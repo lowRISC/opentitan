@@ -16,6 +16,11 @@ from tabulate import tabulate
 from utils import VERBOSE, find_and_substitute_wildcards, run_cmd
 
 
+class DeployError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+
 class Deploy():
     """
     Abstraction for deploying builds and runs.
@@ -66,7 +71,6 @@ class Deploy():
         # Process
         self.process = None
         self.log_fd = None
-        self.status = None
 
         # These are mandatory class attributes that need to be extracted and
         # set from the sim_cfg object. These are explicitly used to construct
@@ -268,13 +272,11 @@ class Deploy():
                                             stderr=f,
                                             env=exports)
             self.log_fd = f
-            self.status = "D"
             Deploy.dispatch_counter += 1
         except IOError:
-            log.error('IO Error: See %s', self.log)
             if self.log_fd:
                 self.log_fd.close()
-            self.status = "K"
+            raise DeployError('IO Error: See {}'.format(self.log))
 
     def odir_limiter(self, odir, max_odirs=-1):
         '''Function to backup previously run output directory to maintain a
@@ -329,93 +331,120 @@ class Deploy():
             log.error("Failed to delete old run directories!")
         return dirs
 
-    def set_status(self):
-        self.status = 'P'
-        if self.dry_run is False:
-            seen_fail_pattern = False
-            for fail_pattern in self.fail_patterns:
-                # Return error message with the following 4 lines.
-                grep_cmd = "grep -m 1 -A 4 -E \'" + fail_pattern + "\' " + self.log
-                (status, rslt) = subprocess.getstatusoutput(grep_cmd)
-                if rslt:
-                    msg = "```\n{}\n```\n".format(rslt)
-                    self.fail_msg += msg
-                    log.log(VERBOSE, msg)
-                    self.status = 'F'
-                    seen_fail_pattern = True
-                    break
+    def _test_passed(self):
+        '''Return True if the job passed, False otherwise
 
-            # If fail patterns were not encountered, but the job returned with non-zero exit code
-            # for whatever reason, then show the last 10 lines of the log as the failure message,
-            # which might help with the debug.
-            if self.process.returncode != 0 and not seen_fail_pattern:
-                msg = "Last 10 lines of the log:<br>\n"
+        This is called by poll() just after the job finishes.
+
+        '''
+        if self.dry_run:
+            return True
+
+        seen_fail_pattern = False
+        for fail_pattern in self.fail_patterns:
+            # Return error message with the following 4 lines.
+            grep_cmd = "grep -m 1 -A 4 -E \'" + fail_pattern + "\' " + self.log
+            (status, rslt) = subprocess.getstatusoutput(grep_cmd)
+            if rslt:
+                msg = "```\n{}\n```\n".format(rslt)
                 self.fail_msg += msg
                 log.log(VERBOSE, msg)
-                get_fail_msg_cmd = "tail -n 10 " + self.log
-                msg = run_cmd(get_fail_msg_cmd)
-                msg = "```\n{}\n```\n".format(msg)
+                seen_fail_pattern = True
+                break
+
+        if seen_fail_pattern:
+            return False
+
+        # If no fail patterns were seen, but the job returned with non-zero
+        # exit code for whatever reason, then show the last 10 lines of the log
+        # as the failure message, which might help with the debug.
+        if self.process.returncode != 0:
+            msg = "Last 10 lines of the log:<br>\n"
+            self.fail_msg += msg
+            log.log(VERBOSE, msg)
+            get_fail_msg_cmd = "tail -n 10 " + self.log
+            msg = run_cmd(get_fail_msg_cmd)
+            msg = "```\n{}\n```\n".format(msg)
+            self.fail_msg += msg
+            log.log(VERBOSE, msg)
+            return False
+
+        # If we get here, we've not seen anything explicitly wrong, but we
+        # might have "pass patterns": patterns that must occur in the log for
+        # the run to be considered successful.
+        for pass_pattern in self.pass_patterns:
+            grep_cmd = "grep -c -m 1 -E \'" + pass_pattern + "\' " + self.log
+            (status, rslt) = subprocess.getstatusoutput(grep_cmd)
+            if rslt == "0":
+                msg = "Pass pattern {!r} not found.<br>\n".format(pass_pattern)
                 self.fail_msg += msg
                 log.log(VERBOSE, msg)
-                self.status = "F"
+                return False
 
-            # Return if status is fail - no need to look for pass patterns.
-            if self.status == 'F':
-                return
+        return True
 
-            # If fail patterns were not found, ensure pass patterns indeed were.
-            for pass_pattern in self.pass_patterns:
-                grep_cmd = "grep -c -m 1 -E \'" + pass_pattern + "\' " + self.log
-                (status, rslt) = subprocess.getstatusoutput(grep_cmd)
-                if rslt == "0":
-                    msg = "Pass pattern \"{}\" not found.<br>\n".format(
-                        pass_pattern)
-                    self.fail_msg += msg
-                    log.log(VERBOSE, msg)
-                    self.status = 'F'
-                    break
+    def _link_odir(self, status):
+        old_link = self.sim_cfg.links['D'] + "/" + self.odir_ln
+        new_link = self.sim_cfg.links[status] + "/" + self.odir_ln
+        cmd = "ln -s " + self.odir + " " + new_link + "; "
+        cmd += "rm " + old_link
+        if os.system(cmd):
+            log.error("Cmd \"%s\" could not be run", cmd)
 
-    def link_odir(self):
-        if self.status == '.':
-            log.error("Method unexpectedly called!")
-        else:
-            old_link = self.sim_cfg.links['D'] + "/" + self.odir_ln
-            new_link = self.sim_cfg.links[self.status] + "/" + self.odir_ln
-            cmd = "ln -s " + self.odir + " " + new_link + "; "
-            cmd += "rm " + old_link
-            if os.system(cmd):
-                log.error("Cmd \"%s\" could not be run", cmd)
+    def _on_finish(self, status):
+        '''Called when the process finishes or is killed'''
+        assert status in ['P', 'F', 'K']
+        if status in ['P', 'F']:
+            self._link_odir(status)
 
-    def get_status(self):
-        if self.status != "D":
-            return
-        if self.process.poll() is not None:
-            self.log_fd.close()
-            self.set_status()
+    def poll(self):
+        '''Check status of the running process
 
-            log.debug("Item %s has completed execution: %s", self.name,
-                      self.status)
-            Deploy.dispatch_counter -= 1
-            self.link_odir()
-            del self.process
+        This returns 'D', 'P' or 'F'. If 'D', the job is still running. If 'P',
+        the job finished successfully. If 'F', the job finished with an error.
+
+        This function must only be called after running self.dispatch_cmd() and
+        must not be called again once it has returned 'P' or 'F'.
+
+        '''
+        assert self.process is not None
+        if self.process.poll() is None:
+            return 'D'
+        self.log_fd.close()
+
+        status = 'P' if self._test_passed() else 'F'
+
+        log.debug("Item %s has completed execution: %s", self.name, status)
+        Deploy.dispatch_counter -= 1
+        self._on_finish(status)
+
+        del self.process
+        self.process = None
+
+        return status
 
     def kill(self):
-        '''Kill running processes.
+        '''Kill the running process.
+
+        This must be called between dispatching and reaping the process (the
+        same window as poll()).
+
         '''
-        if self.status == "D" and self.process.poll() is None:
-            self.kill_remote_job()
+        assert self.process is not None
+        self.kill_remote_job()
 
-            # Try to kill the running process. Send SIGTERM first, wait a bit,
-            # and then send SIGKILL if it didn't work.
-            self.process.terminate()
-            try:
-                self.process.wait(timeout=2)
-            except subprocess.TimeoutExpired:
-                self.process.kill()
+        # Try to kill the running process. Send SIGTERM first, wait a bit,
+        # and then send SIGKILL if it didn't work.
+        self.process.terminate()
+        try:
+            self.process.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
 
-            if self.log_fd:
-                self.log_fd.close()
-            self.status = "K"
+        if self.log_fd:
+            self.log_fd.close()
+        self.process = None
+        self._on_finish('K')
 
     def kill_remote_job(self):
         '''
@@ -630,11 +659,9 @@ class RunTest(Deploy):
         # Set identifier.
         self.identifier = self.sim_cfg.name + ":" + self.run_dir_name
 
-    def get_status(self):
-        '''Override base class get_status implementation for additional post-status
-        actions.'''
-        super().get_status()
-        if self.status not in ["D", "P"]:
+    def _on_finish(self, status):
+        super()._on_finish(status)
+        if status != 'P':
             # Delete the coverage data if available.
             if os.path.exists(self.cov_db_test_dir):
                 log.log(VERBOSE, "Deleting coverage data of failing test:\n%s",
@@ -829,28 +856,31 @@ class CovReport(Deploy):
 
         CovReport.items.append(self)
 
-    def get_status(self):
-        super().get_status()
-        # Once passed, extract the cov results summary from the dashboard.
-        if self.status == "P":
-            results, self.cov_total, ex_msg = get_cov_summary_table(
-                self.cov_report_txt, self.sim_cfg.tool)
+    def _test_passed(self):
+        # Add an extra check to Deploy._test_passed where we extract the
+        # coverage results summary for the dashboard (and fail the job if
+        # something goes wrong).
+        if not super()._test_passed():
+            return False
 
-            if not ex_msg:
-                # Succeeded in obtaining the coverage data.
-                colalign = (("center", ) * len(results[0]))
-                self.cov_results = tabulate(results,
-                                            headers="firstrow",
-                                            tablefmt="pipe",
-                                            colalign=colalign)
-            else:
-                self.fail_msg += ex_msg
-                log.error(ex_msg)
-                self.status = "F"
+        results, self.cov_total, ex_msg = get_cov_summary_table(
+            self.cov_report_txt, self.sim_cfg.tool)
 
-        if self.status == "P":
-            # Delete the cov report - not needed.
-            os.system("rm -rf " + self.log)
+        if ex_msg:
+            self.fail_msg += ex_msg
+            log.error(ex_msg)
+            return False
+
+        # Succeeded in obtaining the coverage data.
+        colalign = (("center", ) * len(results[0]))
+        self.cov_results = tabulate(results,
+                                    headers="firstrow",
+                                    tablefmt="pipe",
+                                    colalign=colalign)
+
+        # Delete the cov report - not needed.
+        os.system("rm -rf " + self.log)
+        return True
 
 
 class CovAnalyze(Deploy):

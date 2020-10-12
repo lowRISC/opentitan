@@ -183,7 +183,7 @@ class FpvCfg(OneShotCfg):
 
         return self.results_summary_md
 
-    def _gen_results(self):
+    def _gen_results(self, results):
         # This function is called after the regression and looks for
         # results.hjson file with aggregated results from the FPV run.
         # The hjson file is required to follow this format:
