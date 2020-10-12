@@ -85,6 +85,7 @@ class dv_base_reg_block extends uvm_reg_block;
   // when reset issued - the locked registers' access will be reset to original access
   virtual function void reset(string kind = "HARD");
     dv_base_reg enable_regs[$];
+    `uvm_info(`gfn, "Resetting RAL reg block", UVM_MEDIUM)
     super.reset(kind);
     get_enable_regs(enable_regs);
     foreach (enable_regs[i]) enable_regs[i].set_locked_regs_access();

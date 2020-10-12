@@ -127,6 +127,10 @@ class dv_base_reg extends uvm_reg;
   virtual task post_write(uvm_reg_item rw);
     dv_base_reg_field fields[$];
     string field_access;
+
+    // no need to update shadow value or access type if access is not OK, as access is aborted
+    if (rw.status != UVM_IS_OK) return;
+
     if (is_shadowed) begin
       // first write
       if (!shadow_wr_staged) begin
