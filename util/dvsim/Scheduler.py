@@ -15,10 +15,15 @@ from Timer import Timer
 
 class TargetScheduler:
     '''A scheduler for the jobs of a given target'''
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
+
         # Sets of items, split up by their current state. The sets are disjoint
-        # and their union equals the keys of self.item_to_status.
-        self._queued = set()
+        # and their union equals the keys of self.item_to_status. _queued is a
+        # list so that we dispatch things in order (relevant for things like
+        # tests where we have ordered things cleverly to try to see failures
+        # early)
+        self._queued = []
         self._running = set()
         self._passed = set()
         self._failed = set()
@@ -29,38 +34,11 @@ class TargetScheduler:
         # membership in the dicts above.
         self.item_to_status = {}
 
-        # A flag set by check_if_done if all jobs are done.
-        self._done = True
-
-    def check_status(self):
-        '''Return (was_done, is_done, has_started)'''
-        was_done = self._done
-        self._done = not (self._queued or self._running)
-        return (was_done,
-                self._done,
-                (self._running or self._passed or
-                 self._failed or self._killed))
-
-    def print_counters(self, tgt_name, hms):
-        total_cnt = len(self.item_to_status)
-        width = len(str(total_cnt))
-
-        field_fmt = '{{:0{}d}}'.format(width)
-        msg_fmt = ('[Q: {0}, D: {0}, P: {0}, F: {0}, K: {0}, T: {0}]'
-                   .format(field_fmt))
-        msg = msg_fmt.format(len(self._queued),
-                             len(self._running),
-                             len(self._passed),
-                             len(self._failed),
-                             len(self._killed),
-                             total_cnt)
-        log.info("[%s]: [%s]: %s", hms, tgt_name, msg)
-
     def add_item(self, item):
         assert item not in self.item_to_status
+        assert item not in self._queued
         self.item_to_status[item] = 'Q'
-        self._queued.add(item)
-        self._done = False
+        self._queued.append(item)
 
     def _kill_item(self, item):
         '''Kill a running item'''
@@ -69,33 +47,7 @@ class TargetScheduler:
         self._killed.add(item)
         self.item_to_status[item] = 'K'
 
-    def dispatch(self, items):
-        '''Start (dispatch) each item in the list'''
-        for item in items:
-            assert item in self._queued
-            self._queued.remove(item)
-            self._running.add(item)
-            self.item_to_status[item] = 'D'
-            try:
-                item.dispatch_cmd()
-            except DeployError as err:
-                log.error('{}'.format(err))
-                self._kill_item(item)
-
-    def kill(self):
-        '''Kill any running items and cancel any that are waiting'''
-
-        # Cancel any waiting items. We take a copy of self._queued to avoid
-        # iterating over the set as we modify it.
-        for item in [item for item in self._queued]:
-            self.cancel(item)
-
-        # Kill any running items. Again, take a copy of the set to avoid
-        # modifying it while iterating over it.
-        for item in [item for item in self._running]:
-            self._kill_item(item)
-
-    def poll(self, hms):
+    def _poll(self, hms):
         '''Check for running items that have finished
 
         Returns True if something changed.
@@ -130,99 +82,30 @@ class TargetScheduler:
 
         return to_pass or to_fail
 
-    def cancel(self, item):
-        '''Cancel an item that is currently queued'''
-        assert item in self._queued
-        self._queued.remove(item)
-        self._killed.add(item)
-        self.item_to_status[item] = 'K'
+    def _dispatch(self, hms, old_results):
+        '''Dispatch some queued items if possible.
 
+        See run() for the format of old_results.
 
-class Scheduler:
-    '''An object to run one or more Deploy items'''
-    print_legend = True
-
-    # Max jobs running at one time
-    max_parallel = 16
-
-    # Max jobs dispatched in one go.
-    slot_limit = 20
-
-    def __init__(self, items):
-        self.timer = Timer()
-        self.queued_items = []
-        self.dispatched_items = []
-
-        # An ordered dictionary keyed by target ('build', 'run' or similar).
-        # The value for each target is a TargetScheduler object.
-        self.schedulers = OrderedDict()
-
-        for item in items:
-            self.add_item(item)
-
-    def add_item(self, item):
-        '''Add a queued item'''
-        self.queued_items.append(item)
-
-        # Like setdefault, but doesn't construct a TargetScheduler object
-        # unnecessarily.
-        tgt_scheduler = self.schedulers.get(item.target)
-        if tgt_scheduler is None:
-            tgt_scheduler = TargetScheduler()
-            self.schedulers[item.target] = tgt_scheduler
-
-        tgt_scheduler.add_item(item)
-
-    def kill(self):
-        '''Kill any running items and cancel any that are waiting'''
-        for scheduler in self.schedulers.values():
-            scheduler.kill()
-
-    def poll(self):
-        '''Update status of running items. Returns true on a change'''
-        status_changed = False
-        hms = self.timer.hms()
-        for scheduler in self.schedulers.values():
-            if scheduler.poll(hms):
-                status_changed = True
-
-        return status_changed
-
-    def dispatch(self):
-        '''Dispatch some queued items if possible'''
+        '''
         num_slots = min(Scheduler.slot_limit,
                         Scheduler.max_parallel - Deploy.dispatch_counter,
-                        len(self.queued_items))
+                        len(self._queued))
+
         if not num_slots:
             return
 
-        # We only dispatch things for one target at once.
-        cur_tgt = None
-        for item in self.dispatched_items:
-            if item.process is not None:
-                cur_tgt = item.target
-                break
-
         to_dispatch = []
 
-        while len(to_dispatch) < num_slots and self.queued_items:
-            next_item = self.queued_items[0]
-
-            # Keep track of the current target to make sure we dispatch things
-            # in phases.
-            if cur_tgt is None:
-                cur_tgt = next_item.target
-            if next_item.target != cur_tgt:
-                break
-
-            self.queued_items = self.queued_items[1:]
+        while len(to_dispatch) < num_slots and self._queued:
+            next_item = self._queued.pop(0)
 
             # Does next_item have any dependencies? Since we dispatch jobs by
-            # "target", we can assume that each of those dependencies appears
-            # earlier in the list than we do.
+            # target, we can assume that each of those dependencies appears
+            # in old_results.
             has_failed_dep = False
             for dep in next_item.dependencies:
-                dep_status = self.schedulers[dep.target].item_to_status[dep]
+                dep_status = old_results[dep]
                 assert dep_status in ['P', 'F', 'K']
                 if dep_status in ['F', 'K']:
                     has_failed_dep = True
@@ -231,7 +114,8 @@ class Scheduler:
             # If has_failed_dep then at least one of the dependencies has been
             # cancelled or has run and failed. Give up on this item too.
             if has_failed_dep:
-                self.schedulers[cur_tgt].cancel(next_item)
+                self._killed.add(next_item)
+                self.item_to_status[next_item] = 'K'
                 continue
 
             to_dispatch.append(next_item)
@@ -239,56 +123,81 @@ class Scheduler:
         if not to_dispatch:
             return
 
-        assert cur_tgt is not None
-
-        self.dispatched_items.extend(to_dispatch)
-        self.schedulers[cur_tgt].dispatch(to_dispatch)
-
         log.log(VERBOSE, "[%s]: [%s]: [dispatch]:\n%s",
-                self.timer.hms(), cur_tgt,
+                hms, self.name,
                 ", ".join(item.identifier for item in to_dispatch))
 
-    def check_if_done(self, print_status):
+        for item in to_dispatch:
+            self._running.add(item)
+            self.item_to_status[item] = 'D'
+            try:
+                item.dispatch_cmd()
+            except DeployError as err:
+                log.error('{}'.format(err))
+                self._kill_item(item)
+
+    def _kill(self):
+        '''Kill any running items and cancel any that are waiting'''
+
+        # Cancel any waiting items. We take a copy of self._queued to avoid
+        # iterating over the set as we modify it.
+        for item in [item for item in self._queued]:
+            self._cancel(item)
+
+        # Kill any running items. Again, take a copy of the set to avoid
+        # modifying it while iterating over it.
+        for item in [item for item in self._running]:
+            self._kill_item(item)
+
+    def _cancel(self, item):
+        '''Cancel an item that is currently queued'''
+        assert item in self._queued
+        self._queued.remove(item)
+        self._killed.add(item)
+        self.item_to_status[item] = 'K'
+
+    def _check_if_done(self, timer, hms, print_status):
         '''Check whether we are finished.
 
         If print_status or we've reached a time interval then print current
-        status for those that weren't known to be finished already.
+        status for those jobs that weren't known to be finished already.
 
         '''
-        if self.timer.check_time():
+        if timer.check_time():
             print_status = True
 
-        hms = self.timer.hms()
+        if print_status:
+            total_cnt = len(self.item_to_status)
+            width = len(str(total_cnt))
 
-        all_done = True
-        printed_something = False
-        for target, scheduler in self.schedulers.items():
-            was_done, is_done, has_started = scheduler.check_status()
-            all_done &= is_done
+            field_fmt = '{{:0{}d}}'.format(width)
+            msg_fmt = ('[Q: {0}, D: {0}, P: {0}, F: {0}, K: {0}, T: {0}]'
+                       .format(field_fmt))
+            msg = msg_fmt.format(len(self._queued),
+                                 len(self._running),
+                                 len(self._passed),
+                                 len(self._failed),
+                                 len(self._killed),
+                                 total_cnt)
+            log.info("[%s]: [%s]: %s", hms, self.name, msg)
 
-            should_print = (print_status and
-                            not (was_done and is_done) and
-                            (has_started or not printed_something))
-            if should_print:
-                scheduler.print_counters(target, hms)
-                printed_something = True
+        return not (self._queued or self._running)
 
-        return all_done
+    def run(self, timer, old_results):
+        '''Run the jobs for this target.
 
-    def run(self):
-        '''Run all items
+        timer is a Timer that was started at the start of the Runner's run.
 
-        Returns a map from item to status.
+        old_results is a dictionary mapping items (from previous targets) to
+        statuses. Every job that appears as a dependency will be in this list
+        (because it ran as part of a previous target).
+
+        is_first_tgt is true if this is the first target to run.
+
+        Returns the results from this target (in the same format).
 
         '''
-
-        # Print the legend just once (at the start of the first run)
-        if Scheduler.print_legend:
-            log.info("[legend]: [Q: queued, D: dispatched, "
-                     "P: passed, F: failed, K: killed, T: total]")
-            Scheduler.print_legend = False
-
-        # Catch one SIGINT and tell the scheduler to quit. On a second, die.
+        # Catch one SIGINT and tell the runner to quit. On a second, die.
         stop_now = threading.Event()
         old_handler = None
 
@@ -311,12 +220,13 @@ class Scheduler:
                 if stop_now.is_set():
                     # We've had an interrupt. Kill any jobs that are running,
                     # then exit.
-                    self.kill()
+                    self._kill()
                     exit(1)
 
-                changed = self.poll()
-                self.dispatch()
-                if self.check_if_done(changed or first_time):
+                hms = timer.hms()
+                changed = self._poll(hms)
+                self._dispatch(hms, old_results)
+                if self._check_if_done(timer, hms, changed or first_time):
                     break
                 first_time = False
 
@@ -328,11 +238,52 @@ class Scheduler:
         finally:
             signal(SIGINT, old_handler)
 
-        # We got to the end without anything exploding. Extract and return
-        # results from the schedulers.
+        # We got to the end without anything exploding. Return the results for our jobs.
+        return self.item_to_status
+
+
+class Scheduler:
+    '''An object to run one or more Deploy items'''
+    print_legend = True
+
+    # Max jobs running at one time
+    max_parallel = 16
+
+    # Max jobs dispatched in one go.
+    slot_limit = 20
+
+    def __init__(self, items):
+        # An ordered dictionary keyed by target ('build', 'run' or similar).
+        # The value for each target is a TargetScheduler object.
+        self.schedulers = OrderedDict()
+
+        for item in items:
+            # This works like setdefault, but doesn't construct a TargetScheduler
+            # object unnecessarily.
+            tgt_scheduler = self.schedulers.get(item.target)
+            if tgt_scheduler is None:
+                tgt_scheduler = TargetScheduler(item.target)
+                self.schedulers[item.target] = tgt_scheduler
+
+            tgt_scheduler.add_item(item)
+
+    def run(self):
+        '''Run all items
+
+        Returns a map from item to status.
+
+        '''
+        timer = Timer()
+
+        # Print the legend just once (at the start of the first run)
+        if Scheduler.print_legend:
+            log.info("[legend]: [Q: queued, D: dispatched, "
+                     "P: passed, F: failed, K: killed, T: total]")
+            Scheduler.print_legend = False
+
         results = {}
         for scheduler in self.schedulers.values():
-            results.update(scheduler.item_to_status)
+            results.update(scheduler.run(timer, results))
         return results
 
 
