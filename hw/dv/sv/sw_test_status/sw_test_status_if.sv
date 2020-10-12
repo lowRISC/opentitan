@@ -2,47 +2,47 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-interface sw_test_status_if (
-  input clk,
-  input valid,
-  input bit [15:0] data
+interface sw_test_status_if #(
+  parameter int AddrWidth = 32
+) (
+  input logic clk_i,
+  input logic wr_valid,             // Qualified write access.
+  input logic [AddrWidth-1:0] addr, // Incoming addr.
+  input logic [15:0] data           // Incoming data.
 );
 
-  import bus_params_pkg::*;
-  import sw_test_status_pkg::*;
 `ifdef UVM
   import uvm_pkg::*;
-  `include "uvm_macros.svh"
 `endif
+  import sw_test_status_pkg::*;
 
-  // Single cycle qualifier for the sw_test_status_val.
-  logic valid;
+  // Address to which the test status is written to. This is set by the testbench.
+  logic [AddrWidth-1:0] sw_test_status_addr;
 
-  // Address to which the test status is written to.
-  logic [bus_params_pkg::BUS_AW-1:0] sw_test_status_addr;
+  // Validate the incoming write address.
+  logic data_valid;
+  assign data_valid = wr_valid && (addr == sw_test_status_addr);
 
   // SW test status indication.
-  sw_test_status_e sw_test_status;
+  sw_test_status_e sw_test_status = SwTestStatusUnderReset;
 
   // If the sw_test_status reaches the terminal states, assert that we are done.
   bit sw_test_done;
 
-  always @(posedge clk) begin
-    if (valid) begin
-      if ($cast(sw_test_status, data)) begin
-`ifdef UVM
-        `uvm_info($sformatf("%m"), $sformatf("Detected SW test status change: %0s",
-                                             sw_test_status.name()), UVM_LOW)
-`elsif VERILATOR
-        $display("%t [%m]: Detected SW test status change: 0x%0h", $time, sw_test_status);
-`else
-        $display("%t [%m]: Detected SW test status change: %0s", $time, sw_test_status.name());
-`endif
-        sw_test_done = sw_test_done | (sw_test_status inside {SwTestStatusPassed,
-                                                              SwTestStatusFailed});
+  always @(posedge clk_i) begin
+    if (data_valid) begin
+      sw_test_status = sw_test_status_e'(data);
+      sw_test_done = sw_test_done | sw_test_status inside {SwTestStatusPassed, SwTestStatusFailed};
+      if (sw_test_status == SwTestStatusPassed) begin
+        `DV_INFO("==== SW TEST PASSED ====")
+      end else if (sw_test_status == SwTestStatusFailed) begin
+        `DV_ERROR("==== SW TEST FAILED ====")
       end else begin
-        $error("%t [%m] Illegal sw_test_status data 0x%0h written to addr 0x%0h",
-               $time, data, sw_test_status_addr);
+`ifdef VERILATOR
+        `DV_INFO($sformatf("SW test status changed: 0x%0h", sw_test_status))
+`else
+        `DV_INFO($sformatf("SW test status changed: %0s", sw_test_status.name()))
+`endif
       end
     end
   end
