@@ -26,7 +26,9 @@ sw_lib_mmio = declare_dependency(
   link_with: static_library(
     'mmio_ot',
     sources: ['mmio.c'],
-    dependencies: [sw_lib_bitfield],
+    dependencies: [
+      sw_lib_bitfield,
+      sw_lib_mem,
+    ],
   )
 )
-
