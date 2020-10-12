@@ -119,58 +119,6 @@ module tb;
     .IO_GP15          (gpio_pins[15])
   );
 
-  // connect sw_logger_if
-  bit             sw_log_valid;
-  bit [TL_AW-1:0] sw_log_addr;
-
-  sw_logger_if sw_logger_if (
-    .clk        (`RAM_MAIN_SUB_HIER.clk_i),
-    .rst_n      (`RAM_MAIN_HIER.rst_ni),
-    .valid      (sw_log_valid),
-    .addr_data  (`RAM_MAIN_SUB_HIER.wdata_i),
-    .sw_log_addr(sw_log_addr)
-  );
-  assign sw_log_valid = !stub_cpu &&
-                        `RAM_MAIN_SUB_HIER.req_i &&
-                        `RAM_MAIN_SUB_HIER.write_i &&
-                        /* RAM only looks at the 14-bit word address 15:2 */
-                        (`RAM_MAIN_SUB_HIER.addr_i == sw_log_addr[15:2]);
-
-  // connect the sw_test_status_if
-  bit sw_test_status_valid;
-  sw_test_status_if sw_test_status_if(
-    .clk  (`RAM_MAIN_SUB_HIER.clk_i),
-    .valid(sw_test_status_valid),
-    .data (`RAM_MAIN_SUB_HIER.wdata_i[15:0])
-  );
-  assign sw_test_status_valid = !stub_cpu &&
-                                `RAM_MAIN_SUB_HIER.req_i &&
-                                `RAM_MAIN_SUB_HIER.write_i &&
-                                (`RAM_MAIN_SUB_HIER.addr_i ==
-                                 sw_test_status_if.sw_test_status_addr[15:2]);
-
-  // Instantiate & connect the simulation SRAM.
-  sim_sram u_sim_sram (
-    .clk_i    (`CPU_HIER.clk_i),
-    .rst_ni   (`CPU_HIER.rst_ni),
-    .tl_in_i  (`CPU_HIER.tl_d_o_int),
-    .tl_in_o  (),
-    .tl_out_o (),
-    .tl_out_i (`CPU_HIER.tl_d_i)
-  );
-
-  initial begin
-    void'($value$plusargs("en_sim_sram=%0b", en_sim_sram));
-    // Set the start address of the simulation SRAM.
-    u_sim_sram.u_sim_sram_if.start_addr = 32'h3000_0000;
-    if (!stub_cpu && en_sim_sram) begin
-      force `CPU_HIER.tl_d_i_int = u_sim_sram.tl_in_o;
-      force `CPU_HIER.tl_d_o = u_sim_sram.tl_out_o;
-    end else begin
-      force u_sim_sram.clk_i = 1'b0;
-    end
-  end
-
   // connect signals
   assign io_dps[0]  = jtag_spi_n ? jtag_tck : spi_device_sck;
   assign io_dps[1]  = jtag_spi_n ? jtag_tdi : spi_device_sdi_i;
@@ -201,6 +149,43 @@ module tb;
   assign usb_dp0    = 1'b1;
   assign usb_dn0    = 1'b0;
   assign usb_sense0 = 1'b0;
+
+  `define SIM_SRAM_IF u_sim_sram.u_sim_sram_if
+
+  // Instantiate & connect the simulation SRAM inside the CPU (rv_core_ibex) using forces.
+  sim_sram u_sim_sram (
+    .clk_i    (`CPU_HIER.clk_i),
+    .rst_ni   (`CPU_HIER.rst_ni),
+    .tl_in_i  (`CPU_HIER.tl_d_o_int),
+    .tl_in_o  (),
+    .tl_out_o (),
+    .tl_out_i (`CPU_HIER.tl_d_i)
+  );
+
+  initial begin
+    void'($value$plusargs("en_sim_sram=%0b", en_sim_sram));
+    if (!stub_cpu && en_sim_sram) begin
+      `SIM_SRAM_IF.start_addr = SW_DV_START_ADDR;
+      force `CPU_HIER.tl_d_i_int = u_sim_sram.tl_in_o;
+      force `CPU_HIER.tl_d_o = u_sim_sram.tl_out_o;
+    end else begin
+      force u_sim_sram.clk_i = 1'b0;
+    end
+  end
+
+  // Bind the SW test status interface directly to the sim SRAM interface.
+  bind sim_sram_if: `SIM_SRAM_IF sw_test_status_if u_sw_test_status_if (
+    .addr (tl_h2d.a_address),
+    .data (tl_h2d.a_data[15:0]),
+    .*
+  );
+
+  // Bind the SW logger interface directly to the sim SRAM interface.
+  bind sim_sram_if: `SIM_SRAM_IF sw_logger_if u_sw_logger_if (
+    .addr (tl_h2d.a_address),
+    .data (tl_h2d.a_data),
+    .*
+  );
 
   // connect alert rx/tx to alert_if
   for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins
@@ -255,9 +240,10 @@ module tb;
 
 
     // SW logger and test status interfaces.
-    uvm_config_db#(virtual sw_logger_if)::set(null, "*.env", "sw_logger_vif", sw_logger_if);
     uvm_config_db#(virtual sw_test_status_if)::set(
-        null, "*.env", "sw_test_status_vif", sw_test_status_if);
+        null, "*.env", "sw_test_status_vif", `SIM_SRAM_IF.u_sw_test_status_if);
+    uvm_config_db#(virtual sw_logger_if)::set(
+        null, "*.env", "sw_logger_vif", `SIM_SRAM_IF.u_sw_logger_if);
 
     // temp disable pinmux assertion AonWkupReqKnownO_A because driving X in spi_device.sdi and
     // WkupPadSel choose IO_DPS1 in MIO will trigger this assertion
@@ -267,6 +253,8 @@ module tb;
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
+
+  `undef SIM_SRAM_IF
 
   // stub cpu environment
   // if enabled, clock to cpu is forced to 0
