@@ -388,3 +388,67 @@
     uvm_config_db#(bit)::set(null, SCOPE_, LABEL_, VALUE_); \
   end
 `endif
+
+// Logs an info message.
+//
+// This is meant to be invoked in modules and interfaces that are shared between DV and Verilator
+// testbenches.
+`ifdef UVM
+`ifndef DV_INFO
+  `define DV_INFO(_msg, _id = $sformatf("%m"), _verbosity = UVM_LOW) \
+    `uvm_info(_id, _msg, _verbosity)
+`endif
+`else
+`ifndef DV_INFO
+  `define DV_INFO(_msg, _id = $sformatf("%m")) \
+    $display("[%0t] %0s(%0d): [%0s] %0s", $time, `__FILE__, `__LINE__, _id, _msg);
+`endif
+`endif
+
+// Logs a warning message.
+//
+// This is meant to be invoked in modules and interfaces that are shared between DV and Verilator
+// testbenches.
+`ifdef UVM
+`ifndef DV_WARNING
+  `define DV_WARNING(_msg, _id = $sformatf("%m")) \
+    `uvm_warning(_id, _msg)
+`endif
+`else
+`ifndef DV_WARNING
+  `define DV_WARNING(_msg, _id = $sformatf("%m")) \
+    $warning("[%0t] %0s(%0d): [%0s] %0s", $time, `__FILE__, `__LINE__, _id, _msg);
+`endif
+`endif
+
+// Logs an error message.
+//
+// This is meant to be invoked in modules and interfaces that are shared between DV and Verilator
+// testbenches.
+`ifdef UVM
+`ifndef DV_ERROR
+  `define DV_ERROR(_msg, _id = $sformatf("%m")) \
+    `uvm_error(_id, _msg)
+`endif
+`else
+`ifndef DV_ERROR
+  `define DV_ERROR(_msg, _id = $sformatf("%m")) \
+    $error("[%0t] %0s(%0d): [%0s] %0s", $time, `__FILE__, `__LINE__, _id, _msg);
+`endif
+`endif
+
+// Logs a fatal message.
+//
+// This is meant to be invoked in modules and interfaces that are shared between DV and Verilator
+// testbenches.
+`ifdef UVM
+`ifndef DV_FATAL
+  `define DV_FATAL(_msg, _id = $sformatf("%m")) \
+    `uvm_fatal(_id, _msg)
+`endif
+`else
+`ifndef DV_FATAL
+  `define DV_FATAL(_msg, _id = $sformatf("%m")) \
+    $fatal("[%0t] %0s(%0d): [%0s] %0s", $time, `__FILE__, `__LINE__, _id, _msg);
+`endif
+`endif
