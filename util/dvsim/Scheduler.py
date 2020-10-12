@@ -243,7 +243,6 @@ class TargetScheduler:
 
 class Scheduler:
     '''An object to run one or more Deploy items'''
-    print_legend = True
 
     # Max jobs running at one time
     max_parallel = 16
@@ -274,12 +273,8 @@ class Scheduler:
         '''
         timer = Timer()
 
-        # Print the legend just once (at the start of the first run)
-        if Scheduler.print_legend:
-            log.info("[legend]: [Q: queued, D: dispatched, "
-                     "P: passed, F: failed, K: killed, T: total]")
-            Scheduler.print_legend = False
-
+        log.info("[legend]: [Q: queued, D: dispatched, "
+                 "P: passed, F: failed, K: killed, T: total]")
         results = {}
         for scheduler in self.schedulers.values():
             results.update(scheduler.run(timer, results))

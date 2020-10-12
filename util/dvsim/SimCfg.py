@@ -13,7 +13,6 @@ import sys
 from collections import OrderedDict
 
 from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
-import Scheduler
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
 from tabulate import tabulate
@@ -180,10 +179,6 @@ class SimCfg(FlowCfg):
         self.cov_merge_deploy = None
         self.cov_report_deploy = None
         self.results_summary = OrderedDict()
-
-        # If is_primary_cfg is set, then each cfg will have its own cov_deploy.
-        # Maintain an array of those in cov_deploys.
-        self.cov_deploys = []
 
         super().__init__(flow_cfg_file, hjson_data, args, mk_config)
 
@@ -542,39 +537,15 @@ class SimCfg(FlowCfg):
 
         self.deploy = self.builds + self.runs
 
-        # Create cov_merge and cov_report objects
-        if self.cov:
-            self.cov_merge_deploy = CovMerge(self)
+        # Create cov_merge and cov_report objects, so long as we've got at
+        # least one run to do.
+        if self.cov and self.runs:
+            self.cov_merge_deploy = CovMerge(self.runs, self)
             self.cov_report_deploy = CovReport(self.cov_merge_deploy, self)
+            self.deploy += [self.cov_merge_deploy, self.cov_report_deploy]
 
         # Create initial set of directories before kicking off the regression.
         self._create_dirs()
-
-    def create_deploy_objects(self):
-        '''Public facing API for _create_deploy_objects().
-        '''
-        super().create_deploy_objects()
-
-        # Also, create cov_deploys
-        if self.cov:
-            for item in self.cfgs:
-                if item.cov:
-                    self.cov_deploys.append(item.cov_merge_deploy)
-                    self.cov_deploys.append(item.cov_report_deploy)
-
-    # deploy additional commands as needed. We do this separated for coverage
-    # since that needs to happen at the end.
-    def deploy_objects(self):
-        '''This is a public facing API, so we use "self.cfgs" instead of self.
-        '''
-        # Invoke the base class method to run the regression.
-        results = super().deploy_objects()
-
-        # If coverage is enabled, then deploy the coverage tasks.
-        if self.cov:
-            results.update(Scheduler.run(self.cov_deploys))
-
-        return results
 
     def _cov_analyze(self):
         '''Use the last regression coverage data to open up the GUI tool to
