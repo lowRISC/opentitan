@@ -734,9 +734,11 @@ class CovMerge(Deploy):
     # Register all builds with the class
     items = []
 
-    def __init__(self, sim_cfg):
+    def __init__(self, run_items, sim_cfg):
         # Initialize common vars.
         super().__init__(sim_cfg)
+
+        self.dependencies += run_items
 
         self.target = "cov_merge"
         self.pass_patterns = []
