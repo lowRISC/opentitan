@@ -40,19 +40,25 @@
 
 interface sw_logger_if #(
   // width of the data bus
-  parameter int unsigned DATA_WIDTH = 32
+  parameter int unsigned AddrDataWidth = 32
 ) (
-  input logic                   clk,        // clock
-  input logic                   rst_n,      // active low reset
-  input logic                   valid,      // qualification for addr_data
-  input logic [DATA_WIDTH-1:0]  addr_data,  // addr/data written to sw_log_addr
-  output logic [DATA_WIDTH-1:0] sw_log_addr // used by external logic to qualify valid
+  input logic clk_i,
+  input logic rst_ni,
+  input logic wr_valid,                 // Qualified write access.
+  input logic [AddrDataWidth-1:0] addr, // Incoming addr.
+  input logic [AddrDataWidth-1:0] data  // Incoming data.
 );
 
 `ifdef UVM
   import uvm_pkg::*;
-  `include "uvm_macros.svh"
 `endif
+
+  // Address to which the SW logs are written to. This is set by the testbench.
+  logic [AddrDataWidth-1:0] sw_log_addr;
+
+  // Validate the incoming write address.
+  logic data_valid;
+  assign data_valid = wr_valid && (addr == sw_log_addr);
 
   // Enable signal to turn on/off logging at runtime.
   bit enable = 1'b1;
@@ -63,7 +69,7 @@ interface sw_logger_if #(
   string sw_rodata_db_files[string];
 
   // typedef addr / data values
-  typedef bit [DATA_WIDTH-1:0] addr_data_t;
+  typedef bit [AddrDataWidth-1:0] addr_data_t;
 
   typedef enum {
     LogSeverityInfo,
@@ -342,9 +348,14 @@ interface sw_logger_if #(
   // retrieve addr or data from the bus
   task automatic get_addr_data_from_bus();
     forever begin
-      @(posedge clk);
-      if (enable && valid === 1'b1 && rst_n !== 0) begin
-        addr_data_q.push_back(addr_data);
+      @(posedge clk_i or negedge rst_ni);
+      if (!rst_ni) begin
+        addr_data_q.delete();
+        wait(rst_ni);
+      end else begin
+        if (enable && data_valid) begin
+          addr_data_q.push_back(data);
+        end
       end
     end
   endtask
@@ -379,8 +390,8 @@ interface sw_logger_if #(
                   end
                 end
                 begin
-                  // check if rst_n occurred - in that case discard and start over
-                  wait(rst_n === 1'b0);
+                  // check if rst_ni occurred - in that case discard and start over
+                  wait(rst_ni === 1'b0);
                   rst_occurred = 1'b1;
                 end
               join_any
