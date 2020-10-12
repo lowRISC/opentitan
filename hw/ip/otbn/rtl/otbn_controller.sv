@@ -264,26 +264,19 @@ module otbn_controller
   // Base ALU Operand A MUX
   always_comb begin
     unique case (insn_dec_base_i.op_a_sel)
-      OpASelRegister:
-        alu_base_operation_o.operand_a = rf_base_rd_data_a_i;
-      OpASelZero:
-        alu_base_operation_o.operand_a = '0;
-      OpASelCurrPc:
-        alu_base_operation_o.operand_a = {{(32 - ImemAddrWidth){1'b0}}, insn_addr_i};
-      default:
-        alu_base_operation_o.operand_a = rf_base_rd_data_a_i;
+      OpASelRegister: alu_base_operation_o.operand_a = rf_base_rd_data_a_i;
+      OpASelZero:     alu_base_operation_o.operand_a = '0;
+      OpASelCurrPc:   alu_base_operation_o.operand_a = {{(32 - ImemAddrWidth){1'b0}}, insn_addr_i};
+      default:        alu_base_operation_o.operand_a = rf_base_rd_data_a_i;
     endcase
   end
 
   // Base ALU Operand B MUX
   always_comb begin
     unique case (insn_dec_base_i.op_b_sel)
-      OpBSelRegister:
-        alu_base_operation_o.operand_b = rf_base_rd_data_b_i;
-      OpBSelImmediate:
-        alu_base_operation_o.operand_b = insn_dec_base_i.i;
-      default:
-        alu_base_operation_o.operand_b = rf_base_rd_data_b_i;
+      OpBSelRegister:  alu_base_operation_o.operand_b = rf_base_rd_data_b_i;
+      OpBSelImmediate: alu_base_operation_o.operand_b = insn_dec_base_i.i;
+      default:         alu_base_operation_o.operand_b = rf_base_rd_data_b_i;
     endcase
   end
 
@@ -301,18 +294,12 @@ module otbn_controller
 
   always_comb begin
     unique case (insn_dec_base_i.rf_wdata_sel)
-      RfWdSelEx:
-        rf_base_wr_data_o = alu_base_operation_result_i;
-      RfWdSelLsu:
-        rf_base_wr_data_o = lsu_base_rdata_i;
-      RfWdSelNextPc:
-        rf_base_wr_data_o = {{(32-ImemAddrWidth){1'b0}}, next_insn_addr};
-      RfWdSelIspr:
-        rf_base_wr_data_o = csr_rdata;
-      RfWdSelIncr:
-        rf_base_wr_data_o = increment_out;
-      default:
-        rf_base_wr_data_o = alu_base_operation_result_i;
+      RfWdSelEx:     rf_base_wr_data_o = alu_base_operation_result_i;
+      RfWdSelLsu:    rf_base_wr_data_o = lsu_base_rdata_i;
+      RfWdSelNextPc: rf_base_wr_data_o = {{(32-ImemAddrWidth){1'b0}}, next_insn_addr};
+      RfWdSelIspr:   rf_base_wr_data_o = csr_rdata;
+      RfWdSelIncr:   rf_base_wr_data_o = increment_out;
+      default:       rf_base_wr_data_o = alu_base_operation_result_i;
     endcase
   end
 
@@ -327,12 +314,9 @@ module otbn_controller
   // Base ALU Operand B MUX
   always_comb begin
     unique case (insn_dec_bignum_i.op_b_sel)
-      OpBSelRegister:
-        alu_bignum_operation_o.operand_b = rf_bignum_rd_data_b_i;
-      OpBSelImmediate:
-        alu_bignum_operation_o.operand_b = insn_dec_bignum_i.i;
-      default:
-        alu_bignum_operation_o.operand_b = rf_bignum_rd_data_b_i;
+      OpBSelRegister:  alu_bignum_operation_o.operand_b = rf_bignum_rd_data_b_i;
+      OpBSelImmediate: alu_bignum_operation_o.operand_b = insn_dec_bignum_i.i;
+      default:         alu_bignum_operation_o.operand_b = rf_bignum_rd_data_b_i;
     endcase
   end
 
@@ -353,14 +337,10 @@ module otbn_controller
 
   always_comb begin
     unique case (insn_dec_bignum_i.rf_wdata_sel)
-      RfWdSelEx:
-        rf_bignum_wr_data_o = alu_bignum_operation_result_i;
-      RfWdSelLsu:
-        rf_bignum_wr_data_o = lsu_bignum_rdata_i;
-      RfWdSelIspr:
-        rf_bignum_wr_data_o = ispr_rdata_i;
-      default:
-        rf_bignum_wr_data_o = alu_bignum_operation_result_i;
+      RfWdSelEx:   rf_bignum_wr_data_o = alu_bignum_operation_result_i;
+      RfWdSelLsu:  rf_bignum_wr_data_o = lsu_bignum_rdata_i;
+      RfWdSelIspr: rf_bignum_wr_data_o = ispr_rdata_i;
+      default:     rf_bignum_wr_data_o = alu_bignum_operation_result_i;
     endcase
   end
 
