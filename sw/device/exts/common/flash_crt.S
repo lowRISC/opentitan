@@ -18,9 +18,9 @@
   // is allocated space in ROM by the linker.
   .section .crt, "ax", @progbits
 
+  .extern abort
   .extern main
   .extern crt_interrupt_vector
-  .extern kDeviceStopAddress
 
 /**
  * Callable entry point for flash.
@@ -117,13 +117,5 @@ init_array_loop_end:
   li   a1, 0x0  // argv = NULL
   call main
 
-  // Load `kDeviceStopAddress` into `t0`. If it is non-zero, write the return
-  // value from `main` (in `a0`) into it, otherwise, skip to `wfi` loop.
-  lw t0, kDeviceStopAddress
-  beqz t0, wfi_loop
-  sw a0, 0(t0)
-
-  // Loop forever if main somehow returns.
-wfi_loop:
-  wfi
-  j wfi_loop
+  // Halt the core (wfi loop)
+  tail abort

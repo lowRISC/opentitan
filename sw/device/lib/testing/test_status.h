@@ -19,46 +19,58 @@
 typedef enum test_status {
   /**
    * Indicates that the CPU has started executing the boot_rom code.
+   *
+   * Writing this value to #kDeviceTestStatusAddress must not stop simulation of
+   * the current device.
    */
   kTestStatusInBootRom = 0xb090,  // 'bogo', BOotrom GO
 
   /**
    * Indicates that the CPU has started executing the test code.
+   *
+   * Writing this value to #kDeviceTestStatusAddress must not stop simulation of
+   * the current device.
    */
   kTestStatusInTest = 0x4354,  // 'test'
 
   /**
    * Indicates that the CPU is in the WFI state.
+   *
+   * Writing this value to #kDeviceTestStatusAddress must not stop simulation of
+   * the current device.
    */
   kTestStatusInWfi = 0x1d1e,  // 'idle'
 
   /**
    * This indicates that the test has passed. This is a terminal state. Any code
    * appearing after this value is set is unreachable.
+   *
+   * Writing this value to #kDeviceTestStatusAddress may stop simulation of the
+   * current device.
    */
   kTestStatusPassed = 0x900d,  // 'good'
 
   /**
    * This indicates that the test has failed. This is a terminal state. Any code
    * appearing after this value is set is unreachable.
+   *
+   * Writing this value to #kDeviceTestStatusAddress may stop simulation of the
+   * current device.
    */
   kTestStatusFailed = 0xbaad  // 'baad'
 } test_status_t;
 
 /**
- * Sets the test status.
- *
  * This signals the status of the software test with `test_status` value.
- * In DV testing, this function writes the `test_status` to a specific
- * location in the RAM. In non-DV testing, this converts to a log message for
- * the terminal states. For the other intermediates states, the function returns
- * immediately.
  *
- * At minimum, it is mandatory to set the status of the software to explicitly
- * indicate whether the software test passed or failed, with
- * `kTestStatusPassed` and `kTestStatusFailed` literals. If one these terminal
- * status is passed as the argument, the function calls `abort()` to ensure that
- * the core stops executing anymore.
+ * It is mandatory for tests to indicate whether they passed or failed using
+ * this function with #kTestStatusPassed and #kTestStatusFailed.
+ *
+ * In simulated testing (Verilator, DV), this function writes `test_status` to
+ * a specific address, which may cause the simulation to end.
+ *
+ * In environments with a null #kDeviceTestStatusAddress, this logs a message
+ * for terminal states and calls abort. Otherwise, the function returns safely.
  *
  * @param test_status current status of the test.
  */
