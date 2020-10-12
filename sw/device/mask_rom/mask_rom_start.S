@@ -205,9 +205,7 @@ _mask_rom_start_boot:
   // `t0` is the address to start zeroing at.
   // `t1` is the address to stop zeroing at.
   li   t0, TOP_EARLGREY_RAM_MAIN_BASE_ADDR
-  // TODO: Ensure we do zero all of RAM, for the moment we're not zeroing the
-  // test area. https://github.com/lowRISC/opentitan/issues/3619
-  la   t1, _test_reserved_start
+  li   t1, (TOP_EARLGREY_RAM_MAIN_BASE_ADDR + TOP_EARLGREY_RAM_MAIN_SIZE_BYTES)
   bgeu t0, t1, sram_zero_end
 sram_zero_loop:
   // TODO: Unroll loop
