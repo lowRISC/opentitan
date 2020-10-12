@@ -371,7 +371,9 @@ module otbn_alu_bignum
       AluOpBignumAdd,
       AluOpBignumAddc,
       AluOpBignumSub,
-      AluOpBignumSubb: operation_result_o = adder_y_res[WLEN:1];
+      AluOpBignumSubb: begin
+        operation_result_o = adder_y_res[WLEN:1];
+      end
 
       // For pseudo-mod operations the result depends upon initial a + b / a - b result that is
       // computed in X. Operation to add/subtract mod (X + mod / X - mod) is computed in Y.
@@ -402,15 +404,21 @@ module otbn_alu_bignum
         end
       end
 
-      AluOpBignumRshi: operation_result_o = shifter_res[WLEN-1:0];
+      AluOpBignumRshi: begin
+        operation_result_o = shifter_res[WLEN-1:0];
+      end
 
       AluOpBignumXor,
       AluOpBignumOr,
       AluOpBignumAnd,
-      AluOpBignumNot: operation_result_o = logical_res;
+      AluOpBignumNot: begin
+        operation_result_o = logical_res;
+      end
 
       AluOpBignumSel,
-      AluOpBignumMov: operation_result_o = sel_res;
+      AluOpBignumMov: begin
+        operation_result_o = sel_res;
+      end
       default: ;
     endcase
   end
