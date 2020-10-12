@@ -16,9 +16,6 @@ module tb;
   wire clk, rst_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  alert_esc_if alert_if[NUM_ALERTS](.clk(clk), .rst_n(rst_n));
-  prim_alert_pkg::alert_rx_t [NUM_ALERTS-1:0] alert_rx;
-  prim_alert_pkg::alert_tx_t [NUM_ALERTS-1:0] alert_tx;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -27,14 +24,7 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
-  for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins
-    assign alert_rx[k] = alert_if[k].alert_rx;
-    assign alert_if[k].alert_tx = alert_tx[k];
-    initial begin
-      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
-          LIST_OF_ALERTS[k]), "vif", alert_if[k]);
-    end
-  end
+  `DV_ALERT_IF_CONNECT
 
   // dut
   aes dut (

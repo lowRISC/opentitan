@@ -19,10 +19,6 @@ module tb;
 % if has_interrupts:
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 % endif
-% if has_alerts:
-  prim_alert_pkg::alert_rx_t [NUM_ALERTS-1:0] alert_rx;
-  prim_alert_pkg::alert_tx_t [NUM_ALERTS-1:0] alert_tx;
-% endif
 % endif
 
   // interfaces
@@ -31,15 +27,16 @@ module tb;
 % if has_interrupts:
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
 % endif
-% if has_alerts:
-  alert_esc_if alert_if[NUM_ALERTS](.clk(clk), .rst_n(rst_n));
-% endif
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 % endif
 % for agent in env_agents:
   ${agent}_if ${agent}_if();
 % endfor
+
+% if has_alerts:
+  `DV_ALERT_IF_CONNECT
+% endif
 
   // dut
   ${name} dut (
