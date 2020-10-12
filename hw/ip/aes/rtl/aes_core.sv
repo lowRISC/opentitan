@@ -126,6 +126,7 @@ module aes_core
 
   // Unused signals
   logic            [3:0][31:0] unused_data_out_q;
+  logic                        unused_force_zero_masks;
 
   // The clearing PRNG provides pseudo-random data for register clearing purposes.
   aes_prng_clearing #(
@@ -415,6 +416,8 @@ module aes_core
   // useful for SCA.
   assign ctrl_d.force_zero_masks = SecAllowForcingMasks ?
       reg2hw.ctrl_shadowed.force_zero_masks.q : 1'b0;
+  assign unused_force_zero_masks = SecAllowForcingMasks ?
+      1'b0 : reg2hw.ctrl_shadowed.force_zero_masks.q;
 
   // Get and forward write enable. Writes are only allowed if the module is idle.
   assign ctrl_re = reg2hw.ctrl_shadowed.operation.re & reg2hw.ctrl_shadowed.mode.re &
