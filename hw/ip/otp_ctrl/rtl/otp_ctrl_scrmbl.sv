@@ -89,26 +89,16 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // Decryption Key LUT //
   ////////////////////////
 
-  logic [NumPresentRounds-1:0][4:0] present_round_lut;
   logic [NumScrmblKeys-1:0][ScrmblKeyWidth-1:0] otp_dec_key_lut;
 
   // This pre-calculates the inverse scrambling keys at elab time.
-  for (genvar k = 0; k < NumPresentRounds; k++) begin : gen_round_lut
-    assign present_round_lut[k] = 5'(unsigned'(k+1));
-  end
   `ASSERT_INIT(NumMaxPresentRounds_A, NumPresentRounds <= 31)
 
-  always_comb begin : p_inv_keys
-    for (int k = 0; k < NumScrmblKeys; k++) begin
-      // Initialize with encryption key
-      otp_dec_key_lut[k] = OtpKey[k];
-      for (int j = 0; j < NumPresentRounds; j++) begin
-        // Due to the PRESENT key schedule, we have to step the key schedule function by
-        // NumPresentRounds forwards to get the decryption key.
-        otp_dec_key_lut[k] = prim_cipher_pkg::present_update_key128(otp_dec_key_lut[k],
-                                                                    present_round_lut[j]);
-      end
-    end
+  // Due to the PRESENT key schedule, we have to step the key schedule function by
+  // NumPresentRounds forwards to get the decryption key.
+  for (genvar k = 0; k < NumScrmblKeys; k++) begin : gen_dec_key_lut
+    assign otp_dec_key_lut[k] =
+        prim_cipher_pkg::present_get_dec_key128(OtpKey[k], NumPresentRounds);
   end
   `ASSERT_KNOWN(DecKeyLutKnown_A, otp_dec_key_lut)
 
@@ -116,11 +106,13 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // Datapath //
   //////////////
 
+  logic [4:0]                   idx_state_d, idx_state_q;
   logic [ScrmblKeyWidth-1:0]    key_state_d, key_state_q;
   logic [ScrmblBlockWidth-1:0]  data_state_d, data_state_q, data_shadow_q;
   logic [ScrmblBlockWidth-1:0]  digest_state_d, digest_state_q;
   logic [ScrmblBlockWidth-1:0]  enc_data_out, dec_data_out;
   logic [ScrmblKeyWidth-1:0]    dec_key_out, enc_key_out;
+  logic [4:0]                   dec_idx_out, enc_idx_out;
   logic [ScrmblKeyWidth-1:0]    otp_digest_const_mux, otp_enc_key_mux, otp_dec_key_mux;
   logic [ScrmblBlockWidth-1:0]  otp_digest_iv_mux;
 
@@ -172,6 +164,11 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
                            (key_state_sel == SelDigestConst)    ? otp_digest_const_mux :
                            (key_state_sel == SelDigestChained)  ? {data_state_q, data_shadow_q} :
                                                                   {data_i, data_shadow_q};
+
+  // Initialize the round index state with 1 in all cases, except for the decrypt operation.
+  assign idx_state_d     = (key_state_sel == SelDecKeyOut)      ? dec_idx_out          :
+                           (key_state_sel == SelEncKeyOut)      ? enc_idx_out          :
+                           (key_state_sel == SelDecKeyInit)     ? 5'(NumPresentRounds) : 5'd1;
 
   assign digest_state_d  = enc_data_out;
 
@@ -371,8 +368,10 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   ) u_prim_present_enc (
     .data_i ( data_state_q ),
     .key_i  ( key_state_q  ),
+    .idx_i  ( idx_state_q  ),
     .data_o ( enc_data_out ),
-    .key_o  ( enc_key_out  )
+    .key_o  ( enc_key_out  ),
+    .idx_o  ( enc_idx_out  )
   );
 
   prim_present #(
@@ -382,8 +381,10 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   ) u_prim_present_dec (
     .data_i ( data_state_q ),
     .key_i  ( key_state_q  ),
+    .idx_i  ( idx_state_q  ),
     .data_o ( dec_data_out ),
-    .key_o  ( dec_key_out  )
+    .key_o  ( dec_key_out  ),
+    .idx_o  ( dec_idx_out  )
   );
 
   ///////////////
@@ -406,6 +407,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
     if (!rst_ni) begin
       cnt_q          <= '0;
       key_state_q    <= '0;
+      idx_state_q    <= '0;
       data_state_q   <= '0;
       data_shadow_q  <= '0;
       digest_state_q <= '0;
@@ -423,6 +425,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
       // enable regs
       if (key_state_en) begin
         key_state_q  <= key_state_d;
+        idx_state_q  <= idx_state_d;
       end
       if (data_state_en) begin
         data_state_q <= data_state_d;

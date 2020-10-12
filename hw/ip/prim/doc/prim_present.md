@@ -25,17 +25,26 @@ Name         | In/Out | Description
 -------------|--------|---------------------------------
 data_i       | input  | Plaintext input
 key_i        | input  | Key input
+idx_i        | input  | Round index input
 data_o       | output | Output of the ciphertext
+key_o        | output | Key output after keyschedule update
+idx_o        | output | Round index output after keyschedule update
+
+The `key_o` and `idx_o` are useful for iterative implementations where the state of the scheduled key, as well as the current round index have to be registered in between rounds.
+Note that `idx_i` should be initialized to 1 for encryption mode, and to `NumRounds` for decryption mode.
 
 # Theory of Operations
 
 ```
              /---------------\
              |               |
+idx_i        |               | idx_o
+=====/======>|               |=====/======>
+ [5]         |               | [5]
              |    PRESENT    |
-key_i        |               |
-=====/======>|   DataWidth   |
- [KeyWidth]  |   KeyWidth    |
+key_i        |               | key_o
+=====/======>|   DataWidth   |=====/======>
+ [KeyWidth]  |   KeyWidth    | [KeyWidth]
              |   NumRounds   |
 data_i       |               |  data_o
 =====/======>|               |=====/=======>
@@ -49,21 +58,25 @@ The only inputs are the key and the plaintext, and the only output is the cipher
 
 The internal construction follows the the algorithm described in the original [paper](http://www.lightweightcrypto.org/present/present_ches2007.pdf).
 The block size is 64bit and the key size can be either 80bit or 128bit, depending on the security requirements.
-In its original formulation, this cipher has 31 rounds comprised of an XOR operation with a round key, followed by the application of an s-box and a permutation layer:
+In its original formulation, this cipher has 31 rounds comprised of an XOR operation with a round key, followed by the application of an s-box and a permutation layer, as illustrated for the encryption pass below:
 
 ```c++
+NumRounds = 32;
+idx_i = 1;
 
-round_keys = key_derivation(key_i);
+round_keys = key_derivation(key_i, idx_i);
 
 state = data_i;
 
-for (int i=1; i < 32; i++) {
+for (int i=0; i < NumRounds; i++) {
 	state = state ^ round_keys[i];
 	state = sbox4_layer(state);
 	state = perm_layer(state);
 }
 
-data_o = state ^ round_keys[32];
+data_o = state ^ round_keys[NumRounds-1];
+key_o  = round_keys[NumRounds-1];
+idx_o  = idx_i + NumRounds;
 ```
 
 The reduced 32bit block-size variant implemented is non-standard and should only be used for scrambling purposes, since it **is not secure**.
