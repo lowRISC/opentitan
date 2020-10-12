@@ -51,11 +51,18 @@ module prim_present_tb;
   // Same scheme used for key_in, data_out, key_out.
   logic [1:0][NumRounds-1:0][DataWidth-1:0] data_in;
   logic [1:0][NumRounds-1:0][KeyWidth-1 :0] key_in;
+  logic [1:0][NumRounds-1:0][4:0]           idx_in;
   logic [1:0][NumRounds-1:0][DataWidth-1:0] data_out;
   logic [1:0][NumRounds-1:0][KeyWidth-1 :0] key_out;
+  logic [1:0][NumRounds-1:0][4:0]           idx_out;
 
   for (genvar j = 0; j < 2; j++) begin : gen_encrypt_decrypt
     for (genvar k = 0; k < NumRounds; k++) begin : gen_duts
+      if (j == 0) begin : gen_encrypt
+        assign idx_in[j][k] = 5'd1;
+      end else begin : gen_decrypt
+        assign idx_in[j][k] = 5'(k+1);
+      end
       prim_present #(
         .DataWidth  ( DataWidth ),
         .KeyWidth   ( KeyWidth  ),
@@ -64,8 +71,10 @@ module prim_present_tb;
       ) dut (
         .data_i     ( data_in[j][k]  ),
         .key_i      ( key_in[j][k]   ),
+        .idx_i      ( idx_in[j][k]   ),
         .data_o     ( data_out[j][k] ),
-        .key_o      ( key_out[j][k]  )
+        .key_o      ( key_out[j][k]  ),
+        .idx_o      ( idx_out[j][k]  )
       );
     end
   end
