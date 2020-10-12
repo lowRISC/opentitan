@@ -20,7 +20,7 @@ const uint64_t kClockFreqUsbHz = 500 * 1000;  // 500kHz
 const uint64_t kUartBaudrate = 7200;
 
 // Defined in `hw/top_earlgrey/top_earlgrey_verilator.core`
-const uintptr_t kDeviceStopAddress = 0x10008000;
+const uintptr_t kDeviceStopAddress = 0x1000fff4;
 
 const uintptr_t kDeviceTestStatusAddress = 0;
 
