@@ -59,19 +59,6 @@ module tb;
     // TODO: add remaining IOs and hook them
   );
 
-% if is_cip:
-% if has_alerts:
-  for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins
-    assign alert_rx[k] = alert_if[k].alert_rx;
-    assign alert_if[k].alert_tx = alert_tx[k];
-    initial begin
-      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
-          LIST_OF_ALERTS[k]), "vif", alert_if[k]);
-    end
-  end
-% endif
-% endif
-
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();

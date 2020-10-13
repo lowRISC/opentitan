@@ -4,7 +4,8 @@
 
 class keymgr_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_reg_block));
 
-  // ext component cfgs
+  // interface for input data from LC, OTP and flash
+  keymgr_input_data_vif keymgr_input_data_vif;
 
   `uvm_object_utils_begin(keymgr_env_cfg)
   `uvm_object_utils_end
@@ -12,6 +13,7 @@ class keymgr_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_reg_block));
   `uvm_object_new
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
+    list_of_alerts = keymgr_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
 
     // set num_interrupts & num_alerts

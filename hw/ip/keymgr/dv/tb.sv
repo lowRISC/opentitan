@@ -22,6 +22,7 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  keymgr_input_data_if keymgr_input_data_if();
 
   logic [1:0][7:0][31:0] rand_values;
   keymgr_pkg::kmac_data_rsp_t kmac_rsp;
@@ -39,6 +40,7 @@ module tb;
   assign kmac_rsp.digest_share0 = rand_values[0];
   assign kmac_rsp.digest_share1 = rand_values[1];
 
+  `DV_ALERT_IF_CONNECT
 
   // dut
   keymgr dut (
@@ -49,19 +51,17 @@ module tb;
     .kmac_key_o           (           ),
     .kmac_data_o          (           ),
     .kmac_data_i          (kmac_rsp   ),
-    .lc_i                 (keymgr_pkg::LC_DATA_DEFAULT),
-    .otp_i                (keymgr_pkg::OTP_DATA_DEFAULT),
-    .flash_i              (keymgr_pkg::FLASH_KEY_DEFAULT),
-    .intr_op_done_o       (           ),
-    .intr_err_o           (           ),
-    .alert_rx_i           ('0         ),
-    .alert_tx_o           (           ),
+    .lc_i                 (keymgr_input_data_if.lc),
+    .otp_i                (keymgr_input_data_if.otp),
+    .flash_i              (keymgr_input_data_if.flash),
+    .intr_op_done_o       (interrupts[IntrOpDone]),
+    .intr_err_o           (interrupts[IntrErr]),
+    .alert_rx_i           (alert_rx   ),
+    .alert_tx_o           (alert_tx   ),
     .tl_i                 (tl_if.h2d  ),
     .tl_o                 (tl_if.d2h  )
     // TODO: add remaining IOs and hook them
   );
-
-  assign interrupts = '0;
 
   initial begin
     // drive clk and rst_n from clk_if
@@ -70,6 +70,8 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(virtual keymgr_input_data_if)::set(null, "*.env", "keymgr_input_data_vif",
+                                                      keymgr_input_data_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

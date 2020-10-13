@@ -5,3 +5,4 @@
 `include "keymgr_base_vseq.sv"
 `include "keymgr_sanity_vseq.sv"
 `include "keymgr_common_vseq.sv"
+`include "keymgr_op_at_wipe_state_vseq.sv"

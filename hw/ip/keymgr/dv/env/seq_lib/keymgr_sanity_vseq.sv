@@ -7,14 +7,20 @@ class keymgr_sanity_vseq extends keymgr_base_vseq;
   `uvm_object_utils(keymgr_sanity_vseq)
   `uvm_object_new
 
+  // test op at StReset
+  constraint do_op_before_init_c {
+    do_op_before_init == 1;
+  }
+
   task body();
     `uvm_info(`gfn, "Key manager sanity check", UVM_HIGH)
+    // check operation at StInit state
+    keymgr_operations(.advance_state(0), .num_gen_op(1), .clr_output(1));
     // Advance state until StDisabled. In each state check SW output and clear output
-    keymgr_operations(.exp_next_state(keymgr_pkg::StCreatorRootKey), .gen_output(1), .clr_output(1));
-    keymgr_operations(.exp_next_state(keymgr_pkg::StOwnerIntKey), .gen_output(1), .clr_output(1));
-    keymgr_operations(.exp_next_state(keymgr_pkg::StOwnerKey), .gen_output(1), .clr_output(1));
-    keymgr_operations(.exp_next_state(keymgr_pkg::StDisabled), .gen_output(1), .clr_output(1));
-    keymgr_operations(.exp_next_state(keymgr_pkg::StDisabled), .gen_output(1), .clr_output(1));
+    repeat (5) begin
+      keymgr_operations(.advance_state(1), .num_gen_op(1), .clr_output(1));
+    end
+
   endtask : body
 
 endclass : keymgr_sanity_vseq
