@@ -8,6 +8,7 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/check.h"
+#include "sw/device/lib/testing/test_status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
@@ -42,5 +43,9 @@ int opentitan_compliance_main(int argc, char **argv) {
     base_printf("SIG: %08x\r\n", begin_signature[i]);
   }
 
+  // Above values are checked for correctness externally post-simulation.
+  test_status_set(kTestStatusPassed);
+
+  // Unreachable code.
   return 0;
 }
