@@ -1,0 +1,24 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Additional build-time options needed to compile C++ sources in
+  // simulators such as VCS and Xcelium for anything that uses
+  // otbn_memutil.
+  memutil_dpi_core: "lowrisc:dv_verilator:memutil_dpi:0"
+  memutil_dpi_src_dir: "{eval_cmd} echo \"{memutil_dpi_core}\" | tr ':' '_'"
+
+  build_modes: [
+    {
+      name: vcs_otbn_memutil_build_opts
+      build_opts: ["-CFLAGS -I{build_dir}/src/{memutil_dpi_src_dir}/cpp",
+                   "-lelf"]
+    }
+
+    {
+      name: xcelium_otbn_memutil_build_opts
+      build_opts: ["-I{build_dir}/src/{memutil_dpi_src_dir}/cpp",
+                   "-lelf"]
+    }
+  ]
+}
