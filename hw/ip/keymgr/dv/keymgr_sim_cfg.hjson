@@ -51,7 +51,12 @@
       uvm_test_seq: keymgr_sanity_vseq
     }
 
-    // TODO: add more tests here
+    {
+      name: keymgr_op_at_wipe_state
+      uvm_test_seq: keymgr_op_at_wipe_state_vseq
+      // StWipe only lasts for several cycles, don't add delay during CSR access
+      run_opts: ["+zero_delays=1"]
+    }
   ]
 
   // List of regressions.

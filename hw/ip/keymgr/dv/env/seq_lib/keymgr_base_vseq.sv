@@ -13,6 +13,9 @@ class keymgr_base_vseq extends cip_base_vseq #(
   // various knobs to enable certain routines
   bit do_keymgr_init = 1'b1;
 
+  // do operations at StReset
+  rand bit do_op_before_init;
+
   // save DUT returned current state here, rather than using it from RAL, it's needed info to
   // predict operation result in seq
   keymgr_pkg::keymgr_working_state_e current_state;
@@ -21,6 +24,14 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
+    `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
+    csr_update(.csr(ral.intr_enable));
+
+    current_state = keymgr_pkg::StReset;
+    // any OP at StReset will trigger error
+    if (do_op_before_init) keymgr_operations();
+
+    // move keymgr to StInit
     if (do_keymgr_init) keymgr_init();
   endtask
 
@@ -34,22 +45,25 @@ class keymgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Initializating key manager", UVM_MEDIUM)
     ral.control.init.set(1'b1);
     csr_update(.csr(ral.control));
-    csr_spinwait(.ptr(ral.working_state), .exp_data(keymgr_pkg::StInit));
     // manually clear here since ral is not aware this bet is self-clearing
     ral.control.init.set(1'b0);
+
+    csr_spinwait(.ptr(ral.working_state), .exp_data(keymgr_pkg::StInit));
+    current_state = keymgr_pkg::StInit;
   endtask : keymgr_init
 
   // advance to next state and generate output, clear output
-  virtual task keymgr_operations(keymgr_pkg::keymgr_working_state_e exp_next_state,
-                                 bit gen_output = $urandom_range(0, 1),
-                                 bit clr_output = $urandom_range(0, 1));
-    `uvm_info(`gfn, "Start keymgr_operations", UVM_HIGH)
-    keymgr_advance(exp_next_state);
-    if (gen_output) begin
-      repeat ($urandom_range(1, 4)) begin
-        keymgr_generate(.identity($urandom_range(0, 1)));
-        if (clr_output) keymgr_rd_clr();
-      end
+  virtual task keymgr_operations(bit advance_state = $urandom_range(0, 1),
+                                 int num_gen_op    = $urandom_range(1, 4),
+                                 bit clr_output    = $urandom_range(0, 1),
+                                 bit wait_done     = 1);
+    `uvm_info(`gfn, "Start keymgr_operations", UVM_MEDIUM)
+
+    if (advance_state) keymgr_advance(wait_done);
+
+    repeat (num_gen_op) begin
+      keymgr_generate(.identity($urandom_range(0, 1)), .wait_done(wait_done));
+      if (clr_output) keymgr_rd_clr();
     end
   endtask : keymgr_operations
 
@@ -57,6 +71,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
     keymgr_pkg::keymgr_op_status_e exp_status;
     bit is_good_op = 1;
     int key_verion = ral.key_version.get_mirrored_value();
+    bit intr_err_exp;
 
     if (is_gen_output) begin
       // only when it's in 3 working state and key_verion less than max version
@@ -73,39 +88,58 @@ class keymgr_base_vseq extends cip_base_vseq #(
         default: is_good_op = 0;
       endcase
     end else begin
-      is_good_op = current_state inside {keymgr_pkg::StInit,
-                                         keymgr_pkg::StCreatorRootKey,
-                                         keymgr_pkg::StOwnerIntKey,
-                                         keymgr_pkg::StOwnerKey};
+      is_good_op = current_state inside LIST_OF_NORMAL_STATES;
     end
-    `uvm_info(`gfn, $sformatf("Wait for operation done in state %0s, gen_out %0d",
-                              current_state.name, is_gen_output), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Wait for operation done in state %0s, gen_out %0d, good_op %0d",
+                              current_state.name, is_gen_output, is_good_op), UVM_MEDIUM)
 
     // wait for status to get out of OpWip and check
     csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip),
                  .compare_op(CompareOpNe));
     exp_status = is_good_op ? keymgr_pkg::OpDoneSuccess : keymgr_pkg::OpDoneFail;
-    `DV_CHECK_EQ_FATAL(ral.op_status.status.get_mirrored_value(), exp_status)
+    `DV_CHECK_EQ(ral.op_status.status.get_mirrored_value(), exp_status)
+
+    read_current_state();
+
+    // check and clear interrupt
+    check_interrupts(.interrupts(1 << IntrOpDone), .check_set(1));
+    check_interrupts(.interrupts(1 << IntrErr), .check_set(!is_good_op));
+
+    // check and clear err_code
+    csr_rd_check(.ptr(ral.err_code.invalid_op), .compare_value(!is_good_op));
+    if (!is_good_op) begin
+      bit [TL_DW-1:0] err_code_wdata;
+      err_code_wdata = get_csr_val_with_updated_field(.field(ral.err_code.invalid_op),
+                                                      .csr_value(err_code_wdata),
+                                                      .field_value(1));
+      csr_wr(.csr(ral.err_code), .value(err_code_wdata));
+    end
   endtask : wait_op_done
 
-  virtual task keymgr_advance(keymgr_pkg::keymgr_working_state_e exp_next_state);
+  virtual task read_current_state();
     bit [TL_DW-1:0] rdata;
 
     csr_rd(.ptr(ral.working_state), .value(rdata));
     `downcast(current_state, rdata)
+    `uvm_info(`gfn, $sformatf("Current state %0s", current_state.name), UVM_MEDIUM)
+  endtask : read_current_state
+
+  virtual task keymgr_advance(bit wait_done = 1);
+    keymgr_pkg::keymgr_working_state_e exp_next_state = get_next_state(current_state);
     `uvm_info(`gfn, $sformatf("Advance key manager state from %0s", current_state.name), UVM_MEDIUM)
     ral.control.start.set(1'b1);
     ral.control.operation.set(keymgr_pkg::OpAdvance);
     csr_update(.csr(ral.control));
+    ral.control.start.set(1'b0);
 
-    wait_op_done(.is_gen_output(0));
-    csr_rd_check(.ptr(ral.working_state), .compare_value(exp_next_state));
-    current_state = exp_next_state;
+    if (wait_done) begin
+      wait_op_done(.is_gen_output(0));
+      `DV_CHECK_EQ(current_state, exp_next_state)
+    end
   endtask : keymgr_advance
 
-
   // by default generate for software
-  virtual task keymgr_generate(bit identity = 0);
+  virtual task keymgr_generate(bit identity = 0, bit wait_done = 1);
     bit [2:0] operation;
 
     `uvm_info(`gfn, "Generate key manager output", UVM_MEDIUM)
@@ -118,8 +152,9 @@ class keymgr_base_vseq extends cip_base_vseq #(
     end
     ral.control.operation.set(operation);
     csr_update(.csr(ral.control));
+    ral.control.start.set(1'b0);
 
-    wait_op_done(.is_gen_output(1));
+    if (wait_done) wait_op_done(.is_gen_output(1));
   endtask : keymgr_generate
 
   virtual task keymgr_rd_clr();
