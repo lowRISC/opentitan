@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  // Name of the sim cfg - typically same as the name of the DUT.
-  name: otbn
+// Name of the sim cfg - typically same as the name of the DUT.
+name:
+  otbn
 
   // Top level dut name (sv module).
   dut: otbn
@@ -23,8 +24,15 @@
 
   // Import additional common sim cfg files.
   // TODO: remove imported cfgs that do not apply.
-  import_cfgs: [// Project wide common sim cfg file
-                "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
+  import_cfgs: [
+      // Project wide common sim cfg file
+      "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
+      // Config file to pull in the correct flags for otbn_memutil
+      "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson"
+  ]
+
+  // Add options needed to compile against otbn_memutil
+  en_build_modes: ["{tool}_otbn_memutil_build_opts"]
 
   // Add additional tops for simulation.
   sim_tops: ["-top {name}_bind"]
@@ -40,11 +48,20 @@
   uvm_test: otbn_base_test
   uvm_test_seq: otbn_base_vseq
 
+  // The directory where ELF binaries should be found.
+  //
+  // TODO: This needs deciding upon. Eventually, it might be nice to allow this
+  //       to be overridden on the command line ("I've got a bunch of ELF files
+  //       that stress my new feature; please run the test suite with them")
+  otbn_elf_dir: "{sw_build_dir}"
+
   // List of test specifications.
   tests: [
     {
-      name: otbn_sanity
-      uvm_test_seq: otbn_sanity_vseq
+      name: "otbn_sanity"
+      uvm_test_seq: "otbn_sanity_vseq"
+
+      run_opts: ["+otbn_elf_dir={otbn_elf_dir}"]
     }
 
     // TODO: add more tests here

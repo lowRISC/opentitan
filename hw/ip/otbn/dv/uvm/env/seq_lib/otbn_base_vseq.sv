@@ -6,6 +6,8 @@
 // Base class for all OTBN test sequences
 //
 
+`include "otbn_memutil.svh"
+
 class otbn_base_vseq extends cip_base_vseq #(
     .CFG_T               (otbn_env_cfg),
     .RAL_T               (otbn_reg_block),
@@ -13,25 +15,95 @@ class otbn_base_vseq extends cip_base_vseq #(
     .VIRTUAL_SEQUENCER_T (otbn_virtual_sequencer)
   );
   `uvm_object_utils(otbn_base_vseq)
-
-  // various knobs to enable certain routines
-  bit do_otbn_init = 1'b1;
-
   `uvm_object_new
 
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init();
-    if (do_otbn_init) otbn_init();
+  // Load the contents of an ELF file into the DUT's memories, either by a DPI backdoor (if backdoor
+  // is true) or with TL transactions. filename is interpreted relative to cfg.otbn_elf_dir.
+  protected task load_elf(string filename, bit backdoor);
+    string path = $sformatf("%0s/%0s", cfg.otbn_elf_dir, filename);
+
+    // Sanity check to make sure that cfg.otbn_elf_dir was set by the test
+    `DV_CHECK_FATAL(cfg.otbn_elf_dir.len() > 0);
+
+    if (backdoor) begin
+      load_elf_backdoor(path);
+    end else begin
+      load_elf_over_bus(path);
+    end
   endtask
 
-  virtual task dut_shutdown();
-    // check for pending otbn operations and wait for them to complete
-    // TODO
+  // Load the contents of an ELF file into the DUT's memories by a DPI backdoor
+  protected function void load_elf_backdoor(string path);
+    if (!OtbnMemUtilLoadElf(cfg.mem_util, path)) begin
+      `uvm_fatal(`gfn, $sformatf("Failed to load ELF at `%0s'", path))
+    end
+  endfunction
+
+  // Load the contents of an ELF file into the DUT's memories by TL transactions
+  protected task load_elf_over_bus(string path);
+    otbn_loaded_word to_load[$];
+
+    // First, tell OtbnMemUtil to stage the ELF. This reads the file and stashes away the segments
+    // we need. If something goes wrong, it will print a message to stderr, so we can just fail.
+    if (!OtbnMemUtilStageElf(cfg.mem_util, path)) begin
+      `uvm_fatal(`gfn, $sformatf("Failed to stage ELF at `%0s'", path))
+    end
+
+    // Next, we need to get the data to be loaded across the "DPI barrier" and into SystemVerilog.
+    // We make a queue of the things that need loading (in address order) and then shuffle it, so
+    // that we load the memory in an arbitrary order
+    get_queue_entries(1'b0, to_load);
+    get_queue_entries(1'b1, to_load);
+    to_load.shuffle();
+
+    // Send the writes, one by one
+    foreach (to_load[i]) begin
+      csr_utils_pkg::mem_wr(to_load[i].for_imem ? ral.imem : ral.dmem,
+                            to_load[i].offset,
+                            to_load[i].data);
+    end
   endtask
 
-  // setup basic otbn features
-  virtual task otbn_init();
-    `uvm_error(`gfn, "FIXME")
-  endtask
+  protected function automatic void
+  get_queue_entries(bit for_imem, ref otbn_loaded_word entries[$]);
+    // Get the size of this memory (for a sanity check on the loaded words)
+    logic [21:0] mem_size = for_imem ? OTBN_IMEM_SIZE   : OTBN_DMEM_SIZE;
+
+    // Iterate over the segments for this memory
+    int seg_count = OtbnMemUtilGetSegCount(cfg.mem_util, for_imem);
+    for (int seg_idx = 0; seg_idx < seg_count; seg_idx++) begin
+
+      // What offset and size (in 32 bit words) is this segment?
+      bit [31:0] seg_off, seg_size;
+      if (!OtbnMemUtilGetSegInfo(cfg.mem_util, for_imem, seg_idx, seg_off, seg_size)) begin
+        `uvm_fatal(`gfn, $sformatf("Failed to get segment info for segment %0d.", seg_idx))
+      end
+
+      // Add each word.
+      for (bit [31:0] i = 0; i < seg_size; i++) begin
+        bit [31:0] word_off, data;
+        otbn_loaded_word entry;
+
+        word_off = seg_off + i;
+
+        if (!OtbnMemUtilGetSegData(cfg.mem_util, for_imem, word_off, data)) begin
+          `uvm_fatal(`gfn, $sformatf("Failed to get segment data at word offset %0d.", word_off))
+        end
+
+        // Since we know that the segment data lies in IMEM or DMEM and that this fits in the
+        // address space, we know that the top two bits of the word address are zero.
+        `DV_CHECK_FATAL(word_off[31:30] == 2'b00)
+
+        // OtbnMemUtil should have checked that this address was valid for the given memory, but it
+        // can't hurt to check again.
+        `DV_CHECK_FATAL({word_off, 2'b00} < {12'b0, mem_size})
+
+        entry.for_imem = for_imem;
+        entry.offset   = word_off[21:0];
+        entry.data     = data;
+        entries.push_back(entry);
+      end
+    end
+  endfunction
 
 endclass : otbn_base_vseq

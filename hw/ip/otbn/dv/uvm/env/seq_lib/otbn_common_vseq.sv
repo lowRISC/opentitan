@@ -11,6 +11,7 @@ class otbn_common_vseq extends otbn_base_vseq;
   `uvm_object_new
 
   virtual task body();
+    run_common_vseq_wrapper(num_trans);
   endtask : body
 
 endclass
