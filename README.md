@@ -4,6 +4,11 @@
 
 At this point it is relatively easy to add support for new architectures, that have gcc based compilers. In future we will be adding clang support, so that we can make use of clangs static-analyzers. If you would like an architecture added to this repository let us know.
 
+Currently supported hosts:
+- Windows
+- Mac/Unix
+- Linux
+
 Current support is limited to Arm Cortex-M Devices:
 - Cortex M0
 - Cortex M1
