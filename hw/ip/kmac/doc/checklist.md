@@ -20,10 +20,10 @@ RTL           | [MEM_INSTANCED_80][]  | Done        |
 RTL           | [FUNC_IMPLEMENTED][]  | In Progress |
 RTL           | [ASSERT_KNOWN_ADDED][]| Done        |
 Code Quality  | [LINT_SETUP][]        | Done        |
-Review        | Reviewer(s)           |             | 
-Review        | Signoff date          |             | 
+Review        | Reviewer(s)           |             |
+Review        | Signoff date          |             |
 
-[KMAC Spec]: {{<relref "/hw/ip/kmac/doc">}}
+[KMAC Spec]: {{</*relref "/hw/ip/kmac/doc"*/>}}
 
 [SPEC_COMPLETE]:      {{<relref "/doc/project/checklist.md#spec-complete" >}}
 [CSR_DEFINED]:        {{<relref "/doc/project/checklist.md#csr-defined" >}}
