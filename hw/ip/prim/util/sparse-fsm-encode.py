@@ -21,14 +21,30 @@ deterministic. If not specified, the script randomly picks a seed.
 """
 import argparse
 import logging
+import math
 import random
 import textwrap
 import sys
 
 MAX_DRAWS = 10000
 MAX_RESTARTS = 10000
-USAGE = "./sparse-fsm-encode -m <#states> -n <#bits> -d <minimum HD> -s <seed>"
 
+
+SV_INSTRUCTIONS = """
+------------------------------------------------------
+| COPY PASTE THE CODE TEMPLATE BELOW INTO YOUR RTL   |
+| IMPLEMENTATION, INLUDING THE COMMENT AND PRIM_FLOP |
+| IN ORDER TO EASE AUDITABILITY AND REPRODUCIBILITY. |
+------------------------------------------------------
+"""
+
+C_INSTRUCTIONS = """
+------------------------------------------------
+| COPY PASTE THE CODE TEMPLATE BELOW INTO YOUR |
+| C HEADER, INLUDING THE COMMENT IN ORDER TO   |
+| EASE AUDITABILITY AND REPRODUCIBILITY.       |
+------------------------------------------------
+"""
 
 def wrapped_docstring():
     '''Return a text-wrapped version of the module docstring'''
@@ -47,6 +63,18 @@ def wrapped_docstring():
 
     return '\n\n'.join(textwrap.fill(p) for p in paras)
 
+def hist_to_bars(hist, m):
+    bars = []
+    for i, j in enumerate(hist):
+        bar_prefix = "{:2}: ".format(i)
+        spaces = len(str(m)) - len(bar_prefix)
+        hist_bar = bar_prefix + (" " * spaces)
+        for k in range(j * 20 // max(hist)):
+            hist_bar += "|"
+        hist_bar += " ({:.2f}%)".format(100.0 * j / sum(hist)) if j else "--"
+        bars += [hist_bar]
+    return bars
+
 
 def main():
     logging.basicConfig(level=logging.INFO,
@@ -56,25 +84,38 @@ def main():
     parser = argparse.ArgumentParser(
         prog="sparse-fsm-encode",
         description=wrapped_docstring(),
-        usage=USAGE,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-d',
                         type=int,
                         default=5,
+                        metavar='<minimum HD>',
                         help='Minimum Hamming distance between encoded states.')
     parser.add_argument('-m',
                         type=int,
                         default=7,
+                        metavar='<#states>',
                         help='Number of states to encode.')
     parser.add_argument('-n',
                         type=int,
                         default=10,
+                        metavar='<#nbits>',
                         help='Encoding length [bit].')
     parser.add_argument('-s',
                         type=int,
+                        metavar='<seed>',
                         help='Custom seed for RNG.')
+    parser.add_argument('--language',
+                        choices=['sv', 'c'],
+                        default='sv',
+                        help='Choose the language of the generated enum.')
 
     args = parser.parse_args()
+
+    if args.language == 'c':
+        if args.n not in [8,16,32]:
+            logging.error("When using C, widths must be a power-of-two at least"
+                          "a byte (8 bits) wide. You chose %d." % (args.n,))
+            sys.exit(1)
 
     if args.m > 2**args.n:
         logging.error(
@@ -161,40 +202,38 @@ def main():
                 minimum = min(dist, minimum)
                 maximum = max(dist, maximum)
 
-    print("------------------------------------------------------\n"
-          "| COPY PASTE THE CODE TEMPLATE BELOW INTO YOUR RTL   |\n"
-          "| IMPLEMENTATION, INLUDING THE COMMENT AND PRIM_FLOP |\n"
-          "| IN ORDER TO EASE AUDITABILITY AND REPRODUCIBILITY. |\n"
-          "------------------------------------------------------\n\n"
-          "// Encoding generated with ./sparse-fsm-encode.py -d {} -m {} -n {} -s {}\n"
-          "// Hamming distance histogram:\n"
-          "//".format(args.d, args.m, args.n, args.s))
-    for i, j in enumerate(hist):
-        hist_bar = "// {}: ".format(i)
-        for k in range(len(str(args.m)) - len(str(i))):
-            hist_bar += " "
-        for k in range(j * 20 // max(hist)):
-            hist_bar += "|"
-        hist_bar += " ({:.2f}%)".format(100.0 * j / sum(hist)) if j else "--"
-        print(hist_bar)
-    print("//\n"
-          "// Minimum Hamming distance: {}\n"
-          "// Maximum Hamming distance: {}\n"
-          "//\n"
-          "localparam int StateWidth = {};\n"
-          "typedef enum logic [StateWidth-1:0] {{".format(minimum, maximum, args.n))
-    fmt_str = "  State{0:} {1:}= {2:}'b{3:0" + str(args.n) + "b}"
-    state_str = ""
-    for j, k in enumerate(encodings):
-        pad = ""
-        for i in range(len(str(args.m)) - len(str(j))):
-            pad += " "
-        comma = "," if j < len(encodings) - 1 else ""
-        print(fmt_str.format(j, pad, args.n, k) + comma)
-        state_str += "    State{}: ;\n".format(j)
+    bars = hist_to_bars(hist, args.m)
 
-    # print FSM template
-    print('''}} state_e;
+
+    if args.language == "sv":
+        print(SV_INSTRUCTIONS)
+        print(
+            "// Encoding generated with:\n"
+            "// $ ./sparse-fsm-encode.py -d {} -m {} -n {} \\\n"
+            "//      -s {} --language=sv\n"
+            "//\n"
+            "// Hamming distance histogram:\n"
+            "//".format(args.d, args.m, args.n, args.s))
+        for bar in hist_to_bars(hist, args.m):
+            print('// ' + bar)
+        print("//\n"
+            "// Minimum Hamming distance: {}\n"
+            "// Maximum Hamming distance: {}\n"
+            "//\n"
+            "localparam int StateWidth = {};\n"
+            "typedef enum logic [StateWidth-1:0] {{".format(minimum, maximum, args.n))
+        fmt_str = "  State{0:} {1:}= {2:}'b{3:0" + str(args.n) + "b}"
+        state_str = ""
+        for j, k in enumerate(encodings):
+            pad = ""
+            for i in range(len(str(args.m)) - len(str(j))):
+                pad += " "
+            comma = "," if j < len(encodings) - 1 else ""
+            print(fmt_str.format(j, pad, args.n, k) + comma)
+            state_str += "    State{}: ;\n".format(j)
+
+        # print FSM template
+        print('''}} state_e;
 
 state_e state_d, state_q;
 always_comb begin : p_fsm
@@ -218,6 +257,32 @@ prim_flop #(
   .q_o ( state_q )
 );
 '''.format(state_str))
+
+    elif args.language == "c":
+        print(C_INSTRUCTIONS)
+        print("/*\n"
+            " * Encoding generated with\n"
+            " * $ ./sparse-fsm-encode.py -d {} -m {} -n {} \\\n"
+            " *     -s {} --language=c\n"
+            " *\n"
+            " * Hamming distance histogram:\n"
+            " *".format(args.d, args.m, args.n, args.s))
+        for hist_bar in bars:
+            print(" * " + hist_bar)
+        print(" *\n"
+            " * Minimum Hamming distance: {}\n"
+            " * Maximum Hamming distance: {}\n"
+            " */\n"
+            "typedef enum my_state {{".format(minimum, maximum))
+        fmt_str = "  kMyState{0:} {1:}= 0x{3:0" + str(math.ceil(args.n / 4)) + "x}"
+        for j, k in enumerate(encodings):
+            pad = ""
+            for i in range(len(str(args.m)) - len(str(j))):
+                pad += " "
+            print(fmt_str.format(j, pad, args.n, k) + ",")
+
+        # print FSM template
+        print("} my_state_t;");
 
 
 if __name__ == "__main__":
