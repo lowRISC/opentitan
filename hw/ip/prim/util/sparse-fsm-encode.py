@@ -46,6 +46,14 @@ C_INSTRUCTIONS = """
 ------------------------------------------------
 """
 
+RUST_INSTRUCTIONS = """
+------------------------------------------------
+| COPY PASTE THE CODE TEMPLATE BELOW INTO YOUR |
+| RUST FILE, INLUDING THE COMMENT IN ORDER TO  |
+| EASE AUDITABILITY AND REPRODUCIBILITY.       |
+------------------------------------------------
+"""
+
 def wrapped_docstring():
     '''Return a text-wrapped version of the module docstring'''
     paras = []
@@ -105,16 +113,16 @@ def main():
                         metavar='<seed>',
                         help='Custom seed for RNG.')
     parser.add_argument('--language',
-                        choices=['sv', 'c'],
+                        choices=['sv', 'c', 'rust'],
                         default='sv',
                         help='Choose the language of the generated enum.')
 
     args = parser.parse_args()
 
-    if args.language == 'c':
+    if args.language in ['c', 'rust']:
         if args.n not in [8,16,32]:
-            logging.error("When using C, widths must be a power-of-two at least"
-                          "a byte (8 bits) wide. You chose %d." % (args.n,))
+            logging.error("When using C or Rust, widths must be a power-of-two "
+                          "at least a byte (8 bits) wide. You chose %d." % (args.n,))
             sys.exit(1)
 
     if args.m > 2**args.n:
@@ -283,6 +291,30 @@ prim_flop #(
 
         # print FSM template
         print("} my_state_t;");
+    elif args.language == 'rust':
+        print(RUST_INSTRUCTIONS)
+        print("//\n"
+            "// Encoding generated with\n"
+            "// $ ./sparse-fsm-encode.py -d {} -m {} -n {} \\\n"
+            "//     -s {} --language=rust\n"
+            "//\n"
+            "// Hamming distance histogram:\n"
+            "//".format(args.d, args.m, args.n, args.s))
+        for hist_bar in bars:
+            print("// " + hist_bar)
+        print("//\n"
+            "// Minimum Hamming distance: {}\n"
+            "// Maximum Hamming distance: {}\n"
+            "//\n"
+            "#[repr(u{})]\n"
+            "enum MyState {{".format(minimum, maximum, args.n))
+        fmt_str = "  MyState{0:} {1:}= 0x{3:0" + str(math.ceil(args.n / 4)) + "x}"
+        for j, k in enumerate(encodings):
+            pad = ""
+            for i in range(len(str(args.m)) - len(str(j))):
+                pad += " "
+            print(fmt_str.format(j, pad, args.n, k) + ",")
+        print("}");
 
 
 if __name__ == "__main__":
