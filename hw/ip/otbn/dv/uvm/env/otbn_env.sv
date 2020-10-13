@@ -14,10 +14,21 @@ class otbn_env extends cip_base_env #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    cfg.mem_util = OtbnMemUtilMake(cfg.dut_instance_hier);
+    `DV_CHECK_FATAL(cfg.mem_util != null);
   endfunction
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+  endfunction
+
+  function void final_phase(uvm_phase phase);
+    super.final_phase(phase);
+
+    `DV_CHECK_FATAL(cfg.mem_util != null);
+    OtbnMemUtilFree(cfg.mem_util);
+    cfg.mem_util = null;
   endfunction
 
 endclass

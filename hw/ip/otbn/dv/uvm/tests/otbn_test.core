@@ -8,6 +8,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:otbn_env
+      - lowrisc:dv:otbn_memutil
     files:
       - otbn_test_pkg.sv
       - otbn_base_test.sv: {is_include_file: true}

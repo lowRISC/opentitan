@@ -41,4 +41,20 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     // post test checks - ensure that all local fifos and queues are empty
   endfunction
 
+  task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+    case (channel)
+      AddrChannel: process_tl_addr(item);
+      DataChannel: process_tl_data(item);
+      default: `uvm_fatal(`gfn, $sformatf("Invalid channel: %0h", channel))
+    endcase
+  endtask
+
+  task process_tl_addr(tl_seq_item item);
+    // TODO: Fill this out to update the register model on TL accesses (addr channel)
+  endtask
+
+  task process_tl_data(tl_seq_item item);
+    // TODO: Fill this out to update the register model on TL accesses (data channel)
+  endtask
+
 endclass
