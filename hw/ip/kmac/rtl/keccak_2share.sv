@@ -57,6 +57,16 @@ module keccak_2share #(
   box_t phase2_in  [Share];
   box_t phase2_out [Share];
 
+  /////////////////
+  // Unused nets //
+  /////////////////
+  // clk_i, rst_ni, rand_valid_i are not used when EnMasking is 0. Tying them.
+  if (EnMasking == 0) begin : gen_tie_unused
+    logic unused_clk, unused_rst_n, unused_rand_valid;
+    assign unused_clk = clk_i;
+    assign unused_rst_n = rst_ni;
+    assign unused_rand_valid = rand_valid_i;
+  end
 
   ///////////////////////
   // Input/ Output Mux //

@@ -254,7 +254,7 @@ module sha3core
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
-            info: {done_i, run_i, process_i, start_i}
+            info: 24'({done_i, run_i, process_i, start_i})
           };
         end
       end
@@ -264,7 +264,7 @@ module sha3core
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
-            info: {done_i, run_i, process_i, start_i}
+            info: 24'({done_i, run_i, process_i, start_i})
           };
         end
       end
@@ -274,7 +274,7 @@ module sha3core
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
-            info: {done_i, run_i, process_i, start_i}
+            info: 24'({done_i, run_i, process_i, start_i})
           };
         end
       end
@@ -284,7 +284,7 @@ module sha3core
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
-            info: {done_i, run_i, process_i, start_i}
+            info: 24'({done_i, run_i, process_i, start_i})
           };
         end
       end
@@ -294,7 +294,7 @@ module sha3core
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
-            info: {done_i, run_i, process_i, start_i}
+            info: 24'({done_i, run_i, process_i, start_i})
           };
         end
       end
