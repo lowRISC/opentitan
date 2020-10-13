@@ -11,11 +11,15 @@ For a transition from D0 to D1, the following items are expected be completed.
 
 ### SPEC_COMPLETE
 
-Spec complete, feature set finalized.
+Specification mostly (90%) complete, all features are defined.
+Specification is submitted into the repo as a markdown document.
+It is acceptable to make changes for further clarification or more details after the D1 stage.
 
 ### CSR_DEFINED
 
-CSRs defined and generated.
+The CSRs required to implement the primary programming model are defined.
+The Hjson file defining the CSRs is checked into the repository.
+It is acceptable to add or modify registers during the D2 stage in order to complete implementation.
 
 ### CLKRST_CONNECTED
 
@@ -28,15 +32,19 @@ Unit `.sv` exists, meet comportability requirements.
 ### IP_INSTANTIABLE
 
 Unit is able to be instantiated and bound in top level RTL.
+The design must compile and elaborate cleanly without errors.
 The unit must not break top level functionality such as propagating X through TL-UL interface, continuously asserting the interrupts, or creating undesired TL-UL transactions.
 
-### MEM_INSTANCED_80
+### PHYSICAL_MACROS_DEFINED_80
 
-80% of expected memories instantiated, using behavioral RAMs.
+All expected memories identified, representative macros instantiated.
+All other physical elements (analog components, pads, etc) are identified and represented with a behavioral model.
+It is acceptable to make changes to these physical macros after the D1 stage as long as they do not have a large impact on the expected resulting area (roughly "80% accurate").
 
 ### FUNC_IMPLEMENTED
 
-Main functional path implemented.
+Mainline functional path is implemented to allow for a basic functionality test by verification.
+("Feature complete" is the target for D2 status.)
 
 ### ASSERT_KNOWN_ADDED
 

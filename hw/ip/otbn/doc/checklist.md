@@ -9,27 +9,27 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/pr
 
 ### D1
 
-Type          | Item                  | Resolution  | Note/Collaterals
---------------|-----------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]     | Done        | [OTBN Design Spec]({{<relref "hw/ip/otbn/doc" >}}). The specification is feature-complete, we were able to successfully run larger chunks of crypto code with the described feature set. At the same time, the specification has (known and unknown) issues, such as incomplete or buggy descriptions of individual instructions. These issues are being worked on as they are discovered while the design is in the D1 stage.
-Documentation | [CSR_DEFINED][]       | Done        |
-RTL           | [CLKRST_CONNECTED][]  | Done        |
-RTL           | [IP_TOP][]            | Done        |
-RTL           | [IP_INSTANTIABLE][]   | Done        |
-RTL           | [MEM_INSTANCED_80][]  | Done        | The instruction and data memories make up the majority of the memories and are instantiated. The register files are planned to be implemented in registers.
-RTL           | [FUNC_IMPLEMENTED][]  | Done        |
-RTL           | [ASSERT_KNOWN_ADDED][]| Done        |
-Code Quality  | [LINT_SETUP][]        | Done        |
+Type          | Item                           | Resolution  | Note/Collaterals
+--------------|--------------------------------|-------------|------------------
+Documentation | [SPEC_COMPLETE][]              | Done        | [OTBN Design Spec]({{<relref "hw/ip/otbn/doc" >}}). The specification is feature-complete, we were able to successfully run larger chunks of crypto code with the described feature set. At the same time, the specification has (known and unknown) issues, such as incomplete or buggy descriptions of individual instructions. These issues are being worked on as they are discovered while the design is in the D1 stage.
+Documentation | [CSR_DEFINED][]                | Done        |
+RTL           | [CLKRST_CONNECTED][]           | Done        |
+RTL           | [IP_TOP][]                     | Done        |
+RTL           | [IP_INSTANTIABLE][]            | Done        |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Done        | The instruction and data memories make up the majority of the memories and are instantiated. The register files are planned to be implemented in registers.
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
+Code Quality  | [LINT_SETUP][]                 | Done        |
 
-[SPEC_COMPLETE]:      {{<relref "/doc/project/checklist.md#spec_complete" >}}
-[CSR_DEFINED]:        {{<relref "/doc/project/checklist.md#csr_defined" >}}
-[CLKRST_CONNECTED]:   {{<relref "/doc/project/checklist.md#clkrst_connected" >}}
-[IP_TOP]:             {{<relref "/doc/project/checklist.md#ip_top" >}}
-[IP_INSTANTIABLE]:    {{<relref "/doc/project/checklist.md#ip_instantiable" >}}
-[MEM_INSTANCED_80]:   {{<relref "/doc/project/checklist.md#mem_instanced_80" >}}
-[FUNC_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#func_implemented" >}}
-[ASSERT_KNOWN_ADDED]: {{<relref "/doc/project/checklist.md#assert_known_added" >}}
-[LINT_SETUP]:         {{<relref "/doc/project/checklist.md#lint_setup" >}}
+[SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec_complete" >}}
+[CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr_defined" >}}
+[CLKRST_CONNECTED]:           {{<relref "/doc/project/checklist.md#clkrst_connected" >}}
+[IP_TOP]:                     {{<relref "/doc/project/checklist.md#ip_top" >}}
+[IP_INSTANTIABLE]:            {{<relref "/doc/project/checklist.md#ip_instantiable" >}}
+[PHYSICAL_MACROS_DEFINED_80]: {{<relref "/doc/project/checklist.md#physical_macros_defined_80" >}}
+[FUNC_IMPLEMENTED]:           {{<relref "/doc/project/checklist.md#func_implemented" >}}
+[ASSERT_KNOWN_ADDED]:         {{<relref "/doc/project/checklist.md#assert_known_added" >}}
+[LINT_SETUP]:                 {{<relref "/doc/project/checklist.md#lint_setup" >}}
 
 ### D2
 
