@@ -4,7 +4,7 @@
 #
 # waiver file for prim_generic_ram_[1,2]p
 
-waive -rules MULTI_PROC_ASSIGN -location {prim_generic_ram_2p.sv} -regexp {Assignment to 'storage' from more than one block} \
+waive -rules MULTI_PROC_ASSIGN -location {prim_generic_ram_2p.sv} -regexp {Assignment to 'mem' from more than one block} \
       -comment "That is the nature of a dual-port memory: both write ports can access the same storage simultaneously"
 waive -rules ALWAYS_SPEC       -location {prim_generic_ram_*p.sv} -regexp {Edge triggered block may be more accurately modeled as always_ff} \
       -comment "Vivado requires here an always instead of always_ff"
