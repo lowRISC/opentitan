@@ -9,29 +9,29 @@ All checklist items refer to the content in the [Checklist]({{< relref "/doc/pro
 
 ### D1
 
-Type          | Item                  | Resolution  | Note/Collaterals
---------------|-----------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]     | Done        | [SPI_DEVICE Spec][]
-Documentation | [CSR_DEFINED][]       | Done        |
-RTL           | [CLKRST_CONNECTED][]  | Done        |
-RTL           | [IP_TOP][]            | Done        |
-RTL           | [IP_INSTANTIABLE][]   | Done        |
-RTL           | [MEM_INSTANCED_80][]  | Done        | `prim_ram_2p` is instantiated
-RTL           | [FUNC_IMPLEMENTED][]  | Done        | Firmware Operation Mode only
-RTL           | [ASSERT_KNOWN_ADDED][]| Done        |
-Code Quality  | [LINT_SETUP][]        | Done        |
+Type          | Item                           | Resolution  | Note/Collaterals
+--------------|--------------------------------|-------------|------------------
+Documentation | [SPEC_COMPLETE][]              | Done        | [SPI_DEVICE Spec][]
+Documentation | [CSR_DEFINED][]                | Done        |
+RTL           | [CLKRST_CONNECTED][]           | Done        |
+RTL           | [IP_TOP][]                     | Done        |
+RTL           | [IP_INSTANTIABLE][]            | Done        |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Done        | `prim_ram_2p` is instantiated
+RTL           | [FUNC_IMPLEMENTED][]           | Done        | Firmware Operation Mode only
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
+Code Quality  | [LINT_SETUP][]                 | Done        |
 
 [SPI_DEVICE Spec]:    {{<relref "./">}}
 
-[SPEC_COMPLETE]:      {{<relref "/doc/project/checklist.md#spec_complete" >}}
-[CSR_DEFINED]:        {{<relref "/doc/project/checklist.md#csr_defined" >}}
-[CLKRST_CONNECTED]:   {{<relref "/doc/project/checklist.md#clkrst_connected" >}}
-[IP_TOP]:             {{<relref "/doc/project/checklist.md#ip_top" >}}
-[IP_INSTANTIABLE]:    {{<relref "/doc/project/checklist.md#ip_instantiable" >}}
-[MEM_INSTANCED_80]:   {{<relref "/doc/project/checklist.md#mem_instanced_80" >}}
-[FUNC_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#func_implemented" >}}
-[ASSERT_KNOWN_ADDED]: {{<relref "/doc/project/checklist.md#assert_known_added" >}}
-[LINT_SETUP]:         {{<relref "/doc/project/checklist.md#lint_setup" >}}
+[SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec_complete" >}}
+[CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr_defined" >}}
+[CLKRST_CONNECTED]:           {{<relref "/doc/project/checklist.md#clkrst_connected" >}}
+[IP_TOP]:                     {{<relref "/doc/project/checklist.md#ip_top" >}}
+[IP_INSTANTIABLE]:            {{<relref "/doc/project/checklist.md#ip_instantiable" >}}
+[PHYSICAL_MACROS_DEFINED_80]: {{<relref "/doc/project/checklist.md#physical_macros_defined_80" >}}
+[FUNC_IMPLEMENTED]:           {{<relref "/doc/project/checklist.md#func_implemented" >}}
+[ASSERT_KNOWN_ADDED]:         {{<relref "/doc/project/checklist.md#assert_known_added" >}}
+[LINT_SETUP]:                 {{<relref "/doc/project/checklist.md#lint_setup" >}}
 
 ### D2
 

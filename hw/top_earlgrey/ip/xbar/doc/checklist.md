@@ -9,32 +9,32 @@ All checklist items refer to the content in the [Checklist]({{< relref "/doc/pro
 
 ### D1
 
-Type          | Item                  | Resolution  | Note/Collaterals
---------------|-----------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]     | Done        | [TL-UL Spec][] [crossbar_tool][]
-Documentation | [CSR_DEFINED][]       | N/A         |
-RTL           | [CLKRST_CONNECTED][]  | Done        |
-RTL           | [IP_TOP][]            | Done        |
-RTL           | [IP_INSTANTIABLE][]      | Done        |
-RTL           | [MEM_INSTANCED_80][]  | N/A         |
-RTL           | [FUNC_IMPLEMENTED][]  | Done        |
-RTL           | [ASSERT_KNOWN_ADDED][]| Done        |
-Code Quality  | [LINT_SETUP][]        | Done        |
-Review        | Reviewer(s)           | Done        | @weicaiyang @aytong @martin-lueker
-Review        | Signoff date          | Done        | 2019-11-04
+Type          | Item                           | Resolution  | Note/Collaterals
+--------------|--------------------------------|-------------|------------------
+Documentation | [SPEC_COMPLETE][]              | Done        | [TL-UL Spec][] [crossbar_tool][]
+Documentation | [CSR_DEFINED][]                | N/A         |
+RTL           | [CLKRST_CONNECTED][]           | Done        |
+RTL           | [IP_TOP][]                     | Done        |
+RTL           | [IP_INSTANTIABLE][]            | Done        |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | N/A         |
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
+Code Quality  | [LINT_SETUP][]                 | Done        |
+Review        | Reviewer(s)                    | Done        | @weicaiyang @aytong @martin-lueker
+Review        | Signoff date                   | Done        | 2019-11-04
 
 [TL-UL Spec]:         {{<relref "/hw/ip/tlul/doc">}}
 [crossbar_tool]:      {{<relref "/doc/rm/crossbar_tool">}}
 
-[SPEC_COMPLETE]:      {{<relref "/doc/project/checklist.md#spec-complete" >}}
-[CSR_DEFINED]:        {{<relref "/doc/project/checklist.md#csr-defined" >}}
-[CLKRST_CONNECTED]:   {{<relref "/doc/project/checklist.md#clkrst-connected" >}}
-[IP_TOP]:             {{<relref "/doc/project/checklist.md#ip-top" >}}
-[IP_INSTANTIABLE]:    {{<relref "/doc/project/checklist.md#ip-instantiable" >}}
-[MEM_INSTANCED_80]:   {{<relref "/doc/project/checklist.md#mem-instanced-80" >}}
-[FUNC_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#func-implemented" >}}
-[ASSERT_KNOWN_ADDED]: {{<relref "/doc/project/checklist.md#assert-known-added" >}}
-[LINT_SETUP]:         {{<relref "/doc/project/checklist.md#lint-setup" >}}
+[SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec-complete" >}}
+[CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr-defined" >}}
+[CLKRST_CONNECTED]:           {{<relref "/doc/project/checklist.md#clkrst-connected" >}}
+[IP_TOP]:                     {{<relref "/doc/project/checklist.md#ip-top" >}}
+[IP_INSTANTIABLE]:            {{<relref "/doc/project/checklist.md#ip-instantiable" >}}
+[PHYSICAL_MACROS_DEFINED_80]: {{<relref "/doc/project/checklist.md#physical_macros_defined-80" >}}
+[FUNC_IMPLEMENTED]:           {{<relref "/doc/project/checklist.md#func-implemented" >}}
+[ASSERT_KNOWN_ADDED]:         {{<relref "/doc/project/checklist.md#assert-known-added" >}}
+[LINT_SETUP]:                 {{<relref "/doc/project/checklist.md#lint-setup" >}}
 
 ### D2
 
