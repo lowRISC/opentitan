@@ -65,6 +65,12 @@ This module features the following output signals to provide a reference for syn
 Both these signals are synchronous to the 48 MHz clock.
 They can be forced to zero by setting {{< regref "phy_config.usb_ref_disable" >}} to `1`.
 
+To successfully receive SOF packets without errors and thereby enabling clock synchronization, the initial accuracy of the 48 MHz clock source should be within 3.2% or 32,000 ppm.
+This requirement comes from the fact that the SOF packet has a length of 24 bits (plus 8-bit sync field).
+The first 8 bits are used to transfer the SOF packet ID (8'b01011010).
+Internally, the USB device dynamically adjusts the sampling point based on observed line transitions.
+Assuming the last bit of the SOF packet ID is sampled in the middle of the eye, the drift over the remaining 16 bits of the packet must be lower than half a bit (10^6 * (0.5/16) = 32,000 ppm).
+
 To externally monitor the 48 MHz clock, the USB device supports an oscillator test mode which can be enabled by setting {{< regref "phy_config.tx_osc_test_mode" >}} to `1`.
 In this mode, the device constantly transmits a J/K pattern but no longer receives SOF packets.
 Consequently, it does not generate reference pulses for clock synchronization.
