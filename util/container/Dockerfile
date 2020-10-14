@@ -88,7 +88,8 @@ ENV LANGUAGE en_US:en
 
 # Copy repository into tmp directory to execute additional install steps.
 COPY python-requirements.txt /tmp/python-requirements.txt
-RUN pip3 install -r /tmp/python-requirements.txt
+RUN pip3 install -U pip six setuptools \
+  && pip3 install -r /tmp/python-requirements.txt
 
 COPY util/get-toolchain.py /tmp/get-toolchain.py
 RUN /tmp/get-toolchain.py -r ${RISCV_TOOLCHAIN_TAR_VERSION}
