@@ -165,6 +165,20 @@
     end
 `endif
 
+`ifndef DV_CHECK_STREQ
+  `define DV_CHECK_STREQ(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
+    if (!(ACT_ == EXP_)) begin \
+      `uvm_``SEV_(ID_, $sformatf("Check failed \"%s\" == \"%s\" %s", ACT_, EXP_, MSG_)); \
+    end
+`endif
+
+`ifndef DV_CHECK_STRNE
+  `define DV_CHECK_STRNE(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
+    if (!(ACT_ != EXP_)) begin \
+      `uvm_``SEV_(ID_, $sformatf("Check failed \"%s\" != \"%s\" %s", ACT_, EXP_, MSG_)); \
+    end
+`endif
+
 // Fatal version of the checks
 `ifndef DV_CHECK_FATAL
   `define DV_CHECK_FATAL(T_, MSG_="", ID_=`gfn) \
@@ -199,6 +213,16 @@
 `ifndef DV_CHECK_GE_FATAL
   `define DV_CHECK_GE_FATAL(ACT_, EXP_, MSG_="", ID_=`gfn) \
     `DV_CHECK_GE(ACT_, EXP_, MSG_, fatal, ID_)
+`endif
+
+`ifndef DV_CHECK_STREQ_FATAL
+  `define DV_CHECK_STREQ_FATAL(ACT_, EXP_, MSG_="", ID_=`gfn) \
+    `DV_CHECK_STREQ(ACT_, EXP_, MSG_, fatal, ID_)
+`endif
+
+`ifndef DV_CHECK_STRNE_FATAL
+  `define DV_CHECK_STRNE_FATAL(ACT_, EXP_, MSG_="", ID_=`gfn) \
+    `DV_CHECK_STRNE(ACT_, EXP_, MSG_, fatal, ID_)
 `endif
 
 // Shorthand for common foo.randomize() + fatal check
