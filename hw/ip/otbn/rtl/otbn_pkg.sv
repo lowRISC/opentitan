@@ -58,21 +58,21 @@ package otbn_pkg;
   // Opcodes (field [6:0] in the instruction), matching the RISC-V specification for the base
   // instruction subset.
   typedef enum logic [6:0] {
-    InsnOpcodeBaseLoad           = 7'h03,
-    InsnOpcodeBaseMemMisc        = 7'h0f,
-    InsnOpcodeBaseOpImm          = 7'h13,
-    InsnOpcodeBaseAuipc          = 7'h17,
-    InsnOpcodeBaseStore          = 7'h23,
-    InsnOpcodeBaseOp             = 7'h33,
-    InsnOpcodeBaseLui            = 7'h37,
-    InsnOpcodeBaseBranch         = 7'h63,
-    InsnOpcodeBaseJalr           = 7'h67,
-    InsnOpcodeBaseJal            = 7'h6f,
-    InsnOpcodeBaseSystem         = 7'h73,
-    InsnOpcodeBignumMisc         = 7'h0B,
-    InsnOpcodeBignumArith        = 7'h2B,
-    InsnOpcodeBignumMulqacc      = 7'h3B,
-    InsnOpcodeBignumShiftLogical = 7'h7B
+    InsnOpcodeBaseLoad       = 7'h03,
+    InsnOpcodeBaseMemMisc    = 7'h0f,
+    InsnOpcodeBaseOpImm      = 7'h13,
+    InsnOpcodeBaseAuipc      = 7'h17,
+    InsnOpcodeBaseStore      = 7'h23,
+    InsnOpcodeBaseOp         = 7'h33,
+    InsnOpcodeBaseLui        = 7'h37,
+    InsnOpcodeBaseBranch     = 7'h63,
+    InsnOpcodeBaseJalr       = 7'h67,
+    InsnOpcodeBaseJal        = 7'h6f,
+    InsnOpcodeBaseSystem     = 7'h73,
+    InsnOpcodeBignumMisc     = 7'h0B,
+    InsnOpcodeBignumArith    = 7'h2B,
+    InsnOpcodeBignumMulqacc  = 7'h3B,
+    InsnOpcodeBignumBaseMisc = 7'h7B
   } insn_opcode_e;
 
   typedef enum logic [3:0] {
@@ -135,6 +135,7 @@ package otbn_pkg;
     ImmBaseBB,
     ImmBaseBU,
     ImmBaseBJ,
+    ImmBaseBL,
     ImmBaseBX
   } imm_b_sel_base_e;
 
@@ -226,6 +227,7 @@ package otbn_pkg;
     logic           st_insn;
     logic           branch_insn;
     logic           jump_insn;
+    logic           loop_insn;
     logic           ispr_rw_insn;
     logic           ispr_rs_insn;
   } insn_dec_shared_t;
@@ -241,6 +243,8 @@ package otbn_pkg;
     op_b_sel_e           op_b_sel;
     logic                rf_we;
     rf_wd_sel_e          rf_wdata_sel;
+    logic [11:0]         loop_bodysize;
+    logic                loop_immediate;
   } insn_dec_base_t;
 
   typedef struct packed {

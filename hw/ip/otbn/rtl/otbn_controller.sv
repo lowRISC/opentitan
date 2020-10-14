@@ -136,6 +136,16 @@ module otbn_controller
   // register file with appropriate zero extension and padding to give a 32-bit result.
   logic [31:0]              increment_out;
 
+  // Loop control, used to start a new loop
+  logic        loop_start;
+  logic [11:0] loop_bodysize;
+  logic [31:0] loop_iterations;
+
+  // Loop generated jumps. The loop controller asks to jump when execution reaches the end of a loop
+  // body that hasn't completed all of its iterations.
+  logic                     loop_jump;
+  logic [ImemAddrWidth-1:0] loop_jump_addr;
+
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
   // TODO: Possibility of error response on store? Probably still don't need to stall in that case
@@ -194,6 +204,8 @@ module otbn_controller
           end else begin
             if (branch_taken) begin
               insn_fetch_req_addr_o = branch_target;
+            end else if (loop_jump) begin
+              insn_fetch_req_addr_o = loop_jump_addr;
             end else begin
               insn_fetch_req_addr_o = next_insn_addr;
             end
@@ -223,6 +235,28 @@ module otbn_controller
       state_q <= state_d;
     end
   end
+
+  otbn_loop_controller #(
+    .ImemAddrWidth(ImemAddrWidth)
+  ) u_otbn_loop_controller (
+    .clk_i,
+    .rst_ni,
+
+    .insn_addr_i,
+    .next_insn_addr_i  (next_insn_addr),
+
+    .loop_start_i      (loop_start),
+    .loop_bodysize_i   (loop_bodysize),
+    .loop_iterations_i (loop_iterations),
+
+    .loop_jump_o       (loop_jump),
+    .loop_jump_addr_o  (loop_jump_addr),
+    .loop_err_o        ()
+  );
+
+  assign loop_start      = insn_valid_i & insn_dec_shared_i.loop_insn;
+  assign loop_bodysize   = insn_dec_base_i.loop_bodysize;
+  assign loop_iterations = insn_dec_base_i.loop_immediate ? insn_dec_base_i.i : rf_base_rd_data_a_i;
 
   // Compute increments which can be optionally applied to indirect register accesses and memory
   // addresses in BN.LID/BN.SID/BN.MOVR instructions.

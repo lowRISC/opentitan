@@ -229,6 +229,32 @@ bn.sel w27, w5, w6, FG0.Z
 bn.cmpb w4, w3
 bn.sel w28, w7, w8, FG0.L
 
+# Nested loop testing, inner adds repeated a total of 3 * 5 = 15 times
+# x28 = 4, x29 = 3
+li x28, 4
+li x29, 3
+# Outer loop, repeat x29 == 3 times
+loop x29, 4
+  # Inner loop, repeat 5 times
+  loopi  5, 2
+    # x28 = x28 + x28 = x28 * 2
+    add x28, x28, x28
+    # x29 = x29 + x29 = x29 * 2
+    add x29, x29, x29
+    # end of inner loop
+  # Nested loops cannot end on same instruction
+  nop
+  # end of outer loop
+# x28 = 4 * (2 ** 15) = 0x00020000
+# x29 = 3 * (2 ** 15) = 0x00018000
+
+# Single instruction loop test
+# Repeat  5 times
+loopi 5, 1
+  # x28 = x28 + x28 = x28 * 2
+  add x28, x28, x28
+# x28 = 0x00020000 * (2 ** 5) = 0x00400000
+
 jal x0, end
 
 # Place end at fixed address so write to x31 by jal doesn't have changing value
