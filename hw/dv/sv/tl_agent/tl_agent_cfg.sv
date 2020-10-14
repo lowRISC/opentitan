@@ -160,7 +160,8 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   protected function void randomize_a_source_in_item(tl_seq_item item,
                                                      bit use_last_a_source_released);
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(a_source,
-        (!reset_asserted) -> !(a_source inside {a_source_pend_q});
+        // use soft constraint as seq may still send req when all the valid a_source are used
+        (!reset_asserted) -> soft !(a_source inside {a_source_pend_q});
         // Set the upper a_source bits that are unused to 0.
         (a_source >> valid_a_source_width) == 0;
         // We cannot guarantee that last_a_source_released is not in a_source_pend_q,
