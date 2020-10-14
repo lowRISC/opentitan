@@ -1289,6 +1289,142 @@ modexp:
 
 
 /**
+ * Bigint modular exponentiation with fixed exponent of 65537
+ *
+ * Returns: C = modexp(A,65537) = A^65537 mod M
+ *
+ * This implements the square and multiply algorithm for the fixed exponent
+ * of E=65537. Note that this implementation (in contrast to modexp) runs the
+ * multiplication step only for bits being actually set in the exponent.
+ * Since the exponent is fixed, this is inherently constant-time.
+ *
+ * The squared Montgomery modulus RR and the Montgomery constant m0' have to
+ * be precomputed and provided at the appropriate locations in dmem.
+ *
+ * Flags: The states of both FG0 and FG1 depend on intermediate values and are
+ *        not usable after return.
+ *
+ * Calling convention:
+ * Data is loaded and stored to and from dmem in accordance to four
+ *   descriptors that have to be provided in the first 4 dmem cells
+ *   (256 bit each).
+ *
+ * first descriptor used to convert to montgomery domain:
+ *   @param[in]  dmem[0] dptr_M: dmem pointer to first limb of modulus M
+ *   @param[in]  dmem[4] dptr_m0d: dmem pointer to Montgomery Constant m0'
+ *   @param[in]  dmem[8] dptr_RR: dmem pointer to first limb of
+ *                              squared Montgomery Modulus RR mod M
+ *   @param[in]  dmem[12] dptr_a_mont: dmem pointer to first limb of base A
+ *   @param[in]  dmem[16] dptr_b_mont: dmem pointer to first limb of RR
+ *   @param[in]  dmem[20] dptr_c_mont: dmem pointer to first limb of base A
+ *   @param[in]  dmem[24] N: Number of limbs per bignum
+ *   @param[in]  dmem[28] N-1: Number of limbs per bignum minus 1
+ *
+ * second descriptor used for squaring:
+ *   @param[in]  dmem[32] dptr_M: dmem pointer to first limb of modulus M
+ *   @param[in]  dmem[36] dptr_m0d: dmem pointer to Montgomery Constant m0'
+ *   @param[in]  dmem[40] dptr_RR: dmem pointer to first limb of
+ *                              squared Montgomery Modulus RR mod M
+ *   @param[in]  dmem[44] dptr_a_sqr: dmem pointer to first limb of result C
+ *   @param[in]  dmem[48] dptr_b_sqr: dmem pointer to first limb of result C
+ *   @param[in]  dmem[52] dptr_c_sqr: dmem pointer to first limb of result C
+ *   @param[in]  dmem[56] N: Number of limbs per bignum
+ *   @param[in]  dmem[60] N-1: Number of limbs per bignum minus 1
+ *
+ * third descriptor used for multiplication:
+ *   @param[in]  dmem[64] dptr_M: dmem pointer to first limb of modulus M
+ *   @param[in]  dmem[68] dptr_m0d: dmem pointer to Montgomery Constant m0'
+ *   @param[in]  dmem[72] dptr_RR: dmem pointer to first limb of
+ *                              squared Montgomery Modulus RR mod M
+ *   @param[in]  dmem[76] dptr_a_mul: dmem pointer to first limb of base A
+ *   @param[in]  dmem[80] dptr_b_mul: dmem pointer to first limb of result C
+ *   @param[in]  dmem[84] dptr_c_mul: dmem pointer to first limb of result C
+ *   @param[in]  dmem[88] N: Number of limbs per bignum
+ *   @param[in]  dmem[92] N-1: Number of limbs per bignum minus 1
+ *
+ * fourth descriptor used for back-conversion:
+ *   @param[in]  dmem[96] dptr_M: dmem pointer to first limb of modulus M
+ *   @param[in]  dmem[100] dptr_m0d: dmem pointer to Montgomery Constant m0'
+ *   @param[in]  dmem[104] dptr_RR: dmem pointer to first limb of
+ *                              squared Montgomery Modulus RR mod M
+ *   @param[in]  dmem[108] dptr_a_ex1: dmem pointer to first limb of base A
+ *   @param[in]  dmem[116] dptr_c_ex1: dmem pointer to first limb of result C
+ *   @param[in]  dmem[120] N: Number of limbs per bignum
+ *   @param[in]  dmem[124] N-1: Number of limbs per bignum minus 1
+ *
+ * clobbered registers: x3 to x13, x16 to x31
+ *                      w0 to w3, w24 to w30
+ *                      w4 to w[4+N-1]
+ * clobbered Flag Groups: FG0, FG1
+ */
+modexp_65537:
+  /* convert to montgomery domain montmul(A,RR)
+  in = montmul(A,RR) = C*R mod M */
+  jal       x1, mulx
+
+  /* pointer to out buffer */
+  lw        x21, 116(x0)
+
+  /* zeroize w2 and reset flags */
+  bn.sub    w2, w2, w2
+
+  /* this loop initializes the output buffer with -M */
+  loop      x30, 3
+    /* load limb from modulus */
+    bn.lid    x11, 0(x16++)
+
+    /* subtract limb from 0 */
+    bn.subb   w2, w31, w2
+
+    /* store limb in dmem */
+    bn.sid    x11, 0(x21++)
+
+  /* 65537 = 0b10000000000000001
+               ^ sqr + mult
+    out = montmul(out,out)       */
+  jal       x1, sqrx_exp
+
+  /* out = montmul(in,out)       */
+  jal       x1, mulx_exp
+
+  /* store multiplication result in output buffer */
+  li        x8, 4
+  loop      x30, 2
+    /* store selected limb to dmem */
+    bn.sid    x8, 0(x21++)
+    addi      x8, x8, 1
+
+  /* 65537 = 0b10000000000000001
+                ^<< 16 x sqr >>^   */
+  loopi      16, 2
+    /* square: out = montmul(out, out) */
+    jal       x1, sqrx_exp
+    nop
+
+  /* 65537 = 0b10000000000000001
+                          mult ^
+     out = montmul(in,out)       */
+  jal       x1, mulx_exp
+
+  /* store multiplication result in output buffer */
+  li        x8, 4
+  loop      x30, 2
+    bn.sid    x8, 0(x21++)
+    addi      x8, x8, 1
+
+  /* pointer to out buffer */
+  lw        x19, 108(x0)
+  /* pointer to out buffer */
+  lw        x21, 116(x0)
+
+  /* convert back from montgomery domain */
+  /* out = montmul(out,1) = out/R mod M  */
+  jal       x1, mul1_exp
+
+  ecall
+
+
+/**
  * Externally callable wrapper for computing Montgomery parameters
  *
  * Computes:
