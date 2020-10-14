@@ -259,6 +259,8 @@ dif_otbn_result_t dif_otbn_get_err_code(const dif_otbn_t *otbn,
 /**
  * Write an OTBN application into its instruction memory (IMEM)
  *
+ * Only 32b-aligned 32b word accesses are allowed.
+ *
  * @param otbn OTBN instance
  * @param offset_bytes the byte offset in IMEM the first word is written to
  * @param src the main memory location to start reading from.
@@ -272,6 +274,8 @@ dif_otbn_result_t dif_otbn_imem_write(const dif_otbn_t *otbn,
 
 /**
  * Read from OTBN's instruction memory (IMEM)
+ *
+ * Only 32b-aligned 32b word accesses are allowed.
  *
  * @param otbn OTBN instance
  * @param offset_bytes the byte offset in IMEM the first word is read from
@@ -287,6 +291,8 @@ dif_otbn_result_t dif_otbn_imem_read(const dif_otbn_t *otbn,
 /**
  * Write to OTBN's data memory (DMEM)
  *
+ * Only 32b-aligned 32b word accesses are allowed.
+ *
  * @param otbn OTBN instance
  * @param offset_bytes the byte offset in DMEM the first word is written to
  * @param src the main memory location to start reading from.
@@ -300,6 +306,8 @@ dif_otbn_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn,
 
 /**
  * Read from OTBN's data memory (DMEM)
+ *
+ * Only 32b-aligned 32b word accesses are allowed.
  *
  * @param otbn OTBN instance
  * @param offset_bytes the byte offset in DMEM the first word is read from
