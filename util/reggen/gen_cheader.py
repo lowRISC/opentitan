@@ -127,11 +127,12 @@ def gen_cdefine_register(outstr, reg, comp, width, rnames, existing_defines):
             if 'enum' in field:
                 for enum in field['enum']:
                     ename = as_define(enum['name'])
+                    value = hex(int(enum['value'], 0))
                     genout(
                         outstr,
                         gen_define(
-                            defname + '_' + as_define(field['name']) + '_' +
-                            ename, [], enum['value'], existing_defines))
+                            defname + '_' + as_define(field['name']) +
+                            '_VALUE_' + ename, [], value, existing_defines))
     genout(outstr, '\n')
     return
 
