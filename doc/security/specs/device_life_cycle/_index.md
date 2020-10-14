@@ -249,7 +249,7 @@ execution are disabled.
 No owner consent is required to transition to SCRAP.
 
 Note also, SCRAP is meant as an EOL manufacturing state.  Transition to this
-state is always purposeful and persistent, it is NOT part of the device’s
+state is always purposeful and persistent, it is NOT part of the device's
 native security countermeasure to transition to this state.
     </td>
   </tr>
@@ -259,7 +259,7 @@ native security countermeasure to transition to this state.
     <td>
 
 Invalid is any combination of OTP values that do not fall in the categories
-above.  It is the “default” state of life cycle when no other conditions match.
+above.  It is the "default" state of life cycle when no other conditions match.
 
 Functionally, INVALID is identical to SCRAP in that no functions are allowed
 and no transitions are allowed.
@@ -453,7 +453,7 @@ the keys can never be re-created.
 
 Further, before transitioning to RMA, a hardware backed mechanism will erase all
 existing owner content in flash. In addition to the key manager mixing above,
-this wipe further limits the Creator’s ability to abuse the existing device.
+this wipe further limits the Creator's ability to abuse the existing device.
 
 ### Identity & Ownership States
 
@@ -585,7 +585,7 @@ functionality to exist in PROD.
 
 ### Security IC Platform Protection Profile with Augmentation Packages
 
-OpenTitan’s Device Life Cycle design may support the PP084 TOE[^3] life cycle
+OpenTitan's Device Life Cycle design may support the PP084 TOE[^3] life cycle
 phase requirements including the composite product life cycle phases.
 
 The list of TOE life cycle phases is available here for reference, See
@@ -652,7 +652,7 @@ for more details.
 
 ## Notes
 
-[^1]: RMA (“Return Material Authorization”) refers to the process in which a
+[^1]: RMA ("Return Material Authorization") refers to the process in which a
     device is returned to the Silicon Creator for more triage and debugging.
     It represents a terminal state of the device, as it cannot be returned to
     production afterwards.

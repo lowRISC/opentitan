@@ -58,7 +58,7 @@ This is distinct from mandating that a DIF be required to cover all of the funct
 ### Verification Stage Allowances
 
 DV, FPGA, and early silicon validation have unique requirements in their use of hardware.
-They might actuate hardware on vastly different timescales, use verification-specific registers, or otherwise manipulate aspects of the hardware that “production"-level code would not (or cannot) do.
+They might actuate hardware on vastly different timescales, use verification-specific registers, or otherwise manipulate aspects of the hardware that "production"-level code would not (or cannot) do.
 To this end, verification-only functionality may be added to a DIF **only** in modules that are included in verification.
 This functionality **must not** be made accessible outside of verification environments, and is enforced by not including DV-specific code in non-DV builds.
 
