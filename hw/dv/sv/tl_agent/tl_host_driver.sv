@@ -59,14 +59,15 @@ class tl_host_driver extends tl_base_driver;
     int unsigned a_valid_delay, a_valid_len;
     bit req_done, req_abort;
 
-    // Seq may override the a_source, in which case it is possible that it might not have factored
+    // Seq may override the a_source or all valid sources are used but still send req, in which case
+    // it is possible that it might not have factored
+    // This wait is only needed in xbar test as xbar can use all valid sources and xbar_stress runs
+    // all seq in parallel, which needs driver to stall when the source is currently being used
     // in the a_source values from pending requests that have not yet completed. If that is true, we
     // need to insert additional delays to ensure we do not end up sending the new request whose
     // a_source matches one of the pending requests.
-    if (req.a_source_is_overridden) begin
-      `DV_SPINWAIT_EXIT(while (is_source_in_pending_req(req.a_source)) @(cfg.vif.host_cb);,
-                        wait(reset_asserted);)
-    end
+    `DV_SPINWAIT_EXIT(while (is_source_in_pending_req(req.a_source)) @(cfg.vif.host_cb);,
+                      wait(reset_asserted);)
 
     while (!req_done && !req_abort) begin
       if (cfg.use_seq_item_a_valid_delay) begin
