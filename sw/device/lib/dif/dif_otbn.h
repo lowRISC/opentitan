@@ -320,6 +320,22 @@ dif_otbn_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn,
                                      uint32_t offset_bytes, uint32_t *dest,
                                      size_t len_bytes);
 
+/**
+ * Get the size of OTBN's data memory in bytes.
+ *
+ * @param otbn OTBN instance
+ * @return data memory size in bytes
+ */
+size_t dif_otbn_get_dmem_size_bytes(const dif_otbn_t *otbn);
+
+/**
+ * Get the size of OTBN's instruction memory in bytes.
+ *
+ * @param otbn OTBN instance
+ * @return instruction memory size in bytes
+ */
+size_t dif_otbn_get_imem_size_bytes(const dif_otbn_t *otbn);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

@@ -289,3 +289,11 @@ dif_otbn_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn,
 
   return kDifOtbnOk;
 }
+
+size_t dif_otbn_get_dmem_size_bytes(const dif_otbn_t *otbn) {
+  return OTBN_DMEM_SIZE_BYTES;
+}
+
+size_t dif_otbn_get_imem_size_bytes(const dif_otbn_t *otbn) {
+  return OTBN_IMEM_SIZE_BYTES;
+}
