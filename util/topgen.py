@@ -1037,14 +1037,14 @@ def main():
         # 'top_earlgrey.sv.tpl' -> 'rtl/autogen/top_earlgrey.sv'
         render_template('top_%s.sv', 'rtl/autogen')
 
-        # 'top_earlgrey_pkg.sv.tpl' -> 'rtl/autogen/top_earlgrey_pkg.sv'
-        render_template('top_%s_pkg.sv', 'rtl/autogen')
-
-        # C Header + C File + Clang-format file
-
-        # The C file needs some complex information, so we initialize this
+        # The C / SV file needs some complex information, so we initialize this
         # object to store it.
         c_helper = TopGenC(completecfg)
+
+        # 'top_earlgrey_pkg.sv.tpl' -> 'rtl/autogen/top_earlgrey_pkg.sv'
+        render_template('top_%s_pkg.sv', 'rtl/autogen', helper=c_helper)
+
+        # C Header + C File + Clang-format file
 
         # 'clang-format' -> 'sw/autogen/.clang-format'
         cformat_tplpath = tpl_path / 'clang-format'
