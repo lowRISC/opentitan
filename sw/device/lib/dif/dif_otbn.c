@@ -261,9 +261,9 @@ dif_otbn_result_t dif_otbn_imem_read(const dif_otbn_t *otbn,
 dif_otbn_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn,
                                       uint32_t offset_bytes,
                                       const uint32_t *src, size_t len_bytes) {
-  // Only 256b-aligned 256b word accesses are allowed.
-  if (otbn == NULL || src == NULL || len_bytes % kDifOtbnWlenBytes != 0 ||
-      (offset_bytes % kDifOtbnWlenBytes != 0) ||
+  // Only 32b-aligned 32b word accesses are allowed.
+  if (otbn == NULL || src == NULL || len_bytes % 4 != 0 ||
+      offset_bytes % 4 != 0 ||
       offset_bytes + len_bytes > OTBN_DMEM_SIZE_BYTES) {
     return kDifOtbnBadArg;
   }
@@ -277,9 +277,9 @@ dif_otbn_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn,
 dif_otbn_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn,
                                      uint32_t offset_bytes, uint32_t *dest,
                                      size_t len_bytes) {
-  // Only 256b-aligned 256b word accesses are allowed.
-  if (otbn == NULL || dest == NULL || len_bytes % kDifOtbnWlenBytes != 0 ||
-      (offset_bytes % kDifOtbnWlenBytes != 0) ||
+  // Only 32b-aligned 32b word accesses are allowed.
+  if (otbn == NULL || dest == NULL || len_bytes % 4 != 0 ||
+      offset_bytes % 4 != 0 ||
       offset_bytes + len_bytes > OTBN_DMEM_SIZE_BYTES) {
     return kDifOtbnBadArg;
   }

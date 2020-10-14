@@ -504,75 +504,65 @@ class DmemWriteTest : public OtbnTest {};
 
 TEST_F(DmemWriteTest, NullArgs) {
   dif_otbn_result_t result;
-  uint32_t test_data[8] = {0};
+  uint32_t test_data[1] = {0};
 
-  result = dif_otbn_dmem_write(nullptr, 0, nullptr, 32);
+  result = dif_otbn_dmem_write(nullptr, 0, nullptr, 4);
   EXPECT_EQ(result, kDifOtbnBadArg);
 
-  result = dif_otbn_dmem_write(nullptr, 0, test_data, 32);
+  result = dif_otbn_dmem_write(nullptr, 0, test_data, 4);
   EXPECT_EQ(result, kDifOtbnBadArg);
 
-  result = dif_otbn_dmem_write(&dif_otbn_, 0, nullptr, 32);
+  result = dif_otbn_dmem_write(&dif_otbn_, 0, nullptr, 4);
   EXPECT_EQ(result, kDifOtbnBadArg);
 }
 
 TEST_F(DmemWriteTest, BadLenBytes) {
   dif_otbn_result_t result;
-  uint32_t test_data[8] = {0};
+  uint32_t test_data[1] = {0};
 
-  // `len_bytes` must be a multiple of 32 bytes.
+  // `len_bytes` must be a multiple of 4 bytes.
   result = dif_otbn_dmem_write(&dif_otbn_, 0, test_data, 1);
   EXPECT_EQ(result, kDifOtbnBadArg);
 
   result = dif_otbn_dmem_write(&dif_otbn_, 0, test_data, 2);
   EXPECT_EQ(result, kDifOtbnBadArg);
-
-  result = dif_otbn_dmem_write(&dif_otbn_, 0, test_data, 4);
-  EXPECT_EQ(result, kDifOtbnBadArg);
 }
 
 TEST_F(DmemWriteTest, BadOffset) {
   dif_otbn_result_t result;
-  uint32_t test_data[16] = {0};
+  uint32_t test_data[1] = {0};
 
-  // `offset` must be 256b-aligned.
-  result = dif_otbn_dmem_write(&dif_otbn_, 1, test_data, 0);
+  // `offset` must be 32b-aligned.
+  result = dif_otbn_dmem_write(&dif_otbn_, 1, test_data, 4);
   EXPECT_EQ(result, kDifOtbnBadArg);
 
-  result = dif_otbn_dmem_write(&dif_otbn_, 2, test_data, 0);
-  EXPECT_EQ(result, kDifOtbnBadArg);
-
-  result = dif_otbn_dmem_write(&dif_otbn_, 16, test_data, 0);
+  result = dif_otbn_dmem_write(&dif_otbn_, 2, test_data, 4);
   EXPECT_EQ(result, kDifOtbnBadArg);
 }
 
 TEST_F(DmemWriteTest, SuccessWithoutOffset) {
   // Test assumption.
-  ASSERT_GE(OTBN_DMEM_SIZE_BYTES, 64);
+  ASSERT_GE(OTBN_DMEM_SIZE_BYTES, 8);
 
-  uint32_t test_data[16];
-  for (int i = 0; i < 16; ++i) {
-    test_data[i] = 0x12345678 + i;
+  uint32_t test_data[2] = {0x12345678, 0xabcdef01};
 
-    EXPECT_WRITE32(OTBN_DMEM_REG_OFFSET + (i * 4), 0x12345678 + i);
-  }
+  EXPECT_WRITE32(OTBN_DMEM_REG_OFFSET, test_data[0]);
+  EXPECT_WRITE32(OTBN_DMEM_REG_OFFSET + 4, test_data[1]);
 
-  dif_otbn_result_t result = dif_otbn_dmem_write(&dif_otbn_, 0, test_data, 64);
+  dif_otbn_result_t result = dif_otbn_dmem_write(&dif_otbn_, 0, test_data, 8);
   EXPECT_EQ(result, kDifOtbnOk);
 }
 
 TEST_F(DmemWriteTest, SuccessWithOffset) {
   // Test assumption.
-  ASSERT_GE(OTBN_DMEM_SIZE_BYTES, 96);
+  ASSERT_GE(OTBN_DMEM_SIZE_BYTES, 12);
 
-  uint32_t test_data[16];
-  for (int i = 0; i < 16; ++i) {
-    test_data[i] = 0x12345678 + i;
+  uint32_t test_data[2] = {0x12345678, 0xabcdef01};
 
-    EXPECT_WRITE32(OTBN_DMEM_REG_OFFSET + 32 + (i * 4), 0x12345678 + i);
-  }
+  EXPECT_WRITE32(OTBN_DMEM_REG_OFFSET + 4, test_data[0]);
+  EXPECT_WRITE32(OTBN_DMEM_REG_OFFSET + 8, test_data[1]);
 
-  dif_otbn_result_t result = dif_otbn_dmem_write(&dif_otbn_, 32, test_data, 64);
+  dif_otbn_result_t result = dif_otbn_dmem_write(&dif_otbn_, 4, test_data, 8);
   EXPECT_EQ(result, kDifOtbnOk);
 }
 
@@ -580,11 +570,7 @@ class DmemReadTest : public OtbnTest {};
 
 TEST_F(DmemReadTest, NullArgs) {
   dif_otbn_result_t result;
-
-  uint32_t test_data[8];
-  for (int i = 0; i < 8; ++i) {
-    test_data[i] = 0xabcdef12 + i;
-  }
+  uint32_t test_data[2] = {0x12345678, 0xabcdef01};
 
   result = dif_otbn_dmem_read(nullptr, 0, nullptr, sizeof(test_data));
   EXPECT_EQ(result, kDifOtbnBadArg);
@@ -596,75 +582,62 @@ TEST_F(DmemReadTest, NullArgs) {
   EXPECT_EQ(result, kDifOtbnBadArg);
 
   // No side effects are expected.
-  for (int i = 0; i < 8; ++i) {
-    EXPECT_EQ(test_data[i], 0xabcdef12 + i);
-  }
+  EXPECT_EQ(test_data[0], 0x12345678);
+  EXPECT_EQ(test_data[1], 0xabcdef01);
 }
 
 TEST_F(DmemReadTest, BadLenBytes) {
   dif_otbn_result_t result;
-  uint32_t test_data[8] = {0};
+  uint32_t test_data[2] = {0};
 
-  // `len_bytes` must be a multiple of 32 bytes.
+  // `len_bytes` must be a multiple of 4 bytes.
   result = dif_otbn_dmem_read(&dif_otbn_, 0, test_data, 1);
   EXPECT_EQ(result, kDifOtbnBadArg);
 
   result = dif_otbn_dmem_read(&dif_otbn_, 0, test_data, 2);
   EXPECT_EQ(result, kDifOtbnBadArg);
-
-  result = dif_otbn_dmem_read(&dif_otbn_, 0, test_data, 4);
-  EXPECT_EQ(result, kDifOtbnBadArg);
 }
 
 TEST_F(DmemReadTest, BadOffset) {
   dif_otbn_result_t result;
-  uint32_t test_data[16] = {0};
+  uint32_t test_data[2] = {0};
 
-  // `offset` must be 256b-aligned.
+  // `offset` must be 32b-aligned.
   result = dif_otbn_dmem_read(&dif_otbn_, 1, test_data, sizeof(test_data));
   EXPECT_EQ(result, kDifOtbnBadArg);
 
   result = dif_otbn_dmem_read(&dif_otbn_, 2, test_data, sizeof(test_data));
   EXPECT_EQ(result, kDifOtbnBadArg);
-
-  result = dif_otbn_dmem_read(&dif_otbn_, 4, test_data, sizeof(test_data));
-  EXPECT_EQ(result, kDifOtbnBadArg);
 }
 
 TEST_F(DmemReadTest, SuccessWithoutOffset) {
   // Assumption in the test.
-  ASSERT_GE(OTBN_DMEM_SIZE_BYTES, 16);
+  ASSERT_GE(OTBN_DMEM_SIZE_BYTES, 8);
 
-  uint32_t test_data[16] = {};
-  for (int i = 0; i < 16; ++i) {
-    EXPECT_READ32(OTBN_DMEM_REG_OFFSET + (i * 4), 0x67891234 + i);
-  }
+  uint32_t test_data[2] = {0};
 
-  dif_otbn_result_t result =
-      dif_otbn_dmem_read(&dif_otbn_, 0, test_data, sizeof(test_data));
+  EXPECT_READ32(OTBN_DMEM_REG_OFFSET, 0x12345678);
+  EXPECT_READ32(OTBN_DMEM_REG_OFFSET + 4, 0xabcdef01);
+
+  dif_otbn_result_t result = dif_otbn_dmem_read(&dif_otbn_, 0, test_data, 8);
   EXPECT_EQ(result, kDifOtbnOk);
-
-  for (int i = 0; i < 16; ++i) {
-    EXPECT_EQ(test_data[i], 0x67891234 + i);
-  }
+  EXPECT_EQ(test_data[0], 0x12345678);
+  EXPECT_EQ(test_data[1], 0xabcdef01);
 }
 
 TEST_F(DmemReadTest, SuccessWithOffset) {
   // Assumption in the test.
-  ASSERT_GE(OTBN_DMEM_SIZE_BYTES, 24);
+  ASSERT_GE(OTBN_DMEM_SIZE_BYTES, 12);
 
-  uint32_t test_data[16] = {0};
-  for (int i = 0; i < 16; ++i) {
-    EXPECT_READ32(OTBN_DMEM_REG_OFFSET + 32 + (i * 4), 0x98765432 + i);
-  }
+  uint32_t test_data[2] = {0};
 
-  dif_otbn_result_t result =
-      dif_otbn_dmem_read(&dif_otbn_, 32, test_data, sizeof(test_data));
+  EXPECT_READ32(OTBN_DMEM_REG_OFFSET + 4, 0x12345678);
+  EXPECT_READ32(OTBN_DMEM_REG_OFFSET + 8, 0xabcdef01);
+
+  dif_otbn_result_t result = dif_otbn_dmem_read(&dif_otbn_, 4, test_data, 8);
   EXPECT_EQ(result, kDifOtbnOk);
-
-  for (int i = 0; i < 16; ++i) {
-    EXPECT_EQ(test_data[i], 0x98765432 + i);
-  }
+  EXPECT_EQ(test_data[0], 0x12345678);
+  EXPECT_EQ(test_data[1], 0xabcdef01);
 }
 
 }  // namespace
