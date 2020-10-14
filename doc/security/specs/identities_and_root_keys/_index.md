@@ -46,9 +46,9 @@ Memory state operations:
 ## Device Identifier
 
 The device identifier is a globally unique 256b value provisioned on each
-device’s OTP memory in early manufacturing stages (e.g. wafer test). It is used
+device's OTP memory in early manufacturing stages (e.g. wafer test). It is used
 to facilitate device tracking during manufacturing and provisioning. This value
-is also used as a component in the generation of the device’s Silicon Creator
+is also used as a component in the generation of the device's Silicon Creator
 Identity, a cryptographically unique identity.
 
 The 256b value is split into two halves. The first contains hardware origin
@@ -77,7 +77,7 @@ devices.
     <td>64</td>
     <td>
 Individual device identification number. Assigned by the Silicon Creator. For
-example, the wafer lot number and die’s X,Y coordinates may be encoded here to
+example, the wafer lot number and die's X,Y coordinates may be encoded here to
 simplify manufacturing tracking. Another option is to use a non cryptographic
 hash function with collision checks to guarantee global uniqueness.
     </td>
@@ -571,8 +571,8 @@ bool keymgr_init(mmio_region_t base_addr, kmgr_t* kmgr);
  * persist until the next system reset.
  *
  * The hardware supports the following transitions:
- * Uninitialized → CreatorRootKey →
- * OwnerIntermediateKey → OwnerRootKey
+ * Uninitialized --> CreatorRootKey -->
+ * OwnerIntermediateKey --> OwnerRootKey
  *
  * Defensive measures may trigger a state transition to Disabled.
  *

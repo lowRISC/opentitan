@@ -29,12 +29,12 @@ _Owned Device Attestation (Owner Identity Certificate)_
 
 It is used to attest ownership of the device, the BL0 configuration, as well as
 the Owner Identity key which is used as a root attestation key managed by the
-Silicon Owner. The attestation certificate is signed with the device’s Creator
+Silicon Owner. The attestation certificate is signed with the device's Creator
 Identity key, forming an attestation chain to the Creator Identity certificate.
 
 A Silicon Owner can endorse the Owner Identity Certificate with its own
 intermediate CA key as soon as it takes ownership of the device. This way device
-attestation can be verified against the Silicon Owners’ PKI of choice.
+attestation can be verified against the Silicon Owners' PKI of choice.
 
 ## Terminology
 
@@ -68,7 +68,7 @@ there is a change to the BL0 software binding tag. The Owner Identity is used to
 attest the owner and BL0 configuration, as well as an attestation key used by
 the Kernel. This key is endorsed by the Creator Identity, but can also be
 endorsed by the Silicon Owner PKI. Endorsement of the Owner Identity with the
-Owner’s PKI, is covered in detail in the [Owner Personalization](#) process
+Owner's PKI, is covered in detail in the [Owner Personalization](#) process
 described in the provisioning specification.
 
 When using a Silicon Owner PKI, the Owner is expected to maintain a device
@@ -245,7 +245,7 @@ measurement = MAC(KM_VersionedKey,
   OwnerIdentitySeed ||
   FixedInfo)
 
-update_cert = measurement ⊕ cached_measurement
+update_cert = measurement XOR cached_measurement
 ```
 
 The Owner Identity certificate needs to be updated if `update_cert` evaluates to
@@ -857,13 +857,13 @@ The Silicon Owner software must address any privacy concerns associated with the
 use of device identifiable information.
 
 The Silicon Owner certificate, for example, is meant to be used exclusively with
-the Silicon Owner’s infrastructure. Use cases requiring multiple identities or
+the Silicon Owner's infrastructure. Use cases requiring multiple identities or
 attestation services for multiple backends are required to derive
 <span style="text-decoration:underline;">application level identities and
 certificates</span>. Such application level identities must fulfill the privacy
 requirements of their use cases.
 
-OpenTitan’s key manager provides a mechanism to derive multiple application
+OpenTitan's key manager provides a mechanism to derive multiple application
 level keys with lineage to the Owner Identity, without making them
 distinguishable from any random key. These properties allow the software
 implementation to bind the OpenTitan attestation to any application level
