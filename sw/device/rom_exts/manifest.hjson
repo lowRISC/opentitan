@@ -13,7 +13,7 @@
     },
     { type: "reserved",
       size: 32,
-    }
+    },
     { name: "image_signature",
       desc: '''ROM_EXT Manifest image signature.
 
@@ -21,6 +21,14 @@
             ''',
       type: "field",
       size: 3072,
+    },
+    {
+      name: 'signed_area_start',
+      desc: '''ROM_EXT Manifest image start of signed area.
+
+            TODO
+            ''',
+      type: "offset",
     },
     {
       name: "image_length",
@@ -48,6 +56,7 @@
             ''',
       type: "field",
       size: 64,
+      alignment: 64,
     },
     {
       name: "signature_algorithm_identifier",
@@ -169,6 +178,35 @@
             ''',
       type: "field",
       size: 32,
+    },
+    {
+      // This is modelled as an offset, as we don't want this to have a size,
+      // and if we generate assembly like `rom_ext_manifest.S`, we don't want to
+      // allocate this area using `.byte` instructions.
+      name: "interrupt_vector",
+      desc: '''ROM_EXT Manifest interrupt vector.
+
+            TODO
+            ''',
+      type: "offset",
+      // Ibex requires this to be 256-byte aligned. In this file, all alignments
+      // and sizes are in bits.
+      alignment: 2048,
+    },
+    {
+      // This reserved area covers the interrupt vector then, to ensure the
+      // `entry_point` field is 128 bytes later.
+      type: "reserved",
+      // A RISC-V interrupt vector is 32*32bit entries.
+      size: 1024,
+    },
+    {
+      name: "entry_point",
+      desc: '''ROM_EXT Manifest entry point.
+
+            TODO
+            ''',
+      type: "offset",
     },
   ],
 }
