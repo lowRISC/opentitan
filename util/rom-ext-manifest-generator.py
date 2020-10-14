@@ -18,7 +18,7 @@ USAGE = """
     Directory where manifest.hjson and manifest.h.tpl reside.
 
   rom-ext-manifest-generator --output-dir:
-    Directory where manifest.hjson and manifest.h.tpl reside.
+    Directory where manifest.h will be created.
 """
 
 
@@ -26,7 +26,7 @@ def generate_cheader(fields, input_dir, output_dir):
     """ Generates C header file from the `template_file`.
 
     It produces a list of tuples with a field name and the `MemoryRegion`
-    object, whic is used in the `template_path`. The resulting header file is
+    object, which is used in the `template_path`. The resulting header file is
     placed into `output_path`.
     """
 
