@@ -62,11 +62,13 @@ ifneq (${sw_test},)
 		-n "rom" -o "${run_dir}"
 	# Copy over the boot rom image to the run_dir.
 	cp ${sw_build_dir}/build-out/sw/device/boot_rom/boot_rom_${sw_build_device}.32.vmem \
-		${run_dir}/rom.32.vmem
+		${run_dir}/rom.vmem
+	cp ${sw_build_dir}/build-out/sw/device/boot_rom/boot_rom_${sw_build_device}.elf \
+		${run_dir}/rom.elf
 
 ifeq (${sw_test_is_prebuilt},1)
 	# Copy over the sw test image and related sources to the run_dir.
-	cp ${proj_root}/${sw_test}.64.vmem ${run_dir}/sw.64.vmem
+	cp ${proj_root}/${sw_test}.64.vmem ${run_dir}/sw.vmem
 	# Optionally, assume that ${sw_test}_logs.txt exists and copy over to the run_dir.
 	# Ignore copy error if it actually doesn't exist. Likewise for ${sw_test}_rodata.txt.
 	-cp ${proj_root}/${sw_test}_logs.txt ${run_dir}/sw_logs.txt
@@ -91,8 +93,8 @@ else
 		-f .logs.fields -r .rodata \
 		-n "sw" -o "${run_dir}"
 	# Copy over the sw test image to the run_dir.
-	cp ${sw_build_dir}/build-out/${sw_test}_${sw_build_device}.64.vmem \
-		${run_dir}/sw.64.vmem
+	cp ${sw_build_dir}/build-out/${sw_test}_${sw_build_device}.64.vmem ${run_dir}/sw.vmem
+	cp ${sw_build_dir}/build-out/${sw_test}_${sw_build_device}.elf ${run_dir}/sw.elf
 endif
 
 endif

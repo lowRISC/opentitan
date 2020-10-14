@@ -21,8 +21,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.m_uart_agent_cfg.set_baud_rate(cfg.uart_baud_rate);
 
     // initialize the sw logger interface
-    foreach (cfg.sw_types[i]) begin
-      cfg.sw_logger_vif.set_sw_name(cfg.sw_types[i]);
+    foreach (cfg.sw_images[i]) begin
+      cfg.sw_logger_vif.set_sw_name(cfg.sw_images[i]);
     end
     cfg.sw_logger_vif.sw_log_addr = SW_DV_LOG_ADDR;
     cfg.sw_logger_vif.write_sw_logs_to_file = cfg.write_sw_logs_to_file;
@@ -32,17 +32,18 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.sw_test_status_vif.sw_test_status_addr = SW_DV_TEST_STATUS_ADDR;
 
     // Initialize the RAM to 0s and flash to all 1s.
-    if (cfg.initialize_ram) cfg.mem_bkdr_vifs[Ram].clear_mem();
+    if (cfg.initialize_ram) cfg.mem_bkdr_vifs[RamMain].clear_mem();
     cfg.mem_bkdr_vifs[FlashBank0].set_mem();
     cfg.mem_bkdr_vifs[FlashBank1].set_mem();
 
     // Backdoor load memories with sw images.
-    cfg.mem_bkdr_vifs[Rom].load_mem_from_file(cfg.sw_images["rom"]);
+    cfg.mem_bkdr_vifs[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".vmem"});
+
     // TODO: the location of the main execution image should be randomized for either bank in future
     if (cfg.use_spi_load_bootstrap) begin
       spi_device_load_bootstrap();
     end else begin
-      cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file(cfg.sw_images["sw"]);
+      cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file({cfg.sw_images[SwTypeTest], ".vmem"});
     end
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
   endtask
@@ -142,4 +143,39 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
     $fclose(mem_fd);
   endfunction
+
+  // Backdoor-override a const symbol in SW to modify the behavior of the test.
+  //
+  // In the extended test vseq, override the cpu_init() to add this function call.
+  // TODO: bootstrap mode not supported.
+  // TODO: Need to deal with scrambling.
+  virtual function void sw_symbol_backdoor_overwrite(input string symbol,
+                                                     inout byte data[],
+                                                     input chip_mem_e mem = FlashBank0,
+                                                     input sw_type_e sw_type = SwTypeTest);
+
+    string elf_file;
+    bit [bus_params_pkg::BUS_AW-1:0] addr;
+    uint size;
+
+    // Elf file name checks.
+    `DV_CHECK_FATAL(cfg.sw_images.exists(sw_type))
+    `DV_CHECK_STRNE_FATAL(cfg.sw_images[sw_type], "")
+
+    // Find the symbol in the sw elf file.
+    elf_file = {cfg.sw_images[sw_type], ".elf"};
+    sw_symbol_get_addr_size(elf_file, symbol, addr, size);
+    `uvm_info(`gfn, $sformatf("Symbol \"%s\": addr = 0x%0h, size = %0d", symbol, addr, size),
+              UVM_MEDIUM)
+    addr -= get_chip_mem_base_addr(mem);
+    `DV_CHECK_EQ_FATAL(size, data.size())
+
+    for (int i = 0; i < size; i++) begin
+      byte prev_data = cfg.mem_bkdr_vifs[mem].read8(addr + i);
+      `uvm_info(`gfn, $sformatf("%s[%0d] = 0x%0h --> 0x%0h", symbol, i, prev_data, data[i]),
+                UVM_HIGH)
+      cfg.mem_bkdr_vifs[mem].write8(addr + i, data[i]);
+    end
+  endfunction
+
 endclass : chip_sw_base_vseq
