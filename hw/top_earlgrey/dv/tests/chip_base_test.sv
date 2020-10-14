@@ -43,6 +43,16 @@ class chip_base_test extends cip_base_test #(
     // Knob to use spi or backdoor to load bootstrap
     void'($value$plusargs("use_spi_load_bootstrap=%0b", cfg.use_spi_load_bootstrap));
 
+    // Knob to indicate the SW test is external (non-standard).
+    void'($value$plusargs("sw_test_is_external=%0b", cfg.sw_test_is_external));
+
+    // Knob to set custom sw image names for rom and sw.
+    // Example: "+sw_images[SwTypeRom]=mask_rom", or "+sw_images[0]=mask_rom".
+    foreach (cfg.sw_images[i]) begin
+      sw_type_e sw_type = sw_type_e'(i);
+      void'($value$plusargs({"sw_images[", $sformatf("%0d", i), "]=%0s"}, cfg.sw_images[i]));
+      void'($value$plusargs({"sw_images[", sw_type.name(), "]=%0s"}, cfg.sw_images[i]));
+    end
   endfunction : build_phase
 
 endclass : chip_base_test

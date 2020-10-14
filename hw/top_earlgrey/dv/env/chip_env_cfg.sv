@@ -26,14 +26,18 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   virtual pins_if#(1) bootstrap_vif;
   virtual pins_if#(1) rst_n_mon_vif;
 
-  // sw logger related
-  string sw_types[]         = '{"rom", "sw"};
-  sw_logger_vif             sw_logger_vif;
-  int sw_image_widths[]     = '{32, 64};
-  string                    sw_images[string];
+  // sw related
+  // Types of SW images used in the test. A ".vmem" and a ".elf" file associated with each of these
+  // (if used) is assumed to exist in the rundir.
+  string                    sw_images[sw_type_e];
+
+  // SW image that has been run through the spiflash utility, used in bootstrap mode.
   string                    sw_frame_image = "sw.frames.vmem";
-  virtual sw_test_status_if sw_test_status_vif;
+
   uint                      sw_test_timeout_ns = 5_000_000; // 5ms
+  bit                       sw_test_is_external;
+  sw_logger_vif             sw_logger_vif;
+  virtual sw_test_status_if sw_test_status_vif;
 
   // ext component cfgs
   rand uart_agent_cfg m_uart_agent_cfg;
@@ -61,7 +65,8 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     chip_mem_e mems[] = {Rom,
-                         Ram,
+                         RamMain,
+                         RamRet,
                          FlashBank0,
                          FlashBank1,
                          FlashBank0Info,
@@ -90,10 +95,10 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
       mem_bkdr_vifs[mems[mem]] = null;
     end
 
-    // initialize the sw_image names and log file names
-    foreach (sw_types[i]) begin
-      sw_images[sw_types[i]] = $sformatf("%0s.%0d.vmem", sw_types[i], sw_image_widths[i]);
-    end
+    // initialize the sw_images.
+    sw_images[SwTypeRom] = "rom";
+    sw_images[SwTypeTest] = "sw";
+    sw_images[SwTypeOtbn] = "otbn";
   endfunction
 
   // ral flow is limited in terms of setting correct field access policies and reset values
