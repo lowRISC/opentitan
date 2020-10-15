@@ -54,7 +54,7 @@ otbn-code-snippets-asm-paths := $(wildcard $(otbn-code-snippets-path)*.s)
 otbn-code-snippets-asm-basenames := $(notdir $(otbn-code-snippets-asm-paths))
 otbn-code-snippets-basenames     := $(otbn-code-snippets-asm-basenames:.s=)
 
-$(otbn-code-snippets-obj-dir) $(otbn-code-snippets-bin-dir):
+$(sort $(otbn-code-snippets-obj-dir) $(otbn-code-snippets-bin-dir)):
 	mkdir -p $@
 
 # Calculate lists of object and ELF files
@@ -82,3 +82,15 @@ $(otbn-code-snippets-elfs): \
 #
 # Define any file-specific flags or dependencies
 #
+
+# rsa_1024_dec_test depends on modexp, defined in modexp.S
+$(otbn-code-snippets-bin-dir)/rsa_1024_dec_test.elf: \
+  $(otbn-code-snippets-obj-dir)/modexp.o
+$(otbn-code-snippets-bin-dir)/rsa_1024_dec_test.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/modexp.o
+
+# rsa_1024_enc_test depends on modexp_65537, defined in modexp.S
+$(otbn-code-snippets-bin-dir)/rsa_1024_enc_test.elf: \
+  $(otbn-code-snippets-obj-dir)/modexp.o
+$(otbn-code-snippets-bin-dir)/rsa_1024_enc_test.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/modexp.o
