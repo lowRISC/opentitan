@@ -8,12 +8,12 @@ description: "DV utilities"
 filesets:
   files_dv:
     depend:
+      - lowrisc:dv:dv_macros
       - lowrisc:dv:common_ifs
       - lowrisc:prim:assert:0.1
       - lowrisc:opentitan:bus_params_pkg
     files:
       - dv_utils_pkg.sv
-      - dv_macros.svh: {is_include_file: true}
       - dv_report_server.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
