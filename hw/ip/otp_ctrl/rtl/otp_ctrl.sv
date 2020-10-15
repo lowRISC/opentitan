@@ -364,9 +364,10 @@ module otp_ctrl
   ) u_prim_alert_sender0 (
     .clk_i,
     .rst_ni,
-    .alert_i    ( otp_macro_failure_q ),
-    .alert_rx_i ( alert_rx_i[0] ),
-    .alert_tx_o ( alert_tx_o[0] )
+    .alert_req_i ( otp_macro_failure_q ),
+    .alert_ack_o (                 ),
+    .alert_rx_i  ( alert_rx_i[0]   ),
+    .alert_tx_o  ( alert_tx_o[0]   )
   );
 
   prim_alert_sender #(
@@ -374,9 +375,10 @@ module otp_ctrl
   ) u_prim_alert_sender1 (
     .clk_i,
     .rst_ni,
-    .alert_i    ( otp_check_failure_q ),
-    .alert_rx_i ( alert_rx_i[1] ),
-    .alert_tx_o ( alert_tx_o[1] )
+    .alert_req_i ( otp_check_failure_q ),
+    .alert_ack_o (                  ),
+    .alert_rx_i  ( alert_rx_i[1]    ),
+    .alert_tx_o  ( alert_tx_o[1]    )
   );
 
   ////////////////////////////////

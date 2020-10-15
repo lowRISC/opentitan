@@ -380,7 +380,8 @@ module keymgr import keymgr_pkg::*; #(
   ) u_err_alert (
     .clk_i,
     .rst_ni,
-    .alert_i(|reg2hw.err_code),
+    .alert_req_i(|reg2hw.err_code),
+    .alert_ack_o(),
     .alert_rx_i(alert_rx_i),
     .alert_tx_o(alert_tx_o)
   );

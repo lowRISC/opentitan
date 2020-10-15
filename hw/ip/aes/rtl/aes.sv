@@ -103,11 +103,12 @@ module aes
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i])
     ) u_alert_sender_i (
-      .clk_i      ( clk_i         ),
-      .rst_ni     ( rst_ni        ),
-      .alert_i    ( alert[i]      ),
-      .alert_rx_i ( alert_rx_i[i] ),
-      .alert_tx_o ( alert_tx_o[i] )
+      .clk_i       ( clk_i         ),
+      .rst_ni      ( rst_ni        ),
+      .alert_req_i ( alert[i]      ),
+      .alert_ack_o (               ),
+      .alert_rx_i  ( alert_rx_i[i] ),
+      .alert_tx_o  ( alert_tx_o[i] )
     );
   end
 
