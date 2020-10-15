@@ -241,6 +241,8 @@ package otbn_pkg;
     comparison_op_base_e comparison_op;
     op_a_sel_e           op_a_sel;
     op_b_sel_e           op_b_sel;
+    logic                rf_ren_a;
+    logic                rf_ren_b;
     logic                rf_we;
     rf_wd_sel_e          rf_wdata_sel;
     logic [11:0]         loop_bodysize;
@@ -279,6 +281,8 @@ package otbn_pkg;
     op_b_sel_e               op_b_sel;
     logic                    rf_we;
     rf_wd_sel_e              rf_wdata_sel;
+    logic                    rf_ren_a;
+    logic                    rf_ren_b;
   } insn_dec_bignum_t;
 
   typedef struct packed {
