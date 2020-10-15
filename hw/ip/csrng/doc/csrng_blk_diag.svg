@@ -181,7 +181,7 @@
 			<v:textRect cx="74.9125" cy="599.18" width="149.83" height="25.6401"/>
 			<rect x="0" y="586.36" width="149.825" height="25.6401" class="st7"/>
 			<text x="17.99" y="599.36" class="st2" v:langID="1033"><v:paragraph v:horizAlign="2"/><v:tabList/>CSRNG application interface <tspan
-						x="123.6" dy="1.2em" class="st3">HW</tspan>1</text>		</g>
+						x="123.6" dy="1.2em" class="st3">HW1</tspan></text>		</g>
 		<g id="shape1006-82" v:mID="1006" v:groupContext="shape" transform="translate(63,-117)">
 			<title>Sheet.1006</title>
 			<desc>CSRNG application interface HW0</desc>
@@ -189,7 +189,7 @@
 			<v:textRect cx="74.9125" cy="599.18" width="149.83" height="25.6401"/>
 			<rect x="0" y="586.36" width="149.825" height="25.6401" class="st7"/>
 			<text x="17.99" y="599.36" class="st2" v:langID="1033"><v:paragraph v:horizAlign="2"/><v:tabList/>CSRNG application interface <tspan
-						x="123.6" dy="1.2em" class="st3">HW</tspan>0</text>		</g>
+						x="123.6" dy="1.2em" class="st3">HW0</tspan></text>		</g>
 		<g id="shape1007-86" v:mID="1007" v:groupContext="shape" transform="translate(251.703,1026) rotate(180)">
 			<title>Sheet.1007</title>
 			<path d="M0 612 L29.98 612" class="st11"/>
