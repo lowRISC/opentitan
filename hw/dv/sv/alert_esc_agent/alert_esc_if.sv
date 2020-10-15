@@ -10,8 +10,8 @@ interface alert_esc_if(input clk, input rst_n);
   wire prim_alert_pkg::alert_rx_t alert_rx;
   wire prim_esc_pkg::esc_tx_t     esc_tx;
   wire prim_esc_pkg::esc_rx_t     esc_rx;
-  prim_alert_pkg::alert_tx_t      alert_tx_sync;      // sync alert_tx 2 clks delay flop
-  prim_alert_pkg::alert_tx_t      alert_tx_sync_temp; // sync alert_tx 1 clk delay flop
+  prim_alert_pkg::alert_tx_t      alert_tx_sync_dly2; // sync alert_tx 2 clk cycle delay flop
+  prim_alert_pkg::alert_tx_t      alert_tx_sync_dly1; // sync alert_tx 1 clk cycle delay flop
   prim_alert_pkg::alert_tx_t      alert_tx_final;     // final alert_tx value depends if on async_mode
   prim_alert_pkg::alert_tx_t      alert_tx_int; // internal alert_tx
   prim_alert_pkg::alert_rx_t      alert_rx_int; // internal alert_rx
@@ -31,14 +31,14 @@ interface alert_esc_if(input clk, input rst_n);
   // TODO: this is not needed once the CDC module is implemented
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      alert_tx_sync      <= {'b01};
-      alert_tx_sync_temp <= {'b01};
+      alert_tx_sync_dly2 <= {2'b01};
+      alert_tx_sync_dly1 <= {2'b01};
     end else begin
-      alert_tx_sync      <= alert_tx_sync_temp;
-      alert_tx_sync_temp <= alert_tx;
+      alert_tx_sync_dly2 <= alert_tx_sync_dly1;
+      alert_tx_sync_dly1 <= alert_tx;
     end
   end
-  assign alert_tx_final = (is_async) ? alert_tx_sync : alert_tx;
+  assign alert_tx_final = (is_async) ? alert_tx_sync_dly2 : alert_tx;
 
   clocking sender_cb @(posedge sender_clk);
     input  rst_n;
