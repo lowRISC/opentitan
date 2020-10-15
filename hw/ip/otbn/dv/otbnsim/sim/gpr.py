@@ -60,6 +60,12 @@ class GPRs(RegFile):
             assert new_x1 is not None
             self._callstack.append(new_x1)
 
+    def peek_call_stack(self) -> List[int]:
+        '''Get a list of values on the call stack'''
+        # _callstack is never empty and always contains 0 as the first element,
+        # so strip that off the returned value.
+        return self._callstack[1:]
+
     def commit(self) -> None:
         self._callstack_pop = False
         super().commit()

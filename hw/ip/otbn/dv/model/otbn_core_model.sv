@@ -142,6 +142,9 @@ module otbn_core_model
     // multiple OTBN instances, so it would be nice to get it right.
     bind otbn_rf_base_ff otbn_rf_snooper #(.Width (32), .Depth (32)) u_snooper (.rf (rf_reg));
     bind otbn_rf_bignum_ff otbn_rf_snooper #(.Width (256), .Depth (32)) u_snooper (.rf (rf));
+    bind otbn_rf_base otbn_stack_snooper #(.StackWidth (32), .StackDepth(8)) u_call_stack_snooper (
+      .stack_storage(u_call_stack.stack_storage),
+      .stack_wr_ptr_q(u_call_stack.stack_wr_ptr_q));
   end
 
   assign err_o = failed_step | failed_cmp;

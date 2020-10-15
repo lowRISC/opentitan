@@ -211,11 +211,22 @@ module otbn_top_sim (
     end
   end
 
+  export "DPI-C" function otbn_base_call_stack_get_size;
+
+  function automatic int unsigned otbn_base_call_stack_get_size();
+    return u_otbn_core.u_otbn_rf_base.u_call_stack.stack_wr_ptr_q;
+  endfunction
+
+  export "DPI-C" function otbn_base_call_stack_get_element;
+
+  function automatic int unsigned otbn_base_call_stack_get_element(int index);
+    return u_otbn_core.u_otbn_rf_base.u_call_stack.stack_storage[index];
+  endfunction
 
   export "DPI-C" function otbn_base_reg_get;
 
   function automatic int unsigned otbn_base_reg_get(int index);
-    return u_otbn_core.gen_rf_base_ff.u_otbn_rf_base.rf_reg[index];
+    return u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.rf_reg[index];
   endfunction
 
   export "DPI-C" function otbn_bignum_reg_get;

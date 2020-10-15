@@ -81,8 +81,10 @@ module otbn_core
   logic         rf_base_wr_en;
   logic [31:0]  rf_base_wr_data;
   logic [4:0]   rf_base_rd_addr_a;
+  logic         rf_base_rd_en_a;
   logic [31:0]  rf_base_rd_data_a;
   logic [4:0]   rf_base_rd_addr_b;
+  logic         rf_base_rd_en_b;
   logic [31:0]  rf_base_rd_data_b;
 
   alu_base_operation_t  alu_base_operation;
@@ -201,8 +203,10 @@ module otbn_core
     .rf_base_wr_en_o     (rf_base_wr_en),
     .rf_base_wr_data_o   (rf_base_wr_data),
     .rf_base_rd_addr_a_o (rf_base_rd_addr_a),
+    .rf_base_rd_en_a_o   (rf_base_rd_en_a),
     .rf_base_rd_data_a_i (rf_base_rd_data_a),
     .rf_base_rd_addr_b_o (rf_base_rd_addr_b),
+    .rf_base_rd_en_b_o   (rf_base_rd_en_b),
     .rf_base_rd_data_b_i (rf_base_rd_data_b),
 
     // To/from bignunm register file
@@ -276,36 +280,25 @@ module otbn_core
 
   // Base Instruction Subset =======================================================================
 
-  // General-Purpose Register File (GPRs): 32 32b registers
-  if (RegFile == RegFileFF) begin : gen_rf_base_ff
-    otbn_rf_base_ff u_otbn_rf_base (
-      .clk_i,
-      .rst_ni,
+  otbn_rf_base #(
+    .RegFile (RegFile)
+  ) u_otbn_rf_base (
+    .clk_i,
+    .rst_ni,
 
-      .wr_addr_i (rf_base_wr_addr),
-      .wr_en_i   (rf_base_wr_en),
-      .wr_data_i (rf_base_wr_data),
+    .wr_addr_i (rf_base_wr_addr),
+    .wr_en_i   (rf_base_wr_en),
+    .wr_data_i (rf_base_wr_data),
 
-      .rd_addr_a_i (rf_base_rd_addr_a),
-      .rd_data_a_o (rf_base_rd_data_a),
-      .rd_addr_b_i (rf_base_rd_addr_b),
-      .rd_data_b_o (rf_base_rd_data_b)
-    );
-  end else if (RegFile == RegFileFPGA) begin : gen_rf_base_fpga
-    otbn_rf_base_fpga u_otbn_rf_base (
-      .clk_i,
-      .rst_ni,
+    .rd_addr_a_i (rf_base_rd_addr_a),
+    .rd_en_a_i   (rf_base_rd_en_a),
+    .rd_data_a_o (rf_base_rd_data_a),
+    .rd_addr_b_i (rf_base_rd_addr_b),
+    .rd_en_b_i   (rf_base_rd_en_b),
+    .rd_data_b_o (rf_base_rd_data_b),
 
-      .wr_addr_i (rf_base_wr_addr),
-      .wr_en_i   (rf_base_wr_en),
-      .wr_data_i (rf_base_wr_data),
-
-      .rd_addr_a_i (rf_base_rd_addr_a),
-      .rd_data_a_o (rf_base_rd_data_a),
-      .rd_addr_b_i (rf_base_rd_addr_b),
-      .rd_data_b_o (rf_base_rd_data_b)
-    );
-  end
+    .call_stack_overflow_err_o ()
+  );
 
   otbn_alu_base u_otbn_alu_base (
     .clk_i,

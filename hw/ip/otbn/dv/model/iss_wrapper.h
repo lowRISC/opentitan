@@ -43,6 +43,9 @@ struct ISSWrapper {
   // Read contents of the register file
   void get_regs(std::array<uint32_t, 32> *gprs, std::array<u256_t, 32> *wdrs);
 
+  // Read the contents of the call stack
+  std::vector<uint32_t> get_call_stack();
+
   // Resolve a path relative to the convenience temporary directory.
   // relative should be a relative path (it is just appended to the
   // path of the temporary directory).
