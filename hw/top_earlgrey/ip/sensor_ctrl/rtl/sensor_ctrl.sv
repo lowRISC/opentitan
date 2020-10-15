@@ -88,7 +88,8 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
     ) i_prim_alert_sender (
       .clk_i,
       .rst_ni,
-      .alert_i(sw_ack_mode[i] ? reg2hw.alert_state[i].q : valid_alert),
+      .alert_req_i(sw_ack_mode[i] ? reg2hw.alert_state[i].q : valid_alert),
+      .alert_ack_o(),
       .alert_rx_i(alert_rx_i[i]),
       .alert_tx_o(alert_tx_o[i])
     );

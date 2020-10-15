@@ -406,9 +406,10 @@ module otbn
     ) i_prim_alert_sender (
       .clk_i,
       .rst_ni,
-      .alert_i    (alerts[i]    ),
-      .alert_rx_i (alert_rx_i[i]),
-      .alert_tx_o (alert_tx_o[i])
+      .alert_req_i (alerts[i]    ),
+      .alert_ack_o (             ),
+      .alert_rx_i  (alert_rx_i[i]),
+      .alert_tx_o  (alert_tx_o[i])
     );
   end
 
