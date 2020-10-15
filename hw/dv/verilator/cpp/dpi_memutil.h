@@ -8,6 +8,8 @@
 #include <string>
 #include <svdpi.h>
 
+#include "ranged_map.h"
+
 enum MemImageType {
   kMemImageUnknown = 0,
   kMemImageElf,
@@ -97,10 +99,5 @@ class DpiMemUtil {
 
  private:
   std::map<std::string, MemArea> name_to_mem_;
-  std::map<uint32_t, const MemArea *> addr_to_mem_;
-
-  /**
-   * Try to find a region for the given LMA. Returns nullptr if none is found.
-   */
-  const MemArea *FindRegionForAddr(uint32_t lma) const;
+  RangedMap<uint32_t, MemArea *> addr_to_mem_;
 };

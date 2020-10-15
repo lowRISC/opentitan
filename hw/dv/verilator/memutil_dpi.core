@@ -8,6 +8,7 @@ description: "DPI memory utilities"
 filesets:
   files_cpp:
     files:
+      - cpp/ranged_map.h: { is_include_file: true }
       - cpp/dpi_memutil.cc
       - cpp/dpi_memutil.h: { is_include_file: true }
       - cpp/sv_scoped.cc
