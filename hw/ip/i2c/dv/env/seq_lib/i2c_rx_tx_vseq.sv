@@ -6,12 +6,13 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
   `uvm_object_utils(i2c_rx_tx_vseq)
   `uvm_object_new
 
-  local int total_rd_bytes;
   local bit complete_program_fmt_fifo;
-  local bit do_interrupt = 1'b1;
+  local uint total_rd_bytes;
 
   virtual task body();
+    bit do_interrupt = 1'b1;
     initialization();
+    `uvm_info(`gfn, "\n--> start of sequence", UVM_DEBUG)
     fork
       begin
         while (do_interrupt) process_interrupts();
@@ -21,17 +22,20 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         do_interrupt = 1'b0; // gracefully stop process_interrupts
       end
     join
+    `uvm_info(`gfn, "\n--> end of sequence", UVM_DEBUG)
+
   endtask : body
 
-  virtual task host_send_trans(int num_trans, tran_type_e trans_type = ReadWrite);
+  virtual task host_send_trans(int max_trans = num_trans, tran_type_e trans_type = ReadWrite);
     bit last_tran, chained_read;
 
     fmt_item = new("fmt_item");
     total_rd_bytes = 0;
+    `uvm_info(`gfn, "\n  host_send_trans task running ...", UVM_DEBUG)
     fork
       begin
         complete_program_fmt_fifo = 1'b0;
-        for (uint cur_tran = 1; cur_tran <= num_trans; cur_tran++) begin
+        for (uint cur_tran = 1; cur_tran <= max_trans; cur_tran++) begin
           // randomize knobs for error interrupts
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(prob_sda_unstable)
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(prob_sda_interference)
@@ -63,9 +67,9 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
             program_address_to_target();
           end
 
-          last_tran = (cur_tran == num_trans);
+          last_tran = (cur_tran == max_trans);
           `uvm_info(`gfn, $sformatf("\n  start sending %s transaction %0d/%0d",
-              (rw_bit) ? "READ" : "WRITE", cur_tran, num_trans), UVM_DEBUG)
+              (rw_bit) ? "READ" : "WRITE", cur_tran, max_trans), UVM_DEBUG)
           if (chained_read) begin
             // keep programming chained read transaction
             program_control_read_to_target(last_tran);
@@ -74,22 +78,25 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
             else        program_write_data_to_target(last_tran);
           end
 
-          `uvm_info(`gfn, $sformatf("\n  finish %s transaction, %0s at the end,  %0d/%0d, ",
+          `uvm_info(`gfn, $sformatf("\n  finish sending %s transaction, %0s at the end, %0d/%0d, ",
               (rw_bit) ? "read" : "write",
-              (fmt_item.stop) ? "stop" : "rstart", cur_tran, num_trans), UVM_DEBUG)
+              (fmt_item.stop) ? "stop" : "rstart", cur_tran, max_trans), UVM_DEBUG)
 
           // check a completed transaction is programmed to the host/dut (stop bit must be issued)
           // and check if the host/dut is in idle before allow re-programming the timing registers
           if (fmt_item.stop) begin
-            check_host_idle();
+            wait_for_reprogram_registers();
           end
         end
         complete_program_fmt_fifo = 1'b1;
       end
       begin
         read_data_from_target();
+        `uvm_info(`gfn, "\n  read_data_from_target task ended", UVM_DEBUG)
       end
     join
+    wait_host_for_idle();
+    `uvm_info(`gfn, "\n  host_send_trans task ended", UVM_DEBUG)
   endtask : host_send_trans
 
   virtual task program_address_to_target();
@@ -104,6 +111,8 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     end else begin // Addr10BitMode
       fmt_item.fbyte = (rw_bit) ? {addr[9:0], BusOpRead} : {addr[9:0], BusOpWrite};
     end
+    `uvm_info(`gfn, $sformatf("\nprogram, %s address %x",
+        fmt_item.fbyte[0] ? "read" : "write", fmt_item.fbyte[7:1]), UVM_DEBUG)
     program_format_flag(fmt_item, "  program_address_to_target");
   endtask : program_address_to_target
 
@@ -127,7 +136,9 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       // accumulate number of read byte
       total_rd_bytes += (num_rd_bytes) ? num_rd_bytes : 256;
       // decrement total_rd_bytes since one data is must be dropped in fifo_overflow test
-      if (cfg.en_rx_overflow) total_rd_bytes--;
+      if (cfg.seq_cfg.en_rx_overflow) total_rd_bytes--;
+      `uvm_info(`gfn, $sformatf("\n  program_control_read_to_target, read %0d byte",
+          total_rd_bytes), UVM_DEBUG)
 
       if (fmt_item.rcont) begin
         `uvm_info(`gfn, "\n  transaction READ is chained with next READ transaction", UVM_DEBUG)
@@ -146,17 +157,14 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     // if not a chained read, read out data sent over rx_fifo
     rx_overflow  = 1'b0;
     rx_watermark = 1'b0;
-    while (!complete_program_fmt_fifo || total_rd_bytes > 0) begin
-      if (cfg.under_reset) break;
-      rx_sanity      = !cfg.en_rx_watermark & !cfg.en_rx_overflow;
-      rx_overflow   |= (cfg.en_rx_overflow  & cfg.intr_vif.pins[RxOverflow]);
-      if (cfg.en_rx_watermark) begin
+    while (!cfg.under_reset && (!complete_program_fmt_fifo || total_rd_bytes > 0)) begin
+      rx_sanity    = !cfg.seq_cfg.en_rx_watermark & !cfg.seq_cfg.en_rx_overflow;
+      rx_overflow |= (cfg.seq_cfg.en_rx_overflow  & cfg.intr_vif.pins[RxOverflow]);
+      if (cfg.seq_cfg.en_rx_watermark) begin
         // TODO: Weicai's comments in PR #3128: consider constraining
         // rx_fifo_access_dly to test watermark irq (require revise watermark_vseq)
         csr_rd(.ptr(ral.status.rxfull), .value(rx_full));
-        rx_watermark  |= (cfg.en_rx_watermark & rx_full);
-      end else begin
-        cfg.clk_rst_vif.wait_clks(1);
+        rx_watermark |= (cfg.seq_cfg.en_rx_watermark & rx_full);
       end
       start_read = rx_sanity    | // read rx_fifo if there is valid data
                    rx_watermark | // read rx_fifo after full (ensure intr rx_watermark asserted)
@@ -165,10 +173,15 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         csr_rd(.ptr(ral.status.rxempty), .value(rx_empty));
         if (!rx_empty) begin
           csr_rd(.ptr(ral.rdata), .value(rd_data));
-          total_rd_bytes--;
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_fifo_access_dly)
           cfg.clk_rst_vif.wait_clks(rx_fifo_access_dly);
+          `uvm_info(`gfn, $sformatf("\n  read byte %0d  %x", total_rd_bytes, rd_data), UVM_DEBUG)
+          total_rd_bytes--;
         end
+      end
+      // avoid non-bloking time
+      if (!cfg.seq_cfg.en_rx_watermark && !start_read) begin
+        cfg.clk_rst_vif.wait_clks(1);
       end
     end
   endtask : read_data_from_target
