@@ -92,7 +92,14 @@ _rom_ext_interrupt_vector:
   // On Ibex interrupt id 31 is for non-maskable interrupts.
   unimp
 
-  // Ibex Reset Handler:
+  /**
+   * ROM_EXT entry point.
+   *
+   * ROM_EXT is the second boot stage, which means that
+   * this entry will be hit as a result of the jump from the Mask ROM, and
+   * not the power-on. This indirection insures that Mask ROM has a well
+   * defined address to jump to.
+   */
   j _rom_ext_start_boot
 
   // Set size so this vector can be disassembled.
@@ -106,23 +113,137 @@ _rom_ext_interrupt_vector:
  * ROM_EXT runtime initialization code.
  */
 
-  // NOTE: The "ax" flag below is necessary to ensure that this section
-  // is allocated executable space in ROM by the linker.
+  /**
+   * NOTE: The "ax" flag below is necessary to ensure that this section
+   * is allocated executable space in ROM by the linker.
+   */
   .section .crt, "ax"
 
-  // Linker Relaxation is disabled until `__global_pointer$` is setup, below,
-  // because otherwise some sequences may be turned into gp-relative sequences,
-  // which is incorrect when `gp` is not initialized.
+  /**
+   * Linker Relaxation is disabled until `__global_pointer$` is setup, below,
+   * because otherwise some sequences may be turned into gp-relative sequences,
+   * which is incorrect when `gp` is not initialized.
+   */
   .option push
   .option norelax
 
 /**
- * Entry point after reset. This symbol is jumped to from the handler
- * for IRQ 32.
+ * Entry point.
  *
- * At the moment, this should just fault, until we have a CRT we can use.
+ * This symbol is jumped to from `_rom_ext_interrupt_vector + (32 * 4)`, and
+ * is part of a two jump Mask ROM execution handover to ROM_EXT (`mask_rom_boot`
+ * -> `_rom_ext_interrupt_vector + (32 * 4)` -> `_rom_ext_start_boot`).
  */
   .globl _rom_ext_start_boot
   .type _rom_ext_start_boot, @function
 _rom_ext_start_boot:
-  unimp
+
+  /**
+   * Disable Interrupts.
+   *
+   * We cannot disable exceptions, or Ibex's non-maskable interrupts (interrupt
+   * 31), so we still need to be careful.
+   */
+
+  // Clear `MIE` field of `mstatus` (disable interrupts globally).
+  csrci mstatus, 0x8
+
+  /**
+   * Clear all the machine-defined interrupts, `MEIE`, `MTIE`, and `MSIE` fields
+   * of `mie`.
+   */
+  li   t0, 0xFFFF0888
+  csrc mie, t0
+
+  /**
+   * Set up the stack pointer.
+   *
+   * In RISC-V, the stack grows downwards, so we load the address of the highest
+   * word in the stack into sp. We don't load in `_stack_end`, as that points
+   * beyond the end of RAM, and we always want it to be valid to dereference
+   * `sp`, and we need this to be 128-bit (16-byte) aligned to meet the psABI.
+   *
+   * If an exception fires, the handler is conventionaly only allowed to clobber
+   * memory at addresses below `sp`.
+   */
+  la   sp, (_stack_end - 16)
+
+  /**
+   * Set well-defined interrupt/exception handlers
+   *
+   * The lowest two bits should be `0b01` to ensure we use vectored interrupts.
+   */
+  la   t0, _rom_ext_interrupt_vector
+  andi t0, t0, -4
+  ori  t0, t0, 0b01
+  csrw mtvec, t0
+
+  /**
+   * Setup C Runtime
+   */
+
+  /**
+   * Initialize the `.data` section.
+   *
+   * `t0` is the start address of `.data` (in RAM).
+   * `t1` is the end address of `.data` (in RAM).
+   * `t2` is the start address of `.data` (in ROM).
+   * `t3` is a scratch register for the copy.
+   */
+  la   t0, _data_start
+  la   t1, _data_end
+  la   t2, _data_init_start
+  bgeu t0, t1, data_copy_loop_end
+data_copy_loop:
+  // TODO: Unroll this loop
+  lw   t3, 0x0(t2)
+  sw   t3, 0x0(t0)
+  addi t0, t0, 0x4
+  addi t2, t2, 0x4
+  bltu t0, t1, data_copy_loop
+data_copy_loop_end:
+
+  /**
+   * Initialize the `.bss` section.
+   *
+   * We do this despite zeroing all of SRAM above, so that we still zero `.bss`
+   * once we've enabled SRAM scrambling.
+   *
+   * `t0` is the address to start zeroing at.
+   * `t1` is the address to stop zeroing at.
+   */
+  la   t0, _bss_start
+  la   t1, _bss_end
+  bgeu t0, t1, bss_zero_end
+bss_zero_loop:
+  // TODO: Unroll loop
+  sw   zero, 0x0(t0)
+  addi t0, t0, 0x4
+  bltu t0, t1, bss_zero_loop
+bss_zero_end:
+
+  // Re-clobber all of the registers used to Setup the C Runtime.
+  mv t0, zero
+  mv t1, zero
+  mv t2, zero
+  mv t3, zero
+
+  /**
+   * Setup global pointer.
+   *
+   * This requires that we disable linker relaxations, or it will be relaxed to
+   * `mv gp, gp`, so we disabled relaxations for all of `_mask_rom_start_boot`.
+   */
+  la gp, __global_pointer$
+
+  // Re-enable linker relaxation.
+  .option pop
+
+  /**
+   * Jump to C Code
+   */
+  .extern rom_ext_boot
+  tail rom_ext_boot
+
+  // Set size so this function can be disassembled.
+  .size _rom_ext_start_boot, .-_rom_ext_start_boot
