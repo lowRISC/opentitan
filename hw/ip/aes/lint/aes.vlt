@@ -9,3 +9,6 @@
 // Always_comb variable driven after use: 'regular'
 // regular is assigned in a for loop, regular[1] depends on regular[0]
 lint_off -rule ALWCOMBORDER -file "*/rtl/aes_key_expand.sv" -match "*'regular'"
+
+// Masked SBox implementations may require multiple modules to prevent aggressive synthesis optimizations.
+lint_off -rule DECLFILENAME -file "*/rtl/aes_sbox_*_masked*.sv" -match "Filename 'aes_sbox_*_masked*' does not match MODULE name: *"
