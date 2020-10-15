@@ -3,7 +3,7 @@ title: "Introduction to the OpenTitan Project"
 ---
 
 OpenTitan is a collaborative hardware and software development program with contributors from many organizations.
-This area gives some more information about how the project itself is organized.
+This area gives some more information about how the project itself is organized and how to contribute.
 More information will be added over time.
 
 ## Quality standards for open hardware IP
@@ -13,6 +13,10 @@ The current status of different IP is reflected in the [Hardware Dashboard]({{< 
 The final state for developed IP is *Signed Off*, indicating that design and verification is complete, and the IP should be bug free.
 To make it to that stage, a [Hardware Signoff Checklist]({{< relref "checklist.md" >}}) is used to confirm completion.
 [Here](https://github.com/lowRISC/opentitan/blob/master/util/uvmdvgen/checklist.md.tpl) is a template that can be used as a checklist item.
+
+## Contributing
+
+See our documentation on [Contributing to OpenTitan]({{< relref "contributing.md" >}}) for general guidance on how we work, making bug reports, dealing with security issues, and contributing code.
 
 ## Governance
 
