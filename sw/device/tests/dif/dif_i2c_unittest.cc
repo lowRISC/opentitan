@@ -304,49 +304,52 @@ TEST_F(FifoCtrlTest, FmtNullArgs) {
 }
 
 TEST_F(FifoCtrlTest, SetLevels) {
-  EXPECT_MASK32(
-      I2C_FIFO_CTRL_REG_OFFSET,
-      {
-          {
-              I2C_FIFO_CTRL_RXILVL_OFFSET, I2C_FIFO_CTRL_RXILVL_MASK,
-              I2C_FIFO_CTRL_RXILVL_RXLVL1,
-          },
-          {
-              I2C_FIFO_CTRL_FMTILVL_OFFSET, I2C_FIFO_CTRL_FMTILVL_MASK,
-              I2C_FIFO_CTRL_FMTILVL_FMTLVL1,
-          },
-      });
+  EXPECT_MASK32(I2C_FIFO_CTRL_REG_OFFSET,
+                {
+                    {
+                        I2C_FIFO_CTRL_RXILVL_OFFSET,
+                        I2C_FIFO_CTRL_RXILVL_MASK,
+                        I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL1,
+                    },
+                    {
+                        I2C_FIFO_CTRL_FMTILVL_OFFSET,
+                        I2C_FIFO_CTRL_FMTILVL_MASK,
+                        I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL1,
+                    },
+                });
   EXPECT_EQ(dif_i2c_set_watermarks(&i2c_, kDifI2cLevel1Byte, kDifI2cLevel1Byte),
             kDifI2cOk);
 
-  EXPECT_MASK32(
-      I2C_FIFO_CTRL_REG_OFFSET,
-      {
-          {
-              I2C_FIFO_CTRL_RXILVL_OFFSET, I2C_FIFO_CTRL_RXILVL_MASK,
-              I2C_FIFO_CTRL_RXILVL_RXLVL4,
-          },
-          {
-              I2C_FIFO_CTRL_FMTILVL_OFFSET, I2C_FIFO_CTRL_FMTILVL_MASK,
-              I2C_FIFO_CTRL_FMTILVL_FMTLVL16,
-          },
-      });
+  EXPECT_MASK32(I2C_FIFO_CTRL_REG_OFFSET,
+                {
+                    {
+                        I2C_FIFO_CTRL_RXILVL_OFFSET,
+                        I2C_FIFO_CTRL_RXILVL_MASK,
+                        I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL4,
+                    },
+                    {
+                        I2C_FIFO_CTRL_FMTILVL_OFFSET,
+                        I2C_FIFO_CTRL_FMTILVL_MASK,
+                        I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL16,
+                    },
+                });
   EXPECT_EQ(
       dif_i2c_set_watermarks(&i2c_, kDifI2cLevel4Byte, kDifI2cLevel16Byte),
       kDifI2cOk);
 
-  EXPECT_MASK32(
-      I2C_FIFO_CTRL_REG_OFFSET,
-      {
-          {
-              I2C_FIFO_CTRL_RXILVL_OFFSET, I2C_FIFO_CTRL_RXILVL_MASK,
-              I2C_FIFO_CTRL_RXILVL_RXLVL30,
-          },
-          {
-              I2C_FIFO_CTRL_FMTILVL_OFFSET, I2C_FIFO_CTRL_FMTILVL_MASK,
-              I2C_FIFO_CTRL_FMTILVL_FMTLVL8,
-          },
-      });
+  EXPECT_MASK32(I2C_FIFO_CTRL_REG_OFFSET,
+                {
+                    {
+                        I2C_FIFO_CTRL_RXILVL_OFFSET,
+                        I2C_FIFO_CTRL_RXILVL_MASK,
+                        I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL30,
+                    },
+                    {
+                        I2C_FIFO_CTRL_FMTILVL_OFFSET,
+                        I2C_FIFO_CTRL_FMTILVL_MASK,
+                        I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL8,
+                    },
+                });
   EXPECT_EQ(
       dif_i2c_set_watermarks(&i2c_, kDifI2cLevel30Byte, kDifI2cLevel8Byte),
       kDifI2cOk);

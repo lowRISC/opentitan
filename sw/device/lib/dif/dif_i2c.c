@@ -255,19 +255,19 @@ dif_i2c_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
   ptrdiff_t rx_level_value;
   switch (rx_level) {
     case kDifI2cLevel1Byte:
-      rx_level_value = I2C_FIFO_CTRL_RXILVL_RXLVL1;
+      rx_level_value = I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL1;
       break;
     case kDifI2cLevel4Byte:
-      rx_level_value = I2C_FIFO_CTRL_RXILVL_RXLVL4;
+      rx_level_value = I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL4;
       break;
     case kDifI2cLevel8Byte:
-      rx_level_value = I2C_FIFO_CTRL_RXILVL_RXLVL8;
+      rx_level_value = I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL8;
       break;
     case kDifI2cLevel16Byte:
-      rx_level_value = I2C_FIFO_CTRL_RXILVL_RXLVL16;
+      rx_level_value = I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL16;
       break;
     case kDifI2cLevel30Byte:
-      rx_level_value = I2C_FIFO_CTRL_RXILVL_RXLVL30;
+      rx_level_value = I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL30;
       break;
     default:
       return kDifI2cBadArg;
@@ -276,16 +276,16 @@ dif_i2c_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
   ptrdiff_t fmt_level_value;
   switch (fmt_level) {
     case kDifI2cLevel1Byte:
-      fmt_level_value = I2C_FIFO_CTRL_FMTILVL_FMTLVL1;
+      fmt_level_value = I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL1;
       break;
     case kDifI2cLevel4Byte:
-      fmt_level_value = I2C_FIFO_CTRL_FMTILVL_FMTLVL4;
+      fmt_level_value = I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL4;
       break;
     case kDifI2cLevel8Byte:
-      fmt_level_value = I2C_FIFO_CTRL_FMTILVL_FMTLVL8;
+      fmt_level_value = I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL8;
       break;
     case kDifI2cLevel16Byte:
-      fmt_level_value = I2C_FIFO_CTRL_FMTILVL_FMTLVL16;
+      fmt_level_value = I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL16;
       break;
     default:
       return kDifI2cBadArg;
