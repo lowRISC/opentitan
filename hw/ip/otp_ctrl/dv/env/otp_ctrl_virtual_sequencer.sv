@@ -8,7 +8,7 @@ class otp_ctrl_virtual_sequencer extends cip_base_virtual_sequencer #(
   );
   `uvm_component_utils(otp_ctrl_virtual_sequencer)
 
-
   `uvm_component_new
 
+  push_pull_sequencer#(SRAM_DATA_SIZE) sram_pull_sequencer_h[NumSramKeyReqSlots];
 endclass

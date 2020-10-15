@@ -12,6 +12,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
+  uvm_tlm_analysis_fifo #(push_pull_item#(SRAM_DATA_SIZE)) sram_fifo[NumSramKeyReqSlots];
 
   // local queues to hold incoming packets pending comparison
 
@@ -19,6 +20,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    for (int i = 0; i < NumSramKeyReqSlots; i++) begin
+      sram_fifo[i] = new($sformatf("sram_fifo[%0d]", i), this);
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -37,7 +41,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     bit     write             = item.is_write();
     uvm_reg_addr_t csr_addr   = get_normalized_addr(item.a_addr);
     bit [TL_AW-1:0] addr_mask = cfg.csr_addr_map_size - 1;
- 
+
     bit addr_phase_read   = (!write && channel == AddrChannel);
     bit addr_phase_write  = (write && channel == AddrChannel);
     bit data_phase_read   = (!write && channel == DataChannel);
@@ -50,7 +54,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     // memories
     // TODO: memory read check, change hardcoded to parameters once design finalized
     end else if ((csr_addr & addr_mask) inside
-        {[CREATOR_WINDOW_BASE_ADDR : CREATOR_WINDOW_BASE_ADDR + WINDOW_SIZE],
+        {[SW_WINDOW_BASE_ADDR : SW_WINDOW_BASE_ADDR + WINDOW_SIZE],
          [TEST_ACCESS_BASE_ADDR : TEST_ACCESS_BASE_ADDR + WINDOW_SIZE]}) begin
       return;
     end else begin
