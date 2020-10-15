@@ -232,6 +232,29 @@ bool rom_ext_get_public_key(rom_ext_manifest_t params,
 bool rom_ext_get_extension(rom_ext_manifest_t params, rom_ext_extension_id_t id,
                            rom_ext_extension_t *extension);
 
+/**
+ * Calculates the ROM_EXT interrupt vector value.
+ *
+ * This value is based upon the absolute address of the ROM_EXT interrupt
+ * vector, for this particular ROM_EXT.
+ *
+ * The value returned does not need extra processing to be used for vectored
+ * interrupts in Ibex - the least significant two bits will have the correct
+ * value.
+ *
+ * @param param Parameters required for manifest parsing.
+ * @return The value to write to the `mtvec` RISC-V CSR.
+ */
+uintptr_t rom_ext_get_interrupt_vector(rom_ext_manifest_t params);
+
+/**
+ * Calculates the ROM_EXT image code entry point.
+ *
+ * @param params Parameters required for manifest parsing.
+ * @return The absolute address to jump to to begin execution of the ROM_EXT.
+ */
+uintptr_t rom_ext_get_entry(rom_ext_manifest_t params);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
