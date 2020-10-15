@@ -20,6 +20,7 @@ test('rom_ext_parser_unittest', executable(
   dependencies: [
     sw_vendor_gtest,
     sw_lib_testing_mock_mmio,
+    sw_lib_testing_bitfield,
   ],
   native: true,
   c_args: ['-DMOCK_MMIO'],

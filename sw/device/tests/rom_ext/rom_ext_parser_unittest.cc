@@ -5,6 +5,7 @@
 #include "sw/device/rom_exts/rom_ext_manifest_parser.h"
 
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/testing/mock_mmio.h"
 #include "sw/device/rom_exts/manifest.h"
@@ -224,6 +225,34 @@ TEST_F(ExtensionGetTest, Success) {
   };
   EXPECT_TRUE(rom_ext_get_extension(params_, kRomExtExtensionId3, &ext3));
   EXPECT_THAT(ext3, Eq(ext3_expected));
+}
+
+class EntryGetTest : public ParserTest {};
+
+TEST_F(EntryGetTest, Success) {
+  EXPECT_EQ(rom_ext_get_entry(params_),
+            kRomExtManifestSlotA + ROM_EXT_ENTRY_POINT_OFFSET);
+}
+
+class InterruptVectorGetTest : public ParserTest {};
+
+TEST_F(InterruptVectorGetTest, Success) {
+  uintptr_t mtvec_val = rom_ext_get_interrupt_vector(params_);
+  uintptr_t vec_addr = kRomExtManifestSlotA + ROM_EXT_INTERRUPT_VECTOR_OFFSET;
+
+  const bitfield_field32_t most_significant_30_bits = {
+      .mask = 0x3fffffff,
+      .index = 2,
+  };
+
+  const bitfield_field32_t least_significant_2_bits = {
+      .mask = 0x3,
+      .index = 0,
+  };
+
+  EXPECT_EQ(bitfield_field32_read(mtvec_val, most_significant_30_bits),
+            bitfield_field32_read(vec_addr, most_significant_30_bits));
+  EXPECT_EQ(bitfield_field32_read(mtvec_val, least_significant_2_bits), 0x1);
 }
 
 }  // namespace
