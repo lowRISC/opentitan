@@ -12,8 +12,8 @@ class i2c_seq_cfg extends uvm_object;
 
   // knobs for number of retry after reset
   // for stress_all, error_intr, stress_all_with_rand_reset
-  uint i2c_min_num_runs         = 10;
-  uint i2c_max_num_runs         = 20;
+  uint i2c_min_num_runs          = 5;
+  uint i2c_max_num_runs          = 10;
 
   // knobs for dut's registers
   uint i2c_min_addr              = 0;
@@ -33,9 +33,25 @@ class i2c_seq_cfg extends uvm_object;
   // knobs for error_intr test
   // assertion probability of sda_interference, scl_interference, and
   // sda_unstable interrupts (in percentage)
-  uint i2c_prob_sda_unstable     = 10;
-  uint i2c_prob_sda_interference = 10;
-  uint i2c_prob_scl_interference = 50;
+  uint i2c_prob_sda_unstable     = 30;
+  uint i2c_prob_sda_interference = 30;
+  uint i2c_prob_scl_interference = 70;
+
+  // bits to control fifos access
+  // set en_fmt_overflow to ensure fmt_overflow irq is triggered
+  bit en_fmt_overflow            = 1'b0;
+  // set en_rx_overflow to ensure ensure rx_overflow irq is triggered
+  bit en_rx_overflow             = 1'b0;
+  // set en_rx_watermark to ensure rx_watermark irq is triggered
+  bit en_rx_watermark            = 1'b0;
+
+  // bits to control interference and unstable interrupts
+  // set en_sda_unstable to allow sda_unstable irq is triggered
+  bit en_sda_unstable            = 1'b0;
+  // set en_scl_interference to allow scl_interference irq is triggered
+  bit en_scl_interference        = 1'b0;
+  // set en_sda_interference to allow sda_interference irq is triggered
+  bit en_sda_interference        = 1'b0;
 
   `uvm_object_new
 

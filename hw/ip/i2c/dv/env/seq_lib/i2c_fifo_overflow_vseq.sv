@@ -27,10 +27,10 @@ class i2c_fifo_overflow_vseq extends i2c_rx_tx_vseq;
   local uint cnt_rx_overflow;
 
   virtual task pre_start();
-    super.pre_start();
     // config fmt_overflow and rx_overflow tests
-    cfg.en_fmt_overflow = 1'b1;
-    cfg.en_rx_overflow  = 1'b1;
+    cfg.seq_cfg.en_fmt_overflow = 1'b1;
+    cfg.seq_cfg.en_rx_overflow  = 1'b1;
+    super.pre_start();
   endtask : pre_start
 
   virtual task body();
@@ -39,7 +39,6 @@ class i2c_fifo_overflow_vseq extends i2c_rx_tx_vseq;
     bit rxempty = 1'b0;
 
     initialization();
-
     `uvm_info(`gfn, "\n--> start of i2c_fifo_overflow_vseq", UVM_DEBUG)
     for (int i = 1; i <= num_trans; i++) begin
       check_fmt_overflow = 1'b1; // set to gracefully stop process_fmt_overflow_intr
@@ -56,8 +55,7 @@ class i2c_fifo_overflow_vseq extends i2c_rx_tx_vseq;
           // -> verify the number of received fmt_watermark interrupt
           // -> verify fmt_data dropped is performed scoreboard
           if (check_fmt_overflow) begin
-            host_send_trans(.num_trans(1), .trans_type(WriteOnly));
-            csr_spinwait(.ptr(ral.status.fmtempty), .exp_data(1'b1));
+            host_send_trans(1, WriteOnly);
             check_fmt_overflow = 1'b0;
             // number of fmt_overflow received is at most num_data_ovf
             // since fmt_fifo can be drained thus decreasing cnt_fmt_overflow counter
@@ -74,8 +72,7 @@ class i2c_fifo_overflow_vseq extends i2c_rx_tx_vseq;
           // -> verify the number of received rx_overflow interrupt
           // -> verify the rx_data dropped is performed in scoreboard
           if (check_rx_overflow) begin
-            host_send_trans(.num_trans(1), .trans_type(ReadOnly));
-            csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b1));
+            host_send_trans(1, ReadOnly);
             check_rx_overflow = 1'b0;
             if (!cfg.under_reset) begin
               `DV_CHECK_EQ(cnt_rx_overflow, 1)

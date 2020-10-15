@@ -171,9 +171,21 @@ class i2c_base_vseq extends cip_base_vseq #(
   `uvm_object_new
 
   task pre_start();
-    super.pre_start();
+    // sync monitor and scoreboard setting
+    cfg.m_i2c_agent_cfg.en_monitor = cfg.en_scb;
+    `uvm_info(`gfn, $sformatf("\n  %s monitor and scoreboard",
+        cfg.en_scb ? "enable" : "disable"), UVM_DEBUG)
     num_runs.rand_mode(0);
+    super.pre_start();
+    print_seq_cfg_vars("pre-start");
   endtask : pre_start
+
+  task post_start();
+    // env_cfg must be reset after vseq completion
+    cfg.reset_seq_cfg();
+    super.post_start();
+    print_seq_cfg_vars("post-start");
+  endtask : post_start
 
   virtual task initialization();
     device_init();
@@ -189,8 +201,8 @@ class i2c_base_vseq extends cip_base_vseq #(
       fork
         m_dev_seq.start(p_sequencer.i2c_sequencer_h);
       join_none
-      // prevent multiple starts of m_dev_seq 
-      cfg.start_dev_seq = 1'b1; 
+      // prevent multiple starts of m_dev_seq
+      cfg.start_dev_seq = 1'b1;
     end
   endtask : device_init
 
@@ -217,17 +229,32 @@ class i2c_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.intr_state), .value({TL_DW{1'b0}}));
   endtask : host_init
 
-  virtual task check_host_idle();
+  virtual task wait_for_reprogram_registers();
     bit fmtempty, hostidle;
     bit [TL_DW-1:0] reg_val;
+
     do begin
       if (cfg.under_reset) break;
       csr_rd(.ptr(ral.status), .value(reg_val));
       fmtempty = bit'(get_field_val(ral.status.fmtempty, reg_val));
       hostidle = bit'(get_field_val(ral.status.hostidle, reg_val));
     end while (!fmtempty || !hostidle);
-    `uvm_info(`gfn, $sformatf("\n  host is in idle status"), UVM_DEBUG);
-  endtask : check_host_idle
+    `uvm_info(`gfn, $sformatf("\n  registers can be reprogrammed"), UVM_DEBUG);
+  endtask : wait_for_reprogram_registers
+
+  virtual task wait_host_for_idle();
+    bit fmtempty, hostidle, rxempty;
+    bit [TL_DW-1:0] reg_val;
+
+    do begin
+      if (cfg.under_reset) break;
+      csr_rd(.ptr(ral.status), .value(reg_val));
+      fmtempty = bit'(get_field_val(ral.status.fmtempty, reg_val));
+      rxempty  = bit'(get_field_val(ral.status.rxempty, reg_val));
+      hostidle = bit'(get_field_val(ral.status.hostidle, reg_val));
+    end while (!fmtempty || !hostidle || !rxempty);
+    `uvm_info(`gfn, $sformatf("\n  host is in idle state"), UVM_DEBUG);
+  endtask : wait_host_for_idle
 
   function automatic void get_timing_values();
     // derived timing parameters
@@ -245,11 +272,11 @@ class i2c_base_vseq extends cip_base_vseq #(
     timing_cfg.tHoldStop   = t_r + t_buf - tsu_sta;
 
     // control interference and unstable interrupts
-    timing_cfg.tSclInterference = (cfg.en_scl_interference) ?
+    timing_cfg.tSclInterference = (cfg.seq_cfg.en_scl_interference) ?
                                   prob_scl_interference * t_scl_interference : 0;
-    timing_cfg.tSdaInterference = (cfg.en_sda_interference) ?
+    timing_cfg.tSdaInterference = (cfg.seq_cfg.en_sda_interference) ?
                                   prob_sda_interference * t_sda_interference : 0;
-    timing_cfg.tSdaUnstable     = (cfg.en_sda_unstable) ?
+    timing_cfg.tSdaUnstable     = (cfg.seq_cfg.en_sda_unstable) ?
                                   prob_sda_unstable * t_sda_unstable : 0;
     `uvm_info(`gfn, $sformatf("\n  tSclItf = %0d, tSdaItf = %0d, tSdaUnstable = %0d",
         timing_cfg.tSclInterference,
@@ -312,7 +339,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     // en_fmt_underflow is set to ensure no write data overflow with fmt_fifo
     // regardless en_fmt_underflow set/unset, the last data (consist of STOP bit) must be
     // pushed into fmt_fifo to safely complete transaction
-    if (!cfg.en_fmt_overflow || fmt_item.stop) begin
+    if (!cfg.seq_cfg.en_fmt_overflow || fmt_item.stop) begin
       csr_spinwait(.ptr(ral.status.fmtfull), .exp_data(1'b0));
     end
     // if fmt_overflow irq is triggered it must be cleared before new fmt data is programmed
@@ -325,6 +352,23 @@ class i2c_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks(fmt_fifo_access_dly);
     print_format_flag(item, msg, en_print);
   endtask : program_format_flag
+
+
+  virtual function void print_seq_cfg_vars(string msg = "");
+    string str;
+
+    str = {str, $sformatf("\n  %s, %s, i2c_seq_cfg", msg, get_name())};
+    str = {str, $sformatf("\n    en_scb                %b", cfg.en_scb)};
+    str = {str, $sformatf("\n    en_monitor            %b", cfg.m_i2c_agent_cfg.en_monitor)};
+    str = {str, $sformatf("\n    do_dut_init           %b", do_dut_init)};
+    str = {str, $sformatf("\n    en_fmt_overflow       %b", cfg.seq_cfg.en_fmt_overflow)};
+    str = {str, $sformatf("\n    en_rx_overflow        %b", cfg.seq_cfg.en_rx_overflow)};
+    str = {str, $sformatf("\n    en_rx_watermark       %b", cfg.seq_cfg.en_rx_watermark)};
+    str = {str, $sformatf("\n    en_sda_unstable       %b", cfg.seq_cfg.en_sda_unstable)};
+    str = {str, $sformatf("\n    en_scl_interference   %b", cfg.seq_cfg.en_scl_interference)};
+    str = {str, $sformatf("\n    en_sda_interference   %b", cfg.seq_cfg.en_sda_interference)};
+    `uvm_info(`gfn, $sformatf("%s", str), UVM_DEBUG)
+  endfunction : print_seq_cfg_vars
 
   task print_format_flag(i2c_item item, string msg = "", bit en_print = 1'b0);
     string str;
@@ -345,11 +389,5 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
     if (en_print) `uvm_info(`gfn, $sformatf("%s", str), UVM_LOW)
   endtask : print_format_flag
-
-  //TODO: reserved for future purpose
-  function automatic int get_byte_latency();
-    return 8*(timing_cfg.tClockLow + timing_cfg.tSetupBit +
-              timing_cfg.tClockPulse + timing_cfg.tHoldBit);
-  endfunction : get_byte_latency
 
 endclass : i2c_base_vseq

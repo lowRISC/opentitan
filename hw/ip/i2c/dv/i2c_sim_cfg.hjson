@@ -85,6 +85,15 @@
       name: i2c_error_intr
       uvm_test_seq: i2c_error_intr_vseq
     }
+
+    {
+      // TODO: remove later when i2c_stress_all_with_rand_reset is added
+      // (then stress_tests.hjson would be included)
+      name: i2c_stress_all
+      uvm_test_seq: i2c_stress_all_vseq
+      // 10ms
+      run_opts: ["+test_timeout_ns=10000000000"]
+    }
   ]
 
   // List of regressions.

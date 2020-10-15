@@ -82,7 +82,7 @@
               - Ensure transactions are transmitted/received correctly
               - Ensure reset is handled correctly
             '''
-      milestone: V3
+      milestone: V2
       tests: ["i2c_stress_all_with_rand_reset"]
     }
     {

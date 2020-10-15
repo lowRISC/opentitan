@@ -14,15 +14,15 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
   local bit do_reset = 1'b0;
 
   // increase num_trans to cover error interrupts
-  constraint num_trans_c { num_trans inside {[50 : 100]}; }
+  constraint num_trans_c { num_trans inside {[40 : 50]}; }
 
   virtual task pre_start();
-    super.pre_start();
     // allow agent/target creating interference and unstable signals so
     // sda_interference, scl_interference, sda_unstable are asserted
-    cfg.en_sda_unstable     = 1'b1;
-    cfg.en_sda_interference = 1'b1;
-    cfg.en_scl_interference = 1'b1;
+    cfg.seq_cfg.en_sda_unstable     = 1'b1;
+    cfg.seq_cfg.en_sda_interference = 1'b1;
+    cfg.seq_cfg.en_scl_interference = 1'b1;
+    super.pre_start();
   endtask : pre_start
 
   virtual task body();
@@ -63,7 +63,6 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
   endtask : body
 
   virtual task process_error_interrupts();
-
     forever begin
       @(posedge cfg.clk_rst_vif.clk) begin
         if (cfg.intr_vif.pins[SclInference] ||
