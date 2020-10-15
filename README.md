@@ -27,8 +27,9 @@ access it [online at docs.opentitan.org](https://docs.opentitan.org/).
 
 ## How to contribute
 
-Have a look at [CONTRIBUTING](./CONTRIBUTING.md) for guidelines on how to
-contribute code to this repository.
+Have a look at [CONTRIBUTING](./CONTRIBUTING.md) and our [documentation on
+project organization and processes](https://docs.opentitan.org/doc/project/)
+for guidelines on how to contribute code to this repository.
 
 ## Licensing
 
