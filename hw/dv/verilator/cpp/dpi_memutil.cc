@@ -460,17 +460,16 @@ void DpiMemUtil::LoadElfToMemories(bool verbose, const std::string &filepath) {
     if (phdr.p_memsz == 0)
       continue;
 
-    auto mem_area_p = addr_to_mem_.Find(phdr.p_paddr);
-    if (!mem_area_p) {
+    auto mem_area_it = addr_to_mem_.find(phdr.p_paddr);
+    if (mem_area_it == addr_to_mem_.end()) {
       std::ostringstream oss;
       oss << "No memory region is registered that contains the address 0x"
           << std::hex << phdr.p_paddr << " (the base address of segment " << i
           << ").";
       throw ElfError(filepath, oss.str());
     }
-    assert(*mem_area_p);
-    const MemArea *mem_area = *mem_area_p;
-    assert(mem_area->addr_loc.base <= phdr.p_paddr);
+    const MemArea &mem_area = *mem_area_it->second;
+    assert(mem_area.addr_loc.base <= phdr.p_paddr);
 
     uint32_t lma_top = phdr.p_paddr + (phdr.p_memsz - 1);
     uint32_t off_end = phdr.p_offset + phdr.p_filesz;
@@ -487,28 +486,28 @@ void DpiMemUtil::LoadElfToMemories(bool verbose, const std::string &filepath) {
       throw ElfError(filepath, oss.str());
     }
 
-    uint32_t local_base = phdr.p_paddr - mem_area->addr_loc.base;
-    uint32_t local_top = lma_top - mem_area->addr_loc.base;
+    uint32_t local_base = phdr.p_paddr - mem_area.addr_loc.base;
+    uint32_t local_top = lma_top - mem_area.addr_loc.base;
 
-    if (mem_area->addr_loc.size <= local_top) {
+    if (mem_area.addr_loc.size <= local_top) {
       std::ostringstream oss;
       oss << "Segment " << i << " has size 0x" << std::hex << phdr.p_memsz
           << " bytes. Its LMA of 0x" << phdr.p_paddr << " is at offset 0x"
-          << local_base << " in the memory region `" << mem_area->name
+          << local_base << " in the memory region `" << mem_area.name
           << "', so the segment finishes at offset 0x" << local_top
-          << ", but the memory region is only 0x" << mem_area->addr_loc.size
+          << ", but the memory region is only 0x" << mem_area.addr_loc.size
           << " bytes long.";
       throw ElfError(filepath, oss.str());
     }
 
     // Check that the segment is aligned correctly for the memory
-    if (local_base % mem_area->width_byte) {
+    if (local_base % mem_area.width_byte) {
       std::ostringstream oss;
       oss << "Segment " << i << " has LMA 0x" << std::hex << phdr.p_paddr
           << ", which starts at offset 0x" << local_base
-          << " in the memory region `" << mem_area->name
+          << " in the memory region `" << mem_area.name
           << "'. This offset is not aligned to the region's word width of "
-          << std::dec << 8 * mem_area->width_byte << " bits.";
+          << std::dec << 8 * mem_area.width_byte << " bits.";
       throw ElfError(filepath, oss.str());
     }
 
@@ -523,17 +522,17 @@ void DpiMemUtil::LoadElfToMemories(bool verbose, const std::string &filepath) {
 
     if (verbose) {
       std::cout << "Loading segment " << i << " from ELF file `" << filepath
-                << "' into memory `" << mem_area->name << "'." << std::endl;
+                << "' into memory `" << mem_area.name << "'." << std::endl;
     }
 
     const char *seg_data = file_data + phdr.p_offset;
     try {
-      WriteSegment(*mem_area, local_base, phdr.p_filesz, phdr.p_memsz,
+      WriteSegment(mem_area, local_base, phdr.p_filesz, phdr.p_memsz,
                    (const uint8_t *)seg_data);
     } catch (const SVScoped::Error &err) {
       std::ostringstream oss;
       oss << "No memory found at `" << err.scope_name_
-          << "' (the scope associated with region `" << mem_area->name
+          << "' (the scope associated with region `" << mem_area.name
           << "', used by segment " << i << ", which starts at LMA 0x"
           << std::hex << phdr.p_paddr << ").";
       throw std::runtime_error(oss.str());
