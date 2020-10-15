@@ -30,19 +30,19 @@ for xbar in top["xbar"]:
       devices[node["name"]] = "clk_" + clk_src[node["clock"]]
 %>\
 <%text>
-`define DRIVE_TL_HOST_IF(tl_name, inst_name, sig_name) \
+`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name) \
      force ``tl_name``_tl_if.d2h = dut.top_earlgrey.u_``inst_name``.``sig_name``_i; \
      force dut.top_earlgrey.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
-`define DRIVE_TL_DEVICE_IF(tl_name, inst_name, sig_name) \
+`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name) \
      force ``tl_name``_tl_if.h2d = dut.top_earlgrey.u_``inst_name``.``sig_name``_i; \
      force dut.top_earlgrey.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
-`define DRIVE_TL_EXT_DEVICE_IF(tl_name, port_name) \
+`define DRIVE_CHIP_TL_EXT_DEVICE_IF(tl_name, port_name) \
      force ``tl_name``_tl_if.h2d = dut.top_earlgrey.``port_name``_req_o; \
      force dut.top_earlgrey.``port_name``_rsp_i = ``tl_name``_tl_if.d2h; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
@@ -103,16 +103,17 @@ sig_name = inst_sig_list[0][2]
 
 %>\
     % if node["type"] == "host" and not node["xbar"]:
-    `DRIVE_TL_HOST_IF(${node["name"]}, ${inst_name}, ${sig_name})
+    `DRIVE_CHIP_TL_HOST_IF(${node["name"]}, ${inst_name}, ${sig_name})
     % elif node["type"] == "device" and not node["xbar"] and node["stub"]:
-    `DRIVE_TL_EXT_DEVICE_IF(${node["name"]}, ${inst_name}_${sig_name})
+    `DRIVE_CHIP_TL_EXT_DEVICE_IF(${node["name"]}, ${inst_name}_${sig_name})
     % elif node["type"] == "device" and not node["xbar"]:
-    `DRIVE_TL_DEVICE_IF(${node["name"]}, ${inst_name}, ${sig_name})
+    `DRIVE_CHIP_TL_DEVICE_IF(${node["name"]}, ${inst_name}, ${sig_name})
     % endif
   % endfor
 % endfor
   end
 end
 
-`undef DRIVE_TL_HOST_IF
-`undef DRIVE_TL_DEVICE_IF
+`undef DRIVE_CHIP_TL_HOST_IF
+`undef DRIVE_CHIP_TL_DEVICE_IF
+`undef DRIVE_CHIP_TL_EXT_DEVICE_IF
