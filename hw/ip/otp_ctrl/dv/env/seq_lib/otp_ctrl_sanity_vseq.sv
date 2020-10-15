@@ -62,6 +62,9 @@ class otp_ctrl_sanity_vseq extends otp_ctrl_base_vseq;
       cfg.clk_rst_vif.wait_clks(1);
       csr_rd_check(.ptr(ral.status), .compare_value(OtpIdle));
 
+      // get sram keys
+      req_all_sram_keys();
+
       for (int i = 0; i < num_dai_wr; i++) begin
         bit [TL_DW-1:0] rdata0, rdata1;
         `DV_CHECK_RANDOMIZE_FATAL(this)
