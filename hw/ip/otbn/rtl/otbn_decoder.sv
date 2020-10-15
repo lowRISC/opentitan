@@ -76,8 +76,12 @@ module otbn_decoder
 
   comparison_op_base_e comparison_operator_base;
 
-  logic rf_ren_a;
-  logic rf_ren_b;
+  logic rf_ren_a_base;
+  logic rf_ren_b_base;
+
+  logic rf_ren_a_bignum;
+  logic rf_ren_b_bignum;
+
   logic rf_a_indirect_bignum;
   logic rf_b_indirect_bignum;
   logic rf_d_indirect_bignum;
@@ -187,6 +191,8 @@ module otbn_decoder
     op_b_sel:       alu_op_b_mux_sel_base,
     rf_we:          rf_we_base,
     rf_wdata_sel:   rf_wdata_sel_base,
+    rf_ren_a:       rf_ren_a_base,
+    rf_ren_b:       rf_ren_b_base,
     loop_bodysize:  loop_bodysize_base,
     loop_immediate: loop_immediate_base
   };
@@ -210,7 +216,9 @@ module otbn_decoder
     alu_op:          alu_operator_bignum,
     op_b_sel:        alu_op_b_mux_sel_bignum,
     rf_we:           rf_we_bignum,
-    rf_wdata_sel:    rf_wdata_sel_bignum
+    rf_wdata_sel:    rf_wdata_sel_bignum,
+    rf_ren_a:        rf_ren_a_bignum,
+    rf_ren_b:        rf_ren_b_bignum
   };
 
   assign insn_dec_shared_o = '{
@@ -238,8 +246,11 @@ module otbn_decoder
     rf_wdata_sel_bignum    = RfWdSelEx;
     rf_we_bignum           = 1'b0;
 
-    rf_ren_a               = 1'b0;
-    rf_ren_b               = 1'b0;
+    rf_ren_a_base          = 1'b0;
+    rf_ren_b_base          = 1'b0;
+    rf_ren_a_bignum        = 1'b0;
+    rf_ren_b_bignum        = 1'b0;
+
     rf_a_indirect_bignum   = 1'b0;
     rf_b_indirect_bignum   = 1'b0;
     rf_d_indirect_bignum   = 1'b0;
@@ -273,7 +284,7 @@ module otbn_decoder
 
       InsnOpcodeBaseOpImm: begin // Register-Immediate ALU Operations
         insn_subset      = InsnSubsetBase;
-        rf_ren_a         = 1'b1;
+        rf_ren_a_base    = 1'b1;
         rf_we_base       = 1'b1;
 
         unique case (insn[14:12])
@@ -308,8 +319,8 @@ module otbn_decoder
 
       InsnOpcodeBaseOp: begin  // Register-Register ALU operation
         insn_subset     = InsnSubsetBase;
-        rf_ren_a        = 1'b1;
-        rf_ren_b        = 1'b1;
+        rf_ren_a_base   = 1'b1;
+        rf_ren_b_base   = 1'b1;
         rf_we_base      = 1'b1;
         if ({insn[26], insn[13:12]} != {1'b1, 2'b01}) begin
           unique case ({insn[31:25], insn[14:12]})
@@ -338,7 +349,7 @@ module otbn_decoder
       InsnOpcodeBaseLoad: begin
         insn_subset       = InsnSubsetBase;
         ld_insn           = 1'b1;
-        rf_ren_a          = 1'b1;
+        rf_ren_a_base     = 1'b1;
         rf_we_base        = 1'b1;
         rf_wdata_sel_base = RfWdSelLsu;
 
@@ -348,10 +359,10 @@ module otbn_decoder
       end
 
       InsnOpcodeBaseStore: begin
-        insn_subset = InsnSubsetBase;
-        st_insn     = 1'b1;
-        rf_ren_a    = 1'b1;
-        rf_ren_b    = 1'b1;
+        insn_subset   = InsnSubsetBase;
+        st_insn       = 1'b1;
+        rf_ren_a_base = 1'b1;
+        rf_ren_b_base = 1'b1;
 
         if (insn[14:12] != 3'b010) begin
           illegal_insn = 1'b1;
@@ -363,10 +374,10 @@ module otbn_decoder
       //////////////////////
 
       InsnOpcodeBaseBranch: begin
-        insn_subset = InsnSubsetBase;
-        branch_insn = 1'b1;
-        rf_ren_a    = 1'b1;
-        rf_ren_b    = 1'b1;
+        insn_subset   = InsnSubsetBase;
+        branch_insn   = 1'b1;
+        rf_ren_a_base = 1'b1;
+        rf_ren_b_base = 1'b1;
 
         // Only EQ & NE comparisons allowed
         if (insn[14:13] != 2'b00) begin
@@ -384,7 +395,7 @@ module otbn_decoder
       InsnOpcodeBaseJalr: begin
         insn_subset       = InsnSubsetBase;
         jump_insn         = 1'b1;
-        rf_ren_a          = 1'b1;
+        rf_ren_a_base     = 1'b1;
         rf_we_base        = 1'b1;
         rf_wdata_sel_base = RfWdSelNextPc;
 
@@ -416,7 +427,7 @@ module otbn_decoder
         end else begin
           rf_we_base        = 1'b1;
           rf_wdata_sel_base = RfWdSelIspr;
-          rf_ren_a          = 1'b1;
+          rf_ren_a_base     = 1'b1;
 
           if (insn[14:12] == 3'b001) begin
             ispr_rw_insn = 1'b1;
@@ -433,13 +444,13 @@ module otbn_decoder
       ////////////////
 
       InsnOpcodeBignumArith: begin
-        insn_subset  = InsnSubsetBignum;
-        rf_we_bignum = 1'b1;
-        rf_ren_a     = 1'b1;
+        insn_subset     = InsnSubsetBignum;
+        rf_we_bignum    = 1'b1;
+        rf_ren_a_bignum = 1'b1;
 
         if (insn[14:12] != 3'b100) begin
           // All Alu instructions other than BN.ADDI/BN.SUBI
-          rf_ren_b = 1'b1;
+          rf_ren_b_bignum = 1'b1;
         end
 
         unique case(insn[14:12])
@@ -484,18 +495,19 @@ module otbn_decoder
 
         unique case (insn[14:12])
           3'b000: begin // BN.SEL
-            rf_we_bignum = 1'b1;
-            rf_ren_a = 1'b1;
-            rf_ren_b = 1'b1;
+            rf_we_bignum    = 1'b1;
+            rf_ren_a_bignum = 1'b1;
+            rf_ren_b_bignum = 1'b1;
           end
           3'b011, 3'b001: begin // BN.CMP[B]
-            rf_ren_a = 1'b1;
-            rf_ren_b = 1'b1;
+            rf_ren_a_bignum = 1'b1;
+            rf_ren_b_bignum = 1'b1;
           end
           3'b100: begin // BN.LID
             ld_insn              = 1'b1;
             rf_we_bignum         = 1'b1;
-            rf_ren_a             = 1'b1;
+            rf_ren_a_base        = 1'b1;
+            rf_ren_b_base        = 1'b1;
             rf_wdata_sel_bignum  = RfWdSelLsu;
             rf_d_indirect_bignum = 1'b1;
             ld_insn              = 1'b1;
@@ -518,8 +530,9 @@ module otbn_decoder
           end
           3'b101: begin // BN.SID
             st_insn              = 1'b1;
-            rf_ren_a             = 1'b1;
-            rf_ren_b             = 1'b1;
+            rf_ren_a_base        = 1'b1;
+            rf_ren_b_base        = 1'b1;
+            rf_ren_b_bignum      = 1'b1;
             st_insn              = 1'b1;
             rf_b_indirect_bignum = 1'b1;
 
@@ -540,13 +553,15 @@ module otbn_decoder
             end
           end
           3'b110: begin // BN.MOV/BN.MOVR
-            insn_subset  = InsnSubsetBignum;
-            rf_we_bignum = 1'b1;
-            rf_ren_a     = 1'b1;
+            insn_subset     = InsnSubsetBignum;
+            rf_we_bignum    = 1'b1;
+            rf_ren_a_bignum = 1'b1;
+            rf_ren_a_base   = 1'b1;
 
             if (insn[31]) begin
               rf_a_indirect_bignum = 1'b1;
               rf_d_indirect_bignum = 1'b1;
+              rf_ren_b_base        = 1'b1;
 
               if (insn[9]) begin
                 a_inc_bignum      = 1'b1;
@@ -567,7 +582,7 @@ module otbn_decoder
           end
           3'b111: begin //BN.WSRRS/BN.WSRRW
             rf_we_bignum        = 1'b1;
-            rf_ren_a            = 1'b1;
+            rf_ren_a_bignum     = 1'b1;
             rf_wdata_sel_bignum = RfWdSelIspr;
 
             if (insn[31]) begin
@@ -856,4 +871,8 @@ module otbn_decoder
   // Can only do a single inc
   `ASSERT(BignumRegIncOnehot,
     insn_valid_o |-> $onehot0({a_inc_bignum, a_wlen_word_inc_bignum, b_inc_bignum, d_inc_bignum}))
+
+  `ASSERT(BaseRenOnBignumIndirectA, insn_valid_o & rf_a_indirect_bignum |-> rf_ren_a_base);
+  `ASSERT(BaseRenOnBignumIndirectB, insn_valid_o & rf_b_indirect_bignum |-> rf_ren_b_base);
+  `ASSERT(BaseRenOnBignumIndirectD, insn_valid_o & rf_d_indirect_bignum |-> rf_ren_b_base);
 endmodule
