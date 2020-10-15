@@ -516,6 +516,9 @@ The data memory (DMEM) is 256b wide and read-write accessible from the base and 
 When accessed from the base instruction subset through the `LW` or `SW` instructions, accesses must read or write 32b-aligned 32b words.
 When accessed from the big number instruction subset through the `BN.LID` or `BN.SID` instructions, accesses must read or write 256b-aligned 256b words.
 
+Both memories can be accessed through OTBN's register interface ({{< regref "DMEM" >}} and {{< regref "IMEM" >}}) only when OTBN is idle, as indicated by the {{< regref "STATUS.busy">}} flag.
+All memory accesses through the register interface must be word-aligned 32b word accesses.
+
 ## Operation
 
 <div class="bd-callout bd-callout-warning">

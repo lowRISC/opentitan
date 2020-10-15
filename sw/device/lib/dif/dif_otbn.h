@@ -259,6 +259,8 @@ dif_otbn_result_t dif_otbn_get_err_code(const dif_otbn_t *otbn,
 /**
  * Write an OTBN application into its instruction memory (IMEM)
  *
+ * Only 32b-aligned 32b word accesses are allowed.
+ *
  * @param otbn OTBN instance
  * @param offset_bytes the byte offset in IMEM the first word is written to
  * @param src the main memory location to start reading from.
@@ -272,6 +274,8 @@ dif_otbn_result_t dif_otbn_imem_write(const dif_otbn_t *otbn,
 
 /**
  * Read from OTBN's instruction memory (IMEM)
+ *
+ * Only 32b-aligned 32b word accesses are allowed.
  *
  * @param otbn OTBN instance
  * @param offset_bytes the byte offset in IMEM the first word is read from
@@ -287,6 +291,8 @@ dif_otbn_result_t dif_otbn_imem_read(const dif_otbn_t *otbn,
 /**
  * Write to OTBN's data memory (DMEM)
  *
+ * Only 32b-aligned 32b word accesses are allowed.
+ *
  * @param otbn OTBN instance
  * @param offset_bytes the byte offset in DMEM the first word is written to
  * @param src the main memory location to start reading from.
@@ -301,6 +307,8 @@ dif_otbn_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn,
 /**
  * Read from OTBN's data memory (DMEM)
  *
+ * Only 32b-aligned 32b word accesses are allowed.
+ *
  * @param otbn OTBN instance
  * @param offset_bytes the byte offset in DMEM the first word is read from
  * @param[out] dest the main memory location to copy the data to (preallocated)
@@ -311,6 +319,22 @@ dif_otbn_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn,
 dif_otbn_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn,
                                      uint32_t offset_bytes, uint32_t *dest,
                                      size_t len_bytes);
+
+/**
+ * Get the size of OTBN's data memory in bytes.
+ *
+ * @param otbn OTBN instance
+ * @return data memory size in bytes
+ */
+size_t dif_otbn_get_dmem_size_bytes(const dif_otbn_t *otbn);
+
+/**
+ * Get the size of OTBN's instruction memory in bytes.
+ *
+ * @param otbn OTBN instance
+ * @return instruction memory size in bytes
+ */
+size_t dif_otbn_get_imem_size_bytes(const dif_otbn_t *otbn);
 
 #ifdef __cplusplus
 }  // extern "C"

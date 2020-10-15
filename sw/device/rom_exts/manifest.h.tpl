@@ -10,7 +10,7 @@
 extern "C" {
 #endif  // __cplusplus
 
-% for name, region in items:
+% for name, region in regions:
 /**
  * Manifest field ${name} offset from the base.
  */
@@ -23,6 +23,15 @@ extern "C" {
 #define ${region.size_words_name().as_c_define()} ${region.size_words}u
 
 % endfor
+
+% for name, offset in offsets:
+/**
+ * Manifest offset ${name} from the base.
+ */
+#define ${offset.offset_name().as_c_define()} ${offset.offset}u
+
+%endfor
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

@@ -153,8 +153,10 @@
         desc: '''
           Instruction Memory.
 
-          Not accessible during the operation of the engine.
-          TODO: Discuss and document behavior in that case. Alert? Ignore?
+          This register should only be accesed while OTBN is not busy, as indicated by the !!STATUS.busy flag.
+          Accesses while OTBN is busy are blocking.
+
+          TODO: The exact behavior is yet to be determined, see https://github.com/lowRISC/opentitan/issues/2696 for details.
         '''
       }
     }
@@ -169,8 +171,10 @@
         desc: '''
           Data Memory.
 
-          Not accessible during the operation of the engine.
-          TODO: Discuss and document behavior in that case. Alert? Ignore?
+          This register should only be accesed while OTBN is not busy, as indicated by the !!STATUS.busy flag.
+          Accesses while OTBN is busy are blocking.
+
+          TODO: The exact behavior is yet to be determined, see https://github.com/lowRISC/opentitan/issues/2696 for details.
         '''
       }
     }
