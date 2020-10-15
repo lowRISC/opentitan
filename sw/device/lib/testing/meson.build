@@ -63,15 +63,27 @@ sw_lib_testing_test_main = declare_dependency(
   )
 )
 
+sw_lib_testing_bitfield = declare_dependency(
+  link_with: static_library(
+    'bitfield',
+    sources: [
+      meson.source_root() / 'sw/device/lib/base/bitfield.c',
+    ],
+    native: true,
+  )
+)
+
 sw_lib_testing_mock_mmio = declare_dependency(
   link_with: static_library(
     'mock_mmio',
     sources: [
       meson.source_root() / 'sw/device/lib/base/mmio.c',
-      meson.source_root() / 'sw/device/lib/base/bitfield.c',
       'mock_mmio.cc',
     ],
-    dependencies: [sw_vendor_gtest],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_testing_bitfield,
+    ],
     native: true,
     c_args: ['-DMOCK_MMIO'],
     cpp_args: ['-DMOCK_MMIO'],
