@@ -20,10 +20,12 @@ extern "C" {
 int simutil_get_mem(int index, svBitVecVal *val);
 int simutil_set_mem(int index, const svBitVecVal *val);
 
-// This function is only implemented if DesignScope != "", i.e. if we're running
-// a block-level simulation. Code needs to check at runtime if otbn_rf_peek() is
-// available before calling it.
+// These functions are only implemented if DesignScope != "", i.e. if we're
+// running a block-level simulation. Code needs to check at runtime if
+// otbn_rf_peek() and otbn_stack_element_peek() are available before calling
+// them.
 int otbn_rf_peek(int index, svBitVecVal *val) __attribute__((weak));
+int otbn_stack_element_peek(int index, svBitVecVal *val);
 }
 
 #define RUNNING_BIT (1U << 0)
@@ -326,6 +328,49 @@ static std::array<T, 32> get_rtl_regs(const std::string &reg_scope) {
   return ret;
 }
 
+template <typename T>
+static std::vector<T> get_stack(const std::string &stack_scope) {
+  std::vector<T> ret;
+  static_assert(sizeof(T) <= 256 / 8, "Can only copy 256 bits");
+
+  SVScoped scoped(stack_scope);
+
+  // otbn_stack_element_peek passes data as a packed array of svBitVecVal words
+  // (for a "bit [255:0]" argument). Allocate 256 bits (= 32 bytes) as
+  // 32/sizeof(svBitVecVal) words on the stack.
+  svBitVecVal buf[256 / 8 / sizeof(svBitVecVal)];
+
+  // The implementation of otbn_stack_element_peek() is only available if
+  // DesignScope != "" (the function is implemented in SystemVerilog, and
+  // imported through DPI).  We should not reach the code here if that's the
+  // case.
+  assert(otbn_stack_element_peek);
+
+  int i = 0;
+
+  while (1) {
+    int peek_result = otbn_stack_element_peek(i, buf);
+
+    if (peek_result == 2) {
+      std::ostringstream oss;
+      oss << "Failed to peek into RTL to get value of stack element " << i
+          << " at scope `" << stack_scope << "'.";
+      throw std::runtime_error(oss.str());
+    } else if (peek_result == 1) {
+      // No more elements on stack
+      break;
+    }
+
+    T stack_element;
+    memcpy(&stack_element, buf, sizeof(T));
+    ret.push_back(stack_element);
+
+    ++i;
+  }
+
+  return ret;
+}
+
 // Compare contents of ISS registers with those from the design. Prints
 // messages to stderr on failure or mismatch. Returns true on success; false on
 // mismatch. Throws a std::runtime_error on failure.
@@ -333,7 +378,8 @@ static bool check_regs(ISSWrapper *model, const std::string &design_scope) {
   assert(model);
 
   std::string base_scope =
-      design_scope + ".gen_rf_base_ff.u_otbn_rf_base.u_snooper";
+      design_scope +
+      ".u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.u_snooper";
   std::string wide_scope =
       design_scope + ".gen_rf_bignum_ff.u_otbn_rf_bignum.u_snooper";
 
@@ -347,6 +393,10 @@ static bool check_regs(ISSWrapper *model, const std::string &design_scope) {
   bool good = true;
 
   for (int i = 0; i < 32; ++i) {
+    // Register index 1 is call stack, which is checked seperately
+    if (i == 1)
+      continue;
+
     if (rtl_gprs[i] != iss_gprs[i]) {
       std::ios old_state(nullptr);
       old_state.copyfmt(std::cerr);
@@ -384,6 +434,48 @@ static bool check_regs(ISSWrapper *model, const std::string &design_scope) {
   return good;
 }
 
+// Compare contents of ISS call stack with those from the design. Prints
+// messages to stderr on failure or mismatch. Returns true on success; false on
+// mismatch.  Throws a std::runtime_error on failure.
+static bool check_call_stack(ISSWrapper *model,
+                             const std::string &design_scope) {
+  assert(model);
+
+  std::string call_stack_snooper_scope =
+      design_scope + ".u_otbn_rf_base.u_call_stack_snooper";
+
+  auto rtl_call_stack = get_stack<uint32_t>(call_stack_snooper_scope);
+
+  auto iss_call_stack = model->get_call_stack();
+
+  bool good = true;
+
+  if (iss_call_stack.size() != rtl_call_stack.size()) {
+    std::cerr << "Call stack size mismatch, RTL call stack has "
+              << rtl_call_stack.size() << " elements and ISS call stack has "
+              << iss_call_stack.size() << " elements\n";
+
+    good = false;
+  }
+
+  // Iterate through both call stacks where both have elements
+  std::size_t call_stack_size =
+      std::min(rtl_call_stack.size(), iss_call_stack.size());
+  for (std::size_t i = 0; i < call_stack_size; ++i) {
+    if (iss_call_stack[i] != rtl_call_stack[i]) {
+      std::ios old_state(nullptr);
+      old_state.copyfmt(std::cerr);
+      std::cerr << std::setfill('0') << "RTL call stack element " << i
+                << " is 0x" << std::hex << rtl_call_stack[i]
+                << ", but ISS has 0x" << iss_call_stack[i] << ".\n";
+      std::cerr.copyfmt(old_state);
+      good = false;
+    }
+  }
+
+  return good;
+}
+
 // Check model against RTL when a run has finished. Prints messages to stderr
 // on failure or mismatch. Returns 1 for a match, 0 for a mismatch, -1 for some
 // other failure.
@@ -405,6 +497,13 @@ int check_model(ISSWrapper *model, const char *dmem_scope, unsigned dmem_words,
     good &= check_regs(model, design_scope);
   } catch (const std::exception &err) {
     std::cerr << "Failed to check registers: " << err.what() << "\n";
+    return -1;
+  }
+
+  try {
+    good &= check_call_stack(model, design_scope);
+  } catch (const std::exception &err) {
+    std::cerr << "Failed to check call stack: " << err.what() << "\n";
     return -1;
   }
 

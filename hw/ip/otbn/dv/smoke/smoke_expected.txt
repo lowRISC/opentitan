@@ -1,7 +1,12 @@
+Call Stack:
+-----------
+0x0000080c
+0x00000810
+0x00000814
+
 Final Base Register Values:
 Reg | Value
 ----------------
-x1  | 0x0000006c
 x2  | 0xd0beb513
 x3  | 0xa0be911a
 x4  | 0x717d462d
@@ -22,7 +27,7 @@ x18 | 0xfacefeed
 x19 | 0xd0beb533
 x20 | 0x00000123
 x21 | 0x00000123
-x22 | 0xcafef00d
+x22 | 0xcafef010
 x23 | 0x89c9b54f
 x24 | 0x00000055
 x25 | 0x00000020

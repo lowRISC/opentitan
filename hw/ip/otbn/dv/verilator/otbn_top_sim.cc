@@ -13,6 +13,8 @@
 #include "verilator_sim_ctrl.h"
 
 extern "C" {
+extern unsigned int otbn_base_call_stack_get_size();
+extern unsigned int otbn_base_call_stack_get_element(int index);
 extern unsigned int otbn_base_reg_get(int index);
 extern unsigned int otbn_bignum_reg_get(int index, int quarter);
 }
@@ -49,10 +51,20 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  std::cout << "Call Stack:" << std::endl;
+  std::cout << "-----------" << std::endl;
+  for (int i = 0; i < otbn_base_call_stack_get_size(); ++i) {
+    std::cout << std::setfill(' ') << "0x" << std::hex << std::setw(8)
+              << std::setfill('0') << std::right
+              << otbn_base_call_stack_get_element(i) << std::endl;
+  }
+
+  std::cout << std::endl;
+
   std::cout << "Final Base Register Values:" << std::endl;
   std::cout << "Reg | Value" << std::endl;
   std::cout << "----------------" << std::endl;
-  for (int i = 1; i < 32; ++i) {
+  for (int i = 2; i < 32; ++i) {
     std::cout << "x" << std::left << std::dec << std::setw(2)
               << std::setfill(' ') << i << " | 0x" << std::hex << std::setw(8)
               << std::setfill('0') << std::right << otbn_base_reg_get(i)

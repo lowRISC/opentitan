@@ -51,7 +51,7 @@ if [ $? -ne 0 ]; then
   fail "Simulator run failed"
 fi
 
-grep -A 69 "Final Base Register Values:" $RUN_LOG | diff $SMOKE_SRC_DIR/smoke_expected.txt -
+grep -A 74 "Call Stack:" $RUN_LOG | diff $SMOKE_SRC_DIR/smoke_expected.txt -
 
 if [ $? -eq 0 ]; then
   echo "OTBN SMOKE PASS"

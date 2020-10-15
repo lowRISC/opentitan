@@ -370,6 +370,43 @@ void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,
   }
 }
 
+std::vector<uint32_t> ISSWrapper::get_call_stack() {
+  std::vector<std::string> lines;
+  run_command("print_call_stack\n", &lines);
+
+  std::regex re("\\s*0x([0-9a-f]+)\n");
+  std::smatch match;
+  std::vector<uint32_t> call_stack;
+
+  for (const std::string &line : lines) {
+    if (line == "PRINT_CALL_STACK\n")
+      continue;
+
+    if (!std::regex_match(line, match, re)) {
+      std::ostringstream oss;
+      oss << "Invalid line in ISS print_call_stack output (`" << line << "').";
+      throw std::runtime_error(oss.str());
+    }
+
+    assert(match.size() == 2);
+
+    std::string str_value = match[1];
+
+    if (str_value.size() != 8) {
+      std::ostringstream oss;
+      oss << "Value from call stack " << str_value << " has "
+          << str_value.size() << " hex characters, but we expected 8.";
+      throw std::runtime_error(oss.str());
+    }
+
+    uint32_t call_stack_entry = read_hex_32(str_value.c_str());
+
+    call_stack.push_back(call_stack_entry);
+  }
+
+  return call_stack;
+}
+
 std::string ISSWrapper::make_tmp_path(const std::string &relative) const {
   return tmpdir->path + "/" + relative;
 }

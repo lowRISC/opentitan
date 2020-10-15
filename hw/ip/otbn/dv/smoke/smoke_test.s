@@ -78,7 +78,7 @@ test_label_1:
 # x20 = x20 + 0x123 = 0x123
 add x20, x20, 0x123
 
-jal x1, test_label_2
+jal x0, test_label_2
 
 # x20 = x20 + 0x123 = 0x246 (shouldn't happen due to jump)
 add x20, x20, 0x123
@@ -263,14 +263,36 @@ jal x0, end
 end:
 
 # x31 = 0x804
-jal x31, test_fn
+jal x31, test_fn_1
+
+# test call/return with call stack
+jal x1, test_fn_2
+
+# test call stack by pushing values without return
+# push 0x80c to call stack
+jal x1, call_stack_1
+
+# push 0x810 to call stack
+call_stack_1:
+jal x1, call_stack_2
+
+# push 0x814 to call stack
+call_stack_2:
+jal x1, call_stack_3
+
+call_stack_3:
 
 ecall
 
-test_fn:
+test_fn_1:
   # x21 = 0xcafef00d
   li x22, 0xcafef00d
   jalr x0, x31, 0
+
+test_fn_2:
+  # x21 = x21 + 3 = 0xcafef010
+  addi x22, x22, 3
+  jalr x0, x1, 0
 
 .section .data
 .word 0x1234abcd

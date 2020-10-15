@@ -167,6 +167,17 @@ def on_print_regs(sim: OTBNSim, args: List[str]) -> None:
         print(' w{:<2} = 0x{:064x}'.format(idx, value))
 
 
+def on_print_call_stack(sim: OTBNSim, args: List[str]) -> None:
+    '''Print call stack to stdout first element is the bottom of the stack'''
+    if len(args):
+        raise ValueError('print_call_stack expects zero arguments. Got {}.'
+                         .format(args))
+
+    print('PRINT_CALL_STACK')
+    for value in sim.state.gprs.peek_call_stack():
+        print('0x{:08x}'.format(value))
+
+
 _HANDLERS = {
     'start': on_start,
     'step': on_step,
@@ -175,7 +186,8 @@ _HANDLERS = {
     'load_d': on_load_d,
     'load_i': on_load_i,
     'dump_d': on_dump_d,
-    'print_regs': on_print_regs
+    'print_regs': on_print_regs,
+    'print_call_stack': on_print_call_stack
 }
 
 
