@@ -16,6 +16,9 @@ interface sw_test_status_if #(
 `endif
   import sw_test_status_pkg::*;
 
+  // macro includes
+  `include "dv_macros.svh"
+
   // Address to which the test status is written to. This is set by the testbench.
   logic [AddrWidth-1:0] sw_test_status_addr;
 
