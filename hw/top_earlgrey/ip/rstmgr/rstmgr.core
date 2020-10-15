@@ -44,3 +44,4 @@ targets:
       ascentlint:
         ascentlint_options:
           - "-wait_license"
+          - "-stop_on_error"
