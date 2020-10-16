@@ -37,86 +37,104 @@ typedef enum pmp_csr_access_type {
   kPmpCsrAccessTypeWrite,
 } pmp_csr_access_type_t;
 
-// Because CSRs are encoded into the instructions, `pmpcfg` and `pmpaddr` cannot
-// be runtime values (must be constexpr). This set of macros allows to read
-// and write `pmpcfg` and `pmpaddr` CSRs in a common way. The alternative would
-// be to create an access function for every `pmpcfg` and `pmpaddr`
-// (20 or 40 together, dependent on the implementation).
-#define PMP_CSR_WRITE(csr, var) asm volatile("csrw " csr ", %0;" : : "r"(var))
-
-#define PMP_CSR_READ(csr, var) asm volatile("csrr %0, " csr ";" : "=r"(var) :)
-
-#define PMP_CSR_RW(access, csr, var)       \
-  do {                                     \
-    uint32_t csr_value;                    \
-    if (access == kPmpCsrAccessTypeRead) { \
-      PMP_CSR_READ(csr, csr_value);        \
-      *var = csr_value;                    \
-    } else {                               \
-      csr_value = *var;                    \
-      PMP_CSR_WRITE(csr, csr_value);       \
-    }                                      \
-  } while (false)
-
 static const bitfield_field32_t kPmpCfgModeField = {
     .mask = PMP_CFG_CSR_MODE_MASK, .index = PMP_CFG_CSR_A,
 };
 
 /**
- * Reads/writes to a `pmpcfgN` CSR.
+ * Reads the pmpcfg for a given region.
  *
- * `N` is derived from a `region` (a single `pmpcfg` CSR contains configuration
- * information for `PMP_CFG_FIELDS_PER_REG` regions).
+ * This reads the entire `pmpcfgN` value, not just the word associated with the
+ * current region.
  *
- * This reads or writes the entire `pmpcfgN` value, not just the word associated
- * with the current region.
- *
- * @param region PMP region ID to get/set.
- * @param access CSR access type read/write.
- * @param value Read value from a CSR, or value to write into a CSR.
- * @return `pmp_region_configure_result_t`.
+ * @param region PMP Region ID to read.
+ * @param[out] value Where to put the result of the read.
+ * @return `true` if `pmp_region_index_t` is valid and value was read, `false`
+ * otherwise.
  */
 PMP_WARN_UNUSED_RESULT
-static pmp_region_configure_result_t pmp_cfg_csr_rw(
-    pmp_region_index_t region, pmp_csr_access_type_t access, uint32_t *value) {
+static bool pmp_cfg_csr_read(pmp_region_index_t region, uint32_t *value) {
   switch (region) {
-#define PMP_REGION(region_id, config_reg_id) \
-    case region_id: \
-      PMP_CSR_RW(access, "pmpcfg" #config_reg_id, value); \
-      break;
+#define PMP_REGION(region_id, config_reg_id)                               \
+  case region_id: {                                                        \
+    uint32_t read_value;                                                   \
+    asm volatile("csrr %0, pmpcfg" #config_reg_id ";" : "=r"(read_value)); \
+    *value = read_value;                                                   \
+    return true;                                                           \
+  }
 #include "sw/device/lib/runtime/pmp_regions.def"
     default:
       return false;
   }
-
-  return true;
 }
 
 /**
- * Reads/writes to a `pmpaddrN` CSR.
+ * Writes the pmpcfg for a given region.
  *
- * `N` is derived from a `region` (a single `pmpaddr` CSR conatins an address
- * for a single region).
+ * This writes the entire `pmpcfgN` value, not just the word associated with the
+ * current region.
  *
- * @param region PMP region ID to get/set.
- * @param access CSR access type read/write.
- * @param value Read value from a CSR, or value to write into a CSR.
- * @return `true` on success, `false` on failure.
+ * @param region PMP Region ID to write.
+ * @param value the value to write.
+ * @return `true` if `pmp_region_index_t` is valid and value was written,
+ * `false` otherwise.
  */
 PMP_WARN_UNUSED_RESULT
-static bool pmp_addr_csr_rw(pmp_region_index_t region,
-                            pmp_csr_access_type_t access, uint32_t *value) {
+static bool pmp_cfg_csr_write(pmp_region_index_t region, uint32_t value) {
   switch (region) {
-#define PMP_REGION(region_id, _) \
-    case region_id: \
-      PMP_CSR_RW(access, "pmpaddr" #region_id, value); \
-      break;
+#define PMP_REGION(region_id, config_reg_id)                         \
+  case region_id: {                                                  \
+    asm volatile("csrw pmpcfg" #config_reg_id ", %0;" ::"r"(value)); \
+    return true;                                                     \
+  }
 #include "sw/device/lib/runtime/pmp_regions.def"
     default:
       return false;
   }
+}
 
-  return true;
+/**
+ * Reads the pmpaddr for a given region.
+ *
+ * @param region PMP Region ID to read.
+ * @param[out] value Where to put the result of the read.
+ * @return `true` if `pmp_region_index_t` is valid and value was read, `false`
+ * otherwise.
+ */
+PMP_WARN_UNUSED_RESULT
+static bool pmp_addr_csr_read(pmp_region_index_t region, uint32_t *value) {
+  switch (region) {
+#define PMP_REGION(region_id, _)                                    \
+  case region_id: {                                                 \
+    asm volatile("csrr %0, pmpaddr" #region_id ";" : "=r"(*value)); \
+    return true;                                                    \
+  }
+#include "sw/device/lib/runtime/pmp_regions.def"
+    default:
+      return false;
+  }
+}
+
+/**
+ * Writes the pmpcfg for a given region.
+ *
+ * @param region PMP region ID to get/set.
+ * @param access CSR access type read/write.
+ * @param value Value to write into a CSR.
+ * @return `pmp_region_configure_result_t`.
+ */
+PMP_WARN_UNUSED_RESULT
+static bool pmp_addr_csr_write(pmp_region_index_t region, uint32_t value) {
+  switch (region) {
+#define PMP_REGION(region_id, _)                                    \
+  case region_id: {                                                 \
+    asm volatile("csrw pmpaddr" #region_id ", %0;" : : "r"(value)); \
+    return true;                                                    \
+  }
+#include "sw/device/lib/runtime/pmp_regions.def"
+    default:
+      return false;
+  }
 }
 
 /**
@@ -132,7 +150,7 @@ PMP_WARN_UNUSED_RESULT
 static pmp_region_configure_result_t pmp_csr_cfg_field_read(
     pmp_region_index_t region, uint32_t *field_value) {
   uint32_t cfg_csr_original;
-  if (!pmp_cfg_csr_rw(region, kPmpCsrAccessTypeRead, &cfg_csr_original)) {
+  if (!pmp_cfg_csr_read(region, &cfg_csr_original)) {
     return kPmpRegionConfigureError;
   }
 
@@ -159,7 +177,7 @@ PMP_WARN_UNUSED_RESULT
 static pmp_region_configure_result_t pmp_csr_cfg_field_write(
     pmp_region_index_t region, uint32_t field_value) {
   uint32_t cfg_csr_current;
-  if (!pmp_cfg_csr_rw(region, kPmpCsrAccessTypeRead, &cfg_csr_current)) {
+  if (!pmp_cfg_csr_read(region, &cfg_csr_current)) {
     return kPmpRegionConfigureError;
   }
 
@@ -172,11 +190,11 @@ static pmp_region_configure_result_t pmp_csr_cfg_field_write(
   uint32_t cfg_csr_new =
       bitfield_field32_write(cfg_csr_current, pmp_csr_cfg_field, field_value);
 
-  if (!pmp_cfg_csr_rw(region, kPmpCsrAccessTypeWrite, &cfg_csr_new)) {
+  if (!pmp_cfg_csr_write(region, cfg_csr_new)) {
     return kPmpRegionConfigureError;
   }
 
-  if (!pmp_cfg_csr_rw(region, kPmpCsrAccessTypeRead, &cfg_csr_current)) {
+  if (!pmp_cfg_csr_read(region, &cfg_csr_current)) {
     return kPmpRegionConfigureError;
   }
 
@@ -208,12 +226,12 @@ static pmp_region_configure_result_t pmp_csr_cfg_field_write(
 pmp_region_configure_result_t pmp_csr_address_write(pmp_region_index_t region,
                                                     uintptr_t address) {
   uint32_t address_shifted = address >> PMP_ADDRESS_SHIFT;
-  if (!pmp_addr_csr_rw(region, kPmpCsrAccessTypeWrite, &address_shifted)) {
+  if (!pmp_addr_csr_write(region, address_shifted)) {
     return kPmpRegionConfigureError;
   }
 
   uint32_t addr_csr_after_write;
-  if (!pmp_addr_csr_rw(region, kPmpCsrAccessTypeRead, &addr_csr_after_write)) {
+  if (!pmp_addr_csr_read(region, &addr_csr_after_write)) {
     return kPmpRegionConfigureError;
   }
 
