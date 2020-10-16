@@ -275,7 +275,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
           bit alert_timeout = alert_int_err[index] ? $urandom_range(0, 1) : 0;
           alert_sender_ping_rsp_seq ping_seq =
               alert_sender_ping_rsp_seq::type_id::create("ping_seq");
-          `DV_CHECK_RANDOMIZE_WITH_FATAL(ping_seq, int_err == 0; timeout == alert_timeout;)
+          `DV_CHECK_RANDOMIZE_WITH_FATAL(ping_seq, int_err == 0; ping_timeout == alert_timeout;)
           ping_seq.start(p_sequencer.alert_host_seqr_h[index]);
         end
       join_none
