@@ -56,13 +56,14 @@ def gen_html_indent(lvl):
 def gen_html_write_style(outbuf):
     outbuf.write("<style>\n")
     outbuf.write("table.dv {\n")
+    outbuf.write("    width: 100%;\n")
     outbuf.write("    border: 1px solid black;\n")
     outbuf.write("    border-collapse: collapse;\n")
     outbuf.write("    text-align: left;\n")
     outbuf.write("    vertical-align: middle;\n")
     outbuf.write("    display: table;\n")
     outbuf.write("}\n")
-    outbuf.write("th, td {\n")
+    outbuf.write("table.dv th, td {\n")
     outbuf.write("    border: 1px solid black;\n")
     outbuf.write("}\n")
     outbuf.write("</style>\n")
@@ -74,7 +75,12 @@ def gen_html_testplan_table(testplan, outbuf):
     '''
 
     text = testplan.testplan_table(fmt="html")
-    text = text.replace("<table>", "<table class=\"dv\">")
+    table_class = "<table class=\"dv\">\n"
+    table_class += "  <col width=\"10%\">\n"
+    table_class += "  <col width=\"20%\">\n"
+    table_class += "  <col width=\"20%\">\n"
+    table_class += "  <col width=\"50%\">"
+    text = text.replace("<table>", table_class)
     gen_html_write_style(outbuf)
     outbuf.write(text)
     return

@@ -294,7 +294,7 @@ class Testplan():
         '''Generate testplan table from hjson entries in the format specified
         by the 'fmt' arg.
         '''
-        table = [["Milestone", "Name", "Description", "Tests"]]
+        table = [["Milestone", "Name", "Tests", "Description"]]
         colalign = ("center", "center", "left", "left")
         for entry in self.entries:
             tests = ""
@@ -303,7 +303,7 @@ class Testplan():
             desc = entry.desc.strip()
             if fmt == "html":
                 desc = mistletoe.markdown(desc)
-            table.append([entry.milestone, entry.name, desc, tests])
+            table.append([entry.milestone, entry.name, tests, desc])
         result = tabulate(table,
                           headers="firstrow",
                           tablefmt=fmt,
