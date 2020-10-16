@@ -6,6 +6,13 @@
   bus_device: "tlul",
   bus_host: "none",
   param_list: [
+    { name: "SBoxImpl",
+      type: "aes_pkg::sbox_imple_e",
+      default: "aes_pkg::SBoxImplLut",
+      desc: "Selection of the S-Box implementation. See aes_pkg.sv.",
+      local: "false",
+      expose: "true"
+    },
     { name: "NHwApps",
       type: "int",
       default: "3",
@@ -16,10 +23,12 @@
   interrupt_list: [
     { name: "cs_cmd_req_done"
       desc: "Asserted when a command request is completed."}
-    { name: "cs_fifo_err"
-      desc: "Asserted when a FIFO error occurs."}
+    { name: "cs_entropy_req"
+      desc: "Asserted when a request for entropy has been made."}
     { name: "cs_hw_inst_exc"
       desc: "Asserted when a hardware-attached CSRNG instance encounters a command exception"}
+    { name: "cs_fifo_err"
+      desc: "Asserted when a FIFO error occurs."}
   ],
   inter_signal_list: [
     { struct:  "csrng",  // csrng_req_t, csrng_rsp_t
@@ -58,7 +67,7 @@
                   When false, they become read-only. Defaults true, write one to clear. Note that this needs to be
                   cleared after initial configuration at boot in order to lock in the listed register settings.
                   '''
-            resval: 1 
+            resval: 1
         },
       ]
     },
@@ -73,7 +82,7 @@
             name: "ENABLE",
             desc: '''
                   Setting this bit will enable the CSRNG module. The application interface for software
-                  (register based) will be enabled only if the respective efuse input is enabled. 
+                  (register based) will be enabled only if the respective efuse input is enabled.
                   '''
         },
         {
@@ -183,7 +192,7 @@
           desc: '''
                 Reading this register will get the generated bits that were requested with
                 the generate request. This register must be four times for each request
-                number made. For example, a application command generate request with 
+                number made. For example, a application command generate request with
                 a `creq` value of 4 requires this register to be read 16 times to get all
                 of the data out of the FIFO path.
                 '''
@@ -193,7 +202,7 @@
     {
       name: "HW_EXC_STS",
       desc: "Hardware instance exception status register",
-      swaccess: "ro",
+      swaccess: "rw",
       hwaccess: "hwo",
       fields: [
         { bits: "14:0",
@@ -203,32 +212,155 @@
                 encountered an exception.  Each bit corresponds to a particular hardware
                 instance, with bit 0 corresponding to instance HW0, bit 1 corresponding
                 to instance HW1, and so forth. (To monitor the status of requests made
-                to the SW instance, check the CMD_STS register).  Uninstantiating the
-                effected hardware instance, usually by a reset of the attached EDN,
-                resets the corresponding status bit.
+                to the SW instance, check the CMD_STS register). Writing a zero to this register
+                resets the status bits.
                 '''
         }
-        { bits: "16",
-          name: "CMD_ERR",
-          desc: '''
-                Indicates that at least one of the instances encountered an exception
-                due to an illegal command sequence (for example, requesting a generate
-                operation from an uninstantiated instance, or exceeding the
-                allowed seed life).  In this case, one can recover by uninstantiating
-                the instance, and reinstantiating it.
-                '''
-        }
-        { bits: "17",
-          name: "ENTROPY_ERR",
-          desc: '''
-                Indicates that at least one of the affected instances was unable to perform an
-                instantiation or reseed operation due to a failure of the entropy source.
-                Troubleshooting the entropy source may be required.  Once the entropy
-                source has been reinitiated, the effected instances can be reinitialized
-                by uninstantiating and reinstantiating them.
-		'''
-	}
       ]
-    }
+    },
+    {
+      name: "ERR_CODE",
+      desc: "Hardware detection of error conditions status register",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "SFIFO_CMD_ERR",
+          desc: '''
+                This is set when a command stage command fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "1",
+          name: "SFIFO_GENBITS_ERR",
+          desc: '''
+                This is set when a command stage genbits fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "2",
+          name: "SFIFO_CMDREQ_ERR",
+          desc: '''
+                This is set when a command stage cmdreq fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "3",
+          name: "SFIFO_RCSTAGE_ERR",
+          desc: '''
+                This is set when a command stage rcstage fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "4",
+          name: "SFIFO_KEYVRC_ERR",
+          desc: '''
+                This is set when a command stage keyvrc fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "5",
+          name: "SFIFO_UPDREQ_ERR",
+          desc: '''
+                This is set when a command stage updreq fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "6",
+          name: "SFIFO_BENCREQ_ERR",
+          desc: '''
+                This is set when a command stage bencreq fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "7",
+          name: "SFIFO_BENCACK_ERR",
+          desc: '''
+                This is set when a command stage bencack fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "8",
+          name: "SFIFO_PDATA_ERR",
+          desc: '''
+                This is set when a command stage pdata fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "9",
+          name: "SFIFO_FINAL_ERR",
+          desc: '''
+                This is set when a command stage final fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "10",
+          name: "SFIFO_GBENCACK_ERR",
+          desc: '''
+                This is set when a command stage gbencack fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "11",
+          name: "SFIFO_GRCSTAGE_ERR",
+          desc: '''
+                This is set when a command stage grcstage fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "12",
+          name: "SFIFO_GGENREQ_ERR",
+          desc: '''
+                This is set when a command stage ggenreq fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "13",
+          name: "SFIFO_GADSTAGE_ERR",
+          desc: '''
+                This is set when a command stage gadstage fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "14",
+          name: "SFIFO_GGENBITS_ERR",
+          desc: '''
+                This is set when a command stage ggenbits fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "15",
+          name: "SFIFO_BLKENC_ERR",
+          desc: '''
+                This is set when a command stage blkenc fifo error is set.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "28",
+          name: "FIFO_WRITE_ERR",
+          desc: '''
+                This is type of error when other source bits are set in this register.
+                This is the case where a full FIFO has been written.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "29",
+          name: "FIFO_READ_ERR",
+          desc: '''
+                This is type of error when other source bits are set in this register.
+                This is the case where an empty FIFO has been read.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+        { bits: "30",
+          name: "FIFO_STATE_ERR",
+          desc: '''
+                This is type of error when other source bits are set in this register.
+                This is the case where a FIFO has both the empty and full indications asserted.
+                Writing a zero to this bit will reset it.
+                '''
+        }
+      ]
+    },
   ]
 }

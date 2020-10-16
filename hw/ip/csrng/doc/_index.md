@@ -14,7 +14,7 @@ In AIS31 language, this same implementation can be used to satisfy either the DR
 
 In this document the terms "DRNG" and "TRNG" are used most generally to refer to deterministic or true random number generation functionalities implemented to this specification.
 However, the terms "DRBG" or "NRBG" are specifically used when respectively referring to SP 800-90A or SP 800-90C requirements.
-Meanwhile, when addressing requirements which originate from AIS31 we refer to the specific DRG.3 or PTG.3 classes of RNGs. 
+Meanwhile, when addressing requirements which originate from AIS31 we refer to the specific DRG.3 or PTG.3 classes of RNGs.
 
 This IP block is attached to the chip interconnect bus as a peripheral module conforming to the [Comportable guideline for peripheral functionality]({{< relref "doc/rm/comportability_specification" >}}), but also has direct hardware links to other IPs for secure and software-inaccessible transmission of random numbers. The bus connections to peripheral modules is done using the CSRNG application interface. This interface allows peripherals to manage CSRNG instances, and request for obfuscated entropy to be returned from the CSRNG module.
 
@@ -29,7 +29,7 @@ This IP block is attached to the chip interconnect bus as a peripheral module co
     - Each instance has its own internal state, control, reseed counters and IO pins.
     - The number of CSRNG instances is set via a module parameter.
 - Software access to a dedicated CSRNG instance.
-    - One instance, Instance 0, is always accessible from the bus through device registers,
+    - One instance, Instance N-1, is always accessible from the bus through device registers,
     - All other instances route to other hardware peripherals (e.g. the key manager, obfuscation engines etc.) and in normal operation these other instances are inaccessible from software.
     - The IP may be configured to support "debug mode" wherein all instances can be accessed by software.
       For security reasons this mode may be permanently disabled using one-time programmable (OTP) memory.
@@ -215,7 +215,7 @@ The total number of application interface ports (for TL-UL, directly attached pe
 The command bus operates like a FIFO, in which a command is pushed into the interface.
 An optional stream of additional data may follow, such as seed material for an `instantiate` application command.
 For the `generate` application command, the obfuscated entropy will be returned on the `genbits` bus.
-This bus also operates like a FIFO, and the receiving module can provide back pressure to the `genbits` bus. 
+This bus also operates like a FIFO, and the receiving module can provide back pressure to the `genbits` bus.
 There is one instance of a firmware application interface, and uses the TL-UL registers.
 For more details on how the application interface works, see the Theory of Operations section above.
 
@@ -434,9 +434,8 @@ A requester must always be ready to receive `csrng_req_sts` signals.
    {name: 'csrng_rsp_sts'    , wave: 'x...|...|....|....|.5x', data: ['ok']},
    {name: 'genbits_valid'    , wave: '0...|.10|.1.0|.10.|...'},
    {name: 'csrng_rsp_fips'   , wave: '0...|.10|.1.0|.10.|...'},
-   {name: 'genbits_bus'      , wave: 'x...|.4x|.4.x|.4x.|...', data: ['bits','bits','bits']},
+   {name: 'genbits_bus'      , wave: '0...|.40|.4.0|.40.|...', data: ['bits0','bits1','bits2']},
    {name: 'genbits_ready'    , wave: '1...|...|0.1.|........'},
- {}, {},
 ]}
 {{< /wavejson >}}
 
@@ -473,26 +472,25 @@ The following waveform shows an example of how the entropy source hardware inter
 
 {{< wavejson >}}
 {signal: [
-   {name: 'clk'       , wave: 'p...|...|....|......'},
-   {name: 'es_enable' , wave: '01..|...|....|......'},
-   {name: 'es_req'    , wave: '0..1|..0|.1..|..0...'},
-   {name: 'es_ack'    , wave: '0...|.10|.10.|.10...'},
-   {name: 'es_bits'   , wave: 'x...|.3x|x3x.|.3x...', data: ['es0','es1','es2','es3','es4','es5','es6','es7']},
-   {name: 'es_fips'   , wave: '0...|...|.10.|.10...'},
- {},
+   {name: 'clk'           , wave: 'p...|.........|.......'},
+   {name: 'es_req'        , wave: '0..1|..01.0..1|.....0.'},
+   {name: 'es_ack'        , wave: '0...|.10.10...|....10.'},
+   {name: 'es_bus[383:0]' , wave: '0...|.30.30...|....30.', data: ['es0','es1','es2']},
+   {name: 'es_fips'       , wave: '0...|....10...|....10.'},
+]}
 ]}
 {{< /wavejson >}}
 
 ### Interrupts
 
-The CSRNG module has two interrupts: `cs_cmd_req_done` and `cs_fifo_err`.
-
 The `cs_cmd_req_done` interrupt will assert when a csrng command has been completed.
+
+The `cs_entropy_req` interrupt will assert when csrng requests for entropy from ENTROPY_SRC.
+
+The `cs_hw_inst_exc` interrupt will assert when any of the hardware-controlled CSRNG instances encounters an exception while executing a command, either due to errors on the command sequencing, or an exception within the `entropy_src` IP.
 
 The `cs_fifo_err` interrupt will assert when any of the csrng FIFOs has a malfunction.
 The conditions that cause this to happen are either when there is a push to a full FIFO or a pull from an empty FIFO.
-
-The `cs_hw_inst_exc` interrupt will assert when any of the hardware-controlled CSRNG instances encounters an exception while executing a command, either due to errors on the command sequencing, or an exception within the `entropy_src` IP.
 
 # Programmers Guide
 
