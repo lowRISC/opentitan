@@ -9,6 +9,11 @@
  *
  */
 
+
+.text
+.globl modexp_65537
+.globl modexp
+
 /**
  * Precomputation of a constant m0' for Montgomery modular arithmetic
  *
