@@ -277,28 +277,29 @@ module otp_ctrl
   otp_err_e [NumPart+1:0] part_error;
   logic [NumPart+1:0] part_errors_reduced;
   logic otp_operation_done, otp_error;
-  logic otp_macro_failure, otp_check_failure;
+  logic otp_macro_failure_d, otp_macro_failure_q;
+  logic otp_check_failure_d, otp_check_failure_q;
   logic chk_pending, chk_timeout;
   logic lfsr_fsm_err, key_deriv_fsm_err, scrmbl_fsm_err;
   always_comb begin : p_errors_alerts
     hw2reg.err_code = part_error;
-    otp_macro_failure = 1'b0;
-    otp_check_failure = 1'b0;
+    // Note: since these are all fatal alert events, we latch them and keep on sending
+    // alert events via the alert senders. These regs can only be cleared via a system reset.
+    otp_macro_failure_d = otp_macro_failure_q;
+    otp_check_failure_d = otp_check_failure_q;
     // Aggregate all the errors from the partitions and the DAI/LCI
     for (int k = 0; k < NumPart+2; k++) begin
       // Set the error bit if the error status of the corresponding partition is nonzero.
       part_errors_reduced[k] = |part_error[k];
       // Filter for critical error codes that should not occur in the field.
-      otp_macro_failure |= part_error[k] inside {MacroError,
-                                                 MacroEccUncorrError};
+      otp_macro_failure_d |= part_error[k] inside {MacroError, MacroEccUncorrError};
 
       // Filter for integrity and consistency check failures.
-      otp_check_failure |= part_error[k] inside {CheckFailError,
-                                                 FsmStateError} |
-                          chk_timeout       |
-                          lfsr_fsm_err      |
-                          scrmbl_fsm_err    |
-                          key_deriv_fsm_err;
+      otp_check_failure_d |= part_error[k] inside {CheckFailError, FsmStateError} |
+                             chk_timeout       |
+                             lfsr_fsm_err      |
+                             scrmbl_fsm_err    |
+                             key_deriv_fsm_err;
     end
   end
 
@@ -312,6 +313,16 @@ module otp_ctrl
                           part_errors_reduced};
   // If we got an error, we trigger an interrupt.
   assign otp_error = |part_errors_reduced | chk_timeout;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_alert_regs
+    if (!rst_ni) begin
+      otp_macro_failure_q <= '0;
+      otp_check_failure_q <= '0;
+    end else begin
+      otp_macro_failure_q <= otp_macro_failure_d;
+      otp_check_failure_q <= otp_check_failure_d;
+    end
+  end
 
   //////////////////////////////////
   // Interrupts and Alert Senders //
@@ -352,7 +363,7 @@ module otp_ctrl
   ) u_prim_alert_sender0 (
     .clk_i,
     .rst_ni,
-    .alert_i    ( otp_macro_failure ),
+    .alert_i    ( otp_macro_failure_q ),
     .alert_rx_i ( alert_rx_i[0] ),
     .alert_tx_o ( alert_tx_o[0] )
   );
@@ -362,7 +373,7 @@ module otp_ctrl
   ) u_prim_alert_sender1 (
     .clk_i,
     .rst_ni,
-    .alert_i    ( otp_check_failure ),
+    .alert_i    ( otp_check_failure_q ),
     .alert_rx_i ( alert_rx_i[1] ),
     .alert_tx_o ( alert_tx_o[1] )
   );
