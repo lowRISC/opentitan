@@ -169,6 +169,8 @@ module csrng_ctr_drbg_upd #(
 
   blk_enc_state_e blk_enc_state_q, blk_enc_state_d;
 
+  logic [BlkEncStateWidth-1:0] blk_enc_prim_flop_q_o;
+
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
   prim_flop #(
@@ -178,8 +180,10 @@ module csrng_ctr_drbg_upd #(
     .clk_i,
     .rst_ni,
     .d_i ( blk_enc_state_d ),
-    .q_o ( blk_enc_state_q )
+    .q_o ( blk_enc_prim_flop_q_o )
   );
+
+  assign blk_enc_state_q = blk_enc_state_e'(blk_enc_prim_flop_q_o);
 
   // Encoding generated with ./sparse-fsm-encode.py -d 3 -m 3 -n 6 -s 4062121537
   // Hamming distance histogram:
@@ -205,6 +209,8 @@ module csrng_ctr_drbg_upd #(
 
   outblk_state_e outblk_state_q, outblk_state_d;
 
+  logic [OutBlkStateWidth-1:0] outblk_prim_flop_q_o;
+
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
   prim_flop #(
@@ -214,8 +220,10 @@ module csrng_ctr_drbg_upd #(
     .clk_i,
     .rst_ni,
     .d_i ( outblk_state_d ),
-    .q_o ( outblk_state_q )
+    .q_o ( outblk_prim_flop_q_o )
   );
+
+  assign outblk_state_q = outblk_state_e'(outblk_prim_flop_q_o);
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin

@@ -195,6 +195,8 @@ module csrng_cmd_stage import csrng_pkg::*; #(
 
   state_e state_q, state_d;
 
+  logic [StateWidth-1:0] prim_flop_q_o;
+
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
   prim_flop #(
@@ -204,8 +206,10 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     .clk_i,
     .rst_ni,
     .d_i ( state_d ),
-    .q_o ( state_q )
+    .q_o ( prim_flop_q_o )
   );
+
+  assign state_q = state_e'(prim_flop_q_o);
 
   always_comb begin
     state_d = state_q;
