@@ -1,0 +1,49 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * \def PMP_REGION(region_id, config_reg_id)
+ *
+ * This is an X-Macro used for automatically deriving switch statements which
+ * link PMP region identifiers to associated information including their
+ * configuration register identifier.
+ *
+ * This also acts as the definitive list of every single PMP region that is
+ * supported by `sw/device/lib/runtime/pmp.h`.
+ *
+ * This macro will be invoked without a following semicolon or comma.
+ *
+ * The macro will be undef'd at the end of this file, so this file may be
+ * included multiple times in the same implementation file. Each inclusion site
+ * should define `PMP_REGION` as required before including this file.
+ *
+ * @param region_id PMP Region Identifier.
+ * @param config_reg_id Configuration Register ID for a given PMP Region (for
+ * Ibex).
+ */
+#ifndef PMP_REGION
+#error PMP_REGION(region_id, config_reg_id) must be defined
+#endif  // PMP_REGION
+
+PMP_REGION(0, 0)
+PMP_REGION(1, 0)
+PMP_REGION(2, 0)
+PMP_REGION(3, 0)
+
+PMP_REGION(4, 1)
+PMP_REGION(5, 1)
+PMP_REGION(6, 1)
+PMP_REGION(7, 1)
+
+PMP_REGION(8, 2)
+PMP_REGION(9, 2)
+PMP_REGION(10, 2)
+PMP_REGION(11, 2)
+
+PMP_REGION(12, 3)
+PMP_REGION(13, 3)
+PMP_REGION(14, 3)
+PMP_REGION(15, 3)
+
+#undef PMP_REGION
