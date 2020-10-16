@@ -146,7 +146,7 @@ module prim_generic_otp #(
     state_d = state_q;
     ready_o = 1'b0;
     valid_d = 1'b0;
-    err_d   = otp_ctrl_pkg::NoErr;
+    err_d   = otp_ctrl_pkg::NoError;
     req     = 1'b0;
     wren    = 1'b0;
     cnt_clr = 1'b0;
@@ -162,7 +162,7 @@ module prim_generic_otp #(
           end else begin
             // Invalid commands get caught here
             valid_d = 1'b1;
-            err_d = otp_ctrl_pkg::OtpCmdInvErr;
+            err_d = otp_ctrl_pkg::MacroError;
           end
         end
       end
@@ -176,14 +176,14 @@ module prim_generic_otp #(
         ready_o = 1'b1;
         if (valid_i) begin
           cnt_clr = 1'b1;
-          err_d = otp_ctrl_pkg::NoErr;
+          err_d = otp_ctrl_pkg::NoError;
           unique case (cmd_i)
             otp_ctrl_pkg::OtpRead:  state_d = ReadSt;
             otp_ctrl_pkg::OtpWrite: state_d = WriteCheckSt;
             default:  begin
               // Invalid commands get caught here
               valid_d = 1'b1;
-              err_d = otp_ctrl_pkg::OtpCmdInvErr;
+              err_d = otp_ctrl_pkg::MacroError;
             end
           endcase // cmd_i
         end
@@ -195,14 +195,13 @@ module prim_generic_otp #(
       end
       // Wait for response from macro.
       ReadWaitSt: begin
-        // TODO: add some pseudo random time here.
         if (rvalid) begin
           cnt_en = 1'b1;
           // Uncorrectable error, bail out.
           if (rerror[1]) begin
             state_d = IdleSt;
             valid_d = 1'b1;
-            err_d = otp_ctrl_pkg::OtpReadUncorrErr;
+            err_d = otp_ctrl_pkg::MacroEccUncorrError;
           end else begin
             if (cnt_q == size_q) begin
               state_d = IdleSt;
@@ -212,7 +211,7 @@ module prim_generic_otp #(
             end
             // Correctable error, carry on but signal back.
             if (rerror[0]) begin
-              err_d = otp_ctrl_pkg::OtpReadCorrErr;
+              err_d = otp_ctrl_pkg::MacroEccCorrError;
             end
           end
         end
@@ -226,13 +225,12 @@ module prim_generic_otp #(
       // If the word is not blank, or if we got an uncorrectable ECC error,
       // the check has failed and we abort the write at this point.
       WriteWaitSt: begin
-        // TODO: add some pseudo random time here.
         if (rvalid) begin
           cnt_en = 1'b1;
           if (rerror[1] || rdata_d != '0) begin
             state_d = IdleSt;
             valid_d = 1'b1;
-            err_d = otp_ctrl_pkg::OtpWriteBlankErr;
+            err_d = otp_ctrl_pkg::MacroWriteBlankError;
           end else begin
             if (cnt_q == size_q) begin
               cnt_clr = 1'b1;
@@ -245,7 +243,6 @@ module prim_generic_otp #(
       end
       // Now that we are sure that the memory is blank, we can write all native words in one go.
       WriteSt: begin
-        // TODO: add some pseudo random time here.
         req = 1'b1;
         wren = 1'b1;
         cnt_en = 1'b1;

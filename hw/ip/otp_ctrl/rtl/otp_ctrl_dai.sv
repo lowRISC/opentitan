@@ -208,7 +208,7 @@ module otp_ctrl_dai
       InitOtpSt: begin
         init_done_o = 1'b0;
         if (otp_rvalid_i) begin
-          if ((!(otp_err_i inside {NoErr, OtpReadCorrErr}))) begin
+          if ((!(otp_err_i inside {NoError, MacroEccCorrError}))) begin
             state_d = ErrorSt;
             error_d = otp_err_i;
           end else begin
@@ -234,7 +234,7 @@ module otp_ctrl_dai
         dai_idle_o  = 1'b1;
         if (dai_req_i) begin
           // This clears previous (recoverable) errors.
-          error_d = NoErr;
+          error_d = NoError;
           unique case (dai_cmd_i)
             DaiRead:  begin
               state_d = ReadSt;
@@ -259,10 +259,7 @@ module otp_ctrl_dai
               scrmbl_mtx_req_o = 1'b1;
               base_sel_d = PartOffset;
             end
-            default: begin
-              // Invalid commands get caught here. This is a recoverable error.
-              error_d = CmdInvErr;
-            end
+            default: ; // Ignore invalid commands
           endcase // dai_cmd_i
         end // dai_req_i
       end
@@ -280,7 +277,7 @@ module otp_ctrl_dai
           end
         end else begin
           state_d = IdleSt;
-          error_d = AccessErr; // Signal this error, but do not go into terminal error state.
+          error_d = AccessError; // Signal this error, but do not go into terminal error state.
           dai_cmd_done_o = 1'b1;
         end
       end
@@ -292,7 +289,7 @@ module otp_ctrl_dai
       ReadWaitSt: begin
         if (otp_rvalid_i) begin
           // Check OTP return code.
-          if ((!(otp_err_i inside {NoErr, OtpReadCorrErr}))) begin
+          if ((!(otp_err_i inside {NoError, MacroEccCorrError}))) begin
             state_d = ErrorSt;
             error_d = otp_err_i;
           end else begin
@@ -304,7 +301,7 @@ module otp_ctrl_dai
               dai_cmd_done_o = 1'b1;
             end
             // Signal soft ECC errors, but do not go into terminal error state.
-            if (otp_err_i == OtpReadCorrErr) begin
+            if (otp_err_i == MacroEccCorrError) begin
               error_d = otp_err_i;
             end
           end
@@ -361,7 +358,7 @@ module otp_ctrl_dai
           end
         end else begin
           state_d = IdleSt;
-          error_d = AccessErr; // Signal this error, but do not go into terminal error state.
+          error_d = AccessError; // Signal this error, but do not go into terminal error state.
           dai_cmd_done_o = 1'b1;
         end
       end
@@ -372,14 +369,14 @@ module otp_ctrl_dai
       WriteWaitSt: begin
         if (otp_rvalid_i) begin
           // Check OTP return code. Note that non-blank errors are recoverable.
-          if ((!(otp_err_i inside {NoErr, OtpWriteBlankErr}))) begin
+          if ((!(otp_err_i inside {NoError, MacroWriteBlankError}))) begin
             state_d = ErrorSt;
             error_d = otp_err_i;
           end else begin
             state_d = IdleSt;
             dai_cmd_done_o = 1'b1;
             // Signal non-blank state, but do not go to terminal error state.
-            if (otp_err_i == OtpWriteBlankErr) begin
+            if (otp_err_i == MacroWriteBlankError) begin
               error_d = otp_err_i;
             end
           end
@@ -436,7 +433,7 @@ module otp_ctrl_dai
           end
         end else begin
           state_d = IdleSt;
-          error_d = AccessErr; // Signal this error, but do not go into terminal error state.
+          error_d = AccessError; // Signal this error, but do not go into terminal error state.
           dai_cmd_done_o = 1'b1;
         end
       end
@@ -450,14 +447,14 @@ module otp_ctrl_dai
         if (otp_rvalid_i) begin
           cnt_en = 1'b1;
           // Check OTP return code.
-          if ((!(otp_err_i inside {NoErr, OtpReadCorrErr}))) begin
+          if ((!(otp_err_i inside {NoError, MacroEccCorrError}))) begin
             state_d = ErrorSt;
             error_d = otp_err_i;
           end else begin
             data_en = 1'b1;
             state_d = DigSt;
             // Signal soft ECC errors, but do not go into terminal error state.
-            if (otp_err_i == OtpReadCorrErr) begin
+            if (otp_err_i == MacroEccCorrError) begin
               error_d = otp_err_i;
             end
           end
@@ -530,11 +527,11 @@ module otp_ctrl_dai
       end
       ///////////////////////////////////////////////////////////////////
       // Terminal Error State. This locks access to the DAI. Make sure
-      // an FsmErr error code is assigned here, in case no error code has
+      // an FsmStateError error code is assigned here, in case no error code has
       // been assigned yet.
       ErrorSt: begin
         if (!error_q) begin
-          error_d = FsmErr;
+          error_d = FsmStateError;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -550,7 +547,7 @@ module otp_ctrl_dai
     if (escalate_en_i != lc_ctrl_pkg::Off) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
-        error_d = EscErr;
+        error_d = FsmStateError;
       end
     end
   end
@@ -637,7 +634,7 @@ module otp_ctrl_dai
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      error_q        <= NoErr;
+      error_q        <= NoError;
       cnt_q          <= '0;
       data_q         <= '0;
       base_sel_q     <= DaiOffset;
@@ -685,7 +682,7 @@ module otp_ctrl_dai
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitOtpSt, ReadWaitSt, WriteWaitSt, DigReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_i inside {NoErr, OtpReadCorrErr, OtpWriteBlankErr})
+      !(otp_err_i inside {NoError, MacroEccCorrError, MacroWriteBlankError})
       |=>
       state_q == ErrorSt && error_o == $past(otp_err_i))
 

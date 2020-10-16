@@ -281,7 +281,7 @@ typedef uint32_t dif_otp_ctrl_irq_snapshot_t;
  */
 typedef enum dif_otp_ctrl_status_code {
   // NOTE: This enum's API *requires* that all "error"-like codes (that is,
-  // those which have associated cause registrers) be a prefix of the enum
+  // those which have associated cause registers) be a prefix of the enum
   // values.
   //
   // Note furthermore that these enum variants are intended as bit indices, so
@@ -378,76 +378,47 @@ typedef enum dif_otp_ctrl_error {
    */
   kDifOtpCtrlErrorOk,
   /**
-   * Indicates an invalid command was issued by hardware.
+   * Indicates that an OTP macro command was invalid or did not
+   * complete successfully.
    *
    * This error indicates non-recoverable hardware malfunction.
    */
-  kDifOtpCtrlErrorInvalidHwCommand,
-  /**
-   * Indicates that the hardware initialization sequence failed.
-   *
-   * This error indicates non-recoverable hardware malfunction.
-   */
-  kDifOtpCtrlErrorFailedInit,
+  kDifOtpCtrlErrorMacroUnspecified,
   /**
    * Indicates a recoverable error during a read operation.
    *
    * A followup read should work as expected.
    */
-  kDifOtpCtrlErrorRecoverableRead,
+  kDifOtpCtrlErrorMacroRecoverableRead,
   /**
    * Indicates an unrecoverable error during a read operation.
    *
    * This error indicates non-recoverable hardware malfunction.
    */
-  kDifOtpCtrlErrorUnrecoverableRead,
-  /**
-   * Indicates an unspecified error during a read operation.
-   *
-   * This error indicates non-recoverable hardware malfunction.
-   */
-  kDifOtpCtrlErrorUnspecifiedRead,
+  kDifOtpCtrlErrorMacroUnrecoverableRead,
   /**
    * Indicates that the blank write check failed during a write operation.
    */
-  kDifOtpCtrlErrorBlankCheckFailed,
-  /**
-   * Indicates an unspecified error during a write operation.
-   *
-   * This error indicates non-recoverable hardware malfunction.
-   */
-  kDifOtpCtrlErrorUnspecifiedWrite,
-  /**
-   * Indicates an invalid command was issued to the DAI.
-   */
-  kDifOtpCtrlErrorInvalidDaiCommand,
+  kDifOtpCtrlErrorMacroBlankCheckFailed,
   /**
    * Indicates a locked memory region was accessed.
    */
   kDifOtpCtrlErrorLockedAccess,
   /**
-   * Indicates an integrity check failed in the buffer registers.
+   * Indicates a parity, integrity or consistency check failed in the buffer
+   * registers.
    *
    * This error indicates non-recoverable hardware malfunction.
    */
-  kDifOtpCtrlErrorIntegrityLoss,
+  kDifOtpCtrlErrorBackgroundCheckFailed,
   /**
-   * Indicates a consistency check failed in the buffer registers.
-   *
-   * This error indicates non-recoverable hardware malfunction.
-   */
-  kDifOtpCtrlErrorConsistencyLoss,
-  /**
-   * Indicates that the FSM of the controller is in a bad state.
+   * Indicates that the FSM of the controller is in a bad state or that the
+   * controller's FSM has been moved into its terminal state due to escalation
+   * via the alert subsystem.
    *
    * This error indicates that the device has been glitched by an attacker.
    */
   kDifOtpCtrlErrorFsmBadState,
-  /**
-   * Indicates that an escalation occured in the alert subsystem, and the
-   * controller's FSM is in its terminal state.
-   */
-  kDifOtpCtrlErrorFsmTerminalState,
 } dif_otp_ctrl_error_t;
 
 /**
