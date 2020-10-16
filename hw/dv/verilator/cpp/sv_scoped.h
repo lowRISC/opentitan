@@ -7,7 +7,7 @@
 
 #include <stdexcept>
 #include <string>
-#include <vltstd/svdpi.h>
+#include <svdpi.h>
 
 /**
  * Wrapper and guard class for SV Scope
