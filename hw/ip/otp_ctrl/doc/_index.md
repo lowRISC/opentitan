@@ -694,7 +694,7 @@ Parameter      | Default | Top Earlgrey  | Description
 `Width`        | 16      | 16            | Native OTP word width.
 `Depth`        | 1024    | 1024          | Depth of OTP macro.
 `CmdWidth`     | 2       | 2             | Width of the OTP command.
-`ErrWidth`     | 4       | 4             | Width of error code output signal.
+`ErrWidth`     | 3       | 3             | Width of error code output signal.
 `PwrSeqWidth`  | 2       | 2             | Width of power sequencing signals to/from AST.
 `SizeWidth`    | 2       | 2             | Width of the size field.
 `IfWidth`      | 2^`SizeWidth` * `Width` | 2^`SizeWidth` * `Width` | Data interface width.
@@ -729,7 +729,7 @@ Signal                  | Direction        | Type                        | Descr
 `rdata_o`               | `output`         | `logic [IfWidth-1:0]`       | Read data from read commands.
 `err_o`                 | `output`         | `logic [ErrWidth-1:0]`      | Error code.
 
-The `prim_otp` wrappers implements the error codes 0x0 - 0x7 defined in the [OTP error handling]({{< relref "#error-handling" >}}).
+The `prim_otp` wrappers implements the `Macro*` error codes (0x0 - 0x4) defined in the [OTP error handling]({{< relref "#error-handling" >}}).
 
 The timing diagram below illustrates the timing of a command.
 Note that both read and write commands return a response, and each command is independent of the previously issued commands.
@@ -881,29 +881,21 @@ The table also lists which error codes are supported by which agent.
 Errors that are not "recoverable" are severe errors that move the corresponding partition or DAI/LCI FSM into a terminal error state, where no more commands can be accepted (a system reset is required to restore functionality in that case).
 Errors that are "recoverable" are less severe and do not cause the FSM to jump into a terminal error state.
 
-Note that error codes that originate in the physical OTP macro are prefixed with `Otp*`.
+Note that error codes that originate in the physical OTP macro are prefixed with `Macro*`.
 
-Error Code | Enum Name        | Recoverable | DAI | LCI | Unbuf | Buf   | Description
------------|------------------|-------------|-----|-----|-------|-------|-------------
-0x0        | NoErr            | -           |  x  |  x  |   x   |  x    | Command completed successfully.
-0x1        | OtpCmdInvErr     | no          |  x  |  x  |   x   |  x    | Invalid OTP macro command. This error is returned if the command encoding is incorrect, or if a read or write command is issued to an uninitialized OTP wrapper.
-0x2        | OtpInitErr       | no          |  x  |  x  |   x   |  x    | Failure during OTP macro initialization. Asserted in case OTP initialization does not complete successfully.
-0x3        | OtpReadCorrErr   | yes         |  x  |  -  |   x   |  x    | Correctable ECC error occurred during a read in the OTP macro.
-0x4        | OtpReadUncorrErr | no          |  x  |  -  |   x   |  x    | Uncorrectable ECC error occurred during a read in the OTP macro.
-0x5        | OtpReadErr       | no          |  x  |  -  |   x   |  x    | An unrecoverable error occurred during a read operation in the OTP macro.
-0x6        | OtpWriteBlankErr | yes         |  x  |  x  |   -   |  -    | OTP macro blank check failed. The location to be programmed is not all-zero.
-0x7        | OtpWriteErr      | no          |  x  |  x  |   -   |  -    | An unrecoverable error occurred during a program operation in the OTP macro.
-0x8        | CmdInvErr        | yes         |  x  |  -  |   -   |  -    | An invalid command has been issued.
-0x9        | AccessErr        | yes         |  x  |  -  |   x   |  -    | An access error has occurred (e.g. write to write-locked region, or read to a read-locked region).
-0xA        | ParityErr        | no          |  -  |  -  |   x   |  x    | A parity error has been detected.
-0xB        | IntegErr         | no          |  -  |  -  |   -   |  x    | An integrity error has been detected.
-0xC        | CnstyErr         | no          |  -  |  -  |   -   |  x    | A consistency error has been detected.
-0xD        | FsmErr           | no          |  x  |  x  |   x   |  x    | The FSM has been glitched into a parasitic state.
-0xE        | EscErr           | no          |  x  |  x  |   x   |  x    | Escalation has been triggered and the FSM has been moved into a terminal error state.
-0xF        | -                | -           |  -  |  -  |   -   |  -    | Reserved.
+Error Code | Enum Name            | Recoverable | DAI | LCI | Unbuf | Buf   | Description
+-----------|----------------------|-------------|-----|-----|-------|-------|-------------
+0x0        | NoError              | -           |  x  |  x  |   x   |  x    | No error has occurred.
+0x1        | MacroError           | no          |  x  |  x  |   x   |  x    | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction.
+0x2        | MacroEccCorrError    | yes         |  x  |  -  |   x   |  x    | A correctable ECC error has occurred during a read operation in the OTP macro.
+0x3        | MacroEccUncorrError  | no          |  x  |  -  |   x   |  x    | An uncorrectable ECC error has occurred during a read operation in the OTP macro.
+0x4        | MacroWriteBlankError | yes         |  x  |  x  |   x   |  x    | This error is returned if a write operation attempted to overwrite an already programmed location.
+0x5        | AccessError          | yes         |  x  |  -  |   x   |  -    | An access error has occurred (e.g. write to write-locked region, or read to a read-locked region).
+0x6        | CheckFailError       | no          |  -  |  -  |   x   |  x    | An unrecoverable parity, integrity or consistency error has been detected.
+0x7        | FsmStateError        | no          |  x  |  x  |   x   |  x    | The FSM has been glitched into an invalid state, or escalation has been triggered and the FSM has been moved into a terminal error state.
 
 All non-zero error codes listed above trigger an `otp_error` interrupt.
-In addition, all unrecoverable OTP macro errors (codes <= 0x7) trigger an `otp_fatal_error` alert, while all remaining unrecoverable errors trigger an `otp_check_failed` alert.
+In addition, all unrecoverable OTP `Macro*` errors (codes 0x1, 0x3) trigger an `otp_macro_failure` alert, while all remaining unrecoverable errors trigger an `otp_check_failure` alert.
 
 ## Direct Access Memory Map
 
