@@ -74,7 +74,7 @@
       desc: '''
             This test will cover two methods of locking read and write: digest calculation and CSR
             write. After locking the partitions, issue read or program sequences and check if the
-            operations are locked correctly, and check if the `access_error` is set.
+            operations are locked correctly, and check if the `AccessError` is set.
             '''
       milestone: V2
       tests: []
@@ -106,13 +106,10 @@
     { name: otp_macro_errors
       desc: '''
             This test will randomly run the following OTP errors:
-            - OtpCmdInvErr
-            - OtpInitErr
-            - OtpReadCorrErr
-            - OtpReadUncorrErr
-            - OtpReadErr
-            - OtpWriteBlankErr
-            - OtpWriteErr
+            - MacroError
+            - MacroEccCorrError
+            - MacroEccUncorrError
+            - MacroWriteBlankError
 
             The test will check:
             - The value of err_code and status registers
@@ -124,9 +121,8 @@
     { name: otp_ctrl_errors
       desc: '''
             This test will randomly run the following OTP errors:
-            - CmdInvErr
-            - FsmErr
-            - EscErr
+            - CheckFailError
+            - FsmStateError
 
             The test will check:
             - The value of err_code and status registers

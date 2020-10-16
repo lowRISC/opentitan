@@ -15,15 +15,15 @@
       desc: "A direct access command or digest calculation operation has completed."
     }
     { name: "otp_error",
-      desc: "An error has occurred in the OTP controller. Check the ERR_CODE register to get more information."
+      desc: "An error has occurred in the OTP controller. Check the !!ERR_CODE register to get more information."
     }
   ],
 
   alert_list: [
-    { name: "otp_fatal_error",
+    { name: "otp_macro_failure",
       desc: "This alert triggers if hardware detects a parity bit or digest error in the buffered partitions.",
     }
-    { name: "otp_check_failed",
+    { name: "otp_check_failure",
       desc: "This alert triggers if the digest over the buffered registers does not match with the digest stored in OTP.",
     }
   ],
@@ -284,28 +284,28 @@
           name: "TIMEOUT_ERROR"
           desc: '''
                 Set to 1 if an integrity or consistency check times out.
-                This raises an otp_check_failed alert and is an unrecoverable error condition.
+                This raises an otp_check_failure alert and is an unrecoverable error condition.
                 '''
         }
         { bits: "10"
           name: "LFSR_FSM_ERROR"
           desc: '''
                 Set to 1 if the LFSR timer FSM has reached an invalid state.
-                This raises an otp_check_failed alert and is an unrecoverable error condition.
+                This raises an otp_check_failure alert and is an unrecoverable error condition.
                 '''
         }
         { bits: "11"
           name: "SCRAMBLING_FSM_ERROR"
           desc: '''
                 Set to 1 if the scrambling datapath FSM has reached an invalid state.
-                This raises an otp_check_failed alert and is an unrecoverable error condition.
+                This raises an otp_check_failure alert and is an unrecoverable error condition.
                 '''
         }
         { bits: "12"
           name: "KEY_DERIV_FSM_ERROR"
           desc: '''
                 Set to 1 if the key derivation FSM has reached an invalid state.
-                This raises an otp_check_failed alert and is an unrecoverable error condition.
+                This raises an otp_check_failure alert and is an unrecoverable error condition.
                 '''
         }
         { bits: "13"
@@ -321,145 +321,85 @@
     { multireg: {
         name:     "ERR_CODE",
         desc:     '''
-                  This register holds information on error conditions and should be
-                  checked when any of the partitions or the DAI flags an error in the
-                  !!STATUS registers, or when an !!INTR_STATE.otp_error has been triggered.
-                  Note that all errors trigger an otp_error interrupt, and in addition some
-                  errors may trigger either an otp_fatal_error or an otp_check_failed alert.
+                  This register holds information about error conditions that occurred in the agents
+                  interacting with the OTP macro via the internal bus. The error codes should be checked
+                  if the partitions, DAI or LCI flag an error in the !!STATUS register, or when an
+                  !!INTR_STATE.otp_error has been triggered. Note that all errors trigger an otp_error
+                  interrupt, and in addition some errors may trigger either an otp_macro_failure or an
+                  otp_check_failure alert.
                   ''',
         count:     "NumErrorEntries",
         swaccess:  "ro",
         hwaccess:  "hwo",
         hwext:     "true",
-        cname:     "MODULE",
+        cname:     "AGENT",
         fields: [
           {
-            bits: "3:0"
+            bits: "2:0"
             enum: [
               { value: "0",
-                name: "NO_ERR",
+                name: "NO_ERROR",
                 desc: '''
                 No error condition has occurred.
                 '''
               },
               { value: "1",
-                name: "OTP_CMD_INV_ERR",
+                name: "MACRO_ERROR",
                 desc: '''
-                An invalid command has been written to the OTP macro.
+                Returned if the OTP macro command was invalid or did not complete successfully
+                due to a macro malfunction.
                 This error should never occur during normal operation and is not recoverable.
-                If this error is present this may be a sign that the device is malfunctioning.
-                This error triggers an otp_fatal_error alert.
+                This error triggers an otp_macro_failure alert.
                 '''
               },
               { value: "2",
-                name: "OTP_INIT_ERR",
+                name: "MACRO_ECC_CORR_ERROR",
                 desc: '''
-                The OTP macro initialization sequence has failed.
-                This error should never occur during normal operation and is not recoverable.
-                If this error is present this may be a sign that the device is malfunctioning.
-                This error triggers an otp_fatal_error alert.
+                A correctable ECC error has occured during an OTP read operation.
+                The corresponding controller automatically recovers from this error when
+                issuing a new command.
                 '''
               },
               { value: "3",
-                name: "OTP_READ_CORR_ERR",
+                name: "MACRO_ECC_UNCORR_ERROR",
                 desc: '''
-                A correctable error has occured during an OTP read operation.
-                The corresponding controller automatically recovers from this error when
-                issuing a new command.
+                An uncorrectable ECC error has occurred during an OTP read operation.
+                This error should never occur during normal operation and is not recoverable.
+                If this error is present this may be a sign that the device is malfunctioning.
+                This error triggers an otp_macro_failure alert.
                 '''
               },
               { value: "4",
-                name: "OTP_READ_UNCORR_ERR",
+                name: "MACRO_WRITE_BLANK_ERROR",
                 desc: '''
-                An uncorrectable error has occurred during an OTP read operation.
-                This error should never occur during normal operation and is not recoverable.
-                If this error is present this may be a sign that the device is malfunctioning.
-                This error triggers an otp_fatal_error alert.
+                A blank write check has failed during an OTP write operation. This effectively
+                aborts the write operation such that no harm is done to the OTP. The corresponding
+                controller automatically recovers from this error when issuing a new command.
                 '''
               },
               { value: "5",
-                name: "OTP_READ_ERR",
+                name: "ACCESS_ERROR",
                 desc: '''
-                A unspecified error has occurred during an OTP read operation.
-                This error should never occur during normal operation and is not recoverable.
-                If this error is present this may be a sign that the device is malfunctioning.
-                This error triggers an otp_fatal_error alert.
+                This error indicates that a locked memory region has been accessed.
+                The corresponding controller automatically recovers from this error when issuing a new command.
                 '''
               },
               { value: "6",
-                name: "OTP_WRITE_BLANK_ERR",
+                name: "CHECK_FAIL_ERROR",
                 desc: '''
-                A blank write check has failed during an OTP write operation.
-                This effectively aborts the write operation such that no harm is done to the OTP.
-                The corresponding controller automatically recovers from this error when issuing
-                a new command.
+                A parity, integrity or consistency mismatch has been detected in the buffer registers.
+                This error should never occur during normal operation and is not recoverable.
+                This error triggers an otp_check_failure alert.
                 '''
               },
               { value: "7",
-                name: "OTP_WRITE_ERR",
+                name: "FSM_STATE_ERROR",
                 desc: '''
-                A unspecified error has occurred during an OTP write operation.
-                This error should never occur during normal operation and is not recoverable.
-                If this error is present this may be a sign that the device is malfunctioning.
-                This error triggers an otp_fatal_error alert.
-                '''
-              },
-              { value: "8",
-                name: "CMD_INV_ERR",
-                desc: '''
-                This error indicates that an invalid command has been written to the DAI.
-                The DAI controller automatically recovers from this error when issuing
-                a new command.
-                '''
-              },
-              { value: "9",
-                name: "ACCESS_ERR",
-                desc: '''
-                This error indicates that a locked memory region has been accessed.
-                The corresponding controller automatically recovers from this error when
-                issuing a new command.
-                '''
-              },
-              { value: "10",
-                name: "PARITY_ERROR",
-                desc: '''
-                A parity mismatch has been detected in the buffer registers.
-                This error should never occur during normal operation and is not recoverable.
-                This error triggers an otp_check_failed alert.
-                '''
-              },
-              { value: "11",
-                name: "INTEG_ERR",
-                desc: '''
-                An integrity check mismatch has been detected in the buffer registers.
-                This error should never occur during normal operation and is not recoverable.
-                This error triggers an otp_check_failed alert.
-                '''
-              },
-              { value: "12",
-                name: "CNSTY_ERR",
-                desc: '''
-                A consistency check mismatch has been detected in the buffer registers.
-                This error should never occur during normal operation and is not recoverable.
-                This error triggers an otp_check_failed alert.
-                '''
-              },
-              { value: "13",
-                name: "FSM_ERR",
-                desc: '''
-                The FSM of the corresponding controller has reached a parasitic state.
+                The FSM of the corresponding controller has reached an invalid state, or the FSM has
+                been moved into a terminal error state due to an escalation action via lc_escalate_en_i.
                 This error should never occur during normal operation and is not recoverable.
                 If this error is present, this is a sign that the device has fallen victim to
-                a glitch attack.
-                This error triggers an otp_check_failed alert.
-                '''
-              },
-              { value: "14",
-                name: "ESC_ERR",
-                desc: '''
-                This error is the result of an escalation action in the alert subsystem, and
-                indicates that the corresponding controller FSM has been moved into a terminal
-                state due to escalation via the alert subsystem.
+                an invasive attack. This error triggers an otp_check_failure alert.
                 '''
               },
             ]
@@ -659,7 +599,7 @@
           desc: '''
           Timeout value in cycles for the for the integrity and consistency checks. If an integrity or consistency
           check does not complete within the timeout window, an error will be flagged in the !!STATUS register,
-          an otp_error interrupt will be raised, and an otp_check_failed alert will be sent out. The timeout should
+          an otp_error interrupt will be raised, and an otp_check_failure alert will be sent out. The timeout should
           be set to a large value to stay on the safe side. The maximum check time can be upper bounded by the
           number of cycles it takes to readout, scramble and digest the entire OTP array. Since this amounts to
           roughly 25k cycles, it is recommended to set this value to at least 100'000 cycles in order to stay on the
