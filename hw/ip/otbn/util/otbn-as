@@ -1040,6 +1040,11 @@ class Transformer:
         pos = 0
         self.line_number += 1
 
+        # Append a newline if the line doesn't have one. In practice, this just
+        # happens with the last line of a file that doesn't end with a newline.
+        if line and line[-1] != '\n':
+            line = line + '\n'
+
         # Finish up any block comment
         if self.in_comment:
             # Strings can't contain nested comments
