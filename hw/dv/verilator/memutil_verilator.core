@@ -9,11 +9,10 @@ filesets:
   files_cpp:
     depend:
       - lowrisc:dv_verilator:simutil_verilator
+      - lowrisc:dv_verilator:memutil_dpi
     files:
       - cpp/verilator_memutil.cc
       - cpp/verilator_memutil.h: { is_include_file: true }
-      - cpp/sv_scoped.cc
-      - cpp/sv_scoped.h: { is_include_file: true }
     file_type: cppSource
 
 targets:

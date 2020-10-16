@@ -16,21 +16,20 @@
 *    the memory if not empty.
  */
 
-`ifdef VERILATOR
+`ifndef SYNTHESIS
   // Task for loading 'mem' with SystemVerilog system task $readmemh()
-  export "DPI-C" task simutil_verilator_memload;
+  export "DPI-C" task simutil_memload;
 
-  task simutil_verilator_memload;
+  task simutil_memload;
     input string file;
     $readmemh(file, mem);
   endtask
 
   // Function for setting a specific element in |mem|
   // Returns 1 (true) for success, 0 (false) for errors.
-  export "DPI-C" function simutil_verilator_set_mem;
+  export "DPI-C" function simutil_set_mem;
 
-  function int simutil_verilator_set_mem(input int         index,
-                                         input bit [255:0] val);
+  function int simutil_set_mem(input int index, input bit [255:0] val);
 
     // Function will only work for memories <= 256 bits
     if (Width > 256) begin
@@ -46,10 +45,9 @@
   endfunction
 
   // Function for getting a specific element in |mem|
-  export "DPI-C" function simutil_verilator_get_mem;
+  export "DPI-C" function simutil_get_mem;
 
-  function int simutil_verilator_get_mem(input int          index,
-                                         output bit [255:0] val);
+  function int simutil_get_mem(input int index, output bit [255:0] val);
 
     // Function will only work for memories <= 256 bits
     if (Width > 256) begin

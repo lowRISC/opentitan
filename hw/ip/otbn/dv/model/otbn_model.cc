@@ -15,8 +15,8 @@
 #include "iss_wrapper.h"
 #include "sv_scoped.h"
 
-extern "C" int simutil_verilator_get_mem(int index, svBitVecVal *val);
-extern "C" int simutil_verilator_set_mem(int index, const svBitVecVal *val);
+extern "C" int simutil_get_mem(int index, svBitVecVal *val);
+extern "C" int simutil_set_mem(int index, const svBitVecVal *val);
 extern "C" int otbn_rf_peek(int index, svBitVecVal *val);
 
 #define RUNNING_BIT (1U << 0)
@@ -57,22 +57,22 @@ extern "C" unsigned otbn_model_step(ISSWrapper *model, const char *imem_scope,
                                     const char *design_scope, svLogic start_i,
                                     unsigned start_addr, unsigned status);
 
-// Use simutil_verilator_get_mem to read data one word at a time from the given
-// scope and collect the results up in a vector of uint8_t values.
+// Use simutil_get_mem to read data one word at a time from the given scope and
+// collect the results up in a vector of uint8_t values.
 static std::vector<uint8_t> get_sim_memory(const char *scope, size_t num_words,
                                            size_t word_size) {
   SVScoped scoped(scope);
 
-  // simutil_verilator_get_mem passes data as a packed array of svBitVecVal
-  // words. It only works for memories of size at most 256 bits, so we can just
-  // allocate 256/8 = 32 bytes as 32/sizeof(svBitVecVal) words on the stack.
+  // simutil_get_mem passes data as a packed array of svBitVecVal words. It
+  // only works for memories of size at most 256 bits, so we can just allocate
+  // 256/8 = 32 bytes as 32/sizeof(svBitVecVal) words on the stack.
   assert(word_size <= 256 / 8);
   svBitVecVal buf[256 / 8 / sizeof(svBitVecVal)];
 
   std::vector<uint8_t> ret;
 
   for (size_t w = 0; w < num_words; w++) {
-    if (!simutil_verilator_get_mem(w, buf)) {
+    if (!simutil_get_mem(w, buf)) {
       std::ostringstream oss;
       oss << "Cannot get memory at word " << w << " from scope " << scope
           << ".\n";
@@ -87,8 +87,7 @@ static std::vector<uint8_t> get_sim_memory(const char *scope, size_t num_words,
   return ret;
 }
 
-// Use simutil_verilator_get_mem to write data one word at a time to the given
-// scope.
+// Use simutil_get_mem to write data one word at a time to the given scope.
 static void set_sim_memory(const std::vector<uint8_t> &data, const char *scope,
                            size_t num_words, size_t word_size) {
   SVScoped scoped(scope);
@@ -103,7 +102,7 @@ static void set_sim_memory(const std::vector<uint8_t> &data, const char *scope,
     const uint8_t *p = &data[w * word_size];
     memcpy(buf, p, word_size);
 
-    if (!simutil_verilator_set_mem(w, buf)) {
+    if (!simutil_set_mem(w, buf)) {
       std::ostringstream oss;
       oss << "Cannot set memory at word " << w << " for scope " << scope
           << ".\n";
