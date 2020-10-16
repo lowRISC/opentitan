@@ -7,7 +7,7 @@
 
 module entropy_src_watermark_reg #(
   parameter int unsigned RegWidth = 16,
-  parameter int unsigned HighWatermark = 1
+  parameter bit HighWatermark = 1
 ) (
   input logic                   clk_i,
   input logic                   rst_ni,
@@ -37,17 +37,16 @@ module entropy_src_watermark_reg #(
                         event_i ? event_cntr_change :
                         event_cntr_q;
 
-  generate
-    if (HighWatermark) begin : gen_hi_wm
+  // Set mode of this counter to be either a high or low watermark
+  if (HighWatermark) begin : gen_hi_wm
 
-      assign event_cntr_change = (value_i > event_cntr_q) ? (value_i) : event_cntr_q;
+    assign event_cntr_change = (value_i > event_cntr_q) ? (value_i) : event_cntr_q;
 
-    end else begin : gen_lo_wm
+  end else begin : gen_lo_wm
 
-      assign event_cntr_change = (value_i < event_cntr_q) ? (value_i) : event_cntr_q;
+    assign event_cntr_change = (value_i < event_cntr_q) ? (value_i) : event_cntr_q;
 
-    end
-  endgenerate
+  end
 
   // drive output
   assign value_o = event_cntr_q;

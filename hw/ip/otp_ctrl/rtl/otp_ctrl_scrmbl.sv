@@ -166,9 +166,10 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
                                                                   {data_i, data_shadow_q};
 
   // Initialize the round index state with 1 in all cases, except for the decrypt operation.
-  assign idx_state_d     = (key_state_sel == SelDecKeyOut)      ? dec_idx_out          :
-                           (key_state_sel == SelEncKeyOut)      ? enc_idx_out          :
-                           (key_state_sel == SelDecKeyInit)     ? 5'(NumPresentRounds) : 5'd1;
+  assign idx_state_d     = (key_state_sel == SelDecKeyOut)      ? dec_idx_out                     :
+                           (key_state_sel == SelEncKeyOut)      ? enc_idx_out                     :
+                           (key_state_sel == SelDecKeyInit)     ? unsigned'(5'(NumPresentRounds)) :
+                                                                  5'd1;
 
   assign digest_state_d  = enc_data_out;
 

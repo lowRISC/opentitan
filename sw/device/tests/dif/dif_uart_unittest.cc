@@ -148,7 +148,7 @@ TEST_F(WatermarkRxSetTest, Success) {
   EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET,
                 {
                     {UART_FIFO_CTRL_RXILVL_OFFSET, UART_FIFO_CTRL_RXILVL_MASK,
-                     UART_FIFO_CTRL_RXILVL_RXLVL1},
+                     UART_FIFO_CTRL_RXILVL_VALUE_RXLVL1},
                 });
   EXPECT_EQ(dif_uart_watermark_rx_set(&uart_, kDifUartWatermarkByte1),
             kDifUartOk);
@@ -156,7 +156,7 @@ TEST_F(WatermarkRxSetTest, Success) {
   EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET,
                 {
                     {UART_FIFO_CTRL_RXILVL_OFFSET, UART_FIFO_CTRL_RXILVL_MASK,
-                     UART_FIFO_CTRL_RXILVL_RXLVL30},
+                     UART_FIFO_CTRL_RXILVL_VALUE_RXLVL30},
                 });
   EXPECT_EQ(dif_uart_watermark_rx_set(&uart_, kDifUartWatermarkByte30),
             kDifUartOk);
@@ -181,7 +181,7 @@ TEST_F(WatermarkTxSetTest, Success) {
   EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET,
                 {
                     {UART_FIFO_CTRL_TXILVL_OFFSET, UART_FIFO_CTRL_TXILVL_MASK,
-                     UART_FIFO_CTRL_TXILVL_TXLVL1},
+                     UART_FIFO_CTRL_TXILVL_VALUE_TXLVL1},
                 });
   EXPECT_EQ(dif_uart_watermark_tx_set(&uart_, kDifUartWatermarkByte1),
             kDifUartOk);
@@ -189,7 +189,7 @@ TEST_F(WatermarkTxSetTest, Success) {
   EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET,
                 {
                     {UART_FIFO_CTRL_TXILVL_OFFSET, UART_FIFO_CTRL_TXILVL_MASK,
-                     UART_FIFO_CTRL_TXILVL_TXLVL16},
+                     UART_FIFO_CTRL_TXILVL_VALUE_TXLVL16},
                 });
   EXPECT_EQ(dif_uart_watermark_tx_set(&uart_, kDifUartWatermarkByte16),
             kDifUartOk);

@@ -115,13 +115,15 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   virtual task spinwait_txidle();
     if (ral.ctrl.tx.get_mirrored_value()) begin
       // use a very big timeout as it takes long time to flush all the items
-      csr_spinwait(.ptr(ral.status.txidle), .exp_data(1'b1), .timeout_ns(40_000_000));
+      csr_spinwait(.ptr(ral.status.txidle), .exp_data(1'b1), .timeout_ns(40_000_000),
+                   .spinwait_delay_ns($urandom_range(0, 1000)));
     end
   endtask
 
   virtual task spinwait_rxidle();
     if (ral.ctrl.rx.get_mirrored_value()) begin
-      csr_spinwait(.ptr(ral.status.rxidle), .exp_data(1'b1));
+      csr_spinwait(.ptr(ral.status.rxidle), .exp_data(1'b1),
+                   .spinwait_delay_ns($urandom_range(0, 1000)));
     end
   endtask
 

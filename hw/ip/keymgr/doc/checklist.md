@@ -10,30 +10,33 @@ stage, and updated as needed. Once done, please remove this comment before check
 This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [KEYMGR peripheral.](../)
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
+## Design Checklist
 
+### D1
 
-Type          | Item                  | Resolution  | Note/Collaterals
---------------|-----------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]     | Not Started | [KEYMGR Design Spec](../)
-Documentation | [CSR_DEFINED][]       | Not Started |
-RTL           | [CLKRST_CONNECTED][]  | Not Started |
-RTL           | [IP_TOP][]            | Not Started |
-RTL           | [IP_INSTANTIABLE][]   | Not Started |
-RTL           | [MEM_INSTANCED_80][]  | Not Started |
-RTL           | [FUNC_IMPLEMENTED][]  | Not Started |
-RTL           | [ASSERT_KNOWN_ADDED][]| Not Started |
-Code Quality  | [LINT_SETUP][]        | Not Started |
+Type          | Item                           | Resolution  | Note/Collaterals
+--------------|--------------------------------|-------------|------------------
+Documentation | [SPEC_COMPLETE][]              | Not Started | [KEYMGR Design Spec](../)
+Documentation | [CSR_DEFINED][]                | Not Started |
+RTL           | [CLKRST_CONNECTED][]           | Not Started |
+RTL           | [IP_TOP][]                     | Not Started |
+RTL           | [IP_INSTANTIABLE][]            | Not Started |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Not Started |
+RTL           | [FUNC_IMPLEMENTED][]           | Not Started |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Not Started |
+Code Quality  | [LINT_SETUP][]                 | Not Started |
 
-[SPEC_COMPLETE]:      {{<relref "/doc/project/checklist.md#spec_complete" >}}
-[CSR_DEFINED]:        {{<relref "/doc/project/checklist.md#csr_defined" >}}
-[CLKRST_CONNECTED]:   {{<relref "/doc/project/checklist.md#clkrst_connected" >}}
-[IP_TOP]:             {{<relref "/doc/project/checklist.md#ip_top" >}}
-[IP_INSTANTIABLE]:    {{<relref "/doc/project/checklist.md#ip_instantiable" >}}
-[MEM_INSTANCED_80]:   {{<relref "/doc/project/checklist.md#mem_instanced_80" >}}
-[FUNC_IMPLEMENTED]:   {{<relref "/doc/project/checklist.md#func_implemented" >}}
-[ASSERT_KNOWN_ADDED]: {{<relref "/doc/project/checklist.md#assert_known_added" >}}
-[LINT_SETUP]:         {{<relref "/doc/project/checklist.md#lint_setup" >}}
+[SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec_complete" >}}
+[CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr_defined" >}}
+[CLKRST_CONNECTED]:           {{<relref "/doc/project/checklist.md#clkrst_connected" >}}
+[IP_TOP]:                     {{<relref "/doc/project/checklist.md#ip_top" >}}
+[IP_INSTANTIABLE]:            {{<relref "/doc/project/checklist.md#ip_instantiable" >}}
+[PHYSICAL_MACROS_DEFINED_80]: {{<relref "/doc/project/checklist.md#physical_macros_defined_80" >}}
+[FUNC_IMPLEMENTED]:           {{<relref "/doc/project/checklist.md#func_implemented" >}}
+[ASSERT_KNOWN_ADDED]:         {{<relref "/doc/project/checklist.md#assert_known_added" >}}
+[LINT_SETUP]:                 {{<relref "/doc/project/checklist.md#lint_setup" >}}
 
+### D2
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
@@ -75,6 +78,7 @@ Security      | [SEC_SHADOW_REGS][]     | Not Started |
 [SEC_NON_RESET_FLOPS]: {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
 [SEC_SHADOW_REGS]:     {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
 
+### D3
 
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
@@ -103,7 +107,9 @@ Review        | Signoff date            | Not Started |
 [REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review_sw_change" >}}
 [REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review_sw_errata" >}}
 
+## Verification Checklist
 
+### V1
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
@@ -151,6 +157,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 [STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std_test_categories_planned" >}}
 [V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2_checklist_scoped" >}}
 
+### V2
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
@@ -192,6 +199,7 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 [PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v2" >}}
 [V3_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v3_checklist_scoped" >}}
 
+### V3
 
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
