@@ -54,7 +54,7 @@ package otp_ctrl_pkg;
   parameter int OtpDepth         = 2**OtpAddrWidth;
   parameter int OtpCmdWidth      = 2;
   parameter int OtpSizeWidth     = 2; // Allows to transfer up to 4 native OTP words at once.
-  parameter int OtpErrWidth      = 4;
+  parameter int OtpErrWidth      = 3;
   parameter int OtpPwrSeqWidth   = 2;
   parameter int OtpIfWidth       = 2**OtpSizeWidth*OtpWidth;
   // Number of Byte address bits to cut off in order to get the native OTP word address.
@@ -67,21 +67,14 @@ package otp_ctrl_pkg;
   } prim_otp_cmd_e;
 
   typedef enum logic [OtpErrWidth-1:0] {
-    NoErr            = 4'h0,
-    OtpCmdInvErr     = 4'h1,
-    OtpInitErr       = 4'h2,
-    OtpReadCorrErr   = 4'h3,
-    OtpReadUncorrErr = 4'h4,
-    OtpReadErr       = 4'h5,
-    OtpWriteBlankErr = 4'h6,
-    OtpWriteErr      = 4'h7,
-    CmdInvErr        = 4'h8,
-    AccessErr        = 4'h9,
-    ParityErr        = 4'hA,
-    IntegErr         = 4'hB,
-    CnstyErr         = 4'hC,
-    FsmErr           = 4'hD,
-    EscErr           = 4'hE
+    NoError              = 3'h0,
+    MacroError           = 3'h1,
+    MacroEccCorrError    = 3'h2,
+    MacroEccUncorrError  = 3'h3,
+    MacroWriteBlankError = 3'h4,
+    AccessError          = 3'h5,
+    CheckFailError       = 3'h6,
+    FsmStateError        = 3'h7
   } otp_err_e;
 
   /////////////////////////////////

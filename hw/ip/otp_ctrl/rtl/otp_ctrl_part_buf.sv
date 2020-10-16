@@ -213,7 +213,7 @@ module otp_ctrl_part_buf
           buffer_reg_en = 1'b1;
           // The only error we tolerate is an ECC soft error. However,
           // we still signal that error via the error state output.
-          if (!(otp_err_i inside {NoErr, OtpReadCorrErr})) begin
+          if (!(otp_err_i inside {NoError, MacroEccCorrError})) begin
             state_d = ErrorSt;
             error_d = otp_err_i;
           end else begin
@@ -231,7 +231,7 @@ module otp_ctrl_part_buf
               cnt_en = 1'b1;
             end
             // Signal ECC soft errors, but do not go into terminal error state.
-            if (otp_err_i == OtpReadCorrErr) begin
+            if (otp_err_i == MacroEccCorrError) begin
               error_d = otp_err_i;
             end
           end
@@ -307,7 +307,7 @@ module otp_ctrl_part_buf
         if (otp_rvalid_i) begin
           // The only error we tolerate is an ECC soft error. However,
           // we still signal that error via the error state output.
-          if (!(otp_err_i inside {NoErr, OtpReadCorrErr})) begin
+          if (!(otp_err_i inside {NoError, MacroEccCorrError})) begin
             state_d = ErrorSt;
             error_d = otp_err_i;
           end else begin
@@ -321,7 +321,7 @@ module otp_ctrl_part_buf
               // Error out and lock the partition if this check fails.
               end else begin
                 state_d = ErrorSt;
-                error_d = CnstyErr;
+                error_d = CheckFailError;
               end
             end else begin
               // Check whether the read data corresponds with the data buffered in regs.
@@ -338,7 +338,7 @@ module otp_ctrl_part_buf
                 end
               end else begin
                 state_d = ErrorSt;
-                error_d = CnstyErr;
+                error_d = CheckFailError;
               end
             end
           end
@@ -481,7 +481,7 @@ module otp_ctrl_part_buf
           // Error out and lock the partition if this check fails.
           end else begin
             state_d = ErrorSt;
-            error_d = IntegErr;
+            error_d = CheckFailError;
           end
         end
       end
@@ -492,7 +492,7 @@ module otp_ctrl_part_buf
       ErrorSt: begin
         dout_gate_d = Locked;
         if (!error_q) begin
-          error_d = FsmErr;
+          error_d = FsmStateError;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -510,13 +510,13 @@ module otp_ctrl_part_buf
     if (parity_err) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
-        error_d = ParityErr;
+        error_d = CheckFailError;
       end
     end
     if (escalate_en_i != lc_ctrl_pkg::Off) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
-        error_d = EscErr;
+        error_d = FsmStateError;
       end
     end
   end
@@ -621,7 +621,7 @@ module otp_ctrl_part_buf
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      error_q     <= NoErr;
+      error_q     <= NoError;
       cnt_q       <= '0;
       dout_gate_q <= Locked;
     end else begin
@@ -680,7 +680,7 @@ module otp_ctrl_part_buf
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitWaitSt, CnstyReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_i inside {NoErr, OtpReadCorrErr}) && !parity_err
+      !(otp_err_i inside {NoError, MacroEccCorrError}) && !parity_err
       |=>
       state_q == ErrorSt && error_o == $past(otp_err_i))
 

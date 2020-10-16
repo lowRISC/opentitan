@@ -277,29 +277,24 @@ module otp_ctrl
   otp_err_e [NumPart+1:0] part_error;
   logic [NumPart+1:0] part_errors_reduced;
   logic otp_operation_done, otp_error;
-  logic otp_fatal_error, otp_check_failed;
+  logic otp_macro_failure, otp_check_failure;
   logic chk_pending, chk_timeout;
   logic lfsr_fsm_err, key_deriv_fsm_err, scrmbl_fsm_err;
   always_comb begin : p_errors_alerts
     hw2reg.err_code = part_error;
-    otp_fatal_error = 1'b0;
-    otp_check_failed = 1'b0;
+    otp_macro_failure = 1'b0;
+    otp_check_failure = 1'b0;
     // Aggregate all the errors from the partitions and the DAI/LCI
     for (int k = 0; k < NumPart+2; k++) begin
       // Set the error bit if the error status of the corresponding partition is nonzero.
       part_errors_reduced[k] = |part_error[k];
       // Filter for critical error codes that should not occur in the field.
-      otp_fatal_error |= part_error[k] inside {OtpCmdInvErr,
-                                               OtpInitErr,
-                                               OtpReadUncorrErr,
-                                               OtpReadErr,
-                                               OtpWriteErr};
+      otp_macro_failure |= part_error[k] inside {MacroError,
+                                                 MacroEccUncorrError};
 
       // Filter for integrity and consistency check failures.
-      otp_check_failed |= part_error[k] inside {ParityErr,
-                                                IntegErr,
-                                                CnstyErr,
-                                                FsmErr} |
+      otp_check_failure |= part_error[k] inside {CheckFailError,
+                                                 FsmStateError} |
                           chk_timeout       |
                           lfsr_fsm_err      |
                           scrmbl_fsm_err    |
@@ -357,7 +352,7 @@ module otp_ctrl
   ) u_prim_alert_sender0 (
     .clk_i,
     .rst_ni,
-    .alert_i    ( otp_fatal_error ),
+    .alert_i    ( otp_macro_failure ),
     .alert_rx_i ( alert_rx_i[0] ),
     .alert_tx_o ( alert_tx_o[0] )
   );
@@ -367,7 +362,7 @@ module otp_ctrl
   ) u_prim_alert_sender1 (
     .clk_i,
     .rst_ni,
-    .alert_i    ( otp_check_failed ),
+    .alert_i    ( otp_check_failure ),
     .alert_rx_i ( alert_rx_i[1] ),
     .alert_tx_o ( alert_tx_o[1] )
   );
