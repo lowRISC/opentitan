@@ -89,7 +89,7 @@ class alert_sender_driver extends alert_esc_base_driver;
             begin
               wait_ping();
               alert_atomic.get(1);
-              if (!req.timeout) begin
+              if (!req.ping_timeout) begin
                 drive_alert_pins(req);
               end else begin
                 repeat (cfg.ping_timeout_cycle) wait_sender_clk();

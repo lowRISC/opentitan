@@ -89,14 +89,15 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           alert_en = ral.alert_en.get_mirrored_value();
           if (alert_en[index]) begin
             // alert detected
-            if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.timeout &&
+            if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.ping_timeout &&
                 act_item.alert_handshake_sta == AlertReceived) begin
               process_alert_sig(index, 0);
             // alert integrity fail
             end else if (act_item.alert_esc_type == AlertEscIntFail) begin
               bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
               if (loc_alert_en[LocalAlertIntFail]) process_alert_sig(index, 1, LocalAlertIntFail);
-            end else if (act_item.alert_esc_type == AlertEscPingTrans && act_item.timeout) begin
+            end else if (act_item.alert_esc_type == AlertEscPingTrans &&
+                         act_item.ping_timeout) begin
               bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
               if (loc_alert_en[LocalAlertPingFail]) begin
                 process_alert_sig(index, 1, LocalAlertPingFail);
@@ -123,11 +124,11 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             check_esc_signal(act_item.sig_cycle_cnt, index);
           // escalation integrity fail
           end else if (act_item.alert_esc_type == AlertEscIntFail ||
-               (act_item.esc_handshake_sta == EscIntFail && !act_item.timeout)) begin
+               (act_item.esc_handshake_sta == EscIntFail && !act_item.ping_timeout)) begin
             bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
             if (loc_alert_en[LocalEscIntFail]) process_alert_sig(index, 1, LocalEscIntFail);
           // escalation ping timeout
-          end else if (act_item.alert_esc_type == AlertEscPingTrans && act_item.timeout) begin
+          end else if (act_item.alert_esc_type == AlertEscPingTrans && act_item.ping_timeout) begin
             bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
             if (loc_alert_en[LocalEscPingFail]) begin
               process_alert_sig(index, 1, LocalEscPingFail);

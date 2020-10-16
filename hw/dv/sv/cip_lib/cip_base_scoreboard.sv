@@ -80,13 +80,13 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
           alert_esc_seq_item item;
           alert_fifos[alert_name].get(item);
           if (!cfg.en_scb) continue;
-          if (item.alert_esc_type == AlertEscSigTrans && !item.timeout &&
+          if (item.alert_esc_type == AlertEscSigTrans && !item.ping_timeout &&
               item.alert_handshake_sta inside {AlertReceived, AlertAckComplete}) begin
             process_alert(alert_name, item);
           // IP level alert protocol does not drive any sig_int_err or ping response
           end else if (item.alert_esc_type == AlertEscIntFail) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected signal int error", alert_name))
-          end else if (item.timeout) begin
+          end else if (item.ping_timeout) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected timeout error", alert_name))
           end else if (item.alert_esc_type == AlertEscPingTrans) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected alert ping response", alert_name))

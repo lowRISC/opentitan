@@ -56,7 +56,7 @@ class esc_monitor extends alert_esc_base_monitor;
           if (ping_cnter >= cfg.ping_timeout_cycle) begin
             alert_esc_seq_item req_clone;
             `downcast(req_clone, req.clone());
-            req_clone.timeout = 1;
+            req_clone.ping_timeout = 1;
             alert_esc_port.write(req_clone);
             // alignment for prim_esc_sender design. Design does not know ping timeout cycles, only
             // way to exit FSM is when state is IDLE or PingComplete.
@@ -97,7 +97,7 @@ class esc_monitor extends alert_esc_base_monitor;
         end
 
         `uvm_info("esc_monitor", $sformatf("[%s]: handshake status is %s, timeout=%0b",
-            req.alert_esc_type.name(), req.esc_handshake_sta.name(), req.timeout), UVM_HIGH)
+            req.alert_esc_type.name(), req.esc_handshake_sta.name(), req.ping_timeout), UVM_HIGH)
          if (cfg.en_cov) begin
            cov.m_esc_handshake_complete_cg.sample(req.alert_esc_type, req.esc_handshake_sta);
            if (cfg.en_ping_cov) cov.m_alert_esc_trans_cg.sample(req.alert_esc_type);
