@@ -2605,7 +2605,7 @@
       {
         clk_i: clkmgr_clocks.clk_io_div4_timers
       }
-      size: 0x2000
+      size: 0x4000
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -3487,7 +3487,7 @@
             }
             {
               base_addr: 0x401b0000
-              size_byte: 0x2000
+              size_byte: 0x4000
             }
           ]
         }
@@ -4113,7 +4113,7 @@
           [
             {
               base_addr: 0x401b0000
-              size_byte: 0x2000
+              size_byte: 0x4000
             }
           ]
           xbar: false
