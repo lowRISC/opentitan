@@ -599,8 +599,8 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdSensorCtrlAstAlerts5 = 10, /**< sensor_ctrl_ast_alerts 5 */
   kTopEarlgreyAlertIdSensorCtrlAstAlerts6 = 11, /**< sensor_ctrl_ast_alerts 6 */
   kTopEarlgreyAlertIdKeymgrErr = 12, /**< keymgr_err */
-  kTopEarlgreyAlertIdOtpCtrlOtpFatalError = 13, /**< otp_ctrl_otp_fatal_error */
-  kTopEarlgreyAlertIdOtpCtrlOtpCheckFailed = 14, /**< otp_ctrl_otp_check_failed */
+  kTopEarlgreyAlertIdOtpCtrlOtpMacroFailure = 13, /**< otp_ctrl_otp_macro_failure */
+  kTopEarlgreyAlertIdOtpCtrlOtpCheckFailure = 14, /**< otp_ctrl_otp_check_failure */
   kTopEarlgreyAlertIdLast = 14, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 

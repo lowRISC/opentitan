@@ -163,7 +163,7 @@ package otp_ctrl_reg_pkg;
   } otp_ctrl_hw2reg_status_reg_t;
 
   typedef struct packed {
-    logic [3:0]  d;
+    logic [2:0]  d;
   } otp_ctrl_hw2reg_err_code_mreg_t;
 
   typedef struct packed {
@@ -221,9 +221,9 @@ package otp_ctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    otp_ctrl_hw2reg_intr_state_reg_t intr_state; // [503:502]
-    otp_ctrl_hw2reg_status_reg_t status; // [501:502]
-    otp_ctrl_hw2reg_err_code_mreg_t [8:0] err_code; // [501:466]
+    otp_ctrl_hw2reg_intr_state_reg_t intr_state; // [494:493]
+    otp_ctrl_hw2reg_status_reg_t status; // [492:493]
+    otp_ctrl_hw2reg_err_code_mreg_t [8:0] err_code; // [492:466]
     otp_ctrl_hw2reg_direct_access_regwen_reg_t direct_access_regwen; // [465:466]
     otp_ctrl_hw2reg_direct_access_rdata_mreg_t [1:0] direct_access_rdata; // [465:402]
     otp_ctrl_hw2reg_creator_sw_cfg_digest_mreg_t [1:0] creator_sw_cfg_digest; // [401:338]
@@ -239,35 +239,34 @@ package otp_ctrl_reg_pkg;
   parameter logic [13:0] OTP_CTRL_INTR_ENABLE_OFFSET = 14'h 4;
   parameter logic [13:0] OTP_CTRL_INTR_TEST_OFFSET = 14'h 8;
   parameter logic [13:0] OTP_CTRL_STATUS_OFFSET = 14'h c;
-  parameter logic [13:0] OTP_CTRL_ERR_CODE_0_OFFSET = 14'h 10;
-  parameter logic [13:0] OTP_CTRL_ERR_CODE_1_OFFSET = 14'h 14;
-  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_OFFSET = 14'h 18;
-  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_CMD_OFFSET = 14'h 1c;
-  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_ADDRESS_OFFSET = 14'h 20;
-  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET = 14'h 24;
-  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET = 14'h 28;
-  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET = 14'h 2c;
-  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET = 14'h 30;
-  parameter logic [13:0] OTP_CTRL_CHECK_TRIGGER_REGWEN_OFFSET = 14'h 34;
-  parameter logic [13:0] OTP_CTRL_CHECK_TRIGGER_OFFSET = 14'h 38;
-  parameter logic [13:0] OTP_CTRL_CHECK_REGWEN_OFFSET = 14'h 3c;
-  parameter logic [13:0] OTP_CTRL_CHECK_TIMEOUT_OFFSET = 14'h 40;
-  parameter logic [13:0] OTP_CTRL_INTEGRITY_CHECK_PERIOD_OFFSET = 14'h 44;
-  parameter logic [13:0] OTP_CTRL_CONSISTENCY_CHECK_PERIOD_OFFSET = 14'h 48;
-  parameter logic [13:0] OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET = 14'h 4c;
-  parameter logic [13:0] OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET = 14'h 50;
-  parameter logic [13:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_OFFSET = 14'h 54;
-  parameter logic [13:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET = 14'h 58;
-  parameter logic [13:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET = 14'h 5c;
-  parameter logic [13:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET = 14'h 60;
-  parameter logic [13:0] OTP_CTRL_HW_CFG_DIGEST_0_OFFSET = 14'h 64;
-  parameter logic [13:0] OTP_CTRL_HW_CFG_DIGEST_1_OFFSET = 14'h 68;
-  parameter logic [13:0] OTP_CTRL_SECRET0_DIGEST_0_OFFSET = 14'h 6c;
-  parameter logic [13:0] OTP_CTRL_SECRET0_DIGEST_1_OFFSET = 14'h 70;
-  parameter logic [13:0] OTP_CTRL_SECRET1_DIGEST_0_OFFSET = 14'h 74;
-  parameter logic [13:0] OTP_CTRL_SECRET1_DIGEST_1_OFFSET = 14'h 78;
-  parameter logic [13:0] OTP_CTRL_SECRET2_DIGEST_0_OFFSET = 14'h 7c;
-  parameter logic [13:0] OTP_CTRL_SECRET2_DIGEST_1_OFFSET = 14'h 80;
+  parameter logic [13:0] OTP_CTRL_ERR_CODE_OFFSET = 14'h 10;
+  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_OFFSET = 14'h 14;
+  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_CMD_OFFSET = 14'h 18;
+  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_ADDRESS_OFFSET = 14'h 1c;
+  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET = 14'h 20;
+  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET = 14'h 24;
+  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET = 14'h 28;
+  parameter logic [13:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET = 14'h 2c;
+  parameter logic [13:0] OTP_CTRL_CHECK_TRIGGER_REGWEN_OFFSET = 14'h 30;
+  parameter logic [13:0] OTP_CTRL_CHECK_TRIGGER_OFFSET = 14'h 34;
+  parameter logic [13:0] OTP_CTRL_CHECK_REGWEN_OFFSET = 14'h 38;
+  parameter logic [13:0] OTP_CTRL_CHECK_TIMEOUT_OFFSET = 14'h 3c;
+  parameter logic [13:0] OTP_CTRL_INTEGRITY_CHECK_PERIOD_OFFSET = 14'h 40;
+  parameter logic [13:0] OTP_CTRL_CONSISTENCY_CHECK_PERIOD_OFFSET = 14'h 44;
+  parameter logic [13:0] OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET = 14'h 48;
+  parameter logic [13:0] OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET = 14'h 4c;
+  parameter logic [13:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_OFFSET = 14'h 50;
+  parameter logic [13:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET = 14'h 54;
+  parameter logic [13:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET = 14'h 58;
+  parameter logic [13:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET = 14'h 5c;
+  parameter logic [13:0] OTP_CTRL_HW_CFG_DIGEST_0_OFFSET = 14'h 60;
+  parameter logic [13:0] OTP_CTRL_HW_CFG_DIGEST_1_OFFSET = 14'h 64;
+  parameter logic [13:0] OTP_CTRL_SECRET0_DIGEST_0_OFFSET = 14'h 68;
+  parameter logic [13:0] OTP_CTRL_SECRET0_DIGEST_1_OFFSET = 14'h 6c;
+  parameter logic [13:0] OTP_CTRL_SECRET1_DIGEST_0_OFFSET = 14'h 70;
+  parameter logic [13:0] OTP_CTRL_SECRET1_DIGEST_1_OFFSET = 14'h 74;
+  parameter logic [13:0] OTP_CTRL_SECRET2_DIGEST_0_OFFSET = 14'h 78;
+  parameter logic [13:0] OTP_CTRL_SECRET2_DIGEST_1_OFFSET = 14'h 7c;
 
   // Window parameter
   parameter logic [13:0] OTP_CTRL_SW_CFG_WINDOW_OFFSET = 14'h 1000;
@@ -281,8 +280,7 @@ package otp_ctrl_reg_pkg;
     OTP_CTRL_INTR_ENABLE,
     OTP_CTRL_INTR_TEST,
     OTP_CTRL_STATUS,
-    OTP_CTRL_ERR_CODE_0,
-    OTP_CTRL_ERR_CODE_1,
+    OTP_CTRL_ERR_CODE,
     OTP_CTRL_DIRECT_ACCESS_REGWEN,
     OTP_CTRL_DIRECT_ACCESS_CMD,
     OTP_CTRL_DIRECT_ACCESS_ADDRESS,
@@ -313,40 +311,39 @@ package otp_ctrl_reg_pkg;
   } otp_ctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] OTP_CTRL_PERMIT [33] = '{
+  parameter logic [3:0] OTP_CTRL_PERMIT [32] = '{
     4'b 0001, // index[ 0] OTP_CTRL_INTR_STATE
     4'b 0001, // index[ 1] OTP_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] OTP_CTRL_INTR_TEST
     4'b 0011, // index[ 3] OTP_CTRL_STATUS
-    4'b 1111, // index[ 4] OTP_CTRL_ERR_CODE_0
-    4'b 0001, // index[ 5] OTP_CTRL_ERR_CODE_1
-    4'b 0001, // index[ 6] OTP_CTRL_DIRECT_ACCESS_REGWEN
-    4'b 0001, // index[ 7] OTP_CTRL_DIRECT_ACCESS_CMD
-    4'b 0011, // index[ 8] OTP_CTRL_DIRECT_ACCESS_ADDRESS
-    4'b 1111, // index[ 9] OTP_CTRL_DIRECT_ACCESS_WDATA_0
-    4'b 1111, // index[10] OTP_CTRL_DIRECT_ACCESS_WDATA_1
-    4'b 1111, // index[11] OTP_CTRL_DIRECT_ACCESS_RDATA_0
-    4'b 1111, // index[12] OTP_CTRL_DIRECT_ACCESS_RDATA_1
-    4'b 0001, // index[13] OTP_CTRL_CHECK_TRIGGER_REGWEN
-    4'b 0001, // index[14] OTP_CTRL_CHECK_TRIGGER
-    4'b 0001, // index[15] OTP_CTRL_CHECK_REGWEN
-    4'b 1111, // index[16] OTP_CTRL_CHECK_TIMEOUT
-    4'b 1111, // index[17] OTP_CTRL_INTEGRITY_CHECK_PERIOD
-    4'b 1111, // index[18] OTP_CTRL_CONSISTENCY_CHECK_PERIOD
-    4'b 0001, // index[19] OTP_CTRL_CREATOR_SW_CFG_READ_LOCK
-    4'b 0001, // index[20] OTP_CTRL_OWNER_SW_CFG_READ_LOCK
-    4'b 1111, // index[21] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0
-    4'b 1111, // index[22] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1
-    4'b 1111, // index[23] OTP_CTRL_OWNER_SW_CFG_DIGEST_0
-    4'b 1111, // index[24] OTP_CTRL_OWNER_SW_CFG_DIGEST_1
-    4'b 1111, // index[25] OTP_CTRL_HW_CFG_DIGEST_0
-    4'b 1111, // index[26] OTP_CTRL_HW_CFG_DIGEST_1
-    4'b 1111, // index[27] OTP_CTRL_SECRET0_DIGEST_0
-    4'b 1111, // index[28] OTP_CTRL_SECRET0_DIGEST_1
-    4'b 1111, // index[29] OTP_CTRL_SECRET1_DIGEST_0
-    4'b 1111, // index[30] OTP_CTRL_SECRET1_DIGEST_1
-    4'b 1111, // index[31] OTP_CTRL_SECRET2_DIGEST_0
-    4'b 1111  // index[32] OTP_CTRL_SECRET2_DIGEST_1
+    4'b 1111, // index[ 4] OTP_CTRL_ERR_CODE
+    4'b 0001, // index[ 5] OTP_CTRL_DIRECT_ACCESS_REGWEN
+    4'b 0001, // index[ 6] OTP_CTRL_DIRECT_ACCESS_CMD
+    4'b 0011, // index[ 7] OTP_CTRL_DIRECT_ACCESS_ADDRESS
+    4'b 1111, // index[ 8] OTP_CTRL_DIRECT_ACCESS_WDATA_0
+    4'b 1111, // index[ 9] OTP_CTRL_DIRECT_ACCESS_WDATA_1
+    4'b 1111, // index[10] OTP_CTRL_DIRECT_ACCESS_RDATA_0
+    4'b 1111, // index[11] OTP_CTRL_DIRECT_ACCESS_RDATA_1
+    4'b 0001, // index[12] OTP_CTRL_CHECK_TRIGGER_REGWEN
+    4'b 0001, // index[13] OTP_CTRL_CHECK_TRIGGER
+    4'b 0001, // index[14] OTP_CTRL_CHECK_REGWEN
+    4'b 1111, // index[15] OTP_CTRL_CHECK_TIMEOUT
+    4'b 1111, // index[16] OTP_CTRL_INTEGRITY_CHECK_PERIOD
+    4'b 1111, // index[17] OTP_CTRL_CONSISTENCY_CHECK_PERIOD
+    4'b 0001, // index[18] OTP_CTRL_CREATOR_SW_CFG_READ_LOCK
+    4'b 0001, // index[19] OTP_CTRL_OWNER_SW_CFG_READ_LOCK
+    4'b 1111, // index[20] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0
+    4'b 1111, // index[21] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1
+    4'b 1111, // index[22] OTP_CTRL_OWNER_SW_CFG_DIGEST_0
+    4'b 1111, // index[23] OTP_CTRL_OWNER_SW_CFG_DIGEST_1
+    4'b 1111, // index[24] OTP_CTRL_HW_CFG_DIGEST_0
+    4'b 1111, // index[25] OTP_CTRL_HW_CFG_DIGEST_1
+    4'b 1111, // index[26] OTP_CTRL_SECRET0_DIGEST_0
+    4'b 1111, // index[27] OTP_CTRL_SECRET0_DIGEST_1
+    4'b 1111, // index[28] OTP_CTRL_SECRET1_DIGEST_0
+    4'b 1111, // index[29] OTP_CTRL_SECRET1_DIGEST_1
+    4'b 1111, // index[30] OTP_CTRL_SECRET2_DIGEST_0
+    4'b 1111  // index[31] OTP_CTRL_SECRET2_DIGEST_1
   };
 endpackage
 

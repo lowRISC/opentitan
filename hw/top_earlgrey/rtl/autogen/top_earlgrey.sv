@@ -1013,8 +1013,8 @@ module top_earlgrey #(
       .intr_otp_operation_done_o (intr_otp_ctrl_otp_operation_done),
       .intr_otp_error_o          (intr_otp_ctrl_otp_error),
 
-      // [10]: otp_fatal_error
-      // [11]: otp_check_failed
+      // [10]: otp_macro_failure
+      // [11]: otp_check_failure
       .alert_tx_o  ( alert_tx[11:10] ),
       .alert_rx_i  ( alert_rx[11:10] ),
 
