@@ -16,5 +16,8 @@ waive -rules {TERMINAL_STATE} -location {otp_ctrl_dai.sv \
 waive -rules {INVALID_COMPARE} -location {otp_ctrl_dai.sv} -regexp {.*dai_addr_i >= PartInfo\[0\]\.offset.*} \
       -comment "This invalid compare is due to the first partition offset being zero."
 
+waive -rules {INVALID_COMPARE} -location {otp_ctrl.sv} -regexp {.*tlul_addr.* >= PartInfo\[0\]\.offset.*} \
+      -comment "This invalid compare is due to the first partition offset being zero."
+
 waive -rules {LOOP_VAR_OP FOR_LOOP_BOUNDS} -location {prim_cipher_pkg.sv} -regexp {Loop.*round_cnt.*constant.*} \
       -comment "This function needs to iterate over the key schedule function in order to derive the decryption key."

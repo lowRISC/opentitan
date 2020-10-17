@@ -31,9 +31,13 @@ module otp_ctrl_part_unbuf
   output part_access_t                access_o,
   // Buffered 64bit digest output.
   output logic [ScrmblBlockWidth-1:0] digest_o,
-  // Bus Interface (device) for window
-  input  tlul_pkg::tl_h2d_t           tl_i,
-  output tlul_pkg::tl_d2h_t           tl_o,
+  // Interface to TL-UL adapter
+  input  logic                        tlul_req_i,
+  output logic                        tlul_gnt_o,
+  input [SwWindowAddrWidth-1:0]       tlul_addr_i,
+  output logic [1:0]                  tlul_rerror_o,
+  output logic                        tlul_rvalid_o,
+  output logic [31:0]                 tlul_rdata_o,
   // OTP interface
   output logic                        otp_req_o,
   output prim_otp_cmd_e               otp_cmd_o,
@@ -52,7 +56,8 @@ module otp_ctrl_part_unbuf
 
   import prim_util_pkg::vbits;
 
-  localparam int PartAddrWidth = prim_util_pkg::vbits(Info.size/4);
+  localparam logic [OtpByteAddrWidth:0] PartEnd = (OtpByteAddrWidth+1)'(Info.offset) +
+                                                  (OtpByteAddrWidth+1)'(Info.size);
   localparam int DigestOffset = (Info.offset + (Info.size - (ScrmblBlockWidth/8)));
 
   // Integration checks for parameters.
@@ -102,10 +107,9 @@ module otp_ctrl_part_unbuf
   otp_err_e error_d, error_q;
 
   logic digest_reg_en;
-  logic tlul_req, tlul_gnt, tlul_rvalid;
-  logic [PartAddrWidth-1:0] tlul_addr_d, tlul_addr_q;
-  logic [1:0]  tlul_rerror;
   logic parity_err;
+
+  logic [SwWindowAddrWidth-1:0] tlul_addr_d, tlul_addr_q;
 
   // Output partition error state.
   assign error_o = error_q;
@@ -128,9 +132,9 @@ module otp_ctrl_part_unbuf
     otp_addr_sel = DigestAddr;
 
     // TL-UL signals
-    tlul_gnt      = 1'b0;
-    tlul_rvalid   = 1'b0;
-    tlul_rerror   = '0;
+    tlul_gnt_o      = 1'b0;
+    tlul_rvalid_o   = 1'b0;
+    tlul_rerror_o   = '0;
 
     // Enable for buffered digest register
     digest_reg_en = 1'b0;
@@ -183,10 +187,10 @@ module otp_ctrl_part_unbuf
       // Then latch address and go to readout state.
       IdleSt: begin
         init_done_o = 1'b1;
-        if (tlul_req) begin
+        if (tlul_req_i) begin
           error_d = NoErr; // clear recoverable soft errors.
           state_d = ReadSt;
-          tlul_gnt = 1'b1;
+          tlul_gnt_o = 1'b1;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -196,8 +200,10 @@ module otp_ctrl_part_unbuf
       // these checks pass, an OTP word is requested.
       ReadSt: begin
         init_done_o = 1'b1;
-        if (OtpByteAddrWidth'({tlul_addr_q, 2'b00}) < Info.size &&
-            access_o.read_lock == Unlocked) begin
+        // Double check the address range.
+        if ({tlul_addr_q, 2'b00} >= Info.offset &&
+            {1'b0, tlul_addr_q, 2'b00} < PartEnd &&
+             access_o.read_lock == Unlocked) begin
           otp_req_o = 1'b1;
           otp_addr_sel = DataAddr;
           if (otp_gnt_i) begin
@@ -206,8 +212,8 @@ module otp_ctrl_part_unbuf
         end else begin
           state_d = IdleSt;
           error_d = AccessErr; // Signal this error, but do not go into terminal error state.
-          tlul_rvalid = 1'b1;
-          tlul_rerror = 2'b11; // This causes the TL-UL adapter to return a bus error.
+          tlul_rvalid_o = 1'b1;
+          tlul_rerror_o = 2'b11; // This causes the TL-UL adapter to return a bus error.
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -217,13 +223,13 @@ module otp_ctrl_part_unbuf
       ReadWaitSt: begin
         init_done_o = 1'b1;
         if (otp_rvalid_i) begin
+          tlul_rvalid_o = 1'b1;
           // Check OTP return code.
-          if ((!(otp_err_i inside {NoErr, OtpReadCorrErr}))) begin
+          if (!(otp_err_i inside {NoErr, OtpReadCorrErr})) begin
             state_d = ErrorSt;
             error_d = otp_err_i;
-            tlul_rvalid = 1'b1;
             // This causes the TL-UL adapter to return a bus error.
-            tlul_rerror = 2'b11;
+            tlul_rerror_o = 2'b11;
           end else begin
             state_d = IdleSt;
             // Signal soft ECC errors, but do not go into terminal error state.
@@ -267,31 +273,12 @@ module otp_ctrl_part_unbuf
     end
   end
 
-  ///////////////////
-  // TL-UL Adapter //
-  ///////////////////
+  ///////////////////////////////////
+  // Signals to/from TL-UL Adapter //
+  ///////////////////////////////////
 
-  tlul_adapter_sram #(
-    .SramAw      ( PartAddrWidth ),
-    .SramDw      ( 32            ),
-    .Outstanding ( 1             ),
-    .ByteAccess  ( 0             ),
-    .ErrOnWrite  ( 1             ) // No write accesses allowed here.
-  ) u_tlul_adapter_sram (
-    .clk_i,
-    .rst_ni,
-    .tl_i,
-    .tl_o,
-    .req_o    ( tlul_req          ),
-    .gnt_i    ( tlul_gnt          ),
-    .we_o     (                   ), // unused
-    .addr_o   ( tlul_addr_d       ),
-    .wdata_o  (                   ), // unused
-    .wmask_o  (                   ), // unused
-    .rdata_i  ( otp_rdata_i[31:0] ),
-    .rvalid_i ( tlul_rvalid       ),
-    .rerror_i ( tlul_rerror       )
-  );
+  assign tlul_addr_d  = tlul_addr_i;
+  assign tlul_rdata_o = (tlul_rvalid_o) ? otp_rdata_i[31:0] : '0;
 
   // Note that OTP works on halfword (16bit) addresses, hence need to
   // shift the addresses appropriately.
@@ -371,7 +358,7 @@ module otp_ctrl_part_unbuf
       tlul_addr_q   <= '0;
     end else begin
       error_q       <= error_d;
-      if (tlul_gnt) begin
+      if (tlul_gnt_o) begin
         tlul_addr_q <= tlul_addr_d;
       end
     end
@@ -382,16 +369,19 @@ module otp_ctrl_part_unbuf
   ////////////////
 
   // Known assertions
-  `ASSERT_KNOWN(InitDoneKnown_A,  init_done_o)
-  `ASSERT_KNOWN(ErrorKnown_A,     error_o)
-  `ASSERT_KNOWN(AccessKnown_A,    access_o)
-  `ASSERT_KNOWN(DigestKnown_A,    digest_o)
-  `ASSERT_KNOWN(TlKnown_A,        tl_o)
-  `ASSERT_KNOWN(OtpReqKnown_A,    otp_req_o)
-  `ASSERT_KNOWN(OtpCmdKnown_A,    otp_cmd_o)
-  `ASSERT_KNOWN(OtpSizeKnown_A,   otp_size_o)
-  `ASSERT_KNOWN(OtpWdataKnown_A,  otp_wdata_o)
-  `ASSERT_KNOWN(OtpAddrKnown_A,   otp_addr_o)
+  `ASSERT_KNOWN(InitDoneKnown_A,   init_done_o)
+  `ASSERT_KNOWN(ErrorKnown_A,      error_o)
+  `ASSERT_KNOWN(AccessKnown_A,     access_o)
+  `ASSERT_KNOWN(DigestKnown_A,     digest_o)
+  `ASSERT_KNOWN(TlulGntKnown_A,    tlul_gnt_o)
+  `ASSERT_KNOWN(TlulRerrorKnown_A, tlul_rerror_o)
+  `ASSERT_KNOWN(TlulRvalidKnown_A, tlul_rvalid_o)
+  `ASSERT_KNOWN(TlulRdataKnown_A,  tlul_rdata_o)
+  `ASSERT_KNOWN(OtpReqKnown_A,     otp_req_o)
+  `ASSERT_KNOWN(OtpCmdKnown_A,     otp_cmd_o)
+  `ASSERT_KNOWN(OtpSizeKnown_A,    otp_size_o)
+  `ASSERT_KNOWN(OtpWdataKnown_A,   otp_wdata_o)
+  `ASSERT_KNOWN(OtpAddrKnown_A,    otp_addr_o)
 
   // Uninitialized partitions should always be locked, no matter what.
   `ASSERT(InitWriteLocksPartition_A,
@@ -413,9 +403,9 @@ module otp_ctrl_part_unbuf
       access_o.read_lock == Locked)
   // If the partition is read locked, the TL-UL access must error out
   `ASSERT(TlulReadOnReadLock_A,
-      tlul_req && tlul_gnt ##1 access_o.read_lock != Unlocked
+      tlul_req_i && tlul_gnt_o ##1 access_o.read_lock != Unlocked
       |=>
-      tlul_rerror > '0 && tlul_rvalid)
+      tlul_rerror_o > '0 && tlul_rvalid_o)
   // Parity error
   `ASSERT(ParityErrorState_A,
       parity_err

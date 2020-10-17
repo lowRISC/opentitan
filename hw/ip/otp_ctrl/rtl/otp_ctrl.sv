@@ -80,8 +80,8 @@ module otp_ctrl
   // Regfile //
   /////////////
 
-  tlul_pkg::tl_h2d_t tl_win_h2d[3];
-  tlul_pkg::tl_d2h_t tl_win_d2h[3];
+  tlul_pkg::tl_h2d_t tl_win_h2d[2];
+  tlul_pkg::tl_d2h_t tl_win_d2h[2];
 
   otp_ctrl_reg_pkg::otp_ctrl_reg2hw_t reg2hw;
   otp_ctrl_reg_pkg::otp_ctrl_hw2reg_t hw2reg;
@@ -97,6 +97,103 @@ module otp_ctrl
     .hw2reg    ( hw2reg     ),
     .devmode_i ( 1'b1       )
   );
+
+  /////////////////////////////////////
+  // TL-UL SW partition select logic //
+  /////////////////////////////////////
+
+  // The SW partitions share the same TL-UL adapter.
+  logic tlul_req, tlul_gnt, tlul_rvalid;
+  logic [SwWindowAddrWidth-1:0] tlul_addr;
+  logic [1:0]  tlul_rerror;
+  logic [31:0] tlul_rdata;
+
+  tlul_adapter_sram #(
+    .SramAw      ( SwWindowAddrWidth ),
+    .SramDw      ( 32 ),
+    .Outstanding ( 1  ),
+    .ByteAccess  ( 0  ),
+    .ErrOnWrite  ( 1  ) // No write accesses allowed here.
+  ) u_tlul_adapter_sram (
+    .clk_i,
+    .rst_ni,
+    .tl_i     ( tl_win_h2d[0] ),
+    .tl_o     ( tl_win_d2h[0] ),
+    .req_o    (  tlul_req     ),
+    .gnt_i    (  tlul_gnt     ),
+    .we_o     (               ), // unused
+    .addr_o   (  tlul_addr    ),
+    .wdata_o  (               ), // unused
+    .wmask_o  (               ), // unused
+    .rdata_i  (  tlul_rdata   ),
+    .rvalid_i (  tlul_rvalid  ),
+    .rerror_i (  tlul_rerror  )
+  );
+
+  logic [NumPart-1:0] tlul_part_sel_oh;
+  for (genvar k = 0; k < NumPart; k++) begin : gen_part_sel
+    localparam logic [OtpByteAddrWidth:0] PartEnd = (OtpByteAddrWidth+1)'(PartInfo[k].offset) +
+                                                    (OtpByteAddrWidth+1)'(PartInfo[k].size);
+    assign tlul_part_sel_oh[k] = ({tlul_addr, 2'b00} >= PartInfo[k].offset) &
+                                 ({1'b0, {tlul_addr, 2'b00}} < PartEnd);
+  end
+
+  `ASSERT(PartSelMustBeOnehot_A, $onehot0(tlul_part_sel_oh))
+
+  logic [NumPartWidth-1:0] tlul_part_idx;
+  prim_arbiter_fixed #(
+    .N(NumPart),
+    .EnDataPort(0)
+  ) u_part_sel_idx (
+    .clk_i,
+    .rst_ni,
+    .req_i   ( tlul_part_sel_oh  ),
+    .data_i  ( '{default: '0}    ),
+    .gnt_o   (                   ), // unused
+    .idx_o   ( tlul_part_idx     ),
+    .valid_o (                   ), // unused
+    .data_o  (                   ), // unused
+    .ready_i ( 1'b0              )
+  );
+
+  logic tlul_oob_err_d, tlul_oob_err_q;
+  logic [NumPart-1:0] part_tlul_req, part_tlul_gnt, part_tlul_rvalid;
+  logic [SwWindowAddrWidth-1:0] part_tlul_addr;
+  logic [NumPart-1:0][1:0]  part_tlul_rerror;
+  logic [NumPart-1:0][31:0] part_tlul_rdata;
+
+  always_comb begin : p_tlul_assign
+    // Send request to the correct partition.
+    part_tlul_addr   = tlul_addr;
+    part_tlul_req    = '0;
+    tlul_oob_err_d   = 1'b0;
+    if (tlul_req) begin
+      if (tlul_part_sel_oh != '0) begin
+        part_tlul_req[tlul_part_idx] = 1'b1;
+      end else begin
+        // Error out in the next cycle if address was out of bounds.
+        tlul_oob_err_d = 1'b1;
+      end
+    end
+
+    // aggregate TL-UL responses
+    tlul_gnt         = |part_tlul_gnt    | tlul_oob_err_q;
+    tlul_rvalid      = |part_tlul_rvalid | tlul_oob_err_q;
+    tlul_rerror      = '0;
+    tlul_rdata       = '0;
+    for (int k = 0; k < NumPart; k++) begin
+      tlul_rerror |= part_tlul_rerror[k];
+      tlul_rdata  |= part_tlul_rdata[k];
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlul_reg
+    if (!rst_ni) begin
+      tlul_oob_err_q <= 1'b0;
+    end else begin
+      tlul_oob_err_q <= tlul_oob_err_d;
+    end
+  end
 
   ///////////////////////////////
   // Digests and LC State CSRs //
@@ -190,9 +287,7 @@ module otp_ctrl
     // Aggregate all the errors from the partitions and the DAI/LCI
     for (int k = 0; k < NumPart+2; k++) begin
       // Set the error bit if the error status of the corresponding partition is nonzero.
-      // Note that due to the enumeration of the fields in the otp_ctrl_hw2reg_status_reg_t
-      // we have to reverse the bitpositions here such that the mapping is correct.
-      part_errors_reduced[NumPart+1-k] = |part_error[k];
+      part_errors_reduced[k] = |part_error[k];
       // Filter for critical error codes that should not occur in the field.
       otp_fatal_error |= part_error[k] inside {OtpCmdInvErr,
                                                OtpInitErr,
@@ -702,9 +797,12 @@ module otp_ctrl
         .access_i      ( part_access_csrs[k]          ),
         .access_o      ( part_access_dai[k]           ),
         .digest_o      ( part_digest[k]               ),
-        // Note: this assumes that partitions with windows always come first.
-        .tl_i          ( tl_win_h2d[k]                ),
-        .tl_o          ( tl_win_d2h[k]                ),
+        .tlul_req_i    ( part_tlul_req[k]             ),
+        .tlul_gnt_o    ( part_tlul_gnt[k]             ),
+        .tlul_addr_i   ( part_tlul_addr               ),
+        .tlul_rerror_o ( part_tlul_rerror[k]          ),
+        .tlul_rvalid_o ( part_tlul_rvalid[k]          ),
+        .tlul_rdata_o  ( part_tlul_rdata[k]           ),
         .otp_req_o     ( part_otp_arb_req[k]          ),
         .otp_cmd_o     ( part_otp_arb_bundle[k].cmd   ),
         .otp_size_o    ( part_otp_arb_bundle[k].size  ),
@@ -739,13 +837,9 @@ module otp_ctrl
     end else if (PartInfo[k].variant == Buffered) begin : gen_buffered
       otp_ctrl_part_buf #(
         .Info(PartInfo[k])
-        // TODO:  .EntropyWidth(8)
       ) u_part_buf (
         .clk_i,
         .rst_ni,
-        // TODO: Entropy for clearing LFSRs
-        // .entropy_en_i     ( edn_otp_up_i.en                    ),
-        // .entropy_i        ( edn_otp_up_i.data[(k-NumUnbuffered) * 2 +: 2] ),
         .init_req_i       ( part_init_req                   ),
         .init_done_o      ( part_init_done[k]               ),
         .integ_chk_req_i  ( integ_chk_req[k]                ),
@@ -777,6 +871,15 @@ module otp_ctrl
         .scrmbl_valid_i   ( part_scrmbl_rsp_valid[k]        ),
         .scrmbl_data_i    ( part_scrmbl_rsp_data            )
       );
+
+      // Buffered partitions are not accessible via the TL-UL window.
+      logic unused_part_tlul_sigs;
+      assign unused_part_tlul_sigs = ^part_tlul_req[k];
+      assign part_tlul_gnt[k]    = 1'b0;
+      assign part_tlul_rerror[k] = '0;
+      assign part_tlul_rvalid[k] = 1'b0;
+      assign part_tlul_rdata[k]  = '0;
+
     end else begin : gen_invalid
       // This is invalid and should break elaboration
       assert_static_in_generate_invalid assert_static_in_generate_invalid();
