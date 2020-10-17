@@ -115,6 +115,14 @@ debug_waves:
 ############################
 ## coverage rated targets ##
 ############################
+cov_unr_build: gen_sv_flist
+	@echo "[make]: cov_unr_build"
+	cd ${sv_flist_gen_dir} && ${cov_unr_build_cmd} ${cov_unr_build_opts}
+
+cov_unr: cov_unr_build
+	@echo "[make]: cov_unr"
+	cd ${sv_flist_gen_dir} && ${cov_unr_run_cmd} ${cov_unr_run_opts}
+
 # Merge coverage if there are multiple builds.
 cov_merge:
 	@echo "[make]: cov_merge"

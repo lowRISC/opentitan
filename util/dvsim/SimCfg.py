@@ -12,12 +12,14 @@ import subprocess
 import sys
 from collections import OrderedDict
 
-from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, Deploy, RunTest
+from Deploy import (CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr,
+                    Deploy, RunTest)
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
 from tabulate import tabulate
-from testplanner import class_defs, testplan_utils
 from utils import VERBOSE, find_and_substitute_wildcards
+
+from testplanner import class_defs, testplan_utils
 
 
 def pick_wave_format(fmts):
@@ -508,8 +510,6 @@ class SimCfg(FlowCfg):
         if self.cov:
             self.cov_merge_deploy = CovMerge(self)
             self.cov_report_deploy = CovReport(self)
-            # Generate reports only if merge was successful; add it as a dependency
-            # of merge.
             self.cov_merge_deploy.sub.append(self.cov_report_deploy)
 
         # Create initial set of directories before kicking off the regression.
@@ -542,6 +542,9 @@ class SimCfg(FlowCfg):
         '''Use the last regression coverage data to open up the GUI tool to
         analyze the coverage.
         '''
+        # Create initial set of directories, such as dispatched, passed etc.
+        self._create_dirs()
+
         cov_analyze_deploy = CovAnalyze(self)
         self.deploy = [cov_analyze_deploy]
 
@@ -550,6 +553,26 @@ class SimCfg(FlowCfg):
         '''
         for item in self.cfgs:
             item._cov_analyze()
+
+    def _cov_unr(self):
+        '''Use the last regression coverage data to generate unreachable
+        coverage exclusions.
+        '''
+        # TODO, Only support VCS
+        if self.tool != 'vcs':
+            log.error("Currently only support VCS for coverage UNR")
+            sys.exit(1)
+        # Create initial set of directories, such as dispatched, passed etc.
+        self._create_dirs()
+
+        cov_unr_deploy = CovUnr(self)
+        self.deploy = [cov_unr_deploy]
+
+    def cov_unr(self):
+        '''Public facing API for analyzing coverage.
+        '''
+        for item in self.cfgs:
+            item._cov_unr()
 
     def _gen_results(self):
         '''

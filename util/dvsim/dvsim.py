@@ -441,6 +441,11 @@ def parse_args():
                             'coverage database directory with the new '
                             'coverage database.'))
 
+    covg.add_argument("--cov-unr",
+                      action='store_true',
+                      help=('Run coverage UNR analysis and generate report. '
+                            'This only supports VCS now.'))
+
     covg.add_argument("--cov-analyze",
                       action='store_true',
                       help=('Rather than building or running any tests, '
@@ -572,16 +577,23 @@ def main():
         cfg.print_list()
         sys.exit(0)
 
+    # Purge the scratch path if --purge option is set.
+    if args.purge:
+        cfg.purge()
+
+    # If --cov-unr is passed, run UNR to generate report for unreachable
+    # exclusion file.
+    if args.cov_unr:
+        cfg.cov_unr()
+        cfg.deploy_objects()
+        sys.exit(0)
+
     # In simulation mode: if --cov-analyze switch is passed, then run the GUI
     # tool.
     if args.cov_analyze:
         cfg.cov_analyze()
         cfg.deploy_objects()
         sys.exit(0)
-
-    # Purge the scratch path if --purge option is set.
-    if args.purge:
-        cfg.purge()
 
     # Deploy the builds and runs
     if args.items != []:
