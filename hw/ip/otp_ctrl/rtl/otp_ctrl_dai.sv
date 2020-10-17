@@ -580,7 +580,7 @@ module otp_ctrl_dai
   prim_arbiter_fixed #(
     .N(NumPart),
     .EnDataPort(0)
-  ) i_prim_arbiter_fixed (
+  ) u_part_sel_idx (
     .clk_i,
     .rst_ni,
     .req_i   ( part_sel_oh    ),

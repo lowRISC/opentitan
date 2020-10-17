@@ -39,7 +39,7 @@
       local: "true"
     },
     { name: "OtpByteAddrWidth",
-      desc: "Width of the OTP Byte address.",
+      desc: "Width of the OTP byte address.",
       type: "int",
       default: "11",
       local: "true"
@@ -62,22 +62,10 @@
       default: "2",
       local: "true"
     },
-    { name: "NumLcHalfwords",
-      desc: "Number of 16bit life cycle fields.",
-      type: "int",
-      default: "12",
-      local: "true"
-    },
-    { name: "NumCreatorSwCfgWindowWords",
+    { name: "NumSwCfgWindowWords",
       desc: "Size of the TL-UL window in 32bit words. Note that the effective partition size is smaller than that.",
       type: "int",
-      default: "256",
-      local: "true"
-    },
-    { name: "NumOwnerSwCfgWindowWords",
-      desc: "Size of the TL-UL window in 32bit words. Note that the effective partition size is smaller than that.",
-      type: "int",
-      default: "256",
+      default: "512",
       local: "true"
     },
     { name: "NumDebugWindowWords",
@@ -738,7 +726,7 @@
       fields: [
         { bits:   "0",
           desc: '''
-          When cleared to 0, read access to the !!CREATOR_SW_CFG partition is locked.
+          When cleared to 0, read access to the CREATOR_SW_CFG partition is locked.
           Write 1 to clear this bit.
           '''
           resval: 1,
@@ -754,7 +742,7 @@
       fields: [
         { bits:   "0",
           desc: '''
-          When cleared to 0, read access to the !!OWNER_SW_CFG partition is locked.
+          When cleared to 0, read access to the OWNER_SW_CFG partition is locked.
           Write 1 to clear this bit.
           '''
           resval: 1,
@@ -771,7 +759,7 @@
                   Integrity digest for the creator software config partition.
                   The integrity digest is 0 by default. Software must write this
                   digest value via the direct access interface in order to lock the partition.
-                  After a reset, write access to the !!OWNER_SW_CFG partition is locked and
+                  After a reset, write access to the CREATOR_SW_CFG partition is locked and
                   the digest becomes visible in this CSR.
                   ''',
         count:     "NumDigestWords",
@@ -791,7 +779,7 @@
                   Integrity digest for the owner software config partition.
                   The integrity digest is 0 by default. Software must write this
                   digest value via the direct access interface in order to lock the partition.
-                  After a reset, write access to the !!OWNER_SW_CFG partition is locked and
+                  After a reset, write access to the OWNER_SW_CFG partition is locked and
                   the digest becomes visible in this CSR.
                   ''',
         count:     "NumDigestWords",
@@ -881,29 +869,15 @@
     ////////////////////////////////
     // Software Config Partitions //
     ////////////////////////////////
-    { skipto: "0x400" }
+    { skipto: "0x1000" }
 
     { window: {
-        name: "CREATOR_SW_CFG"
-        items: "NumCreatorSwCfgWindowWords"
+        name: "SW_CFG_WINDOW"
+        items: "NumSwCfgWindowWords"
         swaccess: "ro",
         desc: '''
-        Any read to this window directly maps to the corresponding offset in the creator software
-        config partition, and triggers an OTP readout of the Bytes requested. Note that the transaction
-        will block until OTP readout has completed.
-        '''
-      }
-    }
-
-    { skipto: "0x800" }
-
-    { window: {
-        name: "OWNER_SW_CFG"
-        items: "NumOwnerSwCfgWindowWords"
-        swaccess: "ro",
-        desc: '''
-        Any read to this window directly maps to the corresponding offset in the owner software
-        config partition, and triggers an OTP readout of the Bytes requested. Note that the transaction
+        Any read to this window directly maps to the corresponding offset in the creator and owner software
+        config partitions, and triggers an OTP readout of the bytes requested. Note that the transaction
         will block until OTP readout has completed.
         '''
       }
@@ -912,7 +886,7 @@
     //////////////////////
     // Test Access Port //
     //////////////////////
-    { skipto: "0xC00" }
+    { skipto: "0x2000" }
 
     { window: {
         name: "TEST_ACCESS"

@@ -20,6 +20,8 @@ package otp_ctrl_pkg;
   // This defines the width of the check timers and LFSR
   parameter int TimerWidth = 40;
 
+  parameter int SwWindowAddrWidth = vbits(NumSwCfgWindowWords);
+
   // TODO: may need to tune this and make sure that this encoding not optimized away.
   // Redundantly encoded and complementary values are used to for signalling to the partition
   // controller FSMs and the DAI whether a partition is locked or not. Any other value than
