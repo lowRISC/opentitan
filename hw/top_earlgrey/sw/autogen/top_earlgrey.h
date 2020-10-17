@@ -366,7 +366,7 @@ extern "C" {
  * address between #TOP_EARLGREY_OTP_CTRL_BASE_ADDR and
  * `TOP_EARLGREY_OTP_CTRL_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_OTP_CTRL_SIZE_BYTES 0x2000u
+#define TOP_EARLGREY_OTP_CTRL_SIZE_BYTES 0x4000u
 
 /**
  * Peripheral base address for otbn in top earlgrey.

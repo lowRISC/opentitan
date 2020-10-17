@@ -35,7 +35,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_RAM_MAIN      = 32'h 0000ffff;
   localparam logic [31:0] ADDR_MASK_EFLASH        = 32'h 0007ffff;
   localparam logic [6:0][31:0] ADDR_MASK_PERI          = {
-    32'h 00001fff,
+    32'h 00003fff,
     32'h 00010fff,
     32'h 00000fff,
     32'h 00020fff,

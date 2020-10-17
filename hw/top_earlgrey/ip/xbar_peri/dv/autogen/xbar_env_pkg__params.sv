@@ -35,7 +35,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h18000000, 32'h18000fff}
     }},
     '{"otp_ctrl", '{
-        '{32'h401b0000, 32'h401b1fff}
+        '{32'h401b0000, 32'h401b3fff}
     }},
     '{"sensor_ctrl", '{
         '{32'h40170000, 32'h40170fff}

@@ -191,7 +191,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for otp_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_OTP_CTRL_SIZE_BYTES = 32'h2000;
+  parameter int unsigned TOP_EARLGREY_OTP_CTRL_SIZE_BYTES = 32'h4000;
 
   /**
    * Peripheral base address for otbn in top earlgrey.

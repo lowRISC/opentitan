@@ -28,7 +28,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_RSTMGR      = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_CLKMGR      = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RAM_RET     = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_OTP_CTRL    = 32'h 00001fff;
+  localparam logic [31:0] ADDR_MASK_OTP_CTRL    = 32'h 00003fff;
   localparam logic [31:0] ADDR_MASK_SENSOR_CTRL = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AST_WRAPPER = 32'h 00000fff;
 
