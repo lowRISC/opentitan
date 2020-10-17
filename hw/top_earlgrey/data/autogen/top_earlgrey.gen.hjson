@@ -2642,13 +2642,13 @@
       alert_list:
       [
         {
-          name: otp_fatal_error
+          name: otp_macro_failure
           width: 1
           type: alert
           async: 1
         }
         {
-          name: otp_check_failed
+          name: otp_check_failure
           width: 1
           type: alert
           async: 1
@@ -5073,14 +5073,14 @@
       module_name: keymgr
     }
     {
-      name: otp_ctrl_otp_fatal_error
+      name: otp_ctrl_otp_macro_failure
       width: 1
       type: alert
       async: 1
       module_name: otp_ctrl
     }
     {
-      name: otp_ctrl_otp_check_failed
+      name: otp_ctrl_otp_check_failure
       width: 1
       type: alert
       async: 1

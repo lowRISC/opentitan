@@ -12,8 +12,8 @@ parameter string LIST_OF_ALERTS[] = {
   "otbn_reg_uncorrectable",
   "sensor_ctrl_ast_alerts",
   "keymgr_err",
-  "otp_ctrl_otp_fatal_error",
-  "otp_ctrl_otp_check_failed"
+  "otp_ctrl_otp_macro_failure",
+  "otp_ctrl_otp_check_failure"
 };
 
 parameter uint NUM_ALERTS = 9;
