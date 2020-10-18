@@ -109,8 +109,6 @@ class OneShotCfg(FlowCfg):
             if not hasattr(self, "build_mode"):
                 setattr(self, "build_mode", "default")
 
-            self._process_exports()
-
             # Create objects from raw dicts - build_modes, sim_modes, run_modes,
             # tests and regressions, only if not a primary cfg obj
             self._create_objects()
