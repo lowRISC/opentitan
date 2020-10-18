@@ -32,9 +32,10 @@
 
   // Vars that need to exported to the env
   exports: [
-    FPV_TOP: {dut}
-    COV:     {cov}
+    { FPV_TOP: "{dut}" },
+    { COV: "{cov}" }
   ]
+
   report_cmd:  "python3 {proj_root}/hw/formal/tools/{tool}/parse-fpv-report.py"
   report_opts: ["--logpath={build_dir}/fpv.log",
                 "--reppath={build_dir}/results.hjson",

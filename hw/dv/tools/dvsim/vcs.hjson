@@ -149,8 +149,8 @@
 
   // Vars that need to exported to the env.
   exports: [
-    VCS_ARCH_OVERRIDE: linux
-    VCS_LIC_EXPIRE_WARNING: 1
+    { VCS_ARCH_OVERRIDE: "linux" },
+    { VCS_LIC_EXPIRE_WARNING: 1 }
   ]
 
   // Defaults for VCS
