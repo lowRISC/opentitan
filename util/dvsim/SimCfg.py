@@ -172,7 +172,7 @@ class SimCfg(FlowCfg):
         # the configuration format because our choice might depend on the
         # chosen tool.
         self.dump_fmt = (resolve_dump_format(self.tool, args.dump)
-                         if self.waves else 'none')
+                         if self.waves and not self.is_primary_cfg else 'none')
 
         # If build_unique is set, then add current timestamp to uniquify it
         if self.build_unique:
@@ -224,8 +224,6 @@ class SimCfg(FlowCfg):
             # Use the default build mode for tests that do not specify it
             if not hasattr(self, "build_mode"):
                 self.build_mode = 'default'
-
-            self._process_exports()
 
             # Create objects from raw dicts - build_modes, sim_modes, run_modes,
             # tests and regressions, only if not a primary cfg obj

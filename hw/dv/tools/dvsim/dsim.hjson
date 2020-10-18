@@ -72,7 +72,9 @@
                      "-elfile {vcs_cov_excl_files}"]
 
   // Vars that need to exported to the env.
-  exports: []
+  exports: [
+    { LD_LIBRARY_PATH: "{DSIM_HOME}/lib:{LD_LIBRARY_PATH}" }
+  ]
 
   // Defaults for DSim
   // TODO: there is currently no equivalent of "all" coverage metrics in DSim

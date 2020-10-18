@@ -379,25 +379,6 @@ class FlowCfg():
             log.error("Override key \"%s\" not found in the cfg!", ov_name)
             sys.exit(1)
 
-    def _process_exports(self):
-        # Convert 'exports' to dict
-        exports_dict = {}
-        if self.exports != []:
-            for item in self.exports:
-                if type(item) is dict:
-                    exports_dict.update(item)
-                elif type(item) is str:
-                    [key, value] = item.split(':', 1)
-                    if type(key) is not str:
-                        key = str(key)
-                    if type(value) is not str:
-                        value = str(value)
-                    exports_dict.update({key.strip(): value.strip()})
-                else:
-                    log.error("Type error in \"exports\": %s", str(item))
-                    sys.exit(1)
-        self.exports = exports_dict
-
     def _purge(self):
         '''Purge the existing scratch areas in preperation for the new run.'''
         return

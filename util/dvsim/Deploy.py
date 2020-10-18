@@ -75,7 +75,7 @@ class Deploy():
         self.renew_odir = False
 
         # List of vars required to be exported to sub-shell
-        self.exports = {}
+        self.exports = None
 
         # Deploy sub commands
         self.sub = []
@@ -157,8 +157,35 @@ class Deploy():
         self.odir_ln = os.path.basename(os.path.normpath(self.odir))
         self.log = self.odir + "/" + self.target + ".log"
 
+        # Make exports more easily mergeable with the current process' env.
+        self._process_exports()
+
         # If using LSF, redirect stdout and err to the log file
         self.cmd = self.construct_cmd()
+
+    def _process_exports(self):
+        '''Convert 'exports' as a list of dicts in the HJson to a dict.
+
+        Exports is a list of key-value pairs that are to be exported to the
+        subprocess' environment so that the tools can lookup those options.
+        DVSim limits how the data is presented in the HJson (the value of a
+        HJson member cannot be an object). This method converts a list of dicts
+        into a dict variable, which makes it easy to merge the list of exports
+        with the subprocess' env where the ASIC tool is invoked.
+        '''
+        exports_dict = {}
+        if self.exports:
+            try:
+                exports_dict = {
+                    k: str(v)
+                    for item in self.exports for k, v in item.items()
+                }
+            except ValueError as e:
+                log.error(
+                    "%s: exports: \'%s\' Exports key must be a list of dicts!",
+                    e, str(self.exports))
+                sys.exit(1)
+        self.exports = exports_dict
 
     def construct_cmd(self):
         cmd = "make -f " + self.flow_makefile + " " + self.target
@@ -216,7 +243,11 @@ class Deploy():
         return True
 
     def dispatch_cmd(self):
-        self.exports.update(os.environ)
+        # Update the shell's env vars with self.exports. Values in exports must
+        # replace the values in the shell's env vars if the keys match.
+        exports = os.environ.copy()
+        exports.update(self.exports)
+
         args = shlex.split(self.cmd)
         try:
             # If renew_odir flag is True - then move it.
@@ -228,8 +259,8 @@ class Deploy():
                       "w",
                       encoding="UTF-8",
                       errors="surrogateescape") as f:
-                for var in sorted(self.exports.keys()):
-                    f.write("{}={}\n".format(var, self.exports[var]))
+                for var in sorted(exports.keys()):
+                    f.write("{}={}\n".format(var, exports[var]))
                 f.close()
             os.system("ln -s " + self.odir + " " + self.sim_cfg.links['D'] +
                       '/' + self.odir_ln)
@@ -241,7 +272,7 @@ class Deploy():
                                             universal_newlines=True,
                                             stdout=f,
                                             stderr=f,
-                                            env=self.exports)
+                                            env=exports)
             self.log_fd = f
             self.status = "D"
             Deploy.dispatch_counter += 1
