@@ -63,9 +63,8 @@
     }
     { name: "PREDIV_CH0",
       desc: "PATTGEN pre-divider register for Channel 0",
-      swaccess: "wo",
+      swaccess: "rw",
       hwaccess: "hro",
-      hwqe: "true",
       fields: [
         { bits: "31:0",
           resval: "0",
@@ -76,9 +75,8 @@
     },
     { name: "PREDIV_CH1",
       desc: "PATTGEN pre-divider register for Channel 1",
-      swaccess: "wo",
+      swaccess: "rw",
       hwaccess: "hro",
-      hwqe: "true",
       fields: [
         { bits: "31:0",
           resval: "0",
@@ -92,9 +90,8 @@
         desc: "PATTGEN seed pattern multi-registers for Channel 0."
         count: "NumRegsData",
         cname: "PATTGEN",
-        swaccess: "wo",
+        swaccess: "rw",
         hwaccess: "hro",
-        hwqe: "true",
         fields: [
           { bits: "31:0",
             resval: "0",
@@ -109,9 +106,8 @@
         desc: "PATTGEN seed pattern multi-registers for Channel 1."
         count: "NumRegsData",
         cname: "PATTGEN",
-        swaccess: "wo",
+        swaccess: "rw",
         hwaccess: "hro",
-        hwqe: "true",
         fields: [
           { bits: "31:0",
             resval: "0",
@@ -123,9 +119,8 @@
     },
     { name: "SIZE",
       desc: "PATTGEN pattern length",
-      swaccess: "wo",
+      swaccess: "rw",
       hwaccess: "hro",
-      hwqe: "true",
       fields: [
         { bits: "5:0",
           resval: "0",

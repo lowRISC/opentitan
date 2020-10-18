@@ -1,0 +1,89 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:pattgen:0.1"
+description: "pattgen"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:ip:tlul
+    files:
+      - rtl/pattgen_reg_pkg.sv
+      - rtl/pattgen_reg_top.sv
+      - rtl/pattgen_ctrl_pkg.sv
+      - rtl/pattgen_core.sv
+      - rtl/pattgen_chan.sv
+      - rtl/pattgen.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/pattgen.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/pattgen.waiver
+    file_type: waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
+#  No DV yet in this PR
+#
+#  files_formal:
+#    files:
+#      - dv/tb/pattgen_bind.sv
+#    file_type: systemVerilogSource
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - target_formal    ? (files_formal)
+      - files_rtl
+    toplevel: pattgen
+
+#  files_formal yet undefined
+#
+#  formal:
+#    filesets:
+#      - files_rtl
+#      - files_formal
+#    toplevel: pattgen
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+          - "-stop_on_error"
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
