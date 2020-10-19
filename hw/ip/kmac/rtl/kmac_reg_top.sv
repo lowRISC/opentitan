@@ -149,9 +149,9 @@ module kmac_reg_top (
   logic cfg_kmac_en_qs;
   logic cfg_kmac_en_wd;
   logic cfg_kmac_en_we;
-  logic [2:0] cfg_strength_qs;
-  logic [2:0] cfg_strength_wd;
-  logic cfg_strength_we;
+  logic [2:0] cfg_kstrength_qs;
+  logic [2:0] cfg_kstrength_wd;
+  logic cfg_kstrength_we;
   logic [1:0] cfg_mode_qs;
   logic [1:0] cfg_mode_wd;
   logic cfg_mode_we;
@@ -514,18 +514,18 @@ module kmac_reg_top (
   );
 
 
-  //   F[strength]: 3:1
+  //   F[kstrength]: 3:1
   prim_subreg #(
     .DW      (3),
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
-  ) u_cfg_strength (
+  ) u_cfg_kstrength (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (cfg_strength_we & cfg_regwen_qs),
-    .wd     (cfg_strength_wd),
+    .we     (cfg_kstrength_we & cfg_regwen_qs),
+    .wd     (cfg_kstrength_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -533,10 +533,10 @@ module kmac_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cfg.strength.q ),
+    .q      (reg2hw.cfg.kstrength.q ),
 
     // to register interface (read)
-    .qs     (cfg_strength_qs)
+    .qs     (cfg_kstrength_qs)
   );
 
 
@@ -1757,8 +1757,8 @@ module kmac_reg_top (
   assign cfg_kmac_en_we = addr_hit[3] & reg_we & ~wr_err;
   assign cfg_kmac_en_wd = reg_wdata[0];
 
-  assign cfg_strength_we = addr_hit[3] & reg_we & ~wr_err;
-  assign cfg_strength_wd = reg_wdata[3:1];
+  assign cfg_kstrength_we = addr_hit[3] & reg_we & ~wr_err;
+  assign cfg_kstrength_wd = reg_wdata[3:1];
 
   assign cfg_mode_we = addr_hit[3] & reg_we & ~wr_err;
   assign cfg_mode_wd = reg_wdata[5:4];
@@ -1943,7 +1943,7 @@ module kmac_reg_top (
 
       addr_hit[3]: begin
         reg_rdata_next[0] = cfg_kmac_en_qs;
-        reg_rdata_next[3:1] = cfg_strength_qs;
+        reg_rdata_next[3:1] = cfg_kstrength_qs;
         reg_rdata_next[5:4] = cfg_mode_qs;
         reg_rdata_next[8] = cfg_msg_endianness_qs;
         reg_rdata_next[9] = cfg_state_endianness_qs;

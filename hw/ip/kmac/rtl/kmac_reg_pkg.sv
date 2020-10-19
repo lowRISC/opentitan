@@ -58,7 +58,7 @@ package kmac_reg_pkg;
     } kmac_en;
     struct packed {
       logic [2:0]  q;
-    } strength;
+    } kstrength;
     struct packed {
       logic [1:0]  q;
     } mode;
