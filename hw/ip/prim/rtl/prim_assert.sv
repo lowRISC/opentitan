@@ -29,7 +29,8 @@
   uvm_pkg::uvm_report_error("ASSERT FAILED", `PRIM_STRINGIFY(__name), uvm_pkg::UVM_NONE, \
                             `__FILE__, `__LINE__, "", 1);                                \
 `else                                                                                    \
-  $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, `__FILE__, `__LINE__, MSG_);  \
+  $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, `__FILE__, `__LINE__,         \
+         `PRIM_STRINGIFY(__name));                                                       \
 `endif
 
 // The basic helper macros are actually defined in "implementation headers". The macros should do
