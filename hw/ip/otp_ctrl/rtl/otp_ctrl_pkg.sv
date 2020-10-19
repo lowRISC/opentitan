@@ -150,9 +150,10 @@ package otp_ctrl_pkg;
   // Partition Metadata //
   ////////////////////////
 
-  typedef enum logic {
+  typedef enum logic [1:0] {
     Unbuffered,
-    Buffered
+    Buffered,
+    LifeCycle
   } part_variant_e;
 
   typedef struct packed {
@@ -185,7 +186,7 @@ package otp_ctrl_pkg;
     // SECRET2
     '{Buffered,     11'h730, 120,  Secret2Key,  1'b1,      1'b1,      1'b1,       1'b1},
     // LIFE_CYCLE
-    '{Buffered,     11'h7A8, 88,   Secret0Key,  1'b0,      1'b0,      1'b0,       1'b0}
+    '{LifeCycle,    11'h7A8, 88,   Secret0Key,  1'b0,      1'b0,      1'b0,       1'b0}
   };
 
   typedef enum {

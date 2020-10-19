@@ -12,7 +12,8 @@ module otp_ctrl_part_buf
   import otp_ctrl_reg_pkg::*;
 #(
   // Partition information.
-  parameter part_info_t Info
+  parameter part_info_t             Info,
+  parameter logic [Info.size*8-1:0] DataDefault = '0
 ) (
   input                               clk_i,
   input                               rst_ni,
@@ -567,8 +568,7 @@ module otp_ctrl_part_buf
 
   // Hardware output gating.
   // Note that this is decoupled from the DAI access rules further below.
-  // TODO: This may need a data-specific default.
-  assign data_o = (dout_gate_q == Unlocked) ? data : '0;
+  assign data_o = (dout_gate_q == Unlocked) ? data : DataDefault;
   // The digest does not have to be gated.
   assign digest_o = data[$high(data_o) -: ScrmblBlockWidth];
   // We have successfully initialized the partition once it has been unlocked.

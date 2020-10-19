@@ -842,7 +842,55 @@ module otp_ctrl
     ////////////////////////////////////////////////////////////////////////////////////////////////
     end else if (PartInfo[k].variant == Buffered) begin : gen_buffered
       otp_ctrl_part_buf #(
-        .Info(PartInfo[k])
+        .Info(PartInfo[k]),
+        .DataDefault('0)
+      ) u_part_buf (
+        .clk_i,
+        .rst_ni,
+        .init_req_i       ( part_init_req                   ),
+        .init_done_o      ( part_init_done[k]               ),
+        .integ_chk_req_i  ( integ_chk_req[k]                ),
+        .integ_chk_ack_o  ( integ_chk_ack[k]                ),
+        .cnsty_chk_req_i  ( cnsty_chk_req[k]                ),
+        .cnsty_chk_ack_o  ( cnsty_chk_ack[k]                ),
+        .escalate_en_i    ( lc_escalate_en_i                ),
+        .error_o          ( part_error[k]                   ),
+        .access_i         ( part_access_csrs[k]             ),
+        .access_o         ( part_access_dai[k]              ),
+        .digest_o         ( part_digest[k]                  ),
+        .data_o           ( part_buf_data[PartInfo[k].offset +: PartInfo[k].size] ),
+        .otp_req_o        ( part_otp_arb_req[k]             ),
+        .otp_cmd_o        ( part_otp_arb_bundle[k].cmd      ),
+        .otp_size_o       ( part_otp_arb_bundle[k].size     ),
+        .otp_wdata_o      ( part_otp_arb_bundle[k].wdata    ),
+        .otp_addr_o       ( part_otp_arb_bundle[k].addr     ),
+        .otp_gnt_i        ( part_otp_arb_gnt[k]             ),
+        .otp_rvalid_i     ( part_otp_rvalid[k]              ),
+        .otp_rdata_i      ( part_otp_rdata                  ),
+        .otp_err_i        ( part_otp_err                    ),
+        .scrmbl_mtx_req_o ( part_scrmbl_mtx_req[k]          ),
+        .scrmbl_mtx_gnt_i ( part_scrmbl_mtx_gnt[k]          ),
+        .scrmbl_cmd_o     ( part_scrmbl_req_bundle[k].cmd   ),
+        .scrmbl_sel_o     ( part_scrmbl_req_bundle[k].sel   ),
+        .scrmbl_data_o    ( part_scrmbl_req_bundle[k].data  ),
+        .scrmbl_valid_o   ( part_scrmbl_req_bundle[k].valid ),
+        .scrmbl_ready_i   ( part_scrmbl_req_ready[k]        ),
+        .scrmbl_valid_i   ( part_scrmbl_rsp_valid[k]        ),
+        .scrmbl_data_i    ( part_scrmbl_rsp_data            )
+      );
+
+      // Buffered partitions are not accessible via the TL-UL window.
+      logic unused_part_tlul_sigs;
+      assign unused_part_tlul_sigs = ^part_tlul_req[k];
+      assign part_tlul_gnt[k]    = 1'b0;
+      assign part_tlul_rerror[k] = '0;
+      assign part_tlul_rvalid[k] = 1'b0;
+      assign part_tlul_rdata[k]  = '0;
+end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
+      otp_ctrl_part_buf #(
+        .Info(PartInfo[k]),
+        // By default all counter words are set and the life cycle state is scrapped.
+        .DataDefault({{lc_ctrl_pkg::NumLcCountValues{lc_ctrl_pkg::Set}}, lc_ctrl_pkg::LcStScrap})
       ) u_part_buf (
         .clk_i,
         .rst_ni,
