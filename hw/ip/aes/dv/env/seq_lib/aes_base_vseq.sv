@@ -59,6 +59,28 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask // trigger
 
 
+  virtual task clear_regs(clear_t clr_vector);
+    string txt="";
+    bit [TL_DW:0] reg_val = '0;
+
+    txt = $sformatf("\n data_out: \t %0b", clr_vector.data_out);
+    txt = {txt, $sformatf("\n data_in: \t %0b", clr_vector.data_in)};
+    txt = {txt, $sformatf("\n data_iv: \t %0b", clr_vector.iv)};
+    txt = {txt, $sformatf("\n data_key: \t %0b", clr_vector.key)};
+    txt = {txt, $sformatf("\n vector: \t %0b", clr_vector)};
+    `uvm_info(`gfn, $sformatf("%s",txt), UVM_MEDIUM)
+    reg_val[4:1] = clr_vector;
+    csr_wr(.csr(ral.trigger), .value(reg_val));
+  endtask // clear_registers
+
+
+  virtual task prng_reseed();
+    bit [TL_DW:0] reg_val = '0;
+    reg_val[5] = 1'b1;
+    csr_wr(.csr(ral.trigger), .value(reg_val));
+  endtask // prng_reseed
+
+
   virtual task set_operation(bit operation);
     ral.ctrl_shadowed.operation.set(operation);
     csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
@@ -116,15 +138,23 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task add_data(ref bit [3:0] [31:0] data, bit do_b2b);
+    int write_order[4] = {0,1,2,3};
+
     `uvm_info(`gfn, $sformatf("\n\t ----| ADDING DATA TO DUT %h ", data),  UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_0: %h ", data[0]), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_1: %h ", data[1]), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_2: %h ", data[2]), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA_IN_3: %h ", data[3]), UVM_HIGH)
-    csr_wr(.csr(ral.data_in_0), .value(data[0][31:0]), .blocking(~do_b2b) );
-    csr_wr(.csr(ral.data_in_1), .value(data[1][31:0]), .blocking(~do_b2b) );
-    csr_wr(.csr(ral.data_in_2), .value(data[2][31:0]), .blocking(~do_b2b) );
-    csr_wr(.csr(ral.data_in_3), .value(data[3][31:0]), .blocking(~do_b2b) );
+
+    write_order.shuffle();
+    foreach (write_order[i]) begin
+      case (write_order[i])
+        0: csr_wr(.csr(ral.data_in_0), .value(data[0][31:0]), .blocking(~do_b2b));
+        1: csr_wr(.csr(ral.data_in_1), .value(data[1][31:0]), .blocking(~do_b2b));
+        2: csr_wr(.csr(ral.data_in_2), .value(data[2][31:0]), .blocking(~do_b2b));
+        3: csr_wr(.csr(ral.data_in_3), .value(data[3][31:0]), .blocking(~do_b2b));
+      endcase
+    end
   endtask
 
 
@@ -133,8 +163,8 @@ class aes_base_vseq extends cip_base_vseq #(
     // randomize read order
     read_order.shuffle();
 
-    foreach(read_order[i]) begin
-      case(read_order[i])
+    foreach (read_order[i]) begin
+      case (read_order[i])
         0: csr_rd(.ptr(ral.data_out_0), .value(cypher_txt[0]), .blocking(~do_b2b));
         1: csr_rd(.ptr(ral.data_out_1), .value(cypher_txt[1]), .blocking(~do_b2b));
         2: csr_rd(.ptr(ral.data_out_2), .value(cypher_txt[2]), .blocking(~do_b2b));
@@ -144,10 +174,10 @@ class aes_base_vseq extends cip_base_vseq #(
 
     `uvm_info(`gfn, $sformatf("\n\t ----| READ OUTPUT DATA"), UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("\n\t ----| DATA FROM DUT %h ", cypher_txt), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_0: %h ", cypher_txt[0][31:0]),  UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_1: %h ", cypher_txt[1][31:0]),  UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_2: %h ", cypher_txt[2][31:0]),  UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_3: %h ", cypher_txt[3][31:0]),  UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_0: %h ", cypher_txt[0][31:0]), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_1: %h ", cypher_txt[1][31:0]), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_2: %h ", cypher_txt[2][31:0]), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("\n\t ----| DATA_OUT_3: %h ", cypher_txt[3][31:0]), UVM_HIGH)
   endtask
 
 
@@ -162,10 +192,6 @@ class aes_base_vseq extends cip_base_vseq #(
     set_mode(item.aes_mode);
     set_key_len(item.key_len);
     set_manual_operation(item.manual_op);
-    if (!cfg.random_data_key_iv_order) begin
-      write_key(item.key, item.do_b2b);
-      if (item.mode != AES_ECB) write_iv(item.iv, item.do_b2b);
-    end
   endtask
 
 
@@ -196,8 +222,8 @@ class aes_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("\n\t ----| FIXED DATA ENABLED? : %0b", msg_item.fixed_data_en),
               UVM_MEDIUM)
     for (int n = 0; n < msg_item.message_length - 15; n += 16) begin
-      if(msg_item.fixed_data_en) begin
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(aes_item, data_in == msg_item.fixed_data; )
+      if (msg_item.fixed_data_en) begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(aes_item, data_in == msg_item.fixed_data;)
       end else begin
         `DV_CHECK_RANDOMIZE_FATAL(aes_item)
       end
@@ -209,11 +235,11 @@ class aes_base_vseq extends cip_base_vseq #(
     end
 
     // check if message length is not divisible by 16bytes
-    if( msg_item.message_length[3:0] != 4'd0) begin
+    if (msg_item.message_length[3:0] != 4'd0) begin
       `uvm_info(`gfn, $sformatf("\n ----| generating runt "), UVM_MEDIUM)
       aes_item.data_len = msg_item.message_length[3:0];
-      if(msg_item.fixed_data_en) begin
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(aes_item, data_in == msg_item.fixed_data; )
+      if (msg_item.fixed_data_en) begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(aes_item, data_in == msg_item.fixed_data;)
       end else begin
         `DV_CHECK_RANDOMIZE_FATAL(aes_item)
       end
@@ -224,53 +250,71 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask // generate_data_stream
 
 
-  virtual task write_interleaved_data_key_iv( bit [7:0] [31:0] key [2], [3:0] [31:0] iv, [3:0] [31:0] data );
+  virtual task write_data_key_iv( aes_seq_item item,  bit [3:0] [31:0] data);
     string txt="";
+    bit    is_blocking = ~item.do_b2b;
     string interleave_queue[] = '{ "key_share0_0", "key_share0_1", "key_share0_2", "key_share0_3",
                                    "key_share0_4", "key_share0_5", "key_share0_6", "key_share0_7",
                                    "key_share1_0", "key_share1_1", "key_share1_2", "key_share1_3",
                                    "key_share1_4", "key_share1_5", "key_share1_6", "key_share1_7",
-                                   "data_in_0", "data_in_1", "data_in_2", "data_in_3",
-                                   "iv_0", "iv_1", "iv_2", "iv_3" };
+                                   "data_in_0", "data_in_1", "data_in_2", "data_in_3"};
 
-    interleave_queue.shuffle();
+    // if non ECB mode add IV to queue
+    if (item.mode != AES_ECB) begin
+      interleave_queue = {"iv_0", "iv_1", "iv_2", "iv_3", interleave_queue};
+    end
 
-   foreach ( interleave_queue[i] ) begin
-     txt = {txt, $sformatf("----|\n \t %s", interleave_queue[i]) };
+    if (|item.clear_reg) begin
+      interleave_queue = { interleave_queue, "clear_reg"};
+      `uvm_info(`gfn, $sformatf("\n\t ----| Clear reg enabled adding register clear to Queue"),
+                 UVM_MEDIUM)
+    end
 
-     case (interleave_queue[i])
-       "key_share0_0": csr_wr(.csr(ral.key_share0_0), .value(key[0][0]));
-       "key_share0_1": csr_wr(.csr(ral.key_share0_1), .value(key[0][1]));
-       "key_share0_2": csr_wr(.csr(ral.key_share0_2), .value(key[0][2]));
-       "key_share0_3": csr_wr(.csr(ral.key_share0_3), .value(key[0][3]));
-       "key_share0_4": csr_wr(.csr(ral.key_share0_4), .value(key[0][4]));
-       "key_share0_5": csr_wr(.csr(ral.key_share0_5), .value(key[0][5]));
-       "key_share0_6": csr_wr(.csr(ral.key_share0_6), .value(key[0][6]));
-       "key_share0_7": csr_wr(.csr(ral.key_share0_7), .value(key[0][7]));
 
-       "key_share1_0": csr_wr(.csr(ral.key_share1_0), .value(key[1][0]));
-       "key_share1_1": csr_wr(.csr(ral.key_share1_1), .value(key[1][1]));
-       "key_share1_2": csr_wr(.csr(ral.key_share1_2), .value(key[1][2]));
-       "key_share1_3": csr_wr(.csr(ral.key_share1_3), .value(key[1][3]));
-       "key_share1_4": csr_wr(.csr(ral.key_share1_4), .value(key[1][4]));
-       "key_share1_5": csr_wr(.csr(ral.key_share1_5), .value(key[1][5]));
-       "key_share1_6": csr_wr(.csr(ral.key_share1_6), .value(key[1][6]));
-       "key_share1_7": csr_wr(.csr(ral.key_share1_7), .value(key[1][7]));
+    if (cfg.random_data_key_iv_order) interleave_queue.shuffle();
 
-       "iv_0": csr_wr(.csr(ral.iv_0), .value(iv[0]));
-       "iv_1": csr_wr(.csr(ral.iv_1), .value(iv[1]));
-       "iv_2": csr_wr(.csr(ral.iv_2), .value(iv[2]));
-       "iv_3": csr_wr(.csr(ral.iv_3), .value(iv[3]));
+    foreach ( interleave_queue[i] ) begin
+      txt = {txt, $sformatf("\n\t ----| \t %s", interleave_queue[i]) };
 
-       "data_in_0": csr_wr(.csr(ral.data_in_0), .value(data[0][31:0]));
-       "data_in_1": csr_wr(.csr(ral.data_in_1), .value(data[1][31:0]));
-       "data_in_2": csr_wr(.csr(ral.data_in_2), .value(data[2][31:0]));
-       "data_in_3": csr_wr(.csr(ral.data_in_3), .value(data[3][31:0]));
-     endcase // case interleave_queue[i]
-   end
-    `uvm_info(`gfn, $sformatf("\n\t ----| Configuring the DUT in the following order:  %s", txt),
+      case (interleave_queue[i])
+        "key_share0_0": csr_wr(.csr(ral.key_share0_0), .value(item.key[0][0]), .blocking(is_blocking));
+        "key_share0_1": csr_wr(.csr(ral.key_share0_1), .value(item.key[0][1]), .blocking(is_blocking));
+        "key_share0_2": csr_wr(.csr(ral.key_share0_2), .value(item.key[0][2]), .blocking(is_blocking));
+        "key_share0_3": csr_wr(.csr(ral.key_share0_3), .value(item.key[0][3]), .blocking(is_blocking));
+        "key_share0_4": csr_wr(.csr(ral.key_share0_4), .value(item.key[0][4]), .blocking(is_blocking));
+        "key_share0_5": csr_wr(.csr(ral.key_share0_5), .value(item.key[0][5]), .blocking(is_blocking));
+        "key_share0_6": csr_wr(.csr(ral.key_share0_6), .value(item.key[0][6]), .blocking(is_blocking));
+        "key_share0_7": csr_wr(.csr(ral.key_share0_7), .value(item.key[0][7]), .blocking(is_blocking));
+
+        "key_share1_0": csr_wr(.csr(ral.key_share1_0), .value(item.key[1][0]), .blocking(is_blocking));
+        "key_share1_1": csr_wr(.csr(ral.key_share1_1), .value(item.key[1][1]), .blocking(is_blocking));
+        "key_share1_2": csr_wr(.csr(ral.key_share1_2), .value(item.key[1][2]), .blocking(is_blocking));
+        "key_share1_3": csr_wr(.csr(ral.key_share1_3), .value(item.key[1][3]), .blocking(is_blocking));
+        "key_share1_4": csr_wr(.csr(ral.key_share1_4), .value(item.key[1][4]), .blocking(is_blocking));
+        "key_share1_5": csr_wr(.csr(ral.key_share1_5), .value(item.key[1][5]), .blocking(is_blocking));
+        "key_share1_6": csr_wr(.csr(ral.key_share1_6), .value(item.key[1][6]), .blocking(is_blocking));
+        "key_share1_7": csr_wr(.csr(ral.key_share1_7), .value(item.key[1][7]), .blocking(is_blocking));
+
+        "iv_0": csr_wr(.csr(ral.iv_0), .value(item.iv[0]), .blocking(is_blocking));
+        "iv_1": csr_wr(.csr(ral.iv_1), .value(item.iv[1]), .blocking(is_blocking));
+        "iv_2": csr_wr(.csr(ral.iv_2), .value(item.iv[2]), .blocking(is_blocking));
+        "iv_3": csr_wr(.csr(ral.iv_3), .value(item.iv[3]), .blocking(is_blocking));
+
+        "data_in_0": csr_wr(.csr(ral.data_in_0), .value(item.data_in[0][31:0]), .blocking(is_blocking));
+        "data_in_1": csr_wr(.csr(ral.data_in_1), .value(item.data_in[1][31:0]), .blocking(is_blocking));
+        "data_in_2": csr_wr(.csr(ral.data_in_2), .value(item.data_in[2][31:0]), .blocking(is_blocking));
+        "data_in_3": csr_wr(.csr(ral.data_in_3), .value(item.data_in[3][31:0]), .blocking(is_blocking));
+
+        "clear_reg": begin
+          clear_regs(item.clear_reg);
+          csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
+        end
+
+      endcase // case interleave_queue[i]
+    end
+    `uvm_info(`gfn, $sformatf("\n\t ----| Configuring the DUT in the following order:  %s, \n\t data 0x%0h", txt, data),
               UVM_MEDIUM)
-  endtask // write_interleaved_data_key_iv
+  endtask // write_data_key_iv
 
 
   // TODO
@@ -290,15 +334,12 @@ class aes_base_vseq extends cip_base_vseq #(
     nxt_item = aes_item_queue.pop_back();
     setup_dut(nxt_item);
 
-    // interleave data key and IV in random matter
-    if ( cfg.random_data_key_iv_order) begin
-      last_item = nxt_item;
-      nxt_item = aes_item_queue.pop_back();
-      write_interleaved_data_key_iv(last_item.key, last_item.iv, nxt_item.data_in);
-      if (nxt_item.mode != AES_NONE) begin
-        csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));    // poll for data valid
-        read_data(nxt_item.data_out, nxt_item.do_b2b);
-      end
+    last_item = nxt_item;
+    nxt_item = aes_item_queue.pop_back();
+    write_data_key_iv(last_item, nxt_item.data_in);
+    if (nxt_item.mode != AES_NONE) begin
+      csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));    // poll for data valid
+      read_data(nxt_item.data_out, nxt_item.do_b2b);
     end
 
     while (aes_item_queue.size() > 0) begin
@@ -308,7 +349,7 @@ class aes_base_vseq extends cip_base_vseq #(
         `uvm_info(`gfn, $sformatf("\n\t ----| POLLING FOR DATA"), UVM_DEBUG)
         csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));    // poll for data valid
         read_data(nxt_item.data_out, nxt_item.do_b2b);
-        end
+      end
     end
 
   endtask // transmit_message_with_rd_back
@@ -338,12 +379,11 @@ class aes_base_vseq extends cip_base_vseq #(
 
     setup_dut(nxt_item);
     `uvm_info(`gfn, $sformatf("\n\t ....| STARTING MANUAL OPERATION |...."), UVM_MEDIUM)
-    if ( cfg.random_data_key_iv_order) begin
-      last_item   = nxt_item;
-      nxt_item    = aes_item_queue.pop_back();
-      write_interleaved_data_key_iv(last_item.key, last_item.iv, nxt_item.data_in);
-      trigger();
-    end
+
+    last_item   = nxt_item;
+    nxt_item    = aes_item_queue.pop_back();
+    write_data_key_iv(last_item, nxt_item.data_in);
+    trigger();
 
     while (num_blocks > 0) begin // until all block has been processed and read out
       `uvm_info(`gfn, $sformatf("\n\t ....| missing output from %d blocks |....",num_blocks),
@@ -386,55 +426,57 @@ class aes_base_vseq extends cip_base_vseq #(
     if (aes_item_queue.size() < 1) begin
       `uvm_fatal(`gfn, $sformatf("\n\t -| TRYING TO READ FROM AN EMPTY QUEUE |-"))
     end
-    num_blocks = aes_item_queue.size() - 1;  // subtract cfg item
+    num_blocks = aes_item_queue.size() -1;  // subtract cfg item
     nxt_item   = aes_item_queue.pop_back();
 
     setup_dut(nxt_item);
     `uvm_info(`gfn, $sformatf("\n\t ....| STARTING MANUAL OPERATION |...."), UVM_MEDIUM)
-    if (cfg.random_data_key_iv_order) begin
-      last_item   = nxt_item;
-      nxt_item    = aes_item_queue.pop_back();
-      num_blocks -= 1;
-      write_interleaved_data_key_iv(last_item.key, last_item.iv, nxt_item.data_in);
-      trigger();
-      csr_spinwait(.ptr(ral.status.output_valid), .exp_data(1'b1));    // poll for data valid
-      read_data(nxt_item.data_out, nxt_item.do_b2b);
-    end
+
+    last_item   = nxt_item;
+    nxt_item    = aes_item_queue.pop_back();
+    num_blocks -= 1;
+    write_data_key_iv(last_item, nxt_item.data_in);
+    trigger();
+    csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));    // poll for data valid
+    read_data(nxt_item.data_out, nxt_item.do_b2b);
 
     while (num_blocks > 0) begin // until all block has been processed and read out
-      `uvm_info(`gfn, $sformatf("\n\t ....| missing output from %d blocks |....", num_blocks),
+      `uvm_info(`gfn, $sformatf("\n\t ....| missing output from %d blocks |....",num_blocks),
                 UVM_MEDIUM)
 
       csr_spinwait(.ptr(ral.status.input_ready) , .exp_data(1'b1));
       `uvm_info(`gfn, $sformatf("\n\t ....| POLLED STATUS %h |....",status), UVM_MEDIUM)
-      `uvm_info(`gfn, $sformatf("\n\t ....| blocks left in message %d |....", aes_item_queue.size()),
+      `uvm_info(`gfn, $sformatf("\n\t ....| blocks left in message %d |....",aes_item_queue.size()),
                 UVM_MEDIUM)
 
       nxt_item = aes_item_queue.pop_back();
       add_data(nxt_item.data_in, nxt_item.do_b2b);
       trigger();
 
-      csr_spinwait(.ptr(ral.status.output_valid), .exp_data(1'b1));    // poll for data valid
+      csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));    // poll for data valid
       read_data(nxt_item.data_out, nxt_item.do_b2b);
       num_blocks -= 1;
     end
-  endtask // transmist_message_manual_op_w_rd_back
+  endtask // trasnmist_message_manual_op_w_rd_back
 
 
+  ///////////////////////////////////////////////////////////
+  ///////////////        FUNCTIONS       ////////////////////
+  ///////////////////////////////////////////////////////////
 
   // initialize the global sequence item
   // with values from the message item (happens once per message item
   function void aes_item_init(ref aes_message_item message_item);
 
     aes_item = new();
-    aes_item.operation = message_item.aes_operation;
-    aes_item.mode      = message_item.aes_mode;
-    aes_item.key_len   = message_item.aes_keylen;
-    aes_item.key       = message_item.aes_key;
-    aes_item.iv        = message_item.aes_iv;
-    aes_item.manual_op = message_item.manual_operation;
-    aes_item.key_mask  = message_item.keymask;
-
+    aes_item.operation     = message_item.aes_operation;
+    aes_item.mode          = message_item.aes_mode;
+    aes_item.key_len       = message_item.aes_keylen;
+    aes_item.key           = message_item.aes_key;
+    aes_item.iv            = message_item.aes_iv;
+    aes_item.manual_op     = message_item.manual_operation;
+    aes_item.key_mask      = message_item.keymask;
+    aes_item.clear_reg_pct = cfg.clear_reg_pct;
   endfunction // aes_item_init
 
 
@@ -485,7 +527,6 @@ class aes_base_vseq extends cip_base_vseq #(
     for (int i=0; i < cfg.num_messages; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(aes_message)
       if (aes_message.cfg_error_type[0] == 1'b1) cfg.num_corrupt_messages += 1;
-
       `downcast(cloned_message, aes_message.clone());
       //`assert($cast(cloned_message, aes_message.clone());
       message_queue.push_front(cloned_message);
@@ -503,5 +544,5 @@ class aes_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, $sformatf("----|  ITEM #%d", n ), UVM_MEDIUM)
       `uvm_info(`gfn, $sformatf("%s", print_item.convert2string()), UVM_MEDIUM)
     end
-  endfunction
+  endfunction // aes_print_item_queue
 endclass : aes_base_vseq
