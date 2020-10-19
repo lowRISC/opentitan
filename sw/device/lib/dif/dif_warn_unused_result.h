@@ -10,7 +10,6 @@
  * @brief Unused Result Warning Macro for DIFs.
  */
 
-// Header Extern Guard (so header can be used from C and C++)
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus

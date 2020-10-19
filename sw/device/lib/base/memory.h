@@ -17,7 +17,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// Header Extern Guard  (so header can be used from C and C++)
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus

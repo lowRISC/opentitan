@@ -5,7 +5,6 @@
 #ifndef OPENTITAN_SW_DEVICE_ROM_EXTS_MANIFEST_H_
 #define OPENTITAN_SW_DEVICE_ROM_EXTS_MANIFEST_H_
 
-// Header Extern Guard (so header can be used from C and C++)
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
