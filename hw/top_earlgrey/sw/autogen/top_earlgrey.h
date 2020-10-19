@@ -831,6 +831,30 @@ typedef enum top_earlgrey_power_manager_reset_requests {
   kTopEarlgreyPowerManagerResetRequestsLast = 0, /**< \internal Last valid pwrmgr reset_request signal */
 } top_earlgrey_power_manager_reset_requests_t;
 
+/**
+ * Clock Manager Software-Controlled ("Gated") Clocks.
+ *
+ * The Software has full control over these clocks.
+ */
+typedef enum top_earlgrey_gateable_clocks {
+  kTopEarlgreyGateableClocksIoDiv4Peri = 0, /**< Clock clk_io_div4_peri in group peri */
+  kTopEarlgreyGateableClocksUsbPeri = 1, /**< Clock clk_usb_peri in group peri */
+  kTopEarlgreyGateableClocksLast = 1, /**< \internal Last Valid Gateable Clock */
+} top_earlgrey_gateable_clocks_t;
+
+/**
+ * Clock Manager Software-Hinted Clocks.
+ *
+ * The Software has partial control over these clocks. It can ask them to stop,
+ * but the clock manager is in control of whether the clock actually is stopped.
+ */
+typedef enum top_earlgrey_hintable_clocks {
+  kTopEarlgreyHintableClocksMainAes = 0, /**< Clock clk_main_aes in group trans */
+  kTopEarlgreyHintableClocksMainHmac = 1, /**< Clock clk_main_hmac in group trans */
+  kTopEarlgreyHintableClocksMainKmac = 2, /**< Clock clk_main_kmac in group trans */
+  kTopEarlgreyHintableClocksMainOtbn = 3, /**< Clock clk_main_otbn in group trans */
+  kTopEarlgreyHintableClocksLast = 3, /**< \internal Last Valid Hintable Clock */
+} top_earlgrey_hintable_clocks_t;
 
 // Header Extern Guard
 #ifdef __cplusplus

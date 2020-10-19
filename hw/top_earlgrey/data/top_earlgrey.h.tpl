@@ -159,6 +159,20 @@ ${helper.rstmgr_sw_rsts.render()}
  */
 ${helper.pwrmgr_reset_requests.render()}
 
+/**
+ * Clock Manager Software-Controlled ("Gated") Clocks.
+ *
+ * The Software has full control over these clocks.
+ */
+${helper.clkmgr_gateable_clocks.render()}
+
+/**
+ * Clock Manager Software-Hinted Clocks.
+ *
+ * The Software has partial control over these clocks. It can ask them to stop,
+ * but the clock manager is in control of whether the clock actually is stopped.
+ */
+${helper.clkmgr_hintable_clocks.render()}
 
 // Header Extern Guard
 #ifdef __cplusplus

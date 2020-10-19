@@ -48,6 +48,9 @@ class Name(object):
     def as_c_type(self):
         return self.as_snake_case() + "_t"
 
+    def remove_part(self, part_to_remove):
+        return Name([p for p in self.parts if p != part_to_remove])
+
 
 class MemoryRegion(object):
     def __init__(self, name, base_addr, size_bytes):
@@ -150,6 +153,7 @@ class TopGenC(object):
         self._init_pwrmgr_wakeups()
         self._init_rstmgr_sw_rsts()
         self._init_pwrmgr_reset_requests()
+        self._init_clkmgr_clocks()
 
     def modules(self):
         return [(m["name"],
@@ -404,3 +408,43 @@ class TopGenC(object):
         enum.add_last_constant("Last valid pwrmgr reset_request signal")
 
         self.pwrmgr_reset_requests = enum
+
+    def _init_clkmgr_clocks(self):
+        """
+        Creates CEnums for accessing the software-controlled clocks in the
+        design.
+
+        The logic here matches the logic in topgen.py in how it instantiates the
+        clock manager with the described clocks.
+
+        We differentiate "gateable" clocks and "hintable" clocks because the
+        clock manager has separate register interfaces for each group.
+        """
+
+
+        aon_clocks = set()
+        for src in self.top['clocks']['srcs'] + self.top['clocks']['derived_srcs']:
+            if src['aon'] == 'yes':
+                aon_clocks.add(src['name'])
+
+        gateable_clocks = CEnum(self._top_name + Name(["gateable", "clocks"]))
+        hintable_clocks = CEnum(self._top_name + Name(["hintable", "clocks"]))
+
+        # This replicates the behaviour in `topgen.py` in deriving `hints` and
+        # `sw_clocks`.
+        for group in self.top['clocks']['groups']:
+            for (name, source) in group['clocks'].items():
+                if source not in aon_clocks:
+                    # All these clocks start with `clk_` which is redundant.
+                    clock_name = Name.from_snake_case(name).remove_part("clk")
+                    docstring = "Clock {} in group {}".format(name, group['name'])
+                    if group["sw_cg"] == "yes":
+                        gateable_clocks.add_constant(clock_name, docstring)
+                    elif group["sw_cg"] == "hint":
+                        hintable_clocks.add_constant(clock_name, docstring)
+
+        gateable_clocks.add_last_constant("Last Valid Gateable Clock")
+        hintable_clocks.add_last_constant("Last Valid Hintable Clock")
+
+        self.clkmgr_gateable_clocks = gateable_clocks
+        self.clkmgr_hintable_clocks = hintable_clocks
