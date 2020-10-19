@@ -20,11 +20,12 @@ class aes_scoreboard extends cip_base_scoreboard #(
   aes_seq_item output_item;                   // item containing resulting output
   aes_seq_item complete_item;                 // merge of input and output items
 
-  bit          aes_from_rst   = 1;            // 1: nothing has happened since rst was released
-  bit          ok_to_fwd      = 0;            // 0: item is not ready to forward
-  bit          finish_message = 0;            // set when test is trying to end
+  bit          aes_from_rst       = 1;        // 1: nothing has happened since rst was released
+  bit          ok_to_fwd          = 0;        // 0: item is not ready to forward
+  bit          finish_message     = 0;        // set when test is trying to end
                                               // - to indicate the last message is finished
-  int          message_cnt    = 0;            // used to check that all messages were received
+  int          message_cnt        = 0;        // used to check that all messages were received
+  int          mode_errors_seen   = 0;        // number of aes_mode errors seen
 
   // local queues to hold incoming packets pending comparison //
 
@@ -100,8 +101,9 @@ class aes_scoreboard extends cip_base_scoreboard #(
             6'b00_1000:  input_item.mode = AES_OFB;
             6'b01_0000:  input_item.mode = AES_CTR;
             6'b10_0000:  input_item.mode = AES_NONE;
-            default:     input_item.mode = AES_ECB;
+            default:     input_item.mode = AES_NONE;
           endcase // case item.a_data[4:1]
+
         end
 
         (!uvm_re_match("key_share0*", csr_name)): begin
@@ -306,7 +308,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
             end
           end
           default: begin
-            `uvm_fatal(`gfn, $sformatf("\n\t ----| I AM IN DEFAULT CASE I SHOULD NOT BE HERE"))
+            `uvm_info(`gfn, $sformatf("\n\t ----| Received illegal AES_MODE setting reverting to AES_NONE "), UVM_LOW)
+
           end
         endcase // case (input_item.mode)
       end // if (input_item.valid)
@@ -447,6 +450,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
                 , UVM_MEDIUM)
 
       msg.alloc_predicted_msg();
+
       //ref-model      / opration     / chipher mode /    IV   / key_len    / key /data i /data o //
       c_dpi_aes_crypt_message(cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv,
                               msg.aes_keylen, msg.aes_key[0] ^ msg.aes_key[1],
@@ -517,7 +521,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_message_item, msg_fifo)
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_seq_item, item_fifo)
       `DV_EOT_PRINT_Q_CONTENTS(aes_seq_item, rcv_item_q)
-      if(message_cnt != cfg.num_messages) begin
+      if(message_cnt != (cfg.num_messages - cfg.num_corrupt_messages)) begin
         rpt_srvr = uvm_report_server::get_server();
         if(rpt_srvr.get_severity_count(UVM_FATAL)+rpt_srvr.get_severity_count(UVM_ERROR) == 0) begin
           txt = "\n\t ----| NO FAILURES BUT DIDN*T SEE ALL EXPECTED MESSAGES";

@@ -22,7 +22,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   int            message_len_max             = 128;
   bit            use_key_mask                = 0;
   bit            use_c_model_pct             = 0;
-  bit            errors_en                   = 0;
+
   // clear registers with 0's or rand
   bit            clear_reg_w_rand            = 1;
   // if set the order of which key iv and data is written will be randomized and interleaved
@@ -66,8 +66,16 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   //   010: malicous injection
   //   100: random resets
   bit [2:0]      error_types                = 3'b111;
+  bit [1:0]      config_error_type          = 2'b00;
+  // number of messages that was selected to be corrupt
+  // these should be excluded from the num_messages count
+  // when checking that all messages was processed
+  int            num_corrupt_messages       = 0;
   // percentage of configuration errors
   int            config_error_pct           = 10;
+  int            mal_error_pct              = 5;
+  int            random_reset_pct           = 10;
+
 
   // rand variables
   // 0: C model 1: OPEN_SSL/BORING_SSL
@@ -88,7 +96,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
 
   function void post_randomize();
-    if(use_key_mask) key_mask = 1;
+    if (use_key_mask) key_mask = 1;
 
     case(host_resp_speed)
       VerySlow: begin
@@ -108,6 +116,9 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
         m_tl_agent_cfg.d_ready_delay_max = 0;
       end
     endcase // case (host_resp_speed)
+
+    if (config_error_type[0] == 1'b1) num_corrupt_messages += 1;
+
   endfunction
 
 

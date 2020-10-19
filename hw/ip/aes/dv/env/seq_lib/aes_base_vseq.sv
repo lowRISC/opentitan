@@ -73,6 +73,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
   virtual task set_key_len(bit [2:0] key_len);
     ral.ctrl_shadowed.key_len.set(key_len);
+    `uvm_info(`gfn, $sformatf("Writing Key LEN: %b", key_len), UVM_LOW)
     csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
   endtask
 
@@ -294,16 +295,20 @@ class aes_base_vseq extends cip_base_vseq #(
       last_item = nxt_item;
       nxt_item = aes_item_queue.pop_back();
       write_interleaved_data_key_iv(last_item.key, last_item.iv, nxt_item.data_in);
-      csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));    // poll for data valid
-      read_data(nxt_item.data_out, nxt_item.do_b2b);
+      if (nxt_item.mode != AES_NONE) begin
+        csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));    // poll for data valid
+        read_data(nxt_item.data_out, nxt_item.do_b2b);
+      end
     end
 
     while(aes_item_queue.size() > 0) begin
       nxt_item = aes_item_queue.pop_back();
       add_data(nxt_item.data_in, nxt_item.do_b2b);
-      `uvm_info(`gfn, $sformatf("\n\t ----| POLLING FOR DATA"), UVM_DEBUG)
-      csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));    // poll for data valid
-      read_data(nxt_item.data_out, nxt_item.do_b2b);
+      if (nxt_item.mode != AES_NONE) begin
+        `uvm_info(`gfn, $sformatf("\n\t ----| POLLING FOR DATA"), UVM_DEBUG)
+        csr_spinwait(.ptr(ral.status.output_valid) , .exp_data(1'b1));    // poll for data valid
+        read_data(nxt_item.data_out, nxt_item.do_b2b);
+        end
     end
 
   endtask // transmit_message_with_rd_back
@@ -417,7 +422,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_message.message_len_max      = cfg.message_len_max;
     aes_message.message_len_min      = cfg.message_len_min;
     aes_message.config_error_pct     = cfg.config_error_pct;
-    aes_message.errors_en            = cfg.errors_en;
+    aes_message.error_types          = cfg.error_types;
     aes_message.manual_operation_pct = cfg.manual_operation_pct;
     aes_message.keymask              = cfg.key_mask;
     aes_message.fixed_key_en         = cfg.fixed_key_en;

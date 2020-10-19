@@ -27,7 +27,7 @@ class aes_base_test extends cip_base_test #(
     cfg.message_len_max             = 599;
     cfg.use_key_mask                = 0;
     cfg.use_c_model_pct             = 0;
-    cfg.errors_en                   = 0;
+    cfg.error_types                 = '0;
   // clear registers with 0's or rand
     cfg.clear_reg_w_rand            = 1;
   // if set the order of which key iv and data is written will be randomized and interleaved

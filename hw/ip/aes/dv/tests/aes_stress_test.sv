@@ -17,7 +17,7 @@ class aes_stress_test extends aes_base_test;
     //   cfg.ref_model          = OpenSSL;
     // env related knobs
 
-    cfg.errors_en                = 0;
+    cfg.error_types              = 0;
     cfg.num_messages_min         = 1;
     cfg.num_messages_max         = 50;
     // message related knobs

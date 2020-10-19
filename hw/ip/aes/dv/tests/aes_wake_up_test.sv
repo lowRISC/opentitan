@@ -19,7 +19,6 @@ class aes_wake_up_test extends aes_base_test;
      cfg.ctr_weight         = 0;
      cfg.num_messages_min   = 2;
      cfg.num_messages_max   = 2;
-     cfg.errors_en          = 0;
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
   endfunction
 endclass : aes_wake_up_test

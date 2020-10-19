@@ -23,20 +23,19 @@ class aes_seq_item extends uvm_sequence_item;
 
   // lenth of plaintext / cypher (max is 128b/16b per block)
   // used to mask bits that are not part of the data vector
-  bit [3:0]       data_len            = 0;
+  bit [3:0]                    data_len            = 0;
   // key len 0: 128, 1: 192, 2: 256 3: NOT VALID
-  bit [2:0]       key_len;
+  bit [2:0]                    key_len;
   // 256 bit key (8x32 bit) in two shares, key = share0 ^ share1
-  bit [7:0][31:0] key [2];
+  bit [7:0][31:0]              key [2];
   // which fields of the key is valid
-  bit [7:0]       key_vld [2]         = '{8'b0, 8'b0};
+  bit [7:0]                    key_vld [2]         = '{8'b0, 8'b0};
   // randomized data to add to queue
-  bit [3:0][31:0] iv;
+  bit [3:0][31:0]              iv;
   // indicate if the initialization vector is valid
-  bit [3:0]       iv_vld;
-  aes_mode_e      mode;
-
-  bit             en_b2b_transactions = 1;
+  bit [3:0]                    iv_vld;
+  aes_mode_e                   mode;
+  bit                          en_b2b_transactions = 1;
 
 
   ///////////////////////////////////////
@@ -67,6 +66,17 @@ class aes_seq_item extends uvm_sequence_item;
   // back to back
   rand bit              do_b2b;
 
+  // this is only used to program dut in illegal mode
+  rand bit [$bits(aes_mode_e) -1:0] aes_mode;
+
+  constraint aes_mode_c {
+   // force to be !onehot
+    if (mode == AES_NONE) {
+      !($countones(aes_mode) == 1);
+    } else {
+      aes_mode == bit'(mode);
+    }
+  }
 
   function new( string name="aes_sequence_item");
     super.new(name);
@@ -90,6 +100,7 @@ class aes_seq_item extends uvm_sequence_item;
       endcase // case (key_len)
 
       if (!en_b2b_transactions) do_b2b = 0;
+
     end
 
     // mask unused data bits
@@ -232,8 +243,8 @@ class aes_seq_item extends uvm_sequence_item;
     str = {str,  $psprintf("\n\t ----| Item Type:    \t %s                          |----\t ",item_type.name()) };
     str = {str,  $psprintf("\n\t ----| AES Mode:    \t %s                          |----\t ",mode.name()) };
     str = {str,  $psprintf("\n\t ----| Operation:    \t %s                          |----\t ", operation.name() ) };
-    str = {str,  $psprintf("\n\t ----| Key len:    \t %s                             |----\t ",
-                           (key_len==3'b001) ? "128b" : (key_len == 3'b010) ? "192b" : "256b") };
+    str = {str,  $psprintf("\n\t ----| Key len:    \t %s  \t(%3b)                           |----\t ",
+                           (key_len==3'b001) ? "128b" : (key_len == 3'b010) ? "192b" : "256b", key_len) };
     str = {str,  $psprintf("\n\t ----| Key Share 0: \t ") };
     for(int i=0; i <8; i++) begin
       str = {str, $psprintf("%h ",key[0][i])};

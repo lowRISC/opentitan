@@ -19,7 +19,7 @@ class aes_sanity_test extends aes_base_test;
 //    the feature below is waiting in anther PR
 //    cfg.zero_delay_pct           = 100;
 
-    cfg.errors_en                = 0;     // no errors in sanity test
+    cfg.error_types              = 0;     // no errors in sanity test
     cfg.num_messages_min         = 2;
     cfg.num_messages_max         = 2;
     // message related knobs

@@ -63,6 +63,11 @@
       uvm_test_seq: aes_stress_vseq
     }
     {
+      name: aes_config_error
+      uvm_test: aes_config_error_test
+      uvm_test_seq: aes_stress_vseq
+    }
+    {
       name: aes_stress
       uvm_test: aes_stress_test
       uvm_test_seq: aes_stress_vseq
@@ -80,7 +85,7 @@
       name: sanity
       tests: ["aes_sanity"]
     }
-     {
+    {
       name: stress
       tests: ["aes_stress","aes_b2b"]
     }
