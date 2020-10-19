@@ -7,3 +7,4 @@
 `include "chip_sw_base_vseq.sv"
 `include "chip_sw_uart_tx_rx_vseq.sv"
 `include "chip_sw_gpio_vseq.sv"
+`include "chip_sw_spi_tx_rx_vseq.sv"

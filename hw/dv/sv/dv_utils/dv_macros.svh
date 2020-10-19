@@ -2,6 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`ifndef __DV_MACROS_SVH__
+`define __DV_MACROS_SVH__
+
+`ifdef UVM
+  `include "uvm_macros.svh"
+`endif
+
 // UVM speficic macros
 `ifndef gfn
   // verilog_lint: waive macro-name-style
@@ -158,6 +165,20 @@
     end
 `endif
 
+`ifndef DV_CHECK_STREQ
+  `define DV_CHECK_STREQ(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
+    if (!(ACT_ == EXP_)) begin \
+      `uvm_``SEV_(ID_, $sformatf("Check failed \"%s\" == \"%s\" %s", ACT_, EXP_, MSG_)); \
+    end
+`endif
+
+`ifndef DV_CHECK_STRNE
+  `define DV_CHECK_STRNE(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
+    if (!(ACT_ != EXP_)) begin \
+      `uvm_``SEV_(ID_, $sformatf("Check failed \"%s\" != \"%s\" %s", ACT_, EXP_, MSG_)); \
+    end
+`endif
+
 // Fatal version of the checks
 `ifndef DV_CHECK_FATAL
   `define DV_CHECK_FATAL(T_, MSG_="", ID_=`gfn) \
@@ -192,6 +213,16 @@
 `ifndef DV_CHECK_GE_FATAL
   `define DV_CHECK_GE_FATAL(ACT_, EXP_, MSG_="", ID_=`gfn) \
     `DV_CHECK_GE(ACT_, EXP_, MSG_, fatal, ID_)
+`endif
+
+`ifndef DV_CHECK_STREQ_FATAL
+  `define DV_CHECK_STREQ_FATAL(ACT_, EXP_, MSG_="", ID_=`gfn) \
+    `DV_CHECK_STREQ(ACT_, EXP_, MSG_, fatal, ID_)
+`endif
+
+`ifndef DV_CHECK_STRNE_FATAL
+  `define DV_CHECK_STRNE_FATAL(ACT_, EXP_, MSG_="", ID_=`gfn) \
+    `DV_CHECK_STRNE(ACT_, EXP_, MSG_, fatal, ID_)
 `endif
 
 // Shorthand for common foo.randomize() + fatal check
@@ -394,66 +425,53 @@
   end
 `endif
 
-// Logs an info message.
+// Macros for logging (info, warning, error and fatal severities).
 //
-// This is meant to be invoked in modules and interfaces that are shared between DV and Verilator
+// These are meant to be invoked in modules and interfaces that are shared between DV and Verilator
 // testbenches.
 `ifdef UVM
 `ifndef DV_INFO
-  `define DV_INFO(_msg, _id = $sformatf("%m"), _verbosity = UVM_LOW) \
-    `uvm_info(_id, _msg, _verbosity)
+  `define DV_INFO(MSG_,  VERBOSITY_ = UVM_LOW, ID_ = $sformatf("%m")) \
+    `uvm_info(ID_, MSG_, VERBOSITY_)
 `endif
-`else
+
+`ifndef DV_WARNING
+  `define DV_WARNING(MSG_, ID_ = $sformatf("%m")) \
+    `uvm_warning(ID_, MSG_)
+`endif
+
+`ifndef DV_ERROR
+  `define DV_ERROR(MSG_, ID_ = $sformatf("%m")) \
+    `uvm_error(ID_, MSG_)
+`endif
+
+`ifndef DV_FATAL
+  `define DV_FATAL(MSG_, ID_ = $sformatf("%m")) \
+    `uvm_fatal(ID_, MSG_)
+`endif
+
+`else // UVM
+
 `ifndef DV_INFO
-  `define DV_INFO(_msg, _id = $sformatf("%m")) \
-    $display("[%0t] %0s(%0d): [%0s] %0s", $time, `__FILE__, `__LINE__, _id, _msg);
-`endif
+  `define DV_INFO(MSG_, VERBOSITY = DUMMY_, ID_ = $sformatf("%m")) \
+    $display("%0t: (%0s:%0d) [%0s] %0s", $time, `__FILE__, `__LINE__, ID_, MSG_);
 `endif
 
-// Logs a warning message.
-//
-// This is meant to be invoked in modules and interfaces that are shared between DV and Verilator
-// testbenches.
-`ifdef UVM
 `ifndef DV_WARNING
-  `define DV_WARNING(_msg, _id = $sformatf("%m")) \
-    `uvm_warning(_id, _msg)
-`endif
-`else
-`ifndef DV_WARNING
-  `define DV_WARNING(_msg, _id = $sformatf("%m")) \
-    $warning("[%0t] %0s(%0d): [%0s] %0s", $time, `__FILE__, `__LINE__, _id, _msg);
-`endif
+  `define DV_WARNING(MSG_, ID_ = $sformatf("%m")) \
+    $warning("%0t: (%0s:%0d) [%0s] %0s", $time, `__FILE__, `__LINE__, ID_, MSG_);
 `endif
 
-// Logs an error message.
-//
-// This is meant to be invoked in modules and interfaces that are shared between DV and Verilator
-// testbenches.
-`ifdef UVM
 `ifndef DV_ERROR
-  `define DV_ERROR(_msg, _id = $sformatf("%m")) \
-    `uvm_error(_id, _msg)
-`endif
-`else
-`ifndef DV_ERROR
-  `define DV_ERROR(_msg, _id = $sformatf("%m")) \
-    $error("[%0t] %0s(%0d): [%0s] %0s", $time, `__FILE__, `__LINE__, _id, _msg);
-`endif
+  `define DV_ERROR(MSG_, ID_ = $sformatf("%m")) \
+    $error("%0t: (%0s:%0d) [%0s] %0s", $time, `__FILE__, `__LINE__, ID_, MSG_);
 `endif
 
-// Logs a fatal message.
-//
-// This is meant to be invoked in modules and interfaces that are shared between DV and Verilator
-// testbenches.
-`ifdef UVM
 `ifndef DV_FATAL
-  `define DV_FATAL(_msg, _id = $sformatf("%m")) \
-    `uvm_fatal(_id, _msg)
+  `define DV_FATAL(MSG_, ID_ = $sformatf("%m")) \
+    $fatal("%0t: (%0s:%0d) [%0s] %0s", $time, `__FILE__, `__LINE__, ID_, MSG_);
 `endif
-`else
-`ifndef DV_FATAL
-  `define DV_FATAL(_msg, _id = $sformatf("%m")) \
-    $fatal("[%0t] %0s(%0d): [%0s] %0s", $time, `__FILE__, `__LINE__, _id, _msg);
-`endif
-`endif
+
+`endif // UVM
+
+`endif // __DV_MACROS_SVH__

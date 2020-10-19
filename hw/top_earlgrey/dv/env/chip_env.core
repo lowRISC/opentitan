@@ -7,6 +7,8 @@ description: "CHIP DV UVM environmnt"
 filesets:
   files_dv:
     depend:
+      - lowrisc:opentitan:bus_params_pkg
+      - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:uart_agent
@@ -29,6 +31,7 @@ filesets:
       - seq_lib/chip_sw_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_tx_rx_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_spi_tx_rx_vseq.sv: {is_include_file: true}
       - autogen/alert_handler_env_pkg__params.sv: {is_include_file: true}
     file_type: systemVerilogSource
 

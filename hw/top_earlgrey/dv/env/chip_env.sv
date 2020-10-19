@@ -55,7 +55,7 @@ class chip_env extends cip_base_env #(
       end
     end
 
-    // get the handle to the sw log monitor for available sw_types
+    // get the handle to the sw log monitor for available sw_images.
     if (!uvm_config_db#(sw_logger_vif)::get(this, "", "sw_logger_vif", cfg.sw_logger_vif)) begin
       `uvm_fatal(`gfn, "failed to get sw_logger_vif from uvm_config_db")
     end

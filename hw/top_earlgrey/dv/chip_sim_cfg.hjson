@@ -145,6 +145,11 @@
       run_opts: ["+use_spi_load_bootstrap=1"]
     }
     {
+      name: chip_spi_tx_rx
+      uvm_test_seq: chip_sw_spi_tx_rx_vseq
+      sw_test: sw/device/tests/spi_tx_rx_test
+    }
+    {
       name: chip_aes_encr
       uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/tests/aes_test
@@ -179,6 +184,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_test: sw/device/benchmarks/coremark/coremark_top_earlgrey
       run_opts: ["+en_uart_logger=1",
+                 "+sw_test_is_external=1",
                  "+sw_test_timeout_ns=22000000"]
     }
     {
@@ -191,6 +197,7 @@
                  // which causes assertion errors to be thrown. This is a
                  // temporary workaround.
                  "+initialize_ram=1",
+                 "+sw_test_is_external=1",
                  "+sw_test_timeout_ns=50000000"]
     }
 

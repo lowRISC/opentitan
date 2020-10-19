@@ -8,6 +8,7 @@ filesets:
   files_sim_verilator:
     depend:
       - lowrisc:systems:top_earlgrey:0.1
+      - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:dv_dpi:uartdpi
       - lowrisc:dv_dpi:gpiodpi
       - lowrisc:dv_dpi:jtagdpi
