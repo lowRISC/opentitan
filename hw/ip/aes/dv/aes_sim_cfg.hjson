@@ -78,6 +78,11 @@
       uvm_test: aes_b2b_test
       uvm_test_seq: aes_stress_vseq
     }
+    {
+      name: aes_clear
+      uvm_test: aes_clear_test
+      uvm_test_seq: aes_clear_vseq
+    }
   ]
 
   // List of regressions.

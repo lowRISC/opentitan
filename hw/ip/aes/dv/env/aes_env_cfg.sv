@@ -76,6 +76,12 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   int            mal_error_pct              = 5;
   int            random_reset_pct           = 10;
 
+  // clear register percentage
+  // percentage of items that will try to clear
+  // one or more registers
+  int            clear_reg_pct              = 0;
+
+
 
   // rand variables
   // 0: C model 1: OPEN_SSL/BORING_SSL
@@ -90,9 +96,9 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
 
   // constraints
-  constraint c_num_messages { num_messages inside {[num_messages_min : num_messages_max] };}
-  constraint c_ref_model    { ref_model    dist   { 0 :/ use_c_model_pct,
-                                                    1 :/ (100 - use_c_model_pct) }; }
+  constraint c_num_messages {num_messages inside {[num_messages_min : num_messages_max]};}
+  constraint c_ref_model    {ref_model    dist   { 0 :/ use_c_model_pct,
+                                                    1 :/ (100 - use_c_model_pct)};}
 
 
   function void post_randomize();
@@ -125,19 +131,19 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
     string str = "";
     str = super.convert2string();
     str = {str,  $sformatf("\n\t ----| AES ENVIRONMENT CONFIG \t ") };
-    str = {str,  $sformatf("\n\t ----| Max Number of message %d \t ", num_messages_max) };
-    str = {str,  $sformatf("\n\t ----| Min Number of message %d \t ", num_messages_min) };
-    str = {str,  $sformatf("\n\t ----| Max message len %d bytes \t ", message_len_max) };
-    str = {str,  $sformatf("\n\t ----| Min message len %d bytes \t ", message_len_min) };
-    str = {str,  $sformatf("\n\t ----| Host response speed %s   \t ", host_resp_speed.name()) };
+    str = {str,  $sformatf("\n\t ----| Max Number of message %d \t ", num_messages_max)};
+    str = {str,  $sformatf("\n\t ----| Min Number of message %d \t ", num_messages_min)};
+    str = {str,  $sformatf("\n\t ----| Max message len %d bytes \t ", message_len_max)};
+    str = {str,  $sformatf("\n\t ----| Min message len %d bytes \t ", message_len_min)};
+    str = {str,  $sformatf("\n\t ----| Host response speed %s   \t ", host_resp_speed.name())};
     str = {str,  $sformatf("\n\t ----| Reference model:\t    %s              \t ",
-         (ref_model==0) ? "C-MODEL" : "OPEN_SSL" ) };
-    str = {str,  $sformatf("\n\t ----| num_messages # %d \t ", num_messages) };
-    str = {str,  $sformatf("\n\t ----| ECB Weight: %d         \t ", ecb_weight) };
-    str = {str,  $sformatf("\n\t ----| CBC Weight: %d         \t ", cbc_weight) };
-    str = {str,  $sformatf("\n\t ----| CFB Weight: %d         \t ", cfb_weight) };
-    str = {str,  $sformatf("\n\t ----| OFB Weight: %d         \t ", ofb_weight) };
-    str = {str,  $sformatf("\n\t ----| CTR Weight: %d         \t ", ctr_weight) };
+         (ref_model==0) ? "C-MODEL" : "OPEN_SSL" )};
+    str = {str,  $sformatf("\n\t ----| num_messages # %d \t ", num_messages)};
+    str = {str,  $sformatf("\n\t ----| ECB Weight: %d         \t ", ecb_weight)};
+    str = {str,  $sformatf("\n\t ----| CBC Weight: %d         \t ", cbc_weight)};
+    str = {str,  $sformatf("\n\t ----| CFB Weight: %d         \t ", cfb_weight)};
+    str = {str,  $sformatf("\n\t ----| OFB Weight: %d         \t ", ofb_weight)};
+    str = {str,  $sformatf("\n\t ----| CTR Weight: %d         \t ", ctr_weight)};
     str = {str,  $sformatf("\n\t ----| key mask:   %b         \t ", key_mask)};
     str = {str, "\n"};
     return str;
