@@ -267,6 +267,10 @@ Notes:
     still want a static entry address so we don't have to validate that it is in
     bounds.
 
+    **Open Q** Do we want to set `mtvec` before jumping to the ROM_EXT? This
+    could cause double fault issues if ROM_EXT is not unlocked by the comparator
+    before the jump happens.
+
 ### Data Not in the Header
 
 *   `.data` + `.bss` section sizes, for establishing PMP regions. The PMP
