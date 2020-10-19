@@ -200,6 +200,12 @@ class OTBNState:
         '''Set the running flag and the ext_reg busy flag'''
         self.ext_regs.set_bits('STATUS', 1 << 0)
         self.running = True
+        # Stall the first cycle immediately after start. The RTL issues its
+        # first instruction fetch the cycle after start so only begins executing
+        # the cycle following that. This stall ensures the ISS matches that
+        # behaviour so stays in sync with the RTL rather than one cycle ahead
+        # during simulation.
+        self.add_stall_cycles(1)
 
     def get_quarter_word_unsigned(self, idx: int, qwsel: int) -> int:
         '''Select a 64-bit quarter of a wide register.
