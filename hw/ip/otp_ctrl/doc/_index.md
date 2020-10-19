@@ -932,6 +932,7 @@ Sizes below are specified in multiples of 32bit words.
 |       |                                 |             |                | LC_TRANSITION_CNT                        | 0x7C0        | 64
 
 Note that since the content in the SECRET* partitions are scrambled using a 64bit PRESENT cipher, read and write access through the DAI needs to occur at a 64bit granularity.
+Also, all digests (no matter whether they are SW or HW digests) have an access granule of 64bit.
 
 The table below lists digests locations, and the corresponding locked partitions.
 
@@ -979,7 +980,7 @@ For the HW_CFG and SECRET* partitions, this can be achieved as follows:
 
 For the {{< regref "CREATOR_SW_CFG" >}} and {{< regref "OWNER_SW_CFG" >}} partitions, the process is similar, but computation and programming of the digest is entirely up to software:
 
-1. Compute a 64bit digest over the relevant parts of the partition, and [program]({{< relref "#programming-sequence" >}}) that value to {{< regref "CREATOR_SW_CFG_DIGEST_0" >}} or {{< regref "OWNER_SW_CFG_DIGEST_0" >}} via the DAI.
+1. Compute a 64bit digest over the relevant parts of the partition, and [program]({{< relref "#programming-sequence" >}}) that value to {{< regref "CREATOR_SW_CFG_DIGEST_0" >}} or {{< regref "OWNER_SW_CFG_DIGEST_0" >}} via the DAI. Note that digest accesses through the DAI have an access granule of 64bit.
 2. [Read back]({{< relref "#readout-sequence" >}}) and verify the digest location via the DAI.
 3. Perform a full-system reset and verify that the corresponding digest CSRs {{< regref "CREATOR_SW_CFG_DIGEST_0" >}} or {{< regref "OWNER_SW_CFG_DIGEST_0" >}} have been populated with the correct 64bit value.
 

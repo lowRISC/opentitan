@@ -542,7 +542,7 @@ module otp_ctrl_part_buf
   // Always transfer 64bit blocks.
   assign otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth) - 1);
 
-  assign scrmbl_data_o = data_o[cnt_q << $clog2(ScrmblBlockWidth) +: ScrmblBlockWidth];
+  assign scrmbl_data_o = data_o[{cnt_q, {$clog2(ScrmblBlockWidth){1'b0}}} +: ScrmblBlockWidth];
 
   assign data_mux = (data_sel == ScrmblData) ? scrmbl_data_i : otp_rdata_i;
 
