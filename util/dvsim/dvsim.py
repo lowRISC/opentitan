@@ -90,9 +90,9 @@ def read_max_parallel(arg):
         return int_val
 
     except ValueError:
-        raise argparse.ArgumentTypeError('Bad argument for --max-parallel '
-                                         '({!r}): must be a positive integer.'
-                                         .format(arg))
+        raise argparse.ArgumentTypeError(
+            'Bad argument for --max-parallel '
+            '({!r}): must be a positive integer.'.format(arg))
 
 
 def resolve_max_parallel(arg):
@@ -108,8 +108,7 @@ def resolve_max_parallel(arg):
         except argparse.ArgumentTypeError:
             log.warning('DVSIM_MAX_PARALLEL environment variable has value '
                         '{!r}, which is not a positive integer. Using default '
-                        'value (16).'
-                        .format(from_env))
+                        'value (16).'.format(from_env))
 
     return 16
 
@@ -213,22 +212,25 @@ def parse_args():
                         action='store_true',
                         help="Print version and exit")
 
-    parser.add_argument("--tool", "-t",
-                        help=("Explicitly set the tool to use. This is "
-                              "optional for running simulations (where it can "
-                              "be set in an .hjson file), but is required for "
-                              "other flows. Possible tools include: vcs, "
-                              "xcelium, ascentlint, veriblelint, verilator, dc."))
+    parser.add_argument(
+        "--tool",
+        "-t",
+        help=("Explicitly set the tool to use. This is "
+              "optional for running simulations (where it can "
+              "be set in an .hjson file), but is required for "
+              "other flows. Possible tools include: vcs, "
+              "xcelium, ascentlint, veriblelint, verilator, dc."))
 
-    parser.add_argument("--list", "-l",
+    parser.add_argument("--list",
+                        "-l",
                         nargs="*",
                         metavar='CAT',
                         choices=_LIST_CATEGORIES,
                         help=('Parse the the given .hjson config file, list '
                               'the things that can be run, then exit. The '
                               'list can be filtered with a space-separated '
-                              'of categories from: {}.'
-                              .format(', '.join(_LIST_CATEGORIES))))
+                              'of categories from: {}.'.format(
+                                  ', '.join(_LIST_CATEGORIES))))
 
     whatg = parser.add_argument_group('Choosing what to run')
 
@@ -257,7 +259,8 @@ def parse_args():
                       help=('Prepend this string when running each tool '
                             'command.'))
 
-    disg.add_argument("--max-parallel", "-mp",
+    disg.add_argument("--max-parallel",
+                      "-mp",
                       type=read_max_parallel,
                       metavar="N",
                       help=('Run only up to N builds/tests at a time. '
@@ -267,20 +270,23 @@ def parse_args():
 
     pathg = parser.add_argument_group('File management')
 
-    pathg.add_argument("--scratch-root", "-sr",
+    pathg.add_argument("--scratch-root",
+                       "-sr",
                        metavar="PATH",
                        help=('Destination for build / run directories. If not '
                              'specified, uses the path in the SCRATCH_ROOT '
                              'environment variable, if set, or ./scratch '
                              'otherwise.'))
 
-    pathg.add_argument("--proj-root", "-pr",
+    pathg.add_argument("--proj-root",
+                       "-pr",
                        metavar="PATH",
                        help=('The root directory of the project. If not '
                              'specified, dvsim will search for a git '
                              'repository containing the current directory.'))
 
-    pathg.add_argument("--branch", "-br",
+    pathg.add_argument("--branch",
+                       "-br",
                        metavar='B',
                        help=('By default, dvsim creates files below '
                              '{scratch-root}/{dut}.{flow}.{tool}/{branch}. '
@@ -288,7 +294,8 @@ def parse_args():
                              'current directory is a git repository and uses '
                              'the name of the current branch.'))
 
-    pathg.add_argument("--max-odirs", "-mo",
+    pathg.add_argument("--max-odirs",
+                       "-mo",
                        type=int,
                        default=5,
                        metavar="N",
@@ -307,7 +314,8 @@ def parse_args():
                         help=('Stop after building executables for the given '
                               'items.'))
 
-    buildg.add_argument("--build-unique", "-bu",
+    buildg.add_argument("--build-unique",
+                        "-bu",
                         action='store_true',
                         help=('Append a timestamp to the directory in which '
                               'files are built. This is suitable for the case '
@@ -315,14 +323,16 @@ def parse_args():
                               'want to run something else from a different '
                               'terminal without affecting it.'))
 
-    buildg.add_argument("--build-opts", "-bo",
+    buildg.add_argument("--build-opts",
+                        "-bo",
                         nargs="+",
                         default=[],
                         metavar="OPT",
                         help=('Additional options passed on the command line '
                               'each time a build tool is run.'))
 
-    buildg.add_argument("--build-modes", "-bm",
+    buildg.add_argument("--build-modes",
+                        "-bm",
                         nargs="+",
                         default=[],
                         metavar="MODE",
@@ -336,21 +346,24 @@ def parse_args():
                       help=('Skip the build step (assume that simulation '
                             'executables have already been built).'))
 
-    rung.add_argument("--run-opts", "-ro",
+    rung.add_argument("--run-opts",
+                      "-ro",
                       nargs="+",
                       default=[],
                       metavar="OPT",
                       help=('Additional options passed on the command line '
                             'each time a test is run.'))
 
-    rung.add_argument("--run-modes", "-rm",
+    rung.add_argument("--run-modes",
+                      "-rm",
                       nargs="+",
                       default=[],
                       metavar="MODE",
                       help=('The options for each run_mode in this list are '
                             'applied to each simulation run.'))
 
-    rung.add_argument("--profile", "-p",
+    rung.add_argument("--profile",
+                      "-p",
                       nargs="?",
                       choices=['time', 'mem'],
                       const="time",
@@ -368,7 +381,8 @@ def parse_args():
                             "tests are automatically rerun with waves "
                             "enabled."))
 
-    rung.add_argument("--verbosity", "-v",
+    rung.add_argument("--verbosity",
+                      "-v",
                       choices=['n', 'l', 'm', 'h', 'd'],
                       metavar='V',
                       help=('Set tool/simulation verbosity to none (n), low '
@@ -377,7 +391,8 @@ def parse_args():
 
     seedg = parser.add_argument_group('Test seeds')
 
-    seedg.add_argument("--seeds", "-s",
+    seedg.add_argument("--seeds",
+                       "-s",
                        nargs="+",
                        default=[],
                        metavar="S",
@@ -391,14 +406,16 @@ def parse_args():
                        help=('Run all items with the seed S. This implies '
                              '--reseed 1.'))
 
-    seedg.add_argument("--reseed", "-r",
+    seedg.add_argument("--reseed",
+                       "-r",
                        type=int,
                        metavar="N",
                        help=('Override any reseed value in the test '
                              'configuration and run each test N times, with '
                              'a new seed each time.'))
 
-    seedg.add_argument("--reseed-multiplier", "-rx",
+    seedg.add_argument("--reseed-multiplier",
+                       "-rx",
                        type=int,
                        default=1,
                        metavar="N",
@@ -410,18 +427,20 @@ def parse_args():
 
     waveg = parser.add_argument_group('Dumping waves')
 
-    waveg.add_argument("--waves", "-w",
-                       nargs="?",
-                       choices=["default", "fsdb", "shm", "vpd", "vcd", "evcd",
-                                "fst"],
-                       const="default",
-                       help=("Enable dumping of waves. It takes an optional "
-                             "argument to pick the desired wave format. If "
-                             "the optional argument is not supplied, it picks "
-                             "whatever is the default for the chosen tool. "
-                             "By default, dumping waves is not enabled."))
+    waveg.add_argument(
+        "--waves",
+        "-w",
+        nargs="?",
+        choices=["default", "fsdb", "shm", "vpd", "vcd", "evcd", "fst"],
+        const="default",
+        help=("Enable dumping of waves. It takes an optional "
+              "argument to pick the desired wave format. If "
+              "the optional argument is not supplied, it picks "
+              "whatever is the default for the chosen tool. "
+              "By default, dumping waves is not enabled."))
 
-    waveg.add_argument("--max-waves", "-mw",
+    waveg.add_argument("--max-waves",
+                       "-mw",
                        type=int,
                        default=5,
                        metavar="N",
@@ -431,7 +450,8 @@ def parse_args():
 
     covg = parser.add_argument_group('Generating simulation coverage')
 
-    covg.add_argument("--cov", "-c",
+    covg.add_argument("--cov",
+                      "-c",
                       action='store_true',
                       help="Enable collection of coverage data.")
 
@@ -464,7 +484,8 @@ def parse_args():
 
     dvg = parser.add_argument_group('Controlling DVSim itself')
 
-    dvg.add_argument("--print-interval", "-pi",
+    dvg.add_argument("--print-interval",
+                     "-pi",
                      type=int,
                      default=10,
                      metavar="N",
@@ -479,7 +500,8 @@ def parse_args():
                            'messages. With --verbose=debug, the volume of '
                            'messages is even higher.'))
 
-    dvg.add_argument("--dry-run", "-n",
+    dvg.add_argument("--dry-run",
+                     "-n",
                      action='store_true',
                      help=("Print dvsim tool messages but don't actually "
                            "run any command"))
