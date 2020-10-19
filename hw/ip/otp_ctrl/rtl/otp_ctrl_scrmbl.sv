@@ -98,7 +98,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // NumPresentRounds forwards to get the decryption key.
   for (genvar k = 0; k < NumScrmblKeys; k++) begin : gen_dec_key_lut
     assign otp_dec_key_lut[k] =
-        prim_cipher_pkg::present_get_dec_key128(OtpKey[k], NumPresentRounds);
+        prim_cipher_pkg::present_get_dec_key128(OtpKey[k], 5'(NumPresentRounds));
   end
   `ASSERT_KNOWN(DecKeyLutKnown_A, otp_dec_key_lut)
 

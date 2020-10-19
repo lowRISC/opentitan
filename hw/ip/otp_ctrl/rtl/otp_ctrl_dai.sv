@@ -470,7 +470,7 @@ module otp_ctrl_dai
         // No need to digest the digest value itself
         if (otp_addr_o == digest_addr_lut[part_idx]) begin
           // Trigger digest round in case this is the second block in a row.
-          if (cnt_q[0]) begin
+          if (!cnt_q[0]) begin
             scrmbl_cmd_o = Digest;
             if (scrmbl_ready_i) begin
               state_d = DigFinSt;
@@ -481,7 +481,7 @@ module otp_ctrl_dai
           end
         end else begin
           // Trigger digest round in case this is the second block in a row.
-          if (cnt_q[0]) begin
+          if (!cnt_q[0]) begin
             scrmbl_cmd_o = Digest;
           end
           // Go back and fetch more data blocks.
@@ -599,11 +599,24 @@ module otp_ctrl_dai
                      (PartInfo[part_idx].scrambled) ? {dai_addr_i[OtpByteAddrWidth-1:3], 3'h0} :
                                                       {dai_addr_i[OtpByteAddrWidth-1:2], 2'h0};
 
-  // OTP transaction sizes are 64bit for scrambled partitions, and when digesting.
-  // Otherwise, they are 32bit.
-  assign otp_size_o = (PartInfo[part_idx].scrambled || base_sel_q == PartOffset) ?
-                      OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1)) :
-                      OtpSizeWidth'(unsigned'(32 / OtpWidth - 1));
+  // Access sizes are either 64bit or 32bit, depending on what partition and region the
+  // access goes to.
+  always_comb begin : p_size_sel
+    otp_size_o = OtpSizeWidth'(unsigned'(32 / OtpWidth - 1));
+
+    // 64bit transaction for scrambled partitions.
+    if (PartInfo[part_idx].scrambled) begin
+      otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1));
+    // 64bit transaction if computing a digest.
+    end else if (PartInfo[part_idx].hw_digest && (base_sel_q == PartOffset)) begin
+        otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1));
+    // 64bit transaction if this partition does not have a HW digest, and the DAI address points to
+    // the digest offset.
+    end else if (!PartInfo[part_idx].hw_digest && (base_sel_q == DaiOffset) &&
+        ({dai_addr_i[OtpByteAddrWidth-1:2], 2'h0} == digest_addr_lut[part_idx])) begin
+      otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1));
+    end
+  end
 
   // Address counter - this is only used for computing a digest, hence the increment is
   // fixed to 8 byte.
