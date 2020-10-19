@@ -19,7 +19,7 @@ class aes_message_item extends uvm_sequence_item;
   // percentage of configuration errors
   int    config_error_pct     = 20;
   // errors enabled
-  bit    errors_en            = 1;
+  bit [2:0]   error_types     = 3'b000;
   // configuraiton errors enabled
   bit    config_err           = 0;
   // manual mode percentage
@@ -79,6 +79,8 @@ class aes_message_item extends uvm_sequence_item;
   rand bit [3:0][31:0] aes_iv;
   // configuration error                                       //
   rand bit             has_config_error;
+  // [0] mode error [1] key_len error
+  rand bit [1:0]       cfg_error_type;
   // run AES in manual mode
   rand bit             manual_operation;
 
@@ -99,7 +101,8 @@ class aes_message_item extends uvm_sequence_item;
 
   constraint c_keylen {
     solve has_config_error before aes_keylen;
-    if (!has_config_error) {
+    solve cfg_error_type before aes_keylen;
+    if (!(has_config_error && cfg_error_type[1])) {
       // key len 001: 128, 010: 192, 100: 256
       aes_keylen inside { 3'b001, 3'b010, 3'b100 };
       // mode distribution
@@ -134,18 +137,30 @@ class aes_message_item extends uvm_sequence_item;
      };
   }
 
-  constraint c_mode { aes_mode dist  { AES_ECB := ecb_weight,
-                                       AES_CBC := cbc_weight,
-                                       AES_CFB := cfb_weight,
-                                       AES_OFB := ofb_weight,
-                                       AES_CTR := ctr_weight };
-                    }
+  constraint c_mode {
+     solve has_config_error before aes_mode;
+     if (!(has_config_error && cfg_error_type[0])) {
+        aes_mode dist   { AES_ECB := ecb_weight,
+                          AES_CBC := cbc_weight,
+                          AES_CFB := cfb_weight,
+                          AES_OFB := ofb_weight,
+                          AES_CTR := ctr_weight };
+       } else {
+         // the mode will be randomized to a random
+         // non legal value later.
+         aes_mode == AES_NONE;
+       }
+     }
+
+
 
   constraint c_has_config_error {
-    if (errors_en && config_err)
+    if (error_types[0])
       {
       has_config_error dist { 0 :/ (100 - config_error_pct),
                               1 :/ config_error_pct    };
+      cfg_error_type inside { [1:3] };
+      cfg_error_type == 2'b01; // force to mode error for now
       }
     else { has_config_error == 0; }
   }
@@ -171,9 +186,16 @@ class aes_message_item extends uvm_sequence_item;
   function void add_start_msg_item(aes_seq_item item);
     this.aes_mode      = item.mode;
     this.aes_operation = item.operation;
-    this.aes_keylen    = item.key_len;
     this.aes_key       = item.key;
     this.aes_iv        = item.iv;
+
+    // check for valid keylen
+    if ( item.key_len inside { 3'b001, 3'b010, 3'b100 } ) begin
+      this.aes_keylen  = item.key_len;
+    end else begin
+      this.aes_keylen = 3'b100; // force to 256b
+      `uvm_info(`gfn, $sformatf("\n\t ---| Illegal key len detected reverting to default 256"), UVM_MEDIUM)
+    end
 
     add_data_item(item);
   endfunction // add_start_msg_item
@@ -217,7 +239,7 @@ class aes_message_item extends uvm_sequence_item;
       str = {str, $sformatf("%h ",aes_iv[i])};
     end
     str = {str,  $sformatf("\n\t ----| Manual Mode : %b      \t   \t ", manual_operation) };
-    str = {str,  $sformatf("\n\t ----| errors_enabled: %b      \t   \t ", errors_en) };
+    str = {str,  $sformatf("\n\t ----| errors types enabled: %b      \t   \t ", error_types) };
     str = {str,  $sformatf("\n\t ----| CFB Weight: %d       \t \t ", cfb_weight) };
     str = {str,  $sformatf("\n\t ----| OFB Weight: %d       \t \t ", ofb_weight) };
     str = {str,  $sformatf("\n\t ----| ECB Weight: %d       \t \t ", ecb_weight) };
@@ -245,6 +267,7 @@ class aes_message_item extends uvm_sequence_item;
     aes_iv           = rhs_.aes_iv;
     message_length   = rhs_.message_length;
     has_config_error = rhs_.has_config_error;
+    error_types      = rhs_.error_types;
     ecb_weight       = rhs_.ecb_weight;
     cbc_weight       = rhs_.cbc_weight;
     cfb_weight       = rhs_.cfb_weight;
