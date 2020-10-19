@@ -4,10 +4,10 @@
 {
   name: "${name}"
   // TODO: remove the common testplans if not applicable
-  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
-                     "hw/dv/tools/testplans/mem_testplan.hjson",
-                     "hw/dv/tools/testplans/intr_test_testplan.hjson",
-                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
       name: sanity
