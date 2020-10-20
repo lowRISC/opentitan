@@ -16,7 +16,9 @@ namespace {
 using mock_mmio::MmioTest;
 using mock_mmio::MockDevice;
 using testing::Each;
+using testing::ElementsAreArray;
 using testing::Eq;
+using testing::IsSubsetOf;
 using testing::Test;
 
 class RstmgrTest : public Test, public MmioTest {
@@ -179,6 +181,187 @@ TEST_F(ResetCausesClearTest, Success) {
                  std::numeric_limits<uint32_t>::max());
 
   EXPECT_EQ(dif_rstmgr_reset_info_clear(&rstmgr_), kDifRstmgrOk);
+}
+
+class AlertInfoSetTest : public RstmgrTest {};
+
+TEST_F(AlertInfoSetTest, NullArgs) {
+  EXPECT_EQ(dif_rstmgr_alert_info_set_enabled(nullptr, kDifRstmgrToggleEnabled),
+            kDifRstmgrBadArg);
+}
+
+TEST_F(AlertInfoSetTest, Success) {
+  // Enable.
+  EXPECT_WRITE32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
+                 {
+                     {RSTMGR_ALERT_INFO_CTRL_EN, true},
+                 });
+  EXPECT_EQ(
+      dif_rstmgr_alert_info_set_enabled(&rstmgr_, kDifRstmgrToggleEnabled),
+      kDifRstmgrOk);
+
+  // Disable.
+  EXPECT_WRITE32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
+                 {
+                     {RSTMGR_ALERT_INFO_CTRL_EN, false},
+                 });
+  EXPECT_EQ(
+      dif_rstmgr_alert_info_set_enabled(&rstmgr_, kDifRstmgrToggleDisabled),
+      kDifRstmgrOk);
+}
+
+class AlertInfoGetTest : public RstmgrTest {};
+
+TEST_F(AlertInfoGetTest, NullArgs) {
+  EXPECT_EQ(dif_rstmgr_alert_info_get_enabled(nullptr, nullptr),
+            kDifRstmgrBadArg);
+  EXPECT_EQ(dif_rstmgr_alert_info_get_enabled(&rstmgr_, nullptr),
+            kDifRstmgrBadArg);
+  dif_rstmgr_toggle_t state;
+  EXPECT_EQ(dif_rstmgr_alert_info_get_enabled(nullptr, &state),
+            kDifRstmgrBadArg);
+}
+
+TEST_F(AlertInfoGetTest, Success) {
+  // Enabled.
+  EXPECT_READ32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
+                {
+                    {RSTMGR_ALERT_INFO_CTRL_EN, true},
+                });
+
+  dif_rstmgr_toggle_t state = kDifRstmgrToggleDisabled;
+  EXPECT_EQ(dif_rstmgr_alert_info_get_enabled(&rstmgr_, &state), kDifRstmgrOk);
+  EXPECT_EQ(state, kDifRstmgrToggleEnabled);
+
+  // Disabled.
+  //
+  // Make sure that the only relevant `enabled` bit is read - set all bits
+  // high apart from the `enabled` bit.
+  uint32_t register_value = bitfield_bit32_write(
+      std::numeric_limits<uint32_t>::max(), RSTMGR_ALERT_INFO_CTRL_EN, false);
+  EXPECT_READ32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, register_value);
+
+  state = kDifRstmgrToggleEnabled;
+  EXPECT_EQ(dif_rstmgr_alert_info_get_enabled(&rstmgr_, &state), kDifRstmgrOk);
+  EXPECT_EQ(state, kDifRstmgrToggleDisabled);
+}
+
+class AlertInfoDumpReadTest : public RstmgrTest {
+ protected:
+  AlertInfoDumpReadTest() {
+    for (uint32_t i = 0; i < DIF_RSTMGR_ALERT_INFO_MAX_SIZE; ++i) {
+      src_[i] = dev().GarbageMemory<uint32_t>();
+    }
+  }
+
+  dif_rstmgr_alert_info_dump_segment_t src_[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
+};
+
+TEST_F(AlertInfoDumpReadTest, NullArgs) {
+  EXPECT_EQ(dif_rstmgr_alert_info_dump_read(
+                nullptr, nullptr, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, nullptr),
+            kDifRstmgrBadArg);
+
+  size_t segments_read;
+  EXPECT_EQ(
+      dif_rstmgr_alert_info_dump_read(
+          nullptr, nullptr, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &segments_read),
+      kDifRstmgrBadArg);
+
+  dif_rstmgr_alert_info_dump_segment_t dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
+  EXPECT_EQ(dif_rstmgr_alert_info_dump_read(
+                nullptr, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, nullptr),
+            kDifRstmgrBadArg);
+
+  EXPECT_EQ(
+      dif_rstmgr_alert_info_dump_read(
+          nullptr, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &segments_read),
+      kDifRstmgrBadArg);
+
+  EXPECT_EQ(
+      dif_rstmgr_alert_info_dump_read(
+          &rstmgr_, nullptr, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &segments_read),
+      kDifRstmgrBadArg);
+
+  EXPECT_EQ(dif_rstmgr_alert_info_dump_read(
+                &rstmgr_, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, nullptr),
+            kDifRstmgrBadArg);
+}
+
+TEST_F(AlertInfoDumpReadTest, BadDumpSize) {
+  EXPECT_READ32(RSTMGR_ALERT_INFO_ATTR_REG_OFFSET,
+                DIF_RSTMGR_ALERT_INFO_MAX_SIZE);
+
+  size_t segments_read = 0xA5A5A5A5;
+  dif_rstmgr_alert_info_dump_segment_t dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
+  EXPECT_EQ(dif_rstmgr_alert_info_dump_read(&rstmgr_, &dump[0],
+                                            DIF_RSTMGR_ALERT_INFO_MAX_SIZE - 1,
+                                            &segments_read),
+            kDifRstmgrError);
+  EXPECT_EQ(segments_read, 0xA5A5A5A5);
+}
+
+TEST_F(AlertInfoDumpReadTest, SuccessFullBuffer) {
+  EXPECT_READ32(RSTMGR_ALERT_INFO_ATTR_REG_OFFSET,
+                DIF_RSTMGR_ALERT_INFO_MAX_SIZE);
+  EXPECT_READ32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 1);
+
+  for (uint32_t i = 0; i < DIF_RSTMGR_ALERT_INFO_MAX_SIZE; ++i) {
+    EXPECT_WRITE32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
+                   {
+                       {
+                           RSTMGR_ALERT_INFO_CTRL_EN,
+                           true,
+                       },
+                       {
+                           RSTMGR_ALERT_INFO_CTRL_INDEX_OFFSET,
+                           i,
+                       },
+                   });
+
+    EXPECT_READ32(RSTMGR_ALERT_INFO_REG_OFFSET, src_[i]);
+  }
+
+  size_t segments_read = 0;
+  dif_rstmgr_alert_info_dump_segment_t dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
+  EXPECT_EQ(
+      dif_rstmgr_alert_info_dump_read(
+          &rstmgr_, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &segments_read),
+      kDifRstmgrOk);
+  EXPECT_EQ(segments_read, DIF_RSTMGR_ALERT_INFO_MAX_SIZE);
+  EXPECT_THAT(src_, ElementsAreArray(dump));
+}
+
+TEST_F(AlertInfoDumpReadTest, SuccessDumpSmaller) {
+  constexpr uint32_t dump_size = DIF_RSTMGR_ALERT_INFO_MAX_SIZE - 1;
+
+  EXPECT_READ32(RSTMGR_ALERT_INFO_ATTR_REG_OFFSET, dump_size);
+  EXPECT_READ32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 1);
+
+  for (uint32_t i = 0; i < dump_size; ++i) {
+    EXPECT_WRITE32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
+                   {
+                       {
+                           RSTMGR_ALERT_INFO_CTRL_EN,
+                           true,
+                       },
+                       {
+                           RSTMGR_ALERT_INFO_CTRL_INDEX_OFFSET,
+                           i,
+                       },
+                   });
+
+    EXPECT_READ32(RSTMGR_ALERT_INFO_REG_OFFSET, src_[i]);
+  }
+
+  size_t segments_read = 0;
+  dif_rstmgr_alert_info_dump_segment_t dump[dump_size];
+  EXPECT_EQ(
+      dif_rstmgr_alert_info_dump_read(
+          &rstmgr_, &dump[0], DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &segments_read),
+      kDifRstmgrOk);
+  EXPECT_EQ(segments_read, dump_size);
+  EXPECT_THAT(dump, IsSubsetOf(src_));
 }
 
 class SoftwareResetTest : public RstmgrTest {};
