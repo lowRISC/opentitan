@@ -88,7 +88,7 @@
 `ifndef DV_CHECK_EQ
   `define DV_CHECK_EQ(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
     begin \
-      if (!(ACT_ == EXP_)) begin \
+      if (!((ACT_) == (EXP_))) begin \
         `uvm_``SEV_(ID_, $sformatf("Check failed %s == %s (%0d [0x%0h] vs %0d [0x%0h]) %s", \
                                     `"ACT_`", `"EXP_`", ACT_, ACT_, EXP_, EXP_, MSG_)) \
       end \
@@ -98,7 +98,7 @@
 `ifndef DV_CHECK_NE
   `define DV_CHECK_NE(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
     begin \
-      if (!(ACT_ != EXP_)) begin \
+      if (!((ACT_) != (EXP_))) begin \
         `uvm_``SEV_(ID_, $sformatf("Check failed %s != %s (%0d [0x%0h] vs %0d [0x%0h]) %s", \
                                     `"ACT_`", `"EXP_`", ACT_, ACT_, EXP_, EXP_, MSG_)) \
       end \
@@ -108,7 +108,7 @@
 `ifndef DV_CHECK_CASE_EQ
   `define DV_CHECK_CASE_EQ(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
     begin \
-      if (!(ACT_ === EXP_)) begin \
+      if (!((ACT_) === (EXP_))) begin \
         `uvm_``SEV_(ID_, $sformatf("Check failed %s === %s (0x%0h [%0b] vs 0x%0h [%0b]) %s", \
                                     `"ACT_`", `"EXP_`", ACT_, ACT_, EXP_, EXP_, MSG_)) \
       end \
@@ -118,7 +118,7 @@
 `ifndef DV_CHECK_CASE_NE
   `define DV_CHECK_CASE_NE(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
     begin \
-      if (!(ACT_ !== EXP_)) begin \
+      if (!((ACT_) !== (EXP_))) begin \
         `uvm_``SEV_(ID_, $sformatf("Check failed %s !== %s (%0d [0x%0h] vs %0d [0x%0h]) %s", \
                                     `"ACT_`", `"EXP_`", ACT_, ACT_, EXP_, EXP_, MSG_)) \
       end \
@@ -128,7 +128,7 @@
 `ifndef DV_CHECK_LT
   `define DV_CHECK_LT(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
     begin \
-      if (!(ACT_ < EXP_)) begin \
+      if (!((ACT_) < (EXP_))) begin \
         `uvm_``SEV_(ID_, $sformatf("Check failed %s < %s (%0d [0x%0h] vs %0d [0x%0h]) %s", \
                                     `"ACT_`", `"EXP_`", ACT_, ACT_, EXP_, EXP_, MSG_)) \
       end \
@@ -138,7 +138,7 @@
 `ifndef DV_CHECK_GT
   `define DV_CHECK_GT(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
     begin \
-      if (!(ACT_ > EXP_)) begin \
+      if (!((ACT_) > (EXP_))) begin \
         `uvm_``SEV_(ID_, $sformatf("Check failed %s > %s (%0d [0x%0h] vs %0d [0x%0h]) %s", \
                                     `"ACT_`", `"EXP_`", ACT_, ACT_, EXP_, EXP_, MSG_)) \
       end \
@@ -148,7 +148,7 @@
 `ifndef DV_CHECK_LE
   `define DV_CHECK_LE(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
     begin \
-      if (!(ACT_ <= EXP_)) begin \
+      if (!((ACT_) <= (EXP_))) begin \
         `uvm_``SEV_(ID_, $sformatf("Check failed %s <= %s (%0d [0x%0h] vs %0d [0x%0h]) %s", \
                                     `"ACT_`", `"EXP_`", ACT_, ACT_, EXP_, EXP_, MSG_)) \
       end \
@@ -158,7 +158,7 @@
 `ifndef DV_CHECK_GE
   `define DV_CHECK_GE(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
     begin \
-      if (!(ACT_ >= EXP_)) begin \
+      if (!((ACT_) >= (EXP_))) begin \
         `uvm_``SEV_(ID_, $sformatf("Check failed %s >= %s (%0d [0x%0h] vs %0d [0x%0h]) %s", \
                                     `"ACT_`", `"EXP_`", ACT_, ACT_, EXP_, EXP_, MSG_)) \
       end \
@@ -167,14 +167,14 @@
 
 `ifndef DV_CHECK_STREQ
   `define DV_CHECK_STREQ(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
-    if (!(ACT_ == EXP_)) begin \
+    if (!((ACT_) == (EXP_))) begin \
       `uvm_``SEV_(ID_, $sformatf("Check failed \"%s\" == \"%s\" %s", ACT_, EXP_, MSG_)); \
     end
 `endif
 
 `ifndef DV_CHECK_STRNE
   `define DV_CHECK_STRNE(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
-    if (!(ACT_ != EXP_)) begin \
+    if (!((ACT_) != (EXP_))) begin \
       `uvm_``SEV_(ID_, $sformatf("Check failed \"%s\" != \"%s\" %s", ACT_, EXP_, MSG_)); \
     end
 `endif
