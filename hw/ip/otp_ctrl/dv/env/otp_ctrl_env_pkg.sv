@@ -22,18 +22,18 @@ package otp_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint DIGEST_SIZE           = 8;
-  parameter uint SW_WINDOW_BASE_ADDR   = 'h1000;
-  parameter uint TEST_ACCESS_BASE_ADDR = 'h2000;
-  parameter uint WINDOW_SIZE           = 512 * 4;
+  parameter uint DIGEST_SIZE             = 8;
+  parameter uint SW_WINDOW_BASE_ADDR     = 'h1000;
+  parameter uint TEST_ACCESS_BASE_ADDR   = 'h2000;
+  parameter uint SW_WINDOW_SIZE          = 512 * 4;
+  parameter uint TEST_ACCESS_WINDOW_SIZE = 16 * 4;
+
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
-  parameter uint SRAM_DATA_SIZE        = 1 + otp_ctrl_pkg::SramKeyWidth +
-                                             otp_ctrl_pkg::SramNonceWidth;
+  parameter uint SRAM_DATA_SIZE  = 1 + otp_ctrl_pkg::SramKeyWidth + otp_ctrl_pkg::SramNonceWidth;
   // otbn rsp data has 1 bit for seed_valid, the rest are for key and nonce
-  parameter uint OTBN_DATA_SIZE        = 1 + otp_ctrl_pkg::OtbnKeyWidth +
-                                             otp_ctrl_pkg::OtbnNonceWidth;
+  parameter uint OTBN_DATA_SIZE  = 1 + otp_ctrl_pkg::OtbnKeyWidth + otp_ctrl_pkg::OtbnNonceWidth;
   // flash rsp data has 1 bit for seed_valid, the rest are for key
-  parameter uint FLASH_DATA_SIZE       = 1 + otp_ctrl_pkg::FlashKeyWidth;
+  parameter uint FLASH_DATA_SIZE = 1 + otp_ctrl_pkg::FlashKeyWidth;
 
   // lc does not have digest
   parameter bit[10:0] DIGESTS_ADDR [NumPart-1] = {
@@ -47,6 +47,7 @@ package otp_ctrl_env_pkg;
   // types
   typedef virtual pins_if #(3) pwr_otp_vif;
   typedef virtual pins_if #(4) lc_provision_en_vif;
+  typedef virtual pins_if #(4) lc_dft_en_vif;
   typedef virtual mem_bkdr_if mem_bkdr_vif;
 
   typedef enum bit [1:0] {

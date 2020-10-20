@@ -19,9 +19,10 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
+    // reset power init pin and lc pins
     cfg.pwr_otp_vif.drive_pin(0, 0);
     cfg.lc_provision_en_vif.drive(lc_ctrl_pkg::Off);
-    // reset power init pin and lc_provision_en pin
+    cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::Off);
     if (do_otp_ctrl_init) otp_ctrl_init();
   endtask
 
