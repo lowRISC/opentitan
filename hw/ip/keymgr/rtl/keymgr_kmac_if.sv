@@ -174,6 +174,8 @@ module keymgr_kmac_if import keymgr_pkg::*;(
       StTxLast: begin
         valid = 1'b1;
 
+        // TODO: kmac_data_o.last set here
+
         if (adv_en_i) begin
           strb = AdvByteMask;
         end else if (id_en_i) begin
@@ -189,6 +191,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 
       StOpWait: begin
         if (kmac_data_i.done) begin
+          // TODO: kmac_data_i.error check here.
           done_o = 1'b1;
           state_d = StClean;
         end
