@@ -38,6 +38,15 @@ _Static_assert(
     RSTMGR_PARAM_NUMSWRESETS <= 32,
     "Reset Enable and Control registers span across multiple registers!");
 
+// Make sure that the public alert info crash dump size matches the HW.
+// Note that `RSTMGR_ALERT_INFO_CTRL_INDEX_MASK` implies 16 indexes ( 0 - 15
+// inclusive). However, in reality it only supports 15, as
+// `RSTMGR_ALERT_INFO_ATTR_CNT_AVAIL_MASK` is of the same size, but value of
+// 0 indicates that there is no alert info crash dump.
+_Static_assert(
+    DIF_RSTMGR_ALERT_INFO_MAX_SIZE == RSTMGR_ALERT_INFO_CTRL_INDEX_MASK,
+    "Alert info dump max size has grown, please update the public define!");
+
 /**
  * Checks whether the software reset is disabled for a `peripheral`.
  */
@@ -151,6 +160,84 @@ dif_rstmgr_result_t dif_rstmgr_reset_info_clear(const dif_rstmgr_t *handle) {
   mmio_region_t base_addr = handle->params.base_addr;
 
   rstmgr_reset_info_clear(base_addr);
+
+  return kDifRstmgrOk;
+}
+
+dif_rstmgr_result_t dif_rstmgr_alert_info_set_enabled(
+    const dif_rstmgr_t *handle, dif_rstmgr_toggle_t state) {
+  if (handle == NULL) {
+    return kDifRstmgrBadArg;
+  }
+
+  mmio_region_t base_addr = handle->params.base_addr;
+
+  uint32_t enabled = (state == kDifRstmgrToggleEnabled) ? 0x1 : 0x0;
+
+  // This will clobber the `ALERT_INFO_CTRL.INDEX` field. However, the index
+  // field is only relevant during the crash dump read operation, and is
+  // set by the caller and not the hardware, so it is safe to clobber it.
+  mmio_region_write32(base_addr, RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, enabled);
+
+  return kDifRstmgrOk;
+}
+
+dif_rstmgr_result_t dif_rstmgr_alert_info_get_enabled(
+    const dif_rstmgr_t *handle, dif_rstmgr_toggle_t *state) {
+  if (handle == NULL || state == NULL) {
+    return kDifRstmgrBadArg;
+  }
+
+  mmio_region_t base_addr = handle->params.base_addr;
+
+  uint32_t reg =
+      mmio_region_read32(base_addr, RSTMGR_ALERT_INFO_CTRL_REG_OFFSET);
+  bool enabled = bitfield_bit32_read(reg, RSTMGR_ALERT_INFO_CTRL_EN);
+
+  *state = enabled ? kDifRstmgrToggleEnabled : kDifRstmgrToggleDisabled;
+
+  return kDifRstmgrOk;
+}
+
+dif_rstmgr_result_t dif_rstmgr_alert_info_dump_read(
+    const dif_rstmgr_t *handle, dif_rstmgr_alert_info_dump_segment_t *dump,
+    size_t dump_size, size_t *segments_read) {
+  if (handle == NULL || dump == NULL || segments_read == NULL) {
+    return kDifRstmgrBadArg;
+  }
+
+  mmio_region_t base_addr = handle->params.base_addr;
+
+  // The actual crash dump size (can be smaller than `dump_size`).
+  size_t dump_size_actual =
+      mmio_region_read32(base_addr, RSTMGR_ALERT_INFO_ATTR_REG_OFFSET);
+
+  // Partial crash dump read is not allowed.
+  if (dump_size < dump_size_actual) {
+    return kDifRstmgrError;
+  }
+
+  bitfield_field32_t index_field = {
+      .mask = RSTMGR_ALERT_INFO_CTRL_INDEX_MASK,
+      .index = RSTMGR_ALERT_INFO_CTRL_INDEX_OFFSET,
+  };
+
+  uint32_t control_reg =
+      mmio_region_read32(base_addr, RSTMGR_ALERT_INFO_CTRL_REG_OFFSET);
+
+  // Read the entire alert info crash dump, one 32bit data segment at the time.
+  for (int i = 0; i < dump_size_actual; ++i) {
+    control_reg = bitfield_field32_write(control_reg, index_field, i);
+
+    // Set the index of the 32bit data segment to be read at `i`.
+    mmio_region_write32(base_addr, RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
+                        control_reg);
+
+    // Read the alert info crash dump 32bit data segment.
+    dump[i] = mmio_region_read32(base_addr, RSTMGR_ALERT_INFO_REG_OFFSET);
+  }
+
+  *segments_read = dump_size_actual;
 
   return kDifRstmgrOk;
 }
