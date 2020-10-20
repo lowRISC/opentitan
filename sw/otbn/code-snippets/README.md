@@ -11,3 +11,7 @@ to do various tasks in OTBN code.
     instruction.
   - `barrett384.S`: An example of a modular multiplication kernel based on
     Barrett reduction.
+
+Also included in this directory is a Makefile fragment that can be
+used to assemble and link the snippets. This can be used standalone or
+included in another Makefile.
