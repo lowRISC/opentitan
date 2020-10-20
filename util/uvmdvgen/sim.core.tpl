@@ -14,7 +14,7 @@ filesets:
       - ${vendor}:dv:${name}_test
       - ${vendor}:dv:${name}_sva
     files:
-      - tb.sv
+      - tb/tb.sv
     file_type: systemVerilogSource
 
 targets:
