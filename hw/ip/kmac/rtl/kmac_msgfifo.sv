@@ -203,6 +203,9 @@ module kmac_msgfifo
     .rdata_o  (fifo_rdata)
   );
 
+  assign fifo_wvalid = packer_wvalid;
+  assign packer_wready = fifo_wready;
+
   assign msg_valid_o = fifo_rvalid;
   assign fifo_rready = msg_ready_i;
   assign msg_data_o  = fifo_rdata.data;

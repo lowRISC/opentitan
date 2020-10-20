@@ -33,6 +33,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
 
   int max_wait_phases_cyc = MIN_CYCLE_PER_PHASE * NUM_ESC_PHASES;
   int max_intr_timeout_cyc;
+  bit do_standalone_alert_handler_init = 1;
 
   uvm_verbosity verbosity = UVM_LOW;
 
@@ -104,11 +105,13 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
           i, num_trans, intr_en, alert_trigger, alert_en, alert_class_map), verbosity)
 
       // write initial settings (enable and mapping csrs)
-      alert_handler_init(.intr_en(intr_en),
-                         .alert_en(alert_en),
-                         .alert_class(alert_class_map),
-                         .loc_alert_en(local_alert_en),
-                         .loc_alert_class(local_alert_class_map));
+      if (do_standalone_alert_handler_init) begin
+        alert_handler_init(.intr_en(intr_en),
+                           .alert_en(alert_en),
+                           .alert_class(alert_class_map),
+                           .loc_alert_en(local_alert_en),
+                           .loc_alert_class(local_alert_class_map));
+      end
 
       // write class_ctrl and clren_reg
       alert_handler_rand_wr_class_ctrl(lock_bit_en);
@@ -138,7 +141,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
         if (do_lock_config) config_locked = 1;
       end
 
-      // drive alerts and escalations
+      // drive esc standalone responses and alerts
       if (esc_standalone_int_err) drive_esc_rsp(esc_standalone_int_err);
       drive_alert(alert_trigger, alert_int_err);
 
@@ -151,6 +154,9 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
       // only check interrupt when no esc_int_err, otherwise clear interrupt might happen the
       // same cycle as interrupt triggered by esc_int_err
       if (esc_int_err == 0) check_alert_interrupts();
+
+      // if ping timeout enabled, wait for ping timeout done before checking escalation phases
+      if ((esc_int_err | alert_ping_timeout) > 0) cfg.clk_rst_vif.wait_clks(MAX_PING_TIMEOUT_CYCLE);
 
       // wait escalation done, and random interrupt with clear_esc
       wait_alert_handshake_done();

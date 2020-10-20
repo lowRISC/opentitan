@@ -37,6 +37,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     if (do_alert_handler_init) alert_handler_init();
+    config_locked = 0;
   endtask
 
   virtual task dut_shutdown();

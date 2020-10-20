@@ -111,7 +111,7 @@ package kmac_pkg;
     L512 = 3'b 100  // rate:  576 bit / capacity: 1024 bit Keccak[1024](, 512)
   } keccak_strength_e;
 
-  parameter int KeccakRate [5] = '{
+  parameter int unsigned KeccakRate [5] = '{
     1344/MsgWidth,  // 21 depth := (1600 - 128*2)
     1152/MsgWidth,  // 18 depth := (1600 - 224*2)
     1088/MsgWidth,  // 17 depth := (1600 - 256*2)
@@ -119,12 +119,12 @@ package kmac_pkg;
      576/MsgWidth   //  9 depth := (1600 - 512*2)
   };
 
-  parameter int MaxBlockSize = KeccakRate[0];
+  parameter int unsigned MaxBlockSize = KeccakRate[0];
 
-  parameter int KeccakEntries = 1600/MsgWidth;
-  parameter int KeccakMsgAddrW = $clog2(KeccakEntries);
+  parameter int unsigned KeccakEntries = 1600/MsgWidth;
+  parameter int unsigned KeccakMsgAddrW = $clog2(KeccakEntries);
 
-  parameter int KeccakCountW = $clog2(KeccakEntries+1);
+  parameter int unsigned KeccakCountW = $clog2(KeccakEntries+1);
 
   // Key related definitions
   // If this value is changed, please modify the logic inside kmac_core
@@ -241,9 +241,9 @@ package kmac_pkg;
   // It depends on the block size. We can reuse KeccakRate
   // 10000000 || 00010101 // 168
   // 10000000 || 00010001 // 136
-  function automatic logic [15:0] encode_bytepad_len(keccak_strength_e strength);
+  function automatic logic [15:0] encode_bytepad_len(keccak_strength_e kstrength);
     logic [15:0] result;
-    unique case (strength)
+    unique case (kstrength)
       L128: result = 16'h A801; // cSHAKE128
       L224: result = 16'h 9001; // not used
       L256: result = 16'h 8801; // cSHAKE256
@@ -252,6 +252,7 @@ package kmac_pkg;
 
       default: result = 16'h 0000;
     endcase
+    return result;
   endfunction : encode_bytepad_len
 
 endpackage : kmac_pkg

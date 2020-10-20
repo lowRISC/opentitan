@@ -172,7 +172,7 @@ In addition, see the [UART DV Plan]({{< relref "hw/ip/uart/doc/dv_plan" >}}) for
 real 'production' example of inline expansion of an imported testplan as a table
 within the DV Plan document.
 The [UART testplan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson)
-imports the shared testplans located at `hw/dv/tools/testplans` area.
+imports the shared testplans located at `hw/dv/tools/dvsim/testplans` area.
 
 ### Limitations
 

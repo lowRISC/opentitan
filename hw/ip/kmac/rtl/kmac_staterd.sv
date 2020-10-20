@@ -54,7 +54,7 @@ module kmac_staterd
   // TL Adapter
   tlul_adapter_sram #(
     .SramAw (AddrW-2),
-    .SramDw (323),
+    .SramDw (32),
     .Outstanding (1),
     .ByteAccess  (1),
     .ErrOnWrite  (1),

@@ -124,11 +124,11 @@ module sha3pad
   // but below is easier to understand
   always_comb begin
     unique case (strength_i)
-      L128: block_addr_limit = KeccakRate[L128];
-      L224: block_addr_limit = KeccakRate[L224];
-      L256: block_addr_limit = KeccakRate[L256];
-      L384: block_addr_limit = KeccakRate[L384];
-      L512: block_addr_limit = KeccakRate[L512];
+      L128: block_addr_limit = KeccakCountW'(KeccakRate[L128]);
+      L224: block_addr_limit = KeccakCountW'(KeccakRate[L224]);
+      L256: block_addr_limit = KeccakCountW'(KeccakRate[L256]);
+      L384: block_addr_limit = KeccakCountW'(KeccakRate[L384]);
+      L512: block_addr_limit = KeccakCountW'(KeccakRate[L512]);
 
       default: block_addr_limit = '0;
     endcase
@@ -241,6 +241,15 @@ module sha3pad
       st <= st_d;
     end
   end
+
+  // `end_of_block` indicates current beat is end of the block
+  // It shall set when the address reaches to the end of the block. End address
+  // is set by the strength_i, which is `block_addr_limit`.
+  // TODO: Decide if it needs to compare with the FSM in {StPad, StPad01} or not
+  logic end_of_block;
+
+  assign end_of_block = ((sent_message+1) == block_addr_limit) ? 1'b 1 : 1'b 0;
+
 
   // Next logic and output logic ==============================================
   logic absorbed_d;
@@ -506,14 +515,6 @@ module sha3pad
     endcase
   end
 
-  // `end_of_block` indicates current beat is end of the block
-  // It shall set when the address reaches to the end of the block. End address
-  // is set by the strength_i, which is `block_addr_limit`.
-  // TODO: Decide if it needs to compare with the FSM in {StPad, StPad01} or not
-  logic end_of_block;
-
-  assign end_of_block = ((sent_message+1) == block_addr_limit) ? 1'b 1 : 1'b 0;
-
   // ==========================================================================
   // `zero_with_endbit` contains all zero unless the message is for the last
   // MsgWidth beat in the block. If it is the end of the block, the last bit
@@ -708,11 +709,11 @@ module sha3pad
   // Sequence, start_i --> process_i --> absorbed_o --> done_i
   //`ASSUME(Sequence_a, start_i ##[1:$] process_i ##[1:$] ##[1:$] absorbed_o ##[1:$] done_i)
 
+`ifndef SYNTHESIS
   // Process only asserts after start and all message are fed.
   // These valid signals are qualifier of FPV to trigger the control signal
   // It is a little bit hard to specify these criteria in SVA property so creating
   // qualifiers in RTL form is easier.
-`ifdef FPV_ON
   logic start_valid, process_valid, absorb_valid, done_valid;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -743,14 +744,22 @@ module sha3pad
       done_valid <= 1'b 0;
     end
   end
-`endif
 
   // Message can be fed in between start_i and process_i.
-  `ASSUME(MessageCondition_a, msg_valid_i && msg_ready_o |-> process_valid && !process_i)
+  `ASSUME(MessageCondition_M, msg_valid_i && msg_ready_o |-> process_valid && !process_i)
 
-  `ASSUME(ProcessCondition_a, process_i |-> process_valid)
-  `ASSUME(StartCondition_a, start_i |-> start_valid)
-  `ASSUME(DoneCondition_a, done_i |-> done_valid)
+  `ASSUME(ProcessCondition_M, process_i |-> process_valid)
+  `ASSUME(StartCondition_M, start_i |-> start_valid)
+  `ASSUME(DoneCondition_M, done_i |-> done_valid)
+
+  // Assume mode_i and strength_i are stable during the operation
+  // This will be guarded at the kmac top level
+  `ASSUME(ModeStableDuringOp_M,
+    $changed(mode_i) |-> start_valid)
+  `ASSUME(StrengthStableDuringOp_M,
+    $changed(strength_i) |-> start_valid)
+
+`endif // SYNTHESIS
 
   // If not full block is written, the pad shall send message to keccak_round
   // If it is end of the message, the state moves to StPad and send the request
@@ -767,37 +776,30 @@ module sha3pad
   // Assumption of input mode_i and strength_i
   // SHA3 variants: SHA3-224, SHA3-256, SHA3-384, SHA3-512
   // SHAKE, cSHAKE variants: SHAKE128, SHAKE256, cSHAKE128, cSHAKE256
-  `ASSUME(ModeStrengthCombinations_A,
+  `ASSUME(ModeStrengthCombinations_M,
     start_i |->
       (mode_i == Sha3 && (strength_i inside {L224, L256, L384, L512})) ||
       ((mode_i == Shake || mode_i == CShake) && (strength_i inside {L128, L256})),
     clk_i, !rst_ni)
 
-  // Assume mode_i and strength_i are stable during the operation
-  // This will be guarded at the kmac top level
-  `ASSUME(ModeStableDuringOp_a,
-    $changed(mode_i) |-> start_valid)
-  `ASSUME(StrengthStableDuringOp_a,
-    $changed(strength_i) |-> start_valid)
-
   // Keccak control interface
   // Keccak run triggered -> completion should come
-  `ASSUME(RunThenComplete_A,
+  `ASSUME(RunThenComplete_M,
     keccak_run_o |-> strong(##[24*Share:$] keccak_complete_i))
 
   // No partial write is allowed for Message FIFO interface
-  `ASSUME(NoPartialMsgFifo_A,
+  `ASSUME(NoPartialMsgFifo_M,
     keccak_valid_o && (sel_mux == MuxFifo) |-> (&msg_strb_i) == 1'b1,
     clk_i, !rst_ni)
 
   // When transaction is stored into msg_buf, it shall be partial write.
-  `ASSUME(AlwaysPartialMsgBuf_A,
+  `ASSUME(AlwaysPartialMsgBuf_M,
     en_msgbuf |-> msg_valid_i && (msg_strb_i[MsgStrbW-1] == 1'b0),
     clk_i, !rst_ni)
 
   // if partial write comes and is acked, then no more msg_valid_i until
   // next message
-  `ASSUME(PartialEndOfMsg_A,
+  `ASSUME(PartialEndOfMsg_M,
     keccak_ack && msg_partial |=>
       !msg_valid_i ##[1:$] $stable(msg_valid_i) ##1 process_latched,
     clk_i, !rst_ni)

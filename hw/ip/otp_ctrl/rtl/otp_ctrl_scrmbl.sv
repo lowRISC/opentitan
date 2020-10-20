@@ -98,7 +98,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // NumPresentRounds forwards to get the decryption key.
   for (genvar k = 0; k < NumScrmblKeys; k++) begin : gen_dec_key_lut
     assign otp_dec_key_lut[k] =
-        prim_cipher_pkg::present_get_dec_key128(OtpKey[k], NumPresentRounds);
+        prim_cipher_pkg::present_get_dec_key128(OtpKey[k], 5'(NumPresentRounds));
   end
   `ASSERT_KNOWN(DecKeyLutKnown_A, otp_dec_key_lut)
 
@@ -146,9 +146,8 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
                                 OtpDigestIV[sel_d[vbits(NumDigestSets)-1:0]]     : '0;
 
   // Make sure we always select a valid key / digest constant.
-  `ASSERT(CheckNumEncKeys_A, data_state_sel == SelEncKeyInit  |-> sel_d < NumScrmblKeys)
-  `ASSERT(CheckNumDecKeys_A, data_state_sel == SelDecKeyInit  |-> sel_d < NumScrmblKeys)
-  `ASSERT(CheckNumDigest0_A, data_state_sel == SelDigestIV    |-> sel_d < NumDigestSets)
+  `ASSERT(CheckNumEncKeys_A, key_state_sel  == SelEncKeyInit  |-> sel_d < NumScrmblKeys)
+  `ASSERT(CheckNumDecKeys_A, key_state_sel  == SelDecKeyInit  |-> sel_d < NumScrmblKeys)
   `ASSERT(CheckNumDigest1_A, data_state_sel == SelDigestConst |-> sel_d < NumDigestSets)
 
   assign data_state_d    = (data_state_sel == SelEncDataOut)  ? enc_data_out      :

@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/rom_exts/manifest.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -143,4 +144,25 @@ bool rom_ext_get_extension(rom_ext_manifest_t params, rom_ext_extension_id_t id,
   extension->checksum = mmio_region_read32(params.base_addr, checksum);
 
   return true;
+}
+
+uintptr_t rom_ext_get_interrupt_vector(rom_ext_manifest_t params) {
+  uintptr_t vector_addr = params.slot + ROM_EXT_INTERRUPT_VECTOR_OFFSET;
+
+  // A valid value for `mtvec` contains:
+  //
+  // - The most-significant 30 bits of the value are the most-significant 30
+  //   bits of the interrupt vector address.
+  // - The least-significant 2 bits of the value must be `0b01` to encode
+  //   vectored interrupts, which we want.
+  //
+  // One additional restriction is that Ibex wants the address to be 256-byte
+  // aligned. We enforce that in the definition of
+  // ROM_EXT_INTERRUPT_VECTOR_OFFSET;
+
+  return (vector_addr & ~0x3) | 0x1;
+}
+
+uintptr_t rom_ext_get_entry(rom_ext_manifest_t params) {
+  return params.slot + ROM_EXT_ENTRY_POINT_OFFSET;
 }

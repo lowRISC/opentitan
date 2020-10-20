@@ -227,7 +227,7 @@
       [
         {
           base_addr: 0x401b0000
-          size_byte: 0x2000
+          size_byte: 0x4000
         }
       ]
       xbar: false

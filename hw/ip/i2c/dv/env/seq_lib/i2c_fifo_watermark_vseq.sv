@@ -12,7 +12,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
   constraint fmt_fifo_access_dly_c { fmt_fifo_access_dly == 0;}
 
-  // fast read data from rd_fifo to quickly finish simulation (increasing sim. performance)
+  // fast read data from rd_fifo after crossing watermark level to quickly finish simulation
   constraint rx_fifo_access_dly_c { rx_fifo_access_dly == 0;}
 
   // write transaction length is more than fmt_fifo depth to cross fmtilvl
@@ -28,9 +28,9 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   local uint cnt_rx_watermark;
 
   virtual task pre_start();
+    // config rx_watermark test (fmt_watermark test is auto configured)
+    cfg.seq_cfg.en_rx_watermark = 1'b1;
     super.pre_start();
-    // config rx_watermark test (fmt_watermark test is auto configed)
-    cfg.en_rx_watermark = 1'b1;
   endtask : pre_start
 
   virtual task body();
@@ -51,8 +51,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
           // -> check write complete -> stop pooling fmt_watermark interrupt
           // -> verify the number of received fmt_watermark interrupt
           if (check_fmt_watermark) begin
-            host_send_trans(.num_trans(1), .trans_type(WriteOnly));
-            csr_spinwait(.ptr(ral.status.fmtempty), .exp_data(1'b1));
+            host_send_trans(1, WriteOnly);
             check_fmt_watermark = 1'b0;  // gracefully stop process_fmt_watermark_intr
             // depending the programmed fmtivl and the DUT configuration
             // (timing regsisters), cnt_fmt_watermark could be
@@ -73,8 +72,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             // first en_rx_watermark is unset to quickly fill up rx_fifo and
             // watermark interrupt is assuredly triggered
             // until rx_fifo becomes full, en_rx_watermark is set to start reading rx_fifo
-            host_send_trans(.num_trans(1), .trans_type(ReadOnly));
-            csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b1));
+            host_send_trans(1, ReadOnly);
             check_rx_watermark = 1'b0; // gracefully stop process_rx_watermark_intr
             // for fmtilvl > 4, rx_watermark is disable (cnt_rx_watermark = 0)
             // otherwise, cnt_rx_watermark must be 1

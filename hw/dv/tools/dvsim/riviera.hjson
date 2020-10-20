@@ -7,7 +7,7 @@
 
   // Indicate the tool specific helper sources - these are copied over to the
   // {tool_srcs_dir} before running the simulation.
-  tool_srcs:  ["{proj_root}/dv/uvm/data/riviera/*"]
+  tool_srcs:  ["{dv_root}/tools/riviera/*"]
 
   build_opts: ["-sv",
                "-timescale 1ns/1ps",

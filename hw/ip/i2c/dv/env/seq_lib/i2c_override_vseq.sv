@@ -10,22 +10,20 @@ class i2c_override_vseq extends i2c_base_vseq;
   local rand bit sdaval;
   local rand bit txovrden;
 
-  virtual task pre_start();
-    super.pre_start();
+  constraint txovrden_c { txovrden dist {1 :/ 3, 0 :/ 1}; };
+
+  task pre_start();
     // for this vseq, $value$plusargs "+en_scb=0" is defined in i2c_sim_cfg.hjson
     // disable i2c_monitor and i2c_scoreboard since they can not handle this test
-    if (!cfg.en_scb) begin
-      cfg.m_i2c_agent_cfg.en_monitor = 1'b0;
-      `uvm_info(`gfn, $sformatf("\n  disable i2c_monitor and i2c_scoreboard"), UVM_DEBUG)
-    end
+
     // disable clear_all_interrupts task due to abnormal assertion of interrupts
     do_clear_all_interrupts = 1'b0;
+    super.pre_start();
   endtask : pre_start
 
-  virtual task body();
+  task body();
+    initialization();
     `uvm_info(`gfn, "\n--> start of i2c_override_vseq", UVM_DEBUG)
-    device_init();
-    host_init();
     for (uint i = 1; i <= num_trans; i++) begin
       `uvm_info(`gfn, $sformatf("\n  run simulation %0d/%0d", i, num_trans), UVM_DEBUG)
       // program to enable OVRD reg

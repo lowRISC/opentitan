@@ -13,22 +13,6 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // set start_dev_seq at the first time m_dev_seq is started
   bit start_dev_seq       = 1'b0;
 
-  // bits to control fifos access
-  // set en_fmt_overflow to ensure fmt_overflow irq is triggered
-  bit en_fmt_overflow     = 1'b0;
-  // set en_rx_overflow to ensure ensure rx_overflow irq is triggered
-  bit en_rx_overflow      = 1'b0;
-  // set en_rx_watermark to ensure rx_watermark irq is triggered
-  bit en_rx_watermark     = 1'b0;
-
-  // bits to control interference and unstable interrupts
-  // set en_sda_unstable to allow sda_unstable irq is triggered
-  bit en_sda_unstable     = 1'b0;
-  // set en_scl_interference to allow scl_interference irq is triggered
-  bit en_scl_interference = 1'b0;
-  // set en_sda_interference to allow sda_interference irq is triggered
-  bit en_sda_interference = 1'b0;
-
   // i2c_agent cfg
   rand i2c_agent_cfg m_i2c_agent_cfg;
 
@@ -58,5 +42,15 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
       end
     end
   endfunction
+
+  // this function is called after reset or end of vseq run
+  virtual function void reset_seq_cfg();
+    seq_cfg.en_fmt_overflow     = 1'b0;
+    seq_cfg.en_rx_overflow      = 1'b0;
+    seq_cfg.en_rx_watermark     = 1'b0;
+    seq_cfg.en_sda_unstable     = 1'b0;
+    seq_cfg.en_scl_interference = 1'b0;
+    seq_cfg.en_sda_interference = 1'b0;
+  endfunction : reset_seq_cfg
 
 endclass : i2c_env_cfg

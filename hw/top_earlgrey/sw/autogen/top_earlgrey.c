@@ -120,7 +120,7 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdSensorCtrlAstAlerts5] = kTopEarlgreyAlertPeripheralSensorCtrl,
   [kTopEarlgreyAlertIdSensorCtrlAstAlerts6] = kTopEarlgreyAlertPeripheralSensorCtrl,
   [kTopEarlgreyAlertIdKeymgrErr] = kTopEarlgreyAlertPeripheralKeymgr,
-  [kTopEarlgreyAlertIdOtpCtrlOtpFatalError] = kTopEarlgreyAlertPeripheralOtpCtrl,
-  [kTopEarlgreyAlertIdOtpCtrlOtpCheckFailed] = kTopEarlgreyAlertPeripheralOtpCtrl,
+  [kTopEarlgreyAlertIdOtpCtrlOtpMacroFailure] = kTopEarlgreyAlertPeripheralOtpCtrl,
+  [kTopEarlgreyAlertIdOtpCtrlOtpCheckFailure] = kTopEarlgreyAlertPeripheralOtpCtrl,
 };
 

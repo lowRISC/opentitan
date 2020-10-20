@@ -160,12 +160,17 @@ module otp_ctrl_lci
       // terminal error state.
       WriteWaitSt: begin
         if (otp_rvalid_i) begin
-          // Check OTP return code. We do not tolerate any errors here.
-          if (otp_err_i != NoErr) begin
-            state_d = ErrorSt;
+          // Check OTP return code. We only tolerate a MacroWriteBlankError error here -
+          // all other errors should not occur and are therefore terminal.
+          if (otp_err_i != NoError) begin
             error_d = otp_err_i;
             lc_ack_o = 1'b1;
             lc_err_o = 1'b1;
+            if (otp_err_i != MacroWriteBlankError) begin
+              state_d = ErrorSt;
+            end else begin
+              state_d = IdleSt;
+            end
           end else begin
             // Check whether we examined all OTP words.
             // If yes, we are done and can go back to idle.
@@ -186,7 +191,7 @@ module otp_ctrl_lci
       // code has been latched so far, and lock the buffer regs down.
       ErrorSt: begin
         if (!error_q) begin
-          error_d = FsmErr;
+          error_d = FsmStateError;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -202,7 +207,7 @@ module otp_ctrl_lci
     if (escalate_en_i != lc_ctrl_pkg::Off) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
-        error_d = EscErr;
+        error_d = FsmStateError;
       end
     end
 
@@ -249,7 +254,7 @@ module otp_ctrl_lci
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      error_q <= NoErr;
+      error_q <= NoError;
       cnt_q   <= '0;
     end else begin
       error_q <= error_d;

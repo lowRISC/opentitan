@@ -105,7 +105,10 @@ class SimCfg(FlowCfg):
         self.profile = args.profile or '(cfg uses profile without --profile)'
         self.xprop_off = args.xprop_off
         self.no_rerun = args.no_rerun
-        self.verbosity = "{" + args.verbosity + "}"
+        # Single-character verbosity setting (n, l, m, h, d). args.verbosity
+        # might be None, in which case we'll pick up a default value from
+        # configuration files.
+        self.verbosity = args.verbosity
         self.verbose = args.verbose
         self.dry_run = args.dry_run
         self.map_full_testplan = args.map_full_testplan

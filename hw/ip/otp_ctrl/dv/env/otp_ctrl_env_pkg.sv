@@ -12,23 +12,72 @@ package otp_ctrl_env_pkg;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import otp_ctrl_ral_pkg::*;
+  import otp_ctrl_pkg::*;
+  import lc_ctrl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // parameters
+  parameter uint DIGEST_SIZE              = 8;
+  parameter uint CREATOR_WINDOW_BASE_ADDR = 'h1000;
+  parameter uint OWNER_WINDOW_BASE_ADDR   = 'h1300;
+  parameter uint TEST_ACCESS_BASE_ADDR    = 'h2000;
+  parameter uint WINDOW_SIZE              = 512 * 4;
+
+  // lc does not have digest
+  parameter bit[10:0] DIGESTS_ADDR [NumPart-1] = {
+      PartInfo[CreatorSwCfgIdx].offset + PartInfo[CreatorSwCfgIdx].size - DIGEST_SIZE,
+      PartInfo[OwnerSwCfgIdx].offset   + PartInfo[OwnerSwCfgIdx].size   - DIGEST_SIZE,
+      PartInfo[HwCfgIdx].offset        + PartInfo[HwCfgIdx].size        - DIGEST_SIZE,
+      PartInfo[Secret0Idx].offset      + PartInfo[Secret0Idx].size      - DIGEST_SIZE,
+      PartInfo[Secret1Idx].offset      + PartInfo[Secret1Idx].size      - DIGEST_SIZE,
+      PartInfo[Secret2Idx].offset      + PartInfo[Secret2Idx].size      - DIGEST_SIZE};
 
   // types
   typedef virtual pins_if #(3) pwr_otp_vif;
+  typedef virtual pins_if #(4) lc_provision_en_vif;
   typedef virtual mem_bkdr_if mem_bkdr_vif;
 
-  typedef enum {
+  typedef enum bit [1:0] {
     OtpOperationDone,
-    OtpErr
+    OtpErr,
+    NumOtpCtrlIntr
   } otp_intr_e;
 
+  // TODO: needs update once design finalize
+  typedef enum bit [6:0] {
+    OtpCheckPending = 7'b0_000_001,
+    OtpIdle         = 7'b0_000_010,
+    OtpKeyFsmErr    = 7'b0_000_100,
+    OtpScrmblFsmErr = 7'b0_001_000,
+    OtpLfsrFsmErr   = 7'b0_010_000,
+    OtpChkTimeout   = 7'b0_100_000,
+    OptPartErrs     = 7'b1_000_000
+  } otp_status_e;
+
   // functions
+  function automatic int get_part_index(bit [TL_DW-1:0] addr);
+    int index;
+    for (index = 0; index < otp_ctrl_pkg::NumPart; index++) begin
+      if (PartInfo[index].offset > addr) begin
+        index--;
+        break;
+      end
+    end
+    return index;
+  endfunction
+
+  function automatic bit is_secret(bit [TL_DW-1:0] addr);
+    int part_index = get_part_index(addr);
+    if (part_index inside {[Secret0Idx:Secret2Idx]}) return 0;
+    else return 1;
+  endfunction
+
+  function automatic bit [TL_AW-1:0] get_sw_window_addr(bit [TL_AW-1:0] dai_addr);
+    get_sw_window_addr = dai_addr + CREATOR_WINDOW_BASE_ADDR;
+  endfunction
 
   // package sources
   `include "otp_ctrl_env_cfg.sv"

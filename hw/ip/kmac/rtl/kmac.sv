@@ -106,7 +106,7 @@ module kmac
   logic [kmac_pkg::MsgStrbW-1:0] msgfifo_strb        ;
   logic                          msgfifo_ready       ;
 
-  if (EnMasking) begin : msgfifo_data_masked
+  if (EnMasking) begin : gen_msgfifo_data_masked
     // In Masked mode, the input message data is split into two shares.
     // Only concern, however, here is the secret key. So message can be
     // put into only one share and other is 0.
@@ -149,13 +149,16 @@ module kmac
 
   // Command signals
   // TODO: Make the entire logic to use enum rather than signal
+  kmac_cmd_e cmd;
+  assign cmd = kmac_cmd_e'(reg2hw.cmd.q);
+  `ASSERT_KNOWN(KmacCmd_A, cmd)
   always_comb begin
     sha3_start = 1'b 0;
     sha3_run = 1'b 0;
     sha3_done = 1'b 0;
     reg2msgfifo_process = 1'b 0;
     if (reg2hw.cmd.qe) begin
-      unique case (kmac_cmd_e'(reg2hw.cmd.q))
+      unique case (cmd)
         CmdStart: begin
           sha3_start = 1'b 1;
         end
@@ -190,6 +193,9 @@ module kmac
   // FIFO related status
   // TODO: handle if register width of `depth` is not same to MsgFifoDepthW
   assign hw2reg.status.fifo_depth.d[MsgFifoDepthW-1:0] = msgfifo_depth;
+  if ($bits(hw2reg.status.fifo_depth.d) != MsgFifoDepthW) begin : gen_fifo_depth_tie
+    assign hw2reg.status.fifo_depth.d[$bits(hw2reg.status.fifo_depth.d)-1:MsgFifoDepthW] = '0;
+  end
   assign hw2reg.status.fifo_empty.d  = msgfifo_empty;
   assign hw2reg.status.fifo_full.d   = msgfifo_full;
 
@@ -275,7 +281,28 @@ module kmac
     .intr_o                 (intr_fifo_empty_o)
   );
 
-  // TODO: Error
+  // Error
+  // As of now, only SHA3 error exists. More error codes will be added.
+
+  logic event_error;
+  assign event_error =  sha3_err.valid;
+
+  // Assing error code to the register
+  assign hw2reg.err_code.de = sha3_err.valid;
+  assign hw2reg.err_code.d = {sha3_err.code , sha3_err.info};
+
+  prim_intr_hw #(.Width(1)) intr_kmac_err (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (event_error),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.kmac_err.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.kmac_err.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.kmac_err.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.kmac_err.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.kmac_err.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.kmac_err.d),
+    .intr_o                 (intr_kmac_err_o)
+  );
 
   ///////////////
   // Instances //
@@ -303,7 +330,7 @@ module kmac
     // Configurations
     .kmac_en_i  (reg2hw.cfg.kmac_en.q),
     .mode_i     (sha3_mode_e'(reg2hw.cfg.mode.q)),
-    .strength_i (keccak_strength_e'(reg2hw.cfg.strength.q)),
+    .strength_i (keccak_strength_e'(reg2hw.cfg.kstrength.q)),
 
     // Secret key interface
     .key_data_i (key_data),
@@ -340,7 +367,7 @@ module kmac
 
     // Configurations
     .mode_i     (sha3_mode_e'(reg2hw.cfg.mode.q)),
-    .strength_i (keccak_strength_e'(reg2hw.cfg.strength.q)),
+    .strength_i (keccak_strength_e'(reg2hw.cfg.kstrength.q)),
 
     // Controls (CMD register)
     .start_i    (sha3_start       ),
@@ -376,7 +403,7 @@ module kmac
     .msg_strb_o  (msgfifo_strb),
     .msg_ready_i (msgfifo_ready),
 
-    .fifo_empty_o (msgfifo_emtpy), // intr and status
+    .fifo_empty_o (msgfifo_empty), // intr and status
     .fifo_full_o  (msgfifo_full),  // connected to status only
     .fifo_depth_o (msgfifo_depth),
 

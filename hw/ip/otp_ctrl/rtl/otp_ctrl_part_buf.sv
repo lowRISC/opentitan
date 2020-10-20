@@ -12,7 +12,8 @@ module otp_ctrl_part_buf
   import otp_ctrl_reg_pkg::*;
 #(
   // Partition information.
-  parameter part_info_t Info
+  parameter part_info_t             Info,
+  parameter logic [Info.size*8-1:0] DataDefault = '0
 ) (
   input                               clk_i,
   input                               rst_ni,
@@ -213,7 +214,7 @@ module otp_ctrl_part_buf
           buffer_reg_en = 1'b1;
           // The only error we tolerate is an ECC soft error. However,
           // we still signal that error via the error state output.
-          if (!(otp_err_i inside {NoErr, OtpReadCorrErr})) begin
+          if (!(otp_err_i inside {NoError, MacroEccCorrError})) begin
             state_d = ErrorSt;
             error_d = otp_err_i;
           end else begin
@@ -231,7 +232,7 @@ module otp_ctrl_part_buf
               cnt_en = 1'b1;
             end
             // Signal ECC soft errors, but do not go into terminal error state.
-            if (otp_err_i == OtpReadCorrErr) begin
+            if (otp_err_i == MacroEccCorrError) begin
               error_d = otp_err_i;
             end
           end
@@ -307,7 +308,7 @@ module otp_ctrl_part_buf
         if (otp_rvalid_i) begin
           // The only error we tolerate is an ECC soft error. However,
           // we still signal that error via the error state output.
-          if (!(otp_err_i inside {NoErr, OtpReadCorrErr})) begin
+          if (!(otp_err_i inside {NoError, MacroEccCorrError})) begin
             state_d = ErrorSt;
             error_d = otp_err_i;
           end else begin
@@ -321,7 +322,7 @@ module otp_ctrl_part_buf
               // Error out and lock the partition if this check fails.
               end else begin
                 state_d = ErrorSt;
-                error_d = CnstyErr;
+                error_d = CheckFailError;
               end
             end else begin
               // Check whether the read data corresponds with the data buffered in regs.
@@ -338,7 +339,7 @@ module otp_ctrl_part_buf
                 end
               end else begin
                 state_d = ErrorSt;
-                error_d = CnstyErr;
+                error_d = CheckFailError;
               end
             end
           end
@@ -481,7 +482,7 @@ module otp_ctrl_part_buf
           // Error out and lock the partition if this check fails.
           end else begin
             state_d = ErrorSt;
-            error_d = IntegErr;
+            error_d = CheckFailError;
           end
         end
       end
@@ -492,7 +493,7 @@ module otp_ctrl_part_buf
       ErrorSt: begin
         dout_gate_d = Locked;
         if (!error_q) begin
-          error_d = FsmErr;
+          error_d = FsmStateError;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -510,13 +511,13 @@ module otp_ctrl_part_buf
     if (parity_err) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
-        error_d = ParityErr;
+        error_d = CheckFailError;
       end
     end
     if (escalate_en_i != lc_ctrl_pkg::Off) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
-        error_d = EscErr;
+        error_d = FsmStateError;
       end
     end
   end
@@ -542,7 +543,7 @@ module otp_ctrl_part_buf
   // Always transfer 64bit blocks.
   assign otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth) - 1);
 
-  assign scrmbl_data_o = data_o[cnt_q << $clog2(ScrmblBlockWidth) +: ScrmblBlockWidth];
+  assign scrmbl_data_o = data_o[{cnt_q, {$clog2(ScrmblBlockWidth){1'b0}}} +: ScrmblBlockWidth];
 
   assign data_mux = (data_sel == ScrmblData) ? scrmbl_data_i : otp_rdata_i;
 
@@ -567,8 +568,7 @@ module otp_ctrl_part_buf
 
   // Hardware output gating.
   // Note that this is decoupled from the DAI access rules further below.
-  // TODO: This may need a data-specific default.
-  assign data_o = (dout_gate_q == Unlocked) ? data : '0;
+  assign data_o = (dout_gate_q == Unlocked) ? data : DataDefault;
   // The digest does not have to be gated.
   assign digest_o = data[$high(data_o) -: ScrmblBlockWidth];
   // We have successfully initialized the partition once it has been unlocked.
@@ -621,7 +621,7 @@ module otp_ctrl_part_buf
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      error_q     <= NoErr;
+      error_q     <= NoError;
       cnt_q       <= '0;
       dout_gate_q <= Locked;
     end else begin
@@ -680,7 +680,7 @@ module otp_ctrl_part_buf
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitWaitSt, CnstyReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_i inside {NoErr, OtpReadCorrErr}) && !parity_err
+      !(otp_err_i inside {NoError, MacroEccCorrError}) && !parity_err
       |=>
       state_q == ErrorSt && error_o == $past(otp_err_i))
 

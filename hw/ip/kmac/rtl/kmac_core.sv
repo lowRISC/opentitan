@@ -197,7 +197,7 @@ module kmac_core
   // When Key write happens, hold the FIFO request. so fifo_ready_o is tied to 0
   assign msg_valid_o  = (kmac_en_i && en_kmac_datapath) ? kmac_valid : fifo_valid_i;
   assign msg_data_o   = (kmac_en_i && en_kmac_datapath) ? kmac_data  : fifo_data_i ;
-  assign msg_strb_i   = (kmac_en_i && en_kmac_datapath) ? kmac_strb  : fifo_strb_i ;
+  assign msg_strb_o   = (kmac_en_i && en_kmac_datapath) ? kmac_strb  : fifo_strb_i ;
   assign fifo_ready_o = (kmac_en_i && en_kmac_datapath) ? 1'b 0      : msg_ready_i ;
 
   // secret key write request to SHA3 hashing engine is always full width write.
@@ -300,7 +300,7 @@ module kmac_core
 
   assign encoded_key_block[0] = {encoded_key[0], encode_bytepad};
 
-  if (EnMasking) begin : encoded_key_block_masked
+  if (EnMasking) begin : gen_encoded_key_block_masked
     assign encoded_key_block[1] = {encoded_key[1], 16'h 0};
   end
 
@@ -334,11 +334,11 @@ module kmac_core
   // but below is easier to understand
   always_comb begin
     unique case (strength_i)
-      L128: block_addr_limit = KeccakRate[L128];
-      L224: block_addr_limit = KeccakRate[L224];
-      L256: block_addr_limit = KeccakRate[L256];
-      L384: block_addr_limit = KeccakRate[L384];
-      L512: block_addr_limit = KeccakRate[L512];
+      L128: block_addr_limit = KeccakCountW'(KeccakRate[L128]);
+      L224: block_addr_limit = KeccakCountW'(KeccakRate[L224]);
+      L256: block_addr_limit = KeccakCountW'(KeccakRate[L256]);
+      L384: block_addr_limit = KeccakCountW'(KeccakRate[L384]);
+      L512: block_addr_limit = KeccakCountW'(KeccakRate[L512]);
 
       default: block_addr_limit = '0;
     endcase

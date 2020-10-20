@@ -11,7 +11,6 @@
 
 #include "sw/device/lib/base/bitfield.h"
 
-// Header Extern Guard  (so header can be used from C and C++)
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus

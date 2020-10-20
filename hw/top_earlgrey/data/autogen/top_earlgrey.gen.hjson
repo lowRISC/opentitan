@@ -2605,7 +2605,7 @@
       {
         clk_i: clkmgr_clocks.clk_io_div4_timers
       }
-      size: 0x2000
+      size: 0x4000
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -2642,13 +2642,13 @@
       alert_list:
       [
         {
-          name: otp_fatal_error
+          name: otp_macro_failure
           width: 1
           type: alert
           async: 1
         }
         {
-          name: otp_check_failed
+          name: otp_check_failure
           width: 1
           type: alert
           async: 1
@@ -3487,7 +3487,7 @@
             }
             {
               base_addr: 0x401b0000
-              size_byte: 0x2000
+              size_byte: 0x4000
             }
           ]
         }
@@ -4113,7 +4113,7 @@
           [
             {
               base_addr: 0x401b0000
-              size_byte: 0x2000
+              size_byte: 0x4000
             }
           ]
           xbar: false
@@ -5073,14 +5073,14 @@
       module_name: keymgr
     }
     {
-      name: otp_ctrl_otp_fatal_error
+      name: otp_ctrl_otp_macro_failure
       width: 1
       type: alert
       async: 1
       module_name: otp_ctrl
     }
     {
-      name: otp_ctrl_otp_check_failed
+      name: otp_ctrl_otp_check_failure
       width: 1
       type: alert
       async: 1

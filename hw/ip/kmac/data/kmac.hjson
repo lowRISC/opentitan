@@ -82,7 +82,7 @@
                  "excl:CsrNonInitTests:CsrExclWrite"]
         } // f: kmac_en
         { bits: "3:1"
-          name: "strength"
+          name: "kstrength"
           desc: '''Hashing Strength
 
                 3 bit field to select the security strength of SHA3 hashing

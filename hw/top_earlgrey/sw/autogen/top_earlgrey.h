@@ -21,7 +21,6 @@
  * - Power Manager Wakeups
  */
 
-// Header Extern Guard  (so header can be used from C and C++)
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -366,7 +365,7 @@ extern "C" {
  * address between #TOP_EARLGREY_OTP_CTRL_BASE_ADDR and
  * `TOP_EARLGREY_OTP_CTRL_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_OTP_CTRL_SIZE_BYTES 0x2000u
+#define TOP_EARLGREY_OTP_CTRL_SIZE_BYTES 0x4000u
 
 /**
  * Peripheral base address for otbn in top earlgrey.
@@ -599,8 +598,8 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdSensorCtrlAstAlerts5 = 10, /**< sensor_ctrl_ast_alerts 5 */
   kTopEarlgreyAlertIdSensorCtrlAstAlerts6 = 11, /**< sensor_ctrl_ast_alerts 6 */
   kTopEarlgreyAlertIdKeymgrErr = 12, /**< keymgr_err */
-  kTopEarlgreyAlertIdOtpCtrlOtpFatalError = 13, /**< otp_ctrl_otp_fatal_error */
-  kTopEarlgreyAlertIdOtpCtrlOtpCheckFailed = 14, /**< otp_ctrl_otp_check_failed */
+  kTopEarlgreyAlertIdOtpCtrlOtpMacroFailure = 13, /**< otp_ctrl_otp_macro_failure */
+  kTopEarlgreyAlertIdOtpCtrlOtpCheckFailure = 14, /**< otp_ctrl_otp_check_failure */
   kTopEarlgreyAlertIdLast = 14, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
