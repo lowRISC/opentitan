@@ -98,14 +98,15 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input bit               check_exp_data = 1'b0,
                          input bit [BUS_DW-1:0]  compare_mask = '1,
                          input bit               blocking = csr_utils_pkg::default_csr_blocking,
+                         input int               req_abort_pct = 0,
                          tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h);
     if (blocking) begin
       tl_access_sub(addr, write, data, mask, check_rsp, exp_err_rsp, exp_data,
-                    compare_mask, check_exp_data, tl_sequencer_h);
+                    compare_mask, check_exp_data, req_abort_pct, tl_sequencer_h);
     end else begin
       fork
         tl_access_sub(addr, write, data, mask, check_rsp, exp_err_rsp, exp_data,
-                      compare_mask, check_exp_data, tl_sequencer_h);
+                      compare_mask, check_exp_data, req_abort_pct, tl_sequencer_h);
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
       #0;
@@ -121,6 +122,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              input bit [BUS_DW-1:0]  exp_data = 0,
                              input bit [BUS_DW-1:0]  compare_mask = '1,
                              input bit               check_exp_data = 1'b0,
+                             input int               req_abort_pct = 0,
                              tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h);
     `DV_SPINWAIT(
         // thread to read/write tlul
@@ -130,6 +132,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           tl_seq.min_req_delay = 0;
           tl_seq.max_req_delay = 0;
         end
+        tl_seq.req_abort_pct = req_abort_pct;
         csr_utils_pkg::increment_outstanding_access();
         `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq,
             addr  == local::addr;
@@ -731,7 +734,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 if (mem.get_mem_partial_write_support()) mask = get_rand_contiguous_mask();
                 else                                     mask = '1;
                 data = $urandom;
-                tl_access(.addr(addr), .write(1), .data(data), .mask(mask), .blocking(1));
+                tl_access(.addr(addr), .write(1), .data(data), .mask(mask), .blocking(1),
+                          .req_abort_pct($urandom_range(0, 100)));
 
                 if (!cfg.under_reset) begin
                   addr[1:0] = 0;
@@ -746,7 +750,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               addr = addr_mask.addr;
               if (get_mem_access_by_addr(ral, addr) != "WO") begin
                 mask = get_rand_contiguous_mask(addr_mask.mask);
-                tl_access(.addr(addr), .write(0), .data(data), .mask(mask), .blocking(1));
+                tl_access(.addr(addr), .write(0), .data(data), .mask(mask), .blocking(1),
+                          .req_abort_pct($urandom_range(0, 100)));
               end
             end
           endcase
