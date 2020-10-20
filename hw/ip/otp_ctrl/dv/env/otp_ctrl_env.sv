@@ -45,13 +45,21 @@ class otp_ctrl_env extends cip_base_env #(
     uvm_config_db#(push_pull_agent_cfg#(FLASH_DATA_SIZE))::set(this, "m_flash_data_pull_agent",
         "cfg", cfg.m_flash_data_pull_agent_cfg);
 
+    // config power manager pin
     if (!uvm_config_db#(pwr_otp_vif)::get(this, "", "pwr_otp_vif", cfg.pwr_otp_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get pwr_otp_vif from uvm_config_db")
     end
+
+    // config lc pins
     if (!uvm_config_db#(lc_provision_en_vif)::get(this, "", "lc_provision_en_vif",
                                                   cfg.lc_provision_en_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get lc_provision_en_vif from uvm_config_db")
     end
+    if (!uvm_config_db#(lc_dft_en_vif)::get(this, "", "lc_dft_en_vif", cfg.lc_dft_en_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get lc_dft_en_vif from uvm_config_db")
+    end
+
+    // config mem virtual interface
     if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "mem_bkdr_vif", cfg.mem_bkdr_vif)) begin
       `uvm_fatal(`gfn, "failed to get mem_bkdr_vif from uvm_config_db")
     end

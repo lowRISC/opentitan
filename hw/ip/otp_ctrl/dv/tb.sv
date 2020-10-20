@@ -17,9 +17,8 @@ module tb;
 
   wire clk, rst_n;
   wire devmode;
-  wire [3:0] lc_provision_en;
+  wire [3:0] lc_provision_en, lc_dft_en;
 
-  // TODO: use standard req/rsp agent
   wire [2:0] pwr_otp;
   wire otp_ctrl_pkg::flash_otp_key_req_t flash_req;
   wire otp_ctrl_pkg::flash_otp_key_rsp_t flash_rsp;
@@ -42,6 +41,7 @@ module tb;
   // TODO: use standard req/rsp agent
   pins_if #(3) pwr_otp_if(pwr_otp);
   pins_if #(4) lc_provision_en_if(lc_provision_en);
+  pins_if #(4) lc_dft_en_if(lc_dft_en);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
   // dut
@@ -73,7 +73,7 @@ module tb;
     .lc_otp_token_o            (  ),
     .lc_escalate_en_i          (lc_ctrl_pkg::Off),
     .lc_provision_en_i         (lc_provision_en),
-    .lc_dft_en_i               ('0),
+    .lc_dft_en_i               (lc_dft_en),
     .otp_lc_data_o             (  ),
     // keymgr
     .otp_keymgr_key_o          (  ),
@@ -135,6 +135,7 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(lc_provision_en_vif)::set(null, "*.env", "lc_provision_en_vif",
                                              lc_provision_en_if);
+    uvm_config_db#(lc_dft_en_vif)::set(null, "*.env", "lc_dft_en_vif", lc_dft_en_if);
     uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif", `OTP_CTRL_MEM_HIER.mem_bkdr_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();

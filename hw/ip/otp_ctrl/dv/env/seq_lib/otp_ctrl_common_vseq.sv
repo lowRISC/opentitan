@@ -14,6 +14,8 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     super.dut_init(reset_kind);
     // drive pwr_otp_req pin
     cfg.pwr_otp_vif.drive_pin(0, 1);
+    // drive dft_en pins to access the test_access memory
+    cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::On);
     wait(cfg.pwr_otp_vif.pins[2] == 1);
   endtask
 

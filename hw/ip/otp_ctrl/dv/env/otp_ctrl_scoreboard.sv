@@ -60,8 +60,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     // memories
     // TODO: memory read check, change hardcoded to parameters once design finalized
     end else if ((csr_addr & addr_mask) inside
-        {[SW_WINDOW_BASE_ADDR : SW_WINDOW_BASE_ADDR + WINDOW_SIZE],
-         [TEST_ACCESS_BASE_ADDR : TEST_ACCESS_BASE_ADDR + WINDOW_SIZE]}) begin
+        {[SW_WINDOW_BASE_ADDR : SW_WINDOW_BASE_ADDR + SW_WINDOW_SIZE],
+         [TEST_ACCESS_BASE_ADDR : TEST_ACCESS_BASE_ADDR + TEST_ACCESS_WINDOW_SIZE]}) begin
       return;
     end else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
