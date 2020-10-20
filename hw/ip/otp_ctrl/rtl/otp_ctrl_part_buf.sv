@@ -12,8 +12,8 @@ module otp_ctrl_part_buf
   import otp_ctrl_reg_pkg::*;
 #(
   // Partition information.
-  parameter part_info_t             Info,
-  parameter logic [Info.size*8-1:0] DataDefault
+  parameter part_info_t             Info = part_info_t'(0),
+  parameter logic [Info.size*8-1:0] DataDefault = '0
 ) (
   input                               clk_i,
   input                               rst_ni,
