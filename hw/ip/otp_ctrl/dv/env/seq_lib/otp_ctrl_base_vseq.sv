@@ -34,7 +34,6 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task otp_ctrl_init();
     // reset memory to avoid readout X
     cfg.mem_bkdr_vif.clear_mem();
-    csr_wr(ral.intr_enable, en_intr);
   endtask
 
   // this task triggers an OTP write sequence via the DAI interface
