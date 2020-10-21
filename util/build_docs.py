@@ -64,6 +64,7 @@ config = {
         "hw/ip/hmac/data/hmac.hjson",
         "hw/ip/i2c/data/i2c.hjson",
         "hw/ip/keymgr/data/keymgr.hjson",
+        "hw/ip/kmac/data/kmac.hjson",
         "hw/ip/lc_ctrl/data/lc_ctrl.hjson",
         "hw/ip/nmi_gen/data/nmi_gen.hjson",
         "hw/ip/otbn/data/otbn.hjson",
@@ -241,6 +242,7 @@ def generate_tool_versions():
         with open(str(version_path), mode='w') as fout:
             fout.write(__TOOL_REQUIREMENTS__[tool])  # noqa: F821
 
+
 def generate_dif_docs():
     """Generate doxygen documentation and DIF listings from DIF source comments.
 
@@ -269,9 +271,11 @@ def generate_dif_docs():
         str(SRCTREE_TOP.joinpath("util/doxygen/Doxyfile")),
     ]
 
-    doxygen_results = subprocess.run(doxygen_args, check=True,
+    doxygen_results = subprocess.run(  # noqa: F841
+        doxygen_args, check=True,
         cwd=str(SRCTREE_TOP), stdout=subprocess.PIPE,
-        env=dict(os.environ,
+        env=dict(
+            os.environ,
             SRCTREE_TOP=str(SRCTREE_TOP),
             DOXYGEN_OUT=str(doxygen_out_path),
         ))
@@ -279,7 +283,8 @@ def generate_dif_docs():
     logging.info("Generated Software API Documentation (Doxygen)")
 
     if doxygen_warnings_path.exists():
-        logging.warning("Doxygen Generated Warnings (saved in {})".format(str(doxygen_warnings_path)))
+        logging.warning("Doxygen Generated Warnings "
+                        "(saved in {})".format(str(doxygen_warnings_path)))
 
     combined_xml = gen_dif_listing.get_combined_xml(doxygen_xml_path)
 

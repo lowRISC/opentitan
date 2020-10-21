@@ -18,7 +18,6 @@
       desc: "KMAC/SHA3 error occurred. ERR_CODE register shows the details"
     }
   ]
-  alert_list: []
   param_list: [
     { name:    "EnMasking"
       type:    "int"
