@@ -276,6 +276,14 @@ class Program:
 
         '''
         self.close_section()
+        out_file.write('PHDRS\n'
+                       '{\n')
+        for idx, (addr, insns) in enumerate(sorted(self._sections.items())):
+            lma = addr + self.imem_lma
+            out_file.write('    seg{:04} PT_LOAD AT ( {:#x} );\n'
+                           .format(idx, lma))
+        out_file.write('}\n\n')
+
         out_file.write('SECTIONS\n'
                        '{\n')
         for idx, (addr, insns) in enumerate(sorted(self._sections.items())):
@@ -286,8 +294,8 @@ class Program:
             out_file.write('    {} {:#x} : AT({:#x})\n'
                            '    {{\n'
                            '        *({})\n'
-                           '    }}\n'
-                           .format(sec_name, addr, lma, sec_name))
+                           '    }} : seg{:04}\n'
+                           .format(sec_name, addr, lma, sec_name, idx))
         out_file.write('}\n')
 
     def pick_branch_targets(self,
