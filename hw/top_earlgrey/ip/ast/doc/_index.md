@@ -9,7 +9,7 @@ device from physical attacks or manipulation.
 At a high level, AST communicates with a number of OpenTitan comportable
 modules. See diagram below.
 
-![](./media/image2.png)
+![](./media/image5.png)
 
 In the following sections, each family of connection is briefly
 described and explained. Note, the analog connections to AST are not
@@ -139,6 +139,20 @@ with some augmentations.
 <td></td>
 </tr>
 <tr class="odd">
+<td>otp_power_seq_i</td>
+<td>I</td>
+<td>2</td>
+<td>async</td>
+<td>Contains the power sequencing signals coming from the OTP macro.</td>
+</tr>
+<tr class="even">
+<td>otp_power_seq_h_o</td>
+<td>O</td>
+<td>2</td>
+<td>async</td>
+<td>Contains the power sequencing signals going to the OTP macro (<strong>VCC domain</strong>).</td>
+</tr>
+<tr class="odd">
 <td>flash_power_down_h_o</td>
 <td>O</td>
 <td>1</td>
@@ -223,7 +237,7 @@ It may take up to 200 uS from this signal transition to power switching completi
 <td>O</td>
 <td>1</td>
 <td>async</td>
-<td>System clock valid. Used as "ack" signals for the power manager.</td>
+<td>System clock valid. Used as "ack" signals for the power manager (TBD - add a link)</td>
 </tr>
 <tr class="odd">
 <td>clk_src_sys_en_i</td>
@@ -300,7 +314,7 @@ It may take up to 200 uS from this signal transition to power switching completi
 <td>O</td>
 <td>1</td>
 <td>async</td>
-<td>I/O and timer clock valid. Used as "ack" signals for the power manager.</td>
+<td>I/O and timer clock valid. Used as "ack" signals for the power manager (TBD - add a link).</td>
 </tr>
 <tr class="even">
 <td>clk_src_io_en_i</td>
@@ -422,258 +436,267 @@ It may take up to 200 uS from this signal transition to power switching completi
 <td></td>
 </tr>
 <tr class="odd">
-<td>adc_ai</td>
+<td>adc_a0_ai</td>
 <td>I</td>
-<td>2</td>
+<td>1</td>
 <td>async</td>
-<td>ADC analog input channels to be measured</td>
+<td>ADC analog input channels 0 to be measured.<br />
+Signal type is awire (see ana_pkg.sv)</td>
 </tr>
 <tr class="even">
+<td>adc_a1_ai</td>
+<td>I</td>
+<td>1</td>
+<td>async</td>
+<td>ADC analog input channels 1 to be measured.<br />
+Signal type is awire (see ana_pkg.sv)</td>
+</tr>
+<tr class="odd">
 <td>adc_d_o</td>
 <td>O</td>
 <td>10</td>
 <td>adc</td>
 <td>ADC digital data</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>adc_chnsel_i</td>
 <td>I</td>
 <td>2</td>
 <td>adc</td>
 <td>ADC input channel select (one hot). No more than one channel should be selected at a time. Any change in ‘adc_chnsel_i’ value must go through all ‘0’. Changing ‘adc_chnsel_i’ from ‘0’ value to non-’0’ value starts an ADC conversion.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>adc_d_val_o</td>
 <td>O</td>
 <td>1</td>
 <td>adc</td>
 <td>ADC digital data valid</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>adc_pd_i</td>
 <td>I</td>
 <td>1</td>
 <td>adc</td>
 <td>ADC power down - for saving power during deep-sleep state between measurements. When this signal is high, ADC module is in off state, otherwise, it is in active state. A setup time of TBD must be provided from activating ADC until performing a measurement (by asserting one of adc_cs signals)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>entropy_req_o</td>
 <td>O</td>
 <td>1</td>
 <td>es</td>
 <td>Request entropy from CSRNG</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>entropy_ack_i</td>
 <td>I</td>
 <td>1</td>
 <td>es</td>
 <td>CSRNG entropy request acknowledge</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>entropy_i</td>
 <td>I</td>
-<td>TBD</td>
+<td>1</td>
 <td>es</td>
 <td>Random input from chip level.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>rng_en_i</td>
 <td>I</td>
 <td>1</td>
 <td>rng</td>
 <td>Input from controller to enable RNG</td>
 </tr>
-<tr class="even">
-<td>rng_ok_o</td>
+<tr class="odd">
+<td>rng_val_o</td>
 <td>O</td>
 <td>1</td>
 <td>rng</td>
-<td>This is a live bit that random streams are ready. This is not a per-transaction valid, but indicates that the streams are ready.</td>
+<td>RNG bit valid. This is a per-transaction valid. rng_b_o can be sampled whenever this bit is high.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>rng_b_o</td>
 <td>O</td>
 <td>4</td>
 <td>rng</td>
 <td>RNG digital bit streams. The downstream controller of this signal should sample at the rates of 200 KHz / 100KHz / 50KHz / 25KHz / 12.5KHz (50 KHz is the target, the rest are for fallback and upside).</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong>Countermeasures and Alerts</strong></td>
 <td></td>
 <td></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>as_alert_po/no</td>
 <td>O</td>
 <td>2</td>
 <td>alert</td>
 <td>Active shield alert</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>as_alert_ack_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>single pulse ack, source and destination assumed to be synchronous</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>as_alert_trig_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>Alert force trigger by software - connected to a chip register</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>cg_alert_po/no</td>
 <td>O</td>
 <td>2</td>
 <td>alert</td>
 <td>Clock glitch detector alert</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>cg_alert_ack_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>single pulse ack, source and destination assumed to be synchronous</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>cg_alert_trig_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>Alert force trigger by software - connected to a chip register</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>gd_alert_po/no</td>
 <td>O</td>
 <td>2</td>
 <td>alert</td>
 <td>Voltage glitch detector alert</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>gd_alert_ack_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>single pulse ack, source and destination assumed to be synchronous</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>gd_alert_trig_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>Alert force trigger by software - connected to a chip register</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>ts_alert_hi_po/no</td>
 <td>O</td>
 <td>2</td>
 <td>alert</td>
 <td>Temperature sensor alert for high temperature band</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>ts_alert_hi_ack_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>single pulse ack, source and destination assumed to be synchronous</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>ts_alert_hi_trig_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>Alert force trigger by software - connected to a chip register</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>ts_alert_lo_po/no</td>
 <td>O</td>
 <td>2</td>
 <td>alert</td>
 <td>Temperature sensor alert for low temperature band</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>ts_alert_lo_ack_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>single pulse ack, source and destination assumed to be synchronous</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>ts_alert_lo_trig_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>Alert force trigger by software - connected to a chip register</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>ls_alert_po/no</td>
 <td>O</td>
 <td>2</td>
 <td>alert</td>
 <td>Light sensor alert (TBD)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>ls_alert_ack_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>single pulse ack, source and destination assumed to be synchronous</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>ls_alert_trig_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>Alert force trigger by software - connected to a chip register</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>ot_alert_po/no</td>
 <td>O</td>
 <td>TBD</td>
 <td>alert</td>
 <td>Other alerts (TBD)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>ot_alert_ack_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>single pulse ack, source and destination assumed to be synchronous</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>ot_alert_trig_i</td>
 <td>I</td>
 <td>1</td>
 <td>alert</td>
 <td>Alert force trigger by software - connected to a chip register</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong>Trimming Test and Debug</strong></td>
 <td></td>
 <td></td>
 <td></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>scan_mode_i</td>
 <td>I</td>
 <td>1</td>
 <td></td>
 <td>Scan mode indication signal. Controllable only when DFT features are enabled (Test and RMA states). Otherwise, these signals are grounded to 0.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>scan_reset_ni</td>
 <td>I</td>
 <td>1</td>
 <td></td>
 <td>Scan reset</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>clk_ast_ext_i</td>
 <td>I</td>
 <td>1</td>
@@ -682,68 +705,87 @@ It may take up to 200 uS from this signal transition to power switching completi
 <p>Clock calibration: AST clock sources are inaccurate by default and must be calibrated prior to use. The results of the calibration are stored in <a href="https://github.com/lowRISC/opentitan/tree/master/hw/ip/otp_ctrl"><u>OTP</u></a> and reloaded by software upon system boot.</p>
 <p>First Flash / OTP programming: AST clock sources are inaccurate by default and may be out of range for initial flash and OTP programming. In this situation, an external clock may be required for initial programming such that a software image can be loaded to calibrate clocks and advance <a href="https://docs.opentitan.org/doc/security/"><u>life cycle</u></a>.</p></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>vcc_supp_i</td>
 <td>I</td>
 <td>1</td>
 <td>async</td>
-<td>VCC Supply Test. (supply indication for DV purposes). In a non-power-aware DV environment, the respective POK signal follows this signal. In a power aware environment this signal should be connected to constant ‘1’</td>
+<td>VCC Supply Test. (supply indication for DV purposes). In FPGA Verilog view, the respective POK signal follows this signal. In other Verilog views this signal should be connected to constant ‘1’ and will be disconnected inside the AST.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>vcmain_supp_i</td>
 <td>I</td>
 <td>1</td>
 <td>async</td>
-<td>VCMAIN Supply Test. (supply indication for DV purposes). In a non-power-aware DV environment, the respective POK signal follows this signal. In a power aware environment this signal should be connected to constant ‘1’</td>
+<td>VCMAIN Supply Test. (supply indication for DV purposes). In FPGA Verilog view, the respective POK signal follows this signal. In other Verilog views this signal should be connected to constant ‘1’ and will be disconnected inside the AST.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>vcaon_supp_i</td>
 <td>I</td>
 <td>1</td>
 <td>async</td>
-<td>VCAON Supply Test. (supply indication for DV purposes). In a non-power-aware DV environment, the respective POK signal follows this signal. In a power aware environment this signal should be connected to constant ‘1’</td>
+<td>VCAON Supply Test. (supply indication for DV purposes). In FPGA Verilog view, the respective POK signal follows this signal. In other Verilog views this signal should be connected to constant ‘1’ and will be disconnected inside the AST.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>vioa_supp_i</td>
 <td>I</td>
 <td>1</td>
 <td>async</td>
-<td>VIOA Supply Test (supply indication for DV purposes). In a non-power-aware DV environment, the respective POK signal follows this signal. In a power aware environment this signal should be connected to constant ‘1’</td>
+<td>VIOA Supply Test. (supply indication for DV purposes). In FPGA Verilog view, the respective POK signal follows this signal. In other Verilog views this signal should be connected to constant ‘1’ and will be disconnected inside the AST.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>viob_supp_i</td>
 <td>I</td>
 <td>1</td>
 <td>async</td>
-<td>VIOB Supply Test (supply indication for DV purposes). In a non-power-aware DV environment, the respective POK signal follows this signal. In a power aware environment this signal should be connected to constant ‘1’</td>
+<td>VIOB Supply Test. (supply indication for DV purposes). In FPGA Verilog view, the respective POK signal follows this signal. In other Verilog views this signal should be connected to constant ‘1’ and will be disconnected inside the AST.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>ast2pad_a_io</td>
 <td>I/O</td>
 <td>TBD</td>
 <td>async</td>
 <td>Analog debug signals. These signals should be connected directly to chip PADs. They can share PADs with functional signals but when they are used for their analog debug function, the functional I/O must be in tri-state.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>padmux2ast_i</td>
 <td>I</td>
 <td>TBD</td>
 <td>async</td>
 <td>Digital debug input signals (routed to pin mux). These signals are controllable only when DFT features are enabled (Test and RMA states). Otherwise, these signals are grounded to 0.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>ast2padmux_o</td>
 <td>O</td>
 <td>TBD</td>
 <td>async</td>
 <td>Digital debug output signals (routed to pin mux). These signals are only outputted when DFT features are enabled (Test and RMA states). Otherwise, these signals are grounded to 0.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>usb_io_cal_o</td>
 <td>O</td>
 <td>32</td>
 <td>async</td>
 <td>USB I/O calibration and trimming</td>
+</tr>
+<tr class="even">
+<td>lc_root_clk_byp_i</td>
+<td>I</td>
+<td>4</td>
+<td>async</td>
+<td><p>External clock mux override for OTP bootstrap purposes. When this bit is set, clk_ast_ext_i serves as the io_clk clock root.</p>
+<p>Signal type is lc_tx_t (see lc_ctl_pkg.sv)</p>
+<p>On = 4'b1010; Off = 4'b0101</p>
+<p>Note: When ‘On’, clk_src_io_o clock max frequency is limited to 50 MHz</p></td>
+</tr>
+<tr class="odd">
+<td>lc_dft_en_i</td>
+<td>I</td>
+<td>4</td>
+<td>async</td>
+<td><p>DFT enable.</p>
+<p>Signal type is lc_tx_t (see lc_ctl_pkg.sv)</p>
+<p>On = 4'b1010; Off = 4'b0101</p></td>
 </tr>
 </tbody>
 </table>
@@ -771,24 +813,23 @@ The core supplies are generated from the VCC supply. These are two core
 supply domains: VCMAIN and VCAON. VCAON, as its name implies, is the
 always on core supply used to power components that stay active during
 device low power states. VCMAIN on the other hand, powers most chip
-logic such as processor, crypto modules and almost all memories and
-peripherals. The VCMAIN supply can be turned off when requested, VCAON
-on the other hand, is active whenever VCC is active. AST core logic is
-powered by VCAON.
+logic such as RISC-V processor, crypto modules and almost all memories
+and peripherals. The VCMAIN supply can be turned off when requested,
+VCAON on the other hand, is active whenever VCC is active. AST core
+logic is powered by VCAON.
 
 # Power Control and Reset
 
 ## Core Power Control and Indication
 
 VCMAIN is the only supply that can be directly influenced by OpenTitan.
-The power manager
-can request VCMAIN to shutdown through \`main\_pd\_n\`. The state of
-VCMAIN is reflected by the ‘vcmain\_pok\_o’ signal.
+The power manager can request VCMAIN to shutdown through main\_pd\_n.
+The state of VCMAIN is reflected by the vcmain\_pok\_o signal.
 
 ## IO Power Indication
 
-IO power state is reflected to OpenTitan by ‘vioa\_pok\_o’ and
-‘viob\_pok\_o’ signals
+IO power state is reflected to OpenTitan by vioa\_pok\_o and
+viob\_pok\_o signals
 
 ## Main (VCC) Power Detection and Flash Protection
 
@@ -845,7 +886,7 @@ resets.
 </tbody>
 </table>
 
-![](./media/image1.png)
+![](./media/image4.png)
 
 # Clock Outputs
 
@@ -854,7 +895,7 @@ Always-on clock. Most clocks have ‘enable’ inputs and a corresponding
 ‘valid’ output. When the enable is de-asserted, the corresponding
 clock stops and valid is dropped to 0. When the enable is asserted, the
 clocks begin outputting in a “glitchless” manner and the valid is raised
-to 1.
+to 1. Unless noted otherwise, clocks duty cycle is 50% +/-5%.
 
 The OpenTitan power and clock managers are responsible for manipulating
 the enables and observing the valids to know when clocks can be safely
@@ -904,10 +945,9 @@ Table</u>](#interface-signals-table) for more details.
 AST contains an analog to digital converter that can be used to sample
 various input signals. For OpenTitan this will primarily be used for
 [<u>debug cable detection</u>](https://www.sparkfun.com/products/14746).
-To activate the ADC, the corresponding [<u>comportable
-module</u>](https://docs.google.com/document/d/1_GwCccYp0zFI8OT5so4832OMEXkC-I306tSsM3i92nA/edit?usp=sharing)
-must first select the channel to sample, and then activate the ADC
-through \`adc\_pd\_i\`. Once activated, the ADC will produce an output
+To activate the ADC, the corresponding comportable module must first
+select the channel to sample, and then activate the ADC through
+\`adc\_pd\_i\`. Once activated, the ADC will produce an output
 synchronous to the adc controller.
 
 ## ADC Usage Flow
@@ -930,24 +970,24 @@ synchronous to the adc controller.
 
 7.   Deactivate the ADC by setting ‘adc\_pd’ to save power.
 
-![](./media/image3.png)
+![](./media/image2.png)
 
 [<u>https://wavedrom.com/editor.html</u>](https://urldefense.proofpoint.com/v2/url?u=https-3A__wavedrom.com_editor.html&d=DwMFaQ&c=ue8mO8zgC4VZ4q_aNVKt8G9MC01UFDmisvMR1k-EoDM&r=ORLxyPY9MsmpJYCWs7a9VBneW9h5vR8MnW3aYvrOooI&m=ts63KFxLdp_aXcU3h1dbe_sIHcNCW8am1RhZxv1PNbA&s=MzZVoXpb6wDp_3iGVjovwJ1b-NW3uLacU2X-WhLfAZ4&e=)
 
-{signal: \[ {node: '.a..b........', phase:0.2},
+<u>{signal: \[ {node: '.a..b........', phase:0.2},</u>
 
-{name: 'adc\_pd\_i' , wave: '10|..|.....|....|..1'},
+<u>{name: 'adc\_pd\_i' , wave: '10|..|.....|....|..1'},</u>
 
-{name: 'clk\_ast\_adc\_i', wave: 'p.|..|.....|....|...'},
+<u>{name: 'clk\_ast\_adc\_i', wave: 'p.|..|.....|....|...'},</u>
 
-{name: 'adc\_chnsel\_i' , wave: '0.|.3|..04.|....|0..'},
+<u>{name: 'adc\_chnsel\_i' , wave: '0.|.3|..04.|....|0..'},</u>
 
-{name: 'adc\_d\_val\_o' , wave: '0.|..|.1.0.|.1..|.0.'},
+<u>{name: 'adc\_d\_val\_o' , wave: '0.|..|.1.0.|.1..|.0.'},</u>
 
-{name: 'adc\_d\_o' , wave: 'x.|..|.3.x.|.4..|.x.', data: \['ch0', 'ch1',
-'ch1'\]},
+<u>{name: 'adc\_d\_o' , wave: 'x.|..|.3.x.|.4..|.x.', data: \['ch0',
+'ch1', 'ch1'\]}, </u>
 
-\],edge: \[ 'a\<-\>b wakeup time', \] }
+<u>\],edge: \[ 'a\<-\>b wakeup time', \] }</u>
 
 # Random Number Generator
 
@@ -955,22 +995,33 @@ AST contains a random number generator that outputs random number
 bitstreams whenever it is enabled. After enabled by the [<u>comportable
 controller</u>](https://github.com/lowRISC/opentitan/blob/master/hw/ip/entropy_src/doc/_index.md)
 through ‘rng\_en\_i’, the AST begins generating multiple independent
-four random bit streams when \`rng\_ok\_o\` is asserted.
+four random bit streams. rng\_b\_o bit streams are valid and can be
+sampled whenever \`rng\_val\_o\` is asserted according to the following
+diagram.
 
-The comportable controller then samples the rng bitstream at a
-configurable rate (random data is produced at \~50KHz rate). It is
-important to note that rng\_ok is NOT used to indicate when to sample,
-but simply that the rng is in a valid operational state. It is up to the
-comportable controller to sample at the correct rate to ensure a
-particular random bit is not consumed more than once. This rate will be
-known in advance and configured by software. For more information on how
-the OpenTitan entropy system operates, please see the most recent.
+![](./media/image3.png)
+
+The expected rng\_b\_o valid output rate is about 50KHz.
 
 # Entropy Consumption
 
 AST consumes entropy for defensive purposes. However, AST does not
-consume its raw entropy directly. Instead, AST receives entropy from the CSRNG.
-The details of this interface are still under discussion.
+consume its raw entropy directly. Instead, AST receives entropy from the
+CSRNG. The details of this interface are still under discussion.
+
+![](./media/image1.png)
+
+{signal: \[
+
+{name: 'clk\_ast\_es\_i' , wave: 'p.|..........'},
+
+{name: 'entropy\_req\_o' , wave: '01|.0.1.....0'},
+
+{name: 'entropy\_ack\_i' , wave: '0.|10.1.01..0'},
+
+{name: 'entropy\_i' , wave: 'xx|2x.22x222x'},
+
+\] }
 
 # Countermeasures and Alerts
 
