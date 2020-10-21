@@ -16,10 +16,10 @@ class push_pull_host_driver #(parameter int DataWidth = 32) extends push_pull_dr
 
   virtual task do_reset();
     if (cfg.agent_type == PushAgent) begin
-      cfg.vif.valid <= '0;
-      cfg.vif.data  <= 'x;
+      cfg.vif.valid_int <= '0;
+      cfg.vif.data      <= 'x;
     end else begin
-      cfg.vif.req <= '0;
+      cfg.vif.req_int   <= '0;
     end
   endtask
 
@@ -54,15 +54,15 @@ class push_pull_host_driver #(parameter int DataWidth = 32) extends push_pull_dr
       @(`PUSH_DRIVER);
     end
     if (!in_reset) begin
-      `PUSH_DRIVER.valid <= 1'b1;
-      `PUSH_DRIVER.data  <= req.data;
+      `PUSH_DRIVER.valid_int <= 1'b1;
+      `PUSH_DRIVER.data      <= req.data;
     end
     do begin
       @(`PUSH_DRIVER);
     end while (!`PUSH_DRIVER.ready && !in_reset);
     if (!in_reset) begin
-      `PUSH_DRIVER.valid <= 1'b0;
-      `PUSH_DRIVER.data  <= 'x;
+      `PUSH_DRIVER.valid_int <= 1'b0;
+      `PUSH_DRIVER.data      <= 'x;
     end
   endtask
 
@@ -73,13 +73,13 @@ class push_pull_host_driver #(parameter int DataWidth = 32) extends push_pull_dr
       @(`PULL_DRIVER);
     end
     if (!in_reset) begin
-      `PULL_DRIVER.req <= 1'b1;
+      `PULL_DRIVER.req_int <= 1'b1;
     end
     do begin
       @(`PULL_DRIVER);
     end while (!`PULL_DRIVER.ack && !in_reset);
     if (!in_reset) begin
-      `PULL_DRIVER.req <= 1'b0;
+      `PULL_DRIVER.req_int <= 1'b0;
     end
   endtask
 
