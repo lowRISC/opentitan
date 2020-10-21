@@ -50,12 +50,16 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     sources: [
       'rom_ext_manifest.S',
       'rom_ext_start.S',
+      'rom_ext.c',
     ],
     name_suffix: 'elf',
     link_args: rom_ext_link_args,
     link_depends: rom_ext_link_deps,
     dependencies: [
       device_lib,
+      sw_lib_dif_uart,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_print,
     ],
   )
 
