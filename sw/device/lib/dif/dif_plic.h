@@ -296,6 +296,55 @@ dif_plic_result_t dif_plic_irq_complete(const dif_plic_t *plic,
                                         dif_plic_target_t target,
                                         const dif_plic_irq_id_t *complete_data);
 
+/**
+ * Forces the software interrupt for a particular target.
+ *
+ * This function causes an interrupt to the `target` HART to be serviced as if
+ * hardware had asserted it.
+ *
+ * This function allows to synchronise between the HARTs, which otherwise
+ * would not be possible due to HART being only able to access own CSRs.
+ * NOTE: this is not an issue on Ibex, as it has only one HART.
+ *
+ * An interrupt handler is expected to call `dif_plic_software_irq_acknowledge`
+ * when the interrupt has been handled.
+ *
+ * @param plic PLIC state data.
+ * @param target Target HART.
+ * @return `dif_plic_result_t`.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_plic_result_t dif_plic_software_irq_force(const dif_plic_t *plic,
+                                              dif_plic_target_t target);
+
+/**
+ * Acknowledges the software interrupt for a particular target.
+ *
+ * This function indicates to the hardware that the software interrupt has been
+ * successfully serviced. It is expected to be called from a software interrupt
+ * handler.
+ *
+ * @param plic PLIC state data.
+ * @param target Target HART.
+ * @return `dif_plic_result_t`.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_plic_result_t dif_plic_software_irq_acknowledge(const dif_plic_t *plic,
+                                                    dif_plic_target_t target);
+
+/**
+ * Returns software interrupt pending state for a particular target.
+ *
+ * @param plic PLIC state data.
+ * @param target Target HART.
+ * @param is_pending[out] Flag indicating whether the interrupt is pending.
+ * @return `dif_plic_result_t`.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_plic_result_t dif_plic_software_irq_is_pending(const dif_plic_t *plic,
+                                                   dif_plic_target_t target,
+                                                   bool *is_pending);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
