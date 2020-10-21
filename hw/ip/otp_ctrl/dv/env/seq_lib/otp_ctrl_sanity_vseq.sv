@@ -42,6 +42,7 @@ class otp_ctrl_sanity_vseq extends otp_ctrl_base_vseq;
     cfg.pwr_otp_vif.drive_pin(0, 1);
     wait(cfg.pwr_otp_vif.pins[2] == 1);
     cfg.lc_provision_en_vif.drive(lc_ctrl_pkg::On);
+    csr_wr(ral.intr_enable, en_intr);
   endtask
 
   virtual task pre_start();

@@ -10,6 +10,7 @@ class otp_ctrl_wake_up_vseq extends otp_ctrl_base_vseq;
 
   virtual task otp_ctrl_init();
     super.otp_ctrl_init();
+    csr_wr(ral.intr_enable, en_intr);
     // drive pwr_otp_req pin
     cfg.pwr_otp_vif.drive_pin(0, 1);
   endtask
