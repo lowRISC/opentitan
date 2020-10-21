@@ -55,6 +55,10 @@ typedef struct plic_target_reg_offset {
    * Threshold register offset for this target.
    */
   ptrdiff_t threshold;
+  /**
+   * Software interrupt register offset.
+   */
+  ptrdiff_t msip;
 } plic_target_reg_offset_t;
 
 // This array gives a way of getting the target-specific register offsets from
@@ -67,12 +71,14 @@ typedef struct plic_target_reg_offset {
 // - `RV_PLIC_IE<i>_0_REG_OFFSET` (the first IE reg for target `i`).
 // - `RV_PLIC_CC<i>_REG_OFFSET`
 // - `RV_PLIC_THRESHOLD<i>_REG_OFFSET`
+// - `RV_PLIC_MSIP<i>_REG_OFFSET`
 static const plic_target_reg_offset_t kPlicTargets[] = {
     [0] =
         {
             .irq_enable = RV_PLIC_IE0_0_REG_OFFSET,
             .claim_complete = RV_PLIC_CC0_REG_OFFSET,
             .threshold = RV_PLIC_THRESHOLD0_REG_OFFSET,
+            .msip = RV_PLIC_MSIP0_REG_OFFSET,
         },
 };
 _Static_assert(sizeof(kPlicTargets) / sizeof(*kPlicTargets) ==
@@ -343,6 +349,46 @@ dif_plic_result_t dif_plic_irq_complete(
   ptrdiff_t claim_complete_reg = kPlicTargets[target].claim_complete;
   mmio_region_write32(plic->params.base_addr, claim_complete_reg,
                       *complete_data);
+
+  return kDifPlicOk;
+}
+
+dif_plic_result_t dif_plic_software_irq_force(const dif_plic_t *plic,
+                                              dif_plic_target_t target) {
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET) {
+    return kDifPlicBadArg;
+  }
+
+  ptrdiff_t msip_offset = kPlicTargets[target].msip;
+  mmio_region_write32(plic->params.base_addr, msip_offset, 1);
+
+  return kDifPlicOk;
+}
+
+dif_plic_result_t dif_plic_software_irq_acknowledge(const dif_plic_t *plic,
+                                                    dif_plic_target_t target) {
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET) {
+    return kDifPlicBadArg;
+  }
+
+  ptrdiff_t msip_offset = kPlicTargets[target].msip;
+  mmio_region_write32(plic->params.base_addr, msip_offset, 0);
+
+  return kDifPlicOk;
+}
+
+dif_plic_result_t dif_plic_software_irq_is_pending(const dif_plic_t *plic,
+                                                   dif_plic_target_t target,
+                                                   bool *is_pending) {
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET || is_pending == NULL) {
+    return kDifPlicBadArg;
+  }
+
+  ptrdiff_t msip_offset = kPlicTargets[target].msip;
+  uint32_t register_value =
+      mmio_region_read32(plic->params.base_addr, msip_offset);
+
+  *is_pending = (register_value == 1) ? true : false;
 
   return kDifPlicOk;
 }
