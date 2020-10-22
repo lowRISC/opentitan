@@ -78,4 +78,15 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  virtual task req_sram_key(int index);
+    push_pull_host_seq#(SRAM_DATA_SIZE) sram_pull_seq;
+    `uvm_create_on(sram_pull_seq, p_sequencer.sram_pull_sequencer_h[index]);
+    `DV_CHECK_RANDOMIZE_FATAL(sram_pull_seq)
+    `uvm_send(sram_pull_seq)
+  endtask
+
+  virtual task req_all_sram_keys();
+    for (int i = 0; i < NumSramKeyReqSlots; i++) req_sram_key(i);
+  endtask
+
 endclass : otp_ctrl_base_vseq

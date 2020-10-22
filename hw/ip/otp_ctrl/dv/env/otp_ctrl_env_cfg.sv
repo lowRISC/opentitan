@@ -5,6 +5,9 @@
 class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
 
   // ext component cfgs
+  rand push_pull_agent_cfg#(SRAM_DATA_SIZE) m_sram_pull_agent_cfg[NumSramKeyReqSlots];
+
+  // ext interfaces
   pwr_otp_vif         pwr_otp_vif;
   lc_provision_en_vif lc_provision_en_vif;
   mem_bkdr_vif        mem_bkdr_vif;
@@ -16,6 +19,13 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     super.initialize(csr_base_addr);
+
+    // create push_pull agent config obj
+    for (int i = 0; i < NumSramKeyReqSlots; i++) begin
+      string cfg_name = $sformatf("sram_pull_agent_cfg[%0d]", i);
+      m_sram_pull_agent_cfg[i] = push_pull_agent_cfg#(SRAM_DATA_SIZE)::type_id::create(cfg_name);
+      m_sram_pull_agent_cfg[i].agent_type = PullAgent;
+    end
 
     // set num_interrupts & num_alerts
     begin

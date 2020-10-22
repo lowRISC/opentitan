@@ -11,8 +11,10 @@ package otp_ctrl_env_pkg;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
+  import push_pull_agent_pkg::*;
   import otp_ctrl_ral_pkg::*;
   import otp_ctrl_pkg::*;
+  import otp_ctrl_reg_pkg::*;
   import lc_ctrl_pkg::*;
 
   // macro includes
@@ -20,11 +22,13 @@ package otp_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint DIGEST_SIZE              = 8;
-  parameter uint CREATOR_WINDOW_BASE_ADDR = 'h1000;
-  parameter uint OWNER_WINDOW_BASE_ADDR   = 'h1300;
-  parameter uint TEST_ACCESS_BASE_ADDR    = 'h2000;
-  parameter uint WINDOW_SIZE              = 512 * 4;
+  parameter uint DIGEST_SIZE           = 8;
+  parameter uint SW_WINDOW_BASE_ADDR   = 'h1000;
+  parameter uint TEST_ACCESS_BASE_ADDR = 'h2000;
+  parameter uint WINDOW_SIZE           = 512 * 4;
+  // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
+  parameter uint SRAM_DATA_SIZE        = 1 + otp_ctrl_pkg::SramKeyWidth +
+                                             otp_ctrl_pkg::SramNonceWidth;
 
   // lc does not have digest
   parameter bit[10:0] DIGESTS_ADDR [NumPart-1] = {
@@ -76,7 +80,7 @@ package otp_ctrl_env_pkg;
   endfunction
 
   function automatic bit [TL_AW-1:0] get_sw_window_addr(bit [TL_AW-1:0] dai_addr);
-    get_sw_window_addr = dai_addr + CREATOR_WINDOW_BASE_ADDR;
+    get_sw_window_addr = dai_addr + SW_WINDOW_BASE_ADDR;
   endfunction
 
   // package sources

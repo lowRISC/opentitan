@@ -8,6 +8,8 @@ module tb;
   import dv_utils_pkg::*;
   import otp_ctrl_env_pkg::*;
   import otp_ctrl_test_pkg::*;
+  import push_pull_agent_pkg::*;
+  import otp_ctrl_reg_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -16,8 +18,16 @@ module tb;
   wire clk, rst_n;
   wire devmode;
   wire [3:0] lc_provision_en;
+
   // TODO: use standard req/rsp agent
   wire [2:0] pwr_otp;
+  wire otp_ctrl_pkg::flash_otp_key_req_t flash_req;
+  wire otp_ctrl_pkg::flash_otp_key_rsp_t flash_rsp;
+  wire otp_ctrl_pkg::otbn_otp_key_req_t  otbn_req;
+  wire otp_ctrl_pkg::otbn_otp_key_rsp_t  otbn_rsp;
+  wire otp_ctrl_pkg::sram_otp_key_req_t[NumSramKeyReqSlots-1:0] sram_req;
+  wire otp_ctrl_pkg::sram_otp_key_rsp_t[NumSramKeyReqSlots-1:0] sram_rsp;
+
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire intr_otp_operation_done, intr_otp_error;
 
@@ -25,6 +35,7 @@ module tb;
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
+  push_pull_if #(SRAM_DATA_SIZE) sram_if[NumSramKeyReqSlots] (.clk(clk), .rst_n(rst_n));
   // TODO: use standard req/rsp agent
   pins_if #(3) pwr_otp_if(pwr_otp);
   pins_if #(4) lc_provision_en_if(lc_provision_en);
@@ -48,7 +59,7 @@ module tb;
     .otp_ast_pwr_seq_h_i       ('0),
     // edn
     .otp_edn_o                 (  ),
-    .otp_edn_i                 ('0),
+    .otp_edn_i                 ('1),
     // pwrmgr
     .pwr_otp_i                 (pwr_otp[0]),
     .pwr_otp_o                 (pwr_otp[2:1]),
@@ -65,16 +76,26 @@ module tb;
     .otp_keymgr_key_o          (  ),
     // flash
     .flash_otp_key_i           ('0),
-    .flash_otp_key_o           (  ),
+    .flash_otp_key_o           (flash_rsp),
     // sram
-    .sram_otp_key_i            ('0),
-    .sram_otp_key_o            (  ),
+    .sram_otp_key_i            (sram_req),
+    .sram_otp_key_o            (sram_rsp),
     // otbn
     .otbn_otp_key_i            ('0),
-    .otbn_otp_key_o            (  ),
-    // hw cfg
+    .otbn_otp_key_o            (obtb_rsp),
+
     .hw_cfg_o                  (  )
   );
+
+  for (genvar i = 0; i < NumSramKeyReqSlots; i++) begin : gen_sram_pull_if
+    assign sram_req[i]     = sram_if[i].req;
+    assign sram_if[i].ack  = sram_rsp[i].ack;
+    assign sram_if[i].data = {sram_rsp[i].key, sram_rsp[i].nonce, sram_rsp[i].seed_valid};
+    initial begin
+      uvm_config_db#(virtual push_pull_if#(SRAM_DATA_SIZE))::set(null,
+                     $sformatf("*env.m_sram_pull_agent[%0d]*", i), "vif", sram_if[i]);
+    end
+  end
 
   // bind mem_bkdr_if
   `define OTP_CTRL_MEM_HIER \
@@ -89,14 +110,14 @@ module tb;
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(pwr_otp_vif)::set(null, "*.env", "pwr_otp_vif", pwr_otp_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(lc_provision_en_vif)::set(null, "*.env", "lc_provision_en_vif",
                                              lc_provision_en_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif",
-                                      `OTP_CTRL_MEM_HIER.mem_bkdr_if);
+    uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif", `OTP_CTRL_MEM_HIER.mem_bkdr_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
