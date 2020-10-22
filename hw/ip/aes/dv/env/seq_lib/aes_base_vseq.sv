@@ -202,7 +202,7 @@ class aes_base_vseq extends cip_base_vseq #(
         `DV_CHECK_RANDOMIZE_FATAL(aes_item)
       end
 
-      `uvm_info(`gfn, $sformatf("\n ----| DATA AES ITEM %s", aes_item.convert2string()), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n ----| DATA AES ITEM %s", aes_item.convert2string()), UVM_HIGH)
       `downcast(item_clone, aes_item.clone());
       aes_item_queue.push_front(item_clone);
       `uvm_info(`gfn, $sformatf("\n ----| generating data item %d", n), UVM_MEDIUM)
@@ -401,7 +401,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_item.item_type = AES_CFG;
 
     `DV_CHECK_RANDOMIZE_FATAL(aes_item)
-    `uvm_info(`gfn, $sformatf("----| CONFIG  AES ITEM %s", aes_item.convert2string()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\n\t ----| CONFIG  AES ITEM %s", aes_item.convert2string()), UVM_FULL)
 
     `downcast(item_clone, aes_item.clone());
     aes_item_queue.push_front(item_clone);
@@ -439,11 +439,13 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_message_item cloned_message;
     for(int i=0; i < cfg.num_messages; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(aes_message)
+      if(aes_message.cfg_error_type[0] == 1'b1) cfg.num_corrupt_messages += 1;
+
       `downcast(cloned_message, aes_message.clone());
       //`assert($cast(cloned_message, aes_message.clone());
       message_queue.push_front(cloned_message);
-      `uvm_info(`gfn, $sformatf("\n message # %d \n %s",i, cloned_message.convert2string()),
-                UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n\t ----| MESSAGE # %d \n %s",i, cloned_message.convert2string())
+               , UVM_MEDIUM)
     end
 
   endfunction
@@ -451,7 +453,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
   function void aes_print_item_queue(ref aes_seq_item item_queue[$]);
     aes_seq_item print_item;
-    `uvm_info(`gfn, $sformatf("----| Item queue size: %d", item_queue.size()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("----| Item queue size: %d", item_queue.size()), UVM_HIGH)
     for(int n = 0; n < item_queue.size(); n++) begin
       print_item = item_queue[n];
       `uvm_info(`gfn, $sformatf("----|  ITEM #%d", n ), UVM_MEDIUM)

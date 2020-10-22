@@ -10,8 +10,7 @@ class aes_stress_vseq extends aes_base_vseq;
   aes_message_item my_message;
 
   task body();
-    `uvm_info(`gfn, $sformatf("\n\t ----| STARTING AES MAIN SEQUENCE |----\n"), UVM_LOW);
-    `uvm_info(`gfn, $sformatf("\n\t cfg item \n %s", cfg.convert2string()), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES MAIN SEQUENCE |----\n %s", cfg.convert2string()), UVM_LOW)
 
     // generate list of messages //
     generate_message_queue();

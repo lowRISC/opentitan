@@ -25,7 +25,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   bit          finish_message     = 0;        // set when test is trying to end
                                               // - to indicate the last message is finished
   int          message_cnt        = 0;        // used to check that all messages were received
-  int          mode_errors_seen   = 0;        // number of aes_mode errors seen
+  int          corrupt_cnt        = 0;        // number of aes_mode errors seen
 
   // local queues to hold incoming packets pending comparison //
 
@@ -53,7 +53,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_MEDIUM)
+//    `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_MEDIUM)
     if(cfg.en_scb) begin
       fork
         compare();
@@ -85,7 +85,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       if (write) begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
       end
-      `uvm_info(`gfn, $sformatf("\n\t ----| ITEM received reg name : %s",csr.get_name() ), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n\t ----| ITEM received reg name : %s",csr.get_name() ), UVM_FULL)
       csr_name = csr.get_name();
       case (1)
         // add individual case item for each csr
@@ -103,6 +103,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
             6'b10_0000:  input_item.mode = AES_NONE;
             default:     input_item.mode = AES_NONE;
           endcase // case item.a_data[4:1]
+          input_item.clean();
 
         end
 
@@ -308,7 +309,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
             end
           end
           default: begin
-            `uvm_info(`gfn, $sformatf("\n\t ----| Received illegal AES_MODE setting reverting to AES_NONE "), UVM_LOW)
+            `uvm_info(`gfn, $sformatf("\n\t ----| Received illegal AES_MODE setting reverting to AES_NONE "), UVM_HIGH)
 
           end
         endcase // case (input_item.mode)
@@ -449,33 +450,38 @@ class aes_scoreboard extends cip_base_scoreboard #(
                                 msg.aes_key[0], msg.aes_key[1])
                 , UVM_MEDIUM)
 
-      msg.alloc_predicted_msg();
+      if (msg.aes_mode != AES_NONE) begin
+        msg.alloc_predicted_msg();
 
-      //ref-model      / opration     / chipher mode /    IV   / key_len    / key /data i /data o //
-      c_dpi_aes_crypt_message(cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv,
-                              msg.aes_keylen, msg.aes_key[0] ^ msg.aes_key[1],
-                              msg.input_msg, msg.predicted_msg);
+        //ref-model      / opration     / chipher mode /    IV   / key_len    / key /data i /data o //
+        c_dpi_aes_crypt_message(cfg.ref_model, msg.aes_operation, msg.aes_mode, msg.aes_iv,
+                                msg.aes_keylen, msg.aes_key[0] ^ msg.aes_key[1],
+                                msg.input_msg, msg.predicted_msg);
 
-      `uvm_info(`gfn, $sformatf("\n\t ----| printing MESSAGE %s", msg.convert2string() )
-                , UVM_MEDIUM)
-      txt = "";
-      foreach(msg.input_msg[i]) begin
-        txt = { txt, $sformatf("\n\t %d %h \t %h \t %h",
-                              i, msg.input_msg[i], msg.output_msg[i], msg.predicted_msg[i])};
-      end
-
-      for( int n =0 ; n < msg.input_msg.size(); n++) begin
-        if( msg.output_msg[n] != msg.predicted_msg[n]) begin
-          txt = {"\t TEST FAILED MESSAGES DID NOT MATCH \n ", txt};
-
-          txt = {txt,  $sformatf("\n\n\t ----| ACTUAL OUTPUT DID NOT MATCH PREDICTED OUTPUT |----")};
-          txt = {txt, $sformatf("\n\t ----| FAILED AT BYTE #%0d \t ACTUAL: 0x%h \t PREDICTED: 0x%h, ",
-                                n, msg.output_msg[n], msg.predicted_msg[n] )};
-          `uvm_fatal(`gfn, $sformatf(" # %0d  \n\t %s \n", message_cnt, txt))
+        `uvm_info(`gfn, $sformatf("\n\t ----| printing MESSAGE %s", msg.convert2string() )
+                  , UVM_MEDIUM)
+        txt = "";
+        foreach(msg.input_msg[i]) begin
+          txt = { txt, $sformatf("\n\t %d %h \t %h \t %h",
+                                i, msg.input_msg[i], msg.output_msg[i], msg.predicted_msg[i])};
         end
+
+        for( int n =0 ; n < msg.input_msg.size(); n++) begin
+          if( msg.output_msg[n] != msg.predicted_msg[n]) begin
+            txt = {"\t TEST FAILED MESSAGES DID NOT MATCH \n ", txt};
+
+            txt = {txt,  $sformatf("\n\n\t ----| ACTUAL OUTPUT DID NOT MATCH PREDICTED OUTPUT |----")};
+          txt = {txt, $sformatf("\n\t ----| FAILED AT BYTE #%0d \t ACTUAL: 0x%h \t PREDICTED: 0x%h, ",
+                                  n, msg.output_msg[n], msg.predicted_msg[n] )};
+          `uvm_fatal(`gfn, $sformatf(" # %0d  \n\t %s \n", message_cnt, txt))
+          end
+        end
+        `uvm_info(`gfn, $sformatf("\n\t ----|   MESSAGE #%0d MATCHED    |-----",message_cnt), UVM_LOW)
+        message_cnt++;
+      end else begin
+        `uvm_info(`gfn, $sformatf("\n\t ----| MESSAGE #%0d HAS ILLEGAL MODE MESSAGE IGNORED     |-----",message_cnt), UVM_LOW)
+        corrupt_cnt++;
       end
-      `uvm_info(`gfn, $sformatf("\n\t ----|   MESSAGE #%0d MATCHED    |-----",message_cnt), UVM_LOW)
-      message_cnt++;
     end
   endtask
 
@@ -521,14 +527,15 @@ class aes_scoreboard extends cip_base_scoreboard #(
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_message_item, msg_fifo)
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_seq_item, item_fifo)
       `DV_EOT_PRINT_Q_CONTENTS(aes_seq_item, rcv_item_q)
-      if(message_cnt != (cfg.num_messages - cfg.num_corrupt_messages)) begin
+      if (message_cnt != (cfg.num_messages - cfg.num_corrupt_messages)) begin
         rpt_srvr = uvm_report_server::get_server();
-        if(rpt_srvr.get_severity_count(UVM_FATAL)+rpt_srvr.get_severity_count(UVM_ERROR) == 0) begin
+        if (rpt_srvr.get_severity_count(UVM_FATAL)+rpt_srvr.get_severity_count(UVM_ERROR) == 0) begin
           txt = "\n\t ----| NO FAILURES BUT DIDN*T SEE ALL EXPECTED MESSAGES";
         end else begin
           txt = "\n\t ----| TEST FAILED";
           end
-        txt = { txt, $sformatf(" \n\t ----| expected %d, seen: %d", cfg.num_messages, message_cnt ) };
+        txt = { txt, $sformatf(" \n\t ----| expected %d, seen: %d, expected corrupted %d, seen corrupted %d",
+                               cfg.num_messages, message_cnt, cfg.num_corrupt_messages, corrupt_cnt ) };
         `uvm_fatal(`gfn, $sformatf("%s", txt) )
       end
     end
