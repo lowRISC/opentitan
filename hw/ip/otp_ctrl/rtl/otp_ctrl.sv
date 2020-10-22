@@ -65,7 +65,7 @@ module otp_ctrl
   input  otbn_otp_key_req_t                          otbn_otp_key_i,
   output otbn_otp_key_rsp_t                          otbn_otp_key_o,
   // Hardware config bits
-  output logic [NumHwCfgBits-1:0]                    hw_cfg_o
+  output logic [HwCfgContentSize * 8-1:0]            hw_cfg_o
 );
 
   import prim_util_pkg::vbits;
@@ -946,38 +946,44 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
   // Buffered Data Output Mapping //
   //////////////////////////////////
 
-  // Output complete hardware config partition.
+  // Output complete hardware config partition (without the digest).
   // Actual mapping to other IPs can occur at the top-level.
-  assign hw_cfg_o = part_buf_data[PartInfo[HwCfgIdx].offset +:
-                                  PartInfo[HwCfgIdx].size];
+  assign hw_cfg_o = part_buf_data[HwCfgContentOffset +:
+                                  HwCfgContentSize];
 
   // Root keys
   assign otp_keymgr_key_o.valid = part_init_done[Secret2Idx];
-  assign {otp_keymgr_key_o.key_share1,
-          otp_keymgr_key_o.key_share0} = part_buf_data[PartInfo[Secret2Idx].offset +:
-                                                       2*KeyMgrKeyWidth/8];
+  assign otp_keymgr_key_o.key_share0 = part_buf_data[CreatorRootKeyShare0Offset +:
+                                                     CreatorRootKeyShare0Size];
+  assign otp_keymgr_key_o.key_share1 = part_buf_data[CreatorRootKeyShare1Offset +:
+                                                     CreatorRootKeyShare1Size];
+
   // Scrambling Keys
   assign scrmbl_key_seed_valid = part_init_done[Secret1Idx];
-  assign {sram_data_key_seed,
-          flash_data_key_seed,
-          flash_addr_key_seed} = part_buf_data[PartInfo[Secret1Idx].offset +:
-                                               2*FlashKeySeedWidth/8 +
-                                               SramKeySeedWidth/8];
-  // Test unlock and exit tokens
-  assign {otp_lc_data_o.test_exit_token,
-          otp_lc_data_o.test_unlock_token} = part_buf_data[PartInfo[Secret0Idx].offset +:
-                                                           2*lc_ctrl_pkg::LcTokenWidth/8];
-  // RMA token
-  assign otp_lc_data_o.rma_token      = part_buf_data[PartInfo[Secret2Idx].offset +:
-                                                        lc_ctrl_pkg::LcTokenWidth/8];
+  assign sram_data_key_seed    = part_buf_data[SramDataKeySeedOffset +:
+                                               SramDataKeySeedSize];
+  assign flash_data_key_seed   = part_buf_data[FlashDataKeySeedOffset +:
+                                               FlashDataKeySeedSize];
+  assign flash_addr_key_seed   = part_buf_data[FlashAddrKeySeedOffset +:
+                                               FlashAddrKeySeedSize];
+
+  // Test unlock and exit tokens and RMA token
+  assign otp_lc_data_o.test_exit_token   = part_buf_data[TestExitTokenOffset +:
+                                                         TestExitTokenSize];
+  assign otp_lc_data_o.test_unlock_token = part_buf_data[TestUnlockTokenOffset +:
+                                                         TestUnlockTokenSize];
+  assign otp_lc_data_o.rma_token         = part_buf_data[RmaTokenOffset +:
+                                                         RmaTokenSize];
+
   // The device is personalized if the root key has been provisioned and locked
   assign otp_lc_data_o.id_state       = (part_digest[Secret2Idx] != '0) ? lc_ctrl_pkg::Set :
                                                                           lc_ctrl_pkg::Blk;
 
   // Lifecycle state
-  assign {otp_lc_data_o.count,
-          otp_lc_data_o.state}        = part_buf_data[PartInfo[LifeCycleIdx].offset +:
-                                                      PartInfo[LifeCycleIdx].size];
+  assign otp_lc_data_o.state = lc_ctrl_pkg::lc_state_e'(part_buf_data[LcStateOffset +:
+                                                                      LcStateSize]);
+  assign otp_lc_data_o.count = lc_ctrl_pkg::lc_cnt_t'(part_buf_data[LcTransitionCntOffset +:
+                                                                    LcTransitionCntSize]);
 
   // Assert life cycle state valid signal only when all partitions have initialized.
   assign otp_lc_data_o.valid    = &part_init_done;
@@ -989,6 +995,18 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
   ////////////////
   // Assertions //
   ////////////////
+
+  `ASSERT_INIT(CreatorRootKeyShare0Size_A, KeyMgrKeyWidth == CreatorRootKeyShare0Size * 8)
+  `ASSERT_INIT(CreatorRootKeyShare1Size_A, KeyMgrKeyWidth == CreatorRootKeyShare1Size * 8)
+  `ASSERT_INIT(FlashDataKeySeedSize_A,     FlashKeySeedWidth == FlashDataKeySeedSize * 8)
+  `ASSERT_INIT(FlashAddrKeySeedSize_A,     FlashKeySeedWidth == FlashAddrKeySeedSize * 8)
+  `ASSERT_INIT(SramDataKeySeedSize_A,      SramKeySeedWidth == SramDataKeySeedSize * 8)
+
+  `ASSERT_INIT(RmaTokenSize_A,        lc_ctrl_pkg::LcTokenWidth == RmaTokenSize * 8)
+  `ASSERT_INIT(TestUnlockTokenSize_A, lc_ctrl_pkg::LcTokenWidth == TestUnlockTokenSize * 8)
+  `ASSERT_INIT(TestExitTokenSize_A,   lc_ctrl_pkg::LcTokenWidth == TestExitTokenSize * 8)
+  `ASSERT_INIT(LcStateSize_A,         lc_ctrl_pkg::LcStateWidth == LcStateSize * 8)
+  `ASSERT_INIT(LcTransitionCntSize_A, lc_ctrl_pkg::LcCountWidth == LcTransitionCntSize * 8)
 
   `ASSERT_KNOWN(OtpAstPwrSeqKnown_A,         otp_ast_pwr_seq_o)
   `ASSERT_KNOWN(TlOutKnown_A,                tl_o)

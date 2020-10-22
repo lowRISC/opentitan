@@ -53,6 +53,5 @@ package otp_ctrl_part_pkg;
   } part_idx_e;
 
   parameter int NumAgents = int'(NumAgentsIdx);
-  parameter int NumHwCfgBits = PartInfo[HwCfgIdx].size*8;
 
 endpackage : otp_ctrl_part_pkg

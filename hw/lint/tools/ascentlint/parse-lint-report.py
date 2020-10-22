@@ -47,7 +47,9 @@ def get_results(resdir):
                                  ("errors", r"^ERROR.*"),
                                  ("errors", r"^  ERR .*"),
                                  ("warnings", r"^Warning: .*"),
-                                 ("warnings", r"^  WARN .*")]
+                                 # TODO: struct assignment labels within concatenation
+                                 # not supported. check with newer ascentlint version.
+                                 ("warnings", r"^  (?!WARN \[#39024\])WARN .*")]
             extract_messages(full_file, err_warn_patterns, results)
     except IOError as err:
         results["errors"] += ["IOError: %s" % err]
