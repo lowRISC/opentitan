@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:otbn_pkg:0.1"
+description: "Constants used by OTBN"
+
+filesets:
+  files_pkg:
+    depend:
+      - lowrisc:prim:assert
+    files:
+      - rtl/otbn_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_pkg

@@ -1,0 +1,26 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:otbn_model:0.1"
+description: "OpenTitan Big Number Accelerator (OTBN)"
+
+filesets:
+  files_model:
+    depend:
+      - lowrisc:ip:otbn_pkg
+      - lowrisc:dv_verilator:memutil_dpi
+    files:
+      - otbn_model.cc: { file_type: cppSource }
+      - iss_wrapper.cc: { file_type: cppSource }
+      - iss_wrapper.h: { file_type: cppSource, is_include_file: true }
+      - otbn_core_model.sv
+      - otbn_rf_snooper_if.sv
+      - otbn_stack_snooper_if.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_model
+    toplevel: otbn_core_model

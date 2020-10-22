@@ -8,10 +8,12 @@ description: "Standalone OpenTitan Big Number Accelerator (OTBN) simulation"
 filesets:
   files_otbn:
     depend:
-      - lowrisc:ip:otbn:0.1
+      - lowrisc:ip:otbn
+      - lowrisc:dv:otbn_model
   files_verilator:
     depend:
       - lowrisc:dv:otbn_memutil
+      - lowrisc:dv_verilator:memutil_verilator
       - lowrisc:dv_verilator:simutil_verilator
     files:
       - otbn_top_sim.cc: { file_type: cppSource }
