@@ -13,8 +13,9 @@ package otp_ctrl_env_pkg;
   import csr_utils_pkg::*;
   import push_pull_agent_pkg::*;
   import otp_ctrl_ral_pkg::*;
-  import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
+  import otp_ctrl_pkg::*;
+  import otp_ctrl_part_pkg::*;
   import lc_ctrl_pkg::*;
 
   // macro includes
@@ -29,20 +30,21 @@ package otp_ctrl_env_pkg;
   parameter uint TEST_ACCESS_WINDOW_SIZE = 16 * 4;
 
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
-  parameter uint SRAM_DATA_SIZE  = 1 + otp_ctrl_pkg::SramKeyWidth + otp_ctrl_pkg::SramNonceWidth;
+  parameter uint SRAM_DATA_SIZE  = 1 + SramKeyWidth + SramNonceWidth;
   // otbn rsp data has 1 bit for seed_valid, the rest are for key and nonce
-  parameter uint OTBN_DATA_SIZE  = 1 + otp_ctrl_pkg::OtbnKeyWidth + otp_ctrl_pkg::OtbnNonceWidth;
+  parameter uint OTBN_DATA_SIZE  = 1 + OtbnKeyWidth + OtbnNonceWidth;
   // flash rsp data has 1 bit for seed_valid, the rest are for key
-  parameter uint FLASH_DATA_SIZE = 1 + otp_ctrl_pkg::FlashKeyWidth;
+  parameter uint FLASH_DATA_SIZE = 1 + FlashKeyWidth;
 
   // lc does not have digest
   parameter bit[10:0] DIGESTS_ADDR [NumPart-1] = {
-      PartInfo[CreatorSwCfgIdx].offset + PartInfo[CreatorSwCfgIdx].size - DIGEST_SIZE,
-      PartInfo[OwnerSwCfgIdx].offset   + PartInfo[OwnerSwCfgIdx].size   - DIGEST_SIZE,
-      PartInfo[HwCfgIdx].offset        + PartInfo[HwCfgIdx].size        - DIGEST_SIZE,
-      PartInfo[Secret0Idx].offset      + PartInfo[Secret0Idx].size      - DIGEST_SIZE,
-      PartInfo[Secret1Idx].offset      + PartInfo[Secret1Idx].size      - DIGEST_SIZE,
-      PartInfo[Secret2Idx].offset      + PartInfo[Secret2Idx].size      - DIGEST_SIZE};
+      CreatorSwCfgDigestOffset,
+      OwnerSwCfgDigestOffset,
+      HwCfgDigestOffset,
+      Secret0DigestOffset,
+      Secret1DigestOffset,
+      Secret2DigestOffset
+  };
 
   // types
   typedef virtual pins_if #(3) pwr_otp_vif;
@@ -70,7 +72,7 @@ package otp_ctrl_env_pkg;
   // functions
   function automatic int get_part_index(bit [TL_DW-1:0] addr);
     int index;
-    for (index = 0; index < otp_ctrl_pkg::NumPart; index++) begin
+    for (index = 0; index < NumPart; index++) begin
       if (PartInfo[index].offset > addr) begin
         index--;
         break;

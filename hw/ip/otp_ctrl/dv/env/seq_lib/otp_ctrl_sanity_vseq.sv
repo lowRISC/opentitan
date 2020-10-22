@@ -14,7 +14,7 @@ class otp_ctrl_sanity_vseq extends otp_ctrl_base_vseq;
   randc bit [TL_AW-1:0]          dai_addr;
   rand  bit [TL_DW-1:0]          wdata0, wdata1;
   rand  int                      num_dai_wr;
-  rand  otp_ctrl_pkg::part_idx_e part_idx;
+  rand  otp_ctrl_part_pkg::part_idx_e part_idx;
 
   // TODO: temp -> no life-cycle partition involved
   constraint partition_index_c {

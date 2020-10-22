@@ -28,7 +28,10 @@
 
 `include "prim_assert.sv"
 
-module otp_ctrl_lfsr_timer import otp_ctrl_pkg::*; #(
+module otp_ctrl_lfsr_timer
+  import otp_ctrl_pkg::*;
+  import otp_ctrl_reg_pkg::*;
+#(
   // Entropy reseeding is triggered every time this counter expires.
   parameter int                          ReseedTimerWidth = 16,
   parameter logic [TimerWidth-1:0]       LfsrSeed           = TimerWidth'(1'b1),

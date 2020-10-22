@@ -13,7 +13,7 @@ module prim_generic_otp #(
   parameter  int ErrWidth    = otp_ctrl_pkg::OtpErrWidth,
   // Width of the power sequencing signal.
   parameter  int PwrSeqWidth = otp_ctrl_pkg::OtpPwrSeqWidth,
-// Number of Test TL-UL words
+  // Number of Test TL-UL words
   parameter  int TlDepth     = 16,
   // Derived parameters
   localparam int AddrWidth   = prim_util_pkg::vbits(Depth),

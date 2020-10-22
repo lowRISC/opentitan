@@ -10,6 +10,7 @@
 module otp_ctrl
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
+  import otp_ctrl_part_pkg::*;
 #(
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0]        AlertAsyncOn = {NumAlerts{1'b1}},
@@ -742,7 +743,7 @@ module otp_ctrl
   logic [SramKeySeedWidth-1:0] sram_data_key_seed;
   logic [FlashKeySeedWidth-1:0] flash_data_key_seed, flash_addr_key_seed;
 
-  otp_ctrl_kdi i_otp_ctrl_kdi (
+  otp_ctrl_kdi u_otp_ctrl_kdi (
     .clk_i,
     .rst_ni,
     .kdi_en_i                ( pwr_otp_o.otp_done      ),
@@ -944,8 +945,6 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
   //////////////////////////////////
   // Buffered Data Output Mapping //
   //////////////////////////////////
-
-  // TODO: template these mappings, based on the address map hjson contents.
 
   // Output complete hardware config partition.
   // Actual mapping to other IPs can occur at the top-level.
