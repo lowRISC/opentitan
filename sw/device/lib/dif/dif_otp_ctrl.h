@@ -125,8 +125,7 @@ typedef struct dif_otp_ctrl_config {
    * The value of this mask limits the period of the consistency check; when the
    * pseudo-random period is computed, this mask is applied to limit it. For
    * example, a value of 0x3ff'ffff would correspond to a maximum period of
-   * about
-   * 716s at 24MHz.
+   * about 716s at 24MHz.
    *
    * A value of zero disables the check.
    */
@@ -503,7 +502,8 @@ dif_otp_ctrl_lockable_result_t dif_otp_ctrl_check_consistency(
     const dif_otp_ctrl_t *otp);
 
 /**
- * Locks out `dif_otp_ctrl_configure()`.
+ * Locks out `dif_otp_ctrl_configure()` and the
+ * `dif_otp_ctrl_check_*()` functions.
  *
  * This function is reentrant: calling it while functionality is locked will
  * have no effect and return `kDifOtpCtrlOk`.
@@ -515,7 +515,8 @@ DIF_WARN_UNUSED_RESULT
 dif_otp_ctrl_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp);
 
 /**
- * Checks whether `dif_otp_ctrl_configure()` is locked-out.
+ * Checks whether `dif_otp_ctrl_configure()` and the `dif_otp_ctrl_check_*()`
+ * functions are locked-out.
  *
  * @param otp An OTP handle.
  * @param[out] is_locked Out-param for the locked state.
@@ -524,29 +525,6 @@ dif_otp_ctrl_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp);
 DIF_WARN_UNUSED_RESULT
 dif_otp_ctrl_result_t dif_otp_ctrl_config_is_locked(const dif_otp_ctrl_t *otp,
                                                     bool *is_locked);
-
-/**
- * Locks out `dif_otp_ctrl_check_*()` functions.
- *
- * This function is reentrant: calling it while functionality is locked will
- * have no effect and return `kDifOtpCtrlOk`.
- *
- * @param otp An OTP handle.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_lock_checking(const dif_otp_ctrl_t *otp);
-
-/**
- * Checks whether `dif_otp_ctrl_check_*()` functions are locked-out.
- *
- * @param otp An OTP handle.
- * @param[out] is_locked Out-param for the locked state.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_checking_is_locked(const dif_otp_ctrl_t *otp,
-                                                      bool *is_locked);
 
 /**
  * Locks out reads to a SW partition.
@@ -686,18 +664,6 @@ dif_otp_ctrl_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
                                               dif_otp_ctrl_status_t *status);
 
 /**
- * Checks whether the Direct Access Interface is busy, such that no commands
- * can be scheduled at this time.
- *
- * @param otp An OTP handle.
- * @param[out] is_busy Out-param for whether the DAI is busy.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_dai_is_busy(const dif_otp_ctrl_t *otp,
-                                               bool *is_busy);
-
-/**
  * Schedules a read on the Direct Access Interface.
  *
  * Reads are performed relative to a partition; `address` should be given
@@ -730,8 +696,8 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read_start(
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_dai_read32_end(const dif_otp_ctrl_t *otp,
-                                                  uint32_t *value);
+dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read32_end(const dif_otp_ctrl_t *otp,
+                                                      uint32_t *value);
 
 /**
  * Gets the result of a completed 64-bit read operation on the Direct Access
@@ -745,8 +711,8 @@ dif_otp_ctrl_result_t dif_otp_ctrl_dai_read32_end(const dif_otp_ctrl_t *otp,
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_otp_ctrl_result_t dif_otp_ctrl_dai_read64_end(const dif_otp_ctrl_t *otp,
-                                                  uint64_t *value);
+dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read64_end(const dif_otp_ctrl_t *otp,
+                                                      uint64_t *value);
 
 /**
  * Schedules a 32-bit write on the Direct Access Interface.
