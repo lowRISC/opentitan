@@ -634,6 +634,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             int             index = $urandom_range(0, shadowed_csrs.size() - 1);
             uvm_reg_data_t  rand_val, origin_val;
             bkdr_reg_path_e kind;
+            int             shadow_reg_width = shadowed_csrs[index].get_msb_pos() + 1;
 
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(
                 kind, kind inside {BkdrRegPathRtlCommitted, BkdrRegPathRtlShadow};)
@@ -645,7 +646,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                       UVM_HIGH);
 
             // check shadow_reg storage error
-            if (origin_val ^ rand_val & (1 << (shadowed_csrs[index].get_msb_pos() + 1) - 1)) begin
+            if ((origin_val ^ rand_val) & ((1 << shadow_reg_width) - 1)) begin
               string alert_name = get_alert_agent_name(err_storage, shadowed_csrs[index]);
               bit    has_storage_error;
 
