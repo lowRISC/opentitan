@@ -119,7 +119,7 @@ static bool classify_local_alerts(
   uint32_t alerts_reg = mmio_region_read32(
       handler->params.base_addr, ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET);
 
-  for (int i = 0; i < class->alerts_len; ++i) {
+  for (int i = 0; i < class->local_alerts_len; ++i) {
     uint32_t classification;
     switch (class->alert_class) {
       case kDifAlertHandlerClassA:
@@ -410,8 +410,8 @@ dif_alert_handler_config_result_t dif_alert_handler_configure(
   }
   // Check that the provided ping timeout actually fits in the timeout register,
   // which is smaller than a native word length.
-  if ((config.ping_timeout &
-       ALERT_HANDLER_PING_TIMEOUT_CYC_PING_TIMEOUT_CYC_MASK) != 0) {
+  if (config.ping_timeout >
+      ALERT_HANDLER_PING_TIMEOUT_CYC_PING_TIMEOUT_CYC_MASK) {
     return kDifAlertHandlerConfigBadArg;
   }
   if (config.classes == NULL && config.classes_len != 0) {
@@ -618,11 +618,11 @@ dif_alert_handler_result_t dif_alert_handler_irq_disable_all(
 
   if (snapshot != NULL) {
     *snapshot = mmio_region_read32(handler->params.base_addr,
-                                   ALERT_HANDLER_INTR_STATE_REG_OFFSET);
+                                   ALERT_HANDLER_INTR_ENABLE_REG_OFFSET);
   }
 
   mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_INTR_STATE_REG_OFFSET, 0);
+                      ALERT_HANDLER_INTR_ENABLE_REG_OFFSET, 0);
 
   return kDifAlertHandlerOk;
 }
@@ -635,7 +635,7 @@ dif_alert_handler_result_t dif_alert_handler_irq_restore_all(
   }
 
   mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_INTR_STATE_REG_OFFSET, *snapshot);
+                      ALERT_HANDLER_INTR_ENABLE_REG_OFFSET, *snapshot);
 
   return kDifAlertHandlerOk;
 }
@@ -933,13 +933,13 @@ dif_alert_handler_result_t dif_alert_handler_get_class_state(
       *state = kDifAlertHandlerClassStatePhase0;
       break;
     case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_PHASE1:
-      *state = kDifAlertHandlerClassStatePhase0;
+      *state = kDifAlertHandlerClassStatePhase1;
       break;
     case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_PHASE2:
-      *state = kDifAlertHandlerClassStatePhase0;
+      *state = kDifAlertHandlerClassStatePhase2;
       break;
     case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_PHASE3:
-      *state = kDifAlertHandlerClassStatePhase0;
+      *state = kDifAlertHandlerClassStatePhase3;
       break;
     case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_TERMINAL:
       *state = kDifAlertHandlerClassStateTerminal;
