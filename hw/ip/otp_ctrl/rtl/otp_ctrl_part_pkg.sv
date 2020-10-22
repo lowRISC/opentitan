@@ -11,23 +11,85 @@ package otp_ctrl_part_pkg;
 
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_pkg::*;
-  // TODO: need to parse this somehow from an hjson
+
   localparam part_info_t PartInfo [NumPart] = '{
-    // Variant    | offset | size | key_sel | scrambled | HW digest | write_lock | read_lock
     // CREATOR_SW_CFG
-    '{Unbuffered,   11'h0,   768,  Secret0Key,  1'b0,      1'b0,      1'b1,       1'b0},
+    '{
+      variant:    Unbuffered,
+      offset:     11'd0,
+      size:       768,
+      key_sel:    key_sel_e'('0),
+      secret:     1'b0,
+      hw_digest:  1'b0,
+      write_lock: 1'b1,
+      read_lock:  1'b0
+    },
     // OWNER_SW_CFG
-    '{Unbuffered,   11'h300, 768,  Secret0Key,  1'b0,      1'b0,      1'b1,       1'b0},
+    '{
+      variant:    Unbuffered,
+      offset:     11'd768,
+      size:       768,
+      key_sel:    key_sel_e'('0),
+      secret:     1'b0,
+      hw_digest:  1'b0,
+      write_lock: 1'b1,
+      read_lock:  1'b0
+    },
     // HW_CFG
-    '{Buffered,     11'h600, 176,  Secret0Key,  1'b0,      1'b1,      1'b1,       1'b0},
+    '{
+      variant:    Buffered,
+      offset:     11'd1536,
+      size:       176,
+      key_sel:    key_sel_e'('0),
+      secret:     1'b0,
+      hw_digest:  1'b1,
+      write_lock: 1'b1,
+      read_lock:  1'b0
+    },
     // SECRET0
-    '{Buffered,     11'h6B0, 40,   Secret0Key,  1'b1,      1'b1,      1'b1,       1'b1},
+    '{
+      variant:    Buffered,
+      offset:     11'd1712,
+      size:       40,
+      key_sel:    Secret0Key,
+      secret:     1'b1,
+      hw_digest:  1'b1,
+      write_lock: 1'b1,
+      read_lock:  1'b1
+    },
     // SECRET1
-    '{Buffered,     11'h6D8, 88,   Secret1Key,  1'b1,      1'b1,      1'b1,       1'b1},
+    '{
+      variant:    Buffered,
+      offset:     11'd1752,
+      size:       88,
+      key_sel:    Secret1Key,
+      secret:     1'b1,
+      hw_digest:  1'b1,
+      write_lock: 1'b1,
+      read_lock:  1'b1
+    },
     // SECRET2
-    '{Buffered,     11'h730, 120,  Secret2Key,  1'b1,      1'b1,      1'b1,       1'b1},
+    '{
+      variant:    Buffered,
+      offset:     11'd1840,
+      size:       120,
+      key_sel:    Secret2Key,
+      secret:     1'b1,
+      hw_digest:  1'b1,
+      write_lock: 1'b1,
+      read_lock:  1'b1
+    },
     // LIFE_CYCLE
-    '{LifeCycle,    11'h7A8, 88,   Secret0Key,  1'b0,      1'b0,      1'b0,       1'b0}
+    '{
+      variant:    LifeCycle,
+      offset:     11'd1960,
+      size:       88,
+      key_sel:    key_sel_e'('0),
+      secret:     1'b0,
+      hw_digest:  1'b0,
+      write_lock: 1'b0,
+      read_lock:  1'b0
+    }
   };
 
   typedef enum {
@@ -50,4 +112,4 @@ package otp_ctrl_part_pkg;
   parameter int NumAgents = int'(NumAgentsIdx);
   parameter int NumHwCfgBits = PartInfo[HwCfgIdx].size*8;
 
-endmodule : otp_ctrl_part_pkg
+endpackage : otp_ctrl_part_pkg
