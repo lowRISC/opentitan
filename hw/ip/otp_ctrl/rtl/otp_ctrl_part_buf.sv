@@ -13,7 +13,7 @@ module otp_ctrl_part_buf
 #(
   // Partition information.
   parameter part_info_t             Info,
-  parameter logic [Info.size*8-1:0] DataDefault = '0
+  parameter logic [Info.size*8-1:0] DataDefault
 ) (
   input                               clk_i,
   input                               rst_ni,

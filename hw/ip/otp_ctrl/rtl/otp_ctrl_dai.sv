@@ -614,7 +614,7 @@ module otp_ctrl_dai
     // 64bit transaction if this partition does not have a HW digest, and the DAI address points to
     // the digest offset.
     end else if (!PartInfo[part_idx].hw_digest && (base_sel_q == DaiOffset) &&
-        ({dai_addr_i[OtpByteAddrWidth-1:2], 2'h0} == digest_addr_lut[part_idx])) begin
+        ({dai_addr_i[OtpByteAddrWidth-1:2], 1'b0} == digest_addr_lut[part_idx])) begin
       otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1));
     end
   end
