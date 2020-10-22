@@ -21,6 +21,7 @@ interface push_pull_if #(parameter int DataWidth = 32) (input wire clk, input wi
   logic valid_int;
   logic req_int;
   logic ack_int;
+  logic [DataWidth-1:0] data_int;
 
   // Parameterized width data payload
   wire  [DataWidth-1:0] data;
@@ -71,10 +72,12 @@ interface push_pull_if #(parameter int DataWidth = 32) (input wire clk, input wi
   // Push output assignments
   assign ready = (is_push_agent && if_mode == dv_utils_pkg::Device) ? ready_int : 'z;
   assign valid = (is_push_agent && if_mode == dv_utils_pkg::Host)   ? valid_int : 'z;
+  assign data  = (is_push_agent && if_mode == dv_utils_pkg::Host)   ? data_int : 'z;
 
   // Pull output assignments
-  assign req = (!is_push_agent && if_mode == dv_utils_pkg::Host)   ? req_int : 'z;
-  assign ack = (!is_push_agent && if_mode == dv_utils_pkg::Device) ? ack_int : 'z;
+  assign req  = (!is_push_agent && if_mode == dv_utils_pkg::Host)   ? req_int : 'z;
+  assign ack  = (!is_push_agent && if_mode == dv_utils_pkg::Device) ? ack_int : 'z;
+  assign data = (!is_push_agent && if_mode == dv_utils_pkg::Device) ? data_int : 'z;
 
   // utility tasks
   task automatic wait_clks(input int num);
