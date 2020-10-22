@@ -86,6 +86,10 @@
       tests: ["aes_sanity"]
     }
     {
+      name: failure
+      tests: ["aes_config_error"]
+    }
+    {
       name: stress
       tests: ["aes_stress","aes_b2b"]
     }

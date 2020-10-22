@@ -33,14 +33,14 @@
       desc: '''
            Compare cypher text from DUT with the output of a C model using same key and data.'''
            milestone: V2
-      tests: ["aes_sanity"]
+      tests: ["aes_sanity", "aes_config_error"]
     }
     {
       name: key_length
       desc: '''
            Randomly select key length to verify all supported key lengths are working.'''
            milestone: V2
-      tests: []
+      tests: ["aes_stress", "aes_sanity", "aes_config_error"]
     }
     {
       name: back2back
@@ -55,7 +55,7 @@
       desc: '''
         Try to write data to registers without offloading the DUT output to verify Stall functionality.'''
         milestone: V2
-      tests: []
+      tests: ["aes_stress"]
     }
     {
       name: multi_message
@@ -63,7 +63,7 @@
         Run multiple messages in a random mix of encryption / decryption.
         Each message should select its mode randomly.'''
       milestone: V2
-      tests: []
+      tests: ["aes_stress", "aes_sanity", "aes_config_error"]
     }
     {
       name: failure_test
@@ -76,7 +76,7 @@
               Will result match plain text and vice.
             - Write unsupported configurations (Key length and mode are 1 hot, what happens if more than one bit is set.)'''
       milestone: V2
-      tests: []
+      tests: ["aes_config_error"]
     }
     {
       name: trigger_clear_test
@@ -113,7 +113,7 @@
       desc: '''
             This will combine the other individual testpoints to ensure we stress test everything across the board.'''
       milestone: V2
-      tests: []
+      tests: ["aes_stress"]
     }
     {
       name: deinitialization

@@ -68,7 +68,7 @@ class aes_message_item extends uvm_sequence_item;
   // length of the message                                     //
   rand int             message_length;
   // mode - which type of ecnryption is used                   //
-  rand aes_mode_e      aes_mode;
+  rand aes_mode_e      aes_mode = AES_NONE;
   // operation - encruption or decryption                      //
   rand aes_op_e        aes_operation;
   // aes key length                                            //
@@ -138,19 +138,20 @@ class aes_message_item extends uvm_sequence_item;
   }
 
   constraint c_mode {
-     solve has_config_error before aes_mode;
-     if (!(has_config_error && cfg_error_type[0])) {
-        aes_mode dist   { AES_ECB := ecb_weight,
-                          AES_CBC := cbc_weight,
-                          AES_CFB := cfb_weight,
-                          AES_OFB := ofb_weight,
-                          AES_CTR := ctr_weight };
-       } else {
-         // the mode will be randomized to a random
-         // non legal value later.
-         aes_mode == AES_NONE;
-       }
+    solve has_config_error before aes_mode;
+    solve cfg_error_type before aes_mode;
+    if (!(has_config_error && cfg_error_type[0]) ) {
+      aes_mode dist   { AES_ECB := ecb_weight,
+                        AES_CBC := cbc_weight,
+                        AES_CFB := cfb_weight,
+                        AES_OFB := ofb_weight,
+                        AES_CTR := ctr_weight };
+     } else {
+       // the mode will be randomized to a random
+       // non legal value later.
+       aes_mode == AES_NONE;
      }
+   }
 
 
 
@@ -159,16 +160,24 @@ class aes_message_item extends uvm_sequence_item;
       {
       has_config_error dist { 0 :/ (100 - config_error_pct),
                               1 :/ config_error_pct    };
-      cfg_error_type inside { [1:3] };
-      cfg_error_type == 2'b01; // force to mode error for now
       }
     else { has_config_error == 0; }
+  }
+
+  constraint c_config_error_type {
+    solve has_config_error before cfg_error_type;
+    if (has_config_error) {
+      cfg_error_type inside { [1:3] };
+    } else {
+      cfg_error_type ==2'b00;
+    }
   }
 
    constraint c_manual_operation {
                   manual_operation dist { 0:/ (100 - manual_operation_pct),
                                           1:/ manual_operation_pct };
    };
+
 
 
   function void add_data_item(aes_seq_item item);
@@ -210,19 +219,21 @@ class aes_message_item extends uvm_sequence_item;
   virtual function string convert2string();
     string str;
     str = super.convert2string();
-    str = {str,  $sformatf("\n\t ----| AES MESSAGE ITEM   \t                                 |----\t ")
+    str = {str,  $sformatf("\n\t ----| \t\t AES MESSAGE ITEM   \t      |----\t ")
            };
     str = {str, "\n\t ----| " };
-    str = {str,  $sformatf("\n\t ----| Mode: \t  \t \t %s                         |----\t ",
+    str = {str,  $sformatf("\n\t ----| Mode: \t  \t \t %s                         \t ",
                            aes_mode.name() ) };
-    str = {str,  $sformatf("\n\t ----| Operation:   \t \t %s                         |----\t ",
+    str = {str,  $sformatf("\n\t ----| Operation:   \t \t %s                         \t ",
                            aes_operation.name() ) };
-    str = {str,  $sformatf("\n\t ----| has Configuration error:  %s  \t          |----\t ",
+    str = {str,  $sformatf("\n\t ----| has Configuration error:  %s  \t  \t        \t ",
                            (has_config_error==1) ? "TRUE" : "FALSE" ) };
-    str = {str,  $sformatf("\n\t ----| Message Length:  \t  \t %d             |----\t ",
+    str = {str,  $sformatf("\n\t ----| Mode error en:  \t %d \n\t ----| Key_len error en: \t %d  \t         \t ",
+                           cfg_error_type[0], cfg_error_type[1]) };
+    str = {str,  $sformatf("\n\t ----| Message Length:  \t  \t %d             \t ",
                            message_length ) };
 
-    str = {str,  $sformatf("\n\t ----| Key Length:   \t \t %03b                             |----\t ",
+    str = {str,  $sformatf("\n\t ----| Key Length:   \t \t %03b                             \t ",
                            aes_keylen) };
     str = {str,  $sformatf("\n\t ----| Key Share 0: \t \t ") };
     for(int i=0; i <8; i++) begin
@@ -267,6 +278,7 @@ class aes_message_item extends uvm_sequence_item;
     aes_iv           = rhs_.aes_iv;
     message_length   = rhs_.message_length;
     has_config_error = rhs_.has_config_error;
+    cfg_error_type   = rhs_.cfg_error_type;
     error_types      = rhs_.error_types;
     ecb_weight       = rhs_.ecb_weight;
     cbc_weight       = rhs_.cbc_weight;
@@ -284,6 +296,7 @@ class aes_message_item extends uvm_sequence_item;
     fixed_data_en    = rhs_.fixed_data_en;
     fixed_data       = rhs_.fixed_data;
     fixed_iv_en      = rhs_.fixed_iv_en;
+
 
   endfunction // copy
 endclass

@@ -18,7 +18,7 @@ class aes_b2b_test extends aes_base_test;
     // env related knobs
 
     // TODO fix manual mode so we can randomize speeds
-    cfg.errors_en                = 0;
+
     cfg.num_messages_min         = 1;
     cfg.num_messages_max         = 5;
     // message related knobs
