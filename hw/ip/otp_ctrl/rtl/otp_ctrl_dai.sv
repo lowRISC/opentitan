@@ -10,6 +10,7 @@
 module otp_ctrl_dai
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
+  import otp_ctrl_part_pkg::*;
 (
   input                                  clk_i,
   input                                  rst_ni,
@@ -248,7 +249,7 @@ module otp_ctrl_dai
               data_en = 1'b1;
               base_sel_d = DaiOffset;
               // If this partition is scrambled, directly go to write scrambling first.
-              if (PartInfo[part_idx].scrambled) begin
+              if (PartInfo[part_idx].secret) begin
                 state_d = ScrSt;
               end else begin
                 state_d = WriteSt;
@@ -294,7 +295,7 @@ module otp_ctrl_dai
             error_d = otp_err_i;
           end else begin
             data_en = 1'b1;
-            if (PartInfo[part_idx].scrambled) begin
+            if (PartInfo[part_idx].secret) begin
               state_d = DescrSt;
             end else begin
               state_d = IdleSt;
@@ -595,9 +596,9 @@ module otp_ctrl_dai
 
   // Depending on whether this is a 32bit or 64bit partition, we cut off the lower address bits.
   logic [OtpByteAddrWidth-1:0] addr_base;
-  assign addr_base = (base_sel_q == PartOffset)     ? PartInfo[part_idx].offset :
-                     (PartInfo[part_idx].scrambled) ? {dai_addr_i[OtpByteAddrWidth-1:3], 3'h0} :
-                                                      {dai_addr_i[OtpByteAddrWidth-1:2], 2'h0};
+  assign addr_base = (base_sel_q == PartOffset)  ? PartInfo[part_idx].offset :
+                     (PartInfo[part_idx].secret) ? {dai_addr_i[OtpByteAddrWidth-1:3], 3'h0} :
+                                                   {dai_addr_i[OtpByteAddrWidth-1:2], 2'h0};
 
   // Access sizes are either 64bit or 32bit, depending on what partition and region the
   // access goes to.
@@ -605,7 +606,7 @@ module otp_ctrl_dai
     otp_size_o = OtpSizeWidth'(unsigned'(32 / OtpWidth - 1));
 
     // 64bit transaction for scrambled partitions.
-    if (PartInfo[part_idx].scrambled) begin
+    if (PartInfo[part_idx].secret) begin
       otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1));
     // 64bit transaction if computing a digest.
     end else if (PartInfo[part_idx].hw_digest && (base_sel_q == PartOffset)) begin

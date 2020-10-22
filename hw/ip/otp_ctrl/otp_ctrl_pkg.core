@@ -13,6 +13,7 @@ filesets:
     files:
       - rtl/otp_ctrl_reg_pkg.sv
       - rtl/otp_ctrl_pkg.sv
+      - rtl/otp_ctrl_part_pkg.sv
     file_type: systemVerilogSource
 
 

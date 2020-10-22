@@ -75,7 +75,7 @@ module otp_ctrl_part_buf
   // Integration checks for parameters.
   `ASSERT_INIT(OffsetMustBeBlockAligned_A, (Info.offset % (ScrmblBlockWidth/8)) == 0)
   `ASSERT_INIT(SizeMustBeBlockAligned_A, (Info.size % (ScrmblBlockWidth/8)) == 0)
-  `ASSERT(ScrambledImpliesDigest_A, Info.scrambled |-> Info.hw_digest)
+  `ASSERT(ScrambledImpliesDigest_A, Info.secret |-> Info.hw_digest)
   `ASSERT(WriteLockImpliesDigest_A, Info.read_lock |-> Info.hw_digest)
   `ASSERT(ReadLockImpliesDigest_A, Info.write_lock |-> Info.hw_digest)
 
@@ -225,7 +225,7 @@ module otp_ctrl_part_buf
               state_d = IntegDigClrSt;
             // Only need to descramble if this is a scrambled partition.
             // Otherwise, we can just go back to InitSt and read the next block.
-            end else if (Info.scrambled) begin
+            end else if (Info.secret) begin
               state_d = InitDescrSt;
             end else begin
               state_d = InitSt;
@@ -356,7 +356,7 @@ module otp_ctrl_part_buf
           // Need to reset the digest state and set it to chained
           // mode if this partition is scrambled.
           scrmbl_cmd_o = DigestInit;
-          if (Info.scrambled) begin
+          if (Info.secret) begin
             scrmbl_sel_o = ChainedMode;
             if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
               state_d = IntegScrSt;
@@ -430,7 +430,7 @@ module otp_ctrl_part_buf
             end
             // Go back and scramble the next data block if this is
             // a scrambled partition. Otherwise just stay here.
-            if (Info.scrambled) begin
+            if (Info.secret) begin
               state_d = IntegScrSt;
             end
           end

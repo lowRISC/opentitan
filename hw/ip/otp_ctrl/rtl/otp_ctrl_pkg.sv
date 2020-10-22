@@ -15,7 +15,6 @@ package otp_ctrl_pkg;
   // Width of entropy input
   parameter int EdnDataWidth = 64;
 
-  parameter int NumPart = 7;
   parameter int NumPartWidth = vbits(NumPart);
   // This defines the width of the check timers and LFSR
   parameter int TimerWidth = 40;
@@ -146,9 +145,9 @@ package otp_ctrl_pkg;
     ChainedMode
   } digest_mode_e;
 
-  ////////////////////////
-  // Partition Metadata //
-  ////////////////////////
+  /////////////////////////////////////
+  // Typedefs for Partition Metadata //
+  /////////////////////////////////////
 
   typedef enum logic [1:0] {
     Unbuffered,
@@ -164,50 +163,11 @@ package otp_ctrl_pkg;
     // Key index to use for scrambling.
     key_sel_e key_sel;
     // Attributes
-    logic scrambled;  // Whether the partition is scrambled
+    logic secret;     // Whether the partition is secret (and hence scrambled)
     logic hw_digest;  // Whether the partition has a hardware digest
     logic write_lock; // Whether the partition is write lockable (via digest)
     logic read_lock;  // Whether the partition is read lockable (via digest)
   } part_info_t;
-
-  // TODO: need to parse this somehow from an hjson
-  localparam part_info_t PartInfo [NumPart] = '{
-    // Variant    | offset | size | key_sel | scrambled | HW digest | write_lock | read_lock
-    // CREATOR_SW_CFG
-    '{Unbuffered,   11'h0,   768,  Secret0Key,  1'b0,      1'b0,      1'b1,       1'b0},
-    // OWNER_SW_CFG
-    '{Unbuffered,   11'h300, 768,  Secret0Key,  1'b0,      1'b0,      1'b1,       1'b0},
-    // HW_CFG
-    '{Buffered,     11'h600, 176,  Secret0Key,  1'b0,      1'b1,      1'b1,       1'b0},
-    // SECRET0
-    '{Buffered,     11'h6B0, 40,   Secret0Key,  1'b1,      1'b1,      1'b1,       1'b1},
-    // SECRET1
-    '{Buffered,     11'h6D8, 88,   Secret1Key,  1'b1,      1'b1,      1'b1,       1'b1},
-    // SECRET2
-    '{Buffered,     11'h730, 120,  Secret2Key,  1'b1,      1'b1,      1'b1,       1'b1},
-    // LIFE_CYCLE
-    '{LifeCycle,    11'h7A8, 88,   Secret0Key,  1'b0,      1'b0,      1'b0,       1'b0}
-  };
-
-  typedef enum {
-    CreatorSwCfgIdx,
-    OwnerSwCfgIdx,
-    HwCfgIdx,
-    Secret0Idx,
-    Secret1Idx,
-    Secret2Idx,
-    LifeCycleIdx,
-    // These are not "real partitions", but in terms of implementation it is convenient to
-    // add these at the end of certain arrays.
-    DaiIdx,
-    LciIdx,
-    KdiIdx,
-    // Number of agents is the last idx+1.
-    NumAgentsIdx
-  } part_idx_e;
-
-  parameter int NumAgents = int'(NumAgentsIdx);
-  parameter int NumHwCfgBits = PartInfo[HwCfgIdx].size*8;
 
   ////////////////////////
   // Typedefs for CSRNG //
