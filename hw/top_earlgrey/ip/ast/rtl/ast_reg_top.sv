@@ -15,6 +15,7 @@ module ast_reg_top (
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
   output ast_reg_pkg::ast_reg2hw_t reg2hw, // Write
+  input  ast_reg_pkg::ast_hw2reg_t hw2reg, // Read
 
   // Config
   input devmode_i // If 1, explicit error return for unmapped register access
@@ -102,8 +103,8 @@ module ast_reg_top (
     .wd     (rwtype0_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.rwtype0.de),
+    .d      (hw2reg.rwtype0.d ),
 
     // to internal hardware
     .qe     (),

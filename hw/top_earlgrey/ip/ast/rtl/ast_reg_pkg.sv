@@ -29,6 +29,11 @@ package ast_reg_pkg;
   } ast_reg2hw_rwtype1_reg_t;
 
 
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } ast_hw2reg_rwtype0_reg_t;
+
 
   ///////////////////////////////////////
   // Register to internal design logic //
@@ -41,6 +46,9 @@ package ast_reg_pkg;
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
+  typedef struct packed {
+    ast_hw2reg_rwtype0_reg_t rwtype0; // [32:1]
+  } ast_hw2reg_t;
 
   // Register Address
   parameter logic [2:0] AST_RWTYPE0_OFFSET = 3'h 0;
