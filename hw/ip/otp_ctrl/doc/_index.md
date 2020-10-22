@@ -105,15 +105,7 @@ Thus the security of both volatile (OTP controller) and non-volatile (OTP IP) st
 
 The OTP controller for OpenTitan contains the seven logical partitions shown below.
 
-Partititon     | Secret | Buffered | WR Lockable  | RD Lockable  | Description
----------------|--------|----------|--------------|--------------|----------------------------------------------------------------
-CREATOR_SW_CFG | no     | no       | yes (digest) |   yes (CSR)  | Software configuration partition for device-specific calibration data (Clock, LDO, RNG, device identity).
-OWNER_SW_CFG   | no     | no       | yes (digest) |   yes (CSR)  | Software configuration partition for data that changes software behavior, specifically in the ROM. <br> E.g., enabling defensive features in ROM or selecting failure modes if verification fails.
-HW_CFG         | no     | yes      | yes (digest) |      no      | Hardware configuration bits used to hardwire specific hardware functionality. <br> E.g., raw entropy accessibility or FLASH scrambling bypass range.
-SECRET0        | yes    | yes      | yes (digest) | yes (digest) | Test unlock tokens.
-SECRET1        | yes    | yes      | yes (digest) | yes (digest) | SRAM and FLASH scrambling key roots used for scrambling key derivation.
-SECRET2        | yes    | yes      | yes (digest) | yes (digest) | RMA unlock token and creator root key.
-LIFE_CYCLE     | no     | yes      |     no       |      no      | [Life-cycle]({{< relref "hw/ip/lc_ctrl/doc" >}}) related bits. **Note**, this partition cannot be locked as the life cycle state needs to be able to advance to RMA in-field.
+{{< snippet "hw/ip/otp_ctrl/doc/otp_ctrl_partitions.md" >}}
 
 Generally speaking, the production life cycle of a device is split into 5 stages "Manufacturing" -> "Calibration and Testing" -> "Provisioning" -> "Mission" -> "RMA".
 OTP values are usually programmed during "Calibration and Testing", "Provisioning" and "RMA" stages, as explained below.
@@ -902,48 +894,19 @@ In addition, all unrecoverable OTP `Macro*` errors (codes 0x1, 0x3) trigger an `
 The table below provides a detailed overview of the items stored in the OTP partitions.
 Some of the items that are buffered in registers is readable via memory mapped CSRs, and these CSRs are linked in the table below.
 Items that are not linked can only be accessed via the direct programming interface (if the partition is not locked via the corresponding digest).
-It should be noted that {{< regref "CREATOR_SW_CFG" >}} and {{< regref "OWNER_SW_CFG" >}} represent memory mapped windows, and content of these partitions is not buffered.
+It should be noted that CREATOR_SW_CFG and OWNER_SW_CFG are accessible through a memory mapped window, and content of these partitions is not buffered.
 Hence, a read access to those windows will take in the order of 10-20 cycles until the read returns.
 
 Sizes below are specified in multiples of 32bit words.
 
-**TODO: consider reading addresses and sizes automatically from an hjson description**
-
-| Index | Partition                       | Size [B]    | Access Granule | Item                                     | Byte Address | Size [B]
-|-------|---------------------------------|-------------|----------------|------------------------------------------|--------------|------------
-| 0     | {{< regref "CREATOR_SW_CFG" >}} | 768         | 32bit          | {{< regref "CREATOR_SW_CFG" >}}          | 0x0          | 760
-|       |                                 |             |                | {{< regref "CREATOR_SW_CFG_DIGEST_0" >}} | 0x2F8        | 8
-| 1     | {{< regref "OWNER_SW_CFG" >}}   | 768         | 32bit          | {{< regref "OWNER_SW_CFG" >}}            | 0x300        | 760
-|       |                                 |             |                | {{< regref "OWNER_SW_CFG_DIGEST_0" >}}   | 0x5F8        | 8
-| 2     | HW_CFG                          | 176         | 32bit          | **TODO: TBD**                            | 0x600        | 168
-|       |                                 |             |                | {{< regref "HW_CFG_DIGEST_0" >}}         | 0x6A8        | 8
-| 3     | SECRET0                         | 40          | 64bit          | TEST_UNLOCK_TOKEN                        | 0x6B0        | 16
-|       |                                 |             |                | TEST_EXIT_TOKEN                          | 0x6C0        | 16
-|       |                                 |             |                | {{< regref "SECRET0_DIGEST_0" >}}        | 0x6D0        | 8
-| 4     | SECRET1                         | 88          | 64bit          | FLASH_ADDR_KEY_SEED                      | 0x6D8        | 32
-|       |                                 |             |                | FLASH_DATA_KEY_SEED                      | 0x6F8        | 32
-|       |                                 |             |                | SRAM_DATA_KEY_SEED                       | 0x718        | 16
-|       |                                 |             |                | {{< regref "SECRET1_DIGEST_0" >}}        | 0x728        | 8
-| 5     | SECRET2                         | 120         | 64bit          | RMA_TOKEN                                | 0x730        | 16
-|       |                                 |             |                | CREATOR_ROOT_KEY_SHARE0                  | 0x740        | 32
-|       |                                 |             |                | CREATOR_ROOT_KEY_SHARE1                  | 0x760        | 32
-|       |                                 |             |                | {{< regref "SECRET2_DIGEST_0" >}}        | 0x7A0        | 8
-| 6     | LIFE_CYCLE                      | 88          | 32bit          | LC_STATE                                 | 0x7A8        | 24
-|       |                                 |             |                | LC_TRANSITION_CNT                        | 0x7C0        | 64
+{{< snippet "hw/ip/otp_ctrl/doc/otp_ctrl_mmap.md" >}}
 
 Note that since the content in the SECRET* partitions are scrambled using a 64bit PRESENT cipher, read and write access through the DAI needs to occur at a 64bit granularity.
 Also, all digests (no matter whether they are SW or HW digests) have an access granule of 64bit.
 
 The table below lists digests locations, and the corresponding locked partitions.
 
-| Digest Name                              | Affected Partition               | Calculated by HW
-|------------------------------------------|----------------------------------|-------------
-| {{< regref "CREATOR_SW_CFG_DIGEST_0" >}} | {{< regref "CREATOR_SW_CFG" >}}  | no
-| {{< regref "OWNER_SW_CFG_DIGEST_0" >}}   | {{< regref "OWNER_SW_CFG" >}}    | no
-| {{< regref "HW_CFG_DIGEST_0" >}}         | HW_CFG                           | yes
-| {{< regref "SECRET0_DIGEST_0" >}}        | SECRET0                          | yes
-| {{< regref "SECRET1_DIGEST_0" >}}        | SECRET1                          | yes
-| {{< regref "SECRET2_DIGEST_0" >}}        | SECRET2                          | yes
+{{< snippet "hw/ip/otp_ctrl/doc/otp_ctrl_digests.md" >}}
 
 Write access to the affected partition will be locked if the digest has a nonzero value.
 
