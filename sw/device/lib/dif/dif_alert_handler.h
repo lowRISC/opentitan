@@ -350,8 +350,7 @@ typedef struct dif_alert_handler_class_config {
 
   /**
    * The threshold for the class accmulator which, when reached, will
-   * automatically
-   * trigger escalation.
+   * automatically trigger escalation.
    */
   uint16_t accumulator_threshold;
 
