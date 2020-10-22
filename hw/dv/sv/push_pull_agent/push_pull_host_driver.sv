@@ -17,7 +17,7 @@ class push_pull_host_driver #(parameter int DataWidth = 32) extends push_pull_dr
   virtual task do_reset();
     if (cfg.agent_type == PushAgent) begin
       cfg.vif.valid_int <= '0;
-      cfg.vif.data      <= 'x;
+      cfg.vif.data_int  <= 'x;
     end else begin
       cfg.vif.req_int   <= '0;
     end

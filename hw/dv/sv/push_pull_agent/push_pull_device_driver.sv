@@ -19,7 +19,7 @@ class push_pull_device_driver #(parameter int DataWidth = 32) extends push_pull_
       cfg.vif.ready_int <= '0;
     end else begin
       cfg.vif.ack_int   <= '0;
-      cfg.vif.data      <= 'x;
+      cfg.vif.data_int  <= 'x;
     end
   endtask
 
