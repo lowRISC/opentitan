@@ -22,6 +22,7 @@ class push_pull_agent #(parameter int DataWidth = 32) extends dv_base_agent #(
     if (!uvm_config_db#(virtual push_pull_if#(DataWidth))::get(this, "", "vif", cfg.vif)) begin
       `uvm_fatal(`gfn, "failed to get push_pull_if handle from uvm_config_db")
     end
+    cfg.vif.if_mode = cfg.if_mode;
     cfg.vif.is_push_agent = (cfg.agent_type == PushAgent);
   endfunction
 

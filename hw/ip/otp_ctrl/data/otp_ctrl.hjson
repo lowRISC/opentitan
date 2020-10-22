@@ -216,6 +216,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
+      tags: [ // OTP internal HW can modify status register
+              "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits: "0"
           name: "CREATOR_SW_CFG_ERROR"
@@ -414,8 +416,10 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
-      tags: [ // DAI interface will set it to 0 during initialization,
-              // so even after reset, the value might not be the reset value
+      tags: [ // OTP internal HW will set this enable register to 0 when OTP is not under IDLE
+              // state, so could not auto-predict its value
+              // TODO: change the exclusion to CsrNonInitTests once top-level triggers otp_init
+              // after reset
               "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         {
@@ -436,9 +440,8 @@
       hwqe:     "true",
       hwext:    "true",
       regwen:   "DIRECT_ACCESS_REGWEN",
-      tags: [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
-              // so not able to predict this register value automatically
-              "excl:CsrNonInitTests:CsrExclCheck"],
+      tags: [ // Write to DIRECT_ACCESS_CMD randomly might cause OTP_ERRORs and illegal sequences
+              "excl:CsrNonInitTests:CsrExclWrite"],
       fields: [
         { bits: "0",
           name: "READ",

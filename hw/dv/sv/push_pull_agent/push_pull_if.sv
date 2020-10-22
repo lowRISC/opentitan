@@ -7,15 +7,26 @@
 interface push_pull_if #(parameter int DataWidth = 32) (input wire clk, input wire rst_n);
 
   // Pins for the push handshake (ready/valid)
-  logic ready;
-  logic valid;
+  wire  ready;
+  wire  valid;
 
   // Pins for the pull handshake (req/ack)
-  logic req;
-  logic ack;
+  wire  req;
+  wire  ack;
+
+  // Internal versions of the interface output signals.
+  // These signals are assigned as outputs depending on
+  // how the agent is configured.
+  logic ready_int;
+  logic valid_int;
+  logic req_int;
+  logic ack_int;
 
   // Parameterized width data payload
-  logic [DataWidth-1:0] data;
+  wire  [DataWidth-1:0] data;
+
+  // Interface mode - Host or Device
+  dv_utils_pkg::if_mode_e if_mode;
 
   // This bit controls what protocol assertions will be enabled,
   // e.g. if the agent is configured in Push mode, we do not want to
@@ -27,25 +38,25 @@ interface push_pull_if #(parameter int DataWidth = 32) (input wire clk, input wi
   // clocking blocks
   clocking host_push_cb @(posedge clk);
     input   ready;
-    output  valid;
+    output  valid_int;
     output  data;
   endclocking
 
   clocking device_push_cb @(posedge clk);
-    output  ready;
+    output  ready_int;
     input   valid;
     input   data;
   endclocking
 
   clocking host_pull_cb @(posedge clk);
-    output  req;
+    output  req_int;
     input   ack;
     input   data;
   endclocking
 
   clocking device_pull_cb @(posedge clk);
     input   req;
-    output  ack;
+    output  ack_int;
     output  data;
   endclocking
 
@@ -56,6 +67,14 @@ interface push_pull_if #(parameter int DataWidth = 32) (input wire clk, input wi
     input ack;
     input data;
   endclocking
+
+  // Push output assignments
+  assign ready = (is_push_agent && if_mode == dv_utils_pkg::Device) ? ready_int : 'z;
+  assign valid = (is_push_agent && if_mode == dv_utils_pkg::Host)   ? valid_int : 'z;
+
+  // Pull output assignments
+  assign req = (!is_push_agent && if_mode == dv_utils_pkg::Host)   ? req_int : 'z;
+  assign ack = (!is_push_agent && if_mode == dv_utils_pkg::Device) ? ack_int : 'z;
 
   // utility tasks
   task automatic wait_clks(input int num);

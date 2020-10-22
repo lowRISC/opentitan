@@ -16,10 +16,10 @@ class push_pull_device_driver #(parameter int DataWidth = 32) extends push_pull_
 
   virtual task do_reset();
     if (cfg.agent_type == PushAgent) begin
-      cfg.vif.ready <= '0;
+      cfg.vif.ready_int <= '0;
     end else begin
-      cfg.vif.ack   <= '0;
-      cfg.vif.data  <= 'x;
+      cfg.vif.ack_int   <= '0;
+      cfg.vif.data      <= 'x;
     end
   endtask
 
@@ -49,11 +49,11 @@ class push_pull_device_driver #(parameter int DataWidth = 32) extends push_pull_
       @(`PUSH_DRIVER);
     end
     if (!in_reset) begin
-      `PUSH_DRIVER.ready <= 1'b1;
+      `PUSH_DRIVER.ready_int <= 1'b1;
     end
     @(`PUSH_DRIVER);
     if (!in_reset) begin
-      `PUSH_DRIVER.ready <= 1'b0;
+      `PUSH_DRIVER.ready_int <= 1'b0;
     end
   endtask
 
@@ -66,13 +66,13 @@ class push_pull_device_driver #(parameter int DataWidth = 32) extends push_pull_
       @(`PULL_DRIVER);
     end
     if (!in_reset) begin
-      `PULL_DRIVER.ack  <= 1'b1;
-      `PULL_DRIVER.data <= req.data;
+      `PULL_DRIVER.ack_int  <= 1'b1;
+      `PULL_DRIVER.data     <= req.data;
     end
     @(`PULL_DRIVER);
     if (!in_reset) begin
-      `PULL_DRIVER.ack  <= 1'b0;
-      `PULL_DRIVER.data <= 'x;
+      `PULL_DRIVER.ack_int  <= 1'b0;
+      `PULL_DRIVER.data     <= 'x;
     end
   endtask
 
