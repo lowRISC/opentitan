@@ -1,0 +1,194 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Use the translate-mmap.py script to update dependent files (like documentation
+// tables the comportable hjson and metadata SV package):
+//
+// $ cd ${PROJ_ROOT}/hw/ip/otp_ctrl/util/
+// $ ./translate-mmap.py
+//
+// Make sure to regenerate the CSRs after converting the memory map:
+//
+// $ cd ${PROJ_ROOT}
+// $ make -C hw regs
+//
+
+{
+    otp: {
+        width: "2", // bytes
+        depth: "1024"
+    }
+    // The enumeration order below defines the address map of the OTP controller,
+    // if the offsets are not defined explicitly via the "offset" key.
+    // Note that the digest items are added automatically to the address map.
+    partitions: [
+        {
+            name:       "CREATOR_SW_CFG",
+            variant:    "Unbuffered",
+            size:       "768", // in bytes
+            secret:     "False",
+            sw_digest:  "True",
+            hw_digest:  "False",
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            items: [
+                {
+                    name: "CREATOR_SW_CFG_CONTENT",
+                    size: "760"
+                }
+            ],
+            desc: '''Software configuration partition for
+            device-specific calibration data (Clock, LDO,
+            RNG, device identity).
+            '''
+        }
+        {
+            name:       "OWNER_SW_CFG",
+            variant:    "Unbuffered",
+            size:       "768", // in bytes
+            secret:     "False",
+            sw_digest:  "True",
+            hw_digest:  "False",
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            items: [
+                {
+                    name: "OWNER_SW_CFG_CONTENT",
+                    size: "760"
+                }
+            ],
+            desc: '''Software configuration partition for
+            data that changes software behavior, specifically
+            in the ROM. E.g., enabling defensive features in
+            ROM or selecting failure modes if verification fails.
+            '''
+        }
+        {
+            name:       "HW_CFG",
+            variant:    "Buffered",
+            size:       "176", // in bytes
+            secret:     "False",
+            sw_digest:  "False",
+            hw_digest:  "True",
+            write_lock: "Digest",
+            read_lock:  "None",
+            key_sel:    "NoKey",
+            items: [
+                {
+                    name: "HW_CFG_CONTENT",
+                    size: "168"
+                }
+            ],
+            desc: '''Hardware configuration bits used to hardwire
+            specific hardware functionality. E.g., raw entropy
+            accessibility or FLASH scrambling bypass range.
+            '''
+        }
+        {
+            name:       "SECRET0",
+            variant:    "Buffered",
+            size:       "40", // in bytes
+            secret:     "True",
+            sw_digest:  "False",
+            hw_digest:  "True",
+            write_lock: "Digest",
+            read_lock:  "Digest",
+            key_sel:    "Secret0Key",
+            items: [
+                {
+                    name: "TEST_UNLOCK_TOKEN",
+                    size: "16"
+                }
+                {
+                    name: "TEST_EXIT_TOKEN",
+                    size: "16"
+                }
+            ],
+            desc: '''Test unlock tokens.
+            '''
+        }
+        {
+            name:       "SECRET1",
+            variant:    "Buffered",
+            size:       "88", // in bytes
+            secret:     "True",
+            sw_digest:  "False",
+            hw_digest:  "True",
+            write_lock: "Digest",
+            read_lock:  "Digest",
+            key_sel:    "Secret1Key",
+            items: [
+                {
+                    name: "FLASH_ADDR_KEY_SEED",
+                    size: "32"
+                }
+                {
+                    name: "FLASH_DATA_KEY_SEED",
+                    size: "32"
+                }
+                {
+                    name: "SRAM_DATA_KEY_SEED",
+                    size: "16"
+                }
+            ],
+            desc: '''SRAM and FLASH scrambling key roots
+            used for scrambling key derivation.
+            '''
+        }
+        {
+            name:       "SECRET2",
+            variant:    "Buffered",
+            size:       "120", // in bytes
+            secret:     "True",
+            sw_digest:  "False",
+            hw_digest:  "True",
+            write_lock: "Digest",
+            read_lock:  "Digest",
+            key_sel:    "Secret2Key",
+            items: [
+                {
+                    name: "RMA_TOKEN",
+                    size: "16"
+                }
+                {
+                    name: "CREATOR_ROOT_KEY_SHARE0",
+                    size: "32"
+                }
+                {
+                    name: "CREATOR_ROOT_KEY_SHARE1",
+                    size: "32"
+                }
+            ],
+            desc: '''RMA unlock token and creator root key.
+            '''
+        }
+        {
+            name:       "LIFE_CYCLE",
+            variant:    "LifeCycle",
+            size:       "88", // in bytes
+            secret:     "False",
+            sw_digest:  "False",
+            hw_digest:  "False",
+            write_lock: "None",
+            read_lock:  "None",
+            key_sel:    "NoKey",
+            items: [
+                {
+                    name: "LC_STATE",
+                    size: "24"
+                }
+                {
+                    name: "LC_TRANSITION_CNT",
+                    size: "64"
+                }
+            ],
+            desc: '''Life-cycle related bits. Note, this
+            partition cannot be locked as the life cycle
+            state needs to be able to advance to RMA in-field.
+            '''
+        }
+    ]
+}
