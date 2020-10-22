@@ -13,6 +13,8 @@ module prim_generic_otp #(
   parameter  int ErrWidth    = otp_ctrl_pkg::OtpErrWidth,
   // Width of the power sequencing signal.
   parameter  int PwrSeqWidth = otp_ctrl_pkg::OtpPwrSeqWidth,
+// Number of Test TL-UL words
+  parameter  int TlDepth     = 16,
   // Derived parameters
   localparam int AddrWidth   = prim_util_pkg::vbits(Depth),
   localparam int IfWidth     = 2**SizeWidth*Width,
@@ -52,10 +54,14 @@ module prim_generic_otp #(
   // Put down a register that can be used to test the TL interface.
   // TODO: this emulation may need to be adjusted, once closed source wrapper is
   // implemented.
+  localparam int TlAddrWidth = prim_util_pkg::vbits(TlDepth);
   logic tlul_req, tlul_rvalid_q, tlul_wren;
-  logic [31:0] tlul_testreg_d, tlul_testreg_q;
+  logic [TlDepth-1:0][31:0] tlul_regfile_q;
+  logic [31:0] tlul_wdata, tlul_rdata_q;
+  logic [TlAddrWidth-1:0]  tlul_addr;
+
   tlul_adapter_sram #(
-    .SramAw      ( 9             ),
+    .SramAw      ( TlAddrWidth   ),
     .SramDw      ( 32            ),
     .Outstanding ( 1             ),
     .ByteAccess  ( 0             ),
@@ -68,10 +74,10 @@ module prim_generic_otp #(
     .req_o    ( tlul_req          ),
     .gnt_i    ( tlul_req          ),
     .we_o     ( tlul_wren         ),
-    .addr_o   (                   ),
-    .wdata_o  ( tlul_testreg_d    ),
+    .addr_o   ( tlul_addr         ),
+    .wdata_o  ( tlul_wdata        ),
     .wmask_o  (                   ),
-    .rdata_i  ( tlul_testreg_q    ),
+    .rdata_i  ( tlul_rdata_q      ),
     .rvalid_i ( tlul_rvalid_q     ),
     .rerror_i ( '0                )
   );
@@ -79,11 +85,14 @@ module prim_generic_otp #(
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlul_testreg
     if (!rst_ni) begin
       tlul_rvalid_q  <= 1'b0;
-      tlul_testreg_q <= '0;
+      tlul_rdata_q   <= '0;
+      tlul_regfile_q <= '0;
     end else begin
       tlul_rvalid_q <= tlul_req & ~tlul_wren;
       if (tlul_req && tlul_wren) begin
-        tlul_testreg_q <= tlul_testreg_d;
+        tlul_regfile_q[tlul_addr] <= tlul_wdata;
+      end else if (tlul_req && !tlul_wren) begin
+        tlul_rdata_q <= tlul_regfile_q[tlul_addr];
       end
     end
   end

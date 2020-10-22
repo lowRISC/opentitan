@@ -71,7 +71,7 @@
     { name: "NumDebugWindowWords",
       desc: "Size of the TL-UL window in 32bit words.",
       type: "int",
-      default: "512",
+      default: "16",
       local: "true"
     },
   ]

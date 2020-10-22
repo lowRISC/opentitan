@@ -493,7 +493,8 @@ module otp_ctrl
 
   prim_otp #(
     .Width(OtpWidth),
-    .Depth(OtpDepth)
+    .Depth(OtpDepth),
+    .TlDepth(NumDebugWindowWords)
   ) u_otp (
     .clk_i,
     .rst_ni,
