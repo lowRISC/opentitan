@@ -36,6 +36,9 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
   push_pull_if #(SRAM_DATA_SIZE) sram_if[NumSramKeyReqSlots] (.clk(clk), .rst_n(rst_n));
+  push_pull_if #(OTBN_DATA_SIZE) otbn_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(FLASH_DATA_SIZE) flash_addr_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(FLASH_DATA_SIZE) flash_data_if(.clk(clk), .rst_n(rst_n));
   // TODO: use standard req/rsp agent
   pins_if #(3) pwr_otp_if(pwr_otp);
   pins_if #(4) lc_provision_en_if(lc_provision_en);
@@ -75,14 +78,14 @@ module tb;
     // keymgr
     .otp_keymgr_key_o          (  ),
     // flash
-    .flash_otp_key_i           ('0),
+    .flash_otp_key_i           (flash_req),
     .flash_otp_key_o           (flash_rsp),
     // sram
     .sram_otp_key_i            (sram_req),
     .sram_otp_key_o            (sram_rsp),
     // otbn
-    .otbn_otp_key_i            ('0),
-    .otbn_otp_key_o            (obtb_rsp),
+    .otbn_otp_key_i            (otbn_req),
+    .otbn_otp_key_o            (otbn_rsp),
 
     .hw_cfg_o                  (  )
   );
@@ -96,6 +99,15 @@ module tb;
                      $sformatf("*env.m_sram_pull_agent[%0d]*", i), "vif", sram_if[i]);
     end
   end
+  assign otbn_req     = otbn_if.req;
+  assign otbn_if.ack  = otbn_rsp.ack;
+  assign otbn_if.data = {otbn_rsp.key, otbn_rsp.nonce, otbn_rsp.seed_valid};
+
+  assign flash_req          = {flash_data_if.req, flash_addr_if.req};
+  assign flash_data_if.ack  = flash_rsp.data_ack;
+  assign flash_addr_if.ack  = flash_rsp.addr_ack;
+  assign flash_data_if.data = {flash_rsp.key, flash_rsp.seed_valid};
+  assign flash_addr_if.data = {flash_rsp.key, flash_rsp.seed_valid};
 
   // bind mem_bkdr_if
   `define OTP_CTRL_MEM_HIER \
@@ -111,6 +123,12 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(virtual push_pull_if#(OTBN_DATA_SIZE))::set(null,
+                   "*env.m_otbn_pull_agent*", "vif", otbn_if);
+    uvm_config_db#(virtual push_pull_if#(FLASH_DATA_SIZE))::set(null,
+                   "*env.m_flash_data_pull_agent*", "vif", flash_data_if);
+    uvm_config_db#(virtual push_pull_if#(FLASH_DATA_SIZE))::set(null,
+                   "*env.m_flash_addr_pull_agent*", "vif", flash_addr_if);
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(pwr_otp_vif)::set(null, "*.env", "pwr_otp_vif", pwr_otp_if);

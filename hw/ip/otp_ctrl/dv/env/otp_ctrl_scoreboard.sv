@@ -12,7 +12,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(push_pull_item#(SRAM_DATA_SIZE)) sram_fifo[NumSramKeyReqSlots];
+  uvm_tlm_analysis_fifo #(push_pull_item#(SRAM_DATA_SIZE))  sram_fifo[NumSramKeyReqSlots];
+  uvm_tlm_analysis_fifo #(push_pull_item#(OTBN_DATA_SIZE))  otbn_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(FLASH_DATA_SIZE)) flash_addr_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(FLASH_DATA_SIZE)) flash_data_fifo;
 
   // local queues to hold incoming packets pending comparison
 
@@ -23,6 +26,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
       sram_fifo[i] = new($sformatf("sram_fifo[%0d]", i), this);
     end
+    otbn_fifo       = new("otbn_fifo", this);
+    flash_addr_fifo = new("flash_addr_fifo", this);
+    flash_data_fifo = new("flash_data_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);

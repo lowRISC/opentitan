@@ -12,12 +12,15 @@ class otp_ctrl_env extends cip_base_env #(
 
   `uvm_component_new
 
-  push_pull_agent#(SRAM_DATA_SIZE) m_sram_pull_agent[NumSramKeyReqSlots];
+  push_pull_agent#(SRAM_DATA_SIZE)  m_sram_pull_agent[NumSramKeyReqSlots];
+  push_pull_agent#(OTBN_DATA_SIZE)  m_otbn_pull_agent;
+  push_pull_agent#(FLASH_DATA_SIZE) m_flash_addr_pull_agent;
+  push_pull_agent#(FLASH_DATA_SIZE) m_flash_data_pull_agent;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
-    // build sram-otp pull interface
+    // build sram-otp pull agent
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
       string sram_agent_name = $sformatf("m_sram_pull_agent[%0d]", i);
       m_sram_pull_agent[i] = push_pull_agent#(SRAM_DATA_SIZE)::type_id::create(sram_agent_name,
@@ -25,6 +28,22 @@ class otp_ctrl_env extends cip_base_env #(
       uvm_config_db#(push_pull_agent_cfg#(SRAM_DATA_SIZE))::set(this,
                      $sformatf("%0s*", sram_agent_name), "cfg", cfg.m_sram_pull_agent_cfg[i]);
     end
+
+    // build otbn-otp pull agent
+    m_otbn_pull_agent = push_pull_agent#(OTBN_DATA_SIZE)::type_id::create("m_otbn_pull_agent",
+                                                                          this);
+    uvm_config_db#(push_pull_agent_cfg#(OTBN_DATA_SIZE))::set(this, "m_otbn_pull_agent", "cfg",
+                                                              cfg.m_otbn_pull_agent_cfg);
+
+    // build flash-otp pull agent
+    m_flash_addr_pull_agent = push_pull_agent#(FLASH_DATA_SIZE)::type_id::create(
+        "m_flash_addr_pull_agent", this);
+    uvm_config_db#(push_pull_agent_cfg#(FLASH_DATA_SIZE))::set(this, "m_flash_addr_pull_agent",
+        "cfg", cfg.m_flash_addr_pull_agent_cfg);
+    m_flash_data_pull_agent = push_pull_agent#(FLASH_DATA_SIZE)::type_id::create(
+        "m_flash_data_pull_agent", this);
+    uvm_config_db#(push_pull_agent_cfg#(FLASH_DATA_SIZE))::set(this, "m_flash_data_pull_agent",
+        "cfg", cfg.m_flash_data_pull_agent_cfg);
 
     if (!uvm_config_db#(pwr_otp_vif)::get(this, "", "pwr_otp_vif", cfg.pwr_otp_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get pwr_otp_vif from uvm_config_db")
@@ -40,11 +59,23 @@ class otp_ctrl_env extends cip_base_env #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+
+    // connect SRAM sequencer and analysis ports
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
       virtual_sequencer.sram_pull_sequencer_h[i] = m_sram_pull_agent[i].sequencer;
       if (cfg.en_scb) begin
         m_sram_pull_agent[i].monitor.req_port.connect(scoreboard.sram_fifo[i].analysis_export);
       end
+    end
+
+    // connect OTBN sequencer and analysis ports
+    virtual_sequencer.otbn_pull_sequencer_h       = m_otbn_pull_agent.sequencer;
+    virtual_sequencer.flash_addr_pull_sequencer_h = m_flash_addr_pull_agent.sequencer;
+    virtual_sequencer.flash_data_pull_sequencer_h = m_flash_data_pull_agent.sequencer;
+    if (cfg.en_scb) begin
+      m_otbn_pull_agent.monitor.req_port.connect(scoreboard.otbn_fifo.analysis_export);
+      m_flash_addr_pull_agent.monitor.req_port.connect(scoreboard.flash_addr_fifo.analysis_export);
+      m_flash_data_pull_agent.monitor.req_port.connect(scoreboard.flash_data_fifo.analysis_export);
     end
   endfunction
 

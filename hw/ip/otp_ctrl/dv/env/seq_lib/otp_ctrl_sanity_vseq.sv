@@ -65,6 +65,13 @@ class otp_ctrl_sanity_vseq extends otp_ctrl_base_vseq;
       // get sram keys
       req_all_sram_keys();
 
+      // get otbn keys
+      req_otbn_key();
+
+      // get flash addr and data
+      req_flash_addr();
+      req_flash_data();
+
       for (int i = 0; i < num_dai_wr; i++) begin
         bit [TL_DW-1:0] rdata0, rdata1;
         `DV_CHECK_RANDOMIZE_FATAL(this)
