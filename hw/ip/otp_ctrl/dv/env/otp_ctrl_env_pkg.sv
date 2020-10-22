@@ -29,6 +29,11 @@ package otp_ctrl_env_pkg;
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
   parameter uint SRAM_DATA_SIZE        = 1 + otp_ctrl_pkg::SramKeyWidth +
                                              otp_ctrl_pkg::SramNonceWidth;
+  // otbn rsp data has 1 bit for seed_valid, the rest are for key and nonce
+  parameter uint OTBN_DATA_SIZE        = 1 + otp_ctrl_pkg::OtbnKeyWidth +
+                                             otp_ctrl_pkg::OtbnNonceWidth;
+  // flash rsp data has 1 bit for seed_valid, the rest are for key
+  parameter uint FLASH_DATA_SIZE       = 1 + otp_ctrl_pkg::FlashKeyWidth;
 
   // lc does not have digest
   parameter bit[10:0] DIGESTS_ADDR [NumPart-1] = {
