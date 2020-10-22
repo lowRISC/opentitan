@@ -60,15 +60,24 @@ module otbn_core_model
   logic [31:0] start_addr_32;
   assign start_addr_32 = {{32 - ImemAddrWidth{1'b0}}, start_addr_i};
 
+  // Work-around for Verilator. IEEE 1800-2017 says you should compare/assign to a chandle with
+  // null. Verilator would prefer you to use zero: it treats null as a synonym of 1'b0 and chandle
+  // as a synonym of bit [63:0], so comparing with null causes width mismatch errors.
+`ifdef VERILATOR
+  chandle chandle_null = 0;
+`else
+  chandle chandle_null = null;
+`endif
+
   // Create and destroy an object through which we can talk to the ISS
   chandle model_handle;
   initial begin
     model_handle = otbn_model_init();
-    assert(model_handle != 0);
+    assert(model_handle != chandle_null);
   end
   final begin
     otbn_model_destroy(model_handle);
-    model_handle = 0;
+    model_handle = chandle_null;
   end
 
   // A packed "status" value. This gets assigned by DPI function calls that need to update both
@@ -116,7 +125,7 @@ module otbn_core_model
 
   // If DesignScope is not empty, we have a design to check. Bind a copy of otbn_rf_snooper into
   // each register file. The otbn_model_check() function will use these to extract memory contents.
-  generate if (DesignScope.len() != 0) begin
+  generate if (DesignScope != "") begin
     // TODO: This bind is by module, rather than by instance, because I couldn't get the by-instance
     // syntax plus upwards name referencing to work with Verilator. Obviously, this won't work with
     // multiple OTBN instances, so it would be nice to get it right.
