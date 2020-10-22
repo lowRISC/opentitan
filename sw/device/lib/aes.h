@@ -87,14 +87,14 @@ void aes_data_put(const void *data);
  * Wait for AES unit to have valid output data and then
  * get one 16B block of output data from AES unit.
  *
- * @param data pointer to output buffer.
+ * @param[out] data pointer to output buffer.
  */
 void aes_data_get_wait(void *data);
 
 /**
  * Get one 16B block of output data from AES unit.
  *
- * @param data pointer to output buffer.
+ * @param[out] data pointer to output buffer.
  */
 void aes_data_get(void *data);
 
@@ -118,6 +118,13 @@ bool aes_data_valid(void);
  * @return true if idle, false otherwise.
  */
 bool aes_idle(void);
+
+/**
+ * Set AES manual trigger.
+ *
+ * This is only valid when AES is configured to run in manual mode.
+ */
+void aes_manual_trigger(void);
 
 /**
  * Clear key, input and ouput registers of AES unit.

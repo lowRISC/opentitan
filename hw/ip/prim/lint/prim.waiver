@@ -59,3 +59,11 @@ waive -rules {HIER_BRANCH_NOT_READ} -location {tlul_fifo_sync.sv} -regexp {Conne
 #
 #waive -rules NOT_READ -location {prim_ram_*_wrapper*} -regexp {(a|b)_rdata_(q|d)\[38} \
 #      -comment "Syndrome is not going out to the interface"
+
+# prim_arbiter_fixed
+waive -rules {HIER_BRANCH_NOT_READ INPUT_NOT_READ} -location {prim_arbiter_fixed.sv} -regexp {.*'(clk_i|rst_ni)' is not read from in module 'prim_arbiter_fixed'.*} \
+      -comment "clk_ and rst_ni are only used for assertions in this module."
+
+waive -rules {INTEGER} -location {prim_cipher_pkg.sv} -msg {'k' of type int used as a non-constant} \
+      -comment "We need to use the iterator value in the keyschedule function, hence this is ok."
+

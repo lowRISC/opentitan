@@ -16,6 +16,8 @@ steps:
     inputs:
       buildType: current
       targetPath: '$(BUILD_ROOT)/downloads'
+      # The first "path" segment is the name of the artifact.
+      pattern: "*-build-bin/**"
     displayName: 'Download upstream outputs'
   - bash: |
       set -e
@@ -23,9 +25,6 @@ steps:
       . util/build_consts.sh
       mkdir -p "$BIN_DIR"
 
-      sudo apt-get install -y tree
-
-      tree "$BUILD_ROOT"
       find "$BUILD_ROOT/downloads" \
         -name 'build-bin.tar' \
         -exec \
@@ -33,6 +32,4 @@ steps:
           --strip-components=1 \
           --overwrite \
           -xvf {} \;
-      tree "$BUILD_ROOT"
     displayName: 'Unpack upstream outputs'
-

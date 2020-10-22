@@ -240,7 +240,7 @@ module tlul_adapter_sram #(
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
 
   // Make sure only requested bytes are forwarded
-  logic [SramDw-1:0] rdata;
+  logic [WidthMult-1:0][top_pkg::TL_DW-1:0] rdata;
   logic [WidthMult-1:0][top_pkg::TL_DW-1:0] rmask;
   //logic [SramDw-1:0] rmask;
   logic [top_pkg::TL_DW-1:0] rdata_tlword;
@@ -253,7 +253,7 @@ module tlul_adapter_sram #(
   end
 
   assign rdata = rdata_i & rmask;
-  assign rdata_tlword = rdata[sramreqfifo_rdata.woffset * top_pkg::TL_DW +: top_pkg::TL_DW];
+  assign rdata_tlword = rdata[sramreqfifo_rdata.woffset];
 
   assign rspfifo_wdata  = '{
     data : rdata_tlword,
@@ -261,6 +261,10 @@ module tlul_adapter_sram #(
   };
   assign rspfifo_rready = (reqfifo_rdata.op == OpRead & ~reqfifo_rdata.error)
                         ? reqfifo_rready : 1'b0 ;
+
+  // This module only cares about uncorrectable errors.
+  logic unused_rerror;
+  assign unused_rerror = rerror_i[0];
 
   // FIFO instance: REQ, RSP
 

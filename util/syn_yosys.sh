@@ -60,9 +60,6 @@ for module in $modules; do
 done
 rm combined.v
 
-# rename ibex_register_file_ff, match filename to module name
-mv ibex_register_file{,_ff}.v
-
 #-------------------------------------------------------------------------
 # run LEC (generarted Verilog vs. original SystemVerilog)
 #-------------------------------------------------------------------------

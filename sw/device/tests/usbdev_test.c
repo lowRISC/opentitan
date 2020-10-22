@@ -19,10 +19,10 @@
 
 #include "sw/device/lib/usbdev.h"
 
-#include "sw/device/lib/base/log.h"
-#include "sw/device/lib/runtime/check.h"
+#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_main.h"
-#include "sw/device/lib/uart.h"
 #include "sw/device/lib/usb_controlep.h"
 #include "sw/device/lib/usb_simpleserial.h"
 
@@ -70,14 +70,14 @@ static char buffer[7];
  */
 static void usb_receipt_callback(uint8_t c) {
   c = make_printable(c, '?');
-  uart_send_char(c);
+  base_printf("%c", c);
   if (usb_chars_recved_total < kExpectedUsbCharsRecved) {
     buffer[usb_chars_recved_total] = c;
     ++usb_chars_recved_total;
   }
 }
 
-const test_config_t kTestConfig = {};
+const test_config_t kTestConfig;
 
 bool test_main(void) {
   CHECK(kDeviceType == kDeviceSimVerilator,
@@ -89,7 +89,8 @@ bool test_main(void) {
   // Call `usbdev_init` here so that DPI will not start until the
   // simulation has finished all of the printing, which takes a while
   // if `--trace` was passed in.
-  usbdev_init(&usbdev);
+  usbdev_init(&usbdev, /* pinflip= */ false, /* rx_diff= */ false,
+              /* tx_diff= */ false);
   usb_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
                      sizeof(config_descriptors));
   usb_simpleserial_init(&simple_serial, &usbdev, 1, usb_receipt_callback);
@@ -98,7 +99,7 @@ bool test_main(void) {
     usbdev_poll(&usbdev);
   }
 
-  uart_send_str("\r\n");
+  base_printf("\r\n");
   for (int i = 0; i < kExpectedUsbCharsRecved; i++) {
     CHECK(buffer[i] == kExpectedUsbRecved[i],
           "Recieved char #%d mismatched: exp = %x, actual = %x", i,

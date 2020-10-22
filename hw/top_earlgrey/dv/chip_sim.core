@@ -17,10 +17,14 @@ filesets:
       - lowrisc:dv:xbar_peri_bind
       - lowrisc:dv:xbar_test
       - lowrisc:dv:xbar_macros
+      - lowrisc:dv:sim_sram
+      - lowrisc:dv:sw_test_status
+      - lowrisc:dv:sw_logger_if
     files:
       - tb/chip_hier_macros.svh: {is_include_file: true}
       - autogen/tb__xbar_connect.sv: {is_include_file: true}
       - autogen/xbar_env_pkg__params.sv: {is_include_file: true}
+      - autogen/tb__alert_handler_connect.sv: {is_include_file: true}
       - tb/tb.sv
     file_type: systemVerilogSource
 
@@ -39,6 +43,7 @@ targets:
       ascentlint:
         ascentlint_options:
           - "-wait_license"
+          - "-stop_on_error"
       verilator:
         mode: lint-only
         verilator_options:

@@ -2,18 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/uart.h"
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_plic.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
-#include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_main.h"
 #include "sw/device/lib/testing/test_status.h"
+
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define UART_DATASET_SIZE 128
@@ -112,27 +112,27 @@ void handler_irq_external(void) {
         "Interurpt from unexpected peripheral: %d", peripheral);
 
   // Correlate the interrupt fired at PLIC with UART.
-  dif_uart_interrupt_t uart_irq;
+  dif_uart_irq_t uart_irq;
   switch (plic_irq_id) {
     case kTopEarlgreyPlicIrqIdUartTxWatermark:
       CHECK(exp_uart_irq_tx_watermark, "Unexpected TX watermark interrupt");
       uart_irq_tx_watermark_fired = true;
-      uart_irq = kDifUartInterruptTxWatermark;
+      uart_irq = kDifUartIrqTxWatermark;
       break;
     case kTopEarlgreyPlicIrqIdUartRxWatermark:
       CHECK(exp_uart_irq_rx_watermark, "Unexpected RX watermark interrupt");
       uart_irq_rx_watermark_fired = true;
-      uart_irq = kDifUartInterruptRxWatermark;
+      uart_irq = kDifUartIrqRxWatermark;
       break;
     case kTopEarlgreyPlicIrqIdUartTxEmpty:
       CHECK(exp_uart_irq_tx_empty, "Unexpected TX empty interrupt");
       uart_irq_tx_empty_fired = true;
-      uart_irq = kDifUartInterruptTxEmpty;
+      uart_irq = kDifUartIrqTxEmpty;
       break;
     case kTopEarlgreyPlicIrqIdUartRxOverflow:
       CHECK(exp_uart_irq_rx_overflow, "Unexpected RX overflow interrupt");
       uart_irq_rx_overflow_fired = true;
-      uart_irq = kDifUartInterruptRxOverflow;
+      uart_irq = kDifUartIrqRxOverflow;
       break;
     default:
       LOG_ERROR("Unexpected interrupt (at PLIC): %d", plic_irq_id);
@@ -144,15 +144,14 @@ void handler_irq_external(void) {
   }
 
   // Check if the same interrupt fired at UART as well.
-  dif_uart_enable_t irq_state;
-  CHECK(dif_uart_irq_state_get(&uart, uart_irq, &irq_state) == kDifUartOk,
-        "dif_uart_irq_state_get failed");
-  CHECK(irq_state == kDifUartEnable,
-        "UART interrupt fired at PLIC did not fire at UART");
+  bool is_pending;
+  CHECK(dif_uart_irq_is_pending(&uart, uart_irq, &is_pending) == kDifUartOk,
+        "dif_uart_irq_is_pending failed");
+  CHECK(is_pending, "UART interrupt fired at PLIC did not fire at UART");
 
   // Clear the interrupt at UART.
-  CHECK(dif_uart_irq_state_clear(&uart, uart_irq) == kDifUartOk,
-        "dif_uart_irq_state_clear failed");
+  CHECK(dif_uart_irq_acknowledge(&uart, uart_irq) == kDifUartOk,
+        "dif_uart_irq_acknowledge failed");
 
   // Complete the IRQ at PLIC.
   CHECK(dif_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
@@ -166,14 +165,20 @@ void handler_irq_external(void) {
 static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
   LOG_INFO("Initializing the UART.");
 
-  dif_uart_config_t config = {
-      .baudrate = kUartBaudrate,
-      .clk_freq_hz = kClockFreqHz,
-      .parity_enable = kDifUartDisable,
-      .parity = kDifUartParityEven,
-  };
-  CHECK(dif_uart_init(base_addr, &config, uart) == kDifUartConfigOk,
+  CHECK(dif_uart_init(
+            (dif_uart_params_t){
+                .base_addr = base_addr,
+            },
+            uart) == kDifUartOk,
         "dif_uart_init failed");
+  CHECK(dif_uart_configure(uart,
+                           (dif_uart_config_t){
+                               .baudrate = kUartBaudrate,
+                               .clk_freq_hz = kClockFreqPeripheralHz,
+                               .parity_enable = kDifUartToggleDisabled,
+                               .parity = kDifUartParityEven,
+                           }) == kDifUartConfigOk,
+        "dif_uart_configure failed");
 
   // Set the TX and RX watermark to 16 bytes.
   CHECK(dif_uart_watermark_tx_set(uart, kDifUartWatermarkByte16) == kDifUartOk,
@@ -182,18 +187,18 @@ static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
         "dif_uart_watermark_rx_set failed");
 
   // Enable these UART interrupts - TX/TX watermark, TX empty and RX overflow.
-  CHECK(dif_uart_irq_enable(uart, kDifUartInterruptTxWatermark,
-                            kDifUartEnable) == kDifUartOk,
-        "dif_uart_irq_enable failed");
-  CHECK(dif_uart_irq_enable(uart, kDifUartInterruptRxWatermark,
-                            kDifUartEnable) == kDifUartOk,
-        "dif_uart_irq_enable failed");
-  CHECK(dif_uart_irq_enable(uart, kDifUartInterruptTxEmpty, kDifUartEnable) ==
-            kDifUartOk,
-        "dif_uart_irq_enable failed");
-  CHECK(dif_uart_irq_enable(uart, kDifUartInterruptRxOverflow,
-                            kDifUartEnable) == kDifUartOk,
-        "dif_uart_irq_enable failed");
+  CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxWatermark,
+                                 kDifUartToggleEnabled) == kDifUartOk,
+        "dif_uart_irq_set_enabled failed");
+  CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
+                                 kDifUartToggleEnabled) == kDifUartOk,
+        "dif_uart_irq_set_enabled failed");
+  CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxEmpty,
+                                 kDifUartToggleEnabled) == kDifUartOk,
+        "dif_uart_irq_set_enabled failed");
+  CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxOverflow,
+                                 kDifUartToggleEnabled) == kDifUartOk,
+        "dif_uart_irq_set_enabled failed");
 }
 
 /**
@@ -399,9 +404,9 @@ static bool execute_test(const dif_uart_t *uart) {
         // At this point we have received the required number of bytes.
         // We disable the RX watermark interrupt and let the fifo
         // overflow by dropping all future incoming data.
-        CHECK(dif_uart_irq_enable(uart, kDifUartInterruptRxWatermark,
-                                  kDifUartDisable) == kDifUartOk,
-              "dif_uart_irq_enable failed");
+        CHECK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
+                                       kDifUartToggleDisabled) == kDifUartOk,
+              "dif_uart_irq_set_enabled failed");
         // Expect the RX overflow interrupt to fire at some point.
         exp_uart_irq_rx_overflow = true;
       }
@@ -417,7 +422,12 @@ static bool execute_test(const dif_uart_t *uart) {
     }
 
     // Wait for the next interrupt to arrive.
-    wait_for_interrupt();
+    // This check here is necessary as rx interrupts may sometimes occur ahead
+    // of tx interrupts.  When this happens, the tx handling code above is not
+    // triggerd and as a result an unexpected tx_empty interrupt is fired later.
+    if (!uart_irq_rx_watermark_fired && !uart_irq_tx_watermark_fired) {
+      wait_for_interrupt();
+    }
   }
 
   // Check data consistency.
@@ -432,7 +442,7 @@ static bool execute_test(const dif_uart_t *uart) {
   return true;
 }
 
-const test_config_t kTestConfig = {};
+const test_config_t kTestConfig;
 
 bool test_main(void) {
   LOG_INFO("UART TX RX test");

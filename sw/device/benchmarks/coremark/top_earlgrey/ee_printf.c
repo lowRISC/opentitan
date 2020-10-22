@@ -33,6 +33,8 @@ GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 */
 
 #include <stdarg.h>
+
+#include "sw/device/lib/runtime/print.h"
 #include "sw/vendor/eembc_coremark/coremark.h"
 
 #define ZEROPAD (1 << 0)   /* Pad with zero */
@@ -504,6 +506,8 @@ static int ee_vsprintf(char *buf, const char *fmt, va_list args) {
       case '0':
         flags |= ZEROPAD;
         goto repeat;
+      default:
+        break;
     }
 
     // Get field width
@@ -654,23 +658,12 @@ static int ee_vsprintf(char *buf, const char *fmt, va_list args) {
 }
 
 int ee_printf(const char *fmt, ...) {
-  char buf[256], *p;
+  char buf[256];
   va_list args;
-  int n = 0;
 
   va_start(args, fmt);
   ee_vsprintf(buf, fmt, args);
   va_end(args);
-  p = buf;
-  while (*p) {
-    if (*p == '\n') {
-      uart_send_char('\r');
-    }
 
-    uart_send_char(*p);
-    n++;
-    p++;
-  }
-
-  return n;
+  return base_printf("%s", buf);
 }

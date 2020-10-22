@@ -24,11 +24,19 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
+    uvm_reg_data_t data;
+    bit init_busy;
     super.apply_reset(kind);
     if (kind == "HARD") begin
       cfg.clk_rst_vif.wait_clks(cfg.post_reset_delay_clks);
     end
-  endtask
+    flash_mem_bkdr_init(flash_ctrl_pkg::FlashPartInfo, FlashMemInitSet);
+
+    // Wait for flash_ctrl to finish initializing on every reset
+    // We probably need a parameter to skip this for certain tests
+    csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
+
+  endtask // apply_reset
 
   // Configure the memory protection regions.
   virtual task flash_ctrl_mp_region_cfg(uint index, flash_mp_region_cfg_t region_cfg);
@@ -40,8 +48,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         get_csr_val_with_updated_field(ral.mp_region_cfg_0.prog_en_0, data, region_cfg.program_en) |
         get_csr_val_with_updated_field(ral.mp_region_cfg_0.erase_en_0, data, region_cfg.erase_en) |
         get_csr_val_with_updated_field(ral.mp_region_cfg_0.base_0, data, region_cfg.start_page) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg_0.size_0, data, region_cfg.num_pages) |
-        get_csr_val_with_updated_field(ral.mp_region_cfg_0.partition_0, data, region_cfg.partition);
+        get_csr_val_with_updated_field(ral.mp_region_cfg_0.size_0, data, region_cfg.num_pages);
     csr = ral.get_reg_by_name($sformatf("mp_region_cfg_%0d", index));
     csr_wr(.csr(csr), .value(data));
   endtask

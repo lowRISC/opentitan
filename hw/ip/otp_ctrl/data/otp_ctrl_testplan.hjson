@@ -1,0 +1,154 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "otp_ctrl"
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+    {
+      name: wake_up
+      desc: '''
+            Basic wake_up test walks through otp_ctrl's power-on initialization, read, program, and
+            digest functionalities.
+
+            - Drive pwrmgr's request pin to trigger OTP initialization after reset, check status
+              after OTP initialization
+            - Write all-ones to a random address within OTP partition 0, wait until this operation
+              completes
+            - Read out the random selected write address, check if the readout value is all-ones
+            - Trigger a digest calculation for a Software partition, check if the OtpError
+              interrupt is set
+            - Trigger a digest calculation for a non-software partition, expect operation completes
+              without the OtpError interrupt
+            - Read out secrets through the hardware interfaces
+            '''
+      milestone: V1
+      tests: ["otp_ctrl_wake_up"]
+    }
+    {
+      name: sanity
+      desc: '''
+            Basic sanity test to provision and lock partitions.
+
+            - Drive pwrmgr's request pin to trigger OTP initialization after reset, check status
+              after OTP initialization
+            - Read out keys from key_manager, flash, SRAM, OTBN
+            - Write random values to random addresses within each OTP partition
+            - Read out the random selected write addresses, check if the readout values are expected
+            - Perform a system-level reset and check corresponding CSRs are set correctly
+            - Lock all partitions except life_cycle by triggering digest calculations
+            - Read back and verify the digest
+            - Perform a system-level reset to verify the corresponding CSRs exposing the digests
+              have been populated
+            '''
+      milestone: V1
+      tests: ["otp_ctrl_sanity"]
+    }
+    {
+      name: all_partitions
+      desc: '''
+            Based on the sanity test, this test ensures every address in each partition can be accessed
+            successfully within its access policy.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: partition_check_failure
+      desc: '''
+            Randomly program partition check related registers including: `check_timeout`,
+            `integrity_check_period`, `consistency_check_period`, and `check_trigger`.
+            Then backdoor write OTP_macro to create parity, digest, and OTP memory errors
+
+            - Check if the corresponding alerts are triggered
+            - Check if the error_code register is set correctly
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: partition_lock
+      desc: '''
+            This test will cover two methods of locking read and write: digest calculation and CSR
+            write. After locking the partitions, issue read or program sequences and check if the
+            operations are locked correctly, and check if the `AccessError` is set.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: interface_key_check
+      desc: '''
+            OTP_CTRL can output keys to key_manager, flash, sram, and OTBN. This test will modify
+            inputs and OTP storage, the check if generated keys are correct.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: lc_interactions
+      desc: '''
+            This test check otp and life_cycle interactions.
+
+            - Initialize life_cycle, secret0, and secret2 partitions
+            - Check if `otp_lc_data_o` is asserted correctly
+            - Randomly issue the following three sequences:
+            - Seq 1. State transitions via the programming interface
+            - Seq 2. Token hashing
+            - Seq 3. Trigger escalation_en
+            '''
+      milestone: V2
+      tests: []
+    }
+    { name: otp_macro_errors
+      desc: '''
+            This test will randomly run the following OTP errors:
+            - MacroError
+            - MacroEccCorrError
+            - MacroEccUncorrError
+            - MacroWriteBlankError
+
+            The test will check:
+            - The value of err_code and status registers
+            - If error is unrecoverable, ensure that OTP entered terminal state
+            '''
+      milestone: V2
+      tests: []
+    }
+    { name: otp_ctrl_errors
+      desc: '''
+            This test will randomly run the following OTP errors:
+            - CheckFailError
+            - FsmStateError
+
+            The test will check:
+            - The value of err_code and status registers
+            - If error is unrecoverable, ensure that OTP entered terminal state
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: test_access
+      desc: '''
+            This test checks if the test access to OTP macro is connected correctly.
+
+            - Read out from the test access window and ensure no error occurs
+            '''
+      milestone: V2
+      tests: []
+    }
+    { name: stress_all
+      desc: '''
+            - Combine above sequences in one test to run sequentially, except csr sequence
+            - Randomly add reset between each sequence
+            '''
+      milestone: V2
+      tests: []
+    }
+
+  ]
+}

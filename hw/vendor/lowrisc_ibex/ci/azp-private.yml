@@ -1,0 +1,31 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Private CI trigger.  Used to run tooling that can't currently be shared
+# publicly.
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - '*'
+  tags:
+    include:
+    - "*"
+pr:
+  branches:
+    include:
+    - '*'
+
+# The runner used for private CI enforces the use of the template below. All
+# build steps need to be placed into the template.
+resources:
+  repositories:
+  - repository: lowrisc-private-ci
+    type: github
+    endpoint: lowRISC
+    name: lowrisc/lowrisc-private-ci
+
+extends:
+  template: jobs-ibex.yml@lowrisc-private-ci

@@ -1,0 +1,17 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:dv_macros"
+description: "A collection of macros used in DV."
+
+filesets:
+  files_dv:
+    files:
+      - dv_macros.svh: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_dv

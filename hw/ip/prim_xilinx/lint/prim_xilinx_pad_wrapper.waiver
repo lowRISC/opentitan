@@ -4,9 +4,9 @@
 #
 # waiver file for prim_xilinx_pad_wrapper
 # note that this code is NOT synthesizable and meant for sim only
-waive -rules TRI_DRIVER -regexp {'inout_io' is driven by a tristate driver}
-      -location {prim_xilinx_pad_wrapper.sv}
+waive -rules TRI_DRIVER -regexp {'inout_io' is driven by a tristate driver} \
+      -location {prim_xilinx_pad_wrapper.sv} \
       -comment "This is a bidirectional pad inout."
-waive -rules INPUT_NOT_READ -regexp {Input port 'attr\_i\[.:2\]' is not read from}
-      -location {prim_xilinx_pad_wrapper.sv}
+waive -rules INPUT_NOT_READ -regexp {Input port 'attr\_i\[.:2\]' is not read from} \
+      -location {prim_xilinx_pad_wrapper.sv} \
       -comment "Some IO attributes may not be implemented."

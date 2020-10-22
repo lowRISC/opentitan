@@ -13,11 +13,16 @@ module uartdpi #(
   output logic tx_o,
   input  logic rx_i
 );
+  // Path to a log file. Used if none is specified through the `UARTDPI_LOG_<name>` plusarg.
+  localparam string DEFAULT_LOG_FILE = {NAME, ".log"};
 
-  localparam CYCLES_PER_SYMBOL = FREQ/BAUD;
+  localparam int CYCLES_PER_SYMBOL = FREQ / BAUD;
 
   import "DPI-C" function
-    chandle uartdpi_create(input string name);
+    chandle uartdpi_create(input string name, input string log_file_path);
+
+  import "DPI-C" function
+    void uartdpi_close(input chandle ctx);
 
   import "DPI-C" function
     byte uartdpi_read(input chandle ctx);
@@ -29,13 +34,16 @@ module uartdpi #(
     void uartdpi_write(input chandle ctx, int data);
 
   chandle ctx;
-  int file_handle;
-  string file_name;
+  string log_file_path = DEFAULT_LOG_FILE;
 
   initial begin
-    ctx = uartdpi_create(NAME);
-    $sformat(file_name, "%s.log", NAME);
-    file_handle = $fopen(file_name, "w");
+    $value$plusargs({"UARTDPI_LOG_", NAME, "=%s"}, log_file_path);
+    ctx = uartdpi_create(NAME, log_file_path);
+  end
+
+  final begin
+    uartdpi_close(ctx);
+    ctx = 0;
   end
 
   // TX
@@ -45,7 +53,7 @@ module uartdpi #(
   reg [9:0] txsymbol;
 
   always_ff @(negedge clk_i or negedge rst_ni) begin
-    if (~rst_ni) begin
+    if (!rst_ni) begin
       tx_o <= 1;
       txactive <= 0;
     end else begin
@@ -81,7 +89,7 @@ module uartdpi #(
   always_ff @(negedge clk_i or negedge rst_ni) begin
     rxcyccount <= rxcyccount + 1;
 
-    if (~rst_ni) begin
+    if (!rst_ni) begin
       rxactive <= 0;
     end else begin
       if (!rxactive) begin
@@ -111,12 +119,11 @@ module uartdpi #(
             rxactive <= 0;
             if (rx_i) begin
               uartdpi_write(ctx, rxsymbol);
-              $fwrite(file_handle, "%c", rxsymbol);
             end
           end
         end
       end
-    end // else: !if(rst)
+    end
   end
 
 endmodule

@@ -6,15 +6,15 @@
 # Documentation at https://aka.ms/yaml
 
 variables:
-  VERILATOR_VERSION: 4.028
-  VERILATOR_PATH: /opt/buildcache/verilator/$(VERILATOR_VERSION)
+  VERILATOR_VERSION: 4.040
   TOOLCHAIN_PATH: /opt/buildcache/riscv
   VERIBLE_VERSION: v0.0-520-g650c6cc
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
   # if you update this, update the definition in util/container/Dockerfile
-  TOOLCHAIN_VERSION: 20200626-1
+  TOOLCHAIN_VERSION: 20200904-1
   # This controls where builds happen, and gets picked up by build_consts.sh.
   BUILD_ROOT: $(Build.ArtifactStagingDirectory)
+  VIVADO_VERSION: "2020.1"
 
 trigger:
   batch: true
@@ -31,9 +31,9 @@ pr:
 
 jobs:
 - job: lint
-  displayName: Run code quality checks (lint)
+  displayName: Run code quality checks (quick lint)
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   steps:
   - bash: |
       sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
@@ -43,7 +43,7 @@ jobs:
       set -e
       mkdir -p build/verible
       cd build/verible
-      curl -Ls -o verible.tar.gz https://github.com/google/verible/releases/download/$(VERIBLE_VERSION)/verible-$(VERIBLE_VERSION)-Ubuntu-16.04-xenial-x86_64.tar.gz
+      curl -Ls -o verible.tar.gz "https://github.com/google/verible/releases/download/$(VERIBLE_VERSION)/verible-$(VERIBLE_VERSION)-Ubuntu-$(lsb_release -sr)-$(lsb_release -sc)-x86_64.tar.gz"
       sudo mkdir -p /tools/verible && sudo chmod 777 /tools/verible
       tar -C /tools/verible -xf verible.tar.gz --strip-components=1
       echo "##vso[task.setvariable variable=PATH]/tools/verible/bin:$PATH"
@@ -178,25 +178,6 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check commit metadata
   - bash: |
-      # Here we look for all *.vendor.hjson files in the repo to re-vendor them.
-      # We exclude the following:
-      # - Any in 'hw/vendor/lowrisc_ibex', because that directory is vendored.
-      # - `./sw/vendor/riscv_compliance.vendor.hjson`, because it has whitespace
-      #   issues in the repository that we cannot easily solve.
-      find . \
-        -not \( -path './hw/vendor/lowrisc_ibex' -prune \) \
-        -not \( -name 'riscv_compliance.vendor.hjson' \) \
-        -name '*.vendor.hjson' \
-        | xargs -n1 util/vendor.py --verbose \
-        && git diff --exit-code
-      if [[ $? != 0 ]]; then
-        echo -n "##vso[task.logissue type=error]"
-        echo "Vendored repositories not up-to-date. Run util/vendor.py to fix."
-        exit 1
-      fi
-    condition: always()
-    displayName: Check vendored directories are up-to-date
-  - bash: |
       set -e
       only_doc_changes=0
       has_otbn_changes=0
@@ -215,9 +196,9 @@ jobs:
           echo "PR contains non doc changes"
         fi
 
+        # Check if any changes were made to OTBN-related files (hardware, software or tooling)
         echo "Checking if any OTBN changes are in this pull request"
-        # Check if any changes were made to OTBN
-        has_otbn_changes="$(! git diff --name-only "$fork_origin" | grep 'hw/ip/otbn/' -q; echo $?)"
+        has_otbn_changes="$(! git diff --name-only "$fork_origin" | grep '/otbn/' -q; echo $?)"
 
         if [[ $has_otbn_changes -eq 1 ]]; then
           echo "PR contains OTBN changes"
@@ -235,10 +216,10 @@ jobs:
   - bash: |
       fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
       changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin")"
-      licence_checker=util/lowrisc_misc-linters/licence-checker/licence-checker.py
+      licence_checker="util/lowrisc_misc-linters/licence-checker/licence-checker.py --config util/licence-checker.hjson"
       if [[ -n "$changed_files" ]]; then
         set -o pipefail
-        xargs "$licence_checker" --config util/licence-checker.hjson <<< "$changed_files" | tee licence-checker-output
+        xargs $licence_checker <<< "$changed_files" | tee licence-checker-output
         if [[ $? != 0 ]]; then
           echo -n "##vso[task.logissue type=error]"
           echo "Licence header check failed. Please check output of $licence_checker on the noted failures."
@@ -248,12 +229,36 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check Licence Headers
 
+- job: slow_lints
+  displayName: Run code quality checks (in-depth lint)
+  dependsOn: lint
+  pool:
+    vmImage: ubuntu-18.04
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - bash: |
+      # Here we look for all *.vendor.hjson files in the repo to re-vendor them.
+      # We exclude the following:
+      # - Any in 'hw/vendor/lowrisc_ibex', because that directory is vendored.
+      find . \
+        -not \( -path './hw/vendor/lowrisc_ibex' -prune \) \
+        -name '*.vendor.hjson' \
+        | xargs -n1 util/vendor.py --verbose \
+        && git diff --exit-code
+      if [[ $? != 0 ]]; then
+        echo -n "##vso[task.logissue type=error]"
+        echo "Vendored repositories not up-to-date. Run util/vendor.py to fix."
+        exit 1
+      fi
+    condition: always()
+    displayName: Check vendored directories are up-to-date
+
 - job: sw_build
   displayName: Build Software
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
@@ -284,7 +289,7 @@ jobs:
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
@@ -312,31 +317,11 @@ jobs:
   displayName: Build Verilator simulation of the Earl Grey toplevel design
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
-  pool: Default
+  pool:
+    vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
-      set -e
-      if [[ ! -d "$(VERILATOR_PATH)" ]]; then
-        echo "Building verilator (no cached build found)"
-
-        mkdir -p build/verilator
-        cd build/verilator
-        curl -Ls -o verilator.tgz \
-          "https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz"
-        tar -xf verilator.tgz
-
-        cd "verilator-$(VERILATOR_VERSION)"
-        ./configure --prefix="$(VERILATOR_PATH)"
-        make -j$(nproc)
-        mkdir -p "$VERILATOR_PATH"
-        make install
-      else
-        echo "Re-using cached verilator build"
-      fi
-    displayName: Build and install Verilator
-  - bash: |
-      export PATH="$VERILATOR_PATH/bin:$PATH"
       python3 --version
       fusesoc --version
       verilator --version
@@ -346,11 +331,14 @@ jobs:
       mkdir -p "$OBJ_DIR/hw"
       mkdir -p "$BIN_DIR/hw/top_earlgrey"
 
-      export PATH="$VERILATOR_PATH/bin:$PATH"
+      # Compile the simulation without threading; the runners provided by
+      # Azure provide two virtual CPUs, which seems to equal one physical
+      # CPU (at most); the use of threading slows down the simulation.
       fusesoc --cores-root=. \
         run --flag=fileset_top --target=sim --setup --build \
         --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:top_earlgrey_verilator
+        lowrisc:systems:top_earlgrey_verilator \
+        --verilator_options="--no-threads"
 
       cp "$OBJ_DIR/hw/sim-verilator/Vtop_earlgrey_verilator" \
         "$BIN_DIR/hw/top_earlgrey"
@@ -362,7 +350,7 @@ jobs:
 - job: execute_verilated_tests
   displayName: Execute tests on the Verilated system
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   dependsOn:
     - top_earlgrey_verilator
     - sw_build
@@ -370,10 +358,15 @@ jobs:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
   - bash: |
+      # Install an additional pytest dependency for result upload.
+      pip3 install pytest-azurepipelines
+
       . util/build_consts.sh
-      export VERILATED_SYSTEM_PATH="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
       pytest --version
-      ci/run_verilator_pytest.sh
+      pytest test/systemtest/earlgrey/test_sim_verilator.py \
+        --log-cli-level=DEBUG \
+        --test-run-title="Run system tests with Verilator simulation" \
+        --napoleon-docstrings
     displayName: Execute tests
 
 - template: ci/run-riscv-compliance.yml
@@ -392,7 +385,8 @@ jobs:
   displayName: Run OTBN Smoke Test
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.hasOTBNChanges'], '1'))
-  pool: Default
+  pool:
+    vmImage: ubuntu-18.04
   timeoutInMinutes: 5
   steps:
   - template: ci/install-package-dependencies.yml
@@ -402,37 +396,22 @@ jobs:
         --target-dir="$TOOLCHAIN_PATH" \
         --release-version="$TOOLCHAIN_VERSION" \
         --update
+      echo "##vso[task.prependpath]$TOOLCHAIN_PATH/bin"
     displayName: Install toolchain
   - bash: |
-      set -e
-      if [[ ! -d "$(VERILATOR_PATH)" ]]; then
-        echo "Building verilator (no cached build found)"
-
-        mkdir -p build/verilator
-        cd build/verilator
-        curl -Ls -o verilator.tgz \
-          "https://www.veripool.org/ftp/verilator-$(VERILATOR_VERSION).tgz"
-        tar -xf verilator.tgz
-
-        cd "verilator-$(VERILATOR_VERSION)"
-        ./configure --prefix="$(VERILATOR_PATH)"
-        make -j$(nproc)
-        mkdir -p "$VERILATOR_PATH"
-        make install
-      else
-        echo "Re-using cached verilator build"
-      fi
-    displayName: Build and install Verilator
-  - bash: |
-      export PATH="$VERILATOR_PATH/bin:$PATH"
       python3 --version
       fusesoc --version
       verilator --version
     displayName: Display environment
   - bash: |
-      export PATH="/opt/buildcache/riscv/bin:$VERILATOR_PATH/bin:$PATH"
+      make -C hw/ip/otbn/dv/otbnsim test
+    displayName: OTBN ISS Test
+  - bash: |
       ./hw/ip/otbn/dv/smoke/run_smoke.sh
     displayName: OTBN Smoke Test
+  - bash: |
+      make -C hw/ip/otbn/util asm-sanity
+    displayName: Assemble and link code snippets
 
 - job: top_earlgrey_nexysvideo
   displayName: Build NexysVideo variant of the Earl Grey toplevel design using Vivado
@@ -469,10 +448,39 @@ jobs:
     parameters:
       artifact: top_earlgrey_nexysvideo
 
+- job: execute_fpga_tests
+  displayName: Execute tests on FPGA
+  pool: FPGA
+  timeoutInMinutes: 30
+  dependsOn:
+    - top_earlgrey_nexysvideo
+    - sw_build
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+  - bash: |
+      set -e
+
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+
+      # Install an additional pytest dependency for result upload.
+      pip3 install pytest-azurepipelines
+
+      . util/build_consts.sh
+      pytest --version
+      pytest test/systemtest/earlgrey/test_fpga_nexysvideo.py \
+        --log-cli-level=DEBUG \
+        --test-run-title="Run system tests on Nexys Video FPGA board" \
+        --napoleon-docstrings
+    # FPGA CI is using new infrastructure. Do not fail CI until we have more
+    # experience with it.
+    continueOnError: true
+    displayName: Execute tests
+
 - job: deploy_release_artifacts
   displayName: Package and deploy release distribution
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: ubuntu-18.04
   dependsOn:
     - lint
     - sw_build
@@ -504,3 +512,31 @@ jobs:
       addChangeLog: false
       assets: |
           $(Build.ArtifactStagingDirectory)/dist-final/*
+
+
+- job: build_docker_containers
+  displayName: "Build Docker Containers"
+  pool:
+    vmImage: ubuntu-18.04
+  dependsOn:
+    - lint
+  steps:
+  - task: Docker@2
+    displayName: Build Developer Utility Container
+    inputs:
+      command: build
+      Dockerfile: ./util/container/Dockerfile
+      buildContext: .
+  - task: Docker@2
+    displayName: Build Documentation Builder Container
+    inputs:
+      command: build
+      tags: gcr.io/active-premise-257318/builder
+      Dockerfile: ./site/docs/builder.Dockerfile
+      buildContext: .
+  - task: Docker@2
+    displayName: Build Documentation Redirector Container
+    inputs:
+      command: build
+      Dockerfile: ./site/redirector/Dockerfile
+      buildContext: ./site/redirector

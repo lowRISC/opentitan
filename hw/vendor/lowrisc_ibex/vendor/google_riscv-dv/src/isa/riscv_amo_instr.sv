@@ -20,7 +20,7 @@ class riscv_amo_instr extends riscv_instr;
   rand bit rl;
 
   constraint aq_rl_c {
-    aq && rl == 0;
+    (aq && rl) == 0;
   }
 
   `uvm_object_utils(riscv_amo_instr)

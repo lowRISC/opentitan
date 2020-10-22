@@ -31,3 +31,9 @@ option(
   type: 'boolean',
   value: true,
 )
+
+option(
+  'coverage',
+  type: 'boolean',
+  value: false,
+)

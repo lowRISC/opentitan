@@ -43,7 +43,6 @@ The following utilities provide generic helper tasks and functions to perform ac
 All common types and methods defined at the package level can be found in
 `uart_env_pkg`. Some of them in use are:
 ```systemverilog
-parameter uint UART_ADDR_MAP_SIZE = 64;
 parameter uint UART_FIFO_DEPTH    = 32;
 ```
 
@@ -60,7 +59,7 @@ These baud rates are supported: 9600, 115200, 230400, 1Mbps(1048576), 2Mbps(2097
 ### UVM RAL Model
 The UART RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually (separately) by running `make` in the the `hw/` area.
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
 
 ### Stimulus strategy
 #### Test sequences
@@ -97,8 +96,7 @@ We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/RE
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a basic sanity test:
 ```console
-$ cd hw/ip/uart/dv
-$ make TEST_NAME=uart_sanity
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/uart/dv/uart_sim_cfg.hjson -i uart_sanity
 ```
 
 ## Testplan

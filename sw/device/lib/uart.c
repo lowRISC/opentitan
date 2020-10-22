@@ -5,7 +5,6 @@
 #include "sw/device/lib/uart.h"
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/common.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/ibex.h"
 
@@ -14,18 +13,18 @@
 static dif_uart_t uart0;
 
 void uart_init(unsigned int baud) {
-  dif_uart_config_t config = {
-      .baudrate = baud,
-      .clk_freq_hz = kClockFreqHz,
-      .parity_enable = kDifUartDisable,
-      .parity = kDifUartParityEven,
-  };
-
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR);
   // Note that, due to a GCC bug, we cannot use the standard `(void) expr`
   // syntax to drop this value on the ground.
   // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=25509
-  if (dif_uart_init(base_addr, &config, &uart0)) {
+  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR);
+  if (dif_uart_init((dif_uart_params_t){.base_addr = base_addr}, &uart0)) {
+  }
+  if (dif_uart_configure(&uart0, (dif_uart_config_t){
+                                     .baudrate = baud,
+                                     .clk_freq_hz = kClockFreqPeripheralHz,
+                                     .parity_enable = kDifUartToggleDisabled,
+                                     .parity = kDifUartParityEven,
+                                 })) {
   }
 }
 

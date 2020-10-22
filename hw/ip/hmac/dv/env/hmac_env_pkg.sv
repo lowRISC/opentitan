@@ -9,7 +9,6 @@ package hmac_env_pkg;
   import dv_utils_pkg::*;
   import csr_utils_pkg::*;
   import tl_agent_pkg::*;
-  import alert_esc_agent_pkg::*;
   import cryptoc_dpi_pkg::*;
   import dv_base_reg_pkg::*;
   import cip_base_pkg::*;
@@ -21,8 +20,6 @@ package hmac_env_pkg;
   `include "dv_macros.svh"
 
   // local parameters and types
-  // csr and mem total size for IP
-  parameter uint   HMAC_ADDR_MAP_SIZE        = 4096;
   parameter uint32 HMAC_MSG_FIFO_DEPTH       = 16;
   parameter uint32 HMAC_MSG_FIFO_DEPTH_BYTES = HMAC_MSG_FIFO_DEPTH * 4;
   parameter uint32 HMAC_MSG_FIFO_SIZE        = 2048;

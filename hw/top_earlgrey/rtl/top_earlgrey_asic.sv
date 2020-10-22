@@ -204,9 +204,18 @@ module top_earlgrey_asic (
   ast_wrapper_pkg::ast_eflash_t ast_base_eflash;
   pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  clkmgr_pkg::clkmgr_ast_out_t clks_ast;
+  rstmgr_pkg::rstmgr_ast_out_t rsts_ast;
+  otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
+  otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
   //ast_wrapper_pkg::ast_func_clks_rsts base_ast_aux;
   logic usb_ref_pulse;
   logic usb_ref_val;
+
+  // TODO: connect once available in AST
+  logic unused_otp_ctrl_otp_ast_pwr_seq;
+  assign unused_otp_ctrl_otp_ast_pwr_seq = otp_ctrl_otp_ast_pwr_seq;
+  assign otp_ctrl_otp_ast_pwr_seq_h = '0;
 
   ast_wrapper ast_wrapper (
     .clk_ext_i(clk),
@@ -219,7 +228,8 @@ module top_earlgrey_asic (
     .clks_o(ast_base_clks),
     .usb_ref_pulse_i(usb_ref_pulse),
     .usb_ref_val_i(usb_ref_val),
-    .aux_i('0), // need a hardwired solution until rstmgr/clkmgr update
+    .clks_ast_i(clks_ast),
+    .rsts_ast_i(rsts_ast),
     .adc_i('0),
     .adc_o(),
     .es_i('0), // not in top_earlgrey
@@ -238,21 +248,32 @@ module top_earlgrey_asic (
   // Top-level design //
   //////////////////////
 
-  top_earlgrey top_earlgrey (
+  top_earlgrey #(
+    .AesMasking(1'b0),
+    .AesSBoxImpl(aes_pkg::SBoxImplCanright),
+    .SecAesStartTriggerDelay(0),
+    .SecAesAllowForcingMasks(1'b0)
+  ) top_earlgrey (
     .rst_ni          ( rst_n         ),
     // ast connections
-    .clk_main_i      ( clk           ),
-    .clk_io_i        ( clk           ),
-    .clk_usb_i       ( clk_usb_48mhz ),
-    .clk_aon_i       ( clk           ),
-    .rstmgr_ast_i                ( ast_base_rst          ),
-    .pwrmgr_pwr_ast_req_o        ( base_ast_pwr          ),
-    .pwrmgr_pwr_ast_rsp_i        ( ast_base_pwr          ),
-    .sensor_ctrl_ast_alert_req_i ( ast_base_alerts       ),
-    .sensor_ctrl_ast_alert_rsp_o ( base_ast_alerts       ),
-    .sensor_ctrl_ast_status_i    ( ast_base_status       ),
-    .usbdev_usb_ref_val_o        ( usb_ref_pulse         ),
-    .usbdev_usb_ref_pulse_o      ( usb_ref_val           ),
+    .clk_main_i      ( ast_base_clks.clk_sys ),
+    .clk_io_i        ( ast_base_clks.clk_io  ),
+    .clk_usb_i       ( ast_base_clks.clk_usb ),
+    .clk_aon_i       ( ast_base_clks.clk_aon ),
+    .clks_ast_o      ( clks_ast      ),
+    .rstmgr_ast_i                 ( ast_base_rst               ),
+    .rsts_ast_o                   ( rsts_ast                   ),
+    .pwrmgr_pwr_ast_req_o         ( base_ast_pwr               ),
+    .pwrmgr_pwr_ast_rsp_i         ( ast_base_pwr               ),
+    .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts            ),
+    .sensor_ctrl_ast_alert_rsp_o  ( base_ast_alerts            ),
+    .sensor_ctrl_ast_status_i     ( ast_base_status            ),
+    .usbdev_usb_ref_val_o         ( usb_ref_pulse              ),
+    .usbdev_usb_ref_pulse_o       ( usb_ref_val                ),
+    .ast_tl_req_o                 ( base_ast_bus               ),
+    .ast_tl_rsp_i                 ( ast_base_bus               ),
+    .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
+    .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck      ),

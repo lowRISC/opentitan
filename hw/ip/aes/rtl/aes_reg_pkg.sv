@@ -10,6 +10,7 @@ package aes_reg_pkg;
   parameter int NumRegsKey = 8;
   parameter int NumRegsIv = 4;
   parameter int NumRegsData = 4;
+  parameter int NumAlerts = 2;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -60,6 +61,11 @@ package aes_reg_pkg;
       logic        qe;
       logic        re;
     } manual_operation;
+    struct packed {
+      logic        q;
+      logic        qe;
+      logic        re;
+    } force_zero_masks;
   } aes_reg2hw_ctrl_shadowed_reg_t;
 
   typedef struct packed {
@@ -118,6 +124,9 @@ package aes_reg_pkg;
     struct packed {
       logic        d;
     } manual_operation;
+    struct packed {
+      logic        d;
+    } force_zero_masks;
   } aes_hw2reg_ctrl_shadowed_reg_t;
 
   typedef struct packed {
@@ -164,6 +173,10 @@ package aes_reg_pkg;
       logic        d;
       logic        de;
     } input_ready;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ctrl_err_storage;
   } aes_hw2reg_status_reg_t;
 
 
@@ -171,12 +184,12 @@ package aes_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_reg2hw_key_share0_mreg_t [7:0] key_share0; // [944:681]
-    aes_reg2hw_key_share1_mreg_t [7:0] key_share1; // [680:417]
-    aes_reg2hw_iv_mreg_t [3:0] iv; // [416:285]
-    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [284:153]
-    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [152:21]
-    aes_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [20:6]
+    aes_reg2hw_key_share0_mreg_t [7:0] key_share0; // [946:683]
+    aes_reg2hw_key_share1_mreg_t [7:0] key_share1; // [682:419]
+    aes_reg2hw_iv_mreg_t [3:0] iv; // [418:287]
+    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [286:155]
+    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [154:23]
+    aes_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [22:6]
     aes_reg2hw_trigger_reg_t trigger; // [5:0]
   } aes_reg2hw_t;
 
@@ -184,14 +197,14 @@ package aes_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [930:675]
-    aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [674:419]
-    aes_hw2reg_iv_mreg_t [3:0] iv; // [418:291]
-    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [290:159]
-    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [158:31]
-    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [30:16]
-    aes_hw2reg_trigger_reg_t trigger; // [15:10]
-    aes_hw2reg_status_reg_t status; // [9:10]
+    aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [933:678]
+    aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [677:422]
+    aes_hw2reg_iv_mreg_t [3:0] iv; // [421:294]
+    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [293:162]
+    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [161:34]
+    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [33:17]
+    aes_hw2reg_trigger_reg_t trigger; // [16:11]
+    aes_hw2reg_status_reg_t status; // [10:11]
   } aes_hw2reg_t;
 
   // Register Address

@@ -24,7 +24,6 @@ package alert_handler_env_pkg;
 
   // parameters
   parameter uint NUM_ESCS                    = 4;
-  parameter uint ALERT_HANDLER_ADDR_MAP_SIZE = 256;
   parameter uint NUM_MAX_ESC_SEV             = 8;
   parameter uint NUM_ESC_SIGNALS             = 4;
   parameter uint NUM_ALERT_HANDLER_CLASSES   = 4;
@@ -35,6 +34,8 @@ package alert_handler_env_pkg;
   // ignore esc signal cycle count after ping occurs - as ping response might ended up adding one
   // extra cycle to the calculated cnt, or even combine two signals into one.
   parameter uint IGNORE_CNT_CHECK_NS         = 100_000_000;
+  // set the max ping timeout cycle to constrain the simulation run time
+  parameter uint MAX_PING_TIMEOUT_CYCLE     = 100;
   // types
   typedef enum {
     EscPhase0,

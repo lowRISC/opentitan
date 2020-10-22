@@ -14,15 +14,17 @@ module aes_key_expand import aes_pkg::*;
 
   localparam int        NumShares    = Masking ? 2 : 1 // derived parameter
 ) (
-  input  logic              clk_i,
-  input  logic              rst_ni,
-  input  ciph_op_e          op_i,
-  input  logic              step_i,
-  input  logic              clear_i,
-  input  logic        [3:0] round_i,
-  input  key_len_e          key_len_i,
-  input  logic  [7:0][31:0] key_i [NumShares],
-  output logic  [7:0][31:0] key_o [NumShares]
+  input  logic                   clk_i,
+  input  logic                   rst_ni,
+  input  logic                   cfg_valid_i,
+  input  ciph_op_e               op_i,
+  input  logic                   step_i,
+  input  logic                   clear_i,
+  input  logic             [3:0] round_i,
+  input  key_len_e               key_len_i,
+  input  logic       [7:0][31:0] key_i [NumShares],
+  output logic       [7:0][31:0] key_o [NumShares],
+  input  logic [WidthPRDKey-1:0] prd_masking_i
 );
 
   logic       [7:0] rcon_d, rcon_q;
@@ -45,6 +47,11 @@ module aes_key_expand import aes_pkg::*;
   logic      [31:0] irregular [NumShares];
   logic [7:0][31:0] regular [NumShares];
 
+  // cfg_valid_i is used for gating assertions only.
+  logic             unused_cfg_valid;
+  assign unused_cfg_valid = cfg_valid_i;
+
+  // Get a shorter reference.
   assign rnd = round_i;
 
   // For AES-192, there are four different types of rounds.
@@ -182,9 +189,7 @@ module aes_key_expand import aes_pkg::*;
     assign sw_in_mask = use_rot_word ? rot_word_out[1] : rot_word_in[1];
   end
 
-  // TODO: Use non-constant output masks for SubWord + remove corresponding comment in aes.sv.
-  // See https://github.com/lowRISC/opentitan/issues/1005
-  assign sw_out_mask = 32'h5555_5555;
+  assign sw_out_mask = prd_masking_i;
 
   // SubWord - individually substitute bytes
   for (genvar i = 0; i < 4; i++) begin : gen_sbox
@@ -376,7 +381,7 @@ module aes_key_expand import aes_pkg::*;
 
   // Selectors must be known/valid
   `ASSERT_KNOWN(AesCiphOpKnown, op_i)
-  `ASSERT(AesKeyLenValid, key_len_i inside {
+  `ASSERT(AesKeyLenValid, cfg_valid_i |-> key_len_i inside {
       AES_128,
       AES_192,
       AES_256

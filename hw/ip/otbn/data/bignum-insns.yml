@@ -1,0 +1,987 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Definitions for the big number group of instructions. See insns.yml
+# for the detailed format.
+
+- mnemonic: bn.add
+  synopsis: Add
+  operands: &bn-add-operands
+    - name: wrd
+      doc: Name of the destination WDR
+    - name: wrs1
+      doc: Name of the first source WDR
+    - name: wrs2
+      doc: Name of the second source WDR
+    - &bn-shift-type-operand
+      name: shift_type
+      type: enum(<<, >>)
+      doc: |
+        The direction of an optional shift applied to `<wrs2>`.
+    - &bn-shift-bytes-operand
+      name: shift_bytes
+      type: uimm5
+      doc: |
+        Number of bytes by which to shift `<wrs2>`. Defaults to 0.
+    - &bn-flag-group-operand
+      name: flag_group
+      type: uimm1
+      doc: Flag group to use. Defaults to 0.
+  syntax: &bn-add-syntax |
+    <wrd>, <wrs1>, <wrs2>[<shift_type> <shift_bytes>B][, FG<flag_group>]
+  doc: |
+    Adds two WDR values, writes the result to the destination WDR and updates
+    flags. The content of the second source WDR can be shifted by an unsigned
+    immediate before it is consumed by the operation.
+  decode: |
+    d = UInt(wrd)
+    a = UInt(wrs1)
+    b = UInt(wrs2)
+
+    fg = DecodeFlagGroup(flag_group)
+    sb = UInt(shift_bytes)
+    st = DecodeShiftType(shift_type)
+  operation: |
+    b_shifted = ShiftReg(b, st, sb)
+    (result, flags_out) = AddWithCarry(a, b_shifted, "0")
+
+    WDR[d] = result
+    FLAGS[flag_group] = flags_out
+  encoding:
+    scheme: bnaf
+    mapping:
+      fg: flag_group
+      shift_type: shift_type
+      shift_bytes: shift_bytes
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b000
+      wrd: wrd
+
+- mnemonic: bn.addc
+  synopsis: Add with Carry
+  operands: *bn-add-operands
+  syntax: *bn-add-syntax
+  doc: |
+    Adds two WDR values and the Carry flag value, writes the result to the
+    destination WDR, and updates the flags. The content of the second source
+    WDR can be shifted by an unsigned immediate before it is consumed by the
+    operation.
+  decode: |
+    d = UInt(wrd)
+    a = UInt(wrs1)
+    b = UInt(wrs2)
+
+    fg = DecodeFlagGroup(flag_group)
+    sb = UInt(shift_bytes)
+    st = DecodeShiftType(shift_type)
+  operation: |
+    b_shifted = ShiftReg(b, st, sb)
+    (result, flags_out) = AddWithCarry(a, b_shifted, FLAGS[flag_group].C)
+
+    WDR[d] = result
+    FLAGS[flag_group] = flags_out
+  encoding:
+    scheme: bnaf
+    mapping:
+      fg: flag_group
+      shift_type: shift_type
+      shift_bytes: shift_bytes
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b010
+      wrd: wrd
+
+- mnemonic: bn.addi
+  synopsis: Add Immediate
+  operands:
+    - name: wrd
+      doc: Name of the destination WDR
+    - name: wrs
+      doc: Name of the source WDR
+    - name: imm
+      type: uimm
+      doc: Immediate value
+    - *bn-flag-group-operand
+  syntax: |
+    <wrd>, <wrs>, <imm>[, FG<flag_group>]
+  doc: |
+    Adds a zero-extended unsigned immediate to the value of a WDR, writes the
+    result to the destination WDR, and updates the flags.
+  decode: |
+    d = UInt(wrd)
+    a = UInt(wrs1)
+
+    fg = DecodeFlagGroup(flag_group)
+    i = ZeroExtend(imm, WLEN)
+  operation: |
+    (result, flags_out) = AddWithCarry(a, i, "0")
+
+    WDR[d] = result
+    FLAGS[flag_group] = flags_out
+  encoding:
+    scheme: bnai
+    mapping:
+      fg: flag_group
+      sub: b0
+      imm: imm
+      wrs: wrs
+      funct3: b100
+      wrd: wrd
+
+- mnemonic: bn.addm
+  synopsis: Pseudo-Modulo Add
+  operands: [wrd, wrs1, wrs2]
+  doc: |
+    Add two WDR values, modulo the MOD WSR.
+
+    The values in `<wrs1>` and `<wrs2>` are summed to get an intermediate result (of width `WLEN + 1`).
+    If this result is greater than MOD then MOD is subtracted from it.
+    The result is then truncated to 256 bits and stored in `<wrd>`.
+
+    This operation correctly implements addition modulo MOD, providing that the intermediate result is less than `2 * MOD`.
+    The intermediate result is small enough if both inputs are less than `MOD`.
+
+    Flags are not used or saved.
+  decode: |
+    d = UInt(wrd)
+    a = UInt(wrs1)
+    b = UInt(wrs2)
+  operation: |
+    result = a + b
+
+    if result >= MOD:
+      result = result - MOD
+
+    WDR[d] = result & ((1 << 256) - 1)
+  encoding:
+    scheme: bnam
+    mapping:
+      sub: b0
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b101
+      wrd: wrd
+
+- mnemonic: bn.mulqacc
+  synopsis: Quarter-word Multiply and Accumulate
+  operands:
+    - &mulqacc-zero-acc
+      name: zero_acc
+      type: option(.Z)
+      doc: Zero the accumulator before accumulating the multiply result.
+    - &mulqacc-wrs1
+      name: wrs1
+      doc: First source WDR
+    - &mulqacc-wrs1-qwsel
+      name: wrs1_qwsel
+      type: uimm2
+      doc: |
+        Quarter-word select for `<wrs1>`.
+
+        Valid values:
+        - `0`: Select `wrs1[WLEN/4-1:0]` (least significant quarter-word)
+        - `1`: Select `wrs1[WLEN/2:WLEN/4]`
+        - `2`: Select `wrs1[WLEN/4*3-1:WLEN/2]`
+        - `3`: Select `wrs1[WLEN-1:WLEN/4*3]` (most significant quarter-word)
+    - &mulqacc-wrs2
+      name: wrs2
+      doc: Second source WDR
+    - &mulqacc-wrs2-qwsel
+      name: wrs2_qwsel
+      type: uimm2
+      doc: |
+        Quarter-word select for `<wrs2>`.
+
+        Valid values:
+        - `0`: Select `wrs1[WLEN/4-1:0]` (least significant quarter-word)
+        - `1`: Select `wrs1[WLEN/2:WLEN/4]`
+        - `2`: Select `wrs1[WLEN/4*3-1:WLEN/2]`
+        - `3`: Select `wrs1[WLEN-1:WLEN/4*3]` (most significant quarter-word)
+    - &mulqacc-acc-shift-imm
+      name: acc_shift_imm
+      type: uimm2<<6
+      doc: |
+        The number of bits to shift the `WLEN/2`-bit multiply result before accumulating.
+  syntax: |
+    [<zero_acc>] <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
+  glued-ops: true
+  doc: |
+    Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bit, and adds the result to the accumulator.
+
+    For versions of the instruction with writeback, see `BN.MULQACC.WO` and `BN.MULQACC.SO`.
+  decode: |
+    writeback_variant = None
+    zero_accumulator = DecodeMulqaccZeroacc(zero_acc)
+
+    d = None
+    a = UInt(wrs1)
+    b = UInt(wrs2)
+
+    d_hwsel = None
+    a_qwsel = DecodeQuarterWordSelect(wrs1_qwsel)
+    b_qwsel = DecodeQuarterWordSelect(wrs2_qwsel)
+  operation: &mulqacc-operation |
+    a_qw = GetQuarterWord(a, a_qwsel)
+    b_qw = GetQuarterWord(b, b_qwsel)
+
+    mul_res = a_qw * b_qw
+
+    if zero_accumulator:
+      ACC = 0
+
+    ACC = ACC + (mul_res << acc_shift_imm)
+
+    if writeback_variant == 'shiftout':
+      if d_hwsel == 'L':
+        WDR[d][WLEN/2-1:0] = ACC[WLEN/2-1:0]
+      elif d_hwsel == 'U':
+        WDR[d][WLEN-1:WLEN/2] = ACC[WLEN/2-1:0]
+      ACC = ACC >> (WLEN/2)
+
+    elif writeback_variant == 'writeout':
+      WDR[d] = ACC
+  encoding:
+    scheme: bnaq
+    mapping:
+      wb: b00
+      dh: bx
+      qs2: wrs2_qwsel
+      qs1: wrs1_qwsel
+      wrs2: wrs2
+      wrs1: wrs1
+      acc: acc_shift_imm
+      z: zero_acc
+      wrd: bxxxxx
+
+- mnemonic: bn.mulqacc.wo
+  synopsis: Quarter-word Multiply and Accumulate with half-word writeback
+  operands:
+    - *mulqacc-zero-acc
+    - &mulqacc-wrd
+      name: wrd
+      doc: Destination WDR.
+    - *mulqacc-wrs1
+    - *mulqacc-wrs1-qwsel
+    - *mulqacc-wrs2
+    - *mulqacc-wrs2-qwsel
+    - *mulqacc-acc-shift-imm
+  syntax: |
+    [<zero_acc>] <wrd>, <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
+  glued-ops: true
+  doc: |
+    Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bit, and adds the result to the accumulator.
+    Writes the resulting accumulator to `wrd`.
+  decode: |
+    writeback_variant = 'writeout'
+    zero_accumulator = DecodeMulqaccZeroacc(zero_acc)
+
+    d = UInt(wrd)
+    a = UInt(wrs1)
+    b = UInt(wrs2)
+
+    d_hwsel = None
+    a_qwsel = DecodeQuarterWordSelect(wrs1_qwsel)
+    b_qwsel = DecodeQuarterWordSelect(wrs2_qwsel)
+  operation: *mulqacc-operation
+  encoding:
+    scheme: bnaq
+    mapping:
+      wb: b01
+      dh: bx
+      qs2: wrs2_qwsel
+      qs1: wrs1_qwsel
+      wrs2: wrs2
+      wrs1: wrs1
+      acc: acc_shift_imm
+      z: zero_acc
+      wrd: wrd
+
+- mnemonic: bn.mulqacc.so
+  synopsis: Quarter-word Multiply and Accumulate with half-word writeback
+  operands:
+    - *mulqacc-zero-acc
+    - *mulqacc-wrd
+    - name: wrd_hwsel
+      type: enum(L,U)
+      doc: |
+        Half-word select for `<wrd>`.
+        A value of `L` means the less significant half-word; `U` means the more significant half-word.
+    - *mulqacc-wrs1
+    - *mulqacc-wrs1-qwsel
+    - *mulqacc-wrs2
+    - *mulqacc-wrs2-qwsel
+    - *mulqacc-acc-shift-imm
+  syntax: |
+    [<zero_acc>] <wrd>.<wrd_hwsel>,
+    <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
+  glued-ops: true
+  doc: |
+    Multiplies two `WLEN/4` WDR values, shifts the product by `<acc_shift_imm>` and adds the result to the accumulator.
+    Next, shifts the resulting accumulator right by half a word.
+    The bits that are shifted out are written to a half-word of `<wrd>`, selected with `<wrd_hwsel>`.
+
+  decode: |
+    writeback_variant = 'shiftout'
+    zero_accumulator = DecodeMulqaccZeroacc(zero_acc)
+
+    d = UInt(wrd)
+    a = UInt(wrs1)
+    b = UInt(wrs2)
+
+    d_hwsel = DecodeHalfWordSelect(wrd_hwsel)
+    a_qwsel = DecodeQuarterWordSelect(wrs1_qwsel)
+    b_qwsel = DecodeQuarterWordSelect(wrs2_qwsel)
+  operation: *mulqacc-operation
+  encoding:
+    scheme: bnaq
+    mapping:
+      wb: b1x
+      dh: wrd_hwsel
+      qs2: wrs2_qwsel
+      qs1: wrs1_qwsel
+      wrs2: wrs2
+      wrs1: wrs1
+      acc: acc_shift_imm
+      z: zero_acc
+      wrd: wrd
+
+- mnemonic: bn.sub
+  synopsis: Subtraction
+  operands: &bn-sub-operands
+    - name: wrd
+      doc: Name of the destination WDR
+    - name: wrs1
+      doc: Name of the first source WDR
+    - name: wrs2
+      doc: Name of the second source WDR
+    - *bn-shift-type-operand
+    - *bn-shift-bytes-operand
+    - *bn-flag-group-operand
+  syntax: *bn-add-syntax
+  doc: |
+    Subtracts the second WDR value from the first one, writes the result to the destination WDR and updates flags.
+    The content of the second source WDR can be shifted by an unsigned immediate before it is consumed by the operation.
+  decode: &bn-sub-decode |
+    d = UInt(wrd)
+    a = UInt(wrs1)
+    b = UInt(wrs2)
+
+    fg = DecodeFlagGroup(flag_group)
+    sb = UInt(shift_bytes)
+    st = DecodeShiftType(shift_type)
+  operation: |
+    b_shifted = ShiftReg(b, st, sb)
+    (result, flags_out) = SubtractWithBorrow(a, b_shifted, 0)
+
+    WDR[d] = result
+    FLAGS[flag_group] = flags_out
+  encoding:
+    scheme: bnaf
+    mapping:
+      fg: flag_group
+      shift_type: shift_type
+      shift_bytes: shift_bytes
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b001
+      wrd: wrd
+
+- mnemonic: bn.subb
+  synopsis: Subtract with borrow
+  operands: *bn-sub-operands
+  syntax: *bn-add-syntax
+  doc: |
+    Subtracts the second WDR value and the Carry from the first one, writes the result to the destination WDR, and updates the flags.
+    The content of the second source WDR can be shifted by an unsigned immediate before it is consumed by the operation.
+  decode: *bn-sub-decode
+  operation: |
+    b_shifted = ShiftReg(b, st, sb)
+    (result, flags_out) = SubtractWithBorrow(a, b_shifted, FLAGS[flag_group].C)
+
+    WDR[d] = result
+    FLAGS[flag_group] = flags_out
+  encoding:
+    scheme: bnaf
+    mapping:
+      fg: flag_group
+      shift_type: shift_type
+      shift_bytes: shift_bytes
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b011
+      wrd: wrd
+
+- mnemonic: bn.subi
+  synopsis: Subtract Immediate
+  operands:
+    - name: wrd
+      doc: Name of the destination WDR
+    - name: wrs
+      doc: Name of the source WDR
+    - name: imm
+      type: uimm
+      doc: Immediate value
+    - *bn-flag-group-operand
+  syntax: <wrd>, <wrs>, <imm>[, FG<flag_group>]
+  doc: |
+    Subtracts a zero-extended unsigned immediate from the value of a WDR,
+    writes the result to the destination WDR, and updates the flags.
+  decode: |
+    d = UInt(wrd)
+    a = UInt(wrs1)
+
+    fg = DecodeFlagGroup(flag_group)
+    i = ZeroExtend(imm, WLEN)
+  operation: |
+    (result, flags_out) = SubtractWithBorrow(a, i, 0)
+
+    WDR[d] = result
+    FLAGS[flag_group] = flags_out
+  encoding:
+    scheme: bnai
+    mapping:
+      fg: flag_group
+      sub: b1
+      imm: imm
+      wrs: wrs
+      funct3: b100
+      wrd: wrd
+
+- mnemonic: bn.subm
+  synopsis: Pseudo-modulo subtraction
+  operands: [wrd, wrs1, wrs2]
+  doc: |
+    Subtract `<wrs2>` from `<wrs1>`, modulo the `MOD` WSR.
+
+    The intermediate result is treated as a signed number (of width `WLEN + 1`).
+    If it is negative, `MOD` is added to it.
+    The 2's-complement result is then truncated to 256 bits and stored in `<wrd>`.
+
+    This operation correctly implements subtraction modulo `MOD`, providing that the intermediate result at least `-MOD` and at most `MOD - 1`.
+    This is guaranteed if both inputs are less than `MOD`.
+
+    Flags are not used or saved.
+  decode: |
+    d = UInt(wrd)
+    a = UInt(wrs1)
+    b = UInt(wrs2)
+  operation: |
+    result = a - b
+
+    if result < 0:
+      result = MOD + result
+
+    WDR[d] = result & ((1 << 256) - 1)
+  encoding:
+    scheme: bnam
+    mapping:
+      sub: b1
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b101
+      wrd: wrd
+
+- mnemonic: bn.and
+  synopsis: Bitwise AND
+  operands: &bn-and-operands
+    - name: wrd
+      doc: Name of the destination WDR
+    - name: wrs1
+      doc: Name of the first source WDR
+    - name: wrs2
+      doc: Name of the second source WDR
+    - *bn-shift-type-operand
+    - *bn-shift-bytes-operand
+    - *bn-flag-group-operand
+  syntax: &bn-and-syntax |
+    <wrd>, <wrs1>, <wrs2>[, <shift_type> <shift_bytes>B][, FG<flag_group>]
+  doc: |
+    Performs a bitwise and operation.
+    Takes the values stored in registers referenced by `wrs1` and `wrs2` and stores the result in the register referenced by `wrd`.
+    The content of the second source register can be shifted by an immediate before it is consumed by the operation.
+    The M, L and Z flags in flag group 0 are updated with the result of the operation.
+  decode: &bn-and-decode |
+    d = UInt(wrd)
+    a = UInt(wrs1)
+    b = UInt(wrs2)
+
+    sb = UInt(shift_bytes)
+    st = DecodeShiftType(shift_type)
+    fg = DecodeFlagGroup(flag_group)
+  operation: |
+    b_shifted = ShiftReg(b, st, sb)
+    result = a & b_shifted
+
+    WDR[d] = result
+    flags_out = FlagsForResult(result)
+    FLAGS[flag_group] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[flag_group].C}
+  encoding:
+    scheme: bna
+    mapping:
+      fg: flag_group
+      shift_type: shift_type
+      shift_bytes: shift_bytes
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b010
+      wrd: wrd
+
+- mnemonic: bn.or
+  synopsis: Bitwise OR
+  operands: *bn-and-operands
+  syntax: *bn-and-syntax
+  doc: |
+    Performs a bitwise or operation.
+    Takes the values stored in WDRs referenced by `wrs1` and `wrs2` and stores the result in the WDR referenced by `wrd`.
+    The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
+    The M, L and Z flags in flag group 0 are updated with the result of the operation.
+  decode: *bn-and-decode
+  operation: |
+    b_shifted = ShiftReg(b, st, sb)
+    result = a | b_shifted
+
+    WDR[d] = result
+    flags_out = FlagsForResult(result)
+    FLAGS[flag_group] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[flag_group].C}
+  encoding:
+    scheme: bna
+    mapping:
+      fg: flag_group
+      shift_type: shift_type
+      shift_bytes: shift_bytes
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b100
+      wrd: wrd
+
+- mnemonic: bn.not
+  synopsis: Bitwise NOT
+  operands:
+    - name: wrd
+      doc: Name of the destination WDR
+    - name: wrs
+      doc: Name of the source WDR
+    - *bn-shift-type-operand
+    - *bn-shift-bytes-operand
+    - *bn-flag-group-operand
+  syntax: |
+    <wrd>, <wrs>[, <shift_type> <shift_bytes>B][, FG<flag_group>]
+  doc: |
+    Negates the value in `wrs` and stores the result in the register referenced by `wrd`.
+    The source value can be shifted by an immediate before it is consumed by the operation.
+    The M, L and Z flags in flag group 0 are updated with the result of the operation.
+  decode: |
+    d = UInt(wrd)
+    a = UInt(wrs1)
+
+    sb = UInt(shift_bytes)
+    st = DecodeShiftType(shift_type)
+    fg = DecodeFlagGroup(flag_group)
+  operation: |
+    a_shifted = ShiftReg(a, st, sb)
+    result = ~a_shifted
+
+    WDR[d] = result
+    flags_out = FlagsForResult(result)
+    FLAGS[flag_group] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[flag_group].C}
+  encoding:
+    scheme: bnan
+    mapping:
+      fg: flag_group
+      shift_type: shift_type
+      shift_bytes: shift_bytes
+      wrs1: wrs
+      funct3: b101
+      wrd: wrd
+
+- mnemonic: bn.xor
+  synopsis: Bitwise XOR
+  operands: *bn-and-operands
+  syntax: *bn-and-syntax
+  doc: |
+    Performs a bitwise xor operation.
+    Takes the values stored in WDRs referenced by `wrs1` and `wrs2` and stores the result in the WDR referenced by `wrd`.
+    The content of the second source WDR can be shifted by an immediate before it is consumed by the operation.
+    The M, L and Z flags in flag group 0 are updated with the result of the operation.
+  decode: *bn-and-decode
+  operation: |
+    b_shifted = ShiftReg(b, st, sb)
+    result = a ^ b_shifted
+
+    WDR[d] = result
+    flags_out = FlagsForResult(result)
+    FLAGS[flag_group] = {M: flags_out.M, L: flags_out.L, Z: flags_out.Z, C: FLAGS[flag_group].C}
+  encoding:
+    scheme: bna
+    mapping:
+      fg: flag_group
+      shift_type: shift_type
+      shift_bytes: shift_bytes
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b110
+      wrd: wrd
+
+- mnemonic: bn.rshi
+  synopsis: Concatenate and right shift immediate
+  operands:
+    - name: wrd
+      doc: Name of the destination WDR
+    - name: wrs1
+      doc: Name of the first source WDR
+    - name: wrs2
+      doc: Name of the second source WDR
+    - name: imm
+      type: uimm
+      doc: |
+        Number of bits to shift the second source register by. Valid range: 0..(WLEN-1).
+  syntax: |
+    <wrd>, <wrs1>, <wrs2> >> <imm>
+  doc: |
+    Concatenates the content of WDRs referenced by `wrs1` and `wrs2` (`wrs1` forms the upper part), shifts it right by an immediate value and truncates to WLEN bit.
+    The result is stored in the WDR referenced by `wrd`.
+  decode: |
+    d = UInt(wrd)
+    a = UInt(wrs1)
+    b = UInt(wrs2)
+    shift_bit = Uint(imm)
+  operation: |
+    WDR[d] = (((a << WLEN) | b) >> shift_bit)[WLEN-1:0]
+  encoding:
+    scheme: bnr
+    mapping:
+      imm: imm
+      wrs2: wrs2
+      wrs1: wrs1
+      funct2: b11
+      wrd: wrd
+
+- mnemonic: bn.sel
+  synopsis: Flag Select
+  operands:
+    - name: wrd
+      doc: Name of the destination WDR
+    - name: wrs1
+      doc: Name of the first source WDR
+    - name: wrs2
+      doc: Name of the second source WDR
+    - *bn-flag-group-operand
+    - name: flag
+      type: enum(C, M, L, Z)
+      doc: |
+        Flag to check. Valid values:
+        - C: Carry flag
+        - M: MSB flag
+        - L: LSB flag
+        - Z: Zero flag
+  syntax: |
+    <wrd>, <wrs1>, <wrs2>, [FG<flag_group>.]<flag>
+  doc: |
+    Returns in the destination WDR the value of the first source WDR if the flag in the chosen flag group is set, otherwise returns the value of the second source WDR.
+  decode: |
+    d = UInt(wrd)
+    a = UInt(wrs1)
+    b = UInt(wrs2)
+    fg = DecodeFlagGroup(flag_group)
+    flag = DecodeFlag(flag)
+  operation: |
+    flag_is_set = FLAGS[fg].get(flag)
+
+    WDR[d] = wrs1 if flag_is_set else wrs2
+  encoding:
+    scheme: bns
+    mapping:
+      fg: flag_group
+      flag: flag
+      wrs2: wrs2
+      wrs1: wrs1
+      wrd: wrd
+
+- mnemonic: bn.cmp
+  synopsis: Compare
+  operands: &bn-cmp-operands
+    - name: wrs1
+      doc: Name of the first source WDR
+    - name: wrs2
+      doc: Name of the second source WDR
+    - *bn-shift-type-operand
+    - *bn-shift-bytes-operand
+    - *bn-flag-group-operand
+  syntax: &bn-cmp-syntax |
+    <wrs1>, <wrs2>[, <shift_type> <shift_bytes>B][, FG<flag_group>]
+  doc: |
+    Subtracts the second WDR value from the first one and updates flags.
+    This instruction is identical to BN.SUB, except that no result register is written.
+  decode: &bn-cmp-decode |
+    a = UInt(wrs1)
+    b = UInt(wrs2)
+
+    fg = DecodeFlagGroup(flag_group)
+    sb = UInt(shift_bytes)
+    st = DecodeShiftType(shift_type)
+  operation: |
+    b_shifted = ShiftReg(b, st, sb)
+    (, flags_out) = SubtractWithBorrow(a, b_shifted, 0)
+
+    FLAGS[flag_group] = flags_out
+  encoding:
+    scheme: bnc
+    mapping:
+      fg: flag_group
+      shift_type: shift_type
+      shift_bytes: shift_bytes
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b001
+
+- mnemonic: bn.cmpb
+  synopsis: Compare with Borrow
+  operands: *bn-cmp-operands
+  syntax: *bn-cmp-syntax
+  doc: |
+    Subtracts the second WDR value from the first one and updates flags.
+    This instruction is identical to BN.SUBB, except that no result register is written.
+  decode: *bn-cmp-decode
+  operation: |
+    (, flags_out) = SubtractWithBorrow(a, b, FLAGS[flag_group].C)
+
+    FLAGS[flag_group] = flags_out
+  encoding:
+    scheme: bnc
+    mapping:
+      fg: flag_group
+      shift_type: shift_type
+      shift_bytes: shift_bytes
+      wrs2: wrs2
+      wrs1: wrs1
+      funct3: b011
+
+- mnemonic: bn.lid
+  synopsis: Load Word (indirect source, indirect destination)
+  operands:
+    - name: grd
+      doc: Name of the GPR referencing the destination WDR
+    - name: grs1
+      doc: |
+        Name of the GPR containing the memory byte address.
+        The value contained in the referenced GPR must be WLEN-aligned.
+    - name: offset
+      doc: |
+        Offset value.
+        Must be WLEN-aligned.
+      type: simm<<5
+    - name: grs1_inc
+      type: option(++)
+      doc: |
+        Increment the value in `<grs1>` by WLEN/8 (one word).
+        Cannot be specified together with `grd_inc`.
+    - name: grd_inc
+      type: option(++)
+      doc: |
+        Increment the value in `<grd>` by one.
+        Cannot be specified together with `grs1_inc`.
+  syntax: |
+    <grd>[<grd_inc>], <offset>(<grs1>[<grs1_inc>])
+  doc: |
+    Load a WLEN-bit little-endian value from data memory.
+
+    The load address is `offset` plus the value in the GPR `grs1`.
+    The loaded value is stored into the WDR given by the bottom 5 bits of the GPR `grd`.
+
+    After the operation, either the value in the GPR `grs1`, or the value in `grd` can be optionally incremented.
+
+    - If `grs1_inc` is set, the value in `grs1` is incremented by value WLEN/8 (one word).
+    - If `grd_inc` is set, `grd` is updated to be `(*grd + 1) & 0x1f`.
+
+    The memory address must be aligned to WLEN bits.
+    Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+  cycles: 2
+  decode: |
+    rd = UInt(grd)
+    rs1 = UInt(grs1)
+    offset = UInt(offset)
+  operation: |
+    mem_addr = GPR[rs1] + offset
+    wdr_dest = GPR[rd]
+
+    assert not (grs1_inc and grd_inc)  # prevented in encoding
+    if mem_addr % (WLEN / 8) or mem_addr + WLEN > DMEM_SIZE:
+        raise BadDataAddr()
+
+    mem_index = mem_addr // (WLEN / 8)
+
+    WDR[wdr_dest] = LoadWlenWordFromMemory(mem_index)
+
+    if grs1_inc:
+        GPR[rs1] = GPR[rs1] + (WLEN / 8)
+    if grd_inc:
+        GPR[rd] = (GPR[rd] + 1) & 0x1f
+  lsu:
+    type: mem-load
+    target: [offset, grs1]
+    bytes: 32
+  encoding:
+    scheme: bnxid
+    mapping:
+      imm: offset
+      rs2: grd
+      rs1: grs1
+      spp: grs1_inc
+      dpp: grd_inc
+      funct3: b100
+
+- mnemonic: bn.sid
+  synopsis: Store Word (indirect source, indirect destination)
+  operands:
+    - name: grs1
+      doc: |
+        Name of the GPR containing the memory byte address.
+        The value contained in the referenced GPR must be WLEN-aligned.
+    - name: grs2
+      doc: Name of the GPR referencing the source WDR.
+    - name: offset
+      doc: |
+        Offset value.
+        Must be WLEN-aligned.
+      type: simm<<5
+    - name: grs1_inc
+      type: option(++)
+      doc: |
+        Increment the value in `<grs1>` by WLEN/8 (one word).
+        Cannot be specified together with `grs2_inc`.
+    - name: grs2_inc
+      type: option(++)
+      doc: |
+        Increment the value in `<grs2>` by one.
+        Cannot be specified together with `grs1_inc`.
+  syntax: |
+    <grs2>[<grs2_inc>], <offset>(<grs1>[<grs1_inc>])
+  doc: |
+    Store a WDR to memory as a WLEN-bit little-endian value.
+
+    The store address is `offset` plus the value in the GPR `grs1`.
+    The value to store is taken from the WDR given by the bottom 5 bits of the GPR `grs2`.
+
+    After the operation, either the value in the GPR `grs1`, or the value in `grs2` can be optionally incremented.
+
+    - If `grs1_inc` is set, the value in `grs1` is incremented by the value WLEN/8 (one word).
+    - If `grs2_inc` is set, the value in `grs2` is updated to be `(*grs2 + 1) & 0x1f`.
+
+    The memory address must be aligned to WLEN bits.
+    Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+  decode: |
+    rs1 = UInt(grs1)
+    rs2 = UInt(grs2)
+    offset = UInt(offset)
+  operation: |
+    mem_addr = GPR[rs1] + offset
+    wdr_src = GPR[rs2]
+
+    assert not (grs1_inc and grd_inc)  # prevented in encoding
+    if mem_addr % (WLEN / 8) or mem_addr + WLEN > DMEM_SIZE:
+        raise BadDataAddr()
+
+    mem_index = mem_addr // (WLEN / 8)
+
+    StoreWlenWordToMemory(mem_index, WDR[wdr_src])
+
+    if grs1_inc:
+        GPR[rs1] = GPR[rs1] + (WLEN / 8)
+    if grs2_inc:
+        GPR[rs2] = (GPR[rs2] + 1) & 0x1f
+  lsu:
+    type: mem-store
+    target: [offset, grs1]
+    bytes: 32
+  encoding:
+    scheme: bnxid
+    mapping:
+      imm: offset
+      rs2: grs2
+      rs1: grs1
+      spp: grs1_inc
+      dpp: grs2_inc
+      funct3: b101
+
+- mnemonic: bn.mov
+  synopsis: Copy content between WDRs (direct addressing)
+  operands: [wrd, wrs]
+  decode: |
+    s = UInt(wrs)
+    d = UInt(wrd)
+  operation: WDR[d] = WDR[s]
+  encoding:
+    scheme: bnmov
+    mapping:
+      src: wrs
+      dst: wrd
+
+- mnemonic: bn.movr
+  synopsis: Copy content between WDRs (register-indirect addressing)
+  operands:
+    - name: grd
+      doc: Name of the GPR containing the destination WDR.
+    - name: grs
+      doc: Name of the GPR referencing the source WDR.
+    - name: grd_inc
+      type: option(++)
+      doc: |
+        Increment the value in `<grd>` by one.
+        Cannot be specified together with `grs_inc`.
+    - name: grs_inc
+      type: option(++)
+      doc: |
+        Increment the value in `<grs>` by one.
+        Cannot be specified together with `grd_inc`.
+  syntax: |
+    <grd>[<grd_inc>], <grs>[<grs_inc>]
+  doc: |
+    Copies WDR contents between registers with indirect addressing.
+    Optionally, either the source or the destination register address can be incremented by 1.
+  decode: |
+    s = UInt(grs)
+    d = UInt(grd)
+  operation: |
+    WDR[GPR[d]] = WDR[GPR[s]]
+
+    if grs_inc:
+      GPR[s] = GPR[s] + 1
+    if grd_inc:
+      GPR[d] = GPR[d] + 1
+  encoding:
+    scheme: bnmovr
+    mapping:
+      dst: grd
+      src: grs
+      spp: grs_inc
+      dpp: grd_inc
+
+- mnemonic: bn.wsrrs
+  synopsis: Atomic Read and Set Bits in WSR
+  operands: [wrd, wsr, wrs]
+  encoding:
+    scheme: wcsr
+    mapping:
+      write: b0
+      wcsr: wsr
+      wrs: wrs
+      wrd: wrd
+  lsu:
+    type: wsr
+    target: [wsr]
+
+- mnemonic: bn.wsrrw
+  synopsis: Atomic Read/Write WSR
+  operands: [wrd, wsr, wrs]
+  encoding:
+    scheme: wcsr
+    mapping:
+      write: b1
+      wcsr: wsr
+      wrs: wrs
+      wrd: wrd
+  lsu:
+    type: wsr
+    target: [wsr]

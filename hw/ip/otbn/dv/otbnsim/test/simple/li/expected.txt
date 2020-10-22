@@ -1,0 +1,16 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+x2 = 1230
+x3 = 0xffffff85  # -123
+x4 = 2272
+x5 = 1048576
+x6 = 0xff800000 # -0x800000
+x7 = 6368
+x8 = 0x10000042
+x9 = 123456789
+x10 = 0x7fffffff
+x11 = 0xffffffff
+x12 = 0x80000000
+x13 = 0x80000001

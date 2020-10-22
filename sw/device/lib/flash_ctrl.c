@@ -3,12 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/flash_ctrl.h"
 
-#include "sw/device/lib/common.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define FLASH_CTRL0_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_BASE_ADDR
+
+#define REG32(add) *((volatile uint32_t *)(add))
+#define SETBIT(val, bit) (val | 1 << bit)
+#define CLRBIT(val, bit) (val & ~(1 << bit))
 
 typedef enum flash_op {
   FLASH_READ = 0,
@@ -132,10 +135,6 @@ int flash_read(uint32_t addr, part_type_t part, uint32_t size, uint32_t *data) {
   return get_clr_err();
 }
 
-void flash_cfg_scramble_enable(bool en) {
-  REG32(FLASH_CTRL_SCRAMBLE_EN(0)) = en & 1;
-}
-
 void flash_cfg_bank_erase(bank_index_t bank, bool erase_en) {
   REG32(FLASH_CTRL_MP_BANK_CFG(0)) =
       (erase_en) ? SETBIT(REG32(FLASH_CTRL_MP_BANK_CFG(0)), bank)
@@ -150,14 +149,36 @@ void flash_default_region_access(bool rd_en, bool prog_en, bool erase_en) {
 }
 
 void flash_cfg_region(const mp_region_t *region_cfg) {
-  REG32(FLASH_CTRL_MP_REGION_CFG_0(0) + region_cfg->num * 4) =
-      region_cfg->base << FLASH_CTRL_MP_REGION_CFG_0_BASE_0_OFFSET |
-      region_cfg->size << FLASH_CTRL_MP_REGION_CFG_0_SIZE_0_OFFSET |
-      region_cfg->part << FLASH_CTRL_MP_REGION_CFG_0_PARTITION_0 |
-      region_cfg->rd_en << FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0 |
-      region_cfg->prog_en << FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0 |
-      region_cfg->erase_en << FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0 |
-      0x1 << FLASH_CTRL_MP_REGION_CFG_0_EN_0;
+  uint32_t reg_value;
+  bank_index_t bank_sel;
+
+  if (region_cfg->part == kDataPartition) {
+    REG32(FLASH_CTRL_MP_REGION_CFG_0(0) + region_cfg->num * 4) =
+        region_cfg->base << FLASH_CTRL_MP_REGION_CFG_0_BASE_0_OFFSET |
+        region_cfg->size << FLASH_CTRL_MP_REGION_CFG_0_SIZE_0_OFFSET |
+        region_cfg->rd_en << FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0 |
+        region_cfg->prog_en << FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0 |
+        region_cfg->erase_en << FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0 |
+        region_cfg->scramble_en << FLASH_CTRL_MP_REGION_CFG_0_SCRAMBLE_EN_0 |
+        0x1 << FLASH_CTRL_MP_REGION_CFG_0_EN_0;
+  } else if (region_cfg->part == kInfoPartition) {
+    reg_value =
+        region_cfg->rd_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0 |
+        region_cfg->prog_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0 |
+        region_cfg->erase_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0 |
+        region_cfg->scramble_en
+            << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_0 |
+        0x1 << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0;
+
+    bank_sel = region_cfg->base / FLASH_PAGES_PER_BANK;
+    if (bank_sel == FLASH_BANK_0) {
+      REG32(FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0(0) + region_cfg->num * 4) =
+          reg_value;
+    } else {
+      REG32(FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0(0) + region_cfg->num * 4) =
+          reg_value;
+    }
+  }
 }
 
 void flash_write_scratch_reg(uint32_t value) {

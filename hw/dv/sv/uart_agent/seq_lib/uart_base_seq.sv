@@ -12,7 +12,7 @@ class uart_base_seq extends dv_base_seq #(
   `uvm_object_new
 
   task body();
-    `uvm_error(`gtn, "Need to override this when you extend from this class!")
+    `uvm_error(`gfn, "Need to override this when you extend from this class!")
   endtask : body
 
 endclass : uart_base_seq

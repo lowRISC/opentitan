@@ -21,6 +21,7 @@ def amend_ip(top, ip):
         - available_input_list: empty list if doesn't exist
         - available_output_list: empty list if doesn't exist
         - available_inout_list: empty list if doesn't exist
+        - param_list: empty list if doesn't exist
         - interrupt_list: empty list if doesn't exist
         - alert_list: empty list if doesn't exist
         - wakeup_list: empty list if doesn't exist
@@ -41,13 +42,15 @@ def amend_ip(top, ip):
         filter(lambda module: module["type"] == ipname, top["module"]))
 
     for ip_module in ip_modules:
+        mod_name = ip_module["name"]
+
         # Size
         if "size" not in ip_module:
             ip_module["size"] = "0x%x" % max(ip["gensize"], 0x1000)
         elif int(ip_module["size"], 0) < ip["gensize"]:
             log.error(
                 "given 'size' field in IP %s is smaller than the required space"
-                % ip_module["name"])
+                % mod_name)
 
         # bus_device
         ip_module["bus_device"] = ip["bus_device"]
@@ -87,6 +90,27 @@ def amend_ip(top, ip):
         else:
             ip_module["available_inout_list"] = []
 
+        # param_list
+        if "param_list" in ip:
+            ip_module["param_list"] = deepcopy(ip["param_list"])
+            # Removing local parameters.
+            for i in ip["param_list"]:
+                if i["local"] == "true":
+                    ip_module["param_list"].remove(i)
+            # Removing descriptors, checking for security-relevant parameters
+            # that are not exposed, adding a top-level name.
+            for i in ip_module["param_list"]:
+                i.pop("desc", None)
+                par_name = i["name"]
+                if par_name.lower().startswith("sec"):
+                    log.warning("{} has security-critical parameter {} "
+                                "not exposed to top".format(mod_name, par_name))
+                i["name_top"] = ("Sec" + mod_name.capitalize() + par_name[3:]
+                                 if par_name.lower().startswith("sec")
+                                 else mod_name.capitalize() + par_name)
+        else:
+            ip_module["param_list"] = []
+
         # interrupt_list
         if "interrupt_list" in ip:
             ip_module["interrupt_list"] = deepcopy(ip["interrupt_list"])
@@ -120,6 +144,14 @@ def amend_ip(top, ip):
                 i.pop('desc', None)
         else:
             ip_module["wakeup_list"] = []
+
+        # reset request
+        if "reset_request_list" in ip:
+            ip_module["reset_request_list"] = deepcopy(ip["reset_request_list"])
+            for i in ip_module["reset_request_list"]:
+                i.pop('desc', None)
+        else:
+            ip_module["reset_request_list"] = []
 
         # scan
         if "scan" in ip:
@@ -180,6 +212,7 @@ def xbar_addhost(top, xbar, host):
             ("reset", xbar['reset']),
             ("type", "host"),
             ("inst_type", ""),
+            ("stub", False),
             # The default matches RTL default
             # pipeline_byp is don't care if pipeline is false
             ("pipeline", "true"),
@@ -200,6 +233,7 @@ def xbar_addhost(top, xbar, host):
     if 'reset' not in obj[0]:
         obj[0]["reset"] = xbar["reset"]
 
+    obj[0]["stub"] = False
     obj[0]["inst_type"] = predefined_modules[
         host] if host in predefined_modules else ""
     obj[0]["pipeline"] = obj[0]["pipeline"] if "pipeline" in obj[0] else "true"
@@ -226,6 +260,8 @@ def xbar_adddevice(top, xbar, device):
     - base_addr: comes from module or memory, or assume rv_plic?
     - size_byte: comes from module or memory
     - xbar: bool, true if the device port is another xbar
+    - stub: There is no backing module / memory, instead a tlul port
+            is created and forwarded above the current hierarchy
     """
     deviceobj = list(
         filter(lambda node: node["name"] == device,
@@ -235,6 +271,9 @@ def xbar_adddevice(top, xbar, device):
     xbar_list = [x["name"] for x in top["xbar"] if x["name"] != xbar["name"]]
 
     # case 1: another xbar --> check in xbar list
+    log.info("Handling xbar device {}, devlen {}, nodelen {}".format(device,
+                                                                     len(deviceobj),
+                                                                     len(nodeobj)))
     if device in xbar_list and len(nodeobj) == 0:
         log.error(
             "Another crossbar %s needs to be specified in the 'nodes' list" %
@@ -251,6 +290,7 @@ def xbar_adddevice(top, xbar, device):
                     device, xbar["name"]))
             assert len(nodeobj) == 1
             nodeobj[0]["xbar"] = True
+            nodeobj[0]["stub"] = False
             process_pipeline_var(nodeobj[0])
             return
 
@@ -271,6 +311,7 @@ def xbar_adddevice(top, xbar, device):
                             ("size_byte", "0x1000"),
                         ])],
                         "xbar": False,
+                        "stub": False,
                         "pipeline": "true",
                         "pipeline_byp": "true"
                     })  # yapf: disable
@@ -283,6 +324,7 @@ def xbar_adddevice(top, xbar, device):
                                      ("size_byte", "0x1000")])
                     ]
                     node["xbar"] = False
+                    node["stub"] = False
                     process_pipeline_var(node)
             else:
                 log.error("device %s shouldn't be host type" % device)
@@ -290,9 +332,32 @@ def xbar_adddevice(top, xbar, device):
         # case 3: not defined
         else:
             # Crossbar check
-            log.error(
-                "device %s doesn't exist in 'module', 'memory', or predefined"
-                % device)
+            if len(nodeobj) == 0:
+                log.error(
+                    """
+                    Device %s doesn't exist in 'module', 'memory', predefined,
+                    or as a node object
+                    """
+                    % device)
+            else:
+                node = nodeobj[0]
+                node["xbar"] = False
+                required_keys = ["addr_range"]
+                if "stub" in node and node["stub"]:
+                    log.info(
+                        """
+                        Device %s definition is a stub and does not exist in
+                        'module', 'memory' or predefined
+                        """
+                        % device)
+
+                    if all(key in required_keys for key in node.keys()):
+                        log.error("{}, The xbar only node is missing fields, see {}".format(
+                            node['name'], required_keys))
+                    process_pipeline_var(node)
+                else:
+                    log.error("Device {} definition is not a stub!")
+
             return
 
     # Search object from module or memory
@@ -309,7 +374,8 @@ def xbar_adddevice(top, xbar, device):
                 ("size_byte", deviceobj[0]["size"])])],
             "pipeline": "true",
             "pipeline_byp": "true",
-            "xbar": True if device in xbar_list else False
+            "xbar": True if device in xbar_list else False,
+            "stub": False
         })  # yapf: disable
 
     else:
@@ -321,6 +387,7 @@ def xbar_adddevice(top, xbar, device):
                          ("size_byte", deviceobj[0]["size"])])
         ]
         node["xbar"] = True if device in xbar_list else False
+        node["stub"] = False
         process_pipeline_var(node)
 
 
@@ -437,6 +504,15 @@ def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
     return result
 
 
+# Check if the export field already exists
+# If yes, return it
+# If no, set a default and return that
+def check_clk_rst_export(module):
+    if 'clock_reset_export' not in module:
+        module['clock_reset_export'] = []
+    return module['clock_reset_export']
+
+
 def amend_clocks(top: OrderedDict):
     """Add a list of clocks to each clock group
        Amend the clock connections of each entry to reflect the actual gated clock
@@ -444,6 +520,8 @@ def amend_clocks(top: OrderedDict):
     clks_attr = top['clocks']
     clk_paths = clks_attr['hier_paths']
     groups_in_top = [x["name"].lower() for x in clks_attr['groups']]
+    exported_clks = OrderedDict()
+    trans_eps = []
 
     # Assign default parameters to source clocks
     for src in clks_attr['srcs']:
@@ -466,10 +544,17 @@ def amend_clocks(top: OrderedDict):
 
         clock_connections = OrderedDict()
 
+        # Ensure each module has a default case
+        export_if = check_clk_rst_export(ep)
+
         # if no clock group assigned, default is unique
         ep['clock_group'] = 'secure' if 'clock_group' not in ep else ep[
             'clock_group']
         ep_grp = ep['clock_group']
+
+        # if ep is in the transactional group, collect into list below
+        if ep['clock_group'] == 'trans':
+            trans_eps.append(ep['name'])
 
         # end point names and clocks
         ep_name = ep['name']
@@ -487,22 +572,25 @@ def amend_clocks(top: OrderedDict):
         for port, clk in ep['clock_srcs'].items():
             ep_clks.append(clk)
 
+            name = ''
             hier_name = clk_paths[src]
 
             if src == 'ext':
                 # clock comes from top ports
                 if clk == 'main':
-                    clk_name = "clk_i"
+                    name = "i"
                 else:
-                    clk_name = "clk_{}_i".format(clk)
+                    name = "{}_i".format(clk)
 
             elif unique == "yes":
                 # new unqiue clock name
-                clk_name = "clk_{}_{}".format(clk, ep_name)
+                name = "{}_{}".format(clk, ep_name)
 
             else:
                 # new group clock name
-                clk_name = "clk_{}_{}".format(clk, ep_grp)
+                name = "{}_{}".format(clk, ep_grp)
+
+            clk_name = "clk_" + name
 
             # add clock to a particular group
             clks_attr['groups'][cg_idx]['clocks'][clk_name] = clk
@@ -510,32 +598,86 @@ def amend_clocks(top: OrderedDict):
             # add clock connections
             clock_connections[port] = hier_name + clk_name
 
+            # clocks for this module are exported
+            for intf in export_if:
+                log.info("{} export clock name is {}".format(ep_name, name))
+
+                # create dict entry if it does not exit
+                if intf not in exported_clks:
+                    exported_clks[intf] = OrderedDict()
+
+                # if first time encounter end point, declare
+                if ep_name not in exported_clks[intf]:
+                    exported_clks[intf][ep_name] = []
+
+                # append clocks
+                exported_clks[intf][ep_name].append(name)
+
         # Add to endpoint structure
         ep['clock_connections'] = clock_connections
+
+    # add entry to top level json
+    top['exported_clks'] = exported_clks
+
+    # add entry to inter_module automatically
+    for intf in top['exported_clks']:
+        top['inter_module']['external']['clkmgr.clocks_{}'.format(intf)] = "clks_{}".format(intf)
+
+    # add to intermodule connections
+    for ep in trans_eps:
+        entry = ep + ".idle"
+        top['inter_module']['connect']['clkmgr.idle'].append(entry)
 
 
 def amend_resets(top):
     """Add a path variable to reset declaration
     """
     reset_paths = OrderedDict()
+    reset_hiers = top["resets"]['hier_paths']
 
-    for reset in top["resets"]:
+    for reset in top["resets"]["nodes"]:
 
         if "type" not in reset:
             log.error("{} missing type field".format(reset["name"]))
             return
 
         if reset["type"] == "top":
-            # The resets structure will be used once rstmgr is integrated
-            # reset_paths[reset["name"]] = "resets.{}_rst_n".format(reset["name"])
-            reset_paths[reset["name"]] = "rstmgr_resets.rst_{}_n".format(
-                reset["name"])
+            reset_paths[reset["name"]] = "{}rst_{}_n".format(
+                reset_hiers["top"], reset["name"])
         elif reset["type"] == "ext":
-            reset_paths[reset["name"]] = "rst_ni"
+            reset_paths[reset["name"]] = "{}rst_ni".format(reset_hiers["ext"])
+        elif reset["type"] == "int":
+            log.info("{} used as internal reset".format(reset["name"]))
         else:
             log.error("{} type is invalid".format(reset["type"]))
 
     top["reset_paths"] = reset_paths
+
+    # Generate exported reset list
+    exported_rsts = OrderedDict()
+    for module in top["module"]:
+
+        # This code is here to ensure if amend_clocks/resets switched order
+        # everything would still work
+        export_if = check_clk_rst_export(module)
+
+        # There may be multiple export interfaces
+        for intf in export_if:
+            # create dict entry if it does not exit
+            if intf not in exported_rsts:
+                exported_rsts[intf] = OrderedDict()
+
+            # grab directly from reset_connections definition
+            rsts = [rst for rst in module['reset_connections'].values()]
+            exported_rsts[intf][module['name']] = rsts
+
+    # add entry to top level json
+    top['exported_rsts'] = exported_rsts
+
+    # add entry to inter_module automatically
+    for intf in top['exported_rsts']:
+        top['inter_module']['external']['rstmgr.resets_{}'.format(intf)] = "rsts_{}".format(intf)
+
     return
 
 
@@ -593,13 +735,41 @@ def amend_wkup(topcfg: OrderedDict):
         log.info("Adding wakeup from module %s" % m["name"])
         for entry in m["wakeup_list"]:
             log.info("Adding singal %s" % entry["name"])
-            topcfg["wakeups"].append("{module}.{signal}".format(
-                module=m["name"].lower(), signal=entry["name"]))
+            signal = deepcopy(entry)
+            signal["module"] = m["name"]
+            topcfg["wakeups"].append(signal)
 
     # add wakeup signals to pwrmgr connections
+    signal_names = ["{}.{}".format(s["module"].lower(), s["name"].lower())
+                    for s in topcfg["wakeups"]]
     # TBD: What's the best way to not hardcode this signal below?
     #      We could make this a top.hjson variable and validate it against pwrmgr hjson
-    topcfg["inter_module"]["connect"]["pwrmgr.wakeups"] = topcfg["wakeups"]
+    topcfg["inter_module"]["connect"]["pwrmgr.wakeups"] = signal_names
+    log.info("Intermodule signals: {}".format(
+        topcfg["inter_module"]["connect"]))
+
+
+# Handle reset requests from modules
+def amend_reset_request(topcfg: OrderedDict):
+
+    if "reset_requests" not in topcfg or topcfg["reset_requests"] == "":
+        topcfg["reset_requests"] = []
+
+    # create list of reset signals
+    for m in topcfg["module"]:
+        log.info("Adding reset requests from module %s" % m["name"])
+        for entry in m["reset_request_list"]:
+            log.info("Adding singal %s" % entry["name"])
+            signal = deepcopy(entry)
+            signal["module"] = m["name"]
+            topcfg["reset_requests"].append(signal)
+
+    # add reset requests to pwrmgr connections
+    signal_names = ["{}.{}".format(s["module"].lower(), s["name"].lower())
+                    for s in topcfg["reset_requests"]]
+    # TBD: What's the best way to not hardcode this signal below?
+    #      We could make this a top.hjson variable and validate it against pwrmgr hjson
+    topcfg["inter_module"]["connect"]["pwrmgr.rstreqs"] = signal_names
     log.info("Intermodule signals: {}".format(
         topcfg["inter_module"]["connect"]))
 
@@ -745,6 +915,7 @@ def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
 
     # Combine the wakeups
     amend_wkup(gencfg)
+    amend_reset_request(gencfg)
 
     # Combine the interrupt (should be processed prior to xbar)
     amend_interrupt(gencfg)

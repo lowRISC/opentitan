@@ -11,7 +11,6 @@
 
 #include "sw/device/lib/base/bitfield.h"
 
-// Header Extern Guard  (so header can be used from C and C++)
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -147,6 +146,8 @@ typedef struct mmio_region { void *mock; } mmio_region_t;
 /**
  * Stubbed-out read/write operations for overriding by a testing library.
  */
+MMIO_WARN_UNUSED_RESULT
+mmio_region_t mmio_region_from_addr(uintptr_t address);
 MMIO_WARN_UNUSED_RESULT
 uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset);
 MMIO_WARN_UNUSED_RESULT

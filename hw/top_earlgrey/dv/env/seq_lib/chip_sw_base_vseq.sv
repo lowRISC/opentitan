@@ -21,8 +21,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.m_uart_agent_cfg.set_baud_rate(cfg.uart_baud_rate);
 
     // initialize the sw logger interface
-    foreach (cfg.sw_types[i]) begin
-      cfg.sw_logger_vif.set_sw_name(cfg.sw_types[i]);
+    foreach (cfg.sw_images[i]) begin
+      cfg.sw_logger_vif.set_sw_name(cfg.sw_images[i]);
     end
     cfg.sw_logger_vif.sw_log_addr = SW_DV_LOG_ADDR;
     cfg.sw_logger_vif.write_sw_logs_to_file = cfg.write_sw_logs_to_file;
@@ -32,14 +32,19 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.sw_test_status_vif.sw_test_status_addr = SW_DV_TEST_STATUS_ADDR;
 
     // Initialize the RAM to 0s and flash to all 1s.
-    if (cfg.initialize_ram) cfg.mem_bkdr_vifs[Ram].clear_mem();
+    if (cfg.initialize_ram) cfg.mem_bkdr_vifs[RamMain].clear_mem();
     cfg.mem_bkdr_vifs[FlashBank0].set_mem();
     cfg.mem_bkdr_vifs[FlashBank1].set_mem();
 
     // Backdoor load memories with sw images.
-    cfg.mem_bkdr_vifs[Rom].load_mem_from_file(cfg.sw_images["rom"]);
+    cfg.mem_bkdr_vifs[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".vmem"});
+
     // TODO: the location of the main execution image should be randomized for either bank in future
-    cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file(cfg.sw_images["sw"]);
+    if (cfg.use_spi_load_bootstrap) begin
+      spi_device_load_bootstrap();
+    end else begin
+      cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file({cfg.sw_images[SwTypeTest], ".vmem"});
+    end
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
   endtask
 
@@ -80,6 +85,97 @@ class chip_sw_base_vseq extends chip_base_vseq;
             cfg.sw_test_status_vif.sw_test_status.name(), cfg.sw_test_timeout_ns))
       end
     endcase
+  endfunction
+
+  virtual task spi_device_load_bootstrap();
+    spi_host_seq m_spi_host_seq;
+    byte sw_byte_q[$];
+    uint byte_cnt;
+
+    // wait until spi init is done
+    // TODO, in some cases though, we might use UART logger instead of SW logger - need to keep that
+    // in mind
+    wait(cfg.sw_logger_vif.printed_log == "HW initialisation completed, waiting for SPI input...");
+    cfg.jtag_spi_n_vif.drive(0); // Select SPI
+
+    // for the first frame of data, sdo from chip is unknown, ignore checking that
+    cfg.m_spi_agent_cfg.en_monitor_checks = 0;
+
+    read_sw_frames(sw_byte_q);
+
+    `DV_CHECK_EQ_FATAL((sw_byte_q.size % SPI_FRAME_BYTE_SIZE), 0,
+                       "SPI data isn't aligned with frame size")
+
+    while (sw_byte_q.size > byte_cnt) begin
+      `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
+                                     data.size() == SPI_FRAME_BYTE_SIZE;
+                                     foreach (data[i]) {data[i] == sw_byte_q[byte_cnt+i];})
+      `uvm_send(m_spi_host_seq)
+      if (byte_cnt == 0) begin
+        // SW erase flash after receiving 1st frame
+        wait(cfg.sw_logger_vif.printed_log == "Flash erase successful");
+        // sdo for next frame shouldn't be unknown
+        cfg.m_spi_agent_cfg.en_monitor_checks = 1;
+      end
+
+      cfg.clk_rst_vif.wait_clks(20_000);
+      byte_cnt += SPI_FRAME_BYTE_SIZE;
+    end
+  endtask
+
+  virtual function void read_sw_frames(ref byte sw_byte_q[$]);
+    int num_returns;
+    int mem_fd = $fopen(cfg.sw_frame_image, "r");
+    bit [31:0] word_data[7];
+    string addr;
+
+    while (!$feof(mem_fd)) begin
+      num_returns = $fscanf(mem_fd, "%s %h %h %h %h %h %h %h", addr, word_data[0], word_data[1],
+                            word_data[2], word_data[3], word_data[4], word_data[5], word_data[6]);
+      if (num_returns <= 1) continue;
+      for (int i = 0; i < num_returns - 1; i++) begin
+        repeat (4) begin
+          sw_byte_q.push_back(word_data[i][7:0]);
+          word_data[i] = word_data[i] >> 8;
+        end
+      end
+    end
+    $fclose(mem_fd);
+  endfunction
+
+  // Backdoor-override a const symbol in SW to modify the behavior of the test.
+  //
+  // In the extended test vseq, override the cpu_init() to add this function call.
+  // TODO: bootstrap mode not supported.
+  // TODO: Need to deal with scrambling.
+  virtual function void sw_symbol_backdoor_overwrite(input string symbol,
+                                                     inout byte data[],
+                                                     input chip_mem_e mem = FlashBank0,
+                                                     input sw_type_e sw_type = SwTypeTest);
+
+    string elf_file;
+    bit [bus_params_pkg::BUS_AW-1:0] addr;
+    uint size;
+
+    // Elf file name checks.
+    `DV_CHECK_FATAL(cfg.sw_images.exists(sw_type))
+    `DV_CHECK_STRNE_FATAL(cfg.sw_images[sw_type], "")
+
+    // Find the symbol in the sw elf file.
+    elf_file = {cfg.sw_images[sw_type], ".elf"};
+    sw_symbol_get_addr_size(elf_file, symbol, addr, size);
+    `uvm_info(`gfn, $sformatf("Symbol \"%s\": addr = 0x%0h, size = %0d", symbol, addr, size),
+              UVM_MEDIUM)
+    addr -= get_chip_mem_base_addr(mem);
+    `DV_CHECK_EQ_FATAL(size, data.size())
+
+    for (int i = 0; i < size; i++) begin
+      byte prev_data = cfg.mem_bkdr_vifs[mem].read8(addr + i);
+      `uvm_info(`gfn, $sformatf("%s[%0d] = 0x%0h --> 0x%0h", symbol, i, prev_data, data[i]),
+                UVM_HIGH)
+      cfg.mem_bkdr_vifs[mem].write8(addr + i, data[i]);
+    end
   endfunction
 
 endclass : chip_sw_base_vseq

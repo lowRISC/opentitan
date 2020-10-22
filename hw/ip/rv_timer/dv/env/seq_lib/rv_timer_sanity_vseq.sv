@@ -114,7 +114,7 @@ class rv_timer_sanity_vseq extends rv_timer_base_vseq;
             if (assert_reset) begin
               `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
               cfg.clk_rst_vif.wait_clks(delay);
-              apply_reset("HARD");
+              dut_init("HARD");
             end
           join_none
 
@@ -122,10 +122,14 @@ class rv_timer_sanity_vseq extends rv_timer_base_vseq;
             automatic int a_i = i;
             fork
               // poll a intr_status continuously until it reads the expected value
+              // in `timeout_ns` the delay value is mulitplied by two due to the
+              // `intr_state_spinwait` task: if interrupt is set right after csr_rd, then the worst
+              // case the code will wait for two `spinwait_delay_ns` before hitting the break
+              // statement
               if (en_harts[a_i]) begin
                 `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
                 intr_state_spinwait(.hart(a_i), .exp_data(en_timers), .spinwait_delay_ns(delay),
-                                    .timeout_ns(delay + (max_clks_until_expiry *
+                                    .timeout_ns(delay * 2 + (max_clks_until_expiry *
                                         (cfg.clk_rst_vif.clk_period_ps / 1000.0))));
               end
             join_none

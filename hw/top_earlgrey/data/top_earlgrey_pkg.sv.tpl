@@ -21,14 +21,30 @@ def get_dio_pin_enum_literal(sig, start_idx):
             top["name"], sig["name"], start_idx))
 %>\
 package top_${top["name"]}_pkg;
+% for name, region in helper.modules():
+  /**
+   * Peripheral base address for ${name} in top ${top["name"]}.
+   */
+  parameter int unsigned ${region.base_addr_name().as_c_define()} = 32'h${region.base_addr[2:]};
 
-  // Base addresses of all peripherals.
-  % for m in top["module"]:
-  ${"parameter logic [31:0] TOP_{}_{}_BASE_ADDR = 32'h{}".format(top["name"].upper(),
-                                                                 m["name"].upper(),
-                                                                 m["base_addr"][2:])};
-  % endfor
+  /**
+   * Peripheral size in bytes for ${name} in top ${top["name"]}.
+   */
+  parameter int unsigned ${region.size_bytes_name().as_c_define()} = 32'h${region.size_bytes[2:]};
 
+% endfor
+% for name, region in helper.memories():
+  /**
+   * Memory base address for ${name} in top ${top["name"]}.
+   */
+  parameter int unsigned ${region.base_addr_name().as_c_define()} = 32'h${region.base_addr[2:]};
+
+  /**
+   * Memory size for ${name} in top ${top["name"]}.
+   */
+  parameter int unsigned ${region.size_bytes_name().as_c_define()} = 32'h${region.size_bytes[2:]};
+
+% endfor
   // Enumeration for DIO pins.
   typedef enum {
   <% pin_cnt = 0 %>\

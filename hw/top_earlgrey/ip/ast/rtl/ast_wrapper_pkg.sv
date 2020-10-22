@@ -52,21 +52,6 @@ package ast_wrapper_pkg;
     logic [NumIoRails-1:0] io_pok;
   } ast_status_t;
 
-  typedef struct packed {
-    logic clk_ast_adc;
-    logic clk_ast_rng;
-    logic clk_ast_usb;
-    logic clk_ast_es;
-    logic clk_ast_alert;
-    logic clk_ast_tlul;
-    logic rst_ast_adc_n;
-    logic rst_ast_rng_n;
-    logic rst_ast_usb_n;
-    logic rst_ast_es_n;
-    logic rst_ast_alert_n;
-    logic rst_ast_tlul_n;
-  } ast_func_clks_rsts_t;
-
   // Ack mode enumerations
   typedef enum logic {
     ImmAck = 0,

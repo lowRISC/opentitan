@@ -9,23 +9,25 @@
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
 module rv_core_ibex #(
-  parameter bit          PMPEnable                = 1'b0,
-  parameter int unsigned PMPGranularity           = 0,
-  parameter int unsigned PMPNumRegions            = 4,
-  parameter int unsigned MHPMCounterNum           = 8,
-  parameter int unsigned MHPMCounterWidth         = 40,
-  parameter bit          RV32E                    = 0,
-  parameter bit          RV32M                    = 1,
-  parameter bit          BranchTargetALU          = 1,
-  parameter bit          WritebackStage           = 1,
-  parameter              MultiplierImplementation = "single-cycle",
-  parameter bit          ICache                   = 1'b0,
-  parameter bit          ICacheECC                = 1'b0,
-  parameter bit          DbgTriggerEn             = 1'b1,
-  parameter bit          SecureIbex               = 1'b0,
-  parameter int unsigned DmHaltAddr               = 32'h1A110800,
-  parameter int unsigned DmExceptionAddr          = 32'h1A110808,
-  parameter bit          PipeLine                 = 0
+  parameter bit                 PMPEnable         = 1'b0,
+  parameter int unsigned        PMPGranularity    = 0,
+  parameter int unsigned        PMPNumRegions     = 4,
+  parameter int unsigned        MHPMCounterNum    = 10,
+  parameter int unsigned        MHPMCounterWidth  = 32,
+  parameter bit                 RV32E             = 0,
+  parameter ibex_pkg::rv32m_e   RV32M             = ibex_pkg::RV32MSingleCycle,
+  parameter ibex_pkg::rv32b_e   RV32B             = ibex_pkg::RV32BNone,
+  parameter ibex_pkg::regfile_e RegFile           = ibex_pkg::RegFileFF,
+  parameter bit                 BranchTargetALU   = 1'b1,
+  parameter bit                 WritebackStage    = 1'b1,
+  parameter bit                 ICache            = 1'b0,
+  parameter bit                 ICacheECC         = 1'b0,
+  parameter bit                 BranchPredictor   = 1'b0,
+  parameter bit                 DbgTriggerEn      = 1'b1,
+  parameter bit                 SecureIbex        = 1'b0,
+  parameter int unsigned        DmHaltAddr        = 32'h1A110800,
+  parameter int unsigned        DmExceptionAddr   = 32'h1A110808,
+  parameter bit                 PipeLine          = 1'b0
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -94,6 +96,11 @@ module rv_core_ibex #(
   tl_h2d_t tl_d_ibex2fifo;
   tl_d2h_t tl_d_fifo2ibex;
 
+  // Intermediate TL signals to connect an sram used in simulations.
+  tlul_pkg::tl_h2d_t tl_d_o_int;
+  tlul_pkg::tl_d2h_t tl_d_i_int;
+
+
 `ifdef RVFI
   logic        rvfi_valid;
   logic [63:0] rvfi_order;
@@ -146,11 +153,13 @@ module rv_core_ibex #(
     .MHPMCounterWidth         ( MHPMCounterWidth         ),
     .RV32E                    ( RV32E                    ),
     .RV32M                    ( RV32M                    ),
+    .RV32B                    ( RV32B                    ),
+    .RegFile                  ( RegFile                  ),
     .BranchTargetALU          ( BranchTargetALU          ),
     .WritebackStage           ( WritebackStage           ),
-    .MultiplierImplementation ( MultiplierImplementation ),
     .ICache                   ( ICache                   ),
     .ICacheECC                ( ICacheECC                ),
+    .BranchPredictor          ( BranchPredictor          ),
     .DbgTriggerEn             ( DbgTriggerEn             ),
     .SecureIbex               ( SecureIbex               ),
     .DmHaltAddr               ( DmHaltAddr               ),
@@ -288,13 +297,27 @@ module rv_core_ibex #(
     .rst_ni,
     .tl_h_i      (tl_d_ibex2fifo),
     .tl_h_o      (tl_d_fifo2ibex),
-    .tl_d_o      (tl_d_o),
-    .tl_d_i      (tl_d_i),
+    .tl_d_o      (tl_d_o_int),
+    .tl_d_i      (tl_d_i_int),
     .spare_req_i (1'b0),
     .spare_req_o (),
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
 
+  //
+  // Interception point for connecting simulation SRAM by disconnecting the tl_d output. The
+  // disconnection is done only if `SYNTHESIS is NOT defined AND `RV_CORE_IBEX_SIM_SRAM is
+  // defined.
+  //
+`ifdef RV_CORE_IBEX_SIM_SRAM
+`ifdef SYNTHESIS
+  // Induce a compilation error by instantiating a non-existent module.
+  illegal_preprocessor_branch_taken u_illegal_preprocessor_branch_taken();
+`endif
+`else
+  assign tl_d_o = tl_d_o_int;
+  assign tl_d_i_int = tl_d_i;
+`endif
 
 `ifdef RVFI
   ibex_tracer ibex_tracer_i (

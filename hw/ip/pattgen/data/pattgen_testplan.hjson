@@ -1,0 +1,84 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "pattgen"
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"],
+  entries: [
+    {
+      name: sanity
+      desc: '''
+            Basic sanity test for pattgen ip in which dut is randomly programmed 
+            to generate random patterns on output channels.
+
+            Stimulus:
+              - Program the configuration registers of the output channels
+              - Randomly activate the output channels
+              - Re-program the configuration registers of the output channels once 
+                completion interrupts are asserted
+
+            Checking:
+              - Check divided clock rate for the active channels
+                matching with the values of pre-divider registers
+              - Check generated pattern matching on the active channels
+                matching with the values of pattern data registers
+              - Check completion interrupts are asserted once a pattern
+                is completely generated on the active channels
+            '''
+      milestone: V1
+      tests: ["pattgen_sanity"]
+    }
+    {
+      name: perf
+      desc: '''
+            Checking ip operation at min/max bandwidth
+
+            Stimulus:
+              - Program the pre-divider registers to highest/lowest values (lowest/highest data rate)
+              - Program the pattern data registers, the pattern length per output, and 
+                repeat counter registers to smallest values
+              - Clear interrupts quickly
+
+            Checking:
+              - Ensure patterns are correctly generated
+              - Ensure interrupts are robust asserted and cleared (e.g. at the highest data rate)
+            '''
+      milestone: V2
+      tests: ["pattgen_perf"]
+    }   
+    {
+      name: error
+      desc: '''
+            Reset then re-start the output channel on the fly.
+
+            Stimulus:
+              - Programm the configuration registers of the output channels
+              - Randomly reset the output channel in progress
+              - Re-program the configuration registers of the output channels
+
+            Checking:
+              - Ensure patterns are dropped when reset
+              - Ensure the output channels get back normal after reset
+            '''
+      milestone: V2
+      tests: ["pattgen_error"]
+    }
+    {
+      name: stress_all
+      desc: '''
+            Combine above sequences in one test then randomly select for running.
+
+            Stimulus:
+              - Start sequences and randomly add reset between each sequence
+
+            Checking:
+              - All sequences should be finished and checked by the scoreboard
+      '''
+      milestone: V2
+      tests: ["pattgen_stress_all"]
+    }
+  ]
+}

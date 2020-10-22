@@ -9,7 +9,9 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
+      - lowrisc:prim:util
     files:
+      - rtl/flash_ctrl_reg_pkg.sv
       - rtl/flash_ctrl_pkg.sv
       - rtl/flash_phy_pkg.sv
     file_type: systemVerilogSource

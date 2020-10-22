@@ -1,0 +1,212 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  fields : [
+    { name: "manifest_identifier",
+      desc: '''ROM_EXT Manifest identifier.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    { type: "reserved",
+      size: 32,
+    },
+    { name: "image_signature",
+      desc: '''ROM_EXT Manifest image signature.
+
+            TODO
+            ''',
+      type: "field",
+      size: 3072,
+    },
+    {
+      name: 'signed_area_start',
+      desc: '''ROM_EXT Manifest image start of signed area.
+
+            TODO
+            ''',
+      type: "offset",
+    },
+    {
+      name: "image_length",
+      desc: '''ROM_EXT Manifest image length.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      name: "image_version",
+      desc: '''ROM_EXT Manifest image version.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      name: "image_timestamp",
+      desc: '''ROM_EXT Manifest image timestamp.
+
+            TODO
+            ''',
+      type: "field",
+      size: 64,
+      alignment: 64,
+    },
+    {
+      name: "signature_algorithm_identifier",
+      desc: '''ROM_EXT Manifest signature algorithm identifier.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      name: "exponent",
+      desc: '''ROM_EXT Manifest exponent.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      name: "usage_constraints",
+      desc: '''ROM_EXT Manifest usage constraints (TBC).
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      type: "reserved",
+      size: 32,
+    },
+    {
+      name: "peripheral_lockdown_info",
+      desc: '''ROM_EXT Manifest peripheral lockdown info(TBC).
+
+            TODO
+            ''',
+      type: "field",
+      size: 128,
+    },
+    {
+      name: "signature_public_key",
+      desc: '''ROM_EXT Manifest sifnature public key.
+
+            TODO
+            ''',
+      type: "field",
+      size: 3072,
+    },
+    {
+      name: "extension0_offset",
+      desc: '''ROM_EXT Manifest extension0 offset.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      name: "extension0_checksum",
+      desc: '''ROM_EXT Manifest extension0 checksum.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      name: "extension1_offset",
+      desc: '''ROM_EXT Manifest extension1 offset.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      name: "extension1_checksum",
+      desc: '''ROM_EXT Manifest extension1 checksum.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      name: "extension2_offset",
+      desc: '''ROM_EXT Manifest extension2 offset.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      name: "extension2_checksum",
+      desc: '''ROM_EXT Manifest extension2 checksum.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      name: "extension3_offset",
+      desc: '''ROM_EXT Manifest extension3 offset.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      name: "extension3_checksum",
+      desc: '''ROM_EXT Manifest extension3 checksum.
+
+            TODO
+            ''',
+      type: "field",
+      size: 32,
+    },
+    {
+      // This is modelled as an offset, as we don't want this to have a size,
+      // and if we generate assembly like `rom_ext_manifest.S`, we don't want to
+      // allocate this area using `.byte` instructions.
+      name: "interrupt_vector",
+      desc: '''ROM_EXT Manifest interrupt vector.
+
+            TODO
+            ''',
+      type: "offset",
+      // Ibex requires this to be 256-byte aligned. In this file, all alignments
+      // and sizes are in bits.
+      alignment: 2048,
+    },
+    {
+      // This reserved area covers the interrupt vector then, to ensure the
+      // `entry_point` field is 128 bytes later.
+      type: "reserved",
+      // A RISC-V interrupt vector is 32*32bit entries.
+      size: 1024,
+    },
+    {
+      name: "entry_point",
+      desc: '''ROM_EXT Manifest entry point.
+
+            TODO
+            ''',
+      type: "offset",
+    },
+  ],
+}

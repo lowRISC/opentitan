@@ -1,0 +1,78 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_modes: [
+    {
+      name: cover_reg_top
+    }
+  ]
+
+  run_modes: [
+    {
+      name: csr_tests_mode
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+en_scb=0"]
+    }
+  ]
+
+  tests: [
+    {
+      name: "{name}_csr_hw_reset"
+      build_mode: "cover_reg_top"
+      run_opts: ["+csr_hw_reset"]
+      en_run_modes: ["csr_tests_mode"]
+    }
+
+    {
+      name: "{name}_csr_rw"
+      build_mode: "cover_reg_top"
+      run_opts: ["+csr_rw"]
+      en_run_modes: ["csr_tests_mode"]
+    }
+
+    {
+      name: "{name}_csr_bit_bash"
+      build_mode: "cover_reg_top"
+      run_opts: ["+csr_bit_bash"]
+      en_run_modes: ["csr_tests_mode"]
+    }
+
+    {
+      name: "{name}_csr_aliasing"
+      build_mode: "cover_reg_top"
+      run_opts: ["+csr_aliasing"]
+      en_run_modes: ["csr_tests_mode"]
+    }
+
+    {
+      name: "{name}_same_csr_outstanding"
+      build_mode: "cover_reg_top"
+      run_opts: ["+run_same_csr_outstanding"]
+      en_run_modes: ["csr_tests_mode"]
+    }
+
+    {
+      name: "{name}_csr_mem_rw_with_rand_reset"
+      build_mode: "cover_reg_top"
+      run_opts: ["+run_csr_mem_rw_with_rand_reset", "+test_timeout_ns=10000000000"]
+      en_run_modes: ["csr_tests_mode"]
+    }
+  ]
+
+  regressions: [
+    {
+      name: sanity
+      tests: ["{name}_csr_hw_reset", "{name}_csr_rw"]
+    }
+
+    {
+      name: sw_access
+      tests: ["{name}_csr_hw_reset",
+              "{name}_csr_rw",
+              "{name}_csr_bit_bash",
+              "{name}_csr_aliasing",
+              "{name}_same_csr_outstanding"]
+    }
+  ]
+}

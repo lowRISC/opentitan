@@ -330,6 +330,7 @@ def _generate_abstract_impl(gapi):
         module_header_imports=generic_hdr['package_import_declaration'],
         module_header_params=generic_hdr['parameter_port_list'],
         module_header_ports=generic_hdr['ports'],
+        num_techlibs= len(techlibs),
         # Creating the code to instantiate the primitives in the Mako templating
         # language is tricky to do; do it in Python instead.
         instances=_create_instances(prim_name, techlibs,

@@ -5,20 +5,21 @@
 class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_block));
 
   // ext component cfgs
-
+  rand rng_agent_cfg   m_rng_agent_cfg;
+  
   `uvm_object_utils_begin(entropy_src_env_cfg)
   `uvm_object_utils_end
 
   `uvm_object_new
 
   virtual pins_if   efuse_es_sw_reg_en_vif;
-    
-  virtual function void initialize_csr_addr_map_size();
-    this.csr_addr_map_size = ENTROPY_SRC_ADDR_MAP_SIZE;
-  endfunction : initialize_csr_addr_map_size
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
+    list_of_alerts = entropy_src_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
+
+    // create uart agent config obj
+    m_rng_agent_cfg = rng_agent_cfg::type_id::create("m_rng_agent_cfg");
 
     // set num_interrupts & num_alerts
     begin

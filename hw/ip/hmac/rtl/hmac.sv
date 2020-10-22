@@ -7,7 +7,6 @@
 `include "prim_assert.sv"
 
 module hmac
-  import prim_alert_pkg::*;
   import hmac_pkg::*;
   import hmac_reg_pkg::*;
 (
@@ -21,9 +20,7 @@ module hmac
   output logic intr_fifo_empty_o,
   output logic intr_hmac_err_o,
 
-  // alerts
-  input  alert_rx_t [NumAlerts-1:0] alert_rx_i,
-  output alert_tx_t [NumAlerts-1:0] alert_tx_o
+  output logic idle_o
 );
 
 
@@ -207,6 +204,8 @@ module hmac
 
   // instantiate interrupt hardware primitive
   prim_intr_hw #(.Width(1)) intr_hw_hmac_done (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_intr[0]),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.hmac_done.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.hmac_done.q),
@@ -217,6 +216,8 @@ module hmac
     .intr_o                 (intr_hmac_done_o)
   );
   prim_intr_hw #(.Width(1)) intr_hw_fifo_empty (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_intr[1]),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fifo_empty.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.fifo_empty.q),
@@ -227,6 +228,8 @@ module hmac
     .intr_o                 (intr_fifo_empty_o)
   );
   prim_intr_hw #(.Width(1)) intr_hw_hmac_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_intr[2]),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.hmac_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.hmac_err.q),
@@ -496,24 +499,10 @@ module hmac
   end
 
   /////////////////////
-  // Hardware Alerts //
+  // Idle output     //
   /////////////////////
-
-  // TODO: add CSR with REGWEN to test alert via SW
-  logic [NumAlerts-1:0] alerts;
-  assign alerts = {msg_push_sha_disabled};
-
-  for (genvar j = 0; j < hmac_pkg::NumAlerts; j++) begin : gen_alert_tx
-    prim_alert_sender #(
-      .AsyncOn(hmac_pkg::AlertAsyncOn[j])
-    ) i_prim_alert_sender (
-      .clk_i      ( clk_i         ),
-      .rst_ni     ( rst_ni        ),
-      .alert_i    ( alerts[j]     ),
-      .alert_rx_i ( alert_rx_i[j] ),
-      .alert_tx_o ( alert_tx_o[j] )
-    );
-  end : gen_alert_tx
+  // TBD this should be connected later
+  assign idle_o = 1'b1;
 
   //////////////////////////////////////////////
   // Assertions, Assumptions, and Coverpoints //
@@ -569,9 +558,6 @@ module hmac
   `ASSERT_KNOWN(IntrFifoEmptyOKnown, intr_fifo_empty_o)
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
-
-  // Alert outputs
-  `ASSERT_KNOWN(AlertTxOKnown, alert_tx_o)
 
 `endif // SYNTHESIS
 `endif // VERILATOR

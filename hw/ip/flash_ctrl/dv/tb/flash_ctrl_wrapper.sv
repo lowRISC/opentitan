@@ -16,6 +16,10 @@ module flash_ctrl_wrapper (
 
   // OTP interface
   input        flash_ctrl_pkg::otp_flash_t otp_i,
+  input        flash_ctrl_pkg::lc_flash_req_t lc_i,
+  output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
+  input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
+  input        flash_ctrl_pkg::edn_entropy_t edn_i,
 
   // Interrupts
   output logic intr_prog_empty_o, // Program fifo is empty
@@ -46,6 +50,10 @@ module flash_ctrl_wrapper (
     .flash_o  (flash_ctrl_flash_req),
     .flash_i  (flash_ctrl_flash_rsp),
     .otp_i    (otp_i),
+    .lc_i     (lc_i),
+    .pwrmgr_i (pwrmgr_i),
+    .pwrmgr_o (pwrmgr_o),
+    .edn_i    (edn_i),
 
     .clk_i    (clk_i),
     .rst_ni   (rst_ni)

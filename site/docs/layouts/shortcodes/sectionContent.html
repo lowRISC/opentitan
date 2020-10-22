@@ -9,37 +9,39 @@
     {{- end }}
 
     {{- $startSection := .Page.Page }}
-    <ul>
-    {{- range .Page.Pages }}
-        {{- template "subsection-loop" dict "startSection" $startSection "currentSection" . "contentType" $contentType "depthLimit" $depthLimit "depthCnt" 0 }}
-    {{- end }}
-    </ul>
+    {{- template "sectioncontent-loop" dict "startSection" $startSection "currentSection" $startSection "contentType" $contentType "depthLimit" $depthLimit "depthCnt" 0 }}
 </div>
 
-{{- define "subsection-loop" }}
+{{- define "sectioncontent-loop" }}
     {{- $startSection := .startSection }}
     {{- $currentSection := .currentSection }}
     {{- $contentType := .contentType }}
     {{- $depthLimit := .depthLimit }}
     {{- $depthCnt := add .depthCnt 1 }}
-
     {{- with .startSection }}
         <li>
             {{- with $currentSection }}
-                {{- if (or (not (eq $contentType "section")) .IsSection) }}
-                    {{- if .LinkTitle }}
-                        <a href="{{.RelPermalink}}">{{- .LinkTitle }}</a>
-                    {{- else }}
-                        {{- replace .File.Dir .Parent.File.Dir "" | replaceRE "/" "-" | replaceRE "-$" ":" }}
-                        <a href="{{.RelPermalink}}">{{- .File.TranslationBaseName }}</a>
-                    {{- end }}
+                {{- if and (ne $startSection $currentSection) (or (ne $contentType "section") .IsSection) }}
+                        {{- if .LinkTitle }}
+                            <a href="{{.RelPermalink}}">{{- .LinkTitle }}</a>
+                        {{- else }}
+                            {{- replace .File.Dir .Parent.File.Dir "" | replaceRE "/" "-" | replaceRE "-$" ":" }}
+                            <a href="{{.RelPermalink}}">{{- .File.TranslationBaseName }}</a>
+                        {{- end }}
                 {{- end }}
             {{- end }}
-            {{- if lt $depthCnt $depthLimit }}
+            {{- if le $depthCnt $depthLimit }}
                 <ul>
-                    {{- $subsc := newScratch }}
-                    {{- range $currentSection.Pages }}
-                        {{- template "subsection-loop" dict "startSection" $startSection "currentSection" . "contentType" $contentType "depthLimit" $depthLimit "depthCnt" $depthCnt}}
+                    {{- $elem := dict }}
+                    {{- range .Site.Pages }}
+                        {{- if and (eq .CurrentSection $currentSection.CurrentSection) (ne $currentSection .) (ne $startSection .) (.IsDescendant $currentSection) }}
+                            {{- $elem = merge $elem (dict (string .) .) }}
+                        {{- else if and (eq $currentSection .Parent) (.IsSection) (ne .CurrentSection $currentSection.CurrentSection) (ne $startSection .) (.IsDescendant $currentSection) }}
+                            {{- $elem = merge $elem (dict (string .) .) }}
+                        {{- end }}
+                    {{- end }}
+                    {{- range $elem }}
+                        {{- template "sectioncontent-loop" dict "startSection" $startSection "currentSection" . "contentType" $contentType "depthLimit" $depthLimit "depthCnt" $depthCnt }}
                     {{- end }}
                 </ul>
             {{- end }}

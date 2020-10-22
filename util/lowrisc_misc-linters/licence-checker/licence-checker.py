@@ -114,7 +114,9 @@ COMMENT_CHARS = [
 
     # Software Files
     ([".c", ".c.tpl", ".h", ".h.tpl", ".cc", ".cpp"], SLASH_SLASH),  # C, C++
-    ([".S"], [SLASH_SLASH, SLASH_STAR]),  # Assembly
+    ([".def"], SLASH_SLASH),  # C, C++ X-Include List Declaration Files
+    ([".S"], [SLASH_SLASH, SLASH_STAR]),  # Assembly (With Preprocessing)
+    ([".s"], SLASH_STAR),  # Assembly (Without Preprocessing)
     ([".ld", ".ld.tpl"], SLASH_STAR),  # Linker Scripts
     ([".rs"], SLASH_SLASH),  # Rust
 
@@ -287,7 +289,6 @@ def check_file_with_style(licence, filepath, comment_style):
     associated success or error message.
 
     '''
-
     def next_line(file, line_no):
         return (next(file).rstrip(), line_no + 1)
 

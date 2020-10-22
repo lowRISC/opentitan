@@ -10,7 +10,7 @@
 
 module aes_control
 #(
-  parameter int unsigned NumDelayCyclesStartTrigger = 0
+  parameter int unsigned SecStartTriggerDelay = 0
 ) (
   input  logic                    clk_i,
   input  logic                    rst_ni,
@@ -18,7 +18,7 @@ module aes_control
   // Main control signals
   input  logic                    ctrl_qe_i,
   output logic                    ctrl_we_o,
-  input  logic                    ctrl_err_i,
+  input  logic                    ctrl_err_storage_i,
   input  aes_pkg::aes_op_e        op_i,
   input  aes_pkg::aes_mode_e      mode_i,
   input  aes_pkg::ciph_op_e       cipher_op_i,
@@ -147,15 +147,15 @@ module aes_control
   logic       ctrl_we_q;
   logic       clear_in_out_status;
 
-  if (NumDelayCyclesStartTrigger > 0) begin : gen_start_delay
+  if (SecStartTriggerDelay > 0) begin : gen_start_delay
     // Delay the manual start trigger input for SCA measurements.
-    localparam int unsigned WidthCounter = $clog2(NumDelayCyclesStartTrigger+1);
+    localparam int unsigned WidthCounter = $clog2(SecStartTriggerDelay+1);
     logic [WidthCounter-1:0] count_d, count_q;
 
     // Clear counter when input goes low. Keep value if the specified delay is reached.
     assign count_d = !start_i       ? '0      :
                       start_trigger ? count_q : count_q + 1'b1;
-    assign start_trigger = (count_q == NumDelayCyclesStartTrigger[WidthCounter-1:0]) ? 1'b1 : 1'b0;
+    assign start_trigger = (count_q == SecStartTriggerDelay[WidthCounter-1:0]) ? 1'b1 : 1'b0;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
@@ -176,7 +176,7 @@ module aes_control
 
   // The cipher core is only ever allowed to start or finish if the control register holds a valid
   // configuration.
-  assign cfg_valid = ~((mode_i == AES_NONE) | ctrl_err_i);
+  assign cfg_valid = ~((mode_i == AES_NONE) | ctrl_err_storage_i);
 
   // If set to start manually, we just wait for the trigger. Otherwise, we start once we have valid
   // data available. If the IV (and counter) is needed, we only start if also the IV (and counter)
@@ -284,8 +284,9 @@ module aes_control
           key_init_we_o  = key_init_qe_i;
           iv_we_o        = iv_qe;
 
-          // Control register updates are only allowed if we are idle.
-          ctrl_we_o      = ctrl_qe_i;
+          // Updates to the control register are only allowed if we are idle and we don't have a
+          // storage error. A storage error is unrecoverable and requires a reset.
+          ctrl_we_o      = !ctrl_err_storage_i ? ctrl_qe_i : 1'b0;
 
           // Control register updates clear all register status trackers.
           key_init_clear = ctrl_we_o;
@@ -623,7 +624,7 @@ module aes_control
   assign prng_reseed_o    = 1'b0;
 
   // Selectors must be known/valid
-  `ASSERT(AesModeValid, mode_i inside {
+  `ASSERT(AesModeValid, !ctrl_err_storage_i |-> mode_i inside {
       AES_ECB,
       AES_CBC,
       AES_CFB,

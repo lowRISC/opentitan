@@ -22,6 +22,7 @@ from reggen import gen_dv, gen_rtl, validate
 from topgen import (amend_clocks, get_hjsonobj_xbars, merge_top, search_ips,
                     validate_top)
 from topgen import intermodule as im
+from topgen.c import TopGenC
 
 # Common header for generated files
 genhdr = '''// Copyright lowRISC contributors.
@@ -103,7 +104,6 @@ def generate_alert_handler(top, out_path):
     # default values
     esc_cnt_dw = 32
     accu_cnt_dw = 16
-    lfsr_seed = 2**31 - 1
     async_on = "'0"
     # leave this constant
     n_classes = 4
@@ -119,17 +119,13 @@ def generate_alert_handler(top, out_path):
             esc_cnt_dw = int(top['module'][ah_idx]['localparam']['EscCntDw'])
         if 'AccuCntDw' in top['module'][ah_idx]['localparam']:
             accu_cnt_dw = int(top['module'][ah_idx]['localparam']['AccuCntDw'])
-        if 'LfsrSeed' in top['module'][ah_idx]['localparam']:
-            lfsr_seed = int(top['module'][ah_idx]['localparam']['LfsrSeed'], 0)
 
     if esc_cnt_dw < 1:
         log.error("EscCntDw must be larger than 0")
     if accu_cnt_dw < 1:
         log.error("AccuCntDw must be larger than 0")
-    if (lfsr_seed & 0xFFFFFFFF) == 0 or lfsr_seed > 2**32:
-        log.error("LFSR seed out of range or zero")
 
-    # Count number of interrupts
+    # Count number of alerts
     n_alerts = sum([x["width"] if "width" in x else 1 for x in top["alert"]])
 
     if n_alerts < 1:
@@ -148,7 +144,6 @@ def generate_alert_handler(top, out_path):
     log.info("NAlerts   = %d" % n_alerts)
     log.info("EscCntDw  = %d" % esc_cnt_dw)
     log.info("AccuCntDw = %d" % accu_cnt_dw)
-    log.info("LfsrSeed  = %d" % lfsr_seed)
     log.info("AsyncOn   = %s" % async_on)
 
     # Define target path
@@ -173,7 +168,6 @@ def generate_alert_handler(top, out_path):
             out = hjson_tpl.render(n_alerts=n_alerts,
                                    esc_cnt_dw=esc_cnt_dw,
                                    accu_cnt_dw=accu_cnt_dw,
-                                   lfsr_seed=lfsr_seed,
                                    async_on=async_on,
                                    n_classes=n_classes)
         except:  # noqa: E722
@@ -495,10 +489,10 @@ def generate_clkmgr(top, cfg_path, out_path):
     # clock classification
     grps = top['clocks']['groups']
 
-    src_aon_attr = OrderedDict()
     ft_clks = OrderedDict()
     rg_clks = OrderedDict()
     sw_clks = OrderedDict()
+    src_aon_attr = OrderedDict()
     hint_clks = OrderedDict()
 
     # construct a dictionary of the aon attribute for easier lookup
@@ -538,11 +532,19 @@ def generate_clkmgr(top, cfg_path, out_path):
     ])
 
     # sw hint clocks
-    hint_clks = OrderedDict([
+    hints = OrderedDict([
         (clk, src)
         for grp in grps for (clk, src) in grp['clocks'].items()
         if grp['sw_cg'] == 'hint' and not src_aon_attr[src]
     ])
+
+    # hint clocks dict
+    for clk, src in hints.items():
+        # the clock is constructed as clk_{src_name}_{module_name}.
+        # so to get the module name we split from the right and pick the last entry
+        hint_clks[clk] = OrderedDict()
+        hint_clks[clk]['name'] = (clk.rsplit('_', 1)[-1])
+        hint_clks[clk]['src'] = src
 
     for idx, tpl in enumerate(tpls):
         out = ""
@@ -555,6 +557,7 @@ def generate_clkmgr(top, cfg_path, out_path):
                                  ft_clks=ft_clks,
                                  rg_clks=rg_clks,
                                  sw_clks=sw_clks,
+                                 export_clks=top['exported_clks'],
                                  hint_clks=hint_clks)
             except:  # noqa: E722
                 log.error(exceptions.text_error_template().render())
@@ -579,9 +582,13 @@ def generate_clkmgr(top, cfg_path, out_path):
 def generate_pwrmgr(top, out_path):
     log.info("Generating pwrmgr")
 
-    # Count number of interrupts
+    # Count number of wakeups
     n_wkups = len(top["wakeups"])
     log.info("Found {} wakeup signals".format(n_wkups))
+
+    # Count number of reset requests
+    n_rstreqs = len(top["reset_requests"])
+    log.info("Found {} reset request signals".format(n_rstreqs))
 
     if n_wkups < 1:
         n_wkups = 1
@@ -603,7 +610,7 @@ def generate_pwrmgr(top, out_path):
     with hjson_tpl_path.open(mode='r', encoding='UTF-8') as fin:
         hjson_tpl = Template(fin.read())
         try:
-            out = hjson_tpl.render(NumWkups=n_wkups)
+            out = hjson_tpl.render(NumWkups=n_wkups, NumRstReqs=n_rstreqs)
 
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
@@ -618,6 +625,89 @@ def generate_pwrmgr(top, out_path):
         fout.write(genhdr + out)
 
     # Generate reg files
+    with open(str(hjson_path), 'r') as out:
+        hjson_obj = hjson.load(out,
+                               use_decimal=True,
+                               object_pairs_hook=OrderedDict)
+    validate.validate(hjson_obj)
+    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+
+
+# generate rstmgr
+def generate_rstmgr(topcfg, out_path):
+    log.info("Generating rstmgr")
+
+    # Define target path
+    rtl_path = out_path / 'ip/rstmgr/rtl/autogen'
+    rtl_path.mkdir(parents=True, exist_ok=True)
+    doc_path = out_path / 'ip/rstmgr/data/autogen'
+    doc_path.mkdir(parents=True, exist_ok=True)
+    tpl_path = out_path / '../ip/rstmgr/data'
+
+    # Read template files from ip directory.
+    tpls = []
+    outputs = []
+    names = ['rstmgr.hjson', 'rstmgr.sv', 'rstmgr_pkg.sv']
+
+    for x in names:
+        tpls.append(tpl_path / Path(x + ".tpl"))
+        if "hjson" in x:
+            outputs.append(doc_path / Path(x))
+        else:
+            outputs.append(rtl_path / Path(x))
+
+    # Parameters needed for generation
+    clks = []
+    output_rsts = OrderedDict()
+    sw_rsts = OrderedDict()
+    leaf_rsts = OrderedDict()
+
+    # unique clocks
+    for rst in topcfg["resets"]["nodes"]:
+        if rst['type'] != "ext" and rst['clk'] not in clks:
+            clks.append(rst['clk'])
+
+    # resets sent to reset struct
+    output_rsts = [rst for rst in topcfg["resets"]["nodes"] if rst['type'] == "top"]
+
+    # sw controlled resets
+    sw_rsts = [rst for rst in topcfg["resets"]["nodes"] if 'sw' in rst and rst['sw'] == 1]
+
+    # leaf resets
+    leaf_rsts = [rst for rst in topcfg["resets"]["nodes"] if rst['gen']]
+
+    log.info("output resets {}".format(output_rsts))
+    log.info("software resets {}".format(sw_rsts))
+    log.info("leaf resets {}".format(leaf_rsts))
+
+    # Number of reset requests
+    n_rstreqs = len(topcfg["reset_requests"])
+
+    # Generate templated files
+    for idx, t in enumerate(tpls):
+        out = StringIO()
+        with t.open(mode='r', encoding='UTF-8') as fin:
+            tpl = Template(fin.read())
+            try:
+                out = tpl.render(clks=clks,
+                                 num_rstreqs=n_rstreqs,
+                                 sw_rsts=sw_rsts,
+                                 output_rsts=output_rsts,
+                                 leaf_rsts=leaf_rsts,
+                                 export_rsts=topcfg['exported_rsts'])
+
+            except:  # noqa: E722
+                log.error(exceptions.text_error_template().render())
+
+        if out == "":
+            log.error("Cannot generate {}".format(names[idx]))
+            return
+
+        with outputs[idx].open(mode='w', encoding='UTF-8') as fout:
+            fout.write(genhdr + out)
+
+    # Generate reg files
+    hjson_path = outputs[0]
     with open(str(hjson_path), 'r') as out:
         hjson_obj = hjson.load(out,
                                use_decimal=True,
@@ -895,6 +985,9 @@ def main():
     # Generate Pwrmgr
     generate_pwrmgr(completecfg, out_path)
 
+    # Generate rstmgr
+    generate_rstmgr(completecfg, out_path)
+
     # Generate top only modules
     # These modules are not templated, but are not in hw/ip
     generate_top_only(top_only_list, out_path)
@@ -938,19 +1031,20 @@ def main():
             with rendered_path.open(mode='w', encoding='UTF-8') as fout:
                 fout.write(template_contents)
 
-            return rendered_path
+            return rendered_path.resolve()
 
         # SystemVerilog Top:
         # 'top_earlgrey.sv.tpl' -> 'rtl/autogen/top_earlgrey.sv'
         render_template('top_%s.sv', 'rtl/autogen')
 
+        # The C / SV file needs some complex information, so we initialize this
+        # object to store it.
+        c_helper = TopGenC(completecfg)
+
         # 'top_earlgrey_pkg.sv.tpl' -> 'rtl/autogen/top_earlgrey_pkg.sv'
-        render_template('top_%s_pkg.sv', 'rtl/autogen')
+        render_template('top_%s_pkg.sv', 'rtl/autogen', helper=c_helper)
 
         # C Header + C File + Clang-format file
-        # The C file needs some information from when the header is generated,
-        # so we keep this in a dictionary here.
-        c_gen_info = {}
 
         # 'clang-format' -> 'sw/autogen/.clang-format'
         cformat_tplpath = tpl_path / 'clang-format'
@@ -960,16 +1054,15 @@ def main():
         cformat_path.write_text(cformat_tplpath.read_text())
 
         # 'top_earlgrey.h.tpl' -> 'sw/autogen/top_earlgrey.h'
-        cheader_path = render_template('top_%s.h',
-                                       'sw/autogen',
-                                       c_gen_info=c_gen_info).resolve()
+        cheader_path = render_template('top_%s.h', 'sw/autogen',
+                                       helper=c_helper)
 
         # Save the relative header path into `c_gen_info`
         rel_header_path = cheader_path.relative_to(SRCTREE_TOP)
-        c_gen_info["header_path"] = str(rel_header_path)
+        c_helper.header_path = str(rel_header_path)
 
         # 'top_earlgrey.c.tpl' -> 'sw/autogen/top_earlgrey.c'
-        render_template('top_%s.c', 'sw/autogen', c_gen_info=c_gen_info)
+        render_template('top_%s.c', 'sw/autogen', helper=c_helper)
 
         # 'top_earlgrey_memory.ld.tpl' -> 'sw/autogen/top_earlgrey_memory.ld'
         render_template('top_%s_memory.ld', 'sw/autogen')
@@ -987,8 +1080,9 @@ def main():
                        check=True,
                        cwd=str(SRCTREE_TOP))  # yapf: disable
 
-        # generate chip level xbar TB
-        tb_files = ["xbar_env_pkg__params.sv", "tb__xbar_connect.sv"]
+        # generate chip level xbar and alert_handler TB
+        tb_files = ["xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
+                    "tb__alert_handler_connect.sv"]
         for fname in tb_files:
             tpl_fname = "%s.tpl" % (fname)
             xbar_chip_data_path = tpl_path / tpl_fname
@@ -1001,6 +1095,19 @@ def main():
 
             with rendered_path.open(mode='w', encoding='UTF-8') as fout:
                 fout.write(template_contents)
+
+        # generate chip level alert_handler pkg
+        tpl_fname = 'alert_handler_env_pkg__params.sv.tpl'
+        alert_handler_chip_data_path = tpl_path / tpl_fname
+        template_contents = generate_top(completecfg,
+                                         str(alert_handler_chip_data_path))
+
+        rendered_dir = tpl_path / '../dv/env/autogen'
+        rendered_dir.mkdir(parents=True, exist_ok=True)
+        rendered_path = rendered_dir / 'alert_handler_env_pkg__params.sv'
+
+        with rendered_path.open(mode='w', encoding='UTF-8') as fout:
+            fout.write(template_contents)
 
 
 if __name__ == "__main__":

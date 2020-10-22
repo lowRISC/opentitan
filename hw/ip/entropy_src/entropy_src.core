@@ -15,7 +15,14 @@ filesets:
       - rtl/entropy_src_pkg.sv
       - rtl/entropy_src_reg_pkg.sv
       - rtl/entropy_src_reg_top.sv
-      - rtl/entropy_src_shtests.sv
+      - rtl/entropy_src_watermark_reg.sv
+      - rtl/entropy_src_cntr_reg.sv
+      - rtl/entropy_src_ack_sm.sv
+      - rtl/entropy_src_main_sm.sv
+      - rtl/entropy_src_repcnt_ht.sv
+      - rtl/entropy_src_adaptp_ht.sv
+      - rtl/entropy_src_bucket_ht.sv
+      - rtl/entropy_src_markov_ht.sv
       - rtl/entropy_src_core.sv
       - rtl/entropy_src.sv
     file_type: systemVerilogSource
@@ -62,6 +69,7 @@ targets:
       ascentlint:
         ascentlint_options:
           - "-wait_license"
+          - "-stop_on_error"
       verilator:
         mode: lint-only
         verilator_options:

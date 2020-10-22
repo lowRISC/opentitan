@@ -15,7 +15,7 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } clk_io_peri_en;
+    } clk_io_div4_peri_en;
     struct packed {
       logic        q;
     } clk_usb_peri_en;

@@ -24,8 +24,11 @@ import sys
 import tempfile
 from typing import Dict, List, Optional, Set, TextIO, Tuple
 
-from shared.insn_yaml import (BitRanges, Encoding, Insn, InsnsFile, Operand,
-                              RegOperandType, load_file)
+from shared.bit_ranges import BitRanges
+from shared.encoding import Encoding
+from shared.insn_yaml import Insn, InsnsFile, load_insns_yaml
+from shared.operand import ImmOperandType, RegOperandType, Operand
+from shared.toolchain import find_tool
 
 
 class RVFmt:
@@ -52,7 +55,8 @@ class RVFmt:
 
         f<n>:    An n-bit literal value.
         r:       A 5-bit register name.
-        i<n>:    An n-bit (signed) immediate
+        i<n>:    An n-bit signed immediate
+        u<n>:    An n-bit unsigned immediate
 
     The syntax should be a list of NAMEs. When an immediate in the encoding is
     split into multiple fields, they can be recombined here with a pipe symbol.
@@ -78,7 +82,7 @@ class RVFmt:
         for field in bitfields:
             name, fmt_width = field.split(':')
             fmt = fmt_width[0]
-            assert fmt in ['f', 'r', 'i']
+            assert fmt in ['f', 'r', 'i', 'u']
             width = 5 if fmt == 'r' else int(fmt_width[1:])
 
             assert name not in name_to_triple
@@ -146,7 +150,7 @@ class RVFmt:
 
 def rv_render(fmt: str, num: int) -> str:
     '''Render a number as expected by a RISC-V .insn field'''
-    if fmt in ['f', 'i']:
+    if fmt in ['f', 'i', 'u']:
         return '{:#x}'.format(num)
 
     assert fmt == 'r'
@@ -201,9 +205,17 @@ RISCV_FORMATS = [
           ['imm12:i1', 'imm105:i6', 'rs2:r', 'rs1:r', 'func3:f3',
            'imm41:i4', 'imm11:i1', 'opcode:f7'],
           ['opcode', 'func3', 'rs2', 'rs1', 'imm12|imm11|imm105|imm41<<1']),
+
+    # The "U" format is used for LUI. The immediate operand gives imm[31:12]
+    # for some imm. Confusingly, the spec implies that this is a signed
+    # immediate, probably because it *is* sign-extended for the 64-bit
+    # architecture. For a 32-bit architecture, the top bit is the sign, so
+    # there is no sign extension to be done. The binutils assembler rejects
+    # things like "lui x1, -1", treating the immediate as unsigned.
     RVFmt('u',
-          ['simm20:i20', 'rd:r', 'opcode:f7'],
-          ['opcode', 'rd', 'simm20']),
+          ['imm20:u20', 'rd:r', 'opcode:f7'],
+          ['opcode', 'rd', 'imm20']),
+
     RVFmt('j',
           ['i20:i1', 'i101:i10', 'i11:i1', 'i1912:i8', 'rd:r', 'opcode:f7'],
           ['opcode', 'rd', 'i20|i1912|i11|i101<<1'])
@@ -240,29 +252,47 @@ def find_rv_encoding(enc: Encoding,
         if not isinstance(field.value, str):
             continue
 
-        operand = name_to_operand[field.value]
-        if operand.op_type.syntax_determines_value():
+        op_type = name_to_operand[field.value].op_type
+        if op_type.syntax_determines_value():
             continue
+
+        # We only support immediate operands (ImmOperandType) below here,
+        # because we need to extract the "signed" field. If this instruction
+        # uses some weird new operand type whose syntax doesn't determine its
+        # value, we'll have to give up.
+        if not isinstance(op_type, ImmOperandType):
+            return None
 
         assert field.value not in full_ops
         full_ops.add(field.value)
 
         # Try to find a non-fixed field in rvfmt with the same bit ranges as
         # those in the encoding field.
-        match_fmt = None
-        for rv_name, (fmt, _, rv_bits) in rvfmt.op_data.items():
+        match = None
+        for rv_name, (fmt, shift, rv_bits) in rvfmt.op_data.items():
             if fmt == 'f':
                 continue
             if field.scheme_field.bits == rv_bits:
-                match_fmt = fmt
+                match = (fmt, shift)
                 break
 
         # If we didn't find a field in rvfmt for this field, we've failed.
-        if match_fmt is None:
+        if match is None:
             return None
 
-        # These "difficult" operands can only be encoded in immediate fields.
-        if match_fmt != 'i':
+        fmt, shift = match
+
+        # These "difficult" operands can only be encoded in immediate fields of
+        # the correct shift and sign.
+        if shift != op_type.shift:
+            return None
+        if fmt == 'i':
+            if not op_type.signed:
+                return None
+        elif fmt == 'u':
+            if op_type.signed:
+                return None
+        else:
             return None
 
         rv_field_to_op[rv_name] = field.value
@@ -427,6 +457,12 @@ def parse_positionals(argv: List[str]) -> Tuple[List[str], List[str], Set[str]]:
 
 def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
     '''Expand the li pseudo-op'''
+
+    # This logic is slightly complicated so it has some associated tests in the
+    # ISS testsuite (where we can run the results). If adding more cleverness
+    # to this or fixing bugs, we should also add a check at
+    # hw/ip/otbn/dv/otbnsim/test/simple/li.
+
     if set(op_to_expr.keys()) != {'grd', 'imm'}:
         raise RuntimeError('When expanding LI, got wrong op_to_expr keys '
                            '({}). This is a mismatch between expand_li in '
@@ -446,13 +482,14 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
 
     try:
         gpr_type = RegOperandType('gpr', True)
-        grd_int = gpr_type.read_index(grd)
+        grd_op_val = gpr_type.str_to_op_val(grd)
+        assert grd_op_val is not None
     except ValueError as err:
         raise RuntimeError('{}: When parsing LI instruction, <grd> '
                            'operand is wrong: {}'
                            .format(where, err))
 
-    grd_txt = gpr_type.render_val(grd_int)
+    grd_txt = gpr_type.op_val_to_str(grd_op_val)
 
     try:
         imm_int = int(imm, 0)
@@ -461,14 +498,22 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
                            'instruction, as an integer.'
                            .format(where, imm))
 
-    # imm_int had better be representable as an i32.
-    if imm_int < -(1 << 32) or 1 << 32 <= imm_int:
+    # We allow immediates in the range [-2^31, 2^31-1] (the i32 range), plus
+    # [2^31, 2^32-1] (to allow any u32 constant).
+    if not (-(1 << 31) <= imm_int <= (1 << 32) - 1):
         raise RuntimeError('{}: The immediate for an LI instruction is {}, '
-                           'which does not fit in a signed 32-bit integer.'
+                           'which does not fit in a 32-bit integer.'
                            .format(where, imm))
 
+    # Convert any large positive constants to negative ones, so imm_int ends up
+    # in the range [-2^31, 2^31-1].
+    if (1 << 31) <= imm_int:
+        imm_int -= 1 << 32
+
+    assert -(1 << 31) <= imm_int <= (1 << 31) - 1
+
     # If imm_int is representable as an i12, we can just generate an addi
-    if -(1 << 12) <= imm_int < (1 << 12):
+    if -(1 << 11) <= imm_int < (1 << 11):
         return ['addi {}, x0, {}'.format(grd_txt, imm_int)]
 
     imm_uint = imm_int if imm_int > 0 else (1 << 32) + imm_int
@@ -595,26 +640,42 @@ class Transformer:
         '''
         assert insn.encoding is not None
 
-        # Generate a mapping from operand name to an integer value. Note that
-        # read_index checks that the value fits in the operand type.
+        # Generate a mapping from operand name to an encoded value. Note that
+        # read_index checks that the value fits in the operand type and
+        # converts to the value that should be encoded.
         op_to_idx = {}
         for op_name, expr in op_to_expr.items():
-            op = insn.name_to_operand[op_name]
+            op_type = insn.name_to_operand[op_name].op_type
             try:
-                idx = (0 if expr is None
-                       else op.op_type.read_index(expr.strip()))
+                op_val = (0 if expr is None
+                          else op_type.str_to_op_val(expr.strip()))
             except ValueError as err:
                 raise RuntimeError('{}:{}: {}'
                                    .format(self.in_path,
                                            self.line_number, err)) from None
-            if idx is None:
+            if op_val is None:
                 raise RuntimeError('{}:{}: Cannot resolve operand expression '
                                    '{!r} to an index and the instruction {!r} '
                                    'has an encoding incompatible with rv32i '
                                    '.insn lines.'
                                    .format(self.in_path, self.line_number,
                                            expr, insn.mnemonic)) from None
-            op_to_idx[op_name] = idx
+
+            try:
+                enc_val = op_type.op_val_to_enc_val(op_val, None)
+            except ValueError as err:
+                raise RuntimeError('{}:{}: {}'
+                                   .format(self.in_path,
+                                           self.line_number, err)) from None
+
+            if enc_val is None:
+                raise RuntimeError('{}:{}: Cannot encode {!r} operand for '
+                                   '{!r} instruction without a current PC '
+                                   '(which is not known to otbn-as).'
+                                   .format(self.in_path, self.line_number,
+                                           expr, insn.mnemonic)) from None
+
+            op_to_idx[op_name] = enc_val
 
         try:
             word_val = insn.encoding.assemble(op_to_idx)
@@ -644,9 +705,12 @@ class Transformer:
             if expr is None:
                 continue
 
-            op = insn.name_to_operand[field.value]
+            op_type = insn.name_to_operand[field.value].op_type
             try:
-                field_value = op.op_type.read_index(expr.strip())
+                op_val = op_type.str_to_op_val(expr.strip())
+                assert op_val is not None
+                enc_val = op_type.op_val_to_enc_val(op_val, None)
+                assert enc_val is not None
             except ValueError as err:
                 raise RuntimeError('{}:{}: {}'
                                    .format(self.in_path,
@@ -654,11 +718,11 @@ class Transformer:
 
             # read_index should always return a non-None result if
             # syntax_determines_value() returned false.
-            assert field_value is not None
+            assert enc_val is not None
 
             for (field_msb, field_lsb), rv_name, rv_lsb in pfe:
                 part_field_mask = (1 << (field_msb - field_lsb + 1)) - 1
-                part_field_value = (field_value >> field_lsb) & part_field_mask
+                part_field_value = (enc_val >> field_lsb) & part_field_mask
                 assert 0 == ((rv_nums[rv_name] >> rv_lsb) & part_field_mask)
                 rv_nums[rv_name] |= part_field_value << rv_lsb
 
@@ -735,7 +799,7 @@ class Transformer:
         # A custom instruction. We have two possible approaches.
         #
         #  1. Generate a .insn line. This is fine if the encoding happens to
-        #     map on to one of the encodings that riscv-unknown-elf-as
+        #     map on to one of the encodings that riscv32-unknown-elf-as
         #     supports, but won't work otherwise.
         #
         #  2. Just generate the bits by hand. This is fine if we can resolve
@@ -923,7 +987,7 @@ class Transformer:
         # glued operands) as a string.
         operands_str = self.key_sym[len(insn.mnemonic):] + ''.join(self.acc)
 
-        match = insn.asm_pattern.match(operands_str)
+        match = insn.asm_pattern.match(operands_str.rstrip())
         if match is None:
             raise RuntimeError('{}:{}: Cannot match syntax for {!r} ({!r}).'
                                .format(self.in_path, self.line_number,
@@ -975,6 +1039,11 @@ class Transformer:
         '''Consume a single line from the input'''
         pos = 0
         self.line_number += 1
+
+        # Append a newline if the line doesn't have one. In practice, this just
+        # happens with the last line of a file that doesn't end with a newline.
+        if line and line[-1] != '\n':
+            line = line + '\n'
 
         # Finish up any block comment
         if self.in_comment:
@@ -1088,20 +1157,19 @@ def run_binutils_as(other_args: List[str], inputs: List[str]) -> int:
     Performs no output redirection and returns the process's exit code.
 
     '''
-    assembler_name = 'riscv32-unknown-elf-as'
+    as_name = find_tool('as')
 
     # Don't ask the linker to do relaxation because, in some cases, this might
     # generate a GP-relative load. OTBN doesn't treat x3 (gp) specially, so
     # this won't work.
     default_args = ['-mno-relax']
 
-    cmd = [assembler_name] + default_args + other_args + inputs
+    cmd = [as_name] + default_args + other_args + inputs
     try:
         return subprocess.run(cmd).returncode
     except FileNotFoundError:
-        sys.stderr.write('Unknown command: {!r}. '
-                         '(is it installed and on your PATH?)\n'
-                         .format(assembler_name))
+        sys.stderr.write('Unknown command: {!r}.\n'
+                         .format(as_name))
         return 127
 
 
@@ -1114,10 +1182,8 @@ def main() -> int:
     # files is now a nonempty list of input files. Rather unusually, '--'
     # (rather than '-') denotes standard input.
 
-    insns_yml = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                              '..', 'data', 'insns.yml'))
     try:
-        insns_file = load_file(insns_yml)
+        insns_file = load_insns_yaml()
     except RuntimeError as err:
         sys.stderr.write('{}\n'.format(err))
         return 1

@@ -1,0 +1,264 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "edn",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  bus_host: "none",
+  param_list: [
+    { name: "NumEndPoints",
+      desc: "Number of end points to be supported by this block",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "EndPointBusWidth0",
+      desc: "Power of two width of the obsfucated entropy data bus for end point 0",
+      type: "int",
+      default: "64",
+      local: "true"
+    },
+    { name: "EndPointBusWidth1",
+      desc: "Power of two width of the obsfucated entropy data bus for end point 1",
+      type: "int",
+      default: "32",
+      local: "true"
+    },
+    { name: "EndPointBusWidth2",
+      desc: "Power of two width of the obsfucated entropy data bus for end point 2",
+      type: "int",
+      default: "16",
+      local: "true"
+    },
+    { name: "EndPointBusWidth3",
+      desc: "Power of two width of the obsfucated entropy data bus for end point 3",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+  ],
+  interrupt_list: [
+    { name: "edn_cmd_req_done"
+      desc: "Asserted when a software CSRNG request has completed."}
+    { name: "edn_fifo_err"
+      desc: "Asserted when a FIFO error occurs."}
+  ],
+  inter_signal_list: [
+    { struct:  "edn",  // edn_req_t, edn_rsp_t
+      type:    "req_rsp",
+      name:    "edn_cmd",
+      act:     "rsp",
+      width:   "4",
+      desc:    '''
+               The collection of peripheral ports supported by edn. The width (4)
+               indicates the number of peripheral ports on a single instance.
+               Due to limitations in the parametrization of top-level interconnects
+               this value is not currently parameterizable.  However, the number
+               of peripheral ports may change in a future revision.
+               ''',
+      package: "edn_pkg",
+    }
+  ],
+
+  regwidth: "32",
+  registers: [
+    { name: "REGEN",
+      desc: "Register write enable for all control registers",
+      swaccess: "rw1c",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          desc: '''
+                When true, the BOOT_REQ_DIS and BCAST_MODE_DIS fields within the CTRL registers
+                can be modified. When false, this field read-only. Defaults true, write one to clear.
+                Note that this needs to be cleared after initial configuration at boot in order to
+                lock in the listed register settings.
+                '''
+          resval: 1
+        },
+      ]
+    },
+    { name: "CTRL",
+      desc: "EDN control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "EDN_ENABLE",
+          desc: '''
+                 Setting this bit enables the EDN module.
+                 '''
+        },
+        { bits: "1",
+          name: "CMD_FIFO_RST",
+          desc: '''
+                Setting this bit clears the three command FIFOs: the SW_CMD_REQ FIFO, the
+                RESEED_CMD FIFO, and the GENERATE_CMD FIFO. This bit must be cleared by
+                software before any further commands can be issued to these FIFOs.
+                '''
+        }
+        { bits: "2",
+          name: "AUTO_REQ_MODE",
+          desc: '''
+                Setting this bit will enable the EDN block to automatically send another request to
+                CSRNG application interface. It is assumed that the command has been set up ahead of
+                time, such that when the previous command has returned ack, then a new command will be
+                send out again without software intervention. It is expected that the generate command
+                will be sent repeatedly so that a continuous supply of entropy can be delivered to the
+                endpoints.
+                '''
+        },
+        { bits: "3",
+          name: "BOOT_REQ_DIS",
+          desc: '''
+                Setting this bit will disable the feature where the EDN block will automatically
+                send a boot-time request to the CSRNG application interface.
+                The purpose of this feature is to request entropy as fast as possible after reset,
+                and during chip boot-time.
+                '''
+        },
+      ]
+    },
+    { name: "SUM_STS",
+      desc: "EDN summary status register",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "REQ_MODE_SM_STS",
+          desc: '''
+                This bit reflects the status of the EDN command state machine. This bit is asserted
+                whenever the the state machine is actively managing commands in either auto
+                request mode, or boot-time request mode.  After the state machine has
+                been suspended, this status bit should be polled to know when the last remaining
+                state machine command has been completed, at which point is safe to issue custom
+                commands via the software command forwarding interface. A value of zero indicates
+                that all commands have completed, and the state machine is idle.
+                '''
+        }
+        { bits: "1",
+          name: "BOOT_INST_ACK",
+          desc: '''
+                This bit indicates that the EDN state machine has started the instantiation
+                process. If this bit is asserted it means the state machine has started in
+                boot-time request mode and that the CSRNG has confirmed that this
+                EDN will be the next application to receive a seed from the entropy_src IP.
+                '''
+        }
+        { bits: "31",
+          name: "INTERNAL_USE",
+          desc: "This bit is for internal use only."
+        }
+      ]
+    },
+    { name: "SW_CMD_REQ",
+      desc: "EDN csrng app command request register",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
+      regwen: "REGEN",
+      fields: [
+        { bits: "31:0",
+          name: "SW_CMD_REQ",
+          desc: '''
+                Any CSRNG action can be initiated by writing a CSRNG command to this
+                register. The application interface must wait for the "ack" to
+                return before issuing new commands. This interface is intended
+                to be controlled solely by software. If AUTO_REQ_MODE is set, this
+                register will have no effect on operation.
+                '''
+        }
+      ]
+    },
+    { name: "SW_CMD_STS",
+      desc: "EDN command status register",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "CMD_RDY",
+          desc: '''
+                This bit indicates when the command interface is ready to accept commands.
+                '''
+        }
+        { bits: "1",
+          name: "CMD_ACK",
+          desc: '''
+                This bit is set when the command request has completed. This bit must
+                be cleared by software before a new request is made.  (CMD_RDY will
+                not be asserted until this bit has been cleared).
+                '''
+        }
+        { bits: "4",
+          name: "CMD_STS",
+          desc: '''
+                This one bit field is the status code returned with the application command ack.
+                0b0: Request completed successfully
+                0b1: Request completed with an error
+                '''
+        }
+      ]
+    },
+    { name: "RESEED_CMD",
+      desc: "EDN csrng reseed command register",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
+      regwen: "REGEN",
+      fields: [
+        { bits: "31:0",
+          name: "RESEED_CMD",
+          desc: '''
+                Writing this register will fill a FIFO with up to 13 command words (32b words).
+                This FIFO will be used to automatically send out a reseed command to the CSRNG
+                application interface when in AUTO_REQ_MODE. This command will be sent only after
+                the MAX_NUM_REQS_BETWEEN_RESEEDS counter value has reached zero. On overflow this
+                FIFO pops the oldest word from the previous command. Updated commands can be inserted
+                by pushing 13 command words into the FIFO, pushing the previous command out.
+                '''
+        }
+      ]
+    },
+    { name: "GENERATE_CMD",
+      desc: "EDN csrng generate command register",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
+      regwen: "REGEN",
+      fields: [
+        { bits: "31:0",
+          name: "GENERATE_CMD",
+          desc: '''
+                Writing this register will fill a FIFO with up to 13 command words (32b words).
+                This FIFO will be used to automatically send out a generate command to the CSRNG
+                appl interface when in AUTO_REQ_MODE. This command will be sent only after
+                receiving a command ack from the previous command. On overflow this
+                FIFO pops the oldest word from the previous command. Updated commands can be inserted
+                by pushing 13 command words into the FIFO, pushing the previous command out.
+                '''
+        }
+      ]
+    },
+    { name: "MAX_NUM_REQS_BETWEEN_RESEEDS",
+      desc: "EDN maximum number of requests between reseeds register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      hwqe: "true",
+      fields: [
+        { bits: "31:0",
+          name: "MAX_NUM_REQS_BETWEEN_RESEEDS",
+          desc: '''
+                Setting this field will set the number of generate requests that can be made
+                to CSRNG before a reseed request is made. This value only has meaning when in
+                AUTO_REQ_MODE. This register supports a maximum of 2^32 requests between reseeds.
+                This register will be used by a counter that counts down, triggering an
+                automatic reseed when it reaches zero.
+                '''
+        }
+      ]
+    }
+  ]
+}

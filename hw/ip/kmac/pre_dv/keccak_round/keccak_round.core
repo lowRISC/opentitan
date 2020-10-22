@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:keccak_round"
+description: "Keccak Single Round TB"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:kmac:0.1
+    files:
+      - tb.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: tb
+

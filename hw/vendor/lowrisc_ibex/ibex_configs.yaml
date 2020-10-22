@@ -9,11 +9,12 @@
 # (4 cycles for mulh), resulting in 2 stall cycles for mul (3 for mulh)
 small:
   RV32E                    : 0
-  RV32M                    : 1
+  RV32M                    : "ibex_pkg::RV32MFast"
   RV32B                    : "ibex_pkg::RV32BNone"
+  RegFile                  : "ibex_pkg::RegFileFF"
   BranchTargetALU          : 0
   WritebackStage           : 0
-  MultiplierImplementation : "fast"
+  BranchPredictor          : 0
   PMPEnable                : 0
   PMPGranularity           : 0
   PMPNumRegions            : 4
@@ -27,11 +28,12 @@ small:
 # maximum performance configuration.
 experimental-maxperf:
   RV32E                    : 0
-  RV32M                    : 1
+  RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BNone"
+  RegFile                  : "ibex_pkg::RegFileFF"
   BranchTargetALU          : 1
   WritebackStage           : 1
-  MultiplierImplementation : "single-cycle"
+  BranchPredictor          : 0
   PMPEnable                : 0
   PMPGranularity           : 0
   PMPNumRegions            : 4
@@ -39,11 +41,12 @@ experimental-maxperf:
 # experimental-maxperf config above plus PMP enabled with 16 regions.
 experimental-maxperf-pmp:
   RV32E                    : 0
-  RV32M                    : 1
+  RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BNone"
+  RegFile                  : "ibex_pkg::RegFileFF"
   BranchTargetALU          : 1
   WritebackStage           : 1
-  MultiplierImplementation : "single-cycle"
+  BranchPredictor          : 0
   PMPEnable                : 1
   PMPGranularity           : 0
   PMPNumRegions            : 16
@@ -51,11 +54,12 @@ experimental-maxperf-pmp:
 # experimental-maxperf-pmp config above with balanced bitmanip extension
 experimental-maxperf-pmp-bmbalanced:
   RV32E                    : 0
-  RV32M                    : 1
+  RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BBalanced"
+  RegFile                  : "ibex_pkg::RegFileFF"
   BranchTargetALU          : 1
   WritebackStage           : 1
-  MultiplierImplementation : "single-cycle"
+  BranchPredictor          : 0
   PMPEnable                : 1
   PMPGranularity           : 0
   PMPNumRegions            : 16
@@ -63,12 +67,29 @@ experimental-maxperf-pmp-bmbalanced:
 # experimental-maxperf-pmp config above with full bitmanip extension
 experimental-maxperf-pmp-bmfull:
   RV32E                    : 0
-  RV32M                    : 1
+  RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BFull"
+  RegFile                  : "ibex_pkg::RegFileFF"
   BranchTargetALU          : 1
   WritebackStage           : 1
-  MultiplierImplementation : "single-cycle"
+  BranchPredictor          : 0
   PMPEnable                : 1
   PMPGranularity           : 0
   PMPNumRegions            : 16
+
+# experimental-maxperf with branch predictor switched on. This exists to allow
+# easy use of Ibex with the branch predictor in particular for CI runs. The
+# branch predictor will be enabled in all the 'maxperf' configs after further
+# development.
+experimental-branch-predictor:
+  RV32E                    : 0
+  RV32M                    : "ibex_pkg::RV32MSingleCycle"
+  RV32B                    : "ibex_pkg::RV32BNone"
+  RegFile                  : "ibex_pkg::RegFileFF"
+  BranchTargetALU          : 1
+  WritebackStage           : 1
+  BranchPredictor          : 1
+  PMPEnable                : 0
+  PMPGranularity           : 0
+  PMPNumRegions            : 4
 

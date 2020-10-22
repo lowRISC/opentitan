@@ -51,9 +51,24 @@ typedef enum device_type {
 extern const device_type_t kDeviceType;
 
 /**
- * The clock frequency of the device, in hertz.
+ * The CPU clock frequency of the device, in hertz.
+ * This is the operating clock for the main processing host.
  */
-extern const uint64_t kClockFreqHz;
+extern const uint64_t kClockFreqCpuHz;
+
+/**
+ * The peripheral clock frequency of the device, in hertz.
+ * This is the operating clock used by timers, uarts,
+ * other peripheral interfaces and the software interface
+ * to the USB controller.
+ */
+extern const uint64_t kClockFreqPeripheralHz;
+
+/**
+ * The USB clock frequency of the device, in hertz.
+ * This is the operating clock used by the USB phy interface.
+ */
+extern const uint64_t kClockFreqUsbHz;
 
 /**
  * The baudrate of the UART peripheral (if such a thing is present).
@@ -61,10 +76,24 @@ extern const uint64_t kClockFreqHz;
 extern const uint64_t kUartBaudrate;
 
 /**
- * An address to write to to cause execution to stop.
+ * An address to write to to report test status.
  *
- * If this is zero, there is no address you can write to to stop execution.
+ * If this is zero, there is no address to write to to report test status.
+ *
+ * Depending on the simulation environment and the value written to this
+ * address, the simulation may stop.
+ *
+ * @see #test_status_set
  */
-extern const uintptr_t kDeviceStopAddress;
+extern const uintptr_t kDeviceTestStatusAddress;
+
+/**
+ * An address to write use for UART logging bypass
+ *
+ * If this is zero, there is no address to write to to bypass UART logging.
+ *
+ * @see #LOG
+ */
+extern const uintptr_t kDeviceLogBypassUartAddress;
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_ARCH_DEVICE_H_

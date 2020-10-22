@@ -21,10 +21,12 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   input slow_pwrup_cause_toggle_i,
   input pwrup_cause_e slow_pwrup_cause_i,
   output logic [NumWkups-1:0] slow_wakeup_en_o,
-  output pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t slow_reset_en_o,
+  output logic [NumRstReqs-1:0] slow_reset_en_o,
   output logic slow_main_pd_no,
   output logic slow_io_clk_en_o,
   output logic slow_core_clk_en_o,
+  output logic slow_usb_clk_en_lp_o,
+  output logic slow_usb_clk_en_active_o,
   output logic slow_req_pwrdn_o,
   output logic slow_ack_pwrup_o,
   output pwr_ast_rsp_t slow_ast_o,
@@ -36,10 +38,12 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   input ack_pwrup_i,
   input cfg_cdc_sync_i,
   input [NumWkups-1:0] wakeup_en_i,
-  input pwrmgr_reg_pkg::pwrmgr_reg2hw_reset_en_reg_t reset_en_i,
+  input logic [NumRstReqs-1:0] reset_en_i,
   input main_pd_ni,
   input io_clk_en_i,
   input core_clk_en_i,
+  input usb_clk_en_lp_i,
+  input usb_clk_en_active_i,
   output logic ack_pwrdn_o,
   output logic req_pwrup_o,
   output pwrup_cause_e pwrup_cause_o,
@@ -48,6 +52,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   // peripheral inputs, mixed domains
   input pwr_peri_t peri_i,
+  input pwr_flash_rsp_t flash_i,
+  output pwr_flash_rsp_t flash_o,
 
   // AST inputs, unknown domain
   input pwr_ast_rsp_t ast_i
@@ -92,7 +98,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // So there is no general concern about recombining as there is
   // no intent to use them in a related manner.
   prim_flop_2sync # (
-    .Width(HwRstReqs + NumWkups)
+    .Width(NumRstReqs + NumWkups)
   ) i_slow_ext_req_sync (
     .clk_i  (clk_slow_i),
     .rst_ni (rst_slow_ni),
@@ -142,12 +148,16 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
       slow_main_pd_no <= '0;
       slow_io_clk_en_o <= '0;
       slow_core_clk_en_o <= '0;
+      slow_usb_clk_en_lp_o <= '0;
+      slow_usb_clk_en_active_o <= 1'b1;
     end else if (slow_cdc_sync) begin
       slow_wakeup_en_o <= wakeup_en_i;
       slow_reset_en_o <= reset_en_i;
       slow_main_pd_no <= main_pd_ni;
       slow_io_clk_en_o <= io_clk_en_i;
       slow_core_clk_en_o <= core_clk_en_i;
+      slow_usb_clk_en_lp_o <= usb_clk_en_lp_i;
+      slow_usb_clk_en_active_o <= usb_clk_en_active_i;
     end
   end
 
@@ -212,13 +222,34 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     end
   end
 
-  prim_flop_2sync # (
-    .Width(HwRstReqs + NumWkups)
+  prim_flop_2sync #(
+    .Width(NumRstReqs + NumWkups)
   ) i_ext_req_sync (
     .clk_i,
     .rst_ni,
     .d_i(slow_peri_reqs_masked_i),
     .q_o(peri_reqs_o)
+  );
+
+  // synchronize inputs from flash
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(1'b0)
+  ) u_sync_flash_done (
+    .clk_i,
+    .rst_ni,
+    .d_i(flash_i.flash_done),
+    .q_o(flash_o.flash_done)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(1'b1)
+  ) u_sync_flash_idle (
+    .clk_i,
+    .rst_ni,
+    .d_i(flash_i.flash_idle),
+    .q_o(flash_o.flash_idle)
   );
 
 

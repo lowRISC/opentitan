@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/usb_simpleserial.h"
 
-#include "sw/device/lib/common.h"
 #include "sw/device/lib/usbdev.h"
 
 #define MAX_GATHER 16

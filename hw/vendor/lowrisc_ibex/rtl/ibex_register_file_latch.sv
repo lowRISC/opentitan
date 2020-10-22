@@ -11,7 +11,7 @@
  * based RF. It requires a target technology-specific clock gating cell. Use this
  * register file when targeting ASIC synthesis or event-based simulators.
  */
-module ibex_register_file #(
+module ibex_register_file_latch #(
     parameter bit          RV32E             = 0,
     parameter int unsigned DataWidth         = 32,
     parameter bit          DummyInstructions = 0

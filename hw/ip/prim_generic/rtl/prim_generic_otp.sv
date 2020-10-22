@@ -3,107 +3,328 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module prim_generic_otp #(
-  parameter  int Width     = 8,
-  parameter  int Depth     = 1024,
-  parameter  int ErrWidth  = 8,
-  localparam int AddrWidth = $clog2(Depth)
+  // Native OTP word size. This determines the size_i granule.
+  parameter  int Width       = 16,
+  parameter  int Depth       = 1024,
+  parameter  int CmdWidth    = otp_ctrl_pkg::OtpCmdWidth,
+  // This determines the maximum number of native words that
+  // can be transferred accross the interface in one cycle.
+  parameter  int SizeWidth   = otp_ctrl_pkg::OtpSizeWidth,
+  parameter  int ErrWidth    = otp_ctrl_pkg::OtpErrWidth,
+  // Width of the power sequencing signal.
+  parameter  int PwrSeqWidth = otp_ctrl_pkg::OtpPwrSeqWidth,
+  // Derived parameters
+  localparam int AddrWidth   = prim_util_pkg::vbits(Depth),
+  localparam int IfWidth     = 2**SizeWidth*Width,
+  // VMEM file to initialize the memory with
+  parameter      MemInitFile = ""
 ) (
-  input                        clk_i,
-  input                        rst_ni,
-  // TODO: power sequencing signals from/to AST
+  input                          clk_i,
+  input                          rst_ni,
+  // Macro-specific power sequencing signals to/from AST
+  output logic [PwrSeqWidth-1:0] pwr_seq_o,
+  input        [PwrSeqWidth-1:0] pwr_seq_h_i,
   // Test interface
-  input  tlul_pkg::tl_h2d_t    test_tl_i,
-  output tlul_pkg::tl_d2h_t    test_tl_o,
-  // Start Macro init sequence
-  // init shall be asserted until acknowledged with done
-  input                        init_req_i,
-  output logic                 init_done_o,
-  // Macro error output
-  // TODO: define error codes
-  output logic                 err_valid_o,
-  output logic [ErrWidth-1:0]  err_code_o,
+  input  tlul_pkg::tl_h2d_t      test_tl_i,
+  output tlul_pkg::tl_d2h_t      test_tl_o,
   // Ready valid handshake for read/write command
-  output logic                 ready_o,
-  input                        valid_i,
-  input [AddrWidth-1:0]        addr_i,
-  input [Width-1:0]            wdata_i,
-  input                        wren_i, // 0: read command, 1: write command
-  // Read data output
-  output logic [Width-1:0]     rdata_o,
-  output logic                 rvalid_o
+  output logic                   ready_o,
+  input                          valid_i,
+  input [SizeWidth-1:0]          size_i, // #(Native words)-1, e.g. size == 0 for 1 native word.
+  input [CmdWidth-1:0]           cmd_i,  // 00: read command, 01: write command, 11: init command
+  input [AddrWidth-1:0]          addr_i,
+  input [IfWidth-1:0]            wdata_i,
+  // Response channel
+  output logic                   valid_o,
+  output logic [IfWidth-1:0]     rdata_o,
+  output logic [ErrWidth-1:0]    err_o
 );
+
+  // Not supported in open-source emulation model.
+  logic [PwrSeqWidth-1:0] unused_pwr_seq_h;
+  assign unused_pwr_seq_h = pwr_seq_h_i;
+  assign pwr_seq_o = '0;
+
+  ////////////////////////////////////
+  // TL-UL Test Interface Emulation //
+  ////////////////////////////////////
+
+  // Put down a register that can be used to test the TL interface.
+  // TODO: this emulation may need to be adjusted, once closed source wrapper is
+  // implemented.
+  logic tlul_req, tlul_rvalid_q, tlul_wren;
+  logic [31:0] tlul_testreg_d, tlul_testreg_q;
+  tlul_adapter_sram #(
+    .SramAw      ( 9             ),
+    .SramDw      ( 32            ),
+    .Outstanding ( 1             ),
+    .ByteAccess  ( 0             ),
+    .ErrOnWrite  ( 0             )
+  ) u_tlul_adapter_sram (
+    .clk_i,
+    .rst_ni,
+    .tl_i     ( test_tl_i         ),
+    .tl_o     ( test_tl_o         ),
+    .req_o    ( tlul_req          ),
+    .gnt_i    ( tlul_req          ),
+    .we_o     ( tlul_wren         ),
+    .addr_o   (                   ),
+    .wdata_o  ( tlul_testreg_d    ),
+    .wmask_o  (                   ),
+    .rdata_i  ( tlul_testreg_q    ),
+    .rvalid_i ( tlul_rvalid_q     ),
+    .rerror_i ( '0                )
+  );
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlul_testreg
+    if (!rst_ni) begin
+      tlul_rvalid_q  <= 1'b0;
+      tlul_testreg_q <= '0;
+    end else begin
+      tlul_rvalid_q <= tlul_req & ~tlul_wren;
+      if (tlul_req && tlul_wren) begin
+        tlul_testreg_q <= tlul_testreg_d;
+      end
+    end
+  end
 
   ///////////////////
   // Control logic //
   ///////////////////
 
-  logic req, write_d, write_q, read_d, read_q;
-  logic [Width-1:0] wdata, wdata_d, wdata_q;
-  logic [AddrWidth-1:0] addr, waddr_d, waddr_q;
+  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 8 -n 10
+  // Hamming distance histogram:
+  //
+  // 0: --
+  // 1: --
+  // 2: --
+  // 3: --
+  // 4: --
+  // 5: |||||||||||||||||||| (53.57%)
+  // 6: ||||||||||||| (35.71%)
+  // 7: | (3.57%)
+  // 8: || (7.14%)
+  // 9: --
+  // 10: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 8
+  //
+  localparam int StateWidth = 10;
+  typedef enum logic [StateWidth-1:0] {
+    ResetSt      = 10'b1100000011,
+    InitSt       = 10'b1100110100,
+    IdleSt       = 10'b1010111010,
+    ReadSt       = 10'b0011100000,
+    ReadWaitSt   = 10'b1001011111,
+    WriteCheckSt = 10'b0111010101,
+    WriteWaitSt  = 10'b0000001100,
+    WriteSt      = 10'b0110101111
+  } state_e;
 
-  // TODO: add support for these in emulation
-  assign test_tl_o   = '0;
-  assign err_valid_o = '0;
-  assign err_type_o  = '0;
-  assign init_done_o = 1'b1;
+  state_e state_d, state_q;
+  logic  valid_d, valid_q;
+  logic [ErrWidth-1:0] err_d, err_q;
+  logic req, wren, rvalid;
+  logic [1:0] rerror;
+  logic [Width-1:0] rdata_d;
+  logic [2**SizeWidth-1:0][Width-1:0] rdata_q, wdata_q;
+  logic [AddrWidth-1:0] addr_q;
+  logic [SizeWidth-1:0] size_q;
+  logic [SizeWidth-1:0] cnt_d, cnt_q;
+  logic cnt_clr, cnt_en;
 
-  // TODO: randomize / extend access times
-  assign read_d  = ready_o & valid_i & ~wren_i;
-  assign write_d = ready_o & valid_i & wren_i;
-  assign wdata_d = (write_d) ? wdata_i : wdata_q;
-  assign waddr_d = (write_d) ? addr_i : waddr_q;
+  assign cnt_d = (cnt_clr) ? '0           :
+                 (cnt_en)  ? cnt_q + 1'b1 : cnt_q;
 
-  assign ready_o  = ~write_q;
-  assign rvalid_o = read_q;
+  assign valid_o = valid_q;
+  assign rdata_o = rdata_q;
+  assign err_o   = err_q;
 
-  // perform read modify write and OR bits on top
-  // of existing data
-  assign wdata = rdata_o | wdata_q;
-  assign addr  = (write_q) ? waddr_q : addr_i;
-  assign req   = read_d | write_d | write_q;
+  always_comb begin : p_fsm
+    // Default
+    state_d = state_q;
+    ready_o = 1'b0;
+    valid_d = 1'b0;
+    err_d   = otp_ctrl_pkg::NoError;
+    req     = 1'b0;
+    wren    = 1'b0;
+    cnt_clr = 1'b0;
+    cnt_en  = 1'b0;
 
-  //////////////////////////////////
-  // Emulate using memory process //
-  //////////////////////////////////
-
-  logic [Width-1:0] mem [Depth];
-
-  // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error
-  // thrown when using $readmemh system task to backdoor load an image
-  always @(posedge clk_i) begin
-    if (req) begin
-      if (write_q) begin
-        mem[addr] <= wdata;
-      end else begin
-        rdata_o <= mem[addr];
+    unique case (state_q)
+      // Wait here until we receive an initialization command.
+      ResetSt: begin
+        ready_o = 1'b1;
+        if (valid_i) begin
+          if (cmd_i == otp_ctrl_pkg::OtpInit) begin
+            state_d = InitSt;
+          end else begin
+            // Invalid commands get caught here
+            valid_d = 1'b1;
+            err_d = otp_ctrl_pkg::MacroError;
+          end
+        end
       end
-    end
+      // Wait for some time until the OTP macro is ready.
+      InitSt: begin
+        state_d = IdleSt;
+        valid_d = 1'b1;
+      end
+      // In the idle state, we basically wait for read or write commands.
+      IdleSt: begin
+        ready_o = 1'b1;
+        if (valid_i) begin
+          cnt_clr = 1'b1;
+          err_d = otp_ctrl_pkg::NoError;
+          unique case (cmd_i)
+            otp_ctrl_pkg::OtpRead:  state_d = ReadSt;
+            otp_ctrl_pkg::OtpWrite: state_d = WriteCheckSt;
+            default:  begin
+              // Invalid commands get caught here
+              valid_d = 1'b1;
+              err_d = otp_ctrl_pkg::MacroError;
+            end
+          endcase // cmd_i
+        end
+      end
+      // Issue a read command to the macro.
+      ReadSt: begin
+        state_d = ReadWaitSt;
+        req     = 1'b1;
+      end
+      // Wait for response from macro.
+      ReadWaitSt: begin
+        if (rvalid) begin
+          cnt_en = 1'b1;
+          // Uncorrectable error, bail out.
+          if (rerror[1]) begin
+            state_d = IdleSt;
+            valid_d = 1'b1;
+            err_d = otp_ctrl_pkg::MacroEccUncorrError;
+          end else begin
+            if (cnt_q == size_q) begin
+              state_d = IdleSt;
+              valid_d = 1'b1;
+            end else begin
+              state_d = ReadSt;
+            end
+            // Correctable error, carry on but signal back.
+            if (rerror[0]) begin
+              err_d = otp_ctrl_pkg::MacroEccCorrError;
+            end
+          end
+        end
+      end
+      // First, perform a blank check.
+      WriteCheckSt: begin
+        state_d = WriteWaitSt;
+        req     = 1'b1;
+      end
+      // Wait for readout to complete first.
+      // If the word is not blank, or if we got an uncorrectable ECC error,
+      // the check has failed and we abort the write at this point.
+      WriteWaitSt: begin
+        if (rvalid) begin
+          cnt_en = 1'b1;
+          if (rerror[1] || rdata_d != '0) begin
+            state_d = IdleSt;
+            valid_d = 1'b1;
+            err_d = otp_ctrl_pkg::MacroWriteBlankError;
+          end else begin
+            if (cnt_q == size_q) begin
+              cnt_clr = 1'b1;
+              state_d = WriteSt;
+            end else begin
+              state_d = WriteCheckSt;
+            end
+          end
+        end
+      end
+      // Now that we are sure that the memory is blank, we can write all native words in one go.
+      WriteSt: begin
+        req = 1'b1;
+        wren = 1'b1;
+        cnt_en = 1'b1;
+        if (cnt_q == size_q) begin
+          valid_d = 1'b1;
+          state_d = IdleSt;
+        end
+      end
+      default: begin
+        state_d = ResetSt;
+      end
+    endcase // state_q
   end
 
-  // TODO: add verilator init mechanism
-  `ifdef OTP_INIT_FILE
-    localparam MEM_FILE = `PRIM_STRINGIFY(`OTP_INIT_FILE);
-    initial begin
-      $display("Initializing OTP from %s", MEM_FILE);
-      $readmemh(MEM_FILE, mem);
-    end
-  `endif
+  ///////////////////////////////////////////
+  // Emulate using ECC protected Block RAM //
+  ///////////////////////////////////////////
+
+  logic [AddrWidth-1:0] addr;
+  assign addr = addr_q + AddrWidth'(cnt_q);
+
+  prim_ram_1p_adv #(
+    .Depth                (Depth),
+    .Width                (Width),
+    .MemInitFile          (MemInitFile),
+    .EnableECC            (1'b1),
+    .EnableInputPipeline  (1),
+    .EnableOutputPipeline (1)
+  ) i_prim_ram_1p_adv (
+    .clk_i,
+    .rst_ni,
+    .req_i    ( req            ),
+    .write_i  ( wren           ),
+    .addr_i   ( addr           ),
+    .wdata_i  ( wdata_q[cnt_q] ),
+    .wmask_i  ( {Width{1'b1}}  ),
+    .rdata_o  ( rdata_d        ),
+    .rvalid_o ( rvalid         ),
+    .rerror_o ( rerror         ),
+    .cfg_i    ( '0             )
+  );
+
+  // Currently it is assumed that no wrap arounds can occur.
+  `ASSERT(NoWrapArounds_A, addr >= addr_q)
 
   //////////
   // Regs //
   //////////
 
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(ResetSt))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( state_d ),
+    .q_o ( state_q )
+  );
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      read_q  <= 1'b0;
-      write_q <= 1'b0;
+      valid_q <= '0;
+      err_q   <= '0;
+      addr_q  <= '0;
       wdata_q <= '0;
-      waddr_q <= '0;
+      rdata_q <= '0;
+      cnt_q   <= '0;
+      size_q  <= '0;
     end else begin
-      read_q  <= read_d;
-      write_q <= write_d;
-      wdata_q <= wdata_d;
-      waddr_q <= waddr_d;
+      valid_q <= valid_d;
+      err_q   <= err_d;
+      cnt_q   <= cnt_d;
+      if (ready_o && valid_i) begin
+        addr_q  <= addr_i;
+        wdata_q <= wdata_i;
+        size_q  <= size_i;
+      end
+      if (rvalid) begin
+        rdata_q[cnt_q] <= rdata_d;
+      end
     end
   end
 

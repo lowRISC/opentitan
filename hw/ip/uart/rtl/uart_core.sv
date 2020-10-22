@@ -27,6 +27,8 @@ module uart_core (
 
   import uart_reg_pkg::*;
 
+  localparam int NcoWidth = $bits(reg2hw.ctrl.nco.q);
+
   logic   [15:0]  rx_val_q;
   logic   [7:0]   uart_rdata;
   logic           tick_baud_x16, rx_tick_baud;
@@ -148,16 +150,14 @@ module uart_core (
 
   //              NCO 16x Baud Generator
   // output clock rate is:
-  //      Fin * (NCO/2**16)
-  // So, with a 16 bit accumulator, the output clock is
-  //      Fin * (NCO/65536)
-  logic   [16:0]     nco_sum_q; // extra bit to get the carry
+  //      Fin * (NCO/2**NcoWidth)
+  logic   [NcoWidth:0]     nco_sum_q; // extra bit to get the carry
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       nco_sum_q <= 17'h0;
     end else if (tx_enable || rx_enable) begin
-      nco_sum_q <= {1'b0,nco_sum_q[15:0]} + {1'b0,reg2hw.ctrl.nco.q};
+      nco_sum_q <= {1'b0,nco_sum_q[NcoWidth-1:0]} + {1'b0,reg2hw.ctrl.nco.q[NcoWidth-1:0]};
     end
   end
 
@@ -384,6 +384,8 @@ module uart_core (
   // instantiate interrupt hardware primitives
 
   prim_intr_hw #(.Width(1)) intr_hw_tx_watermark (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_tx_watermark),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_watermark.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_watermark.q),
@@ -395,6 +397,8 @@ module uart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_watermark (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_watermark),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_watermark.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_watermark.q),
@@ -406,6 +410,8 @@ module uart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_tx_empty (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_tx_empty),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_empty.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_empty.q),
@@ -417,6 +423,8 @@ module uart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_overflow (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_overflow),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_overflow.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_overflow.q),
@@ -428,6 +436,8 @@ module uart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_frame_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_frame_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_frame_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_frame_err.q),
@@ -439,6 +449,8 @@ module uart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_break_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_break_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_break_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_break_err.q),
@@ -450,6 +462,8 @@ module uart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_timeout (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_timeout),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_timeout.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_timeout.q),
@@ -461,6 +475,8 @@ module uart_core (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_parity_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_parity_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_parity_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_parity_err.q),

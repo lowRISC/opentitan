@@ -31,9 +31,12 @@ typedef enum partition_type {
 
 /**
  * Memory protection configuration options.
+ * Data partitions and Info partitions are handled differently.
  */
 typedef struct mp_region {
-  /** Which region to program. */
+  /** Which region to program for data partition.
+      Which page to program for info partition.
+   */
   uint32_t num;
   /** Region offset. */
   uint32_t base;
@@ -47,6 +50,8 @@ typedef struct mp_region {
   uint32_t prog_en;
   /** Erase enable flag. */
   uint32_t erase_en;
+  /** Scramble / ECC enable flag. */
+  uint32_t scramble_en;
 } mp_region_t;
 
 /**
@@ -86,7 +91,7 @@ int flash_write(uint32_t addr, part_type_t part, const uint32_t *data,
  * @param addr Read start address.
  * @param part Flash parittion to access.
  * @param size Number of 4B words to read.
- * @param data Output buffer.
+ * @param[out] data Output buffer.
  * @return Non zero on failure.
  */
 int flash_read(uint32_t addr, part_type_t part, uint32_t size, uint32_t *data);
@@ -95,11 +100,6 @@ int flash_read(uint32_t addr, part_type_t part, uint32_t size, uint32_t *data);
  * Configure bank erase enable
  */
 void flash_cfg_bank_erase(bank_index_t bank, bool erase_en);
-
-/**
- * Configure scramble enable
- */
-void flash_cfg_scramble_enable(bool en);
 
 /**
  * Set flash controller default permissions.

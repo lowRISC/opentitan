@@ -16,6 +16,8 @@ waive -rules HIER_BRANCH_NOT_READ -location {ibex_id_stage.sv} -regexp {[nN]et '
       -comment "testability signal used in some versions of register file"
 waive -rules INPUT_NOT_READ       -location {ibex_register_file_ff.sv} -regexp {Input port 'test_en_i' is not read from} \
       -comment "testability signal used in some versions of register file"
+waive -rules INPUT_NOT_READ       -location {ibex_register_file_fpga.sv} -regexp {Input port 'test_en_i' is not read from} \
+      -comment "testability signal used in some versions of register file"
 waive -rules INPUT_NOT_READ       -location {ibex_core.sv} -regexp {Input port 'clock_en_i' is not read from} \
       -comment "clock enable signal used in behavioral code"
 waive -rules HIER_NET_NOT_READ    -location {rv_core_ibex.sv} -regexp {Net 'instr_addr_o.1.0.' is not read from} \

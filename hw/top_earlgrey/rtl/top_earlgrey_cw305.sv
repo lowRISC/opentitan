@@ -8,8 +8,8 @@ module top_earlgrey_cw305 #(
   parameter BootRomInitFile = "boot_rom_fpga_nexysvideo.32.vmem"
 ) (
   // Clock and Reset
-  inout               IO_CLK,
-  inout               IO_RST_N,
+  input               IO_CLK,
+  input               IO_RST_N,
   // JTAG interface
   inout               IO_DPS0, // IO_JTCK,    IO_SDCK
   inout               IO_DPS3, // IO_JTMS,    IO_SDCSB
@@ -37,16 +37,17 @@ module top_earlgrey_cw305 #(
   inout               IO_GP5,
   inout               IO_GP6,
   inout               IO_GP7,
-  output              IO_GP8,  // XXX: rename as LED
-  output              IO_GP9,  // XXX: rename as LED
-  output              IO_GP10, // XXX: rename as LED
+  inout               IO_GP8,
+  inout               IO_GP9,
+  inout               IO_GP10,
   inout               IO_GP11,
   inout               IO_GP12,
   inout               IO_GP13,
   inout               IO_GP14,
   inout               IO_GP15,
-  // chipwhisperer IO
-  output              TIO_CLKOUT
+  // ChipWhisperer IO
+  output              TIO_CLKOUT,
+  output              IO_UTX_DEBUG
 );
 
   import top_earlgrey_pkg::*;
@@ -56,7 +57,7 @@ module top_earlgrey_cw305 #(
   //////////////////////
 
 
-  logic clk, clk_usb_48mhz, rst_n;
+  logic clk_main, clk_usb_48mhz, rst_n;
   logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
   logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
@@ -66,27 +67,11 @@ module top_earlgrey_cw305 #(
   logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
   logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
 
-  reg io_utx_reg;
-  always @(posedge clk) begin
-      io_utx_reg <<= (IO_UTX == 1'bz)? 0 : IO_UTX;
-  end
-  assign IO_GP8 = io_utx_reg;
-
-  reg io_urx_reg;
-  always @(posedge clk) begin
-    io_urx_reg <<= (IO_URX == 1'bz)? 0 : IO_URX;
-  end
-  assign IO_GP9 = io_urx_reg;
-
-  assign IO_GP10 = 1'b1;
-
-  assign TIO_CLKOUT = clk;
-
   padring #(
     // MIOs 31:20 are currently not
     // connected to pads and hence tied off
-    .ConnectMioIn  ( 32'h000FF8FF ),
-    .ConnectMioOut ( 32'h000FF8FF ),
+    .ConnectMioIn  ( 32'h000FFFFF ),
+    .ConnectMioOut ( 32'h000FFFFF ),
     // Tied off DIOs:
     // 2: usbdev_d
     // 3: usbdev_suspend
@@ -113,9 +98,9 @@ module top_earlgrey_cw305 #(
                              IO_GP13,
                              IO_GP12,
                              IO_GP11,
-                             1'bz,
-                             1'bz,
-                             1'bz,
+                             IO_GP10,
+                             IO_GP9,
+                             IO_GP8,
                              IO_GP7,
                              IO_GP6,
                              IO_GP5,
@@ -158,7 +143,7 @@ module top_earlgrey_cw305 #(
   //////////////////////
 
   logic jtag_trst_n, jtag_srst_n;
-  logic jtag_tck, jtag_tms, jtag_tdi, jtag_tdo;
+  logic jtag_tck, jtag_tck_buf, jtag_tms, jtag_tdi, jtag_tdo;
 
   localparam int NumIOs = padctrl_reg_pkg::NMioPads +
                           padctrl_reg_pkg::NDioPads;
@@ -205,6 +190,15 @@ module top_earlgrey_cw305 #(
     .in_padring_i  ( {dio_in_padring , mio_in_padring } )
   );
 
+  ////////////////////////////////
+  // JTAG clock buffer for FPGA //
+  ////////////////////////////////
+
+  BUFG jtag_buf (
+    .I (jtag_tck),
+    .O (jtag_tck_buf)
+  );
+
   //////////////////
   // PLL for FPGA //
   //////////////////
@@ -212,30 +206,67 @@ module top_earlgrey_cw305 #(
   clkgen_xil7series # (
     .AddClkBuf(0)
   ) clkgen (
-      .IO_CLK,
-    .IO_RST_N(IO_RST_N & jtag_srst_n),
-    .clk_sys(clk),
+    .IO_CLK,
+    .IO_RST_N,
+    .jtag_srst_n,
+    .clk_main(clk_main),
     .clk_48MHz(clk_usb_48mhz),
-    .rst_sys_n(rst_n)
+    .rst_n(rst_n)
   );
 
   //////////////////////
   // Top-level design //
   //////////////////////
+  pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  ast_wrapper_pkg::ast_rst_t ast_base_rst;
+  ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
+  ast_wrapper_pkg::ast_status_t ast_base_status;
 
+  assign ast_base_pwr.slow_clk_val = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.core_clk_val = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.io_clk_val   = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.usb_clk_val  = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.main_pok     = 1'b1;
+
+  assign ast_base_alerts.alerts_p  = '0;
+  assign ast_base_alerts.alerts_n  = {ast_wrapper_pkg::NumAlerts{1'b1}};
+  assign ast_base_status.io_pok    = {ast_wrapper_pkg::NumIoRails{1'b1}};
+
+  // the rst_ni pin only goes to AST
+  // the rest of the logic generates reset based on the 'pok' signal.
+  // for verilator purposes, make these two the same.
+  assign ast_base_rst.aon_pok      = rst_n;
   top_earlgrey #(
+    .AesMasking(1'b0),
+    .AesSBoxImpl(aes_pkg::SBoxImplLut),
+    .SecAesStartTriggerDelay(40),
+    .SecAesAllowForcingMasks(1'b1),
+    .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexPipeLine(1),
+    .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (
     // Clocks, resets
     .rst_ni          ( rst_n         ),
-    .clkmgr_clk_main ( clk           ),
-    .clkmgr_clk_io   ( clk           ),
-    .clkmgr_clk_usb  ( clk_usb_48mhz ),
-    .clkmgr_clk_aon  ( clk           ),
+    .clk_main_i      ( clk_main      ),
+    .clk_io_i        ( clk_main      ),
+    .clk_usb_i       ( clk_usb_48mhz ),
+    .clk_aon_i       ( clk_main      ),
+    .rstmgr_ast_i                 ( ast_base_rst    ),
+    .pwrmgr_pwr_ast_req_o         (                 ),
+    .pwrmgr_pwr_ast_rsp_i         ( ast_base_pwr    ),
+    .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts ),
+    .sensor_ctrl_ast_alert_rsp_o  (                 ),
+    .sensor_ctrl_ast_status_i     ( ast_base_status ),
+    .usbdev_usb_ref_val_o         (                 ),
+    .usbdev_usb_ref_pulse_o       (                 ),
+    .ast_tl_req_o                 (                 ),
+    .ast_tl_rsp_i                 ( '0              ),
+    .otp_ctrl_otp_ast_pwr_seq_o   (                 ),
+    .otp_ctrl_otp_ast_pwr_seq_h_i ( '0              ),
 
     // JTAG
-    .jtag_tck_i      ( jtag_tck      ),
+    .jtag_tck_i      ( jtag_tck_buf  ),
     .jtag_tms_i      ( jtag_tms      ),
     .jtag_trst_ni    ( jtag_trst_n   ),
     .jtag_tdi_i      ( jtag_tdi      ),
@@ -256,6 +287,7 @@ module top_earlgrey_cw305 #(
     .dio_attr_o      ( dio_attr      ),
 
     // DFT signals
+    .scan_rst_ni     ( 1'b1          ),
     .scanmode_i      ( 1'b0          )
   );
 
@@ -269,13 +301,23 @@ module top_earlgrey_cw305 #(
 
   for (genvar i = 0; i < padctrl_reg_pkg::NMioPads; i++) begin : gen_mio_out
     if (i == MioIdxTrigger) begin
-      // To obtain a more precise capture trigger for SCA analysis, we only forward the software-
-      // controlled capture trigger when the AES module is actually busy (performing either
-      // encryption/decryption or clearing internal registers).
-      assign mio_out[i] = mio_out_core[i] & ~top_earlgrey.aes_idle;
+      // To obtain a more precise capture trigger for side-channel analysis, we only forward the
+      // software-controlled capture trigger when the AES module is actually busy (performing
+      // either encryption/decryption or clearing internal registers).
+      assign mio_out[i] = mio_out_core[i] & ~top_earlgrey.clkmgr_idle[clkmgr_pkg::Aes];
     end else begin
       assign mio_out[i] = mio_out_core[i];
     end
   end
+
+  //////////////////////
+  // ChipWhisperer IO //
+  //////////////////////
+
+  // Clock ouput to capture board.
+  assign TIO_CLKOUT = IO_CLK;
+
+  // UART Tx for debugging. The UART itself is connected to the capture board.
+  assign IO_UTX_DEBUG = top_earlgrey.cio_uart_tx_d2p;
 
 endmodule : top_earlgrey_cw305

@@ -18,7 +18,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ],
     name_suffix: 'elf',
     dependencies: [
-      sw_lib_uart,
+      sw_lib_dif_uart,
       sw_lib_mem,
       riscv_crt,
       sw_lib_irq_handlers,
@@ -27,6 +27,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ],
     # Set up coremark-specific defines.
     c_args: [
+      '-Wno-implicit-fallthrough',
       '-DITERATIONS=@0@'.format(coremark_iterations),
       '-DPERFORMANCE_RUN=1',
       '-DTOTAL_DATA_SIZE=2000',

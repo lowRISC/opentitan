@@ -11,7 +11,7 @@ All of these benchmarks run on Simple System. A verilator simulation suitable
 for running them can be built with:
 
 ```
-fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_simple_system --RV32M=1 --RV32E=0
+fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ibex:ibex_simple_system --RV32E=0 --RV32M=ibex_pkg::RV32MFast
 ```
 
 See examples/simple_system/README.md for full details.

@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/aes.h"
 
-#include "sw/device/lib/base/log.h"
-#include "sw/device/lib/runtime/check.h"
+#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_main.h"
 
 // The following plaintext, key and ciphertext are extracted from Appendix C of
@@ -33,7 +33,7 @@ static const uint8_t kKeyShare1[32] = {
     0xbf, 0xcf, 0xdf, 0xef, 0xff, 0x0a, 0x1a, 0x2a, 0x3a, 0x4a, 0x5a,
     0x6a, 0x7a, 0x8a, 0x9a, 0xaa, 0xba, 0xca, 0xda, 0xea, 0xfa};
 
-const test_config_t kTestConfig = {};
+const test_config_t kTestConfig;
 
 bool test_main(void) {
   // Wait for AES unit being idle

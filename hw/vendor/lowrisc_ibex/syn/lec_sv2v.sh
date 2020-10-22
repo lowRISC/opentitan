@@ -64,12 +64,6 @@ printf "\n\nLEC RESULTS:\n"
 for file in *.v; do
   export LEC_TOP=`basename -s .v $file`
 
-  # special case is file ibex_register_file_ff.sv, whose module has a
-  # different name than its file name
-  if [[ $LEC_TOP == "ibex_register_file_ff" ]]; then
-    export LEC_TOP="ibex_register_file"
-  fi
-
   # run Conformal LEC
   lec -xl -nogui -nobanner \
     -dofile  ../lec_sv2v.do \

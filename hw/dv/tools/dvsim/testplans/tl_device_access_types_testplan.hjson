@@ -1,0 +1,57 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  entries: [
+    {
+      name: tl_d_oob_addr_access
+      desc: "Access out of bounds address and verify correctness of response / behavior"
+      milestone: V2
+      tests: ["{name}_tl_errors"]
+    }
+    {
+      name: tl_d_illegal_access
+      desc: '''Drive unsupported requests via TL interface and verify correctness of response
+            / behavior. Below error cases are tested
+            - TL-UL protocol error cases
+              - Unsupported opcode. e.g a_opcode isn't Get, PutPartialData or PutFullData
+              - Mask isn't all active if opcode = PutFullData
+              - Mask isn't in enabled lanes, e.g. a_address = 0x00, a_size = 0, a_mask = 'b0010
+              - Mask doesn't align with address, e.g. a_address = 0x01, a_mask = 'b0001
+              - Address and size aren't aligned, e.g. a_address = 0x01, a_size != 0
+              - Size is over 2.
+            - OpenTitan defined error cases
+              - Access unmapped address, return d_error = 1 when devmode_i == 1
+              - Write CSR with unaligned address, e.g. a_address[1:0] != 0
+              - Write CSR less than its width, e.g. when CSR is 2 bytes wide, only write 1 byte
+              - Write a memory without enabling all lanes (a_mask = '1) if memory doesn't support
+                byte enabled write
+              - Read a WO (write-only) memory'''
+      milestone: V2
+      tests: ["{name}_tl_errors"]
+    }
+    {
+      name: tl_d_outstanding_access
+      desc: '''Drive back-to-back requests without waiting for response to ensure there is one
+            transaction outstanding within the TL device. Also, verify one outstanding when back-
+            to-back accesses are made to the same address.'''
+      milestone: V2
+      tests: ["{name}_csr_hw_reset",
+              "{name}_csr_rw",
+              "{name}_csr_aliasing",
+              "{name}_same_csr_outstanding"]
+    }
+    {
+      name: tl_d_partial_access
+      desc: '''Access CSR with one or more bytes of data
+            For read, expect to return all word value of the CSR
+            For write, enabling bytes should cover all CSR valid fields'''
+      milestone: V2
+      tests: ["{name}_csr_hw_reset",
+              "{name}_csr_rw",
+              "{name}_csr_aliasing",
+              "{name}_same_csr_outstanding"]
+    }
+  ]
+}
+

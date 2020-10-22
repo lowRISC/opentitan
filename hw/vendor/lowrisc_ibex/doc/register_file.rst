@@ -2,7 +2,7 @@
 
 Register File
 =============
-Source FIles: :file:`rtl/ibex_register_file_ff.sv` :file:`rtl/ibex_register_file_latch.sv`
+Source Files: :file:`rtl/ibex_register_file_ff.sv` :file:`rtl/ibex_register_file_fpga.sv` :file:`rtl/ibex_register_file_latch.sv`
 
 Ibex has either 31 or 15 32-bit registers if the RV32E extension is disabled or enabled, respectively.
 Register ``x0`` is statically bound to 0 and can only be read, it does not contain any sequential logic.
@@ -10,7 +10,8 @@ Register ``x0`` is statically bound to 0 and can only be read, it does not conta
 The register file has two read ports and one write port, register file data is available the same cycle a read is requested.
 There is no write to read forwarding path so if one register is being both read and written the read will return the current value rather than the value being written.
 
-There are two flavors of register file available, both having their own benefits and trade-offs.
+There are three flavors of register file available, each having their own benefits and trade-offs.
+The register file flavor is selected via the enumerated parameter ``RegFile`` defined in :file:`rtl/ibex_pkg.sv`.
 
 Flip-Flop-Based Register File
 -----------------------------
@@ -19,10 +20,11 @@ The flip-flop-based register file uses regular, positive-edge-triggered flip-flo
 
 This makes it the **first choice when simulating the design using Verilator**.
 
-To select the flip-flop-based register file, make sure to use the source file ``ibex_register_file_ff.sv`` in your project.
+This implementation can be selected by setting the ``RegFile`` parameter to "ibex_pkg::RegFileFF".
+It is the default selection.
 
 FPGA Register File
---------------------------
+------------------
 
 The FPGA register file leverages synchronous-write / asynchronous-read RAM design elements, where available on FPGA targets.
 
@@ -30,7 +32,7 @@ For Xilinx FPGAs, synthesis results in an implementation using RAM32M primitives
 
 This makes it the **first choice for FPGA synthesis**.
 
-To select the FPGA register file, make sure to use the source file ``ibex_register_file_fpga.sv`` in your project.
+To select the FPGA register file, set the ``RegFile`` parameter to "ibex_pkg::RegFileFPGA".
 
 Latch-Based Register File
 -------------------------
@@ -44,7 +46,7 @@ Simulation of the latch-based register file is possible using commercial tools.
 
 The latch-based register file can also be used for FPGA synthesis, but this is not recommended as FPGAs usually do not well support latches.
 
-To select the latch-based register file, make sure to use the source file ``ibex_register_file_latch.sv`` in your project.
+To select the latch-based register file, set the ``RegFile`` parameter to "ibex_pkg::RegFileLatch".
 In addition, a technology-specific clock gating cell must be provided to keep the clock inactive when the latches are not written.
 This cell must be wrapped in a module called ``prim_clock_gating``.
 For more information regarding the clock gating cell, checkout :ref:`getting-started`.

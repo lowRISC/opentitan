@@ -9,10 +9,9 @@
  * Execution block: Hosts ALU and MUL/DIV unit
  */
 module ibex_ex_block #(
-    parameter bit               RV32M                    = 1,
-    parameter ibex_pkg::rv32b_e RV32B                    = ibex_pkg::RV32BNone,
-    parameter bit               BranchTargetALU          = 0,
-    parameter                   MultiplierImplementation = "fast"
+    parameter ibex_pkg::rv32m_e RV32M           = ibex_pkg::RV32MFast,
+    parameter ibex_pkg::rv32b_e RV32B           = ibex_pkg::RV32BNone,
+    parameter bit               BranchTargetALU = 0
 ) (
     input  logic                  clk_i,
     input  logic                  rst_ni,
@@ -70,11 +69,11 @@ module ibex_ex_block #(
   logic [ 1:0] multdiv_imd_val_we;
 
   /*
-    The multdiv_i output is never selected if RV32M=0
+    The multdiv_i output is never selected if RV32M=RV32MNone
     At synthesis time, all the combinational and sequential logic
     from the multdiv_i module are eliminated
   */
-  if (RV32M) begin : gen_multdiv_m
+  if (RV32M != RV32MNone) begin : gen_multdiv_m
     assign multdiv_sel = mult_sel_i | div_sel_i;
   end else begin : gen_multdiv_no_m
     assign multdiv_sel = 1'b0;
@@ -138,7 +137,7 @@ module ibex_ex_block #(
   // Multiplier //
   ////////////////
 
-  if (MultiplierImplementation == "slow") begin : gen_multdiv_slow
+  if (RV32M == RV32MSlow) begin : gen_multdiv_slow
     ibex_multdiv_slow multdiv_i (
         .clk_i              ( clk_i                 ),
         .rst_ni             ( rst_ni                ),
@@ -163,59 +162,32 @@ module ibex_ex_block #(
         .multdiv_ready_id_i ( multdiv_ready_id_i    ),
         .multdiv_result_o   ( multdiv_result        )
     );
-  end else if (MultiplierImplementation == "fast") begin : gen_multdiv_fast
-    ibex_multdiv_fast #        (
-        .SingleCycleMultiply   (0)
-    ) multdiv_i                (
-        .clk_i                 ( clk_i                 ),
-        .rst_ni                ( rst_ni                ),
-        .mult_en_i             ( mult_en_i             ),
-        .div_en_i              ( div_en_i              ),
-        .mult_sel_i            ( mult_sel_i            ),
-        .div_sel_i             ( div_sel_i             ),
-        .operator_i            ( multdiv_operator_i    ),
-        .signed_mode_i         ( multdiv_signed_mode_i ),
-        .op_a_i                ( multdiv_operand_a_i   ),
-        .op_b_i                ( multdiv_operand_b_i   ),
-        .alu_operand_a_o       ( multdiv_alu_operand_a ),
-        .alu_operand_b_o       ( multdiv_alu_operand_b ),
-        .alu_adder_ext_i       ( alu_adder_result_ext  ),
-        .alu_adder_i           ( alu_adder_result_ex_o ),
-        .equal_to_zero_i       ( alu_is_equal_result   ),
-        .data_ind_timing_i     ( data_ind_timing_i     ),
-        .imd_val_q_i           ( imd_val_q_i           ),
-        .imd_val_d_o           ( multdiv_imd_val_d     ),
-        .imd_val_we_o          ( multdiv_imd_val_we    ),
-        .multdiv_ready_id_i    ( multdiv_ready_id_i    ),
-        .valid_o               ( multdiv_valid         ),
-        .multdiv_result_o      ( multdiv_result        )
-    );
-  end else if (MultiplierImplementation == "single-cycle") begin: gen_multdiv_single_cycle
-    ibex_multdiv_fast #(
-        .SingleCycleMultiply(1)
-    ) multdiv_i (
-        .clk_i                 ( clk_i                 ),
-        .rst_ni                ( rst_ni                ),
-        .mult_en_i             ( mult_en_i             ),
-        .div_en_i              ( div_en_i              ),
-        .mult_sel_i            ( mult_sel_i            ),
-        .div_sel_i             ( div_sel_i             ),
-        .operator_i            ( multdiv_operator_i    ),
-        .signed_mode_i         ( multdiv_signed_mode_i ),
-        .op_a_i                ( multdiv_operand_a_i   ),
-        .op_b_i                ( multdiv_operand_b_i   ),
-        .alu_operand_a_o       ( multdiv_alu_operand_a ),
-        .alu_operand_b_o       ( multdiv_alu_operand_b ),
-        .alu_adder_ext_i       ( alu_adder_result_ext  ),
-        .alu_adder_i           ( alu_adder_result_ex_o ),
-        .equal_to_zero_i       ( alu_is_equal_result   ),
-        .data_ind_timing_i     ( data_ind_timing_i     ),
-        .imd_val_q_i           ( imd_val_q_i           ),
-        .imd_val_d_o           ( multdiv_imd_val_d     ),
-        .imd_val_we_o          ( multdiv_imd_val_we    ),
-        .multdiv_ready_id_i    ( multdiv_ready_id_i    ),
-        .valid_o               ( multdiv_valid         ),
-        .multdiv_result_o      ( multdiv_result        )
+  end else if (RV32M == RV32MFast || RV32M == RV32MSingleCycle) begin : gen_multdiv_fast
+    ibex_multdiv_fast #     (
+        .RV32M ( RV32M )
+    ) multdiv_i             (
+        .clk_i              ( clk_i                 ),
+        .rst_ni             ( rst_ni                ),
+        .mult_en_i          ( mult_en_i             ),
+        .div_en_i           ( div_en_i              ),
+        .mult_sel_i         ( mult_sel_i            ),
+        .div_sel_i          ( div_sel_i             ),
+        .operator_i         ( multdiv_operator_i    ),
+        .signed_mode_i      ( multdiv_signed_mode_i ),
+        .op_a_i             ( multdiv_operand_a_i   ),
+        .op_b_i             ( multdiv_operand_b_i   ),
+        .alu_operand_a_o    ( multdiv_alu_operand_a ),
+        .alu_operand_b_o    ( multdiv_alu_operand_b ),
+        .alu_adder_ext_i    ( alu_adder_result_ext  ),
+        .alu_adder_i        ( alu_adder_result_ex_o ),
+        .equal_to_zero_i    ( alu_is_equal_result   ),
+        .data_ind_timing_i  ( data_ind_timing_i     ),
+        .imd_val_q_i        ( imd_val_q_i           ),
+        .imd_val_d_o        ( multdiv_imd_val_d     ),
+        .imd_val_we_o       ( multdiv_imd_val_we    ),
+        .multdiv_ready_id_i ( multdiv_ready_id_i    ),
+        .valid_o            ( multdiv_valid         ),
+        .multdiv_result_o   ( multdiv_result        )
     );
   end
 

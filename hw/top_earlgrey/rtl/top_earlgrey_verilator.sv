@@ -75,18 +75,24 @@ module top_earlgrey_verilator (
 
   // dummy ast connections
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  ast_wrapper_pkg::ast_rst_t ast_base_rst;
   ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
   ast_wrapper_pkg::ast_status_t ast_base_status;
 
-  assign ast_base_pwr.slow_clk_val = 2'b10;
-  assign ast_base_pwr.core_clk_val = 2'b10;
-  assign ast_base_pwr.io_clk_val   = 2'b10;
+  assign ast_base_pwr.slow_clk_val = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.core_clk_val = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.io_clk_val   = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.usb_clk_val  = pwrmgr_pkg::DiffValid;
   assign ast_base_pwr.main_pok     = 1'b1;
 
   assign ast_base_alerts.alerts_p  = '0;
   assign ast_base_alerts.alerts_n  = {ast_wrapper_pkg::NumAlerts{1'b1}};
   assign ast_base_status.io_pok    = {ast_wrapper_pkg::NumIoRails{1'b1}};
 
+  // the rst_ni pin only goes to AST
+  // the rest of the logic generates reset based on the 'pok' signal.
+  // for verilator purposes, make these two the same.
+  assign ast_base_rst.aon_pok      = rst_ni;
   // Top-level design
   top_earlgrey top_earlgrey (
     .rst_ni                     (rst_ni),
@@ -94,14 +100,18 @@ module top_earlgrey_verilator (
     .clk_io_i                   (clk_i),
     .clk_usb_i                  (clk_i),
     .clk_aon_i                  (clk_i),
-    .rstmgr_ast_i                 (1'b1),
-    .pwrmgr_pwr_ast_req_o         (),
-    .pwrmgr_pwr_ast_rsp_i         (ast_base_pwr),
-    .sensor_ctrl_ast_alert_req_i  (ast_base_alerts),
-    .sensor_ctrl_ast_alert_rsp_o  (),
-    .sensor_ctrl_ast_status_i     (ast_base_status),
-    .usbdev_usb_ref_val_o         (),
-    .usbdev_usb_ref_pulse_o       (),
+    .rstmgr_ast_i                 ( ast_base_rst    ),
+    .pwrmgr_pwr_ast_req_o         (                 ),
+    .pwrmgr_pwr_ast_rsp_i         ( ast_base_pwr    ),
+    .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts ),
+    .sensor_ctrl_ast_alert_rsp_o  (                 ),
+    .sensor_ctrl_ast_status_i     ( ast_base_status ),
+    .usbdev_usb_ref_val_o         (                 ),
+    .usbdev_usb_ref_pulse_o       (                 ),
+    .ast_tl_req_o                 (                 ),
+    .ast_tl_rsp_i                 ( '0              ),
+    .otp_ctrl_otp_ast_pwr_seq_o   (                 ),
+    .otp_ctrl_otp_ast_pwr_seq_h_i ( '0              ),
 
     .jtag_tck_i                 (cio_jtag_tck),
     .jtag_tms_i                 (cio_jtag_tms),
@@ -143,7 +153,7 @@ module top_earlgrey_verilator (
   // Both baud rate and frequency must match the settings used in the on-chip
   // software.
   uartdpi #(
-    .BAUD('d9_600),
+    .BAUD('d7_200),
     .FREQ('d500_000)
   ) u_uart (
     .clk_i  (clk_i),
@@ -196,58 +206,76 @@ module top_earlgrey_verilator (
 
   // USB DPI
   usbdpi u_usbdpi (
-    .clk_i         (clk_i),
-    .rst_ni        (rst_ni),
-    .clk_48MHz_i   (clk_i),
-    .sense_p2d     (cio_usbdev_sense_p2d),
-    .pullup_d2p    (cio_usbdev_dp_pullup_d2p),
-    .pullup_en_d2p (cio_usbdev_dp_pullup_en_d2p),
-    .dp_p2d        (cio_usbdev_dp_p2d),
-    .dp_d2p        (cio_usbdev_dp_d2p),
-    .dp_en_d2p     (cio_usbdev_dp_en_d2p),
-    .dn_p2d        (cio_usbdev_dn_p2d),
-    .dn_d2p        (cio_usbdev_dn_d2p),
-    .dn_en_d2p     (cio_usbdev_dn_en_d2p)
+    .clk_i           (clk_i),
+    .rst_ni          (rst_ni),
+    .clk_48MHz_i     (clk_i),
+    .sense_p2d       (cio_usbdev_sense_p2d),
+    .pullupdp_d2p    (cio_usbdev_dp_pullup_d2p),
+    .pullupdp_en_d2p (cio_usbdev_dp_pullup_en_d2p),
+    .pullupdn_d2p    (cio_usbdev_dn_pullup_d2p),
+    .pullupdn_en_d2p (cio_usbdev_dn_pullup_en_d2p),
+    .dp_p2d          (cio_usbdev_dp_p2d),
+    .dp_d2p          (cio_usbdev_dp_d2p),
+    .dp_en_d2p       (cio_usbdev_dp_en_d2p),
+    .dn_p2d          (cio_usbdev_dn_p2d),
+    .dn_d2p          (cio_usbdev_dn_d2p),
+    .dn_en_d2p       (cio_usbdev_dn_en_d2p),
+    .d_p2d           (cio_usbdev_d_p2d),
+    .d_d2p           (cio_usbdev_d_d2p),
+    .d_en_d2p        (cio_usbdev_d_en_d2p),
+    .se0_d2p         (cio_usbdev_se0_d2p),
+    .se0_en_d2p      (cio_usbdev_se0_en_d2p),
+    .txmode_d2p      (cio_usbdev_tx_mode_se_d2p),
+    .txmode_en_d2p   (cio_usbdev_tx_mode_se_en_d2p)
   );
 
   // Tie off unused signals.
-  logic unused_cio_usbdev_se0_d2p, unused_cio_usbdev_se0_en_d2p;
-  logic unused_cio_usbdev_dn_pullup_d2p, unused_cio_usbdev_dn_pullup_en_d2p;
-  logic unused_cio_usbdev_tx_mode_se_d2p, unused_cio_usbdev_tx_mode_se_en_d2p;
   logic unused_cio_usbdev_suspend_d2p, unused_cio_usbdev_suspend_en_d2p;
-  logic unused_cio_usbdev_d_d2p, unused_cio_usbdev_d_en_d2p;
-  assign unused_cio_usbdev_se0_d2p = cio_usbdev_se0_d2p;
-  assign unused_cio_usbdev_se0_en_d2p = cio_usbdev_se0_en_d2p;
-  assign unused_cio_usbdev_dn_pullup_d2p = cio_usbdev_dn_pullup_d2p;
-  assign unused_cio_usbdev_dn_pullup_en_d2p = cio_usbdev_dn_pullup_en_d2p;
-  assign unused_cio_usbdev_tx_mode_se_d2p = cio_usbdev_tx_mode_se_d2p;
-  assign unused_cio_usbdev_tx_mode_se_en_d2p = cio_usbdev_tx_mode_se_en_d2p;
   assign unused_cio_usbdev_suspend_d2p = cio_usbdev_suspend_d2p;
   assign unused_cio_usbdev_suspend_en_d2p = cio_usbdev_suspend_en_d2p;
-  assign cio_usbdev_d_p2d = 1'b0;
-  assign unused_cio_usbdev_d_d2p = cio_usbdev_d_d2p;
-  assign unused_cio_usbdev_d_en_d2p = cio_usbdev_d_en_d2p;
 
-  // monitor for termination
-`ifndef END_MON_PATH
-  `define END_MON_PATH top_earlgrey.u_ram1p_ram_main
-`endif
+  `define RV_CORE_IBEX      top_earlgrey.u_rv_core_ibex
+  `define SIM_SRAM_IF       u_sim_sram.u_sim_sram_if
+  `define SW_TEST_STATUS_IF `SIM_SRAM_IF.u_sw_test_status_if
 
-  logic valid;
-  logic [31:0] addr;
-  logic end_valid;
+  // Detect SW test termination.
+  sim_sram u_sim_sram (
+    .clk_i    (`RV_CORE_IBEX.clk_i),
+    .rst_ni   (`RV_CORE_IBEX.rst_ni),
+    .tl_in_i  (`RV_CORE_IBEX.tl_d_o_int),
+    .tl_in_o  (),
+    .tl_out_o (),
+    .tl_out_i (`RV_CORE_IBEX.tl_d_i)
+  );
 
-  // mem address in design is offset from base, re-create the full address here
-  assign addr = `VERILATOR_MEM_BASE + {`END_MON_PATH.addr_i, 2'h0};
-  assign valid = `END_MON_PATH.req_i & `END_MON_PATH.write_i & `END_MON_PATH.rst_ni;
-  assign end_valid = valid & (addr == `VERILATOR_END_SIM_ADDR);
+  // Connect the sim SRAM directly inside rv_core_ibex.
+  assign `RV_CORE_IBEX.tl_d_i_int = u_sim_sram.tl_in_o;
+  assign `RV_CORE_IBEX.tl_d_o     = u_sim_sram.tl_out_o;
 
-  always_ff @(posedge clk_i) begin
-    if (end_valid) begin
+  // Bind the SW test status interface directly to the sim SRAM interface.
+  bind sim_sram_if sw_test_status_if u_sw_test_status_if (
+    .addr (tl_h2d.a_address),
+    .data (tl_h2d.a_data[15:0]),
+    .*
+  );
+
+  // Set the start address of the simulation SRAM.
+  // Use offset 0 within the sim SRAM for SW test status indication.
+  initial begin
+    `SIM_SRAM_IF.start_addr = `VERILATOR_TEST_STATUS_ADDR;
+    `SW_TEST_STATUS_IF.sw_test_status_addr = `SIM_SRAM_IF.start_addr;
+  end
+
+  always @(posedge clk_i) begin
+    if (`SW_TEST_STATUS_IF.sw_test_done) begin
       $display("Verilator sim termination requested");
-      $display("Your simulation wrote to 0x%h", `VERILATOR_END_SIM_ADDR);
+      $display("Your simulation wrote to 0x%h", `SW_TEST_STATUS_IF.sw_test_status_addr);
       $finish;
     end
   end
+
+  `undef RV_CORE_IBEX
+  `undef SIM_SRAM_IF
+  `undef SW_TEST_STATUS_IF
 
 endmodule

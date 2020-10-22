@@ -22,35 +22,39 @@ filesets:
       - ibex_simple_system.cc: { file_type: cppSource }
       - lint/verilator_waiver.vlt: {file_type: vlt}
 
-parameters:
-  RV32M:
-    datatype: int
-    paramtype: vlogparam
-    default: 1
-    description: "Enable the M ISA extension (hardware multiply/divide) [0/1]"
+  files_lint_verible:
+    files:
+      - lint/verible_waiver.vbw: {file_type: veribleLintWaiver}
 
+parameters:
   RV32E:
     datatype: int
     paramtype: vlogparam
     default: 0
     description: "Enable the E ISA extension (reduced register set) [0/1]"
 
+  RV32M:
+    datatype: str
+    default: ibex_pkg::RV32MFast
+    paramtype: vlogdefine
+    description: "RV32M implementation parameter enum. See the ibex_pkg::rv32m_e enum in ibex_pkg.sv for permitted values."
+
   RV32B:
     datatype: str
     default: ibex_pkg::RV32BNone
     paramtype: vlogdefine
-    description: "Bitmanip implementation parameter enum. See ibex_pkg.sv (EXPERIMENTAL)"
+    description: "Bitmanip implementation parameter enum. See the ibex_pkg::rv32b_e enum in ibex_pkg.sv for permitted values."
+
+  RegFile:
+    datatype: str
+    default: ibex_pkg::RegFileFF
+    paramtype: vlogdefine
+    description: "Register file implementation parameter enum. See the ibex_pkg::regfile_e enum in ibex_pkg.sv for permitted values."
 
   SRAMInitFile:
     datatype: str
     paramtype: vlogparam
     description: "Path to a vmem file to initialize the RAM with"
-
-  MultiplierImplementation:
-    datatype: str
-    paramtype: vlogparam
-    description: "Multiplier implementation. Valid values: fast, slow, single-cycle"
-    default: "fast"
 
   BranchTargetALU:
     datatype: int
@@ -69,6 +73,12 @@ parameters:
     default: 0
     paramtype: vlogparam
     description: "Enables security hardening features (EXPERIMENTAL) [0/1]"
+
+  BranchPredictor:
+    datatype: int
+    paramtype: vlogparam
+    default: 0
+    description: "Enables static branch prediction (EXPERIMENTAL)"
 
   PMPEnable:
     datatype: int
@@ -92,16 +102,18 @@ targets:
   default: &default_target
     filesets:
       - tool_verilator ? (files_verilator)
+      - tool_veriblelint ? (files_lint_verible)
       - files_sim
     toplevel: ibex_simple_system
     parameters:
-      - RV32M
       - RV32E
+      - RV32M
       - RV32B
-      - MultiplierImplementation
+      - RegFile
       - BranchTargetALU
       - WritebackStage
       - SecureIbex
+      - BranchPredictor
       - PMPEnable
       - PMPGranularity
       - PMPNumRegions

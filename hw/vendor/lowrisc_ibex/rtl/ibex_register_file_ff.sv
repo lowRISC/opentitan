@@ -10,7 +10,7 @@
  * This register file is based on flip flops. Use this register file when
  * targeting FPGA synthesis or Verilator simulation.
  */
-module ibex_register_file #(
+module ibex_register_file_ff #(
     parameter bit          RV32E             = 0,
     parameter int unsigned DataWidth         = 32,
     parameter bit          DummyInstructions = 0

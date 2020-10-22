@@ -90,6 +90,12 @@ module pwrmgr_reg_top (
   logic control_io_clk_en_qs;
   logic control_io_clk_en_wd;
   logic control_io_clk_en_we;
+  logic control_usb_clk_en_lp_qs;
+  logic control_usb_clk_en_lp_wd;
+  logic control_usb_clk_en_lp_we;
+  logic control_usb_clk_en_active_qs;
+  logic control_usb_clk_en_active_wd;
+  logic control_usb_clk_en_active_we;
   logic control_main_pd_n_qs;
   logic control_main_pd_n_wd;
   logic control_main_pd_n_we;
@@ -106,10 +112,10 @@ module pwrmgr_reg_top (
   logic reset_en_regwen_qs;
   logic reset_en_regwen_wd;
   logic reset_en_regwen_we;
-  logic [1:0] reset_en_qs;
-  logic [1:0] reset_en_wd;
+  logic reset_en_qs;
+  logic reset_en_wd;
   logic reset_en_we;
-  logic [1:0] reset_status_qs;
+  logic reset_status_qs;
   logic wake_info_capture_dis_qs;
   logic wake_info_capture_dis_wd;
   logic wake_info_capture_dis_we;
@@ -293,7 +299,59 @@ module pwrmgr_reg_top (
   );
 
 
-  //   F[main_pd_n]: 6:6
+  //   F[usb_clk_en_lp]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_control_usb_clk_en_lp (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (control_usb_clk_en_lp_we & ctrl_cfg_regwen_qs),
+    .wd     (control_usb_clk_en_lp_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.control.usb_clk_en_lp.q ),
+
+    // to register interface (read)
+    .qs     (control_usb_clk_en_lp_qs)
+  );
+
+
+  //   F[usb_clk_en_active]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_control_usb_clk_en_active (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (control_usb_clk_en_active_we & ctrl_cfg_regwen_qs),
+    .wd     (control_usb_clk_en_active_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.control.usb_clk_en_active.q ),
+
+    // to register interface (read)
+    .qs     (control_usb_clk_en_active_qs)
+  );
+
+
+  //   F[main_pd_n]: 8:8
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -406,8 +464,28 @@ module pwrmgr_reg_top (
   // Subregister 0 of Multireg wake_status
   // R[wake_status]: V(False)
 
-  // constant-only read
-  assign wake_status_qs = 1'h0;
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_wake_status (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.wake_status[0].de),
+    .d      (hw2reg.wake_status[0].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (wake_status_qs)
+  );
 
 
   // R[reset_en_regwen]: V(False)
@@ -437,12 +515,14 @@ module pwrmgr_reg_top (
   );
 
 
+
+  // Subregister 0 of Multireg reset_en
   // R[reset_en]: V(False)
 
   prim_subreg #(
-    .DW      (2),
+    .DW      (1),
     .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+    .RESVAL  (1'h0)
   ) u_reset_en (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -457,17 +537,39 @@ module pwrmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_en.q ),
+    .q      (reg2hw.reset_en[0].q ),
 
     // to register interface (read)
     .qs     (reset_en_qs)
   );
 
 
+
+  // Subregister 0 of Multireg reset_status
   // R[reset_status]: V(False)
 
-  // constant-only read
-  assign reset_status_qs = 2'h0;
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_reset_status (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.reset_status[0].de),
+    .d      (hw2reg.reset_status[0].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (reset_status_qs)
+  );
 
 
   // R[wake_info_capture_dis]: V(False)
@@ -606,8 +708,14 @@ module pwrmgr_reg_top (
   assign control_io_clk_en_we = addr_hit[4] & reg_we & ~wr_err;
   assign control_io_clk_en_wd = reg_wdata[5];
 
+  assign control_usb_clk_en_lp_we = addr_hit[4] & reg_we & ~wr_err;
+  assign control_usb_clk_en_lp_wd = reg_wdata[6];
+
+  assign control_usb_clk_en_active_we = addr_hit[4] & reg_we & ~wr_err;
+  assign control_usb_clk_en_active_wd = reg_wdata[7];
+
   assign control_main_pd_n_we = addr_hit[4] & reg_we & ~wr_err;
-  assign control_main_pd_n_wd = reg_wdata[6];
+  assign control_main_pd_n_wd = reg_wdata[8];
 
   assign cfg_cdc_sync_we = addr_hit[5] & reg_we & ~wr_err;
   assign cfg_cdc_sync_wd = reg_wdata[0];
@@ -623,7 +731,7 @@ module pwrmgr_reg_top (
   assign reset_en_regwen_wd = reg_wdata[0];
 
   assign reset_en_we = addr_hit[10] & reg_we & ~wr_err;
-  assign reset_en_wd = reg_wdata[1:0];
+  assign reset_en_wd = reg_wdata[0];
 
 
   assign wake_info_capture_dis_we = addr_hit[12] & reg_we & ~wr_err;
@@ -665,7 +773,9 @@ module pwrmgr_reg_top (
         reg_rdata_next[0] = control_low_power_hint_qs;
         reg_rdata_next[4] = control_core_clk_en_qs;
         reg_rdata_next[5] = control_io_clk_en_qs;
-        reg_rdata_next[6] = control_main_pd_n_qs;
+        reg_rdata_next[6] = control_usb_clk_en_lp_qs;
+        reg_rdata_next[7] = control_usb_clk_en_active_qs;
+        reg_rdata_next[8] = control_main_pd_n_qs;
       end
 
       addr_hit[5]: begin
@@ -689,11 +799,11 @@ module pwrmgr_reg_top (
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[1:0] = reset_en_qs;
+        reg_rdata_next[0] = reset_en_qs;
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[1:0] = reset_status_qs;
+        reg_rdata_next[0] = reset_status_qs;
       end
 
       addr_hit[12]: begin

@@ -65,7 +65,7 @@ class flash_ctrl_env extends cip_base_env #(
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     // We have a custom design wrapper around the flash controller, so we need to fix the
     // HDL path root.
-    cfg.ral.set_hdl_path_root("tb.dut.u_flash_ctrl");
+    cfg.ral.set_hdl_path_root("tb.dut.u_flash_ctrl", "BkdrRegPathRtl");
     super.end_of_elaboration_phase(phase);
   endfunction : end_of_elaboration_phase
 

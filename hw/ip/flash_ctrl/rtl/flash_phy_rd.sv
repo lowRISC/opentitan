@@ -40,6 +40,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   input flash_ctrl_pkg::flash_part_e part_i,
   output logic rdy_o,
   output logic data_valid_o,
+  output logic data_err_o,
   output logic [BusWidth-1:0] data_o,
   output logic idle_o, // the entire read pipeline is idle
 
@@ -56,7 +57,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // interface to actual flash primitive
   output logic req_o,
   input ack_i,
-  input [DataWidth-1:0] data_i
+  input [FullDataWidth-1:0] data_i
   );
 
   /////////////////////////////////
@@ -65,6 +66,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   // muxed de-scrambled and plain-data
   logic [DataWidth-1:0] muxed_data;
+  logic muxed_err;
 
   // muxed data valid signal that takes scrambling into consideration
   logic data_valid;
@@ -187,7 +189,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
       .clk_i,
       .rst_ni,
       .alloc_i(rdy_o & alloc[i]),
-      .update_i(update[i]),
+      .update_i(update[i] & ~muxed_err),
       .wipe_i(data_hazard[i]),
       .addr_i(flash_word_addr),
       .part_i(part_i),
@@ -286,9 +288,48 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // issue a transaction to flash
   assign req_o = req_i & rdy_o & no_match;
 
+
+  /////////////////////////////////
+  // Handling ECC
+  /////////////////////////////////
+
+  // only uncorrectable errors are passed on to the fabric
+  logic ecc_single_err;
+  logic ecc_err;
+  logic unused_err;
+  logic data_err;
+
+  // scrambled data must pass through ECC first
+  logic [DataWidth-1:0] data_ecc_chk;
+  logic [DataWidth-1:0] data_int;
+  logic data_erased;
+
+  // When all bits are 1, the data has been erased
+  // This check is only valid when read data returns.
+  assign data_erased = rd_done & (data_i == {FullDataWidth{1'b1}});
+
+  prim_secded_72_64_dec u_dec (
+    .in(data_i[ScrDataWidth-1:0]),
+    .d_o(data_ecc_chk),
+    .syndrome_o(),
+    .err_o({ecc_err, ecc_single_err})
+  );
+  assign unused_err = ecc_single_err;
+
+  // If data needs to be de-scrambled and has not been erased, pass through ecc decoder.
+  // Otherwise, pass the data through untouched.
+  // Likewise, ecc error is only observed if the data needs to be de-scrambled and has not been
+  // erased.
+  // rd_done signal below is duplicated (already in data_erased) to show clear intent of the code.
+  assign data_int = (rd_done && rd_attrs.descramble && !data_erased) ? data_ecc_chk :
+                                                                       data_i[DataWidth-1:0];
+  assign data_err = (rd_done && rd_attrs.descramble && !data_erased) ? ecc_err : 1'b0;
+
   /////////////////////////////////
   // De-scrambling stage
   /////////////////////////////////
+
+  // Even on ECC error, progress through the stage normally
 
   logic fifo_data_ready;
   logic fifo_data_valid;
@@ -297,9 +338,11 @@ module flash_phy_rd import flash_phy_pkg::*; (
   logic [DataWidth-1:0] mask;
   logic data_fifo_rdy;
   logic mask_fifo_rdy;
+  logic descram;
   logic forward;
   logic hint_forward;
   logic hint_descram;
+  logic data_err_q;
   logic [NumBuf-1:0] alloc_q2;
 
   assign scramble_stage_rdy = data_fifo_rdy & mask_fifo_rdy;
@@ -308,14 +351,15 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // 1. When descrambling completes
   // 2. Immediately consumed when descrambling not required
   // 3. In both cases, when data has not already been forwarded
-  assign fifo_data_ready = hint_descram ? descramble_req_o & descramble_ack_i & ~hint_forward :
-                                          fifo_data_valid & !hint_forward;
+  assign fifo_data_ready = hint_descram ? descramble_req_o & descramble_ack_i :
+                                          fifo_data_valid;
 
-  // data is forwarded whenever it does not require descrambling or if it has been erased
-  // but forwarding is only possible if there are no entries in the FIFO to ensure the current
-  // read cannot run ahead of the descramble.
-  assign forward = rd_done & !fifo_data_valid &
-                   ((data_i == {DataWidth{1'b1}}) | !rd_attrs.descramble);
+  // descramble is only required if the location is scramble enabled AND it is not erased.
+  assign descram = rd_done & rd_attrs.descramble & ~data_erased;
+
+  // data is forwarded whenever it does not require descrambling and there are no entries in the
+  // FIFO to ensure the current read cannot run ahead of the descramble.
+  assign forward = rd_done & ~descram & ~fifo_data_valid;
 
   // storage for read outputs
   // This storage element can be fully merged with the fifo below if the time it takes
@@ -331,28 +375,33 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // All these problems could be resolved if the timings matched exactly, however
   // the user would need to correctly setup constraints on either flash / gf_mult
   // timing change.
+  logic fifo_forward_pop;
+  assign fifo_forward_pop = hint_forward & fifo_data_valid;
+
   prim_fifo_sync #(
-    .Width   (DataWidth + 2 + NumBuf),
+    .Width   (DataWidth + 3 + NumBuf),
     .Pass    (0),
-    .Depth   (2)
+    .Depth   (2),
+    .OutputZeroIfEmpty (1)
   ) u_rd_storage (
     .clk_i,
     .rst_ni,
     .clr_i   (1'b0),
     .wvalid_i(rd_done),
     .wready_o(data_fifo_rdy),
-    .wdata_i ({alloc_q, rd_attrs.descramble,forward,data_i}),
+    .wdata_i ({alloc_q, descram, forward, data_err, data_int}),
     .depth_o (),
     .rvalid_o(fifo_data_valid),
-    .rready_i(fifo_data_ready | hint_forward),
-    .rdata_o ({alloc_q2, hint_descram,hint_forward,fifo_data})
+    .rready_i(fifo_data_ready | fifo_forward_pop),
+    .rdata_o ({alloc_q2, hint_descram, hint_forward, data_err_q, fifo_data})
   );
 
   // storage for mask calculations
   prim_fifo_sync #(
     .Width   (DataWidth),
     .Pass    (0),
-    .Depth   (2)
+    .Depth   (2),
+    .OutputZeroIfEmpty (1)
   ) u_mask_storage (
     .clk_i,
     .rst_ni,
@@ -362,11 +411,12 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .wdata_i (mask_i),
     .depth_o (),
     .rvalid_o(mask_valid),
-    .rready_i(fifo_data_ready | hint_forward),
+    .rready_i(fifo_data_ready | fifo_forward_pop),
     .rdata_o (mask)
   );
 
   // generate the mask calculation request
+  // mask calculation is done in parallel to the read stage
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       calc_req_o <= '0;
@@ -382,13 +432,17 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   // generate the descramble request whenever both stages are available
   // and there is a need to descramble
-  assign descramble_req_o = fifo_data_valid & mask_valid & !hint_forward;
+  assign descramble_req_o = fifo_data_valid & mask_valid & hint_descram;
 
   // scrambled data to de-scramble
   assign scrambled_data_o = fifo_data ^ mask;
 
-  // muxed data
-  assign muxed_data = hint_descram ? descrambled_data_i ^ mask : data_i;
+  // muxed responses
+  // When "forward" is true, hint_descram is always 0.
+  // This is because forward cannot set unless fifo is empty.  If FIFO is
+  // empty, hint_descram is automatically 0.
+  assign muxed_data = hint_descram ? descrambled_data_i ^ mask : data_int;
+  assign muxed_err  = hint_descram ? data_err_q : data_err;
 
   // muxed data valid
   // if no de-scramble required, return data on read complete
@@ -409,7 +463,6 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // When forwarding, update entry stored in alloc_q
   // When de-scrambling however, the contents of alloc_q may have already updated to the next read,
   // so a different pointer is used.
-  // assign update = data_valid ? alloc_q : '0;
   assign update = forward         ? alloc_q  :
                   fifo_data_ready ? alloc_q2 : '0;
 
@@ -434,18 +487,21 @@ module flash_phy_rd import flash_phy_pkg::*; (
   if (WidthMultiple == 1) begin : gen_width_one_rd
     // When multiple is 1, just pass the read through directly
     logic unused_word_sel;
-    assign data_o = |buf_rsp_match ? buf_rsp_data : muxed_data;
+    assign data_o = data_err_o     ? {BusWidth{1'b1}} :
+                    |buf_rsp_match ? buf_rsp_data : muxed_data;
     assign unused_word_sel = rsp_fifo_rdata.word_sel;
 
   end else begin : gen_rd
     // Re-arrange data into packed array to pick the correct one
     logic [WidthMultiple-1:0][BusWidth-1:0] bus_words_packed;
     assign bus_words_packed = |buf_rsp_match ? buf_rsp_data : muxed_data;
-    assign data_o = bus_words_packed[rsp_fifo_rdata.word_sel];
+    assign data_o = data_err_o ? {BusWidth{1'b1}} : bus_words_packed[rsp_fifo_rdata.word_sel];
 
   end
 
+  // whenever the response is coming from the buffer, the error is never set
   assign data_valid_o = flash_rsp_match | |buf_rsp_match;
+  assign data_err_o   = muxed_err;
 
   // the entire read pipeline is idle when there are no responses to return and no
   assign idle_o = ~rsp_fifo_vld;
@@ -478,5 +534,10 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // unless the pipeline is idle, we should not have non-read trasnactions
   `ASSERT(IdleCheck_A, !idle_o |-> {prog_i,pg_erase_i,bk_erase_i} == '0)
 
+  // Whenever forward is true, hint_descram should always be 0
+  `ASSERT(ForwardCheck_A, forward |-> hint_descram == '0)
+
+  // Whenever response is coming from buffer, ecc error cannot be set
+  `ASSERT(BufferMatchEcc_A, |buf_rsp_match |-> muxed_err == '0)
 
 endmodule // flash_phy_core

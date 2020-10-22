@@ -1,4 +1,6 @@
-# Work with hardware code in external repositories
+---
+title: Work with hardware code in external repositories
+---
 
 OpenTitan is not a closed ecosystem: we incorporate code from third parties, and we split out pieces of our code to reach a wider audience.
 In both cases, we need to import and use code from external repositories in our OpenTitan code base.

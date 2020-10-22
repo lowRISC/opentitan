@@ -15,5 +15,7 @@
     '.style.yapf',
     // Avoid licence checker configuration confusion
     'licence-checker.hjson',
+    // Github CI Configuration
+    '.github',
   ]
 }

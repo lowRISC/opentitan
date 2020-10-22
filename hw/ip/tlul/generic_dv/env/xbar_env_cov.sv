@@ -50,7 +50,7 @@ class xbar_env_cov extends dv_base_env_cov #(.CFG_T(xbar_env_cfg));
   same_device_access_cg   same_device_access_cg;
   same_source_access_cg   same_source_access_cg;
   // cover mapped/unmapped addr per host
-  dv_base_generic_cov_obj host_access_mapped_addr_cg[string];
+  bit_toggle_cg_wrap      host_access_mapped_addr_cg[string];
   // cover max_delay per host/device
   max_delay_cg_obj        max_delay_cg_obj[string];
   `uvm_component_utils(xbar_env_cov)
@@ -62,7 +62,7 @@ class xbar_env_cov extends dv_base_env_cov #(.CFG_T(xbar_env_cfg));
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     same_device_access_cg = new(cfg.num_devices);
-    same_source_access_cg = new(1 << cfg.valid_host_id_width);
+    same_source_access_cg = new(1 << cfg.valid_a_source_width);
     foreach (xbar_hosts[i]) begin
       host_access_mapped_addr_cg[xbar_hosts[i].host_name] = new(xbar_hosts[i].host_name);
       max_delay_cg_obj[xbar_hosts[i].host_name]           = new(xbar_hosts[i].host_name);

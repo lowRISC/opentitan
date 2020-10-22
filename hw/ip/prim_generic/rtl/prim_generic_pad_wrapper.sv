@@ -79,8 +79,7 @@ module prim_generic_pad_wrapper #(
     assign (strong0, strong1) inout_io = (oe && drv != DRIVE_00) ? out : 1'bz;
     assign (pull0, pull1)     inout_io = (oe && drv == DRIVE_00) ? out : 1'bz;
     // pullup / pulldown termination
-    assign (highz0, weak1)    inout_io = pe & ps;  // enabled and select = 1
-    assign (weak0, highz1)    inout_io = pe & ~ps; // enabled and select = 0
+    assign (weak0, weak1)     inout_io = pe ? ps : 1'bz;
     // fake trireg emulation
     assign (weak0, weak1)     inout_io = (kp) ? inout_io : 1'bz;
     // received data driver

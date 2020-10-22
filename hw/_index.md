@@ -39,7 +39,7 @@ Finally, we provide the same set of information for all available [top level des
 
 * `top_earlgrey`
   * [Design specification]({{< relref "hw/top_earlgrey/doc" >}})
-  * DV plan (TBD)
+  * [DV plan]({{< relref "hw/top_earlgrey/doc/dv_plan" >}})
   * [DV simulation results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/results.html)
   * FPV results (nightly) (TBD)
   * [AscentLint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/ascentlint/latest/results.html)
@@ -47,3 +47,7 @@ Finally, we provide the same set of information for all available [top level des
   * [Style lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/veriblelint/latest/results.html)
   * [DV Style lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/lint/veriblelint/latest/results.html)
   * [Synthesis results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/syn/latest/results.html)
+
+## Hardware documentation overview
+
+{{% sectionContent %}}

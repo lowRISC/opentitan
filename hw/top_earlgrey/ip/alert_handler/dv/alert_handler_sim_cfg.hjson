@@ -11,5 +11,9 @@
       name:  fusesoc_core
       value: lowrisc:dv:alert_handler_sim:0.1
     }
+    {
+      name:  design_level
+      value: "top"
+    }
   ]
 }

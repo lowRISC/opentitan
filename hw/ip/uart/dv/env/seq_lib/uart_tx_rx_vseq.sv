@@ -11,6 +11,7 @@ class uart_tx_rx_vseq extends uart_base_vseq;
   rand uint dly_to_access_intr;
   rand bit  wait_for_idle;
   rand uint weight_to_skip_rx_read;
+  rand uint dly_to_rx_read;
 
 
   constraint num_trans_c {
@@ -62,6 +63,12 @@ class uart_tx_rx_vseq extends uart_base_vseq;
   constraint weight_to_skip_rx_read_c {
     // 3: read, 7: skip
     weight_to_skip_rx_read == 7;
+  }
+
+  constraint dly_to_rx_read_c {
+    dly_to_rx_read dist {0           :/ 1,
+                         [1:100]     :/ 1,
+                         [100:10000] :/ 2};
   }
 
   `uvm_object_new
@@ -128,6 +135,9 @@ class uart_tx_rx_vseq extends uart_base_vseq;
   task process_interrupts();
     bit [TL_DW-1:0] intr_status, clear_intr;
     bit clear_rx_intr, clear_tx_intr;
+
+    // avoid zero delay loop during reset
+    wait(!cfg.under_reset);
     // read interrupt
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_intr)
     cfg.clk_rst_vif.wait_clks(dly_to_access_intr);
@@ -187,15 +197,9 @@ class uart_tx_rx_vseq extends uart_base_vseq;
         send_rx_done = 1; // to end reading RX thread
       end
       begin // read RX data through register
-        while (!send_rx_done) begin
-          uint dly_to_rx_read;
+        while (!send_rx_done && !cfg.under_reset) begin
           // csr read is much faster than uart transfer, use bigger delay
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(dly_to_rx_read,
-                                             dly_to_rx_read dist {
-                                               0           :/ 1,
-                                               [1:100]     :/ 1,
-                                               [100:10000] :/ 2
-                                             };)
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_rx_read)
           cfg.clk_rst_vif.wait_clks(dly_to_rx_read);
           rand_read_rx_byte(weight_to_skip_rx_read);
         end

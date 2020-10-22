@@ -1,0 +1,35 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  flow:             syn
+  flow_makefile:    "{proj_root}/hw/syn/tools/dvsim/syn.mk"
+
+  import_cfgs:      [// common server configuration for results upload
+                     // TODO: check whether this config file can be aligned such that it can
+                     // be reused among different flow types
+                     // "{proj_root}/hw/dv/tools/dvsim/fusesoc.hjson",
+                     "{proj_root}/hw/data/common_project_cfg.hjson",
+                     "{proj_root}/hw/syn/tools/dvsim/{tool}.hjson"]
+
+  // Default directory structure for the output
+  dut:              "{name}"
+  build_dir:        "{scratch_path}/{build_mode}"
+  build_log:        "{build_dir}/synthesis.log"
+
+  // We rely on Fusesoc to generate the file list for us
+  sv_flist_gen_cmd:   "fusesoc"
+  fusesoc_core_:      "{eval_cmd} echo \"{fusesoc_core}\" | tr ':' '_'"
+
+  // TODO: switch the tool to dc once the corresponding edalize backend is available
+  sv_flist_gen_opts:  ["--cores-root {proj_root}/hw",
+                       "run"
+                       "--flag=fileset_{design_level}",
+                       "--target={flow}",
+                       "--tool icarus",
+                       "--build-root={build_dir}",
+                       "--setup",
+                       "{fusesoc_core}"]
+  sv_flist_gen_dir:   "{build_dir}/syn-icarus"
+  sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
+}

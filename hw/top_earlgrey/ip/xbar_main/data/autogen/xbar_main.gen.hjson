@@ -11,19 +11,20 @@
   clock_srcs:
   {
     clk_main_i: main
-    clk_fixed_i: io
+    clk_fixed_i: io_div4
   }
   clock_group: infra
   reset: rst_main_ni
   reset_connections:
   {
     rst_main_ni: sys
-    rst_fixed_ni: sys_io
+    rst_fixed_ni: sys_io_div4
   }
+  clock_reset_export: []
   clock_connections:
   {
     clk_main_i: clkmgr_clocks.clk_main_infra
-    clk_fixed_i: clkmgr_clocks.clk_io_infra
+    clk_fixed_i: clkmgr_clocks.clk_io_div4_infra
   }
   connections:
   {
@@ -50,6 +51,7 @@
       alert_handler
       nmi_gen
       otbn
+      keymgr
     ]
     dm_sba:
     [
@@ -77,6 +79,7 @@
       reset: rst_main_ni
       pipeline: "false"
       xbar: false
+      stub: false
       inst_type: rv_core_ibex
       pipeline_byp: "true"
     }
@@ -87,6 +90,7 @@
       reset: rst_main_ni
       pipeline: "false"
       xbar: false
+      stub: false
       inst_type: rv_core_ibex
       pipeline_byp: "true"
     }
@@ -97,6 +101,7 @@
       reset: rst_main_ni
       pipeline_byp: "false"
       xbar: false
+      stub: false
       inst_type: rv_dm
       pipeline: "true"
     }
@@ -115,6 +120,7 @@
         }
       ]
       xbar: false
+      stub: false
       pipeline_byp: "true"
     }
     {
@@ -132,6 +138,7 @@
         }
       ]
       xbar: false
+      stub: false
       pipeline: "true"
     }
     {
@@ -149,6 +156,7 @@
         }
       ]
       xbar: false
+      stub: false
       pipeline_byp: "true"
     }
     {
@@ -166,6 +174,7 @@
         }
       ]
       xbar: false
+      stub: false
       pipeline_byp: "true"
     }
     {
@@ -175,6 +184,7 @@
       reset: rst_fixed_ni
       pipeline_byp: "false"
       xbar: true
+      stub: false
       pipeline: "true"
       addr_range:
       [
@@ -200,7 +210,11 @@
         }
         {
           base_addr: 0x40170000
-          size_byte: 0x1000
+          size_byte: 0x11000
+        }
+        {
+          base_addr: 0x401b0000
+          size_byte: 0x4000
         }
       ]
     }
@@ -219,6 +233,7 @@
         }
       ]
       xbar: false
+      stub: false
       pipeline: "true"
     }
     {
@@ -236,6 +251,7 @@
         }
       ]
       xbar: false
+      stub: false
       pipeline: "true"
     }
     {
@@ -253,6 +269,7 @@
         }
       ]
       xbar: false
+      stub: false
       pipeline: "true"
     }
     {
@@ -270,6 +287,7 @@
       ]
       pipeline_byp: "false"
       xbar: false
+      stub: false
       pipeline: "true"
     }
     {
@@ -287,6 +305,7 @@
       ]
       pipeline_byp: "false"
       xbar: false
+      stub: false
       pipeline: "true"
     }
     {
@@ -304,6 +323,7 @@
       ]
       pipeline_byp: "false"
       xbar: false
+      stub: false
       pipeline: "true"
     }
     {
@@ -320,6 +340,7 @@
         }
       ]
       xbar: false
+      stub: false
       pipeline: "true"
     }
     {
@@ -336,6 +357,7 @@
         }
       ]
       xbar: false
+      stub: false
       pipeline: "true"
     }
     {
@@ -353,6 +375,25 @@
         }
       ]
       xbar: false
+      stub: false
+      pipeline: "true"
+    }
+    {
+      name: keymgr
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: keymgr
+      addr_range:
+      [
+        {
+          base_addr: 0x401a0000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
       pipeline: "true"
     }
   ]

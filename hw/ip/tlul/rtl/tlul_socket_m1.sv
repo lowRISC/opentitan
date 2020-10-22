@@ -167,8 +167,9 @@ module tlul_socket_m1 #(
 
   if (tlul_pkg::ArbiterImpl == "PPC") begin : gen_arb_ppc
     prim_arbiter_ppc #(
-      .N      (M),
-      .DW     ($bits(tlul_pkg::tl_h2d_t))
+      .N          (M),
+      .DW         ($bits(tlul_pkg::tl_h2d_t)),
+      .EnReqStabA (0)
     ) u_reqarb (
       .clk_i,
       .rst_ni,
@@ -182,8 +183,9 @@ module tlul_socket_m1 #(
     );
   end else if (tlul_pkg::ArbiterImpl == "BINTREE") begin : gen_tree_arb
     prim_arbiter_tree #(
-      .N      (M),
-      .DW     ($bits(tlul_pkg::tl_h2d_t))
+      .N          (M),
+      .DW         ($bits(tlul_pkg::tl_h2d_t)),
+      .EnReqStabA (0)
     ) u_reqarb (
       .clk_i,
       .rst_ni,

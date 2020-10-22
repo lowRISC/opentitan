@@ -16,6 +16,10 @@ class chip_sw_gpio_vseq extends chip_sw_base_vseq;
     // Wait until we reach the SW test state.
     wait(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
 
+    // Disable pullups and pulldowns on GPIOs.
+    cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b0}});
+    cfg.gpio_vif.set_pullup_en({chip_env_pkg::NUM_GPIOS{1'b0}});
+
     // Run the GPIO output tests.
     gpio_output_test();
 
@@ -73,10 +77,6 @@ class chip_sw_gpio_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task gpio_input_test();
-    // Disable pullups and pulldowns on GPIOs.
-    cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b0}});
-    cfg.gpio_vif.set_pullup_en({chip_env_pkg::NUM_GPIOS{1'b0}});
-
     // Wait and check all zs - this indicates it is safe to drive GPIOs as inputs.
     `DV_SPINWAIT(wait(cfg.gpio_vif.pins === {NUM_GPIOS{1'bz}});,
                  $sformatf("Timed out waiting for GPIOs == %0h", {NUM_GPIOS{1'bz}}),

@@ -29,23 +29,23 @@
   // TODO: remove imported cfgs that do not apply.
 % if is_cip:
   import_cfgs: [// Project wide common sim cfg file
-                "{proj_root}/hw/dv/data/common_sim_cfg.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
 % if has_ral:
-                "{proj_root}/hw/dv/data/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
 % endif
-                "{proj_root}/hw/dv/data/tests/mem_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
 % if has_interrupts:
-                "{proj_root}/hw/dv/data/tests/intr_test.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
 % endif
-                "{proj_root}/hw/dv/data/tests/tl_access_tests.hjson",
-                "{proj_root}/hw/dv/data/tests/stress_tests.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 % else:
   import_cfgs: [// Project wide common sim cfg file
-                "{proj_root}/hw/dv/data/common_sim_cfg.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
 % if has_ral:
-                "{proj_root}/hw/dv/data/tests/csr_tests.hjson",
-                "{proj_root}/hw/dv/data/tests/mem_tests.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson"]
 % endif
 % endif
 

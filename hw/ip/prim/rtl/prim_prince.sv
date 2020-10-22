@@ -16,14 +16,12 @@
 // References: - https://en.wikipedia.org/wiki/PRESENT
 //             - https://en.wikipedia.org/wiki/Prince_(cipher)
 //             - http://www.lightweightcrypto.org/present/present_ches2007.pdf
-//             - https://csrc.nist.gov/csrc/media/events/lightweight-cryptography-workshop-2015/documents/papers/session7-maene-paper.pdf
+//             - https://csrc.nist.gov/csrc/media/events/lightweight-cryptography-workshop-2015/
+//               documents/papers/session7-maene-paper.pdf
 //             - https://eprint.iacr.org/2012/529.pdf
 //             - https://eprint.iacr.org/2015/372.pdf
 //             - https://eprint.iacr.org/2014/656.pdf
 
-
-// TODO: this module has not been verified yet, and has only been used in
-// synthesis experiments.
 `include "prim_assert.sv"
 module prim_prince #(
   parameter int DataWidth     = 64,
@@ -68,10 +66,18 @@ module prim_prince #(
   end
 
   if (UseOldKeySched) begin : gen_legacy_keyschedule
+    // In this case we constantly use k1.
     assign k0_new_d = k1_d;
   end else begin : gen_new_keyschedule
-    // improved keyschedule proposed by https://eprint.iacr.org/2014/656.pdf
-    assign k0_new_d = k0;
+    // Imroved keyschedule proposed by https://eprint.iacr.org/2014/656.pdf
+    // In this case we alternate between k1 and k0.
+    always_comb begin : p_new_keyschedule_k0_alpha
+      k0_new_d = key_i[DataWidth-1:0];
+      // We need to apply the alpha constant here as well, just as for k1 in decryption mode.
+      if (dec_i) begin
+        k0_new_d ^= prim_cipher_pkg::PRINCE_ALPHA_CONST[DataWidth-1:0];
+      end
+    end
   end
 
   if (HalfwayKeyReg) begin : gen_key_reg
@@ -133,8 +139,11 @@ module prim_prince #(
     assign data_state_xor = data_state_round ^
                             prim_cipher_pkg::PRINCE_ROUND_CONST[k][DataWidth-1:0];
     // improved keyschedule proposed by https://eprint.iacr.org/2014/656.pdf
-    if (k % 2 == 1) assign data_state[k]  = data_state_xor ^ k0_new_d;
-    else            assign data_state[k]  = data_state_xor ^ k1_d;
+    if (k % 2 == 1) begin : gen_fwd_key_odd
+      assign data_state[k]  = data_state_xor ^ k0_new_d;
+    end else begin : gen_fwd_key_even
+      assign data_state[k]  = data_state_xor ^ k1_d;
+    end
   end
 
   // middle part
@@ -183,8 +192,11 @@ module prim_prince #(
   for (genvar k = 1; k <= NumRoundsHalf; k++) begin : gen_bwd_pass
     logic [DataWidth-1:0] data_state_xor0, data_state_xor1;
     // improved keyschedule proposed by https://eprint.iacr.org/2014/656.pdf
-    if (k % 2 == 1) assign data_state_xor0 = data_state[NumRoundsHalf+k] ^ k0_new_q;
-    else            assign data_state_xor0 = data_state[NumRoundsHalf+k] ^ k1_q;
+    if ((NumRoundsHalf + k + 1) % 2 == 1) begin : gen_bkwd_key_odd
+      assign data_state_xor0 = data_state[NumRoundsHalf+k] ^ k0_new_q;
+    end else begin : gen_bkwd_key_even
+      assign data_state_xor0 = data_state[NumRoundsHalf+k] ^ k1_q;
+    end
     // the construction is reflective, hence the subtraction with NumRoundsHalf
     assign data_state_xor1 = data_state_xor0 ^
                              prim_cipher_pkg::PRINCE_ROUND_CONST[10-NumRoundsHalf+k][DataWidth-1:0];

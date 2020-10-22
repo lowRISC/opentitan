@@ -9,7 +9,7 @@ class dv_base_reg extends uvm_reg;
   local bit is_ext_reg;
 
   local dv_base_reg    locked_regs[$];
-  local uvm_reg_data_t staged_shadow_val;
+  local uvm_reg_data_t staged_shadow_val, committed_val, shadowed_val;
   local bit            is_shadowed;
   local bit            shadow_wr_staged; // stage the first shadow reg write
   local bit            shadow_update_err;
@@ -111,6 +111,15 @@ class dv_base_reg extends uvm_reg;
     return shadow_update_err;
   endfunction
 
+  function bit get_shadow_storage_err();
+    uvm_reg_data_t mask = (1'b1 << (get_msb_pos() + 1)) - 1;
+    uvm_reg_data_t shadowed_val_temp = (~shadowed_val) & mask;
+    uvm_reg_data_t committed_val_temp = committed_val & mask;
+    `uvm_info(`gfn, $sformatf("shadow_val %0h, commmit_val %0h", shadowed_val_temp,
+                              committed_val_temp), UVM_DEBUG)
+    return shadowed_val_temp != committed_val_temp;
+  endfunction
+
   virtual function void clear_shadow_update_err();
     shadow_update_err = 0;
   endfunction
@@ -123,6 +132,10 @@ class dv_base_reg extends uvm_reg;
   virtual task post_write(uvm_reg_item rw);
     dv_base_reg_field fields[$];
     string field_access;
+
+    // no need to update shadow value or access type if access is not OK, as access is aborted
+    if (rw.status != UVM_IS_OK) return;
+
     if (is_shadowed) begin
       // first write
       if (!shadow_wr_staged) begin
@@ -136,6 +149,8 @@ class dv_base_reg extends uvm_reg;
           shadow_update_err = 1;
           return;
         end
+        committed_val = staged_shadow_val;
+        shadowed_val  = ~committed_val;
       end
     end
     if (is_enable_reg()) begin
@@ -197,11 +212,44 @@ class dv_base_reg extends uvm_reg;
     super.do_predict(rw, kind, be);
   endfunction
 
+  virtual task poke (output uvm_status_e     status,
+                     input  uvm_reg_data_t   value,
+                     input string            kind = "BkdrRegPathRtl",
+                     input uvm_sequence_base parent = null,
+                     input uvm_object        extension = null,
+                     input string            fname = "",
+                     input int               lineno = 0);
+    if (kind == "BkdrRegPathRtlShadow") shadowed_val = value;
+    else if (kind == "BkdrRegPathRtlCommitted") committed_val = value;
+    super.poke(status, value, kind, parent, extension, fname, lineno);
+  endtask
+
+  // callback function to update shadowed values according to specific design
+  // should only be called after post-write
+  virtual function void update_shadowed_val(uvm_reg_data_t val, bit do_predict = 1);
+    if (shadow_wr_staged) begin
+      // update value after first write
+      staged_shadow_val = val;
+    end else begin
+      // update value after second write
+      if (staged_shadow_val != val) begin
+        shadow_update_err = 1;
+      end else begin
+        shadow_update_err = 0;
+        committed_val     = staged_shadow_val;
+        shadowed_val      = ~committed_val;
+      end
+    end
+    if (do_predict) void'(predict(val));
+  endfunction
+
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     if (is_shadowed) begin
       shadow_update_err = 0;
       shadow_wr_staged  = 0;
+      committed_val     = get_mirrored_value();
+      shadowed_val      = ~committed_val;
       // in case reset is issued during shadowed writes
       void'(atomic_shadow_wr.try_get(1));
       void'(atomic_en_shadow_wr.try_get(1));

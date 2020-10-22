@@ -12,12 +12,12 @@
 module rstmgr import rstmgr_pkg::*; (
   // Primary module clocks
   input clk_i,
-  input rst_ni,
+  input rst_ni, // this is currently connected to top level reset, but will change once ast is in
+  input clk_aon_i,
+  input clk_io_div2_i,
   input clk_main_i,
   input clk_io_i,
-  input clk_io_div2_i,
   input clk_usb_i,
-  input clk_aon_i,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -28,7 +28,7 @@ module rstmgr import rstmgr_pkg::*; (
   output pwrmgr_pkg::pwr_rst_rsp_t pwr_o,
 
   // ast interface
-  input ast_wrapper_pkg::ast_rst_t ast_i,
+  input rstmgr_ast_t ast_i,
 
   // cpu related inputs
   input rstmgr_cpu_t cpu_i,
@@ -38,66 +38,22 @@ module rstmgr import rstmgr_pkg::*; (
 
   // Interface to alert handler
   // always on resets
-  output rstmgr_out_t resets_o,
-
-  input scan_rst_ni,
-  input scanmode_i
+  output rstmgr_out_t resets_o
 
 );
 
-  localparam int NumRsts = 10;
-  logic [NumRsts-1:0] raw_resets, muxed_resets;
-  rstmgr_out_t resets_int;
-
   // receive POR and stretch
   // The por is at first stretched and synced on clk_aon
-  rstmgr_por i_por (
+  // The rst_ni and pok_i input will be changed once AST is integrated
+  logic rst_por_aon_n;
+  rstmgr_por u_rst_por_aon (
     .clk_i(clk_aon_i),
     .rst_ni,
     .pok_i(ast_i.aon_pok),
-    .rst_no(resets_int.rst_por_aon_n)
+    .rst_no(rst_por_aon_n)
   );
 
-  // POR usage for the clkmgr
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) i_por_sync (
-    .clk_i(clk_main_i),
-    .rst_ni(resets_o.rst_por_aon_n),
-    .d_i(1'b1),
-    .q_o(resets_int.rst_por_n)
-  );
-
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) i_por_io_sync (
-    .clk_i(clk_io_i),
-    .rst_ni(resets_o.rst_por_aon_n),
-    .d_i(1'b1),
-    .q_o(resets_int.rst_por_io_n)
-  );
-
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) i_por_io_div2_sync (
-    .clk_i(clk_io_div2_i),
-    .rst_ni(resets_o.rst_por_aon_n),
-    .d_i(1'b1),
-    .q_o(resets_int.rst_por_io_div2_n)
-  );
-
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) i_por_usb_sync (
-    .clk_i(clk_usb_i),
-    .rst_ni(resets_o.rst_por_aon_n),
-    .d_i(1'b1),
-    .q_o(resets_int.rst_por_usb_n)
-  );
+  assign resets_o.rst_por_aon_n = rst_por_aon_n;
 
   ////////////////////////////////////////////////////
   // Register Interface                             //
@@ -108,7 +64,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   rstmgr_reg_top u_reg (
     .clk_i,
-    .rst_ni(resets_o.rst_por_aon_n),
+    .rst_ni(resets_o.rst_por_io_div2_n),
     .tl_i,
     .tl_o,
     .reg2hw,
@@ -126,9 +82,9 @@ module rstmgr import rstmgr_pkg::*; (
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) i_sync (
+  ) u_sync (
     .clk_i,
-    .rst_ni(resets_o.rst_por_aon_n),
+    .rst_ni(resets_o.rst_por_io_div2_n),
     .d_i(cpu_i.ndmreset_req),
     .q_o(ndmreset_req_q)
   );
@@ -140,19 +96,20 @@ module rstmgr import rstmgr_pkg::*; (
   // These are hardcoded and not directly used.     //
   // Instead they act as async reset roots.         //
   ////////////////////////////////////////////////////
-  logic [PowerDomains-1:0] rst_lc_src_n;
-  logic [PowerDomains-1:0] rst_sys_src_n;
 
   // The two source reset modules are chained together.  The output of one is fed into the
   // the second.  This ensures that if upstream resets for any reason, the associated downstream
   // reset will also reset.
 
+  logic [PowerDomains-1:0] rst_lc_src_n;
+  logic [PowerDomains-1:0] rst_sys_src_n;
+
   // lc reset sources
   rstmgr_ctrl #(
     .PowerDomains(PowerDomains)
-  ) i_lc_src (
-    .clk_i(clk_i),
-    .rst_ni(resets_o.rst_por_aon_n),
+  ) u_lc_src (
+    .clk_i,
+    .rst_ni(resets_o.rst_por_io_div2_n),
     .rst_req_i(pwr_i.rst_lc_req),
     .rst_parent_ni({PowerDomains{1'b1}}),
     .rst_no(rst_lc_src_n)
@@ -161,9 +118,9 @@ module rstmgr import rstmgr_pkg::*; (
   // sys reset sources
   rstmgr_ctrl #(
     .PowerDomains(PowerDomains)
-  ) i_sys_src (
-    .clk_i(clk_i),
-    .rst_ni(resets_o.rst_por_aon_n),
+  ) u_sys_src (
+    .clk_i,
+    .rst_ni(resets_o.rst_por_io_div2_n),
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
     .rst_parent_ni(rst_lc_src_n),
     .rst_no(rst_sys_src_n)
@@ -180,52 +137,103 @@ module rstmgr import rstmgr_pkg::*; (
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) i_lc (
-    .clk_i(clk_io_div2_i),
-    .rst_ni(rst_lc_src_n[ALWAYS_ON_SEL]),
-    .d_i(1'b1),
-    .q_o(resets_int.rst_lc_n)
-  );
-
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) i_sys (
+  ) u_por (
     .clk_i(clk_main_i),
-    .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
+    .rst_ni(rst_por_aon_n),
     .d_i(1'b1),
-    .q_o(resets_int.rst_sys_n)
+    .q_o(resets_o.rst_por_n)
   );
 
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) i_sys_io (
-    .clk_i(clk_io_div2_i),
-    .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
+  ) u_por_io (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_por_aon_n),
     .d_i(1'b1),
-    .q_o(resets_int.rst_sys_io_n)
+    .q_o(resets_o.rst_por_io_n)
   );
 
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) i_spi_device (
+  ) u_por_io_div2 (
     .clk_i(clk_io_div2_i),
-    .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
-    .d_i(reg2hw.rst_spi_device_n.q),
-    .q_o(resets_int.rst_spi_device_n)
+    .rst_ni(rst_por_aon_n),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_por_io_div2_n)
   );
 
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) i_usb (
+  ) u_por_usb (
     .clk_i(clk_usb_i),
-    .rst_ni(rst_sys_src_n[ALWAYS_ON_SEL]),
-    .d_i(reg2hw.rst_usb_n.q),
-    .q_o(resets_int.rst_usb_n)
+    .rst_ni(rst_por_aon_n),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_por_usb_n)
   );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_lc (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_lc_src_n[0]),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_lc_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_sys (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_sys_src_n[0]),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_sys_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_sys_io (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_sys_src_n[0]),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_sys_io_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_sys_aon (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_sys_src_n[0]),
+    .d_i(1'b1),
+    .q_o(resets_o.rst_sys_aon_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_spi_device (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_sys_src_n[0]),
+    .d_i(reg2hw.rst_spi_device_n.q),
+    .q_o(resets_o.rst_spi_device_n)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_usb (
+    .clk_i(clk_usb_i),
+    .rst_ni(rst_sys_src_n[0]),
+    .d_i(reg2hw.rst_usb_n.q),
+    .q_o(resets_o.rst_usb_n)
+  );
+
 
   ////////////////////////////////////////////////////
   // Reset info construction                        //
@@ -248,43 +256,13 @@ module rstmgr import rstmgr_pkg::*; (
     .Reasons(ResetReasons)
   ) i_info (
     .clk_i,
-    .rst_ni(resets_o.rst_por_aon_n),
+    .rst_ni(rst_por_aon_n),
     .rst_cpu_ni(cpu_i.rst_cpu_n),
     .rst_req_i(rst_reqs),
     .wr_i(reg2hw.reset_info.qe),
     .data_i(reg2hw.reset_info.q),
     .rst_reasons_o(hw2reg.reset_info)
   );
-
-  ////////////////////////////////////////////////////
-  // Test reset bypass                              //
-  ////////////////////////////////////////////////////
-
-  assign raw_resets = {
-                      resets_int.rst_por_aon_n,
-                      resets_int.rst_por_n,
-                      resets_int.rst_por_io_n,
-                      resets_int.rst_por_io_div2_n,
-                      resets_int.rst_por_usb_n,
-                      resets_int.rst_lc_n,
-                      resets_int.rst_sys_io_n,
-                      resets_int.rst_sys_n,
-                      resets_int.rst_spi_device_n,
-                      resets_int.rst_usb_n
-                      };
-
-  assign resets_o = muxed_resets;
-
-  // reuse clock muxes for balanced rise / fall
-  for (genvar i=0; i<NumRsts; i++) begin : gen_rst_muxes
-    prim_clock_mux2 u_rst_mux (
-      .clk0_i(raw_resets[i]),
-      .clk1_i(scan_rst_ni),
-      .sel_i(scanmode_i),
-      .clk_o(muxed_resets[i])
-    );
-  end
-
 
   ////////////////////////////////////////////////////
   // Assertions                                     //

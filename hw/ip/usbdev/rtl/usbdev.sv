@@ -87,9 +87,6 @@ module usbdev (
   localparam int RXFifoWidth = NBufWidth + (1+SizeWidth)         +  4  + 1;
   localparam int RXFifoDepth = 4;
 
-  // Number of endpoints
-  localparam int NEndpoints = usbdev_reg_pkg::NEndpoints;
-
   usbdev_reg2hw_t reg2hw;
   usbdev_hw2reg_t hw2reg;
 
@@ -141,13 +138,20 @@ module usbdev (
 
 
   /////////////////////////////////
-  // USB IO after CDC & muxing   //
+  // USB RX after CDC & muxing   //
   /////////////////////////////////
   logic usb_rx_d;
-  logic usb_rx_se0;
+  logic usb_rx_dp;
+  logic usb_rx_dn;
+  /////////////////////////////////
+  // USB TX after CDC & muxing   //
+  /////////////////////////////////
   logic usb_tx_d;
   logic usb_tx_se0;
   logic usb_tx_oe;
+  /////////////////////////////////
+  // USB contol pins after CDC   //
+  /////////////////////////////////
   logic usb_pwr_sense;
   logic usb_pullup_en;
 
@@ -471,7 +475,8 @@ module usbdev (
 
     // Pins
     .usb_d_i              (usb_rx_d),
-    .usb_se0_i            (usb_rx_se0),
+    .usb_dp_i             (usb_rx_dp),
+    .usb_dn_i             (usb_rx_dn),
     .usb_oe_o             (usb_tx_oe),
     .usb_d_o              (usb_tx_d),
     .usb_se0_o            (usb_tx_se0),
@@ -517,7 +522,8 @@ module usbdev (
     .clr_devaddr_o        (usb_clr_devaddr),
     .ep_iso_i             (ep_iso), // cdc ok, quasi-static
     .cfg_eop_single_bit_i (reg2hw.phy_config.eop_single_bit.q), // cdc ok: quasi-static
-    .tx_osc_test_mode_i   (1'b0), // cdc ok: quasi-static & testmode only
+    .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
+    .cfg_rx_differential_i (reg2hw.phy_config.rx_differential_mode.q), // cdc ok: quasi-static
     .data_toggle_clear_i  (usb_data_toggle_clear),
 
     // status
@@ -705,6 +711,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_pkt_received (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_pkt_received),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.pkt_received.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.pkt_received.q),
@@ -716,6 +724,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_pkt_sent (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (set_sent),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.pkt_sent.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.pkt_sent.q),
@@ -727,6 +737,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_disconnected (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_disconnect),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.disconnected.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.disconnected.q),
@@ -738,6 +750,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_connected (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_connect),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.connected.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.connected.q),
@@ -749,6 +763,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_host_lost (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_host_lost),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.host_lost.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.host_lost.q),
@@ -760,6 +776,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_link_reset (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_link_reset),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.link_reset.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.link_reset.q),
@@ -771,6 +789,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_link_suspend (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_link_suspend),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.link_suspend.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.link_suspend.q),
@@ -782,6 +802,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_link_resume (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_link_resume),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.link_resume.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.link_resume.q),
@@ -793,6 +815,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_av_empty (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_av_empty),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.av_empty.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.av_empty.q),
@@ -804,6 +828,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_rx_full (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_full),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_full.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_full.q),
@@ -815,6 +841,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_av_overflow (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_av_overflow),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.av_overflow.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.av_overflow.q),
@@ -826,6 +854,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_link_in_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_in_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.link_in_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.link_in_err.q),
@@ -837,6 +867,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_rx_crc_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_crc_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_crc_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_crc_err.q),
@@ -848,6 +880,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_rx_pid_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_pid_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_pid_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_pid_err.q),
@@ -859,6 +893,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_rx_bitstuff_err (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_rx_bitstuff_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_bitstuff_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_bitstuff_err.q),
@@ -870,6 +906,8 @@ module usbdev (
   );
 
   prim_intr_hw #(.Width(1)) intr_frame (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_frame),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.frame.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.frame.q),
@@ -912,7 +950,8 @@ module usbdev (
 
     // Internal interface
     .usb_rx_d_o             (usb_rx_d),
-    .usb_rx_se0_o           (usb_rx_se0),
+    .usb_rx_dp_o            (usb_rx_dp),
+    .usb_rx_dn_o            (usb_rx_dn),
     .usb_tx_d_i             (usb_tx_d),
     .usb_tx_se0_i           (usb_tx_se0),
     .usb_tx_oe_i            (usb_tx_oe),

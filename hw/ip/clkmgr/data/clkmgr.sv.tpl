@@ -44,9 +44,12 @@ module clkmgr import clkmgr_pkg::*; (
   input clk_dft_t dft_i,
 
   // idle hints
-  input clk_hint_status_t status_i,
+  input [${len(hint_clks)-1}:0] idle_i,
 
   // clock output interface
+% for intf in export_clks:
+  output clkmgr_${intf}_out_t clocks_${intf}_o,
+% endfor
   output clkmgr_out_t clocks_o
 
 );
@@ -76,9 +79,14 @@ module clkmgr import clkmgr_pkg::*; (
 % endfor
 
 % for src in div_srcs:
-  assign clk_${src['name']}_i = clk_${src['src']}_i;
+  prim_clock_div #(
+    .Divisor(${src['div']})
+  ) u_${src['name']}_div (
+    .clk_i(clk_${src['src']}_i),
+    .rst_ni(rst_${src['src']}_ni),
+    .clk_o(clk_${src['name']}_i)
+  );
 % endfor
-
 
 
   ////////////////////////////////////////////////////
@@ -95,15 +103,20 @@ module clkmgr import clkmgr_pkg::*; (
   // Root gating
   ////////////////////////////////////////////////////
 
-  logic async_roots_en;
-  logic roots_en_q2, roots_en_q1, roots_en_d;
+  logic wait_enable;
+  logic wait_disable;
+  logic en_status_d;
+  logic dis_status_d;
+  logic [1:0] en_status_q;
+  logic [1:0] dis_status_q;
+  logic clk_status;
 % for src in rg_srcs:
   logic clk_${src}_root;
   logic clk_${src}_en;
 % endfor
 
 % for src in rg_srcs:
-  prim_clock_gating_sync i_${src}_cg (
+  prim_clock_gating_sync u_${src}_cg (
     .clk_i(clk_${src}_i),
     .rst_ni(rst_${src}_ni),
     .test_en_i(dft_i.test_en),
@@ -113,8 +126,20 @@ module clkmgr import clkmgr_pkg::*; (
   );
 % endfor
 
+  // an async AND of all the synchronized enables
+  // return feedback to pwrmgr only when all clocks are enabled
+  assign wait_enable =
+% for src in rg_srcs:
+    % if loop.last:
+    clk_${src}_en;
+    % else:
+    clk_${src}_en &
+    % endif
+% endfor
+
   // an async OR of all the synchronized enables
-  assign async_roots_en =
+  // return feedback to pwrmgr only when all clocks are disabled
+  assign wait_disable =
 % for src in rg_srcs:
     % if loop.last:
     clk_${src}_en;
@@ -123,32 +148,45 @@ module clkmgr import clkmgr_pkg::*; (
     % endif
 % endfor
 
-  // Sync the OR back into clkmgr domain for feedback to pwrmgr.
+  // Sync clkmgr domain for feedback to pwrmgr.
   // Since the signal is combo / converged on the other side, de-bounce
   // the signal prior to output
   prim_flop_2sync #(
     .Width(1)
-  ) i_roots_en_sync (
+  ) u_roots_en_status_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_roots_en),
-    .q_o(roots_en_d)
+    .d_i(wait_enable),
+    .q_o(en_status_d)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_roots_or_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(wait_disable),
+    .q_o(dis_status_d)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      roots_en_q1 <= 1'b0;
-      roots_en_q2 <= 1'b0;
+      en_status_q <= '0;
+      dis_status_q <= '0;
+      clk_status <= '0;
     end else begin
-      roots_en_q1 <= roots_en_d;
+      en_status_q <= {en_status_q[0], en_status_d};
+      dis_status_q <= {dis_status_q[0], dis_status_d};
 
-      if (roots_en_q1 == roots_en_d) begin
-        roots_en_q2 <= roots_en_q1;
+      if (&en_status_q) begin
+        clk_status <= 1'b1;
+      end else if (|dis_status_q == '0) begin
+        clk_status <= 1'b0;
       end
     end
   end
 
-  assign pwr_o.roots_en = roots_en_q2;
+  assign pwr_o.clk_status = clk_status;
 
   ////////////////////////////////////////////////////
   // Clocks with only root gate
@@ -168,14 +206,14 @@ module clkmgr import clkmgr_pkg::*; (
 % for k,v in sw_clks.items():
   prim_flop_2sync #(
     .Width(1)
-  ) i_${k}_sw_en_sync (
+  ) u_${k}_sw_en_sync (
     .clk_i(clk_${v}_i),
     .rst_ni(rst_${v}_ni),
     .d_i(reg2hw.clk_enables.${k}_en.q),
     .q_o(${k}_sw_en)
   );
 
-  prim_clock_gating i_${k}_cg (
+  prim_clock_gating u_${k}_cg (
     .clk_i(clk_${v}_i),
     .en_i(${k}_sw_en & clk_${v}_en),
     .test_en_i(dft_i.test_en),
@@ -196,20 +234,20 @@ module clkmgr import clkmgr_pkg::*; (
 % endfor
 
 % for k,v in hint_clks.items():
-  assign ${k}_en = ${k}_hint | ~status_i.idle[${loop.index}];
+  assign ${k}_en = ${k}_hint | ~idle_i[${v["name"].capitalize()}];
 
   prim_flop_2sync #(
     .Width(1)
-  ) i_${k}_hint_sync (
-    .clk_i(clk_${v}_i),
-    .rst_ni(rst_${v}_ni),
+  ) u_${k}_hint_sync (
+    .clk_i(clk_${v["src"]}_i),
+    .rst_ni(rst_${v["src"]}_ni),
     .d_i(reg2hw.clk_hints.${k}_hint.q),
     .q_o(${k}_hint)
   );
 
-  prim_clock_gating i_${k}_cg (
-    .clk_i(clk_${v}_i),
-    .en_i(${k}_en & clk_${v}_en),
+  prim_clock_gating u_${k}_cg (
+    .clk_i(clk_${v["src"]}_i),
+    .en_i(${k}_en & clk_${v["src"]}_en),
     .test_en_i(dft_i.test_en),
     .clk_o(clocks_o.${k})
   );
@@ -222,10 +260,21 @@ module clkmgr import clkmgr_pkg::*; (
   assign hw2reg.clk_hints_status.${k}_val.d = ${k}_en;
 % endfor
 
+  ////////////////////////////////////////////////////
+  // Exported clocks
+  ////////////////////////////////////////////////////
+
+% for intf, eps in export_clks.items():
+  % for ep, clks in eps.items():
+    % for clk in clks:
+  assign clocks_${intf}_o.clk_${intf}_${ep}_${clk} = clocks_o.clk_${clk};
+    % endfor
+  % endfor
+% endfor
 
   ////////////////////////////////////////////////////
   // Assertions
   ////////////////////////////////////////////////////
 
 
-endmodule // rstmgr
+endmodule // clkmgr

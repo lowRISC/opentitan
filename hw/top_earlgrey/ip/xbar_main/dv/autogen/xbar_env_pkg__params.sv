@@ -25,7 +25,8 @@ tl_device_t xbar_devices[$] = '{
         '{32'h40080000, 32'h40080fff},
         '{32'h400a0000, 32'h400c0fff},
         '{32'h40150000, 32'h40150fff},
-        '{32'h40170000, 32'h40170fff}
+        '{32'h40170000, 32'h40180fff},
+        '{32'h401b0000, 32'h401b3fff}
     }},
     '{"flash_ctrl", '{
         '{32'h40030000, 32'h40030fff}
@@ -53,6 +54,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"otbn", '{
         '{32'h50000000, 32'h503fffff}
+    }},
+    '{"keymgr", '{
+        '{32'h401a0000, 32'h401a0fff}
 }}};
 
   // List of Xbar hosts
@@ -77,7 +81,8 @@ tl_host_t xbar_hosts[$] = '{
         "padctrl",
         "alert_handler",
         "nmi_gen",
-        "otbn"}}
+        "otbn",
+        "keymgr"}}
     ,
     '{"dm_sba", 2, '{
         "rom",

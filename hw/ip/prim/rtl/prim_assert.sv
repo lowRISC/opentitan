@@ -9,17 +9,6 @@
 `ifndef PRIM_ASSERT_SV
 `define PRIM_ASSERT_SV
 
-`ifdef UVM
-  // report assertion error with UVM if compiled
-  package assert_rpt_pkg;
-    import uvm_pkg::*;
-    `include "uvm_macros.svh"
-    function void assert_rpt(string msg);
-      `uvm_error("ASSERT FAILED", msg)
-    endfunction
-  endpackage
-`endif
-
 ///////////////////
 // Helper macros //
 ///////////////////
@@ -30,6 +19,19 @@
 
 // Converts an arbitrary block of code into a Verilog string
 `define PRIM_STRINGIFY(__x) `"__x`"
+
+// ASSERT_ERROR logs an error message with either `uvm_error or with $error.
+//
+// This somewhat duplicates `DV_ERROR macro defined in hw/dv/sv/dv_utils/dv_macros.svh. The reason
+// for redefining it here is to avoid creating a dependency.
+`define ASSERT_ERROR(__name)                                                             \
+`ifdef UVM                                                                               \
+  uvm_pkg::uvm_report_error("ASSERT FAILED", `PRIM_STRINGIFY(__name), uvm_pkg::UVM_NONE, \
+                            `__FILE__, `__LINE__, "", 1);                                \
+`else                                                                                    \
+  $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, `__FILE__, `__LINE__,         \
+         `PRIM_STRINGIFY(__name));                                                       \
+`endif
 
 // The basic helper macros are actually defined in "implementation headers". The macros should do
 // the same thing in each case (except for the dummy flavour), but in a way that the respective

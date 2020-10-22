@@ -5,8 +5,7 @@
 #include "sw/device/lib/handler.h"
 
 #include "sw/device/lib/base/stdasm.h"
-#include "sw/device/lib/common.h"
-#include "sw/device/lib/uart.h"
+#include "sw/device/lib/runtime/log.h"
 
 /**
  * Return value of mtval
@@ -23,11 +22,8 @@ static uint32_t get_mtval(void) {
  * TODO - this will be soon by a real print formatting
  */
 static void print_exc_msg(const char *msg) {
-  const uint32_t mtval = get_mtval();
-  uart_send_str((char *)msg);
-  uart_send_str("MTVAL value is ");
-  uart_send_uint(mtval, 32);
-  uart_send_str("\n");
+  LOG_INFO("%s", msg);
+  LOG_INFO("MTVAL value is 0x%x", get_mtval());
   while (1) {
   };
 }
@@ -69,48 +65,48 @@ __attribute__((weak)) void handler_exception(void) {
 }
 
 __attribute__((weak)) void handler_irq_software(void) {
-  uart_send_str("Software IRQ triggered!\n");
+  LOG_INFO("Software IRQ triggered!");
   while (1) {
   }
 }
 
 __attribute__((weak)) void handler_irq_timer(void) {
-  uart_send_str("Timer IRQ triggered!\n");
+  LOG_INFO("Timer IRQ triggered!");
   while (1) {
   }
 }
 
 __attribute__((weak)) void handler_irq_external(void) {
-  uart_send_str("External IRQ triggered!\n");
+  LOG_INFO("External IRQ triggered!");
   while (1) {
   }
 }
 
 __attribute__((weak)) void handler_instr_acc_fault(void) {
   const char fault_msg[] =
-      "Instruction access fault, mtval shows fault address\n";
+      "Instruction access fault, mtval shows fault address";
   print_exc_msg(fault_msg);
 }
 
 __attribute__((weak)) void handler_instr_ill_fault(void) {
   const char fault_msg[] =
-      "Illegal Instruction fault, mtval shows instruction content\n";
+      "Illegal Instruction fault, mtval shows instruction content";
   print_exc_msg(fault_msg);
 }
 
 __attribute__((weak)) void handler_bkpt(void) {
   const char exc_msg[] =
-      "Breakpoint triggerd, mtval shows the breakpoint address\n";
+      "Breakpoint triggerd, mtval shows the breakpoint address";
   print_exc_msg(exc_msg);
 }
 
 __attribute__((weak)) void handler_lsu_fault(void) {
-  const char exc_msg[] = "Load/Store fault, mtval shows the fault address\n";
+  const char exc_msg[] = "Load/Store fault, mtval shows the fault address";
   print_exc_msg(exc_msg);
 }
 
 __attribute__((weak)) void handler_ecall(void) {
-  uart_send_str("Environment call encountered\n");
+  LOG_INFO("Environment call encountered");
   while (1) {
   }
 }

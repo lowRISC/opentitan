@@ -5,91 +5,25 @@
 #ifndef OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_H_
 #define OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_H_
 
-// Header Extern Guard  (so header can be used from C and C++)
+/**
+ * @file
+ * @brief Top-specific Definitions
+ *
+ * This file contains preprocessor and type definitions for use within the
+ * device C/C++ codebase.
+ *
+ * These definitions are for information that depends on the top-specific chip
+ * configuration, which includes:
+ * - Device Memory Information (for Peripherals and Memory)
+ * - PLIC Interrupt ID Names and Source Mappings
+ * - Alert ID Names and Source Mappings
+ * - Pinmux Pin/Select Names
+ * - Power Manager Wakeups
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
-
-// PERIPH_INSEL ranges from 0 to NUM_MIO + 2 -1}
-//  0 and 1 are tied to value 0 and 1
-#define NUM_MIO 32
-#define NUM_DIO 15
-
-#define PINMUX_GPIO_GPIO_0_IN 0
-#define PINMUX_GPIO_GPIO_1_IN 1
-#define PINMUX_GPIO_GPIO_2_IN 2
-#define PINMUX_GPIO_GPIO_3_IN 3
-#define PINMUX_GPIO_GPIO_4_IN 4
-#define PINMUX_GPIO_GPIO_5_IN 5
-#define PINMUX_GPIO_GPIO_6_IN 6
-#define PINMUX_GPIO_GPIO_7_IN 7
-#define PINMUX_GPIO_GPIO_8_IN 8
-#define PINMUX_GPIO_GPIO_9_IN 9
-#define PINMUX_GPIO_GPIO_10_IN 10
-#define PINMUX_GPIO_GPIO_11_IN 11
-#define PINMUX_GPIO_GPIO_12_IN 12
-#define PINMUX_GPIO_GPIO_13_IN 13
-#define PINMUX_GPIO_GPIO_14_IN 14
-#define PINMUX_GPIO_GPIO_15_IN 15
-#define PINMUX_GPIO_GPIO_16_IN 16
-#define PINMUX_GPIO_GPIO_17_IN 17
-#define PINMUX_GPIO_GPIO_18_IN 18
-#define PINMUX_GPIO_GPIO_19_IN 19
-#define PINMUX_GPIO_GPIO_20_IN 20
-#define PINMUX_GPIO_GPIO_21_IN 21
-#define PINMUX_GPIO_GPIO_22_IN 22
-#define PINMUX_GPIO_GPIO_23_IN 23
-#define PINMUX_GPIO_GPIO_24_IN 24
-#define PINMUX_GPIO_GPIO_25_IN 25
-#define PINMUX_GPIO_GPIO_26_IN 26
-#define PINMUX_GPIO_GPIO_27_IN 27
-#define PINMUX_GPIO_GPIO_28_IN 28
-#define PINMUX_GPIO_GPIO_29_IN 29
-#define PINMUX_GPIO_GPIO_30_IN 30
-#define PINMUX_GPIO_GPIO_31_IN 31
-
-#define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
-
-// PERIPH_OUTSEL ranges from 0 to NUM_MIO + 3 -1}
-// 0, 1 and 2 are tied to value 0, 1 and high-impedance
-
-#define PINMUX_VALUE_0_OUT 0
-#define PINMUX_VALUE_1_OUT 1
-#define PINMUX_VALUE_Z_OUT 2
-#define PINMUX_GPIO_GPIO_0_OUT 3
-#define PINMUX_GPIO_GPIO_1_OUT 4
-#define PINMUX_GPIO_GPIO_2_OUT 5
-#define PINMUX_GPIO_GPIO_3_OUT 6
-#define PINMUX_GPIO_GPIO_4_OUT 7
-#define PINMUX_GPIO_GPIO_5_OUT 8
-#define PINMUX_GPIO_GPIO_6_OUT 9
-#define PINMUX_GPIO_GPIO_7_OUT 10
-#define PINMUX_GPIO_GPIO_8_OUT 11
-#define PINMUX_GPIO_GPIO_9_OUT 12
-#define PINMUX_GPIO_GPIO_10_OUT 13
-#define PINMUX_GPIO_GPIO_11_OUT 14
-#define PINMUX_GPIO_GPIO_12_OUT 15
-#define PINMUX_GPIO_GPIO_13_OUT 16
-#define PINMUX_GPIO_GPIO_14_OUT 17
-#define PINMUX_GPIO_GPIO_15_OUT 18
-#define PINMUX_GPIO_GPIO_16_OUT 19
-#define PINMUX_GPIO_GPIO_17_OUT 20
-#define PINMUX_GPIO_GPIO_18_OUT 21
-#define PINMUX_GPIO_GPIO_19_OUT 22
-#define PINMUX_GPIO_GPIO_20_OUT 23
-#define PINMUX_GPIO_GPIO_21_OUT 24
-#define PINMUX_GPIO_GPIO_22_OUT 25
-#define PINMUX_GPIO_GPIO_23_OUT 26
-#define PINMUX_GPIO_GPIO_24_OUT 27
-#define PINMUX_GPIO_GPIO_25_OUT 28
-#define PINMUX_GPIO_GPIO_26_OUT 29
-#define PINMUX_GPIO_GPIO_27_OUT 30
-#define PINMUX_GPIO_GPIO_28_OUT 31
-#define PINMUX_GPIO_GPIO_29_OUT 32
-#define PINMUX_GPIO_GPIO_30_OUT 33
-#define PINMUX_GPIO_GPIO_31_OUT 34
 
 /**
  * Peripheral base address for uart in top earlgrey.
@@ -398,6 +332,42 @@ extern "C" {
 #define TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for keymgr in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_KEYMGR_BASE_ADDR 0x401a0000u
+
+/**
+ * Peripheral size for keymgr in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_KEYMGR_BASE_ADDR and
+ * `TOP_EARLGREY_KEYMGR_BASE_ADDR + TOP_EARLGREY_KEYMGR_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_KEYMGR_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for otp_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_OTP_CTRL_BASE_ADDR 0x401b0000u
+
+/**
+ * Peripheral size for otp_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_OTP_CTRL_BASE_ADDR and
+ * `TOP_EARLGREY_OTP_CTRL_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_OTP_CTRL_SIZE_BYTES 0x4000u
+
+/**
  * Peripheral base address for otbn in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -458,7 +428,7 @@ extern "C" {
 
 
 /**
- * PLIC Interrupt source peripheral enumeration.
+ * PLIC Interrupt Source Peripheral.
  *
  * Enumeration used to determine which peripheral asserted the corresponding
  * interrupt.
@@ -475,13 +445,14 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralUsbdev = 8, /**< usbdev */
   kTopEarlgreyPlicPeripheralPwrmgr = 9, /**< pwrmgr */
   kTopEarlgreyPlicPeripheralOtbn = 10, /**< otbn */
-  kTopEarlgreyPlicPeripheralLast = 10, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralKeymgr = 11, /**< keymgr */
+  kTopEarlgreyPlicPeripheralLast = 11, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
- * PLIC Interrupt Ids Enumeration
+ * PLIC Interrupt Source.
  *
- * Enumeration of all PLIC interrupt source IDs. The IRQ IDs belonging to
+ * Enumeration of all PLIC interrupt sources. The interrupt sources belonging to
  * the same peripheral are guaranteed to be consecutive.
  */
 typedef enum top_earlgrey_plic_irq_id {
@@ -567,28 +538,266 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdPwrmgrWakeup = 79, /**< pwrmgr_wakeup */
   kTopEarlgreyPlicIrqIdOtbnDone = 80, /**< otbn_done */
   kTopEarlgreyPlicIrqIdOtbnErr = 81, /**< otbn_err */
-  kTopEarlgreyPlicIrqIdLast = 81, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdKeymgrOpDone = 82, /**< keymgr_op_done */
+  kTopEarlgreyPlicIrqIdKeymgrErr = 83, /**< keymgr_err */
+  kTopEarlgreyPlicIrqIdLast = 83, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
- * PLIC Interrupt Id to Peripheral Map
+ * PLIC Interrupt Source to Peripheral Map
  *
  * This array is a mapping from `top_earlgrey_plic_irq_id_t` to
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[82];
+    top_earlgrey_plic_interrupt_for_peripheral[84];
 
 /**
- * PLIC external interrupt target.
+ * PLIC Interrupt Target.
  *
  * Enumeration used to determine which set of IE, CC, threshold registers to
- * access dependent on the target.
+ * access for a given interrupt target.
  */
 typedef enum top_earlgrey_plic_target {
   kTopEarlgreyPlicTargetIbex0 = 0, /**< Ibex Core 0 */
   kTopEarlgreyPlicTargetLast = 0, /**< \internal Final PLIC target */
 } top_earlgrey_plic_target_t;
+
+/**
+ * Alert Handler Source Peripheral.
+ *
+ * Enumeration used to determine which peripheral asserted the corresponding
+ * alert.
+ */
+typedef enum top_earlgrey_alert_peripheral {
+  kTopEarlgreyAlertPeripheralAes = 0, /**< aes */
+  kTopEarlgreyAlertPeripheralOtbn = 1, /**< otbn */
+  kTopEarlgreyAlertPeripheralSensorCtrl = 2, /**< sensor_ctrl */
+  kTopEarlgreyAlertPeripheralKeymgr = 3, /**< keymgr */
+  kTopEarlgreyAlertPeripheralOtpCtrl = 4, /**< otp_ctrl */
+  kTopEarlgreyAlertPeripheralLast = 4, /**< \internal Final Alert peripheral */
+} top_earlgrey_alert_peripheral_t;
+
+/**
+ * Alert Handler Alert Source.
+ *
+ * Enumeration of all Alert Handler Alert Sources. The alert sources belonging to
+ * the same peripheral are guaranteed to be consecutive.
+ */
+typedef enum top_earlgrey_alert_id {
+  kTopEarlgreyAlertIdAesCtrlErrUpdate = 0, /**< aes_ctrl_err_update */
+  kTopEarlgreyAlertIdAesCtrlErrStorage = 1, /**< aes_ctrl_err_storage */
+  kTopEarlgreyAlertIdOtbnImemUncorrectable = 2, /**< otbn_imem_uncorrectable */
+  kTopEarlgreyAlertIdOtbnDmemUncorrectable = 3, /**< otbn_dmem_uncorrectable */
+  kTopEarlgreyAlertIdOtbnRegUncorrectable = 4, /**< otbn_reg_uncorrectable */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts0 = 5, /**< sensor_ctrl_ast_alerts 0 */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts1 = 6, /**< sensor_ctrl_ast_alerts 1 */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts2 = 7, /**< sensor_ctrl_ast_alerts 2 */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts3 = 8, /**< sensor_ctrl_ast_alerts 3 */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts4 = 9, /**< sensor_ctrl_ast_alerts 4 */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts5 = 10, /**< sensor_ctrl_ast_alerts 5 */
+  kTopEarlgreyAlertIdSensorCtrlAstAlerts6 = 11, /**< sensor_ctrl_ast_alerts 6 */
+  kTopEarlgreyAlertIdKeymgrErr = 12, /**< keymgr_err */
+  kTopEarlgreyAlertIdOtpCtrlOtpMacroFailure = 13, /**< otp_ctrl_otp_macro_failure */
+  kTopEarlgreyAlertIdOtpCtrlOtpCheckFailure = 14, /**< otp_ctrl_otp_check_failure */
+  kTopEarlgreyAlertIdLast = 14, /**< \internal The Last Valid Alert ID. */
+} top_earlgrey_alert_id_t;
+
+/**
+ * Alert Handler Alert Source to Peripheral Map
+ *
+ * This array is a mapping from `top_earlgrey_alert_id_t` to
+ * `top_earlgrey_alert_peripheral_t`.
+ */
+extern const top_earlgrey_alert_peripheral_t
+    top_earlgrey_alert_for_peripheral[15];
+
+#define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
+
+// PERIPH_INSEL ranges from 0 to NUM_MIO + 2 -1}
+//  0 and 1 are tied to value 0 and 1
+#define NUM_MIO 32
+#define NUM_DIO 15
+
+#define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
+
+/**
+ * Pinmux Peripheral Input.
+ */
+typedef enum top_earlgrey_pinmux_peripheral_in {
+  kTopEarlgreyPinmuxPeripheralInGpioGpio0 = 0, /**< gpio_gpio 0 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio1 = 1, /**< gpio_gpio 1 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio2 = 2, /**< gpio_gpio 2 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio3 = 3, /**< gpio_gpio 3 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio4 = 4, /**< gpio_gpio 4 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio5 = 5, /**< gpio_gpio 5 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio6 = 6, /**< gpio_gpio 6 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio7 = 7, /**< gpio_gpio 7 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio8 = 8, /**< gpio_gpio 8 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio9 = 9, /**< gpio_gpio 9 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio10 = 10, /**< gpio_gpio 10 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio11 = 11, /**< gpio_gpio 11 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio12 = 12, /**< gpio_gpio 12 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio13 = 13, /**< gpio_gpio 13 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio14 = 14, /**< gpio_gpio 14 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio15 = 15, /**< gpio_gpio 15 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio16 = 16, /**< gpio_gpio 16 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio17 = 17, /**< gpio_gpio 17 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio18 = 18, /**< gpio_gpio 18 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio19 = 19, /**< gpio_gpio 19 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio20 = 20, /**< gpio_gpio 20 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio21 = 21, /**< gpio_gpio 21 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio22 = 22, /**< gpio_gpio 22 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio23 = 23, /**< gpio_gpio 23 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio24 = 24, /**< gpio_gpio 24 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio25 = 25, /**< gpio_gpio 25 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio26 = 26, /**< gpio_gpio 26 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio27 = 27, /**< gpio_gpio 27 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio28 = 28, /**< gpio_gpio 28 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio29 = 29, /**< gpio_gpio 29 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio30 = 30, /**< gpio_gpio 30 */
+  kTopEarlgreyPinmuxPeripheralInGpioGpio31 = 31, /**< gpio_gpio 31 */
+  kTopEarlgreyPinmuxPeripheralInLast = 31, /**< \internal Last valid peripheral input */
+} top_earlgrey_pinmux_peripheral_in_t;
+
+/**
+ * Pinmux MIO Input Selector.
+ */
+typedef enum top_earlgrey_pinmux_insel {
+  kTopEarlgreyPinmuxInselConstantZero = 0, /**< Tie constantly to zero */
+  kTopEarlgreyPinmuxInselConstantOne = 1, /**< Tie constantly to one */
+  kTopEarlgreyPinmuxInselMio0 = 2, /**< MIO Pad 0 */
+  kTopEarlgreyPinmuxInselMio1 = 3, /**< MIO Pad 1 */
+  kTopEarlgreyPinmuxInselMio2 = 4, /**< MIO Pad 2 */
+  kTopEarlgreyPinmuxInselMio3 = 5, /**< MIO Pad 3 */
+  kTopEarlgreyPinmuxInselMio4 = 6, /**< MIO Pad 4 */
+  kTopEarlgreyPinmuxInselMio5 = 7, /**< MIO Pad 5 */
+  kTopEarlgreyPinmuxInselMio6 = 8, /**< MIO Pad 6 */
+  kTopEarlgreyPinmuxInselMio7 = 9, /**< MIO Pad 7 */
+  kTopEarlgreyPinmuxInselMio8 = 10, /**< MIO Pad 8 */
+  kTopEarlgreyPinmuxInselMio9 = 11, /**< MIO Pad 9 */
+  kTopEarlgreyPinmuxInselMio10 = 12, /**< MIO Pad 10 */
+  kTopEarlgreyPinmuxInselMio11 = 13, /**< MIO Pad 11 */
+  kTopEarlgreyPinmuxInselMio12 = 14, /**< MIO Pad 12 */
+  kTopEarlgreyPinmuxInselMio13 = 15, /**< MIO Pad 13 */
+  kTopEarlgreyPinmuxInselMio14 = 16, /**< MIO Pad 14 */
+  kTopEarlgreyPinmuxInselMio15 = 17, /**< MIO Pad 15 */
+  kTopEarlgreyPinmuxInselMio16 = 18, /**< MIO Pad 16 */
+  kTopEarlgreyPinmuxInselMio17 = 19, /**< MIO Pad 17 */
+  kTopEarlgreyPinmuxInselMio18 = 20, /**< MIO Pad 18 */
+  kTopEarlgreyPinmuxInselMio19 = 21, /**< MIO Pad 19 */
+  kTopEarlgreyPinmuxInselMio20 = 22, /**< MIO Pad 20 */
+  kTopEarlgreyPinmuxInselMio21 = 23, /**< MIO Pad 21 */
+  kTopEarlgreyPinmuxInselMio22 = 24, /**< MIO Pad 22 */
+  kTopEarlgreyPinmuxInselMio23 = 25, /**< MIO Pad 23 */
+  kTopEarlgreyPinmuxInselMio24 = 26, /**< MIO Pad 24 */
+  kTopEarlgreyPinmuxInselMio25 = 27, /**< MIO Pad 25 */
+  kTopEarlgreyPinmuxInselMio26 = 28, /**< MIO Pad 26 */
+  kTopEarlgreyPinmuxInselMio27 = 29, /**< MIO Pad 27 */
+  kTopEarlgreyPinmuxInselMio28 = 30, /**< MIO Pad 28 */
+  kTopEarlgreyPinmuxInselMio29 = 31, /**< MIO Pad 29 */
+  kTopEarlgreyPinmuxInselMio30 = 32, /**< MIO Pad 30 */
+  kTopEarlgreyPinmuxInselMio31 = 33, /**< MIO Pad 31 */
+  kTopEarlgreyPinmuxInselLast = 33, /**< \internal Last valid insel value */
+} top_earlgrey_pinmux_insel_t;
+
+/**
+ * Pinmux MIO Output.
+ */
+typedef enum top_earlgrey_pinmux_mio_out {
+  kTopEarlgreyPinmuxMioOut0 = 0, /**< MIO Pad 0 */
+  kTopEarlgreyPinmuxMioOut1 = 1, /**< MIO Pad 1 */
+  kTopEarlgreyPinmuxMioOut2 = 2, /**< MIO Pad 2 */
+  kTopEarlgreyPinmuxMioOut3 = 3, /**< MIO Pad 3 */
+  kTopEarlgreyPinmuxMioOut4 = 4, /**< MIO Pad 4 */
+  kTopEarlgreyPinmuxMioOut5 = 5, /**< MIO Pad 5 */
+  kTopEarlgreyPinmuxMioOut6 = 6, /**< MIO Pad 6 */
+  kTopEarlgreyPinmuxMioOut7 = 7, /**< MIO Pad 7 */
+  kTopEarlgreyPinmuxMioOut8 = 8, /**< MIO Pad 8 */
+  kTopEarlgreyPinmuxMioOut9 = 9, /**< MIO Pad 9 */
+  kTopEarlgreyPinmuxMioOut10 = 10, /**< MIO Pad 10 */
+  kTopEarlgreyPinmuxMioOut11 = 11, /**< MIO Pad 11 */
+  kTopEarlgreyPinmuxMioOut12 = 12, /**< MIO Pad 12 */
+  kTopEarlgreyPinmuxMioOut13 = 13, /**< MIO Pad 13 */
+  kTopEarlgreyPinmuxMioOut14 = 14, /**< MIO Pad 14 */
+  kTopEarlgreyPinmuxMioOut15 = 15, /**< MIO Pad 15 */
+  kTopEarlgreyPinmuxMioOut16 = 16, /**< MIO Pad 16 */
+  kTopEarlgreyPinmuxMioOut17 = 17, /**< MIO Pad 17 */
+  kTopEarlgreyPinmuxMioOut18 = 18, /**< MIO Pad 18 */
+  kTopEarlgreyPinmuxMioOut19 = 19, /**< MIO Pad 19 */
+  kTopEarlgreyPinmuxMioOut20 = 20, /**< MIO Pad 20 */
+  kTopEarlgreyPinmuxMioOut21 = 21, /**< MIO Pad 21 */
+  kTopEarlgreyPinmuxMioOut22 = 22, /**< MIO Pad 22 */
+  kTopEarlgreyPinmuxMioOut23 = 23, /**< MIO Pad 23 */
+  kTopEarlgreyPinmuxMioOut24 = 24, /**< MIO Pad 24 */
+  kTopEarlgreyPinmuxMioOut25 = 25, /**< MIO Pad 25 */
+  kTopEarlgreyPinmuxMioOut26 = 26, /**< MIO Pad 26 */
+  kTopEarlgreyPinmuxMioOut27 = 27, /**< MIO Pad 27 */
+  kTopEarlgreyPinmuxMioOut28 = 28, /**< MIO Pad 28 */
+  kTopEarlgreyPinmuxMioOut29 = 29, /**< MIO Pad 29 */
+  kTopEarlgreyPinmuxMioOut30 = 30, /**< MIO Pad 30 */
+  kTopEarlgreyPinmuxMioOut31 = 31, /**< MIO Pad 31 */
+  kTopEarlgreyPinmuxMioOutLast = 31, /**< \internal Last valid mio output */
+} top_earlgrey_pinmux_mio_out_t;
+
+/**
+ * Pinmux Peripheral Output Selector.
+ */
+typedef enum top_earlgrey_pinmux_outsel {
+  kTopEarlgreyPinmuxOutselConstantZero = 0, /**< Tie constantly to zero */
+  kTopEarlgreyPinmuxOutselConstantOne = 1, /**< Tie constantly to one */
+  kTopEarlgreyPinmuxOutselConstantHighZ = 2, /**< Tie constantly to high-Z */
+  kTopEarlgreyPinmuxOutselGpioGpio0 = 3, /**< gpio_gpio 0 */
+  kTopEarlgreyPinmuxOutselGpioGpio1 = 4, /**< gpio_gpio 1 */
+  kTopEarlgreyPinmuxOutselGpioGpio2 = 5, /**< gpio_gpio 2 */
+  kTopEarlgreyPinmuxOutselGpioGpio3 = 6, /**< gpio_gpio 3 */
+  kTopEarlgreyPinmuxOutselGpioGpio4 = 7, /**< gpio_gpio 4 */
+  kTopEarlgreyPinmuxOutselGpioGpio5 = 8, /**< gpio_gpio 5 */
+  kTopEarlgreyPinmuxOutselGpioGpio6 = 9, /**< gpio_gpio 6 */
+  kTopEarlgreyPinmuxOutselGpioGpio7 = 10, /**< gpio_gpio 7 */
+  kTopEarlgreyPinmuxOutselGpioGpio8 = 11, /**< gpio_gpio 8 */
+  kTopEarlgreyPinmuxOutselGpioGpio9 = 12, /**< gpio_gpio 9 */
+  kTopEarlgreyPinmuxOutselGpioGpio10 = 13, /**< gpio_gpio 10 */
+  kTopEarlgreyPinmuxOutselGpioGpio11 = 14, /**< gpio_gpio 11 */
+  kTopEarlgreyPinmuxOutselGpioGpio12 = 15, /**< gpio_gpio 12 */
+  kTopEarlgreyPinmuxOutselGpioGpio13 = 16, /**< gpio_gpio 13 */
+  kTopEarlgreyPinmuxOutselGpioGpio14 = 17, /**< gpio_gpio 14 */
+  kTopEarlgreyPinmuxOutselGpioGpio15 = 18, /**< gpio_gpio 15 */
+  kTopEarlgreyPinmuxOutselGpioGpio16 = 19, /**< gpio_gpio 16 */
+  kTopEarlgreyPinmuxOutselGpioGpio17 = 20, /**< gpio_gpio 17 */
+  kTopEarlgreyPinmuxOutselGpioGpio18 = 21, /**< gpio_gpio 18 */
+  kTopEarlgreyPinmuxOutselGpioGpio19 = 22, /**< gpio_gpio 19 */
+  kTopEarlgreyPinmuxOutselGpioGpio20 = 23, /**< gpio_gpio 20 */
+  kTopEarlgreyPinmuxOutselGpioGpio21 = 24, /**< gpio_gpio 21 */
+  kTopEarlgreyPinmuxOutselGpioGpio22 = 25, /**< gpio_gpio 22 */
+  kTopEarlgreyPinmuxOutselGpioGpio23 = 26, /**< gpio_gpio 23 */
+  kTopEarlgreyPinmuxOutselGpioGpio24 = 27, /**< gpio_gpio 24 */
+  kTopEarlgreyPinmuxOutselGpioGpio25 = 28, /**< gpio_gpio 25 */
+  kTopEarlgreyPinmuxOutselGpioGpio26 = 29, /**< gpio_gpio 26 */
+  kTopEarlgreyPinmuxOutselGpioGpio27 = 30, /**< gpio_gpio 27 */
+  kTopEarlgreyPinmuxOutselGpioGpio28 = 31, /**< gpio_gpio 28 */
+  kTopEarlgreyPinmuxOutselGpioGpio29 = 32, /**< gpio_gpio 29 */
+  kTopEarlgreyPinmuxOutselGpioGpio30 = 33, /**< gpio_gpio 30 */
+  kTopEarlgreyPinmuxOutselGpioGpio31 = 34, /**< gpio_gpio 31 */
+  kTopEarlgreyPinmuxOutselLast = 34, /**< \internal Last valid outsel value */
+} top_earlgrey_pinmux_outsel_t;
+
+/**
+ * Power Manager Wakeup Signals
+ */
+typedef enum top_earlgrey_power_manager_wake_ups {
+  kTopEarlgreyPowerManagerWakeUpsPinmuxAonWkupReq = 0, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsLast = 0, /**< \internal Last valid pwrmgr wakeup signal */
+} top_earlgrey_power_manager_wake_ups_t;
+
+/**
+ * Reset Manager Software Controlled Resets
+ */
+typedef enum top_earlgrey_reset_manager_sw_resets {
+  kTopEarlgreyResetManagerSwResetsSpiDevice = 0, /**<  */
+  kTopEarlgreyResetManagerSwResetsUsb = 1, /**<  */
+  kTopEarlgreyResetManagerSwResetsLast = 1, /**< \internal Last valid rstmgr software reset request */
+} top_earlgrey_reset_manager_sw_resets_t;
 
 // Header Extern Guard
 #ifdef __cplusplus

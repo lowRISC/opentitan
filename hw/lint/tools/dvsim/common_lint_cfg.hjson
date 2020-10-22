@@ -1,0 +1,34 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  flow:             lint
+  flow_makefile:    "{proj_root}/hw/lint/tools/dvsim/lint.mk"
+
+  import_cfgs:      [// common server configuration for results upload
+                     "{proj_root}/hw/data/common_project_cfg.hjson"
+                     // tool-specific configuration
+                     "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
+
+  // Name of the DUT / top-level to be run through lint
+  dut:        "{name}"
+
+  // Default directory structure for the output
+  build_dir:  "{scratch_path}/{build_mode}"
+  build_log:  "{build_dir}/lint.log"
+  // We rely on fusesoc to run lint for us
+  build_cmd:  "fusesoc"
+  build_opts: ["--cores-root {proj_root}/hw",
+               "run",
+               "--flag=fileset_{design_level}",
+               "--target={flow}",
+               "--tool={tool}",
+               "--build-root={build_dir}",
+               "{fusesoc_core}"]
+
+  // these are not needed currently, but have to be defined
+  sv_flist_gen_cmd:   ""
+  sv_flist_gen_opts:  []
+  sv_flist_gen_dir:   ""
+  tool_srcs:          []
+}

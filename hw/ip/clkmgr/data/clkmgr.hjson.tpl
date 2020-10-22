@@ -57,6 +57,16 @@ num_grps = len(grps)
     },
 % endfor
 
+  // Exported clocks
+% for intf in export_clks:
+    { struct:  "clkmgr_${intf}_out",
+      type:    "uni",
+      name:    "clocks_${intf}",
+      act:     "req",
+      package: "clkmgr_pkg",
+    },
+% endfor
+
     { struct:  "pwr_clk",
       type:    "req_rsp",
       name:    "pwr",
@@ -70,11 +80,12 @@ num_grps = len(grps)
       package: "clkmgr_pkg", // This should be moved elsewhere later
     },
 
-    { struct:  "clk_hint_status",
+    { struct:  "logic",
       type:    "uni",
-      name:    "status",
+      name:    "idle",
       act:     "rcv",
-      package: "clkmgr_pkg",
+      package: "",
+      width:   "${len(hint_clks)}"
     },
   ],
 
@@ -143,7 +154,7 @@ num_grps = len(grps)
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-% for clk in hint_clks:
+% for clk in hint_clks.keys():
         {
           bits: "${loop.index}",
           name: "${clk.upper()}_VAL",

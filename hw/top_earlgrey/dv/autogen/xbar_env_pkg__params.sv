@@ -46,6 +46,9 @@ tl_device_t xbar_devices[$] = '{
     '{"otbn", '{
         '{32'h50000000, 32'h503fffff}
     }},
+    '{"keymgr", '{
+        '{32'h401a0000, 32'h401a0fff}
+    }},
     '{"uart", '{
         '{32'h40000000, 32'h40000fff}
     }},
@@ -73,8 +76,14 @@ tl_device_t xbar_devices[$] = '{
     '{"ram_ret", '{
         '{32'h18000000, 32'h18000fff}
     }},
+    '{"otp_ctrl", '{
+        '{32'h401b0000, 32'h401b3fff}
+    }},
     '{"sensor_ctrl", '{
         '{32'h40170000, 32'h40170fff}
+    }},
+    '{"ast_wrapper", '{
+        '{32'h40180000, 32'h40180fff}
     }}};
 
   // List of Xbar hosts
@@ -99,7 +108,9 @@ tl_host_t xbar_hosts[$] = '{
         "rstmgr",
         "clkmgr",
         "ram_ret",
+        "otp_ctrl",
         "sensor_ctrl",
+        "ast_wrapper",
         "flash_ctrl",
         "aes",
         "hmac",
@@ -108,7 +119,8 @@ tl_host_t xbar_hosts[$] = '{
         "padctrl",
         "alert_handler",
         "nmi_gen",
-        "otbn"}}
+        "otbn",
+        "keymgr"}}
     ,
     '{"dm_sba", 2, '{
         "rom",
@@ -123,7 +135,9 @@ tl_host_t xbar_hosts[$] = '{
         "rstmgr",
         "clkmgr",
         "ram_ret",
+        "otp_ctrl",
         "sensor_ctrl",
+        "ast_wrapper",
         "flash_ctrl",
         "aes",
         "hmac",

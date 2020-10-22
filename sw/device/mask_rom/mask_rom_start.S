@@ -131,13 +131,11 @@ _mask_rom_interrupt_vector:
 _mask_rom_start_boot:
 
   /**
-   * Disable Interrupts.
-   *
-   * We cannot disable exceptions, or Ibex's non-maskable interrupts (interrupt
-   * 31), so we still need to be careful.
+   * The interrupts are disabled globally on reset. However, We cannot disable
+   * exceptions, or Ibex's non-maskable interrupts (interrupt 31), so we still
+   * need to be careful.
    */
-  // Clear `MIE` field of `mstatus`.
-  csrci mstatus, 0x8
+
   // Clear all the machine-defined interrupts, `MEIE`, `MTIE`, and `MSIE` fields
   // of `mie`.
   li   t0, 0xFFFF0888
@@ -145,9 +143,14 @@ _mask_rom_start_boot:
 
   // Set up the stack pointer.
   //
+  // In RISC-V, the stack grows downwards, so we load the address of the highest
+  // word in the stack into sp. We don't load in `_stack_end`, as that points
+  // beyond the end of RAM, and we always want it to be valid to dereference
+  // `sp`, and we need this to be 128-bit (16-byte) aligned to meet the psABI.
+  //
   // If an exception fires, the handler is conventionaly only allowed to clobber
   // memory at addresses below `sp`.
-  la   sp, _stack_start
+  la   sp, (_stack_end - 16)
 
   /**
    * Set well-defined interrupt/exception handlers
@@ -163,7 +166,8 @@ _mask_rom_start_boot:
   csrw mtvec, t0
 
   /**
-   * Clean Device State Part 1
+   * Clean Device State Part 1 (Please refer to `boot.md` section "Cleaning Device
+   * State").
    */
 
   // Zero all writable registers except x2 (sp).
@@ -270,12 +274,7 @@ bss_zero_end:
    * Jump to C Code
    */
   .extern mask_rom_boot
-  call mask_rom_boot
-
-  // Loop forever if mask_rom_boot somehow returns.
-1:
-  wfi
-  j 1b
+  tail mask_rom_boot
 
   // Set size so this function can be disassembled.
   .size _mask_rom_start_boot, .-_mask_rom_start_boot

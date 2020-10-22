@@ -16,7 +16,6 @@
 #  - n_alerts:    Number of alert sources
 #  - esc_cnt_dw:  Width of escalation counter
 #  - accu_cnt_dw: Width of accumulator
-#  - lfsr_seed:   Seed for LFSR timer
 #  - async_on:    Enables asynchronous sygnalling between specific alert RX/TX pairs
 #  - n_classes:   Number of supported classes (leave this at 4 at the moment)
 
@@ -30,7 +29,7 @@
     { name: "NAlerts",
       desc: "Number of peripheral inputs",
       type: "int",
-      default: "12",
+      default: "15",
       local: "true"
     },
     { name: "EscCntDw",
@@ -45,16 +44,10 @@
       default: "16",
       local: "true"
     },
-    { name: "LfsrSeed",
-      desc: "Number of peripheral outputs",
-      type: "int",
-      default: "2147483647",
-      local: "true"
-    },
     { name: "AsyncOn",
       desc: "Number of peripheral outputs",
       type: "logic [NAlerts-1:0]",
-      default: "12'b111111100000",
+      default: "15'b110111111100000",
       local: "true"
     },
     { name: "N_CLASSES",
@@ -100,6 +93,15 @@
       local: "true"
     },
   ],
+
+  inter_signal_list: [
+    { struct:  "alert_crashdump",
+      type:    "uni",
+      name:    "crashdump",
+      act:     "req",
+      package: "alert_pkg"
+    },
+  ]
 # interrupt registers for the classes
   interrupt_list: [
     { name: "classa",
@@ -213,8 +215,8 @@
       fields: [
         { bits: "0", name: "A", desc: "Cause bit " }
       ],
-      tags: [// the value of this register is determined by triggering different kinds of alerts
-             // cannot be auto-predicted so excluded from read check
+      tags: [// The value of this register is determined by triggering different kinds of alerts
+             // Cannot be auto-predicted so excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
       }
     },
@@ -357,7 +359,11 @@
           ''',
           resval: 1,
         }
-      ]
+      ],
+      tags: [// The value of this register is set to false only by hardware,
+             // under the condition that escalation is triggered and the corresponding lock bit is true
+             // Cannot not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSA_CLR",
       desc:     '''
@@ -386,8 +392,8 @@
       fields: [
         { bits: "15:0" }
       ],
-      tags: [// this value of this register is determined by how many alerts have been triggered
-             // could not be auto-predicted so it is excluded from read check
+      tags: [// The value of this register is determined by how many alerts have been triggered
+             // Cannot be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSA_ACCUM_THRESH",
@@ -501,8 +507,8 @@
           '''
         }
       ],
-      tags: [// the value of this register is determined by counting how many cycles the escalation
-             // phase has lasted. This can not be auto-predicted so excluded from read check
+      tags: [// The value of this register is determined by counting how many cycles the escalation phase has lasted
+             // Cannot be auto-predicted so excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSA_STATE",
@@ -525,7 +531,7 @@
                 ]
         }
       ],
-      tags: [// the current escalation state cannot be auto-predicted
+      tags: [// The current escalation state cannot be auto-predicted
              // so this register is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
@@ -610,7 +616,11 @@
           ''',
           resval: 1,
         }
-      ]
+      ],
+      tags: [// The value of this register is set to false only by hardware,
+             // under the condition that escalation is triggered and the corresponding lock bit is true
+             // Cannot not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSB_CLR",
       desc:     '''
@@ -639,8 +649,8 @@
       fields: [
         { bits: "15:0" }
       ],
-      tags: [// this value of this register is determined by how many alerts have been triggered
-             // could not be auto-predicted so it is excluded from read check
+      tags: [// The value of this register is determined by how many alerts have been triggered
+             // Cannot be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSB_ACCUM_THRESH",
@@ -754,8 +764,8 @@
           '''
         }
       ],
-      tags: [// the value of this register is determined by counting how many cycles the escalation
-             // phase has lasted. This can not be auto-predicted so excluded from read check
+      tags: [// The value of this register is determined by counting how many cycles the escalation phase has lasted
+             // Cannot be auto-predicted so excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSB_STATE",
@@ -778,7 +788,7 @@
                 ]
         }
       ],
-      tags: [// the current escalation state cannot be auto-predicted
+      tags: [// The current escalation state cannot be auto-predicted
              // so this register is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
@@ -863,7 +873,11 @@
           ''',
           resval: 1,
         }
-      ]
+      ],
+      tags: [// The value of this register is set to false only by hardware,
+             // under the condition that escalation is triggered and the corresponding lock bit is true
+             // Cannot not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSC_CLR",
       desc:     '''
@@ -892,8 +906,8 @@
       fields: [
         { bits: "15:0" }
       ],
-      tags: [// this value of this register is determined by how many alerts have been triggered
-             // could not be auto-predicted so it is excluded from read check
+      tags: [// The value of this register is determined by how many alerts have been triggered
+             // Cannot be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSC_ACCUM_THRESH",
@@ -1007,8 +1021,8 @@
           '''
         }
       ],
-      tags: [// the value of this register is determined by counting how many cycles the escalation
-             // phase has lasted. This can not be auto-predicted so excluded from read check
+      tags: [// The value of this register is determined by counting how many cycles the escalation phase has lasted
+             // Cannot be auto-predicted so excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSC_STATE",
@@ -1031,7 +1045,7 @@
                 ]
         }
       ],
-      tags: [// the current escalation state cannot be auto-predicted
+      tags: [// The current escalation state cannot be auto-predicted
              // so this register is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
@@ -1116,7 +1130,11 @@
           ''',
           resval: 1,
         }
-      ]
+      ],
+      tags: [// The value of this register is set to false only by hardware,
+             // under the condition that escalation is triggered and the corresponding lock bit is true
+             // Cannot not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSD_CLR",
       desc:     '''
@@ -1145,8 +1163,8 @@
       fields: [
         { bits: "15:0" }
       ],
-      tags: [// this value of this register is determined by how many alerts have been triggered
-             // could not be auto-predicted so it is excluded from read check
+      tags: [// The value of this register is determined by how many alerts have been triggered
+             // Cannot be auto-predicted so it is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSD_ACCUM_THRESH",
@@ -1260,8 +1278,8 @@
           '''
         }
       ],
-      tags: [// the value of this register is determined by counting how many cycles the escalation
-             // phase has lasted. This can not be auto-predicted so excluded from read check
+      tags: [// The value of this register is determined by counting how many cycles the escalation phase has lasted
+             // Cannot be auto-predicted so excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSD_STATE",
@@ -1284,7 +1302,7 @@
                 ]
         }
       ],
-      tags: [// the current escalation state cannot be auto-predicted
+      tags: [// The current escalation state cannot be auto-predicted
              // so this register is excluded from read check
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },

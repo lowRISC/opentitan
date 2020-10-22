@@ -55,6 +55,8 @@ class Updater {
   struct Options {
     /** Firmware image in binary format. */
     std::string code;
+    /** Flash erase delay in microseconds. */
+    int32_t flash_erase_delay_us = 100000;
   };
 
   /**
@@ -79,17 +81,18 @@ class Updater {
    */
   bool Run();
 
- private:
   /**
    * Generates `frames` from `code` image.
    *
    * @param code   software image in binary format.
-   * @param frames output SPI frames.
+   * @param[out] frames output SPI frames.
    *
    * @return true on success, false otherwise.
    */
-  bool GenerateFrames(const std::string &code, std::vector<Frame> *frames);
+  static bool GenerateFrames(const std::string &code,
+                             std::vector<Frame> *frames);
 
+ private:
   Options options_;
   std::unique_ptr<SpiInterface> spi_;
 };

@@ -27,8 +27,8 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
 
   constraint baud_rate_c {
     // constrain nco not over nco.get_n_bits
-    `CALC_NCO(baud_rate, p_sequencer.cfg.clk_freq_mhz) <
-        2 ** p_sequencer.cfg.ral.ctrl.nco.get_n_bits();
+    `CALC_NCO(baud_rate, p_sequencer.cfg.ral.ctrl.nco.get_n_bits(),
+        p_sequencer.cfg.clk_freq_mhz) < 2 ** p_sequencer.cfg.ral.ctrl.nco.get_n_bits();
   }
 
   constraint dly_to_access_fifo_c {
@@ -115,13 +115,15 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   virtual task spinwait_txidle();
     if (ral.ctrl.tx.get_mirrored_value()) begin
       // use a very big timeout as it takes long time to flush all the items
-      csr_spinwait(.ptr(ral.status.txidle), .exp_data(1'b1), .timeout_ns(40_000_000));
+      csr_spinwait(.ptr(ral.status.txidle), .exp_data(1'b1), .timeout_ns(40_000_000),
+                   .spinwait_delay_ns($urandom_range(0, 1000)));
     end
   endtask
 
   virtual task spinwait_rxidle();
     if (ral.ctrl.rx.get_mirrored_value()) begin
-      csr_spinwait(.ptr(ral.status.rxidle), .exp_data(1'b1));
+      csr_spinwait(.ptr(ral.status.rxidle), .exp_data(1'b1),
+                   .spinwait_delay_ns($urandom_range(0, 1000)));
     end
   endtask
 
@@ -211,6 +213,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
 
     if (ral.ctrl.tx.get_mirrored_value()) begin
       do begin
+        if (cfg.under_reset) break;
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_fifo)
         cfg.clk_rst_vif.wait_clks(dly_to_access_fifo);
         csr_rd(.ptr(ral.fifo_status), .value(fifo_status));

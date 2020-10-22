@@ -1,6 +1,10 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// This module is the overall reset manager wrapper
+// TODO: This module is only a draft implementation that covers most of the rstmgr
+// functoinality but is incomplete
 
 package rstmgr_pkg;
 
@@ -8,25 +12,23 @@ package rstmgr_pkg;
   parameter int ALWAYS_ON_SEL    = pwrmgr_pkg::ALWAYS_ON_DOMAIN;
 
   // params that reference pwrmgr, should be replaced once pwrmgr is merged
-  localparam int PowerDomains    = pwrmgr_pkg::PowerDomains;
-  localparam int ExtResetReasons = pwrmgr_pkg::HwRstReqs;
+  parameter int PowerDomains    = pwrmgr_pkg::PowerDomains;
+  parameter int ExtResetReasons = pwrmgr_pkg::HwRstReqs;
 
   // calculated domains
-  localparam int OffDomains = PowerDomains-1;
+  parameter int OffDomains = PowerDomains-1;
 
   // low power exit + external reasons + ndm_reset_req
-  localparam int ResetReasons = 1 + ExtResetReasons + 1;
+  parameter int ResetReasons = 1 + ExtResetReasons + 1;
 
   // ast interface
   typedef struct packed {
-    logic vcc_pok;
-    logic alw_pok;
+    logic aon_pok;
   } rstmgr_ast_t;
 
   // default value for rstmgr_ast_rsp_t (for dangling ports)
   parameter rstmgr_ast_t RSTMGR_AST_DEFAULT = '{
-    vcc_pok: 1'b1,
-    alw_pok: 1'b1
+    aon_pok: 1'b1
   };
 
   // resets generated and broadcast
@@ -38,13 +40,14 @@ package rstmgr_pkg;
     logic rst_por_io_div2_n;
     logic rst_por_usb_n;
     logic rst_lc_n;
-    logic rst_sys_io_n;
     logic rst_sys_n;
+    logic rst_sys_io_n;
+    logic rst_sys_aon_n;
     logic rst_spi_device_n;
     logic rst_usb_n;
   } rstmgr_out_t;
 
-  // peripherals reset requests
+  // cpu reset requests and status
   typedef struct packed {
     logic rst_cpu_n;
     logic ndmreset_req;

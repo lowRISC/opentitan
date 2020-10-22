@@ -26,35 +26,9 @@ sw_lib_mmio = declare_dependency(
   link_with: static_library(
     'mmio_ot',
     sources: ['mmio.c'],
-    dependencies: [sw_lib_bitfield],
-  )
-)
-
-# Basic printing library (sw_lib_base_print)
-sw_lib_base_print = declare_dependency(
-  link_with: static_library(
-    'base_print_ot',
-    sources: ['print.c'],
-  )
-)
-
-# Generic logging library (sw_lib_base_log)
-sw_lib_base_log = declare_dependency(
-  link_with: static_library(
-    'base_log_ot',
-    sources: ['log.c'],
     dependencies: [
-      sw_lib_base_print,
+      sw_lib_bitfield,
+      sw_lib_mem,
     ],
   )
 )
-
-test('sw_lib_base_print_test', executable(
-  'sw_lib_base_print_test',
-  sources: ['print.c', 'print_test.cc'],
-  dependencies: [
-    sw_vendor_gtest,
-  ],
-  native: true,
-))
-

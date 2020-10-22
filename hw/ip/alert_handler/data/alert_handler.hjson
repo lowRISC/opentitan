@@ -8,7 +8,6 @@
 #  - n_alerts:    Number of alert sources
 #  - esc_cnt_dw:  Width of escalation counter
 #  - accu_cnt_dw: Width of accumulator
-#  - lfsr_seed:   Seed for LFSR timer
 #  - async_on:    Enables asynchronous sygnalling between specific alert RX/TX pairs
 #  - n_classes:   Number of supported classes (leave this at 4 at the moment)
 
@@ -35,12 +34,6 @@
       desc: "Number of peripheral outputs",
       type: "int",
       default: "16",
-      local: "true"
-    },
-    { name: "LfsrSeed",
-      desc: "Number of peripheral outputs",
-      type: "int",
-      default: "2147483647",
       local: "true"
     },
     { name: "AsyncOn",
@@ -204,7 +197,10 @@
       hwaccess: "hrw",
       fields: [
         { bits: "0", name: "A", desc: "Cause bit " }
-      ]
+      ],
+      tags: [// The value of this register is determined by triggering different kinds of alerts
+             // Cannot be auto-predicted so excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
       }
     },
 # local alerts
@@ -323,7 +319,7 @@
         { bits: "11:10",
           name: "MAP_E2",
           resval: 2,
-          desc: "Determine sin which escalation phase escalation signal 2 shall be asserted.",
+          desc: "Determines in which escalation phase escalation signal 2 shall be asserted.",
         }
         { bits: "13:12",
           name: "MAP_E3",
@@ -346,7 +342,11 @@
           ''',
           resval: 1,
         }
-      ]
+      ],
+      tags: [// The value of this register is set to false only by hardware,
+             // under the condition that escalation is triggered and the corresponding lock bit is true
+             // Cannot not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSA_CLR",
       desc:     '''
@@ -374,7 +374,10 @@
       hwext:    "true",
       fields: [
         { bits: "15:0" }
-      ]
+      ],
+      tags: [// The value of this register is determined by how many alerts have been triggered
+             // Cannot be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSA_ACCUM_THRESH",
       desc:     '''
@@ -486,7 +489,10 @@
           is set to false (either by SW or by HW via the !!CLASSA_CTRL.LOCK feature).
           '''
         }
-      ]
+      ],
+      tags: [// The value of this register is determined by counting how many cycles the escalation phase has lasted
+             // Cannot be auto-predicted so excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSA_STATE",
       desc:     '''
@@ -507,7 +513,10 @@
                   { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
                 ]
         }
-      ]
+      ],
+      tags: [// The current escalation state cannot be auto-predicted
+             // so this register is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
 
     { name:     "CLASSB_CTRL",
@@ -567,7 +576,7 @@
         { bits: "11:10",
           name: "MAP_E2",
           resval: 2,
-          desc: "Determine sin which escalation phase escalation signal 2 shall be asserted.",
+          desc: "Determines in which escalation phase escalation signal 2 shall be asserted.",
         }
         { bits: "13:12",
           name: "MAP_E3",
@@ -590,7 +599,11 @@
           ''',
           resval: 1,
         }
-      ]
+      ],
+      tags: [// The value of this register is set to false only by hardware,
+             // under the condition that escalation is triggered and the corresponding lock bit is true
+             // Cannot not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSB_CLR",
       desc:     '''
@@ -618,7 +631,10 @@
       hwext:    "true",
       fields: [
         { bits: "15:0" }
-      ]
+      ],
+      tags: [// The value of this register is determined by how many alerts have been triggered
+             // Cannot be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSB_ACCUM_THRESH",
       desc:     '''
@@ -730,7 +746,10 @@
           is set to false (either by SW or by HW via the !!CLASSB_CTRL.LOCK feature).
           '''
         }
-      ]
+      ],
+      tags: [// The value of this register is determined by counting how many cycles the escalation phase has lasted
+             // Cannot be auto-predicted so excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSB_STATE",
       desc:     '''
@@ -751,7 +770,10 @@
                   { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
                 ]
         }
-      ]
+      ],
+      tags: [// The current escalation state cannot be auto-predicted
+             // so this register is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
 
     { name:     "CLASSC_CTRL",
@@ -811,7 +833,7 @@
         { bits: "11:10",
           name: "MAP_E2",
           resval: 2,
-          desc: "Determine sin which escalation phase escalation signal 2 shall be asserted.",
+          desc: "Determines in which escalation phase escalation signal 2 shall be asserted.",
         }
         { bits: "13:12",
           name: "MAP_E3",
@@ -834,7 +856,11 @@
           ''',
           resval: 1,
         }
-      ]
+      ],
+      tags: [// The value of this register is set to false only by hardware,
+             // under the condition that escalation is triggered and the corresponding lock bit is true
+             // Cannot not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSC_CLR",
       desc:     '''
@@ -862,7 +888,10 @@
       hwext:    "true",
       fields: [
         { bits: "15:0" }
-      ]
+      ],
+      tags: [// The value of this register is determined by how many alerts have been triggered
+             // Cannot be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSC_ACCUM_THRESH",
       desc:     '''
@@ -974,7 +1003,10 @@
           is set to false (either by SW or by HW via the !!CLASSC_CTRL.LOCK feature).
           '''
         }
-      ]
+      ],
+      tags: [// The value of this register is determined by counting how many cycles the escalation phase has lasted
+             // Cannot be auto-predicted so excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSC_STATE",
       desc:     '''
@@ -995,7 +1027,10 @@
                   { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
                 ]
         }
-      ]
+      ],
+      tags: [// The current escalation state cannot be auto-predicted
+             // so this register is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
 
     { name:     "CLASSD_CTRL",
@@ -1055,7 +1090,7 @@
         { bits: "11:10",
           name: "MAP_E2",
           resval: 2,
-          desc: "Determine sin which escalation phase escalation signal 2 shall be asserted.",
+          desc: "Determines in which escalation phase escalation signal 2 shall be asserted.",
         }
         { bits: "13:12",
           name: "MAP_E3",
@@ -1078,7 +1113,11 @@
           ''',
           resval: 1,
         }
-      ]
+      ],
+      tags: [// The value of this register is set to false only by hardware,
+             // under the condition that escalation is triggered and the corresponding lock bit is true
+             // Cannot not be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSD_CLR",
       desc:     '''
@@ -1106,7 +1145,10 @@
       hwext:    "true",
       fields: [
         { bits: "15:0" }
-      ]
+      ],
+      tags: [// The value of this register is determined by how many alerts have been triggered
+             // Cannot be auto-predicted so it is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSD_ACCUM_THRESH",
       desc:     '''
@@ -1218,7 +1260,10 @@
           is set to false (either by SW or by HW via the !!CLASSD_CTRL.LOCK feature).
           '''
         }
-      ]
+      ],
+      tags: [// The value of this register is determined by counting how many cycles the escalation phase has lasted
+             // Cannot be auto-predicted so excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
     { name:     "CLASSD_STATE",
       desc:     '''
@@ -1239,7 +1284,10 @@
                   { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
                 ]
         }
-      ]
+      ],
+      tags: [// The current escalation state cannot be auto-predicted
+             // so this register is excluded from read check
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     },
   ],
 }

@@ -85,6 +85,17 @@ package dv_utils_pkg;
     return (a > b) ? a : b;
   endfunction
 
+  // get absolute value of the input. Usage: absolute(val) or absolute(a - b)
+  function automatic uint absolute(int val);
+    return val >= 0 ? val : -val;
+  endfunction
+
+  // endian swap
+  function automatic logic [31:0] endian_swap(logic [31:0] data);
+    return {<<8{data}};
+  endfunction
+
+`ifdef UVM
   // Simple function to set max errors before quitting sim
   function automatic void set_max_quit_count(int n);
     uvm_report_server report_server = uvm_report_server::get_server();
@@ -121,16 +132,6 @@ package dv_utils_pkg;
     end
   endfunction
 
-  // get absolute value of the input. Usage: absolute(val) or absolute(a - b)
-  function automatic uint absolute(int val);
-    return val >= 0 ? val : -val;
-  endfunction
-
-  // endian swap
-  function automatic logic [31:0] endian_swap(logic [31:0] data);
-    return {<<8{data}};
-  endfunction
-
   // create a sequence by name and return the handle of uvm_sequence
   function automatic uvm_sequence create_seq_by_name(string seq_name);
     uvm_object      obj;
@@ -149,8 +150,11 @@ package dv_utils_pkg;
     end
     return seq;
   endfunction
+`endif
 
   // sources
+`ifdef UVM
   `include "dv_report_server.sv"
+`endif
 
 endpackage

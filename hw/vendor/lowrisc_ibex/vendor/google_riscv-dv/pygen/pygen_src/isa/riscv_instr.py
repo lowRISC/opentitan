@@ -172,16 +172,15 @@ class riscv_instr:
         # allowed_categories = []
 
         for items in include_category:
-            allowed_instr.append(self.instr_category[items])
-
+            allowed_instr.extend(self.instr_category[items])
         for items in exclude_category:
             if(items in self.instr_category):
-                disallowed_instr.append(self.instr_category[items])
+                disallowed_instr.extend(self.instr_category[items])
         for items in include_group:
-            allowed_instr.append(self.instr_group[items])
+            allowed_instr.extend(self.instr_group[items])
         for items in exclude_group:
             if(items in self.instr_group):
-                disallowed_instr.append(self.instr_group[items])
+                disallowed_instr.extend(self.instr_group[items])
 
         disallowed_instr.extend(exclude_instr)
 

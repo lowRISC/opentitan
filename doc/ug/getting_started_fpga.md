@@ -111,12 +111,12 @@ Please follow the steps shown below.
 
 * Generate the bitstream and flash it to the FPGA as described above.
 * Open a serial console (use the device file determined before) and connect.
-  Settings: 230400 baud, 8N1, no hardware or software flow control.
+  Settings: 115200 baud, 8N1, no hardware or software flow control.
   ```console
-  $ screen /dev/ttyUSB0 230400
+  $ screen /dev/ttyUSB0 115200
   ```
-  Note that the Nexsys Video demo program that comes installed on the board runs the UART at 115200 baud;
-  expect to see garbage characters if that is running.
+  Note that the Nexsys Video demo program that comes installed on the board runs the UART at 115200 baud as well;
+  expect to see different output if that is running.
   This can happen if you connect the serial console before using Vivado to program your new bitstream or you press the *PROG* button that causes the FPGA to reprogram from the code in the on-board SPI flash.
 * On the Nexys Video board, press the red button labeled *CPU_RESET*.
 * You should see the ROM code report its commit ID and build date.

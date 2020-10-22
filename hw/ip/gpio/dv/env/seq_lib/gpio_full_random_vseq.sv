@@ -85,7 +85,7 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
           cfg.clk_rst_vif.wait_clks(delay);
           csr_utils_pkg::wait_no_outstanding_access();
-          apply_reset("HARD");
+          dut_init("HARD");
           data_out = '0;
           data_oe  = '0;
         end

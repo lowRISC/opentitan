@@ -5,6 +5,15 @@
   clock_primary: "clk_i"
   bus_device: "tlul"
   bus_host: "none"
+  param_list: [
+    { name:    "RegFile",
+      type:    "otbn_pkg::regfile_e",
+      default: "otbn_pkg::RegFileFF",
+      desc:    "Selection of the register file implementation. See otbn_pkg.sv."
+      local:   "false",
+      expose:  "true"
+    }
+  ]
   interrupt_list: [
     { name: "done"
       desc: "OTBN has completed the operation"
@@ -109,7 +118,8 @@
 
             Possible values:
 
-            - 0x0 (ErrCodeNoError): No error occurred.
+            - 0x0 (ErrCodeNoError):     No error occurred.
+            - 0x1 (ErrCodeBadDataAddr): Load or store to invalid address
           '''
         }
       ]
@@ -143,8 +153,10 @@
         desc: '''
           Instruction Memory.
 
-          Not accessible during the operation of the engine.
-          TODO: Discuss and document behavior in that case. Alert? Ignore?
+          This register should only be accesed while OTBN is not busy, as indicated by the !!STATUS.busy flag.
+          Accesses while OTBN is busy are blocking.
+
+          TODO: The exact behavior is yet to be determined, see https://github.com/lowRISC/opentitan/issues/2696 for details.
         '''
       }
     }
@@ -159,8 +171,10 @@
         desc: '''
           Data Memory.
 
-          Not accessible during the operation of the engine.
-          TODO: Discuss and document behavior in that case. Alert? Ignore?
+          This register should only be accesed while OTBN is not busy, as indicated by the !!STATUS.busy flag.
+          Accesses while OTBN is busy are blocking.
+
+          TODO: The exact behavior is yet to be determined, see https://github.com/lowRISC/opentitan/issues/2696 for details.
         '''
       }
     }

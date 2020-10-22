@@ -47,6 +47,9 @@ class chip_base_vseq extends cip_base_vseq #(
     cfg.usb_clk_rst_vif.set_freq_mhz(dv_utils_pkg::ClkFreq48Mhz);
     // Initialize gpio pin default states
     cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});
+    // Initialize flash seeds
+    cfg.mem_bkdr_vifs[FlashBank0Info].set_mem();
+    cfg.mem_bkdr_vifs[FlashBank1Info].set_mem();
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
   endtask
@@ -67,7 +70,7 @@ class chip_base_vseq extends cip_base_vseq #(
     if (do_strap_pins_init) begin
       cfg.srst_n_vif.drive(1'b1);
       cfg.jtag_spi_n_vif.drive(1'b1); // Select JTAG.
-      cfg.bootstrap_vif.drive(1'b0);
+      cfg.bootstrap_vif.drive(cfg.use_spi_load_bootstrap);
     end
 
     // Now safe to do DUT init.

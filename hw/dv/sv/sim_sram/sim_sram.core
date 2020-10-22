@@ -1,0 +1,24 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:sim_sram"
+description: "SRAM instantiated on a TL interface at chip level for simulation."
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:tlul:headers
+      - lowrisc:tlul:socket_1n
+      - lowrisc:tlul:adapter_sram
+      - lowrisc:prim:ram_1p
+    files:
+      - tlul_sink.sv
+      - sim_sram_if.sv
+      - sim_sram.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

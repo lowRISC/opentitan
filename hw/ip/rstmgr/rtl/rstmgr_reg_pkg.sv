@@ -47,8 +47,8 @@ package rstmgr_reg_pkg;
   // Register Address
   parameter logic [4:0] RSTMGR_RESET_INFO_OFFSET = 5'h 0;
   parameter logic [4:0] RSTMGR_SPI_DEVICE_REGEN_OFFSET = 5'h 4;
-  parameter logic [4:0] RSTMGR_USB_REGEN_OFFSET = 5'h 8;
-  parameter logic [4:0] RSTMGR_RST_SPI_DEVICE_N_OFFSET = 5'h c;
+  parameter logic [4:0] RSTMGR_RST_SPI_DEVICE_N_OFFSET = 5'h 8;
+  parameter logic [4:0] RSTMGR_USB_REGEN_OFFSET = 5'h c;
   parameter logic [4:0] RSTMGR_RST_USB_N_OFFSET = 5'h 10;
 
 
@@ -56,8 +56,8 @@ package rstmgr_reg_pkg;
   typedef enum int {
     RSTMGR_RESET_INFO,
     RSTMGR_SPI_DEVICE_REGEN,
-    RSTMGR_USB_REGEN,
     RSTMGR_RST_SPI_DEVICE_N,
+    RSTMGR_USB_REGEN,
     RSTMGR_RST_USB_N
   } rstmgr_id_e;
 
@@ -65,8 +65,8 @@ package rstmgr_reg_pkg;
   parameter logic [3:0] RSTMGR_PERMIT [5] = '{
     4'b 0001, // index[0] RSTMGR_RESET_INFO
     4'b 0001, // index[1] RSTMGR_SPI_DEVICE_REGEN
-    4'b 0001, // index[2] RSTMGR_USB_REGEN
-    4'b 0001, // index[3] RSTMGR_RST_SPI_DEVICE_N
+    4'b 0001, // index[2] RSTMGR_RST_SPI_DEVICE_N
+    4'b 0001, // index[3] RSTMGR_USB_REGEN
     4'b 0001  // index[4] RSTMGR_RST_USB_N
   };
 endpackage

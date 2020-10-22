@@ -9,8 +9,6 @@ package alert_pkg;
   localparam int unsigned      NAlerts   = alert_handler_reg_pkg::NAlerts;   // maximum 252
   localparam int unsigned      EscCntDw  = alert_handler_reg_pkg::EscCntDw;  // maximum 32
   localparam int unsigned      AccuCntDw = alert_handler_reg_pkg::AccuCntDw; // maximum 32
-  // seed for the ping timer (must be nonzero!)
-  localparam logic [31:0]      LfsrSeed  = alert_handler_reg_pkg::LfsrSeed;
   // enable async transitions for specific RX/TX pairs
   localparam bit [NAlerts-1:0] AsyncOn   = alert_handler_reg_pkg::AsyncOn;
 

@@ -1,0 +1,57 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: prim_prince
+
+  // Top level dut name (sv module).
+  dut: prim_prince
+
+  // Top level testbench name (sv module).
+  tb: prim_prince_tb
+
+  // Simulator used to sign off this block
+  tool: vcs
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:prim_prince_sim:0.1
+
+  // Import additional common sim cfg files.
+  import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 50
+
+  tool_srcs: ["{proj_root}/hw/ip/prim/dv/prim_prince/data/prim_prince_cover.cfg"]
+
+  overrides: [
+    {
+      name: vcs_cov_cfg_file
+      value: "-cm_hier {tool_srcs_dir}/prim_prince_cover.cfg"
+    }
+  ]
+
+  // List of test specifications.
+  tests: [
+    {
+      name: prim_prince_test
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: sanity
+      tests: ["prim_prince_test"]
+    }
+    {
+      name: nightly
+      // Run the same test as the "sanity" regression, just with a higher reseed value.
+      // This higher reseed value is due to the rather large state space created by
+      // the 128-bit key and 64-bit data values.
+      reseed: 500
+    }
+  ]
+}
+

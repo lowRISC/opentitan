@@ -19,7 +19,7 @@
 //   a_addr[1:0] == 1 -> a_mask[0]   == 0;
 //   a_addr[1:0] == 2 -> a_mask[1:0] == 0;
 //   a_addr[1:0] == 3 -> a_mask[2:0] == 0;
-`define chk_prot_mask_w_addr \
+`define chk_prot_addr_mask_align \
   MaskWidth'(a_mask << (4 - a_addr[SizeWidth-1:0])) == 0
 
 // mask must be within enabled lanes
@@ -56,9 +56,28 @@ class tl_seq_item extends uvm_sequence_item;
 
   // host mode delays
   rand int unsigned               a_valid_delay;
+  rand int unsigned               a_valid_len;
 
   // device mode delays
   rand int unsigned               d_valid_delay;
+  rand int unsigned               d_valid_len;
+
+  // Indicates a_source val is overridden.
+  //
+  // a_source is randomized and set in tl_host_base_seq::finish_item() to facilitate late
+  // randomization. If this bit is set, the a_source is assumed to be set to a fixed value instead.
+  // It is possible that this fixed value might match one of the pending reqs in the that has not
+  // yet completed. The driver can then use this bit to add more delays if needed before sending
+  // this request, to avoid protocol violation.
+  bit                             a_source_is_overridden;
+
+  // after given valid_len, end the req/rsp if it's not accepted, which allows seq to switch
+  // content and test unaccepted item shouldn't be used in design
+  bit                             req_abort_after_a_valid_len;
+  bit                             rsp_abort_after_d_valid_len;
+  // True if the item is completed, not aborted
+  bit                             req_completed;
+  bit                             rsp_completed;
 
   // param is reserved for future use, must be zero
   constraint param_c {
@@ -68,6 +87,14 @@ class tl_seq_item extends uvm_sequence_item;
 
   constraint no_d_error_c {
     soft d_error == 0;
+  }
+
+  constraint a_valid_len_c {
+    soft a_valid_len inside {[1:10]};
+  }
+
+  constraint d_valid_len_c {
+    soft d_valid_len inside {[1:10]};
   }
 
   constraint valid_delay_c {
@@ -92,8 +119,8 @@ class tl_seq_item extends uvm_sequence_item;
     `chk_prot_mask_w_PutFullData;
   }
 
-  constraint mask_w_addr_c {
-    `chk_prot_mask_w_addr;
+  constraint addr_mask_align_c {
+    `chk_prot_addr_mask_align;
   }
 
   constraint mask_in_enabled_lanes_c {
@@ -125,6 +152,15 @@ class tl_seq_item extends uvm_sequence_item;
     `uvm_field_int  (d_error,             UVM_DEFAULT)
     `uvm_field_int  (d_sink,              UVM_DEFAULT)
     `uvm_field_int  (d_user,              UVM_DEFAULT)
+    `uvm_field_int  (a_source_is_overridden, UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (a_valid_delay,       UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (d_valid_delay,       UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (a_valid_len,         UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (d_valid_len,         UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (req_abort_after_a_valid_len, UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (rsp_abort_after_d_valid_len, UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (req_completed,       UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (rsp_completed,       UVM_DEFAULT | UVM_NOPACK)
   `uvm_object_utils_end
 
   function new (string name = "");
@@ -155,7 +191,11 @@ class tl_seq_item extends uvm_sequence_item;
            $sformatf("d_opcode = %0s ", d_opcode_name),
            $sformatf("d_error = %0b ", d_error),
            $sformatf("d_user = %0b ", d_user),
-           $sformatf("d_sink = %0b ", d_sink)};
+           $sformatf("d_sink = %0b ", d_sink),
+           $sformatf("req_abort_after_a_valid_len = %0b ", req_abort_after_a_valid_len),
+           $sformatf("rsp_abort_after_d_valid_len = %0b ", rsp_abort_after_d_valid_len),
+           $sformatf("req_completed = %0b ", req_completed),
+           $sformatf("rsp_completed = %0b ", rsp_completed)};
     return str;
   endfunction
 
@@ -171,16 +211,40 @@ class tl_seq_item extends uvm_sequence_item;
 
   // calculate d_error based on values of a_chan
   function bit get_exp_d_error();
-    return !(`chk_prot_addr_size_align) || !(`chk_prot_max_size) ||
-           !(`chk_prot_a_opcode) || !(`chk_prot_mask_w_PutFullData) ||
-           !(`chk_prot_mask_w_addr) || !(`chk_prot_mask_in_enabled_lanes);
+    return get_error_a_opcode_invalid() || get_error_PutFullData_mask_size_mismatched() ||
+           get_error_addr_mask_misaligned() || get_error_addr_size_misaligned() ||
+           get_error_mask_not_in_enabled_lanes() || get_error_size_over_max();
+  endfunction
+
+  function bit get_error_a_opcode_invalid();
+    return !(`chk_prot_a_opcode);
+  endfunction
+
+  function bit get_error_PutFullData_mask_size_mismatched();
+    return !(`chk_prot_mask_w_PutFullData);
+  endfunction
+
+  function bit get_error_addr_mask_misaligned();
+    return !(`chk_prot_addr_mask_align);
+  endfunction
+
+  function bit get_error_addr_size_misaligned();
+    return !(`chk_prot_addr_size_align);
+  endfunction
+
+  function bit get_error_mask_not_in_enabled_lanes();
+    return !(`chk_prot_mask_in_enabled_lanes);
+  endfunction
+
+  function bit get_error_size_over_max();
+    return !(`chk_prot_max_size);
   endfunction
 
   function void disable_a_chan_protocol_constraint();
     a_opcode_c.constraint_mode(0);
     mask_contiguous_c.constraint_mode(0);
     mask_w_PutFullData_c.constraint_mode(0);
-    mask_w_addr_c.constraint_mode(0);
+    addr_mask_align_c.constraint_mode(0);
     mask_in_enabled_lanes_c.constraint_mode(0);
     addr_size_align_c.constraint_mode(0);
     max_size_c.constraint_mode(0);
@@ -190,18 +254,18 @@ class tl_seq_item extends uvm_sequence_item;
   // at least one constraint_mode needs to be disabled to make sure protocol is violated
   function void randomize_a_chan_with_protocol_error();
     bit cm_a_opcode, cm_mask_w_PutFullData;
-    bit cm_mask_w_addr, cm_mask_in_enabled_lanes, cm_addr_size_align, cm_max_size;
+    bit cm_addr_mask_align, cm_mask_in_enabled_lanes, cm_addr_size_align, cm_max_size;
     `DV_CHECK_FATAL(std::randomize(cm_a_opcode, cm_mask_w_PutFullData,
-                                   cm_mask_w_addr, cm_mask_in_enabled_lanes,
+                                   cm_addr_mask_align, cm_mask_in_enabled_lanes,
                                    cm_addr_size_align, cm_max_size) with {
                                    // at least one constraint_mode is off
                                    !(cm_a_opcode && cm_mask_w_PutFullData &&
-                                   cm_mask_w_addr && cm_mask_in_enabled_lanes &&
+                                   cm_addr_mask_align && cm_mask_in_enabled_lanes &&
                                    cm_addr_size_align && cm_max_size);
                                    })
     a_opcode_c.constraint_mode(cm_a_opcode);
     mask_w_PutFullData_c.constraint_mode(cm_mask_w_PutFullData);
-    mask_w_addr_c.constraint_mode(cm_mask_w_addr);
+    addr_mask_align_c.constraint_mode(cm_addr_mask_align);
     mask_in_enabled_lanes_c.constraint_mode(cm_mask_in_enabled_lanes);
     addr_size_align_c.constraint_mode(cm_addr_size_align);
     max_size_c.constraint_mode(cm_max_size);
@@ -209,7 +273,7 @@ class tl_seq_item extends uvm_sequence_item;
         // at least one `chk_prot_* is violated
         randomize() with {!cm_a_opcode              && !(`chk_prot_a_opcode)              ||
                           !cm_mask_w_PutFullData    && !(`chk_prot_mask_w_PutFullData)    ||
-                          !cm_mask_w_addr           && !(`chk_prot_mask_w_addr)           ||
+                          !cm_addr_mask_align       && !(`chk_prot_addr_mask_align)       ||
                           !cm_mask_in_enabled_lanes && !(`chk_prot_mask_in_enabled_lanes) ||
                           !cm_addr_size_align       && !(`chk_prot_addr_size_align)       ||
                           !cm_max_size              && !(`chk_prot_max_size);})
@@ -246,7 +310,7 @@ endclass
 
 `undef chk_prot_a_opcode
 `undef chk_prot_mask_w_PutFullData
-`undef chk_prot_mask_w_addr
+`undef chk_prot_addr_mask_align
 `undef chk_prot_mask_in_enabled_lanes
 `undef chk_prot_addr_size_align
 `undef chk_prot_max_size

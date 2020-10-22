@@ -54,15 +54,15 @@ class gpio_env_cov extends cip_base_env_cov #(.CFG_T(gpio_env_cfg));
   `uvm_component_utils(gpio_env_cov)
 
   // Array of coverage objects for per pin coverage for gpio pin values
-  dv_base_generic_cov_obj gpio_pin_values_cov_obj[NUM_GPIOS];
+  bit_toggle_cg_wrap gpio_pin_values_cov_obj[NUM_GPIOS];
   // Interrupt State (Interrupt bit getting set and cleared)
-  dv_base_generic_cov_obj intr_state_cov_obj[NUM_GPIOS];
+  bit_toggle_cg_wrap intr_state_cov_obj[NUM_GPIOS];
   // Interrupt Control Enable registers' values
-  dv_base_generic_cov_obj intr_ctrl_en_cov_objs[NUM_GPIOS][string];
+  bit_toggle_cg_wrap intr_ctrl_en_cov_objs[NUM_GPIOS][string];
   // data_in register per bit value coverage
-  dv_base_generic_cov_obj data_in_cov_obj[NUM_GPIOS];
+  bit_toggle_cg_wrap data_in_cov_obj[NUM_GPIOS];
   // Per bit coverage on *out* and *oe* registers
-  dv_base_generic_cov_obj out_oe_cov_objs[NUM_GPIOS][string];
+  bit_toggle_cg_wrap out_oe_cov_objs[NUM_GPIOS][string];
   // Different gpio interrupt types' occurrences
   gpio_intr_type_cov_obj intr_event_type_cov_objs[NUM_GPIOS][string];
   // Coverage on data and mask fields of masked* registers

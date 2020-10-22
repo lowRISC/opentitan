@@ -14,8 +14,6 @@ waive -rules HIER_NET_NOT_READ -regexp {'rspfifo_full' is not read from in modul
       -comment "This signal is only used by assertions"
 waive -rules CONST_OUTPUT -location {tlul_adapter_sram.sv} -regexp {tl_o\.d_(param|sink|user)} \
       -comment "Tied to 0"
-waive -rules INPUT_NOT_READ -regexp {Input port 'rerror_i.0.' is not read from in module 'tlul_adapter_sram'} \
-      -comment "This module only cares about bit [1] of error (i.e. uncorrectable errors), it doesn't care about correctable errors (bit [0])"
 waive -rules INPUT_NOT_READ -regexp {Input port 'tl_i.a_address.*' is not read from} \
       -comment "Not all bits of a_address are used (depending on the address parameters)"
 waive -rules HIER_NET_NOT_READ -regexp {Connected net 'tl_i.a_address.*' at tlul_adapter_sram.sv.* is not read from in module 'tlul_adapter_sram'} \
@@ -24,4 +22,7 @@ waive -rules HIER_NET_NOT_READ -msg {Net 'rspfifo_wready' is not read from in mo
       -comment "This signal is only used by an assertion"
 waive -rules NOT_READ -msg {Signal 'rspfifo_wready' is not read from in module 'tlul_adapter_sram'} \
       -comment "This signal is only used by an assertion"
+waive -rules VAR_INDEX_RANGE -regexp {.*woffset' of length 1 is larger than the 0 bits required to address.*} \
+      -comment "The woffset signal is tied to constant 0 in this case. Fixing this warning in RTL would complicate \
+      the design since multiple generage blocks would be needed with almost identical content."
 

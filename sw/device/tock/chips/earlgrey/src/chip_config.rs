@@ -13,8 +13,8 @@ pub struct DeviceConfig<'a> {
 #[cfg(any(feature = "fpga_nexysvideo", not(feature = "device_specified")))]
 pub const DEVICE_CONFIG: DeviceConfig = DeviceConfig {
     name: &"fpga_nexysvideo",
-    chip_freq: 50_000_000,
-    uart_baudrate: 230400,
+    chip_freq: 10_000_000,
+    uart_baudrate: 115200,
 };
 
 #[cfg(feature = "sim_verilator")]

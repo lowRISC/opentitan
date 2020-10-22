@@ -1,0 +1,13 @@
+diff --git a/dv_utils/dv_utils.core b/dv_utils/dv_utils.core
+index 0dba0235..801e84f6 100644
+--- a/dv_utils.core
++++ b/dv_utils.core
+@@ -10,7 +10,7 @@ filesets:
+     depend:
+       - lowrisc:dv:common_ifs
+       - lowrisc:prim:assert:0.1
+-      - lowrisc:opentitan:bus_params_pkg
++      - lowrisc:ibex:bus_params_pkg
+     files:
+       - dv_utils_pkg.sv
+       - dv_macros.svh: {is_include_file: true}

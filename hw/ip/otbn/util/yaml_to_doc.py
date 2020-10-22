@@ -6,11 +6,14 @@
 '''Generate Markdown documentation for the instructions in insns.yml'''
 
 import argparse
+import os
 import sys
-from typing import List
+from typing import Dict, List, TextIO
 
-from shared.insn_yaml import (BoolLiteral, Encoding, Insn, InsnsFile, Operand,
-                              load_file)
+from shared.bool_literal import BoolLiteral
+from shared.encoding import Encoding
+from shared.insn_yaml import Insn, InsnsFile, InsnGroup, load_file
+from shared.operand import ImmOperandType, Operand
 
 
 def render_operand_row(operand: Operand) -> str:
@@ -59,7 +62,9 @@ def render_operand_table(insn: Insn) -> str:
     return ''.join(parts)
 
 
-def render_encoding(mnemonic: str, encoding: Encoding) -> str:
+def render_encoding(mnemonic: str,
+                    name_to_operand: Dict[str, Operand],
+                    encoding: Encoding) -> str:
     '''Generate a table displaying an instruction encoding'''
     parts = []
     parts.append('<table style="font-size: 75%">')
@@ -96,8 +101,12 @@ def render_encoding(mnemonic: str, encoding: Encoding) -> str:
         assert isinstance(field.value, str)
         operand_name = field.value
 
+        # Figure out whether there's any shifting going on.
+        op_type = name_to_operand[operand_name].op_type
+        shift = op_type.shift if isinstance(op_type, ImmOperandType) else 0
+
         # If there is only one range (and no shifting), that's easy.
-        if len(scheme_field.bits.ranges) == 1 and scheme_field.shift == 0:
+        if len(scheme_field.bits.ranges) == 1 and shift == 0:
             msb, lsb = scheme_field.bits.ranges[0]
             by_msb[msb] = (msb - lsb + 1, operand_name)
             continue
@@ -105,7 +114,7 @@ def render_encoding(mnemonic: str, encoding: Encoding) -> str:
         # Otherwise, we have to split up the operand into things like "foo[8:5]"
         bits_seen = 0
         for msb, lsb in scheme_field.bits.ranges:
-            val_msb = scheme_field.shift + scheme_field.bits.width - 1 - bits_seen
+            val_msb = shift + scheme_field.bits.width - 1 - bits_seen
             val_lsb = val_msb - msb + lsb
             bits_seen += msb - lsb + 1
             if msb == lsb:
@@ -190,6 +199,11 @@ def render_insn(insn: Insn, heading_level: int) -> str:
     if insn.rv32i:
         parts.append('This instruction is defined in the RV32I instruction set.\n\n')
 
+    # If this takes more than a single cycle, say so.
+    if insn.cycles > 1:
+        parts.append('This instruction takes {} cycles.\n\n'
+                     .format(insn.cycles))
+
     # Show any trailing documentation (stuff that should come after the syntax
     # example but before the operand table).
     if insn.trailing_doc is not None:
@@ -204,7 +218,9 @@ def render_insn(insn: Insn, heading_level: int) -> str:
 
     # Show encoding if we have one
     if insn.encoding is not None:
-        parts.append(render_encoding(insn.mnemonic, insn.encoding))
+        parts.append(render_encoding(insn.mnemonic,
+                                     insn.name_to_operand,
+                                     insn.encoding))
 
     # If this is a pseudo-op with a literal translation, show it
     if insn.literal_pseudo_op is not None:
@@ -230,37 +246,52 @@ def render_insn(insn: Insn, heading_level: int) -> str:
     return ''.join(parts)
 
 
-def render_insns(insns: InsnsFile, heading_level: int) -> str:
+def render_insn_group(group: InsnGroup,
+                      heading_level: int,
+                      out_file: TextIO) -> None:
+    # We don't print the group heading: that's done in the top-level
+    # documentation so it makes it into the TOC.
+
+    out_file.write(group.doc + '\n\n')
+
+    if not group.insns:
+        out_file.write('No instructions in group.\n\n')
+        return
+
+    for insn in group.insns:
+        out_file.write(render_insn(insn, heading_level))
+
+
+def render_insns(insns: InsnsFile,
+                 heading_level: int,
+                 out_dir: str) -> None:
     '''Render documentation for all instructions'''
-    parts = []
-    for group, group_insns in insns.grouped_insns():
-        parts.append('{} {}\n\n'.format('#' * heading_level, group.title))
-        parts.append(group.doc)
-        parts.append('\n\n')
-
-        if not group_insns:
-            parts.append('No instructions in group.\n\n')
-            continue
-
-        for insn in group_insns:
-            parts.append(render_insn(insn, heading_level + 1))
-
-    return ''.join(parts)
+    for group in insns.groups.groups:
+        group_path = os.path.join(out_dir, group.key + '.md')
+        with open(group_path, 'w') as group_file:
+            render_insn_group(group, heading_level, group_file)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('yaml_file')
+    parser.add_argument('out_dir')
 
     args = parser.parse_args()
 
     try:
         insns = load_file(args.yaml_file)
     except RuntimeError as err:
-        sys.stderr.write('{}\n'.format(err))
+        print(err, file=sys.stderr)
         return 1
 
-    print(render_insns(insns, 2))
+    try:
+        os.makedirs(args.out_dir, exist_ok=True)
+    except OSError as err:
+        print('Failed to create output directory {!r}: {}.'
+              .format(args.out_dir, err))
+
+    render_insns(insns, 3, args.out_dir)
     return 0
 
 

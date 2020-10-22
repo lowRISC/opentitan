@@ -12,26 +12,34 @@ package entropy_src_env_pkg;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import entropy_src_ral_pkg::*;
+  import rng_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint            ENTROPY_SRC_ADDR_MAP_SIZE = 64;
-  parameter bit [3:0]       POR_SEED = 4'hb;
-  parameter bit [TL_DW-1:0] POR_ENTROPY = 32'h124836cb;
+  parameter bit [11:0][TL_DW-1:0] POR_ENTROPY = {32'h4836cb5a,
+                                                 32'h7efd9124,
+                                                 32'h836cb5a7,
+                                                 32'hefd91248,
+                                                 32'h36cb5a7e,
+                                                 32'hfd912483,
+                                                 32'h6cb5a7ef,
+                                                 32'hd9124836,
+                                                 32'hcb5a7efd,
+                                                 32'h9124836c,
+                                                 32'hb5a7efd9,
+                                                 32'h124836cb};
+  parameter string                LIST_OF_ALERTS[] = {"es_alert_count_met"};
+  parameter uint                  NUM_ALERTS = 1;
 
   // types
   typedef enum int {
-    EntropyValid = 0,
-    RctFailed    = 1,
-    AptFailed    = 2,
-    FifoErr      = 3
+    EntropyValid     = 0,
+    HealthTestFailed = 1,
+    FifoErr          = 2
   } entropy_src_intr_e;
-
-
-  // functions
 
   // package sources
   `include "entropy_src_env_cfg.sv"

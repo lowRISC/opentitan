@@ -24,9 +24,9 @@ module aon_osc #(
 
 // localparam real AON_CLK_PERIOD = 5000; // 5000ns (200Khz)
 // TBD
-// This is a temporary work-around until the design fully supports
-// async clocks as part of a different PR.
-localparam real AON_CLK_PERIOD = 20;
+// sped up to 200ns by default.
+// There should be a DV hook here so that the test can choose the actual frequency
+   localparam real AON_CLK_PERIOD = 200;
 
 logic init_start, clk;
 

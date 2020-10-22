@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // performance test vseq
-class i2c_perf_vseq extends i2c_sanity_vseq;
+class i2c_perf_vseq extends i2c_rx_tx_vseq;
   `uvm_object_utils(i2c_perf_vseq)
   `uvm_object_new
 

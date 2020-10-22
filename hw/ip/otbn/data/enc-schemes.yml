@@ -1,0 +1,367 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Instruction encoding schemes for OTBN
+#
+# These are used by the instructions in insns.yml. A scheme defines the mapping
+# between instruction operands and bits in the encoding. A scheme names zero or
+# more named fields. It can also inherit from zero or more other schemes.
+#
+# The direct fields of a scheme are defined as a dictionary, mapping a field
+# name (which will be matched up with instruction operands) to a value. In
+# general, this value is itself a dictionary with the following keys:
+#
+#  bits: A list of ranges of bits. A range is written <msb>-<lsb>, where both
+#        are integers (and msb >= lsb). Multiple ranges can be separated by
+#        commas. A degenerate range (with msb == lsb) can be written as a bare
+#        integer. Required.
+#
+#  value: Optional. If specified, this should be a binary string for a fixed
+#         value for this field, prefixed with a "b" (to avoid the YAML parser
+#         reading it as a decimal number). Underscores in the string are
+#         ignored (to make it easier to show grouping) and 'x' means don't
+#         care.
+#
+# For brevity, if there's no literal value, the field can be represented as
+# just its bits string.
+#
+# A scheme can inherit from other schemes by listing their names in a 'parents'
+# attribute. If the child scheme needs to set the value of a parents' field to
+# something fixed, it can do so with the following syntax:
+#
+#     parent_name(field_name=b11101, field_name2=b111)
+#
+# The fields of a scheme are recursively defined to be its direct fields plus
+# the fields all its ancestors.
+#
+# A scheme is called complete if its fields cover the entire range of bits
+# (0-31) and partial otherwise.
+
+# A partial scheme that sets the bottom two bits to 2'b11 (as for all RISC-V
+# uncompressed instructions) and defines an 'opcode' field for bits 6-2
+# (standard for RV32I instructions)
+rv:
+  fields:
+    opcode: 6-2
+    uncomp:
+      bits: 1-0
+      value: b11
+
+# A partial scheme defining a funct3 field in bits 14-12 (used in most RV32I
+# instructions, and most BN.* custom instructions)
+funct3:
+  fields:
+    funct3: 14-12
+
+# RISC-V "R-type" encoding (reg <- fun(reg, reg))
+R:
+  parents:
+    - rv
+    - funct3
+  fields:
+    funct7: 31-25
+    rs2: 24-20
+    rs1: 19-15
+    rd: 11-7
+
+# RISC-V "I-type" encoding (reg <- fun(imm, reg))
+I:
+  parents:
+    - rv
+    - funct3
+  fields:
+    imm: 31-20
+    rs1: 19-15
+    rd: 11-7
+
+# RISC-V "I-type" encoding sub-type for shifts (reg <- fun(imm, reg))
+Is:
+  parents:
+    - rv
+    - funct3
+  fields:
+    arithmetic: 30
+    shamt: 24-20
+    rs1: 19-15
+    rd: 11-7
+    unused:
+      bits: 31,29-25
+      value: b000000
+
+# RISC-V "S-type" encoding (_ <- fun(reg, imm))
+S:
+  parents:
+    - rv
+    - funct3
+  fields:
+    imm: 31-25,11-7
+    rs2: 24-20
+    rs1: 19-15
+
+# RISC-V "B-type" encoding (like S, but different immediate layout; used for
+# branches)
+B:
+  parents:
+    - rv
+    - funct3
+  fields:
+    imm: 31,7,30-25,11-8
+    rs2: 24-20
+    rs1: 19-15
+
+# RISC-V "U-type" encoding (reg <- fun(imm))
+U:
+  parents:
+    - rv
+  fields:
+    imm: 31-12
+    rd: 11-7
+
+# RISC-V "J-type" encoding (like U, but different immediate layout; used for
+# jumps)
+J:
+  parents:
+    - rv
+  fields:
+    imm: 31,19-12,20,30-21
+    rd: 11-7
+
+# A partial scheme for custom instructions with opcode b00010
+custom0:
+  parents:
+    - rv(opcode=b00010)
+
+# A partial scheme for custom instructions with opcode b01010
+custom1:
+  parents:
+    - rv(opcode=b01010)
+
+# A partial scheme for custom instructions with opcode b01110
+custom2:
+  parents:
+    - rv(opcode=b01110)
+
+# A partial scheme for custom instructions with opcode b11110
+custom3:
+  parents:
+    - rv(opcode=b11110)
+
+# A partial scheme for instructions that produce a dest WDR.
+wrd:
+  fields:
+    wrd: 11-7
+
+# A partial scheme for instructions that take two source WDRs and produce a
+# dest WDR.
+wdr3:
+  parents:
+    - wrd
+  fields:
+    wrs2: 24-20
+    wrs1: 19-15
+
+# A partial scheme that defines the 'fg' field (for <flag_group> operands)
+fg:
+  fields:
+    fg: 31
+
+# A partial scheme that defines the shift fields (type and bytes)
+shift:
+  fields:
+    shift_type: 30
+    shift_bytes: 29-25
+
+# A partial scheme for specialized 2 bit function field, we need a reduced
+# size in the lower two bits of funct3 as RSHI spills over 1 bit from its
+# immediate
+funct2:
+  fields:
+    funct2: 13-12
+
+# A partial scheme for the bn.mov/bn.movr instructions. Specifies if register
+# indirect lookup is used (bn.mov vs bn.movr)
+indirect:
+  fields:
+    indirect: 31
+
+# A specialised encoding for the loop instruction (only one source, no
+# destination)
+loop:
+  parents:
+    - custom3
+    - funct3(funct3=b000)
+  fields:
+    bodysize: 31-20
+    grs: 19-15
+    fixed:
+      bits: 11-7
+      value: bxxxxx
+
+# A specialised encoding for the loopi instruction (which, unusually, has 2
+# immediates)
+loopi:
+  parents:
+    - custom3
+    - funct3(funct3=b001)
+  fields:
+    bodysize: 31-20
+    iterations: 19-15,11-7
+
+# Used wide logical operations (bn.and, bn.or, bn.xor).
+bna:
+  parents:
+    - custom3
+    - wdr3
+    - funct3
+    - shift
+    - fg
+
+# Used for bn.not (no second source reg).
+bnan:
+  parents:
+    - custom3
+    - funct3
+    - shift
+    - fg
+    - wrd
+  fields:
+    wrs1: 24-20
+    fixed:
+      bits: 19-15
+      value: bxxxxx
+
+# Used for the wide reg/reg ALU instructions.
+bnaf:
+  parents:
+    - custom1
+    - wdr3
+    - funct3
+    - shift
+    - fg
+
+# Used for the wide bn.addi and bn.subi instructions.
+bnai:
+  parents:
+    - custom1
+    - wrd
+    - funct3
+    - fg
+  fields:
+    sub: 30
+    imm: 29-20
+    wrs: 19-15
+
+# Used for bn.addm, bn.subm
+bnam:
+  parents:
+    - custom1
+    - wdr3
+    - funct3
+  fields:
+    sub: 30
+    fixed:
+      bits: 31,29-25
+      value: bxxxxxx
+
+# Used for bn.mulqacc
+bnaq:
+  parents:
+    - custom2
+    - wdr3
+  fields:
+    wb: 31-30
+    dh: 29
+    qs2: 28-27
+    qs1: 26-25
+    acc: 14-13
+    z: 12
+
+# Unusual scheme used for bn.rshi (the immediate bleeds into the usual funct3
+# field)
+bnr:
+  parents:
+    - custom3
+    - wdr3
+  fields:
+    imm: 31-25,14
+    funct2: 13-12
+
+# Used by bn.sel.
+bns:
+  parents:
+    - custom0
+    - wdr3
+    - funct3(funct3=b000)
+    - fg
+  fields:
+    fixed:
+      bits: 30-27
+      value: bxxxx
+    flag: 26-25
+
+# Used by bn.cmp and bn.cmpb
+bnc:
+  parents:
+    - custom0
+    - wdr3(wrd=bxxxxx)
+    - funct3
+    - shift
+    - fg
+
+# Used by bn.lid and bn.sid
+bnxid:
+  parents:
+    - custom0
+    - funct3
+  fields:
+    imm: 11-9,31-25
+    rs2: 24-20
+    rs1: 19-15
+    spp: 8
+    dpp: 7
+
+# Used by bn.mov
+bnmov:
+  parents:
+    - custom0
+    - funct3(funct3=b110)
+    - indirect(indirect=b0)
+  fields:
+    fixed_top:
+      bits: 30-20
+      value: bxxxxxxxxxxx
+    src: 19-15
+    dst: 11-7
+
+# Used by bn.movr
+bnmovr:
+  parents:
+    - custom0
+    - funct3(funct3=b110)
+    - indirect(indirect=b1)
+  fields:
+    fixed_top:
+      bits: 30-25
+      value: bxxxxxx
+    dst: 24-20
+    src: 19-15
+    spp: 9
+    dpp: 7
+    unused:
+      bits: 11-10,8
+      value: bxxx
+
+# Used by bn.wsrrs and bn.wsrrw
+wcsr:
+  parents:
+    - custom0
+    - funct3(funct3=b111)
+  fields:
+    write: 31
+    wcsr: 27-20
+    wrs: 19-15
+    wrd: 11-7
+    fixed:
+      bits: 30-28
+      value: bxxx

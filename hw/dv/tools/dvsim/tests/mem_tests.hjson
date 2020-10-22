@@ -1,0 +1,42 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_modes: [
+    {
+      name: cover_reg_top
+    }
+  ]
+
+  run_modes: [
+    {
+      name: mem_tests_mode
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+en_scb=0"]
+    }
+  ]
+
+  tests: [
+    {
+      name: "{name}_mem_walk"
+      build_mode: "cover_reg_top"
+      en_run_modes: ["mem_tests_mode"]
+      run_opts: ["+csr_mem_walk"]
+    }
+
+    {
+      name: "{name}_mem_partial_access"
+      build_mode: "cover_reg_top"
+      en_run_modes: ["mem_tests_mode"]
+      run_opts: ["+run_mem_partial_access"]
+    }
+  ]
+
+  regressions: [
+    {
+      name: sw_access
+      tests: ["{name}_mem_walk",
+              "{name}_mem_partial_access"]
+    }
+  ]
+}

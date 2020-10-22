@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "rv_plic_regs.h"  // Generated.
 #include "sw/device/lib/base/mmio.h"
+#include "rv_plic_regs.h"  // Generated.
 
 // If either of these static assertions fail, then the assumptions in this DIF
 // implementation should be revisited. In particular, `plic_target_reg_offsets`
 // may need updating,
-_Static_assert(RV_PLIC_PARAM_NUMSRC == 82,
+_Static_assert(RV_PLIC_PARAM_NUMSRC == 84,
                "PLIC instantiation parameters have changed.");
 _Static_assert(RV_PLIC_PARAM_NUMTARGET == 1,
                "PLIC instantiation parameters have changed.");

@@ -11,6 +11,8 @@ sw_tests = {
 }
 
 subdir('dif')
+subdir('rom_ext')
+subdir('runtime')
 subdir('sim_dv')
 
 aes_test_lib = declare_dependency(
@@ -19,7 +21,7 @@ aes_test_lib = declare_dependency(
     sources: ['aes_test.c'],
     dependencies: [
       sw_lib_aes,
-      sw_lib_base_log,
+      sw_lib_runtime_log,
     ],
   ),
 )
@@ -32,7 +34,7 @@ flash_ctrl_test_lib = declare_dependency(
       sw_lib_mem,
       sw_lib_mmio,
       sw_lib_flash_ctrl,
-      sw_lib_base_log,
+      sw_lib_runtime_log,
     ],
   ),
 )
@@ -44,7 +46,7 @@ sha256_test_lib = declare_dependency(
     dependencies: [
       sw_lib_hmac,
       sw_lib_flash_ctrl,
-      sw_lib_base_log,
+      sw_lib_runtime_log,
     ],
   ),
 )
@@ -55,7 +57,45 @@ usbdev_test_lib = declare_dependency(
     sources: ['usbdev_test.c'],
     dependencies: [
       sw_lib_usb,
-      sw_lib_base_log,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+
+coverage_test_lib = declare_dependency(
+  link_with: static_library(
+    'coverage_test_lib',
+    sources: ['coverage_test.c'],
+    dependencies: [
+      collect_coverage,
+    ],
+  ),
+)
+
+pmp_sanitytest_napot_lib = declare_dependency(
+  link_with: static_library(
+    'pmp_sanitytest_napot_lib',
+    sources: ['pmp_sanitytest_napot.c'],
+    dependencies: [
+      sw_lib_irq,
+      sw_lib_runtime_log,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_pmp,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+
+pmp_sanitytest_tor_lib = declare_dependency(
+  link_with: static_library(
+    'pmp_sanitytest_tor_lib',
+    sources: ['pmp_sanitytest_tor.c'],
+    dependencies: [
+      sw_lib_irq,
+      sw_lib_runtime_log,
+      sw_lib_runtime_hart,
+      sw_lib_runtime_pmp,
+      sw_lib_testing_test_status,
     ],
   ),
 )
@@ -65,6 +105,9 @@ sw_tests += {
   'flash_ctrl_test': flash_ctrl_test_lib,
   'sha256_test': sha256_test_lib,
   'usbdev_test': usbdev_test_lib,
+  'coverage_test': coverage_test_lib,
+  'pmp_sanitytest_napot': pmp_sanitytest_napot_lib,
+  'pmp_sanitytest_tor': pmp_sanitytest_tor_lib,
 }
 
 foreach sw_test_name, sw_test_lib : sw_tests
@@ -110,6 +153,9 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       device_lib,
       sw_lib_irq_handlers,
       sw_lib_testing_test_status,
+      sw_lib_runtime_print,
+      sw_lib_runtime_log,
+      sw_lib_dif_uart,
       # Explicitly do not pull in the test main; we need to run right after
       # the CRT is done executing.
       # sw_lib_testing_test_main,

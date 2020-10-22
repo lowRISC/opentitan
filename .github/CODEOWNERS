@@ -24,22 +24,25 @@ util/*.py           @imphil @asb
 util/*gen/          @eunchan @msfschaffner @tjaychen
 util/uvmdvgen*      @sriyerg
 util/regtool.py     @eunchan
-util/tlgen.py       @eunchan @msfschaffner
+util/reggen/        @eunchan
+util/tlgen.py       @eunchan @msfschaffner @tjaychen
+util/tlgen/         @eunchan @msfschaffner @tjaychen
 util/topgen.py      @eunchan @msfschaffner @tjaychen
+util/topgen/        @eunchan @msfschaffner @tjaychen
 util/build_docs.py  @gdk
 
 
 # RTL related
-/hw/ip/*/rtl/           @eunchan
-/hw/ip/*/doc/           @eunchan
 /hw/ip/aes/             @vogelpi
 /hw/ip/alert_handler/   @msfschaffner
 /hw/ip/flash_ctrl/      @tjaychen
+/hw/ip/kmac/            @eunchan
 /hw/ip/padctrl/         @msfschaffner @tjaychen
 /hw/ip/pinmux/          @msfschaffner @tjaychen
 /hw/ip/prim*            @sjgitty @eunchan @tjaychen
 /hw/ip/rv_core_ibex/    @imphil @tjaychen
 /hw/ip/rv_dm/           @imphil @vogelpi
+/hw/ip/spi_device/      @eunchan
 /hw/ip/tlul/            @sjgitty @eunchan @tjaychen
 # /hw/ip/usb*           # TBD
 /hw/top_*/rtl           @eunchan @tjaychen

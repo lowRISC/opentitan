@@ -28,7 +28,7 @@ module flash_ctrl_reg_top (
 
   import flash_ctrl_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 9;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -88,10 +88,10 @@ module flash_ctrl_reg_top (
     reg_steer = 2;       // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
-    if (tl_i.a_address[AW-1:0] >= 96 && tl_i.a_address[AW-1:0] < 100) begin
+    if (tl_i.a_address[AW-1:0] >= 252 && tl_i.a_address[AW-1:0] < 256) begin
       reg_steer = 0;
     end
-    if (tl_i.a_address[AW-1:0] >= 100 && tl_i.a_address[AW-1:0] < 104) begin
+    if (tl_i.a_address[AW-1:0] >= 256 && tl_i.a_address[AW-1:0] < 260) begin
       reg_steer = 1;
     end
   end
@@ -177,24 +177,48 @@ module flash_ctrl_reg_top (
   logic [1:0] control_op_qs;
   logic [1:0] control_op_wd;
   logic control_op_we;
+  logic control_prog_sel_qs;
+  logic control_prog_sel_wd;
+  logic control_prog_sel_we;
   logic control_erase_sel_qs;
   logic control_erase_sel_wd;
   logic control_erase_sel_we;
   logic control_partition_sel_qs;
   logic control_partition_sel_wd;
   logic control_partition_sel_we;
+  logic control_info_sel_qs;
+  logic control_info_sel_wd;
+  logic control_info_sel_we;
   logic [11:0] control_num_qs;
   logic [11:0] control_num_wd;
   logic control_num_we;
   logic [31:0] addr_qs;
   logic [31:0] addr_wd;
   logic addr_we;
-  logic scramble_en_qs;
-  logic scramble_en_wd;
-  logic scramble_en_we;
-  logic region_cfg_regwen_qs;
-  logic region_cfg_regwen_wd;
-  logic region_cfg_regwen_we;
+  logic region_cfg_regwen_0_qs;
+  logic region_cfg_regwen_0_wd;
+  logic region_cfg_regwen_0_we;
+  logic region_cfg_regwen_1_qs;
+  logic region_cfg_regwen_1_wd;
+  logic region_cfg_regwen_1_we;
+  logic region_cfg_regwen_2_qs;
+  logic region_cfg_regwen_2_wd;
+  logic region_cfg_regwen_2_we;
+  logic region_cfg_regwen_3_qs;
+  logic region_cfg_regwen_3_wd;
+  logic region_cfg_regwen_3_we;
+  logic region_cfg_regwen_4_qs;
+  logic region_cfg_regwen_4_wd;
+  logic region_cfg_regwen_4_we;
+  logic region_cfg_regwen_5_qs;
+  logic region_cfg_regwen_5_wd;
+  logic region_cfg_regwen_5_we;
+  logic region_cfg_regwen_6_qs;
+  logic region_cfg_regwen_6_wd;
+  logic region_cfg_regwen_6_we;
+  logic region_cfg_regwen_7_qs;
+  logic region_cfg_regwen_7_wd;
+  logic region_cfg_regwen_7_we;
   logic mp_region_cfg_0_en_0_qs;
   logic mp_region_cfg_0_en_0_wd;
   logic mp_region_cfg_0_en_0_we;
@@ -207,15 +231,15 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_0_erase_en_0_qs;
   logic mp_region_cfg_0_erase_en_0_wd;
   logic mp_region_cfg_0_erase_en_0_we;
+  logic mp_region_cfg_0_scramble_en_0_qs;
+  logic mp_region_cfg_0_scramble_en_0_wd;
+  logic mp_region_cfg_0_scramble_en_0_we;
   logic [8:0] mp_region_cfg_0_base_0_qs;
   logic [8:0] mp_region_cfg_0_base_0_wd;
   logic mp_region_cfg_0_base_0_we;
   logic [9:0] mp_region_cfg_0_size_0_qs;
   logic [9:0] mp_region_cfg_0_size_0_wd;
   logic mp_region_cfg_0_size_0_we;
-  logic mp_region_cfg_0_partition_0_qs;
-  logic mp_region_cfg_0_partition_0_wd;
-  logic mp_region_cfg_0_partition_0_we;
   logic mp_region_cfg_1_en_1_qs;
   logic mp_region_cfg_1_en_1_wd;
   logic mp_region_cfg_1_en_1_we;
@@ -228,15 +252,15 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_1_erase_en_1_qs;
   logic mp_region_cfg_1_erase_en_1_wd;
   logic mp_region_cfg_1_erase_en_1_we;
+  logic mp_region_cfg_1_scramble_en_1_qs;
+  logic mp_region_cfg_1_scramble_en_1_wd;
+  logic mp_region_cfg_1_scramble_en_1_we;
   logic [8:0] mp_region_cfg_1_base_1_qs;
   logic [8:0] mp_region_cfg_1_base_1_wd;
   logic mp_region_cfg_1_base_1_we;
   logic [9:0] mp_region_cfg_1_size_1_qs;
   logic [9:0] mp_region_cfg_1_size_1_wd;
   logic mp_region_cfg_1_size_1_we;
-  logic mp_region_cfg_1_partition_1_qs;
-  logic mp_region_cfg_1_partition_1_wd;
-  logic mp_region_cfg_1_partition_1_we;
   logic mp_region_cfg_2_en_2_qs;
   logic mp_region_cfg_2_en_2_wd;
   logic mp_region_cfg_2_en_2_we;
@@ -249,15 +273,15 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_2_erase_en_2_qs;
   logic mp_region_cfg_2_erase_en_2_wd;
   logic mp_region_cfg_2_erase_en_2_we;
+  logic mp_region_cfg_2_scramble_en_2_qs;
+  logic mp_region_cfg_2_scramble_en_2_wd;
+  logic mp_region_cfg_2_scramble_en_2_we;
   logic [8:0] mp_region_cfg_2_base_2_qs;
   logic [8:0] mp_region_cfg_2_base_2_wd;
   logic mp_region_cfg_2_base_2_we;
   logic [9:0] mp_region_cfg_2_size_2_qs;
   logic [9:0] mp_region_cfg_2_size_2_wd;
   logic mp_region_cfg_2_size_2_we;
-  logic mp_region_cfg_2_partition_2_qs;
-  logic mp_region_cfg_2_partition_2_wd;
-  logic mp_region_cfg_2_partition_2_we;
   logic mp_region_cfg_3_en_3_qs;
   logic mp_region_cfg_3_en_3_wd;
   logic mp_region_cfg_3_en_3_we;
@@ -270,15 +294,15 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_3_erase_en_3_qs;
   logic mp_region_cfg_3_erase_en_3_wd;
   logic mp_region_cfg_3_erase_en_3_we;
+  logic mp_region_cfg_3_scramble_en_3_qs;
+  logic mp_region_cfg_3_scramble_en_3_wd;
+  logic mp_region_cfg_3_scramble_en_3_we;
   logic [8:0] mp_region_cfg_3_base_3_qs;
   logic [8:0] mp_region_cfg_3_base_3_wd;
   logic mp_region_cfg_3_base_3_we;
   logic [9:0] mp_region_cfg_3_size_3_qs;
   logic [9:0] mp_region_cfg_3_size_3_wd;
   logic mp_region_cfg_3_size_3_we;
-  logic mp_region_cfg_3_partition_3_qs;
-  logic mp_region_cfg_3_partition_3_wd;
-  logic mp_region_cfg_3_partition_3_we;
   logic mp_region_cfg_4_en_4_qs;
   logic mp_region_cfg_4_en_4_wd;
   logic mp_region_cfg_4_en_4_we;
@@ -291,15 +315,15 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_4_erase_en_4_qs;
   logic mp_region_cfg_4_erase_en_4_wd;
   logic mp_region_cfg_4_erase_en_4_we;
+  logic mp_region_cfg_4_scramble_en_4_qs;
+  logic mp_region_cfg_4_scramble_en_4_wd;
+  logic mp_region_cfg_4_scramble_en_4_we;
   logic [8:0] mp_region_cfg_4_base_4_qs;
   logic [8:0] mp_region_cfg_4_base_4_wd;
   logic mp_region_cfg_4_base_4_we;
   logic [9:0] mp_region_cfg_4_size_4_qs;
   logic [9:0] mp_region_cfg_4_size_4_wd;
   logic mp_region_cfg_4_size_4_we;
-  logic mp_region_cfg_4_partition_4_qs;
-  logic mp_region_cfg_4_partition_4_wd;
-  logic mp_region_cfg_4_partition_4_we;
   logic mp_region_cfg_5_en_5_qs;
   logic mp_region_cfg_5_en_5_wd;
   logic mp_region_cfg_5_en_5_we;
@@ -312,15 +336,15 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_5_erase_en_5_qs;
   logic mp_region_cfg_5_erase_en_5_wd;
   logic mp_region_cfg_5_erase_en_5_we;
+  logic mp_region_cfg_5_scramble_en_5_qs;
+  logic mp_region_cfg_5_scramble_en_5_wd;
+  logic mp_region_cfg_5_scramble_en_5_we;
   logic [8:0] mp_region_cfg_5_base_5_qs;
   logic [8:0] mp_region_cfg_5_base_5_wd;
   logic mp_region_cfg_5_base_5_we;
   logic [9:0] mp_region_cfg_5_size_5_qs;
   logic [9:0] mp_region_cfg_5_size_5_wd;
   logic mp_region_cfg_5_size_5_we;
-  logic mp_region_cfg_5_partition_5_qs;
-  logic mp_region_cfg_5_partition_5_wd;
-  logic mp_region_cfg_5_partition_5_we;
   logic mp_region_cfg_6_en_6_qs;
   logic mp_region_cfg_6_en_6_wd;
   logic mp_region_cfg_6_en_6_we;
@@ -333,15 +357,15 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_6_erase_en_6_qs;
   logic mp_region_cfg_6_erase_en_6_wd;
   logic mp_region_cfg_6_erase_en_6_we;
+  logic mp_region_cfg_6_scramble_en_6_qs;
+  logic mp_region_cfg_6_scramble_en_6_wd;
+  logic mp_region_cfg_6_scramble_en_6_we;
   logic [8:0] mp_region_cfg_6_base_6_qs;
   logic [8:0] mp_region_cfg_6_base_6_wd;
   logic mp_region_cfg_6_base_6_we;
   logic [9:0] mp_region_cfg_6_size_6_qs;
   logic [9:0] mp_region_cfg_6_size_6_wd;
   logic mp_region_cfg_6_size_6_we;
-  logic mp_region_cfg_6_partition_6_qs;
-  logic mp_region_cfg_6_partition_6_wd;
-  logic mp_region_cfg_6_partition_6_we;
   logic mp_region_cfg_7_en_7_qs;
   logic mp_region_cfg_7_en_7_wd;
   logic mp_region_cfg_7_en_7_we;
@@ -354,15 +378,303 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_7_erase_en_7_qs;
   logic mp_region_cfg_7_erase_en_7_wd;
   logic mp_region_cfg_7_erase_en_7_we;
+  logic mp_region_cfg_7_scramble_en_7_qs;
+  logic mp_region_cfg_7_scramble_en_7_wd;
+  logic mp_region_cfg_7_scramble_en_7_we;
   logic [8:0] mp_region_cfg_7_base_7_qs;
   logic [8:0] mp_region_cfg_7_base_7_wd;
   logic mp_region_cfg_7_base_7_we;
   logic [9:0] mp_region_cfg_7_size_7_qs;
   logic [9:0] mp_region_cfg_7_size_7_wd;
   logic mp_region_cfg_7_size_7_we;
-  logic mp_region_cfg_7_partition_7_qs;
-  logic mp_region_cfg_7_partition_7_wd;
-  logic mp_region_cfg_7_partition_7_we;
+  logic bank0_info0_regwen_0_qs;
+  logic bank0_info0_regwen_0_wd;
+  logic bank0_info0_regwen_0_we;
+  logic bank0_info0_regwen_1_qs;
+  logic bank0_info0_regwen_1_wd;
+  logic bank0_info0_regwen_1_we;
+  logic bank0_info0_regwen_2_qs;
+  logic bank0_info0_regwen_2_wd;
+  logic bank0_info0_regwen_2_we;
+  logic bank0_info0_regwen_3_qs;
+  logic bank0_info0_regwen_3_wd;
+  logic bank0_info0_regwen_3_we;
+  logic bank0_info1_regwen_0_qs;
+  logic bank0_info1_regwen_0_wd;
+  logic bank0_info1_regwen_0_we;
+  logic bank0_info1_regwen_1_qs;
+  logic bank0_info1_regwen_1_wd;
+  logic bank0_info1_regwen_1_we;
+  logic bank0_info1_regwen_2_qs;
+  logic bank0_info1_regwen_2_wd;
+  logic bank0_info1_regwen_2_we;
+  logic bank0_info1_regwen_3_qs;
+  logic bank0_info1_regwen_3_wd;
+  logic bank0_info1_regwen_3_we;
+  logic bank0_info0_page_cfg_0_en_0_qs;
+  logic bank0_info0_page_cfg_0_en_0_wd;
+  logic bank0_info0_page_cfg_0_en_0_we;
+  logic bank0_info0_page_cfg_0_rd_en_0_qs;
+  logic bank0_info0_page_cfg_0_rd_en_0_wd;
+  logic bank0_info0_page_cfg_0_rd_en_0_we;
+  logic bank0_info0_page_cfg_0_prog_en_0_qs;
+  logic bank0_info0_page_cfg_0_prog_en_0_wd;
+  logic bank0_info0_page_cfg_0_prog_en_0_we;
+  logic bank0_info0_page_cfg_0_erase_en_0_qs;
+  logic bank0_info0_page_cfg_0_erase_en_0_wd;
+  logic bank0_info0_page_cfg_0_erase_en_0_we;
+  logic bank0_info0_page_cfg_0_scramble_en_0_qs;
+  logic bank0_info0_page_cfg_0_scramble_en_0_wd;
+  logic bank0_info0_page_cfg_0_scramble_en_0_we;
+  logic bank0_info0_page_cfg_1_en_1_qs;
+  logic bank0_info0_page_cfg_1_en_1_wd;
+  logic bank0_info0_page_cfg_1_en_1_we;
+  logic bank0_info0_page_cfg_1_rd_en_1_qs;
+  logic bank0_info0_page_cfg_1_rd_en_1_wd;
+  logic bank0_info0_page_cfg_1_rd_en_1_we;
+  logic bank0_info0_page_cfg_1_prog_en_1_qs;
+  logic bank0_info0_page_cfg_1_prog_en_1_wd;
+  logic bank0_info0_page_cfg_1_prog_en_1_we;
+  logic bank0_info0_page_cfg_1_erase_en_1_qs;
+  logic bank0_info0_page_cfg_1_erase_en_1_wd;
+  logic bank0_info0_page_cfg_1_erase_en_1_we;
+  logic bank0_info0_page_cfg_1_scramble_en_1_qs;
+  logic bank0_info0_page_cfg_1_scramble_en_1_wd;
+  logic bank0_info0_page_cfg_1_scramble_en_1_we;
+  logic bank0_info0_page_cfg_2_en_2_qs;
+  logic bank0_info0_page_cfg_2_en_2_wd;
+  logic bank0_info0_page_cfg_2_en_2_we;
+  logic bank0_info0_page_cfg_2_rd_en_2_qs;
+  logic bank0_info0_page_cfg_2_rd_en_2_wd;
+  logic bank0_info0_page_cfg_2_rd_en_2_we;
+  logic bank0_info0_page_cfg_2_prog_en_2_qs;
+  logic bank0_info0_page_cfg_2_prog_en_2_wd;
+  logic bank0_info0_page_cfg_2_prog_en_2_we;
+  logic bank0_info0_page_cfg_2_erase_en_2_qs;
+  logic bank0_info0_page_cfg_2_erase_en_2_wd;
+  logic bank0_info0_page_cfg_2_erase_en_2_we;
+  logic bank0_info0_page_cfg_2_scramble_en_2_qs;
+  logic bank0_info0_page_cfg_2_scramble_en_2_wd;
+  logic bank0_info0_page_cfg_2_scramble_en_2_we;
+  logic bank0_info0_page_cfg_3_en_3_qs;
+  logic bank0_info0_page_cfg_3_en_3_wd;
+  logic bank0_info0_page_cfg_3_en_3_we;
+  logic bank0_info0_page_cfg_3_rd_en_3_qs;
+  logic bank0_info0_page_cfg_3_rd_en_3_wd;
+  logic bank0_info0_page_cfg_3_rd_en_3_we;
+  logic bank0_info0_page_cfg_3_prog_en_3_qs;
+  logic bank0_info0_page_cfg_3_prog_en_3_wd;
+  logic bank0_info0_page_cfg_3_prog_en_3_we;
+  logic bank0_info0_page_cfg_3_erase_en_3_qs;
+  logic bank0_info0_page_cfg_3_erase_en_3_wd;
+  logic bank0_info0_page_cfg_3_erase_en_3_we;
+  logic bank0_info0_page_cfg_3_scramble_en_3_qs;
+  logic bank0_info0_page_cfg_3_scramble_en_3_wd;
+  logic bank0_info0_page_cfg_3_scramble_en_3_we;
+  logic bank0_info1_page_cfg_0_en_0_qs;
+  logic bank0_info1_page_cfg_0_en_0_wd;
+  logic bank0_info1_page_cfg_0_en_0_we;
+  logic bank0_info1_page_cfg_0_rd_en_0_qs;
+  logic bank0_info1_page_cfg_0_rd_en_0_wd;
+  logic bank0_info1_page_cfg_0_rd_en_0_we;
+  logic bank0_info1_page_cfg_0_prog_en_0_qs;
+  logic bank0_info1_page_cfg_0_prog_en_0_wd;
+  logic bank0_info1_page_cfg_0_prog_en_0_we;
+  logic bank0_info1_page_cfg_0_erase_en_0_qs;
+  logic bank0_info1_page_cfg_0_erase_en_0_wd;
+  logic bank0_info1_page_cfg_0_erase_en_0_we;
+  logic bank0_info1_page_cfg_0_scramble_en_0_qs;
+  logic bank0_info1_page_cfg_0_scramble_en_0_wd;
+  logic bank0_info1_page_cfg_0_scramble_en_0_we;
+  logic bank0_info1_page_cfg_1_en_1_qs;
+  logic bank0_info1_page_cfg_1_en_1_wd;
+  logic bank0_info1_page_cfg_1_en_1_we;
+  logic bank0_info1_page_cfg_1_rd_en_1_qs;
+  logic bank0_info1_page_cfg_1_rd_en_1_wd;
+  logic bank0_info1_page_cfg_1_rd_en_1_we;
+  logic bank0_info1_page_cfg_1_prog_en_1_qs;
+  logic bank0_info1_page_cfg_1_prog_en_1_wd;
+  logic bank0_info1_page_cfg_1_prog_en_1_we;
+  logic bank0_info1_page_cfg_1_erase_en_1_qs;
+  logic bank0_info1_page_cfg_1_erase_en_1_wd;
+  logic bank0_info1_page_cfg_1_erase_en_1_we;
+  logic bank0_info1_page_cfg_1_scramble_en_1_qs;
+  logic bank0_info1_page_cfg_1_scramble_en_1_wd;
+  logic bank0_info1_page_cfg_1_scramble_en_1_we;
+  logic bank0_info1_page_cfg_2_en_2_qs;
+  logic bank0_info1_page_cfg_2_en_2_wd;
+  logic bank0_info1_page_cfg_2_en_2_we;
+  logic bank0_info1_page_cfg_2_rd_en_2_qs;
+  logic bank0_info1_page_cfg_2_rd_en_2_wd;
+  logic bank0_info1_page_cfg_2_rd_en_2_we;
+  logic bank0_info1_page_cfg_2_prog_en_2_qs;
+  logic bank0_info1_page_cfg_2_prog_en_2_wd;
+  logic bank0_info1_page_cfg_2_prog_en_2_we;
+  logic bank0_info1_page_cfg_2_erase_en_2_qs;
+  logic bank0_info1_page_cfg_2_erase_en_2_wd;
+  logic bank0_info1_page_cfg_2_erase_en_2_we;
+  logic bank0_info1_page_cfg_2_scramble_en_2_qs;
+  logic bank0_info1_page_cfg_2_scramble_en_2_wd;
+  logic bank0_info1_page_cfg_2_scramble_en_2_we;
+  logic bank0_info1_page_cfg_3_en_3_qs;
+  logic bank0_info1_page_cfg_3_en_3_wd;
+  logic bank0_info1_page_cfg_3_en_3_we;
+  logic bank0_info1_page_cfg_3_rd_en_3_qs;
+  logic bank0_info1_page_cfg_3_rd_en_3_wd;
+  logic bank0_info1_page_cfg_3_rd_en_3_we;
+  logic bank0_info1_page_cfg_3_prog_en_3_qs;
+  logic bank0_info1_page_cfg_3_prog_en_3_wd;
+  logic bank0_info1_page_cfg_3_prog_en_3_we;
+  logic bank0_info1_page_cfg_3_erase_en_3_qs;
+  logic bank0_info1_page_cfg_3_erase_en_3_wd;
+  logic bank0_info1_page_cfg_3_erase_en_3_we;
+  logic bank0_info1_page_cfg_3_scramble_en_3_qs;
+  logic bank0_info1_page_cfg_3_scramble_en_3_wd;
+  logic bank0_info1_page_cfg_3_scramble_en_3_we;
+  logic bank1_info0_regwen_0_qs;
+  logic bank1_info0_regwen_0_wd;
+  logic bank1_info0_regwen_0_we;
+  logic bank1_info0_regwen_1_qs;
+  logic bank1_info0_regwen_1_wd;
+  logic bank1_info0_regwen_1_we;
+  logic bank1_info0_regwen_2_qs;
+  logic bank1_info0_regwen_2_wd;
+  logic bank1_info0_regwen_2_we;
+  logic bank1_info0_regwen_3_qs;
+  logic bank1_info0_regwen_3_wd;
+  logic bank1_info0_regwen_3_we;
+  logic bank1_info1_regwen_0_qs;
+  logic bank1_info1_regwen_0_wd;
+  logic bank1_info1_regwen_0_we;
+  logic bank1_info1_regwen_1_qs;
+  logic bank1_info1_regwen_1_wd;
+  logic bank1_info1_regwen_1_we;
+  logic bank1_info1_regwen_2_qs;
+  logic bank1_info1_regwen_2_wd;
+  logic bank1_info1_regwen_2_we;
+  logic bank1_info1_regwen_3_qs;
+  logic bank1_info1_regwen_3_wd;
+  logic bank1_info1_regwen_3_we;
+  logic bank1_info0_page_cfg_0_en_0_qs;
+  logic bank1_info0_page_cfg_0_en_0_wd;
+  logic bank1_info0_page_cfg_0_en_0_we;
+  logic bank1_info0_page_cfg_0_rd_en_0_qs;
+  logic bank1_info0_page_cfg_0_rd_en_0_wd;
+  logic bank1_info0_page_cfg_0_rd_en_0_we;
+  logic bank1_info0_page_cfg_0_prog_en_0_qs;
+  logic bank1_info0_page_cfg_0_prog_en_0_wd;
+  logic bank1_info0_page_cfg_0_prog_en_0_we;
+  logic bank1_info0_page_cfg_0_erase_en_0_qs;
+  logic bank1_info0_page_cfg_0_erase_en_0_wd;
+  logic bank1_info0_page_cfg_0_erase_en_0_we;
+  logic bank1_info0_page_cfg_0_scramble_en_0_qs;
+  logic bank1_info0_page_cfg_0_scramble_en_0_wd;
+  logic bank1_info0_page_cfg_0_scramble_en_0_we;
+  logic bank1_info0_page_cfg_1_en_1_qs;
+  logic bank1_info0_page_cfg_1_en_1_wd;
+  logic bank1_info0_page_cfg_1_en_1_we;
+  logic bank1_info0_page_cfg_1_rd_en_1_qs;
+  logic bank1_info0_page_cfg_1_rd_en_1_wd;
+  logic bank1_info0_page_cfg_1_rd_en_1_we;
+  logic bank1_info0_page_cfg_1_prog_en_1_qs;
+  logic bank1_info0_page_cfg_1_prog_en_1_wd;
+  logic bank1_info0_page_cfg_1_prog_en_1_we;
+  logic bank1_info0_page_cfg_1_erase_en_1_qs;
+  logic bank1_info0_page_cfg_1_erase_en_1_wd;
+  logic bank1_info0_page_cfg_1_erase_en_1_we;
+  logic bank1_info0_page_cfg_1_scramble_en_1_qs;
+  logic bank1_info0_page_cfg_1_scramble_en_1_wd;
+  logic bank1_info0_page_cfg_1_scramble_en_1_we;
+  logic bank1_info0_page_cfg_2_en_2_qs;
+  logic bank1_info0_page_cfg_2_en_2_wd;
+  logic bank1_info0_page_cfg_2_en_2_we;
+  logic bank1_info0_page_cfg_2_rd_en_2_qs;
+  logic bank1_info0_page_cfg_2_rd_en_2_wd;
+  logic bank1_info0_page_cfg_2_rd_en_2_we;
+  logic bank1_info0_page_cfg_2_prog_en_2_qs;
+  logic bank1_info0_page_cfg_2_prog_en_2_wd;
+  logic bank1_info0_page_cfg_2_prog_en_2_we;
+  logic bank1_info0_page_cfg_2_erase_en_2_qs;
+  logic bank1_info0_page_cfg_2_erase_en_2_wd;
+  logic bank1_info0_page_cfg_2_erase_en_2_we;
+  logic bank1_info0_page_cfg_2_scramble_en_2_qs;
+  logic bank1_info0_page_cfg_2_scramble_en_2_wd;
+  logic bank1_info0_page_cfg_2_scramble_en_2_we;
+  logic bank1_info0_page_cfg_3_en_3_qs;
+  logic bank1_info0_page_cfg_3_en_3_wd;
+  logic bank1_info0_page_cfg_3_en_3_we;
+  logic bank1_info0_page_cfg_3_rd_en_3_qs;
+  logic bank1_info0_page_cfg_3_rd_en_3_wd;
+  logic bank1_info0_page_cfg_3_rd_en_3_we;
+  logic bank1_info0_page_cfg_3_prog_en_3_qs;
+  logic bank1_info0_page_cfg_3_prog_en_3_wd;
+  logic bank1_info0_page_cfg_3_prog_en_3_we;
+  logic bank1_info0_page_cfg_3_erase_en_3_qs;
+  logic bank1_info0_page_cfg_3_erase_en_3_wd;
+  logic bank1_info0_page_cfg_3_erase_en_3_we;
+  logic bank1_info0_page_cfg_3_scramble_en_3_qs;
+  logic bank1_info0_page_cfg_3_scramble_en_3_wd;
+  logic bank1_info0_page_cfg_3_scramble_en_3_we;
+  logic bank1_info1_page_cfg_0_en_0_qs;
+  logic bank1_info1_page_cfg_0_en_0_wd;
+  logic bank1_info1_page_cfg_0_en_0_we;
+  logic bank1_info1_page_cfg_0_rd_en_0_qs;
+  logic bank1_info1_page_cfg_0_rd_en_0_wd;
+  logic bank1_info1_page_cfg_0_rd_en_0_we;
+  logic bank1_info1_page_cfg_0_prog_en_0_qs;
+  logic bank1_info1_page_cfg_0_prog_en_0_wd;
+  logic bank1_info1_page_cfg_0_prog_en_0_we;
+  logic bank1_info1_page_cfg_0_erase_en_0_qs;
+  logic bank1_info1_page_cfg_0_erase_en_0_wd;
+  logic bank1_info1_page_cfg_0_erase_en_0_we;
+  logic bank1_info1_page_cfg_0_scramble_en_0_qs;
+  logic bank1_info1_page_cfg_0_scramble_en_0_wd;
+  logic bank1_info1_page_cfg_0_scramble_en_0_we;
+  logic bank1_info1_page_cfg_1_en_1_qs;
+  logic bank1_info1_page_cfg_1_en_1_wd;
+  logic bank1_info1_page_cfg_1_en_1_we;
+  logic bank1_info1_page_cfg_1_rd_en_1_qs;
+  logic bank1_info1_page_cfg_1_rd_en_1_wd;
+  logic bank1_info1_page_cfg_1_rd_en_1_we;
+  logic bank1_info1_page_cfg_1_prog_en_1_qs;
+  logic bank1_info1_page_cfg_1_prog_en_1_wd;
+  logic bank1_info1_page_cfg_1_prog_en_1_we;
+  logic bank1_info1_page_cfg_1_erase_en_1_qs;
+  logic bank1_info1_page_cfg_1_erase_en_1_wd;
+  logic bank1_info1_page_cfg_1_erase_en_1_we;
+  logic bank1_info1_page_cfg_1_scramble_en_1_qs;
+  logic bank1_info1_page_cfg_1_scramble_en_1_wd;
+  logic bank1_info1_page_cfg_1_scramble_en_1_we;
+  logic bank1_info1_page_cfg_2_en_2_qs;
+  logic bank1_info1_page_cfg_2_en_2_wd;
+  logic bank1_info1_page_cfg_2_en_2_we;
+  logic bank1_info1_page_cfg_2_rd_en_2_qs;
+  logic bank1_info1_page_cfg_2_rd_en_2_wd;
+  logic bank1_info1_page_cfg_2_rd_en_2_we;
+  logic bank1_info1_page_cfg_2_prog_en_2_qs;
+  logic bank1_info1_page_cfg_2_prog_en_2_wd;
+  logic bank1_info1_page_cfg_2_prog_en_2_we;
+  logic bank1_info1_page_cfg_2_erase_en_2_qs;
+  logic bank1_info1_page_cfg_2_erase_en_2_wd;
+  logic bank1_info1_page_cfg_2_erase_en_2_we;
+  logic bank1_info1_page_cfg_2_scramble_en_2_qs;
+  logic bank1_info1_page_cfg_2_scramble_en_2_wd;
+  logic bank1_info1_page_cfg_2_scramble_en_2_we;
+  logic bank1_info1_page_cfg_3_en_3_qs;
+  logic bank1_info1_page_cfg_3_en_3_wd;
+  logic bank1_info1_page_cfg_3_en_3_we;
+  logic bank1_info1_page_cfg_3_rd_en_3_qs;
+  logic bank1_info1_page_cfg_3_rd_en_3_wd;
+  logic bank1_info1_page_cfg_3_rd_en_3_we;
+  logic bank1_info1_page_cfg_3_prog_en_3_qs;
+  logic bank1_info1_page_cfg_3_prog_en_3_wd;
+  logic bank1_info1_page_cfg_3_prog_en_3_we;
+  logic bank1_info1_page_cfg_3_erase_en_3_qs;
+  logic bank1_info1_page_cfg_3_erase_en_3_wd;
+  logic bank1_info1_page_cfg_3_erase_en_3_we;
+  logic bank1_info1_page_cfg_3_scramble_en_3_qs;
+  logic bank1_info1_page_cfg_3_scramble_en_3_wd;
+  logic bank1_info1_page_cfg_3_scramble_en_3_we;
   logic default_region_rd_en_qs;
   logic default_region_rd_en_wd;
   logic default_region_rd_en_we;
@@ -372,6 +684,9 @@ module flash_ctrl_reg_top (
   logic default_region_erase_en_qs;
   logic default_region_erase_en_wd;
   logic default_region_erase_en_we;
+  logic default_region_scramble_en_qs;
+  logic default_region_scramble_en_wd;
+  logic default_region_scramble_en_we;
   logic bank_cfg_regwen_qs;
   logic bank_cfg_regwen_wd;
   logic bank_cfg_regwen_we;
@@ -388,19 +703,14 @@ module flash_ctrl_reg_top (
   logic op_status_err_wd;
   logic op_status_err_we;
   logic status_rd_full_qs;
-  logic status_rd_full_re;
   logic status_rd_empty_qs;
-  logic status_rd_empty_re;
   logic status_prog_full_qs;
-  logic status_prog_full_re;
   logic status_prog_empty_qs;
-  logic status_prog_empty_re;
   logic status_init_wip_qs;
-  logic status_init_wip_re;
-  logic [8:0] status_error_page_qs;
-  logic status_error_page_re;
-  logic status_error_bank_qs;
-  logic status_error_bank_re;
+  logic [8:0] status_error_addr_qs;
+  logic phy_status_init_wip_qs;
+  logic phy_status_prog_normal_avail_qs;
+  logic phy_status_prog_repair_avail_qs;
   logic [31:0] scratch_qs;
   logic [31:0] scratch_wd;
   logic scratch_we;
@@ -893,7 +1203,33 @@ module flash_ctrl_reg_top (
   );
 
 
-  //   F[erase_sel]: 6:6
+  //   F[prog_sel]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_control_prog_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (control_prog_sel_we & ctrl_regwen_qs),
+    .wd     (control_prog_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.control.prog_sel.q ),
+
+    // to register interface (read)
+    .qs     (control_prog_sel_qs)
+  );
+
+
+  //   F[erase_sel]: 7:7
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -919,7 +1255,7 @@ module flash_ctrl_reg_top (
   );
 
 
-  //   F[partition_sel]: 7:7
+  //   F[partition_sel]: 8:8
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -942,6 +1278,32 @@ module flash_ctrl_reg_top (
 
     // to register interface (read)
     .qs     (control_partition_sel_qs)
+  );
+
+
+  //   F[info_sel]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_control_info_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (control_info_sel_we & ctrl_regwen_qs),
+    .wd     (control_info_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.control.info_sel.q ),
+
+    // to register interface (read)
+    .qs     (control_info_sel_qs)
   );
 
 
@@ -998,46 +1360,21 @@ module flash_ctrl_reg_top (
   );
 
 
-  // R[scramble_en]: V(False)
 
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_scramble_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (scramble_en_we),
-    .wd     (scramble_en_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.scramble_en.q ),
-
-    // to register interface (read)
-    .qs     (scramble_en_qs)
-  );
-
-
-  // R[region_cfg_regwen]: V(False)
+  // Subregister 0 of Multireg region_cfg_regwen
+  // R[region_cfg_regwen_0]: V(False)
 
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_region_cfg_regwen (
+  ) u_region_cfg_regwen_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (region_cfg_regwen_we),
-    .wd     (region_cfg_regwen_wd),
+    .we     (region_cfg_regwen_0_we),
+    .wd     (region_cfg_regwen_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1048,7 +1385,196 @@ module flash_ctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (region_cfg_regwen_qs)
+    .qs     (region_cfg_regwen_0_qs)
+  );
+
+  // Subregister 1 of Multireg region_cfg_regwen
+  // R[region_cfg_regwen_1]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_region_cfg_regwen_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (region_cfg_regwen_1_we),
+    .wd     (region_cfg_regwen_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (region_cfg_regwen_1_qs)
+  );
+
+  // Subregister 2 of Multireg region_cfg_regwen
+  // R[region_cfg_regwen_2]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_region_cfg_regwen_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (region_cfg_regwen_2_we),
+    .wd     (region_cfg_regwen_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (region_cfg_regwen_2_qs)
+  );
+
+  // Subregister 3 of Multireg region_cfg_regwen
+  // R[region_cfg_regwen_3]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_region_cfg_regwen_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (region_cfg_regwen_3_we),
+    .wd     (region_cfg_regwen_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (region_cfg_regwen_3_qs)
+  );
+
+  // Subregister 4 of Multireg region_cfg_regwen
+  // R[region_cfg_regwen_4]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_region_cfg_regwen_4 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (region_cfg_regwen_4_we),
+    .wd     (region_cfg_regwen_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (region_cfg_regwen_4_qs)
+  );
+
+  // Subregister 5 of Multireg region_cfg_regwen
+  // R[region_cfg_regwen_5]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_region_cfg_regwen_5 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (region_cfg_regwen_5_we),
+    .wd     (region_cfg_regwen_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (region_cfg_regwen_5_qs)
+  );
+
+  // Subregister 6 of Multireg region_cfg_regwen
+  // R[region_cfg_regwen_6]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_region_cfg_regwen_6 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (region_cfg_regwen_6_we),
+    .wd     (region_cfg_regwen_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (region_cfg_regwen_6_qs)
+  );
+
+  // Subregister 7 of Multireg region_cfg_regwen
+  // R[region_cfg_regwen_7]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_region_cfg_regwen_7 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (region_cfg_regwen_7_we),
+    .wd     (region_cfg_regwen_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (region_cfg_regwen_7_qs)
   );
 
 
@@ -1066,7 +1592,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_0_en_0_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_0_en_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_en_0_wd),
 
     // from internal hardware
@@ -1092,7 +1618,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_0_rd_en_0_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_0_rd_en_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_rd_en_0_wd),
 
     // from internal hardware
@@ -1118,7 +1644,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_0_prog_en_0_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_0_prog_en_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_prog_en_0_wd),
 
     // from internal hardware
@@ -1144,7 +1670,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_0_erase_en_0_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_0_erase_en_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_erase_en_0_wd),
 
     // from internal hardware
@@ -1160,7 +1686,33 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_0]: 12:4
+  // F[scramble_en_0]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_mp_region_cfg_0_scramble_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (mp_region_cfg_0_scramble_en_0_we & region_cfg_regwen_0_qs),
+    .wd     (mp_region_cfg_0_scramble_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[0].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_0_scramble_en_0_qs)
+  );
+
+
+  // F[base_0]: 16:8
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
@@ -1170,7 +1722,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_0_base_0_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_0_base_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_base_0_wd),
 
     // from internal hardware
@@ -1186,7 +1738,7 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_0]: 25:16
+  // F[size_0]: 29:20
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
@@ -1196,7 +1748,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_0_size_0_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_0_size_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_size_0_wd),
 
     // from internal hardware
@@ -1209,32 +1761,6 @@ module flash_ctrl_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_size_0_qs)
-  );
-
-
-  // F[partition_0]: 28:28
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_mp_region_cfg_0_partition_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_0_partition_0_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg_0_partition_0_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].partition.q ),
-
-    // to register interface (read)
-    .qs     (mp_region_cfg_0_partition_0_qs)
   );
 
 
@@ -1251,7 +1777,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_1_en_1_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_1_en_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_en_1_wd),
 
     // from internal hardware
@@ -1277,7 +1803,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_1_rd_en_1_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_1_rd_en_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_rd_en_1_wd),
 
     // from internal hardware
@@ -1303,7 +1829,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_1_prog_en_1_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_1_prog_en_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_prog_en_1_wd),
 
     // from internal hardware
@@ -1329,7 +1855,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_1_erase_en_1_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_1_erase_en_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_erase_en_1_wd),
 
     // from internal hardware
@@ -1345,7 +1871,33 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_1]: 12:4
+  // F[scramble_en_1]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_mp_region_cfg_1_scramble_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (mp_region_cfg_1_scramble_en_1_we & region_cfg_regwen_1_qs),
+    .wd     (mp_region_cfg_1_scramble_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[1].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_1_scramble_en_1_qs)
+  );
+
+
+  // F[base_1]: 16:8
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
@@ -1355,7 +1907,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_1_base_1_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_1_base_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_base_1_wd),
 
     // from internal hardware
@@ -1371,7 +1923,7 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_1]: 25:16
+  // F[size_1]: 29:20
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
@@ -1381,7 +1933,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_1_size_1_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_1_size_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_size_1_wd),
 
     // from internal hardware
@@ -1394,32 +1946,6 @@ module flash_ctrl_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_size_1_qs)
-  );
-
-
-  // F[partition_1]: 28:28
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_mp_region_cfg_1_partition_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_1_partition_1_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg_1_partition_1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].partition.q ),
-
-    // to register interface (read)
-    .qs     (mp_region_cfg_1_partition_1_qs)
   );
 
 
@@ -1436,7 +1962,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_2_en_2_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_2_en_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_en_2_wd),
 
     // from internal hardware
@@ -1462,7 +1988,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_2_rd_en_2_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_2_rd_en_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_rd_en_2_wd),
 
     // from internal hardware
@@ -1488,7 +2014,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_2_prog_en_2_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_2_prog_en_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_prog_en_2_wd),
 
     // from internal hardware
@@ -1514,7 +2040,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_2_erase_en_2_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_2_erase_en_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_erase_en_2_wd),
 
     // from internal hardware
@@ -1530,7 +2056,33 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_2]: 12:4
+  // F[scramble_en_2]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_mp_region_cfg_2_scramble_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (mp_region_cfg_2_scramble_en_2_we & region_cfg_regwen_2_qs),
+    .wd     (mp_region_cfg_2_scramble_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[2].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_2_scramble_en_2_qs)
+  );
+
+
+  // F[base_2]: 16:8
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
@@ -1540,7 +2092,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_2_base_2_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_2_base_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_base_2_wd),
 
     // from internal hardware
@@ -1556,7 +2108,7 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_2]: 25:16
+  // F[size_2]: 29:20
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
@@ -1566,7 +2118,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_2_size_2_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_2_size_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_size_2_wd),
 
     // from internal hardware
@@ -1579,32 +2131,6 @@ module flash_ctrl_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_size_2_qs)
-  );
-
-
-  // F[partition_2]: 28:28
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_mp_region_cfg_2_partition_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_2_partition_2_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg_2_partition_2_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].partition.q ),
-
-    // to register interface (read)
-    .qs     (mp_region_cfg_2_partition_2_qs)
   );
 
 
@@ -1621,7 +2147,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_3_en_3_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_3_en_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_en_3_wd),
 
     // from internal hardware
@@ -1647,7 +2173,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_3_rd_en_3_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_3_rd_en_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_rd_en_3_wd),
 
     // from internal hardware
@@ -1673,7 +2199,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_3_prog_en_3_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_3_prog_en_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_prog_en_3_wd),
 
     // from internal hardware
@@ -1699,7 +2225,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_3_erase_en_3_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_3_erase_en_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_erase_en_3_wd),
 
     // from internal hardware
@@ -1715,7 +2241,33 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_3]: 12:4
+  // F[scramble_en_3]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_mp_region_cfg_3_scramble_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (mp_region_cfg_3_scramble_en_3_we & region_cfg_regwen_3_qs),
+    .wd     (mp_region_cfg_3_scramble_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[3].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_3_scramble_en_3_qs)
+  );
+
+
+  // F[base_3]: 16:8
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
@@ -1725,7 +2277,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_3_base_3_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_3_base_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_base_3_wd),
 
     // from internal hardware
@@ -1741,7 +2293,7 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_3]: 25:16
+  // F[size_3]: 29:20
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
@@ -1751,7 +2303,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_3_size_3_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_3_size_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_size_3_wd),
 
     // from internal hardware
@@ -1764,32 +2316,6 @@ module flash_ctrl_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_size_3_qs)
-  );
-
-
-  // F[partition_3]: 28:28
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_mp_region_cfg_3_partition_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_3_partition_3_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg_3_partition_3_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].partition.q ),
-
-    // to register interface (read)
-    .qs     (mp_region_cfg_3_partition_3_qs)
   );
 
 
@@ -1806,7 +2332,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_4_en_4_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_4_en_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_en_4_wd),
 
     // from internal hardware
@@ -1832,7 +2358,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_4_rd_en_4_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_4_rd_en_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_rd_en_4_wd),
 
     // from internal hardware
@@ -1858,7 +2384,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_4_prog_en_4_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_4_prog_en_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_prog_en_4_wd),
 
     // from internal hardware
@@ -1884,7 +2410,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_4_erase_en_4_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_4_erase_en_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_erase_en_4_wd),
 
     // from internal hardware
@@ -1900,7 +2426,33 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_4]: 12:4
+  // F[scramble_en_4]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_mp_region_cfg_4_scramble_en_4 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (mp_region_cfg_4_scramble_en_4_we & region_cfg_regwen_4_qs),
+    .wd     (mp_region_cfg_4_scramble_en_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[4].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_4_scramble_en_4_qs)
+  );
+
+
+  // F[base_4]: 16:8
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
@@ -1910,7 +2462,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_4_base_4_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_4_base_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_base_4_wd),
 
     // from internal hardware
@@ -1926,7 +2478,7 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_4]: 25:16
+  // F[size_4]: 29:20
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
@@ -1936,7 +2488,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_4_size_4_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_4_size_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_size_4_wd),
 
     // from internal hardware
@@ -1949,32 +2501,6 @@ module flash_ctrl_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_size_4_qs)
-  );
-
-
-  // F[partition_4]: 28:28
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_mp_region_cfg_4_partition_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_4_partition_4_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg_4_partition_4_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].partition.q ),
-
-    // to register interface (read)
-    .qs     (mp_region_cfg_4_partition_4_qs)
   );
 
 
@@ -1991,7 +2517,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_5_en_5_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_5_en_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_en_5_wd),
 
     // from internal hardware
@@ -2017,7 +2543,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_5_rd_en_5_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_5_rd_en_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_rd_en_5_wd),
 
     // from internal hardware
@@ -2043,7 +2569,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_5_prog_en_5_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_5_prog_en_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_prog_en_5_wd),
 
     // from internal hardware
@@ -2069,7 +2595,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_5_erase_en_5_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_5_erase_en_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_erase_en_5_wd),
 
     // from internal hardware
@@ -2085,7 +2611,33 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_5]: 12:4
+  // F[scramble_en_5]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_mp_region_cfg_5_scramble_en_5 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (mp_region_cfg_5_scramble_en_5_we & region_cfg_regwen_5_qs),
+    .wd     (mp_region_cfg_5_scramble_en_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[5].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_5_scramble_en_5_qs)
+  );
+
+
+  // F[base_5]: 16:8
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
@@ -2095,7 +2647,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_5_base_5_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_5_base_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_base_5_wd),
 
     // from internal hardware
@@ -2111,7 +2663,7 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_5]: 25:16
+  // F[size_5]: 29:20
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
@@ -2121,7 +2673,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_5_size_5_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_5_size_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_size_5_wd),
 
     // from internal hardware
@@ -2134,32 +2686,6 @@ module flash_ctrl_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_size_5_qs)
-  );
-
-
-  // F[partition_5]: 28:28
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_mp_region_cfg_5_partition_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_5_partition_5_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg_5_partition_5_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].partition.q ),
-
-    // to register interface (read)
-    .qs     (mp_region_cfg_5_partition_5_qs)
   );
 
 
@@ -2176,7 +2702,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_6_en_6_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_6_en_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_en_6_wd),
 
     // from internal hardware
@@ -2202,7 +2728,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_6_rd_en_6_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_6_rd_en_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_rd_en_6_wd),
 
     // from internal hardware
@@ -2228,7 +2754,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_6_prog_en_6_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_6_prog_en_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_prog_en_6_wd),
 
     // from internal hardware
@@ -2254,7 +2780,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_6_erase_en_6_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_6_erase_en_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_erase_en_6_wd),
 
     // from internal hardware
@@ -2270,7 +2796,33 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_6]: 12:4
+  // F[scramble_en_6]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_mp_region_cfg_6_scramble_en_6 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (mp_region_cfg_6_scramble_en_6_we & region_cfg_regwen_6_qs),
+    .wd     (mp_region_cfg_6_scramble_en_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[6].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_6_scramble_en_6_qs)
+  );
+
+
+  // F[base_6]: 16:8
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
@@ -2280,7 +2832,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_6_base_6_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_6_base_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_base_6_wd),
 
     // from internal hardware
@@ -2296,7 +2848,7 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_6]: 25:16
+  // F[size_6]: 29:20
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
@@ -2306,7 +2858,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_6_size_6_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_6_size_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_size_6_wd),
 
     // from internal hardware
@@ -2319,32 +2871,6 @@ module flash_ctrl_reg_top (
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_size_6_qs)
-  );
-
-
-  // F[partition_6]: 28:28
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_mp_region_cfg_6_partition_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_6_partition_6_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg_6_partition_6_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].partition.q ),
-
-    // to register interface (read)
-    .qs     (mp_region_cfg_6_partition_6_qs)
   );
 
 
@@ -2361,7 +2887,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_7_en_7_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_7_en_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_en_7_wd),
 
     // from internal hardware
@@ -2387,7 +2913,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_7_rd_en_7_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_7_rd_en_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_rd_en_7_wd),
 
     // from internal hardware
@@ -2413,7 +2939,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_7_prog_en_7_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_7_prog_en_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_prog_en_7_wd),
 
     // from internal hardware
@@ -2439,7 +2965,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_7_erase_en_7_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_7_erase_en_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_erase_en_7_wd),
 
     // from internal hardware
@@ -2455,7 +2981,33 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_7]: 12:4
+  // F[scramble_en_7]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_mp_region_cfg_7_scramble_en_7 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (mp_region_cfg_7_scramble_en_7_we & region_cfg_regwen_7_qs),
+    .wd     (mp_region_cfg_7_scramble_en_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.mp_region_cfg[7].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (mp_region_cfg_7_scramble_en_7_qs)
+  );
+
+
+  // F[base_7]: 16:8
   prim_subreg #(
     .DW      (9),
     .SWACCESS("RW"),
@@ -2465,7 +3017,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_7_base_7_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_7_base_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_base_7_wd),
 
     // from internal hardware
@@ -2481,7 +3033,7 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_7]: 25:16
+  // F[size_7]: 29:20
   prim_subreg #(
     .DW      (10),
     .SWACCESS("RW"),
@@ -2491,7 +3043,7 @@ module flash_ctrl_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_7_size_7_we & region_cfg_regwen_qs),
+    .we     (mp_region_cfg_7_size_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_size_7_wd),
 
     // from internal hardware
@@ -2507,18 +3059,22 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[partition_7]: 28:28
+
+
+  // Subregister 0 of Multireg bank0_info0_regwen
+  // R[bank0_info0_regwen_0]: V(False)
+
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_mp_region_cfg_7_partition_7 (
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank0_info0_regwen_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface (qualified with register enable)
-    .we     (mp_region_cfg_7_partition_7_we & region_cfg_regwen_qs),
-    .wd     (mp_region_cfg_7_partition_7_wd),
+    // from register interface
+    .we     (bank0_info0_regwen_0_we),
+    .wd     (bank0_info0_regwen_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2526,10 +3082,2556 @@ module flash_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].partition.q ),
+    .q      (),
 
     // to register interface (read)
-    .qs     (mp_region_cfg_7_partition_7_qs)
+    .qs     (bank0_info0_regwen_0_qs)
+  );
+
+  // Subregister 1 of Multireg bank0_info0_regwen
+  // R[bank0_info0_regwen_1]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank0_info0_regwen_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank0_info0_regwen_1_we),
+    .wd     (bank0_info0_regwen_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank0_info0_regwen_1_qs)
+  );
+
+  // Subregister 2 of Multireg bank0_info0_regwen
+  // R[bank0_info0_regwen_2]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank0_info0_regwen_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank0_info0_regwen_2_we),
+    .wd     (bank0_info0_regwen_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank0_info0_regwen_2_qs)
+  );
+
+  // Subregister 3 of Multireg bank0_info0_regwen
+  // R[bank0_info0_regwen_3]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank0_info0_regwen_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank0_info0_regwen_3_we),
+    .wd     (bank0_info0_regwen_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank0_info0_regwen_3_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg bank0_info1_regwen
+  // R[bank0_info1_regwen_0]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank0_info1_regwen_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank0_info1_regwen_0_we),
+    .wd     (bank0_info1_regwen_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank0_info1_regwen_0_qs)
+  );
+
+  // Subregister 1 of Multireg bank0_info1_regwen
+  // R[bank0_info1_regwen_1]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank0_info1_regwen_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank0_info1_regwen_1_we),
+    .wd     (bank0_info1_regwen_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank0_info1_regwen_1_qs)
+  );
+
+  // Subregister 2 of Multireg bank0_info1_regwen
+  // R[bank0_info1_regwen_2]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank0_info1_regwen_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank0_info1_regwen_2_we),
+    .wd     (bank0_info1_regwen_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank0_info1_regwen_2_qs)
+  );
+
+  // Subregister 3 of Multireg bank0_info1_regwen
+  // R[bank0_info1_regwen_3]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank0_info1_regwen_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank0_info1_regwen_3_we),
+    .wd     (bank0_info1_regwen_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank0_info1_regwen_3_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg bank0_info0_page_cfg
+  // R[bank0_info0_page_cfg_0]: V(False)
+
+  // F[en_0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_0_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_0_en_0_we & bank0_info0_regwen_0_qs),
+    .wd     (bank0_info0_page_cfg_0_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[0].en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_0_en_0_qs)
+  );
+
+
+  // F[rd_en_0]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_0_rd_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_0_rd_en_0_we & bank0_info0_regwen_0_qs),
+    .wd     (bank0_info0_page_cfg_0_rd_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[0].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_0_rd_en_0_qs)
+  );
+
+
+  // F[prog_en_0]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_0_prog_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_0_prog_en_0_we & bank0_info0_regwen_0_qs),
+    .wd     (bank0_info0_page_cfg_0_prog_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[0].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_0_prog_en_0_qs)
+  );
+
+
+  // F[erase_en_0]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_0_erase_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_0_erase_en_0_we & bank0_info0_regwen_0_qs),
+    .wd     (bank0_info0_page_cfg_0_erase_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[0].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_0_erase_en_0_qs)
+  );
+
+
+  // F[scramble_en_0]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_0_scramble_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_0_scramble_en_0_we & bank0_info0_regwen_0_qs),
+    .wd     (bank0_info0_page_cfg_0_scramble_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[0].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_0_scramble_en_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg bank0_info0_page_cfg
+  // R[bank0_info0_page_cfg_1]: V(False)
+
+  // F[en_1]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_1_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_1_en_1_we & bank0_info0_regwen_1_qs),
+    .wd     (bank0_info0_page_cfg_1_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[1].en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_1_en_1_qs)
+  );
+
+
+  // F[rd_en_1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_1_rd_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_1_rd_en_1_we & bank0_info0_regwen_1_qs),
+    .wd     (bank0_info0_page_cfg_1_rd_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[1].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_1_rd_en_1_qs)
+  );
+
+
+  // F[prog_en_1]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_1_prog_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_1_prog_en_1_we & bank0_info0_regwen_1_qs),
+    .wd     (bank0_info0_page_cfg_1_prog_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[1].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_1_prog_en_1_qs)
+  );
+
+
+  // F[erase_en_1]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_1_erase_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_1_erase_en_1_we & bank0_info0_regwen_1_qs),
+    .wd     (bank0_info0_page_cfg_1_erase_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[1].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_1_erase_en_1_qs)
+  );
+
+
+  // F[scramble_en_1]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_1_scramble_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_1_scramble_en_1_we & bank0_info0_regwen_1_qs),
+    .wd     (bank0_info0_page_cfg_1_scramble_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[1].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_1_scramble_en_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg bank0_info0_page_cfg
+  // R[bank0_info0_page_cfg_2]: V(False)
+
+  // F[en_2]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_2_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_2_en_2_we & bank0_info0_regwen_2_qs),
+    .wd     (bank0_info0_page_cfg_2_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[2].en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_2_en_2_qs)
+  );
+
+
+  // F[rd_en_2]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_2_rd_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_2_rd_en_2_we & bank0_info0_regwen_2_qs),
+    .wd     (bank0_info0_page_cfg_2_rd_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[2].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_2_rd_en_2_qs)
+  );
+
+
+  // F[prog_en_2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_2_prog_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_2_prog_en_2_we & bank0_info0_regwen_2_qs),
+    .wd     (bank0_info0_page_cfg_2_prog_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[2].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_2_prog_en_2_qs)
+  );
+
+
+  // F[erase_en_2]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_2_erase_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_2_erase_en_2_we & bank0_info0_regwen_2_qs),
+    .wd     (bank0_info0_page_cfg_2_erase_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[2].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_2_erase_en_2_qs)
+  );
+
+
+  // F[scramble_en_2]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_2_scramble_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_2_scramble_en_2_we & bank0_info0_regwen_2_qs),
+    .wd     (bank0_info0_page_cfg_2_scramble_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[2].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_2_scramble_en_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg bank0_info0_page_cfg
+  // R[bank0_info0_page_cfg_3]: V(False)
+
+  // F[en_3]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_3_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_3_en_3_we & bank0_info0_regwen_3_qs),
+    .wd     (bank0_info0_page_cfg_3_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[3].en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_3_en_3_qs)
+  );
+
+
+  // F[rd_en_3]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_3_rd_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_3_rd_en_3_we & bank0_info0_regwen_3_qs),
+    .wd     (bank0_info0_page_cfg_3_rd_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[3].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_3_rd_en_3_qs)
+  );
+
+
+  // F[prog_en_3]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_3_prog_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_3_prog_en_3_we & bank0_info0_regwen_3_qs),
+    .wd     (bank0_info0_page_cfg_3_prog_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[3].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_3_prog_en_3_qs)
+  );
+
+
+  // F[erase_en_3]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_3_erase_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_3_erase_en_3_we & bank0_info0_regwen_3_qs),
+    .wd     (bank0_info0_page_cfg_3_erase_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[3].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_3_erase_en_3_qs)
+  );
+
+
+  // F[scramble_en_3]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info0_page_cfg_3_scramble_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info0_page_cfg_3_scramble_en_3_we & bank0_info0_regwen_3_qs),
+    .wd     (bank0_info0_page_cfg_3_scramble_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info0_page_cfg[3].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info0_page_cfg_3_scramble_en_3_qs)
+  );
+
+
+
+
+  // Subregister 0 of Multireg bank0_info1_page_cfg
+  // R[bank0_info1_page_cfg_0]: V(False)
+
+  // F[en_0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_0_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_0_en_0_we & bank0_info1_regwen_0_qs),
+    .wd     (bank0_info1_page_cfg_0_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[0].en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_0_en_0_qs)
+  );
+
+
+  // F[rd_en_0]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_0_rd_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_0_rd_en_0_we & bank0_info1_regwen_0_qs),
+    .wd     (bank0_info1_page_cfg_0_rd_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[0].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_0_rd_en_0_qs)
+  );
+
+
+  // F[prog_en_0]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_0_prog_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_0_prog_en_0_we & bank0_info1_regwen_0_qs),
+    .wd     (bank0_info1_page_cfg_0_prog_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[0].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_0_prog_en_0_qs)
+  );
+
+
+  // F[erase_en_0]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_0_erase_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_0_erase_en_0_we & bank0_info1_regwen_0_qs),
+    .wd     (bank0_info1_page_cfg_0_erase_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[0].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_0_erase_en_0_qs)
+  );
+
+
+  // F[scramble_en_0]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_0_scramble_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_0_scramble_en_0_we & bank0_info1_regwen_0_qs),
+    .wd     (bank0_info1_page_cfg_0_scramble_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[0].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_0_scramble_en_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg bank0_info1_page_cfg
+  // R[bank0_info1_page_cfg_1]: V(False)
+
+  // F[en_1]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_1_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_1_en_1_we & bank0_info1_regwen_1_qs),
+    .wd     (bank0_info1_page_cfg_1_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[1].en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_1_en_1_qs)
+  );
+
+
+  // F[rd_en_1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_1_rd_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_1_rd_en_1_we & bank0_info1_regwen_1_qs),
+    .wd     (bank0_info1_page_cfg_1_rd_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[1].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_1_rd_en_1_qs)
+  );
+
+
+  // F[prog_en_1]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_1_prog_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_1_prog_en_1_we & bank0_info1_regwen_1_qs),
+    .wd     (bank0_info1_page_cfg_1_prog_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[1].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_1_prog_en_1_qs)
+  );
+
+
+  // F[erase_en_1]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_1_erase_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_1_erase_en_1_we & bank0_info1_regwen_1_qs),
+    .wd     (bank0_info1_page_cfg_1_erase_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[1].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_1_erase_en_1_qs)
+  );
+
+
+  // F[scramble_en_1]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_1_scramble_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_1_scramble_en_1_we & bank0_info1_regwen_1_qs),
+    .wd     (bank0_info1_page_cfg_1_scramble_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[1].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_1_scramble_en_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg bank0_info1_page_cfg
+  // R[bank0_info1_page_cfg_2]: V(False)
+
+  // F[en_2]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_2_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_2_en_2_we & bank0_info1_regwen_2_qs),
+    .wd     (bank0_info1_page_cfg_2_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[2].en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_2_en_2_qs)
+  );
+
+
+  // F[rd_en_2]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_2_rd_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_2_rd_en_2_we & bank0_info1_regwen_2_qs),
+    .wd     (bank0_info1_page_cfg_2_rd_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[2].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_2_rd_en_2_qs)
+  );
+
+
+  // F[prog_en_2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_2_prog_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_2_prog_en_2_we & bank0_info1_regwen_2_qs),
+    .wd     (bank0_info1_page_cfg_2_prog_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[2].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_2_prog_en_2_qs)
+  );
+
+
+  // F[erase_en_2]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_2_erase_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_2_erase_en_2_we & bank0_info1_regwen_2_qs),
+    .wd     (bank0_info1_page_cfg_2_erase_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[2].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_2_erase_en_2_qs)
+  );
+
+
+  // F[scramble_en_2]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_2_scramble_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_2_scramble_en_2_we & bank0_info1_regwen_2_qs),
+    .wd     (bank0_info1_page_cfg_2_scramble_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[2].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_2_scramble_en_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg bank0_info1_page_cfg
+  // R[bank0_info1_page_cfg_3]: V(False)
+
+  // F[en_3]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_3_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_3_en_3_we & bank0_info1_regwen_3_qs),
+    .wd     (bank0_info1_page_cfg_3_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[3].en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_3_en_3_qs)
+  );
+
+
+  // F[rd_en_3]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_3_rd_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_3_rd_en_3_we & bank0_info1_regwen_3_qs),
+    .wd     (bank0_info1_page_cfg_3_rd_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[3].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_3_rd_en_3_qs)
+  );
+
+
+  // F[prog_en_3]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_3_prog_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_3_prog_en_3_we & bank0_info1_regwen_3_qs),
+    .wd     (bank0_info1_page_cfg_3_prog_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[3].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_3_prog_en_3_qs)
+  );
+
+
+  // F[erase_en_3]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_3_erase_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_3_erase_en_3_we & bank0_info1_regwen_3_qs),
+    .wd     (bank0_info1_page_cfg_3_erase_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[3].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_3_erase_en_3_qs)
+  );
+
+
+  // F[scramble_en_3]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank0_info1_page_cfg_3_scramble_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank0_info1_page_cfg_3_scramble_en_3_we & bank0_info1_regwen_3_qs),
+    .wd     (bank0_info1_page_cfg_3_scramble_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank0_info1_page_cfg[3].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank0_info1_page_cfg_3_scramble_en_3_qs)
+  );
+
+
+
+
+  // Subregister 0 of Multireg bank1_info0_regwen
+  // R[bank1_info0_regwen_0]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank1_info0_regwen_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank1_info0_regwen_0_we),
+    .wd     (bank1_info0_regwen_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank1_info0_regwen_0_qs)
+  );
+
+  // Subregister 1 of Multireg bank1_info0_regwen
+  // R[bank1_info0_regwen_1]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank1_info0_regwen_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank1_info0_regwen_1_we),
+    .wd     (bank1_info0_regwen_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank1_info0_regwen_1_qs)
+  );
+
+  // Subregister 2 of Multireg bank1_info0_regwen
+  // R[bank1_info0_regwen_2]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank1_info0_regwen_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank1_info0_regwen_2_we),
+    .wd     (bank1_info0_regwen_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank1_info0_regwen_2_qs)
+  );
+
+  // Subregister 3 of Multireg bank1_info0_regwen
+  // R[bank1_info0_regwen_3]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank1_info0_regwen_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank1_info0_regwen_3_we),
+    .wd     (bank1_info0_regwen_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank1_info0_regwen_3_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg bank1_info1_regwen
+  // R[bank1_info1_regwen_0]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank1_info1_regwen_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank1_info1_regwen_0_we),
+    .wd     (bank1_info1_regwen_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank1_info1_regwen_0_qs)
+  );
+
+  // Subregister 1 of Multireg bank1_info1_regwen
+  // R[bank1_info1_regwen_1]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank1_info1_regwen_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank1_info1_regwen_1_we),
+    .wd     (bank1_info1_regwen_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank1_info1_regwen_1_qs)
+  );
+
+  // Subregister 2 of Multireg bank1_info1_regwen
+  // R[bank1_info1_regwen_2]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank1_info1_regwen_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank1_info1_regwen_2_we),
+    .wd     (bank1_info1_regwen_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank1_info1_regwen_2_qs)
+  );
+
+  // Subregister 3 of Multireg bank1_info1_regwen
+  // R[bank1_info1_regwen_3]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_bank1_info1_regwen_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (bank1_info1_regwen_3_we),
+    .wd     (bank1_info1_regwen_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (bank1_info1_regwen_3_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg bank1_info0_page_cfg
+  // R[bank1_info0_page_cfg_0]: V(False)
+
+  // F[en_0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_0_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_0_en_0_we & bank1_info0_regwen_0_qs),
+    .wd     (bank1_info0_page_cfg_0_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[0].en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_0_en_0_qs)
+  );
+
+
+  // F[rd_en_0]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_0_rd_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_0_rd_en_0_we & bank1_info0_regwen_0_qs),
+    .wd     (bank1_info0_page_cfg_0_rd_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[0].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_0_rd_en_0_qs)
+  );
+
+
+  // F[prog_en_0]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_0_prog_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_0_prog_en_0_we & bank1_info0_regwen_0_qs),
+    .wd     (bank1_info0_page_cfg_0_prog_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[0].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_0_prog_en_0_qs)
+  );
+
+
+  // F[erase_en_0]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_0_erase_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_0_erase_en_0_we & bank1_info0_regwen_0_qs),
+    .wd     (bank1_info0_page_cfg_0_erase_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[0].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_0_erase_en_0_qs)
+  );
+
+
+  // F[scramble_en_0]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_0_scramble_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_0_scramble_en_0_we & bank1_info0_regwen_0_qs),
+    .wd     (bank1_info0_page_cfg_0_scramble_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[0].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_0_scramble_en_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg bank1_info0_page_cfg
+  // R[bank1_info0_page_cfg_1]: V(False)
+
+  // F[en_1]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_1_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_1_en_1_we & bank1_info0_regwen_1_qs),
+    .wd     (bank1_info0_page_cfg_1_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[1].en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_1_en_1_qs)
+  );
+
+
+  // F[rd_en_1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_1_rd_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_1_rd_en_1_we & bank1_info0_regwen_1_qs),
+    .wd     (bank1_info0_page_cfg_1_rd_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[1].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_1_rd_en_1_qs)
+  );
+
+
+  // F[prog_en_1]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_1_prog_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_1_prog_en_1_we & bank1_info0_regwen_1_qs),
+    .wd     (bank1_info0_page_cfg_1_prog_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[1].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_1_prog_en_1_qs)
+  );
+
+
+  // F[erase_en_1]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_1_erase_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_1_erase_en_1_we & bank1_info0_regwen_1_qs),
+    .wd     (bank1_info0_page_cfg_1_erase_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[1].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_1_erase_en_1_qs)
+  );
+
+
+  // F[scramble_en_1]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_1_scramble_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_1_scramble_en_1_we & bank1_info0_regwen_1_qs),
+    .wd     (bank1_info0_page_cfg_1_scramble_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[1].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_1_scramble_en_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg bank1_info0_page_cfg
+  // R[bank1_info0_page_cfg_2]: V(False)
+
+  // F[en_2]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_2_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_2_en_2_we & bank1_info0_regwen_2_qs),
+    .wd     (bank1_info0_page_cfg_2_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[2].en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_2_en_2_qs)
+  );
+
+
+  // F[rd_en_2]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_2_rd_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_2_rd_en_2_we & bank1_info0_regwen_2_qs),
+    .wd     (bank1_info0_page_cfg_2_rd_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[2].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_2_rd_en_2_qs)
+  );
+
+
+  // F[prog_en_2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_2_prog_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_2_prog_en_2_we & bank1_info0_regwen_2_qs),
+    .wd     (bank1_info0_page_cfg_2_prog_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[2].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_2_prog_en_2_qs)
+  );
+
+
+  // F[erase_en_2]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_2_erase_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_2_erase_en_2_we & bank1_info0_regwen_2_qs),
+    .wd     (bank1_info0_page_cfg_2_erase_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[2].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_2_erase_en_2_qs)
+  );
+
+
+  // F[scramble_en_2]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_2_scramble_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_2_scramble_en_2_we & bank1_info0_regwen_2_qs),
+    .wd     (bank1_info0_page_cfg_2_scramble_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[2].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_2_scramble_en_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg bank1_info0_page_cfg
+  // R[bank1_info0_page_cfg_3]: V(False)
+
+  // F[en_3]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_3_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_3_en_3_we & bank1_info0_regwen_3_qs),
+    .wd     (bank1_info0_page_cfg_3_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[3].en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_3_en_3_qs)
+  );
+
+
+  // F[rd_en_3]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_3_rd_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_3_rd_en_3_we & bank1_info0_regwen_3_qs),
+    .wd     (bank1_info0_page_cfg_3_rd_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[3].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_3_rd_en_3_qs)
+  );
+
+
+  // F[prog_en_3]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_3_prog_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_3_prog_en_3_we & bank1_info0_regwen_3_qs),
+    .wd     (bank1_info0_page_cfg_3_prog_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[3].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_3_prog_en_3_qs)
+  );
+
+
+  // F[erase_en_3]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_3_erase_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_3_erase_en_3_we & bank1_info0_regwen_3_qs),
+    .wd     (bank1_info0_page_cfg_3_erase_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[3].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_3_erase_en_3_qs)
+  );
+
+
+  // F[scramble_en_3]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info0_page_cfg_3_scramble_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info0_page_cfg_3_scramble_en_3_we & bank1_info0_regwen_3_qs),
+    .wd     (bank1_info0_page_cfg_3_scramble_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info0_page_cfg[3].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info0_page_cfg_3_scramble_en_3_qs)
+  );
+
+
+
+
+  // Subregister 0 of Multireg bank1_info1_page_cfg
+  // R[bank1_info1_page_cfg_0]: V(False)
+
+  // F[en_0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_0_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_0_en_0_we & bank1_info1_regwen_0_qs),
+    .wd     (bank1_info1_page_cfg_0_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[0].en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_0_en_0_qs)
+  );
+
+
+  // F[rd_en_0]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_0_rd_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_0_rd_en_0_we & bank1_info1_regwen_0_qs),
+    .wd     (bank1_info1_page_cfg_0_rd_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[0].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_0_rd_en_0_qs)
+  );
+
+
+  // F[prog_en_0]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_0_prog_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_0_prog_en_0_we & bank1_info1_regwen_0_qs),
+    .wd     (bank1_info1_page_cfg_0_prog_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[0].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_0_prog_en_0_qs)
+  );
+
+
+  // F[erase_en_0]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_0_erase_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_0_erase_en_0_we & bank1_info1_regwen_0_qs),
+    .wd     (bank1_info1_page_cfg_0_erase_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[0].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_0_erase_en_0_qs)
+  );
+
+
+  // F[scramble_en_0]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_0_scramble_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_0_scramble_en_0_we & bank1_info1_regwen_0_qs),
+    .wd     (bank1_info1_page_cfg_0_scramble_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[0].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_0_scramble_en_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg bank1_info1_page_cfg
+  // R[bank1_info1_page_cfg_1]: V(False)
+
+  // F[en_1]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_1_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_1_en_1_we & bank1_info1_regwen_1_qs),
+    .wd     (bank1_info1_page_cfg_1_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[1].en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_1_en_1_qs)
+  );
+
+
+  // F[rd_en_1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_1_rd_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_1_rd_en_1_we & bank1_info1_regwen_1_qs),
+    .wd     (bank1_info1_page_cfg_1_rd_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[1].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_1_rd_en_1_qs)
+  );
+
+
+  // F[prog_en_1]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_1_prog_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_1_prog_en_1_we & bank1_info1_regwen_1_qs),
+    .wd     (bank1_info1_page_cfg_1_prog_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[1].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_1_prog_en_1_qs)
+  );
+
+
+  // F[erase_en_1]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_1_erase_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_1_erase_en_1_we & bank1_info1_regwen_1_qs),
+    .wd     (bank1_info1_page_cfg_1_erase_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[1].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_1_erase_en_1_qs)
+  );
+
+
+  // F[scramble_en_1]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_1_scramble_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_1_scramble_en_1_we & bank1_info1_regwen_1_qs),
+    .wd     (bank1_info1_page_cfg_1_scramble_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[1].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_1_scramble_en_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg bank1_info1_page_cfg
+  // R[bank1_info1_page_cfg_2]: V(False)
+
+  // F[en_2]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_2_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_2_en_2_we & bank1_info1_regwen_2_qs),
+    .wd     (bank1_info1_page_cfg_2_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[2].en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_2_en_2_qs)
+  );
+
+
+  // F[rd_en_2]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_2_rd_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_2_rd_en_2_we & bank1_info1_regwen_2_qs),
+    .wd     (bank1_info1_page_cfg_2_rd_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[2].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_2_rd_en_2_qs)
+  );
+
+
+  // F[prog_en_2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_2_prog_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_2_prog_en_2_we & bank1_info1_regwen_2_qs),
+    .wd     (bank1_info1_page_cfg_2_prog_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[2].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_2_prog_en_2_qs)
+  );
+
+
+  // F[erase_en_2]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_2_erase_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_2_erase_en_2_we & bank1_info1_regwen_2_qs),
+    .wd     (bank1_info1_page_cfg_2_erase_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[2].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_2_erase_en_2_qs)
+  );
+
+
+  // F[scramble_en_2]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_2_scramble_en_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_2_scramble_en_2_we & bank1_info1_regwen_2_qs),
+    .wd     (bank1_info1_page_cfg_2_scramble_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[2].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_2_scramble_en_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg bank1_info1_page_cfg
+  // R[bank1_info1_page_cfg_3]: V(False)
+
+  // F[en_3]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_3_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_3_en_3_we & bank1_info1_regwen_3_qs),
+    .wd     (bank1_info1_page_cfg_3_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[3].en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_3_en_3_qs)
+  );
+
+
+  // F[rd_en_3]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_3_rd_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_3_rd_en_3_we & bank1_info1_regwen_3_qs),
+    .wd     (bank1_info1_page_cfg_3_rd_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[3].rd_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_3_rd_en_3_qs)
+  );
+
+
+  // F[prog_en_3]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_3_prog_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_3_prog_en_3_we & bank1_info1_regwen_3_qs),
+    .wd     (bank1_info1_page_cfg_3_prog_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[3].prog_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_3_prog_en_3_qs)
+  );
+
+
+  // F[erase_en_3]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_3_erase_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_3_erase_en_3_we & bank1_info1_regwen_3_qs),
+    .wd     (bank1_info1_page_cfg_3_erase_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[3].erase_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_3_erase_en_3_qs)
+  );
+
+
+  // F[scramble_en_3]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_bank1_info1_page_cfg_3_scramble_en_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (bank1_info1_page_cfg_3_scramble_en_3_we & bank1_info1_regwen_3_qs),
+    .wd     (bank1_info1_page_cfg_3_scramble_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bank1_info1_page_cfg[3].scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (bank1_info1_page_cfg_3_scramble_en_3_qs)
   );
 
 
@@ -2611,6 +5713,32 @@ module flash_ctrl_reg_top (
 
     // to register interface (read)
     .qs     (default_region_erase_en_qs)
+  );
+
+
+  //   F[scramble_en]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_default_region_scramble_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (default_region_scramble_en_we),
+    .wd     (default_region_scramble_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.default_region.scramble_en.q ),
+
+    // to register interface (read)
+    .qs     (default_region_scramble_en_qs)
   );
 
 
@@ -2752,110 +5880,232 @@ module flash_ctrl_reg_top (
   );
 
 
-  // R[status]: V(True)
+  // R[status]: V(False)
 
   //   F[rd_full]: 0:0
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
   ) u_status_rd_full (
-    .re     (status_rd_full_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.rd_full.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.rd_full.de),
+    .d      (hw2reg.status.rd_full.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_rd_full_qs)
   );
 
 
   //   F[rd_empty]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h1)
   ) u_status_rd_empty (
-    .re     (status_rd_empty_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.rd_empty.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.rd_empty.de),
+    .d      (hw2reg.status.rd_empty.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_rd_empty_qs)
   );
 
 
   //   F[prog_full]: 2:2
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
   ) u_status_prog_full (
-    .re     (status_prog_full_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.prog_full.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.prog_full.de),
+    .d      (hw2reg.status.prog_full.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_prog_full_qs)
   );
 
 
   //   F[prog_empty]: 3:3
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h1)
   ) u_status_prog_empty (
-    .re     (status_prog_empty_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.prog_empty.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.prog_empty.de),
+    .d      (hw2reg.status.prog_empty.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_prog_empty_qs)
   );
 
 
   //   F[init_wip]: 4:4
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
   ) u_status_init_wip (
-    .re     (status_init_wip_re),
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.init_wip.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.init_wip.de),
+    .d      (hw2reg.status.init_wip.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
+
+    // to register interface (read)
     .qs     (status_init_wip_qs)
   );
 
 
-  //   F[error_page]: 16:8
-  prim_subreg_ext #(
-    .DW    (9)
-  ) u_status_error_page (
-    .re     (status_error_page_re),
+  //   F[error_addr]: 16:8
+  prim_subreg #(
+    .DW      (9),
+    .SWACCESS("RO"),
+    .RESVAL  (9'h0)
+  ) u_status_error_addr (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.error_page.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.error_addr.de),
+    .d      (hw2reg.status.error_addr.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
-    .qs     (status_error_page_qs)
+
+    // to register interface (read)
+    .qs     (status_error_addr_qs)
   );
 
 
-  //   F[error_bank]: 17:17
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_status_error_bank (
-    .re     (status_error_bank_re),
+  // R[phy_status]: V(False)
+
+  //   F[init_wip]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_phy_status_init_wip (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
     .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.error_bank.d),
-    .qre    (),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.phy_status.init_wip.de),
+    .d      (hw2reg.phy_status.init_wip.d ),
+
+    // to internal hardware
     .qe     (),
     .q      (),
-    .qs     (status_error_bank_qs)
+
+    // to register interface (read)
+    .qs     (phy_status_init_wip_qs)
+  );
+
+
+  //   F[prog_normal_avail]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h1)
+  ) u_phy_status_prog_normal_avail (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.phy_status.prog_normal_avail.de),
+    .d      (hw2reg.phy_status.prog_normal_avail.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (phy_status_prog_normal_avail_qs)
+  );
+
+
+  //   F[prog_repair_avail]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h1)
+  ) u_phy_status_prog_repair_avail (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.phy_status.prog_repair_avail.de),
+    .d      (hw2reg.phy_status.prog_repair_avail.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (phy_status_prog_repair_avail_qs)
   );
 
 
@@ -2969,7 +6219,7 @@ module flash_ctrl_reg_top (
 
 
 
-  logic [23:0] addr_hit;
+  logic [62:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == FLASH_CTRL_INTR_STATE_OFFSET);
@@ -2978,24 +6228,63 @@ module flash_ctrl_reg_top (
     addr_hit[ 3] = (reg_addr == FLASH_CTRL_CTRL_REGWEN_OFFSET);
     addr_hit[ 4] = (reg_addr == FLASH_CTRL_CONTROL_OFFSET);
     addr_hit[ 5] = (reg_addr == FLASH_CTRL_ADDR_OFFSET);
-    addr_hit[ 6] = (reg_addr == FLASH_CTRL_SCRAMBLE_EN_OFFSET);
-    addr_hit[ 7] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_OFFSET);
-    addr_hit[ 8] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_0_OFFSET);
-    addr_hit[ 9] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_1_OFFSET);
-    addr_hit[10] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_2_OFFSET);
-    addr_hit[11] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_3_OFFSET);
-    addr_hit[12] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_4_OFFSET);
-    addr_hit[13] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_5_OFFSET);
-    addr_hit[14] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_6_OFFSET);
-    addr_hit[15] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_7_OFFSET);
-    addr_hit[16] = (reg_addr == FLASH_CTRL_DEFAULT_REGION_OFFSET);
-    addr_hit[17] = (reg_addr == FLASH_CTRL_BANK_CFG_REGWEN_OFFSET);
-    addr_hit[18] = (reg_addr == FLASH_CTRL_MP_BANK_CFG_OFFSET);
-    addr_hit[19] = (reg_addr == FLASH_CTRL_OP_STATUS_OFFSET);
-    addr_hit[20] = (reg_addr == FLASH_CTRL_STATUS_OFFSET);
-    addr_hit[21] = (reg_addr == FLASH_CTRL_SCRATCH_OFFSET);
-    addr_hit[22] = (reg_addr == FLASH_CTRL_FIFO_LVL_OFFSET);
-    addr_hit[23] = (reg_addr == FLASH_CTRL_FIFO_RST_OFFSET);
+    addr_hit[ 6] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_0_OFFSET);
+    addr_hit[ 7] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_1_OFFSET);
+    addr_hit[ 8] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_2_OFFSET);
+    addr_hit[ 9] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_3_OFFSET);
+    addr_hit[10] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_4_OFFSET);
+    addr_hit[11] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_5_OFFSET);
+    addr_hit[12] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_6_OFFSET);
+    addr_hit[13] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_7_OFFSET);
+    addr_hit[14] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_0_OFFSET);
+    addr_hit[15] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_1_OFFSET);
+    addr_hit[16] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_2_OFFSET);
+    addr_hit[17] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_3_OFFSET);
+    addr_hit[18] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_4_OFFSET);
+    addr_hit[19] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_5_OFFSET);
+    addr_hit[20] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_6_OFFSET);
+    addr_hit[21] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_7_OFFSET);
+    addr_hit[22] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_0_OFFSET);
+    addr_hit[23] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_1_OFFSET);
+    addr_hit[24] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_2_OFFSET);
+    addr_hit[25] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_3_OFFSET);
+    addr_hit[26] = (reg_addr == FLASH_CTRL_BANK0_INFO1_REGWEN_0_OFFSET);
+    addr_hit[27] = (reg_addr == FLASH_CTRL_BANK0_INFO1_REGWEN_1_OFFSET);
+    addr_hit[28] = (reg_addr == FLASH_CTRL_BANK0_INFO1_REGWEN_2_OFFSET);
+    addr_hit[29] = (reg_addr == FLASH_CTRL_BANK0_INFO1_REGWEN_3_OFFSET);
+    addr_hit[30] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_OFFSET);
+    addr_hit[31] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_1_OFFSET);
+    addr_hit[32] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_2_OFFSET);
+    addr_hit[33] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_3_OFFSET);
+    addr_hit[34] = (reg_addr == FLASH_CTRL_BANK0_INFO1_PAGE_CFG_0_OFFSET);
+    addr_hit[35] = (reg_addr == FLASH_CTRL_BANK0_INFO1_PAGE_CFG_1_OFFSET);
+    addr_hit[36] = (reg_addr == FLASH_CTRL_BANK0_INFO1_PAGE_CFG_2_OFFSET);
+    addr_hit[37] = (reg_addr == FLASH_CTRL_BANK0_INFO1_PAGE_CFG_3_OFFSET);
+    addr_hit[38] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_0_OFFSET);
+    addr_hit[39] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_1_OFFSET);
+    addr_hit[40] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_2_OFFSET);
+    addr_hit[41] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_3_OFFSET);
+    addr_hit[42] = (reg_addr == FLASH_CTRL_BANK1_INFO1_REGWEN_0_OFFSET);
+    addr_hit[43] = (reg_addr == FLASH_CTRL_BANK1_INFO1_REGWEN_1_OFFSET);
+    addr_hit[44] = (reg_addr == FLASH_CTRL_BANK1_INFO1_REGWEN_2_OFFSET);
+    addr_hit[45] = (reg_addr == FLASH_CTRL_BANK1_INFO1_REGWEN_3_OFFSET);
+    addr_hit[46] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0_OFFSET);
+    addr_hit[47] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_1_OFFSET);
+    addr_hit[48] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_2_OFFSET);
+    addr_hit[49] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_3_OFFSET);
+    addr_hit[50] = (reg_addr == FLASH_CTRL_BANK1_INFO1_PAGE_CFG_0_OFFSET);
+    addr_hit[51] = (reg_addr == FLASH_CTRL_BANK1_INFO1_PAGE_CFG_1_OFFSET);
+    addr_hit[52] = (reg_addr == FLASH_CTRL_BANK1_INFO1_PAGE_CFG_2_OFFSET);
+    addr_hit[53] = (reg_addr == FLASH_CTRL_BANK1_INFO1_PAGE_CFG_3_OFFSET);
+    addr_hit[54] = (reg_addr == FLASH_CTRL_DEFAULT_REGION_OFFSET);
+    addr_hit[55] = (reg_addr == FLASH_CTRL_BANK_CFG_REGWEN_OFFSET);
+    addr_hit[56] = (reg_addr == FLASH_CTRL_MP_BANK_CFG_OFFSET);
+    addr_hit[57] = (reg_addr == FLASH_CTRL_OP_STATUS_OFFSET);
+    addr_hit[58] = (reg_addr == FLASH_CTRL_STATUS_OFFSET);
+    addr_hit[59] = (reg_addr == FLASH_CTRL_PHY_STATUS_OFFSET);
+    addr_hit[60] = (reg_addr == FLASH_CTRL_SCRATCH_OFFSET);
+    addr_hit[61] = (reg_addr == FLASH_CTRL_FIFO_LVL_OFFSET);
+    addr_hit[62] = (reg_addr == FLASH_CTRL_FIFO_RST_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -3027,6 +6316,45 @@ module flash_ctrl_reg_top (
     if (addr_hit[21] && reg_we && (FLASH_CTRL_PERMIT[21] != (FLASH_CTRL_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[22] && reg_we && (FLASH_CTRL_PERMIT[22] != (FLASH_CTRL_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[23] && reg_we && (FLASH_CTRL_PERMIT[23] != (FLASH_CTRL_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[24] && reg_we && (FLASH_CTRL_PERMIT[24] != (FLASH_CTRL_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[25] && reg_we && (FLASH_CTRL_PERMIT[25] != (FLASH_CTRL_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[26] && reg_we && (FLASH_CTRL_PERMIT[26] != (FLASH_CTRL_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[27] && reg_we && (FLASH_CTRL_PERMIT[27] != (FLASH_CTRL_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[28] && reg_we && (FLASH_CTRL_PERMIT[28] != (FLASH_CTRL_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[29] && reg_we && (FLASH_CTRL_PERMIT[29] != (FLASH_CTRL_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[30] && reg_we && (FLASH_CTRL_PERMIT[30] != (FLASH_CTRL_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[31] && reg_we && (FLASH_CTRL_PERMIT[31] != (FLASH_CTRL_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[32] && reg_we && (FLASH_CTRL_PERMIT[32] != (FLASH_CTRL_PERMIT[32] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[33] && reg_we && (FLASH_CTRL_PERMIT[33] != (FLASH_CTRL_PERMIT[33] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[34] && reg_we && (FLASH_CTRL_PERMIT[34] != (FLASH_CTRL_PERMIT[34] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[35] && reg_we && (FLASH_CTRL_PERMIT[35] != (FLASH_CTRL_PERMIT[35] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[36] && reg_we && (FLASH_CTRL_PERMIT[36] != (FLASH_CTRL_PERMIT[36] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[37] && reg_we && (FLASH_CTRL_PERMIT[37] != (FLASH_CTRL_PERMIT[37] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[38] && reg_we && (FLASH_CTRL_PERMIT[38] != (FLASH_CTRL_PERMIT[38] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[39] && reg_we && (FLASH_CTRL_PERMIT[39] != (FLASH_CTRL_PERMIT[39] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[40] && reg_we && (FLASH_CTRL_PERMIT[40] != (FLASH_CTRL_PERMIT[40] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[41] && reg_we && (FLASH_CTRL_PERMIT[41] != (FLASH_CTRL_PERMIT[41] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[42] && reg_we && (FLASH_CTRL_PERMIT[42] != (FLASH_CTRL_PERMIT[42] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[43] && reg_we && (FLASH_CTRL_PERMIT[43] != (FLASH_CTRL_PERMIT[43] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[44] && reg_we && (FLASH_CTRL_PERMIT[44] != (FLASH_CTRL_PERMIT[44] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[45] && reg_we && (FLASH_CTRL_PERMIT[45] != (FLASH_CTRL_PERMIT[45] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[46] && reg_we && (FLASH_CTRL_PERMIT[46] != (FLASH_CTRL_PERMIT[46] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[47] && reg_we && (FLASH_CTRL_PERMIT[47] != (FLASH_CTRL_PERMIT[47] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[48] && reg_we && (FLASH_CTRL_PERMIT[48] != (FLASH_CTRL_PERMIT[48] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[49] && reg_we && (FLASH_CTRL_PERMIT[49] != (FLASH_CTRL_PERMIT[49] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[50] && reg_we && (FLASH_CTRL_PERMIT[50] != (FLASH_CTRL_PERMIT[50] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[51] && reg_we && (FLASH_CTRL_PERMIT[51] != (FLASH_CTRL_PERMIT[51] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[52] && reg_we && (FLASH_CTRL_PERMIT[52] != (FLASH_CTRL_PERMIT[52] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[53] && reg_we && (FLASH_CTRL_PERMIT[53] != (FLASH_CTRL_PERMIT[53] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[54] && reg_we && (FLASH_CTRL_PERMIT[54] != (FLASH_CTRL_PERMIT[54] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[55] && reg_we && (FLASH_CTRL_PERMIT[55] != (FLASH_CTRL_PERMIT[55] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[56] && reg_we && (FLASH_CTRL_PERMIT[56] != (FLASH_CTRL_PERMIT[56] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[57] && reg_we && (FLASH_CTRL_PERMIT[57] != (FLASH_CTRL_PERMIT[57] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[58] && reg_we && (FLASH_CTRL_PERMIT[58] != (FLASH_CTRL_PERMIT[58] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[59] && reg_we && (FLASH_CTRL_PERMIT[59] != (FLASH_CTRL_PERMIT[59] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[60] && reg_we && (FLASH_CTRL_PERMIT[60] != (FLASH_CTRL_PERMIT[60] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[61] && reg_we && (FLASH_CTRL_PERMIT[61] != (FLASH_CTRL_PERMIT[61] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[62] && reg_we && (FLASH_CTRL_PERMIT[62] != (FLASH_CTRL_PERMIT[62] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_prog_empty_we = addr_hit[0] & reg_we & ~wr_err;
@@ -3091,11 +6419,17 @@ module flash_ctrl_reg_top (
   assign control_op_we = addr_hit[4] & reg_we & ~wr_err;
   assign control_op_wd = reg_wdata[5:4];
 
+  assign control_prog_sel_we = addr_hit[4] & reg_we & ~wr_err;
+  assign control_prog_sel_wd = reg_wdata[6];
+
   assign control_erase_sel_we = addr_hit[4] & reg_we & ~wr_err;
-  assign control_erase_sel_wd = reg_wdata[6];
+  assign control_erase_sel_wd = reg_wdata[7];
 
   assign control_partition_sel_we = addr_hit[4] & reg_we & ~wr_err;
-  assign control_partition_sel_wd = reg_wdata[7];
+  assign control_partition_sel_wd = reg_wdata[8];
+
+  assign control_info_sel_we = addr_hit[4] & reg_we & ~wr_err;
+  assign control_info_sel_wd = reg_wdata[9];
 
   assign control_num_we = addr_hit[4] & reg_we & ~wr_err;
   assign control_num_wd = reg_wdata[27:16];
@@ -3103,228 +6437,532 @@ module flash_ctrl_reg_top (
   assign addr_we = addr_hit[5] & reg_we & ~wr_err;
   assign addr_wd = reg_wdata[31:0];
 
-  assign scramble_en_we = addr_hit[6] & reg_we & ~wr_err;
-  assign scramble_en_wd = reg_wdata[0];
+  assign region_cfg_regwen_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign region_cfg_regwen_0_wd = reg_wdata[0];
 
-  assign region_cfg_regwen_we = addr_hit[7] & reg_we & ~wr_err;
-  assign region_cfg_regwen_wd = reg_wdata[0];
+  assign region_cfg_regwen_1_we = addr_hit[7] & reg_we & ~wr_err;
+  assign region_cfg_regwen_1_wd = reg_wdata[0];
 
-  assign mp_region_cfg_0_en_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign region_cfg_regwen_2_we = addr_hit[8] & reg_we & ~wr_err;
+  assign region_cfg_regwen_2_wd = reg_wdata[0];
+
+  assign region_cfg_regwen_3_we = addr_hit[9] & reg_we & ~wr_err;
+  assign region_cfg_regwen_3_wd = reg_wdata[0];
+
+  assign region_cfg_regwen_4_we = addr_hit[10] & reg_we & ~wr_err;
+  assign region_cfg_regwen_4_wd = reg_wdata[0];
+
+  assign region_cfg_regwen_5_we = addr_hit[11] & reg_we & ~wr_err;
+  assign region_cfg_regwen_5_wd = reg_wdata[0];
+
+  assign region_cfg_regwen_6_we = addr_hit[12] & reg_we & ~wr_err;
+  assign region_cfg_regwen_6_wd = reg_wdata[0];
+
+  assign region_cfg_regwen_7_we = addr_hit[13] & reg_we & ~wr_err;
+  assign region_cfg_regwen_7_wd = reg_wdata[0];
+
+  assign mp_region_cfg_0_en_0_we = addr_hit[14] & reg_we & ~wr_err;
   assign mp_region_cfg_0_en_0_wd = reg_wdata[0];
 
-  assign mp_region_cfg_0_rd_en_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_rd_en_0_we = addr_hit[14] & reg_we & ~wr_err;
   assign mp_region_cfg_0_rd_en_0_wd = reg_wdata[1];
 
-  assign mp_region_cfg_0_prog_en_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_prog_en_0_we = addr_hit[14] & reg_we & ~wr_err;
   assign mp_region_cfg_0_prog_en_0_wd = reg_wdata[2];
 
-  assign mp_region_cfg_0_erase_en_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_erase_en_0_we = addr_hit[14] & reg_we & ~wr_err;
   assign mp_region_cfg_0_erase_en_0_wd = reg_wdata[3];
 
-  assign mp_region_cfg_0_base_0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign mp_region_cfg_0_base_0_wd = reg_wdata[12:4];
+  assign mp_region_cfg_0_scramble_en_0_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_scramble_en_0_wd = reg_wdata[4];
 
-  assign mp_region_cfg_0_size_0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign mp_region_cfg_0_size_0_wd = reg_wdata[25:16];
+  assign mp_region_cfg_0_base_0_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_base_0_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_0_partition_0_we = addr_hit[8] & reg_we & ~wr_err;
-  assign mp_region_cfg_0_partition_0_wd = reg_wdata[28];
+  assign mp_region_cfg_0_size_0_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_size_0_wd = reg_wdata[29:20];
 
-  assign mp_region_cfg_1_en_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_en_1_we = addr_hit[15] & reg_we & ~wr_err;
   assign mp_region_cfg_1_en_1_wd = reg_wdata[0];
 
-  assign mp_region_cfg_1_rd_en_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_rd_en_1_we = addr_hit[15] & reg_we & ~wr_err;
   assign mp_region_cfg_1_rd_en_1_wd = reg_wdata[1];
 
-  assign mp_region_cfg_1_prog_en_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_prog_en_1_we = addr_hit[15] & reg_we & ~wr_err;
   assign mp_region_cfg_1_prog_en_1_wd = reg_wdata[2];
 
-  assign mp_region_cfg_1_erase_en_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_erase_en_1_we = addr_hit[15] & reg_we & ~wr_err;
   assign mp_region_cfg_1_erase_en_1_wd = reg_wdata[3];
 
-  assign mp_region_cfg_1_base_1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign mp_region_cfg_1_base_1_wd = reg_wdata[12:4];
+  assign mp_region_cfg_1_scramble_en_1_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_scramble_en_1_wd = reg_wdata[4];
 
-  assign mp_region_cfg_1_size_1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign mp_region_cfg_1_size_1_wd = reg_wdata[25:16];
+  assign mp_region_cfg_1_base_1_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_base_1_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_1_partition_1_we = addr_hit[9] & reg_we & ~wr_err;
-  assign mp_region_cfg_1_partition_1_wd = reg_wdata[28];
+  assign mp_region_cfg_1_size_1_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_size_1_wd = reg_wdata[29:20];
 
-  assign mp_region_cfg_2_en_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_en_2_we = addr_hit[16] & reg_we & ~wr_err;
   assign mp_region_cfg_2_en_2_wd = reg_wdata[0];
 
-  assign mp_region_cfg_2_rd_en_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_rd_en_2_we = addr_hit[16] & reg_we & ~wr_err;
   assign mp_region_cfg_2_rd_en_2_wd = reg_wdata[1];
 
-  assign mp_region_cfg_2_prog_en_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_prog_en_2_we = addr_hit[16] & reg_we & ~wr_err;
   assign mp_region_cfg_2_prog_en_2_wd = reg_wdata[2];
 
-  assign mp_region_cfg_2_erase_en_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_erase_en_2_we = addr_hit[16] & reg_we & ~wr_err;
   assign mp_region_cfg_2_erase_en_2_wd = reg_wdata[3];
 
-  assign mp_region_cfg_2_base_2_we = addr_hit[10] & reg_we & ~wr_err;
-  assign mp_region_cfg_2_base_2_wd = reg_wdata[12:4];
+  assign mp_region_cfg_2_scramble_en_2_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_scramble_en_2_wd = reg_wdata[4];
 
-  assign mp_region_cfg_2_size_2_we = addr_hit[10] & reg_we & ~wr_err;
-  assign mp_region_cfg_2_size_2_wd = reg_wdata[25:16];
+  assign mp_region_cfg_2_base_2_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_base_2_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_2_partition_2_we = addr_hit[10] & reg_we & ~wr_err;
-  assign mp_region_cfg_2_partition_2_wd = reg_wdata[28];
+  assign mp_region_cfg_2_size_2_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_size_2_wd = reg_wdata[29:20];
 
-  assign mp_region_cfg_3_en_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_en_3_we = addr_hit[17] & reg_we & ~wr_err;
   assign mp_region_cfg_3_en_3_wd = reg_wdata[0];
 
-  assign mp_region_cfg_3_rd_en_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_rd_en_3_we = addr_hit[17] & reg_we & ~wr_err;
   assign mp_region_cfg_3_rd_en_3_wd = reg_wdata[1];
 
-  assign mp_region_cfg_3_prog_en_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_prog_en_3_we = addr_hit[17] & reg_we & ~wr_err;
   assign mp_region_cfg_3_prog_en_3_wd = reg_wdata[2];
 
-  assign mp_region_cfg_3_erase_en_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_erase_en_3_we = addr_hit[17] & reg_we & ~wr_err;
   assign mp_region_cfg_3_erase_en_3_wd = reg_wdata[3];
 
-  assign mp_region_cfg_3_base_3_we = addr_hit[11] & reg_we & ~wr_err;
-  assign mp_region_cfg_3_base_3_wd = reg_wdata[12:4];
+  assign mp_region_cfg_3_scramble_en_3_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_scramble_en_3_wd = reg_wdata[4];
 
-  assign mp_region_cfg_3_size_3_we = addr_hit[11] & reg_we & ~wr_err;
-  assign mp_region_cfg_3_size_3_wd = reg_wdata[25:16];
+  assign mp_region_cfg_3_base_3_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_base_3_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_3_partition_3_we = addr_hit[11] & reg_we & ~wr_err;
-  assign mp_region_cfg_3_partition_3_wd = reg_wdata[28];
+  assign mp_region_cfg_3_size_3_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_size_3_wd = reg_wdata[29:20];
 
-  assign mp_region_cfg_4_en_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_en_4_we = addr_hit[18] & reg_we & ~wr_err;
   assign mp_region_cfg_4_en_4_wd = reg_wdata[0];
 
-  assign mp_region_cfg_4_rd_en_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_rd_en_4_we = addr_hit[18] & reg_we & ~wr_err;
   assign mp_region_cfg_4_rd_en_4_wd = reg_wdata[1];
 
-  assign mp_region_cfg_4_prog_en_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_prog_en_4_we = addr_hit[18] & reg_we & ~wr_err;
   assign mp_region_cfg_4_prog_en_4_wd = reg_wdata[2];
 
-  assign mp_region_cfg_4_erase_en_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_erase_en_4_we = addr_hit[18] & reg_we & ~wr_err;
   assign mp_region_cfg_4_erase_en_4_wd = reg_wdata[3];
 
-  assign mp_region_cfg_4_base_4_we = addr_hit[12] & reg_we & ~wr_err;
-  assign mp_region_cfg_4_base_4_wd = reg_wdata[12:4];
+  assign mp_region_cfg_4_scramble_en_4_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_scramble_en_4_wd = reg_wdata[4];
 
-  assign mp_region_cfg_4_size_4_we = addr_hit[12] & reg_we & ~wr_err;
-  assign mp_region_cfg_4_size_4_wd = reg_wdata[25:16];
+  assign mp_region_cfg_4_base_4_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_base_4_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_4_partition_4_we = addr_hit[12] & reg_we & ~wr_err;
-  assign mp_region_cfg_4_partition_4_wd = reg_wdata[28];
+  assign mp_region_cfg_4_size_4_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_size_4_wd = reg_wdata[29:20];
 
-  assign mp_region_cfg_5_en_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_en_5_we = addr_hit[19] & reg_we & ~wr_err;
   assign mp_region_cfg_5_en_5_wd = reg_wdata[0];
 
-  assign mp_region_cfg_5_rd_en_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_rd_en_5_we = addr_hit[19] & reg_we & ~wr_err;
   assign mp_region_cfg_5_rd_en_5_wd = reg_wdata[1];
 
-  assign mp_region_cfg_5_prog_en_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_prog_en_5_we = addr_hit[19] & reg_we & ~wr_err;
   assign mp_region_cfg_5_prog_en_5_wd = reg_wdata[2];
 
-  assign mp_region_cfg_5_erase_en_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_erase_en_5_we = addr_hit[19] & reg_we & ~wr_err;
   assign mp_region_cfg_5_erase_en_5_wd = reg_wdata[3];
 
-  assign mp_region_cfg_5_base_5_we = addr_hit[13] & reg_we & ~wr_err;
-  assign mp_region_cfg_5_base_5_wd = reg_wdata[12:4];
+  assign mp_region_cfg_5_scramble_en_5_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_scramble_en_5_wd = reg_wdata[4];
 
-  assign mp_region_cfg_5_size_5_we = addr_hit[13] & reg_we & ~wr_err;
-  assign mp_region_cfg_5_size_5_wd = reg_wdata[25:16];
+  assign mp_region_cfg_5_base_5_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_base_5_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_5_partition_5_we = addr_hit[13] & reg_we & ~wr_err;
-  assign mp_region_cfg_5_partition_5_wd = reg_wdata[28];
+  assign mp_region_cfg_5_size_5_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_size_5_wd = reg_wdata[29:20];
 
-  assign mp_region_cfg_6_en_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_en_6_we = addr_hit[20] & reg_we & ~wr_err;
   assign mp_region_cfg_6_en_6_wd = reg_wdata[0];
 
-  assign mp_region_cfg_6_rd_en_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_rd_en_6_we = addr_hit[20] & reg_we & ~wr_err;
   assign mp_region_cfg_6_rd_en_6_wd = reg_wdata[1];
 
-  assign mp_region_cfg_6_prog_en_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_prog_en_6_we = addr_hit[20] & reg_we & ~wr_err;
   assign mp_region_cfg_6_prog_en_6_wd = reg_wdata[2];
 
-  assign mp_region_cfg_6_erase_en_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_erase_en_6_we = addr_hit[20] & reg_we & ~wr_err;
   assign mp_region_cfg_6_erase_en_6_wd = reg_wdata[3];
 
-  assign mp_region_cfg_6_base_6_we = addr_hit[14] & reg_we & ~wr_err;
-  assign mp_region_cfg_6_base_6_wd = reg_wdata[12:4];
+  assign mp_region_cfg_6_scramble_en_6_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_scramble_en_6_wd = reg_wdata[4];
 
-  assign mp_region_cfg_6_size_6_we = addr_hit[14] & reg_we & ~wr_err;
-  assign mp_region_cfg_6_size_6_wd = reg_wdata[25:16];
+  assign mp_region_cfg_6_base_6_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_base_6_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_6_partition_6_we = addr_hit[14] & reg_we & ~wr_err;
-  assign mp_region_cfg_6_partition_6_wd = reg_wdata[28];
+  assign mp_region_cfg_6_size_6_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_size_6_wd = reg_wdata[29:20];
 
-  assign mp_region_cfg_7_en_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_en_7_we = addr_hit[21] & reg_we & ~wr_err;
   assign mp_region_cfg_7_en_7_wd = reg_wdata[0];
 
-  assign mp_region_cfg_7_rd_en_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_rd_en_7_we = addr_hit[21] & reg_we & ~wr_err;
   assign mp_region_cfg_7_rd_en_7_wd = reg_wdata[1];
 
-  assign mp_region_cfg_7_prog_en_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_prog_en_7_we = addr_hit[21] & reg_we & ~wr_err;
   assign mp_region_cfg_7_prog_en_7_wd = reg_wdata[2];
 
-  assign mp_region_cfg_7_erase_en_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_erase_en_7_we = addr_hit[21] & reg_we & ~wr_err;
   assign mp_region_cfg_7_erase_en_7_wd = reg_wdata[3];
 
-  assign mp_region_cfg_7_base_7_we = addr_hit[15] & reg_we & ~wr_err;
-  assign mp_region_cfg_7_base_7_wd = reg_wdata[12:4];
+  assign mp_region_cfg_7_scramble_en_7_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_scramble_en_7_wd = reg_wdata[4];
 
-  assign mp_region_cfg_7_size_7_we = addr_hit[15] & reg_we & ~wr_err;
-  assign mp_region_cfg_7_size_7_wd = reg_wdata[25:16];
+  assign mp_region_cfg_7_base_7_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_base_7_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_7_partition_7_we = addr_hit[15] & reg_we & ~wr_err;
-  assign mp_region_cfg_7_partition_7_wd = reg_wdata[28];
+  assign mp_region_cfg_7_size_7_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_size_7_wd = reg_wdata[29:20];
 
-  assign default_region_rd_en_we = addr_hit[16] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_0_we = addr_hit[22] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_0_wd = reg_wdata[0];
+
+  assign bank0_info0_regwen_1_we = addr_hit[23] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_1_wd = reg_wdata[0];
+
+  assign bank0_info0_regwen_2_we = addr_hit[24] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_2_wd = reg_wdata[0];
+
+  assign bank0_info0_regwen_3_we = addr_hit[25] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_3_wd = reg_wdata[0];
+
+  assign bank0_info1_regwen_0_we = addr_hit[26] & reg_we & ~wr_err;
+  assign bank0_info1_regwen_0_wd = reg_wdata[0];
+
+  assign bank0_info1_regwen_1_we = addr_hit[27] & reg_we & ~wr_err;
+  assign bank0_info1_regwen_1_wd = reg_wdata[0];
+
+  assign bank0_info1_regwen_2_we = addr_hit[28] & reg_we & ~wr_err;
+  assign bank0_info1_regwen_2_wd = reg_wdata[0];
+
+  assign bank0_info1_regwen_3_we = addr_hit[29] & reg_we & ~wr_err;
+  assign bank0_info1_regwen_3_wd = reg_wdata[0];
+
+  assign bank0_info0_page_cfg_0_en_0_we = addr_hit[30] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_0_en_0_wd = reg_wdata[0];
+
+  assign bank0_info0_page_cfg_0_rd_en_0_we = addr_hit[30] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_0_rd_en_0_wd = reg_wdata[1];
+
+  assign bank0_info0_page_cfg_0_prog_en_0_we = addr_hit[30] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_0_prog_en_0_wd = reg_wdata[2];
+
+  assign bank0_info0_page_cfg_0_erase_en_0_we = addr_hit[30] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_0_erase_en_0_wd = reg_wdata[3];
+
+  assign bank0_info0_page_cfg_0_scramble_en_0_we = addr_hit[30] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_0_scramble_en_0_wd = reg_wdata[4];
+
+  assign bank0_info0_page_cfg_1_en_1_we = addr_hit[31] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_1_en_1_wd = reg_wdata[0];
+
+  assign bank0_info0_page_cfg_1_rd_en_1_we = addr_hit[31] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_1_rd_en_1_wd = reg_wdata[1];
+
+  assign bank0_info0_page_cfg_1_prog_en_1_we = addr_hit[31] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_1_prog_en_1_wd = reg_wdata[2];
+
+  assign bank0_info0_page_cfg_1_erase_en_1_we = addr_hit[31] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_1_erase_en_1_wd = reg_wdata[3];
+
+  assign bank0_info0_page_cfg_1_scramble_en_1_we = addr_hit[31] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_1_scramble_en_1_wd = reg_wdata[4];
+
+  assign bank0_info0_page_cfg_2_en_2_we = addr_hit[32] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_2_en_2_wd = reg_wdata[0];
+
+  assign bank0_info0_page_cfg_2_rd_en_2_we = addr_hit[32] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_2_rd_en_2_wd = reg_wdata[1];
+
+  assign bank0_info0_page_cfg_2_prog_en_2_we = addr_hit[32] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_2_prog_en_2_wd = reg_wdata[2];
+
+  assign bank0_info0_page_cfg_2_erase_en_2_we = addr_hit[32] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_2_erase_en_2_wd = reg_wdata[3];
+
+  assign bank0_info0_page_cfg_2_scramble_en_2_we = addr_hit[32] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_2_scramble_en_2_wd = reg_wdata[4];
+
+  assign bank0_info0_page_cfg_3_en_3_we = addr_hit[33] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_3_en_3_wd = reg_wdata[0];
+
+  assign bank0_info0_page_cfg_3_rd_en_3_we = addr_hit[33] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_3_rd_en_3_wd = reg_wdata[1];
+
+  assign bank0_info0_page_cfg_3_prog_en_3_we = addr_hit[33] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_3_prog_en_3_wd = reg_wdata[2];
+
+  assign bank0_info0_page_cfg_3_erase_en_3_we = addr_hit[33] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_3_erase_en_3_wd = reg_wdata[3];
+
+  assign bank0_info0_page_cfg_3_scramble_en_3_we = addr_hit[33] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_3_scramble_en_3_wd = reg_wdata[4];
+
+  assign bank0_info1_page_cfg_0_en_0_we = addr_hit[34] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_0_en_0_wd = reg_wdata[0];
+
+  assign bank0_info1_page_cfg_0_rd_en_0_we = addr_hit[34] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_0_rd_en_0_wd = reg_wdata[1];
+
+  assign bank0_info1_page_cfg_0_prog_en_0_we = addr_hit[34] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_0_prog_en_0_wd = reg_wdata[2];
+
+  assign bank0_info1_page_cfg_0_erase_en_0_we = addr_hit[34] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_0_erase_en_0_wd = reg_wdata[3];
+
+  assign bank0_info1_page_cfg_0_scramble_en_0_we = addr_hit[34] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_0_scramble_en_0_wd = reg_wdata[4];
+
+  assign bank0_info1_page_cfg_1_en_1_we = addr_hit[35] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_1_en_1_wd = reg_wdata[0];
+
+  assign bank0_info1_page_cfg_1_rd_en_1_we = addr_hit[35] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_1_rd_en_1_wd = reg_wdata[1];
+
+  assign bank0_info1_page_cfg_1_prog_en_1_we = addr_hit[35] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_1_prog_en_1_wd = reg_wdata[2];
+
+  assign bank0_info1_page_cfg_1_erase_en_1_we = addr_hit[35] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_1_erase_en_1_wd = reg_wdata[3];
+
+  assign bank0_info1_page_cfg_1_scramble_en_1_we = addr_hit[35] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_1_scramble_en_1_wd = reg_wdata[4];
+
+  assign bank0_info1_page_cfg_2_en_2_we = addr_hit[36] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_2_en_2_wd = reg_wdata[0];
+
+  assign bank0_info1_page_cfg_2_rd_en_2_we = addr_hit[36] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_2_rd_en_2_wd = reg_wdata[1];
+
+  assign bank0_info1_page_cfg_2_prog_en_2_we = addr_hit[36] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_2_prog_en_2_wd = reg_wdata[2];
+
+  assign bank0_info1_page_cfg_2_erase_en_2_we = addr_hit[36] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_2_erase_en_2_wd = reg_wdata[3];
+
+  assign bank0_info1_page_cfg_2_scramble_en_2_we = addr_hit[36] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_2_scramble_en_2_wd = reg_wdata[4];
+
+  assign bank0_info1_page_cfg_3_en_3_we = addr_hit[37] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_3_en_3_wd = reg_wdata[0];
+
+  assign bank0_info1_page_cfg_3_rd_en_3_we = addr_hit[37] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_3_rd_en_3_wd = reg_wdata[1];
+
+  assign bank0_info1_page_cfg_3_prog_en_3_we = addr_hit[37] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_3_prog_en_3_wd = reg_wdata[2];
+
+  assign bank0_info1_page_cfg_3_erase_en_3_we = addr_hit[37] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_3_erase_en_3_wd = reg_wdata[3];
+
+  assign bank0_info1_page_cfg_3_scramble_en_3_we = addr_hit[37] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_3_scramble_en_3_wd = reg_wdata[4];
+
+  assign bank1_info0_regwen_0_we = addr_hit[38] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_0_wd = reg_wdata[0];
+
+  assign bank1_info0_regwen_1_we = addr_hit[39] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_1_wd = reg_wdata[0];
+
+  assign bank1_info0_regwen_2_we = addr_hit[40] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_2_wd = reg_wdata[0];
+
+  assign bank1_info0_regwen_3_we = addr_hit[41] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_3_wd = reg_wdata[0];
+
+  assign bank1_info1_regwen_0_we = addr_hit[42] & reg_we & ~wr_err;
+  assign bank1_info1_regwen_0_wd = reg_wdata[0];
+
+  assign bank1_info1_regwen_1_we = addr_hit[43] & reg_we & ~wr_err;
+  assign bank1_info1_regwen_1_wd = reg_wdata[0];
+
+  assign bank1_info1_regwen_2_we = addr_hit[44] & reg_we & ~wr_err;
+  assign bank1_info1_regwen_2_wd = reg_wdata[0];
+
+  assign bank1_info1_regwen_3_we = addr_hit[45] & reg_we & ~wr_err;
+  assign bank1_info1_regwen_3_wd = reg_wdata[0];
+
+  assign bank1_info0_page_cfg_0_en_0_we = addr_hit[46] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_0_en_0_wd = reg_wdata[0];
+
+  assign bank1_info0_page_cfg_0_rd_en_0_we = addr_hit[46] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_0_rd_en_0_wd = reg_wdata[1];
+
+  assign bank1_info0_page_cfg_0_prog_en_0_we = addr_hit[46] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_0_prog_en_0_wd = reg_wdata[2];
+
+  assign bank1_info0_page_cfg_0_erase_en_0_we = addr_hit[46] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_0_erase_en_0_wd = reg_wdata[3];
+
+  assign bank1_info0_page_cfg_0_scramble_en_0_we = addr_hit[46] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_0_scramble_en_0_wd = reg_wdata[4];
+
+  assign bank1_info0_page_cfg_1_en_1_we = addr_hit[47] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_1_en_1_wd = reg_wdata[0];
+
+  assign bank1_info0_page_cfg_1_rd_en_1_we = addr_hit[47] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_1_rd_en_1_wd = reg_wdata[1];
+
+  assign bank1_info0_page_cfg_1_prog_en_1_we = addr_hit[47] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_1_prog_en_1_wd = reg_wdata[2];
+
+  assign bank1_info0_page_cfg_1_erase_en_1_we = addr_hit[47] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_1_erase_en_1_wd = reg_wdata[3];
+
+  assign bank1_info0_page_cfg_1_scramble_en_1_we = addr_hit[47] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_1_scramble_en_1_wd = reg_wdata[4];
+
+  assign bank1_info0_page_cfg_2_en_2_we = addr_hit[48] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_2_en_2_wd = reg_wdata[0];
+
+  assign bank1_info0_page_cfg_2_rd_en_2_we = addr_hit[48] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_2_rd_en_2_wd = reg_wdata[1];
+
+  assign bank1_info0_page_cfg_2_prog_en_2_we = addr_hit[48] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_2_prog_en_2_wd = reg_wdata[2];
+
+  assign bank1_info0_page_cfg_2_erase_en_2_we = addr_hit[48] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_2_erase_en_2_wd = reg_wdata[3];
+
+  assign bank1_info0_page_cfg_2_scramble_en_2_we = addr_hit[48] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_2_scramble_en_2_wd = reg_wdata[4];
+
+  assign bank1_info0_page_cfg_3_en_3_we = addr_hit[49] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_3_en_3_wd = reg_wdata[0];
+
+  assign bank1_info0_page_cfg_3_rd_en_3_we = addr_hit[49] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_3_rd_en_3_wd = reg_wdata[1];
+
+  assign bank1_info0_page_cfg_3_prog_en_3_we = addr_hit[49] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_3_prog_en_3_wd = reg_wdata[2];
+
+  assign bank1_info0_page_cfg_3_erase_en_3_we = addr_hit[49] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_3_erase_en_3_wd = reg_wdata[3];
+
+  assign bank1_info0_page_cfg_3_scramble_en_3_we = addr_hit[49] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_3_scramble_en_3_wd = reg_wdata[4];
+
+  assign bank1_info1_page_cfg_0_en_0_we = addr_hit[50] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_0_en_0_wd = reg_wdata[0];
+
+  assign bank1_info1_page_cfg_0_rd_en_0_we = addr_hit[50] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_0_rd_en_0_wd = reg_wdata[1];
+
+  assign bank1_info1_page_cfg_0_prog_en_0_we = addr_hit[50] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_0_prog_en_0_wd = reg_wdata[2];
+
+  assign bank1_info1_page_cfg_0_erase_en_0_we = addr_hit[50] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_0_erase_en_0_wd = reg_wdata[3];
+
+  assign bank1_info1_page_cfg_0_scramble_en_0_we = addr_hit[50] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_0_scramble_en_0_wd = reg_wdata[4];
+
+  assign bank1_info1_page_cfg_1_en_1_we = addr_hit[51] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_1_en_1_wd = reg_wdata[0];
+
+  assign bank1_info1_page_cfg_1_rd_en_1_we = addr_hit[51] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_1_rd_en_1_wd = reg_wdata[1];
+
+  assign bank1_info1_page_cfg_1_prog_en_1_we = addr_hit[51] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_1_prog_en_1_wd = reg_wdata[2];
+
+  assign bank1_info1_page_cfg_1_erase_en_1_we = addr_hit[51] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_1_erase_en_1_wd = reg_wdata[3];
+
+  assign bank1_info1_page_cfg_1_scramble_en_1_we = addr_hit[51] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_1_scramble_en_1_wd = reg_wdata[4];
+
+  assign bank1_info1_page_cfg_2_en_2_we = addr_hit[52] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_2_en_2_wd = reg_wdata[0];
+
+  assign bank1_info1_page_cfg_2_rd_en_2_we = addr_hit[52] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_2_rd_en_2_wd = reg_wdata[1];
+
+  assign bank1_info1_page_cfg_2_prog_en_2_we = addr_hit[52] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_2_prog_en_2_wd = reg_wdata[2];
+
+  assign bank1_info1_page_cfg_2_erase_en_2_we = addr_hit[52] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_2_erase_en_2_wd = reg_wdata[3];
+
+  assign bank1_info1_page_cfg_2_scramble_en_2_we = addr_hit[52] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_2_scramble_en_2_wd = reg_wdata[4];
+
+  assign bank1_info1_page_cfg_3_en_3_we = addr_hit[53] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_3_en_3_wd = reg_wdata[0];
+
+  assign bank1_info1_page_cfg_3_rd_en_3_we = addr_hit[53] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_3_rd_en_3_wd = reg_wdata[1];
+
+  assign bank1_info1_page_cfg_3_prog_en_3_we = addr_hit[53] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_3_prog_en_3_wd = reg_wdata[2];
+
+  assign bank1_info1_page_cfg_3_erase_en_3_we = addr_hit[53] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_3_erase_en_3_wd = reg_wdata[3];
+
+  assign bank1_info1_page_cfg_3_scramble_en_3_we = addr_hit[53] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_3_scramble_en_3_wd = reg_wdata[4];
+
+  assign default_region_rd_en_we = addr_hit[54] & reg_we & ~wr_err;
   assign default_region_rd_en_wd = reg_wdata[0];
 
-  assign default_region_prog_en_we = addr_hit[16] & reg_we & ~wr_err;
+  assign default_region_prog_en_we = addr_hit[54] & reg_we & ~wr_err;
   assign default_region_prog_en_wd = reg_wdata[1];
 
-  assign default_region_erase_en_we = addr_hit[16] & reg_we & ~wr_err;
+  assign default_region_erase_en_we = addr_hit[54] & reg_we & ~wr_err;
   assign default_region_erase_en_wd = reg_wdata[2];
 
-  assign bank_cfg_regwen_we = addr_hit[17] & reg_we & ~wr_err;
+  assign default_region_scramble_en_we = addr_hit[54] & reg_we & ~wr_err;
+  assign default_region_scramble_en_wd = reg_wdata[3];
+
+  assign bank_cfg_regwen_we = addr_hit[55] & reg_we & ~wr_err;
   assign bank_cfg_regwen_wd = reg_wdata[0];
 
-  assign mp_bank_cfg_erase_en_0_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_bank_cfg_erase_en_0_we = addr_hit[56] & reg_we & ~wr_err;
   assign mp_bank_cfg_erase_en_0_wd = reg_wdata[0];
 
-  assign mp_bank_cfg_erase_en_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_bank_cfg_erase_en_1_we = addr_hit[56] & reg_we & ~wr_err;
   assign mp_bank_cfg_erase_en_1_wd = reg_wdata[1];
 
-  assign op_status_done_we = addr_hit[19] & reg_we & ~wr_err;
+  assign op_status_done_we = addr_hit[57] & reg_we & ~wr_err;
   assign op_status_done_wd = reg_wdata[0];
 
-  assign op_status_err_we = addr_hit[19] & reg_we & ~wr_err;
+  assign op_status_err_we = addr_hit[57] & reg_we & ~wr_err;
   assign op_status_err_wd = reg_wdata[1];
 
-  assign status_rd_full_re = addr_hit[20] && reg_re;
 
-  assign status_rd_empty_re = addr_hit[20] && reg_re;
 
-  assign status_prog_full_re = addr_hit[20] && reg_re;
 
-  assign status_prog_empty_re = addr_hit[20] && reg_re;
 
-  assign status_init_wip_re = addr_hit[20] && reg_re;
 
-  assign status_error_page_re = addr_hit[20] && reg_re;
 
-  assign status_error_bank_re = addr_hit[20] && reg_re;
 
-  assign scratch_we = addr_hit[21] & reg_we & ~wr_err;
+
+
+  assign scratch_we = addr_hit[60] & reg_we & ~wr_err;
   assign scratch_wd = reg_wdata[31:0];
 
-  assign fifo_lvl_prog_we = addr_hit[22] & reg_we & ~wr_err;
+  assign fifo_lvl_prog_we = addr_hit[61] & reg_we & ~wr_err;
   assign fifo_lvl_prog_wd = reg_wdata[4:0];
 
-  assign fifo_lvl_rd_we = addr_hit[22] & reg_we & ~wr_err;
+  assign fifo_lvl_rd_we = addr_hit[61] & reg_we & ~wr_err;
   assign fifo_lvl_rd_wd = reg_wdata[12:8];
 
-  assign fifo_rst_we = addr_hit[23] & reg_we & ~wr_err;
+  assign fifo_rst_we = addr_hit[62] & reg_we & ~wr_err;
   assign fifo_rst_wd = reg_wdata[0];
 
   // Read data return
@@ -3365,8 +7003,10 @@ module flash_ctrl_reg_top (
       addr_hit[4]: begin
         reg_rdata_next[0] = control_start_qs;
         reg_rdata_next[5:4] = control_op_qs;
-        reg_rdata_next[6] = control_erase_sel_qs;
-        reg_rdata_next[7] = control_partition_sel_qs;
+        reg_rdata_next[6] = control_prog_sel_qs;
+        reg_rdata_next[7] = control_erase_sel_qs;
+        reg_rdata_next[8] = control_partition_sel_qs;
+        reg_rdata_next[9] = control_info_sel_qs;
         reg_rdata_next[27:16] = control_num_qs;
       end
 
@@ -3375,133 +7015,355 @@ module flash_ctrl_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[0] = scramble_en_qs;
+        reg_rdata_next[0] = region_cfg_regwen_0_qs;
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[0] = region_cfg_regwen_qs;
+        reg_rdata_next[0] = region_cfg_regwen_1_qs;
       end
 
       addr_hit[8]: begin
+        reg_rdata_next[0] = region_cfg_regwen_2_qs;
+      end
+
+      addr_hit[9]: begin
+        reg_rdata_next[0] = region_cfg_regwen_3_qs;
+      end
+
+      addr_hit[10]: begin
+        reg_rdata_next[0] = region_cfg_regwen_4_qs;
+      end
+
+      addr_hit[11]: begin
+        reg_rdata_next[0] = region_cfg_regwen_5_qs;
+      end
+
+      addr_hit[12]: begin
+        reg_rdata_next[0] = region_cfg_regwen_6_qs;
+      end
+
+      addr_hit[13]: begin
+        reg_rdata_next[0] = region_cfg_regwen_7_qs;
+      end
+
+      addr_hit[14]: begin
         reg_rdata_next[0] = mp_region_cfg_0_en_0_qs;
         reg_rdata_next[1] = mp_region_cfg_0_rd_en_0_qs;
         reg_rdata_next[2] = mp_region_cfg_0_prog_en_0_qs;
         reg_rdata_next[3] = mp_region_cfg_0_erase_en_0_qs;
-        reg_rdata_next[12:4] = mp_region_cfg_0_base_0_qs;
-        reg_rdata_next[25:16] = mp_region_cfg_0_size_0_qs;
-        reg_rdata_next[28] = mp_region_cfg_0_partition_0_qs;
+        reg_rdata_next[4] = mp_region_cfg_0_scramble_en_0_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_0_base_0_qs;
+        reg_rdata_next[29:20] = mp_region_cfg_0_size_0_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[15]: begin
         reg_rdata_next[0] = mp_region_cfg_1_en_1_qs;
         reg_rdata_next[1] = mp_region_cfg_1_rd_en_1_qs;
         reg_rdata_next[2] = mp_region_cfg_1_prog_en_1_qs;
         reg_rdata_next[3] = mp_region_cfg_1_erase_en_1_qs;
-        reg_rdata_next[12:4] = mp_region_cfg_1_base_1_qs;
-        reg_rdata_next[25:16] = mp_region_cfg_1_size_1_qs;
-        reg_rdata_next[28] = mp_region_cfg_1_partition_1_qs;
+        reg_rdata_next[4] = mp_region_cfg_1_scramble_en_1_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_1_base_1_qs;
+        reg_rdata_next[29:20] = mp_region_cfg_1_size_1_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[16]: begin
         reg_rdata_next[0] = mp_region_cfg_2_en_2_qs;
         reg_rdata_next[1] = mp_region_cfg_2_rd_en_2_qs;
         reg_rdata_next[2] = mp_region_cfg_2_prog_en_2_qs;
         reg_rdata_next[3] = mp_region_cfg_2_erase_en_2_qs;
-        reg_rdata_next[12:4] = mp_region_cfg_2_base_2_qs;
-        reg_rdata_next[25:16] = mp_region_cfg_2_size_2_qs;
-        reg_rdata_next[28] = mp_region_cfg_2_partition_2_qs;
+        reg_rdata_next[4] = mp_region_cfg_2_scramble_en_2_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_2_base_2_qs;
+        reg_rdata_next[29:20] = mp_region_cfg_2_size_2_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[17]: begin
         reg_rdata_next[0] = mp_region_cfg_3_en_3_qs;
         reg_rdata_next[1] = mp_region_cfg_3_rd_en_3_qs;
         reg_rdata_next[2] = mp_region_cfg_3_prog_en_3_qs;
         reg_rdata_next[3] = mp_region_cfg_3_erase_en_3_qs;
-        reg_rdata_next[12:4] = mp_region_cfg_3_base_3_qs;
-        reg_rdata_next[25:16] = mp_region_cfg_3_size_3_qs;
-        reg_rdata_next[28] = mp_region_cfg_3_partition_3_qs;
+        reg_rdata_next[4] = mp_region_cfg_3_scramble_en_3_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_3_base_3_qs;
+        reg_rdata_next[29:20] = mp_region_cfg_3_size_3_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[18]: begin
         reg_rdata_next[0] = mp_region_cfg_4_en_4_qs;
         reg_rdata_next[1] = mp_region_cfg_4_rd_en_4_qs;
         reg_rdata_next[2] = mp_region_cfg_4_prog_en_4_qs;
         reg_rdata_next[3] = mp_region_cfg_4_erase_en_4_qs;
-        reg_rdata_next[12:4] = mp_region_cfg_4_base_4_qs;
-        reg_rdata_next[25:16] = mp_region_cfg_4_size_4_qs;
-        reg_rdata_next[28] = mp_region_cfg_4_partition_4_qs;
+        reg_rdata_next[4] = mp_region_cfg_4_scramble_en_4_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_4_base_4_qs;
+        reg_rdata_next[29:20] = mp_region_cfg_4_size_4_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[19]: begin
         reg_rdata_next[0] = mp_region_cfg_5_en_5_qs;
         reg_rdata_next[1] = mp_region_cfg_5_rd_en_5_qs;
         reg_rdata_next[2] = mp_region_cfg_5_prog_en_5_qs;
         reg_rdata_next[3] = mp_region_cfg_5_erase_en_5_qs;
-        reg_rdata_next[12:4] = mp_region_cfg_5_base_5_qs;
-        reg_rdata_next[25:16] = mp_region_cfg_5_size_5_qs;
-        reg_rdata_next[28] = mp_region_cfg_5_partition_5_qs;
+        reg_rdata_next[4] = mp_region_cfg_5_scramble_en_5_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_5_base_5_qs;
+        reg_rdata_next[29:20] = mp_region_cfg_5_size_5_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[20]: begin
         reg_rdata_next[0] = mp_region_cfg_6_en_6_qs;
         reg_rdata_next[1] = mp_region_cfg_6_rd_en_6_qs;
         reg_rdata_next[2] = mp_region_cfg_6_prog_en_6_qs;
         reg_rdata_next[3] = mp_region_cfg_6_erase_en_6_qs;
-        reg_rdata_next[12:4] = mp_region_cfg_6_base_6_qs;
-        reg_rdata_next[25:16] = mp_region_cfg_6_size_6_qs;
-        reg_rdata_next[28] = mp_region_cfg_6_partition_6_qs;
+        reg_rdata_next[4] = mp_region_cfg_6_scramble_en_6_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_6_base_6_qs;
+        reg_rdata_next[29:20] = mp_region_cfg_6_size_6_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[21]: begin
         reg_rdata_next[0] = mp_region_cfg_7_en_7_qs;
         reg_rdata_next[1] = mp_region_cfg_7_rd_en_7_qs;
         reg_rdata_next[2] = mp_region_cfg_7_prog_en_7_qs;
         reg_rdata_next[3] = mp_region_cfg_7_erase_en_7_qs;
-        reg_rdata_next[12:4] = mp_region_cfg_7_base_7_qs;
-        reg_rdata_next[25:16] = mp_region_cfg_7_size_7_qs;
-        reg_rdata_next[28] = mp_region_cfg_7_partition_7_qs;
+        reg_rdata_next[4] = mp_region_cfg_7_scramble_en_7_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_7_base_7_qs;
+        reg_rdata_next[29:20] = mp_region_cfg_7_size_7_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[22]: begin
+        reg_rdata_next[0] = bank0_info0_regwen_0_qs;
+      end
+
+      addr_hit[23]: begin
+        reg_rdata_next[0] = bank0_info0_regwen_1_qs;
+      end
+
+      addr_hit[24]: begin
+        reg_rdata_next[0] = bank0_info0_regwen_2_qs;
+      end
+
+      addr_hit[25]: begin
+        reg_rdata_next[0] = bank0_info0_regwen_3_qs;
+      end
+
+      addr_hit[26]: begin
+        reg_rdata_next[0] = bank0_info1_regwen_0_qs;
+      end
+
+      addr_hit[27]: begin
+        reg_rdata_next[0] = bank0_info1_regwen_1_qs;
+      end
+
+      addr_hit[28]: begin
+        reg_rdata_next[0] = bank0_info1_regwen_2_qs;
+      end
+
+      addr_hit[29]: begin
+        reg_rdata_next[0] = bank0_info1_regwen_3_qs;
+      end
+
+      addr_hit[30]: begin
+        reg_rdata_next[0] = bank0_info0_page_cfg_0_en_0_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_0_rd_en_0_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_0_prog_en_0_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_0_erase_en_0_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_0_scramble_en_0_qs;
+      end
+
+      addr_hit[31]: begin
+        reg_rdata_next[0] = bank0_info0_page_cfg_1_en_1_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_1_rd_en_1_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_1_prog_en_1_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_1_erase_en_1_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_1_scramble_en_1_qs;
+      end
+
+      addr_hit[32]: begin
+        reg_rdata_next[0] = bank0_info0_page_cfg_2_en_2_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_2_rd_en_2_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_2_prog_en_2_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_2_erase_en_2_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_2_scramble_en_2_qs;
+      end
+
+      addr_hit[33]: begin
+        reg_rdata_next[0] = bank0_info0_page_cfg_3_en_3_qs;
+        reg_rdata_next[1] = bank0_info0_page_cfg_3_rd_en_3_qs;
+        reg_rdata_next[2] = bank0_info0_page_cfg_3_prog_en_3_qs;
+        reg_rdata_next[3] = bank0_info0_page_cfg_3_erase_en_3_qs;
+        reg_rdata_next[4] = bank0_info0_page_cfg_3_scramble_en_3_qs;
+      end
+
+      addr_hit[34]: begin
+        reg_rdata_next[0] = bank0_info1_page_cfg_0_en_0_qs;
+        reg_rdata_next[1] = bank0_info1_page_cfg_0_rd_en_0_qs;
+        reg_rdata_next[2] = bank0_info1_page_cfg_0_prog_en_0_qs;
+        reg_rdata_next[3] = bank0_info1_page_cfg_0_erase_en_0_qs;
+        reg_rdata_next[4] = bank0_info1_page_cfg_0_scramble_en_0_qs;
+      end
+
+      addr_hit[35]: begin
+        reg_rdata_next[0] = bank0_info1_page_cfg_1_en_1_qs;
+        reg_rdata_next[1] = bank0_info1_page_cfg_1_rd_en_1_qs;
+        reg_rdata_next[2] = bank0_info1_page_cfg_1_prog_en_1_qs;
+        reg_rdata_next[3] = bank0_info1_page_cfg_1_erase_en_1_qs;
+        reg_rdata_next[4] = bank0_info1_page_cfg_1_scramble_en_1_qs;
+      end
+
+      addr_hit[36]: begin
+        reg_rdata_next[0] = bank0_info1_page_cfg_2_en_2_qs;
+        reg_rdata_next[1] = bank0_info1_page_cfg_2_rd_en_2_qs;
+        reg_rdata_next[2] = bank0_info1_page_cfg_2_prog_en_2_qs;
+        reg_rdata_next[3] = bank0_info1_page_cfg_2_erase_en_2_qs;
+        reg_rdata_next[4] = bank0_info1_page_cfg_2_scramble_en_2_qs;
+      end
+
+      addr_hit[37]: begin
+        reg_rdata_next[0] = bank0_info1_page_cfg_3_en_3_qs;
+        reg_rdata_next[1] = bank0_info1_page_cfg_3_rd_en_3_qs;
+        reg_rdata_next[2] = bank0_info1_page_cfg_3_prog_en_3_qs;
+        reg_rdata_next[3] = bank0_info1_page_cfg_3_erase_en_3_qs;
+        reg_rdata_next[4] = bank0_info1_page_cfg_3_scramble_en_3_qs;
+      end
+
+      addr_hit[38]: begin
+        reg_rdata_next[0] = bank1_info0_regwen_0_qs;
+      end
+
+      addr_hit[39]: begin
+        reg_rdata_next[0] = bank1_info0_regwen_1_qs;
+      end
+
+      addr_hit[40]: begin
+        reg_rdata_next[0] = bank1_info0_regwen_2_qs;
+      end
+
+      addr_hit[41]: begin
+        reg_rdata_next[0] = bank1_info0_regwen_3_qs;
+      end
+
+      addr_hit[42]: begin
+        reg_rdata_next[0] = bank1_info1_regwen_0_qs;
+      end
+
+      addr_hit[43]: begin
+        reg_rdata_next[0] = bank1_info1_regwen_1_qs;
+      end
+
+      addr_hit[44]: begin
+        reg_rdata_next[0] = bank1_info1_regwen_2_qs;
+      end
+
+      addr_hit[45]: begin
+        reg_rdata_next[0] = bank1_info1_regwen_3_qs;
+      end
+
+      addr_hit[46]: begin
+        reg_rdata_next[0] = bank1_info0_page_cfg_0_en_0_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_0_rd_en_0_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_0_prog_en_0_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_0_erase_en_0_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_0_scramble_en_0_qs;
+      end
+
+      addr_hit[47]: begin
+        reg_rdata_next[0] = bank1_info0_page_cfg_1_en_1_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_1_rd_en_1_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_1_prog_en_1_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_1_erase_en_1_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_1_scramble_en_1_qs;
+      end
+
+      addr_hit[48]: begin
+        reg_rdata_next[0] = bank1_info0_page_cfg_2_en_2_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_2_rd_en_2_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_2_prog_en_2_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_2_erase_en_2_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_2_scramble_en_2_qs;
+      end
+
+      addr_hit[49]: begin
+        reg_rdata_next[0] = bank1_info0_page_cfg_3_en_3_qs;
+        reg_rdata_next[1] = bank1_info0_page_cfg_3_rd_en_3_qs;
+        reg_rdata_next[2] = bank1_info0_page_cfg_3_prog_en_3_qs;
+        reg_rdata_next[3] = bank1_info0_page_cfg_3_erase_en_3_qs;
+        reg_rdata_next[4] = bank1_info0_page_cfg_3_scramble_en_3_qs;
+      end
+
+      addr_hit[50]: begin
+        reg_rdata_next[0] = bank1_info1_page_cfg_0_en_0_qs;
+        reg_rdata_next[1] = bank1_info1_page_cfg_0_rd_en_0_qs;
+        reg_rdata_next[2] = bank1_info1_page_cfg_0_prog_en_0_qs;
+        reg_rdata_next[3] = bank1_info1_page_cfg_0_erase_en_0_qs;
+        reg_rdata_next[4] = bank1_info1_page_cfg_0_scramble_en_0_qs;
+      end
+
+      addr_hit[51]: begin
+        reg_rdata_next[0] = bank1_info1_page_cfg_1_en_1_qs;
+        reg_rdata_next[1] = bank1_info1_page_cfg_1_rd_en_1_qs;
+        reg_rdata_next[2] = bank1_info1_page_cfg_1_prog_en_1_qs;
+        reg_rdata_next[3] = bank1_info1_page_cfg_1_erase_en_1_qs;
+        reg_rdata_next[4] = bank1_info1_page_cfg_1_scramble_en_1_qs;
+      end
+
+      addr_hit[52]: begin
+        reg_rdata_next[0] = bank1_info1_page_cfg_2_en_2_qs;
+        reg_rdata_next[1] = bank1_info1_page_cfg_2_rd_en_2_qs;
+        reg_rdata_next[2] = bank1_info1_page_cfg_2_prog_en_2_qs;
+        reg_rdata_next[3] = bank1_info1_page_cfg_2_erase_en_2_qs;
+        reg_rdata_next[4] = bank1_info1_page_cfg_2_scramble_en_2_qs;
+      end
+
+      addr_hit[53]: begin
+        reg_rdata_next[0] = bank1_info1_page_cfg_3_en_3_qs;
+        reg_rdata_next[1] = bank1_info1_page_cfg_3_rd_en_3_qs;
+        reg_rdata_next[2] = bank1_info1_page_cfg_3_prog_en_3_qs;
+        reg_rdata_next[3] = bank1_info1_page_cfg_3_erase_en_3_qs;
+        reg_rdata_next[4] = bank1_info1_page_cfg_3_scramble_en_3_qs;
+      end
+
+      addr_hit[54]: begin
         reg_rdata_next[0] = default_region_rd_en_qs;
         reg_rdata_next[1] = default_region_prog_en_qs;
         reg_rdata_next[2] = default_region_erase_en_qs;
+        reg_rdata_next[3] = default_region_scramble_en_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[55]: begin
         reg_rdata_next[0] = bank_cfg_regwen_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[56]: begin
         reg_rdata_next[0] = mp_bank_cfg_erase_en_0_qs;
         reg_rdata_next[1] = mp_bank_cfg_erase_en_1_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[57]: begin
         reg_rdata_next[0] = op_status_done_qs;
         reg_rdata_next[1] = op_status_err_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[58]: begin
         reg_rdata_next[0] = status_rd_full_qs;
         reg_rdata_next[1] = status_rd_empty_qs;
         reg_rdata_next[2] = status_prog_full_qs;
         reg_rdata_next[3] = status_prog_empty_qs;
         reg_rdata_next[4] = status_init_wip_qs;
-        reg_rdata_next[16:8] = status_error_page_qs;
-        reg_rdata_next[17] = status_error_bank_qs;
+        reg_rdata_next[16:8] = status_error_addr_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[59]: begin
+        reg_rdata_next[0] = phy_status_init_wip_qs;
+        reg_rdata_next[1] = phy_status_prog_normal_avail_qs;
+        reg_rdata_next[2] = phy_status_prog_repair_avail_qs;
+      end
+
+      addr_hit[60]: begin
         reg_rdata_next[31:0] = scratch_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[61]: begin
         reg_rdata_next[4:0] = fifo_lvl_prog_qs;
         reg_rdata_next[12:8] = fifo_lvl_rd_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[62]: begin
         reg_rdata_next[0] = fifo_rst_qs;
       end
 

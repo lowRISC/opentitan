@@ -15,7 +15,6 @@ class esc_monitor extends alert_esc_base_monitor;
 
   bit under_esc_ping;
 
-  //TODO: currently only support sync mode
   virtual task run_phase(uvm_phase phase);
     fork
       esc_thread();
@@ -45,13 +44,14 @@ class esc_monitor extends alert_esc_base_monitor;
           under_esc_ping = 1;
           req.alert_esc_type = AlertEscPingTrans;
           check_esc_resp(.req(req), .is_ping(1));
-          do begin
+          while (req.esc_handshake_sta != EscRespComplete &&
+                 ping_cnter < cfg.ping_timeout_cycle &&
+                 !cfg.probe_vif.get_esc_en() &&
+                 !under_reset) begin
             @(cfg.vif.monitor_cb);
             check_esc_resp(.req(req), .is_ping(1));
             ping_cnter ++;
           end
-          while (req.esc_handshake_sta != EscRespComplete && ping_cnter < cfg.ping_timeout_cycle &&
-                 !cfg.probe_vif.get_esc_en() && !under_reset);
           if (under_reset) continue;
           if (ping_cnter >= cfg.ping_timeout_cycle) begin
             alert_esc_seq_item req_clone;
@@ -98,6 +98,10 @@ class esc_monitor extends alert_esc_base_monitor;
 
         `uvm_info("esc_monitor", $sformatf("[%s]: handshake status is %s, timeout=%0b",
             req.alert_esc_type.name(), req.esc_handshake_sta.name(), req.timeout), UVM_HIGH)
+         if (cfg.en_cov) begin
+           cov.m_esc_handshake_complete_cg.sample(req.alert_esc_type, req.esc_handshake_sta);
+           if (cfg.en_ping_cov) cov.m_alert_esc_trans_cg.sample(req.alert_esc_type);
+         end
       end
     end
   endtask : esc_thread

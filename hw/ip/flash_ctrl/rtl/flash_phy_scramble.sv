@@ -54,13 +54,15 @@ module flash_phy_scramble import flash_phy_pkg::*; (
 
   assign dec = op_type_i == DeScrambleOp;
 
-  // Previous discussion settled on PRESENT, using PRINCE here for now
-  // just to get some area idea
   prim_prince # (
     .DataWidth(DataWidth),
     .KeyWidth(KeySize),
-    .UseOldKeySched(1'b1),
-    .HalfwayDataReg(1'b1)
+    // Use improved key schedule proposed by https://eprint.iacr.org/2014/656.pdf (see appendix).
+    .UseOldKeySched(1'b0),
+    .HalfwayDataReg(1'b1),
+    // No key register is needed half way, since the data_key_i and operation op_type_i inputs
+    // remain constant until one data block has been processed.
+    .HalfwayKeyReg (1'b0)
   ) u_cipher (
     .clk_i,
     .rst_ni,

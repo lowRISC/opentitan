@@ -21,10 +21,13 @@ filesets:
       - rtl/otbn_controller.sv
       - rtl/otbn_decoder.sv
       - rtl/otbn_instruction_fetch.sv
-      - rtl/otbn_rf_base.sv
-      - rtl/otbn_status_registers.sv
+      - rtl/otbn_rf_base_ff.sv
+      - rtl/otbn_rf_bignum_ff.sv
+      - rtl/otbn_rf_base_fpga.sv
+      - rtl/otbn_rf_bignum_fpga.sv
       - rtl/otbn_lsu.sv
       - rtl/otbn_alu_base.sv
+      - rtl/otbn_alu_bignum.sv
       - rtl/otbn_core.sv
     file_type: systemVerilogSource
 
@@ -40,6 +43,17 @@ filesets:
       - rtl/otbn_reg_top.sv
       - rtl/otbn.sv
     file_type: systemVerilogSource
+
+  files_model:
+    depend:
+      - lowrisc:dv_verilator:memutil_verilator
+    files:
+      - dv/model/otbn_model.cc
+      - dv/model/iss_wrapper.cc
+      - dv/model/iss_wrapper.h: { is_include_file: true }
+      - dv/model/otbn_core_model.sv: { file_type: systemVerilogSource }
+      - dv/model/otbn_rf_snooper.sv: { file_type: systemVerilogSource }
+    file_type: cppSource
 
   files_verilator_waiver:
     depend:
@@ -62,6 +76,7 @@ targets:
       - files_rtl_pkg
       - files_rtl_core
       - files_rtl_top
+      - tool_verilator ? (files_model)
     toplevel: otbn
 
   lint:
@@ -73,6 +88,7 @@ targets:
       ascentlint:
         ascentlint_options:
           - "-wait_license"
+          - "-stop_on_error"
       verilator:
         mode: lint-only
         verilator_options:
@@ -90,6 +106,7 @@ targets:
       ascentlint:
         ascentlint_options:
           - "-wait_license"
+          - "-stop_on_error"
       verilator:
         mode: lint-only
         verilator_options:

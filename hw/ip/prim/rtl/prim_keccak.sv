@@ -11,7 +11,7 @@ module prim_keccak #(
   localparam int W        = Width/25,
   localparam int L        = $clog2(W),
   localparam int MaxRound = 12 + 2*L, // Keccak-f only
-  localparam int RndW     = $clog2(MaxRound) // Representing up to MaxRound-1
+  localparam int RndW     = $clog2(MaxRound+1) // Representing up to MaxRound
 ) (
   input        [RndW-1:0]  rnd_i,   // Current Round
   input        [Width-1:0] s_i,

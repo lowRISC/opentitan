@@ -57,7 +57,8 @@ module prim_ram_2p_async_adv #(
   input [CfgW-1:0] cfg_i
 );
 
-  logic [CfgW-1:0] unused_cfg = cfg_i;
+  logic [CfgW-1:0] unused_cfg;
+  assign unused_cfg = cfg_i;
 
   `ASSERT_INIT(CannotHaveEccAndParity_A, !(EnableParity && EnableECC))
 
@@ -165,9 +166,9 @@ module prim_ram_2p_async_adv #(
 
     // the wmask is constantly set to 1 in this case
     `ASSERT(OnlyWordWritePossibleWithEccPortA_A, a_req_i |->
-        a_wmask_i == {TotalWidth{1'b1}}, clk_a_i, rst_a_ni)
+        a_wmask_i == {Width{1'b1}}, clk_a_i, rst_a_ni)
     `ASSERT(OnlyWordWritePossibleWithEccPortB_A, b_req_i |->
-        b_wmask_i == {TotalWidth{1'b1}}, clk_b_i, rst_b_ni)
+        b_wmask_i == {Width{1'b1}}, clk_b_i, rst_b_ni)
 
     assign a_wmask_d = {TotalWidth{1'b1}};
     assign b_wmask_d = {TotalWidth{1'b1}};

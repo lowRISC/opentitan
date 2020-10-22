@@ -8,10 +8,10 @@ description: "Reset Manager Package"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_pkg
-      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip:rstmgr_reg
+      - fileset_top ? (lowrisc:systems:rstmgr_pkg)
     files:
-      - rtl/rstmgr_pkg.sv
+      - fileset_ip ? (rtl/rstmgr_pkg.sv)
     file_type: systemVerilogSource
 
 targets:

@@ -14,6 +14,7 @@
       tl_seq.min_req_delay = 0; \
       tl_seq.max_req_delay = 0; \
     end \
+    tl_seq.req_abort_pct = $urandom_range(0, 100); \
     `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq, with_c_) \
     csr_utils_pkg::increment_outstanding_access(); \
     `uvm_send_pri(tl_seq, 1) \
@@ -27,6 +28,8 @@ virtual task tl_access_unmapped_addr();
   // randomize unmapped_addr first to improve perf
   repeat ($urandom_range(10, 100)) begin
     bit [BUS_AW-1:0] unmapped_addr;
+
+    if (cfg.under_reset) return;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(unmapped_addr,
         !((unmapped_addr & csr_addr_mask) inside {normalized_csr_addrs});
         foreach (updated_mem_ranges[i]) {
@@ -41,6 +44,7 @@ endtask
 
 virtual task tl_write_csr_word_unaligned_addr();
   repeat ($urandom_range(10, 100)) begin
+    if (cfg.under_reset) return;
     `create_tl_access_error_case(
         tl_write_csr_word_unaligned_addr,
         opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
@@ -59,6 +63,8 @@ virtual task tl_write_less_than_csr_width();
     dv_base_reg      csr;
     uint             msb_pos;
     bit [BUS_AW-1:0] addr;
+
+    if (cfg.under_reset) return;
     `DV_CHECK_FATAL($cast(csr, all_csrs[i]))
     msb_pos = csr.get_msb_pos();
     addr    = csr.get_address();
@@ -81,6 +87,7 @@ endtask
 
 virtual task tl_protocol_err();
   repeat ($urandom_range(10, 100)) begin
+    if (cfg.under_reset) return;
     `create_tl_access_error_case(
         tl_protocol_err, , tl_host_protocol_err_seq
         )
@@ -91,6 +98,7 @@ virtual task tl_write_mem_less_than_word();
   uint mem_idx;
   dv_base_mem mem;
   repeat ($urandom_range(10, 100)) begin
+    if (cfg.under_reset) return;
     // if more than one memories, randomly select one memory
     mem_idx = $urandom_range(0, cfg.mem_ranges.size - 1);
     // only test when mem doesn't support partial write
@@ -111,6 +119,7 @@ endtask
 virtual task tl_read_mem_err();
   uint mem_idx;
   repeat ($urandom_range(10, 100)) begin
+    if (cfg.under_reset) return;
     // if more than one memories, randomly select one memory
     mem_idx = $urandom_range(0, cfg.mem_ranges.size - 1);
     if (get_mem_access_by_addr(ral, cfg.mem_ranges[mem_idx].start_addr) != "WO") continue;

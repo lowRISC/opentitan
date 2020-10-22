@@ -1,0 +1,22 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:rstmgr_component:0.1"
+description: "Reset manager comopnents"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:clock_mux2
+      - lowrisc:ip:rstmgr_pkg
+    files:
+      - rtl/rstmgr_ctrl.sv
+      - rtl/rstmgr_por.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

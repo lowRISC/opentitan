@@ -12,6 +12,12 @@ num_hints = len(hint_clks)
 
 package clkmgr_pkg;
 
+  typedef enum int {
+% for hint, v in hint_clks.items():
+    ${v['name'].capitalize()} = ${loop.index}${"," if not loop.last else ""}
+% endfor
+  } hint_names_e;
+
   typedef struct packed {
     logic test_en;
   } clk_dft_t;
@@ -34,6 +40,16 @@ all_clocks.update(sw_clks)
 % endfor
 
   } clkmgr_out_t;
+
+% for intf, eps in export_clks.items():
+  typedef struct packed {
+  % for ep, clks in eps.items():
+    % for clk in clks:
+    logic clk_${intf}_${ep}_${clk};
+    % endfor
+  % endfor
+  } clkmgr_${intf}_out_t;
+% endfor
 
   typedef struct packed {
     logic [${num_hints}-1:0] idle;

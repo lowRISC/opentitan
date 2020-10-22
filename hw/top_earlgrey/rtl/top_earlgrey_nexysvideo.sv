@@ -8,8 +8,8 @@ module top_earlgrey_nexysvideo #(
   parameter BootRomInitFile = "boot_rom_fpga_nexysvideo.32.vmem"
 ) (
   // Clock and Reset
-  inout               IO_CLK,
-  inout               IO_RST_N,
+  input               IO_CLK,
+  input               IO_RST_N,
   // JTAG interface
   inout               IO_DPS0, // IO_JTCK,    IO_SDCK
   inout               IO_DPS3, // IO_JTMS,    IO_SDCSB
@@ -54,15 +54,15 @@ module top_earlgrey_nexysvideo #(
   //////////////////////
 
 
-  logic clk, clk_usb_48mhz, rst_n;
+  logic clk_main, clk_usb_48mhz, rst_n;
   logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
   logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
+  logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_umux, dio_out_padring;
+  logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_umux, dio_oe_padring;
+  logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux, dio_in_padring;
 
   padring #(
     // MIOs 31:20 are currently not
@@ -140,7 +140,7 @@ module top_earlgrey_nexysvideo #(
   //////////////////////
 
   logic jtag_trst_n, jtag_srst_n;
-  logic jtag_tck, jtag_tms, jtag_tdi, jtag_tdo;
+  logic jtag_tck, jtag_tck_buf, jtag_tms, jtag_tdi, jtag_tdo;
 
   localparam int NumIOs = padctrl_reg_pkg::NMioPads +
                           padctrl_reg_pkg::NDioPads;
@@ -177,14 +177,75 @@ module top_earlgrey_nexysvideo #(
     .jtag_srst_no ( jtag_srst_n     ),
     .jtag_tdi_o   ( jtag_tdi        ),
     .jtag_tdo_i   ( jtag_tdo        ),
-    // To core side
-    .out_core_i   ( {dio_out_core, mio_out_core} ),
-    .oe_core_i    ( {dio_oe_core,  mio_oe_core}  ),
-    .in_core_o    ( {dio_in_core,  mio_in_core}  ),
+    // To core side via usbmux for DIOs
+    .out_core_i   ( {dio_out_umux, mio_out_core} ),
+    .oe_core_i    ( {dio_oe_umux,  mio_oe_core}  ),
+    .in_core_o    ( {dio_in_umux,  mio_in_core}  ),
     // To padring side
     .out_padring_o ( {dio_out_padring, mio_out_padring} ),
-    .oe_padring_o  ( {dio_oe_padring , mio_oe_padring } ),
-    .in_padring_i  ( {dio_in_padring , mio_in_padring } )
+    .oe_padring_o  ( {dio_oe_padring, mio_oe_padring } ),
+    .in_padring_i  ( {dio_in_padring, mio_in_padring } )
+  );
+
+  // Software can enable the pinflip feature inside usbdev.
+  // The example hello_usbdev does this based on GPIO0 (a switch on the board)
+  //
+  // Here, we use the state of the DN pullup to effectively undo the
+  // swapping such that the PCB always sees the unflipped D+/D-. We
+  // could do the same inside the .xdc file but then two FPGA
+  // bitstreams would be needed for testing.
+  //
+  // dio_in/out/oe map is: PADS <- _padring <- JTAG mux -> _umux -> USB mux -> _core
+  localparam int DioIdxUsbDn0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDn;
+  localparam int DioIdxUsbDp0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDp;
+  localparam int DioIdxUsbDnPullup0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDnPullup;
+  localparam int DioIdxUsbDpPullup0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDpPullup;
+
+  // The output enable for IO_USB_DNPULLUP0 is used to decide whether we need to undo the swapping.
+  logic undo_swap;
+  assign undo_swap = dio_oe_core[DioIdxUsbDnPullup0];
+
+  for (genvar i = 0; i < padctrl_reg_pkg::NDioPads; i++) begin : gen_dio
+    if (i == DioIdxUsbDn0) begin
+      assign dio_out_umux[i] = undo_swap ? dio_out_core[DioIdxUsbDp0] :
+                                           dio_out_core[DioIdxUsbDn0];
+      assign dio_oe_umux[i]  = undo_swap ? dio_oe_core[DioIdxUsbDp0] :
+                                           dio_oe_core[DioIdxUsbDn0];
+      assign dio_in_core[i]  = undo_swap ? dio_in_umux[DioIdxUsbDp0] :
+                                           dio_in_umux[DioIdxUsbDn0];
+    end else if (i == DioIdxUsbDp0) begin
+      assign dio_out_umux[i] = undo_swap ? dio_out_core[DioIdxUsbDn0] :
+                                           dio_out_core[DioIdxUsbDp0];
+      assign dio_oe_umux[i]  = undo_swap ? dio_oe_core[DioIdxUsbDn0] :
+                                           dio_oe_core[DioIdxUsbDp0];
+      assign dio_in_core[i]  = undo_swap ? dio_in_umux[DioIdxUsbDn0] :
+                                           dio_in_umux[DioIdxUsbDp0];
+    end else if (i == DioIdxUsbDnPullup0) begin
+      assign dio_out_umux[i] = undo_swap ? dio_out_core[DioIdxUsbDpPullup0] :
+                                           dio_out_core[DioIdxUsbDnPullup0];
+      assign dio_oe_umux[i]  = undo_swap ? dio_oe_core[DioIdxUsbDpPullup0] :
+                                           dio_oe_core[DioIdxUsbDnPullup0];
+      assign dio_in_core[i]  = dio_in_umux[i];
+    end else if (i == DioIdxUsbDpPullup0) begin
+      assign dio_out_umux[i] = undo_swap ? dio_out_core[DioIdxUsbDnPullup0] :
+                                           dio_out_core[DioIdxUsbDpPullup0];
+      assign dio_oe_umux[i]  = undo_swap ? dio_oe_core[DioIdxUsbDnPullup0] :
+                                           dio_oe_core[DioIdxUsbDpPullup0];
+      assign dio_in_core[i]  = dio_in_umux[i];
+    end else begin
+      assign dio_out_umux[i] = dio_out_core[i];
+      assign dio_oe_umux[i]  = dio_oe_core[i];
+      assign dio_in_core[i]  = dio_in_umux[i];
+    end
+  end
+
+  ////////////////////////////////
+  // JTAG clock buffer for FPGA //
+  ////////////////////////////////
+
+  BUFG jtag_buf (
+    .I (jtag_tck),
+    .O (jtag_tck_buf)
   );
 
   //////////////////
@@ -194,50 +255,67 @@ module top_earlgrey_nexysvideo #(
   clkgen_xil7series # (
     .AddClkBuf(0)
   ) clkgen (
-      .IO_CLK,
-    .IO_RST_N(IO_RST_N & jtag_srst_n),
-    .clk_sys(clk),
+    .IO_CLK,
+    .IO_RST_N,
+    .jtag_srst_n,
+    .clk_main(clk_main),
     .clk_48MHz(clk_usb_48mhz),
-    .rst_sys_n(rst_n)
+    .rst_n(rst_n)
   );
 
   //////////////////////
   // Top-level design //
   //////////////////////
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  ast_wrapper_pkg::ast_rst_t ast_base_rst;
   ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
   ast_wrapper_pkg::ast_status_t ast_base_status;
 
-  assign ast_base_pwr.slow_clk_val = 2'b10;
-  assign ast_base_pwr.core_clk_val = 2'b10;
-  assign ast_base_pwr.io_clk_val   = 2'b10;
+  assign ast_base_pwr.slow_clk_val = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.core_clk_val = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.io_clk_val   = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.usb_clk_val  = pwrmgr_pkg::DiffValid;
   assign ast_base_pwr.main_pok     = 1'b1;
 
   assign ast_base_alerts.alerts_p  = '0;
   assign ast_base_alerts.alerts_n  = {ast_wrapper_pkg::NumAlerts{1'b1}};
   assign ast_base_status.io_pok    = {ast_wrapper_pkg::NumIoRails{1'b1}};
 
+  // the rst_ni pin only goes to AST
+  // the rest of the logic generates reset based on the 'pok' signal.
+  // for verilator purposes, make these two the same.
+  assign ast_base_rst.aon_pok      = rst_n;
   top_earlgrey #(
+    .AesMasking(1'b0),
+    .AesSBoxImpl(aes_pkg::SBoxImplLut),
+    .SecAesStartTriggerDelay(0),
+    .SecAesAllowForcingMasks(1'b0),
+    .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexPipeLine(1),
+    .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (
     // Clocks, resets
     .rst_ni          ( rst_n         ),
-    .clk_main_i      ( clk           ),
-    .clk_io_i        ( clk           ),
+    .clk_main_i      ( clk_main      ),
+    .clk_io_i        ( clk_main      ),
     .clk_usb_i       ( clk_usb_48mhz ),
-    .clk_aon_i       ( clk           ),
-    .rstmgr_ast_i                ( 1'b1            ),
-    .pwrmgr_pwr_ast_req_o        (                 ),
-    .pwrmgr_pwr_ast_rsp_i        ( ast_base_pwr    ),
-    .sensor_ctrl_ast_alert_req_i ( ast_base_alerts ),
-    .sensor_ctrl_ast_alert_rsp_o (                 ),
-    .sensor_ctrl_ast_status_i    ( ast_base_status ),
-    .usbdev_usb_ref_val_o        (                 ),
-    .usbdev_usb_ref_pulse_o      (                 ),
+    .clk_aon_i       ( clk_main      ),
+    .rstmgr_ast_i                 ( ast_base_rst    ),
+    .pwrmgr_pwr_ast_req_o         (                 ),
+    .pwrmgr_pwr_ast_rsp_i         ( ast_base_pwr    ),
+    .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts ),
+    .sensor_ctrl_ast_alert_rsp_o  (                 ),
+    .sensor_ctrl_ast_status_i     ( ast_base_status ),
+    .usbdev_usb_ref_val_o         (                 ),
+    .usbdev_usb_ref_pulse_o       (                 ),
+    .ast_tl_req_o                 (                 ),
+    .ast_tl_rsp_i                 ( '0              ),
+    .otp_ctrl_otp_ast_pwr_seq_o   (                 ),
+    .otp_ctrl_otp_ast_pwr_seq_h_i ( '0              ),
 
     // JTAG
-    .jtag_tck_i      ( jtag_tck      ),
+    .jtag_tck_i      ( jtag_tck_buf  ),
     .jtag_tms_i      ( jtag_tms      ),
     .jtag_trst_ni    ( jtag_trst_n   ),
     .jtag_tdi_i      ( jtag_tdi      ),

@@ -1,0 +1,27 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:fpv:sha3core_fpv:0.1"
+description: "SHA3 Core FPV target"
+filesets:
+  files_formal:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:ip:kmac
+    files:
+      - tb/sha3core_fpv.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    # note, this setting is just used
+    # to generate a file list for jg
+    default_tool: icarus
+    filesets:
+      - files_formal
+    toplevel:
+      - sha3core_fpv
+
+  formal:
+    <<: *default_target

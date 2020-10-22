@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:prim:clock_buf
       - lowrisc:prim:clock_gating
       - lowrisc:prim:clock_inv
       - lowrisc:prim:ram_2p_adv
@@ -83,6 +84,7 @@ targets:
       ascentlint:
         ascentlint_options:
           - "-wait_license"
+          - "-stop_on_error"
       verilator:
         mode: lint-only
         verilator_options:

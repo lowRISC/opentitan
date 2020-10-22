@@ -5,3 +5,4 @@
 `include "entropy_src_base_vseq.sv"
 `include "entropy_src_sanity_vseq.sv"
 `include "entropy_src_common_vseq.sv"
+`include "entropy_src_rng_vseq.sv"

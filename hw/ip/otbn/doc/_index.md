@@ -42,7 +42,8 @@ OTBN is designed as a self-contained co-processor with its own instruction and d
 ## Compatibility
 
 OTBN is not designed to be compatible with other cryptographic accelerators.
-Its design is inspired by dcrypto, the cryptographic accelerator used in Google’s Titan chips, which itself is inspired by the [Fiat Crypto Machine](http://adam.chlipala.net/papers/FiatCryptoSP19/FiatCryptoSP19.pdf).
+It received some inspiration from assembly code available from the [Chromium EC project](https://chromium.googlesource.com/chromiumos/platform/ec/),
+which has been formally verified within the [Fiat Crypto project](http://adam.chlipala.net/papers/FiatCryptoSP19/FiatCryptoSP19.pdf).
 
 # Instruction Set
 
@@ -133,12 +134,12 @@ CSRs can be accessed through dedicated instructions, `CSRRS` and `CSRRW`.
           </thead>
           <tbody>
             <tr><td>0</td><td>Carry of Flag Group 0</td></tr>
-            <tr><td>1</td><td>LSb of Flag Group 0</td></tr>
-            <tr><td>2</td><td>MSb of Flag Group 0</td></tr>
+            <tr><td>1</td><td>MSb of Flag Group 0</td></tr>
+            <tr><td>2</td><td>LSb of Flag Group 0</td></tr>
             <tr><td>3</td><td>Zero of Flag Group 0</td></tr>
             <tr><td>4</td><td>Carry of Flag Group 1</td></tr>
-            <tr><td>5</td><td>LSb of Flag Group 1</td></tr>
-            <tr><td>6</td><td>MSb of Flag Group 1</td></tr>
+            <tr><td>5</td><td>MSb of Flag Group 1</td></tr>
+            <tr><td>6</td><td>LSb of Flag Group 1</td></tr>
             <tr><td>7</td><td>Zero of Flag Group 1</td></tr>
           </tbody>
         </table>
@@ -306,6 +307,8 @@ Each flag is a single bit.
 - `Z` (Zero Flag)
   Set to 1 if the result of the last operation was zero; otherwise 0.
 
+The `L`, `M`, and `Z` flags are determined based on the result of the operation as it is written back into the result register, without considering the overflow bit.
+
 ### Loop Stack
 
 The LOOP instruction allows for nested loops; the active loops are stored on the loop stack.
@@ -324,19 +327,14 @@ Writing to `x1` pushes to the call stack, reading from it pops an item.
 
 A WLEN bit wide accumulator used by the BN.MULQACC instruction.
 
-## Instruction Format
-
-All instructions are a fixed 32b in length and must be aligned on a four byte-boundary in memory.
-
-<div class="bd-callout bd-callout-warning">
-  <h5>Note</h5>
-
-  The instruction encoding has not been finalized yet.
-  See [issue #2391](https://github.com/lowRISC/opentitan/issues/2391) for the current status.
-</div>
-
 <!-- Documentation for the instructions in the ISA. Generated from ../data/insns.yml. -->
-{{< otbn_isa >}}
+## Base Instruction Subset
+
+{{< otbn_isa base >}}
+
+## Big Number Instruction Subset
+
+{{< otbn_isa bignum >}}
 
 ## Pseudo-Code Functions for BN Instructions
 
@@ -435,7 +433,18 @@ def AddWithCarry(a: Bits(WLEN), b: Bits(WLEN), carry_in: Bits(1)) -> (Bits(WLEN)
   flags_out.C = result[WLEN]
   flags_out.L = result[0]
   flags_out.M = result[WLEN-1]
-  flags_out.Z = (result == 0)
+  flags_out.Z = (result[WLEN-1:0] == 0)
+
+  return (result[WLEN-1:0], flags_out)
+
+def SubtractWithBorrow(a: Bits(WLEN), b: Bits(WLEN), borrow_in: Bits(1)) -> (Bits(WLEN), FlagGroup):
+  result: Bits[WLEN+1] = a - b - borrow_in
+
+  flags_out = FlagGroup()
+  flags_out.C = result[WLEN]
+  flags_out.L = result[0]
+  flags_out.M = result[WLEN-1]
+  flags_out.Z = (result[WLEN-1:0] == 0)
 
   return (result[WLEN-1:0], flags_out)
 
@@ -480,6 +489,9 @@ def StoreWlenWordToMemory(byteaddr: integer, storedata: Bits(WLEN)):
   To be filled in as we create the implementation.
 </div>
 
+By design, OTBN is a simple processor and has essentially no error handling support.
+When anything goes wrong (an out-of-bounds memory operation, an invalid instruction encoding, etc.), OTBN will stop fetching instructions, and set the `ERR_CODE` register and the `err` bit of the `INTR_STATE` register.
+
 # Programmers Guide
 
 <div class="bd-callout bd-callout-warning">
@@ -503,6 +515,9 @@ it cannot be read or written from user code through load or store instructions.
 The data memory (DMEM) is 256b wide and read-write accessible from the base and big number instruction subsets of the OTBN processor core.
 When accessed from the base instruction subset through the `LW` or `SW` instructions, accesses must read or write 32b-aligned 32b words.
 When accessed from the big number instruction subset through the `BN.LID` or `BN.SID` instructions, accesses must read or write 256b-aligned 256b words.
+
+Both memories can be accessed through OTBN's register interface ({{< regref "DMEM" >}} and {{< regref "IMEM" >}}) only when OTBN is idle, as indicated by the {{< regref "STATUS.busy">}} flag.
+All memory accesses through the register interface must be word-aligned 32b word accesses.
 
 ## Operation
 
@@ -537,13 +552,13 @@ Rough expected process:
 This specification gives the implementers the option to provide either a quarter-word multiply-accumulate instruction, `BN.MULQADD`, or a half-word multiply instruction, `BN.MULH`.
 Four `BN.MULQACC` can be used to replace one `BN.MULH` instruction, which is able to operate on twice the data size.
 
-`BN.MULH r1, r0.l, r0.u` becomes
+`BN.MULH w1, w0.l, w0.u` becomes
 
 ```
-BN.MULQACC.Z      r0.0, r0.2, 0
-BN.MULQACC        r0.0, r0.3, 64
-BN.MULQACC        r0.1, r0.2, 64
-BN.MULQACC.WO r1, r0.1, r0.3, 128
+BN.MULQACC.Z      w0.0, w0.2, 0
+BN.MULQACC        w0.0, w0.3, 64
+BN.MULQACC        w0.1, w0.2, 64
+BN.MULQACC.WO r1, w0.1, w0.3, 128
 ```
 
 ## Algorithmic Example: Multiplying two WLEN numbers with BN.MULQACC
@@ -553,9 +568,9 @@ However, the multiplication instructions only operate on half or quarter-words o
 This section outlines a technique to multiply two WLEN-bit numbers with the use of the quarter-word multiply-accumulate instruction `BN.MULQACC`.
 
 The shift out functionality can be used to perform larger multiplications without extra adds.
-The table below shows how two registers `wr0` and `wr1` can be multiplied together to give a result in `wr2` and `wr3`.
-The cells on the right show how the result is built up `a0:a3 = wr0.0:wr0.3` and `b0:b3 = wr1.0:wr1.3`.
-The sum of a column represents WLEN/4 bits of a destination register, where `c0:c3 = wr2.0:wr2.3` and `d0:d3 = wr3.0:wr3.3`.
+The table below shows how two registers `w0` and `w1` can be multiplied together to give a result in `w2` and `w3`.
+The cells on the right show how the result is built up `a0:a3 = w0.0:w0.3` and `b0:b3 = w1.0:w1.3`.
+The sum of a column represents WLEN/4 bits of a destination register, where `c0:c3 = w2.0:w2.3` and `d0:d3 = w3.0:w3.3`.
 Each cell with a multiply in takes up two WLEN/4-bit columns to represent the WLEN/2-bit multiply result.
 The current accumulator in each instruction is represented by highlighted cells where the accumulator value will be the sum of the highlighted cell and all cells above it.
 
@@ -577,7 +592,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
   </thead>
   <tbody>
     <tr>
-      <td><code>BN.MULQACC.Z wr0.0, wr1.0, 0</code></td>
+      <td><code>BN.MULQACC.Z w0.0, w1.0, 0</code></td>
       <td></td>
       <td></td>
       <td></td>
@@ -587,7 +602,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td style="background-color: orange" colspan="2" rowspan="1"><code>a0 * b0</code></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC wr0.1, w1.0, 64</code></td>
+      <td><code>BN.MULQACC w0.1, w1.0, 64</code></td>
       <td></td>
       <td></td>
       <td></td>
@@ -597,7 +612,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td style="background-color: orange"></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC.SO wr2.l, wr0.0, wr1.1, 64</code></td>
+      <td><code>BN.MULQACC.SO w2.l, w0.0, w1.1, 64</code></td>
       <td></td>
       <td></td>
       <td></td>
@@ -607,7 +622,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td style="background-color: orange"></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC wr0.2, wr1.0, 0</code></td>
+      <td><code>BN.MULQACC w0.2, w1.0, 0</code></td>
       <td></td>
       <td></td>
       <td style="background-color: yellow"></td>
@@ -617,7 +632,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC wr0.1, wr1.1, 0</code></td>
+      <td><code>BN.MULQACC w0.1, w1.1, 0</code></td>
       <td></td>
       <td></td>
       <td style="background-color: yellow"></td>
@@ -627,7 +642,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC wr0.0, wr1.2, 0</code></td>
+      <td><code>BN.MULQACC w0.0, w1.2, 0</code></td>
       <td></td>
       <td></td>
       <td style="background-color: yellow"></td>
@@ -637,7 +652,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC wr0.3, wr1.0, 64</code></td>
+      <td><code>BN.MULQACC w0.3, w1.0, 64</code></td>
       <td></td>
       <td></td>
       <td style="background-color: yellow"></td>
@@ -647,7 +662,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC wr0.2, wr1.1, 64</code></td>
+      <td><code>BN.MULQACC w0.2, w1.1, 64</code></td>
       <td></td>
       <td></td>
       <td style="background-color: yellow"></td>
@@ -657,7 +672,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC wr0.1, wr1.2, 64</code></td>
+      <td><code>BN.MULQACC w0.1, w1.2, 64</code></td>
       <td></td>
       <td></td>
       <td style="background-color: yellow"></td>
@@ -667,7 +682,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC.SO wr2.u, wr0.0, wr1.3, 64</code></td>
+      <td><code>BN.MULQACC.SO w2.u, w0.0, w1.3, 64</code></td>
       <td></td>
       <td></td>
       <td style="background-color: yellow"></td>
@@ -677,7 +692,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC wr0.3, wr1.1, 0</code></td>
+      <td><code>BN.MULQACC w0.3, w1.1, 0</code></td>
       <td style="background-color: olive"></td>
       <td style="background-color: olive"></td>
       <td style="background-color: olive" colspan="2" rowspan="1"><code>a3 * b1</code></td>
@@ -687,7 +702,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC wr0.2, wr1.2, 0</code></td>
+      <td><code>BN.MULQACC w0.2, w1.2, 0</code></td>
       <td style="background-color: olive"></td>
       <td style="background-color: olive"></td>
       <td style="background-color: olive" colspan="2" rowspan="1"><code>a2 * b2</code></td>
@@ -697,7 +712,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC wr0.1, wr1.3, 0</code></td>
+      <td><code>BN.MULQACC w0.1, w1.3, 0</code></td>
       <td style="background-color: olive"></td>
       <td style="background-color: olive"></td>
       <td style="background-color: olive" colspan="2" rowspan="1"><code>a1 * b3</code></td>
@@ -707,7 +722,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC wr0.3, wr1.2, 64</code></td>
+      <td><code>BN.MULQACC w0.3, w1.2, 64</code></td>
       <td style="background-color: olive"></td>
       <td style="background-color: olive" colspan="2" rowspan="1"><code>a3 * b2</code></td>
       <td style="background-color: olive"></td>
@@ -717,7 +732,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC.SO wr3.l, wr0.2, wr1.3, 64</code></td>
+      <td><code>BN.MULQACC.SO w3.l, w0.2, w1.3, 64</code></td>
       <td style="background-color: olive"></td>
       <td style="background-color: olive" colspan="2" rowspan="1"><code>a2 * b3</code></td>
       <td style="background-color: olive"></td>
@@ -727,7 +742,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
       <td></td>
     </tr>
     <tr>
-      <td><code>BN.MULQACC.SO wr3.u, wr0.3, wr1.3, 0</code></td>
+      <td><code>BN.MULQACC.SO w3.u, w0.3, w1.3, 0</code></td>
       <td style="background-color: lightblue" colspan="2" rowspan="1"><code>a3 * b3</code></td>
       <td></td>
       <td></td>
@@ -738,3 +753,5 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
     </tr>
   </tbody>
 </table>
+
+Code snippets giving examples of 256x256 and 384x384 multiplies can be found in `sw/otbn/code-snippets/mul256.S` and `sw/otbn/code-snippets/mul384.S`.

@@ -22,10 +22,12 @@ from pygen_src.riscv_asm_program_gen import riscv_asm_program_gen  # NOQA
 class riscv_instr_base_test:
     def __init__(self):
         pass
-    asm = riscv_asm_program_gen()
+
     for _ in range(cfg.num_of_tests):
         cfg.randomize()
+        asm = riscv_asm_program_gen()
         riscv_instr_ins.create_instr_list(cfg)
-        test_name = "riscv_asm_test_{}.S".format(_)
+        test_name = "riscv_arithmetic_basic_test_{}.S".format(_)
+        asm.get_directed_instr_stream()
         asm.gen_program()
         asm.gen_test_file(test_name)

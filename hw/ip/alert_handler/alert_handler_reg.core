@@ -8,10 +8,10 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:tlul:headers
-
+      - fileset_top ? (lowrisc:systems:alert_handler_reg)
     files:
-      - rtl/alert_handler_reg_pkg.sv
-      - rtl/alert_handler_reg_top.sv
+      - fileset_ip ? (rtl/alert_handler_reg_pkg.sv)
+      - fileset_ip ? (rtl/alert_handler_reg_top.sv)
     file_type: systemVerilogSource
 
 

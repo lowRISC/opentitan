@@ -106,6 +106,8 @@ module gpio (
 
   // instantiate interrupt hardware primitive
   prim_intr_hw #(.Width(32)) intr_hw (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (event_intr_combined),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.q),

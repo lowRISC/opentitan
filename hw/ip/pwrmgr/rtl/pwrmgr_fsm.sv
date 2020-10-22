@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module pwrmgr_fsm import pwrmgr_pkg::*; (
+module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input clk_i,
   input rst_ni,
 
@@ -19,7 +19,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   input ack_pwrdn_i,
   input low_power_entry_i,
   input main_pd_ni,
-  input reset_req_i,
+  input [NumRstReqs-1:0] reset_reqs_i,
 
   // consumed in pwrmgr
   output logic wkup_o,        // generate wake interrupt
@@ -35,6 +35,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
 
   // clkmgr
   output logic ips_clk_en_o,
+  input clk_en_status_i,
 
   // otp
   output logic otp_init_o,
@@ -47,6 +48,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   input lc_idle_i,
 
   // flash
+  output logic flash_init_o,
+  input flash_done_i,
   input flash_idle_i
 );
 
@@ -57,6 +60,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
     StReleaseLcRst,
     StOtpInit,
     StLcInit,
+    StFlashInit,
     StAckPwrUp,
     StActive,
     StDisClks,
@@ -86,6 +90,9 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   // reset hint to rstmgr
   reset_cause_e reset_cause_q, reset_cause_d;
 
+  // reset request
+  logic reset_req;
+
   state_e state_d, state_q;
   logic reset_ongoing_q, reset_ongoing_d;
   logic req_pwrdn_q, req_pwrdn_d;
@@ -95,6 +102,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   logic [PowerDomains-1:0] rst_lc_req_d, rst_sys_req_d;
   logic otp_init;
   logic lc_init;
+  logic flash_init_d;
 
   assign pd_n_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:1] == '0 &
                               pwr_rst_i.rst_sys_src_n[PowerDomains-1:1] == '0;
@@ -102,12 +110,13 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   assign all_rsts_asserted = pwr_rst_i.rst_lc_src_n == '0 &
                              pwr_rst_i.rst_sys_src_n == '0;
 
+  assign reset_req = |reset_reqs_i;
+
   // when in low power path, resets are controlled by domain power down
   // when in reset path, all resets must be asserted
   // when the reset cause is something else, it is invalid
   assign reset_valid = reset_cause_q == LowPwrEntry ? main_pd_ni | pd_n_rsts_asserted :
                        reset_cause_q == HwReq       ? all_rsts_asserted : 1'b0;
-
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -149,6 +158,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
     rst_lc_req_d = rst_lc_req_q;
     rst_sys_req_d = rst_sys_req_q;
     reset_cause_d = reset_cause_q;
+    flash_init_d = 1'b0;
 
     unique case(state_q)
 
@@ -161,7 +171,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
       StEnableClocks: begin
         ip_clk_en_d = 1'b1;
 
-        if (1'b1) begin // TODO, add a feedback signal to check clocks are enabled
+        if (clk_en_status_i) begin
           state_d = StReleaseLcRst;
         end
       end
@@ -186,11 +196,19 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
         lc_init = 1'b1;
 
         if (lc_done_i) begin
-          state_d = StAckPwrUp;
-
+          state_d = StFlashInit;
 
         end
       end
+
+      StFlashInit: begin
+        flash_init_d = 1'b1;
+
+        if (flash_done_i) begin
+          state_d = StAckPwrUp;
+        end
+      end
+
 
       StAckPwrUp: begin
         // only ack the slow_fsm if we actually transitioned through it
@@ -209,7 +227,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
         rst_sys_req_d = '0;
         reset_cause_d = ResetNone;
 
-        if (reset_req_i || low_power_entry_i) begin
+        if (reset_req || low_power_entry_i) begin
           reset_cause_d = ResetUndefined;
           state_d = StDisClks;
         end
@@ -218,9 +236,9 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
       StDisClks: begin
         ip_clk_en_d = 1'b0;
 
-        if (1'b1) begin // TODO, add something to check that clocks are disabled
-          state_d = reset_req_i ? StNvmShutDown : StFallThrough;
-          wkup_record_o = !reset_req_i;
+        if (!clk_en_status_i) begin
+          state_d = reset_req ? StNvmShutDown : StFallThrough;
+          wkup_record_o = ~reset_req;
         end
       end
 
@@ -310,10 +328,21 @@ module pwrmgr_fsm import pwrmgr_pkg::*; (
   assign pwr_rst_o.rst_lc_req = rst_lc_req_q;
   assign pwr_rst_o.rst_sys_req = rst_sys_req_q;
   assign pwr_rst_o.reset_cause = reset_cause_q;
+  assign pwr_rst_o.rstreqs = reset_reqs_i;
 
   assign otp_init_o = otp_init;
   assign lc_init_o = lc_init;
   assign ips_clk_en_o = ip_clk_en_q;
+
+  prim_flop #(
+    .Width(1),
+    .ResetValue(1'b1)
+  ) u_reg_idle (
+    .clk_i,
+    .rst_ni,
+    .d_i(flash_init_d),
+    .q_o(flash_init_o)
+  );
 
 
 endmodule

@@ -208,7 +208,7 @@ package prim_cipher_pkg;
                                                        logic [4:0]  round_idx);
     logic [63:0] key_out;
     // rotate by 61 to the left
-    key_out = 64'(key_in << 61) | 64'(key_in >> (64-61));
+    key_out = {key_in[63-61:0], key_in[63:64-61]};
     // sbox on uppermost 4 bits
     key_out[63 -: 4] = PRESENT_SBOX4[key_out[63 -: 4]];
     // xor in round counter on bits 19 to 15
@@ -220,7 +220,7 @@ package prim_cipher_pkg;
                                                        logic [4:0]  round_idx);
     logic [79:0] key_out;
     // rotate by 61 to the left
-    key_out = 80'(key_in << 61) | 80'(key_in >> (80-61));
+    key_out = {key_in[79-61:0], key_in[79:80-61]};
     // sbox on uppermost 4 bits
     key_out[79 -: 4] = PRESENT_SBOX4[key_out[79 -: 4]];
     // xor in round counter on bits 19 to 15
@@ -232,7 +232,7 @@ package prim_cipher_pkg;
                                                          logic [4:0]   round_idx);
     logic [127:0] key_out;
     // rotate by 61 to the left
-    key_out = 128'(key_in << 61) | 128'(key_in >> (128-61));
+    key_out = {key_in[127-61:0], key_in[127:128-61]};
     // sbox on uppermost 4 bits
     key_out[127 -: 4] = PRESENT_SBOX4[key_out[127 -: 4]];
     // sbox on second nibble from top
@@ -245,46 +245,40 @@ package prim_cipher_pkg;
 
   // inverse key schedule
   function automatic logic [63:0] present_inv_update_key64(logic [63:0] key_in,
-                                                           logic [4:0]  round_idx,
-                                                           // total number of rounds employed
-                                                           logic [4:0]  round_cnt);
+                                                           logic [4:0]  round_idx);
     logic [63:0] key_out = key_in;
     // xor in round counter on bits 19 to 15
-    key_out[19:15] ^= round_cnt + 1 - round_idx;
+    key_out[19:15] ^= round_idx;
     // sbox on uppermost 4 bits
     key_out[63 -: 4] = PRESENT_SBOX4_INV[key_out[63 -: 4]];
     // rotate by 61 to the right
-    key_out = 64'(key_out >> 61) | 64'(key_out << (64-61));
+    key_out = {key_out[60:0], key_out[63:61]};
     return key_out;
   endfunction : present_inv_update_key64
 
   function automatic logic [79:0] present_inv_update_key80(logic [79:0] key_in,
-                                                           logic [4:0]  round_idx,
-                                                           // total number of rounds employed
-                                                           logic [4:0]  round_cnt);
+                                                           logic [4:0]  round_idx);
     logic [79:0] key_out = key_in;
     // xor in round counter on bits 19 to 15
-    key_out[19:15] ^= round_cnt + 1 - round_idx;
+    key_out[19:15] ^= round_idx;
     // sbox on uppermost 4 bits
     key_out[79 -: 4] = PRESENT_SBOX4_INV[key_out[79 -: 4]];
     // rotate by 61 to the right
-    key_out = 80'(key_out >> 61) | 80'(key_out << (80-61));
+    key_out = {key_out[60:0], key_out[79:61]};
     return key_out;
   endfunction : present_inv_update_key80
 
   function automatic logic [127:0] present_inv_update_key128(logic [127:0] key_in,
-                                                             logic [4:0]   round_idx,
-                                                             // total number of rounds employed
-                                                             logic [4:0]   round_cnt);
+                                                             logic [4:0]   round_idx);
     logic [127:0] key_out = key_in;
     // xor in round counter on bits 66 to 62
-    key_out[66:62] ^= round_cnt + 1 - round_idx;
+    key_out[66:62] ^= round_idx;
     // sbox on second highest nibble
     key_out[123 -: 4] = PRESENT_SBOX4_INV[key_out[123 -: 4]];
     // sbox on uppermost 4 bits
     key_out[127 -: 4] = PRESENT_SBOX4_INV[key_out[127 -: 4]];
     // rotate by 61 to the right
-    key_out = 128'(key_out >> 61) | 128'(key_out << (128-61));
+    key_out = {key_out[60:0], key_out[127:61]};
     return key_out;
   endfunction : present_inv_update_key128
 
@@ -296,7 +290,7 @@ package prim_cipher_pkg;
                                                         logic [4:0]  round_cnt);
     logic [63:0] key_out;
     key_out = key_in;
-    for (int k = 0; k < round_cnt; k++) begin
+    for (int unsigned k = 0; k < round_cnt; k++) begin
       key_out = present_update_key64(key_out, 5'(k + 1));
     end
     return key_out;
@@ -307,7 +301,7 @@ package prim_cipher_pkg;
                                                         logic [4:0]  round_cnt);
     logic [79:0] key_out;
     key_out = key_in;
-    for (int k = 0; k < round_cnt; k++) begin
+    for (int unsigned k = 0; k < round_cnt; k++) begin
       key_out = present_update_key80(key_out, 5'(k + 1));
     end
     return key_out;
@@ -318,7 +312,7 @@ package prim_cipher_pkg;
                                                           logic [4:0]   round_cnt);
     logic [127:0] key_out;
     key_out = key_in;
-    for (int k = 0; k < round_cnt; k++) begin
+    for (int unsigned k = 0; k < round_cnt; k++) begin
       key_out = present_update_key128(key_out, 5'(k + 1));
     end
     return key_out;

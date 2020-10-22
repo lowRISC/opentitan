@@ -1,0 +1,47 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:rstmgr:0.1"
+description: "Top level Reset Manager"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:rstmgr_pkg
+      - lowrisc:ip:rstmgr_component
+    files:
+      - rtl/autogen/rstmgr.sv
+    file_type: systemVerilogSource
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/rstmgr.waiver
+    file_type: waiver
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - files_rtl
+    toplevel: rstmgr
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+          - "-stop_on_error"

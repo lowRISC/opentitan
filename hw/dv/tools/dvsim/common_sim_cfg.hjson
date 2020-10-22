@@ -1,0 +1,161 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  project:          opentitan
+  doc_server:       docs.opentitan.org
+  results_server:   reports.opentitan.org
+
+  // Where to find DV code
+  dv_root:          "{proj_root}/hw/dv"
+
+  flow:             sim
+  flow_makefile:    "{dv_root}/tools/dvsim/sim.mk"
+
+  import_cfgs:      ["{proj_root}/hw/data/common_project_cfg.hjson",
+                     "{dv_root}/tools/dvsim/common_modes.hjson",
+                     "{dv_root}/tools/dvsim/fusesoc.hjson",
+                     "{dv_root}/tools/dvsim/{tool}.hjson"]
+
+  // Default directory structure for the output
+  build_dir:          "{scratch_path}/{build_mode}"
+  run_dir_name:       "{index}.{test}"
+  run_dir:            "{scratch_path}/{run_dir_name}/out"
+  sw_build_dir:       "{scratch_path}/sw"
+  sw_root_dir:        "{proj_root}/sw"
+
+  // pass and fail patterns
+  build_pass_patterns: []
+  build_fail_patterns: ["^ERROR:.*$"] // fusesoc build error
+  run_pass_patterns:   ["^TEST PASSED (UVM_)?CHECKS$"]
+  run_fail_patterns:   ["^UVM_ERROR\\s[^:].*$",
+                        "^UVM_FATAL\\s[^:].*$",
+                        "^UVM_WARNING\\s[^:].*$",
+                        "^Assert failed: ",
+                        "^\\s*Offending '.*'",
+                        "^TEST FAILED (UVM_)?CHECKS$"]
+
+  // Default TileLink widths
+  tl_aw: 32
+  tl_dw: 32
+  tl_dbw: 4
+
+  // Default UVM verbosity settings
+  expand_uvm_verbosity_n: UVM_NONE
+  expand_uvm_verbosity_l: UVM_LOW
+  expand_uvm_verbosity_m: UVM_MEDIUM
+  expand_uvm_verbosity_h: UVM_HIGH
+  expand_uvm_verbosity_d: UVM_DEBUG
+
+  // Default simulation verbosity (l => UVM_LOW). Can be overridden by
+  // the --verbosity command-line argument.
+  verbosity: l
+
+  // Path to the dut instance (this is used in a couple of places such as coverage cfg
+  // file, xprop cfg file etc. If this is different for your block, then override it with
+  // the 'overrides' directive.
+  dut_instance: "{tb}.dut"
+
+  // Top level simulation entities.
+  sim_tops: ["-top {tb}"]
+
+  // Default build and run opts
+  build_opts: [// List multiple tops for the simulation
+               "{sim_tops}",
+               // Standard UVM defines
+               "+define+UVM",
+               "+define+UVM_NO_DEPRECATED",
+               "+define+UVM_REGEX_NO_DPI",
+               "+define+UVM_REG_ADDR_WIDTH={tl_aw}",
+               "+define+UVM_REG_DATA_WIDTH={tl_dw}",
+               "+define+UVM_REG_BYTENABLE_WIDTH={tl_dbw}"]
+
+  run_opts: ["+UVM_NO_RELNOTES",
+             "+UVM_VERBOSITY={expand_uvm_verbosity_{verbosity}}"]
+
+  // Default list of things to export to shell
+  exports: [
+    TOOL_SRCS_DIR: {tool_srcs_dir}
+    EN_WAVES: {waves}
+    DUMP_FMT: {dump_fmt}
+    DUT_TOP: {dut}
+    TB_TOP: {tb}
+    dut_instance: {dut_instance}
+  ]
+
+  // Build modes are collection of build_opts and run_opts
+  // A test can enable a specific build mode by setting 'use_build_mode' key
+  build_modes: [
+    {
+      name: foo
+      build_opts: ["+define+bx",
+                   "+define+by",
+                   "+define+bz"]
+      run_opts: ["+rx=1",
+                 "+ry=2",
+                 "+rz=3"]
+    }
+    {
+      name: bar
+      build_opts: ["+define+bbaru1",
+                   "+define+bbaru2",
+                   "+define+bbaru3"]
+      run_opts: ["+rbar1u=1",
+                 "+rbar2u=2",
+                 "+rbar3u=3"]
+    }
+    {
+      name: cover_reg_top
+    }
+  ]
+
+  // Regressions are tests that can be grouped together and run in one shot
+  // By default, two regressions are made available - "all" and "nightly". Both
+  // run all available tests for the DUT. "nightly" enables coverage as well.
+  // The 'tests' key is set to an empty list, which indicates "run everything".
+  // Test sets can enable sim modes, which are a set of build_opts and run_opts
+  // that are grouped together. These are appended to the build modes used by the
+  // tests.
+  regressions: [
+    {
+      name: sanity
+      tests: []
+      reseed: 1
+    }
+
+    {
+      name: all
+    }
+
+    {
+      name: all_once
+      reseed: 1
+    }
+
+    {
+      name: nightly
+      en_sim_modes: ["cov"]
+    }
+  ]
+
+  // Add waves.tcl to the set of sources to be copied over to
+  // {tool_srcs_dir}. This can be sourced by the tool-specific TCL
+  // script to set up wave dumping.
+  tool_srcs:  ["{dv_root}/tools/waves.tcl"],
+
+  // Project defaults for VCS
+  vcs_cov_cfg_file: "{{build_mode}_vcs_cov_cfg_file}"
+  vcs_cov_excl_files: ["{tool_srcs_dir}/common_cov_excl.el"]
+
+  // Build-specific coverage cfg files for VCS.
+  default_vcs_cov_cfg_file: "-cm_hier {tool_srcs_dir}/cover.cfg"
+  cover_reg_top_vcs_cov_cfg_file: "-cm_hier {tool_srcs_dir}/cover_reg_top.cfg"
+
+  // Project defaults for Xcelium
+  // xcelium_cov_cfg_file: "{{build_mode}_xcelium_cov_cfg_file}"
+  // xcelium_cov_refine_files: ["{tool_srcs_dir}/common_cov.vRefine"]
+
+  // Build-specific coverage cfg files for Xcelium.
+  // default_xcelium_cov_cfg_file: "-covfile {tool_srcs_dir}/cover.ccf"
+  // cover_reg_top_xcelium_cov_cfg_file: "-covfile {tool_srcs_dir}/cover_reg_top.ccf"
+}

@@ -88,6 +88,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (kind == "HARD") begin
       csr_utils_pkg::reset_asserted();
       cfg.clk_rst_vif.apply_reset();
+      csr_utils_pkg::clear_outstanding_access();
       csr_utils_pkg::reset_deasserted();
     end
     if (cfg.has_ral) begin
@@ -186,13 +187,19 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
       string        reset_type = "HARD";
       csr_write_seq m_csr_write_seq;
 
+      // Writing random values to CSRs might trigger assertion errors. So we disable in the entire
+      // DUT hierarchy and re-enable after resetting the DUT. See DV_ASSERT_CTRL macro defined in
+      // hw/dv/sv/dv_utils/dv_macros.svh for more details.
+      if (!enable_asserts_in_hw_reset_rand_wr) begin
+        `DV_ASSERT_CTRL_REQ("dut_assert_en", 1'b0)
+      end
+
       // run write-only sequence to randomize the csr values
       m_csr_write_seq = csr_write_seq::type_id::create("m_csr_write_seq");
       m_csr_write_seq.models = cfg.ral_models;
-      m_csr_write_seq.set_csr_excl_item(csr_excl);
       m_csr_write_seq.external_checker = cfg.en_scb;
-      m_csr_write_seq.en_rand_backdoor_write = 1;
-      if (!enable_asserts_in_hw_reset_rand_wr) $assertoff;
+      m_csr_write_seq.en_rand_backdoor_write = 1'b1;
+      m_csr_write_seq.set_csr_excl_item(csr_excl);
       m_csr_write_seq.start(null);
 
       // run dut_shutdown before asserting reset
@@ -200,16 +207,23 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
       // issue reset
       void'($value$plusargs("do_reset=%0s", reset_type));
       dut_init(reset_type);
-      if (!enable_asserts_in_hw_reset_rand_wr) $asserton;
+      if (!enable_asserts_in_hw_reset_rand_wr) begin
+        `DV_ASSERT_CTRL_REQ("dut_assert_en", 1'b1)
+      end
     end
 
     // create base csr seq and pass our ral
     m_csr_seq = csr_base_seq::type_id::create("m_csr_seq");
-    m_csr_seq.num_test_csrs = num_test_csrs;
     m_csr_seq.models = cfg.ral_models;
-    m_csr_seq.set_csr_excl_item(csr_excl);
     m_csr_seq.external_checker = cfg.en_scb;
+    m_csr_seq.num_test_csrs = num_test_csrs;
+    m_csr_seq.set_csr_excl_item(csr_excl);
     m_csr_seq.start(null);
   endtask
+
+  // enable/disable csr_assert
+  virtual function void set_csr_assert_en(bit enable, string path = "*");
+    uvm_config_db#(bit)::set(null, path, "csr_assert_en", enable);
+  endfunction
 
 endclass

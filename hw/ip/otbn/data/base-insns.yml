@@ -1,0 +1,506 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Definitions for the base group of instructions. See insns.yml for
+# the detailed format.
+
+- mnemonic: add
+  rv32i: true
+  synopsis: Add
+  operands: [grd, grs1, grs2]
+  encoding:
+    scheme: R
+    mapping:
+      funct7: b0000000
+      rs2: grs2
+      rs1: grs1
+      funct3: b000
+      rd: grd
+      opcode: b01100
+
+- mnemonic: addi
+  rv32i: true
+  synopsis: Add Immediate
+  operands: [grd, grs1, imm]
+  encoding:
+    scheme: I
+    mapping:
+      imm: imm
+      rs1: grs1
+      funct3: b000
+      rd: grd
+      opcode: b00100
+
+- mnemonic: lui
+  rv32i: true
+  synopsis: Load Upper Immediate
+  operands:
+    - grd
+    - name: imm
+      type: uimm
+  encoding:
+    scheme: U
+    mapping:
+      imm: imm
+      rd: grd
+      opcode: b01101
+
+- mnemonic: sub
+  rv32i: true
+  synopsis: Subtract
+  operands: [grd, grs1, grs2]
+  encoding:
+    scheme: R
+    mapping:
+      funct7: b0100000
+      rs2: grs2
+      rs1: grs1
+      funct3: b000
+      rd: grd
+      opcode: b01100
+
+- mnemonic: sll
+  rv32i: true
+  synopsis: Logical left shift
+  operands: [grd, grs1, grs2]
+  encoding:
+    scheme: R
+    mapping:
+      funct7: b0000000
+      rs2: grs2
+      rs1: grs1
+      funct3: b001
+      rd: grd
+      opcode: b01100
+
+- mnemonic: slli
+  rv32i: true
+  synopsis: Logical left shift with Immediate
+  operands:
+    - grd
+    - grs1
+    - &shamt-operand
+      name: shamt
+      type: uimm
+  encoding:
+    scheme: Is
+    mapping:
+      arithmetic: b0
+      shamt: shamt
+      rs1: grs1
+      funct3: b001
+      rd: grd
+      opcode: b00100
+
+- mnemonic: srl
+  rv32i: true
+  synopsis: Logical right shift
+  operands: [grd, grs1, grs2]
+  encoding:
+    scheme: R
+    mapping:
+      funct7: b0000000
+      rs2: grs2
+      rs1: grs1
+      funct3: b101
+      rd: grd
+      opcode: b01100
+
+- mnemonic: srli
+  rv32i: true
+  synopsis: Logical right shift with Immediate
+  operands:
+    - grd
+    - grs1
+    - *shamt-operand
+  encoding:
+    scheme: Is
+    mapping:
+      arithmetic: b0
+      shamt: shamt
+      rs1: grs1
+      funct3: b101
+      rd: grd
+      opcode: b00100
+
+- mnemonic: sra
+  rv32i: true
+  synopsis: Arithmetic right shift
+  operands: [grd, grs1, grs2]
+  encoding:
+    scheme: R
+    mapping:
+      funct7: b0100000
+      rs2: grs2
+      rs1: grs1
+      funct3: b101
+      rd: grd
+      opcode: b01100
+
+- mnemonic: srai
+  rv32i: true
+  synopsis: Arithmetic right shift with Immediate
+  operands:
+    - grd
+    - grs1
+    - *shamt-operand
+  encoding:
+    scheme: Is
+    mapping:
+      arithmetic: b1
+      shamt: shamt
+      rs1: grs1
+      funct3: b101
+      rd: grd
+      opcode: b00100
+
+- mnemonic: and
+  rv32i: true
+  synopsis: Bitwise AND
+  operands: [grd, grs1, grs2]
+  encoding:
+    scheme: R
+    mapping:
+      funct7: b0000000
+      rs2: grs2
+      rs1: grs1
+      funct3: b111
+      rd: grd
+      opcode: b01100
+
+- mnemonic: andi
+  rv32i: true
+  synopsis: Bitwise AND with Immediate
+  operands: [grd, grs1, imm]
+  encoding:
+    scheme: I
+    mapping:
+      imm: imm
+      rs1: grs1
+      funct3: b111
+      rd: grd
+      opcode: b00100
+
+- mnemonic: or
+  rv32i: true
+  synopsis: Bitwise OR
+  operands: [grd, grs1, grs2]
+  encoding:
+    scheme: R
+    mapping:
+      funct7: b0000000
+      rs2: grs2
+      rs1: grs1
+      funct3: b110
+      rd: grd
+      opcode: b01100
+
+- mnemonic: ori
+  rv32i: true
+  synopsis: Bitwise OR with Immediate
+  operands: [grd, grs1, imm]
+  encoding:
+    scheme: I
+    mapping:
+      imm: imm
+      rs1: grs1
+      funct3: b110
+      rd: grd
+      opcode: b00100
+
+- mnemonic: xor
+  rv32i: true
+  synopsis: Bitwise XOR
+  operands: [grd, grs1, grs2]
+  encoding:
+    scheme: R
+    mapping:
+      funct7: b0000000
+      rs2: grs2
+      rs1: grs1
+      funct3: b100
+      rd: grd
+      opcode: b01100
+
+- mnemonic: xori
+  rv32i: true
+  synopsis: Bitwise XOR with Immediate
+  operands: [grd, grs1, imm]
+  encoding:
+    scheme: I
+    mapping:
+      imm: imm
+      rs1: grs1
+      funct3: b100
+      rd: grd
+      opcode: b00100
+
+- mnemonic: lw
+  rv32i: true
+  synopsis: Load Word
+  operands: [grd, offset, grs1]
+  syntax: <grd>, <offset>(<grs1>)
+  encoding:
+    scheme: I
+    mapping:
+      imm: offset
+      rs1: grs1
+      funct3: b010
+      rd: grd
+      opcode: b00000
+  doc: |
+    Loads a 32b word from address `offset + grs1` in data memory, writing the result to `grd`.
+    Unaligned loads are not supported.
+    Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+  cycles: 2
+  lsu:
+    type: mem-load
+    target: [offset, grs1]
+    bytes: 4
+
+- mnemonic: sw
+  rv32i: true
+  synopsis: Store Word
+  operands: [grs2, offset, grs1]
+  syntax: <grs2>, <offset>(<grs1>)
+  encoding:
+    scheme: S
+    mapping:
+      imm: offset
+      rs2: grs2
+      rs1: grs1
+      funct3: b010
+      opcode: b01000
+  doc: |
+    Stores a 32b word in `grs2` to address `offset + grs1` in data memory.
+    Unaligned stores are not supported.
+    Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+  lsu:
+    type: mem-store
+    target: [offset, grs1]
+    bytes: 4
+
+- mnemonic: beq
+  rv32i: true
+  synopsis: Branch Equal
+  operands: &beq-operands
+    - grs1
+    - grs2
+    - &branch-offset-operand
+      name: offset
+      pc-rel: true
+      type: simm<<1
+  straight-line: false
+  encoding:
+    scheme: B
+    mapping:
+      imm: offset
+      rs2: grs2
+      rs1: grs1
+      funct3: b000
+      opcode: b11000
+
+- mnemonic: bne
+  rv32i: true
+  synopsis: Branch Not Equal
+  operands: *beq-operands
+  straight-line: false
+  encoding:
+    scheme: B
+    mapping:
+      imm: offset
+      rs2: grs2
+      rs1: grs1
+      funct3: b001
+      opcode: b11000
+
+- mnemonic: jal
+  rv32i: true
+  synopsis: Jump And Link
+  operands:
+    - grd
+    - *branch-offset-operand
+  straight-line: false
+  trailing-doc: |
+    The JAL instruction has the same behavior as in RV32I, jumping by the given offset and writing `PC+4` as a link address to the destination register.
+    OTBN has a hardware managed call stack, accessed through `x1`, which should be used when calling subroutines.
+    Do so by using `x1` as the link register: `jal x1, <offset>`.
+  encoding:
+    scheme: J
+    mapping:
+      imm: offset
+      rd: grd
+      opcode: b11011
+
+- mnemonic: jalr
+  rv32i: true
+  synopsis: Jump And Link Register
+  operands: [grd, grs1, offset]
+  straight-line: false
+  trailing-doc: |
+    The JALR instruction has the same behavior as in RV32I, jumping by `<grs1> + <offset>` and writing `PC+4` as a link address to the destination register.
+    OTBN has a hardware managed call stack, accessed through `x1`, which should be used when calling and returning from subroutines.
+    To return from a subroutine, use `jalr x0, x1, 0`.
+    This pops a link address from the call stack and branches to it.
+    To call a subroutine through a function pointer, use `jalr x1, <grs1>, 0`.
+    This jumps to the address in `<grs1>` and pushes the link address onto the call stack.
+  encoding:
+    scheme: I
+    mapping:
+      imm: offset
+      rs1: grs1
+      funct3: b000
+      rd: grd
+      opcode: b11001
+
+- mnemonic: csrrs
+  rv32i: true
+  synopsis: Atomic Read and Set bits in CSR
+  operands: [grd, csr, grs1]
+  doc: |
+    Reads the value of the CSR `csr`, and writes it to the destination GPR `grd`.
+    The initial value in `grs1` is treated as a bit mask that specifies bits to be set in the CSR.
+    Any bit that is high in `grs1` will cause the corresponding bit to be set in the CSR, if that CSR bit is writable.
+    Other bits in the CSR are unaffected (though CSRs might have side effects when written).
+  encoding:
+    scheme: I
+    mapping:
+      imm: csr
+      rs1: grs1
+      funct3: b010
+      rd: grd
+      opcode: b11100
+  lsu:
+    type: csr
+    target: [csr]
+  decode: |
+    csr_num = UInt(csr)
+    d = UInt(grd)
+    s = UInt(grs1)
+  operation: |
+    gpr_s_val = GPR[s]
+    GPR[d] = CSR[csr_num]
+    CSR[csr_num] |= gpr_s_val
+
+- mnemonic: csrrw
+  rv32i: true
+  synopsis: Atomic Read/Write CSR
+  operands: [grd, csr, grs1]
+  doc: |
+    Atomically swaps values in the CSR `csr` with the value in the GPR `grs1`.
+    Reads the old value of the CSR, and writes it to the GPR `grd`.
+    Writes the initial value in `grs1` to the CSR `csr`.
+    If `grd == x0` the instruction does not read the CSR or cause any read-related side-effects.
+  encoding:
+    scheme: I
+    mapping:
+      imm: csr
+      rs1: grs1
+      funct3: b001
+      rd: grd
+      opcode: b11100
+  lsu:
+    type: csr
+    target: [csr]
+  decode: |
+    csr_num = UInt(csr)
+    d = UInt(grd)
+    s = UInt(grs1)
+  operation: |
+    gpr_s_val = GPR[s]
+
+    if d != 0:
+      GPR[d] = CSR[csr_num]
+
+    CSR[csr_num] = gpr_s_val
+
+- mnemonic: ecall
+  rv32i: true
+  synopsis: Environment Call
+  operands: []
+  straight-line: false
+  doc: |
+    Triggers the `done` interrupt to indicate the completion of the
+    operation.
+  encoding:
+    scheme: I
+    mapping:
+      imm: b000000000000
+      rs1: b00000
+      funct3: b000
+      rd: b00000
+      opcode: b11100
+
+- mnemonic: loop
+  synopsis: Loop (indirect)
+  operands:
+    - name: grs
+      doc: Name of the GPR containing the number of iterations
+    - &bodysize-operand
+      name: bodysize
+      type: uimm
+      doc: Number of instructions in the loop body
+  straight-line: false
+  note: &loop-note |
+    The LOOP and LOOPI instructions are under-specified, and improvements
+    to them are being discussed. See
+    https://github.com/lowRISC/opentitan/issues/2496 for up-to-date
+    information.
+  doc: |
+    Repeats a sequence of code multiple times. The number of iterations is
+    read from `grs`, treated as an unsigned value. The number of
+    instructions in the loop is given in the `bodysize` immediate.
+  encoding:
+    scheme: loop
+    mapping:
+      bodysize: bodysize
+      grs: grs
+
+- mnemonic: loopi
+  synopsis: Loop Immediate
+  operands:
+    - name: iterations
+      type: uimm
+      doc: Number of iterations
+    - *bodysize-operand
+  straight-line: false
+  note: *loop-note
+  doc: |
+    Repeats a sequence of code multiple times. The `iterations`
+    unsigned immediate operand gives the number of iterations and
+    the `bodysize` unsigned immediate operand gives the number of
+    instructions in the body.
+  encoding:
+    scheme: loopi
+    mapping:
+      bodysize: bodysize
+      iterations: iterations
+
+- mnemonic: nop
+  synopsis: No Operation
+  rv32i: true
+  operands: []
+  doc: A pseudo-operation that has no effect.
+  literal-pseudo-op:
+    - ADDI x0, x0, 0
+
+- mnemonic: li
+  synopsis: Load Immediate
+  rv32i: true
+  operands: [grd, imm]
+  doc: |
+    Loads a 32b signed immediate value into a GPR. This uses ADDI and LUI,
+    expanding to one or two instructions, depending on the immediate (small
+    non-negative immediates or immediates with all lower bits zero can be
+    loaded with just ADDI or LUI, respectively; general immediates need a LUI
+    followed by an ADDI).
+  python-pseudo-op: true
+
+- mnemonic: ret
+  synopsis: Return from subroutine
+  rv32i: true
+  operands: []
+  straight-line: false
+  literal-pseudo-op:
+    - JALR x0, x1, 0

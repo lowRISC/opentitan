@@ -11,9 +11,14 @@
 
 const device_type_t kDeviceType = kDeviceFpgaNexysVideo;
 
-const uint64_t kClockFreqHz = 50 * 1000 * 1000;  // 50MHz
+const uint64_t kClockFreqCpuHz = 10 * 1000 * 1000;  // 10MHz
 
-const uint64_t kUartBaudrate = 230400;
+const uint64_t kClockFreqPeripheralHz = 25 * 100 * 1000;  // 2.5MHz
 
-// No Device Stop Address in our FPGA implementation.
-const uintptr_t kDeviceStopAddress = 0;
+const uint64_t kClockFreqUsbHz = 48 * 1000 * 1000;  // 48MHz
+
+const uint64_t kUartBaudrate = 115200;
+
+const uintptr_t kDeviceTestStatusAddress = 0;
+
+const uintptr_t kDeviceLogBypassUartAddress = 0;

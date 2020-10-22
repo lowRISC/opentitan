@@ -160,9 +160,6 @@
       // unsigend immediate value
       bit [31:0] max_val;
       max_val = (1 << imm_len)-1;
-      if (value == '0) begin
-        return MIN_VAL;
-      end
       if (value == max_val) begin
         return MAX_VAL;
       end

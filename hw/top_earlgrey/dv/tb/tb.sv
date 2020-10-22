@@ -43,15 +43,18 @@ module tb;
   wire uart_rx, uart_tx;
 
   bit stub_cpu;
+  bit en_sim_sram = 1'b1;
 
   // internal clocks and resets
   // cpu clock cannot reference cpu_hier since cpu clocks are forced off in stub_cpu mode
   wire cpu_clk = `CLKMGR_HIER.clocks_o.clk_proc_main;
   wire cpu_rst_n = `CPU_HIER.rst_ni;
+  wire alert_handler_clk = `ALERT_HANDLER_HIER.clk_i;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk, .rst_n);
   clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
+  alert_esc_if alert_if[NUM_ALERTS](.clk(alert_handler_clk), .rst_n(rst_n));
   pins_if #(NUM_GPIOS) gpio_if(.pins(gpio_pins));
   pins_if #(1) srst_n_if(.pins(srst_n));
   pins_if #(1) jtag_spi_n_if(.pins(jtag_spi_n));
@@ -64,9 +67,12 @@ module tb;
 
   // backdoors
   bind `ROM_HIER mem_bkdr_if rom_mem_bkdr_if();
-  bind `RAM_MAIN_SUB_HIER mem_bkdr_if ram_mem_bkdr_if();
+  bind `RAM_MAIN_HIER mem_bkdr_if ram_mem_bkdr_if();
+  bind `RAM_RET_HIER mem_bkdr_if ram_mem_bkdr_if();
   bind `FLASH0_MEM_HIER mem_bkdr_if flash0_mem_bkdr_if();
   bind `FLASH1_MEM_HIER mem_bkdr_if flash1_mem_bkdr_if();
+  bind `FLASH0_INFO_HIER mem_bkdr_if flash0_info_bkdr_if();
+  bind `FLASH1_INFO_HIER mem_bkdr_if flash1_info_bkdr_if();
 
   top_earlgrey_asic dut (
     // Clock and Reset
@@ -114,32 +120,6 @@ module tb;
     .IO_GP15          (gpio_pins[15])
   );
 
-  // connect sw_logger_if
-  bit             sw_log_valid;
-  bit [TL_AW-1:0] sw_log_addr;
-
-  sw_logger_if sw_logger_if (
-    .clk          (`RAM_MAIN_SUB_HIER.clk_i),
-    .rst_n        (`RAM_MAIN_HIER.rst_ni),
-    .valid        (sw_log_valid),
-    .addr_data    (`RAM_MAIN_SUB_HIER.wdata_i),
-    .sw_log_addr  (sw_log_addr)
-  );
-  assign sw_log_valid = !stub_cpu &&
-                        `RAM_MAIN_SUB_HIER.req_i &&
-                        `RAM_MAIN_SUB_HIER.write_i &&
-                        /* RAM only looks at the 14-bit word address 15:2 */
-                        (`RAM_MAIN_SUB_HIER.addr_i == sw_log_addr[15:2]);
-
-  // connect the sw_test_status_if
-  sw_test_status_if sw_test_status_if();
-  assign sw_test_status_if.valid =  !stub_cpu &&
-                                    `RAM_MAIN_SUB_HIER.req_i &&
-                                    `RAM_MAIN_SUB_HIER.write_i &&
-                                    (`RAM_MAIN_SUB_HIER.addr_i ==
-                                     sw_test_status_if.sw_test_status_addr[15:2]);
-  assign sw_test_status_if.sw_test_status_val = `RAM_MAIN_SUB_HIER.wdata_i;
-
   // connect signals
   assign io_dps[0]  = jtag_spi_n ? jtag_tck : spi_device_sck;
   assign io_dps[1]  = jtag_spi_n ? jtag_tdi : spi_device_sdi_i;
@@ -170,6 +150,52 @@ module tb;
   assign usb_dp0    = 1'b1;
   assign usb_dn0    = 1'b0;
   assign usb_sense0 = 1'b0;
+
+  `define SIM_SRAM_IF u_sim_sram.u_sim_sram_if
+
+  // Instantiate & connect the simulation SRAM inside the CPU (rv_core_ibex) using forces.
+  sim_sram u_sim_sram (
+    .clk_i    (`CPU_HIER.clk_i),
+    .rst_ni   (`CPU_HIER.rst_ni),
+    .tl_in_i  (`CPU_HIER.tl_d_o_int),
+    .tl_in_o  (),
+    .tl_out_o (),
+    .tl_out_i (`CPU_HIER.tl_d_i)
+  );
+
+  initial begin
+    void'($value$plusargs("en_sim_sram=%0b", en_sim_sram));
+    if (!stub_cpu && en_sim_sram) begin
+      `SIM_SRAM_IF.start_addr = SW_DV_START_ADDR;
+      force `CPU_HIER.tl_d_i_int = u_sim_sram.tl_in_o;
+      force `CPU_HIER.tl_d_o = u_sim_sram.tl_out_o;
+    end else begin
+      force u_sim_sram.clk_i = 1'b0;
+    end
+  end
+
+  // Bind the SW test status interface directly to the sim SRAM interface.
+  bind sim_sram_if: `SIM_SRAM_IF sw_test_status_if u_sw_test_status_if (
+    .addr (tl_h2d.a_address),
+    .data (tl_h2d.a_data[15:0]),
+    .*
+  );
+
+  // Bind the SW logger interface directly to the sim SRAM interface.
+  bind sim_sram_if: `SIM_SRAM_IF sw_logger_if u_sw_logger_if (
+    .addr (tl_h2d.a_address),
+    .data (tl_h2d.a_data),
+    .*
+  );
+
+  // connect alert rx/tx to alert_if
+  for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins
+    assign alert_if[k].alert_rx = `ALERT_HANDLER_HIER.alert_rx_o[k];
+    initial begin
+      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
+          LIST_OF_ALERTS[k]), "vif", alert_if[k]);
+    end
+  end
 
   initial begin
     // Set clk_rst_vifs
@@ -202,21 +228,34 @@ module tb;
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[Rom]", `ROM_HIER.rom_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
-        null, "*.env", "mem_bkdr_vifs[Ram]",
-        `RAM_MAIN_SUB_HIER.ram_mem_bkdr_if);
+        null, "*.env", "mem_bkdr_vifs[RamMain]", `RAM_MAIN_HIER.ram_mem_bkdr_if);
+    uvm_config_db#(virtual mem_bkdr_if)::set(
+        null, "*.env", "mem_bkdr_vifs[RamRet]", `RAM_RET_HIER.ram_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[FlashBank0]", `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[FlashBank1]", `FLASH1_MEM_HIER.flash1_mem_bkdr_if);
+    uvm_config_db#(virtual mem_bkdr_if)::set(
+        null, "*.env", "mem_bkdr_vifs[FlashBank0Info]", `FLASH0_INFO_HIER.flash0_info_bkdr_if);
+    uvm_config_db#(virtual mem_bkdr_if)::set(
+        null, "*.env", "mem_bkdr_vifs[FlashBank1Info]", `FLASH1_INFO_HIER.flash1_info_bkdr_if);
 
     // SW logger and test status interfaces.
-    uvm_config_db#(virtual sw_logger_if)::set(null, "*.env", "sw_logger_vif", sw_logger_if);
     uvm_config_db#(virtual sw_test_status_if)::set(
-        null, "*.env", "sw_test_status_vif", sw_test_status_if);
+        null, "*.env", "sw_test_status_vif", `SIM_SRAM_IF.u_sw_test_status_if);
+    uvm_config_db#(virtual sw_logger_if)::set(
+        null, "*.env", "sw_logger_vif", `SIM_SRAM_IF.u_sw_logger_if);
+
+    // temp disable pinmux assertion AonWkupReqKnownO_A because driving X in spi_device.sdi and
+    // WkupPadSel choose IO_DPS1 in MIO will trigger this assertion
+    // TODO: remove this assertion once pinmux is templatized
+    $assertoff(0, dut.top_earlgrey.u_pinmux.AonWkupReqKnownO_A);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
+
+  `undef SIM_SRAM_IF
 
   // stub cpu environment
   // if enabled, clock to cpu is forced to 0
@@ -232,6 +271,10 @@ module tb;
   end
   assign cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
 
+  // Control assertions in the DUT with UVM resource string "dut_assert_en".
+  `DV_ASSERT_CTRL("dut_assert_en", tb.dut)
+
   `include "../autogen/tb__xbar_connect.sv"
+  `include "../autogen/tb__alert_handler_connect.sv"
 
 endmodule

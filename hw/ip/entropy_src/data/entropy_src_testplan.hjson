@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "entropy_src"
-  import_testplans: ["hw/dv/tools/testplans/csr_testplan.hjson",
-                     "hw/dv/tools/testplans/intr_test_testplan.hjson",
-                     "hw/dv/tools/testplans/tl_device_access_types_testplan.hjson"]
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
       name: sanity
@@ -32,16 +32,16 @@
       tests: []
     }
     {
-      name: lfsr_entropy
+      name: lfsr
       desc: '''Verify digital entropy for all fifo depths.'''
       milestone: V2
       tests: []
     }
     {
-      name: rng_entropy
+      name: rng
       desc: '''Verify rng entropy for various clk speeds, fifo_depths.'''
       milestone: V2
-      tests: []
+      tests: ["entropy_src_rng"]
     }
     {
       name: rng_single_bit

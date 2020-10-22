@@ -73,13 +73,13 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     // grab completed transactions from data channel; ignore packets from address channel
     if (channel == AddrChannel) begin
       // Clock period in nano seconds (timeunit)
-      int clk_period = cfg.clk_rst_vif.clk_period_ps / 1000;
+      real clk_period = cfg.clk_rst_vif.clk_period_ps / 1000;
       time crnt_time = $time;
 
       // apply pending update for interrupt state
       if (data_in_update_queue.size() > 0) begin
         if (data_in_update_queue[$].needs_update == 1'b1 &&
-            ((crnt_time - data_in_update_queue[$].eval_time) / clk_period) > 1) begin
+            (int'((crnt_time - data_in_update_queue[$].eval_time) / clk_period)) > 1) begin
           void'(ral.data_in.predict(.value(data_in_update_queue[$].reg_value),
                                     .kind(UVM_PREDICT_READ)));
         end else if(data_in_update_queue[$ - 1].needs_update == 1'b1) begin
@@ -95,7 +95,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         // read on same or next clock will not give latest updated value. So, look for time stamp
         // of latest update to decide which value to predict for "intr_state" mirrored value
         if (intr_state_update_queue[$].needs_update == 1'b1 &&
-            ((crnt_time - intr_state_update_queue[$].eval_time) / clk_period) > 1) begin
+            (int'((crnt_time - intr_state_update_queue[$].eval_time) / clk_period)) > 1) begin
           void'(ral.intr_state.predict(.value(intr_state_update_queue[$].reg_value),
                                        .kind(UVM_PREDICT_READ)));
         end else if(intr_state_update_queue[$ - 1].needs_update == 1'b1) begin
@@ -212,7 +212,16 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
                                          csr.get_mirrored_value();
             bit [TL_DW-1:0] pred_val_intr_pins = intr_state &
                                                  ral.intr_enable.get_mirrored_value();
-            `DV_CHECK_EQ(cfg.intr_vif.pins, pred_val_intr_pins)
+            // according to issue #841, interrupt is a flop and the value will be updated after one
+            // clock cycle. Because the `pred_val_intr_pins` might be updated during the one clk
+            // cycle, we store the predicted intr val into a temp automatic variable.
+            fork
+              begin
+                automatic bit [TL_DW-1:0] pred_val_intr_pins_temp = pred_val_intr_pins;
+                cfg.clk_rst_vif.wait_clks(1);
+                if (!cfg.under_reset) `DV_CHECK_EQ(cfg.intr_vif.pins, pred_val_intr_pins_temp)
+              end
+            join_none
           end
         end
       end // if (write == 0)

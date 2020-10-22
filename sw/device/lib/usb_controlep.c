@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/usb_controlep.h"
 
-#include "sw/device/lib/common.h"
 #include "sw/device/lib/usb_consts.h"
 #include "sw/device/lib/usbdev.h"
 
@@ -150,6 +149,9 @@ static ctstate_t setup_req(usb_controlep_ctx_t *ctctx, void *ctx,
       usbdev_buf_copyto_byid(ctx, buf, &zero, len);
       usbdev_sendbuf_byid(ctx, buf, len, ctctx->ep);
       return kCtWaitIn;
+
+    default:
+      return kCtError;
   }
   return kCtError;
 }

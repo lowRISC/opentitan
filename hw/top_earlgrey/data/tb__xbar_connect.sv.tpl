@@ -16,7 +16,7 @@ for xbar in top["xbar"]:
     clk_src[clk] = src
 
 clk_freq = OrderedDict()
-for clock in top["clocks"]["srcs"]:
+for clock in top["clocks"]["srcs"] + top["clocks"]["derived_srcs"]:
   if clock["name"] in clk_src.values():
     clk_freq[clock["name"]] = clock["freq"]
 
@@ -30,15 +30,21 @@ for xbar in top["xbar"]:
       devices[node["name"]] = "clk_" + clk_src[node["clock"]]
 %>\
 <%text>
-`define DRIVE_TL_HOST_IF(tl_name, inst_name, sig_name) \
+`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name) \
      force ``tl_name``_tl_if.d2h = dut.top_earlgrey.u_``inst_name``.``sig_name``_i; \
      force dut.top_earlgrey.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
-`define DRIVE_TL_DEVICE_IF(tl_name, inst_name, sig_name) \
+`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name) \
      force ``tl_name``_tl_if.h2d = dut.top_earlgrey.u_``inst_name``.``sig_name``_i; \
      force dut.top_earlgrey.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
+     uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
+                                        ``tl_name``_tl_if);
+
+`define DRIVE_CHIP_TL_EXT_DEVICE_IF(tl_name, port_name) \
+     force ``tl_name``_tl_if.h2d = dut.top_earlgrey.``port_name``_req_o; \
+     force dut.top_earlgrey.``port_name``_rsp_i = ``tl_name``_tl_if.d2h; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 </%text>\
@@ -60,6 +66,8 @@ initial begin
   bit xbar_mode;
   void'($value$plusargs("xbar_mode=%0b", xbar_mode));
   if (xbar_mode) begin
+    // disable ibex clock to avoid printting too much useless log from ibex
+    force `CPU_HIER.clk_i = 1'b0;
     // only enable assertions in xbar as many pins are unconnected
     $assertoff(0, tb);
 % for xbar in top["xbar"]:
@@ -95,14 +103,17 @@ sig_name = inst_sig_list[0][2]
 
 %>\
     % if node["type"] == "host" and not node["xbar"]:
-    `DRIVE_TL_HOST_IF(${node["name"]}, ${inst_name}, ${sig_name})
+    `DRIVE_CHIP_TL_HOST_IF(${node["name"]}, ${inst_name}, ${sig_name})
+    % elif node["type"] == "device" and not node["xbar"] and node["stub"]:
+    `DRIVE_CHIP_TL_EXT_DEVICE_IF(${node["name"]}, ${inst_name}_${sig_name})
     % elif node["type"] == "device" and not node["xbar"]:
-    `DRIVE_TL_DEVICE_IF(${node["name"]}, ${inst_name}, ${sig_name})
+    `DRIVE_CHIP_TL_DEVICE_IF(${node["name"]}, ${inst_name}, ${sig_name})
     % endif
   % endfor
 % endfor
   end
 end
 
-`undef DRIVE_TL_HOST_IF
-`undef DRIVE_TL_DEVICE_IF
+`undef DRIVE_CHIP_TL_HOST_IF
+`undef DRIVE_CHIP_TL_DEVICE_IF
+`undef DRIVE_CHIP_TL_EXT_DEVICE_IF

@@ -14,25 +14,37 @@ package i2c_agent_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  // TODO: optimize later
   typedef enum logic [3:0] {
-    None, DevAck, RdData
+    None, DevAck, RdData, WrData
   } drv_type_e;
 
   // register values
   typedef struct {
     // derived parameters
-    bit [31:0]  tSetupStart;
-    bit [31:0]  tHoldStart;
-    bit [31:0]  tClockStart;
-    bit [31:0]  tClockLow;
-    bit [31:0]  tSetupBit;
-    bit [31:0]  tClockPulse;
-    bit [31:0]  tHoldBit;
-    bit [31:0]  tClockStop;
-    bit [31:0]  tSetupStop;
-    bit [31:0]  tHoldStop;
-    bit         enbTimeOut;
-    bit [30:0]  tTimeOut;
+    bit  [31:0]  tSetupStart;
+    bit  [31:0]  tHoldStart;
+    bit  [31:0]  tClockStart;
+    bit  [31:0]  tClockLow;
+    bit  [31:0]  tSetupBit;
+    bit  [31:0]  tClockPulse;
+    bit  [31:0]  tHoldBit;
+    bit  [31:0]  tClockStop;
+    bit  [31:0]  tSetupStop;
+    bit  [31:0]  tHoldStop;
+    bit          enbTimeOut;
+    bit  [30:0]  tTimeOut;
+    uint         tStretchHostClock;
+
+    // sda_unstable interrupt will be asserted if
+    // tSdaUnstable is set to a non-zero value, otherwise
+    uint         tSdaUnstable;
+    // scl_interference interrupt will be asserted if
+    // tSclInterference is set to a zero value, otherwise
+    uint         tSclInterference;
+    // sda_interference interrupt will be asserted if
+    // tSdaInterference is set to a zero value, otherwise
+    uint         tSdaInterference;
   } timing_cfg_t;
 
   typedef enum int {

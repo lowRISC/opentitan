@@ -53,7 +53,6 @@ module prim_arbiter_fixed #(
     // align to powers of 2 for simplicity
     // a full binary tree with N levels has 2**N + 2**N-1 nodes
     logic [2**(IdxW+1)-2:0]           req_tree;
-    logic [2**(IdxW+1)-2:0]           rdy_tree;
     logic [2**(IdxW+1)-2:0]           gnt_tree;
     logic [2**(IdxW+1)-2:0][IdxW-1:0] idx_tree;
     logic [2**(IdxW+1)-2:0][DW-1:0]   data_tree;
@@ -94,6 +93,8 @@ module prim_arbiter_fixed #(
             assign req_tree[Pa]  = '0;
             assign idx_tree[Pa]  = '0;
             assign data_tree[Pa] = '0;
+            logic unused_sigs;
+            assign unused_sigs = gnt_tree[Pa];
           end
         // this creates the node assignments
         end else begin : gen_nodes
@@ -119,8 +120,8 @@ module prim_arbiter_fixed #(
     if (EnDataPort) begin : gen_data_port
       assign data_o      = data_tree[0];
     end else begin : gen_no_dataport
-      logic [DW-1:0] unused_data [N];
-      assign unused_data = data_i;
+      logic [DW-1:0] unused_data;
+      assign unused_data = data_tree[0];
       assign data_o = '1;
     end
 

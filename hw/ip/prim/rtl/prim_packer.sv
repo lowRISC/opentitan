@@ -87,7 +87,7 @@ module prim_packer #(
     lod_idx = 0;
     for (int i = InW-1; i >= 0 ; i--) begin
       if (mask_i[i] == 1'b1) begin
-        lod_idx = i;
+        lod_idx = $unsigned(i);
       end
     end
   end
@@ -236,11 +236,6 @@ module prim_packer #(
             valid_i |-> $countones(mask_i ^ {mask_i[InW-2:0],1'b0}) <= 2)
   end
 
-  // Assume data pattern to reduce FPV test time
-  //`ASSUME_FPV(FpvDataWithin_M,
-  //            data_i inside {'0, '1, 32'hDEAD_BEEF},
-  //            clk_i, !rst_ni)
-
   // Flush and Write Enable cannot be asserted same time
   `ASSUME(ExFlushValid_M, flush_i |-> !valid_i)
 
@@ -252,8 +247,6 @@ module prim_packer #(
   `ASSUME(DataIStable_M,
           ##1 valid_i && $past(valid_i) && !$past(ready_o)
           |-> $stable(data_i) && $stable(mask_i))
-  `ASSUME(ValidIPairedWithReadyO_M,
-          valid_i && !ready_o |=> valid_i)
 
   `ASSERT(FlushFollowedByDone_A,
           ##1 $rose(flush_i) && !flush_done_o |-> !flush_done_o [*0:$] ##1 flush_done_o)

@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:ram_1p_adv
     files:
       - rtl/prim_generic_otp.sv
     file_type: systemVerilogSource

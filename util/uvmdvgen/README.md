@@ -24,7 +24,7 @@ switches.
 $ util/uvmdvgen/uvmdvgen.py -h
 usage: uvmdvgen.py [-h] [-a] [-s] [-e] [-c] [-hr] [-hi] [-ha]
                    [-ea agt1 agt2 [agt1 agt2 ...]] [-ao [hw/dv/sv]]
-                   [-eo [hw/ip/<ip>]] [-m] [-v VENDOR]
+                   [-eo [hw/ip/<ip>]] [-v VENDOR]
                    [ip/block name]
 
 Command-line tool to autogenerate boilerplate DV testbench code extended from
@@ -69,11 +69,6 @@ optional arguments:
                         doc directories). Under dv, it creates 3 sub-
                         directories - env, tb and tests to place all of the
                         testbench sources. (default set to './<name>')
-  -m, --add-makefile    Tests are now run with dvsim.py tool that requires a
-                        hjson based sim cfg. Setting this option will also
-                        result in the Makefile to be auto-generated (which is
-                        the older way of building and running sims going
-                        through deprecation).
   -v VENDOR, --vendor VENDOR
                         Name of the vendor / entity developing the testbench.
                         This is used to set the VLNV of the FuesSoC core
@@ -293,13 +288,6 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
     This is the top level fusesoc core file with the sim target. It adds the RTL
     and DV dependencies to construct the complete filelist to pass to simulator's
     build step.
-
-* `Makefile`
-
-    This is the simulation Makefile that is used as the starting point for
-    building and running tests using the [make flow]({{< relref "hw/dv/tools/README.md" >}}).
-    It already includes the sanity and CSR suite of tests to allow users to start
-    running tests right away.
 
 * `i2c_host_dv_plan.md`
 

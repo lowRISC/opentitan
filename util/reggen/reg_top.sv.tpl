@@ -7,13 +7,12 @@
   num_wins = len(block.wins)
   num_wins_width = ((num_wins+1).bit_length()) - 1
   num_dsp  = num_wins + 1
-  params = [p for p in block.params if p["local"] == "false"]
   max_regs_char = len("{}".format(block.get_n_regs_flat()-1))
   regs_flat = block.get_regs_flat()
 %>
 `include "prim_assert.sv"
 
-module ${block.name}_reg_top ${print_param(params)}(
+module ${block.name}_reg_top (
   input clk_i,
   input rst_ni,
 
@@ -561,15 +560,5 @@ ${msb}\
         reg_rdata_next[${str_bits_sv(msb,lsb)}] = ${sig_name}_qs;
 % else:
         reg_rdata_next[${str_bits_sv(msb,lsb)}] = '0;
-% endif
-</%def>\
-<%def name="print_param(params)">\
-<% num_params = len(params) %>\
-% if num_params != 0:
-#(
-% for i,p in enumerate(params):
-  parameter ${p["type"]} ${p["name"]} = ${p["default"]}${"," if i != num_params-1 else ""}
-% endfor
-) \
 % endif
 </%def>\

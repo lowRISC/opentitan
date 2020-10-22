@@ -4,11 +4,10 @@
 
 #include "sw/device/lib/flash_ctrl.h"
 
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/common.h"
-#include "sw/device/lib/runtime/check.h"
+#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_main.h"
 
 #define CHECK_ARRAYS_EQ(xs, ys, len) \
@@ -34,16 +33,26 @@ static void test_basic_io(void) {
                               /*erase_en=*/true);
 
   // info partition has no default access, specifically setup a region
-  mp_region_t info_region = {
-      .num = 0x0,
-      .base = FLASH_PAGES_PER_BANK,
-      .size = 0x1,
-      .part = kInfoPartition,
-      .rd_en = true,
-      .prog_en = true,
-      .erase_en = true,
-  };
+  mp_region_t info_region = {.num = 0x0,
+                             .base = FLASH_PAGES_PER_BANK,
+                             .size = 0x1,
+                             .part = kInfoPartition,
+                             .rd_en = true,
+                             .prog_en = true,
+                             .erase_en = true,
+                             .scramble_en = true};
   flash_cfg_region(&info_region);
+
+  // also setup data region to enable scrambling
+  mp_region_t data_region = {.num = 0x0,
+                             .base = FLASH_PAGES_PER_BANK,
+                             .size = 0x1,
+                             .part = kDataPartition,
+                             .rd_en = true,
+                             .prog_en = true,
+                             .erase_en = true,
+                             .scramble_en = true};
+  flash_cfg_region(&data_region);
 
   uintptr_t flash_bank_1_addr = FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ;
   mmio_region_t flash_bank_1 = mmio_region_from_addr(flash_bank_1_addr);
@@ -112,15 +121,14 @@ static void test_memory_protection(void) {
                               /*erase_en=*/true);
 
   // A memory protection region representing the first page of the second bank.
-  mp_region_t protection_region = {
-      .num = 0x0,
-      .base = FLASH_PAGES_PER_BANK,
-      .size = 0x1,
-      .part = kDataPartition,
-      .rd_en = true,
-      .prog_en = true,
-      .erase_en = true,
-  };
+  mp_region_t protection_region = {.num = 0x0,
+                                   .base = FLASH_PAGES_PER_BANK,
+                                   .size = 0x1,
+                                   .part = kDataPartition,
+                                   .rd_en = true,
+                                   .prog_en = true,
+                                   .erase_en = true,
+                                   .scramble_en = false};
 
   uintptr_t ok_region_start =
       FLASH_MEM_BASE_ADDR + (protection_region.base * FLASH_PAGE_SZ);
@@ -174,14 +182,13 @@ static void test_memory_protection(void) {
   }
 }
 
-const test_config_t kTestConfig = {};
+const test_config_t kTestConfig;
 
 bool test_main(void) {
   flash_init_block();
 
   LOG_INFO("flash test!");
 
-  flash_cfg_scramble_enable(true);
   flash_cfg_bank_erase(FLASH_BANK_0, /*erase_en=*/true);
   flash_cfg_bank_erase(FLASH_BANK_1, /*erase_en=*/true);
 

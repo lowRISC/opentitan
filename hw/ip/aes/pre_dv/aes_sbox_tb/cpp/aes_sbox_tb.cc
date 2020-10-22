@@ -6,9 +6,9 @@
 #include "verilated_toplevel.h"
 #include "verilator_sim_ctrl.h"
 
-#include <signal.h>
 #include <functional>
 #include <iostream>
+#include <signal.h>
 
 #include "sim_ctrl_extension.h"
 

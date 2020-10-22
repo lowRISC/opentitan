@@ -59,6 +59,20 @@ class alert_esc_agent extends dv_base_agent#(
       end
     end
 
+    // set variables to alert_esc interface
+    cfg.vif.is_async = cfg.is_async;
+    cfg.vif.is_alert = cfg.is_alert;
+    cfg.vif.if_mode  = cfg.if_mode;
+    // set async alert clock frequency
+    if (cfg.is_alert && cfg.is_async) begin
+      cfg.vif.clk_rst_async_if.set_active(.drive_rst_n_val(0));
+      if (cfg.clk_freq_mhz > 0) begin
+        int min_freq_mhz = (cfg.clk_freq_mhz / 10) ? (cfg.clk_freq_mhz / 10) : 1;
+        cfg.vif.clk_rst_async_if.set_freq_mhz($urandom_range(min_freq_mhz, cfg.clk_freq_mhz * 10));
+      end else begin
+        cfg.vif.clk_rst_async_if.set_freq_mhz($urandom_range(1, 200));
+      end
+    end
   endfunction
 
 endclass : alert_esc_agent

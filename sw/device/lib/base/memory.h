@@ -17,10 +17,25 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// Header Extern Guard  (so header can be used from C and C++)
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
+
+/**
+ * Computes the number of elements in the given array.
+ *
+ * Note that this can only determine the length of *fixed-size* arrays. Due to
+ * limitations of C, it will incorrectly compute the size of an array passed as
+ * a function argument, because those automatically decay into pointers. This
+ * function can only be used correctly with:
+ * - Arrays declared as stack variables.
+ * - Arrays declared at global scope.
+ * - Arrays that are members of a struct or union.
+ *
+ * @param array The array expression to measure.
+ * @return The number of elements in the array, as a `size_t`.
+ */
+#define ARRAYSIZE(array) (sizeof(array) / sizeof(array[0]))
 
 /**
  * Load a word from memory directly, bypassing aliasing rules.
@@ -84,6 +99,9 @@ inline void write_32(uint32_t value, void *ptr) {
  *
  * This function conforms to the semantics defined in ISO C11 S7.23.2.1.
  *
+ * This function will be provided by the platform's libc implementation for host
+ * builds.
+ *
  * @param dest the region to copy to.
  * @param src the region to copy from.
  * @param len the number of bytes to copy.
@@ -95,6 +113,9 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t len);
  * Set a region of memory to a particular byte value.
  *
  * This function conforms to the semantics defined in ISO C11 S7.23.6.1.
+ *
+ * This function will be provided by the platform's libc implementation for host
+ * builds.
  *
  * @param dest the region to write to.
  * @param value the value, converted to a byte, to write to each byte cell.
@@ -108,6 +129,9 @@ void *memset(void *dest, int value, size_t len);
  * lexicographic order.
  *
  * This function conforms to the semantics defined in ISO C11 S7.24.4.1.
+ *
+ * This function will be provided by the platform's libc implementation for host
+ * builds.
  *
  * @param lhs the left-hand-side of the comparison.
  * @param rhs the right-hand-side of the comparison.
@@ -125,6 +149,9 @@ int memcmp(const void *lhs, const void *rhs, size_t len);
  *
  * Since libbase does not provide a `strlen()` function, this function can be
  * used as an approximation: `memchr(my_str, 0, SIZE_MAX) - my_str`.
+ *
+ * This function will be provided by the platform's libc implementation for host
+ * builds.
  *
  * @param ptr the region to search.
  * @param value the value, converted to a byte, to search for.

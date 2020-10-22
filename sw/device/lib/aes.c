@@ -4,8 +4,6 @@
 
 #include "sw/device/lib/aes.h"
 
-#include "sw/device/lib/common.h"
-
 #include "aes_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -13,6 +11,8 @@
 #define AES_NUM_REGS_KEY 8
 #define AES_NUM_REGS_IV 4
 #define AES_NUM_REGS_DATA 4
+
+#define REG32(add) *((volatile uint32_t *)(add))
 
 void aes_init(aes_cfg_t aes_cfg) {
   uint32_t cfg_val =
@@ -102,6 +102,10 @@ bool aes_data_valid(void) {
 
 bool aes_idle(void) {
   return (REG32(AES_STATUS(0)) & (0x1u << AES_STATUS_IDLE));
+}
+
+void aes_manual_trigger(void) {
+  REG32(AES_TRIGGER(0)) = 0x1u << AES_TRIGGER_START;
 }
 
 void aes_clear(void) {

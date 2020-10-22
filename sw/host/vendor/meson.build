@@ -13,7 +13,10 @@ libmpsse = declare_dependency(
     # requirements. This -I argument allows libmpsse to use its existing
     # includes.
     c_args: [
-      '-I' + meson.source_root() + '/sw/host/vendor/mpsse'
+      '-I' + meson.source_root() + '/sw/host/vendor/mpsse',
+      # TODO: Remove this once https://github.com/lowRISC/opentitan/issues/3182
+      # is resolved.
+      '-Wno-error=deprecated-declarations',
     ],
     dependencies: [
       dependency('libftdi1', native: true),

@@ -78,12 +78,12 @@ module rstmgr_reg_top (
   logic spi_device_regen_qs;
   logic spi_device_regen_wd;
   logic spi_device_regen_we;
-  logic usb_regen_qs;
-  logic usb_regen_wd;
-  logic usb_regen_we;
   logic rst_spi_device_n_qs;
   logic rst_spi_device_n_wd;
   logic rst_spi_device_n_we;
+  logic usb_regen_qs;
+  logic usb_regen_wd;
+  logic usb_regen_we;
   logic rst_usb_n_qs;
   logic rst_usb_n_wd;
   logic rst_usb_n_we;
@@ -132,33 +132,6 @@ module rstmgr_reg_top (
   );
 
 
-  // R[usb_regen]: V(False)
-
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h1)
-  ) u_usb_regen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (usb_regen_we),
-    .wd     (usb_regen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (usb_regen_qs)
-  );
-
-
   // R[rst_spi_device_n]: V(False)
 
   prim_subreg #(
@@ -183,6 +156,33 @@ module rstmgr_reg_top (
 
     // to register interface (read)
     .qs     (rst_spi_device_n_qs)
+  );
+
+
+  // R[usb_regen]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h1)
+  ) u_usb_regen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (usb_regen_we),
+    .wd     (usb_regen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (usb_regen_qs)
   );
 
 
@@ -220,8 +220,8 @@ module rstmgr_reg_top (
     addr_hit = '0;
     addr_hit[0] = (reg_addr == RSTMGR_RESET_INFO_OFFSET);
     addr_hit[1] = (reg_addr == RSTMGR_SPI_DEVICE_REGEN_OFFSET);
-    addr_hit[2] = (reg_addr == RSTMGR_USB_REGEN_OFFSET);
-    addr_hit[3] = (reg_addr == RSTMGR_RST_SPI_DEVICE_N_OFFSET);
+    addr_hit[2] = (reg_addr == RSTMGR_RST_SPI_DEVICE_N_OFFSET);
+    addr_hit[3] = (reg_addr == RSTMGR_USB_REGEN_OFFSET);
     addr_hit[4] = (reg_addr == RSTMGR_RST_USB_N_OFFSET);
   end
 
@@ -244,11 +244,11 @@ module rstmgr_reg_top (
   assign spi_device_regen_we = addr_hit[1] & reg_we & ~wr_err;
   assign spi_device_regen_wd = reg_wdata[0];
 
-  assign usb_regen_we = addr_hit[2] & reg_we & ~wr_err;
-  assign usb_regen_wd = reg_wdata[0];
-
-  assign rst_spi_device_n_we = addr_hit[3] & reg_we & ~wr_err;
+  assign rst_spi_device_n_we = addr_hit[2] & reg_we & ~wr_err;
   assign rst_spi_device_n_wd = reg_wdata[0];
+
+  assign usb_regen_we = addr_hit[3] & reg_we & ~wr_err;
+  assign usb_regen_wd = reg_wdata[0];
 
   assign rst_usb_n_we = addr_hit[4] & reg_we & ~wr_err;
   assign rst_usb_n_wd = reg_wdata[0];
@@ -266,11 +266,11 @@ module rstmgr_reg_top (
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[0] = usb_regen_qs;
+        reg_rdata_next[0] = rst_spi_device_n_qs;
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[0] = rst_spi_device_n_qs;
+        reg_rdata_next[0] = usb_regen_qs;
       end
 
       addr_hit[4]: begin

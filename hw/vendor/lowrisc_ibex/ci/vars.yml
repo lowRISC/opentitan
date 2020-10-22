@@ -1,0 +1,15 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Pipeline variables, used by the public and private CI pipelines
+# Quote values to ensure they are parsed as string (version numbers might
+# end up as float otherwise).
+variables:
+  VERILATOR_VERSION: "4.032"
+  RISCV_TOOLCHAIN_TAR_VERSION: "20200626-1"
+  RISCV_TOOLCHAIN_TAR_VARIANT: "lowrisc-toolchain-gcc-rv32imcb"
+  RISCV_COMPLIANCE_GIT_VERSION: "844c6660ef3f0d9b96957991109dfd80cc4938e2"
+  VERIBLE_VERSION: "v0.0-493-g617b404"
+  # lowRISC-internal version numbers of Ibex-specific Spike builds.
+  SPIKE_IBEX_VERSION: "20200819-git-57023895458bc5206fe59fa229e0be6b05aa2f25"

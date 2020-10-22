@@ -77,6 +77,8 @@ module rv_timer (
     prim_intr_hw #(
       .Width(N_TIMERS)
     ) u_intr_hw (
+      .clk_i,
+      .rst_ni,
       .event_intr_i           (intr_timer_set),
 
       .reg2hw_intr_enable_q_i (intr_timer_en[h*N_TIMERS+:N_TIMERS]),

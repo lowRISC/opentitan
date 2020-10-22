@@ -10,17 +10,23 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:prim:secded
+      - lowrisc:prim:lfsr
       - lowrisc:prim:flash
       - lowrisc:prim:gf_mult
+      - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:flash_ctrl_pkg
     files:
-      - rtl/flash_ctrl_reg_pkg.sv
       - rtl/flash_ctrl_reg_top.sv
       - rtl/flash_ctrl.sv
-      - rtl/flash_erase_ctrl.sv
-      - rtl/flash_prog_ctrl.sv
-      - rtl/flash_rd_ctrl.sv
+      - rtl/flash_ctrl_erase.sv
+      - rtl/flash_ctrl_prog.sv
+      - rtl/flash_ctrl_rd.sv
+      - rtl/flash_ctrl_arb.sv
+      - rtl/flash_ctrl_info_cfg.sv
+      - rtl/flash_ctrl_lcmgr.sv
       - rtl/flash_mp.sv
+      - rtl/flash_mp_data_region_sel.sv
       - rtl/flash_phy.sv
       - rtl/flash_phy_core.sv
       - rtl/flash_phy_rd.sv
@@ -89,6 +95,7 @@ targets:
       ascentlint:
         ascentlint_options:
           - "-wait_license"
+          - "-stop_on_error"
       verilator:
         mode: lint-only
         verilator_options:

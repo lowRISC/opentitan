@@ -8,6 +8,7 @@ filesets:
   files_rtl_nexysvideo:
     depend:
       - lowrisc:systems:top_earlgrey:0.1
+      - lowrisc:systems:top_earlgrey_pkg
     files:
       - rtl/clkgen_xil7series.sv
       - rtl/top_earlgrey_nexysvideo.sv
@@ -15,6 +16,7 @@ filesets:
 
   files_constraints:
     files:
+      - data/clocks.xdc
       - data/pins_nexysvideo.xdc
       - data/placement.xdc
     file_type: xdc

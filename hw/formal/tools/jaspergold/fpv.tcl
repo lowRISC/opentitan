@@ -25,7 +25,7 @@ analyze -sv09                 \
   +define+FPV_ON              \
   -f [glob *.scr]
 
-elaborate -top $env(FPV_TOP)
+elaborate -bbox_a 3600 -top $env(FPV_TOP)
 
 #-------------------------------------------------------------------------
 # specify clock(s) and reset(s)

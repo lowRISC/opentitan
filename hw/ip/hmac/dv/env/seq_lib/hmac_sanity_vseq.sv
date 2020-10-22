@@ -55,7 +55,6 @@ class hmac_sanity_vseq extends hmac_base_vseq;
   endtask
 
   task body();
-    run_alert_rsp_seq_nonblocking();
     for (int i = 1; i <= num_trans; i++) begin
       bit [7:0] msg_q[$];
       `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -104,9 +103,17 @@ class hmac_sanity_vseq extends hmac_base_vseq;
         // msg stream in finished, start hash
         if (do_hash_start) trigger_process();
 
-        // there is one clk cycle differenct for scb to predict fifo_empty interrupt, thus wait to
-        // ignore the difference.
-        cfg.clk_rst_vif.wait_clks(HMAC_KEY_PROCESS_CYCLES);
+        // there is one clk cycle difference between scb and design when predict fifo_empty,
+        // it could happen when input message length is not a multiple of 4, then in design
+        // the `sha2_pad.st_q` will transit from `StFifoReceive` to `StPad80`.
+        // If the last two fifo_rds are back-to-back, then design will have one cycle delay before
+        // the last fifo_rd in order to switch the state.
+        // If the last two fifo_rds are not back-to-back, then there won't be any delay for the
+        // last fifo_rd
+        // the wait_clk below is implemented to avoid checking intr_state during this corner case
+        cfg.clk_rst_vif.wait_clks((msg.size() % 4 || !legal_seq_c.constraint_mode()) ?
+                                  HMAC_KEY_PROCESS_CYCLES * 2 :
+                                  $urandom_range(0, HMAC_KEY_PROCESS_CYCLES * 2));
 
         if (do_hash_start) begin
           // wait for interrupt to assert, check status and clear it

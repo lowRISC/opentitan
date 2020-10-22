@@ -11,6 +11,9 @@ package otbn_pkg;
   // Data path width for BN (wide) instructions, in bits.
   parameter int WLEN = 256;
 
+  // Number of 32-bit words per WLEN
+  parameter int BaseWordsPerWLEN = WLEN / 32;
+
   // Number of flag groups
   parameter int NFlagGroups = 2;
 
@@ -29,17 +32,20 @@ package otbn_pkg;
 
   // Toplevel constants ============================================================================
 
-  // Alerts
-  parameter int                   NumAlerts = 3;
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}};
-
   parameter int AlertImemUncorrectable = 0;
   parameter int AlertDmemUncorrectable = 1;
   parameter int AlertRegUncorrectable = 2;
 
+  // Register file implementation selection enum.
+  typedef enum integer {
+    RegFileFF    = 0, // Generic flip-flop based implementation
+    RegFileFPGA  = 1  // FPGA implmentation, does infer RAM primitives.
+  } regfile_e;
+
   // Error codes
   typedef enum logic [31:0] {
-    ErrCodeNoError = 32'h 0000_0000
+    ErrCodeNoError     = 32'h 0000_0000,
+    ErrCodeBadDataAddr = 32'h 0000_0001
   } err_code_e;
 
   // Constants =====================================================================================
@@ -52,70 +58,100 @@ package otbn_pkg;
   // Opcodes (field [6:0] in the instruction), matching the RISC-V specification for the base
   // instruction subset.
   typedef enum logic [6:0] {
-    InsnOpcodeBaseLoad     = 7'h03,
-    InsnOpcodeBaseMemMisc  = 7'h0f,
-    InsnOpcodeBaseOpImm    = 7'h13,
-    InsnOpcodeBaseAuipc    = 7'h17,
-    InsnOpcodeBaseStore    = 7'h23,
-    InsnOpcodeBaseOp       = 7'h33,
-    InsnOpcodeBaseLui      = 7'h37,
-    InsnOpcodeBaseBranch   = 7'h63,
-    InsnOpcodeBaseJalr     = 7'h67,
-    InsnOpcodeBaseJal      = 7'h6f,
-    InsnOpcodeBaseSystem   = 7'h73
+    InsnOpcodeBaseLoad           = 7'h03,
+    InsnOpcodeBaseMemMisc        = 7'h0f,
+    InsnOpcodeBaseOpImm          = 7'h13,
+    InsnOpcodeBaseAuipc          = 7'h17,
+    InsnOpcodeBaseStore          = 7'h23,
+    InsnOpcodeBaseOp             = 7'h33,
+    InsnOpcodeBaseLui            = 7'h37,
+    InsnOpcodeBaseBranch         = 7'h63,
+    InsnOpcodeBaseJalr           = 7'h67,
+    InsnOpcodeBaseJal            = 7'h6f,
+    InsnOpcodeBaseSystem         = 7'h73,
+    InsnOpcodeBignumMisc         = 7'h0B,
+    InsnOpcodeBignumArith        = 7'h2B,
+    InsnOpcodeBignumMulqacc      = 7'h3B,
+    InsnOpcodeBignumShiftLogical = 7'h7B
   } insn_opcode_e;
 
   typedef enum logic [3:0] {
-    AluOpAdd,
-    AluOpSub,
+    AluOpBaseAdd,
+    AluOpBaseSub,
 
-    AluOpXor,
-    AluOpOr,
-    AluOpAnd,
-    AluOpNot,
+    AluOpBaseXor,
+    AluOpBaseOr,
+    AluOpBaseAnd,
+    AluOpBaseNot,
 
-    AluOpSra,
-    AluOpSrl,
-    AluOpSll
-  } alu_op_e;
+    AluOpBaseSra,
+    AluOpBaseSrl,
+    AluOpBaseSll
+  } alu_op_base_e;
+
+  // TODO: Can we arrange this to simplify decoding logic?
+  typedef enum logic [3:0] {
+    AluOpBignumAdd,
+    AluOpBignumAddc,
+    AluOpBignumAddm,
+
+    AluOpBignumSub,
+    AluOpBignumSubb,
+    AluOpBignumSubm,
+
+    AluOpBignumRshi,
+
+    AluOpBignumXor,
+    AluOpBignumOr,
+    AluOpBignumAnd,
+    AluOpBignumNot,
+
+    AluOpBignumSel,
+    AluOpBignumMov
+  } alu_op_bignum_e;
 
   typedef enum logic {
-    ComparisonOpEq,
-    ComparisonOpNeq
-  } comparison_op_e;
+    ComparisonOpBaseEq,
+    ComparisonOpBaseNeq
+  } comparison_op_base_e;
 
   // Operand a source selection
   typedef enum logic [1:0] {
     OpASelRegister  = 'd0,
-    OpASelImmediate = 'd1,
-    OpASelFwd = 'd2,
-    OpASelCurrPc = 'd3
+    OpASelZero = 'd1,
+    OpASelCurrPc = 'd2
   } op_a_sel_e;
 
   // Operand b source selection
   typedef enum logic {
-    OpBSelRegister  = 1'b0,
-    OpBSelImmediate = 1'b1
+    OpBSelRegister  = 'd0,
+    OpBSelImmediate = 'd1
   } op_b_sel_e;
 
-
-  // Immediate a selection
-  typedef enum logic {
-    ImmAZero
-  } imm_a_sel_e;
-
-  // Immediate b selection
+  // Immediate b selection for base ISA
   typedef enum logic [2:0] {
-    ImmBI,
-    ImmBS,
-    ImmBB,
-    ImmBU,
-    ImmBJ
-  } imm_b_sel_e;
+    ImmBaseBI,
+    ImmBaseBS,
+    ImmBaseBB,
+    ImmBaseBU,
+    ImmBaseBJ,
+    ImmBaseBX
+  } imm_b_sel_base_e;
+
+  // Shift amount select for bignum ISA
+  typedef enum logic [1:0] {
+    ShamtSelBignumA,
+    ShamtSelBignumS,
+    ShamtSelBignumZero
+  } shamt_sel_bignum_e;
 
   // Regfile write data selection
-  typedef enum logic {
-    RfWdSelEx
+  typedef enum logic [2:0] {
+    RfWdSelEx,
+    RfWdSelNextPc,
+    RfWdSelLsu,
+    RfWdSelIspr,
+    RfWdSelIncr
   } rf_wd_sel_e;
 
   // Control and Status Registers (CSRs)
@@ -128,7 +164,7 @@ package otbn_pkg;
     CsrMod3  = 12'h7D3,
     CsrMod4  = 12'h7D4,
     CsrMod5  = 12'h7D5,
-    CsrMod6  = 12'hdD6,
+    CsrMod6  = 12'h7D6,
     CsrMod7  = 12'h7D7,
     CsrRnd   = 12'hFC0
   } csr_e;
@@ -137,47 +173,131 @@ package otbn_pkg;
   parameter int NWsr = 3; // Number of WSRs
   parameter int WsrNumWidth = $clog2(NWsr);
   typedef enum logic [WsrNumWidth-1:0] {
-    WsrMod = 'd0,
-    WsrRnd = 'd1,
-    WsrAcc = 'd2
+    WsrMod   = 'd0,
+    WsrRnd   = 'd1,
+    WsrAcc   = 'd2
   } wsr_e;
+
+  // Internal Special Purpose Registers (ISPRs)
+  // CSRs and WSRs have some overlap into what they map into. ISPRs are the actual registers in the
+  // design which CSRs and WSRs are mapped on to.
+  parameter int NIspr = NWsr + 1;
+  parameter int IsprNumWidth = $clog2(NIspr);
+  typedef enum logic [IsprNumWidth-1:0] {
+    IsprMod   = 'd0,
+    IsprRnd   = 'd1,
+    IsprAcc   = 'd2,
+    IsprFlags = 'd3
+  } ispr_e;
+
+  typedef logic [$clog2(NFlagGroups)-1:0] flag_group_t;
+
+  typedef struct packed {
+    logic Z;
+    logic L;
+    logic M;
+    logic C;
+  } flags_t;
+
+  localparam int FlagsWidth = $bits(flags_t);
+
+  typedef enum logic [$clog2(FlagsWidth)-1:0] {
+    FlagC = 'd0,
+    FlagL = 'd1,
+    FlagM = 'd2,
+    FlagZ = 'd3
+  } flag_e;
+
   // TODO: Figure out how to add assertions for the enum type width; initial blocks, as produced by
   // ASSERT_INIT, aren't allowed in packages.
   //`ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
 
-  // Decoded instruction components, with signals matching the "Decoding" section of the
-  // specification.
+  // Structures for decoded instructions, grouped into three:
+  // - insn_dec_shared_t - Anything that applies to both bignum and base microarchitecture
+  // - insn_dec_base_t - Anything that only applies to the base side microarchitecture
+  // - insn_dec_bignum_t - Anything that only applies to bignum side microarchitecture
+  //
   // TODO: The variable names are rather short, especially "i" is confusing. Think about renaming.
+  //
+  typedef struct packed {
+    insn_subset_e   subset;
+    logic           ecall_insn;
+    logic           ld_insn;
+    logic           st_insn;
+    logic           branch_insn;
+    logic           jump_insn;
+    logic           ispr_rw_insn;
+    logic           ispr_rs_insn;
+  } insn_dec_shared_t;
 
   typedef struct packed {
-    logic [4:0]  d;  // Destination register
-    logic [4:0]  a;  // First source register
-    logic [4:0]  b;  // Second source register
-    logic [31:0] i;  // Immediate
+    logic [4:0]          d;             // Destination register
+    logic [4:0]          a;             // First source register
+    logic [4:0]          b;             // Second source register
+    logic [31:0]         i;             // Immediate
+    alu_op_base_e        alu_op;
+    comparison_op_base_e comparison_op;
+    op_a_sel_e           op_a_sel;
+    op_b_sel_e           op_b_sel;
+    logic                rf_we;
+    rf_wd_sel_e          rf_wdata_sel;
   } insn_dec_base_t;
 
-  // Control signals from decoder to controller: additional information about the decoded
-  // instruction influencing the operation.
   typedef struct packed {
-    insn_subset_e subset;
-    op_a_sel_e    op_a_sel;
-    op_b_sel_e    op_b_sel;
-    alu_op_e      alu_op;
-    logic         rf_we;
-    rf_wd_sel_e   rf_wdata_sel;
-    logic         ecall_insn;
-  } insn_dec_ctrl_t;
+    logic [WdrAw-1:0]        d;           // Destination register
+    logic [WdrAw-1:0]        a;           // First source register
+    logic [WdrAw-1:0]        b;           // Second source register
+    logic [WLEN-1:0]         i;           // Immediate
+
+    logic                    rf_a_indirect; // Indirect lookup, bignum register index a comes from
+                                            // base register a read
+    logic                    rf_b_indirect; // Indirect lookup, bignum register index b comes from
+                                            // base register b read
+    logic                    rf_d_indirect; // Indirect lookup, bignum register index d comes from
+                                            // base register b read using d in this struct
+
+    logic                    d_inc;           // Increment destination register index in base
+                                              // register file
+    logic                    a_inc;           // Increment source register index a in base register
+                                              // file
+    logic                    a_wlen_word_inc; // Increment source register a in base register file
+                                              // by WLEN word size
+    logic                    b_inc;           // Increment source register index b in base register
+                                              // file
+
+    // Shifting only applies to a subset of ALU operations
+    logic [$clog2(WLEN)-1:0] shift_amt;   // Shift amount
+    logic                    shift_right; // Shift right if set otherwise left
+
+    flag_group_t             flag_group;
+    flag_e                   sel_flag;
+    alu_op_bignum_e          alu_op;
+    op_b_sel_e               op_b_sel;
+    logic                    rf_we;
+    rf_wd_sel_e              rf_wdata_sel;
+  } insn_dec_bignum_t;
 
   typedef struct packed {
-    alu_op_e     op;
+    alu_op_base_e     op;
     logic [31:0] operand_a;
     logic [31:0] operand_b;
   } alu_base_operation_t;
 
   typedef struct packed {
-    comparison_op_e op;
+    comparison_op_base_e op;
     logic [31:0] operand_a;
     logic [31:0] operand_b;
   } alu_base_comparison_t;
+
+  typedef struct packed {
+    alu_op_bignum_e op;
+    logic [WLEN-1:0]         operand_a;
+    logic [WLEN-1:0]         operand_b;
+    logic                    shift_right;
+    logic [$clog2(WLEN)-1:0] shift_amt;
+    flag_group_t             flag_group;
+    flag_e                   sel_flag;
+  } alu_bignum_operation_t;
+
 
 endpackage

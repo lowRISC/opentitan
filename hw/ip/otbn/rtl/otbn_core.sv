@@ -12,6 +12,9 @@
 module otbn_core
   import otbn_pkg::*;
 #(
+  // Register file implementation selection, see otbn_pkg.sv.
+  parameter regfile_e RegFile = RegFileFF,
+
   // Size of the instruction memory, in bytes
   parameter int ImemSizeByte = 4096,
   // Size of the data memory, in bytes
@@ -51,7 +54,11 @@ module otbn_core
   // TODO: Decide what guarantees we make for random numbers on CSRs/WSRs, and how they might or
   // might not come from the same source.
   logic [WLEN-1:0] rnd;
-  assign rnd = 'd42;
+
+  // Constant for now until RNG is set up. This constant is the same in the model and must be
+  // altered there to match is altered here (the `_random_value` variable in the `RandWSR` class in
+  // dv/otbn/sim/wsr.py).
+  assign rnd = 256'h9999999999999999999999999999999999999999999999999999999999999999;
 
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
@@ -67,8 +74,8 @@ module otbn_core
   logic                     insn_illegal;
   logic [ImemAddrWidth-1:0] insn_addr;
   insn_dec_base_t           insn_dec_base;
-
-  insn_dec_ctrl_t insn_dec_ctrl;
+  insn_dec_bignum_t         insn_dec_bignum;
+  insn_dec_shared_t         insn_dec_shared;
 
   logic [4:0]   rf_base_wr_addr;
   logic         rf_base_wr_en;
@@ -82,6 +89,36 @@ module otbn_core
   alu_base_comparison_t alu_base_comparison;
   logic [31:0]          alu_base_operation_result;
   logic                 alu_base_comparison_result;
+
+  logic                     lsu_load_req;
+  logic                     lsu_store_req;
+  insn_subset_e             lsu_req_subset;
+  logic [DmemAddrWidth-1:0] lsu_addr;
+
+  logic [31:0]              lsu_base_wdata;
+  logic [WLEN-1:0]          lsu_bignum_wdata;
+
+  logic [31:0]              lsu_base_rdata;
+  logic [WLEN-1:0]          lsu_bignum_rdata;
+  logic [1:0]               lsu_rdata_err; // Bit1: Uncorrectable, Bit0: Correctable
+
+  logic [WdrAw-1:0] rf_bignum_wr_addr;
+  logic [1:0]       rf_bignum_wr_en;
+  logic [WLEN-1:0]  rf_bignum_wr_data;
+  logic [WdrAw-1:0] rf_bignum_rd_addr_a;
+  logic [WLEN-1:0]  rf_bignum_rd_data_a;
+  logic [WdrAw-1:0] rf_bignum_rd_addr_b;
+  logic [WLEN-1:0]  rf_bignum_rd_data_b;
+
+  alu_bignum_operation_t alu_bignum_operation;
+  logic [WLEN-1:0]       alu_bignum_operation_result;
+
+  ispr_e                       ispr_addr;
+  logic [31:0]                 ispr_base_wdata;
+  logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en;
+  logic [WLEN-1:0]             ispr_bignum_wdata;
+  logic                        ispr_bignum_wr_en;
+  logic [WLEN-1:0]             ispr_rdata;
 
   // Depending on its usage, the instruction address (program counter) is qualified by two valid
   // signals: insn_fetch_resp_valid (together with the undecoded instruction data), and insn_valid
@@ -126,10 +163,11 @@ module otbn_core
     .insn_fetch_resp_valid_i (insn_fetch_resp_valid),
 
     // Decoded instruction
-    .insn_valid_o    (insn_valid),
-    .insn_illegal_o  (insn_illegal),
-    .insn_dec_base_o (insn_dec_base),
-    .insn_dec_ctrl_o (insn_dec_ctrl)
+    .insn_valid_o      (insn_valid),
+    .insn_illegal_o    (insn_illegal),
+    .insn_dec_base_o   (insn_dec_base),
+    .insn_dec_bignum_o (insn_dec_bignum),
+    .insn_dec_shared_o (insn_dec_shared)
   );
 
   // Controller: coordinate between functional units, prepare their inputs (e.g. by muxing between
@@ -154,8 +192,9 @@ module otbn_core
     .insn_addr_i  (insn_addr),
 
     // Decoded instruction from decoder
-    .insn_dec_base_i (insn_dec_base),
-    .insn_dec_ctrl_i (insn_dec_ctrl),
+    .insn_dec_base_i   (insn_dec_base),
+    .insn_dec_bignum_i (insn_dec_bignum),
+    .insn_dec_shared_i (insn_dec_shared),
 
     // To/from base register file
     .rf_base_wr_addr_o   (rf_base_wr_addr),
@@ -166,11 +205,45 @@ module otbn_core
     .rf_base_rd_addr_b_o (rf_base_rd_addr_b),
     .rf_base_rd_data_b_i (rf_base_rd_data_b),
 
+    // To/from bignunm register file
+    .rf_bignum_wr_addr_o   (rf_bignum_wr_addr),
+    .rf_bignum_wr_en_o     (rf_bignum_wr_en),
+    .rf_bignum_wr_data_o   (rf_bignum_wr_data),
+    .rf_bignum_rd_addr_a_o (rf_bignum_rd_addr_a),
+    .rf_bignum_rd_data_a_i (rf_bignum_rd_data_a),
+    .rf_bignum_rd_addr_b_o (rf_bignum_rd_addr_b),
+    .rf_bignum_rd_data_b_i (rf_bignum_rd_data_b),
+
     // To/from base ALU
     .alu_base_operation_o         (alu_base_operation),
     .alu_base_comparison_o        (alu_base_comparison),
     .alu_base_operation_result_i  (alu_base_operation_result),
-    .alu_base_comparison_result_i (alu_base_comparison_result)
+    .alu_base_comparison_result_i (alu_base_comparison_result),
+
+    // To/from bignum ALU
+    .alu_bignum_operation_o         (alu_bignum_operation),
+    .alu_bignum_operation_result_i  (alu_bignum_operation_result),
+
+    // To/from LSU (base and bignum)
+    .lsu_load_req_o     (lsu_load_req),
+    .lsu_store_req_o    (lsu_store_req),
+    .lsu_req_subset_o   (lsu_req_subset),
+    .lsu_addr_o         (lsu_addr),
+
+    .lsu_base_wdata_o   (lsu_base_wdata),
+    .lsu_bignum_wdata_o (lsu_bignum_wdata),
+
+    .lsu_base_rdata_i   (lsu_base_rdata),
+    .lsu_bignum_rdata_i (lsu_bignum_rdata),
+    .lsu_rdata_err_i    (lsu_rdata_err),
+
+    // Isprs read/write (base and bignum)
+    .ispr_addr_o         (ispr_addr),
+    .ispr_base_wdata_o   (ispr_base_wdata),
+    .ispr_base_wr_en_o   (ispr_base_wr_en),
+    .ispr_bignum_wdata_o (ispr_bignum_wdata),
+    .ispr_bignum_wr_en_o (ispr_bignum_wr_en),
+    .ispr_rdata_i        (ispr_rdata)
   );
 
   // Load store unit: read and write data from data memory
@@ -186,40 +259,53 @@ module otbn_core
     .dmem_wmask_o,
     .dmem_rdata_i,
     .dmem_rvalid_i,
-    .dmem_rerror_i
+    .dmem_rerror_i,
 
-    // Data from base and bn execute blocks.
-    // TODO: Add signals to controller
-  );
+    .lsu_load_req_i     (lsu_load_req),
+    .lsu_store_req_i    (lsu_store_req),
+    .lsu_req_subset_i   (lsu_req_subset),
+    .lsu_addr_i         (lsu_addr),
 
-  // Control and Status registers
-  // 32b Control and Status Registers (CSRs), and WLEN Wide Special-Purpose Registers (WSRs)
-  otbn_status_registers u_otbn_status_registers (
-    .clk_i,
-    .rst_ni,
-    .rnd_i (rnd)
+    .lsu_base_wdata_i   (lsu_base_wdata),
+    .lsu_bignum_wdata_i (lsu_bignum_wdata),
 
-    // TODO: Add CSR and WSR read/write ports to controller.
-
-    // TODO: Add potential side-channel signals.
+    .lsu_base_rdata_o   (lsu_base_rdata),
+    .lsu_bignum_rdata_o (lsu_bignum_rdata),
+    .lsu_rdata_err_o    (lsu_rdata_err)
   );
 
   // Base Instruction Subset =======================================================================
 
   // General-Purpose Register File (GPRs): 32 32b registers
-  otbn_rf_base u_otbn_rf_base (
-    .clk_i,
-    .rst_ni,
+  if (RegFile == RegFileFF) begin : gen_rf_base_ff
+    otbn_rf_base_ff u_otbn_rf_base (
+      .clk_i,
+      .rst_ni,
 
-    .wr_addr_i (rf_base_wr_addr),
-    .wr_en_i   (rf_base_wr_en),
-    .wr_data_i (rf_base_wr_data),
+      .wr_addr_i (rf_base_wr_addr),
+      .wr_en_i   (rf_base_wr_en),
+      .wr_data_i (rf_base_wr_data),
 
-    .rd_addr_a_i (rf_base_rd_addr_a),
-    .rd_data_a_o (rf_base_rd_data_a),
-    .rd_addr_b_i (rf_base_rd_addr_b),
-    .rd_data_b_o (rf_base_rd_data_b)
-  );
+      .rd_addr_a_i (rf_base_rd_addr_a),
+      .rd_data_a_o (rf_base_rd_data_a),
+      .rd_addr_b_i (rf_base_rd_addr_b),
+      .rd_data_b_o (rf_base_rd_data_b)
+    );
+  end else if (RegFile == RegFileFPGA) begin : gen_rf_base_fpga
+    otbn_rf_base_fpga u_otbn_rf_base (
+      .clk_i,
+      .rst_ni,
+
+      .wr_addr_i (rf_base_wr_addr),
+      .wr_en_i   (rf_base_wr_en),
+      .wr_data_i (rf_base_wr_data),
+
+      .rd_addr_a_i (rf_base_rd_addr_a),
+      .rd_data_a_o (rf_base_rd_data_a),
+      .rd_addr_b_i (rf_base_rd_addr_b),
+      .rd_data_b_o (rf_base_rd_data_b)
+    );
+  end
 
   otbn_alu_base u_otbn_alu_base (
     .clk_i,
@@ -230,4 +316,52 @@ module otbn_core
     .operation_result_o  (alu_base_operation_result),
     .comparison_result_o (alu_base_comparison_result)
   );
+
+  if (RegFile == RegFileFF) begin : gen_rf_bignum_ff
+    otbn_rf_bignum_ff u_otbn_rf_bignum (
+      .clk_i,
+      .rst_ni,
+
+      .wr_addr_i (rf_bignum_wr_addr),
+      .wr_en_i   (rf_bignum_wr_en),
+      .wr_data_i (rf_bignum_wr_data),
+
+      .rd_addr_a_i (rf_bignum_rd_addr_a),
+      .rd_data_a_o (rf_bignum_rd_data_a),
+      .rd_addr_b_i (rf_bignum_rd_addr_b),
+      .rd_data_b_o (rf_bignum_rd_data_b)
+    );
+  end else if (RegFile == RegFileFPGA) begin : gen_rf_bignum_fpga
+    otbn_rf_bignum_fpga u_otbn_rf_bignum (
+      .clk_i,
+      .rst_ni,
+
+      .wr_addr_i (rf_bignum_wr_addr),
+      .wr_en_i   (rf_bignum_wr_en),
+      .wr_data_i (rf_bignum_wr_data),
+
+      .rd_addr_a_i (rf_bignum_rd_addr_a),
+      .rd_data_a_o (rf_bignum_rd_data_a),
+      .rd_addr_b_i (rf_bignum_rd_addr_b),
+      .rd_data_b_o (rf_bignum_rd_data_b)
+    );
+  end
+
+  otbn_alu_bignum u_otbn_alu_bignum (
+    .clk_i,
+    .rst_ni,
+
+    .operation_i         (alu_bignum_operation),
+    .operation_result_o  (alu_bignum_operation_result),
+
+    .ispr_addr_i         (ispr_addr),
+    .ispr_base_wdata_i   (ispr_base_wdata),
+    .ispr_base_wr_en_i   (ispr_base_wr_en),
+    .ispr_bignum_wdata_i (ispr_bignum_wdata),
+    .ispr_bignum_wr_en_i (ispr_bignum_wr_en),
+    .ispr_rdata_o        (ispr_rdata),
+
+    .rnd_i               (rnd)
+  );
+
 endmodule

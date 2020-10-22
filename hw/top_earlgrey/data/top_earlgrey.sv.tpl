@@ -30,6 +30,15 @@ cpu_rst = top["reset_paths"]["sys"]
 dm_rst = top["reset_paths"]["lc"]
 %>\
 module top_${top["name"]} #(
+  // Auto-inferred parameters
+% for m in top["module"]:
+  % for p_exp in filter(lambda p: p["expose"] == "true", m["param_list"]):
+  parameter ${p_exp["type"]} ${p_exp["name_top"]} = ${p_exp["default"]},
+  % endfor
+% endfor
+
+  // Manually defined parameters
+  parameter ibex_pkg::regfile_e IbexRegFile = ibex_pkg::RegFileFF,
   parameter bit IbexPipeLine = 0,
   parameter     BootRomInitFile = ""
 ) (
@@ -172,11 +181,6 @@ module top_${top["name"]} #(
 % endfor
 
 ## Inter-module signal collection
-  always_comb begin
-    // TODO: So far just aes is connected
-    clkmgr_status.idle    = clkmgr_pkg::CLK_HINT_STATUS_DEFAULT;
-    clkmgr_status.idle[0] = aes_idle;
-  end
 
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
@@ -189,15 +193,17 @@ module top_${top["name"]} #(
     .PMPEnable                (1),
     .PMPGranularity           (0), // 2^(PMPGranularity+2) == 4 byte granularity
     .PMPNumRegions            (16),
-    .MHPMCounterNum           (8),
-    .MHPMCounterWidth         (40),
+    .MHPMCounterNum           (10),
+    .MHPMCounterWidth         (32),
     .RV32E                    (0),
-    .RV32M                    (1),
+    .RV32M                    (ibex_pkg::RV32MSingleCycle),
+    .RV32B                    (ibex_pkg::RV32BNone),
+    .RegFile                  (IbexRegFile),
     .BranchTargetALU          (1),
     .WritebackStage           (1),
-    .MultiplierImplementation ("single-cycle"),
     .ICache                   (0),
     .ICacheECC                (0),
+    .BranchPredictor          (0),
     .DbgTriggerEn             (1),
     .SecureIbex               (0),
     .DmHaltAddr               (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
@@ -404,6 +410,7 @@ module top_${top["name"]} #(
   logic flash_host_req;
   logic flash_host_req_rdy;
   logic flash_host_req_done;
+  logic flash_host_rderr;
   logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
   logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
 
@@ -432,7 +439,7 @@ module top_${top["name"]} #(
     .wmask_o  (),
     .rdata_i  (flash_host_rdata),
     .rvalid_i (flash_host_req_done),
-    .rerror_i (2'b00)
+    .rerror_i ({flash_host_rderr,1'b0})
   );
 
   flash_phy u_flash_${m["name"]} (
@@ -446,6 +453,7 @@ module top_${top["name"]} #(
     .host_addr_i     (flash_host_addr),
     .host_req_rdy_o  (flash_host_req_rdy),
     .host_req_done_o (flash_host_req_done),
+    .host_rderr_o    (flash_host_rderr),
     .host_rdata_o    (flash_host_rdata),
     .flash_ctrl_i    (${m["inter_signal_list"][0]["top_signame"]}_req),
     .flash_ctrl_o    (${m["inter_signal_list"][0]["top_signame"]}_rsp)
@@ -473,14 +481,10 @@ else:
     max_intrwidth = max([len(x["name"]) for x
         in m["interrupt_list"]])
 %>\
-  % if "parameter" in m:
+  % if m["param_list"]:
   ${m["type"]} #(
-    % for k, v in m["parameter"].items():
-        % if loop.last:
-    .${k}(${v | lib.parameterize})
-        % else:
-    .${k}(${v | lib.parameterize}),
-        % endif
+    % for i in m["param_list"]:
+    .${i["name"]}(${i["name_top" if i["expose"] == "true" else "default"]})${"," if not loop.last else ""}
     % endfor
   ) u_${m["name"]} (
   % else:
@@ -568,8 +572,6 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .dio_attr_o,
     % endif
     % if m["type"] == "alert_handler":
-      // TODO: wire this to hardware debug circuit
-      .crashdump_o (          ),
       // TODO: wire this to TRNG
       .entropy_i   ( 1'b0     ),
       // alert signals

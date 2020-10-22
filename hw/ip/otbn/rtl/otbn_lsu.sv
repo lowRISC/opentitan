@@ -32,15 +32,73 @@ module otbn_lsu
   output logic [WLEN-1:0]          dmem_wmask_o,
   input  logic [WLEN-1:0]          dmem_rdata_i,
   input  logic                     dmem_rvalid_i,
-  input  logic [1:0]               dmem_rerror_i // Bit1: Uncorrectable, Bit0: Correctable
+  input  logic [1:0]               dmem_rerror_i, // Bit1: Uncorrectable, Bit0: Correctable
 
+  input  logic                     lsu_load_req_i,
+  input  logic                     lsu_store_req_i,
+  input  insn_subset_e             lsu_req_subset_i,
+  input  logic [DmemAddrWidth-1:0] lsu_addr_i,
+
+  input  logic [31:0]              lsu_base_wdata_i,
+  input  logic [WLEN-1:0]          lsu_bignum_wdata_i,
+
+  output logic [31:0]              lsu_base_rdata_o,
+  output logic [WLEN-1:0]          lsu_bignum_rdata_o,
+  output logic [1:0]               lsu_rdata_err_o // Bit1: Uncorrectable, Bit0: Correctable
 );
+  localparam int BaseWordsPerWLen = WLEN / 32;
+  localparam int BaseWordAddrW = prim_util_pkg::vbits(WLEN/8);
 
-  // tie-off to 0 to prevent warnings until implementation is done
-  assign dmem_req_o = 1'b0;
-  assign dmem_write_o = 1'b0;
-  assign dmem_addr_o = '0;
-  assign dmem_wdata_o = '0;
-  assign dmem_wmask_o = '0;
+  // Produce a WLEN bit mask for 32-bit writes given the 32-bit word write address. This doesn't
+  // propagate X so a seperate assertion must be used to check the input isn't X when a valid output
+  // is desired.
+  function automatic logic [WLEN-1:0] mask_from_word_addr(logic [BaseWordAddrW-1:2] addr);
+    logic [WLEN-1:0] mask;
+
+    mask = '0;
+
+    // Use of logic == int comparison in this loop works as BaseWordsPerWLen is a constant, so the
+    // loop can be unrolled. Due to the use of '==' any X or Z in addr will result in an X result
+    // for the comparison (so mask will remain 0).
+    for (int i = 0; i < BaseWordsPerWLen; i++) begin
+      if (addr == i) begin
+        mask[i*32+:32] = 32'hFFFFFFFF;
+      end
+    end
+
+    return mask;
+  endfunction
+
+  assign dmem_req_o   = lsu_load_req_i | lsu_store_req_i;
+  assign dmem_write_o = lsu_store_req_i;
+  assign dmem_addr_o  = lsu_addr_i;
+
+  // For base 32-bit writes replicate write data across dmem_wdata. dmem_wmask will be set
+  // appropriately so only the target word is written.
+  assign dmem_wdata_o = lsu_req_subset_i == InsnSubsetBase ?
+    {BaseWordsPerWLen{lsu_base_wdata_i}} : lsu_bignum_wdata_i;
+
+  assign dmem_wmask_o = lsu_req_subset_i == InsnSubsetBase ?
+    mask_from_word_addr(lsu_addr_i[BaseWordAddrW-1:2]) : {WLEN{1'b1}};
+
+  // From the WLEN word read from DMem select out a 32-bit word for base instructions.
+  for (genvar i_bit = 0; i_bit < 32; i_bit++) begin : g_base_rdata
+    logic [BaseWordsPerWLen-1:0] bit_mux;
+
+    for (genvar j_word = 0; j_word < BaseWordsPerWLen; j_word++) begin : g_bit_mux
+      assign bit_mux[j_word] =
+        (lsu_addr_i[BaseWordAddrW-1:2] == j_word) & dmem_rdata_i[i_bit + j_word * 32];
+    end
+
+    assign lsu_base_rdata_o[i_bit] = |bit_mux;
+  end
+
+  // Data appears the cycle following the request, LSU assume lsu_addr_i is kept stable by the
+  // controller to mux out the required 32-bit word.
+  `ASSERT(LsuLoadAddrStable, lsu_load_req_i |=> $stable(lsu_addr_i));
+  `ASSERT_KNOWN_IF(LsuAddrKnown, lsu_addr_i, lsu_load_req_i | lsu_store_req_i);
+
+  assign lsu_bignum_rdata_o = dmem_rdata_i;
+  assign lsu_rdata_err_o    = dmem_rerror_i;
 
 endmodule

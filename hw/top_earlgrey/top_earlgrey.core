@@ -8,9 +8,8 @@ filesets:
   files_rtl_generic:
     depend:
       - lowrisc:ip:uart:0.1
-      - lowrisc:top_earlgrey:alert_handler_reg
       - lowrisc:top_earlgrey:clkmgr
-      - lowrisc:ip:alert_handler_component
+      - lowrisc:ip:alert_handler
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
@@ -27,22 +26,22 @@ filesets:
       - lowrisc:ip:otbn
       - lowrisc:prim:ram_1p_adv
       - lowrisc:prim:rom_adv
-      - lowrisc:ip:rstmgr
       - lowrisc:prim:flash
-      - lowrisc:ip:flash_ctrl:0.1
+      - lowrisc:ip:flash_ctrl
+      - lowrisc:ip:keymgr
       - lowrisc:constants:top_pkg
       - lowrisc:ip:nmi_gen
+      - lowrisc:ip:otp_ctrl
       - lowrisc:ip:usbdev
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
-      - lowrisc:ip:rstmgr
+      - lowrisc:systems:rstmgr
       - lowrisc:ip:pwrmgr
       - lowrisc:systems:sensor_ctrl
       - lowrisc:systems:ast_wrapper_pkg
       - lowrisc:tlul:headers
       - lowrisc:prim:all
     files:
-      - rtl/autogen/top_earlgrey_pkg.sv
       - rtl/autogen/top_earlgrey.sv
     file_type: systemVerilogSource
 
@@ -111,6 +110,7 @@ targets:
       ascentlint:
         ascentlint_options:
           - "-wait_license"
+          - "-stop_on_error"
       verilator:
         mode: lint-only
         verilator_options:

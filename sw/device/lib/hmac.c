@@ -4,14 +4,14 @@
 
 #include "sw/device/lib/hmac.h"
 
-#include "sw/device/lib/common.h"
-
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define HMAC0_BASE_ADDR TOP_EARLGREY_HMAC_BASE_ADDR
 #define HMAC_FIFO_MAX 16
 #define HMAC_FIFO_GROUP_SIZE HMAC_FIFO_MAX / 2
+
+#define REG32(add) *((volatile uint32_t *)(add))
 
 void hmac_init(hmac_cfg_t hmac_cfg) {
   REG32(HMAC_CFG(0)) = hmac_cfg.input_endian_swap << HMAC_CFG_ENDIAN_SWAP |
@@ -61,7 +61,7 @@ void hmac_update(const void *data, size_t size_in_bytes) {
 
   const uint8_t *bp = (const uint8_t *)wp;
   for (; bytes_left_over > 0; --bytes_left_over) {
-    REG8(HMAC_MSG_FIFO(0)) = *bp++;
+    *((volatile uint8_t *)HMAC_MSG_FIFO(0)) = *bp++;
   }
 }
 

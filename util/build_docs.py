@@ -22,6 +22,7 @@ from pathlib import Path
 
 import hjson
 
+import check_tool_requirements
 import dashboard.gen_dashboard_entry as gen_dashboard_entry
 import difgen.gen_dif_listing as gen_dif_listing
 import reggen.gen_cfg_html as gen_cfg_html
@@ -36,7 +37,12 @@ USAGE = """
 """
 
 # Version of hugo extended to be used to build the docs
-HUGO_EXTENDED_VERSION = "0.60.0"
+try:
+    tool_requirements = check_tool_requirements.read_tool_requirements()
+    HUGO_EXTENDED_VERSION = tool_requirements['hugo_extended']
+except Exception as e:
+    print("Unable to get required hugo version: %s" % str(e), file=sys.stderr)
+    sys.exit(1)
 
 # Configurations
 # TODO: Move to config.yaml
@@ -51,18 +57,26 @@ config = {
         "hw/ip/aes/data/aes.hjson",
         "hw/top_earlgrey/ip/alert_handler/data/autogen/alert_handler.hjson",
         "hw/ip/entropy_src/data/entropy_src.hjson",
+        "hw/ip/csrng/data/csrng.hjson",
+        "hw/ip/edn/data/edn.hjson",
         "hw/ip/flash_ctrl/data/flash_ctrl.hjson",
         "hw/ip/gpio/data/gpio.hjson",
         "hw/ip/hmac/data/hmac.hjson",
         "hw/ip/i2c/data/i2c.hjson",
+        "hw/ip/keymgr/data/keymgr.hjson",
+        "hw/ip/lc_ctrl/data/lc_ctrl.hjson",
         "hw/ip/nmi_gen/data/nmi_gen.hjson",
         "hw/ip/otbn/data/otbn.hjson",
         "hw/ip/otp_ctrl/data/otp_ctrl.hjson",
         "hw/ip/padctrl/data/padctrl.hjson",
+        "hw/ip/pattgen/data/pattgen.hjson",
         "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson",
+        "hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson",
+        "hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson",
         "hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson",
         "hw/ip/rv_timer/data/rv_timer.hjson",
         "hw/ip/spi_device/data/spi_device.hjson",
+        "hw/ip/sram_ctrl/data/sram_ctrl.hjson",
         "hw/ip/uart/data/uart.hjson",
         "hw/ip/usbdev/data/usbdev.hjson",
         "hw/ip/usbuart/data/usbuart.hjson",
@@ -82,7 +96,9 @@ config = {
         "hw/ip/gpio/data/gpio_testplan.hjson",
         "hw/ip/hmac/data/hmac_testplan.hjson",
         "hw/ip/i2c/data/i2c_testplan.hjson",
+        "hw/ip/keymgr/data/keymgr_testplan.hjson",
         "hw/ip/padctrl/data/padctrl_fpv_testplan.hjson",
+        "hw/ip/pattgen/data/pattgen_testplan.hjson",
         "hw/ip/pinmux/data/pinmux_fpv_testplan.hjson",
         "hw/ip/rv_plic/data/rv_plic_fpv_testplan.hjson",
         "hw/ip/rv_timer/data/rv_timer_testplan.hjson",
@@ -90,6 +106,7 @@ config = {
         "hw/ip/uart/data/uart_testplan.hjson",
         "hw/ip/usbdev/data/usbdev_testplan.hjson",
         "hw/ip/tlul/data/tlul_testplan.hjson",
+        "hw/top_earlgrey/data/chip_testplan.hjson",
         "hw/top_earlgrey/data/standalone_sw_testplan.hjson",
         "util/dvsim/testplanner/examples/foo_testplan.hjson",
     ],
@@ -304,9 +321,8 @@ def generate_otbn_isa():
     script = otbn_dir / 'util/yaml_to_doc.py'
     yaml_file = otbn_dir / 'data/insns.yml'
 
-    out_path = config['outdir-generated'].joinpath('otbn-isa.md')
-    with open(str(out_path), 'w') as handle:
-        subprocess.run([str(script), str(yaml_file)], stdout=handle, check=True)
+    out_dir = config['outdir-generated'].joinpath('otbn-isa')
+    subprocess.run([str(script), str(yaml_file), str(out_dir)], check=True)
 
 
 def hugo_match_version(hugo_bin_path, version):

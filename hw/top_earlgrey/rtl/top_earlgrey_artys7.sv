@@ -8,8 +8,8 @@ module top_earlgrey_artys7  #(
   parameter BootRomInitFile = "boot_rom_fpga_artys7.32.vmem"
 ) (
   // Clock and Reset
-  inout               IO_CLK,
-  inout               IO_RST_N,
+  input               IO_CLK,
+  input               IO_RST_N,
   // JTAG interface -- not hooked up at the moment
   // inout               IO_DPS0, // IO_JTCK,    IO_SDCK
   // inout               IO_DPS3, // IO_JTMS,    IO_SDCSB
@@ -51,7 +51,7 @@ module top_earlgrey_artys7  #(
   // Padring Instance //
   //////////////////////
 
-  logic clk, clk_usb_48mhz, rst_n;
+  logic clk_main, clk_usb_48mhz, rst_n;
   logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
   logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
   logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
@@ -133,11 +133,12 @@ module top_earlgrey_artys7  #(
   // Unlike nexysvideo, there is currently no dedicated
   // JTAG port available, hence tie off.
   logic jtag_trst_n, jtag_srst_n;
-  logic jtag_tck, jtag_tms, jtag_tdi, jtag_tdo;
+  logic jtag_tck, jtag_tck_buf, jtag_tms, jtag_tdi, jtag_tdo;
 
   assign jtag_trst_n = 1'b1;
   assign jtag_srst_n = 1'b1;
   assign jtag_tck = 1'b0;
+  assign jtag_tck_buf = 1'b0;
   assign jtag_tms = 1'b0;
   assign jtag_tdi = 1'b0;
 
@@ -152,30 +153,70 @@ module top_earlgrey_artys7  #(
   // PLL for FPGA //
   //////////////////
 
-  clkgen_xil7series clkgen (
+  clkgen_xil7series # (
+    .AddClkBuf(0)
+  ) clkgen (
     .IO_CLK,
     .IO_RST_N,
-    .clk_sys(clk),
+    .jtag_srst_n,
+    .clk_main(clk_main),
     .clk_48MHz(clk_usb_48mhz),
-    .rst_sys_n(rst_n)
+    .rst_n(rst_n)
   );
 
   //////////////////////
   // Top-level design //
   //////////////////////
+  pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  ast_wrapper_pkg::ast_rst_t ast_base_rst;
+  ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
+  ast_wrapper_pkg::ast_status_t ast_base_status;
 
+  assign ast_base_pwr.slow_clk_val = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.core_clk_val = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.io_clk_val   = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.usb_clk_val  = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.main_pok     = 1'b1;
+
+  assign ast_base_alerts.alerts_p  = '0;
+  assign ast_base_alerts.alerts_n  = {ast_wrapper_pkg::NumAlerts{1'b1}};
+  assign ast_base_status.io_pok    = {ast_wrapper_pkg::NumIoRails{1'b1}};
+
+  // the rst_ni pin only goes to AST
+  // the rest of the logic generates reset based on the 'pok' signal.
+  // for verilator purposes, make these two the same.
+  assign ast_base_rst.aon_pok      = rst_n;
   top_earlgrey #(
+    .AesMasking(1'b0),
+    .AesSBoxImpl(aes_pkg::SBoxImplLut),
+    .SecAesStartTriggerDelay(0),
+    .SecAesAllowForcingMasks(1'b0),
+    .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexPipeLine(1),
+    .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (
     // Clocks, resets
-    .clk_i           ( clk           ),
     .rst_ni          ( rst_n         ),
-    .clk_fixed_i     ( clk           ),
-    .clk_usb_48mhz_i ( clk_usb_48mhz ),
+    .clk_main_i      ( clk_main      ),
+    .clk_io_i        ( clk_main      ),
+    .clk_usb_i       ( clk_usb_48mhz ),
+    .clk_aon_i       ( clk_main      ),
+    .rstmgr_ast_i                 ( ast_base_rst    ),
+    .pwrmgr_pwr_ast_req_o         (                 ),
+    .pwrmgr_pwr_ast_rsp_i         ( ast_base_pwr    ),
+    .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts ),
+    .sensor_ctrl_ast_alert_rsp_o  (                 ),
+    .sensor_ctrl_ast_status_i     ( ast_base_status ),
+    .usbdev_usb_ref_val_o         (                 ),
+    .usbdev_usb_ref_pulse_o       (                 ),
+    .ast_tl_req_o                 (                 ),
+    .ast_tl_rsp_i                 ( '0              ),
+    .otp_ctrl_otp_ast_pwr_seq_o   (                 ),
+    .otp_ctrl_otp_ast_pwr_seq_h_i ( '0              ),
 
     // JTAG
-    .jtag_tck_i      ( jtag_tck      ),
+    .jtag_tck_i      ( jtag_tck_buf  ),
     .jtag_tms_i      ( jtag_tms      ),
     .jtag_trst_ni    ( jtag_trst_n   ),
     .jtag_tdi_i      ( jtag_tdi      ),
@@ -196,6 +237,7 @@ module top_earlgrey_artys7  #(
     .dio_attr_o      ( dio_attr      ),
 
     // DFT signals
+    .scan_rst_ni     ( 1'b1          ),
     .scanmode_i      ( 1'b0          )
   );
 

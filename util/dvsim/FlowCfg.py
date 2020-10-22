@@ -16,15 +16,12 @@ from Deploy import Deploy
 from utils import VERBOSE, md_results_to_html, parse_hjson, subst_wildcards
 
 # A set of fields that can be overridden on the command line.
-_CMDLINE_FIELDS = {'tool'}
+_CMDLINE_FIELDS = {'tool', 'verbosity'}
 
 
 # Interface class for extensions.
 class FlowCfg():
     def __str__(self):
-        return pprint.pformat(self.__dict__)
-
-    def __repr__(self):
         return pprint.pformat(self.__dict__)
 
     def __init__(self, flow_cfg_file, proj_root, args):

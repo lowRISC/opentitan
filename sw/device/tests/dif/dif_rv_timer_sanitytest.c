@@ -4,12 +4,12 @@
 
 #include "sw/device/lib/dif/dif_rv_timer.h"
 
-#include "sw/device/lib/base/log.h"
 #include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
-#include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
+#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_main.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -28,7 +28,6 @@ static const uint32_t kHart = (uint32_t)kTopEarlgreyPlicTargetIbex0;
 static const uint32_t kComparator = 0;
 
 static const uint64_t kTickFreqHz = 1000 * 1000;  // 1 MHz.
-static const uint64_t kDeadline = 0x10000;        // 10 ms.
 
 static void test_handler(void) {
   CHECK(!irq_fired, "Entered IRQ handler, but `irq_fired` was not false!");
@@ -52,7 +51,7 @@ void handler_irq_timer(void) {
   LOG_INFO("Exiting handler_irq_timer()");
 }
 
-const test_config_t kTestConfig = {};
+const test_config_t kTestConfig;
 
 bool test_main(void) {
   irq_global_ctrl(true);
@@ -66,8 +65,8 @@ bool test_main(void) {
             &timer) == kDifRvTimerOk);
 
   dif_rv_timer_tick_params_t tick_params;
-  CHECK(dif_rv_timer_approximate_tick_params(kClockFreqHz, kTickFreqHz,
-                                             &tick_params) ==
+  CHECK(dif_rv_timer_approximate_tick_params(kClockFreqPeripheralHz,
+                                             kTickFreqHz, &tick_params) ==
         kDifRvTimerApproximateTickParamsOk);
   CHECK(dif_rv_timer_set_tick_params(&timer, kHart, tick_params) ==
         kDifRvTimerOk);
@@ -75,6 +74,12 @@ bool test_main(void) {
                                 kDifRvTimerEnabled) == kDifRvTimerOk);
 
   uint64_t current_time;
+  // Logs over UART incur a large runtime overhead. To accommodate that, the
+  // timer deadline needs to be large as well. In DV simulations, logs are not
+  // sent over UART, so we can reduce the runtime / sim time with a much shorter
+  // deadline (30 ms vs 100 us).
+  uint64_t kDeadline =
+      (kDeviceType == kDeviceSimDV) ? 100 /* 100 us */ : 30000 /* 30 ms */;
   CHECK(dif_rv_timer_counter_read(&timer, kHart, &current_time) ==
         kDifRvTimerOk);
   LOG_INFO("Current time: %d; timer theshold: %d", (uint32_t)current_time,
@@ -86,8 +91,8 @@ bool test_main(void) {
   CHECK(dif_rv_timer_counter_set_enabled(&timer, kHart, kDifRvTimerEnabled) ==
         kDifRvTimerOk);
 
+  LOG_INFO("Waiting...");
   while (!irq_fired) {
-    LOG_INFO("Waiting...");
     wait_for_interrupt();
   }
 

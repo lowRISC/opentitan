@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "pinmux"
-  import_testplans: ["hw/dv/tools/testplans/fpv_csr_testplan.hjson"]
+  import_testplans: ["hw/dv/tools/dvsim/testplans/fpv_csr_testplan.hjson"]
   entries: [
     {
       name: InSel0_A

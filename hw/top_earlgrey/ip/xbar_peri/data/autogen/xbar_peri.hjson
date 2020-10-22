@@ -75,7 +75,19 @@
     }
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_otp_ctrl"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_sensor_ctrl"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_ast_wrapper"
       act:    "req"
       package: "tlul_pkg"
     }

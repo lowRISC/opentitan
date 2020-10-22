@@ -1,5 +1,6 @@
 *~
 *.bak
+tags
 __pycache__
 opentitan-docs
 

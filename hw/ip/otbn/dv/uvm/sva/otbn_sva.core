@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:otbn_sva:0.1"
+description: "OTBN assertion modules and bind file."
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:tlul:headers
+    files:
+      - otbn_bind.sv
+    file_type: systemVerilogSource
+
+
+targets:
+  default:
+    filesets:
+      - files_dv

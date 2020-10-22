@@ -33,6 +33,7 @@ module clkmgr import clkmgr_pkg::*; (
   // Resets for derived clocks
   // clocks are derived locally
   input rst_io_div2_ni,
+  input rst_io_div4_ni,
 
   // Bus Interface
   input tlul_pkg::tl_h2d_t tl_i,
@@ -46,9 +47,10 @@ module clkmgr import clkmgr_pkg::*; (
   input clk_dft_t dft_i,
 
   // idle hints
-  input clk_hint_status_t status_i,
+  input [2:0] idle_i,
 
   // clock output interface
+  output clkmgr_ast_out_t clocks_ast_o,
   output clkmgr_out_t clocks_o
 
 );
@@ -74,9 +76,22 @@ module clkmgr import clkmgr_pkg::*; (
   // Divided clocks
   ////////////////////////////////////////////////////
   logic clk_io_div2_i;
+  logic clk_io_div4_i;
 
-  assign clk_io_div2_i = clk_io_i;
-
+  prim_clock_div #(
+    .Divisor(2)
+  ) u_io_div2_div (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
+    .clk_o(clk_io_div2_i)
+  );
+  prim_clock_div #(
+    .Divisor(4)
+  ) u_io_div4_div (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
+    .clk_o(clk_io_div4_i)
+  );
 
 
   ////////////////////////////////////////////////////
@@ -85,18 +100,25 @@ module clkmgr import clkmgr_pkg::*; (
   // completely untouched. The only reason they are here is for easier
   // bundling management purposes through clocks_o
   ////////////////////////////////////////////////////
-  assign clocks_o.clk_io_powerup = clk_io_i;
+  assign clocks_o.clk_io_div4_powerup = clk_io_div4_i;
   assign clocks_o.clk_aon_powerup = clk_aon_i;
   assign clocks_o.clk_main_powerup = clk_main_i;
+  assign clocks_o.clk_io_powerup = clk_io_i;
   assign clocks_o.clk_usb_powerup = clk_usb_i;
   assign clocks_o.clk_io_div2_powerup = clk_io_div2_i;
+  assign clocks_o.clk_aon_secure = clk_aon_i;
 
   ////////////////////////////////////////////////////
   // Root gating
   ////////////////////////////////////////////////////
 
-  logic async_roots_en;
-  logic roots_en_q2, roots_en_q1, roots_en_d;
+  logic wait_enable;
+  logic wait_disable;
+  logic en_status_d;
+  logic dis_status_d;
+  logic [1:0] en_status_q;
+  logic [1:0] dis_status_q;
+  logic clk_status;
   logic clk_main_root;
   logic clk_main_en;
   logic clk_io_root;
@@ -105,8 +127,10 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_usb_en;
   logic clk_io_div2_root;
   logic clk_io_div2_en;
+  logic clk_io_div4_root;
+  logic clk_io_div4_en;
 
-  prim_clock_gating_sync i_main_cg (
+  prim_clock_gating_sync u_main_cg (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .test_en_i(dft_i.test_en),
@@ -114,7 +138,7 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_main_en),
     .clk_o(clk_main_root)
   );
-  prim_clock_gating_sync i_io_cg (
+  prim_clock_gating_sync u_io_cg (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
     .test_en_i(dft_i.test_en),
@@ -122,7 +146,7 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_io_en),
     .clk_o(clk_io_root)
   );
-  prim_clock_gating_sync i_usb_cg (
+  prim_clock_gating_sync u_usb_cg (
     .clk_i(clk_usb_i),
     .rst_ni(rst_usb_ni),
     .test_en_i(dft_i.test_en),
@@ -130,7 +154,7 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_usb_en),
     .clk_o(clk_usb_root)
   );
-  prim_clock_gating_sync i_io_div2_cg (
+  prim_clock_gating_sync u_io_div2_cg (
     .clk_i(clk_io_div2_i),
     .rst_ni(rst_io_div2_ni),
     .test_en_i(dft_i.test_en),
@@ -138,84 +162,116 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_io_div2_en),
     .clk_o(clk_io_div2_root)
   );
+  prim_clock_gating_sync u_io_div4_cg (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .test_en_i(dft_i.test_en),
+    .async_en_i(pwr_i.ip_clk_en),
+    .en_o(clk_io_div4_en),
+    .clk_o(clk_io_div4_root)
+  );
+
+  // an async AND of all the synchronized enables
+  // return feedback to pwrmgr only when all clocks are enabled
+  assign wait_enable =
+    clk_main_en &
+    clk_io_en &
+    clk_usb_en &
+    clk_io_div2_en &
+    clk_io_div4_en;
 
   // an async OR of all the synchronized enables
-  assign async_roots_en =
+  // return feedback to pwrmgr only when all clocks are disabled
+  assign wait_disable =
     clk_main_en |
     clk_io_en |
     clk_usb_en |
-    clk_io_div2_en;
+    clk_io_div2_en |
+    clk_io_div4_en;
 
-  // Sync the OR back into clkmgr domain for feedback to pwrmgr.
+  // Sync clkmgr domain for feedback to pwrmgr.
   // Since the signal is combo / converged on the other side, de-bounce
   // the signal prior to output
   prim_flop_2sync #(
     .Width(1)
-  ) i_roots_en_sync (
+  ) u_roots_en_status_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_roots_en),
-    .q_o(roots_en_d)
+    .d_i(wait_enable),
+    .q_o(en_status_d)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_roots_or_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(wait_disable),
+    .q_o(dis_status_d)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      roots_en_q1 <= 1'b0;
-      roots_en_q2 <= 1'b0;
+      en_status_q <= '0;
+      dis_status_q <= '0;
+      clk_status <= '0;
     end else begin
-      roots_en_q1 <= roots_en_d;
+      en_status_q <= {en_status_q[0], en_status_d};
+      dis_status_q <= {dis_status_q[0], dis_status_d};
 
-      if (roots_en_q1 == roots_en_d) begin
-        roots_en_q2 <= roots_en_q1;
+      if (&en_status_q) begin
+        clk_status <= 1'b1;
+      end else if (|dis_status_q == '0) begin
+        clk_status <= 1'b0;
       end
     end
   end
 
-  assign pwr_o.roots_en = roots_en_q2;
+  assign pwr_o.clk_status = clk_status;
 
   ////////////////////////////////////////////////////
   // Clocks with only root gate
   ////////////////////////////////////////////////////
   assign clocks_o.clk_main_infra = clk_main_root;
-  assign clocks_o.clk_io_infra = clk_io_root;
-  assign clocks_o.clk_io_secure = clk_io_root;
+  assign clocks_o.clk_io_div4_infra = clk_io_div4_root;
+  assign clocks_o.clk_io_div4_secure = clk_io_div4_root;
   assign clocks_o.clk_main_secure = clk_main_root;
-  assign clocks_o.clk_io_timers = clk_io_root;
+  assign clocks_o.clk_io_div4_timers = clk_io_div4_root;
   assign clocks_o.clk_proc_main = clk_main_root;
 
   ////////////////////////////////////////////////////
   // Software direct control group
   ////////////////////////////////////////////////////
 
-  logic clk_io_peri_sw_en;
+  logic clk_io_div4_peri_sw_en;
   logic clk_usb_peri_sw_en;
 
   prim_flop_2sync #(
     .Width(1)
-  ) i_clk_io_peri_sw_en_sync (
-    .clk_i(clk_io_i),
-    .rst_ni(rst_io_ni),
-    .d_i(reg2hw.clk_enables.clk_io_peri_en.q),
-    .q_o(clk_io_peri_sw_en)
+  ) u_clk_io_div4_peri_sw_en_sync (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .d_i(reg2hw.clk_enables.clk_io_div4_peri_en.q),
+    .q_o(clk_io_div4_peri_sw_en)
   );
 
-  prim_clock_gating i_clk_io_peri_cg (
-    .clk_i(clk_io_i),
-    .en_i(clk_io_peri_sw_en & clk_io_en),
+  prim_clock_gating u_clk_io_div4_peri_cg (
+    .clk_i(clk_io_div4_i),
+    .en_i(clk_io_div4_peri_sw_en & clk_io_div4_en),
     .test_en_i(dft_i.test_en),
-    .clk_o(clocks_o.clk_io_peri)
+    .clk_o(clocks_o.clk_io_div4_peri)
   );
 
   prim_flop_2sync #(
     .Width(1)
-  ) i_clk_usb_peri_sw_en_sync (
+  ) u_clk_usb_peri_sw_en_sync (
     .clk_i(clk_usb_i),
     .rst_ni(rst_usb_ni),
     .d_i(reg2hw.clk_enables.clk_usb_peri_en.q),
     .q_o(clk_usb_peri_sw_en)
   );
 
-  prim_clock_gating i_clk_usb_peri_cg (
+  prim_clock_gating u_clk_usb_peri_cg (
     .clk_i(clk_usb_i),
     .en_i(clk_usb_peri_sw_en & clk_usb_en),
     .test_en_i(dft_i.test_en),
@@ -236,54 +292,54 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_main_otbn_hint;
   logic clk_main_otbn_en;
 
-  assign clk_main_aes_en = clk_main_aes_hint | ~status_i.idle[0];
+  assign clk_main_aes_en = clk_main_aes_hint | ~idle_i[Aes];
 
   prim_flop_2sync #(
     .Width(1)
-  ) i_clk_main_aes_hint_sync (
+  ) u_clk_main_aes_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .d_i(reg2hw.clk_hints.clk_main_aes_hint.q),
     .q_o(clk_main_aes_hint)
   );
 
-  prim_clock_gating i_clk_main_aes_cg (
+  prim_clock_gating u_clk_main_aes_cg (
     .clk_i(clk_main_i),
     .en_i(clk_main_aes_en & clk_main_en),
     .test_en_i(dft_i.test_en),
     .clk_o(clocks_o.clk_main_aes)
   );
 
-  assign clk_main_hmac_en = clk_main_hmac_hint | ~status_i.idle[1];
+  assign clk_main_hmac_en = clk_main_hmac_hint | ~idle_i[Hmac];
 
   prim_flop_2sync #(
     .Width(1)
-  ) i_clk_main_hmac_hint_sync (
+  ) u_clk_main_hmac_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .d_i(reg2hw.clk_hints.clk_main_hmac_hint.q),
     .q_o(clk_main_hmac_hint)
   );
 
-  prim_clock_gating i_clk_main_hmac_cg (
+  prim_clock_gating u_clk_main_hmac_cg (
     .clk_i(clk_main_i),
     .en_i(clk_main_hmac_en & clk_main_en),
     .test_en_i(dft_i.test_en),
     .clk_o(clocks_o.clk_main_hmac)
   );
 
-  assign clk_main_otbn_en = clk_main_otbn_hint | ~status_i.idle[2];
+  assign clk_main_otbn_en = clk_main_otbn_hint | ~idle_i[Otbn];
 
   prim_flop_2sync #(
     .Width(1)
-  ) i_clk_main_otbn_hint_sync (
+  ) u_clk_main_otbn_hint_sync (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
     .d_i(reg2hw.clk_hints.clk_main_otbn_hint.q),
     .q_o(clk_main_otbn_hint)
   );
 
-  prim_clock_gating i_clk_main_otbn_cg (
+  prim_clock_gating u_clk_main_otbn_cg (
     .clk_i(clk_main_i),
     .en_i(clk_main_otbn_en & clk_main_en),
     .test_en_i(dft_i.test_en),
@@ -299,10 +355,17 @@ module clkmgr import clkmgr_pkg::*; (
   assign hw2reg.clk_hints_status.clk_main_otbn_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_otbn_val.d = clk_main_otbn_en;
 
+  ////////////////////////////////////////////////////
+  // Exported clocks
+  ////////////////////////////////////////////////////
+
+  assign clocks_ast_o.clk_ast_usbdev_io_div4_peri = clocks_o.clk_io_div4_peri;
+  assign clocks_ast_o.clk_ast_usbdev_usb_peri = clocks_o.clk_usb_peri;
+  assign clocks_ast_o.clk_ast_sensor_ctrl_io_div4_secure = clocks_o.clk_io_div4_secure;
 
   ////////////////////////////////////////////////////
   // Assertions
   ////////////////////////////////////////////////////
 
 
-endmodule // rstmgr
+endmodule // clkmgr

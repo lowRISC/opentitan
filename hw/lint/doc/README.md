@@ -1,3 +1,7 @@
+---
+title: "Linting"
+---
+
 # RTL Linting
 
 Linting is a productivity tool for designers to quickly find typos and bugs at the time when the RTL is written.
@@ -59,6 +63,10 @@ targets:
     parameters:
       - SYNTHESIS=true
     tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+          - "-stop_on_error"
       verilator:
         mode: lint-only
         verilator_options:

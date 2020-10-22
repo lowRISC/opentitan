@@ -16,36 +16,36 @@ module prim_secded_72_64_dec (
   // Syndrome calculation
   assign syndrome_o[0] = in[64] ^ in[0] ^ in[1] ^ in[2] ^ in[3] ^ in[4] ^ in[5] ^ in[6] ^ in[7]
                        ^ in[8] ^ in[9] ^ in[10] ^ in[11] ^ in[12] ^ in[13] ^ in[14] ^ in[15]
-                       ^ in[16] ^ in[17] ^ in[18] ^ in[19] ^ in[20] ^ in[57] ^ in[58] ^ in[61]
-                       ^ in[62] ^ in[63];
+                       ^ in[16] ^ in[17] ^ in[18] ^ in[19] ^ in[20] ^ in[57] ^ in[59] ^ in[60]
+                       ^ in[61] ^ in[62];
   assign syndrome_o[1] = in[65] ^ in[0] ^ in[1] ^ in[2] ^ in[3] ^ in[4] ^ in[5] ^ in[21] ^ in[22]
                        ^ in[23] ^ in[24] ^ in[25] ^ in[26] ^ in[27] ^ in[28] ^ in[29] ^ in[30]
-                       ^ in[31] ^ in[32] ^ in[33] ^ in[34] ^ in[35] ^ in[58] ^ in[59] ^ in[60]
+                       ^ in[31] ^ in[32] ^ in[33] ^ in[34] ^ in[35] ^ in[56] ^ in[57] ^ in[60]
                        ^ in[62] ^ in[63];
   assign syndrome_o[2] = in[66] ^ in[0] ^ in[6] ^ in[7] ^ in[8] ^ in[9] ^ in[10] ^ in[21] ^ in[22]
                        ^ in[23] ^ in[24] ^ in[25] ^ in[36] ^ in[37] ^ in[38] ^ in[39] ^ in[40]
-                       ^ in[41] ^ in[42] ^ in[43] ^ in[44] ^ in[45] ^ in[56] ^ in[57] ^ in[59]
-                       ^ in[60] ^ in[63];
+                       ^ in[41] ^ in[42] ^ in[43] ^ in[44] ^ in[45] ^ in[56] ^ in[57] ^ in[58]
+                       ^ in[61] ^ in[62];
   assign syndrome_o[3] = in[67] ^ in[1] ^ in[6] ^ in[11] ^ in[12] ^ in[13] ^ in[14] ^ in[21]
                        ^ in[26] ^ in[27] ^ in[28] ^ in[29] ^ in[36] ^ in[37] ^ in[38] ^ in[39]
-                       ^ in[46] ^ in[47] ^ in[48] ^ in[49] ^ in[50] ^ in[51] ^ in[56] ^ in[57]
-                       ^ in[58] ^ in[61] ^ in[63];
+                       ^ in[46] ^ in[47] ^ in[48] ^ in[49] ^ in[50] ^ in[51] ^ in[56] ^ in[58]
+                       ^ in[59] ^ in[62] ^ in[63];
   assign syndrome_o[4] = in[68] ^ in[2] ^ in[7] ^ in[11] ^ in[15] ^ in[16] ^ in[17] ^ in[22]
                        ^ in[26] ^ in[30] ^ in[31] ^ in[32] ^ in[36] ^ in[40] ^ in[41] ^ in[42]
-                       ^ in[46] ^ in[47] ^ in[48] ^ in[52] ^ in[53] ^ in[54] ^ in[56] ^ in[58]
-                       ^ in[59] ^ in[61] ^ in[62];
+                       ^ in[46] ^ in[47] ^ in[48] ^ in[52] ^ in[53] ^ in[54] ^ in[58] ^ in[59]
+                       ^ in[60] ^ in[61] ^ in[63];
   assign syndrome_o[5] = in[69] ^ in[3] ^ in[8] ^ in[12] ^ in[15] ^ in[18] ^ in[19] ^ in[23]
                        ^ in[27] ^ in[30] ^ in[33] ^ in[34] ^ in[37] ^ in[40] ^ in[43] ^ in[44]
                        ^ in[46] ^ in[49] ^ in[50] ^ in[52] ^ in[53] ^ in[55] ^ in[56] ^ in[57]
-                       ^ in[59] ^ in[60] ^ in[61];
+                       ^ in[58] ^ in[60] ^ in[63];
   assign syndrome_o[6] = in[70] ^ in[4] ^ in[9] ^ in[13] ^ in[16] ^ in[18] ^ in[20] ^ in[24]
                        ^ in[28] ^ in[31] ^ in[33] ^ in[35] ^ in[38] ^ in[41] ^ in[43] ^ in[45]
-                       ^ in[47] ^ in[49] ^ in[51] ^ in[52] ^ in[54] ^ in[55] ^ in[56] ^ in[59]
-                       ^ in[60] ^ in[61] ^ in[62];
+                       ^ in[47] ^ in[49] ^ in[51] ^ in[52] ^ in[54] ^ in[55] ^ in[56] ^ in[57]
+                       ^ in[59] ^ in[61] ^ in[63];
   assign syndrome_o[7] = in[71] ^ in[5] ^ in[10] ^ in[14] ^ in[17] ^ in[19] ^ in[20] ^ in[25]
                        ^ in[29] ^ in[32] ^ in[34] ^ in[35] ^ in[39] ^ in[42] ^ in[44] ^ in[45]
-                       ^ in[48] ^ in[50] ^ in[51] ^ in[53] ^ in[54] ^ in[55] ^ in[57] ^ in[58]
-                       ^ in[60] ^ in[62] ^ in[63];
+                       ^ in[48] ^ in[50] ^ in[51] ^ in[53] ^ in[54] ^ in[55] ^ in[58] ^ in[59]
+                       ^ in[60] ^ in[61] ^ in[62];
 
   // Corrected output calculation
   assign d_o[0] = (syndrome_o == 8'h7) ^ in[0];
@@ -104,14 +104,14 @@ module prim_secded_72_64_dec (
   assign d_o[53] = (syndrome_o == 8'hb0) ^ in[53];
   assign d_o[54] = (syndrome_o == 8'hd0) ^ in[54];
   assign d_o[55] = (syndrome_o == 8'he0) ^ in[55];
-  assign d_o[56] = (syndrome_o == 8'h7c) ^ in[56];
-  assign d_o[57] = (syndrome_o == 8'had) ^ in[57];
-  assign d_o[58] = (syndrome_o == 8'h9b) ^ in[58];
-  assign d_o[59] = (syndrome_o == 8'h76) ^ in[59];
-  assign d_o[60] = (syndrome_o == 8'he6) ^ in[60];
-  assign d_o[61] = (syndrome_o == 8'h79) ^ in[61];
-  assign d_o[62] = (syndrome_o == 8'hd3) ^ in[62];
-  assign d_o[63] = (syndrome_o == 8'h8f) ^ in[63];
+  assign d_o[56] = (syndrome_o == 8'h6e) ^ in[56];
+  assign d_o[57] = (syndrome_o == 8'h67) ^ in[57];
+  assign d_o[58] = (syndrome_o == 8'hbc) ^ in[58];
+  assign d_o[59] = (syndrome_o == 8'hd9) ^ in[59];
+  assign d_o[60] = (syndrome_o == 8'hb3) ^ in[60];
+  assign d_o[61] = (syndrome_o == 8'hd5) ^ in[61];
+  assign d_o[62] = (syndrome_o == 8'h8f) ^ in[62];
+  assign d_o[63] = (syndrome_o == 8'h7a) ^ in[63];
 
   // err_o calc. bit0: single error, bit1: double error
   assign single_error = ^syndrome_o;

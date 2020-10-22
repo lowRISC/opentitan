@@ -78,7 +78,7 @@ test('dif_gpio_unittest', executable(
     sw_lib_testing_mock_mmio,
   ],
   native: true,
-  c_args: ['-DMOCK_MMIO'], 
+  c_args: ['-DMOCK_MMIO'],
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
@@ -94,7 +94,55 @@ test('dif_rv_timer_unittest', executable(
     sw_lib_testing_mock_mmio,
   ],
   native: true,
-  c_args: ['-DMOCK_MMIO'], 
+  c_args: ['-DMOCK_MMIO'],
+  cpp_args: ['-DMOCK_MMIO'],
+))
+
+test('dif_otbn_unittest', executable(
+  'dif_otbn_unittest',
+  sources: [
+    'dif_otbn_unittest.cc',
+    meson.source_root() / 'sw/device/lib/dif/dif_otbn.c',
+    hw_ip_otbn_reg_h,
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_mock_mmio,
+  ],
+  native: true,
+  c_args: ['-DMOCK_MMIO'],
+  cpp_args: ['-DMOCK_MMIO'],
+))
+
+test('dif_pwrmgr_unittest', executable(
+  'dif_pwrmgr_unittest',
+  sources: [
+    hw_ip_pwrmgr_reg_h,
+    meson.source_root() / 'sw/device/lib/dif/dif_pwrmgr.c',
+    'dif_pwrmgr_unittest.cc',
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_mock_mmio,
+  ],
+  native: true,
+  c_args: ['-DMOCK_MMIO'],
+  cpp_args: ['-DMOCK_MMIO'],
+))
+
+test('dif_rstmgr_unittest', executable(
+  'dif_rstmgr_unittest',
+  sources: [
+    'dif_rstmgr_unittest.cc',
+    meson.source_root() / 'sw/device/lib/dif/dif_rstmgr.c',
+    hw_ip_rstmgr_reg_h,
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_mock_mmio,
+  ],
+  native: true,
+  c_args: ['-DMOCK_MMIO'],
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
@@ -103,11 +151,11 @@ dif_plic_sanitytest_lib = declare_dependency(
     'dif_plic_sanitytest_lib',
     sources: ['dif_plic_sanitytest.c'],
     dependencies: [
-      dif_uart,
-      dif_plic,
+      sw_lib_dif_uart,
+      sw_lib_dif_plic,
       sw_lib_irq,
       sw_lib_mmio,
-      sw_lib_base_log,
+      sw_lib_runtime_log,
       sw_lib_runtime_hart,
       sw_lib_testing_test_status,
     ],
@@ -120,7 +168,7 @@ dif_uart_sanitytest_lib = declare_dependency(
     'dif_uart_sanitytest_lib',
     sources: ['dif_uart_sanitytest.c'],
     dependencies: [
-      dif_uart,
+      sw_lib_dif_uart,
       sw_lib_mmio,
       sw_lib_runtime_hart,
     ],
@@ -133,8 +181,8 @@ dif_rv_timer_sanitytest_lib = declare_dependency(
     'dif_rv_timer_sanitytest_lib',
     sources: ['dif_rv_timer_sanitytest.c'],
     dependencies: [
-      dif_rv_timer,
-      sw_lib_base_log,
+      sw_lib_dif_rv_timer,
+      sw_lib_runtime_log,
       sw_lib_mmio,
       sw_lib_runtime_hart,
       sw_lib_irq,
@@ -148,8 +196,8 @@ dif_hmac_sanitytest_lib = declare_dependency(
     'dif_hmac_sanitytest_lib',
     sources: ['dif_hmac_sanitytest.c'],
     dependencies: [
-      sw_dif_hmac,
-      sw_lib_base_log,
+      sw_lib_dif_hmac,
+      sw_lib_runtime_log,
       sw_lib_mmio,
       sw_lib_runtime_hart,
     ],

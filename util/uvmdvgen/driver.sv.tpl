@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ${name}_driver extends dv_base_driver #(${name}_item, ${name}_agent_cfg);
+class ${name}_driver extends dv_base_driver #(.ITEM_T(${name}_item),
+                                              .CFG_T (${name}_agent_cfg));
   `uvm_component_utils(${name}_driver)
 
   // the base class provides the following handles for use:

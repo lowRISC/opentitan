@@ -34,3 +34,14 @@ def DEFINE_INSTR(instr_n, instr_format, instr_category, instr_group, imm_tp=imm_
         "valid": riscv_instr.register(instr_n)
     })
     g[class_name] = NewClass
+
+
+'''
+TODO
+@vsc.constraint
+def add_pseudo_instr(self, instr_n, instr_format, instr_category, instr_group):
+        with vsc.if_then(self.pseudo_instr_name == instr_n):
+            self.format == instr_format.name
+            self.category == instr_category.name
+            self.group == instr_group.name
+'''

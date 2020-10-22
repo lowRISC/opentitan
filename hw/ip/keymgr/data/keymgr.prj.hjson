@@ -1,0 +1,18 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "keymgr",
+    design_spec:        "hw/ip/keymgr/doc",
+    dv_plan:            "hw/ip/keymgr/doc/dv_plan",
+    hw_checklist:       "hw/ip/keymgr/doc/checklist",
+    revisions: [
+      {
+        version:            "0.1",
+        life_stage:         "L1",
+        design_stage:       "D0",
+        verification_stage: "V0",
+      }
+    ]
+}

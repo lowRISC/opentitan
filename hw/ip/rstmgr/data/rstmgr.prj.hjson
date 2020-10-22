@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "rstmgr",
+    design_spec:        "hw/ip/rstmgr/doc",
+    dv_plan:            "hw/top_earlgrey/doc/dv_plan",
+    hw_checklist:       "hw/ip/rstmgr/doc/checklist",
+    sw_checklist:       "sw/device/lib/dif/dif_rstmgr",
+    revisions: [
+      {
+        version:            "0.1",
+        life_stage:         "L1",
+        design_stage:       "D1",
+        verification_stage: "V0", // this module is not verified at the block level
+        dif_stage:          "S0",
+      }
+    ]
+}

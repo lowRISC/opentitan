@@ -6,8 +6,15 @@
 
 package aes_pkg;
 
-parameter int NumAlerts = 1;
-parameter logic [NumAlerts-1:0] AlertAsyncOn = NumAlerts'(1'b1);
+// Widths of signals carrying pseudo-random data for clearing and masking and purposes
+parameter int unsigned WidthPRDClearing = 64;
+parameter int unsigned WidthPRDData     = 128;
+parameter int unsigned WidthPRDKey      = 32;
+parameter int unsigned WidthPRDMasking  = WidthPRDData + WidthPRDKey;
+
+// Default seeds for pseudo-random number generators
+parameter logic [WidthPRDClearing-1:0] DefaultSeedClearing = 64'hFEDCBA9876543210;
+parameter logic  [WidthPRDMasking-1:0] DefaultSeedMasking  = {32'h5, 32'h4, 32'h3, 32'h2, 32'h1};
 
 typedef enum integer {
   SBoxImplLut,                  // Unmasked LUT-based S-Box
@@ -115,17 +122,19 @@ typedef enum logic [2:0] {
 } add_so_sel_e;
 
 typedef struct packed {
-  aes_op_e   operation;
-  aes_mode_e mode;
-  key_len_e  key_len;
+  logic      force_zero_masks;
   logic      manual_operation;
+  key_len_e  key_len;
+  aes_mode_e mode;
+  aes_op_e   operation;
 } ctrl_reg_t;
 
 parameter ctrl_reg_t CTRL_RESET = '{
-  operation:        AES_ENC,
-  mode:             AES_NONE,
+  force_zero_masks: '0,
+  manual_operation: '0,
   key_len:          AES_128,
-  manual_operation: '0
+  mode:             AES_NONE,
+  operation:        AES_ENC
 };
 
 // Multiplication by {02} (i.e. x) on GF(2^8)

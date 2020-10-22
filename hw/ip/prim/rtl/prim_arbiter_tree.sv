@@ -75,12 +75,11 @@ module prim_arbiter_tree #(
     // a full binary tree with N levels has 2**N + 2**N-1 nodes
     logic [2**(IdxW+1)-2:0]           req_tree;
     logic [2**(IdxW+1)-2:0]           prio_tree;
-    logic [2**(IdxW+1)-2:0]           rdy_tree;
     logic [2**(IdxW+1)-2:0]           sel_tree;
     logic [2**(IdxW+1)-2:0]           mask_tree;
     logic [2**(IdxW+1)-2:0][IdxW-1:0] idx_tree;
     logic [2**(IdxW+1)-2:0][DW-1:0]   data_tree;
-    logic [2**IdxW-1:0]               prio_mask_d, prio_mask_q;
+    logic [N-1:0]                     prio_mask_d, prio_mask_q;
 
     for (genvar level = 0; level < IdxW+1; level++) begin : gen_tree
       //
@@ -130,9 +129,12 @@ module prim_arbiter_tree #(
           end else begin : gen_tie_off
             // forward path
             assign req_tree[Pa]  = '0;
+            assign prio_tree[Pa] = '0;
             assign idx_tree[Pa]  = '0;
             assign data_tree[Pa] = '0;
-            assign prio_mask_d[offset] = '0;
+            logic unused_sigs;
+            assign unused_sigs = ^{mask_tree[Pa],
+                                   sel_tree[Pa]};
           end
         // this creates the node assignments
         end else begin : gen_nodes
@@ -165,10 +167,14 @@ module prim_arbiter_tree #(
     if (EnDataPort) begin : gen_data_port
       assign data_o      = data_tree[0];
     end else begin : gen_no_dataport
-      logic [DW-1:0] unused_data [N];
-      assign unused_data = data_i;
+      logic [DW-1:0] unused_data;
+      assign unused_data = data_tree[0];
       assign data_o = '1;
     end
+
+    // This index is unused.
+    logic unused_prio_tree;
+    assign unused_prio_tree = prio_tree[0];
 
     assign idx_o       = idx_tree[0];
     assign valid_o     = req_tree[0];

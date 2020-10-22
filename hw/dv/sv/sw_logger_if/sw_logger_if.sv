@@ -40,19 +40,28 @@
 
 interface sw_logger_if #(
   // width of the data bus
-  parameter int unsigned DATA_WIDTH = 32
+  parameter int unsigned AddrDataWidth = 32
 ) (
-  input logic                   clk,        // clock
-  input logic                   rst_n,      // active low reset
-  input logic                   valid,      // qualification for addr_data
-  input logic [DATA_WIDTH-1:0]  addr_data,  // addr/data written to sw_log_addr
-  output logic [DATA_WIDTH-1:0] sw_log_addr // used by external logic to qualify valid
+  input logic clk_i,
+  input logic rst_ni,
+  input logic wr_valid,                 // Qualified write access.
+  input logic [AddrDataWidth-1:0] addr, // Incoming addr.
+  input logic [AddrDataWidth-1:0] data  // Incoming data.
 );
 
 `ifdef UVM
   import uvm_pkg::*;
-  `include "uvm_macros.svh"
 `endif
+
+  // macro includes
+  `include "dv_macros.svh"
+
+  // Address to which the SW logs are written to. This is set by the testbench.
+  logic [AddrDataWidth-1:0] sw_log_addr;
+
+  // Validate the incoming write address.
+  logic data_valid;
+  assign data_valid = wr_valid && (addr == sw_log_addr);
 
   // Enable signal to turn on/off logging at runtime.
   bit enable = 1'b1;
@@ -63,7 +72,7 @@ interface sw_logger_if #(
   string sw_rodata_db_files[string];
 
   // typedef addr / data values
-  typedef bit [DATA_WIDTH-1:0] addr_data_t;
+  typedef bit [AddrDataWidth-1:0] addr_data_t;
 
   typedef enum {
     LogSeverityInfo,
@@ -119,7 +128,7 @@ interface sw_logger_if #(
   // <sw_name>_logs.txt: contains logs split as fields of `sw_log_t`
   // <sw_name>_rodata.txt: contains constants from the read-only sections.
   function automatic void set_sw_name(string sw_name);
-    if (_ready) log_fatal(.log("this function cannot be called after calling ready()"));
+    if (_ready) `DV_FATAL("This function cannot be called after calling ready()")
     sw_log_db_files[sw_name] = {sw_name, "_logs.txt"};
     sw_rodata_db_files[sw_name] = {sw_name, "_rodata.txt"};
   endfunction
@@ -198,8 +207,8 @@ interface sw_logger_if #(
         end
 
         if (sw_logs.exists(sw) && sw_logs[sw].exists(addr)) begin
-          log_warning($sformatf("Log entry for addr %0x already exists:\nOld: %p\nNew: %p",
-                                addr, sw_logs[sw][addr], sw_log));
+          `DV_WARNING($sformatf("Log entry for addr %0x already exists:\nOld: %p\nNew: %p",
+                                addr, sw_logs[sw][addr], sw_log))
         end
         sw_logs[sw][addr] = sw_log;
       end
@@ -213,8 +222,7 @@ interface sw_logger_if #(
 
     // print parsed logs
     foreach (sw_logs[sw, addr]) begin
-      log_info(.verbosity(LogVerbosityHigh),
-               .log($sformatf("sw_logs[%0s][%0h] = %p", sw, addr, sw_logs[sw][addr])));
+      `DV_INFO($sformatf("sw_logs[%0s][%0h] = %p", sw, addr, sw_logs[sw][addr]), UVM_HIGH)
     end
 
     return result;
@@ -237,8 +245,8 @@ interface sw_logger_if #(
       void'(get_sw_log_field(fd, "string", field));
 
       if (sw_rodata.exists(sw) && sw_rodata[sw].exists(addr)) begin
-        log_warning($sformatf("Rodata entry for addr %0x already exists:\nOld: %s\nNew: %s",
-                              addr, sw_rodata[sw][addr], field));
+        `DV_WARNING($sformatf("Rodata entry for addr %0x already exists:\nOld: %s\nNew: %s",
+                              addr, sw_rodata[sw][addr], field))
       end
       // Replace CRs in the middle of the string with NLs.
       sw_rodata[sw][addr] = replace_cr_with_nl(field);
@@ -247,8 +255,7 @@ interface sw_logger_if #(
 
     // print parsed rodata
     foreach (sw_rodata[sw, addr]) begin
-      log_info(.verbosity(LogVerbosityHigh),
-               .log($sformatf("sw_rodata[%0s][%0h] = %p", sw, addr, sw_rodata[sw][addr])));
+      `DV_INFO($sformatf("sw_rodata[%0s][%0h] = %p", sw, addr, sw_rodata[sw][addr]), UVM_HIGH)
     end
 
     return (sw_rodata[sw].size() > 0);
@@ -342,9 +349,14 @@ interface sw_logger_if #(
   // retrieve addr or data from the bus
   task automatic get_addr_data_from_bus();
     forever begin
-      @(posedge clk);
-      if (enable && valid === 1'b1 && rst_n !== 0) begin
-        addr_data_q.push_back(addr_data);
+      @(posedge clk_i or negedge rst_ni);
+      if (!rst_ni) begin
+        addr_data_q.delete();
+        wait(rst_ni);
+      end else begin
+        if (enable && data_valid) begin
+          addr_data_q.push_back(data);
+        end
       end
     end
   endtask
@@ -372,15 +384,13 @@ interface sw_logger_if #(
                   if (sw_logs[sw][addr].str_arg.exists(i)) begin
                     // The arg[i] received is the addr in rodata where the string resides.
                     sw_logs[sw][addr].str_arg[i] = get_str_at_addr(sw, sw_logs[sw][addr].arg[i]);
-                    log_info(.verbosity(LogVerbosityDebug),
-                             .log($sformatf("String arg at addr %0h: %0s",
-                                            sw_logs[sw][addr].arg[i],
-                                            sw_logs[sw][addr].str_arg[i])));
+                    `DV_INFO($sformatf("String arg at addr %0h: %0s", sw_logs[sw][addr].arg[i],
+                                       sw_logs[sw][addr].str_arg[i]), UVM_DEBUG)
                   end
                 end
                 begin
-                  // check if rst_n occurred - in that case discard and start over
-                  wait(rst_n === 1'b0);
+                  // check if rst_ni occurred - in that case discard and start over
+                  wait(rst_ni === 1'b0);
                   rst_occurred = 1'b1;
                 end
               join_any
@@ -396,6 +406,13 @@ interface sw_logger_if #(
 
   // print the log captured from the SW.
   function automatic void print_sw_log(sw_log_t sw_log);
+    string log_header = sw_log.name;
+    if (sw_log.file != "") begin
+      // Append the SW file and line to the header.
+      log_header = {log_header, "(", sw_log.file, ":",
+                    $sformatf("%0d", sw_log.line), ")"};
+    end
+
     // construct formatted string based on args
     case (sw_log.nargs)
        0: ;
@@ -431,55 +448,11 @@ interface sw_logger_if #(
       30: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(30));
       31: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(31));
       32: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(32));
-    default: log_fatal($sformatf("UNSUPPORTED: nargs = %0d (only 0:32 allowed)", sw_log.nargs));
+      default: `DV_FATAL($sformatf("UNSUPPORTED: nargs = %0d (only 0:32 allowed)", sw_log.nargs))
     endcase
-    print_log(.sw_log(sw_log), .is_sw_log(1'b1));
-    printed_log = sw_log.format;
-    ->printed_log_event;
-  endfunction
 
-  // print logs from this file.
-  function automatic void print_self_log(log_severity_e severity,
-                                         log_verbosity_e verbosity = LogVerbosityLow,
-                                         string log);
-    sw_log_t self_log;
-    self_log.name = "sw_logger_if";
-    self_log.severity = severity;
-    self_log.verbosity = verbosity;
-    self_log.file = "";
-    self_log.format = log;
-    print_log(.sw_log(self_log));
-  endfunction
-
-  // print an info message from this file
-  function automatic void log_info(log_verbosity_e verbosity = LogVerbosityLow, string log);
-    print_self_log(.severity(LogSeverityInfo), .verbosity(verbosity), .log(log));
-  endfunction
-
-  // print a warning message from this file
-  function automatic void log_warning(string log);
-    print_self_log(.severity(LogSeverityWarning), .log(log));
-  endfunction
-
-  // print an error message from this file
-  function automatic void log_error(string log);
-    print_self_log(.severity(LogSeverityError), .log(log));
-  endfunction
-
-  // print a fatal message from this file
-  function automatic void log_fatal(string log);
-    print_self_log(.severity(LogSeverityFatal), .log(log));
-  endfunction
-
-  // UVM-agnostic print_log api that switches between system call and UVM call
-  function automatic void print_log(sw_log_t sw_log, bit is_sw_log = 1'b0);
-    string log_header = sw_log.name;
-    if (sw_log.file != "") begin
-      log_header = {log_header, "(", sw_log.file, ":",
-                    $sformatf("%0d", sw_log.line), ")"};
-    end
-`ifdef UVM
     begin
+`ifdef UVM
       uvm_verbosity level;
       case (sw_log.verbosity)
         LogVerbosityNone:   level = UVM_NONE;
@@ -490,28 +463,23 @@ interface sw_logger_if #(
         LogVerbosityDebug:  level = UVM_DEBUG;
         default:            level = UVM_LOW;
       endcase
-
+`endif
       case (sw_log.severity)
-        LogSeverityInfo:    `uvm_info(log_header, sw_log.format, level)
-        LogSeverityWarning: `uvm_error(log_header, sw_log.format)
-        LogSeverityError:   `uvm_error(log_header, sw_log.format)
-        LogSeverityFatal:   `uvm_fatal(log_header, sw_log.format)
-        default:            `uvm_info(log_header, sw_log.format, level)
+        LogSeverityInfo:    `DV_INFO(sw_log.format, level, log_header)
+        LogSeverityWarning: `DV_WARNING(sw_log.format, log_header)
+        LogSeverityError:   `DV_ERROR(sw_log.format, log_header)
+        LogSeverityFatal:   `DV_FATAL(sw_log.format, log_header)
+        default:            `DV_INFO(sw_log.format, level, log_header)
       endcase
     end
-`else
-    case (sw_log.severity)
-      LogSeverityInfo:    $info("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
-      LogSeverityWarning: $warning("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
-      LogSeverityError:   $error("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
-      LogSeverityFatal:   $fatal("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
-      default:            $info("[%15t]: [%0s] %0s", $time, log_header, sw_log.format);
-    endcase
-`endif
+
     // write sw log to file if enabled
-    if (is_sw_log && sw_logs_output_fd) begin
+    if (sw_logs_output_fd) begin
       $fwrite(sw_logs_output_fd, "[%15t]: [%0s] %0s\n", $time, log_header, sw_log.format);
     end
+
+    printed_log = sw_log.format;
+    ->printed_log_event;
   endfunction
 
 endinterface

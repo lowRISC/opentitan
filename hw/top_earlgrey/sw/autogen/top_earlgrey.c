@@ -5,13 +5,13 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
- * PLIC Interrupt Id to Peripheral Map
+ * PLIC Interrupt Source to Peripheral Map
  *
  * This array is a mapping from `top_earlgrey_plic_irq_id_t` to
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[82] = {
+    top_earlgrey_plic_interrupt_for_peripheral[84] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdGpioGpio0] = kTopEarlgreyPlicPeripheralGpio,
   [kTopEarlgreyPlicIrqIdGpioGpio1] = kTopEarlgreyPlicPeripheralGpio,
@@ -94,4 +94,33 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdPwrmgrWakeup] = kTopEarlgreyPlicPeripheralPwrmgr,
   [kTopEarlgreyPlicIrqIdOtbnDone] = kTopEarlgreyPlicPeripheralOtbn,
   [kTopEarlgreyPlicIrqIdOtbnErr] = kTopEarlgreyPlicPeripheralOtbn,
+  [kTopEarlgreyPlicIrqIdKeymgrOpDone] = kTopEarlgreyPlicPeripheralKeymgr,
+  [kTopEarlgreyPlicIrqIdKeymgrErr] = kTopEarlgreyPlicPeripheralKeymgr,
 };
+
+
+/**
+ * Alert Handler Alert Source to Peripheral Map
+ *
+ * This array is a mapping from `top_earlgrey_alert_id_t` to
+ * `top_earlgrey_alert_peripheral_t`.
+ */
+const top_earlgrey_alert_peripheral_t
+    top_earlgrey_alert_for_peripheral[15] = {
+  [kTopEarlgreyAlertIdAesCtrlErrUpdate] = kTopEarlgreyAlertPeripheralAes,
+  [kTopEarlgreyAlertIdAesCtrlErrStorage] = kTopEarlgreyAlertPeripheralAes,
+  [kTopEarlgreyAlertIdOtbnImemUncorrectable] = kTopEarlgreyAlertPeripheralOtbn,
+  [kTopEarlgreyAlertIdOtbnDmemUncorrectable] = kTopEarlgreyAlertPeripheralOtbn,
+  [kTopEarlgreyAlertIdOtbnRegUncorrectable] = kTopEarlgreyAlertPeripheralOtbn,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts0] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts1] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts2] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts3] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts4] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts5] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdSensorCtrlAstAlerts6] = kTopEarlgreyAlertPeripheralSensorCtrl,
+  [kTopEarlgreyAlertIdKeymgrErr] = kTopEarlgreyAlertPeripheralKeymgr,
+  [kTopEarlgreyAlertIdOtpCtrlOtpMacroFailure] = kTopEarlgreyAlertPeripheralOtpCtrl,
+  [kTopEarlgreyAlertIdOtpCtrlOtpCheckFailure] = kTopEarlgreyAlertPeripheralOtpCtrl,
+};
+

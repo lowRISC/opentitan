@@ -16,7 +16,10 @@ IPS ?= aes           \
        flash_ctrl    \
        gpio          \
        hmac          \
+       kmac          \
        i2c           \
+       keymgr        \
+       lc_ctrl       \
        nmi_gen       \
        otp_ctrl      \
        padctrl       \
@@ -27,6 +30,7 @@ IPS ?= aes           \
        rv_timer      \
        sensor_ctrl   \
        spi_device    \
+       sram_ctrl     \
        trial1        \
        otbn          \
        uart          \
@@ -71,7 +75,7 @@ pre_reg:
 
 $(ips_reg): pre_reg
 	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson ]; then \
-		${PRJ_DIR}/util/regtool.py -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
+		${PRJ_DIR}/util/regtool.py ${toolflags} -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
 		${PRJ_DIR}/util/regtool.py -s -t ${REG_OUTPUT_DV_DIR} \
 		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
 	fi

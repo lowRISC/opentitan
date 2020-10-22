@@ -15,7 +15,6 @@ class alert_monitor extends alert_esc_base_monitor;
 
   `uvm_component_new
 
-  //TODO: currently only support sync mode
   virtual task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
@@ -71,6 +70,8 @@ class alert_monitor extends alert_esc_base_monitor;
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
         if (!under_reset) begin
           alert_esc_port.write(req);
+          if (cfg.en_cov && cfg.en_ping_cov) cov.m_alert_esc_trans_cg.sample(req.alert_esc_type);
+
           // spurious alert error, can only happen one clock after timeout. Detail please see
           // discussion on Issue #2321
           if (req.timeout && req.alert_handshake_sta == AlertReceived) begin
@@ -81,7 +82,7 @@ class alert_monitor extends alert_esc_base_monitor;
         under_ping_rsp = 0;
       end
       ping_p = cfg.vif.monitor_cb.alert_rx.ping_p;
-      alert_p = cfg.vif.monitor_cb.alert_tx.alert_p;
+      alert_p = cfg.vif.monitor_cb.alert_tx_final.alert_p;
     end
   endtask : ping_thread
 
@@ -126,28 +127,39 @@ class alert_monitor extends alert_esc_base_monitor;
         `uvm_info("alert_monitor", $sformatf("[%s]: handshake status is %s",
             req.alert_esc_type.name(), req.alert_handshake_sta.name()), UVM_HIGH)
         if (!under_reset) alert_esc_port.write(req);
-      end
-      alert_p = cfg.vif.monitor_cb.alert_tx.alert_p;
+        if (cfg.en_cov) begin
+          cov.m_alert_handshake_complete_cg.sample(req.alert_esc_type, req.alert_handshake_sta);
+          if (cfg.en_ping_cov) cov.m_alert_esc_trans_cg.sample(req.alert_esc_type);
+        end
+      end  // end while loop
+      alert_p = cfg.vif.monitor_cb.alert_tx_final.alert_p;
     end
   endtask : alert_thread
 
   virtual task int_fail_thread();
     alert_esc_seq_item req;
+    bit prev_err;
     forever @(cfg.vif.monitor_cb) begin
-      if (!under_reset && is_sig_int_err()) begin
-        req = alert_esc_seq_item::type_id::create("req");
-        req.alert_esc_type = AlertEscIntFail;
-        alert_esc_port.write(req);
+      // use prev_err to exclude the async clk skew
+      if (!under_reset && is_sig_int_err() && (!cfg.is_async || prev_err != 0)) begin
+        fork
+          begin
+            req = alert_esc_seq_item::type_id::create("req");
+            req.alert_esc_type = AlertEscIntFail;
+            alert_esc_port.write(req);
+          end
+        join_none;
       end
+      prev_err = is_sig_int_err();
     end
   endtask : int_fail_thread
 
   virtual task wait_alert();
-    while (cfg.vif.alert_tx.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
+    while (cfg.vif.alert_tx_final.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
   endtask : wait_alert
 
   virtual task wait_alert_complete();
-    while (cfg.vif.alert_tx.alert_p !== 1'b0) @(cfg.vif.monitor_cb);
+    while (cfg.vif.alert_tx_final.alert_p !== 1'b0) @(cfg.vif.monitor_cb);
   endtask : wait_alert_complete
 
   virtual task wait_ack();
@@ -159,18 +171,19 @@ class alert_monitor extends alert_esc_base_monitor;
   endtask : wait_ack_complete
 
   virtual function bit is_sig_int_err();
-    return cfg.vif.monitor_cb.alert_tx.alert_p === cfg.vif.monitor_cb.alert_tx.alert_n;
+    return cfg.vif.monitor_cb.alert_tx_final.alert_p === cfg.vif.monitor_cb.alert_tx_final.alert_n;
   endfunction : is_sig_int_err
 
   virtual function bit is_valid_alert();
-    return cfg.vif.monitor_cb.alert_tx.alert_p && !cfg.vif.monitor_cb.alert_tx.alert_n;
+    return cfg.vif.monitor_cb.alert_tx_final.alert_p && !cfg.vif.monitor_cb.alert_tx_final.alert_n;
   endfunction : is_valid_alert
 
   // end phase when no alert is triggered
   virtual task monitor_ready_to_end();
     forever begin
-      @(cfg.vif.monitor_cb.alert_tx.alert_p);
-      ok_to_end = !cfg.vif.monitor_cb.alert_tx.alert_p && cfg.vif.monitor_cb.alert_tx.alert_n;
+      @(cfg.vif.monitor_cb.alert_tx_final.alert_p);
+      ok_to_end = !cfg.vif.monitor_cb.alert_tx_final.alert_p &&
+                  cfg.vif.monitor_cb.alert_tx_final.alert_n;
     end
   endtask
 

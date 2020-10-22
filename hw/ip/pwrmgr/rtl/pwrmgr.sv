@@ -40,14 +40,15 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output pwr_lc_req_t pwr_lc_o,
 
   // flash interface
-  input  pwr_flash_t pwr_flash_i,
+  output pwr_flash_req_t pwr_flash_o,
+  input  pwr_flash_rsp_t pwr_flash_i,
 
   // processor interface
   input  pwr_cpu_t pwr_cpu_i,
 
   // peripherals wakeup and reset requests
   input  [NumWkups-1:0] wakeups_i,
-  input  [HwRstReqs-1:0] rstreqs_i,
+  input  [NumRstReqs-1:0] rstreqs_i,
 
   output intr_wakeup_o
 
@@ -79,6 +80,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic low_power_fall_through;
   logic low_power_abort;
 
+  pwr_flash_rsp_t flash_rsp;
+
   ////////////////////////////
   ///  clk_slow_i domain declarations
   ////////////////////////////
@@ -86,7 +89,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // Captured signals
   // These signals, though on clk_i domain, are safe for clk_slow_i to use
   logic [NumWkups-1:0] slow_wakeup_en;
-  pwrmgr_reg2hw_reset_en_reg_t slow_reset_en;
+  logic [NumRstReqs-1:0] slow_reset_en;
 
   pwr_ast_rsp_t slow_ast;
   pwr_peri_t slow_peri_reqs, slow_peri_reqs_masked;
@@ -100,6 +103,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic slow_main_pd_n;
   logic slow_io_clk_en;
   logic slow_core_clk_en;
+  logic slow_usb_clk_en_lp;
+  logic slow_usb_clk_en_active;
 
   ////////////////////////////
   ///  Register module
@@ -157,6 +162,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .slow_main_pd_no(slow_main_pd_n),
     .slow_io_clk_en_o(slow_io_clk_en),
     .slow_core_clk_en_o(slow_core_clk_en),
+    .slow_usb_clk_en_lp_o(slow_usb_clk_en_lp),
+    .slow_usb_clk_en_active_o(slow_usb_clk_en_active),
     .slow_req_pwrdn_o(slow_req_pwrdn),
     .slow_ack_pwrup_o(slow_ack_pwrup),
     .slow_ast_o(slow_ast),
@@ -169,10 +176,12 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .cfg_cdc_sync_i(reg2hw.cfg_cdc_sync.qe & reg2hw.cfg_cdc_sync.q),
     .cdc_sync_done_o(hw2reg.cfg_cdc_sync.de),
     .wakeup_en_i(reg2hw.wakeup_en),
-    .reset_en_i(reg2hw.reset_en.q),
+    .reset_en_i(reg2hw.reset_en),
     .main_pd_ni(reg2hw.control.main_pd_n.q),
     .io_clk_en_i(reg2hw.control.io_clk_en.q),
     .core_clk_en_i(reg2hw.control.core_clk_en.q),
+    .usb_clk_en_lp_i(reg2hw.control.usb_clk_en_lp.q),
+    .usb_clk_en_active_i(reg2hw.control.usb_clk_en_active.q),
     .ack_pwrdn_o(ack_pwrdn),
     .req_pwrup_o(req_pwrup),
     .pwrup_cause_o(pwrup_cause),
@@ -182,7 +191,11 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .ast_i(pwr_ast_i),
 
     // peripheral signals
-    .peri_i(peri_reqs_raw)
+    .peri_i(peri_reqs_raw),
+
+    // flash handshake
+    .flash_i(pwr_flash_i),
+    .flash_o(flash_rsp)
   );
 
   assign hw2reg.cfg_cdc_sync.d = 1'b0;
@@ -212,6 +225,15 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   assign slow_peri_reqs_masked.wakeups = slow_peri_reqs.wakeups & slow_wakeup_en;
   assign slow_peri_reqs_masked.rstreqs = slow_peri_reqs.rstreqs & slow_reset_en;
 
+  for (genvar i = 0; i < NumWkups; i++) begin : gen_wakeup_status
+    assign hw2reg.wake_status[i].de = 1'b1;
+    assign hw2reg.wake_status[i].d  = peri_reqs_masked.wakeups[i];
+  end
+
+  for (genvar i = 0; i < NumRstReqs; i++) begin : gen_reset_status
+    assign hw2reg.reset_status[i].de = 1'b1;
+    assign hw2reg.reset_status[i].d  = peri_reqs_masked.rstreqs[i];
+  end
 
 
 
@@ -235,6 +257,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .main_pd_ni           (slow_main_pd_n),
     .io_clk_en_i          (slow_io_clk_en),
     .core_clk_en_i        (slow_core_clk_en),
+    .usb_clk_en_lp_i      (slow_usb_clk_en_lp),
+    .usb_clk_en_active_i  (slow_usb_clk_en_active),
 
     // outputs to AST - These are on the slow clock domain
     // TBD - need to check this with partners
@@ -259,7 +283,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .req_pwrdn_o       (req_pwrdn),
     .ack_pwrdn_i       (ack_pwrdn),
     .low_power_entry_i (pwr_cpu_i.core_sleeping & low_power_hint),
-    .reset_req_i       (|peri_reqs_masked.rstreqs),
+    .reset_reqs_i      (peri_reqs_masked.rstreqs),
 
     // cfg
     .main_pd_ni        (reg2hw.control.main_pd_n.q),
@@ -278,6 +302,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
     // clkmgr
     .ips_clk_en_o      (pwr_clk_o.ip_clk_en),
+    .clk_en_status_i   (pwr_clk_i.clk_status),
 
     // otp
     .otp_init_o        (pwr_otp_o.otp_init),
@@ -290,7 +315,9 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .lc_idle_i         (pwr_lc_i.lc_idle),
 
     // flash
-    .flash_idle_i       (pwr_flash_i.flash_idle)
+    .flash_init_o      (pwr_flash_o.flash_init),
+    .flash_done_i      (flash_rsp.flash_done),
+    .flash_idle_i      (flash_rsp.flash_idle)
   );
 
   ////////////////////////////
@@ -328,6 +355,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // This interrupt is asserted whenever the fast FSM transitions
   // into active state.  However, it does not assert during POR
   prim_intr_hw #(.Width(1)) intr_wakeup (
+    .clk_i,
+    .rst_ni,
     .event_intr_i           (wkup),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.q),
@@ -342,6 +371,16 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ////////////////////////////
   ///  Assertions
   ////////////////////////////
+
+  `ASSERT_KNOWN(TlDValidKnownO_A,  tl_o.d_valid     )
+  `ASSERT_KNOWN(TlAReadyKnownO_A,  tl_o.a_ready     )
+  `ASSERT_KNOWN(AstKnownO_A,       pwr_ast_o        )
+  `ASSERT_KNOWN(RstKnownO_A,       pwr_rst_o        )
+  `ASSERT_KNOWN(ClkKnownO_A,       pwr_clk_o        )
+  `ASSERT_KNOWN(OtpKnownO_A,       pwr_otp_o        )
+  `ASSERT_KNOWN(LcKnownO_A,        pwr_lc_o         )
+  `ASSERT_KNOWN(FlashKnownO_A,     pwr_flash_o      )
+  `ASSERT_KNOWN(IntrKnownO_A,      intr_wakeup_o    )
 
 
 endmodule // pwrmgr

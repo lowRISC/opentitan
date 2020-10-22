@@ -28,22 +28,27 @@ class FtdiSpiInterface : public SpiInterface {
   /** FTDI SPI configuration options. */
   struct Options {
     /** USB device vendor ID. */
-    int32_t device_vendor_id;
+    int32_t device_vendor_id = 0;
 
     /** USB device product ID. */
-    int32_t device_product_id;
+    int32_t device_product_id = 0;
 
     /** USB device serial number. */
     std::string device_serial_number;
 
-    /** Time to wait between attempts to check the hash in nanoseconds. */
-    int32_t hash_read_delay_ns = 10000;
+    /** Time to wait between attempts to check the hash in microseconds. */
+    int32_t hash_read_delay_us = 10000;
 
-    /** Time before giving up on looking for the correct hash. */
-    int32_t hash_read_timeout_ns = 1000000;
+    /** Time to wait between reading the hash over SPI and checking it in
+     *  microseconds. */
+    int32_t hash_check_delay_us = 10000;
+
+    /** Time before giving up on looking for the correct hash in
+     *  microseconds. */
+    int32_t hash_read_timeout_us = 400000;
 
     /** FTDI Configuration. This can be made configurable later on if needed.
-     * Default value is 1MHz. */
+     * Frequency in Hz. Default value is 1MHz. */
     int32_t spi_frequency = 1000000;
   };
 

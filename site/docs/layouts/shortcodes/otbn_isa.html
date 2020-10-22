@@ -1,6 +1,7 @@
-{{ $path := path.Join .Site.Params.generatedRoot "otbn-isa.md" }}
+{{ $group := .Get 0 }}
+{{ $basename := (print $group ".md") }}
+{{ $path := path.Join .Site.Params.generatedRoot "otbn-isa" $basename }}
 {{ if not (fileExists $path) }}
-  {{ errorf "otbn-isa.md has not been generated" }}
+  {{ errorf "%s has not been generated" $path }}
 {{ end }}
-
 {{ readFile $path | markdownify }}

@@ -1,8 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-// TODO: This module is only a draft implementation that covers most of the rstmgr
-// functoinality but is incomplete
+
+
 
 # RSTMGR register template
 #
@@ -10,18 +10,17 @@
   name: "RSTMGR",
   clock_primary: "clk_i",
   other_clock_list: [
-    "clk_main_i",
-    "clk_io_i",
-    "clk_usb_i",
-    "clk_aon_i",
-    "clk_io_div2_i",
+    "clk_aon_i"
+    "clk_io_div2_i"
+    "clk_main_i"
+    "clk_io_i"
+    "clk_usb_i"
   ],
   bus_device: "tlul",
   regwidth: "32",
   param_list: [
   ],
-  scan: "true",       // Enable `scanmode_i` port
-  scan_reset: "true", // Enable `test_rst_ni` port
+
   // Define rstmgr struct package
   inter_signal_list: [
     { struct:  "pwr_rst",    // pwr_rst_req_t, pwr_rst_rsp_t
@@ -56,7 +55,7 @@
       name:    "peri",
       act:     "rcv",
       package: "rstmgr_pkg", // Origin package (only needs for the req)
-    },
+    }
   ],
 
   registers: [
@@ -86,9 +85,7 @@
       ]
     },
 
-    ########################
-    # These registers below should be templatized and generated
-    ########################
+    # Templated registers for software control
 
     { name: "SPI_DEVICE_REGEN",
       desc: '''
@@ -108,6 +105,25 @@
              "excl:CsrAllTests:CsrExclWrite"]
     },
 
+    { name: "RST_SPI_DEVICE_N",
+      regwen:  "SPI_DEVICE_REGEN",
+      desc: '''
+            Software reset control for spi_device
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+            bits:   "0",
+            desc: ''' When set to 0, spi_device is held in reset.  This bit can only be
+            programmed when spi_device_regen is 1.
+            '''
+            resval: 1,
+        },
+      ]
+      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+             "excl:CsrAllTests:CsrExclWrite"]
+    },
     { name: "USB_REGEN",
       desc: '''
             Register write enable for usb reset.
@@ -126,26 +142,6 @@
              "excl:CsrAllTests:CsrExclWrite"]
     },
 
-    { name: "RST_SPI_DEVICE_N",
-      regwen:  "SPI_DEVICE_REGEN",
-      desc: '''
-            Software reset control for spi device
-            ''',
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        {
-            bits:   "0",
-            desc: ''' When set to 0, spi_device is held in reset.  This bit can only be
-            programmed when spi_device_regen is 1.
-            '''
-            resval: 1,
-        },
-      ]
-      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
-             "excl:CsrAllTests:CsrExclWrite"]
-    },
-
     { name: "RST_USB_N",
       regwen:  "USB_REGEN",
       desc: '''
@@ -156,7 +152,7 @@
       fields: [
         {
             bits:   "0",
-            desc: ''' When set to 0, usb is held in reset. This bit can only be
+            desc: ''' When set to 0, usb is held in reset.  This bit can only be
             programmed when usb_regen is 1.
             '''
             resval: 1,
@@ -164,6 +160,85 @@
       ]
       tags: [// Don't reset other IPs as it will affect CSR access on these IPs
              "excl:CsrAllTests:CsrExclWrite"]
-    }
+    },
   ]
+
+
+
+//    { name: "SPI_DEVICE_REGEN",
+//      desc: '''
+//            Register write enable for spi_device reset.
+//            ''',
+//      swaccess: "rw1c",
+//      hwaccess: "none",
+//      fields: [
+//        {
+//            bits:   "0",
+//            desc: ''' When 1, rst_spi_device_n is software programmable.
+//            '''
+//            resval: 1,
+//        },
+//      ]
+//      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+//             "excl:CsrAllTests:CsrExclWrite"]
+//    },
+//
+//    { name: "USB_REGEN",
+//      desc: '''
+//            Register write enable for usb reset.
+//            ''',
+//      swaccess: "rw1c",
+//      hwaccess: "none",
+//      fields: [
+//        {
+//            bits:   "0",
+//            desc: ''' When 1, rst_usb_n is software programmable.
+//            '''
+//            resval: 1,
+//        },
+//      ]
+//      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+//             "excl:CsrAllTests:CsrExclWrite"]
+//    },
+//
+//    { name: "RST_SPI_DEVICE_N",
+//      regwen:  "SPI_DEVICE_REGEN",
+//      desc: '''
+//            Software reset control for spi device
+//            ''',
+//      swaccess: "rw",
+//      hwaccess: "hro",
+//      fields: [
+//        {
+//            bits:   "0",
+//            desc: ''' When set to 0, spi_device is held in reset.  This bit can only be
+//            programmed when spi_device_regen is 1.
+//            '''
+//            resval: 1,
+//        },
+//      ]
+//      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+//             "excl:CsrAllTests:CsrExclWrite"]
+//    },
+//
+//    { name: "RST_USB_N",
+//      regwen:  "USB_REGEN",
+//      desc: '''
+//            Software reset control for usb
+//            ''',
+//      swaccess: "rw",
+//      hwaccess: "hro",
+//      fields: [
+//        {
+//            bits:   "0",
+//            desc: ''' When set to 0, usb is held in reset. This bit can only be
+//            programmed when usb_regen is 1.
+//            '''
+//            resval: 1,
+//        },
+//      ]
+//      tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+//             "excl:CsrAllTests:CsrExclWrite"]
+//    }
+
 }

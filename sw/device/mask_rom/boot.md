@@ -220,15 +220,18 @@ read_boot_policy() {
 
 This manages reading and parsing ROM_EXT manifests.
 
+The manifest format is defined in [ROM_EXT Manifest Format](../rom_exts/manifest)
+
 DIFs Needed:
 
-*   Flash Controller
+*   None. This is read out of flash using ibex loads/stores.
 
 Milestone Expectations:
 
-*   *v0.5:* Chosen Manifest, Reading Manifest,
-    Tooling to assemble ROM_EXT image with Manifest,
-    Tooling to ensure ROM_EXT is loaded at boot.
+*   *v0.5:* Initial Manifest Format, Initial Parser, Simple Tooling for
+    assembling ROM_EXT Slot A images.
+*   *v0.7:* Tooling to ensure ROM_EXT is loaded at boot. Tooling for assembling
+    Slot B images.
 *   v0.9: Nothing more (Bootstrap should work in v0.9).
 
 ### Bootstrap
@@ -535,68 +538,18 @@ it needs to be checked most times the boot policy is also read.
 
 Accessed by:
 
-*   Mask ROM (to validate ROM_EXT)
+*   Mask ROM (to validate ROM_EXT).
+*   ROM_EXT (potentially).
 *   BL0 Kernel (during firmware update).
 
-Needs to contain:
+The manifest format is defined in [ROM_EXT Manifest Format](../rom_exts/manifest).
 
-*   Unsigned Area:
-    *   Identifier (so we know we're reading the right thing)
-        This also acts as a ROM_EXT manifest version (ie, the version of the
-        layout of the header).
-
-    *   Signature
-*   Signed Area:
-    *   Image Length
-    *   Entry Point
-        **Open Q:** Is this fixed or programmable? Field not needed if fixed.
-
-    *   ROM_EXT PMP Region Information
-        **Open Q:** Is this fixed or programmable? Field not needed if fixed.
-
-    *   Key Selection Area
-        *   Signature Algorithm Identifier
-            **Open Q:** Will the Mask ROM support more than one signature
-            scheme?
-
-        *   Public Key
-
-    *   Software Binding Properties:
-        *   ROM_EXT Version
-            This is the version of the image contained in the ROM_EXT.
-
-        *   Usage Constraints
-        *   Peripheral Lockdown Information
-    *   Read-only Extension Area:
-        *   Several words for ROM_EXT/BL0 use only.
-            (Interpretation governed by ROM_EXT/BL0 Version).
-            **Open Q:** Does this satisfy the previous usecases?
-
-            This is likely to be a fixed number of `(offset, checksum)` pairs,
-            where the offset points to a structure somewhere within the ROM_EXT
-            image. This should help us avoid running out of space, while also
-            ensuring these structures do not become corrupted (note the image
-            and the read-only extension area are also signed). This approach
-            does allow the pointed-to structure to be variable-length, as it is
-            down to the ROM_EXT/BL0 to interpret the data and validate the
-            checksum.
-
-            **Open Q:** Should we require these offsets to be word- or
-            page-aligned?
-
-            For a given ROM_EXT manifest version, the number of these slots
-            cannot be changed, but different manifest versions can add to the
-            number of slots. Each slot in a manifest version should only be
-            allocated for a single use, and once allocated should not be
-            re-allocated.
-
-    *   ROM_EXT Code Image.
-
-Stored in: Flash
+Stored in: Flash (at one of two fixed, memory-mapped, addresses)
 
 Extensibility:
+
 *   Mask ROM: None
 *   ROM_EXT/BL0:
-    *   Uses the "Extension Area" for additional read-only data if required.
+    *   Uses the Extension fields for additional read-only data if required.
         This is not interpreted by the Mask ROM, but may be used by ROM_EXT or
         BL0 if required.

@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/usbdev.h"
 
-#include "sw/device/lib/common.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "usbdev_regs.h"  // Generated.
@@ -12,6 +11,11 @@
 #define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
 
 #define EXTRACT(n, f) ((n >> USBDEV_##f##_OFFSET) & USBDEV_##f##_MASK)
+
+#define SETBIT(val, bit) (val | 1 << bit)
+#define CLRBIT(val, bit) (val & ~(1 << bit))
+
+#define REG32(add) *((volatile uint32_t *)(add))
 
 // Free buffer pool is held on a simple stack
 // Initalize to all buffer IDs are free
@@ -251,7 +255,7 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
   }
 }
 
-void usbdev_init(usbdev_ctx_t *ctx) {
+void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx, bool diff_tx) {
   // setup context
   for (int i = 0; i < NUM_ENDPOINTS; i++) {
     usbdev_endpoint_setup(ctx, i, 0, NULL, NULL, NULL, NULL, NULL);
@@ -268,6 +272,12 @@ void usbdev_init(usbdev_ctx_t *ctx) {
 
   REG32(USBDEV_RXENABLE_SETUP()) = (1 << USBDEV_RXENABLE_SETUP_SETUP_0);
   REG32(USBDEV_RXENABLE_OUT()) = (1 << USBDEV_RXENABLE_OUT_OUT_0);
+
+  uint32_t phy_config = (pinflip << USBDEV_PHY_CONFIG_PINFLIP) |
+                        (diff_rx << USBDEV_PHY_CONFIG_RX_DIFFERENTIAL_MODE) |
+                        (diff_tx << USBDEV_PHY_CONFIG_TX_DIFFERENTIAL_MODE) |
+                        (1 << USBDEV_PHY_CONFIG_EOP_SINGLE_BIT);
+  REG32(USBDEV_PHY_CONFIG()) = phy_config;
 
   REG32(USBDEV_USBCTRL()) = (1 << USBDEV_USBCTRL_ENABLE);
 }
