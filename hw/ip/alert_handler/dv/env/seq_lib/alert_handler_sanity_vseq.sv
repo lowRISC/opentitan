@@ -20,6 +20,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   rand bit [NUM_LOCAL_ALERT*2-1:0]         local_alert_class_map;
   rand bit [NUM_ESCS-1:0]                  esc_int_err;
   rand bit [NUM_ESCS-1:0]                  esc_standalone_int_err;
+  rand bit [NUM_ESCS-1:0]                  esc_ping_timeout;
 
   rand bit do_clr_esc;
   rand bit do_wr_phases_cyc;
@@ -79,6 +80,11 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
     esc_standalone_int_err == 0;
   }
 
+  constraint ping_fail_c {
+    alert_ping_timeout == 0;
+    esc_ping_timeout   == 0;
+  }
+
   task body();
     fork
       begin : isolation_fork
@@ -91,7 +97,9 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
 
   virtual task trigger_non_blocking_seqs();
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(esc_int_err)
-    run_esc_rsp_seq_nonblocking(esc_int_err);
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(alert_ping_timeout)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(esc_ping_timeout)
+    run_esc_rsp_seq_nonblocking(esc_int_err, esc_ping_timeout);
     run_alert_ping_rsp_seq_nonblocking(alert_ping_timeout);
   endtask
 

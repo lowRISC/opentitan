@@ -106,7 +106,7 @@ class esc_receiver_driver extends alert_esc_base_driver;
     end else begin
       wait_esc();
       @(cfg.vif.receiver_cb);
-      while (get_esc() === 1'b1) toggle_resp_signal(req);
+      while (get_esc() === 1'b1) toggle_resp_signal(req.int_err);
 
       // drives escalation ping request response according to the above scenarios:
       // if no sig_int_err: the driver will toggle resp_p/n as design required
@@ -119,7 +119,7 @@ class esc_receiver_driver extends alert_esc_base_driver;
         fork
           begin : isolation_fork
             fork
-              repeat (toggle_cycle) toggle_resp_signal(req);
+              repeat (toggle_cycle) toggle_resp_signal(req.ping_timeout);
               cfg.probe_vif.wait_esc_en();
             join_any
             disable fork;
@@ -127,21 +127,20 @@ class esc_receiver_driver extends alert_esc_base_driver;
         join
         is_ping = 0;
         if (cfg.probe_vif.get_esc_en()) begin
-          req.int_err = 0;
-          while (get_esc() === 1'b1) toggle_resp_signal(req);
+          while (get_esc() === 1'b1) toggle_resp_signal(0);
         end
       end
-      if (req.int_err) reset_resp();
+      if (req.ping_timeout || req.int_err) reset_resp();
     end
   endtask
 
   // If do not request int_err: Toggle resp_p/n for two cycles,
   // first cycle drives resp_p = 1, resp_n = 0; second cycle drives resp_p = 0, resp_n = 1
   // If request int_err: random drives resp_p/n for two cycles
-  task toggle_resp_signal(alert_esc_seq_item req);
+  task toggle_resp_signal(bit do_int_err);
     bit first_cycle_finished;
     repeat(2) begin
-      if (req.int_err) random_drive_resp_signal();
+      if (do_int_err) random_drive_resp_signal();
       else begin
         if (!first_cycle_finished) set_resp();
         else reset_resp();

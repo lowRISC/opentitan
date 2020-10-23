@@ -31,8 +31,12 @@ class alert_handler_ping_corner_cases_vseq extends alert_handler_entropy_vseq;
 
   constraint sig_int_c {
     esc_int_err == '1;
-    esc_standalone_int_err dist {0 :/ 9, [1:'b1111] :/ 1};
+    esc_standalone_int_err dist {0 :/ 9, [1:'1] :/ 1};
+  }
+
+  constraint ping_fail_c {
     alert_ping_timeout == '1;
+    esc_ping_timeout   == '1;
   }
 
   constraint ping_timeout_cyc_c {
