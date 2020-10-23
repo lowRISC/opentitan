@@ -40,25 +40,59 @@ module prim_generic_otp #(
   output logic [ErrWidth-1:0]    err_o
 );
 
-  // TODO: need a randomized LFSR timer to add some reasonable, non-deterministic response delays.
-
-  // Not supported in open-source emulation model.
-  tlul_pkg::tl_h2d_t unused_test_tl;
-  assign unused_test_tl = test_tl_i;
-  assign test_tl_o   = '0;
-
   // Not supported in open-source emulation model.
   logic [PwrSeqWidth-1:0] unused_pwr_seq_h;
   assign unused_pwr_seq_h = pwr_seq_h_i;
   assign pwr_seq_o = '0;
 
+  ////////////////////////////////////
+  // TL-UL Test Interface Emulation //
+  ////////////////////////////////////
+
+  // Put down a register that can be used to test the TL interface.
+  // TODO: this emulation may need to be adjusted, once closed source wrapper is
+  // implemented.
+  logic tlul_req, tlul_rvalid_q, tlul_wren;
+  logic [31:0] tlul_testreg_d, tlul_testreg_q;
+  tlul_adapter_sram #(
+    .SramAw      ( 9             ),
+    .SramDw      ( 32            ),
+    .Outstanding ( 1             ),
+    .ByteAccess  ( 0             ),
+    .ErrOnWrite  ( 0             )
+  ) u_tlul_adapter_sram (
+    .clk_i,
+    .rst_ni,
+    .tl_i     ( test_tl_i         ),
+    .tl_o     ( test_tl_o         ),
+    .req_o    ( tlul_req          ),
+    .gnt_i    ( tlul_req          ),
+    .we_o     ( tlul_wren         ),
+    .addr_o   (                   ),
+    .wdata_o  ( tlul_testreg_d    ),
+    .wmask_o  (                   ),
+    .rdata_i  ( tlul_testreg_q    ),
+    .rvalid_i ( tlul_rvalid_q     ),
+    .rerror_i ( '0                )
+  );
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlul_testreg
+    if (!rst_ni) begin
+      tlul_rvalid_q  <= 1'b0;
+      tlul_testreg_q <= '0;
+    end else begin
+      tlul_rvalid_q <= tlul_req & ~tlul_wren;
+      if (tlul_req && tlul_wren) begin
+        tlul_testreg_q <= tlul_testreg_d;
+      end
+    end
+  end
+
   ///////////////////
   // Control logic //
   ///////////////////
 
-  parameter int StateWidth = 10;
-
-  // Encoding generated with ./sparse-fsm-encode -d 5 -m 8 -n 10
+  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 8 -n 10
   // Hamming distance histogram:
   //
   // 0: --
@@ -76,6 +110,7 @@ module prim_generic_otp #(
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 8
   //
+  localparam int StateWidth = 10;
   typedef enum logic [StateWidth-1:0] {
     ResetSt      = 10'b1100000011,
     InitSt       = 10'b1100110100,
@@ -111,7 +146,7 @@ module prim_generic_otp #(
     state_d = state_q;
     ready_o = 1'b0;
     valid_d = 1'b0;
-    err_d   = otp_ctrl_pkg::NoErr;
+    err_d   = otp_ctrl_pkg::NoError;
     req     = 1'b0;
     wren    = 1'b0;
     cnt_clr = 1'b0;
@@ -127,13 +162,12 @@ module prim_generic_otp #(
           end else begin
             // Invalid commands get caught here
             valid_d = 1'b1;
-            err_d = otp_ctrl_pkg::OtpCmdInvErr;
+            err_d = otp_ctrl_pkg::MacroError;
           end
         end
       end
       // Wait for some time until the OTP macro is ready.
       InitSt: begin
-        // TODO: add some pseudo random init time here.
         state_d = IdleSt;
         valid_d = 1'b1;
       end
@@ -142,14 +176,14 @@ module prim_generic_otp #(
         ready_o = 1'b1;
         if (valid_i) begin
           cnt_clr = 1'b1;
-          err_d = otp_ctrl_pkg::NoErr;
+          err_d = otp_ctrl_pkg::NoError;
           unique case (cmd_i)
             otp_ctrl_pkg::OtpRead:  state_d = ReadSt;
             otp_ctrl_pkg::OtpWrite: state_d = WriteCheckSt;
             default:  begin
               // Invalid commands get caught here
               valid_d = 1'b1;
-              err_d = otp_ctrl_pkg::OtpCmdInvErr;
+              err_d = otp_ctrl_pkg::MacroError;
             end
           endcase // cmd_i
         end
@@ -161,14 +195,13 @@ module prim_generic_otp #(
       end
       // Wait for response from macro.
       ReadWaitSt: begin
-        // TODO: add some pseudo random time here.
         if (rvalid) begin
           cnt_en = 1'b1;
           // Uncorrectable error, bail out.
           if (rerror[1]) begin
             state_d = IdleSt;
             valid_d = 1'b1;
-            err_d = otp_ctrl_pkg::OtpReadUncorrErr;
+            err_d = otp_ctrl_pkg::MacroEccUncorrError;
           end else begin
             if (cnt_q == size_q) begin
               state_d = IdleSt;
@@ -178,7 +211,7 @@ module prim_generic_otp #(
             end
             // Correctable error, carry on but signal back.
             if (rerror[0]) begin
-              err_d = otp_ctrl_pkg::OtpReadCorrErr;
+              err_d = otp_ctrl_pkg::MacroEccCorrError;
             end
           end
         end
@@ -192,13 +225,12 @@ module prim_generic_otp #(
       // If the word is not blank, or if we got an uncorrectable ECC error,
       // the check has failed and we abort the write at this point.
       WriteWaitSt: begin
-        // TODO: add some pseudo random time here.
         if (rvalid) begin
           cnt_en = 1'b1;
           if (rerror[1] || rdata_d != '0) begin
             state_d = IdleSt;
             valid_d = 1'b1;
-            err_d = otp_ctrl_pkg::OtpWriteBlankErr;
+            err_d = otp_ctrl_pkg::MacroWriteBlankError;
           end else begin
             if (cnt_q == size_q) begin
               cnt_clr = 1'b1;
@@ -211,7 +243,6 @@ module prim_generic_otp #(
       end
       // Now that we are sure that the memory is blank, we can write all native words in one go.
       WriteSt: begin
-        // TODO: add some pseudo random time here.
         req = 1'b1;
         wren = 1'b1;
         cnt_en = 1'b1;
@@ -261,17 +292,16 @@ module prim_generic_otp #(
   // Regs //
   //////////
 
-  // This primitive is used to place a size-only constraint on the flops
-  // in order to prevent FSM state encoding optimizations.
-
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
   prim_flop #(
     .Width(StateWidth),
-    .ResetValue(ResetSt)
+    .ResetValue(StateWidth'(ResetSt))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i    ( state_d ),
-    .q_o    ( state_q )
+    .d_i ( state_d ),
+    .q_o ( state_q )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
