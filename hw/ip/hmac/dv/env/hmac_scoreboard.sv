@@ -34,8 +34,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     bit     do_cycle_accurate_check = 1'b1;
     bit     write                   = item.is_write();
     string  csr_name;
-    bit [TL_AW-1:0] addr_mask       = cfg.csr_addr_map_size - 1;
-    uvm_reg_addr_t  csr_addr        = get_normalized_addr(item.a_addr);
+    bit [TL_AW-1:0] addr_mask       = ral.get_addr_mask();
+    uvm_reg_addr_t  csr_addr        = ral.align_to_word_addr(item.a_addr);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs}) begin

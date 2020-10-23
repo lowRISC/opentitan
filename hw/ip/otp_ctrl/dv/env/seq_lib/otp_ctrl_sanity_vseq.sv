@@ -90,7 +90,7 @@ class otp_ctrl_sanity_vseq extends otp_ctrl_base_vseq;
 
         // if write sw partitions, check tlul window
         if (part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx}) begin
-          bit [TL_AW-1:0] tlul_addr = get_sw_window_addr(dai_addr);
+          uvm_reg_addr_t tlul_addr = cfg.ral.offset_to_addr(get_sw_window_offset(dai_addr));
 
           // random issue reset, OTP content should not be cleared
           if ($urandom_range(0, 1)) dut_init();

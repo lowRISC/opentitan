@@ -107,26 +107,20 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endtask
 
   virtual task process_mem_write(tl_seq_item item);
-    uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
+    uvm_reg_addr_t addr = ral.align_to_word_addr(item.a_addr);
     if (!cfg.under_reset)  exp_mem.write(addr, item.a_data, item.a_mask);
   endtask
 
   virtual task process_mem_read(tl_seq_item item);
-    uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
+    uvm_reg_addr_t addr = ral.align_to_word_addr(item.a_addr);
     if (!cfg.under_reset && get_mem_access_by_addr(ral, addr) == "RW") begin
       exp_mem.compare(addr, item.d_data, item.a_mask);
     end
   endtask
 
-  // only lsb addr is used, the other can be ignored, use this function to normalize the addr to
-  // the format that RAL uses
-  virtual function uvm_reg_addr_t get_normalized_addr(uvm_reg_addr_t addr);
-    return ({addr[BUS_AW-1:2], 2'b00} & (cfg.csr_addr_map_size - 1)) + cfg.csr_base_addr;
-  endfunction
-
   // check if it's mem addr
   virtual function bit is_mem_addr(tl_seq_item item);
-    uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
+    uvm_reg_addr_t addr = ral.align_to_word_addr(item.a_addr);
     foreach (cfg.mem_ranges[i]) begin
       if (addr inside {[cfg.mem_ranges[i].start_addr : cfg.mem_ranges[i].end_addr]}) begin
         return 1;
@@ -172,7 +166,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // check if address is mapped
   virtual function bit is_tl_access_mapped_addr(tl_seq_item item);
-    uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
+    uvm_reg_addr_t addr = ral.align_to_word_addr(item.a_addr);
     // check if it's mem addr or reg addr
     if (is_mem_addr(item) || addr inside {cfg.csr_addrs}) return 1;
     else                                                  return 0;
@@ -183,7 +177,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (is_mem_addr(item)) begin
       bit mem_partial_write_support;
       dv_base_mem mem;
-      uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
+      uvm_reg_addr_t addr = ral.align_to_word_addr(item.a_addr);
       string mem_access = get_mem_access_by_addr(ral, addr);
 
       `downcast(mem, get_mem_by_addr(ral, addr))
@@ -211,7 +205,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (!is_tl_access_mapped_addr(item) || is_mem_addr(item)) return 1;
     if (item.is_write()) begin
       dv_base_reg    csr;
-      uvm_reg_addr_t addr = get_normalized_addr(item.a_addr);
+      uvm_reg_addr_t addr = ral.align_to_word_addr(item.a_addr);
       `DV_CHECK_FATAL($cast(csr,
                             ral.default_map.get_reg_by_offset(addr)))
       if (csr.get_msb_pos >= 24 && item.a_mask[3:0] != 'b1111 ||

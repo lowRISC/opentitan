@@ -35,7 +35,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     uvm_reg csr;
     bit     do_read_check   = 1'b1;
     bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
+    uvm_reg_addr_t csr_addr = ral.align_to_word_addr(item.a_addr);
 
     bit addr_phase_read   = (!write && channel == AddrChannel);
     bit addr_phase_write  = (write && channel == AddrChannel);

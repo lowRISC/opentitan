@@ -93,8 +93,9 @@ package otp_ctrl_env_pkg;
     else return 1;
   endfunction
 
-  function automatic bit [TL_AW-1:0] get_sw_window_addr(bit [TL_AW-1:0] dai_addr);
-    get_sw_window_addr = dai_addr + SW_WINDOW_BASE_ADDR;
+  // Resolve an offset within the software window as an offset within the whole otp_ctrl block.
+  function automatic bit [TL_AW-1:0] get_sw_window_offset(bit [TL_AW-1:0] dai_addr);
+    return dai_addr + SW_WINDOW_BASE_ADDR;
   endfunction
 
   // package sources
