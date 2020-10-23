@@ -111,7 +111,8 @@ class alert_handler_base_vseq extends cip_base_vseq #(
               begin
                 esc_receiver_esc_rsp_seq esc_seq =
                     esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
-                `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == 1; standalone_int_err == 1;)
+                `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == 1; standalone_int_err == 1;
+                                               ping_timeout == 0;)
                 esc_seq.start(p_sequencer.esc_device_seqr_h[index]);
               end
             join_none
@@ -251,15 +252,18 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   // This sequence will automatically response to all escalation ping and esc responses
-  virtual task run_esc_rsp_seq_nonblocking(bit [NUM_ESCS-1:0] esc_int_errs = '0);
+  virtual task run_esc_rsp_seq_nonblocking(bit [NUM_ESCS-1:0] esc_int_errs = '0,
+                                           bit [NUM_ESCS-1:0] ping_timeout_errs = '0);
     foreach (cfg.esc_device_cfg[i]) begin
       automatic int index = i;
       fork
         forever begin
-          bit esc_int_err = esc_int_errs[index] ? $urandom_range(0, 1) : 0;
+          bit esc_int_err      = esc_int_errs[index]      ? $urandom_range(0, 1) : 0;
+          bit ping_timeout_err = ping_timeout_errs[index] ? $urandom_range(0, 1) : 0;
           esc_receiver_esc_rsp_seq esc_seq =
               esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
-          `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == esc_int_err; standalone_int_err == 0;)
+          `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == esc_int_err; standalone_int_err == 0;
+                                         ping_timeout == ping_timeout_err;)
           esc_seq.start(p_sequencer.esc_device_seqr_h[index]);
         end
       join_none

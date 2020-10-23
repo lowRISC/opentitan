@@ -15,6 +15,7 @@ class esc_receiver_base_seq extends dv_base_seq #(
   rand bit int_err;
   rand bit r_esc_rsp;
   rand bit standalone_int_err;
+  rand bit ping_timeout;
 
   virtual task body();
     `uvm_info(`gfn, $sformatf("starting escalator receiver transfer"), UVM_HIGH)
@@ -24,9 +25,10 @@ class esc_receiver_base_seq extends dv_base_seq #(
         r_esc_rsp          == local::r_esc_rsp;
         int_err            == local::int_err;
         standalone_int_err == local::standalone_int_err;
+        ping_timeout       == local::ping_timeout;
     )
-    `uvm_info(`gfn, $sformatf("seq_item: esc_rsp=%0b, int_err=%0b",
-        req.r_esc_rsp, req.int_err), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("seq_item: esc_rsp=%0b, int_err=%0b, ping_timeout=%0b",
+        req.r_esc_rsp, req.int_err, req.ping_timeout), UVM_MEDIUM)
     finish_item(req);
     get_response(rsp);
     `uvm_info(`gfn, "escalator receiver transfer done", UVM_HIGH)
