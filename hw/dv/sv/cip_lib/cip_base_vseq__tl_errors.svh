@@ -23,8 +23,10 @@
 
 virtual task tl_access_unmapped_addr();
   bit [BUS_AW-1:0] normalized_csr_addrs[] = new[cfg.csr_addrs.size()];
+  bit [BUS_AW-1:0] csr_base_addr = cfg.ral.default_map.get_base_addr();
+
   // calculate normalized address outside the loop to improve perf
-  foreach (cfg.csr_addrs[i]) normalized_csr_addrs[i] = cfg.csr_addrs[i] - cfg.csr_base_addr;
+  foreach (cfg.csr_addrs[i]) normalized_csr_addrs[i] = cfg.csr_addrs[i] - csr_base_addr;
   // randomize unmapped_addr first to improve perf
   repeat ($urandom_range(10, 100)) begin
     bit [BUS_AW-1:0] unmapped_addr;
@@ -135,13 +137,14 @@ endtask
 // generic task to check interrupt test reg functionality
 virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
   bit has_mem = (cfg.mem_ranges.size > 0);
+  bit [BUS_AW-1:0] csr_base_addr = cfg.ral.default_map.get_base_addr();
 
-  csr_addr_mask = (cfg.csr_addr_map_size - 1);
+  csr_addr_mask = cfg.ral.get_addr_mask();
   csr_addr_mask[1:0] = 0;
   if (updated_mem_ranges.size == 0) begin
     foreach (cfg.mem_ranges[i]) begin
-      updated_mem_ranges.push_back(addr_range_t'{cfg.mem_ranges[i].start_addr - cfg.csr_base_addr,
-                                                 cfg.mem_ranges[i].end_addr - cfg.csr_base_addr});
+      updated_mem_ranges.push_back(addr_range_t'{cfg.mem_ranges[i].start_addr - csr_base_addr,
+                                                 cfg.mem_ranges[i].end_addr - csr_base_addr});
     end
   end
 

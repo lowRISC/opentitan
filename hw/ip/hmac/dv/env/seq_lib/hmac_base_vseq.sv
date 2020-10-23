@@ -171,8 +171,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       word = {>>byte{word_unpack}};
       `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
                                 wr_addr, wr_mask, word), UVM_HIGH)
-      tl_access(.addr(wr_addr + cfg.csr_base_addr), .write(1'b1), .data(word), .mask(wr_mask),
-                .blocking(non_blocking));
+      tl_access(.addr(cfg.ral.offset_to_addr(wr_addr)),
+                .write(1'b1), .data(word), .mask(wr_mask), .blocking(non_blocking));
 
       if (ral.cfg.sha_en.get_mirrored_value()) begin
         if (!do_back_pressure) begin
@@ -207,8 +207,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
           `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
                                     wr_addr, wr_mask, word), UVM_HIGH)
           `DV_CHECK_FATAL(randomize(wr_addr, wr_mask) with {wr_mask == '1;})
-          tl_access(.addr(wr_addr + cfg.csr_base_addr), .write(1'b1), .data(word), .mask(wr_mask),
-                    .blocking($urandom_range(0, 1)));
+          tl_access(.addr(cfg.ral.offset_to_addr(wr_addr)),
+                    .write(1'b1), .data(word), .mask(wr_mask), .blocking($urandom_range(0, 1)));
         end
         if (ral.cfg.sha_en.get_mirrored_value()) begin
           //clear_intr_fifo_full();

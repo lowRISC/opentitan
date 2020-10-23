@@ -26,11 +26,6 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   bit [bus_params_pkg::BUS_AW-1:0]  csr_addrs[$];
   addr_range_t                      mem_ranges[$];
 
-  // ral base address and size
-  bit [bus_params_pkg::BUS_AW-1:0]  csr_base_addr;     // base address where csr map begins
-  bit [bus_params_pkg::BUS_AW:0]    csr_addr_map_size; // csr addr region allocated to the ip,
-                                                       // max: 1 << bus_params_pkg::BUS_AW
-
   // clk_rst_if & freq
   virtual clk_rst_if  clk_rst_vif;
   rand clk_freq_mhz_e clk_freq_mhz;
@@ -40,8 +35,6 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     `uvm_field_int   (en_scb,                       UVM_DEFAULT)
     `uvm_field_int   (en_cov,                       UVM_DEFAULT)
     `uvm_field_int   (zero_delays,                  UVM_DEFAULT)
-    `uvm_field_int   (csr_base_addr,                UVM_DEFAULT)
-    `uvm_field_int   (csr_addr_map_size,            UVM_DEFAULT)
     `uvm_field_enum  (clk_freq_mhz_e, clk_freq_mhz, UVM_DEFAULT)
   `uvm_object_utils_end
 
@@ -50,41 +43,29 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   virtual function void initialize(bit [bus_params_pkg::BUS_AW-1:0] csr_base_addr = '1);
     // build the ral model
     if (has_ral) begin
+      uvm_reg_addr_t base_addr;
+
       ral = RAL_T::type_id::create("ral");
-      // use base address 0 to build and change it later
+
+      // Build the register block with an arbitrary base address (we choose 0). We'll change it
+      // later.
       ral.build(.base_addr(0), .csr_excl(null));
       apply_ral_fixes();
       ral.lock_model();
-      initialize_dut_addr_space(csr_base_addr);
+
+      // Now the model is locked, we know its layout. Ask the register block to sanity-check
+      // csr_base_addr (if it's not '1) or pick a sensible one otherwise. Then install that base
+      // address in the default map.
+      base_addr = ral.pick_base_addr(csr_base_addr);
+      `uvm_info(`gfn, $sformatf("Setting register base address to 0x%0h", base_addr), UVM_HIGH)
+      ral.default_map.set_base_addr(base_addr);
+
       // Get list of valid csr addresses (useful in seq to randomize addr as well as in scb checks)
       get_csr_addrs(ral, csr_addrs);
       get_mem_addr_ranges(ral, mem_ranges);
       ral_models.push_back(ral);
     end
   endfunction
-
-  // initialize dut base address and address map size
-  // when csr_base_addr is '1, will be randomized based on address map size
-  virtual function void initialize_dut_addr_space(
-      bit [bus_params_pkg::BUS_AW-1:0] csr_base_addr = '1);
-
-    csr_addr_map_size = ral.get_addr_map_size();
-    // use locally randomized csr base address based on csr_addr_map_size,
-    // unless provided as arg to this function
-    if (csr_base_addr != '1) begin
-      bit is_aligned;
-      this.csr_base_addr = csr_base_addr;
-      // check alignment
-      is_aligned = ~|(this.csr_base_addr & (this.csr_addr_map_size - 1));
-      `DV_CHECK_EQ_FATAL(is_aligned, 1'b1)
-    end else begin
-      // base address needs to be aligned to csr_addr_map_size
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(csr_base_addr,
-                                         ~|(csr_base_addr & (csr_addr_map_size - 1));)
-      this.csr_base_addr = csr_base_addr;
-    end
-    ral.default_map.set_base_addr(this.csr_base_addr);
-  endfunction : initialize_dut_addr_space
 
   // ral flow is limited in terms of setting correct field access policies and reset values
   // We apply those fixes here - please note these fixes need to be reflected in the scoreboard
@@ -101,4 +82,5 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     this.under_reset = 0;
     csr_utils_pkg::reset_deasserted();
   endfunction
+
 endclass
