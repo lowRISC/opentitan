@@ -37,7 +37,7 @@ module otbn_core_model
   input logic   enable_i,
 
   input  logic  start_i, // start the operation
-  output logic  done_o,  // operation done
+  output bit    done_o,  // operation done
 
   input  logic [ImemAddrWidth-1:0] start_addr_i, // start byte address in IMEM
 
