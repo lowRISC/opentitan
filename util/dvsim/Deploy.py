@@ -13,9 +13,8 @@ import sys
 import time
 from collections import OrderedDict
 
-from tabulate import tabulate
-
 from sim_utils import get_cov_summary_table
+from tabulate import tabulate
 from utils import VERBOSE, find_and_substitute_wildcards, run_cmd
 
 
@@ -56,6 +55,8 @@ class Deploy():
         return self.__self_str__()
 
     def __init__(self, sim_cfg):
+        '''Initialize common class members.'''
+
         # Cross ref the whole cfg object for ease.
         self.sim_cfg = sim_cfg
 
@@ -84,14 +85,22 @@ class Deploy():
         self.log_fd = None
         self.status = None
 
-        # These are command, output directory and log file
-        self.mandatory_misc_attrs.update({
+        # These are mandatory class attributes that need to be extracted and
+        # set from the sim_cfg object. These are explicitly used to construct
+        # the command for deployment.
+        self.mandatory_cmd_attrs = {}
+
+        # These are mandatory class attributes that also need to be extracted
+        # and set from the sim_cfg object. Some of these contribute to the
+        # construction of the command. Others are used to determine pass / fail
+        # conditions.
+        self.mandatory_misc_attrs = {
             "name": False,
             "build_mode": False,
             "flow_makefile": False,
             "exports": False,
             "dry_run": False
-        })
+        }
 
     # Function to parse a dict and extract the mandatory cmd and misc attrs.
     def parse_dict(self, ddict):
@@ -131,12 +140,13 @@ class Deploy():
         # Recursively search and replace wildcards
         # First pass: search within self dict. We ignore errors since some
         # substitions may be available in the second pass.
-        self.__dict__ = find_and_substitute_wildcards(
-            self.__dict__, self.__dict__, [], True)
+        self.__dict__ = find_and_substitute_wildcards(self.__dict__,
+                                                      self.__dict__, [], True)
 
         # Second pass: search in sim_cfg dict, this time not ignoring errors.
-        self.__dict__ = find_and_substitute_wildcards(
-            self.__dict__, self.sim_cfg.__dict__, [], False)
+        self.__dict__ = find_and_substitute_wildcards(self.__dict__,
+                                                      self.sim_cfg.__dict__,
+                                                      [], False)
 
         # Set identifier.
         self.identifier = self.sim_cfg.name + ":" + self.name
@@ -154,7 +164,7 @@ class Deploy():
         cmd = "make -f " + self.flow_makefile + " " + self.target
         if self.dry_run is True:
             cmd += " -n"
-        for attr in self.mandatory_cmd_attrs.keys():
+        for attr in sorted(self.mandatory_cmd_attrs.keys()):
             value = getattr(self, attr)
             if type(value) is list:
                 pretty_value = []
@@ -170,6 +180,40 @@ class Deploy():
         # TODO: If not running locally, redirect stdout and err to the log file
         # self.cmd += " > " + self.log + " 2>&1 &"
         return cmd
+
+    def is_equivalent_job(self, item):
+        '''Checks if job that would be dispatched with `item` is equivalent to
+        `self`.
+
+        Determines if `item` and `self` would behave exactly the same way when
+        deployed. If so, then there is no point in keeping both. The caller can
+        choose to discard `item` and pick `self` instead. To do so, we check
+        the final resolved `cmd` & the exports. The `name` field will be unique
+        to `item` and `self`, so we take that out of the comparison.
+        '''
+        if type(self) != type(item):
+            return False
+
+        # Check if the cmd field is identical.
+        item_cmd = item.cmd.replace(item.name, self.name)
+        if self.cmd != item_cmd:
+            return False
+
+        # Check if exports have identical set of keys.
+        if self.exports.keys() != item.exports.keys():
+            return False
+
+        # Check if exports have identical values.
+        for key, val in self.exports.items():
+            item_val = item.exports[key]
+            if type(item_val) is str:
+                item_val = item_val.replace(item.name, self.name)
+            if val != item_val:
+                return False
+
+        log.log(VERBOSE, "Deploy job \"%s\" is equivalent to \"%s\"",
+                item.name, self.name)
+        return True
 
     def dispatch_cmd(self):
         self.exports.update(os.environ)
@@ -544,11 +588,14 @@ class CompileSim(Deploy):
     items = []
 
     def __init__(self, build_mode, sim_cfg):
+        # Initialize common vars.
+        super().__init__(sim_cfg)
+
         self.target = "build"
         self.pass_patterns = []
         self.fail_patterns = []
 
-        self.mandatory_cmd_attrs = {
+        self.mandatory_cmd_attrs.update({
             # tool srcs
             "tool_srcs": False,
             "tool_srcs_dir": False,
@@ -562,16 +609,14 @@ class CompileSim(Deploy):
             "build_dir": False,
             "build_cmd": False,
             "build_opts": False
-        }
+        })
 
-        self.mandatory_misc_attrs = {
+        self.mandatory_misc_attrs.update({
             "cov_db_dir": False,
             "build_pass_patterns": False,
             "build_fail_patterns": False
-        }
+        })
 
-        # Initialize
-        super().__init__(sim_cfg)
         super().parse_dict(build_mode.__dict__)
         # Call this method again with the sim_cfg dict passed as the object,
         # since it may contain additional mandatory attrs.
@@ -604,11 +649,14 @@ class CompileOneShot(Deploy):
     items = []
 
     def __init__(self, build_mode, sim_cfg):
+        # Initialize common vars.
+        super().__init__(sim_cfg)
+
         self.target = "build"
         self.pass_patterns = []
         self.fail_patterns = []
 
-        self.mandatory_cmd_attrs = {
+        self.mandatory_cmd_attrs.update({
             # tool srcs
             "tool_srcs": False,
             "tool_srcs_dir": False,
@@ -627,12 +675,8 @@ class CompileOneShot(Deploy):
             # Report processing
             "report_cmd": False,
             "report_opts": False
-        }
+        })
 
-        self.mandatory_misc_attrs = {}
-
-        # Initialize
-        super().__init__(sim_cfg)
         super().parse_dict(build_mode.__dict__)
         # Call this method again with the sim_cfg dict passed as the object,
         # since it may contain additional mandatory attrs.
@@ -661,11 +705,14 @@ class RunTest(Deploy):
     items = []
 
     def __init__(self, index, test, sim_cfg):
+        # Initialize common vars.
+        super().__init__(sim_cfg)
+
         self.target = "run"
         self.pass_patterns = []
         self.fail_patterns = []
 
-        self.mandatory_cmd_attrs = {
+        self.mandatory_cmd_attrs.update({
             "proj_root": False,
             "uvm_test": False,
             "uvm_test_seq": False,
@@ -677,20 +724,18 @@ class RunTest(Deploy):
             "run_dir": False,
             "run_cmd": False,
             "run_opts": False
-        }
+        })
 
-        self.mandatory_misc_attrs = {
+        self.mandatory_misc_attrs.update({
             "run_dir_name": False,
             "cov_db_test_dir": False,
             "run_pass_patterns": False,
             "run_fail_patterns": False
-        }
+        })
 
         self.index = index
         self.seed = RunTest.get_seed()
 
-        # Initialize
-        super().__init__(sim_cfg)
         super().parse_dict(test.__dict__)
         # Call this method again with the sim_cfg dict passed as the object,
         # since it may contain additional mandatory attrs.
@@ -752,6 +797,9 @@ class CovMerge(Deploy):
     items = []
 
     def __init__(self, sim_cfg):
+        # Initialize common vars.
+        super().__init__(sim_cfg)
+
         self.target = "cov_merge"
         self.pass_patterns = []
         self.fail_patterns = []
@@ -760,18 +808,16 @@ class CovMerge(Deploy):
         # be merged.
         self.cov_db_dirs = ""
 
-        self.mandatory_cmd_attrs = {
+        self.mandatory_cmd_attrs.update({
             "cov_merge_cmd": False,
             "cov_merge_opts": False
-        }
+        })
 
-        self.mandatory_misc_attrs = {
+        self.mandatory_misc_attrs.update({
             "cov_merge_dir": False,
             "cov_merge_db_dir": False
-        }
+        })
 
-        # Initialize
-        super().__init__(sim_cfg)
         super().parse_dict(sim_cfg.__dict__)
         self.__post_init__()
 
@@ -797,13 +843,17 @@ class CovMerge(Deploy):
         # First pass: search within self dict. We ignore errors since some
         # substitions may be available in the second pass.
         self.__dict__ = find_and_substitute_wildcards(
-            self.__dict__, self.__dict__, ignored_wildcards=["cov_db_dirs"],
+            self.__dict__,
+            self.__dict__,
+            ignored_wildcards=["cov_db_dirs"],
             ignore_error=True)
 
         # Second pass: search in sim_cfg dict, this time not ignoring errors.
         self.__dict__ = find_and_substitute_wildcards(
-            self.__dict__, self.sim_cfg.__dict__,
-            ignored_wildcards=["cov_db_dirs"], ignore_error=False)
+            self.__dict__,
+            self.sim_cfg.__dict__,
+            ignored_wildcards=["cov_db_dirs"],
+            ignore_error=False)
 
         # Prune previous merged cov directories.
         prev_cov_db_dirs = self.odir_limiter(odir=self.cov_merge_db_dir)
@@ -831,25 +881,26 @@ class CovReport(Deploy):
     items = []
 
     def __init__(self, sim_cfg):
+        # Initialize common vars.
+        super().__init__(sim_cfg)
+
         self.target = "cov_report"
         self.pass_patterns = []
         self.fail_patterns = []
         self.cov_total = ""
         self.cov_results = ""
 
-        self.mandatory_cmd_attrs = {
+        self.mandatory_cmd_attrs.update({
             "cov_report_cmd": False,
             "cov_report_opts": False
-        }
+        })
 
-        self.mandatory_misc_attrs = {
+        self.mandatory_misc_attrs.update({
             "cov_report_dir": False,
             "cov_merge_db_dir": False,
             "cov_report_txt": False
-        }
+        })
 
-        # Initialize
-        super().__init__(sim_cfg)
         super().parse_dict(sim_cfg.__dict__)
         self.__post_init__()
 
@@ -893,25 +944,26 @@ class CovAnalyze(Deploy):
     items = []
 
     def __init__(self, sim_cfg):
+        # Initialize common vars.
+        super().__init__(sim_cfg)
+
         self.target = "cov_analyze"
         self.pass_patterns = []
         self.fail_patterns = []
 
-        self.mandatory_cmd_attrs = {
+        self.mandatory_cmd_attrs.update({
             # tool srcs
             "tool_srcs": False,
             "tool_srcs_dir": False,
             "cov_analyze_cmd": False,
             "cov_analyze_opts": False
-        }
+        })
 
-        self.mandatory_misc_attrs = {
+        self.mandatory_misc_attrs.update({
             "cov_analyze_dir": False,
             "cov_merge_db_dir": False
-        }
+        })
 
-        # Initialize
-        super().__init__(sim_cfg)
         super().parse_dict(sim_cfg.__dict__)
         self.__post_init__()
 
