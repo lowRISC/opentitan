@@ -75,7 +75,7 @@
     { name: "NumDebugWindowWords",
       desc: "Number of 32bit words in the debug window.",
       type: "int",
-      default: "500",
+      default: "16",
       local: "true"
     },
   ]

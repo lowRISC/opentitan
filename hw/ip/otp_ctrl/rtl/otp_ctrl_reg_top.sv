@@ -91,7 +91,7 @@ module otp_ctrl_reg_top (
     if (tl_i.a_address[AW-1:0] >= 1024 && tl_i.a_address[AW-1:0] < 2048) begin
       reg_steer = 0;
     end
-    if (tl_i.a_address[AW-1:0] >= 2048 && tl_i.a_address[AW-1:0] < 4048) begin
+    if (tl_i.a_address[AW-1:0] >= 2048 && tl_i.a_address[AW-1:0] < 2112) begin
       reg_steer = 1;
     end
   end

@@ -13,7 +13,7 @@ package otp_ctrl_reg_pkg;
   parameter int NumHwCfgReservedRegs = 6;
   parameter int NumSwCfgPartitionWords = 212;
   parameter int NumSwCfgWindowWords = 256;
-  parameter int NumDebugWindowWords = 500;
+  parameter int NumDebugWindowWords = 16;
   parameter int DIRECT_ACCESS_WDATA = 2;
   parameter int DIRECT_ACCESS_RDATA = 2;
   parameter int LC_STATE = 6;
@@ -245,7 +245,7 @@ package otp_ctrl_reg_pkg;
   parameter logic [11:0] OTP_CTRL_SW_CFG_OFFSET = 12'h 400;
   parameter logic [11:0] OTP_CTRL_SW_CFG_SIZE   = 12'h 400;
   parameter logic [11:0] OTP_CTRL_TEST_ACCESS_OFFSET = 12'h 800;
-  parameter logic [11:0] OTP_CTRL_TEST_ACCESS_SIZE   = 12'h 7d0;
+  parameter logic [11:0] OTP_CTRL_TEST_ACCESS_SIZE   = 12'h 40;
 
   // Register Index
   typedef enum int {
