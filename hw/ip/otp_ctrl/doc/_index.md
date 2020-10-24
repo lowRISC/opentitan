@@ -190,7 +190,7 @@ Unfortunately, secret partitions must utilize a global netlist key for the scram
 
 Once the appropriate partitions have been locked, the hardware integrity checker employs two integrity checks to verify the content of the volatile buffer registers:
 
-1. All buffered partitions have additional byte parity protection that is concurrently monitored.
+1. All buffered partitions have additional ECC protection (8bit ECC for each 64bit block) that is concurrently monitored.
 2. The digest of the partition is recomputed at semi-random intervals and compared to the digest stored alongside the partition.
 
 The purpose of this check is NOT to check between the storage flops and the OTP, but whether the buffer register contents remain consistent with the calculated digest.
@@ -545,7 +545,7 @@ Write access through the DAI will be locked in case the digest is set to a non-z
 Also, read access through the DAI and the CSR window can be locked at runtime via a CSR.
 Read transactions through the CSR window will error out if they are out of bounds, or if read access is locked.
 
-Note that unrecoverable [OTP errors]({{< relref "#generalized-open-source-interface" >}}) or parity failures in the digest register will move the partition controller into a terminal error state.
+Note that unrecoverable [OTP errors]({{< relref "#generalized-open-source-interface" >}}) or ECC failures in the digest register will move the partition controller into a terminal error state.
 
 #### Buffered Partition
 
@@ -568,7 +568,7 @@ If it is, the consistency check will read out the digest stored in OTP and compa
 Otherwise, if no digest is available, the controller will read out the whole partition from OTP, and compare it to the contents stored in the buffer registers.
 In case of a mismatch, the buffered values are gated to their default, and an alert is triggered through the error handling logic.
 
-Note that in case of unrecoverable OTP errors or parity failures in the buffer registers, the partition controller FSM is moved into a terminal error state, which locks down all access through DAI and clamps the values that are broadcast in hardware to their defaults.
+Note that in case of unrecoverable OTP errors or ECC failures in the buffer registers, the partition controller FSM is moved into a terminal error state, which locks down all access through DAI and clamps the values that are broadcast in hardware to their defaults.
 
 ### Direct Access Interface Control
 
@@ -883,7 +883,7 @@ Error Code | Enum Name            | Recoverable | DAI | LCI | Unbuf | Buf   | De
 0x3        | MacroEccUncorrError  | no          |  x  |  -  |   x   |  x    | An uncorrectable ECC error has occurred during a read operation in the OTP macro.
 0x4        | MacroWriteBlankError | yes         |  x  |  x  |   x   |  x    | This error is returned if a write operation attempted to overwrite an already programmed location.
 0x5        | AccessError          | yes         |  x  |  -  |   x   |  -    | An access error has occurred (e.g. write to write-locked region, or read to a read-locked region).
-0x6        | CheckFailError       | no          |  -  |  -  |   x   |  x    | An unrecoverable parity, integrity or consistency error has been detected.
+0x6        | CheckFailError       | no          |  -  |  -  |   x   |  x    | An unrecoverable ECC, integrity or consistency error has been detected.
 0x7        | FsmStateError        | no          |  x  |  x  |   x   |  x    | The FSM has been glitched into an invalid state, or escalation has been triggered and the FSM has been moved into a terminal error state.
 
 All non-zero error codes listed above trigger an `otp_error` interrupt.

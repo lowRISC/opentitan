@@ -41,7 +41,7 @@
 
   alert_list: [
     { name: "otp_macro_failure",
-      desc: "This alert triggers if hardware detects a parity bit or digest error in the buffered partitions.",
+      desc: "This alert triggers if hardware detects an ECC or digest error in the buffered partitions.",
     }
     { name: "otp_check_failure",
       desc: "This alert triggers if the digest over the buffered registers does not match with the digest stored in OTP.",
@@ -407,7 +407,7 @@
               { value: "6",
                 name: "CHECK_FAIL_ERROR",
                 desc: '''
-                A parity, integrity or consistency mismatch has been detected in the buffer registers.
+                An ECC, integrity or consistency mismatch has been detected in the buffer registers.
                 This error should never occur during normal operation and is not recoverable.
                 This error triggers an otp_check_failure alert.
                 '''

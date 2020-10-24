@@ -141,7 +141,7 @@ module otp_ctrl_part_buf
   logic [StateWidth-1:0] state_q;
   logic [CntWidth-1:0] cnt_d, cnt_q;
   logic cnt_en, cnt_clr;
-  logic parity_err;
+  logic ecc_err;
   logic buffer_reg_en;
   logic [ScrmblBlockWidth-1:0] data_mux;
 
@@ -213,7 +213,7 @@ module otp_ctrl_part_buf
       InitWaitSt: begin
         if (otp_rvalid_i) begin
           buffer_reg_en = 1'b1;
-          // The only error we tolerate is an ECC soft error. However,
+          // The pnly error we tolerate is an ECC soft error. However,
           // we still signal that error via the error state output.
           if (!(otp_err_i inside {NoError, MacroEccCorrError})) begin
             state_d = ErrorSt;
@@ -508,8 +508,8 @@ module otp_ctrl_part_buf
 
 
     // Unconditionally jump into the terminal error state in case of
-    // a parity error or escalation, and lock access to the partition down.
-    if (parity_err) begin
+    // an ECC error or escalation, and lock access to the partition down.
+    if (ecc_err) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
         error_d = CheckFailError;
@@ -552,19 +552,18 @@ module otp_ctrl_part_buf
   // Buffer Regs //
   /////////////////
 
-  // TODO: need to add secure erase feature here.
   logic [Info.size*8-1:0] data;
-  otp_ctrl_parity_reg #(
+  otp_ctrl_ecc_reg #(
     .Width ( ScrmblBlockWidth ),
     .Depth ( NumScrmblBlocks  )
-  ) u_otp_ctrl_parity_reg (
+  ) u_otp_ctrl_ecc_reg (
     .clk_i,
     .rst_ni,
-    .wren_i       ( buffer_reg_en ),
-    .addr_i       ( cnt_q         ),
-    .wdata_i      ( data_mux      ),
-    .data_o       ( data          ),
-    .parity_err_o ( parity_err    )
+    .wren_i    ( buffer_reg_en ),
+    .addr_i    ( cnt_q         ),
+    .wdata_i   ( data_mux      ),
+    .data_o    ( data          ),
+    .ecc_err_o ( ecc_err       )
   );
 
   // Hardware output gating.
@@ -673,15 +672,15 @@ module otp_ctrl_part_buf
       access_i.read_lock != Unlocked
       |->
       access_o.read_lock == Locked)
-  // Parity error
-  `ASSERT(ParityErrorState_A,
-      parity_err
+  // ECC error in buffer regs
+  `ASSERT(EccErrorState_A,
+      ecc_err
       |=>
       state_q == ErrorSt)
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitWaitSt, CnstyReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_i inside {NoError, MacroEccCorrError}) && !parity_err
+      !(otp_err_i inside {NoError, MacroEccCorrError}) && !ecc_err
       |=>
       state_q == ErrorSt && error_o == $past(otp_err_i))
 

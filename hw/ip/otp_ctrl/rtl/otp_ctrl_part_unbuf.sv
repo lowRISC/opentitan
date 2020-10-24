@@ -107,7 +107,7 @@ module otp_ctrl_part_unbuf
   otp_err_e error_d, error_q;
 
   logic digest_reg_en;
-  logic parity_err;
+  logic ecc_err;
 
   logic [SwWindowAddrWidth-1:0] tlul_addr_d, tlul_addr_q;
   logic [StateWidth-1:0] state_q;
@@ -259,8 +259,8 @@ module otp_ctrl_part_unbuf
     endcase // state_q
 
     // Unconditionally jump into the terminal error state in case of
-    // a parity error or escalation, and lock access to the partition down.
-    if (parity_err) begin
+    // an ECC error or escalation, and lock access to the partition down.
+    if (ecc_err) begin
       state_d = ErrorSt;
       if (state_q != ErrorSt) begin
         error_d = CheckFailError;
@@ -294,17 +294,17 @@ module otp_ctrl_part_unbuf
   // Digest Reg //
   ////////////////
 
-  otp_ctrl_parity_reg #(
+  otp_ctrl_ecc_reg #(
     .Width ( ScrmblBlockWidth ),
     .Depth ( 1                )
-  ) u_otp_ctrl_parity_reg (
+  ) u_otp_ctrl_ecc_reg (
     .clk_i,
     .rst_ni,
-    .wren_i        ( digest_reg_en ),
-    .addr_i        ( '0            ),
-    .wdata_i       ( otp_rdata_i   ),
-    .data_o        ( digest_o      ),
-    .parity_err_o  ( parity_err    )
+    .wren_i     ( digest_reg_en ),
+    .addr_i     ( '0            ),
+    .wdata_i    ( otp_rdata_i   ),
+    .data_o     ( digest_o      ),
+    .ecc_err_o  ( ecc_err       )
   );
 
   ////////////////////////
@@ -407,15 +407,15 @@ module otp_ctrl_part_unbuf
       tlul_req_i && tlul_gnt_o ##1 access_o.read_lock != Unlocked
       |=>
       tlul_rerror_o > '0 && tlul_rvalid_o)
-  // Parity error
-  `ASSERT(ParityErrorState_A,
-      parity_err
+  // ECC error in buffer regs.
+  `ASSERT(EccErrorState_A,
+      ecc_err
       |=>
       state_q == ErrorSt)
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitWaitSt, ReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_i inside {NoError, MacroEccCorrError}) && !parity_err
+      !(otp_err_i inside {NoError, MacroEccCorrError}) && !ecc_err
       |=>
       state_q == ErrorSt && error_o == $past(otp_err_i))
 
