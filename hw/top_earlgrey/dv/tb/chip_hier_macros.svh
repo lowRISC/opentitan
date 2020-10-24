@@ -22,3 +22,5 @@
 `define FLASH1_MEM_HIER    `FLASH_BANK1.u_mem
 `define FLASH0_INFO_HIER   `FLASH_BANK0.u_info_mem
 `define FLASH1_INFO_HIER   `FLASH_BANK1.u_info_mem
+`define OTP_MEM_HIER       `CHIP_HIER.u_otp_ctrl.u_otp.gen_generic.u_impl_generic.i_prim_ram_1p_adv.\
+                           u_mem.gen_generic.u_impl_generic

@@ -66,7 +66,8 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
                          FlashBank0,
                          FlashBank1,
                          FlashBank0Info,
-                         FlashBank1Info};
+                         FlashBank1Info,
+                         Otp};
 
     has_devmode = 0;
     list_of_alerts = chip_env_pkg::LIST_OF_ALERTS;

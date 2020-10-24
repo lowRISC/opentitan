@@ -19,6 +19,7 @@ class chip_common_vseq extends chip_base_vseq;
 
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
+    cfg.mem_bkdr_vifs[Otp].clear_mem();
     wait (cfg.rst_n_mon_vif.pins[0] === 1);
     cfg.clk_rst_vif.wait_clks(100);
   endtask
@@ -29,10 +30,6 @@ class chip_common_vseq extends chip_base_vseq;
     super.dut_init(reset_kind);
     cfg.jtag_spi_n_vif.drive(1'b0);
   endtask
-
-  virtual function void shadow_reg_storage_err_post_write();
-    ral.aes.status.ctrl_err_storage.predict(1);
-  endfunction
 
   virtual task body();
     run_common_vseq_wrapper(num_trans);

@@ -49,6 +49,7 @@ package chip_env_pkg;
     FlashBank1,
     FlashBank0Info,
     FlashBank1Info,
+    Otp,
     SpiMem
   } chip_mem_e;
 
