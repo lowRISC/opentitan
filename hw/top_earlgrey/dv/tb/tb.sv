@@ -73,6 +73,7 @@ module tb;
   bind `FLASH1_MEM_HIER mem_bkdr_if flash1_mem_bkdr_if();
   bind `FLASH0_INFO_HIER mem_bkdr_if flash0_info_bkdr_if();
   bind `FLASH1_INFO_HIER mem_bkdr_if flash1_info_bkdr_if();
+  bind `OTP_MEM_HIER mem_bkdr_if otp_bkdr_if();
 
   top_earlgrey_asic dut (
     // Clock and Reset
@@ -239,6 +240,8 @@ module tb;
         null, "*.env", "mem_bkdr_vifs[FlashBank0Info]", `FLASH0_INFO_HIER.flash0_info_bkdr_if);
     uvm_config_db#(virtual mem_bkdr_if)::set(
         null, "*.env", "mem_bkdr_vifs[FlashBank1Info]", `FLASH1_INFO_HIER.flash1_info_bkdr_if);
+    uvm_config_db#(virtual mem_bkdr_if)::set(
+        null, "*.env", "mem_bkdr_vifs[Otp]", `OTP_MEM_HIER.otp_bkdr_if);
 
     // SW logger and test status interfaces.
     uvm_config_db#(virtual sw_test_status_if)::set(
@@ -270,6 +273,19 @@ module tb;
     end
   end
   assign cpu_d_tl_if.d2h = `CPU_HIER.tl_d_i;
+
+  // otp test_access memory is only accessible after otp_init and lc_dft_en = 1.
+  // TODO: remove them once the otp/pwr otp/lc connections are completed.
+  initial begin
+    string common_seq_type, csr_seq_type;
+    void'($value$plusargs("run_%0s", common_seq_type));
+    void'($value$plusargs("csr_%0s", csr_seq_type));
+    if (common_seq_type inside {"mem_partial_access", "tl_errors"} ||
+        csr_seq_type == "mem_walk") begin
+      force tb.dut.top_earlgrey.u_otp_ctrl.pwr_otp_i   = 1'b1;
+      force tb.dut.top_earlgrey.u_otp_ctrl.lc_dft_en_i = 4'b1010;
+    end
+  end
 
   // Control assertions in the DUT with UVM resource string "dut_assert_en".
   `DV_ASSERT_CTRL("dut_assert_en", tb.dut)
