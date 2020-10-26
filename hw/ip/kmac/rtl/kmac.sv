@@ -247,7 +247,8 @@ module kmac
     ready: 1'b 0,
     digest_share0: '0,
     digest_share1: '0,
-    done: 1'b 0
+    done: 1'b 0,
+    error: 1'b 0
   };
 
   ///////////////
