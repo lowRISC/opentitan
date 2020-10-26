@@ -95,12 +95,6 @@ def gen_cdefine_register(outstr, reg, comp, width, rnames, existing_defines):
     defname = as_define(comp + '_' + rname)
     genout(
         outstr,
-        gen_define(
-            defname, ['id'],
-            '(' + as_define(comp) + '##id##_BASE_ADDR + ' + hex(offset) + ')',
-            existing_defines))
-    genout(
-        outstr,
         gen_define(defname + '_REG_OFFSET', [], hex(offset), existing_defines))
 
     for field in reg['fields']:
@@ -143,12 +137,6 @@ def gen_cdefine_window(outstr, win, comp, regwidth, rnames, existing_defines):
 
     genout(outstr, format_comment('Memory area: ' + first_line(win['desc'])))
     defname = as_define(comp + '_' + wname)
-    genout(
-        outstr,
-        gen_define(
-            defname, ['id'],
-            '(' + as_define(comp) + '##id##_BASE_ADDR + ' + hex(offset) + ')',
-            existing_defines))
     genout(
         outstr,
         gen_define(defname + '_REG_OFFSET', [], hex(offset), existing_defines))
