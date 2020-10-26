@@ -6,13 +6,38 @@
 #
 # See sw/device/exts/common/flash_link.ld for additional info about these
 # parameters.
-rom_ext_linkfile = files(['rom_ext_slot_a.ld'])
-rom_ext_link_args = [
-  '-Wl,-L,@0@'.format(meson.source_root()),
-  '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_ext_linkfile[0]),
-  '-Wl,--build-id=none',
-]
-rom_ext_link_deps = [rom_ext_linkfile]
+
+rom_ext_linkfile_slot_a = files(['rom_ext_slot_a.ld'])
+rom_ext_linkfile_slot_b = files(['rom_ext_slot_b.ld'])
+
+rom_ext_link_info = {
+  'rom_ext_slot_a' :
+  [
+    # Link arguments for slot A.
+    [
+      '-Wl,-L,@0@'.format(meson.source_root()),
+      '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_ext_linkfile_slot_a[0]),
+      '-Wl,--build-id=none',
+    ],
+    # Link dependency file for slot A.
+    [
+      rom_ext_linkfile_slot_a,
+    ],
+  ],
+  'rom_ext_slot_b' :
+  [
+    # Link arguments for slot B.
+    [
+      '-Wl,-L,@0@'.format(meson.source_root()),
+      '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_ext_linkfile_slot_b[0]),
+      '-Wl,--build-id=none',
+    ],
+    # Link dependency file for slot B.
+    [
+      rom_ext_linkfile_slot_b,
+    ],
+  ],
+}
 
 # ROM_EXT manifest generator.
 rom_exts_manifest_offsets_header = custom_target(
@@ -45,38 +70,40 @@ rom_ext_manifest_parser = declare_dependency(
 )
 
 foreach device_name, device_lib : sw_lib_arch_core_devices
-  rom_ext_elf = executable(
-    'rom_ext_' + device_name,
-    sources: [
-      'rom_ext_manifest.S',
-      'rom_ext_start.S',
-      'rom_ext.c',
-    ],
-    name_suffix: 'elf',
-    link_args: rom_ext_link_args,
-    link_depends: rom_ext_link_deps,
-    dependencies: [
-      device_lib,
-      sw_lib_dif_uart,
-      sw_lib_runtime_hart,
-      sw_lib_runtime_print,
-    ],
-  )
+  foreach slot, slot_link_args : rom_ext_link_info
+    rom_ext_elf = executable(
+      slot + '_' + device_name,
+      sources: [
+        'rom_ext_manifest.S',
+        'rom_ext_start.S',
+        'rom_ext.c',
+      ],
+      name_suffix: 'elf',
+      link_args: slot_link_args[0],
+      link_depends: slot_link_args[1],
+      dependencies: [
+        device_lib,
+        sw_lib_dif_uart,
+        sw_lib_runtime_hart,
+        sw_lib_runtime_print,
+      ],
+    )
 
-  rom_ext_embedded = custom_target(
-    'rom_ext_' + device_name,
-    command: make_embedded_target,
-    input: rom_ext_elf,
-    output: make_embedded_target_outputs,
-    build_by_default: true,
-  )
+    rom_ext_embedded = custom_target(
+      slot + '_' + device_name,
+      command: make_embedded_target,
+      input: rom_ext_elf,
+      output: make_embedded_target_outputs,
+      build_by_default: true,
+    )
 
-  custom_target(
-    'rom_ext_export_' + device_name,
-    command: export_embedded_target,
-    input: [rom_ext_elf, rom_ext_embedded],
-    output: 'rom_ext_export_' + device_name,
-    build_always_stale: true,
-    build_by_default: true,
-  )
+    custom_target(
+      slot + '_export_' + device_name,
+      command: export_embedded_target,
+      input: [rom_ext_elf, rom_ext_embedded],
+      output: slot + '_export_' + device_name,
+      build_always_stale: true,
+      build_by_default: true,
+    )
+  endforeach
 endforeach
