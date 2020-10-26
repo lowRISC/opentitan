@@ -187,8 +187,9 @@ int main(int argc, char **argv) {
       CHECK(dif_gpio_write_all(&gpio, rcv_char << 8) == kDifGpioOk);
 
       if (rcv_char == '/') {
-        uint32_t usb_irq_state = REG32(USBDEV_INTR_STATE());
-        uint32_t usb_stat = REG32(USBDEV_USBSTAT());
+        uint32_t usb_irq_state =
+            REG32(USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET);
+        uint32_t usb_stat = REG32(USBDEV_BASE_ADDR + USBDEV_USBSTAT_REG_OFFSET);
         LOG_INFO("I%4x-%8x", usb_irq_state, usb_stat);
       } else {
         usb_simpleserial_send_byte(&simple_serial0, rcv_char);
