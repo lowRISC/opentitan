@@ -92,11 +92,12 @@ module tlul_socket_1n #(
   // We need to keep track of how many requests are outstanding,
   // and to which device. New requests are compared to this and
   // stall until that number is zero.
-
-  logic [7:0]     num_req_outstanding;
-  logic [NWD-1:0] dev_select_outstanding;
-  logic           hold_all_requests;
-  logic           accept_t_req, accept_t_rsp;
+  localparam int MaxOutstanding = 2**top_pkg::TL_AIW; // Up to 256 ounstanding
+  localparam int OutstandingW = $clog2(MaxOutstanding+1);
+  logic [OutstandingW-1:0] num_req_outstanding;
+  logic [NWD-1:0]          dev_select_outstanding;
+  logic                    hold_all_requests;
+  logic                    accept_t_req, accept_t_rsp;
 
   assign  accept_t_req = tl_t_o.a_valid & tl_t_i.a_ready;
   assign  accept_t_rsp = tl_t_i.d_valid & tl_t_o.d_ready;
@@ -107,7 +108,7 @@ module tlul_socket_1n #(
       dev_select_outstanding <= '0;
     end else if (accept_t_req) begin
       if (!accept_t_rsp) begin
-        `ASSERT_I(NotOverflowed_A, num_req_outstanding != '1)
+        `ASSERT_I(NotOverflowed_A, num_req_outstanding < MaxOutstanding)
         num_req_outstanding <= num_req_outstanding + 8'h1;
       end
       dev_select_outstanding <= dev_select_t;
