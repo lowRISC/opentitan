@@ -990,9 +990,10 @@ module top_earlgrey #(
       .intr_op_done_o (intr_keymgr_op_done),
       .intr_err_o     (intr_keymgr_err),
 
-      // [9]: err
-      .alert_tx_o  ( alert_tx[9:9] ),
-      .alert_rx_i  ( alert_rx[9:9] ),
+      // [9]: fault_err
+      // [10]: operation_err
+      .alert_tx_o  ( alert_tx[10:9] ),
+      .alert_rx_i  ( alert_rx[10:9] ),
 
       // Inter-module signals
       .aes_key_o(),
@@ -1015,10 +1016,10 @@ module top_earlgrey #(
       .intr_otp_operation_done_o (intr_otp_ctrl_otp_operation_done),
       .intr_otp_error_o          (intr_otp_ctrl_otp_error),
 
-      // [10]: otp_macro_failure
-      // [11]: otp_check_failure
-      .alert_tx_o  ( alert_tx[11:10] ),
-      .alert_rx_i  ( alert_rx[11:10] ),
+      // [11]: otp_macro_failure
+      // [12]: otp_check_failure
+      .alert_tx_o  ( alert_tx[12:11] ),
+      .alert_rx_i  ( alert_rx[12:11] ),
 
       // Inter-module signals
       .otp_ast_pwr_seq_o(otp_ctrl_otp_ast_pwr_seq_o),
@@ -1057,11 +1058,11 @@ module top_earlgrey #(
       .intr_done_o (intr_otbn_done),
       .intr_err_o  (intr_otbn_err),
 
-      // [12]: imem_uncorrectable
-      // [13]: dmem_uncorrectable
-      // [14]: reg_uncorrectable
-      .alert_tx_o  ( alert_tx[14:12] ),
-      .alert_rx_i  ( alert_rx[14:12] ),
+      // [13]: imem_uncorrectable
+      // [14]: dmem_uncorrectable
+      // [15]: reg_uncorrectable
+      .alert_tx_o  ( alert_tx[15:13] ),
+      .alert_rx_i  ( alert_rx[15:13] ),
 
       // Inter-module signals
       .idle_o(clkmgr_idle[2]),

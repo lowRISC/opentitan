@@ -2519,7 +2519,7 @@
       alert_list:
       [
         {
-          name: err
+          name: fault_err
           width: 1
           bits: "0"
           bitinfo:
@@ -2527,6 +2527,19 @@
             1
             1
             0
+          ]
+          type: alert
+          async: 0
+        }
+        {
+          name: operation_err
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
           ]
           type: alert
           async: 0
@@ -5180,7 +5193,7 @@
       module_name: sensor_ctrl
     }
     {
-      name: keymgr_err
+      name: keymgr_fault_err
       width: 1
       bits: "0"
       bitinfo:
@@ -5188,6 +5201,20 @@
         1
         1
         0
+      ]
+      type: alert
+      async: 0
+      module_name: keymgr
+    }
+    {
+      name: keymgr_operation_err
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
       ]
       type: alert
       async: 0
