@@ -6,22 +6,43 @@ cargo = find_program('cargo', required: false, disabler: true)
 
 target = 'riscv32imc-unknown-none-elf'
 build_type = 'release'
+build_dir = meson.current_build_dir()
 
-tock_board_dir = meson.source_root() / 'sw/device/tock/boards/opentitan'
+tock_board_dir = meson.current_source_dir() / 'boards/opentitan'
 toolchain_file = tock_board_dir / 'rust-toolchain'
 manifest_path = tock_board_dir / 'Cargo.toml'
 
 # Used to choose local or upstream Tock OS dependencies.
-tock_deps_path = meson.source_root() / 'sw/device/tock/tock'
+tock_deps_path = meson.current_source_dir() / 'tock'
 tock_deps_manifest = tock_deps_path / 'Cargo.toml'
 
+# CARGO FLAGS:
+# These flags will only apply to the final binary, and won't get propogated
+# to the dependency crate builds.
+cargo_flags_array = [
+  'manifest-path=' + manifest_path,
+  'target-dir=' + build_dir,
+  'target=' + target,
+   build_type,
+]
+
+cargo_flags = ''
+foreach flag : cargo_flags_array
+  cargo_flags += '--' + flag + ' '
+endforeach
+
+# RUSTFLAGS:
+# These flags will apply to all the dependencies, as well as the final
+# binary. Linker and linker flavor amongst other things can be passed through
+# these flags.
 rust_flags = '-C link-arg=-Tlayout.ld ' + \
 '-C linker=rust-lld ' + \
 '-C linker-flavor=ld.lld ' + \
 '-C relocation-model=dynamic-no-pic ' + \
 '-C link-arg=-zmax-page-size=512'
 
-build_tock_cmd = meson.source_root() / 'util/build_tock.sh'
+# The cargo invocation script.
+cargo_invoke_cmd = meson.source_root() / 'util/invoke_cargo.sh'
 
 if tock_local
   run_command('ln', '-s', '-f', tock_deps_path / 'Cargo_local.toml', tock_deps_manifest)
@@ -32,19 +53,16 @@ endif
 tock_raw = custom_target(
   'tock_raw',
   command: [
-    build_tock_cmd,
+    cargo_invoke_cmd,
     cargo,
-    target,
-    build_type,
-    manifest_path,
-    '@OUTDIR@',
+    cargo_flags,
+    rust_flags,
     toolchain_file,
     meson.source_root(),
     meson.build_root(),
-    rust_flags,
   ],
   depend_files: [
-    build_tock_cmd,
+    cargo_invoke_cmd,
     manifest_path,
     toolchain_file,
   ],
