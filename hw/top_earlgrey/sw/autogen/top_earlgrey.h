@@ -597,10 +597,11 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdSensorCtrlAstAlerts4 = 9, /**< sensor_ctrl_ast_alerts 4 */
   kTopEarlgreyAlertIdSensorCtrlAstAlerts5 = 10, /**< sensor_ctrl_ast_alerts 5 */
   kTopEarlgreyAlertIdSensorCtrlAstAlerts6 = 11, /**< sensor_ctrl_ast_alerts 6 */
-  kTopEarlgreyAlertIdKeymgrErr = 12, /**< keymgr_err */
-  kTopEarlgreyAlertIdOtpCtrlOtpMacroFailure = 13, /**< otp_ctrl_otp_macro_failure */
-  kTopEarlgreyAlertIdOtpCtrlOtpCheckFailure = 14, /**< otp_ctrl_otp_check_failure */
-  kTopEarlgreyAlertIdLast = 14, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdKeymgrFaultErr = 12, /**< keymgr_fault_err */
+  kTopEarlgreyAlertIdKeymgrOperationErr = 13, /**< keymgr_operation_err */
+  kTopEarlgreyAlertIdOtpCtrlOtpMacroFailure = 14, /**< otp_ctrl_otp_macro_failure */
+  kTopEarlgreyAlertIdOtpCtrlOtpCheckFailure = 15, /**< otp_ctrl_otp_check_failure */
+  kTopEarlgreyAlertIdLast = 15, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -610,7 +611,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[15];
+    top_earlgrey_alert_for_peripheral[16];
 
 #define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
 
