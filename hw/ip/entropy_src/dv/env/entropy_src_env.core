@@ -5,14 +5,12 @@ CAPI=2:
 name: "lowrisc:dv:entropy_src_env:0.1"
 description: "ENTROPY_SRC DV UVM environment"
 filesets:
-  files_rtl:
-    depend:
-        - lowrisc:ip:entropy_src:0.1
   files_dv:
     depend:
+      - lowrisc:ip:entropy_src_pkg
       - lowrisc:dv:ralgen
-      - lowrisc:dv:rng_agent
       - lowrisc:dv:cip_lib
+      - lowrisc:dv:push_pull_agent
     files:
       - entropy_src_env_pkg.sv
       - entropy_src_env_cfg.sv: {is_include_file: true}
@@ -26,7 +24,7 @@ filesets:
       - seq_lib/entropy_src_sanity_vseq.sv: {is_include_file: true}
       - seq_lib/entropy_src_rng_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
-    
+
 generate:
   ral:
     generator: ralgen
@@ -37,7 +35,6 @@ generate:
 targets:
   default:
     filesets:
-      - files_rtl
       - files_dv
     generate:
       - ral
