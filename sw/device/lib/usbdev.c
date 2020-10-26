@@ -44,7 +44,8 @@ int usbdev_buf_free_byid(usbdev_ctx_t *ctx, usbbufid_t buf) {
 }
 
 uint32_t *usbdev_buf_idtoaddr(usbdev_ctx_t *ctx, usbbufid_t buf) {
-  return (uint32_t *)(USBDEV_BUFFER() + (buf * BUF_LENGTH));
+  return (uint32_t *)(USBDEV_BASE_ADDR + USBDEV_BUFFER_REG_OFFSET +
+                      (buf * BUF_LENGTH));
 }
 
 void usbdev_buf_copyto_byid(usbdev_ctx_t *ctx, usbbufid_t buf, const void *from,
@@ -66,19 +67,21 @@ void usbdev_buf_copyto_byid(usbdev_ctx_t *ctx, usbbufid_t buf, const void *from,
 
 // Supply as many buffers to the receive available fifo as possible
 inline static void fill_av_fifo(usbdev_ctx_t *ctx) {
-  while (!(REG32(USBDEV_USBSTAT()) & (1 << USBDEV_USBSTAT_AV_FULL))) {
+  while (!(REG32(USBDEV_BASE_ADDR + USBDEV_USBSTAT_REG_OFFSET) &
+           (1 << USBDEV_USBSTAT_AV_FULL))) {
     usbbufid_t buf = usbdev_buf_allocate_byid(ctx);
     if (buf < 0) {
       // no more free buffers, can't fill AV FIFO
       break;
     }
-    REG32(USBDEV_AVBUFFER()) = buf;
+    REG32(USBDEV_BASE_ADDR + USBDEV_AVBUFFER_REG_OFFSET) = buf;
   }
 }
 
 void usbdev_sendbuf_byid(usbdev_ctx_t *ctx, usbbufid_t buf, size_t size,
                          int endpoint) {
-  uint32_t configin = USBDEV_CONFIGIN_0() + (4 * endpoint);
+  uint32_t configin =
+      USBDEV_BASE_ADDR + USBDEV_CONFIGIN_0_REG_OFFSET + (4 * endpoint);
 
   if ((endpoint >= NUM_ENDPOINTS) || (buf >= NUM_BUFS)) {
     return;
@@ -94,7 +97,7 @@ void usbdev_sendbuf_byid(usbdev_ctx_t *ctx, usbbufid_t buf, size_t size,
 }
 
 void usbdev_poll(usbdev_ctx_t *ctx) {
-  uint32_t istate = REG32(USBDEV_INTR_STATE());
+  uint32_t istate = REG32(USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET);
 
   // Do this first to keep things going
   fill_av_fifo(ctx);
@@ -102,8 +105,8 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
   // Process IN completions first so we get the fact that send completed
   // before processing a response
   if (istate & (1 << USBDEV_INTR_STATE_PKT_SENT)) {
-    uint32_t sentep = REG32(USBDEV_IN_SENT());
-    uint32_t configin = USBDEV_CONFIGIN_0();
+    uint32_t sentep = REG32(USBDEV_BASE_ADDR + USBDEV_IN_SENT_REG_OFFSET);
+    uint32_t configin = USBDEV_BASE_ADDR + USBDEV_CONFIGIN_0_REG_OFFSET;
     TRC_C('a' + sentep);
     for (int ep = 0; ep < NUM_ENDPOINTS; ep++) {
       if (sentep & (1 << ep)) {
@@ -116,14 +119,16 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
       }
     }
     // Write one to clear all the ones we handled
-    REG32(USBDEV_IN_SENT()) = sentep;
+    REG32(USBDEV_BASE_ADDR + USBDEV_IN_SENT_REG_OFFSET) = sentep;
     // Clear the interupt
-    REG32(USBDEV_INTR_STATE()) = (1 << USBDEV_INTR_STATE_PKT_SENT);
+    REG32(USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET) =
+        (1 << USBDEV_INTR_STATE_PKT_SENT);
   }
 
   if (istate & (1 << USBDEV_INTR_STATE_PKT_RECEIVED)) {
-    while (!(REG32(USBDEV_USBSTAT()) & (1 << USBDEV_USBSTAT_RX_EMPTY))) {
-      uint32_t rxinfo = REG32(USBDEV_RXFIFO());
+    while (!(REG32(USBDEV_BASE_ADDR + USBDEV_USBSTAT_REG_OFFSET) &
+             (1 << USBDEV_USBSTAT_RX_EMPTY))) {
+      uint32_t rxinfo = REG32(USBDEV_BASE_ADDR + USBDEV_RXFIFO_REG_OFFSET);
       usbbufid_t buf = EXTRACT(rxinfo, RXFIFO_BUFFER);
       int size = EXTRACT(rxinfo, RXFIFO_SIZE);
       int endpoint = EXTRACT(rxinfo, RXFIFO_EP);
@@ -138,7 +143,8 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
       usbdev_buf_free_byid(ctx, buf);
     }
     // Clear the interupt
-    REG32(USBDEV_INTR_STATE()) = (1 << USBDEV_INTR_STATE_PKT_RECEIVED);
+    REG32(USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET) =
+        (1 << USBDEV_INTR_STATE_PKT_RECEIVED);
   }
   if (istate &
       ~((1 << USBDEV_INTR_STATE_PKT_RECEIVED) |
@@ -146,9 +152,9 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
     TRC_C('I');
     TRC_I(istate, 12);
     TRC_C(' ');
-    REG32(USBDEV_INTR_STATE()) = istate &
-                                 ~((1 << USBDEV_INTR_STATE_PKT_RECEIVED) |
-                                   (1 << USBDEV_INTR_STATE_PKT_SENT));
+    REG32(USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET) =
+        istate & ~((1 << USBDEV_INTR_STATE_PKT_RECEIVED) |
+                   (1 << USBDEV_INTR_STATE_PKT_SENT));
     if (istate & (1 << USBDEV_INTR_ENABLE_LINK_RESET)) {
       // Link reset
       for (int ep = 0; ep < NUM_ENDPOINTS; ep++) {
@@ -158,14 +164,16 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
       }
 
       // Clear the interupt
-      REG32(USBDEV_INTR_STATE()) = (1 << USBDEV_INTR_ENABLE_LINK_RESET);
+      REG32(USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET) =
+          (1 << USBDEV_INTR_ENABLE_LINK_RESET);
     }
   }
   // TODO - clean this up
   // Frame ticks every 1ms, use to flush data every 16ms
   // (faster in DPI but this seems to work ok)
   // At reset frame count is 0, compare to 1 so no calls before SOF received
-  uint32_t usbframe = EXTRACT(REG32(USBDEV_USBSTAT()), USBSTAT_FRAME);
+  uint32_t usbframe = EXTRACT(
+      REG32(USBDEV_BASE_ADDR + USBDEV_USBSTAT_REG_OFFSET), USBSTAT_FRAME);
   if ((usbframe & 0xf) == 1) {
     if (ctx->flushed == 0) {
       for (int i = 0; i < NUM_ENDPOINTS; i++) {
@@ -182,35 +190,38 @@ void usbdev_poll(usbdev_ctx_t *ctx) {
 }
 
 unsigned int usbdev_get_status(usbdev_ctx_t *ctx) {
-  unsigned int status = REG32(USBDEV_USBSTAT());
+  unsigned int status = REG32(USBDEV_BASE_ADDR + USBDEV_USBSTAT_REG_OFFSET);
   return status;
 }
 
 unsigned int usbdev_get_link_state(usbdev_ctx_t *ctx) {
-  unsigned int link_state =
-      EXTRACT(REG32(USBDEV_USBSTAT()), USBSTAT_LINK_STATE);
+  unsigned int link_state = EXTRACT(
+      REG32(USBDEV_BASE_ADDR + USBDEV_USBSTAT_REG_OFFSET), USBSTAT_LINK_STATE);
   return link_state;
 }
 
 unsigned int usbdev_get_address(usbdev_ctx_t *ctx) {
-  unsigned int addr = EXTRACT(REG32(USBDEV_USBCTRL()), USBCTRL_DEVICE_ADDRESS);
+  unsigned int addr =
+      EXTRACT(REG32(USBDEV_BASE_ADDR + USBDEV_USBCTRL_REG_OFFSET),
+              USBCTRL_DEVICE_ADDRESS);
   return addr;
 }
 
 void usbdev_set_deviceid(usbdev_ctx_t *ctx, int deviceid) {
-  REG32(USBDEV_USBCTRL()) = (1 << USBDEV_USBCTRL_ENABLE) |
-                            (deviceid << USBDEV_USBCTRL_DEVICE_ADDRESS_OFFSET);
+  REG32(USBDEV_BASE_ADDR + USBDEV_USBCTRL_REG_OFFSET) =
+      (1 << USBDEV_USBCTRL_ENABLE) |
+      (deviceid << USBDEV_USBCTRL_DEVICE_ADDRESS_OFFSET);
 }
 
 void usbdev_halt(usbdev_ctx_t *ctx, int endpoint, int enable) {
   uint32_t epbit = 1 << endpoint;
-  uint32_t stall = REG32(USBDEV_STALL());
+  uint32_t stall = REG32(USBDEV_BASE_ADDR + USBDEV_STALL_REG_OFFSET);
   if (enable) {
     stall |= epbit;
   } else {
     stall &= ~epbit;
   }
-  REG32(USBDEV_STALL()) = stall;
+  REG32(USBDEV_BASE_ADDR + USBDEV_STALL_REG_OFFSET) = stall;
   ctx->halted = stall;
   // TODO future addition would be to callback the endpoint driver
   // for now it just sees its traffic has stopped
@@ -218,21 +229,26 @@ void usbdev_halt(usbdev_ctx_t *ctx, int endpoint, int enable) {
 
 void usbdev_set_iso(usbdev_ctx_t *ctx, int endpoint, int enable) {
   if (enable) {
-    REG32(USBDEV_ISO()) = SETBIT(REG32(USBDEV_ISO()), endpoint);
+    REG32(USBDEV_BASE_ADDR + USBDEV_ISO_REG_OFFSET) =
+        SETBIT(REG32(USBDEV_BASE_ADDR + USBDEV_ISO_REG_OFFSET), endpoint);
   } else {
-    REG32(USBDEV_ISO()) = CLRBIT(REG32(USBDEV_ISO()), endpoint);
+    REG32(USBDEV_BASE_ADDR + USBDEV_ISO_REG_OFFSET) =
+        CLRBIT(REG32(USBDEV_BASE_ADDR + USBDEV_ISO_REG_OFFSET), endpoint);
   }
 }
 
 void usbdev_clear_data_toggle(usbdev_ctx_t *ctx, int endpoint) {
-  REG32(USBDEV_DATA_TOGGLE_CLEAR()) = (1 << endpoint);
+  REG32(USBDEV_BASE_ADDR + USBDEV_DATA_TOGGLE_CLEAR_REG_OFFSET) =
+      (1 << endpoint);
 }
 
 void usbdev_set_ep0_stall(usbdev_ctx_t *ctx, int stall) {
   if (stall) {
-    REG32(USBDEV_STALL()) = REG32(USBDEV_STALL()) | 1;
+    REG32(USBDEV_BASE_ADDR + USBDEV_STALL_REG_OFFSET) =
+        REG32(USBDEV_BASE_ADDR + USBDEV_STALL_REG_OFFSET) | 1;
   } else {
-    REG32(USBDEV_STALL()) = REG32(USBDEV_STALL()) & ~(1);
+    REG32(USBDEV_BASE_ADDR + USBDEV_STALL_REG_OFFSET) =
+        REG32(USBDEV_BASE_ADDR + USBDEV_STALL_REG_OFFSET) & ~(1);
   }
 }
 
@@ -249,9 +265,9 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
   ctx->flush[ep] = flush;
   ctx->reset[ep] = reset;
   if (enableout) {
-    uint32_t rxen = REG32(USBDEV_RXENABLE_OUT());
+    uint32_t rxen = REG32(USBDEV_BASE_ADDR + USBDEV_RXENABLE_OUT_REG_OFFSET);
     rxen |= (1 << (ep + USBDEV_RXENABLE_OUT_OUT_0));
-    REG32(USBDEV_RXENABLE_OUT()) = rxen;
+    REG32(USBDEV_BASE_ADDR + USBDEV_RXENABLE_OUT_REG_OFFSET) = rxen;
   }
 }
 
@@ -265,19 +281,22 @@ void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx, bool diff_tx) {
   buf_init(ctx);
 
   // All about polling...
-  REG32(USBDEV_INTR_ENABLE()) = 0;
+  REG32(USBDEV_BASE_ADDR + USBDEV_INTR_ENABLE_REG_OFFSET) = 0;
 
   // Provide buffers for any reception
   fill_av_fifo(ctx);
 
-  REG32(USBDEV_RXENABLE_SETUP()) = (1 << USBDEV_RXENABLE_SETUP_SETUP_0);
-  REG32(USBDEV_RXENABLE_OUT()) = (1 << USBDEV_RXENABLE_OUT_OUT_0);
+  REG32(USBDEV_BASE_ADDR + USBDEV_RXENABLE_SETUP_REG_OFFSET) =
+      (1 << USBDEV_RXENABLE_SETUP_SETUP_0);
+  REG32(USBDEV_BASE_ADDR + USBDEV_RXENABLE_OUT_REG_OFFSET) =
+      (1 << USBDEV_RXENABLE_OUT_OUT_0);
 
   uint32_t phy_config = (pinflip << USBDEV_PHY_CONFIG_PINFLIP) |
                         (diff_rx << USBDEV_PHY_CONFIG_RX_DIFFERENTIAL_MODE) |
                         (diff_tx << USBDEV_PHY_CONFIG_TX_DIFFERENTIAL_MODE) |
                         (1 << USBDEV_PHY_CONFIG_EOP_SINGLE_BIT);
-  REG32(USBDEV_PHY_CONFIG()) = phy_config;
+  REG32(USBDEV_BASE_ADDR + USBDEV_PHY_CONFIG_REG_OFFSET) = phy_config;
 
-  REG32(USBDEV_USBCTRL()) = (1 << USBDEV_USBCTRL_ENABLE);
+  REG32(USBDEV_BASE_ADDR + USBDEV_USBCTRL_REG_OFFSET) =
+      (1 << USBDEV_USBCTRL_ENABLE);
 }
