@@ -993,6 +993,7 @@
             ''',
       swaccess: "rw1c",
       hwaccess: "hro",
+      regwen:   "DIRECT_ACCESS_REGWEN",
       fields: [
         { bits:   "0",
           desc: '''
@@ -1009,6 +1010,7 @@
             ''',
       swaccess: "rw1c",
       hwaccess: "hro",
+      regwen:   "DIRECT_ACCESS_REGWEN",
       fields: [
         { bits:   "0",
           desc: '''
