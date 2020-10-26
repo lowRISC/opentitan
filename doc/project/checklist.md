@@ -191,9 +191,10 @@ Prefix "SIM" is applicable for simulation-based DV approach only, while "FPV" is
 - DV Plan document drafted, indicating the overall DV strategy, intent and the testbench environment details with diagrams, details on TB, UVCs, checkers, scoreboard, interfaces, assertions, coverage objects (if applicable).
 - Details may be missing since most items are not expected to be fully developed at this stage.
 
-### TESTPLAN_COMPLETED
+### VERIFICATION_PLAN_COMPLETED
 
-A fully completed Testplan written in Hjson, indicating the list of planned tests with descriptions indicating the goal of the test and optionally details on stimulus and the checking procedure.
+- A fully completed Testplan written in Hjson, indicating the list of planned tests with descriptions indicating the goal of the test and optionally details on stimulus and the checking procedure.
+- A fully completed functional coverage plan written in Hjson, indicating the list of functional coverage points and coverage crosses with a description of what feature is covered by this coverpoint.
 
 ### TB_TOP_CREATED
 

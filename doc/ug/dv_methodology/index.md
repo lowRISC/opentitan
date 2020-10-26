@@ -43,23 +43,24 @@ We will explain some of the key items in those checklists in the remainder of th
 ## Documentation
 
 DV effort needs to be well documented to not only provide a detailed description of what tests are being planned, but also how the overall effort is strategized and implemented.
-The first is provided by the **testplan** document and the second, by the **DV plan** document.
+The first is provided by the **verification plan** document and the second, by the **DV plan** document.
 The [**project status**]({{< relref "doc/project/development_stages.md#indicating-stages-and-making-transitions" >}}) document tracks to progression of the effort through the stages.
 
 In addition to these documents, a nightly **regression dashboard** tabulating the test and coverage results will provide ability to track progress towards completion of the verification stages.
 
 To effectively document all these pieces, there are some key tooling components which are also discussed briefly below.
 
-### Testplan
+### Verification plan
 
-A testplan document captures at a high level, a list of tests that are being planned to verify all design features listed in the design specification.
-It is written in Hjson format and is made available in the corresponding `data` directory of each DUT.
+A verification plan consist of two parts a testplan that captures at a high level, a list of tests that are being planned to verify all design features listed in the design specification.
+A functional coverage plan that captures at high level a list of functional coverage points and coverage crosses needed to verify that the features listed in the design specification is tested by the list of tests.
+the verification plan is written in Hjson format and is made available in the corresponding `data` directory of each DUT.
 
 The Hjson schema enables this information to be human-writable and machine-parsable, which facilitates an automated and documentation-driven DV effort.
-The complete testplan is parsed into a data structure that serves the following purposes:
+The complete verification plan is parsed into a data structure that serves the following purposes:
 
-*  Provide the ability to insert the testplan as a table into the DV plan document itself, so that all of the required information is in one place
-*  Annotate the nightly regression results to allow us to track our progress towards executing the testplan
+*  Provide the ability to insert the testplan and coverage plan as a tables into the DV plan document itself, such that all of the required information is in one place
+*  Annotate the nightly regression results to allow us to track our progress towards executing the testplan and coverage collection
   *  this feature is not yet available and is [under active development](#pending-work-items)
 
 The [testplanner]({{< relref "util/dvsim/testplanner/README.md" >}}) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
@@ -75,7 +76,7 @@ A [template]({{< relref "hw/dv/doc/dv_plan_template" >}}) for the DV plan docume
 ### Regression Dashboard
 
 The DV Plan document provides a link to the latest [nightly](#nightly) regression and coverage results dashboard uploaded to the web server.
-This dashboard contains information in a tabulated format mapping the written tests to planned tests (in the testplan) to provide ability to track progress towards executing the testplan.
+This dashboard contains information in a tabulated format mapping the written tests to planned tests (in the testplan) to provide ability to track progress towards executing the testplan.It likewise contain information mapping the written coverage points in the coverage plan to provide the ability to track progess on hitting the coverage goals.
 **This feature is currently not yet available and is under active development.**
 
 ## Automation
@@ -89,7 +90,7 @@ These are described below.
 As is the case with design, we strive for conformity in our verification efforts as well.
 The motivation for this is not just aesthetics, but also to reap the advantages of [code reuse](#code-reuse), which we rely heavily on.
 To help achieve this, we provide a verification starter tool-kit called [uvmdvgen]({{< relref "util/uvmdvgen/README.md" >}}).
-It can be used to completely auto-generate the complete initial DV enviroment for a new DUT, including the [documentation](#documentation) pieces (testplan as well as DV plan), the complete UVM environment including the testbench, to the collaterals for building and running tests along with some common tests.
+It can be used to completely auto-generate the complete initial DV enviroment for a new DUT, including the [documentation](#documentation) pieces (verification plan as well as DV plan), the complete UVM environment including the testbench, to the collaterals for building and running tests along with some common tests.
 This significantly helps reduce the development time.
 It can also be used to auto-generate the initial skeleton source code for building a new reusable verification component for an interface (a complete UVM agent).
 
@@ -195,7 +196,7 @@ These set of tests (not exhaustive) provide the confidence that the design is re
 At this stage, just a skeleton testbench environment is available and most components lack functionality.
 A basic sanity test drives the clock, brings the DUT out of reset, checks if all outputs are legal values (not unknown) and exercise a major datapath with simple set of checks.
 This paves the way for more complex testing.
-During the testplan and the DV plan review, the key stake holders at the higher level who consume the DUT as an IP (for example, design and DV engineers wotking at the chip level into which the IP is integrated) may drive the requirements for the level of testing to be done.
+During the verification plan and the DV plan review, the key stake holders at the higher level who consume the DUT as an IP (for example, design and DV engineers wotking at the chip level into which the IP is integrated) may drive the requirements for the level of testing to be done.
 This test (or set of tests) is also included as a part of the sanity regression to maintain the code health.
 
 #### CSR Suite of Tests
@@ -285,7 +286,7 @@ The main goals (for all DUTs) are:
 *  Spawn jobs via LSF to leverage compute resources at one's disposal
 *  Run resource intensive simulations without impacting daytime development
 *  Collect and merge coverage
-*  Publish testplan-annotated regression and coverage results in the regression dashboard
+*  Publish verification plan-annotated regression and coverage results in the regression dashboard
 
 To re-iterate, these capabilities do not exist yet, but they will be made available soon.
 One of the key requirements of nightly regressions is to complete overnight, so that the results are available for analysis and triage the next morning.
@@ -528,7 +529,7 @@ DV updates are scrutinized in sufficient detail to enforce coding style, identif
 
 ### Sign-off Reviews
 
-In the initial work stage of verification, the DV plan and the completed testplan documents are reviewed face-to-face with the following individuals:
+In the initial work stage of verification, the DV plan and the completed verification plan documents are reviewed face-to-face with the following individuals:
 
 *  Designer(s)
 *  DV peers
@@ -538,7 +539,7 @@ In the initial work stage of verification, the DV plan and the completed testpla
 *  Product architect
 
 The goal of this review is to achieve utmost clarity in the planning of the DV effort and resolve any queries or assumptions.
-The feedback in this review flows both ways - the language in the design specification could be made more precise, or missing items in both, the design specification as well as in the testplan could be identified and added.
+The feedback in this review flows both ways - the language in the design specification could be made more precise, or missing items in both, the design specification as well as in the verification plan could be identified and added.
 This enables the development stage to progress smoothly.
 
 Subsequently, the intermediate transitions within the verification stages are reviewed within the GitHub pull-request made for updating the checklist and the [project status]({{< relref "doc/project/development_stages.md#indicating-stages-and-making-transitions" >}}).

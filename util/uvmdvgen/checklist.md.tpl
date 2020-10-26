@@ -116,7 +116,7 @@ Review        | Signoff date            | Not Started |
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Not Started | [${name.upper()} DV Plan]({{<relref "hw/ip/${name}/doc/dv_plan" >}})
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started | [${name.upper()} Testplan]({{<relref "hw/ip/${name}/doc/dv_plan/index.md#testplan" >}})
+Documentation | [VERIFICATION_PLAN_COMPLETED][]       | Not Started | [${name.upper()} Testplan]({{<relref "hw/ip/${name}/doc/dv_plan/index.md#testplan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Not Started |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
