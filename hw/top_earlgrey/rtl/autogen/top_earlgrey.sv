@@ -225,6 +225,8 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_pwr_clk_req;
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_pwr_clk_rsp;
+  pwrmgr_pkg::pwr_otp_req_t       pwrmgr_pwr_otp_req;
+  pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_pwr_otp_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   alert_pkg::alert_crashdump_t       alert_handler_crashdump;
   logic [2:0] clkmgr_idle;
@@ -822,8 +824,8 @@ module top_earlgrey #(
       .pwr_rst_i(pwrmgr_pwr_rst_rsp),
       .pwr_clk_o(pwrmgr_pwr_clk_req),
       .pwr_clk_i(pwrmgr_pwr_clk_rsp),
-      .pwr_otp_o(),
-      .pwr_otp_i(pwrmgr_pkg::PWR_OTP_RSP_DEFAULT),
+      .pwr_otp_o(pwrmgr_pwr_otp_req),
+      .pwr_otp_i(pwrmgr_pwr_otp_rsp),
       .pwr_lc_o(),
       .pwr_lc_i(pwrmgr_pkg::PWR_LC_RSP_DEFAULT),
       .pwr_flash_o(pwrmgr_pwr_flash_req),
@@ -1023,8 +1025,8 @@ module top_earlgrey #(
       .otp_ast_pwr_seq_h_i(otp_ctrl_otp_ast_pwr_seq_h_i),
       .otp_edn_o(),
       .otp_edn_i('0),
-      .pwr_otp_i('0),
-      .pwr_otp_o(),
+      .pwr_otp_i(pwrmgr_pwr_otp_req),
+      .pwr_otp_o(pwrmgr_pwr_otp_rsp),
       .lc_otp_program_i('0),
       .lc_otp_program_o(),
       .lc_otp_token_i('0),
@@ -1044,7 +1046,7 @@ module top_earlgrey #(
       .tl_i(otp_ctrl_tl_req),
       .tl_o(otp_ctrl_tl_rsp),
       .clk_i (clkmgr_clocks.clk_io_div4_timers),
-      .rst_ni (rstmgr_resets.rst_sys_io_div4_n)
+      .rst_ni (rstmgr_resets.rst_lc_io_n)
   );
 
   otbn #(

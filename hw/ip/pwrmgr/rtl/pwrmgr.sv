@@ -81,6 +81,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic low_power_abort;
 
   pwr_flash_rsp_t flash_rsp;
+  pwr_otp_rsp_t otp_rsp;
 
   ////////////////////////////
   ///  clk_slow_i domain declarations
@@ -195,7 +196,12 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
     // flash handshake
     .flash_i(pwr_flash_i),
-    .flash_o(flash_rsp)
+    .flash_o(flash_rsp),
+
+    // OTP signals
+    .otp_i(pwr_otp_i),
+    .otp_o(otp_rsp)
+
   );
 
   assign hw2reg.cfg_cdc_sync.d = 1'b0;
@@ -306,8 +312,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
     // otp
     .otp_init_o        (pwr_otp_o.otp_init),
-    .otp_done_i        (pwr_otp_i.otp_done),
-    .otp_idle_i        (pwr_otp_i.otp_idle),
+    .otp_done_i        (otp_rsp.otp_done),
+    .otp_idle_i        (otp_rsp.otp_idle),
 
     // lc
     .lc_init_o         (pwr_lc_o.lc_init),

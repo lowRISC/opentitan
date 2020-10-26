@@ -51,6 +51,7 @@ class chip_base_vseq extends cip_base_vseq #(
     cfg.mem_bkdr_vifs[FlashBank0Info].set_mem();
     cfg.mem_bkdr_vifs[FlashBank1Info].set_mem();
     // Bring the chip out of reset.
+    cfg.mem_bkdr_vifs[Otp].clear_mem();
     super.dut_init(reset_kind);
   endtask
 
