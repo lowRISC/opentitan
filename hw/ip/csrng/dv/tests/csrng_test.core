@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:csrng_test:0.1"
+description: "CSRNG DV UVM test"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:csrng_env
+    files:
+      - csrng_test_pkg.sv
+      - csrng_base_test.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
