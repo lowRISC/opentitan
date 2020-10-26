@@ -1126,8 +1126,8 @@ module otp_ctrl_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (creator_sw_cfg_read_lock_we),
+    // from register interface (qualified with register enable)
+    .we     (creator_sw_cfg_read_lock_we & direct_access_regwen_qs),
     .wd     (creator_sw_cfg_read_lock_wd),
 
     // from internal hardware
@@ -1153,8 +1153,8 @@ module otp_ctrl_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (owner_sw_cfg_read_lock_we),
+    // from register interface (qualified with register enable)
+    .we     (owner_sw_cfg_read_lock_we & direct_access_regwen_qs),
     .wd     (owner_sw_cfg_read_lock_wd),
 
     // from internal hardware
