@@ -55,6 +55,10 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   input pwr_flash_rsp_t flash_i,
   output pwr_flash_rsp_t flash_o,
 
+  // otp interface
+  input  pwr_otp_rsp_t otp_i,
+  output pwr_otp_rsp_t otp_o,
+
   // AST inputs, unknown domain
   input pwr_ast_rsp_t ast_i
 
@@ -244,6 +248,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   prim_flop_2sync #(
     .Width(1),
+    // TODO: Is a value of 1 correct here?
     .ResetValue(1'b1)
   ) u_sync_flash_idle (
     .clk_i,
@@ -252,6 +257,15 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(flash_o.flash_idle)
   );
 
+  prim_flop_2sync #(
+    .Width($bits(pwr_otp_rsp_t)),
+    .ResetValue('0)
+  ) u_sync_otp (
+    .clk_i,
+    .rst_ni,
+    .d_i(otp_i),
+    .q_o(otp_o)
+  );
 
 endmodule
 

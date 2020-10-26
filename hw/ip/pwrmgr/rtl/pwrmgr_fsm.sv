@@ -330,18 +330,37 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   assign pwr_rst_o.reset_cause = reset_cause_q;
   assign pwr_rst_o.rstreqs = reset_reqs_i;
 
-  assign otp_init_o = otp_init;
-  assign lc_init_o = lc_init;
   assign ips_clk_en_o = ip_clk_en_q;
 
   prim_flop #(
     .Width(1),
+    // TODO: Is a value of 1 correct here?
     .ResetValue(1'b1)
-  ) u_reg_idle (
+  ) u_reg_flash_init (
     .clk_i,
     .rst_ni,
     .d_i(flash_init_d),
     .q_o(flash_init_o)
+  );
+
+  prim_flop #(
+    .Width(1),
+    .ResetValue(1'b0)
+  ) u_reg_otp_init (
+    .clk_i,
+    .rst_ni,
+    .d_i(otp_init),
+    .q_o(otp_init_o)
+  );
+
+  prim_flop #(
+    .Width(1),
+    .ResetValue(1'b0)
+  ) u_reg_lc_init (
+    .clk_i,
+    .rst_ni,
+    .d_i(lc_init),
+    .q_o(lc_init_o)
   );
 
 

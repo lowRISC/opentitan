@@ -1556,6 +1556,9 @@
           act: req
           package: pwrmgr_pkg
           inst_name: pwrmgr
+          width: 1
+          default: ""
+          top_signame: pwrmgr_pwr_otp
           index: -1
         }
         {
@@ -2597,7 +2600,7 @@
       clock_group: timers
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni: lc_io
       }
       base_addr: 0x401b0000
       clock_reset_export: []
@@ -2704,6 +2707,8 @@
           default: "'0"
           package: pwrmgr_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_signame: pwrmgr_pwr_otp
           index: -1
         }
         {
@@ -3123,6 +3128,10 @@
       pwrmgr.pwr_clk:
       [
         clkmgr.pwr
+      ]
+      pwrmgr.pwr_otp:
+      [
+        otp_ctrl.pwr_otp
       ]
       flash_ctrl.keymgr:
       [
@@ -5767,6 +5776,9 @@
         act: req
         package: pwrmgr_pkg
         inst_name: pwrmgr
+        width: 1
+        default: ""
+        top_signame: pwrmgr_pwr_otp
         index: -1
       }
       {
@@ -6271,6 +6283,8 @@
         default: "'0"
         package: pwrmgr_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_signame: pwrmgr_pwr_otp
         index: -1
       }
       {
@@ -7081,6 +7095,22 @@
         package: pwrmgr_pkg
         struct: pwr_clk_rsp
         signame: pwrmgr_pwr_clk_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_otp_req
+        signame: pwrmgr_pwr_otp_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_otp_rsp
+        signame: pwrmgr_pwr_otp_rsp
         width: 1
         type: req_rsp
         default: ""
