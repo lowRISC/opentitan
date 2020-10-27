@@ -18,7 +18,7 @@ package flash_phy_pkg;
   parameter int BankAddrW     = flash_ctrl_pkg::BankAddrW;
   parameter int DataWidth     = flash_ctrl_pkg::DataWidth;
   parameter int EccWidth      = 8;
-  parameter int MetaDataWidth = top_pkg::FLASH_METADATA_WIDTH;
+  parameter int MetaDataWidth = flash_ctrl_pkg::MetaDataWidth;
   parameter int WidthMultiple = flash_ctrl_pkg::WidthMultiple;
   parameter int NumBuf        = 4; // number of flash read buffers
   parameter int RspOrderDepth = 2; // this should be DataWidth / BusWidth

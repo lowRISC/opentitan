@@ -6,6 +6,7 @@ package chip_env_pkg;
   // dep packages
   import uvm_pkg::*;
   import top_pkg::*;
+  import flash_ctrl_pkg::*;
   import dv_utils_pkg::*;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
@@ -69,9 +70,9 @@ package chip_env_pkg;
       RamRet: return top_earlgrey_pkg::TOP_EARLGREY_RAM_RET_BASE_ADDR;
       FlashBank0, FlashBank0Info: return top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR;
       FlashBank1, FlashBank1Info: return top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR +
-                                         top_pkg::FLASH_PAGES_PER_BANK *
-                                         top_pkg::FLASH_WORDS_PER_PAGE *
-                                         top_pkg::FLASH_DATA_WIDTH / 8;
+                                         flash_ctrl_pkg::PagesPerBank *
+                                         flash_ctrl_pkg::WordsPerPage *
+                                         flash_ctrl_pkg::DataWidth / 8;
       SpiMem: return top_earlgrey_pkg::TOP_EARLGREY_SPI_DEVICE_BASE_ADDR + 32'h800; // TODO
       default:`uvm_fatal("chip_env_pkg", {"Invalid input: ", mem.name()})
     endcase

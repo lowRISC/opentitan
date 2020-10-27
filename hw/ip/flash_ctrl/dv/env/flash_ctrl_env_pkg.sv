@@ -21,18 +21,18 @@ package flash_ctrl_env_pkg;
 
   // parameters
 
-  parameter uint FlashNumPages            = top_pkg::FLASH_BANKS * top_pkg::FLASH_PAGES_PER_BANK;
-  parameter uint FlashSizeBytes           = FlashNumPages * top_pkg::FLASH_WORDS_PER_PAGE *
-                                            top_pkg::FLASH_DATA_WIDTH / 8;
+  parameter uint FlashNumPages            = flash_ctrl_pkg::NumBanks * flash_ctrl_pkg::PagesPerBank;
+  parameter uint FlashSizeBytes           = FlashNumPages * flash_ctrl_pkg::WordsPerPage *
+                                            flash_ctrl_pkg::DataWidth / 8;
 
   parameter uint FlashNumBusWords         = FlashSizeBytes / top_pkg::TL_DBW;
-  parameter uint FlashNumBusWordsPerBank  = FlashNumBusWords / top_pkg::FLASH_BANKS;
-  parameter uint FlashNumBusWordsPerPage  = FlashNumBusWordsPerBank / top_pkg::FLASH_PAGES_PER_BANK;
+  parameter uint FlashNumBusWordsPerBank  = FlashNumBusWords / flash_ctrl_pkg::NumBanks;
+  parameter uint FlashNumBusWordsPerPage  = FlashNumBusWordsPerBank / flash_ctrl_pkg::PagesPerBank;
 
-  parameter uint FlashDataByteWidth       = $clog2(top_pkg::FLASH_DATA_WIDTH / 8);
-  parameter uint FlashWordLineWidth       = $clog2(top_pkg::FLASH_WORDS_PER_PAGE);
-  parameter uint FlashPageWidth           = $clog2(top_pkg::FLASH_PAGES_PER_BANK);
-  parameter uint FlashBankWidth           = $clog2(top_pkg::FLASH_BANKS);
+  parameter uint FlashDataByteWidth       = $clog2(flash_ctrl_pkg::DataWidth / 8);
+  parameter uint FlashWordLineWidth       = $clog2(flash_ctrl_pkg::WordsPerPage);
+  parameter uint FlashPageWidth           = $clog2(flash_ctrl_pkg::PagesPerBank);
+  parameter uint FlashBankWidth           = $clog2(flash_ctrl_pkg::NumBanks);
 
   parameter uint FlashMemAddrWordMsbBit   = FlashDataByteWidth - 1;
   parameter uint FlashMemAddrLineMsbBit   = FlashDataByteWidth + FlashWordLineWidth - 1;
