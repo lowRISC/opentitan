@@ -95,17 +95,39 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                          input bit               check_rsp = 1'b1,
                          input bit               exp_err_rsp = 1'b0,
                          input bit [BUS_DW-1:0]  exp_data = 0,
-                         input bit               check_exp_data = 1'b0,
                          input bit [BUS_DW-1:0]  compare_mask = '1,
+                         input bit               check_exp_data = 1'b0,
                          input bit               blocking = csr_utils_pkg::default_csr_blocking,
-                         input int               req_abort_pct = 0,
                          tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h);
+    uvm_status_e status;
+    tl_access_w_abort(addr, write, data, status, mask, check_rsp, exp_err_rsp, exp_data,
+                      compare_mask, check_exp_data, blocking, tl_sequencer_h);
+  endtask
+
+  // this tl_access can input req_abort_pct (pertentage to enable req abort) and output status for
+  // seq to update predicted value
+  virtual task tl_access_w_abort(
+      input bit [BUS_AW-1:0]  addr,
+      input bit               write,
+      inout bit [BUS_DW-1:0]  data,
+      output uvm_status_e     status,
+      input bit [BUS_DBW-1:0] mask = '1,
+      input bit               check_rsp = 1'b1,
+      input bit               exp_err_rsp = 1'b0,
+      input bit [BUS_DW-1:0]  exp_data = 0,
+      input bit [BUS_DW-1:0]  compare_mask = '1,
+      input bit               check_exp_data = 1'b0,
+      input bit               blocking = csr_utils_pkg::default_csr_blocking,
+      tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
+      input int               req_abort_pct = 0);
+
+    uvm_status_e status;
     if (blocking) begin
-      tl_access_sub(addr, write, data, mask, check_rsp, exp_err_rsp, exp_data,
+      tl_access_sub(addr, write, data, status, mask, check_rsp, exp_err_rsp, exp_data,
                     compare_mask, check_exp_data, req_abort_pct, tl_sequencer_h);
     end else begin
       fork
-        tl_access_sub(addr, write, data, mask, check_rsp, exp_err_rsp, exp_data,
+        tl_access_sub(addr, write, data, status, mask, check_rsp, exp_err_rsp, exp_data,
                       compare_mask, check_exp_data, req_abort_pct, tl_sequencer_h);
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
@@ -116,6 +138,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual task tl_access_sub(input bit [BUS_AW-1:0]  addr,
                              input bit               write,
                              inout bit [BUS_DW-1:0]  data,
+                             output uvm_status_e     status,
                              input bit [BUS_DBW-1:0] mask = '1,
                              input bit               check_rsp = 1'b1,
                              input bit               exp_err_rsp = 1'b0,
@@ -151,6 +174,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         if (check_rsp && !cfg.under_reset) begin
           `DV_CHECK_EQ(tl_seq.rsp.d_error, exp_err_rsp, "unexpected error response")
         end
+
+        // when error occurs or item isn't completed, use status to let seq not update predicted
+        // value
+        if (tl_seq.rsp.d_error || !tl_seq.rsp.rsp_completed) status = UVM_NOT_OK;
+        else                                                 status = UVM_IS_OK;
+
         csr_utils_pkg::decrement_outstanding_access();,
         // thread to check timeout
         $sformatf("Timeout waiting tl_access : addr=0x%0h", addr))
@@ -721,6 +750,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           bit [BUS_AW-1:0]  addr;
           bit [BUS_DW-1:0]  data;
           bit [BUS_DBW-1:0] mask;
+          uvm_status_e      status;
           randcase
             1: begin // write
               dv_base_mem mem;
@@ -735,10 +765,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 if (mem.get_mem_partial_write_support()) mask = get_rand_contiguous_mask();
                 else                                     mask = '1;
                 data = $urandom;
-                tl_access(.addr(addr), .write(1), .data(data), .mask(mask), .blocking(1),
-                          .req_abort_pct($urandom_range(0, 100)));
+                tl_access_w_abort(.addr(addr), .write(1), .data(data), .status(status), .mask(mask),
+                                  .blocking(1), .req_abort_pct($urandom_range(0, 100)));
 
-                if (!cfg.under_reset) begin
+                if (!cfg.under_reset && status == UVM_IS_OK) begin
                   addr[1:0] = 0;
                   mem_exist_addr_q.push_back(addr_mask_t'{addr, mask});
                 end
@@ -747,12 +777,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             // Randomly pick a previously written address for partial read.
             mem_exist_addr_q.size() > 0: begin // read
               // get all the programmed addresses and randomly pick one
-              addr_mask_t addr_mask = mem_exist_addr_q[$urandom_range(0, mem_exist_addr_q.size - 1)];
+              addr_mask_t addr_mask = mem_exist_addr_q[$urandom_range(0,
+                                                                      mem_exist_addr_q.size - 1)];
               addr = addr_mask.addr;
               if (get_mem_access_by_addr(ral, addr) != "WO") begin
                 mask = get_rand_contiguous_mask(addr_mask.mask);
-                tl_access(.addr(addr), .write(0), .data(data), .mask(mask), .blocking(1),
-                          .req_abort_pct($urandom_range(0, 100)));
+                tl_access_w_abort(.addr(addr), .write(0), .data(data), .status(status), .mask(mask),
+                                  .blocking(1), .req_abort_pct($urandom_range(0, 100)));
               end
             end
           endcase
