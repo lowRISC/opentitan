@@ -109,12 +109,20 @@ class Process:
             return True
 
         # check if the string indicating a successful startup appears in the
-        # the program output (STDOUT or STDERR)
-        init_done = self.find_in_output(pattern=self.startup_done_expect,
-                                        timeout=self.startup_timeout)
-
-        if init_done is None:
-            raise subprocess.TimeoutExpired
+        # the program output (STDOUT or STDERR).
+        try:
+            init_done = self.find_in_output(pattern=self.startup_done_expect,
+                                            timeout=self.startup_timeout)
+            if init_done is None:
+                raise RuntimeError('No match for pattern {!r} in startup.'
+                                   .format(str(self.startup_done_expect)))
+        except subprocess.TimeoutExpired as err:
+            # On time-out, find_in_output will raise a TimeoutExpired exception
+            # but (of course) it doesn't know the command it's running, so we
+            # amend it as it goes past.
+            assert err.cmd is None
+            err.cmd = cmd
+            raise
 
         self.logger.info("Startup sequence matched, startup done.")
 
@@ -392,9 +400,15 @@ def find_in_files(file_objects,
             True if no further output is expected in |file_objects| (this will
             end the wait loop before |timeout| expires), and False otherwise
             (more output could be produced).
+
     Returns:
-        None if |pattern| was not found, the return value of match_line()
-        otherwise.
+        If |pattern| was found, returns the return value of match_line().
+        Otherwise, returns None if |wait_func| returned True (signalling the
+        end of the input with no match).
+
+        Raises a subprocess.TimeoutExpired exception on timeout. This will have
+        a |cmd| field of None.
+
     """
 
     t_end = None
@@ -425,7 +439,7 @@ def find_in_files(file_objects,
         # Check if we exceed the timeout. Do so only every 100 lines to reduce
         # the performance impact.
         if timeout is not None and i % 100 == 99 and time.time() >= t_end:
-            break
+            raise subprocess.TimeoutExpired(None, timeout)
 
         end_loop = wait_func()
         if end_loop:
