@@ -189,6 +189,7 @@
       clock_group: "infra",
       reset_connections: {rst_ni: "lc"},
       base_addr: "0x40030000",
+      generated: "true" // Indicate this module is generated in the topgen
     },
     { name: "rv_timer",
       type: "rv_timer",
@@ -387,8 +388,9 @@
       reset_connections: {rst_ni: "lc"},
       type: "eflash",
       base_addr: "0x20000000",
+      banks: 2,
+      pages_per_bank: 256,
       swaccess: "ro",
-      size: "0x80000",
       inter_signal_list: [
         { struct: "flash",    // flash_req_t, flash_rsp_t
           type: "req_rsp",

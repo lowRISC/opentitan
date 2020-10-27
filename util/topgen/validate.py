@@ -119,6 +119,22 @@ clock_groups_optional = {
 }
 clock_groups_added = {}
 
+eflash_required = {
+    'banks': ['d', 'number of flash banks'],
+    'pages_per_bank': ['d', 'number of data pages per flash bank'],
+    'clock_srcs': ['g', 'clock connections'],
+    'clock_group': ['s', 'associated clock attribute group'],
+    'reset_connections': ['g', 'reset connections'],
+    'type': ['s', 'type of memory'],
+    'base_addr': ['s', 'strarting hex address of memory'],
+    'swaccess': ['s', 'software accessibility'],
+    'inter_signal_list': ['lg', 'intersignal list']
+}
+
+eflash_optional = {}
+
+eflash_added = {}
+
 
 class TargetType(Enum):
     MODULE = "module"
@@ -141,6 +157,48 @@ class Target:
             self.key = "type"
         else:
             self.key = "name"
+
+
+class Flash:
+    """Flash class contains information regarding parameter defaults.
+       For now, only expose banks / pages_per_bank for user configuration.
+       For now, also enforce power of 2 requiremnt.
+    """
+    max_banks = 4
+    max_pages_per_bank = 1024
+
+    def __init__(self, banks, pages_per_bank):
+        self.banks = banks
+        self.pages_per_bank = pages_per_bank
+        self.words_per_page = 128
+        self.data_width = 64
+        self.metadata_width = 12
+        self.info_types = 2
+        self.infos_per_bank = [4, 4]
+
+    def is_pow2(self, n):
+        return (n != 0) and (n & (n - 1) == 0)
+
+    def check_values(self):
+        pow2_check = self.is_pow2(self.banks) and self.is_pow2(self.pages_per_bank)
+        limit_check = (self.banks <= Flash.max_banks) \
+            and (self.pages_per_bank <= Flash.max_pages_per_bank)
+
+        return pow2_check and limit_check
+
+    def calc_size(self):
+        word_bytes = self.data_width / 8
+        bytes_per_page = word_bytes * self.words_per_page
+        bytes_per_bank = bytes_per_page * self.pages_per_bank
+        return bytes_per_bank * self.banks
+
+    def populate(self, mem):
+        mem['words_per_page'] = self.words_per_page
+        mem['data_width'] = self.data_width
+        mem['metadata_width'] = self.metadata_width
+        mem['info_types'] = self.info_types
+        mem['infos_per_bank'] = self.infos_per_bank
+        mem['size'] = hex(int(self.calc_size()))
 
 
 # Check to see if each module/xbar defined in top.hjson exists as ip/xbar.hjson
@@ -383,6 +441,25 @@ def validate_clock(top, inst, clock_srcs, prefix=""):
     return error
 
 
+def check_flash(top):
+    error = 0
+
+    for mem in top['memory']:
+        if mem['type'] == "eflash":
+            error = check_keys(mem, eflash_required, eflash_optional,
+                               eflash_added, "Eflash")
+
+    flash = Flash(mem['banks'], mem['pages_per_bank'])
+    error += 1 if not flash.check_values() else 0
+
+    if error:
+        log.error("Flash check failed")
+    else:
+        flash.populate(mem)
+
+    return error
+
+
 def validate_top(top, ipobjs, xbarobjs):
     # return as it is for now
     error = check_keys(top, top_required, top_optional, top_added, "top")
@@ -402,6 +479,7 @@ def validate_top(top, ipobjs, xbarobjs):
     error += err
 
     # MEMORY check
+    error += check_flash(top)
 
     # Clock / Reset check
     error += check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs)
