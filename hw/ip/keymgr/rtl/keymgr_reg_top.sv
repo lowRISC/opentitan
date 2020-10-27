@@ -87,8 +87,10 @@ module keymgr_reg_top (
   logic intr_test_op_done_we;
   logic intr_test_err_wd;
   logic intr_test_err_we;
-  logic alert_test_wd;
-  logic alert_test_we;
+  logic alert_test_fault_err_wd;
+  logic alert_test_fault_err_we;
+  logic alert_test_operation_err_wd;
+  logic alert_test_operation_err_we;
   logic cfgen_qs;
   logic cfgen_re;
   logic control_init_qs;
@@ -371,16 +373,32 @@ module keymgr_reg_top (
 
   // R[alert_test]: V(True)
 
+  //   F[fault_err]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test (
+  ) u_alert_test_fault_err (
     .re     (1'b0),
-    .we     (alert_test_we),
-    .wd     (alert_test_wd),
+    .we     (alert_test_fault_err_we),
+    .wd     (alert_test_fault_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
-    .q      (reg2hw.alert_test.q ),
+    .qe     (reg2hw.alert_test.fault_err.qe),
+    .q      (reg2hw.alert_test.fault_err.q ),
+    .qs     ()
+  );
+
+
+  //   F[operation_err]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_operation_err (
+    .re     (1'b0),
+    .we     (alert_test_operation_err_we),
+    .wd     (alert_test_operation_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.operation_err.qe),
+    .q      (reg2hw.alert_test.operation_err.q ),
     .qs     ()
   );
 
@@ -1772,8 +1790,11 @@ module keymgr_reg_top (
   assign intr_test_err_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_err_wd = reg_wdata[1];
 
-  assign alert_test_we = addr_hit[3] & reg_we & ~wr_err;
-  assign alert_test_wd = reg_wdata[0];
+  assign alert_test_fault_err_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_fault_err_wd = reg_wdata[0];
+
+  assign alert_test_operation_err_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_operation_err_wd = reg_wdata[1];
 
   assign cfgen_re = addr_hit[4] && reg_re;
 
@@ -1934,6 +1955,7 @@ module keymgr_reg_top (
 
       addr_hit[3]: begin
         reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
       end
 
       addr_hit[4]: begin

@@ -46,8 +46,14 @@ package keymgr_reg_pkg;
   } keymgr_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
-    logic        q;
-    logic        qe;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fault_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } operation_err;
   } keymgr_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -179,10 +185,10 @@ package keymgr_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    keymgr_reg2hw_intr_state_reg_t intr_state; // [532:531]
-    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [530:529]
-    keymgr_reg2hw_intr_test_reg_t intr_test; // [528:525]
-    keymgr_reg2hw_alert_test_reg_t alert_test; // [524:523]
+    keymgr_reg2hw_intr_state_reg_t intr_state; // [534:533]
+    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [532:531]
+    keymgr_reg2hw_intr_test_reg_t intr_test; // [530:527]
+    keymgr_reg2hw_alert_test_reg_t alert_test; // [526:523]
     keymgr_reg2hw_control_reg_t control; // [522:516]
     keymgr_reg2hw_rom_ext_desc_mreg_t [3:0] rom_ext_desc; // [515:388]
     keymgr_reg2hw_software_binding_mreg_t [3:0] software_binding; // [387:260]
