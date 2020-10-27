@@ -61,7 +61,8 @@ targets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
-      - target_formal    ? (files_formal)
+#     files_formal yet undefined
+#     - target_formal    ? (files_formal)
       - files_rtl
     toplevel: pattgen
 
