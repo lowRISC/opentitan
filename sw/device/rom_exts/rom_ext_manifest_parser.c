@@ -52,8 +52,17 @@ bool rom_ext_get_signature(rom_ext_manifest_t params,
   return true;
 }
 
-uint32_t rom_ext_get_image_len(rom_ext_manifest_t params) {
-  return mmio_region_read32(params.base_addr, ROM_EXT_IMAGE_LENGTH_OFFSET);
+rom_ext_ranges_t rom_ext_get_ranges(rom_ext_manifest_t params) {
+  uintptr_t image_length =
+      mmio_region_read32(params.base_addr, ROM_EXT_IMAGE_LENGTH_OFFSET);
+
+  rom_ext_ranges_t ranges = {
+      .image_start = params.slot,
+      .signed_area_start = params.slot + ROM_EXT_SIGNED_AREA_START_OFFSET,
+      .image_end = params.slot + image_length,
+  };
+
+  return ranges;
 }
 
 uint32_t rom_ext_get_version(rom_ext_manifest_t params) {
