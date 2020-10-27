@@ -2,6 +2,7 @@
 *.bak
 tags
 __pycache__
+/.vscode
 opentitan-docs
 
 # fusesoc result
