@@ -571,6 +571,9 @@
       hwqe:     "true",
       hwext:    "true",
       regwen:   "CHECK_TRIGGER_REGWEN",
+      tags:     [ // Triggering any of these checks may lead to unintended alerts
+                  // if the CHECK_TIMEOUT is not configured properly.
+                  "excl:CsrAllTests:CsrExclWrite"],
       fields: [
         { bits: "0",
           name: "INTEGRITY",
@@ -636,6 +639,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "CHECK_REGWEN",
+      tags:     [ // Triggering any of these checks may lead to unintended alerts
+                  // if the CHECK_TIMEOUT is not configured properly.
+                  "excl:CsrAllTests:CsrExclWrite"],
       fields: [
         { bits: "31:0",
           desc: '''
@@ -658,6 +664,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "CHECK_REGWEN",
+      tags:     [ // Triggering any of these checks may lead to unintended alerts
+                  // if the CHECK_TIMEOUT is not configured properly.
+                  "excl:CsrAllTests:CsrExclWrite"],
       fields: [
         { bits: "31:0",
           desc: '''
@@ -684,6 +693,10 @@
             ''',
       swaccess: "rw1c",
       hwaccess: "hro",
+      regwen:   "DIRECT_ACCESS_REGWEN",
+      tags:     [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
+                  // so not able to predict this register value automatically
+                  "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits:   "0",
           desc: '''
