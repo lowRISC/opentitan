@@ -11,6 +11,19 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/rom_exts/manifest.h"
 
+/**
+ * @file
+ * @brief Parser for the ROM_EXT Image Format
+ *
+ * This parser is intended to parse in-memory ROM_EXT images, from either Slot A
+ * or Slot B. The fields it is parsing are defined in
+ * `sw/device/rom_exts/manifest.md` and `sw/device_rom_exts/manifes.hjson`.
+ *
+ * This parser does minimal validity checking of the returned values, which must
+ * always be checked by the caller to ensure do not contain incorrect or
+ * insecure values.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -39,6 +52,35 @@ typedef struct rom_ext_manifest {
   mmio_region_t base_addr;
   rom_ext_manifest_slot_t slot;
 } rom_ext_manifest_t;
+
+/**
+ * ROM Extension Memory Extents.
+ *
+ * This information is needed for calculating the signature of the entire
+ * ROM_EXT.
+ */
+typedef struct rom_ext_ranges {
+  /**
+   * Image Start Address
+   */
+  uintptr_t image_start;
+  /**
+   * Signed Area Start Address
+   *
+   * Not all of a ROM_EXT is signed. This is the address of the first signed
+   * byte of the ROM_EXT, in memory.
+   */
+  uintptr_t signed_area_start;
+  /**
+   * Image End Address
+   *
+   * This is also the Signed Area End Address.
+   *
+   * This is parsed from user-provided data, and must be checked to ensure it
+   * the value is within the expected range, and has not overflowed.
+   */
+  uintptr_t image_end;
+} rom_ext_ranges_t;
 
 /**
  * ROM Extension image signature.
@@ -132,14 +174,19 @@ uint32_t rom_ext_get_identifier(rom_ext_manifest_t params);
 bool rom_ext_get_signature(rom_ext_manifest_t params, rom_ext_signature_t *dst);
 
 /**
- * Retrieves the ROM_EXT image length.
+ * Retrieves the ROM_EXT image address ranges.
  *
- * The memory address where ROM_EXT image length field resides, is relative.
+ * This uses the ROM_EXT image length field, and the offset of the signed area.
  *
- * @param params Parameters required for manifest parsing.
- * @return ROM_EXT image length.
+ * The results provided are absolute addresses, not relative.
+ *
+ * This assumes that the slot identified by `params` is a valid ROM_EXT, and
+ * does not check the ROM_EXT image identifier.
+ *
+ * @param params Parameters required to identify the ROM_EXT.
+ * @return The address ranges of the specific ROM_EXT.
  */
-uint32_t rom_ext_get_image_len(rom_ext_manifest_t params);
+rom_ext_ranges_t rom_ext_get_ranges(rom_ext_manifest_t params);
 
 /**
  * Retrieves the ROM_EXT image version.

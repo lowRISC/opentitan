@@ -66,11 +66,31 @@ TEST_F(SignatureGetTest, Success) {
   EXPECT_THAT(src_.data, ElementsAreArray(dst.data));
 }
 
-class ImageLengthGetTest : public ParserTest {};
+class RangesGetTest : public ParserTest {
+ protected:
+  testing::Matcher<rom_ext_ranges_t> EqualsRanges(const rom_ext_ranges_t &rhs) {
+    return testing::AllOf(
+        testing::Field("image_start", &rom_ext_ranges_t::image_start,
+                       rhs.image_start),
+        testing::Field("signed_area_start",
+                       &rom_ext_ranges_t::signed_area_start,
+                       rhs.signed_area_start),
+        testing::Field("image_end", &rom_ext_ranges_t::image_end,
+                       rhs.image_end));
+  }
+};
 
-TEST_F(ImageLengthGetTest, Success) {
+TEST_F(RangesGetTest, Success) {
   EXPECT_READ32(ROM_EXT_IMAGE_LENGTH_OFFSET, 0xa5a5a5a5);
-  EXPECT_EQ(rom_ext_get_image_len(params_), 0xa5a5a5a5);
+
+  rom_ext_ranges_t expected = {
+      .image_start = kRomExtManifestSlotA,
+      .signed_area_start =
+          kRomExtManifestSlotA + ROM_EXT_SIGNED_AREA_START_OFFSET,
+      .image_end = kRomExtManifestSlotA + 0xa5a5a5a5,
+  };
+
+  EXPECT_THAT(rom_ext_get_ranges(params_), EqualsRanges(expected));
 }
 
 class ImageVersionGetTest : public ParserTest {};
