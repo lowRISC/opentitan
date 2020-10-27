@@ -359,27 +359,33 @@ module otp_ctrl
     .intr_o                 ( intr_otp_error_o               )
   );
 
-  prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn[0])
-  ) u_prim_alert_sender0 (
-    .clk_i,
-    .rst_ni,
-    .alert_req_i ( otp_macro_failure_q ),
-    .alert_ack_o (                 ),
-    .alert_rx_i  ( alert_rx_i[0]   ),
-    .alert_tx_o  ( alert_tx_o[0]   )
-  );
+  logic [NumAlerts-1:0] alerts;
+  logic [NumAlerts-1:0] alert_test;
 
-  prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn[1])
-  ) u_prim_alert_sender1 (
-    .clk_i,
-    .rst_ni,
-    .alert_req_i ( otp_check_failure_q ),
-    .alert_ack_o (                  ),
-    .alert_rx_i  ( alert_rx_i[1]    ),
-    .alert_tx_o  ( alert_tx_o[1]    )
-  );
+  assign alerts = {
+    otp_macro_failure_q,
+    otp_check_failure_q
+  };
+
+  assign alert_test = {
+    reg2hw.alert_test.otp_macro_failure.q &
+    reg2hw.alert_test.otp_macro_failure.qe,
+    reg2hw.alert_test.otp_check_failure.q &
+    reg2hw.alert_test.otp_check_failure.qe
+  };
+
+  for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[k])
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_req_i ( alerts[k] | alert_test[k] ),
+      .alert_ack_o (                 ),
+      .alert_rx_i  ( alert_rx_i[k]   ),
+      .alert_tx_o  ( alert_tx_o[k]   )
+    );
+  end
 
   ////////////////////////////////
   // LFSR Timer and CSR mapping //

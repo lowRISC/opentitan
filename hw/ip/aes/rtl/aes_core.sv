@@ -458,6 +458,10 @@ module aes_core
   assign manual_operation_q = ctrl_q.manual_operation;
   assign force_zero_masks_q = ctrl_q.force_zero_masks;
 
+  // Unused alert signals
+  logic unused_alert_signals;
+  assign unused_alert_signals = ^reg2hw.alert_test;
+
   /////////////
   // Control //
   /////////////

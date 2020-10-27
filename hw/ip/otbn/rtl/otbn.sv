@@ -396,6 +396,16 @@ module otbn
 
   // Alerts ====================================================================
 
+  logic [NumAlerts-1:0] alert_test;
+  assign alert_test = {
+    reg2hw.alert_test.imem_uncorrectable.q &
+    reg2hw.alert_test.imem_uncorrectable.qe,
+    reg2hw.alert_test.dmem_uncorrectable.q &
+    reg2hw.alert_test.dmem_uncorrectable.qe,
+    reg2hw.alert_test.reg_uncorrectable.q &
+    reg2hw.alert_test.reg_uncorrectable.qe
+  };
+
   logic [NumAlerts-1:0] alerts;
   assign alerts[AlertImemUncorrectable] = imem_rerror[1];
   assign alerts[AlertDmemUncorrectable] = dmem_rerror[1];
@@ -406,7 +416,7 @@ module otbn
     ) i_prim_alert_sender (
       .clk_i,
       .rst_ni,
-      .alert_req_i (alerts[i]    ),
+      .alert_req_i (alerts[i] | alert_test[i]),
       .alert_ack_o (             ),
       .alert_rx_i  (alert_rx_i[i]),
       .alert_tx_o  (alert_tx_o[i])
