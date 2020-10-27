@@ -405,23 +405,28 @@ module keymgr import keymgr_pkg::*; #(
     end
   end
 
+  logic fault_alert_test;
+  assign fault_alert_test = reg2hw.alert_test.fault_err.q & reg2hw.alert_test.fault_err.qe;
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn)
   ) u_fault_alert (
     .clk_i,
     .rst_ni,
-    .alert_req_i(fault_err_req_q),
+    .alert_req_i(fault_err_req_q | fault_alert_test),
     .alert_ack_o(fault_err_ack),
     .alert_rx_i(alert_rx_i[0]),
     .alert_tx_o(alert_tx_o[0])
   );
 
+  logic op_err_alert_test;
+  assign op_err_alert_test = reg2hw.alert_test.operation_err.q &
+                             reg2hw.alert_test.operation_err.qe;
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn)
   ) u_op_err_alert (
     .clk_i,
     .rst_ni,
-    .alert_req_i(op_err_req_q | (reg2hw.alert_test.q & reg2hw.alert_test.qe)),
+    .alert_req_i(op_err_req_q | op_err_alert_test),
     .alert_ack_o(op_err_ack),
     .alert_rx_i(alert_rx_i[1]),
     .alert_tx_o(alert_tx_o[1])
