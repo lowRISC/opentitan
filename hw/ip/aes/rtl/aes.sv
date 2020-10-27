@@ -99,16 +99,24 @@ module aes
 
   assign idle_o = hw2reg.status.idle.d;
 
+  logic [NumAlerts-1:0] alert_test;
+  assign alert_test = {
+    reg2hw.alert_test.ctrl_err_update.q &
+    reg2hw.alert_test.ctrl_err_update.qe,
+    reg2hw.alert_test.ctrl_err_storage.q &
+    reg2hw.alert_test.ctrl_err_storage.qe
+  };
+
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i])
     ) u_alert_sender_i (
-      .clk_i       ( clk_i         ),
-      .rst_ni      ( rst_ni        ),
-      .alert_req_i ( alert[i]      ),
-      .alert_ack_o (               ),
-      .alert_rx_i  ( alert_rx_i[i] ),
-      .alert_tx_o  ( alert_tx_o[i] )
+      .clk_i       ( clk_i                    ),
+      .rst_ni      ( rst_ni                   ),
+      .alert_req_i ( alert[i] | alert_test[i] ),
+      .alert_ack_o (                          ),
+      .alert_rx_i  ( alert_rx_i[i]            ),
+      .alert_tx_o  ( alert_tx_o[i]            )
     );
   end
 
