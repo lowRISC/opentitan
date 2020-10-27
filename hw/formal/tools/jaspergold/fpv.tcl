@@ -57,10 +57,10 @@ if {$env(FPV_TOP) == "rv_dm"} {
   clock clk_i -both_edges
   clock clk_usb_48mhz_i
   reset -expr {!rst_ni}
-} elseif {$env(FPV_TOP) == "top_earlgrey"} {
-  clock clk_i -both_edges
-  clock jtag_tck_i
-  reset -expr {!rst_ni !jtag_trst_ni}
+} elseif {$env(FPV_TOP) == "top_earlgrey_asic"} {
+  clock IO_CLK -both_edges
+  clock IO_CLK_USB_48MHZ
+  reset -expr {!IO_RST_N}
 } elseif {$env(FPV_TOP) == "xbar_main"} {
   clock clk_main_i -both_edges
   reset -expr {!rst_main_ni}
