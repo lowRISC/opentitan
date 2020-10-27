@@ -998,12 +998,26 @@
         {
           name: ctrl_err_update
           width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
           type: alert
           async: 0
         }
         {
           name: ctrl_err_storage
           width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
           type: alert
           async: 0
         }
@@ -2393,6 +2407,13 @@
         {
           name: ast_alerts
           width: 7
+          bits: 6:0
+          bitinfo:
+          [
+            127
+            7
+            0
+          ]
           type: alert
           async: 1
         }
@@ -2500,6 +2521,13 @@
         {
           name: err
           width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
           type: alert
           async: 0
         }
@@ -2647,12 +2675,26 @@
         {
           name: otp_macro_failure
           width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
           type: alert
           async: 1
         }
         {
           name: otp_check_failure
           width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
           type: alert
           async: 1
         }
@@ -2903,18 +2945,39 @@
         {
           name: imem_uncorrectable
           width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
           type: alert
           async: 0
         }
         {
           name: dmem_uncorrectable
           width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
           type: alert
           async: 0
         }
         {
           name: reg_uncorrectable
           width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
           type: alert
           async: 0
         }
@@ -5035,6 +5098,13 @@
     {
       name: aes_ctrl_err_update
       width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
       type: alert
       async: 0
       module_name: aes
@@ -5042,6 +5112,13 @@
     {
       name: aes_ctrl_err_storage
       width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
       type: alert
       async: 0
       module_name: aes
@@ -5049,6 +5126,13 @@
     {
       name: otbn_imem_uncorrectable
       width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
       type: alert
       async: 0
       module_name: otbn
@@ -5056,6 +5140,13 @@
     {
       name: otbn_dmem_uncorrectable
       width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
       type: alert
       async: 0
       module_name: otbn
@@ -5063,6 +5154,13 @@
     {
       name: otbn_reg_uncorrectable
       width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
       type: alert
       async: 0
       module_name: otbn
@@ -5070,6 +5168,13 @@
     {
       name: sensor_ctrl_ast_alerts
       width: 7
+      bits: 6:0
+      bitinfo:
+      [
+        127
+        7
+        0
+      ]
       type: alert
       async: 1
       module_name: sensor_ctrl
@@ -5077,6 +5182,13 @@
     {
       name: keymgr_err
       width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
       type: alert
       async: 0
       module_name: keymgr
@@ -5084,6 +5196,13 @@
     {
       name: otp_ctrl_otp_macro_failure
       width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
       type: alert
       async: 1
       module_name: otp_ctrl
@@ -5091,6 +5210,13 @@
     {
       name: otp_ctrl_otp_check_failure
       width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
       type: alert
       async: 1
       module_name: otp_ctrl

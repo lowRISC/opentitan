@@ -16,6 +16,17 @@ package aes_reg_pkg;
   // Typedefs for registers //
   ////////////////////////////
   typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ctrl_err_update;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ctrl_err_storage;
+  } aes_reg2hw_alert_test_reg_t;
+
+  typedef struct packed {
     logic [31:0] q;
     logic        qe;
   } aes_reg2hw_key_share0_mreg_t;
@@ -184,6 +195,7 @@ package aes_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
+    aes_reg2hw_alert_test_reg_t alert_test; // [950:947]
     aes_reg2hw_key_share0_mreg_t [7:0] key_share0; // [946:683]
     aes_reg2hw_key_share1_mreg_t [7:0] key_share1; // [682:419]
     aes_reg2hw_iv_mreg_t [3:0] iv; // [418:287]
@@ -208,41 +220,43 @@ package aes_reg_pkg;
   } aes_hw2reg_t;
 
   // Register Address
-  parameter logic [6:0] AES_KEY_SHARE0_0_OFFSET = 7'h 0;
-  parameter logic [6:0] AES_KEY_SHARE0_1_OFFSET = 7'h 4;
-  parameter logic [6:0] AES_KEY_SHARE0_2_OFFSET = 7'h 8;
-  parameter logic [6:0] AES_KEY_SHARE0_3_OFFSET = 7'h c;
-  parameter logic [6:0] AES_KEY_SHARE0_4_OFFSET = 7'h 10;
-  parameter logic [6:0] AES_KEY_SHARE0_5_OFFSET = 7'h 14;
-  parameter logic [6:0] AES_KEY_SHARE0_6_OFFSET = 7'h 18;
-  parameter logic [6:0] AES_KEY_SHARE0_7_OFFSET = 7'h 1c;
-  parameter logic [6:0] AES_KEY_SHARE1_0_OFFSET = 7'h 20;
-  parameter logic [6:0] AES_KEY_SHARE1_1_OFFSET = 7'h 24;
-  parameter logic [6:0] AES_KEY_SHARE1_2_OFFSET = 7'h 28;
-  parameter logic [6:0] AES_KEY_SHARE1_3_OFFSET = 7'h 2c;
-  parameter logic [6:0] AES_KEY_SHARE1_4_OFFSET = 7'h 30;
-  parameter logic [6:0] AES_KEY_SHARE1_5_OFFSET = 7'h 34;
-  parameter logic [6:0] AES_KEY_SHARE1_6_OFFSET = 7'h 38;
-  parameter logic [6:0] AES_KEY_SHARE1_7_OFFSET = 7'h 3c;
-  parameter logic [6:0] AES_IV_0_OFFSET = 7'h 40;
-  parameter logic [6:0] AES_IV_1_OFFSET = 7'h 44;
-  parameter logic [6:0] AES_IV_2_OFFSET = 7'h 48;
-  parameter logic [6:0] AES_IV_3_OFFSET = 7'h 4c;
-  parameter logic [6:0] AES_DATA_IN_0_OFFSET = 7'h 50;
-  parameter logic [6:0] AES_DATA_IN_1_OFFSET = 7'h 54;
-  parameter logic [6:0] AES_DATA_IN_2_OFFSET = 7'h 58;
-  parameter logic [6:0] AES_DATA_IN_3_OFFSET = 7'h 5c;
-  parameter logic [6:0] AES_DATA_OUT_0_OFFSET = 7'h 60;
-  parameter logic [6:0] AES_DATA_OUT_1_OFFSET = 7'h 64;
-  parameter logic [6:0] AES_DATA_OUT_2_OFFSET = 7'h 68;
-  parameter logic [6:0] AES_DATA_OUT_3_OFFSET = 7'h 6c;
-  parameter logic [6:0] AES_CTRL_SHADOWED_OFFSET = 7'h 70;
-  parameter logic [6:0] AES_TRIGGER_OFFSET = 7'h 74;
-  parameter logic [6:0] AES_STATUS_OFFSET = 7'h 78;
+  parameter logic [6:0] AES_ALERT_TEST_OFFSET = 7'h 0;
+  parameter logic [6:0] AES_KEY_SHARE0_0_OFFSET = 7'h 4;
+  parameter logic [6:0] AES_KEY_SHARE0_1_OFFSET = 7'h 8;
+  parameter logic [6:0] AES_KEY_SHARE0_2_OFFSET = 7'h c;
+  parameter logic [6:0] AES_KEY_SHARE0_3_OFFSET = 7'h 10;
+  parameter logic [6:0] AES_KEY_SHARE0_4_OFFSET = 7'h 14;
+  parameter logic [6:0] AES_KEY_SHARE0_5_OFFSET = 7'h 18;
+  parameter logic [6:0] AES_KEY_SHARE0_6_OFFSET = 7'h 1c;
+  parameter logic [6:0] AES_KEY_SHARE0_7_OFFSET = 7'h 20;
+  parameter logic [6:0] AES_KEY_SHARE1_0_OFFSET = 7'h 24;
+  parameter logic [6:0] AES_KEY_SHARE1_1_OFFSET = 7'h 28;
+  parameter logic [6:0] AES_KEY_SHARE1_2_OFFSET = 7'h 2c;
+  parameter logic [6:0] AES_KEY_SHARE1_3_OFFSET = 7'h 30;
+  parameter logic [6:0] AES_KEY_SHARE1_4_OFFSET = 7'h 34;
+  parameter logic [6:0] AES_KEY_SHARE1_5_OFFSET = 7'h 38;
+  parameter logic [6:0] AES_KEY_SHARE1_6_OFFSET = 7'h 3c;
+  parameter logic [6:0] AES_KEY_SHARE1_7_OFFSET = 7'h 40;
+  parameter logic [6:0] AES_IV_0_OFFSET = 7'h 44;
+  parameter logic [6:0] AES_IV_1_OFFSET = 7'h 48;
+  parameter logic [6:0] AES_IV_2_OFFSET = 7'h 4c;
+  parameter logic [6:0] AES_IV_3_OFFSET = 7'h 50;
+  parameter logic [6:0] AES_DATA_IN_0_OFFSET = 7'h 54;
+  parameter logic [6:0] AES_DATA_IN_1_OFFSET = 7'h 58;
+  parameter logic [6:0] AES_DATA_IN_2_OFFSET = 7'h 5c;
+  parameter logic [6:0] AES_DATA_IN_3_OFFSET = 7'h 60;
+  parameter logic [6:0] AES_DATA_OUT_0_OFFSET = 7'h 64;
+  parameter logic [6:0] AES_DATA_OUT_1_OFFSET = 7'h 68;
+  parameter logic [6:0] AES_DATA_OUT_2_OFFSET = 7'h 6c;
+  parameter logic [6:0] AES_DATA_OUT_3_OFFSET = 7'h 70;
+  parameter logic [6:0] AES_CTRL_SHADOWED_OFFSET = 7'h 74;
+  parameter logic [6:0] AES_TRIGGER_OFFSET = 7'h 78;
+  parameter logic [6:0] AES_STATUS_OFFSET = 7'h 7c;
 
 
   // Register Index
   typedef enum int {
+    AES_ALERT_TEST,
     AES_KEY_SHARE0_0,
     AES_KEY_SHARE0_1,
     AES_KEY_SHARE0_2,
@@ -277,38 +291,39 @@ package aes_reg_pkg;
   } aes_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] AES_PERMIT [31] = '{
-    4'b 1111, // index[ 0] AES_KEY_SHARE0_0
-    4'b 1111, // index[ 1] AES_KEY_SHARE0_1
-    4'b 1111, // index[ 2] AES_KEY_SHARE0_2
-    4'b 1111, // index[ 3] AES_KEY_SHARE0_3
-    4'b 1111, // index[ 4] AES_KEY_SHARE0_4
-    4'b 1111, // index[ 5] AES_KEY_SHARE0_5
-    4'b 1111, // index[ 6] AES_KEY_SHARE0_6
-    4'b 1111, // index[ 7] AES_KEY_SHARE0_7
-    4'b 1111, // index[ 8] AES_KEY_SHARE1_0
-    4'b 1111, // index[ 9] AES_KEY_SHARE1_1
-    4'b 1111, // index[10] AES_KEY_SHARE1_2
-    4'b 1111, // index[11] AES_KEY_SHARE1_3
-    4'b 1111, // index[12] AES_KEY_SHARE1_4
-    4'b 1111, // index[13] AES_KEY_SHARE1_5
-    4'b 1111, // index[14] AES_KEY_SHARE1_6
-    4'b 1111, // index[15] AES_KEY_SHARE1_7
-    4'b 1111, // index[16] AES_IV_0
-    4'b 1111, // index[17] AES_IV_1
-    4'b 1111, // index[18] AES_IV_2
-    4'b 1111, // index[19] AES_IV_3
-    4'b 1111, // index[20] AES_DATA_IN_0
-    4'b 1111, // index[21] AES_DATA_IN_1
-    4'b 1111, // index[22] AES_DATA_IN_2
-    4'b 1111, // index[23] AES_DATA_IN_3
-    4'b 1111, // index[24] AES_DATA_OUT_0
-    4'b 1111, // index[25] AES_DATA_OUT_1
-    4'b 1111, // index[26] AES_DATA_OUT_2
-    4'b 1111, // index[27] AES_DATA_OUT_3
-    4'b 0011, // index[28] AES_CTRL_SHADOWED
-    4'b 0001, // index[29] AES_TRIGGER
-    4'b 0001  // index[30] AES_STATUS
+  parameter logic [3:0] AES_PERMIT [32] = '{
+    4'b 0001, // index[ 0] AES_ALERT_TEST
+    4'b 1111, // index[ 1] AES_KEY_SHARE0_0
+    4'b 1111, // index[ 2] AES_KEY_SHARE0_1
+    4'b 1111, // index[ 3] AES_KEY_SHARE0_2
+    4'b 1111, // index[ 4] AES_KEY_SHARE0_3
+    4'b 1111, // index[ 5] AES_KEY_SHARE0_4
+    4'b 1111, // index[ 6] AES_KEY_SHARE0_5
+    4'b 1111, // index[ 7] AES_KEY_SHARE0_6
+    4'b 1111, // index[ 8] AES_KEY_SHARE0_7
+    4'b 1111, // index[ 9] AES_KEY_SHARE1_0
+    4'b 1111, // index[10] AES_KEY_SHARE1_1
+    4'b 1111, // index[11] AES_KEY_SHARE1_2
+    4'b 1111, // index[12] AES_KEY_SHARE1_3
+    4'b 1111, // index[13] AES_KEY_SHARE1_4
+    4'b 1111, // index[14] AES_KEY_SHARE1_5
+    4'b 1111, // index[15] AES_KEY_SHARE1_6
+    4'b 1111, // index[16] AES_KEY_SHARE1_7
+    4'b 1111, // index[17] AES_IV_0
+    4'b 1111, // index[18] AES_IV_1
+    4'b 1111, // index[19] AES_IV_2
+    4'b 1111, // index[20] AES_IV_3
+    4'b 1111, // index[21] AES_DATA_IN_0
+    4'b 1111, // index[22] AES_DATA_IN_1
+    4'b 1111, // index[23] AES_DATA_IN_2
+    4'b 1111, // index[24] AES_DATA_IN_3
+    4'b 1111, // index[25] AES_DATA_OUT_0
+    4'b 1111, // index[26] AES_DATA_OUT_1
+    4'b 1111, // index[27] AES_DATA_OUT_2
+    4'b 1111, // index[28] AES_DATA_OUT_3
+    4'b 0011, // index[29] AES_CTRL_SHADOWED
+    4'b 0001, // index[30] AES_TRIGGER
+    4'b 0001  // index[31] AES_STATUS
   };
 endpackage
 

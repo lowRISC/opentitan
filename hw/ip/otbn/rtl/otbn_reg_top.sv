@@ -137,6 +137,12 @@ module otbn_reg_top (
   logic intr_test_done_we;
   logic intr_test_err_wd;
   logic intr_test_err_we;
+  logic alert_test_imem_uncorrectable_wd;
+  logic alert_test_imem_uncorrectable_we;
+  logic alert_test_dmem_uncorrectable_wd;
+  logic alert_test_dmem_uncorrectable_we;
+  logic alert_test_reg_uncorrectable_wd;
+  logic alert_test_reg_uncorrectable_we;
   logic cmd_start_wd;
   logic cmd_start_we;
   logic cmd_dummy_wd;
@@ -290,6 +296,53 @@ module otbn_reg_top (
   );
 
 
+  // R[alert_test]: V(True)
+
+  //   F[imem_uncorrectable]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_imem_uncorrectable (
+    .re     (1'b0),
+    .we     (alert_test_imem_uncorrectable_we),
+    .wd     (alert_test_imem_uncorrectable_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.imem_uncorrectable.qe),
+    .q      (reg2hw.alert_test.imem_uncorrectable.q ),
+    .qs     ()
+  );
+
+
+  //   F[dmem_uncorrectable]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_dmem_uncorrectable (
+    .re     (1'b0),
+    .we     (alert_test_dmem_uncorrectable_we),
+    .wd     (alert_test_dmem_uncorrectable_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.dmem_uncorrectable.qe),
+    .q      (reg2hw.alert_test.dmem_uncorrectable.q ),
+    .qs     ()
+  );
+
+
+  //   F[reg_uncorrectable]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_reg_uncorrectable (
+    .re     (1'b0),
+    .we     (alert_test_reg_uncorrectable_we),
+    .wd     (alert_test_reg_uncorrectable_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.reg_uncorrectable.qe),
+    .q      (reg2hw.alert_test.reg_uncorrectable.q ),
+    .qs     ()
+  );
+
+
   // R[cmd]: V(True)
 
   //   F[start]: 0:0
@@ -408,16 +461,17 @@ module otbn_reg_top (
 
 
 
-  logic [6:0] addr_hit;
+  logic [7:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == OTBN_INTR_STATE_OFFSET);
     addr_hit[1] = (reg_addr == OTBN_INTR_ENABLE_OFFSET);
     addr_hit[2] = (reg_addr == OTBN_INTR_TEST_OFFSET);
-    addr_hit[3] = (reg_addr == OTBN_CMD_OFFSET);
-    addr_hit[4] = (reg_addr == OTBN_STATUS_OFFSET);
-    addr_hit[5] = (reg_addr == OTBN_ERR_CODE_OFFSET);
-    addr_hit[6] = (reg_addr == OTBN_START_ADDR_OFFSET);
+    addr_hit[3] = (reg_addr == OTBN_ALERT_TEST_OFFSET);
+    addr_hit[4] = (reg_addr == OTBN_CMD_OFFSET);
+    addr_hit[5] = (reg_addr == OTBN_STATUS_OFFSET);
+    addr_hit[6] = (reg_addr == OTBN_ERR_CODE_OFFSET);
+    addr_hit[7] = (reg_addr == OTBN_START_ADDR_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -432,6 +486,7 @@ module otbn_reg_top (
     if (addr_hit[4] && reg_we && (OTBN_PERMIT[4] != (OTBN_PERMIT[4] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[5] && reg_we && (OTBN_PERMIT[5] != (OTBN_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[6] && reg_we && (OTBN_PERMIT[6] != (OTBN_PERMIT[6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[7] && reg_we && (OTBN_PERMIT[7] != (OTBN_PERMIT[7] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_done_we = addr_hit[0] & reg_we & ~wr_err;
@@ -452,18 +507,27 @@ module otbn_reg_top (
   assign intr_test_err_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_err_wd = reg_wdata[1];
 
-  assign cmd_start_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_imem_uncorrectable_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_imem_uncorrectable_wd = reg_wdata[0];
+
+  assign alert_test_dmem_uncorrectable_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_dmem_uncorrectable_wd = reg_wdata[1];
+
+  assign alert_test_reg_uncorrectable_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_reg_uncorrectable_wd = reg_wdata[2];
+
+  assign cmd_start_we = addr_hit[4] & reg_we & ~wr_err;
   assign cmd_start_wd = reg_wdata[0];
 
-  assign cmd_dummy_we = addr_hit[3] & reg_we & ~wr_err;
+  assign cmd_dummy_we = addr_hit[4] & reg_we & ~wr_err;
   assign cmd_dummy_wd = reg_wdata[1];
 
-  assign status_busy_re = addr_hit[4] && reg_re;
+  assign status_busy_re = addr_hit[5] && reg_re;
 
-  assign status_dummy_re = addr_hit[4] && reg_re;
+  assign status_dummy_re = addr_hit[5] && reg_re;
 
 
-  assign start_addr_we = addr_hit[6] & reg_we & ~wr_err;
+  assign start_addr_we = addr_hit[7] & reg_we & ~wr_err;
   assign start_addr_wd = reg_wdata[31:0];
 
   // Read data return
@@ -488,18 +552,24 @@ module otbn_reg_top (
       addr_hit[3]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
+        reg_rdata_next[2] = '0;
       end
 
       addr_hit[4]: begin
+        reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
+      end
+
+      addr_hit[5]: begin
         reg_rdata_next[0] = status_busy_qs;
         reg_rdata_next[1] = status_dummy_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[31:0] = err_code_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[7]: begin
         reg_rdata_next[31:0] = '0;
       end
 

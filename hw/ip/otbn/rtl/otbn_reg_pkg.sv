@@ -45,6 +45,21 @@ package otbn_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
+    } imem_uncorrectable;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } dmem_uncorrectable;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } reg_uncorrectable;
+  } otbn_reg2hw_alert_test_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
     } start;
     struct packed {
       logic        q;
@@ -87,9 +102,10 @@ package otbn_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [43:42]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [41:40]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [39:36]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [49:48]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [47:46]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [45:42]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [41:36]
     otbn_reg2hw_cmd_reg_t cmd; // [35:32]
     otbn_reg2hw_start_addr_reg_t start_addr; // [31:0]
   } otbn_reg2hw_t;
@@ -107,10 +123,11 @@ package otbn_reg_pkg;
   parameter logic [21:0] OTBN_INTR_STATE_OFFSET = 22'h 0;
   parameter logic [21:0] OTBN_INTR_ENABLE_OFFSET = 22'h 4;
   parameter logic [21:0] OTBN_INTR_TEST_OFFSET = 22'h 8;
-  parameter logic [21:0] OTBN_CMD_OFFSET = 22'h c;
-  parameter logic [21:0] OTBN_STATUS_OFFSET = 22'h 10;
-  parameter logic [21:0] OTBN_ERR_CODE_OFFSET = 22'h 14;
-  parameter logic [21:0] OTBN_START_ADDR_OFFSET = 22'h 18;
+  parameter logic [21:0] OTBN_ALERT_TEST_OFFSET = 22'h c;
+  parameter logic [21:0] OTBN_CMD_OFFSET = 22'h 10;
+  parameter logic [21:0] OTBN_STATUS_OFFSET = 22'h 14;
+  parameter logic [21:0] OTBN_ERR_CODE_OFFSET = 22'h 18;
+  parameter logic [21:0] OTBN_START_ADDR_OFFSET = 22'h 1c;
 
   // Window parameter
   parameter logic [21:0] OTBN_IMEM_OFFSET = 22'h 100000;
@@ -123,6 +140,7 @@ package otbn_reg_pkg;
     OTBN_INTR_STATE,
     OTBN_INTR_ENABLE,
     OTBN_INTR_TEST,
+    OTBN_ALERT_TEST,
     OTBN_CMD,
     OTBN_STATUS,
     OTBN_ERR_CODE,
@@ -130,14 +148,15 @@ package otbn_reg_pkg;
   } otbn_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] OTBN_PERMIT [7] = '{
+  parameter logic [3:0] OTBN_PERMIT [8] = '{
     4'b 0001, // index[0] OTBN_INTR_STATE
     4'b 0001, // index[1] OTBN_INTR_ENABLE
     4'b 0001, // index[2] OTBN_INTR_TEST
-    4'b 0001, // index[3] OTBN_CMD
-    4'b 0001, // index[4] OTBN_STATUS
-    4'b 1111, // index[5] OTBN_ERR_CODE
-    4'b 1111  // index[6] OTBN_START_ADDR
+    4'b 0001, // index[3] OTBN_ALERT_TEST
+    4'b 0001, // index[4] OTBN_CMD
+    4'b 0001, // index[5] OTBN_STATUS
+    4'b 1111, // index[6] OTBN_ERR_CODE
+    4'b 1111  // index[7] OTBN_START_ADDR
   };
 endpackage
 
