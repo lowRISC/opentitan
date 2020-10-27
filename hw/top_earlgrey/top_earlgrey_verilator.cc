@@ -5,12 +5,12 @@
 #include <iostream>
 
 #include "verilated_toplevel.h"
-#include "verilator_memutil_extension.h"
+#include "verilator_memutil.h"
 #include "verilator_sim_ctrl.h"
 
 int main(int argc, char **argv) {
   top_earlgrey_verilator top;
-  VerilatorMemUtilExtension memutil;
+  VerilatorMemUtil memutil;
   VerilatorSimCtrl &simctrl = VerilatorSimCtrl::GetInstance();
   simctrl.SetTop(&top, &top.clk_i, &top.rst_ni,
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
