@@ -19,7 +19,7 @@ def generate_tb(xbar: Xbar,
     tb_files = [
         "xbar_env_pkg__params.sv", "tb__xbar_connect.sv", "xbar.sim.core",
         "xbar.bind.core", "xbar.bind.sv", "xbar.sim_cfg.hjson",
-        "xbar.testplan.hjson"
+        "xbar.testplan.hjson", "xbar_cov_excl.el"
     ]
 
     for fname in tb_files:
