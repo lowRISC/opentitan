@@ -98,7 +98,7 @@ def asm_main(args: argparse.Namespace) -> int:
         program.dump_asm(sys.stdout)
     else:
         try:
-            asm_path = args.output + '.S'
+            asm_path = args.output + '.s'
             with open(asm_path, 'w') as out_file:
                 program.dump_asm(out_file)
         except OSError as err:
@@ -144,7 +144,7 @@ def main() -> int:
     asm.add_argument('--output', '-o',
                      metavar='out',
                      help=('Base path for output filenames. Will generate '
-                           'out.S with an assembly listing and out.ld with '
+                           'out.s with an assembly listing and out.ld with '
                            'a linker script. If this is not supplied, the '
                            'assembly (but no linker script) will be dumped '
                            'to stdout.'))
