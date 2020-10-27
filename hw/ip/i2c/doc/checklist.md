@@ -112,8 +112,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]           | Done        | [i2c_dv_doc]({{<relref "hw/ip/i2c/doc/dv_doc" >}})
-Documentation | [VERIFICATION_PLAN_COMPLETED][]       | Done        | [i2c_testplan]({{<relref "hw/ip/i2c/doc/dv_doc/index.md#testplan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [i2c_dv_doc]({{<relref "hw/ip/i2c/doc/dv_doc" >}})
+Documentation | [VERIFICATION_PLAN_COMPLETED][]       | Done        | [i2c_verification plan]({{<relref "hw/ip/i2c/doc/dv_doc/index.md#verification_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |

@@ -115,7 +115,7 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]           | Not Started | [KEYMGR DV Document]({{<relref "hw/ip/keymgr/doc/dv_doc" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [KEYMGR DV Document]({{<relref "hw/ip/keymgr/doc/dv_doc" >}})
 Documentation | [VERIFICATION_PLAN_COMPLETED][]       | Not Started | [KEYMGR Testplan]({{<relref "hw/ip/keymgr/doc/dv_doc/index.md#testplan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Not Started |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
