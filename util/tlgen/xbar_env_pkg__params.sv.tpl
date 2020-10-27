@@ -6,16 +6,11 @@
 
 <%
   name_len = max([len(x.name) for x in xbar.devices])
-  spaces   = ""
 %>\
 
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
 % for device in xbar.devices:
-<%
-  spaces = ""
-  spaces = spaces.ljust(name_len - len(device.name))
-%>\
     '{"${device.name}", '{
     % for addr in device.addr_range:
         '{32'h${"%08x" % addr[0]}, 32'h${"%08x" % addr[1]}}${"," if not loop.last else ""}
