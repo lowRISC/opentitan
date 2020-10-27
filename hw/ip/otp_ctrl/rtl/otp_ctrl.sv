@@ -13,16 +13,13 @@ module otp_ctrl
   import otp_ctrl_part_pkg::*;
 #(
   // Enable asynchronous transitions on alerts.
-  parameter logic [NumAlerts-1:0]        AlertAsyncOn = {NumAlerts{1'b1}},
-  // TODO: These constants have to be replaced by the silicon creator before taping out.
-  parameter logic [TimerWidth-1:0]       TimerLfsrSeed     = TimerWidth'(1'b1),
-  parameter logic [TimerWidth-1:0][31:0] TimerLfsrPerm     = {
-    32'd13, 32'd17, 32'd29, 32'd11, 32'd28, 32'd12, 32'd33, 32'd27,
-    32'd05, 32'd39, 32'd31, 32'd21, 32'd15, 32'd01, 32'd24, 32'd37,
-    32'd32, 32'd38, 32'd26, 32'd34, 32'd08, 32'd10, 32'd04, 32'd02,
-    32'd19, 32'd00, 32'd20, 32'd06, 32'd25, 32'd22, 32'd03, 32'd35,
-    32'd16, 32'd14, 32'd23, 32'd07, 32'd30, 32'd09, 32'd18, 32'd36
-  }
+  parameter logic [NumAlerts-1:0] AlertAsyncOn      = {NumAlerts{1'b1}},
+  // Compile time random constants, to be overriden by topgen.
+  parameter lfsr_seed_t          RndCnstLfsrSeed    = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t          RndCnstLfsrPerm    = RndCnstLfsrPermDefault,
+  parameter key_array_t          RndCnstKey         = RndCnstKeyDefault,
+  parameter digest_const_array_t RndCnstDigestConst = RndCnstDigestConstDefault,
+  parameter digest_iv_array_t    RndCnstDigestIV    = RndCnstDigestIVDefault
 ) (
   input                                              clk_i,
   input                                              rst_ni,
@@ -402,8 +399,8 @@ module otp_ctrl
                             reg2hw.check_trigger.consistency.qe;
 
   otp_ctrl_lfsr_timer #(
-    .LfsrSeed(TimerLfsrSeed),
-    .LfsrPerm(TimerLfsrPerm)
+    .RndCnstLfsrSeed(RndCnstLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstLfsrPerm)
   ) u_otp_ctrl_lfsr_timer (
     .clk_i,
     .rst_ni,
@@ -614,7 +611,11 @@ module otp_ctrl
   logic scrmbl_arb_req_ready, scrmbl_arb_rsp_valid;
   logic [NumAgents-1:0] part_scrmbl_req_ready, part_scrmbl_rsp_valid;
 
-  otp_ctrl_scrmbl u_scrmbl (
+  otp_ctrl_scrmbl #(
+    .RndCnstKey(RndCnstKey),
+    .RndCnstDigestConst(RndCnstDigestConst),
+    .RndCnstDigestIV(RndCnstDigestIV)
+  ) u_scrmbl (
     .clk_i,
     .rst_ni,
     .cmd_i         ( scrmbl_req_bundle.cmd   ),
