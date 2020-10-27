@@ -12,6 +12,9 @@ package pattgen_agent_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  // TODO: consider to have a parameterized class
+  parameter uint NUM_PATTGEN_CHANNELS = 2;
+
   // local types
   // forward declare classes to allow typedefs below
   typedef class pattgen_item;
@@ -27,8 +30,6 @@ package pattgen_agent_pkg;
   `include "pattgen_agent_cov.sv"
   `include "pattgen_monitor.sv"
   `include "pattgen_driver.sv"
-  `include "pattgen_host_driver.sv"
-  `include "pattgen_device_driver.sv"
   `include "pattgen_agent.sv"
 
 endpackage: pattgen_agent_pkg

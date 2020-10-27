@@ -11,68 +11,92 @@ class pattgen_monitor extends dv_base_monitor #(
   `uvm_component_new
 
   // analysis ports connected to scb
-  uvm_analysis_port #(pattgen_item) ch0_item_port;   // used to send items on ch0 to scb
-  uvm_analysis_port #(pattgen_item) ch1_item_port;   // used to send items on ch1 to scb
-
-  local pattgen_item ch0_dut_item;
-  local pattgen_item ch1_dut_item;
-
-  // counters for generated bits on channels
-  uint cnt_ch0 = 0;
-  uint cnt_ch1 = 0;
+  uvm_analysis_port #(pattgen_item) item_port[NUM_PATTGEN_CHANNELS];
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    ch0_item_port = new("ch0_item_port", this);
-    ch1_item_port = new("ch1_item_port", this);
-    ch0_dut_item  = new("ch0_dut_item");
-    ch1_dut_item  = new("ch1_dut_item");
+    for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
+      item_port[i] = new($sformatf("item_port[%0d]", i), this);
+    end
   endfunction : build_phase
 
   virtual task run_phase(uvm_phase phase);
     wait(cfg.vif.rst_ni);
     collect_trans(phase);
   endtask : run_phase
-  
-  // collect items forever
-  virtual protected task collect_trans(uvm_phase phase);
-    pattgen_item ch0_item, ch1_item;
 
-    forever begin
-      wait(cfg.en_monitor);
+  virtual protected task collect_trans(uvm_phase phase);
+    for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
       fork
-        begin // collect items on the channel 0
-          cfg.vif.get_bit(.channel("Channel0"), .polarity(cfg.polarity_ch0),
-                          .bit_o(ch0_dut_item.data));
-          `downcast(ch0_item, ch0_dut_item.clone());
-          ch0_item_port.write(ch0_item);
-        end
-        begin // collect items on the channel 1
-          cfg.vif.get_bit(.channel("Channel1"), .polarity(cfg.polarity_ch1),
-                          .bit_o(ch1_dut_item.data));
-          `downcast(ch1_item, ch1_dut_item.clone());
-          ch1_item_port.write(ch1_item);
-        end
-        begin // if (on-the-fly) reset is monitored, drop the item
-          @(negedge cfg.vif.rst_ni);
-          `uvm_info(`gfn, $sformatf("\nmonitor is reset, drop item on channel 0\n%s",
-              ch0_dut_item.sprint()), UVM_DEBUG)
-          `uvm_info(`gfn, $sformatf("\nmonitor is reset, drop item on channel 1\n%s",
-              ch1_dut_item.sprint()), UVM_DEBUG)
-        end
-      join_any
-      disable fork;
+        automatic uint channel = i;
+        collect_channel_trans(channel);
+        reset_thread();
+      join_none
     end
   endtask : collect_trans
+
+  virtual protected task collect_channel_trans(uint channel);
+    bit  bit_data;
+    uint bit_cnt;
+
+    pattgen_item dut_item;
+    forever begin
+      dut_item = pattgen_item::type_id::create("dut_item");
+      bit_cnt = 0;
+      fork 
+        begin : isolation_thread
+          fork
+            begin
+              do begin
+                get_pattgen_bit(channel, cfg.polarity[channel], bit_data);
+                dut_item.data_q.push_back(bit_data);
+                bit_cnt++;
+                `uvm_info(`gfn, $sformatf("\n--> monitor: channel %0d, polar %0b, data[%0d] %b",
+                    channel, cfg.polarity[channel], bit_cnt, bit_data), UVM_DEBUG)
+              end while (bit_cnt < cfg.length[channel]);
+              // avoid race condition (counter is achieved and reset is issued at the same time)
+              if (!cfg.reset_asserted) begin
+                item_port[channel].write(dut_item);
+                `uvm_info(`gfn, $sformatf("\n--> monitor: send dut_item on channel %0d to scb\n%s",
+                    channel, dut_item.sprint()), UVM_DEBUG)
+              end
+            end
+            @(posedge cfg.reset_asserted);
+          join_any
+          disable fork;
+        end : isolation_thread
+      join
+    end
+  endtask : collect_channel_trans
+
+  virtual task reset_thread();
+    forever begin
+      @(negedge cfg.vif.rst_ni);
+      cfg.reset_asserted = 1'b1;
+      // implement other clean-up actions under reset here
+      @(posedge cfg.vif.rst_ni);
+      cfg.reset_asserted = 1'b0;
+    end
+  endtask : reset_thread
 
   // update of_to_end to prevent sim finished when there is any activity on the bus
   // ok_to_end = 0 (bus busy) / 1 (bus idle)
   virtual task monitor_ready_to_end();
     forever begin
-      @(cfg.vif.pcl0_tx or cfg.vif.pda0_tx or cfg.vif.pcl1_tx or cfg.vif.pda1_tx);
-      ok_to_end = (cfg.vif.pcl0_tx == 1'b0) && (cfg.vif.pda0_tx == 1'b0) &&
-                  (cfg.vif.pcl1_tx == 1'b0) && (cfg.vif.pda1_tx == 1'b0);
+      @(cfg.vif.pcl_tx, cfg.vif.pda_tx);
+      ok_to_end = (cfg.vif.pcl_tx === {NUM_PATTGEN_CHANNELS{1'b0}}) &&
+                  (cfg.vif.pda_tx === {NUM_PATTGEN_CHANNELS{1'b0}});
     end
   endtask : monitor_ready_to_end
+
+  virtual task get_pattgen_bit(uint channel, bit polarity, output bit bit_o);
+    `DV_CHECK_LT_FATAL(channel, NUM_PATTGEN_CHANNELS, "invalid channel index")
+    if (polarity) begin
+      @(negedge cfg.vif.pcl_tx[channel]);
+    end else begin
+      @(posedge cfg.vif.pcl_tx[channel]);
+    end
+    bit_o = cfg.vif.pda_tx[channel];
+  endtask : get_pattgen_bit
 
 endclass : pattgen_monitor
