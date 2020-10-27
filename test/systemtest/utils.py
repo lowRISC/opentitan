@@ -96,7 +96,7 @@ class Process:
         self.proc = subprocess.Popen(cmd,
                                      cwd=self.cwd,
                                      universal_newlines=True,
-                                     bufsize=1, # Use line buffering
+                                     bufsize=1,  # Use line buffering
                                      stdin=subprocess.PIPE,
                                      stdout=self._f_stdout,
                                      stderr=self._f_stderr)
@@ -192,23 +192,6 @@ class Process:
                              from_start=from_start,
                              wait_func=wait_func)
 
-
-
-def load_sw_over_spi(tmp_path, spiflash_path, sw_test_bin, ftdi_dev_id):
-    """ Use the spiflash utility to load software onto a device. """
-
-    log.info("Flashing device software from {} over SPI".format(str(sw_test_bin)))
-
-    cmd_flash = [
-        spiflash_path,
-        '--input', sw_test_bin,
-        '--dev-id', ftdi_dev_id]
-    p_flash = Process(cmd_flash, logdir=tmp_path, cwd=tmp_path)
-    p_flash.run()
-    p_flash.proc.wait(timeout=30)
-    assert p_flash.proc.returncode == 0
-
-    log.info("Device software flashed.")
 
 class LoggingSerial(serial.Serial):
     """ Acess to a serial console which logs all read/written data to file. """
