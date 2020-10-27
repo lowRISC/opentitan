@@ -9,7 +9,7 @@ title: "Device Life Cycle"
   Contributors:
   <a href="https://github.com/tjaychen">@tjaychen</a>,
   <a href="https://github.com/moidx">@moidx</a>,
-  <a href="https://github.com/ccgori">@ccgori</a>
+  <a href="https://github.com/cdgori">@cdgori</a>
 </p>
 
 ## Overview
