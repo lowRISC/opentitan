@@ -118,7 +118,7 @@ Review        | Signoff date            | Done        | 2019-11-07
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Done        | [DV_PLAN][]
-Documentation | [TESTPLAN_COMPLETED][]                | Done        |
+Documentation | [VERIFICATION_PLAN_COMPLETED][]       | Done        |
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [TB_ENV_CREATED][]                    | Done        |
@@ -143,7 +143,7 @@ Review        | Signoff date                          | Done        | 2019-11-04
 [DV_PLAN]:                            {{<relref "/hw/ip/tlul/doc/dv_plan">}}
 
 [DV_PLAN_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv-plan-draft-completed" >}}
-[TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan-completed" >}}
+[VERIFICATION_PLAN_COMPLETED]:        {{<relref "/doc/project/checklist.md#testplan-completed" >}}
 [TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb-top-created" >}}
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary-assertion-checks-added" >}}
 [TB_ENV_CREATED]:                     {{<relref "/doc/project/checklist.md#tb-env-created" >}}

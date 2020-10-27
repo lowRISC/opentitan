@@ -116,7 +116,7 @@ Review        | Signoff date            | Not Started |
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Not Started | [KEYMGR DV Plan]({{<relref "hw/ip/keymgr/doc/dv_plan" >}})
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started | [KEYMGR Testplan]({{<relref "hw/ip/keymgr/doc/dv_plan/index.md#testplan" >}})
+Documentation | [VERIFICATION_PLAN_COMPLETED][]       | Not Started | [KEYMGR Testplan]({{<relref "hw/ip/keymgr/doc/dv_plan/index.md#testplan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Not Started |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
@@ -139,7 +139,7 @@ Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception 
 Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 
 [DV_PLAN_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv_plan_draft_completed" >}}
-[TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan_completed" >}}
+[VERIFICATION_PLAN_COMPLETED]:        {{<relref "/doc/project/checklist.md#testplan_completed" >}}
 [TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb_top_created" >}}
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary_assertion_checks_added" >}}
 [SIM_TB_ENV_CREATED]:                 {{<relref "/doc/project/checklist.md#sim_tb_env_created" >}}

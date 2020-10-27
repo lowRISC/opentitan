@@ -59,7 +59,7 @@ the verification plan is written in Hjson format and is made available in the co
 The Hjson schema enables this information to be human-writable and machine-parsable, which facilitates an automated and documentation-driven DV effort.
 The complete verification plan is parsed into a data structure that serves the following purposes:
 
-*  Provide the ability to insert the testplan and coverage plan as a tables into the DV plan document itself, such that all of the required information is in one place
+*  Provide the ability to insert the testplan and coverage plan as tables into the DV plan document itself, so that all of the required information is in one place
 *  Annotate the nightly regression results to allow us to track our progress towards executing the testplan and coverage collection
   *  this feature is not yet available and is [under active development](#pending-work-items)
 
@@ -76,7 +76,12 @@ A [template]({{< relref "hw/dv/doc/dv_plan_template" >}}) for the DV plan docume
 ### Regression Dashboard
 
 The DV Plan document provides a link to the latest [nightly](#nightly) regression and coverage results dashboard uploaded to the web server.
-This dashboard contains information in a tabulated format mapping the written tests to planned tests (in the testplan) to provide ability to track progress towards executing the testplan.It likewise contain information mapping the written coverage points in the coverage plan to provide the ability to track progess on hitting the coverage goals.
+This dashboard contains a table that shows which of the entries in the testplan have associated tests.
+The entries with tests also show whether they are passing or not.
+The dashboard also contains a table that maps points in the coverage plan to named coverage points in the code.
+Entries with such a mapping also show whether the point has been covered or not.
+The first table allows the reader to track progress towards executing the testplan.
+The second allows the reader to track progress towards executing the coverage plan.
 **This feature is currently not yet available and is under active development.**
 
 ## Automation
