@@ -4,9 +4,7 @@
  * found in the LICENSE.dcrypto file.
  *
  * Derived from code in
- *
- *	https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/dcrypto/dcrypto_bn.c
- *
+ * https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/dcrypto/dcrypto_bn.c
  */
 
 
