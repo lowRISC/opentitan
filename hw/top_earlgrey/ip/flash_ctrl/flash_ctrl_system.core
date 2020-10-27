@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:flash_ctrl:0.1"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:flash_ctrl_pkg
+    files:
+      - rtl/autogen/flash_ctrl_reg_top.sv
+      - rtl/autogen/flash_ctrl.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
