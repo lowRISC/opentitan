@@ -133,11 +133,12 @@ module otp_ctrl_part_buf
     DigOffset
   } base_sel_e;
 
-  state_e state_d, state_q;
+  state_e state_d;
   otp_err_e error_d, error_q;
   data_sel_e data_sel;
   base_sel_e base_sel;
   access_e dout_gate_d, dout_gate_q;
+  logic [StateWidth-1:0] state_q;
   logic [CntWidth-1:0] cnt_d, cnt_q;
   logic cnt_en, cnt_clr;
   logic parity_err;
@@ -153,7 +154,7 @@ module otp_ctrl_part_buf
   assign otp_cmd_o   = OtpRead;
 
   always_comb begin : p_fsm
-    state_d = state_q;
+    state_d = state_e'(state_q);
 
     // Redundantly encoded lock signal for buffer regs.
     dout_gate_d = dout_gate_q;

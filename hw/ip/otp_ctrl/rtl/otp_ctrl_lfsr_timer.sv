@@ -181,13 +181,14 @@ module otp_ctrl_lfsr_timer
     ErrorSt     = 9'b100101111
   } state_e;
 
-  state_e state_d, state_q;
+  state_e state_d;
+  bit [StateWidth-1:0] state_q;
   logic chk_timeout_d, chk_timeout_q;
 
   assign chk_timeout_o = chk_timeout_q;
 
   always_comb begin : p_fsm
-    state_d = state_q;
+    state_d = state_e'(state_q);
 
     // LFSR and counter signals
     lfsr_en = 1'b0;

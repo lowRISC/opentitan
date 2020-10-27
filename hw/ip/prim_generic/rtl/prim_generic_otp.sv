@@ -39,7 +39,7 @@ module prim_generic_otp #(
   // Response channel
   output logic                   valid_o,
   output logic [IfWidth-1:0]     rdata_o,
-  output logic [ErrWidth-1:0]    err_o
+  output otp_ctrl_pkg::otp_err_e err_o
 );
 
   // Not supported in open-source emulation model.
@@ -132,8 +132,9 @@ module prim_generic_otp #(
   } state_e;
 
   state_e state_d, state_q;
-  logic  valid_d, valid_q;
-  logic [ErrWidth-1:0] err_d, err_q;
+  otp_ctrl_pkg::otp_err_e err_d, err_q;
+  logic [StateWidth-1:0] state_o;
+  logic valid_d, valid_q;
   logic req, wren, rvalid;
   logic [1:0] rerror;
   logic [Width-1:0] rdata_d;
@@ -143,6 +144,7 @@ module prim_generic_otp #(
   logic [SizeWidth-1:0] cnt_d, cnt_q;
   logic cnt_clr, cnt_en;
 
+  assign state_q = state_e'(state_o);
   assign cnt_d = (cnt_clr) ? '0           :
                  (cnt_en)  ? cnt_q + 1'b1 : cnt_q;
 
@@ -310,13 +312,13 @@ module prim_generic_otp #(
     .clk_i,
     .rst_ni,
     .d_i ( state_d ),
-    .q_o ( state_q )
+    .q_o ( state_o )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       valid_q <= '0;
-      err_q   <= '0;
+      err_q   <= otp_ctrl_pkg::NoError;
       addr_q  <= '0;
       wdata_q <= '0;
       rdata_q <= '0;
