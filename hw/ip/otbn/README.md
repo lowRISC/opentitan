@@ -29,10 +29,10 @@ guide](https://docs.opentitan.org/doc/ug/otbn_sw)).
 assembly files using the toolchain:
 
 ```sh
-hw/ip/otbn/util/build.sh prog.S prog_bin/prog
+hw/ip/otbn/util/build.sh prog.s prog_bin/prog
 ```
 
-Will assemble and link `prog.S` and produce various outputs using
+Will assemble and link `prog.s` and produce various outputs using
 `prog_bin/prog` as a prefix for all output filenames. Run
 `./hw/ip/otbn/util/build.sh` without arguments for more information.
 
@@ -71,7 +71,7 @@ follows:
 # Create directory for build outputs
 mkdir otbn_build
 # Build smoke test
-hw/ip/otbn/util/build.sh ./hw/ip/otbn/dv/smoke/smoke_test.S ./otbn_build/smoke
+hw/ip/otbn/util/build.sh ./hw/ip/otbn/dv/smoke/smoke_test.s ./otbn_build/smoke
 
 # Run the resulting binary on the OTBN standalone simulation
 ./build/lowrisc_ip_otbn_top_sim_0.1/sim-verilator/Votbn_top_sim -t \

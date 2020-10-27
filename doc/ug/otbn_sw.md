@@ -26,9 +26,9 @@ This has the same command line interface as `riscv32-unknown-elf-as` (indeed, it
 The only difference in default flags is that `otbn-as` passes `-mno-relax`, telling the assembler not to request linker relaxation.
 This is needed because one of these relaxations generates GP-relative loads, which assume `x3` is treated as a global pointer (not true for OTBN code).
 
-To assemble some code in `foo.S` to an ELF object called `foo.o`, run:
+To assemble some code in `foo.s` to an ELF object called `foo.o`, run:
 ```shell
-hw/ip/otbn/util/otbn-as -o foo.o foo.S
+hw/ip/otbn/util/otbn-as -o foo.o foo.s
 ```
 
 ### Linker

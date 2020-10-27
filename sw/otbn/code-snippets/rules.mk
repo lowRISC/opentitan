@@ -50,9 +50,9 @@ otbn-code-snippets-ld ?= $(otbn-code-snippets-util-dir)/otbn-ld
 # Get the list of all assembly files in this directory. Strip away directory
 # and extension to get basenames (used for objects and binaries).
 otbn-code-snippets-path      := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
-otbn-code-snippets-asm-paths := $(wildcard $(otbn-code-snippets-path)*.S)
+otbn-code-snippets-asm-paths := $(wildcard $(otbn-code-snippets-path)*.s)
 otbn-code-snippets-asm-basenames := $(notdir $(otbn-code-snippets-asm-paths))
-otbn-code-snippets-basenames     := $(otbn-code-snippets-asm-basenames:.S=)
+otbn-code-snippets-basenames     := $(otbn-code-snippets-asm-basenames:.s=)
 
 $(otbn-code-snippets-obj-dir) $(otbn-code-snippets-bin-dir):
 	mkdir -p $@
@@ -68,7 +68,7 @@ otbn-code-snippets-elfs := \
 # Define rules for assembling the source code to make objects
 $(otbn-code-snippets-objects): \
   $(otbn-code-snippets-obj-dir)/%.o: \
-  $(otbn-code-snippets-path)%.S $(otbn-code-snippets-as) \
+  $(otbn-code-snippets-path)%.s $(otbn-code-snippets-as) \
    | $(otbn-code-snippets-obj-dir)
 	$(otbn-code-snippets-as) -o $@ $<
 
