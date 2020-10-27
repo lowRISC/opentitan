@@ -375,8 +375,12 @@ void StagedMem::AddSegment(uint32_t offset, std::vector<uint8_t> &&seg) {
 }
 
 std::vector<uint8_t> StagedMem::GetFlat() const {
-  size_t len = (size_t)max_addr_ - min_addr_;
+  // Since max_addr_ and min_addr_ are inclusive, the size to allocate
+  // is 1+(max-min). We cast to size_t to make sure the +1 doesn't
+  // overflow.
+  size_t len = (size_t)1 + (max_addr_ - min_addr_);
   std::vector<uint8_t> ret(len, 0);
+
   for (const auto &pr : segs_) {
     const AddrRange<uint32_t> &rng = pr.first;
     const std::vector<uint8_t> &seg = pr.second;
