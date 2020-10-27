@@ -2,6 +2,20 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Clock Manager DIF Library (dif_clkmgr)
+sw_lib_dif_clkmgr = declare_dependency(
+  link_with: static_library(
+    'clkmgr_ot',
+    sources: [
+      hw_ip_clkgmr_reg_h,
+      'dif_clkmgr.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # UART DIF library (dif_uart)
 sw_lib_dif_uart = declare_dependency(
   link_with: static_library(

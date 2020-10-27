@@ -180,6 +180,7 @@ gen_hw_hdr = generator(
 # TODO: Considering moving these into hw/ip directories.
 hw_ip_aes_reg_h = gen_hw_hdr.process('hw/ip/aes/data/aes.hjson')
 hw_ip_alert_handler_reg_h = gen_hw_hdr.process('hw/ip/alert_handler/data/alert_handler.hjson')
+hw_ip_clkgmr_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson')
 hw_ip_flash_ctrl_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/flash_ctrl/data/autogen/flash_ctrl.hjson')
 hw_ip_gpio_reg_h = gen_hw_hdr.process('hw/ip/gpio/data/gpio.hjson')
 hw_ip_hmac_reg_h = gen_hw_hdr.process('hw/ip/hmac/data/hmac.hjson')
