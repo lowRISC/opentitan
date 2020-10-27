@@ -71,6 +71,10 @@ module aes_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic alert_test_ctrl_err_update_wd;
+  logic alert_test_ctrl_err_update_we;
+  logic alert_test_ctrl_err_storage_wd;
+  logic alert_test_ctrl_err_storage_we;
   logic [31:0] key_share0_0_wd;
   logic key_share0_0_we;
   logic [31:0] key_share0_1_wd;
@@ -166,6 +170,38 @@ module aes_reg_top (
   logic status_ctrl_err_storage_qs;
 
   // Register instances
+  // R[alert_test]: V(True)
+
+  //   F[ctrl_err_update]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_ctrl_err_update (
+    .re     (1'b0),
+    .we     (alert_test_ctrl_err_update_we),
+    .wd     (alert_test_ctrl_err_update_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.ctrl_err_update.qe),
+    .q      (reg2hw.alert_test.ctrl_err_update.q ),
+    .qs     ()
+  );
+
+
+  //   F[ctrl_err_storage]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_ctrl_err_storage (
+    .re     (1'b0),
+    .we     (alert_test_ctrl_err_storage_we),
+    .wd     (alert_test_ctrl_err_storage_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.ctrl_err_storage.qe),
+    .q      (reg2hw.alert_test.ctrl_err_storage.q ),
+    .qs     ()
+  );
+
+
 
   // Subregister 0 of Multireg key_share0
   // R[key_share0_0]: V(True)
@@ -1022,40 +1058,41 @@ module aes_reg_top (
 
 
 
-  logic [30:0] addr_hit;
+  logic [31:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == AES_KEY_SHARE0_0_OFFSET);
-    addr_hit[ 1] = (reg_addr == AES_KEY_SHARE0_1_OFFSET);
-    addr_hit[ 2] = (reg_addr == AES_KEY_SHARE0_2_OFFSET);
-    addr_hit[ 3] = (reg_addr == AES_KEY_SHARE0_3_OFFSET);
-    addr_hit[ 4] = (reg_addr == AES_KEY_SHARE0_4_OFFSET);
-    addr_hit[ 5] = (reg_addr == AES_KEY_SHARE0_5_OFFSET);
-    addr_hit[ 6] = (reg_addr == AES_KEY_SHARE0_6_OFFSET);
-    addr_hit[ 7] = (reg_addr == AES_KEY_SHARE0_7_OFFSET);
-    addr_hit[ 8] = (reg_addr == AES_KEY_SHARE1_0_OFFSET);
-    addr_hit[ 9] = (reg_addr == AES_KEY_SHARE1_1_OFFSET);
-    addr_hit[10] = (reg_addr == AES_KEY_SHARE1_2_OFFSET);
-    addr_hit[11] = (reg_addr == AES_KEY_SHARE1_3_OFFSET);
-    addr_hit[12] = (reg_addr == AES_KEY_SHARE1_4_OFFSET);
-    addr_hit[13] = (reg_addr == AES_KEY_SHARE1_5_OFFSET);
-    addr_hit[14] = (reg_addr == AES_KEY_SHARE1_6_OFFSET);
-    addr_hit[15] = (reg_addr == AES_KEY_SHARE1_7_OFFSET);
-    addr_hit[16] = (reg_addr == AES_IV_0_OFFSET);
-    addr_hit[17] = (reg_addr == AES_IV_1_OFFSET);
-    addr_hit[18] = (reg_addr == AES_IV_2_OFFSET);
-    addr_hit[19] = (reg_addr == AES_IV_3_OFFSET);
-    addr_hit[20] = (reg_addr == AES_DATA_IN_0_OFFSET);
-    addr_hit[21] = (reg_addr == AES_DATA_IN_1_OFFSET);
-    addr_hit[22] = (reg_addr == AES_DATA_IN_2_OFFSET);
-    addr_hit[23] = (reg_addr == AES_DATA_IN_3_OFFSET);
-    addr_hit[24] = (reg_addr == AES_DATA_OUT_0_OFFSET);
-    addr_hit[25] = (reg_addr == AES_DATA_OUT_1_OFFSET);
-    addr_hit[26] = (reg_addr == AES_DATA_OUT_2_OFFSET);
-    addr_hit[27] = (reg_addr == AES_DATA_OUT_3_OFFSET);
-    addr_hit[28] = (reg_addr == AES_CTRL_SHADOWED_OFFSET);
-    addr_hit[29] = (reg_addr == AES_TRIGGER_OFFSET);
-    addr_hit[30] = (reg_addr == AES_STATUS_OFFSET);
+    addr_hit[ 0] = (reg_addr == AES_ALERT_TEST_OFFSET);
+    addr_hit[ 1] = (reg_addr == AES_KEY_SHARE0_0_OFFSET);
+    addr_hit[ 2] = (reg_addr == AES_KEY_SHARE0_1_OFFSET);
+    addr_hit[ 3] = (reg_addr == AES_KEY_SHARE0_2_OFFSET);
+    addr_hit[ 4] = (reg_addr == AES_KEY_SHARE0_3_OFFSET);
+    addr_hit[ 5] = (reg_addr == AES_KEY_SHARE0_4_OFFSET);
+    addr_hit[ 6] = (reg_addr == AES_KEY_SHARE0_5_OFFSET);
+    addr_hit[ 7] = (reg_addr == AES_KEY_SHARE0_6_OFFSET);
+    addr_hit[ 8] = (reg_addr == AES_KEY_SHARE0_7_OFFSET);
+    addr_hit[ 9] = (reg_addr == AES_KEY_SHARE1_0_OFFSET);
+    addr_hit[10] = (reg_addr == AES_KEY_SHARE1_1_OFFSET);
+    addr_hit[11] = (reg_addr == AES_KEY_SHARE1_2_OFFSET);
+    addr_hit[12] = (reg_addr == AES_KEY_SHARE1_3_OFFSET);
+    addr_hit[13] = (reg_addr == AES_KEY_SHARE1_4_OFFSET);
+    addr_hit[14] = (reg_addr == AES_KEY_SHARE1_5_OFFSET);
+    addr_hit[15] = (reg_addr == AES_KEY_SHARE1_6_OFFSET);
+    addr_hit[16] = (reg_addr == AES_KEY_SHARE1_7_OFFSET);
+    addr_hit[17] = (reg_addr == AES_IV_0_OFFSET);
+    addr_hit[18] = (reg_addr == AES_IV_1_OFFSET);
+    addr_hit[19] = (reg_addr == AES_IV_2_OFFSET);
+    addr_hit[20] = (reg_addr == AES_IV_3_OFFSET);
+    addr_hit[21] = (reg_addr == AES_DATA_IN_0_OFFSET);
+    addr_hit[22] = (reg_addr == AES_DATA_IN_1_OFFSET);
+    addr_hit[23] = (reg_addr == AES_DATA_IN_2_OFFSET);
+    addr_hit[24] = (reg_addr == AES_DATA_IN_3_OFFSET);
+    addr_hit[25] = (reg_addr == AES_DATA_OUT_0_OFFSET);
+    addr_hit[26] = (reg_addr == AES_DATA_OUT_1_OFFSET);
+    addr_hit[27] = (reg_addr == AES_DATA_OUT_2_OFFSET);
+    addr_hit[28] = (reg_addr == AES_DATA_OUT_3_OFFSET);
+    addr_hit[29] = (reg_addr == AES_CTRL_SHADOWED_OFFSET);
+    addr_hit[30] = (reg_addr == AES_TRIGGER_OFFSET);
+    addr_hit[31] = (reg_addr == AES_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1094,124 +1131,131 @@ module aes_reg_top (
     if (addr_hit[28] && reg_we && (AES_PERMIT[28] != (AES_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[29] && reg_we && (AES_PERMIT[29] != (AES_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[30] && reg_we && (AES_PERMIT[30] != (AES_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[31] && reg_we && (AES_PERMIT[31] != (AES_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign key_share0_0_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_ctrl_err_update_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_ctrl_err_update_wd = reg_wdata[0];
+
+  assign alert_test_ctrl_err_storage_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_ctrl_err_storage_wd = reg_wdata[1];
+
+  assign key_share0_0_we = addr_hit[1] & reg_we & ~wr_err;
   assign key_share0_0_wd = reg_wdata[31:0];
 
-  assign key_share0_1_we = addr_hit[1] & reg_we & ~wr_err;
+  assign key_share0_1_we = addr_hit[2] & reg_we & ~wr_err;
   assign key_share0_1_wd = reg_wdata[31:0];
 
-  assign key_share0_2_we = addr_hit[2] & reg_we & ~wr_err;
+  assign key_share0_2_we = addr_hit[3] & reg_we & ~wr_err;
   assign key_share0_2_wd = reg_wdata[31:0];
 
-  assign key_share0_3_we = addr_hit[3] & reg_we & ~wr_err;
+  assign key_share0_3_we = addr_hit[4] & reg_we & ~wr_err;
   assign key_share0_3_wd = reg_wdata[31:0];
 
-  assign key_share0_4_we = addr_hit[4] & reg_we & ~wr_err;
+  assign key_share0_4_we = addr_hit[5] & reg_we & ~wr_err;
   assign key_share0_4_wd = reg_wdata[31:0];
 
-  assign key_share0_5_we = addr_hit[5] & reg_we & ~wr_err;
+  assign key_share0_5_we = addr_hit[6] & reg_we & ~wr_err;
   assign key_share0_5_wd = reg_wdata[31:0];
 
-  assign key_share0_6_we = addr_hit[6] & reg_we & ~wr_err;
+  assign key_share0_6_we = addr_hit[7] & reg_we & ~wr_err;
   assign key_share0_6_wd = reg_wdata[31:0];
 
-  assign key_share0_7_we = addr_hit[7] & reg_we & ~wr_err;
+  assign key_share0_7_we = addr_hit[8] & reg_we & ~wr_err;
   assign key_share0_7_wd = reg_wdata[31:0];
 
-  assign key_share1_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign key_share1_0_we = addr_hit[9] & reg_we & ~wr_err;
   assign key_share1_0_wd = reg_wdata[31:0];
 
-  assign key_share1_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign key_share1_1_we = addr_hit[10] & reg_we & ~wr_err;
   assign key_share1_1_wd = reg_wdata[31:0];
 
-  assign key_share1_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_share1_2_we = addr_hit[11] & reg_we & ~wr_err;
   assign key_share1_2_wd = reg_wdata[31:0];
 
-  assign key_share1_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign key_share1_3_we = addr_hit[12] & reg_we & ~wr_err;
   assign key_share1_3_wd = reg_wdata[31:0];
 
-  assign key_share1_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign key_share1_4_we = addr_hit[13] & reg_we & ~wr_err;
   assign key_share1_4_wd = reg_wdata[31:0];
 
-  assign key_share1_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign key_share1_5_we = addr_hit[14] & reg_we & ~wr_err;
   assign key_share1_5_wd = reg_wdata[31:0];
 
-  assign key_share1_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign key_share1_6_we = addr_hit[15] & reg_we & ~wr_err;
   assign key_share1_6_wd = reg_wdata[31:0];
 
-  assign key_share1_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign key_share1_7_we = addr_hit[16] & reg_we & ~wr_err;
   assign key_share1_7_wd = reg_wdata[31:0];
 
-  assign iv_0_we = addr_hit[16] & reg_we & ~wr_err;
+  assign iv_0_we = addr_hit[17] & reg_we & ~wr_err;
   assign iv_0_wd = reg_wdata[31:0];
 
-  assign iv_1_we = addr_hit[17] & reg_we & ~wr_err;
+  assign iv_1_we = addr_hit[18] & reg_we & ~wr_err;
   assign iv_1_wd = reg_wdata[31:0];
 
-  assign iv_2_we = addr_hit[18] & reg_we & ~wr_err;
+  assign iv_2_we = addr_hit[19] & reg_we & ~wr_err;
   assign iv_2_wd = reg_wdata[31:0];
 
-  assign iv_3_we = addr_hit[19] & reg_we & ~wr_err;
+  assign iv_3_we = addr_hit[20] & reg_we & ~wr_err;
   assign iv_3_wd = reg_wdata[31:0];
 
-  assign data_in_0_we = addr_hit[20] & reg_we & ~wr_err;
+  assign data_in_0_we = addr_hit[21] & reg_we & ~wr_err;
   assign data_in_0_wd = reg_wdata[31:0];
 
-  assign data_in_1_we = addr_hit[21] & reg_we & ~wr_err;
+  assign data_in_1_we = addr_hit[22] & reg_we & ~wr_err;
   assign data_in_1_wd = reg_wdata[31:0];
 
-  assign data_in_2_we = addr_hit[22] & reg_we & ~wr_err;
+  assign data_in_2_we = addr_hit[23] & reg_we & ~wr_err;
   assign data_in_2_wd = reg_wdata[31:0];
 
-  assign data_in_3_we = addr_hit[23] & reg_we & ~wr_err;
+  assign data_in_3_we = addr_hit[24] & reg_we & ~wr_err;
   assign data_in_3_wd = reg_wdata[31:0];
 
-  assign data_out_0_re = addr_hit[24] && reg_re;
+  assign data_out_0_re = addr_hit[25] && reg_re;
 
-  assign data_out_1_re = addr_hit[25] && reg_re;
+  assign data_out_1_re = addr_hit[26] && reg_re;
 
-  assign data_out_2_re = addr_hit[26] && reg_re;
+  assign data_out_2_re = addr_hit[27] && reg_re;
 
-  assign data_out_3_re = addr_hit[27] && reg_re;
+  assign data_out_3_re = addr_hit[28] && reg_re;
 
-  assign ctrl_shadowed_operation_we = addr_hit[28] & reg_we & ~wr_err;
+  assign ctrl_shadowed_operation_we = addr_hit[29] & reg_we & ~wr_err;
   assign ctrl_shadowed_operation_wd = reg_wdata[0];
-  assign ctrl_shadowed_operation_re = addr_hit[28] && reg_re;
+  assign ctrl_shadowed_operation_re = addr_hit[29] && reg_re;
 
-  assign ctrl_shadowed_mode_we = addr_hit[28] & reg_we & ~wr_err;
+  assign ctrl_shadowed_mode_we = addr_hit[29] & reg_we & ~wr_err;
   assign ctrl_shadowed_mode_wd = reg_wdata[6:1];
-  assign ctrl_shadowed_mode_re = addr_hit[28] && reg_re;
+  assign ctrl_shadowed_mode_re = addr_hit[29] && reg_re;
 
-  assign ctrl_shadowed_key_len_we = addr_hit[28] & reg_we & ~wr_err;
+  assign ctrl_shadowed_key_len_we = addr_hit[29] & reg_we & ~wr_err;
   assign ctrl_shadowed_key_len_wd = reg_wdata[9:7];
-  assign ctrl_shadowed_key_len_re = addr_hit[28] && reg_re;
+  assign ctrl_shadowed_key_len_re = addr_hit[29] && reg_re;
 
-  assign ctrl_shadowed_manual_operation_we = addr_hit[28] & reg_we & ~wr_err;
+  assign ctrl_shadowed_manual_operation_we = addr_hit[29] & reg_we & ~wr_err;
   assign ctrl_shadowed_manual_operation_wd = reg_wdata[10];
-  assign ctrl_shadowed_manual_operation_re = addr_hit[28] && reg_re;
+  assign ctrl_shadowed_manual_operation_re = addr_hit[29] && reg_re;
 
-  assign ctrl_shadowed_force_zero_masks_we = addr_hit[28] & reg_we & ~wr_err;
+  assign ctrl_shadowed_force_zero_masks_we = addr_hit[29] & reg_we & ~wr_err;
   assign ctrl_shadowed_force_zero_masks_wd = reg_wdata[11];
-  assign ctrl_shadowed_force_zero_masks_re = addr_hit[28] && reg_re;
+  assign ctrl_shadowed_force_zero_masks_re = addr_hit[29] && reg_re;
 
-  assign trigger_start_we = addr_hit[29] & reg_we & ~wr_err;
+  assign trigger_start_we = addr_hit[30] & reg_we & ~wr_err;
   assign trigger_start_wd = reg_wdata[0];
 
-  assign trigger_key_clear_we = addr_hit[29] & reg_we & ~wr_err;
+  assign trigger_key_clear_we = addr_hit[30] & reg_we & ~wr_err;
   assign trigger_key_clear_wd = reg_wdata[1];
 
-  assign trigger_iv_clear_we = addr_hit[29] & reg_we & ~wr_err;
+  assign trigger_iv_clear_we = addr_hit[30] & reg_we & ~wr_err;
   assign trigger_iv_clear_wd = reg_wdata[2];
 
-  assign trigger_data_in_clear_we = addr_hit[29] & reg_we & ~wr_err;
+  assign trigger_data_in_clear_we = addr_hit[30] & reg_we & ~wr_err;
   assign trigger_data_in_clear_wd = reg_wdata[3];
 
-  assign trigger_data_out_clear_we = addr_hit[29] & reg_we & ~wr_err;
+  assign trigger_data_out_clear_we = addr_hit[30] & reg_we & ~wr_err;
   assign trigger_data_out_clear_wd = reg_wdata[4];
 
-  assign trigger_prng_reseed_we = addr_hit[29] & reg_we & ~wr_err;
+  assign trigger_prng_reseed_we = addr_hit[30] & reg_we & ~wr_err;
   assign trigger_prng_reseed_wd = reg_wdata[5];
 
 
@@ -1224,7 +1268,8 @@ module aes_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
       end
 
       addr_hit[1]: begin
@@ -1320,22 +1365,26 @@ module aes_reg_top (
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[31:0] = data_out_0_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[31:0] = data_out_1_qs;
+        reg_rdata_next[31:0] = data_out_0_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[31:0] = data_out_2_qs;
+        reg_rdata_next[31:0] = data_out_1_qs;
       end
 
       addr_hit[27]: begin
-        reg_rdata_next[31:0] = data_out_3_qs;
+        reg_rdata_next[31:0] = data_out_2_qs;
       end
 
       addr_hit[28]: begin
+        reg_rdata_next[31:0] = data_out_3_qs;
+      end
+
+      addr_hit[29]: begin
         reg_rdata_next[0] = ctrl_shadowed_operation_qs;
         reg_rdata_next[6:1] = ctrl_shadowed_mode_qs;
         reg_rdata_next[9:7] = ctrl_shadowed_key_len_qs;
@@ -1343,7 +1392,7 @@ module aes_reg_top (
         reg_rdata_next[11] = ctrl_shadowed_force_zero_masks_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[30]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
@@ -1352,7 +1401,7 @@ module aes_reg_top (
         reg_rdata_next[5] = '0;
       end
 
-      addr_hit[30]: begin
+      addr_hit[31]: begin
         reg_rdata_next[0] = status_idle_qs;
         reg_rdata_next[1] = status_stall_qs;
         reg_rdata_next[2] = status_output_valid_qs;

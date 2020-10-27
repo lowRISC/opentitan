@@ -71,6 +71,8 @@ module sensor_ctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic [6:0] alert_test_wd;
+  logic alert_test_we;
   logic cfg_regwen_qs;
   logic cfg_regwen_wd;
   logic cfg_regwen_we;
@@ -140,6 +142,22 @@ module sensor_ctrl_reg_top (
   logic [1:0] status_qs;
 
   // Register instances
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (7)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q ),
+    .qs     ()
+  );
+
+
   // R[cfg_regwen]: V(False)
 
   prim_subreg #(
@@ -756,14 +774,15 @@ module sensor_ctrl_reg_top (
 
 
 
-  logic [4:0] addr_hit;
+  logic [5:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == SENSOR_CTRL_CFG_REGWEN_OFFSET);
-    addr_hit[1] = (reg_addr == SENSOR_CTRL_ACK_MODE_OFFSET);
-    addr_hit[2] = (reg_addr == SENSOR_CTRL_ALERT_TRIG_OFFSET);
-    addr_hit[3] = (reg_addr == SENSOR_CTRL_ALERT_STATE_OFFSET);
-    addr_hit[4] = (reg_addr == SENSOR_CTRL_STATUS_OFFSET);
+    addr_hit[0] = (reg_addr == SENSOR_CTRL_ALERT_TEST_OFFSET);
+    addr_hit[1] = (reg_addr == SENSOR_CTRL_CFG_REGWEN_OFFSET);
+    addr_hit[2] = (reg_addr == SENSOR_CTRL_ACK_MODE_OFFSET);
+    addr_hit[3] = (reg_addr == SENSOR_CTRL_ALERT_TRIG_OFFSET);
+    addr_hit[4] = (reg_addr == SENSOR_CTRL_ALERT_STATE_OFFSET);
+    addr_hit[5] = (reg_addr == SENSOR_CTRL_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -776,72 +795,76 @@ module sensor_ctrl_reg_top (
     if (addr_hit[2] && reg_we && (SENSOR_CTRL_PERMIT[2] != (SENSOR_CTRL_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[3] && reg_we && (SENSOR_CTRL_PERMIT[3] != (SENSOR_CTRL_PERMIT[3] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[4] && reg_we && (SENSOR_CTRL_PERMIT[4] != (SENSOR_CTRL_PERMIT[4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[5] && reg_we && (SENSOR_CTRL_PERMIT[5] != (SENSOR_CTRL_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign cfg_regwen_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_wd = reg_wdata[6:0];
+
+  assign cfg_regwen_we = addr_hit[1] & reg_we & ~wr_err;
   assign cfg_regwen_wd = reg_wdata[0];
 
-  assign ack_mode_val_0_we = addr_hit[1] & reg_we & ~wr_err;
+  assign ack_mode_val_0_we = addr_hit[2] & reg_we & ~wr_err;
   assign ack_mode_val_0_wd = reg_wdata[0];
 
-  assign ack_mode_val_1_we = addr_hit[1] & reg_we & ~wr_err;
+  assign ack_mode_val_1_we = addr_hit[2] & reg_we & ~wr_err;
   assign ack_mode_val_1_wd = reg_wdata[1];
 
-  assign ack_mode_val_2_we = addr_hit[1] & reg_we & ~wr_err;
+  assign ack_mode_val_2_we = addr_hit[2] & reg_we & ~wr_err;
   assign ack_mode_val_2_wd = reg_wdata[2];
 
-  assign ack_mode_val_3_we = addr_hit[1] & reg_we & ~wr_err;
+  assign ack_mode_val_3_we = addr_hit[2] & reg_we & ~wr_err;
   assign ack_mode_val_3_wd = reg_wdata[3];
 
-  assign ack_mode_val_4_we = addr_hit[1] & reg_we & ~wr_err;
+  assign ack_mode_val_4_we = addr_hit[2] & reg_we & ~wr_err;
   assign ack_mode_val_4_wd = reg_wdata[4];
 
-  assign ack_mode_val_5_we = addr_hit[1] & reg_we & ~wr_err;
+  assign ack_mode_val_5_we = addr_hit[2] & reg_we & ~wr_err;
   assign ack_mode_val_5_wd = reg_wdata[5];
 
-  assign ack_mode_val_6_we = addr_hit[1] & reg_we & ~wr_err;
+  assign ack_mode_val_6_we = addr_hit[2] & reg_we & ~wr_err;
   assign ack_mode_val_6_wd = reg_wdata[6];
 
-  assign alert_trig_val_0_we = addr_hit[2] & reg_we & ~wr_err;
+  assign alert_trig_val_0_we = addr_hit[3] & reg_we & ~wr_err;
   assign alert_trig_val_0_wd = reg_wdata[0];
 
-  assign alert_trig_val_1_we = addr_hit[2] & reg_we & ~wr_err;
+  assign alert_trig_val_1_we = addr_hit[3] & reg_we & ~wr_err;
   assign alert_trig_val_1_wd = reg_wdata[1];
 
-  assign alert_trig_val_2_we = addr_hit[2] & reg_we & ~wr_err;
+  assign alert_trig_val_2_we = addr_hit[3] & reg_we & ~wr_err;
   assign alert_trig_val_2_wd = reg_wdata[2];
 
-  assign alert_trig_val_3_we = addr_hit[2] & reg_we & ~wr_err;
+  assign alert_trig_val_3_we = addr_hit[3] & reg_we & ~wr_err;
   assign alert_trig_val_3_wd = reg_wdata[3];
 
-  assign alert_trig_val_4_we = addr_hit[2] & reg_we & ~wr_err;
+  assign alert_trig_val_4_we = addr_hit[3] & reg_we & ~wr_err;
   assign alert_trig_val_4_wd = reg_wdata[4];
 
-  assign alert_trig_val_5_we = addr_hit[2] & reg_we & ~wr_err;
+  assign alert_trig_val_5_we = addr_hit[3] & reg_we & ~wr_err;
   assign alert_trig_val_5_wd = reg_wdata[5];
 
-  assign alert_trig_val_6_we = addr_hit[2] & reg_we & ~wr_err;
+  assign alert_trig_val_6_we = addr_hit[3] & reg_we & ~wr_err;
   assign alert_trig_val_6_wd = reg_wdata[6];
 
-  assign alert_state_val_0_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_state_val_0_we = addr_hit[4] & reg_we & ~wr_err;
   assign alert_state_val_0_wd = reg_wdata[0];
 
-  assign alert_state_val_1_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_state_val_1_we = addr_hit[4] & reg_we & ~wr_err;
   assign alert_state_val_1_wd = reg_wdata[1];
 
-  assign alert_state_val_2_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_state_val_2_we = addr_hit[4] & reg_we & ~wr_err;
   assign alert_state_val_2_wd = reg_wdata[2];
 
-  assign alert_state_val_3_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_state_val_3_we = addr_hit[4] & reg_we & ~wr_err;
   assign alert_state_val_3_wd = reg_wdata[3];
 
-  assign alert_state_val_4_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_state_val_4_we = addr_hit[4] & reg_we & ~wr_err;
   assign alert_state_val_4_wd = reg_wdata[4];
 
-  assign alert_state_val_5_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_state_val_5_we = addr_hit[4] & reg_we & ~wr_err;
   assign alert_state_val_5_wd = reg_wdata[5];
 
-  assign alert_state_val_6_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_state_val_6_we = addr_hit[4] & reg_we & ~wr_err;
   assign alert_state_val_6_wd = reg_wdata[6];
 
 
@@ -850,10 +873,14 @@ module sensor_ctrl_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = cfg_regwen_qs;
+        reg_rdata_next[6:0] = '0;
       end
 
       addr_hit[1]: begin
+        reg_rdata_next[0] = cfg_regwen_qs;
+      end
+
+      addr_hit[2]: begin
         reg_rdata_next[0] = ack_mode_val_0_qs;
         reg_rdata_next[1] = ack_mode_val_1_qs;
         reg_rdata_next[2] = ack_mode_val_2_qs;
@@ -863,7 +890,7 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[6] = ack_mode_val_6_qs;
       end
 
-      addr_hit[2]: begin
+      addr_hit[3]: begin
         reg_rdata_next[0] = alert_trig_val_0_qs;
         reg_rdata_next[1] = alert_trig_val_1_qs;
         reg_rdata_next[2] = alert_trig_val_2_qs;
@@ -873,7 +900,7 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[6] = alert_trig_val_6_qs;
       end
 
-      addr_hit[3]: begin
+      addr_hit[4]: begin
         reg_rdata_next[0] = alert_state_val_0_qs;
         reg_rdata_next[1] = alert_state_val_1_qs;
         reg_rdata_next[2] = alert_state_val_2_qs;
@@ -883,7 +910,7 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[6] = alert_state_val_6_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[1:0] = status_qs;
       end
 
