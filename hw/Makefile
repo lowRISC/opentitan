@@ -58,7 +58,7 @@ tops_gen = $(addsuffix _gen,$(TOPS))
 
 tops_reg = $(addsuffix _reg,$(TOPS))
 
-all: $(dynips_reg) $(tops_gen) $(tops_reg) banner
+all: $(dynips_reg) $(tops_gen) $(tops_reg) banner otp-mmap
 
 banner:
 	@echo "############################################"
@@ -79,6 +79,9 @@ $(ips_reg): pre_reg
 		${PRJ_DIR}/util/regtool.py -s -t ${REG_OUTPUT_DV_DIR} \
 		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
 	fi
+
+otp-mmap:
+	cd ${PRJ_DIR}/hw/ip/otp_ctrl/util && ./translate-mmap.py
 
 regs-header: $(ips_reg_header) banner
 
