@@ -1112,8 +1112,9 @@ def validate_register(reg, offset, width, top):
 
     return error
 
+
 # simplify the descriptions and enums for non-first entries in multireg
-def _multi_simplify (field, cname, idx):
+def _multi_simplify(field, cname, idx):
     # description and enum already showed once, skip
     if idx > 0:
         field.pop('enum', None)
@@ -1275,16 +1276,21 @@ def validate_multi(mreg, offset, addrsep, width, top):
     return error, rnum
 
 
-def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
-    intrs = regs['interrupt_list']
+def make_intr_alert_reg(regs, name, offset, swaccess, hwaccess, desc):
+    if name == 'ALERT_TEST':
+        signal_list = regs['alert_list']
+    else:
+        signal_list = regs['interrupt_list']
+    # these names will be converted into test registers
+    testreg_names = ['INTR_TEST', 'ALERT_TEST']
     genreg = {}
     genreg['name'] = name
     genreg['desc'] = desc
-    genreg['hwext'] = 'true' if name == 'INTR_TEST' else 'false'
-    genreg['hwqe'] = 'true' if name == 'INTR_TEST' else 'false'
+    genreg['hwext'] = 'true' if name in testreg_names else 'false'
+    genreg['hwqe'] = 'true' if name in testreg_names else 'false'
     genreg['hwre'] = 'false'
     # Add tags.
-    if name == 'INTR_TEST':
+    if name in testreg_names:
         # intr_test csr is WO which - it reads back 0s
         genreg['tags'] = ["excl:CsrNonInitTests:CsrExclWrite"]
     elif name == 'INTR_STATE':
@@ -1296,7 +1302,7 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
     bits_used = 0
     genfields = []
     cur_bit = 0
-    for (field_idx, bit) in enumerate(intrs):
+    for (field_idx, bit) in enumerate(signal_list):
         newf = {}
         newf['name'] = bit['name']
         w = 1
@@ -1311,8 +1317,8 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
         # Put the automatically generated information back into
         # `interrupt_list`, so that it can be used to generate C preprocessor
         # definitions if needed.
-        intrs[field_idx]['bits'] = newf['bits']
-        intrs[field_idx]['bitinfo'] = newf['bitinfo']
+        signal_list[field_idx]['bits'] = newf['bits']
+        signal_list[field_idx]['bitinfo'] = newf['bitinfo']
 
         if name == 'INTR_ENABLE':
             newf['desc'] = 'Enable interrupt when ' + \
@@ -1322,6 +1328,8 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
             newf['desc'] = 'Write 1 to force ' + \
                            ('corresponding bit in ' if w > 1 else '') + \
                            '!!INTR_STATE.' + newf['name'] + ' to 1'
+        elif name == 'ALERT_TEST':
+            newf['desc'] = 'Write 1 to trigger one alert event of this kind.'
         else:
             newf['desc'] = bit['desc']
         newf['swaccess'] = swaccess
@@ -1332,7 +1340,7 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
         newf['hwaccess'] = hwaccess
         hwacc_info = hwaccess_permitted[hwaccess]
         newf['genhwaccess'] = hwacc_info[1]
-        newf['genhwqe'] = True if name == 'INTR_TEST' else False
+        newf['genhwqe'] = True if name in testreg_names else False
         newf['genhwre'] = False
         newf['genresval'] = 0
         newf['genresvalx'] = False
@@ -1359,21 +1367,35 @@ def make_intr_reg(regs, name, offset, swaccess, hwaccess, desc):
 def make_intr_regs(regs, offset, addrsep, fullwidth):
     iregs = []
     intrs = regs['interrupt_list']
-    if sum([int(x['width'], 0) if 'width' in x else 1
-            for x in intrs]) > fullwidth:
+    num_intrs = sum([int(x.get('width', '1'), 0) for x in intrs])
+    if num_intrs > fullwidth:
         log.error('More than ' + str(fullwidth) + ' interrupts in list')
         return iregs, 1
 
-    iregs.append(
-        make_intr_reg(regs, 'INTR_STATE', offset, 'rw1c', 'hrw',
-                      'Interrupt State Register'))
-    iregs.append(
-        make_intr_reg(regs, 'INTR_ENABLE', offset + addrsep, 'rw', 'hro',
-                      'Interrupt Enable Register'))
-    iregs.append(
-        make_intr_reg(regs, 'INTR_TEST', offset + 2 * addrsep, 'wo', 'hro',
-                      'Interrupt Test Register'))
+    new_reg = make_intr_alert_reg(regs, 'INTR_STATE', offset, 'rw1c', 'hrw',
+                                  'Interrupt State Register')
+    iregs.append(new_reg)
+    new_reg = make_intr_alert_reg(regs, 'INTR_ENABLE', offset + addrsep, 'rw', 'hro',
+                                  'Interrupt Enable Register')
+    iregs.append(new_reg)
+    new_reg = make_intr_alert_reg(regs, 'INTR_TEST', offset + 2 * addrsep, 'wo', 'hro',
+                                  'Interrupt Test Register')
+    iregs.append(new_reg)
     return iregs, 0
+
+
+def make_alert_regs(regs, offset, addrsep, fullwidth):
+    alert_regs = []
+    alerts = regs['alert_list']
+    num_alerts = sum([int(x.get('width', '1'), 0) for x in alerts])
+    if num_alerts > fullwidth:
+        log.error('More than ' + str(fullwidth) + ' alerts in list')
+        return alert_regs, 1
+
+    new_reg = make_intr_alert_reg(regs, 'ALERT_TEST', offset, 'wo', 'hro',
+                                  'Alert Test Register')
+    alert_regs.append(new_reg)
+    return alert_regs, 0
 
 
 def validate_window(win, offset, regwidth, top):
@@ -1597,27 +1619,44 @@ def validate(regs, **kwargs):
     # auto header generation would go here and update autoregs
 
     if 'no_auto_intr_regs' in regs:
-        no_autoi, err = check_bool(regs['no_auto_intr_regs'],
-                                   'no_auto_intr_regs')
+        no_auto_intr, err = check_bool(regs['no_auto_intr_regs'],
+                                       'no_auto_intr_regs')
         if err:
             error += 1
     else:
-        no_autoi = False
-    if 'interrupt_list' in regs and 'genautoregs' not in regs and not no_autoi:
+        no_auto_intr = False
+
+    if 'no_auto_alert_regs' in regs:
+        no_auto_alerts, err = check_bool(regs['no_auto_alert_regs'],
+                                         'no_auto_alert_regs')
+        if err:
+            error += 1
+    else:
+        no_auto_alerts = False
+
+    if 'interrupt_list' in regs and 'genautoregs' not in regs and not no_auto_intr:
         iregs, err = make_intr_regs(regs, offset, addrsep, fullwidth)
         error += err
         autoregs.extend(iregs)
         offset += addrsep * len(iregs)
 
     # Generate a NumAlerts parameter for provided alert_list.
-    if 'alert_list' in regs:
-        num_alerts = len(regs['alert_list'])
-        # Some modules have alerts of width > 1.
-        for a in regs['alert_list']:
-            if 'width' in a:
-                a_width = int(a['width'])
-                if a_width > 1:
-                    num_alerts += (a_width - 1)
+    if regs.setdefault('alert_list', []):
+        # Generate alert test registers.
+        if 'genautoregs' not in regs and not no_auto_alerts:
+            aregs, err = make_alert_regs(regs, offset, addrsep, fullwidth)
+            error += err
+            autoregs.extend(aregs)
+            offset += addrsep * len(aregs)
+
+        num_alerts = 0
+        for alert in regs['alert_list']:
+            alert_width = int(alert.get('width', '1'), 0)
+            num_alerts += alert_width
+            if alert_width > 1:
+                log.warning("{}: Consider naming each alert individually instead of "
+                            "declaring an alert signal with width > 1.".format(alert['name']))
+
         if num_alerts != 0:
             param = ''
             for p in regs['param_list']:
