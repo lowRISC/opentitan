@@ -66,7 +66,12 @@
 //             - http://www.lightweightcrypto.org/present/present_ches2007.pdf
 //
 
-module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
+module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
+  // Compile time random constants, to be overriden by topgen.
+  parameter key_array_t          RndCnstKey         = RndCnstKeyDefault,
+  parameter digest_const_array_t RndCnstDigestConst = RndCnstDigestConstDefault,
+  parameter digest_iv_array_t    RndCnstDigestIV    = RndCnstDigestIVDefault
+) (
   input                               clk_i,
   input                               rst_ni,
   // input data and command
@@ -98,7 +103,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   // NumPresentRounds forwards to get the decryption key.
   for (genvar k = 0; k < NumScrmblKeys; k++) begin : gen_dec_key_lut
     assign otp_dec_key_lut[k] =
-        prim_cipher_pkg::present_get_dec_key128(OtpKey[k], 5'(NumPresentRounds));
+        prim_cipher_pkg::present_get_dec_key128(RndCnstKey[k], 5'(NumPresentRounds));
   end
   `ASSERT_KNOWN(DecKeyLutKnown_A, otp_dec_key_lut)
 
@@ -137,13 +142,13 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; (
   digest_mode_e digest_mode_d, digest_mode_q;
 
   assign otp_enc_key_mux      = (sel_d < NumScrmblKeys) ?
-                                OtpKey[sel_d[vbits(NumScrmblKeys)-1:0]]          : '0;
+                                RndCnstKey[sel_d[vbits(NumScrmblKeys)-1:0]]         : '0;
   assign otp_dec_key_mux      = (sel_d < NumScrmblKeys) ?
-                                otp_dec_key_lut[sel_d[vbits(NumScrmblKeys)-1:0]] : '0;
+                                otp_dec_key_lut[sel_d[vbits(NumScrmblKeys)-1:0]]    : '0;
   assign otp_digest_const_mux = (sel_d < NumDigestSets) ?
-                                OtpDigestConst[sel_d[vbits(NumDigestSets)-1:0]]  : '0;
+                                RndCnstDigestConst[sel_d[vbits(NumDigestSets)-1:0]] : '0;
   assign otp_digest_iv_mux    = (sel_d < NumDigestSets) ?
-                                OtpDigestIV[sel_d[vbits(NumDigestSets)-1:0]]     : '0;
+                                RndCnstDigestIV[sel_d[vbits(NumDigestSets)-1:0]]    : '0;
 
   // Make sure we always select a valid key / digest constant.
   `ASSERT(CheckNumEncKeys_A, key_state_sel  == SelEncKeyInit  |-> sel_d < NumScrmblKeys)

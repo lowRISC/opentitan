@@ -20,7 +20,7 @@
 // an alert via the error logic.
 //
 // The EntropyWidth LSBs of the LFSR are periodically reseeded with fresh entropy from
-// CSRNG every 2^ReseedTimerWidth cycles.
+// CSRNG every 2^ReseedLfsrWidth cycles.
 //
 // It is also possible to trigger one-off checks via integ_chk_trig_i and cnsty_chk_trig_i.
 // This can be useful if SW chooses to leave the periodic checks disabled.
@@ -33,15 +33,10 @@ module otp_ctrl_lfsr_timer
   import otp_ctrl_reg_pkg::*;
 #(
   // Entropy reseeding is triggered every time this counter expires.
-  parameter int                          ReseedTimerWidth = 16,
-  parameter logic [TimerWidth-1:0]       LfsrSeed           = TimerWidth'(1'b1),
-  parameter logic [TimerWidth-1:0][31:0] LfsrPerm           = {
-    32'd13, 32'd17, 32'd29, 32'd11, 32'd28, 32'd12, 32'd33, 32'd27,
-    32'd05, 32'd39, 32'd31, 32'd21, 32'd15, 32'd01, 32'd24, 32'd37,
-    32'd32, 32'd38, 32'd26, 32'd34, 32'd08, 32'd10, 32'd04, 32'd02,
-    32'd19, 32'd00, 32'd20, 32'd06, 32'd25, 32'd22, 32'd03, 32'd35,
-    32'd16, 32'd14, 32'd23, 32'd07, 32'd30, 32'd09, 32'd18, 32'd36
-  }
+  parameter int         ReseedLfsrWidth = 16,
+  // Compile time random constants, to be overriden by topgen.
+  parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
 ) (
   input                            clk_i,
   input                            rst_ni,
@@ -69,10 +64,10 @@ module otp_ctrl_lfsr_timer
   ////////////////////
 
   logic reseed_en;
-  logic [ReseedTimerWidth-1:0] reseed_timer_d, reseed_timer_q;
+  logic [ReseedLfsrWidth-1:0] reseed_timer_d, reseed_timer_q;
 
-  assign reseed_timer_d = (reseed_timer_q > '0) ? reseed_timer_q - 1'b1    :
-                          (reseed_en)           ? {ReseedTimerWidth{1'b1}} : '0;
+  assign reseed_timer_d = (reseed_timer_q > '0) ? reseed_timer_q - 1'b1   :
+                          (reseed_en)           ? {ReseedLfsrWidth{1'b1}} : '0;
   assign edn_req_o = (reseed_timer_q == '0);
   assign reseed_en = edn_req_o & edn_ack_i;
 
@@ -81,23 +76,23 @@ module otp_ctrl_lfsr_timer
   //////////
 
   logic lfsr_en;
-  logic [TimerWidth-1:0] lfsr_state;
+  logic [LfsrWidth-1:0] lfsr_state;
 
   prim_lfsr #(
-    .LfsrDw      ( TimerWidth   ),
-    .EntropyDw   ( TimerWidth   ),
-    .StateOutDw  ( TimerWidth   ),
-    .DefaultSeed ( LfsrSeed     ),
-    .StatePermEn ( 1'b1         ),
-    .StatePerm   ( LfsrPerm     ),
-    .ExtSeedSVA  ( 1'b0         ) // ext seed is unused
+    .LfsrDw      ( LfsrWidth      ),
+    .EntropyDw   ( LfsrWidth      ),
+    .StateOutDw  ( LfsrWidth      ),
+    .DefaultSeed ( RndCnstLfsrSeed ),
+    .StatePermEn ( 1'b1            ),
+    .StatePerm   ( RndCnstLfsrPerm ),
+    .ExtSeedSVA  ( 1'b0            ) // ext seed is unused
   ) i_prim_lfsr (
     .clk_i,
     .rst_ni,
     .seed_en_i  ( 1'b0       ),
     .seed_i     ( '0         ),
-    .lfsr_en_i  ( lfsr_en | reseed_en                                  ),
-    .entropy_i  ( edn_data_i[TimerWidth-1:0] & {TimerWidth{reseed_en}} ),
+    .lfsr_en_i  ( lfsr_en | reseed_en                                ),
+    .entropy_i  ( edn_data_i[LfsrWidth-1:0] & {LfsrWidth{reseed_en}} ),
     .state_o    ( lfsr_state )
   );
 
@@ -105,28 +100,30 @@ module otp_ctrl_lfsr_timer
   logic unused_seed;
   assign unused_seed = ^edn_data_i;
 
+  `ASSERT_INIT(EdnIsWideEnough_A, EdnDataWidth >= LfsrWidth)
+
   //////////////
   // Counters //
   //////////////
 
-  logic [TimerWidth-1:0] integ_cnt_d, integ_cnt_q;
-  logic [TimerWidth-1:0] cnsty_cnt_d, cnsty_cnt_q;
-  logic [TimerWidth-1:0] integ_mask, cnsty_mask;
+  logic [LfsrWidth-1:0] integ_cnt_d, integ_cnt_q;
+  logic [LfsrWidth-1:0] cnsty_cnt_d, cnsty_cnt_q;
+  logic [LfsrWidth-1:0] integ_mask, cnsty_mask;
   logic integ_load_period, integ_load_timeout, integ_cnt_zero;
   logic cnsty_load_period, cnsty_load_timeout, cnsty_cnt_zero;
   logic timeout_zero, integ_msk_zero, cnsty_msk_zero;
 
-  assign integ_mask  = {integ_period_msk_i, {TimerWidth-32{1'b1}}};
-  assign cnsty_mask  = {cnsty_period_msk_i, {TimerWidth-32{1'b1}}};
+  assign integ_mask  = {integ_period_msk_i, {LfsrWidth-32{1'b1}}};
+  assign cnsty_mask  = {cnsty_period_msk_i, {LfsrWidth-32{1'b1}}};
 
   assign integ_cnt_d = (integ_load_period)  ? lfsr_state & integ_mask :
-                       (integ_load_timeout) ? TimerWidth'(timeout_i)  :
+                       (integ_load_timeout) ? LfsrWidth'(timeout_i)  :
                        (integ_cnt_zero)     ? '0                      :
                                               integ_cnt_q - 1'b1;
 
 
   assign cnsty_cnt_d = (cnsty_load_period)  ? lfsr_state & cnsty_mask :
-                       (cnsty_load_timeout) ? TimerWidth'(timeout_i)  :
+                       (cnsty_load_timeout) ? LfsrWidth'(timeout_i)  :
                        (cnsty_cnt_zero)     ? '0                      :
                                               cnsty_cnt_q - 1'b1;
 
