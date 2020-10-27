@@ -7,25 +7,29 @@
 
 package flash_ctrl_pkg;
 
-  // design constants
+  // design parameters that can be altered through topgen
   parameter int NumBanks        = flash_ctrl_reg_pkg::RegNumBanks;
-  parameter int DataWidth       = 64;
-  parameter int MetaDataWidth   = 12;
-  parameter int InfoTypes       = 2; // How many types of info per bank
+  parameter int PagesPerBank    = flash_ctrl_reg_pkg::RegPagesPerBank;
+
+  // fixed parameters of flash derived from topgen parameters
+  parameter int DataWidth       = ${cfg['data_width']};
+  parameter int MetaDataWidth   = ${cfg['metadata_width']};
+  parameter int InfoTypes       = ${cfg['info_types']}; // How many types of info per bank
 
 // The following hard-wired values are there to work-around verilator.
 // For some reason if the values are assigned through parameters verilator thinks
 // they are not constant
   parameter int InfoTypeSize [InfoTypes] = '{
-    4,
-    4
+  % for type in range(cfg['info_types']):
+    ${cfg['infos_per_bank'][type]}${"," if not loop.last else ""}
+  % endfor
   };
   parameter int InfosPerBank    = max_info_pages('{
-    4,
-    4
+  % for type in range(cfg['info_types']):
+    ${cfg['infos_per_bank'][type]}${"," if not loop.last else ""}
+  % endfor
   });
-  parameter int PagesPerBank    = 256; // Data pages per bank
-  parameter int WordsPerPage    = 128; // Number of flash words per page
+  parameter int WordsPerPage    = ${cfg['words_per_page']}; // Number of flash words per page
   parameter int BusWidth        = top_pkg::TL_DW;
   parameter int MpRegions       = 8;  // flash controller protection regions
   parameter int FifoDepth       = 16; // rd / prog fifos

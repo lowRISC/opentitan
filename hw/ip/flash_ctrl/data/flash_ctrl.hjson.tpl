@@ -60,10 +60,19 @@
   ],
 
   param_list: [
+    // The reg parameters can be modified directly through top_*.hjson.
+    // The template will automatically propagate the appropriate values.
     { name: "RegNumBanks",
       desc: "Number of flash banks",
       type: "int",
-      default: "2",
+      default: "${cfg['banks']}",
+      local: "true"
+    },
+
+    { name: "RegPagesPerBank",
+      desc: "Number of pages per bank",
+      type: "int",
+      default: "${cfg['pages_per_bank']}",
       local: "true"
     },
 
@@ -74,18 +83,48 @@
       local: "true"
     },
 
-    { name: "NumInfos0",
-      desc: "Number of configurable flash info pages for info type 0",
+    // The following parameters are derived from topgen and should not be
+    // direclty modified.
+    % for type in range(cfg['info_types']):
+    { name: "NumInfos${type}",
+      desc: "Number of configurable flash info pages for info type ${type}",
       type: "int",
-      default: "4",
+      default: "${cfg['infos_per_bank'][type]}",
       local: "true"
     },
-    { name: "NumInfos1",
-      desc: "Number of configurable flash info pages for info type 1",
+    % endfor
+
+    { name: "WordsPerPage",
+      desc: "Number of words per page",
       type: "int",
-      default: "4",
+      default: "${cfg['words_per_page']}",
       local: "true"
     },
+
+    { name: "BytesPerWord",
+      desc: "Number of bytes per word",
+      type: "int",
+      default: "${cfg['data_width'] // 8}",
+      local: "true"
+    },
+
+    { name: "BytesPerPage",
+      desc: "Number of bytes per page",
+      type: "int",
+      default: "${cfg['data_width'] // 8 * cfg['words_per_page']}",
+      local: "true"
+    },
+
+    { name: "BytesPerBank",
+      desc: "Number of bytes per bank",
+      type: "int",
+      default: "${int(cfg['size'],0) // cfg['banks']}",
+      local: "true"
+    },
+
+
+
+
   ],
 
   regwidth: "32",
@@ -403,11 +442,13 @@
     },
 
     // Info partition memory protection setup
+    % for bank in range(cfg['banks']):
+    %   for idx in range(cfg['info_types']):
     { multireg: {
         cname: "FLASH_CTRL",
-        name: "BANK0_INFO0_REGWEN"
+        name: "BANK${bank}_INFO${idx}_REGWEN"
         desc: "Memory region registers configuration enable.",
-        count: "NumInfos0",
+        count: "NumInfos${idx}",
         swaccess: "rw0c",
         hwaccess: "none",
         compact: false,
@@ -415,7 +456,7 @@
             { bits: "0",
               name: "REGION",
               resval: "1"
-              desc: "Info0 page write enable.  Once set to 0, it can longer be configured to 1",
+              desc: "Info${idx} page write enable.  Once set to 0, it can longer be configured to 1",
               enum: [
                 { value: "0",
                   name: "Page locked",
@@ -437,15 +478,15 @@
 
     { multireg: {
         cname: "FLASH_CTRL",
-        name: "BANK0_INFO0_PAGE_CFG",
+        name: "BANK${bank}_INFO${idx}_PAGE_CFG",
         desc: '''
-                Memory protection configuration for info partition in bank0,
+                Memory protection configuration for info partition in bank${bank},
                 Unlike data partition, each page is individually protected.
               '''
-        count: "NumInfos0",
+        count: "NumInfos${idx}",
         swaccess: "rw",
         hwaccess: "hro",
-        regwen: "BANK0_INFO0_REGWEN",
+        regwen: "BANK${bank}_INFO${idx}_REGWEN",
         regwen_multi: true,
         fields: [
             { bits: "0",
@@ -486,255 +527,8 @@
         ],
       },
     },
-    { multireg: {
-        cname: "FLASH_CTRL",
-        name: "BANK0_INFO1_REGWEN"
-        desc: "Memory region registers configuration enable.",
-        count: "NumInfos1",
-        swaccess: "rw0c",
-        hwaccess: "none",
-        compact: false,
-        fields: [
-            { bits: "0",
-              name: "REGION",
-              resval: "1"
-              desc: "Info1 page write enable.  Once set to 0, it can longer be configured to 1",
-              enum: [
-                { value: "0",
-                  name: "Page locked",
-                  desc: '''
-                    Region can no longer be configured until next reset
-                    '''
-                },
-                { value: "1",
-                  name: "Page enabled",
-                  desc: '''
-                    Region can be configured
-                    '''
-                },
-              ]
-            },
-        ],
-      },
-    },
-
-    { multireg: {
-        cname: "FLASH_CTRL",
-        name: "BANK0_INFO1_PAGE_CFG",
-        desc: '''
-                Memory protection configuration for info partition in bank0,
-                Unlike data partition, each page is individually protected.
-              '''
-        count: "NumInfos1",
-        swaccess: "rw",
-        hwaccess: "hro",
-        regwen: "BANK0_INFO1_REGWEN",
-        regwen_multi: true,
-        fields: [
-            { bits: "0",
-              name: "EN",
-              desc: '''
-                Region enabled, following fields apply
-              ''',
-              resval: "0"
-            },
-            { bits: "1",
-              name: "RD_EN",
-              desc: '''
-                Region can be read
-              ''',
-              resval: "0"
-            },
-            { bits: "2",
-              name: "PROG_EN",
-              desc: '''
-                Region can be programmed
-              ''',
-              resval: "0"
-            }
-            { bits: "3",
-              name: "ERASE_EN",
-              desc: '''
-                Region can be erased
-              ''',
-              resval: "0"
-            }
-            { bits: "4",
-              name: "SCRAMBLE_EN",
-              desc: '''
-                Region is scramble and ECC enabled.
-              ''',
-              resval: "0"
-            }
-        ],
-      },
-    },
-    { multireg: {
-        cname: "FLASH_CTRL",
-        name: "BANK1_INFO0_REGWEN"
-        desc: "Memory region registers configuration enable.",
-        count: "NumInfos0",
-        swaccess: "rw0c",
-        hwaccess: "none",
-        compact: false,
-        fields: [
-            { bits: "0",
-              name: "REGION",
-              resval: "1"
-              desc: "Info0 page write enable.  Once set to 0, it can longer be configured to 1",
-              enum: [
-                { value: "0",
-                  name: "Page locked",
-                  desc: '''
-                    Region can no longer be configured until next reset
-                    '''
-                },
-                { value: "1",
-                  name: "Page enabled",
-                  desc: '''
-                    Region can be configured
-                    '''
-                },
-              ]
-            },
-        ],
-      },
-    },
-
-    { multireg: {
-        cname: "FLASH_CTRL",
-        name: "BANK1_INFO0_PAGE_CFG",
-        desc: '''
-                Memory protection configuration for info partition in bank1,
-                Unlike data partition, each page is individually protected.
-              '''
-        count: "NumInfos0",
-        swaccess: "rw",
-        hwaccess: "hro",
-        regwen: "BANK1_INFO0_REGWEN",
-        regwen_multi: true,
-        fields: [
-            { bits: "0",
-              name: "EN",
-              desc: '''
-                Region enabled, following fields apply
-              ''',
-              resval: "0"
-            },
-            { bits: "1",
-              name: "RD_EN",
-              desc: '''
-                Region can be read
-              ''',
-              resval: "0"
-            },
-            { bits: "2",
-              name: "PROG_EN",
-              desc: '''
-                Region can be programmed
-              ''',
-              resval: "0"
-            }
-            { bits: "3",
-              name: "ERASE_EN",
-              desc: '''
-                Region can be erased
-              ''',
-              resval: "0"
-            }
-            { bits: "4",
-              name: "SCRAMBLE_EN",
-              desc: '''
-                Region is scramble and ECC enabled.
-              ''',
-              resval: "0"
-            }
-        ],
-      },
-    },
-    { multireg: {
-        cname: "FLASH_CTRL",
-        name: "BANK1_INFO1_REGWEN"
-        desc: "Memory region registers configuration enable.",
-        count: "NumInfos1",
-        swaccess: "rw0c",
-        hwaccess: "none",
-        compact: false,
-        fields: [
-            { bits: "0",
-              name: "REGION",
-              resval: "1"
-              desc: "Info1 page write enable.  Once set to 0, it can longer be configured to 1",
-              enum: [
-                { value: "0",
-                  name: "Page locked",
-                  desc: '''
-                    Region can no longer be configured until next reset
-                    '''
-                },
-                { value: "1",
-                  name: "Page enabled",
-                  desc: '''
-                    Region can be configured
-                    '''
-                },
-              ]
-            },
-        ],
-      },
-    },
-
-    { multireg: {
-        cname: "FLASH_CTRL",
-        name: "BANK1_INFO1_PAGE_CFG",
-        desc: '''
-                Memory protection configuration for info partition in bank1,
-                Unlike data partition, each page is individually protected.
-              '''
-        count: "NumInfos1",
-        swaccess: "rw",
-        hwaccess: "hro",
-        regwen: "BANK1_INFO1_REGWEN",
-        regwen_multi: true,
-        fields: [
-            { bits: "0",
-              name: "EN",
-              desc: '''
-                Region enabled, following fields apply
-              ''',
-              resval: "0"
-            },
-            { bits: "1",
-              name: "RD_EN",
-              desc: '''
-                Region can be read
-              ''',
-              resval: "0"
-            },
-            { bits: "2",
-              name: "PROG_EN",
-              desc: '''
-                Region can be programmed
-              ''',
-              resval: "0"
-            }
-            { bits: "3",
-              name: "ERASE_EN",
-              desc: '''
-                Region can be erased
-              ''',
-              resval: "0"
-            }
-            { bits: "4",
-              name: "SCRAMBLE_EN",
-              desc: '''
-                Region is scramble and ECC enabled.
-              ''',
-              resval: "0"
-            }
-        ],
-      },
-    },
+    %   endfor
+    % endfor
 
     { name: "BANK_CFG_REGWEN"
       desc: "Bank configuration registers configuration enable.",
