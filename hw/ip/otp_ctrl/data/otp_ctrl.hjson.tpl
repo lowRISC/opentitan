@@ -351,6 +351,8 @@
         hwaccess:  "hwo",
         hwext:     "true",
         cname:     "AGENT",
+        tags: [ // OTP internal HW can modify the error code registers
+                "excl:CsrAllTests:CsrExclCheck"],
         fields: [
           {
             bits: "2:0"
@@ -571,9 +573,6 @@
       hwqe:     "true",
       hwext:    "true",
       regwen:   "CHECK_TRIGGER_REGWEN",
-      tags:     [ // Triggering any of these checks may lead to unintended alerts
-                  // if the CHECK_TIMEOUT is not configured properly.
-                  "excl:CsrAllTests:CsrExclWrite"],
       fields: [
         { bits: "0",
           name: "INTEGRITY",
@@ -639,9 +638,6 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "CHECK_REGWEN",
-      tags:     [ // Triggering any of these checks may lead to unintended alerts
-                  // if the CHECK_TIMEOUT is not configured properly.
-                  "excl:CsrAllTests:CsrExclWrite"],
       fields: [
         { bits: "31:0",
           desc: '''
@@ -664,9 +660,6 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "CHECK_REGWEN",
-      tags:     [ // Triggering any of these checks may lead to unintended alerts
-                  // if the CHECK_TIMEOUT is not configured properly.
-                  "excl:CsrAllTests:CsrExclWrite"],
       fields: [
         { bits: "31:0",
           desc: '''
