@@ -132,7 +132,8 @@ module otp_ctrl_dai
     DaiOffset = 1'b1
   } addr_sel_e;
 
-  state_e state_d, state_q;
+  state_e state_d;
+  logic [StateWidth-1:0] state_q;
   logic [CntWidth-1:0] cnt_d, cnt_q;
   logic cnt_en, cnt_clr;
   otp_err_e error_d, error_q;
@@ -151,7 +152,7 @@ module otp_ctrl_dai
   assign scrmbl_data_o = data_q;
 
   always_comb begin : p_fsm
-    state_d = state_q;
+    state_d = state_e'(state_q);
 
     // Init signals
     init_done_o = 1'b1;

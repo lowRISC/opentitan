@@ -102,7 +102,7 @@ module otp_ctrl_part_unbuf
     DataAddr = 1'b1
   } addr_sel_e;
 
-  state_e state_d, state_q;
+  state_e state_d;
   addr_sel_e otp_addr_sel;
   otp_err_e error_d, error_q;
 
@@ -110,6 +110,7 @@ module otp_ctrl_part_unbuf
   logic parity_err;
 
   logic [SwWindowAddrWidth-1:0] tlul_addr_d, tlul_addr_q;
+  logic [StateWidth-1:0] state_q;
 
   // Output partition error state.
   assign error_o = error_q;
@@ -122,7 +123,7 @@ module otp_ctrl_part_unbuf
   `ASSERT_KNOWN(FsmStateKnown_A, state_q)
   always_comb begin : p_fsm
     // Default assignments
-    state_d = state_q;
+    state_d = state_e'(state_q);
 
     // Response to init request
     init_done_o = 1'b0;

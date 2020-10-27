@@ -279,10 +279,11 @@ module otp_ctrl_kdi
     ErrorSt      = 10'b1111011100
   } state_e;
 
-  state_e state_d, state_q;
+  state_e state_d;
+  logic [StateWidth-1:0] state_q;
 
   always_comb begin : p_fsm
-    state_d = state_q;
+    state_d = state_e'(state_q);
 
     // FSM Error output
     fsm_err_o = 1'b0;

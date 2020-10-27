@@ -92,13 +92,14 @@ module otp_ctrl_lci
   logic [CntWidth-1:0] cnt_d, cnt_q;
   otp_err_e error_d, error_q;
   logic delta_data_is_set;
-  state_e state_d, state_q;
+  state_e state_d;
+  logic [StateWidth-1:0] state_q;
 
   // Output LCI errors
   assign error_o = error_q;
 
   always_comb begin : p_fsm
-    state_d = state_q;
+    state_d = state_e'(state_q);
 
     // Counter
     cnt_en   = 1'b0;
