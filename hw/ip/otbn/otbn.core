@@ -68,6 +68,17 @@ parameters:
   SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
+  OTBN_BUILD_MODEL:
+    datatype: bool
+    paramtype: vlogdefine
+    description: |
+      Build the simulation with the ISS as well as with the RTL implementation
+      (development only). Use the OTBN_USE_MODEL plusarg to switch at runtime.
+  OTBN_USE_MODEL:
+    datatype: bool
+    description: Use the OTBN model instead of the RTL implementation (development only)
+    paramtype: plusarg
+    default: false
 
 targets:
   default: &default_target
@@ -78,6 +89,9 @@ targets:
       - files_rtl_top
       - tool_verilator ? (files_model)
     toplevel: otbn
+    parameters:
+      - OTBN_USE_MODEL
+      - OTBN_BUILD_MODEL
 
   lint:
     <<: *default_target

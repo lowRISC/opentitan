@@ -56,10 +56,6 @@ parameters:
     paramtype: vlogdefine
     default: true
     description: Replace JTAG TAP with an OpenOCD direct connection
-  OTBN_MODEL:
-    datatype: bool
-    paramtype: vlogdefine
-    description: Use the OTBN model instead of the RTL implementation (development only)
   UART_LOG_uart0:
     datatype: string
     paramtype: plusarg
@@ -84,7 +80,9 @@ targets:
       - flashinit
       - rominit
       - DMIDirectTAP
-      - OTBN_MODEL
+      # Always build OTBN with model and RTL. Switch between the two at runtime
+      # by passing "+OTBN_USE_MODEL=1" to the simulation.
+      - OTBN_BUILD_MODEL=true
       - RV_CORE_IBEX_SIM_SRAM=true
     default_tool: verilator
     filesets:

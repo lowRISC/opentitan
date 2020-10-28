@@ -99,16 +99,26 @@ and check the results are as expected.
 
 ### Run OT earlgrey simulation with the OTBN model, rather than the RTL design
 
-The default behaviour is that the OTBN block contains the RTL design.
-If you wish to run system-level testing against the Python-based
-instruction set simulator instead of the RTL (hereafter called the
-ISS), you need to pass the `OTBN_MODEL` flag. For example, to compile
-the Verilator simulation, use:
+For simulation targets, the OTBN block can be built with both the RTL
+implementation and the Python-based instruction set simulator (hereafter called
+the ISS) compiled in. When running the simulation the plusarg `OTBN_USE_MODEL`
+can be used to switch between the RTL implementation and the model, without
+recompiling the simulation.
+
+The Verilator simulation of Earl Grey (`lowrisc:systems:top_earlgrey_verilator`)
+builds the model by default when compiling the simulation and nothing else needs
+to be done. For other simulation targets, set the `OTBN_BUILD_MODEL` define,
+e.g. by passing `--OTBN_BUILD_MODEL` to fusesoc.
+
+To run the simulation against the OTBN ISS pass `+OTBN_USE_MODEL=1` to the
+simulation run, e.g.
 
 ```sh
-fusesoc --cores-root=. run \
-  --flag=fileset_top --target=sim --setup --build \
-  lowrisc:systems:top_earlgrey_verilator --OTBN_MODEL
+build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
+  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf  \
+  --meminit=flash,build-bin/sw/device/tests/dif_otbn_sanitytest_sim_verilator.elf \
+  +UARTDPI_LOG_uart0=- \
+  +OTBN_USE_MODEL=1
 ```
 
 The simulation communicates with the model by creating a directory in
@@ -116,7 +126,6 @@ the temporary directory (/tmp or TMPDIR) and filling it with files.
 Normally, it cleans up after itself. If something goes wrong and you'd
 like to look at these files, set the `OTBN_MODEL_KEEP_TMP` environment
 variable to `1`.
-
 
 ### Run the ISS on its own
 

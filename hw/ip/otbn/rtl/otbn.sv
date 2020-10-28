@@ -46,12 +46,6 @@ module otbn
   localparam int ImemAddrWidth = vbits(ImemSizeByte);
   localparam int DmemAddrWidth = vbits(DmemSizeByte);
 
-`ifdef OTBN_MODEL
-  localparam int OTBNModel = 1;
-`else
-  localparam int OTBNModel = 0;
-`endif
-
   logic start;
   logic busy_d, busy_q;
   logic done;
@@ -435,9 +429,23 @@ module otbn
   end
   assign busy_d = (busy_q | start) & ~done;
 
-  if (OTBNModel) begin : gen_impl_model
-    localparam ImemScope = "..u_imem.u_mem.gen_generic.u_impl_generic";
-    localparam DmemScope = "..u_dmem.u_mem.gen_generic.u_impl_generic";
+  `ifdef OTBN_BUILD_MODEL
+    // Build both model and RTL implementation into the design, and switch at runtime through a
+    // plusarg.
+
+    // Set the plusarg +OTBN_USE_MODEL=1 to use the model (ISS) instead of the RTL implementation.
+    int otbn_use_model;
+    initial begin
+      $value$plusargs("OTBN_USE_MODEL=%d", otbn_use_model);
+    end
+
+    // Mux between model and RTL implementation at runtime.
+    logic done_model, done_rtl;
+    assign done = done_model | done_rtl;
+
+    // Model (Instruction Set Simulation)
+    localparam string ImemScope = "..u_imem.u_mem.gen_generic.u_impl_generic";
+    localparam string DmemScope = "..u_dmem.u_mem.gen_generic.u_impl_generic";
 
     otbn_core_model #(
       .DmemSizeByte(DmemSizeByte),
@@ -449,14 +457,47 @@ module otbn
       .clk_i,
       .rst_ni,
 
-      .start_i (start),
-      .done_o  (done),
+      .enable_i (otbn_use_model),
 
-      .start_addr_i  (start_addr),
+      .start_i (start),
+      .done_o (done_model),
+
+      .start_addr_i (start_addr),
 
       .err_o ()
     );
-  end else begin : gen_impl_rtl
+
+    // RTL implementation
+    otbn_core #(
+      .RegFile(RegFile),
+      .DmemSizeByte(DmemSizeByte),
+      .ImemSizeByte(ImemSizeByte)
+    ) u_otbn_core (
+      .clk_i,
+      .rst_ni,
+
+      .start_i (start),
+      .done_o  (done_rtl),
+
+      .start_addr_i  (start_addr),
+
+      .imem_req_o    (imem_req_core),
+      .imem_addr_o   (imem_addr_core),
+      .imem_wdata_o  (imem_wdata_core),
+      .imem_rdata_i  (imem_rdata_core),
+      .imem_rvalid_i (imem_rvalid_core),
+      .imem_rerror_i (imem_rerror_core),
+
+      .dmem_req_o    (dmem_req_core),
+      .dmem_write_o  (dmem_write_core),
+      .dmem_addr_o   (dmem_addr_core),
+      .dmem_wdata_o  (dmem_wdata_core),
+      .dmem_wmask_o  (dmem_wmask_core),
+      .dmem_rdata_i  (dmem_rdata_core),
+      .dmem_rvalid_i (dmem_rvalid_core),
+      .dmem_rerror_i (dmem_rerror_core)
+    );
+  `else
     otbn_core #(
       .RegFile(RegFile),
       .DmemSizeByte(DmemSizeByte),
@@ -486,7 +527,7 @@ module otbn
       .dmem_rvalid_i (dmem_rvalid_core),
       .dmem_rerror_i (dmem_rerror_core)
     );
-  end
+  `endif
 
   // The core can never signal a write to IMEM
   assign imem_write_core = 1'b0;
