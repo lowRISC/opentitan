@@ -1,6 +1,10 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//#############################################################################
+// *Name: ast
+// *Module Description: Analog Sensors Top Registers
+//#############################################################################
 { name: "ast",
   clock_primary: "clk_i",
   bus_device: "tlul",
@@ -10,7 +14,7 @@
     { name: "RWTYPE0",
       desc: "RW type with one field",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
       fields: [
         {
           bits: "31:0",
