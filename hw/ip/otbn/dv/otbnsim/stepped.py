@@ -199,8 +199,12 @@ def on_input(sim: OTBNSim, line: str) -> None:
 
 def main() -> int:
     sim = OTBNSim()
-    for line in sys.stdin:
-        on_input(sim, line)
+    try:
+        for line in sys.stdin:
+            on_input(sim, line)
+    except KeyboardInterrupt:
+        print("Received shutdown request, ending OTBN simulation.")
+        return 0
     return 0
 
 
