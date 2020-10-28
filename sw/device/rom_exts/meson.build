@@ -6,7 +6,7 @@
 #
 # See sw/device/exts/common/flash_link.ld for additional info about these
 # parameters.
-rom_ext_linkfile = files(['rom_ext.ld'])
+rom_ext_linkfile = files(['rom_ext_slot_a.ld'])
 rom_ext_link_args = [
   '-Wl,-L,@0@'.format(meson.source_root()),
   '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_ext_linkfile[0]),
