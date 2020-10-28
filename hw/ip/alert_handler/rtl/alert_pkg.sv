@@ -27,6 +27,15 @@ package alert_pkg;
                             Phase0 = 3'b100, Phase1 = 3'b101, Phase2 = 3'b110,
                             Phase3 = 3'b111} cstate_e;
 
+  // These LFSR parameters have been generated with
+  // $ hw/ip/prim/util/gen-lfsr-seed.py --width 32 --seed 2700182644
+  localparam int LfsrWidth = 32;
+  typedef logic [LfsrWidth-1:0]                        lfsr_seed_t;
+  typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
+  localparam lfsr_seed_t RndCnstLfsrSeedDefault = 32'he96064e5;
+  localparam lfsr_perm_t RndCnstLfsrPermDefault =
+      160'hebd1e5d4a1cee5afdb866a9c7a0278b899020d31;
+
   // struct containing the current alert handler state
   // can be used to gather crashdump information in HW
   typedef struct packed {
