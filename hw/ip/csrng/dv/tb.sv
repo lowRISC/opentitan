@@ -22,7 +22,7 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if push_pull_if();
+  push_pull_if#(.DataWidth(384)) entropy_src_if();
 
   // dut
   csrng dut (
@@ -42,7 +42,7 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual push_pull_if)::set(null, "*.env.m_push_pull_agent*", "vif", push_pull_if);
+    uvm_config_db#(virtual push_pull_if#(.DataWidth(384)))::set(null, "*.env.m_entropy_src_agent*", "vif", entropy_src_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

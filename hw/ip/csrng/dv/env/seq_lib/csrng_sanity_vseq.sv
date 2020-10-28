@@ -9,7 +9,8 @@ class csrng_sanity_vseq extends csrng_base_vseq;
   `uvm_object_new
 
   task body();
-    `uvm_error(`gfn, "FIXME")
+    // TODO: Temporary for creating csrng environnment
+    csr_rd_check(.ptr(ral.ctrl), .compare_value('h0));
   endtask : body
 
 endclass : csrng_sanity_vseq

@@ -12,10 +12,10 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(push_pull_item) push_pull_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DataWidth(384))) push_pull_fifo;
 
   // local queues to hold incoming packets pending comparison
-  push_pull_item push_pull_q[$];
+  push_pull_item#(.DataWidth(384)) push_pull_q[$];
 
   `uvm_component_new
 
@@ -36,7 +36,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task process_push_pull_fifo();
-    push_pull_item item;
+    push_pull_item#(.DataWidth(384)) item;
     forever begin
       push_pull_fifo.get(item);
       `uvm_info(`gfn, $sformatf("received push_pull item:\n%0s", item.sprint()), UVM_HIGH)
@@ -82,6 +82,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       "intr_test": begin
         // FIXME
+      end
+      "ctrl": begin
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))

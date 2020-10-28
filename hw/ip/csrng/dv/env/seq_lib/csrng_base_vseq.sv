@@ -27,7 +27,6 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   // setup basic csrng features
   virtual task csrng_init();
-    `uvm_error(`gfn, "FIXME")
   endtask
 
 endclass : csrng_base_vseq
