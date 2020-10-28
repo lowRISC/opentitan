@@ -4,10 +4,15 @@
 //
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
-// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson --hjson-only -o hw/top_earlgrey/
+//
+// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson \
+//                -o hw/top_earlgrey/ \
+//                --hjson-only \
+//                --rnd_cnst_seed 4881560218908238235
 {
   name: earlgrey
   type: top
+  rnd_cnst_seed: 4881560218908238235
   datawidth: "32"
   clocks:
   {
@@ -932,64 +937,101 @@
           name: AES192Enable
           type: bit
           default: 1'b1
+          desc: Disable (0) or enable (1) support for 192-bit key lengths (AES-192).
           local: "false"
           expose: "false"
+          randcount: "0"
+          randtype: none
           name_top: AesAES192Enable
         }
         {
           name: Masking
           type: bit
           default: 1'b0
+          desc:
+            '''
+            Disable (0) or enable (1) first-order masking of the AES cipher core.
+            Masking requires the use of a masked S-Box, see SBoxImpl parameter.
+            '''
           local: "false"
           expose: "true"
+          randcount: "0"
+          randtype: none
           name_top: AesMasking
         }
         {
           name: SBoxImpl
           type: aes_pkg::sbox_impl_e
           default: aes_pkg::SBoxImplLut
+          desc: Selection of the S-Box implementation. See aes_pkg.sv.
           local: "false"
           expose: "true"
+          randcount: "0"
+          randtype: none
           name_top: AesSBoxImpl
         }
         {
           name: SecStartTriggerDelay
           type: int unsigned
           default: "0"
+          desc:
+            '''
+            Manual start trigger delay, useful for SCA measurements.
+            A value of e.g. 40 allows the processor to go into sleep before AES starts operation.
+            '''
           local: "false"
           expose: "true"
+          randcount: "0"
+          randtype: none
           name_top: SecAesStartTriggerDelay
         }
         {
           name: SecAllowForcingMasks
           type: bit
           default: 1'b0
+          desc:
+            '''
+            Forbid (0) or allow (1) forcing the mask to zero via FORCE_ZERO_MASK bit in the Control Register.
+            Useful for SCA measurements.
+            Meaningful only if masking is enabled.
+            '''
           local: "false"
           expose: "true"
+          randcount: "0"
+          randtype: none
           name_top: SecAesAllowForcingMasks
         }
         {
           name: SeedClearing
           type: logic [aes_pkg::WidthPRDClearing-1:0]
           default: aes_pkg::DefaultSeedClearing
+          desc: Default seed of the PRNG used for register clearing.
           local: "false"
           expose: "false"
+          randcount: "0"
+          randtype: none
           name_top: AesSeedClearing
         }
         {
           name: SeedMasking
           type: logic [aes_pkg::WidthPRDMasking-1:0]
           default: aes_pkg::DefaultSeedMasking
+          desc: Default seed of the PRNG used for masking.
           local: "false"
           expose: "false"
+          randcount: "0"
+          randtype: none
           name_top: AesSeedMasking
         }
         {
           name: AlertAsyncOn
           type: logic [aes_reg_pkg::NumAlerts-1:0]
           default: "{aes_reg_pkg::NumAlerts{1'b1}}"
+          desc: One bit per alert specifying whether the corresponding sender in the AES module and the receiver in the alert handler are in the same clock domain (0) or whether there is an asynchronous boundary in between (1).
           local: "false"
           expose: "false"
+          randcount: "0"
+          randtype: none
           name_top: AesAlertAsyncOn
         }
       ]
@@ -1390,7 +1432,33 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
-      param_list: []
+      param_list:
+      [
+        {
+          name: RndCnstLfsrSeed
+          desc: Compile-time random bits for initial LFSR seed
+          type: alert_pkg::lfsr_seed_t
+          randcount: "32"
+          randtype: data
+          local: "false"
+          default: 0x5def7861
+          expose: "false"
+          name_top: RndCnstAlertHandlerLfsrSeed
+          randwidth: 32
+        }
+        {
+          name: RndCnstLfsrPerm
+          desc: Compile-time random permutation for LFSR output
+          type: alert_pkg::lfsr_perm_t
+          randcount: "32"
+          randtype: perm
+          local: "false"
+          default: 0x5f00c4cafd73fc4ac479a61068375f38956d84b3
+          expose: "false"
+          name_top: RndCnstAlertHandlerLfsrPerm
+          randwidth: 160
+        }
+      ]
       interrupt_list:
       [
         {
@@ -2656,7 +2724,69 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
-      param_list: []
+      param_list:
+      [
+        {
+          name: RndCnstLfsrSeed
+          desc: Compile-time random bits for initial LFSR seed
+          type: otp_ctrl_pkg::lfsr_seed_t
+          randcount: "40"
+          randtype: data
+          local: "false"
+          default: 0xf45def7861
+          expose: "false"
+          name_top: RndCnstOtpCtrlLfsrSeed
+          randwidth: 40
+        }
+        {
+          name: RndCnstLfsrPerm
+          desc: Compile-time random permutation for LFSR output
+          type: otp_ctrl_pkg::lfsr_perm_t
+          randcount: "40"
+          randtype: perm
+          local: "false"
+          default: 0x5d294061e29a7c404f4593035a19097666e37072064153623855022d39e0
+          expose: "false"
+          name_top: RndCnstOtpCtrlLfsrPerm
+          randwidth: 240
+        }
+        {
+          name: RndCnstKey
+          desc: Compile-time random scrambling keys
+          type: otp_ctrl_pkg::key_array_t
+          randcount: "384"
+          randtype: data
+          local: "false"
+          default: 0x79ee911ce801484ba8373086f9dd4eee6faf88f22bccd612d1c09f5c02b2c8d1fdb92558e2d9c5d24440722325a93144
+          expose: "false"
+          name_top: RndCnstOtpCtrlKey
+          randwidth: 384
+        }
+        {
+          name: RndCnstDigestConst
+          desc: Compile-time random digest constant
+          type: otp_ctrl_pkg::digest_const_array_t
+          randcount: "640"
+          randtype: data
+          local: "false"
+          default: 0xce7d846469a3b8e35a6bd38295bd2fb366b3d62126c75eeaeb93d32f5cbc77463c91917516d51a2fa4400adc2669e2530ee2a465fd4dabcbd877afb6bcfeed7e03a0b091dc41d062dd10ca2d7b93136f
+          expose: "false"
+          name_top: RndCnstOtpCtrlDigestConst
+          randwidth: 640
+        }
+        {
+          name: RndCnstDigestIV
+          desc: Compile-time random digest IV
+          type: otp_ctrl_pkg::digest_iv_array_t
+          randcount: "320"
+          randtype: data
+          local: "false"
+          default: 0xb77f07ff3d7297200d5ab25561af49c696466a983e5346826a43628219e5a91389b9fe0d3b818e46
+          expose: "false"
+          name_top: RndCnstOtpCtrlDigestIV
+          randwidth: 320
+        }
+      ]
       interrupt_list:
       [
         {
@@ -2922,8 +3052,11 @@
           name: RegFile
           type: otbn_pkg::regfile_e
           default: otbn_pkg::RegFileFF
+          desc: Selection of the register file implementation. See otbn_pkg.sv.
           local: "false"
           expose: "true"
+          randcount: "0"
+          randtype: none
           name_top: OtbnRegFile
         }
       ]
