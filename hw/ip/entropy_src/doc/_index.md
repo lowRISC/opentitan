@@ -219,8 +219,8 @@ The following waveform shows an example of how the entropy source hardware inter
    {name: 'clk'           , wave: 'p...|.........|.......'},
    {name: 'es_req'        , wave: '0..1|..01.0..1|.....0.'},
    {name: 'es_ack'        , wave: '0...|.10.10...|....10.'},
-   {name: 'es_bus[383:0]' , wave: 'x...|.3x.3x...|....3x.', data: ['es0','es1','es2']},
-   {name: 'es_fips'       , wave: 'x...|.0x.1x...|....1x.'},
+   {name: 'es_bus[383:0]' , wave: '0...|.30.30...|....30.', data: ['es0','es1','es2']},
+   {name: 'es_fips'       , wave: '0...|....10...|....10.'},
 ]}
 {{< /wavejson >}}
 

@@ -150,7 +150,7 @@ module ast_wrapper import ast_wrapper_pkg::*;
 
     // entropy source interface
     .rng_en_i(es_i.rng_enable),
-    .rng_ok_o(es_o.rng_ok),
+    .rng_ok_o(es_o.rng_valid),
     .rng_b_o(es_o.rng_b),
 
     // entropy distribution interface - need to hookup later

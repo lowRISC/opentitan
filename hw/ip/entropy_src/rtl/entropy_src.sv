@@ -6,6 +6,7 @@
 
 
 module entropy_src import entropy_src_pkg::*; #(
+  parameter logic AlertAsyncOn = 1,
   parameter int unsigned EsFifoDepth = 2
 ) (
   input  clk_i,
@@ -26,14 +27,18 @@ module entropy_src import entropy_src_pkg::*; #(
   output entropy_src_rng_req_t entropy_src_rng_o,
   input  entropy_src_rng_rsp_t entropy_src_rng_i,
 
+  // External Health Test Interface
+  output entropy_src_xht_req_t entropy_src_xht_o,
+  input  entropy_src_xht_rsp_t entropy_src_xht_i,
+
   // Alerts
   input  prim_alert_pkg::alert_rx_t alert_rx_i,
   output prim_alert_pkg::alert_tx_t alert_tx_o,
 
   // Interrupts
-  output logic    es_entropy_valid_o,
-  output logic    es_health_test_failed_o,
-  output logic    es_fifo_err_o
+  output logic    intr_es_entropy_valid_o,
+  output logic    intr_es_health_test_failed_o,
+  output logic    intr_es_fifo_err_o
 );
 
   import entropy_src_reg_pkg::*;
@@ -42,6 +47,7 @@ module entropy_src import entropy_src_pkg::*; #(
   entropy_src_hw2reg_t hw2reg;
 
   logic alert_event;
+  logic alert_test;
 
   entropy_src_reg_top u_reg (
     .clk_i,
@@ -67,28 +73,56 @@ module entropy_src import entropy_src_pkg::*; #(
     .entropy_src_hw_if_o,
     .entropy_src_hw_if_i,
 
+    .entropy_src_xht_o,
+    .entropy_src_xht_i,
+
     .entropy_src_rng_o,
     .entropy_src_rng_i,
 
     .alert_event_o(alert_event),
+    .alert_test_o(alert_test),
 
-    .es_entropy_valid_o,
-    .es_health_test_failed_o,
-    .es_fifo_err_o
+    .intr_es_entropy_valid_o,
+    .intr_es_health_test_failed_o,
+    .intr_es_fifo_err_o
   );
 
    prim_alert_sender #(
-     .AsyncOn(1'b1)
+     .AsyncOn(AlertAsyncOn)
    ) u_alert_sender_i (
      .clk_i      ( clk_i      ),
      .rst_ni     ( rst_ni     ),
-     .alert_req_i( alert_event),
+     .alert_req_i( alert_event || alert_test),
      .alert_ack_o(            ),
      .alert_rx_i ( alert_rx_i ),
      .alert_tx_o ( alert_tx_o )
    );
 
   // Outputs should have a known value after reset
-  `ASSERT_KNOWN(AlertTxKnown, alert_tx_o)
+
+  // Entropy Interface
+  `ASSERT_KNOWN(EsHwIfEsAckKnownO_A, entropy_src_hw_if_o.es_ack)
+  `ASSERT_KNOWN(EsHwIfEsBitsKnownO_A, entropy_src_hw_if_o.es_bits)
+  `ASSERT_KNOWN(EsHwIfEsFipsKnownO_A, entropy_src_hw_if_o.es_fips)
+
+  // RNG Interface
+  `ASSERT_KNOWN(EsRngEnableKnownO_A, entropy_src_rng_o.rng_enable)
+
+  // External Health Test Interface
+  `ASSERT_KNOWN(EsXhtEntropyBitKnownO_A, entropy_src_xht_o.entropy_bit)
+  `ASSERT_KNOWN(EsXhtEntropyBitValidKnownO_A, entropy_src_xht_o.entropy_bit_valid)
+  `ASSERT_KNOWN(EsXhtClearKnownO_A, entropy_src_xht_o.clear)
+  `ASSERT_KNOWN(EsXhtActiveKnownO_A, entropy_src_xht_o.active)
+  `ASSERT_KNOWN(EsXhtThreshHiKnownO_A, entropy_src_xht_o.thresh_hi)
+  `ASSERT_KNOWN(EsXhtThreshLoKnownO_A, entropy_src_xht_o.thresh_lo)
+  `ASSERT_KNOWN(EsXhtWindowKnownO_A, entropy_src_xht_o.window)
+
+  // Alerts
+  `ASSERT_KNOWN(AlertTxKnownO_A, alert_tx_o)
+
+  // Interrupts
+  `ASSERT_KNOWN(IntrEsEntropyValidKnownO_A, intr_es_entropy_valid_o)
+  `ASSERT_KNOWN(IntrEsHealthTestFailedKnownO_A, intr_es_health_test_failed_o)
+  `ASSERT_KNOWN(IntrEsFifoErrKnownO_A, intr_es_fifo_err_o)
 
 endmodule

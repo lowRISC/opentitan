@@ -150,6 +150,12 @@
                 0b11: RNG bit 3
                 '''
         }
+        { bits: "12",
+          name: "EXTHT_ENABLE",
+          desc: '''Setting this bit enables the hardware-based health test that is external
+                to ENTROPY_SRC."
+                '''
+        }
       ]
     },
     { name: "RATE",
@@ -210,7 +216,7 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_WINDOW",
-          desc: '''This is the window size for all health tests. This is value used in normal mode
+          desc: '''This is the window size for all health tests. This value is used in normal mode
                    when entropy is being tested in FIPS/CC compliance mode.
                    The default value is (1024 bits * 1 clock/4 bits);
                 '''
@@ -218,7 +224,7 @@
         }
         { bits: "31:16",
           name: "BYPASS_WINDOW",
-          desc: '''This is the window size for all health tests when running is bypass mode. This mode
+          desc: '''This is the window size for all health tests when running in bypass mode. This mode
                    is active after reset for the first and only test run, or when this mode is
                    programmed by firmware.
                    The default value is (384 bits * 1 clock/4 bits);
@@ -236,7 +242,7 @@
         { bits: "15:0",
           name: "FIPS_REPCNT_THRESH",
           desc: '''This is the threshold size for the repetition count health test.
-                   This is value used in normal mode when entropy is being tested in
+                   This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
                    The default value is 32
                 '''
@@ -245,7 +251,7 @@
         { bits: "31:16",
           name: "BYPASS_REPCNT_THRESH",
           desc: '''This is the threshold size for the repetition count health test
-                   running is bypass mode. This mode is active after reset for the
+                   running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    The default value is 32
                 '''
@@ -262,7 +268,7 @@
         { bits: "15:0",
           name: "FIPS_ADAPTP_HI_THRESH",
           desc: '''This is the threshold size for the adaptive proportion health test.
-                   This is value used in normal mode when entropy is being tested in
+                   This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
                    The default value is 598.
                 '''
@@ -271,7 +277,7 @@
         { bits: "31:16",
           name: "BYPASS_ADAPTP_HI_THRESH",
           desc: '''This is the threshold size for the adaptive proportion health test
-                   running is bypass mode. This mode is active after reset for the
+                   running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    The default value is .375 of the FIPS threshold.
                 '''
@@ -288,7 +294,7 @@
         { bits: "15:0",
           name: "FIPS_ADAPTP_LO_THRESH",
           desc: '''This is the threshold size for the adaptive proportion health test.
-                   This is value used in normal mode when entropy is being tested in
+                   This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
                    The default value is 426.
                 '''
@@ -297,7 +303,7 @@
         { bits: "31:16",
           name: "BYPASS_ADAPTP_LO_THRESH",
           desc: '''This is the threshold size for the adaptive proportion health test
-                   running is bypass mode. This mode is active after reset for the
+                   running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    The default value is .375 of the FIPS threshold.
                 '''
@@ -314,7 +320,7 @@
         { bits: "15:0",
           name: "FIPS_BUCKET_THRESH",
           desc: '''This is the threshold size for the bucket health test.
-                   This is value used in normal mode when entropy is being tested in
+                   This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
                    The default value is 32.
                 '''
@@ -323,7 +329,7 @@
         { bits: "31:16",
           name: "BYPASS_BUCKET_THRESH",
           desc: '''This is the threshold size for the bucket health test
-                   running is bypass mode. This mode is active after reset for the
+                   running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    The default value is 32.
                 '''
@@ -340,7 +346,7 @@
         { bits: "15:0",
           name: "FIPS_MARKOV_THRESH",
           desc: '''This is the threshold size for the Markov health test.
-                   This is value used in normal mode when entropy is being tested in
+                   This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
                    The default value is 256.
                 '''
@@ -349,11 +355,63 @@
         { bits: "31:16",
           name: "BYPASS_MARKOV_THRESH",
           desc: '''This is the threshold size for the Markov health test
-                   running is bypass mode. This mode is active after reset for the
+                   running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    The default value is .375 of the FIPS threshold.
                 '''
           resval: "0x0060"
+        }
+      ]
+    },
+    { name: "EXTHT_HI_THRESHOLDS",
+      desc: "External health test high thresholds register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "15:0",
+          name: "FIPS_EXTHT_HI_THRESH",
+          desc: '''This is the threshold size for the external health test.
+                   This value is used in normal mode when entropy is being tested in
+                   FIPS/CC compliance mode.
+                   The default value is 0.
+                '''
+          resval: "0x0"
+        }
+        { bits: "31:16",
+          name: "BYPASS_EXTHT_HI_THRESH",
+          desc: '''This is the threshold size for the external health test
+                   running in bypass mode. This mode is active after reset for the
+                   first and only test run, or when this mode is programmed by firmware.
+                   The default value is 0.
+                '''
+          resval: "0x0"
+        }
+      ]
+    },
+    { name: "EXTHT_LO_THRESHOLDS",
+      desc: "External health test low thresholds register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "15:0",
+          name: "FIPS_EXTHT_LO_THRESH",
+          desc: '''This is the threshold size for the external health test.
+                   This value is used in normal mode when entropy is being tested in
+                   FIPS/CC compliance mode.
+                   The default value is 0.
+                '''
+          resval: "0x0"
+        }
+        { bits: "31:16",
+          name: "BYPASS_EXTHT_LO_THRESH",
+          desc: '''This is the threshold size for the external health test
+                   running in bypass mode. This mode is active after reset for the
+                   first and only test run, or when this mode is programmed by firmware.
+                   The default value is 0.
+                '''
+          resval: "0x0"
         }
       ]
     },
@@ -402,6 +460,38 @@
         { bits: "31:16",
           name: "BYPASS_ADAPTP_LO_WATERMARK",
           desc: "Low watermark value of the adaptive proportion test in bypass mode."
+        }
+      ]
+    },
+    { name:     "EXTHT_HI_WATERMARKS",
+      desc:     "External health test high watermarks register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "15:0",
+          name: "FIPS_EXTHT_HI_WATERMARK",
+          desc: "High watermark value of the external health test in FIPS mode."
+        }
+        { bits: "31:16",
+          name: "BYPASS_EXTHT_HI_WATERMARK",
+          desc: "High watermark value of the external health test in bypass mode."
+        }
+      ]
+    },
+    { name:     "EXTHT_LO_WATERMARKS",
+      desc:     "External health test low watermarks register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "15:0",
+          name: "FIPS_EXTHT_LO_WATERMARK",
+          desc: "Low watermark value of the external health test in FIPS mode."
+        }
+        { bits: "31:16",
+          name: "BYPASS_EXTHT_LO_WATERMARK",
+          desc: "Low watermark value of the external health test in bypass mode."
         }
       ]
     },
@@ -507,6 +597,34 @@
         }
       ]
     },
+    { name:     "EXTHT_HI_TOTAL_FAILS",
+      desc:     "External health test high threshold failure counter register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "31:0",
+          name: "EXTHT_HI_TOTAL_FAILS",
+          desc: '''This register will hold a running count of test failures observed
+                   during normal operation. It will persist until cleared.
+                '''
+        }
+      ]
+    },
+    { name:     "EXTHT_LO_TOTAL_FAILS",
+      desc:     "External health test low threshold failure counter register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "31:0",
+          name: "EXTHT_LO_TOTAL_FAILS",
+          desc: '''This register will hold a running count of test failures observed
+                   during normal operation. It will persist until cleared.
+                '''
+        }
+      ]
+    },
     { name: "ALERT_THRESHOLD",
       desc: "Alert threshold register",
       swaccess: "rw",
@@ -575,6 +693,30 @@
         }
         { bits: "23:20",
           name: "MARKOV_FAIL_COUNT",
+          desc: '''This field will hold a running count of test failures that
+                   contribute to the total alert count. It will be reset after every
+                   passing test sequence. If an alert is signaled, this value
+                   will persist until it is cleared.
+                '''
+        }
+      ]
+    },
+    { name:     "EXTHT_FAIL_COUNTS",
+      desc:     "External health test alert failure counts register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "3:0",
+          name: "EXTHT_HI_FAIL_COUNT",
+          desc: '''This field will hold a running count of test failures that
+                   contribute to the total alert count. It will be reset after every
+                   passing test sequence. If an alert is signaled, this value
+                   will persist until it is cleared.
+                '''
+        }
+        { bits: "7:4",
+          name: "EXTHT_LO_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
                    contribute to the total alert count. It will be reset after every
                    passing test sequence. If an alert is signaled, this value
