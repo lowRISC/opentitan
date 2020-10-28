@@ -1159,10 +1159,16 @@ def run_binutils_as(other_args: List[str], inputs: List[str]) -> int:
     '''
     as_name = find_tool('as')
 
-    # Don't ask the linker to do relaxation because, in some cases, this might
-    # generate a GP-relative load. OTBN doesn't treat x3 (gp) specially, so
-    # this won't work.
-    default_args = ['-mno-relax']
+    default_args = [
+        # Don't ask the linker to do relaxation because, in some cases, this
+        # might generate a GP-relative load. OTBN doesn't treat x3 (gp)
+        # specially, so this won't work.
+        '-mno-relax',
+        # OTBN isn't a standard RISC-V architecture, disable .riscv.attributes.
+        '-mno-arch-attr',
+        # OTBN is based on RV32I without any hard float support.
+        '-mabi=ilp32',
+    ]
 
     cmd = [as_name] + default_args + other_args + inputs
     try:
