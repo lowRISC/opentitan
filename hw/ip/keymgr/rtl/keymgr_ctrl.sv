@@ -43,6 +43,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   input kmac_done_i,
   input kmac_input_invalid_i, // asserted when selected data fails criteria check
   input kmac_fsm_err_i, // asserted when kmac fsm reaches unexpected state
+  input kmac_op_err_i,  // asserted when kmac itself reports an error
   input kmac_cmd_err_i, // asserted when more than one command given to kmac
   input [Shares-1:0][KeyWidth-1:0] kmac_data_i
 );
@@ -125,7 +126,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
     end
   end
 
-  assign kmac_op_err = kmac_cmd_err_i | kmac_fsm_err_i;
+  assign kmac_op_err = kmac_cmd_err_i | kmac_fsm_err_i | kmac_op_err_i;
 
   always_comb begin
     // persistent data
