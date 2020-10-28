@@ -3,16 +3,10 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Linker script for an OpenTitan ROM_EXT.
- *
- * Portions of this file are Ibex-specific.
- *
- * The ROM_EXT is actually kept in flash, rather than ROM. While a ROM_EXT can
- * be loaded into either Slot A (the start of flash), or Slot B (the start of
- * the upper half of flash), this linker script only targets Slot A, and we hope
- * not to need to re-link our images for Slot B.
- *
- * TODO: Slot B Support, if needed.
+ * NOTE:
+ * This is an incomplete common portion of ROM_EXT linker file, and should not
+ * be used directly. Instead it should be included by a top level ROM_EXT slot
+ * linker file.
  */
 
 OUTPUT_ARCH(riscv)
@@ -22,13 +16,6 @@ GROUP(-lgcc)
  * Indicate that there are no dynamic libraries, whatsoever.
  */
 __DYNAMIC = 0;
-
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
-
-/* Reserving space at the top of the RAM for the stack. */
-_stack_size = 0x2000;
-_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
-_stack_start = _stack_end - _stack_size;
 
 /**
  * Marking the entrypoint correctly for the ELF file. In reality, we will end up
@@ -43,7 +30,7 @@ ENTRY(_rom_ext_start_boot)
  * s19->slm conversion scripts are not able to handle non-word aligned sections.
  */
 SECTIONS {
-  .rom_ext_manifest ORIGIN(eflash) : {
+  .rom_ext_manifest _slot_start_address : {
     KEEP(*(.rom_ext_manifest))
   } > eflash
 
