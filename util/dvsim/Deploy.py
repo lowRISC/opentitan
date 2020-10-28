@@ -385,7 +385,15 @@ class Deploy():
         '''
         if self.status == "D" and self.process.poll() is None:
             self.kill_remote_job()
-            self.process.kill()
+
+            # Try to kill the running process. Send SIGTERM first, wait a bit,
+            # and then send SIGKILL if it didn't work.
+            self.process.terminate()
+            try:
+                self.process.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                self.process.kill()
+
             if self.log_fd:
                 self.log_fd.close()
             self.status = "K"
