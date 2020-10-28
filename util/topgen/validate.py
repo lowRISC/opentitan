@@ -47,6 +47,7 @@ top_required = {
     ['d', 'Base address of RV_DM. Planned to move to \
 module'],
     'xbar': ['l', 'List of the xbar used in the top'],
+    'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"],
 }
 
 top_optional = {

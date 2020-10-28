@@ -42,6 +42,7 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:prim:all
     files:
+      - rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
       - rtl/autogen/top_earlgrey.sv
     file_type: systemVerilogSource
 

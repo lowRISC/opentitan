@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
+${gencmd}
 <%
 import re
 import topgen.lib as lib
@@ -99,6 +99,8 @@ module top_${top["name"]} #(
   import tlul_pkg::*;
   import top_pkg::*;
   import tl_main_pkg::*;
+  // Compile-time random constants
+  import top_earlgrey_rnd_cnst_pkg::*;
 
   // Signals
   logic [${num_mio_inputs + num_mio_inouts - 1}:0] mio_p2d;
@@ -484,7 +486,7 @@ else:
   % if m["param_list"]:
   ${m["type"]} #(
     % for i in m["param_list"]:
-    .${i["name"]}(${i["name_top" if i["expose"] == "true" else "default"]})${"," if not loop.last else ""}
+    .${i["name"]}(${i["name_top" if i["expose"] == "true" or i["randtype"] != "none" else "default"]})${"," if not loop.last else ""}
     % endfor
   ) u_${m["name"]} (
   % else:

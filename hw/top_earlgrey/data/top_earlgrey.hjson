@@ -6,10 +6,16 @@
 { name: "earlgrey",
   type: "top",
 
-  # 32-bit datawidth
+  /////////////////////////////////////////////////////////////
+  // Seed for compile-time random constants                  //
+  // NOTE: REPLACE THIS WITH A NEW VALUE BEFORE THE TAPEOUT  //
+  /////////////////////////////////////////////////////////////
+  rnd_cnst_seed: 4881560218908238235
+
+  // 32-bit datawidth
   datawidth: "32",
 
-  // This is the clock data strcture of the design.
+  // This is the clock data structure of the design.
   // The hier path refers to the clock reference path (struct / port)
   //   - The top/ext desgination follows the same scheme as inter-module
   // The src key indicates the raw clock sources in the design
