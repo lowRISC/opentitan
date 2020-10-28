@@ -136,13 +136,13 @@ module otbn_core_model
 
   // If DesignScope is not empty, we have a design to check. Bind a copy of otbn_rf_snooper into
   // each register file. The otbn_model_check() function will use these to extract memory contents.
-  generate if (DesignScope != "") begin
+  if (DesignScope != "") begin: g_check_design
     // TODO: This bind is by module, rather than by instance, because I couldn't get the by-instance
     // syntax plus upwards name referencing to work with Verilator. Obviously, this won't work with
     // multiple OTBN instances, so it would be nice to get it right.
     bind otbn_rf_base_ff otbn_rf_snooper #(.Width (32), .Depth (32)) u_snooper (.rf (rf_reg));
     bind otbn_rf_bignum_ff otbn_rf_snooper #(.Width (256), .Depth (32)) u_snooper (.rf (rf));
-  end endgenerate
+  end
 
   assign err_o = failed_step | failed_cmp;
 
