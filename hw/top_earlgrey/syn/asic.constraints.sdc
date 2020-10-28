@@ -6,7 +6,7 @@
 
 # Note that we do not fix hold timing in this flow
 set SETUP_CLOCK_UNCERTAINTY 0.5
-
+set CLK_PERIOD_FACTOR 0.95 ;# clock period over constraining factor
 puts "Applying constraints for top level"
 
 # Note: the netlist does include pads at this level, but not all IO interfaces
@@ -16,48 +16,45 @@ puts "Applying constraints for top level"
 #####################
 # main clock        #
 #####################
-set MAIN_CLK_PIN ast_wrapper/i_ast/i_prim_clock_buf_sys/*/u_size_only_buf/${DRIVING_CELL_PIN}
+set MAIN_CLK_PIN ast_wrapper/i_ast/i_sys_clk/i_sys_osc/sys_clk_o
 set MAIN_RST_PIN IO_RST_N
-# target is 100MHz, overconstrain to 125 MHz (+25%)
-set MAIN_TCK  8.0
-set_ideal_network [get_pins ${MAIN_CLK_PIN}]
-set_ideal_network [get_ports ${MAIN_RST_PIN}]
+# target is 100MHz, overconstrain by factor 
+set MAIN_TCK_TARGET_PERIOD  10
+set MAIN_TCK_PERIOD [expr $MAIN_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR] ;# over constraining 
+# For now we remove this as clock is, by default, ideal. Reset, we'll try w/o ideal_network.
+#set_ideal_network [get_pins ${MAIN_CLK_PIN}]
+#set_ideal_network [get_ports ${MAIN_RST_PIN}]
 
-create_clock -name MAIN_CLK -period ${MAIN_TCK} [get_pins ${MAIN_CLK_PIN}]
+create_clock -name MAIN_CLK -period ${MAIN_TCK_PERIOD} [get_pins ${MAIN_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks MAIN_CLK]
 
 #####################
 # USB clock         #
 #####################
-set USB_CLK_PIN ast_wrapper/i_ast/i_prim_clock_buf_usb/*/u_size_only_buf/${DRIVING_CELL_PIN}
-# 50MHz
-set USB_TCK 20.0
-set_ideal_network [get_pins ${USB_CLK_PIN}]
+set USB_CLK_PIN ast_wrapper/i_ast/i_usb_clk/i_usb_osc/usb_clk_o
+# target is 48MHz, overconstrain by 5% 
+set USB_TCK_TARGET_PERIOD 20.8
+set USB_TCK_PERIOD [expr $USB_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
+#set_ideal_network [get_pins ${USB_CLK_PIN}]
 
-create_clock -name USB_CLK -period ${USB_TCK} [get_pins ${USB_CLK_PIN}]
+create_clock -name USB_CLK -period ${USB_TCK_PERIOD} [get_pins ${USB_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks USB_CLK]
 
-set USB_IN_DEL_FRACTION 0.55
-set USB_OUT_DEL_FRACTION 0.55
-set USB_IN_DEL    [expr ${USB_IN_DEL_FRACTION} * ${USB_TCK}]
-set USB_OUT_DEL   [expr ${USB_OUT_DEL_FRACTION} * ${USB_TCK}]
-
-# constrain dedicated USB IOs
-set_input_delay ${USB_IN_DEL} [get_ports USB_P] -clock USB_CLK
-set_input_delay ${USB_IN_DEL} [get_ports USB_N] -clock USB_CLK
-
-set_output_delay ${USB_OUT_DEL} [get_ports USB_P] -clock USB_CLK
-set_output_delay ${USB_OUT_DEL} [get_ports USB_N] -clock USB_CLK
-
+set_max_delay 1 -from [get_ports USB_N] -to [get_pins top_earlgrey/u_usbdev_aon/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*/gen_flops_2*_u_size_only_reg/D]
+set_max_delay 1 -from [get_ports USB_P] -to [get_pins top_earlgrey/u_usbdev_aon/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*/gen_flops_3*_u_size_only_reg/D]
+set_max_delay 1 -from [get_ports USB_*] -to [get_pins top_earlgrey/u_usbdev_aon/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*/gen_flops_1*_u_size_only_reg/D]
+set_max_delay 1 -from [get_pins top_earlgrey/u_usbdev_aon/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/usb_d_q_reg/Q] -to [get_ports USB_*]
+set_max_delay 1 -from [get_pins top_earlgrey/u_usbdev_aon/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/oe_q_reg/Q] -to [get_ports USB_*]
 #####################
 # IO clk            #
 #####################
-set IO_CLK_PIN ast_wrapper/i_ast/i_prim_clock_buf_io/*/u_size_only_buf/${DRIVING_CELL_PIN}
-set IO_TCK 8.3333
-# target is 96MHz, overconstrain to 120 MHz (+25%)
-set_ideal_network [get_pins ${IO_CLK_PIN}]
+set IO_CLK_PIN ast_wrapper/i_ast/i_io_clk/i_io_osc/io_clk_o
+# target is 96MHz, overconstrain by factor 
+set IO_TCK_TARGET_PERIOD 10.416
+set IO_TCK_PERIOD [expr $IO_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]  
+#set_ideal_network [get_pins ${IO_CLK_PIN}]
 
-create_clock -name IO_CLK -period ${IO_TCK} [get_pins ${IO_CLK_PIN}]
+create_clock -name IO_CLK -period ${IO_TCK_PERIOD} [get_pins ${IO_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 
 # generated clocks (div2/div4)
@@ -77,8 +74,8 @@ set IO_IN_DEL_FRACTION 0.7
 set IO_OUT_DEL_FRACTION 0.7
 
 # IO_DIV2_CLK
-set IO_DIV2_IN_DEL    [expr ${IO_IN_DEL_FRACTION} * ${IO_TCK} * 2.0]
-set IO_DIV2_OUT_DEL   [expr ${IO_OUT_DEL_FRACTION} * ${IO_TCK} * 2.0]
+set IO_DIV2_IN_DEL    [expr ${IO_IN_DEL_FRACTION} * ${IO_TCK_PERIOD} * 2.0]
+set IO_DIV2_OUT_DEL   [expr ${IO_OUT_DEL_FRACTION} * ${IO_TCK_PERIOD} * 2.0]
 
 set_input_delay ${IO_DIV2_IN_DEL}   [get_ports IOA*] -clock IO_DIV2_CLK
 set_input_delay ${IO_DIV2_IN_DEL}   [get_ports IOB*] -clock IO_DIV2_CLK
@@ -91,41 +88,65 @@ set_output_delay ${IO_DIV2_OUT_DEL} [get_ports IOC*] -clock IO_DIV2_CLK
 set_output_delay ${IO_DIV2_OUT_DEL} [get_ports IOR*] -clock IO_DIV2_CLK
 
 # IO_DIV4_CLK
-set IO_DIV4_IN_DEL    [expr ${IO_IN_DEL_FRACTION} * ${IO_TCK} * 4.0]
-set IO_DIV4_OUT_DEL   [expr ${IO_OUT_DEL_FRACTION} * ${IO_TCK} * 4.0]
+set IO_DIV4_IN_DEL    [expr ${IO_IN_DEL_FRACTION} * ${IO_TCK_PERIOD} * 4.0]
+set IO_DIV4_OUT_DEL   [expr ${IO_OUT_DEL_FRACTION} * ${IO_TCK_PERIOD} * 4.0]
 
-set_input_delay ${IO_DIV4_IN_DEL}   [get_ports IOA*] -clock IO_DIV4_CLK
-set_input_delay ${IO_DIV4_IN_DEL}   [get_ports IOB*] -clock IO_DIV4_CLK
-set_input_delay ${IO_DIV4_IN_DEL}   [get_ports IOC*] -clock IO_DIV4_CLK
-set_input_delay ${IO_DIV4_IN_DEL}   [get_ports IOR*] -clock IO_DIV4_CLK
+set_input_delay ${IO_DIV4_IN_DEL}   [get_ports IOA*] -clock IO_DIV4_CLK -add_delay
+set_input_delay ${IO_DIV4_IN_DEL}   [get_ports IOB*] -clock IO_DIV4_CLK -add_delay
+set_input_delay ${IO_DIV4_IN_DEL}   [get_ports IOC*] -clock IO_DIV4_CLK -add_delay
+set_input_delay ${IO_DIV4_IN_DEL}   [get_ports IOR*] -clock IO_DIV4_CLK -add_delay
 
-set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOA*] -clock IO_DIV4_CLK
-set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOB*] -clock IO_DIV4_CLK
-set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOC*] -clock IO_DIV4_CLK
-set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOR*] -clock IO_DIV4_CLK
+set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOA*] -clock IO_DIV4_CLK -add_delay
+set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOB*] -clock IO_DIV4_CLK -add_delay
+set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOC*] -clock IO_DIV4_CLK -add_delay
+set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOR*] -clock IO_DIV4_CLK -add_delay
 
 #####################
-# AON clk (300kHz)  #
+# AON clk           #
 #####################
-set AON_CLK_PIN ast_wrapper/i_ast/i_prim_clock_buf_aon/*/u_size_only_buf/${DRIVING_CELL_PIN}
-set AON_TCK 3333.0
-set_ideal_network [get_pins ${AON_CLK_PIN}]
+set AON_CLK_PIN ast_wrapper/i_ast/i_aon_clk/i_aon_osc/aon_clk_o
+# target is 200KHz, overconstrain by factor 
+set AON_TCK_TARGET_PERIOD 5000.0
+set AON_TCK_PERIOD [expr $AON_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
+#set_ideal_network [get_pins ${AON_CLK_PIN}]
 
-create_clock -name AON_CLK -perio ${AON_TCK} [get_pins ${AON_CLK_PIN}]
+create_clock -name AON_CLK -period ${AON_TCK_PERIOD} [get_pins ${AON_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks AON_CLK]
 
 #####################
 # JTAG clock        #
 #####################
-# TODO: set up constraints for JTAG. this may need additional views with set_case_analysis
+# TODO: set up constraints for JTAG. 
+set JTAG_CLK_PIN IOR3
+# target is 20MHz, overconstrain by factor 
+set JTAG_TCK_TARGET_PERIOD 50
+set JTAG_TCK_PERIOD [expr $JTAG_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
+
+create_clock -name JTAG_TCK -period $JTAG_TCK_PERIOD [get_ports $JTAG_CLK_PIN]
+#set_ideal_network [get_ports $JTAG_CLK_PIN]
+set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks JTAG_TCK]
+
+#####################
+# RNG clock         #
+#####################
+#set RNG_CLK_PIN  ast_wrapper/i_ast/i_rng/i_rng_osc/clk_o ;#opentitan RTL
+set RNG_CLK_PIN  ast_wrapper/i_ast/i_rng/i_rng_osc/rng_clk_o ;#Nuvoton RTL
+# target is 100MHz, overconstrain by factor 
+set RNG_TCK_TARGET_PERIOD 10
+set RNG_TCK_PERIOD [expr $RNG_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
+
+create_clock -name RNG_CLK -period $RNG_TCK_PERIOD [get_pins $RNG_CLK_PIN]
+#set_ideal_network [get_ports $RNG_CLK_PIN]
+set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks RNG_CLK]
 
 #####################
 # SPI DEV clock     #
 #####################
+# strawman constraints. Device target freq is 48MHz. Using 62.5MHz to over-constraint
 set SPI_DEV_CLK_PIN SPI_DEV_CLK
 # 62.5MHz
 set SPI_DEV_TCK 16.0
-set_ideal_network ${SPI_DEV_CLK_PIN}
+#set_ideal_network ${SPI_DEV_CLK_PIN}
 
 ## TODO: Create generated clock for negedge SPI_DEV_CLK. Then make them clock group
 create_clock -name SPI_DEV_CLK  -period ${SPI_DEV_TCK} [get_ports ${SPI_DEV_CLK_PIN}]
@@ -153,6 +174,7 @@ set_output_delay ${SPI_DEV_OUT_DEL} [get_ports SPI_DEV_D3]   -clock SPI_DEV_CLK
 #####################
 # SPI HOST clock   #
 #####################
+# In Bronze the SPI host desing is a duplication of DEV design. For now, over-constraining with 62.5MHz
 set SPI_HOST_CLK_PIN SPI_HOST_CLK
 # 62.5MHz
 set SPI_HOST_TCK 16.0
@@ -185,7 +207,7 @@ set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D3]   -clock SPI_HOST_C
 #####################
 # SPI passthrough   #
 #####################
-
+# Bronze: Over-constraining. Actual values will be set once design is ready
 # input pad + internal + output pad
 set TPAD_I 1.2
 set THODI  2.0
@@ -205,6 +227,8 @@ set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D1] -to [get_
 set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D2] -to [get_ports SPI_DEV_D2]
 set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D3] -to [get_ports SPI_DEV_D3]
 
+
+
 #####################
 # CDC               #
 #####################
@@ -217,6 +241,8 @@ set_clock_groups -name group1 -async -group [get_clocks MAIN_CLK     ] \
                                      -group [get_clocks IO_CLK       ] \
                                      -group [get_clocks IO_DIV2_CLK  ] \
                                      -group [get_clocks IO_DIV4_CLK  ] \
+                                     -group [get_clocks RNG_CLK      ] \
+                                     -group [get_clocks JTAG_TCK     ] \
                                      -group [get_clocks AON_CLK      ]
 
 # UART loopback path can be considered to be a false path
