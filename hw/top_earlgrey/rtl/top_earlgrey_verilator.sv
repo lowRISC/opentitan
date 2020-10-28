@@ -236,7 +236,6 @@ module top_earlgrey_verilator (
 
   `define RV_CORE_IBEX      top_earlgrey.u_rv_core_ibex
   `define SIM_SRAM_IF       u_sim_sram.u_sim_sram_if
-  `define SW_TEST_STATUS_IF `SIM_SRAM_IF.u_sw_test_status_if
 
   // Detect SW test termination.
   sim_sram u_sim_sram (
@@ -252,30 +251,32 @@ module top_earlgrey_verilator (
   assign `RV_CORE_IBEX.tl_d_i_int = u_sim_sram.tl_in_o;
   assign `RV_CORE_IBEX.tl_d_o     = u_sim_sram.tl_out_o;
 
-  // Bind the SW test status interface directly to the sim SRAM interface.
-  bind sim_sram_if sw_test_status_if u_sw_test_status_if (
-    .addr (tl_h2d.a_address),
-    .data (tl_h2d.a_data[15:0]),
-    .*
+  // Instantiate the SW test status interface & connect signals from sim_sram_if instance
+  // instantiated inside sim_sram. Bind would have worked nicely here, but Verilator segfaults
+  // when trace is enabled (#3951).
+  sw_test_status_if u_sw_test_status_if (
+    .clk_i    (`SIM_SRAM_IF.clk_i),
+    .wr_valid (`SIM_SRAM_IF.wr_valid),
+    .addr     (`SIM_SRAM_IF.tl_h2d.a_address),
+    .data     (`SIM_SRAM_IF.tl_h2d.a_data[15:0])
   );
 
   // Set the start address of the simulation SRAM.
   // Use offset 0 within the sim SRAM for SW test status indication.
   initial begin
     `SIM_SRAM_IF.start_addr = `VERILATOR_TEST_STATUS_ADDR;
-    `SW_TEST_STATUS_IF.sw_test_status_addr = `SIM_SRAM_IF.start_addr;
+    u_sw_test_status_if.sw_test_status_addr = `SIM_SRAM_IF.start_addr;
   end
 
   always @(posedge clk_i) begin
-    if (`SW_TEST_STATUS_IF.sw_test_done) begin
+    if (u_sw_test_status_if.sw_test_done) begin
       $display("Verilator sim termination requested");
-      $display("Your simulation wrote to 0x%h", `SW_TEST_STATUS_IF.sw_test_status_addr);
+      $display("Your simulation wrote to 0x%h", u_sw_test_status_if.sw_test_status_addr);
       $finish;
     end
   end
 
   `undef RV_CORE_IBEX
   `undef SIM_SRAM_IF
-  `undef SW_TEST_STATUS_IF
 
 endmodule
