@@ -115,12 +115,19 @@ module otbn_core
   alu_bignum_operation_t alu_bignum_operation;
   logic [WLEN-1:0]       alu_bignum_operation_result;
 
+  mac_bignum_operation_t mac_bignum_operation;
+  logic [WLEN-1:0]       mac_bignum_operation_result;
+  logic                  mac_bignum_en;
+
   ispr_e                       ispr_addr;
   logic [31:0]                 ispr_base_wdata;
   logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en;
   logic [WLEN-1:0]             ispr_bignum_wdata;
   logic                        ispr_bignum_wr_en;
   logic [WLEN-1:0]             ispr_rdata;
+  logic [WLEN-1:0]             ispr_acc;
+  logic [WLEN-1:0]             ispr_acc_wr_data;
+  logic                        ispr_acc_wr_en;
 
   // Depending on its usage, the instruction address (program counter) is qualified by two valid
   // signals: insn_fetch_resp_valid (together with the undecoded instruction data), and insn_valid
@@ -227,6 +234,11 @@ module otbn_core
     // To/from bignum ALU
     .alu_bignum_operation_o         (alu_bignum_operation),
     .alu_bignum_operation_result_i  (alu_bignum_operation_result),
+
+    // To/from bignum MAC
+    .mac_bignum_operation_o        (mac_bignum_operation),
+    .mac_bignum_operation_result_i (mac_bignum_operation_result),
+    .mac_bignum_en_o               (mac_bignum_en),
 
     // To/from LSU (base and bignum)
     .lsu_load_req_o     (lsu_load_req),
@@ -354,7 +366,25 @@ module otbn_core
     .ispr_bignum_wr_en_i (ispr_bignum_wr_en),
     .ispr_rdata_o        (ispr_rdata),
 
+    .ispr_acc_i          (ispr_acc),
+    .ispr_acc_wr_data_o  (ispr_acc_wr_data),
+    .ispr_acc_wr_en_o    (ispr_acc_wr_en),
+
     .rnd_i               (rnd)
+  );
+
+  otbn_mac_bignum u_otbn_mac_bignum (
+    .clk_i,
+    .rst_ni,
+
+    .operation_i        (mac_bignum_operation),
+    .operation_result_o (mac_bignum_operation_result),
+
+    .mac_en_i           (mac_bignum_en),
+
+    .ispr_acc_o         (ispr_acc),
+    .ispr_acc_wr_data_i (ispr_acc_wr_data),
+    .ispr_acc_wr_en_i   (ispr_acc_wr_en)
   );
 
 endmodule

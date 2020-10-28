@@ -29,6 +29,7 @@ filesets:
       - rtl/otbn_lsu.sv
       - rtl/otbn_alu_base.sv
       - rtl/otbn_alu_bignum.sv
+      - rtl/otbn_mac_bignum.sv
       - rtl/otbn_loop_controller.sv
       - rtl/otbn_stack.sv
       - rtl/otbn_core.sv
