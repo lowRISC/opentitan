@@ -19,8 +19,9 @@ module prim_alert_rxtx_fpv
   input        alert_err_pi,
   input        alert_err_ni,
   // normal I/Os
-  input        alert_i,
+  input        alert_req_i,
   input        ping_req_i,
+  output logic alert_ack_o,
   output logic ping_ok_o,
   output logic integ_fail_o,
   output logic alert_o
@@ -43,9 +44,10 @@ module prim_alert_rxtx_fpv
   prim_alert_sender #(
     .AsyncOn ( AsyncOn )
   ) i_prim_alert_sender (
-    .clk_i    ,
-    .rst_ni   ,
-    .alert_i  ,
+    .clk_i      ,
+    .rst_ni     ,
+    .alert_req_i,
+    .alert_ack_o,
     .alert_rx_i ( alert_rx_in  ),
     .alert_tx_o ( alert_tx_out )
   );
