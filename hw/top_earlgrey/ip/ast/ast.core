@@ -9,7 +9,10 @@ filesets:
     depend:
       - lowrisc:ip:tlul
     files:
+      - rtl/lc_ctrl_pkg.sv
       - rtl/ast_reg_pkg.sv
+      - rtl/ast_pkg.sv
+      - rtl/ana_pkg.sv
       - rtl/ast.sv
       - rtl/adc.sv
       - rtl/aon_clk.sv
@@ -20,15 +23,14 @@ filesets:
       - rtl/gen_pok.sv
       - rtl/io_clk.sv
       - rtl/io_osc.sv
-      - rtl/main_rglt.sv
-      - rtl/pdm.sv
+      - rtl/rglts_pdm_3p3v.sv
       - rtl/rng.sv
       - rtl/rng_osc.sv
       - rtl/sys_clk.sv
       - rtl/sys_osc.sv
       - rtl/usb_clk.sv
       - rtl/usb_osc.sv
-
+      
     file_type: systemVerilogSource
 
 
@@ -55,3 +57,4 @@ targets:
       vcs:
         vcs_options: [-timescale=1ns/1ps]
     toplevel: ast
+  

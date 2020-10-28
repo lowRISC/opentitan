@@ -2,59 +2,61 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// 
 // *Name: sys_osc
 // *Module Description: System Clock Oscilator
-//
 //############################################################################
-`timescale 1ns/1ps
+`timescale 1ns / 1ps
 
 module sys_osc #(
+`ifndef VERILATOR
 // synopsys translate_off
-   parameter time SYS_EN_RDLY = 10us,
-   parameter time SYS_EN_FDLY = 100ns,
-   parameter time SYS_JEN_RDLY = 80ns,
-   parameter time SYS_JEN_FDLY = 80ns
+  parameter time SYS_EN_RDLY = 5us
 // synopsys translate_on
+`endif
 ) (
-   input sys_en_i,              // System Source Clock Enable
-   input sys_jen_i,             // System Source Clock Jitter Enable
-   output logic sys_clk_o,      // System Clock Output
-   output logic sys_clk_en_o    // System Clock Enable Output
+  input vcmain_pok_i,     // VCMAIN POK @1.1V
+  input sys_en_i,         // System Source Clock Enable
+  input sys_jen_i,        // System Source Clock Jitter Enable
+  output logic sys_clk_o  // System Clock Output
 );
 
+// Behavioral Model
+
+`ifndef VERILATOR
 // synopsys translate_off
 localparam real SYS_CLK_PERIOD = 10000; // 10000ps (100Mhz)
 
-logic init_start, clk;
+logic clk, en_osc, en_osc_re, en_osc_fe;
 shortreal jitter;
 
 initial begin
-   clk  = 1'b0;
-   $display("\nSYS Clock Period: %0dps", SYS_CLK_PERIOD);
-   init_start = 1'b1; #1;
-   init_start = 1'b0;
+  clk  = 1'b0;
+  $display("\nSYS Clock Period: %0dps", SYS_CLK_PERIOD);
 end
 
-wire #(SYS_JEN_RDLY, SYS_JEN_FDLY) sys_jen = sys_jen_i; 
+always @( * ) begin
+  if ( !vcmain_pok_i )                 en_osc_re = 1'b0;  // For Startup
+  else if ( sys_en_i && vcmain_pok_i ) en_osc_re = #(SYS_EN_RDLY) 1'b1;
+  else                                 en_osc_re = 1'b0;
+end
+
+// Syncronize en_osc to clk FE for glitch free disable
+always_ff @( negedge clk or negedge vcmain_pok_i ) begin
+  if ( !vcmain_pok_i ) en_osc_fe <= 1'b0;
+  else                 en_osc_fe <= en_osc_re;
+end
+
+assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
 
 always begin
-   // 0-2000ps is upto +20% Jitter
-   jitter = sys_jen ? $urandom_range(2000, 0) : 0; 
-   #((SYS_CLK_PERIOD+jitter)/2000) clk = ~clk;
+  // 0-2000ps is upto +20% Jitter
+  jitter = sys_jen_i ? $urandom_range(2000, 0) : 0; 
+  #((SYS_CLK_PERIOD+jitter)/2000) clk = ~clk && en_osc;
 end
 
 assign sys_clk_o = clk;
-
-always_ff @( init_start, posedge sys_en_i, negedge sys_en_i ) begin
-    if ( init_start )
-       sys_clk_en_o <= 1'b0;
-    else if ( !init_start && sys_en_i )
-       sys_clk_en_o <= #(SYS_EN_RDLY) sys_en_i;
-    else if ( !init_start && !sys_en_i )                  
-       sys_clk_en_o <= #(SYS_EN_FDLY) sys_en_i;
-end
 // synopsys translate_on
+`endif
 
 
 endmodule  // of sys_osc

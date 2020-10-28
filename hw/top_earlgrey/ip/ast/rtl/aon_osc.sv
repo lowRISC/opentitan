@@ -2,56 +2,54 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-//
 // *Name: aon_osc
 // *Module Description: AON Clock Oscilator
-//
 //############################################################################
-`timescale 1ns/1ps
+`timescale 1ns / 10ps
 
 module aon_osc #(
+`ifndef VERILATOR
 // synopsys translate_off
-   parameter time AON_EN_RDLY = 10us,
-   parameter time AON_EN_FDLY = 100ns
+  parameter time AON_EN_RDLY = 5us
 // synopsys translate_on
+`endif
 ) (
-   input aon_en_i,              // AON Source Clock Enable
-   output logic aon_clk_o,      // AON Clock Output
-   output logic aon_clk_en_o    // AON Clock Enable Output
+  input vcaon_pok_i,       // VCAON POK @1.1V
+  input aon_en_i,          // AON Source Clock Enable
+  output logic aon_clk_o   // AON Clock Output
 );
 
+`ifndef VERILATOR
 // synopsys translate_off
-
-// localparam real AON_CLK_PERIOD = 5000; // 5000ns (200Khz)
-// TBD
-// sped up to 200ns by default.
-// There should be a DV hook here so that the test can choose the actual frequency
-   localparam real AON_CLK_PERIOD = 200;
-
-logic init_start, clk;
+localparam time AON_CLK_PERIOD = 5000ns; // 5000ns (200Khz)
+logic clk, en_osc, en_osc_re, en_osc_fe;
 
 initial begin
-   clk = 1'b0;
-   $display("\nAON Clock Period: %0dns", AON_CLK_PERIOD);
-   init_start = 1'b1; #1;
-   init_start = 1'b0;
+  clk = 1'b0;
+  $display("\nAON Clock Period: %0dns", AON_CLK_PERIOD);
 end
 
+always @( * ) begin
+  if ( !vcaon_pok_i )                 en_osc_re = 1'b0;
+  else if ( aon_en_i && vcaon_pok_i ) en_osc_re = #(AON_EN_RDLY) 1'b1;
+  else                                en_osc_re = 1'b0;
+end
+
+// Syncronize en_osc_fe to clk FE for glitch free disable
+always_ff @( negedge clk or negedge vcaon_pok_i ) begin
+  if ( !vcaon_pok_i ) en_osc_fe <= 1'b0;
+  else                en_osc_fe <= en_osc_re;
+end
+
+assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
+
 always begin
-   #(AON_CLK_PERIOD/2) clk = ~clk;
+  #(AON_CLK_PERIOD/2) clk = ~clk && en_osc;
 end
 
 assign aon_clk_o = clk;
-
-always_ff @( init_start, posedge aon_en_i, negedge aon_en_i ) begin
-    if ( init_start )
-       aon_clk_en_o <= 1'b0;
-    else if ( !init_start && aon_en_i )
-       aon_clk_en_o <= #(AON_EN_RDLY) aon_en_i;
-    else if ( !init_start && !aon_en_i )
-       aon_clk_en_o <= #(AON_EN_FDLY) aon_en_i;
-end
-
 // synopsys translate_on
+`endif
+
 
 endmodule  // of aon_osc
