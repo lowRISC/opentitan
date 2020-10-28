@@ -26,6 +26,20 @@
   regwidth: "32",
   hier_path: "i_reg_wrap"
   param_list: [
+    // Random netlist constants
+    { name:      "RndCnstLfsrSeed",
+      desc:      "Compile-time random bits for initial LFSR seed",
+      type:      "alert_pkg::lfsr_seed_t"
+      randcount: "32",
+      randtype:  "data", // randomize randcount databits
+    }
+    { name:      "RndCnstLfsrPerm",
+      desc:      "Compile-time random permutation for LFSR output",
+      type:      "alert_pkg::lfsr_perm_t"
+      randcount: "32",
+      randtype:  "perm", // random permutation for randcount elements
+    }
+    // Normal parameters
     { name: "NAlerts",
       desc: "Number of peripheral inputs",
       type: "int",

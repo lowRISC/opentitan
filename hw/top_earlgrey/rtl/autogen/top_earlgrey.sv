@@ -1,6 +1,14 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+//
+// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson \
+//                --tpl hw/top_earlgrey/data/ \
+//                -o hw/top_earlgrey/ \
+//                --rnd_cnst_seed 4881560218908238235
 
 module top_earlgrey #(
   // Auto-inferred parameters
@@ -79,6 +87,8 @@ module top_earlgrey #(
   import tlul_pkg::*;
   import top_pkg::*;
   import tl_main_pkg::*;
+  // Compile-time random constants
+  import top_earlgrey_rnd_cnst_pkg::*;
 
   // Signals
   logic [31:0] mio_p2d;
@@ -788,7 +798,10 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
-  alert_handler u_alert_handler (
+  alert_handler #(
+    .RndCnstLfsrSeed(RndCnstAlertHandlerLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstAlertHandlerLfsrPerm)
+  ) u_alert_handler (
 
       // Interrupt
       .intr_classa_o (intr_alert_handler_classa),
@@ -1010,7 +1023,13 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
-  otp_ctrl u_otp_ctrl (
+  otp_ctrl #(
+    .RndCnstLfsrSeed(RndCnstOtpCtrlLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstOtpCtrlLfsrPerm),
+    .RndCnstKey(RndCnstOtpCtrlKey),
+    .RndCnstDigestConst(RndCnstOtpCtrlDigestConst),
+    .RndCnstDigestIV(RndCnstOtpCtrlDigestIV)
+  ) u_otp_ctrl (
 
       // Interrupt
       .intr_otp_operation_done_o (intr_otp_ctrl_otp_operation_done),
