@@ -3,11 +3,35 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging as log
+import random
 from copy import deepcopy
 from functools import partial
 from collections import OrderedDict
+from math import ceil, log2
 
-from topgen import lib
+from topgen import lib, c
+
+
+def _get_random_data_hex_literal(width):
+    """ Fetch 'width' random bits and return them as hex literal"""
+    width = int(width)
+    literal_str = hex(random.getrandbits(width))
+    return literal_str
+
+
+def _get_random_perm_hex_literal(numel):
+    """ Compute a random permutation of 'numel' elements and
+    return as packed hex literal"""
+    num_elements = int(numel)
+    width = int(ceil(log2(num_elements)))
+    idx = [x for x in range(num_elements)]
+    random.shuffle(idx)
+    literal_str = ""
+    for k in idx:
+        literal_str += format(k, '0' + str(width) + 'b')
+    # convert to hex for space efficiency
+    literal_str = hex(int(literal_str, 2))
+    return literal_str
 
 
 def amend_ip(top, ip):
@@ -32,6 +56,9 @@ def amend_ip(top, ip):
     if ipname not in ip_list_in_top:
         log.info("TOP doens't use the IP %s. Skip" % ip["name"])
         return
+
+    # Initialize RNG for compile-time netlist constants.
+    random.seed(int(top['rnd_cnst_seed']))
 
     # Needed to detect async alert transitions below
     ah_idx = ip_list_in_top.index("alert_handler")
@@ -97,17 +124,32 @@ def amend_ip(top, ip):
             for i in ip["param_list"]:
                 if i["local"] == "true":
                     ip_module["param_list"].remove(i)
-            # Removing descriptors, checking for security-relevant parameters
+            # Checking for security-relevant parameters
             # that are not exposed, adding a top-level name.
             for i in ip_module["param_list"]:
-                i.pop("desc", None)
                 par_name = i["name"]
-                if par_name.lower().startswith("sec"):
+                if par_name.lower().startswith("sec") and not i["expose"]:
                     log.warning("{} has security-critical parameter {} "
                                 "not exposed to top".format(mod_name, par_name))
-                i["name_top"] = ("Sec" + mod_name.capitalize() + par_name[3:]
-                                 if par_name.lower().startswith("sec")
-                                 else mod_name.capitalize() + par_name)
+                # Move special prefixes to the beginnining of the parameter name.
+                param_prefixes = ["Sec", "RndCnst"]
+                cc_mod_name = c.Name.from_snake_case(mod_name).as_camel_case()
+                for prefix in param_prefixes:
+                    if par_name.lower().startswith(prefix.lower()):
+                        i["name_top"] = prefix + cc_mod_name + par_name[len(prefix):]
+                        break
+                else:
+                    i["name_top"] = cc_mod_name + par_name
+
+                # Generate random bits or permutation, if needed
+                if i["randtype"] == "data":
+                    i["default"] = _get_random_data_hex_literal(i["randcount"])
+                    # Effective width of the random vector
+                    i["randwidth"] = int(i["randcount"])
+                elif i["randtype"] == "perm":
+                    i["default"] = _get_random_perm_hex_literal(i["randcount"])
+                    # Effective width of the random vector
+                    i["randwidth"] = int(i["randcount"]) * int(ceil(log2(float(i["randcount"]))))
         else:
             ip_module["param_list"] = []
 

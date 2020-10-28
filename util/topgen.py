@@ -8,6 +8,8 @@ import argparse
 import logging as log
 import subprocess
 import sys
+import random
+
 from collections import OrderedDict
 from io import StringIO
 from pathlib import Path
@@ -25,13 +27,14 @@ from topgen import intermodule as im
 from topgen.c import TopGenC
 
 # Common header for generated files
-genhdr = '''// Copyright lowRISC contributors.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
-//
+warnhdr = '''//
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 '''
+genhdr = '''// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+''' + warnhdr
 
 SRCTREE_TOP = Path(__file__).parent.parent.resolve()
 
@@ -890,6 +893,11 @@ def main():
         default=False,
         action='store_true',
         help="If set, the tool generates top level RAL model for DV")
+    # Generator options for compile time random netlist constants
+    parser.add_argument('--rnd_cnst_seed',
+                        type=int,
+                        metavar='<seed>',
+                        help='Custom seed for RNG to compute netlist constants.')
 
     args = parser.parse_args()
 
@@ -1014,6 +1022,19 @@ def main():
     log.info("Detected crossbars: %s" %
              (", ".join([x["name"] for x in xbar_objs])))
 
+    # If specified, override the seed for random netlist constant computation.
+    if args.rnd_cnst_seed:
+        log.warning(
+            'Commandline override of rnd_cnst_seed with {}.'.format(args.rnd_cnst_seed))
+        topcfg['rnd_cnst_seed'] = args.rnd_cnst_seed
+    # Otherwise, we either take it from the top_earlgrey.hjson if present, or
+    # randomly generate a new seed if not.
+    else:
+        random.seed()
+        new_seed = random.getrandbits(64)
+        if topcfg.setdefault('rnd_cnst_seed', new_seed) != new_seed:
+            log.warning('No rnd_cnst_seed specified, setting to {}.'.format(new_seed))
+
     topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
     if error != 0:
         raise SystemExit("Error occured while validating top.hjson")
@@ -1071,9 +1092,14 @@ def main():
     hjson_dir = Path(args.topcfg).parent
     genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
                                  completecfg["name"])
-    gencmd = (
-        "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --hjson-only "
-        "-o hw/top_{topname}/\n".format(topname=topname))
+
+    # Header for HJSON
+    gencmd = '''//
+// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
+//                -o hw/top_{topname}/ \\
+//                --hjson-only \\
+//                --rnd_cnst_seed {seed}
+'''.format(topname=topname, seed=completecfg['rnd_cnst_seed'])
 
     genhjson_path.write_text(genhdr + gencmd +
                              hjson.dumps(completecfg, for_json=True))
@@ -1095,16 +1121,34 @@ def main():
 
             return rendered_path.resolve()
 
+        # Header for SV files
+        gencmd = warnhdr + '''//
+// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
+//                --tpl hw/top_earlgrey/data/ \\
+//                -o hw/top_{topname}/ \\
+//                --rnd_cnst_seed {seed}
+'''.format(topname=topname, seed=topcfg['rnd_cnst_seed'])
+
         # SystemVerilog Top:
         # 'top_earlgrey.sv.tpl' -> 'rtl/autogen/top_earlgrey.sv'
-        render_template('top_%s.sv', 'rtl/autogen')
+        render_template('top_%s.sv',
+                        'rtl/autogen',
+                        gencmd = gencmd)
 
         # The C / SV file needs some complex information, so we initialize this
         # object to store it.
         c_helper = TopGenC(completecfg)
 
         # 'top_earlgrey_pkg.sv.tpl' -> 'rtl/autogen/top_earlgrey_pkg.sv'
-        render_template('top_%s_pkg.sv', 'rtl/autogen', helper=c_helper)
+        render_template('top_%s_pkg.sv',
+                        'rtl/autogen',
+                        helper=c_helper,
+                        gencmd = gencmd)
+
+        # compile-time random netlist constants
+        render_template('top_%s_rnd_cnst_pkg.sv',
+                        'rtl/autogen',
+                        gencmd = gencmd)
 
         # C Header + C File + Clang-format file
 

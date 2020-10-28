@@ -55,6 +55,9 @@ def check_count(top, mreg, err_prefix):
             "desc": "auto added parameter",
             "local": "true",
             "expose": "false",
+            "randtype": "none",
+            "randcount": "0",
+            "randwidth": "0"
         })
         log.debug("Parameter {} is added".format(mreg["name"]))
         # Replace count integer to parameter
@@ -140,6 +143,43 @@ def check_lp(obj, x, err_prefix):
     for y in obj[x]:
         error += check_keys(y, lp_required, lp_optional, {},
                             err_prefix + ' element ' + x)
+
+        # If this is a random netlist constant, other attributes like local, default and expose
+        # are automatically set. Throw an error if they already exist in the dict.
+        randcount = int(y.setdefault('randcount', "0"))
+        randtype = y.setdefault('randtype', "none")
+        if randtype != "none":
+
+            if randcount <= 0:
+                log.error(err_prefix +
+                          ' randwith for parameter ' + y['name'] + ' must be greater > 0.')
+                return error + 1
+
+            if randtype not in ['perm', 'data']:
+                log.error(err_prefix +
+                          ' parameter ' + y['name'] + ' has unknown randtype ' + randtype)
+                return error + 1
+
+            if y.get('type') is None:
+                log.error(err_prefix + ' parameter ' + y['name'] + ' has undefined type. '
+                          'It is required to define the type in the IP package.')
+                return error + 1
+
+            if not y.get('name').lower().startswith('rndcnst'):
+                log.error(err_prefix + ' parameter ' + y['name'] + ' is defined as a compile-time '
+                          'random netlist constant. The name must therefore start with RndCnst.')
+                return error + 1
+
+            overrides = [('local', 'false'),
+                         ('default', ''),
+                         ('expose', 'false')]
+
+            for key, value in overrides:
+                if y.setdefault(key, value) != value:
+                    log.error(err_prefix + ' ' + key + ' for parameter ' + y['name'] +
+                              ' must not be set since it will be defined automatically.')
+                    return error + 1
+
         # TODO: Check if PascalCase or ALL_CAPS
         y.setdefault('type', 'int')
 
@@ -168,7 +208,7 @@ def check_lp(obj, x, err_prefix):
                 if ierr:
                     error += 1
                     y["default"] = "1"
-        else:
+        elif y["randtype"] != "none":
             # Don't make assumptions for exposed parameters. These must have
             # a default.
             if y["expose"] == "true":
@@ -379,6 +419,8 @@ lp_optional = {
     'default': ['s', "item default value"],
     'local': ['pb', "to be localparam"],
     'expose': ['pb', "to be exposed to top"],
+    'randcount': ['s', "number of bits to randomize in the parameter. 0 by default."],
+    'randtype': ['s', "type of randomization to perform. none by default"],
 }
 
 # Registers list may have embedded keys
