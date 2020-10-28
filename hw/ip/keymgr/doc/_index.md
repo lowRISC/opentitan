@@ -178,6 +178,8 @@ Two separate alerts are also generated, one corresponding to each category above
 When these errors occur, random data is fed to the KMAC for processing.
 At the completion of KMAC processing, the working state is over-written with KMAC's output and the state is transitioned to `Disabled`.
 An error interrupt and fault alert are also generated.
+Note the KMAC module itself may error during the derivation process.
+When this happens, the error is also registered as an invalid command and the same mechanisms apply.
 
 ### Invalid Output
 When these errors occur, an error interrupt and fault alert are generated.

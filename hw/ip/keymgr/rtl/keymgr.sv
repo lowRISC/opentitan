@@ -105,6 +105,7 @@ module keymgr import keymgr_pkg::*; #(
   logic kmac_input_invalid;
   logic kmac_cmd_err;
   logic kmac_fsm_err;
+  logic kmac_op_err;
   logic [Shares-1:0][KeyWidth-1:0] kmac_data;
   logic [ErrLastPos-1:0] err_code;
 
@@ -134,6 +135,7 @@ module keymgr import keymgr_pkg::*; #(
     .kmac_done_i(kmac_done),
     .kmac_input_invalid_i(kmac_input_invalid),
     .kmac_fsm_err_i(kmac_fsm_err),
+    .kmac_op_err_i(kmac_op_err),
     .kmac_cmd_err_i(kmac_cmd_err),
     .kmac_data_i(kmac_data)
   );
@@ -269,6 +271,7 @@ module keymgr import keymgr_pkg::*; #(
     .kmac_data_i,
     .entropy_i(lfsr[31:0]),
     .fsm_error_o(kmac_fsm_err),
+    .kmac_error_o(kmac_op_err),
     .cmd_error_o(kmac_cmd_err)
   );
 

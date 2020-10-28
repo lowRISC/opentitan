@@ -27,6 +27,7 @@ module tb;
   keymgr_pkg::kmac_data_rsp_t kmac_rsp;
   assign kmac_rsp.ready = 1'b1;
   assign kmac_rsp.done = 1'b1;
+  assign kmac_rsp.error = 1'b0;
 
   always_ff @(posedge clk) begin
     for (int i = 0; i < 8; i++) begin

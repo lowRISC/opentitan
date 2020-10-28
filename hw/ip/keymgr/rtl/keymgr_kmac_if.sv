@@ -34,6 +34,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 
   // error outputs
   output logic fsm_error_o,
+  output logic kmac_error_o,
   output logic cmd_error_o
 );
 
@@ -85,6 +86,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   logic [CntWidth-1:0] rounds;
   logic [KmacDataIfWidth-1:0] decoy_data;
   logic valid;
+  logic last;
   logic [IfBytes-1:0] strb;
   logic cnt_clr, cnt_set, cnt_en;
   logic start;
@@ -129,12 +131,14 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     cnt_set = 1'b0;
     cnt_en  = 1'b0;
     valid   = 1'b0;
+    last    = 1'b0;
     strb    = '0;
     done_o  = 1'b0;
     state_d = state_q;
     rounds  = '0;
 
     fsm_error_o = '0;
+    kmac_error_o = '0;
 
     unique case (state_q)
 
@@ -173,8 +177,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 
       StTxLast: begin
         valid = 1'b1;
-
-        // TODO: kmac_data_o.last set here
+        last = 1'b1;
 
         if (adv_en_i) begin
           strb = AdvByteMask;
@@ -191,7 +194,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 
       StOpWait: begin
         if (kmac_data_i.done) begin
-          // TODO: kmac_data_i.error check here.
+          kmac_error_o = kmac_data_i.error;
           done_o = 1'b1;
           state_d = StClean;
         end
@@ -241,7 +244,6 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 
   assign inputs_invalid_o = |inputs_invalid_q;
 
-
   // The count is maintained as a downcount
   // so a subtract is necessary to send the right byte
   // alternatively we can also reverse the order of the input
@@ -260,12 +262,14 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   end
 
   assign kmac_data_o.valid = valid;
+  assign kmac_data_o.last  = last;
   assign kmac_data_o.strb  = strb;
 
   // the enables must be 1 hot
   logic [2:0] enables, enables_sub;
   assign enables = {adv_en_i, id_en_i, gen_en_i};
   assign enables_sub = enables - 1'b1;
+  // command error occurs if kmac errors or if the command itself is invalid
   assign cmd_error_o = |(enables & enables_sub);
 
 endmodule // keymgr_kmac_if
