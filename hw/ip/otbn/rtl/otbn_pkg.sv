@@ -152,7 +152,8 @@ package otbn_pkg;
     RfWdSelNextPc,
     RfWdSelLsu,
     RfWdSelIspr,
-    RfWdSelIncr
+    RfWdSelIncr,
+    RfWdSelMac
   } rf_wd_sel_e;
 
   // Control and Status Registers (CSRs)
@@ -272,13 +273,22 @@ package otbn_pkg;
                                               // file
 
     // Shifting only applies to a subset of ALU operations
-    logic [$clog2(WLEN)-1:0] shift_amt;   // Shift amount
-    logic                    shift_right; // Shift right if set otherwise left
+    logic [$clog2(WLEN)-1:0] alu_shift_amt;   // Shift amount
+    logic                    alu_shift_right; // Shift right if set otherwise left
 
-    flag_group_t             flag_group;
-    flag_e                   sel_flag;
+    flag_group_t             alu_flag_group;
+    flag_e                   alu_sel_flag;
     alu_op_bignum_e          alu_op;
-    op_b_sel_e               op_b_sel;
+    op_b_sel_e               alu_op_b_sel;
+
+    logic [1:0]              mac_op_a_qw_sel;
+    logic [1:0]              mac_op_b_qw_sel;
+    logic                    mac_wr_hw_sel;
+    logic [1:0]              mac_pre_acc_shift;
+    logic                    mac_zero_acc;
+    logic                    mac_shift_out;
+    logic                    mac_en;
+
     logic                    rf_we;
     rf_wd_sel_e              rf_wdata_sel;
     logic                    rf_ren_a;
@@ -306,6 +316,16 @@ package otbn_pkg;
     flag_group_t             flag_group;
     flag_e                   sel_flag;
   } alu_bignum_operation_t;
+
+  typedef struct packed {
+    logic [WLEN-1:0] operand_a;
+    logic [WLEN-1:0] operand_b;
+    logic [1:0]      operand_a_qw_sel;
+    logic [1:0]      operand_b_qw_sel;
+    logic [1:0]      pre_acc_shift_imm;
+    logic            zero_acc;
+    logic            shift_acc;
+  } mac_bignum_operation_t;
 
 
 endpackage

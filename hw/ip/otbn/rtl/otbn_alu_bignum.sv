@@ -80,6 +80,10 @@ module otbn_alu_bignum
   input  logic                        ispr_bignum_wr_en_i,
   output logic [WLEN-1:0]             ispr_rdata_o,
 
+  input  logic [WLEN-1:0]             ispr_acc_i,
+  output logic [WLEN-1:0]             ispr_acc_wr_data_o,
+  output logic                        ispr_acc_wr_en_o,
+
   input  logic [WLEN-1:0]             rnd_i
 );
   ///////////
@@ -152,13 +156,16 @@ module otbn_alu_bignum
                                                            ispr_bignum_wr_en_i);
   end
 
+  assign ispr_acc_wr_en_o   = (ispr_addr_i == IsprAcc) & ispr_bignum_wr_en_i;
+  assign ispr_acc_wr_data_o = ispr_bignum_wdata_i;
+
   always_comb begin
     ispr_rdata_o = mod_q;
 
     unique case (ispr_addr_i)
       IsprMod:   ispr_rdata_o = mod_q;
       IsprRnd:   ispr_rdata_o = rnd_i;
-      IsprAcc:   ispr_rdata_o = 256'h0;
+      IsprAcc:   ispr_rdata_o = ispr_acc_i;
       IsprFlags: ispr_rdata_o = {{(WLEN - (NFlagGroups * FlagsWidth)){1'b0}}, flags_flattened};
       default: ;
     endcase

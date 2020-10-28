@@ -74,6 +74,11 @@ module otbn_controller
   output alu_bignum_operation_t alu_bignum_operation_o,
   input  logic [WLEN-1:0]       alu_bignum_operation_result_i,
 
+  // Bignum MAC
+  output mac_bignum_operation_t mac_bignum_operation_o,
+  input  logic [WLEN-1:0]       mac_bignum_operation_result_i,
+  output logic                  mac_bignum_en_o,
+
   // LSU
   output logic                     lsu_load_req_o,
   output logic                     lsu_store_req_o,
@@ -147,6 +152,8 @@ module otbn_controller
   // body that hasn't completed all of its iterations.
   logic                     loop_jump;
   logic [ImemAddrWidth-1:0] loop_jump_addr;
+
+  logic [WLEN-1:0] mac_bignum_rf_wr_data;
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
@@ -369,7 +376,7 @@ module otbn_controller
 
   // Base ALU Operand B MUX
   always_comb begin
-    unique case (insn_dec_bignum_i.op_b_sel)
+    unique case (insn_dec_bignum_i.alu_op_b_sel)
       OpBSelRegister:  alu_bignum_operation_o.operand_b = rf_bignum_rd_data_b_i;
       OpBSelImmediate: alu_bignum_operation_o.operand_b = insn_dec_bignum_i.i;
       default:         alu_bignum_operation_o.operand_b = rf_bignum_rd_data_b_i;
@@ -377,25 +384,71 @@ module otbn_controller
   end
 
   assign alu_bignum_operation_o.op          = insn_dec_bignum_i.alu_op;
-  assign alu_bignum_operation_o.shift_right = insn_dec_bignum_i.shift_right;
-  assign alu_bignum_operation_o.shift_amt   = insn_dec_bignum_i.shift_amt;
-  assign alu_bignum_operation_o.flag_group  = insn_dec_bignum_i.flag_group;
-  assign alu_bignum_operation_o.sel_flag    = insn_dec_bignum_i.sel_flag;
+  assign alu_bignum_operation_o.shift_right = insn_dec_bignum_i.alu_shift_right;
+  assign alu_bignum_operation_o.shift_amt   = insn_dec_bignum_i.alu_shift_amt;
+  assign alu_bignum_operation_o.flag_group  = insn_dec_bignum_i.alu_flag_group;
+  assign alu_bignum_operation_o.sel_flag    = insn_dec_bignum_i.alu_sel_flag;
 
-  // Register file write MUX
-  // Suppress write for loads when controller isn't in stall state as load data for writeback is
-  // only available in the stall state.
-  assign rf_bignum_wr_en_o =
-    {2{insn_dec_bignum_i.rf_we & ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall))}};
+  assign mac_bignum_operation_o.operand_a         = rf_bignum_rd_data_a_i;
+  assign mac_bignum_operation_o.operand_b         = rf_bignum_rd_data_b_i;
+  assign mac_bignum_operation_o.operand_a_qw_sel  = insn_dec_bignum_i.mac_op_a_qw_sel;
+  assign mac_bignum_operation_o.operand_b_qw_sel  = insn_dec_bignum_i.mac_op_b_qw_sel;
+  assign mac_bignum_operation_o.pre_acc_shift_imm = insn_dec_bignum_i.mac_pre_acc_shift;
+  assign mac_bignum_operation_o.zero_acc          = insn_dec_bignum_i.mac_zero_acc;
+  assign mac_bignum_operation_o.shift_acc         = insn_dec_bignum_i.mac_shift_out;
+
+  assign mac_bignum_en_o = insn_dec_bignum_i.mac_en & insn_valid_i;
+
+
+  // Bignum Register file write control
+
+  always_comb begin
+    // By default write nothing
+    rf_bignum_wr_en_o = 2'b00;
+
+    // Only write if enabled
+    if (insn_dec_bignum_i.rf_we) begin
+      if (insn_dec_bignum_i.mac_en && insn_dec_bignum_i.mac_shift_out) begin
+        // Special handling for BN.MULQACC.SO, only enable upper or lower half depending on
+        // mac_wr_hw_sel.
+        rf_bignum_wr_en_o = insn_dec_bignum_i.mac_wr_hw_sel ? 2'b10 : 2'b01;
+      end else if (insn_dec_shared_i.ld_insn) begin
+        // Special handling for BN.LID. Load data is requested in the first cycle of the instruction
+        // (where state_q == OtbnStateRun) and is available in the second cycle following the
+        // request (where state_q == OtbnStateStall), so only enable writes for BN.LID when in
+        // OtbnStateStall.
+        if (state_q == OtbnStateStall) begin
+          rf_bignum_wr_en_o = 2'b11;
+        end
+      end else begin
+        // For everything else write both halves immediately.
+        rf_bignum_wr_en_o = 2'b11;
+      end
+    end
+  end
 
   assign rf_bignum_wr_addr_o = insn_dec_bignum_i.rf_d_indirect ? rf_base_rd_data_b_i[4:0] :
                                                                  insn_dec_bignum_i.d;
+
+  // For the shift-out variant of BN.MULQACC the bottom half of the MAC result is written to one
+  // half of a desintation register specified by the instruction (mac_wr_hw_sel). The bottom half of
+  // the MAC result must be placed in the appropriate half of the write data (the RF only accepts
+  // write data for the top half in the top half of the write data input). Otherwise (shift-out to
+  // bottom half and all other BN.MULQACC instructions) simply pass the MAC result through unchanged
+  // as write data.
+  assign mac_bignum_rf_wr_data[WLEN-1:WLEN/2] =
+    insn_dec_bignum_i.mac_wr_hw_sel &&
+    insn_dec_bignum_i.mac_shift_out    ? mac_bignum_operation_result_i[WLEN/2-1:0] :
+                                         mac_bignum_operation_result_i[WLEN-1:WLEN/2];
+
+  assign mac_bignum_rf_wr_data[WLEN/2-1:0] = mac_bignum_operation_result_i[WLEN/2-1:0];
 
   always_comb begin
     unique case (insn_dec_bignum_i.rf_wdata_sel)
       RfWdSelEx:   rf_bignum_wr_data_o = alu_bignum_operation_result_i;
       RfWdSelLsu:  rf_bignum_wr_data_o = lsu_bignum_rdata_i;
       RfWdSelIspr: rf_bignum_wr_data_o = ispr_rdata_i;
+      RfWdSelMac:  rf_bignum_wr_data_o = mac_bignum_rf_wr_data;
       default:     rf_bignum_wr_data_o = alu_bignum_operation_result_i;
     endcase
   end
