@@ -12,12 +12,9 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:ip:tlul
       - lowrisc:ip:keymgr_pkg
+      - lowrisc:ip:sha3
     files:
       - rtl/kmac_pkg.sv
-      - rtl/keccak_round.sv
-      - rtl/keccak_2share.sv
-      - rtl/sha3pad.sv
-      - rtl/sha3core.sv
       - rtl/kmac_core.sv
       - rtl/kmac_msgfifo.sv
       - rtl/kmac_staterd.sv

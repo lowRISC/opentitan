@@ -389,7 +389,7 @@ module kmac
   );
 
   // SHA3 hashing engine
-  sha3core #(
+  sha3 #(
     .EnMasking (EnMasking),
     .ReuseShare (ReuseShare)
   ) u_sha3 (

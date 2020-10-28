@@ -1,0 +1,39 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:sha3:0.1"
+description: "SHA3 core"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:prim:prim_dom_and_2share
+      - lowrisc:prim:assert
+      - lowrisc:ip:tlul
+    files:
+      - rtl/kmac_pkg.sv
+      - rtl/keccak_round.sv
+      - rtl/keccak_2share.sv
+      - rtl/sha3pad.sv
+      - rtl/sha3.sv
+    file_type: systemVerilogSource
+
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: sha3
+
+  formal:
+    filesets:
+      - files_rtl
+    toplevel: sha3
+

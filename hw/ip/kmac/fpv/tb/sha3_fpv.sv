@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-module sha3core_fpv
+module sha3_fpv
   import kmac_pkg::*;
 #(
   // Enable Masked Keccak if 1
@@ -48,10 +48,10 @@ module sha3core_fpv
   output err_t error_o
 );
 
-  sha3core #(
+  sha3 #(
     .EnMasking(EnMasking),
     .ReuseShare (0)
-  ) u_core (
+  ) u_sha3 (
     .*
   );
 

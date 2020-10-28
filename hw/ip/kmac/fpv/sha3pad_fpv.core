@@ -8,7 +8,7 @@ filesets:
   files_formal:
     depend:
       - lowrisc:prim:all
-      - lowrisc:ip:kmac
+      - lowrisc:ip:sha3
     files:
       - tb/sha3pad_fpv.sv
     file_type: systemVerilogSource

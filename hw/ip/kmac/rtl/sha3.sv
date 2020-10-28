@@ -8,7 +8,7 @@
 
 `include "prim_assert.sv"
 
-module sha3core
+module sha3
   import kmac_pkg::*;
 #(
   // Enable Masked Keccak if 1
