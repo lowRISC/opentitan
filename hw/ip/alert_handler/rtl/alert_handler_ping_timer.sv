@@ -22,13 +22,9 @@
 `include "prim_assert.sv"
 
 module alert_handler_ping_timer import alert_pkg::*; #(
-  parameter logic [31:0]       LfsrSeed = 32'd1,
-  parameter logic [31:0][31:0] LfsrPerm = {
-    32'd04, 32'd11, 32'd25, 32'd03, 32'd15, 32'd16, 32'd01, 32'd10,
-    32'd02, 32'd22, 32'd07, 32'd00, 32'd23, 32'd28, 32'd30, 32'd19,
-    32'd27, 32'd12, 32'd24, 32'd26, 32'd14, 32'd21, 32'd18, 32'd05,
-    32'd13, 32'd08, 32'd29, 32'd31, 32'd20, 32'd06, 32'd09, 32'd17
-  },
+  // Compile time random constants, to be overriden by topgen.
+  parameter lfsr_seed_t        RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t        RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   // Enable this for DV, disable this for long LFSRs in FPV
   parameter bit                MaxLenSVA  = 1'b1,
   // Can be disabled in cases where entropy
@@ -63,15 +59,15 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   logic [16-IdDw-1:0] unused_lfsr_state;
 
   prim_lfsr #(
-    .LfsrDw      ( 32         ),
-    .EntropyDw   ( 1          ),
-    .StateOutDw  ( 32         ),
-    .DefaultSeed ( LfsrSeed   ),
-    .StatePermEn ( 1'b1       ),
-    .StatePerm   ( LfsrPerm   ),
-    .MaxLenSVA   ( MaxLenSVA  ),
-    .LockupSVA   ( LockupSVA  ),
-    .ExtSeedSVA  ( 1'b0       ) // ext seed is unused
+    .LfsrDw      ( 32              ),
+    .EntropyDw   ( 1               ),
+    .StateOutDw  ( 32              ),
+    .DefaultSeed ( RndCnstLfsrSeed ),
+    .StatePermEn ( 1'b1            ),
+    .StatePerm   ( RndCnstLfsrPerm ),
+    .MaxLenSVA   ( MaxLenSVA       ),
+    .LockupSVA   ( LockupSVA       ),
+    .ExtSeedSVA  ( 1'b0            ) // ext seed is unused
   ) i_prim_lfsr (
     .clk_i,
     .rst_ni,
