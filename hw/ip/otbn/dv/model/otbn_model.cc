@@ -15,9 +15,16 @@
 #include "iss_wrapper.h"
 #include "sv_scoped.h"
 
-extern "C" int simutil_get_mem(int index, svBitVecVal *val);
-extern "C" int simutil_set_mem(int index, const svBitVecVal *val);
-extern "C" int otbn_rf_peek(int index, svBitVecVal *val);
+extern "C" {
+// DPI imports, implemented in SystemVerilog
+int simutil_get_mem(int index, svBitVecVal *val);
+int simutil_set_mem(int index, const svBitVecVal *val);
+
+// This function is only implemented if DesignScope != "", i.e. if we're running
+// a block-level simulation. Code needs to check at runtime if otbn_rf_peek() is
+// available before calling it.
+int otbn_rf_peek(int index, svBitVecVal *val) __attribute__((weak));
+}
 
 #define RUNNING_BIT (1U << 0)
 #define FAILED_STEP_BIT (1U << 1)
@@ -300,6 +307,11 @@ static std::array<T, 32> get_rtl_regs(const std::string &reg_scope) {
   // "bit [255:0]" argument). Allocate 256 bits (= 32 bytes) as
   // 32/sizeof(svBitVecVal) words on the stack.
   svBitVecVal buf[256 / 8 / sizeof(svBitVecVal)];
+
+  // The implementation of otbn_rf_peek() is only available if DesignScope != ""
+  // (the function is implemented in SystemVerilog, and imported through DPI).
+  // We should not reach the code here if that's the case.
+  assert(otbn_rf_peek);
 
   for (int i = 0; i < 32; ++i) {
     if (!otbn_rf_peek(i, buf)) {
