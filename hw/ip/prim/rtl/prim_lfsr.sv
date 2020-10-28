@@ -42,7 +42,7 @@ module prim_lfsr #(
   // If StatePermEn is set to 1, the custom permutation specified via StatePerm is applied
   // to the state output, in order to break linear shifting patterns of the LFSR.
   parameter bit                      StatePermEn = 1'b0,
-  parameter logic [LfsrDw-1:0][31:0] StatePerm   = '0,
+  parameter logic [LfsrDw-1:0][$clog2(LfsrDw)-1:0] StatePerm = '0,
   // Enable this for DV, disable this for long LFSRs in FPV
   parameter bit                MaxLenSVA    = 1'b1,
   // Can be disabled in cases where seed and entropy
