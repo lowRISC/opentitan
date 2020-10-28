@@ -47,15 +47,18 @@ module tb;
     .entropy_src_hw_if_o       ({csrng_if.ack, csrng_if.data, fips}),
     .entropy_src_hw_if_i       (csrng_if.req),
 
+    .entropy_src_xht_o         (),
+    .entropy_src_xht_i         ('0),
+
     .entropy_src_rng_o         (rng_if.ready),
     .entropy_src_rng_i         ({rng_if.valid, rng_if.data}),
 
     .alert_rx_i                (alert_rx),
     .alert_tx_o                (alert_tx),
 
-    .es_entropy_valid_o        (intr_entropy_valid),
-    .es_health_test_failed_o   (intr_health_test_failed),
-    .es_fifo_err_o             (intr_fifo_err)
+    .intr_es_entropy_valid_o      (intr_entropy_valid),
+    .intr_es_health_test_failed_o (intr_health_test_failed),
+    .intr_es_fifo_err_o           (intr_fifo_err)
   );
 
   assign interrupts[EntropyValid]     = intr_entropy_valid;
