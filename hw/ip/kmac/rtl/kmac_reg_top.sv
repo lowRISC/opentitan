@@ -161,6 +161,9 @@ module kmac_reg_top (
   logic cfg_state_endianness_qs;
   logic cfg_state_endianness_wd;
   logic cfg_state_endianness_we;
+  logic cfg_sideload_qs;
+  logic cfg_sideload_wd;
+  logic cfg_sideload_we;
   logic [3:0] cmd_wd;
   logic cmd_we;
   logic status_sha3_idle_qs;
@@ -615,6 +618,32 @@ module kmac_reg_top (
 
     // to register interface (read)
     .qs     (cfg_state_endianness_qs)
+  );
+
+
+  //   F[sideload]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cfg_sideload (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (cfg_sideload_we & cfg_regwen_qs),
+    .wd     (cfg_sideload_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cfg.sideload.q ),
+
+    // to register interface (read)
+    .qs     (cfg_sideload_qs)
   );
 
 
@@ -1769,6 +1798,9 @@ module kmac_reg_top (
   assign cfg_state_endianness_we = addr_hit[3] & reg_we & ~wr_err;
   assign cfg_state_endianness_wd = reg_wdata[9];
 
+  assign cfg_sideload_we = addr_hit[3] & reg_we & ~wr_err;
+  assign cfg_sideload_wd = reg_wdata[12];
+
   assign cmd_we = addr_hit[4] & reg_we & ~wr_err;
   assign cmd_wd = reg_wdata[3:0];
 
@@ -1947,6 +1979,7 @@ module kmac_reg_top (
         reg_rdata_next[5:4] = cfg_mode_qs;
         reg_rdata_next[8] = cfg_msg_endianness_qs;
         reg_rdata_next[9] = cfg_state_endianness_qs;
+        reg_rdata_next[12] = cfg_sideload_qs;
       end
 
       addr_hit[4]: begin

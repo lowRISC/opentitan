@@ -68,6 +68,9 @@ package kmac_reg_pkg;
     struct packed {
       logic        q;
     } state_endianness;
+    struct packed {
+      logic        q;
+    } sideload;
   } kmac_reg2hw_cfg_reg_t;
 
   typedef struct packed {
@@ -145,10 +148,10 @@ package kmac_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    kmac_reg2hw_intr_state_reg_t intr_state; // [1446:1444]
-    kmac_reg2hw_intr_enable_reg_t intr_enable; // [1443:1441]
-    kmac_reg2hw_intr_test_reg_t intr_test; // [1440:1435]
-    kmac_reg2hw_cfg_reg_t cfg; // [1434:1427]
+    kmac_reg2hw_intr_state_reg_t intr_state; // [1447:1445]
+    kmac_reg2hw_intr_enable_reg_t intr_enable; // [1444:1442]
+    kmac_reg2hw_intr_test_reg_t intr_test; // [1441:1436]
+    kmac_reg2hw_cfg_reg_t cfg; // [1435:1427]
     kmac_reg2hw_cmd_reg_t cmd; // [1426:1422]
     kmac_reg2hw_key_share0_mreg_t [15:0] key_share0; // [1421:894]
     kmac_reg2hw_key_share1_mreg_t [15:0] key_share1; // [893:366]
