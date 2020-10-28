@@ -170,6 +170,16 @@
                 If 1, convert the internal state value.
                 '''
         } // f: state_endianness
+        { bits: "12"
+          name: "sideload"
+          desc: '''Sideloaded Key.
+
+                If 1, KMAC uses KeyMgr sideloaded key for SW initiated KMAC
+                operation. KMAC uses the sideloaded key regardless of this
+                configuration when KeyMgr initiates the KMAC operation for
+                Key Derivation Function (KDF).
+                '''
+        } // f: sideload
       ]
     } // R: CFG
     { name: "CMD"
