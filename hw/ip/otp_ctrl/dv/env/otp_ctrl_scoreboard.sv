@@ -12,11 +12,11 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(push_pull_item#(SRAM_DATA_SIZE))  sram_fifo[NumSramKeyReqSlots];
-  uvm_tlm_analysis_fifo #(push_pull_item#(OTBN_DATA_SIZE))  otbn_fifo;
-  uvm_tlm_analysis_fifo #(push_pull_item#(FLASH_DATA_SIZE)) flash_addr_fifo;
-  uvm_tlm_analysis_fifo #(push_pull_item#(FLASH_DATA_SIZE)) flash_data_fifo;
-  uvm_tlm_analysis_fifo #(push_pull_item#(EDN_DATA_SIZE))   edn_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(SRAM_DATA_SIZE)))  sram_fifo[NumSramKeyReqSlots];
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(OTBN_DATA_SIZE)))  otbn_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_addr_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_data_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(EDN_DATA_SIZE)))   edn_fifo;
 
   // local queues to hold incoming packets pending comparison
 

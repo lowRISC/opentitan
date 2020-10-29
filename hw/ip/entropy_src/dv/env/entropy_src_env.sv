@@ -10,21 +10,21 @@ class entropy_src_env extends cip_base_env #(
   );
   `uvm_component_utils(entropy_src_env)
 
-   push_pull_agent#(.DataWidth(RNG_DATA_WIDTH))     m_rng_agent;
-   push_pull_agent#(.DataWidth(CSRNG_DATA_WIDTH))   m_csrng_agent;
+   push_pull_agent#(.HostDataWidth(RNG_DATA_WIDTH))     m_rng_agent;
+   push_pull_agent#(.DeviceDataWidth(CSRNG_DATA_WIDTH)) m_csrng_agent;
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
-    m_rng_agent = push_pull_agent#(.DataWidth(RNG_DATA_WIDTH))::type_id::create("m_rng_agent", this);
-    uvm_config_db#(push_pull_agent_cfg#(.DataWidth(RNG_DATA_WIDTH)))::set(this, "m_rng_agent*", "cfg", cfg.m_rng_agent_cfg);
+    m_rng_agent = push_pull_agent#(.HostDataWidth(RNG_DATA_WIDTH))::type_id::create("m_rng_agent", this);
+    uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(RNG_DATA_WIDTH)))::set(this, "m_rng_agent*", "cfg", cfg.m_rng_agent_cfg);
     cfg.m_rng_agent_cfg.agent_type = push_pull_agent_pkg::PushAgent;
     cfg.m_rng_agent_cfg.if_mode    = dv_utils_pkg::Host;
 
-    m_csrng_agent = push_pull_agent#(.DataWidth(CSRNG_DATA_WIDTH))::type_id::create("m_csrng_agent", this);
-    uvm_config_db#(push_pull_agent_cfg#(.DataWidth(CSRNG_DATA_WIDTH)))::set(this, "m_csrng_agent*", "cfg", cfg.m_csrng_agent_cfg);
+    m_csrng_agent = push_pull_agent#(.DeviceDataWidth(CSRNG_DATA_WIDTH))::type_id::create("m_csrng_agent", this);
+    uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(CSRNG_DATA_WIDTH)))::set(this, "m_csrng_agent*", "cfg", cfg.m_csrng_agent_cfg);
     cfg.m_csrng_agent_cfg.agent_type = push_pull_agent_pkg::PullAgent;
     cfg.m_csrng_agent_cfg.if_mode    = dv_utils_pkg::Host;
 

@@ -40,11 +40,11 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
 
-  push_pull_if #(SRAM_DATA_SIZE)  sram_if[NumSramKeyReqSlots] (.clk(clk), .rst_n(rst_n));
-  push_pull_if #(OTBN_DATA_SIZE)  otbn_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if #(FLASH_DATA_SIZE) flash_addr_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if #(FLASH_DATA_SIZE) flash_data_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if #(EDN_DATA_SIZE)   edn_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))  sram_if[NumSramKeyReqSlots] (.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE))  otbn_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(EDN_DATA_SIZE))   edn_if(.clk(clk), .rst_n(rst_n));
 
   pins_if #(OtpPwrIfWidth) pwr_otp_if(pwr_otp);
   // TODO: use standard req/rsp agent
@@ -75,7 +75,7 @@ module tb;
     .otp_ast_pwr_seq_h_i       ('0),
     // edn
     .otp_edn_o                 (edn_if.req),
-    .otp_edn_i                 ({edn_if.ack, edn_if.data}),
+    .otp_edn_i                 ({edn_if.ack, edn_if.d_data}),
     // pwrmgr
     .pwr_otp_i                 (pwr_otp[OtpPwrInitReq]),
     .pwr_otp_o                 (pwr_otp[OtpPwrDoneRsp:OtpPwrIdleRsp]),
@@ -104,23 +104,23 @@ module tb;
   );
 
   for (genvar i = 0; i < NumSramKeyReqSlots; i++) begin : gen_sram_pull_if
-    assign sram_req[i]     = sram_if[i].req;
-    assign sram_if[i].ack  = sram_rsp[i].ack;
-    assign sram_if[i].data = {sram_rsp[i].key, sram_rsp[i].nonce, sram_rsp[i].seed_valid};
+    assign sram_req[i]       = sram_if[i].req;
+    assign sram_if[i].ack    = sram_rsp[i].ack;
+    assign sram_if[i].d_data = {sram_rsp[i].key, sram_rsp[i].nonce, sram_rsp[i].seed_valid};
     initial begin
-      uvm_config_db#(virtual push_pull_if#(SRAM_DATA_SIZE))::set(null,
+      uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(SRAM_DATA_SIZE)))::set(null,
                      $sformatf("*env.m_sram_pull_agent[%0d]*", i), "vif", sram_if[i]);
     end
   end
-  assign otbn_req     = otbn_if.req;
-  assign otbn_if.ack  = otbn_rsp.ack;
-  assign otbn_if.data = {otbn_rsp.key, otbn_rsp.nonce, otbn_rsp.seed_valid};
+  assign otbn_req       = otbn_if.req;
+  assign otbn_if.ack    = otbn_rsp.ack;
+  assign otbn_if.d_data = {otbn_rsp.key, otbn_rsp.nonce, otbn_rsp.seed_valid};
 
-  assign flash_req          = {flash_data_if.req, flash_addr_if.req};
-  assign flash_data_if.ack  = flash_rsp.data_ack;
-  assign flash_addr_if.ack  = flash_rsp.addr_ack;
-  assign flash_data_if.data = {flash_rsp.key, flash_rsp.seed_valid};
-  assign flash_addr_if.data = {flash_rsp.key, flash_rsp.seed_valid};
+  assign flash_req            = {flash_data_if.req, flash_addr_if.req};
+  assign flash_data_if.ack    = flash_rsp.data_ack;
+  assign flash_addr_if.ack    = flash_rsp.addr_ack;
+  assign flash_data_if.d_data = {flash_rsp.key, flash_rsp.seed_valid};
+  assign flash_addr_if.d_data = {flash_rsp.key, flash_rsp.seed_valid};
 
   // bind mem_bkdr_if
   `define OTP_CTRL_MEM_HIER \
@@ -136,13 +136,13 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual push_pull_if#(OTBN_DATA_SIZE))::set(null,
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(OTBN_DATA_SIZE)))::set(null,
                    "*env.m_otbn_pull_agent*", "vif", otbn_if);
-    uvm_config_db#(virtual push_pull_if#(FLASH_DATA_SIZE))::set(null,
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(null,
                    "*env.m_flash_data_pull_agent*", "vif", flash_data_if);
-    uvm_config_db#(virtual push_pull_if#(FLASH_DATA_SIZE))::set(null,
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(null,
                    "*env.m_flash_addr_pull_agent*", "vif", flash_addr_if);
-    uvm_config_db#(virtual push_pull_if#(EDN_DATA_SIZE))::set(null,
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(EDN_DATA_SIZE)))::set(null,
                    "*env.m_edn_pull_agent*", "vif", edn_if);
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
