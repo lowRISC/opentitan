@@ -147,6 +147,8 @@ add_project_arguments(
 
 # Common program references.
 prog_python = import('python').find_installation('python3')
+prog_ld = find_program('ld')
+prog_as = find_program('as')
 prog_objdump = find_program('objdump')
 prog_objcopy = find_program('objcopy')
 prog_srec_cat = find_program('srec_cat')
