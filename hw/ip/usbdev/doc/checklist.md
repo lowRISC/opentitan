@@ -111,7 +111,7 @@ Review        | Signoff date            | Not Started |
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_DOC_DRAFT_COMPLETED][]            | In Progress | [USB Device DV Document]({{<relref "hw/ip/usbdev/doc/dv_doc" >}})
-Documentation | [VERIFICATION_PLAN_COMPLETED][]       | In Progress | [USB Device Testplan]({{<relref "hw/ip/usbdev/doc/dv_doc/index.md#testplan" >}})
+Documentation | [VERIFICATION_PLAN_COMPLETED][]       | In Progress | [USB Device Verification Plan]({{<relref "hw/ip/usbdev/doc/dv_doc/index.md#verification_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
