@@ -121,7 +121,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h,
       input int               req_abort_pct = 0);
 
-    uvm_status_e status;
     if (blocking) begin
       tl_access_sub(addr, write, data, status, mask, check_rsp, exp_err_rsp, exp_data,
                     compare_mask, check_exp_data, req_abort_pct, tl_sequencer_h);
