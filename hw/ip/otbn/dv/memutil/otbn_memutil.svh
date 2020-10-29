@@ -12,7 +12,7 @@ import "DPI-C" function chandle OtbnMemUtilMake(string top_scope);
 
 import "DPI-C" function void OtbnMemUtilFree(chandle mem_util);
 
-import "DPI-C" function bit OtbnMemUtilLoadElf(chandle mem_util, string elf_path);
+import "DPI-C" context function bit OtbnMemUtilLoadElf(chandle mem_util, string elf_path);
 
 import "DPI-C" function bit OtbnMemUtilStageElf(chandle mem_util, string elf_path);
 
