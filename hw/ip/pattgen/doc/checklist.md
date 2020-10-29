@@ -131,7 +131,7 @@ Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Code Quality  | [TB_LINT_SETUP][]                     | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         | Except for IP module
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
-Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Not Started |
+Review        | [DV_PLAN_REVIEWED][]         | Not Started |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | Exception (Security, Power, Debug)
 Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
@@ -154,7 +154,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 [TB_LINT_SETUP]:                      {{<relref "/doc/project/checklist.md#tb_lint_setup" >}}
 [PRE_VERIFIED_SUB_MODULES_V1]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v1" >}}
 [DESIGN_SPEC_REVIEWED]:               {{<relref "/doc/project/checklist.md#design_spec_reviewed" >}}
-[DV_PLAN_TESTPLAN_REVIEWED]:          {{<relref "/doc/project/checklist.md#dv_plan_testplan_reviewed" >}}
+[DV_PLAN_REVIEWED]:          {{<relref "/doc/project/checklist.md#dv_plan_testplan_reviewed" >}}
 [STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std_test_categories_planned" >}}
 [V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2_checklist_scoped" >}}
 

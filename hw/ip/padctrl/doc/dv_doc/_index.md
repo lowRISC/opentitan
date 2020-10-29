@@ -43,4 +43,3 @@ Detailed explanation is listed in the [Symbolic Variables]({{< relref "hw/formal
 
 ## Testplan
 {{< testplan "hw/ip/padctrl/data/padctrl_fpv_testplan.hjson" >}}
-

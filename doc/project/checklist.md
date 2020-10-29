@@ -188,10 +188,10 @@ Prefix "SIM" is applicable for simulation-based DV approach only, while "FPV" is
 
 ### DV_DOC_DRAFT_COMPLETED
 
-- DV Document document drafted, indicating the overall DV strategy, intent and the testbench environment details with diagrams, details on TB, UVCs, checkers, scoreboard, interfaces, assertions, coverage objects (if applicable).
+- DV document drafted, indicating the overall DV strategy, intent and the testbench environment details with diagrams, details on TB, UVCs, checkers, scoreboard, interfaces, assertions, coverage objects (if applicable).
 - Details may be missing since most items are not expected to be fully developed at this stage.
 
-### VERIFICATION_PLAN_COMPLETED
+### DV_PLAN_COMPLETED
 
 - A fully completed Testplan written in Hjson, indicating the list of planned tests with descriptions indicating the goal of the test and optionally details on stimulus and the checking procedure.
 - A fully completed functional coverage plan written in Hjson, indicating the list of functional coverage points and coverage crosses with a description of what feature is covered by this coverpoint.
@@ -280,9 +280,9 @@ Sub-modules that are pre-verified with their own testbenches have already reache
 
 RTL (uArch) specification reviewed and signed off.
 
-### DV_DOC_TESTPLAN_REVIEWED
+### DV_PLAN_REVIEWED
 
-DV Document & Testplan reviewed with key stakeholders - designer, design lead, DV lead, architects, higher level (chip) design and DV leads.
+DV document & Testplan reviewed with key stakeholders - designer, design lead, DV lead, architects, higher level (chip) design and DV leads.
 
 ### STD_TEST_CATEGORIES_PLANNED
 
@@ -304,11 +304,15 @@ Prefix "SIM" is applicable for simulation-based DV approach only, while "FPV" is
 
 ### DESIGN_DELTAS_CAPTURED_V2
 
-It is possible for the design to have undergone some changes since the DV Document and Testplan was reviewed prior to V1 stage. Please ensure that those deltas have been captured adequately in the DV Document and the Testplan documents.
+It is possible for the design to have undergone some changes since the DV document and Testplan was reviewed prior to V1 stage. Please ensure that those deltas have been captured adequately in the DV document and the Testplan documents.
 
 ### DV_DOC_COMPLETED
 
-DV Document is fully completed in terms of content.
+DV document is fully completed in terms of content.
+
+### FUNCTIONAL_COVERAGE_PLAN_IMPLEMENTED
+
+All coverage points have been written and implemented
 
 ### ALL_INTERFACES_EXERCISED
 
@@ -388,7 +392,7 @@ Prefix "SIM" is applicable for simulation-based DV approach only, while "FPV" is
 
 ### DESIGN_DELTAS_CAPTURED_V3
 
-It is possible for the design to undergo changes even at this stage (when it is expected to be mature). Please ensure that those new deltas have been captured adequately in the DV Document and the Testplan documents.
+It is possible for the design to undergo changes even at this stage (when it is expected to be mature). Please ensure that those new deltas have been captured adequately in the DV document and the Testplan documents.
 
 ### ALL_TODOS_RESOLVED
 

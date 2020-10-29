@@ -32,7 +32,7 @@ However, wherever there is potentially sensitive material from a future certific
 Once the specification has been shared with the OpenTitan audience and sufficient review has been completed, this phase is exited.
 
 The next life stage is **Development**.
-The hardware IP is being developed in GitHub, the specification is converted to Markdown, and design and verification planning is underway.
+The hardware IP is being developed in GitHub, the specification is converted to Markdown, and design and dv planning is underway.
 This is a long phase expected to last until a more formal review is requested for full completion sign-off.
 When in Development phase, the stage tracking of the design and verification milestones are valid.
 See those sections that follow for details there.
@@ -94,23 +94,23 @@ The metric here is the progress towards testing completion and proof of testing 
 The verification stages can be applied to simulation-based DV and formal property verification (FPV) approaches.
 
 The first verification stage is **Initial Work**.
-This indicates the period of time between the beginning of verification planning and the testbench up and running.
-The testbench is still being created, scoreboards implemented, verification plan is being written, nightly regressions running, etc.
-Once the verification environment is available for writing tests, with a written verification plan including a testplan and a functional coverage plan, it has completed the Initial Work stage.
+This indicates the period of time between the beginning of dv planning and the testbench up and running.
+The testbench is still being created, scoreboards implemented, dv plan is being written, nightly regressions running, etc.
+Once the verification environment is available for writing tests, with a written dv plan including a testplan and a functional coverage plan, it has completed the Initial Work stage.
 
 The second verification stage is **Under Test**.
 In this stage, the verification environment is available but not all tests in the testplan are completed and the coverpoints are not implemented.
 Once all of the items in the testplan are implemented, it exits this stage.
 
 The third verification stage is **Testing Complete**.
-In this phase, no changes are expected on the verification plan, no changes expected on the testbench, and no new tests are expected except to close coverage on the design.
+In this phase, no changes are expected on the dv plan, no changes expected on the testbench, and no new tests are expected except to close coverage on the design.
 Once all coverage metrics have been met, waivers checked, the verification moves into its final stage: **Verification Complete**.
 
 **Stages for simulation-based DV**:
 
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
-| V0 | Initial Work | Testbench being developed, not functional; verification plan being written; decided which methodology to use (sim-based DV, FPV, or both). |
+| V0 | Initial Work | Testbench being developed, not functional; dv plan being written; decided which methodology to use (sim-based DV, FPV, or both). |
 | V1 | Under Test | <ul> <li> Documentation: <ul> <li> [DV Document]({{< relref "doc/ug/dv_methodology#documentation" >}}) available <li> [testplan]({{< relref "doc/ug/dv_methodology#documentation" >}}) completed and reviewed <li> [functional coverage plan]({{< relref "doc/ug/dv_methodology#documentation" >}}) completed and reviewed </ul> <li> Testbench: <ul> <li> DUT instantiated with major interfaces hooked up <li> All available interface assertion monitors hooked up <li> X / unknown checks on DUT outputs added <li> Skeleton environment created with UVCs <li> TLM connections made from interface monitors to the scoreboard </ul> <li> Tests (written and passing): <ul> <li> Sanity test accessing basic functionality <li> CSR / mem test suite </ul> <li> Regressions: Sanity and nightly regression set up</ul> |
 | V2 | Testing Complete | <ul> <li> Documentation: <ul> <li> DV Document completely written </ul> <li> Design Issues: <ul> <li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li> Testbench: <ul> <li> all interfaces hooked up and exercised <li> all assertions written and enabled </ul> <li> UVM environment: fully developed with end-to-end checks in scoreboard <li> Tests (written and passing): all tests planned for in the testplan <li> Regression: all tests passing in nightly regression with multiple seeds (> 90%)  <li> Coverage: 90% code coverage across the board, 100% functional coverpoints covered and 75% crosses covered</ul></ul> |
 | V3 | Verification Complete | <ul> <li> Design Issues: all bugs addressed <li> Tests (written and passing): all tests including newly added post-V2 tests (if any) <li> Regression: all tests with all seeds passing <li> Coverage: 100% code and 100% functional coverage with waivers </ul> </ul> |
@@ -222,7 +222,7 @@ They are converted to complete URLs in the generated dashboard.
 ```hjson
 {
     design_spec:  "hw/ip/gpio/doc"
-    dv_doc:      "hw/ip/gpio/doc/dv_doc"
+    dv_doc:       "hw/ip/gpio/doc/dv_doc"
     hw_checklist: "hw/ip/gpio/doc/checklist"
     sw_checklist: "sw/device/lib/dif/dif_gpio"
 }

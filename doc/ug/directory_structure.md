@@ -41,7 +41,7 @@ hw
    │  │              status tracking
    │  │
    │  ├──doc      => All documentation sources including design specification
-   │  │              and DV Document
+   │  │              and DV Documentation
    │  │
    │  ├──dv       => SV/UVM testbench sources
    │  │
