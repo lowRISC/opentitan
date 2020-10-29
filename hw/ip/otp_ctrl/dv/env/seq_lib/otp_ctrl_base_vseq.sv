@@ -96,7 +96,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task req_sram_key(int index);
-    push_pull_host_seq#(SRAM_DATA_SIZE) sram_pull_seq;
+    push_pull_host_seq#(.DeviceDataWidth(SRAM_DATA_SIZE)) sram_pull_seq;
     `uvm_create_on(sram_pull_seq, p_sequencer.sram_pull_sequencer_h[index]);
     `DV_CHECK_RANDOMIZE_FATAL(sram_pull_seq)
     `uvm_send(sram_pull_seq)
@@ -107,21 +107,21 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task req_otbn_key();
-    push_pull_host_seq#(OTBN_DATA_SIZE) otbn_pull_seq;
+    push_pull_host_seq#(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_pull_seq;
     `uvm_create_on(otbn_pull_seq, p_sequencer.otbn_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(otbn_pull_seq)
     `uvm_send(otbn_pull_seq)
   endtask
 
   virtual task req_flash_addr();
-    push_pull_host_seq#(FLASH_DATA_SIZE) flash_addr_pull_seq;
+    push_pull_host_seq#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_pull_seq;
     `uvm_create_on(flash_addr_pull_seq, p_sequencer.flash_addr_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(flash_addr_pull_seq)
     `uvm_send(flash_addr_pull_seq)
   endtask
 
   virtual task req_flash_data();
-    push_pull_host_seq#(FLASH_DATA_SIZE) flash_data_pull_seq;
+    push_pull_host_seq#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_pull_seq;
     `uvm_create_on(flash_data_pull_seq, p_sequencer.flash_data_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(flash_data_pull_seq)
     `uvm_send(flash_data_pull_seq)
