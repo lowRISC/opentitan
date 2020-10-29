@@ -32,8 +32,7 @@ class otbn_sanity_vseq extends otbn_base_vseq;
 
   task body();
     load_elf(elf_name, do_backdoor_load);
-
-    `uvm_error(`gfn, "ELF loaded. Now what?")
+    run_otbn();
   endtask : body
 
   // Return a (random) choice of ELF file to be stored in elf_name

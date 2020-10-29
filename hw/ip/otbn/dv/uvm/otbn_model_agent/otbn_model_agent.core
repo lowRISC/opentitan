@@ -1,0 +1,25 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:otbn_model_agent:0.1"
+description: "Agent for OTBN model interface"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
+    files:
+      - otbn_model_if.sv
+      - otbn_model_agent_pkg.sv
+      - otbn_model_item.sv: {is_include_file: true}
+      - otbn_model_agent_cfg.sv: {is_include_file: true}
+      - otbn_model_monitor.sv: {is_include_file: true}
+      - otbn_model_agent.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
    width="1029.02"
    height="973.72717"
    fill="none"
@@ -7,9 +12,19 @@
    stroke-miterlimit="10"
    version="1.1"
    viewBox="0 0 1029.02 973.72715"
-   id="svg1209"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
+   id="svg1209">
+  <metadata
+     id="metadata1056">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
   <defs
      id="defs835">
     <rect
@@ -298,7 +313,7 @@
        id="text885"><tspan
          x="189.98438"
          y="378.39615"
-         id="tspan883">otbn_agent_cfg</tspan></text>
+         id="tspan883">otbn_model_agent_cfg</tspan></text>
   </g>
   <g
      id="g1133"
@@ -551,82 +566,6 @@
        d="m 280.5,108.7 c -15,0 -30,10 -30,10"
        id="path959" />
   </g>
-  <g
-     transform="translate(-10,188.90884)"
-     stroke-linecap="butt"
-     id="g969">
-    <rect
-       x="590.5"
-       y="107.79"
-       width="136.17"
-       height="35"
-       color="#000000"
-       color-rendering="auto"
-       fill="#fce6ce"
-       fill-rule="evenodd"
-       image-rendering="auto"
-       shape-rendering="auto"
-       solid-color="#000000"
-       stroke="#000000"
-       stroke-miterlimit="10"
-       style="isolation:auto;mix-blend-mode:normal"
-       id="rect963" />
-    <text
-       x="658.44318"
-       y="129.84575"
-       fill="#000000"
-       font-family="'Liberation Sans'"
-       font-size="17.333px"
-       letter-spacing="0px"
-       stroke-width="1px"
-       text-align="center"
-       text-anchor="middle"
-       word-spacing="0px"
-       style="line-height:20px"
-       xml:space="preserve"
-       id="text967"><tspan
-         x="658.44318"
-         y="129.84575"
-         id="tspan965">tl_if</tspan></text>
-  </g>
-  <g
-     transform="translate(-10,188.90884)"
-     stroke-linecap="butt"
-     id="g977">
-    <rect
-       x="590.5"
-       y="60.5"
-       width="136.17"
-       height="35"
-       color="#000000"
-       color-rendering="auto"
-       fill="#fce6ce"
-       fill-rule="evenodd"
-       image-rendering="auto"
-       shape-rendering="auto"
-       solid-color="#000000"
-       stroke="#000000"
-       stroke-miterlimit="10"
-       style="isolation:auto;mix-blend-mode:normal"
-       id="rect971" />
-    <text
-       x="658.20618"
-       y="82.557625"
-       fill="#000000"
-       font-family="'Liberation Sans'"
-       font-size="17.333px"
-       letter-spacing="0px"
-       stroke-width="1px"
-       text-align="center"
-       text-anchor="middle"
-       word-spacing="0px"
-       style="line-height:20px"
-       xml:space="preserve"
-       id="text975"><tspan
-         x="658.20618"
-         y="82.557625"
-         id="tspan973">clk_rst_if</tspan></text>
-  </g>
   <text
      x="795.39844"
      y="218.77205"
@@ -824,152 +763,275 @@
        id="text1015"><tspan
          x="189.98438"
          y="378.39615"
-         id="tspan1013">otbn_agent</tspan></text>
+         id="tspan1013">otbn_model_agent</tspan></text>
   </g>
   <g
-     transform="translate(-10,188.90884)"
-     stroke-linecap="butt"
-     id="g1063">
-    <rect
-       x="590.5"
-       y="155.08"
-       width="136.17"
-       height="35"
-       color="#000000"
-       color-rendering="auto"
-       fill="#fce6ce"
-       fill-rule="evenodd"
-       image-rendering="auto"
-       shape-rendering="auto"
-       solid-color="#000000"
-       stroke="#000000"
-       stroke-miterlimit="10"
-       style="isolation:auto;mix-blend-mode:normal"
-       id="rect1057" />
-    <text
-       x="658.20618"
-       y="177.13387"
-       fill="#000000"
-       font-family="'Liberation Sans'"
-       font-size="17.333px"
-       letter-spacing="0px"
-       stroke-width="1px"
-       text-align="center"
-       text-anchor="middle"
-       word-spacing="0px"
-       style="line-height:20px"
-       xml:space="preserve"
-       id="text1061"><tspan
-         x="658.20618"
-         y="177.13387"
-         id="tspan1059">alert_if</tspan></text>
-  </g>
-  <g
-     transform="translate(-10,188.90884)"
-     stroke-linecap="butt"
-     id="g1071">
-    <rect
-       x="590.5"
-       y="249.64999"
-       width="136.17"
-       height="35"
-       color="#000000"
-       color-rendering="auto"
-       fill="#fce6ce"
-       fill-rule="evenodd"
-       image-rendering="auto"
-       shape-rendering="auto"
-       solid-color="#000000"
-       stroke="#000000"
-       stroke-miterlimit="10"
-       style="isolation:auto;mix-blend-mode:normal"
-       id="rect1065" />
-    <text
-       x="657.99457"
-       y="271.71008"
-       fill="#000000"
-       font-family="'Liberation Sans'"
-       font-size="17.333px"
-       letter-spacing="0px"
-       stroke-width="1px"
-       text-align="center"
-       text-anchor="middle"
-       word-spacing="0px"
-       style="line-height:20px"
-       xml:space="preserve"
-       id="text1069"><tspan
-         x="657.99457"
-         y="271.71008"
-         id="tspan1067">idle_if</tspan></text>
-  </g>
-  <g
-     transform="translate(-10,188.90884)"
-     stroke-linecap="butt"
-     id="g1079">
-    <rect
-       x="590.5"
-       y="202.36"
-       width="136.17"
-       height="35"
-       color="#000000"
-       color-rendering="auto"
-       fill="#fce6ce"
-       fill-rule="evenodd"
-       image-rendering="auto"
-       shape-rendering="auto"
-       solid-color="#000000"
-       stroke="#000000"
-       stroke-miterlimit="10"
-       style="isolation:auto;mix-blend-mode:normal"
-       id="rect1073" />
-    <text
-       x="657.99457"
-       y="224.42198"
-       fill="#000000"
-       font-family="'Liberation Sans'"
-       font-size="17.333px"
-       letter-spacing="0px"
-       stroke-width="1px"
-       text-align="center"
-       text-anchor="middle"
-       word-spacing="0px"
-       style="line-height:20px"
-       xml:space="preserve"
-       id="text1077"><tspan
-         x="657.99457"
-         y="224.42198"
-         id="tspan1075">int_if</tspan></text>
-  </g>
-  <g
-     fill-rule="evenodd"
-     stroke="#000000"
-     stroke-linecap="butt"
-     stroke-width="1px"
-     id="g1091"
-     transform="translate(0,186.17684)">
+     id="g1136"
+     transform="translate(0,1.155102)">
+    <g
+       transform="translate(-10,188.90884)"
+       stroke-linecap="butt"
+       id="g969">
+      <rect
+         x="590.5"
+         y="107.79"
+         width="136.17"
+         height="35"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal"
+         id="rect963" />
+      <text
+         x="658.44318"
+         y="129.84575"
+         fill="#000000"
+         font-family="'Liberation Sans'"
+         font-size="17.333px"
+         letter-spacing="0px"
+         stroke-width="1px"
+         text-align="center"
+         text-anchor="middle"
+         word-spacing="0px"
+         style="line-height:20px"
+         xml:space="preserve"
+         id="text967"><tspan
+           x="658.44318"
+           y="129.84575"
+           id="tspan965">tl_if</tspan></text>
+    </g>
     <path
-       d="m 723.16,128.02 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 H 733.16 v 10 z"
+       d="m 723.16,314.19684 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 H 733.16 v 10 z"
        fill="#ffffff"
-       id="path1081" />
+       id="path1081"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+  </g>
+  <g
+     id="g1129">
+    <g
+       transform="translate(-10,188.90884)"
+       stroke-linecap="butt"
+       id="g977">
+      <rect
+         x="590.5"
+         y="60.5"
+         width="136.17"
+         height="35"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal"
+         id="rect971" />
+      <text
+         x="658.20618"
+         y="82.557625"
+         fill="#000000"
+         font-family="'Liberation Sans'"
+         font-size="17.333px"
+         letter-spacing="0px"
+         stroke-width="1px"
+         text-align="center"
+         text-anchor="middle"
+         word-spacing="0px"
+         style="line-height:20px"
+         xml:space="preserve"
+         id="text975"><tspan
+           x="658.20618"
+           y="82.557625"
+           id="tspan973">clk_rst_if</tspan></text>
+    </g>
     <path
-       d="m 723.16,80.732 h 42.738"
+       d="m 723.16,266.90884 h 42.738"
        fill="#000000"
        marker-end="url(#marker1029)"
-       id="path1083" />
+       id="path1083"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+  </g>
+  <g
+     id="g1186"
+     transform="translate(0,-3.9892578e-5)">
+    <g
+       id="g1177"
+       transform="translate(0,-117.5996)">
+      <rect
+         x="572.5"
+         y="560.78888"
+         width="136.17"
+         height="35"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal;stroke-linecap:butt"
+         id="rect1170" />
+      <rect
+         x="576.5"
+         y="564.78888"
+         width="136.17"
+         height="35"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal;stroke-linecap:butt"
+         id="rect1168" />
+      <rect
+         x="580.5"
+         y="568.78888"
+         width="136.17"
+         height="35"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal;stroke-linecap:butt"
+         id="rect1057" />
+      <text
+         x="648.20618"
+         y="590.84277"
+         fill="#000000"
+         font-family="'Liberation Sans'"
+         font-size="17.333px"
+         letter-spacing="0px"
+         stroke-width="1px"
+         text-align="center"
+         text-anchor="middle"
+         word-spacing="0px"
+         style="line-height:20px;stroke-linecap:butt"
+         xml:space="preserve"
+         id="text1061"><tspan
+           x="648.20618"
+           y="590.84277"
+           id="tspan1059">alert_if</tspan></text>
+    </g>
     <path
-       d="m 723.16,175.31 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 H 733.16 v 10 z"
+       d="m 723.16,464.68928 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 H 733.16 v 10 z"
        fill="#ffffff"
-       id="path1085" />
+       id="path1085"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+  </g>
+  <g
+     id="g1143"
+     transform="translate(0,-92.259792)">
+    <g
+       transform="translate(-10,188.90884)"
+       stroke-linecap="butt"
+       id="g1071">
+      <rect
+         x="590.5"
+         y="249.64999"
+         width="136.17"
+         height="35"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal"
+         id="rect1065" />
+      <text
+         x="657.99457"
+         y="271.71008"
+         fill="#000000"
+         font-family="'Liberation Sans'"
+         font-size="17.333px"
+         letter-spacing="0px"
+         stroke-width="1px"
+         text-align="center"
+         text-anchor="middle"
+         word-spacing="0px"
+         style="line-height:20px"
+         xml:space="preserve"
+         id="text1069"><tspan
+           x="657.99457"
+           y="271.71008"
+           id="tspan1067">idle_if</tspan></text>
+    </g>
     <path
-       d="M 767.77,269.88 H 725.107"
+       d="M 767.77,456.05684 H 725.107"
        fill="#000000"
        marker-end="url(#Arrow1Lend)"
-       id="path1087" />
+       id="path1087"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+  </g>
+  <g
+     id="g1158"
+     transform="translate(-8.0392189,-221.32475)">
+    <g
+       transform="translate(-1.9607811,413.70889)"
+       stroke-linecap="butt"
+       id="g1079">
+      <rect
+         x="590.5"
+         y="202.36"
+         width="136.17"
+         height="35"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal"
+         id="rect1073" />
+      <text
+         x="657.99457"
+         y="224.42198"
+         fill="#000000"
+         font-family="'Liberation Sans'"
+         font-size="17.333px"
+         letter-spacing="0px"
+         stroke-width="1px"
+         text-align="center"
+         text-anchor="middle"
+         word-spacing="0px"
+         style="line-height:20px"
+         xml:space="preserve"
+         id="text1077"><tspan
+           x="657.99457"
+           y="224.42198"
+           id="tspan1075">intr_if</tspan></text>
+    </g>
     <path
-       d="M 767.77,222.6 H 725.107"
+       d="m 775.80922,633.57689 h -42.663"
        fill="#000000"
        marker-end="url(#marker1078)"
-       id="path1089" />
+       id="path1089"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
   </g>
   <g
      stroke-linecap="butt"
@@ -1322,7 +1384,7 @@
      stroke-linecap="butt"
      stroke-width="1px"
      word-spacing="0px"
-     style="line-height:18.4615px;white-space:pre;shape-inside:url(#rect2085)"
+     style="line-height:18.4615px;white-space:pre;shape-inside:url(#rect2085);"
      xml:space="preserve"
      id="text1207"><tspan
        x="0"
@@ -1358,7 +1420,7 @@
   <text
      xml:space="preserve"
      id="text1329"
-     style="font-size:26.6667px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:center;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect1331);fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     style="font-size:26.6667px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:center;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect1331);fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
      transform="translate(0,186.17684)" />
   <text
      xml:space="preserve"
@@ -1576,5 +1638,52 @@
          id="tspan1340"
          x="-270"
          y="200">Code block (a UVM phase)</tspan></text>
+  </g>
+  <g
+     id="g1198"
+     transform="translate(0,432.47798)">
+    <g
+       transform="translate(-10,188.90884)"
+       stroke-linecap="butt"
+       id="g1194">
+      <rect
+         x="590.5"
+         y="107.79"
+         width="136.17"
+         height="35"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal"
+         id="rect1188" />
+      <text
+         x="658.44318"
+         y="129.84575"
+         fill="#000000"
+         font-family="'Liberation Sans'"
+         font-size="17.333px"
+         letter-spacing="0px"
+         stroke-width="1px"
+         text-align="center"
+         text-anchor="middle"
+         word-spacing="0px"
+         style="line-height:20px"
+         xml:space="preserve"
+         id="text1192"><tspan
+           x="658.44318"
+           y="129.84575"
+           id="tspan1190">otbn_model_if</tspan></text>
+    </g>
+    <path
+       d="m 723.16,314.19684 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 H 733.16 v 10 z"
+       fill="#ffffff"
+       id="path1196"
+       style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
   </g>
 </svg>

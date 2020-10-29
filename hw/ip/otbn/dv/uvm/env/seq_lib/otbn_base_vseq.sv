@@ -6,8 +6,6 @@
 // Base class for all OTBN test sequences
 //
 
-`include "otbn_memutil.svh"
-
 class otbn_base_vseq extends cip_base_vseq #(
     .CFG_T               (otbn_env_cfg),
     .RAL_T               (otbn_reg_block),
@@ -105,5 +103,23 @@ class otbn_base_vseq extends cip_base_vseq #(
       end
     end
   endfunction
+
+  // Start OTBN and then wait until done
+  protected task run_otbn();
+    uvm_reg_data_t cmd_val;
+
+    // Set the "start" bit in cmd_val and write it to the "cmd" register to start OTBN.
+    `DV_CHECK_FATAL(ral.cmd.start.get_n_bits == 1);
+    cmd_val = 1 << ral.cmd.start.get_lsb_pos();
+
+    `uvm_info(`gfn, $sformatf("\n\t ----| Starting OTBN"), UVM_MEDIUM)
+    csr_utils_pkg::csr_wr(ral.cmd, cmd_val);
+
+    // Now wait until OTBN has finished
+    `uvm_info(`gfn, $sformatf("\n\t ----| Waiting for OTBN to finish"), UVM_MEDIUM)
+    csr_utils_pkg::csr_spinwait(.ptr(ral.status.busy), .exp_data(1'b0));
+
+    `uvm_info(`gfn, $sformatf("\n\t ----| OTBN finished"), UVM_MEDIUM)
+   endtask
 
 endclass : otbn_base_vseq
