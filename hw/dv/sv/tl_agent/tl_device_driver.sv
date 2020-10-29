@@ -61,7 +61,7 @@ class tl_device_driver extends tl_base_driver;
           d_valid_delay = $urandom_range(cfg.d_valid_delay_min, cfg.d_valid_delay_max);
         end
 
-        if (cfg.allow_d_valid_drop_wo_d_ready) begin
+        if (cfg.allow_d_valid_drop_wo_d_ready || rsp.rsp_abort_after_d_valid_len) begin
           if (cfg.use_seq_item_d_valid_len) begin
             d_valid_len = rsp.d_valid_len;
           end else begin

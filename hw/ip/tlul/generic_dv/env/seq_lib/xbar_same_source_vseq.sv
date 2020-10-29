@@ -3,17 +3,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // test all hosts use same source id for each iteration
-// reduce to 1-10 trans per iteration and increase interation number by x10
+// reduce to 5-20 trans per iteration and increase interation number by x10
 class xbar_same_source_vseq extends xbar_random_vseq;
 
   `uvm_object_utils(xbar_same_source_vseq)
   `uvm_object_new
 
-  // reduce to 1-10 trans per iteration
-  function void seq_init();
-    min_req_cnt = 1;
-    max_req_cnt = 10;
-    super.seq_init();
+  constraint num_trans_c {
+    num_trans inside {[10:200]};
+  }
+
+  // reduce to 5-20 trans per iteration
+  function void pre_randomize();
+    min_req_cnt = 5;
+    max_req_cnt = 20;
+    super.pre_randomize();
   endfunction
 
   virtual function void update_host_seq();

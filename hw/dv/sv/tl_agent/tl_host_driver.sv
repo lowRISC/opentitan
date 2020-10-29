@@ -76,7 +76,7 @@ class tl_host_driver extends tl_base_driver;
         a_valid_delay = $urandom_range(cfg.a_valid_delay_min, cfg.a_valid_delay_max);
       end
 
-      if (cfg.allow_a_valid_drop_wo_a_ready) begin
+      if (req.req_abort_after_a_valid_len || cfg.allow_a_valid_drop_wo_a_ready) begin
         if (cfg.use_seq_item_a_valid_len) begin
           a_valid_len = req.a_valid_len;
         end else begin

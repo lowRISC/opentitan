@@ -170,8 +170,10 @@ class tl_agent_cfg extends dv_base_agent_cfg;
         // soft one to *potentially* avoid violating the previous constraint. Only way to guarantee
         // that the new a_source == last_a_source_released is to ensure the test only does blocking
         // accesses.
-        use_last_a_source_released -> soft (a_source == last_a_source_released);,
+        use_last_a_source_released && !(last_a_source_released inside {a_source_pend_q})
+            -> soft (a_source == last_a_source_released);,
         item)
+    `uvm_info(`gfn, $sformatf("a_source_pend_q: %p a_source: %0h", a_source_pend_q, item.a_source), UVM_DEBUG)
   endfunction
 
   // Randomizes the a_source for a 'real' req (public version of the above function).

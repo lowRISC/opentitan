@@ -88,6 +88,7 @@ class tl_host_seq extends tl_host_base_seq;
 
   // callback after randomize seq, extened seq can override it to handle some non-rand variables
   virtual function void post_randomize_req(tl_seq_item req, int idx);
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(req_abort_after_a_valid_len)
     req.req_abort_after_a_valid_len = req_abort_after_a_valid_len;
   endfunction
 
