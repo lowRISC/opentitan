@@ -1,0 +1,21 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:edn_pkg:0.1"
+description: "edn package"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:tlul:headers
+      - lowrisc:ip:csrng_pkg
+    files:
+      - rtl/edn_reg_pkg.sv
+      - rtl/edn_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
