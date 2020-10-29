@@ -255,6 +255,11 @@
       cname: "LOC_ALERT",
       swaccess: "rw1c",
       hwaccess: "hrw",
+      tags: [// Top level CSR automation test, CPU clock is disabled, so escalation response will
+             // not send back to alert handler. This will set loc_alert_cause and could not predict
+             // automatically.
+             // TODO: remove the exclusion after set up top-level esc_receiver_driver
+             "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits: "0", name: "LA", desc: "Cause bit " }
       ]
