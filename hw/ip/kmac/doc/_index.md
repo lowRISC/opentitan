@@ -199,7 +199,33 @@ In addition to that, the KMAC/SHA3 blocks the software access to the Keccak stat
 
 ### KeyMgr Interface
 
-_TBD_
+![](keymgr-intf.svg)
+
+KMAC/SHA3 HWIP has an option to receive the secret key from KeyMgr via sideload key interface.
+The software should set !!CFG.sideload to use the KeyMgr sideloaded key in SW-initiated KMAC operation.
+`keymgr_pkg::hw_key_t` defines the structure of the sideloaded key.
+KeyMgr provides the sideloaded key in two-share masked form regardless of the compile-time parameter `EnMasking`.
+If `EnMasking` is not defined, the KMAC merges the shared key to the unmasked form before uses the key.
+
+KeyMgr may initiate the KMAC operation via the KeyMgr data interface `keymgr_pkg::kmac_data_{req|rsp}_t`.
+KeyMgr sends 64-bit data (`MsgWidth`) in a beat with the message strobe signal.
+The state machine inside the KeyMgr interface logic starts when it receives the first valid data.
+Because this logic sees the first valid data as an initiator, KeyMgr cannot run KDF with an empty message.
+After the logic switches to accept the message bitstream from KeyMgr, it forces the KMAC to use the sideloaded key as a secret key.
+Also it ignores the command issued from the software.
+Instead it generates the commands and sends them to the KMAC core.
+
+The last beat of the KeyMgr data moves the state machine to append the encoded output length.
+The output length is the digest width, which is 256 bit.
+It means that the logic appends `0x020100` (little-endian) to the end of the message.
+The output data from this logic goes to MSG_FIFO.
+Because the MSG_FIFO handles un-aligned data inside, KeyMgr interface logic sends the encoded output length value in a separate beat.
+
+After the encoded output length is pushed to the KMAC core, the interface logic issues a Process command to run the hashing logic.
+
+After hashing operation is completed, KMAC does not raise a `kmac_done` interrupt; rather it triggers the `done` status in the KeyMgr data response channel.
+The result digest always comes in two shares.
+If the `EnMasking` parameter is not set, the second share is always zero.
 
 ### Entropy Generator
 
