@@ -248,5 +248,20 @@ dif_rstmgr_sanitytest_lib = declare_dependency(
     ],
   ),
 )
-
 sw_tests += { 'dif_rstmgr_sanitytest': dif_rstmgr_sanitytest_lib }
+
+dif_otbn_sanitytest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_otbn_sanitytest_lib',
+    sources: ['dif_otbn_sanitytest.c'],
+    dependencies: [
+      sw_lib_dif_otbn,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+      top_earlgrey,
+      sw_otbn['barrett384']['rv32embed_dependency'],
+    ],
+  ),
+)
+sw_tests += { 'dif_otbn_sanitytest': dif_otbn_sanitytest_lib }
