@@ -17,6 +17,13 @@ class chip_common_vseq extends chip_base_vseq;
     enable_asserts_in_hw_reset_rand_wr = 0;
   endtask
 
+  task post_start();
+    super.post_start();
+    // Random CSR rw might trigger alert. Some alerts will conintuously be triggered until reset
+    // applied, which will cause alert_monitor phase_ready_to_end timeout.
+    apply_reset();
+  endtask
+
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
     cfg.mem_bkdr_vifs[Otp].clear_mem();
