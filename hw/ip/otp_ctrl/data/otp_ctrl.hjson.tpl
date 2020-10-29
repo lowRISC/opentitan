@@ -436,9 +436,7 @@
       hwext:    "true",
       tags: [ // OTP internal HW will set this enable register to 0 when OTP is not under IDLE
               // state, so could not auto-predict its value
-              // TODO: change the exclusion to CsrNonInitTests once top-level triggers otp_init
-              // after reset
-              "excl:CsrAllTests:CsrExclCheck"],
+              "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         {
             bits:   "0",

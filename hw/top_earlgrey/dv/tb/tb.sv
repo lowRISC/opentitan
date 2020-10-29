@@ -282,7 +282,6 @@ module tb;
     void'($value$plusargs("csr_%0s", csr_seq_type));
     if (common_seq_type inside {"mem_partial_access", "tl_errors"} ||
         csr_seq_type == "mem_walk") begin
-      force tb.dut.top_earlgrey.u_otp_ctrl.pwr_otp_i   = 1'b1;
       force tb.dut.top_earlgrey.u_otp_ctrl.lc_dft_en_i = 4'b1010;
     end
   end
