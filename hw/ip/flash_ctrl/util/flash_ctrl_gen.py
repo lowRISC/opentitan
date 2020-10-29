@@ -2,20 +2,17 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Clock Manager Generator
+r"""Flash Controller Generator
 """
 
-import argparse
 import logging as log
 import sys
-import subprocess
 from collections import OrderedDict
-from io import StringIO
 from pathlib import Path
 
 import hjson
-from mako import exceptions
 from mako.template import Template
+
 
 # Common header for generated files
 def main():
@@ -23,17 +20,17 @@ def main():
     current = Path(__file__).parent.absolute()
 
     hjson_tpl = Template(filename=str(current / '../data/flash_ctrl.hjson.tpl'))
-    rtl_tpl   = Template(filename=str(current / '../data/flash_ctrl.sv.tpl'))
-    pkg_tpl   = Template(filename=str(current / '../data/flash_ctrl_pkg.sv.tpl'))
+    rtl_tpl = Template(filename=str(current / '../data/flash_ctrl.sv.tpl'))
+    pkg_tpl = Template(filename=str(current / '../data/flash_ctrl_pkg.sv.tpl'))
 
     hjson_out = current / '../data/flash_ctrl.hjson'
-    rtl_out   = current / '../rtl/flash_ctrl.sv'
-    pkg_out   = current / '../rtl/flash_ctrl_pkg.sv'
-    cfgpath   = current / '../../../top_earlgrey/data/autogen/top_earlgrey.gen.hjson'
+    rtl_out = current / '../rtl/flash_ctrl.sv'
+    pkg_out = current / '../rtl/flash_ctrl_pkg.sv'
+    cfgpath = current / '../../../top_earlgrey/data/autogen/top_earlgrey.gen.hjson'
 
     try:
         with open(cfgpath, 'r') as cfg:
-            topcfg = hjson.load(cfg,use_decimal=True,object_pairs_hook=OrderedDict)
+            topcfg = hjson.load(cfg, use_decimal=True, object_pairs_hook=OrderedDict)
     except ValueError:
         log.error("{} not found".format(cfgpath))
         raise SystemExit(sys.exc_info()[1])
