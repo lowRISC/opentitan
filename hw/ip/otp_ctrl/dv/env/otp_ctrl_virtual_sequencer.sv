@@ -10,9 +10,9 @@ class otp_ctrl_virtual_sequencer extends cip_base_virtual_sequencer #(
 
   `uvm_component_new
 
-  push_pull_sequencer#(SRAM_DATA_SIZE)  sram_pull_sequencer_h[NumSramKeyReqSlots];
-  push_pull_sequencer#(OTBN_DATA_SIZE)  otbn_pull_sequencer_h;
-  push_pull_sequencer#(FLASH_DATA_SIZE) flash_data_pull_sequencer_h;
-  push_pull_sequencer#(FLASH_DATA_SIZE) flash_addr_pull_sequencer_h;
-  push_pull_sequencer#(EDN_DATA_SIZE)   edn_pull_sequencer_h;
+  push_pull_sequencer#(.DeviceDataWidth(SRAM_DATA_SIZE))  sram_pull_sequencer_h[NumSramKeyReqSlots];
+  push_pull_sequencer#(.DeviceDataWidth(OTBN_DATA_SIZE))  otbn_pull_sequencer_h;
+  push_pull_sequencer#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_pull_sequencer_h;
+  push_pull_sequencer#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_pull_sequencer_h;
+  push_pull_sequencer#(.DeviceDataWidth(EDN_DATA_SIZE))   edn_pull_sequencer_h;
 endclass

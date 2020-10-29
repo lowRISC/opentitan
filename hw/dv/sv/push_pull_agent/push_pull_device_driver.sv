@@ -5,9 +5,11 @@
 `define PUSH_DRIVER cfg.vif.device_push_cb
 `define PULL_DRIVER cfg.vif.device_pull_cb
 
-class push_pull_device_driver #(parameter int DataWidth = 32) extends push_pull_driver #(DataWidth);
+class push_pull_device_driver #(parameter int HostDataWidth = 32,
+                                parameter int DeviceDataWidth = HostDataWidth)
+  extends push_pull_driver #(HostDataWidth, DeviceDataWidth);
 
-  `uvm_component_param_utils(push_pull_device_driver#(DataWidth))
+  `uvm_component_param_utils(push_pull_device_driver#(HostDataWidth, DeviceDataWidth))
 
   // the base class provides the following handles for use:
   // push_pull_agent_cfg: cfg
@@ -19,8 +21,8 @@ class push_pull_device_driver #(parameter int DataWidth = 32) extends push_pull_
       cfg.vif.ready_int <= '0;
     end else begin
       cfg.vif.ack_int   <= '0;
-      cfg.vif.data_int  <= 'x;
     end
+    cfg.vif.d_data_int <= 'x;
   endtask
 
   virtual task get_and_drive();
@@ -49,11 +51,13 @@ class push_pull_device_driver #(parameter int DataWidth = 32) extends push_pull_
       @(`PUSH_DRIVER);
     end
     if (!in_reset) begin
-      `PUSH_DRIVER.ready_int <= 1'b1;
+      `PUSH_DRIVER.ready_int  <= 1'b1;
+      `PUSH_DRIVER.d_data_int <= req.d_data;
     end
     @(`PUSH_DRIVER);
     if (!in_reset) begin
-      `PUSH_DRIVER.ready_int <= 1'b0;
+      `PUSH_DRIVER.ready_int  <= 1'b0;
+      `PUSH_DRIVER.d_data_int <= 'x;
     end
   endtask
 
@@ -66,13 +70,13 @@ class push_pull_device_driver #(parameter int DataWidth = 32) extends push_pull_
       @(`PULL_DRIVER);
     end
     if (!in_reset) begin
-      `PULL_DRIVER.ack_int  <= 1'b1;
-      `PULL_DRIVER.data_int <= req.data;
+      `PULL_DRIVER.ack_int    <= 1'b1;
+      `PULL_DRIVER.d_data_int <= req.d_data;
     end
     @(`PULL_DRIVER);
     if (!in_reset) begin
-      `PULL_DRIVER.ack_int  <= 1'b0;
-      `PULL_DRIVER.data_int <= 'x;
+      `PULL_DRIVER.ack_int    <= 1'b0;
+      `PULL_DRIVER.d_data_int <= 'x;
     end
   endtask
 

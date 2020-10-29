@@ -5,9 +5,11 @@
 `define PUSH_DRIVER cfg.vif.host_push_cb
 `define PULL_DRIVER cfg.vif.host_pull_cb
 
-class push_pull_host_driver #(parameter int DataWidth = 32) extends push_pull_driver #(DataWidth);
+class push_pull_host_driver #(parameter int HostDataWidth = 32,
+                              parameter int DeviceDataWidth = HostDataWidth)
+  extends push_pull_driver #(HostDataWidth, DeviceDataWidth);
 
-  `uvm_component_param_utils(push_pull_host_driver#(DataWidth))
+  `uvm_component_param_utils(push_pull_host_driver#(HostDataWidth, DeviceDataWidth))
 
   // the base class provides the following handles for use:
   // push_pull_agent_cfg: cfg
@@ -17,10 +19,10 @@ class push_pull_host_driver #(parameter int DataWidth = 32) extends push_pull_dr
   virtual task do_reset();
     if (cfg.agent_type == PushAgent) begin
       cfg.vif.valid_int <= '0;
-      cfg.vif.data_int  <= 'x;
     end else begin
       cfg.vif.req_int   <= '0;
     end
+    cfg.vif.h_data_int <= 'x;
   endtask
 
   // drive trans received from sequencer
@@ -54,15 +56,15 @@ class push_pull_host_driver #(parameter int DataWidth = 32) extends push_pull_dr
       @(`PUSH_DRIVER);
     end
     if (!in_reset) begin
-      `PUSH_DRIVER.valid_int <= 1'b1;
-      `PUSH_DRIVER.data_int  <= req.data;
+      `PUSH_DRIVER.valid_int  <= 1'b1;
+      `PUSH_DRIVER.h_data_int <= req.h_data;
     end
     do begin
       @(`PUSH_DRIVER);
     end while (!`PUSH_DRIVER.ready && !in_reset);
     if (!in_reset) begin
-      `PUSH_DRIVER.valid_int <= 1'b0;
-      `PUSH_DRIVER.data_int  <= 'x;
+      `PUSH_DRIVER.valid_int  <= 1'b0;
+      `PUSH_DRIVER.h_data_int <= 'x;
     end
   endtask
 
@@ -73,13 +75,15 @@ class push_pull_host_driver #(parameter int DataWidth = 32) extends push_pull_dr
       @(`PULL_DRIVER);
     end
     if (!in_reset) begin
-      `PULL_DRIVER.req_int <= 1'b1;
+      `PULL_DRIVER.req_int    <= 1'b1;
+      `PULL_DRIVER.h_data_int <= req.h_data;
     end
     do begin
       @(`PULL_DRIVER);
     end while (!`PULL_DRIVER.ack && !in_reset);
     if (!in_reset) begin
-      `PULL_DRIVER.req_int <= 1'b0;
+      `PULL_DRIVER.req_int    <= 1'b0;
+      `PULL_DRIVER.h_data_int <= 'x;
     end
   endtask
 

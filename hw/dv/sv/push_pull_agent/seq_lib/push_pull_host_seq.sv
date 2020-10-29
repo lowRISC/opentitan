@@ -5,9 +5,11 @@
 // Request sequence for Push and Pull protocols.
 // This sequence will send num_trans requests to the DUT.
 
-class push_pull_host_seq #(parameter int DataWidth = 32) extends push_pull_base_seq #(DataWidth);
+class push_pull_host_seq #(parameter int HostDataWidth = 32,
+                           parameter int DeviceDataWidth = HostDataWidth)
+  extends push_pull_base_seq #(HostDataWidth, DeviceDataWidth);
 
-  `uvm_object_param_utils(push_pull_host_seq#(DataWidth))
+  `uvm_object_param_utils(push_pull_host_seq#(HostDataWidth, DeviceDataWidth))
 
   `uvm_object_new
 
@@ -17,13 +19,17 @@ class push_pull_host_seq #(parameter int DataWidth = 32) extends push_pull_base_
 
   virtual task body();
     for (int i = 0; i < num_trans; i++) begin : send_req
-      req = push_pull_item#(DataWidth)::type_id::create($sformatf("req[%0d]", i));
+      req = push_pull_item#(HostDataWidth, DeviceDataWidth)::type_id::create(
+        $sformatf("req[%0d]", i));
       start_item(req);
       `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
         if (cfg.zero_delays) {
           host_delay == 0;
         } else {
           host_delay inside {[cfg.host_delay_min : cfg.host_delay_max]};
+        }
+        if (cfg.agent_type == PullAgent && !cfg.in_bidirectional_mode) {
+          h_data == 0;
         }
       )
       `uvm_info(`gfn, $sformatf("Starting sequence item: %0s", req.convert2string()), UVM_HIGH)

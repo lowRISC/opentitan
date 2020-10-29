@@ -28,8 +28,8 @@ module tb;
   pins_if#(1) fips_if(fips);
   pins_if#(1) efuse_es_sw_reg_en_if(efuse_es_sw_reg_en);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if#(.DataWidth(RNG_DATA_WIDTH)) rng_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if#(.DataWidth(CSRNG_DATA_WIDTH)) csrng_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if#(.HostDataWidth(RNG_DATA_WIDTH)) rng_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if#(.DeviceDataWidth(CSRNG_DATA_WIDTH)) csrng_if(.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
 
@@ -43,14 +43,14 @@ module tb;
 
     .efuse_es_sw_reg_en_i      (efuse_es_sw_reg_en),
 
-    .entropy_src_hw_if_o       ({csrng_if.ack, csrng_if.data, fips}),
+    .entropy_src_hw_if_o       ({csrng_if.ack, csrng_if.d_data, fips}),
     .entropy_src_hw_if_i       (csrng_if.req),
 
     .entropy_src_xht_o         (),
     .entropy_src_xht_i         ('0),
 
     .entropy_src_rng_o         (rng_if.ready),
-    .entropy_src_rng_i         ({rng_if.valid, rng_if.data}),
+    .entropy_src_rng_i         ({rng_if.valid, rng_if.h_data}),
 
     .alert_rx_i                (alert_rx),
     .alert_tx_o                (alert_tx),
@@ -74,8 +74,8 @@ module tb;
     uvm_config_db#(virtual pins_if)::set(null, "*.env", "efuse_es_sw_reg_en_vif", efuse_es_sw_reg_en_if);
     uvm_config_db#(virtual pins_if)::set(null, "*.env", "fips_vif", fips_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual push_pull_if#(.DataWidth(RNG_DATA_WIDTH)))::set(null, "*.env.m_rng_agent*", "vif", rng_if);
-    uvm_config_db#(virtual push_pull_if#(.DataWidth(CSRNG_DATA_WIDTH)))::set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
+    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(RNG_DATA_WIDTH)))::set(null, "*.env.m_rng_agent*", "vif", rng_if);
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(CSRNG_DATA_WIDTH)))::set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

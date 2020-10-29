@@ -6,13 +6,15 @@
 // This sequence will infinitely pol for any DUT requests detected by
 // the monitor, and trigger the response driver anytime a request is detected.
 
-class push_pull_device_seq #(parameter int DataWidth = 32) extends push_pull_base_seq #(DataWidth);
+class push_pull_device_seq #(parameter int HostDataWidth = 32,
+                             parameter int DeviceDataWidth = HostDataWidth)
+  extends push_pull_base_seq #(HostDataWidth, DeviceDataWidth);
 
-  `uvm_object_param_utils(push_pull_device_seq#(DataWidth))
+  `uvm_object_param_utils(push_pull_device_seq#(HostDataWidth, DeviceDataWidth))
 
   `uvm_object_new
 
-  mailbox #(push_pull_item#(DataWidth)) req_mailbox;
+  mailbox #(push_pull_item#(HostDataWidth, DeviceDataWidth)) req_mailbox;
 
   virtual task body();
     req_mailbox = new();
@@ -20,14 +22,18 @@ class push_pull_device_seq #(parameter int DataWidth = 32) extends push_pull_bas
     if (cfg.agent_type == PushAgent) begin
       // In Push mode, continuously send an empty but randomized sequence item
       // to the device driver (which just needs to assert ready).
+      // If the agent is in bidirectional mode, send the corresponding data.
       forever begin
-        req = push_pull_item#(DataWidth)::type_id::create("req");
+        req = push_pull_item#(HostDataWidth, DeviceDataWidth)::type_id::create("req");
         start_item(req);
         `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
           if (cfg.zero_delays) {
             device_delay == 0;
           } else {
             device_delay inside {[cfg.device_delay_min : cfg.device_delay_max]};
+          }
+          if (!cfg.in_bidirectional_mode) {
+            d_data == 0;
           }
         )
         finish_item(req);
