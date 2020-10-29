@@ -81,6 +81,9 @@ package kmac_pkg;
   parameter int MsgFifoDepth   = 2 + ((BufferSizeBits + MsgWidth - 1)/MsgWidth);
   parameter int MsgFifoDepthW  = $clog2(MsgFifoDepth+1);
 
+  parameter int MsgWindowWidth = 32; // Register width
+  parameter int MsgWindowDepth = 512; // 2kB space
+
   // Keccak module supports SHA3, SHAKE, cSHAKE function.
   // This mode determines if the module uses encoded N and S or not.
   // Also it chooses the padding value.
@@ -196,6 +199,7 @@ package kmac_pkg;
   // !!CMD register. This is mainly to limit the error scenario that SW writes
   // multiple commands at once.
   typedef enum logic [3:0] {
+    CmdNone      = 4'b 0000,
     CmdStart     = 4'b 0001,
     CmdProcess   = 4'b 0010,
     CmdManualRun = 4'b 0100,

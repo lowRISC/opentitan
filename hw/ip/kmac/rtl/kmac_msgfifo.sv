@@ -11,9 +11,6 @@
 module kmac_msgfifo
   import kmac_pkg::*;
 #(
-  parameter int InWidth = 32,   // 32 bit
-  parameter int InDepth = 512 , // 2kB in space
-
   // OutWidth is MsgFIFO data width. prim_packer converts InW to OutW prior to
   // pushing to MsgFIFO
   parameter int OutWidth = 64,
@@ -25,8 +22,11 @@ module kmac_msgfifo
   input clk_i,
   input rst_ni,
 
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  // from REG or KeyMgr Intf input
+  input                fifo_valid_i,
+  input [OutWidth-1:0] fifo_data_i,
+  input [OutWidth-1:0] fifo_mask_i,
+  output               fifo_ready_o,
 
   // MSG interface
   output logic                  msg_valid_o,
@@ -37,10 +37,6 @@ module kmac_msgfifo
   output logic                 fifo_empty_o,
   output logic                 fifo_full_o,
   output logic [MsgDepthW-1:0] fifo_depth_o,
-
-  // Config
-  // endian_swap converts little-endian to big-endian or vice versa
-  input endian_swap_i,
 
   // Control
   input clear_i,
@@ -81,24 +77,6 @@ module kmac_msgfifo
   // Signals //
   /////////////
 
-  // TL-UL Adapter signals
-  logic        tlram_req;
-  logic        tlram_gnt;
-  logic        tlram_we;
-  logic [8:0]  tlram_addr;   // NOT_READ
-  logic [31:0] tlram_wdata;
-  logic [31:0] tlram_wmask;
-  logic [31:0] tlram_rdata;
-  logic        tlram_rvalid;
-  logic [1:0]  tlram_rerror;
-  logic [31:0] tlram_wdata_endian;
-  logic [31:0] tlram_wmask_endian;
-
-  // Tie the read path
-  assign tlram_rvalid = 1'b 0;
-  assign tlram_rdata = '0;
-  assign tlram_rerror = '0;
-
   // Packer write path
   logic                packer_wvalid;
   logic [OutWidth-1:0] packer_wdata;
@@ -118,50 +96,17 @@ module kmac_msgfifo
   logic packer_flush_done;
   logic msgfifo_flush_done;
 
-  // TL Adapter
-  tlul_adapter_sram #(
-    .SramAw ($clog2(InDepth)),
-    .SramDw (InWidth),
-    .Outstanding (1),
-    .ByteAccess  (1),
-    .ErrOnRead   (1)
-  ) u_tlul_adapter (
-    .clk_i,
-    .rst_ni,
-
-    .tl_i,
-    .tl_o,
-
-    .req_o    (tlram_req),
-    .gnt_i    (tlram_gnt),
-    .we_o     (tlram_we ),
-    .addr_o   (tlram_addr),
-    .wdata_o  (tlram_wdata),
-    .wmask_o  (tlram_wmask),
-    .rdata_i  (tlram_rdata),
-    .rvalid_i (tlram_rvalid),
-    .rerror_i (tlram_rerror)
-  );
-
-  // Convert endian here
-  //    prim_packer always packs to the right, but SHA engine assumes incoming
-  //    to be big-endian, [31:24] comes first. So, the data is reverted after
-  //    prim_packer before the message fifo. here to reverse if not big-endian
-  //    before pushing to the packer.
-  assign tlram_wdata_endian = conv_endian32(tlram_wdata, ~endian_swap_i);
-  assign tlram_wmask_endian = conv_endian32(tlram_wmask, ~endian_swap_i);
-
   prim_packer #(
-    .InW      (InWidth),
+    .InW      (OutWidth),
     .OutW     (OutWidth)
   ) u_packer (
     .clk_i,
     .rst_ni,
 
-    .valid_i      (tlram_req & tlram_we),
-    .data_i       (tlram_wdata_endian),
-    .mask_i       (tlram_wmask_endian),
-    .ready_o      (tlram_gnt),
+    .valid_i      (fifo_valid_i),
+    .data_i       (fifo_data_i),
+    .mask_i       (fifo_mask_i),
+    .ready_o      (fifo_ready_o),
 
     .valid_o      (packer_wvalid),
     .data_o       (packer_wdata),
@@ -287,7 +232,7 @@ module kmac_msgfifo
   `ASSUME(PackerDoneValid_a, process_i |-> flush_st == FlushIdle)
 
   // No messages in between `process_i` and `clear_i`
-  `ASSUME(MessageValid_a, tlram_req && tlram_we |-> flush_st == FlushIdle)
+  `ASSUME(MessageValid_a, fifo_valid_i |-> flush_st == FlushIdle)
 
 endmodule
 

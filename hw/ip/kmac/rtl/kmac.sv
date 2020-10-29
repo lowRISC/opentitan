@@ -116,6 +116,24 @@ module kmac
     assign msgfifo_data[1] = '0;
   end
 
+  // TL-UL Adapter(MSG_FIFO) signals
+  logic        tlram_req;
+  logic        tlram_gnt;
+  logic        tlram_we;
+  logic [8:0]  tlram_addr;   // NOT_READ
+  logic [31:0] tlram_wdata;
+  logic [31:0] tlram_wmask;
+  logic [31:0] tlram_rdata;
+  logic        tlram_rvalid;
+  logic [1:0]  tlram_rerror;
+  logic [31:0] tlram_wdata_endian;
+  logic [31:0] tlram_wmask_endian;
+
+  logic                          sw_msg_valid;
+  logic [kmac_pkg::MsgWidth-1:0] sw_msg_data ;
+  logic [kmac_pkg::MsgWidth-1:0] sw_msg_mask ;
+  logic                          sw_msg_ready;
+
   // KMAC to SHA3 core
   logic                          msg_valid       ;
   logic [kmac_pkg::MsgWidth-1:0] msg_data [Share];
@@ -397,18 +415,67 @@ module kmac
     .error_o (sha3_err)
   );
 
+  // MSG_FIFO window interface to FIFO interface ===============================
+  // Tie the read path
+  assign tlram_rvalid = 1'b 0;
+  assign tlram_rdata = '0;
+  assign tlram_rerror = '0;
+
+  // Convert endian here
+  //    prim_packer always packs to the right, but SHA engine assumes incoming
+  //    to be big-endian, [31:24] comes first. So, the data is reverted after
+  //    prim_packer before the message fifo. here to reverse if not big-endian
+  //    before pushing to the packer.
+  assign tlram_wdata_endian = conv_endian32(tlram_wdata, ~reg2hw.cfg.msg_endianness.q);
+  assign tlram_wmask_endian = conv_endian32(tlram_wmask, ~reg2hw.cfg.msg_endianness.q);
+
+  // TL Adapter
+  tlul_adapter_sram #(
+    .SramAw ($clog2(MsgWindowDepth)),
+    .SramDw (MsgWindowWidth),
+    .Outstanding (1),
+    .ByteAccess  (1),
+    .ErrOnRead   (1)
+  ) u_tlul_adapter_msgfifo (
+    .clk_i,
+    .rst_ni,
+
+    .tl_i (tl_win_h2d[WinMsgFifo]),
+    .tl_o (tl_win_d2h[WinMsgFifo]),
+
+    .req_o    (tlram_req),
+    .gnt_i    (tlram_gnt),
+    .we_o     (tlram_we ),
+    .addr_o   (tlram_addr),
+    .wdata_o  (tlram_wdata),
+    .wmask_o  (tlram_wmask),
+    .rdata_i  (tlram_rdata),
+    .rvalid_i (tlram_rvalid),
+    .rerror_i (tlram_rerror)
+  );
+
+  assign sw_msg_valid = tlram_req & tlram_we ;
+  if (MsgWidth == MsgWindowWidth) begin : gen_sw_msg_samewidth
+    assign sw_msg_data  = tlram_wdata_endian ;
+    assign sw_msg_mask  = tlram_wmask_endian ;
+  end else begin : gen_sw_msg_diff
+    assign sw_msg_data = {(MsgWidth-MsgWindowWidth)'(0), tlram_wdata_endian};
+    assign sw_msg_mask = {(MsgWidth-MsgWindowWidth)'(0), tlram_wmask_endian};
+  end
+  assign tlram_gnt    = sw_msg_ready ;
+
   // Message FIFO
   kmac_msgfifo #(
-    .InWidth (32),
-    .InDepth (512), // Shall be matched to the reg window size
     .OutWidth (kmac_pkg::MsgWidth),
     .MsgDepth (kmac_pkg::MsgFifoDepth)
   ) u_msgfifo (
     .clk_i,
     .rst_ni,
 
-    .tl_i (tl_win_h2d[WinMsgFifo]),
-    .tl_o (tl_win_d2h[WinMsgFifo]),
+    .fifo_valid_i (sw_msg_valid),
+    .fifo_data_i  (sw_msg_data),
+    .fifo_mask_i  (sw_msg_mask),
+    .fifo_ready_o (sw_msg_ready),
 
     .msg_valid_o (msgfifo_valid),
     .msg_data_o  (msgfifo_data[0]),
@@ -418,8 +485,6 @@ module kmac
     .fifo_empty_o (msgfifo_empty), // intr and status
     .fifo_full_o  (msgfifo_full),  // connected to status only
     .fifo_depth_o (msgfifo_depth),
-
-    .endian_swap_i (reg2hw.cfg.msg_endianness.q),
 
     .clear_i (sha3_done),
 
