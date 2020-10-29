@@ -120,4 +120,5 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `DV_CHECK_RANDOMIZE_FATAL(flash_data_pull_seq)
     `uvm_send(flash_data_pull_seq)
   endtask
+
 endclass : otp_ctrl_base_vseq

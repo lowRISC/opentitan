@@ -30,19 +30,44 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire intr_otp_operation_done, intr_otp_error;
 
+  //TODO: use push-pull agent once support
+  wire otp_ctrl_pkg::otp_ast_req_t        ast_req;
+  wire otp_ctrl_pkg::lc_otp_program_rsp_t otp_prog;
+  wire otp_ctrl_pkg::lc_otp_token_rsp_t   otp_token;
+
+  prim_alert_pkg::alert_rx_t [NUM_ALERTS-1:0] alert_rx;
+  prim_alert_pkg::alert_tx_t [NUM_ALERTS-1:0] alert_tx;
+
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
-  push_pull_if #(SRAM_DATA_SIZE) sram_if[NumSramKeyReqSlots] (.clk(clk), .rst_n(rst_n));
-  push_pull_if #(OTBN_DATA_SIZE) otbn_if(.clk(clk), .rst_n(rst_n));
+
+  alert_esc_if alert_if[NUM_ALERTS](.clk(clk), .rst_n(rst_n));
+
+  push_pull_if #(SRAM_DATA_SIZE)  sram_if[NumSramKeyReqSlots] (.clk(clk), .rst_n(rst_n));
+  push_pull_if #(OTBN_DATA_SIZE)  otbn_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(FLASH_DATA_SIZE) flash_addr_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(FLASH_DATA_SIZE) flash_data_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(EDN_DATA_SIZE)   edn_if(.clk(clk), .rst_n(rst_n));
+
   // TODO: use standard req/rsp agent
   pins_if #(3) pwr_otp_if(pwr_otp);
   pins_if #(4) lc_provision_en_if(lc_provision_en);
   pins_if #(4) lc_dft_en_if(lc_dft_en);
+
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
+
+  otp_ctrl_output_data_if otp_ctrl_output_data_if();
+
+  for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins
+    assign alert_rx[k] = alert_if[k].alert_rx;
+    assign alert_if[k].alert_tx = alert_tx[k];
+    initial begin
+      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
+          LIST_OF_ALERTS[k]), "vif", alert_if[k]);
+    end
+  end
 
   // dut
   otp_ctrl dut (
@@ -55,28 +80,28 @@ module tb;
     .intr_otp_operation_done_o (intr_otp_operation_done),
     .intr_otp_error_o          (intr_otp_error),
     // alert
-    .alert_rx_i                ('0),
-    .alert_tx_o                (  ),
+    .alert_rx_i                (alert_rx   ),
+    .alert_tx_o                (alert_tx   ),
     // ast
-    .otp_ast_pwr_seq_o         (  ),
+    .otp_ast_pwr_seq_o         (ast_req),
     .otp_ast_pwr_seq_h_i       ('0),
     // edn
-    .otp_edn_o                 (  ),
-    .otp_edn_i                 ('1),
+    .otp_edn_o                 (edn_if.req),
+    .otp_edn_i                 ({edn_if.ack, edn_if.data}),
     // pwrmgr
     .pwr_otp_i                 (pwr_otp[0]),
     .pwr_otp_o                 (pwr_otp[2:1]),
     // lc
     .lc_otp_program_i          ('0),
-    .lc_otp_program_o          (  ),
+    .lc_otp_program_o          (otp_prog),
     .lc_otp_token_i            ('0),
-    .lc_otp_token_o            (  ),
+    .lc_otp_token_o            (otp_token),
     .lc_escalate_en_i          (lc_ctrl_pkg::Off),
     .lc_provision_en_i         (lc_provision_en),
     .lc_dft_en_i               (lc_dft_en),
-    .otp_lc_data_o             (  ),
+    .otp_lc_data_o             (otp_ctrl_output_data_if.lc_data),
     // keymgr
-    .otp_keymgr_key_o          (  ),
+    .otp_keymgr_key_o          (otp_ctrl_output_data_if.keymgr_key),
     // flash
     .flash_otp_key_i           (flash_req),
     .flash_otp_key_o           (flash_rsp),
@@ -87,7 +112,7 @@ module tb;
     .otbn_otp_key_i            (otbn_req),
     .otbn_otp_key_o            (otbn_rsp),
 
-    .hw_cfg_o                  (  )
+    .hw_cfg_o                  (otp_ctrl_output_data_if.hw_cfg)
   );
 
   for (genvar i = 0; i < NumSramKeyReqSlots; i++) begin : gen_sram_pull_if
@@ -129,6 +154,8 @@ module tb;
                    "*env.m_flash_data_pull_agent*", "vif", flash_data_if);
     uvm_config_db#(virtual push_pull_if#(FLASH_DATA_SIZE))::set(null,
                    "*env.m_flash_addr_pull_agent*", "vif", flash_addr_if);
+    uvm_config_db#(virtual push_pull_if#(EDN_DATA_SIZE))::set(null,
+                   "*env.m_edn_pull_agent*", "vif", edn_if);
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(pwr_otp_vif)::set(null, "*.env", "pwr_otp_vif", pwr_otp_if);
@@ -136,7 +163,11 @@ module tb;
     uvm_config_db#(lc_provision_en_vif)::set(null, "*.env", "lc_provision_en_vif",
                                              lc_provision_en_if);
     uvm_config_db#(lc_dft_en_vif)::set(null, "*.env", "lc_dft_en_vif", lc_dft_en_if);
-    uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif", `OTP_CTRL_MEM_HIER.mem_bkdr_if);
+    uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif",
+                                      `OTP_CTRL_MEM_HIER.mem_bkdr_if);
+
+    uvm_config_db#(virtual otp_ctrl_output_data_if)::set(null, "*.env", "otp_ctrl_output_data_vif",
+                                                 otp_ctrl_output_data_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
