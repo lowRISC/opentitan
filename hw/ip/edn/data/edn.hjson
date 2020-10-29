@@ -259,6 +259,59 @@
                 '''
         }
       ]
-    }
+    },
+    {
+      name: "ERR_CODE",
+      desc: "Hardware detection of error conditions status register",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "SFIFO_RESCMD_ERR",
+          desc: '''
+                This bit will be set to one when an error has been detected for the
+                reseed command FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "1",
+          name: "SFIFO_GENCMD_ERR",
+          desc: '''
+                This bit will be set to one when an error has been detected for the
+                generate command FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "28",
+          name: "FIFO_WRITE_ERR",
+          desc: '''
+                This bit will be set to one when any of the source bits (bits 0 through 1 of this
+                this register) are asserted as a result of an error pulse generated from
+                any full FIFO that has been recieved a write pulse.
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "29",
+          name: "FIFO_READ_ERR",
+          desc: '''
+                This bit will be set to one when any of the source bits (bits 0 through 1 of this
+                this register) are asserted as a result of an error pulse generated from
+                any empty FIFO that has recieved a read pulse.
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "30",
+          name: "FIFO_STATE_ERR",
+          desc: '''
+                This bit will be set to one when any of the source bits (bits 0 through 1 of this
+                this register) are asserted as a result of an error pulse generated from
+                any FIFO where both the empty and full status bits are set.
+                This bit will stay set until firmware clears it.
+                '''
+        }
+      ]
+    },
   ]
 }
