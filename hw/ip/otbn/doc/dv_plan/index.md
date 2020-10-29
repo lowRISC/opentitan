@@ -52,14 +52,16 @@ The idle and interrupt signals are modelled with the basic
 
 As well as instantiating OTBN, the testbench also instantiates an `otbn_core_model`.
 This module wraps an ISS (instruction set simulator) subprocess and performs checks to make sure that OTBN behaves the same as the ISS.
-It has a single output signal that goes high when there's a mismatch with the model.
-Since this should never go high, the testbench contains an assertion saying it is always low.
+The model communicates with the testbench through an `otbn_model_if` interface, which is monitored by the `otbn_model_agent`, described below.
 
-### otbn_agent
+### OTBN model agent
 
-There is a single agent, called `otbn_agent`.
-This is in charge of driving `tl_if`, the TileLink interface to start and stop OTBN.
-It also monitors `alert_if`, `int_if` and `idle_if` for changes in state.
+The model agent is instantiated by the testbench to monitor the OTBN model.
+It is a passive agent (essentially just a monitor): the inputs to the model are set in `tb.sv`.
+The monitor for the agent generates transactions when it sees a start signal or a done signal.
+
+The start signal is important because we "cheat" and pull it out of the DUT.
+To make sure that the processor is starting when we expect, we check start transactions against TL writes in the scoreboard.
 
 ### Reference models
 

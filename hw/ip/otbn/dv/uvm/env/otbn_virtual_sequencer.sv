@@ -7,8 +7,6 @@ class otbn_virtual_sequencer extends cip_base_virtual_sequencer #(
     .COV_T(otbn_env_cov)
   );
   `uvm_component_utils(otbn_virtual_sequencer)
-
-
   `uvm_component_new
 
 endclass

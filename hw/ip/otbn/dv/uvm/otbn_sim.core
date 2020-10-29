@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:otbn
+      - lowrisc:dv:otbn_model
 
   files_dv:
     depend:

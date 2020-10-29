@@ -27,6 +27,13 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if    (interrupts);
   assign interrupts[1:0] = {intr_err, intr_done};
 
+  otbn_model_if #(
+    .ImemSizeByte (otbn_reg_pkg::OTBN_IMEM_SIZE)
+  ) model_if (
+    .clk_i  (clk),
+    .rst_ni (rst_n)
+  );
+
   alert_esc_if alert_if[NumAlerts](.clk(clk), .rst_n(rst_n));
   prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx;
   prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx;
@@ -58,6 +65,36 @@ module tb;
 
   );
 
+  // OTBN model, wrapping an ISS.
+  //
+  // Note that we pull the "start" signal out of the DUT. This is because it's much more difficult
+  // to grab the decoded signal from TL transactions on the cycle it happens. We have an explicit
+  // check in the scoreboard to ensure that this gets asserted at the time we expect (to spot any
+  // decoding errors).
+  assign model_if.start = dut.start;
+
+  localparam ImemScope = "..dut.u_imem.u_mem.gen_generic.u_impl_generic";
+  localparam DmemScope = "..dut.u_dmem.u_mem.gen_generic.u_impl_generic";
+  localparam DesignScope = "..dut.u_otbn_core";
+
+  otbn_core_model #(
+    .DmemSizeByte (otbn_reg_pkg::OTBN_DMEM_SIZE),
+    .ImemSizeByte (otbn_reg_pkg::OTBN_IMEM_SIZE),
+    .DmemScope    (DmemScope),
+    .ImemScope    (ImemScope),
+    .DesignScope  (DesignScope)
+  ) u_model (
+    .clk_i        (model_if.clk_i),
+    .rst_ni       (model_if.rst_ni),
+
+    .enable_i     (1'b1),
+
+    .start_i      (model_if.start),
+    .done_o       (model_if.done),
+    .start_addr_i (model_if.start_addr),
+    .err_o        (model_if.err)
+  );
+
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
@@ -66,6 +103,7 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(idle_vif)::set(null, "*.env", "idle_vif", idle_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
+    uvm_config_db#(virtual otbn_model_if)::set(null, "*.env.model_agent", "vif", model_if);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();

@@ -10,6 +10,8 @@ class otbn_env extends cip_base_env #(
   );
   `uvm_component_utils(otbn_env)
 
+  otbn_model_agent model_agent;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -17,10 +19,14 @@ class otbn_env extends cip_base_env #(
 
     cfg.mem_util = OtbnMemUtilMake(cfg.dut_instance_hier);
     `DV_CHECK_FATAL(cfg.mem_util != null);
+
+    model_agent = otbn_model_agent::type_id::create("model_agent", this);
+    uvm_config_db#(otbn_model_agent_cfg)::set(this, "model_agent*", "cfg", cfg.model_agent_cfg);
   endfunction
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+    model_agent.monitor.analysis_port.connect(scoreboard.model_fifo.analysis_export);
   endfunction
 
   function void final_phase(uvm_phase phase);
