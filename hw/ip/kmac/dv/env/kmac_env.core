@@ -1,0 +1,37 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:kmac_env:0.1"
+description: "KMAC DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:cip_lib
+    files:
+      - kmac_env_pkg.sv
+      - kmac_env_cfg.sv: {is_include_file: true}
+      - kmac_env_cov.sv: {is_include_file: true}
+      - kmac_virtual_sequencer.sv: {is_include_file: true}
+      - kmac_scoreboard.sv: {is_include_file: true}
+      - kmac_env.sv: {is_include_file: true}
+      - seq_lib/kmac_vseq_list.sv: {is_include_file: true}
+      - seq_lib/kmac_base_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_common_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_sanity_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: kmac
+      ip_hjson: ../../data/kmac.hjson
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - ral
