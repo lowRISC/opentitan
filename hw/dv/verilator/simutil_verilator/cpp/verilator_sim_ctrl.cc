@@ -22,6 +22,18 @@
  */
 double sc_time_stamp() { return VerilatorSimCtrl::GetInstance().GetTime(); }
 
+#ifdef VL_USER_STOP
+/**
+ * A simulation stop was requested, e.g. through $stop() or $error()
+ *
+ * This function overrides Verilator's default implementation to more gracefully
+ * shut down the simulation.
+ */
+void vl_stop(const char *filename, int linenum, const char *hier) VL_MT_UNSAFE {
+  VerilatorSimCtrl::GetInstance().RequestStop(false);
+}
+#endif
+
 VerilatorSimCtrl &VerilatorSimCtrl::GetInstance() {
   static VerilatorSimCtrl instance;
   return instance;
