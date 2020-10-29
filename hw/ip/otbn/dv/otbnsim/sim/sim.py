@@ -44,6 +44,7 @@ class OTBNSim:
             return (None, [])
 
         was_stalled = self.state.stalled
+        pc_before = self.state.pc
 
         if was_stalled:
             insn = None
@@ -73,7 +74,7 @@ class OTBNSim:
 
         if verbose:
             disasm = ('(stall)' if was_stalled
-                      else insn.disassemble(self.state.pc))
+                      else insn.disassemble(pc_before))
             self._print_trace(disasm, changes)
 
         return (insn, changes)
