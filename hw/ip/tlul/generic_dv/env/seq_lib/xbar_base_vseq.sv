@@ -43,19 +43,13 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
   `uvm_object_utils(xbar_base_vseq)
   `uvm_object_new
 
-  // call seq_init to create and configure host/device seq
-  // seq_init needs to be called before randomize as host_seq/device_seq are rand
+  // create and configure host/device seq before randomize as host_seq/device_seq are rand
   function void pre_randomize();
-    seq_init();
-  endfunction : pre_randomize
-
-  virtual function void seq_init();
     host_seq = new[xbar_hosts.size()];
     device_seq = new[xbar_devices.size()];
     foreach (host_seq[i]) begin
       host_seq[i] = xbar_tl_host_seq::type_id::create(
                     $sformatf("%0s_seq", xbar_hosts[i].host_name));
-      if (en_req_abort) host_seq[i].req_abort_pct = $urandom_range(0, 100);
       // Default only send request to valid devices that is accessible by the host
       foreach (xbar_devices[j]) begin
         if (is_valid_path(xbar_hosts[i].host_name, xbar_devices[j].device_name)) begin
@@ -68,9 +62,18 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
     foreach (device_seq[i]) begin
       device_seq[i] = tl_device_seq::type_id::create(
                       $sformatf("%0s_seq", xbar_devices[i].device_name));
+      device_seq[i].d_error_pct = $urandom_range(0, 10);
+    end
+  endfunction : pre_randomize
+
+  function void post_randomize();
+    foreach (host_seq[i]) begin
+      if (en_req_abort) host_seq[i].req_abort_pct = $urandom_range(0, 100);
+    end
+    foreach (device_seq[i]) begin
       if (en_rsp_abort) device_seq[i].rsp_abort_pct = $urandom_range(0, 100);
     end
-  endfunction : seq_init
+  endfunction : post_randomize
 
   virtual task run_all_device_seq_nonblocking(bit out_of_order_rsp = 1);
     if (do_device_rsp) begin

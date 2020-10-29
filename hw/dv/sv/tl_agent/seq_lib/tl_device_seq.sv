@@ -19,6 +19,9 @@ class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
   tl_seq_item              req_q[$];
   bit                      out_of_order_rsp = 0;
 
+  // chance to set d_error
+  int                      d_error_pct = 0;
+
   `uvm_object_utils(tl_device_seq)
   `uvm_object_new
 
@@ -66,6 +69,7 @@ class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
 
   virtual function void randomize_rsp(tl_seq_item rsp);
     rsp.disable_a_chan_randomization();
+    if (d_error_pct > 0) rsp.no_d_error_c.constraint_mode(0);
     if (!(rsp.randomize() with
            {rsp.d_valid_delay inside {[min_rsp_delay : max_rsp_delay]};
             if (rsp.a_opcode == tlul_pkg::Get) {
@@ -75,13 +79,16 @@ class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
             }
             rsp.d_size == rsp.a_size;
             rsp.d_user == '0; // TODO: Not defined yet, tie it to zero
-            rsp.d_source == rsp.a_source;})) begin
+            rsp.d_source == rsp.a_source;
+            d_error dist {0 :/ (100 - d_error_pct), 1 :/ d_error_pct};
+        })) begin
       `uvm_fatal(`gfn, "Cannot randomize rsp")
     end
   endfunction
 
   // callback after randomize seq, extened seq can override it to handle some non-rand variables
   virtual function void post_randomize_rsp(tl_seq_item rsp);
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rsp_abort_after_d_valid_len)
     rsp.rsp_abort_after_d_valid_len = rsp_abort_after_d_valid_len;
   endfunction
 

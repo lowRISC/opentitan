@@ -10,6 +10,13 @@ class xbar_access_same_device_vseq extends xbar_random_vseq;
   `uvm_object_utils(xbar_access_same_device_vseq)
   `uvm_object_new
 
+  // more req to hit max outstanding number
+  function void pre_randomize();
+    min_req_cnt = 200;
+    max_req_cnt = 300;
+    super.pre_randomize();
+  endfunction
+
   virtual function void update_host_seq();
     int device_id = $urandom_range(0, xbar_devices.size - 1);
 

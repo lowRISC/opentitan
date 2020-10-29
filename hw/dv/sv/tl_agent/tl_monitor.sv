@@ -92,6 +92,8 @@ class tl_monitor extends dv_base_monitor#(
         `downcast(cloned_req, req.clone());
         `DV_CHECK_EQ_FATAL(cloned_req.a_source >> cfg.valid_a_source_width, 0)
         `DV_CHECK_EQ_FATAL(pending_a_req.exists(cloned_req.a_source), 0)
+
+        if (cfg.en_cov) sample_outstanding_cov(req);
         pending_a_req[cloned_req.a_source] = cloned_req;
 
         if (cfg.max_outstanding_req > 0 && cfg.vif.rst_n === 1) begin
@@ -99,7 +101,7 @@ class tl_monitor extends dv_base_monitor#(
             `uvm_error(get_full_name(), $sformatf("Number of pending a_req exceeds limit %0d",
                                         pending_a_req.size()))
           end
-          if (cfg.en_cov) sample_outstanding_cov(req);
+          if (cfg.en_cov) cov.m_max_outstanding_cg.sample(pending_a_req.size());
         end
 
         // when device_can_rsp_on_same_cycle=1, write item to a_chan_same_cycle_rsp_port in the same
@@ -195,9 +197,6 @@ class tl_monitor extends dv_base_monitor#(
     if (cov.m_outstanding_item_w_same_addr_cov_obj != null) begin
       cov.m_outstanding_item_w_same_addr_cov_obj.sample(is_outstanding_item_w_same_addr);
     end
-
-    // sample current outstanding number
-    cov.m_max_outstanding_cg.sample(pending_a_req.size());
   endfunction : sample_outstanding_cov
 
 endclass : tl_monitor
