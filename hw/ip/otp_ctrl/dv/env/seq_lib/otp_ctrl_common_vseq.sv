@@ -19,6 +19,13 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     wait(cfg.pwr_otp_vif.pins[2] == 1);
   endtask
 
+  task post_start();
+    super.post_start();
+    // Random CSR rw might trigger alert. Some alerts will conintuously be triggered until reset
+    // applied, which will cause alert_monitor phase_ready_to_end timeout.
+    apply_reset();
+  endtask
+
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body

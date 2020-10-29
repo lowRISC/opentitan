@@ -16,6 +16,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   uvm_tlm_analysis_fifo #(push_pull_item#(OTBN_DATA_SIZE))  otbn_fifo;
   uvm_tlm_analysis_fifo #(push_pull_item#(FLASH_DATA_SIZE)) flash_addr_fifo;
   uvm_tlm_analysis_fifo #(push_pull_item#(FLASH_DATA_SIZE)) flash_data_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(EDN_DATA_SIZE))   edn_fifo;
 
   // local queues to hold incoming packets pending comparison
 
@@ -29,6 +30,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     otbn_fifo       = new("otbn_fifo", this);
     flash_addr_fifo = new("flash_addr_fifo", this);
     flash_data_fifo = new("flash_data_fifo", this);
+    edn_fifo        = new("edn_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);

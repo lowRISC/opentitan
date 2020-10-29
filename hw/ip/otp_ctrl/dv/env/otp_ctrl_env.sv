@@ -16,6 +16,7 @@ class otp_ctrl_env extends cip_base_env #(
   push_pull_agent#(OTBN_DATA_SIZE)  m_otbn_pull_agent;
   push_pull_agent#(FLASH_DATA_SIZE) m_flash_addr_pull_agent;
   push_pull_agent#(FLASH_DATA_SIZE) m_flash_data_pull_agent;
+  push_pull_agent#(EDN_DATA_SIZE)   m_edn_pull_agent;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -45,6 +46,12 @@ class otp_ctrl_env extends cip_base_env #(
     uvm_config_db#(push_pull_agent_cfg#(FLASH_DATA_SIZE))::set(this, "m_flash_data_pull_agent",
         "cfg", cfg.m_flash_data_pull_agent_cfg);
 
+    // build edn-otp push agent
+    m_edn_pull_agent = push_pull_agent#(EDN_DATA_SIZE)::type_id::create("m_edn_pull_agent",
+                                                                          this);
+    uvm_config_db#(push_pull_agent_cfg#(EDN_DATA_SIZE))::set(this, "m_edn_pull_agent", "cfg",
+                                                              cfg.m_edn_pull_agent_cfg);
+
     // config power manager pin
     if (!uvm_config_db#(pwr_otp_vif)::get(this, "", "pwr_otp_vif", cfg.pwr_otp_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get pwr_otp_vif from uvm_config_db")
@@ -63,6 +70,12 @@ class otp_ctrl_env extends cip_base_env #(
     if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "mem_bkdr_vif", cfg.mem_bkdr_vif)) begin
       `uvm_fatal(`gfn, "failed to get mem_bkdr_vif from uvm_config_db")
     end
+
+    // config otp_ctrl output data virtual interface
+    if (!uvm_config_db#(otp_ctrl_output_data_vif)::get(this, "", "otp_ctrl_output_data_vif",
+                                                       cfg.otp_ctrl_output_data_vif)) begin
+      `uvm_fatal(`gfn, "failed to get otp_ctrl_output_data_vif from uvm_config_db")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -76,14 +89,15 @@ class otp_ctrl_env extends cip_base_env #(
       end
     end
 
-    // connect OTBN sequencer and analysis ports
     virtual_sequencer.otbn_pull_sequencer_h       = m_otbn_pull_agent.sequencer;
     virtual_sequencer.flash_addr_pull_sequencer_h = m_flash_addr_pull_agent.sequencer;
     virtual_sequencer.flash_data_pull_sequencer_h = m_flash_data_pull_agent.sequencer;
+    virtual_sequencer.edn_pull_sequencer_h        = m_edn_pull_agent.sequencer;
     if (cfg.en_scb) begin
       m_otbn_pull_agent.monitor.req_port.connect(scoreboard.otbn_fifo.analysis_export);
       m_flash_addr_pull_agent.monitor.req_port.connect(scoreboard.flash_addr_fifo.analysis_export);
       m_flash_data_pull_agent.monitor.req_port.connect(scoreboard.flash_data_fifo.analysis_export);
+      m_edn_pull_agent.monitor.req_port.connect(scoreboard.edn_fifo.analysis_export);
     end
   endfunction
 

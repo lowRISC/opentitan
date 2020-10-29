@@ -23,6 +23,9 @@ package otp_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
+  parameter string LIST_OF_ALERTS[]      = {"otp_macro_failure", "otp_check_failure"};
+  parameter uint NUM_ALERTS              = 2;
+
   parameter uint DIGEST_SIZE             = 8;
   parameter uint SW_WINDOW_BASE_ADDR     = 'h1000;
   parameter uint TEST_ACCESS_BASE_ADDR   = 'h2000;
@@ -35,6 +38,8 @@ package otp_ctrl_env_pkg;
   parameter uint OTBN_DATA_SIZE  = 1 + OtbnKeyWidth + OtbnNonceWidth;
   // flash rsp data has 1 bit for seed_valid, the rest are for key
   parameter uint FLASH_DATA_SIZE = 1 + FlashKeyWidth;
+  // edn rsp data are key width
+  parameter uint EDN_DATA_SIZE   = EdnDataWidth;
 
   // lc does not have digest
   parameter bit[10:0] DIGESTS_ADDR [NumPart-1] = {
@@ -47,10 +52,11 @@ package otp_ctrl_env_pkg;
   };
 
   // types
-  typedef virtual pins_if #(3) pwr_otp_vif;
-  typedef virtual pins_if #(4) lc_provision_en_vif;
-  typedef virtual pins_if #(4) lc_dft_en_vif;
-  typedef virtual mem_bkdr_if mem_bkdr_vif;
+  typedef virtual pins_if #(3)            pwr_otp_vif;
+  typedef virtual pins_if #(4)            lc_provision_en_vif;
+  typedef virtual pins_if #(4)            lc_dft_en_vif;
+  typedef virtual mem_bkdr_if             mem_bkdr_vif;
+  typedef virtual otp_ctrl_output_data_if otp_ctrl_output_data_vif;
 
   typedef enum bit [1:0] {
     OtpOperationDone,
