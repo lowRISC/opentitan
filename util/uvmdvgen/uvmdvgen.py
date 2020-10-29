@@ -98,7 +98,7 @@ def main():
         metavar="[hw/ip/<ip>]",
         help=
         """Path to place the full tetsbench code. It creates 3 directories - dv, data and doc.
-                The DV plan and the testplan Hjson files are placed in the doc and data directories
+                The DV Doc and the testplan Hjson files are placed in the doc and data directories
                 respectively. These are to be merged into the IP's root directory (with the existing
                 data and doc directories). Under dv, it creates 3 sub-directories - env,
                 tb and tests to place all of the testbench sources. (default set to './<name>')"""

@@ -1,5 +1,5 @@
 ---
-title: "FLASH_CTRL DV Plan"
+title: "FLASH_CTRL DV Document"
 ---
 
 ## Goals

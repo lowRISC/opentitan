@@ -1,5 +1,5 @@
 ---
-title: "USBDEV DV Plan"
+title: "USBDEV DV Document"
 ---
 
 ## Goals

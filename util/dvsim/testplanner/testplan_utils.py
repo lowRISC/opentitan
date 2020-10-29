@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 r"""Command-line tool to parse and process testplan Hjson into a data structure
-    The data structure is used for expansion inline within DV plan documentation
+    The data structure is used for expansion inline within DV Doc documentation
     as well as for annotating the regression results.
 """
 import os

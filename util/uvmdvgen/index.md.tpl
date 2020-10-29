@@ -1,8 +1,8 @@
 ---
-title: "${name.upper()} DV Plan"
+title: "${name.upper()} DV Document"
 ---
 
-<!-- Copy this file to hw/ip/${name}/doc/${name}_dv_plan.md and make changes as needed.
+<!-- Copy this file to hw/ip/${name}/doc/${name}_dv_doc.md and make changes as needed.
 For convenience '${name}' in the document can be searched and replaced easily with the
 desired IP (with case sensitivity!). Also, use the testbench block diagram
 located at OpenTitan team drive / 'design verification'

@@ -1,5 +1,5 @@
 ---
-title: "PADCTRL DV Plan"
+title: "PADCTRL DV Document"
 ---
 
 ## Goals

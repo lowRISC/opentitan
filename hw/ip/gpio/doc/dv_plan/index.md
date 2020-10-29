@@ -1,5 +1,5 @@
 ---
-title: "GPIO DV Plan"
+title: "GPIO DV Document"
 ---
 
 ## Goals

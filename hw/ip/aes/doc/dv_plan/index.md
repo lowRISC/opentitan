@@ -1,5 +1,5 @@
 ---
-title: "AES DV Plan"
+title: "AES DV Document"
 ---
 
 ## Goals

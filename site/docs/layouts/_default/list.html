@@ -1,1 +1,23 @@
-single.html
+<!DOCTYPE html>
+<html class="no-js">
+  {{ partial "head.html" . }}
+  <body onload="WaveDrom.ProcessAll()">
+    {{ partial "header.html" . }}
+    <section class="light-bg">
+      <div class="layout">
+        {{ partial "parents.html" . }}
+      </div>
+      <div class="layout">
+        <aside>
+          {{ partial "menu.html" . }}
+        </aside>
+        <main id="main" role="main" class="markdown">
+          {{ if .Title }}<h1 class="title">{{ .Title }}</h1>{{ end }}
+          {{ .Content }}
+        </main>
+        {{ partial "toc.html" . }}
+      </div>
+    </section>
+    {{ partial "footer.html" . }}
+  </body>
+</html>

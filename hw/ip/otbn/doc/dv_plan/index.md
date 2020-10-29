@@ -1,5 +1,5 @@
 ---
-title: "OTBN DV Plan"
+title: "OTBN DV Document"
 ---
 
 ## Goals
