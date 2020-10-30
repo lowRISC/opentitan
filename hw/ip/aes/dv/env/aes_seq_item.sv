@@ -37,6 +37,9 @@ class aes_seq_item extends uvm_sequence_item;
   aes_mode_e                   mode;
   bit                          en_b2b_transactions = 1;
 
+  // percentage of items that will// clear one or more registers
+  int                          clear_reg_pct = 0;
+
 
   ///////////////////////////////////////
   // Fixed variables                   //
@@ -61,21 +64,37 @@ class aes_seq_item extends uvm_sequence_item;
   ///////////////////////////////////////
 
   // used by the checker
-  rand  bit [3:0][31:0] data_in;
+  rand  bit [3:0][31:0]             data_in;
 
   // back to back
-  rand bit              do_b2b;
+  rand bit                          do_b2b;
 
   // this is only used to program dut in illegal mode
   rand bit [$bits(aes_mode_e) -1:0] aes_mode;
+
+  // clear reg vector
+  // [3] output data
+  // [2] input data
+  // [1] IV
+  // [0] key
+  rand bit [3:0]                    clear_reg;
 
   constraint aes_mode_c {
    // force to be !onehot
     if (mode == AES_NONE) {
       !($countones(aes_mode) == 1);
     } else {
-      aes_mode == bit'(mode);
+      aes_mode == mode;
     }
+  }
+
+  constraint aes_clear_reg_c {
+        clear_reg dist {     0  :/ (100 - clear_reg_pct),
+                             1  :/ clear_reg_pct/5,
+                             2  :/ clear_reg_pct/5,
+                             4  :/ clear_reg_pct/5,
+                             8  :/ clear_reg_pct/5
+                       };
   }
 
   function new( string name="aes_sequence_item");
@@ -100,6 +119,8 @@ class aes_seq_item extends uvm_sequence_item;
       endcase // case (key_len)
 
       if (!en_b2b_transactions) do_b2b = 0;
+
+      `uvm_info(`gfn, $sformatf("\n SUPERMAN mode is %s: %b" ,mode.name(), aes_mode), UVM_LOW)
 
     end
 
@@ -216,6 +237,7 @@ class aes_seq_item extends uvm_sequence_item;
     data_len     = rhs_.data_len;
     manual_op    = rhs_.manual_op;
     key_mask     = rhs_.key_mask;
+    aes_mode     = rhs_.aes_mode;
   endfunction // copy
 
 
@@ -240,11 +262,14 @@ class aes_seq_item extends uvm_sequence_item;
     str = super.convert2string();
     str = {str,  $psprintf("\n\t ----| AES SEQUENCE ITEM                                  |----\t ")
            };
-    str = {str,  $psprintf("\n\t ----| Item Type:    \t %s                          |----\t ",item_type.name()) };
-    str = {str,  $psprintf("\n\t ----| AES Mode:    \t %s                          |----\t ",mode.name()) };
-    str = {str,  $psprintf("\n\t ----| Operation:    \t %s                          |----\t ", operation.name() ) };
+    str = {str,  $psprintf("\n\t ----| Item Type:    \t %s                          |----\t ",
+                          item_type.name()) };
+    str = {str,  $psprintf("\n\t ----| AES Mode:    \t %s                          |----\t ",
+                          mode.name()) };
+    str = {str,  $psprintf("\n\t ----| Operation:    \t %s                          |----\t ",
+                           operation.name() ) };
     str = {str,  $psprintf("\n\t ----| Key len:    \t %s  \t(%3b)                           |----\t ",
-                           (key_len==3'b001) ? "128b" : (key_len == 3'b010) ? "192b" : "256b", key_len) };
+                          (key_len==3'b001) ? "128b" : (key_len == 3'b010) ? "192b" : "256b", key_len) };
     str = {str,  $psprintf("\n\t ----| Key Share 0: \t ") };
     for(int i=0; i <8; i++) begin
       str = {str, $psprintf("%h ",key[0][i])};

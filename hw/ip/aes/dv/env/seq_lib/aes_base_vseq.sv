@@ -26,9 +26,9 @@ class aes_base_vseq extends cip_base_vseq #(
     if (do_aes_init) aes_init();
     aes_item = new();
     aes_message_init();
-    `uvm_info(`gfn, $sformatf("\n TL delay: [%d:%d] \n zero delay %d", 
-              cfg.m_tl_agent_cfg.d_ready_delay_min,cfg.m_tl_agent_cfg.d_ready_delay_max, cfg.zero_delays  ),
-              UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("\n TL delay: [%d:%d] \n zero delay %d",
+              cfg.m_tl_agent_cfg.d_ready_delay_min,cfg.m_tl_agent_cfg.d_ready_delay_max,
+              cfg.zero_delays  ), UVM_HIGH)
   endtask
 
   virtual task dut_shutdown();
@@ -159,7 +159,7 @@ class aes_base_vseq extends cip_base_vseq #(
   virtual task setup_dut(aes_seq_item item);
     //CTRL reg
     set_operation(item.operation);
-    set_mode(item.mode);
+    set_mode(item.aes_mode);
     set_key_len(item.key_len);
     set_manual_operation(item.manual_op);
     if (!cfg.random_data_key_iv_order) begin
@@ -301,7 +301,7 @@ class aes_base_vseq extends cip_base_vseq #(
       end
     end
 
-    while(aes_item_queue.size() > 0) begin
+    while (aes_item_queue.size() > 0) begin
       nxt_item = aes_item_queue.pop_back();
       add_data(nxt_item.data_in, nxt_item.do_b2b);
       if (nxt_item.mode != AES_NONE) begin
@@ -333,19 +333,19 @@ class aes_base_vseq extends cip_base_vseq #(
     if (aes_item_queue.size() < 1) begin
       `uvm_fatal(`gfn, $sformatf("\n\t -| TRYING TO READ FROM AN EMPTY QUEUE |-"))
     end
-    num_blocks = aes_item_queue.size() -1;  // subtract cfg item
+    num_blocks = aes_item_queue.size() - 1;  // subtract cfg item
     nxt_item   = aes_item_queue.pop_back();
 
     setup_dut(nxt_item);
     `uvm_info(`gfn, $sformatf("\n\t ....| STARTING MANUAL OPERATION |...."), UVM_MEDIUM)
     if ( cfg.random_data_key_iv_order) begin
-      last_item = nxt_item;
-      nxt_item = aes_item_queue.pop_back();
+      last_item   = nxt_item;
+      nxt_item    = aes_item_queue.pop_back();
       write_interleaved_data_key_iv(last_item.key, last_item.iv, nxt_item.data_in);
       trigger();
     end
 
-    while(num_blocks > 0) begin // until all block has been processed and read out
+    while (num_blocks > 0) begin // until all block has been processed and read out
       `uvm_info(`gfn, $sformatf("\n\t ....| missing output from %d blocks |....",num_blocks),
                UVM_MEDIUM)
 
@@ -375,6 +375,51 @@ class aes_base_vseq extends cip_base_vseq #(
       join
     end
   endtask // transmit_message_with_rd_back
+
+
+  virtual task transmit_message_manual_op_w_rd_back();
+    aes_seq_item nxt_item   = new();
+    aes_seq_item last_item  = new();
+    logic [31:0] status     = 32'd0;
+    bit [31:0]   num_blocks = 0;
+
+    if (aes_item_queue.size() < 1) begin
+      `uvm_fatal(`gfn, $sformatf("\n\t -| TRYING TO READ FROM AN EMPTY QUEUE |-"))
+    end
+    num_blocks = aes_item_queue.size() - 1;  // subtract cfg item
+    nxt_item   = aes_item_queue.pop_back();
+
+    setup_dut(nxt_item);
+    `uvm_info(`gfn, $sformatf("\n\t ....| STARTING MANUAL OPERATION |...."), UVM_MEDIUM)
+    if (cfg.random_data_key_iv_order) begin
+      last_item   = nxt_item;
+      nxt_item    = aes_item_queue.pop_back();
+      num_blocks -= 1;
+      write_interleaved_data_key_iv(last_item.key, last_item.iv, nxt_item.data_in);
+      trigger();
+      csr_spinwait(.ptr(ral.status.output_valid), .exp_data(1'b1));    // poll for data valid
+      read_data(nxt_item.data_out, nxt_item.do_b2b);
+    end
+
+    while (num_blocks > 0) begin // until all block has been processed and read out
+      `uvm_info(`gfn, $sformatf("\n\t ....| missing output from %d blocks |....", num_blocks),
+                UVM_MEDIUM)
+
+      csr_spinwait(.ptr(ral.status.input_ready) , .exp_data(1'b1));
+      `uvm_info(`gfn, $sformatf("\n\t ....| POLLED STATUS %h |....",status), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\n\t ....| blocks left in message %d |....", aes_item_queue.size()),
+                UVM_MEDIUM)
+
+      nxt_item = aes_item_queue.pop_back();
+      add_data(nxt_item.data_in, nxt_item.do_b2b);
+      trigger();
+
+      csr_spinwait(.ptr(ral.status.output_valid), .exp_data(1'b1));    // poll for data valid
+      read_data(nxt_item.data_out, nxt_item.do_b2b);
+      num_blocks -= 1;
+    end
+  endtask // transmist_message_manual_op_w_rd_back
+
 
 
   // initialize the global sequence item
@@ -437,9 +482,9 @@ class aes_base_vseq extends cip_base_vseq #(
 
   function void generate_message_queue();
     aes_message_item cloned_message;
-    for(int i=0; i < cfg.num_messages; i++) begin
+    for (int i=0; i < cfg.num_messages; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(aes_message)
-      if(aes_message.cfg_error_type[0] == 1'b1) cfg.num_corrupt_messages += 1;
+      if (aes_message.cfg_error_type[0] == 1'b1) cfg.num_corrupt_messages += 1;
 
       `downcast(cloned_message, aes_message.clone());
       //`assert($cast(cloned_message, aes_message.clone());
@@ -447,14 +492,13 @@ class aes_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, $sformatf("\n\t ----| MESSAGE # %d \n %s",i, cloned_message.convert2string())
                , UVM_MEDIUM)
     end
-
   endfunction
 
 
   function void aes_print_item_queue(ref aes_seq_item item_queue[$]);
     aes_seq_item print_item;
     `uvm_info(`gfn, $sformatf("----| Item queue size: %d", item_queue.size()), UVM_HIGH)
-    for(int n = 0; n < item_queue.size(); n++) begin
+    for (int n = 0; n < item_queue.size(); n++) begin
       print_item = item_queue[n];
       `uvm_info(`gfn, $sformatf("----|  ITEM #%d", n ), UVM_MEDIUM)
       `uvm_info(`gfn, $sformatf("%s", print_item.convert2string()), UVM_MEDIUM)
