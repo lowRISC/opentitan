@@ -153,22 +153,22 @@ class aes_seq_item extends uvm_sequence_item;
         return (&key_vld[0] & &key_vld[1]);
       end
       AES_CBC: begin
-        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &b",
+        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
                    key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
         return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
       end
       AES_CFB: begin
-        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &b",
+        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
                    key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
         return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
       end
       AES_OFB: begin
-        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &b",
+        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
                    key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
         return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
       end
       AES_CTR: begin
-        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &b",
+        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
                    key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
         return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
       end
