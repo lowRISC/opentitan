@@ -24,6 +24,7 @@ readonly DIST_ARTIFACTS=(
   'sw/device/*.elf'
   'sw/device/*.bin'
   'sw/device/*.vmem'
+  'sw/otbn/*.elf'
   'sw/host/spiflash/spiflash'
   'hw/top_earlgrey/Vtop_earlgrey_verilator'
   'hw/top_earlgrey/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit'

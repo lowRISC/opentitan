@@ -100,4 +100,14 @@ foreach sw_otbn__app_name, sw_otbn__app_sources : sw_otbn_sources
       'rv32embed_dependency': sw_otbn__dependency,
     }
   }
+
+  custom_target(
+    'sw_otbn_app_export_' + sw_otbn__app_name,
+    command: export_target_command,
+    input: [sw_otbn__target[1]],
+    output: 'sw_otbn_app_export_' + sw_otbn__app_name,
+    build_always_stale: true,
+    build_by_default: true,
+  )
+
 endforeach
