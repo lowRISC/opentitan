@@ -123,7 +123,7 @@ module kmac_msgfifo
   assign fifo_wdata.data = conv_endian64(packer_wdata, 1'b1);
   always_comb begin
     for (int i = 0 ; i < OutWidth/8 ; i++) begin
-      fifo_wdata.strb[i] = packer_wmask[OutWidth/8-1 - i];
+      fifo_wdata.strb[i] = packer_wmask[8*(OutWidth/8-i-1)];
     end
   end
 

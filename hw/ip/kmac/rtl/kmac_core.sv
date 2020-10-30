@@ -307,7 +307,7 @@ module kmac_core
   // Slicer to slice out 64 bits
   for (genvar i = 0 ; i < Share ; i++) begin : gen_key_slicer
     prim_slicer #(
-      .InW (MaxEncodedKeyW),
+      .InW (MaxEncodedKeyW+16),
       .IndexW(KeccakMsgAddrW),
       .OutW(MsgWidth)
     ) u_key_slicer (
