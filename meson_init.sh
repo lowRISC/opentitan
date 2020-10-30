@@ -157,12 +157,11 @@ else
   fi
 fi
 
-mkdir -p "$DEV_BIN_DIR"
+mkdir -p "$BIN_DIR"
 set -x
 meson $reconf \
   -Dot_version="$OT_VERSION" \
-  -Ddev_bin_dir="$DEV_BIN_DIR" \
-  -Dhost_bin_dir="$HOST_BIN_DIR" \
+  -Dbin_dir="$BIN_DIR" \
   -Dtock_local="$TOCK_LOCAL" \
   -Dkeep_includes="$FLAGS_keep_includes" \
   -Dcoverage="$FLAGS_coverage" \

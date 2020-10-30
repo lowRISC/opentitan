@@ -3,13 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 option(
-  'dev_bin_dir',
-  type: 'string',
-  value: 'undef',
-)
-
-option(
-  'host_bin_dir',
+  'bin_dir',
   type: 'string',
   value: 'undef',
 )

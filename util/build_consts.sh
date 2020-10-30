@@ -45,15 +45,6 @@ export OBJ_DIR
 readonly BIN_DIR="$BUILD_ROOT/build-bin"
 export BIN_DIR
 
-# $DEV_BIN_DIR is a subdirectory of $BIN_DIR where device build outputs (i.e.,
-# compiled programs that should run on the OpenTitan SoC) should be written.
-export DEV_BIN_DIR="$BIN_DIR/sw/device"
-
-# $HOST_BIN_DIR is a subdirectory of $BIN_DIR where host build outputs (i.e.,
-# compiled programs that should run on a host workstation or server) should be
-# written.
-export HOST_BIN_DIR="$BIN_DIR/sw/host"
-
 # $TOCK_SYMLINK is the symlink used when referencing a local checkout of tock to
 # build from.
 export TOCK_SYMLINK="$REPO_TOP/sw/device/tock/tock_local"

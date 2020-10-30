@@ -77,11 +77,10 @@ tock_bin = custom_target(
 
 custom_target(
   'tock_export',
-  command: export_embedded_target,
+  command: export_target_command,
   input: [tock_elf, tock_bin],
   depends: [tock_elf, tock_bin],
   output: 'tock',
   build_always_stale: true,
   build_by_default: false,
 )
-

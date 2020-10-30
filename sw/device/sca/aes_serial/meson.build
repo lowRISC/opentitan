@@ -33,7 +33,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
 
   custom_target(
     'aes_serial_export_' + device_name,
-    command: export_embedded_target,
+    command: export_target_command,
     input: [aes_serial_elf, aes_serial_embedded],
     output: 'aes_serial_export_' + device_name,
     build_always_stale: true,

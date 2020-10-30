@@ -20,16 +20,6 @@ make_embedded_target = [
   '--outdir', '@OUTDIR@',
 ]
 
-# Arguments for custom_target, for copying a completed |make_embedded_target| into
-# the appropriate location under $BIN_DIR.
-export_embedded_target = [
-  meson.source_root() / 'util/export_target.sh',
-  dev_bin_dir,
-  'sw/device',
-  '@OUTDIR@',
-  '@INPUT@',
-]
-
 embedded_target_extra_link_args = [
   '-Wl,--build-id=none',
 ]
