@@ -4,10 +4,8 @@
 
 `verilator_config
 
-// Temporary rule to turn off all unused warnings until implementation is more
-// complete
-lint_off -rule UNUSED -file "*/rtl/otbn_*"
-
 // Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'addr' generates 3
 // bits.
 lint_off -rule WIDTH -file "*/rtl/otbn_lsu.sv" -match "*'addr' generates 3 bits*"
+
+lint_off -rule UNUSED -file "*/rtl/otbn_decoder.sv" -match "Bits of signal are not used: 'insn_alu'[24:15,11:7]"
