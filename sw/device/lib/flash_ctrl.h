@@ -10,11 +10,6 @@
 
 // Flash memory base defines, _SZ are presented in bytes
 #define FLASH_MEM_BASE_ADDR 0x20000000
-#define FLASH_WORDS_PER_PAGE 128
-#define FLASH_WORD_SZ 8
-#define FLASH_PAGE_SZ (FLASH_WORDS_PER_PAGE * FLASH_WORD_SZ)
-#define FLASH_PAGES_PER_BANK 256
-#define FLASH_BANK_SZ (FLASH_PAGES_PER_BANK * FLASH_PAGE_SZ)
 
 /**
  * Flash bank IDs
@@ -116,6 +111,24 @@ void flash_default_region_access(bool rd_en, bool prog_en, bool erase_en);
  * @param region_cfg Region configuration.
  */
 void flash_cfg_region(const mp_region_t *region_cfg);
+
+/** Get number of flash banks */
+uint32_t flash_get_banks();
+
+/** Get number of pages per bank */
+uint32_t flash_get_pages_per_bank();
+
+/** Get number of words per page */
+uint32_t flash_get_words_per_page();
+
+/** Get size of each bank in bytes */
+uint32_t flash_get_bank_size();
+
+/** Get size of each page in bytes */
+uint32_t flash_get_page_size();
+
+/** Get size of each flash word in bytes */
+uint32_t flash_get_word_size();
 
 /** Write value to flash scratch register */
 void flash_write_scratch_reg(uint32_t value);

@@ -27,9 +27,9 @@ def find_file(name, path):
 def main():
 
     # Check for the following regular expressions in the following source files.
-    files = ["top_pkg.sv", "tl_main_pkg.sv"]
+    files = ["flash_ctrl_reg_pkg.sv", "tl_main_pkg.sv"]
     match = [
-        r"localparam\s+int\s+FLASH_PAGES_PER_BANK\s*=\s*32;",
+        r"parameter\s+int\s+RegPagesPerBank\s*=\s*32;",
         r"localparam\s+logic\s*\[\s*31\s*:\s*0\s*\]\s+ADDR_MASK_EFLASH\s*=\s*32'h\s*0000ffff;"
     ]
 

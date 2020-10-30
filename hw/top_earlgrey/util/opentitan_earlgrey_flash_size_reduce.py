@@ -9,6 +9,7 @@ all auto-generated files. The flash size is reduced in a way that does not impac
 interface of the flash controller and is thus more or less transparent to software.
 """
 
+import hjson
 import logging as log
 import subprocess
 import sys
@@ -18,51 +19,46 @@ import re
 # Display INFO log messages and up.
 log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
 
+hdr = '''// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+'''
+
+orighdr = hdr + '''
+// This file has been automatically created from top_earlgrey.hjson.
+// This is a reformatted copy of top_earlgrey.hjson
+'''
+
+genhdr = hdr + '''
+// This file has been automatically modified to reduce the size of the flash.
+// To see what has been changed, please compare to top_earlgrey.original.hjson.
+'''
 
 def main():
 
     # Get path to top-level directory
     top_path = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../.."))
+    top_hjson = top_path + "/hw/top_earlgrey/data/top_earlgrey.hjson"
 
-    # Change the following expressions in the following source files.
-    files = [
-        top_path + "/sw/device/lib/flash_ctrl.h",
-        top_path + "/hw/top_earlgrey/rtl/top_pkg.sv",
-        top_path + "/hw/top_earlgrey/data/top_earlgrey.hjson"
-    ]
-    match = [
-        r"(#define\s+FLASH_PAGES_PER_BANK\s+)\d+(\s*)",
-        r"(localparam\s+int\s+FLASH_PAGES_PER_BANK\s*=\s*)\d+(\s*;)",
-        r"({\s*name:\s*\"eflash\"," +
-        r"\s*clock_srcs:\s*{clk_i:\s*\"main\"}," +
-        r"\s*clock_group:\s*\"infra\"," +
-        r"\s*reset_connections:\s*{rst_ni:\s*\"lc\"}," +
-        r"\s*type:\s*\"eflash\"," +
-        r"\s*base_addr:\s*\"0x\w+\"," +
-        r"\s*swaccess:\s*\"ro\"," +
-        r"\s*size:\s*\"0x)\w+"
-    ]
-    replace = [
-        r"\g<1>32\g<2>",  # Change FLASH_PAGES_PER_BANK to 32
-        r"\g<1>32\g<2>",  # Change FLASH_PAGES_PER_BANK to 32
-        r"\g<1>10000"     # Change size to 0x10000
-    ]
+    # Modify hjson to change flash size
+    with open(top_hjson, "r") as hjson_file:
+        cfg = hjson.load(hjson_file,
+                         use_decimal=True)
 
-    # Change source files
-    for idx in range(len(files)):
-        with open(files[idx], 'r+') as file:
-            text = file.read()
-            text, num = re.subn(match[idx], replace[idx], text)
-            if num == 0:
-                print("ERROR: Cannot find regular expression " + match[idx] +
-                      " in " + files[idx] + ". "
-                      "Aborting")
-                sys.exit(1)
-            else:
-                print("Modifying " + files[idx])
-                file.seek(0)
-                file.write(text)
-                file.truncate()
+    # write out original version reformatted
+    with open(top_path + "/hw/top_earlgrey/data/top_earlgrey.original.hjson", "w") as hjson_file:
+         hjson_file.write(orighdr + hjson.dumps(cfg, hjson_file))
+
+    # update value
+    log.info("Updating flash pages_per_bank to 32")
+    for mem in cfg["memory"]:
+        if mem['type'] == 'eflash':
+            mem['pages_per_bank'] = 32
+
+    # write back updated hjson
+    with open(top_hjson, "w") as hjson_file:
+        hjson_file.write(genhdr + hjson.dumps(cfg, hjson_file))
 
     # Regenerate auto-generated files
     print("Regenerating all auto-generated files...")

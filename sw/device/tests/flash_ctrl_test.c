@@ -23,6 +23,12 @@
 #define CHECK_EQZ(x) CHECK((x) == 0)
 #define CHECK_NEZ(x) CHECK((x) != 0)
 
+#define FLASH_WORDS_PER_PAGE flash_get_words_per_page()
+#define FLASH_WORD_SZ flash_get_word_size()
+#define FLASH_PAGE_SZ flash_get_page_size()
+#define FLASH_PAGES_PER_BANK flash_get_pages_per_bank()
+#define FLASH_BANK_SZ flash_get_bank_size()
+
 /*
  * Basic test of page erase / program / read functions
  * Tests pages from both the data and info partitions
