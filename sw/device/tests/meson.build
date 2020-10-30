@@ -134,7 +134,7 @@ foreach sw_test_name, sw_test_lib : sw_tests
 
     custom_target(
       sw_test_name + '_export_' + device_name,
-      command: export_embedded_target,
+      command: export_target_command,
       input: [sw_test_elf, sw_test_embedded],
       output: sw_test_name + '_export_' + device_name,
       build_always_stale: true,
@@ -172,7 +172,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
 
   custom_target(
     'crt_test_export_' + device_name,
-    command: export_embedded_target,
+    command: export_target_command,
     input: [crt_test_elf, crt_test_embedded],
     output: 'crt_test_export_' + device_name,
     build_always_stale: true,

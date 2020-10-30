@@ -99,7 +99,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
 
     custom_target(
       slot + '_export_' + device_name,
-      command: export_embedded_target,
+      command: export_target_command,
       input: [rom_ext_elf, rom_ext_embedded],
       output: slot + '_export_' + device_name,
       build_always_stale: true,

@@ -45,7 +45,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
 
   custom_target(
     'coremark_top_earlgrey_export_' + device_name,
-    command: export_embedded_target,
+    command: export_target_command,
     input: [
       coremark_top_earlgrey_elf,
       coremark_top_earlgrey_embedded,
