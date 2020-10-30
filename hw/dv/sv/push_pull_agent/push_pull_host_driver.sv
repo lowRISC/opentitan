@@ -55,14 +55,14 @@ class push_pull_host_driver #(parameter int DataWidth = 32) extends push_pull_dr
     end
     if (!in_reset) begin
       `PUSH_DRIVER.valid_int <= 1'b1;
-      `PUSH_DRIVER.data      <= req.data;
+      `PUSH_DRIVER.data_int  <= req.data;
     end
     do begin
       @(`PUSH_DRIVER);
     end while (!`PUSH_DRIVER.ready && !in_reset);
     if (!in_reset) begin
       `PUSH_DRIVER.valid_int <= 1'b0;
-      `PUSH_DRIVER.data      <= 'x;
+      `PUSH_DRIVER.data_int  <= 'x;
     end
   endtask
 
