@@ -42,7 +42,46 @@
                //  - Read capability on registers, variables, and nets
                //  - Write (deposit) capability on registers and variables
                //  - Force capability on registers, variables, and nets
-               "-debug_access+f"]
+               "-debug_access+f",
+
+               // Upgrade below warnings to errors to make VCS more strict on syntax to avoid
+               // having issue with other simulators but passing with VCS
+               //
+               // Identifier previously declared
+               "-error=IPDW",
+               // Input Supply Port with no driver
+               "-error=UPF_ISPND",
+               // Invalid generic or parameter assignment
+               "-error=IGPA",
+               // Class scope used outside of class
+               "-error=PCSRMIO",
+               // Attempt to override undefined parameter
+               "-error=AOUP",
+               // Unbound component
+               "-error=ELW_UNBOUND",
+               // Illegal Use of Wildcard Index
+               "-error=IUWI",
+               // Index into non-array variable
+               "-error=INAV",
+               // Illegal Static Cast
+               "-error=SV-ISC",
+               // Obsolete System Verilog feature
+               "-error=OSVF-NPVIUFPI",
+               // Duplicate port in module instantiation
+               "-error=DPIMI",
+               // Identifier in ANSI port declaration
+               "-error=IPDASP",
+               // File not found
+               "-error=CM-HIER-FNF",
+               // Concatenations with unsized constants
+               "-error=CWUC",
+               // More arguments than needed
+               "-error=MATN",
+               // Specifying negative delays is invalid
+               "-error=STASKW_NDTAZ1",
+               // Too many parameter overrides
+               "-error=TMPO",
+               ]
 
   run_opts:   ["-licqueue",
                "-ucli -do {tool_srcs_dir}/vcs.tcl",
