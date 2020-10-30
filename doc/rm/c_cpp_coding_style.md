@@ -171,6 +171,69 @@ While this does correctly set the ABI for a header implemented in C, that header
 
 This last rule is waived for third-party headers, which may be polyglot but not declared in our style.
 
+### X Macros
+
+In order to avoid repetitive definitions or statements, we allow the use of [X Macros](https://en.wikipedia.org/wiki/X_Macro) in our C and C++ code.
+
+Uses of X Macros should follow the following example, which uses this pattern in a switch definition:
+```c
+int get_field2(int identifier) {
+  switch (identifier) {
+#define ITEM(id_field, data_field1, data_field2) \
+    case id_field:                               \
+      return data_field2;
+#include "path/to/item.def"
+    default:
+      return 0;
+  }
+}
+```
+This example expands to a case statement for each item, which returns the `data_field2` value where the passed in identifier matches `id_field`.
+
+The contents of the X Macro file from this example ("path/to/item.def") should look like:
+```c
+
+/**
+ * \def ITEM(id_field, data_field1, data_field2)
+ *
+ * <Documentation about meaning of ITEM fields>
+ */
+#ifndef ITEM
+#error ITEM(id_field, data_field1, data_field2) must be defined
+#endif
+
+ITEM(fields...)
+ITEM(fields...)
+
+#undef ITEM
+```
+
+These X Macro files must:
+
+*   Have the extension `.def`.
+    The file's basename should match the X Macro name.
+    This is so we can easily identify that this is an X Macro, which will be used by the preprocessor, and is required at compile-time.
+*   Document the X Macro and the meaning of its fields.
+*   Error if the X Macro is not defined.
+*   Include a sequence of X Macro uses, one per line, omitting following semicolons.
+    Omitting semicolons allows X Macros to be used in either expression or statement position, which is useful.
+*   Undefine the X Macro name at the end of the file.
+
+X Macro field values should be valid C constant literals.
+The first field of an X Macro should be the primary identifier, as shown in the example.
+
+X Macros should be kept as simple as possible.
+X Macro files should endeavour to only define one kind of X Macro, and separate files should be used for other X Macros.
+If possible, X Macros should only be used in implementation files, and should be avoided in headers.
+
+The code using an X Macro must:
+
+*   Define the X Macro name, including any separators (such as semicolons or commas) within the definition.
+    It is usually clearer if you split the definition over multiple lines.
+*   Immediately after the definition, include the `.def` file for the X Macro.
+
+
+
 ## C++ Style Guide {#cxx-style-guide}
 
 ### C++ Version {#cxx-version}
