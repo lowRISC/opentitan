@@ -55,3 +55,6 @@ hw/foundry/
 # Local Tock checkout
 sw/device/tock/tock_local
 sw/device/tock/tock/Cargo.toml
+
+# ROM_EXT signer vendored in dependencies
+sw/host/rom_ext_image_signer/vendored_dependencies
