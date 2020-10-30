@@ -2,6 +2,5 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-subdir('vendor')
-subdir('spiflash')
-subdir('rom_ext_image_tools')
+# DO NOT REMOVE THE LINE BELOW, IT IS USED FOR VENDORING PURPOSES
+# ROM_EXT_SIGNER_VENDORED_DEPENDENCIES_SETUP
