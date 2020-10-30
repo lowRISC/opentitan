@@ -40,7 +40,7 @@ interface push_pull_if #(parameter int DataWidth = 32) (input wire clk, input wi
   clocking host_push_cb @(posedge clk);
     input   ready;
     output  valid_int;
-    output  data;
+    output  data_int;
   endclocking
 
   clocking device_push_cb @(posedge clk);
@@ -58,7 +58,7 @@ interface push_pull_if #(parameter int DataWidth = 32) (input wire clk, input wi
   clocking device_pull_cb @(posedge clk);
     input   req;
     output  ack_int;
-    output  data;
+    output  data_int;
   endclocking
 
   clocking mon_cb @(posedge clk);

@@ -67,12 +67,12 @@ class push_pull_device_driver #(parameter int DataWidth = 32) extends push_pull_
     end
     if (!in_reset) begin
       `PULL_DRIVER.ack_int  <= 1'b1;
-      `PULL_DRIVER.data     <= req.data;
+      `PULL_DRIVER.data_int <= req.data;
     end
     @(`PULL_DRIVER);
     if (!in_reset) begin
       `PULL_DRIVER.ack_int  <= 1'b0;
-      `PULL_DRIVER.data     <= 'x;
+      `PULL_DRIVER.data_int <= 'x;
     end
   endtask
 
