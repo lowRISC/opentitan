@@ -5,12 +5,12 @@
 {
     name:               "otp_ctrl",
     design_spec:        "hw/ip/otp_ctrl/doc",
-    dv_plan:            "",
+    dv_plan:            "hw/ip/otp_ctrl/doc/dv_plan",
     hw_checklist:       "hw/ip/otp_ctrl/doc/checklist",
     sw_checklist:       ""
     version:            "0.1",
     life_stage:         "L1",
     design_stage:       "D1",
-    verification_stage: "V0",
+    verification_stage: "V1",
     notes:              "",
 }
