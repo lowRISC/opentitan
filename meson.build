@@ -5,7 +5,7 @@
 project(
   'opentitan', 'c', 'cpp',
   version: '0.1',
-  meson_version: '>=0.51.0', # Matches version in python-requirements.txt
+  meson_version: '>=0.53.0', # Matches version in python-requirements.txt
   default_options: [
     'c_std=c11',
     'build.c_std=c11',

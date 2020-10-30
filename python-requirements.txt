@@ -10,11 +10,7 @@ ipyxact >= 0.2.4
 isort
 livereload
 mako
-# Meson 0.53.0 broke compatibility with Python 3.5.2, see
-# https://github.com/lowRISC/opentitan/issues/1288 for details.
-# Meson 0.54.0+ requires ninja 1.7+, which isn't available by default on
-# Ubuntu 16.04.
-meson >= 0.51.0, != 0.53.0, <0.54.0 # minimum matches version in meson.build
+meson >= 0.53.0, <= 0.54 # minimum matches version in meson.build
 mistletoe>=0.7.2
 premailer
 pyelftools
