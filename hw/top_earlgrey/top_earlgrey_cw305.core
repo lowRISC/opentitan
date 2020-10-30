@@ -22,7 +22,22 @@ filesets:
       - data/clocks.xdc
     file_type: xdc
 
+  files_tcl:
+    files:
+      - util/vivado_setup_hooks.tcl: { file_type: tclSource }
+      # File copied by fusesoc into the workroot (the file containing the
+      # .eda.yml file), and referenced from vivado_setup_hooks.tcl
+      - util/vivado_hook_synth_design_pre.tcl: { file_type: user, copyto: vivado_hook_synth_design_pre.tcl }
+      - util/vivado_hook_write_bitstream_pre.tcl: { file_type: user, copyto: vivado_hook_write_bitstream_pre.tcl }
+      - util/vivado_hook_opt_design_post.tcl: { file_type: user, copyto: vivado_hook_opt_design_post.tcl }
+
 parameters:
+  # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
+  # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
+  # --BootRomInitFile=$PWD/build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem
+  # XXX: The VMEM file should be added to the sources of the Vivado project to
+  # make the Vivado dependency tracking work. However this requires changes to
+  # fusesoc first.
   BootRomInitFile:
     datatype: str
     description: Boot ROM initialization file in 32 bit vmem hex format
@@ -45,6 +60,7 @@ targets:
     filesets:
       - files_rtl_cw305
       - files_constraints
+      - files_tcl
     toplevel: top_earlgrey_cw305
     parameters:
       - BootRomInitFile
