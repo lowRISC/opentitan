@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/flash_ctrl.h"
 
-
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -52,7 +51,7 @@ int flash_check_empty(void) {
   uint32_t *p = (uint32_t *)FLASH_MEM_BASE_ADDR;
   // TODO: Update range to cover entire flash. Limited now to one bank while
   // we debu initialization.
-  for (; p < (uint32_t *)(FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ);) {
+  for (; p < (uint32_t *)(FLASH_MEM_BASE_ADDR + flash_get_bank_size());) {
     mask &= *p++;
     mask &= *p++;
     mask &= *p++;
@@ -74,7 +73,7 @@ int flash_bank_erase(bank_index_t idx) {
   // TODO: Add timeout conditions and add error codes.
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_ADDR_REG_OFFSET) =
       (idx == FLASH_BANK_0) ? FLASH_MEM_BASE_ADDR
-                            : (FLASH_MEM_BASE_ADDR + FLASH_BANK_SZ);
+                            : (FLASH_MEM_BASE_ADDR + flash_get_bank_size());
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_CONTROL_REG_OFFSET) =
       (FLASH_ERASE << FLASH_CTRL_CONTROL_OP_OFFSET |
        FLASH_BANK_ERASE << FLASH_CTRL_CONTROL_ERASE_SEL |
@@ -179,7 +178,7 @@ void flash_cfg_region(const mp_region_t *region_cfg) {
             << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_0 |
         0x1 << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0;
 
-    bank_sel = region_cfg->base / FLASH_PAGES_PER_BANK;
+    bank_sel = region_cfg->base / flash_get_pages_per_bank();
     if (bank_sel == FLASH_BANK_0) {
       REG32(FLASH_CTRL0_BASE_ADDR +
             FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_OFFSET +
@@ -191,6 +190,18 @@ void flash_cfg_region(const mp_region_t *region_cfg) {
     }
   }
 }
+
+uint32_t flash_get_banks() { return FLASH_CTRL_PARAM_REGNUMBANKS; }
+
+uint32_t flash_get_pages_per_bank() { return FLASH_CTRL_PARAM_REGPAGESPERBANK; }
+
+uint32_t flash_get_words_per_page() { return FLASH_CTRL_PARAM_WORDSPERPAGE; }
+
+uint32_t flash_get_bank_size() { return FLASH_CTRL_PARAM_BYTESPERBANK; }
+
+uint32_t flash_get_page_size() { return FLASH_CTRL_PARAM_BYTESPERPAGE; }
+
+uint32_t flash_get_word_size() { return FLASH_CTRL_PARAM_BYTESPERWORD; }
 
 void flash_write_scratch_reg(uint32_t value) {
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_SCRATCH_REG_OFFSET) = value;
