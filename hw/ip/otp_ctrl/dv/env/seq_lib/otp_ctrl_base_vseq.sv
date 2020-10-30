@@ -37,6 +37,16 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     cfg.mem_bkdr_vif.clear_mem();
   endtask
 
+  // some registers won't set to default value until otp_init is done
+  virtual task read_and_check_all_csrs_after_reset();
+    // drive pwr_otp_req pin
+    cfg.pwr_otp_vif.drive_pin(0, 1);
+    // drive dft_en pins to access the test_access memory
+    cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::On);
+    wait(cfg.pwr_otp_vif.pins[2] == 1);
+    super.read_and_check_all_csrs_after_reset();
+  endtask
+
   // this task triggers an OTP write sequence via the DAI interface
   virtual task dai_wr(bit [TL_DW-1:0] addr,
                       bit [TL_DW-1:0] wdata0,
