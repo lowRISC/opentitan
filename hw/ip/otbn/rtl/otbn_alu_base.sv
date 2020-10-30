@@ -25,7 +25,7 @@ module otbn_alu_base
 
   logic [32:0] adder_op_a, adder_op_b;
   logic        adder_op_b_negate;
-  logic [33:0] adder_result;
+  logic [32:0] adder_result;
 
   logic [31:0] and_result;
   logic [31:0] or_result;
@@ -112,4 +112,22 @@ module otbn_alu_base
   assign is_equal = comparison_i.operand_a == comparison_i.operand_b;
 
   assign comparison_result_o = (comparison_i.op == ComparisonOpBaseEq) ? is_equal : ~is_equal;
+
+  // The bottom bit of adder_result is discarded. It simply corresponds to the carry in used to produce
+  // twos completement subtraction from an addition.
+  logic unused_adder_result_bit;
+
+  // The top bit of shift_out is discarded. shift_in contains an extra bit to deal with sign
+  // extension which isn't needed in the shift_out result.
+  logic unused_shift_out_result_bit;
+  assign unused_shift_out_result_bit = shift_out[32];
+
+  assign unused_adder_result_bit = adder_result[0];
+
+  // clk_i, rst_ni are only used by assertions
+  logic unused_clk;
+  logic unused_rst_n;
+
+  assign unused_clk = clk_i;
+  assign unused_rst_n = rst_ni;
 endmodule

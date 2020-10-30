@@ -387,4 +387,9 @@ module otbn_core
     .ispr_acc_wr_en_i   (ispr_acc_wr_en)
   );
 
+  logic unused_insn_illegal;
+
+  // TODO: Implement error handling
+  assign unused_insn_illegal = insn_illegal;
+
 endmodule

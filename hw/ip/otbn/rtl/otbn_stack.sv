@@ -38,7 +38,6 @@ module otbn_stack
   logic [StackWidth-1:0]  stack_storage [StackDepth];
   logic [StackDepthW:0]   stack_wr_ptr_q, stack_wr_ptr_d;
   logic [StackDepthW-1:0] stack_rd_ptr;
-  logic                   stack_wr_en;
 
   logic stack_empty;
   logic stack_full;

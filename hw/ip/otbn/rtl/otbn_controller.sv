@@ -526,4 +526,17 @@ module otbn_controller
   assign lsu_addr_o         = alu_base_operation_result_i[DmemAddrWidth-1:0];
   assign lsu_base_wdata_o   = rf_base_rd_data_b_i;
   assign lsu_bignum_wdata_o = rf_bignum_rd_data_b_i;
+
+  // RF Read enables for bignum RF are unused for now. Future security hardening work may make use
+  // of them.
+  logic unused_rf_ren_a_bignum;
+  logic unused_rf_ren_b_bignum;
+
+  assign unused_rf_ren_a_bignum = insn_dec_bignum_i.rf_ren_a;
+  assign unused_rf_ren_b_bignum = insn_dec_bignum_i.rf_ren_b;
+
+  // TODO: Implement error handling
+  logic [1:0] unused_lsu_rdata_err;
+  assign unused_lsu_rdata_err = lsu_rdata_err_i;
+
 endmodule

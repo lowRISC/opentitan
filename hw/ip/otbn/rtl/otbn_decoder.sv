@@ -899,6 +899,13 @@ module otbn_decoder
 
   end
 
+  // clk_i and rst_ni are only used by assertions
+  logic unused_clk;
+  logic unused_rst_n;
+
+  assign unused_clk = clk_i;
+  assign unused_rst_n = rst_ni;
+
   ////////////////
   // Assertions //
   ////////////////

@@ -58,7 +58,16 @@ module otbn_loop_controller
 
   // Determine end address of incoming loop from LOOP instruction (valid on loop_start_i and
   // specified by loop_bodysize_i and loop_iterations_i).
-  assign new_loop_end_addr = insn_addr_i + {loop_bodysize_i[ImemAddrWidth-3:0], 2'b00};
+  if (ImemAddrWidth < 14) begin : g_new_loop_end_addr_small_imem
+    assign new_loop_end_addr = insn_addr_i + {loop_bodysize_i[ImemAddrWidth-3:0], 2'b00};
+
+    // ISA has a fixed 12 bits for loop_bodysize. When IMEM size is less than 16 kB (ImemAddrWidth
+    // < 14) some of these bits are ignored as a loop body cannot be greater than the IMEM size.
+    logic [11:ImemAddrWidth-2] unused_loop_bodysize_bits;
+    assign unused_loop_bodysize_bits = loop_bodysize_i[11:ImemAddrWidth-2];
+  end else begin : g_new_loop_end_addr_big_imem
+    assign new_loop_end_addr = insn_addr_i + {loop_bodysize_i, 2'b00};
+  end
 
   assign new_loop = '{
     loop_start: next_insn_addr_i,
@@ -140,4 +149,8 @@ module otbn_loop_controller
     .top_data_o  (next_loop),
     .top_valid_o (next_loop_valid)
   );
+
+  // TODO: deal with loop stack overflow
+  logic unused_loop_stack_full;
+  assign unused_loop_stack_full = loop_stack_full;
 endmodule

@@ -48,5 +48,11 @@ module otbn_instruction_fetch
 
   // TODO: Need to handle imem_rerror somewhere, which need to be turned into alerts. Could be
   // handled either here or somewhere more up in the hierarchy.
+  logic [1:0] unused_imem_rerror;
+  assign unused_imem_rerror = imem_rerror_i;
 
+  // Nothing is reset in this module so rst_ni is unused. Leaving it in so adding resettable flops
+  // (or an assertion which will use the reset) is straight forward.
+  logic unused_rst_n;
+  assign unused_rst_n = rst_ni;
 endmodule
