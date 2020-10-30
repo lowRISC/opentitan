@@ -18,7 +18,10 @@ class aes_message_item extends uvm_sequence_item;
   int    message_len_min      = 1;
   // percentage of configuration errors
   int    config_error_pct     = 20;
-  // errors enabled
+  // errors enabled mask
+  // 001: configuration errors
+  // 010: malicous injection
+  // 100: random resets
   bit [2:0]   error_types     = 3'b000;
   // configuraiton errors enabled
   bit    config_err           = 0;
@@ -153,8 +156,6 @@ class aes_message_item extends uvm_sequence_item;
      }
    }
 
-
-
   constraint c_has_config_error {
     if (error_types[0])
       {
@@ -177,7 +178,6 @@ class aes_message_item extends uvm_sequence_item;
                   manual_operation dist { 0:/ (100 - manual_operation_pct),
                                           1:/ manual_operation_pct };
    };
-
 
 
   function void add_data_item(aes_seq_item item);
@@ -296,7 +296,6 @@ class aes_message_item extends uvm_sequence_item;
     fixed_data_en    = rhs_.fixed_data_en;
     fixed_data       = rhs_.fixed_data;
     fixed_iv_en      = rhs_.fixed_iv_en;
-
 
   endfunction // copy
 endclass
