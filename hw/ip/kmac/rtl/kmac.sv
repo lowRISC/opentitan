@@ -75,6 +75,10 @@ module kmac
   // Sequence: start --> process(multiple) --> get absorbed event --> {run -->} done
   logic sha3_start, sha3_run, sha3_done, sha3_absorbed;
 
+  // KeyMgr interface logic generates event_absorbed from sha3_absorbed.
+  // It is active only if SW initiates the hashing engine.
+  logic event_absorbed;
+
   kmac_pkg::sha3_st_e sha3_fsm;
 
   // Prefix: kmac_pkg defines Prefix based on N size and S size.
@@ -92,6 +96,11 @@ module kmac
   // depends on the configuration.
   logic state_valid;
   logic [kmac_pkg::StateW-1:0] state [Share];
+
+  // state is de-muxed in keymgr interface logic.
+  // the output from keymgr logic goes into staterd module to be visible to SW
+  logic reg_state_valid;
+  logic [kmac_pkg::StateW-1:0] reg_state [Share];
 
   // SHA3 Entropy interface
   logic sha3_rand_valid, sha3_rand_consumed;
@@ -134,6 +143,12 @@ module kmac
   logic [kmac_pkg::MsgWidth-1:0] sw_msg_mask ;
   logic                          sw_msg_ready;
 
+  // KeyMgr interface to MSG_FIFO
+  logic                          mux2fifo_valid;
+  logic [kmac_pkg::MsgWidth-1:0] mux2fifo_data ;
+  logic [kmac_pkg::MsgWidth-1:0] mux2fifo_mask ;
+  logic                          mux2fifo_ready;
+
   // KMAC to SHA3 core
   logic                          msg_valid       ;
   logic [kmac_pkg::MsgWidth-1:0] msg_data [Share];
@@ -148,11 +163,18 @@ module kmac
 
 
   // Secret Key signals
+  logic [MaxKeyLen-1:0] sw_key_data [Share];
+  key_len_e             sw_key_len;
   logic [MaxKeyLen-1:0] key_data [Share];
   key_len_e             key_len;
 
-  // KeyMgr interface control
-  logic keymgr_en;
+  // Command
+  // sw_cmd is the command written by SW
+  // kmac_cmd is generated in KeyMgr interface.
+  // If SW initiates the KMAC/SHA3, kmac_cmd represents SW command,
+  // if KeyMgr drives the data, kmac_cmd is controled in the state machine
+  // in KeyMgr interface logic.
+  kmac_cmd_e sw_cmd, kmac_cmd;
 
   // SHA3 Error response
   err_t sha3_err;
@@ -170,37 +192,39 @@ module kmac
 
   // Command signals
   // TODO: Make the entire logic to use enum rather than signal
-  kmac_cmd_e cmd;
-  assign cmd = kmac_cmd_e'(reg2hw.cmd.q);
-  `ASSERT_KNOWN(KmacCmd_A, cmd)
+  assign sw_cmd = (reg2hw.cmd.qe) ? kmac_cmd_e'(reg2hw.cmd.q) : CmdNone;
+  `ASSERT_KNOWN(KmacCmd_A, sw_cmd)
   always_comb begin
     sha3_start = 1'b 0;
     sha3_run = 1'b 0;
     sha3_done = 1'b 0;
     reg2msgfifo_process = 1'b 0;
-    if (reg2hw.cmd.qe) begin
-      unique case (cmd)
-        CmdStart: begin
-          sha3_start = 1'b 1;
-        end
 
-        CmdProcess: begin
-          reg2msgfifo_process = 1'b 1;
-        end
+    unique case (kmac_cmd)
+      CmdStart: begin
+        sha3_start = 1'b 1;
+      end
 
-        CmdManualRun: begin
-          sha3_run = 1'b 1;
-        end
+      CmdProcess: begin
+        reg2msgfifo_process = 1'b 1;
+      end
 
-        CmdDone: begin
-          sha3_done = 1'b 1;
-        end
+      CmdManualRun: begin
+        sha3_run = 1'b 1;
+      end
 
-        default: begin
-          // TODO: Raise an error here
-        end
-      endcase
-    end // if reg2hw.cmd.qe
+      CmdDone: begin
+        sha3_done = 1'b 1;
+      end
+
+      CmdNone: begin
+        // inactive state
+      end
+
+      default: begin
+        // TODO: Raise an error here
+      end
+    endcase
   end
 
   // Status register ==========================================================
@@ -231,11 +255,11 @@ module kmac
   // writes to KEY_SHARE0 , KEY_SHARE1 registers.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      key_data[0] <= '0;
+      sw_key_data[0] <= '0;
     end else if (engine_stable) begin
       for (int j = 0 ; j < MaxKeyLen/32 ; j++) begin
         if (reg2hw.key_share0[j].qe) begin
-          key_data[0][32*j+:32] <= reg2hw.key_share0[j].q;
+          sw_key_data[0][32*j+:32] <= reg2hw.key_share0[j].q;
         end
       end // for j
     end // else if engine_stable
@@ -244,11 +268,11 @@ module kmac
   if (EnMasking) begin : gen_key_masked
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        key_data[1] <= '0;
+        sw_key_data[1] <= '0;
       end else if (engine_stable) begin
         for (int i = 0 ; i < MaxKeyLen/32 ; i++) begin
           if (reg2hw.key_share1[i].qe) begin
-            key_data[1][32*i+:32] <= reg2hw.key_share1[i].q;
+            sw_key_data[1][32*i+:32] <= reg2hw.key_share1[i].q;
           end
         end // for i
       end // else if engine_stable
@@ -258,16 +282,7 @@ module kmac
     assign unused_keyshare1 = ^reg2hw.key_share1;
   end
 
-  assign key_len = key_len_e'(reg2hw.key_len.q);
-
-  // TODO: Implement KeyMgr interface module. As of now, tying them to default value
-  assign keymgr_kdf_o = '{
-    ready: 1'b 0,
-    digest_share0: '0,
-    digest_share1: '0,
-    done: 1'b 0,
-    error: 1'b 0
-  };
+  assign sw_key_len = key_len_e'(reg2hw.key_len.q);
 
   ///////////////
   // Interrupt //
@@ -279,7 +294,7 @@ module kmac
   prim_intr_hw #(.Width(1)) intr_kmac_done (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (sha3_absorbed),
+    .event_intr_i           (event_absorbed),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.kmac_done.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.kmac_done.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.kmac_done.qe),
@@ -464,6 +479,61 @@ module kmac
   end
   assign tlram_gnt    = sw_msg_ready ;
 
+  // KeyMgr Mux/Demux
+  kmac_keymgr #(
+    .EnMasking(EnMasking)
+  ) u_keymgr_intf (
+    .clk_i,
+    .rst_ni,
+
+    .reg_key_data_i (sw_key_data),
+    .reg_key_len_i  (sw_key_len),
+
+    // data from tl_adapter
+    .sw_valid_i (sw_msg_valid),
+    .sw_data_i  (sw_msg_data),
+    .sw_mask_i  (sw_msg_mask),
+    .sw_ready_o (sw_msg_ready),
+
+    // KeyMgr sideloaded key interface
+    .keymgr_key_i,
+
+    // KeyMgr data in / digest out interface
+    .keymgr_data_i (keymgr_kdf_i),
+    .keymgr_data_o (keymgr_kdf_o),
+
+    // Secret Key output to KMAC Core
+    .key_data_o (key_data),
+    .key_len_o  (key_len),
+
+    // to MSG_FIFO
+    .kmac_valid_o (mux2fifo_valid),
+    .kmac_data_o  (mux2fifo_data),
+    .kmac_mask_o  (mux2fifo_mask),
+    .kmac_ready_i (mux2fifo_ready),
+
+    // Keccak state from SHA3 core
+    .keccak_state_valid_i (state_valid),
+    .keccak_state_i       (state),
+
+    // to STATE TL Window
+    .reg_state_valid_o    (reg_state_valid),
+    .reg_state_o          (reg_state),
+
+    // Configuration: Sideloaded Key
+    .keymgr_key_en_i      (reg2hw.cfg.sideload.q),
+
+    .absorbed_i (sha3_absorbed), // from SHA3
+    .absorbed_o (event_absorbed), // to SW
+
+    .error_i  (sha3_err.valid),
+
+    // Command interface
+    .sw_cmd_i (sw_cmd),
+    .cmd_o    (kmac_cmd)
+
+  );
+
   // Message FIFO
   kmac_msgfifo #(
     .OutWidth (kmac_pkg::MsgWidth),
@@ -472,10 +542,10 @@ module kmac
     .clk_i,
     .rst_ni,
 
-    .fifo_valid_i (sw_msg_valid),
-    .fifo_data_i  (sw_msg_data),
-    .fifo_mask_i  (sw_msg_mask),
-    .fifo_ready_o (sw_msg_ready),
+    .fifo_valid_i (mux2fifo_valid),
+    .fifo_data_i  (mux2fifo_data),
+    .fifo_mask_i  (mux2fifo_mask),
+    .fifo_ready_o (mux2fifo_ready),
 
     .msg_valid_o (msgfifo_valid),
     .msg_data_o  (msgfifo_data[0]),
