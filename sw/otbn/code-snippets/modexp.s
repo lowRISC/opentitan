@@ -43,7 +43,7 @@
  * clobbered registers: w0, w1, w29
  * clobbered flag groups: FG0
  */
-d0inv:
+m0inv:
   /* w0 keeps track of loop iterations in one-hot encoding, i.e.
      w0 = 2^i in the loop body below and initialized here with w0 = 1
      It is used for both the comparison in step 4 of [Dus] and the
@@ -124,7 +124,7 @@ d0inv:
  * clobbered registers: x8, x10, x11, x16, w2, w3, w4, w5 to w[5+N-1]
  * clobbered flag groups: FG0
  */
-selcxSub:
+cond_sub_mod:
 
   /* setup pointers */
   li         x8, 5
@@ -179,7 +179,7 @@ selcxSub:
 *                      w0, w2, w3, w4, w5 to w20 depending on N
 * clobbered flag groups: FG0, FG1
 */
-computeRR:
+compute_rr:
   /* prepare all-zero reg */
   bn.xor    w31, w31, w31
 
@@ -219,7 +219,7 @@ computeRR:
   /* compute R-M
      since R = 2^(N*w), this can be computed as R-M = unsigned(0-M) */
   bn.sub    w3, w31, w0, FG1
-  jal       x1, selcxSub
+  jal       x1, cond_sub_mod
 
   /* Compute R^2 mod M = R*2^(N*w) mod M.
      => R^2 mod M can be computed by performing N*w duplications of R.
@@ -250,7 +250,7 @@ computeRR:
        sufficient, since (in case of an overflow) we can write
        2*Y as 2^(N*w) + X with M > X >= 0.
        Then, 2*Y - M = 2^(N*w) + X - M = X + unsigned(0-M) */
-    jal       x1, selcxSub
+    jal       x1, cond_sub_mod
 
     /* reset pointer to 1st limb of bigint in regfile */
     li        x8, 5
@@ -267,7 +267,7 @@ computeRR:
       bn.lid    x10, 0(x16++)
       bn.movr   x11, x8++
       bn.cmpb   w3, w2, FG1
-    jal       x1, selcxSub
+    jal       x1, cond_sub_mod
 
     li        x0, 0
 
@@ -296,7 +296,7 @@ computeRR:
  * clobbered registers: w26, w27
  * clobbered flag groups: none
  */
-dmXd0:
+mul256_w30xw25:
   bn.mulqacc.z          w30.0, w25.0,  0
   bn.mulqacc            w30.1, w25.0, 64
   bn.mulqacc.so  w27.L, w30.0, w25.1, 64
@@ -331,7 +331,7 @@ dmXd0:
  * clobbered registers: w26, w27
  * clobbered flag groups: none
  */
-dmXa:
+mul256_w30xw2:
   bn.mulqacc.z          w30.0, w2.0,  0
   bn.mulqacc            w30.1, w2.0, 64
   bn.mulqacc.so  w27.L, w30.0, w2.1, 64
@@ -379,7 +379,7 @@ dmXa:
  * clobbered registers: x8, x16, w30, w24, w29, w30, w[x8] to w[x8+N-1], w29
  * clobbered Flag Groups: FG0
  */
-mma_sub_cx:
+cond_sub_to_reg:
 
   /* iterate over all limbs for conditional limb-wise subtraction */
   loop      x30, 6
@@ -438,7 +438,7 @@ mma_sub_cx:
  *                      w24, w25, w26, w27, w28, w29, w30, w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
-mma:
+mont_loop:
 
   /* pointers to temp. wregs */
   li        x12, 30
@@ -455,7 +455,7 @@ mma:
 
   /* This is x_i*y_0 in step 2.1 of HAC 14.36 */
   /* [w26, w27] = w30*w2 = y[0]*x_i */
-  jal x1,   dmXa
+  jal x1,   mul256_w30xw2
 
   /* w24 = w4 = A[0] */
   bn.movr   x13, x8++
@@ -471,7 +471,7 @@ mma:
 
   /* multiply by m0', this concludes Step 2.1 of HAC 14.36 */
   /* [_, u_i] = [w26, w27] = w30*w25 = (y[0]*x_i + A[0])*m0'*/
-  jal       x1, dmXd0
+  jal       x1, mul256_w30xw25
 
 
   /* With the computation of u_i, the compuations in a cycle 0 of the loop
@@ -490,7 +490,7 @@ mma:
   bn.lid    x12, 0(x16++)
 
   /* [w26, w27] = w30*w25 = m[0]*u_i*/
-  jal x1,   dmXd0
+  jal x1,   mul256_w30xw25
 
   /* [w28, w27] = [w26, w27] + w24 = m[0]*u_i + (y[0]*x_i + A[0] mod b) */
   bn.add    w27, w27, w24
@@ -515,7 +515,7 @@ mma:
 
     /* load limb of y (operand a) and mult. with x_i: [w26, w27] <= y[j]*x_i */
     bn.lid    x12, 0(x19++)
-    jal       x1, dmXa
+    jal       x1, mul256_w30xw2
     /* add limb of buffer: [w26, w27] <= [w26,w27] + w24 = y[j]*x_i + A[j] */
     bn.movr   x13, x8++
     bn.add    w27, w27, w24
@@ -533,7 +533,7 @@ mma:
     /* load limb m[j] of modulus and multiply with u_i:
        [w26, w27] = w30*w25 = m[j+1]*u_i */
     bn.lid    x12, 0(x16++)
-    jal       x1, dmXd0
+    jal       x1, mul256_w30xw25
     /* add result from first step
        [w26, w27] <= [w26,w27] + w24 = m[j+1]*u_i + a_tmp */
     bn.add    w27, w27, w24
@@ -561,7 +561,7 @@ mma:
 
   /* This replaces Step 3 of HAC 14.36 and performs conditional constant-time
      subtraction of the modulus from the output buffer  */
-  jal       x1, mma_sub_cx
+  jal       x1, cond_sub_to_reg
   nop
 
   ret
@@ -609,7 +609,7 @@ mma:
  * clobbered registers: x8 to x11, x16 to x31
  * clobbered Flag Groups: none
  */
-setupPtrs:
+setup_ptrs:
   lw        x16, 0(x0)
   lw        x17, 4(x0)
   lw        x18, 8(x0)
@@ -642,7 +642,7 @@ setupPtrs:
  *
  * This implements the limb-by-limb interleadved Montgomory Modular
  * Multiplication Algorithm. This is only a wrapper around the main loop body.
- * For algorithmic implementation details see the mma subroutine.
+ * For algorithmic implementation details see the mont_loop subroutine.
  *
  * Flags: The states of both FG0 and FG1 depend on intermediate values and are
  *        not usable after return.
@@ -664,14 +664,14 @@ setupPtrs:
  *                      w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
-mulx:
+montmul:
 
   /* load pointers from dmem[0] to w0*/
   li        x3, 0
   bn.lid    x3, 0(x0)
 
   /* prepare pointers and other parameters */
-  jal       x1, setupPtrs
+  jal       x1, setup_ptrs
 
   /* load Montgomery constant: w3 = dmem[x17] = dmem[dptr_m0d] = m0'*/
   bn.lid    x9, 0(x17)
@@ -696,7 +696,7 @@ mulx:
     add       x6, x20, x0
 
     /* Main loop body of Montgomory Multiplication algorithm */
-    jal       x1, mma
+    jal       x1, mont_loop
 
     /* restore regs */
     add       x16, x4, x0
@@ -745,7 +745,7 @@ mulx:
  * clobbered registers: x8, x16, x21, w2, w3
  * clobbered Flag Groups: FG0
  */
-mm1_sub_cx:
+cond_sub_to_dmem:
   /* iterate over all limbs for conditional limb-wise subtraction */
   loop      x30, 5
     /* load limb of subtrahend (input B): w3 = dmem[x16+i] */
@@ -775,7 +775,7 @@ mm1_sub_cx:
  * This implements the limb-by-limb interleadved Montgomory Modular
  * Multiplication Algorithm, with one operand fixed to 1. This is only a
  * wrapper around the main loop body. For algorithmic implementation details
- * see the mma subroutine.
+ * see the mont_loop subroutine.
  *
  * Flags: The states of both FG0 and FG1 depend on intermediate values and are
  *        not usable after return.
@@ -797,7 +797,7 @@ mm1_sub_cx:
  *                      w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
-mul1_exp:
+montmul_mul1:
   /* load Montgomery constant: w3 = dmem[x17] = dmem[dptr_m0d] = m0' */
   bn.lid    x9, 0(x17)
 
@@ -823,7 +823,7 @@ mul1_exp:
 
     /* Main loop body of Montgomory Multiplication algorithm */
     /* 1[i]*A */
-    jal       x1, mma
+    jal       x1, mont_loop
 
     /* all subsequent limbs of operand B are zero since B=1 */
     bn.mov    w2, w31
@@ -859,7 +859,7 @@ mul1_exp:
 
   /* conditionally subtract Modulus from buffer and store result in
      dmem[x21] to dmem[x21+N] */
-  jal       x1, mm1_sub_cx
+  jal       x1, cond_sub_to_dmem
 
   /* restore  dmem pointers for operand A and modulus */
   addi      x16, x6, 0
@@ -877,7 +877,7 @@ mul1_exp:
  * This implements the limb-by-limb interleadved Montgomory Modular
  * Multiplication Algorithm, with one operand fixed to 1. This is only a
  * wrapper around the main loop body. For algorithmic implementation details
- * see the mma subroutine.
+ * see the mont_loop subroutine.
  *
  * Flags: The states of both FG0 and FG1 depend on intermediate values and are
  *        not usable after return.
@@ -904,10 +904,10 @@ mul1:
   bn.lid    x3, 0(x0)
 
   /* prepare pointers and other parameters */
-  jal       x1, setupPtrs
+  jal       x1, setup_ptrs
 
   /* call montmul(1,A) algorithm */
-  jal       x1, mul1_exp
+  jal       x1, montmul_mul1
 
   ret
 
@@ -919,7 +919,7 @@ mul1:
  *
  * This implements the limb-by-limb interleadved Montgomory Modular
  * Multiplication Algorithm. This is only a wrapper around the main loop body.
- * For algorithmic implementation details see the mma subroutine.
+ * For algorithmic implementation details see the mont_loop subroutine.
  *
  * This variant loads the 3rd descriptor (dmem cell 2) and stores the result
  * in dmem. It is intended to be used as squaring primitive in a
@@ -948,7 +948,7 @@ mul1:
  *                      w2, w3, w24 to w30, w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
-sqrx_exp:
+montmul_sqr:
   /* load pointers from 2nd dmem descriptor (cell 1) */
   lw        x16, 32(x0)
   lw        x17, 36(x0)
@@ -982,7 +982,7 @@ sqrx_exp:
     addi      x7, x19, 0
 
     /* Main loop body of Montgomory Multiplication algorithm */
-    jal       x1, mma
+    jal       x1, mont_loop
 
     /* restore regs */
     addi      x20, x5, 0
@@ -1014,7 +1014,7 @@ sqrx_exp:
  *
  * This implements the limb-by-limb interleadved Montgomory Modular
  * Multiplication Algorithm. This is only a wrapper around the main loop body.
- * For algorithmic implementation details see the mma subroutine.
+ * For algorithmic implementation details see the mont_loop subroutine.
  *
  * This variant loads the 2nd descriptor (dmem cell 1) and stores the result
  * in the regfile. It is intended to be used as multiplication primitive in a
@@ -1043,7 +1043,7 @@ sqrx_exp:
  *                      w2, w3, w24 to w30, w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
-mulx_exp:
+montmul_mul:
   /* load pointers from 3rd dmem descriptor (cell 2) */
   lw        x16, 64(x0)
   lw        x17, 68(x0)
@@ -1080,7 +1080,7 @@ mulx_exp:
     addi      x7, x19, 0
 
     /* Main loop body of Montgomory Multiplication algorithm */
-    jal       x1, mma
+    jal       x1, mont_loop
 
     /* restore regs */
     addi      x20, x5, 0
@@ -1114,7 +1114,7 @@ mulx_exp:
  * clobbered registers: x8, x21, w0, w2
  * clobbered Flag Groups: none
  */
-selOutOrC:
+sel_sqr_or_sqrmul:
   /* iterate over all limbs */
   loop      x30, 6
 
@@ -1146,7 +1146,7 @@ selOutOrC:
  * exponent both the squared only and the squared with multiply results are
  * computed but one result is discarded.
  * Computation is carried out in the Montgomery domain, by using the primitives
- * mulx, sqrx_exp, mulx_exp and mul1_exp.
+ * montmul, montmul_sqr, montmul_mul and montmul_mul1.
  * The squared Montgomery modulus RR and the Montgomery constant m0' have to
  * be precomputed and provided at the appropriate locations in dmem.
  *
@@ -1209,7 +1209,7 @@ selOutOrC:
  */
 modexp:
   /* convert to montgomery domain montmul(A,RR) */
-  jal       x1, mulx
+  jal       x1, montmul
 
   /* load pointers from 4th descriptor (cell 3) */
   lw        x16, 96(x0)
@@ -1241,10 +1241,10 @@ modexp:
   /* iterate over all bits of bigint */
   loop      x24, 17
     /* square */
-    jal       x1, sqrx_exp
+    jal       x1, montmul_sqr
 
     /* multiply */
-    jal       x1, mulx_exp
+    jal       x1, montmul_mul
 
     /* reload pointers */
     lw        x16, 96(x0)
@@ -1268,7 +1268,7 @@ modexp:
       bn.sid    x11, 0(x20++)
 
     /* select squared or squared+multiplied result */
-    jal       x1, selOutOrC
+    jal       x1, sel_sqr_or_sqrmul
 
     nop
 
@@ -1287,7 +1287,7 @@ modexp:
   lw        x23, 124(x0)
 
   /* convert back from montgomery domain */
-  jal       x1, mul1_exp
+  jal       x1, montmul_mul1
 
   ret
 
@@ -1364,7 +1364,7 @@ modexp:
 modexp_65537:
   /* convert to montgomery domain montmul(A,RR)
   in = montmul(A,RR) = C*R mod M */
-  jal       x1, mulx
+  jal       x1, montmul
 
   /* pointer to out buffer */
   lw        x21, 116(x0)
@@ -1386,10 +1386,10 @@ modexp_65537:
   /* 65537 = 0b10000000000000001
                ^ sqr + mult
     out = montmul(out,out)       */
-  jal       x1, sqrx_exp
+  jal       x1, montmul_sqr
 
   /* out = montmul(in,out)       */
-  jal       x1, mulx_exp
+  jal       x1, montmul_mul
 
   /* store multiplication result in output buffer */
   li        x8, 4
@@ -1402,13 +1402,13 @@ modexp_65537:
                 ^<< 16 x sqr >>^   */
   loopi      16, 2
     /* square: out = montmul(out, out) */
-    jal       x1, sqrx_exp
+    jal       x1, montmul_sqr
     nop
 
   /* 65537 = 0b10000000000000001
                           mult ^
      out = montmul(in,out)       */
-  jal       x1, mulx_exp
+  jal       x1, montmul_mul
 
   /* store multiplication result in output buffer */
   li        x8, 4
@@ -1423,7 +1423,7 @@ modexp_65537:
 
   /* convert back from montgomery domain */
   /* out = montmul(out,1) = out/R mod M  */
-  jal       x1, mul1_exp
+  jal       x1, montmul_mul1
 
   ret
 
@@ -1479,12 +1479,12 @@ modload:
   bn.lid   x8, 0(x16)
 
   /* Compute Montgomery constant */
-  jal      x1, d0inv
+  jal      x1, m0inv
 
   /* Store Montgomery constant in dmem */
   bn.sid   x9, 0(x17)
 
   /* Compute square of Montgomery modulus */
-  jal      x1, computeRR
+  jal      x1, compute_rr
 
   ret
