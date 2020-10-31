@@ -11,6 +11,7 @@
 .text
 .globl modexp_65537
 .globl modexp
+.globl modload
 
 /**
  * Precomputation of a constant m0' for Montgomery modular arithmetic
@@ -908,7 +909,7 @@ mul1:
   /* call montmul(1,A) algorithm */
   jal       x1, mul1_exp
 
-  ecall
+  ret
 
 
 /**
@@ -1288,7 +1289,7 @@ modexp:
   /* convert back from montgomery domain */
   jal       x1, mul1_exp
 
-  ecall
+  ret
 
 
 /**
@@ -1424,7 +1425,7 @@ modexp_65537:
   /* out = montmul(out,1) = out/R mod M  */
   jal       x1, mul1_exp
 
-  ecall
+  ret
 
 
 /**
@@ -1486,4 +1487,4 @@ modload:
   /* Compute square of Montgomery modulus */
   jal      x1, computeRR
 
-  ecall
+  ret
