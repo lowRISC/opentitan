@@ -16,6 +16,7 @@
  * w0). See comment at the end of the file for expected values.
  */
 run_rsa_1024_enc:
+  jal      x1, modload
   jal      x1, modexp_65537
   /* pointer to out buffer */
   lw        x21, 116(x0)
