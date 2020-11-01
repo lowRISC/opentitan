@@ -114,8 +114,8 @@ m0inv:
  *        return.
  *        FG1 is not modified in this subroutine.
  *
- * @param[in]  [dmem[3]:dmem[0]]: pointer to 1st limb of modulus M
- * @param[in]  w30: N, number of 256 bit limbs in modulus and bigint
+ * @param[in]  x16: dptr_m, pointer to 1st limb of modulus M
+ * @param[in]  x30: N, number of 256 bit limbs in modulus and bigint
  * @param[in]  w31: all-zero
  * @param[in]  FG1.C: s, selection flag
  * @param[out] [w[5+N-1]:w5]: new bigint value
@@ -130,7 +130,6 @@ cond_sub_mod:
   li         x8, 5
   li        x10, 3
   li        x11, 2
-  lw        x16, 0(x0)
 
   /* reset flags for FG0 */
   bn.add    w31, w31, w31
@@ -171,39 +170,31 @@ cond_sub_mod:
 * Flags: The states of both FG0 and FG1 depend on intermediate values and are
 *        not usable after return.
 *
-* @param[in]  w31: all-zero
+* @param[in]  x16: dptr_M, pointer to first limb of modulus in dmem
+* @param[in]  x18: dptr_RR: dmem pointer to first limb of output buffer for RR
 * @param[in]  x30: N, number of limbs
-* @param[out] dmem[dmem[8]]+N*32:dmem[dmem[8]]: computed RR
+* @param[in]  w31: all-zero
+* @param[out] dmem[x18+N*32:x18]: computed RR
 *
-* clobbered registers: x3, x8, x10, x11, x16 to x24
+* clobbered registers: x3, x8, x10, x11, x16, x18
 *                      w0, w2, w3, w4, w5 to w20 depending on N
 * clobbered flag groups: FG0, FG1
 */
 compute_rr:
-  /* prepare all-zero reg */
-  bn.xor    w31, w31, w31
+  /* save pointer to modulus */
+  addi      x22, x16, 0
 
   /* load dmem[0] to w0. This is just used to have a non-zero number
      available */
   li        x3, 0
   bn.lid    x3, 0(x0)
 
-  /* load dmem pointers from dmem[31..0] */
-  lw        x16, 0(x0)
-  lw        x17, 4(x0)
-  lw        x18, 8(x0)
-  lw        x19, 12(x0)
-  lw        x20, 16(x0)
-  lw        x21, 20(x0)
-  lw        x22, 24(x0)
-  lw        x23, 28(x0)
-
   /* zeroize w3 */
   bn.xor    w3, w3, w3
 
   /* compute full length of current bigint size in bits
-     N*w = x24 = N*256 = N*2^8 = x22 << 8 */
-  slli      x24, x22, 8
+     N*w = x24 = N*256 = N*2^8 = x30 << 8 */
+  slli      x24, x30, 8
 
   /* reg pointers */
   li        x8, 5
@@ -219,13 +210,14 @@ compute_rr:
   /* compute R-M
      since R = 2^(N*w), this can be computed as R-M = unsigned(0-M) */
   bn.sub    w3, w31, w0, FG1
+  addi      x16, x22, 0
   jal       x1, cond_sub_mod
 
   /* Compute R^2 mod M = R*2^(N*w) mod M.
      => R^2 mod M can be computed by performing N*w duplications of R.
      We directly perform a modulo reduction in each step such that the
      final result will already be reduced. */
-  loop      x24, 16
+  loop      x24, 18
     /* reset pointer */
     li        x8, 5
 
@@ -250,13 +242,14 @@ compute_rr:
        sufficient, since (in case of an overflow) we can write
        2*Y as 2^(N*w) + X with M > X >= 0.
        Then, 2*Y - M = 2^(N*w) + X - M = X + unsigned(0-M) */
+    addi      x16, x22, 0
     jal       x1, cond_sub_mod
 
     /* reset pointer to 1st limb of bigint in regfile */
     li        x8, 5
 
     /* reset pointer to modulus in dmem */
-    lw        x16, 0(x0)
+    addi      x16, x22, 0
 
     /* reset flags of FG1 */
     bn.sub    w3, w3, w3, FG1
@@ -267,6 +260,7 @@ compute_rr:
       bn.lid    x10, 0(x16++)
       bn.movr   x11, x8++
       bn.cmpb   w3, w2, FG1
+    addi      x16, x22, 0
     jal       x1, cond_sub_mod
 
     li        x0, 0
@@ -372,14 +366,16 @@ mul256_w30xw2:
  * @param[in]  x8: regfile pointer to first limb of minuend and result (C)
  * @param[in]  FG.C: s, subtraction flag, subtract if 1
  * @param[in]  x30: number of limbs
- * @param[in]  x12: pointer to temp reg, must be set to 30
- * @param[in]  x13: pointer to temp reg, must be set to 24
  * @param[in]  FG0.C: needs to be set to 0
  *
- * clobbered registers: x8, x16, w30, w24, w29, w30, w[x8] to w[x8+N-1], w29
+ * clobbered registers: x8, x16, w24, w29, w30, w[x8] to w[x8+N-1]
  * clobbered Flag Groups: FG0
  */
 cond_sub_to_reg:
+
+  /* load pointers to temp regs */
+  li        x12, 30
+  li        x13, 24
 
   /* iterate over all limbs for conditional limb-wise subtraction */
   loop      x30, 6
@@ -439,6 +435,8 @@ cond_sub_to_reg:
  * clobbered Flag Groups: FG0, FG1
  */
 mont_loop:
+  /* save pointer to modulus */
+  addi      x22, x16, 0
 
   /* pointers to temp. wregs */
   li        x12, 30
@@ -551,86 +549,17 @@ mont_loop:
   bn.addc   w24, w29, w28, FG1
   bn.movr   x10++, x13
 
-  /* restore clobbered pointers */
-  lw        x16, 0(x0)
-  lw        x19, 12(x0)
+  /* restore pointers */
+  addi      x16, x22, 0
   li        x8, 4
   li        x10, 4
-  li        x12, 30
-  li        x13, 24
 
   /* This replaces Step 3 of HAC 14.36 and performs conditional constant-time
      subtraction of the modulus from the output buffer  */
   jal       x1, cond_sub_to_reg
-  nop
 
-  ret
-
-
-/**
- * Helper functions to setup pointers according to calling conventions
- *
- * Loads dmem pointers from first dmem cell and sets some regfile pointers.
- *
- * Flags: No flags are set in this subroutine
- *
- * @param[in]  dmem[0] dptr_M: dmem pointer to first limb of modulus M
- * @param[in]  dmem[4] dptr_m0d: dmem pointer to Montgomery Constant m0'
- * @param[in]  dmem[8] dptr_RR: dmem pointer to first limb of
- *                              squared Montgomery Modulus RR mod M
- * @param[in]  dmem[12] dptr_a: dmem pointer to first limb of operand A
- * @param[in]  dmem[16] dptr_b: dmem pointer to first limb of operand B
- * @param[in]  dmem[20] dptr_c: dmem pointer to first limb of result C
- * @param[in]  dmem[24] N: Number of limbs per bignum
- * @param[in]  dmem[28] N-1: Number of limbs per bignum minus 1
- * @param[out]  x16 dptr_M: dmem pointer to first limb of modulus M
- * @param[out]  x17 dptr_m0d: dmem pointer to Montgomery Constant m0'
- * @param[out]  x18 dptr_RR: dmem pointer to first limb of
- *                           squared Montgomery Modulus RR mod M
- * @param[out]  x19 dptr_a: dmem pointer to first limb of operand A
- * @param[out]  x20 dptr_b: dmem pointer to first limb of operand B
- * @param[out]  x21 dptr_c: dmem pointer to first limb of result C
- * @param[out]  x22 N: number of limbs
- * @param[out]  x23 N-1: number of limbs minus 1
- * @param[out]  x24 dptr_M: dmem pointer to first limb of modulus M
- * @param[out]  x25 dptr_m0d: dmem pointer to Montgomery Constant m0'
- * @param[out]  x26 dptr_RR: dmem pointer to first limb of
- *                           squared Montgomery Modulus RR mod M
- * @param[out]  x27 dptr_a: dmem pointer to first limb of operand A
- * @param[out]  x28 dptr_b: dmem pointer to first limb of operand B
- * @param[out]  x29 dptr_c: dmem pointer to first limb of result C
- * @param[out]  x30 N: number of limbs
- * @param[out]  x31 N-1: number of limbs minus 1
- * @param[out]  x8: pointer to bignum buffer in regfile
- * @param[out]  x9: pointer to temp reg
- * @param[out]  x10: pointer to bignum buffer in regfile
- * @param[out]  x11: pointer to temp reg
- *
- * clobbered registers: x8 to x11, x16 to x31
- * clobbered Flag Groups: none
- */
-setup_ptrs:
-  lw        x16, 0(x0)
-  lw        x17, 4(x0)
-  lw        x18, 8(x0)
-  lw        x19, 12(x0)
-  lw        x20, 16(x0)
-  lw        x21, 20(x0)
-  lw        x22, 24(x0)
-  lw        x23, 28(x0)
-  lw        x24, 0(x0)
-  lw        x25, 4(x0)
-  lw        x26, 8(x0)
-  lw        x27, 12(x0)
-  lw        x28, 16(x0)
-  lw        x29, 20(x0)
-  lw        x30, 24(x0)
-  lw        x31, 28(x0)
-  bn.mov    w1, w31
-  li         x8, 4
-  li         x9, 3
-  li        x10, 4
-  li        x11, 2
+  /* restore pointer */
+  li        x8, 4
 
   ret
 
@@ -647,16 +576,17 @@ setup_ptrs:
  * Flags: The states of both FG0 and FG1 depend on intermediate values and are
  *        not usable after return.
  *
- * @param[in]  dmem[0] dptr_M: dmem pointer to first limb of modulus M
- * @param[in]  dmem[4] dptr_m0d: dmem pointer to Montgomery Constant m0'
- * @param[in]  dmem[8] dptr_RR: dmem pointer to first limb of
- *                              squared Montgomery Modulus RR mod M
- * @param[in]  dmem[12] dptr_a: dmem pointer to first limb of operand A
- * @param[in]  dmem[16] dptr_b: dmem pointer to first limb of operand B
- * @param[in]  dmem[20] dptr_c: dmem pointer to first limb of result C
- * @param[in]  dmem[24] N: Number of limbs per bignum
- * @param[in]  dmem[28] N-1: Number of limbs per bignum minus 1
- * @param[in]  w31: all-zero
+ * @param[in]  x16 dptr_M: dmem pointer to first limb of modulus M
+ * @param[in]  x17 dptr_m0d: dmem pointer to Montgomery Constant m0'
+ * @param[in]  x19 dptr_a: dmem pointer to first limb of operand A
+ * @param[in]  x20 dptr_b: dmem pointer to first limb of operand B
+ * @param[in]  x21 dptr_c: dmem pointer to first limb of result C
+ * @param[in]  w31 all-zero
+ * @param[in]  x30 N: number of limbs
+ * @param[in]  x31 N-1: number of limbs minus one
+ * @param[in]  x9: pointer to temp reg, must be set to 3
+ * @param[in]  x10: pointer to temp reg, must be set to 4
+ * @param[in]  x11: pointer to temp reg, must be set to 2
  * @param[out] [dmem[dptr_c+N*32-1]:dmem[dptr_c]]: result C
  *
  * clobbered registers: x3, x4, x5, x6, x8 to x13, x16 to x31
@@ -665,14 +595,6 @@ setup_ptrs:
  * clobbered Flag Groups: FG0, FG1
  */
 montmul:
-
-  /* load pointers from dmem[0] to w0*/
-  li        x3, 0
-  bn.lid    x3, 0(x0)
-
-  /* prepare pointers and other parameters */
-  jal       x1, setup_ptrs
-
   /* load Montgomery constant: w3 = dmem[x17] = dmem[dptr_m0d] = m0'*/
   bn.lid    x9, 0(x17)
 
@@ -680,9 +602,6 @@ montmul:
   bn.mov    w2, w31
   loop      x30, 1
     bn.movr   x10++, x11
-
-  /* restore pointer */
-  li        x10, 4
 
   /* iterate over limbs of operand B */
   loop      x30, 8
@@ -703,9 +622,6 @@ montmul:
     add       x19, x5, x0
     add       x20, x6, x0
 
-  /* restore pointer */
-  li        x8, 4
-
   /* Store result in dmem starting at dmem[dptr_c] */
   loop      x30, 2
     bn.sid    x8, 0(x21++)
@@ -713,6 +629,7 @@ montmul:
 
   /* restore pointer */
   li        x8, 4
+  li        x10, 4
 
   ret
 
@@ -781,6 +698,7 @@ cond_sub_to_dmem:
  *        not usable after return.
  *
  * @param[in]  x16: dmem pointer to first limb of modulus M
+ * @param[in]  x17: dptr_m0d: dmem pointer to Montgomery Constant m0'
  * @param[in]  x19: dmem pointer to first limb of operand A
  * @param[in]  x21: dmem pointer to first limb of result C
  * @param[in]  x30: N, number of limbs
@@ -789,7 +707,6 @@ cond_sub_to_dmem:
  * @param[in]  x9: pointer to temp reg, must be set to 3
  * @param[in]  x10: pointer to temp reg, must be set to 4
  * @param[in]  x11: pointer to temp reg, must be set to 2
- * @param[in]  w3: Montgomery constant m0'
  * @param[in]  w31: all-zero
  *
  * clobbered registers: x6, x7, x8, x9, x10, x12, x13, x16, x19, x21
@@ -899,14 +816,25 @@ montmul_mul1:
  * clobbered Flag Groups: FG0, FG1
  */
 mul1:
-  /* load pointers from dmem[0] to w0*/
-  li        x3, 0
-  bn.lid    x3, 0(x0)
+  /* prepare pointers to temp regs */
+  li         x8, 4
+  li         x9, 3
+  li        x10, 4
+  li        x11, 2
 
-  /* prepare pointers and other parameters */
-  jal       x1, setup_ptrs
+  /* load pointer to modulus */
+  lw        x16, 0(x0)
+
+  /* load pointer to m0' */
+  lw        x17, 4(x0)
+
+  /* load number of limbs */
+  lw        x30, 24(x0)
+  lw        x31, 28(x0)
 
   /* call montmul(1,A) algorithm */
+  lw        x19, 12(x0)
+  lw        x21, 20(x0)
   jal       x1, montmul_mul1
 
   ret
@@ -928,37 +856,23 @@ mul1:
  * Flags: The states of both FG0 and FG1 depend on intermediate values and are
  *        not usable after return.
  *
- * @param[in]  dmem[32] dptr_M: dmem pointer to first limb of modulus M
- * @param[in]  dmem[36] dptr_m0d: dmem pointer to Montgomery Constant m0'
- * @param[in]  dmem[40] dptr_RR: dmem pointer to first limb of
- *                               squared Montgomery Modulus RR mod M
- * @param[in]  dmem[44] dptr_a: dmem pointer to first limb of operand A
- * @param[in]  dmem[48] dptr_b: dmem pointer to first limb of operand B
- * @param[in]  dmem[52] dptr_c: dmem pointer to first limb of result C
- * @param[in]  dmem[56] N: Number of limbs per bignum
- * @param[in]  dmem[60] N-1: Number of limbs per bignum minus 1
- * @param[in]  w31: all-zero
- * @param[in]  x30: N, number of limbs
- * @param[in]  x31: N-1, number of limbs minus one
+ * @param[in]  x16 dptr_M: dmem pointer to first limb of modulus M
+ * @param[in]  x17 dptr_m0d: dmem pointer to Montgomery Constant m0'
+ * @param[in]  x19 dptr_a: dmem pointer to first limb of operand A
+ * @param[in]  x20 dptr_b: dmem pointer to first limb of operand B
+ * @param[in]  x21 dptr_c: dmem pointer to first limb of result C
+ * @param[in]  w31 all-zero
+ * @param[in]  x30 N: number of limbs
+ * @param[in]  x31 N-1: number of limbs minus one
  * @param[in]  x9: pointer to temp reg, must be set to 3
  * @param[in]  x10: pointer to temp reg, must be set to 4
  * @param[in]  x11: pointer to temp reg, must be set to 2
  *
- * clobbered registers: x5, x6, x7, x8, x10, x12, x13, x16 to x23
+ * clobbered registers: x5, x6, x7, x8, x10, x12, x13, x16, x17, x19, x20, x21
  *                      w2, w3, w24 to w30, w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
 montmul_sqr:
-  /* load pointers from 2nd dmem descriptor (cell 1) */
-  lw        x16, 32(x0)
-  lw        x17, 36(x0)
-  lw        x18, 40(x0)
-  lw        x19, 44(x0)
-  lw        x20, 48(x0)
-  lw        x21, 52(x0)
-  lw        x22, 56(x0)
-  lw        x23, 60(x0)
-
   /* load Montgomery constant: w3 = dmem[x17] = dmem[dptr_m0d] = m0' */
   bn.lid    x9, 0(x17)
 
@@ -966,9 +880,6 @@ montmul_sqr:
   bn.mov    w2, w31
   loop      x30, 1
     bn.movr   x10++, x11
-
-  /* set pointer */
-  lw        x10, 8(x0)
 
   /* iterate over limbs of operand B */
   loop      x30, 8
@@ -989,10 +900,6 @@ montmul_sqr:
     addi      x16, x6, 0
     addi      x19, x7, 0
 
-  /* restore pointers */
-  li        x10, 4
-  li         x8, 4
-
   /* Store result in dmem starting at dmem[dptr_c] */
   loop      x30, 2
     bn.sid    x8, 0(x21++)
@@ -1001,8 +908,6 @@ montmul_sqr:
   /* restore pointers */
   li         x8, 4
   li        x10, 4
-  lw        x12, 16(x0)
-  lw        x13, 20(x0)
 
   ret
 
@@ -1023,14 +928,10 @@ montmul_sqr:
  * Flags: The states of both FG0 and FG1 depend on intermediate values and are
  *        not usable after return.
  *
- * @param[in]  dmem[64] dptr_M: dmem pointer to first limb of modulus M
- * @param[in]  dmem[68] dptr_m0d: dmem pointer to Montgomery Constant m0'
- * @param[in]  dmem[71] dptr_RR: dmem pointer to first limb of
- *                               squared Montgomery Modulus RR mod M
- * @param[in]  dmem[76] dptr_a: dmem pointer to first limb of operand A
- * @param[in]  dmem[80] dptr_b: dmem pointer to first limb of operand B
- * @param[in]  dmem[88] N: Number of limbs per bignum
- * @param[in]  dmem[92] N-1: Number of limbs per bignum minus 1
+ * @param[in]  x16: dptr_M, dmem pointer to first limb of modulus M
+ * @param[in]  x17: dptr_m0d, dmem pointer to Montgomery Constant m0'
+ * @param[in]  x19: dptr_a, dmem pointer to first limb of operand A
+ * @param[in]  x20: dptr_b, dmem pointer to first limb of operand B
  * @param[in]  w31: all-zero
  * @param[in]  x30: N, number of limbs
  * @param[in]  x31: N-1, number of limbs minus one
@@ -1039,21 +940,11 @@ montmul_sqr:
  * @param[in]  x11: pointer to temp reg, must be set to 2
  * @param[out] [w[4+N-1]:w4]: result C
  *
- * clobbered registers: x5, x6, x7, x8, x10, x12, x13, x16 to x23
+ * clobbered registers: x5, x6, x7, x8, x10, x12, x13, x16, x17, x19, x20, x21
  *                      w2, w3, w24 to w30, w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
 montmul_mul:
-  /* load pointers from 3rd dmem descriptor (cell 2) */
-  lw        x16, 64(x0)
-  lw        x17, 68(x0)
-  lw        x18, 72(x0)
-  lw        x19, 76(x0)
-  lw        x20, 80(x0)
-  lw        x21, 84(x0)
-  lw        x22, 88(x0)
-  lw        x23, 92(x0)
-
   /* load Montgomery constant: w3 = dmem[x17] = dmem[dptr_m0d] = m0' */
   bn.lid    x9, 0(x17)
 
@@ -1061,12 +952,6 @@ montmul_mul:
   bn.mov    w2, w31
   loop      x30, 1
     bn.movr   x10++, x11
-
-  /* set pointers */
-  li         x8, 4
-  li        x10, 4
-  lw        x12, 16(x0)
-  lw        x13, 20(x0)
 
   /* iterate over limbs of operand B */
   loop      x30, 8
@@ -1090,8 +975,6 @@ montmul_mul:
   /* restore pointers */
   li        x8, 4
   li        x10, 4
-  lw        x12, 16(x0)
-  lw        x13, 20(x0)
 
   ret
 
@@ -1170,37 +1053,19 @@ sel_sqr_or_sqrmul:
  *   @param[in]  dmem[28] N-1: Number of limbs per bignum minus 1
  *
  * second descriptor used for squaring:
- *   @param[in]  dmem[32] dptr_M: dmem pointer to first limb of modulus M
- *   @param[in]  dmem[36] dptr_m0d: dmem pointer to Montgomery Constant m0'
- *   @param[in]  dmem[40] dptr_RR: dmem pointer to first limb of
- *                              squared Montgomery Modulus RR mod M
  *   @param[in]  dmem[44] dptr_a_sqr: dmem pointer to first limb of result C
  *   @param[in]  dmem[48] dptr_b_sqr: dmem pointer to first limb of result C
  *   @param[in]  dmem[52] dptr_c_sqr: dmem pointer to first limb of result C
- *   @param[in]  dmem[56] N: Number of limbs per bignum
- *   @param[in]  dmem[60] N-1: Number of limbs per bignum minus 1
  *
  * third descriptor used for multiplication:
- *   @param[in]  dmem[64] dptr_M: dmem pointer to first limb of modulus M
- *   @param[in]  dmem[68] dptr_m0d: dmem pointer to Montgomery Constant m0'
- *   @param[in]  dmem[72] dptr_RR: dmem pointer to first limb of
- *                              squared Montgomery Modulus RR mod M
  *   @param[in]  dmem[76] dptr_a_mul: dmem pointer to first limb of base A
  *   @param[in]  dmem[80] dptr_b_mul: dmem pointer to first limb of result C
  *   @param[in]  dmem[84] dptr_c_mul: dmem pointer to first limb of result C
- *   @param[in]  dmem[88] N: Number of limbs per bignum
- *   @param[in]  dmem[92] N-1: Number of limbs per bignum minus 1
  *
  * fourth descriptor used for reading the exponent and back-conversion:
- *   @param[in]  dmem[96] dptr_M: dmem pointer to first limb of modulus M
- *   @param[in]  dmem[100] dptr_m0d: dmem pointer to Montgomery Constant m0'
- *   @param[in]  dmem[104] dptr_RR: dmem pointer to first limb of
- *                              squared Montgomery Modulus RR mod M
  *   @param[in]  dmem[108] dptr_a_ex1: dmem pointer to first limb of base A
  *   @param[in]  dmem[112] dptr_b_ex1: dmem pointer to first limb of exponent E
  *   @param[in]  dmem[116] dptr_c_ex1: dmem pointer to first limb of result C
- *   @param[in]  dmem[120] N: Number of limbs per bignum
- *   @param[in]  dmem[124] N-1: Number of limbs per bignum minus 1
  *
  * clobbered registers: x3 to x13, x16 to x31
  *                      w0 to w3, w24 to w30
@@ -1208,23 +1073,34 @@ sel_sqr_or_sqrmul:
  * clobbered Flag Groups: FG0, FG1
  */
 modexp:
-  /* convert to montgomery domain montmul(A,RR) */
-  jal       x1, montmul
+  /* prepare pointers to temp regs */
+  li         x8, 4
+  li         x9, 3
+  li        x10, 4
+  li        x11, 2
 
-  /* load pointers from 4th descriptor (cell 3) */
-  lw        x16, 96(x0)
-  lw        x17, 100(x0)
-  lw        x18, 104(x0)
-  lw        x19, 108(x0)
-  lw        x20, 112(x0)
-  lw        x21, 116(x0)
-  lw        x22, 120(x0)
-  lw        x23, 124(x0)
+  /* load pointer to modulus */
+  lw        x16, 0(x0)
+
+  /* load pointer to m0' */
+  lw        x17, 4(x0)
+
+  /* load number of limbs */
+  lw        x30, 24(x0)
+  lw        x31, 28(x0)
+
+  /* convert to montgomery domain montmul(A,RR) */
+  lw        x19, 12(x0)
+  lw        x20, 16(x0)
+  lw        x21, 20(x0)
+  jal       x1, montmul
 
   /* zeroize w2 and reset flags */
   bn.sub    w2, w2, w2
 
-  /* this loop initializes the output buffer with -M */
+  /* initialize the output buffer with -M */
+  lw        x16, 0(x0)
+  lw        x21, 116(x0)
   loop      x30, 3
     /* load limb from modulus */
     bn.lid    x11, 0(x16++)
@@ -1235,32 +1111,31 @@ modexp:
     /* store limb in dmem */
     bn.sid    x11, 0(x21++)
 
+  /* reload pointer to modulus */
+  lw        x16, 0(x0)
+
   /* compute bit length of current bigint size */
-  slli      x24, x22, 8
+  slli      x24, x30, 8
 
   /* iterate over all bits of bigint */
-  loop      x24, 17
+  loop      x24, 22
     /* square */
+    lw        x19, 44(x0)
+    lw        x20, 48(x0)
+    lw        x21, 52(x0)
     jal       x1, montmul_sqr
 
     /* multiply */
+    lw        x19, 76(x0)
+    lw        x20, 80(x0)
     jal       x1, montmul_mul
-
-    /* reload pointers */
-    lw        x16, 96(x0)
-    lw        x17, 100(x0)
-    lw        x18, 104(x0)
-    lw        x19, 108(x0)
-    lw        x20, 112(x0)
-    lw        x21, 116(x0)
-    lw        x22, 120(x0)
-    lw        x23, 124(x0)
 
     /* w2 <= w2 << 1 */
     bn.add    w2, w2, w2
 
     /* the loop performs a 1-bit left shift of the exponent. Last MSB moves
        to FG0.C, such that it can be used for selection */
+    lw        x20, 112(x0)
     loop      x30, 3
       bn.lid    x11, 0(x20)
       /* w2 <= w2 << 1 */
@@ -1268,6 +1143,7 @@ modexp:
       bn.sid    x11, 0(x20++)
 
     /* select squared or squared+multiplied result */
+    lw        x21, 116(x0)
     jal       x1, sel_sqr_or_sqrmul
 
     nop
@@ -1276,17 +1152,10 @@ modexp:
   li        x3, 0
   bn.lid    x3, 96(x0)
 
-  /* restore pointers */
-  lw        x16, 96(x0)
-  lw        x17, 100(x0)
-  lw        x18, 104(x0)
+  /* convert back from montgomery domain */
   lw        x19, 108(x0)
   lw        x20, 112(x0)
   lw        x21, 116(x0)
-  lw        x22, 120(x0)
-  lw        x23, 124(x0)
-
-  /* convert back from montgomery domain */
   jal       x1, montmul_mul1
 
   ret
@@ -1325,36 +1194,20 @@ modexp:
  *   @param[in]  dmem[28] N-1: Number of limbs per bignum minus 1
  *
  * second descriptor used for squaring:
- *   @param[in]  dmem[32] dptr_M: dmem pointer to first limb of modulus M
- *   @param[in]  dmem[36] dptr_m0d: dmem pointer to Montgomery Constant m0'
- *   @param[in]  dmem[40] dptr_RR: dmem pointer to first limb of
- *                              squared Montgomery Modulus RR mod M
  *   @param[in]  dmem[44] dptr_a_sqr: dmem pointer to first limb of result C
  *   @param[in]  dmem[48] dptr_b_sqr: dmem pointer to first limb of result C
  *   @param[in]  dmem[52] dptr_c_sqr: dmem pointer to first limb of result C
- *   @param[in]  dmem[56] N: Number of limbs per bignum
- *   @param[in]  dmem[60] N-1: Number of limbs per bignum minus 1
  *
  * third descriptor used for multiplication:
- *   @param[in]  dmem[64] dptr_M: dmem pointer to first limb of modulus M
- *   @param[in]  dmem[68] dptr_m0d: dmem pointer to Montgomery Constant m0'
- *   @param[in]  dmem[72] dptr_RR: dmem pointer to first limb of
- *                              squared Montgomery Modulus RR mod M
  *   @param[in]  dmem[76] dptr_a_mul: dmem pointer to first limb of base A
  *   @param[in]  dmem[80] dptr_b_mul: dmem pointer to first limb of result C
  *   @param[in]  dmem[84] dptr_c_mul: dmem pointer to first limb of result C
- *   @param[in]  dmem[88] N: Number of limbs per bignum
- *   @param[in]  dmem[92] N-1: Number of limbs per bignum minus 1
  *
  * fourth descriptor used for back-conversion:
- *   @param[in]  dmem[96] dptr_M: dmem pointer to first limb of modulus M
- *   @param[in]  dmem[100] dptr_m0d: dmem pointer to Montgomery Constant m0'
  *   @param[in]  dmem[104] dptr_RR: dmem pointer to first limb of
  *                              squared Montgomery Modulus RR mod M
  *   @param[in]  dmem[108] dptr_a_ex1: dmem pointer to first limb of base A
  *   @param[in]  dmem[116] dptr_c_ex1: dmem pointer to first limb of result C
- *   @param[in]  dmem[120] N: Number of limbs per bignum
- *   @param[in]  dmem[124] N-1: Number of limbs per bignum minus 1
  *
  * clobbered registers: x3 to x13, x16 to x31
  *                      w0 to w3, w24 to w30
@@ -1362,8 +1215,27 @@ modexp:
  * clobbered Flag Groups: FG0, FG1
  */
 modexp_65537:
+  /* prepare pointers to temp regs */
+  li         x8, 4
+  li         x9, 3
+  li        x10, 4
+  li        x11, 2
+
+  /* load pointer to modulus */
+  lw        x16, 0(x0)
+
+  /* load pointer to m0' */
+  lw        x17, 4(x0)
+
+  /* load number of limbs */
+  lw        x30, 24(x0)
+  lw        x31, 28(x0)
+
   /* convert to montgomery domain montmul(A,RR)
   in = montmul(A,RR) = C*R mod M */
+  lw        x19, 12(x0)
+  lw        x20, 16(x0)
+  lw        x21, 20(x0)
   jal       x1, montmul
 
   /* pointer to out buffer */
@@ -1383,15 +1255,24 @@ modexp_65537:
     /* store limb in dmem */
     bn.sid    x11, 0(x21++)
 
+  /* reload pointer to modulus */
+  lw        x16, 32(x0)
+
   /* 65537 = 0b10000000000000001
                ^ sqr + mult
     out = montmul(out,out)       */
+  lw        x19, 44(x0)
+  lw        x20, 48(x0)
+  lw        x21, 52(x0)
   jal       x1, montmul_sqr
 
   /* out = montmul(in,out)       */
+  lw        x19, 76(x0)
+  lw        x20, 80(x0)
   jal       x1, montmul_mul
 
   /* store multiplication result in output buffer */
+  lw        x21, 84(x0)
   li        x8, 4
   loop      x30, 2
     /* store selected limb to dmem */
@@ -1400,17 +1281,23 @@ modexp_65537:
 
   /* 65537 = 0b10000000000000001
                 ^<< 16 x sqr >>^   */
-  loopi      16, 2
+  loopi      16, 5
     /* square: out = montmul(out, out) */
+    lw        x19, 44(x0)
+    lw        x20, 48(x0)
+    lw        x21, 52(x0)
     jal       x1, montmul_sqr
     nop
 
   /* 65537 = 0b10000000000000001
                           mult ^
      out = montmul(in,out)       */
+  lw        x19, 76(x0)
+  lw        x20, 80(x0)
   jal       x1, montmul_mul
 
   /* store multiplication result in output buffer */
+  lw        x21, 84(x0)
   li        x8, 4
   loop      x30, 2
     bn.sid    x8, 0(x21++)
@@ -1437,9 +1324,9 @@ modexp_65537:
  *
  * Needs to be executed once per constant Modulus.
  *
- * @param[in]  dmem[0] dptr_M: pointer to first limb of modulus in dmem
+ * @param[in]  dmem[0] dptr_m: pointer to first limb of modulus in dmem
  * @param[in]  dmem[1] dptr_m0d: pointer to m0' in dmem
- * @param[in]  dmem[2] dptr_RR: pointer to RR in dmem
+ * @param[in]  dmem[2] dptr_rr: pointer to RR in dmem
  * @param[in]  dmem[6] N: Number of limbs per bignum
  * @param[out] [dmem[dptr_m0d+31]:dmem[dptr_m0d]] computed m0'
  * @parma[out] [dmem[dptr_RR+N*32-1]:dmem[dptr_RR]] computed RR
@@ -1449,39 +1336,27 @@ modload:
   /* prepare all-zero reg */
   bn.xor   w31, w31, w31
 
-  /* setup pointers */
-  li       x3, 0
-  bn.lid   x3, 0(x0)
+  /* load pointer to modulus (dptr_m) */
   lw       x16, 0(x0)
+
+  /* load pointer to m0' (dptr_m0d) */
   lw       x17, 4(x0)
+
+  /* load pointer to RR (dptr_rr) */
   lw       x18, 8(x0)
-  lw       x19, 12(x0)
-  lw       x20, 16(x0)
-  lw       x21, 20(x0)
-  lw       x22, 24(x0)
-  lw       x23, 28(x0)
-  lw       x24, 0(x0)
-  lw       x25, 4(x0)
-  lw       x26, 8(x0)
-  lw       x27, 12(x0)
-  lw       x28, 16(x0)
-  lw       x29, 20(x0)
+
+  /* load number of limbs (N) */
   lw       x30, 24(x0)
-  lw       x31, 28(x0)
+
+  /* load lowest limb of modulus to w28 */
   li       x8, 28
-  li       x9, 29
-  lw       x10, 8(x0)
-  lw       x11, 12(x0)
-  lw       x12, 16(x0)
-  lw       x13, 20(x0)
-  lw       x14, 24(x0)
-  lw       x15, 28(x0)
   bn.lid   x8, 0(x16)
 
   /* Compute Montgomery constant */
   jal      x1, m0inv
 
   /* Store Montgomery constant in dmem */
+  li       x9, 29
   bn.sid   x9, 0(x17)
 
   /* Compute square of Montgomery modulus */
