@@ -11,10 +11,8 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
       - lowrisc:ip:aes
-      - lowrisc:ip:entropy_src_pkg
+      - lowrisc:ip:csrng_pkg
     files:
-      - rtl/csrng_pkg.sv
-      - rtl/csrng_reg_pkg.sv
       - rtl/csrng_reg_top.sv
       - rtl/csrng_main_sm.sv
       - rtl/csrng_state_db.sv
@@ -66,6 +64,10 @@ targets:
     parameters:
       - SYNTHESIS=true
     tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+          - "-stop_on_error"
       verilator:
         mode: lint-only
         verilator_options:

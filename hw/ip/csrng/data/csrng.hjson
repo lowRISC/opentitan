@@ -227,137 +227,172 @@
         { bits: "0",
           name: "SFIFO_CMD_ERR",
           desc: '''
-                This is set when a command stage command fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                command stage command FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "1",
           name: "SFIFO_GENBITS_ERR",
           desc: '''
-                This is set when a command stage genbits fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                command stage genbits FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "2",
           name: "SFIFO_CMDREQ_ERR",
           desc: '''
-                This is set when a command stage cmdreq fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                cmdreq FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "3",
           name: "SFIFO_RCSTAGE_ERR",
           desc: '''
-                This is set when a command stage rcstage fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                rcstage FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "4",
           name: "SFIFO_KEYVRC_ERR",
           desc: '''
-                This is set when a command stage keyvrc fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                keyvrc FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "5",
           name: "SFIFO_UPDREQ_ERR",
           desc: '''
-                This is set when a command stage updreq fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                updreq FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "6",
           name: "SFIFO_BENCREQ_ERR",
           desc: '''
-                This is set when a command stage bencreq fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                bencreq FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "7",
           name: "SFIFO_BENCACK_ERR",
           desc: '''
-                This is set when a command stage bencack fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                bencack FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "8",
           name: "SFIFO_PDATA_ERR",
           desc: '''
-                This is set when a command stage pdata fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                pdata FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "9",
           name: "SFIFO_FINAL_ERR",
           desc: '''
-                This is set when a command stage final fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                final FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "10",
           name: "SFIFO_GBENCACK_ERR",
           desc: '''
-                This is set when a command stage gbencack fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                gbencack FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "11",
           name: "SFIFO_GRCSTAGE_ERR",
           desc: '''
-                This is set when a command stage grcstage fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                grcstage FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "12",
           name: "SFIFO_GGENREQ_ERR",
           desc: '''
-                This is set when a command stage ggenreq fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                ggenreq FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "13",
           name: "SFIFO_GADSTAGE_ERR",
           desc: '''
-                This is set when a command stage gadstage fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                gadstage FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "14",
           name: "SFIFO_GGENBITS_ERR",
           desc: '''
-                This is set when a command stage ggenbits fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                ggenbits FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "15",
           name: "SFIFO_BLKENC_ERR",
           desc: '''
-                This is set when a command stage blkenc fifo error is set.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when an error has been detected for the
+                blkenc FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "28",
           name: "FIFO_WRITE_ERR",
           desc: '''
-                This is type of error when other source bits are set in this register.
-                This is the case where a full FIFO has been written.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when any of the source bits (bits 0 through 15 of this
+                this register) are asserted as a result of an error pulse generated from
+                any full FIFO that has been recieved a write pulse.
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "29",
           name: "FIFO_READ_ERR",
           desc: '''
-                This is type of error when other source bits are set in this register.
-                This is the case where an empty FIFO has been read.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when any of the source bits (bits 0 through 15 of this
+                this register) are asserted as a result of an error pulse generated from
+                any empty FIFO that has recieved a read pulse.
+                This bit will stay set until firmware clears it.
                 '''
         }
         { bits: "30",
           name: "FIFO_STATE_ERR",
           desc: '''
-                This is type of error when other source bits are set in this register.
-                This is the case where a FIFO has both the empty and full indications asserted.
-                Writing a zero to this bit will reset it.
+                This bit will be set to one when any of the source bits (bits 0 through 15 of this
+                this register) are asserted as a result of an error pulse generated from
+                any FIFO where both the empty and full status bits are set.
+                This bit will stay set until firmware clears it.
                 '''
         }
       ]
