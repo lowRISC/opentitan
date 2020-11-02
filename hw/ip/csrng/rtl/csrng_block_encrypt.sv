@@ -18,6 +18,7 @@ module csrng_block_encrypt #(
    // update interface
   input logic                block_encrypt_bypass_i,
   input logic                block_encrypt_enable_i,
+  input lc_ctrl_pkg::lc_tx_t block_encrypt_lc_dft_en_i,
   input logic                block_encrypt_req_i,
   output logic               block_encrypt_rdy_o,
   input logic [KeyLen-1:0]   block_encrypt_key_i,
@@ -54,6 +55,7 @@ module csrng_block_encrypt #(
   logic                 cipher_out_valid;
   logic                 cipher_out_ready;
   logic [BlkLen-1:0]    cipher_data_out;
+  logic                 aes_cipher_core_enable;
 
   logic [3:0][3:0][7:0] state_init[NumShares];
 
@@ -69,9 +71,28 @@ module csrng_block_encrypt #(
 
 
   //--------------------------------------------
+  // aes cipher core lifecycle enable
+  //--------------------------------------------
+
+  lc_ctrl_pkg::lc_tx_t lc_dft_en;
+
+  prim_multibit_sync #(
+    .Width(lc_ctrl_pkg::TxWidth),
+    .NumChecks (2),
+    .ResetValue(lc_ctrl_pkg::TxWidth'(lc_ctrl_pkg::Off))
+  ) u_prim_multibit_sync (
+    .clk_i,
+    .rst_ni,
+    .data_i (block_encrypt_lc_dft_en_i),
+    .data_o (lc_dft_en)
+  );
+
+  assign aes_cipher_core_enable = (!block_encrypt_bypass_i) || (lc_dft_en != lc_ctrl_pkg::On);
+
+  //--------------------------------------------
   // aes cipher core
   //--------------------------------------------
-  assign cipher_in_valid = (!block_encrypt_bypass_i && block_encrypt_req_i);
+  assign cipher_in_valid = (aes_cipher_core_enable && block_encrypt_req_i);
 
   // Cipher core
   aes_cipher_core #(
@@ -89,7 +110,7 @@ module csrng_block_encrypt #(
     .out_ready_i        ( cipher_out_ready           ),
     .op_i               ( aes_pkg::CIPH_FWD          ),
     .key_len_i          ( aes_pkg::AES_256           ),
-    .crypt_i            ( !block_encrypt_bypass_i    ),
+    .crypt_i            ( aes_cipher_core_enable     ),
     .crypt_o            (                            ),
     .dec_key_gen_i      ( 1'b0                       ), // Disable
     .dec_key_gen_o      (                            ),
@@ -134,17 +155,17 @@ module csrng_block_encrypt #(
   assign sfifo_blkenc_push = block_encrypt_req_i && sfifo_blkenc_not_full;
   assign sfifo_blkenc_wdata = {block_encrypt_v_i,block_encrypt_id_i,block_encrypt_cmd_i};
 
-  assign block_encrypt_rdy_o = block_encrypt_bypass_i ? sfifo_blkenc_not_full : cipher_in_ready;
+  assign block_encrypt_rdy_o = aes_cipher_core_enable ? sfifo_blkenc_not_full : cipher_in_ready;
 
   assign sfifo_blkenc_pop = block_encrypt_ack_o;
   assign {sfifo_blkenc_v,sfifo_blkenc_id,sfifo_blkenc_cmd} = sfifo_blkenc_rdata;
 
   assign block_encrypt_ack_o = block_encrypt_rdy_i &&
-         (block_encrypt_bypass_i ? sfifo_blkenc_not_empty : cipher_out_valid);
+         (!aes_cipher_core_enable ? sfifo_blkenc_not_empty : cipher_out_valid);
 
   assign block_encrypt_cmd_o = sfifo_blkenc_cmd;
   assign block_encrypt_id_o = sfifo_blkenc_id;
-  assign block_encrypt_v_o = block_encrypt_bypass_i ? sfifo_blkenc_v : cipher_data_out;
+  assign block_encrypt_v_o = !aes_cipher_core_enable ? sfifo_blkenc_v : cipher_data_out;
   assign cipher_out_ready = block_encrypt_rdy_i;
 
   assign block_encrypt_sfifo_blkenc_err_o =

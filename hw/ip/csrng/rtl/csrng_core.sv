@@ -19,6 +19,9 @@ module csrng_core import csrng_pkg::*; #(
   // Efuse Interface
   input efuse_sw_app_enable_i,
 
+  // Lifecycle broadcast inputs
+  input  lc_ctrl_pkg::lc_tx_t  lc_dft_en_i,
+
   // Entropy Interface
   output entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_o,
   input  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_i,
@@ -417,20 +420,20 @@ module csrng_core import csrng_pkg::*; #(
  // set the err code type bits
   assign hw2reg.err_code.fifo_write_err.d = 1'b1;
   assign hw2reg.err_code.fifo_write_err.de =
-         block_encrypt_sfifo_blkenc_err[0] ||
-         ctr_drbg_gen_sfifo_ggenbits_err[0] ||
-         ctr_drbg_gen_sfifo_gadstage_err[0] ||
-         ctr_drbg_gen_sfifo_ggenreq_err[0] ||
-         ctr_drbg_gen_sfifo_grcstage_err[0] ||
-         ctr_drbg_gen_sfifo_gbencack_err[0] ||
-         ctr_drbg_upd_sfifo_final_err[0] ||
-         ctr_drbg_upd_sfifo_pdata_err[0] ||
-         ctr_drbg_upd_sfifo_bencack_err[0] ||
-         ctr_drbg_upd_sfifo_bencreq_err[0] ||
-         ctr_drbg_upd_sfifo_updreq_err[0] ||
-         ctr_drbg_cmd_sfifo_keyvrc_err[0] ||
-         ctr_drbg_cmd_sfifo_rcstage_err[0] ||
-         ctr_drbg_cmd_sfifo_cmdreq_err[0] ||
+         block_encrypt_sfifo_blkenc_err[2] ||
+         ctr_drbg_gen_sfifo_ggenbits_err[2] ||
+         ctr_drbg_gen_sfifo_gadstage_err[2] ||
+         ctr_drbg_gen_sfifo_ggenreq_err[2] ||
+         ctr_drbg_gen_sfifo_grcstage_err[2] ||
+         ctr_drbg_gen_sfifo_gbencack_err[2] ||
+         ctr_drbg_upd_sfifo_final_err[2] ||
+         ctr_drbg_upd_sfifo_pdata_err[2] ||
+         ctr_drbg_upd_sfifo_bencack_err[2] ||
+         ctr_drbg_upd_sfifo_bencreq_err[2] ||
+         ctr_drbg_upd_sfifo_updreq_err[2] ||
+         ctr_drbg_cmd_sfifo_keyvrc_err[2] ||
+         ctr_drbg_cmd_sfifo_rcstage_err[2] ||
+         ctr_drbg_cmd_sfifo_cmdreq_err[2] ||
          (|cmd_stage_sfifo_genbits_err_wr) ||
          (|cmd_stage_sfifo_cmd_err_wr);
 
@@ -455,20 +458,20 @@ module csrng_core import csrng_pkg::*; #(
 
   assign hw2reg.err_code.fifo_state_err.d = 1'b1;
   assign hw2reg.err_code.fifo_state_err.de =
-         block_encrypt_sfifo_blkenc_err[2] ||
-         ctr_drbg_gen_sfifo_ggenbits_err[2] ||
-         ctr_drbg_gen_sfifo_gadstage_err[2] ||
-         ctr_drbg_gen_sfifo_ggenreq_err[2] ||
-         ctr_drbg_gen_sfifo_grcstage_err[2] ||
-         ctr_drbg_gen_sfifo_gbencack_err[2] ||
-         ctr_drbg_upd_sfifo_final_err[2] ||
-         ctr_drbg_upd_sfifo_pdata_err[2] ||
-         ctr_drbg_upd_sfifo_bencack_err[2] ||
-         ctr_drbg_upd_sfifo_bencreq_err[2] ||
-         ctr_drbg_upd_sfifo_updreq_err[2] ||
-         ctr_drbg_cmd_sfifo_keyvrc_err[2] ||
-         ctr_drbg_cmd_sfifo_rcstage_err[2] ||
-         ctr_drbg_cmd_sfifo_cmdreq_err[2] ||
+         block_encrypt_sfifo_blkenc_err[0] ||
+         ctr_drbg_gen_sfifo_ggenbits_err[0] ||
+         ctr_drbg_gen_sfifo_gadstage_err[0] ||
+         ctr_drbg_gen_sfifo_ggenreq_err[0] ||
+         ctr_drbg_gen_sfifo_grcstage_err[0] ||
+         ctr_drbg_gen_sfifo_gbencack_err[0] ||
+         ctr_drbg_upd_sfifo_final_err[0] ||
+         ctr_drbg_upd_sfifo_pdata_err[0] ||
+         ctr_drbg_upd_sfifo_bencack_err[0] ||
+         ctr_drbg_upd_sfifo_bencreq_err[0] ||
+         ctr_drbg_upd_sfifo_updreq_err[0] ||
+         ctr_drbg_cmd_sfifo_keyvrc_err[0] ||
+         ctr_drbg_cmd_sfifo_rcstage_err[0] ||
+         ctr_drbg_cmd_sfifo_cmdreq_err[0] ||
          (|cmd_stage_sfifo_genbits_err_st) ||
          (|cmd_stage_sfifo_cmd_err_st);
 
@@ -986,6 +989,7 @@ module csrng_core import csrng_pkg::*; #(
     .rst_ni(rst_ni),
     .block_encrypt_bypass_i(!aes_cipher_enable),
     .block_encrypt_enable_i(cs_enable),
+    .block_encrypt_lc_dft_en_i(lc_dft_en_i),
     .block_encrypt_req_i(benblk_arb_vld),
     .block_encrypt_rdy_o(benblk_arb_rdy),
     .block_encrypt_key_i(benblk_arb_key),
