@@ -5,7 +5,7 @@
 // Backdoor interface that can be bound into an OTBN stack and exports a function to peek at
 // the stack contents.
 
-interface otbn_stack_snooper #(
+interface otbn_stack_snooper_if #(
   parameter int StackWidth = 32,
   parameter int StackDepth = 4,
   localparam int StackDepthW = prim_util_pkg::vbits(StackDepth)
