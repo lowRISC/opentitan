@@ -1,0 +1,20 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for SHA3
+
+#waive -rules {} -location {} -regexp {} -comment ""
+
+waive -rules {CLOCK_USE} -location {keccak_round.sv} -regexp {clk_i' is connected to 'keccak_2share' port} \
+      -comment "In EnMasking = 0, no clock is used in keccak round module"
+
+waive -rules {RESET_USE} -location {keccak_round.sv} -regexp {'rst_ni' is connected to} \
+      -comment "No reset is used if EnMasking = 0. connected to unused_* signal"
+
+waive -rules {HIER_NET_NOT_READ NOT_READ} -location {keccak_round.sv} \
+      -regexp {'sel_mux' in module .* is not read} \
+      -comment "Unmasked version does not use sel_mux signal"
+waive -rules {INPUT_NOT_READ} -location {keccak_2share.sv} \
+      -regexp {'sel_i' is not read from} \
+      -comment "Unmasked version does not use sel_mux signal"

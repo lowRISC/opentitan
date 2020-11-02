@@ -89,18 +89,14 @@ module kmac_keymgr
   localparam int KeyMgrKeyW = $bits(keymgr_key_i.key_share0);
   localparam int KeyMgrDigestW = $bits(keymgr_data_o.digest_share0);
 
+  localparam key_len_e KeyLen [5] = '{Key128, Key192, Key256, Key384, Key512};
+
   localparam int SelKeySize = (KeyMgrDigestW == 128) ? 0 :
                               (KeyMgrDigestW == 192) ? 1 :
                               (KeyMgrDigestW == 256) ? 2 :
                               (KeyMgrDigestW == 384) ? 3 :
                               (KeyMgrDigestW == 512) ? 4 : 0 ;
-  localparam key_len_e SideloadedKey =
-                              (KeyMgrDigestW == 128) ? Key128 :
-                              (KeyMgrDigestW == 192) ? Key192 :
-                              (KeyMgrDigestW == 256) ? Key256 :
-                              (KeyMgrDigestW == 384) ? Key384 :
-                              (KeyMgrDigestW == 512) ? Key512 : Key128 ;
-
+  localparam key_len_e SideloadedKey = KeyLen[SelKeySize];
 
   // Define right_encode(outlen) value here
   // Look at kmac_pkg::key_len_e for the kinds of key size
@@ -120,8 +116,6 @@ module kmac_keymgr
     24'h FFFFFF, // Key384
     24'h FFFFFF  // Key512
   };
-
-  localparam key_len_e KeyLen [5] = '{Key128, Key192, Key256, Key384, Key512};
 
   // States
   typedef enum logic [3:0] {

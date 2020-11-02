@@ -4,4 +4,17 @@
 #
 # waiver file for KMAC
 
+waive -rules {HIER_NET_NOT_READ NOT_READ INPUT_NOT_READ} -location {kmac.sv} -regexp {'reg_state_valid' in module .* is not read} \
+      -comment "state values are guarded by the FSM, so kmac_staterd does not use the valid signal"
 
+waive -rules {HIER_NET_NOT_READ NOT_READ INPUT_NOT_READ} -location {kmac.sv} \
+    -regexp {'tlram_addr' is not read} \
+    -comment "MSG_FIFO ignores the exact memory address but use strobe for alignement"
+
+waive -rules {HIER_NET_NOT_READ NOT_READ INPUT_NOT_READ} \
+    -location {kmac_msgfifo.sv} -regexp {'packer_wmask.* is not read} \
+    -comment "MSG_FIFO uses only the first bit in a byte"
+
+waive -rules {HIER_NET_NOT_READ NOT_READ INPUT_NOT_READ} \
+    -location {kmac_staterd.sv} -regexp {'unused_.*} \
+    -comment "Ignore unused signals"

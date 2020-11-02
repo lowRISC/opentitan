@@ -111,6 +111,9 @@ module kmac_core
   // Encoded key has wider bits. `key_sliced` is the data to send to sha3
   logic [MsgWidth-1:0] key_sliced [Share];
 
+  sha3_mode_e unused_mode;
+  assign unused_mode = mode_i;
+
   /////////
   // FSM //
   /////////

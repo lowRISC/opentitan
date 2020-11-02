@@ -521,11 +521,11 @@ module sha3pad
   // will be set to complete pad10*1() functionality.
   logic [MsgWidth-1:0] zero_with_endbit [Share];
 
-  if (EnMasking) begin : gen_zeroend_masked;
+  if (EnMasking) begin : gen_zeroend_masked
     assign zero_with_endbit[0]               = '0;
     assign zero_with_endbit[1][MsgWidth-1]   = end_of_block;
     assign zero_with_endbit[1][MsgWidth-2:0] = '0;
-  end else begin : gen_zeroend_unmasked;
+  end else begin : gen_zeroend_unmasked
     assign zero_with_endbit[0][MsgWidth-1]   = end_of_block;
     assign zero_with_endbit[0][MsgWidth-2:0] = '0;
   end

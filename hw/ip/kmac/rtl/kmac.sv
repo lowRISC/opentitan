@@ -573,8 +573,8 @@ module kmac
     .tl_i (tl_win_h2d[WinState]),
     .tl_o (tl_win_d2h[WinState]),
 
-    .valid_i (state_valid),
-    .state_i (state),
+    .valid_i (reg_state_valid),
+    .state_i (reg_state),
 
     .endian_swap_i (reg2hw.cfg.state_endianness.q)
   );

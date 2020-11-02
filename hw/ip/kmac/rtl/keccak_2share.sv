@@ -296,6 +296,8 @@ module keccak_2share #(
   // C[x,z] = A[x,0,z] ^ A[x,1,z] ^ A[x,2,z] ^ A[x,3,z] ^ A[x,4,z]
   // D[x,z] = C[x-1,z] ^ C[x+1,z-1]
   // theta = A[x,y,z] ^ D[x,z]
+  parameter int ThetaIndexX1 [5] = '{4, 0, 1, 2, 3}; // (x-1)%5
+  parameter int ThetaIndexX2 [5] = '{1, 2, 3, 4, 0}; // (x+1)%5
   function automatic box_t theta(box_t state);
     plane_t c;
     plane_t d;
@@ -304,13 +306,10 @@ module keccak_2share #(
       c[x] = state[x][0] ^ state[x][1] ^ state[x][2] ^ state[x][3] ^ state[x][4];
     end
     for (int x = 0 ; x < 5 ; x++) begin
-      int index_x1, index_x2;
-      index_x1 = (x == 0) ? 4 : x-1; // (x-1)%5
-      index_x2 = (x == 4) ? 0 : x+1; // (x+1)%5
       for (int z = 0 ; z < W ; z++) begin
         int index_z;
         index_z = (z == 0) ? W-1 : z-1; // (z+1)%W
-        d[x][z] = c[index_x1][z] ^ c[index_x2][index_z];
+        d[x][z] = c[ThetaIndexX1[x]][z] ^ c[ThetaIndexX2[x]][index_z];
       end
     end
     for (int x = 0 ; x < 5 ; x++) begin
@@ -382,13 +381,12 @@ module keccak_2share #(
 
   // chi
   // chi[x,y,z] = state[x,y,z] ^ ((state[x+1,y,z] ^ 1) & state[x+2,y,z])
+  parameter int ChiIndexX1 [5] = '{1, 2, 3, 4, 0}; // (x+1)%5
+  parameter int ChiIndexX2 [5] = '{2, 3, 4, 0, 1}; // (x+2)%5
   function automatic box_t chi(box_t state);
     box_t result;
     for (int x = 0 ; x < 5 ; x++) begin
-      int index_x1, index_x2;
-      index_x1 = (x == 4) ? 0 : x+1;
-      index_x2 = (x >= 3) ? x-3 : x+2;
-      result[x] = state[x] ^ ((~state[index_x1]) & state[index_x2]);
+      result[x] = state[x] ^ ((~state[ChiIndexX1[x]]) & state[ChiIndexX2[x]]);
     end
     return result;
   endfunction : chi
