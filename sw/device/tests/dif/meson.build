@@ -221,3 +221,16 @@ dif_hmac_sanitytest_lib = declare_dependency(
 )
 
 sw_tests += { 'dif_hmac_sanitytest': dif_hmac_sanitytest_lib }
+
+dif_rstmgr_sanitytest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_rstmgr_sanitytest_lib',
+    sources: ['dif_rstmgr_sanitytest.c'],
+    dependencies: [
+      sw_lib_dif_rstmgr,
+      sw_lib_mmio,
+    ],
+  ),
+)
+
+sw_tests += { 'dif_rstmgr_sanitytest': dif_rstmgr_sanitytest_lib }

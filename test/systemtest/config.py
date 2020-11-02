@@ -8,6 +8,7 @@ TEST_APPS_SELFCHECKING = [
     "aes_test",
     "crt_test",
     "dif_plic_sanitytest",
+    "dif_rstmgr_sanitytest",
     "dif_rv_timer_sanitytest",
     "dif_uart_sanitytest",
     "flash_ctrl_test",
