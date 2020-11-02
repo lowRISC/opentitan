@@ -352,7 +352,7 @@ module otbn_controller
   // Register file write MUX
   // Suppress write for loads when controller isn't in stall state as load data for writeback is
   // only available in the stall state.
-  assign rf_base_wr_en_o = insn_dec_base_i.rf_we &
+  assign rf_base_wr_en_o = insn_valid_i & insn_dec_base_i.rf_we &
     ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall));
 
   always_comb begin
@@ -388,6 +388,7 @@ module otbn_controller
   assign alu_bignum_operation_o.shift_amt   = insn_dec_bignum_i.alu_shift_amt;
   assign alu_bignum_operation_o.flag_group  = insn_dec_bignum_i.alu_flag_group;
   assign alu_bignum_operation_o.sel_flag    = insn_dec_bignum_i.alu_sel_flag;
+  assign alu_bignum_operation_o.flag_en     = insn_dec_bignum_i.alu_flag_en;
 
   assign mac_bignum_operation_o.operand_a         = rf_bignum_rd_data_a_i;
   assign mac_bignum_operation_o.operand_b         = rf_bignum_rd_data_b_i;
@@ -407,7 +408,7 @@ module otbn_controller
     rf_bignum_wr_en_o = 2'b00;
 
     // Only write if enabled
-    if (insn_dec_bignum_i.rf_we) begin
+    if (insn_valid_i && insn_dec_bignum_i.rf_we) begin
       if (insn_dec_bignum_i.mac_en && insn_dec_bignum_i.mac_shift_out) begin
         // Special handling for BN.MULQACC.SO, only enable upper or lower half depending on
         // mac_wr_hw_sel.
@@ -514,9 +515,13 @@ module otbn_controller
 
   assign ispr_addr_o         = insn_dec_shared_i.subset == InsnSubsetBase ? ispr_addr_base : ispr_addr_bignum;
   assign ispr_base_wdata_o   = csr_wdata;
-  assign ispr_base_wr_en_o   = {BaseWordsPerWLEN{(insn_dec_shared_i.subset == InsnSubsetBase) & ispr_wr_insn}} & ispr_word_sel_base;
+  assign ispr_base_wr_en_o   =
+    {BaseWordsPerWLEN{(insn_dec_shared_i.subset == InsnSubsetBase) & ispr_wr_insn & insn_valid_i}}
+    & ispr_word_sel_base;
+
   assign ispr_bignum_wdata_o = wsr_wdata;
-  assign ispr_bignum_wr_en_o = (insn_dec_shared_i.subset == InsnSubsetBignum) & ispr_wr_insn;
+  assign ispr_bignum_wr_en_o = (insn_dec_shared_i.subset == InsnSubsetBignum) & ispr_wr_insn
+    & insn_valid_i;
 
   // TODO: Add error on unaligned/out of bounds
   assign lsu_load_req_o   = insn_valid_i & insn_dec_shared_i.ld_insn & (state_q == OtbnStateRun);

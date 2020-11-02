@@ -129,9 +129,11 @@ module otbn_alu_bignum
       endcase
     end
 
-    assign flags_en[i_fg] = (adder_update_flags_en & is_operation_flag_group[i_fg]) |
-                            (logic_update_flags_en & is_operation_flag_group[i_fg]) |
-                            ispr_update_flags_en;
+    assign flags_en[i_fg] = ispr_update_flags_en |
+      (operation_i.flag_en &
+        ((adder_update_flags_en & is_operation_flag_group[i_fg]) |
+         (logic_update_flags_en & is_operation_flag_group[i_fg]))
+      );
   end
 
   assign selected_flags = flags_q[operation_i.flag_group];
