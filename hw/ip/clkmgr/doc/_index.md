@@ -48,7 +48,7 @@ The group refers to modules responsible for power up, such as power, reset and c
 Large portions of these modules operate to release clocks and resets for the rest of the design, thus cannot operate on gated versions of the clocks themselves.
 They are the only group running clocks directly from the source.
 All follow groups are derived after root clock gating.
-See [block diagram](#block-diagram) for more details
+See [block diagram](#block-diagram) for more details.
 
 ## Transactional Clock Group
 
