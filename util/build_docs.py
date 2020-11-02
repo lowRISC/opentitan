@@ -72,6 +72,7 @@ config = {
         "hw/ip/padctrl/data/padctrl.hjson",
         "hw/ip/pattgen/data/pattgen.hjson",
         "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson",
+        "hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson",
         "hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson",
         "hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson",
         "hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson",
