@@ -167,6 +167,9 @@ TEST_F(ResetCausesGetTest, Success) {
 
   dif_rstmgr_reset_info_bitfield_t info;
   EXPECT_EQ(dif_rstmgr_reset_info_get(&rstmgr_, &info), kDifRstmgrOk);
+
+  // Make sure that `kDifRstmgrResetInfoPor` and `kDifRstmgrResetInfoLast`
+  // reset causes are set.
   EXPECT_EQ(info & (kDifRstmgrResetInfoPor | kDifRstmgrResetInfoLast), info);
 }
 
