@@ -30,7 +30,6 @@ module prim_packer #(
   localparam int Width = InW + OutW; // storage width
   localparam int ConcatW = Width + InW; // Input concatenated width
   localparam int PtrW = $clog2(ConcatW+1);
-  localparam int MaxW = (InW > OutW) ? InW : OutW;
   localparam int IdxW = $clog2(InW) + ~|$clog2(InW);
 
   logic valid_next, ready_next;
