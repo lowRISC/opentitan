@@ -19,7 +19,7 @@ run_rsa_1024_enc:
   jal      x1, modload
   jal      x1, modexp_65537
   /* pointer to out buffer */
-  lw        x21, 116(x0)
+  lw        x21, 28(x0)
 
   /* copy all limbs of result to wide reg file */
   li       x8, 0
@@ -32,52 +32,35 @@ run_rsa_1024_enc:
 
 .data
 
-/* descriptor 1: a=in, b=RR, c=in
-   convert to Montgomery */
-.word 0x00000080
-.word 0x00000280
-.word 0x000002c0
-.word 0x000004c0
-.word 0x000002c0
-.word 0x000004c0
-.word 0x00000004
-.word 0x00000003
+/* reserved */
+.word 0x00000000
 
-/* descriptor 2: a=out, b=out, c=out
-   square */
-.word 0x00000080
-.word 0x00000280
-.word 0x000002c0
-.word 0x000008e0
-.word 0x000008e0
-.word 0x000008e0
+/* number of limbs (N) */
 .word 0x00000004
-.word 0x00000003
 
-/* descriptor 3: a=in, b=out, c=out
-   multiply */
-.word 0x00000080
+/* pointer to m0' (dptr_m0d) */
 .word 0x00000280
+
+/* pointer to RR (dptr_rr) */
 .word 0x000002c0
+
+/* load pointer to modulus (dptr_m) */
+.word 0x00000080
+
+/* pointer to base bignum buffer (dptr_in) */
 .word 0x000004c0
-.word 0x000008e0
-.word 0x000008e0
-.word 0x00000004
-.word 0x00000003
 
-/* descriptor 4: a=in, b=exp, c=out
-   shift exponent and convert back */
-.word 0x00000080
-.word 0x00000280
-.word 0x000002c0
-.word 0x000008e0
+/* pointer to exponent buffer (dptr_exp, unused for encrypt) */
 .word 0x000006c0
-.word 0x000008e0
-.word 0x00000004
-.word 0x00000003
+
+/* pointer to out buffer (dptr_out) */
+.word 0x000008c0
 
 
 /* Modulus */
+/* skip to 128 */
+.skip 96
+
 .word 0xc28cf49f
 .word 0xb6e64c3b
 .word 0xa21417f1
