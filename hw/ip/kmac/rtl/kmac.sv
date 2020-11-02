@@ -79,14 +79,14 @@ module kmac
   // It is active only if SW initiates the hashing engine.
   logic event_absorbed;
 
-  kmac_pkg::sha3_st_e sha3_fsm;
+  sha3_pkg::sha3_st_e sha3_fsm;
 
   // Prefix: kmac_pkg defines Prefix based on N size and S size.
   // Then computes left_encode(len(N)) size and left_encode(len(S))
   // For given default value 32, 256 bits, the max
   // encode_string(N) || encode_string(S) is 328. So 11 Prefix registers are
   // created.
-  logic [kmac_pkg::NSRegisterSize*8-1:0] ns_prefix;
+  logic [sha3_pkg::NSRegisterSize*8-1:0] ns_prefix;
 
   // NumWordsPrefix from kmac_reg_pkg
   `ASSERT_INIT(PrefixRegSameToPrefixPkg_A,
@@ -95,16 +95,16 @@ module kmac
   // Output state: this is used to redirect the digest to KeyMgr or Software
   // depends on the configuration.
   logic state_valid;
-  logic [kmac_pkg::StateW-1:0] state [Share];
+  logic [sha3_pkg::StateW-1:0] state [Share];
 
   // state is de-muxed in keymgr interface logic.
   // the output from keymgr logic goes into staterd module to be visible to SW
   logic reg_state_valid;
-  logic [kmac_pkg::StateW-1:0] reg_state [Share];
+  logic [sha3_pkg::StateW-1:0] reg_state [Share];
 
   // SHA3 Entropy interface
   logic sha3_rand_valid, sha3_rand_consumed;
-  logic [kmac_pkg::StateW-1:0] sha3_rand_data;
+  logic [sha3_pkg::StateW-1:0] sha3_rand_data;
   // TODO: Connect to entropy when ready
   assign sha3_rand_valid = 1'b 1;
   assign sha3_rand_data = '0;
@@ -177,7 +177,7 @@ module kmac
   kmac_cmd_e sw_cmd, kmac_cmd;
 
   // SHA3 Error response
-  err_t sha3_err;
+  sha3_pkg::err_t sha3_err;
 
   //////////////////////////////////////
   // Connecting Register IF to logics //
@@ -231,9 +231,9 @@ module kmac
   // status.squeeze is valid only when SHA3 engine completes the Absorb and not
   // running the manual keccak rounds. This status is for SW to determine when
   // to read the STATE values.
-  assign hw2reg.status.sha3_idle.d     = sha3_fsm == kmac_pkg::StIdle;
-  assign hw2reg.status.sha3_absorb.d   = sha3_fsm == kmac_pkg::StAbsorb;
-  assign hw2reg.status.sha3_squeeze.d  = sha3_fsm == kmac_pkg::StSqueeze;
+  assign hw2reg.status.sha3_idle.d     = sha3_fsm == sha3_pkg::StIdle;
+  assign hw2reg.status.sha3_absorb.d   = sha3_fsm == sha3_pkg::StAbsorb;
+  assign hw2reg.status.sha3_squeeze.d  = sha3_fsm == sha3_pkg::StSqueeze;
 
   // FIFO related status
   // TODO: handle if register width of `depth` is not same to MsgFifoDepthW
@@ -246,7 +246,7 @@ module kmac
 
   // Configuration Register
   logic engine_stable;
-  assign engine_stable = sha3_fsm == kmac_pkg::StIdle;
+  assign engine_stable = sha3_fsm == sha3_pkg::StIdle;
 
   assign hw2reg.cfg_regwen.d = engine_stable;
 
@@ -374,8 +374,8 @@ module kmac
 
     // Configurations
     .kmac_en_i  (reg2hw.cfg.kmac_en.q),
-    .mode_i     (sha3_mode_e'(reg2hw.cfg.mode.q)),
-    .strength_i (keccak_strength_e'(reg2hw.cfg.kstrength.q)),
+    .mode_i     (sha3_pkg::sha3_mode_e'(reg2hw.cfg.mode.q)),
+    .strength_i (sha3_pkg::keccak_strength_e'(reg2hw.cfg.kstrength.q)),
 
     // Secret key interface
     .key_data_i (key_data),
@@ -411,8 +411,8 @@ module kmac
     .ns_data_i       (ns_prefix),
 
     // Configurations
-    .mode_i     (sha3_mode_e'(reg2hw.cfg.mode.q)),
-    .strength_i (keccak_strength_e'(reg2hw.cfg.kstrength.q)),
+    .mode_i     (sha3_pkg::sha3_mode_e'(reg2hw.cfg.mode.q)),
+    .strength_i (sha3_pkg::keccak_strength_e'(reg2hw.cfg.kstrength.q)),
 
     // Controls (CMD register)
     .start_i    (sha3_start       ),

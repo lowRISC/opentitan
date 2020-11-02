@@ -9,7 +9,7 @@
 `include "prim_assert.sv"
 
 module sha3
-  import kmac_pkg::*;
+  import sha3_pkg::*;
 #(
   // Enable Masked Keccak if 1
   parameter  int EnMasking = 0,
@@ -36,7 +36,7 @@ module sha3
   output logic              rand_consumed_o,
 
   // N, S: Used in cSHAKE mode only
-  input [NSRegisterSize*8-1:0] ns_data_i, // See kmac_pkg for details
+  input [NSRegisterSize*8-1:0] ns_data_i, // See sha3_pkg for details
 
   // configurations
   input sha3_mode_e       mode_i,     // see sha3pad for details
@@ -100,7 +100,7 @@ module sha3
   logic squeezing;
 
   // FSM variable
-  kmac_pkg::sha3_st_e st, st_d;
+  sha3_pkg::sha3_st_e st, st_d;
 
   // Keccak control signal (filtered by State Machine)
   logic keccak_start, keccak_process, keccak_done;
@@ -347,8 +347,8 @@ module sha3
 
   // Keccak round logic
   keccak_round #(
-    .Width    (kmac_pkg::StateW),
-    .DInWidth (kmac_pkg::MsgWidth),
+    .Width    (sha3_pkg::StateW),
+    .DInWidth (sha3_pkg::MsgWidth),
 
     .EnMasking  (EnMasking),
     .ReuseShare (ReuseShare)

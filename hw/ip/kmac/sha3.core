@@ -12,7 +12,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:ip:tlul
     files:
-      - rtl/kmac_pkg.sv
+      - rtl/sha3_pkg.sv
       - rtl/keccak_round.sv
       - rtl/keccak_2share.sv
       - rtl/sha3pad.sv

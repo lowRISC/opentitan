@@ -26,13 +26,13 @@ module kmac_staterd
 
   // State in
   input valid_i,
-  input [StateW-1:0] state_i [Share],
+  input [sha3_pkg::StateW-1:0] state_i [Share],
 
   // Config
   input endian_swap_i
 );
 
-  localparam int StateAddrW = $clog2(kmac_pkg::StateW/32);
+  localparam int StateAddrW = $clog2(sha3_pkg::StateW/32);
   localparam int SelAddrW   = AddrW-2-StateAddrW;
 
   /////////////
@@ -95,7 +95,7 @@ module kmac_staterd
 
   for (genvar i = 0 ; i < Share ; i++) begin : gen_slicer
     prim_slicer #(
-      .InW (kmac_pkg::StateW),
+      .InW (sha3_pkg::StateW),
       .OutW (32),
       .IndexW (StateAddrW)
     ) u_state_slice (

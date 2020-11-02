@@ -43,15 +43,15 @@ module kmac_keymgr
   input                       kmac_ready_i,
 
   // STATE from SHA3 Core
-  input              keccak_state_valid_i,
-  input [StateW-1:0] keccak_state_i [Share],
+  input                        keccak_state_valid_i,
+  input [sha3_pkg::StateW-1:0] keccak_state_i [Share],
 
   // to STATE TL-window
   // if KeyMgr KDF is not enabled, the incoming state goes to register
   // if kdf_en is set, the state value goes to KeyMgr and the output to the
   // register is all zero.
-  output logic              reg_state_valid_o,
-  output logic [StateW-1:0] reg_state_o [Share],
+  output logic                        reg_state_valid_o,
+  output logic [sha3_pkg::StateW-1:0] reg_state_o [Share],
 
   // Configurations
   // If key_en is set, the logic uses KeyMgr's sideloaded key as a secret key

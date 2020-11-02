@@ -33,9 +33,9 @@ module kmac_core
 
   // If kmac_en is cleared, Core logic doesn't function but forward incoming
   // mesage to SHA3 core
-  input                   kmac_en_i,
-  input sha3_mode_e       mode_i,
-  input keccak_strength_e strength_i,
+  input                             kmac_en_i,
+  input sha3_pkg::sha3_mode_e       mode_i,
+  input sha3_pkg::keccak_strength_e strength_i,
 
   // Key input from CSR
   input [MaxKeyLen-1:0] key_data_i [Share],
@@ -50,7 +50,7 @@ module kmac_core
   output logic process_o
 );
 
-  import kmac_pkg::*;
+  import sha3_pkg::*;
 
   /////////////////
   // Definitions //
@@ -83,12 +83,12 @@ module kmac_core
 
   // Key slice address
   // This signal controls the 64 bit output of the sliced secret_key.
-  logic [KeccakMsgAddrW-1:0] key_index;
+  logic [sha3_pkg::KeccakMsgAddrW-1:0] key_index;
   logic inc_keyidx, clr_keyidx;
 
   // `sent_blocksize` indicates that the encoded key is sent to sha3 hashing
   // engine. If this hits at StKey stage, the state moves to message state.
-  logic [KeccakCountW-1:0] block_addr_limit;
+  logic [sha3_pkg::KeccakCountW-1:0] block_addr_limit;
   logic sent_blocksize;
 
   // Internal message signals

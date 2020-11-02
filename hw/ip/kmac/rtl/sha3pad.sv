@@ -7,7 +7,7 @@
 `include "prim_assert.sv"
 
 module sha3pad
-  import kmac_pkg::*;
+  import sha3_pkg::*;
 #(
   parameter int EnMasking = 0,
   localparam int Share = (EnMasking) ? 2 : 1
@@ -22,7 +22,7 @@ module sha3pad
   output logic                msg_ready_o,
 
   // N, S: Used in cSHAKE mode only
-  input [NSRegisterSize*8-1:0] ns_data_i, // See kmac_pkg for details
+  input [NSRegisterSize*8-1:0] ns_data_i, // See sha3_pkg for details
 
   // output to keccak_round: message path
   output logic                       keccak_valid_o,
@@ -147,7 +147,7 @@ module sha3pad
 
   // `sent_message` indicates the number of entries sent to keccak round per
   // block. The value shall be enough to cover Maximum entry of the Keccak
-  // storage as defined in kmac_pkg, `$clog2(KeccakEntries+1)`. Logically,
+  // storage as defined in sha3_pkg, `$clog2(KeccakEntries+1)`. Logically,
   // it is not needed to have more than KeccakEntries but for safety in case of
   // SHA3 context switch resuming the SHA3 from the middle of sponge
   // construction. If needed, the software should be able to write whole 1600
