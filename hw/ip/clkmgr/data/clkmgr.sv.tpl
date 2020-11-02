@@ -276,5 +276,11 @@ module clkmgr import clkmgr_pkg::*; (
   // Assertions
   ////////////////////////////////////////////////////
 
+  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+% for intf in export_clks:
+  `ASSERT_KNOWN(ExportClocksKownO_A, clocks_${intf}_o)
+% endfor
+  `ASSERT_KNOWN(ClocksKownO_A, clocks_o)
 
 endmodule // clkmgr
