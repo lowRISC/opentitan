@@ -94,7 +94,6 @@ package kmac_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } kmac_reg2hw_prefix_mreg_t;
 
 
@@ -148,15 +147,15 @@ package kmac_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    kmac_reg2hw_intr_state_reg_t intr_state; // [1447:1445]
-    kmac_reg2hw_intr_enable_reg_t intr_enable; // [1444:1442]
-    kmac_reg2hw_intr_test_reg_t intr_test; // [1441:1436]
-    kmac_reg2hw_cfg_reg_t cfg; // [1435:1427]
-    kmac_reg2hw_cmd_reg_t cmd; // [1426:1422]
-    kmac_reg2hw_key_share0_mreg_t [15:0] key_share0; // [1421:894]
-    kmac_reg2hw_key_share1_mreg_t [15:0] key_share1; // [893:366]
-    kmac_reg2hw_key_len_reg_t key_len; // [365:363]
-    kmac_reg2hw_prefix_mreg_t [10:0] prefix; // [362:0]
+    kmac_reg2hw_intr_state_reg_t intr_state; // [1436:1434]
+    kmac_reg2hw_intr_enable_reg_t intr_enable; // [1433:1431]
+    kmac_reg2hw_intr_test_reg_t intr_test; // [1430:1425]
+    kmac_reg2hw_cfg_reg_t cfg; // [1424:1416]
+    kmac_reg2hw_cmd_reg_t cmd; // [1415:1411]
+    kmac_reg2hw_key_share0_mreg_t [15:0] key_share0; // [1410:883]
+    kmac_reg2hw_key_share1_mreg_t [15:0] key_share1; // [882:355]
+    kmac_reg2hw_key_len_reg_t key_len; // [354:352]
+    kmac_reg2hw_prefix_mreg_t [10:0] prefix; // [351:0]
   } kmac_reg2hw_t;
 
   ///////////////////////////////////////

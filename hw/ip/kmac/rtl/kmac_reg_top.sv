@@ -1318,7 +1318,7 @@ module kmac_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prefix[0].qe),
+    .qe     (),
     .q      (reg2hw.prefix[0].q ),
 
     // to register interface (read)
@@ -1345,7 +1345,7 @@ module kmac_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prefix[1].qe),
+    .qe     (),
     .q      (reg2hw.prefix[1].q ),
 
     // to register interface (read)
@@ -1372,7 +1372,7 @@ module kmac_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prefix[2].qe),
+    .qe     (),
     .q      (reg2hw.prefix[2].q ),
 
     // to register interface (read)
@@ -1399,7 +1399,7 @@ module kmac_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prefix[3].qe),
+    .qe     (),
     .q      (reg2hw.prefix[3].q ),
 
     // to register interface (read)
@@ -1426,7 +1426,7 @@ module kmac_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prefix[4].qe),
+    .qe     (),
     .q      (reg2hw.prefix[4].q ),
 
     // to register interface (read)
@@ -1453,7 +1453,7 @@ module kmac_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prefix[5].qe),
+    .qe     (),
     .q      (reg2hw.prefix[5].q ),
 
     // to register interface (read)
@@ -1480,7 +1480,7 @@ module kmac_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prefix[6].qe),
+    .qe     (),
     .q      (reg2hw.prefix[6].q ),
 
     // to register interface (read)
@@ -1507,7 +1507,7 @@ module kmac_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prefix[7].qe),
+    .qe     (),
     .q      (reg2hw.prefix[7].q ),
 
     // to register interface (read)
@@ -1534,7 +1534,7 @@ module kmac_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prefix[8].qe),
+    .qe     (),
     .q      (reg2hw.prefix[8].q ),
 
     // to register interface (read)
@@ -1561,7 +1561,7 @@ module kmac_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prefix[9].qe),
+    .qe     (),
     .q      (reg2hw.prefix[9].q ),
 
     // to register interface (read)
@@ -1588,7 +1588,7 @@ module kmac_reg_top (
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.prefix[10].qe),
+    .qe     (),
     .q      (reg2hw.prefix[10].q ),
 
     // to register interface (read)
