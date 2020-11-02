@@ -18,13 +18,11 @@ module prim_slicer #(
   output logic [OutW-1:0]   data_o
 );
 
-  logic [(2**IndexW)*OutW-1:0] unrolled_data;
+  localparam int UnrollW = OutW*(2**IndexW);
 
-  if (InW < OutW*(2**IndexW)) begin : gen_biggerwidth
-    assign unrolled_data = {'0, data_i};
-  end else if (InW == OutW*(2**IndexW)) begin : gen_samewidth
-    assign unrolled_data = data_i;
-  end
+  logic [UnrollW-1:0] unrolled_data;
+
+  assign unrolled_data = UnrollW'(data_i);
 
   assign data_o = unrolled_data[sel_i*OutW+:OutW];
 
