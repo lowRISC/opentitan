@@ -442,4 +442,20 @@ module keymgr import keymgr_pkg::*; #(
   // Only 1 entity should be trying to use the secret kmac key input
   `ASSERT(KmacKeyLoadExclusive_a, $onehot0({load_key, data_valid & kmac_sel}))
 
+  // known asserts
+  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `ASSERT_KNOWN(IntrKnownO_A, {intr_op_done_o, intr_err_o})
+  `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
+
+  // the keys are not reset to any specific values
+  // TBD this may be changed depending on whether we want to support this
+  // mode of operation going forward.
+  `ASSERT_KNOWN(AesKeyKnownO_A,  aes_key_o.valid)
+  `ASSERT_KNOWN(HmacKeyKnownO_A, hmac_key_o.valid)
+  `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o.valid)
+  `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
+
+
+
 endmodule // keymgr
