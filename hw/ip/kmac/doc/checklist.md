@@ -11,13 +11,13 @@ All checklist items refer to the content in the [Checklist.]({{<relref "/doc/pro
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Not Started | [KMAC Spec][../]
+Documentation | [SPEC_COMPLETE][]              | Done        | [KMAC Spec][../]
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |
 RTL           | [IP_INSTANTIABLE][]            | Done        |
-RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Done        |
-RTL           | [FUNC_IMPLEMENTED][]           | In Progress |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | N/A         |
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
 Code Quality  | [LINT_SETUP][]                 | Done        |
 
