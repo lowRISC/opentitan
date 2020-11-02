@@ -278,6 +278,7 @@ package otbn_pkg;
 
     flag_group_t             alu_flag_group;
     flag_e                   alu_sel_flag;
+    logic                    alu_flag_en;
     alu_op_bignum_e          alu_op;
     op_b_sel_e               alu_op_b_sel;
 
@@ -315,6 +316,7 @@ package otbn_pkg;
     logic [$clog2(WLEN)-1:0] shift_amt;
     flag_group_t             flag_group;
     flag_e                   sel_flag;
+    logic                    flag_en;
   } alu_bignum_operation_t;
 
   typedef struct packed {

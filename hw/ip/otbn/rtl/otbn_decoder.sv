@@ -130,6 +130,8 @@ module otbn_decoder
 
   assign alu_sel_flag_bignum = flag_e'(insn[26:25]);
 
+  logic alu_flag_en_bignum;
+
   // source registers
   assign insn_rs1 = insn[19:15];
   assign insn_rs2 = insn[24:20];
@@ -229,6 +231,7 @@ module otbn_decoder
     alu_shift_right:   alu_shift_right_bignum,
     alu_flag_group:    alu_flag_group_bignum,
     alu_sel_flag:      alu_sel_flag_bignum,
+    alu_flag_en:       alu_flag_en_bignum,
     alu_op:            alu_operator_bignum,
     alu_op_b_sel:      alu_op_b_mux_sel_bignum,
     mac_op_a_qw_sel:   mac_op_a_qw_sel_bignum,
@@ -668,6 +671,8 @@ module otbn_decoder
 
     opcode_alu               = insn_opcode_e'(insn_alu[6:0]);
 
+    alu_flag_en_bignum       = 1'b0;
+
     unique case (opcode_alu)
       //////////////
       // Base ALU //
@@ -794,6 +799,7 @@ module otbn_decoder
       ////////////////
 
       InsnOpcodeBignumArith: begin
+        alu_flag_en_bignum = 1'b1;
 
         unique case(insn_alu[14:12])
           3'b000: alu_operator_bignum = AluOpBignumAdd;
@@ -875,11 +881,13 @@ module otbn_decoder
             alu_operator_bignum      = AluOpBignumSub;
             alu_op_b_mux_sel_bignum  = OpBSelRegister;
             shift_amt_mux_sel_bignum = ShamtSelBignumA;
+            alu_flag_en_bignum       = 1'b1;
           end
           3'b011: begin // BN.CMPB
             alu_operator_bignum      = AluOpBignumSubb;
             alu_op_b_mux_sel_bignum  = OpBSelRegister;
             shift_amt_mux_sel_bignum = ShamtSelBignumA;
+            alu_flag_en_bignum       = 1'b1;
           end
           3'b100,
           3'b101: begin // BN.LID/BN.SID

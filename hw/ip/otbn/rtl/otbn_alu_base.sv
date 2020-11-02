@@ -114,7 +114,7 @@ module otbn_alu_base
   assign comparison_result_o = (comparison_i.op == ComparisonOpBaseEq) ? is_equal : ~is_equal;
 
   // The bottom bit of adder_result is discarded. It simply corresponds to the carry in used to produce
-  // twos completement subtraction from an addition.
+  // twos complement subtraction from an addition.
   logic unused_adder_result_bit;
 
   // The top bit of shift_out is discarded. shift_in contains an extra bit to deal with sign
