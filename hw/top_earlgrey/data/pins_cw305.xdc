@@ -22,14 +22,14 @@ set_property -dict { PACKAGE_PIN K15 IOSTANDARD LVCMOS33 } [get_ports { IO_GP2 }
 set_property -dict { PACKAGE_PIN L14 IOSTANDARD LVCMOS33 } [get_ports { IO_GP3 }]; #sw4
 
 ## SPI/JTAG
-set_property -dict { PACKAGE_PIN A14   IOSTANDARD LVCMOS33 } [get_ports { IO_DPS0 }]; #JP3.A14
-set_property -dict { PACKAGE_PIN A13   IOSTANDARD LVCMOS33 } [get_ports { IO_DPS1 }]; #JP3.A13
-set_property -dict { PACKAGE_PIN A15   IOSTANDARD LVCMOS33 } [get_ports { IO_DPS2 }]; #JP3.A15
-set_property -dict { PACKAGE_PIN B15   IOSTANDARD LVCMOS33 } [get_ports { IO_DPS3 }]; #JP3.B15
-set_property -dict { PACKAGE_PIN C12   IOSTANDARD LVCMOS33 } [get_ports { IO_DPS4 }]; #JP3.C12
-set_property -dict { PACKAGE_PIN C11   IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IO_DPS5 }];   #JP3.C11
-set_property -dict { PACKAGE_PIN B14   IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IO_DPS6 }]; #JP3.B14
-set_property -dict { PACKAGE_PIN C14   IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IO_DPS7 }]; #JP3.C14
+set_property -dict { PACKAGE_PIN L2 IOSTANDARD LVCMOS33 } [get_ports { IO_DPS0 }]; #SCK (USB_A13)
+set_property -dict { PACKAGE_PIN J3 IOSTANDARD LVCMOS33 } [get_ports { IO_DPS1 }]; #SDI (USB_A14)
+set_property -dict { PACKAGE_PIN B2 IOSTANDARD LVCMOS33 } [get_ports { IO_DPS2 }]; #SDO (USB_A15)
+set_property -dict { PACKAGE_PIN C7 IOSTANDARD LVCMOS33 } [get_ports { IO_DPS3 }]; #CSB (USB_A16)
+set_property -dict { PACKAGE_PIN C6 IOSTANDARD LVCMOS33 } [get_ports { IO_DPS4 }]; #JTAG TRST (USB_A17)
+set_property -dict { PACKAGE_PIN D6 IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IO_DPS5 }]; #JTAG SRST (USB_A18)
+set_property -dict { PACKAGE_PIN C4 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IO_DPS6 }]; #JTAG/SPI (USB_A19)
+set_property -dict { PACKAGE_PIN D5 IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IO_DPS7 }]; #Bootstrap (USB_A20)
 
 ## OTHER IO
 set_property -dict { PACKAGE_PIN B16 IOSTANDARD LVCMOS33 } [get_ports { IO_GP4  }]; #JP3.B16
