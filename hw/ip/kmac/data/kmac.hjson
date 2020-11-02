@@ -404,7 +404,6 @@
         count: "NumWordsPrefix"
         cname: "KMAC"
         hwext: "false"
-        hwqe : "true"
         swaccess: "rw"
         hwaccess: "hro"
         fields: [
