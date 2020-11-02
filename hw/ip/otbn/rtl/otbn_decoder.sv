@@ -872,6 +872,10 @@ module otbn_decoder
   `ASSERT(BignumRegIncOnehot,
     insn_valid_o |-> $onehot0({a_inc_bignum, a_wlen_word_inc_bignum, b_inc_bignum, d_inc_bignum}))
 
+  // RfWdSelIncr requires active selection
+  `ASSERT(BignumRegIncReq, rf_wdata_sel_base == RfWdSelIncr
+      |-> $onehot({a_inc_bignum, a_wlen_word_inc_bignum, b_inc_bignum, d_inc_bignum}))
+
   `ASSERT(BaseRenOnBignumIndirectA, insn_valid_o & rf_a_indirect_bignum |-> rf_ren_a_base);
   `ASSERT(BaseRenOnBignumIndirectB, insn_valid_o & rf_b_indirect_bignum |-> rf_ren_b_base);
   `ASSERT(BaseRenOnBignumIndirectD, insn_valid_o & rf_d_indirect_bignum |-> rf_ren_b_base);

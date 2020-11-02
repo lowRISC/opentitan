@@ -284,7 +284,13 @@ module otbn_controller
       insn_dec_bignum_i.a_wlen_word_inc: begin
         increment_out = {{32-DmemAddrWidth{1'b0}}, rf_base_rd_data_a_wlen_word_inc};
       end
-      default: ;
+      default: begin
+        // Whenever increment_out is written back to the register file, exactly one of the
+        // increment selector signals is high. To prevent the automatic inference of latches in
+        // case nothing is written back (rf_wdata_sel != RfWdSelIncr) and to save logic, we choose
+        // a valid output as default.
+        increment_out = {27'b0, rf_base_rd_data_a_inc};
+      end
     endcase
   end
 
