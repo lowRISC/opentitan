@@ -76,16 +76,16 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   output logic [2:0]         ctr_drbg_gen_sfifo_ggenbits_err_o
 );
 
-  localparam GenreqFifoDepth = 1;
-  localparam GenreqFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+StateId+Cmd;
-  localparam BlkEncAckFifoDepth = 1;
-  localparam BlkEncAckFifoWidth = BlkLen+StateId+Cmd;
-  localparam AdstageFifoDepth = 1;
-  localparam AdstageFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen;
-  localparam RCStageFifoDepth = 1;
-  localparam RCStageFifoWidth = BlkLen+CtrLen+1;
-  localparam GenbitsFifoDepth = 1;
-  localparam GenbitsFifoWidth = 1+BlkLen+KeyLen+BlkLen+CtrLen+StateId+Cmd;
+  localparam int unsigned GenreqFifoDepth = 1;
+  localparam int unsigned GenreqFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+StateId+Cmd;
+  localparam int unsigned BlkEncAckFifoDepth = 1;
+  localparam int unsigned BlkEncAckFifoWidth = BlkLen+StateId+Cmd;
+  localparam int unsigned AdstageFifoDepth = 1;
+  localparam int unsigned AdstageFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen;
+  localparam int unsigned RCStageFifoDepth = 1;
+  localparam int unsigned RCStageFifoWidth = BlkLen+CtrLen+1;
+  localparam int unsigned GenbitsFifoDepth = 1;
+  localparam int unsigned GenbitsFifoWidth = 1+BlkLen+KeyLen+BlkLen+CtrLen+StateId+Cmd;
 
   // signals
   logic [Cmd-1:0]     genreq_ccmd;

@@ -96,8 +96,8 @@ module prim_prince_tb;
 
   // Top level API task that should be called to run a full pass
   // of encryption and decryption on some input data and key.
-  task test_prince(bit [DataWidth-1:0] plaintext,
-                   bit [KeyWidth-1:0]  key);
+  task automatic test_prince(bit [DataWidth-1:0] plaintext,
+                             bit [KeyWidth-1:0]  key);
 
     bit [1:0][1:0][NumRoundsHalf-1:0][DataWidth-1:0] encrypted_text;
     $display("Starting encryption with data[0x%0x] and key[0x%0x]!", plaintext, key);
@@ -111,9 +111,10 @@ module prim_prince_tb;
 
   // Helper task to drive plaintext and key into each encryption instance.
   // Calls a subroutine to perform checks on the outputs (once they are available).
-  task check_encryption(input bit [DataWidth-1:0]                                 plaintext,
-                        input bit [KeyWidth-1:0]                                  key,
-                        output bit [1:0][1:0][NumRoundsHalf-1:0][DataWidth-1:0]   expected_cipher);
+  task automatic check_encryption(
+      input bit  [DataWidth-1:0]                              plaintext,
+      input bit  [KeyWidth-1:0]                               key,
+      output bit [1:0][1:0][NumRoundsHalf-1:0][DataWidth-1:0] expected_cipher);
 
     // Drive input into encryption instances.
     key_in    = key;
@@ -147,8 +148,9 @@ module prim_prince_tb;
 
   // Helper task to drive ciphertext and key into each decryption instance.
   // Calls a subroutine to perform checks on the outputs (once they are available).
-  task check_decryption(input bit [1:0][1:0][NumRoundsHalf-1:0][DataWidth-1:0]  ciphertext,
-                        input bit [KeyWidth-1:0]                                key);
+  task automatic check_decryption(
+      input bit [1:0][1:0][NumRoundsHalf-1:0][DataWidth-1:0] ciphertext,
+      input bit [KeyWidth-1:0]                               key);
 
     // the expected plaintext after decryption will be provided by the C model.
     bit [1:0][1:0][NumRoundsHalf-1:0][DataWidth-1:0] expected_plaintext;
@@ -190,11 +192,12 @@ module prim_prince_tb;
   //
   // If any comparison error is seen, this task short-circuits immediately,
   // printing out some debug information and the correct failure signature.
-  task check_output(input bit [1:0][NumRoundsHalf-1:0][DataWidth-1:0] expected_text_old_sched,
-                    input bit [1:0][NumRoundsHalf-1:0][DataWidth-1:0] expected_text_new_sched,
-                    input bit [1:0][NumRoundsHalf-1:0][DataWidth-1:0] actual_text_old_sched,
-                    input bit [1:0][NumRoundsHalf-1:0][DataWidth-1:0] actual_text_new_sched,
-                    input string                                      msg);
+  task automatic check_output(
+      input bit [1:0][NumRoundsHalf-1:0][DataWidth-1:0] expected_text_old_sched,
+      input bit [1:0][NumRoundsHalf-1:0][DataWidth-1:0] expected_text_new_sched,
+      input bit [1:0][NumRoundsHalf-1:0][DataWidth-1:0] actual_text_old_sched,
+      input bit [1:0][NumRoundsHalf-1:0][DataWidth-1:0] actual_text_new_sched,
+      input string                                      msg);
 
     string reg_msg;
     string err_msg;

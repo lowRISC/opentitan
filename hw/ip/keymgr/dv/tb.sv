@@ -31,8 +31,8 @@ module tb;
 
   always_ff @(posedge clk) begin
     for (int i = 0; i < 8; i++) begin
-      rand_values[0][i] = $urandom_range(-1, 0);
-      rand_values[1][i] = $urandom_range(-1, 0);
+      rand_values[0][i] <= $urandom_range(-1, 0);
+      rand_values[1][i] <= $urandom_range(-1, 0);
     end
   end
 
