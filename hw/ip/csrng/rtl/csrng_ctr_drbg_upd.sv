@@ -51,16 +51,16 @@ module csrng_ctr_drbg_upd #(
   output logic [2:0]         ctr_drbg_upd_sfifo_final_err_o
 );
 
-  localparam UpdReqFifoDepth = 1;
-  localparam UpdReqFifoWidth = KeyLen+BlkLen+SeedLen+StateId+Cmd;
-  localparam BlkEncReqFifoDepth = 1;
-  localparam BlkEncReqFifoWidth = KeyLen+BlkLen+StateId+Cmd;
-  localparam BlkEncAckFifoDepth = 1;
-  localparam BlkEncAckFifoWidth = BlkLen+StateId+Cmd;
-  localparam PDataFifoDepth = 1;
-  localparam PDataFifoWidth = SeedLen;
-  localparam FinalFifoDepth = 1;
-  localparam FinalFifoWidth = KeyLen+BlkLen+StateId+Cmd;
+  localparam int unsigned UpdReqFifoDepth = 1;
+  localparam int unsigned UpdReqFifoWidth = KeyLen+BlkLen+SeedLen+StateId+Cmd;
+  localparam int unsigned BlkEncReqFifoDepth = 1;
+  localparam int unsigned BlkEncReqFifoWidth = KeyLen+BlkLen+StateId+Cmd;
+  localparam int unsigned BlkEncAckFifoDepth = 1;
+  localparam int unsigned BlkEncAckFifoWidth = BlkLen+StateId+Cmd;
+  localparam int unsigned PDataFifoDepth = 1;
+  localparam int unsigned PDataFifoWidth = SeedLen;
+  localparam int unsigned FinalFifoDepth = 1;
+  localparam int unsigned FinalFifoWidth = KeyLen+BlkLen+StateId+Cmd;
 
   // signals
   logic [SeedLen-1:0] updated_key_and_v;

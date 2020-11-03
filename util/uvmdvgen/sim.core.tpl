@@ -25,15 +25,6 @@ targets:
       - files_dv
     default_tool: vcs
 
+  // TODO: add a lint check cfg in `hw/top_earlgrey/lint/top_earlgrey_dv_lint_cfgs.hjson`
   lint:
     <<: *sim_target
-    default_tool: verilator
-    tools:
-      ascentlint:
-        ascentlint_options:
-          - "-wait_license"
-          - "-stop_on_error"
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"

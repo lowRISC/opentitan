@@ -63,12 +63,12 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   output logic [2:0]         ctr_drbg_cmd_sfifo_keyvrc_err_o
 );
 
-  localparam CmdreqFifoDepth = 1;
-  localparam CmdreqFifoWidth = KeyLen+BlkLen+CtrLen+1+2*SeedLen+StateId+Cmd;
-  localparam RCStageFifoDepth = 1;
-  localparam RCStageFifoWidth = CtrLen+1+SeedLen+Cmd;
-  localparam KeyVRCFifoDepth = 1;
-  localparam KeyVRCFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+StateId+Cmd;
+  localparam int unsigned CmdreqFifoDepth = 1;
+  localparam int unsigned CmdreqFifoWidth = KeyLen+BlkLen+CtrLen+1+2*SeedLen+StateId+Cmd;
+  localparam int unsigned RCStageFifoDepth = 1;
+  localparam int unsigned RCStageFifoWidth = CtrLen+1+SeedLen+Cmd;
+  localparam int unsigned KeyVRCFifoDepth = 1;
+  localparam int unsigned KeyVRCFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+StateId+Cmd;
 
 
   // signals
