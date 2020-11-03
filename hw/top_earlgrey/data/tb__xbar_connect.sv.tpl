@@ -33,12 +33,14 @@ for xbar in top["xbar"]:
 `define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name) \
      force ``tl_name``_tl_if.d2h = dut.top_earlgrey.u_``inst_name``.``sig_name``_i; \
      force dut.top_earlgrey.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
+     force dut.top_earlgrey.u_``inst_name``.clk_i = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
 `define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name) \
      force ``tl_name``_tl_if.h2d = dut.top_earlgrey.u_``inst_name``.``sig_name``_i; \
      force dut.top_earlgrey.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
+     force dut.top_earlgrey.u_``inst_name``.clk_i = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
@@ -66,8 +68,6 @@ initial begin
   bit xbar_mode;
   void'($value$plusargs("xbar_mode=%0b", xbar_mode));
   if (xbar_mode) begin
-    // disable ibex clock to avoid printting too much useless log from ibex
-    force `CPU_HIER.clk_i = 1'b0;
     // only enable assertions in xbar as many pins are unconnected
     $assertoff(0, tb);
 % for xbar in top["xbar"]:
