@@ -62,10 +62,13 @@ module prim_clock_div #(
     end
   end
 
+  // when in scanmode, bypass the dividers completely
+  // also anchor point for constraints
   logic clk_muxed;
 
-  // when in scanmode, bypass the dividers completely
-  prim_clock_mux2 u_clk_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_clk_mux (
     .clk0_i(clk_int),
     .clk1_i(clk_i),
     .sel_i(test_en_i),
@@ -73,7 +76,7 @@ module prim_clock_div #(
   );
 
   // anchor point for constraints
-  prim_clock_buf u_clk_div_buf(
+  prim_clock_buf u_clk_div_buf (
     .clk_i(clk_muxed),
     .clk_o
   );
