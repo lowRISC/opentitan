@@ -1,0 +1,106 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+
+  // This is the primary cfg hjson for FPV linting. It imports ALL individual lint
+  // cfgs of the IPs FPV environments.
+  // This enables to run them all as a regression in one shot.
+  name: top_earlgrey_fpv_batch
+
+  import_cfgs:      [// common server configuration for results upload
+                     "{proj_root}/hw/data/common_project_cfg.hjson"
+                     // tool-specific configuration
+                     "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
+
+  // Different dashboard output path for each tool
+  rel_path: "hw/top_earlgrey/fpv/lint/{tool}"
+
+  use_cfgs: [{
+               name: prim_arbiter_ppc_fpv
+               fusesoc_core: lowrisc:fpv:prim_arbiter_ppc_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+             }
+             {
+               name: prim_arbiter_tree_fpv
+               fusesoc_core: lowrisc:fpv:prim_arbiter_tree_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+             }
+             {
+               name: prim_arbiter_fixed_fpv
+               fusesoc_core: lowrisc:fpv:prim_arbiter_fixed_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+             }
+             {
+               name: prim_lfsr_fpv
+               fusesoc_core: lowrisc:fpv:prim_lfsr_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+             }
+             {
+               name: prim_fifo_sync_fpv
+               fusesoc_core: lowrisc:fpv:prim_fifo_sync_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+             }
+             {
+               name: prim_alert_rxtx_fpv
+               fusesoc_core: lowrisc:fpv:prim_alert_rxtx_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+             }
+             {
+               name: prim_alert_rxtx_async_fpv
+               fusesoc_core: lowrisc:fpv:prim_alert_rxtx_async_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+             }
+             {
+               name: prim_esc_rxtx_fpv
+               fusesoc_core: lowrisc:fpv:prim_esc_rxtx_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+             }
+             {
+               name: prim_packer_fpv
+               fusesoc_core: lowrisc:fpv:prim_packer_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+             }
+             {
+               name: padctrl_fpv
+               fusesoc_core: lowrisc:fpv:padctrl_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/padctrl/fpv/lint/{tool}"
+             }
+             {
+               name: pinmux_fpv
+               fusesoc_core: lowrisc:fpv:pinmux_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/pinmux/fpv/lint/{tool}"
+             }
+             {
+               name: rv_plic_fpv
+               fusesoc_core: lowrisc:fpv:rv_plic_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/top_earlgrey/ip/rv_plic/fpv/lint/{tool}"
+             }
+             {
+               name: rv_plic_generic_fpv
+               fusesoc_core: lowrisc:fpv:rv_plic_generic_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/prim/fpv/lint/{tool}"
+               rel_path: "hw/ip/rv_plic/fpv/lint/{tool}"
+             }
+             {
+               name: sha3pad_fpv
+               fusesoc_core: lowrisc:fpv:sha3pad_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/kmac/fpv/lint/{tool}"
+             }
+            ]
+}
+

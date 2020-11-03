@@ -13,7 +13,7 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  default:
+  default: &default_target
     # note, this setting is just used
     # to generate a file list for jg
     default_tool: icarus
@@ -21,3 +21,6 @@ targets:
       - files_fpv
     toplevel:
       - prim_keccak_fpv
+
+  lint:
+    <<: *default_target
