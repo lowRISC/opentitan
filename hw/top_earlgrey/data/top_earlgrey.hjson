@@ -218,6 +218,13 @@
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x40120000",
     },
+    { name: "kmac"
+      type: "kmac"
+      clock_srcs: {clk_i: "main"}
+      clock_group: "trans"
+      reset_connections: {rst_ni: "sys"}
+      base_addr: "0x41120000"
+    }
     { name: "rv_plic",
       type: "rv_plic",
       clock_srcs: {clk_i: "main"},
@@ -428,6 +435,10 @@
       'pwrmgr.pwr_otp'   : ['otp_ctrl.pwr_otp'],
       'flash_ctrl.keymgr': ['keymgr.flash'],
       'alert_handler.crashdump': ['rstmgr.alert_dump'],
+
+      // KeyMgr Sideload & KDF function
+      'keymgr.kmac_key' : ['kmac.keymgr_key']
+      'keymgr.kmac_data': ['kmac.keymgr_kdf']
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
       // an empty list.
@@ -490,7 +501,7 @@
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl",
                      "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr",
-                     "otbn", "keymgr" ]
+                     "otbn", "keymgr", "kmac" ]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
