@@ -30,6 +30,10 @@ export_embedded_target = [
   '@INPUT@',
 ]
 
+embedded_target_extra_link_args = [
+  '-Wl,--build-id=none',
+]
+
 subdir('boot_rom')
 subdir('rom_exts')
 subdir('mask_rom')

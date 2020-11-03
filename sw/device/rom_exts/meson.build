@@ -17,7 +17,7 @@ rom_ext_link_info = {
     [
       '-Wl,-L,@0@'.format(meson.source_root()),
       '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_ext_linkfile_slot_a[0]),
-      '-Wl,--build-id=none',
+      embedded_target_extra_link_args,
     ],
     # Link dependency file for slot A.
     [
@@ -30,7 +30,7 @@ rom_ext_link_info = {
     [
       '-Wl,-L,@0@'.format(meson.source_root()),
       '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_ext_linkfile_slot_b[0]),
-      '-Wl,--build-id=none',
+      embedded_target_extra_link_args,
     ],
     # Link dependency file for slot B.
     [

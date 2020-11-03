@@ -29,6 +29,17 @@ _stack_size = 0x2000;
 _stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
 _stack_start = _stack_end - _stack_size;
 
+/* DV Log offset (has to be different to other boot stages). */
+_dv_log_offset = 0x10000;
+
+/**
+ * The entry point in `flash_crt.S` is called `_start`. This information in the
+ * ELF file is not used - instead we use the information in the `.flash_header`
+ * section to understand where to start execution of a flash image. We need this
+ * declaration so LLD does not error.
+ */
+ENTRY(_start);
+
 SECTIONS {
   /**
    * The flash header. This will eventually contain other stuff, like a
@@ -41,8 +52,8 @@ SECTIONS {
   /**
    * C runtime (CRT) section, containing program initialization code.
    *
-   * We don't use ENTRY, so the start of |flash| acts as the entrypoint. Since
-   * the CRT is the first thing that needs to run, it goes at the top.
+   * The flash header contains the address of the entry point, _start, which is
+   * inside this section. We keep them together in the linked elf files too.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
@@ -143,42 +154,9 @@ SECTIONS {
     *(.sbss.*)
     *(.bss)
     *(.bss.*)
-    *(COMMON)
     . = ALIGN(4);
     _bss_end = .;
   } > ram_main
 
-  /**
-   * STAB debug table.
-   */
-  .stab 0x0 (NOLOAD): {
-    *(.stab)
-  }
-
-  /**
-   * STAB debug strings.
-   */
-  .stabstr 0x0 (NOLOAD): {
-    *(.stabstr)
-  }
-
-  /**
-   * The following sections are used by DV to implement logging in an
-   * alternate way, which enables simulation speed up by completely avoiding
-   * any string format processing or even the actual transmission of log data
-   * to a real peripheral.
-   *
-   * These sections are marked as dummy so that they can still be extracted
-   * using readelf or similar utilities. As such, the content in these sections
-   * is not relevant for the actual SW code and can be safely discarded.
-   */
-
-  /**
-   * The following section contains log fields constructed from the logs using
-   * the log_fields_t struct defined in sw/device/lib/runtime/log.h. The size of
-   * each log field is fixed - 20 bytes, which is used as the delimiter.
-   */
-  .logs.fields 0x10000 (DSECT): {
-    *(.logs.fields)
-  }
+  INCLUDE sw/device/info_sections.ld
 }
