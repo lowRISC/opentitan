@@ -30,7 +30,7 @@ def main():
     rtl_out   = current / '../rtl/rstmgr.sv'
     pkg_out   = current / '../rtl/rstmgr_pkg.sv'
 
-    cfgpath   = current / '../data/rstmgr.cfg.example.hjson'
+    cfgpath   = current / '../../../top_earlgrey/data/autogen/top_earlgrey.gen.hjson'
 
     try:
         with open(cfgpath, 'r') as cfg:
@@ -39,44 +39,75 @@ def main():
         log.error("{} not found".format(cfgpath))
         raise SystemExit(sys.exc_info()[1])
 
+    # Parameters needed for generation
     clks = []
     output_rsts = OrderedDict()
-    por_rsts = OrderedDict()
     sw_rsts = OrderedDict()
     leaf_rsts = OrderedDict()
 
     # unique clocks
-    for rst in topcfg["resets"]:
+    for rst in topcfg["resets"]["nodes"]:
         if rst['type'] != "ext" and rst['clk'] not in clks:
             clks.append(rst['clk'])
 
     # resets sent to reset struct
-    output_rsts = [rst for rst in topcfg["resets"] if rst['type'] == "top"]
-
-    # por_rsts = [rst for rst in topcfg["resets"] if 'inst' in rst and rst['inst'] == "por"]
+    output_rsts = [rst for rst in topcfg["resets"]["nodes"] if rst['type'] == "top"]
 
     # sw controlled resets
-    sw_rsts = [rst for rst in topcfg["resets"] if 'sw' in rst and rst['sw'] == 1]
+    sw_rsts = [rst for rst in topcfg["resets"]["nodes"] if 'sw' in rst and rst['sw'] == 1]
 
     # leaf resets
-    leaf_rsts = [rst for rst in topcfg["resets"] if rst['gen'] == 1]
+    leaf_rsts = [rst for rst in topcfg["resets"]["nodes"] if rst['gen']]
+
+    log.info("output resets {}".format(output_rsts))
+    log.info("software resets {}".format(sw_rsts))
+    log.info("leaf resets {}".format(leaf_rsts))
+
+    # Number of reset requests
+    n_rstreqs = len(topcfg["reset_requests"])
+
+#    # unique clocks
+#    for rst in topcfg["resets"]:
+#        if rst['type'] != "ext" and rst['clk'] not in clks:
+#            clks.append(rst['clk'])
+#
+#    # resets sent to reset struct
+#    output_rsts = [rst for rst in topcfg["resets"] if rst['type'] == "top"]
+#
+#    # por_rsts = [rst for rst in topcfg["resets"] if 'inst' in rst and rst['inst'] == "por"]
+#
+#    # sw controlled resets
+#    sw_rsts = [rst for rst in topcfg["resets"] if 'sw' in rst and rst['sw'] == 1]
+#
+#    # leaf resets
+#    leaf_rsts = [rst for rst in topcfg["resets"] if rst['gen'] == 1]
 
     # generate hjson
     hjson_out.write_text(
-         hjson_tpl.render(cfg=topcfg,
-                          clks=clks,
-                          sw_rsts=sw_rsts))
+         hjson_tpl.render(clks=clks,
+                          num_rstreqs=n_rstreqs,
+                          sw_rsts=sw_rsts,
+                          output_rsts=output_rsts,
+                          leaf_rsts=leaf_rsts,
+                          export_rsts=topcfg['exported_rsts']))
 
     # generate rtl package
     pkg_out.write_text(
-         pkg_tpl.render(cfg=topcfg,
-                        output_rsts=output_rsts))
+        pkg_tpl.render(clks=clks,
+                       num_rstreqs=n_rstreqs,
+                       sw_rsts=sw_rsts,
+                       output_rsts=output_rsts,
+                       leaf_rsts=leaf_rsts,
+                       export_rsts=topcfg['exported_rsts']))
 
     # generate top level
     rtl_out.write_text(
-         rtl_tpl.render(cfg=topcfg,
-                        clks=clks,
-                        leaf_rsts=leaf_rsts))
+         rtl_tpl.render(clks=clks,
+                        num_rstreqs=n_rstreqs,
+                        sw_rsts=sw_rsts,
+                        output_rsts=output_rsts,
+                        leaf_rsts=leaf_rsts,
+                        export_rsts=topcfg['exported_rsts']))
 
 
 if __name__ == "__main__":
