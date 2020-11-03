@@ -10,8 +10,8 @@ class pattgen_agent_cfg extends dv_base_agent_cfg;
 
   bit reset_asserted;
 
-  bit [NUM_PATTGEN_CHANNELS-1:0] polarity;
-  int length[NUM_PATTGEN_CHANNELS-1:0];
+  bit  polarity[NUM_PATTGEN_CHANNELS-1:0];
+  uint length[NUM_PATTGEN_CHANNELS-1:0];
 
   `uvm_object_utils_begin(pattgen_agent_cfg)
     `uvm_field_sarray_int(polarity, UVM_DEFAULT)

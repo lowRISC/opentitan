@@ -48,11 +48,12 @@ class pattgen_monitor extends dv_base_monitor #(
           fork
             begin
               do begin
-                get_pattgen_bit(channel, cfg.polarity[channel], bit_data);
+                wait(cfg.en_monitor);
+                get_pattgen_bit(channel, bit_data);
+                `uvm_info(`gfn, $sformatf("\n--> monitor: channel %0d, polarity %0d, data[%0d] %b",
+                    channel, cfg.polarity[channel], bit_cnt, bit_data), UVM_DEBUG)
                 dut_item.data_q.push_back(bit_data);
                 bit_cnt++;
-                `uvm_info(`gfn, $sformatf("\n--> monitor: channel %0d, polar %0b, data[%0d] %b",
-                    channel, cfg.polarity[channel], bit_cnt, bit_data), UVM_DEBUG)
               end while (bit_cnt < cfg.length[channel]);
               // avoid race condition (counter is achieved and reset is issued at the same time)
               if (!cfg.reset_asserted) begin
@@ -89,14 +90,32 @@ class pattgen_monitor extends dv_base_monitor #(
     end
   endtask : monitor_ready_to_end
 
-  virtual task get_pattgen_bit(uint channel, bit polarity, output bit bit_o);
+  // collect bits alligned by polarized clock
+  virtual task get_pattgen_bit(uint channel, output bit bit_o);
+    bit stop_thread = 1'b0;
+
     `DV_CHECK_LT_FATAL(channel, NUM_PATTGEN_CHANNELS, "invalid channel index")
-    if (polarity) begin
-      @(negedge cfg.vif.pcl_tx[channel]);
-    end else begin
-      @(posedge cfg.vif.pcl_tx[channel]);
+    while (!stop_thread) begin
+      fork
+        begin : isolation_thread
+          fork
+            begin
+              if (cfg.polarity[channel]) begin
+                @(negedge cfg.vif.pcl_tx[channel]);
+              end else begin
+                @(posedge cfg.vif.pcl_tx[channel]);
+              end
+              bit_o = cfg.vif.pda_tx[channel];
+              stop_thread = 1'b1;
+            end
+            // if polarity is updated, fork is disabled and the first thread is rerun with
+            // updated polarity value to capture data
+            @(cfg.polarity[channel]);
+          join_any
+          disable fork;
+        end : isolation_thread
+      join
     end
-    bit_o = cfg.vif.pda_tx[channel];
   endtask : get_pattgen_bit
 
 endclass : pattgen_monitor

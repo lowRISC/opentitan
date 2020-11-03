@@ -13,3 +13,4 @@ interface pattgen_if #(
   logic [NumChannels-1:0] pcl_tx;
 
 endinterface : pattgen_if
+
