@@ -72,7 +72,7 @@ module otbn
 
   // TODO: Better define what "idle" means -- only the core, or also the
   // register interface?
-  assign idle_o = ~busy_q | ~start;
+  assign idle_o = ~busy_q & ~start;
 
 
   // Interrupts ================================================================
