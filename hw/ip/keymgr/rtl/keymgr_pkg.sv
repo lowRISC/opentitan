@@ -108,6 +108,12 @@ package keymgr_pkg;
     logic [KeyWidth-1:0] key_share1;
   } hw_key_req_t;
 
+  parameter hw_key_req_t HW_KEY_REQ_DEFAULT = '{
+    valid: 1'b0,
+    key_share0: KeyWidth'(32'hDEADBEEF),
+    key_share1: KeyWidth'(32'hFACEBEEF)
+  };
+
   typedef struct packed {
     logic valid;
     logic [KmacDataIfWidth-1:0] data;
