@@ -37,7 +37,10 @@ module kmac
   // interrupts
   output logic intr_kmac_done_o,
   output logic intr_fifo_empty_o,
-  output logic intr_kmac_err_o
+  output logic intr_kmac_err_o,
+
+  // Idle signal
+  output logic idle_o
 );
 
   import kmac_reg_pkg::*;
@@ -90,7 +93,7 @@ module kmac
 
   // NumWordsPrefix from kmac_reg_pkg
   `ASSERT_INIT(PrefixRegSameToPrefixPkg_A,
-               kmac_reg_pkg::NumWordsPrefix*4 == kmac_pkg::NSRegisterSize)
+               kmac_reg_pkg::NumWordsPrefix*4 == sha3_pkg::NSRegisterSize)
 
   // Output state: this is used to redirect the digest to KeyMgr or Software
   // depends on the configuration.
@@ -284,6 +287,17 @@ module kmac
 
   assign sw_key_len = key_len_e'(reg2hw.key_len.q);
 
+  // Idle control (registered output)
+  // The logic checks idle of SHA3 engine, MSG_FIFO, KMAC_CORE, KEYMGR interface
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      idle_o <= 1'b 1;
+    end else if ((sha3_fsm == sha3_pkg::StIdle) && msgfifo_empty) begin
+      idle_o <= 1'b 1;
+    end else begin
+      idle_o <= 1'b 0;
+    end
+  end
   ///////////////
   // Interrupt //
   ///////////////

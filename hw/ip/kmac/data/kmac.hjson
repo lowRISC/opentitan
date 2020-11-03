@@ -70,6 +70,13 @@
       act:     "rsp"
       package: "keymgr_pkg"
     }
+    { name:    "idle",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
   ]
   regwidth: "32"
   registers: [
