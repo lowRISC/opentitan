@@ -44,3 +44,6 @@ targets:
 
   formal:
     <<: *default_target
+
+  lint:
+    <<: *default_target
