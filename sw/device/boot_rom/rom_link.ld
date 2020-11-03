@@ -42,6 +42,16 @@ _flash_header = _flash_start;
 _chip_info_size = 128;
 _chip_info_start = ORIGIN(rom) + LENGTH(rom) - _chip_info_size;
 
+/* DV Log offset (has to be different to other boot stages). */
+_dv_log_offset = 0x0;
+
+/**
+ * We define an entry point only for documentation purposes (and to stop LLD
+ * erroring). In reality, we don't use this information within the ROM image, as
+ * we start at a fixed offset.
+ */
+ENTRY(_reset_start);
+
 /**
  * NOTE: We have to align each section to word boundaries as our current
  * s19->slm conversion scripts are not able to handle non-word aligned sections.
@@ -134,42 +144,9 @@ SECTIONS {
     *(.sbss.*)
     *(.bss)
     *(.bss.*)
-    *(COMMON)
     . = ALIGN(4);
     _bss_end = .;
   } > ram_main
 
-  /**
-   * STAB debug table.
-   */
-  .stab 0x0 (NOLOAD): {
-    [.stab]
-  }
-
-  /**
-   * STAB debug strings.
-   */
-  .stabstr 0x0 (NOLOAD): {
-    [.stabstr]
-  }
-
-  /**
-   * The following sections are used by DV to implement logging in an
-   * alternate way, which enables simulation speed up by completely avoiding
-   * any string format processing or even the actual transmission of log data
-   * to a real peripheral.
-   *
-   * These sections are marked as dummy so that they can still be extracted
-   * using readelf or similar utilities. As such, the content in these sections
-   * is not relevant for the actual SW code and can be safely discarded.
-   */
-
-  /**
-   * The following section contains log fields constructed from the logs using
-   * the log_fields_t struct defined in sw/device/lib/runtime/log.h. The size of
-   * each log field is fixed - 20 bytes, which is used as the delimiter.
-   */
-  .logs.fields 0x0 (DSECT): {
-    *(.logs.fields)
-  }
+  INCLUDE sw/device/info_sections.ld
 }

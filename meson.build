@@ -90,6 +90,8 @@ c_cpp_cross_args = [
   '-nostdinc',
   # Use OpenTitan's freestanding headers instead
   '-isystem' + meson.source_root() / 'sw/device/lib/base/freestanding',
+  # Don't emit unwinding information
+  '-fno-asynchronous-unwind-tables',
 ]
 
 # Add extra warning flags for cross builds, if they are supported.
@@ -112,6 +114,12 @@ c_cpp_cross_link_args = [
   '-nostdlib',
    # Only link static files
   '-static',
+  # Warn if we use COMMON
+  '-Wl,--warn-common',
+  # Warn if we include orphan sections
+  '-Wl,--orphan-handling=warn',
+  # Turn Linker Warnings into Errors
+  '-Wl,--fatal-warnings',
 ]
 add_project_link_arguments(
   c_cpp_cross_link_args,
