@@ -61,6 +61,7 @@ Code Quality  | [CDC_SYNCMACRO][]       | N/A         |
 Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
 Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
 Security      | [SEC_SHADOW_REGS][]     | Not Started |
+Security      | [SEC_RND_CNST][]        | Not Started |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
 [BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block_diagram" >}}
@@ -80,6 +81,7 @@ Security      | [SEC_SHADOW_REGS][]     | Not Started |
 [SEC_CM_IMPLEMENTED]:  {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
 [SEC_NON_RESET_FLOPS]: {{<relref "/doc/project/checklist.md#sec_non_reset_flops" >}}
 [SEC_SHADOW_REGS]:     {{<relref "/doc/project/checklist.md#sec_shadow_regs" >}}
+[SEC_RND_CNST]:        {{<relref "/doc/project/checklist.md#sec_rnd_cnst" >}}
 
 ### D3
 
