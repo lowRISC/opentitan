@@ -304,7 +304,7 @@ module otp_ctrl_lfsr_timer
       integ_chk_req_q <= '0;
       cnsty_chk_req_q <= '0;
       chk_timeout_q   <= 1'b0;
-      reseed_timer_q  <= {ReseedTimerWidth{1'b1}};
+      reseed_timer_q  <= {ReseedLfsrWidth{1'b1}};
     end else begin
       integ_cnt_q <= integ_cnt_d;
       cnsty_cnt_q <= cnsty_cnt_d;
