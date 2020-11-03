@@ -67,7 +67,9 @@ module rstmgr import rstmgr_pkg::*; (
     .rst_no(rst_por_aon_n)
   );
 
-  prim_clock_mux2 u_rst_por_aon_n_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_rst_por_aon_n_mux (
     .clk0_i(rst_por_aon_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -194,7 +196,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_por_n)
   );
 
-  prim_clock_mux2 u_por_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_por_mux (
     .clk0_i(rst_por_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -213,7 +217,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_por_io_n)
   );
 
-  prim_clock_mux2 u_por_io_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_por_io_mux (
     .clk0_i(rst_por_io_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -232,7 +238,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_por_io_div2_n)
   );
 
-  prim_clock_mux2 u_por_io_div2_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_por_io_div2_mux (
     .clk0_i(rst_por_io_div2_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -251,7 +259,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_por_io_div4_n)
   );
 
-  prim_clock_mux2 u_por_io_div4_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_por_io_div4_mux (
     .clk0_i(rst_por_io_div4_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -270,7 +280,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_por_usb_n)
   );
 
-  prim_clock_mux2 u_por_usb_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_por_usb_mux (
     .clk0_i(rst_por_usb_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -289,7 +301,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_lc_n)
   );
 
-  prim_clock_mux2 u_lc_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_lc_mux (
     .clk0_i(rst_lc_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -308,7 +322,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_lc_io_n)
   );
 
-  prim_clock_mux2 u_lc_io_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_lc_io_mux (
     .clk0_i(rst_lc_io_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -327,7 +343,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_sys_n)
   );
 
-  prim_clock_mux2 u_sys_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_sys_mux (
     .clk0_i(rst_sys_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -346,7 +364,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_sys_io_n)
   );
 
-  prim_clock_mux2 u_sys_io_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_sys_io_mux (
     .clk0_i(rst_sys_io_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -365,7 +385,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_sys_io_div4_n)
   );
 
-  prim_clock_mux2 u_sys_io_div4_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_sys_io_div4_mux (
     .clk0_i(rst_sys_io_div4_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -384,7 +406,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_sys_aon_n)
   );
 
-  prim_clock_mux2 u_sys_aon_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_sys_aon_mux (
     .clk0_i(rst_sys_aon_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -403,7 +427,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_spi_device_n)
   );
 
-  prim_clock_mux2 u_spi_device_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_spi_device_mux (
     .clk0_i(rst_spi_device_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -422,7 +448,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_usb_n)
   );
 
-  prim_clock_mux2 u_usb_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_usb_mux (
     .clk0_i(rst_usb_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),

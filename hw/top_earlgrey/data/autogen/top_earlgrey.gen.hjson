@@ -2045,7 +2045,7 @@
       alert_list: []
       wakeup_list: []
       reset_request_list: []
-      scan: "false"
+      scan: "true"
       scan_reset: "false"
       inter_signal_list:
       [
@@ -2136,15 +2136,6 @@
           default: ""
           package: pwrmgr_pkg
           top_signame: pwrmgr_pwr_clk
-          index: -1
-        }
-        {
-          struct: clk_dft
-          type: uni
-          name: dft
-          act: rcv
-          package: clkmgr_pkg
-          inst_name: clkmgr
           index: -1
         }
         {
@@ -6622,15 +6613,6 @@
         default: ""
         package: pwrmgr_pkg
         top_signame: pwrmgr_pwr_clk
-        index: -1
-      }
-      {
-        struct: clk_dft
-        type: uni
-        name: dft
-        act: rcv
-        package: clkmgr_pkg
-        inst_name: clkmgr
         index: -1
       }
       {
