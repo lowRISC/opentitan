@@ -19,14 +19,6 @@ package clkmgr_pkg;
   } hint_names_e;
 
   typedef struct packed {
-    logic test_en;
-  } clk_dft_t;
-
-  parameter clk_dft_t CLK_DFT_DEFAULT = '{
-    test_en: 1'b0
-  };
-
-  typedef struct packed {
 <%
 # Merge Clock Dicts together
 all_clocks = OrderedDict()

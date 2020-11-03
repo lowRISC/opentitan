@@ -41,7 +41,7 @@ module clkmgr import clkmgr_pkg::*; (
   output pwrmgr_pkg::pwr_clk_rsp_t pwr_o,
 
   // dft interface
-  input clk_dft_t dft_i,
+  input scanmode_i,
 
   // idle hints
   input [${len(hint_clks)-1}:0] idle_i,
@@ -84,6 +84,7 @@ module clkmgr import clkmgr_pkg::*; (
   ) u_${src['name']}_div (
     .clk_i(clk_${src['src']}_i),
     .rst_ni(rst_${src['src']}_ni),
+    .test_en_i(scanmode_i),
     .clk_o(clk_${src['name']}_i)
   );
 % endfor
@@ -119,7 +120,7 @@ module clkmgr import clkmgr_pkg::*; (
   prim_clock_gating_sync u_${src}_cg (
     .clk_i(clk_${src}_i),
     .rst_ni(rst_${src}_ni),
-    .test_en_i(dft_i.test_en),
+    .test_en_i(scanmode_i),
     .async_en_i(pwr_i.ip_clk_en),
     .en_o(clk_${src}_en),
     .clk_o(clk_${src}_root)
@@ -214,9 +215,9 @@ module clkmgr import clkmgr_pkg::*; (
   );
 
   prim_clock_gating u_${k}_cg (
-    .clk_i(clk_${v}_i),
+    .clk_i(clk_${v}_root),
     .en_i(${k}_sw_en & clk_${v}_en),
-    .test_en_i(dft_i.test_en),
+    .test_en_i(scanmode_i),
     .clk_o(clocks_o.${k})
   );
 
@@ -246,9 +247,9 @@ module clkmgr import clkmgr_pkg::*; (
   );
 
   prim_clock_gating u_${k}_cg (
-    .clk_i(clk_${v["src"]}_i),
+    .clk_i(clk_${v["src"]}_root),
     .en_i(${k}_en & clk_${v["src"]}_en),
-    .test_en_i(dft_i.test_en),
+    .test_en_i(scanmode_i),
     .clk_o(clocks_o.${k})
   );
 
