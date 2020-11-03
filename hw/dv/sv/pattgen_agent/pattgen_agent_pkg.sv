@@ -16,6 +16,7 @@ package pattgen_agent_pkg;
   parameter uint NUM_PATTGEN_CHANNELS = 2;
 
   // local types
+
   // forward declare classes to allow typedefs below
   typedef class pattgen_item;
   typedef class pattgen_agent_cfg;

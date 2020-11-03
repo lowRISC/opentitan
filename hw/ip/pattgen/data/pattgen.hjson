@@ -42,12 +42,18 @@
         { bits: "0",
           resval: "0",
           name: "ENABLE_CH0",
-          desc: "Enable pattern generator functionality for Channel 0"
+          desc: "Enable pattern generator functionality for Channel 0",
+          tags: [// don't write (e.g. 1'b1) to enable bit
+                 // because DUT can operate with zero values programmed to registers - it affects several other csrs
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
         { bits: "1",
           resval: "0",
           name: "ENABLE_CH1",
-          desc: "Enable pattern generator functionality for Channel 1"
+          desc: "Enable pattern generator functionality for Channel 1",
+          tags: [// don't write (e.g. 1'b1) to enable bit
+                 // because DUT can operate with zero values programmed to registers - it affects several other csrs
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
         { bits: "2",
           resval: "0",

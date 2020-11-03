@@ -5,14 +5,14 @@
 {
     name:               "pattgen",
     design_spec:        "hw/ip/pattgen/doc",
-//    dv_plan:            "hw/ip/pattgen/doc/dv_plan",
+    dv_plan:            "hw/ip/pattgen/doc/dv_plan",
     hw_checklist:       "hw/ip/pattgen/doc/checklist",
     revisions: [
       {
         version:            "1.0",
         life_stage:         "L1",
         design_stage:       "D1",
-        verification_stage: "V0",
+        verification_stage: "V1",
         dif_stage:          "S0",
         notes:              ""
       }

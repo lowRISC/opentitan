@@ -87,6 +87,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/prim/dv/prim_prince/lint/{tool}"
              },
+             {    name: pattgen
+                  fusesoc_core: lowrisc:,dv:pattgen_sim,
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
+                  rel_path: "hw/ip/pattgen/dv/lint/{tool}"
+             },
              {    name: rv_timer
                   fusesoc_core: lowrisc:dv:rv_timer_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
