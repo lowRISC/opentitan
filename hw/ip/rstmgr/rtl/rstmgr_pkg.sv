@@ -9,17 +9,18 @@
 package rstmgr_pkg;
 
   // global constants
-  parameter int ALWAYS_ON_SEL    = pwrmgr_pkg::ALWAYS_ON_DOMAIN;
+  parameter int ALWAYS_ON_SEL   = pwrmgr_pkg::ALWAYS_ON_DOMAIN;
 
   // params that reference pwrmgr, should be replaced once pwrmgr is merged
-  parameter int PowerDomains    = pwrmgr_pkg::PowerDomains;
-  parameter int ExtResetReasons = pwrmgr_pkg::HwRstReqs;
+  parameter int PowerDomains  = pwrmgr_pkg::PowerDomains;
+  //parameter int HwResetReqs   = pwrmgr_pkg::NumRstReqs;
 
   // calculated domains
   parameter int OffDomains = PowerDomains-1;
 
-  // low power exit + external reasons + ndm_reset_req
-  parameter int ResetReasons = 1 + ExtResetReasons + 1;
+  // positions of software controllable reset bits
+  parameter int SPI_DEVICE = 0;
+  parameter int USB = 1;
 
   // ast interface
   typedef struct packed {
@@ -38,10 +39,13 @@ package rstmgr_pkg;
     logic rst_por_n;
     logic rst_por_io_n;
     logic rst_por_io_div2_n;
+    logic rst_por_io_div4_n;
     logic rst_por_usb_n;
     logic rst_lc_n;
+    logic rst_lc_io_n;
     logic rst_sys_n;
     logic rst_sys_io_n;
+    logic rst_sys_io_div4_n;
     logic rst_sys_aon_n;
     logic rst_spi_device_n;
     logic rst_usb_n;
@@ -53,21 +57,17 @@ package rstmgr_pkg;
     logic ndmreset_req;
   } rstmgr_cpu_t;
 
+  // exported resets
+  typedef struct packed {
+    logic rst_ast_usbdev_sys_io_div4_n;
+    logic rst_ast_usbdev_usb_n;
+    logic rst_ast_sensor_ctrl_sys_io_div4_n;
+  } rstmgr_ast_out_t;
+
   // default value for rstmgr_ast_rsp_t (for dangling ports)
   parameter rstmgr_cpu_t RSTMGR_CPU_DEFAULT = '{
     rst_cpu_n: 1'b1,
     ndmreset_req: '0
   };
-
-  // peripherals reset requests
-  typedef struct packed {
-    logic [ExtResetReasons-1:0] rst_reqs;
-  } rstmgr_peri_t;
-
-  // default value for rstmgr_ast_rsp_t (for dangling ports)
-  parameter rstmgr_peri_t RSTMGR_PERI_DEFAULT = '{
-    rst_reqs: '0
-  };
-
 
 endpackage // rstmgr_pkg

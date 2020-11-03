@@ -71,53 +71,252 @@ module rstmgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [4:0] reset_info_qs;
-  logic [4:0] reset_info_wd;
-  logic reset_info_we;
-  logic reset_info_re;
-  logic spi_device_regen_qs;
-  logic spi_device_regen_wd;
-  logic spi_device_regen_we;
-  logic rst_spi_device_n_qs;
-  logic rst_spi_device_n_wd;
-  logic rst_spi_device_n_we;
-  logic usb_regen_qs;
-  logic usb_regen_wd;
-  logic usb_regen_we;
-  logic rst_usb_n_qs;
-  logic rst_usb_n_wd;
-  logic rst_usb_n_we;
+  logic reset_info_por_qs;
+  logic reset_info_por_wd;
+  logic reset_info_por_we;
+  logic reset_info_low_power_exit_qs;
+  logic reset_info_low_power_exit_wd;
+  logic reset_info_low_power_exit_we;
+  logic reset_info_ndm_reset_qs;
+  logic reset_info_ndm_reset_wd;
+  logic reset_info_ndm_reset_we;
+  logic reset_info_hw_req_qs;
+  logic reset_info_hw_req_wd;
+  logic reset_info_hw_req_we;
+  logic alert_info_ctrl_en_qs;
+  logic alert_info_ctrl_en_wd;
+  logic alert_info_ctrl_en_we;
+  logic [3:0] alert_info_ctrl_index_qs;
+  logic [3:0] alert_info_ctrl_index_wd;
+  logic alert_info_ctrl_index_we;
+  logic [3:0] alert_info_attr_qs;
+  logic alert_info_attr_re;
+  logic [31:0] alert_info_qs;
+  logic alert_info_re;
+  logic sw_rst_regen_en_0_qs;
+  logic sw_rst_regen_en_0_wd;
+  logic sw_rst_regen_en_0_we;
+  logic sw_rst_regen_en_1_qs;
+  logic sw_rst_regen_en_1_wd;
+  logic sw_rst_regen_en_1_we;
+  logic sw_rst_ctrl_n_val_0_qs;
+  logic sw_rst_ctrl_n_val_0_wd;
+  logic sw_rst_ctrl_n_val_0_we;
+  logic sw_rst_ctrl_n_val_0_re;
+  logic sw_rst_ctrl_n_val_1_qs;
+  logic sw_rst_ctrl_n_val_1_wd;
+  logic sw_rst_ctrl_n_val_1_we;
+  logic sw_rst_ctrl_n_val_1_re;
 
   // Register instances
-  // R[reset_info]: V(True)
+  // R[reset_info]: V(False)
+
+  //   F[por]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h1)
+  ) u_reset_info_por (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (reset_info_por_we),
+    .wd     (reset_info_por_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (reset_info_por_qs)
+  );
+
+
+  //   F[low_power_exit]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_reset_info_low_power_exit (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (reset_info_low_power_exit_we),
+    .wd     (reset_info_low_power_exit_wd),
+
+    // from internal hardware
+    .de     (hw2reg.reset_info.low_power_exit.de),
+    .d      (hw2reg.reset_info.low_power_exit.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (reset_info_low_power_exit_qs)
+  );
+
+
+  //   F[ndm_reset]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_reset_info_ndm_reset (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (reset_info_ndm_reset_we),
+    .wd     (reset_info_ndm_reset_wd),
+
+    // from internal hardware
+    .de     (hw2reg.reset_info.ndm_reset.de),
+    .d      (hw2reg.reset_info.ndm_reset.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (reset_info_ndm_reset_qs)
+  );
+
+
+  //   F[hw_req]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_reset_info_hw_req (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (reset_info_hw_req_we),
+    .wd     (reset_info_hw_req_wd),
+
+    // from internal hardware
+    .de     (hw2reg.reset_info.hw_req.de),
+    .d      (hw2reg.reset_info.hw_req.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.reset_info.hw_req.q ),
+
+    // to register interface (read)
+    .qs     (reset_info_hw_req_qs)
+  );
+
+
+  // R[alert_info_ctrl]: V(False)
+
+  //   F[en]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_alert_info_ctrl_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (alert_info_ctrl_en_we),
+    .wd     (alert_info_ctrl_en_wd),
+
+    // from internal hardware
+    .de     (hw2reg.alert_info_ctrl.en.de),
+    .d      (hw2reg.alert_info_ctrl.en.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_info_ctrl.en.q ),
+
+    // to register interface (read)
+    .qs     (alert_info_ctrl_en_qs)
+  );
+
+
+  //   F[index]: 7:4
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_alert_info_ctrl_index (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (alert_info_ctrl_index_we),
+    .wd     (alert_info_ctrl_index_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_info_ctrl.index.q ),
+
+    // to register interface (read)
+    .qs     (alert_info_ctrl_index_qs)
+  );
+
+
+  // R[alert_info_attr]: V(True)
 
   prim_subreg_ext #(
-    .DW    (5)
-  ) u_reset_info (
-    .re     (reset_info_re),
-    .we     (reset_info_we),
-    .wd     (reset_info_wd),
-    .d      (hw2reg.reset_info.d),
+    .DW    (4)
+  ) u_alert_info_attr (
+    .re     (alert_info_attr_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.alert_info_attr.d),
     .qre    (),
-    .qe     (reg2hw.reset_info.qe),
-    .q      (reg2hw.reset_info.q ),
-    .qs     (reset_info_qs)
+    .qe     (),
+    .q      (),
+    .qs     (alert_info_attr_qs)
   );
 
 
-  // R[spi_device_regen]: V(False)
+  // R[alert_info]: V(True)
 
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_alert_info (
+    .re     (alert_info_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.alert_info.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (alert_info_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg sw_rst_regen
+  // R[sw_rst_regen]: V(False)
+
+  // F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_spi_device_regen (
+  ) u_sw_rst_regen_en_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (spi_device_regen_we),
-    .wd     (spi_device_regen_wd),
+    .we     (sw_rst_regen_en_0_we),
+    .wd     (sw_rst_regen_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -125,53 +324,25 @@ module rstmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.sw_rst_regen[0].q ),
 
     // to register interface (read)
-    .qs     (spi_device_regen_qs)
+    .qs     (sw_rst_regen_en_0_qs)
   );
 
 
-  // R[rst_spi_device_n]: V(False)
-
+  // F[en_1]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_rst_spi_device_n (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (rst_spi_device_n_we & spi_device_regen_qs),
-    .wd     (rst_spi_device_n_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rst_spi_device_n.q ),
-
-    // to register interface (read)
-    .qs     (rst_spi_device_n_qs)
-  );
-
-
-  // R[usb_regen]: V(False)
-
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h1)
-  ) u_usb_regen (
+  ) u_sw_rst_regen_en_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (usb_regen_we),
-    .wd     (usb_regen_wd),
+    .we     (sw_rst_regen_en_1_we),
+    .wd     (sw_rst_regen_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -179,50 +350,60 @@ module rstmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.sw_rst_regen[1].q ),
 
     // to register interface (read)
-    .qs     (usb_regen_qs)
-  );
-
-
-  // R[rst_usb_n]: V(False)
-
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_rst_usb_n (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (rst_usb_n_we & usb_regen_qs),
-    .wd     (rst_usb_n_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rst_usb_n.q ),
-
-    // to register interface (read)
-    .qs     (rst_usb_n_qs)
+    .qs     (sw_rst_regen_en_1_qs)
   );
 
 
 
 
-  logic [4:0] addr_hit;
+  // Subregister 0 of Multireg sw_rst_ctrl_n
+  // R[sw_rst_ctrl_n]: V(True)
+
+  // F[val_0]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_sw_rst_ctrl_n_val_0 (
+    .re     (sw_rst_ctrl_n_val_0_re),
+    .we     (sw_rst_ctrl_n_val_0_we),
+    .wd     (sw_rst_ctrl_n_val_0_wd),
+    .d      (hw2reg.sw_rst_ctrl_n[0].d),
+    .qre    (),
+    .qe     (reg2hw.sw_rst_ctrl_n[0].qe),
+    .q      (reg2hw.sw_rst_ctrl_n[0].q ),
+    .qs     (sw_rst_ctrl_n_val_0_qs)
+  );
+
+
+  // F[val_1]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_sw_rst_ctrl_n_val_1 (
+    .re     (sw_rst_ctrl_n_val_1_re),
+    .we     (sw_rst_ctrl_n_val_1_we),
+    .wd     (sw_rst_ctrl_n_val_1_wd),
+    .d      (hw2reg.sw_rst_ctrl_n[1].d),
+    .qre    (),
+    .qe     (reg2hw.sw_rst_ctrl_n[1].qe),
+    .q      (reg2hw.sw_rst_ctrl_n[1].q ),
+    .qs     (sw_rst_ctrl_n_val_1_qs)
+  );
+
+
+
+
+
+  logic [5:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == RSTMGR_RESET_INFO_OFFSET);
-    addr_hit[1] = (reg_addr == RSTMGR_SPI_DEVICE_REGEN_OFFSET);
-    addr_hit[2] = (reg_addr == RSTMGR_RST_SPI_DEVICE_N_OFFSET);
-    addr_hit[3] = (reg_addr == RSTMGR_USB_REGEN_OFFSET);
-    addr_hit[4] = (reg_addr == RSTMGR_RST_USB_N_OFFSET);
+    addr_hit[1] = (reg_addr == RSTMGR_ALERT_INFO_CTRL_OFFSET);
+    addr_hit[2] = (reg_addr == RSTMGR_ALERT_INFO_ATTR_OFFSET);
+    addr_hit[3] = (reg_addr == RSTMGR_ALERT_INFO_OFFSET);
+    addr_hit[4] = (reg_addr == RSTMGR_SW_RST_REGEN_OFFSET);
+    addr_hit[5] = (reg_addr == RSTMGR_SW_RST_CTRL_N_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -235,46 +416,77 @@ module rstmgr_reg_top (
     if (addr_hit[2] && reg_we && (RSTMGR_PERMIT[2] != (RSTMGR_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[3] && reg_we && (RSTMGR_PERMIT[3] != (RSTMGR_PERMIT[3] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[4] && reg_we && (RSTMGR_PERMIT[4] != (RSTMGR_PERMIT[4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[5] && reg_we && (RSTMGR_PERMIT[5] != (RSTMGR_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign reset_info_we = addr_hit[0] & reg_we & ~wr_err;
-  assign reset_info_wd = reg_wdata[4:0];
-  assign reset_info_re = addr_hit[0] && reg_re;
+  assign reset_info_por_we = addr_hit[0] & reg_we & ~wr_err;
+  assign reset_info_por_wd = reg_wdata[0];
 
-  assign spi_device_regen_we = addr_hit[1] & reg_we & ~wr_err;
-  assign spi_device_regen_wd = reg_wdata[0];
+  assign reset_info_low_power_exit_we = addr_hit[0] & reg_we & ~wr_err;
+  assign reset_info_low_power_exit_wd = reg_wdata[1];
 
-  assign rst_spi_device_n_we = addr_hit[2] & reg_we & ~wr_err;
-  assign rst_spi_device_n_wd = reg_wdata[0];
+  assign reset_info_ndm_reset_we = addr_hit[0] & reg_we & ~wr_err;
+  assign reset_info_ndm_reset_wd = reg_wdata[2];
 
-  assign usb_regen_we = addr_hit[3] & reg_we & ~wr_err;
-  assign usb_regen_wd = reg_wdata[0];
+  assign reset_info_hw_req_we = addr_hit[0] & reg_we & ~wr_err;
+  assign reset_info_hw_req_wd = reg_wdata[3];
 
-  assign rst_usb_n_we = addr_hit[4] & reg_we & ~wr_err;
-  assign rst_usb_n_wd = reg_wdata[0];
+  assign alert_info_ctrl_en_we = addr_hit[1] & reg_we & ~wr_err;
+  assign alert_info_ctrl_en_wd = reg_wdata[0];
+
+  assign alert_info_ctrl_index_we = addr_hit[1] & reg_we & ~wr_err;
+  assign alert_info_ctrl_index_wd = reg_wdata[7:4];
+
+  assign alert_info_attr_re = addr_hit[2] && reg_re;
+
+  assign alert_info_re = addr_hit[3] && reg_re;
+
+  assign sw_rst_regen_en_0_we = addr_hit[4] & reg_we & ~wr_err;
+  assign sw_rst_regen_en_0_wd = reg_wdata[0];
+
+  assign sw_rst_regen_en_1_we = addr_hit[4] & reg_we & ~wr_err;
+  assign sw_rst_regen_en_1_wd = reg_wdata[1];
+
+  assign sw_rst_ctrl_n_val_0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign sw_rst_ctrl_n_val_0_wd = reg_wdata[0];
+  assign sw_rst_ctrl_n_val_0_re = addr_hit[5] && reg_re;
+
+  assign sw_rst_ctrl_n_val_1_we = addr_hit[5] & reg_we & ~wr_err;
+  assign sw_rst_ctrl_n_val_1_wd = reg_wdata[1];
+  assign sw_rst_ctrl_n_val_1_re = addr_hit[5] && reg_re;
 
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[4:0] = reset_info_qs;
+        reg_rdata_next[0] = reset_info_por_qs;
+        reg_rdata_next[1] = reset_info_low_power_exit_qs;
+        reg_rdata_next[2] = reset_info_ndm_reset_qs;
+        reg_rdata_next[3] = reset_info_hw_req_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = spi_device_regen_qs;
+        reg_rdata_next[0] = alert_info_ctrl_en_qs;
+        reg_rdata_next[7:4] = alert_info_ctrl_index_qs;
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[0] = rst_spi_device_n_qs;
+        reg_rdata_next[3:0] = alert_info_attr_qs;
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[0] = usb_regen_qs;
+        reg_rdata_next[31:0] = alert_info_qs;
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[0] = rst_usb_n_qs;
+        reg_rdata_next[0] = sw_rst_regen_en_0_qs;
+        reg_rdata_next[1] = sw_rst_regen_en_1_qs;
+      end
+
+      addr_hit[5]: begin
+        reg_rdata_next[0] = sw_rst_ctrl_n_val_0_qs;
+        reg_rdata_next[1] = sw_rst_ctrl_n_val_1_qs;
       end
 
       default: begin

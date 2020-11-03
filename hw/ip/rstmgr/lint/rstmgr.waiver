@@ -3,3 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for rstmgr
+
+# dedicated reset drivers / muxes
+set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
+set_clock_drivers prim_clock_buf
