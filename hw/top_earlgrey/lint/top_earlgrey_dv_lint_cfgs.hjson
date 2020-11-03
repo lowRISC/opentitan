@@ -36,6 +36,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/entropy_src/dv/lint/{tool}"
              },
+             {    name: edn
+                  fusesoc_core: lowrisc:dv:edn_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/edn/dv/lint/{tool}"
+             },
              {    name: flash_ctrl
                   fusesoc_core: lowrisc:dv:flash_ctrl_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
