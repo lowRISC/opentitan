@@ -4,7 +4,9 @@
 //
 // Common Library: Clock Gating cell
 
-module prim_generic_clock_gating (
+module prim_generic_clock_gating #(
+  parameter bit NoFpgaGate = 1'b0 // this parameter has no function in generic
+) (
   input        clk_i,
   input        en_i,
   input        test_en_i,

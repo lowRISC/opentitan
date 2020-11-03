@@ -60,7 +60,9 @@ module rstmgr import rstmgr_pkg::*; (
     .rst_no(rst_por_aon_n)
   );
 
-  prim_clock_mux2 u_rst_por_aon_n_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_rst_por_aon_n_mux (
     .clk0_i(rst_por_aon_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
@@ -196,7 +198,9 @@ module rstmgr import rstmgr_pkg::*; (
     .q_o(rst_${rst['name']}_n)
   );
 
-  prim_clock_mux2 u_${rst['name']}_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_${rst['name']}_mux (
     .clk0_i(rst_${rst['name']}_n),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),

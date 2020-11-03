@@ -97,7 +97,10 @@ module clkmgr import clkmgr_pkg::*; (
   // bundling management purposes through clocks_o
   ////////////////////////////////////////////////////
 % for k,v in ft_clks.items():
-  assign clocks_o.${k} = clk_${v}_i;
+  prim_clock_buf u_${k}_buf (
+    .clk_i(clk_${v}_i),
+    .clk_o(clocks_o.${k})
+  );
 % endfor
 
   ////////////////////////////////////////////////////
@@ -214,7 +217,9 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(${k}_sw_en)
   );
 
-  prim_clock_gating u_${k}_cg (
+  prim_clock_gating #(
+    .NoFpgaGate(1'b1)
+  ) u_${k}_cg (
     .clk_i(clk_${v}_root),
     .en_i(${k}_sw_en & clk_${v}_en),
     .test_en_i(scanmode_i),
@@ -246,7 +251,9 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(${k}_hint)
   );
 
-  prim_clock_gating u_${k}_cg (
+  prim_clock_gating #(
+    .NoFpgaGate(1'b1)
+  ) u_${k}_cg (
     .clk_i(clk_${v["src"]}_root),
     .en_i(${k}_en & clk_${v["src"]}_en),
     .test_en_i(scanmode_i),
