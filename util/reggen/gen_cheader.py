@@ -159,6 +159,11 @@ def gen_cdefine_window(outstr, win, comp, regwidth, rnames, existing_defines):
 def gen_cdefines_module_param(outstr, param, module_name, existing_defines):
     param_type = param['type']
 
+    # Do not generate C defines for parameters that are not localparams defined
+    # in the corresponding SystemVerilog package.
+    if param["local"].lower() == "false":
+        return
+
     # Presently there is only one type (int), however if the new types are
     # added, they potentially need to be handled differently.
     known_types = ["int"]
