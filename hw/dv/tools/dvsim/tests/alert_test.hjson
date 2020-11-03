@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_modes: [
+    {
+      name: cover_reg_top
+    }
+  ]
+
+  tests: [
+    {
+      name: "{name}_alert_test"
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "{name}_common_vseq"
+      run_opts: ["+run_alert_test", "+en_scb=0"]
+      reseed: 50
+    }
+  ]
+}
