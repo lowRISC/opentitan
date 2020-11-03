@@ -15,6 +15,8 @@ if {$env(COV) == 1} {
   check_cov -init -model {branch statement functional} \
   -enable_prove_based_proof_core
 }
+set_task_compile_time_limit 1000s
+set_property_compile_time_limit 1000s
 
 #-------------------------------------------------------------------------
 # read design
@@ -25,7 +27,7 @@ analyze -sv09                 \
   +define+FPV_ON              \
   -f [glob *.scr]
 
-elaborate -bbox_a 3600 -top $env(FPV_TOP)
+elaborate -bbox_a 3600 -top $env(FPV_TOP) -enable_sva_isunknown
 
 #-------------------------------------------------------------------------
 # specify clock(s) and reset(s)
@@ -143,7 +145,7 @@ report
 #-------------------------------------------------------------------------
 
 if {$env(COV) == 1} {
-  check_cov -measure
+  check_cov -measure -time_limit 2h
   check_cov -report -force -exclude { reset waived }
   check_cov -report -type all -no_return -report_file cover.html \
       -html -force -exclude { reset waived }
