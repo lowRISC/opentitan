@@ -95,6 +95,7 @@
         {
           clk_main_aes: main
           clk_main_hmac: main
+          clk_main_kmac: main
           clk_main_otbn: main
         }
       }
@@ -1195,6 +1196,164 @@
       ]
     }
     {
+      name: kmac
+      type: kmac
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: trans
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x41120000
+      clock_reset_export: []
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_kmac
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list:
+      [
+        {
+          name: EnMasking
+          type: int
+          default: "0"
+          desc:
+            '''
+            Disable(0) or enable(1) first-order masking of Keccak round.
+
+            If masking is enabled, ReuseShare parameter will impact the design.
+            '''
+          local: "false"
+          expose: "true"
+          randcount: "0"
+          randtype: none
+          name_top: KmacEnMasking
+        }
+        {
+          name: ReuseShare
+          type: int
+          default: "0"
+          desc:
+            '''
+            If enabled (1), the internal Keccak round logic will re-use the
+            adjacent shares as entropy in Domain-Oriented Masking AND logic.
+            It improves the throughput of Keccak, as it only requires small
+            amount of entropy rather than 1600 bit per round.
+
+            This feature is not implemented yet.
+            '''
+          local: "false"
+          expose: "true"
+          randcount: "0"
+          randtype: none
+          name_top: KmacReuseShare
+        }
+      ]
+      interrupt_list:
+      [
+        {
+          name: kmac_done
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: fifo_empty
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: kmac_err
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      wakeup_list: []
+      reset_request_list: []
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: hw_key_req
+          type: uni
+          name: keymgr_key
+          act: rcv
+          package: keymgr_pkg
+          inst_name: kmac
+          width: 1
+          default: ""
+          top_signame: keymgr_kmac_key
+          index: -1
+        }
+        {
+          struct: kmac_data
+          type: req_rsp
+          name: keymgr_kdf
+          act: rsp
+          package: keymgr_pkg
+          inst_name: kmac
+          width: 1
+          default: ""
+          top_signame: keymgr_kmac_data
+          index: -1
+        }
+        {
+          name: idle
+          type: uni
+          act: req
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: kmac
+          default: ""
+          top_signame: clkmgr_idle
+          index: 2
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: kmac
+          width: 1
+          default: ""
+          top_signame: kmac_tl
+          index: -1
+        }
+      ]
+    }
+    {
       name: rv_plic
       type: rv_plic
       clock_srcs:
@@ -1994,7 +2153,7 @@
           name: idle
           act: rcv
           package: ""
-          width: 3
+          width: 4
           inst_name: clkmgr
           default: ""
           top_type: one-to-N
@@ -2645,6 +2804,10 @@
           act: req
           package: keymgr_pkg
           inst_name: keymgr
+          width: 1
+          default: ""
+          top_type: broadcast
+          top_signame: keymgr_kmac_key
           index: -1
         }
         {
@@ -2654,6 +2817,9 @@
           act: req
           package: keymgr_pkg
           inst_name: keymgr
+          width: 1
+          default: ""
+          top_signame: keymgr_kmac_data
           index: -1
         }
         {
@@ -3145,7 +3311,7 @@
           default: ""
           package: ""
           top_signame: clkmgr_idle
-          index: 2
+          index: 3
         }
         {
           struct: tl
@@ -3362,10 +3528,19 @@
       [
         rstmgr.alert_dump
       ]
+      keymgr.kmac_key:
+      [
+        kmac.keymgr_key
+      ]
+      keymgr.kmac_data:
+      [
+        kmac.keymgr_kdf
+      ]
       clkmgr.idle:
       [
         aes.idle
         hmac.idle
+        kmac.idle
         otbn.idle
       ]
       pwrmgr.wakeups:
@@ -3399,6 +3574,10 @@
       hmac.tl:
       [
         main.tl_hmac
+      ]
+      kmac.tl:
+      [
+        main.tl_kmac
       ]
       aes.tl:
       [
@@ -3555,6 +3734,7 @@
           nmi_gen
           otbn
           keymgr
+          kmac
         ]
         dm_sba:
         [
@@ -3571,6 +3751,7 @@
           alert_handler
           nmi_gen
           otbn
+          kmac
         ]
       }
       nodes:
@@ -3750,6 +3931,24 @@
           [
             {
               base_addr: 0x40120000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: "true"
+        }
+        {
+          name: kmac
+          type: device
+          clock: clk_main_i
+          rset: rst_main_ni
+          pipeline_byp: "false"
+          inst_type: kmac
+          addr_range:
+          [
+            {
+              base_addr: 0x41120000
               size_byte: 0x1000
             }
           ]
@@ -4022,6 +4221,18 @@
           width: 1
           default: ""
           top_signame: hmac_tl
+          index: -1
+        }
+        {
+          struct: tl
+          type: req_rsp
+          name: tl_kmac
+          act: req
+          package: tlul_pkg
+          inst_name: main
+          width: 1
+          default: ""
+          top_signame: kmac_tl
           index: -1
         }
         {
@@ -4563,6 +4774,7 @@
     pwrmgr
     otbn
     keymgr
+    kmac
   ]
   interrupt:
   [
@@ -5242,6 +5454,45 @@
       type: interrupt
       module_name: keymgr
     }
+    {
+      name: kmac_kmac_done
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: kmac
+    }
+    {
+      name: kmac_fifo_empty
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: kmac
+    }
+    {
+      name: kmac_kmac_err
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: interrupt
+      module_name: kmac
+    }
   ]
   alert_module:
   [
@@ -5918,6 +6169,54 @@
         index: -1
       }
       {
+        struct: hw_key_req
+        type: uni
+        name: keymgr_key
+        act: rcv
+        package: keymgr_pkg
+        inst_name: kmac
+        width: 1
+        default: ""
+        top_signame: keymgr_kmac_key
+        index: -1
+      }
+      {
+        struct: kmac_data
+        type: req_rsp
+        name: keymgr_kdf
+        act: rsp
+        package: keymgr_pkg
+        inst_name: kmac
+        width: 1
+        default: ""
+        top_signame: keymgr_kmac_data
+        index: -1
+      }
+      {
+        name: idle
+        type: uni
+        act: req
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: kmac
+        default: ""
+        top_signame: clkmgr_idle
+        index: 2
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: kmac
+        width: 1
+        default: ""
+        top_signame: kmac_tl
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -6340,7 +6639,7 @@
         name: idle
         act: rcv
         package: ""
-        width: 3
+        width: 4
         inst_name: clkmgr
         default: ""
         top_type: one-to-N
@@ -6484,6 +6783,10 @@
         act: req
         package: keymgr_pkg
         inst_name: keymgr
+        width: 1
+        default: ""
+        top_type: broadcast
+        top_signame: keymgr_kmac_key
         index: -1
       }
       {
@@ -6493,6 +6796,9 @@
         act: req
         package: keymgr_pkg
         inst_name: keymgr
+        width: 1
+        default: ""
+        top_signame: keymgr_kmac_data
         index: -1
       }
       {
@@ -6718,7 +7024,7 @@
         default: ""
         package: ""
         top_signame: clkmgr_idle
-        index: 2
+        index: 3
       }
       {
         struct: tl
@@ -6910,6 +7216,18 @@
         width: 1
         default: ""
         top_signame: hmac_tl
+        index: -1
+      }
+      {
+        struct: tl
+        type: req_rsp
+        name: tl_kmac
+        act: req
+        package: tlul_pkg
+        inst_name: main
+        width: 1
+        default: ""
+        top_signame: kmac_tl
         index: -1
       }
       {
@@ -7430,10 +7748,34 @@
         default: ""
       }
       {
+        package: keymgr_pkg
+        struct: hw_key_req
+        signame: keymgr_kmac_key
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: keymgr_pkg
+        struct: kmac_data_req
+        signame: keymgr_kmac_data_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: keymgr_pkg
+        struct: kmac_data_rsp
+        signame: keymgr_kmac_data_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
         package: ""
         struct: logic
         signame: clkmgr_idle
-        width: 3
+        width: 4
         type: uni
         default: ""
       }
@@ -7545,6 +7887,22 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: hmac_tl_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: kmac_tl_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: kmac_tl_rsp
         width: 1
         type: req_rsp
         default: ""

@@ -82,6 +82,16 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_HMAC_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for kmac in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_KMAC_BASE_ADDR = 32'h41120000;
+
+  /**
+   * Peripheral size in bytes for kmac in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_KMAC_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for rv_plic in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_RV_PLIC_BASE_ADDR = 32'h40090000;

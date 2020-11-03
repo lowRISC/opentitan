@@ -52,6 +52,7 @@
       nmi_gen
       otbn
       keymgr
+      kmac
     ]
     dm_sba:
     [
@@ -68,6 +69,7 @@
       alert_handler
       nmi_gen
       otbn
+      kmac
     ]
   }
   nodes:
@@ -247,6 +249,24 @@
       [
         {
           base_addr: 0x40120000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+    }
+    {
+      name: kmac
+      type: device
+      clock: clk_main_i
+      rset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: kmac
+      addr_range:
+      [
+        {
+          base_addr: 0x41120000
           size_byte: 0x1000
         }
       ]

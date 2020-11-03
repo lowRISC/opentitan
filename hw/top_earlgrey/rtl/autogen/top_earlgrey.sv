@@ -16,6 +16,8 @@ module top_earlgrey #(
   parameter aes_pkg::sbox_impl_e AesSBoxImpl = aes_pkg::SBoxImplCanrightMasked,
   parameter int unsigned SecAesStartTriggerDelay = 0,
   parameter bit SecAesAllowForcingMasks = 1'b0,
+  parameter int KmacEnMasking = 0,
+  parameter int KmacReuseShare = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
 
   // Manually defined parameters
@@ -116,6 +118,7 @@ module top_earlgrey #(
   // rv_timer
   // aes
   // hmac
+  // kmac
   // rv_plic
   // pinmux
   // padctrl
@@ -151,7 +154,7 @@ module top_earlgrey #(
   // otbn
 
 
-  logic [83:0]  intr_vector;
+  logic [86:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -178,6 +181,9 @@ module top_earlgrey #(
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
+  logic intr_kmac_kmac_done;
+  logic intr_kmac_fifo_empty;
+  logic intr_kmac_kmac_err;
   logic intr_alert_handler_classa;
   logic intr_alert_handler_classb;
   logic intr_alert_handler_classc;
@@ -240,7 +246,10 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_pwr_otp_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   alert_pkg::alert_crashdump_t       alert_handler_crashdump;
-  logic [2:0] clkmgr_idle;
+  keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
+  keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
+  keymgr_pkg::kmac_data_rsp_t       keymgr_kmac_data_rsp;
+  logic [3:0] clkmgr_idle;
   logic       pwrmgr_wakeups;
   logic       pwrmgr_rstreqs;
   tlul_pkg::tl_h2d_t       rom_tl_req;
@@ -255,6 +264,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       flash_ctrl_tl_rsp;
   tlul_pkg::tl_h2d_t       hmac_tl_req;
   tlul_pkg::tl_d2h_t       hmac_tl_rsp;
+  tlul_pkg::tl_h2d_t       kmac_tl_req;
+  tlul_pkg::tl_d2h_t       kmac_tl_rsp;
   tlul_pkg::tl_h2d_t       aes_tl_req;
   tlul_pkg::tl_d2h_t       aes_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_plic_tl_req;
@@ -740,6 +751,27 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_n)
   );
 
+  kmac #(
+    .EnMasking(KmacEnMasking),
+    .ReuseShare(KmacReuseShare)
+  ) u_kmac (
+
+      // Interrupt
+      .intr_kmac_done_o  (intr_kmac_kmac_done),
+      .intr_fifo_empty_o (intr_kmac_fifo_empty),
+      .intr_kmac_err_o   (intr_kmac_kmac_err),
+
+      // Inter-module signals
+      .keymgr_key_i(keymgr_kmac_key),
+      .keymgr_kdf_i(keymgr_kmac_data_req),
+      .keymgr_kdf_o(keymgr_kmac_data_rsp),
+      .idle_o(clkmgr_idle[2]),
+      .tl_i(kmac_tl_req),
+      .tl_o(kmac_tl_rsp),
+      .clk_i (clkmgr_clocks.clk_main_kmac),
+      .rst_ni (rstmgr_resets.rst_sys_n)
+  );
+
   rv_plic u_rv_plic (
 
       // Inter-module signals
@@ -1012,9 +1044,9 @@ module top_earlgrey #(
       // Inter-module signals
       .aes_key_o(),
       .hmac_key_o(),
-      .kmac_key_o(),
-      .kmac_data_o(),
-      .kmac_data_i(keymgr_pkg::KMAC_DATA_RSP_DEFAULT),
+      .kmac_key_o(keymgr_kmac_key),
+      .kmac_data_o(keymgr_kmac_data_req),
+      .kmac_data_i(keymgr_kmac_data_rsp),
       .lc_i(keymgr_pkg::LC_DATA_DEFAULT),
       .otp_i(keymgr_pkg::OTP_DATA_DEFAULT),
       .flash_i(flash_ctrl_keymgr),
@@ -1085,7 +1117,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[15:13] ),
 
       // Inter-module signals
-      .idle_o(clkmgr_idle[2]),
+      .idle_o(clkmgr_idle[3]),
       .tl_i(otbn_tl_req),
       .tl_o(otbn_tl_rsp),
       .clk_i (clkmgr_clocks.clk_main_otbn),
@@ -1094,6 +1126,9 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
+      intr_kmac_kmac_err,
+      intr_kmac_fifo_empty,
+      intr_kmac_kmac_done,
       intr_keymgr_err,
       intr_keymgr_op_done,
       intr_otbn_err,
@@ -1195,6 +1230,10 @@ module top_earlgrey #(
     // port: tl_hmac
     .tl_hmac_o(hmac_tl_req),
     .tl_hmac_i(hmac_tl_rsp),
+
+    // port: tl_kmac
+    .tl_kmac_o(kmac_tl_req),
+    .tl_kmac_i(kmac_tl_rsp),
 
     // port: tl_aes
     .tl_aes_o(aes_tl_req),

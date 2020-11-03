@@ -34,6 +34,9 @@ tl_device_t xbar_devices[$] = '{
     '{"hmac", '{
         '{32'h40120000, 32'h40120fff}
     }},
+    '{"kmac", '{
+        '{32'h41120000, 32'h41120fff}
+    }},
     '{"aes", '{
         '{32'h40110000, 32'h40110fff}
     }},
@@ -82,7 +85,8 @@ tl_host_t xbar_hosts[$] = '{
         "alert_handler",
         "nmi_gen",
         "otbn",
-        "keymgr"}}
+        "keymgr",
+        "kmac"}}
     ,
     '{"dm_sba", 2, '{
         "rom",
@@ -97,5 +101,6 @@ tl_host_t xbar_hosts[$] = '{
         "padctrl",
         "alert_handler",
         "nmi_gen",
-        "otbn"}}
+        "otbn",
+        "kmac"}}
 };

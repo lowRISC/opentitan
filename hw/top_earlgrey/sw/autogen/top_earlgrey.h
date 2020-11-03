@@ -152,6 +152,24 @@ extern "C" {
 #define TOP_EARLGREY_HMAC_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for kmac in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_KMAC_BASE_ADDR 0x41120000u
+
+/**
+ * Peripheral size for kmac in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_KMAC_BASE_ADDR and
+ * `TOP_EARLGREY_KMAC_BASE_ADDR + TOP_EARLGREY_KMAC_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_KMAC_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for rv_plic in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -446,7 +464,8 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralPwrmgr = 9, /**< pwrmgr */
   kTopEarlgreyPlicPeripheralOtbn = 10, /**< otbn */
   kTopEarlgreyPlicPeripheralKeymgr = 11, /**< keymgr */
-  kTopEarlgreyPlicPeripheralLast = 11, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralKmac = 12, /**< kmac */
+  kTopEarlgreyPlicPeripheralLast = 12, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -540,7 +559,10 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdOtbnErr = 81, /**< otbn_err */
   kTopEarlgreyPlicIrqIdKeymgrOpDone = 82, /**< keymgr_op_done */
   kTopEarlgreyPlicIrqIdKeymgrErr = 83, /**< keymgr_err */
-  kTopEarlgreyPlicIrqIdLast = 83, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdKmacKmacDone = 84, /**< kmac_kmac_done */
+  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 85, /**< kmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdKmacKmacErr = 86, /**< kmac_kmac_err */
+  kTopEarlgreyPlicIrqIdLast = 86, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -550,7 +572,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[84];
+    top_earlgrey_plic_interrupt_for_peripheral[87];
 
 /**
  * PLIC Interrupt Target.

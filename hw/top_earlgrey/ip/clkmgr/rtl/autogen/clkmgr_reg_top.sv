@@ -83,11 +83,15 @@ module clkmgr_reg_top (
   logic clk_hints_clk_main_hmac_hint_qs;
   logic clk_hints_clk_main_hmac_hint_wd;
   logic clk_hints_clk_main_hmac_hint_we;
+  logic clk_hints_clk_main_kmac_hint_qs;
+  logic clk_hints_clk_main_kmac_hint_wd;
+  logic clk_hints_clk_main_kmac_hint_we;
   logic clk_hints_clk_main_otbn_hint_qs;
   logic clk_hints_clk_main_otbn_hint_wd;
   logic clk_hints_clk_main_otbn_hint_we;
   logic clk_hints_status_clk_main_aes_val_qs;
   logic clk_hints_status_clk_main_hmac_val_qs;
+  logic clk_hints_status_clk_main_kmac_val_qs;
   logic clk_hints_status_clk_main_otbn_val_qs;
 
   // Register instances
@@ -199,7 +203,33 @@ module clkmgr_reg_top (
   );
 
 
-  //   F[clk_main_otbn_hint]: 2:2
+  //   F[clk_main_kmac_hint]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_clk_hints_clk_main_kmac_hint (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (clk_hints_clk_main_kmac_hint_we),
+    .wd     (clk_hints_clk_main_kmac_hint_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_hints.clk_main_kmac_hint.q ),
+
+    // to register interface (read)
+    .qs     (clk_hints_clk_main_kmac_hint_qs)
+  );
+
+
+  //   F[clk_main_otbn_hint]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -277,7 +307,32 @@ module clkmgr_reg_top (
   );
 
 
-  //   F[clk_main_otbn_val]: 2:2
+  //   F[clk_main_kmac_val]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h1)
+  ) u_clk_hints_status_clk_main_kmac_val (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.clk_hints_status.clk_main_kmac_val.de),
+    .d      (hw2reg.clk_hints_status.clk_main_kmac_val.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (clk_hints_status_clk_main_kmac_val_qs)
+  );
+
+
+  //   F[clk_main_otbn_val]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
@@ -334,8 +389,12 @@ module clkmgr_reg_top (
   assign clk_hints_clk_main_hmac_hint_we = addr_hit[1] & reg_we & ~wr_err;
   assign clk_hints_clk_main_hmac_hint_wd = reg_wdata[1];
 
+  assign clk_hints_clk_main_kmac_hint_we = addr_hit[1] & reg_we & ~wr_err;
+  assign clk_hints_clk_main_kmac_hint_wd = reg_wdata[2];
+
   assign clk_hints_clk_main_otbn_hint_we = addr_hit[1] & reg_we & ~wr_err;
-  assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[2];
+  assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[3];
+
 
 
 
@@ -352,13 +411,15 @@ module clkmgr_reg_top (
       addr_hit[1]: begin
         reg_rdata_next[0] = clk_hints_clk_main_aes_hint_qs;
         reg_rdata_next[1] = clk_hints_clk_main_hmac_hint_qs;
-        reg_rdata_next[2] = clk_hints_clk_main_otbn_hint_qs;
+        reg_rdata_next[2] = clk_hints_clk_main_kmac_hint_qs;
+        reg_rdata_next[3] = clk_hints_clk_main_otbn_hint_qs;
       end
 
       addr_hit[2]: begin
         reg_rdata_next[0] = clk_hints_status_clk_main_aes_val_qs;
         reg_rdata_next[1] = clk_hints_status_clk_main_hmac_val_qs;
-        reg_rdata_next[2] = clk_hints_status_clk_main_otbn_val_qs;
+        reg_rdata_next[2] = clk_hints_status_clk_main_kmac_val_qs;
+        reg_rdata_next[3] = clk_hints_status_clk_main_otbn_val_qs;
       end
 
       default: begin

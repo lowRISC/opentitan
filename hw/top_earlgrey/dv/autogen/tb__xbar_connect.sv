@@ -39,6 +39,7 @@ tl_if ram_main_tl_if(clk_main, rst_n);
 tl_if eflash_tl_if(clk_main, rst_n);
 tl_if flash_ctrl_tl_if(clk_main, rst_n);
 tl_if hmac_tl_if(clk_main, rst_n);
+tl_if kmac_tl_if(clk_main, rst_n);
 tl_if aes_tl_if(clk_main, rst_n);
 tl_if rv_plic_tl_if(clk_main, rst_n);
 tl_if pinmux_tl_if(clk_main, rst_n);
@@ -93,6 +94,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(eflash, tl_adapter_eflash, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl, flash_ctrl, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(hmac, hmac, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(kmac, kmac, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(aes, aes, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_plic, rv_plic, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(pinmux, pinmux, tl)
