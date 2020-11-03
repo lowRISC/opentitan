@@ -10,6 +10,7 @@ module prim_clock_div #(
 ) (
   input clk_i,
   input rst_ni,
+  input test_en_i,
   output logic clk_o
 );
 
@@ -61,9 +62,19 @@ module prim_clock_div #(
     end
   end
 
+  logic clk_muxed;
+
+  // when in scanmode, bypass the dividers completely
+  prim_clock_mux2 u_clk_mux (
+    .clk0_i(clk_int),
+    .clk1_i(clk_i),
+    .sel_i(test_en_i),
+    .clk_o(clk_muxed)
+  );
+
   // anchor point for constraints
   prim_clock_buf u_clk_div_buf(
-    .clk_i(clk_int),
+    .clk_i(clk_muxed),
     .clk_o
   );
 

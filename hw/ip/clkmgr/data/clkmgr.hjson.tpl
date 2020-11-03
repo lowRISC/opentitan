@@ -15,6 +15,7 @@ num_grps = len(grps)
 #
 {
   name: "CLKMGR",
+  scan: "true",
   clock_primary: "clk_i",
   other_clock_list: [],
   reset_primary: "rst_ni",
@@ -71,13 +72,6 @@ num_grps = len(grps)
       type:    "req_rsp",
       name:    "pwr",
       act:     "rsp",
-    },
-
-    { struct:  "clk_dft",
-      type:    "uni",
-      name:    "dft",
-      act:     "rcv",
-      package: "clkmgr_pkg", // This should be moved elsewhere later
     },
 
     { struct:  "logic",
