@@ -35,7 +35,7 @@ filesets:
       - lowrisc:ip:usbdev
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
-      - lowrisc:systems:rstmgr
+      - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr
       - lowrisc:systems:sensor_ctrl
       - lowrisc:systems:ast_wrapper_pkg

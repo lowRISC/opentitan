@@ -245,7 +245,7 @@
         ''',
         count: "NumSwResets",
         swaccess: "rw",
-        hwaccess: "hro",
+        hwaccess: "hrw",
         hwext: "true",
         hwqe: "true",
         fields: [
