@@ -20,9 +20,12 @@ filesets:
     file_type: systemVerilogSource
 
 targets:
-  sim:
+  sim: &sim_target
     toplevel: prim_prince_tb
     filesets:
       - files_rtl
       - files_dv
     default_tool: vcs
+
+  lint:
+    <<: *sim_target
