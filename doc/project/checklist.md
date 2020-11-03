@@ -100,7 +100,7 @@ Review and sign off TODOs.
 
 ### STYLE_X
 
-Confirming to style guide regarding X usage. TODO: Related GitHub issue.
+Conforming to [style guide regarding X usage](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md#dont-cares-xs).
 
 ### LINT_PASS
 
@@ -122,6 +122,7 @@ CDC Sync flops use behavioral synchronization macros(`prim_flop_2sync`) not
 ### SEC_CM_IMPLEMENTED
 
 Any appropriate security counter-measures documented and implemented.
+For redundantly encoded FSMs, [the sparse-fsm-encode.py script](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/util/sparse-fsm-encode.py) must be used to generate the encoding.
 
 ### SEC_NON_RESET_FLOPS
 
@@ -131,6 +132,12 @@ Where appropriate, non-reset flops are used to store secure material.
 ### SEC_SHADOW_REGS
 
 Shadow registers are implemented for all appropriate storage of critical control functions.
+
+### SEC_RND_CNST
+
+Compile-time random netlist constants (such as LFSR seeds or scrambling constants) are exposed to topgen via the `randtype` parameter mechanism in the comportable IP Hjson file.
+Default random seeds and permutations for LFSRs can be generated with [the gen-lfsr-seed.py script](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/util/gen-lfsr-seed.py).
+See also the related [GitHub issue #2229](https://github.com/lowRISC/opentitan/issues/2229).
 
 ## D3
 
