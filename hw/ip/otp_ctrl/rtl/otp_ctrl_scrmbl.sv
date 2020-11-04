@@ -151,9 +151,9 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
                                 RndCnstDigestIV[sel_d[vbits(NumDigestSets)-1:0]]    : '0;
 
   // Make sure we always select a valid key / digest constant.
-  `ASSERT(CheckNumEncKeys_A, key_state_sel  == SelEncKeyInit  |-> sel_d < NumScrmblKeys)
-  `ASSERT(CheckNumDecKeys_A, key_state_sel  == SelDecKeyInit  |-> sel_d < NumScrmblKeys)
-  `ASSERT(CheckNumDigest1_A, data_state_sel == SelDigestConst |-> sel_d < NumDigestSets)
+  `ASSERT(CheckNumEncKeys_A, key_state_sel == SelEncKeyInit  |-> sel_d < NumScrmblKeys)
+  `ASSERT(CheckNumDecKeys_A, key_state_sel == SelDecKeyInit  |-> sel_d < NumScrmblKeys)
+  `ASSERT(CheckNumDigest1_A, key_state_sel == SelDigestConst |-> sel_d < NumDigestSets)
 
   assign data_state_d    = (data_state_sel == SelEncDataOut)  ? enc_data_out      :
                            (data_state_sel == SelDecDataOut)  ? dec_data_out      :
