@@ -249,8 +249,8 @@ module top_earlgrey_asic (
   //////////////////////
 
   top_earlgrey #(
-    .AesMasking(1'b0),
-    .AesSBoxImpl(aes_pkg::SBoxImplCanright),
+    .AesMasking(1'b1),
+    .AesSBoxImpl(aes_pkg::SBoxImplCanrightMasked),
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b0)
   ) top_earlgrey (
