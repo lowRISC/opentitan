@@ -131,6 +131,7 @@ Regression    | [SIM_SANITY_REGRESSION_SETUP][]       | Not Started |
 Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
 Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
+Code Quality  | [TB_LINT_SETUP][]                     | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
 Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Not Started |
@@ -153,6 +154,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 [SIM_NIGHTLY_REGRESSION_SETUP]:       {{<relref "/doc/project/checklist.md#sim_nightly_regression_setup" >}}
 [FPV_REGRESSION_SETUP]:               {{<relref "/doc/project/checklist.md#fpv_regression_setup" >}}
 [SIM_COVERAGE_MODEL_ADDED]:           {{<relref "/doc/project/checklist.md#sim_coverage_model_added" >}}
+[TB_LINT_SETUP]:                      {{<relref "/doc/project/checklist.md#tb_lint_setup" >}}
 [PRE_VERIFIED_SUB_MODULES_V1]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v1" >}}
 [DESIGN_SPEC_REVIEWED]:               {{<relref "/doc/project/checklist.md#design_spec_reviewed" >}}
 [DV_PLAN_TESTPLAN_REVIEWED]:          {{<relref "/doc/project/checklist.md#dv_plan_testplan_reviewed" >}}
@@ -177,6 +179,7 @@ Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
 Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | Not Started |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | Not Started |
+Code Quality  | [TB_LINT_PASS][]                        | Not Started |
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
@@ -196,6 +199,7 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 [SIM_FUNCTIONAL_COVERAGE_V2]:         {{<relref "/doc/project/checklist.md#sim_functional_coverage_v2" >}}
 [FPV_CODE_COVERAGE_V2]:               {{<relref "/doc/project/checklist.md#fpv_code_coverage_v2" >}}
 [FPV_COI_COVERAGE_V2]:                {{<relref "/doc/project/checklist.md#fpv_coi_coverage_v2" >}}
+[TB_LINT_PASS]:                       {{<relref "/doc/project/checklist.md#tb_lint_pass" >}}
 [NO_HIGH_PRIORITY_ISSUES_PENDING]:    {{<relref "/doc/project/checklist.md#no_high_priority_issues_pending" >}}
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/project/checklist.md#all_low_priority_issues_root_caused" >}}
 [PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v2" >}}
@@ -216,6 +220,7 @@ Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | Not Started |
 Coverage      | [FPV_COI_COVERAGE_AT_100][]       | Not Started |
 Issues        | [NO_ISSUES_PENDING][]             | Not Started |
 Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Not Started |
+Code Quality  | [TB_LINT_COMPLETE][]              | Not Started |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Not Started |
 Review        | Reviewer(s)                       | Not Started |
 Review        | Signoff date                      | Not Started |
@@ -231,4 +236,5 @@ Review        | Signoff date                      | Not Started |
 [FPV_COI_COVERAGE_AT_100]:       {{<relref "/doc/project/checklist.md#fpv_coi_coverage_at_100" >}}
 [NO_ISSUES_PENDING]:             {{<relref "/doc/project/checklist.md#no_issues_pending" >}}
 [NO_TOOL_WARNINGS_THROWN]:       {{<relref "/doc/project/checklist.md#no_tool_warnings_thrown" >}}
+[TB_LINT_COMPLETE]:              {{<relref "/doc/project/checklist.md#tb_lint_complete" >}}
 [PRE_VERIFIED_SUB_MODULES_V3]:   {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v3" >}}

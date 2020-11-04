@@ -269,6 +269,12 @@ Set up FPV regression by adding the module to `hw/formal/fpv_all` script.
 
 Sub-modules that are pre-verified with their own testbenches have already reached V1 or higher stage.
 
+### TB_LINT_SETUP
+
+[VeribleLint](https://google.github.io/verible/verilog_lint.html) for the testbench is [setup]({{< relref "hw/lint/doc/README.md" >}}) to run in nightly regression, with appropriate waivers.
+* For DV testbench, an entry is expected to be added at `hw/<top-level-design>/lint/<top-level-design>_dv_lint_cfgs.hjson`
+* For FPV testbench, an entry is expected to be added at `hw/<top-level-design>/lint/<top-level-design>_fpv_lint_cfgs.hjson`
+
 ### DESIGN_SPEC_REVIEWED
 
 RTL (uArch) specification reviewed and signed off.
@@ -354,6 +360,10 @@ Code coverage requirements: branch, statement, functional: 90%
 
 COI coverage requirements: 75%
 
+### TB_LINT_PASS
+
+Lint for the testbench passes. Waiver reviewed.
+
 ### NO_HIGH_PRIORITY_ISSUES_PENDING
 
 Ensure that all high priority (tagged P0 and P1) design bugs have been addressed and closed. If the bugs were found elsewhere, ensure that they are reproduced deterministically in DV (through additional tests or by tweaking existing tests as needed) and the fixes are adequately verified.
@@ -419,6 +429,10 @@ Ensure that all design bugs have been addressed and closed.
 ### NO_TOOL_WARNINGS_THROWN
 
 Clean up all compile-time and run-time warnings thrown by the simulator.
+
+### TB_LINT_COMPLETE
+
+Lint for the testbench is clean. Lint waiver file reviewed and signed off by tech steering committe.
 
 ### PRE_VERIFIED_SUB_MODULES_V3
 
