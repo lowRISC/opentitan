@@ -19,7 +19,7 @@ module tb;
   wire devmode;
   wire [3:0] lc_provision_en, lc_dft_en;
 
-  wire [2:0] pwr_otp;
+  wire [OtpPwrIfWidth-1:0] pwr_otp;
   wire otp_ctrl_pkg::flash_otp_key_req_t flash_req;
   wire otp_ctrl_pkg::flash_otp_key_rsp_t flash_rsp;
   wire otp_ctrl_pkg::otbn_otp_key_req_t  otbn_req;
@@ -51,8 +51,8 @@ module tb;
   push_pull_if #(FLASH_DATA_SIZE) flash_data_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(EDN_DATA_SIZE)   edn_if(.clk(clk), .rst_n(rst_n));
 
+  pins_if #(OtpPwrIfWidth) pwr_otp_if(pwr_otp);
   // TODO: use standard req/rsp agent
-  pins_if #(3) pwr_otp_if(pwr_otp);
   pins_if #(4) lc_provision_en_if(lc_provision_en);
   pins_if #(4) lc_dft_en_if(lc_dft_en);
 
@@ -89,8 +89,8 @@ module tb;
     .otp_edn_o                 (edn_if.req),
     .otp_edn_i                 ({edn_if.ack, edn_if.data}),
     // pwrmgr
-    .pwr_otp_i                 (pwr_otp[0]),
-    .pwr_otp_o                 (pwr_otp[2:1]),
+    .pwr_otp_i                 (pwr_otp[OtpPwrInitReq]),
+    .pwr_otp_o                 (pwr_otp[OtpPwrDoneRsp:OtpPwrIdleRsp]),
     // lc
     .lc_otp_program_i          ('0),
     .lc_otp_program_o          (otp_prog),

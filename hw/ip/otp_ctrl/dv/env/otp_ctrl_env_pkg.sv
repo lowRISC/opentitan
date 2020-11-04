@@ -52,12 +52,6 @@ package otp_ctrl_env_pkg;
   };
 
   // types
-  typedef virtual pins_if #(3)            pwr_otp_vif;
-  typedef virtual pins_if #(4)            lc_provision_en_vif;
-  typedef virtual pins_if #(4)            lc_dft_en_vif;
-  typedef virtual mem_bkdr_if             mem_bkdr_vif;
-  typedef virtual otp_ctrl_output_data_if otp_ctrl_output_data_vif;
-
   typedef enum bit [1:0] {
     OtpOperationDone,
     OtpErr,
@@ -81,6 +75,19 @@ package otp_ctrl_env_pkg;
     OtpOwnerSwCfgErr    = 15'b000_0000_0000_0010,
     OtpCreatorSwCfgErr  = 15'b000_0000_0000_0001
   } otp_status_e;
+
+  typedef enum bit [1:0] {
+    OtpPwrInitReq,
+    OtpPwrIdleRsp,
+    OtpPwrDoneRsp,
+    OtpPwrIfWidth
+  } otp_pwr_if_e;
+
+  typedef virtual pins_if #(OtpPwrIfWidth) pwr_otp_vif;
+  typedef virtual pins_if #(4)             lc_provision_en_vif;
+  typedef virtual pins_if #(4)             lc_dft_en_vif;
+  typedef virtual mem_bkdr_if              mem_bkdr_vif;
+  typedef virtual otp_ctrl_output_data_if  otp_ctrl_output_data_vif;
 
   // functions
   function automatic int get_part_index(bit [TL_DW-1:0] addr);

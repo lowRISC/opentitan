@@ -11,8 +11,6 @@ class otp_ctrl_wake_up_vseq extends otp_ctrl_base_vseq;
   virtual task otp_ctrl_init();
     super.otp_ctrl_init();
     csr_wr(ral.intr_enable, en_intr);
-    // drive pwr_otp_req pin
-    cfg.pwr_otp_vif.drive_pin(0, 1);
   endtask
 
   virtual task pre_start();
@@ -23,9 +21,7 @@ class otp_ctrl_wake_up_vseq extends otp_ctrl_base_vseq;
     bit [TL_DW-1:0] rand_addr = $urandom_range(0, 768);
     dut_init();
 
-    // wait until otp-init done, check status
-    wait(cfg.pwr_otp_vif.pins[2] == 1);
-    cfg.pwr_otp_vif.drive_pin(0, 0);
+    // check status
     cfg.clk_rst_vif.wait_clks(1);
     csr_wr(ral.intr_enable, 2'b11);
     csr_rd_check(.ptr(ral.status), .compare_value(2));
