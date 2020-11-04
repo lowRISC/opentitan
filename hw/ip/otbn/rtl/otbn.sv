@@ -391,14 +391,12 @@ module otbn
   // Alerts ====================================================================
 
   logic [NumAlerts-1:0] alert_test;
-  assign alert_test = {
-    reg2hw.alert_test.imem_uncorrectable.q &
-    reg2hw.alert_test.imem_uncorrectable.qe,
-    reg2hw.alert_test.dmem_uncorrectable.q &
-    reg2hw.alert_test.dmem_uncorrectable.qe,
-    reg2hw.alert_test.reg_uncorrectable.q &
-    reg2hw.alert_test.reg_uncorrectable.qe
-  };
+  assign alert_test[AlertImemUncorrectable] = reg2hw.alert_test.imem_uncorrectable.q &
+                                              reg2hw.alert_test.imem_uncorrectable.qe;
+  assign alert_test[AlertDmemUncorrectable] = reg2hw.alert_test.dmem_uncorrectable.q &
+                                              reg2hw.alert_test.dmem_uncorrectable.qe;
+  assign alert_test[AlertRegUncorrectable]  = reg2hw.alert_test.reg_uncorrectable.q &
+                                              reg2hw.alert_test.reg_uncorrectable.qe;
 
   logic [NumAlerts-1:0] alerts;
   assign alerts[AlertImemUncorrectable] = imem_rerror[1];

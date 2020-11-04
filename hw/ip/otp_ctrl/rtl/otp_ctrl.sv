@@ -360,15 +360,15 @@ module otp_ctrl
   logic [NumAlerts-1:0] alert_test;
 
   assign alerts = {
-    otp_macro_failure_q,
-    otp_check_failure_q
+    otp_check_failure_q,
+    otp_macro_failure_q
   };
 
   assign alert_test = {
-    reg2hw.alert_test.otp_macro_failure.q &
-    reg2hw.alert_test.otp_macro_failure.qe,
     reg2hw.alert_test.otp_check_failure.q &
-    reg2hw.alert_test.otp_check_failure.qe
+    reg2hw.alert_test.otp_check_failure.qe,
+    reg2hw.alert_test.otp_macro_failure.q &
+    reg2hw.alert_test.otp_macro_failure.qe
   };
 
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx

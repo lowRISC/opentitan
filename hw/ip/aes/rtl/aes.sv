@@ -101,10 +101,10 @@ module aes
 
   logic [NumAlerts-1:0] alert_test;
   assign alert_test = {
-    reg2hw.alert_test.ctrl_err_update.q &
-    reg2hw.alert_test.ctrl_err_update.qe,
     reg2hw.alert_test.ctrl_err_storage.q &
-    reg2hw.alert_test.ctrl_err_storage.qe
+    reg2hw.alert_test.ctrl_err_storage.qe,
+    reg2hw.alert_test.ctrl_err_update.q &
+    reg2hw.alert_test.ctrl_err_update.qe
   };
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
