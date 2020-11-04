@@ -260,7 +260,7 @@ module usbdev_usbif  #(
   assign set_sent_o = in_ep_acked;
 
   logic [10:0]     frame_index_raw;
-  logic            rx_se0_det, rx_jjj_det;
+  logic            rx_jjj_det;
 
   usb_fs_nb_pe #(
     .NumOutEps      (NEndpoints),
@@ -312,7 +312,6 @@ module usbdev_usbif  #(
     .in_ep_iso_i           (ep_iso_i),
 
     // rx status
-    .rx_se0_det_o          (rx_se0_det),
     .rx_jjj_det_o          (rx_jjj_det),
 
     // error signals
@@ -358,7 +357,8 @@ module usbdev_usbif  #(
     .rst_ni            (rst_ni),
     .us_tick_i         (us_tick),
     .usb_sense_i       (usb_sense_i),
-    .rx_se0_det_i      (rx_se0_det),
+    .usb_dp_i          (usb_dp_i),
+    .usb_dn_i          (usb_dn_i),
     .rx_jjj_det_i      (rx_jjj_det),
     .sof_valid_i       (sof_valid),
     .link_disconnect_o (link_disconnect_o),

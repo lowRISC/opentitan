@@ -10,7 +10,8 @@ module usbdev_linkstate (
   input  logic rst_ni,
   input  logic us_tick_i,
   input  logic usb_sense_i,
-  input  logic rx_se0_det_i,
+  input  logic usb_dp_i,
+  input  logic usb_dn_i,
   input  logic rx_jjj_det_i,
   input  logic sof_valid_i,
   output logic link_disconnect_o,  // level
@@ -79,6 +80,20 @@ module usbdev_linkstate (
     (link_state_q == LinkActiveNoSOF);
   // Link state is stable, so we can output it to the register
   assign link_state_o      =  link_state_q;
+
+  logic see_se0, line_se0_raw;
+  assign line_se0_raw = (usb_dn_i == 1'b0) & (usb_dp_i == 1'b0);
+
+  // four ticks is a bit time
+  // Could completely filter out 2-cycle EOP SE0 here but
+  // does not seem needed
+  prim_filter #(.Cycles(6)) filter_se0 (
+    .clk_i    (clk_48mhz_i),
+    .rst_ni   (rst_ni),
+    .enable_i (1'b1),
+    .filter_i (line_se0_raw),
+    .filter_o (see_se0)
+  );
 
   prim_filter #(.Cycles(6)) filter_pwr_sense (
     .clk_i    (clk_48mhz_i),
@@ -188,7 +203,7 @@ module usbdev_linkstate (
     unique case (link_rst_state_q)
       // No reset signal detected
       NoRst: begin
-        if (rx_se0_det_i) begin
+        if (see_se0) begin
           link_rst_state_d = RstCnt;
           link_rst_timer_d = 0;
         end
@@ -196,7 +211,7 @@ module usbdev_linkstate (
 
       // Reset signal detected -> counting
       RstCnt: begin
-        if (!rx_se0_det_i) begin
+        if (!see_se0) begin
           link_rst_state_d = NoRst;
         end else begin
           if (us_tick_i) begin
@@ -211,7 +226,7 @@ module usbdev_linkstate (
 
       // Detected reset -> wait for falling edge
       RstPend: begin
-        if (!rx_se0_det_i) begin
+        if (!see_se0) begin
           link_rst_state_d = NoRst;
           ev_reset = 1'b1;
         end
