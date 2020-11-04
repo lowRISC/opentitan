@@ -37,6 +37,9 @@ TEST_APPS_SELFCHECKING = [
 #        "targets": ["sim_verilator"],
 #    },
     {
+        "name": "dif_otp_ctrl_smoketest",
+    },
+    {
         "name": "dif_plic_sanitytest",
     },
     {
