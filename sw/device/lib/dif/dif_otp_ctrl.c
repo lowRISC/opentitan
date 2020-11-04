@@ -558,7 +558,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read_start(
                       OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, address);
 
   uint32_t cmd =
-      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_READ_BIT, true);
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_RD_BIT, true);
   mmio_region_write32(otp->params.base_addr,
                       OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
 
@@ -647,7 +647,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program32(
                       OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, value);
 
   uint32_t cmd =
-      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WRITE_BIT, true);
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true);
   mmio_region_write32(otp->params.base_addr,
                       OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
 
@@ -696,7 +696,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program64(
                       OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET, value >> 32);
 
   uint32_t cmd =
-      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WRITE_BIT, true);
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true);
   mmio_region_write32(otp->params.base_addr,
                       OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
 
@@ -746,7 +746,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_digest(
   }
 
   bitfield_bit32_index_t cmd_bit = is_sw
-                                       ? OTP_CTRL_DIRECT_ACCESS_CMD_WRITE_BIT
+                                       ? OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT
                                        : OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST_BIT;
   uint32_t cmd = bitfield_bit32_write(0, cmd_bit, true);
   mmio_region_write32(otp->params.base_addr,

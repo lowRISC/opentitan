@@ -116,11 +116,11 @@ package otp_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } read;
+    } rd;
     struct packed {
       logic        q;
       logic        qe;
-    } write;
+    } wr;
     struct packed {
       logic        q;
       logic        qe;
