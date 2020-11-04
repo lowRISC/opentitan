@@ -215,13 +215,14 @@ module keccak_2share #(
   // Rho ======================================================================
   // As RhoOffset[x][y] is considered as variable int in VCS,
   // it is replaced with generate statement.
-  localparam int RhoOffset [5][5]  = '{
+  // Revised to meet verilator lint. Now RhoOffset is 1-D array
+  localparam int RhoOffset [25]  = '{
     //y  0    1    2    3    4     x
-    '{   0,  36,   3, 105, 210},// 0
-    '{   1, 300,  10,  45,  66},// 1
-    '{ 190,   6, 171,  15, 253},// 2
-    '{  28,  55, 153,  21, 120},// 3
-    '{  91, 276, 231, 136,  78} // 4
+         0,  36,   3, 105, 210, // 0:  0  1  2  3  4
+         1, 300,  10,  45,  66, // 1:  5  6  7  8  9
+       190,   6, 171,  15, 253, // 2: 10 11 12 13 14
+        28,  55, 153,  21, 120, // 3: 15 16 17 18 19
+        91, 276, 231, 136,  78  // 4: 20 21 22 23 24
   };
   for (genvar i = 0 ; i < Share ; i++) begin : g_rho
     box_t rho_in, rho_out;
@@ -230,7 +231,7 @@ module keccak_2share #(
 
     for (genvar x = 0 ; x < 5 ; x++) begin : gen_rho_x
       for (genvar y = 0 ; y < 5 ; y++) begin : gen_rho_y
-        localparam int Offset = RhoOffset[x][y]%W;
+        localparam int Offset = RhoOffset[5*x+y]%W;
         localparam int ShiftAmt = W- Offset;
         if (Offset == 0) begin : gen_offset0
           assign rho_out[x][y][W-1:0] = rho_in[x][y][W-1:0];
