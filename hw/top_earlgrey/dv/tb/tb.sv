@@ -176,14 +176,14 @@ module tb;
   end
 
   // Bind the SW test status interface directly to the sim SRAM interface.
-  bind sim_sram_if: `SIM_SRAM_IF sw_test_status_if u_sw_test_status_if (
+  bind `SIM_SRAM_IF sw_test_status_if u_sw_test_status_if (
     .addr (tl_h2d.a_address),
     .data (tl_h2d.a_data[15:0]),
     .*
   );
 
   // Bind the SW logger interface directly to the sim SRAM interface.
-  bind sim_sram_if: `SIM_SRAM_IF sw_logger_if u_sw_logger_if (
+  bind `SIM_SRAM_IF sw_logger_if u_sw_logger_if (
     .addr (tl_h2d.a_address),
     .data (tl_h2d.a_data),
     .*
