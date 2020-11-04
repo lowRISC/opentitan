@@ -88,4 +88,7 @@
   *(.stab)
   *(.stab.*)
   *(.stabstr)
+
+  /* COMMON Sections */
+  *(COMMON)
 }
