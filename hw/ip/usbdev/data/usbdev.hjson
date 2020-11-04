@@ -132,10 +132,8 @@
     }
     { name: "link_out_err",
       desc: '''
-            Raised if a packet to an OUT endpoint started to be received but was
-            then dropped due to an error. This error is raised if either the 
-            data toggle, token, packet or CRC is invalid or if there is no 
-            buffer available in the rxfifo.
+            Raised if a packet to an OUT endpoint started to be received but was then dropped due to an error.
+            This error is raised if either the data toggle, token, packet or CRC is invalid or if there is no buffer available in the Received Buffer FIFO.
             '''
     }
   ]
@@ -501,6 +499,135 @@
           }
         ]
       }
+    }
+    { name: "phy_pins_sense",
+      desc: '''
+            USB PHY pins sense. 
+            This register can be used to read out the state of the USB device inputs and outputs from software.
+            This is designed to be used for debugging purposes or during chip testing.
+            '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        {
+          bits: "0",
+          name: "rx_dp_i",
+          desc: "USB D+ input."
+        }
+        {
+          bits: "1",
+          name: "rx_dn_i",
+          desc: "USB D- input."
+        }
+        {
+          bits: "2",
+          name: "rx_d_i",
+          desc: "USB differential input."
+        }
+        {
+          bits: "8",
+          name: "tx_dp_o",
+          desc: "USB D+ output (readback)."
+        }
+        {
+          bits: "9",
+          name: "tx_dn_o",
+          desc: "USB D- output (readback)."
+        }
+        {
+          bits: "10",
+          name: "tx_d_o",
+          desc: "USB differential output (readback)."
+        }
+        {
+          bits: "11",
+          name: "tx_se0_o",
+          desc: "USB SE0 output (readback)."
+        }
+        {
+          bits: "12",
+          name: "tx_oe_o",
+          desc: "USB OE output (readback)."
+        }
+        {
+          bits: "13",
+          name: "suspend_o",
+          desc: "USB suspend output (readback)."
+        }
+        {
+          bits: "16",
+          name: "pwr_sense",
+          desc: "USB power sense signal."
+        }
+      ]
+      tags: [// Updated by HW based on observed USB PHY signals, comprises also readbacks.
+             // Exclude all read checks in all tests including reset tests.
+             "excl:CsrAllTests:CsrExclCheck"]
+    }
+    { name: "phy_pins_drive",
+      desc: '''
+            USB PHY pins drive.
+            This register can be used to control the USB device inputs and outputs from software.
+            This is designed to be used for debugging purposes or during chip testing.
+            '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "dp_o",
+          desc: "USB D+ output."
+        }
+        {
+          bits: "1",
+          name: "dn_o",
+          desc: "USB D- output."
+        }
+        {
+          bits: "2",
+          name: "d_o",
+          desc: "USB differential output."
+        }
+        {
+          bits: "3",
+          name: "se0_o",
+          desc: "USB SE0 output."
+        }
+        {
+          bits: "4",
+          name: "oe_o",
+          desc: "USB OE output."
+        }
+        {
+          bits: "5",
+          name: "tx_mode_se_o",
+          desc: "USB TX mode. 0: Differential, 1: Single-ended."
+        }
+        {
+          bits: "6",
+          name: "dp_pullup_en_o",
+          desc: "USB D+ pullup enable output."
+        }
+        {
+          bits: "7",
+          name: "dn_pullup_en_o",
+          desc: "USB D- pullup enable output."
+        }
+        {
+          bits: "8",
+          name: "suspend_o",
+          desc: "USB suspend output."
+        }
+        {
+          bits: "16",
+          name: "en",
+          desc: '''
+                0: Outputs are controlled by the hardware block.
+                1: Outputs are controlled with this register.
+                '''
+        }
+      ]
     }
     { name: "phy_config",
       desc: "USB PHY Configuration",

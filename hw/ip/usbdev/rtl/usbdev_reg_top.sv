@@ -633,6 +633,56 @@ module usbdev_reg_top (
   logic data_toggle_clear_clear_10_we;
   logic data_toggle_clear_clear_11_wd;
   logic data_toggle_clear_clear_11_we;
+  logic phy_pins_sense_rx_dp_i_qs;
+  logic phy_pins_sense_rx_dp_i_re;
+  logic phy_pins_sense_rx_dn_i_qs;
+  logic phy_pins_sense_rx_dn_i_re;
+  logic phy_pins_sense_rx_d_i_qs;
+  logic phy_pins_sense_rx_d_i_re;
+  logic phy_pins_sense_tx_dp_o_qs;
+  logic phy_pins_sense_tx_dp_o_re;
+  logic phy_pins_sense_tx_dn_o_qs;
+  logic phy_pins_sense_tx_dn_o_re;
+  logic phy_pins_sense_tx_d_o_qs;
+  logic phy_pins_sense_tx_d_o_re;
+  logic phy_pins_sense_tx_se0_o_qs;
+  logic phy_pins_sense_tx_se0_o_re;
+  logic phy_pins_sense_tx_oe_o_qs;
+  logic phy_pins_sense_tx_oe_o_re;
+  logic phy_pins_sense_suspend_o_qs;
+  logic phy_pins_sense_suspend_o_re;
+  logic phy_pins_sense_pwr_sense_qs;
+  logic phy_pins_sense_pwr_sense_re;
+  logic phy_pins_drive_dp_o_qs;
+  logic phy_pins_drive_dp_o_wd;
+  logic phy_pins_drive_dp_o_we;
+  logic phy_pins_drive_dn_o_qs;
+  logic phy_pins_drive_dn_o_wd;
+  logic phy_pins_drive_dn_o_we;
+  logic phy_pins_drive_d_o_qs;
+  logic phy_pins_drive_d_o_wd;
+  logic phy_pins_drive_d_o_we;
+  logic phy_pins_drive_se0_o_qs;
+  logic phy_pins_drive_se0_o_wd;
+  logic phy_pins_drive_se0_o_we;
+  logic phy_pins_drive_oe_o_qs;
+  logic phy_pins_drive_oe_o_wd;
+  logic phy_pins_drive_oe_o_we;
+  logic phy_pins_drive_tx_mode_se_o_qs;
+  logic phy_pins_drive_tx_mode_se_o_wd;
+  logic phy_pins_drive_tx_mode_se_o_we;
+  logic phy_pins_drive_dp_pullup_en_o_qs;
+  logic phy_pins_drive_dp_pullup_en_o_wd;
+  logic phy_pins_drive_dp_pullup_en_o_we;
+  logic phy_pins_drive_dn_pullup_en_o_qs;
+  logic phy_pins_drive_dn_pullup_en_o_wd;
+  logic phy_pins_drive_dn_pullup_en_o_we;
+  logic phy_pins_drive_suspend_o_qs;
+  logic phy_pins_drive_suspend_o_wd;
+  logic phy_pins_drive_suspend_o_we;
+  logic phy_pins_drive_en_qs;
+  logic phy_pins_drive_en_wd;
+  logic phy_pins_drive_en_we;
   logic phy_config_rx_differential_mode_qs;
   logic phy_config_rx_differential_mode_wd;
   logic phy_config_rx_differential_mode_we;
@@ -5244,6 +5294,420 @@ module usbdev_reg_top (
 
 
 
+  // R[phy_pins_sense]: V(True)
+
+  //   F[rx_dp_i]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_phy_pins_sense_rx_dp_i (
+    .re     (phy_pins_sense_rx_dp_i_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.phy_pins_sense.rx_dp_i.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (phy_pins_sense_rx_dp_i_qs)
+  );
+
+
+  //   F[rx_dn_i]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_phy_pins_sense_rx_dn_i (
+    .re     (phy_pins_sense_rx_dn_i_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.phy_pins_sense.rx_dn_i.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (phy_pins_sense_rx_dn_i_qs)
+  );
+
+
+  //   F[rx_d_i]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_phy_pins_sense_rx_d_i (
+    .re     (phy_pins_sense_rx_d_i_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.phy_pins_sense.rx_d_i.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (phy_pins_sense_rx_d_i_qs)
+  );
+
+
+  //   F[tx_dp_o]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_phy_pins_sense_tx_dp_o (
+    .re     (phy_pins_sense_tx_dp_o_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.phy_pins_sense.tx_dp_o.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (phy_pins_sense_tx_dp_o_qs)
+  );
+
+
+  //   F[tx_dn_o]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_phy_pins_sense_tx_dn_o (
+    .re     (phy_pins_sense_tx_dn_o_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.phy_pins_sense.tx_dn_o.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (phy_pins_sense_tx_dn_o_qs)
+  );
+
+
+  //   F[tx_d_o]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_phy_pins_sense_tx_d_o (
+    .re     (phy_pins_sense_tx_d_o_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.phy_pins_sense.tx_d_o.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (phy_pins_sense_tx_d_o_qs)
+  );
+
+
+  //   F[tx_se0_o]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_phy_pins_sense_tx_se0_o (
+    .re     (phy_pins_sense_tx_se0_o_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.phy_pins_sense.tx_se0_o.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (phy_pins_sense_tx_se0_o_qs)
+  );
+
+
+  //   F[tx_oe_o]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_phy_pins_sense_tx_oe_o (
+    .re     (phy_pins_sense_tx_oe_o_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.phy_pins_sense.tx_oe_o.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (phy_pins_sense_tx_oe_o_qs)
+  );
+
+
+  //   F[suspend_o]: 13:13
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_phy_pins_sense_suspend_o (
+    .re     (phy_pins_sense_suspend_o_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.phy_pins_sense.suspend_o.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (phy_pins_sense_suspend_o_qs)
+  );
+
+
+  //   F[pwr_sense]: 16:16
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_phy_pins_sense_pwr_sense (
+    .re     (phy_pins_sense_pwr_sense_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.phy_pins_sense.pwr_sense.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (phy_pins_sense_pwr_sense_qs)
+  );
+
+
+  // R[phy_pins_drive]: V(False)
+
+  //   F[dp_o]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_pins_drive_dp_o (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_pins_drive_dp_o_we),
+    .wd     (phy_pins_drive_dp_o_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_pins_drive.dp_o.q ),
+
+    // to register interface (read)
+    .qs     (phy_pins_drive_dp_o_qs)
+  );
+
+
+  //   F[dn_o]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_pins_drive_dn_o (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_pins_drive_dn_o_we),
+    .wd     (phy_pins_drive_dn_o_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_pins_drive.dn_o.q ),
+
+    // to register interface (read)
+    .qs     (phy_pins_drive_dn_o_qs)
+  );
+
+
+  //   F[d_o]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_pins_drive_d_o (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_pins_drive_d_o_we),
+    .wd     (phy_pins_drive_d_o_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_pins_drive.d_o.q ),
+
+    // to register interface (read)
+    .qs     (phy_pins_drive_d_o_qs)
+  );
+
+
+  //   F[se0_o]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_pins_drive_se0_o (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_pins_drive_se0_o_we),
+    .wd     (phy_pins_drive_se0_o_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_pins_drive.se0_o.q ),
+
+    // to register interface (read)
+    .qs     (phy_pins_drive_se0_o_qs)
+  );
+
+
+  //   F[oe_o]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_pins_drive_oe_o (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_pins_drive_oe_o_we),
+    .wd     (phy_pins_drive_oe_o_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_pins_drive.oe_o.q ),
+
+    // to register interface (read)
+    .qs     (phy_pins_drive_oe_o_qs)
+  );
+
+
+  //   F[tx_mode_se_o]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_pins_drive_tx_mode_se_o (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_pins_drive_tx_mode_se_o_we),
+    .wd     (phy_pins_drive_tx_mode_se_o_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_pins_drive.tx_mode_se_o.q ),
+
+    // to register interface (read)
+    .qs     (phy_pins_drive_tx_mode_se_o_qs)
+  );
+
+
+  //   F[dp_pullup_en_o]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_pins_drive_dp_pullup_en_o (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_pins_drive_dp_pullup_en_o_we),
+    .wd     (phy_pins_drive_dp_pullup_en_o_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_pins_drive.dp_pullup_en_o.q ),
+
+    // to register interface (read)
+    .qs     (phy_pins_drive_dp_pullup_en_o_qs)
+  );
+
+
+  //   F[dn_pullup_en_o]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_pins_drive_dn_pullup_en_o (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_pins_drive_dn_pullup_en_o_we),
+    .wd     (phy_pins_drive_dn_pullup_en_o_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_pins_drive.dn_pullup_en_o.q ),
+
+    // to register interface (read)
+    .qs     (phy_pins_drive_dn_pullup_en_o_qs)
+  );
+
+
+  //   F[suspend_o]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_pins_drive_suspend_o (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_pins_drive_suspend_o_we),
+    .wd     (phy_pins_drive_suspend_o_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_pins_drive.suspend_o.q ),
+
+    // to register interface (read)
+    .qs     (phy_pins_drive_suspend_o_qs)
+  );
+
+
+  //   F[en]: 16:16
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_phy_pins_drive_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (phy_pins_drive_en_we),
+    .wd     (phy_pins_drive_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.phy_pins_drive.en.q ),
+
+    // to register interface (read)
+    .qs     (phy_pins_drive_en_qs)
+  );
+
+
   // R[phy_config]: V(False)
 
   //   F[rx_differential_mode]: 0:0
@@ -5456,7 +5920,7 @@ module usbdev_reg_top (
 
 
 
-  logic [25:0] addr_hit;
+  logic [27:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == USBDEV_INTR_STATE_OFFSET);
@@ -5484,7 +5948,9 @@ module usbdev_reg_top (
     addr_hit[22] = (reg_addr == USBDEV_CONFIGIN_11_OFFSET);
     addr_hit[23] = (reg_addr == USBDEV_ISO_OFFSET);
     addr_hit[24] = (reg_addr == USBDEV_DATA_TOGGLE_CLEAR_OFFSET);
-    addr_hit[25] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
+    addr_hit[25] = (reg_addr == USBDEV_PHY_PINS_SENSE_OFFSET);
+    addr_hit[26] = (reg_addr == USBDEV_PHY_PINS_DRIVE_OFFSET);
+    addr_hit[27] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -5518,6 +5984,8 @@ module usbdev_reg_top (
     if (addr_hit[23] && reg_we && (USBDEV_PERMIT[23] != (USBDEV_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[24] && reg_we && (USBDEV_PERMIT[24] != (USBDEV_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[25] && reg_we && (USBDEV_PERMIT[25] != (USBDEV_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[26] && reg_we && (USBDEV_PERMIT[26] != (USBDEV_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[27] && reg_we && (USBDEV_PERMIT[27] != (USBDEV_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_pkt_received_we = addr_hit[0] & reg_we & ~wr_err;
@@ -6066,28 +6534,78 @@ module usbdev_reg_top (
   assign data_toggle_clear_clear_11_we = addr_hit[24] & reg_we & ~wr_err;
   assign data_toggle_clear_clear_11_wd = reg_wdata[11];
 
-  assign phy_config_rx_differential_mode_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_pins_sense_rx_dp_i_re = addr_hit[25] && reg_re;
+
+  assign phy_pins_sense_rx_dn_i_re = addr_hit[25] && reg_re;
+
+  assign phy_pins_sense_rx_d_i_re = addr_hit[25] && reg_re;
+
+  assign phy_pins_sense_tx_dp_o_re = addr_hit[25] && reg_re;
+
+  assign phy_pins_sense_tx_dn_o_re = addr_hit[25] && reg_re;
+
+  assign phy_pins_sense_tx_d_o_re = addr_hit[25] && reg_re;
+
+  assign phy_pins_sense_tx_se0_o_re = addr_hit[25] && reg_re;
+
+  assign phy_pins_sense_tx_oe_o_re = addr_hit[25] && reg_re;
+
+  assign phy_pins_sense_suspend_o_re = addr_hit[25] && reg_re;
+
+  assign phy_pins_sense_pwr_sense_re = addr_hit[25] && reg_re;
+
+  assign phy_pins_drive_dp_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_dp_o_wd = reg_wdata[0];
+
+  assign phy_pins_drive_dn_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_dn_o_wd = reg_wdata[1];
+
+  assign phy_pins_drive_d_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_d_o_wd = reg_wdata[2];
+
+  assign phy_pins_drive_se0_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_se0_o_wd = reg_wdata[3];
+
+  assign phy_pins_drive_oe_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_oe_o_wd = reg_wdata[4];
+
+  assign phy_pins_drive_tx_mode_se_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_tx_mode_se_o_wd = reg_wdata[5];
+
+  assign phy_pins_drive_dp_pullup_en_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_dp_pullup_en_o_wd = reg_wdata[6];
+
+  assign phy_pins_drive_dn_pullup_en_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_dn_pullup_en_o_wd = reg_wdata[7];
+
+  assign phy_pins_drive_suspend_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_suspend_o_wd = reg_wdata[8];
+
+  assign phy_pins_drive_en_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_en_wd = reg_wdata[16];
+
+  assign phy_config_rx_differential_mode_we = addr_hit[27] & reg_we & ~wr_err;
   assign phy_config_rx_differential_mode_wd = reg_wdata[0];
 
-  assign phy_config_tx_differential_mode_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_tx_differential_mode_we = addr_hit[27] & reg_we & ~wr_err;
   assign phy_config_tx_differential_mode_wd = reg_wdata[1];
 
-  assign phy_config_eop_single_bit_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_eop_single_bit_we = addr_hit[27] & reg_we & ~wr_err;
   assign phy_config_eop_single_bit_wd = reg_wdata[2];
 
-  assign phy_config_override_pwr_sense_en_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_override_pwr_sense_en_we = addr_hit[27] & reg_we & ~wr_err;
   assign phy_config_override_pwr_sense_en_wd = reg_wdata[3];
 
-  assign phy_config_override_pwr_sense_val_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_override_pwr_sense_val_we = addr_hit[27] & reg_we & ~wr_err;
   assign phy_config_override_pwr_sense_val_wd = reg_wdata[4];
 
-  assign phy_config_pinflip_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_pinflip_we = addr_hit[27] & reg_we & ~wr_err;
   assign phy_config_pinflip_wd = reg_wdata[5];
 
-  assign phy_config_usb_ref_disable_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_usb_ref_disable_we = addr_hit[27] & reg_we & ~wr_err;
   assign phy_config_usb_ref_disable_wd = reg_wdata[6];
 
-  assign phy_config_tx_osc_test_mode_we = addr_hit[25] & reg_we & ~wr_err;
+  assign phy_config_tx_osc_test_mode_we = addr_hit[27] & reg_we & ~wr_err;
   assign phy_config_tx_osc_test_mode_wd = reg_wdata[7];
 
   // Read data return
@@ -6356,6 +6874,32 @@ module usbdev_reg_top (
       end
 
       addr_hit[25]: begin
+        reg_rdata_next[0] = phy_pins_sense_rx_dp_i_qs;
+        reg_rdata_next[1] = phy_pins_sense_rx_dn_i_qs;
+        reg_rdata_next[2] = phy_pins_sense_rx_d_i_qs;
+        reg_rdata_next[8] = phy_pins_sense_tx_dp_o_qs;
+        reg_rdata_next[9] = phy_pins_sense_tx_dn_o_qs;
+        reg_rdata_next[10] = phy_pins_sense_tx_d_o_qs;
+        reg_rdata_next[11] = phy_pins_sense_tx_se0_o_qs;
+        reg_rdata_next[12] = phy_pins_sense_tx_oe_o_qs;
+        reg_rdata_next[13] = phy_pins_sense_suspend_o_qs;
+        reg_rdata_next[16] = phy_pins_sense_pwr_sense_qs;
+      end
+
+      addr_hit[26]: begin
+        reg_rdata_next[0] = phy_pins_drive_dp_o_qs;
+        reg_rdata_next[1] = phy_pins_drive_dn_o_qs;
+        reg_rdata_next[2] = phy_pins_drive_d_o_qs;
+        reg_rdata_next[3] = phy_pins_drive_se0_o_qs;
+        reg_rdata_next[4] = phy_pins_drive_oe_o_qs;
+        reg_rdata_next[5] = phy_pins_drive_tx_mode_se_o_qs;
+        reg_rdata_next[6] = phy_pins_drive_dp_pullup_en_o_qs;
+        reg_rdata_next[7] = phy_pins_drive_dn_pullup_en_o_qs;
+        reg_rdata_next[8] = phy_pins_drive_suspend_o_qs;
+        reg_rdata_next[16] = phy_pins_drive_en_qs;
+      end
+
+      addr_hit[27]: begin
         reg_rdata_next[0] = phy_config_rx_differential_mode_qs;
         reg_rdata_next[1] = phy_config_tx_differential_mode_qs;
         reg_rdata_next[2] = phy_config_eop_single_bit_qs;
