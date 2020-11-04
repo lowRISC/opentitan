@@ -113,30 +113,30 @@ Below, each state is described in detail.
 
 This is the default state of the OTP.
 
-During this state, no functions other than transition to TEST0 are
+During this state, no functions other than transition to TEST_UNLOCKED0 are
 available.
 
-The token authorizing the transition from RAW to TEST0 is a value that
+The token authorizing the transition from RAW to TEST_UNLOCKED0 is a value that
 is secret global to all devices.  This is known as the RAW_UNLOCK token.
     </td>
   </tr>
   <tr>
-    <td>TEST{N}_LOCKED</td>
+    <td>TEST_LOCKED{N}</td>
     <td>OTP</td>
     <td>
 
-TEST{N}_LOCKED states have identical functionality to RAW state and serve as a
+TEST_LOCKED{N} states have identical functionality to RAW state and serve as a
 way for the Silicon Creator to protect devices in transit.
 
 It is not possible to provision OTP root secrets during this state.  This
 is enforced by hardware and is implementation defined.
 
-To progress from a TEST_LOCKED state to another TEST state, a TEST_UNLOCK
+To progress from a TEST_LOCKED state to another TEST_UNLOCKED state, a TEST_UNLOCK
 token is required.
     </td>
   </tr>
   <tr>
-    <td>TEST{N}</td>
+    <td>TEST_UNLOCKED{N}</td>
     <td>OTP</td>
     <td>
 
@@ -154,7 +154,7 @@ During this state:
 Note: during this state it is not possible to provision specific OTP root
 secrets. This will be enforced by hardware.
 
-It is expected that during TEST0 the TEST_UNLOCK and TEST_EXIT tokens will be
+It is expected that during TEST_UNLOCKED0 the TEST_UNLOCK and TEST_EXIT tokens will be
 provisioned into OTP.
 
 Once provisioned, these tokens are no longer readable by software.
@@ -165,7 +165,7 @@ Once provisioned, these tokens are no longer readable by software.
     <td>OTP</td>
     <td>
 
-Transition from TEST state via OTP write. This is a mutually exclusive state to
+Transition from TEST_UNLOCKED state via OTP write. This is a mutually exclusive state to
 DEV and PROD_END.
 
 To enter this state, a TEST_EXIT token is required.
@@ -196,7 +196,7 @@ To enter this state, a TEST_EXIT token is required.
    <td>OTP</td>
    <td>
 
-Transition from TEST state via OTP write. This is a mutually exclusive state to
+Transition from TEST_UNLOCKED state via OTP write. This is a mutually exclusive state to
 DEV and PROD_END.
 
 To enter this state, a TEST_EXIT token is required.
@@ -216,12 +216,12 @@ During this state
     <td>OTP</td>
     <td>
 
-Transition from TEST / PROD / DEV via OTP write. It is not possible to reach
+Transition from TEST_UNLOCKED / PROD / DEV via OTP write. It is not possible to reach
 this state from PROD_END.
 
 When transitioning from PROD or DEV, an RMA_UNLOCK token is required.
 
-When transitioning from TEST, no RMA_UNLOCK token is required.
+When transitioning from TEST_UNLOCKED, no RMA_UNLOCK token is required.
 
 A hardware-backed mechanism will erase all owner flash content before RMA
 transition is allowed. This includes the isolation owner flash partitions as
@@ -318,7 +318,7 @@ state.
    <td colspan="4" style="background:#dadce0"> </td>
   </tr>
   <tr>
-    <td style="text-align:left">TEST</td>
+    <td style="text-align:left">TEST_UNLOCKED</td>
     <td>Y</td><td>Y</td><td>Y</td><td>Y</td>
   </tr>
   <tr>
@@ -357,7 +357,7 @@ qualified by the token table that follows.
     <td style="text-align:left"><strong>States</strong></td>
     <td><strong>RAW</strong></td>
     <td><strong>TEST LOCKED</strong></td>
-    <td><strong>TEST</strong></td>
+    <td><strong>TEST_UNLOCKED</strong></td>
     <td><strong>DEV</strong></td>
     <td><strong>PROD</strong></td>
     <td><strong>PROD_END</strong></td>
@@ -373,7 +373,7 @@ qualified by the token table that follows.
     <td colspan="2" style="background:#dadce0"> </td><td>C</td><td>C</td><td>C</td><td>C</td><td style="background:#dadce0"> </td><td>Y</td>
   </tr>
   <tr>
-    <td style="text-align:left">TEST</td>
+    <td style="text-align:left">TEST_UNLOCKED</td>
     <td style="background:#dadce0"> </td><td>Y</td><td style="background:#dadce0"> </td><td>C</td><td>C</td><td>C</td><td>Y</td><td>Y</td>
   </tr>
   <tr>
@@ -416,19 +416,19 @@ format is implementation specific.
     <td style="text-align:left">RAW_UNLOCK</td>
     <td>RTL</td>
     <td>No</td>
-    <td>From RAW->TEST0</td>
+    <td>From RAW->TEST_UNLOCKED0</td>
   </tr>
   <tr>
     <td style="text-align:left">TEST_UNLOCK</td>
     <td>OTP</td>
     <td>Silicon creator choice</td>
-    <td>From TEST{N}_LOCKED to TEST{N}</td>
+    <td>From TEST_LOCKED{N} to TEST_UNLOCKED{N}</td>
   </tr>
   <tr>
     <td style="text-align:left">TEST_EXIT</td>
     <td>OTP</td>
     <td>Silicon creator choice</td>
-    <td>From any TEST state to DEV, PROD_END or PROD</td>
+    <td>From any TEST_UNLOCKED state to DEV, PROD_END or PROD</td>
   </tr>
   <tr>
     <td style="text-align:left">RMA_UNLOCK</td>
@@ -558,7 +558,7 @@ presented, the transition shall not be stopped.
 
 There is one manufacturing and identity state dependency.
 
-*   When the manufacturing state is **RAW** or **TEST**, the provisioning of
+*   When the manufacturing state is **RAW** or **TEST_UNLOCKED**, the provisioning of
     creator entropy is disabled and identity state SHALL be **BLANK.**
 *   Once manufacturing state transitions to **DEV / PROD / PROD\_END**,
     provisioning is then enabled and the identity state is allowed to transition
