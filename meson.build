@@ -91,6 +91,8 @@ c_cpp_cross_args = [
   '-isystem' + meson.source_root() / 'sw/device/lib/base/freestanding',
   # Don't emit unwinding information
   '-fno-asynchronous-unwind-tables',
+  # Don't use COMMON sections for uninitialized globals
+  '-fno-common',
 ]
 
 # Add extra warning flags for cross builds, if they are supported.
