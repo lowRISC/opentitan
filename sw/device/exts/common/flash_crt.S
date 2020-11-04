@@ -56,7 +56,7 @@ _start:
 bss_zero_loop:
   sw    zero, 0(t0)
   addi  t0, t0, 0x4
-  bltu  t0, t1, bss_zero_loop
+  bleu  t0, t1, bss_zero_loop
 bss_zero_loop_end:
 
   // Zero out the stack
