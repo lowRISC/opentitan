@@ -143,23 +143,19 @@ static bool classify_local_alerts(
     switch (class->local_alerts[i]) {
       case kDifAlertHandlerLocalAlertAlertPingFail:
         enable_bit = ALERT_HANDLER_LOC_ALERT_EN_EN_LA_0_BIT;
-        field.mask = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_0_MASK;
-        field.index = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_0_OFFSET;
+        field = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_0_FIELD;
         break;
       case kDifAlertHandlerLocalAlertEscalationPingFail:
         enable_bit = ALERT_HANDLER_LOC_ALERT_EN_EN_LA_1_BIT;
-        field.mask = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_1_MASK;
-        field.index = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_1_OFFSET;
+        field = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_1_FIELD;
         break;
       case kDifAlertHandlerLocalAlertAlertIntegrityFail:
         enable_bit = ALERT_HANDLER_LOC_ALERT_EN_EN_LA_2_BIT;
-        field.mask = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_2_MASK;
-        field.index = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_2_OFFSET;
+        field = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_2_FIELD;
         break;
       case kDifAlertHandlerLocalAlertEscalationIntegrityFail:
         enable_bit = ALERT_HANDLER_LOC_ALERT_EN_EN_LA_3_BIT;
-        field.mask = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_3_MASK;
-        field.index = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_3_OFFSET;
+        field = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_3_FIELD;
         break;
       default:
         return false;
@@ -261,23 +257,19 @@ static bool configure_class(const dif_alert_handler_t *handler,
     switch (class->phase_signals[i].phase) {
       case kDifAlertHandlerClassStatePhase0:
         enable_bit = ALERT_HANDLER_CLASSA_CTRL_EN_E0_BIT;
-        map_field.mask = ALERT_HANDLER_CLASSA_CTRL_MAP_E0_MASK;
-        map_field.index = ALERT_HANDLER_CLASSA_CTRL_MAP_E0_OFFSET;
+        map_field = ALERT_HANDLER_CLASSA_CTRL_MAP_E0_FIELD;
         break;
       case kDifAlertHandlerClassStatePhase1:
         enable_bit = ALERT_HANDLER_CLASSA_CTRL_EN_E1_BIT;
-        map_field.mask = ALERT_HANDLER_CLASSA_CTRL_MAP_E1_MASK;
-        map_field.index = ALERT_HANDLER_CLASSA_CTRL_MAP_E1_OFFSET;
+        map_field = ALERT_HANDLER_CLASSA_CTRL_MAP_E1_FIELD;
         break;
       case kDifAlertHandlerClassStatePhase2:
         enable_bit = ALERT_HANDLER_CLASSA_CTRL_EN_E2_BIT;
-        map_field.mask = ALERT_HANDLER_CLASSA_CTRL_MAP_E2_MASK;
-        map_field.index = ALERT_HANDLER_CLASSA_CTRL_MAP_E2_OFFSET;
+        map_field = ALERT_HANDLER_CLASSA_CTRL_MAP_E2_FIELD;
         break;
       case kDifAlertHandlerClassStatePhase3:
         enable_bit = ALERT_HANDLER_CLASSA_CTRL_EN_E3_BIT;
-        map_field.mask = ALERT_HANDLER_CLASSA_CTRL_MAP_E3_MASK;
-        map_field.index = ALERT_HANDLER_CLASSA_CTRL_MAP_E3_OFFSET;
+        map_field = ALERT_HANDLER_CLASSA_CTRL_MAP_E3_FIELD;
         break;
       default:
         return false;
@@ -444,11 +436,7 @@ dif_alert_handler_config_result_t dif_alert_handler_configure(
   }
 
   uint32_t ping_timeout_reg = bitfield_field32_write(
-      0,
-      (bitfield_field32_t){
-          .mask = ALERT_HANDLER_PING_TIMEOUT_CYC_PING_TIMEOUT_CYC_MASK,
-          .index = ALERT_HANDLER_PING_TIMEOUT_CYC_PING_TIMEOUT_CYC_OFFSET,
-      },
+      0, ALERT_HANDLER_PING_TIMEOUT_CYC_PING_TIMEOUT_CYC_FIELD,
       config.ping_timeout);
   mmio_region_write32(handler->params.base_addr,
                       ALERT_HANDLER_PING_TIMEOUT_CYC_REG_OFFSET,
@@ -829,23 +817,19 @@ dif_alert_handler_result_t dif_alert_handler_get_accumulator(
   switch (alert_class) {
     case kDifAlertHandlerClassA:
       reg_offset = ALERT_HANDLER_CLASSA_ACCUM_CNT_REG_OFFSET;
-      field.mask = ALERT_HANDLER_CLASSA_ACCUM_CNT_CLASSA_ACCUM_CNT_MASK;
-      field.index = ALERT_HANDLER_CLASSA_ACCUM_CNT_CLASSA_ACCUM_CNT_OFFSET;
+      field = ALERT_HANDLER_CLASSA_ACCUM_CNT_CLASSA_ACCUM_CNT_FIELD;
       break;
     case kDifAlertHandlerClassB:
       reg_offset = ALERT_HANDLER_CLASSB_ACCUM_CNT_REG_OFFSET;
-      field.mask = ALERT_HANDLER_CLASSB_ACCUM_CNT_CLASSB_ACCUM_CNT_MASK;
-      field.index = ALERT_HANDLER_CLASSB_ACCUM_CNT_CLASSB_ACCUM_CNT_OFFSET;
+      field = ALERT_HANDLER_CLASSB_ACCUM_CNT_CLASSB_ACCUM_CNT_FIELD;
       break;
     case kDifAlertHandlerClassC:
       reg_offset = ALERT_HANDLER_CLASSC_ACCUM_CNT_REG_OFFSET;
-      field.mask = ALERT_HANDLER_CLASSC_ACCUM_CNT_CLASSC_ACCUM_CNT_MASK;
-      field.index = ALERT_HANDLER_CLASSC_ACCUM_CNT_CLASSC_ACCUM_CNT_OFFSET;
+      field = ALERT_HANDLER_CLASSC_ACCUM_CNT_CLASSC_ACCUM_CNT_FIELD;
       break;
     case kDifAlertHandlerClassD:
       reg_offset = ALERT_HANDLER_CLASSD_ACCUM_CNT_REG_OFFSET;
-      field.mask = ALERT_HANDLER_CLASSD_ACCUM_CNT_CLASSD_ACCUM_CNT_MASK;
-      field.index = ALERT_HANDLER_CLASSD_ACCUM_CNT_CLASSD_ACCUM_CNT_OFFSET;
+      field = ALERT_HANDLER_CLASSD_ACCUM_CNT_CLASSD_ACCUM_CNT_FIELD;
       break;
     default:
       return kDifAlertHandlerBadArg;
@@ -899,23 +883,19 @@ dif_alert_handler_result_t dif_alert_handler_get_class_state(
   switch (alert_class) {
     case kDifAlertHandlerClassA:
       reg_offset = ALERT_HANDLER_CLASSA_STATE_REG_OFFSET;
-      field.mask = ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_MASK;
-      field.index = ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_OFFSET;
+      field = ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_FIELD;
       break;
     case kDifAlertHandlerClassB:
       reg_offset = ALERT_HANDLER_CLASSB_STATE_REG_OFFSET;
-      field.mask = ALERT_HANDLER_CLASSB_STATE_CLASSB_STATE_MASK;
-      field.index = ALERT_HANDLER_CLASSB_STATE_CLASSB_STATE_OFFSET;
+      field = ALERT_HANDLER_CLASSB_STATE_CLASSB_STATE_FIELD;
       break;
     case kDifAlertHandlerClassC:
       reg_offset = ALERT_HANDLER_CLASSC_STATE_REG_OFFSET;
-      field.mask = ALERT_HANDLER_CLASSC_STATE_CLASSC_STATE_MASK;
-      field.index = ALERT_HANDLER_CLASSC_STATE_CLASSC_STATE_OFFSET;
+      field = ALERT_HANDLER_CLASSC_STATE_CLASSC_STATE_FIELD;
       break;
     case kDifAlertHandlerClassD:
       reg_offset = ALERT_HANDLER_CLASSD_STATE_REG_OFFSET;
-      field.mask = ALERT_HANDLER_CLASSD_STATE_CLASSD_STATE_MASK;
-      field.index = ALERT_HANDLER_CLASSD_STATE_CLASSD_STATE_OFFSET;
+      field = ALERT_HANDLER_CLASSD_STATE_CLASSD_STATE_FIELD;
       break;
     default:
       return kDifAlertHandlerBadArg;
