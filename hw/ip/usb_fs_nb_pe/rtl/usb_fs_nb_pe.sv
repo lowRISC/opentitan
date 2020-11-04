@@ -68,7 +68,6 @@ module usb_fs_nb_pe #(
   output logic [10:0]            frame_index_o,
 
   // RX line status
-  output logic                   rx_se0_det_o,
   output logic                   rx_jjj_det_o,
 
   // RX errors
@@ -227,7 +226,6 @@ module usb_fs_nb_pe #(
     .rx_data_put_o          (rx_data_put),
     .rx_data_o              (rx_data),
     .valid_packet_o         (rx_pkt_valid),
-    .rx_se0_det_o           (rx_se0_det_o),
     .rx_jjj_det_o           (rx_jjj_det_o),
     .crc_error_o            (rx_crc_err_o),
     .pid_error_o            (rx_pid_err_o),

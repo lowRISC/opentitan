@@ -45,7 +45,6 @@ module usb_fs_rx (
   output logic valid_packet_o,
 
   // line status for the status detection (actual rx bits after clock recovery)
-  output logic rx_se0_det_o,
   output logic rx_jjj_det_o,
 
   // Error detection
@@ -301,7 +300,6 @@ module usb_fs_rx (
   end
 
   // mask out jjj detection when transmitting (because rx is forced to J)
-  assign rx_se0_det_o = line_history_q[5:0] == 6'b000000; // three SE0s
   assign rx_jjj_det_o = ~tx_en_i & (line_history_q[5:0] == 6'b101010); // three Js
 
   /////////////////
