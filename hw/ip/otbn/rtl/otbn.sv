@@ -434,14 +434,17 @@ module otbn
     // plusarg.
 
     // Set the plusarg +OTBN_USE_MODEL=1 to use the model (ISS) instead of the RTL implementation.
-    int otbn_use_model;
+    bit otbn_use_model;
     initial begin
       $value$plusargs("OTBN_USE_MODEL=%d", otbn_use_model);
     end
 
     // Mux between model and RTL implementation at runtime.
     logic done_model, done_rtl;
-    assign done = done_model | done_rtl;
+    logic start_model, start_rtl;
+    assign done = otbn_use_model ? done_model : done_rtl;
+    assign start_model = start & otbn_use_model;
+    assign start_rtl = start & ~otbn_use_model;
 
     // Model (Instruction Set Simulation)
     localparam string ImemScope = "..u_imem.u_mem.gen_generic.u_impl_generic";
@@ -459,7 +462,7 @@ module otbn
 
       .enable_i (otbn_use_model),
 
-      .start_i (start),
+      .start_i (start_model),
       .done_o (done_model),
 
       .start_addr_i (start_addr),
@@ -476,7 +479,7 @@ module otbn
       .clk_i,
       .rst_ni,
 
-      .start_i (start),
+      .start_i (start_rtl),
       .done_o  (done_rtl),
 
       .start_addr_i  (start_addr),
