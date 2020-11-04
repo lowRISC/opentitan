@@ -326,9 +326,6 @@ dif_uart_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
 
   // Check if the requested watermark is valid, and get a corresponding
   // register definition to be written.
-  bitfield_field32_t field = {
-      .mask = UART_FIFO_CTRL_RXILVL_MASK, .index = UART_FIFO_CTRL_RXILVL_OFFSET,
-  };
   uint32_t value;
   switch (watermark) {
     case kDifUartWatermarkByte1:
@@ -352,7 +349,8 @@ dif_uart_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
 
   // Set watermark level.
   mmio_region_nonatomic_set_field32(uart->params.base_addr,
-                                    UART_FIFO_CTRL_REG_OFFSET, field, value);
+                                    UART_FIFO_CTRL_REG_OFFSET,
+                                    UART_FIFO_CTRL_RXILVL_FIELD, value);
 
   return kDifUartOk;
 }
@@ -365,9 +363,6 @@ dif_uart_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
 
   // Check if the requested watermark is valid, and get a corresponding
   // register definition to be written.
-  bitfield_field32_t field = {
-      .mask = UART_FIFO_CTRL_TXILVL_MASK, .index = UART_FIFO_CTRL_TXILVL_OFFSET,
-  };
   uint32_t value;
   switch (watermark) {
     case kDifUartWatermarkByte1:
@@ -389,7 +384,8 @@ dif_uart_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
 
   // Set watermark level.
   mmio_region_nonatomic_set_field32(uart->params.base_addr,
-                                    UART_FIFO_CTRL_REG_OFFSET, field, value);
+                                    UART_FIFO_CTRL_REG_OFFSET,
+                                    UART_FIFO_CTRL_TXILVL_FIELD, value);
 
   return kDifUartOk;
 }
