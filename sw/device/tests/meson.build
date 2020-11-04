@@ -25,6 +25,7 @@ aes_test_lib = declare_dependency(
     ],
   ),
 )
+sw_tests += { 'aes_test': aes_test_lib }
 
 flash_ctrl_test_lib = declare_dependency(
   link_with: static_library(
@@ -38,6 +39,7 @@ flash_ctrl_test_lib = declare_dependency(
     ],
   ),
 )
+sw_tests += { 'flash_ctrl_test': flash_ctrl_test_lib }
 
 sha256_test_lib = declare_dependency(
   link_with: static_library(
@@ -50,6 +52,7 @@ sha256_test_lib = declare_dependency(
     ],
   ),
 )
+sw_tests += { 'sha256_test': sha256_test_lib }
 
 usbdev_test_lib = declare_dependency(
   link_with: static_library(
@@ -61,6 +64,7 @@ usbdev_test_lib = declare_dependency(
     ],
   ),
 )
+sw_tests += { 'usbdev_test': usbdev_test_lib }
 
 coverage_test_lib = declare_dependency(
   link_with: static_library(
@@ -71,6 +75,7 @@ coverage_test_lib = declare_dependency(
     ],
   ),
 )
+sw_tests += { 'coverage_test': coverage_test_lib }
 
 pmp_sanitytest_napot_lib = declare_dependency(
   link_with: static_library(
@@ -85,6 +90,7 @@ pmp_sanitytest_napot_lib = declare_dependency(
     ],
   ),
 )
+sw_tests += { 'pmp_sanitytest_napot': pmp_sanitytest_napot_lib }
 
 pmp_sanitytest_tor_lib = declare_dependency(
   link_with: static_library(
@@ -99,16 +105,7 @@ pmp_sanitytest_tor_lib = declare_dependency(
     ],
   ),
 )
-
-sw_tests += {
-  'aes_test': aes_test_lib,
-  'flash_ctrl_test': flash_ctrl_test_lib,
-  'sha256_test': sha256_test_lib,
-  'usbdev_test': usbdev_test_lib,
-  'coverage_test': coverage_test_lib,
-  'pmp_sanitytest_napot': pmp_sanitytest_napot_lib,
-  'pmp_sanitytest_tor': pmp_sanitytest_tor_lib,
-}
+sw_tests += { 'pmp_sanitytest_tor': pmp_sanitytest_tor_lib }
 
 foreach sw_test_name, sw_test_lib : sw_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
