@@ -118,6 +118,12 @@ def gen_cdefine_register(outstr, reg, comp, width, rnames, existing_defines):
                     outstr,
                     gen_define(dname + '_OFFSET', [], str(fieldlsb),
                                existing_defines))
+                genout(
+                    outstr,
+                    gen_define(
+                        dname + '_FIELD', [],
+                        '((bitfield_field32_t) {{ .mask = {dname}_MASK, .index = {dname}_OFFSET }})'
+                        .format(dname=dname), existing_defines))
             if 'enum' in field:
                 for enum in field['enum']:
                     ename = as_define(enum['name'])
@@ -260,6 +266,12 @@ def gen_cdefines_interrupt_field(outstr, interrupt, component, regwidth,
                 outstr,
                 gen_define(defname + '_OFFSET', [], str(fieldlsb),
                            existing_defines))
+            genout(
+                outstr,
+                gen_define(
+                    defname + '_FIELD', [],
+                    '((bitfield_field32_t) {{ .mask = {dname}_MASK, .index = {dname}_OFFSET }})'
+                    .format(dname=defname), existing_defines))
 
 
 def gen_cdefines_interrupts(outstr, regs, component, regwidth,
