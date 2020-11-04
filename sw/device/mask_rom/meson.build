@@ -10,7 +10,7 @@ rom_linkfile = files(['mask_rom.ld'])
 rom_link_args = [
   '-Wl,-L,@0@'.format(meson.source_root()),
   '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_linkfile[0]),
-  embedded_target_extra_link_args
+  '-Wl,--build-id=none',
 ]
 rom_link_deps = [rom_linkfile]
 
