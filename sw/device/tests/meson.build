@@ -17,6 +17,7 @@ subdir('dif')
 subdir('rom_ext')
 subdir('runtime')
 subdir('sim_dv')
+subdir('otbn')
 
 aes_test_lib = declare_dependency(
   link_with: static_library(

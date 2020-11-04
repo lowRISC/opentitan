@@ -83,13 +83,13 @@ $(otbn-code-snippets-elfs): \
 # Define any file-specific flags or dependencies
 #
 
-# rsa_1024_dec_test depends on modexp, defined in modexp.s
+# rsa_1024_dec_test depends on code defined in modexp.s
 $(otbn-code-snippets-bin-dir)/rsa_1024_dec_test.elf: \
   $(otbn-code-snippets-obj-dir)/modexp.o
 $(otbn-code-snippets-bin-dir)/rsa_1024_dec_test.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/modexp.o
 
-# rsa_1024_enc_test depends on modexp_65537, defined in modexp.s
+# rsa_1024_enc_test depends on code defined in modexp.s
 $(otbn-code-snippets-bin-dir)/rsa_1024_enc_test.elf: \
   $(otbn-code-snippets-obj-dir)/modexp.o
 $(otbn-code-snippets-bin-dir)/rsa_1024_enc_test.elf: \
@@ -118,3 +118,9 @@ $(otbn-code-snippets-bin-dir)/p256_ecdsa_verify_test.elf: \
   $(otbn-code-snippets-obj-dir)/p256.o
 $(otbn-code-snippets-bin-dir)/p256_ecdsa_verify_test.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/p256.o
+
+# rsa depends on code defined in modexp.s
+$(otbn-code-snippets-bin-dir)/rsa.elf: \
+  $(otbn-code-snippets-obj-dir)/modexp.o
+$(otbn-code-snippets-bin-dir)/rsa.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/modexp.o
