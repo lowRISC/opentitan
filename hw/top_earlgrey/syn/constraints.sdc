@@ -7,8 +7,6 @@
 # note that we do not fix hold timing in this flow
 set SETUP_CLOCK_UNCERTAINTY 0.5
 
-puts "Applying constraints for top level"
-
 # note: this does not account for clock insertion delay and
 # there are no pads instantiated in the netlist (yet)
 
@@ -198,5 +196,3 @@ set_critical_range 0.5 ${DUT}
 #####################
 
 set_size_only -all_instances [get_cells -h *u_size_only*] true
-
-puts "Done applying constraints for top level"

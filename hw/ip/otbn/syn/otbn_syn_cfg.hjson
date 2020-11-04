@@ -3,30 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   // Top level dut name (sv module).
-  name: top_earlgrey
+  name: otbn
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:systems:top_earlgrey:0.1
+  fusesoc_core: lowrisc:ip:otbn:0.1
 
   import_cfgs: [// Project wide common synthesis config file
                 "{proj_root}/hw/syn/tools/dvsim/common_syn_cfg.hjson"]
 
-  // Overrides
-  overrides: [
-    {
-      name: design_level
-      value: "top"
-    }
-  ]
-
   // Timing constraints for this module
-  sdc_path: "{proj_root}/hw/top_earlgrey/syn"
+  sdc_path: "{proj_root}/hw/ip/otbn/syn/"
   sdc_file: "constraints.sdc"
-
-  // Technology specific timing constraints for this module
-  foundry_sdc_path: "{proj_root}/hw/foundry/top_earlgrey/syn"
-  foundry_sdc_file: "foundry.constraints.sdc"
-  tool_srcs: ["{foundry_sdc_path}/{foundry_sdc_file}"]
 
   // Configuration for result parser script
   area_depth: 1
