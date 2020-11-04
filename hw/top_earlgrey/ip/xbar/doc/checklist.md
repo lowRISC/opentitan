@@ -130,6 +130,7 @@ Tool Setup    | [ALT_TOOL_SETUP][]                    | Done        |
 Regression    | [SANITY_REGRESSION_SETUP][]           | Done        | Exception (Runs at local)
 Regression    | [NIGHTLY_REGRESSION_SETUP][]          | Done        | Exception (Runs at local)
 Coverage      | [COVERAGE_MODEL_ADDED][]              | Done        |
+Code Quality  | [TB_LINT_SETUP][]                     | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Waived      | prim_arbiter to be verified later
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
 Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Done        |
@@ -147,14 +148,14 @@ Review        | Signoff date                          | Done        | 2019-11-04
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary-assertion-checks-added" >}}
 [TB_ENV_CREATED]:                     {{<relref "/doc/project/checklist.md#tb-env-created" >}}
 [RAL_MODEL_GEN_AUTOMATED]:            {{<relref "/doc/project/checklist.md#ral-model-gen-automated" >}}
-[TB_GEN_AUTOMATED]:                   {{<relref "/doc/project/checklist.md#tb-gen-automated"
->}}
+[TB_GEN_AUTOMATED]:                   {{<relref "/doc/project/checklist.md#tb-gen-automated" >}}
 [SANITY_TEST_PASSING]:                {{<relref "/doc/project/checklist.md#sanity-test-passing" >}}
 [CSR_MEM_TEST_SUITE_PASSING]:         {{<relref "/doc/project/checklist.md#csr-mem-test-suite-passing" >}}
 [ALT_TOOL_SETUP]:                     {{<relref "/doc/project/checklist.md#alt-tool-setup" >}}
 [SANITY_REGRESSION_SETUP]:            {{<relref "/doc/project/checklist.md#sanity-regression-setup" >}}
 [NIGHTLY_REGRESSION_SETUP]:           {{<relref "/doc/project/checklist.md#nightly-regression-setup" >}}
 [COVERAGE_MODEL_ADDED]:               {{<relref "/doc/project/checklist.md#coverage-model-added" >}}
+[TB_LINT_setup]:                      {{<relref "/doc/project/checklist.md#tb_lint_setup" >}}
 [PRE_VERIFIED_SUB_MODULES_V1]:        {{<relref "/doc/project/checklist.md#pre-verified-sub-modules-v1" >}}
 [DESIGN_SPEC_REVIEWED]:               {{<relref "/doc/project/checklist.md#design-spec-reviewed" >}}
 [DV_PLAN_TESTPLAN_REVIEWED]:          {{<relref "/doc/project/checklist.md#dv-plan-testplan-reviewed" >}}
@@ -175,6 +176,7 @@ Tests         | [FW_SIMULATED][]                        | N/A         |
 Regression    | [NIGHTLY_REGRESSION_V2][]               | Done        |
 Coverage      | [CODE_COVERAGE_V2][]                    | Done        |
 Coverage      | [FUNCTIONAL_COVERAGE_V2][]              | Done        |
+Code Quality  | [TB_LINT_PASS][]                        | Done        |
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Waived      | prim_arbiter to be verified later
@@ -193,6 +195,7 @@ Review        | Signoff date                            | Done        | 2019-11-
 [NIGHTLY_REGRESSION_V2]:              {{<relref "/doc/project/checklist.md#nightly-regression-v2" >}}
 [CODE_COVERAGE_V2]:                   {{<relref "/doc/project/checklist.md#code-coverage-v2" >}}
 [FUNCTIONAL_COVERAGE_V2]:             {{<relref "/doc/project/checklist.md#functional-coverage-v2" >}}
+[TB_LINT_PASS]:                       {{<relref "/doc/project/checklist.md#tb_lint_pass" >}}
 [NO_HIGH_PRIORITY_ISSUES_PENDING]:    {{<relref "/doc/project/checklist.md#no-high-priority-issues-pending" >}}
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/project/checklist.md#all-low-priority-issues-root-caused" >}}
 [PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre-verified-sub-modules-v2" >}}
@@ -210,6 +213,7 @@ Coverage      | [CODE_COVERAGE_AT_100][]          | Done        | [xbar_cov_excl
 Coverage      | [FUNCTIONAL_COVERAGE_AT_100][]    | Done        |
 Issues        | [NO_ISSUES_PENDING][]             | Done        |
 Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Done        | Waived warning due to using 'force' to connect the signal
+Code Quality  | [TB_LINT_COMPLETE][]              | Not Started |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Waived      | prim_arbiter to be verified later
 Review        | Reviewer(s)                       | Done        | @eunchan @sriyerg
 Review        | Signoff date                      | Done        | 2019-11-07
@@ -222,5 +226,6 @@ Review        | Signoff date                      | Done        | 2019-11-07
 [FUNCTIONAL_COVERAGE_AT_100]:   {{<relref "/doc/project/checklist.md#functional-coverage-at-100" >}}
 [NO_ISSUES_PENDING]:            {{<relref "/doc/project/checklist.md#no-issues-pending" >}}
 [NO_TOOL_WARNINGS_THROWN]:      {{<relref "/doc/project/checklist.md#no-tool-warnings-thrown" >}}
+[TB_LINT_COMPLETE]:             {{<relref "/doc/project/checklist.md#tb_lint_complete" >}}
 [PRE_VERIFIED_SUB_MODULES_V3]:  {{<relref "/doc/project/checklist.md#pre-verified-sub-modules-v3" >}}
 [xbar_cov_excl.el]: https://github.com/weicaiyang/opentitan/blob/6cd55ad23aac96374bfa0bec315b904c6ffbdb8f/hw/ip/tlul/dv/cov/xbar_cov_excl.el
