@@ -218,17 +218,13 @@ dif_rstmgr_result_t dif_rstmgr_alert_info_dump_read(
     return kDifRstmgrError;
   }
 
-  bitfield_field32_t index_field = {
-      .mask = RSTMGR_ALERT_INFO_CTRL_INDEX_MASK,
-      .index = RSTMGR_ALERT_INFO_CTRL_INDEX_OFFSET,
-  };
-
   uint32_t control_reg =
       mmio_region_read32(base_addr, RSTMGR_ALERT_INFO_CTRL_REG_OFFSET);
 
   // Read the entire alert info crash dump, one 32bit data segment at the time.
   for (int i = 0; i < dump_size_actual; ++i) {
-    control_reg = bitfield_field32_write(control_reg, index_field, i);
+    control_reg = bitfield_field32_write(control_reg,
+                                         RSTMGR_ALERT_INFO_CTRL_INDEX_FIELD, i);
 
     // Set the index of the 32bit data segment to be read at `i`.
     mmio_region_write32(base_addr, RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
