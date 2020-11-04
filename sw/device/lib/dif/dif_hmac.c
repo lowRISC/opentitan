@@ -29,11 +29,7 @@ static uint32_t get_status(const dif_hmac_t *hmac) {
  * @return The number of entries in the HMAC FIFO.
  */
 static uint32_t get_fifo_entry_count(const dif_hmac_t *hmac) {
-  return bitfield_field32_read(get_status(hmac),
-                               (bitfield_field32_t){
-                                   .mask = HMAC_STATUS_FIFO_DEPTH_MASK,
-                                   .index = HMAC_STATUS_FIFO_DEPTH_OFFSET,
-                               });
+  return bitfield_field32_read(get_status(hmac), HMAC_STATUS_FIFO_DEPTH_FIELD);
 }
 
 /**
