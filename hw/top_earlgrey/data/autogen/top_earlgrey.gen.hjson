@@ -2621,7 +2621,7 @@
       inter_signal_list:
       [
         {
-          struct: hw_key
+          struct: hw_key_req
           type: uni
           name: aes_key
           act: req
@@ -2630,7 +2630,7 @@
           index: -1
         }
         {
-          struct: hw_key
+          struct: hw_key_req
           type: uni
           name: hmac_key
           act: req
@@ -2639,7 +2639,7 @@
           index: -1
         }
         {
-          struct: hw_key
+          struct: hw_key_req
           type: uni
           name: kmac_key
           act: req
@@ -6460,7 +6460,7 @@
         index: -1
       }
       {
-        struct: hw_key
+        struct: hw_key_req
         type: uni
         name: aes_key
         act: req
@@ -6469,7 +6469,7 @@
         index: -1
       }
       {
-        struct: hw_key
+        struct: hw_key_req
         type: uni
         name: hmac_key
         act: req
@@ -6478,7 +6478,7 @@
         index: -1
       }
       {
-        struct: hw_key
+        struct: hw_key_req
         type: uni
         name: kmac_key
         act: req
