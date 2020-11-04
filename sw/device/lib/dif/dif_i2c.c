@@ -142,78 +142,38 @@ dif_i2c_result_t dif_i2c_configure(const dif_i2c_t *i2c,
   }
 
   uint32_t timing0 = 0;
-  timing0 = bitfield_field32_write(
-      timing0,
-      (bitfield_field32_t){
-          .mask = I2C_TIMING0_THIGH_MASK, .index = I2C_TIMING0_THIGH_OFFSET,
-      },
-      config.scl_time_high_cycles);
-  timing0 = bitfield_field32_write(
-      timing0,
-      (bitfield_field32_t){
-          .mask = I2C_TIMING0_TLOW_MASK, .index = I2C_TIMING0_TLOW_OFFSET,
-      },
-      config.scl_time_low_cycles);
+  timing0 = bitfield_field32_write(timing0, I2C_TIMING0_THIGH_FIELD,
+                                   config.scl_time_high_cycles);
+  timing0 = bitfield_field32_write(timing0, I2C_TIMING0_TLOW_FIELD,
+                                   config.scl_time_low_cycles);
   mmio_region_write32(i2c->params.base_addr, I2C_TIMING0_REG_OFFSET, timing0);
 
   uint32_t timing1 = 0;
-  timing1 = bitfield_field32_write(
-      timing1,
-      (bitfield_field32_t){
-          .mask = I2C_TIMING1_T_R_MASK, .index = I2C_TIMING1_T_R_OFFSET,
-      },
-      config.rise_cycles);
-  timing1 = bitfield_field32_write(
-      timing1,
-      (bitfield_field32_t){
-          .mask = I2C_TIMING1_T_F_MASK, .index = I2C_TIMING1_T_F_OFFSET,
-      },
-      config.fall_cycles);
+  timing1 = bitfield_field32_write(timing1, I2C_TIMING1_T_R_FIELD,
+                                   config.rise_cycles);
+  timing1 = bitfield_field32_write(timing1, I2C_TIMING1_T_F_FIELD,
+                                   config.fall_cycles);
   mmio_region_write32(i2c->params.base_addr, I2C_TIMING1_REG_OFFSET, timing1);
 
   uint32_t timing2 = 0;
-  timing2 = bitfield_field32_write(
-      timing2,
-      (bitfield_field32_t){
-          .mask = I2C_TIMING2_TSU_STA_MASK, .index = I2C_TIMING2_TSU_STA_OFFSET,
-      },
-      config.start_signal_setup_cycles);
-  timing2 = bitfield_field32_write(
-      timing2,
-      (bitfield_field32_t){
-          .mask = I2C_TIMING2_THD_STA_MASK, .index = I2C_TIMING2_THD_STA_OFFSET,
-      },
-      config.start_signal_hold_cycles);
+  timing2 = bitfield_field32_write(timing2, I2C_TIMING2_TSU_STA_FIELD,
+                                   config.start_signal_setup_cycles);
+  timing2 = bitfield_field32_write(timing2, I2C_TIMING2_THD_STA_FIELD,
+                                   config.start_signal_hold_cycles);
   mmio_region_write32(i2c->params.base_addr, I2C_TIMING2_REG_OFFSET, timing2);
 
   uint32_t timing3 = 0;
-  timing3 = bitfield_field32_write(
-      timing3,
-      (bitfield_field32_t){
-          .mask = I2C_TIMING3_TSU_DAT_MASK, .index = I2C_TIMING3_TSU_DAT_OFFSET,
-      },
-      config.data_signal_setup_cycles);
-  timing3 = bitfield_field32_write(
-      timing3,
-      (bitfield_field32_t){
-          .mask = I2C_TIMING3_THD_DAT_MASK, .index = I2C_TIMING3_THD_DAT_OFFSET,
-      },
-      config.data_signal_hold_cycles);
+  timing3 = bitfield_field32_write(timing3, I2C_TIMING3_TSU_DAT_FIELD,
+                                   config.data_signal_setup_cycles);
+  timing3 = bitfield_field32_write(timing3, I2C_TIMING3_THD_DAT_FIELD,
+                                   config.data_signal_hold_cycles);
   mmio_region_write32(i2c->params.base_addr, I2C_TIMING3_REG_OFFSET, timing3);
 
   uint32_t timing4 = 0;
-  timing4 = bitfield_field32_write(
-      timing4,
-      (bitfield_field32_t){
-          .mask = I2C_TIMING4_TSU_STO_MASK, .index = I2C_TIMING4_TSU_STO_OFFSET,
-      },
-      config.stop_signal_setup_cycles);
-  timing4 = bitfield_field32_write(
-      timing4,
-      (bitfield_field32_t){
-          .mask = I2C_TIMING4_T_BUF_MASK, .index = I2C_TIMING4_T_BUF_OFFSET,
-      },
-      config.stop_signal_hold_cycles);
+  timing4 = bitfield_field32_write(timing4, I2C_TIMING4_TSU_STO_FIELD,
+                                   config.stop_signal_setup_cycles);
+  timing4 = bitfield_field32_write(timing4, I2C_TIMING4_T_BUF_FIELD,
+                                   config.stop_signal_hold_cycles);
   mmio_region_write32(i2c->params.base_addr, I2C_TIMING4_REG_OFFSET, timing4);
 
   return kDifI2cOk;
@@ -293,17 +253,9 @@ dif_i2c_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
 
   uint32_t ctrl_value =
       mmio_region_read32(i2c->params.base_addr, I2C_FIFO_CTRL_REG_OFFSET);
-  ctrl_value = bitfield_field32_write(ctrl_value,
-                                      (bitfield_field32_t){
-                                          .mask = I2C_FIFO_CTRL_RXILVL_MASK,
-                                          .index = I2C_FIFO_CTRL_RXILVL_OFFSET,
-                                      },
+  ctrl_value = bitfield_field32_write(ctrl_value, I2C_FIFO_CTRL_RXILVL_FIELD,
                                       rx_level_value);
-  ctrl_value = bitfield_field32_write(ctrl_value,
-                                      (bitfield_field32_t){
-                                          .mask = I2C_FIFO_CTRL_FMTILVL_MASK,
-                                          .index = I2C_FIFO_CTRL_FMTILVL_OFFSET,
-                                      },
+  ctrl_value = bitfield_field32_write(ctrl_value, I2C_FIFO_CTRL_FMTILVL_FIELD,
                                       fmt_level_value);
   mmio_region_write32(i2c->params.base_addr, I2C_FIFO_CTRL_REG_OFFSET,
                       ctrl_value);
@@ -553,19 +505,11 @@ dif_i2c_result_t dif_i2c_override_sample_pins(const dif_i2c_t *i2c,
   uint32_t samples =
       mmio_region_read32(i2c->params.base_addr, I2C_VAL_REG_OFFSET);
   if (scl_samples != NULL) {
-    *scl_samples = bitfield_field32_read(
-        samples,
-        (bitfield_field32_t){
-            .mask = I2C_VAL_SCL_RX_MASK, .index = I2C_VAL_SCL_RX_OFFSET,
-        });
+    *scl_samples = bitfield_field32_read(samples, I2C_VAL_SCL_RX_FIELD);
   }
 
   if (sda_samples != NULL) {
-    *sda_samples = bitfield_field32_read(
-        samples,
-        (bitfield_field32_t){
-            .mask = I2C_VAL_SDA_RX_MASK, .index = I2C_VAL_SDA_RX_OFFSET,
-        });
+    *sda_samples = bitfield_field32_read(samples, I2C_VAL_SDA_RX_FIELD);
   }
 
   return kDifI2cOk;
@@ -581,18 +525,11 @@ dif_i2c_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
   uint32_t values =
       mmio_region_read32(i2c->params.base_addr, I2C_FIFO_STATUS_REG_OFFSET);
   if (fmt_fifo_level != NULL) {
-    *fmt_fifo_level = bitfield_field32_read(
-        values, (bitfield_field32_t){
-                    .mask = I2C_FIFO_STATUS_FMTLVL_MASK,
-                    .index = I2C_FIFO_STATUS_FMTLVL_OFFSET,
-                });
+    *fmt_fifo_level =
+        bitfield_field32_read(values, I2C_FIFO_STATUS_FMTLVL_FIELD);
   }
   if (rx_fifo_level != NULL) {
-    *rx_fifo_level =
-        bitfield_field32_read(values, (bitfield_field32_t){
-                                          .mask = I2C_FIFO_STATUS_RXLVL_MASK,
-                                          .index = I2C_FIFO_STATUS_RXLVL_OFFSET,
-                                      });
+    *rx_fifo_level = bitfield_field32_read(values, I2C_FIFO_STATUS_RXLVL_FIELD);
   }
 
   return kDifI2cOk;
@@ -606,10 +543,7 @@ dif_i2c_result_t dif_i2c_read_byte(const dif_i2c_t *i2c, uint8_t *byte) {
   uint32_t values =
       mmio_region_read32(i2c->params.base_addr, I2C_RDATA_REG_OFFSET);
   if (byte != NULL) {
-    *byte = bitfield_field32_read(values, (bitfield_field32_t){
-                                              .mask = I2C_RDATA_RDATA_MASK,
-                                              .index = I2C_RDATA_RDATA_OFFSET,
-                                          });
+    *byte = bitfield_field32_read(values, I2C_RDATA_RDATA_FIELD);
   }
 
   return kDifI2cOk;
@@ -633,12 +567,7 @@ dif_i2c_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
   }
 
   uint32_t fmt_byte = 0;
-  fmt_byte = bitfield_field32_write(
-      fmt_byte,
-      (bitfield_field32_t){
-          .mask = I2C_FDATA_FBYTE_MASK, .index = I2C_FDATA_FBYTE_OFFSET,
-      },
-      byte);
+  fmt_byte = bitfield_field32_write(fmt_byte, I2C_FDATA_FBYTE_FIELD, byte);
   fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_START_BIT, flags.start);
   fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_STOP_BIT, flags.stop);
   fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_READ_BIT, flags.read);
