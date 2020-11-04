@@ -38,11 +38,7 @@ static uint32_t build_control_word(dif_spi_device_config_t config) {
                              config.tx_order == kDifSpiDeviceBitOrderLsbToMsb);
   val = bitfield_bit32_write(val, SPI_DEVICE_CFG_RX_ORDER_BIT,
                              config.rx_order == kDifSpiDeviceBitOrderLsbToMsb);
-  val = bitfield_field32_write(val,
-                               (bitfield_field32_t){
-                                   .mask = SPI_DEVICE_CFG_TIMER_V_MASK,
-                                   .index = SPI_DEVICE_CFG_TIMER_V_OFFSET,
-                               },
+  val = bitfield_field32_write(val, SPI_DEVICE_CFG_TIMER_V_FIELD,
                                config.rx_fifo_timeout);
 
   return val;
@@ -69,36 +65,16 @@ dif_spi_device_result_t dif_spi_device_configure(
   }
 
   uint32_t rx_fifo_bounds = 0;
-  rx_fifo_bounds =
-      bitfield_field32_write(rx_fifo_bounds,
-                             (bitfield_field32_t){
-                                 .mask = SPI_DEVICE_RXF_ADDR_BASE_MASK,
-                                 .index = SPI_DEVICE_RXF_ADDR_BASE_OFFSET,
-                             },
-                             rx_fifo_start);
-  rx_fifo_bounds =
-      bitfield_field32_write(rx_fifo_bounds,
-                             (bitfield_field32_t){
-                                 .mask = SPI_DEVICE_RXF_ADDR_LIMIT_MASK,
-                                 .index = SPI_DEVICE_RXF_ADDR_LIMIT_OFFSET,
-                             },
-                             rx_fifo_end);
+  rx_fifo_bounds = bitfield_field32_write(
+      rx_fifo_bounds, SPI_DEVICE_RXF_ADDR_BASE_FIELD, rx_fifo_start);
+  rx_fifo_bounds = bitfield_field32_write(
+      rx_fifo_bounds, SPI_DEVICE_RXF_ADDR_LIMIT_FIELD, rx_fifo_end);
 
   uint32_t tx_fifo_bounds = 0;
-  tx_fifo_bounds =
-      bitfield_field32_write(tx_fifo_bounds,
-                             (bitfield_field32_t){
-                                 .mask = SPI_DEVICE_TXF_ADDR_BASE_MASK,
-                                 .index = SPI_DEVICE_TXF_ADDR_BASE_OFFSET,
-                             },
-                             tx_fifo_start);
-  tx_fifo_bounds =
-      bitfield_field32_write(tx_fifo_bounds,
-                             (bitfield_field32_t){
-                                 .mask = SPI_DEVICE_TXF_ADDR_LIMIT_MASK,
-                                 .index = SPI_DEVICE_TXF_ADDR_LIMIT_OFFSET,
-                             },
-                             tx_fifo_end);
+  tx_fifo_bounds = bitfield_field32_write(
+      tx_fifo_bounds, SPI_DEVICE_TXF_ADDR_BASE_FIELD, tx_fifo_start);
+  tx_fifo_bounds = bitfield_field32_write(
+      tx_fifo_bounds, SPI_DEVICE_TXF_ADDR_LIMIT_FIELD, tx_fifo_end);
 
   spi->rx_fifo_len = config.rx_fifo_len;
   spi->tx_fifo_len = config.tx_fifo_len;
@@ -305,20 +281,10 @@ dif_spi_device_result_t dif_spi_device_set_irq_levels(
   }
 
   uint32_t compressed_limit = 0;
-  compressed_limit =
-      bitfield_field32_write(compressed_limit,
-                             (bitfield_field32_t){
-                                 .mask = SPI_DEVICE_FIFO_LEVEL_RXLVL_MASK,
-                                 .index = SPI_DEVICE_FIFO_LEVEL_RXLVL_OFFSET,
-                             },
-                             rx_level);
-  compressed_limit =
-      bitfield_field32_write(compressed_limit,
-                             (bitfield_field32_t){
-                                 .mask = SPI_DEVICE_FIFO_LEVEL_TXLVL_MASK,
-                                 .index = SPI_DEVICE_FIFO_LEVEL_TXLVL_OFFSET,
-                             },
-                             tx_level);
+  compressed_limit = bitfield_field32_write(
+      compressed_limit, SPI_DEVICE_FIFO_LEVEL_RXLVL_FIELD, rx_level);
+  compressed_limit = bitfield_field32_write(
+      compressed_limit, SPI_DEVICE_FIFO_LEVEL_TXLVL_FIELD, tx_level);
   mmio_region_write32(spi->params.base_addr, SPI_DEVICE_FIFO_LEVEL_REG_OFFSET,
                       compressed_limit);
 
