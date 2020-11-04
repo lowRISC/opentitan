@@ -80,6 +80,26 @@
   ]
   regwidth: "32"
   registers: [
+    { name: "CFG_REGWEN"
+      desc: '''Controls the configurability of !!CFG register.
+
+            This register ensures the contents of !!CFG register cannot be
+            changed by the software while the KMAC/SHA3 is in operation mode.
+            '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: "true"
+      fields: [
+        { bits: "0"
+          name: "en"
+          desc: "Configuration enable."
+          resval: "1"
+        } // f : en 
+      ]
+      tags: [// This regwen is completely under HW management and thus cannot be manipulated
+             // by software.
+             "excl:CsrNonInitTests:CsrExclCheck"]
+    } // R : CFG_REGWEN
     { name: "CFG"
       desc: '''KMAC Configuration register.
 
@@ -436,27 +456,6 @@
         }
       ]
     } // R: ERR_CODE
-    { name: "CFG_REGWEN"
-      desc: '''Controls the configurability of !!CFG register.
-
-            This register ensures the contents of !!CFG register cannot be
-            changed by the software while the KMAC/SHA3 is in operation mode.
-            '''
-      swaccess: "ro"
-      hwaccess: "hwo"
-      hwext: "true"
-      fields: [
-        { bits: "0"
-          name: "en"
-          desc: "Configuration enable."
-          resval: "1"
-        } // f : en 
-      ]
-      tags: [// This regwen is completely under HW management and thus cannot be manipulated
-             // by software.
-             "excl:CsrNonInitTests:CsrExclCheck"]
-    } // R : CFG_REGWEN
-
     { skipto: "0x400"}
     { window: {
         name: "STATE"
