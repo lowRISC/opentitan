@@ -269,8 +269,8 @@ dif_otbn_result_t dif_otbn_get_err_code(const dif_otbn_t *otbn,
  * invalid, `kDifOtbnOk` otherwise.
  */
 dif_otbn_result_t dif_otbn_imem_write(const dif_otbn_t *otbn,
-                                      uint32_t offset_bytes,
-                                      const uint32_t *src, size_t len_bytes);
+                                      uint32_t offset_bytes, const void *src,
+                                      size_t len_bytes);
 
 /**
  * Read from OTBN's instruction memory (IMEM)
@@ -285,7 +285,7 @@ dif_otbn_result_t dif_otbn_imem_write(const dif_otbn_t *otbn,
  * invalid, `kDifOtbnOk` otherwise.
  */
 dif_otbn_result_t dif_otbn_imem_read(const dif_otbn_t *otbn,
-                                     uint32_t offset_bytes, uint32_t *dest,
+                                     uint32_t offset_bytes, void *dest,
                                      size_t len_bytes);
 
 /**
@@ -301,8 +301,8 @@ dif_otbn_result_t dif_otbn_imem_read(const dif_otbn_t *otbn,
  * invalid, `kDifOtbnOk` otherwise.
  */
 dif_otbn_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn,
-                                      uint32_t offset_bytes,
-                                      const uint32_t *src, size_t len_bytes);
+                                      uint32_t offset_bytes, const void *src,
+                                      size_t len_bytes);
 
 /**
  * Read from OTBN's data memory (DMEM)
@@ -317,7 +317,7 @@ dif_otbn_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn,
  * invalid, `kDifOtbnOk` otherwise.
  */
 dif_otbn_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn,
-                                     uint32_t offset_bytes, uint32_t *dest,
+                                     uint32_t offset_bytes, void *dest,
                                      size_t len_bytes);
 
 /**
