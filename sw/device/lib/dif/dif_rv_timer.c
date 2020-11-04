@@ -94,19 +94,10 @@ dif_rv_timer_result_t dif_rv_timer_set_tick_params(
   }
 
   uint32_t config_value = 0;
-  config_value =
-      bitfield_field32_write(config_value,
-                             (bitfield_field32_t){
-                                 .mask = RV_TIMER_CFG0_PRESCALE_MASK,
-                                 .index = RV_TIMER_CFG0_PRESCALE_OFFSET,
-                             },
-                             params.prescale);
   config_value = bitfield_field32_write(
-      config_value,
-      (bitfield_field32_t){
-          .mask = RV_TIMER_CFG0_STEP_MASK, .index = RV_TIMER_CFG0_STEP_OFFSET,
-      },
-      params.tick_step);
+      config_value, RV_TIMER_CFG0_PRESCALE_FIELD, params.prescale);
+  config_value = bitfield_field32_write(config_value, RV_TIMER_CFG0_STEP_FIELD,
+                                        params.tick_step);
   mmio_region_write32(timer->base_addr,
                       reg_for_hart(hart_id, RV_TIMER_CFG0_REG_OFFSET),
                       config_value);
