@@ -12,6 +12,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // various knobs to enable certain routines
   bit do_otp_ctrl_init = 1'b1;
+  bit do_otp_pwr_init  = 1'b1;
 
   rand bit [NumOtpCtrlIntr-1:0] en_intr;
 
@@ -20,15 +21,23 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
     // reset power init pin and lc pins
-    cfg.pwr_otp_vif.drive_pin(0, 0);
+    cfg.pwr_otp_vif.drive_pin(OtpPwrInitReq, 0);
     cfg.lc_provision_en_vif.drive(lc_ctrl_pkg::Off);
     cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::Off);
     if (do_otp_ctrl_init) otp_ctrl_init();
+    if (do_otp_pwr_init) otp_pwr_init();
   endtask
 
   virtual task dut_shutdown();
     // check for pending otp_ctrl operations and wait for them to complete
     // TODO
+  endtask
+
+  // drive otp_pwr req pin to initialize OTP, and wait until init is done
+  virtual task otp_pwr_init();
+    cfg.pwr_otp_vif.drive_pin(OtpPwrInitReq, 1);
+    wait(cfg.pwr_otp_vif.pins[OtpPwrDoneRsp] == 1);
+    cfg.pwr_otp_vif.drive_pin(OtpPwrInitReq, 0);
   endtask
 
   // setup basic otp_ctrl features
@@ -39,12 +48,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // some registers won't set to default value until otp_init is done
   virtual task read_and_check_all_csrs_after_reset();
-    // drive pwr_otp_req pin
-    cfg.pwr_otp_vif.drive_pin(0, 1);
     // drive dft_en pins to access the test_access memory
     cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::On);
-    wait(cfg.pwr_otp_vif.pins[2] == 1);
-    super.read_and_check_all_csrs_after_reset();
+    otp_pwr_init();
   endtask
 
   // this task triggers an OTP write sequence via the DAI interface
