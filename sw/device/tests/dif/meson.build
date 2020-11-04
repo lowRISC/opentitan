@@ -260,6 +260,7 @@ dif_rstmgr_sanitytest_lib = declare_dependency(
     dependencies: [
       sw_lib_dif_rstmgr,
       sw_lib_mmio,
+      sw_lib_runtime_hart,
     ],
   ),
 )
@@ -286,5 +287,23 @@ dif_otbn_sanitytest_lib = declare_dependency(
 sw_tests += {
   'dif_otbn_sanitytest': {
     'library': dif_otbn_sanitytest_lib,
+  }
+}
+
+dif_otp_ctrl_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_otp_ctrl_smoketest_lib',
+    sources: ['dif_otp_ctrl_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_otp_ctrl,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'dif_otp_ctrl_smoketest': {
+    'library': dif_otp_ctrl_smoketest_lib,
   }
 }
