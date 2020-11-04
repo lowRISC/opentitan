@@ -47,6 +47,7 @@ extra_warning_args = [
   '-Wswitch-default', # Ensure all switches have default statements
   '-Wno-covered-switch-default', # We require `default:` always.
   '-Wgnu', # We aim to be standards compliant, and avoid gnu extensions.
+  '-Wno-error=unused-function', # Don't error out on unused functions, only warn.
   # Issues we intend to fix in the future but are currently ignored as there are
   # many places they are triggered.
   '-Wno-unused-parameter',
