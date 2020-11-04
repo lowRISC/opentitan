@@ -10,9 +10,9 @@
  * @brief <a href="/hw/ip/otbn/doc/">OTBN</a> Device Interface Functions
  */
 
-#include "sw/device/lib/base/mmio.h"
 #include <stddef.h>
 #include <stdint.h>
+#include "sw/device/lib/base/mmio.h"
 
 #ifdef __cplusplus
 extern "C" {
