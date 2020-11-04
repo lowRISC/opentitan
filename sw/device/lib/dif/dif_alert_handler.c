@@ -21,12 +21,6 @@ dif_alert_handler_result_t dif_alert_handler_init(
     return kDifAlertHandlerBadArg;
   }
 
-  // TODO: We currently don't support more than 16 alerts correctly.
-  // See: #3826
-  if (params.alert_count > 16) {
-    return kDifAlertHandlerBadArg;
-  }
-
   // For now, the hardware is hardwired to four signals.
   if (params.escalation_signal_count != ALERT_HANDLER_PARAM_N_ESC_SEV) {
     return kDifAlertHandlerBadArg;
@@ -35,6 +29,34 @@ dif_alert_handler_result_t dif_alert_handler_init(
   handler->params = params;
 
   return kDifAlertHandlerOk;
+}
+
+/**
+ * Computes the register index and register-relative offset for a field within
+ * a multi-register made up of equally-sized fields.
+ *
+ * @param field_index The absolute field index within the multi-register.
+ * @param field_width The width of the field, in bits.
+ * @param[out] register_index The index of the register containing the field.
+ * @param[out] relative_offset The bit offset within the register containing the
+ *             field.
+ */
+static void multireg_parts(uint32_t field_index, uint32_t field_width,
+                           uint32_t *register_index,
+                           uint32_t *relative_offset) {
+  // For a multireg made up of 32-bit registers, each with n-bit fields, we
+  // can compute the register, and offset therein, of the mth field, via the
+  // following formula:
+  //
+  // fields_per_reg = 32 / n;
+  // register_index = m / fields_per_reg;
+  // relative_index = m % fields_per_reg;
+  // field_offset = relative_index * n;
+  uint32_t fields_per_reg = 32 / field_width;
+  *register_index = field_index / fields_per_reg;
+
+  uint32_t relative_index = field_index % fields_per_reg;
+  *relative_offset = relative_index * field_width;
 }
 
 /**
@@ -48,19 +70,24 @@ static bool classify_alerts(const dif_alert_handler_t *handler,
     return false;
   }
 
-  uint32_t enable_reg = mmio_region_read32(handler->params.base_addr,
-                                           ALERT_HANDLER_ALERT_EN_REG_OFFSET);
-  uint32_t alerts_reg = mmio_region_read32(
-      handler->params.base_addr, ALERT_HANDLER_ALERT_CLASS_REG_OFFSET);
-
   for (int i = 0; i < class->alerts_len; ++i) {
     if (class->alerts[i] >= handler->params.alert_count) {
       return false;
     }
 
-    // Note: the value in alerts[i] corresponds directly to the bit index within
+    // NOTE: the value in alerts[i] corresponds directly to the bit index within
     // the register. (I.e., alert N has enable bit N).
-    enable_reg = bitfield_bit32_write(enable_reg, class->alerts[i], true);
+    uint32_t enable_register_index, enable_field_offset;
+    multireg_parts(class->alerts[i], /*field_width=*/1, &enable_register_index,
+                   &enable_field_offset);
+    ptrdiff_t enable_reg_offset = ALERT_HANDLER_ALERT_EN_REG_OFFSET +
+                                  sizeof(uint32_t) * enable_register_index;
+
+    uint32_t enable_reg =
+        mmio_region_read32(handler->params.base_addr, enable_reg_offset);
+    enable_reg = bitfield_bit32_write(enable_reg, enable_field_offset, true);
+    mmio_region_write32(handler->params.base_addr, enable_reg_offset,
+                        enable_reg);
 
     uint32_t classification;
     switch (class->alert_class) {
@@ -80,25 +107,27 @@ static bool classify_alerts(const dif_alert_handler_t *handler,
         return false;
     }
 
-    // TODO: Currently, we assume all fields are of equal width.
-    // See: #3826
-    uint32_t field_width =
+    uint32_t class_width =
         bitfield_popcount32(ALERT_HANDLER_ALERT_CLASS_CLASS_A_0_MASK);
-    uint32_t field_offset = field_width * class->alerts[i];
+    uint32_t class_register_index, class_field_offset;
+    multireg_parts(class->alerts[i], class_width, &class_register_index,
+                   &class_field_offset);
+    ptrdiff_t class_reg_offset = ALERT_HANDLER_ALERT_CLASS_REG_OFFSET +
+                                 sizeof(uint32_t) * class_register_index;
 
+    uint32_t alerts_reg =
+        mmio_region_read32(handler->params.base_addr, class_reg_offset);
     alerts_reg = bitfield_field32_write(
         alerts_reg,
         (bitfield_field32_t){
             .mask = ALERT_HANDLER_ALERT_CLASS_CLASS_A_0_MASK,
-            .index = field_offset,
+            .index = class_field_offset,
         },
         classification);
+    mmio_region_write32(handler->params.base_addr, class_reg_offset,
+                        alerts_reg);
   }
 
-  mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_ALERT_EN_REG_OFFSET, enable_reg);
-  mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_ALERT_CLASS_REG_OFFSET, alerts_reg);
   return true;
 }
 
@@ -113,11 +142,6 @@ static bool classify_local_alerts(
   if (class->local_alerts == NULL && class->local_alerts_len != 0) {
     return false;
   }
-
-  uint32_t enable_reg = mmio_region_read32(
-      handler->params.base_addr, ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET);
-  uint32_t alerts_reg = mmio_region_read32(
-      handler->params.base_addr, ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET);
 
   for (int i = 0; i < class->local_alerts_len; ++i) {
     uint32_t classification;
@@ -165,14 +189,19 @@ static bool classify_local_alerts(
         return false;
     }
 
+    uint32_t enable_reg = mmio_region_read32(
+        handler->params.base_addr, ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET);
     enable_reg = bitfield_bit32_write(enable_reg, enable_bit, true);
+    mmio_region_write32(handler->params.base_addr,
+                        ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET, enable_reg);
+
+    uint32_t alerts_reg = mmio_region_read32(
+        handler->params.base_addr, ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET);
     alerts_reg = bitfield_field32_write(alerts_reg, field, classification);
+    mmio_region_write32(handler->params.base_addr,
+                        ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET, alerts_reg);
   }
 
-  mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET, enable_reg);
-  mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET, alerts_reg);
   return true;
 }
 
