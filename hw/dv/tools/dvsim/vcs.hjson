@@ -81,6 +81,8 @@
                "-error=STASKW_NDTAZ1",
                // Too many parameter overrides
                "-error=TMPO",
+               // Class objects must not hide other class members due to same name
+               "-error=SV-OHCM",
                ]
 
   run_opts:   ["-licqueue",
