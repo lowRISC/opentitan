@@ -191,10 +191,10 @@ module otp_ctrl_reg_top (
   logic err_code_err_code_8_re;
   logic direct_access_regwen_qs;
   logic direct_access_regwen_re;
-  logic direct_access_cmd_read_wd;
-  logic direct_access_cmd_read_we;
-  logic direct_access_cmd_write_wd;
-  logic direct_access_cmd_write_we;
+  logic direct_access_cmd_rd_wd;
+  logic direct_access_cmd_rd_we;
+  logic direct_access_cmd_wr_wd;
+  logic direct_access_cmd_wr_we;
   logic direct_access_cmd_digest_wd;
   logic direct_access_cmd_digest_we;
   logic [10:0] direct_access_address_qs;
@@ -818,34 +818,34 @@ module otp_ctrl_reg_top (
 
   // R[direct_access_cmd]: V(True)
 
-  //   F[read]: 0:0
+  //   F[rd]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_direct_access_cmd_read (
+  ) u_direct_access_cmd_rd (
     .re     (1'b0),
     // qualified with register enable
-    .we     (direct_access_cmd_read_we & direct_access_regwen_qs),
-    .wd     (direct_access_cmd_read_wd),
+    .we     (direct_access_cmd_rd_we & direct_access_regwen_qs),
+    .wd     (direct_access_cmd_rd_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.direct_access_cmd.read.qe),
-    .q      (reg2hw.direct_access_cmd.read.q ),
+    .qe     (reg2hw.direct_access_cmd.rd.qe),
+    .q      (reg2hw.direct_access_cmd.rd.q ),
     .qs     ()
   );
 
 
-  //   F[write]: 1:1
+  //   F[wr]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_direct_access_cmd_write (
+  ) u_direct_access_cmd_wr (
     .re     (1'b0),
     // qualified with register enable
-    .we     (direct_access_cmd_write_we & direct_access_regwen_qs),
-    .wd     (direct_access_cmd_write_wd),
+    .we     (direct_access_cmd_wr_we & direct_access_regwen_qs),
+    .wd     (direct_access_cmd_wr_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.direct_access_cmd.write.qe),
-    .q      (reg2hw.direct_access_cmd.write.q ),
+    .qe     (reg2hw.direct_access_cmd.wr.qe),
+    .q      (reg2hw.direct_access_cmd.wr.q ),
     .qs     ()
   );
 
@@ -1564,11 +1564,11 @@ module otp_ctrl_reg_top (
 
   assign direct_access_regwen_re = addr_hit[6] && reg_re;
 
-  assign direct_access_cmd_read_we = addr_hit[7] & reg_we & ~wr_err;
-  assign direct_access_cmd_read_wd = reg_wdata[0];
+  assign direct_access_cmd_rd_we = addr_hit[7] & reg_we & ~wr_err;
+  assign direct_access_cmd_rd_wd = reg_wdata[0];
 
-  assign direct_access_cmd_write_we = addr_hit[7] & reg_we & ~wr_err;
-  assign direct_access_cmd_write_wd = reg_wdata[1];
+  assign direct_access_cmd_wr_we = addr_hit[7] & reg_we & ~wr_err;
+  assign direct_access_cmd_wr_wd = reg_wdata[1];
 
   assign direct_access_cmd_digest_we = addr_hit[7] & reg_we & ~wr_err;
   assign direct_access_cmd_digest_wd = reg_wdata[2];

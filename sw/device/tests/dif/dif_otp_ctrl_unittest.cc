@@ -382,7 +382,7 @@ TEST_F(DaiReadTest, Read32) {
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x620);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
-                 {{OTP_CTRL_DIRECT_ACCESS_CMD_READ_BIT, true}});
+                 {{OTP_CTRL_DIRECT_ACCESS_CMD_RD_BIT, true}});
 
   EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionHwCfg,
                                         /*address=*/0x20),
@@ -404,7 +404,7 @@ TEST_F(DaiReadTest, Read64) {
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x738);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
-                 {{OTP_CTRL_DIRECT_ACCESS_CMD_READ_BIT, true}});
+                 {{OTP_CTRL_DIRECT_ACCESS_CMD_RD_BIT, true}});
 
   EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionSecret2,
                                         /*address=*/0x8),
@@ -480,7 +480,7 @@ TEST_F(DaiProgramTest, Program32) {
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, 0x620);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, 0x12345678);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
-                 {{OTP_CTRL_DIRECT_ACCESS_CMD_WRITE_BIT, true}});
+                 {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
 
   EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionHwCfg,
                                        /*address=*/0x20, /*value=*/0x12345678),
@@ -495,7 +495,7 @@ TEST_F(DaiProgramTest, Program64) {
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, 0x90abcdef);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET, 0x12345678);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
-                 {{OTP_CTRL_DIRECT_ACCESS_CMD_WRITE_BIT, true}});
+                 {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
 
   EXPECT_EQ(
       dif_otp_ctrl_dai_program64(&otp_, kDifOtpCtrlPartitionSecret2,
@@ -573,7 +573,7 @@ TEST_F(DaiDigestTest, DigestSw) {
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, 0x00abcdef);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET, 0xabcdef00);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
-                 {{OTP_CTRL_DIRECT_ACCESS_CMD_WRITE_BIT, true}});
+                 {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
 
   EXPECT_EQ(dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionCreatorSwCfg,
                                     /*digest=*/0xabcdef0000abcdef),

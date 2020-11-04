@@ -492,7 +492,7 @@
               "excl:CsrNonInitTests:CsrExclWrite"],
       fields: [
         { bits: "0",
-          name: "READ",
+          name: "RD",
           desc: '''
           Initiates a readout sequence that reads the location specified
           by !!DIRECT_ACCESS_ADDRESS. The command places the data read into
@@ -500,7 +500,7 @@
           '''
         }
         { bits: "1",
-          name: "WRITE",
+          name: "WR",
           desc: '''
                 Initiates a programming sequence that writes the data in !!DIRECT_ACCESS_WDATA_0
                 and !!DIRECT_ACCESS_WDATA_1 (for 64bit partitions) to the location specified by

@@ -237,12 +237,12 @@ module otp_ctrl
 
   // Any write to this register triggers a DAI command.
   assign dai_req = reg2hw.direct_access_cmd.digest.qe |
-                   reg2hw.direct_access_cmd.write.qe  |
-                   reg2hw.direct_access_cmd.read.qe;
+                   reg2hw.direct_access_cmd.wr.qe  |
+                   reg2hw.direct_access_cmd.rd.qe;
 
   assign dai_cmd = dai_cmd_e'({reg2hw.direct_access_cmd.digest.q,
-                               reg2hw.direct_access_cmd.write.q,
-                               reg2hw.direct_access_cmd.read.q});
+                               reg2hw.direct_access_cmd.wr.q,
+                               reg2hw.direct_access_cmd.rd.q});
 
   assign dai_addr  = reg2hw.direct_access_address.q;
   assign dai_wdata = reg2hw.direct_access_wdata;
