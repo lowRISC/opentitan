@@ -483,6 +483,7 @@ typedef struct partition_info {
 
 static const partition_info_t kPartitions[] = {
     // TODO: These should be provided by the gen'd header.
+    // See #3904.
     [kDifOtpCtrlPartitionCreatorSwCfg] =
         {
             .start_addr = 0,
