@@ -100,7 +100,9 @@ write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
 ##   APPLY CONSTRAINTS   ##
 ###########################
 
+puts "Applying constraints for ${DUT}"
 source ${CONSTRAINT}
+puts "Done applying constraints for ${DUT}"
 
 # If hold time should be fixed
 # set_fix_hold ${CLK_PIN}
