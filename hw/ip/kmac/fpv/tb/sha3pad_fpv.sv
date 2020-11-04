@@ -4,7 +4,7 @@
 //
 
 module sha3pad_fpv
-  import kmac_pkg::*;
+  import sha3_pkg::*;
 #(
   parameter int EnMasking = 0,
   localparam int Share = (EnMasking) ? 2 : 1
