@@ -956,6 +956,8 @@ module usbdev (
     .rst_usb_48mhz_ni       (rst_usb_48mhz_ni),
 
     // Register interface
+    .sys_hw2reg_sense_o     (hw2reg.phy_pins_sense),
+    .sys_reg2hw_drive_i     (reg2hw.phy_pins_drive),
     .sys_reg2hw_config_i    (reg2hw.phy_config),
     .sys_usb_sense_o        (hw2reg.usbstat.sense.d),
 
