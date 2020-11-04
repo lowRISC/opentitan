@@ -162,6 +162,22 @@ test('dif_alert_handler_unittest', executable(
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
+test('dif_otp_ctrl_unittest', executable(
+  'dif_otp_ctrl_unittest',
+  sources: [
+    hw_ip_otp_ctrl_reg_h,
+    meson.source_root() / 'sw/device/lib/dif/dif_otp_ctrl.c',
+    'dif_otp_ctrl_unittest.cc',
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_mock_mmio,
+  ],
+  native: true,
+  c_args: ['-DMOCK_MMIO'],
+  cpp_args: ['-DMOCK_MMIO'],
+))
+
 dif_plic_sanitytest_lib = declare_dependency(
   link_with: static_library(
     'dif_plic_sanitytest_lib',
