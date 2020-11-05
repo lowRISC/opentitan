@@ -230,7 +230,6 @@ package ${block.name}_ral_pkg;
   reg_right = r.dvrights
   reg_width = block.width
   reg_offset =  str(reg_width) + "'h" + "%x" % r.offset
-  reg_wen = r.regwen
   reg_tags = r.tags
   reg_shadowed = r.shadowed
 %>\
@@ -240,24 +239,29 @@ package ${block.name}_ral_pkg;
       default_map.add_reg(.rg(${reg_name}),
                           .offset(${reg_offset}),
                           .rights("${reg_right}"));
-% if reg_wen:
-      ${reg_wen}.add_locked_reg(${reg_name});
-% endif
-% if reg_shadowed:
+  % if reg_shadowed:
       ${reg_name}.set_is_shadowed();
-% endif
-% if reg_tags:
+  % endif
+  % if reg_tags:
       // create register tags
-% for reg_tag in reg_tags:
+    % for reg_tag in reg_tags:
 <%
   tag = reg_tag.split(":")
 %>\
-% if tag[0] == "excl":
+      % if tag[0] == "excl":
       csr_excl.add_excl(${reg_name}.get_full_name(), ${tag[2]}, ${tag[1]});
-% endif
+      % endif
+    % endfor
+  % endif
 % endfor
-% endif
+
+      // assign locked reg to its regwen reg
+% for r in regs_flat:
+  % if r.regwen:
+      ${r.regwen}.add_locked_reg(${r.name});
+  % endif
 % endfor
+
 % if block.wins:
 
       // create memories
@@ -276,17 +280,17 @@ package ${block.name}_ral_pkg;
       default_map.add_mem(.mem(${mem_name}),
                           .offset(${mem_offset}),
                           .rights("${mem_right}"));
-% if mem_tags:
+  % if mem_tags:
       // create memory tags
-% for mem_tag in mem_tags:
+    % for mem_tag in mem_tags:
 <%
   tag = mem_tag.split(":")
 %>\
-% if tag[0] == "excl":
+      % if tag[0] == "excl":
       csr_excl.add_excl(${mem_name}.get_full_name(), ${tag[2]}, ${tag[1]});
-% endif
-% endfor
-% endif
+      % endif
+    % endfor
+  % endif
 % endfor
     endfunction : build
 
