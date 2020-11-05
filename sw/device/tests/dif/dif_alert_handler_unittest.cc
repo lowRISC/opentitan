@@ -210,39 +210,16 @@ TEST_F(ConfigTest, ClassInit) {
   EXPECT_READ32(ALERT_HANDLER_REGEN_REG_OFFSET,
                 {{ALERT_HANDLER_REGEN_REGEN, true}});
 
-  // Unfortunately, we can't use EXPECT_MASK for these reads and writes,
-  // since there are not sequenced exactly.
-  EXPECT_READ32(ALERT_HANDLER_ALERT_EN_REG_OFFSET, 0);
-  EXPECT_READ32(ALERT_HANDLER_ALERT_CLASS_REG_OFFSET, kAllOnes);
-
-  EXPECT_WRITE32(ALERT_HANDLER_ALERT_EN_REG_OFFSET, {
-                                                        {1, true},
-                                                        {2, true},
-                                                        {5, true},
-                                                    });
-  uint32_t reg_a = kAllOnes;
   for (auto alert : alerts_a) {
-    reg_a =
-        bitfield_field32_write(reg_a, {.mask = 0b11, .index = alert * 2}, 0b00);
+    EXPECT_MASK32(ALERT_HANDLER_ALERT_EN_REG_OFFSET, {{alert, 1, true}});
+    EXPECT_MASK32(ALERT_HANDLER_ALERT_CLASS_REG_OFFSET,
+                  {{alert * 2, 0b11, 0b00}});
   }
-  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CLASS_REG_OFFSET, reg_a);
-
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET, 0);
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET, kAllOnes);
-
-  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET,
-                 {
-                     {ALERT_HANDLER_LOC_ALERT_EN_EN_LA_1, true},
-                 });
-  uint32_t loc_reg_a = kAllOnes;
-  loc_reg_a = bitfield_field32_write(
-      loc_reg_a,
-      {
-          .mask = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_1_MASK,
-          .index = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_1_OFFSET,
-      },
-      0b00);
-  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET, loc_reg_a);
+  EXPECT_MASK32(ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET,
+                {{ALERT_HANDLER_LOC_ALERT_EN_EN_LA_1, 1, true}});
+  EXPECT_MASK32(ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET,
+                {{ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_1_OFFSET,
+                  ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_1_MASK, 0b00}});
 
   EXPECT_WRITE32(ALERT_HANDLER_CLASSA_CTRL_REG_OFFSET,
                  {
@@ -260,45 +237,22 @@ TEST_F(ConfigTest, ClassInit) {
   EXPECT_WRITE32(ALERT_HANDLER_CLASSA_PHASE1_CYC_REG_OFFSET, 20000);
   EXPECT_WRITE32(ALERT_HANDLER_CLASSA_PHASE2_CYC_REG_OFFSET, 15000);
 
-  EXPECT_READ32(ALERT_HANDLER_ALERT_EN_REG_OFFSET, 0);
-  EXPECT_READ32(ALERT_HANDLER_ALERT_CLASS_REG_OFFSET, kAllOnes);
-
-  EXPECT_WRITE32(ALERT_HANDLER_ALERT_EN_REG_OFFSET, {
-                                                        {9, true},
-                                                        {6, true},
-                                                        {11, true},
-                                                    });
-  uint32_t reg_b = kAllOnes;
   for (auto alert : alerts_b) {
-    reg_b =
-        bitfield_field32_write(reg_b, {.mask = 0b11, .index = alert * 2}, 0b01);
+    EXPECT_MASK32(ALERT_HANDLER_ALERT_EN_REG_OFFSET, {{alert, 1, true}});
+    EXPECT_MASK32(ALERT_HANDLER_ALERT_CLASS_REG_OFFSET,
+                  {{alert * 2, 0b11, 0b01}});
   }
-  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CLASS_REG_OFFSET, reg_b);
 
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET, 0);
-  EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET, kAllOnes);
-
-  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET,
-                 {
-                     {ALERT_HANDLER_LOC_ALERT_EN_EN_LA_0, true},
-                     {ALERT_HANDLER_LOC_ALERT_EN_EN_LA_2, true},
-                 });
-  uint32_t loc_reg_b = kAllOnes;
-  loc_reg_b = bitfield_field32_write(
-      loc_reg_b,
-      {
-          .mask = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_0_MASK,
-          .index = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_0_OFFSET,
-      },
-      0b01);
-  loc_reg_b = bitfield_field32_write(
-      loc_reg_b,
-      {
-          .mask = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_2_MASK,
-          .index = ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_2_OFFSET,
-      },
-      0b01);
-  EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET, loc_reg_b);
+  EXPECT_MASK32(ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET,
+                {{ALERT_HANDLER_LOC_ALERT_EN_EN_LA_0, 1, true}});
+  EXPECT_MASK32(ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET,
+                {{ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_0_OFFSET,
+                  ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_0_MASK, 0b01}});
+  EXPECT_MASK32(ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET,
+                {{ALERT_HANDLER_LOC_ALERT_EN_EN_LA_2, 1, true}});
+  EXPECT_MASK32(ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET,
+                {{ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_2_OFFSET,
+                  ALERT_HANDLER_LOC_ALERT_CLASS_CLASS_LA_2_MASK, 0b01}});
 
   EXPECT_WRITE32(ALERT_HANDLER_CLASSB_CTRL_REG_OFFSET,
                  {
