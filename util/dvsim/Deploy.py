@@ -894,6 +894,9 @@ class CovMerge(Deploy):
             ignored_wildcards=["cov_db_dirs"],
             ignore_error=False)
 
+        # Call base class __post_init__ to do checks and substitutions
+        super().__post_init__()
+
         # Prune previous merged cov directories.
         prev_cov_db_dirs = self.odir_limiter(odir=self.cov_merge_db_dir)
 
@@ -905,9 +908,6 @@ class CovMerge(Deploy):
 
         # Append cov_db_dirs to the list of exports.
         self.exports["cov_db_dirs"] = "\"{}\"".format(self.cov_db_dirs)
-
-        # Call base class __post_init__ to do checks and substitutions
-        super().__post_init__()
 
 
 class CovReport(Deploy):
