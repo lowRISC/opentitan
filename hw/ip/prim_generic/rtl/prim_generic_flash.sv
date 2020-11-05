@@ -6,12 +6,12 @@
 //
 
 module prim_generic_flash #(
-  parameter int InfosPerBank = 1,   // info pages per bank
-  parameter int PagesPerBank = 256, // data pages per bank
-  parameter int WordsPerPage = 256, // words per page
-  parameter int DataWidth   = 32,   // bits per word
-  parameter int MetaDataWidth = 12, // this is a temporary parameter to work around ECC issues
-  parameter bit SkipInit = 1,       // this is an option to reset flash to all F's at reset
+  parameter int InfosPerBank  = 1,   // info pages per bank
+  parameter int PagesPerBank  = 256, // data pages per bank
+  parameter int WordsPerPage  = 256, // words per page
+  parameter int DataWidth     = 32,  // bits per word
+  parameter int MetaDataWidth = 12,  // this is a temporary parameter to work around ECC issues
+  parameter bit SkipInit      = 1,   // this is an option to reset flash to all F's at reset
 
   // Derived parameters
   localparam int PageW = $clog2(PagesPerBank),
@@ -31,6 +31,7 @@ module prim_generic_flash #(
   input [DataWidth-1:0]              prog_data_i,
   output logic [flash_ctrl_pkg::ProgTypes-1:0] prog_type_avail_o,
   output logic                       ack_o,
+  output logic                       done_o,
   output logic [DataWidth-1:0]       rd_data_o,
   output logic                       init_busy_o,
 
@@ -77,37 +78,74 @@ module prim_generic_flash #(
   logic                     prog_pend_q, prog_pend_d;
   logic                     mem_req;
   logic                     mem_wr;
+  logic [DataWidth-1:0]     mem_wdata;
   logic [AddrW-1:0]         mem_addr;
   flash_ctrl_pkg::flash_part_e mem_part;
-  logic [DataWidth-1:0]     held_rdata;
-  logic [DataWidth-1:0]     held_wdata;
-  logic [DataWidth-1:0]     mem_wdata;
-  logic                     hold_cmd;
-  logic [AddrW-1:0]         held_addr;
-  flash_ctrl_pkg::flash_part_e held_part;
 
   // insert a fifo here to break the large fanout from inputs to memories on reads
-  logic rd_q;
-  logic [AddrW-1:0] addr_q;
-  flash_ctrl_pkg::flash_part_e part_q;
+  typedef struct packed {
+    logic                        rd;
+    logic                        prog;
+    flash_ctrl_pkg::flash_prog_e prog_type;
+    logic                        pg_erase;
+    logic                        bk_erase;
+    logic [AddrW-1:0]            addr;
+    flash_ctrl_pkg::flash_part_e part;
+    logic [DataWidth-1:0]        prog_data;
+  } cmd_payload_t;
+
+  cmd_payload_t cmd_d, cmd_q;
+  logic cmd_valid;
+  logic pop_cmd;
+  logic mem_rd_q, mem_rd_d;
+
+  assign cmd_d = '{
+    rd :       rd_i,
+    prog:      prog_i,
+    prog_type: prog_type_i,
+    pg_erase:  pg_erase_i,
+    bk_erase:  bk_erase_i,
+    addr:      addr_i,
+    part:      part_i,
+    prog_data: prog_data_i
+  };
+
+  // for read transactions, in order to reduce latency, the
+  // command fifo is popped early (before done_o).  This is to ensure that when
+  // the current transaction is complete, during the same cycle
+  // a new read can be issued. As a result, the command is popped
+  // immediately after the read is issued, rather than waiting for
+  // the read to be completed.  The same restrictions are not necessary
+  // for program / erase, which do not have the same performance
+  // requirements.
 
   prim_fifo_sync #(
-    .Width   (AddrW + $bits(flash_ctrl_pkg::flash_part_e)),
+    .Width   ($bits(cmd_payload_t)),
     .Pass    (0),
     .Depth   (2)
-  ) i_slice (
+  ) u_cmd_fifo (
     .clk_i,
     .rst_ni,
     .clr_i   (1'b0),
-    .wvalid_i(rd_i),
-    .wready_o(),
-    .wdata_i ({part_i, addr_i}),
+    .wvalid_i(rd_i | prog_i | pg_erase_i | bk_erase_i),
+    .wready_o(ack_o),
+    .wdata_i (cmd_d),
     .depth_o (),
-    .rvalid_o(rd_q),
-    .rready_i(hold_cmd), //whenver command is held, pop
-    .rdata_o ({part_q, addr_q})
+    .rvalid_o(cmd_valid),
+    .rready_i(pop_cmd),
+    .rdata_o (cmd_q)
   );
 
+  logic rd_req, prog_req, pg_erase_req, bk_erase_req;
+  assign rd_req = cmd_valid & cmd_q.rd;
+  assign prog_req = cmd_valid & cmd_q.prog;
+  assign pg_erase_req = cmd_valid & cmd_q.pg_erase;
+  assign bk_erase_req = cmd_valid & cmd_q.bk_erase;
+
+  // for read / program operations, the index cnt should be 0
+  assign mem_rd_d = mem_req & ~mem_wr;
+  assign mem_addr = cmd_q.addr + index_cnt[AddrW-1:0];
+  assign mem_part = cmd_q.part;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) st_q <= StReset;
@@ -116,35 +154,51 @@ module prim_generic_flash #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      held_addr <= '0;
-      held_part <= flash_ctrl_pkg::FlashPartData;
-      held_wdata <= '0;
-    end else if (hold_cmd) begin
-      held_addr <= rd_q ? addr_q : addr_i;
-      held_part <= rd_q ? part_q : part_i;
-      held_wdata <= prog_data_i;
-    end
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      time_limit_q  <= 32'h0;
-      index_limit_q <= 32'h0;
-      prog_pend_q   <= 1'h0;
+      time_limit_q  <= 'h0;
+      index_limit_q <= 'h0;
+      prog_pend_q   <= 'h0;
+      mem_rd_q      <= 'h0;
     end else begin
       time_limit_q  <= time_limit_d;
       index_limit_q <= index_limit_d;
       prog_pend_q   <= prog_pend_d;
+      mem_rd_q      <= mem_rd_d;
     end
+  end
+
+  // latch read data from emulated memories the cycle after a read
+  logic [DataWidth-1:0] rd_data_q, rd_data_d;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rd_data_q <= '0;
+    end else if (mem_rd_q) begin
+      rd_data_q <= rd_data_d;
+    end
+  end
+
+  // latch partiton being read since the command fifo is popped early
+  flash_ctrl_pkg::flash_part_e rd_part_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rd_part_q <= flash_ctrl_pkg::FlashPartData;
+    end else if (mem_rd_d) begin
+      rd_part_q <= cmd_q.part;
+    end
+  end
+
+  // if read cycle is only 1, we can expose the unlatched data directly
+  if (ReadCycles == 1) begin : gen_fast_rd_data
+    assign rd_data_o = rd_data_d;
+  end else begin : gen_rd_data
+    assign rd_data_o = rd_data_q;
   end
 
   // prog_pend_q is necessary to emulate flash behavior that a bit written to 0 cannot be written
   // back to 1 without an erase
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      time_cnt <= 32'h0;
-      index_cnt <= 32'h0;
-      held_rdata <= 'h0;
+      time_cnt  <= 'h0;
+      index_cnt <= 'h0;
     end else begin
       if (time_cnt_inc) time_cnt <= time_cnt + 1'b1;
       else if (time_cnt_set1) time_cnt <= 32'h1;
@@ -152,9 +206,6 @@ module prim_generic_flash #(
 
       if (index_cnt_inc) index_cnt <= index_cnt + 1'b1;
       else if (index_cnt_clr) index_cnt <= 32'h0;
-
-      if (prog_pend_q) held_rdata <= rd_data_o;
-
     end
   end
 
@@ -169,19 +220,17 @@ module prim_generic_flash #(
     prog_pend_d      = prog_pend_q;
     mem_req          = 'h0;
     mem_wr           = 'h0;
-    mem_addr         = 'h0;
-    mem_part         = flash_ctrl_pkg::FlashPartData;
     mem_wdata        = 'h0;
-    time_cnt_inc     = 1'h0;
-    time_cnt_clr     = 1'h0;
-    time_cnt_set1    = 1'h0;
-    index_cnt_inc    = 1'h0;
-    index_cnt_clr    = 1'h0;
-    hold_cmd         = 1'h0;
+    time_cnt_inc     = 'h0;
+    time_cnt_clr     = 'h0;
+    time_cnt_set1    = 'h0;
+    index_cnt_inc    = 'h0;
+    index_cnt_clr    = 'h0;
 
     // i/o
-    init_busy_o      = 1'h0;
-    ack_o            = 1'h0;
+    init_busy_o      = 'h0;
+    pop_cmd          = 'h0;
+    done_o           = 'h0;
 
     unique case (st_q)
       StReset: begin
@@ -198,52 +247,44 @@ module prim_generic_flash #(
           index_cnt_inc = 1'b1;
           mem_req = 1'h0;
           mem_wr  = 1'h0;
-          mem_addr = index_cnt[AddrW-1:0];
           mem_wdata = {DataWidth{1'b1}};
         end else begin
           st_d = StIdle;
           index_cnt_clr = 1'b1;
         end
       end
+
       StIdle: begin
-        if (rd_q) begin
-          // reads begin immediately
-          hold_cmd = 1'b1;
-          mem_addr = addr_q;
-          mem_part = part_q;
+        if (rd_req) begin
+          pop_cmd = 1'b1;
           mem_req = 1'b1;
           time_cnt_inc = 1'b1;
           st_d = StRead;
-        end else if (prog_i) begin
-          hold_cmd = 1'b1;
-          st_d = StRead;
+        end else if (prog_req) begin
+          mem_req = 1'b1;
           prog_pend_d = 1'b1;
-        end else if (pg_erase_i) begin
-          hold_cmd = 1'b1;
+          st_d = StRead;
+        end else if (pg_erase_req) begin
           st_d = StErase;
           index_limit_d = WordsPerPage;
           time_limit_d = PgEraseCycles;
-        end else if (bk_erase_i) begin
-          hold_cmd = 1'b1;
+        end else if (bk_erase_req) begin
           st_d = StErase;
           index_limit_d = WordsPerBank;
           time_limit_d = BkEraseCycles;
         end
       end
+
       StRead: begin
-        mem_addr = held_addr;
-        mem_part = held_part;
         if (time_cnt < ReadCycles) begin
-          mem_req = 1'b1;
           time_cnt_inc = 1'b1;
+
         end else if (!prog_pend_q) begin
-          ack_o = 1'b1; //finish up transaction
+          done_o = 1'b1;
 
           // if another request already pending
-          if (rd_q) begin
-            hold_cmd = 1'b1;
-            mem_addr = addr_q;
-            mem_part = part_q;
+          if (rd_req) begin
+            pop_cmd = 1'b1;
             mem_req = 1'b1;
             time_cnt_set1 = 1'b1;
             st_d = StRead;
@@ -251,6 +292,7 @@ module prim_generic_flash #(
             time_cnt_clr = 1'b1;
             st_d = StIdle;
           end
+
         end else if (prog_pend_q) begin
           // this is the read performed before a program operation
           prog_pend_d = 1'b0;
@@ -258,36 +300,34 @@ module prim_generic_flash #(
           st_d = StProg;
         end
       end
-      StProg: begin
-        mem_addr = held_addr;
-        mem_part = held_part;
 
+      StProg: begin
         // if data is already 0, cannot program to 1 without erase
-        mem_wdata = held_wdata & held_rdata;
+        mem_wdata = cmd_q.prog_data & rd_data_q;
         if (time_cnt < ProgCycles) begin
           mem_req = 1'b1;
           mem_wr = 1'b1;
           time_cnt_inc = 1'b1;
         end else begin
           st_d = StIdle;
-          ack_o  = 1'b1;
+          pop_cmd = 1'b1;
+          done_o = 1'b1;
           time_cnt_clr = 1'b1;
         end
       end
+
       StErase: begin
         // Actual erasing of the page
         if (index_cnt < index_limit_q || time_cnt < time_limit_q) begin
           mem_req = 1'b1;
           mem_wr = 1'b1;
           mem_wdata = {DataWidth{1'b1}};
-
-          mem_addr = held_addr + index_cnt[AddrW-1:0];
-          mem_part = held_part;
           time_cnt_inc = (time_cnt < time_limit_q);
           index_cnt_inc = (index_cnt < index_limit_q);
         end else begin
           st_d = StIdle;
-          ack_o = 1'b1;
+          pop_cmd = 1'b1;
+          done_o = 1'b1;
           time_cnt_clr = 1'b1;
           index_cnt_clr = 1'b1;
         end
@@ -362,7 +402,7 @@ module prim_generic_flash #(
 
   assign rd_data_main = {rd_meta_data_main, rd_nom_data_main};
   assign rd_data_info = {rd_meta_data_info, rd_nom_data_info};
-  assign rd_data_o = held_part == flash_ctrl_pkg::FlashPartData ? rd_data_main : rd_data_info;
+  assign rd_data_d    = rd_part_q == flash_ctrl_pkg::FlashPartData ? rd_data_main : rd_data_info;
 
   // hard-wire assignment for now
   assign tdo_o = 1'b0;

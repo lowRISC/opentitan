@@ -356,7 +356,8 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .part_i(muxed_part),
     .prog_data_i(prog_full_data),
     .prog_type_avail_o(prog_type_avail_o),
-    .ack_o(ack),
+    .ack_o(), // temporary hack
+    .done_o(ack),
     .rd_data_o(flash_rdata),
     .init_busy_o, // TBD this needs to be looked at later. What init do we need to do,
                   // and where does it make the most sense?
