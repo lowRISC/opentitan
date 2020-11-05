@@ -70,6 +70,8 @@ module rv_core_ibex #(
   // if pipeline is 0, passthrough the fifo completely
   localparam int FifoPass = PipeLine ? 1'b0 : 1'b1;
   localparam int FifoDepth = PipeLine ? 4'h2 : 4'h0;
+  // ICache creates more outstanding transactions
+  localparam int NumOutstandingReqs = ICache ? 8 : 2;
 
   // Instruction interface (internal)
   logic        instr_req;
@@ -235,7 +237,7 @@ module rv_core_ibex #(
   //
 
   tlul_adapter_host #(
-    .MAX_REQS(2)
+    .MAX_REQS(NumOutstandingReqs)
   ) tl_adapter_host_i_ibex (
     .clk_i,
     .rst_ni,
