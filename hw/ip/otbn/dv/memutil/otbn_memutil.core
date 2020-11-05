@@ -13,7 +13,7 @@ filesets:
     files:
       - otbn_memutil.cc
       - otbn_memutil.h: { is_include_file: true }
-      - otbn_memutil.svh: { file_type: systemVerilogSource, is_include_file: true }
+      - otbn_memutil_pkg.sv: { file_type: systemVerilogSource }
     file_type: cppSource
 
 targets:
