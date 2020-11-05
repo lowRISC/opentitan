@@ -10,6 +10,8 @@ class csrng_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(csrng_base_vseq)
 
+  bit  efuse_sw_app_enable = 1'b1;
+
   // various knobs to enable certain routines
   bit do_csrng_init = 1'b1;
 
@@ -27,6 +29,12 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   // setup basic csrng features
   virtual task csrng_init();
+    cfg.efuse_sw_app_enable_vif.drive_pin(.idx(0), .val(efuse_sw_app_enable));
+  endtask
+
+  // write csrng command request register
+  virtual task wr_cmd_req(bit[3:0] acmd, bit[3:0] clen, bit[3:0] flags, bit[18:0] glen);
+    csr_wr(.csr(ral.cmd_req), .value({1'b0, glen, flags, clen, acmd}));
   endtask
 
 endclass : csrng_base_vseq
