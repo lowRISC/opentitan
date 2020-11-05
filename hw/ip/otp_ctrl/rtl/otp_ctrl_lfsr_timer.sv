@@ -178,8 +178,7 @@ module otp_ctrl_lfsr_timer
     ErrorSt     = 9'b100101111
   } state_e;
 
-  state_e state_d;
-  bit [StateWidth-1:0] state_q;
+  state_e state_d, state_q;
   logic chk_timeout_d, chk_timeout_q;
 
   assign chk_timeout_o = chk_timeout_q;
@@ -287,14 +286,16 @@ module otp_ctrl_lfsr_timer
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = state_e'(state_raw_q);
   prim_flop #(
     .Width(StateWidth),
     .ResetValue(StateWidth'(ResetSt))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d ),
-    .q_o ( state_q )
+    .d_i ( state_d     ),
+    .q_o ( state_raw_q )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
