@@ -30,13 +30,13 @@ static uint32_t build_control_word(dif_spi_device_config_t config) {
   uint32_t val = 0;
 
   val =
-      bitfield_bit32_write(val, SPI_DEVICE_CFG_CPOL,
+      bitfield_bit32_write(val, SPI_DEVICE_CFG_CPOL_BIT,
                            config.clock_polarity == kDifSpiDeviceEdgeNegative);
-  val = bitfield_bit32_write(val, SPI_DEVICE_CFG_CPHA,
+  val = bitfield_bit32_write(val, SPI_DEVICE_CFG_CPHA_BIT,
                              config.data_phase == kDifSpiDeviceEdgePositive);
-  val = bitfield_bit32_write(val, SPI_DEVICE_CFG_TX_ORDER,
+  val = bitfield_bit32_write(val, SPI_DEVICE_CFG_TX_ORDER_BIT,
                              config.tx_order == kDifSpiDeviceBitOrderLsbToMsb);
-  val = bitfield_bit32_write(val, SPI_DEVICE_CFG_RX_ORDER,
+  val = bitfield_bit32_write(val, SPI_DEVICE_CFG_RX_ORDER_BIT,
                              config.rx_order == kDifSpiDeviceBitOrderLsbToMsb);
   val = bitfield_field32_write(val,
                                (bitfield_field32_t){
@@ -121,14 +121,14 @@ dif_spi_device_result_t dif_spi_device_abort(const dif_spi_device_t *spi) {
   // Set the `abort` bit, and then spin until `abort_done` is asserted.
   uint32_t reg =
       mmio_region_read32(spi->params.base_addr, SPI_DEVICE_CONTROL_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, SPI_DEVICE_CONTROL_ABORT, true);
+  reg = bitfield_bit32_write(reg, SPI_DEVICE_CONTROL_ABORT_BIT, true);
   mmio_region_write32(spi->params.base_addr, SPI_DEVICE_CONTROL_REG_OFFSET,
                       reg);
 
   while (true) {
     uint32_t reg =
         mmio_region_read32(spi->params.base_addr, SPI_DEVICE_STATUS_REG_OFFSET);
-    if (bitfield_bit32_read(reg, SPI_DEVICE_STATUS_ABORT_DONE)) {
+    if (bitfield_bit32_read(reg, SPI_DEVICE_STATUS_ABORT_DONE_BIT)) {
       return kDifSpiDeviceOk;
     }
   }
@@ -138,22 +138,22 @@ DIF_WARN_UNUSED_RESULT
 static bool irq_index(dif_spi_device_irq_t irq, bitfield_bit32_index_t *index) {
   switch (irq) {
     case kDifSpiDeviceIrqRxFull:
-      *index = SPI_DEVICE_INTR_COMMON_RXF;
+      *index = SPI_DEVICE_INTR_COMMON_RXF_BIT;
       break;
     case kDifSpiDeviceIrqRxAboveLevel:
-      *index = SPI_DEVICE_INTR_COMMON_RXLVL;
+      *index = SPI_DEVICE_INTR_COMMON_RXLVL_BIT;
       break;
     case kDifSpiDeviceIrqTxBelowLevel:
-      *index = SPI_DEVICE_INTR_COMMON_TXLVL;
+      *index = SPI_DEVICE_INTR_COMMON_TXLVL_BIT;
       break;
     case kDifSpiDeviceIrqRxError:
-      *index = SPI_DEVICE_INTR_COMMON_RXERR;
+      *index = SPI_DEVICE_INTR_COMMON_RXERR_BIT;
       break;
     case kDifSpiDeviceIrqRxOverflow:
-      *index = SPI_DEVICE_INTR_COMMON_RXOVERFLOW;
+      *index = SPI_DEVICE_INTR_COMMON_RXOVERFLOW_BIT;
       break;
     case kDifSpiDeviceIrqTxUnderflow:
-      *index = SPI_DEVICE_INTR_COMMON_TXUNDERFLOW;
+      *index = SPI_DEVICE_INTR_COMMON_TXUNDERFLOW_BIT;
       break;
     default:
       return false;

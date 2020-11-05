@@ -94,7 +94,7 @@ TEST_F(LowPowerTest, SetBadArgs) {
 TEST_F(LowPowerTest, SetLocked) {
   for (auto toggle : kAllToggles) {
     EXPECT_READ32(PWRMGR_CTRL_CFG_REGWEN_REG_OFFSET,
-                  AllOnesExcept(PWRMGR_CTRL_CFG_REGWEN_EN));
+                  AllOnesExcept(PWRMGR_CTRL_CFG_REGWEN_EN_BIT));
 
     EXPECT_EQ(dif_pwrmgr_low_power_set_enabled(&pwrmgr_, toggle),
               kDifPwrMgrConfigLocked);
@@ -105,12 +105,12 @@ TEST_F(LowPowerTest, Set) {
   for (auto toggle : kAllToggles) {
     EXPECT_READ32(PWRMGR_CTRL_CFG_REGWEN_REG_OFFSET,
                   {{
-                      .offset = PWRMGR_CTRL_CFG_REGWEN_EN,
+                      .offset = PWRMGR_CTRL_CFG_REGWEN_EN_BIT,
                       .value = 1,
                   }});
     EXPECT_MASK32(PWRMGR_CONTROL_REG_OFFSET,
                   {{
-                      .offset = PWRMGR_CONTROL_LOW_POWER_HINT,
+                      .offset = PWRMGR_CONTROL_LOW_POWER_HINT_BIT,
                       .mask = 1,
                       .value = (toggle == kDifPwrmgrToggleEnabled),
                   }});
@@ -138,7 +138,7 @@ TEST_F(LowPowerTest, Get) {
 
     EXPECT_READ32(PWRMGR_CONTROL_REG_OFFSET,
                   {{
-                      .offset = PWRMGR_CONTROL_LOW_POWER_HINT,
+                      .offset = PWRMGR_CONTROL_LOW_POWER_HINT_BIT,
                       .value = (toggle == kDifPwrmgrToggleEnabled),
                   }});
 
@@ -158,7 +158,7 @@ class DomainConfig : public DifPwrmgrInitialized {
               kDifPwrmgrDomainOptionUsbClockInLowPower |
               kDifPwrmgrDomainOptionUsbClockInActivePower |
               kDifPwrmgrDomainOptionMainPowerInLowPower,
-      .index = PWRMGR_CONTROL_CORE_CLK_EN,
+      .index = PWRMGR_CONTROL_CORE_CLK_EN_BIT,
   };
   static constexpr std::array<dif_pwrmgr_domain_config_t, 4> kConfigs = {
       // All disabled.
@@ -191,7 +191,7 @@ TEST_F(DomainConfig, SetBadArgs) {
 
 TEST_F(DomainConfig, SetLocked) {
   EXPECT_READ32(PWRMGR_CTRL_CFG_REGWEN_REG_OFFSET,
-                AllOnesExcept(PWRMGR_WAKEUP_EN_REGWEN_EN));
+                AllOnesExcept(PWRMGR_WAKEUP_EN_REGWEN_EN_BIT));
 
   EXPECT_EQ(dif_pwrmgr_set_domain_config(&pwrmgr_, 0), kDifPwrMgrConfigLocked);
 }
@@ -200,7 +200,7 @@ TEST_F(DomainConfig, Set) {
   for (auto config : kConfigs) {
     EXPECT_READ32(PWRMGR_CTRL_CFG_REGWEN_REG_OFFSET,
                   {{
-                      .offset = PWRMGR_CTRL_CFG_REGWEN_EN,
+                      .offset = PWRMGR_CTRL_CFG_REGWEN_EN_BIT,
                       .value = 1,
                   }});
     EXPECT_MASK32(PWRMGR_CONTROL_REG_OFFSET,
@@ -289,7 +289,7 @@ TEST_F(RequestSources, SetBadArgs) {
 
 TEST_F(RequestSources, SetWakeupLocked) {
   EXPECT_READ32(PWRMGR_WAKEUP_EN_REGWEN_REG_OFFSET,
-                AllOnesExcept(PWRMGR_WAKEUP_EN_REGWEN_EN));
+                AllOnesExcept(PWRMGR_WAKEUP_EN_REGWEN_EN_BIT));
 
   EXPECT_EQ(dif_pwrmgr_set_request_sources(&pwrmgr_, kDifPwrmgrReqTypeWakeup,
                                            kDifPwrmgrWakeupRequestSourceOne),
@@ -298,7 +298,7 @@ TEST_F(RequestSources, SetWakeupLocked) {
 
 TEST_F(RequestSources, SetResetLocked) {
   EXPECT_READ32(PWRMGR_RESET_EN_REGWEN_REG_OFFSET,
-                AllOnesExcept(PWRMGR_RESET_EN_REGWEN_EN));
+                AllOnesExcept(PWRMGR_RESET_EN_REGWEN_EN_BIT));
 
   EXPECT_EQ(dif_pwrmgr_set_request_sources(&pwrmgr_, kDifPwrmgrReqTypeReset,
                                            kDifPwrmgrResetRequestSourceOne),
@@ -308,7 +308,7 @@ TEST_F(RequestSources, SetResetLocked) {
 TEST_F(RequestSources, SetWakeup) {
   EXPECT_READ32(PWRMGR_WAKEUP_EN_REGWEN_REG_OFFSET,
                 {{
-                    .offset = PWRMGR_WAKEUP_EN_REGWEN_EN,
+                    .offset = PWRMGR_WAKEUP_EN_REGWEN_EN_BIT,
                     .value = 1,
                 }});
   EXPECT_WRITE32(PWRMGR_WAKEUP_EN_REG_OFFSET, kDifPwrmgrWakeupRequestSourceOne);
@@ -322,7 +322,7 @@ TEST_F(RequestSources, SetWakeup) {
 TEST_F(RequestSources, SetReset) {
   EXPECT_READ32(PWRMGR_RESET_EN_REGWEN_REG_OFFSET,
                 {{
-                    .offset = PWRMGR_RESET_EN_REGWEN_EN,
+                    .offset = PWRMGR_RESET_EN_REGWEN_EN_BIT,
                     .value = 1,
                 }});
   EXPECT_WRITE32(PWRMGR_RESET_EN_REG_OFFSET, kDifPwrmgrResetRequestSourceOne);
@@ -481,7 +481,7 @@ TEST_F(RequestSources, IsLockedWakeup) {
   for (auto exp_val : kAllBools) {
     EXPECT_READ32(PWRMGR_WAKEUP_EN_REGWEN_REG_OFFSET,
                   {{
-                      .offset = PWRMGR_WAKEUP_EN_REGWEN_EN,
+                      .offset = PWRMGR_WAKEUP_EN_REGWEN_EN_BIT,
                       .value = !exp_val,
                   }});
 
@@ -497,7 +497,7 @@ TEST_F(RequestSources, IsLockedReset) {
   for (auto exp_val : kAllBools) {
     EXPECT_READ32(PWRMGR_RESET_EN_REGWEN_REG_OFFSET,
                   {{
-                      .offset = PWRMGR_RESET_EN_REGWEN_EN,
+                      .offset = PWRMGR_RESET_EN_REGWEN_EN_BIT,
                       .value = !exp_val,
                   }});
 
@@ -527,7 +527,7 @@ TEST_F(WakeupRecording, SetEnabled) {
   for (auto new_state : kAllToggles) {
     EXPECT_WRITE32(PWRMGR_WAKE_INFO_CAPTURE_DIS_REG_OFFSET,
                    {{
-                       .offset = PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL,
+                       .offset = PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL_BIT,
                        .value = (new_state == kDifPwrmgrToggleDisabled),
                    }});
 
@@ -553,7 +553,7 @@ TEST_F(WakeupRecording, GetEnabled) {
   for (auto exp_val : kAllToggles) {
     EXPECT_READ32(PWRMGR_WAKE_INFO_CAPTURE_DIS_REG_OFFSET,
                   {{
-                      .offset = PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL,
+                      .offset = PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL_BIT,
                       .value = (exp_val == kDifPwrmgrToggleDisabled),
                   }});
 
@@ -616,15 +616,15 @@ TEST_F(WakeupRecording, GetReason) {
       // All bits set.
       {
           .read_val = {{
-                           .offset = PWRMGR_WAKE_INFO_ABORT,
+                           .offset = PWRMGR_WAKE_INFO_ABORT_BIT,
                            .value = 1,
                        },
                        {
-                           .offset = PWRMGR_WAKE_INFO_FALL_THROUGH,
+                           .offset = PWRMGR_WAKE_INFO_FALL_THROUGH_BIT,
                            .value = 1,
                        },
                        {
-                           .offset = PWRMGR_WAKE_INFO_REASONS,
+                           .offset = PWRMGR_WAKE_INFO_REASONS_BIT,
                            .value = 1,
                        }},
           .exp_output =
@@ -638,7 +638,7 @@ TEST_F(WakeupRecording, GetReason) {
       // Only abort.
       {
           .read_val = {{
-              .offset = PWRMGR_WAKE_INFO_ABORT,
+              .offset = PWRMGR_WAKE_INFO_ABORT_BIT,
               .value = 1,
           }},
           .exp_output =
@@ -650,7 +650,7 @@ TEST_F(WakeupRecording, GetReason) {
       // Only fall-through.
       {
           .read_val = {{
-              .offset = PWRMGR_WAKE_INFO_FALL_THROUGH,
+              .offset = PWRMGR_WAKE_INFO_FALL_THROUGH_BIT,
               .value = 1,
           }},
           .exp_output =
@@ -662,7 +662,7 @@ TEST_F(WakeupRecording, GetReason) {
       // Only requests from peripherals.
       {
           .read_val = {{
-              .offset = PWRMGR_WAKE_INFO_REASONS,
+              .offset = PWRMGR_WAKE_INFO_REASONS_BIT,
               .value = 1,
           }},
           .exp_output =

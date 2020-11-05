@@ -226,7 +226,7 @@ dif_i2c_result_t dif_i2c_reset_rx_fifo(const dif_i2c_t *i2c) {
 
   uint32_t reg =
       mmio_region_read32(i2c->params.base_addr, I2C_FIFO_CTRL_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, I2C_FIFO_CTRL_RXRST, true);
+  reg = bitfield_bit32_write(reg, I2C_FIFO_CTRL_RXRST_BIT, true);
   mmio_region_write32(i2c->params.base_addr, I2C_FIFO_CTRL_REG_OFFSET, reg);
 
   return kDifI2cOk;
@@ -239,7 +239,7 @@ dif_i2c_result_t dif_i2c_reset_fmt_fifo(const dif_i2c_t *i2c) {
 
   uint32_t reg =
       mmio_region_read32(i2c->params.base_addr, I2C_FIFO_CTRL_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, I2C_FIFO_CTRL_FMTRST, true);
+  reg = bitfield_bit32_write(reg, I2C_FIFO_CTRL_FMTRST_BIT, true);
   mmio_region_write32(i2c->params.base_addr, I2C_FIFO_CTRL_REG_OFFSET, reg);
 
   return kDifI2cOk;
@@ -315,31 +315,31 @@ DIF_WARN_UNUSED_RESULT
 static bool irq_index(dif_i2c_irq_t irq, bitfield_bit32_index_t *bit_index) {
   switch (irq) {
     case kDifI2cIrqFmtWatermarkUnderflow:
-      *bit_index = I2C_INTR_COMMON_FMT_WATERMARK;
+      *bit_index = I2C_INTR_COMMON_FMT_WATERMARK_BIT;
       break;
     case kDifI2cIrqRxWatermarkOverflow:
-      *bit_index = I2C_INTR_COMMON_RX_WATERMARK;
+      *bit_index = I2C_INTR_COMMON_RX_WATERMARK_BIT;
       break;
     case kDifI2cIrqFmtFifoOverflow:
-      *bit_index = I2C_INTR_COMMON_FMT_OVERFLOW;
+      *bit_index = I2C_INTR_COMMON_FMT_OVERFLOW_BIT;
       break;
     case kDifI2cIrqRxFifoOverflow:
-      *bit_index = I2C_INTR_COMMON_RX_OVERFLOW;
+      *bit_index = I2C_INTR_COMMON_RX_OVERFLOW_BIT;
       break;
     case kDifI2cIrqNak:
-      *bit_index = I2C_INTR_COMMON_NAK;
+      *bit_index = I2C_INTR_COMMON_NAK_BIT;
       break;
     case kDifI2cIrqSclInterference:
-      *bit_index = I2C_INTR_COMMON_SCL_INTERFERENCE;
+      *bit_index = I2C_INTR_COMMON_SCL_INTERFERENCE_BIT;
       break;
     case kDifI2cIrqSdaInterference:
-      *bit_index = I2C_INTR_COMMON_SDA_INTERFERENCE;
+      *bit_index = I2C_INTR_COMMON_SDA_INTERFERENCE_BIT;
       break;
     case kDifI2cIrqClockStretchTimeout:
-      *bit_index = I2C_INTR_COMMON_STRETCH_TIMEOUT;
+      *bit_index = I2C_INTR_COMMON_STRETCH_TIMEOUT_BIT;
       break;
     case kDifI2cIrqSdaUnstable:
-      *bit_index = I2C_INTR_COMMON_SDA_UNSTABLE;
+      *bit_index = I2C_INTR_COMMON_SDA_UNSTABLE_BIT;
       break;
     default:
       return false;
@@ -497,7 +497,7 @@ dif_i2c_result_t dif_i2c_host_set_enabled(const dif_i2c_t *i2c,
   }
 
   uint32_t reg = mmio_region_read32(i2c->params.base_addr, I2C_CTRL_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, I2C_CTRL_ENABLEHOST, flag);
+  reg = bitfield_bit32_write(reg, I2C_CTRL_ENABLEHOST_BIT, flag);
   mmio_region_write32(i2c->params.base_addr, I2C_CTRL_REG_OFFSET, reg);
 
   return kDifI2cOk;
@@ -522,7 +522,7 @@ dif_i2c_result_t dif_i2c_override_set_enabled(const dif_i2c_t *i2c,
   }
 
   uint32_t reg = mmio_region_read32(i2c->params.base_addr, I2C_OVRD_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, I2C_OVRD_TXOVRDEN, flag);
+  reg = bitfield_bit32_write(reg, I2C_OVRD_TXOVRDEN_BIT, flag);
   mmio_region_write32(i2c->params.base_addr, I2C_OVRD_REG_OFFSET, reg);
 
   return kDifI2cOk;
@@ -536,8 +536,8 @@ dif_i2c_result_t dif_i2c_override_drive_pins(const dif_i2c_t *i2c, bool scl,
 
   uint32_t override_val =
       mmio_region_read32(i2c->params.base_addr, I2C_OVRD_REG_OFFSET);
-  override_val = bitfield_bit32_write(override_val, I2C_OVRD_SCLVAL, scl);
-  override_val = bitfield_bit32_write(override_val, I2C_OVRD_SDAVAL, sda);
+  override_val = bitfield_bit32_write(override_val, I2C_OVRD_SCLVAL_BIT, scl);
+  override_val = bitfield_bit32_write(override_val, I2C_OVRD_SDAVAL_BIT, sda);
   mmio_region_write32(i2c->params.base_addr, I2C_OVRD_REG_OFFSET, override_val);
 
   return kDifI2cOk;
@@ -639,12 +639,13 @@ dif_i2c_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
           .mask = I2C_FDATA_FBYTE_MASK, .index = I2C_FDATA_FBYTE_OFFSET,
       },
       byte);
-  fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_START, flags.start);
-  fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_STOP, flags.stop);
-  fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_READ, flags.read);
-  fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_RCONT, flags.read_cont);
+  fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_START_BIT, flags.start);
+  fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_STOP_BIT, flags.stop);
+  fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_READ_BIT, flags.read);
   fmt_byte =
-      bitfield_bit32_write(fmt_byte, I2C_FDATA_NAKOK, flags.suppress_nak_irq);
+      bitfield_bit32_write(fmt_byte, I2C_FDATA_RCONT_BIT, flags.read_cont);
+  fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_NAKOK_BIT,
+                                  flags.suppress_nak_irq);
   mmio_region_write32(i2c->params.base_addr, I2C_FDATA_REG_OFFSET, fmt_byte);
 
   return kDifI2cOk;

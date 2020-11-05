@@ -110,7 +110,7 @@ TEST_F(ConfigTest, NoClassInit) {
   };
 
   EXPECT_READ32(ALERT_HANDLER_REGEN_REG_OFFSET,
-                {{ALERT_HANDLER_REGEN_REGEN, true}});
+                {{ALERT_HANDLER_REGEN_REGEN_BIT, true}});
 
   EXPECT_WRITE32(
       ALERT_HANDLER_PING_TIMEOUT_CYC_REG_OFFSET,
@@ -208,7 +208,7 @@ TEST_F(ConfigTest, ClassInit) {
   };
 
   EXPECT_READ32(ALERT_HANDLER_REGEN_REG_OFFSET,
-                {{ALERT_HANDLER_REGEN_REGEN, true}});
+                {{ALERT_HANDLER_REGEN_REGEN_BIT, true}});
 
   // Unfortunately, we can't use EXPECT_MASK for these reads and writes,
   // since there are not sequenced exactly.
@@ -232,7 +232,7 @@ TEST_F(ConfigTest, ClassInit) {
 
   EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET,
                  {
-                     {ALERT_HANDLER_LOC_ALERT_EN_EN_LA_1, true},
+                     {ALERT_HANDLER_LOC_ALERT_EN_EN_LA_1_BIT, true},
                  });
   uint32_t loc_reg_a = kAllOnes;
   loc_reg_a = bitfield_field32_write(
@@ -246,11 +246,11 @@ TEST_F(ConfigTest, ClassInit) {
 
   EXPECT_WRITE32(ALERT_HANDLER_CLASSA_CTRL_REG_OFFSET,
                  {
-                     {ALERT_HANDLER_CLASSA_CTRL_EN, false},
-                     {ALERT_HANDLER_CLASSA_CTRL_LOCK, true},
-                     {ALERT_HANDLER_CLASSA_CTRL_EN_E0, true},
+                     {ALERT_HANDLER_CLASSA_CTRL_EN_BIT, false},
+                     {ALERT_HANDLER_CLASSA_CTRL_LOCK_BIT, true},
+                     {ALERT_HANDLER_CLASSA_CTRL_EN_E0_BIT, true},
                      {ALERT_HANDLER_CLASSA_CTRL_MAP_E0_OFFSET, 3},
-                     {ALERT_HANDLER_CLASSA_CTRL_EN_E2, true},
+                     {ALERT_HANDLER_CLASSA_CTRL_EN_E2_BIT, true},
                      {ALERT_HANDLER_CLASSA_CTRL_MAP_E2_OFFSET, 1},
                  });
 
@@ -280,8 +280,8 @@ TEST_F(ConfigTest, ClassInit) {
 
   EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET,
                  {
-                     {ALERT_HANDLER_LOC_ALERT_EN_EN_LA_0, true},
-                     {ALERT_HANDLER_LOC_ALERT_EN_EN_LA_2, true},
+                     {ALERT_HANDLER_LOC_ALERT_EN_EN_LA_0_BIT, true},
+                     {ALERT_HANDLER_LOC_ALERT_EN_EN_LA_2_BIT, true},
                  });
   uint32_t loc_reg_b = kAllOnes;
   loc_reg_b = bitfield_field32_write(
@@ -302,9 +302,9 @@ TEST_F(ConfigTest, ClassInit) {
 
   EXPECT_WRITE32(ALERT_HANDLER_CLASSB_CTRL_REG_OFFSET,
                  {
-                     {ALERT_HANDLER_CLASSB_CTRL_EN, true},
-                     {ALERT_HANDLER_CLASSB_CTRL_LOCK, false},
-                     {ALERT_HANDLER_CLASSB_CTRL_EN_E1, true},
+                     {ALERT_HANDLER_CLASSB_CTRL_EN_BIT, true},
+                     {ALERT_HANDLER_CLASSB_CTRL_LOCK_BIT, false},
+                     {ALERT_HANDLER_CLASSB_CTRL_EN_E1_BIT, true},
                      {ALERT_HANDLER_CLASSB_CTRL_MAP_E1_OFFSET, 0},
                  });
 
@@ -570,19 +570,19 @@ TEST_F(LockTest, IsLocked) {
   bool flag;
 
   EXPECT_READ32(ALERT_HANDLER_REGEN_REG_OFFSET,
-                {{ALERT_HANDLER_REGEN_REGEN, true}});
+                {{ALERT_HANDLER_REGEN_REGEN_BIT, true}});
   EXPECT_EQ(dif_alert_handler_is_locked(&handler_, &flag), kDifAlertHandlerOk);
   EXPECT_FALSE(flag);
 
   EXPECT_READ32(ALERT_HANDLER_REGEN_REG_OFFSET,
-                {{ALERT_HANDLER_REGEN_REGEN, false}});
+                {{ALERT_HANDLER_REGEN_REGEN_BIT, false}});
   EXPECT_EQ(dif_alert_handler_is_locked(&handler_, &flag), kDifAlertHandlerOk);
   EXPECT_TRUE(flag);
 }
 
 TEST_F(LockTest, Lock) {
   EXPECT_WRITE32(ALERT_HANDLER_REGEN_REG_OFFSET,
-                 {{ALERT_HANDLER_REGEN_REGEN, true}});
+                 {{ALERT_HANDLER_REGEN_REGEN_BIT, true}});
   EXPECT_EQ(dif_alert_handler_lock(&handler_), kDifAlertHandlerOk);
 }
 
@@ -603,8 +603,8 @@ TEST_F(IrqTest, IsPending) {
 
   EXPECT_READ32(ALERT_HANDLER_INTR_STATE_REG_OFFSET,
                 {
-                    {ALERT_HANDLER_INTR_COMMON_CLASSB, true},
-                    {ALERT_HANDLER_INTR_COMMON_CLASSD, true},
+                    {ALERT_HANDLER_INTR_COMMON_CLASSB_BIT, true},
+                    {ALERT_HANDLER_INTR_COMMON_CLASSD_BIT, true},
                 });
   EXPECT_EQ(dif_alert_handler_irq_is_pending(&handler_, kDifAlertHandlerClassA,
                                              &flag),
@@ -613,8 +613,8 @@ TEST_F(IrqTest, IsPending) {
 
   EXPECT_READ32(ALERT_HANDLER_INTR_STATE_REG_OFFSET,
                 {
-                    {ALERT_HANDLER_INTR_COMMON_CLASSB, true},
-                    {ALERT_HANDLER_INTR_COMMON_CLASSD, true},
+                    {ALERT_HANDLER_INTR_COMMON_CLASSB_BIT, true},
+                    {ALERT_HANDLER_INTR_COMMON_CLASSD_BIT, true},
                 });
   EXPECT_EQ(dif_alert_handler_irq_is_pending(&handler_, kDifAlertHandlerClassB,
                                              &flag),
@@ -624,7 +624,7 @@ TEST_F(IrqTest, IsPending) {
 
 TEST_F(IrqTest, Ack) {
   EXPECT_MASK32(ALERT_HANDLER_INTR_STATE_REG_OFFSET,
-                {{ALERT_HANDLER_INTR_COMMON_CLASSC, 1, true}});
+                {{ALERT_HANDLER_INTR_COMMON_CLASSC_BIT, 1, true}});
   EXPECT_EQ(
       dif_alert_handler_irq_acknowledge(&handler_, kDifAlertHandlerClassC),
       kDifAlertHandlerOk);
@@ -635,8 +635,8 @@ TEST_F(IrqTest, GetEnabled) {
 
   EXPECT_READ32(ALERT_HANDLER_INTR_ENABLE_REG_OFFSET,
                 {
-                    {ALERT_HANDLER_INTR_COMMON_CLASSB, true},
-                    {ALERT_HANDLER_INTR_COMMON_CLASSD, true},
+                    {ALERT_HANDLER_INTR_COMMON_CLASSB_BIT, true},
+                    {ALERT_HANDLER_INTR_COMMON_CLASSD_BIT, true},
                 });
   EXPECT_EQ(dif_alert_handler_irq_get_enabled(&handler_, kDifAlertHandlerClassA,
                                               &flag),
@@ -645,8 +645,8 @@ TEST_F(IrqTest, GetEnabled) {
 
   EXPECT_READ32(ALERT_HANDLER_INTR_ENABLE_REG_OFFSET,
                 {
-                    {ALERT_HANDLER_INTR_COMMON_CLASSB, true},
-                    {ALERT_HANDLER_INTR_COMMON_CLASSD, true},
+                    {ALERT_HANDLER_INTR_COMMON_CLASSB_BIT, true},
+                    {ALERT_HANDLER_INTR_COMMON_CLASSD_BIT, true},
                 });
   EXPECT_EQ(dif_alert_handler_irq_get_enabled(&handler_, kDifAlertHandlerClassB,
                                               &flag),
@@ -656,7 +656,7 @@ TEST_F(IrqTest, GetEnabled) {
 
 TEST_F(IrqTest, SetEnabled) {
   EXPECT_MASK32(ALERT_HANDLER_INTR_ENABLE_REG_OFFSET,
-                {{ALERT_HANDLER_INTR_COMMON_CLASSC, 1, true}});
+                {{ALERT_HANDLER_INTR_COMMON_CLASSC_BIT, 1, true}});
   EXPECT_EQ(dif_alert_handler_irq_set_enabled(&handler_, kDifAlertHandlerClassC,
                                               kDifAlertHandlerToggleEnabled),
             kDifAlertHandlerOk);
@@ -664,7 +664,7 @@ TEST_F(IrqTest, SetEnabled) {
 
 TEST_F(IrqTest, SetDisabled) {
   EXPECT_MASK32(ALERT_HANDLER_INTR_ENABLE_REG_OFFSET,
-                {{ALERT_HANDLER_INTR_COMMON_CLASSD, 1, false}});
+                {{ALERT_HANDLER_INTR_COMMON_CLASSD_BIT, 1, false}});
   EXPECT_EQ(dif_alert_handler_irq_set_enabled(&handler_, kDifAlertHandlerClassD,
                                               kDifAlertHandlerToggleDisabled),
             kDifAlertHandlerOk);
@@ -672,7 +672,7 @@ TEST_F(IrqTest, SetDisabled) {
 
 TEST_F(IrqTest, Force) {
   EXPECT_WRITE32(ALERT_HANDLER_INTR_TEST_REG_OFFSET,
-                 {{ALERT_HANDLER_INTR_COMMON_CLASSC, true}});
+                 {{ALERT_HANDLER_INTR_COMMON_CLASSC_BIT, true}});
   EXPECT_EQ(dif_alert_handler_irq_force(&handler_, kDifAlertHandlerClassC),
             kDifAlertHandlerOk);
 }
@@ -762,16 +762,16 @@ TEST_F(CauseTest, IsCauseLocal) {
   bool flag;
 
   EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_REG_OFFSET,
-                {{ALERT_HANDLER_LOC_ALERT_CAUSE_LA_0, true},
-                 {ALERT_HANDLER_LOC_ALERT_CAUSE_LA_1, true}});
+                {{ALERT_HANDLER_LOC_ALERT_CAUSE_LA_0_BIT, true},
+                 {ALERT_HANDLER_LOC_ALERT_CAUSE_LA_1_BIT, true}});
   EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
                 &handler_, kDifAlertHandlerLocalAlertEscalationPingFail, &flag),
             kDifAlertHandlerOk);
   EXPECT_TRUE(flag);
 
   EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CAUSE_REG_OFFSET,
-                {{ALERT_HANDLER_LOC_ALERT_CAUSE_LA_0, true},
-                 {ALERT_HANDLER_LOC_ALERT_CAUSE_LA_1, true}});
+                {{ALERT_HANDLER_LOC_ALERT_CAUSE_LA_0_BIT, true},
+                 {ALERT_HANDLER_LOC_ALERT_CAUSE_LA_1_BIT, true}});
   EXPECT_EQ(dif_alert_handler_local_alert_is_cause(
                 &handler_, kDifAlertHandlerLocalAlertAlertIntegrityFail, &flag),
             kDifAlertHandlerOk);
@@ -780,7 +780,7 @@ TEST_F(CauseTest, IsCauseLocal) {
 
 TEST_F(CauseTest, AckLocal) {
   EXPECT_WRITE32(ALERT_HANDLER_LOC_ALERT_CAUSE_REG_OFFSET,
-                 {{ALERT_HANDLER_LOC_ALERT_CAUSE_LA_3, true}});
+                 {{ALERT_HANDLER_LOC_ALERT_CAUSE_LA_3_BIT, true}});
   EXPECT_EQ(dif_alert_handler_local_alert_acknowledge(
                 &handler_, kDifAlertHandlerLocalAlertEscalationIntegrityFail),
             kDifAlertHandlerOk);

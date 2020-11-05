@@ -26,14 +26,14 @@ typedef enum erase_type {
 /* Wait for flash command to complete and set ACK in controller */
 static inline void wait_done_and_ack(void) {
   while ((REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_OP_STATUS_REG_OFFSET) &
-          (1 << FLASH_CTRL_OP_STATUS_DONE)) == 0) {
+          (1 << FLASH_CTRL_OP_STATUS_DONE_BIT)) == 0) {
   }
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_OP_STATUS_REG_OFFSET) = 0;
 }
 
 void flash_init_block(void) {
   while ((REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_STATUS_REG_OFFSET) &
-          (1 << FLASH_CTRL_STATUS_INIT_WIP)) > 0) {
+          (1 << FLASH_CTRL_STATUS_INIT_WIP_BIT)) > 0) {
   }
 }
 
@@ -41,7 +41,7 @@ void flash_init_block(void) {
 static int get_clr_err(void) {
   uint32_t err_status =
       REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_INTR_STATE_REG_OFFSET) &
-      (0x1 << FLASH_CTRL_INTR_STATE_OP_ERROR);
+      (0x1 << FLASH_CTRL_INTR_STATE_OP_ERROR_BIT);
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_INTR_STATE_REG_OFFSET) = err_status;
   return err_status;
 }
@@ -76,8 +76,8 @@ int flash_bank_erase(bank_index_t idx) {
                             : (FLASH_MEM_BASE_ADDR + flash_get_bank_size());
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_CONTROL_REG_OFFSET) =
       (FLASH_ERASE << FLASH_CTRL_CONTROL_OP_OFFSET |
-       FLASH_BANK_ERASE << FLASH_CTRL_CONTROL_ERASE_SEL |
-       0x1 << FLASH_CTRL_CONTROL_START);
+       FLASH_BANK_ERASE << FLASH_CTRL_CONTROL_ERASE_SEL_BIT |
+       0x1 << FLASH_CTRL_CONTROL_START_BIT);
   wait_done_and_ack();
 
   flash_cfg_bank_erase(idx, /*erase_en=*/false);
@@ -89,9 +89,9 @@ int flash_page_erase(uint32_t addr, part_type_t part) {
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_ADDR_REG_OFFSET) = addr;
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_CONTROL_REG_OFFSET) =
       FLASH_ERASE << FLASH_CTRL_CONTROL_OP_OFFSET |
-      FLASH_PAGE_ERASE << FLASH_CTRL_CONTROL_ERASE_SEL |
-      part << FLASH_CTRL_CONTROL_PARTITION_SEL |
-      0x1 << FLASH_CTRL_CONTROL_START;
+      FLASH_PAGE_ERASE << FLASH_CTRL_CONTROL_ERASE_SEL_BIT |
+      part << FLASH_CTRL_CONTROL_PARTITION_SEL_BIT |
+      0x1 << FLASH_CTRL_CONTROL_START_BIT;
   wait_done_and_ack();
   return get_clr_err();
 }
@@ -103,9 +103,9 @@ static int flash_write_internal(uint32_t addr, part_type_t part,
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_ADDR_REG_OFFSET) = addr;
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_CONTROL_REG_OFFSET) =
       (FLASH_PROG << FLASH_CTRL_CONTROL_OP_OFFSET |
-       part << FLASH_CTRL_CONTROL_PARTITION_SEL |
+       part << FLASH_CTRL_CONTROL_PARTITION_SEL_BIT |
        (size - 1) << FLASH_CTRL_CONTROL_NUM_OFFSET |
-       0x1 << FLASH_CTRL_CONTROL_START);
+       0x1 << FLASH_CTRL_CONTROL_START_BIT);
   for (int i = 0; i < size; ++i) {
     REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_PROG_FIFO_REG_OFFSET) = data[i];
   }
@@ -123,12 +123,12 @@ int flash_read(uint32_t addr, part_type_t part, uint32_t size, uint32_t *data) {
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_ADDR_REG_OFFSET) = addr;
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_CONTROL_REG_OFFSET) =
       FLASH_READ << FLASH_CTRL_CONTROL_OP_OFFSET |
-      part << FLASH_CTRL_CONTROL_PARTITION_SEL |
+      part << FLASH_CTRL_CONTROL_PARTITION_SEL_BIT |
       (size - 1) << FLASH_CTRL_CONTROL_NUM_OFFSET |
-      0x1 << FLASH_CTRL_CONTROL_START;
+      0x1 << FLASH_CTRL_CONTROL_START_BIT;
   for (uint32_t i = 0; i < size;) {
     if (((REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_STATUS_REG_OFFSET) >>
-          FLASH_CTRL_STATUS_RD_EMPTY) &
+          FLASH_CTRL_STATUS_RD_EMPTY_BIT) &
          0x1) == 0) {
       *data++ = REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_RD_FIFO_REG_OFFSET);
       i++;
@@ -150,9 +150,9 @@ void flash_cfg_bank_erase(bank_index_t bank, bool erase_en) {
 
 void flash_default_region_access(bool rd_en, bool prog_en, bool erase_en) {
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET) =
-      rd_en << FLASH_CTRL_DEFAULT_REGION_RD_EN |
-      prog_en << FLASH_CTRL_DEFAULT_REGION_PROG_EN |
-      erase_en << FLASH_CTRL_DEFAULT_REGION_ERASE_EN;
+      rd_en << FLASH_CTRL_DEFAULT_REGION_RD_EN_BIT |
+      prog_en << FLASH_CTRL_DEFAULT_REGION_PROG_EN_BIT |
+      erase_en << FLASH_CTRL_DEFAULT_REGION_ERASE_EN_BIT;
 }
 
 void flash_cfg_region(const mp_region_t *region_cfg) {
@@ -164,19 +164,21 @@ void flash_cfg_region(const mp_region_t *region_cfg) {
           region_cfg->num * 4) =
         region_cfg->base << FLASH_CTRL_MP_REGION_CFG_0_BASE_0_OFFSET |
         region_cfg->size << FLASH_CTRL_MP_REGION_CFG_0_SIZE_0_OFFSET |
-        region_cfg->rd_en << FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0 |
-        region_cfg->prog_en << FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0 |
-        region_cfg->erase_en << FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0 |
-        region_cfg->scramble_en << FLASH_CTRL_MP_REGION_CFG_0_SCRAMBLE_EN_0 |
-        0x1 << FLASH_CTRL_MP_REGION_CFG_0_EN_0;
+        region_cfg->rd_en << FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0_BIT |
+        region_cfg->prog_en << FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0_BIT |
+        region_cfg->erase_en << FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0_BIT |
+        region_cfg->scramble_en
+            << FLASH_CTRL_MP_REGION_CFG_0_SCRAMBLE_EN_0_BIT |
+        0x1 << FLASH_CTRL_MP_REGION_CFG_0_EN_0_BIT;
   } else if (region_cfg->part == kInfoPartition) {
     reg_value =
-        region_cfg->rd_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0 |
-        region_cfg->prog_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0 |
-        region_cfg->erase_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0 |
+        region_cfg->rd_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_RD_EN_0_BIT |
+        region_cfg->prog_en << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0_BIT |
+        region_cfg->erase_en
+            << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0_BIT |
         region_cfg->scramble_en
-            << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_0 |
-        0x1 << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0;
+            << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_SCRAMBLE_EN_0_BIT |
+        0x1 << FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_BIT;
 
     bank_sel = region_cfg->base / flash_get_pages_per_bank();
     if (bank_sel == FLASH_BANK_0) {

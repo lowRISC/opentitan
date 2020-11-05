@@ -18,32 +18,32 @@
 
 /**
  * Relevant bits of the control register must start at
- * `PWRMGR_CONTROL_CORE_CLK_EN` and be in the same order as
+ * `PWRMGR_CONTROL_CORE_CLK_EN_BIT` and be in the same order as
  * `dif_pwrmgr_domain_option_t` constants.
  */
 _Static_assert(kDifPwrmgrDomainOptionCoreClockInLowPower ==
-                   (1u << (PWRMGR_CONTROL_CORE_CLK_EN -
-                           PWRMGR_CONTROL_CORE_CLK_EN)),
+                   (1u << (PWRMGR_CONTROL_CORE_CLK_EN_BIT -
+                           PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
                "Layout of control register changed.");
 
 _Static_assert(kDifPwrmgrDomainOptionIoClockInLowPower ==
-                   (1u << (PWRMGR_CONTROL_IO_CLK_EN -
-                           PWRMGR_CONTROL_CORE_CLK_EN)),
+                   (1u << (PWRMGR_CONTROL_IO_CLK_EN_BIT -
+                           PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
                "Layout of control register changed.");
 
 _Static_assert(kDifPwrmgrDomainOptionUsbClockInLowPower ==
-                   (1u << (PWRMGR_CONTROL_USB_CLK_EN_LP -
-                           PWRMGR_CONTROL_CORE_CLK_EN)),
+                   (1u << (PWRMGR_CONTROL_USB_CLK_EN_LP_BIT -
+                           PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
                "Layout of control register changed.");
 
 _Static_assert(kDifPwrmgrDomainOptionUsbClockInActivePower ==
-                   (1u << (PWRMGR_CONTROL_USB_CLK_EN_ACTIVE -
-                           PWRMGR_CONTROL_CORE_CLK_EN)),
+                   (1u << (PWRMGR_CONTROL_USB_CLK_EN_ACTIVE_BIT -
+                           PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
                "Layout of control register changed.");
 
 _Static_assert(kDifPwrmgrDomainOptionMainPowerInLowPower ==
-                   (1u << (PWRMGR_CONTROL_MAIN_PD_N -
-                           PWRMGR_CONTROL_CORE_CLK_EN)),
+                   (1u << (PWRMGR_CONTROL_MAIN_PD_N_BIT -
+                           PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
                "Layout of control register changed.");
 
 /**
@@ -56,7 +56,7 @@ static const bitfield_field32_t kDomainConfigBitfield = {
             kDifPwrmgrDomainOptionUsbClockInLowPower |
             kDifPwrmgrDomainOptionUsbClockInActivePower |
             kDifPwrmgrDomainOptionMainPowerInLowPower,
-    .index = PWRMGR_CONTROL_CORE_CLK_EN,
+    .index = PWRMGR_CONTROL_CORE_CLK_EN_BIT,
 };
 
 /**
@@ -64,23 +64,24 @@ static const bitfield_field32_t kDomainConfigBitfield = {
  * be in the same order as `dif_pwrmgr_wakeup_request_source_t` constants.
  */
 _Static_assert(kDifPwrmgrWakeupRequestSourceOne ==
-                   (1u << PWRMGR_WAKEUP_EN_EN_0),
+                   (1u << PWRMGR_WAKEUP_EN_EN_0_BIT),
                "Layout of WAKEUP_EN register changed.");
 _Static_assert(kDifPwrmgrWakeupRequestSourceOne ==
-                   (1u << PWRMGR_WAKE_INFO_REASONS),
+                   (1u << PWRMGR_WAKE_INFO_REASONS_BIT),
                "Layout of WAKE_INFO register changed.");
 
 /**
  * Relevant bits of the RESET_EN register must start at `0` and be in the same
  * order as `dif_pwrmgr_reset_request_source_t` constants.
  */
-_Static_assert(kDifPwrmgrResetRequestSourceOne == (1u << PWRMGR_RESET_EN_EN_0),
+_Static_assert(kDifPwrmgrResetRequestSourceOne ==
+                   (1u << PWRMGR_RESET_EN_EN_0_BIT),
                "Layout of RESET_EN register changed.");
 
 /**
  * `dif_pwrmgr_irq_t` constants must match the corresponding generated values.
  */
-_Static_assert(kDifPwrmgrIrqWakeup == PWRMGR_INTR_COMMON_WAKEUP,
+_Static_assert(kDifPwrmgrIrqWakeup == PWRMGR_INTR_COMMON_WAKEUP_BIT,
                "Layout of interrupt registers changed.");
 
 /**
@@ -105,7 +106,7 @@ static const request_reg_info_t request_reg_infos[2] = {
     [kDifPwrmgrReqTypeWakeup] =
         {
             .write_enable_reg_offset = PWRMGR_WAKEUP_EN_REGWEN_REG_OFFSET,
-            .write_enable_bit_index = PWRMGR_WAKEUP_EN_REGWEN_EN,
+            .write_enable_bit_index = PWRMGR_WAKEUP_EN_REGWEN_EN_BIT,
             .sources_enable_reg_offset = PWRMGR_WAKEUP_EN_REG_OFFSET,
             .cur_req_sources_reg_offset = PWRMGR_WAKE_STATUS_REG_OFFSET,
             .bitfield =
@@ -117,7 +118,7 @@ static const request_reg_info_t request_reg_infos[2] = {
     [kDifPwrmgrReqTypeReset] =
         {
             .write_enable_reg_offset = PWRMGR_RESET_EN_REGWEN_REG_OFFSET,
-            .write_enable_bit_index = PWRMGR_RESET_EN_REGWEN_EN,
+            .write_enable_bit_index = PWRMGR_RESET_EN_REGWEN_EN_BIT,
             .sources_enable_reg_offset = PWRMGR_RESET_EN_REG_OFFSET,
             .cur_req_sources_reg_offset = PWRMGR_RESET_STATUS_REG_OFFSET,
             .bitfield =
@@ -186,11 +187,11 @@ static bool is_valid_for_bitfield(uint32_t val, bitfield_field32_t bitfield) {
  */
 DIF_WARN_UNUSED_RESULT
 static bool control_register_is_locked(const dif_pwrmgr_t *pwrmgr) {
-  // Control register is locked when `PWRMGR_CTRL_CFG_REGWEN_EN` bit is 0.
+  // Control register is locked when `PWRMGR_CTRL_CFG_REGWEN_EN_BIT` bit is 0.
   return !bitfield_bit32_read(
       mmio_region_read32(pwrmgr->params.base_addr,
                          PWRMGR_CTRL_CFG_REGWEN_REG_OFFSET),
-      PWRMGR_CTRL_CFG_REGWEN_EN);
+      PWRMGR_CTRL_CFG_REGWEN_EN_BIT);
 }
 
 /**
@@ -201,11 +202,12 @@ static bool control_register_is_locked(const dif_pwrmgr_t *pwrmgr) {
  */
 static void sync_slow_clock_domain_polled(const dif_pwrmgr_t *pwrmgr) {
   // Start sync and wait for it to finish.
-  mmio_region_write32(pwrmgr->params.base_addr, PWRMGR_CFG_CDC_SYNC_REG_OFFSET,
-                      bitfield_bit32_write(0, PWRMGR_CFG_CDC_SYNC_SYNC, true));
+  mmio_region_write32(
+      pwrmgr->params.base_addr, PWRMGR_CFG_CDC_SYNC_REG_OFFSET,
+      bitfield_bit32_write(0, PWRMGR_CFG_CDC_SYNC_SYNC_BIT, true));
   while (bitfield_bit32_read(mmio_region_read32(pwrmgr->params.base_addr,
                                                 PWRMGR_CFG_CDC_SYNC_REG_OFFSET),
-                             PWRMGR_CFG_CDC_SYNC_SYNC)) {
+                             PWRMGR_CFG_CDC_SYNC_SYNC_BIT)) {
   }
 }
 
@@ -251,7 +253,7 @@ dif_pwrmgr_config_result_t dif_pwrmgr_low_power_set_enabled(
   uint32_t reg_val =
       mmio_region_read32(pwrmgr->params.base_addr, PWRMGR_CONTROL_REG_OFFSET);
   reg_val =
-      bitfield_bit32_write(reg_val, PWRMGR_CONTROL_LOW_POWER_HINT, enable);
+      bitfield_bit32_write(reg_val, PWRMGR_CONTROL_LOW_POWER_HINT_BIT, enable);
   mmio_region_write32(pwrmgr->params.base_addr, PWRMGR_CONTROL_REG_OFFSET,
                       reg_val);
 
@@ -270,7 +272,7 @@ dif_pwrmgr_result_t dif_pwrmgr_low_power_get_enabled(
   uint32_t reg_val =
       mmio_region_read32(pwrmgr->params.base_addr, PWRMGR_CONTROL_REG_OFFSET);
   *cur_state = bool_to_toggle(
-      bitfield_bit32_read(reg_val, PWRMGR_CONTROL_LOW_POWER_HINT));
+      bitfield_bit32_read(reg_val, PWRMGR_CONTROL_LOW_POWER_HINT_BIT));
 
   return kDifPwrmgrOk;
 }
@@ -408,7 +410,7 @@ dif_pwrmgr_result_t dif_pwrmgr_wakeup_request_recording_set_enabled(
   // Only a single bit of this register is significant, thus we don't perform a
   // read-modify-write. Setting this bit to 1 disables recording.
   uint32_t reg_val =
-      bitfield_bit32_write(0, PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL, !enable);
+      bitfield_bit32_write(0, PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL_BIT, !enable);
 
   mmio_region_write32(pwrmgr->params.base_addr,
                       PWRMGR_WAKE_INFO_CAPTURE_DIS_REG_OFFSET, reg_val);
@@ -426,7 +428,7 @@ dif_pwrmgr_result_t dif_pwrmgr_wakeup_request_recording_get_enabled(
       pwrmgr->params.base_addr, PWRMGR_WAKE_INFO_CAPTURE_DIS_REG_OFFSET);
   // Recording is disabled if this bit is set to 1.
   *cur_state = bool_to_toggle(
-      !bitfield_bit32_read(reg_val, PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL));
+      !bitfield_bit32_read(reg_val, PWRMGR_WAKE_INFO_CAPTURE_DIS_VAL_BIT));
 
   return kDifPwrmgrOk;
 }
@@ -441,10 +443,10 @@ dif_pwrmgr_result_t dif_pwrmgr_wakeup_reason_get(
       mmio_region_read32(pwrmgr->params.base_addr, PWRMGR_WAKE_INFO_REG_OFFSET);
 
   dif_pwrmgr_wakeup_types_t types = 0;
-  if (bitfield_bit32_read(reg_val, PWRMGR_WAKE_INFO_FALL_THROUGH)) {
+  if (bitfield_bit32_read(reg_val, PWRMGR_WAKE_INFO_FALL_THROUGH_BIT)) {
     types |= kDifPwrmgrWakeupTypeFallThrough;
   }
-  if (bitfield_bit32_read(reg_val, PWRMGR_WAKE_INFO_ABORT)) {
+  if (bitfield_bit32_read(reg_val, PWRMGR_WAKE_INFO_ABORT_BIT)) {
     types |= kDifPwrmgrWakeupTypeAbort;
   }
 

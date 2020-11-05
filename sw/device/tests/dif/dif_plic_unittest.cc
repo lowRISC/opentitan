@@ -76,21 +76,21 @@ class IrqTest : public PlicTest {
   };
   static constexpr std::array<Register, RV_PLIC_IE0_MULTIREG_COUNT>
       kEnableRegisters{{
-          {RV_PLIC_IE0_0_REG_OFFSET, RV_PLIC_IE0_0_E_31},
-          {RV_PLIC_IE0_1_REG_OFFSET, RV_PLIC_IE0_1_E_63},
-          {RV_PLIC_IE0_2_REG_OFFSET, RV_PLIC_IE0_2_E_83},
+          {RV_PLIC_IE0_0_REG_OFFSET, RV_PLIC_IE0_0_E_31_BIT},
+          {RV_PLIC_IE0_1_REG_OFFSET, RV_PLIC_IE0_1_E_63_BIT},
+          {RV_PLIC_IE0_2_REG_OFFSET, RV_PLIC_IE0_2_E_83_BIT},
       }};
   static constexpr std::array<Register, RV_PLIC_LE_MULTIREG_COUNT>
       kTriggerRegisters{{
-          {RV_PLIC_LE_0_REG_OFFSET, RV_PLIC_LE_0_LE_31},
-          {RV_PLIC_LE_1_REG_OFFSET, RV_PLIC_LE_1_LE_63},
-          {RV_PLIC_LE_2_REG_OFFSET, RV_PLIC_LE_2_LE_83},
+          {RV_PLIC_LE_0_REG_OFFSET, RV_PLIC_LE_0_LE_31_BIT},
+          {RV_PLIC_LE_1_REG_OFFSET, RV_PLIC_LE_1_LE_63_BIT},
+          {RV_PLIC_LE_2_REG_OFFSET, RV_PLIC_LE_2_LE_83_BIT},
       }};
   static constexpr std::array<Register, RV_PLIC_IP_MULTIREG_COUNT>
       kPendingRegisters{{
-          {RV_PLIC_IP_0_REG_OFFSET, RV_PLIC_IP_0_P_31},
-          {RV_PLIC_IP_1_REG_OFFSET, RV_PLIC_IP_1_P_63},
-          {RV_PLIC_IP_2_REG_OFFSET, RV_PLIC_IP_2_P_83},
+          {RV_PLIC_IP_0_REG_OFFSET, RV_PLIC_IP_0_P_31_BIT},
+          {RV_PLIC_IP_1_REG_OFFSET, RV_PLIC_IP_1_P_63_BIT},
+          {RV_PLIC_IP_2_REG_OFFSET, RV_PLIC_IP_2_P_83_BIT},
       }};
 
   // Set enable/disable multireg expectations, one bit per call.

@@ -42,7 +42,7 @@ typedef struct endpoint_hw_info {
  */
 #define ENDPOINT_HW_INFO_ENTRY(N)                                  \
   [N] = {.config_in_reg_offset = USBDEV_CONFIGIN_##N##_REG_OFFSET, \
-         .bit_index = USBDEV_IN_SENT_SENT_##N}
+         .bit_index = USBDEV_IN_SENT_SENT_##N##_BIT}
 
 static const endpoint_hw_info_t kEndpointHwInfos[USBDEV_NUM_ENDPOINTS] = {
     ENDPOINT_HW_INFO_ENTRY(0),  ENDPOINT_HW_INFO_ENTRY(1),
@@ -59,22 +59,22 @@ static const endpoint_hw_info_t kEndpointHwInfos[USBDEV_NUM_ENDPOINTS] = {
  * Mapping from `dif_usbdev_irq_t` to bit indices in interrupt registers.
  */
 static const uint8_t kIrqEnumToBitIndex[] = {
-        [kDifUsbdevIrqPktReceived] = USBDEV_INTR_COMMON_PKT_RECEIVED,
-        [kDifUsbdevIrqPktSent] = USBDEV_INTR_COMMON_PKT_SENT,
-        [kDifUsbdevIrqDisconnected] = USBDEV_INTR_COMMON_DISCONNECTED,
-        [kDifUsbdevIrqHostLost] = USBDEV_INTR_COMMON_HOST_LOST,
-        [kDifUsbdevIrqLinkReset] = USBDEV_INTR_COMMON_LINK_RESET,
-        [kDifUsbdevIrqLinkSuspend] = USBDEV_INTR_COMMON_LINK_SUSPEND,
-        [kDifUsbdevIrqLinkResume] = USBDEV_INTR_COMMON_LINK_RESUME,
-        [kDifUsbdevIrqAvEmpty] = USBDEV_INTR_COMMON_AV_EMPTY,
-        [kDifUsbdevIrqRxFull] = USBDEV_INTR_COMMON_RX_FULL,
-        [kDifUsbdevIrqAvOverflow] = USBDEV_INTR_COMMON_AV_OVERFLOW,
-        [kDifUsbdevIrqLinkInError] = USBDEV_INTR_COMMON_LINK_IN_ERR,
-        [kDifUsbdevIrqRxCrcError] = USBDEV_INTR_COMMON_RX_CRC_ERR,
-        [kDifUsbdevIrqRxPidError] = USBDEV_INTR_COMMON_RX_PID_ERR,
-        [kDifUsbdevIrqRxBitstuffError] = USBDEV_INTR_COMMON_RX_BITSTUFF_ERR,
-        [kDifUsbdevIrqFrame] = USBDEV_INTR_COMMON_FRAME,
-        [kDifUsbdevIrqConnected] = USBDEV_INTR_COMMON_CONNECTED,
+    [kDifUsbdevIrqPktReceived] = USBDEV_INTR_COMMON_PKT_RECEIVED_BIT,
+    [kDifUsbdevIrqPktSent] = USBDEV_INTR_COMMON_PKT_SENT_BIT,
+    [kDifUsbdevIrqDisconnected] = USBDEV_INTR_COMMON_DISCONNECTED_BIT,
+    [kDifUsbdevIrqHostLost] = USBDEV_INTR_COMMON_HOST_LOST_BIT,
+    [kDifUsbdevIrqLinkReset] = USBDEV_INTR_COMMON_LINK_RESET_BIT,
+    [kDifUsbdevIrqLinkSuspend] = USBDEV_INTR_COMMON_LINK_SUSPEND_BIT,
+    [kDifUsbdevIrqLinkResume] = USBDEV_INTR_COMMON_LINK_RESUME_BIT,
+    [kDifUsbdevIrqAvEmpty] = USBDEV_INTR_COMMON_AV_EMPTY_BIT,
+    [kDifUsbdevIrqRxFull] = USBDEV_INTR_COMMON_RX_FULL_BIT,
+    [kDifUsbdevIrqAvOverflow] = USBDEV_INTR_COMMON_AV_OVERFLOW_BIT,
+    [kDifUsbdevIrqLinkInError] = USBDEV_INTR_COMMON_LINK_IN_ERR_BIT,
+    [kDifUsbdevIrqRxCrcError] = USBDEV_INTR_COMMON_RX_CRC_ERR_BIT,
+    [kDifUsbdevIrqRxPidError] = USBDEV_INTR_COMMON_RX_PID_ERR_BIT,
+    [kDifUsbdevIrqRxBitstuffError] = USBDEV_INTR_COMMON_RX_BITSTUFF_ERR_BIT,
+    [kDifUsbdevIrqFrame] = USBDEV_INTR_COMMON_FRAME_BIT,
+    [kDifUsbdevIrqConnected] = USBDEV_INTR_COMMON_CONNECTED_BIT,
 };
 
 /**
@@ -290,7 +290,8 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
     phy_config_val = bitfield_field32_write(
         phy_config_val,
         (bitfield_field32_t){
-            .mask = 1, .index = USBDEV_PHY_CONFIG_RX_DIFFERENTIAL_MODE,
+            .mask = 1,
+            .index = USBDEV_PHY_CONFIG_RX_DIFFERENTIAL_MODE_BIT,
         },
         1);
   }
@@ -299,7 +300,8 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
     phy_config_val = bitfield_field32_write(
         phy_config_val,
         (bitfield_field32_t){
-            .mask = 1, .index = USBDEV_PHY_CONFIG_TX_DIFFERENTIAL_MODE,
+            .mask = 1,
+            .index = USBDEV_PHY_CONFIG_TX_DIFFERENTIAL_MODE_BIT,
         },
         1);
   }
@@ -308,7 +310,8 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
     phy_config_val = bitfield_field32_write(
         phy_config_val,
         (bitfield_field32_t){
-            .mask = 1, .index = USBDEV_PHY_CONFIG_EOP_SINGLE_BIT,
+            .mask = 1,
+            .index = USBDEV_PHY_CONFIG_EOP_SINGLE_BIT_BIT,
         },
         1);
   }
@@ -317,13 +320,15 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
     phy_config_val = bitfield_field32_write(
         phy_config_val,
         (bitfield_field32_t){
-            .mask = 1, .index = USBDEV_PHY_CONFIG_OVERRIDE_PWR_SENSE_EN,
+            .mask = 1,
+            .index = USBDEV_PHY_CONFIG_OVERRIDE_PWR_SENSE_EN_BIT,
         },
         1);
     phy_config_val = bitfield_field32_write(
         phy_config_val,
         (bitfield_field32_t){
-            .mask = 1, .index = USBDEV_PHY_CONFIG_OVERRIDE_PWR_SENSE_VAL,
+            .mask = 1,
+            .index = USBDEV_PHY_CONFIG_OVERRIDE_PWR_SENSE_VAL_BIT,
         },
         1);
   } else if (config->power_sense_override ==
@@ -331,25 +336,28 @@ dif_usbdev_result_t dif_usbdev_init(dif_usbdev_config_t *config,
     phy_config_val = bitfield_field32_write(
         phy_config_val,
         (bitfield_field32_t){
-            .mask = 1, .index = USBDEV_PHY_CONFIG_OVERRIDE_PWR_SENSE_EN,
+            .mask = 1,
+            .index = USBDEV_PHY_CONFIG_OVERRIDE_PWR_SENSE_EN_BIT,
         },
         1);
   }
 
   if (config->pin_flip == kDifUsbdevToggleEnable) {
-    phy_config_val = bitfield_field32_write(
-        phy_config_val,
-        (bitfield_field32_t){
-            .mask = 1, .index = USBDEV_PHY_CONFIG_PINFLIP,
-        },
-        1);
+    phy_config_val =
+        bitfield_field32_write(phy_config_val,
+                               (bitfield_field32_t){
+                                   .mask = 1,
+                                   .index = USBDEV_PHY_CONFIG_PINFLIP_BIT,
+                               },
+                               1);
   }
 
   if (config->clock_sync_signals == kDifUsbdevToggleDisable) {
     phy_config_val = bitfield_field32_write(
         phy_config_val,
         (bitfield_field32_t){
-            .mask = 1, .index = USBDEV_PHY_CONFIG_USB_REF_DISABLE,
+            .mask = 1,
+            .index = USBDEV_PHY_CONFIG_USB_REF_DISABLE_BIT,
         },
         1);
   }
@@ -368,7 +376,7 @@ dif_usbdev_result_t dif_usbdev_fill_available_fifo(dif_usbdev_t *usbdev) {
 
   // Remove buffers from the pool and write them to the AV FIFO until it is full
   while (!mmio_region_get_bit32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET,
-                                USBDEV_USBSTAT_AV_FULL) &&
+                                USBDEV_USBSTAT_AV_FULL_BIT) &&
          !buffer_pool_is_empty(&usbdev->buffer_pool)) {
     uint8_t buffer_id;
     if (!buffer_pool_remove(&usbdev->buffer_pool, &buffer_id)) {
@@ -430,11 +438,13 @@ dif_usbdev_result_t dif_usbdev_interface_enable(dif_usbdev_t *usbdev,
   }
 
   if (new_state == kDifUsbdevToggleEnable) {
-    mmio_region_nonatomic_set_bit32(
-        usbdev->base_addr, USBDEV_USBCTRL_REG_OFFSET, USBDEV_USBCTRL_ENABLE);
+    mmio_region_nonatomic_set_bit32(usbdev->base_addr,
+                                    USBDEV_USBCTRL_REG_OFFSET,
+                                    USBDEV_USBCTRL_ENABLE_BIT);
   } else {
-    mmio_region_nonatomic_clear_bit32(
-        usbdev->base_addr, USBDEV_USBCTRL_REG_OFFSET, USBDEV_USBCTRL_ENABLE);
+    mmio_region_nonatomic_clear_bit32(usbdev->base_addr,
+                                      USBDEV_USBCTRL_REG_OFFSET,
+                                      USBDEV_USBCTRL_ENABLE_BIT);
   }
 
   return kDifUsbdevOK;
@@ -449,7 +459,7 @@ dif_usbdev_recv_result_t dif_usbdev_recv(dif_usbdev_t *usbdev,
 
   // Check if the RX FIFO is empty
   if (mmio_region_get_bit32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET,
-                            USBDEV_USBSTAT_RX_EMPTY)) {
+                            USBDEV_USBSTAT_RX_EMPTY_BIT)) {
     return kDifUsbdevRecvResultNoNewPacket;
   }
 
@@ -458,16 +468,16 @@ dif_usbdev_recv_result_t dif_usbdev_recv(dif_usbdev_t *usbdev,
       mmio_region_read32(usbdev->base_addr, USBDEV_RXFIFO_REG_OFFSET);
   // Init packet info
   *info = (dif_usbdev_rx_packet_info_t){
-      .endpoint = bitfield_field32_read(
-          fifo_entry,
-          (bitfield_field32_t){
-              .mask = USBDEV_RXFIFO_EP_MASK, .index = USBDEV_RXFIFO_EP_OFFSET,
-          }),
-      .is_setup =
-          bitfield_field32_read(fifo_entry,
-                                (bitfield_field32_t){
-                                    .mask = 1, .index = USBDEV_RXFIFO_SETUP,
-                                }),
+      .endpoint = bitfield_field32_read(fifo_entry,
+                                        (bitfield_field32_t){
+                                            .mask = USBDEV_RXFIFO_EP_MASK,
+                                            .index = USBDEV_RXFIFO_EP_OFFSET,
+                                        }),
+      .is_setup = bitfield_field32_read(fifo_entry,
+                                        (bitfield_field32_t){
+                                            .mask = 1,
+                                            .index = USBDEV_RXFIFO_SETUP_BIT,
+                                        }),
       .length = bitfield_field32_read(fifo_entry,
                                       (bitfield_field32_t){
                                           .mask = USBDEV_RXFIFO_SIZE_MASK,
@@ -642,7 +652,7 @@ dif_usbdev_result_t dif_usbdev_send(dif_usbdev_t *usbdev, uint8_t endpoint,
 
   // Mark the packet as ready for transmission
   mmio_region_nonatomic_set_bit32(usbdev->base_addr, config_in_reg_offset,
-                                  USBDEV_CONFIGIN_0_RDY_0);
+                                  USBDEV_CONFIGIN_0_RDY_0_BIT);
 
   // Mark the buffer as stale. It will be returned to the free buffer pool
   // in dif_usbdev_get_tx_status once transmission is complete.
@@ -677,7 +687,8 @@ dif_usbdev_result_t dif_usbdev_get_tx_status(dif_usbdev_t *usbdev,
   // Check the status of the packet
   if (bitfield_field32_read(config_in_val,
                             (bitfield_field32_t){
-                                .mask = 1, .index = USBDEV_CONFIGIN_0_RDY_0,
+                                .mask = 1,
+                                .index = USBDEV_CONFIGIN_0_RDY_0_BIT,
                             })) {
     // Packet is marked as ready to be sent and pending transmission
     *status = kDifUsbdevTxStatusPending;
@@ -692,15 +703,15 @@ dif_usbdev_result_t dif_usbdev_get_tx_status(dif_usbdev_t *usbdev,
       return kDifUsbdevError;
     }
     *status = kDifUsbdevTxStatusSent;
-  } else if (bitfield_field32_read(
-                 config_in_val,
-                 (bitfield_field32_t){
-                     .mask = 1, .index = USBDEV_CONFIGIN_0_PEND_0,
-                 })) {
+  } else if (bitfield_field32_read(config_in_val,
+                                   (bitfield_field32_t){
+                                       .mask = 1,
+                                       .index = USBDEV_CONFIGIN_0_PEND_0_BIT,
+                                   })) {
     // Canceled due to an IN SETUP packet or link reset
     // Clear pending bit (rw1c)
     mmio_region_write_only_set_bit32(usbdev->base_addr, config_in_reg_offset,
-                                     USBDEV_CONFIGIN_0_PEND_0);
+                                     USBDEV_CONFIGIN_0_PEND_0_BIT);
     // Return the buffer back to the free buffer pool
     if (!buffer_pool_add(&usbdev->buffer_pool, buffer)) {
       return kDifUsbdevError;
@@ -764,8 +775,9 @@ dif_usbdev_result_t dif_usbdev_status_get_host_lost(dif_usbdev_t *usbdev,
     return kDifUsbdevBadArg;
   }
 
-  *host_lost = mmio_region_get_bit32(
-      usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET, USBDEV_USBSTAT_HOST_LOST);
+  *host_lost =
+      mmio_region_get_bit32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET,
+                            USBDEV_USBSTAT_HOST_LOST_BIT);
 
   return kDifUsbdevOK;
 }
@@ -810,7 +822,7 @@ dif_usbdev_result_t dif_usbdev_status_get_sense(dif_usbdev_t *usbdev,
   }
 
   *sense = mmio_region_get_bit32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET,
-                                 USBDEV_USBSTAT_SENSE);
+                                 USBDEV_USBSTAT_SENSE_BIT);
 
   return kDifUsbdevOK;
 }
@@ -836,7 +848,7 @@ dif_usbdev_result_t dif_usbdev_status_get_available_fifo_full(
   }
 
   *is_full = mmio_region_get_bit32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET,
-                                   USBDEV_USBSTAT_AV_FULL);
+                                   USBDEV_USBSTAT_AV_FULL_BIT);
 
   return kDifUsbdevOK;
 }
@@ -862,7 +874,7 @@ dif_usbdev_result_t dif_usbdev_status_get_rx_fifo_empty(dif_usbdev_t *usbdev,
   }
 
   *is_full = mmio_region_get_bit32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET,
-                                   USBDEV_USBSTAT_RX_EMPTY);
+                                   USBDEV_USBSTAT_RX_EMPTY_BIT);
 
   return kDifUsbdevOK;
 }

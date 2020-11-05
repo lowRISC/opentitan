@@ -12,10 +12,11 @@
 
 // This macro simplifies the `_Static_assert` check to make sure that the
 // public reset info register bitfield matches register bits.
-#define RSTMGR_RESET_INFO_CHECK(pub_name, priv_name)                      \
-  _Static_assert(                                                         \
-      kDifRstmgrResetInfo##pub_name == (0x1 << RSTMGR_RESET_##priv_name), \
-      "kDifRstmgrResetInfo" #pub_name " must match the register definition!")
+#define RSTMGR_RESET_INFO_CHECK(pub_name, priv_name)          \
+  _Static_assert(kDifRstmgrResetInfo##pub_name ==             \
+                     (0x1 << RSTMGR_RESET_##priv_name##_BIT), \
+                 "kDifRstmgrResetInfo" #pub_name              \
+                 " must match the register definition!")
 
 RSTMGR_RESET_INFO_CHECK(Por, INFO_POR);
 RSTMGR_RESET_INFO_CHECK(LowPowerExit, INFO_LOW_POWER_EXIT);
@@ -192,7 +193,7 @@ dif_rstmgr_result_t dif_rstmgr_alert_info_get_enabled(
 
   uint32_t reg =
       mmio_region_read32(base_addr, RSTMGR_ALERT_INFO_CTRL_REG_OFFSET);
-  bool enabled = bitfield_bit32_read(reg, RSTMGR_ALERT_INFO_CTRL_EN);
+  bool enabled = bitfield_bit32_read(reg, RSTMGR_ALERT_INFO_CTRL_EN_BIT);
 
   *state = enabled ? kDifRstmgrToggleEnabled : kDifRstmgrToggleDisabled;
 

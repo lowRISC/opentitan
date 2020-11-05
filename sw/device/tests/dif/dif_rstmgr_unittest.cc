@@ -133,10 +133,10 @@ class ResetCausesGetTest : public RstmgrTest {
   }
 
   const std::vector<uint32_t> reset_info_reasons_{
-      RSTMGR_RESET_INFO_POR,
-      RSTMGR_RESET_INFO_LOW_POWER_EXIT,
-      RSTMGR_RESET_INFO_NDM_RESET,
-      RSTMGR_RESET_INFO_HW_REQ,
+      RSTMGR_RESET_INFO_POR_BIT,
+      RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT,
+      RSTMGR_RESET_INFO_NDM_RESET_BIT,
+      RSTMGR_RESET_INFO_HW_REQ_BIT,
   };
 };
 
@@ -197,7 +197,7 @@ TEST_F(AlertInfoSetTest, Success) {
   // Enable.
   EXPECT_WRITE32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
                  {
-                     {RSTMGR_ALERT_INFO_CTRL_EN, true},
+                     {RSTMGR_ALERT_INFO_CTRL_EN_BIT, true},
                  });
   EXPECT_EQ(
       dif_rstmgr_alert_info_set_enabled(&rstmgr_, kDifRstmgrToggleEnabled),
@@ -206,7 +206,7 @@ TEST_F(AlertInfoSetTest, Success) {
   // Disable.
   EXPECT_WRITE32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
                  {
-                     {RSTMGR_ALERT_INFO_CTRL_EN, false},
+                     {RSTMGR_ALERT_INFO_CTRL_EN_BIT, false},
                  });
   EXPECT_EQ(
       dif_rstmgr_alert_info_set_enabled(&rstmgr_, kDifRstmgrToggleDisabled),
@@ -229,7 +229,7 @@ TEST_F(AlertInfoGetTest, Success) {
   // Enabled.
   EXPECT_READ32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
                 {
-                    {RSTMGR_ALERT_INFO_CTRL_EN, true},
+                    {RSTMGR_ALERT_INFO_CTRL_EN_BIT, true},
                 });
 
   dif_rstmgr_toggle_t state = kDifRstmgrToggleDisabled;
@@ -240,8 +240,9 @@ TEST_F(AlertInfoGetTest, Success) {
   //
   // Make sure that the only relevant `enabled` bit is read - set all bits
   // high apart from the `enabled` bit.
-  uint32_t register_value = bitfield_bit32_write(
-      std::numeric_limits<uint32_t>::max(), RSTMGR_ALERT_INFO_CTRL_EN, false);
+  uint32_t register_value =
+      bitfield_bit32_write(std::numeric_limits<uint32_t>::max(),
+                           RSTMGR_ALERT_INFO_CTRL_EN_BIT, false);
   EXPECT_READ32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, register_value);
 
   state = kDifRstmgrToggleEnabled;
@@ -313,7 +314,7 @@ TEST_F(AlertInfoDumpReadTest, SuccessFullBuffer) {
     EXPECT_WRITE32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
                    {
                        {
-                           RSTMGR_ALERT_INFO_CTRL_EN,
+                           RSTMGR_ALERT_INFO_CTRL_EN_BIT,
                            true,
                        },
                        {
@@ -345,7 +346,7 @@ TEST_F(AlertInfoDumpReadTest, SuccessDumpSmaller) {
     EXPECT_WRITE32(RSTMGR_ALERT_INFO_CTRL_REG_OFFSET,
                    {
                        {
-                           RSTMGR_ALERT_INFO_CTRL_EN,
+                           RSTMGR_ALERT_INFO_CTRL_EN_BIT,
                            true,
                        },
                        {
