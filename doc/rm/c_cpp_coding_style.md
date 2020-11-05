@@ -110,6 +110,31 @@ This convention helps readers distinguish which files they should not expect to 
 
 The above rules also do not apply to system includes, which should be included by the names dictated by the ISO standard, e.g. `#include <stddef.h>`.
 
+### Linker Script- and Assembly-Provided Symbols
+
+Some C/C++ programs may need to use symbols that are defined by a linker script or in an external assembly file.
+Referring to linker script- and assembly-provided symbols can be complex and error-prone, as they don't quite work like C's global variables.
+We have chosen the following approach based on the examples in [the binutils ld manual](https://sourceware.org/binutils/docs/ld/Source-Code-Reference.html).
+
+If you need to refer to the symbol `_my_linker_symbol`, the correct way to do so is with an incomplete extern char array declaration, as shown below.
+It is good practice to provide a comment that directs others to where the symbol is actually defined, and whether the symbol should be treated as a memory address or another kind of value.
+```c
+/**
+ * `_my_linker_symbol` is defined in the linker script `sw/device/my_feature.ld`.
+ *
+ * `_my_linker_symbol` is a memory address in RAM.
+ */
+extern char _my_linker_symbol[];
+```
+
+A symbol's value is exposed using its address, and declaring it this way allows you to use the symbol where you need a pointer.
+```c
+char my_buffer[4];
+memcpy(my_buffer, _my_linker_symbol, sizeof(my_buffer));
+```
+
+If the symbol has been defined to a non-address value (usually using `ABSOLUTE()` in a linker script, or `.set` in assembly), you must cast the symbol to obtain its value using `(intptr_t)_my_linker_symbol`.
+You must not dereference a symbol that has non-address value.
 
 ### Public function (API) documentation
 
