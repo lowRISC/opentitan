@@ -34,7 +34,7 @@ class alert_monitor extends alert_esc_base_monitor;
     alert_esc_seq_item req;
     bit                ping_p, alert_p;
     forever @(cfg.vif.monitor_cb) begin
-      if (ping_p != cfg.vif.monitor_cb.alert_rx.ping_p) begin
+      if (ping_p != cfg.vif.monitor_cb.alert_rx_final.ping_p) begin
         under_ping_rsp = 1;
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscPingTrans;
@@ -76,12 +76,12 @@ class alert_monitor extends alert_esc_base_monitor;
           // discussion on Issue #2321
           if (req.ping_timeout && req.alert_handshake_sta == AlertReceived) begin
             @(cfg.vif.monitor_cb);
-            if (cfg.vif.alert_rx.ack_p == 1'b1) alert_esc_port.write(req);
+            if (cfg.vif.alert_rx_final.ack_p == 1'b1) alert_esc_port.write(req);
           end
         end
         under_ping_rsp = 0;
       end
-      ping_p = cfg.vif.monitor_cb.alert_rx.ping_p;
+      ping_p = cfg.vif.monitor_cb.alert_rx_final.ping_p;
       alert_p = cfg.vif.monitor_cb.alert_tx_final.alert_p;
     end
   endtask : ping_thread
@@ -163,11 +163,11 @@ class alert_monitor extends alert_esc_base_monitor;
   endtask : wait_alert_complete
 
   virtual task wait_ack();
-    while (cfg.vif.alert_rx.ack_p !== 1'b1) @(cfg.vif.monitor_cb);
+    while (cfg.vif.alert_rx_final.ack_p !== 1'b1) @(cfg.vif.monitor_cb);
   endtask : wait_ack
 
   virtual task wait_ack_complete();
-    while (cfg.vif.alert_rx.ack_p !== 1'b0) @(cfg.vif.monitor_cb);
+    while (cfg.vif.alert_rx_final.ack_p !== 1'b0) @(cfg.vif.monitor_cb);
   endtask : wait_ack_complete
 
   virtual function bit is_sig_int_err();
