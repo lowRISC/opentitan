@@ -47,12 +47,18 @@ SECTIONS
 
     .rodata : {
         . = ALIGN(4);
+        /* Small RO data before large RO data */
+        *(.srodata)
+        *(.srodata.*)
         *(.rodata);
         *(.rodata.*)
     } > ram
 
     .data : {
         . = ALIGN(4);
+        /* Small data before large data */
+        *(.sdata)
+        *(.sdata.*)
         *(.data);
         *(.data.*)
     } > ram
@@ -61,6 +67,9 @@ SECTIONS
     {
         . = ALIGN(4);
         _bss_start = .;
+        /* Small BSS before large BSS */
+        *(.sbss)
+        *(.sbss.*)
         *(.bss)
         *(.bss.*)
         *(COMMON)

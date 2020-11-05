@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import logging
 from enum import Enum, IntEnum, auto
 from bitstring import BitArray
-from pygen.pygen_src.target.rv32i import riscv_core_setting as rcs
+from importlib import import_module
 
 
 class mem_region_t:
@@ -83,6 +83,7 @@ class riscv_instr_group_t(IntEnum):
     RV64B = auto()
     RV32X = auto()
     RV64X = auto()
+    RVV = auto()
 
 
 class riscv_instr_name_t(IntEnum):
@@ -1081,6 +1082,8 @@ class rv32i_misc_instrs(IntEnum):
     MRET = auto()
 
 # Ignore RAW_HAZARD for store lsu hazard
+
+
 class store_lsu_hazard_e(IntEnum):
     NO_HAZARD = 0
     WAR_HAZARD = auto()
@@ -1432,21 +1435,24 @@ def add_functions_as_methods(function):
 
 
 class riscv_instr_pkg:
-    def __init__(self):
-        self.MPRV_BIT_MASK = BitArray(uint=0x1 << 0x17, length=rcs.XLEN)
-        self.SUM_BIT_MASK = BitArray(uint=0x1 << 0x18, length=rcs.XLEN)
-        self.MPP_BIT_MASK = BitArray(uint=0x3 << 0x11, length=rcs.XLEN)
-        self.MAX_USED_VADDR_BITS = 30
-        self.IMM25_WIDTH = 25
-        self.IMM12_WIDTH = 12
-        self.INSTR_WIDTH = 32
-        self.DATA_WIDTH = 32
-        self.MAX_INSTR_STR_LEN = 11
-        self.LABEL_STR_LEN = 18
-        self.MAX_CALLSTACK_DEPTH = 20
-        self.MAX_SUB_PROGRAM_CNT = 20
-        self.MAX_CALL_PER_FUNC = 5
-        self.indent = self.LABEL_STR_LEN * " "
+    global rcs
+    from pygen_src.riscv_instr_gen_config import cfg
+    rcs = import_module("pygen_src.target." + cfg.argv.target + ".riscv_core_setting")
+
+    MPRV_BIT_MASK = BitArray(uint=0x1 << 0x17, length=rcs.XLEN)
+    SUM_BIT_MASK = BitArray(uint=0x1 << 0x18, length=rcs.XLEN)
+    MPP_BIT_MASK = BitArray(uint=0x3 << 0x11, length=rcs.XLEN)
+    MAX_USED_VADDR_BITS = 30
+    IMM25_WIDTH = 25
+    IMM12_WIDTH = 12
+    INSTR_WIDTH = 32
+    DATA_WIDTH = 32
+    MAX_INSTR_STR_LEN = 11
+    LABEL_STR_LEN = 18
+    MAX_CALLSTACK_DEPTH = 20
+    MAX_SUB_PROGRAM_CNT = 20
+    MAX_CALL_PER_FUNC = 5
+    indent = LABEL_STR_LEN * " "
 
     def hart_prefix(self, hart=0):
         if (rcs.NUM_HARTS <= 1):
@@ -1470,14 +1476,73 @@ class riscv_instr_pkg:
             if ((i % byte_per_group == 0) and (i != len(data) - 1) and (
                     i != 0)):
                 string = string + ", 0x"
-            string = string + f"{hex(data[i])}"
+            string = string + "{:02x}".format(data[i])
         return string
 
     def push_gpr_to_kernel_stack(self, status, scratch, mprv, sp, tp, instr):
-        pass
+        store_instr = ''
+        if(rcs.XLEN == 32):
+            store_instr = "sw"
+        else:
+            store_instr = "sd"
+        if (scratch.name in rcs.implemented_csr):
+            # Use kernal stack for handling exceptions. Save the user mode stack
+            # pointer to the scratch register
+            instr.append(pkg_ins.format_string(
+                "csrrw x{}, {}, x{}".format(sp, hex(scratch.value), sp)))
+            # Move TP to SP
+            instr.append(pkg_ins.format_string("add x{}, x{}, zero".format(sp, tp)))
+        # If MPRV is set and MPP is S/U mode, it means the address translation and
+        # memory protection for load/store instruction is the same as the mode indicated
+        # by MPP. In this case, we need to use the virtual address to access the kernel stack.
+        if((status.name == "MSTATUS") and (rcs.SATP_MODE != "BARE")):
+            # We temporarily use tp to check mstatus to avoid changing other GPR. The value
+            # of sp has been saved to xScratch and can be restored later.
+            if(mprv):
+                instr.append(pkg_ins.format_string(
+                    "csrr x{}, 0x{} // MSTATUS".format(tp, status.value)))
+                instr.append(pkg_ins.format_string(
+                    "srli x{}, x{}, 11".format(tp, tp)))  # Move MPP to bit 0
+                instr.append(pkg_ins.format_string(
+                    "andi x{}, x{}, 0x3".format(tp, tp)))  # keep the MPP bits
+                # Check if MPP equals to M-mode('b11)
+                instr.append(pkg_ins.format_string("xori x{}, x{}, 0x3".format(tp, tp)))
+                # Use physical address for kernel SP
+                instr.append(pkg_ins.format_string("bnez x{}, 1f".format(tp)))
+                # Use virtual address for stack pointer
+                instr.append(pkg_ins.format_string(
+                    "slli x{}, x{}, {}".format(sp, sp,
+                                               rcs.XLEN - riscv_instr_pkg.MAX_USED_VADDR_BITS)))
+                instr.append(pkg_ins.format_string(
+                    "srli x{}, x{}, {}".format(sp, sp,
+                                               rcs.XLEN - riscv_instr_pkg.MAX_USED_VADDR_BITS)))
+        # Reserve space from kernel stack to save all 32 GPR except for x0
+        instr.append(pkg_ins.format_string(
+            "1: addi x{}, x{}, -{}".format(sp, sp, int(31 * (rcs.XLEN / 8)))))
+        # Push all GPRs to kernel stack
+        for i in range(1, 32):
+            instr.append(pkg_ins.format_string("{} x{}, {}(x{})".format(
+                store_instr, i, int(i * (rcs.XLEN / 8)), sp)))
 
     def pop_gpr_from_kernel_stack(self, status, scratch, mprv, sp, tp, instr):
-        pass
+        load_instr = ''
+        if(rcs.XLEN == 32):
+            load_instr = "lw"
+        else:
+            load_instr = "ld"
+        # Pop user mode GPRs from kernel stack
+        for i in range(1, 32):
+            instr.append(pkg_ins.format_string("{} x{}, {}(x{})".format(
+                load_instr, i, int(i * (rcs.XLEN / 8)), sp)))
+        # Restore kernel stack pointer
+        instr.append(pkg_ins.format_string(
+            "addi x{}, x{}, {}".format(sp, sp, int(31 * (rcs.XLEN / 8)))))
+        if (scratch in rcs.implemented_csr):
+            # Move SP to TP
+            instr.append(pkg_ins.format_string("add x{}, x{}, zero".format(tp, sp)))
+            # Restore user mode stack pointer
+            instr.append(pkg_ins.format_string(
+                "csrrw x{}, 0x{}, x{}".format(sp, scratch.value, sp)))
 
 
 pkg_ins = riscv_instr_pkg()

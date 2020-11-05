@@ -15,8 +15,8 @@ import logging
 import sys
 import vsc
 from pygen_src.riscv_instr_pkg import riscv_instr_name_t,\
-    riscv_instr_category_t, riscv_reg_t
-from pygen_src.isa.riscv_instr import riscv_instr, riscv_instr_ins
+    riscv_instr_category_t, riscv_instr_format_t, riscv_reg_t
+from pygen_src.isa.riscv_instr import riscv_instr
 from pygen_src.riscv_instr_gen_config import cfg
 
 
@@ -34,10 +34,10 @@ class riscv_instr_stream:
         self.instr_cnt = 0
         self.label = ""
         # User can specify a small group of available registers to generate various hazard condition
-        self.avail_regs = vsc.randsz_list_t(vsc.enum_t(riscv_reg_t))
+        self.avail_regs = vsc.rand_list_t(vsc.enum_t(riscv_reg_t), sz = 10)
         # Some additional reserved registers that should not be used as rd register
         # by this instruction stream
-        self.reserved_rd = []
+        self.reserved_rd = vsc.list_t(vsc.enum_t(riscv_reg_t))
         self.hart = 0
 
     def initialize_instr_list(self, instr_cnt):
@@ -106,16 +106,16 @@ class riscv_instr_stream:
             new_instr[0].label = self.instr_list[idx].label
             new_instr[0].has_label = self.instr_list[idx].has_label
             if idx == 0:
-                self.instr_list = new_instr + self.instr_list[idx + 1:current_instr_cnt - 1]
-            else:
-                self.instr_list = self.instr_list[0:idx - 1] + new_instr + \
-                    self.instr_list[idx + 1:current_instr_cnt - 1]
-        else:
-            if idx == 0:
-                self.instr_list = new_instr + self.instr_list[idx:current_instr_cnt - 1]
+                self.instr_list = new_instr + self.instr_list[idx + 1:current_instr_cnt]
             else:
                 self.instr_list = self.instr_list[0:idx] + new_instr + \
-                    self.instr_list[idx:current_instr_cnt - 1]
+                    self.instr_list[idx + 1:current_instr_cnt]
+        else:
+            if idx == 0:
+                self.instr_list = new_instr + self.instr_list[idx:current_instr_cnt]
+            else:
+                self.instr_list = self.instr_list[0:idx] + new_instr + \
+                    self.instr_list[idx:current_instr_cnt]
 
     def mix_instr_stream(self, new_instr, contained = 0):
         """
@@ -170,15 +170,15 @@ class riscv_rand_instr_stream(riscv_instr_stream):
             self.instr_list.append(None)
 
     def setup_allowed_instr(self, no_branch = 0, no_load_store = 1):
-        self.allowed_instr = riscv_instr_ins.basic_instr
+        self.allowed_instr = riscv_instr.basic_instr
         if no_branch == 0:
             self.allowed_instr.extend(
-                riscv_instr_ins.instr_category[riscv_instr_category_t.BRANCH.name])
+                riscv_instr.instr_category[riscv_instr_category_t.BRANCH.name])
         if no_load_store == 0:
             self.allowed_instr.extend(
-                riscv_instr_ins.instr_category[riscv_instr_category_t.LOAD.name])
+                riscv_instr.instr_category[riscv_instr_category_t.LOAD.name])
             self.allowed_instr.extend(
-                riscv_instr_ins.instr_category[riscv_instr_category_t.STORE.name])
+                riscv_instr.instr_category[riscv_instr_category_t.STORE.name])
         self.setup_instruction_dist(no_branch, no_load_store)
 
     # TODO
@@ -215,20 +215,39 @@ class riscv_rand_instr_stream(riscv_instr_stream):
             exclude_instr.append(riscv_instr_name_t.C_ADDI16SP.name)
             exclude_instr.append(riscv_instr_name_t.C_LWSP.name)
             exclude_instr.append(riscv_instr_name_t.C_LDSP.name)
-        if is_in_debug and (not cfg.enable_ebreak_in_debug_rom):
-            exclude_instr.append(riscv_instr_name_t.EBREAK.name)
-            exclude_instr.append(riscv_instr_name_t.C_EBREAK.name)
-        instr = riscv_instr_ins.get_rand_instr(
+        # Post-process the allowed_instr and exclude_instr lists to handle
+        # adding ebreak instructions into the debug ROM.
+        if is_in_debug:
+            if (cfg.no_ebreak and cfg.enable_ebreak_in_debug_rom):
+                self.allowed_instr.extend([riscv_instr_name_t.EBREAK.name,
+                                           riscv_instr_name_t.C_EBREAK.name])
+            elif (not cfg.no_ebreak and not cfg.enable_ebreak_in_debug_rom):
+                exclude_instr.extend([riscv_instr_name_t.EBREAK.name,
+                                      riscv_instr_name_t.C_EBREAK.name])
+        instr = riscv_instr.get_rand_instr(
             include_instr = self.allowed_instr, exclude_instr = exclude_instr)
         instr = self.randomize_gpr(instr)
         return instr
 
     def randomize_gpr(self, instr):
-        # TODO
-        """
-        PyVSC library doesn't support inline randomization for list of enum types.
-        The randomization is done directly here.
-        it will be updated once randomization for list of enum types supports in PyVSC.
-        """
-        instr.randomize()
+        with instr.randomize_with() as it:
+            if self.avail_regs.size > 0:
+                if instr.has_rs1:
+                    instr.rs1.inside(vsc.rangelist(self.avail_regs))
+                if instr.has_rs2:
+                    instr.rs2.inside(vsc.rangelist(self.avail_regs))
+                if instr.has_rd:
+                    instr.rd.inside(vsc.rangelist(self.avail_regs))
+            with vsc.foreach(self.reserved_rd, idx = True) as i:
+                if instr.has_rd == 1:
+                    instr.rd != self.reserved_rd[i]
+                if instr.format == riscv_instr_format_t.CB_FORMAT:
+                    instr.rs1 != self.reserved_rd[i]
+
+            with vsc.foreach(cfg.reserved_regs, idx = True) as i:
+                with vsc.if_then(instr.has_rd == 1):
+                    instr.rd != cfg.reserved_regs[i]
+                with vsc.if_then(instr.format == riscv_instr_format_t.CB_FORMAT):
+                    instr.rs1 != cfg.reserved_regs[i]
+        # TODO: Add constraint for CSR, floating point register
         return instr

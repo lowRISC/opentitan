@@ -123,7 +123,8 @@ Parameters
 | ``BranchPrediction``         | bit                 | 0          | *EXPERIMENTAL* Enable Static branch prediction                        |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``SecureIbex``               | bit                 | 0          | *EXPERIMENTAL* Enable various additional features targeting           |
-|                              |                     |            | secure code execution.                                                |
+|                              |                     |            | secure code execution. Note: SecureIbex == 1'b1 and                   |
+|                              |                     |            | RV32M == ibex_pkg::RV32MNone is an illegal combination.               |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``DbgTriggerEn``             | bit                 | 0          | Enable debug trigger support (one trigger only)                       |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+

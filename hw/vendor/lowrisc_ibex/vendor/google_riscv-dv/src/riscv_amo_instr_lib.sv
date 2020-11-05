@@ -148,6 +148,27 @@ class riscv_lr_sc_instr_stream extends riscv_amo_base_instr_stream;
     instr_list.push_back(sc_instr);
   endfunction
 
+  // section 8.3 Eventual Success of Store-Conditional Instructions
+  // An LR/SC sequence begins with an LR instruction and ends with an SC instruction.
+  // The dynamic code executed between the LR and SC instructions can only contain
+  // instructions from the base “I” instruction set, excluding loads, stores, backward
+  // jumps, taken backward branches, JALR, FENCE, and SYSTEM instructions. If the “C”
+  // extension is supported, then compressed forms of the aforementioned “I” instructions
+  // are also permitted.
+  virtual function void add_mixed_instr(int instr_cnt);
+    riscv_instr instr;
+    int i;
+    setup_allowed_instr(.no_branch(1), .no_load_store(1));
+    while (i < instr_cnt) begin
+      instr = riscv_instr::type_id::create("instr");
+      randomize_instr(instr, .include_group({RV32I, RV32C}));
+      if (!(instr.category inside {SYNCH, SYSTEM})) begin
+        insert_instr(instr);
+        i++;
+      end
+    end
+  endfunction
+
 endclass : riscv_lr_sc_instr_stream
 
 class riscv_amo_instr_stream extends riscv_amo_base_instr_stream;
@@ -193,12 +214,8 @@ endclass : riscv_amo_instr_stream
 class riscv_vector_amo_instr_stream extends riscv_vector_load_store_instr_stream;
 
   constraint amo_address_mode_c {
-    // AMO operation only supports word alignment or element alignemt
-    alignment inside {W_ALIGNMENT, E_ALIGNMENT};
     // AMO operation uses indexed address mode
     address_mode == INDEXED;
-    // For the 32-bit vector AMO operations, SEW must be at least 32 bit
-    (cfg.vector_cfg.vtype.vsew < 32) -> (alignment != W_ALIGNMENT);
   }
 
   `uvm_object_utils(riscv_vector_amo_instr_stream)
@@ -208,12 +225,6 @@ class riscv_vector_amo_instr_stream extends riscv_vector_load_store_instr_stream
     allowed_instr = {VAMOSWAPE_V, VAMOADDE_V, VAMOXORE_V,
                      VAMOANDE_V, VAMOORE_V, VAMOMINE_V,
                      VAMOMAXE_V, VAMOMINUE_V, VAMOMAXUE_V, allowed_instr};
-  endfunction
-
-  virtual function void add_w_vec_load_stores();
-    allowed_instr = {VAMOSWAPW_V, VAMOADDW_V, VAMOXORW_V,
-                     VAMOANDW_V, VAMOORW_V, VAMOMINW_V,
-                     VAMOMAXW_V, VAMOMINUW_V, VAMOMAXUW_V, allowed_instr};
   endfunction
 
 endclass : riscv_vector_amo_instr_stream

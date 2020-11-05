@@ -1,7 +1,7 @@
 End to End Simulation Flow
 ==========================
 
-We have collaborated with LowRISC to apply this flow for `IBEX RISC-V core verification`_.
+We have collaborated with lowRISC to apply this flow for `Ibex RISC-V core verification`_.
 You can use it as a reference to setup end-to-end co-simulation flow.
 This repo is still under active development, this is the recommended approach to
 customize the instruction generator while keeping the effort of merging
@@ -27,13 +27,13 @@ upstream changes to a minimum.
     ``--sim_opts="+uvm_set_inst_override=riscv_asm_program_gen,<extended
     class>,'uvm_test_top.asm_gen'"``
 
-You can refer to `riscv-dv extension for ibex`_ for a working example.
+You can refer to `riscv-dv extension for Ibex`_ for a working example.
 
 We have plan to open-source the end-to-end environments of other advanced RISC-V
 processors. Stay tuned!
 
-.. _IBEX RISC-V core verification: https://github.com/lowRISC/ibex/blob/master/doc/verification.rst
-.. _riscv-dv extension for ibex: https://github.com/lowRISC/ibex/blob/master/dv/uvm/Makefile#L68
+.. _Ibex RISC-V core verification: https://github.com/lowRISC/ibex/blob/master/doc/03_reference/verification.rst
+.. _riscv-dv extension for Ibex: https://github.com/lowRISC/ibex/blob/master/dv/uvm/core_ibex/Makefile#L110
 
 
 

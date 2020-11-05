@@ -365,4 +365,10 @@ module ibex_multdiv_slow
       MD_IDLE, MD_ABS_A, MD_ABS_B, MD_COMP, MD_LAST, MD_CHANGE_SIGN, MD_FINISH
       }, clk_i, !rst_ni)
 
+`ifdef FORMAL
+  `ifdef YOSYS
+    `include "formal_tb_frag.svh"
+  `endif
+`endif
+
 endmodule

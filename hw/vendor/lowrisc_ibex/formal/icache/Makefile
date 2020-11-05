@@ -30,6 +30,3 @@ all: prove cover
 
 prove cover:
 	$(call mk-fusesoc-cmd,$@)
-
-lint:
-	mypy --strict sv2v_in_place.py

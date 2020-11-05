@@ -52,7 +52,9 @@ class riscv_instr_stream extends uvm_object;
   // When index is -1, the instruction is injected at a random location
   function void insert_instr(riscv_instr instr, int idx = -1);
     int current_instr_cnt = instr_list.size();
-    if(idx == -1) begin
+    if (current_instr_cnt == 0) begin
+      idx = 0;
+    end else if (idx == -1) begin
       idx = $urandom_range(0, current_instr_cnt-1);
       while(instr_list[idx].atomic) begin
        idx += 1;
@@ -228,17 +230,25 @@ class riscv_rand_instr_stream extends riscv_instr_stream;
 
   function void randomize_instr(output riscv_instr instr,
                                 input  bit is_in_debug = 1'b0,
-                                input  bit disable_dist = 1'b0);
+                                input  bit disable_dist = 1'b0,
+                                input  riscv_instr_group_t include_group[$] = {});
     riscv_instr_name_t exclude_instr[];
     if ((SP inside {reserved_rd, cfg.reserved_regs}) ||
         ((avail_regs.size() > 0) && !(SP inside {avail_regs}))) begin
       exclude_instr = {C_ADDI4SPN, C_ADDI16SP, C_LWSP, C_LDSP};
     end
-    if (is_in_debug && !cfg.enable_ebreak_in_debug_rom) begin
-      exclude_instr = {exclude_instr, EBREAK, C_EBREAK};
+    // Post-process the allowed_instr and exclude_instr lists to handle
+    // adding ebreak instructions to the debug rom.
+    if (is_in_debug) begin
+      if (cfg.no_ebreak && cfg.enable_ebreak_in_debug_rom) begin
+        allowed_instr = {allowed_instr, EBREAK, C_EBREAK};
+      end else if (!cfg.no_ebreak && !cfg.enable_ebreak_in_debug_rom) begin
+        exclude_instr = {exclude_instr, EBREAK, C_EBREAK};
+      end
     end
     instr = riscv_instr::get_rand_instr(.include_instr(allowed_instr),
-                                        .exclude_instr(exclude_instr));
+                                        .exclude_instr(exclude_instr),
+                                        .include_group(include_group));
     instr.m_cfg = cfg;
     randomize_gpr(instr);
   endfunction

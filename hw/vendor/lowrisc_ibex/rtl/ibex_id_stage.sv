@@ -405,7 +405,7 @@ module ibex_id_stage #(
       RF_WD_EX:  rf_wdata_id_o = result_ex_i;
       RF_WD_CSR: rf_wdata_id_o = csr_rdata_i;
       default:   rf_wdata_id_o = result_ex_i;
-    endcase;
+    endcase
   end
 
   /////////////
@@ -957,7 +957,6 @@ module ibex_id_stage #(
     // Assign inputs and internal wiring to unused signals to satisfy lint checks
     // Tie-off outputs to constant values
     logic unused_data_req_done_ex;
-    logic unused_lsu_load;
     logic [4:0] unused_rf_waddr_wb;
     logic unused_rf_write_wb;
     logic unused_outstanding_load_wb;

@@ -63,5 +63,8 @@ module ibex_register_file_fpga #(
   // Dummy instruction changes not relevant for FPGA implementation
   logic unused_dummy_instr;
   assign unused_dummy_instr = dummy_instr_id_i;
+  // Test enable signal not used in FPGA implementation
+  logic unused_test_en;
+  assign unused_test_en = test_en_i;
 
 endmodule

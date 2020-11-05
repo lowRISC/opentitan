@@ -95,4 +95,8 @@ module ibex_register_file_ff #(
   assign rdata_a_o = rf_reg[raddr_a_i];
   assign rdata_b_o = rf_reg[raddr_b_i];
 
+  // Signal not used in FF register file
+  logic unused_test_en;
+  assign unused_test_en = test_en_i;
+
 endmodule

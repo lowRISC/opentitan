@@ -18,7 +18,7 @@ module ibex_if_stage #(
     parameter bit          DummyInstructions = 1'b0,
     parameter bit          ICache            = 1'b0,
     parameter bit          ICacheECC         = 1'b0,
-    parameter bit          SecureIbex        = 1'b0,
+    parameter bit          PCIncrCheck       = 1'b0,
     parameter bit          BranchPredictor   = 1'b0
 ) (
     input  logic                   clk_i,
@@ -104,6 +104,7 @@ module ibex_if_stage #(
   logic              branch_spec;
   logic              predicted_branch;
   logic       [31:0] fetch_addr_n;
+  logic              unused_fetch_addr_n0;
 
   logic              fetch_valid;
   logic              fetch_ready;
@@ -213,6 +214,10 @@ module ibex_if_stage #(
         .icache_inval_i    ( icache_inval_i              ),
         .busy_o            ( prefetch_busy               )
     );
+    // Branch predictor tie-offs (which are unused when the instruction cache is enabled)
+    logic unused_nt_branch_mispredict, unused_predicted_branch;
+    assign unused_nt_branch_mispredict  = nt_branch_mispredict_i;
+    assign unused_predicted_branch = predicted_branch;
   end else begin : gen_prefetch_buffer
     // prefetch buffer, caches a fixed number of instructions
     ibex_prefetch_buffer #(
@@ -251,6 +256,8 @@ module ibex_if_stage #(
     assign unused_icen  = icache_enable_i;
     assign unused_icinv = icache_inval_i;
   end
+
+  assign unused_fetch_addr_n0 = fetch_addr_n[0];
 
   assign branch_req  = pc_set_i | predict_branch_taken;
   assign branch_spec = pc_set_spec_i | predict_branch_taken;
@@ -372,13 +379,14 @@ module ibex_if_stage #(
   end
 
   // Check for expected increments of the PC when security hardening enabled
-  if (SecureIbex) begin : g_secure_pc
+  if (PCIncrCheck) begin : g_secure_pc
     logic [31:0] prev_instr_addr_incr;
     logic        prev_instr_seq_q, prev_instr_seq_d;
 
     // Do not check for sequential increase after a branch, jump, exception, interrupt or debug
-    // request, all of which will set branch_req. Also do not check after reset.
-    assign prev_instr_seq_d = (prev_instr_seq_q | instr_new_id_d) & ~branch_req;
+    // request, all of which will set branch_req. Also do not check after reset or for dummys.
+    assign prev_instr_seq_d = (prev_instr_seq_q | instr_new_id_d) &
+        ~branch_req & ~stall_dummy_instr;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
@@ -388,7 +396,8 @@ module ibex_if_stage #(
       end
     end
 
-    assign prev_instr_addr_incr = pc_id_o + (instr_is_compressed_id_o ? 32'd2 : 32'd4);
+    assign prev_instr_addr_incr = pc_id_o + ((instr_is_compressed_id_o && !instr_fetch_err_o) ?
+                                             32'd2 : 32'd4);
 
     // Check that the address equals the previous address +2/+4
     assign pc_mismatch_alert_o = prev_instr_seq_q & (pc_if_o != prev_instr_addr_incr);
@@ -569,17 +578,18 @@ module ibex_if_stage #(
     // Must only see mispredict after we've performed a predicted branch but before we've accepted
     // any instruction (with fetch_ready & fetch_valid) that follows that predicted branch.
     `ASSERT(MispredictOnlyImmediatelyAfterPredictedBranch,
-      nt_branch_mispredict_i |-> predicted_branch_live_q);
+      nt_branch_mispredict_i |-> predicted_branch_live_q)
     // Check that on mispredict we get the correct PC for the non-taken side of the branch when
     // prefetch buffer/icache makes that PC available.
     `ASSERT(CorrectPCOnMispredict,
-      predicted_branch_live_q & mispredicted_d & fetch_valid |-> fetch_addr == predicted_branch_nt_pc_q);
+      predicted_branch_live_q & mispredicted_d & fetch_valid |->
+      fetch_addr == predicted_branch_nt_pc_q)
     // Must not signal mispredict over multiple cycles but it's possible to have back to back
     // mispredicts for different branches (core signals mispredict, prefetch buffer/icache immediate
     // has not-taken side of the mispredicted branch ready, which itself is a predicted branch,
     // following cycle core signal that that branch has mispredicted).
     `ASSERT(MispredictSingleCycle,
-      nt_branch_mispredict_i & ~(fetch_valid & fetch_ready) |=> ~nt_branch_mispredict_i);
+      nt_branch_mispredict_i & ~(fetch_valid & fetch_ready) |=> ~nt_branch_mispredict_i)
 `endif
 
   end else begin : g_no_branch_predictor_asserts

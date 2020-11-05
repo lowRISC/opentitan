@@ -17,11 +17,14 @@ cv: depth 32
 smtbmc boolector
 
 [script]
-read -sv @INPUT@
+{{"-sv"|gen_reads}}
 
 # Our formal properties are currently just about control logic, which
 # isn't affected by the exact behaviour of the memories in the design.
 # Blackbox them.
 blackbox $abstract\prim_generic_ram_1p
 
-prep -top ibex_icache
+prep -top {{top_level}}
+
+[files]
+{{files}}

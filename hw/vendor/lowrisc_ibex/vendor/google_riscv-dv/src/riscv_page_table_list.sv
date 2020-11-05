@@ -371,6 +371,8 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
 
     // End of page table fault handling
     instr.push_back("fix_pte_done:");
+    // Make sure all outstanding memory access is completed
+    instr.push_back("sfence.vma");
     // Randomly decide if run some kernel program before exiting from exception handling
     // Use the low 2 bits of x30 to determine whether to skip it or not.
     instr.push_back($sformatf("slli x30, x30, %0d", XLEN - 2));
@@ -526,6 +528,7 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
                // If not the end of the kernel space, process the next PTE
                $sformatf("ble x%0d, x%0d, 2b", cfg.gpr[0], cfg.gpr[1])};
     end
+    instr = {instr, "sfence.vma"};
   endfunction
 
   // If you want to create custom page table topology, override the below tasks to specify the

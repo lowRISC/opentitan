@@ -1,0 +1,45 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:util:sv2v:0.1"
+description: "Script to convert SystemVerilog files to Verilog with sv2v"
+
+filesets:
+  files_sv2v_in_place:
+    files:
+      - sv2v_in_place.py : { copyto: util/sv2v_in_place.py }
+
+scripts:
+  sv2v_in_place:
+    cmd:
+      - python3
+      - util/sv2v_in_place.py
+      - --incdir-list=incdirs.txt
+        # A bit of a hack: The primitives directory (vendored from OpenTitan)
+        # contains SystemVerilog code that has proper SVA assertions, using
+        # things like the |-> operator.
+        #
+        # The Yosys-style prim_assert.sv assertions are immediate, rather than
+        # concurrent. Such assertions only allow expressions (not full property
+        # specifiers), which cause a syntax error if you try to use them with
+        # the assertions in the primitives directory.
+        #
+        # Since we don't care about those assertions here, we want to strip
+        # them out. The code that selects an assertion backend in
+        # prim_assert.sv doesn't have an explicit "NO_ASSERTIONS" mode, but
+        # "SYNTHESIS" implies the same thing, so we use that.
+      - --define-if=prim:SYNTHESIS
+      - -DYOSYS
+      - -DFORMAL
+      - -v
+      - files.txt
+
+targets:
+  default:
+    filesets:
+      - files_sv2v_in_place
+    hooks:
+      pre_build:
+        - sv2v_in_place

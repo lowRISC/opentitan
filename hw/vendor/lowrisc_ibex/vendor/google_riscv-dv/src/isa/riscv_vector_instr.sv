@@ -26,6 +26,7 @@ class riscv_vector_instr extends riscv_floating_point_instr;
   rand va_variant_t va_variant;
   rand bit          vm;
   rand bit          wd;
+  rand bit [10:0]   eew;
   bit               has_vd = 1'b1;
   bit               has_vs1 = 1'b1;
   bit               has_vs2 = 1'b1;
@@ -39,6 +40,7 @@ class riscv_vector_instr extends riscv_floating_point_instr;
   va_variant_t      allowed_va_variants[$];
   string            sub_extension;
   rand bit [2:0]    nfields; // Used by segmented load/store
+  rand bit [3:0]    emul;
 
   constraint avoid_reserved_vregs_c {
     if (m_cfg.vector_cfg.reserved_vregs.size() > 0) {
@@ -56,6 +58,7 @@ class riscv_vector_instr extends riscv_floating_point_instr;
   // Instructions specifying a vector operand with an odd-numbered vector register will raisean
   // illegal instruction exception.
   // TODO: Exclude the instruction that ignore VLMUL
+  // TODO: Update this constraint for fractional LMUL
   constraint operand_group_c {
     if (m_cfg.vector_cfg.vtype.vlmul > 0) {
       vd  % m_cfg.vector_cfg.vtype.vlmul == 0;
@@ -268,6 +271,38 @@ class riscv_vector_instr extends riscv_floating_point_instr;
     }
   }
 
+  // load/store EEW/EMUL and corresponding register grouping constraints
+  constraint load_store_solve_order_c {
+    solve eew before emul;
+    solve emul before vd;
+    solve emul before vs1;
+    solve emul before vs2;
+    solve emul before vs3;
+  }
+
+  constraint load_store_eew_emul_c {
+    if (category inside {LOAD, STORE, AMO}) {
+      eew inside {m_cfg.vector_cfg.legal_eew};
+      if (eew > m_cfg.vector_cfg.vtype.vsew) {
+        emul == eew / m_cfg.vector_cfg.vtype.vsew;
+      } else {
+        emul == 1;
+      }
+      if (emul > 1) {
+        vd % emul == 0;
+        vs1 % emul == 0;
+        vs2 % emul == 0;
+        vs3 % emul == 0;
+      }
+    }
+  }
+
+  // Some temporarily constraint to avoid illegal instruction
+  // TODO: Review these constraints
+  constraint temp_c {
+    (vm == 0) -> (vd != 0);
+  }
+
   `uvm_object_utils(riscv_vector_instr)
   `uvm_object_new
 
@@ -301,6 +336,22 @@ class riscv_vector_instr extends riscv_floating_point_instr;
       end
     end
     return 1'b1;
+  endfunction
+
+  virtual function string get_instr_name();
+    string name = super.get_instr_name();
+    if (category inside {LOAD, STORE}) begin
+      // Add eew before ".v" or "ff.v" suffix
+      if (instr_name inside {VLEFF_V, VLSEGEFF_V}) begin
+        name = name.substr(0, name.len() - 5);
+        name = $sformatf("%0s%0dFF.V", name, eew);
+      end else begin
+        name = name.substr(0, name.len() - 3);
+        name = $sformatf("%0s%0d.V", name, eew);
+      end
+      `uvm_info(`gfn, $sformatf("%0s -> %0s", super.get_instr_name(), name), UVM_LOW)
+    end
+    return name;
   endfunction
 
   // Convert the instruction to assembly code
@@ -448,6 +499,9 @@ class riscv_vector_instr extends riscv_floating_point_instr;
     vs2.rand_mode(has_vs2);
     vs3.rand_mode(has_vs3);
     vd.rand_mode(has_vd);
+    if (!(category inside {LOAD, STORE, AMO})) begin
+      load_store_solve_order_c.constraint_mode(0);
+    end
   endfunction : pre_randomize
 
   virtual function void set_rand_mode();
@@ -504,9 +558,14 @@ class riscv_vector_instr extends riscv_floating_point_instr;
     string suffix = instr_name.substr(prefix.len(), instr_name.len() - 1);
     return $sformatf("%0s%0d%0s", prefix, nfields + 1, suffix);
   endfunction
-  
+
+  function string add_eew(string instr_name, string prefix);
+    string suffix = instr_name.substr(prefix.len(), instr_name.len() - 1);
+    return $sformatf("%0s%0d%0s", prefix,  eew, suffix);
+  endfunction
+
   function bit check_sub_extension(string s, string literal);
     return s == literal;
   endfunction
-  
+
 endclass : riscv_vector_instr

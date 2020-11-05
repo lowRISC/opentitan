@@ -1,0 +1,23 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[tasks]
+slow sl
+fast fs
+single si
+
+[options]
+mode bmc
+depth 50
+
+[engines]
+smtbmc boolector
+
+[script]
+{{"-sv"|gen_reads}}
+
+prep -top {{top_level}}
+
+[files]
+{{files}}

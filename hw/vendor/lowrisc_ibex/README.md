@@ -5,7 +5,7 @@
 Ibex is a small and efficient, 32-bit, in-order RISC-V core with a 2-stage pipeline that implements
 the RV32IMC instruction set architecture.
 
-<p align="center"><img src="doc/images/blockdiagram.svg" width="650"></p>
+<p align="center"><img src="doc/03_reference/images/blockdiagram.svg" width="650"></p>
 
 This core was initially developed as part of the [PULP platform](https://www.pulp-platform.org)
 under the name "Zero-riscy" \[[1](https://doi.org/10.1109/PATMOS.2017.8106976)\], and has been

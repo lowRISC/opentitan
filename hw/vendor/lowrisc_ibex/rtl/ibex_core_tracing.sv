@@ -22,6 +22,7 @@ module ibex_core_tracing #(
     parameter bit                 ICacheECC        = 1'b0,
     parameter bit                 BranchPredictor  = 1'b0,
     parameter bit                 DbgTriggerEn     = 1'b0,
+    parameter int unsigned        DbgHwBreakNum    = 1,
     parameter bit                 SecureIbex       = 1'b0,
     parameter int unsigned        DmHaltAddr       = 32'h1A110800,
     parameter int unsigned        DmExceptionAddr  = 32'h1A110808
@@ -118,6 +119,7 @@ module ibex_core_tracing #(
     .ICacheECC        ( ICacheECC        ),
     .BranchPredictor  ( BranchPredictor  ),
     .DbgTriggerEn     ( DbgTriggerEn     ),
+    .DbgHwBreakNum    ( DbgHwBreakNum    ),
     .WritebackStage   ( WritebackStage   ),
     .SecureIbex       ( SecureIbex       ),
     .DmHaltAddr       ( DmHaltAddr       ),

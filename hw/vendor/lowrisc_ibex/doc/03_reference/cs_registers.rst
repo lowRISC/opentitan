@@ -309,7 +309,11 @@ Reset Value: ``0x0000_0000``
 
 Accessible in Debug Mode or M-Mode when trigger support is enabled (using the DbgTriggerEn parameter).
 
-Ibex implements a single trigger, therefore this register will always read as zero.
+Number of the currently selected trigger starting at 0.
+The number of triggers is configured by the DbgHwNumLen parameter.
+
+Writing a value larger than or equal to the number of supported triggers will write the highest valid index.
+This allows a debugger to detect the allowed number of triggers by reading back the value.
 
 .. _csr-tdata1:
 

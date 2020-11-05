@@ -304,7 +304,7 @@ module ibex_controller #(
                       ebrk_insn_prio,
                       store_err_prio,
                       load_err_prio}),
-             (ctrl_fsm_cs == FLUSH) & exc_req_q);
+             (ctrl_fsm_cs == FLUSH) & exc_req_q)
 
   ////////////////
   // Interrupts //
@@ -766,7 +766,10 @@ module ibex_controller #(
         // Leave all other signals as is to ensure CSRs and PC get set as if
         // core was entering exception handler, entry to debug mode will then
         // see the appropriate state and setup dpc correctly.
-        if (enter_debug_mode) begin
+        // If an EBREAK instruction is causing us to enter debug mode on the
+        // same cycle as a debug_req or single step, honor the EBREAK and
+        // proceed to DBG_TAKEN_ID.
+        if (enter_debug_mode && !(ebrk_insn_prio && ebreak_into_debug)) begin
           ctrl_fsm_ns = DBG_TAKEN_IF;
         end
       end // FLUSH
@@ -830,7 +833,7 @@ module ibex_controller #(
   // Assertions //
   ////////////////
 
-  `ASSERT(AlwaysInstrClearOnMispredict, nt_branch_mispredict_o -> instr_valid_clear_o);
+  `ASSERT(AlwaysInstrClearOnMispredict, nt_branch_mispredict_o -> instr_valid_clear_o)
 
   // Selectors must be known/valid.
   `ASSERT(IbexCtrlStateValid, ctrl_fsm_cs inside {

@@ -43,7 +43,7 @@ class riscv_instr_gen_config extends uvm_object;
   // SAME_VALUES_ALL_ELEMS - Using vmv.v.x to fill all the elements of the vreg with the same value as the one in the GPR selected
   // RANDOM_VALUES_VMV     - Using vmv.v.x + vslide1up.vx to randomize the contents of each vector element
   // RANDOM_VALUES_LOAD    - Using vle.v, same approach as RANDOM_VALUES_VMV but more efficient for big VLEN
-  vreg_init_method_t vreg_init_method = RANDOM_VALUES_VMV;
+  vreg_init_method_t     vreg_init_method = RANDOM_VALUES_VMV;
 
   // Associate array for delegation configuration for each exception and interrupt
   // When the bit is 1, the corresponding delegation is enabled.
@@ -411,16 +411,16 @@ class riscv_instr_gen_config extends uvm_object;
     !(tp inside {GP, RA, ZERO});
   }
 
+  // This reg is used in various places throughout the generator,
+  // so need more conservative constraints on it.
   constraint reserve_scratch_reg_c {
-    scratch_reg != ZERO;
-    scratch_reg != sp;
-    scratch_reg != tp;
+    !(scratch_reg inside {ZERO, sp, tp, ra, GP});
   }
 
+  // This reg is only used inside PMP exception routine,
+  // so we can be a bit looser with constraints.
   constraint reserve_pmp_reg_c {
-    pmp_reg != ZERO;
-    pmp_reg != sp;
-    pmp_reg != tp;
+    !(pmp_reg inside {ZERO, sp, tp});
   }
 
   constraint gpr_c {
