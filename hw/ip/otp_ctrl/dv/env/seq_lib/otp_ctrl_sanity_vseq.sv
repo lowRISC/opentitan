@@ -60,7 +60,7 @@ class otp_ctrl_sanity_vseq extends otp_ctrl_base_vseq;
 
       // after otp-init done, check status
       cfg.clk_rst_vif.wait_clks(1);
-      csr_rd_check(.ptr(ral.status), .compare_value(OtpIdle));
+      csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
 
       // get sram keys
       req_all_sram_keys();
@@ -100,12 +100,12 @@ class otp_ctrl_sanity_vseq extends otp_ctrl_base_vseq;
       end
 
       // check no error
-      csr_rd_check(.ptr(ral.status), .compare_value(OtpIdle));
+      csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
 
       // lock HW digests
       `uvm_info(`gfn, "Trigger HW digest calculation", UVM_HIGH)
       cal_hw_digests();
-      csr_rd_check(.ptr(ral.status), .compare_value(OtpIdle));
+      csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
     end
   endtask : body
 
