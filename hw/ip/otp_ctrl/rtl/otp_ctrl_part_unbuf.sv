@@ -102,7 +102,7 @@ module otp_ctrl_part_unbuf
     DataAddr = 1'b1
   } addr_sel_e;
 
-  state_e state_d;
+  state_e state_d, state_q;
   addr_sel_e otp_addr_sel;
   otp_err_e error_d, error_q;
 
@@ -110,7 +110,6 @@ module otp_ctrl_part_unbuf
   logic ecc_err;
 
   logic [SwWindowAddrWidth-1:0] tlul_addr_d, tlul_addr_q;
-  logic [StateWidth-1:0] state_q;
 
   // Output partition error state.
   assign error_o = error_q;
@@ -123,7 +122,7 @@ module otp_ctrl_part_unbuf
   `ASSERT_KNOWN(FsmStateKnown_A, state_q)
   always_comb begin : p_fsm
     // Default assignments
-    state_d = state_e'(state_q);
+    state_d = state_q;
 
     // Response to init request
     init_done_o = 1'b0;
@@ -343,14 +342,16 @@ module otp_ctrl_part_unbuf
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = state_e'(state_raw_q);
   prim_flop #(
     .Width(StateWidth),
     .ResetValue(StateWidth'(ResetSt))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d ),
-    .q_o ( state_q )
+    .d_i ( state_d     ),
+    .q_o ( state_raw_q )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs

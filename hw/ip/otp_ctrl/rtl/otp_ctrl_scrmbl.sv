@@ -210,8 +210,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
   } state_e;
 
   localparam int CntWidth = $clog2(NumPresentRounds+1);
-  state_e state_d;
-  logic [StateWidth-1:0] state_q;
+  state_e state_d, state_q;
   logic [CntWidth-1:0] cnt_d, cnt_q;
   logic cnt_clr, cnt_en;
   logic valid_d, valid_q;
@@ -224,7 +223,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
                              cnt_q;
 
   always_comb begin : p_fsm
-    state_d          = state_e'(state_q);
+    state_d          = state_q;
     is_first_d       = is_first_q;
     sel_d            = sel_q;
     digest_mode_d    = digest_mode_q;
@@ -399,14 +398,16 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = state_e'(state_raw_q);
   prim_flop #(
     .Width(StateWidth),
     .ResetValue(StateWidth'(IdleSt))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d ),
-    .q_o ( state_q )
+    .d_i ( state_d     ),
+    .q_o ( state_raw_q )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs

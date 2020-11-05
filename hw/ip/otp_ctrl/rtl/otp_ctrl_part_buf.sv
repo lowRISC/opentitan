@@ -133,12 +133,11 @@ module otp_ctrl_part_buf
     DigOffset
   } base_sel_e;
 
-  state_e state_d;
+  state_e state_d, state_q;
   otp_err_e error_d, error_q;
   data_sel_e data_sel;
   base_sel_e base_sel;
   access_e dout_gate_d, dout_gate_q;
-  logic [StateWidth-1:0] state_q;
   logic [CntWidth-1:0] cnt_d, cnt_q;
   logic cnt_en, cnt_clr;
   logic ecc_err;
@@ -154,7 +153,7 @@ module otp_ctrl_part_buf
   assign otp_cmd_o   = OtpRead;
 
   always_comb begin : p_fsm
-    state_d = state_e'(state_q);
+    state_d = state_q;
 
     // Redundantly encoded lock signal for buffer regs.
     dout_gate_d = dout_gate_q;
@@ -609,14 +608,16 @@ module otp_ctrl_part_buf
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = state_e'(state_raw_q);
   prim_flop #(
     .Width(StateWidth),
     .ResetValue(StateWidth'(ResetSt))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d ),
-    .q_o ( state_q )
+    .d_i ( state_d     ),
+    .q_o ( state_raw_q )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs

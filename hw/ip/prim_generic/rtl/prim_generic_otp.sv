@@ -133,7 +133,6 @@ module prim_generic_otp #(
 
   state_e state_d, state_q;
   otp_ctrl_pkg::otp_err_e err_d, err_q;
-  logic [StateWidth-1:0] state_o;
   logic valid_d, valid_q;
   logic req, wren, rvalid;
   logic [1:0] rerror;
@@ -144,7 +143,6 @@ module prim_generic_otp #(
   logic [SizeWidth-1:0] cnt_d, cnt_q;
   logic cnt_clr, cnt_en;
 
-  assign state_q = state_e'(state_o);
   assign cnt_d = (cnt_clr) ? '0           :
                  (cnt_en)  ? cnt_q + 1'b1 : cnt_q;
 
@@ -305,14 +303,16 @@ module prim_generic_otp #(
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] state_raw_q;
+  assign state_q = state_e'(state_raw_q);
   prim_flop #(
     .Width(StateWidth),
     .ResetValue(StateWidth'(ResetSt))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d ),
-    .q_o ( state_o )
+    .d_i ( state_d     ),
+    .q_o ( state_raw_q )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
