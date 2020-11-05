@@ -15,13 +15,14 @@
 
 void hmac_init(hmac_cfg_t hmac_cfg) {
   REG32(HMAC0_BASE_ADDR + HMAC_CFG_REG_OFFSET) =
-      hmac_cfg.input_endian_swap << HMAC_CFG_ENDIAN_SWAP | 1 << hmac_cfg.mode |
-      hmac_cfg.digest_endian_swap << HMAC_CFG_DIGEST_SWAP;
+      hmac_cfg.input_endian_swap << HMAC_CFG_ENDIAN_SWAP_BIT |
+      1 << hmac_cfg.mode |
+      hmac_cfg.digest_endian_swap << HMAC_CFG_DIGEST_SWAP_BIT;
   for (int i = 0; i < 8; i++) {
     REG32(HMAC0_BASE_ADDR + HMAC_KEY_0_REG_OFFSET + i * sizeof(uint32_t)) =
         hmac_cfg.keys[i];
   }
-  REG32(HMAC0_BASE_ADDR + HMAC_CMD_REG_OFFSET) = 1 << HMAC_CMD_HASH_START;
+  REG32(HMAC0_BASE_ADDR + HMAC_CMD_REG_OFFSET) = 1 << HMAC_CMD_HASH_START_BIT;
 };
 
 static int hmac_fifo_depth(void) {
@@ -68,13 +69,13 @@ void hmac_update(const void *data, size_t size_in_bytes) {
 }
 
 void hmac_done(uint32_t *digest) {
-  REG32(HMAC0_BASE_ADDR + HMAC_CMD_REG_OFFSET) = 1 << HMAC_CMD_HASH_PROCESS;
+  REG32(HMAC0_BASE_ADDR + HMAC_CMD_REG_OFFSET) = 1 << HMAC_CMD_HASH_PROCESS_BIT;
   while (!((REG32(HMAC0_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET) >>
-            HMAC_INTR_STATE_HMAC_DONE) &
+            HMAC_INTR_STATE_HMAC_DONE_BIT) &
            0x1)) {
   }
   REG32(HMAC0_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET) =
-      1 << HMAC_INTR_STATE_HMAC_DONE;
+      1 << HMAC_INTR_STATE_HMAC_DONE_BIT;
 
   for (uint32_t i = 0; i < 8; i++) {
     *digest++ = REG32(HMAC0_BASE_ADDR + HMAC_DIGEST_0_REG_OFFSET +

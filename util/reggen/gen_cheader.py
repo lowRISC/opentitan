@@ -105,7 +105,7 @@ def gen_cdefine_register(outstr, reg, comp, width, rnames, existing_defines):
         if field['bitinfo'][1] == 1:
             # single bit
             genout(outstr,
-                   gen_define(dname, [], str(fieldlsb), existing_defines))
+                   gen_define(dname + '_BIT', [], str(fieldlsb), existing_defines))
         else:
             # multiple bits (unless it is the whole register)
             if field['bitinfo'][1] != width:
@@ -247,7 +247,7 @@ def gen_cdefines_interrupt_field(outstr, interrupt, component, regwidth,
 
     if interrupt['bitinfo'][1] == 1:
         # single bit
-        genout(outstr, gen_define(defname, [], str(fieldlsb),
+        genout(outstr, gen_define(defname + '_BIT', [], str(fieldlsb),
                                   existing_defines))
     else:
         # multiple bits (unless it is the whole register)

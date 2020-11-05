@@ -30,7 +30,7 @@ dif_otp_ctrl_result_t dif_otp_ctrl_init(dif_otp_ctrl_params_t params,
 static bool checks_are_locked(const dif_otp_ctrl_t *otp) {
   uint32_t locked = mmio_region_read32(otp->params.base_addr,
                                        OTP_CTRL_CHECK_REGWEN_REG_OFFSET);
-  return !bitfield_bit32_read(locked, OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN);
+  return !bitfield_bit32_read(locked, OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT);
 }
 
 dif_otp_ctrl_lockable_result_t dif_otp_ctrl_configure(
@@ -64,7 +64,7 @@ dif_otp_ctrl_lockable_result_t dif_otp_ctrl_check_integrity(
   }
 
   uint32_t reg =
-      bitfield_bit32_write(0, OTP_CTRL_CHECK_TRIGGER_INTEGRITY, true);
+      bitfield_bit32_write(0, OTP_CTRL_CHECK_TRIGGER_INTEGRITY_BIT, true);
   mmio_region_write32(otp->params.base_addr, OTP_CTRL_CHECK_TRIGGER_REG_OFFSET,
                       reg);
 
@@ -81,7 +81,7 @@ dif_otp_ctrl_lockable_result_t dif_otp_ctrl_check_consistency(
   }
 
   uint32_t reg =
-      bitfield_bit32_write(0, OTP_CTRL_CHECK_TRIGGER_CONSISTENCY, true);
+      bitfield_bit32_write(0, OTP_CTRL_CHECK_TRIGGER_CONSISTENCY_BIT, true);
   mmio_region_write32(otp->params.base_addr, OTP_CTRL_CHECK_TRIGGER_REG_OFFSET,
                       reg);
 
@@ -94,7 +94,7 @@ dif_otp_ctrl_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp) {
   }
 
   uint32_t reg =
-      bitfield_bit32_write(0, OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN, true);
+      bitfield_bit32_write(0, OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT, true);
   mmio_region_write32(otp->params.base_addr, OTP_CTRL_CHECK_REGWEN_REG_OFFSET,
                       reg);
 
@@ -117,11 +117,11 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
   switch (partition) {
     case kDifOtpCtrlPartitionCreatorSwCfg:
       *reg_offset = OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET;
-      *index = OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_CREATOR_SW_CFG_READ_LOCK;
+      *index = OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_CREATOR_SW_CFG_READ_LOCK_BIT;
       break;
     case kDifOtpCtrlPartitionOwnerSwCfg:
       *reg_offset = OTP_CTRL_OWNER_SW_CFG_READ_LOCK_REG_OFFSET;
-      *index = OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OWNER_SW_CFG_READ_LOCK;
+      *index = OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OWNER_SW_CFG_READ_LOCK_BIT;
       break;
     default:
       return false;
@@ -168,10 +168,10 @@ dif_otp_ctrl_result_t dif_otp_ctrl_reading_is_locked(
 static bool irq_index(dif_otp_ctrl_irq_t irq, bitfield_bit32_index_t *index) {
   switch (irq) {
     case kDifOtpCtrlIrqDone:
-      *index = OTP_CTRL_INTR_COMMON_OTP_OPERATION_DONE;
+      *index = OTP_CTRL_INTR_COMMON_OTP_OPERATION_DONE_BIT;
       break;
     case kDifOtpCtrlIrqError:
-      *index = OTP_CTRL_INTR_COMMON_OTP_ERROR;
+      *index = OTP_CTRL_INTR_COMMON_OTP_ERROR_BIT;
       break;
     default:
       return false;
@@ -322,23 +322,24 @@ dif_otp_ctrl_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
 
   static const bitfield_bit32_index_t kIndices[] = {
       [kDifOtpCtrlStatusCodeCreatorSwCfgError] =
-          OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR,
+          OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR_BIT,
       [kDifOtpCtrlStatusCodeOwnerSwCfgError] =
-          OTP_CTRL_STATUS_OWNER_SW_CFG_ERROR,
-      [kDifOtpCtrlStatusCodeHwCfgError] = OTP_CTRL_STATUS_HW_CFG_ERROR,
-      [kDifOtpCtrlStatusCodeLifeCycleError] = OTP_CTRL_STATUS_LIFE_CYCLE_ERROR,
-      [kDifOtpCtrlStatusCodeSecret0Error] = OTP_CTRL_STATUS_SECRET0_ERROR,
-      [kDifOtpCtrlStatusCodeSecret1Error] = OTP_CTRL_STATUS_SECRET1_ERROR,
-      [kDifOtpCtrlStatusCodeSecret2Error] = OTP_CTRL_STATUS_SECRET2_ERROR,
-      [kDifOtpCtrlStatusCodeDaiError] = OTP_CTRL_STATUS_DAI_ERROR,
-      [kDifOtpCtrlStatusCodeLciError] = OTP_CTRL_STATUS_LCI_ERROR,
-      [kDifOtpCtrlStatusCodeTimeoutError] = OTP_CTRL_STATUS_TIMEOUT_ERROR,
-      [kDifOtpCtrlStatusCodeLfsrError] = OTP_CTRL_STATUS_LFSR_FSM_ERROR,
+          OTP_CTRL_STATUS_OWNER_SW_CFG_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeHwCfgError] = OTP_CTRL_STATUS_HW_CFG_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeLifeCycleError] =
+          OTP_CTRL_STATUS_LIFE_CYCLE_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeSecret0Error] = OTP_CTRL_STATUS_SECRET0_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeSecret1Error] = OTP_CTRL_STATUS_SECRET1_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeSecret2Error] = OTP_CTRL_STATUS_SECRET2_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeDaiError] = OTP_CTRL_STATUS_DAI_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeLciError] = OTP_CTRL_STATUS_LCI_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeTimeoutError] = OTP_CTRL_STATUS_TIMEOUT_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeLfsrError] = OTP_CTRL_STATUS_LFSR_FSM_ERROR_BIT,
       [kDifOtpCtrlStatusCodeScramblingError] =
-          OTP_CTRL_STATUS_SCRAMBLING_FSM_ERROR,
-      [kDifOtpCtrlStatusCodeKdfError] = OTP_CTRL_STATUS_KEY_DERIV_FSM_ERROR,
-      [kDifOtpCtrlStatusCodeDaiIdle] = OTP_CTRL_STATUS_DAI_IDLE,
-      [kDifOtpCtrlStatusCodeCheckPending] = OTP_CTRL_STATUS_CHECK_PENDING,
+          OTP_CTRL_STATUS_SCRAMBLING_FSM_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeKdfError] = OTP_CTRL_STATUS_KEY_DERIV_FSM_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeDaiIdle] = OTP_CTRL_STATUS_DAI_IDLE_BIT,
+      [kDifOtpCtrlStatusCodeCheckPending] = OTP_CTRL_STATUS_CHECK_PENDING_BIT,
   };
 
   status->codes = 0;
@@ -548,7 +549,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read_start(
   uint32_t busy = mmio_region_read32(otp->params.base_addr,
                                      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN)) {
+          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
     return kDifOtpCtrlDaiBusy;
   }
 
@@ -556,7 +557,8 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read_start(
   mmio_region_write32(otp->params.base_addr,
                       OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, address);
 
-  uint32_t cmd = bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_READ, true);
+  uint32_t cmd =
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_READ_BIT, true);
   mmio_region_write32(otp->params.base_addr,
                       OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
 
@@ -572,7 +574,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read32_end(const dif_otp_ctrl_t *otp,
   uint32_t busy = mmio_region_read32(otp->params.base_addr,
                                      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN)) {
+          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
     return kDifOtpCtrlDaiBusy;
   }
 
@@ -590,7 +592,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_read64_end(const dif_otp_ctrl_t *otp,
   uint32_t busy = mmio_region_read32(otp->params.base_addr,
                                      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN)) {
+          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
     return kDifOtpCtrlDaiBusy;
   }
 
@@ -633,7 +635,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program32(
   uint32_t busy = mmio_region_read32(otp->params.base_addr,
                                      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN)) {
+          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
     return kDifOtpCtrlDaiBusy;
   }
 
@@ -645,7 +647,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program32(
                       OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, value);
 
   uint32_t cmd =
-      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WRITE, true);
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WRITE_BIT, true);
   mmio_region_write32(otp->params.base_addr,
                       OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
 
@@ -679,7 +681,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program64(
   uint32_t busy = mmio_region_read32(otp->params.base_addr,
                                      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN)) {
+          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
     return kDifOtpCtrlDaiBusy;
   }
 
@@ -694,7 +696,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_program64(
                       OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET, value >> 32);
 
   uint32_t cmd =
-      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WRITE, true);
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WRITE_BIT, true);
   mmio_region_write32(otp->params.base_addr,
                       OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
 
@@ -723,7 +725,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_digest(
   uint32_t busy = mmio_region_read32(otp->params.base_addr,
                                      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   if (!bitfield_bit32_read(
-          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN)) {
+          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
     return kDifOtpCtrlDaiBusy;
   }
 
@@ -743,8 +745,9 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_dai_digest(
                         digest >> 32);
   }
 
-  bitfield_bit32_index_t cmd_bit = is_sw ? OTP_CTRL_DIRECT_ACCESS_CMD_WRITE
-                                         : OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST;
+  bitfield_bit32_index_t cmd_bit = is_sw
+                                       ? OTP_CTRL_DIRECT_ACCESS_CMD_WRITE_BIT
+                                       : OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST_BIT;
   uint32_t cmd = bitfield_bit32_write(0, cmd_bit, true);
   mmio_region_write32(otp->params.base_addr,
                       OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);

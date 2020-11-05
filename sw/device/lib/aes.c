@@ -16,12 +16,12 @@
 
 void aes_init(aes_cfg_t aes_cfg) {
   uint32_t cfg_val =
-      (aes_cfg.operation << AES_CTRL_SHADOWED_OPERATION) |
+      (aes_cfg.operation << AES_CTRL_SHADOWED_OPERATION_BIT) |
       ((aes_cfg.mode & AES_CTRL_SHADOWED_MODE_MASK)
        << AES_CTRL_SHADOWED_MODE_OFFSET) |
       ((aes_cfg.key_len & AES_CTRL_SHADOWED_KEY_LEN_MASK)
        << AES_CTRL_SHADOWED_KEY_LEN_OFFSET) |
-      (aes_cfg.manual_operation << AES_CTRL_SHADOWED_MANUAL_OPERATION);
+      (aes_cfg.manual_operation << AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT);
   REG32(AES0_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET) = cfg_val;
   REG32(AES0_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET) = cfg_val;
 };
@@ -99,21 +99,22 @@ void aes_data_get(void *data) {
 
 bool aes_data_ready(void) {
   return (REG32(AES0_BASE_ADDR + AES_STATUS_REG_OFFSET) &
-          (0x1u << AES_STATUS_INPUT_READY));
+          (0x1u << AES_STATUS_INPUT_READY_BIT));
 }
 
 bool aes_data_valid(void) {
   return (REG32(AES0_BASE_ADDR + AES_STATUS_REG_OFFSET) &
-          (0x1u << AES_STATUS_OUTPUT_VALID));
+          (0x1u << AES_STATUS_OUTPUT_VALID_BIT));
 }
 
 bool aes_idle(void) {
   return (REG32(AES0_BASE_ADDR + AES_STATUS_REG_OFFSET) &
-          (0x1u << AES_STATUS_IDLE));
+          (0x1u << AES_STATUS_IDLE_BIT));
 }
 
 void aes_manual_trigger(void) {
-  REG32(AES0_BASE_ADDR + AES_TRIGGER_REG_OFFSET) = 0x1u << AES_TRIGGER_START;
+  REG32(AES0_BASE_ADDR + AES_TRIGGER_REG_OFFSET) = 0x1u
+                                                   << AES_TRIGGER_START_BIT;
 }
 
 void aes_clear(void) {
@@ -122,15 +123,15 @@ void aes_clear(void) {
   }
 
   // Disable autostart
-  uint32_t cfg_val = 0x1u << AES_CTRL_SHADOWED_MANUAL_OPERATION;
+  uint32_t cfg_val = 0x1u << AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT;
   REG32(AES0_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET) = cfg_val;
   REG32(AES0_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET) = cfg_val;
 
   // Clear internal key and output registers
   REG32(AES0_BASE_ADDR + AES_TRIGGER_REG_OFFSET) =
-      (0x1u << AES_TRIGGER_KEY_CLEAR) | (0x1u << AES_TRIGGER_IV_CLEAR) |
-      (0x1u << AES_TRIGGER_DATA_IN_CLEAR) |
-      (0x1u << AES_TRIGGER_DATA_OUT_CLEAR);
+      (0x1u << AES_TRIGGER_KEY_CLEAR_BIT) | (0x1u << AES_TRIGGER_IV_CLEAR_BIT) |
+      (0x1u << AES_TRIGGER_DATA_IN_CLEAR_BIT) |
+      (0x1u << AES_TRIGGER_DATA_OUT_CLEAR_BIT);
 
   // Wait for output not valid, and input ready
   while (!(!aes_data_valid() && aes_data_ready())) {

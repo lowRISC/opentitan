@@ -93,7 +93,7 @@ TEST_F(IrqStateGetTest, NullArgs) {
 
 TEST_F(IrqStateGetTest, Success) {
   // Get the first IRQ state.
-  EXPECT_READ32(OTBN_INTR_STATE_REG_OFFSET, {{OTBN_INTR_STATE_DONE, true}});
+  EXPECT_READ32(OTBN_INTR_STATE_REG_OFFSET, {{OTBN_INTR_STATE_DONE_BIT, true}});
 
   dif_otbn_enable_t done_state = kDifOtbnDisable;
   dif_otbn_result_t result =
@@ -102,7 +102,7 @@ TEST_F(IrqStateGetTest, Success) {
   EXPECT_EQ(done_state, kDifOtbnEnable);
 
   // Get the last IRQ state.
-  EXPECT_READ32(OTBN_INTR_STATE_REG_OFFSET, {{OTBN_INTR_STATE_ERR, false}});
+  EXPECT_READ32(OTBN_INTR_STATE_REG_OFFSET, {{OTBN_INTR_STATE_ERR_BIT, false}});
 
   dif_otbn_enable_t err_state = kDifOtbnEnable;
   result = dif_otbn_irq_state_get(&dif_otbn_, kDifOtbnInterruptErr, &err_state);
@@ -120,14 +120,14 @@ TEST_F(IrqStateClearTest, NullArgs) {
 
 TEST_F(IrqStateClearTest, Success) {
   // Clear the first IRQ state.
-  EXPECT_WRITE32(OTBN_INTR_STATE_REG_OFFSET, {{OTBN_INTR_STATE_DONE, 1}});
+  EXPECT_WRITE32(OTBN_INTR_STATE_REG_OFFSET, {{OTBN_INTR_STATE_DONE_BIT, 1}});
 
   dif_otbn_result_t result =
       dif_otbn_irq_state_clear(&dif_otbn_, kDifOtbnInterruptDone);
   EXPECT_EQ(result, kDifOtbnOk);
 
   // Clear the last IRQ state.
-  EXPECT_WRITE32(OTBN_INTR_STATE_REG_OFFSET, {{OTBN_INTR_STATE_ERR, 1}});
+  EXPECT_WRITE32(OTBN_INTR_STATE_REG_OFFSET, {{OTBN_INTR_STATE_ERR_BIT, 1}});
 
   result = dif_otbn_irq_state_clear(&dif_otbn_, kDifOtbnInterruptErr);
   EXPECT_EQ(result, kDifOtbnOk);
@@ -211,7 +211,7 @@ TEST_F(IrqControlTest, NullArgs) {
 TEST_F(IrqControlTest, Success) {
   // Enable first IRQ.
   EXPECT_MASK32(OTBN_INTR_ENABLE_REG_OFFSET,
-                {{OTBN_INTR_ENABLE_DONE, 0x1, true}});
+                {{OTBN_INTR_ENABLE_DONE_BIT, 0x1, true}});
 
   dif_otbn_result_t result =
       dif_otbn_irq_control(&dif_otbn_, kDifOtbnInterruptDone, kDifOtbnEnable);
@@ -219,7 +219,7 @@ TEST_F(IrqControlTest, Success) {
 
   // Disable last IRQ.
   EXPECT_MASK32(OTBN_INTR_ENABLE_REG_OFFSET,
-                {{OTBN_INTR_ENABLE_ERR, 0x1, false}});
+                {{OTBN_INTR_ENABLE_ERR_BIT, 0x1, false}});
 
   result =
       dif_otbn_irq_control(&dif_otbn_, kDifOtbnInterruptErr, kDifOtbnDisable);
@@ -235,14 +235,16 @@ TEST_F(IrqForceTest, NullArgs) {
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
-  EXPECT_MASK32(OTBN_INTR_TEST_REG_OFFSET, {{OTBN_INTR_TEST_DONE, 0x1, true}});
+  EXPECT_MASK32(OTBN_INTR_TEST_REG_OFFSET,
+                {{OTBN_INTR_TEST_DONE_BIT, 0x1, true}});
 
   dif_otbn_result_t result =
       dif_otbn_irq_force(&dif_otbn_, kDifOtbnInterruptDone);
   EXPECT_EQ(result, kDifOtbnOk);
 
   // Force last IRQ.
-  EXPECT_MASK32(OTBN_INTR_TEST_REG_OFFSET, {{OTBN_INTR_TEST_ERR, 0x1, true}});
+  EXPECT_MASK32(OTBN_INTR_TEST_REG_OFFSET,
+                {{OTBN_INTR_TEST_ERR_BIT, 0x1, true}});
 
   result = dif_otbn_irq_force(&dif_otbn_, kDifOtbnInterruptErr);
   EXPECT_EQ(result, kDifOtbnOk);
@@ -281,7 +283,7 @@ TEST_F(StartTest, Success) {
   EXPECT_WRITE32(OTBN_START_ADDR_REG_OFFSET, 4);
 
   // Set start command bit.
-  EXPECT_WRITE32(OTBN_CMD_REG_OFFSET, {{OTBN_CMD_START, 1}});
+  EXPECT_WRITE32(OTBN_CMD_REG_OFFSET, {{OTBN_CMD_START_BIT, 1}});
 
   dif_otbn_result_t result = dif_otbn_start(&dif_otbn_, 4);
   EXPECT_EQ(result, kDifOtbnOk);
@@ -312,7 +314,7 @@ TEST_F(IsBusyTest, NullArgs) {
 }
 
 TEST_F(IsBusyTest, Success) {
-  EXPECT_READ32(OTBN_STATUS_REG_OFFSET, {{OTBN_STATUS_BUSY, true}});
+  EXPECT_READ32(OTBN_STATUS_REG_OFFSET, {{OTBN_STATUS_BUSY_BIT, true}});
 
   bool busy = false;
   dif_otbn_result_t result = dif_otbn_is_busy(&dif_otbn_, &busy);

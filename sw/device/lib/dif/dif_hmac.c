@@ -52,13 +52,13 @@ static bool irq_bit_offset_get(dif_hmac_interrupt_t irq_type,
   ptrdiff_t offset;
   switch (irq_type) {
     case kDifHmacInterruptHmacDone:
-      offset = HMAC_INTR_COMMON_HMAC_DONE;
+      offset = HMAC_INTR_COMMON_HMAC_DONE_BIT;
       break;
     case kDifHmacInterruptFifoEmpty:
-      offset = HMAC_INTR_COMMON_FIFO_EMPTY;
+      offset = HMAC_INTR_COMMON_FIFO_EMPTY_BIT;
       break;
     case kDifHmacInterruptHmacErr:
-      offset = HMAC_INTR_COMMON_HMAC_ERR;
+      offset = HMAC_INTR_COMMON_HMAC_ERR_BIT;
       break;
     default:
       return false;
@@ -84,16 +84,16 @@ dif_hmac_result_t dif_hmac_init(const dif_hmac_config_t *config,
 
   // Clear INTER.
   mmio_region_write32(config->base_addr, HMAC_INTR_STATE_REG_OFFSET,
-                      (1 << HMAC_INTR_STATE_HMAC_DONE) |
-                          (1 << HMAC_INTR_STATE_FIFO_EMPTY) |
-                          (1 << HMAC_INTR_STATE_HMAC_ERR));
+                      (1 << HMAC_INTR_STATE_HMAC_DONE_BIT) |
+                          (1 << HMAC_INTR_STATE_FIFO_EMPTY_BIT) |
+                          (1 << HMAC_INTR_STATE_HMAC_ERR_BIT));
 
   uint32_t device_config = 0;
 
   // Set the byte-order of the input message.
   switch (config->message_endianness) {
     case kDifHmacEndiannessBig:
-      device_config |= (1 << HMAC_CFG_ENDIAN_SWAP);
+      device_config |= (1 << HMAC_CFG_ENDIAN_SWAP_BIT);
       break;
     case kDifHmacEndiannessLittle:
       break;
@@ -104,7 +104,7 @@ dif_hmac_result_t dif_hmac_init(const dif_hmac_config_t *config,
   // Set the byte-order of the digest.
   switch (config->digest_endianness) {
     case kDifHmacEndiannessBig:
-      device_config |= (1 << HMAC_CFG_DIGEST_SWAP);
+      device_config |= (1 << HMAC_CFG_DIGEST_SWAP_BIT);
       break;
     case kDifHmacEndiannessLittle:
       break;
@@ -235,7 +235,7 @@ dif_hmac_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
 
   // Disable SHA256 while configuring and to clear the digest.
   mmio_region_nonatomic_clear_bit32(hmac->base_addr, HMAC_CFG_REG_OFFSET,
-                                    HMAC_CFG_SHA_EN);
+                                    HMAC_CFG_SHA_EN_BIT);
 
   // Set the HMAC key.
   // TODO Static assert register layout.
@@ -245,11 +245,11 @@ dif_hmac_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
   // Set HMAC to process in HMAC mode (not SHA256-only mode).
   mmio_region_nonatomic_set_mask32(
       hmac->base_addr, HMAC_CFG_REG_OFFSET,
-      (1 << HMAC_CFG_SHA_EN) | (1 << HMAC_CFG_HMAC_EN), 0);
+      (1 << HMAC_CFG_SHA_EN_BIT) | (1 << HMAC_CFG_HMAC_EN_BIT), 0);
 
   // Begin HMAC operation.
   mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_CMD_REG_OFFSET,
-                                  HMAC_CMD_HASH_START);
+                                  HMAC_CMD_HASH_START_BIT);
   return kDifHmacOk;
 }
 
@@ -260,19 +260,19 @@ dif_hmac_result_t dif_hmac_mode_sha256_start(const dif_hmac_t *hmac) {
 
   // Disable SHA256 while configuring and to clear the digest.
   mmio_region_nonatomic_clear_bit32(hmac->base_addr, HMAC_CFG_REG_OFFSET,
-                                    HMAC_CFG_SHA_EN);
+                                    HMAC_CFG_SHA_EN_BIT);
 
   // Disable HMAC mode.
   mmio_region_nonatomic_clear_bit32(hmac->base_addr, HMAC_CFG_REG_OFFSET,
-                                    HMAC_CFG_HMAC_EN);
+                                    HMAC_CFG_HMAC_EN_BIT);
 
   // Set HMAC to process in SHA256-only mode.
   mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_CFG_REG_OFFSET,
-                                  HMAC_CFG_SHA_EN);
+                                  HMAC_CFG_SHA_EN_BIT);
 
   // Begin SHA256-only operation.
   mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_CMD_REG_OFFSET,
-                                  HMAC_CMD_HASH_START);
+                                  HMAC_CMD_HASH_START_BIT);
 
   return kDifHmacOk;
 }
@@ -351,7 +351,7 @@ dif_hmac_result_t dif_hmac_process(const dif_hmac_t *hmac) {
   }
 
   mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_CMD_REG_OFFSET,
-                                  HMAC_CMD_HASH_PROCESS);
+                                  HMAC_CMD_HASH_PROCESS_BIT);
   return kDifHmacOk;
 }
 
@@ -363,12 +363,12 @@ dif_hmac_digest_result_t dif_hmac_digest_read(const dif_hmac_t *hmac,
 
   // Check if hmac_done is asserted.
   bool done = mmio_region_get_bit32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
-                                    HMAC_INTR_STATE_HMAC_DONE);
+                                    HMAC_INTR_STATE_HMAC_DONE_BIT);
 
   if (done) {
     // Clear hmac_done.
     mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
-                                    HMAC_INTR_STATE_HMAC_DONE);
+                                    HMAC_INTR_STATE_HMAC_DONE_BIT);
   } else {
     return kDifHmacDigestProcessing;
   }

@@ -17,17 +17,17 @@ const uint32_t kDifUartFifoSizeBytes = 32u;
 
 static bool uart_tx_full(const dif_uart_t *uart) {
   return mmio_region_get_bit32(uart->params.base_addr, UART_STATUS_REG_OFFSET,
-                               UART_STATUS_TXFULL);
+                               UART_STATUS_TXFULL_BIT);
 }
 
 static bool uart_tx_idle(const dif_uart_t *uart) {
   return mmio_region_get_bit32(uart->params.base_addr, UART_STATUS_REG_OFFSET,
-                               UART_STATUS_TXIDLE);
+                               UART_STATUS_TXIDLE_BIT);
 }
 
 static bool uart_rx_empty(const dif_uart_t *uart) {
   return mmio_region_get_bit32(uart->params.base_addr, UART_STATUS_REG_OFFSET,
-                               UART_STATUS_RXEMPTY);
+                               UART_STATUS_RXEMPTY_BIT);
 }
 
 static uint8_t uart_rx_fifo_read(const dif_uart_t *uart) {
@@ -52,28 +52,28 @@ static bool uart_irq_offset_get(dif_uart_irq_t irq_type,
   ptrdiff_t offset;
   switch (irq_type) {
     case kDifUartIrqTxWatermark:
-      offset = UART_INTR_STATE_TX_WATERMARK;
+      offset = UART_INTR_STATE_TX_WATERMARK_BIT;
       break;
     case kDifUartIrqRxWatermark:
-      offset = UART_INTR_STATE_RX_WATERMARK;
+      offset = UART_INTR_STATE_RX_WATERMARK_BIT;
       break;
     case kDifUartIrqTxEmpty:
-      offset = UART_INTR_STATE_TX_EMPTY;
+      offset = UART_INTR_STATE_TX_EMPTY_BIT;
       break;
     case kDifUartIrqRxOverflow:
-      offset = UART_INTR_STATE_RX_OVERFLOW;
+      offset = UART_INTR_STATE_RX_OVERFLOW_BIT;
       break;
     case kDifUartIrqRxFrameErr:
-      offset = UART_INTR_STATE_RX_FRAME_ERR;
+      offset = UART_INTR_STATE_RX_FRAME_ERR_BIT;
       break;
     case kDifUartIrqRxBreakErr:
-      offset = UART_INTR_STATE_RX_BREAK_ERR;
+      offset = UART_INTR_STATE_RX_BREAK_ERR_BIT;
       break;
     case kDifUartIrqRxTimeout:
-      offset = UART_INTR_STATE_RX_TIMEOUT;
+      offset = UART_INTR_STATE_RX_TIMEOUT_BIT;
       break;
     case kDifUartIrqRxParityErr:
-      offset = UART_INTR_STATE_RX_PARITY_ERR;
+      offset = UART_INTR_STATE_RX_PARITY_ERR_BIT;
       break;
     default:
       return false;
@@ -89,7 +89,7 @@ static void uart_reset(const dif_uart_t *uart) {
   // Write to the relevant bits clears the FIFOs.
   mmio_region_write32(
       uart->params.base_addr, UART_FIFO_CTRL_REG_OFFSET,
-      (1u << UART_FIFO_CTRL_RXRST) | (1u << UART_FIFO_CTRL_TXRST));
+      (1u << UART_FIFO_CTRL_RXRST_BIT) | (1u << UART_FIFO_CTRL_TXRST_BIT));
   mmio_region_write32(uart->params.base_addr, UART_OVRD_REG_OFFSET, 0u);
   mmio_region_write32(uart->params.base_addr, UART_TIMEOUT_CTRL_REG_OFFSET, 0u);
   mmio_region_write32(uart->params.base_addr, UART_INTR_ENABLE_REG_OFFSET, 0u);
@@ -172,19 +172,19 @@ dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
 
   // Set baudrate, enable RX and TX, configure parity.
   uint32_t reg = (nco_masked << UART_CTRL_NCO_OFFSET);
-  reg |= (1u << UART_CTRL_TX);
-  reg |= (1u << UART_CTRL_RX);
+  reg |= (1u << UART_CTRL_TX_BIT);
+  reg |= (1u << UART_CTRL_RX_BIT);
   if (config.parity_enable == kDifUartToggleEnabled) {
-    reg |= (1u << UART_CTRL_PARITY_EN);
+    reg |= (1u << UART_CTRL_PARITY_EN_BIT);
   }
   if (config.parity == kDifUartParityOdd) {
-    reg |= (1u << UART_CTRL_PARITY_ODD);
+    reg |= (1u << UART_CTRL_PARITY_ODD_BIT);
   }
   mmio_region_write32(uart->params.base_addr, UART_CTRL_REG_OFFSET, reg);
 
   // Reset RX/TX FIFOs.
-  reg = (1u << UART_FIFO_CTRL_RXRST);
-  reg |= (1u << UART_FIFO_CTRL_TXRST);
+  reg = (1u << UART_FIFO_CTRL_RXRST_BIT);
+  reg |= (1u << UART_FIFO_CTRL_TXRST_BIT);
   mmio_region_write32(uart->params.base_addr, UART_FIFO_CTRL_REG_OFFSET, reg);
 
   // Disable interrupts.
@@ -504,7 +504,8 @@ dif_uart_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
   if (reset == kDifUartFifoResetRx || reset == kDifUartFifoResetAll) {
     reg = bitfield_field32_write(reg,
                                  (bitfield_field32_t){
-                                     .mask = 0x1, .index = UART_FIFO_CTRL_RXRST,
+                                     .mask = 0x1,
+                                     .index = UART_FIFO_CTRL_RXRST_BIT,
                                  },
                                  1);
   }
@@ -512,7 +513,8 @@ dif_uart_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
   if (reset == kDifUartFifoResetTx || reset == kDifUartFifoResetAll) {
     reg = bitfield_field32_write(reg,
                                  (bitfield_field32_t){
-                                     .mask = 0x1, .index = UART_FIFO_CTRL_TXRST,
+                                     .mask = 0x1,
+                                     .index = UART_FIFO_CTRL_TXRST_BIT,
                                  },
                                  1);
   }
@@ -530,7 +532,8 @@ dif_uart_result_t dif_uart_loopback_set(const dif_uart_t *uart,
   }
 
   bitfield_field32_t field = {
-      .mask = 0x1, .index = loopback ? UART_CTRL_LLPBK : UART_CTRL_SLPBK,
+      .mask = 0x1,
+      .index = loopback ? UART_CTRL_LLPBK_BIT : UART_CTRL_SLPBK_BIT,
   };
 
   uint32_t reg =

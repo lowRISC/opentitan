@@ -60,16 +60,16 @@ class AbortTest : public SpiTest {};
 
 TEST_F(AbortTest, Immediate) {
   EXPECT_MASK32(SPI_DEVICE_CONTROL_REG_OFFSET,
-                {{SPI_DEVICE_CONTROL_ABORT, 0x1, 0x1}});
+                {{SPI_DEVICE_CONTROL_ABORT_BIT, 0x1, 0x1}});
   EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET,
-                {{SPI_DEVICE_STATUS_ABORT_DONE, 0x1}});
+                {{SPI_DEVICE_STATUS_ABORT_DONE_BIT, 0x1}});
 
   EXPECT_EQ(dif_spi_device_abort(&spi_), kDifSpiDeviceOk);
 }
 
 TEST_F(AbortTest, Delayed) {
   EXPECT_MASK32(SPI_DEVICE_CONTROL_REG_OFFSET,
-                {{SPI_DEVICE_CONTROL_ABORT, 0x1, 0x1}});
+                {{SPI_DEVICE_CONTROL_ABORT_BIT, 0x1, 0x1}});
   EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET, 0);
   EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET, 0);
   EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET, 0);
@@ -77,7 +77,7 @@ TEST_F(AbortTest, Delayed) {
   EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET, 0);
   EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET, 0);
   EXPECT_READ32(SPI_DEVICE_STATUS_REG_OFFSET,
-                {{SPI_DEVICE_STATUS_ABORT_DONE, 0x1}});
+                {{SPI_DEVICE_STATUS_ABORT_DONE_BIT, 0x1}});
 
   EXPECT_EQ(dif_spi_device_abort(&spi_), kDifSpiDeviceOk);
 }
@@ -91,10 +91,10 @@ class ConfigTest : public SpiTest {};
 TEST_F(ConfigTest, BasicInit) {
   EXPECT_WRITE32(SPI_DEVICE_CFG_REG_OFFSET,
                  {
-                     {SPI_DEVICE_CFG_CPOL, 0},
-                     {SPI_DEVICE_CFG_CPHA, 0},
-                     {SPI_DEVICE_CFG_TX_ORDER, 0},
-                     {SPI_DEVICE_CFG_RX_ORDER, 0},
+                     {SPI_DEVICE_CFG_CPOL_BIT, 0},
+                     {SPI_DEVICE_CFG_CPHA_BIT, 0},
+                     {SPI_DEVICE_CFG_TX_ORDER_BIT, 0},
+                     {SPI_DEVICE_CFG_RX_ORDER_BIT, 0},
                      {SPI_DEVICE_CFG_TIMER_V_OFFSET, config_.rx_fifo_timeout},
                  });
   EXPECT_WRITE32(SPI_DEVICE_RXF_ADDR_REG_OFFSET,
@@ -124,10 +124,10 @@ TEST_F(ConfigTest, ComplexInit) {
 
   EXPECT_WRITE32(SPI_DEVICE_CFG_REG_OFFSET,
                  {
-                     {SPI_DEVICE_CFG_CPOL, 1},
-                     {SPI_DEVICE_CFG_CPHA, 1},
-                     {SPI_DEVICE_CFG_TX_ORDER, 1},
-                     {SPI_DEVICE_CFG_RX_ORDER, 0},
+                     {SPI_DEVICE_CFG_CPOL_BIT, 1},
+                     {SPI_DEVICE_CFG_CPHA_BIT, 1},
+                     {SPI_DEVICE_CFG_TX_ORDER_BIT, 1},
+                     {SPI_DEVICE_CFG_RX_ORDER_BIT, 0},
                      {SPI_DEVICE_CFG_TIMER_V_OFFSET, config_.rx_fifo_timeout},
                  });
   EXPECT_WRITE32(SPI_DEVICE_RXF_ADDR_REG_OFFSET,
@@ -159,27 +159,27 @@ TEST_F(IrqTest, Get) {
   bool out;
 
   EXPECT_READ32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
-                {{SPI_DEVICE_INTR_STATE_RXF, 1}});
+                {{SPI_DEVICE_INTR_STATE_RXF_BIT, 1}});
   EXPECT_EQ(dif_spi_device_irq_is_pending(&spi_, kDifSpiDeviceIrqRxFull, &out),
             kDifSpiDeviceOk);
   EXPECT_TRUE(out);
 
-  EXPECT_READ32(
-      SPI_DEVICE_INTR_STATE_REG_OFFSET,
-      {{SPI_DEVICE_INTR_STATE_RXERR, 0}, {SPI_DEVICE_INTR_STATE_RXF, 1}});
+  EXPECT_READ32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
+                {{SPI_DEVICE_INTR_STATE_RXERR_BIT, 0},
+                 {SPI_DEVICE_INTR_STATE_RXF_BIT, 1}});
   EXPECT_EQ(dif_spi_device_irq_is_pending(&spi_, kDifSpiDeviceIrqRxError, &out),
             kDifSpiDeviceOk);
   EXPECT_FALSE(out);
 
   EXPECT_READ32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
-                {{SPI_DEVICE_INTR_STATE_TXUNDERFLOW, 1}});
+                {{SPI_DEVICE_INTR_STATE_TXUNDERFLOW_BIT, 1}});
   EXPECT_EQ(
       dif_spi_device_irq_is_pending(&spi_, kDifSpiDeviceIrqTxUnderflow, &out),
       kDifSpiDeviceOk);
   EXPECT_TRUE(out);
 
   EXPECT_READ32(SPI_DEVICE_INTR_STATE_REG_OFFSET,
-                {{SPI_DEVICE_INTR_STATE_TXLVL, 0}});
+                {{SPI_DEVICE_INTR_STATE_TXLVL_BIT, 0}});
   EXPECT_EQ(
       dif_spi_device_irq_is_pending(&spi_, kDifSpiDeviceIrqTxBelowLevel, &out),
       kDifSpiDeviceOk);
@@ -198,25 +198,25 @@ TEST_F(IrqTest, GetNull) {
 
 TEST_F(IrqTest, Enable) {
   EXPECT_MASK32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
-                {{SPI_DEVICE_INTR_ENABLE_RXF, 0x1, 1}});
+                {{SPI_DEVICE_INTR_ENABLE_RXF_BIT, 0x1, 1}});
   EXPECT_EQ(dif_spi_device_irq_set_enabled(&spi_, kDifSpiDeviceIrqRxFull,
                                            kDifSpiDeviceToggleEnabled),
             kDifSpiDeviceOk);
 
   EXPECT_MASK32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
-                {{SPI_DEVICE_INTR_ENABLE_RXERR, 0x1, 0}});
+                {{SPI_DEVICE_INTR_ENABLE_RXERR_BIT, 0x1, 0}});
   EXPECT_EQ(dif_spi_device_irq_set_enabled(&spi_, kDifSpiDeviceIrqRxError,
                                            kDifSpiDeviceToggleDisabled),
             kDifSpiDeviceOk);
 
   EXPECT_MASK32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
-                {{SPI_DEVICE_INTR_ENABLE_TXUNDERFLOW, 0x1, 1}});
+                {{SPI_DEVICE_INTR_ENABLE_TXUNDERFLOW_BIT, 0x1, 1}});
   EXPECT_EQ(dif_spi_device_irq_set_enabled(&spi_, kDifSpiDeviceIrqTxUnderflow,
                                            kDifSpiDeviceToggleEnabled),
             kDifSpiDeviceOk);
 
   EXPECT_MASK32(SPI_DEVICE_INTR_ENABLE_REG_OFFSET,
-                {{SPI_DEVICE_INTR_ENABLE_TXLVL, 0x1, 0}});
+                {{SPI_DEVICE_INTR_ENABLE_TXLVL_BIT, 0x1, 0}});
   EXPECT_EQ(dif_spi_device_irq_set_enabled(&spi_, kDifSpiDeviceIrqTxBelowLevel,
                                            kDifSpiDeviceToggleDisabled),
             kDifSpiDeviceOk);
@@ -230,22 +230,22 @@ TEST_F(IrqTest, EnableNull) {
 
 TEST_F(IrqTest, Force) {
   EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
-                 {{SPI_DEVICE_INTR_TEST_RXF, 1}});
+                 {{SPI_DEVICE_INTR_TEST_RXF_BIT, 1}});
   EXPECT_EQ(dif_spi_device_irq_force(&spi_, kDifSpiDeviceIrqRxFull),
             kDifSpiDeviceOk);
 
   EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
-                 {{SPI_DEVICE_INTR_TEST_RXERR, 1}});
+                 {{SPI_DEVICE_INTR_TEST_RXERR_BIT, 1}});
   EXPECT_EQ(dif_spi_device_irq_force(&spi_, kDifSpiDeviceIrqRxError),
             kDifSpiDeviceOk);
 
   EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
-                 {{SPI_DEVICE_INTR_TEST_TXUNDERFLOW, 1}});
+                 {{SPI_DEVICE_INTR_TEST_TXUNDERFLOW_BIT, 1}});
   EXPECT_EQ(dif_spi_device_irq_force(&spi_, kDifSpiDeviceIrqTxUnderflow),
             kDifSpiDeviceOk);
 
   EXPECT_WRITE32(SPI_DEVICE_INTR_TEST_REG_OFFSET,
-                 {{SPI_DEVICE_INTR_TEST_TXLVL, 1}});
+                 {{SPI_DEVICE_INTR_TEST_TXLVL_BIT, 1}});
   EXPECT_EQ(dif_spi_device_irq_force(&spi_, kDifSpiDeviceIrqTxBelowLevel),
             kDifSpiDeviceOk);
 }
