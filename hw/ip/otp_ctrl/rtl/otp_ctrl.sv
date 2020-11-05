@@ -288,7 +288,8 @@ module otp_ctrl
     // Aggregate all the errors from the partitions and the DAI/LCI
     for (int k = 0; k < NumPart+2; k++) begin
       // Set the error bit if the error status of the corresponding partition is nonzero.
-      part_errors_reduced[k] = |part_error[k];
+      // Need to reverse the order here since the field enumeration in hw2reg.status is reversed.
+      part_errors_reduced[NumPart+1-k] = |part_error[k];
       // Filter for critical error codes that should not occur in the field.
       otp_macro_failure_d |= part_error[k] inside {MacroError, MacroEccUncorrError};
 
@@ -302,13 +303,14 @@ module otp_ctrl
   end
 
   // Assign these to the status register.
-  assign hw2reg.status = {chk_pending,
-                          dai_idle,
-                          key_deriv_fsm_err,
-                          scrmbl_fsm_err,
-                          lfsr_fsm_err,
+  assign hw2reg.status = {part_errors_reduced,
                           chk_timeout,
-                          part_errors_reduced};
+                          lfsr_fsm_err,
+                          scrmbl_fsm_err,
+                          key_deriv_fsm_err,
+                          dai_idle,
+                          chk_pending};
+
   // If we got an error, we trigger an interrupt.
   assign otp_error = |part_errors_reduced | chk_timeout;
 

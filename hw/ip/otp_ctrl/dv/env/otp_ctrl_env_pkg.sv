@@ -64,15 +64,22 @@ package otp_ctrl_env_pkg;
     NumOtpCtrlIntr
   } otp_intr_e;
 
-  // TODO: needs update once design finalize
-  typedef enum bit [6:0] {
-    OtpCheckPending = 7'b0_000_001,
-    OtpIdle         = 7'b0_000_010,
-    OtpKeyFsmErr    = 7'b0_000_100,
-    OtpScrmblFsmErr = 7'b0_001_000,
-    OtpLfsrFsmErr   = 7'b0_010_000,
-    OtpChkTimeout   = 7'b0_100_000,
-    OptPartErrs     = 7'b1_000_000
+  typedef enum bit [14:0] {
+    OtpCheckPending     = 15'b100_0000_0000_0000,
+    OtpDaiIdle          = 15'b010_0000_0000_0000,
+    OtpDerivKeyFsmErr   = 15'b001_0000_0000_0000,
+    OtpScramblingFsmErr = 15'b000_1000_0000_0000,
+    OtpLfsrFsmErr       = 15'b000_0100_0000_0000,
+    OtpTimeoutErr       = 15'b000_0010_0000_0000,
+    OtpLciErr           = 15'b000_0001_0000_0000,
+    OtpDaiErr           = 15'b000_0000_1000_0000,
+    OtpLifeCycleErr     = 15'b000_0000_0100_0000,
+    OtpSecret2Err       = 15'b000_0000_0010_0000,
+    OtpSecret1Err       = 15'b000_0000_0001_0000,
+    OtpSecret0Err       = 15'b000_0000_0000_1000,
+    OtpHwCfgErr         = 15'b000_0000_0000_0100,
+    OtpOwnerSwCfgErr    = 15'b000_0000_0000_0010,
+    OtpCreatorSwCfgErr  = 15'b000_0000_0000_0001
   } otp_status_e;
 
   // functions
