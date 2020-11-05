@@ -1,0 +1,185 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:fpv:ibex_data_ind_timing:0.1"
+description: "Formal test for data independent timing"
+
+filesets:
+  testbench:
+    depend:
+      - lowrisc:ibex:ibex_pkg
+      - lowrisc:ibex:ibex_multdiv
+      - lowrisc:util:sv2v
+    files:
+      - run.sby.j2 : {file_type: sbyConfigTemplate}
+      - formal_tb_frag.svh : {file_type: systemVerilogSource, is_include_file: true}
+      - formal_tb.sv : {file_type: systemVerilogSource}
+  op_mull:
+    files:
+      - operation_mull.svh : {file_type: systemVerilogSource, copyto: multdiv_operation.svh, is_include_file: true}
+  op_mulh:
+    files:
+      - operation_mulh.svh : {file_type: systemVerilogSource, copyto: multdiv_operation.svh, is_include_file: true}
+  op_div:
+    files:
+      - operation_div.svh : {file_type: systemVerilogSource, copyto: multdiv_operation.svh, is_include_file: true}
+  op_rem:
+    files:
+      - operation_rem.svh : {file_type: systemVerilogSource, copyto: multdiv_operation.svh, is_include_file: true}
+  slow_mull:
+    files:
+      - check_slow_mull.svh : {file_type: systemVerilogSource, copyto: multdiv_check.svh, is_include_file: true}
+  slow_mulh:
+    files:
+      - check_slow_mulh.svh : {file_type: systemVerilogSource, copyto: multdiv_check.svh, is_include_file: true}
+  slow_div:
+    files:
+      - check_slow_div.svh : {file_type: systemVerilogSource, copyto: multdiv_check.svh, is_include_file: true}
+  slow_rem:
+    files:
+      - check_slow_rem.svh : {file_type: systemVerilogSource, copyto: multdiv_check.svh, is_include_file: true}
+  fast_mull:
+    files:
+      - check_fast_mull.svh : {file_type: systemVerilogSource, copyto: multdiv_check.svh, is_include_file: true}
+  fast_mulh:
+    files:
+      - check_fast_mulh.svh : {file_type: systemVerilogSource, copyto: multdiv_check.svh, is_include_file: true}
+  fast_div:
+    files:
+      - check_fast_div.svh : {file_type: systemVerilogSource, copyto: multdiv_check.svh, is_include_file: true}
+  fast_rem:
+    files:
+      - check_fast_rem.svh : {file_type: systemVerilogSource, copyto: multdiv_check.svh, is_include_file: true}
+  single_mull:
+    files:
+      - check_single_mull.svh : {file_type: systemVerilogSource, copyto: multdiv_check.svh, is_include_file: true}
+  single_mulh:
+    files:
+      - check_single_mulh.svh : {file_type: systemVerilogSource, copyto: multdiv_check.svh, is_include_file: true}
+  single_div:
+    files:
+      - check_single_div.svh : {file_type: systemVerilogSource, copyto: multdiv_check.svh, is_include_file: true}
+  single_rem:
+    files:
+      - check_single_rem.svh : {file_type: systemVerilogSource, copyto: multdiv_check.svh, is_include_file: true}
+
+parameters:
+  RV32M:
+    datatype: int
+    default: 2
+    paramtype: vlogparam
+    description: "Selection of multiplication implementation. Switch to enable single cycle multiplications."
+
+targets:
+  slow: &slow
+    filesets:
+      - testbench
+    toplevel: ibex_multdiv_slow
+    default_tool: symbiyosys
+    tools:
+      symbiyosys:
+        tasknames:
+        - slow
+  slow_mull:
+    <<: *slow
+    filesets:
+      - testbench
+      - op_mull
+      - slow_mull
+
+  slow_mulh:
+    <<: *slow
+    filesets:
+      - testbench
+      - op_mulh
+      - slow_mulh
+
+  slow_div:
+    <<: *slow
+    filesets:
+      - testbench
+      - op_div
+      - slow_div
+
+  slow_rem:
+    <<: *slow
+    filesets:
+      - testbench
+      - op_rem
+      - slow_rem
+
+
+  fast: &fast
+    <<: *slow
+    toplevel: ibex_multdiv_fast
+    tools:
+      symbiyosys:
+        tasknames:
+        - fast
+
+  fast_mull:
+    <<: *fast
+    filesets:
+      - testbench
+      - op_mull
+      - fast_mull
+
+  fast_mulh:
+    <<: *fast
+    filesets:
+      - testbench
+      - op_mulh
+      - fast_mulh
+
+  fast_div:
+    <<: *fast
+    filesets:
+      - testbench
+      - op_div
+      - fast_div
+
+  fast_rem:
+    <<: *fast
+    filesets:
+      - testbench
+      - op_rem
+      - fast_rem
+
+  single: &single
+    <<: *fast
+    parameters:
+      - RV32M=3
+    tools:
+      symbiyosys:
+        tasknames:
+        - single
+
+  single_mull:
+    <<: *single
+    filesets:
+      - testbench
+      - op_mull
+      - single_mull
+
+  single_mulh:
+    <<: *single
+    filesets:
+      - testbench
+      - op_mulh
+      - single_mulh
+
+  single_div:
+    <<: *single
+    filesets:
+      - testbench
+      - op_div
+      - single_div
+
+  single_rem:
+    <<: *single
+    filesets:
+      - testbench
+      - op_rem
+      - single_rem

@@ -42,7 +42,7 @@ class riscv_instr_cov_test extends uvm_test;
       bit expect_illegal_instr;
       entry_cnt = 0;
       instr_cg.reset();
-      if (uvm_is_match("*illegal*", trace_csv[i])) begin
+      if (uvm_is_match("*illegal*", trace_csv[i]) || uvm_is_match("*unknown*", trace_csv[i]) ) begin
         expect_illegal_instr = 1;
       end
       `uvm_info(`gfn, $sformatf("Processing CSV trace[%0d]: %s", i, trace_csv[i]), UVM_LOW)

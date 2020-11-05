@@ -51,6 +51,18 @@ parameters:
     paramtype: vlogdefine
     description: "Register file implementation parameter enum. See the ibex_pkg::regfile_e enum in ibex_pkg.sv for permitted values."
 
+  ICache:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable instruction cache"
+
+  ICacheECC:
+    datatype: int
+    default: 0
+    paramtype: vlogparam
+    description: "Enable ECC protection in instruction cache"
+
   SRAMInitFile:
     datatype: str
     paramtype: vlogparam
@@ -110,6 +122,8 @@ targets:
       - RV32M
       - RV32B
       - RegFile
+      - ICache
+      - ICacheECC
       - BranchTargetALU
       - WritebackStage
       - SecureIbex

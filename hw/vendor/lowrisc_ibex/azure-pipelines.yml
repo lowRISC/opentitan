@@ -92,9 +92,12 @@ jobs:
   - template : ci/ibex-rtl-ci-steps.yml
     parameters:
       ibex_configs:
+        # Note: Try to keep the list of configurations in sync with the one used
+        # in Private CI.
         - small
         - experimental-maxperf-pmp
         - experimental-maxperf-pmp-bmfull
+        - experimental-maxperf-pmp-bmfull-icache
         - experimental-branch-predictor
 
   # Run lint on simple system

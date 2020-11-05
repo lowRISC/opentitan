@@ -16,6 +16,15 @@ The file name base, defaulting to ``trace_core`` can be set using the ``ibex_tra
 For example, ``+ibex_tracer_file_base=ibex_my_trace`` will produce log files named ``ibex_my_trace_<HARTID>.log``.
 The exact syntax of passing plusargs to a simulation depends on the simulator.
 
+Disabling the tracer
+--------------------
+
+If the instruction log is not needed for a specific simulation run, the tracer can be disabled.
+
+The plusarg ``ibex_tracer_enable`` controls the tracer.
+The tracer is enabled by default.
+To disable the tracer use ``ibex_tracer_enable=0`` with the correct plusarg syntax of the simulator.
+
 Trace output format
 -------------------
 

@@ -142,10 +142,6 @@ class riscv_compressed_instr extends riscv_instr;
         end
         has_imm = 1'b0;
       end
-      CI_FORMAT : begin
-        has_rs2 = 1'b0;
-        has_rs1 = 1'b0;
-      end
       CSS_FORMAT : begin
         has_rs1 = 1'b0;
         has_rd  = 1'b0;
@@ -160,7 +156,7 @@ class riscv_compressed_instr extends riscv_instr;
         has_rs1 = 1'b0;
         has_imm = 1'b0;
       end
-      CIW_FORMAT: begin
+      CI_FORMAT, CIW_FORMAT: begin
         has_rs1 = 1'b0;
         has_rs2 = 1'b0;
       end

@@ -118,6 +118,8 @@ targets:
       - RV32M
       - RV32B
       - RegFile
+      - ICache
+      - ICacheECC
       - BranchTargetALU
       - WritebackStage
       - BranchPredictor

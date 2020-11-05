@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# The -CFLAGS option is required as some VCS DPI code contains smart quotes
+# around some preprocessor macros, making G++ throw errors during compilation.
+# As a result, passing -fno-extended-identifiers tells G++ to pretend that
+# everything is ASCII, preventing strange compilation errors.
 - tool: vcs
   compile:
     cmd:
@@ -21,6 +25,7 @@
              -f <cwd>/files.f -full64
              -l <out>/compile.log
              -LDFLAGS '-Wl,--no-as-needed'
+             -CFLAGS '--std=c99 -fno-extended-identifiers'
              -Mdir=<out>/vcs_simv.csrc
              -o <out>/vcs_simv <cmp_opts> <cov_opts> "
     cov_opts: >
@@ -135,3 +140,8 @@
   sim:
     cmd: >
       xrun -R -xmlibdirpath <out> <sim_opts> -svseed <seed> -svrnc rand_struct -nokey
+
+- tool: pyflow
+  sim:
+    cmd: >
+      python3 <cwd>/pygen/pygen_src/test/<test_name>.py <sim_opts>

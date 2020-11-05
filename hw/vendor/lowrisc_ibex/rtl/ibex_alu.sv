@@ -192,8 +192,8 @@ module ibex_alu #(
   //  shift_amt = rs2 & 63;
   //  shift_amt_compl = 32 - shift_amt[4:0]
   //  if (shift_amt >=33):
-  //     multicycle_result = (rs1 >> shift_amt_cmpl[4:0]) | (rs3 << shift_amt[4:0]);
-  //                         ^-- cycle 0 ---------------^ ^-- cycle 1 ------------^
+  //     multicycle_result = (rs1 >> shift_amt_compl[4:0]) | (rs3 << shift_amt[4:0]);
+  //                         ^-- cycle 0 ----------------^ ^-- cycle 1 ------------^
   //  else if (shift_amt <= 31 && shift_amt > 0):
   //     multicycle_result = (rs1 << shift_amt[4:0]) | (rs3 >> shift_amt_compl[4:0]);
   //                         ^-- cycle 0 ----------^ ^-- cycle 1 -------------------^
@@ -228,8 +228,10 @@ module ibex_alu #(
   logic [5:0] shift_amt;
   logic [5:0] shift_amt_compl; // complementary shift amount (32 - shift_amt)
 
-  logic [31:0] shift_result;
+  logic [31:0] shift_operand;
   logic [32:0] shift_result_ext;
+  logic        unused_shift_result_ext;
+  logic [31:0] shift_result;
   logic [31:0] shift_result_rev;
 
   // zbf
@@ -308,19 +310,21 @@ module ibex_alu #(
     // select shifter input
     // for bfp, sbmode and shift_left the corresponding bit-reversed input is chosen.
     if (RV32B == RV32BNone) begin
-      shift_result = shift_left ? operand_a_rev : operand_a_i;
+      shift_operand = shift_left ? operand_a_rev : operand_a_i;
     end else begin
       unique case (1'b1)
-        bfp_op:       shift_result = bfp_mask_rev;
-        shift_sbmode: shift_result = 32'h8000_0000;
-        default:      shift_result = shift_left ? operand_a_rev : operand_a_i;
+        bfp_op:       shift_operand = bfp_mask_rev;
+        shift_sbmode: shift_operand = 32'h8000_0000;
+        default:      shift_operand = shift_left ? operand_a_rev : operand_a_i;
       endcase
     end
 
     shift_result_ext =
-        $signed({shift_ones | (shift_arith & shift_result[31]), shift_result}) >>> shift_amt[4:0];
+        $unsigned($signed({shift_ones | (shift_arith & shift_operand[31]), shift_operand}) >>>
+                  shift_amt[4:0]);
 
-    shift_result = shift_result_ext[31:0];
+    shift_result            = shift_result_ext[31:0];
+    unused_shift_result_ext = shift_result_ext[32];
 
     for (int unsigned i=0; i<32; i++) begin
       shift_result_rev[i] = shift_result[31-i];
@@ -656,10 +660,14 @@ module ibex_alu #(
 
         if (shuffle_flip) begin
           shuffle_result = (shuffle_result & 32'h8822_4411) |
-              ((shuffle_result << 6)  & FLIP_MASK_L[0]) | ((shuffle_result >> 6)  & FLIP_MASK_R[0]) |
-              ((shuffle_result << 9)  & FLIP_MASK_L[1]) | ((shuffle_result >> 9)  & FLIP_MASK_R[1]) |
-              ((shuffle_result << 15) & FLIP_MASK_L[2]) | ((shuffle_result >> 15) & FLIP_MASK_R[2]) |
-              ((shuffle_result << 21) & FLIP_MASK_L[3]) | ((shuffle_result >> 21) & FLIP_MASK_R[3]);
+              ((shuffle_result << 6)  & FLIP_MASK_L[0]) |
+              ((shuffle_result >> 6)  & FLIP_MASK_R[0]) |
+              ((shuffle_result << 9)  & FLIP_MASK_L[1]) |
+              ((shuffle_result >> 9)  & FLIP_MASK_R[1]) |
+              ((shuffle_result << 15) & FLIP_MASK_L[2]) |
+              ((shuffle_result >> 15) & FLIP_MASK_R[2]) |
+              ((shuffle_result << 21) & FLIP_MASK_L[3]) |
+              ((shuffle_result >> 21) & FLIP_MASK_R[3]);
         end
 
         if (shuffle_mode[3]) begin
@@ -685,10 +693,14 @@ module ibex_alu #(
 
         if (shuffle_flip) begin
           shuffle_result = (shuffle_result & 32'h8822_4411) |
-              ((shuffle_result << 6)  & FLIP_MASK_L[0]) | ((shuffle_result >> 6) & FLIP_MASK_R[0])  |
-              ((shuffle_result << 9)  & FLIP_MASK_L[1]) | ((shuffle_result >> 9) & FLIP_MASK_R[1])  |
-              ((shuffle_result << 15) & FLIP_MASK_L[2]) | ((shuffle_result >> 15) & FLIP_MASK_R[2]) |
-              ((shuffle_result << 21) & FLIP_MASK_L[3]) | ((shuffle_result >> 21) & FLIP_MASK_R[3]);
+              ((shuffle_result << 6)  & FLIP_MASK_L[0]) |
+              ((shuffle_result >> 6)  & FLIP_MASK_R[0]) |
+              ((shuffle_result << 9)  & FLIP_MASK_L[1]) |
+              ((shuffle_result >> 9)  & FLIP_MASK_R[1]) |
+              ((shuffle_result << 15) & FLIP_MASK_L[2]) |
+              ((shuffle_result >> 15) & FLIP_MASK_R[2]) |
+              ((shuffle_result << 21) & FLIP_MASK_L[3]) |
+              ((shuffle_result >> 21) & FLIP_MASK_R[3]);
         end
       end
 
@@ -1048,6 +1060,8 @@ module ibex_alu #(
         endcase
       end
     end else begin : gen_alu_rvb_notfull
+      logic [31:0] unused_imd_val_q_1;
+      assign unused_imd_val_q_1   = imd_val_q_i[1];
       assign shuffle_result       = '0;
       assign butterfly_result     = '0;
       assign invbutterfly_result  = '0;
@@ -1070,8 +1084,8 @@ module ibex_alu #(
     always_comb begin
       unique case (operator_i)
         ALU_CMOV: begin
-            multicycle_result = (operand_b_i == 32'h0) ? operand_a_i : imd_val_q_i[0];
-            imd_val_d_o = '{operand_a_i, 32'h0};
+          multicycle_result = (operand_b_i == 32'h0) ? operand_a_i : imd_val_q_i[0];
+          imd_val_d_o = '{operand_a_i, 32'h0};
           if (instr_first_cycle_i) begin
             imd_val_we_o = 2'b01;
           end else begin
@@ -1152,6 +1166,12 @@ module ibex_alu #(
 
 
   end else begin : g_no_alu_rvb
+    logic [31:0] unused_imd_val_q[2];
+    assign unused_imd_val_q           = imd_val_q_i;
+    logic [31:0] unused_butterfly_result;
+    assign unused_butterfly_result    = butterfly_result;
+    logic [31:0] unused_invbutterfly_result;
+    assign unused_invbutterfly_result = invbutterfly_result;
     // RV32B result signals
     assign bitcnt_result       = '0;
     assign minmax_result       = '0;
@@ -1244,5 +1264,8 @@ module ibex_alu #(
       default: ;
     endcase
   end
+
+  logic unused_shift_amt_compl;
+  assign unused_shift_amt_compl = shift_amt_compl[5];
 
 endmodule

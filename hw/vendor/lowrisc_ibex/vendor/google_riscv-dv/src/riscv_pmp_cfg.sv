@@ -77,8 +77,6 @@ class riscv_pmp_cfg extends uvm_object;
     pmp_granularity inside {[0 : XLEN + 3]};
   }
 
-  // TODO(udinator) more address constraints?
-  // TODO(udinator) move to posts_randomize() if lower performance
   constraint xwr_c {
     foreach (pmp_cfg[i]) {
       !(pmp_cfg[i].w && !pmp_cfg[i].r);
@@ -438,7 +436,8 @@ class riscv_pmp_cfg extends uvm_object;
              $sformatf("li x%0d, 3", scratch_reg[0]),
              $sformatf("beq x%0d, x%0d, 27f", scratch_reg[4], scratch_reg[0]),
              // Error check, if no address modes match, something has gone wrong
-             $sformatf("j test_done"),
+             $sformatf("la x%0d, test_done", scratch_reg[0]),
+             $sformatf("jalr x0, x%0d, 0", scratch_reg[0]),
              /////////////////////////////////////////////////////////////////
              // increment loop counter and branch back to beginning of loop //
              /////////////////////////////////////////////////////////////////
@@ -459,7 +458,8 @@ class riscv_pmp_cfg extends uvm_object;
              // We must immediately jump to <test_done> since the CPU is taking a PMP exception,
              // but this routine is unable to find a matching PMP region for the faulting access -
              // there is a bug somewhere.
-             $sformatf("19: j test_done")
+             $sformatf("19: la x%0d, test_done", scratch_reg[0]),
+             $sformatf("jalr x0, x%0d, 0", scratch_reg[0])
             };
 
     /////////////////////////////////////////////////
@@ -495,8 +495,8 @@ class riscv_pmp_cfg extends uvm_object;
              // <test_done>, otherwise modify access bits and return
              $sformatf("andi x%0d, x%0d, 128", scratch_reg[4], scratch_reg[3]),
              $sformatf("beqz x%0d, 24f", scratch_reg[4]),
-             $sformatf("j test_done"),
-             // TODO : update with correct label
+             $sformatf("la x%0d, test_done", scratch_reg[0]),
+             $sformatf("jalr x0, x%0d, 0", scratch_reg[0]),
              $sformatf("24: j 29f")
             };
 
@@ -515,8 +515,8 @@ class riscv_pmp_cfg extends uvm_object;
              // entry is locked, otherwise modify access bits
              $sformatf("andi x%0d, x%0d, 128", scratch_reg[4], scratch_reg[3]),
              $sformatf("beqz x%0d, 26f", scratch_reg[4]),
-             $sformatf("j test_done"),
-             // TODO : update with correct label
+             $sformatf("la x%0d, test_done", scratch_reg[0]),
+             $sformatf("jalr x0, x%0d, 0", scratch_reg[0]),
              $sformatf("26: j 29f")
             };
 
@@ -540,8 +540,8 @@ class riscv_pmp_cfg extends uvm_object;
              // the entry is locked, otherwise modify access bits
              $sformatf("andi x%0d, x%0d, 128", scratch_reg[4], scratch_reg[3]),
              $sformatf("beqz x%0d, 29f", scratch_reg[4]),
-             $sformatf("j test_done"),
-             // TODO : update with correct label
+             $sformatf("la x%0d, test_done", scratch_reg[0]),
+             $sformatf("jalr x0, x%0d, 0", scratch_reg[0]),
              $sformatf("28: j 29f")
            };
 

@@ -115,11 +115,7 @@ const privileged_reg_t implemented_csr[] = {
 };
 
 // Implementation-specific custom CSRs
-`ifdef DSIM
 bit [11:0] custom_csr[] = {
-`else
-const bit [11:0] custom_csr[] = {
-`endif
 };
 
 // ----------------------------------------------------------------------------

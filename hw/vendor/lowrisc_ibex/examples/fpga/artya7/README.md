@@ -1,6 +1,6 @@
 # Ibex RISC-V Core SoC Example
 
-Please see [examples](https://ibex-core.readthedocs.io/en/latest/examples.html "Ibex User Manual") for a description of this example.
+Please see [examples](https://ibex-core.readthedocs.io/en/latest/02_user/examples.html "Ibex User Manual") for a description of this example.
 
 ## Requirements
 

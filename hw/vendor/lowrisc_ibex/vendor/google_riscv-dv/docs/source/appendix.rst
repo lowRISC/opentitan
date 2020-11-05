@@ -21,7 +21,7 @@ A standard CSV format is defined for the instruction execution trace. It's used 
 
   - The same format as the GPR field
 - binary: Instruction binary
-- instr_str: Instruction in assmebly format
+- instr_str: Instruction in assembly format
 - operand: Instruction operands
 - pad: Unused
 

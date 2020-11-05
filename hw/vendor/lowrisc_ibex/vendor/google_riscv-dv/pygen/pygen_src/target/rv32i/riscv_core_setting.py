@@ -29,3 +29,8 @@ support_pmp = 0
 unsupported_instr = []
 
 support_umode_trap = 0
+
+# GPR Setting
+NUM_FLOAT_GPR = 32
+NUM_GPR = 32
+NUM_VEC_GPR = 32

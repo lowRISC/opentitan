@@ -521,10 +521,9 @@ endclass
 
 class riscv_vector_load_store_instr_stream extends riscv_mem_access_stream;
 
-  typedef enum {B_ALIGNMENT, H_ALIGNMENT, W_ALIGNMENT, E_ALIGNMENT} alignment_e;
   typedef enum {UNIT_STRIDED, STRIDED, INDEXED} address_mode_e;
 
-  rand alignment_e alignment;
+  rand bit [10:0] eew;
   rand int unsigned data_page_id;
   rand int unsigned num_mixed_instr;
   rand int unsigned stride_byte_offset;
@@ -538,20 +537,22 @@ class riscv_vector_load_store_instr_stream extends riscv_mem_access_stream;
     num_mixed_instr inside {[0:10]};
   }
 
+  constraint eew_c {
+    eew inside {cfg.vector_cfg.legal_eew};
+  }
+
   constraint stride_byte_offset_c {
+    solve eew before stride_byte_offset;
     // Keep a reasonable byte offset range to avoid vector memory address overflow
-    stride_byte_offset inside {[1 : 32]};
-    (alignment == H_ALIGNMENT) -> (stride_byte_offset % 2 == 0);
-    (alignment == W_ALIGNMENT) -> (stride_byte_offset % 4 == 0);
-    (alignment == E_ALIGNMENT) -> (stride_byte_offset % cfg.vector_cfg.vtype.vsew == 0);
+    stride_byte_offset inside {[1 : 128]};
+    stride_byte_offset % (eew / 8) == 1;
   }
 
   constraint index_addr_c {
+    solve eew before index_addr;
     // Keep a reasonable index address range to avoid vector memory address overflow
-    index_addr inside {[1 : 128]};
-    (alignment == H_ALIGNMENT) -> (index_addr % 2 == 0);
-    (alignment == W_ALIGNMENT) -> (index_addr % 4 == 0);
-    (alignment == E_ALIGNMENT) -> (index_addr % cfg.vector_cfg.vtype.vsew == 0);
+    index_addr inside {[0 : 128]};
+    index_addr % (eew / 8) == 1;
   }
 
   constraint vec_rs_c {
@@ -564,21 +565,12 @@ class riscv_vector_load_store_instr_stream extends riscv_mem_access_stream;
     data_page_id < max_data_page_id;
   }
 
-  constraint alignment_sew_c {
-    if (cfg.vector_cfg.vtype.vsew <= 16) {alignment != W_ALIGNMENT;}
-    if (cfg.vector_cfg.vtype.vsew <=  8) {alignment != H_ALIGNMENT;}
-  }
-
   int base;
   int max_load_store_addr;
   riscv_vector_instr load_store_instr;
 
   `uvm_object_utils(riscv_vector_load_store_instr_stream)
   `uvm_object_new
-
-  virtual function int get_addr_alignment_mask(int alignment_bytes);
-    return alignment_bytes - 1;
-  endfunction
 
   function void post_randomize();
     reserved_rd = {reserved_rd, rs1_reg, rs2_reg};
@@ -613,17 +605,13 @@ class riscv_vector_load_store_instr_stream extends riscv_mem_access_stream;
       `uvm_fatal(`gfn, $sformatf({"Expected positive value for max_load_store_addr, got %0d.",
         "  Perhaps more memory needs to be allocated in the data pages for vector loads and stores.",
         "\ndata_page_id:%0d\ndata_page[data_page_id].size_in_bytes:%0d\naddress_span:%0d",
-        "\nalignment:%s\nstride_bytes:%0d\nVLEN:%0d\nLMUL:%0d\ncfg.vector_cfg.vtype.vsew:%0d\n\n"},
+        "\nstride_bytes:%0d\nVLEN:%0d\nLMUL:%0d\ncfg.vector_cfg.vtype.vsew:%0d\n\n"},
         max_load_store_addr, data_page_id, data_page[data_page_id].size_in_bytes, ss,
-        alignment.name(), stride_bytes(), VLEN,
-        cfg.vector_cfg.vtype.vlmul, cfg.vector_cfg.vtype.vsew))
+        stride_bytes(), VLEN, cfg.vector_cfg.vtype.vlmul, cfg.vector_cfg.vtype.vsew))
     end
 
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(base, base >= 0; base <= max_load_store_addr;)
-
-    if (!cfg.enable_unaligned_load_store) begin
-      base &= ~get_addr_alignment_mask(stride_bytes());
-    end
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(base, base inside {[0 : max_load_store_addr]};
+                                             base % eew == 0;)
   endfunction
 
   virtual function int address_span();
@@ -636,11 +624,7 @@ class riscv_vector_load_store_instr_stream extends riscv_mem_access_stream;
   endfunction
 
   virtual function int stride_bytes();
-    stride_bytes = 0;
-    if (alignment == B_ALIGNMENT) stride_bytes = 1;
-    else if (alignment == H_ALIGNMENT) stride_bytes = 2;
-    else if (alignment == W_ALIGNMENT) stride_bytes = 4;
-    else if (alignment == E_ALIGNMENT) stride_bytes = cfg.vector_cfg.vtype.vsew;
+    stride_bytes = eew / 8;
   endfunction
 
   // Generate each load/store instruction
@@ -651,13 +635,6 @@ class riscv_vector_load_store_instr_stream extends riscv_mem_access_stream;
   endfunction
 
   virtual function void build_allowed_instr();
-    if (alignment == B_ALIGNMENT) add_byte_aligned_vec_load_stores();
-    else if (alignment == H_ALIGNMENT) add_h_aligned_vec_load_stores();
-    else if (alignment == W_ALIGNMENT) add_w_aligned_vec_load_stores();
-    else if (alignment == E_ALIGNMENT) add_element_vec_load_stores();
-  endfunction
-
-  virtual function void add_element_vec_load_stores();
     case (address_mode)
       UNIT_STRIDED : begin
         allowed_instr = {VLE_V, VSE_V, allowed_instr};
@@ -678,96 +655,9 @@ class riscv_vector_load_store_instr_stream extends riscv_mem_access_stream;
         end
       end
       INDEXED : begin
-        allowed_instr = {VLXE_V, VSXE_V, allowed_instr};
+        allowed_instr = {VLXEI_V, VSXEI_V, VSUXEI_V, allowed_instr};
         if (cfg.vector_cfg.enable_zvlsseg) begin
-          allowed_instr = {VLXSEGE_V, VSXSEGE_V, allowed_instr};
-        end
-      end
-    endcase
-  endfunction
-
-  virtual function void add_byte_aligned_vec_load_stores();
-    case (address_mode)
-      UNIT_STRIDED : begin
-        allowed_instr = {VLB_V, VSB_V, VLBU_V, allowed_instr};
-        if (cfg.vector_cfg.enable_fault_only_first_load) begin
-          allowed_instr = {VLBFF_V, VLBUFF_V, allowed_instr};
-        end
-        if (cfg.vector_cfg.enable_zvlsseg) begin
-          allowed_instr = {VLSEGB_V, VSSEGB_V, VLSEGBU_V, allowed_instr};
-          if (cfg.vector_cfg.enable_fault_only_first_load) begin
-            allowed_instr = {VLSEGBFF_V, VLSEGBUFF_V, allowed_instr};
-          end
-        end
-      end
-      STRIDED : begin
-        allowed_instr = {VLSB_V, VSSB_V, VLSBU_V, allowed_instr};
-        if (cfg.vector_cfg.enable_zvlsseg) begin
-          allowed_instr = {VLSSEGB_V, VSSSEGB_V, VLSSEGBU_V, allowed_instr};
-        end
-      end
-      INDEXED : begin
-        allowed_instr = {VLXB_V, VSXB_V, VLXBU_V, allowed_instr};
-        if (cfg.vector_cfg.enable_zvlsseg) begin
-          allowed_instr = {VLXSEGB_V, VSXSEGB_V, VLXSEGBU_V, allowed_instr};
-        end
-      end
-    endcase
-  endfunction
-
-  virtual function void add_h_aligned_vec_load_stores();
-    case (address_mode)
-      UNIT_STRIDED : begin
-        allowed_instr = {VLH_V, VSH_V, VLHU_V, allowed_instr};
-        if (cfg.vector_cfg.enable_fault_only_first_load) begin
-          allowed_instr = {VLHFF_V, VLHUFF_V, allowed_instr};
-        end
-        if (cfg.vector_cfg.enable_zvlsseg) begin
-          allowed_instr = {VLSEGH_V, VSSEGH_V, VLSEGHU_V, allowed_instr};
-          if (cfg.vector_cfg.enable_fault_only_first_load) begin
-            allowed_instr = {VLSEGHFF_V, VLSEGHUFF_V, allowed_instr};
-          end
-        end
-      end
-      STRIDED : begin
-        allowed_instr = {VLSH_V, VSSH_V, VLSHU_V, allowed_instr};
-        if (cfg.vector_cfg.enable_zvlsseg) begin
-          allowed_instr = {VLSSEGH_V, VSSSEGH_V, VLSSEGHU_V, allowed_instr};
-        end
-      end
-      INDEXED : begin
-        allowed_instr = {VLXH_V, VSXH_V, VLXHU_V, allowed_instr};
-        if (cfg.vector_cfg.enable_zvlsseg) begin
-          allowed_instr = {VLXSEGH_V, VSXSEGH_V, VLXSEGHU_V, allowed_instr};
-        end
-      end
-    endcase
-  endfunction
-
-  virtual function void add_w_aligned_vec_load_stores();
-    case (address_mode)
-      UNIT_STRIDED : begin
-        allowed_instr = {VLW_V, VSW_V, VLWU_V, allowed_instr};
-        if (cfg.vector_cfg.enable_fault_only_first_load) begin
-          allowed_instr = {VLWFF_V, VLWUFF_V, allowed_instr};
-        end
-        if (cfg.vector_cfg.enable_zvlsseg) begin
-          allowed_instr = {VLSEGW_V, VSSEGW_V, VLSEGWU_V, allowed_instr};
-          if (cfg.vector_cfg.enable_fault_only_first_load) begin
-            allowed_instr = {VLSEGWFF_V, VLSEGWUFF_V, allowed_instr};
-          end
-        end
-      end
-      STRIDED : begin
-        allowed_instr = {VLSW_V, VSSW_V, VLSWU_V, allowed_instr};
-        if (cfg.vector_cfg.enable_zvlsseg) begin
-          allowed_instr = {VLSSEGW_V, VSSSEGW_V, VLSSEGWU_V, allowed_instr};
-        end
-      end
-      INDEXED : begin
-        allowed_instr = {VLXW_V, VSXW_V, VLXWU_V, allowed_instr};
-        if (cfg.vector_cfg.enable_zvlsseg) begin
-          allowed_instr = {VLXSEGW_V, VSXSEGW_V, VLXSEGWU_V, allowed_instr};
+          allowed_instr = {VLXSEGEI_V, VSXSEGEI_V, VSUXSEGEI_V, allowed_instr};
         end
       end
     endcase

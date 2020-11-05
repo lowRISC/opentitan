@@ -30,7 +30,11 @@ numfig_format = {'figure': 'Figure %s', 'table': 'Table %s', 'code-block': 'List
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinxcontrib.wavedrom']
+extensions = [
+    'sphinxcontrib.wavedrom',
+    'sphinx.ext.todo',
+]
+
 wavedrom_html_jsinline = False
 
 # Add any paths that contain templates here, relative to this directory.
@@ -46,7 +50,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Ibex User Manual'
+project = 'Ibex Documentation'
 copyright = '2017-2018, ETH Zurich and University of Bologna, 2018-present lowRISC'
 author = 'lowRISC contributors'
 
@@ -76,7 +80,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'venv']
 pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = False
+todo_include_todos = True
 
 
 # -- Options for HTML output ----------------------------------------------

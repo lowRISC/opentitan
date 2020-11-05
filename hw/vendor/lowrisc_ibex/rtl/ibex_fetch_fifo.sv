@@ -103,7 +103,7 @@ module ibex_fetch_fifo #(
                                         (valid_q[0] & in_valid_i);
 
   // If there is an error, rdata is unknown
-  assign unaligned_is_compressed = (rdata[17:16] != 2'b11) | err;
+  assign unaligned_is_compressed = (rdata[17:16] != 2'b11) & ~err;
   assign aligned_is_compressed   = (rdata[ 1: 0] != 2'b11) & ~err;
 
   ////////////////////////////////////////

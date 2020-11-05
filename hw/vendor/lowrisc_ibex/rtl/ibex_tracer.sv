@@ -16,6 +16,10 @@
  * plusarg passed to the simulation, e.g. "+ibex_tracer_file_base=ibex_my_trace". The exact syntax
  * of passing plusargs to a simulation depends on the simulator.
  *
+ * The creation of the instruction trace is enabled by default but can be disabled for a simulation.
+ * This behaviour is controlled by the plusarg "ibex_tracer_enable". Use "ibex_tracer_enable=0" to
+ * disable the tracer.
+ *
  * The trace contains six columns, separated by tabs:
  * - The simulation time
  * - The clock cycle count since reset
@@ -91,6 +95,17 @@ module ibex_tracer (
   localparam logic [4:0] RD  = (1 << 3);
   localparam logic [4:0] MEM = (1 << 4);
   logic [4:0] data_accessed;
+
+  logic trace_log_enable;
+  initial begin
+    if ($value$plusargs("ibex_tracer_enable=%b", trace_log_enable)) begin
+      if (trace_log_enable == 1'b0) begin
+        $display("%m: Instruction trace disabled.");
+      end
+    end else begin
+      trace_log_enable = 1'b1;
+    end
+  end
 
   function automatic void printbuffer_dumpline();
     string rvfi_insn_str;
@@ -391,9 +406,7 @@ module ibex_tracer (
       12'd899: return "mibound";
       12'd900: return "mdbase";
       12'd901: return "mdbound";
-      12'd800: return "mucounteren";
-      12'd801: return "mscounteren";
-      12'd802: return "mhcounteren";
+      12'd800: return "mcountinhibit";
       default: return $sformatf("0x%x", csr_addr);
     endcase
   endfunction
@@ -732,7 +745,7 @@ module ibex_tracer (
 
   // log execution
   always_ff @(posedge clk_i) begin
-    if (rvfi_valid) begin
+    if (rvfi_valid && trace_log_enable) begin
       printbuffer_dumpline();
     end
   end

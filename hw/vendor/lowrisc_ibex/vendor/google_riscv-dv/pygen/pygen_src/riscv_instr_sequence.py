@@ -11,12 +11,19 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 """
+import re
 import logging
 import random
+import sys
+import vsc
+from importlib import import_module
 from collections import defaultdict
 from pygen_src.riscv_instr_stream import riscv_rand_instr_stream
 from pygen_src.riscv_instr_gen_config import cfg
-from pygen_src.riscv_instr_pkg import pkg_ins, riscv_instr_category_t
+from pygen_src.riscv_instr_pkg import (pkg_ins, riscv_instr_name_t, riscv_reg_t,
+                                      riscv_instr_category_t)
+from pygen_src.riscv_directed_instr_lib import riscv_pop_stack_instr, riscv_push_stack_instr
+rcs = import_module("pygen_src.target." + cfg.argv.target + ".riscv_core_setting")
 
 
 class riscv_instr_sequence:
@@ -33,6 +40,8 @@ class riscv_instr_sequence:
         self.illegal_instr_pct = 0  # Percentage of illegal instructions
         self.hint_instr_pct = 0     # Percentage of hint instructions
         self.branch_idx = [None] * 30
+        self.instr_stack_enter = riscv_push_stack_instr()
+        self.instr_stack_exit = riscv_pop_stack_instr()
 
     def gen_instr(self, is_main_program, no_branch = 1):
         self.is_main_program = is_main_program
@@ -49,9 +58,12 @@ class riscv_instr_sequence:
     def gen_stack_enter_instr(self):
         pass
 
-    # TODO
+    # Recover the saved GPR from the stack
+    # Advance the stack pointer(SP) to release the allocated stack space.
     def gen_stack_exit_instr(self):
-        pass
+        self.instr_stack_exit.cfg = cfg
+        self.instr_stack_exit.gen_pop_stack_instr(self.program_stack_len,
+                                                  self.instr_stack_enter.saved_regs)
 
     '''
     ----------------------------------------------------------------------------------------------
@@ -139,6 +151,7 @@ class riscv_instr_sequence:
                 logging.info("Processing branch instruction[%0d]:%0s # %0d -> %0d", j,
                              self.instr_stream.instr_list[j].convert2asm(),
                              self.instr_stream.instr_list[j].idx, branch_target_label)
+                logging.info("Branch", branch_target_label)
                 self.instr_stream.instr_list[j].imm_str = "{}f".format(branch_target_label)
                 self.instr_stream.instr_list[j].branch_assigned = 1
                 branch_target[branch_target_label] = 1
@@ -177,11 +190,38 @@ class riscv_instr_sequence:
                     prefix = pkg_ins.format_string(string = " ", length = pkg_ins.LABEL_STR_LEN)
             string = prefix + self.instr_stream.instr_list[i].convert2asm()
             self.instr_string_list.append(string)
+            if(rcs.support_pmp and not re.search("main", self.label_name)):
+                self.instr_string_list.insert(0, ".align 2")
+            self.insert_illegal_hint_instr()
             prefix = pkg_ins.format_string(str(i), pkg_ins.LABEL_STR_LEN)
+            if not self.is_main_program:
+                self.generate_return_routine(prefix)
 
-    # TODO
-    def generate_return_routine(self):
-        pass
+    def generate_return_routine(self, prefix):
+        string = ''
+        jump_instr = [riscv_instr_name_t.JALR]
+        rand_lsb = random.randrange(0, 1)
+        ra = vsc.enum_t(riscv_reg_t)
+        # TODO
+        # `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(ra,!(ra inside {cfg.reserved_regs}) ra != ZERO)
+        string = (prefix + pkg_ins.format_string("{}addi x{} x{} {}".format(ra.name,
+                                                                            cfg.ra.name, rand_lsb)))
+        self.instr_string_list.append(string)
+        if(not cfg.disable_compressed_instr):
+            jump_instr.append(riscv_instr_name_t.C_JR)
+            if(not (riscv_reg_t.RA in {cfg.reserved_regs})):
+                jump_instr.append(riscv_instr_name_t.C_JALR)
+        i = random.randrange(0, len(jump_instr) - 1)
+        if (jump_instr[i] == riscv_instr_name_t.C_JAL):
+            string = prefix + pkg_ins.format_string("{}c.jalr x{}".format(ra.name))
+        elif(jump_instr[i] == riscv_instr_name_t.C_JR):
+            string = prefix + pkg_ins.format_string("{}c.jr x{}".format(ra.name))
+        elif(jump_instr[i] == riscv_instr_name_t.JALR):
+            string = prefix + pkg_ins.format_string("{}c.jalr x{} x{} 0".format(ra.name, ra.name))
+        else:
+            logging.critical("Unsupported jump_instr: %0s" % (jump_instr[i]))
+            sys.exit(1)
+            self.instr_string_list.append(string)
 
     # TODO
     def insert_illegal_hint_instr(self):

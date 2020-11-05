@@ -1,0 +1,28 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:ibex_multdiv:0.1"
+description: "Multiplier and divider"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:ibex:ibex_pkg
+    files:
+      - rtl/ibex_multdiv_fast.sv
+      - rtl/ibex_multdiv_slow.sv
+    file_type: systemVerilogSource
+
+parameters:
+  RV32M:
+    datatype: int
+    default: 2
+    paramtype: vlogparam
+    description: "Selection of multiplication implementation. Switch to enable single cycle multiplications."
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl

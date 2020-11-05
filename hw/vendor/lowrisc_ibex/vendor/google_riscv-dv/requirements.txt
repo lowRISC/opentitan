@@ -9,3 +9,4 @@ rst2pdf
 flake8
 pyvsc
 tabulate
+pandas

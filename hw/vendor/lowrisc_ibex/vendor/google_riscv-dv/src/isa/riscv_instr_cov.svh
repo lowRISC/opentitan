@@ -268,10 +268,10 @@
       I_FORMAT: begin
         `DV_CHECK_FATAL(operands.size() == 3, instr_name)
         if(category == LOAD) begin
-          // load rd, imm(rs1)
-          rs1 = get_gpr(operands[2]);
-          rs1_value = get_gpr_state(operands[2]);
-          get_val(operands[1], imm);
+          // load rd, imm(rs1) -> rd,rs1,imm
+          rs1 = get_gpr(operands[1]);
+          rs1_value = get_gpr_state(operands[1]);
+          get_val(operands[2], imm);
         end else if(category == CSR) begin
           // csrrwi rd, csr, imm
           get_val(operands[2], imm);
@@ -290,11 +290,12 @@
       S_FORMAT, B_FORMAT: begin
         `DV_CHECK_FATAL(operands.size() == 3)
         if(category == STORE) begin
-          rs2 = get_gpr(operands[0]);
-          rs2_value = get_gpr_state(operands[0]);
-          rs1 = get_gpr(operands[2]);
-          rs1_value = get_gpr_state(operands[2]);
-          get_val(operands[1], imm);
+          // store rs2, imm(rs1) -> rs1,rs2,imm
+          rs2 = get_gpr(operands[1]);
+          rs2_value = get_gpr_state(operands[1]);
+          rs1 = get_gpr(operands[0]);
+          rs1_value = get_gpr_state(operands[0]);
+          get_val(operands[2], imm);
         end else begin
           // bne rs1, rs2, imm
           rs1 = get_gpr(operands[0]);
@@ -358,18 +359,18 @@
         end
       end
       CL_FORMAT: begin
-        // c.lw rd, imm(rs1)
-        get_val(operands[1], imm);
-        rs1 = get_gpr(operands[2]);
-        rs1_value = get_gpr_state(operands[2]);
+        // c.lw rd, imm(rs1) -> rd,rs1,imm
+        get_val(operands[2], imm);
+        rs1 = get_gpr(operands[1]);
+        rs1_value = get_gpr_state(operands[1]);
       end
       CS_FORMAT: begin
-        // c.sw rs2,imm(rs1)
-        rs2 = get_gpr(operands[0]);
-        rs2_value = get_gpr_state(operands[0]);
-        rs1 = get_gpr(operands[2]);
-        rs1_value = get_gpr_state(operands[2]);
-        get_val(operands[1], imm);
+        // c.sw rs2,imm(rs1) -> rs1,rs2,imm
+        rs2 = get_gpr(operands[1]);
+        rs2_value = get_gpr_state(operands[1]);
+        rs1 = get_gpr(operands[0]);
+        rs1_value = get_gpr_state(operands[0]);
+        get_val(operands[2], imm);
       end
       CA_FORMAT: begin
         // c.and rd, rs2 (rs1 == rd)
