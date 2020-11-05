@@ -242,6 +242,7 @@ module top_earlgrey_cw305 #(
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
     .IbexRegFile(ibex_pkg::RegFileFPGA),
+    .IbexICache(0),
     .IbexPipeLine(1),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .BootRomInitFile(BootRomInitFile)

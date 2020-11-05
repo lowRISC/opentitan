@@ -20,6 +20,7 @@ module top_earlgrey #(
 
   // Manually defined parameters
   parameter ibex_pkg::regfile_e IbexRegFile = ibex_pkg::RegFileFF,
+  parameter bit IbexICache = 1,
   parameter bit IbexPipeLine = 0,
   parameter     BootRomInitFile = ""
 ) (
@@ -325,8 +326,8 @@ module top_earlgrey #(
     .RegFile                  (IbexRegFile),
     .BranchTargetALU          (1),
     .WritebackStage           (1),
-    .ICache                   (0),
-    .ICacheECC                (0),
+    .ICache                   (IbexICache),
+    .ICacheECC                (1),
     .BranchPredictor          (0),
     .DbgTriggerEn             (1),
     .SecureIbex               (0),
