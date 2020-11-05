@@ -9,7 +9,7 @@
     hw_checklist:       "hw/ip/otbn/doc/checklist",
     sw_checklist:       "sw/device/lib/dif/dif_otbn"
     version:            "0.1",
-    life_stage:         "L0",
+    life_stage:         "L1",
     design_stage:       "D1",
     verification_stage: "V0",
     dif_stage:          "S0",
