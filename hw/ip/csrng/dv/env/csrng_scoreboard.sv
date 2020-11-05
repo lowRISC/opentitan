@@ -12,10 +12,10 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(push_pull_item#(.DataWidth(384))) push_pull_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DataWidth(CSRNG_DATA_WIDTH))) push_pull_fifo;
 
   // local queues to hold incoming packets pending comparison
-  push_pull_item#(.DataWidth(384)) push_pull_q[$];
+  push_pull_item#(.DataWidth(CSRNG_DATA_WIDTH)) push_pull_q[$];
 
   `uvm_component_new
 
@@ -36,7 +36,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task process_push_pull_fifo();
-    push_pull_item#(.DataWidth(384)) item;
+    push_pull_item#(.DataWidth(CSRNG_DATA_WIDTH)) item;
     forever begin
       push_pull_fifo.get(item);
       `uvm_info(`gfn, $sformatf("received push_pull item:\n%0s", item.sprint()), UVM_HIGH)
@@ -47,7 +47,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     uvm_reg csr;
     bit     do_read_check   = 1'b1;
     bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = get_normalized_addr(item.a_addr);
+    uvm_reg_addr_t csr_addr = ral.align_to_word_addr(item.a_addr);
 
     bit addr_phase_read   = (!write && channel == AddrChannel);
     bit addr_phase_write  = (write && channel == AddrChannel);
@@ -83,7 +83,29 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       "intr_test": begin
         // FIXME
       end
+      "regen": begin
+      end
       "ctrl": begin
+      end
+      "sum_sts": begin
+      end
+      "cmd_req": begin
+      end
+      "sw_cmd_sts": begin
+        do_read_check = 1'b0;
+      end
+      "sw_cmd_ack": begin
+        do_read_check = 1'b0;
+      end
+      "genbits_vld": begin
+        do_read_check = 1'b0;
+      end
+      "genbits": begin
+        do_read_check = 1'b0;
+      end
+      "hw_exc_sts": begin
+      end
+      "err_code": begin
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
