@@ -16,8 +16,6 @@ class otbn_base_test extends dv_base_test #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    cfg.has_ral = 1'b0;
-
     if (!$value$plusargs("otbn_elf_dir=%0s", cfg.otbn_elf_dir)) begin
       `uvm_fatal(`gfn, "Missing required plusarg: otbn_elf_dir.")
     end
