@@ -70,6 +70,13 @@
       act:     "rsp"
       package: "keymgr_pkg"
     }
+    { struct:  "csrng"
+      type:    "req_rsp"
+      name:    "entropy"
+      act:     "req"
+      width:   "1"
+      package: "csrng_pkg"
+    }
     { name:    "idle",
       type:    "uni",
       act:     "req",

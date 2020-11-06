@@ -229,7 +229,30 @@ If the `EnMasking` parameter is not set, the second share is always zero.
 
 ### Entropy Generator
 
-_TBD_
+This section explains the entropy generator inside the KMAC HWIP.
+
+![Entropy block](kmac-entropy.svg)
+
+KMAC has an entropy generator to feed the random value while KMAC is processing the secret key block.
+The entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module.
+The `prim_lfsr` module in this entropy generator consumes the seed entropy from EDN.
+
+[edn]: {{<relref "/hw/ip/edn/doc/_index.md">}}
+
+Internal entropy size used in KMAC operation is the length of Keccak state, which is 1600 bit.
+However, EDN provides the entropy in much less size.
+Requesting multiple entropy to EDN module degrades the KMAC throughput.
+This module requests the entropy to EDN then expands the entropy to 1600 bit.
+
+This module, at first, expands the generated random values to 320 bits by stacking the values in every cycle.
+Then the 320b of the entropy is duplicated into 1600bit.
+Internally, the module stores only 320bit of entropy.
+We choose 320bit to cover one plane (5x 64bit).
+No requirement of the entropy bit size exists.
+But we have decided to prepare the entropy size bigger than the security strength and also cover one plane (5x 64bit).
+
+The module periodically refreshes the LFSR with the new entropy from EDN.
+The refresh does not block the internal entropy expansion operation.
 
 ### Error Report
 
