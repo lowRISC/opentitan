@@ -69,7 +69,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
     aes_seq_item   complete_clone;
     bit            do_read_check = 1'b0;
     bit            write         = item.is_write();
-    uvm_reg_addr_t csr_addr      = ral.align_to_word_addr(item.a_addr);
+    uvm_reg_addr_t csr_addr      = ral.get_word_aligned_addr(item.a_addr);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs}) begin

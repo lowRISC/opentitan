@@ -53,12 +53,10 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       apply_ral_fixes();
       ral.lock_model();
 
-      // Now the model is locked, we know its layout. Ask the register block to sanity-check
-      // csr_base_addr (if it's not '1) or pick a sensible one otherwise. Then install that base
-      // address in the default map.
-      base_addr = ral.pick_base_addr(csr_base_addr);
-      `uvm_info(`gfn, $sformatf("Setting register base address to 0x%0h", base_addr), UVM_HIGH)
-      ral.default_map.set_base_addr(base_addr);
+      // Now the model is locked, we know its layout. Set the base address for the register block.
+      // The function internally picks a random one if we pass '1 to it, and performs an integrity
+      // check on the set address.
+      ral.set_base_addr(csr_base_addr);
 
       // Get list of valid csr addresses (useful in seq to randomize addr as well as in scb checks)
       get_csr_addrs(ral, csr_addrs);
