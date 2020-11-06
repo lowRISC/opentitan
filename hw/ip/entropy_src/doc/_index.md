@@ -232,10 +232,9 @@ The following waveform shows an example of what the PTRNG timing looks like.
 {{< wavejson >}}
 {signal: [
    {name: 'clk'             , wave: 'p.|......|......|......'},
-   {name: 'rng_en'          , wave: '01|......|......|......'},
-   {name: 'rng_ok'          , wave: '0.|1.....|......|......'},
-   {name: 'es_bit_sample'   , wave: '0.|..10..|..10..|..10..'},
-   {name: 'rng_b'           , wave: 'x.|3.....|4.....|5.....', data: ['es0','es1','es2']},
+   {name: 'rng_enable'      , wave: '01|......|......|......'},
+   {name: 'rng_valid'       , wave: '0.|..10..|..10..|..10..'},
+   {name: 'rng_b'           , wave: 'x.|..3...|..4...|..5.....', data: ['es0','es1','es2']},
 ]}
 {{< /wavejson >}}
 

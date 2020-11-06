@@ -6,11 +6,11 @@
 //
 
 module entropy_src_adaptp_ht #(
-  parameter int unsigned RegWidth = 16,
-  parameter int unsigned RngBusWidth = 4
+  parameter int RegWidth = 16,
+  parameter int RngBusWidth = 4
 ) (
-  input                  clk_i,
-  input                  rst_ni,
+  input logic clk_i,
+  input logic rst_ni,
 
    // ins req interface
   input logic [RngBusWidth-1:0] entropy_bit_i,
@@ -19,27 +19,22 @@ module entropy_src_adaptp_ht #(
   input logic                   active_i,
   input logic [RegWidth-1:0]    thresh_hi_i,
   input logic [RegWidth-1:0]    thresh_lo_i,
-  input logic [RegWidth-1:0]    window_i,
+  input logic                   window_wrap_pulse_i,
   output logic [RegWidth-1:0]   test_cnt_o,
-  output logic                  test_done_pulse_o,
   output logic                  test_fail_hi_pulse_o,
   output logic                  test_fail_lo_pulse_o
 );
 
   // signals
   logic [RegWidth-1:0] column_cnt;
-  logic        window_cntr_wrap;
 
   // flops
-  logic [RegWidth-1:0] window_cntr_q, window_cntr_d;
   logic [RegWidth-1:0] test_cnt_q, test_cnt_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
-      window_cntr_q    <= '0;
       test_cnt_q       <= '0;
     end else begin
-      window_cntr_q    <= window_cntr_d;
       test_cnt_q       <= test_cnt_d;
     end
 
@@ -54,32 +49,21 @@ module entropy_src_adaptp_ht #(
 
 
   // Number of ones per column
-  assign column_cnt =  RngBusWidth'(entropy_bit_i[3]) +
-                       RngBusWidth'(entropy_bit_i[2]) +
-                       RngBusWidth'(entropy_bit_i[1]) +
-                       RngBusWidth'(entropy_bit_i[0]);
-
-  // Window wrap condition
-  assign window_cntr_wrap = (window_cntr_q == window_i);
-
-  // Window counter
-  assign window_cntr_d =
-         clear_i ? '0 :
-         window_cntr_wrap ? '0  :
-         entropy_bit_vld_i ? (window_cntr_q+1) :
-         window_cntr_q;
+  assign column_cnt =  RegWidth'(entropy_bit_i[3]) +
+                       RegWidth'(entropy_bit_i[2]) +
+                       RegWidth'(entropy_bit_i[1]) +
+                       RegWidth'(entropy_bit_i[0]);
 
   // Test event counter
   assign test_cnt_d =
          (!active_i || clear_i) ? '0 :
-         window_cntr_wrap ? '0 :
+         window_wrap_pulse_i ? '0 :
          entropy_bit_vld_i ? (test_cnt_q+column_cnt) :
          test_cnt_q;
 
   // the pulses will be only one clock in length
-  assign test_fail_hi_pulse_o = active_i && window_cntr_wrap && (test_cnt_q > thresh_hi_i);
-  assign test_fail_lo_pulse_o = active_i && window_cntr_wrap && (test_cnt_q < thresh_lo_i);
-  assign test_done_pulse_o = window_cntr_wrap;
+  assign test_fail_hi_pulse_o = active_i && window_wrap_pulse_i && (test_cnt_q > thresh_hi_i);
+  assign test_fail_lo_pulse_o = active_i && window_wrap_pulse_i && (test_cnt_q < thresh_lo_i);
   assign test_cnt_o = test_cnt_q;
 
 

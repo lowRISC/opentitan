@@ -337,14 +337,14 @@
         }
       ]
     },
-    { name: "MARKOV_THRESHOLDS",
-      desc: "Markov test thresholds register",
+    { name: "MARKOV_HI_THRESHOLDS",
+      desc: "Markov test high thresholds register",
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "REGEN",
       fields: [
         { bits: "15:0",
-          name: "FIPS_MARKOV_THRESH",
+          name: "FIPS_MARKOV_HI_THRESH",
           desc: '''This is the threshold size for the Markov health test.
                    This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
@@ -353,13 +353,39 @@
           resval: "0x0100"
         }
         { bits: "31:16",
-          name: "BYPASS_MARKOV_THRESH",
+          name: "BYPASS_MARKOV_HI_THRESH",
           desc: '''This is the threshold size for the Markov health test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    The default value is .375 of the FIPS threshold.
                 '''
           resval: "0x0060"
+        }
+      ]
+    },
+    { name: "MARKOV_LO_THRESHOLDS",
+      desc: "Markov test low thresholds register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "15:0",
+          name: "FIPS_MARKOV_LO_THRESH",
+          desc: '''This is the threshold size for the Markov health test.
+                   This value is used in normal mode when entropy is being tested in
+                   FIPS/CC compliance mode.
+                   The default value is 16.
+                '''
+          resval: "0x0010"
+        }
+        { bits: "31:16",
+          name: "BYPASS_MARKOV_LO_THRESH",
+          desc: '''This is the threshold size for the Markov health test
+                   running in bypass mode. This mode is active after reset for the
+                   first and only test run, or when this mode is programmed by firmware.
+                   The default value is .375 of the FIPS threshold.
+                '''
+          resval: "0x006"
         }
       ]
     },
@@ -527,6 +553,22 @@
         }
       ]
     },
+    { name:     "MARKOV_LO_WATERMARKS",
+      desc:     "Markov test low watermarks register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "15:0",
+          name: "FIPS_MARKOV_LO_WATERMARK",
+          desc: "Low watermark value of the Markov test in FIPS mode."
+        }
+        { bits: "31:16",
+          name: "BYPASS_MARKOV_LO_WATERMARK",
+          desc: "Low watermark value of the Markov test in bypass mode."
+        }
+      ]
+    },
     { name:     "REPCNT_TOTAL_FAILS",
       desc:     "Repetition count test failure counter register",
       swaccess: "ro",
@@ -583,14 +625,28 @@
         }
       ]
     },
-    { name:     "MARKOV_TOTAL_FAILS",
-      desc:     "Markov test failure counter register",
+    { name:     "MARKOV_HI_TOTAL_FAILS",
+      desc:     "Markov high test failure counter register",
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
       fields: [
         { bits: "31:0",
-          name: "MARKOV_TOTAL_FAILS",
+          name: "MARKOV_HI_TOTAL_FAILS",
+          desc: '''This register will hold a running count of test failures observed
+                   during normal operation. It will persist until cleared.
+                '''
+        }
+      ]
+    },
+    { name:     "MARKOV_LO_TOTAL_FAILS",
+      desc:     "Markov low test failure counter register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "31:0",
+          name: "MARKOV_LO_TOTAL_FAILS",
           desc: '''This register will hold a running count of test failures observed
                    during normal operation. It will persist until cleared.
                 '''
@@ -692,7 +748,15 @@
                 '''
         }
         { bits: "23:20",
-          name: "MARKOV_FAIL_COUNT",
+          name: "MARKOV_HI_FAIL_COUNT",
+          desc: '''This field will hold a running count of test failures that
+                   contribute to the total alert count. It will be reset after every
+                   passing test sequence. If an alert is signaled, this value
+                   will persist until it is cleared.
+                '''
+        }
+        { bits: "27:24",
+          name: "MARKOV_LO_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
                    contribute to the total alert count. It will be reset after every
                    passing test sequence. If an alert is signaled, this value
@@ -751,6 +815,59 @@
           desc: "Seed used to load into the LFSR for the initial state. This field will not update if the REGEN bit 0 is cleared.",
           resval: "0xb"
        }
+      ]
+    },
+    {
+      name: "ERR_CODE",
+      desc: "Hardware detection of error conditions status register",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "SFIFO_ESRNG_ERR",
+          desc: '''
+                This bit will be set to one when an error has been detected for the
+                esrng FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "1",
+          name: "SFIFO_ESFINAL_ERR",
+          desc: '''
+                This bit will be set to one when an error has been detected for the
+                esfinal FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "28",
+          name: "FIFO_WRITE_ERR",
+          desc: '''
+                This bit will be set to one when any of the source bits (bits 0 through 1 of this
+                this register) are asserted as a result of an error pulse generated from
+                any full FIFO that has been recieved a write pulse.
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "29",
+          name: "FIFO_READ_ERR",
+          desc: '''
+                This bit will be set to one when any of the source bits (bits 0 through 1 of this
+                this register) are asserted as a result of an error pulse generated from
+                any empty FIFO that has recieved a read pulse.
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "30",
+          name: "FIFO_STATE_ERR",
+          desc: '''
+                This bit will be set to one when any of the source bits (bits 0 through 1 of this
+                this register) are asserted as a result of an error pulse generated from
+                any FIFO where both the empty and full status bits are set.
+                This bit will stay set until firmware clears it.
+                '''
+        }
       ]
     },
   ]
