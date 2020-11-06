@@ -165,6 +165,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     }
 ##############################################################################
 # all alerts
+    {skipto: "0x20"},
     { multireg: { name:     "ALERT_EN",
                   desc:     '''Enable register for alerts.
                   ''',
@@ -181,6 +182,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   ]
                 }
     },
+    {skipto: "0x120"},
     { multireg: { name:     "ALERT_CLASS",
                   desc:     '''Class assignment of alerts.
                   ''',
@@ -204,6 +206,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   ]
                 }
     },
+    {skipto: "0x220"},
     { multireg: {
       name: "ALERT_CAUSE",
       desc: "Alert Cause Register",
@@ -221,6 +224,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     },
 ##############################################################################
 # local alerts
+    {skipto: "0x320"},
     { multireg: { name:     "LOC_ALERT_EN",
                   desc:     '''Enable register for the aggregated local alerts "alert
                   pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).
