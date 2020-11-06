@@ -70,7 +70,7 @@ module sha3pad
   // Padding States
   // TODO: Make it has Hamming Distance >= 3 to be resistent to glitch attacks.
   typedef enum logic [3:0] {
-    StIdle,
+    StPadIdle,
 
     // Sending a block of prefix, if cSHAKE mode is turned on. For the rest
     // (SHA3, SHAKE), sending prefix is not needed. FSM moves from Idle to
@@ -101,7 +101,7 @@ module sha3pad
     StPad01,
 
     // Flushing the internal packers in front of the Keccak data output port.
-    StFlush
+    StPadFlush
   } pad_st_e;
 
   typedef enum logic [2:0] {
@@ -236,7 +236,7 @@ module sha3pad
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      st <= StIdle;
+      st <= StPadIdle;
     end else begin
       st <= st_d;
     end
@@ -259,7 +259,7 @@ module sha3pad
   end
 
   always_comb begin
-    st_d = StIdle;
+    st_d = StPadIdle;
 
     // FSM output : default values
     keccak_run_o = 1'b 0;
@@ -283,7 +283,7 @@ module sha3pad
       // hashing mode, FSM may push additional prefex in front of the actual
       // message. It means, the message could be back-pressured until the first
       // prefix is processed.
-      StIdle: begin
+      StPadIdle: begin
         if (start_i) begin
           // If cSHAKE, move to Prefix state
           // TODO: Reset sent_message to count on next states
@@ -293,7 +293,7 @@ module sha3pad
             st_d = StMessage;
           end
         end else begin
-          st_d = StIdle;
+          st_d = StPadIdle;
         end
       end
 
@@ -391,7 +391,7 @@ module sha3pad
       end
 
       StPadRun: begin
-        st_d = StFlush;
+        st_d = StPadFlush;
 
         keccak_run_o = 1'b 1;
         clr_sentmsg = 1'b 1;
@@ -408,7 +408,7 @@ module sha3pad
         // There's no chance StPad01 can be a start of the block. So can be
         // discard that the sent_blocksize is set at the beginning.
         if (sent_blocksize) begin
-          st_d = StFlush;
+          st_d = StPadFlush;
 
           fsm_keccak_valid = 1'b 0;
           // TODO: Trigger keccak_round
@@ -421,23 +421,23 @@ module sha3pad
         end
       end
 
-      StFlush: begin
+      StPadFlush: begin
         // Wait completion from keccak_round or wait SW indicator.
         clr_sentmsg = 1'b 1;
         clr_msgbuf = 1'b 1;
 
         if (keccak_complete_i) begin
-          st_d = StIdle;
+          st_d = StPadIdle;
 
           absorbed_d = 1'b 1;
           // TODO: Clear internal variables to fresh start
         end else begin
-          st_d = StFlush;
+          st_d = StPadFlush;
         end
       end
 
       default: begin
-        st_d = StIdle;
+        st_d = StPadIdle;
       end
 
     endcase
@@ -823,6 +823,6 @@ module sha3pad
   `COVER(StMessageFeed_C, st == StMessage)
   `COVER(StPad_C, st == StPad01 && sent_blocksize)
   `COVER(StPadSendMsg_C, st == StPad01 && keccak_ack)
-  `COVER(StComplete_C, st == StFlush)
+  `COVER(StComplete_C, st == StPadFlush)
 endmodule
 

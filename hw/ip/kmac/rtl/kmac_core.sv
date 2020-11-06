@@ -50,14 +50,21 @@ module kmac_core
   output logic process_o
 );
 
-  import sha3_pkg::*;
+  import sha3_pkg::KeccakMsgAddrW;
+  import sha3_pkg::KeccakCountW;
+  import sha3_pkg::KeccakRate;
+  import sha3_pkg::L128;
+  import sha3_pkg::L224;
+  import sha3_pkg::L256;
+  import sha3_pkg::L384;
+  import sha3_pkg::L512;
 
   /////////////////
   // Definitions //
   /////////////////
 
   typedef enum logic [1:0] {
-    StIdle,
+    StKmacIdle,
 
     // Secret Key pushing stage
     // The key is sliced by prim_slicer. This state pushes the sliced data into
@@ -68,10 +75,10 @@ module kmac_core
     // Incoming Message
     // The core does nothing but forwarding the incoming message to SHA3 hashing
     // engine by turning off `en_kmac_datapath`.
-    StMessage,
+    StKmacMsg,
 
     // Wait till done signal
-    StFlush
+    StKmacFlush
   } kmac_st_e ;
 
   /////////////
@@ -111,7 +118,7 @@ module kmac_core
   // Encoded key has wider bits. `key_sliced` is the data to send to sha3
   logic [MsgWidth-1:0] key_sliced [Share];
 
-  sha3_mode_e unused_mode;
+  sha3_pkg::sha3_mode_e unused_mode;
   assign unused_mode = mode_i;
 
   /////////
@@ -122,7 +129,7 @@ module kmac_core
   // State register
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      st <= StIdle;
+      st <= StKmacIdle;
     end else begin
       st <= st_d;
     end
@@ -130,7 +137,7 @@ module kmac_core
 
   // Next state and output logic
   always_comb begin
-    st_d = StIdle;
+    st_d = StKmacIdle;
 
     en_kmac_datapath = 1'b 0;
     en_key_write = 1'b 0;
@@ -141,11 +148,11 @@ module kmac_core
     kmac_process = 1'b 0;
 
     unique case (st)
-      StIdle: begin
+      StKmacIdle: begin
         if (kmac_en_i && start_i) begin
           st_d = StKey;
         end else begin
-          st_d = StIdle;
+          st_d = StKmacIdle;
         end
       end
 
@@ -156,7 +163,7 @@ module kmac_core
         en_key_write = 1'b 1;
 
         if (sent_blocksize) begin
-          st_d = StMessage;
+          st_d = StKmacMsg;
 
           kmac_valid = 1'b 0;
           clr_keyidx = 1'b 1;
@@ -167,27 +174,27 @@ module kmac_core
         end
       end
 
-      StMessage: begin
+      StKmacMsg: begin
         // If process is previously latched, it is sent to SHA3 here.
         if (process_i || process_latched) begin
-          st_d = StFlush;
+          st_d = StKmacFlush;
 
           kmac_process = 1'b 1;
         end else begin
-          st_d = StMessage;
+          st_d = StKmacMsg;
         end
       end
 
-      StFlush: begin
+      StKmacFlush: begin
         if (done_i) begin
-          st_d = StIdle;
+          st_d = StKmacIdle;
         end else begin
-          st_d = StFlush;
+          st_d = StKmacFlush;
         end
       end
 
       default: begin
-        st_d = StIdle;
+        st_d = StKmacIdle;
       end
     endcase
   end
@@ -233,7 +240,7 @@ module kmac_core
 
   // left_encode(w): Same as used in sha3pad logic.
   logic [15:0] encode_bytepad;
-  assign encode_bytepad = encode_bytepad_len(strength_i);
+  assign encode_bytepad = sha3_pkg::encode_bytepad_len(strength_i);
 
   // left_encode(len(secret_key))
   // encoded length is always byte size. Use MaxEncodedKeyLenByte parameter
@@ -370,7 +377,7 @@ module kmac_core
   // If process_latched is set, then at Message state, it should be cleared
 
   `ASSERT(ProcessLatchedCleared_A,
-          st == StMessage && process_latched |=> !process_latched)
+          st == StKmacMsg && process_latched |=> !process_latched)
 
   // Assume configuration is stable during the operation
   `ASSUME(KmacEnStable_M, $changed(kmac_en_i) |-> st == StIdle)
@@ -379,9 +386,9 @@ module kmac_core
   `ASSUME(KeyLengthStable_M, $changed(key_len_i) |-> st == StIdle)
   `ASSUME(KeyDataStable_M, $changed(key_data_i) |-> st == StIdle)
 
-  // no acked to MsgFIFO in StMessage
+  // no acked to MsgFIFO in StKmacMsg
   `ASSERT(AckOnlyInMessageState_A,
-          fifo_valid_i && fifo_ready_o && kmac_en_i |-> st == StMessage)
+          fifo_valid_i && fifo_ready_o && kmac_en_i |-> st == StKmacMsg)
 
 endmodule : kmac_core
 
