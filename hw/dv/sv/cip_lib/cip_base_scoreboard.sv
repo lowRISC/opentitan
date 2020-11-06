@@ -225,8 +225,16 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_a_chan_fifo)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_d_chan_fifo)
+    // Print any outstanding elements in the FIFOs (and fail in that case). The null checks are
+    // because the FIFOs will be null if something went wrong before we finished the build phase. If
+    // that happens, we'll already be failing the test, but it's better not to spit out spurious
+    // "object used before it was allocated" errors.
+    if (tl_a_chan_fifo != null) begin
+      `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_a_chan_fifo)
+    end
+    if (tl_d_chan_fifo != null) begin
+      `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_d_chan_fifo)
+    end
   endfunction
 
 endclass
