@@ -302,10 +302,10 @@ state.
 <table style="text-align:center">
   <tr>
     <td style="text-align:left"><strong>Functions</strong></td>
-    <td><strong>DFT</strong></td>
-    <td><strong>NVM_DBG</strong></td>
-    <td><strong>HW_DBG</strong></td>
-    <td><strong>CPU</strong></td>
+    <td><strong>DFT_EN</strong></td>
+    <td><strong>NVM_DEBUG_EN</strong></td>
+    <td><strong>HW_DEBUG_EN</strong></td>
+    <td><strong>CPU_EN</strong></td>
     <td><strong>Change State</strong></td>
   </tr>
   <tr>
