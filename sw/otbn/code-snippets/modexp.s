@@ -1054,7 +1054,7 @@ modexp_65537:
 
   /* 65537 = 0b10000000000000001
                 ^<< 16 x sqr >>^   */
-  loopi      16, 7
+  loopi      16, 8
     /* square: out = montmul(out, out) */
     lw        x19, 28(x0)
     lw        x20, 28(x0)
@@ -1064,6 +1064,7 @@ modexp_65537:
     loop      x30, 2
       bn.sid    x8, 0(x21++)
       addi      x8, x8, 1
+    nop
 
   /* 65537 = 0b10000000000000001
                           mult ^
