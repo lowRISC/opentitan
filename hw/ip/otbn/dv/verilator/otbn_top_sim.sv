@@ -69,6 +69,9 @@ module otbn_top_sim (
     .dmem_rerror_i ( dmem_rerror   )
   );
 
+  bind otbn_core otbn_trace_intf #(.ImemAddrWidth, .DmemAddrWidth) i_otbn_trace_intf (.*);
+  bind otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_intf));
+
   // Pulse otbn_start for 1 cycle immediately out of reset
   always @(posedge IO_CLK or negedge IO_RST_N) begin
     if(!IO_RST_N) begin

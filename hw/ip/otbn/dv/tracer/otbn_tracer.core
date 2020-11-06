@@ -1,0 +1,27 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:otbn_tracer"
+description: "Tracer for OTBN"
+
+filesets:
+  files_tracer:
+    depend:
+      - lowrisc:ip:otbn_pkg
+    files:
+      - cpp/otbn_trace_listener.h: { is_include_file: true, file_type: cppSource }
+      - cpp/log_trace_listener.h: { is_include_file: true, file_type: cppSource }
+      - cpp/log_trace_listener.cc: { file_type: cppSource }
+      - rtl/otbn_tracer.sv: { file_type: systemVerilogSource }
+      - rtl/otbn_trace_intf.sv: { file_type: systemVerilogSource }
+  files_verilator_waiver:
+    files:
+      - lint/otbn_tracer_waivers.vlt
+    file_type: vlt
+
+targets:
+  default:
+    filesets:
+      - files_tracer
+      - tool_verilator ? (files_verilator_waiver)

@@ -329,5 +329,11 @@ package otbn_pkg;
     logic            shift_acc;
   } mac_bignum_operation_t;
 
+  // States for controller state machine
+  typedef enum logic [1:0] {
+    OtbnStateHalt,
+    OtbnStateRun,
+    OtbnStateStall
+  } otbn_state_e;
 
 endpackage
