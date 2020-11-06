@@ -145,6 +145,18 @@ typedef enum dif_${ip_snake}_irq {
 typedef uint32_t dif_${ip_snake}_irq_snapshot_t;
 
 /**
+ * Calculates information needed to safely call a DIF. Functions like this
+ * should be used instead of global variables or #defines.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param params Hardware instantiation parameters.
+ * @return The information required.
+ */
+DIF_WARN_UNUSED_RESULT
+uint32_t dif_${ip_snake}_get_size(dif_${ip_snake}_params_t params);
+
+/**
  * Creates a new handle for ${periph_lower}.
  *
  * This function does not actuate the hardware.
