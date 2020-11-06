@@ -54,7 +54,8 @@ module jtag_mux #(
 
   // Input tie-off muxes
   for (genvar k = 0; k < NumIOs; k++) begin : gen_input_tie_off
-    if (k inside {TckIdx, TmsIdx, TrstIdx, SrstIdx, TdiIdx, TdoIdx}) begin : gen_jtag_signal
+    if (k == TckIdx || k == TmsIdx || k == TrstIdx || k == SrstIdx || k == TdiIdx ||
+        k == TdoIdx) begin : gen_jtag_signal
       assign in_core_o[k] = (jtag_en) ? TieOffValues[k] : in_padring_i[k];
     end else begin : gen_other_inputs
       assign in_core_o[k] = in_padring_i[k];
