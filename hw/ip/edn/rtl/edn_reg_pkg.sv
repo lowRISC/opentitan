@@ -7,11 +7,12 @@
 package edn_reg_pkg;
 
   // Param list
-  parameter int NumEndPoints = 4;
   parameter int EndPointBusWidth0 = 64;
   parameter int EndPointBusWidth1 = 32;
   parameter int EndPointBusWidth2 = 16;
   parameter int EndPointBusWidth3 = 8;
+  parameter int BootInsCmd = 1;
+  parameter int BootGenCmd = 12291;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -119,10 +120,6 @@ package edn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } cmd_ack;
-    struct packed {
-      logic        d;
-      logic        de;
     } cmd_sts;
   } edn_hw2reg_sw_cmd_sts_reg_t;
 
@@ -169,10 +166,10 @@ package edn_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    edn_hw2reg_intr_state_reg_t intr_state; // [25:24]
-    edn_hw2reg_sum_sts_reg_t sum_sts; // [23:24]
-    edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [23:24]
-    edn_hw2reg_err_code_reg_t err_code; // [23:24]
+    edn_hw2reg_intr_state_reg_t intr_state; // [23:22]
+    edn_hw2reg_sum_sts_reg_t sum_sts; // [21:22]
+    edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [21:22]
+    edn_hw2reg_err_code_reg_t err_code; // [21:22]
   } edn_hw2reg_t;
 
   // Register Address

@@ -16,6 +16,7 @@ package edn_pkg;
   typedef struct packed {
     logic                                 edn_ack;
     logic                                 edn_fips;
+    logic [31:0]                          edn_bus;
   } edn_rsp_t;
 
   parameter edn_req_t EDN_REQ_DEFAULT = '{default: '0};
