@@ -6,11 +6,11 @@
 //
 
 module entropy_src_repcnt_ht #(
-  parameter int unsigned RegWidth = 16,
-  parameter int unsigned RngBusWidth = 4
+  parameter int RegWidth = 16,
+  parameter int RngBusWidth = 4
 ) (
-  input                  clk_i,
-  input                  rst_ni,
+  input logic clk_i,
+  input logic rst_ni,
 
    // ins req interface
   input logic [RngBusWidth-1:0] entropy_bit_i,
@@ -18,14 +18,11 @@ module entropy_src_repcnt_ht #(
   input logic                   clear_i,
   input logic                   active_i,
   input logic [RegWidth-1:0]    thresh_i,
-  input logic [RegWidth-1:0]    window_i,
   output logic [RegWidth-1:0]   test_cnt_o,
-  output logic                  test_done_pulse_o,
   output logic                  test_fail_pulse_o
 );
 
   // signals
-  logic                  window_cntr_wrap;
   logic [RngBusWidth-1:0] samples_match_pulse;
   logic [RngBusWidth-1:0] samples_no_match_pulse;
   logic [RngBusWidth-1:0] rep_cnt_fail;
@@ -33,19 +30,16 @@ module entropy_src_repcnt_ht #(
   // flops
   logic [RngBusWidth-1:0] prev_sample_q, prev_sample_d;
   logic [RegWidth-1:0]  rep_cntr_q[RngBusWidth], rep_cntr_d[RngBusWidth];
-  logic [RegWidth-1:0]  window_cntr_q, window_cntr_d;
   logic [RegWidth-1:0]  test_cnt_q, test_cnt_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
       prev_sample_q    <= '0;
       rep_cntr_q       <= '{default:0};
-      window_cntr_q    <= '0;
       test_cnt_q       <= '0;
     end else begin
       prev_sample_q    <= prev_sample_d;
       rep_cntr_q       <= rep_cntr_d;
-      window_cntr_q    <= window_cntr_d;
       test_cnt_q       <= test_cnt_d;
     end
 
@@ -61,7 +55,6 @@ module entropy_src_repcnt_ht #(
 
     // NIST A sample
     assign prev_sample_d[sh] = (!active_i || clear_i) ? '0 :
-                               window_cntr_wrap ? '0  :
                                entropy_bit_vld_i ? entropy_bit_i[sh] :
                                prev_sample_q[sh];
 
@@ -73,7 +66,6 @@ module entropy_src_repcnt_ht #(
     // NIST B counter
     assign rep_cntr_d[sh] =
            (!active_i || clear_i) ? '0 :
-           window_cntr_wrap ? '0  :
            samples_match_pulse[sh] ? (rep_cntr_q[sh]+1) :
            samples_no_match_pulse[sh] ?  '0 :
            rep_cntr_q[sh];
@@ -83,26 +75,14 @@ module entropy_src_repcnt_ht #(
   end : gen_cntrs
 
 
-  // Window wrap condition
-  assign window_cntr_wrap = (window_cntr_q == window_i);
-
-  // Window counter
-  assign window_cntr_d =
-         clear_i ? '0 :
-         window_cntr_wrap ? '0  :
-         entropy_bit_vld_i ? (window_cntr_q+1) :
-         window_cntr_q;
-
   // Test event counter
   assign test_cnt_d =
          (!active_i || clear_i) ? '0 :
-         window_cntr_wrap ? '0 :
          entropy_bit_vld_i && (|rep_cnt_fail) ? (test_cnt_q+1) :
          test_cnt_q;
 
   // the pulses will be only one clock in length
-  assign test_fail_pulse_o = active_i && window_cntr_wrap && (test_cnt_q > '0);
-  assign test_done_pulse_o = window_cntr_wrap;
+  assign test_fail_pulse_o = active_i && (test_cnt_q > '0);
   assign test_cnt_o = test_cnt_q;
 
 

@@ -50,9 +50,9 @@ module entropy_src_main_sm (
     NormalMode        = 8'b11001000  // in normal mode
   } state_e;
 
-  state_e state_d;
+  state_e state_d, state_q;
 
-  logic [StateWidth-1:0] state_q;
+  logic [StateWidth-1:0] state_raw_q;
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
@@ -63,11 +63,13 @@ module entropy_src_main_sm (
     .clk_i,
     .rst_ni,
     .d_i ( state_d ),
-    .q_o ( state_q )
+    .q_o ( state_raw_q )
   );
 
+  assign state_q = state_e'(state_raw_q);
+
   always_comb begin
-    state_d = state_e'(state_q);
+    state_d = state_q;
     rst_bypass_mode_o = 1'b0;
     rst_alert_cntr_o = 1'b0;
     main_stage_pop_o = 1'b0;

@@ -6,7 +6,7 @@
 //
 
 module entropy_src_watermark_reg #(
-  parameter int unsigned RegWidth = 16,
+  parameter int RegWidth = 16,
   parameter bit HighWatermark = 1
 ) (
   input logic                   clk_i,
