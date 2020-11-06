@@ -426,19 +426,13 @@ def find_in_files(file_objects,
             file_object.seek(0)
 
     while True:
-        i = 0
         for file_object in file_objects:
-            i = 0
             for line in file_object:
-                i += 1
-
                 m = match_line(line.rstrip(), pattern, filter_func)
                 if m is not None:
                     return m
 
-        # Check if we exceed the timeout. Do so only every 100 lines to reduce
-        # the performance impact.
-        if timeout is not None and i % 100 == 99 and time.time() >= t_end:
+        if timeout is not None and time.time() >= t_end:
             raise subprocess.TimeoutExpired(None, timeout)
 
         end_loop = wait_func()
