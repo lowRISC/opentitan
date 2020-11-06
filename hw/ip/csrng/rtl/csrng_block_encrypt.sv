@@ -7,10 +7,10 @@
 
 module csrng_block_encrypt #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
-  parameter int unsigned Cmd = 3,
-  parameter int unsigned StateId = 4,
-  parameter int unsigned BlkLen = 128,
-  parameter int unsigned KeyLen = 256
+  parameter int Cmd = 3,
+  parameter int StateId = 4,
+  parameter int BlkLen = 128,
+  parameter int KeyLen = 256
 ) (
   input logic                clk_i,
   input logic                rst_ni,
@@ -33,9 +33,9 @@ module csrng_block_encrypt #(
   output logic [2:0]         block_encrypt_sfifo_blkenc_err_o
 );
 
-  localparam int unsigned BlkEncFifoDepth = 1;
-  localparam int unsigned BlkEncFifoWidth = BlkLen+StateId+Cmd;
-  localparam int unsigned NumShares = 1;
+  localparam int BlkEncFifoDepth = 1;
+  localparam int BlkEncFifoWidth = BlkLen+StateId+Cmd;
+  localparam int NumShares = 1;
 
   // signals
   // blk_encrypt_in fifo
@@ -155,7 +155,7 @@ module csrng_block_encrypt #(
   assign sfifo_blkenc_push = block_encrypt_req_i && sfifo_blkenc_not_full;
   assign sfifo_blkenc_wdata = {block_encrypt_v_i,block_encrypt_id_i,block_encrypt_cmd_i};
 
-  assign block_encrypt_rdy_o = aes_cipher_core_enable ? sfifo_blkenc_not_full : cipher_in_ready;
+  assign block_encrypt_rdy_o = !aes_cipher_core_enable ? sfifo_blkenc_not_full : cipher_in_ready;
 
   assign sfifo_blkenc_pop = block_encrypt_ack_o;
   assign {sfifo_blkenc_v,sfifo_blkenc_id,sfifo_blkenc_cmd} = sfifo_blkenc_rdata;

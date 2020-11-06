@@ -7,12 +7,12 @@
 // Accepts all csrng commands
 
 module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
-  parameter int unsigned Cmd = 3,
-  parameter int unsigned StateId = 4,
-  parameter int unsigned BlkLen = 128,
-  parameter int unsigned KeyLen = 256,
-  parameter int unsigned SeedLen = 384,
-  parameter int unsigned CtrLen  = 32
+  parameter int Cmd = 3,
+  parameter int StateId = 4,
+  parameter int BlkLen = 128,
+  parameter int KeyLen = 256,
+  parameter int SeedLen = 384,
+  parameter int CtrLen  = 32
 ) (
   input logic                clk_i,
   input logic                rst_ni,
@@ -63,12 +63,12 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   output logic [2:0]         ctr_drbg_cmd_sfifo_keyvrc_err_o
 );
 
-  localparam int unsigned CmdreqFifoDepth = 1;
-  localparam int unsigned CmdreqFifoWidth = KeyLen+BlkLen+CtrLen+1+2*SeedLen+StateId+Cmd;
-  localparam int unsigned RCStageFifoDepth = 1;
-  localparam int unsigned RCStageFifoWidth = CtrLen+1+SeedLen+Cmd;
-  localparam int unsigned KeyVRCFifoDepth = 1;
-  localparam int unsigned KeyVRCFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+StateId+Cmd;
+  localparam int CmdreqFifoDepth = 1;
+  localparam int CmdreqFifoWidth = KeyLen+BlkLen+CtrLen+1+2*SeedLen+StateId+Cmd;
+  localparam int RCStageFifoDepth = 1;
+  localparam int RCStageFifoWidth = CtrLen+1+SeedLen+Cmd;
+  localparam int KeyVRCFifoDepth = 1;
+  localparam int KeyVRCFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+StateId+Cmd;
 
 
   // signals
@@ -94,7 +94,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   // cmdreq fifo
   logic [CmdreqFifoWidth-1:0] sfifo_cmdreq_rdata;
   logic                       sfifo_cmdreq_push;
-  logic [CmdreqFifoWidth-1:0]  sfifo_cmdreq_wdata;
+  logic [CmdreqFifoWidth-1:0] sfifo_cmdreq_wdata;
   logic                       sfifo_cmdreq_pop;
   logic                       sfifo_cmdreq_not_full;
   logic                       sfifo_cmdreq_not_empty;
