@@ -7,12 +7,12 @@
 // implementation using security_strength = 256
 
 module csrng_ctr_drbg_upd #(
-  parameter int unsigned Cmd = 3,
-  parameter int unsigned StateId = 4,
-  parameter int unsigned BlkLen = 128,
-  parameter int unsigned KeyLen = 256,
-  parameter int unsigned SeedLen = 384,
-  parameter int unsigned CtrLen  = 32
+  parameter int Cmd = 3,
+  parameter int StateId = 4,
+  parameter int BlkLen = 128,
+  parameter int KeyLen = 256,
+  parameter int SeedLen = 384,
+  parameter int CtrLen  = 32
 ) (
   input logic                clk_i,
   input logic                rst_ni,
@@ -51,16 +51,16 @@ module csrng_ctr_drbg_upd #(
   output logic [2:0]         ctr_drbg_upd_sfifo_final_err_o
 );
 
-  localparam int unsigned UpdReqFifoDepth = 1;
-  localparam int unsigned UpdReqFifoWidth = KeyLen+BlkLen+SeedLen+StateId+Cmd;
-  localparam int unsigned BlkEncReqFifoDepth = 1;
-  localparam int unsigned BlkEncReqFifoWidth = KeyLen+BlkLen+StateId+Cmd;
-  localparam int unsigned BlkEncAckFifoDepth = 1;
-  localparam int unsigned BlkEncAckFifoWidth = BlkLen+StateId+Cmd;
-  localparam int unsigned PDataFifoDepth = 1;
-  localparam int unsigned PDataFifoWidth = SeedLen;
-  localparam int unsigned FinalFifoDepth = 1;
-  localparam int unsigned FinalFifoWidth = KeyLen+BlkLen+StateId+Cmd;
+  localparam int UpdReqFifoDepth = 1;
+  localparam int UpdReqFifoWidth = KeyLen+BlkLen+SeedLen+StateId+Cmd;
+  localparam int BlkEncReqFifoDepth = 1;
+  localparam int BlkEncReqFifoWidth = KeyLen+BlkLen+StateId+Cmd;
+  localparam int BlkEncAckFifoDepth = 1;
+  localparam int BlkEncAckFifoWidth = BlkLen+StateId+Cmd;
+  localparam int PDataFifoDepth = 1;
+  localparam int PDataFifoWidth = SeedLen;
+  localparam int FinalFifoDepth = 1;
+  localparam int FinalFifoWidth = KeyLen+BlkLen+StateId+Cmd;
 
   // signals
   logic [SeedLen-1:0] updated_key_and_v;
@@ -166,9 +166,9 @@ module csrng_ctr_drbg_upd #(
     ReqSend = 4'b0110
   } blk_enc_state_e;
 
-  blk_enc_state_e blk_enc_state_d;
+  blk_enc_state_e blk_enc_state_d, blk_enc_state_q;
 
-  logic [BlkEncStateWidth-1:0] blk_enc_state_q;
+  logic [BlkEncStateWidth-1:0] blk_enc_state_raw_q;
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
@@ -179,8 +179,10 @@ module csrng_ctr_drbg_upd #(
     .clk_i,
     .rst_ni,
     .d_i ( blk_enc_state_d ),
-    .q_o ( blk_enc_state_q )
+    .q_o ( blk_enc_state_raw_q )
   );
+
+  assign blk_enc_state_q = blk_enc_state_e'(blk_enc_state_raw_q);
 
   // Encoding generated with ./sparse-fsm-encode.py -d 3 -m 3 -n 6 -s 4062121537
   // Hamming distance histogram:
@@ -204,9 +206,9 @@ module csrng_ctr_drbg_upd #(
     Shift   = 6'b110010
   } outblk_state_e;
 
-  outblk_state_e outblk_state_d;
+  outblk_state_e outblk_state_d, outblk_state_q;
 
-  logic [OutBlkStateWidth-1:0] outblk_state_q;
+  logic [OutBlkStateWidth-1:0] outblk_state_raw_q;
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
@@ -217,8 +219,10 @@ module csrng_ctr_drbg_upd #(
     .clk_i,
     .rst_ni,
     .d_i ( outblk_state_d ),
-    .q_o ( outblk_state_q )
+    .q_o ( outblk_state_raw_q )
   );
+
+  assign outblk_state_q = outblk_state_e'(outblk_state_raw_q);
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -303,7 +307,7 @@ module csrng_ctr_drbg_upd #(
   //--------------------------------------------
 
   always_comb begin
-    blk_enc_state_d = blk_enc_state_e'(blk_enc_state_q);
+    blk_enc_state_d = blk_enc_state_q;
     v_ctr_load = 1'b0;
     v_ctr_inc  = 1'b0;
     interate_ctr_inc  = 1'b0;
@@ -462,7 +466,7 @@ module csrng_ctr_drbg_upd #(
   //--------------------------------------------
 
   always_comb begin
-    outblk_state_d = outblk_state_e'(outblk_state_q);
+    outblk_state_d = outblk_state_q;
     concat_ctr_inc  = 1'b0;
     concat_outblk_shift = 1'b0;
     sfifo_pdata_pop = 1'b0;

@@ -8,12 +8,12 @@
 //    working state for a given drbg instance.
 
 module csrng_state_db import csrng_pkg::*; #(
-  parameter int unsigned NApps = 4,
-  parameter int unsigned StateId = 4,
-  parameter int unsigned BlkLen = 128,
-  parameter int unsigned KeyLen = 256,
-  parameter int unsigned CtrLen  = 32,
-  parameter int unsigned Cmd     = 3
+  parameter int NApps = 4,
+  parameter int StateId = 4,
+  parameter int BlkLen = 128,
+  parameter int KeyLen = 256,
+  parameter int CtrLen  = 32,
+  parameter int Cmd     = 3
 ) (
   input logic                clk_i,
   input logic                rst_ni,
@@ -43,7 +43,7 @@ module csrng_state_db import csrng_pkg::*; #(
   output logic [StateId-1:0] state_db_sts_id_o
 );
 
-  localparam int unsigned InternalStateWidth = 2+KeyLen+BlkLen+CtrLen;
+  localparam int InternalStateWidth = 2+KeyLen+BlkLen+CtrLen;
 
   logic [StateId-1:0]              state_db_id;
   logic [KeyLen-1:0]               state_db_key;

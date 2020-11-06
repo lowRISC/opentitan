@@ -9,12 +9,12 @@
 // ctr_drbg cmd module.
 
 module csrng_ctr_drbg_gen import csrng_pkg::*; #(
-  parameter int unsigned Cmd = 3,
-  parameter int unsigned StateId = 4,
-  parameter int unsigned BlkLen = 128,
-  parameter int unsigned KeyLen = 256,
-  parameter int unsigned SeedLen = 384,
-  parameter int unsigned CtrLen  = 32
+  parameter int Cmd = 3,
+  parameter int StateId = 4,
+  parameter int BlkLen = 128,
+  parameter int KeyLen = 256,
+  parameter int SeedLen = 384,
+  parameter int CtrLen  = 32
 ) (
   input logic                clk_i,
   input logic                rst_ni,
@@ -76,16 +76,16 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   output logic [2:0]         ctr_drbg_gen_sfifo_ggenbits_err_o
 );
 
-  localparam int unsigned GenreqFifoDepth = 1;
-  localparam int unsigned GenreqFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+StateId+Cmd;
-  localparam int unsigned BlkEncAckFifoDepth = 1;
-  localparam int unsigned BlkEncAckFifoWidth = BlkLen+StateId+Cmd;
-  localparam int unsigned AdstageFifoDepth = 1;
-  localparam int unsigned AdstageFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen;
-  localparam int unsigned RCStageFifoDepth = 1;
-  localparam int unsigned RCStageFifoWidth = BlkLen+CtrLen+1;
-  localparam int unsigned GenbitsFifoDepth = 1;
-  localparam int unsigned GenbitsFifoWidth = 1+BlkLen+KeyLen+BlkLen+CtrLen+StateId+Cmd;
+  localparam int GenreqFifoDepth = 1;
+  localparam int GenreqFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+StateId+Cmd;
+  localparam int BlkEncAckFifoDepth = 1;
+  localparam int BlkEncAckFifoWidth = BlkLen+StateId+Cmd;
+  localparam int AdstageFifoDepth = 1;
+  localparam int AdstageFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen;
+  localparam int RCStageFifoDepth = 1;
+  localparam int RCStageFifoWidth = BlkLen+CtrLen+1;
+  localparam int GenbitsFifoDepth = 1;
+  localparam int GenbitsFifoWidth = 1+BlkLen+KeyLen+BlkLen+CtrLen+StateId+Cmd;
 
   // signals
   logic [Cmd-1:0]     genreq_ccmd;
@@ -184,10 +184,9 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     ReqSend = 4'b0101
 } state_e;
 
+  state_e state_d, state_q;
 
-  state_e state_d;
-
-  logic [StateWidth-1:0] state_q;
+  logic [StateWidth-1:0] state_raw_q;
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
@@ -198,8 +197,10 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     .clk_i,
     .rst_ni,
     .d_i ( state_d ),
-    .q_o ( state_q )
+    .q_o ( state_raw_q )
   );
+
+  assign state_q = state_e'(state_raw_q);
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -291,7 +292,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   assign block_encrypt_v_o = v_sized;
 
   always_comb begin
-    state_d = state_e'(state_q);
+    state_d = state_q;
     v_ctr_load = 1'b0;
     v_ctr_inc  = 1'b0;
     interate_ctr_inc  = 1'b0;
