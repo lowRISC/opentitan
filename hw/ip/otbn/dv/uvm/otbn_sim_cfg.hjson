@@ -28,7 +28,12 @@ name:
       // Project wide common sim cfg file
       "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
       // Config file to pull in the correct flags for otbn_memutil
-      "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson"
+      "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
+      // Common CIP test lists
+      "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+      "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
+      "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
+      "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"
   ]
 
   // Add options needed to compile against otbn_memutil
@@ -55,13 +60,13 @@ name:
   //       that stress my new feature; please run the test suite with them")
   otbn_elf_dir: "{sw_build_dir}"
 
+  run_opts: ["+otbn_elf_dir={otbn_elf_dir}"]
+
   // List of test specifications.
   tests: [
     {
       name: "otbn_sanity"
       uvm_test_seq: "otbn_sanity_vseq"
-
-      run_opts: ["+otbn_elf_dir={otbn_elf_dir}"]
     }
 
     // TODO: add more tests here
