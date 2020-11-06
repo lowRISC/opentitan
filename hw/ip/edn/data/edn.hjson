@@ -7,33 +7,21 @@
   bus_host: "none",
   param_list: [
     { name: "NumEndPoints",
-      desc: "Number of end points to be supported by this block",
-      type: "int",
-      default: "4",
-      local: "true"
-    },
-    { name: "EndPointBusWidth0",
-      desc: "Power of two width of the obsfucated entropy data bus for end point 0",
+      desc: "The number of endpoint ports supported by this EDN instance",
       type: "int",
       default: "64",
       local: "true"
     },
-    { name: "EndPointBusWidth1",
-      desc: "Power of two width of the obsfucated entropy data bus for end point 1",
+    { name: "BootInsCmd",
+      desc: "Default boot-time CSRNG application interface instantiate command",
       type: "int",
-      default: "32",
+      default: "1",
       local: "true"
     },
-    { name: "EndPointBusWidth2",
-      desc: "Power of two width of the obsfucated entropy data bus for end point 2",
+    { name: "BootGenCmd",
+      desc: "Default boot-time CSRNG application interface generate command",
       type: "int",
-      default: "16",
-      local: "true"
-    },
-    { name: "EndPointBusWidth3",
-      desc: "Power of two width of the obsfucated entropy data bus for end point 3",
-      type: "int",
-      default: "8",
+      default: "12291",
       local: "true"
     },
   ],
@@ -44,6 +32,16 @@
       desc: "Asserted when a FIFO error occurs."}
   ],
   inter_signal_list: [
+    { struct:  "csrng",  // csrng_req_t, csrng_rsp_t
+      type:    "req_rsp",
+      name:    "csrng_cmd",
+      act:     "req",
+      width:   "1",
+      package: "csrng_pkg",
+      desc:    '''
+               EDN supports a signal CSRNG application interface.
+               ''',
+    }
     { struct:  "edn",  // edn_req_t, edn_rsp_t
       type:    "req_rsp",
       name:    "edn_cmd",
@@ -173,7 +171,7 @@
     },
     { name: "SW_CMD_STS",
       desc: "EDN command status register",
-      swaccess: "rw",
+      swaccess: "ro",
       hwaccess: "hwo",
       fields: [
         { bits: "0",
@@ -183,17 +181,10 @@
                 '''
         }
         { bits: "1",
-          name: "CMD_ACK",
-          desc: '''
-                This bit is set when the command request has completed. This bit must
-                be cleared by software before a new request is made.  (CMD_RDY will
-                not be asserted until this bit has been cleared).
-                '''
-        }
-        { bits: "4",
           name: "CMD_STS",
           desc: '''
                 This one bit field is the status code returned with the application command ack.
+                It is updated each time a command ack is asserted on the CSRNG interface.
                 0b0: Request completed successfully
                 0b1: Request completed with an error
                 '''
