@@ -305,7 +305,7 @@ The actions performed by each command, as well as which flags are supported, are
     <td>Instantiate</td>
     <td>0x1</td>
     <td> Initializes an instance in CSRNG.
-         When seeding, if <tt>flag0</tt> is not set and <tt>clen</tt> is zero, then a seed of of only the entropy source seed will be used.
+         When seeding, if <tt>flag0</tt> is not set and <tt>clen</tt> is zero, then a seed of only the entropy source seed will be used.
          If <tt>flag0</tt> is not set and <tt>clen</tt> is non-zero, then the seed will xor'ed with the provided additional data.
          If <tt>flag0</tt> is set and <tt>clen</tt> is zero, then a seed of zero with no entropy source seed material will be used.
          If <tt>flag0</tt> is set and <tt>clen</tt> is non-zero, then only the provided additional data will be used as the seed.

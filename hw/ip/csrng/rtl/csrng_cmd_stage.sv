@@ -6,9 +6,9 @@
 //
 
 module csrng_cmd_stage import csrng_pkg::*; #(
-  parameter int unsigned CmdFifoWidth = 32,
-  parameter int unsigned CmdFifoDepth = 16,
-  parameter int unsigned StateId = 4
+  parameter int CmdFifoWidth = 32,
+  parameter int CmdFifoDepth = 16,
+  parameter int StateId = 4
 ) (
   input logic                        clk_i,
   input logic                        rst_ni,
@@ -45,8 +45,8 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   output logic [2:0]                 cmd_stage_sfifo_genbits_err_o
 );
 
-  localparam int unsigned GenBitsFifoWidth = 1+128;
-  localparam int unsigned GenBitsFifoDepth = 1;
+  localparam int GenBitsFifoWidth = 1+128;
+  localparam int GenBitsFifoDepth = 1;
 
   // signals
   // command fifo
@@ -196,9 +196,9 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     GenReq    = 6'b111000  // process gen requests
   } state_e;
 
-  state_e state_d;
+  state_e state_d, state_q;
 
-  logic [StateWidth-1:0] state_q;
+  logic [StateWidth-1:0] state_raw_q;
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
@@ -209,11 +209,13 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     .clk_i,
     .rst_ni,
     .d_i ( state_d ),
-    .q_o ( state_q )
+    .q_o ( state_raw_q )
   );
 
+  assign state_q = state_e'(state_raw_q);
+
   always_comb begin
-    state_d = state_e'(state_q);
+    state_d = state_q;
     cmd_fifo_pop = 1'b0;
     cmd_len_dec = 1'b0;
     cmd_gen_cnt_dec= 1'b0;

@@ -136,9 +136,9 @@
       ]
     },
     {
-      name: "CMD_STS",
-      desc: "Command status register",
-      swaccess: "rw",
+      name: "SW_CMD_STS",
+      desc: "Application interface command status register",
+      swaccess: "ro",
       hwaccess: "hwo",
       fields: [
         { bits: "0",
@@ -147,15 +147,11 @@
                 '''
         }
         { bits: "1",
-          name: "CMD_ACK",
-          desc: '''This bit is set when the command request has completed. This bit must
-                   be cleared before a new request is made.
-                '''
-        }
-        { bits: "4",
           name: "CMD_STS",
           desc: '''
                 This one bit field is the status code returned with the application command ack.
+                It is updated each time a command ack is asserted on the internal application
+                interface for software use.
                 0b0: Request completed successfully
                 0b1: Request completed with an error
                 '''

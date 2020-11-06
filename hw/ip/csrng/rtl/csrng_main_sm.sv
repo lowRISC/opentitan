@@ -19,7 +19,6 @@ module csrng_main_sm import csrng_pkg::*; (
   input logic                flag0_i,
   output logic               cmd_entropy_req_o,
   input logic                cmd_entropy_avail_i,
-  input logic                cmd_adata_avail_i,
   output logic               instant_req_o,
   output logic               reseed_req_o,
   output logic               generate_req_o,
@@ -57,9 +56,9 @@ module csrng_main_sm import csrng_pkg::*; (
     UninstantReq = 8'b00101000  // uninstantiate request (no input)
   } state_e;
 
- state_e state_d;
+  state_e state_d, state_q;
 
-  logic [StateWidth-1:0] state_q;
+  logic [StateWidth-1:0] state_raw_q;
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
@@ -70,11 +69,13 @@ module csrng_main_sm import csrng_pkg::*; (
     .clk_i,
     .rst_ni,
     .d_i ( state_d ),
-    .q_o ( state_q )
+    .q_o ( state_raw_q )
   );
 
+  assign state_q = state_e'(state_raw_q);
+
   always_comb begin
-    state_d = state_e'(state_q);
+    state_d = state_q;
     acmd_accept_o = 1'b0;
     cmd_entropy_req_o = 1'b0;
     instant_req_o = 1'b0;
@@ -109,10 +110,8 @@ module csrng_main_sm import csrng_pkg::*; (
       end
       InstantPrep: begin
         if (flag0_i) begin
-          acmd_accept_o = 1'b1;
-          if (cmd_adata_avail_i) begin
-            state_d = InstantReq;
-          end
+          // assumes all adata is present now
+          state_d = InstantReq;
         end else begin
           // delay one clock to fix timing issue
           cmd_entropy_req_o = 1'b1;
@@ -128,7 +127,8 @@ module csrng_main_sm import csrng_pkg::*; (
       ReseedPrep: begin
         acmd_accept_o = 1'b1;
         cmd_entropy_req_o = 1'b1;
-        if (cmd_adata_avail_i && cmd_entropy_avail_i) begin
+        // assumes all adata is present now
+        if (cmd_entropy_avail_i) begin
           state_d = ReseedReq;
         end
       end
@@ -142,10 +142,9 @@ module csrng_main_sm import csrng_pkg::*; (
         state_d = Idle;
       end
       UpdatePrep: begin
+        // assumes all adata is present now
         acmd_accept_o = 1'b1;
-        if (cmd_adata_avail_i) begin
-          state_d = UpdateReq;
-        end
+        state_d = UpdateReq;
       end
       UpdateReq: begin
         update_req_o = 1'b1;

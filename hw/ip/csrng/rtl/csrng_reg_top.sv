@@ -119,15 +119,8 @@ module csrng_reg_top (
   logic sum_sts_diag_qs;
   logic [31:0] cmd_req_wd;
   logic cmd_req_we;
-  logic cmd_sts_cmd_rdy_qs;
-  logic cmd_sts_cmd_rdy_wd;
-  logic cmd_sts_cmd_rdy_we;
-  logic cmd_sts_cmd_ack_qs;
-  logic cmd_sts_cmd_ack_wd;
-  logic cmd_sts_cmd_ack_we;
-  logic cmd_sts_cmd_sts_qs;
-  logic cmd_sts_cmd_sts_wd;
-  logic cmd_sts_cmd_sts_we;
+  logic sw_cmd_sts_cmd_rdy_qs;
+  logic sw_cmd_sts_cmd_sts_qs;
   logic genbits_vld_genbits_vld_qs;
   logic genbits_vld_genbits_vld_re;
   logic genbits_vld_genbits_fips_qs;
@@ -655,83 +648,55 @@ module csrng_reg_top (
   );
 
 
-  // R[cmd_sts]: V(False)
+  // R[sw_cmd_sts]: V(False)
 
   //   F[cmd_rdy]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
-  ) u_cmd_sts_cmd_rdy (
+  ) u_sw_cmd_sts_cmd_rdy (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (cmd_sts_cmd_rdy_we),
-    .wd     (cmd_sts_cmd_rdy_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.cmd_sts.cmd_rdy.de),
-    .d      (hw2reg.cmd_sts.cmd_rdy.d ),
+    .de     (hw2reg.sw_cmd_sts.cmd_rdy.de),
+    .d      (hw2reg.sw_cmd_sts.cmd_rdy.d ),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (cmd_sts_cmd_rdy_qs)
+    .qs     (sw_cmd_sts_cmd_rdy_qs)
   );
 
 
-  //   F[cmd_ack]: 1:1
+  //   F[cmd_sts]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
-  ) u_cmd_sts_cmd_ack (
+  ) u_sw_cmd_sts_cmd_sts (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (cmd_sts_cmd_ack_we),
-    .wd     (cmd_sts_cmd_ack_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.cmd_sts.cmd_ack.de),
-    .d      (hw2reg.cmd_sts.cmd_ack.d ),
+    .de     (hw2reg.sw_cmd_sts.cmd_sts.de),
+    .d      (hw2reg.sw_cmd_sts.cmd_sts.d ),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (cmd_sts_cmd_ack_qs)
-  );
-
-
-  //   F[cmd_sts]: 4:4
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_cmd_sts_cmd_sts (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (cmd_sts_cmd_sts_we),
-    .wd     (cmd_sts_cmd_sts_wd),
-
-    // from internal hardware
-    .de     (hw2reg.cmd_sts.cmd_sts.de),
-    .d      (hw2reg.cmd_sts.cmd_sts.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (cmd_sts_cmd_sts_qs)
+    .qs     (sw_cmd_sts_cmd_sts_qs)
   );
 
 
@@ -1318,7 +1283,7 @@ module csrng_reg_top (
     addr_hit[ 4] = (reg_addr == CSRNG_CTRL_OFFSET);
     addr_hit[ 5] = (reg_addr == CSRNG_SUM_STS_OFFSET);
     addr_hit[ 6] = (reg_addr == CSRNG_CMD_REQ_OFFSET);
-    addr_hit[ 7] = (reg_addr == CSRNG_CMD_STS_OFFSET);
+    addr_hit[ 7] = (reg_addr == CSRNG_SW_CMD_STS_OFFSET);
     addr_hit[ 8] = (reg_addr == CSRNG_GENBITS_VLD_OFFSET);
     addr_hit[ 9] = (reg_addr == CSRNG_GENBITS_OFFSET);
     addr_hit[10] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
@@ -1397,14 +1362,7 @@ module csrng_reg_top (
   assign cmd_req_we = addr_hit[6] & reg_we & ~wr_err;
   assign cmd_req_wd = reg_wdata[31:0];
 
-  assign cmd_sts_cmd_rdy_we = addr_hit[7] & reg_we & ~wr_err;
-  assign cmd_sts_cmd_rdy_wd = reg_wdata[0];
 
-  assign cmd_sts_cmd_ack_we = addr_hit[7] & reg_we & ~wr_err;
-  assign cmd_sts_cmd_ack_wd = reg_wdata[1];
-
-  assign cmd_sts_cmd_sts_we = addr_hit[7] & reg_we & ~wr_err;
-  assign cmd_sts_cmd_sts_wd = reg_wdata[4];
 
   assign genbits_vld_genbits_vld_re = addr_hit[8] && reg_re;
 
@@ -1517,9 +1475,8 @@ module csrng_reg_top (
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[0] = cmd_sts_cmd_rdy_qs;
-        reg_rdata_next[1] = cmd_sts_cmd_ack_qs;
-        reg_rdata_next[4] = cmd_sts_cmd_sts_qs;
+        reg_rdata_next[0] = sw_cmd_sts_cmd_rdy_qs;
+        reg_rdata_next[1] = sw_cmd_sts_cmd_sts_qs;
       end
 
       addr_hit[8]: begin

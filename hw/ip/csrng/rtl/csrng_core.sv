@@ -8,7 +8,7 @@
 
 module csrng_core import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
-  parameter int unsigned NHwApps = 2
+  parameter int NHwApps = 2
 ) (
   input logic        clk_i,
   input logic        rst_ni,
@@ -39,20 +39,20 @@ module csrng_core import csrng_pkg::*; #(
 
   import csrng_reg_pkg::*;
 
-  localparam int unsigned NApps = NHwApps + 1;
-  localparam int unsigned AppCmdWidth = 32;
-  localparam int unsigned AppCmdFifoDepth = 2;
-  localparam int unsigned GenBitsWidth = 128;
-  localparam int unsigned Cmd = 3;
-  localparam int unsigned StateId = 4;
-  localparam int unsigned KeyLen = 256;
-  localparam int unsigned BlkLen = 128;
-  localparam int unsigned SeedLen = 384;
-  localparam int unsigned CtrLen = 32;
-  localparam int unsigned NBlkEncArbReqs = 2;
-  localparam int unsigned BlkEncArbWidth = KeyLen+BlkLen+StateId+Cmd;
-  localparam int unsigned NUpdateArbReqs = 2;
-  localparam int unsigned UpdateArbWidth = KeyLen+BlkLen+SeedLen+StateId+Cmd;
+  localparam int NApps = NHwApps + 1;
+  localparam int AppCmdWidth = 32;
+  localparam int AppCmdFifoDepth = 2;
+  localparam int GenBitsWidth = 128;
+  localparam int Cmd = 3;
+  localparam int StateId = 4;
+  localparam int KeyLen = 256;
+  localparam int BlkLen = 128;
+  localparam int SeedLen = 384;
+  localparam int CtrLen = 32;
+  localparam int NBlkEncArbReqs = 2;
+  localparam int BlkEncArbWidth = KeyLen+BlkLen+StateId+Cmd;
+  localparam int NUpdateArbReqs = 2;
+  localparam int UpdateArbWidth = KeyLen+BlkLen+SeedLen+StateId+Cmd;
 
   // signals
   // interrupt signals
@@ -87,7 +87,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                   cmd_entropy_req;
   logic                   cmd_entropy_avail;
   logic                   cmd_entropy_fips;
-  logic                   cmd_adata_avail;
   logic [SeedLen-1:0]     cmd_entropy;
 
   logic                   cmd_result_wr_req;
@@ -534,13 +533,11 @@ module csrng_core import csrng_pkg::*; #(
   assign cmd_stage_vld[NApps-1] = reg2hw.cmd_req.qe;
   assign cmd_stage_shid[NApps-1] = (NApps-1);
   assign cmd_stage_bus[NApps-1] = reg2hw.cmd_req.q;
-  assign hw2reg.cmd_sts.cmd_rdy.de = 1'b1;
-  assign hw2reg.cmd_sts.cmd_rdy.d = cmd_stage_rdy[NApps-1];
-  // cmd ack
-  assign hw2reg.cmd_sts.cmd_ack.de = cmd_stage_ack[NApps-1];
-  assign hw2reg.cmd_sts.cmd_ack.d = 1'b1;
-  assign hw2reg.cmd_sts.cmd_sts.de = cmd_stage_ack[NApps-1];
-  assign hw2reg.cmd_sts.cmd_sts.d = cmd_stage_ack_sts[NApps-1];
+  assign hw2reg.sw_cmd_sts.cmd_rdy.de = 1'b1;
+  assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_stage_rdy[NApps-1];
+  // cmd ack sts
+  assign hw2reg.sw_cmd_sts.cmd_sts.de = cmd_stage_ack[NApps-1];
+  assign hw2reg.sw_cmd_sts.cmd_sts.d = cmd_stage_ack_sts[NApps-1];
   // genbits
   assign hw2reg.genbits_vld.genbits_vld.d = genbits_stage_vldo_sw;
   assign hw2reg.genbits_vld.genbits_fips.d = genbits_stage_fips_sw;
@@ -662,7 +659,6 @@ module csrng_core import csrng_pkg::*; #(
     .flag0_i(flag0_q),
     .cmd_entropy_req_o(cmd_entropy_req),
     .cmd_entropy_avail_i(cmd_entropy_avail),
-    .cmd_adata_avail_i(cmd_adata_avail),
     .instant_req_o(instant_req),
     .reseed_req_o(reseed_req),
     .generate_req_o(generate_req),
@@ -672,7 +668,7 @@ module csrng_core import csrng_pkg::*; #(
 
 
   // interrupt for sw app interface only
-  assign event_cs_cmd_req_done = cmd_core_ack[NApps-1];
+  assign event_cs_cmd_req_done = cmd_stage_ack[NApps-1];
 
   // interrupt for entropy request
   assign event_cs_entropy_req = entropy_src_hw_if_o.es_req;
@@ -702,7 +698,7 @@ module csrng_core import csrng_pkg::*; #(
     .wvalid_i   (acmd_mop),
     .wdata_i    (acmd_bus),
     .wready_o   (),
-    .rvalid_o   (cmd_adata_avail),
+    .rvalid_o   (),
     .rdata_o    (packer_adata),
     .rready_i   (packer_adata_rrdy),
     .depth_o    ()
@@ -1127,7 +1123,7 @@ module csrng_core import csrng_pkg::*; #(
          24'b0;
 
 
-  assign hw2reg.sum_sts.diag.de = ~cs_enable;
+  assign hw2reg.sum_sts.diag.de = !cs_enable;
   assign hw2reg.sum_sts.diag.d  =
          (reg2hw.regen)          || // not used
          (|reg2hw.genbits.q);       // not used

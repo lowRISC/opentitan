@@ -6,7 +6,7 @@
 
 module csrng import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
-  parameter int unsigned NHwApps = 2
+  parameter int NHwApps = 2
 ) (
   input logic         clk_i,
   input logic         rst_ni,
