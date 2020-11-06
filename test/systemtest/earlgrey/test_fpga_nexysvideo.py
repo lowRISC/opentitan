@@ -67,7 +67,8 @@ def uart(uart_persistent, request):
 
 
 @pytest.fixture(scope="module")
-def nexysvideo_earlgrey(tmp_path_factory, topsrcdir, bin_dir, localconf_nexysvideo):
+def nexysvideo_earlgrey(tmp_path_factory, topsrcdir, bin_dir,
+                        localconf_nexysvideo):
     """ A Nexys Video board flashed with an Earl Grey bitstream """
 
     bitstream = bin_dir / "hw/top_earlgrey/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit"
