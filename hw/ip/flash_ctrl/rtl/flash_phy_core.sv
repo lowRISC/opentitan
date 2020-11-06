@@ -248,7 +248,8 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .data_o(rd_data_o),
     .idle_o(rd_stage_idle),
     .req_o(flash_rd_req),
-    .ack_i(done), // temporary hack and use done
+    .ack_i(ack),
+    .done_i(done),
     .data_i(flash_rdata),
     //scramble unit interface
     .calc_req_o(rd_calc_req),

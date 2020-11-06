@@ -23,7 +23,7 @@
 // for any reason, then the read stage cannot start.
 //
 // When the read stage begins, the galois multiply portion of the de-scramble is
-// also be kicked off. When the galois multiply stage AND read stage completes, the
+// also kicked off. When the galois multiply stage AND read stage completes, the
 // de-scramble is then kicked off.
 
 module flash_phy_rd import flash_phy_pkg::*; (
@@ -56,7 +56,8 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   // interface to actual flash primitive
   output logic req_o,
-  input ack_i,
+  input ack_i,  // request has been accepted
+  input done_i, // actual data return
   input [FullDataWidth-1:0] data_i
   );
 
@@ -215,21 +216,19 @@ module flash_phy_rd import flash_phy_pkg::*; (
   logic rsp_fifo_rdy;
   logic rsp_fifo_vld;
 
-  // whether there is an ongoing read to flash
-  // stage is idle when a transaction is ongoing, and the cycle when a response comes from
-  // the flash primitive
-  logic rd_stage_idle;
-  logic rd_busy;
-  logic rd_done;
+  // saved attributes on flash read
   logic [NumBuf-1:0] alloc_q;
   rd_attr_t rd_attrs;
 
+  // read complete
+  // since done is broadcast to all the modules, need to know we are actually active
+  logic rd_busy;
+  logic rd_done;
+
+  assign rd_done = rd_busy & done_i;
+
   // scramble stage ready
   logic scramble_stage_rdy;
-
-  // read done does not mean data is available.
-  // if the data must be de-scrambled, there is another wait stage
-  assign rd_done = rd_busy & ack_i;
 
   // if buffer allocated, that is the return source
   // if buffer matched, that is the return source
@@ -260,13 +259,17 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .rdata_o (rsp_fifo_rdata)
   );
 
+
+  // Consider converting this to a FIFO for better matching
+  // The rd_busy flag is effectively a "full" flag anyways of a single
+  // entry.
+  logic flash_rdy;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      rd_busy <= 1'b0;
       alloc_q <= '0;
       rd_attrs <= '0;
-    end else if (req_o) begin
-      // read only becomes busy if a buffer is allocated and read
+      rd_busy <= '0;
+    end else if (req_o && ack_i) begin
       rd_busy <= 1'b1;
       alloc_q <= alloc;
       rd_attrs.addr <= addr_i[BusBankAddrW-1:LsbAddrBit];
@@ -276,18 +279,21 @@ module flash_phy_rd import flash_phy_pkg::*; (
     end
   end
 
-  // this stage is idle whenever there is not an ongoing read, or if there is
-  // but the ack has returned
-  assign rd_stage_idle = !rd_busy | ack_i;
+  // flash is ready to accept another transaction
+  assign flash_rdy = ~rd_busy | rd_done;
 
-  // if no buffers matched, accept only if read state is idle and there is space
+  // read stages are ready when both the response fifo and the
+  // data / mask fifos have space for new entries
+  logic rd_stages_rdy;
+  assign rd_stages_rdy = rsp_fifo_rdy & scramble_stage_rdy;
+
+  // if no buffers matched, accept only if flash is ready and there is space
   // if buffer is matched, accept as long as there is space in the rsp fifo
-  assign rdy_o = no_match ? rd_stage_idle & rsp_fifo_rdy & scramble_stage_rdy :
-                            rsp_fifo_rdy & scramble_stage_rdy;
+  assign rdy_o = no_match ? ack_i & flash_rdy & rd_stages_rdy : rd_stages_rdy;
 
-  // issue a transaction to flash
-  assign req_o = req_i & rdy_o & no_match;
-
+  // issue a transaction to flash only if there is space in read stages,
+  // there is no buffer match and flash is not currently busy.
+  assign req_o = req_i & flash_rdy & rd_stages_rdy & no_match;
 
   /////////////////////////////////
   // Handling ECC
@@ -541,5 +547,14 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   // Whenever response is coming from buffer, ecc error cannot be set
   `ASSERT(BufferMatchEcc_A, |buf_rsp_match |-> muxed_err == '0)
+
+  /////////////////////////////////
+  // Functional coverage points to add
+  /////////////////////////////////
+
+  // exercise both flash_read and de-scramble stages at the same time
+  // - make sure accesses can be consecutive or random
+  // exercise back to back transactions, and transactions with varying delays
+  // exercise data hazard where erase / program requires buffer eviction
 
 endmodule // flash_phy_core
