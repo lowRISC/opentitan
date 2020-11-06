@@ -52,7 +52,8 @@ end
 
 assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
 
-wire #(USB_VAL_RDLY, USB_VAL_FDLY) ref_val = usb_ref_val_i;
+wire ref_val;
+assign #(USB_VAL_RDLY, USB_VAL_FDLY) ref_val = usb_ref_val_i;
 assign drift = ref_val ? 0 : rand32;
 
 always begin
