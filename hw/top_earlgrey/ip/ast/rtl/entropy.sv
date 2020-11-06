@@ -23,7 +23,7 @@ module entropy #(
 );
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Entropy Logic @clk_ast_es_i clock domain 
+// Entropy Logic @clk_ast_es_i clock domain
 
 
 ///////////////////////////////////////
@@ -72,16 +72,16 @@ always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
 end
 
 assign entropy_rate = (1 << entropy_rate_i);
-assign read_entropy = (erate_cnt == entropy_rate[(1<<EntropyRateWidth)-1:0]); 
+assign read_entropy = (erate_cnt == entropy_rate[(1<<EntropyRateWidth)-1:0]);
 
 
 ///////////////////////////////////////
-// Entropy FIFO 
+// Entropy FIFO
 ///////////////////////////////////////
 // FIFO RDP/WRP/Level
 logic [6-1:0] fifo_cnt;            // For 32 1-bit FIFO
 logic [5-1:0] fifo_rdp, fifo_wrp;  // FIFO read pointer & write pointer
-logic [32-1:0] fifo_data;          // 32 1-bi FIFOt 
+logic [32-1:0] fifo_data;          // 32 1-bi FIFOt
 logic inc_fifo_cnt, dec_fifo_cnt;
 
 assign inc_fifo_cnt = (fifo_cnt < 6'h20) && entropy_ack_i;

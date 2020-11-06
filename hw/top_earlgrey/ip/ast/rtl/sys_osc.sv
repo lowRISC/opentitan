@@ -50,7 +50,7 @@ assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
 
 always begin
   // 0-2000ps is upto +20% Jitter
-  jitter = sys_jen_i ? $urandom_range(2000, 0) : 0; 
+  jitter = sys_jen_i ? $urandom_range(2000, 0) : 0;
   #((SYS_CLK_PERIOD+jitter)/2000) clk = ~clk && en_osc;
 end
 
