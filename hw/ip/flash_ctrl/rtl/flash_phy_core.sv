@@ -70,6 +70,9 @@ module flash_phy_core import flash_phy_pkg::*; #(
   // ack to phy operations from flash macro
   logic ack;
 
+  // done to phy operations from flash macro
+  logic done;
+
   // ack from flash_phy_prog to controller
   logic prog_ack;
 
@@ -198,7 +201,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
       // other controller operations directly interface with flash
       StCtrl: begin
-        if (ack) begin
+        if (done) begin
           ctrl_rsp_vld = 1'b1;
           state_d = StIdle;
         end
@@ -245,7 +248,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .data_o(rd_data_o),
     .idle_o(rd_stage_idle),
     .req_o(flash_rd_req),
-    .ack_i(ack),
+    .ack_i(done), // temporary hack and use done
     .data_i(flash_rdata),
     //scramble unit interface
     .calc_req_o(rd_calc_req),
@@ -265,6 +268,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   logic [FullDataWidth-1:0] prog_full_data;
   logic [DataWidth-1:0] prog_scrambled_data;
   logic [DataWidth-1:0] prog_data;
+  logic prog_last;
   logic flash_prog_req;
   logic prog_calc_req;
   logic prog_op_req;
@@ -283,6 +287,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
       .data_i(prog_data_i),
       .last_i(prog_last_i),
       .ack_i(ack),
+      .done_i(done),
       .calc_ack_i(calc_ack),
       .scramble_ack_i(op_ack),
       .mask_i(scramble_mask),
@@ -290,6 +295,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
       .calc_req_o(prog_calc_req),
       .scramble_req_o(prog_op_req),
       .req_o(flash_prog_req),
+      .last_o(prog_last),
       .ack_o(prog_ack),
       .block_data_o(prog_data),
       .data_o(prog_full_data)
@@ -349,6 +355,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .rst_ni,
     .rd_i(flash_rd_req),
     .prog_i(flash_prog_req),
+    .prog_last_i(prog_last),
     .prog_type_i(prog_type_i),
     .pg_erase_i(reqs[PhyPgErase]),
     .bk_erase_i(reqs[PhyBkErase]),
@@ -356,8 +363,8 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .part_i(muxed_part),
     .prog_data_i(prog_full_data),
     .prog_type_avail_o(prog_type_avail_o),
-    .ack_o(), // temporary hack
-    .done_o(ack),
+    .ack_o(ack),
+    .done_o(done),
     .rd_data_o(flash_rdata),
     .init_busy_o, // TBD this needs to be looked at later. What init do we need to do,
                   // and where does it make the most sense?

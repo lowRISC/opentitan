@@ -30,7 +30,8 @@ module flash_phy_prog import flash_phy_pkg::*; (
   input [WordSelW-1:0] sel_i,
   input [BusWidth-1:0] data_i,
   input last_i,
-  input ack_i,
+  input ack_i,  // ack means request has been accepted by flash
+  input done_i, // done means requested transaction has completed
   input calc_ack_i,
   input scramble_ack_i,
   input [DataWidth-1:0] mask_i,
@@ -38,6 +39,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   output logic calc_req_o,
   output logic scramble_req_o,
   output logic req_o,
+  output logic last_o, // last beat of an incoming transaction
   output logic ack_o,
   // block data does not contain ecc / metadata portion
   output logic [DataWidth-1:0] block_data_o,
@@ -112,6 +114,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
     data_sel = Filler;
     req_o = 1'b0;
     ack_o = 1'b0;
+    last_o = 1'b0;
     calc_req_o = 1'b0;
     scramble_req_o = 1'b0;
 
@@ -181,12 +184,23 @@ module flash_phy_prog import flash_phy_pkg::*; (
 
       StReqFlash: begin
         req_o = 1'b1;
-        state_d = StWaitFlash;
+        last_o = last_i;
+
+        // if this is the last beat of the program burst
+        //   - wait for done
+        // if this is NOT the last beat
+        //   - ack the upstream request and accept more beats
+        if (last_i) begin
+          state_d = ack_i ? StWaitFlash : StReqFlash;
+        end else begin
+          ack_o = ack_i;
+          state_d = ack_i ? StIdle : StReqFlash;
+        end
       end
 
       StWaitFlash: begin
 
-        if (ack_i) begin
+        if (done_i) begin
           ack_o = 1'b1;
           state_d = StIdle;
         end
@@ -227,15 +241,36 @@ module flash_phy_prog import flash_phy_pkg::*; (
   // pad the remaining bits to '0', this effectively "programs" them.
   assign data_o = scramble_i ? FullDataWidth'(ecc_data) : FullDataWidth'(packed_data);
 
-
   /////////////////////////////////
   // Assertions
   /////////////////////////////////
+
+`ifndef SYNTHESIS
+  logic txn_done;
+  logic [15:0] done_cnt;
+
+  assign txn_done = req_i && ack_o && last_i;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (rst_ni) begin
+      done_cnt <= '0;
+    end else if (txn_done) begin
+      done_cnt <= '0;
+    end else if (done_i) begin
+      done_cnt <= done_cnt + 1'b1;
+    end
+  end
+
+  // We can only observe one done per transaction.
+  `ASSERT(OneDonePerTxn_A,  txn_done |-> done_cnt == '0)
+
+`endif
 
   // Prepack state can only pack up to WidthMultiple - 1
   `ASSERT(PrePackRule_A, state_q == StPrePack && pack_valid |-> idx < (WidthMultiple - 1))
 
   // Postpack states should never pack the first index (as it would be aligned in that case)
   `ASSERT(PostPackRule_A, state_q == StPostPack && pack_valid |-> idx != '0)
+
+
 
 endmodule // flash_phy_prog

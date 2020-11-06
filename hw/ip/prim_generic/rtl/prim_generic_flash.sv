@@ -22,6 +22,7 @@ module prim_generic_flash #(
   input                              rst_ni,
   input                              rd_i,
   input                              prog_i,
+  input                              prog_last_i,
   // the generic model does not make use of program types
   input flash_ctrl_pkg::flash_prog_e prog_type_i,
   input                              pg_erase_i,
@@ -86,6 +87,7 @@ module prim_generic_flash #(
   typedef struct packed {
     logic                        rd;
     logic                        prog;
+    logic                        prog_last;
     flash_ctrl_pkg::flash_prog_e prog_type;
     logic                        pg_erase;
     logic                        bk_erase;
@@ -102,6 +104,7 @@ module prim_generic_flash #(
   assign cmd_d = '{
     rd :       rd_i,
     prog:      prog_i,
+    prog_last: prog_last_i,
     prog_type: prog_type_i,
     pg_erase:  pg_erase_i,
     bk_erase:  bk_erase_i,
@@ -311,7 +314,7 @@ module prim_generic_flash #(
         end else begin
           st_d = StIdle;
           pop_cmd = 1'b1;
-          done_o = 1'b1;
+          done_o = cmd_q.prog_last;
           time_cnt_clr = 1'b1;
         end
       end
@@ -410,5 +413,21 @@ module prim_generic_flash #(
   // this represents the type of program operations that are supported
   assign prog_type_avail_o[flash_ctrl_pkg::FlashProgNormal] = 1'b1;
   assign prog_type_avail_o[flash_ctrl_pkg::FlashProgRepair] = 1'b1;
+
+  logic unused_flash_power_down_hi;
+  logic unused_flash_power_ready_hi;
+  logic unused_scan_reset_ni;
+  logic unused_tck;
+  logic unused_tms;
+  logic unused_tdi;
+  flash_ctrl_pkg::flash_prog_e unused_prog_type;
+  assign unused_prog_type = cmd_q.prog_type;
+  assign unused_flash_power_down_hi = flash_power_down_hi;
+  assign unused_flash_power_ready_hi = flash_power_ready_hi;
+  assign unused_scan_reset_ni = scan_reset_ni;
+  assign unused_scanmode_i = scanmode_i;
+  assign unused_tck = tck_i;
+  assign unused_tdi = tdi_i;
+  assign unused_tms = tms_i;
 
 endmodule // prim_generic_flash
