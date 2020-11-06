@@ -154,6 +154,7 @@ prog_objcopy = find_program('objcopy')
 prog_srec_cat = find_program('srec_cat')
 prog_git = find_program('git')
 
+
 # Hardware register headers. These are generated from HJSON files, and accesible
 # in C via |#include "{IP_NAME}_regs.h"|.
 gen_hw_hdr = generator(
@@ -165,8 +166,7 @@ gen_hw_hdr = generator(
   ],
 )
 
-# TODO: Considering moving these into hw/ip directories.
-hw_ip_aes_reg_h = gen_hw_hdr.process('hw/ip/aes/data/aes.hjson')
+# hw_ip_aes_reg_h = gen_hw_hdr.process('hw/ip/aes/data/aes.hjson')
 hw_ip_alert_handler_reg_h = gen_hw_hdr.process('hw/ip/alert_handler/data/alert_handler.hjson')
 hw_ip_flash_ctrl_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/flash_ctrl/data/autogen/flash_ctrl.hjson')
 hw_ip_gpio_reg_h = gen_hw_hdr.process('hw/ip/gpio/data/gpio.hjson')
@@ -181,17 +181,12 @@ hw_ip_usbdev_reg_h = gen_hw_hdr.process('hw/ip/usbdev/data/usbdev.hjson')
 hw_ip_pwrmgr_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson')
 hw_ip_rstmgr_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson')
 hw_top_earlgrey_pinmux_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson')
-hw_top_earlgrey_rv_plic_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson')
+# hw_top_earlgrey_rv_plic_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson')
 
-# Top Earlgrey library (top_earlgrey)
-# The sources for this are generated into the hw hierarchy.
-top_earlgrey = declare_dependency(
-  link_with: static_library(
-    'top_earlgrey_ot',
-    sources: [
-      'hw/top_earlgrey/sw/autogen/top_earlgrey.c',
-    ],
-  )
-)
+# Meson in `hw` includes targets for auto-generated headers and libraries based
+# on reggen and topgen information. This is depended on by the device targets in
+# `sw`.
+subdir('hw')
 
+# This contains the majority of the software configuration.
 subdir('sw')

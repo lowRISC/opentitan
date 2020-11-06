@@ -37,7 +37,7 @@ test('dif_uart_unittest', executable(
 test('dif_plic_unittest', executable(
   'dif_plic_unittest',
   sources: [
-    hw_top_earlgrey_rv_plic_reg_h,
+    hw_top_earlgrey_ip_rv_plic_reg_h,
     meson.source_root() / 'sw/device/lib/dif/dif_plic.c',
     'dif_plic_unittest.cc',
   ],

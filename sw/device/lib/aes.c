@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/aes.h"
 
-#include "aes_regs.h"  // Generated.
+#include "hw/ip/aes/aes_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define AES0_BASE_ADDR TOP_EARLGREY_AES_BASE_ADDR

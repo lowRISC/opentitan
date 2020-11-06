@@ -21,7 +21,7 @@ sw_lib_dif_plic = declare_dependency(
   link_with: static_library(
     'dif_plic_ot',
     sources: [
-      hw_top_earlgrey_rv_plic_reg_h,
+      hw_top_earlgrey_ip_rv_plic_reg_h,
       'dif_plic.c',
     ],
     dependencies: [

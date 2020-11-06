@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/testing/mock_mmio.h"
 
-#include "rv_plic_regs.h"  // Generated.
+#include "hw/top_earlgrey/ip/rv_plic/rv_plic_regs.h"  // Generated.
 
 namespace dif_plic_unittest {
 namespace {

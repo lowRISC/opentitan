@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 
-#include "rv_plic_regs.h"  // Generated.
+#include "hw/top_earlgrey/ip/rv_plic/rv_plic_regs.h"  // Generated.
 
 // If either of these static assertions fail, then the assumptions in this DIF
 // implementation should be revisited. In particular, `kPlicTargets`
