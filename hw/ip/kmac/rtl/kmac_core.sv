@@ -380,11 +380,11 @@ module kmac_core
           st == StKmacMsg && process_latched |=> !process_latched)
 
   // Assume configuration is stable during the operation
-  `ASSUME(KmacEnStable_M, $changed(kmac_en_i) |-> st == StIdle)
-  `ASSUME(ModeStable_M, $changed(mode_i) |-> st == StIdle)
-  `ASSUME(StrengthStable_M, $changed(strength_i) |-> st == StIdle)
-  `ASSUME(KeyLengthStable_M, $changed(key_len_i) |-> st == StIdle)
-  `ASSUME(KeyDataStable_M, $changed(key_data_i) |-> st == StIdle)
+  `ASSUME(KmacEnStable_M, $changed(kmac_en_i) |-> st == StKmacIdle)
+  `ASSUME(ModeStable_M, $changed(mode_i) |-> st == StKmacIdle)
+  `ASSUME(StrengthStable_M, $changed(strength_i) |-> st == StKmacIdle)
+  `ASSUME(KeyLengthStable_M, $changed(key_len_i) |-> st == StKmacIdle)
+  `ASSUME(KeyDataStable_M, $changed(key_data_i) |-> st == StKmacIdle)
 
   // no acked to MsgFIFO in StKmacMsg
   `ASSERT(AckOnlyInMessageState_A,
