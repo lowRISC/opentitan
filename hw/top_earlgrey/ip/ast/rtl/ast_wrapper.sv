@@ -62,6 +62,8 @@ module ast_wrapper import ast_wrapper_pkg::*;
   output ast_eflash_t ast_eflash_o
 );
 
+  // For nettype real awire;
+  import ana_pkg::*;
 
   ///////////////////////////
   // AST instantiation
@@ -77,6 +79,26 @@ module ast_wrapper import ast_wrapper_pkg::*;
   assign pwr_o.slow_clk_val = slow_clk_val ? pwrmgr_pkg::DiffValid : pwrmgr_pkg::DiffInvalid;
   assign pwr_o.io_clk_val   = io_clk_val   ? pwrmgr_pkg::DiffValid : pwrmgr_pkg::DiffInvalid;
   assign pwr_o.usb_clk_val  = usb_clk_val  ? pwrmgr_pkg::DiffValid : pwrmgr_pkg::DiffInvalid;
+
+// need to hookup later
+`ifndef VERILATOR
+`ifndef SYNTHESIS
+  awire adc_a0_a; // ADC A0 Analog Input
+  awire adc_a1_a; // ADC A1 Analog Input
+  assign adc_a0_a = 0.0;
+  assign adc_a1_a = 0.0;
+`else
+  wire adc_a0_a;  // ADC A0 Analog Input
+  wire adc_a1_a;  // ADC A1 Analog Input
+  assign adc_a0_a = 1'b0;
+  assign adc_a1_a = 1'b0;
+`endif
+`else
+  wire adc_a0_a;  // ADC A0 Analog Input
+  wire adc_a1_a;  // ADC A1 Analog Input
+  assign adc_a0_a = 1'b0;
+  assign adc_a1_a = 1'b0;
+`endif
 
   ast #(
     .EntropyStreams(EntropyStreams),
@@ -142,7 +164,8 @@ module ast_wrapper import ast_wrapper_pkg::*;
     .usb_ref_val_i,
 
     // ADC interface
-    .adc_ai('0),                               // need to hookup later
+    .adc_a0_ai(adc_a0_a),
+    .adc_a1_ai(adc_a1_a),
     .adc_chnsel_i(adc_i.channel_sel),
     .adc_pd_i(adc_i.pd),
     .adc_d_o(adc_o.data),
@@ -150,7 +173,7 @@ module ast_wrapper import ast_wrapper_pkg::*;
 
     // entropy source interface
     .rng_en_i(es_i.rng_enable),
-    .rng_ok_o(es_o.rng_valid),
+    .rng_val_o(es_o.rng_valid),
     .rng_b_o(es_o.rng_b),
 
     // entropy distribution interface - need to hookup later
