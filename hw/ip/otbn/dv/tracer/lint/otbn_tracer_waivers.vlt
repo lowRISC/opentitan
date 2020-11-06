@@ -1,0 +1,14 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+`verilator_config
+
+lint_off -rule BLKSEQ -file "*/otbn_tracer.sv" -match "*Blocking assignments (=) in sequential (flop or latch) block*"
+
+// Flag ISPR (3) has its own trace signals due to special handling
+lint_off -rule UNDRIVEN -file "*/otbn_trace_intf.sv" -match "*Bits of signal are not driven: 'ispr_*'[3]*"
+
+lint_off -rule UNUSED -file "*/otbn_trace_intf.sv" -match "*Bits of signal are not used: 'dmem_addr_o'*"
+lint_off -rule UNUSED -file "*/otbn_trace_intf.sv" -match "*Bits of signal are not used: 'insn_dec_shared'*"
+lint_off -rule UNUSED -file "*/otbn_trace_intf.sv" -match "*Bits of signal are not used: 'alu_bignum_operation'*"

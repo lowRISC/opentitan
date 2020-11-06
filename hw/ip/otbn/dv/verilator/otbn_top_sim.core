@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:otbn
       - lowrisc:dv:otbn_model
+      - lowrisc:ip:otbn_tracer
   files_verilator:
     depend:
       - lowrisc:dv:otbn_memutil
