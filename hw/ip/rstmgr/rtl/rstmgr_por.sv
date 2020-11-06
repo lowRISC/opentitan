@@ -49,7 +49,9 @@ module rstmgr_por #(
   // The stable is a vote of all filter stages.
   // Only when all the stages agree is the reset considered stable and count allowed.
 
-  prim_clock_mux2 u_rst_clean_mux (
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_rst_clean_mux (
     .clk0_i(rst_filter_n[FilterStages-1]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
