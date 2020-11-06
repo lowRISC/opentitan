@@ -252,7 +252,9 @@ module top_earlgrey_asic (
     .AesMasking(1'b1),
     .AesSBoxImpl(aes_pkg::SBoxImplCanrightMasked),
     .SecAesStartTriggerDelay(0),
-    .SecAesAllowForcingMasks(1'b0)
+    .SecAesAllowForcingMasks(1'b0),
+    .KmacEnMasking(1),  // DOM AND + Masking scheme
+    .KmacReuseShare(0)
   ) top_earlgrey (
     .rst_ni          ( rst_n         ),
     // ast connections
