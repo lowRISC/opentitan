@@ -81,6 +81,40 @@ Notational caveats:
 * Unless otherwise noted, all symbols mentioned below are required.
 
 
+#### Hardware Parameterization
+
+Our aim is that a single DIF library can be used with multiple instances of the
+same IP on the same chip, even when those IPs have been instantiated with
+different hardware parameters.
+
+At the moment, we have a good approach to being able to address separate
+hardware instances instantiated at separate addresses, as long as they have the
+same hardware parameters (see the `base_addr` member in `dif_<ip>_params_t`).
+Most other parameters come from the specific IP on a case-by-case basis.
+
+As much as possible, we would like to hide these parameters underneath the
+interface of the DIF, but this is not always possible, especially where
+particular functionality requires the DIF caller to allocate memory. This should
+be done even if the current DIF implementation does not support changing
+parameters, so we can add this parameterization later.
+
+In order to support exposing these parameters to callers, DIFs should provide
+query functions which take a `dif_<ip>_params_t`, rather than `#define`s or
+global variable definitions. These functions do not have to return
+`dif_<ip>_result_t` if they do not error.
+
+An example of such a query function is provided in the template, called
+`dif_<ip>_get_size`, but we are not placing restrictions on the naming of these
+functions.
+
+One implication of this decision is that we will not always be able to provide
+struct definitions containing fixed-size buffers, which we have relied upon in
+the past. These structs should instead use a pointer and a size member to safely
+store the buffer outside the struct and use it without overflows. From the DIF's
+perspective, these buffers are dynamically allocated, even if we get static
+information about their size from other information (e.g. topgen).
+
+
 #### Base Types
 
 The following basic types are expected to be provided by all DIFs (unless
