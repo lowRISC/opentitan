@@ -574,16 +574,17 @@ module top_earlgrey #(
     .rerror_i (ram_main_rerror)
   );
 
-  prim_ram_1p_adv #(
+  prim_ram_1p_scr #(
     .Width(32),
     .Depth(16384),
     .DataBitsPerMask(8),
-    .CfgW(8),
-    // TODO: enable parity once supported by the simulation infrastructure
-    .EnableParity(0)
+    .CfgWidth(8)
   ) u_ram1p_ram_main (
     .clk_i   (clkmgr_clocks.clk_main_infra),
     .rst_ni   (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+
+    .key_i    ( '0 ),
+    .nonce_i  ( '0 ),
 
     .req_i    (ram_main_req),
     .write_i  (ram_main_we),
@@ -593,8 +594,10 @@ module top_earlgrey #(
     .rdata_o  (ram_main_rdata),
     .rvalid_o (ram_main_rvalid),
     .rerror_o (ram_main_rerror),
+    .raddr_o  (  ),
     .cfg_i    ('0)
   );
+
   // sram device
   logic        ram_ret_req;
   logic        ram_ret_we;
@@ -626,16 +629,17 @@ module top_earlgrey #(
     .rerror_i (ram_ret_rerror)
   );
 
-  prim_ram_1p_adv #(
+  prim_ram_1p_scr #(
     .Width(32),
     .Depth(1024),
     .DataBitsPerMask(8),
-    .CfgW(8),
-    // TODO: enable parity once supported by the simulation infrastructure
-    .EnableParity(0)
+    .CfgWidth(8)
   ) u_ram1p_ram_ret (
     .clk_i   (clkmgr_clocks.clk_io_div4_infra),
     .rst_ni   (rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
+
+    .key_i    ( '0 ),
+    .nonce_i  ( '0 ),
 
     .req_i    (ram_ret_req),
     .write_i  (ram_ret_we),
@@ -645,8 +649,10 @@ module top_earlgrey #(
     .rdata_o  (ram_ret_rdata),
     .rvalid_o (ram_ret_rvalid),
     .rerror_o (ram_ret_rerror),
+    .raddr_o  (  ),
     .cfg_i    ('0)
   );
+
 
   // host to flash communication
   logic flash_host_req;
