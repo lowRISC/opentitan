@@ -179,6 +179,7 @@
       ]
     }
 # all alerts
+    {skipto: "0x20"},
     { multireg: { name:     "ALERT_EN",
                   desc:     '''Enable register for alerts.
                   ''',
@@ -195,6 +196,7 @@
                   ]
                 }
     },
+    {skipto: "0x120"},
     { multireg: { name:     "ALERT_CLASS",
                   desc:     '''Class assignment of alerts.
                   ''',
@@ -219,6 +221,7 @@
                   ]
                 }
     },
+    {skipto: "0x220"},
     { multireg: {
       name: "ALERT_CAUSE",
       desc: "Alert Cause Register",
@@ -235,6 +238,7 @@
       }
     },
 # local alerts
+    {skipto: "0x320"},
     { multireg: { name:     "LOC_ALERT_EN",
                   desc:     '''Enable register for the aggregated local alerts "alert
                   pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).

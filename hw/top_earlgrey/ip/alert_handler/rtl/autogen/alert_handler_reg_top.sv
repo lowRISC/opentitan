@@ -23,7 +23,7 @@ module alert_handler_reg_top (
 
   import alert_handler_reg_pkg::* ;
 
-  localparam int AW = 8;
+  localparam int AW = 10;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
