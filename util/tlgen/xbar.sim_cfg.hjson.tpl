@@ -12,8 +12,8 @@
   // Testplan hjson file.
   testplan: "{proj_root}/${xbar.ip_path}/data/autogen/{dut}_testplan.hjson"
 
-  // Add xbar_${xbar.name} specific exclusion files.
-  vcs_cov_excl_files: ["{proj_root}/${xbar.ip_path}/dv/cov/xbar_cov_excl.el"]
+  // Add xbar_main specific exclusion files.
+  vcs_cov_excl_files: ["{proj_root}/hw/top_earlgrey/ip/{dut}/dv/autogen/xbar_cov_excl.el"]
 
   // Import additional common sim cfg files.
   import_cfgs: [// xbar common sim cfg file

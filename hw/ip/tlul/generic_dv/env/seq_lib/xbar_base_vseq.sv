@@ -62,7 +62,7 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
     foreach (device_seq[i]) begin
       device_seq[i] = tl_device_seq::type_id::create(
                       $sformatf("%0s_seq", xbar_devices[i].device_name));
-      device_seq[i].d_error_pct = $urandom_range(0, 10);
+      device_seq[i].d_error_pct = $urandom_range(0, 70);
     end
   endfunction : pre_randomize
 
