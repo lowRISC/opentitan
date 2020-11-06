@@ -95,9 +95,24 @@ def nexysvideo_earlgrey(tmp_path_factory, topsrcdir, bin_dir, localconf_nexysvid
     assert p_pgm.proc.returncode == 0
 
 
-@pytest.fixture(params=config.TEST_APPS_SELFCHECKING)
+@pytest.fixture(params=config.TEST_APPS_SELFCHECKING,
+                ids=lambda param: param['name'])
 def app_selfchecking_bin(request, bin_dir):
-    test_filename = request.param + '_fpga_nexysvideo.bin'
+    app_config = request.param
+
+    if 'name' not in app_config:
+        raise RuntimeError("Key 'name' not found in TEST_APPS_SELFCHECKING")
+
+    if 'targets' in app_config and 'fpga_nexysvideo' not in app_config[
+            'targets']:
+        pytest.skip("Test %s skipped on NexysVideo FPGA." % app_config['name'])
+
+    if 'binary_name' in app_config:
+        binary_name = app_config['binary_name']
+    else:
+        binary_name = app_config['name']
+
+    test_filename = binary_name + '_fpga_nexysvideo.bin'
     bin_path = bin_dir / 'sw/device/tests' / test_filename
     assert bin_path.is_file()
     return bin_path

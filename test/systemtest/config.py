@@ -2,22 +2,54 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Self-checking test applications, which return PASS or FAIL after completion,
-# usable on all targets.
+# List of self-checking test applications, which return PASS or FAIL after
+# completion.
+#
+# Each list entry is a dict with the following keys:
+#
+# name:
+#   Name of the test (required)
+# binary_name:
+#   Basename of the test binary. Default: name (optional)
+# verilator_extra_args:
+#   A list of additional command-line arguments passed to the Verilator
+#   simulation (optional).
+# targets:
+#   List of targets for which the test is executed. The test will be executed
+#   on all targets if not given (optional).
 TEST_APPS_SELFCHECKING = [
-    "aes_test",
-    "crt_test",
-    "dif_plic_sanitytest",
-    "dif_rstmgr_sanitytest",
-    "dif_rv_timer_sanitytest",
-    "dif_uart_sanitytest",
-    "flash_ctrl_test",
-    "pmp_sanitytest_napot",
-    "pmp_sanitytest_tor",
-    "sha256_test",
-]
-
-# Self-checking applications running on the Verilator simulation
-TEST_APPS_SELFCHECKING_SIM_VERILATOR = TEST_APPS_SELFCHECKING + [
-    "usbdev_test",
+    {
+        "name": "aes_test",
+    },
+    {
+        "name": "crt_test",
+    },
+    {
+        "name": "dif_plic_sanitytest",
+    },
+    {
+        "name": "dif_rstmgr_sanitytest",
+    },
+    {
+        "name": "dif_rv_timer_sanitytest",
+    },
+    {
+        "name": "dif_uart_sanitytest",
+    },
+    {
+        "name": "flash_ctrl_test",
+    },
+    {
+        "name": "pmp_sanitytest_napot",
+    },
+    {
+        "name": "pmp_sanitytest_tor",
+    },
+    {
+        "name": "sha256_test",
+    },
+    {
+        "name": "usbdev_test",
+        "targets": ["sim_verilator"],
+    },
 ]
