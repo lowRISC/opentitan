@@ -114,14 +114,7 @@ module edn_reg_top (
   logic [31:0] sw_cmd_req_wd;
   logic sw_cmd_req_we;
   logic sw_cmd_sts_cmd_rdy_qs;
-  logic sw_cmd_sts_cmd_rdy_wd;
-  logic sw_cmd_sts_cmd_rdy_we;
-  logic sw_cmd_sts_cmd_ack_qs;
-  logic sw_cmd_sts_cmd_ack_wd;
-  logic sw_cmd_sts_cmd_ack_we;
   logic sw_cmd_sts_cmd_sts_qs;
-  logic sw_cmd_sts_cmd_sts_wd;
-  logic sw_cmd_sts_cmd_sts_we;
   logic [31:0] reseed_cmd_wd;
   logic reseed_cmd_we;
   logic [31:0] generate_cmd_wd;
@@ -521,15 +514,14 @@ module edn_reg_top (
   //   F[cmd_rdy]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_sw_cmd_sts_cmd_rdy (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (sw_cmd_sts_cmd_rdy_we),
-    .wd     (sw_cmd_sts_cmd_rdy_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.sw_cmd_sts.cmd_rdy.de),
@@ -544,44 +536,17 @@ module edn_reg_top (
   );
 
 
-  //   F[cmd_ack]: 1:1
+  //   F[cmd_sts]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_sw_cmd_sts_cmd_ack (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (sw_cmd_sts_cmd_ack_we),
-    .wd     (sw_cmd_sts_cmd_ack_wd),
-
-    // from internal hardware
-    .de     (hw2reg.sw_cmd_sts.cmd_ack.de),
-    .d      (hw2reg.sw_cmd_sts.cmd_ack.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (sw_cmd_sts_cmd_ack_qs)
-  );
-
-
-  //   F[cmd_sts]: 4:4
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_sw_cmd_sts_cmd_sts (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (sw_cmd_sts_cmd_sts_we),
-    .wd     (sw_cmd_sts_cmd_sts_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.sw_cmd_sts.cmd_sts.de),
@@ -872,14 +837,7 @@ module edn_reg_top (
   assign sw_cmd_req_we = addr_hit[6] & reg_we & ~wr_err;
   assign sw_cmd_req_wd = reg_wdata[31:0];
 
-  assign sw_cmd_sts_cmd_rdy_we = addr_hit[7] & reg_we & ~wr_err;
-  assign sw_cmd_sts_cmd_rdy_wd = reg_wdata[0];
 
-  assign sw_cmd_sts_cmd_ack_we = addr_hit[7] & reg_we & ~wr_err;
-  assign sw_cmd_sts_cmd_ack_wd = reg_wdata[1];
-
-  assign sw_cmd_sts_cmd_sts_we = addr_hit[7] & reg_we & ~wr_err;
-  assign sw_cmd_sts_cmd_sts_wd = reg_wdata[4];
 
   assign reseed_cmd_we = addr_hit[8] & reg_we & ~wr_err;
   assign reseed_cmd_wd = reg_wdata[31:0];
@@ -947,8 +905,7 @@ module edn_reg_top (
 
       addr_hit[7]: begin
         reg_rdata_next[0] = sw_cmd_sts_cmd_rdy_qs;
-        reg_rdata_next[1] = sw_cmd_sts_cmd_ack_qs;
-        reg_rdata_next[4] = sw_cmd_sts_cmd_sts_qs;
+        reg_rdata_next[1] = sw_cmd_sts_cmd_sts_qs;
       end
 
       addr_hit[8]: begin
