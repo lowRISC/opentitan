@@ -2,31 +2,130 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <algorithm>
+#include <cassert>
 #include <fstream>
+#include <getopt.h>
 #include <iomanip>
 #include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
 #include <svdpi.h>
+#include <vector>
 
+#include "log_trace_listener.h"
 #include "otbn_memutil.h"
+#include "otbn_trace_listener.h"
 #include "verilated_toplevel.h"
 #include "verilator_memutil.h"
 #include "verilator_sim_ctrl.h"
+
+std::vector<OTBNTraceListener *> otbn_trace_listeners;
+
+void AddOTBNTraceListener(OTBNTraceListener *l) {
+  otbn_trace_listeners.push_back(l);
+}
+
+void RemoveOTBNTraceListener(OTBNTraceListener *l) {
+  auto l_iter =
+      std::find(otbn_trace_listeners.begin(), otbn_trace_listeners.end(), l);
+
+  if (l_iter != otbn_trace_listeners.end()) {
+    otbn_trace_listeners.erase(l_iter);
+  }
+}
 
 extern "C" {
 extern unsigned int otbn_base_call_stack_get_size();
 extern unsigned int otbn_base_call_stack_get_element(int index);
 extern unsigned int otbn_base_reg_get(int index);
 extern unsigned int otbn_bignum_reg_get(int index, int quarter);
+
+extern void accept_otbn_trace_string(const char *trace,
+                                     unsigned int cycle_count) {
+  assert(trace != nullptr);
+
+  std::string trace_str(trace);
+
+  for (auto l : otbn_trace_listeners) {
+    l->AcceptTraceString(trace, cycle_count);
+  }
 }
+}
+
+/**
+ * SimCtrlExtension that adds a '--otbn-trace-file' command line option. If set
+ * it sets up a LogTraceListener that will dump out the trace to the given log
+ * file
+ */
+class OTBNTraceUtil : public SimCtrlExtension {
+ private:
+  std::unique_ptr<LogTraceListener> log_trace_listener_;
+
+  bool SetupTraceLog(const std::string &log_filename) {
+    try {
+      log_trace_listener_ = std::make_unique<LogTraceListener>(log_filename);
+      AddOTBNTraceListener(log_trace_listener_.get());
+      return true;
+    } catch (const std::runtime_error &err) {
+      std::cerr << "ERROR: Failed to set up trace log: " << err.what()
+                << std::endl;
+      return false;
+    }
+
+    return false;
+  }
+
+  void PrintHelp() {
+    std::cout << "Trace log utilities:\n\n"
+                 "--otbn-trace-file=FILE\n"
+                 "  Write OTBN trace log to FILE\n\n";
+  }
+
+ public:
+  virtual bool ParseCLIArguments(int argc, char **argv, bool &exit_app) {
+    const struct option long_options[] = {
+        {"otbn-trace-file", required_argument, nullptr, 'l'},
+        {"help", no_argument, nullptr, 'h'},
+        {nullptr, no_argument, nullptr, 0}};
+
+    // Reset the command parsing index in-case other utils have already parsed
+    // some arguments
+    optind = 1;
+    while (1) {
+      int c = getopt_long(argc, argv, "h", long_options, nullptr);
+      if (c == -1) {
+        break;
+      }
+
+      switch (c) {
+        case 0:
+          break;
+        case 'l':
+          return SetupTraceLog(optarg);
+        case 'h':
+          PrintHelp();
+          break;
+      }
+    }
+
+    return true;
+  }
+
+  ~OTBNTraceUtil() { RemoveOTBNTraceListener(log_trace_listener_.get()); }
+};
 
 int main(int argc, char **argv) {
   otbn_top_sim top;
   VerilatorMemUtil memutil(new OtbnMemUtil("TOP.otbn_top_sim"));
+  OTBNTraceUtil traceutil;
 
   VerilatorSimCtrl &simctrl = VerilatorSimCtrl::GetInstance();
   simctrl.SetTop(&top, &top.IO_CLK, &top.IO_RST_N,
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
   simctrl.RegisterExtension(&memutil);
+  simctrl.RegisterExtension(&traceutil);
 
   bool exit_app = false;
   int ret_code = simctrl.ParseCommandArgs(argc, argv, exit_app);

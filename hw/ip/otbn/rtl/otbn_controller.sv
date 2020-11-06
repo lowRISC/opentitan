@@ -103,12 +103,6 @@ module otbn_controller
 
   logic done_d, done_q;
 
-  typedef enum logic [1:0] {
-    OtbnStateHalt,
-    OtbnStateRun,
-    OtbnStateStall
-  } otbn_state_e;
-
   otbn_state_e state_q, state_d;
 
   logic stall;
