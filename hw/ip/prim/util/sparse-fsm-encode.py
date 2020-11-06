@@ -196,6 +196,10 @@ def main():
         pop_cnt = bin(c).count('1')
         if pop_cnt < args.n and pop_cnt > 0:
             for k in encodings:
+                # disallow candidates that are the complement of other states
+                if c == ~k:
+                    break
+                # disallow candidates that are too close to other states
                 if bin(c ^ k).count('1') < args.d:
                     break
             else:
