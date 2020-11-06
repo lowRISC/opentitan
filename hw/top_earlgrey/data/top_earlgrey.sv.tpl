@@ -342,13 +342,11 @@ module top_${top["name"]} #(
     .rerror_i (${m["name"]}_rerror)
   );
 
-  prim_ram_1p_adv #(
+  prim_ram_1p_scr #(
     .Width(${data_width}),
     .Depth(${sram_depth}),
     .DataBitsPerMask(8),
-    .CfgW(8),
-    // TODO: enable parity once supported by the simulation infrastructure
-    .EnableParity(0)
+    .CfgWidth(8)
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -356,6 +354,9 @@ module top_${top["name"]} #(
     % for key, value in resets.items():
     .${key}   (${value}),
     % endfor
+
+    .key_i    ( '0 ),
+    .nonce_i  ( '0 ),
 
     .req_i    (${m["name"]}_req),
     .write_i  (${m["name"]}_we),
@@ -365,8 +366,10 @@ module top_${top["name"]} #(
     .rdata_o  (${m["name"]}_rdata),
     .rvalid_o (${m["name"]}_rvalid),
     .rerror_o (${m["name"]}_rerror),
+    .raddr_o  (  ),
     .cfg_i    ('0)
   );
+
   % elif m["type"] == "rom":
 <%
      data_width = int(top["datawidth"])

@@ -6,6 +6,8 @@
 
 package sram_ctrl_reg_pkg;
 
+  // Param list
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
