@@ -465,7 +465,39 @@ It is recommended to follow these guidelines when collecting coverage:
 *  Collect all coverage metrics (except toggle based on above bullet) on the DUT and all of its non-pre-verified sub-modules
 *  Treat pre-verified sub-modules as ['black-box'](#integration-testing) in terms of coverage collection
 
-### X-Propagation (Xprop)
+### Unreachable Coverage Analysis
+
+Instead of manually reviewing coverage reports to find unreachable code, we use VCS UNR to generate a UNR exclusion file which lists all the unreachable codes.
+VCS UNR (Unreachability) is a formal solution that determines the unreachable coverage objects automatically from simulation.
+The same coverage hierarchy file and the exclusion files used for the simulation can be supplied to VCS UNR.
+
+Follow these steps to run and submit the exclusion file.
+1. Generate the VCS coverage database for the block by running full regression with `--cov` switch.
+2. Launch the VCS UNR flow:
+```
+util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson --cov-unr
+```
+3. If no exclusion file is generated, there is no unreachable code in RTL.
+   If there is an exclusion file generated, the output should be reviewed by both designer and verification engineer.
+   When the unreachable code is sensible and we decide to exclude it in coverage report, create a PR to add to ['common_cov_excl.el'](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/common_cov_excl.el) or block specific exclusion file, such as ['uart_cov_excl.el'](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/dv/cov/uart_cov_excl.el)
+
+Here are some guidelines for using UNR and checking in generating exclusion.
+1. It's encouraged that designers run UNR to check the design in the early design stage (D1/D2), but adding exclusions for unreachable coverage should be done between the D2 and V3 stage when the design is frozen (no feature update is allowed, except bug fix).
+Getting to 90% coverage via functional tests is easy.
+Over 90% is the hard part as there may be a big chunk of unreachable codes.
+It is cumbersome to go through a coverage report to manually add exclusions, but the VCS UNR flow provides a path to weed out all of the unreachable ones.
+However, it is not the right thing to add a coverage exclusion file to reach the 80% needed for V2 since the design isn't stable at that period.
+2. If any RTL changes happen to the design after the coverage exclusion file has been created, it needs to be redone and re-reviewed.
+3. All coverage exclusion files and coverage configuration file (if it's not using default [cover.cfg](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/cover.cfg)) should be checked during sign-off.
+4. Keep the VCS generated `CHECKSUM` along with exclusions, which is served as a crosscheck to ensure that the exclusion isn't applied when there is some change on the corresponding codes and the exclusion is outdated.
+We should not use `--exclude-bypass-checks` to disable the check, otherwise, it's needed to have additional review to make sure exclusions match to the design.
+5. For IP verified in IP-level test bench, UNR should be run in IP-level to generate exclusion.
+For IP verified in top-level, UNR should be run in top-level.
+There is no reuse of exclusions from IP to top, since they are independently closed for coverage.
+
+Note: VCS UNR doesn't support assertion or functional coverage.
+
+## X-Propagation (Xprop)
 
 Standard RTL simulations (RTL-sim) ignore the uncertainty of X-valued control signals and assign predictable output values.
 As a result, classic RTL-sim often fail to detect design problems related to the lack of Xprop, which actually can be detected in gate-level simulations (gate-sim).
