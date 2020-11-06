@@ -7,17 +7,17 @@
 
 module entropy_src import entropy_src_pkg::*; #(
   parameter logic AlertAsyncOn = 1,
-  parameter int unsigned EsFifoDepth = 2
+  parameter int EsFifoDepth = 2
 ) (
-  input  clk_i,
-  input  rst_ni,
+  input logic clk_i,
+  input logic rst_ni,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Efuse Interface
-  input efuse_es_sw_reg_en_i,
+  input logic efuse_es_sw_reg_en_i,
 
   // Entropy Interface
   input  entropy_src_hw_if_req_t entropy_src_hw_if_i,

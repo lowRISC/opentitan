@@ -6,16 +6,16 @@
 //
 
 module entropy_src_core import entropy_src_pkg::*; #(
-  parameter int unsigned EsFifoDepth = 2
+  parameter int EsFifoDepth = 2
 ) (
-  input                  clk_i,
-  input                  rst_ni,
+  input logic clk_i,
+  input logic rst_ni,
 
   input  entropy_src_reg_pkg::entropy_src_reg2hw_t reg2hw,
   output entropy_src_reg_pkg::entropy_src_hw2reg_t hw2reg,
 
   // Efuse Interface
-  input efuse_es_sw_reg_en_i,
+  input logic efuse_es_sw_reg_en_i,
 
 
   // Entropy Interface
@@ -40,13 +40,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   import entropy_src_reg_pkg::*;
 
-  localparam int unsigned Clog2EsFifoDepth = $clog2(EsFifoDepth);
-  localparam int unsigned PostHTWidth = 64;
-  localparam int unsigned RngBusWidth = 4;
-  localparam int unsigned HalfRegWidth = 16;
-  localparam int unsigned FullRegWidth = 32;
-  localparam int unsigned EigthRegWidth = 4;
-  localparam int unsigned SeedLen = 384;
+  localparam int Clog2EsFifoDepth = $clog2(EsFifoDepth);
+  localparam int PostHTWidth = 64;
+  localparam int RngBusWidth = 4;
+  localparam int HalfRegWidth = 16;
+  localparam int FullRegWidth = 32;
+  localparam int EigthRegWidth = 4;
+  localparam int SeedLen = 384;
 
   // signals
   logic [RngBusWidth-1:0] lfsr_value;
@@ -72,8 +72,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                   sfifo_esrng_push;
   logic                   sfifo_esrng_pop;
   logic                   sfifo_esrng_clr;
+  logic                   sfifo_esrng_not_full;
   logic                   sfifo_esrng_not_empty;
-  logic                   sfifo_esrng_err;
+  logic [2:0]             sfifo_esrng_err;
 
   logic [Clog2EsFifoDepth:0] sfifo_esfinal_depth;
   logic [(1+SeedLen)-1:0] sfifo_esfinal_wdata;
@@ -83,7 +84,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                   sfifo_esfinal_clr;
   logic                   sfifo_esfinal_not_full;
   logic                   sfifo_esfinal_not_empty;
-  logic                   sfifo_esfinal_err;
+  logic [2:0]             sfifo_esfinal_err;
   logic [SeedLen-1:0]     esfinal_data;
   logic                   esfinal_fips_flag;
 
@@ -153,15 +154,24 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [EigthRegWidth-1:0] bucket_fail_count;
   logic                     bucket_fail_pulse;
 
-  logic [HalfRegWidth-1:0] markov_fips_threshold;
-  logic [HalfRegWidth-1:0] markov_bypass_threshold;
-  logic [HalfRegWidth-1:0] markov_threshold;
-  logic [HalfRegWidth-1:0] markov_event_cnt;
-  logic [HalfRegWidth-1:0] markov_event_hwm_fips;
-  logic [HalfRegWidth-1:0] markov_event_hwm_bypass;
-  logic [FullRegWidth-1:0] markov_total_fails;
-  logic [EigthRegWidth-1:0] markov_fail_count;
-  logic                     markov_fail_pulse;
+  logic [HalfRegWidth-1:0] markov_hi_fips_threshold;
+  logic [HalfRegWidth-1:0] markov_hi_bypass_threshold;
+  logic [HalfRegWidth-1:0] markov_hi_threshold;
+  logic [HalfRegWidth-1:0] markov_lo_fips_threshold;
+  logic [HalfRegWidth-1:0] markov_lo_bypass_threshold;
+  logic [HalfRegWidth-1:0] markov_lo_threshold;
+  logic [HalfRegWidth-1:0] markov_hi_event_cnt;
+  logic [HalfRegWidth-1:0] markov_lo_event_cnt;
+  logic [HalfRegWidth-1:0] markov_hi_event_hwm_fips;
+  logic [HalfRegWidth-1:0] markov_hi_event_hwm_bypass;
+  logic [HalfRegWidth-1:0] markov_lo_event_hwm_fips;
+  logic [HalfRegWidth-1:0] markov_lo_event_hwm_bypass;
+  logic [FullRegWidth-1:0] markov_hi_total_fails;
+  logic [FullRegWidth-1:0] markov_lo_total_fails;
+  logic [EigthRegWidth-1:0] markov_hi_fail_count;
+  logic [EigthRegWidth-1:0] markov_lo_fail_count;
+  logic                     markov_hi_fail_pulse;
+  logic                     markov_lo_fail_pulse;
 
   logic [HalfRegWidth-1:0] extht_hi_fips_threshold;
   logic [HalfRegWidth-1:0] extht_hi_bypass_threshold;
@@ -231,6 +241,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        ht_esbus_vld_dly2_q, ht_esbus_vld_dly2_d;
   logic        boot_bypass_q, boot_bypass_d;
   logic        ht_failed_q, ht_failed_d;
+  logic [HalfRegWidth-1:0] window_cntr_q, window_cntr_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -241,6 +252,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       ht_esbus_dly_q        <= '0;
       ht_esbus_vld_dly_q    <= '0;
       ht_esbus_vld_dly2_q   <= '0;
+      window_cntr_q         <= '0;
     end else begin
       es_rate_cntr_q        <= es_rate_cntr_d;
       lfsr_incr_dly_q       <= lfsr_incr_dly_d;
@@ -249,6 +261,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       ht_esbus_dly_q        <= ht_esbus_dly_d;
       ht_esbus_vld_dly_q    <= ht_esbus_vld_dly_d;
       ht_esbus_vld_dly2_q   <= ht_esbus_vld_dly2_d;
+      window_cntr_q         <= window_cntr_d;
     end
 
   assign es_enable = (|reg2hw.conf.enable.q);
@@ -361,8 +374,36 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // set the interrupt event when enabled
   assign event_es_entropy_valid = pfifo_swread_not_empty;
 
+
   // set the interrupt sources
-  assign event_es_fifo_err = sfifo_esrng_err || sfifo_esfinal_err;
+  assign event_es_fifo_err =
+         (|sfifo_esrng_err) ||
+         (sfifo_esfinal_err);
+
+  // set the err code source bits
+  assign hw2reg.err_code.sfifo_esrng_err.d = 1'b1;
+  assign hw2reg.err_code.sfifo_esrng_err.de = (|sfifo_esrng_err);
+
+  assign hw2reg.err_code.sfifo_esfinal_err.d = 1'b1;
+  assign hw2reg.err_code.sfifo_esfinal_err.de = (|sfifo_esfinal_err);
+
+
+ // set the err code type bits
+  assign hw2reg.err_code.fifo_write_err.d = 1'b1;
+  assign hw2reg.err_code.fifo_write_err.de =
+         sfifo_esrng_err[2] ||
+         sfifo_esfinal_err[2];
+
+  assign hw2reg.err_code.fifo_read_err.d = 1'b1;
+  assign hw2reg.err_code.fifo_read_err.de =
+         sfifo_esrng_err[1] ||
+         sfifo_esfinal_err[1];
+
+  assign hw2reg.err_code.fifo_state_err.d = 1'b1;
+  assign hw2reg.err_code.fifo_state_err.de =
+         sfifo_esrng_err[0] ||
+         sfifo_esfinal_err[0];
+
 
   // set the debug status reg
   assign hw2reg.debug_status.entropy_fifo_depth.d = sfifo_esfinal_depth;
@@ -382,7 +423,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clr_i      (sfifo_esrng_clr),
     .wvalid_i   (sfifo_esrng_push),
     .wdata_i    (sfifo_esrng_wdata),
-    .wready_o   (),
+    .wready_o   (sfifo_esrng_not_full),
     .rvalid_o   (sfifo_esrng_not_empty),
     .rdata_o    (sfifo_esrng_rdata),
     .rready_i   (sfifo_esrng_pop),
@@ -401,7 +442,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // fifo err
   assign sfifo_esrng_err =
-         (sfifo_esrng_pop && !sfifo_esrng_not_empty );
+         {1'b0,
+         (sfifo_esrng_pop && !sfifo_esrng_not_empty),
+         (!sfifo_esrng_not_full && !sfifo_esrng_not_empty)};
 
 
   // pack esrng bus into signal bit packer
@@ -462,17 +505,24 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign repcnt_fips_threshold = reg2hw.repcnt_thresholds.fips_repcnt_thresh.q;
   assign repcnt_bypass_threshold = reg2hw.repcnt_thresholds.bypass_repcnt_thresh.q;
 
+
   assign adaptp_hi_fips_threshold = reg2hw.adaptp_hi_thresholds.fips_adaptp_hi_thresh.q;
   assign adaptp_hi_bypass_threshold = reg2hw.adaptp_hi_thresholds.bypass_adaptp_hi_thresh.q;
 
   assign adaptp_lo_fips_threshold = reg2hw.adaptp_lo_thresholds.fips_adaptp_lo_thresh.q;
   assign adaptp_lo_bypass_threshold = reg2hw.adaptp_lo_thresholds.bypass_adaptp_lo_thresh.q;
 
+
   assign bucket_fips_threshold = reg2hw.bucket_thresholds.fips_bucket_thresh.q;
   assign bucket_bypass_threshold = reg2hw.bucket_thresholds.bypass_bucket_thresh.q;
 
-  assign markov_fips_threshold = reg2hw.markov_thresholds.fips_markov_thresh.q;
-  assign markov_bypass_threshold = reg2hw.markov_thresholds.bypass_markov_thresh.q;
+
+  assign markov_hi_fips_threshold = reg2hw.markov_hi_thresholds.fips_markov_hi_thresh.q;
+  assign markov_hi_bypass_threshold = reg2hw.markov_hi_thresholds.bypass_markov_hi_thresh.q;
+
+  assign markov_lo_fips_threshold = reg2hw.markov_lo_thresholds.fips_markov_lo_thresh.q;
+  assign markov_lo_bypass_threshold = reg2hw.markov_lo_thresholds.bypass_markov_lo_thresh.q;
+
 
   assign extht_hi_fips_threshold = reg2hw.extht_hi_thresholds.fips_extht_hi_thresh.q;
   assign extht_hi_bypass_threshold = reg2hw.extht_hi_thresholds.bypass_extht_hi_thresh.q;
@@ -488,7 +538,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign adaptp_lo_threshold = es_bypass_mode ? adaptp_lo_bypass_threshold :
          adaptp_lo_fips_threshold;
   assign bucket_threshold = es_bypass_mode ? bucket_bypass_threshold : bucket_fips_threshold;
-  assign markov_threshold = es_bypass_mode ? markov_bypass_threshold : markov_fips_threshold;
+  assign markov_hi_threshold = es_bypass_mode ? markov_hi_bypass_threshold :
+         markov_hi_fips_threshold;
+  assign markov_lo_threshold = es_bypass_mode ? markov_lo_bypass_threshold :
+         markov_lo_fips_threshold;
   assign extht_hi_threshold = es_bypass_mode ? extht_hi_bypass_threshold :
          extht_hi_fips_threshold;
   assign extht_lo_threshold = es_bypass_mode ? extht_lo_bypass_threshold :
@@ -508,6 +561,20 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_bypass_mode = boot_bypass_q || es_bypass_to_sw;
 
   //--------------------------------------------
+  // common health test window counter
+  //--------------------------------------------
+
+  // Window counter
+  assign window_cntr_d =
+         health_test_clr ? '0 :
+         health_test_done_pulse ? '0  :
+         health_test_esbus_vld ? (window_cntr_q+1) :
+         window_cntr_q;
+
+  // Window wrap condition
+  assign health_test_done_pulse = (window_cntr_q == health_test_window);
+
+  //--------------------------------------------
   // repetitive count test
   //--------------------------------------------
 
@@ -522,9 +589,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clear_i             (health_test_clr),
     .active_i            (repcnt_active),
     .thresh_i            (repcnt_threshold),
-    .window_i            (health_test_window),
     .test_cnt_o          (repcnt_event_cnt),
-    .test_done_pulse_o   (health_test_done_pulse),
     .test_fail_pulse_o   (repcnt_fail_pulse)
   );
 
@@ -585,9 +650,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .active_i            (adaptp_active),
     .thresh_hi_i         (adaptp_hi_threshold),
     .thresh_lo_i         (adaptp_lo_threshold),
-    .window_i            (health_test_window),
+    .window_wrap_pulse_i (health_test_done_pulse),
     .test_cnt_o          (adaptp_event_cnt),
-    .test_done_pulse_o   (), // NC
     .test_fail_hi_pulse_o(adaptp_hi_fail_pulse),
     .test_fail_lo_pulse_o(adaptp_lo_fail_pulse)
   );
@@ -693,10 +757,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clear_i             (health_test_clr),
     .active_i            (bucket_active),
     .thresh_i            (bucket_threshold),
-    .window_i            (health_test_window),
+    .window_wrap_pulse_i (health_test_done_pulse),
     .test_cnt_o          (bucket_event_cnt),
-    .test_done_pulse_o     (), // NC
-    .test_fail_pulse_o     (bucket_fail_pulse)
+    .test_fail_pulse_o   (bucket_fail_pulse)
   );
 
   entropy_src_watermark_reg #(
@@ -755,53 +818,97 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .entropy_bit_vld_i   (health_test_esbus_vld),
     .clear_i             (health_test_clr),
     .active_i            (markov_active),
-    .thresh_i            (markov_threshold),
-    .window_i            (health_test_window),
-    .test_cnt_o          (markov_event_cnt),
-    .test_done_pulse_o   (),// NC
-    .test_fail_pulse_o   (markov_fail_pulse)
+    .thresh_hi_i         (markov_hi_threshold),
+    .thresh_lo_i         (markov_lo_threshold),
+    .window_wrap_pulse_i (health_test_done_pulse),
+    .test_cnt_hi_o       (markov_hi_event_cnt),
+    .test_cnt_lo_o       (markov_lo_event_cnt),
+    .test_fail_hi_pulse_o (markov_hi_fail_pulse),
+    .test_fail_lo_pulse_o (markov_lo_fail_pulse)
   );
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
     .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_markov_fips (
+  ) u_entropy_src_watermark_reg_markov_hi_fips (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .active_i            (markov_active),
-    .event_i             (markov_fail_pulse && !es_bypass_mode),
-    .value_i             (markov_event_cnt),
-    .value_o             (markov_event_hwm_fips)
+    .event_i             (markov_hi_fail_pulse && !es_bypass_mode),
+    .value_i             (markov_hi_event_cnt),
+    .value_o             (markov_hi_event_hwm_fips)
   );
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
     .HighWatermark(1)
-  ) u_entropy_src_watermark_reg_markov_bypass (
+  ) u_entropy_src_watermark_reg_markov_hi_bypass (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .active_i            (markov_active),
-    .event_i             (markov_fail_pulse && es_bypass_mode),
-    .value_i             (markov_event_cnt),
-    .value_o             (markov_event_hwm_bypass)
+    .event_i             (markov_hi_fail_pulse && es_bypass_mode),
+    .value_i             (markov_hi_event_cnt),
+    .value_o             (markov_hi_event_hwm_bypass)
   );
 
   entropy_src_cntr_reg #(
     .RegWidth(FullRegWidth)
-  ) u_entropy_src_cntr_reg_markov (
+  ) u_entropy_src_cntr_reg_markov_hi (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .active_i            (markov_active),
-    .event_i             (markov_fail_pulse),
-    .value_o             (markov_total_fails)
+    .event_i             (markov_hi_fail_pulse),
+    .value_o             (markov_hi_total_fails)
   );
 
-  assign hw2reg.markov_hi_watermarks.fips_markov_hi_watermark.d = markov_event_hwm_fips;
-  assign hw2reg.markov_hi_watermarks.bypass_markov_hi_watermark.d = markov_event_hwm_bypass;
-  assign hw2reg.markov_total_fails.d = markov_total_fails;
+  assign hw2reg.markov_hi_watermarks.fips_markov_hi_watermark.d = markov_hi_event_hwm_fips;
+  assign hw2reg.markov_hi_watermarks.bypass_markov_hi_watermark.d = markov_hi_event_hwm_bypass;
+  assign hw2reg.markov_hi_total_fails.d = markov_hi_total_fails;
+
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_markov_lo_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (markov_active),
+    .event_i             (markov_lo_fail_pulse && !es_bypass_mode),
+    .value_i             (markov_lo_event_cnt),
+    .value_o             (markov_lo_event_hwm_fips)
+  );
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_markov_lo_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (markov_active),
+    .event_i             (markov_lo_fail_pulse && es_bypass_mode),
+    .value_i             (markov_lo_event_cnt),
+    .value_o             (markov_lo_event_hwm_bypass)
+  );
+
+  entropy_src_cntr_reg #(
+    .RegWidth(FullRegWidth)
+  ) u_entropy_src_cntr_reg_markov_lo (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (health_test_clr),
+    .active_i            (markov_active),
+    .event_i             (markov_lo_fail_pulse),
+    .value_o             (markov_lo_total_fails)
+  );
+
+  assign hw2reg.markov_lo_watermarks.fips_markov_lo_watermark.d = markov_lo_event_hwm_fips;
+  assign hw2reg.markov_lo_watermarks.bypass_markov_lo_watermark.d = markov_lo_event_hwm_bypass;
+  assign hw2reg.markov_lo_total_fails.d = markov_lo_total_fails;
 
 
   //--------------------------------------------
@@ -925,9 +1032,15 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (any_fail_count)
   );
 
-  assign any_active = repcnt_active || adaptp_active || bucket_active || markov_active;
-  assign any_fail_pulse = repcnt_fail_pulse || adaptp_hi_fail_pulse || adaptp_lo_fail_pulse ||
-         bucket_fail_pulse || markov_fail_pulse;
+  assign any_active = repcnt_active || adaptp_active ||
+         bucket_active || markov_active || extht_active;
+
+  assign any_fail_pulse =
+         repcnt_fail_pulse ||
+         adaptp_hi_fail_pulse || adaptp_lo_fail_pulse ||
+         bucket_fail_pulse ||
+         markov_hi_fail_pulse ||markov_lo_fail_pulse ||
+         extht_hi_fail_pulse || extht_lo_fail_pulse;
 
 
   assign ht_failed_d = sfifo_esfinal_push ? 1'b0 :
@@ -1002,19 +1115,32 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.alert_fail_counts.bucket_fail_count.d = bucket_fail_count;
 
 
-  // markov fail counter
+  // markov fail counter hi and lo
   entropy_src_cntr_reg #(
     .RegWidth(EigthRegWidth)
-  ) u_entropy_src_cntr_reg_markov_alert_fails (
+  ) u_entropy_src_cntr_reg_markov_alert_hi_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .active_i            (markov_active),
-    .event_i             (markov_fail_pulse),
-    .value_o             (markov_fail_count)
+    .event_i             (markov_hi_fail_pulse),
+    .value_o             (markov_hi_fail_count)
   );
 
-  assign hw2reg.alert_fail_counts.markov_fail_count.d = markov_fail_count;
+  assign hw2reg.alert_fail_counts.markov_hi_fail_count.d = markov_hi_fail_count;
+
+  entropy_src_cntr_reg #(
+    .RegWidth(EigthRegWidth)
+  ) u_entropy_src_cntr_reg_markov_alert_lo_fails (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (alert_cntrs_clr),
+    .active_i            (markov_active),
+    .event_i             (markov_lo_fail_pulse),
+    .value_o             (markov_lo_fail_count)
+  );
+
+  assign hw2reg.alert_fail_counts.markov_lo_fail_count.d = markov_lo_fail_count;
 
   // extht fail counter hi and lo
   entropy_src_cntr_reg #(
@@ -1190,8 +1316,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // fifo err
   assign sfifo_esfinal_err =
-         (sfifo_esfinal_push && !sfifo_esfinal_not_full) |
-         (sfifo_esfinal_pop && !sfifo_esfinal_not_empty );
+         {(sfifo_esfinal_push && !sfifo_esfinal_not_full),
+          (sfifo_esfinal_pop && !sfifo_esfinal_not_empty),
+          (!sfifo_esfinal_not_full && !sfifo_esfinal_not_empty)};
 
   // drive out hw interface
   assign es_hw_if_req = entropy_src_hw_if_i.es_req;

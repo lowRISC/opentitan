@@ -6,7 +6,7 @@
 //
 
 module entropy_src_cntr_reg #(
-  parameter int unsigned RegWidth = 16
+  parameter int RegWidth = 16
 ) (
   input logic                   clk_i,
   input logic                   rst_ni,
