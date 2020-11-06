@@ -33,7 +33,7 @@ class VerilatorSimEarlgrey:
         self.uart0_log_path = None
         self.spi0_log_path = None
 
-    def run(self, flash_elf=None):
+    def run(self, flash_elf=None, extra_sim_args=[]):
         """
         Run the simulation
         """
@@ -44,6 +44,7 @@ class VerilatorSimEarlgrey:
             self._sim_path, '--meminit=rom,' + str(self._rom_elf_path),
             '+UARTDPI_LOG_uart0=' + str(self.uart0_log_path)
         ]
+        cmd_sim += extra_sim_args
 
         if flash_elf is not None:
             assert flash_elf.is_file()
@@ -150,14 +151,38 @@ class VerilatorSimEarlgrey:
                                    from_start=from_start)
 
 
-@pytest.fixture(params=config.TEST_APPS_SELFCHECKING_SIM_VERILATOR)
-def app_selfchecking_elf(request, bin_dir):
-    """ A self-checking device application as ELF for Verilator simulation """
+@pytest.fixture(params=config.TEST_APPS_SELFCHECKING,
+                ids=lambda param: param['name'])
+def app_selfchecking(request, bin_dir):
+    """ A self-checking device application for Verilator simulation
 
-    test_filename = request.param + '_sim_verilator.elf'
+    Returns:
+        A set (elf_path, verilator_extra_args)
+    """
+
+    app_config = request.param
+
+    if 'name' not in app_config:
+        raise RuntimeError("Key 'name' not found in TEST_APPS_SELFCHECKING")
+
+    if 'targets' in app_config and 'sim_verilator' not in app_config['targets']:
+        pytest.skip("Test %s skipped on Verilator." % app_config['name'])
+
+    if 'binary_name' in app_config:
+        binary_name = app_config['binary_name']
+    else:
+        binary_name = app_config['name']
+
+    if 'verilator_extra_args' in app_config:
+        verilator_extra_args = app_config['verilator_extra_args']
+    else:
+        verilator_extra_args = []
+
+    test_filename = binary_name + '_sim_verilator.elf'
     bin_path = bin_dir / 'sw/device/tests' / test_filename
     assert bin_path.is_file()
-    return bin_path
+
+    return (bin_path, verilator_extra_args)
 
 
 # The following tests use the UART output from the log file written by the
@@ -168,12 +193,12 @@ def app_selfchecking_elf(request, bin_dir):
 # and the test never finishes.
 
 
-def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking_elf):
+def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
     """
     Run a self-checking application on a Earl Grey Verilator simulation
 
     The ROM is initialized with the default boot ROM, the flash is initialized
-    with |app_selfchecking_elf|.
+    with |app_selfchecking|.
 
     Self-checking applications are expected to return PASS or FAIL in the end.
     """
@@ -183,7 +208,7 @@ def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking_elf):
 
     sim = VerilatorSimEarlgrey(sim_path, rom_elf_path, tmp_path)
 
-    sim.run(app_selfchecking_elf)
+    sim.run(app_selfchecking[0], extra_sim_args=app_selfchecking[1])
 
     bootmsg_exp = b'Boot ROM initialisation has completed, jump into flash!'
     assert sim.find_in_uart0(
