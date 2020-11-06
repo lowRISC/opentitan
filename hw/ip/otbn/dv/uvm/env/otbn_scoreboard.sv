@@ -63,7 +63,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     // the DUT internals. Of course, we need to check this is true exactly when we expect it to be.
     // Here, we set a flag to say that we expect the "start" signal to be high. See the
     // check_start() task, which checks it's true at the right time.
-    csr_addr = ral.align_to_word_addr(item.a_addr);
+    csr_addr = ral.get_word_aligned_addr(item.a_addr);
     csr = ral.default_map.get_reg_by_offset(csr_addr);
 
     // csr might be null and that's ok (it's probably a write to memory).

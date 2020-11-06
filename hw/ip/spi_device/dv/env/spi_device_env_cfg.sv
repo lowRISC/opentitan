@@ -20,7 +20,7 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
     // set num_interrupts & num_alerts which will be used to create coverage and more
     num_interrupts = ral.intr_state.get_n_used_bits();
 
-    sram_start_addr = ral.offset_to_addr(SRAM_OFFSET);
+    sram_start_addr = ral.get_addr_from_offset(SRAM_OFFSET);
     sram_end_addr   = sram_start_addr + SRAM_SIZE - 1;
   endfunction
 
