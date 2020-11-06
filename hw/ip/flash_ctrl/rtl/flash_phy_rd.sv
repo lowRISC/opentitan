@@ -438,11 +438,13 @@ module flash_phy_rd import flash_phy_pkg::*; (
   assign scrambled_data_o = fifo_data ^ mask;
 
   // muxed responses
-  // When "forward" is true, hint_descram is always 0.
-  // This is because forward cannot set unless fifo is empty.  If FIFO is
-  // empty, hint_descram is automatically 0.
-  assign muxed_data = hint_descram ? descrambled_data_i ^ mask : data_int;
-  assign muxed_err  = hint_descram ? data_err_q : data_err;
+  // When "forward" is true, there is nothing ahead in the pipeline, directly feed data
+  // and error forward.
+  // When "forward" is not true, take the output from the descrmable stage, which is
+  // dependent on the scramble hint.
+  assign muxed_data = forward      ? data_int :
+                      hint_descram ? descrambled_data_i ^ mask : fifo_data;
+  assign muxed_err  = forward      ? data_err : data_err_q;
 
   // muxed data valid
   // if no de-scramble required, return data on read complete
