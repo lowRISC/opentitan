@@ -6,12 +6,6 @@
   bus_device: "tlul",
   bus_host: "none",
   param_list: [
-    { name: "NumEndPoints",
-      desc: "Number of end points to be supported by this block",
-      type: "int",
-      default: "4",
-      local: "true"
-    },
     { name: "EndPointBusWidth0",
       desc: "Power of two width of the obsfucated entropy data bus for end point 0",
       type: "int",
@@ -34,6 +28,18 @@
       desc: "Power of two width of the obsfucated entropy data bus for end point 3",
       type: "int",
       default: "8",
+      local: "true"
+    },
+    { name: "BootInsCmd",
+      desc: "Default boot-time CSRNG application interface instantiate command",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+    { name: "BootGenCmd",
+      desc: "Default boot-time CSRNG application interface generate command",
+      type: "int",
+      default: "12291",
       local: "true"
     },
   ],
@@ -173,7 +179,7 @@
     },
     { name: "SW_CMD_STS",
       desc: "EDN command status register",
-      swaccess: "rw",
+      swaccess: "ro",
       hwaccess: "hwo",
       fields: [
         { bits: "0",
@@ -183,19 +189,26 @@
                 '''
         }
         { bits: "1",
-          name: "CMD_ACK",
-          desc: '''
-                This bit is set when the command request has completed. This bit must
-                be cleared by software before a new request is made.  (CMD_RDY will
-                not be asserted until this bit has been cleared).
-                '''
-        }
-        { bits: "4",
           name: "CMD_STS",
           desc: '''
                 This one bit field is the status code returned with the application command ack.
+                It is updated each time a command ack is asserted on the CSRNG interface.
                 0b0: Request completed successfully
                 0b1: Request completed with an error
+                '''
+        }
+      ]
+    },
+    { name: "SW_CMD_ACK",
+      desc: "EDN command status register",
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "CMD_ACK",
+          desc: '''
+                This bit is set when the command request has completed. This bit must
+                be cleared by software before a new request is made.
                 '''
         }
       ]

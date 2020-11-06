@@ -7,11 +7,12 @@
 package edn_reg_pkg;
 
   // Param list
-  parameter int NumEndPoints = 4;
   parameter int EndPointBusWidth0 = 64;
   parameter int EndPointBusWidth1 = 32;
   parameter int EndPointBusWidth2 = 16;
   parameter int EndPointBusWidth3 = 8;
+  parameter int BootInsCmd = 1;
+  parameter int BootGenCmd = 12291;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -119,12 +120,13 @@ package edn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } cmd_ack;
-    struct packed {
-      logic        d;
-      logic        de;
     } cmd_sts;
   } edn_hw2reg_sw_cmd_sts_reg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } edn_hw2reg_sw_cmd_ack_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -172,6 +174,7 @@ package edn_reg_pkg;
     edn_hw2reg_intr_state_reg_t intr_state; // [25:24]
     edn_hw2reg_sum_sts_reg_t sum_sts; // [23:24]
     edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [23:24]
+    edn_hw2reg_sw_cmd_ack_reg_t sw_cmd_ack; // [23:24]
     edn_hw2reg_err_code_reg_t err_code; // [23:24]
   } edn_hw2reg_t;
 
@@ -184,10 +187,11 @@ package edn_reg_pkg;
   parameter logic [5:0] EDN_SUM_STS_OFFSET = 6'h 14;
   parameter logic [5:0] EDN_SW_CMD_REQ_OFFSET = 6'h 18;
   parameter logic [5:0] EDN_SW_CMD_STS_OFFSET = 6'h 1c;
-  parameter logic [5:0] EDN_RESEED_CMD_OFFSET = 6'h 20;
-  parameter logic [5:0] EDN_GENERATE_CMD_OFFSET = 6'h 24;
-  parameter logic [5:0] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET = 6'h 28;
-  parameter logic [5:0] EDN_ERR_CODE_OFFSET = 6'h 2c;
+  parameter logic [5:0] EDN_SW_CMD_ACK_OFFSET = 6'h 20;
+  parameter logic [5:0] EDN_RESEED_CMD_OFFSET = 6'h 24;
+  parameter logic [5:0] EDN_GENERATE_CMD_OFFSET = 6'h 28;
+  parameter logic [5:0] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET = 6'h 2c;
+  parameter logic [5:0] EDN_ERR_CODE_OFFSET = 6'h 30;
 
 
   // Register Index
@@ -200,6 +204,7 @@ package edn_reg_pkg;
     EDN_SUM_STS,
     EDN_SW_CMD_REQ,
     EDN_SW_CMD_STS,
+    EDN_SW_CMD_ACK,
     EDN_RESEED_CMD,
     EDN_GENERATE_CMD,
     EDN_MAX_NUM_REQS_BETWEEN_RESEEDS,
@@ -207,7 +212,7 @@ package edn_reg_pkg;
   } edn_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] EDN_PERMIT [12] = '{
+  parameter logic [3:0] EDN_PERMIT [13] = '{
     4'b 0001, // index[ 0] EDN_INTR_STATE
     4'b 0001, // index[ 1] EDN_INTR_ENABLE
     4'b 0001, // index[ 2] EDN_INTR_TEST
@@ -216,10 +221,11 @@ package edn_reg_pkg;
     4'b 1111, // index[ 5] EDN_SUM_STS
     4'b 1111, // index[ 6] EDN_SW_CMD_REQ
     4'b 0001, // index[ 7] EDN_SW_CMD_STS
-    4'b 1111, // index[ 8] EDN_RESEED_CMD
-    4'b 1111, // index[ 9] EDN_GENERATE_CMD
-    4'b 1111, // index[10] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS
-    4'b 1111  // index[11] EDN_ERR_CODE
+    4'b 0001, // index[ 8] EDN_SW_CMD_ACK
+    4'b 1111, // index[ 9] EDN_RESEED_CMD
+    4'b 1111, // index[10] EDN_GENERATE_CMD
+    4'b 1111, // index[11] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS
+    4'b 1111  // index[12] EDN_ERR_CODE
   };
 endpackage
 
