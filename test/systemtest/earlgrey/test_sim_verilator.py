@@ -4,6 +4,7 @@
 
 import logging
 import re
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -144,11 +145,14 @@ class VerilatorSimEarlgrey:
             # The default filter function for all device software in OpenTitan.
             filter_func = utils.filter_remove_device_sw_log_prefix
 
-        return utils.find_in_files([self._uart0_log],
-                                   pattern,
-                                   timeout,
-                                   filter_func=filter_func,
-                                   from_start=from_start)
+        try:
+            return utils.find_in_files([self._uart0_log],
+                                       pattern,
+                                       timeout,
+                                       filter_func=filter_func,
+                                       from_start=from_start)
+        except subprocess.TimeoutExpired:
+            return None
 
 
 @pytest.fixture(params=config.TEST_APPS_SELFCHECKING,
