@@ -7,7 +7,7 @@
 //############################################################################
 `timescale 1ns / 10ps
 
-module rglts_pdm_3p3v 
+module rglts_pdm_3p3v
 #(
 `ifndef VERILATOR
 // synopsys translate_off
@@ -20,14 +20,14 @@ module rglts_pdm_3p3v
 ) (
   input vcc_pok_h_i,                     // VCC (3.3V) Exist @3.3v
   input vcmain_pok_h_i,                  // VCMAIN (1.1v) Exist @3.3v
-  input clk_src_aon_i,                   // AON Clock @1.1v 
+  input clk_src_aon_i,                   // AON Clock @1.1v
   input main_pd_ni,                      // VCMAIN/Regulator Power Down @1.1v
   input [1:0] otp_power_seq_i,           // MMR0,24 in (VDD)
   output logic main_pwr_dly_o,           // For modeling only.
   output logic vcaon_pok_o,              // VCAON (1.1v) Exist @1.1v
   output logic vcaon_pok_h_o,            // VCAON (1.1v) Exist @3.3v
-  output logic flash_power_down_h_o,     // 
-  output logic flash_power_ready_h_o,    // 
+  output logic flash_power_down_h_o,     //
+  output logic flash_power_ready_h_o,    //
   output logic [1:0] otp_power_seq_h_o   // MMR0,24 masked by PDM, out (VCC)
 );
 
@@ -52,7 +52,7 @@ logic mr_vcc_dly, mr_pd_dly;
 logic init_start;
 
 initial begin
-  init_start = 1'b1; #1; 
+  init_start = 1'b1; #1;
   init_start = 1'b0;
 end
 
@@ -66,7 +66,7 @@ always_ff @( init_start, posedge vcc_pok_h_i, negedge vcc_pok_h_i ) begin
 end
 
 always_ff @( init_start, posedge main_pd_h_n, negedge main_pd_h_n ) begin
-  if ( init_start )        
+  if ( init_start )
     mr_pd_dly <= 1'b1;
   else if ( !init_start && main_pd_h_n && vcc_pok_h_i )
     mr_pd_dly <= #(MRPD_RDLY) main_pd_h_n && vcc_pok_h_i;
@@ -76,10 +76,10 @@ end
 
 assign main_pwr_dly_o = mr_vcc_dly && mr_pd_dly;
 
-gen_pok #( 
+gen_pok #(
 // synopsys translate_off
-/*P*/ .POK_RDLY ( VCMAIN_POK_RDLY ), 
-/*P*/ .POK_FDLY ( VCMAIN_POK_FDLY ) 
+/*P*/ .POK_RDLY ( VCMAIN_POK_RDLY ),
+/*P*/ .POK_FDLY ( VCMAIN_POK_FDLY )
 // synopsys translate_on
 ) i_vcaon_pok (
 /*O*/ .gen_pok_o ( vcaon_pok_o )
@@ -92,15 +92,15 @@ assign vcaon_pok_h_o = vcaon_pok_o;  // Level Shifter
 ///////////////////////////////////////
 // Flash
 ///////////////////////////////////////
-assign flash_power_down_h_o  = ~(main_pd_h_n && vcmain_pok_h_i); 
+assign flash_power_down_h_o  = ~(main_pd_h_n && vcmain_pok_h_i);
 assign flash_power_ready_h_o = vcc_pok_h_i;
 
 
 ///////////////////////////////////////
 // OTP
 ///////////////////////////////////////
-assign otp_power_seq_h_o[0] = flash_power_down_h_o && otp_power_seq_h[0]; 
-assign otp_power_seq_h_o[1] = flash_power_down_h_o || otp_power_seq_h[1]; 
+assign otp_power_seq_h_o[0] = flash_power_down_h_o && otp_power_seq_h[0];
+assign otp_power_seq_h_o[1] = flash_power_down_h_o || otp_power_seq_h[1];
 
 
 endmodule  // of rglts_pdm_3p3v

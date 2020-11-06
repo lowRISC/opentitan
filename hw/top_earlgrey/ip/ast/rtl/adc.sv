@@ -33,7 +33,7 @@ module adc
   output logic [AdcDataWidth-1:0] adc_d_o,  // ADC 10-bit Data Output
   output logic adc_d_val_o                  // ADC Data Valid Output
 );
- 
+
 // Behavioral Model
 integer adc_d_ch0, adc_d_ch1;
 

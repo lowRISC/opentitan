@@ -18,14 +18,14 @@ module ast
   parameter int Pad2AstInWidth  = 16,         // TBD
   parameter int UsbCalibWidth   = 16          // TBD
 ) (
- 
+
   // tlul if
-  input  tlul_pkg::tl_h2d_t tl_i,             // TLUL H2D 
+  input  tlul_pkg::tl_h2d_t tl_i,             // TLUL H2D
   output tlul_pkg::tl_d2h_t tl_o,             // TLUL D2H
 
   // LC TX if
   input lc_ctrl_pkg::lc_tx_t lc_root_clk_byp_i,  // External clock mux override for OTP bootstrap
-  input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,     // DFT enable 
+  input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,     // DFT enable
 
   // clocks / rests
   input clk_ast_adc_i,                        // Buffered AST ADC Clock
@@ -43,11 +43,11 @@ module ast
   input clk_ast_ext_i,                        // Buffered AST External Clock
   input por_ni,                               // Power ON Reset
 
-  // power OK control 
-  // In non-power aware DV environment, the <>_supp_i is for debug only! 
+  // power OK control
+  // In non-power aware DV environment, the <>_supp_i is for debug only!
   // POK signal follow this input.
   // In a power aware environment this signal should be connected to constant '1'
-  input vcc_supp_i,                           // VCC Supply Test for OS FPGA 
+  input vcc_supp_i,                           // VCC Supply Test for OS FPGA
   input vcaon_supp_i,                         // VCAON Supply Test for OS FPGA
   input vcmain_supp_i,                        // VCMAIN Supply Test for OS FPGA
   input vioa_supp_i,                          // VIOA Rail Supply Test for OS FPGA
@@ -56,7 +56,7 @@ module ast
   output logic vcmain_pok_o,                  // VCMAIN Power OK
   output logic vioa_pok_o,                    // VIOA Rail Power OK
   output logic viob_pok_o,                    // VIOB Rail Power OK
- 
+
   // Power and IO pin connections
   input main_pd_ni,                           // MAIN Regulator Power Down
   input main_iso_en_i,                        // Isolation enable for main core power (VCMAIN).
@@ -84,11 +84,11 @@ module ast
 
   // usb source clock
   input usb_ref_pulse_i,                      // USB Reference Pulse
-  input usb_ref_val_i,                        // USB Reference Valid 
+  input usb_ref_val_i,                        // USB Reference Valid
   input clk_src_usb_en_i,                     // USB Source Clock Enable
   output logic clk_src_usb_o,                 // USB Source Clock
   output logic clk_src_usb_val_o,             // USB Source Clock Valid
-  output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o,  // USB IO Pull-up Calibration Setting 
+  output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o,  // USB IO Pull-up Calibration Setting
 
   // adc interface
   input adc_pd_i,                             // ADC Power Down
@@ -104,7 +104,7 @@ module ast
   input wire adc_a0_ai,                       // ADC A0 Analog Input
   input wire adc_a1_ai,                       // ADC A1 Analog Input
 `endif
-  input [AdcChannels-1:0] adc_chnsel_i,       // ADC Channel Select 
+  input [AdcChannels-1:0] adc_chnsel_i,       // ADC Channel Select
   output [AdcDataWidth-1:0] adc_d_o,          // ADC Digital (per channel)
   output adc_d_val_o,                         // ADC Digital Valid
 
@@ -153,7 +153,7 @@ module ast
   input ot_alert_ack_i,                       // OT Alert Acknowlage
   output logic ot_alert_po,                   // OT Alert Positive
   output logic ot_alert_no,                   // OT Alert Negative
-  
+
   // pad mux related - DFT
   input [Pad2AstInWidth-1:0] padmux2ast_i,    // IO_2_DFT Input Signals
   output logic [Ast2PadOutWidth-1:0] ast2padmux_o,   // DFT_2_IO Output Signals
@@ -167,7 +167,7 @@ module ast
 import ast_pkg::*;
 import ast_reg_pkg::*;
 
-logic vcaon_pok, vcaon_pok_h; 
+logic vcaon_pok, vcaon_pok_h;
 
 
 
@@ -180,8 +180,8 @@ logic vcc_pok_h, vcc_pok;
 gen_pok #(
 `ifndef VERILATOR
 // synopsys translate_off
-/*P*/ .POK_RDLY ( VCC_POK_RDLY ), 
-/*P*/ .POK_FDLY ( VCC_POK_FDLY ) 
+/*P*/ .POK_RDLY ( VCC_POK_RDLY ),
+/*P*/ .POK_FDLY ( VCC_POK_FDLY )
 // synopsys translate_on
 `endif
 ) i_vcc_pok (
@@ -193,7 +193,7 @@ assign vcc_pok_h = vcc_pok;     // "Level Shifter"
 
 
 // VCAON POK
-logic vcmain_pok, vcmain_pok_h; 
+logic vcmain_pok, vcmain_pok_h;
 logic vcaon_pok_int, vcaon_pok_int_h;
 assign vcaon_pok   = vcaon_pok_int && vcaon_supp_i;
 assign vcaon_pok_h = vcaon_pok_int_h && vcaon_supp_i;
@@ -221,11 +221,11 @@ assign vcaon_pok_o = por_sync_n && vcc_pok && vcaon_pok;
 // Power up/down with rise/fall delays.
 logic vcmain_pok_int, main_pwr_dly_o;
 
-gen_pok #( 
+gen_pok #(
 `ifndef VERILATOR
 // synopsys translate_off
-/*P*/ .POK_RDLY ( VCMAIN_POK_RDLY ), 
-/*P*/ .POK_FDLY ( VCMAIN_POK_FDLY ) 
+/*P*/ .POK_RDLY ( VCMAIN_POK_RDLY ),
+/*P*/ .POK_FDLY ( VCMAIN_POK_FDLY )
 // synopsys translate_on
 `endif
 ) i_vcmain_pok (
@@ -234,18 +234,18 @@ gen_pok #(
 
 assign vcmain_pok = vcmain_pok_int && vcmain_supp_i && main_pwr_dly_o ;
 assign vcmain_pok_h = vcmain_pok;   // Level Shifter
-assign vcmain_pok_o = vcaon_pok_o && vcmain_pok; 
+assign vcmain_pok_o = vcaon_pok_o && vcmain_pok;
 
 
 // VIOA POK
 logic vioa_pok;
 logic vioa_pok_int;
 
-gen_pok #( 
+gen_pok #(
 `ifndef VERILATOR
 // synopsys translate_off
-/*P*/ .POK_RDLY ( VIOA_POK_RDLY ), 
-/*P*/ .POK_FDLY ( VIOA_POK_FDLY ) 
+/*P*/ .POK_RDLY ( VIOA_POK_RDLY ),
+/*P*/ .POK_FDLY ( VIOA_POK_FDLY )
 // synopsys translate_on
 `endif
 ) i_vioa_pok (
@@ -261,11 +261,11 @@ assign vioa_pok_o = vcaon_pok && vioa_pok;
 logic viob_pok;
 logic viob_pok_int;
 
-gen_pok #( 
+gen_pok #(
 `ifndef VERILATOR
 // synopsys translate_off
-/*P*/ .POK_RDLY ( VIOB_POK_RDLY ), 
-/*P*/ .POK_FDLY ( VIOB_POK_FDLY ) 
+/*P*/ .POK_RDLY ( VIOB_POK_RDLY ),
+/*P*/ .POK_FDLY ( VIOB_POK_FDLY )
 // synopsys translate_on
 `endif
 ) i_viob_pok (
@@ -377,7 +377,7 @@ io_clk #(
 /////////////////////////////////
 
 // ADC (Always ON)
-adc #( 
+adc #(
 /*P*/ .AdcCnvtClks ( AdcCnvtClks ),
 /*P*/ .AdcDataWidth ( AdcDataWidth ),
 /*P*/ .AdcChannels ( AdcChannels )
@@ -399,7 +399,7 @@ adc #(
 
 // Entropy (Always ON)
 localparam int EntropyRateWidth = 4;
-logic [EntropyRateWidth-1:0] entropy_rate_o; 
+logic [EntropyRateWidth-1:0] entropy_rate_o;
 
 entropy #(
 /*P*/ .EntropyRateWidth ( EntropyRateWidth )
@@ -407,10 +407,10 @@ entropy #(
 /*I*/ .entropy_ack_i ( entropy_ack_i ),
 /*I*/ .entropy_i ( entropy_i ),
 /*I*/ .entropy_rate_i ( entropy_rate_o[EntropyRateWidth-1:0] ),
-/*I*/ .clk_src_sys_jen_i ( clk_src_sys_jen_i ), 
-/*I*/ .clk_ast_es_i ( clk_ast_es_i ), 
+/*I*/ .clk_src_sys_jen_i ( clk_src_sys_jen_i ),
+/*I*/ .clk_ast_es_i ( clk_ast_es_i ),
 /*I*/ .rst_ast_es_ni ( rst_ast_es_ni ),
-/*I*/ .clk_src_sys_i ( clk_src_sys_o ), 
+/*I*/ .clk_src_sys_i ( clk_src_sys_o ),
 /*I*/ .rst_src_sys_ni ( vcmain_pok_o ),
 /*I*/ .scan_mode_i ( scan_mode_i ),
 /*O*/ .entropy_req_o ( entropy_req_o )
@@ -531,11 +531,11 @@ ast_reg_top i_ast_reg_top (
 logic [32-1:0] ast_rwtype0_q;
 logic [11-1:0] ast_rwtype1_q;
 
-assign ast_rwtype0_q = reg2hw.rwtype0.q; 
+assign ast_rwtype0_q = reg2hw.rwtype0.q;
 assign ast_rwtype1_q = { reg2hw.rwtype1.field15_8.q,
                          reg2hw.rwtype1.field4.q,
                          reg2hw.rwtype1.field1.q,
-                         reg2hw.rwtype1.field0.q }; 
+                         reg2hw.rwtype1.field0.q };
 
 // AST to Registers Input
 assign hw2reg.rwtype0.d = 32'h0000_0000;
