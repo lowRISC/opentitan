@@ -3454,6 +3454,7 @@
       base_addr: 0x20000000
       banks: 2
       pages_per_bank: 256
+      program_resolution: 128
       swaccess: ro
       inter_signal_list:
       [
@@ -3497,6 +3498,7 @@
         4
       ]
       size: 0x80000
+      pgm_resolution_bytes: 1024
     }
   ]
   inter_module:
