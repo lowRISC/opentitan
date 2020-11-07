@@ -10,6 +10,7 @@ package flash_ctrl_pkg;
   // design parameters that can be altered through topgen
   parameter int NumBanks        = flash_ctrl_reg_pkg::RegNumBanks;
   parameter int PagesPerBank    = flash_ctrl_reg_pkg::RegPagesPerBank;
+  parameter int BusPgmResBytes  = flash_ctrl_reg_pkg::RegBusPgmResBytes;
 
   // fixed parameters of flash derived from topgen parameters
   parameter int DataWidth       = ${cfg['data_width']};
@@ -47,8 +48,12 @@ package flash_ctrl_pkg;
 
   // flash ctrl / bus parameters
   // flash / bus width may be different from actual flash word width
-  parameter int BusByteWidth    = prim_util_pkg::vbits(BusWidth / 8);
+  parameter int BusBytes        = BusWidth / 8;
+  parameter int BusByteWidth    = prim_util_pkg::vbits(BusBytes);
   parameter int WidthMultiple   = DataWidth / BusWidth;
+  // Number of bus words that can be programmed at once
+  parameter int BusPgmRes       = BusPgmResBytes / BusBytes;
+  parameter int BusPgmResWidth  = prim_util_pkg::vbits(BusPgmRes);
   parameter int BusWordsPerPage = WordsPerPage * WidthMultiple;
   parameter int BusWordW        = prim_util_pkg::vbits(BusWordsPerPage);
   parameter int BusAddrW        = BankW + PageW + BusWordW;

@@ -123,6 +123,7 @@ clock_groups_added = {}
 eflash_required = {
     'banks': ['d', 'number of flash banks'],
     'pages_per_bank': ['d', 'number of data pages per flash bank'],
+    'program_resolution': ['d', 'maximum number of flash words allowed to program'],
     'clock_srcs': ['g', 'clock connections'],
     'clock_group': ['s', 'associated clock attribute group'],
     'reset_connections': ['g', 'reset connections'],
@@ -168,9 +169,10 @@ class Flash:
     max_banks = 4
     max_pages_per_bank = 1024
 
-    def __init__(self, banks, pages_per_bank):
-        self.banks = banks
-        self.pages_per_bank = pages_per_bank
+    def __init__(self, mem):
+        self.banks = mem['banks']
+        self.pages_per_bank = mem['pages_per_bank']
+        self.program_resolution = mem['program_resolution']
         self.words_per_page = 128
         self.data_width = 64
         self.metadata_width = 12
@@ -181,7 +183,8 @@ class Flash:
         return (n != 0) and (n & (n - 1) == 0)
 
     def check_values(self):
-        pow2_check = self.is_pow2(self.banks) and self.is_pow2(self.pages_per_bank)
+        pow2_check = self.is_pow2(self.banks) and self.is_pow2(self.pages_per_bank) and \
+        self.is_pow2(self.program_resolution)
         limit_check = (self.banks <= Flash.max_banks) \
             and (self.pages_per_bank <= Flash.max_pages_per_bank)
 
@@ -200,6 +203,10 @@ class Flash:
         mem['info_types'] = self.info_types
         mem['infos_per_bank'] = self.infos_per_bank
         mem['size'] = hex(int(self.calc_size()))
+
+        word_bytes = self.data_width / 8
+        mem['pgm_resolution_bytes'] = int(self.program_resolution * word_bytes)
+
 
 
 # Check to see if each module/xbar defined in top.hjson exists as ip/xbar.hjson
@@ -450,7 +457,7 @@ def check_flash(top):
             error = check_keys(mem, eflash_required, eflash_optional,
                                eflash_added, "Eflash")
 
-    flash = Flash(mem['banks'], mem['pages_per_bank'])
+    flash = Flash(mem)
     error += 1 if not flash.check_values() else 0
 
     if error:
