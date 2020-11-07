@@ -189,6 +189,17 @@ Software can only control the accessibility of the owner secret seed page under 
 During life cycle RMA transition, the software configured memory protection for both data and information partitions is ignored.
 Instead, the flash controller assumes a default accessibility setting that allows it to secure the chip and transition to RMA.
 
+#### Program Resolution
+
+Certain flash memories place restrictions on the program window.
+This means the flash accepts program beats only if all beats belong to the same address window.
+Typically, this boundary is nicely aligned (for example, 16 words, 32 words) and is related to how the flash memory amortizes the program operation over nearby words.
+
+To support this function, the flash controller errors back anytime the start of the program beat is in a different window from the end of the program beat.
+The valid program range is thus the valid program resolution for a particular memory.
+
+This information is not configurable but instead decided at design time and is exposed as a readable status.
+
 
 ### Flash Physical Controller
 
