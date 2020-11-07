@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  build_cmd:  "{job_prefix} dsim"
-  run_cmd:    "{job_prefix} dsim"
+  setup_cmd:  "LD_LIBRARY_PATH={DSIM_HOME}/lib:{LD_LIBRARY_PATH}"
+  build_cmd:  "{job_prefix} {setup_cmd} dsim"
+  run_cmd:    "{job_prefix} {setup_cmd} dsim"
 
   build_opts: ["-work {build_dir}/dsim_out",
                "-genimage image",
