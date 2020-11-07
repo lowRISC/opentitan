@@ -76,6 +76,13 @@
       local: "true"
     },
 
+    { name: "RegBusPgmResBytes",
+      desc: "Number of pages per bank",
+      type: "int",
+      default: "1024",
+      local: "true"
+    },
+
     { name: "NumRegions",
       desc: "Number of configurable flash regions",
       type: "int",
