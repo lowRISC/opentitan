@@ -20,7 +20,7 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
 
   // FIFO Interface
   input                    data_rdy_i,
-  input  [BusWidth-1:0]       data_i,
+  input  [BusWidth-1:0]    data_i,
   output logic             data_rd_o,
 
   // Flash Macro Interface
@@ -63,6 +63,18 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
   logic prog_type_avail;
   assign prog_type_avail = type_avail_i[op_type_i];
 
+  // program resolution check
+  // if the incoming beat is larger than the maximum program resolution, error
+  // immediately and do not allow it to start.
+  localparam int WindowWidth = BusAddrW - BusPgmResWidth;
+  logic [WindowWidth-1:0] start_window, end_window;
+  logic [BusAddrW-1:0] end_addr;
+  logic win_err;
+  assign end_addr = op_addr_i + BusAddrW'(op_num_words_i);
+  assign start_window = op_addr_i[BusAddrW-1:BusPgmResWidth];
+  assign end_window = end_addr[BusAddrW-1:BusPgmResWidth];
+  assign win_err = start_window != end_window;
+
   // when error'd, continue to drain all program fifo contents like normal operation
   // if this is not done, software may fill up the fifo without anyone
   // draining the contents, leading to a lockup
@@ -77,7 +89,7 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
     unique case (st)
       StNorm: begin
         // if the select operation type is not available, error
-        if (op_start_i && prog_type_avail) begin
+        if (op_start_i && prog_type_avail && !win_err) begin
           flash_req_o = data_rdy_i;
 
           if(txn_done && cnt_hit) begin
@@ -90,7 +102,7 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
             data_rd_o = 1'b1;
             st_nxt = flash_error_i ? StErr : StNorm;
           end
-        end else if (op_start_i && !prog_type_avail) begin
+        end else if (op_start_i && (!prog_type_avail || win_err)) begin
           st_nxt = StErr;
         end
       end
@@ -116,5 +128,9 @@ module flash_ctrl_prog import flash_ctrl_pkg::*; (
   assign flash_ovfl_o = int_addr[BusAddrW];
   assign flash_last_o = flash_req_o & cnt_hit;
   assign flash_type_o = op_type_i;
+
+  // unused signals
+  logic [BusPgmResWidth-1:0] unused_end_addr;
+  assign unused_end_addr = end_addr[BusPgmResWidth-1:0];
 
 endmodule // flash_ctrl_prog
