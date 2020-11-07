@@ -22,6 +22,7 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
   constraint flash_op_c {
     solve flash_op.op before flash_op.erase_type;
     solve flash_op.op before flash_op.num_words;
+    solve flash_op.addr before flash_op.num_words ;
 
     flash_op.addr inside {[0:FlashSizeBytes-1]};
 
@@ -45,7 +46,11 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
         [1:FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]
       };
       flash_op.num_words <= cfg.seq_cfg.op_max_words;
+      // end of transaction must be within the program resolution
+      // units             words         bytes
+      flash_op.num_words < FlashPgmRes - flash_op.addr[TL_SZW +: FlashPgmResWidth];
     }
+
   }
 
   // Flash ctrl op data - use for programing or reading the flash.

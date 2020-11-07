@@ -33,6 +33,8 @@ package flash_ctrl_env_pkg;
   parameter uint FlashWordLineWidth       = $clog2(flash_ctrl_pkg::WordsPerPage);
   parameter uint FlashPageWidth           = $clog2(flash_ctrl_pkg::PagesPerBank);
   parameter uint FlashBankWidth           = $clog2(flash_ctrl_pkg::NumBanks);
+  parameter uint FlashPgmRes              = flash_ctrl_pkg::BusPgmRes;
+  parameter uint FlashPgmResWidth         = $clog2(FlashPgmRes);
 
   parameter uint FlashMemAddrWordMsbBit   = FlashDataByteWidth - 1;
   parameter uint FlashMemAddrLineMsbBit   = FlashDataByteWidth + FlashWordLineWidth - 1;
