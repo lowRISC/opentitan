@@ -7,6 +7,8 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define FLASH_CTRL0_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_BASE_ADDR
+#define PROGRAM_RESOLUTION_WORDS \
+  (FLASH_CTRL_PARAM_REGBUSPGMRESBYTES / sizeof(uint32_t))
 
 #define REG32(add) *((volatile uint32_t *)(add))
 #define SETBIT(val, bit) (val | 1 << bit)
@@ -113,10 +115,38 @@ static int flash_write_internal(uint32_t addr, part_type_t part,
   return get_clr_err();
 }
 
+// The address is assumed to be aligned to uint32_t.
 int flash_write(uint32_t addr, part_type_t part, const uint32_t *data,
                 uint32_t size) {
-  // TODO: Breakdown into FIFO chunks if needed.
-  return flash_write_internal(addr, part, data, size);
+  uint32_t window_offset = (addr / sizeof(uint32_t)) % PROGRAM_RESOLUTION_WORDS;
+  uint32_t max_words = PROGRAM_RESOLUTION_WORDS;
+
+  // If initial address isn't aligned, the delta is the max
+  // number of words that can be programmed.
+  max_words = PROGRAM_RESOLUTION_WORDS - window_offset;
+
+  // Loop through the amount of data to program.
+  uint32_t words_to_program = max_words;
+  uint32_t words_remaining = size;
+  uint32_t current_word = 0;
+  uint32_t err = 0;
+  while (words_remaining > 0) {
+    // Determine the number of words to program.
+    if (words_remaining < max_words) {
+      words_to_program = words_remaining;
+    } else {
+      words_to_program = max_words;
+    }
+    err |= flash_write_internal(addr + current_word * sizeof(uint32_t), part,
+                                data, words_to_program);
+    current_word += words_to_program;
+    data += words_to_program;
+
+    // Increment remaining words and reset max words to program.
+    max_words = PROGRAM_RESOLUTION_WORDS;
+    words_remaining = size - current_word;
+  }
+  return err;
 }
 
 int flash_read(uint32_t addr, part_type_t part, uint32_t size, uint32_t *data) {
