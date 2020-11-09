@@ -50,3 +50,17 @@ sw_lib_runtime_log = declare_dependency(
     ],
   )
 )
+
+sw_lib_runtime_otbn = declare_dependency(
+  link_with: static_library(
+    'otbn_ot',
+    sources: [
+      'otbn.c',
+    ],
+    dependencies: [
+      sw_lib_dif_otbn,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ]
+  )
+)
