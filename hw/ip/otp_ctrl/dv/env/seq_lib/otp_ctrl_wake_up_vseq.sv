@@ -23,29 +23,29 @@ class otp_ctrl_wake_up_vseq extends otp_ctrl_base_vseq;
 
     // check status
     cfg.clk_rst_vif.wait_clks(1);
-    csr_wr(ral.intr_enable, 2'b11);
-    csr_rd_check(.ptr(ral.status), .compare_value(2));
+    csr_wr(ral.intr_enable, (1'b1 << NumOtpCtrlIntr) - 1);
+    csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
 
     // write seq
     csr_wr(ral.direct_access_address, rand_addr);
     csr_wr(ral.direct_access_wdata_0, '1);
     csr_wr(ral.direct_access_cmd, 2);
     wait(cfg.intr_vif.pins[OtpOperationDone] == 1);
-    csr_wr(ral.intr_state, 2'b11);
+    csr_wr(ral.intr_state, (1'b1 << NumOtpCtrlIntr) - 1);
 
     // read seq
     csr_wr(ral.direct_access_address, rand_addr);
     csr_wr(ral.direct_access_cmd, 1);
     wait(cfg.intr_vif.pins[OtpOperationDone] == 1);
     csr_rd_check(.ptr(ral.direct_access_rdata_0), .compare_value('1));
-    csr_wr(ral.intr_state, 2'b11);
+    csr_wr(ral.intr_state, (1'b1 << NumOtpCtrlIntr) - 1);
 
     // digest sw error seq
     csr_wr(ral.direct_access_address, 2);
     csr_wr(ral.direct_access_cmd, 4);
     wait(cfg.intr_vif.pins[OtpOperationDone] == 1);
     wait(cfg.intr_vif.pins[OtpErr] == 1);
-    csr_wr(ral.intr_state, 2'b11);
+    csr_wr(ral.intr_state, (1'b1 << NumOtpCtrlIntr) - 1);
 
     // digest hw seq
     csr_wr(ral.direct_access_address, 11'h600);
