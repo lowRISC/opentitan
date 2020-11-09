@@ -10,12 +10,6 @@ class otbn_sanity_vseq extends otbn_base_vseq;
   `uvm_object_utils(otbn_sanity_vseq)
   `uvm_object_new
 
-  // The name of the ELF file to use in the test. Taken as a path relative to cfg.otbn_elf_dir.
-  //
-  // This is set in pre_start(), which will run after the vseq has been randomised. To customise it,
-  // override pick_elf_name() respectively.
-  string   elf_name;
-
   // Should the ELF file be loaded with a backdoor DPI method, or should we actually generate the
   // bus transactions to load it into the memory properly?
   rand bit do_backdoor_load;
@@ -25,20 +19,42 @@ class otbn_sanity_vseq extends otbn_base_vseq;
                             1'b0 := 100 - cfg.backdoor_load_pct };
   }
 
-  task pre_start();
-    super.pre_start();
-    elf_name = pick_elf_name();
-  endtask
-
   task body();
-    load_elf(elf_name, do_backdoor_load);
+    chandle helper;
+    int     num_files;
+    string  elf_path;
+
+    // Sanity check to make sure that cfg.otbn_elf_dir was set by the test
+    `DV_CHECK_FATAL(cfg.otbn_elf_dir.len() > 0);
+
+    // Pick an ELF file to use in the test. We have to do this via DPI (because you can't list a
+    // directory in pure SystemVerilog). To do so, we have to construct a helper object, which will
+    // look after memory allocation for the string holding the path.
+    helper = OtbnTestHelperMake(cfg.otbn_elf_dir);
+    `DV_CHECK_FATAL(helper != null)
+
+    // Ask the helper how many files there are. If it returns zero, the directory name is bogus or
+    // the directory is empty.
+    num_files = OtbnTestHelperCountFilesInDir(helper);
+    `DV_CHECK_FATAL(num_files > 0,
+                    $sformatf("No regular files found in directory `%0s'.", cfg.otbn_elf_dir))
+
+    // Pick a file, any file... Note that we pick an index on the SV side so that we use the right
+    // random seed. Then we convert back to a filename with another DPI call. If the result is the
+    // empty string, something went wrong.
+    elf_path = OtbnTestHelperGetFilePath(helper, $urandom_range(num_files - 1));
+    `DV_CHECK_FATAL(elf_path.len() > 0, "Bad index for ELF file")
+
+    // Actually load the binary
+    `uvm_info(`gfn, $sformatf("|-- Loading binary from `%0s'", elf_path), UVM_MEDIUM)
+    load_elf(elf_path, do_backdoor_load);
+
+    // At this point, we won't use elf_path again, so we can safely free the test helper which was
+    // maintaining its memory.
+    OtbnTestHelperFree(helper);
+
+    // We've loaded the binary. Run the processor to see what happens!
     run_otbn();
   endtask : body
-
-  // Return a (random) choice of ELF file to be stored in elf_name
-  virtual function automatic string pick_elf_name();
-    // TODO: Pick something more interesting here!
-    return "0.elf";
-  endfunction
 
 endclass : otbn_sanity_vseq

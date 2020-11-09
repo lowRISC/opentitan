@@ -21,6 +21,7 @@ filesets:
       - otbn_virtual_sequencer.sv: {is_include_file: true}
       - otbn_scoreboard.sv: {is_include_file: true}
       - otbn_env.sv: {is_include_file: true}
+      - otbn_test_helpers.cc: {file_type: cppSource}
       - seq_lib/otbn_vseq_list.sv: {is_include_file: true}
       - seq_lib/otbn_base_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_common_vseq.sv: {is_include_file: true}
