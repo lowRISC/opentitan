@@ -70,8 +70,13 @@
 
             The completion is signalled by the done interrupt.
           '''
-          tags: [// Do not randomly start big num operations
-                 "excl:CsrNonInitTests:CsrExclWrite"],
+          tags: [
+            // Don't write this field in the automated CSR tests. Doing so will
+            // start OTBN, but we won't have initialised its memory with any
+            // code, so we'll get Xs on its interfaces and everything will be
+            // a bit of a mess!
+            "excl:CsrAllTests:CsrExclWrite"
+          ]
         }
         { bits: "1",
           name: "dummy",
