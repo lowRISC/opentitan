@@ -16,13 +16,8 @@ class otbn_base_vseq extends cip_base_vseq #(
   `uvm_object_new
 
   // Load the contents of an ELF file into the DUT's memories, either by a DPI backdoor (if backdoor
-  // is true) or with TL transactions. filename is interpreted relative to cfg.otbn_elf_dir.
-  protected task load_elf(string filename, bit backdoor);
-    string path = $sformatf("%0s/%0s", cfg.otbn_elf_dir, filename);
-
-    // Sanity check to make sure that cfg.otbn_elf_dir was set by the test
-    `DV_CHECK_FATAL(cfg.otbn_elf_dir.len() > 0);
-
+  // is true) or with TL transactions.
+  protected task load_elf(string path, bit backdoor);
     if (backdoor) begin
       load_elf_backdoor(path);
     end else begin

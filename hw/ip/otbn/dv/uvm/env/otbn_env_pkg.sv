@@ -21,8 +21,14 @@ package otbn_env_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // typedefs
+  // Imports for the functions defined in otbn_test_helpers.cc. There are documentation comments
+  // explaining what the functions do there.
+  import "DPI-C" function chandle OtbnTestHelperMake(string path);
+  import "DPI-C" function void OtbnTestHelperFree(chandle helper);
+  import "DPI-C" function int OtbnTestHelperCountFilesInDir(chandle helper);
+  import "DPI-C" function string OtbnTestHelperGetFilePath(chandle helper, int index);
 
+  // typedefs
   typedef virtual pins_if #(1) idle_vif;
 
   // A very simple wrapper around a word that has been loaded from the input binary and needs
