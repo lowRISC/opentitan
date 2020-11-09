@@ -68,7 +68,24 @@ TEST_F(InitTest, Success) {
 
 class IrqTest : public PlicTest {
  protected:
-  IrqTest() { EXPECT_EQ(RV_PLIC_PARAM_NUMTARGET, 1); }
+  IrqTest() {
+    // Make sure to change the `last_bit` when `RV_PLIC_PARAM_NUMSRC` changes.
+    // As `last_bit` represents the bit index in a register, we need to count
+    // all of the last bits of a multireg to get the total number of bits.
+    // The bit count in IE, LE and IP registers is expected to be the same.
+    //
+    // This check has been added to help diagnose the mismatch of test values
+    // with the HW defines. One of the recent PRs ran into this problem, and
+    // the failure message was not descriptive, so some engineering time was
+    // lost to investigation.
+    uint8_t number_of_sources = 0;
+    for (const auto &reg : kEnableRegisters) {
+      number_of_sources += (reg.last_bit + 1);
+    }
+    EXPECT_EQ(RV_PLIC_PARAM_NUMSRC, number_of_sources);
+
+    EXPECT_EQ(RV_PLIC_PARAM_NUMTARGET, 1);
+  }
 
   struct Register {
     ptrdiff_t offset;  // Register offset from the base.
