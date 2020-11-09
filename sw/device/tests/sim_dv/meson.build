@@ -18,7 +18,11 @@ uart_tx_rx_test_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'uart_tx_rx_test': uart_tx_rx_test_lib }
+sw_tests += {
+  'uart_tx_rx_test': {
+    'library': uart_tx_rx_test_lib,
+  }
+}
 
 gpio_test_lib = declare_dependency(
   link_with: static_library(
@@ -37,7 +41,11 @@ gpio_test_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'gpio_test': gpio_test_lib }
+sw_tests += {
+  'gpio_test': {
+    'library': gpio_test_lib,
+  }
+}
 
 spi_tx_rx_test_lib = declare_dependency(
   link_with: static_library(
@@ -55,4 +63,8 @@ spi_tx_rx_test_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'spi_tx_rx_test': spi_tx_rx_test_lib }
+sw_tests += {
+  'spi_tx_rx_test': {
+    'library': spi_tx_rx_test_lib,
+  }
+}

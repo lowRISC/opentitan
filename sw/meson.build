@@ -13,5 +13,5 @@ export_target_command = [
 
 subdir('vendor')
 subdir('otbn')
-subdir('device')
 subdir('host')
+subdir('device')

@@ -7,7 +7,10 @@
 # subdirectory name, because the build targets are really declared at the bottom
 # of this file, rather than in the subdirectories.
 sw_tests = {
-  # 'test_name': test_lib,
+  # 'test_name': {
+  #   'library': test_lib,
+  #   'dv_frames': true/false, # (can be omitted, defaults to `false`)
+  # },
 }
 
 subdir('dif')
@@ -25,7 +28,11 @@ aes_test_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'aes_test': aes_test_lib }
+sw_tests += {
+  'aes_test': {
+    'library': aes_test_lib,
+  }
+}
 
 flash_ctrl_test_lib = declare_dependency(
   link_with: static_library(
@@ -39,7 +46,11 @@ flash_ctrl_test_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'flash_ctrl_test': flash_ctrl_test_lib }
+sw_tests += {
+  'flash_ctrl_test': {
+    'library': flash_ctrl_test_lib,
+  }
+}
 
 sha256_test_lib = declare_dependency(
   link_with: static_library(
@@ -52,7 +63,11 @@ sha256_test_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'sha256_test': sha256_test_lib }
+sw_tests += {
+  'sha256_test': {
+    'library': sha256_test_lib,
+  }
+}
 
 usbdev_test_lib = declare_dependency(
   link_with: static_library(
@@ -64,7 +79,11 @@ usbdev_test_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'usbdev_test': usbdev_test_lib }
+sw_tests += {
+  'usbdev_test': {
+    'library': usbdev_test_lib,
+  }
+}
 
 coverage_test_lib = declare_dependency(
   link_with: static_library(
@@ -75,7 +94,11 @@ coverage_test_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'coverage_test': coverage_test_lib }
+sw_tests += {
+  'coverage_test': {
+    'library': coverage_test_lib,
+  }
+}
 
 pmp_sanitytest_napot_lib = declare_dependency(
   link_with: static_library(
@@ -90,7 +113,11 @@ pmp_sanitytest_napot_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'pmp_sanitytest_napot': pmp_sanitytest_napot_lib }
+sw_tests += {
+  'pmp_sanitytest_napot': {
+    'library': pmp_sanitytest_napot_lib,
+  }
+}
 
 pmp_sanitytest_tor_lib = declare_dependency(
   link_with: static_library(
@@ -105,9 +132,13 @@ pmp_sanitytest_tor_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'pmp_sanitytest_tor': pmp_sanitytest_tor_lib }
+sw_tests += {
+  'pmp_sanitytest_tor': {
+    'library': pmp_sanitytest_tor_lib,
+  }
+}
 
-foreach sw_test_name, sw_test_lib : sw_tests
+foreach sw_test_name, sw_test_info : sw_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
     sw_test_elf = executable(
       sw_test_name + '_' + device_name,
@@ -115,7 +146,7 @@ foreach sw_test_name, sw_test_lib : sw_tests
       dependencies: [
         riscv_crt,
         device_lib,
-        sw_test_lib,
+        sw_test_info['library'],
         sw_lib_irq_handlers,
         sw_lib_testing_test_main,
       ],
@@ -129,10 +160,26 @@ foreach sw_test_name, sw_test_lib : sw_tests
       build_by_default: true,
     )
 
+    sw_test_dv_frames = []
+    if device_name == 'sim_dv' and \
+        sw_test_info.has_key('dv_frames') and sw_test_info['dv_frames']
+      sw_test_dv_frames = custom_target(
+        sw_test_name + '_dv_frames',
+        command: [
+          spiflash_bin,
+          '--input=@INPUT@',
+          '--dump-frames=@OUTPUT@',
+        ],
+        input: sw_test_embedded[0],
+        output: '@BASENAME@.frames',
+        build_by_default: true
+      )
+    endif
+
     custom_target(
       sw_test_name + '_export_' + device_name,
       command: export_target_command,
-      input: [sw_test_elf, sw_test_embedded],
+      input: [sw_test_elf, sw_test_embedded, sw_test_dv_frames],
       output: sw_test_name + '_export_' + device_name,
       build_always_stale: true,
       build_by_default: true,
@@ -140,6 +187,7 @@ foreach sw_test_name, sw_test_lib : sw_tests
   endforeach
 endforeach
 
+# Specific custom configuration for `crt_test`
 foreach device_name, device_lib : sw_lib_arch_core_devices
   crt_test_elf = executable(
     'crt_test_' + device_name,
