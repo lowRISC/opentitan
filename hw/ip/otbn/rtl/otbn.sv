@@ -246,7 +246,7 @@ module otbn
   );
 
   // Mux core and bus access into IMEM
-  assign imem_access_core = busy_q;
+  assign imem_access_core = busy_q | start;
 
   assign imem_req   = imem_access_core ? imem_req_core   : imem_req_bus;
   assign imem_write = imem_access_core ? imem_write_core : imem_write_bus;
