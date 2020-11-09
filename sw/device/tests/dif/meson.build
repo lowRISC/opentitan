@@ -193,7 +193,11 @@ dif_plic_sanitytest_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'dif_plic_sanitytest': dif_plic_sanitytest_lib }
+sw_tests += {
+  'dif_plic_sanitytest': {
+    'library': dif_plic_sanitytest_lib,
+  }
+}
 
 dif_uart_sanitytest_lib = declare_dependency(
   link_with: static_library(
@@ -206,7 +210,11 @@ dif_uart_sanitytest_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'dif_uart_sanitytest': dif_uart_sanitytest_lib }
+sw_tests += {
+  'dif_uart_sanitytest': {
+    'library': dif_uart_sanitytest_lib,
+  }
+}
 
 dif_rv_timer_sanitytest_lib = declare_dependency(
   link_with: static_library(
@@ -221,7 +229,11 @@ dif_rv_timer_sanitytest_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'dif_rv_timer_sanitytest': dif_rv_timer_sanitytest_lib }
+sw_tests += {
+  'dif_rv_timer_sanitytest': {
+    'library': dif_rv_timer_sanitytest_lib,
+  }
+}
 
 dif_hmac_sanitytest_lib = declare_dependency(
   link_with: static_library(
@@ -235,8 +247,11 @@ dif_hmac_sanitytest_lib = declare_dependency(
     ],
   ),
 )
-
-sw_tests += { 'dif_hmac_sanitytest': dif_hmac_sanitytest_lib }
+sw_tests += {
+  'dif_hmac_sanitytest': {
+    'library': dif_hmac_sanitytest_lib,
+  }
+}
 
 dif_rstmgr_sanitytest_lib = declare_dependency(
   link_with: static_library(
@@ -248,7 +263,11 @@ dif_rstmgr_sanitytest_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'dif_rstmgr_sanitytest': dif_rstmgr_sanitytest_lib }
+sw_tests += {
+  'dif_rstmgr_sanitytest': {
+    'library': dif_rstmgr_sanitytest_lib,
+  }
+}
 
 dif_otbn_sanitytest_lib = declare_dependency(
   link_with: static_library(
@@ -264,4 +283,8 @@ dif_otbn_sanitytest_lib = declare_dependency(
     ],
   ),
 )
-sw_tests += { 'dif_otbn_sanitytest': dif_otbn_sanitytest_lib }
+sw_tests += {
+  'dif_otbn_sanitytest': {
+    'library': dif_otbn_sanitytest_lib,
+  }
+}
