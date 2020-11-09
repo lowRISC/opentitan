@@ -59,8 +59,8 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
   assign a_mask_bit[31:24] = h2d.a_mask[3] ? '1 : '0;
 
 <%
-  addr_msb       = block.addr_width - 1
-  reg_width      = block.addr_width
+  addr_msb  = block.addr_width - 1
+  reg_width = block.addr_width
 %>\
   // normalized address only take the [${addr_msb}:2] address from the TLUL a_address
   bit [${addr_msb}:0] normalized_addr;
@@ -87,36 +87,54 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
   property wr_P(bit [${addr_msb}:0] addr, bit [TL_DW-1:0] act_data, bit regen,
                 bit [TL_DW-1:0] mask, int lsb);
     logic [TL_DW-1:0] id, exp_data;
-    (device_wr_S(addr), id = h2d.a_source, exp_data = h2d.a_data & a_mask_bit & mask) ##1
+    (device_wr_S(addr) and regen, id = h2d.a_source, exp_data = h2d.a_data & a_mask_bit & mask) ##1
         first_match(##[0:$] d2h.d_valid && d2h.d_source == id) |->
-        (d2h.d_error || (act_data << lsb) == exp_data || !regen);
+        (d2h.d_error || (act_data << lsb) == exp_data);
+  endproperty
+
+  // this property is to check when regen is set to 0, the write data should not be updated
+  property wr_regen_P(bit [${addr_msb}:0] addr, bit [TL_DW-1:0] act_data, bit regen,
+                bit [TL_DW-1:0] mask, int lsb);
+    logic [TL_DW-1:0] id, exp_data;
+    (device_wr_S(addr) and !regen, id = h2d.a_source, exp_data = (act_data << lsb)) ##1
+        first_match(##[0:$] d2h.d_valid && d2h.d_source == id) |->
+        (d2h.d_error || (act_data << lsb) == exp_data);
   endproperty
 
   // external reg will use one clk cycle to update act_data from external
   property wr_ext_P(bit [${addr_msb}:0] addr, bit [TL_DW-1:0] act_data, bit regen,
                     bit [TL_DW-1:0] mask, int lsb);
     logic [TL_DW-1:0] id, exp_data;
-    (device_wr_S(addr), id = h2d.a_source, exp_data = h2d.a_data & a_mask_bit & mask) ##1
+    (device_wr_S(addr) and regen, id = h2d.a_source, exp_data = h2d.a_data & a_mask_bit & mask) ##1
         first_match(##[0:$] (d2h.d_valid && d2h.d_source == id)) |->
-        (d2h.d_error || ($past(act_data) << lsb) == exp_data || !regen);
+        (d2h.d_error || ($past(act_data) << lsb) == exp_data);
+  endproperty
+
+  property wr_ext_regen_P(bit [${addr_msb}:0] addr, bit [TL_DW-1:0] act_data, bit regen,
+                    bit [TL_DW-1:0] mask, int lsb);
+    logic [TL_DW-1:0] id, exp_data;
+    (device_wr_S(addr) and !regen, id = h2d.a_source, exp_data = (act_data << lsb)) ##1
+        first_match(##[0:$] (d2h.d_valid && d2h.d_source == id)) |->
+        (d2h.d_error || ($past(act_data) << lsb) == exp_data);
   endproperty
 
   // W1C register, if write 1 external data will be cleared to 0;
   // if write 0, internal data won't change
+  // TODO: add regen check for W1C regs
   property w1c_P(bit [${addr_msb}:0] addr, bit [TL_DW-1:0] act_data, bit regen,
                  bit [TL_DW-1:0] mask, int lsb);
     logic [TL_DW-1:0] id, exp_data;
-    (device_wr_S(addr), id = h2d.a_source, exp_data = h2d.a_data & a_mask_bit & mask) ##1
+    (device_wr_S(addr) and regen, id = h2d.a_source, exp_data = h2d.a_data & a_mask_bit & mask) ##1
         first_match(##[0:$] d2h.d_valid && d2h.d_source == id) |->
-        (d2h.d_error || ((act_data << lsb) & exp_data) == 0 || !regen);
+        (d2h.d_error || ((act_data << lsb) & exp_data) == 0);
   endproperty
 
   property w1c_ext_P(bit [${addr_msb}:0] addr, bit [TL_DW-1:0] act_data, bit regen,
                      bit [TL_DW-1:0] mask, int lsb);
     logic [TL_DW-1:0] id, exp_data;
-    (device_wr_S(addr), id = h2d.a_source, exp_data = h2d.a_data & a_mask_bit & mask) ##1
+    (device_wr_S(addr) and regen, id = h2d.a_source, exp_data = h2d.a_data & a_mask_bit & mask) ##1
         first_match(##[0:$] (d2h.d_valid && d2h.d_source == id)) |->
-        (d2h.d_error || ($past(act_data) << lsb) == exp_data || !regen);
+        (d2h.d_error || ($past(act_data) << lsb) == exp_data);
   endproperty
 
   property rd_P(bit [${addr_msb}:0] addr, bit [TL_DW-1:0] act_data, bit [TL_DW-1:0] mask, int lsb);
@@ -317,6 +335,9 @@ ${gen_rd_asserts(assert_name, is_ext, reg_r_path, wr_mask)}\
   `ASSERT(${name}_w1c_A, w1c_${wr_property}(${reg_offset}, ${reg_w_path}, ${reg_wen}, 'h${wr_mask}, ${shift_index}), clk_i, !rst_ni || disable_sva)
   % elif field_access in {"RW", "WO", "W0C"}:
   `ASSERT(${name}_wr_A, wr_${wr_property}(${reg_offset}, ${reg_w_path}, ${reg_wen}, 'h${wr_mask}, ${shift_index}), clk_i, !rst_ni || disable_sva)
+    % if reg_wen != "1":
+  `ASSERT(${name}_wr_regen_A, wr_${wr_property}(${reg_offset}, ${reg_w_path}, ${reg_wen}, 'h${wr_mask}, ${shift_index}), clk_i, !rst_ni || disable_sva)
+    % endif
   % endif
 </%def>\
 <%def name="gen_rd_asserts(name, is_ext, reg_r_path, mask)">\
