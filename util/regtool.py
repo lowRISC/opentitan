@@ -27,7 +27,6 @@ USAGE = '''
 
 
 def main():
-    format = 'hjson'
     verbose = 0
 
     parser = argparse.ArgumentParser(
@@ -106,24 +105,28 @@ def main():
 
     verbose = args.verbose
 
-    if args.j:
-        format = 'json'
-    elif args.c:
-        format = 'compact'
-    elif args.d:
-        format = 'html'
-    elif args.doc:
-        format = 'doc'
-    elif args.r:
-        format = 'rtl'
-    elif args.s:
-        format = 'dv'
-    elif args.f:
-        format = 'fpv'
-    elif args.cdefines:
-        format = 'cdh'
-    elif args.ctdefines:
-        format = 'cth'
+    arg_to_format = [
+        ('j', 'json'),
+        ('c', 'compact'),
+        ('d', 'html'),
+        ('doc', 'doc'),
+        ('r', 'rtl'),
+        ('s', 'dv'),
+        ('f', 'fpv'),
+        ('cdefines', 'cdh'),
+        ('ctdefines', 'cth')
+    ]
+    format = None
+    for arg_name, fmt in arg_to_format:
+        if getattr(args, arg_name):
+            if format is not None:
+                log.error('Multiple output formats specified on '
+                          'command line ({} and {}).'
+                          .format(format, fmt))
+                sys.exit(1)
+            format = fmt
+    if format is None:
+        format = 'hjson'
 
     if (verbose):
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
