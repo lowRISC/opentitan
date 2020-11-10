@@ -371,6 +371,18 @@ This may change if we find cases where this initialization improves readability.
 When initializing an array, initializers *may* be designated when that makes the array more readable (e.g., lookup tables that are mostly zeroed). Mixing designated and undesignated initializers, or using nested initializers, is still
 forbidden.
 
+### Function Declarations
+
+***All function declarations in C must include a list of the function's parameters, with their types.***
+
+C functions declared as `return_t my_function()` are called "K&R declarations", and are type compatible with any list of arguments, with any types.
+Declarations of this type allow type confusion, especially if the function definition is not available.
+
+The correct way to denote that a function takes no arguments is using the parameter type `void`.
+For example `return_t my_function(void)` is the correct way to declare that `my_function` takes no arguments.
+
+The parameter names in every declaration should match the parameter names in the function definition.
+
 ### Inline Functions
 
 Functions that we strongly wish to be inlined, and which are part of a public interface, should be declared as an inline function.
