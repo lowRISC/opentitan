@@ -127,20 +127,14 @@ int main(int argc, char **argv) {
   simctrl.RegisterExtension(&memutil);
   simctrl.RegisterExtension(&traceutil);
 
-  bool exit_app = false;
-  int ret_code = simctrl.ParseCommandArgs(argc, argv, exit_app);
-  if (exit_app) {
-    return ret_code;
-  }
-
   std::cout << "Simulation of OTBN" << std::endl
             << "==================" << std::endl
             << std::endl;
 
-  simctrl.RunSimulation();
+  int ret_code = simctrl.Exec(argc, argv);
 
-  if (!simctrl.WasSimulationSuccessful()) {
-    return 1;
+  if (ret_code != 0) {
+    return ret_code;
   }
 
   svSetScope(svGetScopeFromName("TOP.otbn_top_sim"));
