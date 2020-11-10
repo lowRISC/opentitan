@@ -368,8 +368,8 @@ When initializing a struct or union, initializers within *must* be designated; a
 Furthermore, the nested forms of designated initialization are forbidden (e.g., `.x.y = foo` and `.x[0] = bar`), to discourage initialization of deeply nested structures with flat syntax.
 This may change if we find cases where this initialization improves readability.
 
-When initializing an array, initializers *may* be designated when that makes the array more readable (e.g., lookup tables that are mostly zeroed). Mixing designated and undesignated initializers, or using nested initializers, is still
-forbidden.
+When initializing an array, initializers *may* be designated when that makes the array more readable (e.g., lookup tables that are mostly zeroed).
+Mixing designated and undesignated initializers, or using nested initializers, is still forbidden.
 
 ### Function Declarations
 
