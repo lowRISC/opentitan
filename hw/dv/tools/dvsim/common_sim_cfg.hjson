@@ -84,30 +84,25 @@
   ]
 
   // Build modes are collection of build_opts and run_opts
-  // A test can enable a specific build mode by setting 'use_build_mode' key
-  build_modes: [
-    {
-      name: foo
-      build_opts: ["+define+bx",
-                   "+define+by",
-                   "+define+bz"]
-      run_opts: ["+rx=1",
-                 "+ry=2",
-                 "+rz=3"]
-    }
-    {
-      name: bar
-      build_opts: ["+define+bbaru1",
-                   "+define+bbaru2",
-                   "+define+bbaru3"]
-      run_opts: ["+rbar1u=1",
-                 "+rbar2u=2",
-                 "+rbar3u=3"]
-    }
-    {
-      name: cover_reg_top
-    }
-  ]
+  //
+  // To define a build mode that overrides these flags, add something
+  // like the following to the IP block's configuration:
+  //
+  //   build_modes: [
+  //     {
+  //       name: foo
+  //       build_opts: ["+define+bx",
+  //                    "+define+by",
+  //                    "+define+bz"]
+  //       run_opts: ["+rx=1",
+  //                  "+ry=2",
+  //                  "+rz=3"]
+  //     }
+  //   ]
+  //
+  // To use a build mode for a specific test, set the 'use_build_mode' key.
+  //
+  build_modes: []
 
   // Regressions are tests that can be grouped together and run in one shot
   // By default, two regressions are made available - "all" and "nightly". Both
