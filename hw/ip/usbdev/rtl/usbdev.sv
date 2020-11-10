@@ -60,6 +60,7 @@ module usbdev (
   output logic       intr_rx_full_o,
   output logic       intr_av_overflow_o,
   output logic       intr_link_in_err_o,
+  output logic       intr_link_out_err_o,
   output logic       intr_rx_crc_err_o,
   output logic       intr_rx_pid_err_o,
   output logic       intr_rx_bitstuff_err_o,
@@ -116,6 +117,7 @@ module usbdev (
   logic              usb_event_rx_crc_err, usb_event_rx_pid_err;
   logic              usb_event_rx_bitstuff_err;
   logic              usb_event_in_err;
+  logic              usb_event_out_err;
   logic              usb_event_frame;
   logic              usb_link_active;
 
@@ -124,6 +126,7 @@ module usbdev (
   logic              event_rx_crc_err, event_rx_pid_err;
   logic              event_rx_bitstuff_err;
   logic              event_in_err;
+  logic              event_out_err;
   logic              event_frame;
 
   // CDC signals
@@ -364,6 +367,15 @@ module usbdev (
     .dst_pulse_o (event_in_err)
   );
 
+  prim_pulse_sync usbdev_sync_out_err (
+    .clk_src_i   (clk_usb_48mhz_i),
+    .clk_dst_i   (clk_i),
+    .rst_src_ni  (rst_usb_48mhz_ni),
+    .rst_dst_ni  (rst_ni),
+    .src_pulse_i (usb_event_out_err),
+    .dst_pulse_o (event_out_err)
+  );
+
   prim_pulse_sync usbdev_outrdyclr (
     .clk_src_i   (clk_usb_48mhz_i),
     .clk_dst_i   (clk_i),
@@ -538,6 +550,7 @@ module usbdev (
     .link_resume_o        (usb_event_link_resume),
     .host_lost_o          (usb_event_host_lost),
     .link_in_err_o        (usb_event_in_err),
+    .link_out_err_o       (usb_event_out_err),
     .rx_crc_err_o         (usb_event_rx_crc_err),
     .rx_pid_err_o         (usb_event_rx_pid_err),
     .rx_bitstuff_err_o    (usb_event_rx_bitstuff_err)
@@ -864,6 +877,19 @@ module usbdev (
     .hw2reg_intr_state_de_o (hw2reg.intr_state.link_in_err.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.link_in_err.d),
     .intr_o                 (intr_link_in_err_o)
+  );
+
+  prim_intr_hw #(.Width(1)) intr_link_out_err (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (event_out_err),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.link_out_err.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.link_out_err.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.link_out_err.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.link_out_err.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.link_out_err.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.link_out_err.d),
+    .intr_o                 (intr_link_out_err_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_rx_crc_err (

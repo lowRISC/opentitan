@@ -88,6 +88,7 @@ module usbdev_usbif  #(
   output logic                     link_suspend_o,
   output logic                     link_resume_o,
   output logic                     link_in_err_o,
+  output logic                     link_out_err_o,
   output logic                     host_lost_o,
   output logic                     rx_crc_err_o,
   output logic                     rx_pid_err_o,
@@ -119,6 +120,7 @@ module usbdev_usbif  #(
   assign link_reset_o   = link_reset;
   assign clr_devaddr_o  = ~enable_i | link_reset;
   assign frame_start_o  = sof_valid;
+  assign link_out_err_o = out_ep_rollback;
 
   always_comb begin
     if (out_ep_acked || out_ep_rollback) begin
@@ -223,7 +225,7 @@ module usbdev_usbif  #(
   assign setup_received_o = current_setup & rx_wvalid_o;
 
   // IN (device to host) transfers
-  logic                  in_ep_acked, in_ep_data_get, in_data_done, in_ep_newpkt, pkt_start_rd;
+  logic                  in_ep_xfr_end, in_ep_data_get, in_data_done, in_ep_newpkt, pkt_start_rd;
   logic [NEndpoints-1:0] in_ep_data_done;
   logic [PktW-1:0]       in_ep_get_addr;
   logic [7:0]            in_ep_data;
@@ -257,7 +259,7 @@ module usbdev_usbif  #(
   assign in_ep_data = in_ep_get_addr[1] ?
                       (in_ep_get_addr[0] ? mem_rdata_i[31:24] : mem_rdata_i[23:16]) :
                       (in_ep_get_addr[0] ? mem_rdata_i[15:8]  : mem_rdata_i[7:0]);
-  assign set_sent_o = in_ep_acked;
+  assign set_sent_o = in_ep_xfr_end;
 
   logic [10:0]     frame_index_raw;
   logic            rx_jjj_det;
@@ -301,7 +303,7 @@ module usbdev_usbif  #(
     // in endpoint interfaces
     .in_ep_current_o       (in_ep_current),
     .in_ep_rollback_o      (link_in_err_o),
-    .in_ep_acked_o         (in_ep_acked),
+    .in_ep_xfr_end_o       (in_ep_xfr_end),
     .in_ep_get_addr_o      (in_ep_get_addr),
     .in_ep_data_get_o      (in_ep_data_get),
     .in_ep_newpkt_o        (in_ep_newpkt),

@@ -2543,6 +2543,18 @@
           ]
           type: interrupt
         }
+        {
+          name: link_out_err
+          width: 1
+          bits: "16"
+          bitinfo:
+          [
+            65536
+            1
+            16
+          ]
+          type: interrupt
+        }
       ]
       alert_list: []
       wakeup_list: []
@@ -5376,6 +5388,19 @@
         32768
         1
         15
+      ]
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_link_out_err
+      width: 1
+      bits: "16"
+      bitinfo:
+      [
+        65536
+        1
+        16
       ]
       type: interrupt
       module_name: usbdev
