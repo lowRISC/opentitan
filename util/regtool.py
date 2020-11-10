@@ -104,68 +104,74 @@ def main():
         version.show_and_exit(__file__, ["Hjson", "Mako"])
 
     verbose = args.verbose
-
-    arg_to_format = [
-        ('j', 'json'),
-        ('c', 'compact'),
-        ('d', 'html'),
-        ('doc', 'doc'),
-        ('r', 'rtl'),
-        ('s', 'dv'),
-        ('f', 'fpv'),
-        ('cdefines', 'cdh'),
-        ('ctdefines', 'cth')
-    ]
-    format = None
-    for arg_name, fmt in arg_to_format:
-        if getattr(args, arg_name):
-            if format is not None:
-                log.error('Multiple output formats specified on '
-                          'command line ({} and {}).'
-                          .format(format, fmt))
-                sys.exit(1)
-            format = fmt
-    if format is None:
-        format = 'hjson'
-
     if (verbose):
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
 
-    outfile = args.outfile
+    # Entries are triples of the form (arg, (format, dirspec)).
+    #
+    # arg is the name of the argument that selects the format. format is the
+    # name of the format. dirspec is None if the output is a single file; if
+    # the output needs a directory, it is a default path relative to the source
+    # file (used when --outdir is not given).
+    arg_to_format = [
+        ('j', ('json', None)),
+        ('c', ('compact', None)),
+        ('d', ('html', None)),
+        ('doc', ('doc', None)),
+        ('r', ('rtl', 'rtl')),
+        ('s', ('dv', 'dv')),
+        ('f', ('fpv', 'fpv/vip')),
+        ('cdefines', ('cdh', None)),
+        ('ctdefines', ('cth', None))
+    ]
+    format = None
+    dirspec = None
+    for arg_name, spec in arg_to_format:
+        if getattr(args, arg_name):
+            if format is not None:
+                log.error('Multiple output formats specified on '
+                          'command line ({} and {}).'
+                          .format(format, spec[0]))
+                sys.exit(1)
+            format, dirspec = spec
+    if format is None:
+        format = 'hjson'
 
     infile = args.input
-
     params = args.param.split(';')
 
-    if format == 'rtl':
-        if args.outdir:
-            outdir = args.outdir
-        elif infile != sys.stdin:
-            outdir = str(PurePath(infile.name).parents[1].joinpath("rtl"))
-        else:
-            # Using sys.stdin. not possible to generate RTL
-            log.error("-r option cannot be used with pipe or stdin")
-    elif format == 'dv':
-        if args.outdir:
-            outdir = args.outdir
-        elif infile != sys.stdin:
-            outdir = str(PurePath(infile.name).parents[1].joinpath("dv"))
-        else:
-            # Using sys.stdin. not possible to generate RTL
-            log.error("-s option cannot be used with pipe or stdin")
-    elif format == 'fpv':
-        if args.outdir:
-            outdir = args.outdir
-        elif infile != sys.stdin:
-            outdir = str(PurePath(infile.name).parents[1].joinpath("fpv/vip"))
-        else:
-            # Using sys.stdin. not possible to generate RTL
-            log.error("-s option cannot be used with pipe or stdin")
+    # Define either outfile or outdir (but not both), depending on the output
+    # format.
+    outfile = None
+    outdir = None
+    if dirspec is None:
+        if args.outdir is not None:
+            log.error('The {} format expects an output file, '
+                      'not an output directory.'
+                      .format(format))
+            sys.exit(1)
+
+        outfile = args.outfile
     else:
-        # Ignore
-        outdir = "."
+        if args.outfile is not sys.stdout:
+            log.error('The {} format expects an output directory, '
+                      'not an output file.'
+                      .format(format))
+            sys.exit(1)
+
+        if args.outdir is not None:
+            outdir = args.outdir
+        elif infile is not sys.stdin:
+            outdir = str(PurePath(infile.name).parents[1].joinpath(dirspec))
+        else:
+            # We're using sys.stdin, so can't infer an output directory name
+            log.error('The {} format writes to an output directory, which '
+                      'cannot be inferred automatically if the input comes '
+                      'from stdin. Use --outdir to specify it manually.'
+                      .format(format))
+            sys.exit(1)
 
     if format == 'doc':
         with outfile:
