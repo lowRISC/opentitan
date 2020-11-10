@@ -123,7 +123,7 @@ class ANDI(RV32RegImm):
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
-        val2 = self.imm
+        val2 = self.as_u32(self.imm)
         result = val1 & val2
         state.gprs.get_reg(self.grd).write_unsigned(result)
 
@@ -143,7 +143,7 @@ class ORI(RV32RegImm):
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
-        val2 = self.imm
+        val2 = self.as_u32(self.imm)
         result = val1 | val2
         state.gprs.get_reg(self.grd).write_unsigned(result)
 
@@ -163,7 +163,7 @@ class XORI(RV32RegImm):
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
-        val2 = self.imm
+        val2 = self.as_u32(self.imm)
         result = val1 ^ val2
         state.gprs.get_reg(self.grd).write_unsigned(result)
 
