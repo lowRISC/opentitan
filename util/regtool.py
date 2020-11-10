@@ -178,14 +178,13 @@ def main():
             gen_selfdoc.document(outfile)
         exit(0)
 
-    with infile:
-        try:
-            srcfull = infile.read()
-            obj = hjson.loads(srcfull,
-                              use_decimal=True,
-                              object_pairs_hook=validate.checking_dict)
-        except ValueError:
-            raise SystemExit(sys.exc_info()[1])
+    try:
+        srcfull = infile.read()
+        obj = hjson.loads(srcfull,
+                          use_decimal=True,
+                          object_pairs_hook=validate.checking_dict)
+    except ValueError:
+        raise SystemExit(sys.exc_info()[1])
 
     if args.novalidate:
         with outfile:
