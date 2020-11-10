@@ -7,6 +7,9 @@ parameters:
 
 jobs:
   - job: riscv_compliance_tests_${{ join('_', parameters.rvc_test_suites) }}
+    # Disable RISC-V Compliance tests due to excessive runtimes in simulation
+    # (#4128).
+    condition: false
     displayName: Execute RISC-V compliance tests for ${{ join(' ', parameters.rvc_test_suites) }}
     pool:
       vmImage: ubuntu-18.04
