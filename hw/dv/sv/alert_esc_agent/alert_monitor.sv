@@ -88,9 +88,12 @@ class alert_monitor extends alert_esc_base_monitor;
 
   virtual task alert_thread();
     alert_esc_seq_item req;
-    bit                alert_p;
+    bit                alert_p, ping_p;
     forever @(cfg.vif.monitor_cb) begin
-      if (!alert_p && is_valid_alert() && !under_ping_rsp) begin
+      // If ping and alert are triggered at the same clock cycle, the alert is considered a ping
+      // response
+      if (!alert_p && is_valid_alert() && !under_ping_rsp &&
+          ping_p == cfg.vif.monitor_cb.alert_rx_final.ping_p) begin
         req = alert_esc_seq_item::type_id::create("req");
         req.alert_esc_type = AlertEscSigTrans;
         req.alert_handshake_sta = AlertReceived;
@@ -132,6 +135,7 @@ class alert_monitor extends alert_esc_base_monitor;
           if (cfg.en_ping_cov) cov.m_alert_esc_trans_cg.sample(req.alert_esc_type);
         end
       end  // end while loop
+      ping_p = cfg.vif.monitor_cb.alert_rx_final.ping_p;
       alert_p = cfg.vif.monitor_cb.alert_tx_final.alert_p;
     end
   endtask : alert_thread

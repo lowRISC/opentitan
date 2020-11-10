@@ -170,12 +170,12 @@ class alert_sender_driver extends alert_esc_base_driver;
 
   virtual task random_drive_int_fail(int int_err_cyc);
     repeat (req.int_err_cyc) begin
+      wait_sender_clk();
       if (under_reset) break;
       randcase
         1: drive_alerts_low();
         1: drive_alerts_high();
       endcase
-      wait_sender_clk();
     end
   endtask : random_drive_int_fail
 

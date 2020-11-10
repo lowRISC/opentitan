@@ -91,6 +91,7 @@ class esc_receiver_driver extends alert_esc_base_driver;
   virtual task drive_esc_resp(alert_esc_seq_item req);
     if (req.standalone_int_err) begin
       wait_esc_complete();
+      @(cfg.vif.receiver_cb); // wait one clock cycle to ensure is_ping is set
       if (!is_ping) begin
         repeat (req.int_err_cyc) begin
           if (cfg.vif.esc_tx.esc_p === 1'b0 && !is_ping) begin
