@@ -9,8 +9,10 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:dv:push_pull_agent
     files:
       - kmac_env_pkg.sv
+      - kmac_sideload_if.sv
       - kmac_env_cfg.sv: {is_include_file: true}
       - kmac_env_cov.sv: {is_include_file: true}
       - kmac_virtual_sequencer.sv: {is_include_file: true}
