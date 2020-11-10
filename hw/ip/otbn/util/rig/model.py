@@ -117,7 +117,7 @@ class KnownMem:
                         loads_value: bool,
                         min_addr: int,
                         max_addr: int) -> Optional[int]:
-        '''Try to pick an address in range [min_addr, max_addr]
+        '''Try to pick a 4-byte aligned address in range [min_addr, max_addr]
 
         If loads_value is true, the memory needs a known value at that
         address.
@@ -131,34 +131,43 @@ class KnownMem:
         min_addr = max(0, min_addr)
         max_addr = min(max_addr, self.top_addr - 1)
 
+        # We don't know that min_addr and max_addr are aligned. Move them "in"
+        # if necessary to ensure that they are, dividing by 4 to turn them into
+        # word addresses.
+        min_word = (min_addr + 3) // 4
+        max_word = max_addr // 4
+
+        if max_word < min_word:
+            return None
+
         if not loads_value:
             # If we're not loading something, we can pick any old address in
             # the range.
-            return int(random.randrange(min_addr, max_addr + 1))
+            return 4 * int(random.randrange(min_word, max_word + 1))
 
         # If we are loading something, we need to be more careful. Collect up
         # the known ranges that have an intersection with the range in
-        # question. Note that the (lo, hi) pairs are exclusive, but
-        # min_addr/max_addr is inclusive, so we need a +1 every so often.
-        ranges = []
+        # question, converting to word addresses as we go. Note that the (lo,
+        # hi) pairs don't include the right endpoint, but min_word/max_word
+        # does, so we need a +1 every so often.
+        word_ranges = []
         weights = []
-        for lo, hi in self.known_ranges:
-            lo = max(lo, min_addr)
-            hi = min(hi, max_addr + 1)
-            if lo >= hi:
-                continue
-            ranges.append((lo, hi))
-            weights.append(hi - lo)
+        for byte_lo, byte_hi in self.known_ranges:
+            word_lo = max((byte_lo + 3) // 4, min_word)
+            word_hi = min(byte_hi // 4, max_word + 1)
+            if word_lo < word_hi:
+                word_ranges.append((word_lo, word_hi))
+                weights.append(word_hi - word_lo)
 
         # If there are no ranges that intersect, give up.
-        if not ranges:
+        if not word_ranges:
             return None
 
         # Otherwise, pick a range with weight equal to the number of elements
         # in the range (so we'll get a uniform sampling on valid addresses) and
         # then pick from the range.
-        lo, hi = random.choices(ranges, weights=weights)[0]
-        return random.randrange(lo, hi)
+        word_lo, word_hi = random.choices(word_ranges, weights=weights)[0]
+        return 4 * random.randrange(word_lo, word_hi)
 
 
 class Model:
