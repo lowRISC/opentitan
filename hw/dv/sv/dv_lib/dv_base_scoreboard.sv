@@ -52,12 +52,19 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual function void pre_abort();
     super.pre_abort();
-    // use under_pre_abort flag to prevent deadloop described below:
-    // when fatal_err occurred, it will skip check_phase. We add the additional check_phase call
-    // here to help debugging. But if inside the check_phase there are UVM_ERRORs, and the err cnt
-    // is larger than max_err_cnt, then check_phase will call pre_abort again. This will end up
-    // creating a deadloop.
-    if (has_uvm_fatal_occurred() && !under_pre_abort) begin
+
+    // In UVM, a fatal error normally aborts the test completely and skips the check phase. However,
+    // it's sometimes helpful to run that phase on the scoreboard anyway (it might make it easier to
+    // debug whatever went wrong), so we do that here.
+    //
+    // We only run the check phase if we were in the run phase: if something went wrong in the build
+    // or connect phase, there's not much point in "checking the run" further. We also have to be
+    // careful to avoid an infinite loop, so we set a flag to avoid doing this a second time if we
+    // have errors in the check phase.
+    if (has_uvm_fatal_occurred() &&
+        !under_pre_abort &&
+        m_current_phase.is(uvm_run_phase::get())) begin
+
       under_pre_abort = 1;
       check_phase(m_current_phase);
       under_pre_abort = 0;
