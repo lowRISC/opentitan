@@ -302,27 +302,30 @@ prim_flop #(
         print("} my_state_t;")
     elif args.language == 'rust':
         print(RUST_INSTRUCTIONS)
-        print("//\n"
-              "// Encoding generated with\n"
-              "// $ ./sparse-fsm-encode.py -d {} -m {} -n {} \\\n"
-              "//     -s {} --language=rust\n"
-              "//\n"
-              "// Hamming distance histogram:\n"
-              "//".format(args.d, args.m, args.n, args.s))
+        print("///```text\n"
+              "/// Encoding generated with\n"
+              "/// $ ./sparse-fsm-encode.py -d {} -m {} -n {} \\\n"
+              "///     -s {} --language=rust\n"
+              "///\n"
+              "/// Hamming distance histogram:\n"
+              "///".format(args.d, args.m, args.n, args.s))
         for hist_bar in bars:
-            print("// " + hist_bar)
-        print("//\n"
-              "// Minimum Hamming distance: {}\n"
-              "// Maximum Hamming distance: {}\n"
-              "//\n"
-              "#[repr(u{})]\n"
-              "enum MyState {{".format(minimum, maximum, args.n))
-        fmt_str = "  MyState{0:} {1:}= 0x{3:0" + str(math.ceil(args.n / 4)) + "x}"
+            print("/// " + hist_bar)
+        print("///\n"
+              "/// Minimum Hamming distance: {}\n"
+              "/// Maximum Hamming distance: {}\n"
+              "///```\n"
+              "#[derive(Clone,Copy,Eq,PartialEq,Ord,ParitalOrd,Hash,Debug)]\n"
+              "#[repr(transparent)]\n"
+              "struct MyState(u{});\n"
+              "\n"
+              "impl MyState {{".format(minimum, maximum, args.n))
+        fmt_str = "  const MY_STATE{0:}: MyState {1:}= MyState(0x{3:0" + str(math.ceil(args.n / 4)) + "x})"
         for j, k in enumerate(encodings):
             pad = ""
             for i in range(len(str(args.m)) - len(str(j))):
                 pad += " "
-            print(fmt_str.format(j, pad, args.n, k) + ",")
+            print(fmt_str.format(j, pad, args.n, k) + ";")
         print("}")
 
 
