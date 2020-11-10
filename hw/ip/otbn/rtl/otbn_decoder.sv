@@ -845,18 +845,22 @@ module otbn_decoder
           3'b010: begin
             shift_amt_mux_sel_bignum = ShamtSelBignumA;
             alu_operator_bignum      = AluOpBignumAnd;
+            alu_flag_en_bignum       = 1'b1;
           end
           3'b100: begin
             shift_amt_mux_sel_bignum = ShamtSelBignumA;
             alu_operator_bignum      = AluOpBignumOr;
+            alu_flag_en_bignum       = 1'b1;
           end
           3'b101: begin
             shift_amt_mux_sel_bignum = ShamtSelBignumA;
             alu_operator_bignum      = AluOpBignumNot;
+            alu_flag_en_bignum       = 1'b1;
           end
           3'b110: begin
             shift_amt_mux_sel_bignum = ShamtSelBignumA;
             alu_operator_bignum      = AluOpBignumXor;
+            alu_flag_en_bignum       = 1'b1;
           end
           3'b011,
           3'b111: begin
