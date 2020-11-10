@@ -14,6 +14,14 @@ class kmac_env extends cip_base_env #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    // get ext interfaces
+    if (!uvm_config_db#(idle_vif)::get(this, "", "idle_vif", cfg.idle_vif)) begin
+      `uvm_fatal(`gfn, "failed to get idle_vif handle from uvm_config_db")
+    end
+    if (!uvm_config_db#(sideload_vif)::get(this, "", "sideload_vif", cfg.sideload_vif)) begin
+      `uvm_fatal(`gfn, "failed to get sideload_vif handle from uvm_config_db")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
