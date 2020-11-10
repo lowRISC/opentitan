@@ -11,8 +11,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // local variables
 
-  // TLM agent fifos
-
   // local queues to hold incoming packets pending comparison
 
   `uvm_component_new

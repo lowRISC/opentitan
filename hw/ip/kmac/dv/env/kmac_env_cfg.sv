@@ -4,7 +4,9 @@
 
 class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
 
-  // ext component cfgs
+  // ext interfaces
+  idle_vif        idle_vif;
+  sideload_vif    sideload_vif;
 
   `uvm_object_utils_begin(kmac_env_cfg)
   `uvm_object_utils_end
