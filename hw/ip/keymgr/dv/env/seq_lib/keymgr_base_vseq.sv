@@ -28,8 +28,11 @@ class keymgr_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.intr_enable));
 
     current_state = keymgr_pkg::StReset;
-    // any OP at StReset will trigger error
-    if (do_op_before_init) keymgr_operations();
+    // Any OP at StReset will trigger OP error. There are 5 kinds of OPs
+    // Also test both start and init set to 1, which triggers OP error as well
+    if (do_op_before_init) begin
+      repeat ($urandom_range(1, 5)) keymgr_random_op(.start(1), .init($urandom_range(0, 1)));
+    end
 
     // move keymgr to StInit
     if (do_keymgr_init) keymgr_init();
@@ -186,5 +189,18 @@ class keymgr_base_vseq extends cip_base_vseq #(
     csr_rd_check(.ptr(ral.sw_share0_output_7), .compare_value('0));
 
   endtask : keymgr_rd_clr
+
+  // issue any operation in a non-working state to trigger op error
+  virtual task keymgr_random_op(bit start, bit init);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.control,
+                                   init.value == local::init;
+                                   start.value == local::start;)
+    `uvm_info(`gfn, $sformatf("Issuing OP: %0d at state %0s",
+                              ral.control.operation.get(), current_state), UVM_MEDIUM)
+    csr_update(.csr(ral.control));
+    wait_op_done(.is_gen_output(0));
+
+    ral.control.set(0); // clear random value
+  endtask
 
 endclass : keymgr_base_vseq

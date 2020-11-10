@@ -3,21 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Test advance state and generate output at StWipe state
-// also test both start and init setting to 1, which triggers error
 class keymgr_op_at_wipe_state_vseq extends keymgr_sanity_vseq;
   `uvm_object_utils(keymgr_op_at_wipe_state_vseq)
   `uvm_object_new
 
   virtual task keymgr_init();
-    `uvm_info(`gfn, "Initializating key manager with both start and init setting to 1", UVM_MEDIUM)
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.control,
-                                   init.value == 1;
-                                   start.value == 1;)
-    csr_update(.csr(ral.control));
-    wait_op_done(.is_gen_output(0));
-
     `uvm_info(`gfn, "Initializating key manager", UVM_MEDIUM)
-    ral.control.set(0); // clear random value
     ral.control.init.set(1'b1);
     csr_update(.csr(ral.control));
     ral.control.init.set(1'b0); // don't program init again

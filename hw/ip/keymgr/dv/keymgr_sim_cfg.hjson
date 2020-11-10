@@ -57,6 +57,11 @@
       // StWipe only lasts for several cycles, don't add delay during CSR access
       run_opts: ["+zero_delays=1"]
     }
+
+    {
+      name: keymgr_direct_to_disabled
+      uvm_test_seq: keymgr_direct_to_disabled_vseq
+    }
   ]
 
   // List of regressions.
