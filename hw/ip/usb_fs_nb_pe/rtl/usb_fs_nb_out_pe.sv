@@ -224,7 +224,8 @@ module usb_fs_nb_out_pe #(
           // ISO EP: Don't send a handshake, ignore toggle. Note an unimplemented EP cannot be an
           // ISO EP.
           out_xfr_state_next = StRcvdIsoDataEnd;
-        end else if (ep_impl_q && bad_data_toggle) begin
+        end else if (ep_impl_q && bad_data_toggle && !out_ep_stall_i[out_ep_index]) begin
+          // The DATA toggle was wrong (skipped when this EP is stalled)
           // Note: bad_data_toggle is meaningless for unimplemented EPs.
           out_xfr_state_next = StIdle;
           rollback_data = 1'b1;

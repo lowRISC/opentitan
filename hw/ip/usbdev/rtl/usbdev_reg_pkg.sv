@@ -61,6 +61,9 @@ package usbdev_reg_pkg;
     struct packed {
       logic        q;
     } connected;
+    struct packed {
+      logic        q;
+    } link_out_err;
   } usbdev_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
@@ -112,6 +115,9 @@ package usbdev_reg_pkg;
     struct packed {
       logic        q;
     } connected;
+    struct packed {
+      logic        q;
+    } link_out_err;
   } usbdev_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
@@ -179,6 +185,10 @@ package usbdev_reg_pkg;
       logic        q;
       logic        qe;
     } connected;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } link_out_err;
   } usbdev_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -343,6 +353,10 @@ package usbdev_reg_pkg;
       logic        d;
       logic        de;
     } connected;
+    struct packed {
+      logic        d;
+      logic        de;
+    } link_out_err;
   } usbdev_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -420,9 +434,9 @@ package usbdev_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    usbdev_reg2hw_intr_state_reg_t intr_state; // [346:331]
-    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [330:315]
-    usbdev_reg2hw_intr_test_reg_t intr_test; // [314:283]
+    usbdev_reg2hw_intr_state_reg_t intr_state; // [350:334]
+    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [333:317]
+    usbdev_reg2hw_intr_test_reg_t intr_test; // [316:283]
     usbdev_reg2hw_usbctrl_reg_t usbctrl; // [282:275]
     usbdev_reg2hw_avbuffer_reg_t avbuffer; // [274:269]
     usbdev_reg2hw_rxfifo_reg_t rxfifo; // [268:248]
@@ -439,13 +453,13 @@ package usbdev_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    usbdev_hw2reg_intr_state_reg_t intr_state; // [176:161]
-    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [160:153]
-    usbdev_hw2reg_usbstat_reg_t usbstat; // [152:153]
-    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [152:132]
-    usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [131:108]
-    usbdev_hw2reg_stall_mreg_t [11:0] stall; // [107:84]
-    usbdev_hw2reg_configin_mreg_t [11:0] configin; // [83:36]
+    usbdev_hw2reg_intr_state_reg_t intr_state; // [178:162]
+    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [161:154]
+    usbdev_hw2reg_usbstat_reg_t usbstat; // [153:154]
+    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [153:133]
+    usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [132:109]
+    usbdev_hw2reg_stall_mreg_t [11:0] stall; // [108:85]
+    usbdev_hw2reg_configin_mreg_t [11:0] configin; // [84:37]
   } usbdev_hw2reg_t;
 
   // Register Address
@@ -512,9 +526,9 @@ package usbdev_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] USBDEV_PERMIT [26] = '{
-    4'b 0011, // index[ 0] USBDEV_INTR_STATE
-    4'b 0011, // index[ 1] USBDEV_INTR_ENABLE
-    4'b 0011, // index[ 2] USBDEV_INTR_TEST
+    4'b 0111, // index[ 0] USBDEV_INTR_STATE
+    4'b 0111, // index[ 1] USBDEV_INTR_ENABLE
+    4'b 0111, // index[ 2] USBDEV_INTR_TEST
     4'b 0111, // index[ 3] USBDEV_USBCTRL
     4'b 1111, // index[ 4] USBDEV_USBSTAT
     4'b 0001, // index[ 5] USBDEV_AVBUFFER

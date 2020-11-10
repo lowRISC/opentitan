@@ -29,7 +29,7 @@ module usb_fs_nb_in_pe #(
   ////////////////////
   output logic [3:0]            in_ep_current_o, // Other signals addressed to this ep
   output logic                  in_ep_rollback_o, // Bad termination, rollback transaction
-  output logic                  in_ep_acked_o, // good termination, transaction complete
+  output logic                  in_ep_xfr_end_o, // good termination, transaction complete
   output logic [PktW - 1:0]     in_ep_get_addr_o, // Offset requested (0..pktlen)
   output logic                  in_ep_data_get_o, // Accept data (get_addr advances too)
   output logic                  in_ep_newpkt_o, // New IN packet starting (updates in_ep_current_o)
@@ -93,7 +93,7 @@ module usb_fs_nb_in_pe #(
 
   logic in_xfr_end;
 
-  assign in_ep_acked_o = in_xfr_end;
+  assign in_ep_xfr_end_o = in_xfr_end;
 
   // data toggle state
   logic [NumInEps-1:0] data_toggle_q, data_toggle_d;
@@ -199,6 +199,7 @@ module usb_fs_nb_in_pe #(
         if ((!more_data_to_send) || ((&in_ep_get_addr_o) && tx_data_get_i)) begin
           if (in_ep_iso_i[in_ep_index]) begin
             in_xfr_state_next = StIdle; // no ACK for ISO EPs
+            in_xfr_end = 1'b1;
           end else begin
             in_xfr_state_next = StWaitAck;
           end

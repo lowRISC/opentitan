@@ -154,7 +154,7 @@ module top_earlgrey #(
   // otbn
 
 
-  logic [86:0]  intr_vector;
+  logic [87:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -208,6 +208,7 @@ module top_earlgrey #(
   logic intr_usbdev_rx_bitstuff_err;
   logic intr_usbdev_frame;
   logic intr_usbdev_connected;
+  logic intr_usbdev_link_out_err;
   logic intr_keymgr_op_done;
   logic intr_keymgr_err;
   logic intr_otp_ctrl_otp_operation_done;
@@ -996,6 +997,7 @@ module top_earlgrey #(
       .intr_rx_bitstuff_err_o (intr_usbdev_rx_bitstuff_err),
       .intr_frame_o           (intr_usbdev_frame),
       .intr_connected_o       (intr_usbdev_connected),
+      .intr_link_out_err_o    (intr_usbdev_link_out_err),
 
       // Inter-module signals
       .usb_ref_val_o(usbdev_usb_ref_val_o),
@@ -1134,6 +1136,7 @@ module top_earlgrey #(
       intr_otbn_err,
       intr_otbn_done,
       intr_pwrmgr_wakeup,
+      intr_usbdev_link_out_err,
       intr_usbdev_connected,
       intr_usbdev_frame,
       intr_usbdev_rx_bitstuff_err,

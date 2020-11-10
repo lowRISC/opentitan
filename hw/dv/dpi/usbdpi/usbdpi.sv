@@ -82,6 +82,7 @@ module usbdpi #(
       d_int <= 0;
       dp_int <= 0;
       dn_int <= 0;
+      sense_p2d <= 0;
     end
   end
 
