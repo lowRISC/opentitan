@@ -12,7 +12,7 @@
     {
       name: sanity
       desc: '''
-            Basic sanity test acessing a major datapath within the ${name}.
+            Basic sanity test accessing a major datapath within the ${name}.
 
             **Stimulus**:
             - TBD

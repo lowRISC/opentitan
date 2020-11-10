@@ -12,7 +12,7 @@
     {
       name: sanity
       desc: '''
-            Basic sanity test acessing a major datapath within the keymgr.
+            Basic sanity test accessing a major datapath within the keymgr.
 
             **Stimulus**:
             - TBD
