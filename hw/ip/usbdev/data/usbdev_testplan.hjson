@@ -11,7 +11,7 @@
   entries: [
     {
       name: sanity
-      desc: '''**Goal**: Basic sanity test acessing a major datapath in USBDEV.
+      desc: '''**Goal**: Basic sanity test accessing a major datapath in USBDEV.
 
             **Stimulus**: Describe the stimulus procedure.
 

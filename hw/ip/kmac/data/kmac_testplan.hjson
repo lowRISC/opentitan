@@ -11,7 +11,7 @@
     {
       name: sanity
       desc: '''
-            Basic sanity test acessing a major datapath within the kmac.
+            Basic sanity test accessing a major datapath within the kmac.
 
             **Stimulus**:
             - TBD
