@@ -90,6 +90,12 @@ class OTBNInsn:
         self._disasm = (pc, disasm)
         return disasm
 
+    @staticmethod
+    def as_u32(value: int) -> int:
+        '''Interpret the signed value as a 2's complement u32'''
+        assert -(1 << 31) <= value < (1 << 31)
+        return (1 << 32) + value if value < 0 else value
+
 
 class RV32RegReg(OTBNInsn):
     '''A general class for register-register insns from the RV32I ISA'''
