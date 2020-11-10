@@ -8,10 +8,8 @@ class keymgr_op_at_wipe_state_vseq extends keymgr_sanity_vseq;
   `uvm_object_new
 
   virtual task keymgr_init();
-    `uvm_info(`gfn, "Initializating key manager", UVM_MEDIUM)
-    ral.control.init.set(1'b1);
-    csr_update(.csr(ral.control));
-    ral.control.init.set(1'b0); // don't program init again
+    do_wait_for_init_done = 0;
+    super.keymgr_init();
 
     current_state = keymgr_pkg::StWipe;
     // it's StWipe now, but only last for several cycles, during this period, any OP will be
