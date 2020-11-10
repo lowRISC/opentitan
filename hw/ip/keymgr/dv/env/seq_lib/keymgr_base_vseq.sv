@@ -12,6 +12,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   // various knobs to enable certain routines
   bit do_keymgr_init = 1'b1;
+  bit do_wait_for_init_done = 1'b1;
 
   // do operations at StReset
   rand bit do_op_before_init;
@@ -24,17 +25,6 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
-    `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
-    csr_update(.csr(ral.intr_enable));
-
-    current_state = keymgr_pkg::StReset;
-    // Any OP at StReset will trigger OP error. There are 5 kinds of OPs
-    // Also test both start and init set to 1, which triggers OP error as well
-    if (do_op_before_init) begin
-      repeat ($urandom_range(1, 5)) keymgr_random_op(.start(1), .init($urandom_range(0, 1)));
-    end
-
-    // move keymgr to StInit
     if (do_keymgr_init) keymgr_init();
   endtask
 
@@ -45,14 +35,28 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   // setup basic keymgr features
   virtual task keymgr_init();
+    current_state = keymgr_pkg::StReset;
+
+    // Any OP at StReset will trigger OP error. There are 5 kinds of OPs
+    // Also test both start and init set to 1, which triggers OP error as well
+    if (do_op_before_init) begin
+      repeat ($urandom_range(1, 5)) keymgr_random_op(.start(1), .init($urandom_range(0, 1)));
+    end
+
     `uvm_info(`gfn, "Initializating key manager", UVM_MEDIUM)
+
+    `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
+    csr_update(.csr(ral.intr_enable));
+
     ral.control.init.set(1'b1);
     csr_update(.csr(ral.control));
     // manually clear here since ral is not aware this bet is self-clearing
     ral.control.init.set(1'b0);
 
-    csr_spinwait(.ptr(ral.working_state), .exp_data(keymgr_pkg::StInit));
-    current_state = keymgr_pkg::StInit;
+    if (do_wait_for_init_done) begin
+      csr_spinwait(.ptr(ral.working_state), .exp_data(keymgr_pkg::StInit));
+      current_state = keymgr_pkg::StInit;
+    end
   endtask : keymgr_init
 
   // advance to next state and generate output, clear output
