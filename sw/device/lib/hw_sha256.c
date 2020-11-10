@@ -12,7 +12,7 @@ static const HASH_VTAB HW_SHA256_VTAB = {.init = &hw_SHA256_init,
                                          .hash = &hw_SHA256_hash,
                                          .size = SHA256_DIGEST_SIZE};
 
-static void sha256_init() {
+static void sha256_init(void) {
   hmac_cfg_t config = {.mode = HMAC_OP_SHA256,
                        .input_endian_swap = 1,
                        .digest_endian_swap = 1,

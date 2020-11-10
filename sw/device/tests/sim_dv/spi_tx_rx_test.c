@@ -280,7 +280,7 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_plic_t *plic) {
         "dif_plic_irq_set_enabled failed");
 }
 
-static bool exp_irqs_fired() {
+static bool exp_irqs_fired(void) {
   return fired_irqs[kDifSpiDeviceIrqRxAboveLevel] &&
          fired_irqs[kDifSpiDeviceIrqTxBelowLevel] &&
          fired_irqs[kDifSpiDeviceIrqRxOverflow] &&

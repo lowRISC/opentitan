@@ -113,22 +113,22 @@ void flash_default_region_access(bool rd_en, bool prog_en, bool erase_en);
 void flash_cfg_region(const mp_region_t *region_cfg);
 
 /** Get number of flash banks */
-uint32_t flash_get_banks();
+uint32_t flash_get_banks(void);
 
 /** Get number of pages per bank */
-uint32_t flash_get_pages_per_bank();
+uint32_t flash_get_pages_per_bank(void);
 
 /** Get number of words per page */
-uint32_t flash_get_words_per_page();
+uint32_t flash_get_words_per_page(void);
 
 /** Get size of each bank in bytes */
-uint32_t flash_get_bank_size();
+uint32_t flash_get_bank_size(void);
 
 /** Get size of each page in bytes */
-uint32_t flash_get_page_size();
+uint32_t flash_get_page_size(void);
 
 /** Get size of each flash word in bytes */
-uint32_t flash_get_word_size();
+uint32_t flash_get_word_size(void);
 
 /** Write value to flash scratch register */
 void flash_write_scratch_reg(uint32_t value);

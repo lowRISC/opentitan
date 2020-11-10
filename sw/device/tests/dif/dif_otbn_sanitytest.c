@@ -153,7 +153,7 @@ static void call_function(const otbn_func_t *func) {
 /**
  * Busy wait for OTBN to be done with its operation.
  */
-static void otbn_wait_for_done() {
+static void otbn_wait_for_done(void) {
   bool busy = true;
   while (busy) {
     CHECK(dif_otbn_is_busy(&otbn, &busy) == kDifOtbnOk,
@@ -164,7 +164,7 @@ static void otbn_wait_for_done() {
 /**
  * Initialize OTBN's data memory with zeros
  */
-static void zero_dmem() {
+static void zero_dmem(void) {
   int dmem_size_words = dif_otbn_get_dmem_size_bytes(&otbn) / sizeof(uint32_t);
   for (int i = 0; i < dmem_size_words; ++i) {
     const uint32_t zero = 0;
@@ -185,7 +185,7 @@ static void zero_dmem() {
  * The entry point wrap_barrett384() is called according to the calling
  * convention described in the OTBN assembly code file.
  */
-static void test_barrett384() {
+static void test_barrett384(void) {
   enum { kDataSizeBytes = 48 };
 
   zero_dmem();
