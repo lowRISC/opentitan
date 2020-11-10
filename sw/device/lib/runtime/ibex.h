@@ -25,7 +25,7 @@
  * Adapted from: The RISC-V Instruction Set Manual, Volume I: Unprivileged ISA
  * V20191213, pp. 61.
  */
-inline uint64_t ibex_mcycle_read() {
+inline uint64_t ibex_mcycle_read(void) {
   uint32_t cycle_low = 0;
   uint32_t cycle_high = 0;
   uint32_t cycle_high_2 = 0;

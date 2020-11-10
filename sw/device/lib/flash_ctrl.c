@@ -193,17 +193,21 @@ void flash_cfg_region(const mp_region_t *region_cfg) {
   }
 }
 
-uint32_t flash_get_banks() { return FLASH_CTRL_PARAM_REGNUMBANKS; }
+uint32_t flash_get_banks(void) { return FLASH_CTRL_PARAM_REGNUMBANKS; }
 
-uint32_t flash_get_pages_per_bank() { return FLASH_CTRL_PARAM_REGPAGESPERBANK; }
+uint32_t flash_get_pages_per_bank(void) {
+  return FLASH_CTRL_PARAM_REGPAGESPERBANK;
+}
 
-uint32_t flash_get_words_per_page() { return FLASH_CTRL_PARAM_WORDSPERPAGE; }
+uint32_t flash_get_words_per_page(void) {
+  return FLASH_CTRL_PARAM_WORDSPERPAGE;
+}
 
-uint32_t flash_get_bank_size() { return FLASH_CTRL_PARAM_BYTESPERBANK; }
+uint32_t flash_get_bank_size(void) { return FLASH_CTRL_PARAM_BYTESPERBANK; }
 
-uint32_t flash_get_page_size() { return FLASH_CTRL_PARAM_BYTESPERPAGE; }
+uint32_t flash_get_page_size(void) { return FLASH_CTRL_PARAM_BYTESPERPAGE; }
 
-uint32_t flash_get_word_size() { return FLASH_CTRL_PARAM_BYTESPERWORD; }
+uint32_t flash_get_word_size(void) { return FLASH_CTRL_PARAM_BYTESPERWORD; }
 
 void flash_write_scratch_reg(uint32_t value) {
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_SCRATCH_REG_OFFSET) = value;

@@ -4,4 +4,4 @@
 
 #include "sw/device/lib/runtime/ibex.h"
 
-extern uint64_t ibex_mcycle_read();
+extern uint64_t ibex_mcycle_read(void);

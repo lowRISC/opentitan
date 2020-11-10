@@ -108,6 +108,10 @@ add_project_arguments(
   c_cpp_cross_args,
   optimize_size_args,
   language: ['c', 'cpp'], native: false)
+# Add a C-only flag for cross builds.
+add_project_arguments(
+  '-Wstrict-prototypes', # Ban K&R Declarations/Definitions.
+  language: ['c'], native: false)
 
 # The following flags are applied only to cross builds
 c_cpp_cross_link_args = [
@@ -144,6 +148,10 @@ endforeach
 add_project_arguments(
   c_cpp_native_args,
   language: ['c', 'cpp'], native: true)
+# Add a C-only flag for native builds.
+add_project_arguments(
+  '-Wstrict-prototypes', # Ban K&R Declarations/Definitions.
+  language: ['c'], native: true)
 
 # Common program references.
 prog_python = import('python').find_installation('python3')
