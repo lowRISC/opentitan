@@ -31,7 +31,7 @@
   // List of test specifications.
   tests: [
     {
-      name: tl_agent_sanity
+      name: tl_agent_smoke
       uvm_test_seq: tl_agent_base_vseq
     }
   ]
@@ -39,8 +39,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["tl_agent_sanity"]
+      name: smoke
+      tests: ["tl_agent_smoke"]
     }
   ]
 }

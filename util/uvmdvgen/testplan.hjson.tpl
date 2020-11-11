@@ -10,9 +10,9 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
-      name: sanity
+      name: smoke
       desc: '''
-            Basic sanity test accessing a major datapath within the ${name}.
+            Smoke test accessing a major datapath within the ${name}.
 
             **Stimulus**:
             - TBD
@@ -21,7 +21,7 @@
             - TBD
             '''
       milestone: V1
-      tests: ["${name}_sanity"]
+      tests: ["${name}_smoke"]
     }
     {
       name: feature1

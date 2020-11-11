@@ -62,8 +62,8 @@
   // List of test specifications.
   tests: [
     {
-      name: ${name}_sanity
-      uvm_test_seq: ${name}_sanity_vseq
+      name: ${name}_smoke
+      uvm_test_seq: ${name}_smoke_vseq
     }
 
     // TODO: add more tests here
@@ -72,8 +72,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["${name}_sanity"]
+      name: smoke
+      tests: ["${name}_smoke"]
     }
   ]
 }
