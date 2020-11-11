@@ -118,11 +118,11 @@ Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
 Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Not Started |
 Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
 Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SIM_SANITY_TEST_PASSING][]           | Not Started |
+Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
 Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started |
 Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
 Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
-Regression    | [SIM_SANITY_REGRESSION_SETUP][]       | Not Started |
+Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
 Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
 Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
@@ -140,11 +140,11 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 [SIM_RAL_MODEL_GEN_AUTOMATED]:        {{<relref "/doc/project/checklist.md#sim_ral_model_gen_automated" >}}
 [CSR_CHECK_GEN_AUTOMATED]:            {{<relref "/doc/project/checklist.md#csr_check_gen_automated" >}}
 [TB_GEN_AUTOMATED]:                   {{<relref "/doc/project/checklist.md#tb_gen_automated" >}}
-[SIM_SANITY_TEST_PASSING]:            {{<relref "/doc/project/checklist.md#sim_sanity_test_passing" >}}
+[SIM_SMOKE_TEST_PASSING]:             {{<relref "/doc/project/checklist.md#sim_smoke_test_passing" >}}
 [SIM_CSR_MEM_TEST_SUITE_PASSING]:     {{<relref "/doc/project/checklist.md#sim_csr_mem_test_suite_passing" >}}
 [FPV_MAIN_ASSERTIONS_PROVEN]:         {{<relref "/doc/project/checklist.md#fpv_main_assertions_proven" >}}
 [SIM_ALT_TOOL_SETUP]:                 {{<relref "/doc/project/checklist.md#sim_alt_tool_setup" >}}
-[SIM_SANITY_REGRESSION_SETUP]:        {{<relref "/doc/project/checklist.md#sim_sanity_regression_setup" >}}
+[SIM_SMOKE_REGRESSION_SETUP]:         {{<relref "/doc/project/checklist.md#sim_smoke_regression_setup" >}}
 [SIM_NIGHTLY_REGRESSION_SETUP]:       {{<relref "/doc/project/checklist.md#sim_nightly_regression_setup" >}}
 [FPV_REGRESSION_SETUP]:               {{<relref "/doc/project/checklist.md#fpv_regression_setup" >}}
 [SIM_COVERAGE_MODEL_ADDED]:           {{<relref "/doc/project/checklist.md#sim_coverage_model_added" >}}

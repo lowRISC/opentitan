@@ -69,7 +69,7 @@ Review        | Signoff date            | Done        | 2019-11-04
 [MISSING_FUNC]:        {{<relref "/doc/project/checklist.md#missing-func" >}}
 [FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature-frozen" >}}
 [FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature-complete" >}}
-[AREA_CHECK]:          {{<relref "/doc/project/checklist.md#area-sanity-check" >}}
+[AREA_CHECK]:          {{<relref "/doc/project/checklist.md#area-check" >}}
 [PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port-frozen" >}}
 [ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture-frozen" >}}
 [REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review-todo" >}}
