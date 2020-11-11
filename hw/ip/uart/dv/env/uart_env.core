@@ -19,7 +19,7 @@ filesets:
       - uart_env.sv: {is_include_file: true}
       - seq_lib/uart_vseq_list.sv: {is_include_file: true}
       - seq_lib/uart_base_vseq.sv: {is_include_file: true}
-      - seq_lib/uart_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/uart_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/uart_common_vseq.sv: {is_include_file: true}
       - seq_lib/uart_tx_rx_vseq.sv: {is_include_file: true}
       - seq_lib/uart_fifo_full_vseq.sv: {is_include_file: true}
