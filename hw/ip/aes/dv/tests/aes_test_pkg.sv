@@ -19,7 +19,7 @@ package aes_test_pkg;
   // package sources
   `include "aes_base_test.sv"
   `include "aes_wake_up_test.sv"
-  `include "aes_sanity_test.sv"
+  `include "aes_smoke_test.sv"
   `include "aes_stress_test.sv"
   `include "aes_b2b_test.sv"
   `include "aes_config_error_test.sv"
