@@ -21,7 +21,7 @@ filesets:
       - seq_lib/xbar_seq_err_item.sv: {is_include_file: true}
       - seq_lib/xbar_tl_host_seq.sv: {is_include_file: true}
       - seq_lib/xbar_base_vseq.sv: {is_include_file: true}
-      - seq_lib/xbar_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/xbar_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/xbar_random_vseq.sv: {is_include_file: true}
       - seq_lib/xbar_access_same_device_vseq.sv: {is_include_file: true}
       - seq_lib/xbar_same_source_vseq.sv: {is_include_file: true}

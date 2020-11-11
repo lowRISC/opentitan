@@ -14,7 +14,7 @@ class xbar_stress_all_vseq extends xbar_base_vseq;
   `uvm_object_new
 
   task body();
-    string seq_names[] = {"xbar_sanity_vseq",
+    string seq_names[] = {"xbar_smoke_vseq",
                           "xbar_random_vseq",
                           "xbar_access_same_device_vseq",
                           "xbar_same_source_vseq",

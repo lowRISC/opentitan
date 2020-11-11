@@ -12,25 +12,25 @@
   // List of test specifications.
   tests: [
     {
-      name: "xbar_{name}_sanity"
+      name: "xbar_{name}_smoke"
       en_run_modes: ["xbar_mode"]
       uvm_test: xbar_base_test
-      uvm_test_seq: xbar_sanity_vseq
+      uvm_test_seq: xbar_smoke_vseq
     }
 
     {
-      name: "xbar_{name}_sanity_zero_delays"
+      name: "xbar_{name}_smoke_zero_delays"
       en_run_modes: ["xbar_mode"]
       uvm_test: xbar_base_test
-      uvm_test_seq: xbar_sanity_vseq
+      uvm_test_seq: xbar_smoke_vseq
       run_opts: ["+zero_delays=1"]
     }
 
     {
-      name: "xbar_{name}_sanity_large_delays"
+      name: "xbar_{name}_smoke_large_delays"
       en_run_modes: ["xbar_mode"]
       uvm_test: xbar_base_test
-      uvm_test_seq: xbar_sanity_vseq
+      uvm_test_seq: xbar_smoke_vseq
       run_opts: ["+max_host_req_delay=1000",
                  "+max_host_rsp_delay=1000",
                  "+max_device_req_delay=1000",
@@ -40,10 +40,10 @@
     }
 
     {
-      name: "xbar_{name}_sanity_slow_rsp"
+      name: "xbar_{name}_smoke_slow_rsp"
       en_run_modes: ["xbar_mode"]
       uvm_test: xbar_base_test
-      uvm_test_seq: xbar_sanity_vseq
+      uvm_test_seq: xbar_smoke_vseq
       run_opts: ["+max_host_req_delay=10",
                  "+max_host_rsp_delay=1000",
                  "+max_device_req_delay=1000",
@@ -173,8 +173,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["xbar_{name}_sanity"]
+      name: smoke
+      tests: ["xbar_{name}_smoke"]
     }
   ]
 }
