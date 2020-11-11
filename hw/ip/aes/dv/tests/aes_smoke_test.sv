@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class aes_sanity_test extends aes_base_test;
+class aes_smoke_test extends aes_base_test;
 
-  `uvm_component_utils(aes_sanity_test)
+  `uvm_component_utils(aes_smoke_test)
   `uvm_component_new
 
 
@@ -19,7 +19,7 @@ class aes_sanity_test extends aes_base_test;
 //    the feature below is waiting in anther PR
 //    cfg.zero_delay_pct           = 100;
 
-    cfg.error_types              = 0;     // no errors in sanity test
+    cfg.error_types              = 0;     // no errors in smoke test
     cfg.num_messages_min         = 2;
     cfg.num_messages_max         = 2;
     // message related knobs
@@ -49,4 +49,4 @@ class aes_sanity_test extends aes_base_test;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
   endfunction
-endclass : aes_sanity_test
+endclass : aes_smoke_test
