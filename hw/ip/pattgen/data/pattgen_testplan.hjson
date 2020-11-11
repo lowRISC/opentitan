@@ -9,15 +9,15 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"],
   entries: [
     {
-      name: sanity
+      name: smoke
       desc: '''
-            Basic sanity test for pattgen ip in which dut is randomly programmed 
+            Smoke test for pattgen ip in which dut is randomly programmed
             to generate random patterns on output channels.
 
             Stimulus:
               - Program the configuration registers of the output channels
               - Randomly activate the output channels
-              - Re-program the configuration registers of the output channels once 
+              - Re-program the configuration registers of the output channels once
                 completion interrupts are asserted
 
             Checking:
@@ -29,7 +29,7 @@
                 is completely generated on the active channels
             '''
       milestone: V1
-      tests: ["pattgen_sanity"]
+      tests: ["pattgen_smoke"]
     }
     {
       name: perf
