@@ -38,7 +38,7 @@
 
             '''
       milestone: V1
-      tests: ["otbn_sanity"]
+      tests: ["otbn_single"]
     }
 
     {
