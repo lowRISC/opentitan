@@ -54,8 +54,8 @@
     }
 
     {
-      name: otp_ctrl_sanity
-      uvm_test_seq: otp_ctrl_sanity_vseq
+      name: otp_ctrl_smoke
+      uvm_test_seq: otp_ctrl_smoke_vseq
     }
 
     // TODO: add more tests here
@@ -64,8 +64,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["otp_ctrl_sanity"]
+      name: smoke
+      tests: ["otp_ctrl_smoke"]
     }
   ]
 }
