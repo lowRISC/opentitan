@@ -16,13 +16,14 @@
   reset: rst_peri_ni
   reset_connections:
   {
-    rst_peri_ni: sys_io_div4
+    rst_peri_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
   }
   clock_reset_export: []
   clock_connections:
   {
     clk_peri_i: clkmgr_clocks.clk_io_div4_infra
   }
+  domain: "0"
   connections:
   {
     main:

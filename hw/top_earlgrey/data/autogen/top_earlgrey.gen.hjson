@@ -14,6 +14,15 @@
   type: top
   rnd_cnst_seed: 4881560218908238235
   datawidth: "32"
+  power:
+  {
+    domains:
+    [
+      Aon
+      "0"
+    ]
+    default: "0"
+  }
   clocks:
   {
     hier_paths:
@@ -173,27 +182,42 @@
         name: por_aon
         gen: false
         type: top
-        parent: rst_ni
+        domains:
+        [
+          Aon
+        ]
         clk: aon
       }
       {
         name: lc_src
         gen: false
         type: int
-        parent: por
-        clk: io_div2
+        domains:
+        [
+          Aon
+          "0"
+        ]
+        clk: io_div4
       }
       {
         name: sys_src
         gen: false
         type: int
-        parent: por
-        clk: io_div2
+        domains:
+        [
+          Aon
+          "0"
+        ]
+        clk: io_div4
       }
       {
         name: por
         gen: true
         type: top
+        domains:
+        [
+          Aon
+        ]
         parent: por_aon
         clk: main
       }
@@ -201,6 +225,10 @@
         name: por_io
         gen: true
         type: top
+        domains:
+        [
+          Aon
+        ]
         parent: por_aon
         clk: io
       }
@@ -208,6 +236,10 @@
         name: por_io_div2
         gen: true
         type: top
+        domains:
+        [
+          Aon
+        ]
         parent: por_aon
         clk: io_div2
       }
@@ -215,6 +247,10 @@
         name: por_io_div4
         gen: true
         type: top
+        domains:
+        [
+          Aon
+        ]
         parent: por_aon
         clk: io_div4
       }
@@ -222,6 +258,10 @@
         name: por_usb
         gen: true
         type: top
+        domains:
+        [
+          Aon
+        ]
         parent: por_aon
         clk: usb
       }
@@ -229,15 +269,21 @@
         name: lc
         gen: true
         type: top
-        domain: "0"
+        domains:
+        [
+          "0"
+        ]
         parent: lc_src
         clk: main
       }
       {
-        name: lc_io
+        name: lc_io_div4
         gen: true
         type: top
-        domain: "0"
+        domains:
+        [
+          "0"
+        ]
         parent: lc_src
         clk: io_div4
       }
@@ -245,23 +291,23 @@
         name: sys
         gen: true
         type: top
-        domain: "0"
+        domains:
+        [
+          Aon
+          "0"
+        ]
         parent: sys_src
         clk: main
-      }
-      {
-        name: sys_io
-        gen: true
-        type: top
-        domain: "0"
-        parent: sys_src
-        clk: io_div2
       }
       {
         name: sys_io_div4
         gen: true
         type: top
-        domain: "0"
+        domains:
+        [
+          Aon
+          "0"
+        ]
         parent: sys_src
         clk: io_div4
       }
@@ -269,7 +315,10 @@
         name: sys_aon
         gen: true
         type: top
-        domain: "0"
+        domains:
+        [
+          Aon
+        ]
         parent: sys_src
         clk: aon
       }
@@ -277,7 +326,10 @@
         name: spi_device
         gen: true
         type: top
-        domain: "0"
+        domains:
+        [
+          "0"
+        ]
         parent: sys_src
         clk: io_div2
         sw: 1
@@ -286,7 +338,10 @@
         name: usb
         gen: true
         type: top
-        domain: "0"
+        domains:
+        [
+          Aon
+        ]
         parent: sys_src
         clk: usb
         sw: 1
@@ -305,7 +360,7 @@
       }
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40000000
       clock_reset_export: []
@@ -314,6 +369,7 @@
       {
         clk_i: clkmgr_clocks.clk_io_div4_secure
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -465,7 +521,7 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40010000
       clock_reset_export: []
@@ -473,6 +529,7 @@
       {
         clk_i: clkmgr_clocks.clk_io_div4_peri
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -533,7 +590,7 @@
       clock_group: peri
       reset_connections:
       {
-        rst_ni: spi_device
+        rst_ni: rstmgr_resets.rst_spi_device_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40020000
       clock_reset_export: []
@@ -541,6 +598,7 @@
       {
         clk_i: clkmgr_clocks.clk_io_div4_peri
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -678,7 +736,7 @@
       clock_group: infra
       reset_connections:
       {
-        rst_ni: lc
+        rst_ni: rstmgr_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40030000
       generated: "true"
@@ -687,6 +745,7 @@
       {
         clk_i: clkmgr_clocks.clk_main_infra
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -864,7 +923,7 @@
       clock_group: timers
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40080000
       clock_reset_export: []
@@ -872,6 +931,7 @@
       {
         clk_i: clkmgr_clocks.clk_io_div4_timers
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -918,7 +978,7 @@
       clock_group: trans
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40110000
       clock_reset_export: []
@@ -926,6 +986,7 @@
       {
         clk_i: clkmgr_clocks.clk_main_aes
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -1108,7 +1169,7 @@
       clock_group: trans
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40120000
       clock_reset_export: []
@@ -1116,6 +1177,7 @@
       {
         clk_i: clkmgr_clocks.clk_main_hmac
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -1205,7 +1267,7 @@
       clock_group: trans
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41120000
       clock_reset_export: []
@@ -1213,6 +1275,7 @@
       {
         clk_i: clkmgr_clocks.clk_main_kmac
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -1363,7 +1426,7 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40090000
       generated: "true"
@@ -1372,6 +1435,7 @@
       {
         clk_i: clkmgr_clocks.clk_main_secure
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -1413,9 +1477,10 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
-        rst_aon_ni: sys_aon
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::DomainAonSel]
+        rst_aon_ni: rstmgr_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel]
       }
+      domain: Aon
       base_addr: 0x40070000
       generated: "true"
       clock_reset_export: []
@@ -1522,8 +1587,9 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::DomainAonSel]
       }
+      domain: Aon
       base_addr: 0x40160000
       generated: "true"
       clock_reset_export: []
@@ -1570,7 +1636,7 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40130000
       generated: "true"
@@ -1585,6 +1651,7 @@
       {
         clk_i: clkmgr_clocks.clk_main_secure
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -1714,9 +1781,10 @@
       clock_group: powerup
       reset_connections:
       {
-        rst_ni: por
-        rst_slow_ni: por_aon
+        rst_ni: rstmgr_resets.rst_por_n[rstmgr_pkg::DomainAonSel]
+        rst_slow_ni: rstmgr_resets.rst_por_aon_n[rstmgr_pkg::DomainAonSel]
       }
+      domain: Aon
       base_addr: 0x400A0000
       generated: "true"
       clock_reset_export: []
@@ -1894,6 +1962,7 @@
       {
         rst_ni: rst_ni
       }
+      domain: Aon
       base_addr: 0x400B0000
       generated: "true"
       clock_reset_export: []
@@ -2020,13 +2089,14 @@
       clock_group: powerup
       reset_connections:
       {
-        rst_ni: por_io
-        rst_main_ni: por
-        rst_io_ni: por_io
-        rst_usb_ni: por_usb
-        rst_io_div2_ni: por_io_div2
-        rst_io_div4_ni: por_io_div4
+        rst_ni: rstmgr_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]
+        rst_main_ni: rstmgr_resets.rst_por_n[rstmgr_pkg::DomainAonSel]
+        rst_io_ni: rstmgr_resets.rst_por_io_n[rstmgr_pkg::DomainAonSel]
+        rst_usb_ni: rstmgr_resets.rst_por_usb_n[rstmgr_pkg::DomainAonSel]
+        rst_io_div2_ni: rstmgr_resets.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel]
+        rst_io_div4_ni: rstmgr_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]
       }
+      domain: Aon
       base_addr: 0x400C0000
       generated: "true"
       clock_reset_export: []
@@ -2175,7 +2245,7 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40140000
       clock_reset_export: []
@@ -2183,6 +2253,7 @@
       {
         clk_i: clkmgr_clocks.clk_main_secure
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -2282,9 +2353,10 @@
       ]
       reset_connections:
       {
-        rst_ni: sys_io_div4
-        rst_usb_48mhz_ni: usb
+        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
+        rst_usb_48mhz_ni: rstmgr_resets.rst_usb_n[rstmgr_pkg::DomainAonSel]
       }
+      domain: Aon
       base_addr: 0x40150000
       clock_connections:
       {
@@ -2617,8 +2689,9 @@
       ]
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
       }
+      domain: Aon
       base_addr: 0x40170000
       top_only: "true"
       clock_connections:
@@ -2705,7 +2778,7 @@
       clock_group: secure
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x401a0000
       clock_reset_export: []
@@ -2713,6 +2786,7 @@
       {
         clk_i: clkmgr_clocks.clk_main_secure
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -2879,7 +2953,7 @@
       clock_group: timers
       reset_connections:
       {
-        rst_ni: lc_io
+        rst_ni: rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x401b0000
       clock_reset_export: []
@@ -2887,6 +2961,7 @@
       {
         clk_i: clkmgr_clocks.clk_io_div4_timers
       }
+      domain: "0"
       size: 0x4000
       bus_device: tlul
       bus_host: none
@@ -3201,7 +3276,7 @@
       clock_group: trans
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x50000000
       clock_reset_export: []
@@ -3209,6 +3284,7 @@
       {
         clk_i: clkmgr_clocks.clk_main_otbn
       }
+      domain: "0"
       size: 0x400000
       bus_device: tlul
       bus_host: none
@@ -3342,7 +3418,7 @@
       clock_group: infra
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       type: rom
       base_addr: 0x00008000
@@ -3368,6 +3444,7 @@
       {
         clk_i: clkmgr_clocks.clk_main_infra
       }
+      domain: "0"
     }
     {
       name: ram_main
@@ -3378,7 +3455,7 @@
       clock_group: infra
       reset_connections:
       {
-        rst_ni: sys
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       type: ram_1p
       base_addr: 0x10000000
@@ -3403,6 +3480,7 @@
       {
         clk_i: clkmgr_clocks.clk_main_infra
       }
+      domain: "0"
     }
     {
       name: ram_ret
@@ -3413,8 +3491,9 @@
       clock_group: infra
       reset_connections:
       {
-        rst_ni: sys_io_div4
+        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
       }
+      domain: Aon
       type: ram_1p
       base_addr: 0x18000000
       size: 0x1000
@@ -3448,7 +3527,7 @@
       clock_group: infra
       reset_connections:
       {
-        rst_ni: lc
+        rst_ni: rstmgr_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]
       }
       type: eflash
       base_addr: 0x20000000
@@ -3499,6 +3578,7 @@
       ]
       size: 0x80000
       pgm_resolution_bytes: 1024
+      domain: "0"
     }
   ]
   inter_module:
@@ -3704,8 +3784,8 @@
       reset: rst_main_ni
       reset_connections:
       {
-        rst_main_ni: sys
-        rst_fixed_ni: sys_io_div4
+        rst_main_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
+        rst_fixed_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       clock_reset_export: []
       clock_connections:
@@ -3713,6 +3793,7 @@
         clk_main_i: clkmgr_clocks.clk_main_infra
         clk_fixed_i: clkmgr_clocks.clk_io_div4_infra
       }
+      domain: "0"
       connections:
       {
         corei:
@@ -4348,13 +4429,14 @@
       reset: rst_peri_ni
       reset_connections:
       {
-        rst_peri_ni: sys_io_div4
+        rst_peri_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       clock_reset_export: []
       clock_connections:
       {
         clk_peri_i: clkmgr_clocks.clk_io_div4_infra
       }
+      domain: "0"
       connections:
       {
         main:
@@ -5962,39 +6044,6 @@
       ]
     }
   }
-  reset_paths:
-  {
-    rst_ni: rst_ni
-    por_aon: rstmgr_resets.rst_por_aon_n
-    por: rstmgr_resets.rst_por_n
-    por_io: rstmgr_resets.rst_por_io_n
-    por_io_div2: rstmgr_resets.rst_por_io_div2_n
-    por_io_div4: rstmgr_resets.rst_por_io_div4_n
-    por_usb: rstmgr_resets.rst_por_usb_n
-    lc: rstmgr_resets.rst_lc_n
-    lc_io: rstmgr_resets.rst_lc_io_n
-    sys: rstmgr_resets.rst_sys_n
-    sys_io: rstmgr_resets.rst_sys_io_n
-    sys_io_div4: rstmgr_resets.rst_sys_io_div4_n
-    sys_aon: rstmgr_resets.rst_sys_aon_n
-    spi_device: rstmgr_resets.rst_spi_device_n
-    usb: rstmgr_resets.rst_usb_n
-  }
-  exported_rsts:
-  {
-    ast:
-    {
-      usbdev:
-      [
-        sys_io_div4
-        usb
-      ]
-      sensor_ctrl:
-      [
-        sys_io_div4
-      ]
-    }
-  }
   wakeups:
   [
     {
@@ -6010,6 +6059,38 @@
       module: nmi_gen
     }
   ]
+  exported_rsts:
+  {
+    ast:
+    {
+      usbdev:
+      [
+        sys_io_div4
+        usb
+      ]
+      sensor_ctrl:
+      [
+        sys_io_div4
+      ]
+    }
+  }
+  reset_paths:
+  {
+    rst_ni: rst_ni
+    por_aon: rstmgr_resets.rst_por_aon_n
+    por: rstmgr_resets.rst_por_n
+    por_io: rstmgr_resets.rst_por_io_n
+    por_io_div2: rstmgr_resets.rst_por_io_div2_n
+    por_io_div4: rstmgr_resets.rst_por_io_div4_n
+    por_usb: rstmgr_resets.rst_por_usb_n
+    lc: rstmgr_resets.rst_lc_n
+    lc_io_div4: rstmgr_resets.rst_lc_io_div4_n
+    sys: rstmgr_resets.rst_sys_n
+    sys_io_div4: rstmgr_resets.rst_sys_io_div4_n
+    sys_aon: rstmgr_resets.rst_sys_aon_n
+    spi_device: rstmgr_resets.rst_spi_device_n
+    usb: rstmgr_resets.rst_usb_n
+  }
   inter_signal:
   {
     signals:

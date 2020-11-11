@@ -14,10 +14,10 @@ module rstmgr import rstmgr_pkg::*; (
   input clk_i,
   input rst_ni, // this is currently connected to top level reset, but will change once ast is in
   input clk_aon_i,
-  input clk_io_div2_i,
+  input clk_io_div4_i,
   input clk_main_i,
   input clk_io_i,
-  input clk_io_div4_i,
+  input clk_io_div2_i,
   input clk_usb_i,
 
   // Bus Interface
@@ -52,21 +52,32 @@ module rstmgr import rstmgr_pkg::*; (
   // receive POR and stretch
   // The por is at first stretched and synced on clk_aon
   // The rst_ni and pok_i input will be changed once AST is integrated
-  logic rst_por_aon_n;
-  rstmgr_por u_rst_por_aon (
-    .clk_i(clk_aon_i),
-    .rst_ni(ast_i.aon_pok),
-    .scan_rst_ni,
-    .scanmode_i,
-    .rst_no(rst_por_aon_n)
-  );
+  logic [PowerDomains-1:0] rst_por_aon_n;
 
-  prim_clock_mux2 u_rst_por_aon_n_mux (
-    .clk0_i(rst_por_aon_n),
-    .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_por_aon_n)
-  );
+  for (genvar i = 0; i < PowerDomains; i++) begin : gen_rst_por_aon
+    if (i == DomainAonSel) begin : gen_rst_por_aon_normal
+      rstmgr_por u_rst_por_aon (
+        .clk_i(clk_aon_i),
+        .rst_ni(ast_i.aon_pok),
+        .scan_rst_ni,
+        .scanmode_i,
+        .rst_no(rst_por_aon_n[i])
+      );
+
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_rst_por_aon_n_mux (
+        .clk0_i(rst_por_aon_n[i]),
+        .clk1_i(scan_rst_ni),
+        .sel_i(scanmode_i),
+        .clk_o(resets_o.rst_por_aon_n[i])
+      );
+    end else begin : gen_rst_por_aon_tieoff
+      assign rst_por_aon_n[i] = 1'b0;
+      assign resets_o.rst_por_aon_n[i] = rst_por_aon_n[i];
+    end
+  end
+
 
   ////////////////////////////////////////////////////
   // Register Interface                             //
@@ -74,7 +85,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   // local_rst_n is the reset used by the rstmgr for its internal logic
   logic local_rst_n;
-  assign local_rst_n = resets_o.rst_por_io_div2_n;
+  assign local_rst_n = resets_o.rst_por_io_div2_n[DomainAonSel];
 
   rstmgr_reg_pkg::rstmgr_reg2hw_t reg2hw;
   rstmgr_reg_pkg::rstmgr_hw2reg_t hw2reg;
@@ -175,253 +186,350 @@ module rstmgr import rstmgr_pkg::*; (
   // leaf reset in the system                       //
   // These should all be generated                  //
   ////////////////////////////////////////////////////
+  // To simplify generation, each reset generates all associated power domain outputs.
+  // If a reset does not support a particular power domain, that reset is always hard-wired to 0.
 
-  logic rst_por_n;
-
+  logic [PowerDomains-1:0] rst_por_n;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_por (
+  ) u_aon_por (
     .clk_i(clk_main_i),
-    .rst_ni(rst_por_aon_n),
+    .rst_ni(rst_por_aon_n[DomainAonSel]),
     .d_i(1'b1),
-    .q_o(rst_por_n)
+    .q_o(rst_por_n[DomainAonSel])
   );
 
-  prim_clock_mux2 u_por_mux (
-    .clk0_i(rst_por_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_por_mux (
+    .clk0_i(rst_por_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_por_n)
+    .clk_o(resets_o.rst_por_n[DomainAonSel])
   );
 
-  logic rst_por_io_n;
+  assign rst_por_n[Domain0Sel] = 1'b0;
+  assign resets_o.rst_por_n[Domain0Sel] = rst_por_n[Domain0Sel];
 
+
+  logic [PowerDomains-1:0] rst_por_io_n;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_por_io (
+  ) u_aon_por_io (
     .clk_i(clk_io_i),
-    .rst_ni(rst_por_aon_n),
+    .rst_ni(rst_por_aon_n[DomainAonSel]),
     .d_i(1'b1),
-    .q_o(rst_por_io_n)
+    .q_o(rst_por_io_n[DomainAonSel])
   );
 
-  prim_clock_mux2 u_por_io_mux (
-    .clk0_i(rst_por_io_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_por_io_mux (
+    .clk0_i(rst_por_io_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_por_io_n)
+    .clk_o(resets_o.rst_por_io_n[DomainAonSel])
   );
 
-  logic rst_por_io_div2_n;
+  assign rst_por_io_n[Domain0Sel] = 1'b0;
+  assign resets_o.rst_por_io_n[Domain0Sel] = rst_por_io_n[Domain0Sel];
 
+
+  logic [PowerDomains-1:0] rst_por_io_div2_n;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_por_io_div2 (
+  ) u_aon_por_io_div2 (
     .clk_i(clk_io_div2_i),
-    .rst_ni(rst_por_aon_n),
+    .rst_ni(rst_por_aon_n[DomainAonSel]),
     .d_i(1'b1),
-    .q_o(rst_por_io_div2_n)
+    .q_o(rst_por_io_div2_n[DomainAonSel])
   );
 
-  prim_clock_mux2 u_por_io_div2_mux (
-    .clk0_i(rst_por_io_div2_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_por_io_div2_mux (
+    .clk0_i(rst_por_io_div2_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_por_io_div2_n)
+    .clk_o(resets_o.rst_por_io_div2_n[DomainAonSel])
   );
 
-  logic rst_por_io_div4_n;
+  assign rst_por_io_div2_n[Domain0Sel] = 1'b0;
+  assign resets_o.rst_por_io_div2_n[Domain0Sel] = rst_por_io_div2_n[Domain0Sel];
 
+
+  logic [PowerDomains-1:0] rst_por_io_div4_n;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_por_io_div4 (
+  ) u_aon_por_io_div4 (
     .clk_i(clk_io_div4_i),
-    .rst_ni(rst_por_aon_n),
+    .rst_ni(rst_por_aon_n[DomainAonSel]),
     .d_i(1'b1),
-    .q_o(rst_por_io_div4_n)
+    .q_o(rst_por_io_div4_n[DomainAonSel])
   );
 
-  prim_clock_mux2 u_por_io_div4_mux (
-    .clk0_i(rst_por_io_div4_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_por_io_div4_mux (
+    .clk0_i(rst_por_io_div4_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_por_io_div4_n)
+    .clk_o(resets_o.rst_por_io_div4_n[DomainAonSel])
   );
 
-  logic rst_por_usb_n;
+  assign rst_por_io_div4_n[Domain0Sel] = 1'b0;
+  assign resets_o.rst_por_io_div4_n[Domain0Sel] = rst_por_io_div4_n[Domain0Sel];
 
+
+  logic [PowerDomains-1:0] rst_por_usb_n;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_por_usb (
+  ) u_aon_por_usb (
     .clk_i(clk_usb_i),
-    .rst_ni(rst_por_aon_n),
+    .rst_ni(rst_por_aon_n[DomainAonSel]),
     .d_i(1'b1),
-    .q_o(rst_por_usb_n)
+    .q_o(rst_por_usb_n[DomainAonSel])
   );
 
-  prim_clock_mux2 u_por_usb_mux (
-    .clk0_i(rst_por_usb_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_por_usb_mux (
+    .clk0_i(rst_por_usb_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_por_usb_n)
+    .clk_o(resets_o.rst_por_usb_n[DomainAonSel])
   );
 
-  logic rst_lc_n;
+  assign rst_por_usb_n[Domain0Sel] = 1'b0;
+  assign resets_o.rst_por_usb_n[Domain0Sel] = rst_por_usb_n[Domain0Sel];
+
+
+  logic [PowerDomains-1:0] rst_lc_n;
+  assign rst_lc_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_lc_n[DomainAonSel] = rst_lc_n[DomainAonSel];
+
 
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_lc (
+  ) u_0_lc (
     .clk_i(clk_main_i),
-    .rst_ni(rst_lc_src_n[0]),
+    .rst_ni(rst_lc_src_n[Domain0Sel]),
     .d_i(1'b1),
-    .q_o(rst_lc_n)
+    .q_o(rst_lc_n[Domain0Sel])
   );
 
-  prim_clock_mux2 u_lc_mux (
-    .clk0_i(rst_lc_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_lc_mux (
+    .clk0_i(rst_lc_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_lc_n)
+    .clk_o(resets_o.rst_lc_n[Domain0Sel])
   );
 
-  logic rst_lc_io_n;
+  logic [PowerDomains-1:0] rst_lc_io_div4_n;
+  assign rst_lc_io_div4_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_lc_io_div4_n[DomainAonSel] = rst_lc_io_div4_n[DomainAonSel];
+
 
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_lc_io (
+  ) u_0_lc_io_div4 (
     .clk_i(clk_io_div4_i),
-    .rst_ni(rst_lc_src_n[0]),
+    .rst_ni(rst_lc_src_n[Domain0Sel]),
     .d_i(1'b1),
-    .q_o(rst_lc_io_n)
+    .q_o(rst_lc_io_div4_n[Domain0Sel])
   );
 
-  prim_clock_mux2 u_lc_io_mux (
-    .clk0_i(rst_lc_io_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_lc_io_div4_mux (
+    .clk0_i(rst_lc_io_div4_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_lc_io_n)
+    .clk_o(resets_o.rst_lc_io_div4_n[Domain0Sel])
   );
 
-  logic rst_sys_n;
-
+  logic [PowerDomains-1:0] rst_sys_n;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_sys (
+  ) u_aon_sys (
     .clk_i(clk_main_i),
-    .rst_ni(rst_sys_src_n[0]),
+    .rst_ni(rst_sys_src_n[DomainAonSel]),
     .d_i(1'b1),
-    .q_o(rst_sys_n)
+    .q_o(rst_sys_n[DomainAonSel])
   );
 
-  prim_clock_mux2 u_sys_mux (
-    .clk0_i(rst_sys_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_sys_mux (
+    .clk0_i(rst_sys_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_sys_n)
+    .clk_o(resets_o.rst_sys_n[DomainAonSel])
   );
-
-  logic rst_sys_io_n;
 
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_sys_io (
+  ) u_0_sys (
+    .clk_i(clk_main_i),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
+    .d_i(1'b1),
+    .q_o(rst_sys_n[Domain0Sel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_sys_mux (
+    .clk0_i(rst_sys_n[Domain0Sel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_sys_n[Domain0Sel])
+  );
+
+  logic [PowerDomains-1:0] rst_sys_io_n;
+  assign rst_sys_io_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_sys_io_n[DomainAonSel] = rst_sys_io_n[DomainAonSel];
+
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_0_sys_io (
     .clk_i(clk_io_div2_i),
-    .rst_ni(rst_sys_src_n[0]),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
     .d_i(1'b1),
-    .q_o(rst_sys_io_n)
+    .q_o(rst_sys_io_n[Domain0Sel])
   );
 
-  prim_clock_mux2 u_sys_io_mux (
-    .clk0_i(rst_sys_io_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_sys_io_mux (
+    .clk0_i(rst_sys_io_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_sys_io_n)
+    .clk_o(resets_o.rst_sys_io_n[Domain0Sel])
   );
 
-  logic rst_sys_io_div4_n;
-
+  logic [PowerDomains-1:0] rst_sys_io_div4_n;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_sys_io_div4 (
+  ) u_aon_sys_io_div4 (
     .clk_i(clk_io_div4_i),
-    .rst_ni(rst_sys_src_n[0]),
+    .rst_ni(rst_sys_src_n[DomainAonSel]),
     .d_i(1'b1),
-    .q_o(rst_sys_io_div4_n)
+    .q_o(rst_sys_io_div4_n[DomainAonSel])
   );
 
-  prim_clock_mux2 u_sys_io_div4_mux (
-    .clk0_i(rst_sys_io_div4_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_sys_io_div4_mux (
+    .clk0_i(rst_sys_io_div4_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_sys_io_div4_n)
+    .clk_o(resets_o.rst_sys_io_div4_n[DomainAonSel])
   );
-
-  logic rst_sys_aon_n;
 
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_sys_aon (
+  ) u_0_sys_io_div4 (
+    .clk_i(clk_io_div4_i),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
+    .d_i(1'b1),
+    .q_o(rst_sys_io_div4_n[Domain0Sel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_sys_io_div4_mux (
+    .clk0_i(rst_sys_io_div4_n[Domain0Sel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_sys_io_div4_n[Domain0Sel])
+  );
+
+  logic [PowerDomains-1:0] rst_sys_aon_n;
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_aon_sys_aon (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_sys_src_n[0]),
+    .rst_ni(rst_sys_src_n[DomainAonSel]),
     .d_i(1'b1),
-    .q_o(rst_sys_aon_n)
+    .q_o(rst_sys_aon_n[DomainAonSel])
   );
 
-  prim_clock_mux2 u_sys_aon_mux (
-    .clk0_i(rst_sys_aon_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_sys_aon_mux (
+    .clk0_i(rst_sys_aon_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_sys_aon_n)
+    .clk_o(resets_o.rst_sys_aon_n[DomainAonSel])
   );
 
-  logic rst_spi_device_n;
+  assign rst_sys_aon_n[Domain0Sel] = 1'b0;
+  assign resets_o.rst_sys_aon_n[Domain0Sel] = rst_sys_aon_n[Domain0Sel];
+
+
+  logic [PowerDomains-1:0] rst_spi_device_n;
+  assign rst_spi_device_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_spi_device_n[DomainAonSel] = rst_spi_device_n[DomainAonSel];
+
 
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_spi_device (
+  ) u_0_spi_device (
     .clk_i(clk_io_div2_i),
-    .rst_ni(rst_sys_src_n[0]),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
     .d_i(sw_rst_ctrl_n[SPI_DEVICE]),
-    .q_o(rst_spi_device_n)
+    .q_o(rst_spi_device_n[Domain0Sel])
   );
 
-  prim_clock_mux2 u_spi_device_mux (
-    .clk0_i(rst_spi_device_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_spi_device_mux (
+    .clk0_i(rst_spi_device_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_spi_device_n)
+    .clk_o(resets_o.rst_spi_device_n[Domain0Sel])
   );
 
-  logic rst_usb_n;
-
+  logic [PowerDomains-1:0] rst_usb_n;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_usb (
+  ) u_aon_usb (
     .clk_i(clk_usb_i),
-    .rst_ni(rst_sys_src_n[0]),
+    .rst_ni(rst_sys_src_n[DomainAonSel]),
     .d_i(sw_rst_ctrl_n[USB]),
-    .q_o(rst_usb_n)
+    .q_o(rst_usb_n[DomainAonSel])
   );
 
-  prim_clock_mux2 u_usb_mux (
-    .clk0_i(rst_usb_n),
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_aon_usb_mux (
+    .clk0_i(rst_usb_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_usb_n)
+    .clk_o(resets_o.rst_usb_n[DomainAonSel])
   );
+
+  assign rst_usb_n[Domain0Sel] = 1'b0;
+  assign resets_o.rst_usb_n[Domain0Sel] = rst_usb_n[Domain0Sel];
+
 
 
   ////////////////////////////////////////////////////
