@@ -5,7 +5,7 @@
 `include "i2c_base_vseq.sv"
 `include "i2c_common_vseq.sv"
 `include "i2c_rx_tx_vseq.sv"
-`include "i2c_sanity_vseq.sv"
+`include "i2c_smoke_vseq.sv"
 
 `include "i2c_override_vseq.sv"
 `include "i2c_fifo_watermark_vseq.sv"

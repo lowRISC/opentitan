@@ -8,10 +8,10 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
-      name: sanity
+      name: smoke
       desc: '''
-            Basic I2C sanity test in which random (rd/wr) transactions are sent to the DUT 
-            and received asynchronously with scoreboard checks.
+            I2C smoke test in which random (rd/wr) transactions are sent to the DUT and
+            received asynchronously with scoreboard checks.
 
             Stimulus:
               - Enable I2C host
@@ -25,7 +25,7 @@
               - Read and write transfer matching
             '''
       milestone: V1
-      tests: ["i2c_sanity"]
+      tests: ["i2c_smoke"]
     }
     {
       name: error_intr
