@@ -8,14 +8,13 @@
 
 package rstmgr_pkg;
 
-  // global constants
-  parameter int ALWAYS_ON_SEL   = pwrmgr_pkg::ALWAYS_ON_DOMAIN;
+  // Power domain parameters
+  parameter int PowerDomains = ${len(power_domains)};
+  % for power_domain in power_domains:
+  parameter int Domain${power_domain}Sel = ${loop.index};
+  % endfor
 
-  // params that reference pwrmgr, should be replaced once pwrmgr is merged
-  parameter int PowerDomains  = pwrmgr_pkg::PowerDomains;
-  //parameter int HwResetReqs   = pwrmgr_pkg::NumRstReqs;
-
-  // calculated domains
+  // Number of non-always-on domains
   parameter int OffDomains = PowerDomains-1;
 
   // positions of software controllable reset bits
@@ -37,7 +36,7 @@ package rstmgr_pkg;
   // This should be templatized and generated
   typedef struct packed {
 % for rst in output_rsts:
-    logic rst_${rst['name']}_n;
+    logic [PowerDomains-1:0] rst_${rst['name']}_n;
 % endfor
   } rstmgr_out_t;
 
@@ -52,7 +51,7 @@ package rstmgr_pkg;
   typedef struct packed {
   % for ep, rsts in eps.items():
     % for rst in rsts:
-    logic rst_${intf}_${ep}_${rst}_n;
+    logic [PowerDomains-1:0] rst_${intf}_${ep}_${rst}_n;
     % endfor
   % endfor
   } rstmgr_${intf}_out_t;
