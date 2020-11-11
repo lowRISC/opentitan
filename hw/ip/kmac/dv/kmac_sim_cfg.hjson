@@ -46,8 +46,8 @@
   // List of test specifications.
   tests: [
     {
-      name: kmac_sanity
-      uvm_test_seq: kmac_sanity_vseq
+      name: kmac_smoke
+      uvm_test_seq: kmac_smoke_vseq
     }
 
     // TODO: add more tests here
@@ -56,8 +56,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["kmac_sanity"]
+      name: smoke
+      tests: ["kmac_smoke"]
     }
   ]
 }
