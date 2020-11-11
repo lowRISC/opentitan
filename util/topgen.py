@@ -693,6 +693,7 @@ def generate_rstmgr(topcfg, out_path):
             tpl = Template(fin.read())
             try:
                 out = tpl.render(clks=clks,
+                                 power_domains=topcfg['power']['domains'],
                                  num_rstreqs=n_rstreqs,
                                  sw_rsts=sw_rsts,
                                  output_rsts=output_rsts,
