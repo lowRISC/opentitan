@@ -56,7 +56,7 @@ def resolve_dump_format(tool, dump):
 
     if dump is not None:
         # If the user has specified their preferred dumping format, use it. As
-        # a sanity check, error out if the chosen tool doesn't support the
+        # a smoke check, error out if the chosen tool doesn't support the
         # format, but only if we know about the tool. If not, we'll just assume
         # they know what they're doing.
         if fmts is not None and dump not in fmts:

@@ -235,9 +235,9 @@ def parse_args():
     whatg.add_argument("-i",
                        "--items",
                        nargs="*",
-                       default=["sanity"],
+                       default=["smoke"],
                        help=('Specify the regressions or tests to run. '
-                             'Defaults to "sanity", but can be a '
+                             'Defaults to "smoke", but can be a '
                              'space separated list of test or regression '
                              'names.'))
 
