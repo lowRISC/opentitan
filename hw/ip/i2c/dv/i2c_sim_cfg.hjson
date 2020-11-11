@@ -46,8 +46,8 @@
   // List of test specifications.
   tests: [
     {
-      name: i2c_sanity
-      uvm_test_seq: i2c_sanity_vseq
+      name: i2c_smoke
+      uvm_test_seq: i2c_smoke_vseq
     }
 
     {
@@ -99,8 +99,8 @@
   // List of regressions.
   regressions: [
     {
-       name: sanity
-       tests: ["i2c_sanity"]
+       name: smoke
+       tests: ["i2c_smoke"]
     }
   ]
 }

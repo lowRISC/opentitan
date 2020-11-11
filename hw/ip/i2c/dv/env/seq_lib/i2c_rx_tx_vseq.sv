@@ -152,13 +152,13 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
   endtask : program_control_read_to_target
 
   virtual task read_data_from_target();
-    bit rx_sanity, rx_full, rx_overflow, rx_watermark, rx_empty, start_read;
+    bit rx_smoke, rx_full, rx_overflow, rx_watermark, rx_empty, start_read;
 
     // if not a chained read, read out data sent over rx_fifo
     rx_overflow  = 1'b0;
     rx_watermark = 1'b0;
     while (!cfg.under_reset && (!complete_program_fmt_fifo || total_rd_bytes > 0)) begin
-      rx_sanity    = !cfg.seq_cfg.en_rx_watermark & !cfg.seq_cfg.en_rx_overflow;
+      rx_smoke    = !cfg.seq_cfg.en_rx_watermark & !cfg.seq_cfg.en_rx_overflow;
       rx_overflow |= (cfg.seq_cfg.en_rx_overflow  & cfg.intr_vif.pins[RxOverflow]);
       if (cfg.seq_cfg.en_rx_watermark) begin
         // TODO: Weicai's comments in PR #3128: consider constraining
@@ -166,7 +166,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         csr_rd(.ptr(ral.status.rxfull), .value(rx_full));
         rx_watermark |= (cfg.seq_cfg.en_rx_watermark & rx_full);
       end
-      start_read = rx_sanity    | // read rx_fifo if there is valid data
+      start_read = rx_smoke    | // read rx_fifo if there is valid data
                    rx_watermark | // read rx_fifo after full (ensure intr rx_watermark asserted)
                    rx_overflow;   // read rx_fifo after overflow (ensure intr_rx_overflow asserted)
       if (start_read) begin
