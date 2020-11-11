@@ -4,9 +4,9 @@
 
 // Sequentially test each host to access any device
 // device will respond in order
-class xbar_sanity_vseq extends xbar_base_vseq;
+class xbar_smoke_vseq extends xbar_base_vseq;
 
-  `uvm_object_utils(xbar_sanity_vseq)
+  `uvm_object_utils(xbar_smoke_vseq)
   `uvm_object_new
 
   virtual task body();

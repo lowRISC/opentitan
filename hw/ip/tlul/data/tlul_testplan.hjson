@@ -7,10 +7,10 @@
   name: main
   entries: [
     {
-      name: xbar_sanity
+      name: xbar_smoke
       desc: '''Sequentially test each host to access any device'''
       milestone: V1
-      tests: ["xbar_{name}_sanity"]
+      tests: ["xbar_{name}_smoke"]
     }
     {
       name: xbar_base_random_sequence
@@ -25,7 +25,7 @@
             - Large delay from 0 ~ 1000 cycles
             - Small delay (0-10 cycles) for a_channel, large delay (0-1000 cycles) for d_channel'''
       milestone: V2
-      tests: ["xbar_{name}_sanity_zero_delays", "xbar_{name}_sanity_large_delays", "xbar_{name}_sanity_slow_rsp",
+      tests: ["xbar_{name}_smoke_zero_delays", "xbar_{name}_smoke_large_delays", "xbar_{name}_smoke_slow_rsp",
               "xbar_{name}_random_zero_delays", "xbar_{name}_random_large_delays", "xbar_{name}_random_slow_rsp"]
     }
     {
