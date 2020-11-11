@@ -337,7 +337,7 @@ For example:
 ## Implementation Guidelines
 The recommended guidelines for where to implement assertions are as follows:
 * Basic assertions should be implemented directly in the RTL file. These basic
-  functional assertions are often inserted by designers to act as a sanity
+  functional assertions are often inserted by designers to act as a smoke
   check.
 * Assertions used for the testbench to achieve verification goals should be
   implemented under the `ip/hw/module_name/fpv/vip` folder. This FPV environment
