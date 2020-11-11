@@ -12,7 +12,7 @@ filesets:
       - aes_test_pkg.sv
       - aes_base_test.sv: {is_include_file: true}
       - aes_wake_up_test.sv: {is_include_file: true}
-      - aes_sanity_test.sv: {is_include_file: true}
+      - aes_smoke_test.sv: {is_include_file: true}
       - aes_stress_test.sv: {is_include_file: true}
       - aes_b2b_test.sv: {is_include_file: true}
       - aes_config_error_test.sv: {is_include_file: true}
