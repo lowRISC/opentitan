@@ -6,12 +6,12 @@
   import_testplans: []
   entries: [
     {
-      name: sanity
+      name: smoke
       desc: '''Simple PRESENT test - feed golden and random testvectors into
                both the encryption and decryption algorithms and verify that all
                outputs match those from the reference model.'''
       milestone: V2
-      tests: ["prim_present_sanity"]
+      tests: ["prim_present_smoke"]
     }
   ]
 }
