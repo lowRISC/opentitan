@@ -47,8 +47,8 @@
   // List of test specifications.
   tests: [
     {
-      name: spi_device_sanity
-      uvm_test_seq: spi_device_sanity_vseq
+      name: spi_device_smoke
+      uvm_test_seq: spi_device_smoke_vseq
     }
 
     {
@@ -85,8 +85,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["spi_device_sanity"]
+      name: smoke
+      tests: ["spi_device_smoke"]
     }
   ]
 }
