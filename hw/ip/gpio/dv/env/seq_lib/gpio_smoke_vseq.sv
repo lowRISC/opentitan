@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// class : gpio_sanity_vseq
-// This is a sanity test sequence for gpio.
+// class : gpio_smoke_vseq
+// This is a smoke test sequence for gpio.
 // This sequence does following:
 // (i) drives random gpio input data with gpio outputs disabled
 // (ii) programs random values of gpio output data and output enable
-class gpio_sanity_vseq extends gpio_base_vseq;
-  `uvm_object_utils(gpio_sanity_vseq)
+class gpio_smoke_vseq extends gpio_base_vseq;
+  `uvm_object_utils(gpio_smoke_vseq)
 
   // gpio input to drive
   rand bit [NUM_GPIOS-1:0] gpio_i;
@@ -68,4 +68,4 @@ class gpio_sanity_vseq extends gpio_base_vseq;
     end
   endtask : body
 
-endclass : gpio_sanity_vseq
+endclass : gpio_smoke_vseq

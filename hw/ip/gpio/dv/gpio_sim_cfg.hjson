@@ -54,13 +54,13 @@
   // List of test specifications.
   tests: [
     {
-      name: gpio_sanity
-      uvm_test_seq: gpio_sanity_vseq
+      name: gpio_smoke
+      uvm_test_seq: gpio_smoke_vseq
     }
 
     {
-      name: gpio_sanity_no_pullup_pulldown
-      uvm_test_seq: gpio_sanity_vseq
+      name: gpio_smoke_no_pullup_pulldown
+      uvm_test_seq: gpio_smoke_vseq
       run_opts: ["+no_pullup_pulldown=1"]
     }
 
@@ -151,8 +151,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["gpio_sanity"]
+      name: smoke
+      tests: ["gpio_smoke"]
     }
   ]
 }

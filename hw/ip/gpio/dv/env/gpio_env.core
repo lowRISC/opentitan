@@ -18,7 +18,7 @@ filesets:
       - seq_lib/gpio_vseq_list.sv: {is_include_file: true}
       - seq_lib/gpio_base_vseq.sv: {is_include_file: true}
       - seq_lib/gpio_common_vseq.sv: {is_include_file: true}
-      - seq_lib/gpio_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/gpio_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/gpio_rand_intr_trigger_vseq.sv: {is_include_file: true}
       - seq_lib/gpio_random_dout_din_vseq.sv: {is_include_file: true}
       - seq_lib/gpio_dout_din_regs_random_rw_vseq.sv: {is_include_file: true}
