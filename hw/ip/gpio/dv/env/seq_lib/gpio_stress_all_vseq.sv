@@ -11,7 +11,7 @@ class gpio_stress_all_vseq extends gpio_base_vseq;
   `uvm_object_new
 
   task body();
-    string seq_names[] = {"gpio_sanity_vseq",
+    string seq_names[] = {"gpio_smoke_vseq",
                           // "gpio_common_vseq",
                           // does not support intr_test as plus_arg disable do_clear_all_interrupts
                           "gpio_random_dout_din_vseq",
