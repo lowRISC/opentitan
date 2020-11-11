@@ -56,16 +56,16 @@
   // List of test specifications.
   tests: [
     {
-      name: usbdev_sanity
-      uvm_test_seq: usbdev_sanity_vseq
+      name: usbdev_smoke
+      uvm_test_seq: usbdev_smoke_vseq
     }
   ]
 
   // List of regressions.
   regressions: [
     // {
-    //   name: sanity
-    //   tests: ["usbdev_sanity"]
+    //   name: smoke
+    //   tests: ["usbdev_smoke"]
     // }
   ]
 }
