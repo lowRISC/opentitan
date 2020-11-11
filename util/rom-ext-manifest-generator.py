@@ -51,7 +51,15 @@ USAGE = """
 
   rom-ext-manifest-generator --output-dir:
     Directory where manifest.h will be created.
+
+  rom-ext-manifest-generator --output-headers=[all | c | rust]:
+    Type of headers to be generated:
+
+    all  - All header files
+    c    - C header file
+    rust - Rust "header" file
 """
+
 
 class MemoryOffset(object):
     def __init__(self, name, offset):
@@ -62,16 +70,13 @@ class MemoryOffset(object):
         return self.name + Name(["offset"])
 
 
-def generate_cheader(fields, input_dir, output_dir):
-    """ Generates C header file from the `template_file`.
+def generate_defines(fields):
+    """ Generates manifest defines.
 
-    It produces a list of tuples with a field name and the `MemoryRegion`
-    object, which is used in the `template_path`. The resulting header file is
-    placed into `output_path`.
+    It produces two list of tuples. One with a field name and the `MemoryRegion`
+    object, and one with `MemoryOffset` object. Please see the description at
+    the top for more information on the differences between these objects.
     """
-
-    template_path = input_dir / 'manifest.h.tpl'
-    output_path = output_dir / 'manifest.h'
 
     base_name = Name.from_snake_case("ROM_EXT")
 
@@ -87,7 +92,7 @@ def generate_cheader(fields, input_dir, output_dir):
         # This ends up aligning `current_offset_bytes` to `required_alignment_bytes`
         # that is greater than or equal to `current_offset_bytes`.
         current_offset_bytes = (current_offset_bytes + required_alignment_bytes - 1) \
-                             & ~(required_alignment_bytes - 1)
+            & ~(required_alignment_bytes - 1)
 
         if field['type'] == "offset":
             offset_name = base_name + Name.from_snake_case(field['name'])
@@ -103,6 +108,46 @@ def generate_cheader(fields, input_dir, output_dir):
                 regions.append((field['name'], region))
             current_offset_bytes += size_bytes
 
+    return [regions, offsets]
+
+
+def generate_cheader(fields, input_dir, output_dir):
+    """ Generates C header file from the template file.
+
+    It produces a list of `MemoryRegion` and `MemoryOffset` objects, which are
+    used by the template file to generate C header file, which is placed into
+    the `output_path`.
+    """
+
+    template_path = input_dir / 'manifest.h.tpl'
+    output_path = output_dir / 'manifest.h'
+
+    regions, offsets = generate_defines(fields)
+
+    with template_path.open('r') as f:
+        template = Template(f.read())
+
+    header = template.render(regions=regions, offsets=offsets)
+
+    with output_path.open('w') as f:
+        f.write(header)
+
+    print('Template sucessfuly written to {}.'.format(output_path))
+
+
+def generate_rust_header(fields, input_dir, output_dir):
+    """ Generates Rust "header" from the template file.
+
+    It produces a list of `MemoryRegion` and `MemoryOffset` objects, which are
+    used by the template file to generate Rust "header", which is placed into
+    the `output_path`.
+    """
+
+    template_path = input_dir / 'manifest.rs.tpl'
+    output_path = output_dir / 'manifest.rs'
+
+    regions, offsets = generate_defines(fields)
+
     with template_path.open('r') as f:
         template = Template(f.read())
 
@@ -115,6 +160,8 @@ def generate_cheader(fields, input_dir, output_dir):
 
 
 def main():
+    ALL_PARTS = ["c", "rust"]
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         usage=USAGE,
@@ -130,6 +177,12 @@ def main():
                         type=Path,
                         help='Manifest header output directory.')
 
+    parser.add_argument('--output-headers',
+                        choices=['all'] + ALL_PARTS,
+                        default=[],
+                        action='append',
+                        help='The type of headers to be produced.')
+
     args = parser.parse_args()
 
     manifest_hjson_file = args.input_dir / 'manifest.hjson'
@@ -137,7 +190,16 @@ def main():
     with manifest_hjson_file.open('r') as hjson_file:
         obj = hjson.loads(hjson_file.read())
 
-    generate_cheader(obj['fields'], args.input_dir, args.output_dir)
+    if len(args.output_headers) == 0:
+        args.output_headers += ['all']
+    if 'all' in args.output_headers:
+        args.output_headers += ALL_PARTS
+
+    if "c" in args.output_headers:
+        generate_cheader(obj['fields'], args.input_dir, args.output_dir)
+
+    if "rust" in args.output_headers:
+        generate_rust_header(obj['fields'], args.input_dir, args.output_dir)
 
 
 if __name__ == '__main__':
