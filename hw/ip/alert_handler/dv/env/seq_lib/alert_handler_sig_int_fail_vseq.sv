@@ -4,7 +4,7 @@
 
 // this sequence enable signal intergrity fail.
 
-class alert_handler_sig_int_fail_vseq extends alert_handler_sanity_vseq;
+class alert_handler_sig_int_fail_vseq extends alert_handler_smoke_vseq;
   `uvm_object_utils(alert_handler_sig_int_fail_vseq)
 
   `uvm_object_new

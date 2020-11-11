@@ -51,8 +51,8 @@
   // List of test specifications.
   tests: [
     {
-      name: alert_handler_sanity
-      uvm_test_seq: alert_handler_sanity_vseq
+      name: alert_handler_smoke
+      uvm_test_seq: alert_handler_smoke_vseq
     }
 
     {
@@ -110,8 +110,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["alert_handler_sanity"]
+      name: smoke
+      tests: ["alert_handler_smoke"]
     }
   ]
 }

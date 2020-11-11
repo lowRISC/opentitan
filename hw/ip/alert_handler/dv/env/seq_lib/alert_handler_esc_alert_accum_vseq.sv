@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // this sequence triggers escalation by accumulating alerts in the same class.
-// difference from sanity test, this sequence set the threshold to larger numbers.
+// difference from smoke test, this sequence set the threshold to larger numbers.
 
-class alert_handler_esc_alert_accum_vseq extends alert_handler_sanity_vseq;
+class alert_handler_esc_alert_accum_vseq extends alert_handler_smoke_vseq;
   `uvm_object_utils(alert_handler_esc_alert_accum_vseq)
 
   `uvm_object_new

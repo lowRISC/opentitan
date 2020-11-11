@@ -4,7 +4,7 @@
 
 // this sequence enable entropy by writing 1 to the lock_regen register.
 
-class alert_handler_entropy_vseq extends alert_handler_sanity_vseq;
+class alert_handler_entropy_vseq extends alert_handler_smoke_vseq;
   `uvm_object_utils(alert_handler_entropy_vseq)
 
   `uvm_object_new

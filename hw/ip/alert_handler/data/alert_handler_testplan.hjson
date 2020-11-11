@@ -10,20 +10,20 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
-      name: sanity
+      name: smoke
       desc: '''
-            - Basic alert_handler sanity test with one class configured that escalates through all
+            - Alert_handler smoke test with one class configured that escalates through all
               phases after one alert has been triggered
             - Check interrupt pins, alert cause CSR values, escalation pings, and crashdump_o
               output values
             - Support both synchronous and asynchronous settings'''
       milestone: V1
-      tests: ["alert_handler_sanity"]
+      tests: ["alert_handler_smoke"]
     }
     {
       name: esc_accum
       desc: '''
-            Based on the sanity test, this test will focus on testing the escalation accumulation
+            Based on the smoke test, this test will focus on testing the escalation accumulation
             feature. So all the escalations in the test will be triggered by alert accumulation.'''
       milestone: V2
       tests: ["alert_handler_esc_alert_accum"]
@@ -31,7 +31,7 @@
     {
       name: esc_timeout
       desc: '''
-           Based on the sanity test, this test will focus on testing the escalation timeout
+           Based on the smoke test, this test will focus on testing the escalation timeout
            feature. So all the escalations in the test will be triggered by interrupt timeout.'''
       milestone: V2
       tests: ["alert_handler_esc_intr_timeout"]
@@ -39,7 +39,7 @@
     {
       name: entropy
       desc: '''
-            Based on the sanity test, this test enables ping testing, and check if the ping feature
+            Based on the smoke test, this test enables ping testing, and check if the ping feature
             correctly pings all devices within certain period of time'''
       milestone: V2
       tests: ["alert_handler_entropy"]
@@ -80,7 +80,7 @@
             This test will randomly inject clock skew within the differential pairs. Then check no
             alert is raised'''
       milestone: V2
-      tests: ["alert_handler_sanity"]
+      tests: ["alert_handler_smoke"]
     }
     {
       name: random_alerts

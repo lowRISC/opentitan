@@ -11,7 +11,7 @@ class alert_handler_stress_all_vseq extends alert_handler_base_vseq;
 
   task body();
     bit entropy_test_flag; // this flag ensures entropy test only runs once due to its long runtime
-    string seq_names[] = {"alert_handler_sanity_vseq",
+    string seq_names[] = {"alert_handler_smoke_vseq",
                           "alert_handler_random_alerts_vseq",
                           "alert_handler_random_classes_vseq",
                           "alert_handler_esc_intr_timeout_vseq",
