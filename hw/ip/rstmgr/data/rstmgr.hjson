@@ -11,10 +11,10 @@
   clock_primary: "clk_i",
   other_clock_list: [
     "clk_aon_i"
-    "clk_io_div2_i"
+    "clk_io_div4_i"
     "clk_main_i"
     "clk_io_i"
-    "clk_io_div4_i"
+    "clk_io_div2_i"
     "clk_usb_i"
   ],
   bus_device: "tlul",
