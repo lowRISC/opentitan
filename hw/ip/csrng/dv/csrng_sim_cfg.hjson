@@ -47,8 +47,8 @@
   // List of test specifications.
   tests: [
     {
-      name: csrng_sanity
-      uvm_test_seq: csrng_sanity_vseq
+      name: csrng_smoke
+      uvm_test_seq: csrng_smoke_vseq
     }
 
     // TODO: add more tests here
@@ -57,8 +57,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["csrng_sanity"]
+      name: smoke
+      tests: ["csrng_smoke"]
     }
   ]
 }
