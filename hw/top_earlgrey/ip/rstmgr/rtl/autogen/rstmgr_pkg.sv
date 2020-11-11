@@ -14,14 +14,12 @@
 
 package rstmgr_pkg;
 
-  // global constants
-  parameter int ALWAYS_ON_SEL   = pwrmgr_pkg::ALWAYS_ON_DOMAIN;
+  // Power domain parameters
+  parameter int PowerDomains = 2;
+  parameter int DomainAonSel = 0;
+  parameter int Domain0Sel = 1;
 
-  // params that reference pwrmgr, should be replaced once pwrmgr is merged
-  parameter int PowerDomains  = pwrmgr_pkg::PowerDomains;
-  //parameter int HwResetReqs   = pwrmgr_pkg::NumRstReqs;
-
-  // calculated domains
+  // Number of non-always-on domains
   parameter int OffDomains = PowerDomains-1;
 
   // positions of software controllable reset bits
@@ -41,20 +39,19 @@ package rstmgr_pkg;
   // resets generated and broadcast
   // This should be templatized and generated
   typedef struct packed {
-    logic rst_por_aon_n;
-    logic rst_por_n;
-    logic rst_por_io_n;
-    logic rst_por_io_div2_n;
-    logic rst_por_io_div4_n;
-    logic rst_por_usb_n;
-    logic rst_lc_n;
-    logic rst_lc_io_n;
-    logic rst_sys_n;
-    logic rst_sys_io_n;
-    logic rst_sys_io_div4_n;
-    logic rst_sys_aon_n;
-    logic rst_spi_device_n;
-    logic rst_usb_n;
+    logic [PowerDomains-1:0] rst_por_aon_n;
+    logic [PowerDomains-1:0] rst_por_n;
+    logic [PowerDomains-1:0] rst_por_io_n;
+    logic [PowerDomains-1:0] rst_por_io_div2_n;
+    logic [PowerDomains-1:0] rst_por_io_div4_n;
+    logic [PowerDomains-1:0] rst_por_usb_n;
+    logic [PowerDomains-1:0] rst_lc_n;
+    logic [PowerDomains-1:0] rst_lc_io_div4_n;
+    logic [PowerDomains-1:0] rst_sys_n;
+    logic [PowerDomains-1:0] rst_sys_io_div4_n;
+    logic [PowerDomains-1:0] rst_sys_aon_n;
+    logic [PowerDomains-1:0] rst_spi_device_n;
+    logic [PowerDomains-1:0] rst_usb_n;
   } rstmgr_out_t;
 
   // cpu reset requests and status
@@ -65,9 +62,9 @@ package rstmgr_pkg;
 
   // exported resets
   typedef struct packed {
-    logic rst_ast_usbdev_sys_io_div4_n;
-    logic rst_ast_usbdev_usb_n;
-    logic rst_ast_sensor_ctrl_sys_io_div4_n;
+    logic [PowerDomains-1:0] rst_ast_usbdev_sys_io_div4_n;
+    logic [PowerDomains-1:0] rst_ast_usbdev_usb_n;
+    logic [PowerDomains-1:0] rst_ast_sensor_ctrl_sys_io_div4_n;
   } rstmgr_ast_out_t;
 
   // default value for rstmgr_ast_rsp_t (for dangling ports)

@@ -2,7 +2,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Clock Manager Generator
+r"""Reset Manager Generator
 """
 
 import argparse
@@ -66,25 +66,10 @@ def main():
     # Number of reset requests
     n_rstreqs = len(topcfg["reset_requests"])
 
-#    # unique clocks
-#    for rst in topcfg["resets"]:
-#        if rst['type'] != "ext" and rst['clk'] not in clks:
-#            clks.append(rst['clk'])
-#
-#    # resets sent to reset struct
-#    output_rsts = [rst for rst in topcfg["resets"] if rst['type'] == "top"]
-#
-#    # por_rsts = [rst for rst in topcfg["resets"] if 'inst' in rst and rst['inst'] == "por"]
-#
-#    # sw controlled resets
-#    sw_rsts = [rst for rst in topcfg["resets"] if 'sw' in rst and rst['sw'] == 1]
-#
-#    # leaf resets
-#    leaf_rsts = [rst for rst in topcfg["resets"] if rst['gen'] == 1]
-
     # generate hjson
     hjson_out.write_text(
          hjson_tpl.render(clks=clks,
+                          power_domains=topcfg['power']['domains'],
                           num_rstreqs=n_rstreqs,
                           sw_rsts=sw_rsts,
                           output_rsts=output_rsts,
@@ -94,6 +79,7 @@ def main():
     # generate rtl package
     pkg_out.write_text(
         pkg_tpl.render(clks=clks,
+                       power_domains=topcfg['power']['domains'],
                        num_rstreqs=n_rstreqs,
                        sw_rsts=sw_rsts,
                        output_rsts=output_rsts,
@@ -103,6 +89,7 @@ def main():
     # generate top level
     rtl_out.write_text(
          rtl_tpl.render(clks=clks,
+                        power_domains=topcfg['power']['domains'],
                         num_rstreqs=n_rstreqs,
                         sw_rsts=sw_rsts,
                         output_rsts=output_rsts,
