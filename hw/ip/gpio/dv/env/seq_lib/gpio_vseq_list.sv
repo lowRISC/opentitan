@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "gpio_base_vseq.sv"
-`include "gpio_sanity_vseq.sv"
+`include "gpio_smoke_vseq.sv"
 `include "gpio_common_vseq.sv"
 `include "gpio_random_dout_din_vseq.sv"
 `include "gpio_dout_din_regs_random_rw_vseq.sv"
