@@ -20,7 +20,7 @@ filesets:
       - seq_lib/spi_device_vseq_list.sv: {is_include_file: true}
       - seq_lib/spi_device_base_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_common_vseq.sv: {is_include_file: true}
-      - seq_lib/spi_device_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_device_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_fifo_underflow_overflow_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_extreme_fifo_size_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_txrx_vseq.sv: {is_include_file: true}
