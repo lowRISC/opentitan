@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class rv_timer_sanity_vseq extends rv_timer_base_vseq;
-  `uvm_object_utils(rv_timer_sanity_vseq)
+class rv_timer_smoke_vseq extends rv_timer_base_vseq;
+  `uvm_object_utils(rv_timer_smoke_vseq)
   `uvm_object_new
 
   rand bit [NUM_TIMERS-1:0] en_timers;
@@ -172,4 +172,4 @@ class rv_timer_sanity_vseq extends rv_timer_base_vseq;
     end
   endtask : cfg_all_timers
 
-endclass : rv_timer_sanity_vseq
+endclass : rv_timer_smoke_vseq
