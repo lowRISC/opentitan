@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// simple sanity test with both en_tx and en_rx on
+// simple smoke test with both en_tx and en_rx on
 // process one item at a time for TX and RX
-class uart_sanity_vseq extends uart_tx_rx_vseq;
-  `uvm_object_utils(uart_sanity_vseq)
+class uart_smoke_vseq extends uart_tx_rx_vseq;
+  `uvm_object_utils(uart_smoke_vseq)
 
   constraint num_trans_c {
     num_trans == 10;
@@ -66,4 +66,4 @@ class uart_sanity_vseq extends uart_tx_rx_vseq;
     dut_shutdown();
   endtask : process_remaining_data
 
-endclass : uart_sanity_vseq
+endclass : uart_smoke_vseq

@@ -8,16 +8,16 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
-      name: sanity
+      name: smoke
       desc: '''
-            - Basic UART sanity test with few bytes transmitted and received asynchronously and
+            - UART smoke test with few bytes transmitted and received asynchronously and
               in parallel with scoreboard checks
             - TX and RX have 2 independent threads respectively.
               -  program one Tx item in register and wait for it to complete at uart interface,
                  before send another one
               - sequencally send one Rx byte, then immediately read from register and check it'''
       milestone: V1
-      tests: ["uart_sanity"]
+      tests: ["uart_smoke"]
     }
     {
       name: base_random_seq
@@ -34,7 +34,7 @@
       name: parity
       desc: '''Send / receive bytes with parity and odd parity enabled randomly.'''
       milestone: V2
-      tests: ["uart_sanity", "uart_tx_rx"]
+      tests: ["uart_smoke", "uart_tx_rx"]
     }
     {
       name: parity_error

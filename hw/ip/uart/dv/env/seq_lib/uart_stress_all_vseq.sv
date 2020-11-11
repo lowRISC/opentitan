@@ -11,7 +11,7 @@ class uart_stress_all_vseq extends uart_base_vseq;
   `uvm_object_new
 
   task body();
-    string seq_names[] = {"uart_sanity_vseq",
+    string seq_names[] = {"uart_smoke_vseq",
                           "uart_tx_rx_vseq",
                           "uart_fifo_full_vseq",
                           "uart_fifo_overflow_vseq",
