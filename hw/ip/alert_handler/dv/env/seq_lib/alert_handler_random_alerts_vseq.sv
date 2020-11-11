@@ -4,7 +4,7 @@
 
 // this sequence enable random alert inputs, and rand wr phase cycles
 
-class alert_handler_random_alerts_vseq extends alert_handler_sanity_vseq;
+class alert_handler_random_alerts_vseq extends alert_handler_smoke_vseq;
   `uvm_object_utils(alert_handler_random_alerts_vseq)
 
   `uvm_object_new
