@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// basic sanity test vseq
 class otp_ctrl_wake_up_vseq extends otp_ctrl_base_vseq;
   `uvm_object_utils(otp_ctrl_wake_up_vseq)
 

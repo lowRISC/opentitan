@@ -104,7 +104,7 @@ def validate(config):
         part["sw_digest"] = check_bool(part["sw_digest"])
         part["hw_digest"] = check_bool(part["hw_digest"])
 
-        # Sanity checks
+        # basic checks
         if part["variant"] not in ["Unbuffered", "Buffered", "LifeCycle"]:
             log.error("Invalid partition type {}".format(part["variant"]))
             exit(1)
