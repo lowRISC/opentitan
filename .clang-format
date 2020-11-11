@@ -1,6 +1,6 @@
-# OpenTitan is still using clang-format 3.8, so the documentation for this
+# OpenTitan CI is using clang-format 6.0. The documentation for this
 # configuration is here:
-#   https://releases.llvm.org/3.8.1/tools/docs/ClangFormatStyleOptions.html
+#   https://releases.llvm.org/6.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 BasedOnStyle: Google
 AllowShortIfStatementsOnASingleLine: false
