@@ -20,7 +20,7 @@ filesets:
       - seq_lib/hmac_vseq_list.sv: {is_include_file: true}
       - seq_lib/hmac_base_vseq.sv: {is_include_file: true}
       - seq_lib/hmac_common_vseq.sv: {is_include_file: true}
-      - seq_lib/hmac_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/hmac_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/hmac_back_pressure_vseq.sv: {is_include_file: true}
       - seq_lib/hmac_datapath_stress_vseq.sv: {is_include_file: true}
       - seq_lib/hmac_test_vectors_hmac_vseq.sv: {is_include_file: true}
