@@ -749,7 +749,7 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
     It also adds suffix for external signal
     """
 
-    # sanity check and add missing fields
+    # Basic check and add missing fields
     check_intermodule_field(obj)
 
     # Floating signals

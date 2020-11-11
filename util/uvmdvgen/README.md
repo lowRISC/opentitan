@@ -168,7 +168,7 @@ Please see description for more details.
 
 The tool generates not only the UVM environment, but also the base test,
 testbench, top level fusesoc core file with sim target, Makefile that already
-includes the sanity and CSR test suite and more. With just a few tweaks, this
+includes the smoke and CSR test suite and more. With just a few tweaks, this
 enables the user to reach the V1 milestone much quicker.  Let's take `i2c_host`
 as the argument passed for the name of the IP. The following is the list of
 files generated with a brief description of their contents:
@@ -220,9 +220,9 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
     starters, it provides the `i2c_host_init()` task and `do_i2c_host_init` knob
     for controllability.
 
-* `env/seq_lib/i2c_host_sanity_vseq`
+* `env/seq_lib/i2c_host_smoke_vseq`
 
-    This is the basic sanity test sequence that user needs to develop as the first
+    This is the smoke test sequence that user needs to develop as the first
     test sequence. It extends from `i2c_host_base_vseq`.
 
 * `env/seq_lib/i2c_host_csr_vseq`

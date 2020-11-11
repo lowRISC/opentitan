@@ -123,7 +123,7 @@ Supported CSR test sequences are:
    the read results with the expected values
 
 ### CSR exclusion methodology
-The CSR test sequences listed above intend to perform a sanity check to CSR
+The CSR test sequences listed above intend to perform a basic check to CSR
 read/write accesses, but do not intend to check specific DUT functionalities. Thus the
 sequences might need to exclude reading or writing certain CSRs depending on the
 specific testbench.

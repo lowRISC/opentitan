@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// basic sanity test vseq
-class ${name}_sanity_vseq extends ${name}_base_vseq;
-  `uvm_object_utils(${name}_sanity_vseq)
+// smoke test vseq
+class ${name}_smoke_vseq extends ${name}_base_vseq;
+  `uvm_object_utils(${name}_smoke_vseq)
 
   `uvm_object_new
 
@@ -12,4 +12,4 @@ class ${name}_sanity_vseq extends ${name}_base_vseq;
     `uvm_error(`gfn, "FIXME")
   endtask : body
 
-endclass : ${name}_sanity_vseq
+endclass : ${name}_smoke_vseq

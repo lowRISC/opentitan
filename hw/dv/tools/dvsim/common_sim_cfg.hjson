@@ -118,7 +118,7 @@
   // tests.
   regressions: [
     {
-      name: sanity
+      name: smoke
       tests: []
       reseed: 1
     }

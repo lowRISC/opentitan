@@ -62,7 +62,7 @@
 
   regressions: [
     {
-      name: sanity
+      name: smoke
       tests: ["{name}_csr_hw_reset", "{name}_csr_rw"]
     }
 

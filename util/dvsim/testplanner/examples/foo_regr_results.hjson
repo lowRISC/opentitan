@@ -5,7 +5,7 @@
   timestamp: 10/10/2019 1:55AM
   test_results: [
     {
-      name: foo_sanity
+      name: foo_smoke
       passing: 25
       total: 50
     }

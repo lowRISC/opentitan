@@ -21,8 +21,8 @@ intent of a planned test:
 * **name: name of the planned test**
 
     This is a single `lower_snake_case` string that succinctly describes the intended
-    feature being tested. As an example, a basic sanity test which is typically the
-    first test written on a brand new testbench would be simply named `sanity`.
+    feature being tested. As an example, a smoke test which is typically the
+    first test written on a brand new testbench would be simply named `smoke`.
 
 * **milestone: verification milestone**
 
