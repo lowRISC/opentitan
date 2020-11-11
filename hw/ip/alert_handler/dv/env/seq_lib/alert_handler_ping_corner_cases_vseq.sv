@@ -69,7 +69,7 @@ class alert_handler_ping_corner_cases_vseq extends alert_handler_entropy_vseq;
       fork begin
         fork
           begin : run_normal_sequence
-            run_sanity_seq();
+            run_smoke_seq();
           end
           begin : wait_for_ping
             wait_alert_esc_ping(ping_index);

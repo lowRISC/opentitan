@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "alert_handler_base_vseq.sv"
-`include "alert_handler_sanity_vseq.sv"
+`include "alert_handler_smoke_vseq.sv"
 `include "alert_handler_common_vseq.sv"
 `include "alert_handler_random_alerts_vseq.sv"
 `include "alert_handler_random_classes_vseq.sv"
