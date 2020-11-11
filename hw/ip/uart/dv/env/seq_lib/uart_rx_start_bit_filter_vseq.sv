@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // test start bit length < 0.5 will be ignored
-class uart_rx_start_bit_filter_vseq extends uart_sanity_vseq;
+class uart_rx_start_bit_filter_vseq extends uart_smoke_vseq;
   `uvm_object_utils(uart_rx_start_bit_filter_vseq)
 
   `uvm_object_new

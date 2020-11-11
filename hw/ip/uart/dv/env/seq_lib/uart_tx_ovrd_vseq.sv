@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // test TX override feature through uart.OVRD and check the pin
-class uart_tx_ovrd_vseq extends uart_sanity_vseq;
+class uart_tx_ovrd_vseq extends uart_smoke_vseq;
   `uvm_object_utils(uart_tx_ovrd_vseq)
 
   `uvm_object_new

@@ -4,7 +4,7 @@
 
 `include "uart_base_vseq.sv"
 `include "uart_tx_rx_vseq.sv"
-`include "uart_sanity_vseq.sv"
+`include "uart_smoke_vseq.sv"
 `include "uart_common_vseq.sv"
 `include "uart_fifo_full_vseq.sv"
 `include "uart_fifo_overflow_vseq.sv"

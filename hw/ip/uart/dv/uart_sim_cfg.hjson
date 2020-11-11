@@ -54,8 +54,8 @@
   // List of test specifications.
   tests: [
     {
-      name: uart_sanity
-      uvm_test_seq: uart_sanity_vseq
+      name: uart_smoke
+      uvm_test_seq: uart_smoke_vseq
     }
 
     {
@@ -140,8 +140,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["uart_sanity"]
+      name: smoke
+      tests: ["uart_smoke"]
     }
   ]
 }
