@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class hmac_sanity_vseq extends hmac_base_vseq;
-  `uvm_object_utils(hmac_sanity_vseq)
+class hmac_smoke_vseq extends hmac_base_vseq;
+  `uvm_object_utils(hmac_smoke_vseq)
   `uvm_object_new
 
   constraint num_trans_c {
@@ -136,4 +136,4 @@ class hmac_sanity_vseq extends hmac_base_vseq;
     end
   endtask : body
 
-endclass : hmac_sanity_vseq
+endclass : hmac_smoke_vseq
