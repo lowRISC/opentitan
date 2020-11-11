@@ -107,9 +107,9 @@ It creates the following analysis ports to retrieve the data monitored by corres
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
-Here's how to run a basic sanity test:
+Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/kmac/dv/kmac_sim_cfg.hjson -i kmac_sanity
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/kmac/dv/kmac_sim_cfg.hjson -i kmac_smoke
 ```
 
 ## Testplan

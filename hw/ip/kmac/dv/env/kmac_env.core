@@ -21,7 +21,7 @@ filesets:
       - seq_lib/kmac_vseq_list.sv: {is_include_file: true}
       - seq_lib/kmac_base_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_common_vseq.sv: {is_include_file: true}
-      - seq_lib/kmac_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_smoke_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

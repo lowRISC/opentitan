@@ -9,9 +9,9 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
-      name: sanity
+      name: smoke
       desc: '''
-            Basic sanity test accessing a major datapath within the kmac.
+            Smoke test accessing a major datapath within the kmac.
 
             **Stimulus**:
             - TBD
@@ -20,7 +20,7 @@
             - TBD
             '''
       milestone: V1
-      tests: ["kmac_sanity"]
+      tests: ["kmac_smoke"]
     }
     {
       name: feature1
