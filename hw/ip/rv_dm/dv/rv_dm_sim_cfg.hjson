@@ -47,16 +47,16 @@
   // List of test specifications.
   tests: [
     {
-      name: rv_dm_sanity
-      uvm_test_seq: rv_dm_sanity_vseq
+      name: rv_dm_smoke
+      uvm_test_seq: rv_dm_smoke_vseq
     }
   ]
 
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["rv_dm_sanity"]
+      name: smoke
+      tests: ["rv_dm_smoke"]
     }
   ]
 }

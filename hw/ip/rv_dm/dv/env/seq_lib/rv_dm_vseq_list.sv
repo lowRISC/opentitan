@@ -3,5 +3,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "rv_dm_base_vseq.sv"
-`include "rv_dm_sanity_vseq.sv"
+`include "rv_dm_smoke_vseq.sv"
 `include "rv_dm_csr_vseq.sv"
