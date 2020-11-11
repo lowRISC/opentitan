@@ -29,9 +29,9 @@
       tests: ["otp_ctrl_wake_up"]
     }
     {
-      name: sanity
+      name: smoke
       desc: '''
-            Basic sanity test to provision and lock partitions.
+            Basic smoke test to provision and lock partitions.
 
             - Drive pwrmgr's request pin to trigger OTP initialization after reset, check status
               after OTP initialization
@@ -45,12 +45,12 @@
               have been populated
             '''
       milestone: V1
-      tests: ["otp_ctrl_sanity"]
+      tests: ["otp_ctrl_smoke"]
     }
     {
       name: all_partitions
       desc: '''
-            Based on the sanity test, this test ensures every address in each partition can be accessed
+            Based on the smoke test, this test ensures every address in each partition can be accessed
             successfully within its access policy.
             '''
       milestone: V2
