@@ -13,7 +13,7 @@
 module top_earlgrey #(
   // Auto-inferred parameters
   parameter bit AesMasking = 1'b1,
-  parameter aes_pkg::sbox_impl_e AesSBoxImpl = aes_pkg::SBoxImplCanrightMasked,
+  parameter aes_pkg::sbox_impl_e AesSBoxImpl = aes_pkg::SBoxImplCanrightMaskedNoreuse,
   parameter int unsigned SecAesStartTriggerDelay = 0,
   parameter bit SecAesAllowForcingMasks = 1'b0,
   parameter int KmacEnMasking = 0,

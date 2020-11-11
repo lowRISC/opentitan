@@ -51,12 +51,13 @@ module aes_sbox_tb #(
   );
 
   // Mask Generation
-  logic [7:0] masked_stimulus;
-  logic [7:0] in_mask;
-  logic [7:0] out_mask;
-  logic [7:0] masked_response [NUM_SBOX_IMPLS_MASKED];
-  logic [31:0] tmp;
-  logic [15:0] unused_tmp;
+  logic              [7:0] masked_stimulus;
+  logic              [7:0] in_mask;
+  logic              [7:0] out_mask;
+  logic [WidthPRDSBox-1:0] prd_masking;
+  logic              [7:0] masked_response [NUM_SBOX_IMPLS_MASKED];
+  logic             [31:0] tmp;
+  logic              [5:0] unused_tmp;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_tmp
     if (!rst_ni) begin
@@ -65,19 +66,21 @@ module aes_sbox_tb #(
       tmp <= $random;
     end
   end
-  assign unused_tmp = tmp[31:16];
-  assign in_mask  = tmp[7:0];
-  assign out_mask = tmp[15:8];
+  assign in_mask     = tmp[7:0];
+  assign out_mask    = tmp[15:8];
+  assign prd_masking = tmp[WidthPRDSBox-1+16:16];
+  assign unused_tmp  = tmp[31:WidthPRDSBox+16];
 
   assign masked_stimulus = stimulus ^ in_mask;
 
   // Instantiate Masked SBox Implementations
   aes_sbox_canright_masked_noreuse aes_sbox_canright_masked_noreuse (
-    .op_i       ( op                 ),
-    .data_i     ( masked_stimulus    ),
-    .in_mask_i  ( in_mask            ),
-    .out_mask_i ( out_mask           ),
-    .data_o     ( masked_response[0] )
+    .op_i          ( op                 ),
+    .data_i        ( masked_stimulus    ),
+    .in_mask_i     ( in_mask            ),
+    .out_mask_i    ( out_mask           ),
+    .prd_masking_i ( prd_masking        ),
+    .data_o        ( masked_response[0] )
   );
 
   aes_sbox_canright_masked aes_sbox_canright_masked (
