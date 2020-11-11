@@ -5,7 +5,7 @@
 // This sequence generates a mix of short and long msgs
 // Long msg has a larger size than HMAC input FIFO
 
-class hmac_long_msg_vseq extends hmac_sanity_vseq;
+class hmac_long_msg_vseq extends hmac_smoke_vseq;
   `uvm_object_utils(hmac_long_msg_vseq)
   `uvm_object_new
 

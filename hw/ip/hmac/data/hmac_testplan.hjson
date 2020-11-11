@@ -9,8 +9,8 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
-      name: sanity
-      desc: '''Basic sanity test performs a few round of HMAC or SHA256-ONLY transactions with the
+      name: smoke
+      desc: '''HMAC smoke test performs a few round of HMAC or SHA256-ONLY transactions with the
       prodecures below:
             - Set configuration register to randomly enable SHA256, hmac, endian_swap, and digest_swap
             - Set interrupt enable register to randomly enable fifo_full, hmac_done, and err_code
@@ -23,11 +23,11 @@
             - Trigger HMAC hash_process
             - After hmac_done interrupt, read and check digest data'''
       milestone: V1
-      tests: ["hmac_sanity"]
+      tests: ["hmac_smoke"]
     }
     {
       name: long_msg
-      desc: '''Long_msg test is based on the sanity test. The message length is between 0 and
+      desc: '''Long_msg test is based on the smoke test. The message length is between 0 and
             10,000 bytes.'''
       milestone: V2
       tests: ["hmac_long_msg"]
@@ -83,7 +83,7 @@
       name: write_config_and_secret_key_during_msg_wr
       desc: "Change config registers and secret keys during msg write, make sure access is blocked."
       milestone: V3
-      tests: ["hmac_sanity"]
+      tests: ["hmac_smoke"]
     }
   ]
 }

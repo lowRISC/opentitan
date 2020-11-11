@@ -5,7 +5,7 @@
 // This sequence generates back-pressure seq
 // The sequence disabled all the rand delay and optional reg checkings
 
-class hmac_back_pressure_vseq extends hmac_sanity_vseq;
+class hmac_back_pressure_vseq extends hmac_smoke_vseq;
   `uvm_object_utils(hmac_back_pressure_vseq)
   `uvm_object_new
 

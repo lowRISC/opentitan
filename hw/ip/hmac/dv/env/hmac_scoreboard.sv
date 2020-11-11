@@ -168,7 +168,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           // but for coverage purpose, we will reset intr_test after collected the coverage
           intr_test = 0;
           if (item.d_data[HmacDone] == 1) begin
-            // here sanity check DUT should only trigger hmac_done when sha is enabled, and
+            // here check DUT should only trigger hmac_done when sha is enabled, and
             // previously triggered hash_process.
             // future throughput test should check the accurate cycles
             if (sha_en && hmac_process) begin

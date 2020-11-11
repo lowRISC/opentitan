@@ -10,7 +10,7 @@ class hmac_stress_all_vseq extends hmac_base_vseq;
   `uvm_object_new
 
   task body();
-    string seq_names[] = {"hmac_sanity_vseq",
+    string seq_names[] = {"hmac_smoke_vseq",
                           "hmac_back_pressure_vseq",
                           "hmac_burst_wr_vseq",
                           "hmac_common_vseq", // for intr_test
