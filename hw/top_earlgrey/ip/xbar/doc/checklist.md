@@ -46,7 +46,7 @@ Documentation | [DOC_INTERFACE][]       | N/A         |
 Documentation | [MISSING_FUNC][]        | N/A         |
 Documentation | [FEATURE_FROZEN][]      | Done        |
 RTL           | [FEATURE_COMPLETE][]    | Done        |
-RTL           | [AREA_SANITY_CHECK][]   | Done        |
+RTL           | [AREA_CROSS_CHECK][]    | Done        |
 RTL           | [PORT_FROZEN][]         | Done        | Targetting for current top_earlgrey( Port can be changed later based on top_earlgrey config)
 RTL           | [ARCHITECTURE_FROZEN][] | Done        |
 RTL           | [REVIEW_TODO][]         | Done        | PR [#837][] is pending
@@ -69,7 +69,7 @@ Review        | Signoff date            | Done        | 2019-11-04
 [MISSING_FUNC]:        {{<relref "/doc/project/checklist.md#missing-func" >}}
 [FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature-frozen" >}}
 [FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature-complete" >}}
-[AREA_SANITY_CHECK]:   {{<relref "/doc/project/checklist.md#area-sanity-check" >}}
+[AREA_CROSS_CHECK]:    {{<relref "/doc/project/checklist.md#area-smoke-check" >}}
 [PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port-frozen" >}}
 [ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture-frozen" >}}
 [REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review-todo" >}}
@@ -124,10 +124,10 @@ Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [TB_ENV_CREATED][]                    | Done        |
 Testbench     | [RAL_MODEL_GEN_AUTOMATED][]           | N/A         |
 Testbench     | [TB_GEN_AUTOMATED][]                  | Waived      | Manually generated. Planned to automate later
-Tests         | [SANITY_TEST_PASSING][]               | Done        |
+Tests         | [SMOKE_TEST_PASSING][]                | Done        |
 Tests         | [CSR_MEM_TEST_SUITE_PASSING][]        | N/A         |
 Tool Setup    | [ALT_TOOL_SETUP][]                    | Done        |
-Regression    | [SANITY_REGRESSION_SETUP][]           | Done        | Exception (Runs at local)
+Regression    | [SMOKE_REGRESSION_SETUP][]            | Done        | Exception (Runs at local)
 Regression    | [NIGHTLY_REGRESSION_SETUP][]          | Done        | Exception (Runs at local)
 Coverage      | [COVERAGE_MODEL_ADDED][]              | Done        |
 Code Quality  | [TB_LINT_SETUP][]                     | Done        |
@@ -149,10 +149,10 @@ Review        | Signoff date                          | Done        | 2019-11-04
 [TB_ENV_CREATED]:                     {{<relref "/doc/project/checklist.md#tb-env-created" >}}
 [RAL_MODEL_GEN_AUTOMATED]:            {{<relref "/doc/project/checklist.md#ral-model-gen-automated" >}}
 [TB_GEN_AUTOMATED]:                   {{<relref "/doc/project/checklist.md#tb-gen-automated" >}}
-[SANITY_TEST_PASSING]:                {{<relref "/doc/project/checklist.md#sanity-test-passing" >}}
+[SMOKE_TEST_PASSING]:                 {{<relref "/doc/project/checklist.md#smoke-test-passing" >}}
 [CSR_MEM_TEST_SUITE_PASSING]:         {{<relref "/doc/project/checklist.md#csr-mem-test-suite-passing" >}}
 [ALT_TOOL_SETUP]:                     {{<relref "/doc/project/checklist.md#alt-tool-setup" >}}
-[SANITY_REGRESSION_SETUP]:            {{<relref "/doc/project/checklist.md#sanity-regression-setup" >}}
+[SMOKE_REGRESSION_SETUP]:             {{<relref "/doc/project/checklist.md#smoke-regression-setup" >}}
 [NIGHTLY_REGRESSION_SETUP]:           {{<relref "/doc/project/checklist.md#nightly-regression-setup" >}}
 [COVERAGE_MODEL_ADDED]:               {{<relref "/doc/project/checklist.md#coverage-model-added" >}}
 [TB_LINT_setup]:                      {{<relref "/doc/project/checklist.md#tb_lint_setup" >}}

@@ -5,7 +5,7 @@
 `include "xbar_seq_err_item.sv"
 `include "xbar_tl_host_seq.sv"
 `include "xbar_base_vseq.sv"
-`include "xbar_sanity_vseq.sv"
+`include "xbar_smoke_vseq.sv"
 `include "xbar_random_vseq.sv"
 `include "xbar_access_same_device_vseq.sv"
 `include "xbar_same_source_vseq.sv"
