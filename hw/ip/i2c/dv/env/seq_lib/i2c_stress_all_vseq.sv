@@ -15,7 +15,7 @@ class i2c_stress_all_vseq extends i2c_base_vseq;
 
   string seq_names[] = {
     "i2c_common_vseq",      // for intr_test
-    "i2c_sanity_vseq",
+    "i2c_smoke_vseq",
     "i2c_fifo_full_vseq",
     "i2c_fifo_overflow_vseq",
     "i2c_fifo_watermark_vseq",
