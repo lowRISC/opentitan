@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "spi_device_base_vseq.sv"
-`include "spi_device_sanity_vseq.sv"
+`include "spi_device_smoke_vseq.sv"
 `include "spi_device_common_vseq.sv"
 `include "spi_device_txrx_vseq.sv"
 `include "spi_device_fifo_full_vseq.sv"
