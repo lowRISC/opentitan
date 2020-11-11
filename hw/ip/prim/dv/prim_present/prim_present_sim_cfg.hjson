@@ -39,15 +39,15 @@
   // List of test specifications.
   tests: [
     {
-      name: prim_present_sanity
+      name: prim_present_smoke
     }
   ]
 
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["prim_present_sanity"]
+      name: smoke
+      tests: ["prim_present_smoke"]
     }
   ]
 }
