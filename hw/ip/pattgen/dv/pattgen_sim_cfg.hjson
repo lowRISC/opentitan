@@ -47,16 +47,16 @@
   // List of test specifications.
   tests: [
     {
-      name: pattgen_sanity
-      uvm_test_seq: pattgen_sanity_vseq
+      name: pattgen_smoke
+      uvm_test_seq: pattgen_smoke_vseq
     }
   ]
 
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["pattgen_sanity"]
+      name: smoke
+      tests: ["pattgen_smoke"]
     }
   ]
 }
