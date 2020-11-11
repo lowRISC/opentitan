@@ -4,7 +4,7 @@
 
 // This vseq randomly programs memory protection and performs a bunch of read / program / erase
 // operations. It is encouraged to extend this vseq to a custom vseq that constrains the
-// randomization by overriding the `configure_vseq()` function. See `flash_ctrl_sanity_vseq` for
+// randomization by overriding the `configure_vseq()` function. See `flash_ctrl_smoke_vseq` for
 // example.
 class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
   `uvm_object_utils(flash_ctrl_rand_ops_vseq)

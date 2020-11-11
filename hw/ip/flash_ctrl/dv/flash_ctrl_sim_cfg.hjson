@@ -51,16 +51,16 @@
   // List of test specifications.
   tests: [
     {
-      name: flash_ctrl_sanity
-      uvm_test_seq: flash_ctrl_sanity_vseq
+      name: flash_ctrl_smoke
+      uvm_test_seq: flash_ctrl_smoke_vseq
     }
   ]
 
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["flash_ctrl_sanity"]
+      name: smoke
+      tests: ["flash_ctrl_smoke"]
     }
   ]
 }
