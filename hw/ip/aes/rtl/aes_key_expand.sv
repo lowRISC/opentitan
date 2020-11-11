@@ -27,28 +27,29 @@ module aes_key_expand import aes_pkg::*;
   input  logic [WidthPRDKey-1:0] prd_masking_i
 );
 
-  logic       [7:0] rcon_d, rcon_q;
-  logic             rcon_we;
-  logic             use_rcon;
+  logic                [7:0] rcon_d, rcon_q;
+  logic                      rcon_we;
+  logic                      use_rcon;
 
-  logic       [3:0] rnd;
-  logic       [3:0] rnd_type;
+  logic                [3:0] rnd;
+  logic                [3:0] rnd_type;
 
-  logic      [31:0] spec_in_128 [NumShares];
-  logic      [31:0] spec_in_192 [NumShares];
-  logic      [31:0] rot_word_in [NumShares];
-  logic      [31:0] rot_word_out [NumShares];
-  logic             use_rot_word;
-  logic      [31:0] sub_word_in, sub_word_out;
-  logic      [31:0] sw_in_mask, sw_out_mask;
-  logic       [7:0] rcon_add_in, rcon_add_out;
-  logic      [31:0] rcon_added;
+  logic               [31:0] spec_in_128 [NumShares];
+  logic               [31:0] spec_in_192 [NumShares];
+  logic               [31:0] rot_word_in [NumShares];
+  logic               [31:0] rot_word_out [NumShares];
+  logic                      use_rot_word;
+  logic               [31:0] sub_word_in, sub_word_out;
+  logic               [31:0] sw_in_mask, sw_out_mask;
+  logic [4*WidthPRDSBox-1:0] sw_prd;
+  logic                [7:0] rcon_add_in, rcon_add_out;
+  logic               [31:0] rcon_added;
 
-  logic      [31:0] irregular [NumShares];
-  logic [7:0][31:0] regular [NumShares];
+  logic               [31:0] irregular [NumShares];
+  logic          [7:0][31:0] regular [NumShares];
 
   // cfg_valid_i is used for gating assertions only.
-  logic             unused_cfg_valid;
+  logic                      unused_cfg_valid;
   assign unused_cfg_valid = cfg_valid_i;
 
   // Get a shorter reference.
@@ -189,18 +190,20 @@ module aes_key_expand import aes_pkg::*;
     assign sw_in_mask = use_rot_word ? rot_word_out[1] : rot_word_in[1];
   end
 
-  assign sw_out_mask = prd_masking_i;
+  assign sw_out_mask = aes_sb_out_mask_get(prd_masking_i);
+  assign sw_prd      = aes_sb_prd_get(prd_masking_i);
 
   // SubWord - individually substitute bytes
   for (genvar i = 0; i < 4; i++) begin : gen_sbox
     aes_sbox #(
       .SBoxImpl ( SBoxImpl )
     ) u_aes_sbox_i (
-      .op_i       ( CIPH_FWD               ),
-      .data_i     ( sub_word_in[8*i +: 8]  ),
-      .in_mask_i  ( sw_in_mask[8*i +: 8]   ),
-      .out_mask_i ( sw_out_mask[8*i +: 8]  ),
-      .data_o     ( sub_word_out[8*i +: 8] )
+      .op_i          ( CIPH_FWD                               ),
+      .data_i        ( sub_word_in[8*i +: 8]                  ),
+      .in_mask_i     ( sw_in_mask[8*i +: 8]                   ),
+      .out_mask_i    ( sw_out_mask[8*i +: 8]                  ),
+      .prd_masking_i ( sw_prd[WidthPRDSBox*i +: WidthPRDSBox] ),
+      .data_o        ( sub_word_out[8*i +: 8]                 )
     );
   end
 

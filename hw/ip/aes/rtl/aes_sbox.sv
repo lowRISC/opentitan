@@ -8,11 +8,12 @@ module aes_sbox import aes_pkg::*;
 #(
   parameter sbox_impl_e SBoxImpl = SBoxImplLut
 ) (
-  input  ciph_op_e   op_i,
-  input  logic [7:0] data_i,
-  input  logic [7:0] in_mask_i,
-  input  logic [7:0] out_mask_i,
-  output logic [7:0] data_o
+  input  ciph_op_e                op_i,
+  input  logic              [7:0] data_i,
+  input  logic              [7:0] in_mask_i,
+  input  logic              [7:0] out_mask_i,
+  input  logic [WidthPRDSBox-1:0] prd_masking_i,
+  output logic              [7:0] data_o
 );
 
   import aes_pkg::*;
@@ -20,9 +21,11 @@ module aes_sbox import aes_pkg::*;
                                SBoxImpl == SBoxImplCanrightMaskedNoreuse) ? 1'b1 : 1'b0;
 
   if (!SBoxMasked) begin : gen_sbox_unmasked
-    // Tie off unused mask inputs.
-    logic [15:0] unused_masks;
+    // Tie off unused mask and PRD inputs.
+    logic             [15:0] unused_masks;
+    logic [WidthPRDSBox-1:0] unused_prd;
     assign unused_masks = {in_mask_i, out_mask_i};
+    assign unused_prd   = prd_masking_i;
 
     if (SBoxImpl == SBoxImplCanright) begin : gen_sbox_canright
       aes_sbox_canright u_aes_sbox (
@@ -45,9 +48,14 @@ module aes_sbox import aes_pkg::*;
         .data_i,
         .in_mask_i,
         .out_mask_i,
+        .prd_masking_i,
         .data_o
       );
     end else begin : gen_sbox_canright_masked // SBoxImpl == SBoxImplCanrightMasked
+      // Tie of unused PRD inputs.
+      logic [WidthPRDSBox-1:0] unused_prd;
+      assign unused_prd = prd_masking_i;
+
       aes_sbox_canright_masked u_aes_sbox (
         .op_i,
         .data_i,

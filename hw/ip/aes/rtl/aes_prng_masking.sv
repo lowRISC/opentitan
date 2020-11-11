@@ -17,16 +17,17 @@
 // for masking purposes.                                                                         //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-module aes_prng_masking #(
-  parameter  int unsigned Width       = 128 + 32,         // must be divisble by CHUNK_SIZE
-  localparam int unsigned CHUNK_SIZE  = 32,               // width of the LFSR primitives
-  localparam int unsigned NumChunks   = Width/CHUNK_SIZE, // derived parameter
+module aes_prng_masking import aes_pkg::*;
+#(
+  parameter  int unsigned Width     = WidthPRDMasking,     // Must be divisble by ChunkSize and 8.
+  parameter  int unsigned ChunkSize = ChunkSizePRDMasking, // width of the LFSR primitives
+  localparam int unsigned NumChunks = Width/ChunkSize,     // derived parameter
 
   parameter  bit          SecAllowForcingMasks  = 0, // Allow forcing masks to 0 using
                                                      // force_zero_masks_i. Useful for SCA only.
 
   // The chunks must not be initialized to 0. Every chunk should get a different seed.
-  parameter logic [NumChunks-1:0][CHUNK_SIZE-1:0] DefaultSeed = {NumChunks{CHUNK_SIZE'(1)}}
+  parameter logic [NumChunks-1:0][ChunkSize-1:0] DefaultSeed = {NumChunks{ChunkSize'(1)}}
 ) (
   input  logic             clk_i,
   input  logic             rst_ni,
@@ -45,12 +46,14 @@ module aes_prng_masking #(
   input  logic [Width-1:0] entropy_i
 );
 
-  logic                                 seed_en;
-  logic [NumChunks-1:0][CHUNK_SIZE-1:0] prng_seed;
-  logic                                 prng_en;
-  logic [NumChunks-1:0][CHUNK_SIZE-1:0] prng_state;
-  logic [NumChunks-1:0][CHUNK_SIZE-1:0] sub, perm;
-  logic                                 phase_q;
+  localparam int unsigned NumBytes  = Width/8;
+
+  logic                                seed_en;
+  logic [NumChunks-1:0][ChunkSize-1:0] prng_seed;
+  logic                                prng_en;
+  logic [NumChunks-1:0][ChunkSize-1:0] prng_state, sub;
+  logic            [NumBytes-1:0][7:0] prng_b, sub_b;
+  logic                                phase_q;
 
   /////////////
   // Control //
@@ -77,17 +80,19 @@ module aes_prng_masking #(
   // LFSRs //
   ///////////
 
-  // We use multiple LFSR instances each having a width of CHUNK_SIZE.
+  // We use multiple LFSR instances each having a width of ChunkSize.
   for (genvar c = 0; c < NumChunks; c++) begin : gen_chunks
 
     // Extract entropy input.
-    assign prng_seed[c] = entropy_i[c * CHUNK_SIZE +: CHUNK_SIZE];
+    assign prng_seed[c] = entropy_i[c * ChunkSize +: ChunkSize];
 
     prim_lfsr #(
-      .LfsrType    ( "GAL_XOR"      ),
-      .LfsrDw      ( CHUNK_SIZE     ),
-      .StateOutDw  ( CHUNK_SIZE     ),
-      .DefaultSeed ( DefaultSeed[c] )
+      .LfsrType    ( "GAL_XOR"                       ),
+      .LfsrDw      ( ChunkSize                       ),
+      .StateOutDw  ( ChunkSize                       ),
+      .DefaultSeed ( DefaultSeed[c]                  ),
+      .StatePermEn ( 1'b1                            ),
+      .StatePerm   ( RndCnstMskgChunkLfsrPermDefault )
     ) u_lfsr_chunk (
       .clk_i     ( clk_i         ),
       .rst_ni    ( rst_ni        ),
@@ -97,11 +102,14 @@ module aes_prng_masking #(
       .entropy_i ( '0            ),
       .state_o   ( prng_state[c] )
     );
-
-    // "Scramble" the LFSR state to break linear shift patterns.
-    assign sub[c]  = prim_cipher_pkg::sbox4_32bit(prng_state[c], prim_cipher_pkg::PRINCE_SBOX4);
-    assign perm[c] = prim_cipher_pkg::perm_32bit(sub[c], prim_cipher_pkg::PRESENT_PERM32);
   end
+
+  // Furhter "scramble" the LFSR state at the byte level to break linear shift patterns.
+  assign prng_b = prng_state;
+  for (genvar b = 0; b < NumBytes; b++) begin : gen_sub
+    assign sub_b[b] = prim_cipher_pkg::sbox4_8bit(prng_b[b], prim_cipher_pkg::PRINCE_SBOX4);
+  end
+  assign sub = sub_b;
 
   /////////////
   // Outputs //
@@ -110,8 +118,8 @@ module aes_prng_masking #(
   // To achieve independence of input and output masks (the output mask of round X is the input
   // mask of round X+1), we assign the scrambled chunks to the output data in alternating fashion.
   assign data_o =
-      (SecAllowForcingMasks && force_zero_masks_i) ? '0                             :
-       phase_q                                     ? {perm[0], perm[NumChunks-1:1]} : perm;
+      (SecAllowForcingMasks && force_zero_masks_i) ? '0                           :
+       phase_q                                     ? {sub[0], sub[NumChunks-1:1]} : sub;
 
   if (!SecAllowForcingMasks) begin : gen_unused_force_masks
     logic unused_force_zero_masks;
@@ -130,7 +138,9 @@ module aes_prng_masking #(
   // Asssertions //
   /////////////////
 
-  // Width must be divisible by CHUNK_SIZE
-  `ASSERT_INIT(AesPrngMaskingWidth, Width % CHUNK_SIZE == 0)
+  // Width must be divisible by ChunkSize
+  `ASSERT_INIT(AesPrngMaskingWidthByChunk, Width % ChunkSize == 0)
+  // Width must be divisible by 8
+  `ASSERT_INIT(AesPrngMaskingWidthBy8, Width % 8 == 0)
 
 endmodule

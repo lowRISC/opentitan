@@ -144,50 +144,51 @@ module aes_cipher_core import aes_pkg::*;
 );
 
   // Signals
-  logic       [3:0][3:0][7:0] state_d [NumShares];
-  logic       [3:0][3:0][7:0] state_q [NumShares];
-  logic                       state_we;
-  state_sel_e                 state_sel;
+  logic               [3:0][3:0][7:0] state_d [NumShares];
+  logic               [3:0][3:0][7:0] state_q [NumShares];
+  logic                               state_we;
+  state_sel_e                         state_sel;
 
-  logic       [3:0][3:0][7:0] sub_bytes_out;
-  logic       [3:0][3:0][7:0] sb_in_mask;
-  logic       [3:0][3:0][7:0] sb_out_mask;
-  logic       [3:0][3:0][7:0] shift_rows_in [NumShares];
-  logic       [3:0][3:0][7:0] shift_rows_out [NumShares];
-  logic       [3:0][3:0][7:0] mix_columns_out [NumShares];
-  logic       [3:0][3:0][7:0] add_round_key_in [NumShares];
-  logic       [3:0][3:0][7:0] add_round_key_out [NumShares];
-  add_rk_sel_e                add_round_key_in_sel;
+  logic               [3:0][3:0][7:0] sub_bytes_out;
+  logic               [3:0][3:0][7:0] sb_in_mask;
+  logic               [3:0][3:0][7:0] sb_out_mask;
+  logic               [3:0][3:0][7:0] shift_rows_in [NumShares];
+  logic               [3:0][3:0][7:0] shift_rows_out [NumShares];
+  logic               [3:0][3:0][7:0] mix_columns_out [NumShares];
+  logic               [3:0][3:0][7:0] add_round_key_in [NumShares];
+  logic               [3:0][3:0][7:0] add_round_key_out [NumShares];
+  add_rk_sel_e                        add_round_key_in_sel;
 
-  logic           [7:0][31:0] key_full_d [NumShares];
-  logic           [7:0][31:0] key_full_q [NumShares];
-  logic                       key_full_we;
-  key_full_sel_e              key_full_sel;
-  logic           [7:0][31:0] key_dec_d [NumShares];
-  logic           [7:0][31:0] key_dec_q [NumShares];
-  logic                       key_dec_we;
-  key_dec_sel_e               key_dec_sel;
-  logic           [7:0][31:0] key_expand_out [NumShares];
-  ciph_op_e                   key_expand_op;
-  logic                       key_expand_step;
-  logic                       key_expand_clear;
-  logic                 [3:0] key_expand_round;
-  key_words_sel_e             key_words_sel;
-  logic           [3:0][31:0] key_words [NumShares];
-  logic       [3:0][3:0][7:0] key_bytes [NumShares];
-  logic       [3:0][3:0][7:0] key_mix_columns_out [NumShares];
-  logic       [3:0][3:0][7:0] round_key [NumShares];
-  round_key_sel_e             round_key_sel;
+  logic                   [7:0][31:0] key_full_d [NumShares];
+  logic                   [7:0][31:0] key_full_q [NumShares];
+  logic                               key_full_we;
+  key_full_sel_e                      key_full_sel;
+  logic                   [7:0][31:0] key_dec_d [NumShares];
+  logic                   [7:0][31:0] key_dec_q [NumShares];
+  logic                               key_dec_we;
+  key_dec_sel_e                       key_dec_sel;
+  logic                   [7:0][31:0] key_expand_out [NumShares];
+  ciph_op_e                           key_expand_op;
+  logic                               key_expand_step;
+  logic                               key_expand_clear;
+  logic                         [3:0] key_expand_round;
+  key_words_sel_e                     key_words_sel;
+  logic                   [3:0][31:0] key_words [NumShares];
+  logic               [3:0][3:0][7:0] key_bytes [NumShares];
+  logic               [3:0][3:0][7:0] key_mix_columns_out [NumShares];
+  logic               [3:0][3:0][7:0] round_key [NumShares];
+  round_key_sel_e                     round_key_sel;
 
   // Pseudo-random data for clearing and masking purposes
-  logic               [127:0] prd_clearing_128;
-  logic               [255:0] prd_clearing_256;
+  logic                       [127:0] prd_clearing_128;
+  logic                       [255:0] prd_clearing_256;
 
-  logic [WidthPRDMasking-1:0] prd_masking;
-  logic     [WidthPRDKey-1:0] prd_key_expand;
-  logic                       prd_masking_upd;
-  logic                       prd_masking_rsd_req;
-  logic                       prd_masking_rsd_ack;
+  logic         [WidthPRDMasking-1:0] prd_masking;
+  logic  [3:0][3:0][WidthPRDSBox-1:0] prd_sub_bytes;
+  logic             [WidthPRDKey-1:0] prd_key_expand;
+  logic                               prd_masking_upd;
+  logic                               prd_masking_rsd_req;
+  logic                               prd_masking_rsd_ack;
 
   // Generate clearing signals of appropriate widths.
   localparam int unsigned NumChunks = 128/WidthPRDClearing;
@@ -243,10 +244,12 @@ module aes_cipher_core import aes_pkg::*;
     assign sb_in_mask  = state_q[1];
 
     // The masking PRNG generates:
-    // - the output mask, as well as
+    // - the SubBytes output masks,
+    // - additional randomness required by SubBytes, as well as
     // - the randomness required by the key expand module.
     aes_prng_masking #(
       .Width                ( WidthPRDMasking      ),
+      .ChunkSize            ( ChunkSizePRDMasking  ),
       .SecAllowForcingMasks ( SecAllowForcingMasks ),
       .DefaultSeed          ( SeedMasking          )
     ) u_aes_prng_masking (
@@ -263,19 +266,27 @@ module aes_cipher_core import aes_pkg::*;
     );
   end
 
-  assign sb_out_mask    = prd_masking[WidthPRDMasking-1:WidthPRDKey];
-  assign data_in_mask_o = prd_masking[WidthPRDMasking-1 -: 128];
-  assign prd_key_expand = prd_masking[WidthPRDKey-1:0];
+  // Extract SubBytes output masks and additional randomness on a row basis. We have:
+  // prd_masking = { prd_key_expand, ... , sb_prd[4], sb_out_mask[4], sb_prd[0], sb_out_mask[0] }
+  localparam int unsigned WidthPRDRow = 4*(8+WidthPRDSBox);
+  for (genvar i = 0; i < 4; i++) begin : gen_sb_prd
+    assign sb_out_mask[i]    = aes_sb_out_mask_get(prd_masking[i*WidthPRDRow +: WidthPRDRow]);
+    assign data_in_mask_o[i] = aes_sb_out_mask_get(prd_masking[i*WidthPRDRow +: WidthPRDRow]);
+    assign prd_sub_bytes[i]  =      aes_sb_prd_get(prd_masking[i*WidthPRDRow +: WidthPRDRow]);
+  end
+  // Extract randomness for key expand module.
+  assign prd_key_expand = prd_masking[WidthPRDMasking-1 -: WidthPRDKey];
 
   // Cipher data path
   aes_sub_bytes #(
     .SBoxImpl ( SBoxImpl )
   ) u_aes_sub_bytes (
-    .op_i       ( op_i           ),
-    .data_i     ( state_q[0]     ),
-    .in_mask_i  ( sb_in_mask     ),
-    .out_mask_i ( sb_out_mask    ),
-    .data_o     ( sub_bytes_out  )
+    .op_i          ( op_i           ),
+    .data_i        ( state_q[0]     ),
+    .in_mask_i     ( sb_in_mask     ),
+    .out_mask_i    ( sb_out_mask    ),
+    .prd_masking_i ( prd_sub_bytes  ),
+    .data_o        ( sub_bytes_out  )
   );
 
   for (genvar s = 0; s < NumShares; s++) begin : gen_shares_shift_mix
