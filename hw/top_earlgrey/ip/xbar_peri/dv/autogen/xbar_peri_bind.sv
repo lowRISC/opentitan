@@ -86,5 +86,11 @@ module xbar_peri_bind;
     .h2d    (tl_ast_wrapper_o),
     .d2h    (tl_ast_wrapper_i)
   );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_pattgen (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_pattgen_o),
+    .d2h    (tl_pattgen_i)
+  );
 
 endmodule
