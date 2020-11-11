@@ -9,7 +9,7 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
-      name: sanity
+      name: smoke
       desc: '''
             Use default SRAM fifo setting. Seq:
             - Write a word data to TX memory and update wptr
@@ -18,7 +18,7 @@
             - Compare the data and check no pending data in SRAM FIFO
             - Repeat above steps'''
       milestone: V1
-      tests: ["spi_device_sanity"]
+      tests: ["spi_device_smoke"]
     }
     {
       name: base_random_seq

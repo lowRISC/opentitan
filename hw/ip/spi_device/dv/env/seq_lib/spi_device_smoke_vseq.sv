@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// sanity test to verify host and device spi data transfers and circular fifo wrapping
+// smoke test to verify host and device spi data transfers and circular fifo wrapping
 // cpol, cpha, host and device data ordering and sram fofo limits are randomized
-class spi_device_sanity_vseq extends spi_device_base_vseq;
-  `uvm_object_utils(spi_device_sanity_vseq)
+class spi_device_smoke_vseq extends spi_device_base_vseq;
+  `uvm_object_utils(spi_device_smoke_vseq)
   `uvm_object_new
 
   constraint num_trans_c {
@@ -43,4 +43,4 @@ class spi_device_sanity_vseq extends spi_device_base_vseq;
     end
   endtask : body
 
-endclass : spi_device_sanity_vseq
+endclass : spi_device_smoke_vseq
