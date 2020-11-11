@@ -45,8 +45,8 @@
   // List of test specifications.
   tests: [
     {
-      name: rv_timer_sanity
-      uvm_test_seq: rv_timer_sanity_vseq
+      name: rv_timer_smoke
+      uvm_test_seq: rv_timer_smoke_vseq
       reseed: 200
     }
 
@@ -72,8 +72,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["rv_timer_sanity"]
+      name: smoke
+      tests: ["rv_timer_smoke"]
     }
   ]
 }
