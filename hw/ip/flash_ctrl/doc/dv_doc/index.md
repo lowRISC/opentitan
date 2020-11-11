@@ -121,10 +121,10 @@ All common types and methods defined at the package level can be found in
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
-Here's how to run a basic sanity test:
+Here's how to run a smoke test:
 ```console
 $ cd $REPO_TOP
-$ ./util/dvsim/dvsim.py hw/ip/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson -i flash_ctrl_sanity
+$ ./util/dvsim/dvsim.py hw/ip/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson -i flash_ctrl_smoke
 ```
 
 ## Testplan

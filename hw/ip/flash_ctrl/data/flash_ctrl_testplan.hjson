@@ -11,7 +11,7 @@
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
   entries: [
     {
-      name: sanity
+      name: smoke
       desc: '''
             Randomly read, program or erase (page or a bank) a randomized chunk of flash memory.
             Only the data partition is accessed. No extra features enabled. Flash memory is
@@ -20,7 +20,7 @@
             success of each operation is verified via backdoor.
             '''
       milestone: V1
-      tests: ["flash_ctrl_sanity"]
+      tests: ["flash_ctrl_smoke"]
     }
     {
       name: backpressure
