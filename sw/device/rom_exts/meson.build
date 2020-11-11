@@ -53,6 +53,7 @@ rom_exts_manifest_offsets_header = custom_target(
     meson.source_root() / 'util/rom-ext-manifest-generator.py',
     '--input-dir', meson.current_source_dir(),
     '--output-dir', meson.current_build_dir(),
+    '--output-headers', 'c',
   ],
 )
 
