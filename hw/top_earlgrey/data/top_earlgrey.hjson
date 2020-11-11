@@ -15,6 +15,17 @@
   // 32-bit datawidth
   datawidth: "32",
 
+  // Power information for the design
+  power: {
+    // Power domains supported by the design
+    // Aon represents domain aon
+    // 0 represents domain 0
+    domains: ["Aon", "0"],
+
+    // Default power domain used for the design
+    default: "0"
+  },
+
   // This is the clock data structure of the design.
   // The hier path refers to the clock reference path (struct / port)
   //   - The top/ext desgination follows the same scheme as inter-module
@@ -109,6 +120,7 @@
     // gen: whether the reset is generated
     // true: it is a generated reset inside rstmgr
     // false: it is a hardwired design reset inside rstmgr (roots and por)
+    // For non-generated resets, the parent / domain definitions have no meaning.
     //
     // type: the reset type [ext, top]
     // ext: the reset is coming in from the ports, external to earlgrey
@@ -118,34 +130,32 @@
     // parent: The parent reset
     // If type is "ext", there is no root, since it is external
     //
-    // domain: The power domain
-    // If no domain, it means there is no choice, just inherits from root.
-    // Otherwise, selects the domain to which it is related
-    // 0 is defaulted for always on.
-    // TBD: This should eventually be changed to a name->index project wide lookup
+    // domains: The power domains of a particular reset
+    // This is a list of of the supported power domains.
+    // Valid values are Aon and (power domain)0 ~ (power domain)1.
+    // If no value is supplied, the default is only the Aon version.
     //
     // clk:  related clock domain for synchronous release
     // If type is "por", there is not related clock, since it is
     // likely external or generated from a voltage comparator
     //
     nodes: [
-      { name: "rst_ni",      gen: false, type: "ext"                                                    }
-      { name: "por_aon",     gen: false, type: "top",              parent: "rst_ni",  clk: "aon"        }
-      { name: "lc_src",      gen: false, type: "int",              parent: "por",     clk: "io_div2"    }
-      { name: "sys_src",     gen: false, type: "int",              parent: "por",     clk: "io_div2"    }
-      { name: "por",         gen: true,  type: "top",              parent: "por_aon", clk: "main"       }
-      { name: "por_io",      gen: true,  type: "top",              parent: "por_aon", clk: "io"         }
-      { name: "por_io_div2", gen: true,  type: "top",              parent: "por_aon", clk: "io_div2"    }
-      { name: "por_io_div4", gen: true , type: "top",              parent: "por_aon", clk: "io_div4"    }
-      { name: "por_usb",     gen: true,  type: "top",              parent: "por_aon", clk: "usb"        }
-      { name: "lc",          gen: true,  type: "top", domain: "0", parent: "lc_src",  clk: "main"       }
-      { name: "lc_io",       gen: true,  type: "top", domain: "0", parent: "lc_src",  clk: "io_div4"    }
-      { name: "sys",         gen: true,  type: "top", domain: "0", parent: "sys_src", clk: "main"       }
-      { name: "sys_io",      gen: true,  type: "top", domain: "0", parent: "sys_src", clk: "io_div2"    }
-      { name: "sys_io_div4", gen: true,  type: "top", domain: "0", parent: "sys_src", clk: "io_div4"    }
-      { name: "sys_aon",     gen: true,  type: "top", domain: "0", parent: "sys_src", clk: "aon"        }
-      { name: "spi_device",  gen: true,  type: "top", domain: "0", parent: "sys_src", clk: "io_div2", sw: 1 }
-      { name: "usb",         gen: true,  type: "top", domain: "0", parent: "sys_src", clk: "usb",     sw: 1 }
+      { name: "rst_ni",      gen: false, type: "ext",                                                          }
+      { name: "por_aon",     gen: false, type: "top", domains: ["Aon"     ],                    clk: "aon"     }
+      { name: "lc_src",      gen: false, type: "int", domains: ["Aon", "0"],                    clk: "io_div4" }
+      { name: "sys_src",     gen: false, type: "int", domains: ["Aon", "0"],                    clk: "io_div4" }
+      { name: "por",         gen: true,  type: "top", domains: ["Aon"     ], parent: "por_aon", clk: "main"    }
+      { name: "por_io",      gen: true,  type: "top", domains: ["Aon",    ], parent: "por_aon", clk: "io"      }
+      { name: "por_io_div2", gen: true,  type: "top", domains: ["Aon",    ], parent: "por_aon", clk: "io_div2" }
+      { name: "por_io_div4", gen: true , type: "top", domains: ["Aon",    ], parent: "por_aon", clk: "io_div4" }
+      { name: "por_usb",     gen: true,  type: "top", domains: ["Aon",    ], parent: "por_aon", clk: "usb"     }
+      { name: "lc",          gen: true,  type: "top", domains: [       "0"], parent: "lc_src",  clk: "main"    }
+      { name: "lc_io_div4",  gen: true,  type: "top", domains: [       "0"], parent: "lc_src",  clk: "io_div4" }
+      { name: "sys",         gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "main"    }
+      { name: "sys_io_div4", gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "io_div4" }
+      { name: "sys_aon",     gen: true,  type: "top", domains: ["Aon",    ], parent: "sys_src", clk: "aon"     }
+      { name: "spi_device",  gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "io_div2", sw: 1 }
+      { name: "usb",         gen: true,  type: "top", domains: ["Aon",    ], parent: "sys_src", clk: "usb",     sw: 1 }
     ]
   }
 
@@ -241,6 +251,7 @@
       clock_srcs: {clk_i: "main", clk_aon_i: "aon"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys", rst_aon_ni: "sys_aon"},
+      domain: "Aon",
       base_addr: "0x40070000",
       generated: "true"
     },
@@ -251,6 +262,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
+      domain: "Aon",
       base_addr: "0x40160000",
       generated: "true"
     },
@@ -272,6 +284,7 @@
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "por", rst_slow_ni: "por_aon"},
+      domain: "Aon",
       base_addr: "0x400A0000",
       generated: "true"         // Indicate this module is generated in the topgen
 
@@ -282,6 +295,7 @@
                    clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "rst_ni"},
+      domain: "Aon",
       base_addr: "0x400B0000",
       generated: "true"         // Indicate this module is generated in the topgen
     },
@@ -289,8 +303,9 @@
       type: "clkmgr",
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "por_io", rst_main_ni: "por", rst_io_ni: "por_io", rst_usb_ni: "por_usb"
+      reset_connections: {rst_ni: "por_io_div4", rst_main_ni: "por", rst_io_ni: "por_io", rst_usb_ni: "por_usb"
                           rst_io_div2_ni: "por_io_div2", rst_io_div4_ni: "por_io_div4"},
+      domain: "Aon",
       base_addr: "0x400C0000",
       generated: "true"
     },
@@ -309,6 +324,7 @@
       clock_group: "peri",
       clock_reset_export: ["ast"],
       reset_connections: {rst_ni: "sys_io_div4", rst_usb_48mhz_ni: "usb"},
+      domain: "Aon",
       base_addr: "0x40150000",
     },
     { name: "sensor_ctrl",
@@ -317,6 +333,7 @@
       clock_group: "secure",
       clock_reset_export: ["ast"],
       reset_connections: {rst_ni: "sys_io_div4"},
+      domain: "Aon",
       base_addr: "0x40170000",
       top_only: "true"
     },
@@ -331,7 +348,7 @@
       type: "otp_ctrl",
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "timers",
-      reset_connections: {rst_ni: "lc_io"},
+      reset_connections: {rst_ni: "lc_io_div4"},
       base_addr: "0x401b0000",
     },
     { name: "otbn",
@@ -383,9 +400,10 @@
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "infra",
       reset_connections: {rst_ni: "sys_io_div4"},
+      domain: "Aon",
       type: "ram_1p",
       base_addr: "0x18000000",
-      size: "0x1000"
+      size: "0x1000",
       inter_signal_list: [
         { struct: "tl"
           package: "tlul_pkg"

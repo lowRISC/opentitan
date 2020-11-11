@@ -672,29 +672,10 @@ def amend_clocks(top: OrderedDict):
 
 
 def amend_resets(top):
-    """Add a path variable to reset declaration
+
+    """Generate exported reset structure and automatically connect to
+       intermodule.
     """
-    reset_paths = OrderedDict()
-    reset_hiers = top["resets"]['hier_paths']
-
-    for reset in top["resets"]["nodes"]:
-
-        if "type" not in reset:
-            log.error("{} missing type field".format(reset["name"]))
-            return
-
-        if reset["type"] == "top":
-            reset_paths[reset["name"]] = "{}rst_{}_n".format(
-                reset_hiers["top"], reset["name"])
-        elif reset["type"] == "ext":
-            reset_paths[reset["name"]] = "{}rst_ni".format(reset_hiers["ext"])
-        elif reset["type"] == "int":
-            log.info("{} used as internal reset".format(reset["name"]))
-        else:
-            log.error("{} type is invalid".format(reset["type"]))
-
-    top["reset_paths"] = reset_paths
-
     # Generate exported reset list
     exported_rsts = OrderedDict()
     for module in top["module"]:
@@ -719,6 +700,36 @@ def amend_resets(top):
     # add entry to inter_module automatically
     for intf in top['exported_rsts']:
         top['inter_module']['external']['rstmgr.resets_{}'.format(intf)] = "rsts_{}".format(intf)
+
+    """Discover the full path and selection to each reset connection.
+       This is done by modifying the reset connection of each end point.
+    """
+    for end_point in top['module'] + top['memory'] + top['xbar']:
+        for port, net in end_point['reset_connections'].items():
+            reset_path = lib.get_reset_path(net, end_point['domain'], top['resets'])
+            end_point['reset_connections'][port] = reset_path
+
+    # reset paths are still needed temporarily until host only modules are properly automated
+    reset_paths = OrderedDict()
+    reset_hiers = top["resets"]['hier_paths']
+
+    for reset in top["resets"]["nodes"]:
+        if "type" not in reset:
+            log.error("{} missing type field".format(reset["name"]))
+            return
+
+        if reset["type"] == "top":
+            reset_paths[reset["name"]] = "{}rst_{}_n".format(
+                reset_hiers["top"], reset["name"])
+
+        elif reset["type"] == "ext":
+            reset_paths[reset["name"]] = reset_hiers["ext"] + reset['name']
+        elif reset["type"] == "int":
+            log.info("{} used as internal reset".format(reset["name"]))
+        else:
+            log.error("{} type is invalid".format(reset["type"]))
+
+    top["reset_paths"] = reset_paths
 
     return
 
@@ -952,9 +963,6 @@ def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
     # as part of alerts.
     # amend_clocks(gencfg)
 
-    # Add path names to declared resets
-    amend_resets(gencfg)
-
     # Combine the wakeups
     amend_wkup(gencfg)
     amend_reset_request(gencfg)
@@ -976,6 +984,10 @@ def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
     # 2nd phase of xbar (gathering the devices address range)
     for xbar in gencfg["xbar"]:
         xbar_cross(xbar, gencfg["xbar"])
+
+    # Add path names to declared resets.
+    # Declare structure for exported resets.
+    amend_resets(gencfg)
 
     # remove unwanted fields 'debug_mem_base_addr'
     gencfg.pop('debug_mem_base_addr', None)

@@ -468,6 +468,46 @@ def check_flash(top):
     return error
 
 
+def check_power_domains(top):
+    error = 0
+
+    # check that the default domain is valid
+    if top['power']['default'] not in top['power']['domains']:
+        error += 1
+        return error
+
+    # check that power domain definition is consistent with reset and module definition
+    for reset in top['resets']['nodes']:
+        if reset['gen']:
+            if 'domains' not in reset:
+                log.error("{} missing domain definition".format(reset['name']))
+                error += 1
+                return error
+            else:
+                for domain in reset['domains']:
+                    if domain not in top['power']['domains']:
+                        log.error("{} defined invalid domain {}".format(reset['name'], domain))
+                        error += 1
+                        return error
+
+    # Check that each module, xbar, memory has a power domain defined.
+    # If not, give it a default.
+    # If there is one defined, check that it is a valid definition
+    for end_point in top['module'] + top['memory'] + top['xbar']:
+        if 'domain' not in end_point:
+            log.warning("{} does not have a power domain defined, \
+            assigning default".format(end_point['name']))
+
+            end_point['domain'] = top['power']['default']
+        elif end_point['domain'] not in top['power']['domains']:
+            log.error("{} defined invalid domain {}".format(end_point['name'], end_point['domain']))
+            error += 1
+            return error
+
+    # arrived without incident, return
+    return error
+
+
 def validate_top(top, ipobjs, xbarobjs):
     # return as it is for now
     error = check_keys(top, top_required, top_optional, top_added, "top")
@@ -488,6 +528,9 @@ def validate_top(top, ipobjs, xbarobjs):
 
     # MEMORY check
     error += check_flash(top)
+
+    # Power domain check
+    error += check_power_domains(top)
 
     # Clock / Reset check
     error += check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs)

@@ -231,11 +231,43 @@ def get_clk_name(clk):
         return "clk_{}_i".format(clk)
 
 
-def get_reset_path(resets, name):
+def get_reset_path(reset, domain, reset_cfg):
     """Return the appropriate reset path given name
     """
-    for reset in resets:
-        if reset['name'] == name:
-            return reset['path']
+    # find matching node for reset
+    node_match = [node for node in reset_cfg['nodes'] if node['name'] == reset]
+    assert len(node_match) == 1
+    reset_type = node_match[0]['type']
 
-    return "none"
+    # find matching path
+    hier_path = ""
+    if reset_type == "int":
+        log.debug("{} used as internal reset".format(reset["name"]))
+    else:
+        hier_path = reset_cfg['hier_paths'][reset_type]
+
+    # find domain selection
+    domain_sel = ''
+    if reset_type not in ["ext", "int"]:
+        domain_sel = "[rstmgr_pkg::Domain{}Sel]".format(domain)
+
+    reset_path = ""
+    if reset_type == "ext":
+        reset_path = reset
+    else:
+        reset_path = "{}rst_{}_n{}".format(hier_path, reset, domain_sel)
+
+    return reset_path
+
+
+def get_unused_resets(top):
+    """Return dict of unused resets and associated domain
+    """
+    unused_resets = OrderedDict()
+    unused_resets = {reset['name']: domain
+                     for reset in top['resets']['nodes']
+                     for domain in top['power']['domains']
+                     if reset['type'] == 'top' and domain not in reset['domains']}
+
+    log.debug("Unused resets are {}".format(unused_resets))
+    return unused_resets

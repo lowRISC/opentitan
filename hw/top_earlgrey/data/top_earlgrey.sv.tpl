@@ -28,6 +28,8 @@ clks_attr = top['clocks']
 cpu_clk = top['clocks']['hier_paths']['top'] + "clk_proc_main"
 cpu_rst = top["reset_paths"]["sys"]
 dm_rst = top["reset_paths"]["lc"]
+
+unused_resets = lib.get_unused_resets(top)
 %>\
 module top_${top["name"]} #(
   // Auto-inferred parameters
@@ -185,6 +187,14 @@ module top_${top["name"]} #(
 
 ## Inter-module signal collection
 
+  // Unused reset signals
+% for k, v in unused_resets.items():
+  logic unused_d${v.lower()}_rst_${k};
+% endfor
+% for k, v in unused_resets.items():
+  assign unused_d${v.lower()}_rst_${k} = ${lib.get_reset_path(k, v, top['resets'])};
+% endfor
+
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
 
@@ -215,7 +225,7 @@ module top_${top["name"]} #(
   ) u_rv_core_ibex (
     // clock and reset
     .clk_i                (${cpu_clk}),
-    .rst_ni               (${cpu_rst}),
+    .rst_ni               (${cpu_rst}[rstmgr_pkg::Domain0Sel]),
     .test_en_i            (1'b0),
     // static pinning
     .hart_id_i            (32'b0),
@@ -247,7 +257,7 @@ module top_${top["name"]} #(
     .IdcodeValue (JTAG_IDCODE)
   ) u_dm_top (
     .clk_i         (${cpu_clk}),
-    .rst_ni        (${dm_rst}),
+    .rst_ni        (${dm_rst}[rstmgr_pkg::Domain0Sel]),
     .testmode_i    (1'b0),
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
@@ -272,7 +282,7 @@ module top_${top["name"]} #(
   );
 
   assign rstmgr_cpu.ndmreset_req = ndmreset_req;
-  assign rstmgr_cpu.rst_cpu_n = ${top["reset_paths"]["sys"]};
+  assign rstmgr_cpu.rst_cpu_n = ${top["reset_paths"]["sys"]}[rstmgr_pkg::Domain0Sel];
 
 ## Memory Instantiation
 % for m in top["memory"]:
@@ -306,8 +316,8 @@ module top_${top["name"]} #(
     % for key in clocks:
     .${key}   (${clocks[key]}),
     % endfor
-    % for key in resets:
-    .${key}   (${top["reset_paths"][resets[key]]}),
+    % for key, value in resets.items():
+    .${key}   (${value}),
     % endfor
     .tl_i     (${m["name"]}_tl_req),
     .tl_o     (${m["name"]}_tl_rsp),
@@ -334,8 +344,8 @@ module top_${top["name"]} #(
     % for key in clocks:
     .${key}   (${clocks[key]}),
     % endfor
-    % for key in resets:
-    .${key}   (${top["reset_paths"][resets[key]]}),
+    % for key, value in resets.items():
+    .${key}   (${value}),
     % endfor
 
     .req_i    (${m["name"]}_req),
@@ -371,8 +381,8 @@ module top_${top["name"]} #(
     % for key in clocks:
     .${key}   (${clocks[key]}),
     % endfor
-    % for key in resets:
-    .${key}   (${top["reset_paths"][resets[key]]}),
+    % for key, value in resets.items():
+    .${key}   (${value}),
     % endfor
 
     .tl_i     (${m["name"]}_tl_req),
@@ -397,8 +407,8 @@ module top_${top["name"]} #(
     % for key in clocks:
     .${key}   (${clocks[key]}),
     % endfor
-    % for key in resets:
-    .${key}   (${top["reset_paths"][resets[key]]}),
+    % for key, value in resets.items():
+    .${key}   (${value}),
     % endfor
     .req_i    (${m["name"]}_req),
     .addr_i   (${m["name"]}_addr),
@@ -427,8 +437,8 @@ module top_${top["name"]} #(
     % for key in clocks:
     .${key}   (${clocks[key]}),
     % endfor
-    % for key in resets:
-    .${key}   (${top["reset_paths"][resets[key]]}),
+    % for key, value in resets.items():
+    .${key}   (${value}),
     % endfor
 
     .tl_i     (${m["name"]}_tl_req),
@@ -449,8 +459,8 @@ module top_${top["name"]} #(
     % for key in clocks:
     .${key}   (${clocks[key]}),
     % endfor
-    % for key in resets:
-    .${key}   (${top["reset_paths"][resets[key]]}),
+    % for key, value in resets.items():
+    .${key}   (${value}),
     % endfor
     .host_req_i      (flash_host_req),
     .host_addr_i     (flash_host_addr),
@@ -599,7 +609,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .${k} (${v}),
     % endfor
     % for k, v in m["reset_connections"].items():
-      .${k} (${top["reset_paths"][v]})${"," if not loop.last else ""}
+      .${k} (${v})${"," if not loop.last else ""}
     % endfor
   );
 
@@ -622,7 +632,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     .${k} (${v}),
   % endfor
   % for k, v in xbar["reset_connections"].items():
-    .${k} (${top["reset_paths"][v]}),
+    .${k} (${v}),
   % endfor
 
   ## Inter-module signal

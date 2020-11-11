@@ -51,23 +51,32 @@ module rstmgr import rstmgr_pkg::*; (
   // receive POR and stretch
   // The por is at first stretched and synced on clk_aon
   // The rst_ni and pok_i input will be changed once AST is integrated
-  logic rst_por_aon_n;
-  rstmgr_por u_rst_por_aon (
-    .clk_i(clk_aon_i),
-    .rst_ni(ast_i.aon_pok),
-    .scan_rst_ni,
-    .scanmode_i,
-    .rst_no(rst_por_aon_n)
-  );
+  logic [PowerDomains-1:0] rst_por_aon_n;
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_rst_por_aon_n_mux (
-    .clk0_i(rst_por_aon_n),
-    .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_por_aon_n)
-  );
+  for (genvar i = 0; i < PowerDomains; i++) begin : gen_rst_por_aon
+    if (i == DomainAonSel) begin : gen_rst_por_aon_normal
+      rstmgr_por u_rst_por_aon (
+        .clk_i(clk_aon_i),
+        .rst_ni(ast_i.aon_pok),
+        .scan_rst_ni,
+        .scanmode_i,
+        .rst_no(rst_por_aon_n[i])
+      );
+
+      prim_clock_mux2 #(
+        .NoFpgaBufG(1'b1)
+      ) u_rst_por_aon_n_mux (
+        .clk0_i(rst_por_aon_n[i]),
+        .clk1_i(scan_rst_ni),
+        .sel_i(scanmode_i),
+        .clk_o(resets_o.rst_por_aon_n[i])
+      );
+    end else begin : gen_rst_por_aon_tieoff
+      assign rst_por_aon_n[i] = 1'b0;
+      assign resets_o.rst_por_aon_n[i] = rst_por_aon_n[i];
+    end
+  end
+
 
   ////////////////////////////////////////////////////
   // Register Interface                             //
@@ -75,7 +84,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   // local_rst_n is the reset used by the rstmgr for its internal logic
   logic local_rst_n;
-  assign local_rst_n = resets_o.rst_por_io_div2_n;
+  assign local_rst_n = resets_o.rst_por_io_div2_n[DomainAonSel];
 
   rstmgr_reg_pkg::rstmgr_reg2hw_t reg2hw;
   rstmgr_reg_pkg::rstmgr_hw2reg_t hw2reg;
@@ -176,37 +185,43 @@ module rstmgr import rstmgr_pkg::*; (
   // leaf reset in the system                       //
   // These should all be generated                  //
   ////////////////////////////////////////////////////
+  // To simplify generation, each reset generates all associated power domain outputs.
+  // If a reset does not support a particular power domain, that reset is always hard-wired to 0.
 
 % for rst in leaf_rsts:
-  logic rst_${rst['name']}_n;
-
+  logic [PowerDomains-1:0] rst_${rst['name']}_n;
+  % for domain in power_domains:
+    % if domain in rst['domains']:
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_${rst['name']} (
+  ) u_${domain.lower()}_${rst['name']} (
     .clk_i(clk_${rst['clk']}_i),
-  % if "domain" in rst:
-    .rst_ni(rst_${rst['parent']}_n[${rst['domain']}]),
-  % else:
-    .rst_ni(rst_${rst['parent']}_n),
-  % endif
-  % if "sw" in rst:
+    .rst_ni(rst_${rst['parent']}_n[Domain${domain}Sel]),
+      % if "sw" in rst:
     .d_i(sw_rst_ctrl_n[${rst['name'].upper()}]),
-  % else:
+      % else:
     .d_i(1'b1),
-  % endif
-    .q_o(rst_${rst['name']}_n)
+      % endif
+    .q_o(rst_${rst['name']}_n[Domain${domain}Sel])
   );
 
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
-  ) u_${rst['name']}_mux (
-    .clk0_i(rst_${rst['name']}_n),
+  ) u_${domain.lower()}_${rst['name']}_mux (
+    .clk0_i(rst_${rst['name']}_n[Domain${domain}Sel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_${rst['name']}_n)
+    .clk_o(resets_o.rst_${rst['name']}_n[Domain${domain}Sel])
   );
 
+    % else:
+  assign rst_${rst['name']}_n[Domain${domain}Sel] = 1'b0;
+  assign resets_o.rst_${rst['name']}_n[Domain${domain}Sel] = rst_${rst['name']}_n[Domain${domain}Sel];
+
+
+    % endif
+  % endfor
 % endfor
 
   ////////////////////////////////////////////////////
