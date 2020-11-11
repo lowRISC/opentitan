@@ -42,12 +42,12 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
+      name: smoke
       tests: ["prim_prince_test"]
     }
     {
       name: nightly
-      // Run the same test as the "sanity" regression, just with a higher reseed value.
+      // Run the same test as the "smoke" regression, just with a higher reseed value.
       // This higher reseed value is due to the rather large state space created by
       // the 128-bit key and 64-bit data values.
       reseed: 500

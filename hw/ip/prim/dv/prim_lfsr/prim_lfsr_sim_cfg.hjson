@@ -42,7 +42,7 @@
     }
   ]
 
-  // dw_8 is only used for "sanity" sims, so coverage collection is not needed.
+  // dw_8 is only used for "smoke" sims, so coverage collection is not needed.
   prim_lfsr_dw_8_vcs_cov_cfg_file: ""
   prim_lfsr_dw_24_vcs_cov_cfg_file: "-cm_hier {tool_srcs_dir}/prim_lfsr_cover.cfg"
   vcs_cov_assert_cfg_file: "-cm_assert_hier {tool_srcs_dir}/prim_lfsr_cover_assert.cfg"
@@ -53,7 +53,7 @@
   // List of test specifications.
   tests: [
     {
-      name: prim_lfsr_sanity
+      name: prim_lfsr_smoke
       // limit max lfsr length to reduce private CI runtime.
       build_mode: prim_lfsr_dw_8
     }
@@ -66,8 +66,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["prim_lfsr_sanity"]
+      name: smoke
+      tests: ["prim_lfsr_smoke"]
     }
     {
       name: nightly
