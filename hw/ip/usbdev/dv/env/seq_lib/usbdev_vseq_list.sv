@@ -3,5 +3,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "usbdev_base_vseq.sv"
-`include "usbdev_sanity_vseq.sv"
+`include "usbdev_smoke_vseq.sv"
 `include "usbdev_common_vseq.sv"

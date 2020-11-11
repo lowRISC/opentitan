@@ -10,8 +10,8 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
-      name: sanity
-      desc: '''**Goal**: Basic sanity test accessing a major datapath in USBDEV.
+      name: smoke
+      desc: '''**Goal**: Smoke test accessing a major datapath in USBDEV.
 
             **Stimulus**: Describe the stimulus procedure.
 
@@ -22,7 +22,7 @@
 
             Start a new paragraph.'''
       milestone: V1
-      tests: ["usbdev_sanity"]
+      tests: ["usbdev_smoke"]
     }
   ]
 }
