@@ -14,15 +14,15 @@
   entries: [
     {
       // name of the testplan entry - should be unique
-      name: sanity
-      desc: '''Basic FOO sanity test. Describe this test in sufficient detail. You can
-            split the description on multiple lines like this (with 3 single-inverted
-            commas. Note that the subsequent lines are indented right below where the
-            inverted commas start.'''
+      name: smoke
+      desc: '''FOO smoke test. Describe this test in sufficient detail. You can split
+            the description on multiple lines like this (with 3 single-inverted commas.
+            Note that the subsequent lines are indented right below where the inverted
+            commas start.'''
       // milestone for which this test is targeted for - V1, V2 or V3
       milestone: V1
       // tests of actual written tests that maps to this entry
-      tests: ["foo_sanity"]
+      tests: ["foo_smoke"]
     }
     {
       name: feature1

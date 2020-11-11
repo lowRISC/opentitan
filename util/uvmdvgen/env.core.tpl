@@ -28,7 +28,7 @@ filesets:
       - seq_lib/${name}_vseq_list.sv: {is_include_file: true}
       - seq_lib/${name}_base_vseq.sv: {is_include_file: true}
       - seq_lib/${name}_common_vseq.sv: {is_include_file: true}
-      - seq_lib/${name}_sanity_vseq.sv: {is_include_file: true}
+      - seq_lib/${name}_smoke_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 % if has_ral:
