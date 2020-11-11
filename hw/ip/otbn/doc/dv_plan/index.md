@@ -76,7 +76,7 @@ When testing OTBN, we are careful to distinguish between
 - behaviour that is triggered by particular external stimuli (register writes; surprise resets etc.)
 
 Testing lots of different instruction streams doesn't really use the UVM machinery, so we have a "pre-DV" phase of testing that generates constrained-random instruction streams (as ELF binaries) and runs a simple block-level simulation on each to check that the RTL matches the model.
-The idea is that this is much quicker for designers to use to sanity-test proposed changes, and can be run with Verilator, so it doesn't require an EDA tool licence.
+The idea is that this is much quicker for designers to use to smoke-test proposed changes, and can be run with Verilator, so it doesn't require an EDA tool licence.
 This pre-DV phase cannot drive sign-off, but it does use much of the same tooling.
 
 Once we are running full DV tests, we re-use this work, by using the same collection of randomised instruction streams and randomly picking from them for most of the sequences.
@@ -132,7 +132,7 @@ The design RTL contains other assertions defined by the designers, which will be
 
 Tests can be run with [`dvsim.py`]({{< relref "hw/dv/tools/README.md" >}}).
 The link gives details of the tool's features and command line arguments.
-To run a basic sanity test, go to the top of the repository and run:
+To run a basic smoke test, go to the top of the repository and run:
 ```console
 $ util/dvsim/dvsim.py hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson -i otbn_single
 ```
