@@ -49,8 +49,8 @@
   // List of test specifications.
   tests: [
     {
-      name: keymgr_sanity
-      uvm_test_seq: keymgr_sanity_vseq
+      name: keymgr_smoke
+      uvm_test_seq: keymgr_smoke_vseq
     }
 
     {
@@ -69,8 +69,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["keymgr_sanity"]
+      name: smoke
+      tests: ["keymgr_smoke"]
     }
   ]
 }

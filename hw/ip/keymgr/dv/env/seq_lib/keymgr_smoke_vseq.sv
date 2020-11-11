@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// basic sanity test vseq
-class keymgr_sanity_vseq extends keymgr_base_vseq;
-  `uvm_object_utils(keymgr_sanity_vseq)
+// smoke test vseq
+class keymgr_smoke_vseq extends keymgr_base_vseq;
+  `uvm_object_utils(keymgr_smoke_vseq)
   `uvm_object_new
 
   // test op at StReset
@@ -13,7 +13,7 @@ class keymgr_sanity_vseq extends keymgr_base_vseq;
   }
 
   task body();
-    `uvm_info(`gfn, "Key manager sanity check", UVM_HIGH)
+    `uvm_info(`gfn, "Key manager smoke check", UVM_HIGH)
     // check operation at StInit state
     keymgr_operations(.advance_state(0), .num_gen_op(1), .clr_output(1));
     // Advance state until StDisabled. In each state check SW output and clear output
@@ -23,4 +23,4 @@ class keymgr_sanity_vseq extends keymgr_base_vseq;
 
   endtask : body
 
-endclass : keymgr_sanity_vseq
+endclass : keymgr_smoke_vseq
