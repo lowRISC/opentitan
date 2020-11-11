@@ -134,7 +134,7 @@ Tests can be run with [`dvsim.py`]({{< relref "hw/dv/tools/README.md" >}}).
 The link gives details of the tool's features and command line arguments.
 To run a basic sanity test, go to the top of the repository and run:
 ```console
-$ util/dvsim/dvsim.py hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson -i otbn_sanity
+$ util/dvsim/dvsim.py hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson -i otbn_single
 ```
 
 ## Testplan

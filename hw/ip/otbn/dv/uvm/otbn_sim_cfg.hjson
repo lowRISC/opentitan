@@ -65,8 +65,8 @@ name:
   // List of test specifications.
   tests: [
     {
-      name: "otbn_sanity"
-      uvm_test_seq: "otbn_sanity_vseq"
+      name: "otbn_single"
+      uvm_test_seq: "otbn_single_vseq"
     }
 
     // TODO: add more tests here
@@ -75,8 +75,8 @@ name:
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["otbn_sanity"]
+      name: smoke
+      tests: []
     }
   ]
 }

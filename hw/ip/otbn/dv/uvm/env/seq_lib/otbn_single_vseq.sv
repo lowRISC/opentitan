@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// A basic sanity test
-//
-// This loads up an ELF file, lets it run to completion, and then finishes.
+// A basic sequence that loads up an ELF file, lets it run to completion, and then finishes.
 
-class otbn_sanity_vseq extends otbn_base_vseq;
-  `uvm_object_utils(otbn_sanity_vseq)
+class otbn_single_vseq extends otbn_base_vseq;
+  `uvm_object_utils(otbn_single_vseq)
   `uvm_object_new
 
   // Should the ELF file be loaded with a backdoor DPI method, or should we actually generate the
@@ -57,4 +55,4 @@ class otbn_sanity_vseq extends otbn_base_vseq;
     run_otbn();
   endtask : body
 
-endclass : otbn_sanity_vseq
+endclass : otbn_single_vseq
