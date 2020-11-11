@@ -4,5 +4,5 @@
 
 `include "otp_ctrl_base_vseq.sv"
 `include "otp_ctrl_wake_up_vseq.sv"
-`include "otp_ctrl_sanity_vseq.sv"
+`include "otp_ctrl_smoke_vseq.sv"
 `include "otp_ctrl_common_vseq.sv"

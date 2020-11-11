@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// basic sanity test vseq
+// smoke test vseq to walk through DAI states and request keys
 `define PART_ADDR_RANGE(i) \
     {[PartInfo[``i``].offset : (PartInfo[``i``].offset + PartInfo[``i``].size - DIGEST_SIZE - 1)]}
 
-class otp_ctrl_sanity_vseq extends otp_ctrl_base_vseq;
-  `uvm_object_utils(otp_ctrl_sanity_vseq)
+class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
+  `uvm_object_utils(otp_ctrl_smoke_vseq)
 
   `uvm_object_new
 
@@ -106,6 +106,6 @@ class otp_ctrl_sanity_vseq extends otp_ctrl_base_vseq;
     end
   endtask : body
 
-endclass : otp_ctrl_sanity_vseq
+endclass : otp_ctrl_smoke_vseq
 
 `undef PART_ADDR_RANGE
