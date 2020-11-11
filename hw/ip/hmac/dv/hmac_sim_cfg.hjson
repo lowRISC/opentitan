@@ -54,8 +54,8 @@
   // List of test specifications.
   tests: [
     {
-      name: hmac_sanity
-      uvm_test_seq: hmac_sanity_vseq
+      name: hmac_smoke
+      uvm_test_seq: hmac_smoke_vseq
     }
 
     {
@@ -114,8 +114,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["hmac_sanity", "hmac_test_sha_vectors"]
+      name: smoke
+      tests: ["hmac_smoke", "hmac_test_sha_vectors"]
     }
   ]
 }

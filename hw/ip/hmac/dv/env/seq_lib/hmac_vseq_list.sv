@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "hmac_base_vseq.sv"
-`include "hmac_sanity_vseq.sv"
+`include "hmac_smoke_vseq.sv"
 `include "hmac_long_msg_vseq.sv"
 `include "hmac_test_vectors_sha_vseq.sv"
 `include "hmac_test_vectors_hmac_vseq.sv"
