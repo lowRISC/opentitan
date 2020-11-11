@@ -37,7 +37,7 @@ filesets:
       - lowrisc:prim:util
       - lowrisc:prim:ram_1p_adv
       - lowrisc:ip:otbn_pkg
-      - lowrisc:dv:otbn_model
+      - "!tool_ascentlint ? (lowrisc:dv:otbn_model)"
     files:
       - rtl/otbn_reg_pkg.sv
       - rtl/otbn_reg_top.sv
