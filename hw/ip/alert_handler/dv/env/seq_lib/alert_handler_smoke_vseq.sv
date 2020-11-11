@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// basic sanity test vseq
-class alert_handler_sanity_vseq extends alert_handler_base_vseq;
-  `uvm_object_utils(alert_handler_sanity_vseq)
+// basic smoke test vseq
+class alert_handler_smoke_vseq extends alert_handler_base_vseq;
+  `uvm_object_utils(alert_handler_smoke_vseq)
 
   `uvm_object_new
 
@@ -89,7 +89,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
     fork
       begin : isolation_fork
         trigger_non_blocking_seqs();
-        run_sanity_seq();
+        run_smoke_seq();
         disable fork; // disable non-blocking seqs for stress_all tests
       end // end fork
     join
@@ -103,7 +103,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
     run_alert_ping_rsp_seq_nonblocking(alert_ping_timeout);
   endtask
 
-  virtual task run_sanity_seq();
+  virtual task run_smoke_seq();
     `uvm_info(`gfn, $sformatf("num_trans=%0d", num_trans), UVM_LOW)
     for (int i = 1; i <= num_trans; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -184,4 +184,4 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
     end
   endtask
 
-endclass : alert_handler_sanity_vseq
+endclass : alert_handler_smoke_vseq

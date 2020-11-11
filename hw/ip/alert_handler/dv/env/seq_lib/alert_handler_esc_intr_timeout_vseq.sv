@@ -4,7 +4,7 @@
 
 // this sequence triggers escalation by the interrupt timeout
 
-class alert_handler_esc_intr_timeout_vseq extends alert_handler_sanity_vseq;
+class alert_handler_esc_intr_timeout_vseq extends alert_handler_smoke_vseq;
   `uvm_object_utils(alert_handler_esc_intr_timeout_vseq)
 
   `uvm_object_new

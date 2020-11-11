@@ -105,9 +105,9 @@ The alert_handler scoreboard is parameterized to support different number of cla
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
-Here's how to run a basic sanity test:
+Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/$CHIP/ip/alert_handler/dv/alert_handler_sim_cfg.hjson -i alert_handler_sanity
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/$CHIP/ip/alert_handler/dv/alert_handler_sim_cfg.hjson -i alert_handler_smoke
 ```
 In this run command, $CHIP can be top_earlgrey, etc.
 
