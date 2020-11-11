@@ -165,7 +165,7 @@ See [TAP isolation]({{< relref "#tap-isolation" >}}) for more implementation det
 
 ### NVM_DEBUG_EN
 
-NVM modules like Flash implement debug access that bypasses memory protection or lock-down.
+NVM modules like flash implement debug access that bypasses memory protection or lock-down.
 This feature may be there for a variety of reasons, but primarily it can be used to debug the normal behavior of the controller.
 
 This type of functionality, if it exists, must be disabled during specific life cycle states.
@@ -204,8 +204,8 @@ This specifically limits the danger of rogue software images during any TEST_UNL
 
 However, as PROVISION_EN only gates functional access and not DFT access, it is still possible for a malicious agent to bypass this protection by abusing scan shift/capture mechanics.
 
-Note also, PROVISION_EN is a blanket control over all provision related collateral.  Each collateral contains more specific OTP / Flash / Software based decoding that further limits accessibility.
-See the Flash and OTP sections for more details.
+Note also, PROVISION_EN is a blanket control over all provision related collateral.  Each collateral contains more specific OTP / flash / Software based decoding that further limits accessibility.
+See the flash and OTP sections for more details.
 
 ### KEY_MANAGER_EN
 
@@ -298,7 +298,7 @@ In particular, this encoding guards against attacks that manipulate the OTP to o
 Note that the RAW state is guarded by the RAW_UNLOCK process, which involves supplying a 128bit UNLOCK_TOKEN and performing a full system reset in case the token was correct. Hence moving the state into RAW does not provide any advantage to an attacker.
 
 The encoded life cycle state is not readable by SW in any way through the OTP or life cycle interfaces.
-However a decoded version of the manufacturing life cycle is exposed in (**TODO: add ref**) register.
+However a decoded version of the manufacturing life cycle is exposed in the {{< regref "LC_STATE" >}} register.
 
 ### Life Cycle Readout Consistency Checks
 
@@ -316,6 +316,8 @@ The strokes are similarly encoded as the life cycle state in the sense that upon
 
 Upon each life cycle transition attempt, the life cycle controller **FIRST** increments the transition counter before initiating any token hashing and comparison operations.
 
+A decoded version of this counter is exposed in the {{< regref "LC_TRANSITION_CNT" >}} register.
+
 ### Strap Selection
 
 Although technically a life-cycle feature, the sampling of the two strap pins and JTAG muxing is performed in the pinmux after the life-cycle controller has initialized. See pinmux documentation (**TODO: add link**) and detailed selection listed in [Life Cycle Definition Table]({{< relref "doc/security/specs/device_life_cycle/_index.md#manufacturing-states" >}}).
@@ -330,17 +332,16 @@ Life cycle requests are the explicit requests made to change life cycle states.
 The controller allows requests to come from either the TAP or the software interface.
 The interface is common between the two (maintained as external registers).
 To arbitrate between the two, a hardware mutex needs to be obtained before either side can proceed.
-The hardware mutex internally acts as a mux to block off the unselected path.
-All accesses to the request interface are also blocked until a mutex is claimed.
+The hardware mutex internally acts as a mux to block off the unselected path and all accesses to the request interface are blocked until it is claimed.
 If two requests arrive simultaneously, the TAP interface is given priority.
 
-The request interface consists of 4 registers (**TODO: add CSR refs**):
+The request interface consists of 4 registers:
 
-1. Target: Specifies the target state to which the agent wants to transition
-2. Token: Any necessary token for the transition.
-3. Start: Start the life cycle transition
-4. Status: Indicates whether the requested transition succeeded.
-If the transition fails, report the cause.
+1. {{< regref "TRANSITION_TARGET" >}}: Specifies the target state to which the agent wants to transition.
+2. {{< regref "TRANSITION_TOKEN_0" >}}: Any necessary token for conditional transitions.
+3. {{< regref "TRANSITION_CMD" >}}: Start the life cycle transition.
+4. {{< regref "STATUS" >}}: Indicates whether the requested transition succeeded.
+If the transition fails, the cause will be reported in this register as well.
 
 See diagram below
 
@@ -348,7 +349,7 @@ See diagram below
 
 #### Hardware Mutex
 
-In order to claim the hardware mutex, a non-zero value must be written to the claim register (**TODO: add CSR ref**).
+In order to claim the hardware mutex, a non-zero value must be written to the claim register ({{< regref "CLAIM_TRANSITION_IF" >}}).
 If the value written is read back, then the mutex is claimed, and the interface that won arbitration can continue operations.
 If the value is not read back, then the requesting interface should wait and try again later.
 
@@ -435,7 +436,7 @@ The general flash partition refers to any software managed storage in flash, and
 
 #### Flash Accessibility Summary and Impact of PROVISION_EN
 
-At the moment (**TODO: link to Creator / Owner isolation**), the creator software is trusted to manage the owner partitions (OWNER_DATA).
+At the moment (**TODO: link to Creator / Owner isolation**), the creator software is trusted to manage the owner partition (OWNER_DATA).
 As such, there is no additional hardware used to control the accessibility.
 Instead, it is expected that ROM_ext during secure boot programs the protection correctly such that downstream software has appropriate permissions.
 
@@ -483,7 +484,26 @@ This physical separation aids in logical isolation, as the SOC DFT tap can be di
 
 # Programmer's Guide
 
-**TODO: programmers manual**
+The register layout and offsets shown in the [register table]{{< relref "#register-table" >}} below are identical for both the CSR and JTAG TAP interfaces.
+Hence the following programming sequence applies to both SW running on the device and SW running on the test appliance that accesses life cycle through the TAP.
+
+1. In order to perform a life cycle transition, SW should first check whether the life cycle controller has successfully initialized by making sure that the {{< regref "STATUS.READY" >}} bit is set to 1, and that all other status and error bits in {{< regref "STATUS" >}} are set to 0.
+
+2. Read the {{< regref "LC_STATE" >}} and {{< regref "LC_TRANSITION_CNT" >}} registers to determine which life cycle state the device currently is in, and how many transition attempts are still available.
+
+3. Claim exclusive access to the transition interface by writing 1 to the {{< regref "CLAIM_TRANSITION_IF" >}} register, and reading it back. If the value read back equals to 1, the hardware mutex has successfully been claimed and SW can proceed to step 4. If the value read back equals to 0, the mutex has already been claimed by the other interface (either CSR or TAP), and SW should try claiming the mutex again.
+
+4. Write the desired target state to {{< regref "TRANSITION_TARGET" >}}. If the transition is conditional, the corresponding token should be written to {{< regref "TRANSITION_TOKEN_0" >}} as well. An optional, but recommended step is to read back and verify the values written to these registers before proceeding with step 5.
+
+5. Write 1 to the {{< regref "TRANSITION_CMD.START" >}} register to initiate the life cycle transition.
+
+6. Poll the {{< regref "STATUS" >}} register and wait until either {{< regref "STATUS.TRANSITION_SUCCESSFUL" >}} or any of the error bits is asserted.
+
+Note that any life cycle state transition - no matter whether successful or not - increments the LC_TRANSITION_CNT and moves the life cycle state into the temporary POST_TRANSITION state.
+Hence, step 6. cannot be carried out in case device SW is used to implement the programming sequence above, since the processor is disabled in the POST_TRANSITION life cycle state.
+
+This behavior is however not of concern, since access to the transition interface via the CSRs is considered a convenience feature for bringup in the lab.
+It is expected that the JTAG TAP interface is used to access the life cycle transition interface in production settings.
 
 ## Register Table
 
