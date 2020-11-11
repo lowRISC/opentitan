@@ -42,6 +42,16 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for pattgen in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_PATTGEN_BASE_ADDR = 32'h400e0000;
+
+  /**
+   * Peripheral size in bytes for pattgen in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_PATTGEN_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for rv_timer in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_RV_TIMER_BASE_ADDR = 32'h40100000;

@@ -100,8 +100,8 @@ module top_earlgrey #(
 
   // Signals
   logic [31:0] mio_p2d;
-  logic [31:0] mio_d2p;
-  logic [31:0] mio_d2p_en;
+  logic [35:0] mio_d2p;
+  logic [35:0] mio_d2p_en;
   logic [14:0] dio_p2d;
   logic [14:0] dio_d2p;
   logic [14:0] dio_d2p_en;
@@ -119,6 +119,15 @@ module top_earlgrey #(
   logic        cio_spi_device_sdi_p2d;
   logic        cio_spi_device_sdo_d2p;
   logic        cio_spi_device_sdo_en_d2p;
+  // pattgen
+  logic        cio_pattgen_pda0_tx_d2p;
+  logic        cio_pattgen_pda0_tx_en_d2p;
+  logic        cio_pattgen_pcl0_tx_d2p;
+  logic        cio_pattgen_pcl0_tx_en_d2p;
+  logic        cio_pattgen_pda1_tx_d2p;
+  logic        cio_pattgen_pda1_tx_en_d2p;
+  logic        cio_pattgen_pcl1_tx_d2p;
+  logic        cio_pattgen_pcl1_tx_en_d2p;
   // rv_timer
   // sensor_ctrl
   // otp_ctrl
@@ -163,7 +172,7 @@ module top_earlgrey #(
   // otbn
 
 
-  logic [86:0]  intr_vector;
+  logic [88:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -180,6 +189,8 @@ module top_earlgrey #(
   logic intr_spi_device_rxerr;
   logic intr_spi_device_rxoverflow;
   logic intr_spi_device_txunderflow;
+  logic intr_pattgen_done_ch0;
+  logic intr_pattgen_done_ch1;
   logic intr_rv_timer_timer_expired_0_0;
   logic intr_otp_ctrl_otp_operation_done;
   logic intr_otp_ctrl_otp_error;
@@ -339,6 +350,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       otp_ctrl_tl_rsp;
   tlul_pkg::tl_h2d_t       sensor_ctrl_tl_req;
   tlul_pkg::tl_d2h_t       sensor_ctrl_tl_rsp;
+  tlul_pkg::tl_h2d_t       pattgen_tl_req;
+  tlul_pkg::tl_d2h_t       pattgen_tl_rsp;
   rstmgr_pkg::rstmgr_out_t       rstmgr_resets;
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_cpu;
   pwrmgr_pkg::pwr_cpu_t       pwrmgr_pwr_cpu;
@@ -751,6 +764,29 @@ module top_earlgrey #(
       .scanmode_i   (scanmode_i),
       .clk_i (clkmgr_clocks.clk_io_div4_peri),
       .rst_ni (rstmgr_resets.rst_spi_device_n[rstmgr_pkg::Domain0Sel])
+  );
+
+  pattgen u_pattgen (
+
+      // Output
+      .cio_pda0_tx_o    (cio_pattgen_pda0_tx_d2p),
+      .cio_pda0_tx_en_o (cio_pattgen_pda0_tx_en_d2p),
+      .cio_pcl0_tx_o    (cio_pattgen_pcl0_tx_d2p),
+      .cio_pcl0_tx_en_o (cio_pattgen_pcl0_tx_en_d2p),
+      .cio_pda1_tx_o    (cio_pattgen_pda1_tx_d2p),
+      .cio_pda1_tx_en_o (cio_pattgen_pda1_tx_en_d2p),
+      .cio_pcl1_tx_o    (cio_pattgen_pcl1_tx_d2p),
+      .cio_pcl1_tx_en_o (cio_pattgen_pcl1_tx_en_d2p),
+
+      // Interrupt
+      .intr_done_ch0_o (intr_pattgen_done_ch0),
+      .intr_done_ch1_o (intr_pattgen_done_ch1),
+
+      // Inter-module signals
+      .tl_i(pattgen_tl_req),
+      .tl_o(pattgen_tl_rsp),
+      .clk_i (clkmgr_clocks.clk_io_div4_peri),
+      .rst_ni (rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
 
   rv_timer u_rv_timer (
@@ -1314,6 +1350,8 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
+      intr_pattgen_done_ch1,
+      intr_pattgen_done_ch0,
       intr_kmac_kmac_err,
       intr_kmac_fifo_empty,
       intr_kmac_kmac_done,
@@ -1530,16 +1568,28 @@ module top_earlgrey #(
     .tl_ast_wrapper_o(ast_tl_req_o),
     .tl_ast_wrapper_i(ast_tl_rsp_i),
 
+    // port: tl_pattgen
+    .tl_pattgen_o(pattgen_tl_req),
+    .tl_pattgen_i(pattgen_tl_rsp),
+
 
     .scanmode_i
   );
 
   // Pinmux connections
   assign mio_d2p = {
-    cio_gpio_gpio_d2p
+    cio_gpio_gpio_d2p,
+    cio_pattgen_pda0_tx_d2p,
+    cio_pattgen_pcl0_tx_d2p,
+    cio_pattgen_pda1_tx_d2p,
+    cio_pattgen_pcl1_tx_d2p
   };
   assign mio_d2p_en = {
-    cio_gpio_gpio_en_d2p
+    cio_gpio_gpio_en_d2p,
+    cio_pattgen_pda0_tx_en_d2p,
+    cio_pattgen_pcl0_tx_en_d2p,
+    cio_pattgen_pda1_tx_en_d2p,
+    cio_pattgen_pcl1_tx_en_d2p
   };
   assign {
     cio_gpio_gpio_p2d
