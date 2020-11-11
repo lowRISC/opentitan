@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// basic sanity test vseq
-class csrng_sanity_vseq extends csrng_base_vseq;
-  `uvm_object_utils(csrng_sanity_vseq)
+// smoke test vseq
+class csrng_smoke_vseq extends csrng_base_vseq;
+  `uvm_object_utils(csrng_smoke_vseq)
 
   `uvm_object_new
 
@@ -40,4 +40,4 @@ class csrng_sanity_vseq extends csrng_base_vseq;
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
   endtask : body
 
-endclass : csrng_sanity_vseq
+endclass : csrng_smoke_vseq
