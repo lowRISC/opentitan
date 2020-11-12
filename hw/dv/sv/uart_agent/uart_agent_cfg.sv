@@ -14,6 +14,12 @@ class uart_agent_cfg extends dv_base_agent_cfg;
   bit en_parity;
   bit odd_parity;
 
+  // Controls upto what percentage of the clock period the RX is randomly glitched every 1ns.
+  // RX is glitched at the start of the clock to ensure that the design is robust enough to sample
+  // the correct value (typically at the center of the clock). The recommended range for this value
+  // is 0-10%.
+  local uint uart_period_glitch_pct = 10;
+
   // Logger settings.
   bit en_logger           = 1'b0; // enable logger on tx
   bit use_rx_for_logger   = 1'b0; // use rx instead of tx
@@ -41,9 +47,19 @@ class uart_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int(en_parity,     UVM_DEFAULT)
     `uvm_field_int(odd_parity,    UVM_DEFAULT)
     `uvm_field_enum(baud_rate_e, baud_rate, UVM_DEFAULT)
+    `uvm_field_int(uart_period_glitch_pct, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
+
+  function void set_uart_period_glitch_pct(uint pct);
+    `DV_CHECK_LT_FATAL(pct, 20)
+    uart_period_glitch_pct = pct;
+  endfunction
+
+  function uint get_uart_period_glitch_pct();
+    return uart_period_glitch_pct;
+  endfunction
 
   function void set_baud_rate(baud_rate_e b);
     baud_rate = b;

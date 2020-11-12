@@ -16,6 +16,9 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   rand bit odd_parity;        // enable odd parity
   rand bit en_noise_filter;   // enable noise filter
 
+  // glitch control
+  rand uint uart_period_glitch_pct;
+
   // enable interrupts
   rand bit [NumUartIntr-1:0] en_intr;
 
@@ -25,7 +28,17 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   // various knobs to enable certain routines
   bit do_interrupt      = 1'b1;
 
+  constraint uart_period_glitch_pct_c {
+    uart_period_glitch_pct inside {[0:10]};
+  }
+
   constraint baud_rate_c {
+    // when the uart frequency is very close to core freq, disable noise filter and glitch,
+    // otherwise, not enough timing margin to predict status correctly in scb
+    if (baud_rate == BaudRate1p5Mbps && p_sequencer.cfg.clk_freq_mhz == ClkFreq24Mhz) {
+      en_noise_filter == 0;
+      uart_period_glitch_pct == 0;
+    }
     // constrain nco not over nco.get_n_bits
     `CALC_NCO(baud_rate, p_sequencer.cfg.ral.ctrl.nco.get_n_bits(),
         p_sequencer.cfg.clk_freq_mhz) < 2 ** p_sequencer.cfg.ral.ctrl.nco.get_n_bits();
@@ -55,6 +68,9 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   // setup basic uart features
   virtual task uart_init();
     int nco = get_nco(baud_rate, cfg.clk_freq_mhz, ral.ctrl.nco.get_n_bits());
+
+    cfg.m_uart_agent_cfg.set_uart_period_glitch_pct(uart_period_glitch_pct);
+
     // cfg uart agent to set the baud rate & parity
     cfg.m_uart_agent_cfg.set_baud_rate(baud_rate);
     cfg.m_uart_agent_cfg.set_parity(en_parity, odd_parity);
