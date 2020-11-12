@@ -43,7 +43,7 @@ Documentation | [DOC_INTERFACE][]       | Done        |
 Documentation | [MISSING_FUNC][]        | N/A         |
 Documentation | [FEATURE_FROZEN][]      | Done        |
 RTL           | [FEATURE_COMPLETE][]    | Done        |
-RTL           | [AREA_SANITY_CHECK][]   | Done        |
+RTL           | [AREA_CHECK][]          | Done        |
 RTL           | [PORT_FROZEN][]         | Done        | Interrupt port was revised.
 RTL           | [ARCHITECTURE_FROZEN][] | Done        | Livestream was added
 RTL           | [REVIEW_TODO][]         | Done        | Removed irrelevant TODOs and create [#761][]
@@ -65,7 +65,7 @@ Security      | [SEC_RND_CNST][]        | Not Started |
 [MISSING_FUNC]:        {{<relref "/doc/project/checklist.md#missing_func" >}}
 [FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature_frozen" >}}
 [FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature_complete" >}}
-[AREA_SANITY_CHECK]:   {{<relref "/doc/project/checklist.md#area_sanity_check" >}}
+[AREA_CHECK]:          {{<relref "/doc/project/checklist.md#area_check" >}}
 [PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port_frozen" >}}
 [ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture_frozen" >}}
 [REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review_todo" >}}

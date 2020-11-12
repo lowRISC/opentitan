@@ -49,7 +49,7 @@ Documentation | [DOC_INTERFACE][]       | Done        |
 Documentation | [MISSING_FUNC][]        | N/A         |
 Documentation | [FEATURE_FROZEN][]      | Done        |
 RTL           | [FEATURE_COMPLETE][]    | Done        |
-RTL           | [AREA_SANITY_CHECK][]   | Done        | Area Sanity Check Done (on FPGA)
+RTL           | [AREA_CHECK][]          | Done        | Area Sanity Check Done (on FPGA)
 RTL           | [PORT_FROZEN][]         | Done        |
 RTL           | [ARCHITECTURE_FROZEN][] | Done        |
 RTL           | [REVIEW_TODO][]         | Done        | Minor TODOs remain, waived
@@ -69,7 +69,7 @@ Security      | [SEC_RND_CNST][]        | Not Started |
 [MISSING_FUNC]:        {{<relref "/doc/project/checklist.md#missing_func" >}}
 [FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature_frozen" >}}
 [FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature_complete" >}}
-[AREA_SANITY_CHECK]:   {{<relref "/doc/project/checklist.md#area_sanity_check" >}}
+[AREA_CHECK]:          {{<relref "/doc/project/checklist.md#area_check" >}}
 [PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port_frozen" >}}
 [ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture_frozen" >}}
 [REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review_todo" >}}
