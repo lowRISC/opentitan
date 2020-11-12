@@ -20,7 +20,7 @@
 
             '''
       milestone: V1
-      tests: []
+      tests: ["otbn_smoke"]
     }
     {
       name: single_binary

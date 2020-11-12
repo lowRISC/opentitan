@@ -18,11 +18,22 @@ class otbn_single_vseq extends otbn_base_vseq;
   }
 
   task body();
+    string elf_path = pick_elf_path();
+
+    // Actually load the binary
+    `uvm_info(`gfn, $sformatf("|-- Loading binary from `%0s'", elf_path), UVM_MEDIUM)
+    load_elf(elf_path, do_backdoor_load);
+
+    // We've loaded the binary. Run the processor to see what happens!
+    run_otbn();
+  endtask : body
+
+  virtual protected function string pick_elf_path();
     chandle helper;
     int     num_files;
     string  elf_path;
 
-    // Sanity check to make sure that cfg.otbn_elf_dir was set by the test
+    // Check that cfg.otbn_elf_dir was set by the test
     `DV_CHECK_FATAL(cfg.otbn_elf_dir.len() > 0);
 
     // Pick an ELF file to use in the test. We have to do this via DPI (because you can't list a
@@ -43,16 +54,14 @@ class otbn_single_vseq extends otbn_base_vseq;
     elf_path = OtbnTestHelperGetFilePath(helper, $urandom_range(num_files - 1));
     `DV_CHECK_FATAL(elf_path.len() > 0, "Bad index for ELF file")
 
-    // Actually load the binary
-    `uvm_info(`gfn, $sformatf("|-- Loading binary from `%0s'", elf_path), UVM_MEDIUM)
-    load_elf(elf_path, do_backdoor_load);
+    // Use sformat in a trivial way to take a copy of the string, so we can safely free helper (and
+    // hence the old elf_path) afterwards.
+    elf_path = $sformatf("%0s", elf_path);
 
-    // At this point, we won't use elf_path again, so we can safely free the test helper which was
-    // maintaining its memory.
+    // Now that we've taken a copy of elf_path, we can safely free the test helper.
     OtbnTestHelperFree(helper);
 
-    // We've loaded the binary. Run the processor to see what happens!
-    run_otbn();
-  endtask : body
+    return elf_path;
+  endfunction
 
 endclass : otbn_single_vseq

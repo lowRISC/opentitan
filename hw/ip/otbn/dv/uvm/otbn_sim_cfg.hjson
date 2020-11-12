@@ -65,6 +65,10 @@ name:
   // List of test specifications.
   tests: [
     {
+      name: "otbn_smoke"
+      uvm_test_seq: "otbn_smoke_vseq"
+    }
+    {
       name: "otbn_single"
       uvm_test_seq: "otbn_single_vseq"
     }
@@ -76,7 +80,7 @@ name:
   regressions: [
     {
       name: smoke
-      tests: []
+      tests: ["otbn_smoke"]
     }
   ]
 }
