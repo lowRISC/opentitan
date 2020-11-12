@@ -108,8 +108,8 @@ module otbn_alu_bignum
   assign ispr_update_flags_en = (ispr_base_wr_en_i[0] & (ispr_addr_i == IsprFlags));
 
 
-  `ASSERT(UpdateFlagsOnehot, $onehot0({adder_update_flags_en, logic_update_flags_en,
-                                       ispr_update_flags_en}))
+  `ASSERT(UpdateFlagsOnehot,
+          $onehot0({adder_update_flags_en, logic_update_flags_en, ispr_update_flags_en}))
 
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_groups
     always_ff @(posedge clk_i or negedge rst_ni) begin
