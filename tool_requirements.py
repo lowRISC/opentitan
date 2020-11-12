@@ -9,5 +9,5 @@ __TOOL_REQUIREMENTS__ = {
     'hugo_extended': '0.71.0',
     'ninja-build': '1.8.2',
     'verible': '0.0-520-g650c6cc',
-    'verilator': '4.040',
+    'verilator': '4.102',
 }
