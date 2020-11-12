@@ -74,7 +74,7 @@ module keymgr import keymgr_pkg::*; #(
   // have more bits than the lfsr output, the lfsr value is simply replicated
 
   logic [63:0] lfsr;
-  logic lfsr_en;
+  logic ctrl_lfsr_en, data_lfsr_en, sideload_lfsr_en;
 
   prim_lfsr #(
     .LfsrDw(64),
@@ -82,7 +82,7 @@ module keymgr import keymgr_pkg::*; #(
   ) u_lfsr (
     .clk_i,
     .rst_ni,
-    .lfsr_en_i(lfsr_en),
+    .lfsr_en_i(ctrl_lfsr_en | data_lfsr_en | sideload_lfsr_en),
     .seed_en_i(1'b0),
     .seed_i('0),
     .entropy_i('0), // TBD, this should be hooked up to an entropy distribution pkg
@@ -113,7 +113,7 @@ module keymgr import keymgr_pkg::*; #(
     .clk_i,
     .rst_ni,
     .keymgr_en_i(lc_i.keymgr_en),
-    .prng_en_o(lfsr_en),
+    .prng_en_o(ctrl_lfsr_en),
     .entropy_i(lfsr[63:32]),  // TBD, recommend directly interfacing with DRBG for keymgr_ctrl
     .init_i(reg2hw.control.init.q),
     .init_done_o(init_done),
@@ -257,6 +257,7 @@ module keymgr import keymgr_pkg::*; #(
   keymgr_kmac_if u_kmac_if (
     .clk_i,
     .rst_ni,
+    .prng_en_o(data_lfsr_en),
     .adv_data_i(adv_matrix[stage_sel]),
     .id_data_i(id_matrix[stage_sel]),
     .gen_data_i(gen_in),
@@ -279,45 +280,22 @@ module keymgr import keymgr_pkg::*; #(
   /////////////////////////////////////
   //  Side load key storage
   /////////////////////////////////////
-  keymgr_key_dest_e dest_sel;
-  logic aes_sel, hmac_sel, kmac_sel;
-
-  assign dest_sel = keymgr_key_dest_e'(reg2hw.control.dest_sel);
-  assign aes_sel  = dest_sel == Aes  & key_sel == HwKey;
-  assign hmac_sel = dest_sel == Hmac & key_sel == HwKey;
-  assign kmac_sel = dest_sel == Kmac & key_sel == HwKey;
-
-  keymgr_sideload_key u_aes_key (
+  keymgr_sideload_key_ctrl u_sideload_ctrl(
     .clk_i,
     .rst_ni,
-    .keymgr_en_i(lc_i.keymgr_en),
-    .set_i(data_valid & aes_sel),
-    .clr_i(lc_i.keymgr_en), // TBD, should add an option for software clear later
-    .entropy_i(lfsr[31:0]), //TBD, recommend directly interfacign with DRBG entropy for keys
-    .key_i(kmac_data),
-    .key_o(aes_key_o)
-  );
-
-  keymgr_sideload_key u_hmac_key (
-    .clk_i,
-    .rst_ni,
-    .keymgr_en_i(lc_i.keymgr_en),
-    .set_i(data_valid & hmac_sel),
-    .clr_i(lc_i.keymgr_en), // TBD, should add an option for software clear later
-    .entropy_i(lfsr[31:0]),
-    .key_i(kmac_data),
-    .key_o(hmac_key_o)
-  );
-
-  keymgr_sideload_key u_kmac_key (
-    .clk_i,
-    .rst_ni,
-    .keymgr_en_i(lc_i.keymgr_en),
-    .set_i(load_key | (data_valid & kmac_sel)),
-    .clr_i(~lc_i.keymgr_en), // TBD, should add an option for software clear later
-    .entropy_i(lfsr[31:0]),
-    .key_i(load_key ? kmac_key : kmac_data),
-    .key_o(kmac_key_o)
+    .en_i(lc_i.keymgr_en),
+    .init_i(init_done),
+    .entropy_i(lfsr[63:32]),
+    .dest_sel_i(keymgr_key_dest_e'(reg2hw.control.dest_sel)),
+    .key_sel_i(key_sel),
+    .load_key_i(load_key),
+    .data_valid_i(data_valid),
+    .key_i(kmac_key),
+    .data_i(kmac_data),
+    .prng_en_o(sideload_lfsr_en),
+    .aes_key_o(aes_key_o),
+    .hmac_key_o(hmac_key_o),
+    .kmac_key_o(kmac_key_o)
   );
 
   for (genvar i = 0; i < 8; i++) begin : gen_sw_assigns
@@ -434,13 +412,6 @@ module keymgr import keymgr_pkg::*; #(
     .alert_rx_i(alert_rx_i[1]),
     .alert_tx_o(alert_tx_o[1])
   );
-
-  /////////////////////////////////////
-  //  Assertions
-  /////////////////////////////////////
-
-  // Only 1 entity should be trying to use the secret kmac key input
-  `ASSERT(KmacKeyLoadExclusive_a, $onehot0({load_key, data_valid & kmac_sel}))
 
   // known asserts
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
