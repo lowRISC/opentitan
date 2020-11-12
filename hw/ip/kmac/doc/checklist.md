@@ -112,23 +112,23 @@ Review        | Signoff date            |             |
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Not Started |
 Documentation | [TESTPLAN_COMPLETED][]                | Not Started |
-Testbench     | [TB_TOP_CREATED][]                    | Not Started |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
-Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
-Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Not Started |
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
-Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
+Testbench     | [TB_TOP_CREATED][]                    | Done        |
+Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
+Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
+Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done        |
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        |
+Testbench     | [TB_GEN_AUTOMATED][]                  | Done        |
 Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
-Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started |
-Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
+Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        |
+Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Done        |
 Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
 Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
 Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
-Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
+Regression    | [FPV_REGRESSION_SETUP][]              | Done        |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
-Code Quality  | [TB_LINT_SETUP][]                     | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
-Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
+Code Quality  | [TB_LINT_SETUP][]                     | Done        |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Done        |
+Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
 Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Not Started |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started |
 Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
