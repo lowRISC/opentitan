@@ -49,7 +49,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_GPIO_BASE_ADDR 0x40010000u
+#define TOP_EARLGREY_GPIO_BASE_ADDR 0x40040000u
 
 /**
  * Peripheral size for gpio in top earlgrey.
@@ -67,7 +67,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SPI_DEVICE_BASE_ADDR 0x40020000u
+#define TOP_EARLGREY_SPI_DEVICE_BASE_ADDR 0x40050000u
 
 /**
  * Peripheral size for spi_device in top earlgrey.
@@ -80,30 +80,12 @@ extern "C" {
 #define TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for flash_ctrl in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_FLASH_CTRL_BASE_ADDR 0x40030000u
-
-/**
- * Peripheral size for flash_ctrl in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_FLASH_CTRL_BASE_ADDR and
- * `TOP_EARLGREY_FLASH_CTRL_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_FLASH_CTRL_SIZE_BYTES 0x1000u
-
-/**
  * Peripheral base address for rv_timer in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RV_TIMER_BASE_ADDR 0x40080000u
+#define TOP_EARLGREY_RV_TIMER_BASE_ADDR 0x40100000u
 
 /**
  * Peripheral size for rv_timer in top earlgrey.
@@ -116,12 +98,192 @@ extern "C" {
 #define TOP_EARLGREY_RV_TIMER_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for sensor_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR 0x40110000u
+
+/**
+ * Peripheral size for sensor_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR and
+ * `TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR + TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for otp_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_OTP_CTRL_BASE_ADDR 0x40130000u
+
+/**
+ * Peripheral size for otp_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_OTP_CTRL_BASE_ADDR and
+ * `TOP_EARLGREY_OTP_CTRL_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_OTP_CTRL_SIZE_BYTES 0x4000u
+
+/**
+ * Peripheral base address for pwrmgr in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_PWRMGR_BASE_ADDR 0x40400000u
+
+/**
+ * Peripheral size for pwrmgr in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_PWRMGR_BASE_ADDR and
+ * `TOP_EARLGREY_PWRMGR_BASE_ADDR + TOP_EARLGREY_PWRMGR_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_PWRMGR_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for rstmgr in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RSTMGR_BASE_ADDR 0x40410000u
+
+/**
+ * Peripheral size for rstmgr in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_RSTMGR_BASE_ADDR and
+ * `TOP_EARLGREY_RSTMGR_BASE_ADDR + TOP_EARLGREY_RSTMGR_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_RSTMGR_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for clkmgr in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_CLKMGR_BASE_ADDR 0x40420000u
+
+/**
+ * Peripheral size for clkmgr in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_CLKMGR_BASE_ADDR and
+ * `TOP_EARLGREY_CLKMGR_BASE_ADDR + TOP_EARLGREY_CLKMGR_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_CLKMGR_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for pinmux in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_PINMUX_BASE_ADDR 0x40460000u
+
+/**
+ * Peripheral size for pinmux in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_PINMUX_BASE_ADDR and
+ * `TOP_EARLGREY_PINMUX_BASE_ADDR + TOP_EARLGREY_PINMUX_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_PINMUX_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for padctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_PADCTRL_BASE_ADDR 0x40470000u
+
+/**
+ * Peripheral size for padctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_PADCTRL_BASE_ADDR and
+ * `TOP_EARLGREY_PADCTRL_BASE_ADDR + TOP_EARLGREY_PADCTRL_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_PADCTRL_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for usbdev in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_USBDEV_BASE_ADDR 0x40500000u
+
+/**
+ * Peripheral size for usbdev in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_USBDEV_BASE_ADDR and
+ * `TOP_EARLGREY_USBDEV_BASE_ADDR + TOP_EARLGREY_USBDEV_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_USBDEV_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for flash_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_FLASH_CTRL_BASE_ADDR 0x41000000u
+
+/**
+ * Peripheral size for flash_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_FLASH_CTRL_BASE_ADDR and
+ * `TOP_EARLGREY_FLASH_CTRL_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_FLASH_CTRL_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for rv_plic in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RV_PLIC_BASE_ADDR 0x41010000u
+
+/**
+ * Peripheral size for rv_plic in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_RV_PLIC_BASE_ADDR and
+ * `TOP_EARLGREY_RV_PLIC_BASE_ADDR + TOP_EARLGREY_RV_PLIC_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_RV_PLIC_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for aes in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_AES_BASE_ADDR 0x40110000u
+#define TOP_EARLGREY_AES_BASE_ADDR 0x41100000u
 
 /**
  * Peripheral size for aes in top earlgrey.
@@ -139,7 +301,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_HMAC_BASE_ADDR 0x40120000u
+#define TOP_EARLGREY_HMAC_BASE_ADDR 0x41110000u
 
 /**
  * Peripheral size for hmac in top earlgrey.
@@ -170,192 +332,12 @@ extern "C" {
 #define TOP_EARLGREY_KMAC_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for rv_plic in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_RV_PLIC_BASE_ADDR 0x40090000u
-
-/**
- * Peripheral size for rv_plic in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_RV_PLIC_BASE_ADDR and
- * `TOP_EARLGREY_RV_PLIC_BASE_ADDR + TOP_EARLGREY_RV_PLIC_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_RV_PLIC_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for pinmux in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_PINMUX_BASE_ADDR 0x40070000u
-
-/**
- * Peripheral size for pinmux in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_PINMUX_BASE_ADDR and
- * `TOP_EARLGREY_PINMUX_BASE_ADDR + TOP_EARLGREY_PINMUX_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_PINMUX_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for padctrl in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_PADCTRL_BASE_ADDR 0x40160000u
-
-/**
- * Peripheral size for padctrl in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_PADCTRL_BASE_ADDR and
- * `TOP_EARLGREY_PADCTRL_BASE_ADDR + TOP_EARLGREY_PADCTRL_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_PADCTRL_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for alert_handler in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0x411b0000u
-
-/**
- * Peripheral size for alert_handler in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR and
- * `TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR + TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for pwrmgr in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_PWRMGR_BASE_ADDR 0x400A0000u
-
-/**
- * Peripheral size for pwrmgr in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_PWRMGR_BASE_ADDR and
- * `TOP_EARLGREY_PWRMGR_BASE_ADDR + TOP_EARLGREY_PWRMGR_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_PWRMGR_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for rstmgr in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_RSTMGR_BASE_ADDR 0x400B0000u
-
-/**
- * Peripheral size for rstmgr in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_RSTMGR_BASE_ADDR and
- * `TOP_EARLGREY_RSTMGR_BASE_ADDR + TOP_EARLGREY_RSTMGR_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_RSTMGR_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for clkmgr in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_CLKMGR_BASE_ADDR 0x400C0000u
-
-/**
- * Peripheral size for clkmgr in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_CLKMGR_BASE_ADDR and
- * `TOP_EARLGREY_CLKMGR_BASE_ADDR + TOP_EARLGREY_CLKMGR_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_CLKMGR_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for nmi_gen in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_NMI_GEN_BASE_ADDR 0x411c0000u
-
-/**
- * Peripheral size for nmi_gen in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_NMI_GEN_BASE_ADDR and
- * `TOP_EARLGREY_NMI_GEN_BASE_ADDR + TOP_EARLGREY_NMI_GEN_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_NMI_GEN_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for usbdev in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_USBDEV_BASE_ADDR 0x40150000u
-
-/**
- * Peripheral size for usbdev in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_USBDEV_BASE_ADDR and
- * `TOP_EARLGREY_USBDEV_BASE_ADDR + TOP_EARLGREY_USBDEV_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_USBDEV_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for sensor_ctrl in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR 0x40170000u
-
-/**
- * Peripheral size for sensor_ctrl in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR and
- * `TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR + TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES 0x1000u
-
-/**
  * Peripheral base address for keymgr in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_KEYMGR_BASE_ADDR 0x401a0000u
+#define TOP_EARLGREY_KEYMGR_BASE_ADDR 0x41130000u
 
 /**
  * Peripheral size for keymgr in top earlgrey.
@@ -366,24 +348,6 @@ extern "C" {
  * `TOP_EARLGREY_KEYMGR_BASE_ADDR + TOP_EARLGREY_KEYMGR_SIZE_BYTES`.
  */
 #define TOP_EARLGREY_KEYMGR_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for otp_ctrl in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_OTP_CTRL_BASE_ADDR 0x401b0000u
-
-/**
- * Peripheral size for otp_ctrl in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_OTP_CTRL_BASE_ADDR and
- * `TOP_EARLGREY_OTP_CTRL_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_OTP_CTRL_SIZE_BYTES 0x4000u
 
 /**
  * Peripheral base address for csrng in top earlgrey.
@@ -458,12 +422,48 @@ extern "C" {
 #define TOP_EARLGREY_EDN1_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for alert_handler in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0x411b0000u
+
+/**
+ * Peripheral size for alert_handler in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR and
+ * `TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR + TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for nmi_gen in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_NMI_GEN_BASE_ADDR 0x411c0000u
+
+/**
+ * Peripheral size for nmi_gen in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_NMI_GEN_BASE_ADDR and
+ * `TOP_EARLGREY_NMI_GEN_BASE_ADDR + TOP_EARLGREY_NMI_GEN_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_NMI_GEN_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for otbn in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_OTBN_BASE_ADDR 0x50000000u
+#define TOP_EARLGREY_OTBN_BASE_ADDR 0x411d0000u
 
 /**
  * Peripheral size for otbn in top earlgrey.

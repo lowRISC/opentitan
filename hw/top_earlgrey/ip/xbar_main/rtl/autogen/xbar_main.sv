@@ -567,15 +567,7 @@ end
       ((tl_s1n_28_us_h2d.a_address <= (ADDR_MASK_PERI[1] + ADDR_SPACE_PERI[1])) &&
        (tl_s1n_28_us_h2d.a_address >= ADDR_SPACE_PERI[1])) ||
       ((tl_s1n_28_us_h2d.a_address <= (ADDR_MASK_PERI[2] + ADDR_SPACE_PERI[2])) &&
-       (tl_s1n_28_us_h2d.a_address >= ADDR_SPACE_PERI[2])) ||
-      ((tl_s1n_28_us_h2d.a_address <= (ADDR_MASK_PERI[3] + ADDR_SPACE_PERI[3])) &&
-       (tl_s1n_28_us_h2d.a_address >= ADDR_SPACE_PERI[3])) ||
-      ((tl_s1n_28_us_h2d.a_address <= (ADDR_MASK_PERI[4] + ADDR_SPACE_PERI[4])) &&
-       (tl_s1n_28_us_h2d.a_address >= ADDR_SPACE_PERI[4])) ||
-      ((tl_s1n_28_us_h2d.a_address <= (ADDR_MASK_PERI[5] + ADDR_SPACE_PERI[5])) &&
-       (tl_s1n_28_us_h2d.a_address >= ADDR_SPACE_PERI[5])) ||
-      ((tl_s1n_28_us_h2d.a_address <= (ADDR_MASK_PERI[6] + ADDR_SPACE_PERI[6])) &&
-       (tl_s1n_28_us_h2d.a_address >= ADDR_SPACE_PERI[6]))
+       (tl_s1n_28_us_h2d.a_address >= ADDR_SPACE_PERI[2]))
     ) begin
       dev_sel_s1n_28 = 5'd4;
 
@@ -643,15 +635,7 @@ end
       ((tl_s1n_45_us_h2d.a_address <= (ADDR_MASK_PERI[1] + ADDR_SPACE_PERI[1])) &&
        (tl_s1n_45_us_h2d.a_address >= ADDR_SPACE_PERI[1])) ||
       ((tl_s1n_45_us_h2d.a_address <= (ADDR_MASK_PERI[2] + ADDR_SPACE_PERI[2])) &&
-       (tl_s1n_45_us_h2d.a_address >= ADDR_SPACE_PERI[2])) ||
-      ((tl_s1n_45_us_h2d.a_address <= (ADDR_MASK_PERI[3] + ADDR_SPACE_PERI[3])) &&
-       (tl_s1n_45_us_h2d.a_address >= ADDR_SPACE_PERI[3])) ||
-      ((tl_s1n_45_us_h2d.a_address <= (ADDR_MASK_PERI[4] + ADDR_SPACE_PERI[4])) &&
-       (tl_s1n_45_us_h2d.a_address >= ADDR_SPACE_PERI[4])) ||
-      ((tl_s1n_45_us_h2d.a_address <= (ADDR_MASK_PERI[5] + ADDR_SPACE_PERI[5])) &&
-       (tl_s1n_45_us_h2d.a_address >= ADDR_SPACE_PERI[5])) ||
-      ((tl_s1n_45_us_h2d.a_address <= (ADDR_MASK_PERI[6] + ADDR_SPACE_PERI[6])) &&
-       (tl_s1n_45_us_h2d.a_address >= ADDR_SPACE_PERI[6]))
+       (tl_s1n_45_us_h2d.a_address >= ADDR_SPACE_PERI[2]))
     ) begin
       dev_sel_s1n_45 = 5'd3;
 

@@ -566,9 +566,9 @@ module rstmgr import rstmgr_pkg::*; (
   ////////////////////////////////////////////////////
   // Exported resets                                //
   ////////////////////////////////////////////////////
+  assign resets_ast_o.rst_ast_sensor_ctrl_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
   assign resets_ast_o.rst_ast_usbdev_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
   assign resets_ast_o.rst_ast_usbdev_usb_n = resets_o.rst_usb_n;
-  assign resets_ast_o.rst_ast_sensor_ctrl_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
 
   ////////////////////////////////////////////////////
   // Crash info capture                             //
