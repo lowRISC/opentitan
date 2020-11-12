@@ -371,9 +371,16 @@ top_optional = {
     'no_auto_intr_regs': [
         's', "Set to true to suppress automatic "
         "generation of interrupt registers. "
-        "Defaults to false if not present."
+        "Defaults to true if no interrupt_list is present. "
+        "Otherwise this defaults to false. "
     ],
     'alert_list': ['lnw', "list of peripheral alerts"],
+    'no_auto_alert_regs': [
+        's', "Set to true to suppress automatic "
+        "generation of alert test registers. "
+        "Defaults to true if no alert_list is present. "
+        "Otherwise this defaults to false. "
+    ],
     'wakeup_list': ['lnw', "list of peripheral wakeups"],
     'regwidth': ['d', "width of registers in bits (default 32)"],
     'param_list': ['lp', "list of parameters of the IP"],
@@ -1666,7 +1673,10 @@ def validate(regs, **kwargs):
         if err:
             error += 1
     else:
-        no_auto_intr = False
+        if 'interrupt_list' not in regs:
+            no_auto_intr = True
+        else:
+            no_auto_intr = False
 
     if 'no_auto_alert_regs' in regs:
         no_auto_alerts, err = check_bool(regs['no_auto_alert_regs'],
@@ -1674,7 +1684,10 @@ def validate(regs, **kwargs):
         if err:
             error += 1
     else:
-        no_auto_alerts = False
+        if 'alert_list' not in regs:
+            no_auto_alerts = True
+        else:
+            no_auto_alerts = False
 
     if 'interrupt_list' in regs and 'genautoregs' not in regs and not no_auto_intr:
         iregs, err = make_intr_regs(regs, offset, addrsep, fullwidth)
