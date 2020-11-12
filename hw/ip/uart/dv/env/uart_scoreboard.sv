@@ -43,8 +43,6 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   // and it also takes 3 cycles to trigger tx matermark interrupt
   parameter uint NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK = 3;
 
-  bit obj_raised = 1'b0;
-
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -193,6 +191,10 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     case (csr.get_name())
       "ctrl": begin
         if (write && channel == AddrChannel) begin
+          if (cfg.en_cov) begin
+            cov.baud_rate_w_core_clk_cg.sample(cfg.m_uart_agent_cfg.baud_rate, cfg.clk_freq_mhz);
+          end
+
           tx_enabled = ral.ctrl.tx.get_mirrored_value();
           rx_enabled = ral.ctrl.rx.get_mirrored_value();
 

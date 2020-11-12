@@ -19,7 +19,7 @@ const uint64_t kClockFreqPeripheralHz = 24 * 1000 * 1000;  // 24MHz
 
 const uint64_t kClockFreqUsbHz = 48 * 1000 * 1000;  // 48MHz
 
-const uint64_t kUartBaudrate = 1 * (1 << 20);  // 1Mbps
+const uint64_t kUartBaudrate = 1 * 1000 * 1000;  // 1Mbps
 
 // Defined in `hw/top_earlgrey/dv/env/chip_env_pkg.sv`
 const uintptr_t kDeviceTestStatusAddress = 0x30000000;

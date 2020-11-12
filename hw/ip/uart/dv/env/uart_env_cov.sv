@@ -14,9 +14,21 @@ class uart_env_cov extends cip_base_env_cov #(.CFG_T(uart_env_cfg));
     cross cp_dir, cp_lvl, cp_rst;
   endgroup
 
+  // Cover all combinations of 2 different clocks
+  covergroup baud_rate_w_core_clk_cg with function sample(baud_rate_e baud_rate,
+                                                          clk_freq_mhz_e clk_freq);
+    cp_baud_rate: coverpoint baud_rate;
+    cp_clk_freq:  coverpoint clk_freq;
+    cross cp_baud_rate, cp_clk_freq {
+      ignore_bins unsupported = binsof(cp_baud_rate) intersect {BaudRate1p5Mbps} &&
+                                binsof(cp_clk_freq)  intersect {ClkFreq24Mhz};
+    }
+  endgroup
+
   function new(string name, uvm_component parent);
     super.new(name, parent);
     fifo_level_cg = new();
+    baud_rate_w_core_clk_cg = new();
   endfunction : new
 
 endclass
