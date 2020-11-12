@@ -82,7 +82,8 @@ class IrqTest : public PlicTest {
     for (const auto &reg : kEnableRegisters) {
       number_of_sources += (reg.last_bit + 1);
     }
-    EXPECT_EQ(RV_PLIC_PARAM_NUMSRC, number_of_sources);
+    EXPECT_EQ(RV_PLIC_PARAM_NUMSRC, number_of_sources)
+        << "make sure to update the IrqTest register arrays!";
 
     EXPECT_EQ(RV_PLIC_PARAM_NUMTARGET, 1);
   }
