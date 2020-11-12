@@ -15,6 +15,7 @@ filesets:
     files:
       - rtl/keymgr_reg_pkg.sv
       - rtl/keymgr_reg_top.sv
+      - rtl/keymgr_sideload_key_ctrl.sv
       - rtl/keymgr_sideload_key.sv
       - rtl/keymgr_ctrl.sv
       - rtl/keymgr_cfg_en.sv
