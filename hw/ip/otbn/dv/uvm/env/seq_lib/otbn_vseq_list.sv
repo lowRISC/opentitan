@@ -5,3 +5,4 @@
 `include "otbn_base_vseq.sv"
 `include "otbn_common_vseq.sv"
 `include "otbn_single_vseq.sv"
+`include "otbn_smoke_vseq.sv"
