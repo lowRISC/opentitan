@@ -82,9 +82,9 @@ Feature requests for this IP version are frozen at this time.
 
 All features specified have been completed.
 
-### AREA_SANITY_CHECK
+### AREA_CHECK
 
-Area sanity check completed either on FPGA or on Design Compiler.
+Area check completed either on FPGA or on Design Compiler.
 
 ### PORT_FROZEN
 
