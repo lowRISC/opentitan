@@ -30,6 +30,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   input kmac_data_rsp_t kmac_data_i,
 
   // entropy input
+  output logic prng_en_o,
   input [31:0] entropy_i,
 
   // error outputs
@@ -271,5 +272,8 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   assign enables_sub = enables - 1'b1;
   // command error occurs if kmac errors or if the command itself is invalid
   assign cmd_error_o = |(enables & enables_sub);
+
+  // request entropy to churn whenever a transaction is accepted
+  assign prng_en_o = kmac_data_o.valid & kmac_data_i.ready;
 
 endmodule // keymgr_kmac_if

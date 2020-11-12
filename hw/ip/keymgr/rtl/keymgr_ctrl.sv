@@ -144,7 +144,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
     stage_sel_o = Disable;
 
     // enable prng toggling
-    prng_en_o = 1'b1;
+    prng_en_o = 1'b0;
 
     op_done_o = 1'b0;
     init_done_o = 1'b0;
@@ -175,6 +175,8 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
       // This state does not accept any command.
       StWipe: begin
+        prng_en_o = 1'b1;
+
         // populate both shares with the same entropy
         // This is the default mask
         if (cnt < EntropyRounds) begin
