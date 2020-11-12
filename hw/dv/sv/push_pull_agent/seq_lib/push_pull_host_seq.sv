@@ -20,6 +20,7 @@ class push_pull_host_seq #(parameter int DataWidth = 32) extends push_pull_base_
       req = push_pull_item#(DataWidth)::type_id::create($sformatf("req[%0d]", i));
       start_item(req);
       `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
+        if (!cfg.has_mask) {mask == '1;}
         if (cfg.zero_delays) {
           host_delay == 0;
         } else {

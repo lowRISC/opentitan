@@ -11,6 +11,9 @@ class push_pull_agent_cfg #(parameter int DataWidth = 32) extends dv_base_agent_
   // Should be set from the IP level environment.
   push_pull_agent_e agent_type;
 
+  // Indicate if the bus has mask signal to qualify the data
+  bit has_mask = 0;
+
   // Device-side delay range for both Push/Pull protocols.
   int unsigned device_delay_min = 0;
   int unsigned device_delay_max = 10;

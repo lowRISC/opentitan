@@ -67,8 +67,9 @@ class push_pull_monitor #(parameter int DataWidth = 32) extends dv_base_monitor 
       if (valid_txn) begin
         item = push_pull_item#(DataWidth)::type_id::create("item");
         item.data = cfg.vif.mon_cb.data;
-        `uvm_info(`gfn, $sformatf("[%0s] transaction detected: data = 0x%0x",
-                                  cfg.agent_type, item.data), UVM_HIGH)
+        item.mask = cfg.has_mask ? cfg.vif.mon_cb.mask : '1;
+        `uvm_info(`gfn, $sformatf("[%0s] transaction detected: data = 0x%0x, mask = 0b%0b",
+                                  cfg.agent_type, item.data, item.mask), UVM_HIGH)
         analysis_port.write(item);
         valid_txn = 1'b0;
       end

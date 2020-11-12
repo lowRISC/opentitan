@@ -46,6 +46,7 @@ class push_pull_device_seq #(parameter int DataWidth = 32) extends push_pull_bas
           req_mailbox.get(rsp);
           start_item(rsp);
           `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp,
+            if (!cfg.has_mask) {mask == '1;}
             if (cfg.zero_delays) {
               device_delay == 0;
             } else {

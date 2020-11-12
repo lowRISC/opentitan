@@ -24,6 +24,7 @@ class push_pull_agent #(parameter int DataWidth = 32) extends dv_base_agent #(
     end
     cfg.vif.if_mode = cfg.if_mode;
     cfg.vif.is_push_agent = (cfg.agent_type == PushAgent);
+    cfg.vif.has_mask = cfg.has_mask;
   endfunction
 
   function void connect_phase(uvm_phase phase);

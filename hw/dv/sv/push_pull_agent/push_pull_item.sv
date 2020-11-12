@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class push_pull_item #(parameter int DataWidth = 32) extends uvm_sequence_item;
+class push_pull_item #(parameter int DataWidth = 32)
+    extends uvm_sequence_item;
 
-  rand bit [DataWidth-1:0] data;
+  rand bit [DataWidth-1:0]   data;
+  rand bit [DataWidth/8-1:0] mask;
 
   // Host-side delay for both Push/Pull protocols.
   rand int unsigned host_delay;
@@ -14,6 +16,7 @@ class push_pull_item #(parameter int DataWidth = 32) extends uvm_sequence_item;
 
   `uvm_object_param_utils_begin(push_pull_item#(DataWidth))
     `uvm_field_int(data,         UVM_DEFAULT)
+    `uvm_field_int(mask,         UVM_DEFAULT)
     `uvm_field_int(host_delay,   UVM_DEFAULT)
     `uvm_field_int(device_delay, UVM_DEFAULT)
   `uvm_object_utils_end
@@ -22,6 +25,7 @@ class push_pull_item #(parameter int DataWidth = 32) extends uvm_sequence_item;
 
   virtual function string convert2string();
     return {$sformatf("data = 0x%0x ", data),
+            $sformatf("mask = 0b%0b ", mask),
             $sformatf("host_delay = 0x%0x ", host_delay),
             $sformatf("device_delay = 0x%0x ", device_delay)};
   endfunction

@@ -18,6 +18,7 @@ class push_pull_host_driver #(parameter int DataWidth = 32) extends push_pull_dr
     if (cfg.agent_type == PushAgent) begin
       cfg.vif.valid_int <= '0;
       cfg.vif.data_int  <= 'x;
+      cfg.vif.mask_int  <= 'x;
     end else begin
       cfg.vif.req_int   <= '0;
     end
@@ -56,6 +57,7 @@ class push_pull_host_driver #(parameter int DataWidth = 32) extends push_pull_dr
     if (!in_reset) begin
       `PUSH_DRIVER.valid_int <= 1'b1;
       `PUSH_DRIVER.data_int  <= req.data;
+      `PUSH_DRIVER.mask_int  <= req.mask;
     end
     do begin
       @(`PUSH_DRIVER);
@@ -63,6 +65,7 @@ class push_pull_host_driver #(parameter int DataWidth = 32) extends push_pull_dr
     if (!in_reset) begin
       `PUSH_DRIVER.valid_int <= 1'b0;
       `PUSH_DRIVER.data_int  <= 'x;
+      `PUSH_DRIVER.mask_int  <= 'x;
     end
   endtask
 

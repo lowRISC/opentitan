@@ -20,6 +20,7 @@ class push_pull_device_driver #(parameter int DataWidth = 32) extends push_pull_
     end else begin
       cfg.vif.ack_int   <= '0;
       cfg.vif.data_int  <= 'x;
+      cfg.vif.mask_int  <= 'x;
     end
   endtask
 
@@ -68,11 +69,13 @@ class push_pull_device_driver #(parameter int DataWidth = 32) extends push_pull_
     if (!in_reset) begin
       `PULL_DRIVER.ack_int  <= 1'b1;
       `PULL_DRIVER.data_int <= req.data;
+      `PULL_DRIVER.mask_int <= req.mask;
     end
     @(`PULL_DRIVER);
     if (!in_reset) begin
       `PULL_DRIVER.ack_int  <= 1'b0;
       `PULL_DRIVER.data_int <= 'x;
+      `PULL_DRIVER.mask_int <= 'x;
     end
   endtask
 
