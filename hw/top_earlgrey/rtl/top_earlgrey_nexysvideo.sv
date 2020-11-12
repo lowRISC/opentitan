@@ -44,7 +44,16 @@ module top_earlgrey_nexysvideo #(
   inout               IO_GP12,
   inout               IO_GP13,
   inout               IO_GP14,
-  inout               IO_GP15
+  inout               IO_GP15,
+  // GPIOs going to PMOD JA
+  inout               IO_GP24,
+  inout               IO_GP25,
+  inout               IO_GP26,
+  inout               IO_GP27,
+  inout               IO_GP28,
+  inout               IO_GP29,
+  inout               IO_GP30,
+  inout               IO_GP31
 );
 
   import top_earlgrey_pkg::*;
@@ -65,10 +74,10 @@ module top_earlgrey_nexysvideo #(
   logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux, dio_in_padring;
 
   padring #(
-    // MIOs 31:20 are currently not
+    // MIOs 23:20 are currently not
     // connected to pads and hence tied off
-    .ConnectMioIn  ( 32'h000FFFFF ),
-    .ConnectMioOut ( 32'h000FFFFF ),
+    .ConnectMioIn  ( 32'hFF0FFFFF ),
+    .ConnectMioOut ( 32'hFF0FFFFF ),
     // Tied off DIOs:
     // 2: usbdev_d
     // 3: usbdev_suspend
@@ -85,7 +94,15 @@ module top_earlgrey_nexysvideo #(
     .clk_usb_48mhz_o     (      ),
     .rst_no              (      ),
     // MIO Pads
-    .mio_pad_io          ( { 12'bz,   // Note that 31:20 are currently not mapped
+    .mio_pad_io          ( { IO_GP31,
+                             IO_GP30,
+                             IO_GP29,
+                             IO_GP28,
+                             IO_GP27,
+                             IO_GP26,
+                             IO_GP25,
+                             IO_GP24,
+                             4'bz,    // Note that 23:20 are currently not mapped
                              IO_DPS5, // Use GPIO19 to pass JTAG_SRST
                              IO_DPS4, // Use GPIO18 to pass JTAG_TRST
                              IO_DPS7, // Use GPIO17 to pass rom boot_strap indication
