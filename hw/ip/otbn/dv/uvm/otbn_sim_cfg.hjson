@@ -53,12 +53,11 @@ name:
   uvm_test: otbn_base_test
   uvm_test_seq: otbn_base_vseq
 
-  // The directory where ELF binaries should be found.
-  //
-  // TODO: This needs deciding upon. Eventually, it might be nice to allow this
-  //       to be overridden on the command line ("I've got a bunch of ELF files
-  //       that stress my new feature; please run the test suite with them")
+  // The default place to find and build ELF binaries. If you have
+  // some pre-built binaries, you can run the simulation with them by using
+  // --run-opts to override the otbn_elf_dir plusarg in run_opts.
   otbn_elf_dir: "{run_dir}/build-out"
+
   run_opts: ["+otbn_elf_dir={otbn_elf_dir}"]
 
   // OTBN run modes.
