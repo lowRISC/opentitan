@@ -10,7 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:prim:util
-      - lowrisc:prim:multibit_sync
+      - lowrisc:prim:lc_sync
       - lowrisc:prim:ram_1p_scr
       - lowrisc:tlul:adapter_sram
       - lowrisc:ip:tlul
