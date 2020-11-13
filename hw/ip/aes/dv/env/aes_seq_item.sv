@@ -14,30 +14,32 @@ class aes_seq_item extends uvm_sequence_item;
   ///////////////////////////////////////
 
   // set if this item contains valid information
-  bit             valid = 0;
+  bit             valid                = 0;
   // 0: auto mode 1: manual start
   bit             manual_op;
   // 0: output data cannot be overwritten
 
   // lenth of plaintext / cypher (max is 128b/16b per block)
   // used to mask bits that are not part of the data vector
-  bit [3:0]                    data_len            = 0;
+  bit [3:0]       data_len            = 0;
   // key len 0: 128, 1: 192, 2: 256 3: NOT VALID
-  bit [2:0]                    key_len;
+  bit [2:0]       key_len;
   // 256 bit key (8x32 bit) in two shares, key = share0 ^ share1
-  bit [7:0][31:0]              key [2];
+  bit [7:0][31:0] key [2];
   // which fields of the key is valid
-  bit [7:0]                    key_vld [2]         = '{8'b0, 8'b0};
+  bit [7:0]       key_vld [2]          = '{8'b0, 8'b0};
   // randomized data to add to queue
-  bit [3:0][31:0]              iv;
+  bit [3:0][31:0] iv;
   // indicate if the initialization vector is valid
-  bit [3:0]                    iv_vld;
-  aes_mode_e                   mode;
-  bit                          en_b2b_transactions = 1;
+  bit [3:0]       iv_vld;
+  aes_mode_e      mode;
+  bit             en_b2b_transactions  = 1;
 
   // percentage of items that will// clear one or more registers
-  int                          clear_reg_pct = 0;
+  int             clear_reg_pct = 0;
 
+  // clear registers with random data
+  bit             clear_reg_w_rand = 0;
 
   ///////////////////////////////////////
   // Fixed variables                   //
@@ -103,7 +105,7 @@ class aes_seq_item extends uvm_sequence_item;
 
   function void post_randomize();
     bit [3:0]           index;
-    if(key_mask) begin
+    if (key_mask) begin
       case (key_len)
         3'b001: begin
           key[0][7:4] = 32'h00000000;
@@ -154,11 +156,11 @@ class aes_seq_item extends uvm_sequence_item;
   function bit key_clean(bit ret_clean, bit clear);
     `uvm_info(`gfn, $sformatf("\n\t ----| Key status %b %b", key_vld[0], key_vld[1]), UVM_MEDIUM)
     if (clear) begin
-    //  if(cfg.clear_reg_w_rand) begin
-    //    key = '{default: {8{$urandom()}}};
-    //  end else begin
+      if (clear_reg_w_rand) begin
+        key = '{default: {8{$urandom()}}};
+      end else begin
         key = '{default: '0};
-     // end
+      end
       key_vld[0] = '0;
       key_vld[1] = '0;
     end
@@ -176,16 +178,16 @@ class aes_seq_item extends uvm_sequence_item;
   // return 1 if all or none of the registers have been written
   function bit iv_clean(bit ret_clean, bit clear);
     if (clear) begin
-  //    if (cfg.clear_reg_w_rand) begin
-  //      iv = {4{$urandom()}};
-  //    end else begin
+      if (clear_reg_w_rand) begin
+        iv = {4{$urandom()}};
+      end else begin
         iv = '0;
-  //    end
-      iv_vld = '0;
+      end
+        iv_vld = '0;
     end
 
     if (ret_clean) begin
-      return ((&iv_vld) || ~(|iv_vld));
+      return  ((&iv_vld) || ~(|iv_vld));
     end else begin
       return &iv_vld;
     end
@@ -227,11 +229,11 @@ class aes_seq_item extends uvm_sequence_item;
   endfunction // message_start
 
   function void clean_data_in();
-//    if(cfg.clear_reg_w_rand) begin
-//      data_in = {4{$urandom()}};
-//    end else begin
+    if (clear_reg_w_rand) begin
+      data_in = {4{$urandom()}};
+    end else begin
       data_in = '0;
-//    end
+    end
     data_in_vld = '0;
   endfunction // clean_data_in
 
@@ -249,19 +251,20 @@ class aes_seq_item extends uvm_sequence_item;
 
     `downcast(rhs_,rhs)
     super.do_copy(rhs);
-    item_type    = rhs_.item_type;
-    operation    = rhs_.operation;
-    mode         = rhs_.mode;
-    data_in      = rhs_.data_in;
-    key          = rhs_.key;
-    key_len      = rhs_.key_len;
-    key_vld      = rhs_.key_vld;
-    iv           = rhs_.iv;
-    iv_vld       = rhs_.iv_vld;
-    data_out     = rhs_.data_out;
-    data_len     = rhs_.data_len;
-    manual_op    = rhs_.manual_op;
-    key_mask     = rhs_.key_mask;
+    item_type        = rhs_.item_type;
+    operation        = rhs_.operation;
+    mode             = rhs_.mode;
+    data_in          = rhs_.data_in;
+    key              = rhs_.key;
+    key_len          = rhs_.key_len;
+    key_vld          = rhs_.key_vld;
+    iv               = rhs_.iv;
+    iv_vld           = rhs_.iv_vld;
+    data_out         = rhs_.data_out;
+    data_len         = rhs_.data_len;
+    manual_op        = rhs_.manual_op;
+    clear_reg_w_rand = rhs_.clear_reg_w_rand;
+    key_mask         = rhs_.key_mask;
     aes_mode     = rhs_.aes_mode;
   endfunction // copy
 
