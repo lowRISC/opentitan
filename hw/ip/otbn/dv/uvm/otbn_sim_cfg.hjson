@@ -78,9 +78,13 @@ name:
 
   // List of regressions.
   regressions: [
+    // A "smoke test" regression. This builds some OTBN binaries (see the
+    // setup field) and then runs the otbn_smoke test.
     {
       name: smoke
       tests: ["otbn_smoke"]
+      setup: ["rm -rf {sw_build_dir}",
+              "{proj_root}/hw/ip/otbn/dv/uvm/gen-binaries.py {sw_build_dir}"]
     }
   ]
 }
