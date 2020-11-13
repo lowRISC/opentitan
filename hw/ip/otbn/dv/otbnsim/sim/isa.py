@@ -37,10 +37,11 @@ class DummyInsn(Insn):
 def insn_for_mnemonic(mnemonic: str, num_operands: int) -> Insn:
     '''Look up the named instruction in the loaded YAML data.
 
-    As a sanity check, make sure it has the expected number of operands. If we
-    fail to find the right instruction, print a message to stderr and exit
-    (rather than raising a RuntimeError: this happens on module load time, so
-    it's a lot clearer to the user what's going on this way).
+    To make sure nothing's gone really wrong, make sure it has the expected
+    number of operands. If we fail to find the right instruction, print a
+    message to stderr and exit (rather than raising a RuntimeError: this
+    happens on module load time, so it's a lot clearer to the user what's going
+    on this way).
 
     '''
     insn = _INSNS_FILE.mnemonic_to_insn.get(mnemonic)

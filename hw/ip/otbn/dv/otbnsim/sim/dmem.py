@@ -35,8 +35,8 @@ class Dmem:
     def __init__(self) -> None:
         _, dmem_size = get_memory_layout()['DMEM']
 
-        # Sanity check to avoid allocating massive chunks of memory. We know we
-        # won't have more than 1 MiB of DMEM.
+        # Check the arguments look sensible, to avoid allocating massive chunks
+        # of memory. We know we won't have more than 1 MiB of DMEM.
         if dmem_size > 1024 * 1024:
             raise RuntimeError('Implausibly large DMEM size: {}'
                                .format(dmem_size))

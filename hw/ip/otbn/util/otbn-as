@@ -730,8 +730,9 @@ class Transformer:
         for rv_name, rv_num in rv_nums.items():
             rv_op_fmt, _, _ = rve.rvfmt.op_data[rv_name]
             if rv_num != 0:
-                # We've got some fixed or partial data. As a sanity check, make
-                # sure we don't have a match in rv_field_to_op.
+                # We've got some fixed or partial data. We shouldn't have a
+                # match in rv_to_full_op (because the code in find_rv_encoding
+                # will put an operand in that or rv_masks, but not both)
                 assert rv_name not in rve.rv_to_full_op
                 rv_strings[rv_name] = rv_render(rv_op_fmt, rv_num)
                 continue

@@ -59,7 +59,10 @@ class StraightLineInsn(SnippetGen):
         prog_insn = None
         while prog_insn is None:
             idx = random.choices(range(len(self.insns)), weights=weights)[0]
-            # Sanity check to make sure some weight was positive
+            # At least one weight should be positive. This is guaranteed so
+            # long as fill_insn doesn't fail for absolutely everything. We know
+            # that doesn't happen, because we have some instructions (such as
+            # addi) where it will not fail.
             assert weights[idx] > 0
 
             # Try to fill out the instruction. On failure, clear the weight for
@@ -85,6 +88,10 @@ class StraightLineInsn(SnippetGen):
 
         This might fail if, for example, the model doesn't have enough
         registers with architectural values. In that case, return None.
+
+        Note that there are some instructions that will never return None. For
+        example, addi, which can always expand to "addi x0, x0, 0" (also known
+        as nop).
 
         '''
 
