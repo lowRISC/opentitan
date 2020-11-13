@@ -26,10 +26,10 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
 
   // Enumeration for working state
   typedef enum logic [1:0] {
-    StReset,
-    StIdle,
-    StWipe,
-    StStop
+    StSideloadReset,
+    StSideloadIdle,
+    StSideloadWipe,
+    StSideloadStop
   } keymgr_sideload_e;
 
   keymgr_sideload_e state_q, state_d;
@@ -41,7 +41,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      state_q <= StReset;
+      state_q <= StSideloadReset;
       cnt_q <= '0;
     end else begin
       state_q <= state_d;
@@ -60,28 +60,28 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     state_d = state_q;
 
     unique case (state_q)
-      StReset: begin
+      StSideloadReset: begin
         if (init_i && en_i) begin
-          state_d = StIdle;
+          state_d = StSideloadIdle;
         end
       end
 
-      StIdle: begin
+      StSideloadIdle: begin
         keys_en = 1'b1;
         if (!en_i) begin
           keys_en = 1'b0;
-          state_d = StWipe;
+          state_d = StSideloadWipe;
         end
       end
 
-      StWipe: begin
+      StSideloadWipe: begin
         keys_en = 1'b0;
         clr = 1'b1;
-        state_d = StStop;
+        state_d = StSideloadStop;
       end
 
       // intentional terminal state
-      StStop: begin
+      StSideloadStop: begin
         keys_en = 1'b0;
       end
 
