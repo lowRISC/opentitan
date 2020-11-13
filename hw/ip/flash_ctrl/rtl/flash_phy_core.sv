@@ -76,6 +76,9 @@ module flash_phy_core import flash_phy_pkg::*; #(
   // ack from flash_phy_prog to controller
   logic prog_ack;
 
+  // ack from flash_phy_erase to controller
+  logic erase_ack;
+
   // interface with flash macro
   logic [BusBankAddrW-1:0] muxed_addr;
   flash_ctrl_pkg::flash_part_e muxed_part;
@@ -157,8 +160,6 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
         end else if (req_i) begin
           clr_arb_cnt = 1'b1;
-          reqs[PhyPgErase] = pg_erase_i;
-          reqs[PhyBkErase] = bk_erase_i;
           state_d = StCtrl;
         end
       end
@@ -201,7 +202,9 @@ module flash_phy_core import flash_phy_pkg::*; #(
 
       // other controller operations directly interface with flash
       StCtrl: begin
-        if (done) begin
+        reqs[PhyPgErase] = pg_erase_i;
+        reqs[PhyBkErase] = bk_erase_i;
+        if (erase_ack) begin
           ctrl_rsp_vld = 1'b1;
           state_d = StIdle;
         end
@@ -305,6 +308,24 @@ module flash_phy_core import flash_phy_pkg::*; #(
   end
 
   ////////////////////////
+  // erase pipeline
+  ////////////////////////
+
+  logic flash_pg_erase_req;
+  logic flash_bk_erase_req;
+  flash_phy_erase u_erase (
+    .clk_i,
+    .rst_ni,
+    .pg_erase_req_i(reqs[PhyPgErase]),
+    .bk_erase_req_i(reqs[PhyBkErase]),
+    .ack_o(erase_ack),
+    .pg_erase_req_o(flash_pg_erase_req),
+    .bk_erase_req_o(flash_bk_erase_req),
+    .ack_i(ack),
+    .done_i(done)
+  );
+
+  ////////////////////////
   // scrambling / de-scrambling primitive
   ////////////////////////
 
@@ -358,8 +379,8 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .prog_i(flash_prog_req),
     .prog_last_i(prog_last),
     .prog_type_i(prog_type_i),
-    .pg_erase_i(reqs[PhyPgErase]),
-    .bk_erase_i(reqs[PhyBkErase]),
+    .pg_erase_i(flash_pg_erase_req),
+    .bk_erase_i(flash_bk_erase_req),
     .addr_i(muxed_addr[BusBankAddrW-1:LsbAddrBit]),
     .part_i(muxed_part),
     .prog_data_i(prog_full_data),
