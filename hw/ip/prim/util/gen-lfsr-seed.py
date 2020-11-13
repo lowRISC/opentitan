@@ -122,18 +122,18 @@ def main():
     outstr = '''
 // These LFSR parameters have been generated with
 // $ hw/ip/prim/util/gen-lfsr-seed.py --width {} --seed {} --prefix "{}"
-localparam int {}LfsrWidth = {};
+parameter int {}LfsrWidth = {};
 typedef logic [{}LfsrWidth-1:0] {}lfsr_seed_t;
 typedef logic [{}LfsrWidth-1:0][$clog2({}LfsrWidth)-1:0] {}lfsr_perm_t;
-localparam lfsr_seed_t RndCnst{}LfsrSeedDefault = {};
-localparam lfsr_perm_t RndCnst{}LfsrPermDefault =
+parameter {}lfsr_seed_t RndCnst{}LfsrSeedDefault = {};
+parameter {}lfsr_perm_t RndCnst{}LfsrPermDefault =
     {};
 '''.format(args.width, args.seed, args.prefix,
            args.prefix, args.width,
            args.prefix, type_prefix,
            args.prefix, args.prefix, type_prefix,
-           args.prefix, _get_random_data_hex_literal(args.width),
-           args.prefix, _get_random_perm_hex_literal(args.width))
+           type_prefix, args.prefix, _get_random_data_hex_literal(args.width),
+           type_prefix, args.prefix, _get_random_perm_hex_literal(args.width))
 
     print(outstr)
 
