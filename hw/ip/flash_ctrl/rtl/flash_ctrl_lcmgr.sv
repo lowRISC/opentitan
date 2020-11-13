@@ -49,6 +49,9 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   // error status to registers
   output logic seed_err_o,
 
+  // enable read buffer in flash_phy
+  output logic rd_buf_en_o,
+
   // init ongoing
   output logic init_busy_o
 );
@@ -230,6 +233,9 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
     state_d = state_q;
     validate_d = validate_q;
 
+    // read buffer enable
+    rd_buf_en_o = 1'b0;
+
     // init status
     // flash_ctrl handles its own arbitration between hardware and software.
     // So once the init kicks off it is safe to ack.  The done signal is still
@@ -291,6 +297,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
 
       // Waiting for an rma entry command
       StWait: begin
+        rd_buf_en_o = 1'b1;
         if (rma_i) begin
           state_d = StWipeOwner;
         end

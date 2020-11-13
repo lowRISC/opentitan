@@ -182,6 +182,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .prog_type_i(flash_ctrl_i.prog_type),
       .addr_key_i(flash_ctrl_i.addr_key),
       .data_key_i(flash_ctrl_i.data_key),
+      .rd_buf_en_i(flash_ctrl_i.rd_buf_en),
       .prog_type_avail_o(prog_type_avail[bank]),
       .host_req_rdy_o(host_req_rdy[bank]),
       .host_req_done_o(host_req_done[bank]),
