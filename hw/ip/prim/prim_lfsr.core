@@ -25,7 +25,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
-      - lint/prim_otp.waiver
+      # - lint/prim_lfsr.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
