@@ -116,20 +116,18 @@ module sram_ctrl
     .intr_o                 ( sram_integ_error_o   )
   );
 
-  ///////////////////////////////////
-  // Lifecycle Escalation Receiver //
-  ///////////////////////////////////
+  //////////////////////////////////////////
+  // Lifecycle Escalation Synchronization //
+  //////////////////////////////////////////
 
   lc_ctrl_pkg::lc_tx_t escalate_en;
-  prim_multibit_sync #(
-    .Width(lc_ctrl_pkg::TxWidth),
-    .NumChecks (2),
-    .ResetValue(lc_ctrl_pkg::TxWidth'(lc_ctrl_pkg::Off))
-  ) u_prim_multibit_sync (
+  prim_lc_sync #(
+    .NumCopies (1)
+  ) u_prim_lc_sync (
     .clk_i,
     .rst_ni,
-    .data_i (lc_escalate_en_i),
-    .data_o (escalate_en)
+    .lc_en_i (lc_escalate_en_i),
+    .lc_en_o (escalate_en)
   );
 
   ////////////////////////////
