@@ -5,6 +5,7 @@
 // Backdoor interface that can be bound into an OTBN stack and exports a function to peek at
 // the stack contents.
 
+`ifndef SYNTHESIS
 interface otbn_stack_snooper_if #(
   parameter int StackWidth = 32,
   parameter int StackDepth = 4,
@@ -36,3 +37,4 @@ interface otbn_stack_snooper_if #(
   endfunction
 
 endinterface
+`endif // SYNTHESIS

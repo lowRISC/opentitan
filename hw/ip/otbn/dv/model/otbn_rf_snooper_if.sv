@@ -5,6 +5,7 @@
 // Backdoor interface that can be bound into an OTBN register file and exports a function to peek at
 // the memory contents.
 
+`ifndef SYNTHESIS
 interface otbn_rf_snooper_if #(
   parameter int Width = 32,    // Memory width in bits
   parameter int Depth = 32     // Number of registers
@@ -30,3 +31,4 @@ interface otbn_rf_snooper_if #(
   endfunction
 
 endinterface
+`endif // SYNTHESIS

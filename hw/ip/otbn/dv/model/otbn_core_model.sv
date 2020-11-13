@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`ifndef SYNTHESIS
 `include "prim_assert.sv"
 
 /**
@@ -9,6 +10,7 @@
  *
  * This module is the top-level of the OTBN processing core.
  */
+
 module otbn_core_model
   import otbn_pkg::*;
 #(
@@ -152,3 +154,5 @@ module otbn_core_model
   assign err_o = failed_step | failed_cmp;
 
 endmodule
+`endif // SYNTHESIS
+
