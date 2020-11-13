@@ -27,8 +27,8 @@ Image Timestamp:64,
 
 Signature Algorithm Identifier:32,
 Signature Exponent:32,
-Usage Constraints (TBC):32,
-Reserved:32,
+
+Usage Constraints (256 bits):${BROKEN_LENGTH},
 
 Peripheral Lockdown Info (TBC):128,
 

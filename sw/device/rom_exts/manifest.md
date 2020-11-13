@@ -30,9 +30,13 @@ Based on the requirements outlined in [boot.md](./boot)
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Signature Exponent                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Usage Constraints (TBC)                    |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                            Reserved                           |
+|                                                               |
++                                                               +
+|                                                               |
++                  Usage Constraints (256 bits)                 +
+|                                                               |
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  break  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+|                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -129,9 +133,10 @@ Notes:
     This is used by any ROM_EXT image parsers to identify a ROM_EXT image.
 
 1.  **Image Signature** This is a RSA 3k signature of all the fields that follow
-    the signature. This a sequence of 32-bit values. There is no data in the
-    image which is not signed, except the signature itself and the ROM_EXT
-    manifest identifier.
+    the signature. This is a sequence of 32-bit values. The signed area of the
+    image starts immediately after this field, and runs to the end of the image
+    (as defined by the image length). All content outside that range is unsigned
+    (including the Manifest Identifier, and the Image Signature itself).
 
     This is used by the Mask ROM during secure boot to validate that a ROM_EXT
     image has been produced by a Silicon Creator for this chip. This is also
@@ -156,7 +161,8 @@ Notes:
     image was prepared, in seconds since 00:00:00 UTC on 1 January 1970 (the
     Unix Epoch). This is a 64-bit signed numeric value.
 
-    This is not used by the Mask ROM when validating the image.
+    This is not used by the Mask ROM when validating the image, but is part of
+    the signed image.
 
     *Alignment* This is 64-bit aligned.
 
@@ -184,13 +190,16 @@ Notes:
     This is used when signing and validating the image. This happens in the
     Mask ROM, as well as during firmware update.
 
-1.  **Usage Constraints** This is a 32-bit enumeration value which denotes what
-    kinds of devices the ROM_EXT image may be used on.
+1.  **Usage Constraint** This is a 256-bit unsigned numeric value.
 
-    This is used by the Mask ROM to validate the image is running on the right
-    kind of hardware.
+    This allows the ROM_EXT author to constrain a ROM_EXT to a single device or
+    a group of devices, such that the ROM_EXT will not validate (and therefore
+    will not boot) on devices not in that group.
 
-    **Open Q** What possible values should this have?
+    The Mask ROM will use this value to calculate a 1024-byte "device usage
+    value" which is used when validating the signature of a ROM_EXT. The exact
+    interpretation of the Usage Constraints value is left as an implementation
+    detail.
 
 1.  **Peripheral Lockdown Info** This is a 128-bit value which describes how
     some peripherals should be configured, before the write-enable bits for
@@ -252,12 +261,12 @@ Notes:
     256-byte aligned offset in the ROM_EXT code image, before jumping into
     ROM_EXT code. This matches how Ibex boots.
 
-    The total manifest length is currently `0x358` (856) bytes, so the first
+    The total manifest length is currently `0x370` (880) bytes, so the first
     valid mtvec address is at offset `0x400` (1024) bytes from the beginning of
     the ROM_EXT image, and **the entry address is therefore `0x480` (1152) bytes
     from the beginning of the ROM_EXT image**.
 
-    This does leave 168 (`0xa8`) bytes between the end of the manifest and the
+    This does leave 144 (`0x90`) bytes between the end of the manifest and the
     first valid mtvec. It is up to the image as to how this is used--it could be
     used for extension data or for routines. We could also reserve this space so
     the manifest can be extended later, but this is the intention of the
@@ -358,3 +367,79 @@ B, without having to re-link or re-compile the image (note we only have one
 entry address). At least initially, we will only create images that can work
 from Slot A, and later we will add support ensuring these images are linked in
 a way that they can run from Slot B without modification.
+
+
+## How To Validate a ROM_EXT Image
+
+Below we provide an abstract definition of how to sign and verify a ROM_EXT
+image. This description is provided so that there is a specification of what the
+signing and validation systems are implementing, so that alternate
+implementations may be produced if necessary.
+
+Notation:
+
+*   `rom_ext` - ROM_EXT Image, including manifest and contents (Variable Length)
+    `signed_area(rom_ext)` denotes just the area between the start of the signed
+    contents and the end of the image.
+*   `device_usage_value` - Device-Calculated Usage Constraint Value (1024
+    bytes). This is the "device usage value" described above, as calculated by
+    the Mask ROM.
+*   `system_state_value` - Device System State Value (32 bytes). This is a Mask
+    ROM calculated value that summarises the current device state.
+*   `private_key` - RSA Private Key
+*   `public_key` - RSA Public Key
+*   `signature` - ROM_EXT RSA Signature,
+*   `||` - Denotes concatenation without a delimiter.
+*   `:=` - Denotes assignment.
+
+### Algorithms
+
+*   We primarily use
+    [`RSASSA-PKCS1-V1_5-SIGN`](https://tools.ietf.org/html/rfc3447#section-8.2.1)
+    and
+    [`RSASSA-PKCS1-V1_5-VERIFY`](https://tools.ietf.org/html/rfc3447#section-8.2.2)
+    for signatures and verification.
+*   RSA Signing and Verification is done with 3072-bit keys.
+*   The `Hash` operation may be done with SHA2-265, SHA3-256, SHA3-384, or
+    SHA3-512, depending on the Signature Algorithm Identifier provided in the
+    manifest. The `Hash` operation is required to provide a security level
+    equivalent to that provided by the signature.
+
+### Signing
+
+This is usually done on a host machine, which does not have access to a real OT
+device. Thus there has to be a way for the host signer to predict the value of
+`device_usage_value` and `system_state_value`, as they would be calculated
+on-device.
+
+The `private_key` is never available on-device, in this scheme.
+
+```
+system_state_value := predict_system_state_value()
+device_usage_value := predict_device_usage_value(rom_ext.usage_constraint)
+
+message := system_state_value || device_usage_value || signed_area(rom_ext)
+signature := RSASSA-PKCS1-V1_5-SIGN(private_key, message)
+```
+
+### Validation
+
+Usually, validation is done on-device, where `device_usage_value` and
+`system_state_value` can be calculated.
+
+However, we also want to be able to validate the signature off-device, so still
+need a way to predict the value of `device_usage_value` and
+`system_state_value`. Off-device, we will use the same `predict_` systems as
+used above.
+
+This document does not cover how a device should ensure that `public_key` is
+allowed to validate images for a given device.
+
+```
+system_state_value := calculate_system_state_value()
+device_usage_value := calculate_device_usage_value(rom_ext.usage_constraint)
+signature := rom_ext.signature
+
+message := system_state_value || device_usage_value || signed_area(rom_ext)
+result := RSASSA-PKCS1-V1_5-VERIFY(public_key, message, signature)
+```
