@@ -215,7 +215,6 @@ class aes_base_vseq extends cip_base_vseq #(
 
   virtual task generate_data_stream(ref aes_message_item msg_item);
     aes_seq_item item_clone;
-
     aes_item.item_type = AES_DATA;
 
     // generate an item for each 128b message block
@@ -273,7 +272,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
     if (cfg.random_data_key_iv_order) interleave_queue.shuffle();
 
-    foreach ( interleave_queue[i] ) begin
+    foreach (interleave_queue[i]) begin
       txt = {txt, $sformatf("\n\t ----| \t %s", interleave_queue[i]) };
 
       case (interleave_queue[i])
@@ -469,14 +468,15 @@ class aes_base_vseq extends cip_base_vseq #(
   function void aes_item_init(ref aes_message_item message_item);
 
     aes_item = new();
-    aes_item.operation     = message_item.aes_operation;
-    aes_item.mode          = message_item.aes_mode;
-    aes_item.key_len       = message_item.aes_keylen;
-    aes_item.key           = message_item.aes_key;
-    aes_item.iv            = message_item.aes_iv;
-    aes_item.manual_op     = message_item.manual_operation;
-    aes_item.key_mask      = message_item.keymask;
+    aes_item.operation        = message_item.aes_operation;
+    aes_item.mode             = message_item.aes_mode;
+    aes_item.key_len          = message_item.aes_keylen;
+    aes_item.key              = message_item.aes_key;
+    aes_item.iv               = message_item.aes_iv;
+    aes_item.manual_op        = message_item.manual_operation;
+    aes_item.key_mask         = message_item.keymask;
     aes_item.clear_reg_pct = cfg.clear_reg_pct;
+    aes_item.clear_reg_w_rand = cfg.clear_reg_w_rand;
   endfunction // aes_item_init
 
 

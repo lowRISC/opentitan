@@ -5,7 +5,7 @@
 // This sequence will send a number of messages
 // and in each case it will try to reset one or more
 // registers in the DUT verifying that registers are
-// indeed reset and false values are not posted anywere
+// indeed reset and false values are not posted anywhere
 // and more importantly that parts of the Key and IV are not exposed
 
 // the first part Runs in auto mode

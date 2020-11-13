@@ -153,13 +153,13 @@ class aes_scoreboard extends cip_base_scoreboard #(
         end
         // clear key
         if (get_field_val(ral.trigger.key_clear, item.a_data)) begin
-          void'(input_item.key_clean(0,1));
+          void'(input_item.key_clean(0, 1));
           new_config = 1;
           `uvm_info(`gfn, $sformatf("\n\t ----clearing KEY"), UVM_MEDIUM)
         end
         // clear IV
         if (get_field_val(ral.trigger.iv_clear, item.a_data)) begin
-          void'(input_item.iv_clean(0,1));
+          void'(input_item.iv_clean(0, 1));
           new_config = 1;
           `uvm_info(`gfn, $sformatf("\n\t ----| clearing IV"), UVM_MEDIUM)
         end

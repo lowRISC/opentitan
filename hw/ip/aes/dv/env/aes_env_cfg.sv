@@ -16,80 +16,84 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
 
     //  Message Knobs //
-  int            num_messages_min            = 1;
-  int            num_messages_max            = 1;
-  int            message_len_min             = 128;
-  int            message_len_max             = 128;
-  bit            use_key_mask                = 0;
-  bit            use_c_model_pct             = 0;
+  int                num_messages_min            = 1;
+  int                num_messages_max            = 1;
+  int                message_len_min             = 128;
+  int                message_len_max             = 128;
+  bit                use_key_mask                = 0;
+  bit                use_c_model_pct             = 0;
 
   // clear registers with 0's or rand
-  bit            clear_reg_w_rand            = 1;
+  bit                clear_reg_w_rand            = 1;
   // if set the order of which key iv and data is written will be randomized and interleaved
-  bit            random_data_key_iv_order    = 1;
+  bit                random_data_key_iv_order    = 1;
 
   // Mode distribution //
   // There are 5 modes (ecb, cbc, ofb, cfb, ctr). The weight for mode X is called X_weight. By
   // default, all weights are set equal at 10 (so each is selected 10/50 = 20% of the time).
-  int            ecb_weight                 = 10;
-  int            cbc_weight                 = 10;
-  int            ofb_weight                 = 10;
-  int            cfb_weight                 = 10;
-  int            ctr_weight                 = 10;
+  int                ecb_weight                 = 10;
+  int                cbc_weight                 = 10;
+  int                ofb_weight                 = 10;
+  int                cfb_weight                 = 10;
+  int                ctr_weight                 = 10;
 
   // KEYLEN weights
   // change of selecting 128b key
   //  128b/(128+192+256) = 10/30 = (33%)
-  int            key_128b_weight            = 10;
-  int            key_192b_weight            = 10;
-  int            key_256b_weight            = 10;
+  int                key_128b_weight            = 10;
+  int                key_192b_weight            = 10;
+  int                key_256b_weight            = 10;
 
   // use manual operation mode percentage
-  int            manual_operation_pct       = 10;
+  int                manual_operation_pct       = 10;
 
   // debug / directed test knobs
   // use fixed key
-  bit            fixed_key_en               = 0;
+  bit                fixed_key_en               = 0;
   // use fixed data (same data for each block in a message)
-  bit            fixed_data_en              = 0;
+  bit                fixed_data_en              = 0;
   // fixed operation
-  bit            fixed_operation_en         = 0;
-  bit            fixed_operation            = 1'b0;
+  bit                fixed_operation_en         = 0;
+  bit                fixed_operation            = 1'b0;
   // fixed iv (will set all to bits 0)
-  bit            fixed_iv_en                = 0;
+  bit                fixed_iv_en                = 0;
 
-  bit            fixed_keylen_en            = 0;
-  bit [2:0]      fixed_keylen               = 3'b001;
+  bit                fixed_keylen_en            = 0;
+  bit [2:0]          fixed_keylen               = 3'b001;
 
 
-  //   001: configuration errors
-  //   010: malicous injection
-  //   100: random resets
-  bit [2:0]      error_types                = 3'b111;
-  bit [1:0]      config_error_type          = 2'b00;
+  //   [0]: configuration errors
+  //   [1]: malicous injection
+  //   [2]: random resets
+  error_types_t      error_types                = 3'b111;
+
+  //   [1]: mode error
+  //   [0]: key_len
+  cfg_error_type_t   config_error_type          = 2'b00;
+
   // number of messages that was selected to be corrupt
   // these should be excluded from the num_messages count
   // when checking that all messages was processed
-  int            num_corrupt_messages       = 0;
+  int                num_corrupt_messages       = 0;
   // percentage of configuration errors
-  int            config_error_pct           = 10;
-  int            mal_error_pct              = 5;
-  int            random_reset_pct           = 10;
+  int                config_error_pct           = 10;
+  int                mal_error_pct              = 5;
+  int                random_reset_pct           = 10;
 
   // clear register percentage
   // percentage of items that will try to clear
   // one or more registers
-  int            clear_reg_pct              = 0;
+  int                clear_reg_pct              = 0;
 
 
 
   // rand variables
   // 0: C model 1: OPEN_SSL/BORING_SSL
-  rand bit     ref_model;
+  rand bit           ref_model;
   // randomly select if we force unused key bits to 0
-  rand bit     key_mask;
+  rand bit           key_mask;
   // number of messages to encrypt/decrypt
-  rand int     num_messages;
+  rand int           num_messages;
 
   // TL UL contraints //
   rand tl_ul_access_e host_resp_speed;

@@ -12,37 +12,36 @@ class aes_message_item extends uvm_sequence_item;
   ///////////////////////////////////////
 
   // min number of data bytes
-  int    message_len_max      = 16;
+  int               message_len_max      = 16;
   // Max number of data bytes
-  int    message_len_min      = 1;
+  int               message_len_min      = 1;
   // percentage of configuration errors
-  int    config_error_pct     = 20;
+  int               config_error_pct     = 20;
   // errors enabled mask
-  // 001: configuration errors
+  error_types_t     error_types          = 3'b000;
   // 010: malicous injection
   // 100: random resets
-  bit [2:0]   error_types     = 3'b000;
   // configuraiton errors enabled
-  bit    config_err           = 0;
+//  bit               config_err           = 0;
   // manual mode percentage
-  int    manual_operation_pct = 10;
+  int               manual_operation_pct = 10;
   // maskout unused key bits
-  bit    keymask              = 0;
+  bit               keymask              = 0;
   // use fixed key
-  bit    fixed_key_en         = 0;
+  bit               fixed_key_en         = 0;
   //used fixed key length
-  bit    fixed_keylen_en      = 0;
+  bit               fixed_keylen_en      = 0;
   // use fixed data (same data for each block in a message
-  bit    fixed_data_en        = 0;
+  bit               fixed_data_en        = 0;
   // fixed operation
-  bit    fixed_operation_en   = 0;
+  bit               fixed_operation_en   = 0;
   // fixed IV
-  bit    fixed_iv_en          = 0;
+  bit               fixed_iv_en          = 0;
 
   // clear register percentage
   // percentage of items that will try to clear
   // one or more registers
-  int    clear_reg_pct        = 0;
+  int               clear_reg_pct        = 0;
 
 
   // predefined values for fixed mode
@@ -72,23 +71,23 @@ class aes_message_item extends uvm_sequence_item;
   ///////////////////////////////////////
 
   // length of the message                                     //
-  rand int             message_length;
+  rand int               message_length;
   // mode - which type of ecnryption is used                   //
-  rand aes_mode_e      aes_mode = AES_NONE;
+  rand aes_mode_e        aes_mode = AES_NONE;
   // operation - encruption or decryption                      //
-  rand aes_op_e        aes_operation;
+  rand aes_op_e          aes_operation;
   // aes key length                                            //
-  rand bit [2:0]       aes_keylen;
+  rand bit [2:0]         aes_keylen;
   // 256 bit key (8x32 bit)                                    //
-  rand bit [7:0][31:0] aes_key [2];
+  rand bit [7:0][31:0]   aes_key [2];
   // 256 bit initialization vector (8x32 bit)                  //
-  rand bit [3:0][31:0] aes_iv;
+  rand bit [3:0][31:0]   aes_iv;
   // configuration error                                       //
-  rand bit             has_config_error;
+  rand bit               has_config_error;
   // [0] mode error [1] key_len error
-  rand bit [1:0]       cfg_error_type;
+  rand cfg_error_type_t  cfg_error_type;
   // run AES in manual mode
-  rand bit             manual_operation;
+  rand bit               manual_operation;
 
 
   ///////////////////////////////////////
@@ -108,7 +107,7 @@ class aes_message_item extends uvm_sequence_item;
   constraint c_keylen {
     solve has_config_error before aes_keylen;
     solve cfg_error_type before aes_keylen;
-    if (!(has_config_error && cfg_error_type[1])) {
+    if (!(has_config_error && cfg_error_type.key_len) ) {
       // key len 001: 128, 010: 192, 100: 256
       aes_keylen inside { 3'b001, 3'b010, 3'b100 };
       // mode distribution
@@ -146,7 +145,7 @@ class aes_message_item extends uvm_sequence_item;
   constraint c_mode {
     solve has_config_error before aes_mode;
     solve cfg_error_type before aes_mode;
-    if (!(has_config_error && cfg_error_type[0])) {
+    if (!(has_config_error && cfg_error_type.mode)) {
       aes_mode dist   { AES_ECB := ecb_weight,
                         AES_CBC := cbc_weight,
                         AES_CFB := cfb_weight,
@@ -160,13 +159,14 @@ class aes_message_item extends uvm_sequence_item;
    }
 
   constraint c_has_config_error {
-    if (error_types[0])
+    if (error_types.cfg)
       {
       has_config_error dist { 0 :/ (100 - config_error_pct),
                               1 :/ config_error_pct};
       }
     else { has_config_error == 0;}
   }
+
 
   constraint c_config_error_type {
     solve has_config_error before cfg_error_type;
@@ -236,7 +236,7 @@ class aes_message_item extends uvm_sequence_item;
     str = {str,  $sformatf("\n\t ----| has Configuration error:  %s  \t  \t        \t ",
                            (has_config_error==1) ? "TRUE" : "FALSE")};
     str = {str,  $sformatf("\n\t ----| Mode error en:  \t %d \n\t ----| Key_len error en: \t %d  \t         \t ",
-                           cfg_error_type[0], cfg_error_type[1])};
+                           cfg_error_type.mode, cfg_error_type.key_len)};
     str = {str,  $sformatf("\n\t ----| Message Length:  \t  \t %d             \t ",
                            message_length)};
 
