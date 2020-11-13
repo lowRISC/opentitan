@@ -456,7 +456,11 @@ class Regressions(Modes):
         self.en_run_modes = []
         self.build_opts = []
         self.run_opts = []
+        self.setup = []
+
         super().__init__(regdict)
+
+        self.setup = self.parse_setup(self.setup)
 
     @staticmethod
     def create_regressions(regdicts, sim_cfg, tests):
@@ -585,3 +589,23 @@ class Regressions(Modes):
             # Override reseed if available.
             if self.reseed is not None:
                 test.reseed = self.reseed
+
+    def parse_setup(self, setup):
+        '''Make sense of any "setup" object parsed from hjson.
+
+        This should be a list of commands that are to be run
+
+        '''
+        if not isinstance(setup, list):
+            raise RuntimeError('Invalid setup field for {!r} mode: '
+                               'Expected a list of strings, but saw {!r}.'
+                               .format(self.name, setup))
+
+        for idx, cmd in enumerate(setup):
+            if not isinstance(cmd, str):
+                raise RuntimeError('Element {} of the setup field for {!r} '
+                                   'mode is {!r}, not a command '
+                                   '(expected a string).'
+                                   .format(idx, self.name, cmd))
+
+        return setup

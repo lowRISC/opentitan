@@ -12,7 +12,8 @@ import subprocess
 import sys
 from collections import OrderedDict
 
-from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, Deploy, RunTest
+from Deploy import (CompileSim, LocalCommands,
+                    CovAnalyze, CovMerge, CovReport, Deploy, RunTest)
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
 from tabulate import tabulate
@@ -155,6 +156,7 @@ class SimCfg(FlowCfg):
 
         # Generated data structures
         self.links = {}
+        self.setup_cmds = []
         self.build_list = []
         self.run_list = []
         self.cov_merge_deploy = None
@@ -349,6 +351,7 @@ class SimCfg(FlowCfg):
                         regression.name)
                     sys.exit(1)
 
+                self.setup_cmds.extend(regression.setup)
                 self.run_list.extend(regression.tests)
                 # Merge regression's build and run opts with its tests and their
                 # build_modes
@@ -472,6 +475,12 @@ class SimCfg(FlowCfg):
             if is_unique:
                 self.builds.append(new_build)
             build_map[build_mode_obj] = new_build
+
+        # If there are any setup commands (which come from 'setup' fields in
+        # regression modes), generate a single Deploy object to do them in
+        # sequence.
+        if self.setup_cmds:
+            self.builds.append(LocalCommands(self.setup_cmds, self))
 
         # Update all tests to use the updated (uniquified) build modes.
         for test in self.run_list:

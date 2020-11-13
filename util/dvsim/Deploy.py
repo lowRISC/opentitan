@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 from collections import OrderedDict
+import tempfile
 
 from sim_utils import get_cov_summary_table
 from tabulate import tabulate
@@ -616,6 +617,41 @@ class Deploy():
                 time.sleep(1)
                 Deploy.increment_timer()
                 print_status_flag = has_print_interval_reached()
+
+
+class LocalCommands(Deploy):
+    '''Some commands that should be run locally.
+
+    This runs as a single command by generating a shell script containing the
+    commands in sequence (or echoing them, if dry_run) and then running that.
+
+    '''
+
+    def __init__(self, commands, sim_cfg):
+        # We generate commands in sim_cfg.scratch_path/local-cmds.
+        cmd_dir = os.path.join(sim_cfg.scratch_path, 'local-cmds')
+
+        # Basic variables that we need to set in order to derive from Deploy.
+        # TODO: Factor out the guts of Deploy so that we don't need to do this.
+        self.target = 'build'
+        self.build_dir = cmd_dir
+        self.fail_patterns = []
+        self.pass_patterns = []
+
+        super().__init__(sim_cfg)
+        self.parse_dict(sim_cfg.__dict__)
+        self.__post_init__()
+
+        pfx = 'echo ' if self.dry_run else ''
+        os.makedirs(cmd_dir, exist_ok=True)
+        script_fd, script_path = tempfile.mkstemp(suffix='.sh', dir=cmd_dir, text=True)
+        with os.fdopen(script_fd, 'w') as script:
+            for cmd in commands:
+                script.write('{}{}\n'.format(pfx, cmd))
+
+        # Override self.cmd (which was set by __post_init__) to point at our
+        # script.
+        self.cmd = shlex.join(['bash', script_path])
 
 
 class CompileSim(Deploy):
