@@ -1,0 +1,1 @@
+../../top_earlgrey/rtl/top_pkg.sv

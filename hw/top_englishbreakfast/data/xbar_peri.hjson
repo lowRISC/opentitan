@@ -1,0 +1,130 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "peri",
+  type: "xbar",
+  clock_primary: "clk_peri_i", // Main clock, used in sockets
+  reset_primary: "rst_peri_ni", // Main reset, used in sockets
+
+  nodes: [
+    { name:  "main",
+      type:  "host",
+      clock: "clk_peri_i",
+      reset: "rst_peri_ni",
+      xbar:  "true",
+      pipeline: "false"
+
+    },
+    { name:      "uart",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "gpio",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "spi_device",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "rv_timer",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "usbdev",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "pwrmgr",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "rstmgr",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "clkmgr",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "ram_ret",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false",
+    },
+    { name:      "otp_ctrl",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "lc_ctrl",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "sensor_ctrl",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false",
+    },
+    { name:      "alert_handler",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false",
+    },
+    { name:      "sram_ctrl_ret",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    // dummy module to capture the alert handler escalation signals
+    // and test them by converting them into IRQs
+    { name:      "nmi_gen",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false",
+    }
+    { name:      "ast_wrapper",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false",
+      stub:      true,
+      addr_range:
+      [
+        {
+          base_addr: 0x40180000
+          size_byte: 0x1000
+        }
+      ]
+    },
+  ],
+  connections: {
+    main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr", "rstmgr", "clkmgr",
+            "ram_ret", "otp_ctrl", "lc_ctrl", "sensor_ctrl", "alert_handler", "nmi_gen",
+            "ast_wrapper", "sram_ctrl_ret"],
+  },
+}

@@ -1,0 +1,69 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:top_englishbreakfast_cw305:0.1"
+description: "English Breakfast toplevel for the ChipWhisperer CW305 board"
+
+filesets:
+  files_rtl_cw305:
+    depend:
+      - lowrisc:systems:top_englishbreakfast:0.1
+      - lowrisc:systems:topgen
+    files:
+      - rtl/clkgen_xil7series.sv
+      - rtl/top_englishbreakfast_cw305.sv
+    file_type: systemVerilogSource
+
+  files_constraints:
+    files:
+      - data/pins_cw305.xdc
+      - data/clocks.xdc
+    file_type: xdc
+
+  files_tcl:
+    files:
+      - util/vivado_setup_hooks.tcl: { file_type: tclSource }
+      # File copied by fusesoc into the workroot (the file containing the
+      # .eda.yml file), and referenced from vivado_setup_hooks.tcl
+      - util/vivado_hook_synth_design_pre.tcl: { file_type: user, copyto: vivado_hook_synth_design_pre.tcl }
+      - util/vivado_hook_write_bitstream_pre.tcl: { file_type: user, copyto: vivado_hook_write_bitstream_pre.tcl }
+      - util/vivado_hook_opt_design_post.tcl: { file_type: user, copyto: vivado_hook_opt_design_post.tcl }
+
+parameters:
+  # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
+  # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
+  # --BootRomInitFile=$PWD/build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem
+  # XXX: The VMEM file should be added to the sources of the Vivado project to
+  # make the Vivado dependency tracking work. However this requires changes to
+  # fusesoc first.
+  BootRomInitFile:
+    datatype: str
+    description: Boot ROM initialization file in 32 bit vmem hex format
+    default: "../../../../../build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem"
+    paramtype: vlogparam
+  # For value definition, please see ip/prim/rtl/prim_pkg.sv
+  PRIM_DEFAULT_IMPL:
+    datatype: str
+    paramtype: vlogdefine
+    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl_cw305
+    toplevel: top_englishbreakfast_cw305
+
+  synth:
+    default_tool: vivado
+    filesets:
+      - files_rtl_cw305
+      - files_constraints
+      - files_tcl
+    toplevel: top_englishbreakfast_cw305
+    parameters:
+      - BootRomInitFile
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
+    tools:
+      vivado:
+        part: "xc7a100tftg256-2" # CW305 Board

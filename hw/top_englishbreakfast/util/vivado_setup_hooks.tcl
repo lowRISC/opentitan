@@ -1,0 +1,1 @@
+../../top_earlgrey/util/vivado_setup_hooks.tcl
