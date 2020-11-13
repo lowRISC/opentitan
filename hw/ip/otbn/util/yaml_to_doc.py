@@ -129,7 +129,8 @@ def render_encoding(mnemonic: str,
     # Now run down the ranges in descending order of msb to get the table cells
     next_bit = 31
     for msb in sorted(by_msb.keys(), reverse=True):
-        # Sanity check to make sure we have a dense table
+        # Check to make sure we have a dense table (this should be guaranteed
+        # because encoding objects ensure they hit every bit).
         assert msb == next_bit
 
         width, desc = by_msb[msb]

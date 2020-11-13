@@ -58,8 +58,8 @@ class SnippetGens:
             # Note that there should always be at least one non-zero weight in
             # real_weights. random.choices doesn't check that: if you pass all
             # weights equal to zero, it always picks the last element. Since
-            # that would cause an infinite loop, add a sanity check here to
-            # make sure that the choice we made had positive weight.
+            # that would cause an infinite loop, add a check here to make sure
+            # that the choice we made had positive weight.
             assert real_weights[idx] > 0
 
             # Run the generator to generate a snippet
