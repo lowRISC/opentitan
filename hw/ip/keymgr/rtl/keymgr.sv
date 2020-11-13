@@ -97,6 +97,7 @@ module keymgr import keymgr_pkg::*; #(
   keymgr_gen_out_e key_sel;
   logic adv_en, id_en, gen_en;
   logic load_key;
+  logic wipe_key;
   logic [Shares-1:0][KeyWidth-1:0] kmac_key;
   logic op_done;
   logic init_done;
@@ -112,7 +113,7 @@ module keymgr import keymgr_pkg::*; #(
   keymgr_ctrl u_ctrl (
     .clk_i,
     .rst_ni,
-    .keymgr_en_i(lc_i.keymgr_en),
+    .en_i(lc_i.keymgr_en),
     .prng_en_o(ctrl_lfsr_en),
     .entropy_i(lfsr[63:32]),  // TBD, recommend directly interfacing with DRBG for keymgr_ctrl
     .init_i(reg2hw.control.init.q),
@@ -128,6 +129,7 @@ module keymgr import keymgr_pkg::*; #(
     .hw_sel_o(key_sel),
     .stage_sel_o(stage_sel),
     .load_key_o(load_key),
+    .wipe_key_o(wipe_key),
     .adv_en_o(adv_en),
     .id_en_o(id_en),
     .gen_en_o(gen_en),
@@ -154,7 +156,7 @@ module keymgr import keymgr_pkg::*; #(
   keymgr_cfg_en u_cfgen (
     .clk_i,
     .rst_ni,
-    .keymgr_en_i(lc_i.keymgr_en),
+    .en_i(lc_i.keymgr_en),
     .set_i(op_done | init_done),
     .clr_i(reg2hw.control.start.q | reg2hw.control.init.q),
     .out_o(hw2reg.cfgen.d)
@@ -280,12 +282,15 @@ module keymgr import keymgr_pkg::*; #(
   /////////////////////////////////////
   //  Side load key storage
   /////////////////////////////////////
-  keymgr_sideload_key_ctrl u_sideload_ctrl(
+  logic [31:0] key_entropy;
+  assign key_entropy = lfsr[63:32];
+
+  keymgr_sideload_key_ctrl u_sideload_ctrl (
     .clk_i,
     .rst_ni,
-    .en_i(lc_i.keymgr_en),
     .init_i(init_done),
-    .entropy_i(lfsr[63:32]),
+    .entropy_i(key_entropy),
+    .wipe_key_i(wipe_key),
     .dest_sel_i(keymgr_key_dest_e'(reg2hw.control.dest_sel)),
     .key_sel_i(key_sel),
     .load_key_i(load_key),
@@ -299,10 +304,10 @@ module keymgr import keymgr_pkg::*; #(
   );
 
   for (genvar i = 0; i < 8; i++) begin : gen_sw_assigns
-    assign hw2reg.sw_share0_output[i].d  = kmac_data[0][i*32 +: 32];
-    assign hw2reg.sw_share1_output[i].d  = kmac_data[1][i*32 +: 32];
-    assign hw2reg.sw_share0_output[i].de = data_valid & (key_sel == SwKey);
-    assign hw2reg.sw_share1_output[i].de = data_valid & (key_sel == SwKey);
+    assign hw2reg.sw_share0_output[i].d  = wipe_key ? key_entropy : kmac_data[0][i*32 +: 32];
+    assign hw2reg.sw_share1_output[i].d  = wipe_key ? key_entropy : kmac_data[1][i*32 +: 32];
+    assign hw2reg.sw_share0_output[i].de = wipe_key | data_valid & (key_sel == SwKey);
+    assign hw2reg.sw_share1_output[i].de = wipe_key | data_valid & (key_sel == SwKey);
   end
 
 

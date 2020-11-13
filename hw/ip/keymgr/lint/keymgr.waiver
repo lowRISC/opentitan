@@ -7,5 +7,5 @@
 waive -rules {MISSING_STATE} -location {keymgr_ctrl.sv} -regexp {.*StDisabled.*} \
       -comment "Disabled state absorbed into default."
 
-waive -rules {TERMINAL_STATE} -location {keymgr_sideload_key_ctrl.sv} -regexp {.*StStop.*} \
+waive -rules {TERMINAL_STATE} -location {keymgr_sideload_key_ctrl.sv} -regexp {.*StSideloadStop.*} \
       -comment "Intentional terminal state."
