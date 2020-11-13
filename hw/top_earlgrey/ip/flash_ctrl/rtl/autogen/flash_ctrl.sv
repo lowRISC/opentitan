@@ -313,6 +313,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     // phase indication
     .phase_o(hw_phase),
 
+    // phy read buffer enable
+    .rd_buf_en_o(flash_o.rd_buf_en),
+
     // init ongoing
     .init_busy_o(ctrl_init_busy)
   );
