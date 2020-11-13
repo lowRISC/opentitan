@@ -189,8 +189,6 @@ class RegOperandType(OperandType):
              is_dest: bool,
              what: str,
              scheme_field: Optional[EncSchemeField]) -> 'RegOperandType':
-        '''Sanity-checking smart constructor'''
-
         if scheme_field is not None:
             fmt = RegOperandType.TYPE_FMTS.get(reg_type)
             assert fmt is not None
@@ -265,8 +263,6 @@ class ImmOperandType(OperandType):
              pc_rel: bool,
              what: str,
              scheme_field: Optional[EncSchemeField]) -> 'ImmOperandType':
-        '''Sanity-checking smart constructor'''
-
         if scheme_field is not None:
             # If there is an encoding scheme, check its width is compatible
             # with the operand type. If the operand type doesn't specify a

@@ -231,9 +231,9 @@ class Program:
         sec_addr, open_section = self._cur_section
 
         # The "insns_left" tracking in OpenSection should ensure that this
-        # section doesn't collide with anything else in self._sections. As a
-        # quick sanity check, we make sure the base address isn't duplicated
-        # (of course, that's not a full check, but it can't hurt).
+        # section doesn't collide with anything else in self._sections. To
+        # catch really silly errors, we make sure the base address isn't
+        # duplicated (of course, that's not a full check, but it can't hurt).
         assert sec_addr not in self._sections
         self._sections[sec_addr] = open_section.insns
 

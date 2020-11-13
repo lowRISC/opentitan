@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 .PHONY: all
-all: lint asm-sanity
+all: lint asm-check
 
 # We need a directory to build stuff and use the "otbn/util" namespace
 # in the top-level build-bin directory.
@@ -33,8 +33,8 @@ lint: $(lint-stamps)
 $(lint-targets): lint-%:
 	mypy --strict $* $(pylibs)
 
-# Sanity check target that assembles and links each of the code
-# snippets.
+# Target that assembles and links each of the code snippets to make
+# sure the toolchain is in a reasonable shape.
 
 otbn-code-snippets-obj-dir := $(cs-build-dir)
 otbn-code-snippets-bin-dir := $(cs-build-dir)
@@ -42,8 +42,8 @@ otbn-code-snippets-util-dir  := .
 
 include $(repo-top)/sw/otbn/code-snippets/rules.mk
 
-.PHONY: asm-sanity
-asm-sanity: $(otbn-code-snippets-elfs)
+.PHONY: asm-check
+asm-check: $(otbn-code-snippets-elfs)
 
 .PHONY: clean
 clean:

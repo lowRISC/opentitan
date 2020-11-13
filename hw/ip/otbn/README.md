@@ -40,7 +40,7 @@ Will assemble and link `prog.s` and produce various outputs using
 
 The instruction set is described in machine readable form in
 `data/insns.yml`. This is parsed by Python code in
-`util/insn_yaml.py`, which runs various sanity checks on the data. The
+`util/insn_yaml.py`, which runs various basic checks on the data. The
 binutils-based toolchain described above uses this information. Other
 users include:
 

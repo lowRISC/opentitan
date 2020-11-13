@@ -417,7 +417,7 @@ jobs:
       ./hw/ip/otbn/dv/smoke/run_smoke.sh
     displayName: OTBN Smoke Test
   - bash: |
-      make -C hw/ip/otbn/util asm-sanity
+      make -C hw/ip/otbn/util asm-check
     displayName: Assemble and link code snippets
 
 - job: top_earlgrey_nexysvideo
