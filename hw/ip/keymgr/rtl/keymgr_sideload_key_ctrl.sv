@@ -9,8 +9,8 @@
 module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   input clk_i,
   input rst_ni,
-  input en_i,
   input init_i,
+  input wipe_key_i,
   input [31:0] entropy_i,
   input keymgr_key_dest_e dest_sel_i,
   input keymgr_gen_out_e key_sel_i,
@@ -61,14 +61,14 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
 
     unique case (state_q)
       StSideloadReset: begin
-        if (init_i && en_i) begin
+        if (init_i) begin
           state_d = StSideloadIdle;
         end
       end
 
       StSideloadIdle: begin
         keys_en = 1'b1;
-        if (!en_i) begin
+        if (wipe_key_i) begin
           keys_en = 1'b0;
           state_d = StSideloadWipe;
         end
@@ -77,7 +77,9 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
       StSideloadWipe: begin
         keys_en = 1'b0;
         clr = 1'b1;
-        state_d = StSideloadStop;
+        if (!wipe_key_i) begin
+          state_d = StSideloadStop;
+        end
       end
 
       // intentional terminal state

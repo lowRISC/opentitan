@@ -128,7 +128,12 @@ When entering Disabled random values are used to compute a new random value.
 The function of the key manager is directly tied to the life cycle controller.
 During specific life cycle states, the key manager is explicitly disabled.
 
-When disabled, key manager will not advance or generate and if currently in an operational state, will automatically transition to `Disabled`.
+When disabled, the following key manager behavior applies:
+-  If the key manager has not been initialized, it cannot be initialized until life cycle enables key manager.
+-  If the key manager has been initialized and is currently in a valid state, it immediately wipes its key contents (working state, sideload keys and software keys) and transitions to `Disabled`.
+   -  Note, unlike a normal software requested disable, this path does not gracefully interact with KMAC, instead the secret contents are forcibly wiped.
+   -  If there is an ongoing transaction with KMAC, the handshake with KMAC is still completed as usual, however the results are discarded and the value sent to KMAC are also not real.
+-  Once the system settles to `Disabled` state, the behavior is consistent with normal behavior.
 
 
 ## Commands in Each State
@@ -224,7 +229,7 @@ Key manager is primarily composed of two components:
 ### Key Manager Control
 
 The key manager control block manages the working state, sideload key updates, as well as what commands are valid in each state.
-It also handles the life cycle keymgr_en input, which helps disable the entire key manager function in the event of an escalation.
+It also handles the life cycle `keymgr_en` input, which helps disable the entire key manager function in the event of an escalation.
 
 ![Key Manager Control Block Diagram](keymgr_control_diagram.svg)
 

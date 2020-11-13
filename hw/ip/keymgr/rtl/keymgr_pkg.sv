@@ -75,12 +75,13 @@ package keymgr_pkg;
   // Enumeration for working state
   typedef enum logic [2:0] {
     StReset = 0,
-    StWipe = 1,
+    StRandom = 1,
     StInit = 2,
     StCreatorRootKey = 3,
     StOwnerIntKey = 4,
     StOwnerKey = 5,
-    StDisabled = 6
+    StWipe = 6,
+    StDisabled = 7
   } keymgr_working_state_e;
 
   // Enumeration for operation status

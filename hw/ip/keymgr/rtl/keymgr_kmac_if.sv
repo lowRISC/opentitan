@@ -202,9 +202,12 @@ module keymgr_kmac_if import keymgr_pkg::*;(
       end
 
       StClean: begin
-        // make sure there's a cycle of random data to keymgr_ctrl/kmac before transitioning
-        // back to idle
-        state_d = StIdle;
+        done_o = 1'b1;
+
+        // wait for control side to ack done by waiting start de-assertion
+        if (!start) begin
+          state_d = StIdle;
+        end
       end
 
       // trigger error
