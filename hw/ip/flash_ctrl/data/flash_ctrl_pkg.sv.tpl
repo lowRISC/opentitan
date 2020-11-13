@@ -251,6 +251,7 @@ package flash_ctrl_pkg;
     mp_region_cfg_t [MpRegions:0] region_cfgs;
     logic [127:0]         addr_key;
     logic [127:0]         data_key;
+    logic                 rd_buf_en;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)
@@ -269,7 +270,8 @@ package flash_ctrl_pkg;
     prog_type:   FlashProgNormal,
     region_cfgs: '0,
     addr_key:    128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
-    data_key:    128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE
+    data_key:    128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE,
+    rd_buf_en:   1'b0
   };
 
   // memory to flash controller

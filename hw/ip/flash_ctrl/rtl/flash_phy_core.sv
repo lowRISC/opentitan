@@ -33,6 +33,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   input flash_ctrl_pkg::flash_prog_e prog_type_i,
   input [KeySize-1:0]                addr_key_i,
   input [KeySize-1:0]                data_key_i,
+  input                              rd_buf_en_i,
   output logic [ProgTypes-1:0]       prog_type_avail_o,
   output logic                       host_req_rdy_o,
   output logic                       host_req_done_o,
@@ -242,6 +243,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   flash_phy_rd u_rd (
     .clk_i,
     .rst_ni,
+    .buf_en_i(rd_buf_en_i),
     .req_i(reqs[PhyRead]),
     .descramble_i(muxed_scramble_en),
     .ecc_i(muxed_ecc_en),

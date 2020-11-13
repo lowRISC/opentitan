@@ -17,7 +17,7 @@
 // The allocate and descramble indication received at read stage are saved.
 // When the read completes, depending on the 'descramble' indication saved, the
 // data is either stored into FIFO (reg + skid) between read and descramble stage,
-// or forwarded directly to the buffers (no de-scramble)
+// or forwarded directly to the buffer (no de-scramble)
 //
 // If the storage element between read and de-scramble stages are completely full
 // for any reason, then the read stage cannot start.
@@ -29,6 +29,9 @@
 module flash_phy_rd import flash_phy_pkg::*; (
   input clk_i,
   input rst_ni,
+
+  // configuration interface from flash controller
+  input buf_en_i,
 
   // interface with arbitration unit
   input req_i,
@@ -65,6 +68,9 @@ module flash_phy_rd import flash_phy_pkg::*; (
   /////////////////////////////////
   // Read buffers
   /////////////////////////////////
+
+  // internal buffer enable
+  logic buf_en_q;
 
   // muxed de-scrambled and plain-data
   logic [DataWidth-1:0] muxed_data;
@@ -147,6 +153,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // do not attempt to generate match unless the transaction is relevant
   for (genvar i = 0; i < NumBuf; i++) begin: gen_buf_match
     assign buf_match[i] = req_i &
+                          buf_en_q &
                           (buf_valid[i] | buf_wip[i]) &
                           (read_buf[i].addr == flash_word_addr) &
                           (read_buf[i].part == part_i);
@@ -180,7 +187,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   assign no_match = ~|buf_match;
 
   // if new request does not match anything, allocate
-  assign alloc = no_match ? {NumBuf{req_i}} &  buf_alloc : '0;
+  assign alloc = no_match ? {NumBuf{req_i & buf_en_q}} &  buf_alloc : '0;
 
   // read buffers
   // allocate sets state to Wip
@@ -190,6 +197,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
     flash_phy_rd_buffers u_rd_buf (
       .clk_i,
       .rst_ni,
+      .en_i(buf_en_q),
       .alloc_i(rdy_o & alloc[i]),
       .update_i(update[i] & ~muxed_err),
       .wipe_i(data_hazard[i]),
@@ -198,6 +206,15 @@ module flash_phy_rd import flash_phy_pkg::*; (
       .data_i(muxed_data),
       .out_o(read_buf[i])
     );
+  end
+
+  // buffer enable cannot be changed unless the entire read pipeline is idle
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      buf_en_q <= 1'b0;
+    end else if (idle_o) begin
+      buf_en_q <= buf_en_i;
+    end
   end
 
   /////////////////////////////////
@@ -478,11 +495,14 @@ module flash_phy_rd import flash_phy_pkg::*; (
                   fifo_data_ready ? alloc_q2 : '0;
 
   // match in flash response when allocated buffer is the same as top of response fifo
-  assign flash_rsp_match = rsp_fifo_vld & data_valid & (rsp_fifo_rdata.buf_sel == update);
+  // if read buffers are not enabled, do not check buffer selection
+  assign flash_rsp_match = rsp_fifo_vld & data_valid &
+                           (~buf_en_q | rsp_fifo_rdata.buf_sel == update);
 
   // match in buf response when there is a valid buffer that is the same as top of response fifo
   for (genvar i = 0; i < NumBuf; i++) begin: gen_buf_rsp_match
-    assign buf_rsp_match[i] = rsp_fifo_vld & (rsp_fifo_rdata.buf_sel[i] & buf_valid[i]);
+    assign buf_rsp_match[i] = buf_en_q & rsp_fifo_vld &
+                              (rsp_fifo_rdata.buf_sel[i] & buf_valid[i]);
   end
 
   // select among the buffers
