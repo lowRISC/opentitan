@@ -1,0 +1,19 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for top_englishbreakfast
+
+# dedicated reset drivers / muxes
+set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
+set_clock_drivers prim_clock_buf
+
+# All leaf resets have a reset multiplex
+waive -rules RESET_MUX -location {top_englishbreakfast.sv} -regexp {Asynchronous reset .*rstmgr_resets\.rst.* is driven by a multiplexer} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
+## xbar
+#waive -rules HIER_NET_NOT_READ -location {tlul_xbar.sv} -regexp {a_source.* is not read from} \
+#      -comment "upper bits of a_source are shifted off when going through M:1 sockets"
+#waive -rules LINE_LENGTH -location {xbar_main.sv} -regexp {Line length of .* exceeds 100 character limit} \
+#      -comment "This is a generated file and it is hence permissible to have line lengths that exceed this limit"

@@ -1,0 +1,94 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+
+  // This is the primary cfg hjson for RTL linting. It imports ALL individual lint
+  // cfgs of the IPs and the full chip used in top_englishbreakfast. This enables to run
+  // them all as a regression in one shot.
+  name: top_englishbreakfast_batch
+
+  flow: lint
+
+  import_cfgs:      [// common server configuration for results upload
+                     "{proj_root}/hw/data/common_project_cfg.hjson"
+                     // tool-specific configuration
+                     "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
+
+  // Different dashboard output path for each tool
+  rel_path: "hw/top_englishbreakfast/lint/{tool}"
+
+  use_cfgs: [{    name: alert_handler
+                  fusesoc_core: lowrisc:ip:alert_handler
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/alert_handler/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
+             {    name: flash_ctrl
+                  fusesoc_core: lowrisc:ip:flash_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/flash_ctrl/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
+             {    name: otp_ctrl
+                  fusesoc_core: lowrisc:ip:otp_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/otp_ctrl/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
+             {    name: pwrmgr
+                  fusesoc_core: lowrisc:ip:pwrmgr
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
+                  rel_path: "hw/ip/pwrmgr/lint/{tool}",
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
+             {    name: rstmgr
+                  fusesoc_core: lowrisc:ip:rstmgr
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
+                  rel_path: "hw/top_englishbreakfast/ip/rstmgr/lint/{tool}",
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
+             {    name: sensor_ctrl
+                  fusesoc_core: lowrisc:systems:sensor_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/top_englishbreakfast/ip/sensor_ctrl/lint/{tool}"
+             },
+             // This currently doesn't work. We need to tell dvsim to call topgen.
+             //{    name: top_englishbreakfast
+             //     fusesoc_core: lowrisc:systems:top_englishbreakfast
+             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+             //     rel_path: "hw/top_englishbreakfast/lint/{tool}"
+             //     overrides: [
+             //       {
+             //         name: design_level
+             //         value: "top"
+             //       }
+             //     ]
+             //},
+            ]
+}

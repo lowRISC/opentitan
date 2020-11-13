@@ -1,0 +1,120 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:top_englishbreakfast_verilator:0.1"
+description: "English Breakfast toplevel for simulation with Verilator"
+filesets:
+  files_sim_verilator:
+    depend:
+      - lowrisc:systems:top_englishbreakfast:0.1
+      - lowrisc:systems:topgen
+      - lowrisc:dv_dpi:uartdpi
+      - lowrisc:dv_dpi:gpiodpi
+      - lowrisc:dv_dpi:jtagdpi
+      - lowrisc:dv_dpi:dmidpi
+      - lowrisc:dv_dpi:spidpi
+      - lowrisc:dv_dpi:usbdpi
+      - lowrisc:dv_verilator:memutil_verilator
+      - lowrisc:dv_verilator:simutil_verilator
+      - lowrisc:ibex:ibex_tracer
+      - lowrisc:dv:sim_sram
+      - lowrisc:dv:sw_test_status
+
+    files:
+      - rtl/top_englishbreakfast_verilator.sv: { file_type: systemVerilogSource }
+      - top_englishbreakfast_verilator.cc: { file_type: cppSource }
+
+parameters:
+  # For value definition, please see ip/prim/rtl/prim_pkg.sv
+  PRIM_DEFAULT_IMPL:
+    datatype: str
+    paramtype: vlogdefine
+    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
+  RVFI:
+    datatype: bool
+    paramtype: vlogdefine
+    description: Enable the RISC-V Verification Interface and instruction tracing
+  VERILATOR_MEM_BASE:
+    datatype: int
+    paramtype: vlogdefine
+    description: Main memory mem base.
+  VERILATOR_TEST_STATUS_ADDR:
+    datatype: int
+    paramtype: vlogdefine
+    description: Verilator specific address to write to, to report the test status. This value should be at a word offset in the unmapped address space.
+  flashinit:
+    datatype : file
+    description : Application to load into Flash (in Verilog hex format)
+    paramtype : cmdlinearg
+  rominit:
+    datatype : file
+    description : Application to load into Boot ROM (in Verilog hex format)
+    paramtype : cmdlinearg
+  DMIDirectTAP:
+    datatype: bool
+    paramtype: vlogdefine
+    default: true
+    description: Replace JTAG TAP with an OpenOCD direct connection
+  UART_LOG_uart0:
+    datatype: string
+    paramtype: plusarg
+    description: Write a log of output from uart0 to the given log file. Use "-" for stdout.
+  RV_CORE_IBEX_SIM_SRAM:
+    datatype: bool
+    paramtype: vlogdefine
+    description: Disconnect the TL data output of rv_core_ibex so that we can attach the simulation SRAM.
+
+targets:
+  default: &default_target
+    filesets:
+      - files_sim_verilator
+    toplevel: top_englishbreakfast_verilator
+
+  sim:
+    parameters:
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
+      - RVFI=true
+      - VERILATOR_MEM_BASE=0x10000000
+      - VERILATOR_TEST_STATUS_ADDR=0x30000000
+      - flashinit
+      - rominit
+      - DMIDirectTAP
+      - RV_CORE_IBEX_SIM_SRAM=true
+    default_tool: verilator
+    filesets:
+      - files_sim_verilator
+    toplevel: top_englishbreakfast_verilator
+    tools:
+      verilator:
+        mode: cc
+        verilator_options:
+          # Disabling tracing reduces compile times but doesn't have a
+          # huge influence on runtime performance.
+          - '--trace'
+          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+          # Remove FST options for VCD trace
+          - '--trace-structs'
+          - '--trace-params'
+          - '--trace-max-array 1024'
+          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=top_englishbreakfast_verilator -g"'
+          - '-LDFLAGS "-pthread -lutil -lelf"'
+          - '-Wall'
+          # Execute simulation with four threads by default, which works best
+          # with four physical CPU cores.
+          # Users can override this setting by appending e.g.
+          # --verilator_options '--threads 2'
+          # to the end of the fusesoc invocation when compiling the simulation.
+          - '--threads 4'
+          # XXX: Cleanup all warnings and remove this option
+          # (or make it more fine-grained at least)
+          - '-Wno-fatal'
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

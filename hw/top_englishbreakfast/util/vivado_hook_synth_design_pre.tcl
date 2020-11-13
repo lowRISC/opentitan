@@ -1,0 +1,1 @@
+../../top_earlgrey/util/vivado_hook_synth_design_pre.tcl

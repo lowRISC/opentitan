@@ -1,0 +1,111 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:top_englishbreakfast:0.1"
+description: "Technology-independent English Breakfast toplevel"
+filesets:
+  files_rtl_generic:
+    depend:
+      - lowrisc:systems:topgen
+      - lowrisc:constants:top_pkg
+      - lowrisc:tlul:headers
+      # Manually instantiated
+      - lowrisc:ip:rv_core_ibex
+      - lowrisc:ip:rv_dm
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:prim:ram_1p_adv
+      - lowrisc:prim:ram_1p_scr
+      - lowrisc:prim:rom_adv
+      - lowrisc:prim:flash
+      - lowrisc:ip:flash_ctrl
+      - lowrisc:ip:sram_ctrl
+      # Instantiated by topgen
+      - lowrisc:ip:uart:0.1
+      - lowrisc:ip:alert_handler
+      - lowrisc:ip:gpio
+      - lowrisc:ip:rv_plic_component
+      - lowrisc:ip:pinmux_component
+      - lowrisc:ip:padctrl_component
+      - lowrisc:ip:rv_timer
+      - lowrisc:ip:spi_device
+      - lowrisc:ip:aes
+      - lowrisc:ip:entropy_src
+      - lowrisc:ip:hmac
+      - lowrisc:ip:kmac
+      - lowrisc:ip:keymgr
+      - lowrisc:ip:nmi_gen
+      - lowrisc:ip:otp_ctrl
+      - lowrisc:ip:lc_ctrl
+      - lowrisc:ip:usbdev
+      - lowrisc:ip:rstmgr
+      - lowrisc:ip:pwrmgr
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_englishbreakfast.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_englishbreakfast.waiver
+    file_type: waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+  # For value definition, please see ip/prim/rtl/prim_pkg.sv
+  PRIM_DEFAULT_IMPL:
+    datatype: str
+    paramtype: vlogdefine
+    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
+    default: prim_pkg::ImplGeneric
+
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - files_rtl_generic
+    parameters:
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
+    toplevel: top_englishbreakfast
+
+  sim:
+    default_tool: icarus
+    filesets:
+      - files_rtl_generic
+    parameters:
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
+    toplevel: top_englishbreakfast
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+

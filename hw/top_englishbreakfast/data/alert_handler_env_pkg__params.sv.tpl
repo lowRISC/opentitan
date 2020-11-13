@@ -1,0 +1,1 @@
+../../top_earlgrey/data/alert_handler_env_pkg__params.sv.tpl

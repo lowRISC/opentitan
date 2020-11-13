@@ -1,0 +1,1 @@
+../../top_earlgrey/util/vivado_hook_write_bitstream_pre.tcl

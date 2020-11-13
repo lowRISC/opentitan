@@ -1,0 +1,1 @@
+../../top_earlgrey/rtl/clkgen_xil7series.sv

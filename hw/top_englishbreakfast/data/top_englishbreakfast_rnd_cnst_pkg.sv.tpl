@@ -1,0 +1,1 @@
+../../top_earlgrey/data/top_earlgrey_rnd_cnst_pkg.sv.tpl
