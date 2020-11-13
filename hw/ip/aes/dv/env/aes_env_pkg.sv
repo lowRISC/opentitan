@@ -34,6 +34,17 @@ package aes_env_pkg;
     bit          key;
   } clear_t;
 
+  typedef struct packed {
+    bit          reset;
+    bit          mal_inject;
+    bit          cfg;
+  } error_types_t;
+
+  typedef struct packed {
+    bit          key_len;
+    bit          mode;
+  } cfg_error_type_t;
+
 
   // package sources
  `include "aes_env_cfg.sv"
