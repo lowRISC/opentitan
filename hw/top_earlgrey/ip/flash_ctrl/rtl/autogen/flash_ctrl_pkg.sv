@@ -144,7 +144,8 @@ package flash_ctrl_pkg;
     rd_en:       1'b1,
     prog_en:     1'b0,
     erase_en:    1'b0,
-    scramble_en: 1'b0  // TBD, update to 1 once tb supports ECC
+    scramble_en: 1'b0,
+    ecc_en:      1'b0  // TBD, update to 1 once tb supports ECC
   };
 
   parameter info_page_cfg_t CfgAllowReadErase = '{
@@ -152,7 +153,8 @@ package flash_ctrl_pkg;
     rd_en:       1'b1,
     prog_en:     1'b0,
     erase_en:    1'b1,
-    scramble_en: 1'b0  // TBD, update to 1 once tb supports ECC
+    scramble_en: 1'b0,
+    ecc_en:      1'b0  // TBD, update to 1 once tb supports ECC
   };
 
   parameter info_page_attr_t HwInfoPageAttr[HwInfoRules] = '{
@@ -184,6 +186,7 @@ package flash_ctrl_pkg;
                  prog_en:     1'b0,
                  erase_en:    1'b1,
                  scramble_en: 1'b0,
+                 ecc_en:      1'b0,
                  base:        '0,
                  size:        '{default:'1}
                 }
@@ -239,6 +242,7 @@ package flash_ctrl_pkg;
   typedef struct packed {
     logic                 req;
     logic                 scramble_en;
+    logic                 ecc_en;
     logic                 rd;
     logic                 prog;
     logic                 pg_erase;
@@ -257,6 +261,7 @@ package flash_ctrl_pkg;
   parameter flash_req_t FLASH_REQ_DEFAULT = '{
     req:         1'b0,
     scramble_en: 1'b0,
+    ecc_en:      1'b0,
     rd:          1'b0,
     prog:        1'b0,
     pg_erase:    1'b0,
