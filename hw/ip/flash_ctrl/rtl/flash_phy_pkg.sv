@@ -72,6 +72,7 @@ package flash_phy_pkg;
   typedef struct packed {
     logic [BankAddrW-1:0] addr;
     logic descramble;
+    logic ecc;
   } rd_attr_t;
 
   // Flash Operations Supported

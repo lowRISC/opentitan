@@ -33,6 +33,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // interface with arbitration unit
   input req_i,
   input descramble_i,
+  input ecc_i,
   input prog_i,
   input pg_erase_i,
   input bk_erase_i,
@@ -274,6 +275,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
       alloc_q <= alloc;
       rd_attrs.addr <= addr_i[BusBankAddrW-1:LsbAddrBit];
       rd_attrs.descramble <= descramble_i;
+      rd_attrs.ecc <= ecc_i;
     end else if (rd_done) begin
       rd_busy <= 1'b0;
     end
@@ -320,6 +322,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .syndrome_o(),
     .err_o({ecc_err, ecc_single_err})
   );
+
   assign unused_err = ecc_single_err;
 
   // If data needs to be de-scrambled and has not been erased, pass through ecc decoder.
@@ -327,9 +330,9 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // Likewise, ecc error is only observed if the data needs to be de-scrambled and has not been
   // erased.
   // rd_done signal below is duplicated (already in data_erased) to show clear intent of the code.
-  assign data_int = (rd_done && rd_attrs.descramble && !data_erased) ? data_ecc_chk :
-                                                                       data_i[DataWidth-1:0];
-  assign data_err = (rd_done && rd_attrs.descramble && !data_erased) ? ecc_err : 1'b0;
+  assign data_int = (rd_done && rd_attrs.ecc && !data_erased) ? data_ecc_chk :
+                                                                data_i[DataWidth-1:0];
+  assign data_err = (rd_done && rd_attrs.ecc && !data_erased) ? ecc_err : 1'b0;
 
   /////////////////////////////////
   // De-scrambling stage

@@ -516,6 +516,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign region_cfgs[MpRegions].prog_en.q = reg2hw.default_region.prog_en.q;
   assign region_cfgs[MpRegions].erase_en.q = reg2hw.default_region.erase_en.q;
   assign region_cfgs[MpRegions].scramble_en.q = reg2hw.default_region.scramble_en.q;
+  assign region_cfgs[MpRegions].ecc_en.q = reg2hw.default_region.ecc_en.q;
 
   //////////////////////////////////////
   // Info partition protection configuration
@@ -591,6 +592,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     // flash phy interface
     .req_o(flash_o.req),
     .scramble_en_o(flash_o.scramble_en),
+    .ecc_en_o(flash_o.ecc_en),
     .rd_o(flash_o.rd),
     .prog_o(flash_o.prog),
     .pg_erase_o(flash_o.pg_erase),
