@@ -27,6 +27,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   input rst_ni,
   input req_i,
   input scramble_i,
+  input ecc_i,
   input [WordSelW-1:0] sel_i,
   input [BusWidth-1:0] data_i,
   input last_i,
@@ -239,7 +240,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   );
 
   // pad the remaining bits to '0', this effectively "programs" them.
-  assign data_o = scramble_i ? FullDataWidth'(ecc_data) : FullDataWidth'(packed_data);
+  assign data_o = ecc_i ? FullDataWidth'(ecc_data) : FullDataWidth'(packed_data);
 
   /////////////////////////////////
   // Assertions

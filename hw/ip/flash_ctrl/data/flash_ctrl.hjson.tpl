@@ -388,7 +388,14 @@
             { bits: "4",
               name: "SCRAMBLE_EN",
               desc: '''
-                Region is scramble and ECC enabled.
+                Region is scramble enabled.
+              ''',
+              resval: "0"
+            }
+            { bits: "5",
+              name: "ECC_EN",
+              desc: '''
+                Region is ECC enabled.
               ''',
               resval: "0"
             }
@@ -441,7 +448,14 @@
         { bits: "3",
           name: "SCRAMBLE_EN",
           desc: '''
-            Region is scramble and ECC enabled
+            Region is scrambleenabled
+          ''',
+          resval: "0"
+        }
+        { bits: "4",
+          name: "ECC_EN",
+          desc: '''
+            Region is ECC enabled
           ''',
           resval: "0"
         }
@@ -527,7 +541,14 @@
             { bits: "4",
               name: "SCRAMBLE_EN",
               desc: '''
-                Region is scramble and ECC enabled.
+                Region is scramble enabled.
+              ''',
+              resval: "0"
+            }
+            { bits: "5",
+              name: "ECC_EN",
+              desc: '''
+                Region is ECC enabled.
               ''',
               resval: "0"
             }
