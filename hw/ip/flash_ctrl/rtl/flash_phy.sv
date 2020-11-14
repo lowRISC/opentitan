@@ -105,7 +105,7 @@ module flash_phy import flash_ctrl_pkg::*; (
 
   // Generate host scramble_en indication, broadcasted to all banks
   localparam int TotalRegions = MpRegions + 1;
-  logic host_scramble_en;
+  logic host_scramble_en, host_ecc_en;
   data_region_attr_t region_attrs [TotalRegions];
   mp_region_cfg_t region_cfg, unused_cfg;
 
@@ -128,8 +128,9 @@ module flash_phy import flash_ctrl_pkg::*; (
   // most attributes are unused
   assign unused_cfg = region_cfg;
 
-  // only scramble attributes are looked at
+  // only scramble/ecc attributes are looked at
   assign host_scramble_en = region_cfg.scramble_en.q;
+  assign host_ecc_en = region_cfg.ecc_en.q;
 
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_flash_banks
 
@@ -163,10 +164,12 @@ module flash_phy import flash_ctrl_pkg::*; (
       .rst_ni,
       .req_i(ctrl_req),
       .scramble_en_i(flash_ctrl_i.scramble_en),
+      .ecc_en_i(flash_ctrl_i.ecc_en),
       // host request must be suppressed if response fifo cannot hold more
       // otherwise the flash_phy_core and flash_phy will get out of sync
       .host_req_i(host_req),
       .host_scramble_en_i(host_scramble_en),
+      .host_ecc_en_i(host_ecc_en),
       .host_addr_i(host_addr_i[0 +: BusBankAddrW]),
       .rd_i(flash_ctrl_i.rd),
       .prog_i(flash_ctrl_i.prog),
