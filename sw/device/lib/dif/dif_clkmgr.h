@@ -21,6 +21,23 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * An Index of a "Gateable" Clock.
+ *
+ * "Gateable" clocks are under full software control: they can be enabled and
+ * disabled by software, which directly starts and stops the identified clock.
+ */
+typedef uint32_t dif_clkmgr_gateable_clock_t;
+
+/**
+ * An Index of a "Hintable" Clock.
+ *
+ * "Hintable" clocks are under partial software control: software can suggest
+ * they are stopped, but the clock manager may delay stopping the peripheral, or
+ * may ignore the request altogether.
+ */
+typedef uint32_t dif_clkmgr_hintable_clock_t;
+
+/**
  * A toggle state: enabled, or disabled.
  *
  * This enum may be used instead of a `bool` when describing an enabled/disabled
@@ -49,6 +66,14 @@ typedef struct dif_clkmgr_params {
    * The base address for the clock manager hardware registers.
    */
   mmio_region_t base_addr;
+  /**
+   * The last index of gateable clocks being managed by this clock manager.
+   */
+  dif_clkmgr_gateable_clock_t last_gateable_clock;
+  /**
+   * The last index of of hintable clocks being managed by this clock manager.
+   */
+  dif_clkmgr_hintable_clock_t last_hintable_clock;
 } dif_clkmgr_params_t;
 
 /**
@@ -80,23 +105,6 @@ typedef enum dif_clkmgr_result {
    */
   kDifClkmgrBadArg = 2,
 } dif_clkmgr_result_t;
-
-/**
- * An Index of a "Gateable" Clock.
- *
- * "Gateable" clocks are under full software control: they can be enabled and
- * disabled by software, which directly starts and stops the identified clock.
- */
-typedef uint32_t dif_clkmgr_gateable_clock_t;
-
-/**
- * An Index of a "Hintable" Clock.
- *
- * "Hintable" clocks are under partial software control: software can suggest
- * they are stopped, but the clock manager may delay stopping the peripheral, or
- * may ignore the request altogether.
- */
-typedef uint32_t dif_clkmgr_hintable_clock_t;
 
 /**
  * Creates a new handle for a clock manager.
