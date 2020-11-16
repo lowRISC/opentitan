@@ -84,6 +84,30 @@
       reset:     "rst_main_ni"
       pipeline_byp: "false"
     },
+    { name:      "entropy_src",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      pipeline_byp: "false"
+    },
+    { name:      "csrng",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      pipeline_byp: "false"
+    },
+    { name:      "edn0",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      pipeline_byp: "false"
+    },
+    { name:      "edn1",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      pipeline_byp: "false"
+    },
     { name:      "rv_plic",
       type:      "device",
       clock:     "clk_main_i",
@@ -147,8 +171,10 @@
   connections: {
     corei:  ["rom", "debug_mem", "ram_main", "eflash"],
     cored:  ["rom", "debug_mem", "ram_main", "eflash", "peri", "flash_ctrl",
-    "aes", "hmac", "rv_plic", "pinmux", "padctrl", "alert_handler", "nmi_gen", "otbn", "keymgr", "kmac"],
+    "aes", "entropy_src", "csrng", "edn0", "edn1",
+    "hmac", "rv_plic", "pinmux", "padctrl", "alert_handler", "nmi_gen", "otbn", "keymgr", "kmac"],
     dm_sba: ["rom",              "ram_main", "eflash", "peri", "flash_ctrl",
-    "aes", "hmac", "rv_plic", "pinmux", "padctrl", "alert_handler", "nmi_gen", "otbn", "kmac"],
+    "aes", "entropy_src", "csrng", "edn0", "edn1",
+    "hmac", "rv_plic", "pinmux", "padctrl", "alert_handler", "nmi_gen", "otbn", "kmac"],
   },
 }

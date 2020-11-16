@@ -44,7 +44,7 @@
     }
     { struct:  "edn",  // edn_req_t, edn_rsp_t
       type:    "req_rsp",
-      name:    "edn_cmd",
+      name:    "edn",
       act:     "rsp",
       width:   "4",
       desc:    '''
@@ -80,6 +80,8 @@
       desc: "EDN control register",
       swaccess: "rw",
       hwaccess: "hro",
+      tags: [ // Exclude from writes to these bits since hardware actions will start.
+              "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "0",
           name: "EDN_ENABLE",
@@ -121,6 +123,8 @@
       desc: "EDN summary status register",
       swaccess: "rw",
       hwaccess: "hwo",
+      tags: [ // EDN internal HW can modify status register
+              "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "0",
           name: "REQ_MODE_SM_STS",
@@ -179,6 +183,7 @@
           desc: '''
                 This bit indicates when the command interface is ready to accept commands.
                 '''
+          resval: "1"
         }
         { bits: "1",
           name: "CMD_STS",
@@ -188,6 +193,7 @@
                 0b0: Request completed successfully
                 0b1: Request completed with an error
                 '''
+          resval: "0"
         }
       ]
     },

@@ -22,6 +22,9 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
       - lowrisc:ip:aes
+      - lowrisc:ip:entropy_src
+      - lowrisc:ip:csrng
+      - lowrisc:ip:edn
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:otbn

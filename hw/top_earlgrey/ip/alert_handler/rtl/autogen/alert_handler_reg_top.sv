@@ -157,54 +157,60 @@ module alert_handler_reg_top (
   logic alert_en_en_a_15_qs;
   logic alert_en_en_a_15_wd;
   logic alert_en_en_a_15_we;
-  logic [1:0] alert_class_class_a_0_qs;
-  logic [1:0] alert_class_class_a_0_wd;
-  logic alert_class_class_a_0_we;
-  logic [1:0] alert_class_class_a_1_qs;
-  logic [1:0] alert_class_class_a_1_wd;
-  logic alert_class_class_a_1_we;
-  logic [1:0] alert_class_class_a_2_qs;
-  logic [1:0] alert_class_class_a_2_wd;
-  logic alert_class_class_a_2_we;
-  logic [1:0] alert_class_class_a_3_qs;
-  logic [1:0] alert_class_class_a_3_wd;
-  logic alert_class_class_a_3_we;
-  logic [1:0] alert_class_class_a_4_qs;
-  logic [1:0] alert_class_class_a_4_wd;
-  logic alert_class_class_a_4_we;
-  logic [1:0] alert_class_class_a_5_qs;
-  logic [1:0] alert_class_class_a_5_wd;
-  logic alert_class_class_a_5_we;
-  logic [1:0] alert_class_class_a_6_qs;
-  logic [1:0] alert_class_class_a_6_wd;
-  logic alert_class_class_a_6_we;
-  logic [1:0] alert_class_class_a_7_qs;
-  logic [1:0] alert_class_class_a_7_wd;
-  logic alert_class_class_a_7_we;
-  logic [1:0] alert_class_class_a_8_qs;
-  logic [1:0] alert_class_class_a_8_wd;
-  logic alert_class_class_a_8_we;
-  logic [1:0] alert_class_class_a_9_qs;
-  logic [1:0] alert_class_class_a_9_wd;
-  logic alert_class_class_a_9_we;
-  logic [1:0] alert_class_class_a_10_qs;
-  logic [1:0] alert_class_class_a_10_wd;
-  logic alert_class_class_a_10_we;
-  logic [1:0] alert_class_class_a_11_qs;
-  logic [1:0] alert_class_class_a_11_wd;
-  logic alert_class_class_a_11_we;
-  logic [1:0] alert_class_class_a_12_qs;
-  logic [1:0] alert_class_class_a_12_wd;
-  logic alert_class_class_a_12_we;
-  logic [1:0] alert_class_class_a_13_qs;
-  logic [1:0] alert_class_class_a_13_wd;
-  logic alert_class_class_a_13_we;
-  logic [1:0] alert_class_class_a_14_qs;
-  logic [1:0] alert_class_class_a_14_wd;
-  logic alert_class_class_a_14_we;
-  logic [1:0] alert_class_class_a_15_qs;
-  logic [1:0] alert_class_class_a_15_wd;
-  logic alert_class_class_a_15_we;
+  logic alert_en_en_a_16_qs;
+  logic alert_en_en_a_16_wd;
+  logic alert_en_en_a_16_we;
+  logic [1:0] alert_class_0_class_a_0_qs;
+  logic [1:0] alert_class_0_class_a_0_wd;
+  logic alert_class_0_class_a_0_we;
+  logic [1:0] alert_class_0_class_a_1_qs;
+  logic [1:0] alert_class_0_class_a_1_wd;
+  logic alert_class_0_class_a_1_we;
+  logic [1:0] alert_class_0_class_a_2_qs;
+  logic [1:0] alert_class_0_class_a_2_wd;
+  logic alert_class_0_class_a_2_we;
+  logic [1:0] alert_class_0_class_a_3_qs;
+  logic [1:0] alert_class_0_class_a_3_wd;
+  logic alert_class_0_class_a_3_we;
+  logic [1:0] alert_class_0_class_a_4_qs;
+  logic [1:0] alert_class_0_class_a_4_wd;
+  logic alert_class_0_class_a_4_we;
+  logic [1:0] alert_class_0_class_a_5_qs;
+  logic [1:0] alert_class_0_class_a_5_wd;
+  logic alert_class_0_class_a_5_we;
+  logic [1:0] alert_class_0_class_a_6_qs;
+  logic [1:0] alert_class_0_class_a_6_wd;
+  logic alert_class_0_class_a_6_we;
+  logic [1:0] alert_class_0_class_a_7_qs;
+  logic [1:0] alert_class_0_class_a_7_wd;
+  logic alert_class_0_class_a_7_we;
+  logic [1:0] alert_class_0_class_a_8_qs;
+  logic [1:0] alert_class_0_class_a_8_wd;
+  logic alert_class_0_class_a_8_we;
+  logic [1:0] alert_class_0_class_a_9_qs;
+  logic [1:0] alert_class_0_class_a_9_wd;
+  logic alert_class_0_class_a_9_we;
+  logic [1:0] alert_class_0_class_a_10_qs;
+  logic [1:0] alert_class_0_class_a_10_wd;
+  logic alert_class_0_class_a_10_we;
+  logic [1:0] alert_class_0_class_a_11_qs;
+  logic [1:0] alert_class_0_class_a_11_wd;
+  logic alert_class_0_class_a_11_we;
+  logic [1:0] alert_class_0_class_a_12_qs;
+  logic [1:0] alert_class_0_class_a_12_wd;
+  logic alert_class_0_class_a_12_we;
+  logic [1:0] alert_class_0_class_a_13_qs;
+  logic [1:0] alert_class_0_class_a_13_wd;
+  logic alert_class_0_class_a_13_we;
+  logic [1:0] alert_class_0_class_a_14_qs;
+  logic [1:0] alert_class_0_class_a_14_wd;
+  logic alert_class_0_class_a_14_we;
+  logic [1:0] alert_class_0_class_a_15_qs;
+  logic [1:0] alert_class_0_class_a_15_wd;
+  logic alert_class_0_class_a_15_we;
+  logic [1:0] alert_class_1_qs;
+  logic [1:0] alert_class_1_wd;
+  logic alert_class_1_we;
   logic alert_cause_a_0_qs;
   logic alert_cause_a_0_wd;
   logic alert_cause_a_0_we;
@@ -253,6 +259,9 @@ module alert_handler_reg_top (
   logic alert_cause_a_15_qs;
   logic alert_cause_a_15_wd;
   logic alert_cause_a_15_we;
+  logic alert_cause_a_16_qs;
+  logic alert_cause_a_16_wd;
+  logic alert_cause_a_16_we;
   logic loc_alert_en_en_la_0_qs;
   logic loc_alert_en_en_la_0_wd;
   logic loc_alert_en_en_la_0_we;
@@ -1275,23 +1284,49 @@ module alert_handler_reg_top (
   );
 
 
+  // F[en_a_16]: 16:16
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_alert_en_en_a_16 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_en_en_a_16_we & regen_qs),
+    .wd     (alert_en_en_a_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_en[16].q ),
+
+    // to register interface (read)
+    .qs     (alert_en_en_a_16_qs)
+  );
+
+
 
 
   // Subregister 0 of Multireg alert_class
-  // R[alert_class]: V(False)
+  // R[alert_class_0]: V(False)
 
   // F[class_a_0]: 1:0
   prim_subreg #(
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_0 (
+  ) u_alert_class_0_class_a_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_0_we & regen_qs),
-    .wd     (alert_class_class_a_0_wd),
+    .we     (alert_class_0_class_a_0_we & regen_qs),
+    .wd     (alert_class_0_class_a_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1302,7 +1337,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[0].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_0_qs)
+    .qs     (alert_class_0_class_a_0_qs)
   );
 
 
@@ -1311,13 +1346,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_1 (
+  ) u_alert_class_0_class_a_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_1_we & regen_qs),
-    .wd     (alert_class_class_a_1_wd),
+    .we     (alert_class_0_class_a_1_we & regen_qs),
+    .wd     (alert_class_0_class_a_1_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1328,7 +1363,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[1].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_1_qs)
+    .qs     (alert_class_0_class_a_1_qs)
   );
 
 
@@ -1337,13 +1372,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_2 (
+  ) u_alert_class_0_class_a_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_2_we & regen_qs),
-    .wd     (alert_class_class_a_2_wd),
+    .we     (alert_class_0_class_a_2_we & regen_qs),
+    .wd     (alert_class_0_class_a_2_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1354,7 +1389,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[2].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_2_qs)
+    .qs     (alert_class_0_class_a_2_qs)
   );
 
 
@@ -1363,13 +1398,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_3 (
+  ) u_alert_class_0_class_a_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_3_we & regen_qs),
-    .wd     (alert_class_class_a_3_wd),
+    .we     (alert_class_0_class_a_3_we & regen_qs),
+    .wd     (alert_class_0_class_a_3_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1380,7 +1415,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[3].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_3_qs)
+    .qs     (alert_class_0_class_a_3_qs)
   );
 
 
@@ -1389,13 +1424,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_4 (
+  ) u_alert_class_0_class_a_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_4_we & regen_qs),
-    .wd     (alert_class_class_a_4_wd),
+    .we     (alert_class_0_class_a_4_we & regen_qs),
+    .wd     (alert_class_0_class_a_4_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1406,7 +1441,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[4].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_4_qs)
+    .qs     (alert_class_0_class_a_4_qs)
   );
 
 
@@ -1415,13 +1450,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_5 (
+  ) u_alert_class_0_class_a_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_5_we & regen_qs),
-    .wd     (alert_class_class_a_5_wd),
+    .we     (alert_class_0_class_a_5_we & regen_qs),
+    .wd     (alert_class_0_class_a_5_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1432,7 +1467,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[5].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_5_qs)
+    .qs     (alert_class_0_class_a_5_qs)
   );
 
 
@@ -1441,13 +1476,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_6 (
+  ) u_alert_class_0_class_a_6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_6_we & regen_qs),
-    .wd     (alert_class_class_a_6_wd),
+    .we     (alert_class_0_class_a_6_we & regen_qs),
+    .wd     (alert_class_0_class_a_6_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1458,7 +1493,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[6].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_6_qs)
+    .qs     (alert_class_0_class_a_6_qs)
   );
 
 
@@ -1467,13 +1502,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_7 (
+  ) u_alert_class_0_class_a_7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_7_we & regen_qs),
-    .wd     (alert_class_class_a_7_wd),
+    .we     (alert_class_0_class_a_7_we & regen_qs),
+    .wd     (alert_class_0_class_a_7_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1484,7 +1519,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[7].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_7_qs)
+    .qs     (alert_class_0_class_a_7_qs)
   );
 
 
@@ -1493,13 +1528,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_8 (
+  ) u_alert_class_0_class_a_8 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_8_we & regen_qs),
-    .wd     (alert_class_class_a_8_wd),
+    .we     (alert_class_0_class_a_8_we & regen_qs),
+    .wd     (alert_class_0_class_a_8_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1510,7 +1545,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[8].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_8_qs)
+    .qs     (alert_class_0_class_a_8_qs)
   );
 
 
@@ -1519,13 +1554,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_9 (
+  ) u_alert_class_0_class_a_9 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_9_we & regen_qs),
-    .wd     (alert_class_class_a_9_wd),
+    .we     (alert_class_0_class_a_9_we & regen_qs),
+    .wd     (alert_class_0_class_a_9_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1536,7 +1571,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[9].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_9_qs)
+    .qs     (alert_class_0_class_a_9_qs)
   );
 
 
@@ -1545,13 +1580,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_10 (
+  ) u_alert_class_0_class_a_10 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_10_we & regen_qs),
-    .wd     (alert_class_class_a_10_wd),
+    .we     (alert_class_0_class_a_10_we & regen_qs),
+    .wd     (alert_class_0_class_a_10_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1562,7 +1597,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[10].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_10_qs)
+    .qs     (alert_class_0_class_a_10_qs)
   );
 
 
@@ -1571,13 +1606,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_11 (
+  ) u_alert_class_0_class_a_11 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_11_we & regen_qs),
-    .wd     (alert_class_class_a_11_wd),
+    .we     (alert_class_0_class_a_11_we & regen_qs),
+    .wd     (alert_class_0_class_a_11_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1588,7 +1623,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[11].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_11_qs)
+    .qs     (alert_class_0_class_a_11_qs)
   );
 
 
@@ -1597,13 +1632,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_12 (
+  ) u_alert_class_0_class_a_12 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_12_we & regen_qs),
-    .wd     (alert_class_class_a_12_wd),
+    .we     (alert_class_0_class_a_12_we & regen_qs),
+    .wd     (alert_class_0_class_a_12_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1614,7 +1649,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[12].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_12_qs)
+    .qs     (alert_class_0_class_a_12_qs)
   );
 
 
@@ -1623,13 +1658,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_13 (
+  ) u_alert_class_0_class_a_13 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_13_we & regen_qs),
-    .wd     (alert_class_class_a_13_wd),
+    .we     (alert_class_0_class_a_13_we & regen_qs),
+    .wd     (alert_class_0_class_a_13_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1640,7 +1675,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[13].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_13_qs)
+    .qs     (alert_class_0_class_a_13_qs)
   );
 
 
@@ -1649,13 +1684,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_14 (
+  ) u_alert_class_0_class_a_14 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_14_we & regen_qs),
-    .wd     (alert_class_class_a_14_wd),
+    .we     (alert_class_0_class_a_14_we & regen_qs),
+    .wd     (alert_class_0_class_a_14_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1666,7 +1701,7 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[14].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_14_qs)
+    .qs     (alert_class_0_class_a_14_qs)
   );
 
 
@@ -1675,13 +1710,13 @@ module alert_handler_reg_top (
     .DW      (2),
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
-  ) u_alert_class_class_a_15 (
+  ) u_alert_class_0_class_a_15 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_class_a_15_we & regen_qs),
-    .wd     (alert_class_class_a_15_wd),
+    .we     (alert_class_0_class_a_15_we & regen_qs),
+    .wd     (alert_class_0_class_a_15_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1692,9 +1727,36 @@ module alert_handler_reg_top (
     .q      (reg2hw.alert_class[15].q ),
 
     // to register interface (read)
-    .qs     (alert_class_class_a_15_qs)
+    .qs     (alert_class_0_class_a_15_qs)
   );
 
+
+  // Subregister 16 of Multireg alert_class
+  // R[alert_class_1]: V(False)
+
+  prim_subreg #(
+    .DW      (2),
+    .SWACCESS("RW"),
+    .RESVAL  (2'h0)
+  ) u_alert_class_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_class_1_we & regen_qs),
+    .wd     (alert_class_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_class[16].q ),
+
+    // to register interface (read)
+    .qs     (alert_class_1_qs)
+  );
 
 
 
@@ -2114,6 +2176,32 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_cause_a_15_qs)
+  );
+
+
+  // F[a_16]: 16:16
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_alert_cause_a_16 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (alert_cause_a_16_we),
+    .wd     (alert_cause_a_16_wd),
+
+    // from internal hardware
+    .de     (hw2reg.alert_cause[16].de),
+    .d      (hw2reg.alert_cause[16].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_cause[16].q ),
+
+    // to register interface (read)
+    .qs     (alert_cause_a_16_qs)
   );
 
 
@@ -4547,7 +4635,7 @@ module alert_handler_reg_top (
 
 
 
-  logic [58:0] addr_hit;
+  logic [59:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == ALERT_HANDLER_INTR_STATE_OFFSET);
@@ -4556,59 +4644,60 @@ module alert_handler_reg_top (
     addr_hit[ 3] = (reg_addr == ALERT_HANDLER_REGEN_OFFSET);
     addr_hit[ 4] = (reg_addr == ALERT_HANDLER_PING_TIMEOUT_CYC_OFFSET);
     addr_hit[ 5] = (reg_addr == ALERT_HANDLER_ALERT_EN_OFFSET);
-    addr_hit[ 6] = (reg_addr == ALERT_HANDLER_ALERT_CLASS_OFFSET);
-    addr_hit[ 7] = (reg_addr == ALERT_HANDLER_ALERT_CAUSE_OFFSET);
-    addr_hit[ 8] = (reg_addr == ALERT_HANDLER_LOC_ALERT_EN_OFFSET);
-    addr_hit[ 9] = (reg_addr == ALERT_HANDLER_LOC_ALERT_CLASS_OFFSET);
-    addr_hit[10] = (reg_addr == ALERT_HANDLER_LOC_ALERT_CAUSE_OFFSET);
-    addr_hit[11] = (reg_addr == ALERT_HANDLER_CLASSA_CTRL_OFFSET);
-    addr_hit[12] = (reg_addr == ALERT_HANDLER_CLASSA_CLREN_OFFSET);
-    addr_hit[13] = (reg_addr == ALERT_HANDLER_CLASSA_CLR_OFFSET);
-    addr_hit[14] = (reg_addr == ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET);
-    addr_hit[15] = (reg_addr == ALERT_HANDLER_CLASSA_ACCUM_THRESH_OFFSET);
-    addr_hit[16] = (reg_addr == ALERT_HANDLER_CLASSA_TIMEOUT_CYC_OFFSET);
-    addr_hit[17] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE0_CYC_OFFSET);
-    addr_hit[18] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE1_CYC_OFFSET);
-    addr_hit[19] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE2_CYC_OFFSET);
-    addr_hit[20] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE3_CYC_OFFSET);
-    addr_hit[21] = (reg_addr == ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET);
-    addr_hit[22] = (reg_addr == ALERT_HANDLER_CLASSA_STATE_OFFSET);
-    addr_hit[23] = (reg_addr == ALERT_HANDLER_CLASSB_CTRL_OFFSET);
-    addr_hit[24] = (reg_addr == ALERT_HANDLER_CLASSB_CLREN_OFFSET);
-    addr_hit[25] = (reg_addr == ALERT_HANDLER_CLASSB_CLR_OFFSET);
-    addr_hit[26] = (reg_addr == ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET);
-    addr_hit[27] = (reg_addr == ALERT_HANDLER_CLASSB_ACCUM_THRESH_OFFSET);
-    addr_hit[28] = (reg_addr == ALERT_HANDLER_CLASSB_TIMEOUT_CYC_OFFSET);
-    addr_hit[29] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE0_CYC_OFFSET);
-    addr_hit[30] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE1_CYC_OFFSET);
-    addr_hit[31] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE2_CYC_OFFSET);
-    addr_hit[32] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE3_CYC_OFFSET);
-    addr_hit[33] = (reg_addr == ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET);
-    addr_hit[34] = (reg_addr == ALERT_HANDLER_CLASSB_STATE_OFFSET);
-    addr_hit[35] = (reg_addr == ALERT_HANDLER_CLASSC_CTRL_OFFSET);
-    addr_hit[36] = (reg_addr == ALERT_HANDLER_CLASSC_CLREN_OFFSET);
-    addr_hit[37] = (reg_addr == ALERT_HANDLER_CLASSC_CLR_OFFSET);
-    addr_hit[38] = (reg_addr == ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET);
-    addr_hit[39] = (reg_addr == ALERT_HANDLER_CLASSC_ACCUM_THRESH_OFFSET);
-    addr_hit[40] = (reg_addr == ALERT_HANDLER_CLASSC_TIMEOUT_CYC_OFFSET);
-    addr_hit[41] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE0_CYC_OFFSET);
-    addr_hit[42] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE1_CYC_OFFSET);
-    addr_hit[43] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE2_CYC_OFFSET);
-    addr_hit[44] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE3_CYC_OFFSET);
-    addr_hit[45] = (reg_addr == ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET);
-    addr_hit[46] = (reg_addr == ALERT_HANDLER_CLASSC_STATE_OFFSET);
-    addr_hit[47] = (reg_addr == ALERT_HANDLER_CLASSD_CTRL_OFFSET);
-    addr_hit[48] = (reg_addr == ALERT_HANDLER_CLASSD_CLREN_OFFSET);
-    addr_hit[49] = (reg_addr == ALERT_HANDLER_CLASSD_CLR_OFFSET);
-    addr_hit[50] = (reg_addr == ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET);
-    addr_hit[51] = (reg_addr == ALERT_HANDLER_CLASSD_ACCUM_THRESH_OFFSET);
-    addr_hit[52] = (reg_addr == ALERT_HANDLER_CLASSD_TIMEOUT_CYC_OFFSET);
-    addr_hit[53] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE0_CYC_OFFSET);
-    addr_hit[54] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE1_CYC_OFFSET);
-    addr_hit[55] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE2_CYC_OFFSET);
-    addr_hit[56] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE3_CYC_OFFSET);
-    addr_hit[57] = (reg_addr == ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET);
-    addr_hit[58] = (reg_addr == ALERT_HANDLER_CLASSD_STATE_OFFSET);
+    addr_hit[ 6] = (reg_addr == ALERT_HANDLER_ALERT_CLASS_0_OFFSET);
+    addr_hit[ 7] = (reg_addr == ALERT_HANDLER_ALERT_CLASS_1_OFFSET);
+    addr_hit[ 8] = (reg_addr == ALERT_HANDLER_ALERT_CAUSE_OFFSET);
+    addr_hit[ 9] = (reg_addr == ALERT_HANDLER_LOC_ALERT_EN_OFFSET);
+    addr_hit[10] = (reg_addr == ALERT_HANDLER_LOC_ALERT_CLASS_OFFSET);
+    addr_hit[11] = (reg_addr == ALERT_HANDLER_LOC_ALERT_CAUSE_OFFSET);
+    addr_hit[12] = (reg_addr == ALERT_HANDLER_CLASSA_CTRL_OFFSET);
+    addr_hit[13] = (reg_addr == ALERT_HANDLER_CLASSA_CLREN_OFFSET);
+    addr_hit[14] = (reg_addr == ALERT_HANDLER_CLASSA_CLR_OFFSET);
+    addr_hit[15] = (reg_addr == ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET);
+    addr_hit[16] = (reg_addr == ALERT_HANDLER_CLASSA_ACCUM_THRESH_OFFSET);
+    addr_hit[17] = (reg_addr == ALERT_HANDLER_CLASSA_TIMEOUT_CYC_OFFSET);
+    addr_hit[18] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE0_CYC_OFFSET);
+    addr_hit[19] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE1_CYC_OFFSET);
+    addr_hit[20] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE2_CYC_OFFSET);
+    addr_hit[21] = (reg_addr == ALERT_HANDLER_CLASSA_PHASE3_CYC_OFFSET);
+    addr_hit[22] = (reg_addr == ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET);
+    addr_hit[23] = (reg_addr == ALERT_HANDLER_CLASSA_STATE_OFFSET);
+    addr_hit[24] = (reg_addr == ALERT_HANDLER_CLASSB_CTRL_OFFSET);
+    addr_hit[25] = (reg_addr == ALERT_HANDLER_CLASSB_CLREN_OFFSET);
+    addr_hit[26] = (reg_addr == ALERT_HANDLER_CLASSB_CLR_OFFSET);
+    addr_hit[27] = (reg_addr == ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET);
+    addr_hit[28] = (reg_addr == ALERT_HANDLER_CLASSB_ACCUM_THRESH_OFFSET);
+    addr_hit[29] = (reg_addr == ALERT_HANDLER_CLASSB_TIMEOUT_CYC_OFFSET);
+    addr_hit[30] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE0_CYC_OFFSET);
+    addr_hit[31] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE1_CYC_OFFSET);
+    addr_hit[32] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE2_CYC_OFFSET);
+    addr_hit[33] = (reg_addr == ALERT_HANDLER_CLASSB_PHASE3_CYC_OFFSET);
+    addr_hit[34] = (reg_addr == ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET);
+    addr_hit[35] = (reg_addr == ALERT_HANDLER_CLASSB_STATE_OFFSET);
+    addr_hit[36] = (reg_addr == ALERT_HANDLER_CLASSC_CTRL_OFFSET);
+    addr_hit[37] = (reg_addr == ALERT_HANDLER_CLASSC_CLREN_OFFSET);
+    addr_hit[38] = (reg_addr == ALERT_HANDLER_CLASSC_CLR_OFFSET);
+    addr_hit[39] = (reg_addr == ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET);
+    addr_hit[40] = (reg_addr == ALERT_HANDLER_CLASSC_ACCUM_THRESH_OFFSET);
+    addr_hit[41] = (reg_addr == ALERT_HANDLER_CLASSC_TIMEOUT_CYC_OFFSET);
+    addr_hit[42] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE0_CYC_OFFSET);
+    addr_hit[43] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE1_CYC_OFFSET);
+    addr_hit[44] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE2_CYC_OFFSET);
+    addr_hit[45] = (reg_addr == ALERT_HANDLER_CLASSC_PHASE3_CYC_OFFSET);
+    addr_hit[46] = (reg_addr == ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET);
+    addr_hit[47] = (reg_addr == ALERT_HANDLER_CLASSC_STATE_OFFSET);
+    addr_hit[48] = (reg_addr == ALERT_HANDLER_CLASSD_CTRL_OFFSET);
+    addr_hit[49] = (reg_addr == ALERT_HANDLER_CLASSD_CLREN_OFFSET);
+    addr_hit[50] = (reg_addr == ALERT_HANDLER_CLASSD_CLR_OFFSET);
+    addr_hit[51] = (reg_addr == ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET);
+    addr_hit[52] = (reg_addr == ALERT_HANDLER_CLASSD_ACCUM_THRESH_OFFSET);
+    addr_hit[53] = (reg_addr == ALERT_HANDLER_CLASSD_TIMEOUT_CYC_OFFSET);
+    addr_hit[54] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE0_CYC_OFFSET);
+    addr_hit[55] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE1_CYC_OFFSET);
+    addr_hit[56] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE2_CYC_OFFSET);
+    addr_hit[57] = (reg_addr == ALERT_HANDLER_CLASSD_PHASE3_CYC_OFFSET);
+    addr_hit[58] = (reg_addr == ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET);
+    addr_hit[59] = (reg_addr == ALERT_HANDLER_CLASSD_STATE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -4675,6 +4764,7 @@ module alert_handler_reg_top (
     if (addr_hit[56] && reg_we && (ALERT_HANDLER_PERMIT[56] != (ALERT_HANDLER_PERMIT[56] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[57] && reg_we && (ALERT_HANDLER_PERMIT[57] != (ALERT_HANDLER_PERMIT[57] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[58] && reg_we && (ALERT_HANDLER_PERMIT[58] != (ALERT_HANDLER_PERMIT[58] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[59] && reg_we && (ALERT_HANDLER_PERMIT[59] != (ALERT_HANDLER_PERMIT[59] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_classa_we = addr_hit[0] & reg_we & ~wr_err;
@@ -4767,377 +4857,386 @@ module alert_handler_reg_top (
   assign alert_en_en_a_15_we = addr_hit[5] & reg_we & ~wr_err;
   assign alert_en_en_a_15_wd = reg_wdata[15];
 
-  assign alert_class_class_a_0_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_0_wd = reg_wdata[1:0];
+  assign alert_en_en_a_16_we = addr_hit[5] & reg_we & ~wr_err;
+  assign alert_en_en_a_16_wd = reg_wdata[16];
 
-  assign alert_class_class_a_1_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_1_wd = reg_wdata[3:2];
+  assign alert_class_0_class_a_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_0_wd = reg_wdata[1:0];
 
-  assign alert_class_class_a_2_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_2_wd = reg_wdata[5:4];
+  assign alert_class_0_class_a_1_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_1_wd = reg_wdata[3:2];
 
-  assign alert_class_class_a_3_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_3_wd = reg_wdata[7:6];
+  assign alert_class_0_class_a_2_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_2_wd = reg_wdata[5:4];
 
-  assign alert_class_class_a_4_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_4_wd = reg_wdata[9:8];
+  assign alert_class_0_class_a_3_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_3_wd = reg_wdata[7:6];
 
-  assign alert_class_class_a_5_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_5_wd = reg_wdata[11:10];
+  assign alert_class_0_class_a_4_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_4_wd = reg_wdata[9:8];
 
-  assign alert_class_class_a_6_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_6_wd = reg_wdata[13:12];
+  assign alert_class_0_class_a_5_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_5_wd = reg_wdata[11:10];
 
-  assign alert_class_class_a_7_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_7_wd = reg_wdata[15:14];
+  assign alert_class_0_class_a_6_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_6_wd = reg_wdata[13:12];
 
-  assign alert_class_class_a_8_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_8_wd = reg_wdata[17:16];
+  assign alert_class_0_class_a_7_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_7_wd = reg_wdata[15:14];
 
-  assign alert_class_class_a_9_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_9_wd = reg_wdata[19:18];
+  assign alert_class_0_class_a_8_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_8_wd = reg_wdata[17:16];
 
-  assign alert_class_class_a_10_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_10_wd = reg_wdata[21:20];
+  assign alert_class_0_class_a_9_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_9_wd = reg_wdata[19:18];
 
-  assign alert_class_class_a_11_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_11_wd = reg_wdata[23:22];
+  assign alert_class_0_class_a_10_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_10_wd = reg_wdata[21:20];
 
-  assign alert_class_class_a_12_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_12_wd = reg_wdata[25:24];
+  assign alert_class_0_class_a_11_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_11_wd = reg_wdata[23:22];
 
-  assign alert_class_class_a_13_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_13_wd = reg_wdata[27:26];
+  assign alert_class_0_class_a_12_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_12_wd = reg_wdata[25:24];
 
-  assign alert_class_class_a_14_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_14_wd = reg_wdata[29:28];
+  assign alert_class_0_class_a_13_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_13_wd = reg_wdata[27:26];
 
-  assign alert_class_class_a_15_we = addr_hit[6] & reg_we & ~wr_err;
-  assign alert_class_class_a_15_wd = reg_wdata[31:30];
+  assign alert_class_0_class_a_14_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_14_wd = reg_wdata[29:28];
 
-  assign alert_cause_a_0_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_15_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_0_class_a_15_wd = reg_wdata[31:30];
+
+  assign alert_class_1_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_class_1_wd = reg_wdata[1:0];
+
+  assign alert_cause_a_0_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_0_wd = reg_wdata[0];
 
-  assign alert_cause_a_1_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_1_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_1_wd = reg_wdata[1];
 
-  assign alert_cause_a_2_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_2_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_2_wd = reg_wdata[2];
 
-  assign alert_cause_a_3_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_3_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_3_wd = reg_wdata[3];
 
-  assign alert_cause_a_4_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_4_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_4_wd = reg_wdata[4];
 
-  assign alert_cause_a_5_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_5_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_5_wd = reg_wdata[5];
 
-  assign alert_cause_a_6_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_6_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_6_wd = reg_wdata[6];
 
-  assign alert_cause_a_7_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_7_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_7_wd = reg_wdata[7];
 
-  assign alert_cause_a_8_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_8_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_8_wd = reg_wdata[8];
 
-  assign alert_cause_a_9_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_9_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_9_wd = reg_wdata[9];
 
-  assign alert_cause_a_10_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_10_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_10_wd = reg_wdata[10];
 
-  assign alert_cause_a_11_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_11_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_11_wd = reg_wdata[11];
 
-  assign alert_cause_a_12_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_12_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_12_wd = reg_wdata[12];
 
-  assign alert_cause_a_13_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_13_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_13_wd = reg_wdata[13];
 
-  assign alert_cause_a_14_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_14_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_14_wd = reg_wdata[14];
 
-  assign alert_cause_a_15_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_15_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_15_wd = reg_wdata[15];
 
-  assign loc_alert_en_en_la_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign alert_cause_a_16_we = addr_hit[8] & reg_we & ~wr_err;
+  assign alert_cause_a_16_wd = reg_wdata[16];
+
+  assign loc_alert_en_en_la_0_we = addr_hit[9] & reg_we & ~wr_err;
   assign loc_alert_en_en_la_0_wd = reg_wdata[0];
 
-  assign loc_alert_en_en_la_1_we = addr_hit[8] & reg_we & ~wr_err;
+  assign loc_alert_en_en_la_1_we = addr_hit[9] & reg_we & ~wr_err;
   assign loc_alert_en_en_la_1_wd = reg_wdata[1];
 
-  assign loc_alert_en_en_la_2_we = addr_hit[8] & reg_we & ~wr_err;
+  assign loc_alert_en_en_la_2_we = addr_hit[9] & reg_we & ~wr_err;
   assign loc_alert_en_en_la_2_wd = reg_wdata[2];
 
-  assign loc_alert_en_en_la_3_we = addr_hit[8] & reg_we & ~wr_err;
+  assign loc_alert_en_en_la_3_we = addr_hit[9] & reg_we & ~wr_err;
   assign loc_alert_en_en_la_3_wd = reg_wdata[3];
 
-  assign loc_alert_class_class_la_0_we = addr_hit[9] & reg_we & ~wr_err;
+  assign loc_alert_class_class_la_0_we = addr_hit[10] & reg_we & ~wr_err;
   assign loc_alert_class_class_la_0_wd = reg_wdata[1:0];
 
-  assign loc_alert_class_class_la_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign loc_alert_class_class_la_1_we = addr_hit[10] & reg_we & ~wr_err;
   assign loc_alert_class_class_la_1_wd = reg_wdata[3:2];
 
-  assign loc_alert_class_class_la_2_we = addr_hit[9] & reg_we & ~wr_err;
+  assign loc_alert_class_class_la_2_we = addr_hit[10] & reg_we & ~wr_err;
   assign loc_alert_class_class_la_2_wd = reg_wdata[5:4];
 
-  assign loc_alert_class_class_la_3_we = addr_hit[9] & reg_we & ~wr_err;
+  assign loc_alert_class_class_la_3_we = addr_hit[10] & reg_we & ~wr_err;
   assign loc_alert_class_class_la_3_wd = reg_wdata[7:6];
 
-  assign loc_alert_cause_la_0_we = addr_hit[10] & reg_we & ~wr_err;
+  assign loc_alert_cause_la_0_we = addr_hit[11] & reg_we & ~wr_err;
   assign loc_alert_cause_la_0_wd = reg_wdata[0];
 
-  assign loc_alert_cause_la_1_we = addr_hit[10] & reg_we & ~wr_err;
+  assign loc_alert_cause_la_1_we = addr_hit[11] & reg_we & ~wr_err;
   assign loc_alert_cause_la_1_wd = reg_wdata[1];
 
-  assign loc_alert_cause_la_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign loc_alert_cause_la_2_we = addr_hit[11] & reg_we & ~wr_err;
   assign loc_alert_cause_la_2_wd = reg_wdata[2];
 
-  assign loc_alert_cause_la_3_we = addr_hit[10] & reg_we & ~wr_err;
+  assign loc_alert_cause_la_3_we = addr_hit[11] & reg_we & ~wr_err;
   assign loc_alert_cause_la_3_wd = reg_wdata[3];
 
-  assign classa_ctrl_en_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_en_we = addr_hit[12] & reg_we & ~wr_err;
   assign classa_ctrl_en_wd = reg_wdata[0];
 
-  assign classa_ctrl_lock_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_lock_we = addr_hit[12] & reg_we & ~wr_err;
   assign classa_ctrl_lock_wd = reg_wdata[1];
 
-  assign classa_ctrl_en_e0_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_en_e0_we = addr_hit[12] & reg_we & ~wr_err;
   assign classa_ctrl_en_e0_wd = reg_wdata[2];
 
-  assign classa_ctrl_en_e1_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_en_e1_we = addr_hit[12] & reg_we & ~wr_err;
   assign classa_ctrl_en_e1_wd = reg_wdata[3];
 
-  assign classa_ctrl_en_e2_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_en_e2_we = addr_hit[12] & reg_we & ~wr_err;
   assign classa_ctrl_en_e2_wd = reg_wdata[4];
 
-  assign classa_ctrl_en_e3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_en_e3_we = addr_hit[12] & reg_we & ~wr_err;
   assign classa_ctrl_en_e3_wd = reg_wdata[5];
 
-  assign classa_ctrl_map_e0_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_map_e0_we = addr_hit[12] & reg_we & ~wr_err;
   assign classa_ctrl_map_e0_wd = reg_wdata[7:6];
 
-  assign classa_ctrl_map_e1_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_map_e1_we = addr_hit[12] & reg_we & ~wr_err;
   assign classa_ctrl_map_e1_wd = reg_wdata[9:8];
 
-  assign classa_ctrl_map_e2_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_map_e2_we = addr_hit[12] & reg_we & ~wr_err;
   assign classa_ctrl_map_e2_wd = reg_wdata[11:10];
 
-  assign classa_ctrl_map_e3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_map_e3_we = addr_hit[12] & reg_we & ~wr_err;
   assign classa_ctrl_map_e3_wd = reg_wdata[13:12];
 
-  assign classa_clren_we = addr_hit[12] & reg_we & ~wr_err;
+  assign classa_clren_we = addr_hit[13] & reg_we & ~wr_err;
   assign classa_clren_wd = reg_wdata[0];
 
-  assign classa_clr_we = addr_hit[13] & reg_we & ~wr_err;
+  assign classa_clr_we = addr_hit[14] & reg_we & ~wr_err;
   assign classa_clr_wd = reg_wdata[0];
 
-  assign classa_accum_cnt_re = addr_hit[14] && reg_re;
+  assign classa_accum_cnt_re = addr_hit[15] && reg_re;
 
-  assign classa_accum_thresh_we = addr_hit[15] & reg_we & ~wr_err;
+  assign classa_accum_thresh_we = addr_hit[16] & reg_we & ~wr_err;
   assign classa_accum_thresh_wd = reg_wdata[15:0];
 
-  assign classa_timeout_cyc_we = addr_hit[16] & reg_we & ~wr_err;
+  assign classa_timeout_cyc_we = addr_hit[17] & reg_we & ~wr_err;
   assign classa_timeout_cyc_wd = reg_wdata[31:0];
 
-  assign classa_phase0_cyc_we = addr_hit[17] & reg_we & ~wr_err;
+  assign classa_phase0_cyc_we = addr_hit[18] & reg_we & ~wr_err;
   assign classa_phase0_cyc_wd = reg_wdata[31:0];
 
-  assign classa_phase1_cyc_we = addr_hit[18] & reg_we & ~wr_err;
+  assign classa_phase1_cyc_we = addr_hit[19] & reg_we & ~wr_err;
   assign classa_phase1_cyc_wd = reg_wdata[31:0];
 
-  assign classa_phase2_cyc_we = addr_hit[19] & reg_we & ~wr_err;
+  assign classa_phase2_cyc_we = addr_hit[20] & reg_we & ~wr_err;
   assign classa_phase2_cyc_wd = reg_wdata[31:0];
 
-  assign classa_phase3_cyc_we = addr_hit[20] & reg_we & ~wr_err;
+  assign classa_phase3_cyc_we = addr_hit[21] & reg_we & ~wr_err;
   assign classa_phase3_cyc_wd = reg_wdata[31:0];
 
-  assign classa_esc_cnt_re = addr_hit[21] && reg_re;
+  assign classa_esc_cnt_re = addr_hit[22] && reg_re;
 
-  assign classa_state_re = addr_hit[22] && reg_re;
+  assign classa_state_re = addr_hit[23] && reg_re;
 
-  assign classb_ctrl_en_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_en_we = addr_hit[24] & reg_we & ~wr_err;
   assign classb_ctrl_en_wd = reg_wdata[0];
 
-  assign classb_ctrl_lock_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_lock_we = addr_hit[24] & reg_we & ~wr_err;
   assign classb_ctrl_lock_wd = reg_wdata[1];
 
-  assign classb_ctrl_en_e0_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_en_e0_we = addr_hit[24] & reg_we & ~wr_err;
   assign classb_ctrl_en_e0_wd = reg_wdata[2];
 
-  assign classb_ctrl_en_e1_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_en_e1_we = addr_hit[24] & reg_we & ~wr_err;
   assign classb_ctrl_en_e1_wd = reg_wdata[3];
 
-  assign classb_ctrl_en_e2_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_en_e2_we = addr_hit[24] & reg_we & ~wr_err;
   assign classb_ctrl_en_e2_wd = reg_wdata[4];
 
-  assign classb_ctrl_en_e3_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_en_e3_we = addr_hit[24] & reg_we & ~wr_err;
   assign classb_ctrl_en_e3_wd = reg_wdata[5];
 
-  assign classb_ctrl_map_e0_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_map_e0_we = addr_hit[24] & reg_we & ~wr_err;
   assign classb_ctrl_map_e0_wd = reg_wdata[7:6];
 
-  assign classb_ctrl_map_e1_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_map_e1_we = addr_hit[24] & reg_we & ~wr_err;
   assign classb_ctrl_map_e1_wd = reg_wdata[9:8];
 
-  assign classb_ctrl_map_e2_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_map_e2_we = addr_hit[24] & reg_we & ~wr_err;
   assign classb_ctrl_map_e2_wd = reg_wdata[11:10];
 
-  assign classb_ctrl_map_e3_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_map_e3_we = addr_hit[24] & reg_we & ~wr_err;
   assign classb_ctrl_map_e3_wd = reg_wdata[13:12];
 
-  assign classb_clren_we = addr_hit[24] & reg_we & ~wr_err;
+  assign classb_clren_we = addr_hit[25] & reg_we & ~wr_err;
   assign classb_clren_wd = reg_wdata[0];
 
-  assign classb_clr_we = addr_hit[25] & reg_we & ~wr_err;
+  assign classb_clr_we = addr_hit[26] & reg_we & ~wr_err;
   assign classb_clr_wd = reg_wdata[0];
 
-  assign classb_accum_cnt_re = addr_hit[26] && reg_re;
+  assign classb_accum_cnt_re = addr_hit[27] && reg_re;
 
-  assign classb_accum_thresh_we = addr_hit[27] & reg_we & ~wr_err;
+  assign classb_accum_thresh_we = addr_hit[28] & reg_we & ~wr_err;
   assign classb_accum_thresh_wd = reg_wdata[15:0];
 
-  assign classb_timeout_cyc_we = addr_hit[28] & reg_we & ~wr_err;
+  assign classb_timeout_cyc_we = addr_hit[29] & reg_we & ~wr_err;
   assign classb_timeout_cyc_wd = reg_wdata[31:0];
 
-  assign classb_phase0_cyc_we = addr_hit[29] & reg_we & ~wr_err;
+  assign classb_phase0_cyc_we = addr_hit[30] & reg_we & ~wr_err;
   assign classb_phase0_cyc_wd = reg_wdata[31:0];
 
-  assign classb_phase1_cyc_we = addr_hit[30] & reg_we & ~wr_err;
+  assign classb_phase1_cyc_we = addr_hit[31] & reg_we & ~wr_err;
   assign classb_phase1_cyc_wd = reg_wdata[31:0];
 
-  assign classb_phase2_cyc_we = addr_hit[31] & reg_we & ~wr_err;
+  assign classb_phase2_cyc_we = addr_hit[32] & reg_we & ~wr_err;
   assign classb_phase2_cyc_wd = reg_wdata[31:0];
 
-  assign classb_phase3_cyc_we = addr_hit[32] & reg_we & ~wr_err;
+  assign classb_phase3_cyc_we = addr_hit[33] & reg_we & ~wr_err;
   assign classb_phase3_cyc_wd = reg_wdata[31:0];
 
-  assign classb_esc_cnt_re = addr_hit[33] && reg_re;
+  assign classb_esc_cnt_re = addr_hit[34] && reg_re;
 
-  assign classb_state_re = addr_hit[34] && reg_re;
+  assign classb_state_re = addr_hit[35] && reg_re;
 
-  assign classc_ctrl_en_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_en_we = addr_hit[36] & reg_we & ~wr_err;
   assign classc_ctrl_en_wd = reg_wdata[0];
 
-  assign classc_ctrl_lock_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_lock_we = addr_hit[36] & reg_we & ~wr_err;
   assign classc_ctrl_lock_wd = reg_wdata[1];
 
-  assign classc_ctrl_en_e0_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_en_e0_we = addr_hit[36] & reg_we & ~wr_err;
   assign classc_ctrl_en_e0_wd = reg_wdata[2];
 
-  assign classc_ctrl_en_e1_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_en_e1_we = addr_hit[36] & reg_we & ~wr_err;
   assign classc_ctrl_en_e1_wd = reg_wdata[3];
 
-  assign classc_ctrl_en_e2_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_en_e2_we = addr_hit[36] & reg_we & ~wr_err;
   assign classc_ctrl_en_e2_wd = reg_wdata[4];
 
-  assign classc_ctrl_en_e3_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_en_e3_we = addr_hit[36] & reg_we & ~wr_err;
   assign classc_ctrl_en_e3_wd = reg_wdata[5];
 
-  assign classc_ctrl_map_e0_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_map_e0_we = addr_hit[36] & reg_we & ~wr_err;
   assign classc_ctrl_map_e0_wd = reg_wdata[7:6];
 
-  assign classc_ctrl_map_e1_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_map_e1_we = addr_hit[36] & reg_we & ~wr_err;
   assign classc_ctrl_map_e1_wd = reg_wdata[9:8];
 
-  assign classc_ctrl_map_e2_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_map_e2_we = addr_hit[36] & reg_we & ~wr_err;
   assign classc_ctrl_map_e2_wd = reg_wdata[11:10];
 
-  assign classc_ctrl_map_e3_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_map_e3_we = addr_hit[36] & reg_we & ~wr_err;
   assign classc_ctrl_map_e3_wd = reg_wdata[13:12];
 
-  assign classc_clren_we = addr_hit[36] & reg_we & ~wr_err;
+  assign classc_clren_we = addr_hit[37] & reg_we & ~wr_err;
   assign classc_clren_wd = reg_wdata[0];
 
-  assign classc_clr_we = addr_hit[37] & reg_we & ~wr_err;
+  assign classc_clr_we = addr_hit[38] & reg_we & ~wr_err;
   assign classc_clr_wd = reg_wdata[0];
 
-  assign classc_accum_cnt_re = addr_hit[38] && reg_re;
+  assign classc_accum_cnt_re = addr_hit[39] && reg_re;
 
-  assign classc_accum_thresh_we = addr_hit[39] & reg_we & ~wr_err;
+  assign classc_accum_thresh_we = addr_hit[40] & reg_we & ~wr_err;
   assign classc_accum_thresh_wd = reg_wdata[15:0];
 
-  assign classc_timeout_cyc_we = addr_hit[40] & reg_we & ~wr_err;
+  assign classc_timeout_cyc_we = addr_hit[41] & reg_we & ~wr_err;
   assign classc_timeout_cyc_wd = reg_wdata[31:0];
 
-  assign classc_phase0_cyc_we = addr_hit[41] & reg_we & ~wr_err;
+  assign classc_phase0_cyc_we = addr_hit[42] & reg_we & ~wr_err;
   assign classc_phase0_cyc_wd = reg_wdata[31:0];
 
-  assign classc_phase1_cyc_we = addr_hit[42] & reg_we & ~wr_err;
+  assign classc_phase1_cyc_we = addr_hit[43] & reg_we & ~wr_err;
   assign classc_phase1_cyc_wd = reg_wdata[31:0];
 
-  assign classc_phase2_cyc_we = addr_hit[43] & reg_we & ~wr_err;
+  assign classc_phase2_cyc_we = addr_hit[44] & reg_we & ~wr_err;
   assign classc_phase2_cyc_wd = reg_wdata[31:0];
 
-  assign classc_phase3_cyc_we = addr_hit[44] & reg_we & ~wr_err;
+  assign classc_phase3_cyc_we = addr_hit[45] & reg_we & ~wr_err;
   assign classc_phase3_cyc_wd = reg_wdata[31:0];
 
-  assign classc_esc_cnt_re = addr_hit[45] && reg_re;
+  assign classc_esc_cnt_re = addr_hit[46] && reg_re;
 
-  assign classc_state_re = addr_hit[46] && reg_re;
+  assign classc_state_re = addr_hit[47] && reg_re;
 
-  assign classd_ctrl_en_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_en_we = addr_hit[48] & reg_we & ~wr_err;
   assign classd_ctrl_en_wd = reg_wdata[0];
 
-  assign classd_ctrl_lock_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_lock_we = addr_hit[48] & reg_we & ~wr_err;
   assign classd_ctrl_lock_wd = reg_wdata[1];
 
-  assign classd_ctrl_en_e0_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_en_e0_we = addr_hit[48] & reg_we & ~wr_err;
   assign classd_ctrl_en_e0_wd = reg_wdata[2];
 
-  assign classd_ctrl_en_e1_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_en_e1_we = addr_hit[48] & reg_we & ~wr_err;
   assign classd_ctrl_en_e1_wd = reg_wdata[3];
 
-  assign classd_ctrl_en_e2_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_en_e2_we = addr_hit[48] & reg_we & ~wr_err;
   assign classd_ctrl_en_e2_wd = reg_wdata[4];
 
-  assign classd_ctrl_en_e3_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_en_e3_we = addr_hit[48] & reg_we & ~wr_err;
   assign classd_ctrl_en_e3_wd = reg_wdata[5];
 
-  assign classd_ctrl_map_e0_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_map_e0_we = addr_hit[48] & reg_we & ~wr_err;
   assign classd_ctrl_map_e0_wd = reg_wdata[7:6];
 
-  assign classd_ctrl_map_e1_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_map_e1_we = addr_hit[48] & reg_we & ~wr_err;
   assign classd_ctrl_map_e1_wd = reg_wdata[9:8];
 
-  assign classd_ctrl_map_e2_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_map_e2_we = addr_hit[48] & reg_we & ~wr_err;
   assign classd_ctrl_map_e2_wd = reg_wdata[11:10];
 
-  assign classd_ctrl_map_e3_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_map_e3_we = addr_hit[48] & reg_we & ~wr_err;
   assign classd_ctrl_map_e3_wd = reg_wdata[13:12];
 
-  assign classd_clren_we = addr_hit[48] & reg_we & ~wr_err;
+  assign classd_clren_we = addr_hit[49] & reg_we & ~wr_err;
   assign classd_clren_wd = reg_wdata[0];
 
-  assign classd_clr_we = addr_hit[49] & reg_we & ~wr_err;
+  assign classd_clr_we = addr_hit[50] & reg_we & ~wr_err;
   assign classd_clr_wd = reg_wdata[0];
 
-  assign classd_accum_cnt_re = addr_hit[50] && reg_re;
+  assign classd_accum_cnt_re = addr_hit[51] && reg_re;
 
-  assign classd_accum_thresh_we = addr_hit[51] & reg_we & ~wr_err;
+  assign classd_accum_thresh_we = addr_hit[52] & reg_we & ~wr_err;
   assign classd_accum_thresh_wd = reg_wdata[15:0];
 
-  assign classd_timeout_cyc_we = addr_hit[52] & reg_we & ~wr_err;
+  assign classd_timeout_cyc_we = addr_hit[53] & reg_we & ~wr_err;
   assign classd_timeout_cyc_wd = reg_wdata[31:0];
 
-  assign classd_phase0_cyc_we = addr_hit[53] & reg_we & ~wr_err;
+  assign classd_phase0_cyc_we = addr_hit[54] & reg_we & ~wr_err;
   assign classd_phase0_cyc_wd = reg_wdata[31:0];
 
-  assign classd_phase1_cyc_we = addr_hit[54] & reg_we & ~wr_err;
+  assign classd_phase1_cyc_we = addr_hit[55] & reg_we & ~wr_err;
   assign classd_phase1_cyc_wd = reg_wdata[31:0];
 
-  assign classd_phase2_cyc_we = addr_hit[55] & reg_we & ~wr_err;
+  assign classd_phase2_cyc_we = addr_hit[56] & reg_we & ~wr_err;
   assign classd_phase2_cyc_wd = reg_wdata[31:0];
 
-  assign classd_phase3_cyc_we = addr_hit[56] & reg_we & ~wr_err;
+  assign classd_phase3_cyc_we = addr_hit[57] & reg_we & ~wr_err;
   assign classd_phase3_cyc_wd = reg_wdata[31:0];
 
-  assign classd_esc_cnt_re = addr_hit[57] && reg_re;
+  assign classd_esc_cnt_re = addr_hit[58] && reg_re;
 
-  assign classd_state_re = addr_hit[58] && reg_re;
+  assign classd_state_re = addr_hit[59] && reg_re;
 
   // Read data return
   always_comb begin
@@ -5189,28 +5288,33 @@ module alert_handler_reg_top (
         reg_rdata_next[13] = alert_en_en_a_13_qs;
         reg_rdata_next[14] = alert_en_en_a_14_qs;
         reg_rdata_next[15] = alert_en_en_a_15_qs;
+        reg_rdata_next[16] = alert_en_en_a_16_qs;
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[1:0] = alert_class_class_a_0_qs;
-        reg_rdata_next[3:2] = alert_class_class_a_1_qs;
-        reg_rdata_next[5:4] = alert_class_class_a_2_qs;
-        reg_rdata_next[7:6] = alert_class_class_a_3_qs;
-        reg_rdata_next[9:8] = alert_class_class_a_4_qs;
-        reg_rdata_next[11:10] = alert_class_class_a_5_qs;
-        reg_rdata_next[13:12] = alert_class_class_a_6_qs;
-        reg_rdata_next[15:14] = alert_class_class_a_7_qs;
-        reg_rdata_next[17:16] = alert_class_class_a_8_qs;
-        reg_rdata_next[19:18] = alert_class_class_a_9_qs;
-        reg_rdata_next[21:20] = alert_class_class_a_10_qs;
-        reg_rdata_next[23:22] = alert_class_class_a_11_qs;
-        reg_rdata_next[25:24] = alert_class_class_a_12_qs;
-        reg_rdata_next[27:26] = alert_class_class_a_13_qs;
-        reg_rdata_next[29:28] = alert_class_class_a_14_qs;
-        reg_rdata_next[31:30] = alert_class_class_a_15_qs;
+        reg_rdata_next[1:0] = alert_class_0_class_a_0_qs;
+        reg_rdata_next[3:2] = alert_class_0_class_a_1_qs;
+        reg_rdata_next[5:4] = alert_class_0_class_a_2_qs;
+        reg_rdata_next[7:6] = alert_class_0_class_a_3_qs;
+        reg_rdata_next[9:8] = alert_class_0_class_a_4_qs;
+        reg_rdata_next[11:10] = alert_class_0_class_a_5_qs;
+        reg_rdata_next[13:12] = alert_class_0_class_a_6_qs;
+        reg_rdata_next[15:14] = alert_class_0_class_a_7_qs;
+        reg_rdata_next[17:16] = alert_class_0_class_a_8_qs;
+        reg_rdata_next[19:18] = alert_class_0_class_a_9_qs;
+        reg_rdata_next[21:20] = alert_class_0_class_a_10_qs;
+        reg_rdata_next[23:22] = alert_class_0_class_a_11_qs;
+        reg_rdata_next[25:24] = alert_class_0_class_a_12_qs;
+        reg_rdata_next[27:26] = alert_class_0_class_a_13_qs;
+        reg_rdata_next[29:28] = alert_class_0_class_a_14_qs;
+        reg_rdata_next[31:30] = alert_class_0_class_a_15_qs;
       end
 
       addr_hit[7]: begin
+        reg_rdata_next[1:0] = alert_class_1_qs;
+      end
+
+      addr_hit[8]: begin
         reg_rdata_next[0] = alert_cause_a_0_qs;
         reg_rdata_next[1] = alert_cause_a_1_qs;
         reg_rdata_next[2] = alert_cause_a_2_qs;
@@ -5227,30 +5331,31 @@ module alert_handler_reg_top (
         reg_rdata_next[13] = alert_cause_a_13_qs;
         reg_rdata_next[14] = alert_cause_a_14_qs;
         reg_rdata_next[15] = alert_cause_a_15_qs;
+        reg_rdata_next[16] = alert_cause_a_16_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = loc_alert_en_en_la_0_qs;
         reg_rdata_next[1] = loc_alert_en_en_la_1_qs;
         reg_rdata_next[2] = loc_alert_en_en_la_2_qs;
         reg_rdata_next[3] = loc_alert_en_en_la_3_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[10]: begin
         reg_rdata_next[1:0] = loc_alert_class_class_la_0_qs;
         reg_rdata_next[3:2] = loc_alert_class_class_la_1_qs;
         reg_rdata_next[5:4] = loc_alert_class_class_la_2_qs;
         reg_rdata_next[7:6] = loc_alert_class_class_la_3_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[11]: begin
         reg_rdata_next[0] = loc_alert_cause_la_0_qs;
         reg_rdata_next[1] = loc_alert_cause_la_1_qs;
         reg_rdata_next[2] = loc_alert_cause_la_2_qs;
         reg_rdata_next[3] = loc_alert_cause_la_3_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[12]: begin
         reg_rdata_next[0] = classa_ctrl_en_qs;
         reg_rdata_next[1] = classa_ctrl_lock_qs;
         reg_rdata_next[2] = classa_ctrl_en_e0_qs;
@@ -5263,51 +5368,51 @@ module alert_handler_reg_top (
         reg_rdata_next[13:12] = classa_ctrl_map_e3_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[13]: begin
         reg_rdata_next[0] = classa_clren_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[14]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[14]: begin
+      addr_hit[15]: begin
         reg_rdata_next[15:0] = classa_accum_cnt_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[16]: begin
         reg_rdata_next[15:0] = classa_accum_thresh_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[17]: begin
         reg_rdata_next[31:0] = classa_timeout_cyc_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[18]: begin
         reg_rdata_next[31:0] = classa_phase0_cyc_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[19]: begin
         reg_rdata_next[31:0] = classa_phase1_cyc_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[20]: begin
         reg_rdata_next[31:0] = classa_phase2_cyc_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[21]: begin
         reg_rdata_next[31:0] = classa_phase3_cyc_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[22]: begin
         reg_rdata_next[31:0] = classa_esc_cnt_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[23]: begin
         reg_rdata_next[2:0] = classa_state_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[24]: begin
         reg_rdata_next[0] = classb_ctrl_en_qs;
         reg_rdata_next[1] = classb_ctrl_lock_qs;
         reg_rdata_next[2] = classb_ctrl_en_e0_qs;
@@ -5320,51 +5425,51 @@ module alert_handler_reg_top (
         reg_rdata_next[13:12] = classb_ctrl_map_e3_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[25]: begin
         reg_rdata_next[0] = classb_clren_qs;
       end
 
-      addr_hit[25]: begin
+      addr_hit[26]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[26]: begin
+      addr_hit[27]: begin
         reg_rdata_next[15:0] = classb_accum_cnt_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[28]: begin
         reg_rdata_next[15:0] = classb_accum_thresh_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[29]: begin
         reg_rdata_next[31:0] = classb_timeout_cyc_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[30]: begin
         reg_rdata_next[31:0] = classb_phase0_cyc_qs;
       end
 
-      addr_hit[30]: begin
+      addr_hit[31]: begin
         reg_rdata_next[31:0] = classb_phase1_cyc_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[32]: begin
         reg_rdata_next[31:0] = classb_phase2_cyc_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[33]: begin
         reg_rdata_next[31:0] = classb_phase3_cyc_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[34]: begin
         reg_rdata_next[31:0] = classb_esc_cnt_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[35]: begin
         reg_rdata_next[2:0] = classb_state_qs;
       end
 
-      addr_hit[35]: begin
+      addr_hit[36]: begin
         reg_rdata_next[0] = classc_ctrl_en_qs;
         reg_rdata_next[1] = classc_ctrl_lock_qs;
         reg_rdata_next[2] = classc_ctrl_en_e0_qs;
@@ -5377,51 +5482,51 @@ module alert_handler_reg_top (
         reg_rdata_next[13:12] = classc_ctrl_map_e3_qs;
       end
 
-      addr_hit[36]: begin
+      addr_hit[37]: begin
         reg_rdata_next[0] = classc_clren_qs;
       end
 
-      addr_hit[37]: begin
+      addr_hit[38]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[38]: begin
+      addr_hit[39]: begin
         reg_rdata_next[15:0] = classc_accum_cnt_qs;
       end
 
-      addr_hit[39]: begin
+      addr_hit[40]: begin
         reg_rdata_next[15:0] = classc_accum_thresh_qs;
       end
 
-      addr_hit[40]: begin
+      addr_hit[41]: begin
         reg_rdata_next[31:0] = classc_timeout_cyc_qs;
       end
 
-      addr_hit[41]: begin
+      addr_hit[42]: begin
         reg_rdata_next[31:0] = classc_phase0_cyc_qs;
       end
 
-      addr_hit[42]: begin
+      addr_hit[43]: begin
         reg_rdata_next[31:0] = classc_phase1_cyc_qs;
       end
 
-      addr_hit[43]: begin
+      addr_hit[44]: begin
         reg_rdata_next[31:0] = classc_phase2_cyc_qs;
       end
 
-      addr_hit[44]: begin
+      addr_hit[45]: begin
         reg_rdata_next[31:0] = classc_phase3_cyc_qs;
       end
 
-      addr_hit[45]: begin
+      addr_hit[46]: begin
         reg_rdata_next[31:0] = classc_esc_cnt_qs;
       end
 
-      addr_hit[46]: begin
+      addr_hit[47]: begin
         reg_rdata_next[2:0] = classc_state_qs;
       end
 
-      addr_hit[47]: begin
+      addr_hit[48]: begin
         reg_rdata_next[0] = classd_ctrl_en_qs;
         reg_rdata_next[1] = classd_ctrl_lock_qs;
         reg_rdata_next[2] = classd_ctrl_en_e0_qs;
@@ -5434,47 +5539,47 @@ module alert_handler_reg_top (
         reg_rdata_next[13:12] = classd_ctrl_map_e3_qs;
       end
 
-      addr_hit[48]: begin
+      addr_hit[49]: begin
         reg_rdata_next[0] = classd_clren_qs;
       end
 
-      addr_hit[49]: begin
+      addr_hit[50]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[50]: begin
+      addr_hit[51]: begin
         reg_rdata_next[15:0] = classd_accum_cnt_qs;
       end
 
-      addr_hit[51]: begin
+      addr_hit[52]: begin
         reg_rdata_next[15:0] = classd_accum_thresh_qs;
       end
 
-      addr_hit[52]: begin
+      addr_hit[53]: begin
         reg_rdata_next[31:0] = classd_timeout_cyc_qs;
       end
 
-      addr_hit[53]: begin
+      addr_hit[54]: begin
         reg_rdata_next[31:0] = classd_phase0_cyc_qs;
       end
 
-      addr_hit[54]: begin
+      addr_hit[55]: begin
         reg_rdata_next[31:0] = classd_phase1_cyc_qs;
       end
 
-      addr_hit[55]: begin
+      addr_hit[56]: begin
         reg_rdata_next[31:0] = classd_phase2_cyc_qs;
       end
 
-      addr_hit[56]: begin
+      addr_hit[57]: begin
         reg_rdata_next[31:0] = classd_phase3_cyc_qs;
       end
 
-      addr_hit[57]: begin
+      addr_hit[58]: begin
         reg_rdata_next[31:0] = classd_esc_cnt_qs;
       end
 
-      addr_hit[58]: begin
+      addr_hit[59]: begin
         reg_rdata_next[2:0] = classd_state_qs;
       end
 

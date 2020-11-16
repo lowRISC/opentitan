@@ -229,7 +229,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0x40130000u
+#define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0x411b0000u
 
 /**
  * Peripheral size for alert_handler in top earlgrey.
@@ -301,7 +301,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_NMI_GEN_BASE_ADDR 0x40140000u
+#define TOP_EARLGREY_NMI_GEN_BASE_ADDR 0x411c0000u
 
 /**
  * Peripheral size for nmi_gen in top earlgrey.
@@ -384,6 +384,78 @@ extern "C" {
  * `TOP_EARLGREY_OTP_CTRL_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_SIZE_BYTES`.
  */
 #define TOP_EARLGREY_OTP_CTRL_SIZE_BYTES 0x4000u
+
+/**
+ * Peripheral base address for csrng in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_CSRNG_BASE_ADDR 0x41150000u
+
+/**
+ * Peripheral size for csrng in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_CSRNG_BASE_ADDR and
+ * `TOP_EARLGREY_CSRNG_BASE_ADDR + TOP_EARLGREY_CSRNG_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_CSRNG_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for entropy_src in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR 0x41160000u
+
+/**
+ * Peripheral size for entropy_src in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR and
+ * `TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR + TOP_EARLGREY_ENTROPY_SRC_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_ENTROPY_SRC_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for edn0 in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_EDN0_BASE_ADDR 0x41170000u
+
+/**
+ * Peripheral size for edn0 in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_EDN0_BASE_ADDR and
+ * `TOP_EARLGREY_EDN0_BASE_ADDR + TOP_EARLGREY_EDN0_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_EDN0_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for edn1 in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_EDN1_BASE_ADDR 0x41180000u
+
+/**
+ * Peripheral size for edn1 in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_EDN1_BASE_ADDR and
+ * `TOP_EARLGREY_EDN1_BASE_ADDR + TOP_EARLGREY_EDN1_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_EDN1_SIZE_BYTES 0x1000u
 
 /**
  * Peripheral base address for otbn in top earlgrey.
@@ -598,7 +670,8 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralSensorCtrl = 2, /**< sensor_ctrl */
   kTopEarlgreyAlertPeripheralKeymgr = 3, /**< keymgr */
   kTopEarlgreyAlertPeripheralOtpCtrl = 4, /**< otp_ctrl */
-  kTopEarlgreyAlertPeripheralLast = 4, /**< \internal Final Alert peripheral */
+  kTopEarlgreyAlertPeripheralEntropySrc = 5, /**< entropy_src */
+  kTopEarlgreyAlertPeripheralLast = 5, /**< \internal Final Alert peripheral */
 } top_earlgrey_alert_peripheral_t;
 
 /**
@@ -624,7 +697,8 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdKeymgrOperationErr = 13, /**< keymgr_operation_err */
   kTopEarlgreyAlertIdOtpCtrlOtpMacroFailure = 14, /**< otp_ctrl_otp_macro_failure */
   kTopEarlgreyAlertIdOtpCtrlOtpCheckFailure = 15, /**< otp_ctrl_otp_check_failure */
-  kTopEarlgreyAlertIdLast = 15, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdEntropySrcEsAlertCountMet = 16, /**< entropy_src_es_alert_count_met */
+  kTopEarlgreyAlertIdLast = 16, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -634,7 +708,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[16];
+    top_earlgrey_alert_for_peripheral[17];
 
 #define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
 

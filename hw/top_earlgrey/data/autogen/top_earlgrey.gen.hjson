@@ -1647,7 +1647,7 @@
       {
         rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40130000
+      base_addr: 0x411b0000
       generated: "true"
       localparam:
       {
@@ -2256,7 +2256,7 @@
       {
         rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40140000
+      base_addr: 0x411c0000
       clock_reset_export: []
       clock_connections:
       {
@@ -3354,6 +3354,512 @@
       ]
     }
     {
+      name: csrng
+      type: csrng
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
+      }
+      base_addr: 0x41150000
+      clock_reset_export: []
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_secure
+      }
+      domain: "0"
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list:
+      [
+        {
+          name: SBoxImpl
+          type: aes_pkg::sbox_impl_e
+          default: aes_pkg::SBoxImplLut
+          desc: Selection of the S-Box implementation. See aes_pkg.sv.
+          local: "false"
+          expose: "true"
+          randcount: "0"
+          randtype: none
+          name_top: CsrngSBoxImpl
+        }
+      ]
+      interrupt_list:
+      [
+        {
+          name: cs_cmd_req_done
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: cs_entropy_req
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: cs_hw_inst_exc
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+        {
+          name: cs_fifo_err
+          width: 1
+          bits: "3"
+          bitinfo:
+          [
+            8
+            1
+            3
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      wakeup_list: []
+      reset_request_list: []
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: csrng
+          type: req_rsp
+          name: csrng_cmd
+          act: rsp
+          package: csrng_pkg
+          width: 2
+          inst_name: csrng
+          default: ""
+          top_signame: csrng_csrng_cmd
+          index: -1
+        }
+        {
+          struct: entropy_src_hw_if
+          type: req_rsp
+          name: entropy_src_hw_if
+          act: req
+          package: entropy_src_pkg
+          inst_name: csrng
+          width: 1
+          default: ""
+          top_signame: csrng_entropy_src_hw_if
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: efuse_sw_app_enable
+          act: rcv
+          width: 1
+          package: ""
+          inst_name: csrng
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_dft_en
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: csrng
+          index: -1
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: csrng
+          width: 1
+          default: ""
+          top_signame: csrng_tl
+          index: -1
+        }
+      ]
+    }
+    {
+      name: entropy_src
+      type: entropy_src
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
+      }
+      base_addr: 0x41160000
+      clock_reset_export: []
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_secure
+      }
+      domain: "0"
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list: []
+      interrupt_list:
+      [
+        {
+          name: es_entropy_valid
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: es_health_test_failed
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: es_fifo_err
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list:
+      [
+        {
+          name: es_alert_count_met
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: alert
+          async: 0
+        }
+      ]
+      wakeup_list: []
+      reset_request_list: []
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: entropy_src_hw_if
+          type: req_rsp
+          name: entropy_src_hw_if
+          act: rsp
+          package: entropy_src_pkg
+          inst_name: entropy_src
+          width: 1
+          default: ""
+          top_signame: csrng_entropy_src_hw_if
+          index: -1
+        }
+        {
+          struct: entropy_src_rng
+          type: req_rsp
+          name: entropy_src_rng
+          act: req
+          package: entropy_src_pkg
+          inst_name: entropy_src
+          index: -1
+        }
+        {
+          struct: entropy_src_xht
+          type: req_rsp
+          name: entropy_src_xht
+          act: req
+          package: entropy_src_pkg
+          inst_name: entropy_src
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: efuse_es_sw_reg_en
+          act: rcv
+          width: 1
+          package: ""
+          inst_name: entropy_src
+          index: -1
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: entropy_src
+          width: 1
+          default: ""
+          top_signame: entropy_src_tl
+          index: -1
+        }
+      ]
+    }
+    {
+      name: edn0
+      type: edn
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
+      }
+      base_addr: 0x41170000
+      clock_reset_export: []
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_secure
+      }
+      domain: "0"
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list: []
+      interrupt_list:
+      [
+        {
+          name: edn_cmd_req_done
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: edn_fifo_err
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      wakeup_list: []
+      reset_request_list: []
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: csrng
+          type: req_rsp
+          name: csrng_cmd
+          act: req
+          width: 1
+          package: csrng_pkg
+          desc: EDN supports a signal CSRNG application interface.
+          inst_name: edn0
+          default: ""
+          top_signame: csrng_csrng_cmd
+          index: 0
+        }
+        {
+          struct: edn
+          type: req_rsp
+          name: edn
+          act: rsp
+          width: "4"
+          desc:
+            '''
+            The collection of peripheral ports supported by edn. The width (4)
+            indicates the number of peripheral ports on a single instance.
+            Due to limitations in the parametrization of top-level interconnects
+            this value is not currently parameterizable.  However, the number
+            of peripheral ports may change in a future revision.
+            '''
+          package: edn_pkg
+          inst_name: edn0
+          index: -1
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: edn0
+          width: 1
+          default: ""
+          top_signame: edn0_tl
+          index: -1
+        }
+      ]
+    }
+    {
+      name: edn1
+      type: edn
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
+      }
+      base_addr: 0x41180000
+      clock_reset_export: []
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_secure
+      }
+      domain: "0"
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list: []
+      interrupt_list:
+      [
+        {
+          name: edn_cmd_req_done
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: edn_fifo_err
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      wakeup_list: []
+      reset_request_list: []
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: csrng
+          type: req_rsp
+          name: csrng_cmd
+          act: req
+          width: 1
+          package: csrng_pkg
+          desc: EDN supports a signal CSRNG application interface.
+          inst_name: edn1
+          default: ""
+          top_signame: csrng_csrng_cmd
+          index: 1
+        }
+        {
+          struct: edn
+          type: req_rsp
+          name: edn
+          act: rsp
+          width: "4"
+          desc:
+            '''
+            The collection of peripheral ports supported by edn. The width (4)
+            indicates the number of peripheral ports on a single instance.
+            Due to limitations in the parametrization of top-level interconnects
+            this value is not currently parameterizable.  However, the number
+            of peripheral ports may change in a future revision.
+            '''
+          package: edn_pkg
+          inst_name: edn1
+          index: -1
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: edn1
+          width: 1
+          default: ""
+          top_signame: edn1_tl
+          index: -1
+        }
+      ]
+    }
+    {
       name: otbn
       type: otbn
       clock_srcs:
@@ -3724,6 +4230,11 @@
   {
     connect:
     {
+      csrng.csrng_cmd:
+      [
+        edn0.csrng_cmd
+        edn1.csrng_cmd
+      ]
       flash_ctrl.flash:
       [
         eflash.flash_ctrl
@@ -3751,6 +4262,10 @@
       alert_handler.crashdump:
       [
         rstmgr.alert_dump
+      ]
+      csrng.entropy_src_hw_if:
+      [
+        entropy_src.entropy_src_hw_if
       ]
       keymgr.kmac_key:
       [
@@ -3806,6 +4321,22 @@
       aes.tl:
       [
         main.tl_aes
+      ]
+      entropy_src.tl:
+      [
+        main.tl_entropy_src
+      ]
+      csrng.tl:
+      [
+        main.tl_csrng
+      ]
+      edn0.tl:
+      [
+        main.tl_edn0
+      ]
+      edn1.tl:
+      [
+        main.tl_edn1
       ]
       rv_plic.tl:
       [
@@ -3955,6 +4486,10 @@
           peri
           flash_ctrl
           aes
+          entropy_src
+          csrng
+          edn0
+          edn1
           hmac
           rv_plic
           pinmux
@@ -3973,6 +4508,10 @@
           peri
           flash_ctrl
           aes
+          entropy_src
+          csrng
+          edn0
+          edn1
           hmac
           rv_plic
           pinmux
@@ -4204,6 +4743,78 @@
           pipeline: "true"
         }
         {
+          name: entropy_src
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline_byp: "false"
+          inst_type: entropy_src
+          addr_range:
+          [
+            {
+              base_addr: 0x41160000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: "true"
+        }
+        {
+          name: csrng
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline_byp: "false"
+          inst_type: csrng
+          addr_range:
+          [
+            {
+              base_addr: 0x41150000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: "true"
+        }
+        {
+          name: edn0
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline_byp: "false"
+          inst_type: edn
+          addr_range:
+          [
+            {
+              base_addr: 0x41170000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: "true"
+        }
+        {
+          name: edn1
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline_byp: "false"
+          inst_type: edn
+          addr_range:
+          [
+            {
+              base_addr: 0x41180000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: "true"
+        }
+        {
           name: rv_plic
           type: device
           clock: clk_main_i
@@ -4266,7 +4877,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40130000
+              base_addr: 0x411b0000
               size_byte: 0x1000
             }
           ]
@@ -4283,7 +4894,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40140000
+              base_addr: 0x411c0000
               size_byte: 0x1000
             }
           ]
@@ -4474,6 +5085,54 @@
           width: 1
           default: ""
           top_signame: aes_tl
+          index: -1
+        }
+        {
+          struct: tl
+          type: req_rsp
+          name: tl_entropy_src
+          act: req
+          package: tlul_pkg
+          inst_name: main
+          width: 1
+          default: ""
+          top_signame: entropy_src_tl
+          index: -1
+        }
+        {
+          struct: tl
+          type: req_rsp
+          name: tl_csrng
+          act: req
+          package: tlul_pkg
+          inst_name: main
+          width: 1
+          default: ""
+          top_signame: csrng_tl
+          index: -1
+        }
+        {
+          struct: tl
+          type: req_rsp
+          name: tl_edn0
+          act: req
+          package: tlul_pkg
+          inst_name: main
+          width: 1
+          default: ""
+          top_signame: edn0_tl
+          index: -1
+        }
+        {
+          struct: tl
+          type: req_rsp
+          name: tl_edn1
+          act: req
+          package: tlul_pkg
+          inst_name: main
+          width: 1
+          default: ""
+          top_signame: edn1_tl
           index: -1
         }
         {
@@ -5744,6 +6403,7 @@
     sensor_ctrl
     keymgr
     otp_ctrl
+    entropy_src
   ]
   alert:
   [
@@ -5970,6 +6630,20 @@
       type: alert
       async: 1
       module_name: otp_ctrl
+    }
+    {
+      name: entropy_src_es_alert_count_met
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: alert
+      async: 0
+      module_name: entropy_src
     }
   ]
   pinmux:
@@ -7341,6 +8015,200 @@
         index: -1
       }
       {
+        struct: csrng
+        type: req_rsp
+        name: csrng_cmd
+        act: rsp
+        package: csrng_pkg
+        width: 2
+        inst_name: csrng
+        default: ""
+        top_signame: csrng_csrng_cmd
+        index: -1
+      }
+      {
+        struct: entropy_src_hw_if
+        type: req_rsp
+        name: entropy_src_hw_if
+        act: req
+        package: entropy_src_pkg
+        inst_name: csrng
+        width: 1
+        default: ""
+        top_signame: csrng_entropy_src_hw_if
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: efuse_sw_app_enable
+        act: rcv
+        width: 1
+        package: ""
+        inst_name: csrng
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_dft_en
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: csrng
+        index: -1
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: csrng
+        width: 1
+        default: ""
+        top_signame: csrng_tl
+        index: -1
+      }
+      {
+        struct: entropy_src_hw_if
+        type: req_rsp
+        name: entropy_src_hw_if
+        act: rsp
+        package: entropy_src_pkg
+        inst_name: entropy_src
+        width: 1
+        default: ""
+        top_signame: csrng_entropy_src_hw_if
+        index: -1
+      }
+      {
+        struct: entropy_src_rng
+        type: req_rsp
+        name: entropy_src_rng
+        act: req
+        package: entropy_src_pkg
+        inst_name: entropy_src
+        index: -1
+      }
+      {
+        struct: entropy_src_xht
+        type: req_rsp
+        name: entropy_src_xht
+        act: req
+        package: entropy_src_pkg
+        inst_name: entropy_src
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: efuse_es_sw_reg_en
+        act: rcv
+        width: 1
+        package: ""
+        inst_name: entropy_src
+        index: -1
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: entropy_src
+        width: 1
+        default: ""
+        top_signame: entropy_src_tl
+        index: -1
+      }
+      {
+        struct: csrng
+        type: req_rsp
+        name: csrng_cmd
+        act: req
+        width: 1
+        package: csrng_pkg
+        desc: EDN supports a signal CSRNG application interface.
+        inst_name: edn0
+        default: ""
+        top_signame: csrng_csrng_cmd
+        index: 0
+      }
+      {
+        struct: edn
+        type: req_rsp
+        name: edn
+        act: rsp
+        width: "4"
+        desc:
+          '''
+          The collection of peripheral ports supported by edn. The width (4)
+          indicates the number of peripheral ports on a single instance.
+          Due to limitations in the parametrization of top-level interconnects
+          this value is not currently parameterizable.  However, the number
+          of peripheral ports may change in a future revision.
+          '''
+        package: edn_pkg
+        inst_name: edn0
+        index: -1
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: edn0
+        width: 1
+        default: ""
+        top_signame: edn0_tl
+        index: -1
+      }
+      {
+        struct: csrng
+        type: req_rsp
+        name: csrng_cmd
+        act: req
+        width: 1
+        package: csrng_pkg
+        desc: EDN supports a signal CSRNG application interface.
+        inst_name: edn1
+        default: ""
+        top_signame: csrng_csrng_cmd
+        index: 1
+      }
+      {
+        struct: edn
+        type: req_rsp
+        name: edn
+        act: rsp
+        width: "4"
+        desc:
+          '''
+          The collection of peripheral ports supported by edn. The width (4)
+          indicates the number of peripheral ports on a single instance.
+          Due to limitations in the parametrization of top-level interconnects
+          this value is not currently parameterizable.  However, the number
+          of peripheral ports may change in a future revision.
+          '''
+        package: edn_pkg
+        inst_name: edn1
+        index: -1
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: edn1
+        width: 1
+        default: ""
+        top_signame: edn1_tl
+        index: -1
+      }
+      {
         name: idle
         type: uni
         struct: logic
@@ -7618,6 +8486,54 @@
         width: 1
         default: ""
         top_signame: aes_tl
+        index: -1
+      }
+      {
+        struct: tl
+        type: req_rsp
+        name: tl_entropy_src
+        act: req
+        package: tlul_pkg
+        inst_name: main
+        width: 1
+        default: ""
+        top_signame: entropy_src_tl
+        index: -1
+      }
+      {
+        struct: tl
+        type: req_rsp
+        name: tl_csrng
+        act: req
+        package: tlul_pkg
+        inst_name: main
+        width: 1
+        default: ""
+        top_signame: csrng_tl
+        index: -1
+      }
+      {
+        struct: tl
+        type: req_rsp
+        name: tl_edn0
+        act: req
+        package: tlul_pkg
+        inst_name: main
+        width: 1
+        default: ""
+        top_signame: edn0_tl
+        index: -1
+      }
+      {
+        struct: tl
+        type: req_rsp
+        name: tl_edn1
+        act: req
+        package: tlul_pkg
+        inst_name: main
+        width: 1
+        default: ""
+        top_signame: edn1_tl
         index: -1
       }
       {
@@ -8066,6 +8982,22 @@
     definitions:
     [
       {
+        package: csrng_pkg
+        struct: csrng_req
+        signame: csrng_csrng_cmd_req
+        width: 2
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: csrng_pkg
+        struct: csrng_rsp
+        signame: csrng_csrng_cmd_rsp
+        width: 2
+        type: req_rsp
+        default: ""
+      }
+      {
         package: flash_ctrl_pkg
         struct: flash_req
         signame: flash_ctrl_flash_req
@@ -8159,6 +9091,22 @@
         signame: alert_handler_crashdump
         width: 1
         type: uni
+        default: ""
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_hw_if_req
+        signame: csrng_entropy_src_hw_if_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_hw_if_rsp
+        signame: csrng_entropy_src_hw_if_rsp
+        width: 1
+        type: req_rsp
         default: ""
       }
       {
@@ -8333,6 +9281,70 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: aes_tl_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: entropy_src_tl_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: entropy_src_tl_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: csrng_tl_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: csrng_tl_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: edn0_tl_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: edn0_tl_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: edn1_tl_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: edn1_tl_rsp
         width: 1
         type: req_rsp
         default: ""
