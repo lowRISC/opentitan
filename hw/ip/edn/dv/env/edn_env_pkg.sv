@@ -19,6 +19,9 @@ package edn_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
+  parameter uint   NUM_ENDPOINTS      = 2;
+  parameter uint   ENDPOINT_BUS_WIDTH = 32;
+  parameter uint   GENBITS_BUS_WIDTH  = 128;
 
   // types
 

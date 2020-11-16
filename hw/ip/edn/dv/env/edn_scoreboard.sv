@@ -12,16 +12,18 @@ class edn_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(push_pull_item) push_pull_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DataWidth(ENDPOINT_BUS_WIDTH))) endpoint_fifo[NUM_ENDPOINTS-1:0];
 
   // local queues to hold incoming packets pending comparison
-  push_pull_item push_pull_q[$];
+  push_pull_item#(.DataWidth(ENDPOINT_BUS_WIDTH)) endpoint_q[$][NUM_ENDPOINTS-1:0];
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    push_pull_fifo = new("push_pull_fifo", this);
+  // TODO: for loop
+    endpoint_fifo[NUM_ENDPOINTS-1] = new("endpoint_fifo[NUM_ENDPOINTS-1]", this);
+    endpoint_fifo[0] = new("endpoint_fifo[0]", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -36,10 +38,13 @@ class edn_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task process_push_pull_fifo();
-    push_pull_item item;
+    // TODO: for loop
+    push_pull_item#(.DataWidth(ENDPOINT_BUS_WIDTH)) item[NUM_ENDPOINTS-1:0];
+        endpoint_fifo[NUM_ENDPOINTS-1].get(item[NUM_ENDPOINTS-1]);
+        `uvm_info(`gfn, $sformatf("received endpoint[%0d-1] item:\n%0s", NUM_ENDPOINTS, item[NUM_ENDPOINTS-1].sprint()), UVM_HIGH)
     forever begin
-      push_pull_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received push_pull item:\n%0s", item.sprint()), UVM_HIGH)
+        endpoint_fifo[0].get(item[0]);
+        `uvm_info(`gfn, $sformatf("received endpoint[0] item:\n%0s", item[0].sprint()), UVM_HIGH)
     end
   endtask
 

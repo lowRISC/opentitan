@@ -11,6 +11,7 @@ class edn_sanity_vseq extends edn_base_vseq;
   task body();
     // TODO: Temporary for creating edn environnment
     csr_rd_check(.ptr(ral.ctrl), .compare_value('h0));
+    //csr_wr(.csr(ral.ctrl), .value(1'b1));
   endtask : body
 
 endclass : edn_sanity_vseq
