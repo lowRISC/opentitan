@@ -13,7 +13,7 @@
   param_list: [
     { name: "NOutputs",
       desc: "Number of PWM outputs",
-       type: "int",
+      type: "int",
       default: "6",
     }
   ]
