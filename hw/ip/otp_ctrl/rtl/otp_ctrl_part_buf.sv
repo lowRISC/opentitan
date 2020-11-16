@@ -422,6 +422,7 @@ module otp_ctrl_part_buf
               state_d = IntegDigFinSt;
             end else begin
               state_d = IntegDigPadSt;
+              cnt_en = 1'b0;
             end
           end else begin
             // Trigger digest round in case this is the second block in a row.
@@ -543,7 +544,8 @@ module otp_ctrl_part_buf
   // Always transfer 64bit blocks.
   assign otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth) - 1);
 
-  assign scrmbl_data_o = data_o[{cnt_q, {$clog2(ScrmblBlockWidth){1'b0}}} +: ScrmblBlockWidth];
+  logic [Info.size*8-1:0] data;
+  assign scrmbl_data_o = data[{cnt_q, {$clog2(ScrmblBlockWidth){1'b0}}} +: ScrmblBlockWidth];
 
   assign data_mux = (data_sel == ScrmblData) ? scrmbl_data_i : otp_rdata_i;
 
@@ -551,7 +553,6 @@ module otp_ctrl_part_buf
   // Buffer Regs //
   /////////////////
 
-  logic [Info.size*8-1:0] data;
   otp_ctrl_ecc_reg #(
     .Width ( ScrmblBlockWidth ),
     .Depth ( NumScrmblBlocks  )
