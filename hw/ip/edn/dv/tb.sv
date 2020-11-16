@@ -22,25 +22,25 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if push_pull_if();
+  //TODO: generate?
+  push_pull_if#(.DataWidth(GENBITS_BUS_WIDTH))  csrng_if();
+  push_pull_if#(.DataWidth(ENDPOINT_BUS_WIDTH)) endpoint_if_1();
+  push_pull_if#(.DataWidth(ENDPOINT_BUS_WIDTH)) endpoint_if_0();
 
   // dut
-  edn dut (
+  edn#(.NumEndPoints(NUM_ENDPOINTS)) dut (
     .clk_i                     (clk      ),
     .rst_ni                    (rst_n    ),
 
     .tl_i                      (tl_if.h2d),
     .tl_o                      (tl_if.d2h),
 
-    .edn_i                     (4'h0),
+    //TODO: generate?
+    .edn_i                     ({endpoint_if_1.req, endpoint_if_0.req}),
     .edn_o                     (),
-    .edn_bus0_o                (),
-    .edn_bus1_o                (),
-    .edn_bus2_o                (),
-    .edn_bus3_o                (),
 
-    .csrng_cmd_o               (),
     .csrng_cmd_i               ('h0),
+    .csrng_cmd_o               (),
 
     .intr_edn_cmd_req_done_o   (),
     .intr_edn_fifo_err_o       ()
@@ -55,6 +55,9 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual push_pull_if)::set(null, "*.env.m_push_pull_agent*", "vif", push_pull_if);
+    //TODO: generate?
+    uvm_config_db#(virtual push_pull_if#(.DataWidth(ENDPOINT_BUS_WIDTH)))::set(null, "*.env.m_endpoint_agent*", "vif", endpoint_if_1);
+    uvm_config_db#(virtual push_pull_if#(.DataWidth(ENDPOINT_BUS_WIDTH)))::set(null, "*.env.m_endpoint_agent*", "vif", endpoint_if_0);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
