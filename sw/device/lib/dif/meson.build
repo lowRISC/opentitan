@@ -188,6 +188,21 @@ sw_lib_dif_pwrmgr = declare_dependency(
   )
 )
 
+# Key Manager DIF library
+sw_lib_dif_keymgr = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_keymgr',
+    sources: [
+      hw_ip_keymgr_reg_h,
+      'dif_keymgr.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_bitfield,
+    ],
+  )
+)
+
 # OTP controller library
 sw_lib_dif_otp_ctrl = declare_dependency(
   link_with: static_library(
