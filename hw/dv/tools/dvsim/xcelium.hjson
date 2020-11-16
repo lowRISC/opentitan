@@ -22,14 +22,24 @@
                "-access +rw",
                // Use this to conditionally compile for Xcelium (example: LRM interpretations differ
                // across tools).
-               "+define+XCELIUM"]
+               "+define+XCELIUM",
+               // Ignore "timescale is not specified for the package" warning
+               "-nowarn TSNSPK",
+               // Ignore "IEEE 1800-2009 SystemVerilog simulation semantics" warning
+               "-nowarn DSEMEL",
+               // Ignore hierarchial ref warnings in interfaces
+               "-nowarn CUVIHR",
+               ]
 
   run_opts:   ["-input {run_script}",
                "-licqueue",
                "-64bit -xmlibdirname {build_dir}/xcelium.d -R",
                "+SVSEED={seed}",
                "+UVM_TESTNAME={uvm_test}",
-               "+UVM_TEST_SEQ={uvm_test_seq}"]
+               "+UVM_TEST_SEQ={uvm_test_seq}",
+               // Ignore "IEEE 1800-2009 SystemVerilog simulation semantics" warning
+               "-nowarn DSEM2009",
+               ]
 
   // Vars that need to exported to the env.
   exports: [
