@@ -214,6 +214,7 @@ hw_ip_flash_ctrl_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/flash_ctrl/da
 hw_ip_gpio_reg_h = gen_hw_hdr.process('hw/ip/gpio/data/gpio.hjson')
 hw_ip_hmac_reg_h = gen_hw_hdr.process('hw/ip/hmac/data/hmac.hjson')
 hw_ip_i2c_reg_h = gen_hw_hdr.process('hw/ip/i2c/data/i2c.hjson')
+hw_ip_keymgr_reg_h = gen_hw_hdr.process('hw/ip/keymgr/data/keymgr.hjson')
 hw_ip_lc_ctrl_reg_h = gen_hw_hdr.process('hw/ip/lc_ctrl/data/lc_ctrl.hjson')
 hw_ip_otbn_reg_h = gen_hw_hdr.process('hw/ip/otbn/data/otbn.hjson')
 hw_ip_otp_ctrl_reg_h = gen_hw_hdr.process('hw/ip/otp_ctrl/data/otp_ctrl.hjson')
