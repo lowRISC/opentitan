@@ -9,7 +9,7 @@ All checklist items refer to the content in the [Checklist]({{< relref "/doc/pro
 
 Type           | Item                 | Resolution  | Note/Collaterals
 ---------------|----------------------|-------------|------------------
-Implementation | [DIF_EXISTS][]       | Not Started |
+Implementation | [DIF_EXISTS][]       | Done        |
 Implementation | [DIF_USED_IN_TREE][] | Not Started |
 Tests          | [DIF_TEST_UNIT][]    | Not Started |
 Tests          | [DIF_TEST_SANITY][]  | Not Started |
