@@ -18,6 +18,7 @@ module top_earlgrey #(
   parameter bit SecAesAllowForcingMasks = 1'b0,
   parameter int KmacEnMasking = 0,
   parameter int KmacReuseShare = 0,
+  parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplLut,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
 
   // Manually defined parameters
@@ -155,6 +156,10 @@ module top_earlgrey #(
   // sensor_ctrl
   // keymgr
   // otp_ctrl
+  // csrng
+  // entropy_src
+  // edn0
+  // edn1
   // otbn
 
 
@@ -217,6 +222,17 @@ module top_earlgrey #(
   logic intr_keymgr_err;
   logic intr_otp_ctrl_otp_operation_done;
   logic intr_otp_ctrl_otp_error;
+  logic intr_csrng_cs_cmd_req_done;
+  logic intr_csrng_cs_entropy_req;
+  logic intr_csrng_cs_hw_inst_exc;
+  logic intr_csrng_cs_fifo_err;
+  logic intr_entropy_src_es_entropy_valid;
+  logic intr_entropy_src_es_health_test_failed;
+  logic intr_entropy_src_es_fifo_err;
+  logic intr_edn0_edn_cmd_req_done;
+  logic intr_edn0_edn_fifo_err;
+  logic intr_edn1_edn_cmd_req_done;
+  logic intr_edn1_edn_fifo_err;
   logic intr_otbn_done;
   logic intr_otbn_err;
 
@@ -239,6 +255,8 @@ module top_earlgrey #(
 
 
   // define inter-module signals
+  csrng_pkg::csrng_req_t [1:0] csrng_csrng_cmd_req;
+  csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
   flash_ctrl_pkg::flash_req_t       flash_ctrl_flash_req;
   flash_ctrl_pkg::flash_rsp_t       flash_ctrl_flash_rsp;
   pwrmgr_pkg::pwr_flash_req_t       pwrmgr_pwr_flash_req;
@@ -251,6 +269,8 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_pwr_otp_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   alert_pkg::alert_crashdump_t       alert_handler_crashdump;
+  entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
+  entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
   keymgr_pkg::kmac_data_rsp_t       keymgr_kmac_data_rsp;
@@ -273,6 +293,14 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       kmac_tl_rsp;
   tlul_pkg::tl_h2d_t       aes_tl_req;
   tlul_pkg::tl_d2h_t       aes_tl_rsp;
+  tlul_pkg::tl_h2d_t       entropy_src_tl_req;
+  tlul_pkg::tl_d2h_t       entropy_src_tl_rsp;
+  tlul_pkg::tl_h2d_t       csrng_tl_req;
+  tlul_pkg::tl_d2h_t       csrng_tl_rsp;
+  tlul_pkg::tl_h2d_t       edn0_tl_req;
+  tlul_pkg::tl_d2h_t       edn0_tl_rsp;
+  tlul_pkg::tl_h2d_t       edn1_tl_req;
+  tlul_pkg::tl_d2h_t       edn1_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_plic_tl_req;
   tlul_pkg::tl_d2h_t       rv_plic_tl_rsp;
   tlul_pkg::tl_h2d_t       pinmux_tl_req;
@@ -1148,6 +1176,88 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
 
+  csrng #(
+    .SBoxImpl(CsrngSBoxImpl)
+  ) u_csrng (
+
+      // Interrupt
+      .intr_cs_cmd_req_done_o (intr_csrng_cs_cmd_req_done),
+      .intr_cs_entropy_req_o  (intr_csrng_cs_entropy_req),
+      .intr_cs_hw_inst_exc_o  (intr_csrng_cs_hw_inst_exc),
+      .intr_cs_fifo_err_o     (intr_csrng_cs_fifo_err),
+
+      // Inter-module signals
+      .csrng_cmd_i(csrng_csrng_cmd_req),
+      .csrng_cmd_o(csrng_csrng_cmd_rsp),
+      .entropy_src_hw_if_o(csrng_entropy_src_hw_if_req),
+      .entropy_src_hw_if_i(csrng_entropy_src_hw_if_rsp),
+      .efuse_sw_app_enable_i('0),
+      .lc_dft_en_i(lc_ctrl_pkg::Off),
+      .tl_i(csrng_tl_req),
+      .tl_o(csrng_tl_rsp),
+      .clk_i (clkmgr_clocks.clk_main_secure),
+      .rst_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
+  );
+
+  entropy_src u_entropy_src (
+
+      // Interrupt
+      .intr_es_entropy_valid_o      (intr_entropy_src_es_entropy_valid),
+      .intr_es_health_test_failed_o (intr_entropy_src_es_health_test_failed),
+      .intr_es_fifo_err_o           (intr_entropy_src_es_fifo_err),
+
+      // [13]: es_alert_count_met
+      .alert_tx_o  ( alert_tx[13:13] ),
+      .alert_rx_i  ( alert_rx[13:13] ),
+
+      // Inter-module signals
+      .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
+      .entropy_src_hw_if_o(csrng_entropy_src_hw_if_rsp),
+      .entropy_src_rng_o(),
+      .entropy_src_rng_i(entropy_src_pkg::ENTROPY_SRC_RNG_RSP_DEFAULT),
+      .entropy_src_xht_o(),
+      .entropy_src_xht_i(entropy_src_pkg::ENTROPY_SRC_XHT_RSP_DEFAULT),
+      .efuse_es_sw_reg_en_i('0),
+      .tl_i(entropy_src_tl_req),
+      .tl_o(entropy_src_tl_rsp),
+      .clk_i (clkmgr_clocks.clk_main_secure),
+      .rst_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
+  );
+
+  edn u_edn0 (
+
+      // Interrupt
+      .intr_edn_cmd_req_done_o (intr_edn0_edn_cmd_req_done),
+      .intr_edn_fifo_err_o     (intr_edn0_edn_fifo_err),
+
+      // Inter-module signals
+      .csrng_cmd_o(csrng_csrng_cmd_req[0]),
+      .csrng_cmd_i(csrng_csrng_cmd_rsp[0]),
+      .edn_i(edn_pkg::EDN_REQ_DEFAULT),
+      .edn_o(),
+      .tl_i(edn0_tl_req),
+      .tl_o(edn0_tl_rsp),
+      .clk_i (clkmgr_clocks.clk_main_secure),
+      .rst_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
+  );
+
+  edn u_edn1 (
+
+      // Interrupt
+      .intr_edn_cmd_req_done_o (intr_edn1_edn_cmd_req_done),
+      .intr_edn_fifo_err_o     (intr_edn1_edn_fifo_err),
+
+      // Inter-module signals
+      .csrng_cmd_o(csrng_csrng_cmd_req[1]),
+      .csrng_cmd_i(csrng_csrng_cmd_rsp[1]),
+      .edn_i(edn_pkg::EDN_REQ_DEFAULT),
+      .edn_o(),
+      .tl_i(edn1_tl_req),
+      .tl_o(edn1_tl_rsp),
+      .clk_i (clkmgr_clocks.clk_main_secure),
+      .rst_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
+  );
+
   otbn #(
     .RegFile(OtbnRegFile)
   ) u_otbn (
@@ -1156,11 +1266,11 @@ module top_earlgrey #(
       .intr_done_o (intr_otbn_done),
       .intr_err_o  (intr_otbn_err),
 
-      // [13]: imem_uncorrectable
-      // [14]: dmem_uncorrectable
-      // [15]: reg_uncorrectable
-      .alert_tx_o  ( alert_tx[15:13] ),
-      .alert_rx_i  ( alert_rx[15:13] ),
+      // [14]: imem_uncorrectable
+      // [15]: dmem_uncorrectable
+      // [16]: reg_uncorrectable
+      .alert_tx_o  ( alert_tx[16:14] ),
+      .alert_rx_i  ( alert_rx[16:14] ),
 
       // Inter-module signals
       .idle_o(clkmgr_idle[3]),
@@ -1285,6 +1395,22 @@ module top_earlgrey #(
     // port: tl_aes
     .tl_aes_o(aes_tl_req),
     .tl_aes_i(aes_tl_rsp),
+
+    // port: tl_entropy_src
+    .tl_entropy_src_o(entropy_src_tl_req),
+    .tl_entropy_src_i(entropy_src_tl_rsp),
+
+    // port: tl_csrng
+    .tl_csrng_o(csrng_tl_req),
+    .tl_csrng_i(csrng_tl_rsp),
+
+    // port: tl_edn0
+    .tl_edn0_o(edn0_tl_req),
+    .tl_edn0_i(edn0_tl_rsp),
+
+    // port: tl_edn1
+    .tl_edn1_o(edn1_tl_req),
+    .tl_edn1_i(edn1_tl_rsp),
 
     // port: tl_rv_plic
     .tl_rv_plic_o(rv_plic_tl_req),

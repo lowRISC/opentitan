@@ -23,11 +23,15 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_HMAC          = 32'h 40120000;
   localparam logic [31:0] ADDR_SPACE_KMAC          = 32'h 41120000;
   localparam logic [31:0] ADDR_SPACE_AES           = 32'h 40110000;
+  localparam logic [31:0] ADDR_SPACE_ENTROPY_SRC   = 32'h 41160000;
+  localparam logic [31:0] ADDR_SPACE_CSRNG         = 32'h 41150000;
+  localparam logic [31:0] ADDR_SPACE_EDN0          = 32'h 41170000;
+  localparam logic [31:0] ADDR_SPACE_EDN1          = 32'h 41180000;
   localparam logic [31:0] ADDR_SPACE_RV_PLIC       = 32'h 40090000;
   localparam logic [31:0] ADDR_SPACE_PINMUX        = 32'h 40070000;
   localparam logic [31:0] ADDR_SPACE_PADCTRL       = 32'h 40160000;
-  localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER = 32'h 40130000;
-  localparam logic [31:0] ADDR_SPACE_NMI_GEN       = 32'h 40140000;
+  localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER = 32'h 411b0000;
+  localparam logic [31:0] ADDR_SPACE_NMI_GEN       = 32'h 411c0000;
   localparam logic [31:0] ADDR_SPACE_OTBN          = 32'h 50000000;
   localparam logic [31:0] ADDR_SPACE_KEYMGR        = 32'h 401a0000;
 
@@ -48,6 +52,10 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_HMAC          = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_KMAC          = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AES           = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_ENTROPY_SRC   = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_CSRNG         = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_EDN0          = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_EDN1          = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RV_PLIC       = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_PINMUX        = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_PADCTRL       = 32'h 00000fff;
@@ -57,7 +65,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_KEYMGR        = 32'h 00000fff;
 
   localparam int N_HOST   = 3;
-  localparam int N_DEVICE = 16;
+  localparam int N_DEVICE = 20;
 
   typedef enum int {
     TlRom = 0,
@@ -69,13 +77,17 @@ package tl_main_pkg;
     TlHmac = 6,
     TlKmac = 7,
     TlAes = 8,
-    TlRvPlic = 9,
-    TlPinmux = 10,
-    TlPadctrl = 11,
-    TlAlertHandler = 12,
-    TlNmiGen = 13,
-    TlOtbn = 14,
-    TlKeymgr = 15
+    TlEntropySrc = 9,
+    TlCsrng = 10,
+    TlEdn0 = 11,
+    TlEdn1 = 12,
+    TlRvPlic = 13,
+    TlPinmux = 14,
+    TlPadctrl = 15,
+    TlAlertHandler = 16,
+    TlNmiGen = 17,
+    TlOtbn = 18,
+    TlKeymgr = 19
   } tl_device_e;
 
   typedef enum int {

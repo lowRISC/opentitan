@@ -41,6 +41,10 @@ tl_if flash_ctrl_tl_if(clk_main, rst_n);
 tl_if hmac_tl_if(clk_main, rst_n);
 tl_if kmac_tl_if(clk_main, rst_n);
 tl_if aes_tl_if(clk_main, rst_n);
+tl_if entropy_src_tl_if(clk_main, rst_n);
+tl_if csrng_tl_if(clk_main, rst_n);
+tl_if edn0_tl_if(clk_main, rst_n);
+tl_if edn1_tl_if(clk_main, rst_n);
 tl_if rv_plic_tl_if(clk_main, rst_n);
 tl_if pinmux_tl_if(clk_main, rst_n);
 tl_if padctrl_tl_if(clk_main, rst_n);
@@ -96,6 +100,10 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(hmac, hmac, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(kmac, kmac, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(aes, aes, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(entropy_src, entropy_src, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(csrng, csrng, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(edn0, edn0, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(edn1, edn1, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_plic, rv_plic, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(pinmux, pinmux, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(padctrl, padctrl, tl)
