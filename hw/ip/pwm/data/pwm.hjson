@@ -1,0 +1,203 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "pwm",
+  clock_primary: "clk_i",
+  other_clock_list: [ "clk_core_i" ],
+  reset_primary: "rst_ni",
+  other_reset_list: [ "rst_core_ni" ],
+  bus_device: "tlul",
+  bus_host: "none",
+  regwidth: "32",
+  param_list: [
+    { name: "NOutputs",
+      desc: "Number of PWM outputs",
+       type: "int",
+      default: "6",
+    }
+  ]
+  available_output_list: [
+    { name:  "pwm"
+      desc:  "pulse output"
+      width: "6"
+    }
+  ]
+  registers: [
+    { name: "REGEN",
+      desc: "Register write enable for all control registers",
+      swaccess: "rw1c",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          desc: ''' When true, all writable registers can be modified.
+                    When false, they become read-only. Defaults true, write
+                    one to clear. This can be cleared after initial
+                    configuration at boot in order to lock in the listed
+                    register settings.'''
+          resval: 1
+        }
+      ]
+    }
+    { name: "CFG",
+      desc: "Configuration register",
+      swaccess: "rw",
+      fields: [
+        { bits: "31",
+          name: "CNTR_EN",
+          desc: '''Assert this bit to enable the PWM phase counter.
+                   Clearing this bit disables and resets the phase counter.'''
+          resval: "0x0"
+        },
+        { bits: "30:27",
+          name: "DC_RESN"
+          desc: '''Phase Resolution (logarithmic). All duty-cycle and phase
+                   shift registers represent fractional PWM cycles, expressed in
+                   units of 2^16 PWM cycles. Each PWM cycle  is divided
+                   into 2^(DC_RESN+1) time slices, and thus only the (DC_RESN+1)
+                   most significant bits of each phase or duty cycle register
+                   are relevant.'''
+          resval: 7
+        },
+        { bits: "26:0",
+          name: "CLK_DIV",
+          desc: '''Sets the period of each PWM beat to be (CLK_DIV+1)
+                   input clock periods.  Since PWM pulses are generated once
+                   every 2^(DC_RESN+1) beats, the period between output
+                   pulses is 2^(DC_RESN+1)*(CLK_DIV+1) times longer than the
+                   input clock period.'''
+          resval: "0x00008000"
+        }
+      ]
+    },
+    { multireg: { name: "PWM_EN",
+        desc: "Enable PWM operation for each channel",
+        count: "NOutputs",
+        swaccess: "rw",
+        cname: "pwm_en",
+        compact: "1",
+        fields: [
+          { bits: "0",
+            name: "EN",
+            desc: '''Write 1 to this bit to enable PWM pulses on the
+                     corresponding channel.''',
+            resval: "0"
+          }
+        ]
+      }
+    },
+    { multireg: { name: "INVERT",
+        desc: "Invert the PWM output for each channel",
+        count: "NOutputs",
+        swaccess: "rw",
+        cname: "pwm_invert",
+        compact: "1",
+        fields: [
+          { bits: "0",
+            name: "INVERT",
+            desc: '''Write 1 to this bit to invert the output for each channel,
+                     so that the corresponding output is active-low.''',
+            resval: "0"
+          }
+        ]
+      }
+    },
+    { multireg: { name: "PWM_PARAM",
+        desc: "Basic PWM Channel Parameters",
+        count: "NOutputs"
+        swaccess: "rw",
+        cname: "pwm_params",
+        fields: [
+          { bits: "31",
+            name: "BLINK_EN",
+            desc: '''Enables blink (or heartbeat).  If cleared, the output duty
+                     cycle will remain constant at DUTY_CYCLE.A. Enabling this
+                     bit  causes the PWM duty cycle to fluctuate between
+                     DUTY_CYCLE.A and DUTY_CYCLE.B'''
+            resval: 0
+          },
+          { bits: "30",
+            name: "HTBT_EN",
+            desc: '''Modulates blink behavior to create a heartbeat effect. When
+                     HTBT_EN is set, the duty cycle increases (or decreases)
+                     linearly from DUTY_CYCLE.A to DUTY_CYCLE.B and back, in
+                     steps of (BLINK_PARAM.Y+1), with an increment (decrement)
+                     once every (BLINK_PARAM.X+1) PWM cycles. When HTBT_EN is
+                     cleared, the standard blink behavior applies, meaning that
+                     the output duty cycle alternates between DUTY_CYCLE.A for
+                     (BLINK_PARAM.X+1) pulses and DUTY_CYCLE.B for
+                     (BLINK_PARAM.Y+1) pulses.'''
+            resval: 0
+          },
+          { bits: "15:0",
+            name: "PHASE_DELAY",
+            desc: '''Phase delay of the PWM rising edge, in units of 2^(-16) PWM
+                     cycles''',
+            resval: "0x0000"
+          }
+        ]
+      }
+    },
+    { multireg: { name: "DUTY_CYCLE",
+        desc:'''Controls the duty_cycle of each channel.''',
+        count: "NOutputs"
+        swaccess: "rw",
+        cname: "duty_cycle",
+        fields: [
+          { bits: "31:16",
+            name: "B",
+            desc: '''The target duty cycle for PWM output, in units
+                     of 2^(-16)ths of a pulse cycle. The actual precision is
+                     however limited to the (DC_RESN+1) most significant bits.
+                     This setting only applies when blinking, and determines
+                     the target duty cycle.
+                     '''
+            resval: "0x7fff"
+          }
+          { bits: "15:0",
+            name: "A",
+            desc: '''The initial duty cycle for PWM output, in units
+                     of 2^(-16)ths of a pulse cycle. The actual precision is
+                     however limited to the (DC_RESN+1) most significant bits.
+                     This setting applies continuously when not blinking
+                     and determines the initial duty cycle when blinking.
+                     '''
+            resval: "0x7fff"
+          }
+        ]
+      }
+    },
+    { multireg: { name: "BLINK_PARAM",
+        desc: "Hardware controlled blink/heartbeat parameters.",
+        count: "NOutputs"
+        swaccess: "rw",
+        cname: "blink_param",
+        fields: [
+          { bits: "15:0",
+            name: "X",
+            desc: '''This blink-rate timing parameter has two different
+                     interpretations depending on whether or not the heartbeat
+                     feature is enabled. If heartbeat is disabled, a blinking
+                     PWM will pulse at duty cycle A for (X+1) pulses before
+                     switching to duty cycle B. If heartbeat is enabled
+                     the duty-cycle will start at the duty cycle A, but
+                     will be incremented (or decremented) every (X+1) cycles.
+                     In heartbeat mode is enabled, the size of each step is
+                     controlled by BLINK_PARAM.Y.'''
+            resval: "0x00"
+          }
+          { bits: "31:16",
+            name: "Y",
+            desc: '''This blink-rate timing parameter has two different
+                     interpretations depending on whether or not the heartbeat
+                     feature is enabled. If heartbeat is disabled, a blinking
+                     PWM will pulse at duty cycle B for (Y+1) pulse cycles
+                     before returning to duty cycle A. If heartbeat is enabled
+                     the duty cycle will increase (or decrease) by (Y+1) units
+                     every time it is incremented (or decremented)'''
+            resval: "0x0"
+          }
+        ]
+      }
+    }
+  ]
+}
