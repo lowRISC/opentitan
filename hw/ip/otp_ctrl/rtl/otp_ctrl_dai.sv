@@ -234,8 +234,9 @@ module otp_ctrl_dai
       IdleSt: begin
         dai_idle_o  = 1'b1;
         if (dai_req_i) begin
-          // This clears previous (recoverable) errors.
+          // This clears previous (recoverable) and reset the counter.
           error_d = NoError;
+          cnt_clr = 1'b1;
           unique case (dai_cmd_i)
             DaiRead:  begin
               state_d = ReadSt;
