@@ -1,0 +1,35 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:keymgr_kmac_agent:0.1"
+description: "KEYMGR_KMAC DV UVM agent"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
+      - lowrisc:dv:push_pull_agent
+      - lowrisc:ip:keymgr_pkg
+    files:
+      - keymgr_kmac_agent_pkg.sv
+      - keymgr_kmac_intf.sv
+      - keymgr_kmac_item.sv: {is_include_file: true}
+      - keymgr_kmac_agent_cfg.sv: {is_include_file: true}
+      - keymgr_kmac_sequencer.sv: {is_include_file: true}
+      - keymgr_kmac_agent_cov.sv: {is_include_file: true}
+      - keymgr_kmac_driver.sv: {is_include_file: true}
+      - keymgr_kmac_host_driver.sv: {is_include_file: true}
+      - keymgr_kmac_device_driver.sv: {is_include_file: true}
+      - keymgr_kmac_monitor.sv: {is_include_file: true}
+      - keymgr_kmac_agent.sv: {is_include_file: true}
+      - seq_lib/keymgr_kmac_base_seq.sv: {is_include_file: true}
+      - seq_lib/keymgr_kmac_host_seq.sv: {is_include_file: true}
+      - seq_lib/keymgr_kmac_device_seq.sv: {is_include_file: true}
+      - seq_lib/keymgr_kmac_seq_list.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
