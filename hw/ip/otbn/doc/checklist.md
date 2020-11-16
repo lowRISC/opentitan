@@ -110,23 +110,23 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Not Started |
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started |
-Testbench     | [TB_TOP_CREATED][]                    | Not Started |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
-Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
-Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Not Started |
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
-Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
-Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started |
+Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Done        | [OTBN DV Plan]({{<relref "hw/ip/otbn/doc/dv_plan" >}})
+Documentation | [TESTPLAN_COMPLETED][]                | Done        | [OTBN Testplan]({{<relref "hw/ip/otbn/doc/dv_plan/index.md#testplan" >}})
+Testbench     | [TB_TOP_CREATED][]                    | Done        |
+Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
+Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
+Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done        |
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        |
+Testbench     | [TB_GEN_AUTOMATED][]                  | N/A         |
+Tests         | [SIM_SMOKE_TEST_PASSING][]            | Done        |
+Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        |
 Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
 Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
-Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
+Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | In progress | This needs feedback from the Google side. [Draft PR](https://github.com/lowRISC/opentitan/pull/4189) available.
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | In progress | As above.
 Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
-Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
+Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        | No sub-blocks, so auto-generated framework will work
+Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
 Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Not Started |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
