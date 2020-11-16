@@ -25,6 +25,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
+    cfg.keymgr_vif.init();
     if (do_keymgr_init) keymgr_init();
   endtask
 
@@ -95,7 +96,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
         default: is_good_op = 0;
       endcase
     end else begin
-      is_good_op = current_state inside LIST_OF_NORMAL_STATES;
+      is_good_op = current_state inside {LIST_OF_NORMAL_STATES};
     end
     `uvm_info(`gfn, $sformatf("Wait for operation done in state %0s, gen_out %0d, good_op %0d",
                               current_state.name, is_gen_output, is_good_op), UVM_MEDIUM)

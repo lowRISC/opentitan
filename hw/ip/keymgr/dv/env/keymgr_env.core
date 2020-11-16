@@ -9,8 +9,9 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:dv:keymgr_kmac_agent
     files:
-      - keymgr_input_data_if.sv
+      - keymgr_if.sv
       - keymgr_env_pkg.sv
       - keymgr_env_cfg.sv: {is_include_file: true}
       - keymgr_env_cov.sv: {is_include_file: true}

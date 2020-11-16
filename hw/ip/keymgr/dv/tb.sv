@@ -22,23 +22,8 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  keymgr_input_data_if keymgr_input_data_if();
-
-  logic [1:0][7:0][31:0] rand_values;
-  keymgr_pkg::kmac_data_rsp_t kmac_rsp;
-  assign kmac_rsp.ready = 1'b1;
-  assign kmac_rsp.done = 1'b1;
-  assign kmac_rsp.error = 1'b0;
-
-  always_ff @(posedge clk) begin
-    for (int i = 0; i < 8; i++) begin
-      rand_values[0][i] <= $urandom_range(-1, 0);
-      rand_values[1][i] <= $urandom_range(-1, 0);
-    end
-  end
-
-  assign kmac_rsp.digest_share0 = rand_values[0];
-  assign kmac_rsp.digest_share1 = rand_values[1];
+  keymgr_if keymgr_if(.clk(clk), .rst_n(rst_n));
+  keymgr_kmac_intf keymgr_kmac_intf(.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
 
@@ -46,14 +31,14 @@ module tb;
   keymgr dut (
     .clk_i                (clk        ),
     .rst_ni               (rst_n      ),
-    .aes_key_o            (           ),
-    .hmac_key_o           (           ),
-    .kmac_key_o           (           ),
-    .kmac_data_o          (           ),
-    .kmac_data_i          (kmac_rsp   ),
-    .lc_i                 (keymgr_input_data_if.lc),
-    .otp_i                (keymgr_input_data_if.otp),
-    .flash_i              (keymgr_input_data_if.flash),
+    .aes_key_o            (keymgr_if.aes_key),
+    .hmac_key_o           (keymgr_if.hmac_key),
+    .kmac_key_o           (keymgr_if.kmac_key),
+    .kmac_data_o          (keymgr_kmac_intf.kmac_data_req),
+    .kmac_data_i          (keymgr_kmac_intf.kmac_data_rsp),
+    .lc_i                 (keymgr_if.lc),
+    .otp_i                (keymgr_if.otp),
+    .flash_i              (keymgr_if.flash),
     .intr_op_done_o       (interrupts[IntrOpDone]),
     .intr_err_o           (interrupts[IntrErr]),
     .alert_rx_i           (alert_rx   ),
@@ -70,8 +55,9 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual keymgr_input_data_if)::set(null, "*.env", "keymgr_input_data_vif",
-                                                      keymgr_input_data_if);
+    uvm_config_db#(virtual keymgr_if)::set(null, "*.env", "keymgr_vif", keymgr_if);
+    uvm_config_db#(virtual keymgr_kmac_intf)::set(null,
+                   "*env.m_keymgr_kmac_agent*", "vif", keymgr_kmac_intf);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
