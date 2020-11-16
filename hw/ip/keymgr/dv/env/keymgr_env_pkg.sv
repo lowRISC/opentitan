@@ -12,21 +12,22 @@ package keymgr_env_pkg;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import keymgr_ral_pkg::*;
+  import keymgr_kmac_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // parameters and types
-  parameter string LIST_OF_ALERTS[] = {"keymgr_err"};
-  parameter uint NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fault_err", "operation_err"};
+  parameter uint NUM_ALERTS = 2;
   parameter keymgr_pkg::keymgr_working_state_e LIST_OF_NORMAL_STATES[] = {
       keymgr_pkg::StInit,
       keymgr_pkg::StCreatorRootKey,
       keymgr_pkg::StOwnerIntKey,
       keymgr_pkg::StOwnerKey};
 
-  typedef virtual keymgr_input_data_if keymgr_input_data_vif;
+  typedef virtual keymgr_if keymgr_vif;
   typedef enum {
     IntrOpDone,
     IntrErr,
