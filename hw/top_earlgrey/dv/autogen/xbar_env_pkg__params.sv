@@ -31,6 +31,18 @@ tl_device_t xbar_devices[$] = '{
     '{"aes", '{
         '{32'h40110000, 32'h40110fff}
     }},
+    '{"entropy_src", '{
+        '{32'h41160000, 32'h41160fff}
+    }},
+    '{"csrng", '{
+        '{32'h41150000, 32'h41150fff}
+    }},
+    '{"edn0", '{
+        '{32'h41170000, 32'h41170fff}
+    }},
+    '{"edn1", '{
+        '{32'h41180000, 32'h41180fff}
+    }},
     '{"rv_plic", '{
         '{32'h40090000, 32'h40090fff}
     }},
@@ -41,10 +53,10 @@ tl_device_t xbar_devices[$] = '{
         '{32'h40160000, 32'h40160fff}
     }},
     '{"alert_handler", '{
-        '{32'h40130000, 32'h40130fff}
+        '{32'h411b0000, 32'h411b0fff}
     }},
     '{"nmi_gen", '{
-        '{32'h40140000, 32'h40140fff}
+        '{32'h411c0000, 32'h411c0fff}
     }},
     '{"otbn", '{
         '{32'h50000000, 32'h5000ffff}
@@ -116,6 +128,10 @@ tl_host_t xbar_hosts[$] = '{
         "ast_wrapper",
         "flash_ctrl",
         "aes",
+        "entropy_src",
+        "csrng",
+        "edn0",
+        "edn1",
         "hmac",
         "rv_plic",
         "pinmux",
@@ -144,6 +160,10 @@ tl_host_t xbar_hosts[$] = '{
         "ast_wrapper",
         "flash_ctrl",
         "aes",
+        "entropy_src",
+        "csrng",
+        "edn0",
+        "edn1",
         "hmac",
         "rv_plic",
         "pinmux",

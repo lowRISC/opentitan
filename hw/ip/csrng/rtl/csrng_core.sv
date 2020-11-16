@@ -1125,7 +1125,8 @@ module csrng_core import csrng_pkg::*; #(
 
   assign hw2reg.sum_sts.diag.de = !cs_enable;
   assign hw2reg.sum_sts.diag.d  =
-         (reg2hw.regen)          || // not used
+         1'b0                    &&
+         (reg2hw.regen)          && // not used
          (|reg2hw.genbits.q);       // not used
 
 

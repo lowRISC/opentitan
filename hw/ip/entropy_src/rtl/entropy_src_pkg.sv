@@ -25,6 +25,9 @@ package entropy_src_pkg;
     logic es_req;
   } entropy_src_hw_if_req_t;
 
+  parameter entropy_src_hw_if_req_t ENTROPY_SRC_HW_IF_REQ_DEFAULT = '{default: '0};
+  parameter entropy_src_hw_if_rsp_t ENTROPY_SRC_HW_IF_RSP_DEFAULT = '{default: '0};
+
 
   // ast rng i/f
   typedef struct packed {
@@ -35,6 +38,9 @@ package entropy_src_pkg;
     logic rng_valid;
     logic [RNG_DATA_WIDTH-1:0] rng_b;
   } entropy_src_rng_rsp_t;
+
+  parameter entropy_src_rng_req_t ENTROPY_SRC_RNG_REQ_DEFAULT = '{default: '0};
+  parameter entropy_src_rng_rsp_t ENTROPY_SRC_RNG_RSP_DEFAULT = '{default: '0};
 
   // external health test i/f
   typedef struct packed {
@@ -52,6 +58,9 @@ package entropy_src_pkg;
     logic test_fail_hi_pulse;
     logic test_fail_lo_pulse;
   } entropy_src_xht_rsp_t;
+
+  parameter entropy_src_xht_req_t ENTROPY_SRC_XHT_REQ_DEFAULT = '{default: '0};
+  parameter entropy_src_xht_rsp_t ENTROPY_SRC_XHT_RSP_DEFAULT = '{default: '0};
 
 
 endpackage : entropy_src_pkg

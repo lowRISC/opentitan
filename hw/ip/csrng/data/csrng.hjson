@@ -7,7 +7,7 @@
   bus_host: "none",
   param_list: [
     { name: "SBoxImpl",
-      type: "aes_pkg::sbox_imple_e",
+      type: "aes_pkg::sbox_impl_e",
       default: "aes_pkg::SBoxImplLut",
       desc: "Selection of the S-Box implementation. See aes_pkg.sv.",
       local: "false",
@@ -15,7 +15,7 @@
     },
     { name: "NHwApps",
       type: "int",
-      default: "3",
+      default: "2",
       desc: "Number of CSRNG hardware applications",
       local: "true"
     }
@@ -31,18 +31,17 @@
       desc: "Asserted when a FIFO error occurs."}
   ],
   inter_signal_list: [
-    { struct:  "csrng",  // csrng_req_t, csrng_rsp_t
-      type:    "req_rsp",
-      name:    "csrng_cmd",
-      act:     "rsp",
-      width:   "3",
-      package: "csrng_pkg",
+    { struct:  "csrng"
+      type:    "req_rsp"
+      name:    "csrng_cmd"
+      act:     "rsp"
+      package: "csrng_pkg"
+      width:   "2",
     }
     { struct:  "entropy_src_hw_if"
       type:    "req_rsp",
       name:    "entropy_src_hw_if"
       act:     "req"
-      width:   1
       package: "entropy_src_pkg"
     }
     { struct:  "logic"
@@ -51,6 +50,13 @@
       act:     "rcv"
       width:   1
       package: ""
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_dft_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
   ],
   regwidth: "32",
@@ -84,6 +90,8 @@
                   Setting this bit will enable the CSRNG module. The application interface for software
                   (register based) will be enabled only if the respective efuse input is enabled.
                   '''
+            tags: [// Exclude from writes to these bits.
+                   "excl:CsrAllTests:CsrExclWrite"]
         },
         {
             bits: "1",
@@ -145,6 +153,7 @@
           name: "CMD_RDY",
           desc: '''This bit indicates when the command interface is ready to accept commands.
                 '''
+          resval: "1"
         }
         { bits: "1",
           name: "CMD_STS",
@@ -155,6 +164,7 @@
                 0b0: Request completed successfully
                 0b1: Request completed with an error
                 '''
+          resval: "0"
         }
       ]
     },

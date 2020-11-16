@@ -124,7 +124,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral base address for alert_handler in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR = 32'h40130000;
+  parameter int unsigned TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR = 32'h411b0000;
 
   /**
    * Peripheral size in bytes for alert_handler in top earlgrey.
@@ -164,7 +164,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral base address for nmi_gen in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_NMI_GEN_BASE_ADDR = 32'h40140000;
+  parameter int unsigned TOP_EARLGREY_NMI_GEN_BASE_ADDR = 32'h411c0000;
 
   /**
    * Peripheral size in bytes for nmi_gen in top earlgrey.
@@ -210,6 +210,46 @@ package top_earlgrey_pkg;
    * Peripheral size in bytes for otp_ctrl in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_OTP_CTRL_SIZE_BYTES = 32'h4000;
+
+  /**
+   * Peripheral base address for csrng in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_CSRNG_BASE_ADDR = 32'h41150000;
+
+  /**
+   * Peripheral size in bytes for csrng in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_CSRNG_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for entropy_src in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR = 32'h41160000;
+
+  /**
+   * Peripheral size in bytes for entropy_src in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_ENTROPY_SRC_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for edn0 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_EDN0_BASE_ADDR = 32'h41170000;
+
+  /**
+   * Peripheral size in bytes for edn0 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_EDN0_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for edn1 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_EDN1_BASE_ADDR = 32'h41180000;
+
+  /**
+   * Peripheral size in bytes for edn1 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_EDN1_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for otbn in top earlgrey.

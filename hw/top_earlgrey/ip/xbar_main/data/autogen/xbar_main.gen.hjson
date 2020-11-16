@@ -45,6 +45,10 @@
       peri
       flash_ctrl
       aes
+      entropy_src
+      csrng
+      edn0
+      edn1
       hmac
       rv_plic
       pinmux
@@ -63,6 +67,10 @@
       peri
       flash_ctrl
       aes
+      entropy_src
+      csrng
+      edn0
+      edn1
       hmac
       rv_plic
       pinmux
@@ -294,6 +302,78 @@
       pipeline: "true"
     }
     {
+      name: entropy_src
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: entropy_src
+      addr_range:
+      [
+        {
+          base_addr: 0x41160000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+    }
+    {
+      name: csrng
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: csrng
+      addr_range:
+      [
+        {
+          base_addr: 0x41150000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+    }
+    {
+      name: edn0
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: edn
+      addr_range:
+      [
+        {
+          base_addr: 0x41170000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+    }
+    {
+      name: edn1
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: edn
+      addr_range:
+      [
+        {
+          base_addr: 0x41180000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+    }
+    {
       name: rv_plic
       type: device
       clock: clk_main_i
@@ -356,7 +436,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40130000
+          base_addr: 0x411b0000
           size_byte: 0x1000
         }
       ]
@@ -373,7 +453,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40140000
+          base_addr: 0x411c0000
           size_byte: 0x1000
         }
       ]

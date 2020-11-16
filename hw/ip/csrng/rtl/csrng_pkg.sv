@@ -19,14 +19,6 @@ package csrng_pkg;
     logic         genbits_ready;
   } csrng_req_t;
 
-  // default value of csrng_req_t (for dangling ports)
-  parameter csrng_req_t CSRNG_REQ_DEFAULT = '{
-    csrng_req_valid: 1'b0,
-    csrng_req_bus:   '0,
-    genbits_ready:   1'b0
-  };
-
-
   typedef struct packed {
     logic         csrng_req_ready;
     logic         csrng_rsp_ack;
@@ -36,15 +28,8 @@ package csrng_pkg;
     logic [GENBITS_BUS_WIDTH-1:0] genbits_bus;
   } csrng_rsp_t;
 
-  // default value of csrng_rsp_t (for dangling ports)
-  parameter csrng_rsp_t CSRNG_RSP_DEFAULT = '{
-    csrng_req_ready: 1'b0,
-    csrng_rsp_ack: 1'b0,
-    csrng_rsp_sts: 1'b0,
-    genbits_valid:   1'b0,
-    genbits_fips:   1'b0,
-    genbits_bus:     '0
-  };
+  parameter csrng_req_t CSRNG_REQ_DEFAULT = '{default: '0};
+  parameter csrng_rsp_t CSRNG_RSP_DEFAULT = '{default: '0};
 
 
   typedef enum logic [2:0] {
