@@ -66,7 +66,10 @@ rom_ext_manifest_parser = declare_dependency(
     dependencies: [
       sw_lib_mmio,
     ],
-  )
+  ),
+  sources: [
+    rom_exts_manifest_offsets_header,
+  ],
 )
 
 foreach device_name, device_lib : sw_lib_arch_core_devices
