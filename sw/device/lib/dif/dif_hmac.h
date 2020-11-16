@@ -87,9 +87,9 @@ typedef enum dif_hmac_result {
   /** No error occurred. */
   kDifHmacOk = 0,
   /** An unknown error occurred. */
-  kDifHmacError,
+  kDifHmacError = 1,
   /** An invalid argument was provided. */
-  kDifHmacBadArg,
+  kDifHmacBadArg = 2,
 } dif_hmac_result_t;
 
 /**
@@ -99,9 +99,9 @@ typedef enum dif_hmac_fifo_result {
   /** No error occurred. */
   kDifHmacFifoOk = 0,
   /** An unknown error occurred. */
-  kDifHmacFifoError,
+  kDifHmacFifoError = kDifHmacError,
   /** An invalid argument was provided. */
-  kDifHmacFifoBadArg,
+  kDifHmacFifoBadArg = kDifHmacBadArg,
   /**
    * The FIFO filled up before the buffer was fully consumed.
    *
@@ -120,9 +120,9 @@ typedef enum dif_hmac_digest_result {
   /** No error occurred. */
   kDifHmacDigestOk = 0,
   /** An unknown error occurred. */
-  kDifHmacDigestError,
+  kDifHmacDigestError = kDifHmacError,
   /** An invalid argument was provided. */
-  kDifHmacDigestBadArg,
+  kDifHmacDigestBadArg = kDifHmacBadArg,
   /**
    * The HMAC operation is still in progress.
    *
@@ -143,11 +143,17 @@ typedef enum dif_hmac_digest_result {
 typedef struct dif_hmac_config {
   /** The base address for registers in the HMAC IP. */
   mmio_region_t base_addr;
+} dif_hmac_config_t;
+
+/**
+ * Configuration for a single HMAC Transaction
+ */
+typedef struct dif_hmac_transaction {
   /** Byte endianness for writes to the FIFO. */
   dif_hmac_endianness_t message_endianness;
   /** Byte endianness for reads from the digest. */
   dif_hmac_endianness_t digest_endianness;
-} dif_hmac_config_t;
+} dif_hmac_transaction_t;
 
 /**
  * A typed representation of the HMAC digest.
@@ -268,10 +274,12 @@ dif_hmac_result_t dif_hmac_irq_force(const dif_hmac_t *hmac,
  *
  * @param hmac The HMAC device to start HMAC operation for.
  * @param key The 256-bit HMAC key.
+ * @param config The per-transaction configuration.
  * @return `kDifHmacBadArg` if `hmac` or `key` is null, `kDifHmacOk` otherwise.
  */
-dif_hmac_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
-                                           const uint8_t *key);
+dif_hmac_result_t dif_hmac_mode_hmac_start(
+    const dif_hmac_t *hmac, const uint8_t *key,
+    const dif_hmac_transaction_t config);
 
 /**
  * Resets the HMAC engine and readies it to receive a new message to process a
@@ -282,9 +290,11 @@ dif_hmac_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
  * write the message for SHA256 processing.
  *
  * @param hmac The HMAC device to start SHA256 operation for.
+ * @param config The per-transaction configuration.
  * @return `kDifHmacBadArg` if `hmac` null, `kDifHmacOk` otherwise.
  */
-dif_hmac_result_t dif_hmac_mode_sha256_start(const dif_hmac_t *hmac);
+dif_hmac_result_t dif_hmac_mode_sha256_start(
+    const dif_hmac_t *hmac, const dif_hmac_transaction_t config);
 
 /**
  * Attempts to send `len` bytes from the buffer pointed to by `data` to the
@@ -352,10 +362,16 @@ dif_hmac_result_t dif_hmac_get_message_length(const dif_hmac_t *hmac,
 dif_hmac_result_t dif_hmac_process(const dif_hmac_t *hmac);
 
 /**
- * Attempts to read the HMAC digest and store store the result in the buffer
- * referenced by `digest`.
+ * Attempts to finish a transaction started with `dif_hmac_mode_*_start`, and
+ * reads the final digest in the buffer referenced by `digest`.
  *
- * If HMAC is still processing this will return `kDifHmacErrorDigestProcessing`
+ * This queries the `INTR_STATE` register to check if the HMAC is finished, and
+ * will acknowledge a `hmac_done` interrupt. If that register is not pending,
+ * then this function assumes HMAC is still processing and will return
+ * `kDifHmacErrorDigestProcessing`.
+ *
+ * Once the digest has been read, the HMAC and SHA256 datapaths are disabled,
+ * clearing the digest registers.
  *
  * `digest` must reference an allocated, contiguous, 32-byte buffer. This buffer
  * shall also be 4-byte aligned. This is all consistent with the platform
@@ -368,8 +384,8 @@ dif_hmac_result_t dif_hmac_process(const dif_hmac_t *hmac);
  *         `kDifHmacDigestProcessing` if HMAC is still processing, and
  *         `kDifHmacOk` otherwise.
  */
-dif_hmac_digest_result_t dif_hmac_digest_read(const dif_hmac_t *hmac,
-                                              dif_hmac_digest_t *digest);
+dif_hmac_digest_result_t dif_hmac_finish(const dif_hmac_t *hmac,
+                                         dif_hmac_digest_t *digest);
 
 /**
  * Randomizes internal secret registers on the HMAC device. This includes the

@@ -14,8 +14,19 @@
 
 #define MAX_FIFO_FILL 10
 
-const test_config_t kTestConfig = {
-    .can_clobber_uart = false,
+const test_config_t kTestConfig;
+
+// This test needs to understand the byte order of the data in the string and
+// the digest values below, as they are laid out for the current processor.
+// RISC-V is little-endian, so the first of these `kHmacTransactionConfig`
+// values is the one we expect to be used, but we include the other for
+// completeness.
+_Static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
+               "This test assumes the target platform is little endian.");
+
+static const dif_hmac_transaction_config_t kHmacTransactionConfig = {
+    .digest_endianness = kDifHmacEndiannessLittle,
+    .message_endianness = kDifHmacEndiannessLittle,
 };
 
 static const char kData[142] =
@@ -53,9 +64,9 @@ static void test_start(const dif_hmac_t *hmac, const uint8_t *key) {
   dif_hmac_result_t res;
   // Let a null key indicate we are operating in SHA256-only mode.
   if (key == NULL) {
-    res = dif_hmac_mode_sha256_start(hmac);
+    res = dif_hmac_mode_sha256_start(hmac, kHmacTransactionConfig);
   } else {
-    res = dif_hmac_mode_hmac_start(hmac, key);
+    res = dif_hmac_mode_hmac_start(hmac, key, kHmacTransactionConfig);
   }
 
   CHECK(res != kDifHmacBadArg, "Invalid arguments encountered in HMAC start.");
@@ -146,7 +157,7 @@ static void check_digest(const dif_hmac_t *hmac,
   dif_hmac_digest_t digest_result;
   bool hmac_done = false;
   do {
-    dif_hmac_digest_result_t res = dif_hmac_digest_read(hmac, &digest_result);
+    dif_hmac_digest_result_t res = dif_hmac_finish(hmac, &digest_result);
 
     CHECK(res != kDifHmacDigestBadArg,
           "Invalid arguments encountered reading HMAC digest.");
@@ -181,8 +192,6 @@ bool test_main() {
 
   dif_hmac_config_t hmac_config = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR),
-      .digest_endianness = kDifHmacEndiannessBig,
-      .message_endianness = kDifHmacEndiannessBig,
   };
 
   dif_hmac_t hmac;

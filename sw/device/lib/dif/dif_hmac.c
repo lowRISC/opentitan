@@ -83,33 +83,6 @@ dif_hmac_result_t dif_hmac_init(const dif_hmac_config_t *config,
                           (1 << HMAC_INTR_STATE_FIFO_EMPTY_BIT) |
                           (1 << HMAC_INTR_STATE_HMAC_ERR_BIT));
 
-  uint32_t device_config = 0;
-
-  // Set the byte-order of the input message.
-  switch (config->message_endianness) {
-    case kDifHmacEndiannessBig:
-      device_config |= (1 << HMAC_CFG_ENDIAN_SWAP_BIT);
-      break;
-    case kDifHmacEndiannessLittle:
-      break;
-    default:
-      return kDifHmacError;
-  }
-
-  // Set the byte-order of the digest.
-  switch (config->digest_endianness) {
-    case kDifHmacEndiannessBig:
-      device_config |= (1 << HMAC_CFG_DIGEST_SWAP_BIT);
-      break;
-    case kDifHmacEndiannessLittle:
-      break;
-    default:
-      return kDifHmacError;
-  }
-
-  // Write the configuration.
-  mmio_region_write32(config->base_addr, HMAC_CFG_REG_OFFSET, device_config);
-
   return kDifHmacOk;
 }
 
@@ -222,25 +195,89 @@ dif_hmac_result_t dif_hmac_irq_force(const dif_hmac_t *hmac,
   return kDifHmacOk;
 }
 
-dif_hmac_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
-                                           const uint8_t *key) {
+/**
+ * Sets up the CFG value for a given per-transaction configuration.
+ *
+ * This only sets the right values for the ENDIAN_SWAP / DIGEST_SWAP values,
+ * using the values in `config`.
+ *
+ * The implementation here is careful to only update `*device_config` once it
+ * has calculated the entire value for the register, rather than gradually
+ * updating it early. The value of `*device_config` is only updated if the
+ * function returns #kDifHmacOk.
+ *
+ * @param[inout] device_config HMAC CFG register value to be updated;
+ * @param config A per-transaction configuration.
+ * @returns #kDifHmacError if the config is invalid, #kDifHmacOk if
+ * `*device_config` was sucessfully updated.
+ */
+static dif_hmac_result_t dif_hmac_calculate_device_config_value(
+    uint32_t *device_config, const dif_hmac_transaction_t config) {
+  // Set the byte-order of the input message.
+  bool swap_message_endianness;
+  switch (config.message_endianness) {
+    case kDifHmacEndiannessBig:
+      swap_message_endianness = false;
+      break;
+    case kDifHmacEndiannessLittle:
+      swap_message_endianness = true;
+      break;
+    default:
+      return kDifHmacError;
+  }
+
+  // Set the byte-order of the digest.
+  bool swap_digest_endianness;
+  switch (config.digest_endianness) {
+    case kDifHmacEndiannessBig:
+      swap_digest_endianness = false;
+      break;
+    case kDifHmacEndiannessLittle:
+      swap_digest_endianness = true;
+      break;
+    default:
+      return kDifHmacError;
+  }
+
+  // `*device_config` must only be updated after the two switch statements,
+  // because they can return #kDifHmacError.
+  *device_config = bitfield_bit32_write(
+      *device_config, HMAC_CFG_ENDIAN_SWAP_BIT, swap_message_endianness);
+  *device_config = bitfield_bit32_write(
+      *device_config, HMAC_CFG_DIGEST_SWAP_BIT, swap_digest_endianness);
+
+  return kDifHmacOk;
+}
+
+dif_hmac_result_t dif_hmac_mode_hmac_start(
+    const dif_hmac_t *hmac, const uint8_t *key,
+    const dif_hmac_transaction_t config) {
   if (hmac == NULL || key == NULL) {
     return kDifHmacBadArg;
   }
-
-  // Disable SHA256 while configuring and to clear the digest.
-  mmio_region_nonatomic_clear_bit32(hmac->base_addr, HMAC_CFG_REG_OFFSET,
-                                    HMAC_CFG_SHA_EN_BIT);
 
   // Set the HMAC key.
   // TODO Static assert register layout.
   mmio_region_memcpy_to_mmio32(hmac->base_addr, HMAC_KEY_0_REG_OFFSET, key,
                                HMAC_PARAM_NUMWORDS * sizeof(uint32_t));
 
+  // Read current CFG register value.
+  uint32_t device_config =
+      mmio_region_read32(hmac->base_addr, HMAC_CFG_REG_OFFSET);
+
+  // Set the byte-order of the input message and the digest.
+  dif_hmac_result_t update_result =
+      dif_hmac_calculate_device_config_value(&device_config, config);
+  if (update_result != kDifHmacOk) {
+    return update_result;
+  }
+
   // Set HMAC to process in HMAC mode (not SHA256-only mode).
-  mmio_region_nonatomic_set_mask32(
-      hmac->base_addr, HMAC_CFG_REG_OFFSET,
-      (1 << HMAC_CFG_SHA_EN_BIT) | (1 << HMAC_CFG_HMAC_EN_BIT), 0);
+  device_config =
+      bitfield_bit32_write(device_config, HMAC_CFG_SHA_EN_BIT, true);
+  device_config =
+      bitfield_bit32_write(device_config, HMAC_CFG_HMAC_EN_BIT, true);
+  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, device_config);
 
   // Begin HMAC operation.
   mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_CMD_REG_OFFSET,
@@ -248,22 +285,33 @@ dif_hmac_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
   return kDifHmacOk;
 }
 
-dif_hmac_result_t dif_hmac_mode_sha256_start(const dif_hmac_t *hmac) {
+dif_hmac_result_t dif_hmac_mode_sha256_start(
+    const dif_hmac_t *hmac, const dif_hmac_transaction_t config) {
   if (hmac == NULL) {
     return kDifHmacBadArg;
   }
 
-  // Disable SHA256 while configuring and to clear the digest.
-  mmio_region_nonatomic_clear_bit32(hmac->base_addr, HMAC_CFG_REG_OFFSET,
-                                    HMAC_CFG_SHA_EN_BIT);
+  // TODO: Clear HMAC Key? Write Zeroed HMAC Key?
 
-  // Disable HMAC mode.
-  mmio_region_nonatomic_clear_bit32(hmac->base_addr, HMAC_CFG_REG_OFFSET,
-                                    HMAC_CFG_HMAC_EN_BIT);
+  // Read current CFG register value.
+  uint32_t device_config =
+      mmio_region_read32(hmac->base_addr, HMAC_CFG_REG_OFFSET);
 
-  // Set HMAC to process in SHA256-only mode.
-  mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_CFG_REG_OFFSET,
-                                  HMAC_CFG_SHA_EN_BIT);
+  // Set the byte-order of the input message and the digest.
+  dif_hmac_result_t update_result =
+      dif_hmac_calculate_device_config_value(&device_config, config);
+  if (update_result != kDifHmacOk) {
+    return update_result;
+  }
+
+  // Set HMAC to process in SHA256-only mode (without HMAC mode).
+  device_config =
+      bitfield_bit32_write(device_config, HMAC_CFG_SHA_EN_BIT, true);
+  device_config =
+      bitfield_bit32_write(device_config, HMAC_CFG_HMAC_EN_BIT, false);
+
+  // Write new CFG register value.
+  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, device_config);
 
   // Begin SHA256-only operation.
   mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_CMD_REG_OFFSET,
@@ -350,8 +398,8 @@ dif_hmac_result_t dif_hmac_process(const dif_hmac_t *hmac) {
   return kDifHmacOk;
 }
 
-dif_hmac_digest_result_t dif_hmac_digest_read(const dif_hmac_t *hmac,
-                                              dif_hmac_digest_t *digest) {
+dif_hmac_digest_result_t dif_hmac_finish(const dif_hmac_t *hmac,
+                                         dif_hmac_digest_t *digest) {
   if (hmac == NULL || digest == NULL) {
     return kDifHmacDigestBadArg;
   }
@@ -373,6 +421,16 @@ dif_hmac_digest_result_t dif_hmac_digest_read(const dif_hmac_t *hmac,
   mmio_region_memcpy_from_mmio32(hmac->base_addr, HMAC_DIGEST_0_REG_OFFSET,
                                  digest->digest,
                                  HMAC_PARAM_NUMWORDS * sizeof(uint32_t));
+
+  // Disable HMAC and SHA256 until the next transaction, clearing the current
+  // digest.
+  uint32_t device_config =
+      mmio_region_read32(hmac->base_addr, HMAC_CFG_REG_OFFSET);
+  device_config =
+      bitfield_bit32_write(device_config, HMAC_CFG_SHA_EN_BIT, false);
+  device_config =
+      bitfield_bit32_write(device_config, HMAC_CFG_HMAC_EN_BIT, false);
+  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, device_config);
 
   return kDifHmacDigestOk;
 }
