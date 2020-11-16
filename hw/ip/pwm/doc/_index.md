@@ -108,13 +108,13 @@ If the duty cycle is internally represented as a 16-bit value x, the output puls
 
 $$DC(x)=\frac{x}{2^{16}}.$$
 
-Thus the allowed duty cycle in principle ranges from 0 to 99.998% (i.e. 1-(&frac12;)<sup>16</sup>).
+Thus the allowed duty cycle in principle ranges from 0 to 99.998% (i.e. <nobr>1-(&frac12;)<sup>16</sup></nobr>).
 
 However, the actual phase resolution may be smaller.
-In order to support faster pulse rates, the phase resolution can be set to less than 16-bits, in which case the observed duty cycle will be rounded down to the next lowest multiple of 2<sup>-({{< regref "CFG.DC_RESN" >}}+1)</sup>.
-In other words, the {{< regref "CFG.DC_RESN" >}} register effectively limits the duty cycle resolution, such that only the {{< regref "CFG.DC_RESN" >}}+1 most significant bits are relevant:
+In order to support faster pulse rates, the phase resolution can be set to less than 16-bits, in which case the observed duty cycle will be rounded down to the next lowest multiple of <nobr>2<sup>-({{< regref "CFG.DC_RESN" >}}+1)</sup></nobr>.
+In other words, the {{< regref "CFG.DC_RESN" >}} register effectively limits the duty cycle resolution, such that only the <nobr>{{< regref "CFG.DC_RESN" >}}+1</nobr> most significant bits are relevant:
 
-$$DC(x; \textrm{DC_RESN})=\frac{\textrm{MSB}(x; \textrm{DC_RESN}+1)}{2^{\textrm{DC_RESN}+1}},$$
+$$DC(x; \textrm{DC_RESN})=\frac{\textrm{MSB}(x; \textrm{DC_RESN}+1)}{2^{(\textrm{DC_RESN}+1)}},$$
 
 where here we use the notation MSB(<i>x</i>; <i>y</i>), to mean the <i>y</i> most significant bits of the binary value <i>x</i>.
 
@@ -124,7 +124,7 @@ The IP maintains a single phase counter that is shared by all outputs.
 As we discuss in the next section, each channel has a comparator which compares these values to the current duty cycle and phase value and generates the appropriate pulse.
 Since all phase or duty cycle related quantities are represented as 16-bit fixed point fractions-regardless of whether they are calculated by the PWM IP or determined by firmware-the phase counter is also a 16-bit quantity.
 
-Each PWM pulse cycle is divided into 2<sup>DC_RESN+1</sup> beats.
+Each PWM pulse cycle is divided into <nobr>2<sup>DC_RESN+1</sup></nobr> beats.
 During each beat, the 16-bit phase counter increments by 2<sup>(16-DC_RESN-1)</sup> (modulo 65536).
 The beat period is defined by the {{< regref "CFG.CLK_DIV" >}} register:
 
