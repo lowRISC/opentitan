@@ -188,10 +188,20 @@ class Model:
         # an Optional[int]. If the value is a number, the register value is
         # known to currently equal that number. If it is None, the register
         # value is unknown (but the register does have an architectural value).
+        #
+        # Note that x1 behaves a bit strangely because of the call stack rules,
+        # so we don't store it in _known_regs but instead in _call_stack.
         self._known_regs = {}  # type: Dict[str, Dict[int, Optional[int]]]
 
         # Set x0 (the zeros register)
         self._known_regs['gpr'] = {0: 0}
+
+        # A call stack, representing the contents of x1. The top of the stack
+        # is at the end (position -1), to match Python's list.pop function. A
+        # entry of None means an entry with an architectural value, but where
+        # we don't actually know what it is (usually a result of some
+        # arithmetic operation that got written to x1).
+        self._call_stack = []  # type: List[Optional[int]]
 
         # Known values for memory, keyed by memory type ('dmem', 'csr', 'wsr').
         self._known_mem = {
@@ -206,20 +216,56 @@ class Model:
         # generating)
         self.pc = reset_addr
 
-    def write_reg(self, reg_type: str, idx: int, value: Optional[int]) -> None:
+    def read_reg(self, reg_type: str, idx: int) -> None:
+        '''Update the model for a read of the given register
+
+        This is mostly ignored, but has an effect for x1, which pops from the
+        call stack on a read.
+
+        '''
+        if reg_type == 'gpr' and idx == 1:
+            assert self._call_stack
+            self._call_stack.pop()
+
+    def write_reg(self,
+                  reg_type: str,
+                  idx: int,
+                  value: Optional[int],
+                  update: bool) -> None:
         '''Mark a register as having an architectural value
 
         If value is not None, it is the actual value that the register has.
         Writes to the zeros register x0 are ignored.
 
+        The update flag is normally False. If set, it means that other code has
+        already updated the model with a write of a value to the register for
+        this instruction, and we should replace that value with the given one,
+        which refines the previous value. This is irrelevant for idempotent
+        registers, but matters for x1.
+
         '''
-        if reg_type == 'gpr' and idx == 0:
-            return
+        if reg_type == 'gpr':
+            if idx == 0:
+                # Ignore writes to x0
+                return
+
+            if idx == 1:
+                # Special-case writes to x1
+                if update:
+                    assert self._call_stack
+                    assert self._call_stack[-1] in [None, value]
+                    self._call_stack[-1] = value
+                else:
+                    self._call_stack.append(value)
+                return
 
         self._known_regs.setdefault(reg_type, {})[idx] = value
 
     def get_reg(self, reg_type: str, idx: int) -> Optional[int]:
         '''Get a register value, if known.'''
+        if reg_type == 'gpr' and idx == 1:
+            return self._call_stack[-1] if self._call_stack else None
+
         return self._known_regs.setdefault(reg_type, {}).get(idx)
 
     def touch_mem(self, mem_type: str, base: int, width: int) -> None:
@@ -258,7 +304,16 @@ class Model:
             if not known_regs:
                 return None
 
-            return random.choice(list(known_regs))
+            known_list = list(known_regs)
+            if op_type.reg_type == 'gpr':
+                # Add x1 if to the list of known registers (if it has an
+                # architectural value). This won't appear in known_regs,
+                # because we don't track x1 there.
+                assert 1 not in known_regs
+                if self._call_stack:
+                    known_list.append(1)
+
+            return random.choice(known_list)
 
         # This operand isn't treated as a source. Pick any register!
         assert op_type.width is not None
@@ -272,11 +327,18 @@ class Model:
 
         '''
         ret = []
-        known_regs = self._known_regs.get(reg_type)
-        if known_regs is not None:
-            for reg_idx, reg_val in known_regs.items():
-                if reg_val is not None:
-                    ret.append((reg_idx, reg_val))
+        known_regs = self._known_regs.setdefault(reg_type, {})
+        for reg_idx, reg_val in known_regs.items():
+            if reg_val is not None:
+                ret.append((reg_idx, reg_val))
+
+        # Handle x1, which has a known value iff the top of the call stack is
+        # not None
+        if reg_type == 'gpr':
+            assert 1 not in known_regs
+            if self._call_stack and self._call_stack[-1] is not None:
+                ret.append((1, self._call_stack[-1]))
+
         return ret
 
     def pick_lsu_target(self,
@@ -344,7 +406,7 @@ class Model:
     def update_for_lui(self, insn: Insn, op_vals: List[int]) -> None:
         '''Update model state after a LUI
 
-        A lui instruction looks like "lui x1, 80000" or similar. This operation
+        A lui instruction looks like "lui x2, 80000" or similar. This operation
         is easy to understand, so we can actually update the model registers
         appropriately.
 
@@ -364,7 +426,7 @@ class Model:
                                'Model.update_for_lui.')
 
         assert op_vals[1] >= 0
-        self.write_reg('gpr', op_vals[0], op_vals[1])
+        self.write_reg('gpr', op_vals[0], op_vals[1], True)
 
     def update_for_addi(self, insn: Insn, op_vals: List[int]) -> None:
         '''Update model state after an ADDI
@@ -402,17 +464,23 @@ class Model:
             value -= 1 << 32
             assert (value >> 32) == 0
 
-        self.write_reg('gpr', op_vals[0], value)
+        self.write_reg('gpr', op_vals[0], value, True)
 
     def update_for_insn(self, prog_insn: ProgInsn) -> None:
-        # Mark any destination operand as having an architectural value
+        # Apply side-effecting reads (relevant for x1) then mark any
+        # destination operand as having an architectural value
         insn = prog_insn.insn
         assert len(insn.operands) == len(prog_insn.operands)
+        pending_writes = []  # type: List[Tuple[str, int]]
         for operand, op_val in zip(insn.operands, prog_insn.operands):
             op_type = operand.op_type
             if isinstance(op_type, RegOperandType):
                 if op_type.is_dest:
-                    self.write_reg(op_type.reg_type, op_val, None)
+                    pending_writes.append((op_type.reg_type, op_val))
+                else:
+                    self.read_reg(op_type.reg_type, op_val)
+        for reg_type, op_val in pending_writes:
+            self.write_reg(reg_type, op_val, None, False)
 
         # If this is a sufficiently simple operation that we understand the
         # result, actually set the destination register with a value.

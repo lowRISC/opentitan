@@ -143,7 +143,10 @@ class Jump(SnippetGen):
         # set that explicitly here.
         link_reg_optype = prog_insn.insn.operands[0].op_type
         assert isinstance(link_reg_optype, RegOperandType)
-        model.write_reg(link_reg_optype.reg_type, link_reg_idx, model.pc + 4)
+        model.write_reg(link_reg_optype.reg_type,
+                        link_reg_idx,
+                        model.pc + 4,
+                        True)
 
         # And update the PC, which is now tgt
         model.pc = new_pc
