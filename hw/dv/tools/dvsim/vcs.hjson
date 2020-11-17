@@ -31,7 +31,9 @@
                // otherwise. The double-escaped quotes are because this needs to go inside a string
                // that gets passed to Make (stripping one level of quotes), and then needs to
                // result in an argument with an embedded space (the other one).
-               "-CFLAGS \\\"--std=c99 -fno-extended-identifiers\\\"",
+               "-CFLAGS \\\"--std=c++11 -fno-extended-identifiers\\\"",
+               // This is required for dpi_memutil.cc
+               "-CFLAGS --std=c++11",
                // Without this magic LDFLAGS argument below, we get compile time errors with
                // VCS on Google Linux machines that look like this:
                // .../libvcsnew.so: undefined reference to `snpsReallocFunc'
