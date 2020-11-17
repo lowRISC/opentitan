@@ -351,7 +351,9 @@ def parse_args():
                             'applied to each simulation run.'))
 
     rung.add_argument("--profile", "-p",
+                      nargs="?",
                       choices=['time', 'mem'],
+                      const="time",
                       metavar="P",
                       help=('Turn on simulation profiling (where P is time '
                             'or mem).'))
@@ -409,16 +411,15 @@ def parse_args():
     waveg = parser.add_argument_group('Dumping waves')
 
     waveg.add_argument("--waves", "-w",
-                       action='store_true',
-                       help="Enable dumping of waves")
-
-    waveg.add_argument("-d",
-                       "--dump",
-                       choices=["fsdb", "shm", "vpd"],
-                       help=("Format to dump waves for simulation. The default "
-                             "format depends on the tool. With VCS, this "
-                             "defaults to fsdb if Verdi is installed, else "
-                             "vpd. With Xcelium, defaults to shm."))
+                       nargs="?",
+                       choices=["default", "fsdb", "shm", "vpd", "vcd", "evcd",
+                                "fst"],
+                       const="default",
+                       help=("Enable dumping of waves. It takes an optional "
+                             "argument to pick the desired wave format. If "
+                             "the optional argument is not supplied, it picks "
+                             "whatever is the default for the chosen tool. "
+                             "By default, dumping waves is not enabled."))
 
     waveg.add_argument("--max-waves", "-mw",
                        type=int,
@@ -467,7 +468,6 @@ def parse_args():
     dvg.add_argument("--verbose",
                      nargs="?",
                      choices=['default', 'debug'],
-                     default=None,
                      const="default",
                      metavar="D",
                      help=('With no argument, print verbose dvsim tool '
