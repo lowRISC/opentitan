@@ -270,10 +270,10 @@ sw_tests += {
   }
 }
 
-dif_otbn_sanitytest_lib = declare_dependency(
+dif_otbn_smoketest_lib = declare_dependency(
   link_with: static_library(
-    'dif_otbn_sanitytest_lib',
-    sources: ['dif_otbn_sanitytest.c'],
+    'dif_otbn_smoketest_lib',
+    sources: ['dif_otbn_smoketest.c'],
     dependencies: [
       sw_lib_dif_otbn,
       sw_lib_runtime_log,
@@ -285,8 +285,8 @@ dif_otbn_sanitytest_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'dif_otbn_sanitytest': {
-    'library': dif_otbn_sanitytest_lib,
+  'dif_otbn_smoketest': {
+    'library': dif_otbn_smoketest_lib,
   }
 }
 

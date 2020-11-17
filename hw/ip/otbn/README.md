@@ -116,7 +116,7 @@ simulation run, e.g.
 ```sh
 build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
   --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf  \
-  --meminit=flash,build-bin/sw/device/tests/dif_otbn_sanitytest_sim_verilator.elf \
+  --meminit=flash,build-bin/sw/device/tests/dif_otbn_smoketest_sim_verilator.elf \
   +UARTDPI_LOG_uart0=- \
   +OTBN_USE_MODEL=1
 ```
