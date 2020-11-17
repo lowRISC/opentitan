@@ -13,11 +13,14 @@ I.e., this primitive is only intended to be used as a lightweight data scramblin
 
 ## Parameters
 
-Name         | type   | Description
--------------|--------|----------------------------------------------------------
-DataWidth    | int    | Block size, can be 32 or 64
-KeyWidth     | int    | Key size, can be 64, 80 or 128
-NumRounds    | int    | Number of PRESENT rounds, has to be greater than 0
+Name          | type   | Description
+--------------|--------|----------------------------------------------------------
+DataWidth     | int    | Block size, can be 32 or 64
+KeyWidth      | int    | Key size, can be 64, 80 or 128
+NumRounds     | int    | Number of PRESENT rounds, has to be greater than 0
+NumPhysRounds | int    | Number of physically instantiated PRESENT rounds (defaults to NumRounds)
+
+Note that by setting `NumRounds = 31` and `NumPhysRounds = 1` we can construct a PRESENT primitive that is suitable for iterative evaluation of a full-round PRESENT pass, where each iteration evaluates one of the 31 rounds.
 
 ## Signal Interfaces
 
@@ -46,7 +49,7 @@ key_i        |               | key_o
 =====/======>|   DataWidth   |=====/======>
  [KeyWidth]  |   KeyWidth    | [KeyWidth]
              |   NumRounds   |
-data_i       |               |  data_o
+data_i       | NumPhysRounds |  data_o
 =====/======>|               |=====/=======>
  [DataWidth] |               |  [DataWidth]
              |               |
