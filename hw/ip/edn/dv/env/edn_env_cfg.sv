@@ -5,25 +5,23 @@
 class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
 
   // ext component cfgs
-  rand push_pull_agent_cfg m_push_pull_agent_cfg;
-  rand push_pull_agent_cfg#(.DataWidth(ENDPOINT_BUS_WIDTH)) m_endpoint_agent_cfg [NUM_ENDPOINTS:0];
+  rand push_pull_agent_cfg#(.DataWidth(GENBITS_BUS_WIDTH))     m_csrng_agent_cfg;
+  rand push_pull_agent_cfg#(.DataWidth(ENDPOINT_BUS_WIDTH))    m_endpoint_agent_cfg [NUM_ENDPOINTS:0];
 
   `uvm_object_utils_begin(edn_env_cfg)
-    `uvm_field_object(m_push_pull_agent_cfg, UVM_DEFAULT)
-    //TODO: for loop
+    `uvm_field_object(m_csrng_agent_cfg, UVM_DEFAULT)
+    // TODO: multiple endpoints, for loop?
     `uvm_field_object(m_endpoint_agent_cfg[NUM_ENDPOINTS-1], UVM_DEFAULT)
-    `uvm_field_object(m_endpoint_agent_cfg[0], UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     super.initialize(csr_base_addr);
-    // create endpoint agent config obj
-    m_push_pull_agent_cfg = push_pull_agent_cfg::type_id::create("m_push_pull_agent_cfg");
-    //TODO: for loop
-    m_endpoint_agent_cfg[NUM_ENDPOINTS-1] = push_pull_agent_cfg#(.DataWidth(ENDPOINT_BUS_WIDTH))::type_id::create("m_endpoint_agent_cfg[NUM_ENDPOINTS-1]");
-    m_endpoint_agent_cfg[0] = push_pull_agent_cfg#(.DataWidth(ENDPOINT_BUS_WIDTH))::type_id::create("m_endpoint_agent_cfg[0]");
+    // create config objects
+    m_csrng_agent_cfg = push_pull_agent_cfg#(.DataWidth(GENBITS_BUS_WIDTH))::type_id::create("m_csrng_agent_cfg");
+    // TODO: multiple endpoints, for loop?
+    m_endpoint_agent_cfg[NUM_ENDPOINTS-1] = push_pull_agent_cfg#(.DataWidth(ENDPOINT_BUS_WIDTH))::type_id::create($sformatf("m_endpoint_agent_cfg[$0d]", NUM_ENDPOINTS-1));
 
     // set num_interrupts & num_alerts
     begin
