@@ -20,8 +20,8 @@ from testplanner import class_defs, testplan_utils
 from utils import VERBOSE, find_and_substitute_wildcards
 
 
-def pick_dump_format(fmts):
-    '''Choose a supported wave dumping format
+def pick_wave_format(fmts):
+    '''Pick a supported wave format from a list.
 
     fmts is a list of formats that the chosen tool supports. Return the first
     that we think is possible (e.g. not fsdb if Verdi is not installed).
@@ -29,51 +29,15 @@ def pick_dump_format(fmts):
     '''
     assert fmts
     fmt = fmts[0]
+    # TODO: This will not work if the EDA tools are expected to be launched
+    # in a separate sandboxed environment such as Docker /  LSF. In such case,
+    # Verdi may be installed in that environment, but it may not be visible in
+    # the current repo environment where dvsim is invoked.
     if fmt == 'fsdb' and not shutil.which('verdi'):
-        return pick_dump_format(fmts[1:])
+        log.log(VERBOSE, "Skipping fsdb since verdi is not found in $PATH")
+        return pick_wave_format(fmts[1:])
 
     return fmt
-
-
-def resolve_dump_format(tool, dump):
-    '''Decide on the correct dumping format
-
-    This is called after reading the config file. tool is the chosen tool,
-    which will always have been resolved by this point. waves is a boolean
-    which determines whether waves should be dumped at all (from the --waves
-    argument). dump is the dumping format chosen on the command line or None.
-
-    '''
-    assert tool is not None
-
-    SUPPORTED_DUMP_FMTS = {
-        'vcs': ['fsdb', 'vpd'],
-        'xcelium': ['fsdb', 'shm', 'vpd']
-    }
-
-    # Look up which dumping formats the tool supports
-    fmts = SUPPORTED_DUMP_FMTS.get(tool)
-
-    if dump is not None:
-        # If the user has specified their preferred dumping format, use it. As
-        # a sanity check, error out if the chosen tool doesn't support the
-        # format, but only if we know about the tool. If not, we'll just assume
-        # they know what they're doing.
-        if fmts is not None and dump not in fmts:
-            log.error('Chosen tool ({}) does not support wave '
-                      'dumping format {!r}.'.format(tool, dump))
-            sys.exit(1)
-
-        return dump
-
-    # If the user hasn't specified a dumping format, but has asked for waves,
-    # we need to decide on a format for them. If fmts is None, we don't know
-    # about this tool. Maybe it's a new simulator, in which case, default to
-    # VPD and hope for the best.
-    if not fmts:
-        return 'vpd'
-
-    return pick_dump_format(fmts)
 
 
 class SimCfg(FlowCfg):
@@ -98,7 +62,9 @@ class SimCfg(FlowCfg):
         self.run_only = args.run_only
         self.reseed_ovrd = args.reseed
         self.reseed_multiplier = args.reseed_multiplier
-        self.waves = args.waves
+        # Waves must be of type string, since it may be used as substitution
+        # variable in the HJson cfg files.
+        self.waves = args.waves or 'none'
         self.max_waves = args.max_waves
         self.cov = args.cov
         self.cov_merge_previous = args.cov_merge_previous
@@ -118,7 +84,7 @@ class SimCfg(FlowCfg):
             self.cov = False
 
         # Set default sim modes for unpacking
-        if self.waves is True:
+        if args.waves is not None:
             self.en_build_modes.append("waves")
         if self.cov is True:
             self.en_build_modes.append("cov")
@@ -145,6 +111,7 @@ class SimCfg(FlowCfg):
         self.build_modes = []
         self.run_modes = []
         self.regressions = []
+        self.supported_wave_formats = None
 
         # Options from tools - for building and running tests
         self.build_cmd = ""
@@ -168,11 +135,10 @@ class SimCfg(FlowCfg):
         # Parse the cfg_file file tree
         self._parse_flow_cfg(flow_cfg_file)
 
-        # Choose a dump format now. Note that this has to happen after parsing
+        # Choose a wave format now. Note that this has to happen after parsing
         # the configuration format because our choice might depend on the
         # chosen tool.
-        self.dump_fmt = (resolve_dump_format(self.tool, args.dump)
-                         if self.waves and not self.is_primary_cfg else 'none')
+        self.waves = self._resolve_waves()
 
         # If build_unique is set, then add current timestamp to uniquify it
         if self.build_unique:
@@ -235,6 +201,47 @@ class SimCfg(FlowCfg):
     def __post_init__(self):
         # Run some post init checks
         super().__post_init__()
+
+    def _resolve_waves(self):
+        '''Choose and return a wave format, if waves are enabled.
+
+        This is called after reading the config file. This method is used to
+        update the value of class member 'waves', which must be of type string,
+        since it is used as a substitution variable in the parsed HJson dict.
+        If waves are not enabled, or if this is a primary cfg, then return
+        'none'. 'tool', which must be set at this point, supports a limited
+        list of wave formats (supplied with 'supported_wave_formats' key). If
+        waves is set to 'default', then pick the first item on that list; else
+        pick the desired format.
+        '''
+        if self.waves == 'none' or self.is_primary_cfg:
+            return 'none'
+
+        assert self.tool is not None
+
+        # If the user hasn't specified a wave format (No argument supplied
+        # to --waves), we need to decide on a format for them. The supported
+        # list of wave formats is set in the tool's HJson configuration using
+        # the `supported_wave_formats` key. If that list is not set, we use
+        # 'vpd' by default and hope for the best. It that list if set, then we
+        # pick the first available format for which the waveform viewer exists.
+        if self.waves == 'default':
+            if self.supported_wave_formats:
+                return pick_wave_format(self.supported_wave_formats)
+            else:
+                return 'vpd'
+
+        # If the user has specified their preferred wave format, use it. As
+        # a sanity check, error out if the chosen tool doesn't support the
+        # format, but only if we know about the tool. If not, we'll just assume
+        # they know what they're doing.
+        if self.supported_wave_formats and \
+           self.waves not in self.supported_wave_formats:
+            log.error('Chosen tool ({}) does not support wave format '
+                      '{!r}.'.format(self.tool, self.waves))
+            sys.exit(1)
+
+        return self.waves
 
     def kill(self):
         '''kill running processes and jobs gracefully

@@ -88,7 +88,7 @@
                ]
 
   run_opts:   ["-licqueue",
-               "-ucli -do {tool_srcs_dir}/vcs.tcl",
+               "-ucli -do {run_script}",
                "+ntb_random_seed={seed}",
                // Disable the display of the SystemVerilog assert and cover statement summary
                // at the end of simulation. This summary is list of assertions that started but
@@ -98,6 +98,12 @@
                "-assert nopostproc",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}"]
+
+  // Supported wave dumping formats (in order of preference).
+  supported_wave_formats: ["fsdb", "vpd"]
+
+  // Default tcl script used when running the sim. Override if needed.
+  run_script: "{tool_srcs_dir}/sim.tcl"
 
   // Coverage related.
   cov_db_dir: "{scratch_path}/coverage/{build_mode}.vdb"
