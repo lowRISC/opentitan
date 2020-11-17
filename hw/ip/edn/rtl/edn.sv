@@ -47,6 +47,7 @@ module edn import edn_pkg::*; #(
   );
 
   edn_core #(
+    .NumEndPoints(NumEndPoints),
     .BootInsCmd(BootInsCmd),
     .BootGenCmd(BootGenCmd)
   ) u_edn_core (
