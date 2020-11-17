@@ -96,6 +96,40 @@ module otp_ctrl
     .devmode_i ( 1'b1       )
   );
 
+  ///////////////////////////////////////
+  // Life Cycle Signal Synchronization //
+  ///////////////////////////////////////
+
+  lc_ctrl_pkg::lc_tx_t lc_escalate_en, lc_provision_en;
+  lc_ctrl_pkg::lc_tx_t [1:0] lc_dft_en;
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync_escalate_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_escalate_en_i),
+    .lc_en_o(lc_escalate_en)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync_provision_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_provision_en_i),
+    .lc_en_o(lc_provision_en)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(2)
+  ) u_prim_lc_sync_dft_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_dft_en_i),
+    .lc_en_o(lc_dft_en)
+  );
+
   /////////////////////////////////////
   // TL-UL SW partition select logic //
   /////////////////////////////////////
@@ -216,13 +250,14 @@ module otp_ctrl
   always_comb begin : p_access_control
     // Default (this will be overridden by partition-internal settings).
     part_access_csrs = {{32'(2*NumPart)}{Unlocked}};
+    // Permanently lock DAI write access to the life cycle partition
+    part_access_csrs[LifeCycleIdx].write_lock = Locked;
+
     // Propagate CSR read enables down to the SW_CFG partitions.
     if (!reg2hw.creator_sw_cfg_read_lock) part_access_csrs[CreatorSwCfgIdx].read_lock = Locked;
     if (!reg2hw.owner_sw_cfg_read_lock) part_access_csrs[OwnerSwCfgIdx].read_lock = Locked;
     // The SECRET2 partition can only be accessed (write&read) when provisioning is enabled.
-    if (lc_provision_en_i != lc_ctrl_pkg::On) part_access_csrs[Secret2Idx] = {2{Locked}};
-    // Permanently lock DAI write access to the life cycle partition
-    part_access_csrs[LifeCycleIdx].write_lock = Locked;
+    if (lc_provision_en != lc_ctrl_pkg::On) part_access_csrs[Secret2Idx] = {2{Locked}};
   end
 
   //////////////////////
@@ -426,7 +461,7 @@ module otp_ctrl
     .cnsty_chk_req_o    ( cnsty_chk_req             ),
     .integ_chk_ack_i    ( integ_chk_ack             ),
     .cnsty_chk_ack_i    ( cnsty_chk_ack             ),
-    .escalate_en_i      ( lc_escalate_en_i          ),
+    .escalate_en_i      ( lc_escalate_en            ),
     .chk_timeout_o      ( chk_timeout               ),
     .fsm_err_o          ( lfsr_fsm_err              )
   );
@@ -494,9 +529,9 @@ module otp_ctrl
   tlul_pkg::tl_d2h_t     tl_win_d2h_gated;
 
   // Life cycle qualification of TL-UL test interface.
-  assign tl_win_h2d_gated              = (lc_dft_en_i == lc_ctrl_pkg::On) ?
+  assign tl_win_h2d_gated              = (lc_dft_en[0] == lc_ctrl_pkg::On) ?
                                          tl_win_h2d[$high(tl_win_h2d)] : '0;
-  assign tl_win_d2h[$high(tl_win_h2d)] = (lc_dft_en_i == lc_ctrl_pkg::On) ?
+  assign tl_win_d2h[$high(tl_win_h2d)] = (lc_dft_en[1] == lc_ctrl_pkg::On) ?
                                          tl_win_d2h_gated : '0;
 
   prim_otp #(
@@ -627,7 +662,7 @@ module otp_ctrl
     .ready_o       ( scrmbl_arb_req_ready    ),
     .data_o        ( part_scrmbl_rsp_data    ),
     .valid_o       ( scrmbl_arb_rsp_valid    ),
-    .escalate_en_i ( lc_escalate_en_i        ),
+    .escalate_en_i ( lc_escalate_en          ),
     .fsm_err_o     ( scrmbl_fsm_err          )
   );
 
@@ -677,7 +712,7 @@ module otp_ctrl
     .init_done_o      ( pwr_otp_rsp_d                         ),
     .part_init_req_o  ( part_init_req                         ),
     .part_init_done_i ( part_init_done                        ),
-    .escalate_en_i    ( lc_escalate_en_i                      ),
+    .escalate_en_i    ( lc_escalate_en                        ),
     .error_o          ( part_error[DaiIdx]                    ),
     .part_access_i    ( part_access_dai                       ),
     .dai_addr_i       ( dai_addr                              ),
@@ -717,7 +752,7 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     .lci_en_i         ( pwr_otp_o.otp_done                ),
-    .escalate_en_i    ( lc_escalate_en_i                  ),
+    .escalate_en_i    ( lc_escalate_en                    ),
     .error_o          ( part_error[LciIdx]                ),
     .lci_idle_o       ( lci_idle                          ),
     .lc_req_i         ( lc_otp_program_i.req              ),
@@ -758,7 +793,7 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     .kdi_en_i                ( pwr_otp_o.otp_done      ),
-    .escalate_en_i           ( lc_escalate_en_i        ),
+    .escalate_en_i           ( lc_escalate_en          ),
     .fsm_err_o               ( key_deriv_fsm_err       ),
     .scrmbl_key_seed_valid_i ( scrmbl_key_seed_valid   ),
     .flash_data_key_seed_i   ( flash_data_key_seed     ),
@@ -811,7 +846,7 @@ module otp_ctrl
         .rst_ni,
         .init_req_i    ( part_init_req                ),
         .init_done_o   ( part_init_done[k]            ),
-        .escalate_en_i ( lc_escalate_en_i             ),
+        .escalate_en_i ( lc_escalate_en               ),
         .error_o       ( part_error[k]                ),
         .access_i      ( part_access_csrs[k]          ),
         .access_o      ( part_access_dai[k]           ),
@@ -866,7 +901,7 @@ module otp_ctrl
         .integ_chk_ack_o  ( integ_chk_ack[k]                ),
         .cnsty_chk_req_i  ( cnsty_chk_req[k]                ),
         .cnsty_chk_ack_o  ( cnsty_chk_ack[k]                ),
-        .escalate_en_i    ( lc_escalate_en_i                ),
+        .escalate_en_i    ( lc_escalate_en                  ),
         .error_o          ( part_error[k]                   ),
         .access_i         ( part_access_csrs[k]             ),
         .access_o         ( part_access_dai[k]              ),
@@ -913,7 +948,7 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
         .integ_chk_ack_o  ( integ_chk_ack[k]                ),
         .cnsty_chk_req_i  ( cnsty_chk_req[k]                ),
         .cnsty_chk_ack_o  ( cnsty_chk_ack[k]                ),
-        .escalate_en_i    ( lc_escalate_en_i                ),
+        .escalate_en_i    ( lc_escalate_en                  ),
         .error_o          ( part_error[k]                   ),
         .access_i         ( part_access_csrs[k]             ),
         .access_o         ( part_access_dai[k]              ),
