@@ -26,11 +26,11 @@ class KnownMem:
         assert 0 <= width
         assert 0 <= base <= self.top_addr - width
         for off in range(width):
-            self.touch_idx(base + off)
+            self.touch_addr(base + off)
 
-    def touch_idx(self, idx: int) -> None:
-        '''Mark idx as known'''
-        assert 0 <= idx < self.top_addr
+    def touch_addr(self, addr: int) -> None:
+        '''Mark word starting at addr as known'''
+        assert 0 <= addr < self.top_addr
 
         # Find the index of the last range that starts below us, if there is
         # one, and the index of the first range that starts above us, if there
@@ -38,7 +38,7 @@ class KnownMem:
         last_idx_below = None
         first_idx_above = None
         for idx, (lo, hi) in enumerate(self.known_ranges):
-            if lo <= idx:
+            if lo <= addr:
                 last_idx_below = idx
                 continue
 
@@ -51,25 +51,24 @@ class KnownMem:
             # need to shuffle it back one.
             if first_idx_above is not None:
                 lo, hi = self.known_ranges[first_idx_above]
-                assert idx < lo
-                if idx == lo - 1:
+                assert addr < lo
+                if addr == lo - 1:
                     self.known_ranges[first_idx_above] = (lo - 1, hi)
                     return
 
             # Otherwise, we're disjoint. Add a one-element range at the start.
-            self.known_ranges = [(idx, idx + 1)] + self.known_ranges
+            self.known_ranges = [(addr, addr + 1)] + self.known_ranges
             return
 
         # If not, are we inside a range? In that case, there's nothing to do.
         left_lo, left_hi = self.known_ranges[last_idx_below]
-        if idx < left_hi:
+        if addr < left_hi:
             return
 
-        left = (self.known_ranges[:last_idx_below - 1]
-                if last_idx_below > 0 else [])
+        left = self.known_ranges[:last_idx_below]
 
         # Are we just above it?
-        if idx == left_hi:
+        if addr == left_hi:
             # If there is no range above, we can just extend the last range by one.
             if first_idx_above is None:
                 self.known_ranges = left + [(left_lo, left_hi + 1)]
@@ -78,9 +77,9 @@ class KnownMem:
             # Otherwise, does this new address glue two ranges together?
             assert first_idx_above == last_idx_below + 1
             right_lo, right_hi = self.known_ranges[first_idx_above]
-            assert idx < right_lo
+            assert addr < right_lo
 
-            if idx == right_lo - 1:
+            if addr == right_lo - 1:
                 self.known_ranges = (left + [(left_lo, right_hi)] +
                                      self.known_ranges[first_idx_above + 1:])
                 return
@@ -95,21 +94,21 @@ class KnownMem:
         # just append a new 1-element range.
         left_inc = self.known_ranges[:first_idx_above]
         if first_idx_above is None:
-            self.known_ranges.append((idx, idx + 1))
+            self.known_ranges.append((addr, addr + 1))
             return
 
         # Otherwise, are we just below the next range?
         assert first_idx_above == last_idx_below + 1
         right_lo, right_hi = self.known_ranges[first_idx_above]
-        assert idx < right_lo
+        assert addr < right_lo
 
-        if idx == right_lo - 1:
+        if addr == right_lo - 1:
             self.known_ranges = (left_inc + [(right_lo - 1, right_hi)] +
                                  self.known_ranges[first_idx_above + 1:])
             return
 
         # If not, we just insert a 1-element range in between
-        self.known_ranges = (left_inc + [(idx, idx + 1)] +
+        self.known_ranges = (left_inc + [(addr, addr + 1)] +
                              self.known_ranges[first_idx_above:])
         return
 
