@@ -19,11 +19,11 @@ prep_tool_srcs:
 	mkdir -p ${tool_srcs_dir}
 	${LOCK_TOOL_SRCS_DIR} "cp -Ru ${tool_srcs} ${tool_srcs_dir}/."
 
-pre_compile:
+pre_compile: prep_tool_srcs
 	@echo "[make]: pre_compile"
 	mkdir -p ${build_dir}
 
-gen_sv_flist: pre_compile prep_tool_srcs
+gen_sv_flist: pre_compile
 	@echo "[make]: gen_sv_flist"
 	cd ${build_dir} && ${sv_flist_gen_cmd} ${sv_flist_gen_opts}
 
@@ -39,7 +39,7 @@ compile_result: post_compile
 
 run: run_result
 
-pre_run:
+pre_run: prep_tool_srcs
 	@echo "[make]: pre_run"
 	mkdir -p ${run_dir}
 ifneq (${sw_test},)

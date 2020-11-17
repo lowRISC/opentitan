@@ -752,6 +752,10 @@ class RunTest(Deploy):
         self.fail_patterns = []
 
         self.mandatory_cmd_attrs.update({
+            # tool srcs
+            "tool_srcs": False,
+            "tool_srcs_dir": False,
+
             "proj_root": False,
             "uvm_test": False,
             "uvm_test_seq": False,
