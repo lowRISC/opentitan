@@ -7,7 +7,7 @@ from typing import Optional, Tuple
 
 from shared.insn_yaml import Insn, InsnsFile
 from shared.lsu_desc import LSUDesc
-from shared.operand import ImmOperandType, RegOperandType
+from shared.operand import ImmOperandType, OptionOperandType, RegOperandType
 
 from ..program import ProgInsn, Program
 from ..model import Model
@@ -29,10 +29,9 @@ class StraightLineInsn(SnippetGen):
             if not insn.straight_line:
                 continue
 
-            # Skip bn.sid, bn.lid and bn.movr: These are indirect and we don't
-            # currently track their sources properly (e.g. "bn.movr x2, x3"
-            # reads from the WDR whose index is whatever is currently in x3)
-            if insn.mnemonic in ['bn.sid', 'bn.lid', 'bn.movr']:
+            # Skip bn.sid and bn.movr (these have special "LSU behaviour" and
+            # aren't yet implemented)
+            if insn.mnemonic in ['bn.sid', 'bn.movr']:
                 continue
 
             self.insns.append(insn)
@@ -98,19 +97,113 @@ class StraightLineInsn(SnippetGen):
         # If this is not an LSU operation, or it is an LSU operation that
         # operates on CSR/WSRs, we can pick operands independently.
         if insn.lsu is None:
-            # For each operand, pick a value that's allowed by the model (i.e.
-            # one that won't trigger any undefined behaviour)
-            op_vals = []
-            for operand in insn.operands:
-                op_val = model.pick_operand_value(operand.op_type)
-                if op_val is None:
-                    return None
+            return self._fill_non_lsu_insn(insn, model)
 
-                op_vals.append(op_val)
+        # Special-case BN load/store instructions by mnemonic. These use
+        # complicated indirect addressing, so it's probably more sensible to
+        # give them special code.
+        if insn.mnemonic == 'bn.lid':
+            return self._fill_bn_lid(insn, model)
 
-            assert len(op_vals) == len(insn.operands)
-            return ProgInsn(insn, op_vals, None)
+        return self._fill_lsu_insn(insn, model)
 
+    def _fill_non_lsu_insn(self,
+                           insn: Insn,
+                           model: Model) -> Optional[ProgInsn]:
+        '''Fill out an instruction with no LSU component'''
+        assert insn.lsu is None
+        # For each operand, pick a value that's allowed by the model (i.e.
+        # one that won't trigger any undefined behaviour)
+        op_vals = []
+        for operand in insn.operands:
+            op_val = model.pick_operand_value(operand.op_type)
+            if op_val is None:
+                return None
+
+            op_vals.append(op_val)
+
+        assert len(op_vals) == len(insn.operands)
+        return ProgInsn(insn, op_vals, None)
+
+    def _fill_bn_lid(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
+        '''Fill out a BN.LID instruction'''
+        assert insn.mnemonic == 'bn.lid'
+        # bn.lid expects the operands: grd, grs1, offset, grs1_inc, grd_inc
+        if len(insn.operands) != 5:
+            raise RuntimeError('Unexpected number of operands for bn.lid')
+
+        grd, grs1, offset, grs1_inc, grd_inc = insn.operands
+        exp_shape = (
+            # grd
+            isinstance(grd.op_type, RegOperandType) and
+            grd.op_type.reg_type == 'gpr' and
+            not grd.op_type.is_dest() and
+            # grs1
+            isinstance(grs1.op_type, RegOperandType) and
+            grs1.op_type.reg_type == 'gpr' and
+            not grs1.op_type.is_dest() and
+            # offset
+            isinstance(offset.op_type, ImmOperandType) and
+            offset.op_type.signed and
+            # grs1_inc
+            isinstance(grs1_inc.op_type, OptionOperandType) and
+            # grd_inc
+            isinstance(grd_inc.op_type, OptionOperandType)
+        )
+        if not exp_shape:
+            raise RuntimeError('Unexpected shape for bn.lid')
+
+        # Assertions to guide mypy
+        assert isinstance(offset.op_type, ImmOperandType)
+
+        # bn.lid reads the bottom 5 bits of grd to get the index of the
+        # destination WDR. So look at the registers with architectural values.
+        # Since this is a destination register, we can safely pick anything.
+        known_regs = model.regs_with_known_vals('gpr')
+        grd_idx, grd_val = random.choices(known_regs)[0]
+
+        # Now pick the source register and offset. The range for offset
+        # shouldn't be none (because we know the width of the underlying bit
+        # field).
+        offset_rng = offset.op_type.get_op_val_range(model.pc)
+        assert offset_rng is not None
+
+        op_to_known_regs = {'grs1': known_regs}
+        tgt = model.pick_lsu_target('dmem',
+                                    True,
+                                    op_to_known_regs,
+                                    offset_rng,
+                                    offset.op_type.shift,
+                                    32)
+        if tgt is None:
+            return None
+
+        addr, imm_val, reg_indices = tgt
+        assert offset_rng[0] <= imm_val <= offset_rng[1]
+
+        assert list(reg_indices.keys()) == ['grs1']
+        grs1_val = reg_indices['grs1']
+
+        offset_val = offset.op_type.op_val_to_enc_val(imm_val, model.pc)
+        assert offset_val is not None
+
+        # Do we increment grs1 / grd? We can increment up to one of them.
+        inc_idx = random.randint(0, 2)
+        if inc_idx == 0:
+            grs1_inc_val = 0
+            grd_inc_val = 0
+        elif inc_idx == 1:
+            grs1_inc_val = 1
+            grd_inc_val = 0
+        else:
+            grs1_inc_val = 0
+            grd_inc_val = 1
+
+        enc_vals = [grd_idx, grs1_val, offset_val, grs1_inc_val, grd_inc_val]
+        return ProgInsn(insn, enc_vals, ('dmem', addr))
+
+    def _fill_lsu_insn(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
+        '''Fill out a generic load/store instruction'''
         # If this is an LSU operation, then the target address is given by the
         # sum of one or more operands. For each of these operands with a
         # register type, we are going to need to look in the model to figure
@@ -120,9 +213,10 @@ class StraightLineInsn(SnippetGen):
         lsu_imm_op = None
         lsu_reg_ops = []
         lsu_reg_types = set()
-        imm_op_min = 0
-        imm_op_max = 0
+        imm_op_range = (0, 0)
+        imm_op_shift = 0
 
+        assert insn.lsu is not None
         for tgt_op_name in insn.lsu.target:
             tgt_op = insn.name_to_operand[tgt_op_name]
             if isinstance(tgt_op.op_type, ImmOperandType):
@@ -133,15 +227,15 @@ class StraightLineInsn(SnippetGen):
                                        .format(insn.mnemonic))
                 lsu_imm_op = tgt_op_name
 
-                imm_op_range = tgt_op.op_type.get_op_val_range(model.pc)
-                if imm_op_range is None:
+                rng = tgt_op.op_type.get_op_val_range(model.pc)
+                if rng is None:
                     assert tgt_op.op_type.width is None
                     raise RuntimeError('The {!r} immediate operand for the '
                                        '{!r} instruction contributes to its '
                                        'LSU target but has no width.'
                                        .format(tgt_op_name, insn.mnemonic))
-
-                imm_op_min, imm_op_max = imm_op_range
+                imm_op_range = rng
+                imm_op_shift = tgt_op.op_type.shift
                 continue
 
             if isinstance(tgt_op.op_type, RegOperandType):
@@ -179,14 +273,14 @@ class StraightLineInsn(SnippetGen):
         tgt = model.pick_lsu_target(mem_type,
                                     loads_value,
                                     op_to_known_regs,
-                                    imm_op_min,
-                                    imm_op_max,
+                                    imm_op_range,
+                                    imm_op_shift,
                                     insn.lsu.idx_width)
         if tgt is None:
             return None
 
         addr, imm_val, reg_indices = tgt
-        assert imm_op_min <= imm_val <= imm_op_max
+        assert imm_op_range[0] <= imm_val <= imm_op_range[1]
 
         enc_vals = []
         for operand in insn.operands:
