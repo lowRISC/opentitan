@@ -173,9 +173,9 @@
       sw_test: sw/device/tests/flash_ctrl_test
     }
     {
-      name: chip_dif_otbn_sanitytest
+      name: chip_dif_otbn_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_test: sw/device/tests/dif_otbn_sanitytest
+      sw_test: sw/device/tests/dif_otbn_smoketest
     }
     {
       name: chip_hmac_sha256_encr
