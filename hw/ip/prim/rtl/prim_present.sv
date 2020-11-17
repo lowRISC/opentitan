@@ -25,7 +25,14 @@
 module prim_present #(
   parameter int DataWidth = 64,  // {32, 64}
   parameter int KeyWidth  = 128, // {64, 80, 128}
-  parameter int NumRounds = 31,  // > 0
+  // Number of rounds to perform in total (>0)
+  parameter int NumRounds = 31,
+  // Number of physically instantiated PRESENT rounds.
+  // This can be used to construct e.g. an iterative
+  // full-round implementation that only has one physical
+  // round instance by setting NumRounds = 31 and NumPhysRounds = 1.
+  // Note that NumPhysRounds needs to divide NumRounds.
+  parameter int NumPhysRounds = NumRounds,
   // Note that the decryption pass needs a modified key,
   // to be calculated by performing NumRounds key updates
   parameter bit Decrypt   = 0    // 0: encrypt, 1: decrypt
@@ -37,7 +44,8 @@ module prim_present #(
   input        [4:0]           idx_i,
   output logic [DataWidth-1:0] data_o,
   output logic [KeyWidth-1:0]  key_o,
-  // Next round index for keyschedule (Enc: idx_i + NumRounds, Dec: idx_i - NumRounds)
+  // Next round index for keyschedule
+  // (Enc: idx_i + NumPhysRounds, Dec: idx_i - NumPhysRounds)
   // Can be ignored for a fully unrolled implementation.
   output logic [4:0]           idx_o
 );
@@ -46,16 +54,16 @@ module prim_present #(
   // datapath //
   //////////////
 
-  logic [NumRounds:0][DataWidth-1:0] data_state;
-  logic [NumRounds:0][KeyWidth-1:0]  round_key;
-  logic [NumRounds:0][4:0]           round_idx;
+  logic [NumPhysRounds:0][DataWidth-1:0] data_state;
+  logic [NumPhysRounds:0][KeyWidth-1:0]  round_key;
+  logic [NumPhysRounds:0][4:0]           round_idx;
 
   // initialize
   assign data_state[0] = data_i;
   assign round_key[0]  = key_i;
   assign round_idx[0]  = idx_i;
 
-  for (genvar k = 0; k < NumRounds; k++) begin : gen_round
+  for (genvar k = 0; k < NumPhysRounds; k++) begin : gen_round
     logic [DataWidth-1:0] data_state_xor, data_state_sbox;
     // cipher layers
     assign data_state_xor  = data_state[k] ^ round_key[k][KeyWidth-1 : KeyWidth-DataWidth];
@@ -124,10 +132,17 @@ module prim_present #(
     ////////////////////////////////
   end // gen_round
 
-  // finalize
-  assign data_o = data_state[NumRounds] ^ round_key[NumRounds][KeyWidth-1 : KeyWidth-DataWidth];
-  assign key_o  = round_key[NumRounds];
-  assign idx_o  = round_idx[NumRounds];
+  // This only needs to be applied after the last round.
+  // Note that for a full-round implementation the output index
+  // will be 0 for enc/dec for the last round (either due to wraparound or subtraction).
+  localparam int LastRoundIdx = (Decrypt != 0 || NumRounds == 31) ? 0 : NumRounds+1;
+  assign data_o = (idx_o == LastRoundIdx) ?
+      data_state[NumPhysRounds] ^
+      round_key[NumPhysRounds][KeyWidth-1 : KeyWidth-DataWidth] :
+      data_state[NumPhysRounds];
+
+  assign key_o  = round_key[NumPhysRounds];
+  assign idx_o  = round_idx[NumPhysRounds];
 
   ////////////////
   // assertions //
@@ -136,5 +151,8 @@ module prim_present #(
   `ASSERT_INIT(SupportedWidths_A, (DataWidth == 64 && KeyWidth inside {80, 128}) ||
                                   (DataWidth == 32 && KeyWidth == 64))
   `ASSERT_INIT(SupportedNumRounds_A, NumRounds > 0 && NumRounds <= 31)
+  `ASSERT_INIT(SupportedNumPhysRounds0_A, NumPhysRounds > 0 && NumPhysRounds <= NumRounds)
+  // Currently we do not support other arrangements
+  `ASSERT_INIT(SupportedNumPhysRounds1_A, (NumRounds % NumPhysRounds) == 0)
 
 endmodule : prim_present

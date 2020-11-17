@@ -369,7 +369,8 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
 
   prim_present #(
     .KeyWidth(128),
-    .NumRounds(1)
+    .NumRounds(NumPresentRounds),
+    .NumPhysRounds(1)
   ) u_prim_present_enc (
     .data_i ( data_state_q ),
     .key_i  ( key_state_q  ),
@@ -381,7 +382,9 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
 
   prim_present #(
     .KeyWidth(128),
-    .NumRounds(1),
+    // We are using an iterative full-round implementation here.
+    .NumRounds(NumPresentRounds),
+    .NumPhysRounds(1),
     .Decrypt(1)
   ) u_prim_present_dec (
     .data_i ( data_state_q ),
