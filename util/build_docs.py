@@ -352,18 +352,24 @@ def install_hugo(install_dir):
     install_dir is created if it doesn't exist yet.
 
     Limitations:
-      Currently only 64 bit Linux is supported."""
+      Currently only 64-bit x86 Linux and macOS is supported."""
 
     # TODO: Support more configurations
-    if platform.system() != 'Linux' or platform.machine() != 'x86_64':
-        logging.fatal(
-            "Auto-install of hugo only supported for 64 bit Linux "
-            "currently. Manually install hugo and re-run this script.")
-        return False
-
-    download_url = ('https://github.com/gohugoio/hugo/releases/download/v{version}'
-                    '/hugo_extended_{version}_Linux-64bit.tar.gz').format(
+    if platform.system() == 'Linux' and platform.machine() == 'x86_64':
+        download_url = ('https://github.com/gohugoio/hugo/releases/download/v{version}'
+                '/hugo_extended_{version}_Linux-64bit.tar.gz').format(
                         version=HUGO_EXTENDED_VERSION)
+
+    elif platform.system() == 'Darwin' and platform.machine() == 'x86_64':
+        download_url =  ('https://github.com/gohugoio/hugo/releases/download/v{version}'
+                '/hugo_extended_{version}_macOS-64bit.tar.gz').format(
+                        version=HUGO_EXTENDED_VERSION)
+
+    else:
+        logging.fatal(
+            "Auto-install of hugo only supported for 64-bit x86 Linux and "
+            "macOS. Manually install hugo and re-run this script with --force-global.")
+        return False
 
     install_dir.mkdir(exist_ok=True, parents=True)
     hugo_bin_path = install_dir / 'hugo'
@@ -379,7 +385,7 @@ def install_hugo(install_dir):
 
     # TODO: Investigate the use of Python builtins for downloading. Extracting
     # the archive will probably will be a call to tar.
-    cmd = 'curl -sL {download_url} | tar -xzO --overwrite hugo > {hugo_bin_file}'.format(
+    cmd = 'curl -sL {download_url} | tar -xzO hugo > {hugo_bin_file}'.format(
         hugo_bin_file=str(hugo_bin_path), download_url=download_url)
     logging.info("Calling %s to download hugo.", cmd)
     subprocess.run(cmd, shell=True, check=True, cwd=str(SRCTREE_TOP))
