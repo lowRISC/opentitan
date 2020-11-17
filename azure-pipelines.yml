@@ -271,7 +271,7 @@ jobs:
   - bash: |
       set -x
       sudo util/get-toolchain.py \
-        --target-dir="$TOOLCHAIN_PATH" \
+        --install-dir="$TOOLCHAIN_PATH" \
         --release-version="$TOOLCHAIN_VERSION" \
         --update
     displayName: Install toolchain
@@ -302,7 +302,7 @@ jobs:
   - bash: |
       set -x
       sudo util/get-toolchain.py \
-        --target-dir="$TOOLCHAIN_PATH" \
+        --install-dir="$TOOLCHAIN_PATH" \
         --release-version="$TOOLCHAIN_VERSION" \
         --update
     displayName: Install toolchain
@@ -400,7 +400,7 @@ jobs:
   - bash: |
       set -x
       sudo util/get-toolchain.py \
-        --target-dir="$TOOLCHAIN_PATH" \
+        --install-dir="$TOOLCHAIN_PATH" \
         --release-version="$TOOLCHAIN_VERSION" \
         --update
       echo "##vso[task.prependpath]$TOOLCHAIN_PATH/bin"

@@ -149,8 +149,9 @@ $ cd $REPO_TOP
 $ ./util/get-toolchain.py
 ```
 
-This tool will automatically adjust the toolchain configuration if you override the installation directory (by using the `--target-dir` option).
-Alternatively, manually download the file starting with `lowrisc-toolchain-rv32imc-` from [GitHub releases](https://github.com/lowRISC/lowrisc-toolchains/releases/latest) and unpack it to `/tools/riscv`.
+This tool will automatically adjust the toolchain configuration if you override the installation directory (by using the `--install-dir` option).
+It also provides the ability to perform a staged installation (by supplying a `--dest-dir` option), if the toolchain needs to be unpacked first at a temporary staging directory, before it can be moved to the final installation directory.
+Alternatively, manually download the file starting with `lowrisc-toolchain-rv32imc-` from [GitHub releases](https://github.com/lowRISC/lowrisc-toolchains/releases/latest) and unpack it to the desired installation directory.
 
 #### Option 2: Compile your own GCC toolchain
 
