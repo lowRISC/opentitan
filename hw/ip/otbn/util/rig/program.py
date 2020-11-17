@@ -164,10 +164,14 @@ class Program:
     # instructions for the section.
     _SecData = Tuple[int, int, List[ProgInsn]]
 
-    def __init__(self, imem_lma: int, imem_size: int) -> None:
+    def __init__(self,
+                 imem_lma: int, imem_size: int,
+                 dmem_lma: int, dmem_size: int) -> None:
         assert imem_size & 3 == 0
         self.imem_lma = imem_lma
         self.imem_size = imem_size
+        self.dmem_lma = dmem_lma
+        self.dmem_size = dmem_size
 
         # A map from base address (VMA) to a list of instructions. Each
         # instruction is 4 bytes long, so a "section" of N instructions has
@@ -253,10 +257,10 @@ class Program:
     def _get_section_comment(idx: int,
                              addr: int,
                              insns: List[ProgInsn]) -> str:
-        return ('/* Section {} (addresses [{:#06x}..{:#06x}]) */'
+        return ('/* Text section {} ([{:#06x}..{:#06x}]) */'
                 .format(idx, addr, addr + 4 * len(insns) - 1))
 
-    def dump_asm(self, out_file: TextIO) -> None:
+    def dump_asm(self, out_file: TextIO, init_data: Dict[int, int]) -> None:
         '''Write an assembly representation of the program to out_file'''
         # Close any existing section, so that we can iterate over all the
         # instructions by iterating over self._sections.
@@ -269,33 +273,53 @@ class Program:
                 cur_pc = addr + 4 * insn_off
                 out_file.write(pi.to_asm(cur_pc) + '\n')
 
-    def dump_linker_script(self, out_file: TextIO) -> None:
+        # Generate data .words
+        for idx, (addr, value) in enumerate(sorted(init_data.items())):
+            out_file.write('\n/* Data section {} ({:#06x}-{:#06x}) */\n'
+                           .format(idx, addr, addr + 3))
+            out_file.write('.section .data.sec{:04}\n'.format(idx))
+            out_file.write('.word {:#x}\n'.format(value))
+
+    def dump_linker_script(self,
+                           out_file: TextIO,
+                           init_data: Dict[int, int]) -> None:
         '''Write a linker script to link the program
 
         This lays out the sections generated in dump_asm().
 
         '''
         self.close_section()
+
+        seg_descs = []
+        for idx, addr in enumerate(sorted(init_data.keys())):
+            seg_descs.append(('dseg{:04}'.format(idx),
+                              addr,
+                              addr + self.dmem_lma,
+                              '.data.sec{:04}'.format(idx),
+                              ('/* Data section {} ({:#06x}-{:#06x}) */'
+                               .format(idx, addr, addr + 3))))
+        for idx, (addr, insns) in enumerate(sorted(self._sections.items())):
+            seg_descs.append(('iseg{:04}'.format(idx),
+                              addr,
+                              addr + self.imem_lma,
+                              '.text.sec{:04}'.format(idx),
+                              Program._get_section_comment(idx, addr, insns)))
+
         out_file.write('PHDRS\n'
                        '{\n')
-        for idx, (addr, insns) in enumerate(sorted(self._sections.items())):
-            lma = addr + self.imem_lma
-            out_file.write('    seg{:04} PT_LOAD AT ( {:#x} );\n'
-                           .format(idx, lma))
+        for seg, vma, lma, sec, comment in seg_descs:
+            out_file.write('    {} PT_LOAD AT ( {:#x} );\n'.format(seg, lma))
         out_file.write('}\n\n')
 
         out_file.write('SECTIONS\n'
                        '{\n')
-        for idx, (addr, insns) in enumerate(sorted(self._sections.items())):
-            comment = Program._get_section_comment(idx, addr, insns)
+        for idx, (seg, vma, lma, sec, comment) in enumerate(seg_descs):
             out_file.write('{}    {}\n'.format('\n' if idx else '', comment))
-            sec_name = '.text.sec{:04}'.format(idx)
-            lma = addr + self.imem_lma
             out_file.write('    {} {:#x} : AT({:#x})\n'
                            '    {{\n'
                            '        *({})\n'
-                           '    }} : seg{:04}\n'
-                           .format(sec_name, addr, lma, sec_name, idx))
+                           '    }} : {}\n'
+                           .format(sec, vma, lma, sec, seg))
         out_file.write('}\n')
 
     def pick_branch_targets(self,
