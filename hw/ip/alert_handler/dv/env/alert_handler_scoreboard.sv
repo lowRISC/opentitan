@@ -229,12 +229,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   // check if escalation signal's duration length is correct
   virtual function void check_esc_signal(int cycle_cnt, int esc_sig_i);
-    // if ping response enabled, will not check cycle count after the earliest expect ping esc
-    // might trigger. It is beyond this scb to check ping timer (FPV checks it).
-    bit reduce_ping_timer_wait_cycles = 0;
-    void'($value$plusargs("reduce_ping_timer_wait_cycles=%0b", reduce_ping_timer_wait_cycles));
-    if (ral.regen.get_mirrored_value() ||
-        ($realtime < IGNORE_CNT_CHECK_NS && !reduce_ping_timer_wait_cycles)) begin
+    // if ping periodic check enabled, will not check cycle count, because cycle count might be
+    // connected with ping request, which makes the length unpredictable
+    // it is beyond this scb to check ping timer (FPV checks it).
+    if (ral.regen.get_mirrored_value()) begin
       `DV_CHECK_EQ(cycle_cnt, esc_cnter_per_signal[esc_sig_i],
                    $sformatf("check signal_%0d", esc_sig_i))
       if (cfg.en_cov) cov.esc_sig_length_cg.sample(esc_sig_i, cycle_cnt);
