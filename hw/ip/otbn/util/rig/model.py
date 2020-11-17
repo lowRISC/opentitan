@@ -2,13 +2,40 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import math
 import random
 from typing import Dict, List, Optional, Tuple
 
 from shared.insn_yaml import Insn
-from shared.operand import ImmOperandType, RegOperandType, OperandType
+from shared.operand import (OperandType,
+                            ImmOperandType, OptionOperandType, RegOperandType)
 
 from .program import ProgInsn
+
+
+def extended_euclidean_algorithm(a: int, b: int) -> Tuple[int, int, int]:
+    '''The extended Euclidean algorithm.
+
+    Returns a tuple (r, s, t) so that gcd is the GCD of the two inputs and r =
+    a s + b t.
+
+    '''
+    r, r_nxt = a, b
+    s, s_nxt = 1, 0
+    t, t_nxt = 0, 1
+
+    while r_nxt:
+        q = r // r_nxt
+        r, r_nxt = r_nxt, r - q * r_nxt
+        s, s_nxt = s_nxt, s - q * s_nxt
+        t, t_nxt = t_nxt, t - q * t_nxt
+
+    # If both inputs are non-positive, the result comes out negative and we
+    # should flip all the signs.
+    if r < 0:
+        r, s, t = - r, - s, - t
+
+    return (r, s, t)
 
 
 class KnownMem:
@@ -114,59 +141,153 @@ class KnownMem:
 
     def pick_lsu_target(self,
                         loads_value: bool,
-                        min_addr: int,
-                        max_addr: int) -> Optional[int]:
-        '''Try to pick a 4-byte aligned address in range [min_addr, max_addr]
+                        base_addr: int,
+                        offset_range: Tuple[int, int],
+                        offset_align: int,
+                        width: int,
+                        addr_align: int) -> Optional[int]:
+        '''Try to pick an address with base and offset.
 
-        If loads_value is true, the memory needs a known value at that
-        address.
+        If loads_value is true, the memory needs a known value for at least
+        width bytes starting at that address. The address should be encodable
+        as base_addr + offset where offset is in offset_range (inclusive) and
+        is a multiple of offset_align. The address must be a multiple of
+        addr_align.
+
+        On failure, returns None. On success, returns the chosen address.
 
         '''
-        assert min_addr <= max_addr
+        assert offset_range[0] <= offset_range[1]
+        assert 1 <= offset_align
+        assert 1 <= width
+        assert 1 <= addr_align
 
-        if min_addr >= self.top_addr or max_addr < 0:
+        # We're trying to pick an offset and an address so that
+        #
+        #   base_addr + offset = addr
+        #
+        # Let's ignore offset_range and questions about valid memory addresses
+        # for a second. We have two alignment requirements from offset and
+        # addr, which mean we're really trying to satisfy something that looks
+        # like
+        #
+        #    a = b i + c j
+        #
+        # for a = base_addr; b = -offset_align; c = addr_align: find solutions
+        # i, j.
+        #
+        # This is a 2-variable linear Diophantine equation. Then, if gcd(b, c)
+        # does not divide a, there is no solution. Otherwise, the extended
+        # Euclidean algorithm yields (x0, y0) where
+        #
+        #   a = b x0 + c y0
+        #
+        # and where every solution to the problem is a pair (x0 + kv, y0 - ku)
+        # where u = b / gcd(b, c); v = c / gcd(b, c).
+        gcd, i0, j0 = extended_euclidean_algorithm(-offset_align, addr_align)
+        assert gcd == -offset_align * i0 + addr_align * j0
+        assert 0 < gcd
+
+        if base_addr % gcd:
             return None
 
-        min_addr = max(0, min_addr)
-        max_addr = min(max_addr, self.top_addr - 1)
+        # If gcd divides base_addr, we can convert i0 and j0 to an initial
+        # solution by multiplying up by base_addr / gcd.
+        scale_factor = base_addr // gcd
+        x0 = i0 * scale_factor
+        y0 = j0 * scale_factor
+        u = -offset_align // gcd
+        v = addr_align // gcd
+        assert u < 0 < v
 
-        # We don't know that min_addr and max_addr are aligned. Move them "in"
-        # if necessary to ensure that they are, dividing by 4 to turn them into
-        # word addresses.
-        min_word = (min_addr + 3) // 4
-        max_word = max_addr // 4
+        # offset_range constrains the possible values of offset. Re-arranging
+        # the initial equation, x0 + k v = b i = -offset, so
+        #
+        #   k v = -offset - x0
+        #   k   = (-offset - x0) / v
+        #
+        # Since v is positive, this is an decreasing function of offset, so we
+        # can translate the endpoints in offset_range in the obvious way as
+        # long as we swap them.
+        k_min = (-(offset_range[1] + x0) + v - 1) // v
+        k_max = -(offset_range[0] + x0) // v
+        assert k_min <= k_max
 
-        if max_word < min_word:
+        # Now, we need to consider which memory locations we can actually use.
+        # If we're writing memory, we have a single range of allowed addresses
+        # (all of memory!). If reading, we need to use self.known_ranges. In
+        # either case, adjust for the fact that we need a width-byte access and
+        # then rescale everything into "k units".
+        #
+        # To do that rescaling, we know that c j = addr and that j = y0 - k u.
+        # So
+        #
+        #   y0 - k u = addr / c
+        #   k u      = y0 - addr / c
+        #   k        = (y0 - addr / c) / u
+        #
+        # Since u is negative, this is an increasing function of addr, so we
+        # can use address endpoints to get (disjoint) ranges for k.
+        k_ranges = []
+        k_weights = []
+        byte_ranges = (self.known_ranges
+                       if loads_value else [(0, self.top_addr - 1)])
+        minus_u = offset_align // gcd
+        for byte_lo, byte_top in byte_ranges:
+            # Since we're doing an access of width bytes, we round byte_top
+            # down to the largest base address where the access lies completely
+            # in the range.
+            base_hi = byte_top - width
+            if base_hi < byte_lo:
+                continue
+
+            # Compute the valid range for addr/c, rounding up if necessary.
+            word_lo = (byte_lo + addr_align - 1) // addr_align
+            word_hi = base_hi // addr_align
+
+            # If word_hi < word_lo, there are no multiples of addr_align in the
+            # range [byte_lo, base_hi].
+            if word_hi < word_lo:
+                continue
+
+            # Now translate by -y0 and divide through by -u.
+            k_lo = (-y0 + word_lo + minus_u - 1) // minus_u
+            k_hi = (-y0 + word_hi) // minus_u
+
+            # If k_hi < k_lo, that means there are no multiples of minus_u in
+            # the range [-y0 + word_lo, -y0 + word_hi].
+            if k_hi < k_lo:
+                continue
+
+            # Finally, take the intersection with [k_min, k_max]. The
+            # intersection is non-empty so long as k_lo <= k_max and k_min <=
+            # k_hi.
+            if k_lo > k_max or k_min > k_hi:
+                continue
+
+            k_lo = max(k_lo, k_min)
+            k_hi = min(k_hi, k_max)
+
+            k_ranges.append((k_lo, k_hi))
+            k_weights.append(k_hi - k_lo + 1)
+
+        if not k_ranges:
             return None
 
-        if not loads_value:
-            # If we're not loading something, we can pick any old address in
-            # the range.
-            return 4 * int(random.randrange(min_word, max_word + 1))
+        # We can finally pick a value of k. Pick the range (weighted by
+        # k_weights) and then pick uniformly from in that range.
+        k_lo, k_hi = random.choices(k_ranges, weights=k_weights)[0]
+        k = random.randrange(k_lo, k_hi + 1)
 
-        # If we are loading something, we need to be more careful. Collect up
-        # the known ranges that have an intersection with the range in
-        # question, converting to word addresses as we go. Note that the (lo,
-        # hi) pairs don't include the right endpoint, but min_word/max_word
-        # does, so we need a +1 every so often.
-        word_ranges = []
-        weights = []
-        for byte_lo, byte_hi in self.known_ranges:
-            word_lo = max((byte_lo + 3) // 4, min_word)
-            word_hi = min(byte_hi // 4, max_word + 1)
-            if word_lo < word_hi:
-                word_ranges.append((word_lo, word_hi))
-                weights.append(word_hi - word_lo)
+        # Convert back to a solution to the original problem
+        x = x0 + k * (addr_align // gcd)
+        y = y0 + k * minus_u
 
-        # If there are no ranges that intersect, give up.
-        if not word_ranges:
-            return None
+        offset = offset_align * x
+        addr = addr_align * y
 
-        # Otherwise, pick a range with weight equal to the number of elements
-        # in the range (so we'll get a uniform sampling on valid addresses) and
-        # then pick from the range.
-        word_lo, word_hi = random.choices(word_ranges, weights=weights)[0]
-        return 4 * random.randrange(word_lo, word_hi)
+        assert addr == base_addr + offset
+        return addr
 
 
 class Model:
@@ -354,12 +475,12 @@ class Model:
                         mem_type: str,
                         loads_value: bool,
                         known_regs: Dict[str, List[Tuple[int, int]]],
-                        imm_min: int,
-                        imm_max: int,
+                        imm_rng: Tuple[int, int],
+                        imm_shift: int,
                         byte_width: int) -> Optional[Tuple[int,
                                                            int,
                                                            Dict[str, int]]]:
-        '''Try to pick an address for an LSU operation.
+        '''Try to pick an address for a naturally-aligned LSU operation.
 
         mem_type is the type of memory (which must a key of self._known_mem).
         If loads_value, this address needs to have an architecturally defined
@@ -367,8 +488,9 @@ class Model:
 
         known_regs is a map from operand name to a list of pairs (idx, value)
         with index and known value for this register operand. Any immediate
-        operand will have a value in the range [imm_min, imm_max]. byte_width
-        is the number of contiguous addresses that the LSU operation touches.
+        operand will have a value in the range imm_rng (including endpoints)
+        and a shift of imm_shift. byte_width is the number of contiguous
+        addresses that the LSU operation touches.
 
         Returns None if we can't find an address. Otherwise, returns a tuple
         (addr, imm_val, reg_vals) where addr is the target address, imm_val is
@@ -377,34 +499,42 @@ class Model:
 
         '''
         assert mem_type in self._known_mem
-        assert imm_min <= imm_max
+        assert imm_rng[0] <= imm_rng[1]
+        assert 0 <= imm_shift
 
         # A "general" solution to this needs constraint solving, but we expect
-        # [imm_min, imm_max] to cover most of the address space most of the
-        # time. So we'll do something much simpler: pick a value for each
-        # register, then pick a target address that can be reached from the
-        # "sum so far" plus the range of the immediate.
+        # imm_rng to cover most of the address space most of the time. So we'll
+        # do something much simpler: pick a value for each register, then pick
+        # a target address that can be reached from the "sum so far" plus the
+        # range of the immediate.
         reg_indices = {}
         reg_sum = 0
 
+        # The base address should be aligned to base_align (see the logic in
+        # KnownMem.pick_lsu_target), otherwise we'll fail to find anything.
+        base_align = math.gcd(byte_width, 1 << imm_shift)
+
         for name, indices in known_regs.items():
-            # If there are no known indices for this operand, give up now.
-            if not indices:
+            aligned_regs = [(idx, value)
+                            for idx, value in indices
+                            if value % base_align == 0]
+
+            # If there are no known aligned indices for this operand, give up now.
+            if not aligned_regs:
                 return None
 
-            # Otherwise, pick an index and value
-            idx, value = random.choice(indices)
+            # Otherwise, pick an index and value.
+            idx, value = random.choice(aligned_regs)
             reg_sum += value
             reg_indices[name] = idx
 
-        # TODO: This is a bit pessimistic, because it doesn't allow things like
-        #       the register sum coming to -1 (module 2^32) and adding an
-        #       immediate 1 to get a valid address.
-        min_addr = reg_sum + imm_min
-        max_addr = reg_sum + imm_max
         known_mem = self._known_mem[mem_type]
-
-        addr = known_mem.pick_lsu_target(loads_value, min_addr, max_addr)
+        addr = known_mem.pick_lsu_target(loads_value,
+                                         reg_sum,
+                                         imm_rng,
+                                         1 << imm_shift,
+                                         byte_width,
+                                         byte_width)
 
         # If there was no address we could use, give up.
         if addr is None:
@@ -475,6 +605,54 @@ class Model:
 
         self.write_reg('gpr', op_vals[0], value, True)
 
+    def update_for_bnlid(self, insn: Insn, op_vals: List[int]) -> None:
+        '''Update model state after an BN.LID
+
+        We need this special case code because of the indirect access to the
+        wide-side register file.
+
+        '''
+        assert insn.mnemonic == 'bn.lid'
+        assert len(insn.operands) == len(op_vals)
+
+        grd_op, grs1_op, offset_op, grs1_inc_op, grd_inc_op = insn.operands
+        exp_shape = (
+            # grd
+            isinstance(grd_op.op_type, RegOperandType) and
+            grd_op.op_type.reg_type == 'gpr' and
+            not grd_op.op_type.is_dest() and
+            # grs1
+            isinstance(grs1_op.op_type, RegOperandType) and
+            grs1_op.op_type.reg_type == 'gpr' and
+            not grs1_op.op_type.is_dest() and
+            # offset
+            isinstance(offset_op.op_type, ImmOperandType) and
+            offset_op.op_type.signed and
+            # grs1_inc
+            isinstance(grs1_inc_op.op_type, OptionOperandType) and
+            # grd_inc
+            isinstance(grd_inc_op.op_type, OptionOperandType)
+        )
+        if not exp_shape:
+            raise RuntimeError('Unexpected shape for bn.lid')
+
+        grd, grs1, offset, grs1_inc, grd_inc = op_vals
+
+        grd_val = self.get_reg('gpr', grd)
+        if grd_val is not None:
+            self.write_reg('wdr', grd_val & 31, None, False)
+
+        if grs1_inc:
+            grs1_val = self.get_reg('gpr', grs1)
+            if grs1_val is not None:
+                self.write_reg('gpr', grs1,
+                               (grs1_val + 32) & ((1 << 32) - 1),
+                               False)
+        elif grd_inc:
+            grd_val = self.get_reg('gpr', grd)
+            if grd_val is not None:
+                self.write_reg('gpr', grd, (grd_val + 1) & 31, False)
+
     def update_for_insn(self, prog_insn: ProgInsn) -> None:
         # Apply side-effecting reads (relevant for x1) then mark any
         # destination operand as having an architectural value
@@ -492,12 +670,16 @@ class Model:
             self.write_reg(reg_type, op_val, None, False)
 
         # If this is a sufficiently simple operation that we understand the
-        # result, actually set the destination register with a value.
-        # Currently, we just support lui and addi
-        if insn.mnemonic == 'lui':
-            self.update_for_lui(insn, prog_insn.operands)
-        elif insn.mnemonic == 'addi':
-            self.update_for_addi(insn, prog_insn.operands)
+        # result, or a complicated instruction where we have to do something
+        # clever, actually set the destination register with a value.
+        updaters = {
+            'lui': self.update_for_lui,
+            'addi': self.update_for_addi,
+            'bn.lid': self.update_for_bnlid
+        }
+        updater = updaters.get(insn.mnemonic)
+        if updater is not None:
+            updater(insn, prog_insn.operands)
 
         # If this is an LSU operation, we've either loaded a value (in which
         # case, the memory hopefully had a value already) or we've stored

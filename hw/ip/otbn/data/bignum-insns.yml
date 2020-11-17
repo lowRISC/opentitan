@@ -762,6 +762,10 @@
   synopsis: Load Word (indirect source, indirect destination)
   operands:
     - name: grd
+      # The grd register is read to pick the WDR that should be written, so
+      # it's sort of logically a destination (hence the name) but should be
+      # treated as a source by tools like the random instruction generator.
+      type: grs
       doc: Name of the GPR referencing the destination WDR
     - name: grs1
       doc: |
