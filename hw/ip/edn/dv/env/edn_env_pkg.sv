@@ -19,11 +19,16 @@ package edn_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint   NUM_ENDPOINTS      = 2;
+  // TODO: add multiple endpoints
+  parameter uint   NUM_ENDPOINTS      = 1;
   parameter uint   ENDPOINT_BUS_WIDTH = 32;
   parameter uint   GENBITS_BUS_WIDTH  = 128;
 
   // types
+  typedef enum int {
+    CmdReqDone = 0,
+    FifoErr    = 1
+  } edn_intr_e;
 
   // functions
 
