@@ -5,6 +5,12 @@
   build_cmd:  "{job_prefix} dsim"
   run_cmd:    "{job_prefix} dsim"
 
+  // Indicate the tool specific helper sources - these are copied over to the
+  // {tool_srcs_dir} before running the simulation.
+  // TODO, there is no dsim tool file, point to vcs for now to avoid error from script
+  // tool_srcs: ["{dv_root}/tools/dsim/*"]
+
+
   build_opts: ["-work {build_dir}/dsim_out",
                "-genimage image",
                "-sv",
@@ -32,10 +38,11 @@
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}"]
 
-  // Indicate the tool specific helper sources - these are copied over to the
-  // {tool_srcs_dir} before running the simulation.
-  // TODO, there is no dsim tool file, point to vcs for now to avoid error from script
-  tool_srcs: ["{dv_root}/tools/vcs/*"]
+  // Supported wave dumping formats (in order of preference).
+  supported_wave_formats: ["vcd", "fst"]
+
+  // Default tcl script used when running the sim. Override if needed.
+  run_script: ""
 
   // TODO: refactor coverage configuration for DSim.
 
@@ -86,8 +93,6 @@
   run_fail_patterns:   ["^Error-.*$"] // Null pointer error
 
   // waveform
-  wave_type:  "vcd"
-  wave_file:  "dsim_wave.{wave_type}"
   probe_file: "dsim.probe"
 
   build_modes: [
@@ -95,7 +100,7 @@
       name: dsim_waves
       is_sim_mode: 1
       build_opts: ["+acc+b"]
-      run_opts:   ["-waves {wave_file}",
+      run_opts:   ["-waves waves.{waves}",
                    // dsim.probe is currently undefined
                    //"-wave-scope-specs {probe_file}",
                    // Dump unpacked structs and arrays.

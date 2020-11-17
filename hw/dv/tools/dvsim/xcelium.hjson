@@ -23,7 +23,7 @@
                "+define+XCELIUM",
                ]
 
-  run_opts:   ["-input {tool_srcs_dir}/xcelium.tcl",
+  run_opts:   ["-input {run_script}",
                "-licqueue",
                "-64bit -xmlibdirname {build_dir}/xcelium.d -R",
                "+SVSEED={seed}",
@@ -47,6 +47,12 @@
     { cov_merge_db_dir: "{cov_merge_db_dir}" },
     { cov_report_dir: "{cov_report_dir}" }
   ]
+
+  // Supported wave dumping formats (in order of preference).
+  supported_wave_formats: ["shm", "fsdb", "vcd"]
+
+  // Default tcl script used when running the sim. Override if needed.
+  run_script: "{tool_srcs_dir}/sim.tcl"
 
   // Coverage related.
   // By default, collect all coverage metrics: block:expr:fsm:toggle:functional.

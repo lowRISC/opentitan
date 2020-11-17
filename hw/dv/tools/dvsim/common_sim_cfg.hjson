@@ -76,8 +76,8 @@
   // Default list of things to export to shell
   exports: [
     { TOOL_SRCS_DIR: "{tool_srcs_dir}" },
-    { EN_WAVES: "{waves}" },
-    { DUMP_FMT: "{dump_fmt}" },
+    { SIMULATOR: "{tool}" },
+    { WAVES: "{waves}" },
     { DUT_TOP: "{dut}" },
     { TB_TOP: "{tb}" },
     { dut_instance: "{dut_instance}" }
@@ -141,7 +141,9 @@
   // Add waves.tcl to the set of sources to be copied over to
   // {tool_srcs_dir}. This can be sourced by the tool-specific TCL
   // script to set up wave dumping.
-  tool_srcs:  ["{dv_root}/tools/waves.tcl"],
+  tool_srcs:  ["{dv_root}/tools/sim.tcl",
+               "{dv_root}/tools/common.tcl",
+               "{dv_root}/tools/waves.tcl"]
 
   // Project defaults for VCS
   vcs_cov_cfg_file: "{{build_mode}_vcs_cov_cfg_file}"
