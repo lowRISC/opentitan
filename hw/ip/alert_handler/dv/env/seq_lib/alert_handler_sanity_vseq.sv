@@ -39,7 +39,7 @@ class alert_handler_sanity_vseq extends alert_handler_base_vseq;
   uvm_verbosity verbosity = UVM_LOW;
 
   constraint lock_bit_c {
-    do_lock_config dist {1 := 1, 0 := 9};
+    do_lock_config dist {1 := 1, 0 := 49};
   }
 
   constraint clr_and_lock_en_c {
