@@ -11,10 +11,9 @@ import os.path
 import re
 import sys
 
+import dashboard.dashboard_validate as dashboard_validate
 import hjson
 import mistletoe as mk
-
-import dashboard.dashboard_validate as dashboard_validate
 
 
 def genout(outfile, msg):
@@ -114,6 +113,7 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
 
     return "<a href=\"{}\">{}</a>".format(url, html.escape(rev[stage]))
 
+
 # Link S stages with the checklist table.
 def get_linked_sw_checklist(obj, rev, stage, is_latest_rev=True):
     if not stage or stage not in rev: return ""
@@ -150,51 +150,38 @@ def get_development_stage(obj, rev, is_latest_rev=True):
     if "life_stage" not in rev: return "&nbsp;"
 
     life_stage = rev['life_stage']
-    life_stage_mapping = convert_stage(life_stage)
-    separator = " : "
+    life_stage_html = "<span title='{}'>{}</span>".format(
+        html.escape(convert_stage(life_stage)), html.escape(life_stage))
 
     if life_stage != 'L0' and 'design_stage' in rev:
         design_stage = rev['design_stage']
-        design_stage_mapping = convert_stage(design_stage)
+        design_stage_html = "<span title='{}'>{}</span>".format(
+            html.escape(convert_stage(design_stage)),
+            get_linked_checklist(obj, rev, 'design_stage', is_latest_rev))
     else:
-        design_stage = None
+        design_stage_html = "-"
 
     if life_stage != 'L0' and 'verification_stage' in rev:
         verification_stage = rev['verification_stage']
-        verification_stage_mapping = convert_stage(verification_stage)
+        verification_stage_html = "<span title='{}'>{}</span>".format(
+            html.escape(convert_stage(verification_stage)),
+            get_linked_checklist(obj, rev, 'verification_stage',
+                                 is_latest_rev))
     else:
-        verification_stage = None
+        verification_stage_html = "-"
 
     if life_stage != 'L0' and 'dif_stage' in rev:
         dif_stage = rev['dif_stage']
-        dif_stage_mapping = convert_stage(dif_stage)
+        dif_stage_html = "<span title='{}'>{}</span>".format(
+            html.escape(convert_stage(dif_stage)),
+            get_linked_sw_checklist(obj, rev, 'dif_stage', is_latest_rev))
     else:
-        dif_stage = None
+        dif_stage_html = "-"
 
-    result = "<span title='{}'>{}</span>".format(
-        html.escape(life_stage_mapping), html.escape(life_stage))
-
-    if design_stage:
-        result += separator
-        result += "<span title='{}'>{}</span>".format(
-            html.escape(design_stage_mapping),
-            get_linked_checklist(obj, rev, 'design_stage', is_latest_rev))
-
-    if verification_stage:
-        result += separator
-        result += "<span title='{}'>{}</span>".format(
-            html.escape(verification_stage_mapping),
-            get_linked_checklist(obj, rev, 'verification_stage',
-                                 is_latest_rev))
-
-    if dif_stage:
-        result += separator
-        result += "<span title='{}'>{}</span>".format(
-            html.escape(dif_stage_mapping),
-            get_linked_sw_checklist(obj, rev, 'dif_stage',
-                                    is_latest_rev))
-
-    return result
+    return [
+        life_stage_html, design_stage_html, verification_stage_html,
+        dif_stage_html
+    ]
 
 
 # Create dashboard of hardware IP development status
@@ -233,8 +220,9 @@ def print_version1_format(obj, outfile):
                     get_linked_dv_plan(obj) + "</td>\n")
     genout(outfile, "        <td class=\"hw-stage\">" +
                     get_linked_version(obj) + "</td>\n")
-    genout(outfile, "        <td class=\"hw-stage\"><span class='hw-stage'>" +
-                    get_development_stage(obj, obj) + "</span></td>\n")
+
+    for stage_html in get_development_stage(obj, obj):
+        genout(outfile, "        <td class=\"hw-stage\"><span class='hw-stage'>" + stage_html + "</span></td>\n")
 
     if 'notes' in obj:
         genout(outfile,
@@ -275,9 +263,10 @@ def print_multiversion_format(obj, outfile):
         outstr += get_linked_version(rev) + "</td>\n"
 
         # Development Stage
-        outstr += "        <td class=\"hw-stage\"><span class='hw-stage'>"
-        outstr += get_development_stage(obj, rev, (i == latest_rev))
-        outstr += "</span></td>\n"
+        for stage_html in get_development_stage(obj, rev, (i == latest_rev)):
+            outstr += "        <td class=\"hw-stage\"><span class='hw-stage'>"
+            outstr += stage_html
+            outstr += "</span></td>\n"
 
         # Notes
         if 'notes' in rev and rev['notes'] != '':
