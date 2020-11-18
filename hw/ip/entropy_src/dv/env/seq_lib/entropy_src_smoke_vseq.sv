@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// basic sanity test vseq
-class entropy_src_sanity_vseq extends entropy_src_base_vseq;
-  `uvm_object_utils(entropy_src_sanity_vseq)
+class entropy_src_smoke_vseq extends entropy_src_base_vseq;
+  `uvm_object_utils(entropy_src_smoke_vseq)
 
   `uvm_object_new
 
@@ -37,7 +36,7 @@ class entropy_src_sanity_vseq extends entropy_src_base_vseq;
 
     // Ensure entropy_valid interrupt bit cleared
     csr_rd_check(.ptr(ral.intr_state), .compare_value(1'b0));
-    
+
   endtask : body
 
-endclass : entropy_src_sanity_vseq
+endclass : entropy_src_smoke_vseq
