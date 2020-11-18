@@ -46,8 +46,8 @@
   // List of test specifications.
   tests: [
     {
-      name: entropy_src_sanity
-      uvm_test_seq: entropy_src_sanity_vseq
+      name: entropy_src_smoke
+      uvm_test_seq: entropy_src_smoke_vseq
     }
 
     {
@@ -61,8 +61,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["entropy_src_sanity"]
+      name: smoke
+      tests: ["entropy_src_smoke"]
     }
   ]
 }
