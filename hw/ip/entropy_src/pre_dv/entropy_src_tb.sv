@@ -14,7 +14,7 @@ module entropy_src_tb;
   import entropy_src_reg_pkg::*;
 
   // tests
-  bit sanity_test = 0;
+  bit smoke_test = 0;
   bit interrupt_test = 0;
   bit lfsr_update_test = 0;
   bit basic_entropy_test = 0;
@@ -223,8 +223,8 @@ module entropy_src_tb;
     repeat (20) @ (posedge clk); #1ps;
 
     //-----------------------------------------------------
-    if (sanity_test) begin
-      $display("%t Running sanity_test...",$time);
+    if (smoke_test) begin
+      $display("%t Running smoke_test...",$time);
       cmp_reg({26'b0,ENTROPY_SRC_ES_SEED_OFFSET},32'h1234_5678,32'hffff_ffff);
       wr_reg({26'b0,ENTROPY_SRC_ES_SEED_OFFSET},32'habdc_efab); // wr config reg
       cmp_reg({26'b0,ENTROPY_SRC_ES_SEED_OFFSET},32'habdc_efab,32'hffff_ffff);
