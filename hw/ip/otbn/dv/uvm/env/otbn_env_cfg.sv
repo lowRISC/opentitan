@@ -34,12 +34,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     has_devmode = 0;
 
     // Set the list of alerts, needed by the CIP base code. This needs to match the names assigned
-    // in tb.sv (where we bind in the alert interfaces and register each with the UVM DB). Rather
-    // than copying the names out of the hjson, we're just referencing them by number for now.
-    list_of_alerts = new[NumAlerts];
-    for (int i = 0; i < NumAlerts; i++) begin
-      list_of_alerts[i] = $sformatf("%0d", i);
-    end
+    // in tb.sv (where we bind in the alert interfaces and register each with the UVM DB).
+    list_of_alerts = otbn_env_pkg::LIST_OF_ALERTS;
 
     model_agent_cfg = otbn_model_agent_cfg::type_id::create("model_agent_cfg");
 

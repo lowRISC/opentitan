@@ -35,15 +35,10 @@ module tb;
   wire otp_ctrl_pkg::lc_otp_program_rsp_t otp_prog;
   wire otp_ctrl_pkg::lc_otp_token_rsp_t   otp_token;
 
-  prim_alert_pkg::alert_rx_t [NUM_ALERTS-1:0] alert_rx;
-  prim_alert_pkg::alert_tx_t [NUM_ALERTS-1:0] alert_tx;
-
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
-
-  alert_esc_if alert_if[NUM_ALERTS](.clk(clk), .rst_n(rst_n));
 
   push_pull_if #(SRAM_DATA_SIZE)  sram_if[NumSramKeyReqSlots] (.clk(clk), .rst_n(rst_n));
   push_pull_if #(OTBN_DATA_SIZE)  otbn_if(.clk(clk), .rst_n(rst_n));
@@ -60,14 +55,7 @@ module tb;
 
   otp_ctrl_output_data_if otp_ctrl_output_data_if();
 
-  for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins
-    assign alert_rx[k] = alert_if[k].alert_rx;
-    assign alert_if[k].alert_tx = alert_tx[k];
-    initial begin
-      uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
-          LIST_OF_ALERTS[k]), "vif", alert_if[k]);
-    end
-  end
+  `DV_ALERT_IF_CONNECT
 
   // dut
   otp_ctrl dut (
