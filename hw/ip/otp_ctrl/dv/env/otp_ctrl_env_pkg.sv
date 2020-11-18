@@ -31,6 +31,8 @@ package otp_ctrl_env_pkg;
   parameter uint TEST_ACCESS_BASE_ADDR   = 'h2000;
   parameter uint SW_WINDOW_SIZE          = 512 * 4;
   parameter uint TEST_ACCESS_WINDOW_SIZE = 16 * 4;
+  // convert byte into TLUL width size
+  parameter uint HW_CFG_ARRAY_SIZE       = HwCfgContentSize / (TL_DW / 8);
 
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
   parameter uint SRAM_DATA_SIZE  = 1 + SramKeyWidth + SramNonceWidth;
@@ -41,14 +43,19 @@ package otp_ctrl_env_pkg;
   // edn rsp data are key width
   parameter uint EDN_DATA_SIZE   = EdnDataWidth;
 
+  // scramble related parameters
+  parameter uint SCRAMBLE_DATA_SIZE = 64;
+  parameter uint SCRAMBLE_KEY_SIZE  = 128;
+  parameter uint NUM_ROUND          = 31;
+
   // lc does not have digest
-  parameter bit[10:0] DIGESTS_ADDR [NumPart-1] = {
-      CreatorSwCfgDigestOffset,
-      OwnerSwCfgDigestOffset,
-      HwCfgDigestOffset,
-      Secret0DigestOffset,
-      Secret1DigestOffset,
-      Secret2DigestOffset
+  parameter int PART_BASE_ADDRS [NumPart-1] = {
+    CreatorSwCfgOffset,
+    OwnerSwCfgOffset,
+    HwCfgOffset,
+    Secret0Offset,
+    Secret1Offset,
+    Secret2Offset
   };
 
   // types
