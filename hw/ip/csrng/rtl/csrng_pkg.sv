@@ -10,6 +10,8 @@ package csrng_pkg;
   // Application Interfaces
   //-------------------------
 
+  parameter int unsigned   GENBITS_BUS_WIDTH = 128;
+
   // instantiation interface
   typedef struct packed {
     logic         csrng_req_valid;
@@ -31,7 +33,7 @@ package csrng_pkg;
     logic         csrng_rsp_sts;
     logic         genbits_valid;
     logic         genbits_fips;
-    logic [127:0] genbits_bus;
+    logic [GENBITS_BUS_WIDTH-1:0] genbits_bus;
   } csrng_rsp_t;
 
   // default value of csrng_rsp_t (for dangling ports)
