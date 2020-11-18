@@ -110,7 +110,13 @@ def install(archive_file, unpack_dir):
     unpack_dir.mkdir(parents=True, exist_ok=True)
 
     cmd = [
-        'tar', '-x', '-f', str(archive_file), '--strip-components=1', '-C', str(unpack_dir),
+        'tar',
+        '-x',
+        '-f',
+        str(archive_file),
+        '--strip-components=1',
+        '-C',
+        str(unpack_dir),
     ]
     subprocess.run(cmd, check=True)
 
@@ -131,8 +137,7 @@ def postinstall_rewrite_configs(unpack_dir, install_dir):
     for file_pattern in FILE_PATTERNS_TO_REWRITE:
         for config_file_path in unpack_dir.glob(file_pattern):
             # Rewrite INSTALL_DIR to the requested target dir.
-            log.info("Updating toolchain paths in %s",
-                        str(config_file_path))
+            log.info("Updating toolchain paths in %s", str(config_file_path))
             with open(str(config_file_path)) as f:
                 original = f.read()
             with open(str(config_file_path), "w") as f:
@@ -201,10 +206,13 @@ def main():
                      'Delete target directory %s and try again.' %
                      str(unpack_dir))
 
-        version_matches = available_toolchain['version'] == installed_toolchain['version']
-        kind_matches = available_toolchain['kind'] == installed_toolchain['kind']
+        version_matches = available_toolchain[
+            'version'] == installed_toolchain['version']
+        kind_matches = available_toolchain['kind'] == installed_toolchain[
+            'kind']
 
-        if installed_toolchain['kind'] != 'unknown' and version_matches and kind_matches:
+        if installed_toolchain[
+                'kind'] != 'unknown' and version_matches and kind_matches:
             log.info(
                 'Downloaded %s toolchain is version %s, '
                 'same as the %s toolchain installed at %s (version %s).',
@@ -215,7 +223,8 @@ def main():
             sys.exit(0)
 
         log.info(
-            "Found installed %s toolchain version %s, updating to %s toolchain version %s.",
+            "Found installed %s toolchain version %s, updating to %s toolchain "
+            "version %s.",
             installed_toolchain['kind'], installed_toolchain['version'],
             available_toolchain['kind'], available_toolchain['version'])
     else:
@@ -233,7 +242,8 @@ def main():
             shutil.rmtree(str(unpack_dir))
 
         install(archive_file, unpack_dir)
-        postinstall_rewrite_configs(unpack_dir.resolve(), install_dir.resolve())
+        postinstall_rewrite_configs(unpack_dir.resolve(),
+                                    install_dir.resolve())
     finally:
         if archive_file:
             archive_file.unlink()
