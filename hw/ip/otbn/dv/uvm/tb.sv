@@ -34,18 +34,7 @@ module tb;
     .rst_ni (rst_n)
   );
 
-  alert_esc_if alert_if[NumAlerts](.clk(clk), .rst_n(rst_n));
-  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx;
-  prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx;
-
-  for (genvar k = 0; k < NumAlerts; k++) begin : connect_alerts_pins
-    assign alert_rx[k] = alert_if[k].alert_rx;
-    assign alert_if[k].alert_tx = alert_tx[k];
-    initial begin
-      uvm_config_db#(virtual alert_esc_if)::
-        set(null, $sformatf("*.env.m_alert_agent_%0d", k), "vif", alert_if[k]);
-    end
-  end
+  `DV_ALERT_IF_CONNECT
 
   // dut
   otbn dut (

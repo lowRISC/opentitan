@@ -28,6 +28,12 @@ package otbn_env_pkg;
   import "DPI-C" function int OtbnTestHelperCountFilesInDir(chandle helper);
   import "DPI-C" function string OtbnTestHelperGetFilePath(chandle helper, int index);
 
+  // parameters
+  parameter string LIST_OF_ALERTS[] = {"imem_uncorrectable",
+                                       "dmem_uncorrectable",
+                                       "reg_uncorrectable"};
+  parameter uint NUM_ALERTS = otbn_reg_pkg::NumAlerts;
+
   // typedefs
   typedef virtual pins_if #(1) idle_vif;
 
