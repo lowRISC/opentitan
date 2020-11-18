@@ -288,8 +288,18 @@ class Model:
             # is going to be valid is 0.
             return 0
 
+        if isinstance(op_type, ImmOperandType):
+            shift = op_type.shift
+        else:
+            shift = 0
+
+        align = 1 << shift
+
         lo, hi = op_rng
-        op_val = random.randrange(lo, hi + 1)
+        sh_lo = (lo + align - 1) // align
+        sh_hi = hi // align
+
+        op_val = random.randint(sh_lo, sh_hi) << shift
         return op_type.op_val_to_enc_val(op_val, self.pc)
 
     def pick_reg_operand_value(self, op_type: RegOperandType) -> Optional[int]:
