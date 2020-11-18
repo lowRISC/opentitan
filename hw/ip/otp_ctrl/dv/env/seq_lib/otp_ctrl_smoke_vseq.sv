@@ -103,7 +103,12 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       `uvm_info(`gfn, "Trigger HW digest calculation", UVM_HIGH)
       cal_hw_digests();
       csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
+      dut_init();
+
+      // check digest
+      check_digests();
     end
+
   endtask : body
 
 endclass : otp_ctrl_smoke_vseq
