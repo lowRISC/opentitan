@@ -10,7 +10,9 @@ package entropy_src_pkg;
   // Entropy Interface
   //-------------------------
 
-  parameter int  RNG_DATA_WIDTH = 4, CSRNG_DATA_WIDTH = 384;
+  parameter int  RNG_DATA_WIDTH   = 4;
+  parameter int  CSRNG_DATA_WIDTH = 384;
+  parameter int  FIPS_WIDTH       = 1;
 
   // es entropy i/f
   typedef struct packed {
