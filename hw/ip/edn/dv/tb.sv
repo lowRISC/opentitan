@@ -17,15 +17,16 @@ module tb;
   wire devmode;
   wire intr_edn_cmd_req_done, intr_edn_fifo_err;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  edn_pkg::edn_req_t [NUM_ENDPOINTS-1:0] endpoint_req;
+  edn_pkg::edn_rsp_t [NUM_ENDPOINTS-1:0] endpoint_rsp;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if#(.DataWidth(GENBITS_BUS_WIDTH))  csrng_if();
-  // TODO: add multiple endpoints, generate?
-  push_pull_if#(.DataWidth(ENDPOINT_BUS_WIDTH)) endpoint_if[NUM_ENDPOINTS-1:0]();
+  push_pull_if#(.DataWidth(csrng_pkg::GENBITS_BUS_WIDTH))   csrng_if();
+  push_pull_if#(.DataWidth(edn_pkg::ENDPOINT_BUS_WIDTH))    endpoint_if[NUM_ENDPOINTS-1:0]();
 
   // dut
   edn#(.NumEndPoints(NUM_ENDPOINTS)) dut (
@@ -35,10 +36,8 @@ module tb;
     .tl_i                      (tl_if.h2d),
     .tl_o                      (tl_if.d2h),
 
-    // TODO: add multiple endpoints, generate?
-    // .edn_i                     ({endpoint_if[NUM_ENDPOINTS-1].req, endpoint_if[0].req}),
-    .edn_i                     (endpoint_if[0].req),
-    .edn_o                     (),
+    .edn_i                     (endpoint_req),
+    .edn_o                     (endpoint_rsp),
 
     .csrng_cmd_i               ('h0),
     .csrng_cmd_o               (),
@@ -46,6 +45,16 @@ module tb;
     .intr_edn_cmd_req_done_o   (intr_edn_cmd_req_done),
     .intr_edn_fifo_err_o       (intr_edn_fifo_err)
   );
+
+  for (genvar i = 0; i < NUM_ENDPOINTS; i++) begin : gen_endpoint_if
+    assign endpoint_req[i].edn_req = endpoint_if[i].req;
+    assign endpoint_if[i].ack      = endpoint_rsp[i].edn_ack;
+    assign endpoint_if[i].data     = endpoint_rsp[i].edn_bus;
+    initial begin
+      uvm_config_db#(virtual push_pull_if#(.DataWidth(edn_pkg::ENDPOINT_BUS_WIDTH)))::set(null,
+                     $sformatf("*.env.m_endpoint_agent[%0d]*", i), "vif", endpoint_if[i]);
+    end
+  end
 
   assign interrupts[CmdReqDone] = intr_edn_cmd_req_done;
   assign interrupts[FifoErr]    = intr_edn_fifo_err;
@@ -57,9 +66,7 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual push_pull_if#(.DataWidth(GENBITS_BUS_WIDTH)))::set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
-    // TODO: add multiple endpoints, generate?
-    uvm_config_db#(virtual push_pull_if#(.DataWidth(ENDPOINT_BUS_WIDTH)))::set(null, "*.env.m_endpoint_agent*", "vif", endpoint_if[NUM_ENDPOINTS-1]);
+    uvm_config_db#(virtual push_pull_if#(.DataWidth(csrng_pkg::GENBITS_BUS_WIDTH)))::set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

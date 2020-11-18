@@ -9,6 +9,8 @@ package edn_pkg;
   // Peripheral Interfaces //
   ///////////////////////////
 
+  parameter int unsigned   ENDPOINT_BUS_WIDTH = 32;
+
   // EDN request interface
   typedef struct packed {
     logic                                 edn_req;
@@ -16,7 +18,7 @@ package edn_pkg;
   typedef struct packed {
     logic                                 edn_ack;
     logic                                 edn_fips;
-    logic [31:0]                          edn_bus;
+    logic [ENDPOINT_BUS_WIDTH-1:0]        edn_bus;
   } edn_rsp_t;
 
   parameter edn_req_t EDN_REQ_DEFAULT = '{default: '0};
