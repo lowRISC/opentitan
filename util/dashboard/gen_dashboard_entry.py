@@ -84,7 +84,8 @@ def get_linked_version(rev):
 
 # Link D/V stages with the checklist table.
 def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
-    if not stage or stage not in rev: return ""
+    if not stage or stage not in rev:
+        return ""
 
     url = ""
     in_page_ref = ""
@@ -116,7 +117,8 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
 
 # Link S stages with the checklist table.
 def get_linked_sw_checklist(obj, rev, stage, is_latest_rev=True):
-    if not stage or stage not in rev: return ""
+    if not stage or stage not in rev:
+        return ""
 
     url = ""
     in_page_ref = ""
@@ -147,7 +149,8 @@ def get_linked_sw_checklist(obj, rev, stage, is_latest_rev=True):
 # Hover text over each L, D, V, S indicates the stage mapping.
 # D, V, and S stages link to actual checklist items.
 def get_development_stage(obj, rev, is_latest_rev=True):
-    if "life_stage" not in rev: return "&nbsp;"
+    if "life_stage" not in rev:
+        return "&nbsp;"
 
     life_stage = rev['life_stage']
     life_stage_html = "<span title='{}'>{}</span>".format(
@@ -199,7 +202,7 @@ def gen_dashboard_html(hjson_path, outfile):
 
     # If `revisions` field doesn't exist, the tool assumes the Hjson
     # as the previous project format, which has only one version entry.
-    if not "revisions" in obj:
+    if "revisions" not in obj:
         print_version1_format(obj, outfile)
     else:
         print_multiversion_format(obj, outfile)
@@ -208,28 +211,25 @@ def gen_dashboard_html(hjson_path, outfile):
 
 # Version 1 (single version) format
 def print_version1_format(obj, outfile):
-    life_stage = obj['life_stage']
-    life_stage_mapping = convert_stage(obj['life_stage'])
-
     # yapf: disable
     genout(outfile, "      <tr>\n")
-    name = html.escape(obj['name'])
     genout(outfile, "        <td class=\"fixleft\">" +
                     get_linked_design_spec(obj) + "</td>\n")
-    genout(outfile, "        <td class=\"hw-stage\">" +
+    genout(outfile, "        <td class=\"dv-plan\">" +
                     get_linked_dv_plan(obj) + "</td>\n")
-    genout(outfile, "        <td class=\"hw-stage\">" +
+    genout(outfile, "        <td class=\"version\">" +
                     get_linked_version(obj) + "</td>\n")
 
     for stage_html in get_development_stage(obj, obj):
-        genout(outfile, "        <td class=\"hw-stage\"><span class='hw-stage'>" + stage_html + "</span></td>\n")
+        genout(outfile,
+               "        <td class=\"hw-stage\">" + stage_html + "</td>\n")
 
     if 'notes' in obj:
         genout(outfile,
-                    "        <td>" + mk.markdown(obj['notes']).rstrip() + "</td>\n")
+               "        <td>" + mk.markdown(obj['notes']).rstrip() + "</td>\n")
     else:
         genout(outfile,
-                    "        <td><p>&nbsp;</p></td>\n")
+               "        <td><p>&nbsp;</p></td>\n")
     genout(outfile, "      </tr>\n")
     # yapf: enable
 
@@ -247,7 +247,7 @@ def print_multiversion_format(obj, outfile):
         if len(revisions) == 1:
             outstr += "        <td class='fixleft'>"
             outstr += get_linked_design_spec(obj) + "</td>\n"
-            outstr += "        <td class='hw-stage'>"
+            outstr += "        <td class='dv-plan'>"
             outstr += get_linked_dv_plan(obj) + "</td>\n"
         # Print out the module name in the first entry only
         elif i == 0:
@@ -259,7 +259,7 @@ def print_multiversion_format(obj, outfile):
             outstr += get_linked_dv_plan(obj) + "</td>\n"
 
         # Version
-        outstr += "        <td class=\"hw-stage\">"
+        outstr += "        <td class=\"version\">"
         outstr += get_linked_version(rev) + "</td>\n"
 
         # Development Stage
@@ -310,21 +310,18 @@ def gen_specboard_html(hjson_path, rel_hjson_path, outfile):
     genout(outfile, "        <td class=\"fixleft\">" +
                     html.escape(obj['name']) + "</td>\n")
     if os.path.exists(design_spec_md):
-        genout(outfile,
-                    "        <td class=\"fixleft\"><a href=\"" +
-                    html.escape(design_spec_html) + "\">" +
-                    "design spec</a>\n")
+        genout(outfile, "        <td class=\"fixleft\"><a href=\"" +
+               html.escape(design_spec_html) + "\">" +
+               "design spec</a>\n")
     else:
-        genout(outfile,
-                    "        <td>&nbsp;</td>\n")
+        genout(outfile, "        <td>&nbsp;</td>\n")
     if os.path.exists(dv_plan_md):
-        genout(outfile,
-                    "        <td class=\"fixleft\"><a href=\"" +
-                    html.escape(dv_plan_html) + "\">" +
-                    "DV plan</a>\n")
+        genout(outfile, "        <td class=\"fixleft\"><a href=\"" +
+               html.escape(dv_plan_html) + "\">" +
+               "DV plan</a>\n")
     else:
-        genout(outfile,
-                    "        <td>&nbsp;</td>\n")
+        genout(outfile, "        <td>&nbsp;</td>\n")
+
     genout(outfile, "      </tr>\n")
     # yapf: enable
     return
