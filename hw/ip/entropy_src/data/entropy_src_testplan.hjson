@@ -8,10 +8,10 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
-      name: sanity
+      name: smoke
       desc: '''Enable entropy_src in LFSR mode, wait for interrupt, verify entropy.'''
       milestone: V1
-      tests: ["entropy_src_sanity"]
+      tests: ["entropy_src_smoke"]
     }
     {
       name: efuse
