@@ -20,6 +20,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
+    cfg.backdoor_clear_mem = 0;
     // reset power init pin and lc pins
     cfg.pwr_otp_vif.drive_pin(OtpPwrInitReq, 0);
     cfg.lc_provision_en_vif.drive(lc_ctrl_pkg::Off);
@@ -44,6 +45,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task otp_ctrl_init();
     // reset memory to avoid readout X
     cfg.mem_bkdr_vif.clear_mem();
+    cfg.backdoor_clear_mem = 1;
   endtask
 
   // some registers won't set to default value until otp_init is done
@@ -80,7 +82,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // this task exercises an OTP digest calculation via the DAI interface
   virtual task cal_digest(int part_idx);
-    csr_wr(ral.direct_access_address, DIGESTS_ADDR[part_idx]);
+    csr_wr(ral.direct_access_address, PART_BASE_ADDRS[part_idx]);
     csr_wr(ral.direct_access_cmd, otp_ctrl_pkg::DaiDigest);
     csr_spinwait(ral.intr_state, 1 << OtpOperationDone);
     csr_wr(ral.intr_state, 1 << OtpOperationDone);
@@ -93,6 +95,14 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     for (int i = int'(HwCfgIdx); i < int'(LifeCycleIdx); i++) begin
       cal_digest(i);
     end
+  endtask
+
+  // TODO: support checking all partitions within OTP
+  // The digest CSR values are verified in otp_ctrl_scoreboard
+  virtual task check_digests();
+    bit [TL_DW-1:0] val;
+    csr_rd(.ptr(ral.hw_cfg_digest_0), .value(val));
+    csr_rd(.ptr(ral.hw_cfg_digest_1), .value(val));
   endtask
 
   virtual task req_sram_key(int index);
