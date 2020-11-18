@@ -63,7 +63,11 @@ def mk_linker_script() -> Iterator[str]:
 def run_ld(ld_script: Optional[str], args: List[str]) -> int:
     '''Run the underlying linker and return the status code'''
     ld_name = find_tool('ld')
-    cmd = [ld_name]
+    # The --no-check-sections argument tells ld not to complain when we have
+    # more than one section with the same VMA. Since we have a Harvard
+    # architecture where data and instructions both start at zero, we expect
+    # that to happen.
+    cmd = [ld_name, '--no-check-sections']
     if ld_script is not None:
         cmd.append('--script={}'.format(ld_script))
     cmd += args
