@@ -27,9 +27,6 @@ class csrng_sanity_vseq extends csrng_base_vseq;
     // Write CSRNG Cmd_Req Register - Generate Command
     wr_cmd_req(.acmd(Generate), .clen(0), .flags(0), .glen(1));
 
-    // Wait for CSRNG Cmd_Ack
-    csr_spinwait(.ptr(ral.sw_cmd_ack.cmd_ack), .exp_data(1'b1));
-
     // Wait for CSRNG genbits_vld
     csr_spinwait(.ptr(ral.genbits_vld.genbits_vld), .exp_data(1'b1));
 
