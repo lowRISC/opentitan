@@ -127,10 +127,20 @@ table.regdef {
 
 // Dashboard design
 table.hw-project-dashboard {
+    thead th {
+        vertical-align: middle;
+    }
+
     td {
         vertical-align: middle;
+
+        &.dv-plan, &.version {
+            text-align: center;
+        }
+
         &.hw-stage {
             text-align: center;
+            border-style: solid none;
         }
     }
 }
