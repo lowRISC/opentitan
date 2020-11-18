@@ -188,13 +188,13 @@ csrrs x24, 0x7c0, x0
 bn.add w18, w1, w2 << 17B
 
 # w19 = w1 & (w2 << 9B) = 0x18988800_00088990_89899109_88189108_81989801_09981800_00000000_00000000
-bn.and w19, w1, w2, << 9B
+bn.and w19, w1, w2 << 9B
 
 # w20 = w1 - (w2 >> 23B) = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be57d4_fecd21a1_b9dd0141
 bn.sub w20, w1, w2 >> 23B
 
 # w21 = w1 | (w2 >> 15B) = 0x78fccc06_2228e9d6_89c9b54f_887cf1df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff9bdb
-bn.or  w21, w1, w2, >> 15B
+bn.or  w21, w1, w2 >> 15B
 
 # w22 = w21 + 0x1bd = 0x78fccc06_2228e9d6_89c9b54f_887cf1df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff9d98
 bn.addi w22, w21, 0x1bd
