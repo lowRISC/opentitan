@@ -40,10 +40,6 @@ sw_otbn_sources = {}
 # dictionary.
 subdir('code-snippets')
 
-prog_otbn_as = meson.source_root() / 'hw/ip/otbn/util/otbn-as'
-prog_otbn_ld = meson.source_root() / 'hw/ip/otbn/util/otbn-ld'
-
-prog_env = find_program('env')
 prog_otbn_build = meson.source_root() / 'util/otbn_build.py'
 
 otbn_build_command = [
