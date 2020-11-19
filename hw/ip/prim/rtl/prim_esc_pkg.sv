@@ -9,6 +9,8 @@ package prim_esc_pkg;
     logic esc_n;
   } esc_tx_t;
 
+  parameter esc_tx_t ESC_TX_DEFAULT = 2'b01;
+
   typedef struct packed {
     logic resp_p;
     logic resp_n;
