@@ -131,7 +131,10 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   endtask
 
   // write 256-bit hashed key
-  virtual task wr_key(bit [TL_DW-1:0] key[8]);
+  //
+  // can safely assume that the input array will always have 8 elements
+  // since HMAC key size is always 256 bits
+  virtual task wr_key(bit [TL_DW-1:0] key[]);
     // pity we cant loop here
     ral.key_0.set(key[0]);
     ral.key_1.set(key[1]);
@@ -262,12 +265,19 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     csr_rd(ral.err_code, error_code);
   endtask
 
-  virtual task compare_digest(bit [TL_DW-1:0] exp_digest[8]);
+  virtual task compare_digest(bit [7:0] exp_digest[]);
     bit [TL_DW-1:0] act_digest[8];
+    bit [TL_DW-1:0] packed_exp_digest[8];
     csr_rd_digest(act_digest);
+    // `exp_digest` is guaranteed to always contain 32 bytes of data since
+    // HMAC digest size is always 256 bits.
+    packed_exp_digest = {>>byte{exp_digest}};
     if (cfg.clk_rst_vif.rst_n) begin
+      // can safely assume that `exp_digest` always has 8 elements
+      // since HMAC output size is 256 bits.
       foreach (act_digest[i]) begin
-        `DV_CHECK_EQ(act_digest[i], exp_digest[i], $sformatf("for index %0d", i))
+        `DV_CHECK_EQ(act_digest[i], packed_exp_digest[i],
+                     $sformatf("for index %0d", i))
       end
     end else begin
       `uvm_info(`gfn, "skipped comparison due to reset", UVM_LOW)
