@@ -222,10 +222,25 @@ When a read transaction is sent to flash, the following steps are taken:
 *  If the data content is not scrambled, the prince and XOR steps are skipped and data provided directly back to the requestor.
 
 When a program transaction is sent to flash, the same steps are taken if the address in question has scrambling enabled.
-During a program, the text is encrypted through the prince block cipher.
+During a program, the text is scrambled through the prince block cipher.
 
-Note, at the moment scrambling is enabled on the entire 2nd bank of flash, but in the future will be a page boundary attribute.
+Scramble enablement is done differently depending on the type of partitions.
+*  For data partitions, the scramble enablement is done on contiugous page boundaries.
+   *  Software has the ability to configure these regions and whether scramble is enabled.
+*  For information partitions,the scramble enablement is done on a per page basis.
+   *  Software can configure for each page whether scramble is enabled.
 
+### Flash ECC
+
+Similar to scrambling, flash ECC is enabled based on an address decode.
+The ECC for flash is chosen such that a fully erased flash word has valid ECC.
+Likewise a flash word that is completely 0 is also valid ECC.
+
+ECC enablement is done differently depending on the type of partitions.
+*  For data partitions, the ECC enablement is done on contiugous page boundaries.
+   *  Software has the ability to configure these regions and whether ECC is enabled.
+*  For information partitions,the ECC enablement is done on a per page basis.
+   *  Software can configure for each page whether ECC is enabled.
 
 #### Scrambling Consistency
 
