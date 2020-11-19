@@ -155,12 +155,16 @@ add_project_arguments(
 
 # Common program references.
 prog_python = import('python').find_installation('python3')
+prog_env = find_program('env')
+prog_srec_cat = find_program('srec_cat')
+
 prog_ld = find_program('ld')
 prog_as = find_program('as')
 prog_objdump = find_program('objdump')
 prog_objcopy = find_program('objcopy')
-prog_srec_cat = find_program('srec_cat')
-prog_git = find_program('git')
+
+prog_otbn_as = meson.source_root() / 'hw/ip/otbn/util/otbn-as'
+prog_otbn_ld = meson.source_root() / 'hw/ip/otbn/util/otbn-ld'
 
 # Hardware register headers. These are generated from HJSON files, and accesible
 # in C via |#include "{IP_NAME}_regs.h"|.
