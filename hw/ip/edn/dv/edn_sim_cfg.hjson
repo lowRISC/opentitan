@@ -47,8 +47,8 @@
   // List of test specifications.
   tests: [
     {
-      name: edn_sanity
-      uvm_test_seq: edn_sanity_vseq
+      name: edn_smoke
+      uvm_test_seq: edn_smoke_vseq
     }
 
     // TODO: add more tests here
@@ -57,8 +57,8 @@
   // List of regressions.
   regressions: [
     {
-      name: sanity
-      tests: ["edn_sanity"]
+      name: smoke
+      tests: ["edn_smoke"]
     }
   ]
 }
