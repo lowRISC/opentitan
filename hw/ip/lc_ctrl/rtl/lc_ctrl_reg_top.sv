@@ -79,10 +79,14 @@ module lc_ctrl_reg_top (
   logic status_ready_re;
   logic status_transition_successful_qs;
   logic status_transition_successful_re;
+  logic status_transition_count_error_qs;
+  logic status_transition_count_error_re;
   logic status_transition_error_qs;
   logic status_transition_error_re;
   logic status_token_error_qs;
   logic status_token_error_re;
+  logic status_flash_rma_error_qs;
+  logic status_flash_rma_error_re;
   logic status_otp_error_qs;
   logic status_otp_error_re;
   logic status_state_error_qs;
@@ -92,6 +96,7 @@ module lc_ctrl_reg_top (
   logic claim_transition_if_we;
   logic claim_transition_if_re;
   logic transition_regwen_qs;
+  logic transition_regwen_re;
   logic transition_cmd_wd;
   logic transition_cmd_we;
   logic [31:0] transition_token_0_qs;
@@ -166,7 +171,7 @@ module lc_ctrl_reg_top (
     .d      (hw2reg.status.ready.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.status.ready.q ),
+    .q      (),
     .qs     (status_ready_qs)
   );
 
@@ -181,12 +186,27 @@ module lc_ctrl_reg_top (
     .d      (hw2reg.status.transition_successful.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.status.transition_successful.q ),
+    .q      (),
     .qs     (status_transition_successful_qs)
   );
 
 
-  //   F[transition_error]: 2:2
+  //   F[transition_count_error]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_transition_count_error (
+    .re     (status_transition_count_error_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.transition_count_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_transition_count_error_qs)
+  );
+
+
+  //   F[transition_error]: 3:3
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_transition_error (
@@ -196,12 +216,12 @@ module lc_ctrl_reg_top (
     .d      (hw2reg.status.transition_error.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.status.transition_error.q ),
+    .q      (),
     .qs     (status_transition_error_qs)
   );
 
 
-  //   F[token_error]: 3:3
+  //   F[token_error]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_token_error (
@@ -211,12 +231,27 @@ module lc_ctrl_reg_top (
     .d      (hw2reg.status.token_error.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.status.token_error.q ),
+    .q      (),
     .qs     (status_token_error_qs)
   );
 
 
-  //   F[otp_error]: 4:4
+  //   F[flash_rma_error]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_flash_rma_error (
+    .re     (status_flash_rma_error_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.flash_rma_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_flash_rma_error_qs)
+  );
+
+
+  //   F[otp_error]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_otp_error (
@@ -226,12 +261,12 @@ module lc_ctrl_reg_top (
     .d      (hw2reg.status.otp_error.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.status.otp_error.q ),
+    .q      (),
     .qs     (status_otp_error_qs)
   );
 
 
-  //   F[state_error]: 5:5
+  //   F[state_error]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_state_error (
@@ -241,7 +276,7 @@ module lc_ctrl_reg_top (
     .d      (hw2reg.status.state_error.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.status.state_error.q ),
+    .q      (),
     .qs     (status_state_error_qs)
   );
 
@@ -262,28 +297,18 @@ module lc_ctrl_reg_top (
   );
 
 
-  // R[transition_regwen]: V(False)
+  // R[transition_regwen]: V(True)
 
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RO"),
-    .RESVAL  (1'h1)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_transition_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
+    .re     (transition_regwen_re),
     .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.transition_regwen.de),
-    .d      (hw2reg.transition_regwen.d ),
-
-    // to internal hardware
+    .wd     ('0),
+    .d      (hw2reg.transition_regwen.d),
+    .qre    (),
     .qe     (),
     .q      (),
-
-    // to register interface (read)
     .qs     (transition_regwen_qs)
   );
 
@@ -297,7 +322,7 @@ module lc_ctrl_reg_top (
     // qualified with register enable
     .we     (transition_cmd_we & transition_regwen_qs),
     .wd     (transition_cmd_wd),
-    .d      (hw2reg.transition_cmd.d),
+    .d      ('0),
     .qre    (),
     .qe     (reg2hw.transition_cmd.qe),
     .q      (reg2hw.transition_cmd.q ),
@@ -403,7 +428,7 @@ module lc_ctrl_reg_top (
     .d      (hw2reg.lc_state.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.lc_state.q ),
+    .q      (),
     .qs     (lc_state_qs)
   );
 
@@ -419,7 +444,7 @@ module lc_ctrl_reg_top (
     .d      (hw2reg.lc_transition_cnt.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.lc_transition_cnt.q ),
+    .q      (),
     .qs     (lc_transition_cnt_qs)
   );
 
@@ -435,7 +460,7 @@ module lc_ctrl_reg_top (
     .d      (hw2reg.lc_id_state.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.lc_id_state.q ),
+    .q      (),
     .qs     (lc_id_state_qs)
   );
 
@@ -490,9 +515,13 @@ module lc_ctrl_reg_top (
 
   assign status_transition_successful_re = addr_hit[1] && reg_re;
 
+  assign status_transition_count_error_re = addr_hit[1] && reg_re;
+
   assign status_transition_error_re = addr_hit[1] && reg_re;
 
   assign status_token_error_re = addr_hit[1] && reg_re;
+
+  assign status_flash_rma_error_re = addr_hit[1] && reg_re;
 
   assign status_otp_error_re = addr_hit[1] && reg_re;
 
@@ -502,6 +531,7 @@ module lc_ctrl_reg_top (
   assign claim_transition_if_wd = reg_wdata[0];
   assign claim_transition_if_re = addr_hit[2] && reg_re;
 
+  assign transition_regwen_re = addr_hit[3] && reg_re;
 
   assign transition_cmd_we = addr_hit[4] & reg_we & ~wr_err;
   assign transition_cmd_wd = reg_wdata[0];
@@ -544,10 +574,12 @@ module lc_ctrl_reg_top (
       addr_hit[1]: begin
         reg_rdata_next[0] = status_ready_qs;
         reg_rdata_next[1] = status_transition_successful_qs;
-        reg_rdata_next[2] = status_transition_error_qs;
-        reg_rdata_next[3] = status_token_error_qs;
-        reg_rdata_next[4] = status_otp_error_qs;
-        reg_rdata_next[5] = status_state_error_qs;
+        reg_rdata_next[2] = status_transition_count_error_qs;
+        reg_rdata_next[3] = status_transition_error_qs;
+        reg_rdata_next[4] = status_token_error_qs;
+        reg_rdata_next[5] = status_flash_rma_error_qs;
+        reg_rdata_next[6] = status_otp_error_qs;
+        reg_rdata_next[7] = status_state_error_qs;
       end
 
       addr_hit[2]: begin

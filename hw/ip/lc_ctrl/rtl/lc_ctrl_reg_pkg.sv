@@ -8,8 +8,9 @@ package lc_ctrl_reg_pkg;
 
   // Param list
   parameter int NumTokenWords = 4;
-  parameter int NumLcStateBits = 4;
-  parameter int NumLcCntBits = 5;
+  parameter int CsrLcStateWidth = 4;
+  parameter int CsrLcCountWidth = 5;
+  parameter int CsrLcIdStateWidth = 2;
   parameter int NumAlerts = 2;
 
   ////////////////////////////
@@ -25,27 +26,6 @@ package lc_ctrl_reg_pkg;
       logic        qe;
     } lc_state_failure;
   } lc_ctrl_reg2hw_alert_test_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        q;
-    } ready;
-    struct packed {
-      logic        q;
-    } transition_successful;
-    struct packed {
-      logic        q;
-    } transition_error;
-    struct packed {
-      logic        q;
-    } token_error;
-    struct packed {
-      logic        q;
-    } otp_error;
-    struct packed {
-      logic        q;
-    } state_error;
-  } lc_ctrl_reg2hw_status_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -67,18 +47,6 @@ package lc_ctrl_reg_pkg;
     logic        qe;
   } lc_ctrl_reg2hw_transition_target_reg_t;
 
-  typedef struct packed {
-    logic [3:0]  q;
-  } lc_ctrl_reg2hw_lc_state_reg_t;
-
-  typedef struct packed {
-    logic [4:0]  q;
-  } lc_ctrl_reg2hw_lc_transition_cnt_reg_t;
-
-  typedef struct packed {
-    logic [1:0]  q;
-  } lc_ctrl_reg2hw_lc_id_state_reg_t;
-
 
   typedef struct packed {
     struct packed {
@@ -89,10 +57,16 @@ package lc_ctrl_reg_pkg;
     } transition_successful;
     struct packed {
       logic        d;
+    } transition_count_error;
+    struct packed {
+      logic        d;
     } transition_error;
     struct packed {
       logic        d;
     } token_error;
+    struct packed {
+      logic        d;
+    } flash_rma_error;
     struct packed {
       logic        d;
     } otp_error;
@@ -107,12 +81,7 @@ package lc_ctrl_reg_pkg;
 
   typedef struct packed {
     logic        d;
-    logic        de;
   } lc_ctrl_hw2reg_transition_regwen_reg_t;
-
-  typedef struct packed {
-    logic        d;
-  } lc_ctrl_hw2reg_transition_cmd_reg_t;
 
   typedef struct packed {
     logic [31:0] d;
@@ -139,30 +108,25 @@ package lc_ctrl_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    lc_ctrl_reg2hw_alert_test_reg_t alert_test; // [161:158]
-    lc_ctrl_reg2hw_status_reg_t status; // [157:152]
-    lc_ctrl_reg2hw_claim_transition_if_reg_t claim_transition_if; // [151:150]
-    lc_ctrl_reg2hw_transition_cmd_reg_t transition_cmd; // [149:148]
-    lc_ctrl_reg2hw_transition_token_mreg_t [3:0] transition_token; // [147:16]
-    lc_ctrl_reg2hw_transition_target_reg_t transition_target; // [15:11]
-    lc_ctrl_reg2hw_lc_state_reg_t lc_state; // [10:7]
-    lc_ctrl_reg2hw_lc_transition_cnt_reg_t lc_transition_cnt; // [6:2]
-    lc_ctrl_reg2hw_lc_id_state_reg_t lc_id_state; // [1:0]
+    lc_ctrl_reg2hw_alert_test_reg_t alert_test; // [144:141]
+    lc_ctrl_reg2hw_claim_transition_if_reg_t claim_transition_if; // [140:139]
+    lc_ctrl_reg2hw_transition_cmd_reg_t transition_cmd; // [138:137]
+    lc_ctrl_reg2hw_transition_token_mreg_t [3:0] transition_token; // [136:5]
+    lc_ctrl_reg2hw_transition_target_reg_t transition_target; // [4:0]
   } lc_ctrl_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    lc_ctrl_hw2reg_status_reg_t status; // [152:147]
-    lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [146:145]
-    lc_ctrl_hw2reg_transition_regwen_reg_t transition_regwen; // [144:145]
-    lc_ctrl_hw2reg_transition_cmd_reg_t transition_cmd; // [144:143]
-    lc_ctrl_hw2reg_transition_token_mreg_t [3:0] transition_token; // [142:15]
-    lc_ctrl_hw2reg_transition_target_reg_t transition_target; // [14:10]
-    lc_ctrl_hw2reg_lc_state_reg_t lc_state; // [9:6]
-    lc_ctrl_hw2reg_lc_transition_cnt_reg_t lc_transition_cnt; // [5:1]
-    lc_ctrl_hw2reg_lc_id_state_reg_t lc_id_state; // [0:-1]
+    lc_ctrl_hw2reg_status_reg_t status; // [152:153]
+    lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [152:151]
+    lc_ctrl_hw2reg_transition_regwen_reg_t transition_regwen; // [150:151]
+    lc_ctrl_hw2reg_transition_token_mreg_t [3:0] transition_token; // [150:23]
+    lc_ctrl_hw2reg_transition_target_reg_t transition_target; // [22:18]
+    lc_ctrl_hw2reg_lc_state_reg_t lc_state; // [17:18]
+    lc_ctrl_hw2reg_lc_transition_cnt_reg_t lc_transition_cnt; // [17:18]
+    lc_ctrl_hw2reg_lc_id_state_reg_t lc_id_state; // [17:18]
   } lc_ctrl_hw2reg_t;
 
   // Register Address
