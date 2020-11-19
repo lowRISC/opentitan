@@ -17,11 +17,16 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   rand bit        intr_fifo_empty_en;
   rand bit        intr_hmac_done_en;
   rand bit        intr_hmac_err_en;
-  rand bit [31:0] key[8];
+  rand bit [31:0] key[];
   rand bit [7:0]  msg[];
   rand int        burst_wr_length;
   rand bit        do_hash_start_when_active;
   rand bit        do_hash_start;
+
+  // HMAC key size will always be 256 bits.
+  constraint key_c {
+    key.size() == 8;
+  };
 
   constraint legal_seq_c {
     do_hash_start == 1;

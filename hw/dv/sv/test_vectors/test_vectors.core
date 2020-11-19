@@ -8,9 +8,29 @@ filesets:
   files_dv:
     files:
       - test_vectors_pkg.sv
-      - HMAC_RFC4868.rsp: {is_include_file: true}
-      - SHA256ShortMsg.rsp: {is_include_file: true}
-      - SHA256LongMsg.rsp: {is_include_file: true}
+      - vectors/hmac/HMAC_RFC4868.rsp: {is_include_file: true}
+      - vectors/sha/sha256/SHA256ShortMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha256/SHA256LongMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha3/SHA3_224ShortMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha3/SHA3_224LongMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha3/SHA3_256ShortMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha3/SHA3_256LongMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha3/SHA3_384ShortMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha3/SHA3_384LongMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha3/SHA3_512ShortMsg.rsp: {is_include_file: true}
+      - vectors/sha/sha3/SHA3_512LongMsg.rsp: {is_include_file: true}
+      - vectors/xof/cshake/CSHAKE128Ex1.rsp: {is_include_file: true}
+      - vectors/xof/cshake/CSHAKE256Ex1.rsp: {is_include_file: true}
+      - vectors/xof/kmac/KMAC128Ex1.rsp: {is_include_file: true}
+      - vectors/xof/kmac/KMAC128XOFEx1.rsp: {is_include_file: true}
+      - vectors/xof/kmac/KMAC256Ex1.rsp: {is_include_file: true}
+      - vectors/xof/kmac/KMAC256XOFEx1.rsp: {is_include_file: true}
+      - vectors/xof/shake/SHAKE128ShortMsg.rsp: {is_include_file: true}
+      - vectors/xof/shake/SHAKE128LongMsg.rsp: {is_include_file: true}
+      - vectors/xof/shake/SHAKE128VariableOut.rsp: {is_include_file: true}
+      - vectors/xof/shake/SHAKE256ShortMsg.rsp: {is_include_file: true}
+      - vectors/xof/shake/SHAKE256LongMsg.rsp: {is_include_file: true}
+      - vectors/xof/shake/SHAKE256VariableOut.rsp: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

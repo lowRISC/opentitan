@@ -13,8 +13,31 @@ The following is a list of common properties and methods:
   test_vectors_t.
 
 ### SHA256 vectors
-The `SHA256LongMsg.rsp` and `SHA256ShortMsg.rsp` are test vector files downloaded from the
+The test vector files inside of `vectors/sha/sha256/` are downloaded from the
 [NIST website](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs).
 
+### SHA3 vectors
+Test vector files for the 224, 256, 384, and 512 bit variants of SHA3 found at
+`vectors/sha/sha3-<224/256/384/512>` are downloaded from the [NIST
+website](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/sha3/sha-3bytetestvectors.zip).
+
 ### HMAC vectors
-The `HMAC_RFC4868.rsp` contains test vectors extracted from [IETF RFC 4868](https://tools.ietf.org/html/rfc4868).
+Files inside of `vectors/hmac/` contain test vectors extracted from [IETF RFC 4868](https://tools.ietf.org/html/rfc4868).
+
+### SHAKE vectors
+Test vector files for the SHA3 Extendable Output Functions in `vectors/xof/shake` are
+downloaded from the [NIST
+website](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/shs/shabytetestvectors.zip).
+
+### cSHAKE vectors
+Test vectors for the Customizable SHAKE functions are taken from the [NIST
+website](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/cSHAKE_samples.pdf).
+These vectors are found in `vectors/xof/cshake/`.
+
+### KMAC vectors
+Test vectors for KMAC algorithm are taken from NIST website for both the
+[XOF](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/KMAC_samples.pdf)
+and
+[non-XOF](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/KMACXOF_samples.pdf)
+variants.
+These vectors are found in `vectors/xof/kmac/`.
