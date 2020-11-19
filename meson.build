@@ -207,3 +207,26 @@ top_earlgrey = declare_dependency(
 )
 
 subdir('sw')
+
+# Write environment file
+prog_meson_write_env = meson.source_root() / 'util/meson_write_env.py'
+r = run_command(
+  prog_python,
+  prog_meson_write_env,
+
+  '--out-file',
+  meson.current_build_dir() / '.env',
+
+  'PYTHON=@0@'.format(prog_python.path()),
+  'OTBN_AS=@0@'.format(prog_otbn_as),
+  'OTBN_LD=@0@'.format(prog_otbn_ld),
+  'RV32_TOOL_OBJCOPY=@0@'.format(prog_objcopy.path()),
+  'RV32_TOOL_AS=@0@'.format(prog_as.path()),
+  'RV32_TOOL_LD=@0@'.format(prog_ld.path()),
+  'RV32_TOOL_OBJDUMP=@0@'.format(prog_objdump.path()),
+  'RV32_TOOL_OBJCOPY=@0@'.format(prog_objcopy.path()),
+)
+assert(r.returncode() == 0, 'Error while calling meson_write_env.py.\n' +
+  'STDOUT:\n' + r.stdout().strip() + '\n' +
+  'STDERR:\n ' + r.stderr().strip())
+message(r.stdout().strip())
