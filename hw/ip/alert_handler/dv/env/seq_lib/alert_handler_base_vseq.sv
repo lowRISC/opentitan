@@ -53,9 +53,16 @@ class alert_handler_base_vseq extends cip_base_vseq #(
                                   bit [TL_DW-1:0]                     loc_alert_class = 'h0);
     csr_wr(.csr(ral.intr_enable), .value(intr_en));
     csr_wr(.csr(ral.alert_en), .value(alert_en));
-    csr_wr(.csr(ral.alert_class), .value(alert_class));
     csr_wr(.csr(ral.loc_alert_en), .value(loc_alert_en));
     csr_wr(.csr(ral.loc_alert_class), .value(loc_alert_class));
+    for (int i = 0; i < $ceil(NUM_ALERTS * 2 / TL_DW); i++) begin
+      string alert_name = (NUM_ALERTS <= TL_DW / 2) ? "alert_class" :
+                                                      $sformatf("alert_class_%0d", i);
+      uvm_reg alert_class_csr = ral.get_reg_by_name(alert_name);
+      `DV_CHECK_NE_FATAL(alert_class_csr, null, alert_name)
+      csr_wr(.csr(alert_class_csr), .value(alert_class[i * TL_DW +: TL_DW]));
+    end
+
   endtask
 
   virtual task alert_handler_rand_wr_class_ctrl(bit [NUM_ALERT_HANDLER_CLASSES-1:0] lock_bit);

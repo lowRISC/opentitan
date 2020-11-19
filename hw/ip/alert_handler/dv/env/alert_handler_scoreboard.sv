@@ -150,10 +150,11 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       begin
         cfg.clk_rst_vif.wait_n_clks(1);
         if (!under_reset) begin
-          bit [TL_DW-1:0] alert_class, intr_en, class_ctrl;
+          bit [TL_DW-1:0] intr_en, class_ctrl;
+          bit [NUM_ALERTS*2-1:0] alert_class;
           bit [NUM_ALERT_HANDLER_CLASS_MSB:0] class_i;
           if (!is_int_err) begin
-            alert_class = ral.alert_class.get_mirrored_value();
+            alert_class = get_alert_class_mirrored_val();
             // extract the two bits that indicates which intr class this alert will trigger
             class_i = (alert_class >> alert_i * 2) & 'b11;
             alert_cause_field = alert_cause_fields[alert_i];
@@ -548,6 +549,17 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     class_timeout_rg = ral.get_reg_by_name($sformatf("class%s_timeout_cyc", class_name[class_i]));
     `DV_CHECK_NE_FATAL(class_timeout_rg, null)
     return class_timeout_rg.get_mirrored_value();
+  endfunction
+
+  // If num_alerts exceeds TL_DW/2, then alert_class will need more than one reg to hold its value
+  function bit [NUM_ALERTS*2-1:0] get_alert_class_mirrored_val();
+    for (int i = 0; i < $ceil(NUM_ALERTS * 2 / TL_DW); i++) begin
+      string alert_name = (NUM_ALERTS <= TL_DW / 2) ? "alert_class" :
+                                                      $sformatf("alert_class_%0d", i);
+      uvm_reg alert_class_csr = ral.get_reg_by_name(alert_name);
+      `DV_CHECK_NE_FATAL(alert_class_csr, null)
+      get_alert_class_mirrored_val =| (alert_class_csr.get_mirrored_value() << i * TL_DW);
+    end
   endfunction
 endclass
 
