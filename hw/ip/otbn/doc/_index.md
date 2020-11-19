@@ -61,48 +61,49 @@ The instruction set is split into two groups:
 
 ### General Purpose Registers (GPRs)
 
-OTBN has 32 General Purpose Registers (GPRs).
-Each GPR is 32b wide.
-General Purpose Registers in OTBN are mainly used for control flow.
-The GPRs are defined in line with RV32I.
-
-Note: GPRs and Wide Data Registers (WDRs) are separate register files.
-They are only accessible through their respective instruction subset:
-GPRs are accessible from the base instruction subset, and WDRs are accessible from the big number instruction subset (`BN` instructions).
+OTBN has 32 General Purpose Registers (GPRs), each of which is 32b wide.
+The GPRs are defined in line with RV32I and are mainly used for control flow.
+They are accessed through the base instruction subset.
+GPRs aren't used by the main data path; this operates on the [wide data registers](#wide-data-registers-wdrs), a separate register file, controlled by the big number instructions.
 
 <table>
   <tr>
     <td><code>x0</code></td>
-    <td><strong>Zero</strong>. Always reads 0. Writes are ignored.</td>
+    <td>Zero register. Reads as 0; writes are ignored.</td>
   </tr>
   <tr>
     <td><code>x1</code></td>
-    <td>
-      <strong>Return address</strong>.
-      Access to the call stack.
-      Reading <code>x1</code> pops an address from the call stack.
-      Writing <code>x1</code> pushes a return address to the call stack.
-      Reading from an empty call stack results in an alert.
-    </td>
+<td>
+
+Access to the [call stack](#call-stack)
+
+</td>
   </tr>
   <tr>
-    <td><code>x2</code></td>
-    <td><strong>General Purpose Register 2</strong>.</td>
-  </tr>
-  <tr>
-    <td>...</td>
-    <td></td>
-  </tr>
-  <tr>
-    <td><code>x31</code></td>
-    <td><strong>General Purpose Register 31</strong>.</td>
+    <td><code>x2</code> ... <code>x31</code></td>
+    <td>General purpose registers</td>
   </tr>
 </table>
 
-Note: Currently, OTBN has no "standard calling convention," and GPRs except for `x0` and `x1` can be used for any purpose.
-If, at one point, a calling convention is needed, it is expected to be aligned with the RISC-V standard calling conventions, and the roles assigned to registers in that convention.
+Note: Currently, OTBN has no "standard calling convention," and GPRs other than `x0` and `x1` can be used for any purpose.
+If a calling convention is needed at some point, it is expected to be aligned with the RISC-V standard calling conventions, and the roles assigned to registers in that convention.
 Even without a agreed-on calling convention, software authors are encouraged to follow the RISC-V calling convention where it makes sense.
 For example, good choices for temporary registers are `x6`, `x7`, `x28`, `x29`, `x30`, and `x31`.
+
+### Call Stack
+
+OTBN has an in-built call stack which is accessed through the `x1` GPR.
+This is intended to be used as a return address stack, containing return addresses for the current stack of function calls.
+See the documentation for [`JAL`]({{< relref "hw/ip/otbn/doc/isa#jal" >}}) and [`JALR`]({{< relref "hw/ip/otbn/doc/isa#jalr" >}}) for a description of how to use it for this purpose.
+
+The call stack has a maximum depth of 8 elements.
+Each instruction that reads from `x1` pops a single element from the stack.
+Each instruction that writes to `x1` pushes a single element onto the stack.
+An instruction that reads from an empty stack or writes to a full stack, causes OTBN to stop, raising an alert and setting the `ERR_CODE` register to `ErrCodeCallStack`.
+
+A single instruction can both read and write to the stack.
+In this case, the read is ordered before the write.
+Providing the stack has at least one element, this is allowed, even if the stack is full.
 
 ### Control and Status Registers (CSRs)
 
@@ -312,14 +313,6 @@ The `L`, `M`, and `Z` flags are determined based on the result of the operation 
 The LOOP instruction allows for nested loops; the active loops are stored on the loop stack.
 Each loop stack entry is a tuple of loop count, start address, and end address.
 The number of entries in the loop stack is implementation-dependent.
-
-### Call Stack
-
-A stack (LIFO) of function call return addresses (also known as "return address stack").
-The number of entries in this stack is implementation-dependent.
-
-The call stack is accessed through the `x1` GPR (return address).
-Writing to `x1` pushes to the call stack, reading from it pops an item.
 
 ### Accumulator
 
