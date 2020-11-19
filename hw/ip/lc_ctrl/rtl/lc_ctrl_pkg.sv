@@ -13,7 +13,7 @@ package lc_ctrl_pkg;
   parameter int LcTokenWidth = 128;
   parameter int NumLcStateValues = 12;
   parameter int LcStateWidth = NumLcStateValues * LcValueWidth;
-  parameter int NumLcCountValues = 32;
+  parameter int NumLcCountValues = 16;
   parameter int LcCountWidth = NumLcCountValues * LcValueWidth;
 
   typedef enum logic [LcValueWidth-1:0] {
