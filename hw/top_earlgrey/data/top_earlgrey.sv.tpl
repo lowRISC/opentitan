@@ -240,6 +240,8 @@ module top_${top["name"]} #(
     .irq_timer_i          (intr_rv_timer_timer_expired_0_0),
     .irq_external_i       (irq_plic),
     // escalation input from alert handler (NMI)
+    // TODO: need to put the escalation receiver
+    // into the alert handler clock domain.
     .esc_tx_i             (esc_tx[0]),
     .esc_rx_o             (esc_rx[0]),
     // debug interface

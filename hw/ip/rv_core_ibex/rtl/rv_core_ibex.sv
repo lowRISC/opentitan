@@ -32,6 +32,9 @@ module rv_core_ibex #(
   // Clock and Reset
   input  logic        clk_i,
   input  logic        rst_ni,
+  // Clock domain for escalation receiver
+  input  logic        clk_esc_i,
+  input  logic        rst_esc_ni,
 
   input  logic        test_en_i,     // enable all clock gates for testing
 
@@ -131,13 +134,24 @@ module rv_core_ibex #(
 
   // Escalation receiver that converts differential
   // protocol into single ended signal.
-  logic irq_nm;
-  prim_esc_receiver i_prim_esc_receiver (
-    .clk_i,
-    .rst_ni,
-    .esc_en_o ( irq_nm   ),
+  logic esc_irq_nm;
+  prim_esc_receiver u_prim_esc_receiver (
+    .clk_i    ( clk_esc_i  ),
+    .rst_ni   ( rst_esc_ni ),
+    .esc_en_o ( esc_irq_nm ),
     .esc_rx_o,
     .esc_tx_i
+  );
+
+  // Synchronize to fast Ibex clock domain.
+  logic irq_nm;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_prim_flop_2sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(esc_irq_nm),
+    .q_o(irq_nm)
   );
 
   // Alert outputs
