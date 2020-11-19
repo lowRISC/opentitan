@@ -32,16 +32,22 @@
       default: "4",
       local:   "true"
     }
-    { name:    "NumLcStateBits",
+    { name:    "CsrLcStateWidth",
       desc:    "Number of life cycle state enum bits.",
       type:    "int"
       default: "4",
       local:   "true"
     }
-    { name:    "NumLcCntBits",
-      desc:    "Number of life cycle state enum bits.",
+    { name:    "CsrLcCountWidth",
+      desc:    "Number of life cycle transition counter bits.",
       type:    "int"
       default: "5",
+      local:   "true"
+    }
+    { name:    "CsrLcIdStateWidth",
+      desc:    "Number of life cycle id state enum bits.",
+      type:    "int"
+      default: "2",
       local:   "true"
     }
   ]
@@ -51,6 +57,31 @@
   /////////////////////////////
 
   inter_signal_list: [
+    // Escalation inputs from alert handler
+    { struct:  "esc_tx"
+      type:    "uni"
+      name:    "esc1_tx"
+      act:     "rcv"
+      package: "prim_esc_pkg"
+    }
+    { struct:  "esc_rx"
+      type:    "uni"
+      name:    "esc1_rx"
+      act:     "req"
+      package: "prim_esc_pkg"
+    }
+    { struct:  "esc_tx"
+      type:    "uni"
+      name:    "esc2_tx"
+      act:     "rcv"
+      package: "prim_esc_pkg"
+    }
+    { struct:  "esc_rx"
+      type:    "uni"
+      name:    "esc2_rx"
+      act:     "req"
+      package: "prim_esc_pkg"
+    }
     // life cycle state broadcast from OTP
     { struct:  "otp_lc_data"
       type:    "uni"
@@ -106,7 +137,14 @@
     }
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_provision_en"
+      name:    "lc_provision_wr_en"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_provision_rd_en"
       act:     "req"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
@@ -120,19 +158,46 @@
     }
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_clk_byp_en"
+      name:    "lc_escalate_en"
       act:     "req"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_escalate_en"
+      name:    "lc_clk_byp_req"
       act:     "req"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     }
-    // TODO: add flash interface signals
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_clk_byp_ack"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_flash_rma_req"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_flash_rma_seed"
+      type:    "uni"
+      name:    "lc_flash_rma_seed"
+      act:     "req"
+      default: "'0"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_flash_rma_ack"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
   ] // inter_signal_list
 
   registers: [
@@ -142,9 +207,9 @@
     ////////////////
 
     { name: "STATUS",
-      desc: "life cycle status register.",
+      desc: "life cycle status register. Note that all errors are terminal and require a reset cycle.",
       swaccess: "ro",
-      hwaccess: "hrw",
+      hwaccess: "hwo",
       hwext:    "true",
       fields: [
         { bits: "0"
@@ -163,6 +228,15 @@
                 '''
         }
         { bits: "2"
+          name: "TRANSITION_COUNT_ERROR"
+          desc: '''
+                This bit is set to 1 if the !!LC_TRANSITION_CNT has reached its maximum.
+                If this is the case, no more state transitions can be performed.
+                Note that each transition attempt increments the !!LC_TRANSITION_CNT and
+                moves the life cycle state into POST_TRANSITION.
+                '''
+        }
+        { bits: "3"
           name: "TRANSITION_ERROR"
           desc: '''
                 This bit is set to 1 if the last transition command requested an invalid state transition
@@ -170,7 +244,7 @@
                 moves the life cycle state into POST_TRANSITION.
                 '''
         }
-        { bits: "3"
+        { bits: "4"
           name: "TOKEN_ERROR"
           desc: '''
                 This bit is set to 1 if the token supplied for a conditional transition was invalid.
@@ -178,7 +252,15 @@
                 moves the life cycle state into POST_TRANSITION.
                 '''
         }
-        { bits: "4"
+        { bits: "5"
+          name: "FLASH_RMA_ERROR"
+          desc: '''
+                This bit is set to 1 if flash failed to correctly respond to an RMA request.
+                Note that each transition attempt increments the !!LC_TRANSITION_CNT and
+                moves the life cycle state into POST_TRANSITION.
+                '''
+        }
+        { bits: "6"
           name: "OTP_ERROR"
           desc: '''
                 This bit is set to 1 if an error occurred during an OTP programming operation.
@@ -186,7 +268,7 @@
                 lc_programming_failure alert.
                 '''
         }
-        { bits: "5"
+        { bits: "7"
           name: "STATE_ERROR"
           desc: '''
                 This bit is set to 1 if either the controller FSM state or the life cycle state is invalid or
@@ -230,6 +312,7 @@
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
+      hwext:    "true",
       tags: [ // life cycle internal HW will set this enable register to 0 when the life cycle controller
               // is busy and not ready to accept a transition command.
               "excl:CsrNonInitTests:CsrExclCheck"],
@@ -248,7 +331,7 @@
     { name: "TRANSITION_CMD",
       desc: "Command register for state transition requests.",
       swaccess: "r0w1c",
-      hwaccess: "hrw",
+      hwaccess: "hro",
       hwqe:     "true",
       hwext:    "true",
       regwen:   "TRANSITION_REGWEN",
@@ -272,6 +355,7 @@
         name:     "TRANSITION_TOKEN",
         desc:     '''
                   128bit token for conditional transitions.
+                  Make sure to set this to 0 for unconditional transitions.
                   Note that this register is shared with the life cycle TAP interface.
                   In order to have exclusive access to this register, SW must first claim the associated
                   hardware mutex via !!CLAIM_TRANSITION_IF.
@@ -297,7 +381,7 @@
       hwext:    "true",
       regwen:   "TRANSITION_REGWEN",
       fields: [
-        { bits: "NumLcStateBits-1:0"
+        { bits: "CsrLcStateWidth-1:0"
           name: "STATE"
           desc: '''
                 Note that this register is shared with the life cycle TAP interface.
@@ -369,10 +453,10 @@
     { name: "LC_STATE",
       desc: "This register exposes the decoded life cycle state.",
       swaccess: "ro",
-      hwaccess: "hrw",
+      hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "NumLcStateBits-1:0"
+        { bits: "CsrLcStateWidth-1:0"
           name: "STATE"
           desc: ""
           enum: [
@@ -452,10 +536,10 @@
     { name: "LC_TRANSITION_CNT",
       desc: "This register exposes the state of the decoded life cycle transition counter.",
       swaccess: "ro",
-      hwaccess: "hrw",
+      hwaccess: "hwo",
       hwext:    "true",
       fields: [
-        { bits: "NumLcCntBits-1:0"
+        { bits: "CsrLcCountWidth-1:0"
           name: "CNT"
           desc: '''
           Number of total life cycle state transition attempts.
@@ -473,7 +557,7 @@
     { name: "LC_ID_STATE",
       desc: "This register exposes the id state of the device.",
       swaccess: "ro",
-      hwaccess: "hrw",
+      hwaccess: "hwo",
       hwext:    "true",
       fields: [
         { bits: "1:0"
