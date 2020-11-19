@@ -128,10 +128,10 @@ The first escalation path is used to trigger escalation mechanisms such as secre
 Upon assertion, the life cycle controller asserts the ESCALATE_EN life cycle signal which is distributed to all IPs in the design that expose an escalation action.
 
 The second escalation path is used to **TEMPORARILY** alter the life cycle state.
-I.e. when this escalation path is triggered, the life cycle state is virtually transitioned to "SCRAP".
+I.e. when this escalation path is triggered, the life cycle state is transitioned into "ESCALATE", which behaves like a virtual "SCRAP" state (i.e. this state is not programmed into OTP).
 This causes [all decoded outputs]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}) to be disabled until the next power cycle, with the exception of the escalation enable life cycle signal ESCALATE_EN which is used for the first escalation path.
 
-Whether to escalate to the life cycle controller is a software decision, please see the [alert handler]({{< relref "hw/ip/alert_handler/doc/_index.md" >}}) for more details.
+Whether to escalate to the life cycle controller or not is a software decision, please see the [alert handler]({{< relref "hw/ip/alert_handler/doc/_index.md" >}}) for more details.
 
 ## Life Cycle Decoded Outputs and Controls
 
