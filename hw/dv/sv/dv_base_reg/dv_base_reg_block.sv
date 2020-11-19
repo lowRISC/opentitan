@@ -38,6 +38,15 @@ class dv_base_reg_block extends uvm_reg_block;
     foreach (ral_regs[i]) `downcast(dv_regs[i], ral_regs[i])
   endfunction
 
+  function dv_base_reg get_dv_base_reg_by_name(string csr_name, bit check_csr_exist = 1'b1);
+    uvm_reg csr = get_reg_by_name(csr_name);
+    `downcast(get_dv_base_reg_by_name, csr)
+    if (check_csr_exist) begin
+      `DV_CHECK_NE_FATAL(get_dv_base_reg_by_name, null,
+                         $sformatf("%0s does not exist in block %0s",csr_name, get_name()))
+    end
+  endfunction
+
   function void get_enable_regs(ref dv_base_reg enable_regs[$]);
     dv_base_reg_block blks[$];
     get_dv_base_reg_blocks(blks);
