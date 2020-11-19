@@ -178,10 +178,10 @@ test('dif_otp_ctrl_unittest', executable(
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
-dif_plic_sanitytest_lib = declare_dependency(
+dif_plic_smoketest_lib = declare_dependency(
   link_with: static_library(
-    'dif_plic_sanitytest_lib',
-    sources: ['dif_plic_sanitytest.c'],
+    'dif_plic_smoketest_lib',
+    sources: ['dif_plic_smoketest.c'],
     dependencies: [
       sw_lib_dif_uart,
       sw_lib_dif_plic,
@@ -194,15 +194,15 @@ dif_plic_sanitytest_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'dif_plic_sanitytest': {
-    'library': dif_plic_sanitytest_lib,
+  'dif_plic_smoketest': {
+    'library': dif_plic_smoketest_lib,
   }
 }
 
-dif_uart_sanitytest_lib = declare_dependency(
+dif_uart_smoketest_lib = declare_dependency(
   link_with: static_library(
-    'dif_uart_sanitytest_lib',
-    sources: ['dif_uart_sanitytest.c'],
+    'dif_uart_smoketest_lib',
+    sources: ['dif_uart_smoketest.c'],
     dependencies: [
       sw_lib_dif_uart,
       sw_lib_mmio,
@@ -211,15 +211,15 @@ dif_uart_sanitytest_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'dif_uart_sanitytest': {
-    'library': dif_uart_sanitytest_lib,
+  'dif_uart_smoketest': {
+    'library': dif_uart_smoketest_lib,
   }
 }
 
-dif_rv_timer_sanitytest_lib = declare_dependency(
+dif_rv_timer_smoketest_lib = declare_dependency(
   link_with: static_library(
-    'dif_rv_timer_sanitytest_lib',
-    sources: ['dif_rv_timer_sanitytest.c'],
+    'dif_rv_timer_smoketest_lib',
+    sources: ['dif_rv_timer_smoketest.c'],
     dependencies: [
       sw_lib_dif_rv_timer,
       sw_lib_runtime_log,
@@ -230,15 +230,15 @@ dif_rv_timer_sanitytest_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'dif_rv_timer_sanitytest': {
-    'library': dif_rv_timer_sanitytest_lib,
+  'dif_rv_timer_smoketest': {
+    'library': dif_rv_timer_smoketest_lib,
   }
 }
 
-dif_hmac_sanitytest_lib = declare_dependency(
+dif_hmac_smoketest_lib = declare_dependency(
   link_with: static_library(
-    'dif_hmac_sanitytest_lib',
-    sources: ['dif_hmac_sanitytest.c'],
+    'dif_hmac_smoketest_lib',
+    sources: ['dif_hmac_smoketest.c'],
     dependencies: [
       sw_lib_dif_hmac,
       sw_lib_runtime_log,
@@ -248,15 +248,15 @@ dif_hmac_sanitytest_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'dif_hmac_sanitytest': {
-    'library': dif_hmac_sanitytest_lib,
+  'dif_hmac_smoketest': {
+    'library': dif_hmac_smoketest_lib,
   }
 }
 
-dif_rstmgr_sanitytest_lib = declare_dependency(
+dif_rstmgr_smoketest_lib = declare_dependency(
   link_with: static_library(
-    'dif_rstmgr_sanitytest_lib',
-    sources: ['dif_rstmgr_sanitytest.c'],
+    'dif_rstmgr_smoketest_lib',
+    sources: ['dif_rstmgr_smoketest.c'],
     dependencies: [
       sw_lib_dif_rstmgr,
       sw_lib_mmio,
@@ -265,8 +265,8 @@ dif_rstmgr_sanitytest_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'dif_rstmgr_sanitytest': {
-    'library': dif_rstmgr_sanitytest_lib,
+  'dif_rstmgr_smoketest': {
+    'library': dif_rstmgr_smoketest_lib,
   }
 }
 

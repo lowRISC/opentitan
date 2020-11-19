@@ -67,8 +67,7 @@ static bool irq_bit_offset_get(dif_hmac_interrupt_t irq_type,
 
 dif_hmac_result_t dif_hmac_init(const dif_hmac_config_t *config,
                                 dif_hmac_t *hmac) {
-  // Basic sanity checks on parameters. In `kDifHmacModeHmac` mode a key is
-  // required.
+  // Basic checks on parameters. In `kDifHmacModeHmac` mode a key is required.
   if (config == NULL || hmac == NULL) {
     return kDifHmacBadArg;
   }

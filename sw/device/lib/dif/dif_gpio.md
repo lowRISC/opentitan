@@ -14,12 +14,12 @@ Type           | Item                 | Resolution  | Note/Collaterals
 Implementation | [DIF_EXISTS][]       | Not Started |
 Implementation | [DIF_USED_IN_TREE][] | Not Started |
 Tests          | [DIF_TEST_UNIT][]    | Not Started |
-Tests          | [DIF_TEST_SANITY][]  | Not Started |
+Tests          | [DIF_TEST_SMOKE][]   | Not Started |
 
 [DIF_EXISTS]:       {{< relref "/doc/project/checklist.md#dif_exists" >}}
 [DIF_USED_IN_TREE]: {{< relref "/doc/project/checklist.md#dif_used_in_tree" >}}
 [DIF_TEST_UNIT]:    {{< relref "/doc/project/checklist.md#dif_test_unit" >}}
-[DIF_TEST_SANITY]:  {{< relref "/doc/project/checklist.md#dif_test_sanity" >}}
+[DIF_TEST_SMOKE]:   {{< relref "/doc/project/checklist.md#dif_test_smoke" >}}
 
 ### S2
 
@@ -64,4 +64,5 @@ Review         | Signoff date                     | Not Started |
 [DIF_REVIEW_C_STABLE]:          {{< relref "/doc/project/checklist.md#dif_review_c_stable" >}}
 [DIF_TEST_UNIT_COMPLETE]:       {{< relref "/doc/project/checklist.md#dif_test_unit_complete" >}}
 [DIF_TODO_COMPLETE]:            {{< relref "/doc/project/checklist.md#dif_todo_complete" >}}
-[DIF_REVIEW_TOCK_STABLE]:       {{< relref "/doc/project/checklist.md#dif_review_tock_stable" >}}
+[DIF_REVIEW_TOCK_STABLE]:       {{< relref
+"/doc/project/checklist.md#dif_review_tock_stable" >}}

@@ -14,12 +14,12 @@ Type           | Item                 | Resolution  | Note/Collaterals
 Implementation | [DIF_EXISTS][]       | Not Started |
 Implementation | [DIF_USED_IN_TREE][] | Not Started |
 Tests          | [DIF_TEST_UNIT][]    | Not Started |
-Tests          | [DIF_TEST_SANITY][]  | Not Started |
+Tests          | [DIF_TEST_smoke][]   | Not Started |
 
 [DIF_EXISTS]:       {{< relref "/doc/project/checklist.md#dif_exists" >}}
 [DIF_USED_IN_TREE]: {{< relref "/doc/project/checklist.md#dif_used_in_tree" >}}
 [DIF_TEST_UNIT]:    {{< relref "/doc/project/checklist.md#dif_test_unit" >}}
-[DIF_TEST_SANITY]:  {{< relref "/doc/project/checklist.md#dif_test_sanity" >}}
+[DIF_TEST_smoke]:   {{< relref "/doc/project/checklist.md#dif_test_smoke" >}}
 
 ### S2
 
