@@ -18,6 +18,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   input        clk_i,
   input        rst_ni,
 
+  // life cycle interface
+  lc_ctrl_pkg::lc_tx_t lc_provision_en_i,
+
   // Bus Interface
   input        tlul_pkg::tl_h2d_t tl_i,
   output       tlul_pkg::tl_d2h_t tl_o,
@@ -167,6 +170,19 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic [31:0] rand_val;
   logic lfsr_en;
 
+  // life cycle connections
+  lc_ctrl_pkg::lc_tx_t [FlashLcLast-1:0] lc_provision_en;
+
+  // synchronize provision enable into local domain
+  prim_lc_sync #(
+    .NumCopies(int'(FlashLcLast))
+  ) u_lc_provision_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_provision_en_i),
+    .lc_en_o(lc_provision_en)
+  );
+
   prim_lfsr #(
     .DefaultSeed(),
     .EntropyDw(4),
@@ -270,10 +286,11 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
   // software only has privilege to change creator seed when provision enable is set and
   // before the the seed is set as valid in otp
-  assign creator_seed_priv = lc_i.provision_en & ~otp_i.seed_valid;
+  assign creator_seed_priv = lc_provision_en[FlashLcCreatorSeedPriv] == lc_ctrl_pkg::On &
+                             ~otp_i.seed_valid;
 
   // owner seed is under software control and can be modided whenever provision enable is set
-  assign owner_seed_priv = lc_i.provision_en;
+  assign owner_seed_priv = lc_provision_en[FlashLcOwnerSeedPriv] == lc_ctrl_pkg::On;
 
   flash_ctrl_lcmgr u_flash_hw_if (
     .clk_i,
@@ -281,7 +298,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
     .init_i(pwrmgr_i.flash_init),
     .init_done_o(pwrmgr_o.flash_done),
-    .provision_en_i(lc_i.provision_en),
+    .provision_en_i(lc_provision_en[FlashLcMgrIf] == lc_ctrl_pkg::On),
 
     // interface to ctrl arb control ports
     .ctrl_o(hw_ctrl),
@@ -549,6 +566,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
         .cfgs_i(reg2hw_info_page_cfgs[i][j]),
         .creator_seed_priv_i(creator_seed_priv),
         .owner_seed_priv_i(owner_seed_priv),
+        .provision_en_i(lc_provision_en[FlashLcInfoCfg] == lc_ctrl_pkg::On),
         .cfgs_o(info_page_cfgs[i][j])
       );
     end

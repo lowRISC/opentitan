@@ -722,6 +722,7 @@ module top_earlgrey #(
       .flash_o(flash_ctrl_flash_req),
       .flash_i(flash_ctrl_flash_rsp),
       .otp_i(flash_ctrl_pkg::OTP_FLASH_DEFAULT),
+      .lc_provision_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
       .lc_i(flash_ctrl_pkg::LC_FLASH_REQ_DEFAULT),
       .lc_o(),
       .edn_i(flash_ctrl_pkg::EDN_ENTROPY_DEFAULT),
