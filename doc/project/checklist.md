@@ -455,14 +455,14 @@ There is no remaining driver code that directly uses the device outside of DIF c
 
 Software unit tests exist for the DIF in `sw/device/tests/dif` named `dif_<ip>_unittest.cc`.
 
-### DIF_TEST_SANITY
+### DIF_TEST_SMOKE
 
-Sanity tests exist for the DIF in `sw/device/tests/dif` named `dif_<ip>_sanitytest.c`.
+Smoke tests exist for the DIF in `sw/device/tests/dif` named `dif_<ip>_smoketest.c`.
 
 This should perform a basic test of the main datapath of the hardware module by the embedded core, via the DIF, and should be able to be run on all OpenTitan platforms (including FPGA, simulation, and DV).
 This test will be shared with DV.
 
-Sanity tests are for diagnosing major issues in both software and hardware, and with this in mind, they should execute quickly.
+Smoke tests are for diagnosing major issues in both software and hardware, and with this in mind, they should execute quickly.
 Initially we expect this kind of test to be written by hardware designers for debugging issues during module development.
 This happens long before a DIF is implemented, so there are no requirements on how these should work, though we suggest they are placed in `sw/device/tests/<ip>/<ip>.c` as this has been the convention until now.
 Later, when a DIF is written, the DIF author is responsible for updating this test to use the DIF, and for moving this test into the aforementioned location.

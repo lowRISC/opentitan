@@ -100,10 +100,10 @@ sw_tests += {
   }
 }
 
-pmp_sanitytest_napot_lib = declare_dependency(
+pmp_smoketest_napot_lib = declare_dependency(
   link_with: static_library(
-    'pmp_sanitytest_napot_lib',
-    sources: ['pmp_sanitytest_napot.c'],
+    'pmp_smoketest_napot_lib',
+    sources: ['pmp_smoketest_napot.c'],
     dependencies: [
       sw_lib_irq,
       sw_lib_runtime_log,
@@ -114,15 +114,15 @@ pmp_sanitytest_napot_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'pmp_sanitytest_napot': {
-    'library': pmp_sanitytest_napot_lib,
+  'pmp_smoketest_napot': {
+    'library': pmp_smoketest_napot_lib,
   }
 }
 
-pmp_sanitytest_tor_lib = declare_dependency(
+pmp_smoketest_tor_lib = declare_dependency(
   link_with: static_library(
-    'pmp_sanitytest_tor_lib',
-    sources: ['pmp_sanitytest_tor.c'],
+    'pmp_smoketest_tor_lib',
+    sources: ['pmp_smoketest_tor.c'],
     dependencies: [
       sw_lib_irq,
       sw_lib_runtime_log,
@@ -133,8 +133,8 @@ pmp_sanitytest_tor_lib = declare_dependency(
   ),
 )
 sw_tests += {
-  'pmp_sanitytest_tor': {
-    'library': pmp_sanitytest_tor_lib,
+  'pmp_smoketest_tor': {
+    'library': pmp_smoketest_tor_lib,
   }
 }
 

@@ -40,25 +40,25 @@ TEST_APPS_SELFCHECKING = [
         "name": "dif_otp_ctrl_smoketest",
     },
     {
-        "name": "dif_plic_sanitytest",
+        "name": "dif_plic_smoketest",
     },
     {
-        "name": "dif_rstmgr_sanitytest",
+        "name": "dif_rstmgr_smoketest",
     },
     {
-        "name": "dif_rv_timer_sanitytest",
+        "name": "dif_rv_timer_smoketest",
     },
     {
-        "name": "dif_uart_sanitytest",
+        "name": "dif_uart_smoketest",
     },
     {
         "name": "flash_ctrl_test",
     },
     {
-        "name": "pmp_sanitytest_napot",
+        "name": "pmp_smoketest_napot",
     },
     {
-        "name": "pmp_sanitytest_tor",
+        "name": "pmp_smoketest_tor",
     },
     {
         "name": "sha256_test",

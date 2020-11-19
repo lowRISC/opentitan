@@ -149,7 +149,7 @@ Once testing is complete, and we are satisfied that the interface will not chang
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
 | S0 | Initial Work | Work has started on a DIF for the given IP block. |
-| S1 | Functional | <ul> <li> DIF has been reviewed and merged <li> DIF is used by all in-tree device code <li> DIF has (mocked) unit tests </ul> |
+| S1 | Functional | <ul> <li> DIF has been reviewed and merged <li> DIF is used by all in-tree device code <li> DIF has (mocked) unit tests <li> DIF has smoke test </ul> |
 | S2 | Complete | <ul> <li> DIF API is now Complete <li> The respective IP block is feature complete (at least D2) <li> DIF matches HW designer's agreed IP block usage <li> DIF covers all specified functionality of the IP block <li> DIF is used for chip-level DV <li> DIF documented in IP documentation <li> DIF has initial Tock integration </ul> |
 | S3 | Stable | <ul> <li> DIF API Reviewed and Stable <li> The respective IP block is at D3/V3 <li> DIF tested fully (DV + Unit tests, full functional coverage) <li> Complete and Stable Tock interface to DIF </ul> |
 

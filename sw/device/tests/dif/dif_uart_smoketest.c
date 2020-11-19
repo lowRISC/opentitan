@@ -12,7 +12,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
-static const uint8_t kSendData[] = "Sanity test!";
+static const uint8_t kSendData[] = "Smoke test!";
 
 const test_config_t kTestConfig = {
     .can_clobber_uart = true,
