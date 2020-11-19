@@ -196,14 +196,21 @@ interface otbn_trace_intf #(
   flags_t                 flags_write_data [NFlagGroups];
   logic [NFlagGroups-1:0] flags_read;
   flags_t                 flags_read_data [NFlagGroups];
+  logic                   flag_group_read_op;
+
+  // Determine if current instruction reads a flag group specified in the instruction.
+  assign flag_group_read_op =
+      alu_bignum_operation.mac_flag_en                                                  |
+      (alu_bignum_operation.op inside {AluOpBignumAddc, AluOpBignumSubb, AluOpBignumSel,
+                                       AluOpBignumXor, AluOpBignumOr, AluOpBignumAnd,
+                                       AluOpBignumNot});
 
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_group_acceses
     assign flags_write[i_fg] = u_otbn_alu_bignum.flags_en[i_fg];
     assign flags_write_data[i_fg] = u_otbn_alu_bignum.flags_d[i_fg];
 
     assign flags_read[i_fg] = (any_ispr_read & (ispr_addr == IsprFlags)) |
-        ((alu_bignum_operation.op inside {AluOpBignumAddc, AluOpBignumSubb, AluOpBignumSel}) &
-         (alu_bignum_operation.flag_group == i_fg) & insn_fetch_resp_valid);
+         (flag_group_read_op & (alu_bignum_operation.flag_group == i_fg) & insn_fetch_resp_valid);
 
     assign flags_read_data[i_fg] = u_otbn_alu_bignum.flags_q[i_fg];
   end

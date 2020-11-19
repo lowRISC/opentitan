@@ -208,11 +208,10 @@
     [<zero_acc>] <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
   glued-ops: true
   doc: |
-    Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bit, and adds the result to the accumulator.
+    Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bits, and adds the result to the accumulator.
 
     For versions of the instruction with writeback, see `BN.MULQACC.WO` and `BN.MULQACC.SO`.
   decode: |
-    writeback_variant = None
     zero_accumulator = DecodeMulqaccZeroacc(zero_acc)
 
     d = None
@@ -222,7 +221,7 @@
     d_hwsel = None
     a_qwsel = DecodeQuarterWordSelect(wrs1_qwsel)
     b_qwsel = DecodeQuarterWordSelect(wrs2_qwsel)
-  operation: &mulqacc-operation |
+  operation: |
     a_qw = GetQuarterWord(a, a_qwsel)
     b_qw = GetQuarterWord(b, b_qwsel)
 
@@ -232,26 +231,17 @@
       ACC = 0
 
     ACC = ACC + (mul_res << acc_shift_imm)
-
-    if writeback_variant == 'shiftout':
-      if d_hwsel == 'L':
-        WDR[d][WLEN/2-1:0] = ACC[WLEN/2-1:0]
-      elif d_hwsel == 'U':
-        WDR[d][WLEN-1:WLEN/2] = ACC[WLEN/2-1:0]
-      ACC = ACC >> (WLEN/2)
-
-    elif writeback_variant == 'writeout':
-      WDR[d] = ACC
   encoding:
     scheme: bnaq
     mapping:
-      wb: b00
-      dh: bx
+      fg: bx
+      so: b0
+      wb0: b0
       qs2: wrs2_qwsel
       qs1: wrs1_qwsel
       wrs2: wrs2
       wrs1: wrs1
-      acc: acc_shift_imm
+      shift: acc_shift_imm
       z: zero_acc
       wrd: bxxxxx
 
@@ -267,14 +257,15 @@
     - *mulqacc-wrs2
     - *mulqacc-wrs2-qwsel
     - *mulqacc-acc-shift-imm
+    - *bn-flag-group-operand
   syntax: |
-    [<zero_acc>] <wrd>, <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
+    [<zero_acc>] <wrd>, <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>[, FG<flag_group>]
   glued-ops: true
   doc: |
-    Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bit, and adds the result to the accumulator.
+    Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bits, and adds the result to the accumulator.
     Writes the resulting accumulator to `wrd`.
+    Updates the M, L and Z flags of `flag_group`.
   decode: |
-    writeback_variant = 'writeout'
     zero_accumulator = DecodeMulqaccZeroacc(zero_acc)
 
     d = UInt(wrd)
@@ -284,17 +275,34 @@
     d_hwsel = None
     a_qwsel = DecodeQuarterWordSelect(wrs1_qwsel)
     b_qwsel = DecodeQuarterWordSelect(wrs2_qwsel)
-  operation: *mulqacc-operation
+
+    fg = DecodeFlagGroup(flag_group)
+  operation: |
+    a_qw = GetQuarterWord(a, a_qwsel)
+    b_qw = GetQuarterWord(b, b_qwsel)
+
+    mul_res = a_qw * b_qw
+
+    if zero_accumulator:
+      ACC = 0
+
+    ACC = ACC + (mul_res << acc_shift_imm)
+
+    WDR[d] = ACC
+    FLAGS[fg].M = ACC[WLEN-1]
+    FLAGS[fg].L = ACC[0]
+    FLAGS[fg].Z = (ACC == 0)
   encoding:
     scheme: bnaq
     mapping:
-      wb: b01
-      dh: bx
+      fg: flag_group
+      so: b0
+      wb0: b1
       qs2: wrs2_qwsel
       qs1: wrs1_qwsel
       wrs2: wrs2
       wrs1: wrs1
-      acc: acc_shift_imm
+      shift: acc_shift_imm
       z: zero_acc
       wrd: wrd
 
@@ -313,17 +321,25 @@
     - *mulqacc-wrs2
     - *mulqacc-wrs2-qwsel
     - *mulqacc-acc-shift-imm
+    - *bn-flag-group-operand
   syntax: |
     [<zero_acc>] <wrd>.<wrd_hwsel>,
-    <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>
+    <wrs1>.<wrs1_qwsel>, <wrs2>.<wrs2_qwsel>, <acc_shift_imm>[, FG<flag_group>]
   glued-ops: true
   doc: |
-    Multiplies two `WLEN/4` WDR values, shifts the product by `<acc_shift_imm>` and adds the result to the accumulator.
-    Next, shifts the resulting accumulator right by half a word.
-    The bits that are shifted out are written to a half-word of `<wrd>`, selected with `<wrd_hwsel>`.
+    Multiplies two `WLEN/4` WDR values, shifts the product by `acc_shift_imm` bits and adds the result to the accumulator.
+    Next, shifts the resulting accumulator right by half a word (128 bits).
+    The bits that are shifted out are written to a half-word of `wrd`, selected with `wrd_hwsel`.
 
+    This instruction never changes the `C` flag.
+    If `wrd_hwsel` is zero (so the instruction is updating the lower half-word of `wrd`), it updates the `L` and `Z` flags and leaves `M` unchanged.
+    The `L` flag is set iff the bottom bit of the shifted-out result is zero.
+    The `Z` flag is set iff the shifted-out result is zero.
+
+    If `wrd_hwsel` is one (so the instruction is updating the upper half-word of `wrd`), it updates the `M` and `Z` flags and leaves `L` unchanged.
+    The `M` flag is set iff the top bit of the shifted-out result is zero.
+    The `Z` flag is left unchanged if the shifted-out result is zero and cleared if not.
   decode: |
-    writeback_variant = 'shiftout'
     zero_accumulator = DecodeMulqaccZeroacc(zero_acc)
 
     d = UInt(wrd)
@@ -333,17 +349,42 @@
     d_hwsel = DecodeHalfWordSelect(wrd_hwsel)
     a_qwsel = DecodeQuarterWordSelect(wrs1_qwsel)
     b_qwsel = DecodeQuarterWordSelect(wrs2_qwsel)
-  operation: *mulqacc-operation
+
+    fg = DecodeFlagGroup(flag_group)
+  operation: |
+    a_qw = GetQuarterWord(a, a_qwsel)
+    b_qw = GetQuarterWord(b, b_qwsel)
+
+    mul_res = a_qw * b_qw
+
+    if zero_accumulator:
+      ACC = 0
+
+    ACC = ACC + (mul_res << acc_shift_imm)
+
+    shifted = ACC[WLEN/2-1:0]
+    ACC = ACC >> (WLEN/2)
+
+    if d_hwsel == 'L':
+      WDR[d][WLEN/2-1:0] = shifted
+      FLAGS[fg].L = shifted[0]
+      FLAGS[fg].Z = (shifted == 0)
+    elif d_hwsel == 'U':
+      WDR[d][WLEN-1:WLEN/2] = shifted
+      FLAGS[fg].M = shifted[WLEN/2-1]
+      if (shifted != 0):
+        FLAGS[fg].Z = 0
   encoding:
     scheme: bnaq
     mapping:
-      wb: b1x
-      dh: wrd_hwsel
+      fg: flag_group
+      so: b1
+      wb0: wrd_hwsel
       qs2: wrs2_qwsel
       qs1: wrs1_qwsel
       wrs2: wrs2
       wrs1: wrs1
-      acc: acc_shift_imm
+      shift: acc_shift_imm
       z: zero_acc
       wrd: wrd
 

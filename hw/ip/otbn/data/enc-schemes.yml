@@ -269,12 +269,13 @@ bnaq:
   parents:
     - custom2
     - wdr3
+    - fg
   fields:
-    wb: 31-30
-    dh: 29
+    so: 30
+    wb0: 29
     qs2: 28-27
     qs1: 26-25
-    acc: 14-13
+    shift: 14-13
     z: 12
 
 # Unusual scheme used for bn.rshi (the immediate bleeds into the usual funct3

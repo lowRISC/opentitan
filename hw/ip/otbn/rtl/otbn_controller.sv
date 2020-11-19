@@ -384,12 +384,14 @@ module otbn_controller
   assign alu_bignum_operation_o.shift_amt   = insn_dec_bignum_i.alu_shift_amt;
   assign alu_bignum_operation_o.flag_group  = insn_dec_bignum_i.alu_flag_group;
   assign alu_bignum_operation_o.sel_flag    = insn_dec_bignum_i.alu_sel_flag;
-  assign alu_bignum_operation_o.flag_en     = insn_dec_bignum_i.alu_flag_en;
+  assign alu_bignum_operation_o.alu_flag_en = insn_dec_bignum_i.alu_flag_en;
+  assign alu_bignum_operation_o.mac_flag_en = insn_dec_bignum_i.mac_flag_en;
 
   assign mac_bignum_operation_o.operand_a         = rf_bignum_rd_data_a_i;
   assign mac_bignum_operation_o.operand_b         = rf_bignum_rd_data_b_i;
   assign mac_bignum_operation_o.operand_a_qw_sel  = insn_dec_bignum_i.mac_op_a_qw_sel;
   assign mac_bignum_operation_o.operand_b_qw_sel  = insn_dec_bignum_i.mac_op_b_qw_sel;
+  assign mac_bignum_operation_o.wr_hw_sel_upper   = insn_dec_bignum_i.mac_wr_hw_sel_upper;
   assign mac_bignum_operation_o.pre_acc_shift_imm = insn_dec_bignum_i.mac_pre_acc_shift;
   assign mac_bignum_operation_o.zero_acc          = insn_dec_bignum_i.mac_zero_acc;
   assign mac_bignum_operation_o.shift_acc         = insn_dec_bignum_i.mac_shift_out;
@@ -407,8 +409,8 @@ module otbn_controller
     if (insn_valid_i && insn_dec_bignum_i.rf_we) begin
       if (insn_dec_bignum_i.mac_en && insn_dec_bignum_i.mac_shift_out) begin
         // Special handling for BN.MULQACC.SO, only enable upper or lower half depending on
-        // mac_wr_hw_sel.
-        rf_bignum_wr_en_o = insn_dec_bignum_i.mac_wr_hw_sel ? 2'b10 : 2'b01;
+        // mac_wr_hw_sel_upper.
+        rf_bignum_wr_en_o = insn_dec_bignum_i.mac_wr_hw_sel_upper ? 2'b10 : 2'b01;
       end else if (insn_dec_shared_i.ld_insn) begin
         // Special handling for BN.LID. Load data is requested in the first cycle of the instruction
         // (where state_q == OtbnStateRun) and is available in the second cycle following the
@@ -428,15 +430,15 @@ module otbn_controller
                                                                  insn_dec_bignum_i.d;
 
   // For the shift-out variant of BN.MULQACC the bottom half of the MAC result is written to one
-  // half of a desintation register specified by the instruction (mac_wr_hw_sel). The bottom half of
+  // half of a desintation register specified by the instruction (mac_wr_hw_sel_upper). The bottom half of
   // the MAC result must be placed in the appropriate half of the write data (the RF only accepts
   // write data for the top half in the top half of the write data input). Otherwise (shift-out to
   // bottom half and all other BN.MULQACC instructions) simply pass the MAC result through unchanged
   // as write data.
   assign mac_bignum_rf_wr_data[WLEN-1:WLEN/2] =
-    insn_dec_bignum_i.mac_wr_hw_sel &&
-    insn_dec_bignum_i.mac_shift_out    ? mac_bignum_operation_result_i[WLEN/2-1:0] :
-                                         mac_bignum_operation_result_i[WLEN-1:WLEN/2];
+    insn_dec_bignum_i.mac_wr_hw_sel_upper &&
+    insn_dec_bignum_i.mac_shift_out         ? mac_bignum_operation_result_i[WLEN/2-1:0] :
+                                              mac_bignum_operation_result_i[WLEN-1:WLEN/2];
 
   assign mac_bignum_rf_wr_data[WLEN/2-1:0] = mac_bignum_operation_result_i[WLEN/2-1:0];
 
