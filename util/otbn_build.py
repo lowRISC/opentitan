@@ -41,7 +41,7 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 log.basicConfig(level=log.INFO, format="%(message)s")
 
@@ -62,10 +62,15 @@ def call_otbn_as(src_file: Path, out_file: Path):
     run_cmd([otbn_as_cmd, '-o', out_file, src_file], check=True)
 
 
-def call_otbn_ld(src_files: List[Path], out_file: Path):
+def call_otbn_ld(src_files: List[Path], out_file: Path, linker_script: Optional[Path]):
     otbn_ld_cmd = os.environ.get('OTBN_LD',
                                  str(REPO_TOP / 'hw/ip/otbn/util/otbn-ld'))
-    run_cmd([otbn_ld_cmd, '-o', out_file] + src_files, check=True)
+
+    cmd = [otbn_ld_cmd, '-o', out_file]
+    if linker_script:
+        cmd += ['-T', linker_script]
+    cmd += src_files
+    run_cmd(cmd, check=True)
 
 
 def call_rv32_objcopy(args: List[str]):
@@ -82,6 +87,12 @@ def main() -> int:
         required=False,
         default=".",
         help="Output directory (default: %(default)s)")
+    parser.add_argument(
+        '--script',
+        '-T',
+        dest="linker_script",
+        required=False,
+        help="Linker script")
     parser.add_argument(
         '--app-name',
         '-n',
@@ -108,7 +119,7 @@ def main() -> int:
             call_otbn_as(src_file, obj_file)
 
         out_elf = out_dir / (app_name + '.elf')
-        call_otbn_ld(obj_files, out_elf)
+        call_otbn_ld(obj_files, out_elf, linker_script = args.linker_script)
 
         out_embedded_obj = out_dir / (app_name + '.rv32embed.o')
         args = [
