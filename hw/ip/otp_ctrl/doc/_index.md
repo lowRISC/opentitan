@@ -594,8 +594,8 @@ Also, the DAI consumes the read and write access information provided by the par
 ![Life Cycle Interface FSM](otp_ctrl_lci_fsm.svg)
 
 Upon reset release the LCI FSM waits until the OTP controller has initialized and the LCI gets enabled.
-Once it is in the idle state, incremental life cycle state updates can be initiated via the life cycle interface as [described here]({{< relref "#state-transitions" >}}).
-The LCI controller takes the life cycle state delta to be programmed and writes all non-blank 16bit words to OTP.
+Once it is in the idle state, life cycle state updates can be initiated via the life cycle interface as [described here]({{< relref "#state-transitions" >}}).
+The LCI controller takes the life cycle state to be programmed and writes all 16bit words to OTP.
 In case of unrecoverable OTP errors, the FSM signals an error to the life cycle controller and moves into a terminal error state.
 
 ### Key Derivation Interface

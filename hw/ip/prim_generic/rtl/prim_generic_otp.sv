@@ -10,7 +10,6 @@ module prim_generic_otp #(
   // This determines the maximum number of native words that
   // can be transferred accross the interface in one cycle.
   parameter  int SizeWidth   = otp_ctrl_pkg::OtpSizeWidth,
-  parameter  int ErrWidth    = otp_ctrl_pkg::OtpErrWidth,
   // Width of the power sequencing signal.
   parameter  int PwrSeqWidth = otp_ctrl_pkg::OtpPwrSeqWidth,
   // Number of Test TL-UL words
@@ -231,12 +230,13 @@ module prim_generic_otp #(
         req     = 1'b1;
       end
       // Wait for readout to complete first.
-      // If the word is not blank, or if we got an uncorrectable ECC error,
-      // the check has failed and we abort the write at this point.
+      // If the write data would clear an already programmed bit, or if we got an uncorrectable
+      // ECC error, the check has failed and we abort the write at this point.
       WriteWaitSt: begin
         if (rvalid) begin
           cnt_en = 1'b1;
-          if (rerror[1] || rdata_d != '0) begin
+          // TODO: this blank check needs to be extended to account for the ECC bits as well.
+          if (rerror[1] || (rdata_d & wdata_q[cnt_q]) != rdata_d) begin
             state_d = IdleSt;
             valid_d = 1'b1;
             err_d = otp_ctrl_pkg::MacroWriteBlankError;
@@ -250,7 +250,7 @@ module prim_generic_otp #(
           end
         end
       end
-      // Now that we are sure that the memory is blank, we can write all native words in one go.
+      // Now that the write check was successful, we can write all native words in one go.
       WriteSt: begin
         req = 1'b1;
         wren = 1'b1;

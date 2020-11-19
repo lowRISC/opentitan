@@ -202,19 +202,19 @@ package otp_ctrl_pkg;
   ///////////////////////////////
 
   typedef struct packed {
-    logic                                 valid;
-    lc_ctrl_pkg::lc_state_e               state;
-    lc_ctrl_pkg::lc_cnt_t                 count;
-    logic [lc_ctrl_pkg::LcTokenWidth-1:0] test_unlock_token;
-    logic [lc_ctrl_pkg::LcTokenWidth-1:0] test_exit_token;
-    logic [lc_ctrl_pkg::LcTokenWidth-1:0] rma_token;
-    lc_ctrl_pkg::lc_value_e               id_state;
+    logic                      valid;
+    lc_ctrl_pkg::lc_state_e    state;
+    lc_ctrl_pkg::lc_cnt_e      count;
+    lc_ctrl_pkg::lc_token_t    test_unlock_token;
+    lc_ctrl_pkg::lc_token_t    test_exit_token;
+    lc_ctrl_pkg::lc_token_t    rma_token;
+    lc_ctrl_pkg::lc_id_state_e id_state;
   } otp_lc_data_t;
 
   typedef struct packed {
     logic req;
-    lc_ctrl_pkg::lc_state_e state_delta;
-    lc_ctrl_pkg::lc_cnt_t   count_delta;
+    lc_ctrl_pkg::lc_state_e state;
+    lc_ctrl_pkg::lc_cnt_e   count;
   } lc_otp_program_req_t;
 
   typedef struct packed {
@@ -225,12 +225,12 @@ package otp_ctrl_pkg;
   // RAW unlock token hashing request.
   typedef struct packed {
     logic req;
-    logic [lc_ctrl_pkg::LcTokenWidth-1:0] token_input;
+    lc_ctrl_pkg::lc_token_t token_input;
   } lc_otp_token_req_t;
 
   typedef struct packed {
     logic ack;
-    logic [lc_ctrl_pkg::LcTokenWidth-1:0] hashed_token;
+    lc_ctrl_pkg::lc_token_t hashed_token;
   } lc_otp_token_rsp_t;
 
   ////////////////////////////////

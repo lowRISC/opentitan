@@ -14,21 +14,22 @@ module otp_ctrl_lci
   // Lifecycle partition information
   parameter part_info_t Info = part_info_t'(0)
 ) (
-  input                                    clk_i,
-  input                                    rst_ni,
-  input                                    lci_en_i,
+  input                                     clk_i,
+  input                                     rst_ni,
+  input                                     lci_en_i,
   // Escalation input. This moves the FSM into a terminal state and locks down
   // the partition.
-  input  lc_ctrl_pkg::lc_tx_t              escalate_en_i,
+  input  lc_ctrl_pkg::lc_tx_t               escalate_en_i,
   // Life cycle transition request. In order to perform a state transition,
-  // the LC controller signals the incremental value with respect to the
-  // current state. The OTP controller then only programs the non-zero
-  // state delta.
-  input                                    lc_req_i,
-  input  lc_ctrl_pkg::lc_state_e           lc_state_delta_i,
-  input  lc_ctrl_pkg::lc_cnt_t             lc_count_delta_i,
-  output logic                             lc_ack_o,
-  output logic                             lc_err_o,
+  // the LC controller signals the new count and state. The OTP wrapper then
+  // only programs bits that have not been programmed before.
+  // Note that a transition request will fail if the request attempts to
+  // clear already programmed bits within OTP.
+  input                                     lc_req_i,
+  input  lc_ctrl_pkg::lc_state_e            lc_state_i,
+  input  lc_ctrl_pkg::lc_cnt_e              lc_count_i,
+  output logic                              lc_ack_o,
+  output logic                              lc_err_o,
   // Output error state of partition, to be consumed by OTP error/alert logic.
   // Note that most errors are not recoverable and move the partition FSM into
   // a terminal error state.
@@ -91,7 +92,6 @@ module otp_ctrl_lci
   logic cnt_clr, cnt_en;
   logic [CntWidth-1:0] cnt_d, cnt_q;
   otp_err_e error_d, error_q;
-  logic delta_data_is_set;
   state_e state_d, state_q;
 
   // Output LCI errors
@@ -135,23 +135,15 @@ module otp_ctrl_lci
         end
       end
       ///////////////////////////////////////////////////////////////////
-      // Loop through the lifecycle sate and burn in the words that are set.
+      // Loop through the lifecycle sate and burn in all words.
+      // If the write data contains a 0 bit in a position where a bit has already been
+      // programmed to 1 before, the OTP errors out.
       WriteSt: begin
         // Check whether the OTP word is nonzero.
-        if (delta_data_is_set) begin
-          otp_req_o = 1'b1;
-          otp_cmd_o = OtpWrite;
-          if (otp_gnt_i) begin
-            state_d = WriteWaitSt;
-          end
-        // Check whether we examined all OTP words.
-        // If yes, we are done and can go back to idle.
-        end else if (cnt_q == NumLcOtpWords-1) begin
-          state_d = IdleSt;
-          lc_ack_o = 1'b1;
-        // Otherwise we increase the OTP word counter.
-        end else begin
-          cnt_en = 1'b1;
+        otp_req_o = 1'b1;
+        otp_cmd_o = OtpWrite;
+        if (otp_gnt_i) begin
+          state_d = WriteWaitSt;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -160,17 +152,13 @@ module otp_ctrl_lci
       // terminal error state.
       WriteWaitSt: begin
         if (otp_rvalid_i) begin
-          // Check OTP return code. We only tolerate a MacroWriteBlankError error here -
-          // all other errors should not occur and are therefore terminal.
+          // Check OTP return code.
+          // No errors are tolerated here.
           if (otp_err_i != NoError) begin
             error_d = otp_err_i;
             lc_ack_o = 1'b1;
             lc_err_o = 1'b1;
-            if (otp_err_i != MacroWriteBlankError) begin
-              state_d = ErrorSt;
-            end else begin
-              state_d = IdleSt;
-            end
+            state_d = ErrorSt;
           end else begin
             // Check whether we examined all OTP words.
             // If yes, we are done and can go back to idle.
@@ -228,10 +216,9 @@ module otp_ctrl_lci
   // Always transfer 16bit blocks.
   assign otp_size_o = '0;
 
-  logic [NumLcOtpWords-1:0][OtpWidth-1:0] delta_data;
-  assign delta_data        = {lc_count_delta_i, lc_state_delta_i};
-  assign otp_wdata_o       = OtpIfWidth'(delta_data[cnt_q]);
-  assign delta_data_is_set = (delta_data[cnt_q] != lc_ctrl_pkg::Blk);
+  logic [NumLcOtpWords-1:0][OtpWidth-1:0] data;
+  assign data        = {lc_count_i, lc_state_i};
+  assign otp_wdata_o = OtpIfWidth'(data[cnt_q]);
 
   logic unused_rdata;
   assign unused_rdata = ^otp_rdata_i;
