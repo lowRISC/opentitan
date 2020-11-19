@@ -22,8 +22,8 @@ class FlagReg:
 
     def __init__(self, C: bool, M: bool, L: bool, Z: bool):
         self.C = C
-        self.L = L
         self.M = M
+        self.L = L
         self.Z = Z
 
         self._new_val = None  # type: Optional['FlagReg']
