@@ -308,15 +308,8 @@ class ECALL(OTBNInsn):
         pass
 
     def execute(self, state: OTBNState) -> None:
-        # INTR_STATE is the interrupt state register. Bit 0 (which is being
-        # set) is the 'done' flag.
-        state.ext_regs.set_bits('INTR_STATE', 1 << 0)
-        # STATUS is a status register. Bit 0 (being cleared) is the 'busy' flag
-        state.ext_regs.clear_bits('STATUS', 1 << 0)
-
-        # As well as the external register, clear an internal 'running' flag to
-        # tell the simulation to stop.
-        state.running = False
+        # Set INTR_STATE.done and STATUS, reflecting the fact we've stopped.
+        state.stop(None)
 
 
 class LOOP(OTBNInsn):

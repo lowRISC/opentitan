@@ -81,6 +81,8 @@ typedef enum dif_otbn_err_code {
   kDifOtbnErrCodeNoError = 0x0,
   /** Load or store to invalid address. */
   kDifOtbnErrCodeBadDataAddr = 0x1,
+  /** Call stack underflow or overflow. */
+  kDifOtbnErrCodeCallStack = 0x2,
 } dif_otbn_err_code_t;
 
 /**

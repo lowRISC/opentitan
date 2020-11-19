@@ -94,6 +94,9 @@ class RGField:
     def commit(self) -> None:
         self.value = self.next_value
 
+    def abort(self) -> None:
+        self.next_value = self.value
+
 
 class RGReg:
     '''A wrapper around a register as parsed by reggen'''
@@ -142,6 +145,10 @@ class RGReg:
     def commit(self) -> None:
         for field in self.fields:
             field.commit()
+
+    def abort(self) -> None:
+        for field in self.fields:
+            field.abort()
 
 
 class OTBNExtRegs:
@@ -210,4 +217,9 @@ class OTBNExtRegs:
 
         for reg in self.regs.values():
             reg.commit()
+        self.trace = []
+
+    def abort(self) -> None:
+        for reg in self.regs.values():
+            reg.abort()
         self.trace = []
