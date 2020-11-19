@@ -77,7 +77,7 @@ void boot(void) {
   // Determine which ROM_EXT slot is prioritised (2.b, 2.c.i)
   for ( current_rom_ext_manifest in rom_ext_manifests_to_try(boot_policy) ) { // Boot Policy Module
 
-    // Sanity Check ROM_EXT Manifest (2.c.ii)
+    // Check ROM_EXT Manifest (2.c.ii)
     // **Open Q:** Integration with Secure Boot Hardware
     // - Header Format (ROM_EXT Manifest Module)
     // - Plausible Key (??)
