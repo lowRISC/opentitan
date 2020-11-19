@@ -14,10 +14,20 @@ module flash_ctrl_info_cfg import flash_ctrl_pkg::*; # (
   input info_page_cfg_t [InfosPerBank-1:0] cfgs_i,
   input creator_seed_priv_i,
   input owner_seed_priv_i,
+  input provision_en_i,
   output info_page_cfg_t [InfosPerBank-1:0] cfgs_o
 );
 
   localparam int CfgBitWidth = $bits(info_page_cfg_t);
+  info_page_cfg_t isolate_pg_cfg;
+  assign isolate_pg_cfg = '{
+    en: 1'b1,
+    rd_en: provision_en_i,
+    prog_en: 1'b1,
+    erase_en: 1'b1,
+    scramble_en: 1'b1,
+    ecc_en: 1'b1
+  };
 
   for(genvar i = 0; i < InfosPerBank; i++) begin : gen_info_priv
 
@@ -35,6 +45,10 @@ module flash_ctrl_info_cfg import flash_ctrl_pkg::*; # (
     end else if (CurAddr == SeedInfoPageSel[OwnerSeedIdx]) begin : gen_owner
       assign cfgs_o[i] = cfgs_i[i] & {CfgBitWidth{owner_seed_priv_i}};
 
+    // if match isolated partition, only allow read when provision privilege is set
+    end else if (CurAddr == IsolatedPageSel) begin : gen_isolated_page
+      assign cfgs_o[i] = cfgs_i[i] & isolate_pg_cfg;
+
     // if other, just passthrough configuration
     end else begin : gen_normal
       assign cfgs_o[i] = cfgs_i[i];
@@ -45,6 +59,8 @@ module flash_ctrl_info_cfg import flash_ctrl_pkg::*; # (
   if (SeedBank != Bank || SeedInfoSel != InfoSel) begin : gen_tieoffs
     logic [1:0] unused_seed_privs;
     assign unused_seed_privs = {owner_seed_priv_i, creator_seed_priv_i};
+    info_page_cfg_t unused_pg_cfg;
+    assign unused_pg_cfg = isolate_pg_cfg;
   end
 
 

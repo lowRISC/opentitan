@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:util
+      - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:pwrmgr_pkg
       - fileset_top ? (lowrisc:systems:flash_ctrl_pkg)
     files:
