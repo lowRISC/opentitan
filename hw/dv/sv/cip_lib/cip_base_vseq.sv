@@ -200,8 +200,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   local function dv_base_reg get_interrupt_csr(string csr_name,
                                                string suffix = "",
                                                int indices[$] = {},
-                                               uvm_reg_block scope = null);
-    uvm_reg csr;
+                                               dv_base_reg_block scope = null);
     if (indices.size() != 0) begin
       foreach (indices[i]) begin
         suffix = {suffix, (i == 0) ? "" : "_", $sformatf("%0d", i)};
@@ -210,12 +209,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
     // check within scope first, if supplied
     if (scope != null)  begin
-      csr = scope.get_reg_by_name(csr_name);
+      get_interrupt_csr = scope.get_dv_base_reg_by_name(csr_name);
     end else begin
-      csr = ral.get_reg_by_name(csr_name);
+      get_interrupt_csr = ral.get_dv_base_reg_by_name(csr_name);
     end
-    `downcast(get_interrupt_csr, csr)
-    `DV_CHECK_NE_FATAL(get_interrupt_csr, null)
   endfunction
 
   // function to extract common csrs and fill the respective queue
@@ -252,7 +249,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                               bit enable = 1'b1,
                               string suffix = "",
                               int indices[$] = {},
-                              uvm_reg_block scope = null);
+                              dv_base_reg_block scope = null);
 
     uvm_reg          csr;
     bit [BUS_DW-1:0] data;
@@ -273,7 +270,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                                 bit check_set,
                                 string suffix = "",
                                 int indices[$] = {},
-                                uvm_reg_block scope = null,
+                                dv_base_reg_block scope = null,
                                 bit [BUS_DW-1:0] clear = '1);
     uvm_reg          csr_intr_state, csr_intr_enable;
     bit [BUS_DW-1:0] act_pins;
