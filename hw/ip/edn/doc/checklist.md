@@ -46,7 +46,7 @@ Documentation | [DOC_INTERFACE][]       | Not Started |
 Documentation | [MISSING_FUNC][]        | Not Started |
 Documentation | [FEATURE_FROZEN][]      | Not Started |
 RTL           | [FEATURE_COMPLETE][]    | Not Started |
-RTL           | [AREA_SANITY_CHECK][]   | Not Started |
+RTL           | [AREA_SMOKE_CHECK][]    | Not Started |
 RTL           | [PORT_FROZEN][]         | Not Started |
 RTL           | [ARCHITECTURE_FROZEN][] | Not Started |
 RTL           | [REVIEW_TODO][]         | Not Started |
@@ -65,7 +65,7 @@ Security      | [SEC_SHADOW_REGS][]     | Not Started |
 [MISSING_FUNC]:        {{<relref "/doc/project/checklist.md#missing_func" >}}
 [FEATURE_FROZEN]:      {{<relref "/doc/project/checklist.md#feature_frozen" >}}
 [FEATURE_COMPLETE]:    {{<relref "/doc/project/checklist.md#feature_complete" >}}
-[AREA_SANITY_CHECK]:   {{<relref "/doc/project/checklist.md#area_sanity_check" >}}
+[AREA_SMOKE_CHECK]:    {{<relref "/doc/project/checklist.md#area_smoke_check" >}}
 [PORT_FROZEN]:         {{<relref "/doc/project/checklist.md#port_frozen" >}}
 [ARCHITECTURE_FROZEN]: {{<relref "/doc/project/checklist.md#architecture_frozen" >}}
 [REVIEW_TODO]:         {{<relref "/doc/project/checklist.md#review_todo" >}}
@@ -121,11 +121,11 @@ Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
 Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Not Started |
 Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
 Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SIM_SANITY_TEST_PASSING][]           | Not Started |
+Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
 Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started |
 Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
 Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
-Regression    | [SIM_SANITY_REGRESSION_SETUP][]       | Not Started |
+Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
 Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
 Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
@@ -143,11 +143,11 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 [SIM_RAL_MODEL_GEN_AUTOMATED]:        {{<relref "/doc/project/checklist.md#sim_ral_model_gen_automated" >}}
 [CSR_CHECK_GEN_AUTOMATED]:            {{<relref "/doc/project/checklist.md#csr_check_gen_automated" >}}
 [TB_GEN_AUTOMATED]:                   {{<relref "/doc/project/checklist.md#tb_gen_automated" >}}
-[SIM_SANITY_TEST_PASSING]:            {{<relref "/doc/project/checklist.md#sim_sanity_test_passing" >}}
+[SIM_SMOKE_TEST_PASSING]:             {{<relref "/doc/project/checklist.md#sim_smoke_test_passing" >}}
 [SIM_CSR_MEM_TEST_SUITE_PASSING]:     {{<relref "/doc/project/checklist.md#sim_csr_mem_test_suite_passing" >}}
 [FPV_MAIN_ASSERTIONS_PROVEN]:         {{<relref "/doc/project/checklist.md#fpv_main_assertions_proven" >}}
 [SIM_ALT_TOOL_SETUP]:                 {{<relref "/doc/project/checklist.md#sim_alt_tool_setup" >}}
-[SIM_SANITY_REGRESSION_SETUP]:        {{<relref "/doc/project/checklist.md#sim_sanity_regression_setup" >}}
+[SIM_SMOKE_REGRESSION_SETUP]:         {{<relref "/doc/project/checklist.md#sim_smoke_regression_setup" >}}
 [SIM_NIGHTLY_REGRESSION_SETUP]:       {{<relref "/doc/project/checklist.md#sim_nightly_regression_setup" >}}
 [FPV_REGRESSION_SETUP]:               {{<relref "/doc/project/checklist.md#fpv_regression_setup" >}}
 [SIM_COVERAGE_MODEL_ADDED]:           {{<relref "/doc/project/checklist.md#sim_coverage_model_added" >}}
