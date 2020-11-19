@@ -69,7 +69,7 @@
         {
             name:       "HW_CFG",
             variant:    "Buffered",
-            size:       "176", // in bytes
+            size:       "208", // in bytes
             secret:     "False",
             sw_digest:  "False",
             hw_digest:  "True",
@@ -79,7 +79,7 @@
             items: [
                 {
                     name: "HW_CFG_CONTENT",
-                    size: "168"
+                    size: "200"
                 }
             ],
             desc: '''Hardware configuration bits used to hardwire
@@ -168,7 +168,7 @@
         {
             name:       "LIFE_CYCLE",
             variant:    "LifeCycle",
-            size:       "88", // in bytes
+            size:       "56", // in bytes
             secret:     "False",
             sw_digest:  "False",
             hw_digest:  "False",
@@ -182,12 +182,21 @@
                 }
                 {
                     name: "LC_TRANSITION_CNT",
-                    size: "64"
+                    size: "32"
                 }
             ],
-            desc: '''Life-cycle related bits. Note, this
+            desc: '''Life-cycle related bits. This
             partition cannot be locked as the life cycle
             state needs to be able to advance to RMA in-field.
+            Note that while this partition is not marked secret
+            (i.e. it is not scrambled) it is not readable
+            nor writeable via the DAI. Only the LC controller
+            can access this partition, and even via the LC
+            controller it is not possible to read the
+            raw manufacturing life cycle state in encoded form,
+            since that encoding is considered a netlist secret.
+            The LC controller only exposes a decoded version of
+            this state.
             '''
         }
     ]

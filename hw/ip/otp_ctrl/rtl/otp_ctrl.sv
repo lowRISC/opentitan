@@ -250,8 +250,10 @@ module otp_ctrl
   always_comb begin : p_access_control
     // Default (this will be overridden by partition-internal settings).
     part_access_csrs = {{32'(2*NumPart)}{Unlocked}};
-    // Permanently lock DAI write access to the life cycle partition
+    // Permanently lock DAI write and read access to the life cycle partition.
+    // The LC partition can only be read from and written to via the LC controller.
     part_access_csrs[LifeCycleIdx].write_lock = Locked;
+    part_access_csrs[LifeCycleIdx].read_lock = Locked;
 
     // Propagate CSR read enables down to the SW_CFG partitions.
     if (!reg2hw.creator_sw_cfg_read_lock) part_access_csrs[CreatorSwCfgIdx].read_lock = Locked;
