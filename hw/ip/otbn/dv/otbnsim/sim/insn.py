@@ -4,9 +4,10 @@
 
 from typing import Dict
 
-from .state import OTBNState
+from .flags import FlagReg
 from .isa import (OTBNInsn, RV32RegReg, RV32RegImm, RV32ImmShift,
                   insn_for_mnemonic, logical_byte_shift)
+from .state import OTBNState
 
 
 class ADD(RV32RegReg):
@@ -452,7 +453,7 @@ class BNMULQACC(OTBNInsn):
 
 
 class BNMULQACCWO(OTBNInsn):
-    insn = insn_for_mnemonic('bn.mulqacc.wo', 7)
+    insn = insn_for_mnemonic('bn.mulqacc.wo', 8)
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
@@ -463,6 +464,7 @@ class BNMULQACCWO(OTBNInsn):
         self.wrs2 = op_vals['wrs2']
         self.wrs2_qwsel = op_vals['wrs2_qwsel']
         self.acc_shift_imm = op_vals['acc_shift_imm']
+        self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
         a_qw = state.get_quarter_word_unsigned(self.wrs1, self.wrs1_qwsel)
@@ -479,10 +481,11 @@ class BNMULQACCWO(OTBNInsn):
         truncated = acc & ((1 << 256) - 1)
         state.wdrs.get_reg(self.wrd).write_unsigned(truncated)
         state.wsrs.ACC.write_unsigned(truncated)
+        state.set_mlz_flags(self.flag_group, truncated)
 
 
 class BNMULQACCSO(OTBNInsn):
-    insn = insn_for_mnemonic('bn.mulqacc.so', 8)
+    insn = insn_for_mnemonic('bn.mulqacc.so', 9)
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
@@ -494,6 +497,7 @@ class BNMULQACCSO(OTBNInsn):
         self.wrs2 = op_vals['wrs2']
         self.wrs2_qwsel = op_vals['wrs2_qwsel']
         self.acc_shift_imm = op_vals['acc_shift_imm']
+        self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
         a_qw = state.get_quarter_word_unsigned(self.wrs1, self.wrs1_qwsel)
@@ -512,6 +516,19 @@ class BNMULQACCSO(OTBNInsn):
 
         state.set_half_word_unsigned(self.wrd, self.wrd_hwsel, lo_part)
         state.wsrs.ACC.write_unsigned(hi_part)
+
+        old_flags = state.csrs.flags[self.flag_group]
+        if self.wrd_hwsel:
+            new_flags = FlagReg(C=old_flags.C,
+                                M=bool((lo_part >> 127) & 1),
+                                L=old_flags.L,
+                                Z=old_flags.Z and lo_part == 0)
+        else:
+            new_flags = FlagReg(C=old_flags.C,
+                                M=old_flags.M,
+                                L=bool(lo_part & 1),
+                                Z=lo_part == 0)
+        state.csrs.flags[self.flag_group] = new_flags
 
 
 class BNSUB(OTBNInsn):

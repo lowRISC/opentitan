@@ -79,7 +79,7 @@ module otbn_decoder
 
   logic [1:0] mac_op_a_qw_sel_bignum;
   logic [1:0] mac_op_b_qw_sel_bignum;
-  logic       mac_wr_hw_sel_bignum;
+  logic       mac_wr_hw_sel_upper_bignum;
   logic [1:0] mac_pre_acc_shift_bignum;
   logic       mac_zero_acc_bignum;
   logic       mac_shift_out_bignum;
@@ -131,6 +131,7 @@ module otbn_decoder
   assign alu_sel_flag_bignum = flag_e'(insn[26:25]);
 
   logic alu_flag_en_bignum;
+  logic mac_flag_en_bignum;
 
   // source registers
   assign insn_rs1 = insn[19:15];
@@ -149,12 +150,12 @@ module otbn_decoder
   assign loop_bodysize_base  = insn[31:20];
   assign loop_immediate_base = insn[12];
 
-  assign mac_op_a_qw_sel_bignum   = insn[26:25];
-  assign mac_op_b_qw_sel_bignum   = insn[28:27];
-  assign mac_wr_hw_sel_bignum     = insn[29];
-  assign mac_pre_acc_shift_bignum = insn[14:13];
-  assign mac_zero_acc_bignum      = insn[12];
-  assign mac_shift_out_bignum     = insn[31];
+  assign mac_op_a_qw_sel_bignum     = insn[26:25];
+  assign mac_op_b_qw_sel_bignum     = insn[28:27];
+  assign mac_wr_hw_sel_upper_bignum = insn[29];
+  assign mac_pre_acc_shift_bignum   = insn[14:13];
+  assign mac_zero_acc_bignum        = insn[12];
+  assign mac_shift_out_bignum       = insn[30];
 
   logic d_inc_bignum;
   logic a_inc_bignum;
@@ -216,35 +217,36 @@ module otbn_decoder
   };
 
   assign insn_dec_bignum_o = '{
-    a:                 insn_rs1,
-    b:                 insn_rs2,
-    d:                 insn_rd,
-    i:                 imm_i_type_bignum,
-    rf_a_indirect:     rf_a_indirect_bignum,
-    rf_b_indirect:     rf_b_indirect_bignum,
-    rf_d_indirect:     rf_d_indirect_bignum,
-    d_inc:             d_inc_bignum,
-    a_inc:             a_inc_bignum,
-    a_wlen_word_inc:   a_wlen_word_inc_bignum,
-    b_inc:             b_inc_bignum,
-    alu_shift_amt:     alu_shift_amt_bignum,
-    alu_shift_right:   alu_shift_right_bignum,
-    alu_flag_group:    alu_flag_group_bignum,
-    alu_sel_flag:      alu_sel_flag_bignum,
-    alu_flag_en:       alu_flag_en_bignum,
-    alu_op:            alu_operator_bignum,
-    alu_op_b_sel:      alu_op_b_mux_sel_bignum,
-    mac_op_a_qw_sel:   mac_op_a_qw_sel_bignum,
-    mac_op_b_qw_sel:   mac_op_b_qw_sel_bignum,
-    mac_wr_hw_sel:     mac_wr_hw_sel_bignum,
-    mac_pre_acc_shift: mac_pre_acc_shift_bignum,
-    mac_zero_acc:      mac_zero_acc_bignum,
-    mac_shift_out:     mac_shift_out_bignum,
-    mac_en:            mac_en_bignum,
-    rf_we:             rf_we_bignum,
-    rf_wdata_sel:      rf_wdata_sel_bignum,
-    rf_ren_a:          rf_ren_a_bignum,
-    rf_ren_b:          rf_ren_b_bignum
+    a:                   insn_rs1,
+    b:                   insn_rs2,
+    d:                   insn_rd,
+    i:                   imm_i_type_bignum,
+    rf_a_indirect:       rf_a_indirect_bignum,
+    rf_b_indirect:       rf_b_indirect_bignum,
+    rf_d_indirect:       rf_d_indirect_bignum,
+    d_inc:               d_inc_bignum,
+    a_inc:               a_inc_bignum,
+    a_wlen_word_inc:     a_wlen_word_inc_bignum,
+    b_inc:               b_inc_bignum,
+    alu_shift_amt:       alu_shift_amt_bignum,
+    alu_shift_right:     alu_shift_right_bignum,
+    alu_flag_group:      alu_flag_group_bignum,
+    alu_sel_flag:        alu_sel_flag_bignum,
+    alu_flag_en:         alu_flag_en_bignum,
+    mac_flag_en:         mac_flag_en_bignum,
+    alu_op:              alu_operator_bignum,
+    alu_op_b_sel:        alu_op_b_mux_sel_bignum,
+    mac_op_a_qw_sel:     mac_op_a_qw_sel_bignum,
+    mac_op_b_qw_sel:     mac_op_b_qw_sel_bignum,
+    mac_wr_hw_sel_upper: mac_wr_hw_sel_upper_bignum,
+    mac_pre_acc_shift:   mac_pre_acc_shift_bignum,
+    mac_zero_acc:        mac_zero_acc_bignum,
+    mac_shift_out:       mac_shift_out_bignum,
+    mac_en:              mac_en_bignum,
+    rf_we:               rf_we_bignum,
+    rf_wdata_sel:        rf_wdata_sel_bignum,
+    rf_ren_a:            rf_ren_a_bignum,
+    rf_ren_b:            rf_ren_b_bignum
   };
 
   assign insn_dec_shared_o = '{
@@ -633,7 +635,7 @@ module otbn_decoder
         rf_wdata_sel_bignum = RfWdSelMac;
         mac_en_bignum       = 1'b1;
 
-        if (insn[31:30] != 2'b00) begin // BN.MULQACC.WO/BN.MULQACC.SO
+        if (insn[30] == 1'b1 || insn[29] == 1'b1) begin // BN.MULQACC.WO/BN.MULQACC.SO
           rf_we_bignum = 1'b1;
         end
       end
@@ -672,6 +674,7 @@ module otbn_decoder
     opcode_alu               = insn_opcode_e'(insn_alu[6:0]);
 
     alu_flag_en_bignum       = 1'b0;
+    mac_flag_en_bignum       = 1'b0;
 
     unique case (opcode_alu)
       //////////////
@@ -906,6 +909,16 @@ module otbn_decoder
           end
           default: ;
         endcase
+      end
+
+      ////////////////////////////////////////////
+      // BN.MULQACC/BN.MULQACC.WO/BN.MULQACC.SO //
+      ////////////////////////////////////////////
+
+      InsnOpcodeBignumMulqacc: begin
+        if (insn[30] == 1'b1 || insn[29] == 1'b1) begin // BN.MULQACC.WO/BN.MULQACC.SO
+          mac_flag_en_bignum = 1'b1;
+        end
       end
     endcase
 

@@ -14,6 +14,8 @@ module otbn_mac_bignum
   input logic                  mac_en_i,
 
   output logic [WLEN-1:0] operation_result_o,
+  output flags_t          operation_flags_o,
+  output flags_t          operation_flags_en_o,
 
   output logic [WLEN-1:0] ispr_acc_o,
   input  logic [WLEN-1:0] ispr_acc_wr_data_i,
@@ -25,6 +27,7 @@ module otbn_mac_bignum
   logic [WLEN-1:0] adder_op_a;
   logic [WLEN-1:0] adder_op_b;
   logic [WLEN-1:0] adder_result;
+  logic [1:0]      adder_result_hw_is_zero;
 
   logic [QWLEN-1:0]  mul_op_a;
   logic [QWLEN-1:0]  mul_op_b;
@@ -90,6 +93,39 @@ module otbn_mac_bignum
   assign adder_op_b = acc;
 
   assign adder_result = adder_op_a + adder_op_b;
+
+  // Split zero check between the two halves of the result. This is used for flag setting (see
+  // below).
+  assign adder_result_hw_is_zero[0] = adder_result[WLEN/2-1:0] == 'h0;
+  assign adder_result_hw_is_zero[1] = adder_result[WLEN/2+:WLEN/2] == 'h0;
+
+  assign operation_flags_o.L    = adder_result[0];
+  // L is always updated for .WO, and for .SO when writing to the lower half-word
+  assign operation_flags_en_o.L = operation_i.shift_acc ? ~operation_i.wr_hw_sel_upper :
+                                                          1'b1;
+
+  // For .SO M is taken from the top-bit of shifted out half-word, otherwise it is taken from the top-bit
+  // of the full result.
+  assign operation_flags_o.M    = operation_i.shift_acc ? adder_result[WLEN/2-1] :
+                                                          adder_result[WLEN-1];
+  // M is always updated for .WO, and for .SO when writing to the upper half-word.
+  assign operation_flags_en_o.M = operation_i.shift_acc ? operation_i.wr_hw_sel_upper :
+                                                          1'b1;
+
+  // For .SO Z is calculated from the shifted out half-word, otherwise it is calculated on the full result.
+  assign operation_flags_o.Z    = operation_i.shift_acc ? adder_result_hw_is_zero[0] :
+                                                          &adder_result_hw_is_zero;
+
+  // Z is updated for .WO. For .SO updates are based upon result and half-word:
+  // - When writing to lower half-word always update Z.
+  // - When writing to upper half-word clear Z if result is non-zero otherwise leave it alone.
+  assign operation_flags_en_o.Z =
+      operation_i.shift_acc & operation_i.wr_hw_sel_upper ? ~adder_result_hw_is_zero[0] :
+                                                            1'b1;
+
+  // MAC never sets the carry flag
+  assign operation_flags_o.C    = 1'b0;
+  assign operation_flags_en_o.C = 1'b0;
 
   // If performing an ACC ISPR write the next accumulator value is taken from the ISPR write data,
   // otherwise it is drawn from the adder result. The new accumulator can be optionally shifted

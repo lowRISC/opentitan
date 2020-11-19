@@ -117,6 +117,8 @@ module otbn_core
 
   mac_bignum_operation_t mac_bignum_operation;
   logic [WLEN-1:0]       mac_bignum_operation_result;
+  flags_t                mac_bignum_operation_flags;
+  flags_t                mac_bignum_operation_flags_en;
   logic                  mac_bignum_en;
 
   ispr_e                       ispr_addr;
@@ -356,29 +358,34 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
-    .operation_i         (alu_bignum_operation),
-    .operation_result_o  (alu_bignum_operation_result),
+    .operation_i              (alu_bignum_operation),
+    .operation_result_o       (alu_bignum_operation_result),
 
-    .ispr_addr_i         (ispr_addr),
-    .ispr_base_wdata_i   (ispr_base_wdata),
-    .ispr_base_wr_en_i   (ispr_base_wr_en),
-    .ispr_bignum_wdata_i (ispr_bignum_wdata),
-    .ispr_bignum_wr_en_i (ispr_bignum_wr_en),
-    .ispr_rdata_o        (ispr_rdata),
+    .ispr_addr_i              (ispr_addr),
+    .ispr_base_wdata_i        (ispr_base_wdata),
+    .ispr_base_wr_en_i        (ispr_base_wr_en),
+    .ispr_bignum_wdata_i      (ispr_bignum_wdata),
+    .ispr_bignum_wr_en_i      (ispr_bignum_wr_en),
+    .ispr_rdata_o             (ispr_rdata),
 
-    .ispr_acc_i          (ispr_acc),
-    .ispr_acc_wr_data_o  (ispr_acc_wr_data),
-    .ispr_acc_wr_en_o    (ispr_acc_wr_en),
+    .ispr_acc_i               (ispr_acc),
+    .ispr_acc_wr_data_o       (ispr_acc_wr_data),
+    .ispr_acc_wr_en_o         (ispr_acc_wr_en),
 
-    .rnd_i               (rnd)
+    .mac_operation_flags_i    (mac_bignum_operation_flags),
+    .mac_operation_flags_en_i (mac_bignum_operation_flags_en),
+
+    .rnd_i                    (rnd)
   );
 
   otbn_mac_bignum u_otbn_mac_bignum (
     .clk_i,
     .rst_ni,
 
-    .operation_i        (mac_bignum_operation),
-    .operation_result_o (mac_bignum_operation_result),
+    .operation_i          (mac_bignum_operation),
+    .operation_result_o   (mac_bignum_operation_result),
+    .operation_flags_o    (mac_bignum_operation_flags),
+    .operation_flags_en_o (mac_bignum_operation_flags_en),
 
     .mac_en_i           (mac_bignum_en),
 
