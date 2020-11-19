@@ -73,7 +73,7 @@ class OTBNSim:
         self.state.commit()
 
         if verbose:
-            disasm = ('(stall)' if was_stalled
+            disasm = ('(stall)' if insn is None
                       else insn.disassemble(pc_before))
             self._print_trace(disasm, changes)
 
