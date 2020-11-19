@@ -25,7 +25,7 @@ See that document for integration overview within the broader top level system.
 * Full control-flow support with conditional branch and unconditional jump instructions, hardware loops, and hardware-managed call/return stacks.
 * Reduced, security-focused instruction set architecture for easier verification and the prevention of data leaks.
 * Built-in access to random numbers.
-  Note: The (quality) properties of the provided random numbers it not specified currently; this gap in the specification will be addressed in a future revision.
+  Note: The (quality) properties of the provided random numbers are not currently specified; this gap in the specification will be addressed in a future revision.
 
 ## Description
 
@@ -47,7 +47,8 @@ which has been formally verified within the [Fiat Crypto project](http://adam.ch
 
 # Instruction Set
 
-OTBN is a processor with a custom instruction set, which is described in this section.
+OTBN is a processor with a custom instruction set.
+The full ISA description can be found in our [ISA manual]({{< relref "hw/ip/otbn/doc/isa" >}}).
 The instruction set is split into two groups:
 
 * The **base instruction subset** operates on the 32b General Purpose Registers (GPRs).
@@ -55,9 +56,6 @@ The instruction set is split into two groups:
   The base instructions are inspired by RISC-V’s RV32I instruction set, but not compatible with it.
 * The **big number instruction subset** operates on 256b Wide Data Registers (WDRs).
   Its instructions are used for data processing.
-  Also included are compare and select instructions to perform data-dependent control flow in a safe and constant time fashion.
-
-The subsequent sections describe first the processor state, followed by a description of the base and big number instruction subsets.
 
 ## Processor State
 
@@ -326,150 +324,6 @@ Writing to `x1` pushes to the call stack, reading from it pops an item.
 ### Accumulator
 
 A WLEN bit wide accumulator used by the BN.MULQACC instruction.
-
-<!-- Documentation for the instructions in the ISA. Generated from ../data/insns.yml. -->
-## Base Instruction Subset
-
-{{< otbn_isa base >}}
-
-## Big Number Instruction Subset
-
-{{< otbn_isa bignum >}}
-
-## Pseudo-Code Functions for BN Instructions
-
-The instruction description uses Python-based pseudocode.
-Commonly used functions are defined once below.
-
-<div class="bd-callout bd-callout-warning">
-  <h5>Note</h5>
-
-  This "pseudo-code" is intended to be Python 3, and contains known inconsistencies at the moment.
-  It will be further refined as we make progress in the implementation of a simulator using this syntax.
-</div>
-
-```python3
-class Flag(Enum):
-  C: Bits[1]
-  M: Bits[1]
-  L: Bits[1]
-  Z: Bits[1]
-
-class FlagGroup:
-  C: Bits[1]
-  M: Bits[1]
-  L: Bits[1]
-  Z: Bits[1]
-
-  def set(self, flag: Flag, value: Bits[1]):
-    assert flag in Flag
-
-    if flag == Flag.C:
-      self.C = value
-    elif flag == Flag.M:
-      self.M = value
-    elif flag == Flag.L:
-      self.L = value
-    elif flag == Flag.Z:
-      self.Z = value
-
-  def get(self, flag: Flag):
-    assert flag in Flag
-
-    if flag == Flag.C:
-      return self.C
-    elif flag == Flag.M:
-      return self.M
-    elif flag == Flag.L:
-      return self.L
-    elif flag == Flag.Z:
-      return self.Z
-
-
-class ShiftType(Enum):
-  LSL = 0 # logical shift left
-  LSR = 1 # logical shift right
-
-class HalfWord(Enum):
-  LOWER = 0 # lower or less significant half-word
-  UPPER = 1 # upper or more significant half-word
-
-def DecodeShiftType(st: Bits(1)) -> ShiftType:
-  if st == 0:
-    return ShiftType.LSL
-  elif st == 1:
-    return ShiftType.LSR
-  else:
-    raise UndefinedException()
-
-def DecodeFlagGroup(flag_group: Bits(1)) -> UInt:
-  if flag_group > 1:
-    raise UndefinedException()
-  return UInt(flag_group)
-
-def DecodeFlag(flag: Bits(1)) -> Flag:
-  if flag == 0:
-    return ShiftType.C
-  elif flag == 1:
-    return ShiftType.M
-  elif flag == 2:
-    return ShiftType.L
-  elif flag == 3:
-    return ShiftType.Z
-  else:
-    raise UndefinedException()
-
-
-def ShiftReg(reg, shift_type, shift_bytes) -> Bits(N):
-  if ShiftType == ShiftType.LSL:
-    return GPR[reg] << shift_bytes << 3
-  elif ShiftType == ShiftType.LSR:
-    return GPR[reg] >> shift_bytes >> 3
-
-def AddWithCarry(a: Bits(WLEN), b: Bits(WLEN), carry_in: Bits(1)) -> (Bits(WLEN), FlagGroup):
-  result: Bits[WLEN+1] = a + b + carry_in
-
-  flags_out = FlagGroup()
-  flags_out.C = result[WLEN]
-  flags_out.L = result[0]
-  flags_out.M = result[WLEN-1]
-  flags_out.Z = (result[WLEN-1:0] == 0)
-
-  return (result[WLEN-1:0], flags_out)
-
-def SubtractWithBorrow(a: Bits(WLEN), b: Bits(WLEN), borrow_in: Bits(1)) -> (Bits(WLEN), FlagGroup):
-  result: Bits[WLEN+1] = a - b - borrow_in
-
-  flags_out = FlagGroup()
-  flags_out.C = result[WLEN]
-  flags_out.L = result[0]
-  flags_out.M = result[WLEN-1]
-  flags_out.Z = (result[WLEN-1:0] == 0)
-
-  return (result[WLEN-1:0], flags_out)
-
-def DecodeHalfWordSelect(hwsel: Bits(1)) -> HalfWord:
-  if hwsel == 0:
-    return HalfWord.LOWER
-  elif hwsel == 1:
-    return HalfWord.UPPER
-  else:
-    raise UndefinedException()
-
-def GetHalfWord(reg: integer, hwsel: HalfWord) -> Bits(WLEN/2):
-  if hwsel == HalfWord.LOWER:
-    return GPR[reg][WLEN/2-1:0]
-  elif hwsel == HalfWord.UPPER:
-    return GPR[reg][WLEN-1:WLEN/2]
-
-def LoadWlenWordFromMemory(byteaddr: integer) -> Bits(WLEN):
-  wordaddr = byteaddr >> 5
-  return DMEM[wordaddr]
-
-def StoreWlenWordToMemory(byteaddr: integer, storedata: Bits(WLEN)):
-  wordaddr = byteaddr >> 5
-  DMEM[wordaddr] = storedata
-```
 
 # Theory of Operations
 
