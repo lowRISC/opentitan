@@ -127,7 +127,8 @@ def asm_main(args: argparse.Namespace) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(dest='cmd')
+    subparsers.required = True
 
     gen = subparsers.add_parser('gen', help='Generate a random program')
     asm = subparsers.add_parser('asm', help='Convert snippets to assembly')
