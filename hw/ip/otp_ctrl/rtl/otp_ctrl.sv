@@ -758,8 +758,8 @@ module otp_ctrl
     .error_o          ( part_error[LciIdx]                ),
     .lci_idle_o       ( lci_idle                          ),
     .lc_req_i         ( lc_otp_program_i.req              ),
-    .lc_state_delta_i ( lc_otp_program_i.state_delta      ),
-    .lc_count_delta_i ( lc_otp_program_i.count_delta      ),
+    .lc_state_i       ( lc_otp_program_i.state            ),
+    .lc_count_i       ( lc_otp_program_i.count            ),
     .lc_ack_o         ( lc_otp_program_o.ack              ),
     .lc_err_o         ( lc_otp_program_o.err              ),
     .otp_req_o        ( part_otp_arb_req[LciIdx]          ),
@@ -940,7 +940,7 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
       otp_ctrl_part_buf #(
         .Info(PartInfo[k]),
         // By default all counter words are set and the life cycle state is scrapped.
-        .DataDefault({{lc_ctrl_pkg::NumLcCountValues{lc_ctrl_pkg::Set}}, lc_ctrl_pkg::LcStScrap})
+        .DataDefault({lc_ctrl_pkg::LcCnt16, lc_ctrl_pkg::LcStScrap})
       ) u_part_buf (
         .clk_i,
         .rst_ni,
@@ -1024,13 +1024,14 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
                                                          RmaTokenSize];
 
   // The device is personalized if the root key has been provisioned and locked
-  assign otp_lc_data_o.id_state       = (part_digest[Secret2Idx] != '0) ? lc_ctrl_pkg::Set :
-                                                                          lc_ctrl_pkg::Blk;
+  assign otp_lc_data_o.id_state       = (part_digest[Secret2Idx] != '0) ?
+                                        lc_ctrl_pkg::LcIdPersonalized :
+                                        lc_ctrl_pkg::LcIdBlank;
 
   // Lifecycle state
   assign otp_lc_data_o.state = lc_ctrl_pkg::lc_state_e'(part_buf_data[LcStateOffset +:
                                                                       LcStateSize]);
-  assign otp_lc_data_o.count = lc_ctrl_pkg::lc_cnt_t'(part_buf_data[LcTransitionCntOffset +:
+  assign otp_lc_data_o.count = lc_ctrl_pkg::lc_cnt_e'(part_buf_data[LcTransitionCntOffset +:
                                                                     LcTransitionCntSize]);
 
   // Assert life cycle state valid signal only when all partitions have initialized.
