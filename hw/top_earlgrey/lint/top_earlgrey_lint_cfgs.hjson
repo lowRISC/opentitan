@@ -68,6 +68,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/i2c/lint/{tool}"
              },
+             {    name: lc_ctrl
+                  fusesoc_core: lowrisc:ip:lc_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/lc_ctrl/lint/{tool}"
+             },
              {    name: pattgen
                   fusesoc_core: lowrisc:ip:pattgen
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
