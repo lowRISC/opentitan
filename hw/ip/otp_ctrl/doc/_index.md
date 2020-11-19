@@ -167,11 +167,12 @@ The contents must go through periodic integrity checks and therefore the stored 
 ### Life Cycle Partition
 
 The life cycle partition cannot be locked and will therefore not contain a stored digest.
+Note however that only the life cycle controller has access to this partition, i.e., the DAI cannot read nor write from/to the life cycle partition.
 
 ## Secret vs Non-Secret Partitions
 
 Non-secret OTP partitions hold data that can be public; or data that has no impact on security.
-For example, the current value of lock bits, life cycle state or clock calibration value.
+For example, the current value of lock bits or clock calibration values.
 These values are stored in OTP as plaintext.
 
 Secret partitions contain data that are critical to security, for example FLASH scrambling keys, device root secret and unlock tokens.
@@ -390,21 +391,24 @@ The `otp_lc_data_o.id_state` signal is set to `lc_ctrl_pkg::Set` iff the `SECRET
 
 ##### State Transitions
 
-In order to perform life cycle state transitions, the life cycle controller can present the **incremental** value of the life cycle state and counter with respect to the current status via the programming interface as shown below:
+In order to perform life cycle state transitions, the life cycle controller can present the new value of the life cycle state and counter via the programming interface as shown below:
 
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i',                            wave: 'p.......'},
-  {name: 'lc_otp_program_i.req',             wave: '01.|..0.'},
-  {name: 'lc_otp_program_i.state_delta',     wave: '03.|..0.'},
-  {name: 'lc_otp_program_i.count_delta',     wave: '03.|..0.'},
-  {name: 'lc_otp_program_o.ack',             wave: '0..|.10.'},
-  {name: 'lc_otp_program_o.err',             wave: '0..|.40.'},
+  {name: 'clk_i',                      wave: 'p.......'},
+  {name: 'lc_otp_program_i.req',       wave: '01.|..0.'},
+  {name: 'lc_otp_program_i.state',     wave: '03.|..0.'},
+  {name: 'lc_otp_program_i.count',     wave: '03.|..0.'},
+  {name: 'lc_otp_program_o.ack',       wave: '0..|.10.'},
+  {name: 'lc_otp_program_o.err',       wave: '0..|.40.'},
 ]}
 {{< /wavejson >}}
 
-Note that the request must remain asserted until the life cycle controller has responded.
+The request must remain asserted until the life cycle controller has responded.
 An error is fatal and indicates that the OTP programming operation has failed.
+
+Note that the new state must not clear any bits that have already been programmed to OTP - i.e., the new state must be incrementally programmable on top of the previous state.
+There are hence some implications on the life cycle encoding due to the ECC employed, see [life cycle state encoding]({{< relref "hw/ip/lc_ctrl/doc/_index.md#life-cycle-manufacturing-state-encodings" >}}) for details.
 
 ##### Token Hashing
 
@@ -881,7 +885,7 @@ Error Code | Enum Name            | Recoverable | DAI | LCI | Unbuf | Buf   | De
 0x1        | MacroError           | no          |  x  |  x  |   x   |  x    | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction.
 0x2        | MacroEccCorrError    | yes         |  x  |  -  |   x   |  x    | A correctable ECC error has occurred during a read operation in the OTP macro.
 0x3        | MacroEccUncorrError  | no          |  x  |  -  |   x   |  x    | An uncorrectable ECC error has occurred during a read operation in the OTP macro.
-0x4        | MacroWriteBlankError | yes         |  x  |  x  |   x   |  x    | This error is returned if a write operation attempted to overwrite an already programmed location.
+0x4        | MacroWriteBlankError | yes         |  x  |  x  |   x   |  x    | This error is returned if a write operation attempted to clear an already programmed bit location.
 0x5        | AccessError          | yes         |  x  |  -  |   x   |  -    | An access error has occurred (e.g. write to write-locked region, or read to a read-locked region).
 0x6        | CheckFailError       | no          |  -  |  -  |   x   |  x    | An unrecoverable ECC, integrity or consistency error has been detected.
 0x7        | FsmStateError        | no          |  x  |  x  |   x   |  x    | The FSM has been glitched into an invalid state, or escalation has been triggered and the FSM has been moved into a terminal error state.
