@@ -202,7 +202,7 @@
     { name: "HwCfgSize",
       desc: "Size of the HW_CFG partition",
       type: "int",
-      default: "176",
+      default: "208",
       local: "true"
     },
     { name: "HwCfgContentOffset",
@@ -214,13 +214,13 @@
     { name: "HwCfgContentSize",
       desc: "Size of HW_CFG_CONTENT",
       type: "int",
-      default: "168",
+      default: "200",
       local: "true"
     },
     { name: "HwCfgDigestOffset",
       desc: "Offset of HW_CFG_DIGEST",
       type: "int",
-      default: "1704",
+      default: "1736",
       local: "true"
     },
     { name: "HwCfgDigestSize",
@@ -232,7 +232,7 @@
     { name: "Secret0Offset",
       desc: "Offset of the SECRET0 partition",
       type: "int",
-      default: "1712",
+      default: "1744",
       local: "true"
     },
     { name: "Secret0Size",
@@ -244,7 +244,7 @@
     { name: "TestUnlockTokenOffset",
       desc: "Offset of TEST_UNLOCK_TOKEN",
       type: "int",
-      default: "1712",
+      default: "1744",
       local: "true"
     },
     { name: "TestUnlockTokenSize",
@@ -256,7 +256,7 @@
     { name: "TestExitTokenOffset",
       desc: "Offset of TEST_EXIT_TOKEN",
       type: "int",
-      default: "1728",
+      default: "1760",
       local: "true"
     },
     { name: "TestExitTokenSize",
@@ -268,7 +268,7 @@
     { name: "Secret0DigestOffset",
       desc: "Offset of SECRET0_DIGEST",
       type: "int",
-      default: "1744",
+      default: "1776",
       local: "true"
     },
     { name: "Secret0DigestSize",
@@ -280,7 +280,7 @@
     { name: "Secret1Offset",
       desc: "Offset of the SECRET1 partition",
       type: "int",
-      default: "1752",
+      default: "1784",
       local: "true"
     },
     { name: "Secret1Size",
@@ -292,7 +292,7 @@
     { name: "FlashAddrKeySeedOffset",
       desc: "Offset of FLASH_ADDR_KEY_SEED",
       type: "int",
-      default: "1752",
+      default: "1784",
       local: "true"
     },
     { name: "FlashAddrKeySeedSize",
@@ -304,7 +304,7 @@
     { name: "FlashDataKeySeedOffset",
       desc: "Offset of FLASH_DATA_KEY_SEED",
       type: "int",
-      default: "1784",
+      default: "1816",
       local: "true"
     },
     { name: "FlashDataKeySeedSize",
@@ -316,7 +316,7 @@
     { name: "SramDataKeySeedOffset",
       desc: "Offset of SRAM_DATA_KEY_SEED",
       type: "int",
-      default: "1816",
+      default: "1848",
       local: "true"
     },
     { name: "SramDataKeySeedSize",
@@ -328,7 +328,7 @@
     { name: "Secret1DigestOffset",
       desc: "Offset of SECRET1_DIGEST",
       type: "int",
-      default: "1832",
+      default: "1864",
       local: "true"
     },
     { name: "Secret1DigestSize",
@@ -340,7 +340,7 @@
     { name: "Secret2Offset",
       desc: "Offset of the SECRET2 partition",
       type: "int",
-      default: "1840",
+      default: "1872",
       local: "true"
     },
     { name: "Secret2Size",
@@ -352,7 +352,7 @@
     { name: "RmaTokenOffset",
       desc: "Offset of RMA_TOKEN",
       type: "int",
-      default: "1840",
+      default: "1872",
       local: "true"
     },
     { name: "RmaTokenSize",
@@ -364,7 +364,7 @@
     { name: "CreatorRootKeyShare0Offset",
       desc: "Offset of CREATOR_ROOT_KEY_SHARE0",
       type: "int",
-      default: "1856",
+      default: "1888",
       local: "true"
     },
     { name: "CreatorRootKeyShare0Size",
@@ -376,7 +376,7 @@
     { name: "CreatorRootKeyShare1Offset",
       desc: "Offset of CREATOR_ROOT_KEY_SHARE1",
       type: "int",
-      default: "1888",
+      default: "1920",
       local: "true"
     },
     { name: "CreatorRootKeyShare1Size",
@@ -388,7 +388,7 @@
     { name: "Secret2DigestOffset",
       desc: "Offset of SECRET2_DIGEST",
       type: "int",
-      default: "1952",
+      default: "1984",
       local: "true"
     },
     { name: "Secret2DigestSize",
@@ -400,19 +400,19 @@
     { name: "LifeCycleOffset",
       desc: "Offset of the LIFE_CYCLE partition",
       type: "int",
-      default: "1960",
+      default: "1992",
       local: "true"
     },
     { name: "LifeCycleSize",
       desc: "Size of the LIFE_CYCLE partition",
       type: "int",
-      default: "88",
+      default: "56",
       local: "true"
     },
     { name: "LcStateOffset",
       desc: "Offset of LC_STATE",
       type: "int",
-      default: "1960",
+      default: "1992",
       local: "true"
     },
     { name: "LcStateSize",
@@ -424,13 +424,13 @@
     { name: "LcTransitionCntOffset",
       desc: "Offset of LC_TRANSITION_CNT",
       type: "int",
-      default: "1984",
+      default: "2016",
       local: "true"
     },
     { name: "LcTransitionCntSize",
       desc: "Size of LC_TRANSITION_CNT",
       type: "int",
-      default: "64",
+      default: "32",
       local: "true"
     },
   ]
