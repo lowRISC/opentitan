@@ -52,6 +52,9 @@ class FlagReg:
                 setattr(self, n, getattr(self._new_val, n))
         self._new_val = None
 
+    def abort(self) -> None:
+        self._new_val = None
+
     def read_unsigned(self) -> int:
         '''Return a 4-bit number with the flags as ZLMC'''
         return ((int(self.Z) << 3) |
@@ -110,6 +113,12 @@ class FlagGroups:
         if self._dirty:
             self._groups[0].commit()
             self._groups[1].commit()
+        self._dirty = False
+
+    def abort(self) -> None:
+        if self._dirty:
+            self._groups[0].abort()
+            self._groups[1].abort()
         self._dirty = False
 
     def read_unsigned(self) -> int:

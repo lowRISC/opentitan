@@ -168,13 +168,13 @@ def on_print_regs(sim: OTBNSim, args: List[str]) -> None:
 
 
 def on_print_call_stack(sim: OTBNSim, args: List[str]) -> None:
-    '''Print call stack to stdout first element is the bottom of the stack'''
+    '''Print call stack to stdout. First element is the bottom of the stack'''
     if len(args):
         raise ValueError('print_call_stack expects zero arguments. Got {}.'
                          .format(args))
 
     print('PRINT_CALL_STACK')
-    for value in sim.state.gprs.peek_call_stack():
+    for value in sim.state.peek_call_stack():
         print('0x{:08x}'.format(value))
 
 

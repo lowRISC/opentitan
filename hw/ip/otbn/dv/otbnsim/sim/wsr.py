@@ -44,6 +44,10 @@ class WSR:
         '''Commit pending changes'''
         return
 
+    def abort(self) -> None:
+        '''Abort pending changes'''
+        return
+
     def changes(self) -> List[TraceWSR]:
         '''Return list of pending architectural changes'''
         return []
@@ -66,6 +70,9 @@ class DumbWSR(WSR):
     def commit(self) -> None:
         if self._next_value is not None:
             self._value = self._next_value
+        self._next_value = None
+
+    def abort(self) -> None:
         self._next_value = None
 
     def changes(self) -> List[TraceWSR]:
@@ -130,6 +137,11 @@ class WSRFile:
         self.MOD.commit()
         self.RND.commit()
         self.ACC.commit()
+
+    def abort(self) -> None:
+        self.MOD.abort()
+        self.RND.abort()
+        self.ACC.abort()
 
     def changes(self) -> List[TraceWSR]:
         return self.MOD.changes() + self.RND.changes() + self.ACC.changes()
