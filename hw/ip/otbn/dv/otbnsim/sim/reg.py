@@ -35,8 +35,6 @@ class Reg:
         self._next_uval = None  # type: Optional[int]
 
     def read_unsigned(self, backdoor: bool = False) -> int:
-        if not backdoor and self._parent is not None:
-            self._parent.mark_read(self._idx)
         return self._uval
 
     def write_unsigned(self, uval: int, backdoor: bool = False) -> None:
@@ -66,6 +64,9 @@ class Reg:
             self._uval = self._next_uval
         self._next_uval = None
 
+    def abort(self) -> None:
+        self._next_uval = None
+
 
 class RegFile:
     '''A base class for register files (used for both GPRs and WDRs).
@@ -86,12 +87,6 @@ class RegFile:
         self._registers = [Reg(self, i, width, 0) for i in range(depth)]
         self._pending_writes = set()  # type: Set[int]
 
-    def mark_read(self, idx: int) -> None:
-        '''Mark a register as having been read'''
-        # The default implementation ignores this, but the GPRs subclass
-        # overrides it to deal with reads from x1.
-        pass
-
     def mark_written(self, idx: int) -> None:
         '''Mark a register as having been written'''
         assert 0 <= idx < len(self._registers)
@@ -105,7 +100,7 @@ class RegFile:
         ret = []
         for idx in sorted(self._pending_writes):
             assert 0 <= idx < len(self._registers)
-            next_val = self._registers[idx].read_next()
+            next_val = self.get_reg(idx).read_next()
             assert next_val is not None
             ret.append(TraceRegister(self._name_pfx + str(idx),
                                      self._width,
@@ -116,6 +111,12 @@ class RegFile:
         for idx in self._pending_writes:
             assert 0 <= idx < len(self._registers)
             self._registers[idx].commit()
+        self._pending_writes.clear()
+
+    def abort(self) -> None:
+        for idx in self._pending_writes:
+            assert 0 <= idx < len(self._registers)
+            self._registers[idx].abort()
         self._pending_writes.clear()
 
     def peek_unsigned_values(self) -> List[int]:

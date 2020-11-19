@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple
 from riscvmodel.types import Trace, TracePC  # type: ignore
 
 
+from .alert import Alert
 from .csr import CSRFile
 from .dmem import Dmem
 from .ext_regs import OTBNExtRegs
@@ -118,6 +119,9 @@ class LoopStack:
     def commit(self) -> None:
         self.trace = []
 
+    def abort(self) -> None:
+        self.trace = []
+
 
 class OTBNState:
     def __init__(self) -> None:
@@ -144,7 +148,7 @@ class OTBNState:
         self.running = False
 
     def add_stall_cycles(self, num_cycles: int) -> None:
-        '''Add a single stall cycle before the next insn completes'''
+        '''Add stall cycles before the next insn completes'''
         assert num_cycles >= 0
         self._stalls += num_cycles
 
@@ -195,6 +199,22 @@ class OTBNState:
         self.wsrs.commit()
         self.csrs.flags.commit()
         self.wdrs.commit()
+
+    def abort(self) -> None:
+        '''Abort any pending state changes'''
+        # This should only be called when an instruction's execution goes
+        # wrong. If self._stalls is positive, the bad execution caused those
+        # stalls, so we should just zero them.
+        self._stalls = 0
+
+        self.gprs.abort()
+        self.pc_next = None
+        self.dmem.abort()
+        self.loop_stack.abort()
+        self.ext_regs.abort()
+        self.wsrs.abort()
+        self.csrs.flags.abort()
+        self.wdrs.abort()
 
     def start(self) -> None:
         '''Set the running flag and the ext_reg busy flag'''
@@ -288,7 +308,6 @@ class OTBNState:
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''
         self.loop_step()
-        self.gprs.post_insn()
 
     def read_csr(self, idx: int) -> int:
         '''Read the CSR with index idx as an unsigned 32-bit number'''
@@ -297,3 +316,25 @@ class OTBNState:
     def write_csr(self, idx: int, value: int) -> None:
         '''Write value (an unsigned 32-bit number) to the CSR with index idx'''
         self.csrs.write_unsigned(self.wsrs, idx, value)
+
+    def peek_call_stack(self) -> List[int]:
+        '''Return the current call stack, bottom-first'''
+        return self.gprs.peek_call_stack()
+
+    def stop(self, err_code: Optional[int]) -> None:
+        '''Set flags to stop the processor.
+
+        If err_code is not None, it is the value to write to the ERR_CODE
+        register.
+
+        '''
+        # INTR_STATE is the interrupt state register. Bit 0 (which is being
+        # set) is the 'done' flag.
+        self.ext_regs.set_bits('INTR_STATE', 1 << 0)
+        # STATUS is a status register. Bit 0 (being cleared) is the 'busy' flag
+        self.ext_regs.clear_bits('STATUS', 1 << 0)
+
+        if err_code is not None:
+            self.ext_regs.write('ERR_CODE', err_code, True)
+
+        self.running = False

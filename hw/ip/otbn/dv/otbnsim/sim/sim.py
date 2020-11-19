@@ -4,6 +4,7 @@
 
 from typing import List, Optional, Tuple
 
+from .alert import Alert
 from .isa import OTBNInsn
 from .state import OTBNState
 
@@ -46,31 +47,45 @@ class OTBNSim:
         was_stalled = self.state.stalled
         pc_before = self.state.pc
 
-        if was_stalled:
-            insn = None
-            changes = []
-        else:
-            word_pc = int(self.state.pc) >> 2
-            if word_pc >= len(self.program):
-                raise RuntimeError('Trying to execute instruction at address '
-                                   '{:#x}, but the program is only {:#x} '
-                                   'bytes ({} instructions) long. Since there '
-                                   'are no architectural contents of the '
-                                   'memory here, we have to stop.'
-                                   .format(int(self.state.pc),
-                                           4 * len(self.program),
-                                           len(self.program)))
-            insn = self.program[word_pc]
+        try:
+            if was_stalled:
+                insn = None
+                changes = []
+            else:
+                word_pc = int(self.state.pc) >> 2
+                if word_pc >= len(self.program):
+                    raise RuntimeError('Trying to execute instruction at address '
+                                       '{:#x}, but the program is only {:#x} '
+                                       'bytes ({} instructions) long. Since there '
+                                       'are no architectural contents of the '
+                                       'memory here, we have to stop.'
+                                       .format(int(self.state.pc),
+                                               4 * len(self.program),
+                                               len(self.program)))
+                insn = self.program[word_pc]
 
-            if insn.insn.cycles > 1:
-                self.state.add_stall_cycles(insn.insn.cycles - 1)
+                if insn.insn.cycles > 1:
+                    self.state.add_stall_cycles(insn.insn.cycles - 1)
 
-            insn.execute(self.state)
-            self.state.post_insn()
+                insn.execute(self.state)
+                self.state.post_insn()
 
+                changes = self.state.changes()
+
+            self.state.commit()
+
+        except Alert as alert:
+            # Roll back any pending state changes: we ensure that a faulting
+            # instruction doesn't actually do anything.
+            self.state.abort()
+
+            # We've rolled back any changes, but need to actually generate an
+            # "alert". To do that, we tell the state to set an appropriate
+            # error code in the external ERR_CODE register and clear the busy
+            # flag. These register changes get reflected in the returned list
+            # of trace items, that we propagate up.
+            self.state.stop(alert.error_code())
             changes = self.state.changes()
-
-        self.state.commit()
 
         if verbose:
             disasm = ('(stall)' if insn is None

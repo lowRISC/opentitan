@@ -203,3 +203,6 @@ class Dmem:
         for item in self.trace:
             self._commit_store(item)
         self.trace = []
+
+    def abort(self) -> None:
+        self.trace = []
