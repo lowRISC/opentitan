@@ -46,15 +46,16 @@ def gen_main(args: argparse.Namespace) -> int:
     # Write out the data and snippets to a JSON file
     ser_data = init_data_to_json(init_data)
     ser_snippets = [snippet.to_json() for snippet in snippets]
+    ser = [ser_data, ser_snippets]
     try:
         if args.output == '-':
-            json.dump([ser_data, ser_snippets], sys.stdout)
+            json.dump(ser, sys.stdout)
             # Add a newline at end of output: json.dump doesn't, and it makes a
             # bit of a mess of some consoles.
             sys.stdout.write('\n')
         else:
             with open(args.output, 'w') as out_file:
-                json.dump(ser_snippets, out_file)
+                json.dump(ser, out_file)
     except OSError as err:
         print('Failed to open json output file {!r}: {}.'
               .format(args.output, err),
