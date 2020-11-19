@@ -28,7 +28,7 @@ module prim_lc_sync #(
   lc_ctrl_pkg::lc_tx_t lc_en;
   prim_flop_2sync #(
     .Width(lc_ctrl_pkg::TxWidth),
-    .ResetValue(lc_ctrl_pkg::Off)
+    .ResetValue(int'(lc_ctrl_pkg::Off))
   ) u_prim_flop_2sync (
     .clk_i,
     .rst_ni,

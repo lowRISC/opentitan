@@ -29,6 +29,13 @@
       package: "flash_ctrl_pkg"
     },
 
+    { struct: "lc_tx",
+      type: "uni",
+      name: "lc_provision_en",
+      act:  "rcv",
+      package: "lc_ctrl_pkg"
+    },
+
     { struct: "lc_flash",
       type: "req_rsp",
       name: "lc",

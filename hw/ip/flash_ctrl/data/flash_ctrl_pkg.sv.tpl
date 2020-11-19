@@ -78,6 +78,15 @@ package flash_ctrl_pkg;
   // parameters for connected components
   parameter int SeedWidth = 256;
 
+  // life cycle provision enable usage
+  typedef enum logic [2:0] {
+    FlashLcCreatorSeedPriv,
+    FlashLcOwnerSeedPriv,
+    FlashLcMgrIf,
+    FlashLcInfoCfg,
+    FlashLcLast
+  } flash_lc_provision_en_e;
+
   // lcmgr phase enum
   typedef enum logic [1:0] {
     PhaseSeed,
@@ -110,6 +119,7 @@ package flash_ctrl_pkg;
   // flash life cycle / key manager management constants
   // One page for creator seeds
   // One page for owner seeds
+  // One page for isolated flash page
   parameter int NumSeeds = 2;
   parameter int SeedBank = 0;
   parameter int SeedInfoSel = 0;
@@ -117,8 +127,9 @@ package flash_ctrl_pkg;
   parameter int OwnerSeedIdx = 1;
   parameter int CreatorInfoPage = 1;
   parameter int OwnerInfoPage = 2;
+  parameter int IsolatedInfoPage = 3;
 
-  // which page of which info type of which bank
+  // which page of which info type of which bank for seed selection
   parameter page_addr_t SeedInfoPageSel [NumSeeds] = '{
     '{
       sel:  SeedInfoSel,
@@ -129,6 +140,12 @@ package flash_ctrl_pkg;
       sel:  SeedInfoSel,
       addr: {SeedBank, OwnerInfoPage}
      }
+  };
+
+  // which page of which info type of which bank for isolated partition
+  parameter page_addr_t IsolatedPageSel = '{
+    sel:  SeedInfoSel,
+    addr: {SeedBank, IsolatedInfoPage}
   };
 
   // hardware interface memory protection rules
@@ -314,7 +331,6 @@ package flash_ctrl_pkg;
     // TBD: this signal will become multi-bit in the future
     logic rma_req;
     logic [BusWidth-1:0] rma_req_token;
-    logic provision_en;
   } lc_flash_req_t;
 
   // flash_ctrl to lc
@@ -346,8 +362,7 @@ package flash_ctrl_pkg;
 
   parameter lc_flash_req_t LC_FLASH_REQ_DEFAULT = '{
     rma_req: 1'b0,
-    rma_req_token: '0,
-    provision_en: 1'b1
+    rma_req_token: '0
   };
 
   parameter edn_entropy_t EDN_ENTROPY_DEFAULT = '{
