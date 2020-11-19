@@ -39,7 +39,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:    Buffered,
       offset:     11'd1536,
-      size:       176,
+      size:       208,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       hw_digest:  1'b1,
@@ -49,7 +49,7 @@ package otp_ctrl_part_pkg;
     // SECRET0
     '{
       variant:    Buffered,
-      offset:     11'd1712,
+      offset:     11'd1744,
       size:       40,
       key_sel:    Secret0Key,
       secret:     1'b1,
@@ -60,7 +60,7 @@ package otp_ctrl_part_pkg;
     // SECRET1
     '{
       variant:    Buffered,
-      offset:     11'd1752,
+      offset:     11'd1784,
       size:       88,
       key_sel:    Secret1Key,
       secret:     1'b1,
@@ -71,7 +71,7 @@ package otp_ctrl_part_pkg;
     // SECRET2
     '{
       variant:    Buffered,
-      offset:     11'd1840,
+      offset:     11'd1872,
       size:       120,
       key_sel:    Secret2Key,
       secret:     1'b1,
@@ -82,8 +82,8 @@ package otp_ctrl_part_pkg;
     // LIFE_CYCLE
     '{
       variant:    LifeCycle,
-      offset:     11'd1960,
-      size:       88,
+      offset:     11'd1992,
+      size:       56,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       hw_digest:  1'b0,
