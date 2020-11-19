@@ -292,7 +292,7 @@ def main() -> int:
         print('Failed to create output directory {!r}: {}.'
               .format(args.out_dir, err))
 
-    render_insns(insns, 3, args.out_dir)
+    render_insns(insns, 2, args.out_dir)
     return 0
 
 
