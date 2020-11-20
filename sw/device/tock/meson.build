@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-cargo = find_program('cargo', required: false)
+cargo = find_program('cargo', required: false, disabler: true)
 
 target = 'riscv32imc-unknown-none-elf'
 build_type = 'release'
@@ -33,6 +33,7 @@ tock_raw = custom_target(
   'tock_raw',
   command: [
     build_tock_cmd,
+    cargo,
     target,
     build_type,
     manifest_path,
@@ -41,6 +42,11 @@ tock_raw = custom_target(
     meson.source_root(),
     meson.build_root(),
     rust_flags,
+  ],
+  depend_files: [
+    build_tock_cmd,
+    manifest_path,
+    toolchain_file,
   ],
   output: target,
   console: true,
@@ -68,7 +74,6 @@ tock_bin = custom_target(
     '@INPUT@',
     '@OUTPUT@'
   ],
-  depends: tock_elf,
   input: tock_elf,
   output: 'opentitan.bin',
   build_always_stale: true,
@@ -78,8 +83,8 @@ tock_bin = custom_target(
 custom_target(
   'tock_export',
   command: export_target_command,
+  depend_files: [export_target_depend_files,],
   input: [tock_elf, tock_bin],
-  depends: [tock_elf, tock_bin],
   output: 'tock',
   build_always_stale: true,
   build_by_default: false,

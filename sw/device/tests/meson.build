@@ -154,7 +154,8 @@ foreach sw_test_name, sw_test_info : sw_tests
 
     sw_test_embedded = custom_target(
       sw_test_name + '_' + device_name,
-      command: make_embedded_target,
+      command: make_embedded_target_command,
+      depend_files: [make_embedded_target_depend_files,],
       input: sw_test_elf,
       output: make_embedded_target_outputs,
       build_by_default: true,
@@ -179,6 +180,7 @@ foreach sw_test_name, sw_test_info : sw_tests
     custom_target(
       sw_test_name + '_export_' + device_name,
       command: export_target_command,
+      depend_files: [export_target_depend_files,],
       input: [sw_test_elf, sw_test_embedded, sw_test_dv_frames],
       output: sw_test_name + '_export_' + device_name,
       build_always_stale: true,
@@ -209,7 +211,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
 
   crt_test_embedded = custom_target(
     'crt_test_' + device_name,
-    command: make_embedded_target,
+    command: make_embedded_target_command,
+    depend_files: [make_embedded_target_depend_files,],
     input: crt_test_elf,
     output: make_embedded_target_outputs,
     build_by_default: true,
@@ -218,6 +221,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   custom_target(
     'crt_test_export_' + device_name,
     command: export_target_command,
+    depend_files: [export_target_depend_files,],
     input: [crt_test_elf, crt_test_embedded],
     output: 'crt_test_export_' + device_name,
     build_always_stale: true,

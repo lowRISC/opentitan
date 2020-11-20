@@ -25,7 +25,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
 
   aes_serial_embedded = custom_target(
     'aes_serial_' + device_name,
-    command: make_embedded_target,
+    command: make_embedded_target_command,
+    depend_files: [make_embedded_target_depend_files,],
     input: aes_serial_elf,
     output: make_embedded_target_outputs,
     build_by_default: true,
@@ -34,6 +35,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   custom_target(
     'aes_serial_export_' + device_name,
     command: export_target_command,
+    depend_files: [export_target_depend_files,],
     input: [aes_serial_elf, aes_serial_embedded],
     output: 'aes_serial_export_' + device_name,
     build_always_stale: true,
