@@ -2718,14 +2718,92 @@
       alert_list:
       [
         {
-          name: ast_alerts
-          width: 7
-          bits: 6:0
+          name: as
+          width: 1
+          bits: "0"
           bitinfo:
           [
-            127
-            7
+            1
+            1
             0
+          ]
+          type: alert
+          async: 1
+        }
+        {
+          name: cg
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: alert
+          async: 1
+        }
+        {
+          name: gd
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: alert
+          async: 1
+        }
+        {
+          name: ts_hi
+          width: 1
+          bits: "3"
+          bitinfo:
+          [
+            8
+            1
+            3
+          ]
+          type: alert
+          async: 1
+        }
+        {
+          name: ts_lo
+          width: 1
+          bits: "4"
+          bitinfo:
+          [
+            16
+            1
+            4
+          ]
+          type: alert
+          async: 1
+        }
+        {
+          name: ls
+          width: 1
+          bits: "5"
+          bitinfo:
+          [
+            32
+            1
+            5
+          ]
+          type: alert
+          async: 1
+        }
+        {
+          name: ot
+          width: 1
+          bits: "6"
+          bitinfo:
+          [
+            64
+            1
+            6
           ]
           type: alert
           async: 1
@@ -5684,14 +5762,98 @@
       module_name: otbn
     }
     {
-      name: sensor_ctrl_ast_alerts
-      width: 7
-      bits: 6:0
+      name: sensor_ctrl_as
+      width: 1
+      bits: "0"
       bitinfo:
       [
-        127
-        7
+        1
+        1
         0
+      ]
+      type: alert
+      async: 1
+      module_name: sensor_ctrl
+    }
+    {
+      name: sensor_ctrl_cg
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: alert
+      async: 1
+      module_name: sensor_ctrl
+    }
+    {
+      name: sensor_ctrl_gd
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: alert
+      async: 1
+      module_name: sensor_ctrl
+    }
+    {
+      name: sensor_ctrl_ts_hi
+      width: 1
+      bits: "3"
+      bitinfo:
+      [
+        8
+        1
+        3
+      ]
+      type: alert
+      async: 1
+      module_name: sensor_ctrl
+    }
+    {
+      name: sensor_ctrl_ts_lo
+      width: 1
+      bits: "4"
+      bitinfo:
+      [
+        16
+        1
+        4
+      ]
+      type: alert
+      async: 1
+      module_name: sensor_ctrl
+    }
+    {
+      name: sensor_ctrl_ls
+      width: 1
+      bits: "5"
+      bitinfo:
+      [
+        32
+        1
+        5
+      ]
+      type: alert
+      async: 1
+      module_name: sensor_ctrl
+    }
+    {
+      name: sensor_ctrl_ot
+      width: 1
+      bits: "6"
+      bitinfo:
+      [
+        64
+        1
+        6
       ]
       type: alert
       async: 1
