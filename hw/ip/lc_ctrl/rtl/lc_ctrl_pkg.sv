@@ -185,8 +185,8 @@ package lc_ctrl_pkg;
   } token_idx_e;
 
   // TODO: precompute these values (probably have to do that in OTP at elab time).
-  parameter logic [TokenIdxWidth-1:0] RawUnlockTokenHashed = '0;
-  parameter logic [TokenIdxWidth-1:0] AllZeroTokenHashed = '0;
+  parameter logic [LcTokenWidth-1:0] RawUnlockTokenHashed = '0;
+  parameter logic [LcTokenWidth-1:0] AllZeroTokenHashed = '0;
 
   ////////////////////////////////
   // Typedefs for LC Interfaces //
