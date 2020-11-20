@@ -96,4 +96,23 @@ package flash_phy_pkg;
     DeScrambleOp = 1'b1
   } cipher_ops_e;
 
+  // Connections to prim_flash
+  typedef struct packed {
+    logic rd_req;
+    logic prog_req;
+    logic prog_last;
+    flash_ctrl_pkg::flash_prog_e prog_type;
+    logic pg_erase_req;
+    logic bk_erase_req;
+    logic [BankAddrW-1:0] addr;
+    flash_ctrl_pkg::flash_part_e part;
+    logic [FullDataWidth-1:0] prog_full_data;
+  } flash_phy_prim_flash_req_t;
+
+  typedef struct packed {
+    logic ack;
+    logic done;
+    logic [FullDataWidth-1:0] rdata;
+  } flash_phy_prim_flash_rsp_t;
+
 endpackage // flash_phy_pkg

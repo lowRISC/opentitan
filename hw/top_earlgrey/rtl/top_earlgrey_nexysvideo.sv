@@ -330,6 +330,8 @@ module top_earlgrey_nexysvideo #(
     .ast_tl_rsp_i                 ( '0              ),
     .otp_ctrl_otp_ast_pwr_seq_o   (                 ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( '0              ),
+    .flash_power_down_h_i         ( '0              ),
+    .flash_power_ready_h_i        ( 1'b1            ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck_buf  ),

@@ -20,7 +20,13 @@ module flash_phy import flash_ctrl_pkg::*; (
   output logic [BusWidth-1:0] host_rdata_o,
   output logic host_rderr_o,
   input flash_req_t flash_ctrl_i,
-  output flash_rsp_t flash_ctrl_o
+  output flash_rsp_t flash_ctrl_o,
+  input scanmode_i,
+  input scan_rst_ni,
+  input flash_power_ready_h_i,
+  input flash_power_down_h_i,
+  input [1:0] flash_test_mode_a_i,
+  input flash_test_voltage_h_i
 );
 
   // Flash macro outstanding refers to how many reads we allow a macro to move ahead of an
@@ -57,8 +63,8 @@ module flash_phy import flash_ctrl_pkg::*; (
   logic [NumBanks-1:0]  rd_done;
   logic [NumBanks-1:0]  prog_done;
   logic [NumBanks-1:0]  erase_done;
-  logic [NumBanks-1:0]  init_busy;
-  logic [ProgTypes-1:0] prog_type_avail [NumBanks];
+  logic                 init_busy;
+  logic [ProgTypes-1:0] prog_type_avail;
 
   // common interface
   logic [BusWidth-1:0] rd_data [NumBanks];
@@ -77,20 +83,20 @@ module flash_phy import flash_ctrl_pkg::*; (
   assign host_rdata_o = host_rsp_data[rsp_bank_sel];
 
   // all banks are assumed to be the same in terms of prog_type support
-  assign flash_ctrl_o.prog_type_avail = prog_type_avail[0];
+  assign flash_ctrl_o.prog_type_avail = prog_type_avail;
   assign flash_ctrl_o.rd_done = rd_done[ctrl_bank_sel];
   assign flash_ctrl_o.prog_done = prog_done[ctrl_bank_sel];
   assign flash_ctrl_o.erase_done = erase_done[ctrl_bank_sel];
   assign flash_ctrl_o.rd_data = rd_data[ctrl_bank_sel];
   assign flash_ctrl_o.rd_err = rd_err[ctrl_bank_sel];
-  assign flash_ctrl_o.init_busy = |init_busy;
+  assign flash_ctrl_o.init_busy = init_busy;
 
   // This fifo holds the expected return order
   prim_fifo_sync #(
     .Width   (BankW),
     .Pass    (0),
     .Depth   (SeqFifoDepth)
-  ) i_bank_sequence_fifo (
+  ) u_bank_sequence_fifo (
     .clk_i,
     .rst_ni,
     .clr_i   (1'b0),
@@ -132,7 +138,11 @@ module flash_phy import flash_ctrl_pkg::*; (
   assign host_scramble_en = region_cfg.scramble_en.q;
   assign host_ecc_en = region_cfg.ecc_en.q;
 
-  for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_flash_banks
+  // Prim flash to flash_phy_core connections
+  flash_phy_pkg::flash_phy_prim_flash_req_t [NumBanks-1:0] prim_flash_req;
+  flash_phy_pkg::flash_phy_prim_flash_rsp_t [NumBanks-1:0] prim_flash_rsp;
+
+  for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_flash_cores
 
     // pop if the response came from the appropriate fifo
     assign host_rsp_ack[bank] = host_req_done_o & (rsp_bank_sel == bank);
@@ -141,7 +151,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .Width   (BusWidth + 1),
       .Pass    (1'b1),
       .Depth   (FlashMacroOustanding)
-    ) i_host_rsp_fifo (
+    ) u_host_rsp_fifo (
       .clk_i,
       .rst_ni,
       .clr_i   (1'b0),
@@ -159,7 +169,7 @@ module flash_phy import flash_ctrl_pkg::*; (
     assign host_req = host_req_i & (host_bank_sel == bank) & host_rsp_avail[bank];
     assign ctrl_req = flash_ctrl_i.req & (ctrl_bank_sel == bank);
 
-    flash_phy_core i_core (
+    flash_phy_core u_core (
       .clk_i,
       .rst_ni,
       .req_i(ctrl_req),
@@ -183,7 +193,6 @@ module flash_phy import flash_ctrl_pkg::*; (
       .addr_key_i(flash_ctrl_i.addr_key),
       .data_key_i(flash_ctrl_i.data_key),
       .rd_buf_en_i(flash_ctrl_i.rd_buf_en),
-      .prog_type_avail_o(prog_type_avail[bank]),
       .host_req_rdy_o(host_req_rdy[bank]),
       .host_req_done_o(host_req_done[bank]),
       .rd_done_o(rd_done[bank]),
@@ -191,23 +200,41 @@ module flash_phy import flash_ctrl_pkg::*; (
       .erase_done_o(erase_done[bank]),
       .rd_data_o(rd_data[bank]),
       .rd_err_o(rd_err[bank]),
-      .init_busy_o(init_busy[bank])
+      .prim_flash_req_o(prim_flash_req[bank]),
+      .prim_flash_rsp_i(prim_flash_rsp[bank])
     );
-  end
+  end // block: gen_flash_banks
+
+  prim_flash #(
+    .NumBanks(NumBanks),
+    .InfosPerBank(InfosPerBank),
+    .PagesPerBank(PagesPerBank),
+    .WordsPerPage(WordsPerPage),
+    .DataWidth(flash_phy_pkg::FullDataWidth),
+    .MetaDataWidth(MetaDataWidth)
+  ) u_flash (
+    .clk_i,
+    .rst_ni,
+    .flash_req_i(prim_flash_req),
+    .flash_rsp_o(prim_flash_rsp),
+    .prog_type_avail_o(prog_type_avail),
+    .init_busy_o(init_busy),
+    .tck_i('0),
+    .tdi_i('0),
+    .tms_i('0),
+    .tdo_o(),
+    .scanmode_i,
+    .scan_rst_ni,
+    .flash_power_ready_h_i,
+    .flash_power_down_h_i,
+    .flash_test_mode_a_i,
+    .flash_test_voltage_h_i
+  );
 
   //////////////////////////////////////////////
   // Assertions, Assumptions, and Coverpoints //
   /////////////////////////////////////////////
-  logic [ProgTypes-1:0] unused_prog_type;
 
-  always_comb begin
-    unused_prog_type = '0;
-    for (int i = 0; i < NumBanks; i++) begin : gen_prog_type_xor
-      unused_prog_type ^= prog_type_avail[i];
-    end
-  end
-
-  // all banks must support the same kinds of programs
-  `ASSERT(homogenousProg_a,  unused_prog_type == '0)
+  // Add some assertions regarding response ordering
 
 endmodule // flash_phy

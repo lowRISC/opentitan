@@ -478,7 +478,13 @@ module top_${top["name"]} #(
     .host_rderr_o    (flash_host_rderr),
     .host_rdata_o    (flash_host_rdata),
     .flash_ctrl_i    (${m["inter_signal_list"][0]["top_signame"]}_req),
-    .flash_ctrl_o    (${m["inter_signal_list"][0]["top_signame"]}_rsp)
+    .flash_ctrl_o    (${m["inter_signal_list"][0]["top_signame"]}_rsp),
+    .flash_power_down_h_i,
+    .flash_power_ready_h_i,
+    .flash_test_mode_a_i,
+    .flash_test_voltage_h_i,
+    .scanmode_i,
+    .scan_rst_ni
   );
 
   % else:
