@@ -488,27 +488,28 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   virtual task run_same_csr_outstanding_vseq(int num_times);
-    csr_excl_item csr_excl = add_and_return_csr_excl("csr_excl");
+    csr_excl_item   csr_excl = add_and_return_csr_excl("csr_excl");
     csr_test_type_e csr_test_type = CsrRwTest; // share the same exclusion as csr_rw_test
-    uvm_reg test_csrs[$];
+    dv_base_reg     test_csrs[$];
 
-    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_registers(test_csrs);
+    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_dv_base_regs(test_csrs);
 
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running same CSR outstanding test iteration %0d/%0d",
                                  trans, num_times), UVM_LOW)
       test_csrs.shuffle();
 
+      // first iteration already issued dut_init in pre_start
+      if (trans != 1 && $urandom_range(0, 1)) dut_init();
+
       foreach (test_csrs[i]) begin
-        uvm_reg_data_t exp_data = test_csrs[i].get_reset();
+        uvm_reg_data_t exp_data = test_csrs[i].get_mirrored_value();
         uvm_reg_data_t rd_data, wr_data, rd_mask, wr_mask;
 
         rd_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck, csr_test_type, csr_excl);
         wr_mask = get_mask_excl_fields(test_csrs[i], CsrExclWrite, csr_test_type, csr_excl);
 
-        // reset before every csr to avoid situation of writing one csr affect another's value
-        dut_init("HARD");
-        repeat ($urandom_range(10, 100)) begin
+        repeat ($urandom_range(2, 50)) begin
           // do read, exclude CsrExclWriteCheck, CsrExclCheck
           if ($urandom_range(0, 1) &&
               !csr_excl.is_excl(test_csrs[i], CsrExclWriteCheck, csr_test_type)) begin
@@ -519,8 +520,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           // do write, exclude CsrExclWrite
           if ($urandom_range(0, 1) &&
               !csr_excl.is_excl(test_csrs[i], CsrExclWrite, csr_test_type)) begin
-            uvm_reg_field csr_fields[$];
-            test_csrs[i].get_fields(csr_fields);
             `DV_CHECK_STD_RANDOMIZE_FATAL(wr_data)
             wr_data &= wr_mask;
             tl_access(.addr(test_csrs[i].get_address()), .write(1), .data(wr_data), .blocking(0));
@@ -529,6 +528,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           end
         end
         csr_utils_pkg::wait_no_outstanding_access();
+
+        // reset after writing to enable_reg to avoid it locking associated regs
+        if (test_csrs[i].is_enable_reg()) dut_init("HARD");
       end
     end
   endtask
