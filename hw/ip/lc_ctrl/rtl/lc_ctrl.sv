@@ -12,13 +12,20 @@ module lc_ctrl
   import lc_ctrl_reg_pkg::*;
 #(
   // Enable asynchronous transitions on alerts.
-  parameter logic [NumAlerts-1:0] AlertAsyncOn      = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Idcode value for the JTAG.
+  parameter logic [31:0]          IdcodeValue  = 32'h00000001
 ) (
   input                                              clk_i,
   input                                              rst_ni,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t                          tl_i,
   output tlul_pkg::tl_d2h_t                          tl_o,
+  // JTAG TAP.
+  input  rv_dm_pkg::jtag_req_t                       jtag_req_i,
+  output rv_dm_pkg::jtag_rsp_t                       jtag_rsp_o,
+  // This bypasses the clock inverter inside the JTAG TAP for scanmmode.
+  input                                              scanmode_i,
   // Alert outputs.
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
@@ -95,7 +102,7 @@ module lc_ctrl
   ////////////////////
 
   tlul_pkg::tl_h2d_t tap_tl_h2d;
-  tlul_pkg::tl_d2h_t tap_tl_d2h, unused_tap_tl_d2h;
+  tlul_pkg::tl_d2h_t tap_tl_d2h;
   lc_ctrl_reg_pkg::lc_ctrl_reg2hw_t tap_reg2hw;
   lc_ctrl_reg_pkg::lc_ctrl_hw2reg_t tap_hw2reg;
 
@@ -109,9 +116,74 @@ module lc_ctrl
     .devmode_i ( 1'b1       )
   );
 
-  // TODO: implement TAP
-  assign tap_tl_h2d = '0;
-  assign unused_tap_tl_d2h = tap_tl_d2h;
+  // TODO: add this to the LC_CTRL spec.
+  // note that the DMI reset does not affect the LC controller in any way.
+
+  // This reuses the JTAG DTM and DMI from the RISC-V external
+  // debug v0.13 specification to read and write the lc_ctrl CSRs:
+  // https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf
+  // The register addresses correspond to the byte offsets of the lc_ctrl CSRs, divided by 4.
+  dm::dmi_req_t dmi_req;
+  logic dmi_req_valid;
+  logic dmi_req_ready;
+  dm::dmi_resp_t dmi_resp;
+  logic dmi_resp_ready;
+  logic dmi_resp_valid;
+
+  dmi_jtag #(
+    .IdcodeValue(IdcodeValue)
+  ) u_dmi_jtag (
+    .clk_i,
+    .rst_ni,
+    .testmode_i       ( scanmode_i        ),
+    .dmi_rst_no       (                   ), // unused
+    .dmi_req_o        ( dmi_req           ),
+    .dmi_req_valid_o  ( dmi_req_valid     ),
+    .dmi_req_ready_i  ( dmi_req_ready     ),
+    .dmi_resp_i       ( dmi_resp          ),
+    .dmi_resp_ready_o ( dmi_resp_ready    ),
+    .dmi_resp_valid_i ( dmi_resp_valid    ),
+    .tck_i            ( jtag_req_i.tck    ),
+    .tms_i            ( jtag_req_i.tms    ),
+    .trst_ni          ( jtag_req_i.trst_n ),
+    .td_i             ( jtag_req_i.tdi    ),
+    .td_o             ( jtag_rsp_o.tdo    ),
+    .tdo_oe_o         ( jtag_rsp_o.tdo_oe )
+  );
+
+  // DMI to TL-UL transducing
+  assign dmi_req_ready       = tap_tl_d2h.a_ready;
+  assign tap_tl_h2d.a_valid  = dmi_req_valid;
+  assign tap_tl_h2d.a_opcode = (dmi_req.op == dm::DTM_WRITE) ? tlul_pkg::PutFullData :
+                                                               tlul_pkg::Get;
+  // Always read/write 32bit
+  assign tap_tl_h2d.a_size    = top_pkg::TL_SZW'(2'h2);
+  assign tap_tl_h2d.a_mask    = {top_pkg::TL_DBW{1'b1}};
+  // Need to transform register address into byte address.
+  assign tap_tl_h2d.a_address = top_pkg::TL_AW'({dmi_req.addr, 2'b00});
+  assign tap_tl_h2d.a_data    = dmi_req.data;
+  // Unused
+  assign tap_tl_h2d.a_param   = '0;
+  assign tap_tl_h2d.a_source  = '0;
+  assign tap_tl_h2d.a_user    = '0;
+
+  // TL-UL to DMI transducing
+  assign tap_tl_h2d.d_ready  = dmi_resp_ready;
+  assign dmi_resp_valid      = tap_tl_d2h.d_valid;
+  assign dmi_resp.data       = tap_tl_d2h.d_data;
+  assign dmi_resp.resp       = '0; // unused inside dmi_jtag
+
+  // These signals are unused
+  logic unused_tap_tl_d2h;
+  assign unused_tap_tl_d2h = ^{
+    tap_tl_d2h.d_opcode,
+    tap_tl_d2h.d_param,
+    tap_tl_d2h.d_size,
+    tap_tl_d2h.d_source,
+    tap_tl_d2h.d_sink,
+    tap_tl_d2h.d_user,
+    tap_tl_d2h.d_error
+  };
 
   ///////////////////////////////////////
   // Transition Interface and HW Mutex //

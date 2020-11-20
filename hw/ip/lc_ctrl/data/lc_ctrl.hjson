@@ -5,6 +5,7 @@
   clock_primary: "clk_i",
   bus_device: "tlul",
   bus_host: "none",
+  scan: "true", // Enable `scanmode_i` port
   regwidth: "32",
 
 
@@ -57,6 +58,13 @@
   /////////////////////////////
 
   inter_signal_list: [
+    // life cycle JTAG TAP
+    { struct:  "jtag"
+      type:    "req_rsp"
+      name:    "jtag"
+      act:     "rsp"
+      package: "rv_dm_pkg"
+    }
     // Escalation inputs from alert handler
     { struct:  "esc_tx"
       type:    "uni"
