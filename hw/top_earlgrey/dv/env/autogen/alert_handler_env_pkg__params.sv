@@ -10,11 +10,17 @@ parameter string LIST_OF_ALERTS[] = {
   "otbn_imem_uncorrectable",
   "otbn_dmem_uncorrectable",
   "otbn_reg_uncorrectable",
-  "sensor_ctrl_ast_alerts",
+  "sensor_ctrl_as",
+  "sensor_ctrl_cg",
+  "sensor_ctrl_gd",
+  "sensor_ctrl_ts_hi",
+  "sensor_ctrl_ts_lo",
+  "sensor_ctrl_ls",
+  "sensor_ctrl_ot",
   "keymgr_fault_err",
   "keymgr_operation_err",
   "otp_ctrl_otp_macro_failure",
   "otp_ctrl_otp_check_failure"
 };
 
-parameter uint NUM_ALERTS = 10;
+parameter uint NUM_ALERTS = 16;

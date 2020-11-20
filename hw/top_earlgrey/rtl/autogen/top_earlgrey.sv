@@ -1046,13 +1046,13 @@ module top_earlgrey #(
 
   sensor_ctrl u_sensor_ctrl (
 
-      // [2]: ast_alerts
-      // [3]: ast_alerts
-      // [4]: ast_alerts
-      // [5]: ast_alerts
-      // [6]: ast_alerts
-      // [7]: ast_alerts
-      // [8]: ast_alerts
+      // [2]: as
+      // [3]: cg
+      // [4]: gd
+      // [5]: ts_hi
+      // [6]: ts_lo
+      // [7]: ls
+      // [8]: ot
       .alert_tx_o  ( alert_tx[8:2] ),
       .alert_rx_i  ( alert_rx[8:2] ),
 
