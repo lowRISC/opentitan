@@ -486,6 +486,12 @@
           act: "rcv"
           name: "flash_test_voltage_h"
         },
+        { struct: "lc_tx",
+          package: "lc_ctrl",
+          type: "uni"
+          act: "rcv"
+          name: "lc_dft_en"
+        },
       ],
     },
   ],
@@ -510,6 +516,10 @@
       // TODO see #4447
       //'edn0.edn' : ['keymgr.edn'],
 
+
+      // life cycle connections
+      // Temporarily commented out because lc_ctrl not instantiated yet
+      //'lc_ctrl.lc_dft_en': ['eflash.lc_dft_en'],
 
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key': ['keymgr.otp_key'],

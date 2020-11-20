@@ -382,6 +382,14 @@ package flash_ctrl_pkg;
     entropy: '0
   };
 
+  // dft_en jtag selection
+  typedef enum logic [2:0] {
+    FlashLcTckSel,
+    FlashLcTdiSel,
+    FlashLcTmsSel,
+    FlashLcTdoSel,
+    FlashLcJtagLast
+  } flash_lc_jtag_e;
 
   // find the max number pages among info types
   function automatic integer max_info_pages(int infos[InfoTypes]);
