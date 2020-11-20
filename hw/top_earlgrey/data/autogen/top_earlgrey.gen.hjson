@@ -3648,6 +3648,58 @@
           top_signame: eflash_tl
           index: -1
         }
+        {
+          struct: logic
+          package: ""
+          type: uni
+          act: rcv
+          name: flash_power_down_h
+          inst_name: eflash
+          width: 1
+          default: ""
+          external: true
+          top_signame: flash_power_down_h
+          index: -1
+        }
+        {
+          struct: logic
+          package: ""
+          type: uni
+          act: rcv
+          name: flash_power_ready_h
+          inst_name: eflash
+          width: 1
+          default: ""
+          external: true
+          top_signame: flash_power_ready_h
+          index: -1
+        }
+        {
+          struct: logic
+          package: ""
+          width: 2
+          type: uni
+          act: rcv
+          name: flash_test_mode_a
+          inst_name: eflash
+          default: ""
+          external: true
+          top_signame: flash_test_mode_a
+          index: -1
+        }
+        {
+          struct: logic
+          package: ""
+          type: uni
+          act: rcv
+          name: flash_test_voltage_h
+          inst_name: eflash
+          width: 1
+          default: ""
+          external: true
+          top_signame: flash_test_voltage_h
+          index: -1
+        }
       ]
       clock_reset_export: []
       clock_connections:
@@ -3854,6 +3906,10 @@
       peri.tl_ast_wrapper: ast_tl
       otp_ctrl.otp_ast_pwr_seq: ""
       otp_ctrl.otp_ast_pwr_seq_h: ""
+      eflash.flash_power_down_h: flash_power_down_h
+      eflash.flash_power_ready_h: flash_power_ready_h
+      eflash.flash_test_mode_a: flash_test_mode_a
+      eflash.flash_test_voltage_h: flash_test_voltage_h
       clkmgr.clocks_ast: clks_ast
       rstmgr.resets_ast: rsts_ast
     }
@@ -7369,6 +7425,58 @@
         index: -1
       }
       {
+        struct: logic
+        package: ""
+        type: uni
+        act: rcv
+        name: flash_power_down_h
+        inst_name: eflash
+        width: 1
+        default: ""
+        external: true
+        top_signame: flash_power_down_h
+        index: -1
+      }
+      {
+        struct: logic
+        package: ""
+        type: uni
+        act: rcv
+        name: flash_power_ready_h
+        inst_name: eflash
+        width: 1
+        default: ""
+        external: true
+        top_signame: flash_power_ready_h
+        index: -1
+      }
+      {
+        struct: logic
+        package: ""
+        width: 2
+        type: uni
+        act: rcv
+        name: flash_test_mode_a
+        inst_name: eflash
+        default: ""
+        external: true
+        top_signame: flash_test_mode_a
+        index: -1
+      }
+      {
+        struct: logic
+        package: ""
+        type: uni
+        act: rcv
+        name: flash_test_voltage_h
+        inst_name: eflash
+        width: 1
+        default: ""
+        external: true
+        top_signame: flash_test_voltage_h
+        index: -1
+      }
+      {
         struct: tl
         type: req_rsp
         name: tl_corei
@@ -7898,6 +8006,42 @@
         width: 1
         type: uni
         default: "'0"
+        direction: in
+      }
+      {
+        package: ""
+        struct: logic
+        signame: flash_power_down_h_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+      }
+      {
+        package: ""
+        struct: logic
+        signame: flash_power_ready_h_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+      }
+      {
+        package: ""
+        struct: logic
+        signame: flash_test_mode_a_i
+        width: 2
+        type: uni
+        default: ""
+        direction: in
+      }
+      {
+        package: ""
+        struct: logic
+        signame: flash_test_voltage_h_i
+        width: 1
+        type: uni
+        default: ""
         direction: in
       }
       {

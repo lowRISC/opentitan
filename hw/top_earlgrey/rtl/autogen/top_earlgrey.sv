@@ -69,6 +69,10 @@ module top_earlgrey #(
   input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
   output otp_ctrl_pkg::otp_ast_req_t       otp_ctrl_otp_ast_pwr_seq_o,
   input  otp_ctrl_pkg::otp_ast_rsp_t       otp_ctrl_otp_ast_pwr_seq_h_i,
+  input  logic       flash_power_down_h_i,
+  input  logic       flash_power_ready_h_i,
+  input  logic [1:0] flash_test_mode_a_i,
+  input  logic       flash_test_voltage_h_i,
   output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
   output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,
   input               scan_rst_ni, // reset used for test mode
@@ -631,7 +635,13 @@ module top_earlgrey #(
     .host_rderr_o    (flash_host_rderr),
     .host_rdata_o    (flash_host_rdata),
     .flash_ctrl_i    (flash_ctrl_flash_req),
-    .flash_ctrl_o    (flash_ctrl_flash_rsp)
+    .flash_ctrl_o    (flash_ctrl_flash_rsp),
+    .flash_power_down_h_i,
+    .flash_power_ready_h_i,
+    .flash_test_mode_a_i,
+    .flash_test_voltage_h_i,
+    .scanmode_i,
+    .scan_rst_ni
   );
 
 
