@@ -252,6 +252,19 @@ module top_${top["name"]} #(
   // Debug Module (RISC-V Debug Spec 0.13)
   //
 
+  // TODO: this will be routed to the pinmux for TAP selection
+  // based on straps and LC control signals.
+  rv_dm_pkg::jtag_req_t jtag_req;
+  rv_dm_pkg::jtag_rsp_t jtag_rsp;
+  logic unused_jtag_tdo_oe_o;
+
+  assign jtag_req.tck    = jtag_tck_i;
+  assign jtag_req.tms    = jtag_tms_i;
+  assign jtag_req.trst_n = jtag_trst_ni;
+  assign jtag_req.tdi    = jtag_tdi_i;
+  assign jtag_tdo_o      = jtag_rsp.tdo;
+  assign unused_jtag_tdo_oe_o = jtag_rsp.tdo_oe;
+
   rv_dm #(
     .NrHarts     (1),
     .IdcodeValue (JTAG_IDCODE)
@@ -273,12 +286,8 @@ module top_${top["name"]} #(
     .tl_h_i        (main_tl_dm_sba_rsp),
 
     //JTAG
-    .tck_i            (jtag_tck_i),
-    .tms_i            (jtag_tms_i),
-    .trst_ni          (jtag_trst_ni),
-    .td_i             (jtag_tdi_i),
-    .td_o             (jtag_tdo_o),
-    .tdo_oe_o         (       )
+    .jtag_req_i    (jtag_req),
+    .jtag_rsp_o    (jtag_rsp)
   );
 
   assign rstmgr_cpu.ndmreset_req = ndmreset_req;
