@@ -28,6 +28,8 @@ clks_attr = top['clocks']
 cpu_clk = top['clocks']['hier_paths']['top'] + "clk_proc_main"
 cpu_rst = top["reset_paths"]["sys"]
 dm_rst = top["reset_paths"]["lc"]
+esc_clk = top['clocks']['hier_paths']['top'] + "clk_io_div4_timers"
+esc_rst = top["reset_paths"]["sys_io_div4"]
 
 unused_resets = lib.get_unused_resets(top)
 %>\
@@ -226,6 +228,8 @@ module top_${top["name"]} #(
     // clock and reset
     .clk_i                (${cpu_clk}),
     .rst_ni               (${cpu_rst}[rstmgr_pkg::Domain0Sel]),
+    .clk_esc_i            (${esc_clk}),
+    .rst_esc_ni           (${esc_rst}[rstmgr_pkg::Domain0Sel]),
     .test_en_i            (1'b0),
     // static pinning
     .hart_id_i            (32'b0),
@@ -240,8 +244,6 @@ module top_${top["name"]} #(
     .irq_timer_i          (intr_rv_timer_timer_expired_0_0),
     .irq_external_i       (irq_plic),
     // escalation input from alert handler (NMI)
-    // TODO: need to put the escalation receiver
-    // into the alert handler clock domain.
     .esc_tx_i             (esc_tx[0]),
     .esc_rx_o             (esc_rx[0]),
     // debug interface

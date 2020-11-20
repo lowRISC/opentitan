@@ -141,20 +141,6 @@
         }],
       pipeline_byp: "false"
     },
-    { name:      "alert_handler",
-      type:      "device",
-      clock:     "clk_main_i",
-      inst_type: "alert_handler",
-      pipeline_byp: "false"
-    },
-    // dummy module to capture the alert handler escalation signals
-    // and test them by converting them into IRQs
-    { name:      "nmi_gen",
-      type:      "device",
-      clock:     "clk_main_i",
-      inst_type: "nmi_gen",
-      pipeline_byp: "false"
-    }
     { name:      "otbn",
       type:      "device",
       clock:     "clk_main_i"
@@ -172,9 +158,9 @@
     corei:  ["rom", "debug_mem", "ram_main", "eflash"],
     cored:  ["rom", "debug_mem", "ram_main", "eflash", "peri", "flash_ctrl",
     "aes", "entropy_src", "csrng", "edn0", "edn1",
-    "hmac", "rv_plic", "pinmux", "padctrl", "alert_handler", "nmi_gen", "otbn", "keymgr", "kmac"],
+    "hmac", "rv_plic", "pinmux", "padctrl", "otbn", "keymgr", "kmac"],
     dm_sba: ["rom",              "ram_main", "eflash", "peri", "flash_ctrl",
     "aes", "entropy_src", "csrng", "edn0", "edn1",
-    "hmac", "rv_plic", "pinmux", "padctrl", "alert_handler", "nmi_gen", "otbn", "kmac"],
+    "hmac", "rv_plic", "pinmux", "padctrl", "otbn", "kmac"],
   },
 }
