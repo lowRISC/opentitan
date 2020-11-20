@@ -148,7 +148,7 @@ encoding-schemes: enc-schemes.yml
 # If specified, the lsu field for an instruction should be a dictionary with
 # the following fields:
 #
-#  type:    A string. "mem-load", "mem-store", "csr" or "wsr"
+#  type:    A string. "mem-load", "mem-store", "wsr-load", "wsr-store" or "csr"
 #
 #  target:  A string or list of strings, which should be operand names. If a
 #           single string, this means that the named operand contains the

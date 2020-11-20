@@ -168,7 +168,8 @@ module otbn_decoder
   logic branch_insn;
   logic jump_insn;
   logic loop_insn;
-  logic ispr_rw_insn;
+  logic ispr_rd_insn;
+  logic ispr_wr_insn;
   logic ispr_rs_insn;
 
   // Reduced main ALU immediate MUX for Operand B
@@ -257,7 +258,8 @@ module otbn_decoder
     branch_insn:   branch_insn,
     jump_insn:     jump_insn,
     loop_insn:     loop_insn,
-    ispr_rw_insn:  ispr_rw_insn,
+    ispr_rd_insn:  ispr_rd_insn,
+    ispr_wr_insn:  ispr_wr_insn,
     ispr_rs_insn:  ispr_rs_insn
   };
 
@@ -296,7 +298,8 @@ module otbn_decoder
     branch_insn            = 1'b0;
     jump_insn              = 1'b0;
     loop_insn              = 1'b0;
-    ispr_rw_insn           = 1'b0;
+    ispr_rd_insn           = 1'b0;
+    ispr_wr_insn           = 1'b0;
     ispr_rs_insn           = 1'b0;
 
     opcode                 = insn_opcode_e'(insn[6:0]);
@@ -459,7 +462,8 @@ module otbn_decoder
           rf_ren_a_base     = 1'b1;
 
           if (insn[14:12] == 3'b001) begin
-            ispr_rw_insn = 1'b1;
+            ispr_rd_insn = 1'b1;
+            ispr_wr_insn = 1'b1;
           end else if(insn[14:12] == 3'b010) begin
             ispr_rs_insn = 1'b1;
           end else begin
@@ -609,15 +613,14 @@ module otbn_decoder
               end
             end
           end
-          3'b111: begin //BN.WSRRS/BN.WSRRW
-            rf_we_bignum        = 1'b1;
-            rf_ren_a_bignum     = 1'b1;
-            rf_wdata_sel_bignum = RfWdSelIspr;
-
-            if (insn[31]) begin
-              ispr_rw_insn = 1'b1;
-            end else begin
-              ispr_rs_insn = 1'b1;
+          3'b111: begin
+            if (insn[31]) begin // BN.WSRW
+              rf_ren_a_bignum = 1'b1;
+              ispr_wr_insn    = 1'b1;
+            end else begin // BN.WSRR
+              rf_we_bignum        = 1'b1;
+              rf_wdata_sel_bignum = RfWdSelIspr;
+              ispr_rd_insn        = 1'b1;
             end
           end
           default: illegal_insn = 1'b1;

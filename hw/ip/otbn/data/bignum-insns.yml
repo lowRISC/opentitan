@@ -1003,30 +1003,49 @@
       spp: grs_inc
       dpp: grd_inc
 
-- mnemonic: bn.wsrrs
-  synopsis: Atomic Read and Set Bits in WSR
-  operands: [wrd, wsr, wrs]
+- mnemonic: bn.wsrr
+  synopsis: Read WSR to register
+  operands:
+    - name: wrd
+      doc: Destination WDR
+    - name: wsr
+      doc: The WSR to read
+  doc: |
+    Reads a WSR to a WDR.
+    If `wsr` isn't the index of a valid WSR, this halts with an error (TODO: Specify error code).
+  operation: |
+    WDR[wrd] = WSR[wsr]
   encoding:
     scheme: wcsr
     mapping:
       write: b0
       wcsr: wsr
-      wrs: wrs
+      wrs: bxxxxx
       wrd: wrd
   lsu:
-    type: wsr
+    type: wsr-load
     target: [wsr]
 
-- mnemonic: bn.wsrrw
-  synopsis: Atomic Read/Write WSR
-  operands: [wrd, wsr, wrs]
+- mnemonic: bn.wsrw
+  synopsis: Write WSR from register
+  operands: [wsr, wrs]
+  operands:
+    - name: wsr
+      doc: The WSR to read
+    - name: wrs
+      doc: Source WDR
+  doc: |
+    Writes a WDR to a WSR.
+    If `wsr` isn't the index of a valid WSR, this halts with an error (TODO: Specify error code).
+  operation: |
+    WSR[wsr] = WDR[wrs]
   encoding:
     scheme: wcsr
     mapping:
       write: b1
       wcsr: wsr
       wrs: wrs
-      wrd: wrd
+      wrd: bxxxxx
   lsu:
-    type: wsr
+    type: wsr-store
     target: [wsr]

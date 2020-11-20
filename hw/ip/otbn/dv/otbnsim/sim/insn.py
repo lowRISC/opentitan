@@ -882,39 +882,30 @@ class BNMOVR(OTBNInsn):
             state.gprs.get_reg(self.grs).write_unsigned(new_grs_val)
 
 
-class BNWSRRS(OTBNInsn):
-    insn = insn_for_mnemonic('bn.wsrrs', 3)
+class BNWSRR(OTBNInsn):
+    insn = insn_for_mnemonic('bn.wsrr', 2)
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
         self.wrd = op_vals['wrd']
         self.wsr = op_vals['wsr']
-        self.wrs = op_vals['wrs']
 
     def execute(self, state: OTBNState) -> None:
-        old_val = state.wsrs.read_at_idx(self.wsr)
-        bits_to_set = state.wdrs.get_reg(self.wrs).read_unsigned()
-        new_val = old_val | bits_to_set
-
-        state.wdrs.get_reg(self.wrd).write_unsigned(old_val)
-        state.wsrs.write_at_idx(self.wsr, new_val)
+        val = state.wsrs.read_at_idx(self.wsr)
+        state.wdrs.get_reg(self.wrd).write_unsigned(val)
 
 
-class BNWSRRW(OTBNInsn):
-    insn = insn_for_mnemonic('bn.wsrrw', 3)
+class BNWSRW(OTBNInsn):
+    insn = insn_for_mnemonic('bn.wsrw', 2)
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
-        self.wrd = op_vals['wrd']
         self.wsr = op_vals['wsr']
         self.wrs = op_vals['wrs']
 
     def execute(self, state: OTBNState) -> None:
-        old_val = state.wsrs.read_at_idx(self.wsr)
-        new_val = state.wdrs.get_reg(self.wrs).read_unsigned()
-
-        state.wdrs.get_reg(self.wrd).write_unsigned(old_val)
-        state.wsrs.write_at_idx(self.wsr, new_val)
+        val = state.wdrs.get_reg(self.wrs).read_unsigned()
+        state.wsrs.write_at_idx(self.wsr, val)
 
 
 INSN_CLASSES = [
@@ -935,5 +926,5 @@ INSN_CLASSES = [
     BNCMP, BNCMPB,
     BNLID, BNSID,
     BNMOV, BNMOVR,
-    BNWSRRS, BNWSRRW
+    BNWSRR, BNWSRW
 ]

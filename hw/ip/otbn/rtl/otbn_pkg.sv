@@ -232,7 +232,8 @@ package otbn_pkg;
     logic           branch_insn;
     logic           jump_insn;
     logic           loop_insn;
-    logic           ispr_rw_insn;
+    logic           ispr_rd_insn;
+    logic           ispr_wr_insn;
     logic           ispr_rs_insn;
   } insn_dec_shared_t;
 

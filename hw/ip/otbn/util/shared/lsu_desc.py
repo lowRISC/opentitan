@@ -16,7 +16,7 @@ class LSUDesc:
 
     '''
 
-    TYPES = ['mem-load', 'mem-store', 'csr', 'wsr']
+    TYPES = ['mem-load', 'mem-store', 'csr', 'wsr-load', 'wsr-store']
 
     def __init__(self,
                  lsu_type: str,
