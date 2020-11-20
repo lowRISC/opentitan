@@ -335,7 +335,7 @@ class ImmOperandType(OperandType):
         assert rng is not None
         lo, hi = rng
 
-        if not (lo <= shifted <= hi):
+        if not (lo <= offset_val <= hi):
             shifted_msg = (', which shifts down to {}'.format(shifted)
                            if self.shift != 0 else '')
             raise ValueError('Cannot encode the value {}{} as a {}-bit '
