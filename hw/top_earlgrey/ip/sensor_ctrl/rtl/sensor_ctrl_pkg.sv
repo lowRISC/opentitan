@@ -14,5 +14,4 @@ package sensor_ctrl_pkg;
     SwAck  = 1
   } ast_ack_mode_e;
 
-
 endpackage // sensor_ctrl_pkg
