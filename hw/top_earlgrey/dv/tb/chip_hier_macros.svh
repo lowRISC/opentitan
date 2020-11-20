@@ -12,12 +12,12 @@
 `define RAM_MAIN_HIER      `CHIP_HIER.u_ram1p_ram_main.u_mem
 `define RAM_RET_HIER       `CHIP_HIER.u_ram1p_ram_ret.u_mem
 `define ROM_HIER           `CHIP_HIER.u_rom_rom.u_prim_rom
-`define FLASH_HIER         `CHIP_HIER.u_flash_eflash
+`define FLASH_HIER         `CHIP_HIER.u_flash_eflash.u_flash
 `define RSTMGR_HIER        `CHIP_HIER.u_rstmgr
 `define CLKMGR_HIER        `CHIP_HIER.u_clkmgr
 `define USBDEV_HIER        `CHIP_HIER.u_usbdev
-`define FLASH_BANK0        `FLASH_HIER.gen_flash_banks[0].i_core.i_flash.gen_generic.u_impl_generic
-`define FLASH_BANK1        `FLASH_HIER.gen_flash_banks[1].i_core.i_flash.gen_generic.u_impl_generic
+`define FLASH_BANK0        `FLASH_HIER.gen_generic.u_impl_generic.gen_prim_flash_banks[0].u_prim_flash_bank
+`define FLASH_BANK1        `FLASH_HIER.gen_generic.u_impl_generic.gen_prim_flash_banks[1].u_prim_flash_bank
 `define FLASH0_MEM_HIER    `FLASH_BANK0.u_mem
 `define FLASH1_MEM_HIER    `FLASH_BANK1.u_mem
 `define FLASH0_INFO_HIER   `FLASH_BANK0.u_info_mem

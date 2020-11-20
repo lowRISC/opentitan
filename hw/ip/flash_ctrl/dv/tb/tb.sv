@@ -40,6 +40,9 @@ module tb;
     .flash_ctrl_tl_i    (tl_if.h2d),
     .flash_ctrl_tl_o    (tl_if.d2h),
 
+    .flash_power_ready_h_i (1'b1  ),
+    .flash_power_down_h_i  (1'b0  ),
+
     .eflash_tl_i        (eflash_tl_if.h2d),
     .eflash_tl_o        (eflash_tl_if.d2h),
 
@@ -61,10 +64,10 @@ module tb;
 
   // bind mem_bkdr_if
   `define FLASH_DATA_MEM_HIER(i) \
-      dut.u_flash_eflash.gen_flash_banks[``i``].i_core.i_flash.gen_generic.u_impl_generic.u_mem
+      dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[``i``].u_prim_flash_bank.u_mem
 
   `define FLASH_INFO_MEM_HIER(i) \
-      dut.u_flash_eflash.gen_flash_banks[``i``].i_core.i_flash.gen_generic.u_impl_generic.u_info_mem
+      dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[``i``].u_prim_flash_bank.u_info_mem
 
   generate
     for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : mem_bkdr_if_i

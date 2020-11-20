@@ -14,6 +14,10 @@ module flash_ctrl_wrapper (
   input        tlul_pkg::tl_h2d_t eflash_tl_i,
   output       tlul_pkg::tl_d2h_t eflash_tl_o,
 
+  // Analog Interface
+  input        flash_power_ready_h_i,
+  input        flash_power_down_h_i,
+
   // OTP interface
   input        flash_ctrl_pkg::otp_flash_t otp_i,
   input        lc_ctrl_pkg::lc_tx_t lc_provision_en_i,
@@ -101,7 +105,9 @@ module flash_ctrl_wrapper (
     .host_req_done_o (flash_host_req_done),
     .host_rdata_o    (flash_host_rdata),
     .flash_ctrl_i    (flash_ctrl_flash_req),
-    .flash_ctrl_o    (flash_ctrl_flash_rsp)
+    .flash_ctrl_o    (flash_ctrl_flash_rsp),
+    .flash_power_ready_h_i,
+    .flash_power_down_h_i
   );
 
 endmodule

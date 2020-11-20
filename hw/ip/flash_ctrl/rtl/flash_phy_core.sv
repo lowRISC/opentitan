@@ -10,8 +10,7 @@
 // Most of the items are TODO, at the moment only arbitration logic exists.
 
 module flash_phy_core import flash_phy_pkg::*; #(
-  parameter bit SkipInit     = 1,  // this is an option to reset flash to all F's at reset
-  parameter int ArbCnt       = 4   // this is an option to reset flash to all F's at reset
+  parameter int ArbCnt       = 4
 ) (
   input                              clk_i,
   input                              rst_ni,
@@ -34,15 +33,15 @@ module flash_phy_core import flash_phy_pkg::*; #(
   input [KeySize-1:0]                addr_key_i,
   input [KeySize-1:0]                data_key_i,
   input                              rd_buf_en_i,
-  output logic [ProgTypes-1:0]       prog_type_avail_o,
+  input  flash_phy_prim_flash_rsp_t  prim_flash_rsp_i,
+  output flash_phy_prim_flash_req_t  prim_flash_req_o,
   output logic                       host_req_rdy_o,
   output logic                       host_req_done_o,
   output logic                       rd_done_o,
   output logic                       prog_done_o,
   output logic                       erase_done_o,
   output logic [BusWidth-1:0]        rd_data_o,
-  output logic                       rd_err_o,
-  output logic                       init_busy_o
+  output logic                       rd_err_o
 );
 
 
@@ -364,51 +363,22 @@ module flash_phy_core import flash_phy_pkg::*; #(
   // Actual connection to flash phy
   ////////////////////////
 
-  wire [3:0] flash_test_mode_a;
-  wire flash_test_voltage_h;
+  // Connections to the actual flash macro wrapper
+  assign prim_flash_req_o = '{
+    rd_req: flash_rd_req,
+    prog_req: flash_prog_req,
+    prog_last: prog_last,
+    prog_type: prog_type_i,
+    pg_erase_req: flash_pg_erase_req,
+    bk_erase_req: flash_bk_erase_req,
+    addr: muxed_addr[BusBankAddrW-1:LsbAddrBit],
+    part: muxed_part,
+    prog_full_data: prog_full_data
+  };
 
-  assign flash_test_mode_a = '0;
-  assign flash_test_voltage_h = '0;
-
-  // The actual flash macro wrapper
-  // The size of a page is fixed.  However, depending on the sizing of the word,
-  // the number of words within a page will change.
-  prim_flash #(
-    .InfosPerBank(InfosPerBank),
-    .PagesPerBank(PagesPerBank),
-    .WordsPerPage(WordsPerPage),
-    .DataWidth(FullDataWidth),
-    .MetaDataWidth(MetaDataWidth),
-    .SkipInit(SkipInit)
-  ) i_flash (
-    .clk_i,
-    .rst_ni,
-    .rd_i(flash_rd_req),
-    .prog_i(flash_prog_req),
-    .prog_last_i(prog_last),
-    .prog_type_i(prog_type_i),
-    .pg_erase_i(flash_pg_erase_req),
-    .bk_erase_i(flash_bk_erase_req),
-    .addr_i(muxed_addr[BusBankAddrW-1:LsbAddrBit]),
-    .part_i(muxed_part),
-    .prog_data_i(prog_full_data),
-    .prog_type_avail_o(prog_type_avail_o),
-    .ack_o(ack),
-    .done_o(done),
-    .rd_data_o(flash_rdata),
-    .init_busy_o, // TBD this needs to be looked at later. What init do we need to do,
-                  // and where does it make the most sense?
-    .tck_i('0),
-    .tdi_i('0),
-    .tms_i('0),
-    .tdo_o(),
-    .scanmode_i('0),
-    .scan_reset_ni('0),
-    .flash_power_ready_hi('0),
-    .flash_power_down_hi('0),
-    .flash_test_mode_ai(flash_test_mode_a),
-    .flash_test_voltage_hi(flash_test_voltage_h)
-  );
+  assign ack = prim_flash_rsp_i.ack;
+  assign done = prim_flash_rsp_i.done;
+  assign flash_rdata = prim_flash_rsp_i.rdata;
 
   /////////////////////////////////
   // Assertions
