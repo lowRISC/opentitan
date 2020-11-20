@@ -22,6 +22,7 @@ custom_target(
   'spiflash_export',
   output: 'spiflash_export',
   command: export_target_command,
+  depend_files: [export_target_depend_files,],
   input: spiflash_bin,
   build_always_stale: true,
   build_by_default: true,

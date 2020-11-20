@@ -10,6 +10,9 @@ export_target_command = [
   '@OUTDIR@',
   '@INPUT@',
 ]
+export_target_depend_files = [
+  meson.source_root() / 'util/export_target.sh',
+]
 
 subdir('vendor')
 subdir('otbn')

@@ -59,6 +59,14 @@ otbn_build_command = [
   '@OUTDIR@',
   '@INPUT@',
 ]
+otbn_build_depend_files = [
+  prog_otbn_as,
+  prog_otbn_ld,
+  prog_objcopy.path(),
+  prog_as.path(),
+  prog_ld.path(),
+  prog_otbn_build,
+]
 
 # Note on variable naming below: Variables in meson are global, we hence prefix
 # all variables with sw_otbn as "our namespace". Variables which are meant to be
@@ -78,6 +86,7 @@ foreach sw_otbn__app_name, sw_otbn__app_sources : sw_otbn_sources
     input: sw_otbn__app_sources,
     output: sw_otbn__app_output_files,
     command: otbn_build_command,
+    depend_files: [otbn_build_depend_files,],
   )
 
   # A library containing the OTBN application in a form embeddable into device
@@ -104,6 +113,7 @@ foreach sw_otbn__app_name, sw_otbn__app_sources : sw_otbn_sources
   custom_target(
     'sw_otbn_app_export_' + sw_otbn__app_name,
     command: export_target_command,
+    depend_files: [export_target_depend_files,],
     input: [sw_otbn__target[1]],
     output: 'sw_otbn_app_export_' + sw_otbn__app_name,
     build_always_stale: true,
