@@ -23,6 +23,7 @@ class alert_receiver_base_seq extends dv_base_seq #(
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
         r_alert_ping_send == local::r_alert_ping_send;
         r_alert_rsp       == local::r_alert_rsp;
+        int_err           == 0; // TODO: current do not support alert_receiver int_err
     )
     `uvm_info(`gfn, $sformatf("seq_item: ping_send=%0b alert_rsp=%0b int_err=%0b",
                               req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_MEDIUM)
