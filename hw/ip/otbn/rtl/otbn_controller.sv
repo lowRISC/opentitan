@@ -518,6 +518,13 @@ module otbn_controller
     endcase
   end
 
+  // ISPR RS (read and set) must not be combined with ISPR RD or WR (read or write). ISPR RD and
+  // WR (read and write) is allowed.
+  `ASSERT(NoIsprRorWAndRs, insn_valid_i |-> ~(insn_dec_shared_i.ispr_rs_insn   &
+                                              (insn_dec_shared_i.ispr_rd_insn |
+                                               insn_dec_shared_i.ispr_wr_insn)))
+
+
   assign wsr_addr = wsr_e'(insn_dec_bignum_i.i[WsrNumWidth-1:0]);
 
   always_comb begin
@@ -533,7 +540,7 @@ module otbn_controller
 
   assign wsr_wdata = insn_dec_shared_i.ispr_rs_insn ? ispr_rdata_i | rf_bignum_rd_data_a_i : rf_bignum_rd_data_a_i;
 
-  assign ispr_wr_insn = insn_dec_shared_i.ispr_rw_insn | insn_dec_shared_i.ispr_rs_insn;
+  assign ispr_wr_insn = insn_dec_shared_i.ispr_wr_insn | insn_dec_shared_i.ispr_rs_insn;
 
   assign ispr_addr_o         = insn_dec_shared_i.subset == InsnSubsetBase ? ispr_addr_base : ispr_addr_bignum;
   assign ispr_base_wdata_o   = csr_wdata;
@@ -565,5 +572,9 @@ module otbn_controller
   // TODO: Implement error handling
   logic [1:0] unused_lsu_rdata_err;
   assign unused_lsu_rdata_err = lsu_rdata_err_i;
+
+  // Unused for now, may be used in later security hardening work
+  logic unused_ispr_rd_insn;
+  assign unused_ispr_rd_insn = insn_dec_shared_i.ispr_rd_insn;
 
 endmodule
