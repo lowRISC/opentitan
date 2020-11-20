@@ -124,11 +124,11 @@ csrrs x23, 0x7d5, x0
 # can cascade into later instructions.
 
 # w1 = mod = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be586e_9866bb3b_53769ada
-bn.wsrrs w1, 0, w0
+bn.wsrr w1, 0
 
 # rnd WSR gives fixed value for now
 # w2 = rnd = 0x99999999_99999999_99999999_99999999_99999999_99999999_99999999_99999999
-bn.wsrrs w2, 1, w0
+bn.wsrr w2, 1
 
 # w3 = w1 + w2 = 0x1296659f_bbc28370_23634ee9_22168ae8_613491bf_0357f208_320054d4_ed103473
 bn.add w3, w1, w2
@@ -152,7 +152,7 @@ bn.not w8, w1
 bn.rshi w9, w1, w2 >> 117
 
 # mod = w4 = 0xdf63326c_888f503c_f0301bb5_eee357b5_2e015e8b_d024bed4_fecd21a1_b9dd0141
-bn.wsrrw w0, 0, w4
+bn.wsrw 0, w4
 
 # w0 = 0
 bn.xor w0, w0, w0
@@ -230,7 +230,7 @@ bn.cmpb w4, w3
 bn.sel w28, w7, w8, FG0.L
 
 # acc = w26 = 0x78fccc06_2228e9d6_89c9b54f_887cf1df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff9bdb
-bn.wsrrw w0, 2, w26
+bn.wsrw 2, w26
 
 # {w30, w29} = (w28 * w27 + acc) =
 # 0x15a7cbef_a5f473e1_860c1110_6bcc33ed_1583aef1_8130f3df_1a806984_c4f3507e
@@ -259,7 +259,7 @@ bn.mulqacc         w27.1, w28.0, 64
 bn.mulqacc.wo w31, w27.1, w28.1, 128
 
 # w0 = acc = 0x2f97be14_a0c429f2_53b42730_953d7d2f_0873f36c_1a01de4e_17fe23d9_0f09b7c8
-bn.wsrrs w0, 2, w0
+bn.wsrr w0, 2
 
 # Nested loop testing, inner adds repeated a total of 3 * 5 = 15 times
 # x28 = 4, x29 = 3
