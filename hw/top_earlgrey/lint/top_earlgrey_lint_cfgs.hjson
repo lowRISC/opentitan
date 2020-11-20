@@ -207,6 +207,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/tlul/adapter_sram/lint/{tool}"
              },
+             {    name: sensor_ctrl
+                  fusesoc_core: lowrisc:systems:sensor_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/top_earlgrey/ip/sensor_ctrl/lint/{tool}"
+             },
              {    name: sram2tlul
                   fusesoc_core: lowrisc:tlul:sram2tlul
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
