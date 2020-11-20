@@ -29,7 +29,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
 
   hello_usbdev_embedded = custom_target(
     'hello_usbdev_' + device_name,
-    command: make_embedded_target,
+    command: make_embedded_target_command,
+    depend_files: [make_embedded_target_depend_files,],
     input: hello_usbdev_elf,
     output: make_embedded_target_outputs,
     build_by_default: true,
@@ -38,6 +39,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   custom_target(
     'hello_usbdev_export_' + device_name,
     command: export_target_command,
+    depend_files: [export_target_depend_files,],
     input: [hello_usbdev_elf, hello_usbdev_embedded],
     output: 'hello_usbdev_export_' + device_name,
     build_always_stale: true,

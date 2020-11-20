@@ -9,22 +9,23 @@ set -e
 # solution to read the rust-toolchain file from the Tock repository and set the
 # RUSTFLAGS environment variable.
 
-TARGET="${1}"
-MODE="${2}"
-MANIFEST_PATH="${3}"
-TARGET_DIR="${4}"
-TOOLCHAIN_FILE="${5}"
-export MESON_SOURCE_ROOT="${6}"
-export MESON_BUILD_ROOT="${7}"
-export RUSTFLAGS="${8}"
+CARGO="${1}"
+TARGET="${2}"
+MODE="${3}"
+MANIFEST_PATH="${4}"
+TARGET_DIR="${5}"
+TOOLCHAIN_FILE="${6}"
+export MESON_SOURCE_ROOT="${7}"
+export MESON_BUILD_ROOT="${8}"
+export RUSTFLAGS="${9}"
 
 if [[ "${MODE}" == "release" ]]; then
-	RELEASE_FLAG="--release"
+  RELEASE_FLAG="--release"
 fi
 
-cargo +"$(cat ${TOOLCHAIN_FILE})" build \
-	--target "${TARGET}" \
-	--manifest-path "${MANIFEST_PATH}" \
-	--target-dir "${TARGET_DIR}" \
-	--features="${TOCK_FEATURES}" \
-	${RELEASE_FLAG}
+"${CARGO}" +"$(cat ${TOOLCHAIN_FILE})" build \
+  --target "${TARGET}" \
+  --manifest-path "${MANIFEST_PATH}" \
+  --target-dir "${TARGET_DIR}" \
+  --features="${TOCK_FEATURES}" \
+  ${RELEASE_FLAG}

@@ -10,14 +10,18 @@ subdir('exts')
 #
 # These definitions should only be available to directories which define executables.
 make_embedded_target_outputs = ['@BASENAME@.bin', '@BASENAME@.dis', '@BASENAME@.32.vmem', '@BASENAME@.64.vmem']
-make_embedded_target = [
-  prog_python, meson.source_root() / 'util/embedded_target.py',
+make_embedded_target_command = [
+  prog_python,
+  meson.source_root() / 'util/embedded_target.py',
   '--objcopy', prog_objcopy,
   '--srec_cat', prog_srec_cat,
   '--objdump', prog_objdump,
   '--input', '@INPUT@',
   '--basename', '@BASENAME@',
   '--outdir', '@OUTDIR@',
+]
+make_embedded_target_depend_files = [
+  meson.source_root() / 'util/embedded_target.py',
 ]
 
 embedded_target_extra_link_args = [

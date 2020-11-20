@@ -26,7 +26,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
 
   hello_world_embedded = custom_target(
     'hello_world_' + device_name,
-    command: make_embedded_target,
+    command: make_embedded_target_command,
+    depend_files: [make_embedded_target_depend_files,],
     input: hello_world_elf,
     output: make_embedded_target_outputs,
     build_by_default: true,
@@ -35,6 +36,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   custom_target(
     'hello_world_export_' + device_name,
     command: export_target_command,
+    depend_files: [export_target_depend_files,],
     input: [hello_world_elf, hello_world_embedded],
     output: 'hello_world_export_' + device_name,
     build_always_stale: true,

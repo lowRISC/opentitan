@@ -46,6 +46,7 @@ rom_exts_manifest_offsets_header = custom_target(
   depend_files: [
     'manifest.h.tpl',
     'manifest.hjson',
+    meson.source_root() / 'util/rom-ext-manifest-generator.py',
   ],
   command: [
     prog_python,
@@ -94,7 +95,8 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
 
     rom_ext_embedded = custom_target(
       slot + '_' + device_name,
-      command: make_embedded_target,
+      command: make_embedded_target_command,
+      depend_files: [make_embedded_target_depend_files,],
       input: rom_ext_elf,
       output: make_embedded_target_outputs,
       build_by_default: true,
@@ -103,6 +105,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     custom_target(
       slot + '_export_' + device_name,
       command: export_target_command,
+      depend_files: [export_target_depend_files,],
       input: [rom_ext_elf, rom_ext_embedded],
       output: slot + '_export_' + device_name,
       build_always_stale: true,

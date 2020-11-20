@@ -29,6 +29,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   custom_target(
     'riscv_compliance_support_export_' + device_name,
     command: export_target_command,
+    depend_files: [export_target_depend_files,],
     input: [riscv_compliance_support],
     output: 'riscv_compliance_support_export_' + device_name,
     build_always_stale: true,
