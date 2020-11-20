@@ -25,8 +25,9 @@ int main(int argc, char **argv) {
       "gen_generic.u_impl_generic");
   memutil.RegisterMemoryArea(
       "flash",
-      ("TOP.top_earlgrey_verilator.top_earlgrey.u_flash_eflash."
-       "gen_flash_banks[0].i_core.i_flash.gen_generic.u_impl_generic.u_mem.gen_"
+      ("TOP.top_earlgrey_verilator.top_earlgrey.u_flash_eflash.u_flash."
+       "gen_generic.u_impl_generic.gen_prim_flash_banks[0].u_prim_flash_bank.u_"
+       "mem.gen_"
        "generic.u_impl_generic"),
       64, nullptr);
   simctrl.RegisterExtension(&memutil);
