@@ -32,8 +32,9 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
   ///////////////////////////
   // Register interface
   ///////////////////////////
-  sensor_ctrl_reg_pkg::sensor_ctrl_reg2hw_t reg2hw;
-  sensor_ctrl_reg_pkg::sensor_ctrl_hw2reg_t hw2reg;
+  import sensor_ctrl_reg_pkg::*;
+  sensor_ctrl_reg2hw_t reg2hw;
+  sensor_ctrl_hw2reg_t hw2reg;
 
   sensor_ctrl_reg_top u_reg (
     .clk_i,
@@ -54,11 +55,21 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
   ///////////////////////////
 
   logic [NumAlerts-1:0] diff_err;
+  logic [NumAlerts-1:0] alert_test;
   logic [NumAlerts-1:0] alerts_vld, alerts_clr;
   logic [NumAlerts-1:0] sw_ack_mode;
 
   // a particular alert is only valid if differential
   assign alerts_vld = ast_alert_i.alerts_p ^ ast_alert_i.alerts_n;
+
+  // alert test connection
+  assign alert_test[AsSel]   = reg2hw.alert_test.as.qe    & reg2hw.alert_test.as.q;
+  assign alert_test[CgSel]   = reg2hw.alert_test.cg.qe    & reg2hw.alert_test.cg.q;
+  assign alert_test[GdSel]   = reg2hw.alert_test.gd.qe    & reg2hw.alert_test.gd.q;
+  assign alert_test[TsHiSel] = reg2hw.alert_test.ts_hi.qe & reg2hw.alert_test.ts_hi.q;
+  assign alert_test[TsLoSel] = reg2hw.alert_test.ts_lo.qe & reg2hw.alert_test.ts_lo.q;
+  assign alert_test[LsSel]   = reg2hw.alert_test.ls.qe    & reg2hw.alert_test.ls.q;
+  assign alert_test[OtSel]   = reg2hw.alert_test.ot.qe    & reg2hw.alert_test.ot.q;
 
   // Differential errors are devasting and should never happen.
   // If differential errors are detected, hold state on that permanently until reboot.
@@ -111,6 +122,6 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
   end
 
   // alert trigger for test
-  assign ast_alert_o.alerts_trig = reg2hw.alert_trig;
+  assign ast_alert_o.alerts_trig = alert_test;
 
 endmodule // sensor_ctrl

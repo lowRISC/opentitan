@@ -24,12 +24,71 @@
       default: "2",
       desc:    "Number of IO rails",
       local:   "true"
+    },
+    { name:    "AsSel",
+      type:    "int",
+      default: "0",
+      desc:    "Active shield alert bit position",
+      local:   "true"
+    }
+    { name:    "CgSel",
+      type:    "int",
+      default: "1",
+      desc:    "Clock glitch alert bit position",
+      local:   "true"
+    }
+    { name:    "GdSel",
+      type:    "int",
+      default: "2",
+      desc:    "Glitch detector alert bit position",
+      local:   "true"
+    }
+    { name:    "TsHiSel",
+      type:    "int",
+      default: "3",
+      desc:    "Temperature high alert bit position",
+      local:   "true"
+    }
+    { name:    "TsLoSel",
+      type:    "int",
+      default: "4",
+      desc:    "Temperature low alert bit position",
+      local:   "true"
+    }
+    { name:    "LsSel",
+      type:    "int",
+      default: "5",
+      desc:    "Laser alert bit position",
+      local:   "true"
+    }
+    { name:    "OtSel",
+      type:    "int",
+      default: "6",
+      desc:    "Other alert bit position",
+      local:   "true"
     }
   ],
 
   alert_list: [
-    { name: "ast_alerts",
-      width: "7", // need to update tool to support param
+    { name: "as",
+      desc: "Triggered through AST",
+    },
+    { name: "cg",
+      desc: "Triggered through AST",
+    },
+    { name: "gd",
+      desc: "Triggered through AST",
+    },
+    { name: "ts_hi",
+      desc: "Triggered through AST",
+    },
+    { name: "ts_lo",
+      desc: "Triggered through AST",
+    },
+    { name: "ls",
+      desc: "Triggered through AST",
+    },
+    { name: "ot",
       desc: "Triggered through AST",
     },
   ]
@@ -89,33 +148,10 @@ registers: [
                 Acknowledge mode to alerts.
                 0 is immediate acknowledge, the hardware immedaitely acks an incoming alert.
                 1 is software acknowledge.  Software must program the appropriate bit in !!ALERT_STATE to acknowledge the alert.
-              ''',
+                ''',
               resval: "0"
             },
         ],
-      },
-    },
-
-    { multireg: {
-        cname: "SENSOR_CTRL",
-        name: "ALERT_TRIG",
-        desc: "Alert trigger test",
-        count: "NumAlerts",
-        swaccess: "rw",
-        hwaccess: "hro",
-        fields: [
-            { bits: "0",
-              name: "VAL",
-              desc: '''
-                Alert trigger for testing
-                0 No alerts triggered
-                1 Continuously trigger alert until disabled
-              ''',
-              resval: "0"
-            },
-        ],
-        tags: [// This register triggers alerts to fire and should be a directed test
-               "excl:CsrNonInitTests:CsrExclWrite"]
       },
     },
 
@@ -127,6 +163,7 @@ registers: [
           Software reads back the alert that was set and clears the appropriate bits to acknowledge the alert.
 
           This is only valid when !!ACK_MODE is set to software.
+          For bit mapping, please see !!ALERT_TEST
         ''',
         count: "NumAlerts",
         swaccess: "rw1c",
