@@ -12,34 +12,32 @@
 
 `include "prim_assert.sv"
 
-module rv_dm #(
-  parameter int                 NrHarts = 1,
-  parameter logic [31:0]        IdcodeValue = 32'h 0000_0001
+module rv_dm
+  import rv_dm_pkg::*;
+#(
+  parameter int              NrHarts = 1,
+  parameter logic [31:0]     IdcodeValue = 32'h 0000_0001
 ) (
-  input  logic                  clk_i,       // clock
-  input  logic                  rst_ni,      // asynchronous reset active low, connect PoR
-                                             // here, not the system reset
-  input  logic                  testmode_i,
-  output logic                  ndmreset_o,  // non-debug module reset
-  output logic                  dmactive_o,  // debug module is active
-  output logic [NrHarts-1:0]    debug_req_o, // async debug request
-  input  logic [NrHarts-1:0]    unavailable_i, // communicate whether the hart is unavailable
-                                               // (e.g.: power down)
+  input  logic               clk_i,       // clock
+  input  logic               rst_ni,      // asynchronous reset active low, connect PoR
+                                          // here, not the system reset
+  input  logic               testmode_i,
+  output logic               ndmreset_o,  // non-debug module reset
+  output logic               dmactive_o,  // debug module is active
+  output logic [NrHarts-1:0] debug_req_o, // async debug request
+  input  logic [NrHarts-1:0] unavailable_i, // communicate whether the hart is unavailable
+                                            // (e.g.: power down)
 
   // bus device with debug memory, for an execution based technique
-  input  tlul_pkg::tl_h2d_t tl_d_i,
-  output tlul_pkg::tl_d2h_t tl_d_o,
+  input  tlul_pkg::tl_h2d_t  tl_d_i,
+  output tlul_pkg::tl_d2h_t  tl_d_o,
 
   // bus host, for system bus accesses
   output tlul_pkg::tl_h2d_t  tl_h_o,
   input  tlul_pkg::tl_d2h_t  tl_h_i,
 
-  input  logic               tck_i,           // JTAG test clock pad
-  input  logic               tms_i,           // JTAG test mode select pad
-  input  logic               trst_ni,         // JTAG test reset pad
-  input  logic               td_i,            // JTAG test data input pad
-  output logic               td_o,            // JTAG test data output pad
-  output logic               tdo_oe_o         // Data out output enable
+  input  jtag_req_t          jtag_req_i,
+  output jtag_rsp_t          jtag_rsp_o
 );
 
   `ASSERT_INIT(paramCheckNrHarts, NrHarts > 0)
@@ -293,12 +291,12 @@ module rv_dm #(
     .dmi_resp_valid_i (dmi_rsp_valid),
 
     //JTAG
-    .tck_i,
-    .tms_i,
-    .trst_ni,
-    .td_i,
-    .td_o,
-    .tdo_oe_o
+    .tck_i            (jtag_req_i.tck),
+    .tms_i            (jtag_req_i.tms),
+    .trst_ni          (jtag_req_i.trst_n),
+    .td_i             (jtag_req_i.tdi),
+    .td_o             (jtag_rsp_o.tdo),
+    .tdo_oe_o         (jtag_rsp_o.tdo_oe)
   );
 `endif
 
