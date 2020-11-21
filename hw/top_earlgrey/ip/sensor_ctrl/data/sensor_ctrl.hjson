@@ -157,6 +157,30 @@ registers: [
 
     { multireg: {
         cname: "SENSOR_CTRL",
+        name: "ALERT_TRIG",
+        desc: "Alert trigger test",
+        count: "NumAlerts",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                Alert trigger for testing
+                0 No alerts triggered
+                1 Continuously trigger alert until disabled
+                For bit mapping, please see !!ALERT_TEST
+              ''',
+              resval: "0"
+            },
+        ],
+        tags: [// This register triggers alerts to fire and should be a directed test
+               "excl:CsrNonInitTests:CsrExclWrite"]
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
         name: "ALERT_STATE",
         desc: '''
           A bit is set whenever there is an incoming alert event.
