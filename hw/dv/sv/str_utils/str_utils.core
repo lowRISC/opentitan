@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:str_utils"
+description: "String manipulation utilities"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_macros
+    files:
+      - str_utils_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
