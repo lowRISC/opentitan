@@ -222,8 +222,8 @@ def main():
                         help="Elf section where log fields are written.")
     parser.add_argument('--rodata-sections',
                         '-r',
-                        default=[RODATA_SECTION],
                         nargs="+",
+                        action="append",
                         help="Elf sections with rodata.")
     parser.add_argument('--name',
                         '-n',
@@ -235,15 +235,25 @@ def main():
                         help="Output directory.")
     args = parser.parse_args()
 
+    if args.rodata_sections is None:
+        ro_sections = [RODATA_SECTION]
+    else:
+        # TODO: We want the `--rodata-sections` arg to have the 'extend' action
+        # which is only available in Python 3.8. To maintain compatibility with
+        # Python 3.6 (which is the minimum required version for OpenTitan), we
+        # flatten the list here instead.
+        ro_sections = list(
+            set([section for lst in args.rodata_sections for section in lst]))
+
     os.makedirs(args.outdir, exist_ok=True)
     rodata, result = extract_sw_logs(args.elf_file, args.logs_fields_section,
-                                     args.rodata_sections)
+                                     ro_sections)
 
-    outfile = os.path.join(args.outdir, args.name + "_rodata.txt")
+    outfile = os.path.join(args.outdir, args.name + ".rodata.txt")
     with open(outfile, "w", encoding='utf-8') as f:
         f.write(rodata.strip())
 
-    outfile = os.path.join(args.outdir, args.name + "_logs.txt")
+    outfile = os.path.join(args.outdir, args.name + ".logs.txt")
     with open(outfile, "w", encoding='utf-8') as f:
         f.write(result.strip())
 
