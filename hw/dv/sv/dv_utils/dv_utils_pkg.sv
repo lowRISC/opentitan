@@ -6,6 +6,7 @@ package dv_utils_pkg;
   // dep packages
   import uvm_pkg::*;
   import bus_params_pkg::*;
+  import str_utils_pkg::*;
 
   // macro includes
   `include "dv_macros.svh"
