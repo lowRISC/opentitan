@@ -69,7 +69,7 @@ class dv_report_server extends uvm_default_report_server;
       string        file_line;
 
       if (show_file_line && filename != "") begin
-        if (!show_file_path) filename = get_no_hier_filename(filename);
+        if (!show_file_path) filename = str_utils_pkg::str_path_basename(filename);
         file_line = $sformatf("(%0s:%0d) ", filename, line);
       end
       obj_name = {obj_name, ((obj_name != "") ? " " : "")};
@@ -77,14 +77,6 @@ class dv_report_server extends uvm_default_report_server;
                                           severity.name(), $realtime, id, message);
       return compose_report_message;
     end
-  endfunction
-
-  // get we don't really want the full path to the filename
-  // this should be reasonably lightweight
-  local function string get_no_hier_filename(string filename);
-    int idx;
-    for (idx = filename.len() - 1; idx >= 0; idx--) if (filename[idx] == "/") break;
-    return (filename.substr(idx + 1, filename.len() - 1));
   endfunction
 
 endclass
