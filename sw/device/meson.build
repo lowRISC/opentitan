@@ -28,6 +28,21 @@ embedded_target_extra_link_args = [
   '-Wl,--build-id=none',
 ]
 
+# Generate the txt files (rodata sections and logs deconstructed from the elf) used by DV
+# simulations.
+extract_sw_logs_sim_dv_outputs = ['@BASENAME@.rodata.txt', '@BASENAME@.logs.txt']
+extract_sw_logs_sim_dv_command = [
+  prog_python, meson.source_root() / 'util/device_sw_utils/extract_sw_logs.py',
+  '--elf-file', '@INPUT@',
+  '--rodata-sections', '.rodata',
+  '--logs-fields-section', '.logs.fields',
+  '--name', '@BASENAME@',
+  '--outdir', '@OUTDIR@',
+]
+extract_sw_logs_sim_dv_depend_files = [
+  meson.source_root() / 'util/device_sw_utils/extract_sw_logs.py',
+]
+
 subdir('boot_rom')
 subdir('rom_exts')
 subdir('mask_rom')

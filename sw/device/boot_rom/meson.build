@@ -70,11 +70,26 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     build_by_default: true,
   )
 
+  boot_rom_sim_dv_logs = []
+  if device_name == 'sim_dv'
+    boot_rom_sim_dv_logs = custom_target(
+      'boot_rom_dv_logs',
+      # Boot_rom has additional RO data sections of interest to DV logging.
+      command: [
+        extract_sw_logs_sim_dv_command,
+        '--rodata-sections', '.chip_info',
+      ],
+      depend_files: [extract_sw_logs_sim_dv_depend_files,],
+      input: boot_rom_elf,
+      output: extract_sw_logs_sim_dv_outputs,
+    )
+  endif
+
   custom_target(
     'boot_rom_export_' + device_name,
     command: export_target_command,
     depend_files: [export_target_depend_files,],
-    input: [boot_rom_elf, boot_rom_embedded],
+    input: [boot_rom_elf, boot_rom_embedded, boot_rom_sim_dv_logs,],
     output: 'boot_rom_export_' + device_name,
     build_always_stale: true,
     build_by_default: true,
