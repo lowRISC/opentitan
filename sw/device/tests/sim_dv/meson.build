@@ -21,6 +21,7 @@ uart_tx_rx_test_lib = declare_dependency(
 sw_tests += {
   'uart_tx_rx_test': {
     'library': uart_tx_rx_test_lib,
+    'dv_frames': true,
   }
 }
 

@@ -161,19 +161,52 @@ foreach sw_test_name, sw_test_info : sw_tests
       build_by_default: true,
     )
 
-    sw_test_dv_frames = []
+    sw_test_sim_dv_frames = []
     if device_name == 'sim_dv' and \
         sw_test_info.has_key('dv_frames') and sw_test_info['dv_frames']
-      sw_test_dv_frames = custom_target(
-        sw_test_name + '_dv_frames',
+      sw_test_sim_dv_frames_bin = custom_target(
+        sw_test_name + '_sim_dv_frames_bin',
         command: [
           spiflash_bin,
           '--input=@INPUT@',
           '--dump-frames=@OUTPUT@',
         ],
         input: sw_test_embedded[0],
-        output: '@BASENAME@.frames',
-        build_by_default: true
+        output: '@BASENAME@.frames.bin',
+      )
+
+      sw_test_sim_dv_frames_vmem = custom_target(
+        sw_test_name + '_sim_dv_frames_vmem',
+        command: [
+          prog_srec_cat,
+          '@INPUT@',
+          '--binary',
+          '--offset', '0x0',
+          '--byte-swap', '4',
+          '--fill', '0xff',
+          '-within', '@INPUT@',
+          '-binary',
+          '-range-pad', '4',
+          '--output', '@OUTPUT@',
+          '--vmem',
+        ],
+        input: sw_test_sim_dv_frames_bin,
+        output: '@BASENAME@.vmem',
+      )
+      sw_test_sim_dv_frames = [
+        sw_test_sim_dv_frames_bin,
+        sw_test_sim_dv_frames_vmem,
+      ]
+    endif
+
+    sw_test_sim_dv_logs = []
+    if device_name == 'sim_dv'
+      sw_test_sim_dv_logs = custom_target(
+        sw_test_name + '_sim_dv_logs',
+        command: extract_sw_logs_sim_dv_command,
+        depend_files: [extract_sw_logs_sim_dv_depend_files,],
+        input: sw_test_elf,
+        output: extract_sw_logs_sim_dv_outputs,
       )
     endif
 
@@ -181,7 +214,12 @@ foreach sw_test_name, sw_test_info : sw_tests
       sw_test_name + '_export_' + device_name,
       command: export_target_command,
       depend_files: [export_target_depend_files,],
-      input: [sw_test_elf, sw_test_embedded, sw_test_dv_frames],
+      input: [
+        sw_test_elf,
+        sw_test_embedded,
+        sw_test_sim_dv_frames,
+        sw_test_sim_dv_logs,
+      ],
       output: sw_test_name + '_export_' + device_name,
       build_always_stale: true,
       build_by_default: true,
