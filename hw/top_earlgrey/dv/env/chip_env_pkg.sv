@@ -20,6 +20,7 @@ package chip_env_pkg;
   import sw_test_status_pkg::*;
   import xbar_env_pkg::*;
   import bus_params_pkg::*;
+  import str_utils_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -40,6 +41,7 @@ package chip_env_pkg;
   typedef virtual pins_if #(NUM_GPIOS)  gpio_vif;
   typedef virtual mem_bkdr_if           mem_bkdr_vif;
   typedef virtual sw_logger_if          sw_logger_vif;
+  typedef virtual sw_test_status_if     sw_test_status_vif;
 
   // Types of memories in the chip.
   typedef enum {

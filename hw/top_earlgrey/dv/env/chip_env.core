@@ -10,6 +10,7 @@ filesets:
       - lowrisc:opentitan:bus_params_pkg
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:dv:ralgen
+      - lowrisc:dv:str_utils
       - lowrisc:dv:cip_lib
       - lowrisc:dv:uart_agent
       - lowrisc:dv:jtag_agent

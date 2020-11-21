@@ -104,6 +104,6 @@ class chip_env extends cip_base_env #(
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
-  endfunction : end_of_elaboration_phase
+  endfunction
 
 endclass
