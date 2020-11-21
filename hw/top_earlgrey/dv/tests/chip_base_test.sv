@@ -26,32 +26,37 @@ class chip_base_test extends cip_base_test #(
     // Knob to set the UART baud rate (set to 2M by default).
     void'($value$plusargs("uart_baud_rate=%0d", cfg.uart_baud_rate));
 
-    // Knob to configure writing sw logs to a separate file (enabled by default).
-    void'($value$plusargs("write_sw_logs_to_file=%0b", cfg.write_sw_logs_to_file));
+    // The following plurargs are only valid for SW based tests.
+    if (!cfg.stub_cpu) begin
+      string sw_images_plusarg;
 
-    // Knob to enable logging over UART (disabled by default).
-    void'($value$plusargs("en_uart_logger=%0b", cfg.en_uart_logger));
-    cfg.m_uart_agent_cfg.en_logger = cfg.en_uart_logger;
-    cfg.m_uart_agent_cfg.write_logs_to_file = cfg.write_sw_logs_to_file;
+      // Knob to configure writing sw logs to a separate file (enabled by default).
+      void'($value$plusargs("write_sw_logs_to_file=%0b", cfg.write_sw_logs_to_file));
 
-    // Knob to set the sw_test_timeout_ns (set to 5ms by default).
-    void'($value$plusargs("sw_test_timeout_ns=%0d", cfg.sw_test_timeout_ns));
+      // Knob to enable logging over UART (disabled by default).
+      void'($value$plusargs("en_uart_logger=%0b", cfg.en_uart_logger));
+      cfg.m_uart_agent_cfg.en_logger = cfg.en_uart_logger;
+      cfg.m_uart_agent_cfg.write_logs_to_file = cfg.write_sw_logs_to_file;
 
-    // Knob to pre-initialize RAM to 0s (disabled by default).
-    void'($value$plusargs("initialize_ram=%0b", cfg.initialize_ram));
+      // Knob to set the sw_test_timeout_ns (set to 5ms by default).
+      void'($value$plusargs("sw_test_timeout_ns=%0d", cfg.sw_test_timeout_ns));
 
-    // Knob to use spi or backdoor to load bootstrap
-    void'($value$plusargs("use_spi_load_bootstrap=%0b", cfg.use_spi_load_bootstrap));
+      // Knob to pre-initialize RAM to 0s (disabled by default).
+      void'($value$plusargs("initialize_ram=%0b", cfg.initialize_ram));
 
-    // Knob to indicate the SW test is external (non-standard).
-    void'($value$plusargs("sw_test_is_external=%0b", cfg.sw_test_is_external));
+      // Knob to use SPI to load image via ROM bootstrap.
+      void'($value$plusargs("use_spi_load_bootstrap=%0b", cfg.use_spi_load_bootstrap));
 
-    // Knob to set custom sw image names for rom and sw.
-    // Example: "+sw_images[SwTypeRom]=mask_rom", or "+sw_images[0]=mask_rom".
-    foreach (cfg.sw_images[i]) begin
-      sw_type_e sw_type = sw_type_e'(i);
-      void'($value$plusargs({"sw_images[", $sformatf("%0d", i), "]=%0s"}, cfg.sw_images[i]));
-      void'($value$plusargs({"sw_images[", sw_type.name(), "]=%0s"}, cfg.sw_images[i]));
+      // Knob to indicate where to pick up the SW images from.
+      void'($value$plusargs("sw_build_bin_dir=%0s", cfg.sw_build_bin_dir));
+
+      // Knob to indicate what build device to use (DV, Verilator or FPGA).
+      void'($value$plusargs("sw_build_device=%0s", cfg.sw_build_device));
+
+      // Knob to set custom sw image names for rom and sw.
+      if ($value$plusargs("sw_images=%0s", sw_images_plusarg)) begin
+        cfg.parse_sw_images_string(sw_images_plusarg);
+      end
     end
   endfunction : build_phase
 

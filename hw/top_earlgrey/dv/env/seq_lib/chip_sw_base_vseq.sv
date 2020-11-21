@@ -22,7 +22,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // initialize the sw logger interface
     foreach (cfg.sw_images[i]) begin
-      cfg.sw_logger_vif.set_sw_name(cfg.sw_images[i]);
+      cfg.sw_logger_vif.add_sw_log_db(cfg.sw_images[i]);
     end
     cfg.sw_logger_vif.sw_log_addr = SW_DV_LOG_ADDR;
     cfg.sw_logger_vif.write_sw_logs_to_file = cfg.write_sw_logs_to_file;
@@ -37,13 +37,13 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.mem_bkdr_vifs[FlashBank1].set_mem();
 
     // Backdoor load memories with sw images.
-    cfg.mem_bkdr_vifs[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".vmem"});
+    cfg.mem_bkdr_vifs[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
 
     // TODO: the location of the main execution image should be randomized for either bank in future
     if (cfg.use_spi_load_bootstrap) begin
-      spi_device_load_bootstrap();
+      spi_device_load_bootstrap({cfg.sw_images[SwTypeTest], ".frames.vmem"});
     end else begin
-      cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file({cfg.sw_images[SwTypeTest], ".vmem"});
+      cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file({cfg.sw_images[SwTypeTest], ".64.vmem"});
     end
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
   endtask
@@ -87,7 +87,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     endcase
   endfunction
 
-  virtual task spi_device_load_bootstrap();
+  virtual task spi_device_load_bootstrap(string sw_image);
     spi_host_seq m_spi_host_seq;
     byte sw_byte_q[$];
     uint byte_cnt;
@@ -101,7 +101,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // for the first frame of data, sdo from chip is unknown, ignore checking that
     cfg.m_spi_agent_cfg.en_monitor_checks = 0;
 
-    read_sw_frames(sw_byte_q);
+    read_sw_frames(sw_image, sw_byte_q);
 
     `DV_CHECK_EQ_FATAL((sw_byte_q.size % SPI_FRAME_BYTE_SIZE), 0,
                        "SPI data isn't aligned with frame size")
@@ -124,9 +124,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
   endtask
 
-  virtual function void read_sw_frames(ref byte sw_byte_q[$]);
+  virtual function void read_sw_frames(string sw_image, ref byte sw_byte_q[$]);
     int num_returns;
-    int mem_fd = $fopen(cfg.sw_frame_image, "r");
+    int mem_fd = $fopen(sw_image, "r");
     bit [31:0] word_data[7];
     string addr;
 
@@ -154,7 +154,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                                      input chip_mem_e mem = FlashBank0,
                                                      input sw_type_e sw_type = SwTypeTest);
 
-    string elf_file;
     bit [bus_params_pkg::BUS_AW-1:0] addr;
     uint size;
 
@@ -163,8 +162,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `DV_CHECK_STRNE_FATAL(cfg.sw_images[sw_type], "")
 
     // Find the symbol in the sw elf file.
-    elf_file = {cfg.sw_images[sw_type], ".elf"};
-    sw_symbol_get_addr_size(elf_file, symbol, addr, size);
+    sw_symbol_get_addr_size({cfg.sw_images[sw_type], ".elf"}, symbol, addr, size);
     `uvm_info(`gfn, $sformatf("Symbol \"%s\": addr = 0x%0h, size = %0d", symbol, addr, size),
               UVM_MEDIUM)
     addr -= get_chip_mem_base_addr(mem);
