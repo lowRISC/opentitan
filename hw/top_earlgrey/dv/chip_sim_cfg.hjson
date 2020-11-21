@@ -104,19 +104,26 @@
   // Add run modes.
   run_modes: [
     {
-      name: stub_cpu
+      name: sw_test_mode
+      sw_images: ["sw/device/boot_rom/boot_rom:0"]
+      run_opts: ["+sw_build_bin_dir={sw_build_dir}/build-bin",
+                 "+sw_build_device={sw_build_device}",
+                 "+sw_images=\\\"{sw_images}\\\""]
+    }
+    {
+      name: stub_cpu_mode
       run_opts: ["+stub_cpu=1"]
     }
     {
       // Append stub cpu mode to csr_tests_mode, run with 20 reseeds.
       name: csr_tests_mode
-      en_run_modes: ["stub_cpu"]
+      en_run_modes: ["stub_cpu_mode"]
       reseed: 20
     }
     {
       // Append stub cpu mode to mem_tests_mode, run with 20 reseeds.
       name: mem_tests_mode
-      en_run_modes: ["stub_cpu"]
+      en_run_modes: ["stub_cpu_mode"]
       reseed: 20
     }
     {
@@ -129,96 +136,112 @@
   // List of test specifications.
   //
   // If you are adding a test that has been generated from the `sw_tests`
-  // dictionary declared in `sw/device/tests/meson.build`, the `sw_test` key
+  // dictionary declared in `sw/device/tests/meson.build`, the `sw_images` list
   // below should contain `sw/device/tests/<sw_test_name>` (without any more
   // subdirectories) because that is where the meson target is created. For
   // example `dif_plic_smoketest` is added to `sw_tests` in
   // `sw/device/tests/dif/meson.build`, but the final meson targets all start
   // `sw/device/tests/dif_plic_smoketest_`.
+  //
+  // Each entry in `sw_images` is followed by an index separated with ':' which
+  // is used by the testbench to know what type of image is it:
+  // - 0 for boot_rom,
+  // - 1 for SW test,
+  // - 2 for OTBN and so on
+  // This allows an arbitrary number of SW images to be supplied to the TB.
   tests: [
     {
       name: chip_uart_tx_rx
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
-      sw_test: sw/device/tests/uart_tx_rx_test
+      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      en_run_modes: ["sw_test_mode"]
     }
     {
       name: chip_uart_tx_rx_bootstrap
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
-      sw_test: sw/device/tests/uart_tx_rx_test
+      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      en_run_modes: ["sw_test_mode"]
       run_opts: ["+use_spi_load_bootstrap=1"]
     }
     {
       name: chip_spi_tx_rx
       uvm_test_seq: chip_sw_spi_tx_rx_vseq
-      sw_test: sw/device/tests/spi_tx_rx_test
+      sw_images: ["sw/device/tests/spi_tx_rx_test:1"]
+      en_run_modes: ["sw_test_mode"]
     }
     {
       name: chip_aes_encr
       uvm_test_seq: chip_sw_base_vseq
-      sw_test: sw/device/tests/aes_test
+      sw_images: ["sw/device/tests/aes_test:1"]
+      en_run_modes: ["sw_test_mode"]
     }
     {
       name: chip_gpio
       uvm_test_seq: chip_sw_gpio_vseq
-      sw_test: sw/device/tests/gpio_test
+      sw_images: ["sw/device/tests/gpio_test:1"]
+      en_run_modes: ["sw_test_mode"]
     }
     {
       name: chip_dif_plic_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_test: sw/device/tests/dif_plic_smoketest
+      sw_images: ["sw/device/tests/dif_plic_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
     }
     {
       name: chip_flash_ctrl_access
       uvm_test_seq: chip_sw_base_vseq
-      sw_test: sw/device/tests/flash_ctrl_test
+      sw_images: ["sw/device/tests/flash_ctrl_test:1"]
+      en_run_modes: ["sw_test_mode"]
     }
     {
       name: chip_dif_otbn_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_test: sw/device/tests/dif_otbn_smoketest
+      sw_images: ["sw/device/tests/dif_otbn_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
     }
     {
       name: chip_hmac_sha256_encr
       uvm_test_seq: chip_sw_base_vseq
-      sw_test: sw/device/tests/sha256_test
+      sw_images: ["sw/device/tests/sha256_test:1"]
+      en_run_modes: ["sw_test_mode"]
     }
     {
       name: chip_rv_timer_irq
       uvm_test_seq: chip_sw_base_vseq
-      sw_test: sw/device/tests/dif_rv_timer_smoketest
+      sw_images: ["sw/device/tests/dif_rv_timer_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
     }
     {
       name: chip_coremark
       uvm_test_seq: chip_sw_base_vseq
-      sw_test: sw/device/benchmarks/coremark/coremark_top_earlgrey
+      sw_images: ["sw/device/benchmarks/coremark/coremark_top_earlgrey:1:external"]
+      en_run_modes: ["sw_test_mode"]
       run_opts: ["+en_uart_logger=1",
-                 "+sw_test_is_external=1",
                  "+sw_test_timeout_ns=22000000"]
     }
     {
       name: chip_opentitan_tock
       uvm_test_seq: chip_sw_base_vseq
-      sw_test: sw/device/tock/prebuilt/opentitan
-      sw_test_is_prebuilt: 1
+      sw_images: ["sw/device/tock/prebuilt/opentitan:1:prebuilt:external"]
+      en_run_modes: ["sw_test_mode"]
       run_opts: ["+en_uart_logger=1",
                  // TODO #2241: tock reads an un-initialized part of stack,
                  // which causes assertion errors to be thrown. This is a
                  // temporary workaround.
                  "+initialize_ram=1",
-                 "+sw_test_is_external=1",
                  "+sw_test_timeout_ns=50000000"]
     }
     {
       name: chip_shadow_reg_errors
       uvm_test_seq: chip_shadow_reg_errors_vseq
-      en_run_modes: ["stub_cpu"]
+      en_run_modes: ["stub_cpu_mode"]
       run_opts: ["+en_scb=0"]
     }
     // The test below is added in the included tl_access_tests.hjson.
-    // We just need to append the stub_cpu run mode to it.
+    // We just need to append the stub_cpu_mode run mode to it.
     {
       name: chip_tl_errors
-      en_run_modes: ["stub_cpu"]
+      en_run_modes: ["stub_cpu_mode"]
     }
   ]
 
