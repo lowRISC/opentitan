@@ -94,12 +94,14 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
     assign hw2reg.alert_state[i].d  = sw_ack_mode[i];
     assign hw2reg.alert_state[i].de = valid_alert;
 
+    logic alert_req;
+    assign alert_req = alert_test[i] | (sw_ack_mode[i] ? reg2hw.alert_state[i].q : valid_alert);
     prim_alert_sender #(
       .AsyncOn(AsyncOn)
     ) i_prim_alert_sender (
       .clk_i,
       .rst_ni,
-      .alert_req_i(sw_ack_mode[i] ? reg2hw.alert_state[i].q : valid_alert),
+      .alert_req_i(alert_req),
       .alert_ack_o(),
       .alert_rx_i(alert_rx_i[i]),
       .alert_tx_o(alert_tx_o[i])
@@ -122,6 +124,6 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
   end
 
   // alert trigger for test
-  assign ast_alert_o.alerts_trig = alert_test;
+  assign ast_alert_o.alerts_trig = reg2hw.alert_trig;
 
 endmodule // sensor_ctrl
