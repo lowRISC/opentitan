@@ -25,7 +25,7 @@ int simutil_set_mem(int index, const svBitVecVal *val);
 // otbn_rf_peek() and otbn_stack_element_peek() are available before calling
 // them.
 int otbn_rf_peek(int index, svBitVecVal *val) __attribute__((weak));
-int otbn_stack_element_peek(int index, svBitVecVal *val);
+int otbn_stack_element_peek(int index, svBitVecVal *val) __attribute__((weak));
 }
 
 #define RUNNING_BIT (1U << 0)
