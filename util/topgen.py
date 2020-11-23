@@ -1024,7 +1024,7 @@ def main():
         log.warning('Commandline override of rnd_cnst_seed with {}.'.format(
             args.rnd_cnst_seed))
         topcfg['rnd_cnst_seed'] = args.rnd_cnst_seed
-    # Otherwise, we either take it from the top_earlgrey.hjson if present, or
+    # Otherwise, we either take it from the top_{topname}.hjson if present, or
     # randomly generate a new seed if not.
     else:
         random.seed()
@@ -1122,20 +1122,20 @@ def main():
         # Header for SV files
         gencmd = warnhdr + '''//
 // util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
-//                --tpl hw/top_earlgrey/data/ \\
+//                --tpl hw/top_{topname}/data/ \\
 //                -o hw/top_{topname}/ \\
 //                --rnd_cnst_seed {seed}
 '''.format(topname=topname, seed=topcfg['rnd_cnst_seed'])
 
         # SystemVerilog Top:
-        # 'top_earlgrey.sv.tpl' -> 'rtl/autogen/top_earlgrey.sv'
         render_template('top_%s.sv', 'rtl/autogen', gencmd=gencmd)
+        # 'top_{topname}.sv.tpl' -> 'rtl/autogen/top_{topname}.sv'
 
         # The C / SV file needs some complex information, so we initialize this
         # object to store it.
         c_helper = TopGenC(completecfg)
 
-        # 'top_earlgrey_pkg.sv.tpl' -> 'rtl/autogen/top_earlgrey_pkg.sv'
+        # 'top_{topname}_pkg.sv.tpl' -> 'rtl/autogen/top_{topname}_pkg.sv'
         render_template('top_%s_pkg.sv',
                         'rtl/autogen',
                         helper=c_helper,
@@ -1153,7 +1153,7 @@ def main():
         cformat_path = cformat_dir / '.clang-format'
         cformat_path.write_text(cformat_tplpath.read_text())
 
-        # 'top_earlgrey.h.tpl' -> 'sw/autogen/top_earlgrey.h'
+        # 'top_{topname}.h.tpl' -> 'sw/autogen/top_{topname}.h'
         cheader_path = render_template('top_%s.h',
                                        'sw/autogen',
                                        helper=c_helper)
@@ -1162,13 +1162,13 @@ def main():
         rel_header_path = cheader_path.relative_to(SRCTREE_TOP)
         c_helper.header_path = str(rel_header_path)
 
-        # 'top_earlgrey.c.tpl' -> 'sw/autogen/top_earlgrey.c'
+        # 'top_{topname}.c.tpl' -> 'sw/autogen/top_{topname}.c'
         render_template('top_%s.c', 'sw/autogen', helper=c_helper)
 
-        # 'top_earlgrey_memory.ld.tpl' -> 'sw/autogen/top_earlgrey_memory.ld'
+        # 'top_{topname}_memory.ld.tpl' -> 'sw/autogen/top_{topname}_memory.ld'
         render_template('top_%s_memory.ld', 'sw/autogen')
 
-        # 'top_earlgrey_memory.h.tpl' -> 'sw/autogen/top_earlgrey_memory.h'
+        # 'top_{topname}_memory.h.tpl' -> 'sw/autogen/top_{topname}_memory.h'
         memory_cheader_path = render_template('top_%s_memory.h', 'sw/autogen')
 
         # Fix the C header guards, which will have the wrong name
