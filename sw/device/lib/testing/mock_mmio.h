@@ -128,6 +128,22 @@ Int ToInt(std::initializer_list<BitField> fields) {
   }
   return val;
 }
+
+/**
+ * Returns an integer with the bit at index set to 1 and all other bits to 0.
+ */
+template <typename Int>
+Int Bit(Int index) {
+  return (1 << index);
+}
+
+/**
+ * Bitwise invert received value.
+ */
+template <typename Int>
+Int Inverted(Int integer) {
+  return ~integer;
+}
 }  // namespace internal
 
 /**

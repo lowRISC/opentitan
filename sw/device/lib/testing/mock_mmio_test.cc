@@ -10,6 +10,8 @@
 namespace {
 using ::mock_mmio::LeInt;
 using ::mock_mmio::MmioTest;
+using ::mock_mmio::internal::Bit;
+using ::mock_mmio::internal::Inverted;
 using ::testing::Test;
 
 /**
@@ -76,5 +78,13 @@ TEST_F(MockMmioTest, ExpectMask) {
   // Clear the 16th bit.
   value &= ~(1 << 0x10);
   mmio_region_write32(dev().region(), 0x8, value);
+}
+
+TEST_F(MockMmioTest, ExpectReadBit) {
+  EXPECT_READ32(0x0, Bit(0x5));
+  EXPECT_EQ(mmio_region_read32(dev().region(), 0x0), 0x1 << 5);
+
+  EXPECT_READ32(0x1, Inverted(Bit(0x3)));
+  EXPECT_EQ(mmio_region_read32(dev().region(), 0x1), ~(0x1 << 3));
 }
 }  // namespace
