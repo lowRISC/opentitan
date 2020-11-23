@@ -136,7 +136,7 @@ COMMENT_CHARS = [
     ([".S"], [SLASH_SLASH, SLASH_STAR]),  # Assembly (With Preprocessing)
     ([".s"], SLASH_STAR),  # Assembly (Without Preprocessing)
     ([".ld", ".ld.tpl"], SLASH_STAR),  # Linker Scripts
-    ([".rs"], SLASH_SLASH),  # Rust
+    ([".rs", ".rs.tpl"], SLASH_SLASH),  # Rust
 
     # Software Build Systems
     (["meson.build", "toolchain.txt", "meson_options.txt"], HASH),  # Meson
