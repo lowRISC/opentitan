@@ -439,14 +439,50 @@ outer_body:
 
 ## Design Details
 
-<div class="bd-callout bd-callout-warning">
-  <h5>Note</h5>
+### Error Handling and Reporting
 
-  To be filled in as we create the implementation.
+By design, OTBN is a simple processor and provides no error handling support to code that runs on it.
+
+Whenever OTBN observes an error, it will generate an alert.
+This gets sent to the alert manager.
+The alert will either be fatal or recoverable, depending on the class of error: see [Alerts]({{< relref "hw/ip/otbn/doc#alerts" >}}) and [Error Conditions]({{< relref "hw/ip/otbn/doc#error-conditions" >}}) below for details.
+
+If OTBN was running when the alert occurred (this is true whenever {{< regref "STATUS.busy" >}} is high), it will also:
+- Immediately stop fetching and executing instructions.
+- Set {{< regref "INTR_STATE.done" >}} and clear {{< regref "STATUS.busy" >}}, marking the operation as completed.
+- Set the {{< regref "ERR_CODE" >}} register to a non-zero value describing the error.
+
+Note that OTBN can detect some errors even when it isn't running.
+One example of this is an error caused by an ECC failure when reading or programming OTBN's memories over the bus.
+In this case, the {{< regref "ERR_CODE" >}} register will not change.
+This avoids race conditions with the host processor's error handling software.
+However, every error that OTBN detects when it isn't running causes a fatal alert.
+This means that the cause will be reflected in {{< regref "FATAL_ALERT_CAUSE" >}}, as described below in [Alerts]({{< relref "hw/ip/otbn/doc#alerts" >}}).
+This way, no alert is generated without setting an error code somewhere.
+
+<div class="bd-callout bd-callout-warning">
+  <h5>TODO</h5>
+
+  When the implementation is finished, document more precisely how OTBN stops on error.
+  Can we claim to cancel all register and memory writes in that cycle?
+  Is there a way for that to make sense for errors that aren't related to a particular instruction (e.g. shadow register mis-matches; FSM glitches)?
+
+  Also, once it is decided, document behaviour on a bus access when OTBN is running.
 </div>
 
-By design, OTBN is a simple processor and has essentially no error handling support.
-When anything goes wrong (an out-of-bounds memory operation, an invalid instruction encoding, etc.), OTBN will stop fetching instructions, and set the `ERR_CODE` register and the `err` bit of the `INTR_STATE` register.
+### Alerts
+
+OTBN has two alerts, one recoverable and one fatal.
+The [Error Conditions]({{< relref "hw/ip/otbn/doc#error-conditions" >}}) section has a detailed list of error conditions and the alerts that they raise.
+
+A **recoverable alert** is a one-time triggered alert for recoverable error conditions.
+Recoverable alerts are only triggered when OTBN is running, so will always imply a write to {{< regref "ERR_CODE" >}}.
+The error that caused the alert can be determined by reading the {{< regref "ERR_CODE" >}} register.
+
+A **fatal alert** is a continuously triggered alert after unrecoverable error conditions.
+The error that caused the alert can be determined by reading the {{< regref "FATAL_ALERT_CAUSE" >}} register.
+If OTBN was running, this value will also be reflected in the {{< regref "ERR_CODE" >}} register.
+A fatal alert can only be cleared by resetting OTBN through the `rst_ni` line.
 
 # Programmers Guide
 
@@ -477,19 +513,19 @@ All memory accesses through the register interface must be word-aligned 32b word
 
 ## Operation
 
-<div class="bd-callout bd-callout-warning">
-  <h5>Note</h5>
+The high-level sequence by which the host processor should use OTBN is as follows:
 
-  The exact sequence of operations is not yet finalized.
-</div>
+1. Write {{< regref "IMEM" >}} and {{< regref "DMEM" >}}.
+1. Write `1` to {{< regref "CMD.start" >}}.
+1. Wait for `done` interrupt (or poll {{< regref "STATUS.busy" >}})
+1. Check the operation was successful by reading {{< regref "ERR_CODE" >}}
+1. Retrieve results by reading {{< regref "DMEM" >}}
 
-Rough expected process:
-
-* Write {{< regref "IMEM" >}}
-* Write {{< regref "DMEM" >}}
-* Write `1` to {{< regref "CMD.start" >}}
-* Wait for `done` interrupt
-* Retrieve results by reading {{< regref "DMEM" >}}
+The software running on OTBN signals completion by executing the [`ECALL`]({{< relref "hw/ip/otbn/doc/isa#ecall" >}}) instruction.
+When it executes this instruction, OTBN:
+- Stops fetching and executing instructions.
+- Sets {{< regref "INTR_STATE.done" >}} and clears {{< regref "STATUS.busy" >}}, marking the operation as completed.
+- Writes zero to {{< regref "ERR_CODE" >}}.
 
 ## Error conditions
 
