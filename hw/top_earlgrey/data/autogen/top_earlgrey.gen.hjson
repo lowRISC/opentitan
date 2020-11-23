@@ -3372,7 +3372,7 @@
         clk_i: clkmgr_clocks.clk_main_otbn
       }
       domain: "0"
-      size: 0x400000
+      size: 0x10000
       bus_device: tlul
       bus_host: none
       available_input_list: []
@@ -4302,7 +4302,7 @@
           [
             {
               base_addr: 0x50000000
-              size_byte: 0x400000
+              size_byte: 0x10000
             }
           ]
           xbar: false
