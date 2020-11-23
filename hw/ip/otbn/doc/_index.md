@@ -246,42 +246,45 @@ GPRs are accessible from the base instruction subset, and WDRs are accessible fr
 
 ### Wide Special Purpose Registers (WSRs)
 
-In addition to the Wide Data Registers, BN instructions can also access WLEN-sized special purpose registers, short WSRs.
+OTBN has 256b Wide Special purpose Registers (WSRs).
+These are analogous to the 32b CSRs, but are used by big number instructions.
+They can be accessed with the [`BN.WSRRS`]({{< relref "hw/ip/otbn/doc/isa#bnwsrrs" >}}) and [`BN.WSRRW`]({{< relref "hw/ip/otbn/doc/isa#bnwsrrw" >}}) instructions.
 
 <table>
   <thead>
     <tr>
       <th>Number</th>
-      <th>Privilege</th>
+      <th>Name</th>
+      <th>R/W</th>
       <th>Description</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>0x0</td>
+      <td><strong>MOD</strong></td>
       <td>RW</td>
-      <td>
-        <strong>MOD</strong>
-        Modulus.
-        To be used in the BN.ADDM and BN.SUBM instructions.
-        This WSR is mapped to the MOD0 to MOD7 CSRs.
-      </td>
+<td>
+
+The modulus used by the [`BN.ADDM`]({{< relref "hw/ip/otbn/doc/isa#bnaddm" >}}) and [`BN.SUBM`]({{< relref "hw/ip/otbn/doc/isa#bnsubm" >}}) instructions.
+This WSR is also visible as CSRs `MOD0` through to `MOD7`.
+
+</td>
     </tr>
     <tr>
       <td>0x1</td>
+      <td><strong>RND</strong></td>
       <td>R</td>
       <td>
-        <strong>RND</strong>
         A random number.
       </td>
     </tr>
     <tr>
       <td>0x2</td>
+      <td><strong>ACC</strong></td>
       <td>RW</td>
       <td>
-        <strong>ACC</strong>
-        MAC Accumulator.
-        This gives direct access to the accumulator register used by the BN.MULQACC instruction.
+        The accumulator register used by the BN.MULQACC instruction.
       </td>
     </tr>
   </tbody>
@@ -313,10 +316,6 @@ The `L`, `M`, and `Z` flags are determined based on the result of the operation 
 The LOOP instruction allows for nested loops; the active loops are stored on the loop stack.
 Each loop stack entry is a tuple of loop count, start address, and end address.
 The number of entries in the loop stack is implementation-dependent.
-
-### Accumulator
-
-A WLEN bit wide accumulator used by the BN.MULQACC instruction.
 
 # Theory of Operations
 
