@@ -53,7 +53,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_PADCTRL       = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_ALERT_HANDLER = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_NMI_GEN       = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_OTBN          = 32'h 003fffff;
+  localparam logic [31:0] ADDR_MASK_OTBN          = 32'h 0000ffff;
   localparam logic [31:0] ADDR_MASK_KEYMGR        = 32'h 00000fff;
 
   localparam int N_HOST   = 3;
