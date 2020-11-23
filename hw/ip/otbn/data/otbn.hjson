@@ -147,9 +147,9 @@
     } // register : start_addr
 
 
-    // Give IMEM and DMEM 1 MB address space, each, to allow for easy expansion
+    // Give IMEM and DMEM 16 KiB address space, each, to allow for easy expansion
     // of the actual IMEM and DMEM sizes without changing the address map.
-    { skipto: "0x100000" }
+    { skipto: "0x4000" }
 
     { window: {
         name: "IMEM"
@@ -167,7 +167,7 @@
       }
     }
 
-    { skipto: "0x200000" }
+    { skipto: "0x8000" }
 
     { window: {
         name: "DMEM"

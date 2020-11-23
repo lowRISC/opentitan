@@ -28,7 +28,7 @@ module otbn_reg_top (
 
   import otbn_reg_pkg::* ;
 
-  localparam int AW = 22;
+  localparam int AW = 16;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -88,10 +88,10 @@ module otbn_reg_top (
     reg_steer = 2;       // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
-    if (tl_i.a_address[AW-1:0] >= 1048576 && tl_i.a_address[AW-1:0] < 1052672) begin
+    if (tl_i.a_address[AW-1:0] >= 16384 && tl_i.a_address[AW-1:0] < 20480) begin
       reg_steer = 0;
     end
-    if (tl_i.a_address[AW-1:0] >= 2097152 && tl_i.a_address[AW-1:0] < 2101248) begin
+    if (tl_i.a_address[AW-1:0] >= 32768 && tl_i.a_address[AW-1:0] < 36864) begin
       reg_steer = 1;
     end
   end

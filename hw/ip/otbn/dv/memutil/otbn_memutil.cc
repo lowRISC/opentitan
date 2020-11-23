@@ -11,14 +11,14 @@
 #include <stdexcept>
 
 OtbnMemUtil::OtbnMemUtil(const std::string &top_scope) {
-  MemAreaLoc imem_loc = {.base = 0x100000, .size = 4096};
+  MemAreaLoc imem_loc = {.base = 0x4000, .size = 4096};
   std::string imem_scope =
       top_scope + ".u_imem.u_mem.gen_generic.u_impl_generic";
   if (!RegisterMemoryArea("imem", imem_scope, 32, &imem_loc)) {
     throw std::runtime_error("Failed to register IMEM OTBN memory area.");
   }
 
-  MemAreaLoc dmem_loc = {.base = 0x200000, .size = 4096};
+  MemAreaLoc dmem_loc = {.base = 0x8000, .size = 4096};
   std::string dmem_scope =
       top_scope + ".u_dmem.u_mem.gen_generic.u_impl_generic";
   if (!RegisterMemoryArea("dmem", dmem_scope, 256, &dmem_loc)) {
