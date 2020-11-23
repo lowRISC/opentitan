@@ -102,14 +102,17 @@ def get_results(logpath):
     return results
 
 
-def get_cov_results(logpath):
+def get_cov_results(logpath, dut_name):
     '''Parse FPV coverage information from the log file'''
     try:
         with Path(logpath).open() as f:
             full_file = f.read()
-            coverage_patterns = [("stimuli", r"^\|\w+.*\|(\d*.\d\d)%.*\|\d*.\d\d%.*\|\d*.\d\d%.*"),
-                                 ("coi", r"^\|\w+.*\|\d*.\d\d%.*\|(\d*.\d\d)%.*\|\d*.\d\d%.*"),
-                                 ("proof", r"^\|\w+.*\|\d*.\d\d%.*\|\d*.\d\d%.*\|(\d*.\d\d)%.*")]
+            cov_pattern = r"\s*\|\d*.\d\d%\s\(\d*\/\d*\)"  # cov pattern: 100.00% (5/5)
+            pattern_match = r"\s*\|(\d*.\d\d)%\s\(\d*\/\d*\)"  # extract percentage in cov_pattern
+            coverage_patterns = \
+                [("stimuli", r"^\|" + dut_name + pattern_match + cov_pattern + cov_pattern),
+                 ("coi", r"^\|" + dut_name + cov_pattern + pattern_match + cov_pattern),
+                 ("proof", r"^\|" + dut_name + cov_pattern + cov_pattern + pattern_match)]
             cov_results = extract_messages(full_file, coverage_patterns)
             for key, item in cov_results.items():
                 if len(item) == 1:
@@ -156,6 +159,8 @@ def main():
         }
         The script returns nonzero status if any errors or property failures including
         "cex, undetermined, unreachable" are presented.
+
+        Note this script is capable of parsing jaspergold 2020.09 version.
         ''')
     parser.add_argument('--logpath',
                         type=str,
@@ -173,14 +178,19 @@ def main():
                         type=int,
                         default=0,
                         help=('Enable parsing coverage data. '
-                              'By default, coerage parsing is disabled.'))
+                              'By default, coverage parsing is disabled.'))
 
+    parser.add_argument('--dut',
+                        type=str,
+                        default=None,
+                        help=('Tesbench name. '
+                              'By default is empty, used for coverage parsing.'))
     args = parser.parse_args()
 
     results = get_results(args.logpath)
 
     if args.cov:
-        results["fpv_coverage"] = get_cov_results(args.logpath)
+        results["fpv_coverage"] = get_cov_results(args.logpath, args.dut)
 
     with Path(args.reppath).open("w") as results_file:
         hjson.dump(results,
