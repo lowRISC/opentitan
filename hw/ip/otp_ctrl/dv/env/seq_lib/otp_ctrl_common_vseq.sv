@@ -14,6 +14,8 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     super.dut_init(reset_kind);
     // drive dft_en pins to access the test_access memory
     cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::On);
+    // once turn on lc_dft_en regiser, will need some time to update the state register
+    cfg.clk_rst_vif.wait_clks(2);
   endtask
 
   task post_start();
