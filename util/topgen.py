@@ -1006,7 +1006,19 @@ def main():
                          x.stem)
                 continue
 
-            obj = hjson.load(x.open('r'),
+            # The auto-generated hjson might not yet exist. It will be created
+            # later, see generate_{ip_name}() calls below. For the initial
+            # validation, use the template in hw/ip/{ip_name}/data .
+            if x.stem in generated_list and not x.is_file():
+                hjson_file = ip_dir / "{}/data/{}.hjson".format(x.stem, x.stem)
+                log.info("Auto-generated hjson %s does not yet exist. "
+                         % str(x) +
+                         "Falling back to template %s for initial validation."
+                         % str(hjson_file))
+            else:
+                hjson_file = x
+
+            obj = hjson.load(hjson_file.open('r'),
                              use_decimal=True,
                              object_pairs_hook=OrderedDict)
             if validate.validate(obj) != 0:
