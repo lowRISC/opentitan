@@ -39,6 +39,11 @@ class Deploy():
     # Max jobs dispatched in one go.
     slot_limit = 20
 
+    # List of variable names that are to be treated as "list of commands".
+    # This tells `construct_cmd` that these vars are lists that need to
+    # be joined with '&&' instead of a space.
+    cmds_list_vars = []
+
     def __self_str__(self):
         if log.getLogger().isEnabledFor(VERBOSE):
             return pprint.pformat(self.__dict__)
@@ -197,7 +202,10 @@ class Deploy():
                 pretty_value = []
                 for item in value:
                     pretty_value.append(item.strip())
-                value = " ".join(pretty_value)
+                # Join attributes that are list of commands with '&&' to chain
+                # them together when executed as a Make target's recipe.
+                separator = " && " if attr in self.cmds_list_vars else " "
+                value = separator.join(pretty_value)
             if type(value) is bool:
                 value = int(value)
             if type(value) is str:
@@ -626,6 +634,8 @@ class CompileSim(Deploy):
     # Register all builds with the class
     items = []
 
+    cmds_list_vars = ["pre_build_cmds", "post_build_cmds"]
+
     def __init__(self, build_mode, sim_cfg):
         # Initialize common vars.
         super().__init__(sim_cfg)
@@ -646,8 +656,10 @@ class CompileSim(Deploy):
 
             # Build
             "build_dir": False,
+            "pre_build_cmds": False,
             "build_cmd": False,
-            "build_opts": False
+            "build_opts": False,
+            "post_build_cmds": False,
         })
 
         self.mandatory_misc_attrs.update({
@@ -743,6 +755,8 @@ class RunTest(Deploy):
     # Register all runs with the class
     items = []
 
+    cmds_list_vars = ["pre_run_cmds", "post_run_cmds"]
+
     def __init__(self, index, test, sim_cfg):
         # Initialize common vars.
         super().__init__(sim_cfg)
@@ -755,18 +769,18 @@ class RunTest(Deploy):
             # tool srcs
             "tool_srcs": False,
             "tool_srcs_dir": False,
-
             "proj_root": False,
             "uvm_test": False,
             "uvm_test_seq": False,
-            "run_opts": False,
             "sw_test": False,
             "sw_test_is_prebuilt": False,
             "sw_build_device": False,
             "sw_build_dir": False,
             "run_dir": False,
+            "pre_run_cmds": False,
             "run_cmd": False,
-            "run_opts": False
+            "run_opts": False,
+            "post_run_cmds": False,
         })
 
         self.mandatory_misc_attrs.update({
