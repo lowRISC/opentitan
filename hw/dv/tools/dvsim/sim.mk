@@ -12,30 +12,36 @@ all: build run
 ###############################
 ## sim build and run targets ##
 ###############################
-build: compile_result
+build: build_result
 
 prep_tool_srcs:
 	@echo "[make]: prep_tool_srcs"
 	mkdir -p ${tool_srcs_dir}
 	${LOCK_TOOL_SRCS_DIR} "cp -Ru ${tool_srcs} ${tool_srcs_dir}/."
 
-pre_compile: prep_tool_srcs
-	@echo "[make]: pre_compile"
+pre_build: prep_tool_srcs
+	@echo "[make]: pre_build"
 	mkdir -p ${build_dir}
+ifneq (${pre_build_cmds},)
+	cd ${build_dir} && ${pre_build_cmds}
+endif
 
-gen_sv_flist: pre_compile
+gen_sv_flist: pre_build
 	@echo "[make]: gen_sv_flist"
 	cd ${build_dir} && ${sv_flist_gen_cmd} ${sv_flist_gen_opts}
 
-compile: gen_sv_flist
-	@echo "[make]: compile"
+build_tb: gen_sv_flist
+	@echo "[make]: build the testbench"
 	cd ${sv_flist_gen_dir} && ${build_cmd} ${build_opts}
 
-post_compile: compile
-	@echo "[make]: post_compile"
+post_build: build_tb
+	@echo "[make]: post_build"
+ifneq (${post_build_cmds},)
+	cd ${build_dir} && ${post_build_cmds}
+endif
 
-compile_result: post_compile
-	@echo "[make]: compile_result"
+build_result: post_build
+	@echo "[make]: build_result"
 
 run: run_result
 
@@ -44,6 +50,9 @@ pre_run: prep_tool_srcs
 	mkdir -p ${run_dir}
 ifneq (${sw_test},)
 	mkdir -p ${sw_build_dir}
+endif
+ifneq (${pre_run_cmds},)
+	cd ${run_dir} && ${pre_run_cmds}
 endif
 
 sw_build: pre_run
@@ -99,13 +108,15 @@ endif
 
 endif
 
-
 simulate: sw_build
 	@echo "[make]: simulate"
 	cd ${run_dir} && ${run_cmd} ${run_opts}
 
 post_run: simulate
 	@echo "[make]: post_run"
+ifneq (${post_run_cmds},)
+	cd ${run_dir} && ${post_run_cmds}
+endif
 
 run_result: post_run
 	@echo "[make]: run_result"
@@ -137,10 +148,10 @@ cov_report:
 .PHONY: build \
 	run \
 	reg \
-	pre_compile \
-	compile \
-	post_compile \
-	compile_result \
+	pre_build \
+	build_tb \
+	post_build \
+	build_result \
 	pre_run \
 	simulate \
 	post_run \
