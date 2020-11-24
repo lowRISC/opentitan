@@ -182,7 +182,7 @@ bn.addc w15, w10, w11, FG0
 bn.subb w17, w3, w4, FG1
 
 # x24 = {fg1, fg0} = 0x55
-csrrs x24, 0x7c0, x0
+csrrs x24, 0x7c8, x0
 
 # w18 = w1 + (w2 << 17B) = 0x1296659f_bbc28370_23634ee9_22168a4e_c79af825_69be586e_9866bb3b_53769ada
 bn.add w18, w1, w2 << 17B
