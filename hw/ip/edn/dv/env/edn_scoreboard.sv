@@ -12,10 +12,10 @@ class edn_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(push_pull_item#(.DataWidth(edn_pkg::ENDPOINT_BUS_WIDTH))) endpoint_fifo[NUM_ENDPOINTS-1:0];
+  uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(edn_pkg::ENDPOINT_BUS_WIDTH))) endpoint_fifo[NUM_ENDPOINTS-1:0];
 
   // local queues to hold incoming packets pending comparison
-  push_pull_item#(.DataWidth(edn_pkg::ENDPOINT_BUS_WIDTH)) endpoint_q[$][NUM_ENDPOINTS-1:0];
+  push_pull_item#(.HostDataWidth(edn_pkg::ENDPOINT_BUS_WIDTH)) endpoint_q[$][NUM_ENDPOINTS-1:0];
 
   `uvm_component_new
 
