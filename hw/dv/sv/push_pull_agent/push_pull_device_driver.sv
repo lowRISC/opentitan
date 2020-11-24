@@ -26,9 +26,9 @@ class push_pull_device_driver #(parameter int HostDataWidth = 32,
   endtask
 
   virtual task get_and_drive();
-    // wait for initial reset to pass
-    @(posedge cfg.vif.rst_n);
     forever begin
+      // wait for reset to be completed and avoid deadloop
+      wait(cfg.vif.rst_n === 1);
       seq_item_port.get_next_item(req);
       `uvm_info(`gfn, $sformatf("driver rcvd item:\n%0s", req.convert2string()), UVM_HIGH)
       if (!in_reset) begin
