@@ -1,0 +1,9 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// testplan for the unmasked version of KMAC
+{
+  name: "kmac_unmasked"
+  import_testplans: ["hw/ip/kmac/data/kmac_base_testplan.hjson"]
+}

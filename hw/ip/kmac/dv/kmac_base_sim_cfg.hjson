@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  // Name of the sim cfg - typically same as the name of the DUT.
-  name: kmac
+  // The `name` field that provides the name of the sim_cfg
+  // should be set by the Hjson that imports this base config.
 
-  // Top level dut name (sv module).
+  // Top level dut name
   dut: kmac
 
   // Top level testbench name (sv module).
@@ -17,14 +17,13 @@
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:kmac_sim:0.1
 
-  // Testplan hjson file.
-  testplan: "{proj_root}/hw/ip/kmac/data/kmac_testplan.hjson"
+  // Testplan hjson file
+  testplan: "{proj_root}/hw/ip/kmac/data/{name}_testplan.hjson"
 
   // RAL spec - used to generate the RAL model.
   ral_spec: "{proj_root}/hw/ip/kmac/data/kmac.hjson"
 
   // Import additional common sim cfg files.
-  // TODO: remove imported cfgs that do not apply.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
@@ -39,6 +38,27 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  // Need to override the default output directory
+  overrides: [
+    {
+      name: scratch_base_path
+      value: "{scratch_root}/{name}.{flow}.{tool}"
+    }
+  ]
+
+  build_modes: [
+    {
+      name: enable_mask_mode
+      build_opts: ["+define+EN_MASKING=1", "+define+REUSE_SHARE=0"]
+      run_opts: ["+enable_masking=1"]
+    }
+    {
+      name: disable_mask_mode
+      build_opts: ["+define+EN_MASKING=0", "+define+REUSE_SHARE=0"]
+      run_opts: ["+enable_masking=0"]
+    }
+  ]
+
   // Default UVM test and seq class name.
   uvm_test: kmac_base_test
   uvm_test_seq: kmac_base_vseq
@@ -46,7 +66,7 @@
   // List of test specifications.
   tests: [
     {
-      name: kmac_smoke
+      name: "{name}_smoke"
       uvm_test_seq: kmac_smoke_vseq
     }
 
@@ -57,7 +77,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["kmac_smoke"]
+      tests: ["{name}_smoke"]
     }
   ]
 }
