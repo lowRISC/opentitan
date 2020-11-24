@@ -7,7 +7,7 @@ aliases:
 <p style="text-align: right">
 Contributors(s):
   <a href="https://github.com/lenary">Sam Elliott</a>,
-  <a href="https://github.com/moidx">Garret Kelly</a>,
+  <a href="https://github.com/gkelly">Garret Kelly</a>,
   <a href="https://github.com/moidx">Miguel Osorio</a>
 </p>
 
