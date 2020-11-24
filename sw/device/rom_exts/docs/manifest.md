@@ -1,6 +1,28 @@
-# ROM_EXT Manifest Format
+---
+title: Reference ROM_EXT Manifest Format
+aliases:
+- /sw/device/rom_exts/manifest
+---
 
-Based on the requirements outlined in [boot.md](./boot)
+<p style="text-align: right">
+Contributors(s):
+  <a href="https://github.com/lenary">Sam Elliott</a>,
+  <a href="https://github.com/gkelly">Garret Kelly</a>,
+  <a href="https://github.com/silvestrst">Silvestrs Timofejevs</a>,
+  <a href="https://github.com/moidx">Miguel Osorio</a>
+</p>
+
+<p style="color: red; text-align: right;">
+  Status: Draft
+</p>
+
+This describes the signed image format for a ROM_EXT image.
+This format is based on the requirements outlined in the [Reference Mask ROM Secure Boot Description][mask-rom-description].
+
+ROM_EXTs are the second boot stage in the Reference Secure Boot implementation.
+ROM_EXTs are supplied by the Silicon Creator.
+ROM_EXTs are programmed into the chip's flash.
+
 
 ```
  0                   1                   2                   3
@@ -121,7 +143,7 @@ Notes:
 
     Reserved fields have fixed size and unspecified alignment.
 
-## Field Descriptions
+# Field Descriptions
 
 1.  **ROM_EXT Manifest Identifier** This is a 32-bit enumeration value which is
     used by the Mask ROM to identify that an image with the above format is
@@ -282,7 +304,7 @@ Notes:
     could cause double fault issues if ROM_EXT is not unlocked by the comparator
     before the jump happens.
 
-### Data Not in the Header
+## Data Not in the Header
 
 *   `.data` + `.bss` section sizes, for establishing PMP regions. The PMP
     regions should be established by the ROM_EXT image as it sets up its own
@@ -308,7 +330,7 @@ Notes:
 
     This would have been used by the Mask ROM as an input for the key manager.
 
-## Development Versions (Subject to Change)
+# Development Versions (Subject to Change)
 
 **ROM_EXT Manifest Identifier**: `0x4552544F` (Reads "OTRE" when Disassembled --
 OpenTitan ROM_EXT)
@@ -331,7 +353,7 @@ development, but this will not be used in production software.
 
 
 
-## Software Deliverables
+# Software Deliverables
 
 *   A C Library for parsing/extracting this image format on-device.
 
@@ -371,7 +393,7 @@ from Slot A, and later we will add support ensuring these images are linked in
 a way that they can run from Slot B without modification.
 
 
-## How To Validate a ROM_EXT Image
+# How To Validate a ROM_EXT Image {#how-to-validate}
 
 Below we provide an abstract definition of how to sign and verify a ROM_EXT
 image. This description is provided so that there is a specification of what the
@@ -394,20 +416,18 @@ Notation:
 *   `||` - Denotes concatenation without a delimiter.
 *   `:=` - Denotes assignment.
 
-### Algorithms
+## Algorithms
 
-*   We primarily use
-    [`RSASSA-PKCS1-V1_5-SIGN`](https://tools.ietf.org/html/rfc3447#section-8.2.1)
-    and
-    [`RSASSA-PKCS1-V1_5-VERIFY`](https://tools.ietf.org/html/rfc3447#section-8.2.2)
-    for signatures and verification.
+*   We primarily use [`RSASSA-PKCS1-V1_5-SIGN`][RSASSA-PKCS1-V1_5-SIGN] and
+    [`RSASSA-PKCS1-V1_5-VERIFY`][RSASSA-PKCS1-V1_5-VERIFY] for signatures and
+    verification.
 *   RSA Signing and Verification is done with 3072-bit keys.
 *   The `Hash` operation may be done with SHA2-265, SHA3-256, SHA3-384, or
     SHA3-512, depending on the Signature Algorithm Identifier provided in the
     manifest. The `Hash` operation is required to provide a security level
     equivalent to that provided by the signature.
 
-### Signing
+## Signing
 
 This is usually done on a host machine, which does not have access to a real OT
 device. Thus there has to be a way for the host signer to predict the value of
@@ -424,7 +444,7 @@ message := system_state_value || device_usage_value || signed_area(rom_ext)
 signature := RSASSA-PKCS1-V1_5-SIGN(private_key, message)
 ```
 
-### Validation
+## Validation
 
 Usually, validation is done on-device, where `device_usage_value` and
 `system_state_value` can be calculated.
@@ -445,3 +465,8 @@ signature := rom_ext.signature
 message := system_state_value || device_usage_value || signed_area(rom_ext)
 result := RSASSA-PKCS1-V1_5-VERIFY(public_key, message, signature)
 ```
+
+
+[mask-rom-description]: {{< relref "sw/device/mask_rom/docs" >}}
+[RSASSA-PKCS1-V1_5-SIGN]: https://tools.ietf.org/html/rfc3447#section-8.2.1
+[RSASSA-PKCS1-V1_5-VERIFY]: https://tools.ietf.org/html/rfc3447#section-8.2.2

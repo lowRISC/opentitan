@@ -1,7 +1,7 @@
 ---
 title: "Reference Mask ROM: Secure Boot Description"
 aliases:
-- /sw/device/mask_rom/boot/
+- /sw/device/mask_rom/boot
 ---
 
 <p style="text-align: right">
@@ -15,10 +15,14 @@ Contributors(s):
   Status: Draft
 </p>
 
+This describes how Mask ROM has chosen to implement the initial parts of the OpenTitan Secure Boot specification.
+
 This should be read in conjunction with the [Secure Boot specification][csm-secure-boot].
 References to that document are included.
 
-[csm-secure-boot]: {{< relref "doc/security/specs/secure_boot" >}}
+The Mask ROM is the first boot stage in the Reference Secure Boot implementation, and starts executing at device reset.
+The Mask ROM is programmed into the chip's ROM during manufacturing, and cannot be changed.
+The Mask ROM needs to prepare the OpenTitan chip for executing a ROM_EXT, including ensuring the loaded ROM_EXT is allowed to be executed on this chip.
 
 # Secure Boot Process
 
@@ -33,10 +37,10 @@ References to that document are included.
         *   Disable Interrupts and set well-defined exception handler.
             This should keep initial execution deterministic.
 
-        *   Clean Device State Part 1. (See "Cleaning Device State" below).
+        *   [Clean Device State Part 1](#clean-device-state-p1).
             This includes enabling SRAM Scrambling.
 
-        *   Setup structures for C execution (CRT: `.data`, `.bss` sections, stack).
+        *   Setup structures for C execution ([CRT](#crt-init): `.data`, `.bss` sections, stack).
 
         *   Jump into C code
 
@@ -218,7 +222,7 @@ read_boot_policy() {
 
 This manages reading and parsing ROM_EXT manifests.
 
-The manifest format is defined in [ROM_EXT Manifest Format](../rom_exts/manifest)
+The manifest format is defined in [ROM_EXT Manifest Format][rom-ext-manifest]
 
 DIFs Needed:
 
@@ -374,7 +378,7 @@ Milestone Expectations:
 *   *v0.5:* Software Binding Properties, OTP Bits.
 *   *v0.9:* Full `CreatorRootKey` derivation.
 
-### Cleaning Device State
+### Cleaning Device State {#clean-device-state-p1}
 
 Part of this process is done before we can execute any C code. In particular, we
 have to clear all registers and all of the main RAM before we setup the CRT
@@ -435,7 +439,7 @@ Milestone Expectations:
 *   *v0.5:* Can Execute C functions.
 *   *v0.9:* SRAM Scrambling.
 
-### CRT Initialization
+### CRT Initialization {#crt-init}
 
 Setting up the CRT involves: loading the `.data` and `.bss` sections, and
 setting up the stack and `gp` (`gp` may be used for referencing some data).
@@ -542,8 +546,6 @@ Accessed by:
 
 The manifest format is defined in [ROM_EXT Manifest Format][rom-ext-manifest].
 
-[rom-ext-manifest]: {{< relref "sw/device/rom_exts/manifest" >}}
-
 Stored in: Flash (at one of two fixed, memory-mapped, addresses)
 
 Extensibility:
@@ -553,3 +555,8 @@ Extensibility:
     *   Uses the Extension fields for additional read-only data if required.
         This is not interpreted by the Mask ROM, but may be used by ROM_EXT or
         BL0 if required.
+
+
+<!-- Links -->
+[csm-secure-boot]: {{< relref "doc/security/specs/secure_boot" >}}
+[rom-ext-manifest]: {{< relref "sw/device/rom_exts/docs/manifest" >}}

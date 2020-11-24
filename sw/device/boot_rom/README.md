@@ -1,4 +1,8 @@
-## Boot ROM Overview
+# Boot ROM Overview
+
+The Boot ROM is a **testing-only** device image.
+The [Mask ROM]({{< relref "sw/device/mask_rom/docs/index.md" >}}) is the reference implementation of the OpenTitan Secure Boot specification.
+
 The boot ROM is always the first piece of code run in the system.
 At the moment, it serves 2 functions:
 
@@ -6,6 +10,7 @@ At the moment, it serves 2 functions:
 * Jump to embedded flash and begin execution.
 
 ## Bootstrap Overview
+
 The boot ROM bootstrap function differs between Verilator, DV and FPGA.
 
 In DV and in Verilator, embedded flash code can be backdoor loaded.
