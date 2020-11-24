@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// sim cfg file for the unmasked version of KMAc
+{
+  // Name of the sim cfg
+  name: kmac_unmasked
+
+  // Import additional common sim cfg files.
+  import_cfgs: ["{proj_root}/hw/ip/kmac/dv/kmac_base_sim_cfg.hjson"]
+
+  // Enable this build mode for all tests
+  en_build_modes: ["disable_mask_mode"]
+}
