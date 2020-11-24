@@ -53,12 +53,8 @@ class OtbnTestHelper {
       if (entry->d_type != DT_REG)
         continue;
 
-      // Check the file name looks like an ELF file. If not, print a warning
-      // message to stderr saying that we're skipping the file.
+      // Only look at files ending in .elf
       if (!IsElfFileName(entry->d_name)) {
-        std::cerr << "WARNING: When searching for ELF files in `" << dir_path_
-                  << "', skipping file `" << entry->d_name
-                  << "', which doesn't end with `.elf'.\n";
         continue;
       }
 
@@ -85,8 +81,6 @@ class OtbnTestHelper {
       if (entry->d_type != DT_REG)
         continue;
 
-      // Skip files whose names don't look right. No warning message here: we
-      // already printed it in CountFilesInDir.
       if (!IsElfFileName(entry->d_name))
         continue;
 
