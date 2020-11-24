@@ -12,10 +12,12 @@ Contributors(s):
   Status: Draft
 </p>
 
-This should be read in conjunction with the [Reference Mask ROM Secure Boot Description][mask-rom-secure-boot] and the [Secure Boot][csm-secure-boot] specification.
+This should be read in conjunction with the [Reference Mask ROM Secure Boot Description][mask-rom-description] and the [Secure Boot][csm-secure-boot] specification.
 References to those documents are included.
 
-[mask-rom-secure-boot]: {{< relref "sw/device/mask_rom/docs" >}}
-[csm-secure-boot]: {{< relref "doc/security/specs/secure_boot" >}}
-
 <!-- Use # for Sections, and ## for Sub-sections. A ToC is generated automatically. -->
+${content}
+
+<!-- Links -->
+[csm-secure-boot]: {{< relref "doc/security/specs/secure_boot" >}}
+[mask-rom-description]: {{< relref "sw/device/mask_rom/docs" >}}
