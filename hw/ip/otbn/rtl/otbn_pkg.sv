@@ -160,7 +160,9 @@ package otbn_pkg;
   // Control and Status Registers (CSRs)
   parameter int CsrNumWidth = 12;
   typedef enum logic [CsrNumWidth-1:0] {
-    CsrFlags = 12'h7C0,
+    CsrFg0   = 12'h7C0,
+    CsrFg1   = 12'h7C1,
+    CsrFlags = 12'h7C8,
     CsrMod0  = 12'h7D0,
     CsrMod1  = 12'h7D1,
     CsrMod2  = 12'h7D2,

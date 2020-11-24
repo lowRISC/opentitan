@@ -124,9 +124,52 @@ CSRs can be accessed through dedicated instructions, `CSRRS` and `CSRRW`.
       <td>0x7C0</td>
       <td>RW</td>
       <td>
+        <strong>FG0</strong>.
+        Wide arithmetic flag group 0.
+        This CSR provides access to flag group 0 used by wide integer arithmetic.
+        <strong>FLAGS</strong>, <strong>FG0</strong> and <strong>FG1</strong> provide different views on the same underlying bits.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>Carry of Flag Group 0</td></tr>
+            <tr><td>1</td><td>MSb of Flag Group 0</td></tr>
+            <tr><td>2</td><td>LSb of Flag Group 0</td></tr>
+            <tr><td>3</td><td>Zero of Flag Group 0</td></tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7C1</td>
+      <td>RW</td>
+      <td>
+        <strong>FG1</strong>.
+        Wide arithmetic flag group 1.
+        This CSR provides access to flag group 1 used by wide integer arithmetic.
+        <strong>FLAGS</strong>, <strong>FG0</strong> and <strong>FG1</strong> provide different views on the same underlying bits.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>Carry of Flag Group 1</td></tr>
+            <tr><td>1</td><td>MSb of Flag Group 1</td></tr>
+            <tr><td>2</td><td>LSb of Flag Group 1</td></tr>
+            <tr><td>3</td><td>Zero of Flag Group 1</td></tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7C8</td>
+      <td>RW</td>
+      <td>
         <strong>FLAGS</strong>.
-        Wide arithmetic flags.
-        This CSR provides access to the flags used in wide integer arithmetic.
+        Wide arithmetic flag groups.
+        This CSR provides access to both flags groups used by wide integer arithmetic.
+        <strong>FLAGS</strong>, <strong>FG0</strong> and <strong>FG1</strong> provide different views on the same underlying bits.
         <table>
           <thead>
             <tr><th>Bit</th><th>Description</th></tr>
