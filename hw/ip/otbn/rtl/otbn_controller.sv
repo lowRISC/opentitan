@@ -112,8 +112,10 @@ module otbn_controller
   logic [ImemAddrWidth-1:0] next_insn_addr;
 
   csr_e                                csr_addr;
+  logic [31:0]                         csr_rdata_raw;
   logic [31:0]                         csr_rdata;
   logic [BaseWordsPerWLEN-1:0]         csr_rdata_mux [32];
+  logic [31:0]                         csr_wdata_raw;
   logic [31:0]                         csr_wdata;
 
   wsr_e                                wsr_addr;
@@ -459,7 +461,7 @@ module otbn_controller
     ispr_word_addr_base = '0;
 
     unique case (csr_addr)
-      CsrFlags: begin
+      CsrFlags, CsrFg0, CsrFg1 : begin
         ispr_addr_base      = IsprFlags;
         ispr_word_addr_base = '0;
       end
@@ -485,10 +487,34 @@ module otbn_controller
       assign csr_rdata_mux[i_bit][i_word] = ispr_rdata_i[i_word*32 + i_bit] & ispr_word_sel_base[i_word];
     end
 
-    assign csr_rdata[i_bit] = |csr_rdata_mux[i_bit];
+    assign csr_rdata_raw[i_bit] = |csr_rdata_mux[i_bit];
   end
 
-  assign csr_wdata = insn_dec_shared_i.ispr_rs_insn ? csr_rdata | rf_base_rd_data_a_i : rf_base_rd_data_a_i;
+  // Specialised read data handling for CSR reads where raw read data needs modification.
+  always_comb begin
+    csr_rdata = csr_rdata_raw;
+
+    unique case(csr_addr)
+      // For FG0/FG1 select out appropriate bits from FLAGS ISPR and pad the rest with zeros.
+      CsrFg0: csr_rdata = {28'b0, csr_rdata_raw[3:0]};
+      CsrFg1: csr_rdata = {28'b0, csr_rdata_raw[7:4]};
+      default: ;
+    endcase
+  end
+
+  assign csr_wdata_raw = insn_dec_shared_i.ispr_rs_insn ? csr_rdata | rf_base_rd_data_a_i : rf_base_rd_data_a_i;
+
+  // Specialised write data handling for CSR writes where raw write data needs modification.
+  always_comb begin
+    csr_wdata = csr_wdata_raw;
+
+    unique case(csr_addr)
+      // For FG0/FG1 only modify relevant part of FLAGS ISPR.
+      CsrFg0: csr_wdata = {24'b0, csr_rdata_raw[7:4], csr_wdata_raw[3:0]};
+      CsrFg1: csr_wdata = {24'b0, csr_wdata_raw[3:0], csr_rdata_raw[3:0]};
+      default: ;
+    endcase
+  end
 
   assign wsr_addr = wsr_e'(insn_dec_bignum_i.i[WsrNumWidth-1:0]);
 
