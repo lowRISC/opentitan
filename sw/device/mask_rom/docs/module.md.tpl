@@ -5,7 +5,7 @@ title: "Reference Mask ROM: ${module} Module"
 <p style="text-align: right">
 Contributors(s):
   <a href="https://github.com/lenary">Sam Elliott</a>,
-  <a href="https://github.com/moidx">Garret Kelly</a>
+  <a href="https://github.com/gkelly">Garret Kelly</a>
 </p>
 
 <p style="color: red; text-align: right;">
