@@ -545,9 +545,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   // get class_timeout_cyc register mirrored value by class
   function bit [TL_DW-1:0] get_class_timeout_cyc(int class_i);
-    uvm_reg class_timeout_rg;
-    class_timeout_rg = ral.get_reg_by_name($sformatf("class%s_timeout_cyc", class_name[class_i]));
-    `DV_CHECK_NE_FATAL(class_timeout_rg, null)
+    dv_base_reg class_timeout_rg = ral.get_dv_base_reg_by_name($sformatf("class%s_timeout_cyc",
+                                                               class_name[class_i]));
     return class_timeout_rg.get_mirrored_value();
   endfunction
 
@@ -556,9 +555,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     for (int i = 0; i < $ceil(NUM_ALERTS * 2 / TL_DW); i++) begin
       string alert_name = (NUM_ALERTS <= TL_DW / 2) ? "alert_class" :
                                                       $sformatf("alert_class_%0d", i);
-      uvm_reg alert_class_csr = ral.get_reg_by_name(alert_name);
-      `DV_CHECK_NE_FATAL(alert_class_csr, null)
-      get_alert_class_mirrored_val =| (alert_class_csr.get_mirrored_value() << i * TL_DW);
+      dv_base_reg alert_class_csr = ral.get_dv_base_reg_by_name(alert_name);
+      get_alert_class_mirrored_val |= (alert_class_csr.get_mirrored_value() << i * TL_DW);
     end
   endfunction
 endclass
