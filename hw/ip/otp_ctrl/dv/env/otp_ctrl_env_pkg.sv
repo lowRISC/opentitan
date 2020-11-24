@@ -31,8 +31,12 @@ package otp_ctrl_env_pkg;
   parameter uint TEST_ACCESS_BASE_ADDR   = 'h2000;
   parameter uint SW_WINDOW_SIZE          = 512 * 4;
   parameter uint TEST_ACCESS_WINDOW_SIZE = 16 * 4;
+
   // convert byte into TLUL width size
-  parameter uint HW_CFG_ARRAY_SIZE       = HwCfgContentSize / (TL_DW / 8);
+  parameter uint HW_CFG_ARRAY_SIZE  = HwCfgContentSize / (TL_DW / 8);
+  parameter uint SECRET0_ARRAY_SIZE = (Secret0Size - DIGEST_SIZE) / (TL_DW / 8);
+  parameter uint SECRET1_ARRAY_SIZE = (Secret1Size - DIGEST_SIZE) / (TL_DW / 8);
+  parameter uint SECRET2_ARRAY_SIZE = (Secret2Size - DIGEST_SIZE) / (TL_DW / 8);
 
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
   parameter uint SRAM_DATA_SIZE  = 1 + SramKeyWidth + SramNonceWidth;
