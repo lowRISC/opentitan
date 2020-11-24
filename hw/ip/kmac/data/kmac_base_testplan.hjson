@@ -5,27 +5,149 @@
   name: kmac_base
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
       name: smoke
       desc: '''
-            Smoke test accessing a major datapath within the kmac.
-
-            **Stimulus**:
-            - TBD
-
-            **Checks**:
-            - TBD
+            KMAC smoke test will contain a number of rounds, and acts as a base for many other tests.
+            In each round, we run a full KMAC hashing operation:
+              - Randomly enable interrupts, operation mode (SHA3/SHAKE/CSHAKE/KMAC), key length (if
+                applicable), constraining all settings to be legal.
+              - Set function name to "KMAC" and set customization string as empty if applicable.
+              - Randomly set endianness of input msg and internal keccak state.
+              - Randomly provide a sideloaded key, do not set cfg.sideload.
+              - Set output length between 1-1600 bits if applicable.
+              - Trigger KMAC to start absorbing input message.
+                - During absorption stage randomly read from STATE window, expect 0.
+              - Write message to MSG_FIFO window, maximum length of 32 bytes.
+              - Check SHA3 engine status.
+              - Trigger KMAC to finish absorbing stage, check kmac_done is set and status.squeeze is
+                set.
+              - Read output digest, and compare against output from reference C++ model.
+                - In masked configuration: both shares are XORed to get unmasked result digest.
+                - In unmasked configuration: Share1 is the result digest, Share2 should be 0.
+              - Signal cmd.done to tell KMAC to clear internal state.
+              - Try reading output digest again, confirm that it is 0.
             '''
       milestone: V1
       tests: ["{name}_smoke"]
     }
     {
-      name: feature1
-      desc: '''Add more test entries here like above.'''
-      milestone: V1
-      tests: []
+      name: long_message_and_output
+      desc: '''
+            Same as the smoke test, except with a message of up to 100KB.
+            Max firmware input size for KMAX is around 392KB, but this is too large for a DV
+            simulation.
+            Average input size from firmware would be around 60-100KB, so we use 100KB as a max
+            input size for DV, but will enable easy extensibility for emulation testing where we can
+            enable much larger messages.
+            Allow output length to vary up to 1KB (for XOF functions).
+            If output length is greater than 1600 bits, keccak rounds will be run manually to
+            squeeze extra output data.
+            Set function name as "KMAC" and enable full randomization of customization string (if
+            applicable).
+            '''
+      milestone: V2
+      tests: ["{name}_long_message_and_output"]
+    }
+    {
+      name: burst_wr
+      desc: '''
+            This is the same as the long_message test, except we burst-write chunks of the message
+            into the msg_fifo, and disable intermediate status/CSR checks.
+            '''
+      milestone: V2
+      tests: ["{name}_burst_wr"]
+    }
+    {
+      name: test_vectors
+      desc: '''
+            These tests drive NIST test vectors for SHA3/SHAKE/KMAC into the design and check
+            the output against the expected digest values.
+            '''
+      milestone: V2
+      tests: ["{name}_sha3_test_vectors", "{name}_shake_test_vectors", "{name}_test_vectors",
+      "{name}_xof_test_vectors"]
+    }
+    {
+      name: sideload
+      desc: '''
+            Same as long_message_and_output test, except we set cfg.sideload and provide a
+            valid sideloaded key as well as a valid SW-provided key.
+            KMAC should operate on the sideloaded key.
+            '''
+      milestone: V2
+      tests: ["{name}_sideload"]
+    }
+    {
+      name: kdf
+      desc: '''
+            Test KeyMgr can initiate the KMAC operation through the KDF interface.
+            Use the keymgr_kmac_agent to send message data to the KMAC and to control the hashing
+            logic, and set cfg.sideload.
+            The result digest sent to the keymgr_kmac_agent will be compared against the result from
+            the C++ reference model.
+            In addition, try to read from the STATE window, confirm that this access is blocked
+            (return 0).
+            '''
+      milestone: V2
+      tests: ["{name}_kdf"]
+    }
+    {
+      name: kdf_with_sw_access
+      desc: '''
+            Initiate a KDF operation as before, but this time also provide a "SW" message and key,
+            and try to also initiate the KMAC with the CMD register.
+            KMAC should raise an error and discard the SW inputs.
+            After KDF is done, trigger a software-initiated KMAC process using the previously
+            available message/key.
+            '''
+      milestone: V2
+      tests: ["{name}_kdf_with_sw_key"]
+    }
+    {
+      name: error
+      desc: '''
+            Try several error sequences:
+
+            - Update key/prefix/config during absorption/process/squeeze stage.
+            - Write msg to msg_fifo during process/squeeze stage
+            - When in KMAC mode, set the function name to not "KMAC"
+            - Incorrect SHA3 control flow:
+              - Issue Process/Run/Done cmds before issuing Start
+              - Issue Run/Done before issuing Process
+              - Issue Start after issuing Process
+              - If squeezing data, issue Start/Process after issuing Run
+            - Incorrect KMAC configurations (e.g. set KMAC strength as 512).
+
+            // TODO: Not all of these errors have been supported yet, and more errors might be
+            //       added later.
+            //       So this might be split into several error tests later on.
+            '''
+      milestone: V2
+      tests: ["{name}_error"]
+    }
+    {
+      name: throughput
+      desc: '''
+            Measure the throughput of the various hashing calculations and make sure they correspond
+            to the expected throughput range for the design.
+            '''
+      milestone: V3
+      tests: ["{name}_throughput"]
+    }
+
+    // TODO: Entropy functionality is not finalized, needs to be captured here.
+    {
+      name: entropy
+      desc: ''' Test entropy interface for KMAC.
+
+            TODO.
+            '''
+      milestone: V2
+      tests: ["{name}_entropy"]
     }
   ]
 }
