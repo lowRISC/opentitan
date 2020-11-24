@@ -1103,9 +1103,9 @@ def main():
     top_name = completecfg["name"]
 
     # Generate top.gen.hjson right before rendering
-    hjson_dir = Path(args.topcfg).parent
-    genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
-                                 completecfg["name"])
+    genhjson_dir = Path(out_path) / "data/autogen"
+    genhjson_dir.mkdir(parents=True, exist_ok=True)
+    genhjson_path = genhjson_dir / ("top_%s.gen.hjson" % completecfg["name"])
 
     # Header for HJSON
     gencmd = '''//
