@@ -101,8 +101,14 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // The digest CSR values are verified in otp_ctrl_scoreboard
   virtual task check_digests();
     bit [TL_DW-1:0] val;
-    csr_rd(.ptr(ral.hw_cfg_digest_0), .value(val));
-    csr_rd(.ptr(ral.hw_cfg_digest_1), .value(val));
+    csr_rd(.ptr(ral.hw_cfg_digest_0),  .value(val));
+    csr_rd(.ptr(ral.hw_cfg_digest_1),  .value(val));
+    csr_rd(.ptr(ral.secret0_digest_0), .value(val));
+    csr_rd(.ptr(ral.secret0_digest_1), .value(val));
+    csr_rd(.ptr(ral.secret1_digest_0), .value(val));
+    csr_rd(.ptr(ral.secret1_digest_1), .value(val));
+    csr_rd(.ptr(ral.secret2_digest_0), .value(val));
+    csr_rd(.ptr(ral.secret2_digest_1), .value(val));
   endtask
 
   virtual task req_sram_key(int index);
