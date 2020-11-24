@@ -37,7 +37,7 @@ module tb;
   kmac_sideload_if sideload_if();
 
   // dut
-  kmac dut (
+  kmac #(.EnMasking(`EN_MASKING), .ReuseShare(`REUSE_SHARE)) dut (
     .clk_i                (clk                      ),
     .rst_ni               (rst_n                    ),
 
