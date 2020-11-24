@@ -22,8 +22,7 @@ SetupP256PandMuLow:
   sw x2, 540(x0)
   addi x2, x0, 29
   bn.lid x2, 512(x0)
-  bn.wsrrw w31, 0, w29
-  bn.xor w31, w31, w31
+  bn.wsrw 0, w29
   sw x0, 548(x0)
   sw x0, 572(x0)
   addi x2, x0, -1
@@ -379,7 +378,7 @@ ProjToAffine:
   jalr x0, x1, 0
 
 ModInv:
-  bn.wsrrs w2, 0, w31
+  bn.wsrr w2, 0
   bn.subi w2, w2, 2
   bn.mov w1, w30
   loopi 256, 14
@@ -401,7 +400,7 @@ ModInv:
   jalr x0, x1, 0
 
 FetchBandRandomize:
-  bn.wsrrs w2, 1, w31
+  bn.wsrr w2, 1
   bn.addm w26, w2, w31
   bn.lid x10, 0(x21)
   bn.mov w25, w26
@@ -441,8 +440,7 @@ SetupP256NandMuLow:
   sw x2, 620(x0)
   addi x2, x0, 29
   bn.lid x2, 608(x0)
-  bn.wsrrw w31, 0, w29
-  bn.xor w31, w31, w31
+  bn.wsrw 0, w29
   addi x2, x0, 0
   sw x2, 668(x0)
   addi x2, x0, -1
@@ -500,10 +498,10 @@ ScalarMult_internal:
   bn.sel w10, w13, w7, M
   bn.rshi w0, w0, w0 >> 255
   bn.rshi w1, w1, w1 >> 255
-  bn.wsrrs w11, 1, w31
-  bn.wsrrs w12, 1, w31
-  bn.wsrrs w13, 1, w31
-  bn.wsrrs w2, 1, w31
+  bn.wsrr w11, 1
+  bn.wsrr w12, 1
+  bn.wsrr w13, 1
+  bn.wsrr w2, 1
   bn.mov w24, w3
   bn.mov w25, w2
   jal x1, MulMod
@@ -654,8 +652,8 @@ p256scalarbasemult:
 ModInvVar:
   bn.mov w2, w31
   bn.mov w3, w30
-  bn.wsrrs w4, 0, w31
-  bn.wsrrs w7, 0, w31
+  bn.wsrr w4, 0
+  bn.wsrr w7, 0
   bn.mov w5, w0
 
 impvt_Loop:
