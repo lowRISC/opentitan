@@ -1,50 +1,48 @@
-# Pseudo-code for Mask ROM Secure Boot Process
+---
+title: "Reference Mask ROM: Secure Boot Description"
+aliases:
+- /sw/device/mask_rom/boot/
+---
 
-*   [Secure Boot Process](#secure-boot-process)
-*   [Modules](#modules)
-    +   [Boot Policy](#boot-policy)
-        -   [Read Boot Policy](#read-boot-policy)
-    +   [ROM_EXT Manifest](#rom-ext-manifest)
-    +   [Bootstrap](#bootstrap)
-        -   [Manufacturing boot-strapping intervention](#manufacturing-boot-strapping-intervention)
-    +   [Keys and Signature](#keys-and-signature)
-    +   [Chip-specific Startup](#chip-specific-startup)
-    +   [Lockdown](#lockdown)
-        -   [Locking Down Peripherals](#locking-down-peripherals)
-    +   [Hardened Jump](#hardened-jump)
-    +   [System State](#system-state)
-        -   [Cleaning Device State](#cleaning-device-state)
-    +   [CRT (C Runtime)](#crt--c-runtime-)
-        -   [CRT Initialization](#crt-initialization)
-*   [Interface Data](#interface-data)
-    +   [Key Management Data](#key-management-data)
-    +   [Boot Policy Structure](#boot-policy-structure)
-    +   [ROM_EXT Manifest Structure](#rom-ext-manifest-structure)
+<p style="text-align: right">
+Contributors(s):
+  <a href="https://github.com/lenary">Sam Elliott</a>,
+  <a href="https://github.com/moidx">Garret Kelly</a>,
+  <a href="https://github.com/moidx">Miguel Osorio</a>
+</p>
 
-This file should be read in conjunction with the secure boot specification.
+<p style="color: red; text-align: right;">
+  Status: Draft
+</p>
+
+This should be read in conjunction with the [Secure Boot specification][csm-secure-boot].
 References to that document are included.
 
-## Secure Boot Process
+[csm-secure-boot]: {{< relref "doc/security/specs/secure_boot" >}}
 
-1. Power on (entirely in hardware)
+# Secure Boot Process
 
-   **Open Q:** Whether SW has to configure PMP initial region.
+1.  Power on (entirely in hardware)
 
-2. Execution Begins with Mask ROM stage:
-   *   CRT Startup Code (Written in Assembly)
+    **Open Q:** Whether SW has to configure PMP initial region.
 
-       *   Disable Interrupts and set well-defined exception handler.
-           This should keep initial execution deterministic.
+2.  Execution Begins with Mask ROM stage:
 
-       *   Clean Device State Part 1. (See "Cleaning Device State" below)
-           This includes enabling SRAM Scrambling.
+    *   CRT Startup Code (Written in Assembly)
 
-       *   Setup structures for C execution (CRT: `.data`, `.bss` sections, stack).
+        *   Disable Interrupts and set well-defined exception handler.
+            This should keep initial execution deterministic.
 
-       *   Jump into C code
+        *   Clean Device State Part 1. (See "Cleaning Device State" below).
+            This includes enabling SRAM Scrambling.
 
-   *   Main Mask ROM Secure Boot Software (Written in C)
-       *   Orchestrated from `boot`:
+        *   Setup structures for C execution (CRT: `.data`, `.bss` sections, stack).
+
+        *   Jump into C code
+
+    *   Main Mask ROM Secure Boot Software (Written in C)
+
+        *   Orchestrated from `boot`:
 
 ```c
 void boot(void) {
@@ -171,11 +169,11 @@ void boot(void) {
 }
 ```
 
-3. Execution Enters ROM_EXT stage.
+3.  Execution Enters ROM_EXT stage.
 
-   Not covered by this document. Refer to Secure Boot document instead.
+    Not covered by this document. Refer to [Secure Boot][csm-secure-boot] document instead.
 
-## Modules
+# Modules
 
 We've tried to divide the Mask ROM into self-contained modules that can be
 tested separately, rather than having to test the whole boot system at once.
@@ -185,7 +183,7 @@ required for that module to be implemented fully; the functionality expected at
 various milestones of the Mask ROM's development; and, optionally, pseudo-code
 for any subroutines that make up their implementation.
 
-### Boot Policy
+## Boot Policy
 
 This manages reading the boot policy, updating the boot policy
 if required, and making decisions based on that policy. Most Boot Policy
@@ -202,7 +200,7 @@ Milestone Expectations:
 *   *v0.5:* Reading/Updating Boot Policy
 *   *v0.9:* Reading Boot Reason
 
-#### Read Boot Policy
+## Read Boot Policy
 
 ```c
 read_boot_policy() {
@@ -216,7 +214,7 @@ read_boot_policy() {
 }
 ```
 
-### ROM_EXT Manifest
+## ROM_EXT Manifest
 
 This manages reading and parsing ROM_EXT manifests.
 
@@ -234,7 +232,7 @@ Milestone Expectations:
     Slot B images.
 *   v0.9: Nothing more (Bootstrap should work in v0.9).
 
-### Bootstrap
+## Bootstrap
 
 This manages boot-strapping, chip recovery, and manufacturer loading of ROM_EXT
 images.
@@ -253,7 +251,7 @@ Milestone Expectations
 *   *v0.5:* Nothing (images pre-loaded into Memory)
 *   *v0.9:* Full Strapping (ROM_EXT images loaded over SPI)
 
-#### Manufacturing boot-strapping intervention
+### Manufacturing boot-strapping intervention
 
 This is where, depending on lifecycle state, new flash images may be loaded onto
 the device (usually during manufacturing).
@@ -273,7 +271,7 @@ manufacturing_boot_strap() {
 }
 ```
 
-### Keys and Signature
+## Signature Verification
 
 This manages public key selection (for ROM_EXT validation), and calculating the
 digest and signature of the ROM_EXT image itself.
@@ -290,7 +288,7 @@ Milestone Expectations:
 *   *v0.5:* HMAC Digests, Software Implementations of RSA Verify
 *   *v0.9:* OTBN Implementations of RSA Verify
 
-### Chip-specific Startup
+## Chip-specific Startup
 
 This deals with how to initialize and clear any chip-specific hardware.
 
@@ -302,7 +300,7 @@ DIFs Needed:
 *   Entropy?
 *   Clocks
 
-### Lockdown
+## Lockdown
 
 This is responsible for managing memory protection regions as well as
 disallowing reconfiguration of peripherals. Some memory protection regions are
@@ -320,7 +318,7 @@ Milestone Expectations:
 *   *v0.5:* PMP, Flash Controller
 *   *v0.9:* SRAM Scrambling, Lockdown Profiles Defined
 
-#### Locking Down Peripherals
+### Locking Down Peripherals
 
 ```c
 peripheral_lockdown() {
@@ -344,7 +342,7 @@ peripheral_lockdown() {
 }
 ```
 
-### Hardened Jump
+## Hardened Jump
 
 This module is responsible for managing the state associated with the hardware
 support for the jump into ROM_EXT.
@@ -358,7 +356,7 @@ Milestone Expectations:
 *   *v0.5:* Unhardened Jump (entirely in SW)
 *   *v0.9:* HW-support Hardened Jump
 
-### System State
+## System State
 
 This deals with taking the system state measurements which are used to derive
 the `CreatorRootKey`. Some of these measurements may cause boot to be halted.
@@ -376,7 +374,7 @@ Milestone Expectations:
 *   *v0.5:* Software Binding Properties, OTP Bits.
 *   *v0.9:* Full `CreatorRootKey` derivation.
 
-#### Cleaning Device State
+### Cleaning Device State
 
 Part of this process is done before we can execute any C code. In particular, we
 have to clear all registers and all of the main RAM before we setup the CRT
@@ -425,7 +423,7 @@ clean_device_state_part_2() {
 }
 ```
 
-### CRT (C Runtime)
+## CRT (C Runtime)
 
 This sets up execution so we can run C functions. We cannot execute any C code
 until we have setup the CRT.
@@ -437,7 +435,7 @@ Milestone Expectations:
 *   *v0.5:* Can Execute C functions.
 *   *v0.9:* SRAM Scrambling.
 
-#### CRT Initialization
+### CRT Initialization
 
 Setting up the CRT involves: loading the `.data` and `.bss` sections, and
 setting up the stack and `gp` (`gp` may be used for referencing some data).
@@ -455,7 +453,7 @@ crt_init() {
 }
 ```
 
-## Interface Data
+# Interface Data
 
 There is some data that is accessed by more than just the Mask ROM:
 
@@ -468,7 +466,7 @@ support one version each of the following structures. This means they must be
 carefully designed to be extensible if the other systems accessing them may
 require additional data in these formats.
 
-### Key Management Data
+## Key Management Data
 
 This is the storage for the IDs of keys that are used to sign a ROM_EXT. The
 ROM_EXT image contains the full key, this stores only the key id (which can be
@@ -491,7 +489,7 @@ Extensibility: None. A ROM_EXT can disable the use of a key, but cannot add new
 valid root key IDs. There will be a fixed set of root key IDs as part of a given
 Mask ROM version.
 
-### Boot Policy Structure
+## Boot Policy Structure
 
 This is the in-flash structure that defines which ROM_EXT should be booted next,
 whether it should fall back to the other ROM_EXT if it fails to boot, and/or
@@ -534,7 +532,7 @@ add other information to this structure.
 The in-RAM representation also contains the boot reason (reset manager), because
 it needs to be checked most times the boot policy is also read.
 
-### ROM_EXT Manifest Structure
+## ROM_EXT Manifest Structure
 
 Accessed by:
 
@@ -542,7 +540,9 @@ Accessed by:
 *   ROM_EXT (potentially).
 *   BL0 Kernel (during firmware update).
 
-The manifest format is defined in [ROM_EXT Manifest Format](../rom_exts/manifest).
+The manifest format is defined in [ROM_EXT Manifest Format][rom-ext-manifest].
+
+[rom-ext-manifest]: {{< relref "sw/device/rom_exts/manifest" >}}
 
 Stored in: Flash (at one of two fixed, memory-mapped, addresses)
 
