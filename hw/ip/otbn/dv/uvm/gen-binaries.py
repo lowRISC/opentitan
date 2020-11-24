@@ -209,7 +209,7 @@ def write_ninja(handle: TextIO, rig_count: int, start_seed: int,
     # Rules to build the smoke test.
     smoke_src = os.path.join(os.path.abspath(smoke_src_dir), 'smoke_test.s')
     handle.write('build smoke.o: as {smoke_src}\n'.format(smoke_src=smoke_src))
-    handle.write('build smoke.elf: ld1 smoke.elf\n\n')
+    handle.write('build smoke.elf: ld1 smoke.o\n\n')
 
 
 if __name__ == '__main__':
