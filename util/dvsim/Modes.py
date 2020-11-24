@@ -261,6 +261,10 @@ class BuildModes(Modes):
         if not hasattr(self, "mname"):
             self.mname = "mode"
         self.is_sim_mode = 0
+        self.pre_build_cmds = []
+        self.post_build_cmds = []
+        self.pre_run_cmds = []
+        self.post_run_cmds = []
         self.build_opts = []
         self.run_opts = []
         self.en_build_modes = []
@@ -287,6 +291,8 @@ class RunModes(Modes):
         if not hasattr(self, "mname"):
             self.mname = "mode"
         self.reseed = None
+        self.pre_run_cmds = []
+        self.post_run_cmds = []
         self.run_opts = []
         self.uvm_test = ""
         self.uvm_test_seq = ""
@@ -408,19 +414,27 @@ class Tests(RunModes):
                     test_obj.name, test_obj.build_mode.name)
                 sys.exit(1)
 
-            # Merge build_mode's run_opts with self
+            # Merge build_mode's params with self
+            test_obj.pre_run_cmds.extend(test_obj.build_mode.pre_run_cmds)
+            test_obj.post_run_cmds.extend(test_obj.build_mode.post_run_cmds)
             test_obj.run_opts.extend(test_obj.build_mode.run_opts)
 
         # Return the list of tests
         return tests_objs
 
     @staticmethod
-    def merge_global_opts(tests, global_build_opts, global_run_opts):
+    def merge_global_opts(tests, global_pre_build_cmds, global_post_build_cmds,
+                          global_build_opts, global_pre_run_cmds,
+                          global_post_run_cmds, global_run_opts):
         processed_build_modes = []
         for test in tests:
             if test.build_mode.name not in processed_build_modes:
+                test.build_mode.pre_build_cmds.extend(global_pre_build_cmds)
+                test.build_mode.post_build_cmds.extend(global_post_build_cmds)
                 test.build_mode.build_opts.extend(global_build_opts)
                 processed_build_modes.append(test.build_mode.name)
+            test.pre_run_cmds.extend(global_pre_run_cmds)
+            test.post_run_cmds.extend(global_post_run_cmds)
             test.run_opts.extend(global_run_opts)
 
 
@@ -454,6 +468,10 @@ class Regressions(Modes):
         self.excl_tests = []  # TODO: add support for this
         self.en_sim_modes = []
         self.en_run_modes = []
+        self.pre_build_cmds = []
+        self.post_build_cmds = []
+        self.pre_run_cmds = []
+        self.post_run_cmds = []
         self.build_opts = []
         self.run_opts = []
         super().__init__(regdict)
@@ -515,8 +533,8 @@ class Regressions(Modes):
                     sys.exit(1)
 
                 # Check if sim_mode_obj's sub-modes are a part of regressions's
-                # sim modes- if yes, then it will cause duplication of opts
-                # Throw an error and exit.
+                # sim modes- if yes, then it will cause duplication of cmds &
+                # opts. Throw an error and exit.
                 for sim_mode_obj_sub in sim_mode_obj.en_build_modes:
                     if sim_mode_obj_sub in regression_obj.en_sim_modes:
                         log.error(
@@ -531,21 +549,31 @@ class Regressions(Modes):
                 if sim_mode_obj.name in sim_cfg.en_build_modes:
                     continue
 
-                # Merge the build and run opts from the sim modes
+                # Merge the build and run cmds & opts from the sim modes
+                regression_obj.pre_build_cmds.extend(
+                    sim_mode_obj.pre_build_cmds)
+                regression_obj.post_build_cmds.extend(
+                    sim_mode_obj.post_build_cmds)
                 regression_obj.build_opts.extend(sim_mode_obj.build_opts)
+                regression_obj.pre_run_cmds.extend(sim_mode_obj.pre_run_cmds)
+                regression_obj.post_run_cmds.extend(sim_mode_obj.post_run_cmds)
                 regression_obj.run_opts.extend(sim_mode_obj.run_opts)
 
             # Unpack the run_modes
-            # TODO: If there are other params other than run_opts throw an error and exit
+            # TODO: If there are other params other than run_opts throw an
+            # error and exit
             found_run_mode_objs = Modes.find_and_merge_modes(
                 regression_obj, regression_obj.en_run_modes, run_modes, False)
 
-            # Only merge the run_opts from the run_modes enabled
+            # Only merge the pre_run_cmds, post_run_cmds & run_opts from the
+            # run_modes enabled
             for run_mode_obj in found_run_mode_objs:
                 # Check if run_mode_obj is also passed on the command line, in
                 # which case, skip
                 if run_mode_obj.name in sim_cfg.en_run_modes:
                     continue
+                regression_obj.pre_run_cmds.extend(run_mode_obj.pre_run_cmds)
+                regression_obj.post_run_cmds.extend(run_mode_obj.post_run_cmds)
                 regression_obj.run_opts.extend(run_mode_obj.run_opts)
 
             # Unpack tests
@@ -578,8 +606,12 @@ class Regressions(Modes):
         processed_build_modes = []
         for test in self.tests:
             if test.build_mode.name not in processed_build_modes:
+                test.build_mode.pre_build_cmds.extend(self.pre_build_cmds)
+                test.build_mode.post_build_cmds.extend(self.post_build_cmds)
                 test.build_mode.build_opts.extend(self.build_opts)
                 processed_build_modes.append(test.build_mode.name)
+            test.pre_run_cmds.extend(self.pre_run_cmds)
+            test.post_run_cmds.extend(self.post_run_cmds)
             test.run_opts.extend(self.run_opts)
 
             # Override reseed if available.

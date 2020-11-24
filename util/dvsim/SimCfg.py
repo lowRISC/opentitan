@@ -97,7 +97,11 @@ class SimCfg(FlowCfg):
         self.project = ""
         self.flow = ""
         self.flow_makefile = ""
+        self.pre_build_cmds = []
+        self.post_build_cmds = []
         self.build_dir = ""
+        self.pre_run_cmds = []
+        self.post_run_cmds = []
         self.run_dir = ""
         self.sw_build_dir = ""
         self.pass_patterns = []
@@ -269,7 +273,11 @@ class SimCfg(FlowCfg):
         for en_build_mode in self.en_build_modes:
             build_mode_obj = Modes.find_mode(en_build_mode, self.build_modes)
             if build_mode_obj is not None:
+                self.pre_build_cmds.extend(build_mode_obj.pre_build_cmds)
+                self.post_build_cmds.extend(build_mode_obj.post_build_cmds)
                 self.build_opts.extend(build_mode_obj.build_opts)
+                self.pre_run_cmds.extend(build_mode_obj.pre_run_cmds)
+                self.post_run_cmds.extend(build_mode_obj.post_run_cmds)
                 self.run_opts.extend(build_mode_obj.run_opts)
             else:
                 log.error(
@@ -281,6 +289,8 @@ class SimCfg(FlowCfg):
         for en_run_mode in self.en_run_modes:
             run_mode_obj = Modes.find_mode(en_run_mode, self.run_modes)
             if run_mode_obj is not None:
+                self.pre_run_cmds.extend(run_mode_obj.pre_run_cmds)
+                self.post_run_cmds.extend(run_mode_obj.post_run_cmds)
                 self.run_opts.extend(run_mode_obj.run_opts)
             else:
                 log.error(
@@ -376,7 +386,10 @@ class SimCfg(FlowCfg):
         items_list = prune_items(items_list, marked_items)
 
         # Merge the global build and run opts
-        Tests.merge_global_opts(self.run_list, self.build_opts, self.run_opts)
+        Tests.merge_global_opts(self.run_list, self.pre_build_cmds,
+                                self.post_build_cmds, self.build_opts,
+                                self.pre_run_cmds, self.post_run_cmds,
+                                self.run_opts)
 
         # Check if all items have been processed
         if items_list != []:
