@@ -26,7 +26,7 @@ firmware upgrade support.
 ## RISC-V Concepts:
 
 *   **PMP:** Physical Memory Protection unit from the
-    [RISC-V ISA Volume II: Privileged Architecture](rv-isa-priv) specification.
+    [RISC-V ISA Volume II: Privileged Architecture][rv-isa-priv] specification.
     Allows defining properties (RWX) for regions of physical memory. **Note
     that the use of ePMP is currently being considered and that this
     specification will change to accomodate it.**
@@ -44,7 +44,7 @@ The boot process flows as follows:
 
 1.  Power on.
     1.  Execution is restricted to the ROM region via
-        [OpenTitan Secure Boot HW Support](secure-boot-hw-support).
+        [OpenTitan Secure Boot HW Support][secure-boot-hw-support].
     2.  The last PMP region (region #15) is configured by reset logic to cover
         the entire flash region, with only the R and L bits set (that is, the
         region is **R**ead-only and **L**ocked, meaning the region is respected
@@ -61,11 +61,11 @@ The boot process flows as follows:
                 logic.
         2.  Using the Silicon Creator public key stored in ROM, verify the
             signature of the payload digest, using the process outlined in
-            [OpenTitan Secure Boot HW Support](secure-boot-hw-support).
+            [OpenTitan Secure Boot HW Support][secure-boot-hw-support].
             1.  If signature validation fails, enter boot failure logic.
         3.  Perform system state measurements and derive the CreatorRootKey
             identity (see [Identities and Root Keys][identities-keys]), which
-            will reside in the [key manager](key-manager), as an intermediate
+            will reside in the [key manager][key-manager], as an intermediate
             state.
         4.  Write PMP region #0: Read, Execute, Locked, covering the entirety of
             the `ROM_EXT` image from the active slot.
@@ -199,6 +199,6 @@ manifest format is required to support:
 [ot-flash]: #
 [ot-unlock-flow]: #
 [ownership-transfer]: {{< relref "/doc/security/specs/ownership_transfer" >}}
-[rv-isa-priv]: https://riscv.org/specifications/privileged-isa/
+[rv-isa-priv]: https://riscv.org/technical/specifications/
 [secure-boot-hw-support]: #
 [secure-boot-pmp]: #
