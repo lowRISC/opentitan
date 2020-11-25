@@ -158,7 +158,7 @@ def generate_alert_handler(top, out_path):
 
     # Generating IP top module script is not generalized yet.
     # So, topgen reads template files from alert_handler directory directly.
-    tpl_path = out_path / '../ip/alert_handler/data'
+    tpl_path = Path(__file__).resolve().parent / '../hw/ip/alert_handler/data'
     hjson_tpl_path = tpl_path / 'alert_handler.hjson.tpl'
     dv_tpl_path = tpl_path / 'alert_handler_env_pkg__params.sv.tpl'
 
@@ -237,7 +237,7 @@ def generate_plic(top, out_path):
     # Generating IP top module script is not generalized yet.
     # So, topgen reads template files from rv_plic directory directly.
     # Next, if the ip top gen tool is placed in util/ we can import the library.
-    tpl_path = out_path / '../ip/rv_plic/data'
+    tpl_path = Path(__file__).resolve().parent / '../hw/ip/rv_plic/data'
     hjson_tpl_path = tpl_path / 'rv_plic.hjson.tpl'
     rtl_tpl_path = tpl_path / 'rv_plic.sv.tpl'
 
@@ -379,7 +379,7 @@ def generate_pinmux_and_padctrl(top, out_path):
     data_path.mkdir(parents=True, exist_ok=True)
 
     # Template path
-    tpl_path = out_path / '../ip/pinmux/data/pinmux.hjson.tpl'
+    tpl_path = Path(__file__).resolve().parent / '../hw/ip/pinmux/data/pinmux.hjson.tpl'
 
     # Generate register package and RTLs
     gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
@@ -434,7 +434,7 @@ def generate_pinmux_and_padctrl(top, out_path):
     data_path.mkdir(parents=True, exist_ok=True)
 
     # Template path
-    tpl_path = out_path / '../ip/padctrl/data/padctrl.hjson.tpl'
+    tpl_path = Path(__file__).resolve().parent / '../hw/ip/padctrl/data/padctrl.hjson.tpl'
 
     # Generate register package and RTLs
     gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
@@ -596,7 +596,7 @@ def generate_pwrmgr(top, out_path):
     doc_path.mkdir(parents=True, exist_ok=True)
 
     # So, read template files from ip directory.
-    tpl_path = out_path / '../ip/pwrmgr/data'
+    tpl_path = Path(__file__).resolve().parent / '../hw/ip/pwrmgr/data'
     hjson_tpl_path = tpl_path / 'pwrmgr.hjson.tpl'
 
     # Render and write out hjson
@@ -636,7 +636,7 @@ def generate_rstmgr(topcfg, out_path):
     rtl_path.mkdir(parents=True, exist_ok=True)
     doc_path = out_path / 'ip/rstmgr/data/autogen'
     doc_path.mkdir(parents=True, exist_ok=True)
-    tpl_path = out_path / '../ip/rstmgr/data'
+    tpl_path = Path(__file__).resolve().parent / '../hw/ip/rstmgr/data'
 
     # Read template files from ip directory.
     tpls = []
@@ -725,7 +725,7 @@ def generate_flash(topcfg, out_path):
     rtl_path.mkdir(parents=True, exist_ok=True)
     doc_path = out_path / 'ip/flash_ctrl/data/autogen'
     doc_path.mkdir(parents=True, exist_ok=True)
-    tpl_path = out_path / '../ip/flash_ctrl/data'
+    tpl_path = Path(__file__).resolve().parent / '../hw/ip/flash_ctrl/data'
 
     # Read template files from ip directory.
     tpls = []
