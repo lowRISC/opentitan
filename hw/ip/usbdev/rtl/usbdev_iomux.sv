@@ -183,8 +183,8 @@ module usbdev_iomux
           cio_usb_dp_o = 1'b0;
           cio_usb_dn_o = 1'b0;
         end else begin
-          cio_usb_dp_o = usb_tx_d_i;
-          cio_usb_dn_o = !usb_tx_d_i;
+          cio_usb_dp_o = cio_usb_d_flipped;
+          cio_usb_dn_o = ~cio_usb_d_flipped;
         end
       end
     end

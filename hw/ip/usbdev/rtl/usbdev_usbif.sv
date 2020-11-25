@@ -361,6 +361,7 @@ module usbdev_usbif  #(
     .usb_sense_i       (usb_sense_i),
     .usb_dp_i          (usb_dp_i),
     .usb_dn_i          (usb_dn_i),
+    .usb_oe_i          (usb_oe_o),
     .rx_jjj_det_i      (rx_jjj_det),
     .sof_valid_i       (sof_valid),
     .link_disconnect_o (link_disconnect_o),
