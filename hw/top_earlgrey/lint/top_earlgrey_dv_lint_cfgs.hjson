@@ -72,6 +72,12 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/kmac/dv/lint/{tool}"
              },
+             {
+                  name: lc_ctrl
+                  fusesoc_core: lowrisc:dv:lc_ctrl_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/lc_ctrl/dv/lint/{tool}"
+             },
              {    name: otp_ctrl
                   fusesoc_core: lowrisc:dv:otp_ctrl_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
