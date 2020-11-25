@@ -495,12 +495,12 @@ package i2c_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    i2c_hw2reg_intr_state_reg_t intr_state; // [113:99]
-    i2c_hw2reg_status_reg_t status; // [98:99]
-    i2c_hw2reg_rdata_reg_t rdata; // [98:90]
-    i2c_hw2reg_fifo_status_reg_t fifo_status; // [89:90]
-    i2c_hw2reg_val_reg_t val; // [89:90]
-    i2c_hw2reg_acqdata_reg_t acqdata; // [89:78]
+    i2c_hw2reg_intr_state_reg_t intr_state; // [113:84]
+    i2c_hw2reg_status_reg_t status; // [83:74]
+    i2c_hw2reg_rdata_reg_t rdata; // [73:66]
+    i2c_hw2reg_fifo_status_reg_t fifo_status; // [65:42]
+    i2c_hw2reg_val_reg_t val; // [41:10]
+    i2c_hw2reg_acqdata_reg_t acqdata; // [9:0]
   } i2c_hw2reg_t;
 
   // Register Address

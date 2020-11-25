@@ -88,11 +88,11 @@ package rstmgr_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    rstmgr_hw2reg_reset_info_reg_t reset_info; // [45:45]
-    rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [44:40]
-    rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [39:40]
-    rstmgr_hw2reg_alert_info_reg_t alert_info; // [39:40]
-    rstmgr_hw2reg_sw_rst_ctrl_n_mreg_t [1:0] sw_rst_ctrl_n; // [39:38]
+    rstmgr_hw2reg_reset_info_reg_t reset_info; // [45:40]
+    rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [39:38]
+    rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [37:34]
+    rstmgr_hw2reg_alert_info_reg_t alert_info; // [33:2]
+    rstmgr_hw2reg_sw_rst_ctrl_n_mreg_t [1:0] sw_rst_ctrl_n; // [1:0]
   } rstmgr_hw2reg_t;
 
   // Register Address

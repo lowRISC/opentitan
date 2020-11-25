@@ -55,7 +55,7 @@ package clkmgr_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [3:4]
+    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [3:0]
   } clkmgr_hw2reg_t;
 
   // Register Address

@@ -243,11 +243,11 @@ package spi_device_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    spi_device_hw2reg_intr_state_reg_t intr_state; // [67:62]
-    spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [61:62]
-    spi_device_hw2reg_status_reg_t status; // [61:62]
-    spi_device_hw2reg_rxf_ptr_reg_t rxf_ptr; // [61:46]
-    spi_device_hw2reg_txf_ptr_reg_t txf_ptr; // [45:30]
+    spi_device_hw2reg_intr_state_reg_t intr_state; // [67:56]
+    spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [55:40]
+    spi_device_hw2reg_status_reg_t status; // [39:34]
+    spi_device_hw2reg_rxf_ptr_reg_t rxf_ptr; // [33:17]
+    spi_device_hw2reg_txf_ptr_reg_t txf_ptr; // [16:0]
   } spi_device_hw2reg_t;
 
   // Register Address

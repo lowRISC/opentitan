@@ -163,10 +163,10 @@ package edn_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    edn_hw2reg_intr_state_reg_t intr_state; // [23:22]
-    edn_hw2reg_sum_sts_reg_t sum_sts; // [21:22]
-    edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [21:22]
-    edn_hw2reg_err_code_reg_t err_code; // [21:22]
+    edn_hw2reg_intr_state_reg_t intr_state; // [23:20]
+    edn_hw2reg_sum_sts_reg_t sum_sts; // [19:14]
+    edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [13:10]
+    edn_hw2reg_err_code_reg_t err_code; // [9:0]
   } edn_hw2reg_t;
 
   // Register Address

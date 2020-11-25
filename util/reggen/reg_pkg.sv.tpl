@@ -130,20 +130,21 @@ packbit = 0
 % if nbits > 0:
   typedef struct packed {
 % for r in block.regs:
-  ######################## multiregister ###########################
-  % if r.is_multi_reg() and r.get_n_bits(["d"]):
+<%  reg_d_bits = r.get_n_bits(["d"]) %>\
+  % if reg_d_bits:
 <%
-  array_dims = ""
-  for d in r.get_nested_dims():
-    array_dims += "[%d:0]" % (d-1)
+    if r.is_multi_reg():
+      array_dims = "".join("[%d:0]" % (d-1) for d in r.get_nested_dims())
+      reg_type = "{}_hw2reg_{}_mreg_t {}".format(block.name, r.name, array_dims)
+    else:
+      reg_type = "{}_hw2reg_{}_reg_t".format(block.name, r.name)
+
+    reg_width = r.get_n_bits(["d", "de"])
+    msb = nbits - packbit - 1
+    lsb = nbits - (packbit + reg_width)
+    packbit += reg_width
 %>\
-    ${block.name + "_hw2reg_" + r.name + "_mreg_t"} ${array_dims} ${r.name}; // [${nbits - packbit - 1}:${nbits - (packbit + r.get_n_bits(["d", "de"]))}]<% packbit += r.get_n_bits(["d", "de"]) %>\
-
-  ######################## register with single field ###########################
-  % elif r.get_n_bits(["d"]):
-    ## Only one field, should use register name as it is
-    ${block.name + "_hw2reg_" + r.name + "_reg_t"} ${r.name}; // [${nbits - packbit - 1}:${nbits - (packbit + r.get_n_bits(["q", "qe", "re"]))}]<% packbit += r.get_n_bits(["q", "qe", "re"]) %>\
-
+    ${reg_type} ${r.name}; // [${msb}:${lsb}]
   % endif
 % endfor
   } ${block.name}_hw2reg_t;

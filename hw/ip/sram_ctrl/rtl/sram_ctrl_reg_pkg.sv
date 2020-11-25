@@ -91,10 +91,10 @@ package sram_ctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    sram_ctrl_hw2reg_intr_state_reg_t intr_state; // [41:41]
-    sram_ctrl_hw2reg_status_reg_t status; // [40:41]
-    sram_ctrl_hw2reg_error_type_reg_t error_type; // [40:39]
-    sram_ctrl_hw2reg_error_address_reg_t error_address; // [38:39]
+    sram_ctrl_hw2reg_intr_state_reg_t intr_state; // [41:40]
+    sram_ctrl_hw2reg_status_reg_t status; // [39:37]
+    sram_ctrl_hw2reg_error_type_reg_t error_type; // [36:33]
+    sram_ctrl_hw2reg_error_address_reg_t error_address; // [32:0]
   } sram_ctrl_hw2reg_t;
 
   // Register Address
