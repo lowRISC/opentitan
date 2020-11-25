@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+from collections import OrderedDict
 from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
 
 
@@ -216,7 +217,7 @@ class Window():
 class Block():
     width = 32
     addr_width = 12
-    base_addr = 0
+    base_addr = OrderedDict()
     name = ""
     hier_path = ""
     regs = []
@@ -228,7 +229,8 @@ class Block():
     def __init__(self):
         self.width = 32
         self.addr_width = 12
-        self.base_addr = 0
+        # Key is instance name
+        self.base_addr = OrderedDict()
         self.name = ""
         self.hier_path = ""
         self.regs = []
