@@ -800,7 +800,7 @@ def generate_top_ral(top, ip_objs, out_path):
     top_block.base_addr = 0
     top_block.width = int(top["datawidth"])
 
-    # add blocks
+    # add all the IPs into blocks
     for ip_obj in ip_objs:
         top_block.blocks.append(gen_rtl.json_to_reg(ip_obj))
 
@@ -818,14 +818,14 @@ def generate_top_ral(top, ip_objs, out_path):
             mem.n_bits = top_block.width
             top_block.wins.append(mem)
 
-    # get sub-block base addresses from top cfg
+    # get sub-block base addresses, instance names from top cfg
     for block in top_block.blocks:
         for module in top["module"]:
-            if block.name == module["name"]:
-                block.base_addr = int(module["base_addr"], 0)
-                break
+            if block.name == module["type"]:
+                block.base_addr[module["name"]] = int(module["base_addr"], 0)
 
-    top_block.blocks.sort(key=lambda block: block.base_addr)
+    # sort by the base_addr of 1st instance of the block
+    top_block.blocks.sort(key=lambda block: next(iter(block.base_addr))[1])
     top_block.wins.sort(key=lambda win: win.base_addr)
 
     # generate the top ral model with template
