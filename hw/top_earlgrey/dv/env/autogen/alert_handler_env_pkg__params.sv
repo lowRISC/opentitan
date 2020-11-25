@@ -7,9 +7,8 @@
 parameter string LIST_OF_ALERTS[] = {
   "aes_ctrl_err_update",
   "aes_ctrl_err_storage",
-  "otbn_imem_uncorrectable",
-  "otbn_dmem_uncorrectable",
-  "otbn_reg_uncorrectable",
+  "otbn_fatal",
+  "otbn_recoverable",
   "sensor_ctrl_as",
   "sensor_ctrl_cg",
   "sensor_ctrl_gd",
@@ -26,4 +25,4 @@ parameter string LIST_OF_ALERTS[] = {
   "entropy_src_es_alert_count_met"
 };
 
-parameter uint NUM_ALERTS = 19;
+parameter uint NUM_ALERTS = 18;

@@ -1382,11 +1382,10 @@ module top_earlgrey #(
       // Interrupt
       .intr_done_o (intr_otbn_done),
 
-      // [16]: imem_uncorrectable
-      // [17]: dmem_uncorrectable
-      // [18]: reg_uncorrectable
-      .alert_tx_o  ( alert_tx[18:16] ),
-      .alert_rx_i  ( alert_rx[18:16] ),
+      // [16]: fatal
+      // [17]: recoverable
+      .alert_tx_o  ( alert_tx[17:16] ),
+      .alert_rx_i  ( alert_rx[17:16] ),
 
       // Inter-module signals
       .idle_o(clkmgr_idle[3]),

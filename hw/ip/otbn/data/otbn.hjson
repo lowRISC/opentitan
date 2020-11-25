@@ -20,14 +20,11 @@
     }
   ]
   alert_list: [
-    { name: "imem_uncorrectable"
-      desc: "Uncorrectable error in the instruction memory detected."
+    { name: "fatal"
+      desc: "A fatal error. Fatal alerts are non-recoverable and will be asserted until a hard reset."
     }
-    { name: "dmem_uncorrectable"
-      desc: "Uncorrectable error in the data memory detected."
-    }
-    { name: "reg_uncorrectable"
-      desc: "Uncorrectable error in one of the register files detected."
+    { name: "recoverable"
+      desc: "A recoverable error. Just sent once (as the processor stops)."
     }
   ]
 
@@ -144,7 +141,34 @@
         }
       ]
     } // register : start_addr
+    { name: "FATAL_ALERT_CAUSE",
+      desc: '''
+        The cause of a fatal alert.
 
+        The bits of this register correspond to errors that can cause a fatal
+        alert. Software can read these bits to see what went wrong. Once set,
+        these bits cannot be cleared.
+      '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "imem_error",
+          resval: 0,
+          desc: "Set on any ECC error in IMEM"
+        }
+        { bits: "1",
+          name: "dmem_error",
+          resval: 0,
+          desc: "Set on any ECC error in DMEM"
+        }
+        { bits: "2",
+          name: "reg_error",
+          resval: 0,
+          desc: "Set on any ECC error in a register file"
+        }
+      ]
+    }
 
     // Give IMEM and DMEM 16 KiB address space, each, to allow for easy expansion
     // of the actual IMEM and DMEM sizes without changing the address map.

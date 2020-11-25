@@ -700,24 +700,23 @@ typedef enum top_earlgrey_alert_peripheral {
 typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdAesCtrlErrUpdate = 0, /**< aes_ctrl_err_update */
   kTopEarlgreyAlertIdAesCtrlErrStorage = 1, /**< aes_ctrl_err_storage */
-  kTopEarlgreyAlertIdOtbnImemUncorrectable = 2, /**< otbn_imem_uncorrectable */
-  kTopEarlgreyAlertIdOtbnDmemUncorrectable = 3, /**< otbn_dmem_uncorrectable */
-  kTopEarlgreyAlertIdOtbnRegUncorrectable = 4, /**< otbn_reg_uncorrectable */
-  kTopEarlgreyAlertIdSensorCtrlAs = 5, /**< sensor_ctrl_as */
-  kTopEarlgreyAlertIdSensorCtrlCg = 6, /**< sensor_ctrl_cg */
-  kTopEarlgreyAlertIdSensorCtrlGd = 7, /**< sensor_ctrl_gd */
-  kTopEarlgreyAlertIdSensorCtrlTsHi = 8, /**< sensor_ctrl_ts_hi */
-  kTopEarlgreyAlertIdSensorCtrlTsLo = 9, /**< sensor_ctrl_ts_lo */
-  kTopEarlgreyAlertIdSensorCtrlLs = 10, /**< sensor_ctrl_ls */
-  kTopEarlgreyAlertIdSensorCtrlOt = 11, /**< sensor_ctrl_ot */
-  kTopEarlgreyAlertIdKeymgrFaultErr = 12, /**< keymgr_fault_err */
-  kTopEarlgreyAlertIdKeymgrOperationErr = 13, /**< keymgr_operation_err */
-  kTopEarlgreyAlertIdOtpCtrlOtpMacroFailure = 14, /**< otp_ctrl_otp_macro_failure */
-  kTopEarlgreyAlertIdOtpCtrlOtpCheckFailure = 15, /**< otp_ctrl_otp_check_failure */
-  kTopEarlgreyAlertIdLcCtrlLcProgrammingFailure = 16, /**< lc_ctrl_lc_programming_failure */
-  kTopEarlgreyAlertIdLcCtrlLcStateFailure = 17, /**< lc_ctrl_lc_state_failure */
-  kTopEarlgreyAlertIdEntropySrcEsAlertCountMet = 18, /**< entropy_src_es_alert_count_met */
-  kTopEarlgreyAlertIdLast = 18, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdOtbnFatal = 2, /**< otbn_fatal */
+  kTopEarlgreyAlertIdOtbnRecoverable = 3, /**< otbn_recoverable */
+  kTopEarlgreyAlertIdSensorCtrlAs = 4, /**< sensor_ctrl_as */
+  kTopEarlgreyAlertIdSensorCtrlCg = 5, /**< sensor_ctrl_cg */
+  kTopEarlgreyAlertIdSensorCtrlGd = 6, /**< sensor_ctrl_gd */
+  kTopEarlgreyAlertIdSensorCtrlTsHi = 7, /**< sensor_ctrl_ts_hi */
+  kTopEarlgreyAlertIdSensorCtrlTsLo = 8, /**< sensor_ctrl_ts_lo */
+  kTopEarlgreyAlertIdSensorCtrlLs = 9, /**< sensor_ctrl_ls */
+  kTopEarlgreyAlertIdSensorCtrlOt = 10, /**< sensor_ctrl_ot */
+  kTopEarlgreyAlertIdKeymgrFaultErr = 11, /**< keymgr_fault_err */
+  kTopEarlgreyAlertIdKeymgrOperationErr = 12, /**< keymgr_operation_err */
+  kTopEarlgreyAlertIdOtpCtrlOtpMacroFailure = 13, /**< otp_ctrl_otp_macro_failure */
+  kTopEarlgreyAlertIdOtpCtrlOtpCheckFailure = 14, /**< otp_ctrl_otp_check_failure */
+  kTopEarlgreyAlertIdLcCtrlLcProgrammingFailure = 15, /**< lc_ctrl_lc_programming_failure */
+  kTopEarlgreyAlertIdLcCtrlLcStateFailure = 16, /**< lc_ctrl_lc_state_failure */
+  kTopEarlgreyAlertIdEntropySrcEsAlertCountMet = 17, /**< entropy_src_es_alert_count_met */
+  kTopEarlgreyAlertIdLast = 17, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -727,7 +726,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[19];
+    top_earlgrey_alert_for_peripheral[18];
 
 #define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
 

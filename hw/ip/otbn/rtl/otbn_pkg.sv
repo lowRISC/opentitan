@@ -32,9 +32,8 @@ package otbn_pkg;
 
   // Toplevel constants ============================================================================
 
-  parameter int AlertImemUncorrectable = 0;
-  parameter int AlertDmemUncorrectable = 1;
-  parameter int AlertRegUncorrectable = 2;
+  parameter int AlertFatal = 0;
+  parameter int AlertRecoverable = 1;
 
   // Register file implementation selection enum.
   typedef enum integer {
