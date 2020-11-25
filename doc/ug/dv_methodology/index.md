@@ -424,7 +424,7 @@ The following are some of the best practices when adding exclusions:
 
    These categories are as follows:
 
-   *  **UNR**: Unreachable code due to constraints, or module inputs being tied off in a certain way will result in specific coverage items being unreachable.
+   *  **UNR**: Unreachable code due to design constraints, or module inputs being tied off in a certain way will result in specific coverage items being unreachable.
       Additional explanation is optional.
    *  **NON_RTL**: Simulation constructs in RTL that can be safely excluded in structural coverage collection.
       These include tasks and functions, initial / final blocks that are specifically used for simulation such as backdoor write and read functions for memory elements.
