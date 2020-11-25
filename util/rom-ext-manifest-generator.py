@@ -37,6 +37,7 @@ directory):
 
 import argparse
 from pathlib import Path
+import subprocess
 
 import hjson
 from mako.template import Template
@@ -52,12 +53,13 @@ USAGE = """
   rom-ext-manifest-generator --output-dir:
     Directory where manifest.h will be created.
 
-  rom-ext-manifest-generator --output-headers=[all | c | rust]:
-    Type of headers to be generated:
+  rom-ext-manifest-generator --output-files=[all | c | rust | format]:
+    Type of files to be generated:
 
-    all  - All header files
-    c    - C header file
-    rust - Rust "header" file
+    all    - All files listed below
+    c      - C header file
+    rust   - Rust module file
+    format - Format description file (plaintext)
 """
 
 
@@ -73,9 +75,10 @@ class MemoryOffset(object):
 def generate_defines(fields):
     """ Generates manifest defines.
 
-    It produces two list of tuples. One with a field name and the `MemoryRegion`
-    object, and one with `MemoryOffset` object. Please see the description at
-    the top for more information on the differences between these objects.
+    This produces two lists of tuples. One with a field name and the
+    `MemoryRegion` object, and one with `MemoryOffset` object. Please see the
+    description at the top for more information on the differences between these
+    objects.
     """
 
     base_name = Name.from_snake_case("ROM_EXT")
@@ -108,22 +111,20 @@ def generate_defines(fields):
                 regions.append((field['name'], region))
             current_offset_bytes += size_bytes
 
-    return [regions, offsets]
+    return (regions, offsets)
 
 
-def generate_cheader(fields, input_dir, output_dir):
-    """ Generates C header file from the template file.
+def generate_cheader(regions, offsets, input_dir, output_dir):
+    """Generates C header file.
 
-    It produces a list of `MemoryRegion` and `MemoryOffset` objects, which are
-    used by the template file to generate C header file, which is placed into
-    the `output_path`.
+    This uses the lists of `MemoryRegion` and `MemoryOffset` objects, to
+    generate a C header, using a template and placing the output into
+    `output_dir`.
     """
 
     template_path = input_dir / 'manifest.h.tpl'
     output_path = output_dir / 'manifest.h'
 
-    regions, offsets = generate_defines(fields)
-
     with template_path.open('r') as f:
         template = Template(f.read())
 
@@ -132,22 +133,20 @@ def generate_cheader(fields, input_dir, output_dir):
     with output_path.open('w') as f:
         f.write(header)
 
-    print('Template sucessfuly written to {}.'.format(output_path))
+    print('C header sucessfuly written to {}.'.format(output_path))
 
 
-def generate_rust_header(fields, input_dir, output_dir):
-    """ Generates Rust "header" from the template file.
+def generate_rust_header(regions, offsets, input_dir, output_dir):
+    """Generates Rust module.
 
-    It produces a list of `MemoryRegion` and `MemoryOffset` objects, which are
-    used by the template file to generate Rust "header", which is placed into
-    the `output_path`.
+    This uses the lists of `MemoryRegion` and `MemoryOffset` objects, to
+    generate a Rust module, using a template and placing the output into
+    `output_dir`.
     """
 
     template_path = input_dir / 'manifest.rs.tpl'
     output_path = output_dir / 'manifest.rs'
 
-    regions, offsets = generate_defines(fields)
-
     with template_path.open('r') as f:
         template = Template(f.read())
 
@@ -156,11 +155,85 @@ def generate_rust_header(fields, input_dir, output_dir):
     with output_path.open('w') as f:
         f.write(header)
 
-    print('Template sucessfuly written to {}.'.format(output_path))
+    print('Rust module sucessfuly written to {}.'.format(output_path))
+
+
+def generate_format_description(regions, output_dir):
+    """Generates Plaintext Format Description.
+
+    This uses the `MemoryRegion` objects to generate a format description using
+    the `protocol` tool [1]. This produces an ascii diagram of how the fields of
+    a format are laid out.
+
+    [1]: https://github.com/luismartingarcia/protocol
+    """
+
+    output_path = output_dir / 'manifest.txt'
+
+    truncate_length = 16 # bytes
+    bits_in_byte = 8
+
+    verbose_regions = []
+    current_offset = 0 # bytes
+
+    truncation_lines = []
+    current_truncation_delta = 0 # bytes
+
+    # We need to re-process this info to re-add reserved regions of the right
+    # size, and also to truncate really long fields.
+    for name, mem_region in regions:
+        new_offset = mem_region.base_addr
+        assert new_offset >= current_offset
+
+        # Pad with a reserved field to get to new offset
+        if new_offset != current_offset:
+            verbose_regions.append("- reserved -:{}".format((new_offset - current_offset) * bits_in_byte))
+
+        current_offset = new_offset
+
+        # Add a (potentially truncated) field
+        if mem_region.size_bytes > truncate_length:
+            # We only allow truncated regions at 4-byte offsets.
+            assert(current_offset % 4 == 0)
+            verbose_regions.append("{} ({} bits):{}".format(name, mem_region.size_bytes * bits_in_byte, truncate_length * bits_in_byte))
+
+            # Save some information so we know where to insert the `~~ break ~~` line.
+            data_line = (current_offset - current_truncation_delta) // 4
+            truncation_lines.append(data_line)
+            current_truncation_delta += mem_region.size_bytes - truncate_length
+
+        else:
+            verbose_regions.append("{}:{}".format(name, mem_region.size_bytes * bits_in_byte))
+
+        current_offset = new_offset + mem_region.size_bytes
+
+    # Add a field for the image itself:
+    verbose_regions.append("code image:{}".format(truncate_length * bits_in_byte))
+    truncation_lines.append((current_offset - current_truncation_delta) // 4)
+
+    protocol_input = ",".join(verbose_regions)
+    protocol_result = subprocess.run(["protocol", "--bits", "32", protocol_input], universal_newlines=True, capture_output=True)
+    protocol_output = protocol_result.stdout
+
+    truncation_mark = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  break  ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+    # The formula here depends on the output of `protocol`. The idea is to
+    # replace a line *after* the label with `truncation_mark`, preferrably a
+    # line that otherwise would denote the space between adjacent words.
+    visual_truncations = [line * 2 + 8 for line in truncation_lines]
+
+    with output_path.open('w') as f:
+        for idx, line in enumerate(protocol_output.splitlines(keepends=True)):
+            if idx in visual_truncations:
+                f.write(truncation_mark)
+            else:
+                f.write(line)
+
+    print('Format description successfully written to {}.'.format(output_path))
+
 
 
 def main():
-    ALL_PARTS = ["c", "rust"]
+    ALL_PARTS = ["c", "rust", "format"]
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -175,13 +248,13 @@ def main():
     parser.add_argument('--output-dir',
                         required=True,
                         type=Path,
-                        help='Manifest header output directory.')
+                        help='Manifest file output directory.')
 
-    parser.add_argument('--output-headers',
+    parser.add_argument('--output-files',
                         choices=['all'] + ALL_PARTS,
                         default=[],
                         action='append',
-                        help='The type of headers to be produced.')
+                        help='The type of files to be produced.')
 
     args = parser.parse_args()
 
@@ -190,16 +263,21 @@ def main():
     with manifest_hjson_file.open('r') as hjson_file:
         obj = hjson.loads(hjson_file.read())
 
-    if len(args.output_headers) == 0:
-        args.output_headers += ['all']
-    if 'all' in args.output_headers:
-        args.output_headers += ALL_PARTS
+    if len(args.output_files) == 0:
+        args.output_files += ['all']
+    if 'all' in args.output_files:
+        args.output_files += ALL_PARTS
 
-    if "c" in args.output_headers:
-        generate_cheader(obj['fields'], args.input_dir, args.output_dir)
+    regions, offsets = generate_defines(obj['fields'])
 
-    if "rust" in args.output_headers:
-        generate_rust_header(obj['fields'], args.input_dir, args.output_dir)
+    if "c" in args.output_files:
+        generate_cheader(regions, offsets, args.input_dir, args.output_dir)
+
+    if "rust" in args.output_files:
+        generate_rust_header(regions, offsets, args.input_dir, args.output_dir)
+
+    if "format" in args.output_files:
+        generate_format_description(regions, args.output_dir)
 
 
 if __name__ == '__main__':
