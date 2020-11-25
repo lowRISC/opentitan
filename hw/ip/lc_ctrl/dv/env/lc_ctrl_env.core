@@ -1,0 +1,38 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:lc_ctrl_env:0.1"
+description: "LC_CTRL DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:cip_lib
+    files:
+      - lc_ctrl_env_pkg.sv
+      - lc_ctrl_if.sv
+      - lc_ctrl_env_cfg.sv: {is_include_file: true}
+      - lc_ctrl_env_cov.sv: {is_include_file: true}
+      - lc_ctrl_virtual_sequencer.sv: {is_include_file: true}
+      - lc_ctrl_scoreboard.sv: {is_include_file: true}
+      - lc_ctrl_env.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_vseq_list.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_base_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_common_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_smoke_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: lc_ctrl
+      ip_hjson: ../../data/lc_ctrl.hjson
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - ral
