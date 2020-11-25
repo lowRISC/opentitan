@@ -118,7 +118,8 @@
       milestone: V2
       tests: []
     }
-    { name: otp_ctrl_errors
+    {
+      name: otp_ctrl_errors
       desc: '''
             This test will randomly run the following OTP errors:
             - CheckFailError
@@ -141,7 +142,8 @@
       milestone: V2
       tests: []
     }
-    { name: stress_all
+    {
+      name: stress_all
       desc: '''
             - Combine above sequences in one test to run sequentially, except csr sequence
             - Randomly add reset between each sequence
@@ -149,6 +151,5 @@
       milestone: V2
       tests: []
     }
-
   ]
 }
