@@ -877,9 +877,10 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     char obuf[MAX_OBUF];
 
     n = snprintf(
-        obuf, MAX_OBUF, "%4x %8d              %s %s\n", ctx->frame, ctx->tick,
-        ctx->driving & P2D_SENSE ? "VBUS" : "    ",
-        (ctx->state != ST_IDLE) ? decode_usb[(ctx->driving >> 1) & 3] : "ZZ ");
+        obuf, MAX_OBUF, "%4x %8d              %s %s %s\n", ctx->frame,
+        ctx->tick, ctx->driving & P2D_SENSE ? "VBUS" : "    ",
+        (ctx->state != ST_IDLE) ? decode_usb[(ctx->driving >> 1) & 3] : "ZZ ",
+        (ctx->driving & P2D_D) ? "1" : "0");
     ssize_t written = fwrite(obuf, sizeof(char), (size_t)n, ctx->mon_file);
     assert(written == n);
   }
