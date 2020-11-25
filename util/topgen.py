@@ -6,14 +6,13 @@ r"""Top Module Generator
 """
 import argparse
 import logging as log
+import random
 import subprocess
 import sys
-import random
-
 from collections import OrderedDict
+from copy import deepcopy
 from io import StringIO
 from pathlib import Path
-from copy import deepcopy
 
 import hjson
 from mako import exceptions
@@ -21,9 +20,9 @@ from mako.template import Template
 
 import tlgen
 from reggen import gen_dv, gen_rtl, validate
-from topgen import (amend_clocks, get_hjsonobj_xbars, merge_top, search_ips,
-                    validate_top)
+from topgen import amend_clocks, get_hjsonobj_xbars
 from topgen import intermodule as im
+from topgen import merge_top, search_ips, validate_top
 from topgen.c import TopGenC
 
 # Common header for generated files
@@ -513,33 +512,25 @@ def generate_clkmgr(top, cfg_path, out_path):
     # This includes two groups of clocks
     # Clocks fed from the always-on source
     # Clocks fed to the powerup group
-    ft_clks = OrderedDict([
-        (clk, src)
-        for grp in grps for (clk, src) in grp['clocks'].items()
-        if src_aon_attr[src] or grp['name'] == 'powerup'
-    ])
+    ft_clks = OrderedDict([(clk, src) for grp in grps
+                           for (clk, src) in grp['clocks'].items()
+                           if src_aon_attr[src] or grp['name'] == 'powerup'])
 
     # root-gate clocks
-    rg_clks = OrderedDict([
-        (clk, src)
-        for grp in grps for (clk, src) in grp['clocks'].items()
-        if grp['name'] != 'powerup' and grp['sw_cg'] == 'no' and
-        not src_aon_attr[src]
-    ])
+    rg_clks = OrderedDict([(clk, src) for grp in grps
+                           for (clk, src) in grp['clocks'].items()
+                           if grp['name'] != 'powerup' and
+                           grp['sw_cg'] == 'no' and not src_aon_attr[src]])
 
     # direct sw control clocks
-    sw_clks = OrderedDict([
-        (clk, src)
-        for grp in grps for (clk, src) in grp['clocks'].items()
-        if grp['sw_cg'] == 'yes' and not src_aon_attr[src]
-    ])
+    sw_clks = OrderedDict([(clk, src) for grp in grps
+                           for (clk, src) in grp['clocks'].items()
+                           if grp['sw_cg'] == 'yes' and not src_aon_attr[src]])
 
     # sw hint clocks
-    hints = OrderedDict([
-        (clk, src)
-        for grp in grps for (clk, src) in grp['clocks'].items()
-        if grp['sw_cg'] == 'hint' and not src_aon_attr[src]
-    ])
+    hints = OrderedDict([(clk, src) for grp in grps
+                         for (clk, src) in grp['clocks'].items()
+                         if grp['sw_cg'] == 'hint' and not src_aon_attr[src]])
 
     # hint clocks dict
     for clk, src in hints.items():
@@ -671,10 +662,15 @@ def generate_rstmgr(topcfg, out_path):
             clks.append(rst['clk'])
 
     # resets sent to reset struct
-    output_rsts = [rst for rst in topcfg["resets"]["nodes"] if rst['type'] == "top"]
+    output_rsts = [
+        rst for rst in topcfg["resets"]["nodes"] if rst['type'] == "top"
+    ]
 
     # sw controlled resets
-    sw_rsts = [rst for rst in topcfg["resets"]["nodes"] if 'sw' in rst and rst['sw'] == 1]
+    sw_rsts = [
+        rst for rst in topcfg["resets"]["nodes"]
+        if 'sw' in rst and rst['sw'] == 1
+    ]
 
     # leaf resets
     leaf_rsts = [rst for rst in topcfg["resets"]["nodes"] if rst['gen']]
@@ -895,10 +891,11 @@ def main():
         action='store_true',
         help="If set, the tool generates top level RAL model for DV")
     # Generator options for compile time random netlist constants
-    parser.add_argument('--rnd_cnst_seed',
-                        type=int,
-                        metavar='<seed>',
-                        help='Custom seed for RNG to compute netlist constants.')
+    parser.add_argument(
+        '--rnd_cnst_seed',
+        type=int,
+        metavar='<seed>',
+        help='Custom seed for RNG to compute netlist constants.')
 
     args = parser.parse_args()
 
@@ -992,8 +989,7 @@ def main():
 
     for ip in top_only_list:
         log.info("Appending {}".format(ip))
-        ip_hjson = hjson_dir.parent / "ip/{}/data/{}.hjson".format(
-            ip, ip)
+        ip_hjson = hjson_dir.parent / "ip/{}/data/{}.hjson".format(ip, ip)
         ips.append(ip_hjson)
 
     # load Hjson and pass validate from reggen
@@ -1025,8 +1021,8 @@ def main():
 
     # If specified, override the seed for random netlist constant computation.
     if args.rnd_cnst_seed:
-        log.warning(
-            'Commandline override of rnd_cnst_seed with {}.'.format(args.rnd_cnst_seed))
+        log.warning('Commandline override of rnd_cnst_seed with {}.'.format(
+            args.rnd_cnst_seed))
         topcfg['rnd_cnst_seed'] = args.rnd_cnst_seed
     # Otherwise, we either take it from the top_earlgrey.hjson if present, or
     # randomly generate a new seed if not.
@@ -1034,7 +1030,8 @@ def main():
         random.seed()
         new_seed = random.getrandbits(64)
         if topcfg.setdefault('rnd_cnst_seed', new_seed) != new_seed:
-            log.warning('No rnd_cnst_seed specified, setting to {}.'.format(new_seed))
+            log.warning(
+                'No rnd_cnst_seed specified, setting to {}.'.format(new_seed))
 
     topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
     if error != 0:
@@ -1132,9 +1129,7 @@ def main():
 
         # SystemVerilog Top:
         # 'top_earlgrey.sv.tpl' -> 'rtl/autogen/top_earlgrey.sv'
-        render_template('top_%s.sv',
-                        'rtl/autogen',
-                        gencmd = gencmd)
+        render_template('top_%s.sv', 'rtl/autogen', gencmd=gencmd)
 
         # The C / SV file needs some complex information, so we initialize this
         # object to store it.
@@ -1144,12 +1139,10 @@ def main():
         render_template('top_%s_pkg.sv',
                         'rtl/autogen',
                         helper=c_helper,
-                        gencmd = gencmd)
+                        gencmd=gencmd)
 
         # compile-time random netlist constants
-        render_template('top_%s_rnd_cnst_pkg.sv',
-                        'rtl/autogen',
-                        gencmd = gencmd)
+        render_template('top_%s_rnd_cnst_pkg.sv', 'rtl/autogen', gencmd=gencmd)
 
         # C Header + C File + Clang-format file
 
@@ -1161,7 +1154,8 @@ def main():
         cformat_path.write_text(cformat_tplpath.read_text())
 
         # 'top_earlgrey.h.tpl' -> 'sw/autogen/top_earlgrey.h'
-        cheader_path = render_template('top_%s.h', 'sw/autogen',
+        cheader_path = render_template('top_%s.h',
+                                       'sw/autogen',
                                        helper=c_helper)
 
         # Save the relative header path into `c_gen_info`
@@ -1188,8 +1182,10 @@ def main():
                        cwd=str(SRCTREE_TOP))  # yapf: disable
 
         # generate chip level xbar and alert_handler TB
-        tb_files = ["xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
-                    "tb__alert_handler_connect.sv"]
+        tb_files = [
+            "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
+            "tb__alert_handler_connect.sv"
+        ]
         for fname in tb_files:
             tpl_fname = "%s.tpl" % (fname)
             xbar_chip_data_path = tpl_path / tpl_fname
