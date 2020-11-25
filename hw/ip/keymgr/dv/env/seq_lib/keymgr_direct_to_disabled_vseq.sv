@@ -2,15 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Issue operation OpDisable in any state and check it enters StDisabled correctly
+// Issue operation OpDisable in any state after StReset and check it enters StDisabled correctly
 class keymgr_direct_to_disabled_vseq extends keymgr_random_vseq;
   `uvm_object_utils(keymgr_direct_to_disabled_vseq)
   `uvm_object_new
 
   task body();
     `uvm_info(`gfn, "Start seq", UVM_HIGH)
-    // Advance any state
-    repeat ($urandom_range(0, 4)) begin
+    // Advance any state after StReset
+    // if it's at StReset. OpDisable is invalid, which is tested at keymgr_init
+    repeat ($urandom_range(1, 4)) begin
       keymgr_operations(.advance_state(1));
     end
 

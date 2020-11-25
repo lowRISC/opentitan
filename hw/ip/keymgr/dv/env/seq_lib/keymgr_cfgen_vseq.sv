@@ -64,10 +64,11 @@ class keymgr_cfgen_vseq extends keymgr_smoke_vseq;
     randcase
       1: csr_wr(ral.control,            val);
       1: csr_wr(ral.key_version,        val);
-      1: csr_wr(ral.sw_binding_0,       val);
-      1: csr_wr(ral.sw_binding_1,       val);
-      1: csr_wr(ral.sw_binding_2,       val);
-      1: csr_wr(ral.sw_binding_3,       val);
+      // TODO enable these after #4564 is solved
+      //1: csr_wr(ral.sw_binding_0,       val);
+      //1: csr_wr(ral.sw_binding_1,       val);
+      //1: csr_wr(ral.sw_binding_2,       val);
+      //1: csr_wr(ral.sw_binding_3,       val);
       1: csr_wr(ral.salt_0,             val);
       1: csr_wr(ral.salt_1,             val);
       1: csr_wr(ral.salt_2,             val);

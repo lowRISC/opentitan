@@ -22,6 +22,10 @@ class keymgr_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_reg_block));
     m_keymgr_kmac_agent_cfg = keymgr_kmac_agent_cfg::type_id::create("m_keymgr_kmac_agent_cfg");
     m_keymgr_kmac_agent_cfg.if_mode = dv_utils_pkg::Device;
 
+    // keymgr requests entropy periodically, if seq is done, don't need to add any delay due to
+    // activity from EDN interface
+    m_edn_pull_agent_cfg.ok_to_end_delay_ns = 0;
+
     // set num_interrupts & num_alerts
     begin
       uvm_reg rg = ral.get_reg_by_name("intr_state");
