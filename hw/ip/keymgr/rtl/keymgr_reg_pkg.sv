@@ -204,14 +204,14 @@ package keymgr_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    keymgr_hw2reg_intr_state_reg_t intr_state; // [551:550]
-    keymgr_hw2reg_cfgen_reg_t cfgen; // [549:550]
-    keymgr_hw2reg_control_reg_t control; // [549:543]
+    keymgr_hw2reg_intr_state_reg_t intr_state; // [551:548]
+    keymgr_hw2reg_cfgen_reg_t cfgen; // [547:547]
+    keymgr_hw2reg_control_reg_t control; // [546:543]
     keymgr_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [542:279]
     keymgr_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [278:15]
-    keymgr_hw2reg_working_state_reg_t working_state; // [14:15]
-    keymgr_hw2reg_op_status_reg_t op_status; // [14:15]
-    keymgr_hw2reg_err_code_reg_t err_code; // [14:11]
+    keymgr_hw2reg_working_state_reg_t working_state; // [14:11]
+    keymgr_hw2reg_op_status_reg_t op_status; // [10:8]
+    keymgr_hw2reg_err_code_reg_t err_code; // [7:0]
   } keymgr_hw2reg_t;
 
   // Register Address

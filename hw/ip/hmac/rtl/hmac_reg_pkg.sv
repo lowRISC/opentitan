@@ -175,14 +175,14 @@ package hmac_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    hmac_hw2reg_intr_state_reg_t intr_state; // [627:625]
-    hmac_hw2reg_cfg_reg_t cfg; // [624:617]
-    hmac_hw2reg_status_reg_t status; // [616:617]
-    hmac_hw2reg_err_code_reg_t err_code; // [616:617]
-    hmac_hw2reg_key_mreg_t [7:0] key; // [616:361]
-    hmac_hw2reg_digest_mreg_t [7:0] digest; // [360:105]
-    hmac_hw2reg_msg_length_lower_reg_t msg_length_lower; // [104:105]
-    hmac_hw2reg_msg_length_upper_reg_t msg_length_upper; // [104:105]
+    hmac_hw2reg_intr_state_reg_t intr_state; // [627:622]
+    hmac_hw2reg_cfg_reg_t cfg; // [621:618]
+    hmac_hw2reg_status_reg_t status; // [617:611]
+    hmac_hw2reg_err_code_reg_t err_code; // [610:578]
+    hmac_hw2reg_key_mreg_t [7:0] key; // [577:322]
+    hmac_hw2reg_digest_mreg_t [7:0] digest; // [321:66]
+    hmac_hw2reg_msg_length_lower_reg_t msg_length_lower; // [65:33]
+    hmac_hw2reg_msg_length_upper_reg_t msg_length_upper; // [32:0]
   } hmac_hw2reg_t;
 
   // Register Address

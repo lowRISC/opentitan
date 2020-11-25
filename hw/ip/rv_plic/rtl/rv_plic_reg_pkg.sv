@@ -222,7 +222,7 @@ package rv_plic_reg_pkg;
   ///////////////////////////////////////
   typedef struct packed {
     rv_plic_hw2reg_ip_mreg_t [31:0] ip; // [69:6]
-    rv_plic_hw2reg_cc0_reg_t cc0; // [5:-2]
+    rv_plic_hw2reg_cc0_reg_t cc0; // [5:0]
   } rv_plic_hw2reg_t;
 
   // Register Address

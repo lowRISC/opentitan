@@ -119,14 +119,14 @@ package lc_ctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    lc_ctrl_hw2reg_status_reg_t status; // [159:160]
-    lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [159:151]
-    lc_ctrl_hw2reg_transition_regwen_reg_t transition_regwen; // [150:151]
-    lc_ctrl_hw2reg_transition_token_mreg_t [3:0] transition_token; // [150:23]
-    lc_ctrl_hw2reg_transition_target_reg_t transition_target; // [22:18]
-    lc_ctrl_hw2reg_lc_state_reg_t lc_state; // [17:18]
-    lc_ctrl_hw2reg_lc_transition_cnt_reg_t lc_transition_cnt; // [17:18]
-    lc_ctrl_hw2reg_lc_id_state_reg_t lc_id_state; // [17:18]
+    lc_ctrl_hw2reg_status_reg_t status; // [159:152]
+    lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [151:144]
+    lc_ctrl_hw2reg_transition_regwen_reg_t transition_regwen; // [143:143]
+    lc_ctrl_hw2reg_transition_token_mreg_t [3:0] transition_token; // [142:15]
+    lc_ctrl_hw2reg_transition_target_reg_t transition_target; // [14:11]
+    lc_ctrl_hw2reg_lc_state_reg_t lc_state; // [10:7]
+    lc_ctrl_hw2reg_lc_transition_cnt_reg_t lc_transition_cnt; // [6:2]
+    lc_ctrl_hw2reg_lc_id_state_reg_t lc_id_state; // [1:0]
   } lc_ctrl_hw2reg_t;
 
   // Register Address

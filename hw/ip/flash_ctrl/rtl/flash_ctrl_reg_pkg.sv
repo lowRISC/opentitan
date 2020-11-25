@@ -386,12 +386,12 @@ package flash_ctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    flash_ctrl_hw2reg_intr_state_reg_t intr_state; // [44:39]
-    flash_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [38:39]
-    flash_ctrl_hw2reg_control_reg_t control; // [38:20]
-    flash_ctrl_hw2reg_op_status_reg_t op_status; // [19:20]
-    flash_ctrl_hw2reg_status_reg_t status; // [19:20]
-    flash_ctrl_hw2reg_phy_status_reg_t phy_status; // [19:20]
+    flash_ctrl_hw2reg_intr_state_reg_t intr_state; // [44:33]
+    flash_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [32:32]
+    flash_ctrl_hw2reg_control_reg_t control; // [31:30]
+    flash_ctrl_hw2reg_op_status_reg_t op_status; // [29:26]
+    flash_ctrl_hw2reg_status_reg_t status; // [25:6]
+    flash_ctrl_hw2reg_phy_status_reg_t phy_status; // [5:0]
   } flash_ctrl_hw2reg_t;
 
   // Register Address
