@@ -58,12 +58,15 @@ class keymgr_kmac_monitor extends dv_base_monitor #(
         if (last) break;
       end
       req_port.write(req);
+      `uvm_info(`gfn, $sformatf("Write req item:\n%0s", req.sprint()), UVM_HIGH)
+
       `downcast(rsp, req.clone())
       while (cfg.vif.rsp_done !== 1) @(cfg.vif.mon_cb);
       rsp.rsp_error         = cfg.vif.rsp_error;
       rsp.rsp_digest_share0 = cfg.vif.rsp_digest_share0;
       rsp.rsp_digest_share1 = cfg.vif.rsp_digest_share1;
       rsp_port.write(rsp);
+      `uvm_info(`gfn, $sformatf("Write rsp item:\n%0s", rsp.sprint()), UVM_HIGH)
     end
   endtask
 
