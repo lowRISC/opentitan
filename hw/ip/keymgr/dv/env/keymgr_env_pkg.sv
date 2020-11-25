@@ -21,16 +21,7 @@ package keymgr_env_pkg;
   // parameters and types
   parameter string LIST_OF_ALERTS[] = {"fault_err", "operation_err"};
   parameter uint NUM_ALERTS = 2;
-  parameter keymgr_pkg::keymgr_ops_e ILLEGAL_OPS_B4_INIT[] = {
-      keymgr_pkg::OpGenId,
-      keymgr_pkg::OpGenSwOut,
-      keymgr_pkg::OpGenHwOut,
-      keymgr_pkg::OpDisable};
-  parameter keymgr_pkg::keymgr_working_state_e LIST_OF_NORMAL_STATES[] = {
-      keymgr_pkg::StInit,
-      keymgr_pkg::StCreatorRootKey,
-      keymgr_pkg::StOwnerIntKey,
-      keymgr_pkg::StOwnerKey};
+  parameter uint DIGEST_SHARE_WORD_NUM = keymgr_pkg::KeyWidth / TL_DW;
 
   typedef virtual keymgr_if keymgr_vif;
   typedef enum {
@@ -39,15 +30,12 @@ package keymgr_env_pkg;
   } keymgr_intr_e;
 
   // functions
+  // state is incremental, if it's not in defined enum, consider as StDisabled
   function automatic keymgr_pkg::keymgr_working_state_e get_next_state(
       keymgr_pkg::keymgr_working_state_e current_state);
-    case (current_state)
-      keymgr_pkg::StInit:           return keymgr_pkg::StCreatorRootKey;
-      keymgr_pkg::StCreatorRootKey: return keymgr_pkg::StOwnerIntKey;
-      keymgr_pkg::StOwnerIntKey:    return keymgr_pkg::StOwnerKey;
-      keymgr_pkg::StOwnerKey:       return keymgr_pkg::StDisabled;
-      default: return current_state;
-    endcase
+
+    uint next_state = int'(current_state) + 1;
+    if (!$cast(get_next_state, next_state)) return keymgr_pkg::StDisabled;
   endfunction
 
   // package sources
