@@ -162,10 +162,10 @@ package kmac_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    kmac_hw2reg_intr_state_reg_t intr_state; // [49:47]
-    kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [46:47]
-    kmac_hw2reg_status_reg_t status; // [46:47]
-    kmac_hw2reg_err_code_reg_t err_code; // [46:47]
+    kmac_hw2reg_intr_state_reg_t intr_state; // [49:44]
+    kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [43:43]
+    kmac_hw2reg_status_reg_t status; // [42:33]
+    kmac_hw2reg_err_code_reg_t err_code; // [32:0]
   } kmac_hw2reg_t;
 
   // Register Address

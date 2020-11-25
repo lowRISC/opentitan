@@ -520,14 +520,14 @@ package usbdev_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    usbdev_hw2reg_intr_state_reg_t intr_state; // [188:172]
-    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [171:164]
-    usbdev_hw2reg_usbstat_reg_t usbstat; // [163:164]
-    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [163:143]
-    usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [142:119]
-    usbdev_hw2reg_stall_mreg_t [11:0] stall; // [118:95]
-    usbdev_hw2reg_configin_mreg_t [11:0] configin; // [94:47]
-    usbdev_hw2reg_phy_pins_sense_reg_t phy_pins_sense; // [46:47]
+    usbdev_hw2reg_intr_state_reg_t intr_state; // [188:155]
+    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [154:147]
+    usbdev_hw2reg_usbstat_reg_t usbstat; // [146:123]
+    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [122:106]
+    usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [105:82]
+    usbdev_hw2reg_stall_mreg_t [11:0] stall; // [81:58]
+    usbdev_hw2reg_configin_mreg_t [11:0] configin; // [57:10]
+    usbdev_hw2reg_phy_pins_sense_reg_t phy_pins_sense; // [9:0]
   } usbdev_hw2reg_t;
 
   // Register Address

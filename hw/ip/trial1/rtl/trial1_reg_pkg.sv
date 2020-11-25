@@ -244,18 +244,18 @@ package trial1_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    trial1_hw2reg_rwtype2_reg_t rwtype2; // [386:355]
-    trial1_hw2reg_rwtype3_reg_t rwtype3; // [354:323]
-    trial1_hw2reg_rotype0_reg_t rotype0; // [322:291]
-    trial1_hw2reg_w1ctype2_reg_t w1ctype2; // [290:259]
-    trial1_hw2reg_w1stype2_reg_t w1stype2; // [258:227]
-    trial1_hw2reg_w0ctype2_reg_t w0ctype2; // [226:195]
-    trial1_hw2reg_r0w1ctype2_reg_t r0w1ctype2; // [194:163]
-    trial1_hw2reg_rctype0_reg_t rctype0; // [162:131]
-    trial1_hw2reg_mixtype0_reg_t mixtype0; // [130:99]
-    trial1_hw2reg_rwtype5_reg_t rwtype5; // [98:66]
-    trial1_hw2reg_rwtype6_reg_t rwtype6; // [65:33]
-    trial1_hw2reg_rotype1_reg_t rotype1; // [32:1]
+    trial1_hw2reg_rwtype2_reg_t rwtype2; // [386:354]
+    trial1_hw2reg_rwtype3_reg_t rwtype3; // [353:320]
+    trial1_hw2reg_rotype0_reg_t rotype0; // [319:287]
+    trial1_hw2reg_w1ctype2_reg_t w1ctype2; // [286:254]
+    trial1_hw2reg_w1stype2_reg_t w1stype2; // [253:221]
+    trial1_hw2reg_w0ctype2_reg_t w0ctype2; // [220:188]
+    trial1_hw2reg_r0w1ctype2_reg_t r0w1ctype2; // [187:155]
+    trial1_hw2reg_rctype0_reg_t rctype0; // [154:122]
+    trial1_hw2reg_mixtype0_reg_t mixtype0; // [121:97]
+    trial1_hw2reg_rwtype5_reg_t rwtype5; // [96:64]
+    trial1_hw2reg_rwtype6_reg_t rwtype6; // [63:32]
+    trial1_hw2reg_rotype1_reg_t rotype1; // [31:0]
   } trial1_hw2reg_t;
 
   // Register Address

@@ -114,9 +114,9 @@ package otbn_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [38:37]
-    otbn_hw2reg_status_reg_t status; // [36:37]
-    otbn_hw2reg_err_code_reg_t err_code; // [36:37]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [38:35]
+    otbn_hw2reg_status_reg_t status; // [34:33]
+    otbn_hw2reg_err_code_reg_t err_code; // [32:0]
   } otbn_hw2reg_t;
 
   // Register Address

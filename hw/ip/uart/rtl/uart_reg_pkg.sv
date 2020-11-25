@@ -308,12 +308,12 @@ package uart_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    uart_hw2reg_intr_state_reg_t intr_state; // [64:57]
-    uart_hw2reg_status_reg_t status; // [56:45]
-    uart_hw2reg_rdata_reg_t rdata; // [44:36]
-    uart_hw2reg_fifo_ctrl_reg_t fifo_ctrl; // [35:25]
-    uart_hw2reg_fifo_status_reg_t fifo_status; // [24:25]
-    uart_hw2reg_val_reg_t val; // [24:25]
+    uart_hw2reg_intr_state_reg_t intr_state; // [64:49]
+    uart_hw2reg_status_reg_t status; // [48:43]
+    uart_hw2reg_rdata_reg_t rdata; // [42:35]
+    uart_hw2reg_fifo_ctrl_reg_t fifo_ctrl; // [34:28]
+    uart_hw2reg_fifo_status_reg_t fifo_status; // [27:16]
+    uart_hw2reg_val_reg_t val; // [15:0]
   } uart_hw2reg_t;
 
   // Register Address

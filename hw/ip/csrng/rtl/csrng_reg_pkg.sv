@@ -244,13 +244,13 @@ package csrng_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [126:123]
-    csrng_hw2reg_sum_sts_reg_t sum_sts; // [122:123]
-    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [122:123]
-    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [122:123]
-    csrng_hw2reg_genbits_reg_t genbits; // [122:90]
-    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [89:90]
-    csrng_hw2reg_err_code_reg_t err_code; // [89:90]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [126:119]
+    csrng_hw2reg_sum_sts_reg_t sum_sts; // [118:92]
+    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [91:88]
+    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [87:86]
+    csrng_hw2reg_genbits_reg_t genbits; // [85:54]
+    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [53:38]
+    csrng_hw2reg_err_code_reg_t err_code; // [37:0]
   } csrng_hw2reg_t;
 
   // Register Address
