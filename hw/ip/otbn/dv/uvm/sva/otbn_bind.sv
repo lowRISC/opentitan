@@ -20,7 +20,7 @@ module otbn_bind;
     .h2d    (tl_i),
     .d2h    (tl_o),
     .reg2hw (reg2hw),
-    .hw2reg (reg2hw)
+    .hw2reg (hw2reg)
   );
 
 endmodule
