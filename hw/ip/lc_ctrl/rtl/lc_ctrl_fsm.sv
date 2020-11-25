@@ -439,9 +439,9 @@ module lc_ctrl_fsm
   ////////////////
 
   `ASSERT(ClkBypStaysOnOnceAsserted_A,
-      lc_escalate_en_q == On
+      lc_escalate_en_o == On
       |=>
-      lc_escalate_en_q == On)
+      lc_escalate_en_o == On)
 
   `ASSERT(FlashRmaStaysOnOnceAsserted_A,
       lc_flash_rma_req_o == On
