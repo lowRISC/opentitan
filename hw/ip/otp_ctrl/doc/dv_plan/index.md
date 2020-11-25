@@ -114,5 +114,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/otp_ctrl/dv/otp_ctrl_sim_cfg.hjs
 ```
 
 ## Testplan
-<!-- TODO: uncomment the line below after adding the testplan -->
-{{</* testplan "hw/ip/otp_ctrl/data/otp_ctrl_testplan.hjson" */>}}
+{{< testplan "hw/ip/otp_ctrl/data/otp_ctrl_testplan.hjson" >}}

@@ -99,6 +99,7 @@ config = {
         "hw/ip/hmac/data/hmac_testplan.hjson",
         "hw/ip/i2c/data/i2c_testplan.hjson",
         "hw/ip/keymgr/data/keymgr_testplan.hjson",
+        "hw/ip/otp_ctrl/data/otp_ctrl_testplan.hjson",
         "hw/ip/padctrl/data/padctrl_fpv_testplan.hjson",
         "hw/ip/pattgen/data/pattgen_testplan.hjson",
         "hw/ip/pinmux/data/pinmux_fpv_testplan.hjson",
