@@ -93,37 +93,6 @@ module otbn
     .intr_o                 (intr_done_o)
   );
 
-  // Registers =================================================================
-
-  otbn_reg_top u_reg (
-    .clk_i,
-    .rst_ni,
-    .tl_i,
-    .tl_o,
-    .tl_win_o (tl_win_h2d),
-    .tl_win_i (tl_win_d2h),
-
-    .reg2hw,
-    .hw2reg,
-
-    .devmode_i (1'b1)
-  );
-
-  // CMD register
-  assign start = reg2hw.cmd.start.qe & reg2hw.cmd.start.q;
-
-  // STATUS register
-  assign hw2reg.status.busy.d = busy_q;
-  assign hw2reg.status.dummy.d = 1'b0;
-
-  // ERR_CODE register
-  // The error code (stored as ERR_CODE) for an OTBN operation gets stored on the cycle that done is
-  // asserted. Software is expected to read out this value before starting the next operation.
-  assign hw2reg.err_code.de = done;
-  assign hw2reg.err_code.d  = err_code;
-
-  // START_ADDR register
-  assign start_addr = reg2hw.start_addr.q[ImemAddrWidth-1:0];
 
   // Instruction Memory (IMEM) =================================================
 
@@ -371,20 +340,73 @@ module otbn
   assign dmem_rerror_core = dmem_rerror;
 
 
+  // Registers =================================================================
+
+  otbn_reg_top u_reg (
+    .clk_i,
+    .rst_ni,
+    .tl_i,
+    .tl_o,
+    .tl_win_o (tl_win_h2d),
+    .tl_win_i (tl_win_d2h),
+
+    .reg2hw,
+    .hw2reg,
+
+    .devmode_i (1'b1)
+  );
+
+  // CMD register
+  assign start = reg2hw.cmd.start.qe & reg2hw.cmd.start.q;
+
+  // STATUS register
+  assign hw2reg.status.busy.d = busy_q;
+  assign hw2reg.status.dummy.d = 1'b0;
+
+  // ERR_CODE register
+  // The error code (stored as ERR_CODE) for an OTBN operation gets stored on the cycle that done is
+  // asserted. Software is expected to read out this value before starting the next operation.
+  assign hw2reg.err_code.de = done;
+  assign hw2reg.err_code.d  = err_code;
+
+  // START_ADDR register
+  assign start_addr = reg2hw.start_addr.q[ImemAddrWidth-1:0];
+
+  // FATAL_ALERT_CAUSE register. The .de and .d values are equal for each bit, so that it can only
+  // be set, not cleared.
+  assign hw2reg.fatal_alert_cause.imem_error.de = imem_rerror;
+  assign hw2reg.fatal_alert_cause.imem_error.d  = imem_rerror;
+  assign hw2reg.fatal_alert_cause.dmem_error.de = dmem_rerror;
+  assign hw2reg.fatal_alert_cause.dmem_error.d  = dmem_rerror;
+  // TODO: Register file errors
+  assign hw2reg.fatal_alert_cause.reg_error.de = 0;
+  assign hw2reg.fatal_alert_cause.reg_error.d  = 0;
+
   // Alerts ====================================================================
 
   logic [NumAlerts-1:0] alert_test;
-  assign alert_test[AlertImemUncorrectable] = reg2hw.alert_test.imem_uncorrectable.q &
-                                              reg2hw.alert_test.imem_uncorrectable.qe;
-  assign alert_test[AlertDmemUncorrectable] = reg2hw.alert_test.dmem_uncorrectable.q &
-                                              reg2hw.alert_test.dmem_uncorrectable.qe;
-  assign alert_test[AlertRegUncorrectable]  = reg2hw.alert_test.reg_uncorrectable.q &
-                                              reg2hw.alert_test.reg_uncorrectable.qe;
+  assign alert_test[AlertFatal] = reg2hw.alert_test.fatal.q &
+                                  reg2hw.alert_test.fatal.qe;
+  assign alert_test[AlertRecoverable] = reg2hw.alert_test.recoverable.q &
+                                        reg2hw.alert_test.recoverable.qe;
+
+  // Latch any error that we consider fatal.
+  logic fatal_err_q, fatal_err_d;
+  assign fatal_err_d = (fatal_err_q |
+                        (imem_rvalid & imem_rerror) |
+                        (dmem_rvalid & dmem_rerror));
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      fatal_err_q <= 1'b0;
+    end else begin
+      fatal_err_q <= fatal_err_d;
+    end
+  end
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertImemUncorrectable] = imem_rvalid & imem_rerror;
-  assign alerts[AlertDmemUncorrectable] = dmem_rvalid & dmem_rerror;
-  assign alerts[AlertRegUncorrectable] = 1'b0; // TODO: Implement
+  assign alerts[AlertFatal]       = fatal_err_d;
+  assign alerts[AlertRecoverable] = 1'b0; // TODO: Implement
+
   for (genvar i = 0; i < NumAlerts; i++) begin: gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i])

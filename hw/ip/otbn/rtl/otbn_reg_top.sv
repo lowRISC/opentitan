@@ -129,12 +129,10 @@ module otbn_reg_top (
   logic intr_enable_we;
   logic intr_test_wd;
   logic intr_test_we;
-  logic alert_test_imem_uncorrectable_wd;
-  logic alert_test_imem_uncorrectable_we;
-  logic alert_test_dmem_uncorrectable_wd;
-  logic alert_test_dmem_uncorrectable_we;
-  logic alert_test_reg_uncorrectable_wd;
-  logic alert_test_reg_uncorrectable_we;
+  logic alert_test_fatal_wd;
+  logic alert_test_fatal_we;
+  logic alert_test_recoverable_wd;
+  logic alert_test_recoverable_we;
   logic cmd_start_wd;
   logic cmd_start_we;
   logic cmd_dummy_wd;
@@ -146,6 +144,9 @@ module otbn_reg_top (
   logic [31:0] err_code_qs;
   logic [31:0] start_addr_wd;
   logic start_addr_we;
+  logic fatal_alert_cause_imem_error_qs;
+  logic fatal_alert_cause_dmem_error_qs;
+  logic fatal_alert_cause_reg_error_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -220,47 +221,32 @@ module otbn_reg_top (
 
   // R[alert_test]: V(True)
 
-  //   F[imem_uncorrectable]: 0:0
+  //   F[fatal]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_imem_uncorrectable (
+  ) u_alert_test_fatal (
     .re     (1'b0),
-    .we     (alert_test_imem_uncorrectable_we),
-    .wd     (alert_test_imem_uncorrectable_wd),
+    .we     (alert_test_fatal_we),
+    .wd     (alert_test_fatal_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.imem_uncorrectable.qe),
-    .q      (reg2hw.alert_test.imem_uncorrectable.q ),
+    .qe     (reg2hw.alert_test.fatal.qe),
+    .q      (reg2hw.alert_test.fatal.q ),
     .qs     ()
   );
 
 
-  //   F[dmem_uncorrectable]: 1:1
+  //   F[recoverable]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_dmem_uncorrectable (
+  ) u_alert_test_recoverable (
     .re     (1'b0),
-    .we     (alert_test_dmem_uncorrectable_we),
-    .wd     (alert_test_dmem_uncorrectable_wd),
+    .we     (alert_test_recoverable_we),
+    .wd     (alert_test_recoverable_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.dmem_uncorrectable.qe),
-    .q      (reg2hw.alert_test.dmem_uncorrectable.q ),
-    .qs     ()
-  );
-
-
-  //   F[reg_uncorrectable]: 2:2
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_alert_test_reg_uncorrectable (
-    .re     (1'b0),
-    .we     (alert_test_reg_uncorrectable_we),
-    .wd     (alert_test_reg_uncorrectable_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.alert_test.reg_uncorrectable.qe),
-    .q      (reg2hw.alert_test.reg_uncorrectable.q ),
+    .qe     (reg2hw.alert_test.recoverable.qe),
+    .q      (reg2hw.alert_test.recoverable.q ),
     .qs     ()
   );
 
@@ -381,9 +367,86 @@ module otbn_reg_top (
   );
 
 
+  // R[fatal_alert_cause]: V(False)
+
+  //   F[imem_error]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_fatal_alert_cause_imem_error (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_alert_cause.imem_error.de),
+    .d      (hw2reg.fatal_alert_cause.imem_error.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fatal_alert_cause_imem_error_qs)
+  );
 
 
-  logic [7:0] addr_hit;
+  //   F[dmem_error]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_fatal_alert_cause_dmem_error (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_alert_cause.dmem_error.de),
+    .d      (hw2reg.fatal_alert_cause.dmem_error.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fatal_alert_cause_dmem_error_qs)
+  );
+
+
+  //   F[reg_error]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_fatal_alert_cause_reg_error (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_alert_cause.reg_error.de),
+    .d      (hw2reg.fatal_alert_cause.reg_error.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fatal_alert_cause_reg_error_qs)
+  );
+
+
+
+
+  logic [8:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == OTBN_INTR_STATE_OFFSET);
@@ -394,6 +457,7 @@ module otbn_reg_top (
     addr_hit[5] = (reg_addr == OTBN_STATUS_OFFSET);
     addr_hit[6] = (reg_addr == OTBN_ERR_CODE_OFFSET);
     addr_hit[7] = (reg_addr == OTBN_START_ADDR_OFFSET);
+    addr_hit[8] = (reg_addr == OTBN_FATAL_ALERT_CAUSE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -409,6 +473,7 @@ module otbn_reg_top (
     if (addr_hit[5] && reg_we && (OTBN_PERMIT[5] != (OTBN_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[6] && reg_we && (OTBN_PERMIT[6] != (OTBN_PERMIT[6] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[7] && reg_we && (OTBN_PERMIT[7] != (OTBN_PERMIT[7] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[8] && reg_we && (OTBN_PERMIT[8] != (OTBN_PERMIT[8] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_we = addr_hit[0] & reg_we & ~wr_err;
@@ -420,14 +485,11 @@ module otbn_reg_top (
   assign intr_test_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_wd = reg_wdata[0];
 
-  assign alert_test_imem_uncorrectable_we = addr_hit[3] & reg_we & ~wr_err;
-  assign alert_test_imem_uncorrectable_wd = reg_wdata[0];
+  assign alert_test_fatal_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_fatal_wd = reg_wdata[0];
 
-  assign alert_test_dmem_uncorrectable_we = addr_hit[3] & reg_we & ~wr_err;
-  assign alert_test_dmem_uncorrectable_wd = reg_wdata[1];
-
-  assign alert_test_reg_uncorrectable_we = addr_hit[3] & reg_we & ~wr_err;
-  assign alert_test_reg_uncorrectable_wd = reg_wdata[2];
+  assign alert_test_recoverable_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_recoverable_wd = reg_wdata[1];
 
   assign cmd_start_we = addr_hit[4] & reg_we & ~wr_err;
   assign cmd_start_wd = reg_wdata[0];
@@ -442,6 +504,9 @@ module otbn_reg_top (
 
   assign start_addr_we = addr_hit[7] & reg_we & ~wr_err;
   assign start_addr_wd = reg_wdata[31:0];
+
+
+
 
   // Read data return
   always_comb begin
@@ -462,7 +527,6 @@ module otbn_reg_top (
       addr_hit[3]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
-        reg_rdata_next[2] = '0;
       end
 
       addr_hit[4]: begin
@@ -481,6 +545,12 @@ module otbn_reg_top (
 
       addr_hit[7]: begin
         reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[8]: begin
+        reg_rdata_next[0] = fatal_alert_cause_imem_error_qs;
+        reg_rdata_next[1] = fatal_alert_cause_dmem_error_qs;
+        reg_rdata_next[2] = fatal_alert_cause_reg_error_qs;
       end
 
       default: begin

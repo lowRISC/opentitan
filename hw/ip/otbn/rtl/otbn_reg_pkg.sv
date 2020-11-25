@@ -7,7 +7,7 @@
 package otbn_reg_pkg;
 
   // Param list
-  parameter int NumAlerts = 3;
+  parameter int NumAlerts = 2;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -29,15 +29,11 @@ package otbn_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } imem_uncorrectable;
+    } fatal;
     struct packed {
       logic        q;
       logic        qe;
-    } dmem_uncorrectable;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } reg_uncorrectable;
+    } recoverable;
   } otbn_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -75,15 +71,30 @@ package otbn_reg_pkg;
     logic        de;
   } otbn_hw2reg_err_code_reg_t;
 
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } imem_error;
+    struct packed {
+      logic        d;
+      logic        de;
+    } dmem_error;
+    struct packed {
+      logic        d;
+      logic        de;
+    } reg_error;
+  } otbn_hw2reg_fatal_alert_cause_reg_t;
+
 
   ///////////////////////////////////////
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [45:45]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [44:44]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [43:42]
-    otbn_reg2hw_alert_test_reg_t alert_test; // [41:36]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [43:43]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [42:42]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [41:40]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [39:36]
     otbn_reg2hw_cmd_reg_t cmd; // [35:32]
     otbn_reg2hw_start_addr_reg_t start_addr; // [31:0]
   } otbn_reg2hw_t;
@@ -92,9 +103,10 @@ package otbn_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [36:35]
-    otbn_hw2reg_status_reg_t status; // [34:33]
-    otbn_hw2reg_err_code_reg_t err_code; // [32:0]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [42:41]
+    otbn_hw2reg_status_reg_t status; // [40:39]
+    otbn_hw2reg_err_code_reg_t err_code; // [38:6]
+    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [5:0]
   } otbn_hw2reg_t;
 
   // Register Address
@@ -106,6 +118,7 @@ package otbn_reg_pkg;
   parameter logic [15:0] OTBN_STATUS_OFFSET = 16'h 14;
   parameter logic [15:0] OTBN_ERR_CODE_OFFSET = 16'h 18;
   parameter logic [15:0] OTBN_START_ADDR_OFFSET = 16'h 1c;
+  parameter logic [15:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
 
   // Window parameter
   parameter logic [15:0] OTBN_IMEM_OFFSET = 16'h 4000;
@@ -122,11 +135,12 @@ package otbn_reg_pkg;
     OTBN_CMD,
     OTBN_STATUS,
     OTBN_ERR_CODE,
-    OTBN_START_ADDR
+    OTBN_START_ADDR,
+    OTBN_FATAL_ALERT_CAUSE
   } otbn_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] OTBN_PERMIT [8] = '{
+  parameter logic [3:0] OTBN_PERMIT [9] = '{
     4'b 0001, // index[0] OTBN_INTR_STATE
     4'b 0001, // index[1] OTBN_INTR_ENABLE
     4'b 0001, // index[2] OTBN_INTR_TEST
@@ -134,7 +148,8 @@ package otbn_reg_pkg;
     4'b 0001, // index[4] OTBN_CMD
     4'b 0001, // index[5] OTBN_STATUS
     4'b 1111, // index[6] OTBN_ERR_CODE
-    4'b 1111  // index[7] OTBN_START_ADDR
+    4'b 1111, // index[7] OTBN_START_ADDR
+    4'b 0001  // index[8] OTBN_FATAL_ALERT_CAUSE
   };
 endpackage
 

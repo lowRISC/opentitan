@@ -4717,7 +4717,7 @@
       alert_list:
       [
         {
-          name: imem_uncorrectable
+          name: fatal
           width: 1
           bits: "0"
           bitinfo:
@@ -4730,7 +4730,7 @@
           async: 0
         }
         {
-          name: dmem_uncorrectable
+          name: recoverable
           width: 1
           bits: "1"
           bitinfo:
@@ -4738,19 +4738,6 @@
             2
             1
             1
-          ]
-          type: alert
-          async: 0
-        }
-        {
-          name: reg_uncorrectable
-          width: 1
-          bits: "2"
-          bitinfo:
-          [
-            4
-            1
-            2
           ]
           type: alert
           async: 0
@@ -7304,7 +7291,7 @@
       module_name: aes
     }
     {
-      name: otbn_imem_uncorrectable
+      name: otbn_fatal
       width: 1
       bits: "0"
       bitinfo:
@@ -7318,7 +7305,7 @@
       module_name: otbn
     }
     {
-      name: otbn_dmem_uncorrectable
+      name: otbn_recoverable
       width: 1
       bits: "1"
       bitinfo:
@@ -7326,20 +7313,6 @@
         2
         1
         1
-      ]
-      type: alert
-      async: 0
-      module_name: otbn
-    }
-    {
-      name: otbn_reg_uncorrectable
-      width: 1
-      bits: "2"
-      bitinfo:
-      [
-        4
-        1
-        2
       ]
       type: alert
       async: 0
