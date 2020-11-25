@@ -775,14 +775,16 @@ def generate_flash(topcfg, out_path):
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
 
-def generate_top_only(top_only_list, out_path):
+def generate_top_only(top_only_list, out_path, topname):
     log.info("Generating top only modules")
 
     for ip in top_only_list:
-        rtl_path = out_path / "ip/{}/rtl".format(ip)
-        hjson_path = out_path / "ip/{}/data/{}.hjson".format(ip, ip)
+        hjson_path = Path(__file__).resolve().parent / "../hw/top_{}/ip/{}/data/{}.hjson".format(
+            topname, ip, ip)
+        genrtl_dir = out_path / "ip/{}/rtl".format(ip)
+        genrtl_dir.mkdir(parents=True, exist_ok=True)
         log.info("Generating top modules {}, hjson: {}, output: {}".format(
-            ip, hjson_path, rtl_path))
+            ip, hjson_path, genrtl_dir))
 
         # Generate reg files
         with open(str(hjson_path), 'r') as out:
@@ -790,7 +792,7 @@ def generate_top_only(top_only_list, out_path):
                                    use_decimal=True,
                                    object_pairs_hook=OrderedDict)
             validate.validate(hjson_obj)
-            gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+            gen_rtl.gen_rtl(hjson_obj, str(genrtl_dir))
 
 
 def generate_top_ral(top, ip_objs, out_path):
@@ -1087,7 +1089,7 @@ def main():
 
     # Generate top only modules
     # These modules are not templated, but are not in hw/ip
-    generate_top_only(top_only_list, out_path)
+    generate_top_only(top_only_list, out_path, topname)
 
     # Generate xbars
     if not args.no_xbar or args.xbar_only:
