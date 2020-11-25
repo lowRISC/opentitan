@@ -11,9 +11,9 @@ def _get_basename(name):
     for (k, c) in enumerate(name[::-1]):
         if not str.isdigit(c):
             if c == "_":
-                return name[0:len(name) - (k+1)]
+                return name[0:len(name) - (k + 1)]
             else:
-                break;
+                break
     return ""
 
 
