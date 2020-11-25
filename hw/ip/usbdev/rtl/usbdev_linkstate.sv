@@ -12,6 +12,7 @@ module usbdev_linkstate (
   input  logic usb_sense_i,
   input  logic usb_dp_i,
   input  logic usb_dn_i,
+  input  logic usb_oe_i,
   input  logic rx_jjj_det_i,
   input  logic sof_valid_i,
   output logic link_disconnect_o,  // level
@@ -81,8 +82,11 @@ module usbdev_linkstate (
   // Link state is stable, so we can output it to the register
   assign link_state_o      =  link_state_q;
 
+  // If the PHY reflects the line state on rx pins when the device is driving
+  // then the usb_oe_i check isn't needed here. But it seems best to do the check
+  // to be robust in the face of different PHY designs.
   logic see_se0, line_se0_raw;
-  assign line_se0_raw = (usb_dn_i == 1'b0) & (usb_dp_i == 1'b0);
+  assign line_se0_raw = (usb_dn_i == 1'b0) & (usb_dp_i == 1'b0) & (usb_oe_i == 1'b0);
 
   // four ticks is a bit time
   // Could completely filter out 2-cycle EOP SE0 here but

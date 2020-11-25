@@ -64,10 +64,15 @@ module usbdpi #(
   logic       unused_clk = clk_i;
   logic       unused_rst = rst_ni;
   logic       dp_int, dn_int, d_int;
+  logic       flip_detect, pullup_detect;
+
+  // Detect a request to flip pins by the DN resistor being applied
+  assign flip_detect = pullupdn_d2p && pullupdn_en_d2p;
+  assign pullup_detect = (pullupdp_d2p && pullupdp_en_d2p) || (pullupdn_d2p && pullupdn_en_d2p);
 
   assign d2p = {dp_d2p, dp_en_d2p, dn_d2p, dn_en_d2p, d_d2p, d_en_d2p, se0_d2p, se0_en_d2p, pullupdp_d2p & pullupdp_en_d2p, pullupdn_d2p & pullupdn_en_d2p, txmode_d2p & txmode_en_d2p};
   always_ff @(posedge clk_48MHz_i) begin
-    if ((pullupdp_d2p && pullupdp_en_d2p) || (pullupdn_d2p && pullupdn_en_d2p)) begin
+    if (pullup_detect) begin
       automatic byte p2d = usbdpi_host_to_device(ctx, d2p);
       d_int <= p2d[3];
       dp_int <= p2d[2];
@@ -93,12 +98,20 @@ module usbdpi #(
       d_p2d = d_int;
     end
     if (dp_en_d2p) begin
-      dp_p2d = dp_d2p;
+      if (txmode_d2p) begin
+        dp_p2d = dp_d2p;
+      end else begin // decode differential and flip
+        dp_p2d = se0_d2p ? 1'b0 : flip_detect ^ d_d2p;
+      end
     end else begin
       dp_p2d = dp_int;
     end
     if (dn_en_d2p) begin
-      dn_p2d = dn_d2p;
+      if (txmode_d2p) begin
+        dn_p2d = dn_d2p;
+      end else begin // decode differential and flip
+        dn_p2d = se0_d2p ? 1'b0 : flip_detect ^ ~d_d2p;
+      end
     end else begin
       dn_p2d = dn_int;
     end

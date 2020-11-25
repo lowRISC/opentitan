@@ -14,12 +14,14 @@ FLASH=build-bin/sw/device/examples/hello_usbdev/hello_usbdev_sim_verilator.elf
 VFILE_DIR=.
 
 # How long to simulate
-SIM_CYCLES=700000
+SIM_CYCLES=757000
 
 # Expected output
-EXPECT_USB=hw/top_earlgrey/util/opentitan_earlgrey_usbdev_expected-usb.log
-EXPECT_UART=hw/top_earlgrey/util/opentitan_earlgrey_usbdev_expected-uart.log
+EXPECT_USB=hw/top_earlgrey/util/opentitan_earlgrey_usbdev_expected-usb
+EXPECT_UART=hw/top_earlgrey/util/opentitan_earlgrey_usbdev_expected-uart
 
+# Expected differences in output between expected and actual
+IGNORE_EX_UART="-I Build.Date -I Version -I Built.at"
 # Expected differences in output between noflip se and the others
 IGNORE_USB="-I Pullup.change"
 IGNORE_UART="-I PHY.settings"
@@ -55,7 +57,7 @@ cp $VFILE_DIR/uart0.log $VFILE_DIR/uart-flip-diff.log
 
 echo "Check No Flip Single Ended against expected logs"
 diff $VFILE_DIR/usb-noflip-se.log $EXPECT_USB
-diff $VFILE_DIR/uart-noflip-se.log $EXPECT_UART
+diff $IGNORE_EX_UART $VFILE_DIR/uart-noflip-se.log $EXPECT_UART
 
 echo "Check Flipped Single Ended against No Flip Single Ended"
 diff $IGNORE_USB $VFILE_DIR/usb-flip-se.log $VFILE_DIR/usb-noflip-se.log
