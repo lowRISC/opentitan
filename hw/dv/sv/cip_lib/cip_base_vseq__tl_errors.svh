@@ -138,9 +138,16 @@ endtask
 virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
   bit has_mem = (cfg.mem_ranges.size > 0);
   bit [BUS_AW-1:0] csr_base_addr = cfg.ral.default_map.get_base_addr();
+  bit has_unmapped_addr;
 
+  // get_addr_mask returns address map size - 1 and get_max_offset return the offset of high byte
+  // in address map. The difference btw them is unmapped address
   csr_addr_mask = cfg.ral.get_addr_mask();
+  has_unmapped_addr = csr_addr_mask > cfg.ral.get_max_offset();
+
+  // word aligned. This is used to constrain the random address and LSB 2 bits are masked out
   csr_addr_mask[1:0] = 0;
+
   if (updated_mem_ranges.size == 0) begin
     foreach (cfg.mem_ranges[i]) begin
       updated_mem_ranges.push_back(addr_range_t'{cfg.mem_ranges[i].start_addr - csr_base_addr,
@@ -163,10 +170,11 @@ virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
           fork
             begin
               randcase
-                1: tl_access_unmapped_addr();
                 1: tl_write_csr_word_unaligned_addr();
                 1: tl_write_less_than_csr_width();
                 1: tl_protocol_err();
+                // only run when unmapped addr exists
+                has_unmapped_addr: tl_access_unmapped_addr();
                 // only run this task when there is an mem
                 has_mem: tl_write_mem_less_than_word();
                 has_mem: tl_read_mem_err();
