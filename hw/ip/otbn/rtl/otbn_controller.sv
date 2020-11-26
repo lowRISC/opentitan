@@ -310,6 +310,7 @@ module otbn_controller
     .clk_i,
     .rst_ni,
 
+    .insn_valid_i,
     .insn_addr_i,
     .next_insn_addr_i  (next_insn_addr),
 
@@ -320,6 +321,8 @@ module otbn_controller
     .loop_jump_o       (loop_jump),
     .loop_jump_addr_o  (loop_jump_addr),
     .loop_err_o        (loop_err),
+
+    .branch_taken_i    (branch_taken)
   );
 
   assign loop_start      = insn_valid_i & insn_dec_shared_i.loop_insn;

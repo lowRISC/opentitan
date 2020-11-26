@@ -10,6 +10,7 @@ module otbn_loop_controller
   input clk_i,
   input rst_ni,
 
+  input                      insn_valid_i,
   input [ImemAddrWidth-1:0]  insn_addr_i,
   input [ImemAddrWidth-1:0]  next_insn_addr_i,
 
@@ -19,16 +20,20 @@ module otbn_loop_controller
 
   output                     loop_jump_o,
   output [ImemAddrWidth-1:0] loop_jump_addr_o,
+  output                     loop_err_o,
 
-  output                     loop_err_o
+  input                      branch_taken_i
 );
   // The loop controller has a current loop and then a stack of outer loops, this sets the size of
   // the stack so maximum loop nesting depth is LoopStackDepth + 1.
   localparam int unsigned LoopStackDepth = 8;
+  // ISA has a fixed 12 bits for loop_bodysize. When IMEM size is less than 16 kB (ImemAddrWidth
+  // < 14) some of these bits are ignored as a loop body cannot be greater than the IMEM size.
+  localparam int unsigned LoopEndAddrWidth = ImemAddrWidth < 14 ? 14 : ImemAddrWidth;
 
   typedef struct packed {
     logic [ImemAddrWidth-1:0] loop_start;
-    logic [ImemAddrWidth-1:0] loop_end;
+    logic [ImemAddrWidth:0]   loop_end;
     logic [31:0]              loop_iterations;
   } loop_info_t;
 
@@ -41,12 +46,18 @@ module otbn_loop_controller
   loop_info_t next_loop;
   logic       next_loop_valid;
 
-  loop_info_t               new_loop;
-  logic [ImemAddrWidth-1:0] new_loop_end_addr;
+  loop_info_t                new_loop;
+  logic [LoopEndAddrWidth:0] new_loop_end_addr_full;
+  logic [ImemAddrWidth:0]    new_loop_end_addr_imem;
 
   logic loop_stack_push;
   logic loop_stack_full;
   logic loop_stack_pop;
+
+  logic loop_iteration_err;
+  logic loop_branch_err;
+  logic loop_stack_overflow_err;
+  logic loop_at_end_err;
 
   // The loop controller maintains a current loop and a loop stack. The current loop is the
   // innermost loop and is valid when loop_active_q is set. The loop controller tracks the current
@@ -58,24 +69,39 @@ module otbn_loop_controller
 
   // Determine end address of incoming loop from LOOP instruction (valid on loop_start_i and
   // specified by loop_bodysize_i and loop_iterations_i).
-  if (ImemAddrWidth < 14) begin : g_new_loop_end_addr_small_imem
-    assign new_loop_end_addr = insn_addr_i + {loop_bodysize_i[ImemAddrWidth-3:0], 2'b00} + 'd4;
+  if (ImemAddrWidth <= LoopEndAddrWidth) begin : g_new_loop_end_addr_small_imem
+    // Where the Imem address width is small enough that `loop_bodysize` could cause overflow when
+    // calculating the end the address then first calculate the 'full' address using sufficient
+    // width to avoid overflow.
+    assign new_loop_end_addr_full = {{(LoopEndAddrWidth-ImemAddrWidth){1'b0}}, insn_addr_i} +
+                                    {loop_bodysize_i, 2'b00} + 'd4;
 
-    // ISA has a fixed 12 bits for loop_bodysize. When IMEM size is less than 16 kB (ImemAddrWidth
-    // < 14) some of these bits are ignored as a loop body cannot be greater than the IMEM size.
-    logic [11:ImemAddrWidth-2] unused_loop_bodysize_bits;
-    assign unused_loop_bodysize_bits = loop_bodysize_i[11:ImemAddrWidth-2];
+    // Truncate the full address to get an Imem address.
+    assign new_loop_end_addr_imem[ImemAddrWidth-1:0] = new_loop_end_addr_full[ImemAddrWidth-1:0];
+
+    // If the end address calculation did overflow Imem bounds set top bit of stored end address to
+    // indicate this.
+    assign new_loop_end_addr_imem[ImemAddrWidth] =
+        |new_loop_end_addr_full[LoopEndAddrWidth:ImemAddrWidth];
   end else begin : g_new_loop_end_addr_big_imem
-    assign new_loop_end_addr = insn_addr_i + {loop_bodysize_i, 2'b00} + 'd4;
+    // Where Imem address width is large enough that `loop_bodysize` won't cause overflow when
+    // calculating the end address pass 'full' address straight through as Imem address.
+    assign new_loop_end_addr_full = insn_addr_i + {{(ImemAddrWidth-LoopEndAddrWidth){1'b0}},
+                                                   loop_bodysize_i, 2'b00} + 'd4;
+
+    assign new_loop_end_addr_imem = new_loop_end_addr_full;
   end
 
   assign new_loop = '{
     loop_start: next_insn_addr_i,
-    loop_end: new_loop_end_addr,
+    loop_end: new_loop_end_addr_imem,
     loop_iterations: loop_iterations_i
   };
 
-  assign at_current_loop_end_insn = loop_active_q & (current_loop_q.loop_end == insn_addr_i);
+  // `loop_end` has one more bit than Imem width; this is set when the end address calculation
+  // overflows. When this is the case the end instruction is never reached.
+  assign at_current_loop_end_insn =
+      loop_active_q & (current_loop_q.loop_end == {1'b0, insn_addr_i}) & insn_valid_i;
 
   // The iteration decrement happens at loop end. So when execution reaches the end instruction of
   // the current loop with 1 iteration that is the end of the final iteration and the current loop
@@ -87,14 +113,21 @@ module otbn_loop_controller
   assign loop_jump_o      = at_current_loop_end_insn & !current_loop_finish;
   assign loop_jump_addr_o = current_loop_q.loop_start;
 
-  // TODO: Add in loop error conditions
-  assign loop_err_o = 1'b0;
+  assign loop_iteration_err      = (loop_iterations_i == '0) & loop_start_i;
+  assign loop_branch_err         = at_current_loop_end_insn & branch_taken_i;
+  assign loop_stack_overflow_err = loop_stack_push & loop_stack_full;
+  assign loop_at_end_err         = at_current_loop_end_insn & loop_start_i;
+
+  assign loop_err_o = loop_iteration_err      |
+                      loop_branch_err         |
+                      loop_stack_overflow_err |
+                      loop_at_end_err;
 
   always_comb begin
     loop_active_d  = loop_active_q;
     current_loop_d = current_loop_q;
 
-    if (loop_start_i) begin
+    if (loop_start_i & ~loop_err_o) begin
       // A new loop is starting (executing LOOP instruction), so incoming loop becomes the current
       // loop
       loop_active_d  = 1'b1;
@@ -127,7 +160,8 @@ module otbn_loop_controller
   end
 
   // Push current loop to the loop stack when a new loop starts (LOOP instruction executed) and
-  // there is an active loop.
+  // there is an active loop. Stack internally checks to see if it's full when asked to push so no
+  // need to factor in overflow here.
   assign loop_stack_push = loop_start_i & loop_active_q;
 
   // Pop from the loop stack when the current loop finishes. Stack internally checks to see if it's
@@ -150,7 +184,5 @@ module otbn_loop_controller
     .top_valid_o (next_loop_valid)
   );
 
-  // TODO: deal with loop stack overflow
-  logic unused_loop_stack_full;
-  assign unused_loop_stack_full = loop_stack_full;
+  `ASSERT(NoLoopStackPushAndPop, !(loop_stack_push && loop_stack_pop))
 endmodule
