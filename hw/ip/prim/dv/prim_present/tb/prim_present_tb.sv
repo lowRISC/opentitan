@@ -40,6 +40,10 @@ module prim_present_tb;
   localparam bit Encrypt = 1'b0;
   localparam bit Decrypt = 1'b1;
 
+  // used to index data arrays
+  localparam bit Unrolled = 1'b0;
+  localparam bit Iterative = 1'b1;
+
   // this parameter is required for the DPI model.
   localparam bit KeySize80 = (KeyWidth == 80);
 
@@ -52,35 +56,96 @@ module prim_present_tb;
 // DUTs for both encryption and decryption
 //////////////////////////////////////////////////////
 
-  // data_in[0]: encryption, data_in[1]: decryption.
-  // Same scheme used for key_in, data_out, key_out.
+  // Inputs for the unrolled PRESENT instances.
+  // data_in[0]: encryption, data_in[1]: decryption - same scheme for key/idx.
   logic [1:0][NumRounds-1:0][DataWidth-1:0] data_in;
   logic [1:0][NumRounds-1:0][KeyWidth-1 :0] key_in;
   logic [1:0][NumRounds-1:0][4:0]           idx_in;
-  logic [1:0][NumRounds-1:0][DataWidth-1:0] data_out;
-  logic [1:0][NumRounds-1:0][KeyWidth-1 :0] key_out;
-  logic [1:0][NumRounds-1:0][4:0]           idx_out;
 
-  for (genvar j = 0; j < 2; j++) begin : gen_encrypt_decrypt
-    for (genvar k = 0; k < NumRounds; k++) begin : gen_duts
+  // Intermediate input/output arrays for the iterative PRESENT instances.
+  // data_iter_in[0]: encryption, data_iter_in[1]: decryption - same scheme for key/idx.
+  logic [1:0][NumRounds-1:0][NumRounds-1:0][DataWidth-1:0]  data_iter_in;
+  logic [1:0][NumRounds-1:0][NumRounds-1:0][KeyWidth-1:0]   key_iter_in;
+  logic [1:0][NumRounds-1:0][NumRounds-1:0][4:0]            idx_iter_in;
+  logic [1:0][NumRounds-1:0][NumRounds-1:0][DataWidth-1:0]  data_iter_out;
+  logic [1:0][NumRounds-1:0][NumRounds-1:0][KeyWidth-1:0]   key_iter_out;
+  logic [1:0][NumRounds-1:0][NumRounds-1:0][4:0]            idx_iter_out;
+
+  // Final output arrays used for correctness checking.
+  logic [1:0][1:0][NumRounds-1:0][DataWidth-1:0] data_out;
+  logic [1:0][1:0][NumRounds-1:0][KeyWidth-1:0]  key_out;
+  logic [1:0][1:0][NumRounds-1:0][4:0]           idx_out;
+
+  // Unrolled PRESENT instances.
+  //
+  // Generate NumRounds number of PRESENT instances, each with its NumRounds parameter set to N,
+  // where 1<N<NumRounds+1.
+  for (genvar j = 0; j < 2; j++) begin : gen_unrolled_encrypt_decrypt
+    for (genvar k = 0; k < NumRounds; k++) begin : gen_unrolled_duts
       if (j == 0) begin : gen_encrypt
         assign idx_in[j][k] = 5'd1;
       end else begin : gen_decrypt
         assign idx_in[j][k] = 5'(k+1);
       end
       prim_present #(
-        .DataWidth  ( DataWidth ),
-        .KeyWidth   ( KeyWidth  ),
-        .NumRounds  ( k+1       ),
-        .Decrypt    ( j         )
+        .DataWidth     ( DataWidth ),
+        .KeyWidth      ( KeyWidth  ),
+        .NumRounds     ( k+1       ),
+        .NumPhysRounds ( k+1       ),
+        .Decrypt       ( j         )
       ) dut (
-        .data_i     ( data_in[j][k]  ),
-        .key_i      ( key_in[j][k]   ),
-        .idx_i      ( idx_in[j][k]   ),
-        .data_o     ( data_out[j][k] ),
-        .key_o      ( key_out[j][k]  ),
-        .idx_o      ( idx_out[j][k]  )
+        .data_i        ( data_in[j][k]            ),
+        .key_i         ( key_in[j][k]             ),
+        .idx_i         ( idx_in[j][k]             ),
+        .data_o        ( data_out[Unrolled][j][k] ),
+        .key_o         ( key_out[Unrolled][j][k]  ),
+        .idx_o         ( idx_out[Unrolled][j][k]  )
       );
+    end
+  end
+
+  // Iterative PRESENT instances.
+  //
+  // For 1<N<NumRounds+1, generate N chained PRESENT instances,
+  // each running 1 physical round of the algorithm.
+  //
+  // This should produce equivalent results as the PRESENT instances running N internal rounds.
+  for (genvar i = 0; i < 2; i++) begin : gen_iterative_encrypt_decrypt
+    for (genvar j = 0; j < NumRounds; j++) begin : gen_iterative_duts
+      for (genvar k = 0; k <= j; k++) begin : gen_numrounds_duts
+        // assign encryption/decryption indices
+        assign idx_iter_in[i][j][k] = (i == 0) ? 5'(k+1) : 5'(j+1-k);
+        if (k == 0) begin : gen_first
+          // Assign the very first set of inputs to the requested plaintext/key.
+          assign data_iter_in[i][j][k] = data_in[i][j];
+          assign key_iter_in[i][j][k] = key_in[i][j];
+        end else begin : gen_others
+          // assign the data/key inputs of round K+1 to the outputs of round K.
+          assign data_iter_in[i][j][k] = data_iter_out[i][j][k-1];
+          assign key_iter_in[i][j][k] = key_iter_out[i][j][k-1];
+        end
+          // On the last round, assign the correct final outputs.
+        if (k == j) begin : gen_last
+          assign data_out[Iterative][i][j] = data_iter_out[i][j][k];
+          assign key_out[Iterative][i][j] = key_iter_out[i][j][k];
+          assign idx_out[Iterative][i][j] = idx_iter_out[i][j][k];
+        end
+
+        prim_present #(
+          .DataWidth     ( DataWidth ),
+          .KeyWidth      ( KeyWidth  ),
+          .NumRounds     ( j+1       ),
+          .NumPhysRounds ( 1         ),
+          .Decrypt       ( i         )
+        ) dut (
+          .data_i ( data_iter_in[i][j][k]  ),
+          .key_i  ( key_iter_in[i][j][k]   ),
+          .idx_i  ( idx_iter_in[i][j][k]   ),
+          .data_o ( data_iter_out[i][j][k] ),
+          .key_o  ( key_iter_out[i][j][k]  ),
+          .idx_o  ( idx_iter_out[i][j][k]  )
+        );
+      end
     end
   end
 
@@ -126,8 +191,15 @@ module prim_present_tb;
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(plaintext, key,
                                                    KeySize80, expected_ciphertext);
 
+    // Test encryption with unrolled PRESENT instances.
     check_output(key_schedule[NumRounds:1], expected_ciphertext,
-                 key_out[Encrypt], data_out[Encrypt], "Encryption");
+                 key_out[Unrolled][Encrypt], data_out[Unrolled][Encrypt],
+                 "Unrolled encryption");
+
+    // Test encryption with iterative PRESENT instances.
+    check_output(key_schedule[NumRounds:1], expected_ciphertext,
+                 key_out[Iterative][Encrypt], data_out[Iterative][Encrypt],
+                 "Iterative encryption");
   endtask
 
 
@@ -157,8 +229,15 @@ module prim_present_tb;
     // query DPI model for expected decrypted output.
     crypto_dpi_present_pkg::sv_dpi_present_decrypt(ciphertext, key, KeySize80, expected_plaintext);
 
+    // Test decryption with unrolled PRESENT instances.
     check_output(expected_key, expected_plaintext,
-                 key_out[Decrypt], data_out[Decrypt], "Decryption");
+                 key_out[Unrolled][Decrypt], data_out[Unrolled][Decrypt],
+                 "Unrolled decryption");
+
+    // Test decryption with iterative PRESENT instances.
+    check_output(expected_key, expected_plaintext,
+                 key_out[Iterative][Decrypt], data_out[Iterative][Decrypt],
+                 "Iterative decryption");
   endtask
 
 
