@@ -78,10 +78,8 @@ class dv_base_reg_block extends uvm_reg_block;
   // Use below to get the addr map size #3317
   // max2(biggest_reg_offset+reg_size, biggest_mem_offset+mem_size) and then round up to 2**N
   protected function void compute_addr_mask(uvm_reg_map map);
-    uvm_reg_addr_t max_addr, max_offset;
+    uvm_reg_addr_t max_offset;
     uvm_reg_block  blocks[$];
-    uvm_reg        regs[$];
-    uvm_mem        mems[$];
     int unsigned   alignment;
 
     // TODO: assume IP only contains 1 reg block, find a better way to handle chip-level and IP
@@ -92,26 +90,7 @@ class dv_base_reg_block extends uvm_reg_block;
       return;
     end
 
-    get_registers(regs);
-    get_memories(mems);
-    `DV_CHECK_GT_FATAL(regs.size() + mems.size(), 0)
-
-    // Walk the known registers and memories, calculating the largest byte address visible. Note
-    // that the get_offset() calls will return absolute addresses, including any base address in the
-    // default register map.
-    max_addr = 0;
-    foreach (regs[i]) begin
-      max_addr = max2(regs[i].get_offset(map) + regs[i].get_n_bytes() - 1, max_addr);
-    end
-
-    foreach (mems[i]) begin
-      uvm_reg_addr_t mem_size;
-      mem_size = mems[i].get_offset(.map(map)) + mems[i].get_size() * mems[i].get_n_bytes() - 1;
-      max_addr = max2(mem_size, max_addr);
-    end
-
-    // Subtract the base address in the default register map to get the maximum relative offset.
-    max_offset = max_addr - map.get_base_addr();
+    max_offset = get_max_offset(map);
 
     // Set alignment to be ceil(log2(biggest_offset))
     alignment = 0;
@@ -129,6 +108,35 @@ class dv_base_reg_block extends uvm_reg_block;
 
     // Computed mask must be non-zero.
     `DV_CHECK_FATAL(addr_mask[map])
+  endfunction
+
+  // Return the offset of the highest byte contained in either a register or a memory
+  function uvm_reg_addr_t get_max_offset(uvm_reg_map map = null);
+    uvm_reg_addr_t max_offset;
+    uvm_reg        regs[$];
+    uvm_mem        mems[$];
+
+    if (map == null) map = get_default_map();
+
+    get_registers(regs);
+    get_memories(mems);
+    `DV_CHECK_GT_FATAL(regs.size() + mems.size(), 0)
+
+    // Walk the known registers and memories, calculating the largest byte address visible. Note
+    // that the get_offset() calls will return absolute addresses, including any base address in the
+    // specified register map.
+    max_offset = 0;
+    foreach (regs[i]) begin
+      max_offset = max2(regs[i].get_offset(map) + regs[i].get_n_bytes() - 1, max_offset);
+    end
+
+    foreach (mems[i]) begin
+      uvm_reg_addr_t mem_size;
+      mem_size = mems[i].get_offset(.map(map)) + mems[i].get_size() * mems[i].get_n_bytes() - 1;
+      max_offset = max2(mem_size, max_offset);
+    end
+
+    return max_offset;
   endfunction
 
   // Get the address mask. This should only be called after locking the model (because it depends on
