@@ -983,8 +983,12 @@ def main():
 
     for ip in generated_list:
         log.info("Appending {}".format(ip))
-        ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
-            ip, ip)
+        if ip == 'clkmgr':
+            ip_hjson = Path(out_path) / "ip/{}/data/autogen/{}.hjson".format(
+                ip, ip)
+        else:
+            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
+                ip, ip)
         ips.append(ip_hjson)
 
     for ip in top_only_list:
