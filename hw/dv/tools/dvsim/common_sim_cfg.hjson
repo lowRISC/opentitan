@@ -2,10 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  project:          opentitan
-  doc_server:       docs.opentitan.org
-  results_server:   reports.opentitan.org
-
   // Where to find DV code
   dv_root:          "{proj_root}/hw/dv"
 
