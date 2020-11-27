@@ -1,0 +1,5 @@
+(sym_lib_table
+  (lib (name 2020-09-06_23-11-15)(type Legacy)(uri ${KIPRJMOD}/ti-part/2020-09-06_23-11-15.lib)(options "")(descr ""))
+  (lib (name power)(type Legacy)(uri ${KIPRJMOD}/power.lib)(options "")(descr ""))
+  (lib (name 2020-09-07_23-03-14)(type Legacy)(uri ${KIPRJMOD}/ti-part/2020-09-07_23-03-14.lib)(options "")(descr ""))
+)

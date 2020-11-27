@@ -28,6 +28,15 @@ module top_earlgrey_nexysvideo #(
   inout               IO_USB_SENSE0,
   inout               IO_USB_DNPULLUP0,
   inout               IO_USB_DPPULLUP0,
+  // USB interface for testing with TI1106 USB PHY
+  output              IO_UPHY_DP_TX,
+  output              IO_UPHY_DN_TX,
+  input               IO_UPHY_DP_RX,
+  input               IO_UPHY_DN_RX,
+  input               IO_UPHY_D_RX,
+  output              IO_UPHY_OE_N,
+  input               IO_UPHY_SENSE,
+  output              IO_UPHY_DPPULLUP,
   // GPIO x 16 interface
   inout               IO_GP0,
   inout               IO_GP1,
@@ -215,12 +224,63 @@ module top_earlgrey_nexysvideo #(
   // dio_in/out/oe map is: PADS <- _padring <- JTAG mux -> _umux -> USB mux -> _core
   localparam int DioIdxUsbDn0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDn;
   localparam int DioIdxUsbDp0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDp;
+  localparam int DioIdxUsbD0  = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevD;
+  localparam int DioIdxUsbSense0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevSense;
   localparam int DioIdxUsbDnPullup0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDnPullup;
   localparam int DioIdxUsbDpPullup0 = top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDpPullup;
+
+
+  // Split out for differential PHY testing
+
+  // Outputs always drive and just copy the value
+  // Let them go to the normal place too because it won't do any harm
+  // and it simplifies the changes needed
+  OBUF o_uphy_dp (
+    .O (IO_UPHY_DP_TX),
+    .I (dio_out_umux[DioIdxUsbDp0])
+  );
+  OBUF o_uphy_dn (
+    .O (IO_UPHY_DN_TX),
+    .I (dio_out_umux[DioIdxUsbDn0])
+  );
+  OBUF o_uphy_pu (
+    .O (IO_UPHY_DPPULLUP),
+    .I (dio_out_umux[DioIdxUsbDpPullup0] & dio_oe_umux[DioIdxUsbDpPullup0])
+  );
+  OBUF o_uphy_oe_N (
+    .O (IO_UPHY_OE_N),
+    .I (~dio_oe_umux[DioIdxUsbDp0])
+  );
+
+  // Input: pull to local signals and mux in loop below
+  logic uphy_dp_rx, uphy_dn_rx, uphy_d_rx, uphy_sense;
+
+  IBUF i_uphy_dp (
+    .I (IO_UPHY_DP_RX),
+    .O (uphy_dp_rx)
+  );
+  IBUF i_uphy_dn (
+    .I (IO_UPHY_DN_RX),
+    .O (uphy_dn_rx)
+  );
+  IBUF i_uphy_d (
+    .I (IO_UPHY_D_RX),
+    .O (uphy_d_rx)
+  );
+  IBUF i_uphy_sense (
+    .I (IO_UPHY_SENSE),
+    .O (uphy_sense)
+  );
+
 
   // The output enable for IO_USB_DNPULLUP0 is used to decide whether we need to undo the swapping.
   logic undo_swap;
   assign undo_swap = dio_oe_core[DioIdxUsbDnPullup0];
+
+  // GPIO[2] = Switch 2 on board is used to select using the UPHY
+  // Keep GPIO[1] for selecting differential in sw
+  logic use_uphy;
+  assign use_uphy = mio_in_padring[2];
 
   for (genvar i = 0; i < padctrl_reg_pkg::NDioPads; i++) begin : gen_dio
     if (i == DioIdxUsbDn0) begin
@@ -228,15 +288,27 @@ module top_earlgrey_nexysvideo #(
                                            dio_out_core[DioIdxUsbDn0];
       assign dio_oe_umux[i]  = undo_swap ? dio_oe_core[DioIdxUsbDp0] :
                                            dio_oe_core[DioIdxUsbDn0];
-      assign dio_in_core[i]  = undo_swap ? dio_in_umux[DioIdxUsbDp0] :
-                                           dio_in_umux[DioIdxUsbDn0];
+      assign dio_in_core[i] = use_uphy ?
+                              (undo_swap ? uphy_dp_rx : uphy_dn_rx) :
+                              (undo_swap ? dio_in_umux[DioIdxUsbDp0] :
+                                           dio_in_umux[DioIdxUsbDn0]);
     end else if (i == DioIdxUsbDp0) begin
       assign dio_out_umux[i] = undo_swap ? dio_out_core[DioIdxUsbDn0] :
                                            dio_out_core[DioIdxUsbDp0];
       assign dio_oe_umux[i]  = undo_swap ? dio_oe_core[DioIdxUsbDn0] :
                                            dio_oe_core[DioIdxUsbDp0];
-      assign dio_in_core[i]  = undo_swap ? dio_in_umux[DioIdxUsbDn0] :
-                                           dio_in_umux[DioIdxUsbDp0];
+      assign dio_in_core[i] = use_uphy ?
+                              (undo_swap ? uphy_dn_rx : uphy_dp_rx) :
+                              (undo_swap ? dio_in_umux[DioIdxUsbDn0] :
+                                           dio_in_umux[DioIdxUsbDp0]);
+    end else if (i == DioIdxUsbD0) begin
+      assign dio_out_umux[i] = undo_swap ? ~dio_out_core[DioIdxUsbD0] :
+                                            dio_out_core[DioIdxUsbD0];
+      assign dio_oe_umux[i]  = dio_oe_core[i];
+      assign dio_in_core[i] = use_uphy ?
+                              (undo_swap ? ~uphy_d_rx : uphy_d_rx) :
+                              (undo_swap ? ~dio_in_umux[DioIdxUsbD0] :
+                                            dio_in_umux[DioIdxUsbD0]);
     end else if (i == DioIdxUsbDnPullup0) begin
       assign dio_out_umux[i] = undo_swap ? dio_out_core[DioIdxUsbDpPullup0] :
                                            dio_out_core[DioIdxUsbDnPullup0];
@@ -249,6 +321,10 @@ module top_earlgrey_nexysvideo #(
       assign dio_oe_umux[i]  = undo_swap ? dio_oe_core[DioIdxUsbDnPullup0] :
                                            dio_oe_core[DioIdxUsbDpPullup0];
       assign dio_in_core[i]  = dio_in_umux[i];
+    end else if (i == DioIdxUsbSense0) begin
+      assign dio_out_umux[i] = dio_out_core[i];
+      assign dio_oe_umux[i]  = dio_oe_core[i];
+      assign dio_in_core[i]  = use_uphy ? uphy_sense : dio_in_umux[i];
     end else begin
       assign dio_out_umux[i] = dio_out_core[i];
       assign dio_oe_umux[i]  = dio_oe_core[i];

@@ -1,0 +1,522 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP +10V
+D Power symbol creates a global label with name "+10V"
+K power-flag
+$ENDCMP
+#
+$CMP +12C
+D Power symbol creates a global label with name "+12C"
+K power-flag
+$ENDCMP
+#
+$CMP +12L
+D Power symbol creates a global label with name "+12L"
+K power-flag
+$ENDCMP
+#
+$CMP +12LF
+D Power symbol creates a global label with name "+12LF"
+K power-flag
+$ENDCMP
+#
+$CMP +12P
+D Power symbol creates a global label with name "+12P"
+K power-flag
+$ENDCMP
+#
+$CMP +12V
+D Power symbol creates a global label with name "+12V"
+K power-flag
+$ENDCMP
+#
+$CMP +12VA
+D Power symbol creates a global label with name "+12VA"
+K power-flag
+$ENDCMP
+#
+$CMP +15V
+D Power symbol creates a global label with name "+15V"
+K power-flag
+$ENDCMP
+#
+$CMP +1V0
+D Power symbol creates a global label with name "+1V0"
+K power-flag
+$ENDCMP
+#
+$CMP +1V1
+D Power symbol creates a global label with name "+1V1"
+K power-flag
+$ENDCMP
+#
+$CMP +1V2
+D Power symbol creates a global label with name "+1V2"
+K power-flag
+$ENDCMP
+#
+$CMP +1V35
+D Power symbol creates a global label with name "+1V35"
+K power-flag
+$ENDCMP
+#
+$CMP +1V5
+D Power symbol creates a global label with name "+1V5"
+K power-flag
+$ENDCMP
+#
+$CMP +1V8
+D Power symbol creates a global label with name "+1V8"
+K power-flag
+$ENDCMP
+#
+$CMP +24V
+D Power symbol creates a global label with name "+24V"
+K power-flag
+$ENDCMP
+#
+$CMP +28V
+D Power symbol creates a global label with name "+28V"
+K power-flag
+$ENDCMP
+#
+$CMP +2V5
+D Power symbol creates a global label with name "+2V5"
+K power-flag
+$ENDCMP
+#
+$CMP +2V8
+D Power symbol creates a global label with name "+2V8"
+K power-flag
+$ENDCMP
+#
+$CMP +3.3V
+D Power symbol creates a global label with name "+3.3V"
+K power-flag
+$ENDCMP
+#
+$CMP +3.3VA
+D Power symbol creates a global label with name "+3.3VA"
+K power-flag
+$ENDCMP
+#
+$CMP +3.3VADC
+D Power symbol creates a global label with name "+3.3VADC"
+K power-flag
+$ENDCMP
+#
+$CMP +3.3VDAC
+D Power symbol creates a global label with name "+3.3VDAC"
+K power-flag
+$ENDCMP
+#
+$CMP +3.3VP
+D Power symbol creates a global label with name "+3.3VP"
+K power-flag
+$ENDCMP
+#
+$CMP +3.3V_copy
+D Power symbol creates a global label with name "+3.3V"
+K power-flag
+$ENDCMP
+#
+$CMP +36V
+D Power symbol creates a global label with name "+36V"
+K power-flag
+$ENDCMP
+#
+$CMP +3V0
+D Power symbol creates a global label with name "+3V0"
+K power-flag
+$ENDCMP
+#
+$CMP +3V3
+D Power symbol creates a global label with name "+3V3"
+K power-flag
+$ENDCMP
+#
+$CMP +3V8
+D Power symbol creates a global label with name "+3V8"
+K power-flag
+$ENDCMP
+#
+$CMP +48V
+D Power symbol creates a global label with name "+48V"
+K power-flag
+$ENDCMP
+#
+$CMP +4V
+D Power symbol creates a global label with name "+4V"
+K power-flag
+$ENDCMP
+#
+$CMP +5C
+D Power symbol creates a global label with name "+5C"
+K power-flag
+$ENDCMP
+#
+$CMP +5F
+D Power symbol creates a global label with name "+5F"
+K power-flag
+$ENDCMP
+#
+$CMP +5P
+D Power symbol creates a global label with name "+5P"
+K power-flag
+$ENDCMP
+#
+$CMP +5V
+D Power symbol creates a global label with name "+5V"
+K power-flag
+$ENDCMP
+#
+$CMP +5VA
+D Power symbol creates a global label with name "+5VA"
+K power-flag
+$ENDCMP
+#
+$CMP +5VD
+D Power symbol creates a global label with name "+5VD"
+K power-flag
+$ENDCMP
+#
+$CMP +5VL
+D Power symbol creates a global label with name "+5VL"
+K power-flag
+$ENDCMP
+#
+$CMP +5VP
+D Power symbol creates a global label with name "+5VP"
+K power-flag
+$ENDCMP
+#
+$CMP +6V
+D Power symbol creates a global label with name "+6V"
+K power-flag
+$ENDCMP
+#
+$CMP +7.5V
+D Power symbol creates a global label with name "+7.5V"
+K power-flag
+$ENDCMP
+#
+$CMP +8V
+D Power symbol creates a global label with name "+8V"
+K power-flag
+$ENDCMP
+#
+$CMP +9V
+D Power symbol creates a global label with name "+9V"
+K power-flag
+$ENDCMP
+#
+$CMP +9VA
+D Power symbol creates a global label with name "+9VA"
+K power-flag
+$ENDCMP
+#
+$CMP +BATT
+D Power symbol creates a global label with name "+BATT"
+K power-flag battery
+$ENDCMP
+#
+$CMP +VDC
+D Power symbol creates a global label with name "+VDC"
+K power-flag
+$ENDCMP
+#
+$CMP +VSW
+D Power symbol creates a global label with name "+VSW"
+K power-flag
+$ENDCMP
+#
+$CMP -10V
+D Power symbol creates a global label with name "-10V"
+K power-flag
+$ENDCMP
+#
+$CMP -12V
+D Power symbol creates a global label with name "-12V"
+K power-flag
+$ENDCMP
+#
+$CMP -12VA
+D Power symbol creates a global label with name "-12VA"
+K power-flag
+$ENDCMP
+#
+$CMP -15V
+D Power symbol creates a global label with name "-15V"
+K power-flag
+$ENDCMP
+#
+$CMP -24V
+D Power symbol creates a global label with name "-24V"
+K power-flag
+$ENDCMP
+#
+$CMP -2V5
+D Power symbol creates a global label with name "-2V5"
+K power-flag
+$ENDCMP
+#
+$CMP -36V
+D Power symbol creates a global label with name "-36V"
+K power-flag
+$ENDCMP
+#
+$CMP -3V3
+D Power symbol creates a global label with name "-3V3"
+K power-flag
+$ENDCMP
+#
+$CMP -48V
+D Power symbol creates a global label with name "-48V"
+K power-flag
+$ENDCMP
+#
+$CMP -5V
+D Power symbol creates a global label with name "-5V"
+K power-flag
+$ENDCMP
+#
+$CMP -5VA
+D Power symbol creates a global label with name "-5VA"
+K power-flag
+$ENDCMP
+#
+$CMP -6V
+D Power symbol creates a global label with name "-6V"
+K power-flag
+$ENDCMP
+#
+$CMP -8V
+D Power symbol creates a global label with name "-8V"
+K power-flag
+$ENDCMP
+#
+$CMP -9V
+D Power symbol creates a global label with name "-9V"
+K power-flag
+$ENDCMP
+#
+$CMP -9VA
+D Power symbol creates a global label with name "-9VA"
+K power-flag
+$ENDCMP
+#
+$CMP -BATT
+D Power symbol creates a global label with name "-BATT"
+K power-flag battery
+$ENDCMP
+#
+$CMP -VDC
+D Power symbol creates a global label with name "-VDC"
+K power-flag
+$ENDCMP
+#
+$CMP -VSW
+D Power symbol creates a global label with name "-VSW"
+K power-flag
+$ENDCMP
+#
+$CMP AC
+D Power symbol creates a global label with name "AC"
+K power-flag
+$ENDCMP
+#
+$CMP Earth
+D Power symbol creates a global label with name "Earth"
+K power-flag ground gnd
+F ~
+$ENDCMP
+#
+$CMP Earth_Clean
+D Power symbol creates a global label with name "Earth_Clean"
+K power-flag ground gnd clean signal
+F ~
+$ENDCMP
+#
+$CMP Earth_Protective
+D Power symbol creates a global label with name "Earth_Protective"
+K power-flag ground gnd clean
+F ~
+$ENDCMP
+#
+$CMP GND
+D Power symbol creates a global label with name "GND" , ground
+K power-flag
+$ENDCMP
+#
+$CMP GND1
+D Power symbol creates a global label with name "GND1" , ground
+K power-flag
+$ENDCMP
+#
+$CMP GND2
+D Power symbol creates a global label with name "GND2" , ground
+K power-flag
+$ENDCMP
+#
+$CMP GND3
+D Power symbol creates a global label with name "GND3" , ground
+K power-flag
+$ENDCMP
+#
+$CMP GNDA
+D Power symbol creates a global label with name "GNDA" , analog ground
+K power-flag
+$ENDCMP
+#
+$CMP GNDD
+D Power symbol creates a global label with name "GNDD" , digital ground
+K power-flag
+$ENDCMP
+#
+$CMP GNDPWR
+D Power symbol creates a global label with name "GNDPWR" , power ground
+K power-flag
+$ENDCMP
+#
+$CMP GNDREF
+D Power symbol creates a global label with name "GNDREF" , reference supply ground
+K power-flag
+$ENDCMP
+#
+$CMP GNDS
+D Power symbol creates a global label with name "GNDS" , signal ground
+K power-flag
+$ENDCMP
+#
+$CMP HT
+D Power symbol creates a global label with name "HT"
+K power-flag
+$ENDCMP
+#
+$CMP LINE
+D Power symbol creates a global label with name "LINE"
+K power-flag
+$ENDCMP
+#
+$CMP NEUT
+D Power symbol creates a global label with name "NEUT"
+K power-flag
+$ENDCMP
+#
+$CMP PP3300
+D Power symbol creates a global label with name "PP3300"
+K power-flag
+$ENDCMP
+#
+$CMP PRI_HI
+D Power symbol creates a global label with name "PRI_HI"
+K power-flag
+$ENDCMP
+#
+$CMP PRI_LO
+D Power symbol creates a global label with name "PRI_LO"
+K power-flag
+$ENDCMP
+#
+$CMP PRI_MID
+D Power symbol creates a global label with name "PRI_MID"
+K power-flag
+$ENDCMP
+#
+$CMP PWR_FLAG
+D Special symbol for telling ERC where power comes from
+K power-flag
+F ~
+$ENDCMP
+#
+$CMP VAA
+D Power symbol creates a global label with name "VAA"
+K power-flag
+$ENDCMP
+#
+$CMP VAC
+D Power symbol creates a global label with name "VAC"
+K power-flag
+$ENDCMP
+#
+$CMP VBUS
+D Power symbol creates a global label with name "VBUS"
+K power-flag
+$ENDCMP
+#
+$CMP VCC
+D Power symbol creates a global label with name "VCC"
+K power-flag
+$ENDCMP
+#
+$CMP VCCQ
+D Power symbol creates a global label with name "VCCQ"
+K power-flag
+$ENDCMP
+#
+$CMP VCOM
+D Power symbol creates a global label with name "VCOM"
+K power-flag
+$ENDCMP
+#
+$CMP VD
+D Power symbol creates a global label with name "VD"
+K power-flag
+$ENDCMP
+#
+$CMP VDC
+D Power symbol creates a global label with name "VDC"
+K power-flag
+$ENDCMP
+#
+$CMP VDD
+D Power symbol creates a global label with name "VDD"
+K power-flag
+$ENDCMP
+#
+$CMP VDDA
+D Power symbol creates a global label with name "VDDA"
+K power-flag
+$ENDCMP
+#
+$CMP VDDF
+D Power symbol creates a global label with name "VDDF"
+K power-flag
+$ENDCMP
+#
+$CMP VEE
+D Power symbol creates a global label with name "VEE"
+K power-flag
+$ENDCMP
+#
+$CMP VMEM
+D Power symbol creates a global label with name "VMEM"
+K power-flag
+$ENDCMP
+#
+$CMP VPP
+D Power symbol creates a global label with name "VPP"
+K power-flag
+$ENDCMP
+#
+$CMP VS
+D Power symbol creates a global label with name "VS"
+K power-flag
+$ENDCMP
+#
+$CMP VSS
+D Power symbol creates a global label with name "VSS"
+K power-flag
+$ENDCMP
+#
+$CMP VSSA
+D Power symbol creates a global label with name "VSSA"
+K power-flag
+$ENDCMP
+#
+$CMP Vdrive
+D Power symbol creates a global label with name "Vdrive"
+K power-flag
+$ENDCMP
+#
+#End Doc Library
