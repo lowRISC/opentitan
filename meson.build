@@ -178,11 +178,12 @@ gen_hw_hdr = generator(
 )
 
 # TODO: Considering moving these into hw/ip directories.
+TOPNAME='top_earlgrey'
 hw_ip_aes_reg_h = gen_hw_hdr.process('hw/ip/aes/data/aes.hjson')
 hw_ip_alert_handler_reg_h = gen_hw_hdr.process('hw/ip/alert_handler/data/alert_handler.hjson')
 hw_ip_aon_timer_reg_h = gen_hw_hdr.process('hw/ip/aon_timer/data/aon_timer.hjson')
-hw_ip_clkgmr_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson')
-hw_ip_flash_ctrl_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/flash_ctrl/data/autogen/flash_ctrl.hjson')
+hw_ip_clkgmr_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/clkmgr/data/autogen/clkmgr.hjson')
+hw_ip_flash_ctrl_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/flash_ctrl/data/autogen/flash_ctrl.hjson')
 hw_ip_gpio_reg_h = gen_hw_hdr.process('hw/ip/gpio/data/gpio.hjson')
 hw_ip_hmac_reg_h = gen_hw_hdr.process('hw/ip/hmac/data/hmac.hjson')
 hw_ip_i2c_reg_h = gen_hw_hdr.process('hw/ip/i2c/data/i2c.hjson')
@@ -193,10 +194,10 @@ hw_ip_spi_device_reg_h = gen_hw_hdr.process('hw/ip/spi_device/data/spi_device.hj
 hw_ip_rv_timer_reg_h = gen_hw_hdr.process('hw/ip/rv_timer/data/rv_timer.hjson')
 hw_ip_uart_reg_h = gen_hw_hdr.process('hw/ip/uart/data/uart.hjson')
 hw_ip_usbdev_reg_h = gen_hw_hdr.process('hw/ip/usbdev/data/usbdev.hjson')
-hw_ip_pwrmgr_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson')
-hw_ip_rstmgr_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson')
-hw_top_earlgrey_pinmux_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson')
-hw_top_earlgrey_rv_plic_reg_h = gen_hw_hdr.process('hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson')
+hw_ip_pwrmgr_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/pwrmgr/data/autogen/pwrmgr.hjson')
+hw_ip_rstmgr_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/rstmgr/data/autogen/rstmgr.hjson')
+hw_top_earlgrey_pinmux_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/pinmux/data/autogen/pinmux.hjson')
+hw_top_earlgrey_rv_plic_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/rv_plic/data/autogen/rv_plic.hjson')
 
 # Top Earlgrey library (top_earlgrey)
 # The sources for this are generated into the hw hierarchy.
@@ -204,7 +205,7 @@ top_earlgrey = declare_dependency(
   link_with: static_library(
     'top_earlgrey_ot',
     sources: [
-      'hw/top_earlgrey/sw/autogen/top_earlgrey.c',
+      'hw/' + TOPNAME + '/sw/autogen/top_earlgrey.c',
     ],
   )
 )
