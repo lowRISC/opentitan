@@ -3,14 +3,20 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:systems:ast_wrapper:0.1"
-description: "ast wrapper"
+description: "Analog sensor top (AST) wrapper"
+
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim:assert
+      - lowrisc:tlul:headers
       - lowrisc:systems:ast_wrapper_pkg
       - lowrisc:systems:ast
-      - lowrisc:ip:entropy_src
-      - lowrisc:prim:clock_buf
+      - lowrisc:systems:sensor_ctrl_reg
+      - lowrisc:ip:clkmgr_pkg
+      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip:rstmgr_pkg
+      - lowrisc:ip:entropy_src_pkg
     files:
       - rtl/ast_wrapper.sv
     file_type: systemVerilogSource
