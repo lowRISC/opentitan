@@ -256,6 +256,14 @@ class Deploy():
         exports = os.environ.copy()
         exports.update(self.exports)
 
+        # Clear the magic MAKEFLAGS variable from exports if necessary. This
+        # variable is used by recursive Make calls to pass variables from one
+        # level to the next. Here, self.cmd is a call to Make but it's
+        # logically a top-level invocation: we don't want to pollute the flow's
+        # Makefile with Make variables from any wrapper that called dvsim.
+        if 'MAKEFLAGS' in exports:
+            del exports['MAKEFLAGS']
+
         args = shlex.split(self.cmd)
         try:
             # If renew_odir flag is True - then move it.
