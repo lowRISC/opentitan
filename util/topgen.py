@@ -1210,7 +1210,7 @@ def main():
             template_contents = generate_top(completecfg,
                                              str(xbar_chip_data_path))
 
-            rendered_dir = tpl_path / '../dv/autogen'
+            rendered_dir = Path(out_path) / 'dv/autogen'
             rendered_dir.mkdir(parents=True, exist_ok=True)
             rendered_path = rendered_dir / fname
 
@@ -1223,7 +1223,7 @@ def main():
         template_contents = generate_top(completecfg,
                                          str(alert_handler_chip_data_path))
 
-        rendered_dir = tpl_path / '../dv/env/autogen'
+        rendered_dir = Path(out_path) / 'dv/env/autogen'
         rendered_dir.mkdir(parents=True, exist_ok=True)
         rendered_path = rendered_dir / 'alert_handler_env_pkg__params.sv'
 
