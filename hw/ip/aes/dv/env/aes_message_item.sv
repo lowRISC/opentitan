@@ -19,17 +19,14 @@ class aes_message_item extends uvm_sequence_item;
   int               config_error_pct     = 20;
   // errors enabled mask
   error_types_t     error_types          = 3'b000;
-  // 010: malicous injection
-  // 100: random resets
-  // configuraiton errors enabled
-//  bit               config_err           = 0;
+
   // manual mode percentage
   int               manual_operation_pct = 10;
   // maskout unused key bits
   bit               keymask              = 0;
   // use fixed key
   bit               fixed_key_en         = 0;
-  //used fixed key length
+  // used fixed key length
   bit               fixed_keylen_en      = 0;
   // use fixed data (same data for each block in a message
   bit               fixed_data_en        = 0;
@@ -66,6 +63,12 @@ class aes_message_item extends uvm_sequence_item;
   int    key_192b_weight      = 10;
   int    key_256b_weight      = 10;
 
+  // set if this message should not be
+  // validated
+  // due to a premature trigger
+  // i.e unkown key and IV settings used
+  bit    skip_msg             = 0;
+
   ///////////////////////////////////////
   // Randomizable variables            //
   ///////////////////////////////////////
@@ -97,6 +100,7 @@ class aes_message_item extends uvm_sequence_item;
   bit [7:0]            input_msg[];
   bit [7:0]            output_msg[];
   bit [7:0]            predicted_msg[];
+  bit                  output_cleared[];
 
   ///////////////////////////////////////
   // Constraints                       //
@@ -185,16 +189,17 @@ class aes_message_item extends uvm_sequence_item;
 
   function void add_data_item(aes_seq_item item);
     for (int i=0; i < 4 ; i++) begin
-      // data_in.push_front (data_in[3:0])
       input_msg  = { input_msg , item.data_in[i][7:0], item.data_in[i][15:8], item.data_in[i][23:16]
                     ,item.data_in[i][31:24]};
-      // data_in.push_front (data_in[3:0])
       output_msg = { output_msg, item.data_out[i][7:0], item.data_out[i][15:8],
                      item.data_out[i][23:16],item.data_out[i][31:24] };
       `uvm_info(`gfn, $sformatf("\n\t ---| adding to 0x%0h to data, length is now: %0d",
                {item.data_in[i][7:0], item.data_in[i][15:8],item.data_in[i][23:16], item.data_in[i][31:24]},
-               input_msg.size()), UVM_LOW)
+               input_msg.size()), UVM_FULL)
+      output_cleared = { output_cleared, item.data_was_cleared, item.data_was_cleared,
+                        item.data_was_cleared, item.data_was_cleared};
     end
+
 
   endfunction // add_data_item
 
@@ -283,7 +288,6 @@ class aes_message_item extends uvm_sequence_item;
    endfunction // get_data_length
 
 
-
   virtual function void do_copy(uvm_object rhs);
     aes_message_item rhs_;
 
@@ -308,12 +312,13 @@ class aes_message_item extends uvm_sequence_item;
     key_256b_weight  = rhs_.key_256b_weight;
     input_msg        = rhs_.input_msg;
     output_msg       = rhs_.output_msg;
+    output_cleared   = rhs_.output_cleared;
     predicted_msg    = rhs_.predicted_msg;
     manual_operation = rhs_.manual_operation;
     keymask          = rhs_.keymask;
     fixed_data_en    = rhs_.fixed_data_en;
     fixed_data       = rhs_.fixed_data;
     fixed_iv_en      = rhs_.fixed_iv_en;
-
+    skip_msg         = rhs_.skip_msg;
   endfunction // copy
 endclass

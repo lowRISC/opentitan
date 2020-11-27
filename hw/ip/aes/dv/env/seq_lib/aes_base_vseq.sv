@@ -69,8 +69,13 @@ class aes_base_vseq extends cip_base_vseq #(
     txt = {txt, $sformatf("\n data_key: \t %0b", clr_vector.key)};
     txt = {txt, $sformatf("\n vector: \t %0b", clr_vector)};
     `uvm_info(`gfn, $sformatf("%s",txt), UVM_MEDIUM)
-    reg_val[4:1] = clr_vector;
-    csr_wr(.csr(ral.trigger), .value(reg_val));
+
+    ral.trigger.set(0);
+    ral.trigger.key_clear.set(clr_vector.key);
+    ral.trigger.iv_clear.set(clr_vector.iv);
+    ral.trigger.data_in_clear.set(clr_vector.data_in);
+    ral.trigger.data_out_clear.set(clr_vector.data_out);
+    csr_update(ral.trigger);
   endtask // clear_registers
 
 
@@ -196,7 +201,6 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task generate_aes_item_queue(ref aes_message_item msg_item);
-
     // init aes item
     aes_item_init(msg_item);
     // generate DUT cfg
@@ -205,7 +209,6 @@ class aes_base_vseq extends cip_base_vseq #(
 
     // TODO
     // aes_generate_err_inj();
-
     // TODO
     // aes_generate_rnd_rst();
 
@@ -230,7 +233,6 @@ class aes_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, $sformatf("\n ----| DATA AES ITEM %s", aes_item.convert2string()), UVM_HIGH)
       `downcast(item_clone, aes_item.clone());
       aes_item_queue.push_front(item_clone);
-      `uvm_info(`gfn, $sformatf("\n ----| generating data item %d", n), UVM_MEDIUM)
     end
 
     // check if message length is not divisible by 16bytes
@@ -270,7 +272,11 @@ class aes_base_vseq extends cip_base_vseq #(
     end
 
 
-    if (cfg.random_data_key_iv_order) interleave_queue.shuffle();
+    if (cfg.random_data_key_iv_order) begin
+      int q_size = interleave_queue.size();
+        interleave_queue.shuffle();
+    end
+
 
     foreach (interleave_queue[i]) begin
       txt = {txt, $sformatf("\n\t ----| \t %s", interleave_queue[i]) };
@@ -299,10 +305,10 @@ class aes_base_vseq extends cip_base_vseq #(
         "iv_2": csr_wr(.csr(ral.iv_2), .value(item.iv[2]), .blocking(is_blocking));
         "iv_3": csr_wr(.csr(ral.iv_3), .value(item.iv[3]), .blocking(is_blocking));
 
-        "data_in_0": csr_wr(.csr(ral.data_in_0), .value(item.data_in[0][31:0]), .blocking(is_blocking));
-        "data_in_1": csr_wr(.csr(ral.data_in_1), .value(item.data_in[1][31:0]), .blocking(is_blocking));
-        "data_in_2": csr_wr(.csr(ral.data_in_2), .value(item.data_in[2][31:0]), .blocking(is_blocking));
-        "data_in_3": csr_wr(.csr(ral.data_in_3), .value(item.data_in[3][31:0]), .blocking(is_blocking));
+        "data_in_0": csr_wr(.csr(ral.data_in_0), .value(data[0][31:0]), .blocking(is_blocking));
+        "data_in_1": csr_wr(.csr(ral.data_in_1), .value(data[1][31:0]), .blocking(is_blocking));
+        "data_in_2": csr_wr(.csr(ral.data_in_2), .value(data[2][31:0]), .blocking(is_blocking));
+        "data_in_3": csr_wr(.csr(ral.data_in_3), .value(data[3][31:0]), .blocking(is_blocking));
 
         "clear_reg": begin
           clear_regs(item.clear_reg);
@@ -475,7 +481,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_item.iv               = message_item.aes_iv;
     aes_item.manual_op        = message_item.manual_operation;
     aes_item.key_mask         = message_item.keymask;
-    aes_item.clear_reg_pct = cfg.clear_reg_pct;
+    aes_item.clear_reg_pct    = cfg.clear_reg_pct;
     aes_item.clear_reg_w_rand = cfg.clear_reg_w_rand;
   endfunction // aes_item_init
 

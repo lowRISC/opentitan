@@ -49,6 +49,8 @@ class aes_seq_item extends uvm_sequence_item;
   bit [3:0]       data_in_vld         = 4'b0;
   // indicate which words has data
   bit [3:0]       data_out_vld        = 4'b0;
+  // data out was cleared and will not match output from DUT
+  bit             data_was_cleared    = 0;
 
 
   // used by the checker
@@ -57,6 +59,9 @@ class aes_seq_item extends uvm_sequence_item;
   bit             fixed_data          = 0;
   // if set unused key bytes will be forced to 0 - controlled from test
   bit             key_mask            = 1;
+
+  // indicate message start  in manual mode
+  bit             start_item       = 0;
 
 
   ///////////////////////////////////////
@@ -68,6 +73,9 @@ class aes_seq_item extends uvm_sequence_item;
 
   // back to back
   rand bit                          do_b2b;
+
+  // bit to select if we clear 1 or more regs
+  rand int                          clr_reg_dist_select;
 
   // this is only used to program dut in illegal mode
   rand bit [$bits(aes_mode_e) -1:0] aes_mode;
@@ -89,14 +97,21 @@ class aes_seq_item extends uvm_sequence_item;
   }
 
   constraint aes_clear_reg_c {
-        clear_reg dist {     0  :/ (100 - clear_reg_pct),
-                             1  :/ clear_reg_pct/10,
-                             2  :/ clear_reg_pct/10,
-                             4  :/ clear_reg_pct/10,
-                             8  :/ clear_reg_pct/10,
-                             ($countones(clear_reg) > 2) :/ clear_reg_pct
-                       };
+    solve clr_reg_dist_select before clear_reg;
+    clr_reg_dist_select dist { 0     :/ (100 - clear_reg_pct),
+                               [1:2] :/ clear_reg_pct
+                             };
+
+    clr_reg_dist_select == 0 ->            clear_reg == 0;
+    clr_reg_dist_select == 1 ->            $countones(clear_reg) > 1;
+    clr_reg_dist_select == 2 -> clear_reg dist {     1  :/ clear_reg_pct/4,
+                                                     2  :/ clear_reg_pct/4,
+                                                     4  :/ clear_reg_pct/4,
+                                                     8  :/ clear_reg_pct/4
+                                                };
+
   }
+
 
   function new( string name="aes_sequence_item");
     super.new(name);
@@ -208,9 +223,9 @@ class aes_seq_item extends uvm_sequence_item;
         return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
       end
       AES_CFB: begin
-        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
+        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b a",
                    key_vld[0], key_vld[1], (&key_vld[0] & &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
-        return ((&key_vld[0] & &key_vld[1]) && &iv_vld);
+        return ((&key_vld[0] && &key_vld[1]) && &iv_vld);
       end
       AES_OFB: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
@@ -243,6 +258,7 @@ class aes_seq_item extends uvm_sequence_item;
     iv_vld       = '0;
     key_vld      = '{default: '0};
     data_out_vld = '0;
+    start_item   = 0;
   endfunction // clean
 
 
@@ -265,7 +281,10 @@ class aes_seq_item extends uvm_sequence_item;
     manual_op        = rhs_.manual_op;
     clear_reg_w_rand = rhs_.clear_reg_w_rand;
     key_mask         = rhs_.key_mask;
-    aes_mode     = rhs_.aes_mode;
+    aes_mode         = rhs_.aes_mode;
+    clear_reg        = rhs_.clear_reg;
+    start_item       = rhs_.start_item;
+    data_was_cleared = rhs_.data_was_cleared;
   endfunction // copy
 
 
