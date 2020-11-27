@@ -209,17 +209,6 @@ uint32_t rom_ext_get_version(rom_ext_manifest_t params);
 uint64_t rom_ext_get_timestamp(rom_ext_manifest_t params);
 
 /**
- * Retrieves the ROM_EXT signature algorithm identifier.
- *
- * The memory address where ROM_EXT signature algorithm identifier field
- * resides, is relative.
- *
- * @param params Parameters required for manifest parsing.
- * @return ROM_EXT signature algorithm identifier.
- */
-uint32_t rom_ext_get_algorithm_id(rom_ext_manifest_t params);
-
-/**
  * Retrieves the ROM_EXT Signature Key Public Exponent.
  *
  * The memory address where ROM_EXT exponent field resides, is relative.

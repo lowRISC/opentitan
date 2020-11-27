@@ -59,15 +59,6 @@
       alignment: 64,
     },
     {
-      name: "signature_algorithm_identifier",
-      desc: '''ROM_EXT Manifest signature algorithm identifier.
-
-            TODO
-            ''',
-      type: "field",
-      size: 32,
-    },
-    {
       name: "signature_key_public_exponent",
       desc: '''ROM_EXT Manifest Signature Key Public Exponent.
 
@@ -76,6 +67,10 @@
       type: "field",
       size: 32,
     },
+    {
+      type: "reserved",
+      size: 32,
+    }
     {
       name: "usage_constraints",
       desc: '''ROM_EXT Manifest usage constraints.

@@ -62,9 +62,9 @@ At which point you can find the format in `${OUT_DIR}/manifest.txt`
 +                        image_timestamp                        +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 signature_algorithm_identifier                |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 signature_key_public_exponent                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          - reserved -                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -203,24 +203,6 @@ Notes:
 
     *Alignment* This is 64-bit aligned.
 
-1.  **Signature Algorithm Identifier** This identifies which algorithm has been
-    used to sign the ROM_EXT Image. This is a 32-bit enumeration value.
-
-    This is used when signing and validating the image. This happens in the
-    Mask ROM, as well as during firmware update.
-
-    `0x0` denotes an unsigned image. Unsigned images **must not** be booted.
-
-    The initial version of the Mask ROM will support the following message
-    digest algorithms:
-
-    *   SHA2-265
-    *   SHA2-384
-    *   SHA2-512
-
-    The specific signature scheme is as yet undefined, but will be based on
-    RSA-3072, and one of the message digest algorithms above.
-
 1.  **Signature Key Public Exponent** This is the RSA public exponent to be used
     during signature verification. This is a 32-bit numeric value.
 
@@ -344,7 +326,11 @@ Notes:
 
     This would have been used by the Mask ROM as an input for the key manager.
 
-# Development Versions (Subject to Change)
+*   **Signature Algorithm Identifier** We originally planned to have this field
+    in the ROM_EXT manifest, but with the padding scheme, it is redundant, so it
+    has been removed.
+
+## Development Versions (Subject to Change)
 
 **ROM_EXT Manifest Identifier**: `0x4552544F` (Reads "OTRE" when Disassembled --
 OpenTitan ROM_EXT)
