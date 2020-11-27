@@ -3,7 +3,8 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:systems:ast:0.1"
-description: "Analog Sensor Top generic views"
+description: "Analog sensor top (AST) generic views"
+
 filesets:
   files_rtl:
     depend:
