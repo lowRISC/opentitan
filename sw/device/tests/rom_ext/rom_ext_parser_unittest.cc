@@ -109,13 +109,6 @@ TEST_F(ImageTimestampGetTest, Success) {
   EXPECT_EQ(rom_ext_get_timestamp(params_), 0xababababcdcdcdcd);
 }
 
-class AlgorithmIdGetTest : public ParserTest {};
-
-TEST_F(AlgorithmIdGetTest, Success) {
-  EXPECT_READ32(ROM_EXT_SIGNATURE_ALGORITHM_IDENTIFIER_OFFSET, 0xa5a5a5a5);
-  EXPECT_EQ(rom_ext_get_algorithm_id(params_), 0xa5a5a5a5);
-}
-
 class SignatureKeyPublicExponentGetTest : public ParserTest {};
 
 TEST_F(SignatureKeyPublicExponentGetTest, Success) {

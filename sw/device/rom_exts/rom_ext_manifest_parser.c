@@ -79,11 +79,6 @@ uint64_t rom_ext_get_timestamp(rom_ext_manifest_t params) {
   return ((uint64_t)timestamp_high << 32) | timestamp_low;
 }
 
-uint32_t rom_ext_get_algorithm_id(rom_ext_manifest_t params) {
-  return mmio_region_read32(params.base_addr,
-                            ROM_EXT_SIGNATURE_ALGORITHM_IDENTIFIER_OFFSET);
-}
-
 uint32_t rom_ext_get_signature_key_public_exponent(rom_ext_manifest_t params) {
   return mmio_region_read32(params.base_addr,
                             ROM_EXT_SIGNATURE_KEY_PUBLIC_EXPONENT_OFFSET);
