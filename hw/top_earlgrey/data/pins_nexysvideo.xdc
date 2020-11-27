@@ -137,11 +137,23 @@ set_property -dict { PACKAGE_PIN Y8    IOSTANDARD LVCMOS33 } [get_ports { IO_USB
 #set_property -dict { PACKAGE_PIN Y9    IOSTANDARD LVCMOS33 DRIVE 8 SLEW FAST } [get_ports { IO_USB_DN1 }]; #IO_L24N_T3_34 Sch=jb_n[3]
 #set_property -dict { PACKAGE_PIN Y7    IOSTANDARD LVCMOS33 } [get_ports { IO_USB_SENSE1 }]; #IO_L23N_T3_34 Sch=jb_n[4]
 
-## Pmod header JC
+## Pmod header JC -- When used for SPI
 #set_property -dict { PACKAGE_PIN Y6    IOSTANDARD LVCMOS33 } [get_ports { IO_SDCK   }]; #IO_L18P_T2_34 Sch=jc_p[1]
 #set_property -dict { PACKAGE_PIN AA6   IOSTANDARD LVCMOS33 } [get_ports { IO_SDCSB  }]; #IO_L18N_T2_34 Sch=jc_n[1]
 #set_property -dict { PACKAGE_PIN AA8   IOSTANDARD LVCMOS33 } [get_ports { IO_SDSDI }]; #IO_L22P_T3_34 Sch=jc_p[2]
 #set_property -dict { PACKAGE_PIN AB8   IOSTANDARD LVCMOS33 } [get_ports { IO_SDSDO }]; #IO_L22N_T3_34 Sch=jc_n[2]
+
+## Pmod header JC -- When used for TI TUSB1106 USB PHY usbdev testing
+set_property -dict { PACKAGE_PIN Y6    IOSTANDARD LVCMOS33 } [get_ports { IO_UPHY_DP_TX }]; #IO_L18P_T2_34 Sch=jc_p[1]
+set_property -dict { PACKAGE_PIN AA6   IOSTANDARD LVCMOS33 } [get_ports { IO_UPHY_DN_TX }]; #IO_L18N_T2_34 Sch=jc_n[1]
+set_property -dict { PACKAGE_PIN AA8   IOSTANDARD LVCMOS33 } [get_ports { IO_UPHY_DP_RX }]; #IO_L22P_T3_34 Sch=jc_p[2]
+set_property -dict { PACKAGE_PIN AB8   IOSTANDARD LVCMOS33 } [get_ports { IO_UPHY_DN_RX }]; #IO_L22N_T3_34 Sch=jc_n[2]
+set_property -dict { PACKAGE_PIN R6    IOSTANDARD LVCMOS33 } [get_ports { IO_UPHY_DPPULLUP }]; #IO_L17P_T2_34 Sch=jc_p[3]
+set_property -dict { PACKAGE_PIN T6    IOSTANDARD LVCMOS33 } [get_ports { IO_UPHY_SENSE }]; #IO_L17N_T2_34 Sch=jc_n[3]
+set_property -dict { PACKAGE_PIN AB7   IOSTANDARD LVCMOS33 } [get_ports { IO_UPHY_OE_N }]; #IO_L20P_T3_34 Sch=jc_p[4]
+set_property -dict { PACKAGE_PIN AB6   IOSTANDARD LVCMOS33 } [get_ports { IO_UPHY_D_RX }]; #IO_L20N_T3_34 Sch=jc_n[4]
+
+## Pmod header JC -- Default
 #set_property -dict { PACKAGE_PIN Y6    IOSTANDARD LVCMOS33 } [get_ports { IO_OBS }]; #IO_L18P_T2_34 Sch=jc_p[1]
 #set_property -dict { PACKAGE_PIN AA6   IOSTANDARD LVCMOS33 } [get_ports { jc[1] }]; #IO_L18N_T2_34 Sch=jc_n[1]
 #set_property -dict { PACKAGE_PIN AA8   IOSTANDARD LVCMOS33 } [get_ports { jc[2] }]; #IO_L22P_T3_34 Sch=jc_p[2]

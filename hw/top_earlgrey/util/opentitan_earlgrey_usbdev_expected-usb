@@ -119,6 +119,3 @@ mon:   278860 --   279064: (D) SOP, PID DATA1, EOP
 mon:     d->h: 21, 21, 21, 06, 7d CRCOK
 mon:          !!!
 mon:   279236 --   279284: (H) SOP, PID ACK EOP
-mon:   286752 --   286864: (H) SOP, PID SOF 023 (CRC5 1b OK), EOP
-mon:   286904 --   287016: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
-mon:   287052 --   287096: (D) SOP, PID NAK EOP
