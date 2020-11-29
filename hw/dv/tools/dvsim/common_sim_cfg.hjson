@@ -57,7 +57,7 @@
 
   // Default build and run opts
   build_opts: [// List multiple tops for the simulation
-               "{sim_tops}",
+               // VW Questa "{sim_tops}",
                // Standard UVM defines
                "+define+UVM",
                "+define+UVM_NO_DEPRECATED",
@@ -66,8 +66,24 @@
                "+define+UVM_REG_DATA_WIDTH={tl_dw}",
                "+define+UVM_REG_BYTENABLE_WIDTH={tl_dbw}"]
 
+  // VW
+  // Questa/Riviera build and run opts
+  build_opts_qsta: [// List multiple tops for the simulation
+               // Standard UVM defines
+               "+define+UVM",
+               "+define+UVM_NO_DEPRECATED",
+               "+define+UVM_REGEX_NO_DPI",
+               "+define+UVM_REG_ADDR_WIDTH={tl_aw}",
+               "+define+UVM_REG_DATA_WIDTH={tl_dw}",
+               "+define+UVM_REG_BYTENABLE_WIDTH={tl_dbw}"]
+
+
   run_opts: ["+UVM_NO_RELNOTES",
              "+UVM_VERBOSITY={expand_uvm_verbosity_{verbosity}}"]
+
+  run_opts_qsta: ["+UVM_NO_RELNOTES",
+                  "{sim_tops}",
+                  "+UVM_VERBOSITY={expand_uvm_verbosity_{verbosity}}"]
 
   // Default list of things to export to shell
   exports: [

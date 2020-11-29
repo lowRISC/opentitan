@@ -8,15 +8,17 @@
 
   // Indicate the tool specific helper sources - these are copied over to the
   // {tool_srcs_dir} before running the simulation.
-  tool_srcs:  ["{dv_root}/tools/riviera/*"]
+  tool_srcs:  ["{dv_root}/tools/questa/*"]
 
   build_opts: ["-sv",
                "-timescale 1ns/1ps",
-               "-uvmver 1.2",
+               "-L /${QUESTA_HOME}/uvm-1.2",
+               "-mfcu"
                "-f {sv_flist}"]
 
   run_opts:   ["-sv_seed={seed}",
                "-c",
+               "-L /${QUESTA_HOME}/uvm-1.2",
                "{tb}",
                "-lib {sv_flist_gen_dir}/work",
                "+UVM_TESTNAME={uvm_test}",
@@ -28,7 +30,7 @@
   supported_wave_formats: []
 
   // Default tcl script used when running the sim. Override if needed.
-  run_script: "{tool_srcs_dir}/riviera_run.do"
+  run_script: "{tool_srcs_dir}/questa_run.do"
 
   // Coverage related.
   // TODO: These options have to be filled in.
@@ -65,31 +67,31 @@
 
   build_modes: [
     {
-      name: riviera_waves
+      name: questa_waves
       is_sim_mode: 1
     }
-    // TODO support coverage for riviera
+    // TODO support coverage for questa
     {
-      name: riviera_cov
-      is_sim_mode: 1
-      build_opts: []
-      run_opts:   []
-    }
-    // TODO support profiling for riviera
-    {
-      name: riviera_profile
+      name: questa_cov
       is_sim_mode: 1
       build_opts: []
       run_opts:   []
     }
+    // TODO support profiling for questa
     {
-      name: riviera_xprop
+      name: questa_profile
+      is_sim_mode: 1
+      build_opts: []
+      run_opts:   []
+    }
+    {
+      name: questa_xprop
       is_sim_mode: 1
       build_opts: []
     }
     {
       // TODO: Add build and run options to enable zero delay loop detection.
-      name: riviera_loopdetect
+      name: questa_loopdetect
       is_sim_mode: 1
       build_opts: []
       run_opts:   []
