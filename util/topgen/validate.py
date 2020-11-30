@@ -147,15 +147,10 @@ class TargetType(Enum):
 class Target:
     """Target class informs the checkers if we are validating a module or xbar
     """
-
-    # The type of this target
-    target_type = ""
-
-    # The key to search against
-    key = ""
-
     def __init__(self, target_type):
+        # The type of this target
         self.target_type = target_type
+        # The key to search against
         if target_type == TargetType.MODULE:
             self.key = "type"
         else:
