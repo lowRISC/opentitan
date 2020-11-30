@@ -56,16 +56,37 @@ name:
   // The default place to find and build ELF binaries. If you have
   // some pre-built binaries, you can run the simulation with them by using
   // --run-opts to override the otbn_elf_dir plusarg in run_opts.
-  otbn_elf_dir: "{run_dir}/build-out"
+  otbn_elf_dir: "{run_dir}/otbn-binaries"
 
   run_opts: ["+otbn_elf_dir={otbn_elf_dir}"]
 
-  // OTBN run modes.
+  // A default build mode, used for the tests explicitly listed below. This
+  // runs meson to set up a .env file, needed by gen-binaries.py to find a
+  // toolchain. This isn't needed for things like the automated CSR tests, and
+  // they won't use it because they build in a different mode anyway.
+  //
+  // This step could run either as a pre-build command or a post-build command.
+  // Since it's much quicker than the SV build, we do it first so that you get
+  // a quick result if something has gone wrong.
+  build_modes: [
+    {
+      name: default
+      pre_build_cmds: ["cd {proj_root} && BUILD_ROOT={build_dir} ./meson_init.sh"]
+    }
+  ]
+
+  gen_binaries: "{proj_root}/hw/ip/otbn/dv/uvm/gen-binaries.py"
+  otbn_obj_dir: "{build_dir}/build-out"
   run_modes: [
+    // A run mode that runs the random instruction generator and builds the
+    // resulting binaries in {otbn_elf_dir}. If you override the otbn_elf_dir
+    // plusarg with --run-opts, we'll still build the binaries (but will ignore
+    // them).
     {
       name: build_otbn_rig_binaries_mode
-      pre_run_cmds: ["BUILD_ROOT={run_dir} cd {proj_root} && ./meson_init.sh",
-                     "{proj_root}/hw/ip/otbn/dv/uvm/gen-binaries.py --seed {seed} {otbn_elf_dir}"]
+      pre_run_cmds: [
+        "{gen_binaries} --seed {seed} --obj-dir {otbn_obj_dir} {otbn_elf_dir}"
+      ]
     }
   ]
 
