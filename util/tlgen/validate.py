@@ -8,9 +8,8 @@ from functools import partial
 from reggen.validate import check_bool, check_int, val_types
 
 from .item import Node, NodeType
-from .xbar import Xbar
-
 from .lib import simplify_addr
+from .xbar import Xbar
 
 # val_types = {
 #     'd': ["int", "integer (binary 0b, octal 0o, decimal, hex 0x)"],

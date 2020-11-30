@@ -161,8 +161,9 @@ def process_pipeline(xbar):
                 dnode.hpass = 1
                 dnode.hdepth = 0
 
-            log.info("Finished processing socket1n {}, pass={}, depth={}"
-                     .format(dnode.name, dnode.hpass, dnode.hdepth))
+            log.info(
+                "Finished processing socket1n {}, pass={}, depth={}".format(
+                    dnode.name, dnode.hpass, dnode.hdepth))
 
         elif dnode.node_type == NodeType.SOCKET_M1:
             idx = dnode.us.index(host.ds[0])
@@ -179,8 +180,9 @@ def process_pipeline(xbar):
                 dnode.hpass = dnode.hpass | (1 << idx)
                 dnode.hdepth = dnode.hdepth & ~(0xF << idx * 4)
 
-            log.info("Finished processing socketm1 {}, pass={}, depth={}"
-                     .format(dnode.name, dnode.hpass, dnode.hdepth))
+            log.info(
+                "Finished processing socketm1 {}, pass={}, depth={}".format(
+                    dnode.name, dnode.hpass, dnode.hdepth))
 
     for device in xbar.devices:
         # go upstream and set DReq/RspPass at the first instance.
@@ -227,8 +229,8 @@ def process_pipeline(xbar):
                 unode.dpass = unode.dpass | (1 << idx)
                 unode.ddepth = unode.ddepth & ~(0xF << idx * 4)
 
-            log.info("Finished processing socket1n {}, pass={:x}, depth={:x}"
-                     .format(unode.name, unode.dpass, unode.ddepth))
+            log.info("Finished processing socket1n {}, pass={:x}, depth={:x}".
+                     format(unode.name, unode.dpass, unode.ddepth))
 
         elif unode.node_type == NodeType.SOCKET_M1:
             if full_fifo:
@@ -244,7 +246,7 @@ def process_pipeline(xbar):
                 unode.dpass = 1
                 unode.ddepth = 0
 
-            log.info("Finished processing socketm1 {}, pass={:x}, depth={:x}"
-                     .format(unode.name, unode.dpass, unode.ddepth))
+            log.info("Finished processing socketm1 {}, pass={:x}, depth={:x}".
+                     format(unode.name, unode.dpass, unode.ddepth))
 
     return xbar

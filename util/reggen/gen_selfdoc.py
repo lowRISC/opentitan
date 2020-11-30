@@ -217,9 +217,9 @@ def doc_tbl_line(outfile, key, use, desc):
         desc_txt = desc
 
     if val_type is not None:
-        genout(outfile,
-               '{} | {} | {} | {}\n'
-               .format(key, validate.key_use[use], val_type, desc_txt))
+        genout(
+            outfile, '{} | {} | {} | {}\n'.format(key, validate.key_use[use],
+                                                  val_type, desc_txt))
     else:
         genout(outfile, key + " | " + desc_txt + "\n")
 
