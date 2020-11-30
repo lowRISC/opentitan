@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 import logging as log
-from enum import Enum
 from collections import OrderedDict
+from enum import Enum
 
 from reggen.validate import check_keys
 
@@ -123,7 +123,8 @@ clock_groups_added = {}
 eflash_required = {
     'banks': ['d', 'number of flash banks'],
     'pages_per_bank': ['d', 'number of data pages per flash bank'],
-    'program_resolution': ['d', 'maximum number of flash words allowed to program'],
+    'program_resolution':
+    ['d', 'maximum number of flash words allowed to program'],
     'clock_srcs': ['g', 'clock connections'],
     'clock_group': ['s', 'associated clock attribute group'],
     'reset_connections': ['g', 'reset connections'],
@@ -206,7 +207,6 @@ class Flash:
 
         word_bytes = self.data_width / 8
         mem['pgm_resolution_bytes'] = int(self.program_resolution * word_bytes)
-
 
 
 # Check to see if each module/xbar defined in top.hjson exists as ip/xbar.hjson
@@ -293,7 +293,8 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
     # check clock fields are all there
     ext_srcs = []
     for src in top['clocks']['srcs']:
-        check_keys(src, clock_srcs_required, clock_srcs_optional, {}, "Clock source")
+        check_keys(src, clock_srcs_required, clock_srcs_optional, {},
+                   "Clock source")
         ext_srcs.append(src['name'])
 
     # check derived clock sources
@@ -304,12 +305,15 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
             ext_srcs.index(src['src'])
         except Exception:
             error += 1
-            log.error("{} is not a valid src for {}".format(src['src'], src['name']))
+            log.error("{} is not a valid src for {}".format(
+                src['src'], src['name']))
 
     # all defined clock/reset nets
     reset_nets = [reset['name'] for reset in top['resets']['nodes']]
-    clock_srcs = [clock['name'] for clock in top['clocks']['srcs'] +
-                  top['clocks']['derived_srcs']]
+    clock_srcs = [
+        clock['name']
+        for clock in top['clocks']['srcs'] + top['clocks']['derived_srcs']
+    ]
 
     # Check clock/reset port connection for all IPs
     for ipcfg in top['module']:
@@ -486,7 +490,8 @@ def check_power_domains(top):
             else:
                 for domain in reset['domains']:
                     if domain not in top['power']['domains']:
-                        log.error("{} defined invalid domain {}".format(reset['name'], domain))
+                        log.error("{} defined invalid domain {}".format(
+                            reset['name'], domain))
                         error += 1
                         return error
 
@@ -500,7 +505,8 @@ def check_power_domains(top):
 
             end_point['domain'] = top['power']['default']
         elif end_point['domain'] not in top['power']['domains']:
-            log.error("{} defined invalid domain {}".format(end_point['name'], end_point['domain']))
+            log.error("{} defined invalid domain {}".format(
+                end_point['name'], end_point['domain']))
             error += 1
             return error
 

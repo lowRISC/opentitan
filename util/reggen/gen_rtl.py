@@ -6,11 +6,11 @@
 
 import logging as log
 
-from mako.template import Template
 from mako import exceptions
+from mako.template import Template
 from pkg_resources import resource_filename
 
-from .data import Field, Reg, MultiReg, Window, Block
+from .data import Block, Field, MultiReg, Reg, Window
 from .field_enums import HwAccess, SwRdAccess, SwWrAccess
 
 
