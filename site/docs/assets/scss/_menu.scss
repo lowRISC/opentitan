@@ -28,7 +28,6 @@
   a {
     color: $dark-purple;
     color: var(--text-color);
-    text-decoration: none;
     line-height: 1.2;
 
     &:hover,
@@ -56,7 +55,7 @@
   }
 
   a.section {
-    text-decoration: underline dotted;
+    text-decoration: underline;
   }
 
   a.ancestor {
