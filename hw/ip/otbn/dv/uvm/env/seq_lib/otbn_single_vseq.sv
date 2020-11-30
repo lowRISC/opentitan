@@ -21,7 +21,7 @@ class otbn_single_vseq extends otbn_base_vseq;
     string elf_path = pick_elf_path();
 
     // Actually load the binary
-    `uvm_info(`gfn, $sformatf("|-- Loading binary from `%0s'", elf_path), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Loading OTBN binary from `%0s'", elf_path), UVM_LOW)
     load_elf(elf_path, do_backdoor_load);
 
     // We've loaded the binary. Run the processor to see what happens!
