@@ -10,21 +10,12 @@ from .item import Edge, NodeType
 class Xbar:
     """Xbar contains configurations to generate TL-UL crossbar.
     """
-    nodes = []  # Nodes
-    edges = []  # Edges
-    clock = ""  # str  # primary clock of xbar
-    reset = ""  # str  # primary reset of xbar
-    name = ""  # str  # e.g. "main" --> main_xbar
-    clocks = []  # All clocks of xbar
-    resets = []  # All resets of xbar
-    ip_path = ""  # additional path to generated rtl/dv folders: outdir/ip_path/rtl
-
-    # prefix is useful if SoC has more than one Xbar
-
-    # variables after elaboration. Shouldn't be touched by outside
-    blocks = []  # Nodes  # Internal blocks
-
     def __init__(self):
+        self.clock = ""  # str  # primary clock of xbar
+        self.reset = ""  # str  # primary reset of xbar
+        self.name = ""  # str  # e.g. "main" --> main_xbar
+        self.ip_path = ""  # additional path to generated rtl/dv folders: outdir/ip_path/rtl
+
         self.blocks = []
         self.nodes = []
         self.edges = []

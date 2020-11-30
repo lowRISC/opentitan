@@ -26,20 +26,6 @@ class Field():
     It has two additional (tool generated) fields, swrdaccess and swwraccess,
     which represent read and write type. This makes RTL generation code simpler.
     """
-    name = ""  # required
-    msb = 31  # required
-    lsb = 0  # required
-    resval = 0  # optional
-    swaccess = SwAccess.NONE  # optional
-    swrdaccess = SwRdAccess.NONE
-    swwraccess = SwWrAccess.NONE
-    hwaccess = HwAccess.HRO
-    hwqe = False
-    hwre = False
-    hwext = False
-    tags = []
-    shadowed = False
-
     def __init__(self):
         self.name = ""  # required
         self.msb = 31  # required
@@ -77,20 +63,6 @@ class Field():
 
 
 class Reg():
-    name = ""
-    offset = 0
-    hwqe = False
-    hwre = False
-    hwext = False  # External register
-    resval = 0
-    dvrights = "RO"  # Used by UVM REG only
-    regwen = ""
-    fields = []
-    width = 0  # indicate register size
-    ishomog = 0
-    tags = []
-    shadowed = False
-
     def __init__(self, name=""):
         self.name = name
         self.offset = 0
@@ -191,8 +163,6 @@ class Reg():
 
 
 class MultiReg(Reg):
-    param = ""
-
     def __init__(self, name):
         Reg.__init__(self, name)
         self.param = ""
@@ -203,11 +173,6 @@ class MultiReg(Reg):
 
 
 class Window():
-    base_addr = 0
-    limit_addr = 0
-    n_bits = 0
-    tags = []
-
     def __init__(self):
         self.base_addr = 0
         self.limit_addr = 0
@@ -216,17 +181,6 @@ class Window():
 
 
 class Block():
-    width = 32
-    addr_width = 12
-    base_addr = OrderedDict()
-    name = ""
-    hier_path = ""
-    regs = []
-    wins = []
-    blocks = []
-    params = []
-    tags = []
-
     def __init__(self):
         self.width = 32
         self.addr_width = 12
