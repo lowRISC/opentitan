@@ -18,6 +18,10 @@ The purpose of this document is to capture the process by which Tock will
 perform a complete in-place B-slot update of the running firmware and request
 that the `ROM/ROM_EXT` code boot into it.
 
+*Note*: For certification reasons this document does not discuss detailed
+guidance for encrypted updates. Additional implementation details on both
+regular and encrypted updates to follow when possible.
+
 # Update Process
 
 1. A firmware update is initiated by a process external to the device.
