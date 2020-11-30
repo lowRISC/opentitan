@@ -5,10 +5,9 @@
 `top_{name}.h`.
 """
 from collections import OrderedDict
+from math import ceil
 
 from mako.template import Template
-
-from math import ceil
 
 
 class Name(object):
@@ -222,8 +221,7 @@ class TopGenC(object):
             # adding a bit-index suffix
             if "width" in intr and int(intr["width"]) != 1:
                 for i in range(int(intr["width"])):
-                    name = Name.from_snake_case(
-                        intr["name"]) + Name([str(i)])
+                    name = Name.from_snake_case(intr["name"]) + Name([str(i)])
                     irq_id = interrupts.add_constant(name,
                                                      docstring="{} {}".format(
                                                          intr["name"], i))
@@ -276,10 +274,10 @@ class TopGenC(object):
         for alert in self.top["alert"]:
             if "width" in alert and int(alert["width"]) != 1:
                 for i in range(int(alert["width"])):
-                    name = Name.from_snake_case(
-                        alert["name"]) + Name([str(i)])
-                    irq_id = alerts.add_constant(name, docstring="{} {}".format(
-                        alert["name"], i))
+                    name = Name.from_snake_case(alert["name"]) + Name([str(i)])
+                    irq_id = alerts.add_constant(name,
+                                                 docstring="{} {}".format(
+                                                     alert["name"], i))
                     source_name = source_name_map[alert["module_name"]]
                     alert_mapping.add_entry(irq_id, source_name)
             else:
@@ -318,15 +316,15 @@ class TopGenC(object):
         for signal in pinmux_info["inouts"] + pinmux_info["inputs"]:
             if "width" in signal and int(signal["width"]) != 1:
                 for i in range(int(signal["width"])):
-                    name = Name.from_snake_case(
-                        signal["name"]) + Name([str(i)])
+                    name = Name.from_snake_case(signal["name"]) + Name(
+                        [str(i)])
                     peripheral_in.add_constant(name,
                                                docstring="{} {}".format(
                                                    signal["name"], i))
             else:
                 peripheral_in.add_constant(Name.from_snake_case(
                     signal["name"]),
-                    docstring=signal["name"])
+                                           docstring=signal["name"])
         peripheral_in.add_last_constant("Last valid peripheral input")
 
         # Pinmux Input Selects
@@ -358,8 +356,8 @@ class TopGenC(object):
         for signal in pinmux_info["inouts"] + pinmux_info["outputs"]:
             if "width" in signal and int(signal["width"]) != 1:
                 for i in range(int(signal["width"])):
-                    name = Name.from_snake_case(
-                        signal["name"]) + Name([str(i)])
+                    name = Name.from_snake_case(signal["name"]) + Name(
+                        [str(i)])
                     outsel.add_constant(name,
                                         docstring="{} {}".format(
                                             signal["name"], i))
@@ -374,11 +372,13 @@ class TopGenC(object):
         self.pinmux_outsel = outsel
 
     def _init_pwrmgr_wakeups(self):
-        enum = CEnum(self._top_name + Name(["power", "manager", "wake", "ups"]))
+        enum = CEnum(self._top_name +
+                     Name(["power", "manager", "wake", "ups"]))
 
         for signal in self.top["wakeups"]:
-            enum.add_constant(Name.from_snake_case(signal["module"]) +
-                              Name.from_snake_case(signal["name"]))
+            enum.add_constant(
+                Name.from_snake_case(signal["module"]) +
+                Name.from_snake_case(signal["name"]))
 
         enum.add_last_constant("Last valid pwrmgr wakeup signal")
 
@@ -386,10 +386,13 @@ class TopGenC(object):
 
     # Enumerates the positions of all software controllable resets
     def _init_rstmgr_sw_rsts(self):
-        sw_rsts = [rst for rst in self.top["resets"]["nodes"] if 'sw' in rst
-                   and rst['sw'] == 1]
+        sw_rsts = [
+            rst for rst in self.top["resets"]["nodes"]
+            if 'sw' in rst and rst['sw'] == 1
+        ]
 
-        enum = CEnum(self._top_name + Name(["reset", "manager", "sw", "resets"]))
+        enum = CEnum(self._top_name +
+                     Name(["reset", "manager", "sw", "resets"]))
 
         for rst in sw_rsts:
             enum.add_constant(Name.from_snake_case(rst["name"]))
@@ -399,11 +402,13 @@ class TopGenC(object):
         self.rstmgr_sw_rsts = enum
 
     def _init_pwrmgr_reset_requests(self):
-        enum = CEnum(self._top_name + Name(["power", "manager", "reset", "requests"]))
+        enum = CEnum(self._top_name +
+                     Name(["power", "manager", "reset", "requests"]))
 
         for signal in self.top["reset_requests"]:
-            enum.add_constant(Name.from_snake_case(signal["module"]) +
-                              Name.from_snake_case(signal["name"]))
+            enum.add_constant(
+                Name.from_snake_case(signal["module"]) +
+                Name.from_snake_case(signal["name"]))
 
         enum.add_last_constant("Last valid pwrmgr reset_request signal")
 
@@ -421,9 +426,9 @@ class TopGenC(object):
         clock manager has separate register interfaces for each group.
         """
 
-
         aon_clocks = set()
-        for src in self.top['clocks']['srcs'] + self.top['clocks']['derived_srcs']:
+        for src in self.top['clocks']['srcs'] + self.top['clocks'][
+                'derived_srcs']:
             if src['aon'] == 'yes':
                 aon_clocks.add(src['name'])
 
@@ -437,7 +442,8 @@ class TopGenC(object):
                 if source not in aon_clocks:
                     # All these clocks start with `clk_` which is redundant.
                     clock_name = Name.from_snake_case(name).remove_part("clk")
-                    docstring = "Clock {} in group {}".format(name, group['name'])
+                    docstring = "Clock {} in group {}".format(
+                        name, group['name'])
                     if group["sw_cg"] == "yes":
                         gateable_clocks.add_constant(clock_name, docstring)
                     elif group["sw_cg"] == "hint":

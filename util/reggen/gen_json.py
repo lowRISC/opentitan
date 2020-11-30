@@ -9,23 +9,24 @@ import hjson
 
 def gen_json(obj, outfile, format):
     if format == 'json':
-        hjson.dumpJSON(
-            obj,
-            outfile,
-            ensure_ascii=False,
-            use_decimal=True,
-            indent='  ',
-            for_json=True)
+        hjson.dumpJSON(obj,
+                       outfile,
+                       ensure_ascii=False,
+                       use_decimal=True,
+                       indent='  ',
+                       for_json=True)
     elif format == 'compact':
-        hjson.dumpJSON(
-            obj,
-            outfile,
-            ensure_ascii=False,
-            for_json=True,
-            use_decimal=True,
-            separators=(',', ':'))
+        hjson.dumpJSON(obj,
+                       outfile,
+                       ensure_ascii=False,
+                       for_json=True,
+                       use_decimal=True,
+                       separators=(',', ':'))
     elif format == 'hjson':
-        hjson.dump(
-            obj, outfile, ensure_ascii=False, for_json=True, use_decimal=True)
+        hjson.dump(obj,
+                   outfile,
+                   ensure_ascii=False,
+                   for_json=True,
+                   use_decimal=True)
     else:
         raise ValueError('Invalid JSON format ' + format)

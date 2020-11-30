@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from collections import OrderedDict
+
 from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
 
 
