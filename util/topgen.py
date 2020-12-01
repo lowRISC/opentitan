@@ -1168,40 +1168,48 @@ def main():
 
         # C Header + C File + Clang-format file
 
-        # 'clang-format' -> 'sw/autogen/.clang-format'
-        cformat_tplpath = tpl_path / 'clang-format'
-        cformat_dir = out_path / 'sw/autogen'
-        cformat_dir.mkdir(parents=True, exist_ok=True)
-        cformat_path = cformat_dir / '.clang-format'
-        cformat_path.write_text(cformat_tplpath.read_text())
+        # Since SW does not use FuseSoC and instead expects those files always
+        # to be in hw/top_{topname}/sw/autogen, we currently create these files
+        # twice:
+        # - Once under out_path/sw/autogen
+        # - Once under hw/top_{topname}/sw/autogen
+        for path in [Path(out_path).resolve(),
+                     (SRCTREE_TOP / 'hw/top_{}/'.format(topname)).resolve()]:
 
-        # 'top_{topname}.h.tpl' -> 'sw/autogen/top_{topname}.h'
-        cheader_path = render_template('top_%s.h',
-                                       'sw/autogen',
-                                       helper=c_helper)
+            # 'clang-format' -> 'sw/autogen/.clang-format'
+            cformat_tplpath = tpl_path / 'clang-format'
+            cformat_dir = path / 'sw/autogen'
+            cformat_dir.mkdir(parents=True, exist_ok=True)
+            cformat_path = cformat_dir / '.clang-format'
+            cformat_path.write_text(cformat_tplpath.read_text())
 
-        # Save the relative header path into `c_gen_info`
-        rel_header_path = cheader_path.relative_to(SRCTREE_TOP)
-        c_helper.header_path = str(rel_header_path)
+            # 'top_{topname}.h.tpl' -> 'sw/autogen/top_{topname}.h'
+            cheader_path = render_template('top_%s.h',
+                                           cformat_dir,
+                                           helper=c_helper)
 
-        # 'top_{topname}.c.tpl' -> 'sw/autogen/top_{topname}.c'
-        render_template('top_%s.c', 'sw/autogen', helper=c_helper)
+            # Save the relative header path into `c_gen_info`
+            rel_header_path = cheader_path.relative_to(path.parents[1])
+            c_helper.header_path = str(rel_header_path)
 
-        # 'top_{topname}_memory.ld.tpl' -> 'sw/autogen/top_{topname}_memory.ld'
-        render_template('top_%s_memory.ld', 'sw/autogen')
+            # 'top_{topname}.c.tpl' -> 'sw/autogen/top_{topname}.c'
+            render_template('top_%s.c', cformat_dir, helper=c_helper)
 
-        # 'top_{topname}_memory.h.tpl' -> 'sw/autogen/top_{topname}_memory.h'
-        memory_cheader_path = render_template('top_%s_memory.h', 'sw/autogen')
+            # 'top_{topname}_memory.ld.tpl' -> 'sw/autogen/top_{topname}_memory.ld'
+            render_template('top_%s_memory.ld', cformat_dir)
 
-        # Fix the C header guards, which will have the wrong name
-        subprocess.run(["util/fix_include_guard.py",
-                        str(cheader_path),
-                        str(memory_cheader_path)],
-                       universal_newlines=True,
-                       stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL,
-                       check=True,
-                       cwd=str(SRCTREE_TOP))  # yapf: disable
+            # 'top_{topname}_memory.h.tpl' -> 'sw/autogen/top_{topname}_memory.h'
+            memory_cheader_path = render_template('top_%s_memory.h', cformat_dir)
+
+            # Fix the C header guards, which will have the wrong name
+            subprocess.run(["util/fix_include_guard.py",
+                            str(cheader_path),
+                            str(memory_cheader_path)],
+                           universal_newlines=True,
+                           stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL,
+                           check=True,
+                           cwd=str(SRCTREE_TOP))  # yapf: disable
 
         # generate chip level xbar and alert_handler TB
         tb_files = [
