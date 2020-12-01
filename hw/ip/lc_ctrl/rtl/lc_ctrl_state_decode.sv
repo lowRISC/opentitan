@@ -99,7 +99,7 @@ module lc_ctrl_state_decode
 
         // Require that any non-raw state has a valid, nonzero
         // transition count.
-        if (lc_state_i != LcStRaw && lc_cnt_i != LcCntRaw) begin
+        if (lc_state_i != LcStRaw && lc_cnt_i == LcCntRaw) begin
           state_invalid_error_o = 1'b1;
         end
 
