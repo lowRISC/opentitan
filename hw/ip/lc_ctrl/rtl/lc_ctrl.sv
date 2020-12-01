@@ -296,6 +296,7 @@ module lc_ctrl
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_csrs
     if (!rst_ni) begin
       trans_success_q           <= 1'b0;
+      trans_cnt_oflw_error_q    <= 1'b0;
       trans_invalid_error_q     <= 1'b0;
       token_invalid_error_q     <= 1'b0;
       flash_rma_error_q         <= 1'b0;
