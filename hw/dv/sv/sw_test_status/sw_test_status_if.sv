@@ -31,21 +31,19 @@ interface sw_test_status_if #(
 
   // If the sw_test_status reaches the terminal states, assert that we are done.
   bit sw_test_done;
+  bit sw_test_passed;
 
   always @(posedge clk_i) begin
     if (data_valid) begin
       sw_test_status = sw_test_status_e'(data);
       sw_test_done = sw_test_done | sw_test_status inside {SwTestStatusPassed, SwTestStatusFailed};
+      sw_test_passed = sw_test_status == SwTestStatusPassed;
       if (sw_test_status == SwTestStatusPassed) begin
         `DV_INFO("==== SW TEST PASSED ====")
       end else if (sw_test_status == SwTestStatusFailed) begin
         `DV_ERROR("==== SW TEST FAILED ====")
       end else begin
-`ifdef VERILATOR
-        `DV_INFO($sformatf("SW test status changed: 0x%0h", sw_test_status))
-`else
         `DV_INFO($sformatf("SW test status changed: %0s", sw_test_status.name()))
-`endif
       end
     end
   end
