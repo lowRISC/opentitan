@@ -104,7 +104,7 @@ module otbn_decoder
   // l type immediate is for the loop count in the LOOPI instruction and is not from the RISC-V ISA
   assign imm_l_type_base = { 22'b0, insn[19:15], insn[11:7] };
   // x type immediate is for BN.LID/BN.SID instructions and is not from the RISC-V ISA
-  assign imm_x_type_base = { {17{insn[24]}}, insn[11:9], insn[31:25], 5'b0 };
+  assign imm_x_type_base = { {17{insn[11]}}, insn[11:9], insn[31:25], 5'b0 };
 
   logic [WLEN-1:0] imm_i_type_bignum;
 
