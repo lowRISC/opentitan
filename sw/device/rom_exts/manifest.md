@@ -28,7 +28,7 @@ Based on the requirements outlined in [boot.md](./boot)
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Signature Algorithm Identifier                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Signature Exponent                      |
+|                 Signature Key Public Exponent                 |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -49,7 +49,7 @@ Based on the requirements outlined in [boot.md](./boot)
 |                                                               |
 +                                                               +
 |                                                               |
-+                Signature Public Key (3072 bits)               +
++               Signature Key Modulus (3072 bits)               +
 |                                                               |
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  break  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 |                                                               |
@@ -103,12 +103,12 @@ Notes:
     **Open Q**: The ordering below is still subject to alignment requirements
     for different fields, and may change in future.
 
-*   The `Image Signature`, `ROM_EXT Signature Public Key` and `Image` are not
+*   The `Image Signature`, `ROM_EXT Signature Key Modulus` and `Image` are not
     shown to scale. This is denoted using `~~~ break ~~~` lines, which specify a
     truncation of field size displayed in the diagram, not that a new field has
     started.
 
-    *   The Signature and Public Key are each 3072 bits long (they are
+    *   The Signature and Modulus are each 3072 bits long (they are
         notionally `int32_t[96]`s).
 
     *   The Code Image itself is variable length, where the length of the entire
@@ -132,11 +132,12 @@ Notes:
 
     This is used by any ROM_EXT image parsers to identify a ROM_EXT image.
 
-1.  **Image Signature** This is a RSA 3k signature of all the fields that follow
-    the signature. This is a sequence of 32-bit values. The signed area of the
-    image starts immediately after this field, and runs to the end of the image
-    (as defined by the image length). All content outside that range is unsigned
-    (including the Manifest Identifier, and the Image Signature itself).
+1.  **Image Signature** This is a RSA-3072 signature of the hash of all the
+    fields that follow the signature. This is a sequence of 32-bit values. The
+    signed area of the image starts immediately after this field, and runs to
+    the end of the image (as defined by the image length). All content outside
+    that range is unsigned (including the Manifest Identifier, and the Image
+    Signature itself).
 
     This is used by the Mask ROM during secure boot to validate that a ROM_EXT
     image has been produced by a Silicon Creator for this chip. This is also
@@ -182,13 +183,13 @@ Notes:
     *   SHA2-512
 
     The specific signature scheme is as yet undefined, but will be based on
-    RSA-3k, and one of the message digest algorithms above.
+    RSA-3072, and one of the message digest algorithms above.
 
-1.  **Signature Exponent** This is the RSA exponent to be used during the RSA
-    3K Signature Scheme. This is a 32-bit numeric value.
+1.  **Signature Key Public Exponent** This is the RSA public exponent to be used
+    during signature verification. This is a 32-bit numeric value.
 
-    This is used when signing and validating the image. This happens in the
-    Mask ROM, as well as during firmware update.
+    This is used when validating the image. This happens in the Mask ROM, as
+    well as during firmware update.
 
 1.  **Usage Constraint** This is a 256-bit unsigned numeric value.
 
@@ -216,8 +217,9 @@ Notes:
     currently tight for space, so this may turn into an Offset to later in the
     image.
 
-1.  **Signature Public Key** This is a RSA 3k public key, as used by the image
-    signature. This is a sequence of 32-bit values.
+1.  **Signature Key Modulus** This is a RSA-3072 modulus, used in both the
+    signing and signature verification operations. This is a sequence of 32-bit
+    values.
 
     This is used when signing and validating the image. This happens in the
     Mask ROM, as well as during firmware update.
@@ -313,10 +315,10 @@ OpenTitan ROM_EXT)
 
 **Signature Algorithm Identifier**: TBC
 
-**Signature Exponent**: TBC
+**Signature Key Public Exponent**: TBC
 
-**Signature Key Pair**: TBC. We will create a dummy key pair for development,
-but this will not be used in production software.
+**Development Signature Key Pair**: TBC. We will create a dummy key pair for
+development, but this will not be used in production software.
 
 **Extension Allocation**:
 
