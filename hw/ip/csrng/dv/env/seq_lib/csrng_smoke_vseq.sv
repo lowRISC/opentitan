@@ -18,14 +18,14 @@ class csrng_smoke_vseq extends csrng_base_vseq;
     csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
 
     // Write CSRNG Cmd_Req - Instantiate Command
-    wr_cmd_req(.acmd(Instantiate), .clen(0), .flags(1), .glen(0));
+    wr_cmd_req(.acmd(csrng_pkg::INS), .clen(0), .flags(1), .glen(0));
 
     // Expect/Clear interrupt bit
     csr_spinwait(.ptr(ral.intr_state.cs_cmd_req_done), .exp_data(1'b1));
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
 
     // Write CSRNG Cmd_Req Register - Generate Command
-    wr_cmd_req(.acmd(Generate), .clen(0), .flags(0), .glen(1));
+    wr_cmd_req(.acmd(csrng_pkg::GEN), .clen(0), .flags(0), .glen(1));
 
     // Wait for CSRNG genbits_vld
     csr_spinwait(.ptr(ral.genbits_vld.genbits_vld), .exp_data(1'b1));
