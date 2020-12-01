@@ -6,11 +6,12 @@ package dv_utils_pkg;
   // dep packages
   import uvm_pkg::*;
   import bus_params_pkg::*;
-  import str_utils_pkg::*;
 
   // macro includes
   `include "dv_macros.svh"
+`ifdef UVM
   `include "uvm_macros.svh"
+`endif
 
   // common parameters used across all benches
   parameter int NUM_MAX_INTERRUPTS  = 32;

@@ -33,24 +33,7 @@ class dv_report_server extends uvm_default_report_server;
 
     // Print final test pass-fail - external tool can use this signature for test status
     // Treat UVM_WARNINGs as a sign of test failure since it could silently result in false pass
-    if ((num_uvm_warning + num_uvm_error + num_uvm_fatal) == 0) begin
-      $display("\nTEST PASSED CHECKS");
-      $display(" _____         _                                  _ _ ");
-      $display("|_   _|__  ___| |_   _ __   __ _ ___ ___  ___  __| | |");
-      $display("  | |/ _ \\/ __| __| | '_ \\ / _` / __/ __|/ _ \\/ _` | |");
-      $display("  | |  __/\\__ \\ |_  | |_) | (_| \\__ \\__ \\  __/ (_| |_|");
-      $display("  |_|\\___||___/\\__| | .__/ \\__,_|___/___/\\___|\\__,_(_)");
-      $display("                    |_|                               \n");
-    end
-    else begin
-      $display("\nTEST FAILED CHECKS");
-      $display(" _____         _      __       _ _          _ _ ");
-      $display("|_   _|__  ___| |_   / _| __ _(_) | ___  __| | |");
-      $display("  | |/ _ \\/ __| __| | |_ / _` | | |/ _ \\/ _` | |");
-      $display("  | |  __/\\__ \\ |_  |  _| (_| | | |  __/ (_| |_|");
-      $display("  |_|\\___||___/\\__| |_|  \\__,_|_|_|\\___|\\__,_(_)\n");
-    end
-
+    dv_test_status_pkg::dv_test_status((num_uvm_warning + num_uvm_error + num_uvm_fatal) == 0);
   endfunction
 
   // Override default messaging format to standard "pretty" format for all testbenches
