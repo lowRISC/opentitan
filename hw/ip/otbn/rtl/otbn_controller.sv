@@ -286,9 +286,9 @@ module otbn_controller
 
   always_comb begin
     rf_base_rd_addr_a_o = insn_dec_base_i.a;
-    rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a;
+    rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & insn_valid_i;
     rf_base_rd_addr_b_o = insn_dec_base_i.b;
-    rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b;
+    rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & insn_valid_i;
     rf_base_wr_addr_o   = insn_dec_base_i.d;
 
     if (insn_dec_shared_i.subset == InsnSubsetBignum) begin
