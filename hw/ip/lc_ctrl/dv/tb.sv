@@ -9,6 +9,7 @@ module tb;
   import lc_ctrl_env_pkg::*;
   import lc_ctrl_test_pkg::*;
   import lc_ctrl_pkg::*;
+  import otp_ctrl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -17,6 +18,10 @@ module tb;
   wire clk, rst_n;
   wire devmode;
   wire [LcPwrIfWidth-1:0] pwr_lc;
+  // TODO: use push-pull agent
+  wire lc_otp_token_rsp_t lc_rsp;
+  assign lc_rsp.ack = 1;
+  assign lc_rsp.hashed_token = 0;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -49,10 +54,10 @@ module tb;
     .pwr_lc_o              (pwr_lc[LcPwrDoneRsp:LcPwrIdleRsp]),
 
     .lc_otp_program_o      (),
-    .lc_otp_program_i      (0),
+    .lc_otp_program_i      ('b01),
 
     .lc_otp_token_o        (),
-    .lc_otp_token_i        (0),
+    .lc_otp_token_i        (lc_rsp),
 
     .otp_lc_data_i         (lc_ctrl_if.otp_i),
 
@@ -66,11 +71,11 @@ module tb;
     .lc_escalate_en_o      (),
 
     .lc_clk_byp_req_o      (),
-    .lc_clk_byp_ack_i      (0),
+    .lc_clk_byp_ack_i      (lc_ctrl_pkg::On),
 
     .lc_flash_rma_seed_o   (),
     .lc_flash_rma_req_o    (),
-    .lc_flash_rma_ack_i    (0)
+    .lc_flash_rma_ack_i    (lc_ctrl_pkg::Off)
   );
 
   initial begin

@@ -12,6 +12,8 @@ package lc_ctrl_env_pkg;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import lc_ctrl_ral_pkg::*;
+  import lc_ctrl_pkg::*;
+  import otp_ctrl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -21,6 +23,7 @@ package lc_ctrl_env_pkg;
   // TODO: add the names of alerts in order
   parameter string LIST_OF_ALERTS[] = {"lc_programming_failure", "lc_state_failure"};
   parameter uint   NUM_ALERTS = 2;
+  parameter uint   CLAIM_TRANS_VAL = 'ha5;
 
   // types
   typedef enum bit [1:0] {

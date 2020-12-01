@@ -12,7 +12,13 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
 
   // various knobs to enable certain routines
   bit do_lc_ctrl_init = 1'b1;
-  bit do_lc_pwr_init  = 1'b1;
+
+  rand lc_ctrl_pkg::lc_state_e lc_state;
+  rand lc_ctrl_pkg::lc_cnt_e   lc_cnt;
+
+  constraint lc_cnt_c {
+    (lc_state != LcStRaw) -> (lc_cnt != LcCntRaw);
+  }
 
   `uvm_object_new
 
@@ -24,9 +30,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
-    cfg.lc_ctrl_vif.init();
     if (do_lc_ctrl_init) lc_ctrl_init();
-    if (do_lc_pwr_init) lc_pwr_init();
   endtask
 
   virtual task dut_shutdown();
@@ -34,16 +38,21 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     // TODO
   endtask
 
-  // drive lc_pwr req pin to initialize LC, and wait until init is done
-  virtual task lc_pwr_init();
+  // setup basic lc_ctrl features
+  virtual task lc_ctrl_init();
+    `DV_CHECK_RANDOMIZE_FATAL(this)
     cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 1);
+    cfg.lc_ctrl_vif.init(lc_state, lc_cnt);
     wait(cfg.pwr_lc_vif.pins[LcPwrDoneRsp] == 1);
     cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 0);
   endtask
 
-  // setup basic lc_ctrl features
-  virtual task lc_ctrl_init();
-    //`uvm_error(`gfn, "FIXME")
+  virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW-1:0] token_val);
+    csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
+    csr_wr(ral.transition_target, next_lc_state);
+    csr_wr(ral.transition_token_0, token_val);
+    csr_wr(ral.transition_cmd, 'h01);
+    csr_spinwait(ral.status.transition_successful, 1);
   endtask
 
 endclass : lc_ctrl_base_vseq
