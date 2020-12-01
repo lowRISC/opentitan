@@ -76,7 +76,7 @@ module kmac
 
   // SHA3 core control signals and its response.
   // Sequence: start --> process(multiple) --> get absorbed event --> {run -->} done
-  logic sha3_start, sha3_run, sha3_done, sha3_absorbed;
+  logic sha3_start, sha3_run, sha3_done, sha3_absorbed, unused_sha3_squeeze;
 
   // KeyMgr interface logic generates event_absorbed from sha3_absorbed.
   // It is active only if SW initiates the hashing engine.
@@ -102,7 +102,7 @@ module kmac
 
   // state is de-muxed in keymgr interface logic.
   // the output from keymgr logic goes into staterd module to be visible to SW
-  logic reg_state_valid;
+  logic unused_reg_state_valid;
   logic [sha3_pkg::StateW-1:0] reg_state [Share];
 
   // SHA3 Entropy interface
@@ -181,6 +181,9 @@ module kmac
 
   // SHA3 Error response
   sha3_pkg::err_t sha3_err;
+
+  // KeyMgr Error response
+  kmac_pkg::err_t keymgr_err;
 
   //////////////////////////////////////
   // Connecting Register IF to logics //
@@ -344,11 +347,20 @@ module kmac
   // As of now, only SHA3 error exists. More error codes will be added.
 
   logic event_error;
-  assign event_error =  sha3_err.valid;
+  assign event_error =  sha3_err.valid | keymgr_err.valid;
 
   // Assing error code to the register
-  assign hw2reg.err_code.de = sha3_err.valid;
-  assign hw2reg.err_code.d = {sha3_err.code , sha3_err.info};
+  assign hw2reg.err_code.de = event_error;
+
+  always_comb begin
+    if (sha3_err.valid) begin
+      hw2reg.err_code.d = {sha3_err.code , sha3_err.info};
+    end else if (keymgr_err.valid) begin
+      hw2reg.err_code.d = {keymgr_err.code, keymgr_err.info};
+    end else begin
+      hw2reg.err_code.d = '0;
+    end
+  end
 
   prim_intr_hw #(.Width(1)) intr_kmac_err (
     .clk_i,
@@ -434,7 +446,8 @@ module kmac
     .run_i      (sha3_run         ),
     .done_i     (sha3_done        ),
 
-    .absorbed_o (sha3_absorbed),
+    .absorbed_o  (sha3_absorbed),
+    .squeezing_o (unused_sha3_squeeze),
 
     .sha3_fsm_o (sha3_fsm),
 
@@ -531,7 +544,7 @@ module kmac
     .keccak_state_i       (state),
 
     // to STATE TL Window
-    .reg_state_valid_o    (reg_state_valid),
+    .reg_state_valid_o    (unused_reg_state_valid),
     .reg_state_o          (reg_state),
 
     // Configuration: Sideloaded Key
@@ -544,7 +557,10 @@ module kmac
 
     // Command interface
     .sw_cmd_i (sw_cmd),
-    .cmd_o    (kmac_cmd)
+    .cmd_o    (kmac_cmd),
+
+    // Error report
+    .error_o (keymgr_err)
 
   );
 
@@ -587,7 +603,6 @@ module kmac
     .tl_i (tl_win_h2d[WinState]),
     .tl_o (tl_win_d2h[WinState]),
 
-    .valid_i (reg_state_valid),
     .state_i (reg_state),
 
     .endian_swap_i (reg2hw.cfg.state_endianness.q)

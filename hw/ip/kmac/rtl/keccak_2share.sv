@@ -63,9 +63,13 @@ module keccak_2share #(
   // clk_i, rst_ni, rand_valid_i are not used when EnMasking is 0. Tying them.
   if (EnMasking == 0) begin : gen_tie_unused
     logic unused_clk, unused_rst_n, unused_rand_valid;
+    logic [Width-1:0] unused_rand_data;
+    logic unused_sel;
     assign unused_clk = clk_i;
     assign unused_rst_n = rst_ni;
     assign unused_rand_valid = rand_valid_i;
+    assign unused_rand_data = rand_i;
+    assign unused_sel = sel_i;
   end
 
   ///////////////////////
@@ -99,7 +103,6 @@ module keccak_2share #(
       endcase
     end
   end else begin : g_single_data
-    // TODO: Handle unused sel_i signal
     assign phase1_in = state_in;
     assign phase2_in = phase1_out;
     assign state_out = phase2_out;
@@ -207,8 +210,6 @@ module keccak_2share #(
     end : g_chi_w
 
   end else begin : g_single_chi
-    // TODO: Handle unused clk_i, rst_ni (Lint waiver)
-    // TODO: Handle unused rand_i signal
     assign chi_data[0] = chi(phase2_in[0]);
   end
 
