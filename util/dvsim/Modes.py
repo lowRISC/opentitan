@@ -263,11 +263,12 @@ class BuildModes(Modes):
         self.is_sim_mode = 0
         self.pre_build_cmds = []
         self.post_build_cmds = []
+        self.en_build_modes = []
+        self.build_opts = []
         self.pre_run_cmds = []
         self.post_run_cmds = []
-        self.build_opts = []
         self.run_opts = []
-        self.en_build_modes = []
+        self.sw_images = []
 
         super().__init__(bdict)
         self.en_build_modes = list(set(self.en_build_modes))
@@ -293,11 +294,11 @@ class RunModes(Modes):
         self.reseed = None
         self.pre_run_cmds = []
         self.post_run_cmds = []
+        self.en_run_modes = []
         self.run_opts = []
         self.uvm_test = ""
         self.uvm_test_seq = ""
         self.build_mode = ""
-        self.en_run_modes = []
         self.sw_images = []
         self.sw_build_device = ""
 
@@ -416,6 +417,7 @@ class Tests(RunModes):
             test_obj.pre_run_cmds.extend(test_obj.build_mode.pre_run_cmds)
             test_obj.post_run_cmds.extend(test_obj.build_mode.post_run_cmds)
             test_obj.run_opts.extend(test_obj.build_mode.run_opts)
+            test_obj.sw_images.extend(test_obj.build_mode.sw_images)
 
         # Return the list of tests
         return tests_objs
@@ -423,7 +425,7 @@ class Tests(RunModes):
     @staticmethod
     def merge_global_opts(tests, global_pre_build_cmds, global_post_build_cmds,
                           global_build_opts, global_pre_run_cmds,
-                          global_post_run_cmds, global_run_opts):
+                          global_post_run_cmds, global_run_opts, global_sw_images):
         processed_build_modes = []
         for test in tests:
             if test.build_mode.name not in processed_build_modes:
@@ -434,6 +436,7 @@ class Tests(RunModes):
             test.pre_run_cmds.extend(global_pre_run_cmds)
             test.post_run_cmds.extend(global_post_run_cmds)
             test.run_opts.extend(global_run_opts)
+            test.sw_images.extend(global_sw_images)
 
 
 class Regressions(Modes):
