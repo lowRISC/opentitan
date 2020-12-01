@@ -404,6 +404,7 @@ module lc_ctrl_fsm
     .lc_state_i            ( lc_state_q     ),
     .lc_cnt_i              ( lc_cnt_q       ),
     .dec_lc_state_i        ( dec_lc_state_o ),
+    .fsm_state_i           ( fsm_state_q    ),
     .trans_target_i,
     .next_lc_state_o       ( next_lc_state  ),
     .next_lc_cnt_o         ( next_lc_cnt    ),
