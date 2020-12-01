@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   // The `name` field that provides the name of the sim_cfg
-  // should be set by the Hjson that imports this base config.
+  name: kmac
 
   // Top level dut name
   dut: kmac
@@ -18,7 +18,7 @@
   fusesoc_core: lowrisc:dv:kmac_sim:0.1
 
   // Testplan hjson file
-  testplan: "{proj_root}/hw/ip/kmac/data/{name}_testplan.hjson"
+  testplan: "{proj_root}/hw/ip/kmac/data/{variant}_testplan.hjson"
 
   // RAL spec - used to generate the RAL model.
   ral_spec: "{proj_root}/hw/ip/kmac/data/kmac.hjson"
@@ -42,7 +42,7 @@
   overrides: [
     {
       name: scratch_base_path
-      value: "{scratch_root}/{name}.{flow}.{tool}"
+      value: "{scratch_root}/{variant}.{flow}.{tool}"
     }
   ]
 
@@ -66,7 +66,7 @@
   // List of test specifications.
   tests: [
     {
-      name: "{name}_smoke"
+      name: "{variant}_smoke"
       uvm_test_seq: kmac_smoke_vseq
     }
 
@@ -77,7 +77,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["{name}_smoke"]
+      tests: ["{variant}_smoke"]
     }
   ]
 }

@@ -121,11 +121,11 @@ Testbench     | [TB_GEN_AUTOMATED][]                  | Done        |
 Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
 Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        |
 Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Done        |
-Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
-Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
+Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Done        |
+Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Done        |
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        |
 Regression    | [FPV_REGRESSION_SETUP][]              | Done        |
-Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
+Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Code Quality  | [TB_LINT_SETUP][]                     | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Done        |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
