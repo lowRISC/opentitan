@@ -6,6 +6,6 @@
 
 # waiver for unused_* signals for HIER_* rules (note that our policy file has a
 # similar exception list for rule NOT_READ)
-waive -rules {HIER_NET_NOT_READ HIER_BRANCH_NOT_READ} -pattern {unused_*}
-waive -rules {HIER_NET_NOT_READ HIER_BRANCH_NOT_READ} -pattern {gen_*.unused_*}
+waive -rules {HIER_NET_NOT_READ HIER_BRANCH_NOT_READ} -regexp {unused_.*}
+waive -rules {HIER_NET_NOT_READ HIER_BRANCH_NOT_READ} -regexp {gen_.*\.unused_.*}
 
