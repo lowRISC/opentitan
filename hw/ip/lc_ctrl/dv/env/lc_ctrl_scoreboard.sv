@@ -33,7 +33,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
-    bit     do_read_check   = 1'b1;
+    bit     do_read_check   = 1'b0;
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
 

@@ -10,10 +10,11 @@ interface lc_ctrl_if(input clk, input rst_n);
 
   otp_ctrl_pkg::otp_lc_data_t otp_i;
 
-  task automatic init();
+  task automatic init(lc_ctrl_pkg::lc_state_e lc_state = LcStRaw,
+                      lc_ctrl_pkg::lc_cnt_e   lc_cnt = LcCntRaw);
     otp_i.valid = 1;
-    otp_i.state = LcStRaw;
-    otp_i.count = LcCntRaw;
+    otp_i.state = lc_state;
+    otp_i.count = lc_cnt;
     otp_i.test_unlock_token = 0;
     otp_i.test_exit_token = 0;
     otp_i.rma_token = 0;
