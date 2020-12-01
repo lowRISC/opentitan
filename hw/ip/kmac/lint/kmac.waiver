@@ -15,6 +15,6 @@ waive -rules {HIER_NET_NOT_READ NOT_READ INPUT_NOT_READ} \
     -location {kmac_msgfifo.sv} -regexp {'packer_wmask.* is not read} \
     -comment "MSG_FIFO uses only the first bit in a byte"
 
-waive -rules {HIER_NET_NOT_READ NOT_READ INPUT_NOT_READ} \
-    -location {kmac_staterd.sv} -regexp {'unused_.*} \
-    -comment "Ignore unused signals"
+waive -rules {TWO_STATE_TYPE} -location {kmac.sv} \
+    -regexp {'tl_window_e' is of two state type} \
+    -comment "Window enum is used to select, not synthesized"

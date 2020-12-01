@@ -12,9 +12,6 @@ waive -rules {CLOCK_USE} -location {keccak_round.sv} -regexp {clk_i' is connecte
 waive -rules {RESET_USE} -location {keccak_round.sv} -regexp {'rst_ni' is connected to} \
       -comment "No reset is used if EnMasking = 0. connected to unused_* signal"
 
-waive -rules {HIER_NET_NOT_READ NOT_READ} -location {keccak_round.sv} \
-      -regexp {'sel_mux' in module .* is not read} \
-      -comment "Unmasked version does not use sel_mux signal"
-waive -rules {INPUT_NOT_READ} -location {keccak_2share.sv} \
-      -regexp {'sel_i' is not read from} \
-      -comment "Unmasked version does not use sel_mux signal"
+waive -rules {TWO_STATE_TYPE} -location {keccak_2share.sv} \
+      -regexp {'index_z' is of two state} \
+      -comment "index_z behaves as constant"

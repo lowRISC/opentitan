@@ -82,6 +82,30 @@ package kmac_pkg;
     CmdDone      = 4'b 1000
   } kmac_cmd_e;
 
+  ////////////////////
+  // Error Handling //
+  ////////////////////
+
+  // Error structure is same to the SHA3 one. The codes do not overlap.
+  typedef enum logic [7:0] {
+    ErrNone = 8'h 00,
+
+    // ErrSha3SwControl occurs when software sent wrong flow signal.
+    // e.g) Sw set `process_i` without `start_i`. The state machine ignores
+    //      the signal and report through the error FIFO.
+    //ErrSha3SwControl = 8'h 80
+
+    // ErrKeyNotValid: KeyMgr interface raises an error if the secret key is
+    // not valid when KeyMgr initiates KDF.
+    ErrKeyNotValid = 8'h 01
+  } err_code_e;
+
+  typedef struct packed {
+    logic        valid;
+    err_code_e   code; // Type of error
+    logic [23:0] info; // Additional Debug info
+  } err_t;
+
   ///////////////////////
   // Library Functions //
   ///////////////////////
