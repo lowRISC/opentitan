@@ -13,7 +13,6 @@ package csrng_env_pkg;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import csrng_ral_pkg::*;
-  import entropy_src_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -33,14 +32,6 @@ package csrng_env_pkg;
     HwInstExc  = 2,
     FifoErr    = 3
   } csrng_intr_e;
-
-  typedef enum bit[3:0] {
-    Instantiate   = 1,
-    Reseed        = 2,
-    Generate      = 3,
-    Update        = 4,
-    Uninstantiate = 5
-  } csrng_app_cmd_e;
 
   // functions
 

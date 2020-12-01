@@ -2,15 +2,6 @@
 title: "CSRNG DV Plan"
 ---
 
-<!-- Copy this file to hw/ip/csrng/doc/csrng_dv_plan.md and make changes as needed.
-For convenience 'csrng' in the document can be searched and replaced easily with the
-desired IP (with case sensitivity!). Also, use the testbench block diagram
-located at OpenTitan team drive / 'design verification'
-as a starting point and modify it to reflect your csrng testbench and save it
-to hw/ip/csrng/doc/tb.svg. It should get linked and rendered under the block
-diagram section below. Please update / modify / remove sections below as
-applicable. Once done, remove this comment before making a PR. -->
-
 ## Goals
 * **DV**
   * Verify all CSRNG IP features by running dynamic simulations with a SV/UVM based testbench
@@ -44,6 +35,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
+* [common_ifs]({{< relref "hw/dv/sv/common_ifs" >}})
 * [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
 * [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
 
@@ -61,22 +53,13 @@ CSRNG testbench instantiates (already handled in CIP base env) [tl_agent]({{< re
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into CSRNG device.
 
-###  PUSH_PULL Agent
-[Describe here or add link to its README]
-
-### UVC/agent 1
-[Describe here or add link to its README]
-
-### UVC/agent 2
-[Describe here or add link to its README]
+###  Entropy_src_agent
+CSRNG testbench instantiates this push_pull_agent({{< relref "hw/dv/sv/push_pull_agent/README.md" >}}) which models the entropy_src module.
 
 ### UVM RAL Model
 The CSRNG RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
-
-### Reference models
-[Describe reference models in use if applicable, example: SHA256/HMAC]
 
 ### Stimulus strategy
 #### Test sequences
@@ -85,28 +68,24 @@ The `csrng_base_vseq` virtual sequence is extended from `cip_base_vseq` and serv
 All test sequences are extended from `csrng_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* task 1:
-* task 2:
+* csrng_init:     Initialize the CSRNG module from the randomized environment variables in the config.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
+* common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
 
 ### Self-checking strategy
 #### Scoreboard
 The `csrng_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
+* tl_a_chan_fifo, tl_d_chan_fifo:           These 2 fifos provide transaction items at the end of Tilelink address channel and data channel respectively
 * analysis port1:
 * analysis port2:
-<!-- explain inputs monitored, flow of data and outputs checked -->
 
 #### Assertions
 * TLUL assertions: The `tb/csrng_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* assert prop 1:
-* assert prop 2:
 
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.
