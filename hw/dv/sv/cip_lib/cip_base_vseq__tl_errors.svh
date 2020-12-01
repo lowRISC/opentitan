@@ -60,7 +60,9 @@ endtask
 
 virtual task tl_write_less_than_csr_width();
   uvm_reg all_csrs[$];
+
   ral.get_registers(all_csrs);
+  all_csrs.shuffle();
   foreach (all_csrs[i]) begin
     dv_base_reg      csr;
     uint             msb_pos;
