@@ -274,6 +274,7 @@ module top_earlgrey_verilator (
     if (u_sw_test_status_if.sw_test_done) begin
       $display("Verilator sim termination requested");
       $display("Your simulation wrote to 0x%h", u_sw_test_status_if.sw_test_status_addr);
+      dv_test_status_pkg::dv_test_status(u_sw_test_status_if.sw_test_passed);
       $finish;
     end
   end
