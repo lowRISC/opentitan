@@ -106,6 +106,7 @@ class SimCfg(FlowCfg):
         self.post_run_cmds = []
         self.run_dir = ""
         self.sw_build_dir = ""
+        self.sw_images = []
         self.pass_patterns = []
         self.fail_patterns = []
         self.name = ""
@@ -281,6 +282,7 @@ class SimCfg(FlowCfg):
                 self.pre_run_cmds.extend(build_mode_obj.pre_run_cmds)
                 self.post_run_cmds.extend(build_mode_obj.post_run_cmds)
                 self.run_opts.extend(build_mode_obj.run_opts)
+                self.sw_images.extend(build_mode_obj.sw_images)
             else:
                 log.error(
                     "Mode \"%s\" enabled on the the command line is not defined",
@@ -294,6 +296,7 @@ class SimCfg(FlowCfg):
                 self.pre_run_cmds.extend(run_mode_obj.pre_run_cmds)
                 self.post_run_cmds.extend(run_mode_obj.post_run_cmds)
                 self.run_opts.extend(run_mode_obj.run_opts)
+                self.sw_images.extend(run_mode_obj.sw_images)
             else:
                 log.error(
                     "Mode \"%s\" enabled on the the command line is not defined",
@@ -391,7 +394,7 @@ class SimCfg(FlowCfg):
         Tests.merge_global_opts(self.run_list, self.pre_build_cmds,
                                 self.post_build_cmds, self.build_opts,
                                 self.pre_run_cmds, self.post_run_cmds,
-                                self.run_opts)
+                                self.run_opts, self.sw_images)
 
         # Check if all items have been processed
         if items_list != []:
