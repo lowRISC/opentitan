@@ -10,6 +10,7 @@ module tb;
   import otp_ctrl_test_pkg::*;
   import push_pull_agent_pkg::*;
   import otp_ctrl_reg_pkg::*;
+  import lc_ctrl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -17,7 +18,7 @@ module tb;
 
   wire clk, rst_n;
   wire devmode;
-  wire [3:0] lc_provision_en, lc_dft_en;
+  wire lc_ctrl_pkg::lc_tx_e lc_provision_en, lc_dft_en;
 
   wire [OtpPwrIfWidth-1:0] pwr_otp;
   wire otp_ctrl_pkg::flash_otp_key_req_t flash_req;
@@ -40,7 +41,8 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
 
-  push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))  sram_if[NumSramKeyReqSlots] (.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))  sram_if[NumSramKeyReqSlots] (.clk(clk),
+                                                                                 .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE))  otbn_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_if(.clk(clk), .rst_n(rst_n));
