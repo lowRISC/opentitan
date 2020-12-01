@@ -45,9 +45,8 @@ module prim_lc_sync #(
         .clk_o(lc_en_copies[j][k])
       );
     end
+    assign lc_en_o[j] = lc_ctrl_pkg::lc_tx_t'(lc_en_copies[j]);
   end
-
-  assign lc_en_o = lc_en_copies;
 
   ////////////////
   // Assertions //
