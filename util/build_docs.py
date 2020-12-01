@@ -55,6 +55,7 @@ config = {
     # Pre-generate register and hwcfg fragments from these files.
     "hardware_definitions": [
         "hw/ip/aes/data/aes.hjson",
+        "hw/ip/aon_timer/data/aon_timer.hjson",
         "hw/top_earlgrey/ip/alert_handler/data/autogen/alert_handler.hjson",
         "hw/ip/entropy_src/data/entropy_src.hjson",
         "hw/ip/csrng/data/csrng.hjson",
