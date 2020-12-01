@@ -119,13 +119,8 @@
             The error cause if an error occurred.
 
             Software should read this register before clearing the err
-            interrupt to avoid race conditions.
-
-            Possible values:
-
-            - 0x0 (ErrCodeNoError):     No error occurred.
-            - 0x1 (ErrCodeBadDataAddr): Load or store to invalid address
-            - 0x2 (ErrCodeCallStack):   Call stack underflow/overflow
+            interrupt to avoid race conditions. See 'Error conditions' in the
+            main OTBN documentation for the possible values.
           '''
         }
       ]

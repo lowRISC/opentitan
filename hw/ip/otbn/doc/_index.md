@@ -426,11 +426,73 @@ Rough expected process:
 
 ## Error conditions
 
-<div class="bd-callout bd-callout-warning">
-  <h5>Note</h5>
-
-  To be filled in as we create the implementation.
-</div>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Code</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>No Error</td>
+      <td>0x00</td>
+      <td>Execution was successful</td>
+    </tr>
+    <tr>
+      <td>Bad Data Address</td>
+      <td>0x01</td>
+      <td>
+      A Dmem read or write occurred with an out of bounds or unaligned address
+      </td>
+    </tr>
+    <tr>
+      <td>Bad Instruction Address</td>
+      <td>0x02</td>
+      <td>
+      An instruction fetch occurred with an out of bounds or unaligned address
+      </td>
+    </tr>
+    <tr>
+      <td>Call Stack over/underflow</td>
+      <td>0x03</td>
+      <td>
+      A push to the call stack when it was full or a pop from the call stack
+      when it was empty was attempted
+      </td>
+    </tr>
+    <tr>
+      <td>Illegal instruction</td>
+      <td>0x04</td>
+      <td><ul>
+        <li>An instruction being excuted had an invalid encoding</li>
+        <li>A CSR or WSR access occurred to an invalid CSR or WSR</li>
+        <li>
+          A CSR or WSR access occurred that is not permitted (e.g. writing to a
+          read-only CSR or WSR).
+        </li>
+      </ul></td>
+    </tr>
+    <tr>
+      <td>Loop error</td>
+      <td>0x05</td>
+      <td><ul>
+        <li>A loop was started with a 0 iteration count</li>
+        <li>The final instruction of a loop was a branch or another loop</li>
+        <li>The loop stack would overflow (loop nesting level too deep)</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <td>Fatal Alert</td>
+      <td>0xFF</td>
+      <td>
+      A fatal alert was raised, see XXX for more details about what can cause
+      a fatal alert
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## Register Table
 
