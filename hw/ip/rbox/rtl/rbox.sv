@@ -7,36 +7,50 @@
 `include "prim_assert.sv"
 
 module rbox (
-  input clk_i,//Always-on slow clock
-  input rst_ni,//power-on hardware reset
-  input sw_rst_ni,//software reset
+  input clk_i,//Always-on 24MHz clock(config)
+  input clk_aon_i,//Always-on 200KHz clock(logic)
+  input rst_ni,//power-on reset for the 24MHz clock(config)
+  input rst_slow_ni,//power-on reset for the 200KHz clock(logic)
+  output gsc_rst_o,//GSC reset to rstmgr
+  output rbox_intr_o,//rbox interrupt to PLIC
 
-  //Regster interface 
+  //Regster interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
   //DIO
-  input  ac_present,//AC power is present
-  input  ec_entering_rw,//Embedded controller is entering the R/W mode in the boot flow. Initially, EC is in RO mode
-  input  key0_in,//VolUp button in tablet; column output from the EC in a laptop
-  input  key1_in,//VolDown button in tablet; row input from keyboard matrix in a laptop
-  input  key2_in,//TBD button in tablet; row input from keyboard matrix in a laptop
-  input  pwrb_in,//Power button in both tablet and laptop
-  output logic bat_en,//Battery is enabled
-  output logic ec_in_rw,//Embedded controller is in the R/W mode. It’s a flopped version of ec_entering_rw. Reset by rst_ec_l
-  output logic ec_rst_l,//Reset. Active low. Asserted when por_l(Power On Reset) is low. Released a short period after por_l is high
-  output logic flash_wp_l,//Write protection. Active low. Asserted when por_l(Power On Reset) is low. Released by FW
-  output logic key0_out,//Passthrough from key0_in, can be configured to invert
-  output logic key1_out,//Passthrough from key1_in, can be configured to invert
-  output logic key2_out,//Passthrough from key2_in, can be configured to invert
-  output logic pwrb_out,//Passthrough from pwrb_in, can be configured to invert
-
+  input  cio_ac_present_i,//AC power is present
+  input  cio_ec_rst_l_i,//EC reset is asserted by some other system agent
+  input  cio_key0_in_i,//VolUp button in tablet; column output from the EC in a laptop
+  input  cio_key1_in_i,//VolDown button in tablet; row input from keyboard matrix in a laptop
+  input  cio_key2_in_i,//TBD button in tablet; row input from keyboard matrix in a laptop
+  input  cio_pwrb_in_i,//Power button in both tablet and laptop
+  output logic cio_bat_disable_o,//Battery is disconnected
+  output logic cio_ec_rst_l_o,//EC reset is asserted by rbox
+  output logic cio_key0_out_o,//Passthrough from key0_in, can be configured to invert
+  output logic cio_key1_out_o,//Passthrough from key1_in, can be configured to invert
+  output logic cio_key2_out_o,//Passthrough from key2_in, can be configured to invert
+  output logic cio_pwrb_out_o,//Passthrough from pwrb_in, can be configured to invert
+  output logic cio_bat_disable_en_o,
+  output logic cio_ec_rst_l_en_o,
+  output logic cio_key0_out_en_o,
+  output logic cio_key1_out_en_o,
+  output logic cio_key2_out_en_o,
+  output logic cio_pwrb_out_en_o
 );
 
   import rbox_reg_pkg::* ;
 
   rbox_reg2hw_t reg2hw;
   rbox_hw2reg_t hw2reg;
+
+  //Always-on pins
+  assign cio_ec_rst_l_en_o = 1'b1;
+  assign cio_pwrb_out_en_o = 1'b1;
+  assign cio_key0_out_en_o = 1'b1;
+  assign cio_key1_out_en_o = 1'b1;
+  assign cio_key2_out_en_o = 1'b1;
+  assign cio_bat_disable_en_o = 1'b1;
 
   // Register module
   rbox_reg_top i_reg_top (
@@ -48,7 +62,120 @@ module rbox (
     .hw2reg,
     .devmode_i  (1'b1)
   );
-  // TBD RTL
-  // TBD Assert Known: Outputs
+
+  //Instantiate the autoblock module
+  rbox_autoblock i_autoblock (
+    .clk_i,
+    .rst_ni,
+    .clk_aon_i,
+    .rst_slow_ni,
+    .reg2hw,
+    .pwrb_int,
+    .key0_int,
+    .key1_int,
+    .key2_int,
+    .pwrb_out_hw,
+    .key0_out_hw,
+    .key1_out_hw,
+    .key2_out_hw
+  );
+
+  //Instantiate the pin inversion module
+  rbox_inv i_inversion (
+    .clk_aon_i,
+    .rst_slow_ni,
+    .reg2hw,
+    .cio_pwrb_in_i,
+    .cio_key0_in_i,
+    .cio_key1_in_i,
+    .cio_key2_in_i,
+    .cio_ac_present_i,
+    .pwrb_out_int,
+    .key0_out_int,
+    .key1_out_int,
+    .key2_out_int,
+    .bat_disable_int,
+    .pwrb_int,
+    .key0_int,
+    .key1_int,
+    .key2_int,
+    .ac_present_int,
+    .cio_bat_disable_o,
+    .cio_pwrb_out_o,
+    .cio_key0_out_o,
+    .cio_key1_out_o,
+    .cio_key2_out_o
+  );
+
+  //Instantiate the pin visibility and override module
+  rbox_pin i_pin_vis_ovd (
+    .clk_i,
+    .rst_ni,
+    .clk_aon_i,
+    .rst_slow_ni,
+    .reg2hw,
+    .hw2reg,
+    .cio_pwrb_in_i,
+    .cio_key0_in_i,
+    .cio_key1_in_i,
+    .cio_key2_in_i,
+    .cio_ac_present_i,
+    .cio_ec_rst_l_i,
+    .pwrb_out_hw,
+    .key0_out_hw,
+    .key1_out_hw,
+    .key2_out_hw,
+    .bat_disable_hw,
+    .ec_rst_l_hw,
+    .pwrb_out_int,
+    .key0_out_int,
+    .key1_out_int,
+    .key2_out_int,
+    .bat_disable_int,
+    .cio_ec_rst_l_o
+  );
+
+  //Instantiate key-triggered interrupt module
+  rbox_keyintr i_keyintr (
+    .clk_i,
+    .rst_ni,
+    .clk_aon_i,
+    .rst_slow_ni,
+    .reg2hw,
+    .hw2reg,
+    .pwrb_int,
+    .key0_int,
+    .key1_int,
+    .key2_int,
+    .ac_present_int,
+    .cio_ec_rst_l_i
+  );
+
+  //Instantiate combo module
+  rbox_combo i_combo (
+    .clk_i,
+    .rst_ni,
+    .clk_aon_i,
+    .rst_slow_ni,
+    .reg2hw,
+    .hw2reg,
+    .pwrb_int,
+    .key0_int,
+    .key1_int,
+    .key2_int,
+    .ac_present_int,
+    .cio_ec_rst_l_i,
+    .bat_disable_hw,
+    .gsc_rst_o,
+    .ec_rst_l_hw
+  );
+
+  //Instantiate the interrupt module
+  rbox_intr i_intr (
+    .reg2hw,
+    .hw2reg,
+    .rbox_intr_o
+  );
+
 
 endmodule

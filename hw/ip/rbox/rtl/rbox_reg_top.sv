@@ -23,7 +23,7 @@ module rbox_reg_top (
 
   import rbox_reg_pkg::* ;
 
-  localparam int AW = 6;
+  localparam int AW = 7;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -71,27 +71,20 @@ module rbox_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic cfg_lock_ctl_qs;
-  logic cfg_lock_ctl_wd;
-  logic cfg_lock_ctl_we;
-  logic [31:0] ec_rst_ctl_qs;
-  logic [31:0] ec_rst_ctl_wd;
+  logic intr_state_qs;
+  logic intr_state_wd;
+  logic intr_state_we;
+  logic intr_enable_qs;
+  logic intr_enable_wd;
+  logic intr_enable_we;
+  logic intr_test_wd;
+  logic intr_test_we;
+  logic cfg_wen_ctl_qs;
+  logic cfg_wen_ctl_wd;
+  logic cfg_wen_ctl_we;
+  logic [15:0] ec_rst_ctl_qs;
+  logic [15:0] ec_rst_ctl_wd;
   logic ec_rst_ctl_we;
-  logic flash_wp_ctl_qs;
-  logic flash_wp_ctl_wd;
-  logic flash_wp_ctl_we;
-  logic [31:0] key_com0_debounce_ctl_qs;
-  logic [31:0] key_com0_debounce_ctl_wd;
-  logic key_com0_debounce_ctl_we;
-  logic [31:0] key_com1_debounce_ctl_qs;
-  logic [31:0] key_com1_debounce_ctl_wd;
-  logic key_com1_debounce_ctl_we;
-  logic [31:0] key_com2_debounce_ctl_qs;
-  logic [31:0] key_com2_debounce_ctl_wd;
-  logic key_com2_debounce_ctl_we;
-  logic [31:0] key_com3_debounce_ctl_qs;
-  logic [31:0] key_com3_debounce_ctl_wd;
-  logic key_com3_debounce_ctl_we;
   logic key_invert_ctl_key0_in_qs;
   logic key_invert_ctl_key0_in_wd;
   logic key_invert_ctl_key0_in_we;
@@ -116,15 +109,51 @@ module rbox_reg_top (
   logic key_invert_ctl_pwrb_out_qs;
   logic key_invert_ctl_pwrb_out_wd;
   logic key_invert_ctl_pwrb_out_we;
-  logic pin_out_ctl_bat_en_qs;
-  logic pin_out_ctl_bat_en_wd;
-  logic pin_out_ctl_bat_en_we;
-  logic pin_out_ctl_ec_in_rw_qs;
-  logic pin_out_ctl_ec_in_rw_wd;
-  logic pin_out_ctl_ec_in_rw_we;
-  logic pin_out_ctl_flash_wp_l_qs;
-  logic pin_out_ctl_flash_wp_l_wd;
-  logic pin_out_ctl_flash_wp_l_we;
+  logic key_invert_ctl_ac_present_qs;
+  logic key_invert_ctl_ac_present_wd;
+  logic key_invert_ctl_ac_present_we;
+  logic key_invert_ctl_bat_disable_qs;
+  logic key_invert_ctl_bat_disable_wd;
+  logic key_invert_ctl_bat_disable_we;
+  logic pin_allowed_ctl_bat_disable_0_qs;
+  logic pin_allowed_ctl_bat_disable_0_wd;
+  logic pin_allowed_ctl_bat_disable_0_we;
+  logic pin_allowed_ctl_ec_rst_l_0_qs;
+  logic pin_allowed_ctl_ec_rst_l_0_wd;
+  logic pin_allowed_ctl_ec_rst_l_0_we;
+  logic pin_allowed_ctl_pwrb_out_0_qs;
+  logic pin_allowed_ctl_pwrb_out_0_wd;
+  logic pin_allowed_ctl_pwrb_out_0_we;
+  logic pin_allowed_ctl_key0_out_0_qs;
+  logic pin_allowed_ctl_key0_out_0_wd;
+  logic pin_allowed_ctl_key0_out_0_we;
+  logic pin_allowed_ctl_key1_out_0_qs;
+  logic pin_allowed_ctl_key1_out_0_wd;
+  logic pin_allowed_ctl_key1_out_0_we;
+  logic pin_allowed_ctl_key2_out_0_qs;
+  logic pin_allowed_ctl_key2_out_0_wd;
+  logic pin_allowed_ctl_key2_out_0_we;
+  logic pin_allowed_ctl_bat_disable_1_qs;
+  logic pin_allowed_ctl_bat_disable_1_wd;
+  logic pin_allowed_ctl_bat_disable_1_we;
+  logic pin_allowed_ctl_ec_rst_l_1_qs;
+  logic pin_allowed_ctl_ec_rst_l_1_wd;
+  logic pin_allowed_ctl_ec_rst_l_1_we;
+  logic pin_allowed_ctl_pwrb_out_1_qs;
+  logic pin_allowed_ctl_pwrb_out_1_wd;
+  logic pin_allowed_ctl_pwrb_out_1_we;
+  logic pin_allowed_ctl_key0_out_1_qs;
+  logic pin_allowed_ctl_key0_out_1_wd;
+  logic pin_allowed_ctl_key0_out_1_we;
+  logic pin_allowed_ctl_key1_out_1_qs;
+  logic pin_allowed_ctl_key1_out_1_wd;
+  logic pin_allowed_ctl_key1_out_1_we;
+  logic pin_allowed_ctl_key2_out_1_qs;
+  logic pin_allowed_ctl_key2_out_1_wd;
+  logic pin_allowed_ctl_key2_out_1_we;
+  logic pin_out_ctl_bat_disable_qs;
+  logic pin_out_ctl_bat_disable_wd;
+  logic pin_out_ctl_bat_disable_we;
   logic pin_out_ctl_ec_rst_l_qs;
   logic pin_out_ctl_ec_rst_l_wd;
   logic pin_out_ctl_ec_rst_l_we;
@@ -140,15 +169,9 @@ module rbox_reg_top (
   logic pin_out_ctl_key2_out_qs;
   logic pin_out_ctl_key2_out_wd;
   logic pin_out_ctl_key2_out_we;
-  logic pin_out_value_bat_en_qs;
-  logic pin_out_value_bat_en_wd;
-  logic pin_out_value_bat_en_we;
-  logic pin_out_value_ec_in_rw_qs;
-  logic pin_out_value_ec_in_rw_wd;
-  logic pin_out_value_ec_in_rw_we;
-  logic pin_out_value_flash_wp_l_qs;
-  logic pin_out_value_flash_wp_l_wd;
-  logic pin_out_value_flash_wp_l_we;
+  logic pin_out_value_bat_disable_qs;
+  logic pin_out_value_bat_disable_wd;
+  logic pin_out_value_bat_disable_we;
   logic pin_out_value_ec_rst_l_qs;
   logic pin_out_value_ec_rst_l_wd;
   logic pin_out_value_ec_rst_l_we;
@@ -164,47 +187,354 @@ module rbox_reg_top (
   logic pin_out_value_key2_out_qs;
   logic pin_out_value_key2_out_wd;
   logic pin_out_value_key2_out_we;
+  logic pin_in_value_ac_present_qs;
+  logic pin_in_value_ec_rst_l_qs;
+  logic pin_in_value_pwrb_in_qs;
+  logic pin_in_value_key0_in_qs;
+  logic pin_in_value_key1_in_qs;
+  logic pin_in_value_key2_in_qs;
+  logic key_intr_ctl_pwrb_in_h2l_qs;
+  logic key_intr_ctl_pwrb_in_h2l_wd;
+  logic key_intr_ctl_pwrb_in_h2l_we;
+  logic key_intr_ctl_key0_in_h2l_qs;
+  logic key_intr_ctl_key0_in_h2l_wd;
+  logic key_intr_ctl_key0_in_h2l_we;
+  logic key_intr_ctl_key1_in_h2l_qs;
+  logic key_intr_ctl_key1_in_h2l_wd;
+  logic key_intr_ctl_key1_in_h2l_we;
+  logic key_intr_ctl_key2_in_h2l_qs;
+  logic key_intr_ctl_key2_in_h2l_wd;
+  logic key_intr_ctl_key2_in_h2l_we;
+  logic key_intr_ctl_ac_present_h2l_qs;
+  logic key_intr_ctl_ac_present_h2l_wd;
+  logic key_intr_ctl_ac_present_h2l_we;
+  logic key_intr_ctl_ec_rst_l_h2l_qs;
+  logic key_intr_ctl_ec_rst_l_h2l_wd;
+  logic key_intr_ctl_ec_rst_l_h2l_we;
+  logic key_intr_ctl_pwrb_in_l2h_qs;
+  logic key_intr_ctl_pwrb_in_l2h_wd;
+  logic key_intr_ctl_pwrb_in_l2h_we;
+  logic key_intr_ctl_key0_in_l2h_qs;
+  logic key_intr_ctl_key0_in_l2h_wd;
+  logic key_intr_ctl_key0_in_l2h_we;
+  logic key_intr_ctl_key1_in_l2h_qs;
+  logic key_intr_ctl_key1_in_l2h_wd;
+  logic key_intr_ctl_key1_in_l2h_we;
+  logic key_intr_ctl_key2_in_l2h_qs;
+  logic key_intr_ctl_key2_in_l2h_wd;
+  logic key_intr_ctl_key2_in_l2h_we;
+  logic key_intr_ctl_ac_present_l2h_qs;
+  logic key_intr_ctl_ac_present_l2h_wd;
+  logic key_intr_ctl_ac_present_l2h_we;
+  logic key_intr_ctl_ec_rst_l_l2h_qs;
+  logic key_intr_ctl_ec_rst_l_l2h_wd;
+  logic key_intr_ctl_ec_rst_l_l2h_we;
+  logic [15:0] key_intr_debounce_ctl_qs;
+  logic [15:0] key_intr_debounce_ctl_wd;
+  logic key_intr_debounce_ctl_we;
+  logic [15:0] auto_block_debounce_ctl_debounce_timer_qs;
+  logic [15:0] auto_block_debounce_ctl_debounce_timer_wd;
+  logic auto_block_debounce_ctl_debounce_timer_we;
+  logic auto_block_debounce_ctl_auto_block_enable_qs;
+  logic auto_block_debounce_ctl_auto_block_enable_wd;
+  logic auto_block_debounce_ctl_auto_block_enable_we;
+  logic auto_block_out_ctl_key0_out_sel_qs;
+  logic auto_block_out_ctl_key0_out_sel_wd;
+  logic auto_block_out_ctl_key0_out_sel_we;
+  logic auto_block_out_ctl_key1_out_sel_qs;
+  logic auto_block_out_ctl_key1_out_sel_wd;
+  logic auto_block_out_ctl_key1_out_sel_we;
+  logic auto_block_out_ctl_key2_out_sel_qs;
+  logic auto_block_out_ctl_key2_out_sel_wd;
+  logic auto_block_out_ctl_key2_out_sel_we;
+  logic auto_block_out_ctl_key0_out_value_qs;
+  logic auto_block_out_ctl_key0_out_value_wd;
+  logic auto_block_out_ctl_key0_out_value_we;
+  logic auto_block_out_ctl_key1_out_value_qs;
+  logic auto_block_out_ctl_key1_out_value_wd;
+  logic auto_block_out_ctl_key1_out_value_we;
+  logic auto_block_out_ctl_key2_out_value_qs;
+  logic auto_block_out_ctl_key2_out_value_wd;
+  logic auto_block_out_ctl_key2_out_value_we;
+  logic com_sel_ctl0_key0_in_sel0_qs;
+  logic com_sel_ctl0_key0_in_sel0_wd;
+  logic com_sel_ctl0_key0_in_sel0_we;
+  logic com_sel_ctl0_key1_in_sel0_qs;
+  logic com_sel_ctl0_key1_in_sel0_wd;
+  logic com_sel_ctl0_key1_in_sel0_we;
+  logic com_sel_ctl0_key2_in_sel0_qs;
+  logic com_sel_ctl0_key2_in_sel0_wd;
+  logic com_sel_ctl0_key2_in_sel0_we;
+  logic com_sel_ctl0_pwrb_in_sel0_qs;
+  logic com_sel_ctl0_pwrb_in_sel0_wd;
+  logic com_sel_ctl0_pwrb_in_sel0_we;
+  logic com_sel_ctl0_ac_present_sel0_qs;
+  logic com_sel_ctl0_ac_present_sel0_wd;
+  logic com_sel_ctl0_ac_present_sel0_we;
+  logic com_sel_ctl1_key0_in_sel1_qs;
+  logic com_sel_ctl1_key0_in_sel1_wd;
+  logic com_sel_ctl1_key0_in_sel1_we;
+  logic com_sel_ctl1_key1_in_sel1_qs;
+  logic com_sel_ctl1_key1_in_sel1_wd;
+  logic com_sel_ctl1_key1_in_sel1_we;
+  logic com_sel_ctl1_key2_in_sel1_qs;
+  logic com_sel_ctl1_key2_in_sel1_wd;
+  logic com_sel_ctl1_key2_in_sel1_we;
+  logic com_sel_ctl1_pwrb_in_sel1_qs;
+  logic com_sel_ctl1_pwrb_in_sel1_wd;
+  logic com_sel_ctl1_pwrb_in_sel1_we;
+  logic com_sel_ctl1_ac_present_sel1_qs;
+  logic com_sel_ctl1_ac_present_sel1_wd;
+  logic com_sel_ctl1_ac_present_sel1_we;
+  logic com_sel_ctl2_key0_in_sel2_qs;
+  logic com_sel_ctl2_key0_in_sel2_wd;
+  logic com_sel_ctl2_key0_in_sel2_we;
+  logic com_sel_ctl2_key1_in_sel2_qs;
+  logic com_sel_ctl2_key1_in_sel2_wd;
+  logic com_sel_ctl2_key1_in_sel2_we;
+  logic com_sel_ctl2_key2_in_sel2_qs;
+  logic com_sel_ctl2_key2_in_sel2_wd;
+  logic com_sel_ctl2_key2_in_sel2_we;
+  logic com_sel_ctl2_pwrb_in_sel2_qs;
+  logic com_sel_ctl2_pwrb_in_sel2_wd;
+  logic com_sel_ctl2_pwrb_in_sel2_we;
+  logic com_sel_ctl2_ac_present_sel2_qs;
+  logic com_sel_ctl2_ac_present_sel2_wd;
+  logic com_sel_ctl2_ac_present_sel2_we;
+  logic com_sel_ctl3_key0_in_sel3_qs;
+  logic com_sel_ctl3_key0_in_sel3_wd;
+  logic com_sel_ctl3_key0_in_sel3_we;
+  logic com_sel_ctl3_key1_in_sel3_qs;
+  logic com_sel_ctl3_key1_in_sel3_wd;
+  logic com_sel_ctl3_key1_in_sel3_we;
+  logic com_sel_ctl3_key2_in_sel3_qs;
+  logic com_sel_ctl3_key2_in_sel3_wd;
+  logic com_sel_ctl3_key2_in_sel3_we;
+  logic com_sel_ctl3_pwrb_in_sel3_qs;
+  logic com_sel_ctl3_pwrb_in_sel3_wd;
+  logic com_sel_ctl3_pwrb_in_sel3_we;
+  logic com_sel_ctl3_ac_present_sel3_qs;
+  logic com_sel_ctl3_ac_present_sel3_wd;
+  logic com_sel_ctl3_ac_present_sel3_we;
+  logic [31:0] com_det_ctl0_qs;
+  logic [31:0] com_det_ctl0_wd;
+  logic com_det_ctl0_we;
+  logic [31:0] com_det_ctl1_qs;
+  logic [31:0] com_det_ctl1_wd;
+  logic com_det_ctl1_we;
+  logic [31:0] com_det_ctl2_qs;
+  logic [31:0] com_det_ctl2_wd;
+  logic com_det_ctl2_we;
+  logic [31:0] com_det_ctl3_qs;
+  logic [31:0] com_det_ctl3_wd;
+  logic com_det_ctl3_we;
+  logic com_out_ctl0_bat_disable0_qs;
+  logic com_out_ctl0_bat_disable0_wd;
+  logic com_out_ctl0_bat_disable0_we;
+  logic com_out_ctl0_interrupt0_qs;
+  logic com_out_ctl0_interrupt0_wd;
+  logic com_out_ctl0_interrupt0_we;
+  logic com_out_ctl0_ec_rst0_qs;
+  logic com_out_ctl0_ec_rst0_wd;
+  logic com_out_ctl0_ec_rst0_we;
+  logic com_out_ctl0_gsc_rst0_qs;
+  logic com_out_ctl0_gsc_rst0_wd;
+  logic com_out_ctl0_gsc_rst0_we;
+  logic com_out_ctl1_bat_disable1_qs;
+  logic com_out_ctl1_bat_disable1_wd;
+  logic com_out_ctl1_bat_disable1_we;
+  logic com_out_ctl1_interrupt1_qs;
+  logic com_out_ctl1_interrupt1_wd;
+  logic com_out_ctl1_interrupt1_we;
+  logic com_out_ctl1_ec_rst1_qs;
+  logic com_out_ctl1_ec_rst1_wd;
+  logic com_out_ctl1_ec_rst1_we;
+  logic com_out_ctl1_gsc_rst1_qs;
+  logic com_out_ctl1_gsc_rst1_wd;
+  logic com_out_ctl1_gsc_rst1_we;
+  logic com_out_ctl2_bat_disable2_qs;
+  logic com_out_ctl2_bat_disable2_wd;
+  logic com_out_ctl2_bat_disable2_we;
+  logic com_out_ctl2_interrupt2_qs;
+  logic com_out_ctl2_interrupt2_wd;
+  logic com_out_ctl2_interrupt2_we;
+  logic com_out_ctl2_ec_rst2_qs;
+  logic com_out_ctl2_ec_rst2_wd;
+  logic com_out_ctl2_ec_rst2_we;
+  logic com_out_ctl2_gsc_rst2_qs;
+  logic com_out_ctl2_gsc_rst2_wd;
+  logic com_out_ctl2_gsc_rst2_we;
+  logic com_out_ctl3_bat_disable3_qs;
+  logic com_out_ctl3_bat_disable3_wd;
+  logic com_out_ctl3_bat_disable3_we;
+  logic com_out_ctl3_interrupt3_qs;
+  logic com_out_ctl3_interrupt3_wd;
+  logic com_out_ctl3_interrupt3_we;
+  logic com_out_ctl3_ec_rst3_qs;
+  logic com_out_ctl3_ec_rst3_wd;
+  logic com_out_ctl3_ec_rst3_we;
+  logic com_out_ctl3_gsc_rst3_qs;
+  logic com_out_ctl3_gsc_rst3_wd;
+  logic com_out_ctl3_gsc_rst3_we;
+  logic intr_status_combo0_h2l_qs;
+  logic intr_status_combo0_h2l_wd;
+  logic intr_status_combo0_h2l_we;
+  logic intr_status_combo1_h2l_qs;
+  logic intr_status_combo1_h2l_wd;
+  logic intr_status_combo1_h2l_we;
+  logic intr_status_combo2_h2l_qs;
+  logic intr_status_combo2_h2l_wd;
+  logic intr_status_combo2_h2l_we;
+  logic intr_status_combo3_h2l_qs;
+  logic intr_status_combo3_h2l_wd;
+  logic intr_status_combo3_h2l_we;
+  logic intr_status_pwrb_h2l_qs;
+  logic intr_status_pwrb_h2l_wd;
+  logic intr_status_pwrb_h2l_we;
+  logic intr_status_key0_in_h2l_qs;
+  logic intr_status_key0_in_h2l_wd;
+  logic intr_status_key0_in_h2l_we;
+  logic intr_status_key1_in_h2l_qs;
+  logic intr_status_key1_in_h2l_wd;
+  logic intr_status_key1_in_h2l_we;
+  logic intr_status_key2_in_h2l_qs;
+  logic intr_status_key2_in_h2l_wd;
+  logic intr_status_key2_in_h2l_we;
+  logic intr_status_ac_present_h2l_qs;
+  logic intr_status_ac_present_h2l_wd;
+  logic intr_status_ac_present_h2l_we;
+  logic intr_status_ec_rst_l_h2l_qs;
+  logic intr_status_ec_rst_l_h2l_wd;
+  logic intr_status_ec_rst_l_h2l_we;
+  logic intr_status_pwrb_l2h_qs;
+  logic intr_status_pwrb_l2h_wd;
+  logic intr_status_pwrb_l2h_we;
+  logic intr_status_key0_in_l2h_qs;
+  logic intr_status_key0_in_l2h_wd;
+  logic intr_status_key0_in_l2h_we;
+  logic intr_status_key1_in_l2h_qs;
+  logic intr_status_key1_in_l2h_wd;
+  logic intr_status_key1_in_l2h_we;
+  logic intr_status_key2_in_l2h_qs;
+  logic intr_status_key2_in_l2h_wd;
+  logic intr_status_key2_in_l2h_we;
+  logic intr_status_ac_present_l2h_qs;
+  logic intr_status_ac_present_l2h_wd;
+  logic intr_status_ac_present_l2h_we;
+  logic intr_status_ec_rst_l_l2h_qs;
+  logic intr_status_ec_rst_l_l2h_wd;
+  logic intr_status_ec_rst_l_l2h_we;
 
   // Register instances
-  // R[cfg_lock_ctl]: V(False)
+  // R[intr_state]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_we),
+    .wd     (intr_state_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.de),
+    .d      (hw2reg.intr_state.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_qs)
+  );
+
+
+  // R[intr_enable]: V(False)
 
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_cfg_lock_ctl (
+  ) u_intr_enable (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (cfg_lock_ctl_we),
-    .wd     (cfg_lock_ctl_wd),
+    .we     (intr_enable_we),
+    .wd     (intr_enable_wd),
 
     // from internal hardware
-    .de     (hw2reg.cfg_lock_ctl.de),
-    .d      (hw2reg.cfg_lock_ctl.d ),
+    .de     (1'b0),
+    .d      ('0  ),
 
     // to internal hardware
-    .qe     (reg2hw.cfg_lock_ctl.qe),
-    .q      (reg2hw.cfg_lock_ctl.q ),
+    .qe     (),
+    .q      (reg2hw.intr_enable.q ),
 
     // to register interface (read)
-    .qs     (cfg_lock_ctl_qs)
+    .qs     (intr_enable_qs)
+  );
+
+
+  // R[intr_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.qe),
+    .q      (reg2hw.intr_test.q ),
+    .qs     ()
+  );
+
+
+  // R[cfg_wen_ctl]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h1)
+  ) u_cfg_wen_ctl (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (cfg_wen_ctl_we),
+    .wd     (cfg_wen_ctl_wd),
+
+    // from internal hardware
+    .de     (hw2reg.cfg_wen_ctl.de),
+    .d      (hw2reg.cfg_wen_ctl.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.cfg_wen_ctl.qe),
+    .q      (reg2hw.cfg_wen_ctl.q ),
+
+    // to register interface (read)
+    .qs     (cfg_wen_ctl_qs)
   );
 
 
   // R[ec_rst_ctl]: V(False)
 
   prim_subreg #(
-    .DW      (32),
+    .DW      (16),
     .SWACCESS("RW"),
-    .RESVAL  (32'ha04)
+    .RESVAL  (16'h7d0)
   ) u_ec_rst_ctl (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (ec_rst_ctl_we),
+    // from register interface (qualified with register enable)
+    .we     (ec_rst_ctl_we & cfg_wen_ctl_qs),
     .wd     (ec_rst_ctl_wd),
 
     // from internal hardware
@@ -220,141 +550,6 @@ module rbox_reg_top (
   );
 
 
-  // R[flash_wp_ctl]: V(False)
-
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h1)
-  ) u_flash_wp_ctl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (flash_wp_ctl_we),
-    .wd     (flash_wp_ctl_wd),
-
-    // from internal hardware
-    .de     (hw2reg.flash_wp_ctl.de),
-    .d      (hw2reg.flash_wp_ctl.d ),
-
-    // to internal hardware
-    .qe     (reg2hw.flash_wp_ctl.qe),
-    .q      (reg2hw.flash_wp_ctl.q ),
-
-    // to register interface (read)
-    .qs     (flash_wp_ctl_qs)
-  );
-
-
-  // R[key_com0_debounce_ctl]: V(False)
-
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'ha04)
-  ) u_key_com0_debounce_ctl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (key_com0_debounce_ctl_we),
-    .wd     (key_com0_debounce_ctl_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_com0_debounce_ctl.de),
-    .d      (hw2reg.key_com0_debounce_ctl.d ),
-
-    // to internal hardware
-    .qe     (reg2hw.key_com0_debounce_ctl.qe),
-    .q      (reg2hw.key_com0_debounce_ctl.q ),
-
-    // to register interface (read)
-    .qs     (key_com0_debounce_ctl_qs)
-  );
-
-
-  // R[key_com1_debounce_ctl]: V(False)
-
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'ha04)
-  ) u_key_com1_debounce_ctl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (key_com1_debounce_ctl_we),
-    .wd     (key_com1_debounce_ctl_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_com1_debounce_ctl.de),
-    .d      (hw2reg.key_com1_debounce_ctl.d ),
-
-    // to internal hardware
-    .qe     (reg2hw.key_com1_debounce_ctl.qe),
-    .q      (reg2hw.key_com1_debounce_ctl.q ),
-
-    // to register interface (read)
-    .qs     (key_com1_debounce_ctl_qs)
-  );
-
-
-  // R[key_com2_debounce_ctl]: V(False)
-
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'ha04)
-  ) u_key_com2_debounce_ctl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (key_com2_debounce_ctl_we),
-    .wd     (key_com2_debounce_ctl_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_com2_debounce_ctl.de),
-    .d      (hw2reg.key_com2_debounce_ctl.d ),
-
-    // to internal hardware
-    .qe     (reg2hw.key_com2_debounce_ctl.qe),
-    .q      (reg2hw.key_com2_debounce_ctl.q ),
-
-    // to register interface (read)
-    .qs     (key_com2_debounce_ctl_qs)
-  );
-
-
-  // R[key_com3_debounce_ctl]: V(False)
-
-  prim_subreg #(
-    .DW      (32),
-    .SWACCESS("RW"),
-    .RESVAL  (32'ha04)
-  ) u_key_com3_debounce_ctl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (key_com3_debounce_ctl_we),
-    .wd     (key_com3_debounce_ctl_wd),
-
-    // from internal hardware
-    .de     (hw2reg.key_com3_debounce_ctl.de),
-    .d      (hw2reg.key_com3_debounce_ctl.d ),
-
-    // to internal hardware
-    .qe     (reg2hw.key_com3_debounce_ctl.qe),
-    .q      (reg2hw.key_com3_debounce_ctl.q ),
-
-    // to register interface (read)
-    .qs     (key_com3_debounce_ctl_qs)
-  );
-
-
   // R[key_invert_ctl]: V(False)
 
   //   F[key0_in]: 0:0
@@ -366,8 +561,8 @@ module rbox_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (key_invert_ctl_key0_in_we),
+    // from register interface (qualified with register enable)
+    .we     (key_invert_ctl_key0_in_we & cfg_wen_ctl_qs),
     .wd     (key_invert_ctl_key0_in_wd),
 
     // from internal hardware
@@ -392,8 +587,8 @@ module rbox_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (key_invert_ctl_key0_out_we),
+    // from register interface (qualified with register enable)
+    .we     (key_invert_ctl_key0_out_we & cfg_wen_ctl_qs),
     .wd     (key_invert_ctl_key0_out_wd),
 
     // from internal hardware
@@ -418,8 +613,8 @@ module rbox_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (key_invert_ctl_key1_in_we),
+    // from register interface (qualified with register enable)
+    .we     (key_invert_ctl_key1_in_we & cfg_wen_ctl_qs),
     .wd     (key_invert_ctl_key1_in_wd),
 
     // from internal hardware
@@ -444,8 +639,8 @@ module rbox_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (key_invert_ctl_key1_out_we),
+    // from register interface (qualified with register enable)
+    .we     (key_invert_ctl_key1_out_we & cfg_wen_ctl_qs),
     .wd     (key_invert_ctl_key1_out_wd),
 
     // from internal hardware
@@ -470,8 +665,8 @@ module rbox_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (key_invert_ctl_key2_in_we),
+    // from register interface (qualified with register enable)
+    .we     (key_invert_ctl_key2_in_we & cfg_wen_ctl_qs),
     .wd     (key_invert_ctl_key2_in_wd),
 
     // from internal hardware
@@ -496,8 +691,8 @@ module rbox_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (key_invert_ctl_key2_out_we),
+    // from register interface (qualified with register enable)
+    .we     (key_invert_ctl_key2_out_we & cfg_wen_ctl_qs),
     .wd     (key_invert_ctl_key2_out_wd),
 
     // from internal hardware
@@ -522,8 +717,8 @@ module rbox_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (key_invert_ctl_pwrb_in_we),
+    // from register interface (qualified with register enable)
+    .we     (key_invert_ctl_pwrb_in_we & cfg_wen_ctl_qs),
     .wd     (key_invert_ctl_pwrb_in_wd),
 
     // from internal hardware
@@ -548,8 +743,8 @@ module rbox_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (key_invert_ctl_pwrb_out_we),
+    // from register interface (qualified with register enable)
+    .we     (key_invert_ctl_pwrb_out_we & cfg_wen_ctl_qs),
     .wd     (key_invert_ctl_pwrb_out_wd),
 
     // from internal hardware
@@ -565,91 +760,405 @@ module rbox_reg_top (
   );
 
 
+  //   F[ac_present]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_invert_ctl_ac_present (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_invert_ctl_ac_present_we & cfg_wen_ctl_qs),
+    .wd     (key_invert_ctl_ac_present_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_invert_ctl.ac_present.de),
+    .d      (hw2reg.key_invert_ctl.ac_present.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_invert_ctl.ac_present.qe),
+    .q      (reg2hw.key_invert_ctl.ac_present.q ),
+
+    // to register interface (read)
+    .qs     (key_invert_ctl_ac_present_qs)
+  );
+
+
+  //   F[bat_disable]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_invert_ctl_bat_disable (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_invert_ctl_bat_disable_we & cfg_wen_ctl_qs),
+    .wd     (key_invert_ctl_bat_disable_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_invert_ctl.bat_disable.de),
+    .d      (hw2reg.key_invert_ctl.bat_disable.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_invert_ctl.bat_disable.qe),
+    .q      (reg2hw.key_invert_ctl.bat_disable.q ),
+
+    // to register interface (read)
+    .qs     (key_invert_ctl_bat_disable_qs)
+  );
+
+
+  // R[pin_allowed_ctl]: V(False)
+
+  //   F[bat_disable_0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_bat_disable_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (pin_allowed_ctl_bat_disable_0_we & cfg_wen_ctl_qs),
+    .wd     (pin_allowed_ctl_bat_disable_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pin_allowed_ctl.bat_disable_0.de),
+    .d      (hw2reg.pin_allowed_ctl.bat_disable_0.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_allowed_ctl.bat_disable_0.qe),
+    .q      (reg2hw.pin_allowed_ctl.bat_disable_0.q ),
+
+    // to register interface (read)
+    .qs     (pin_allowed_ctl_bat_disable_0_qs)
+  );
+
+
+  //   F[ec_rst_l_0]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_pin_allowed_ctl_ec_rst_l_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (pin_allowed_ctl_ec_rst_l_0_we & cfg_wen_ctl_qs),
+    .wd     (pin_allowed_ctl_ec_rst_l_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pin_allowed_ctl.ec_rst_l_0.de),
+    .d      (hw2reg.pin_allowed_ctl.ec_rst_l_0.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_allowed_ctl.ec_rst_l_0.qe),
+    .q      (reg2hw.pin_allowed_ctl.ec_rst_l_0.q ),
+
+    // to register interface (read)
+    .qs     (pin_allowed_ctl_ec_rst_l_0_qs)
+  );
+
+
+  //   F[pwrb_out_0]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_pwrb_out_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (pin_allowed_ctl_pwrb_out_0_we & cfg_wen_ctl_qs),
+    .wd     (pin_allowed_ctl_pwrb_out_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pin_allowed_ctl.pwrb_out_0.de),
+    .d      (hw2reg.pin_allowed_ctl.pwrb_out_0.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_allowed_ctl.pwrb_out_0.qe),
+    .q      (reg2hw.pin_allowed_ctl.pwrb_out_0.q ),
+
+    // to register interface (read)
+    .qs     (pin_allowed_ctl_pwrb_out_0_qs)
+  );
+
+
+  //   F[key0_out_0]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_key0_out_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (pin_allowed_ctl_key0_out_0_we & cfg_wen_ctl_qs),
+    .wd     (pin_allowed_ctl_key0_out_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pin_allowed_ctl.key0_out_0.de),
+    .d      (hw2reg.pin_allowed_ctl.key0_out_0.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_allowed_ctl.key0_out_0.qe),
+    .q      (reg2hw.pin_allowed_ctl.key0_out_0.q ),
+
+    // to register interface (read)
+    .qs     (pin_allowed_ctl_key0_out_0_qs)
+  );
+
+
+  //   F[key1_out_0]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_key1_out_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (pin_allowed_ctl_key1_out_0_we & cfg_wen_ctl_qs),
+    .wd     (pin_allowed_ctl_key1_out_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pin_allowed_ctl.key1_out_0.de),
+    .d      (hw2reg.pin_allowed_ctl.key1_out_0.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_allowed_ctl.key1_out_0.qe),
+    .q      (reg2hw.pin_allowed_ctl.key1_out_0.q ),
+
+    // to register interface (read)
+    .qs     (pin_allowed_ctl_key1_out_0_qs)
+  );
+
+
+  //   F[key2_out_0]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_key2_out_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (pin_allowed_ctl_key2_out_0_we & cfg_wen_ctl_qs),
+    .wd     (pin_allowed_ctl_key2_out_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pin_allowed_ctl.key2_out_0.de),
+    .d      (hw2reg.pin_allowed_ctl.key2_out_0.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_allowed_ctl.key2_out_0.qe),
+    .q      (reg2hw.pin_allowed_ctl.key2_out_0.q ),
+
+    // to register interface (read)
+    .qs     (pin_allowed_ctl_key2_out_0_qs)
+  );
+
+
+  //   F[bat_disable_1]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_bat_disable_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (pin_allowed_ctl_bat_disable_1_we & cfg_wen_ctl_qs),
+    .wd     (pin_allowed_ctl_bat_disable_1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pin_allowed_ctl.bat_disable_1.de),
+    .d      (hw2reg.pin_allowed_ctl.bat_disable_1.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_allowed_ctl.bat_disable_1.qe),
+    .q      (reg2hw.pin_allowed_ctl.bat_disable_1.q ),
+
+    // to register interface (read)
+    .qs     (pin_allowed_ctl_bat_disable_1_qs)
+  );
+
+
+  //   F[ec_rst_l_1]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_ec_rst_l_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (pin_allowed_ctl_ec_rst_l_1_we & cfg_wen_ctl_qs),
+    .wd     (pin_allowed_ctl_ec_rst_l_1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pin_allowed_ctl.ec_rst_l_1.de),
+    .d      (hw2reg.pin_allowed_ctl.ec_rst_l_1.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_allowed_ctl.ec_rst_l_1.qe),
+    .q      (reg2hw.pin_allowed_ctl.ec_rst_l_1.q ),
+
+    // to register interface (read)
+    .qs     (pin_allowed_ctl_ec_rst_l_1_qs)
+  );
+
+
+  //   F[pwrb_out_1]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_pwrb_out_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (pin_allowed_ctl_pwrb_out_1_we & cfg_wen_ctl_qs),
+    .wd     (pin_allowed_ctl_pwrb_out_1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pin_allowed_ctl.pwrb_out_1.de),
+    .d      (hw2reg.pin_allowed_ctl.pwrb_out_1.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_allowed_ctl.pwrb_out_1.qe),
+    .q      (reg2hw.pin_allowed_ctl.pwrb_out_1.q ),
+
+    // to register interface (read)
+    .qs     (pin_allowed_ctl_pwrb_out_1_qs)
+  );
+
+
+  //   F[key0_out_1]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_key0_out_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (pin_allowed_ctl_key0_out_1_we & cfg_wen_ctl_qs),
+    .wd     (pin_allowed_ctl_key0_out_1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pin_allowed_ctl.key0_out_1.de),
+    .d      (hw2reg.pin_allowed_ctl.key0_out_1.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_allowed_ctl.key0_out_1.qe),
+    .q      (reg2hw.pin_allowed_ctl.key0_out_1.q ),
+
+    // to register interface (read)
+    .qs     (pin_allowed_ctl_key0_out_1_qs)
+  );
+
+
+  //   F[key1_out_1]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_key1_out_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (pin_allowed_ctl_key1_out_1_we & cfg_wen_ctl_qs),
+    .wd     (pin_allowed_ctl_key1_out_1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pin_allowed_ctl.key1_out_1.de),
+    .d      (hw2reg.pin_allowed_ctl.key1_out_1.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_allowed_ctl.key1_out_1.qe),
+    .q      (reg2hw.pin_allowed_ctl.key1_out_1.q ),
+
+    // to register interface (read)
+    .qs     (pin_allowed_ctl_key1_out_1_qs)
+  );
+
+
+  //   F[key2_out_1]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pin_allowed_ctl_key2_out_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (pin_allowed_ctl_key2_out_1_we & cfg_wen_ctl_qs),
+    .wd     (pin_allowed_ctl_key2_out_1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pin_allowed_ctl.key2_out_1.de),
+    .d      (hw2reg.pin_allowed_ctl.key2_out_1.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_allowed_ctl.key2_out_1.qe),
+    .q      (reg2hw.pin_allowed_ctl.key2_out_1.q ),
+
+    // to register interface (read)
+    .qs     (pin_allowed_ctl_key2_out_1_qs)
+  );
+
+
   // R[pin_out_ctl]: V(False)
 
-  //   F[bat_en]: 0:0
+  //   F[bat_disable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pin_out_ctl_bat_en (
+  ) u_pin_out_ctl_bat_disable (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pin_out_ctl_bat_en_we),
-    .wd     (pin_out_ctl_bat_en_wd),
+    .we     (pin_out_ctl_bat_disable_we),
+    .wd     (pin_out_ctl_bat_disable_wd),
 
     // from internal hardware
-    .de     (hw2reg.pin_out_ctl.bat_en.de),
-    .d      (hw2reg.pin_out_ctl.bat_en.d ),
+    .de     (hw2reg.pin_out_ctl.bat_disable.de),
+    .d      (hw2reg.pin_out_ctl.bat_disable.d ),
 
     // to internal hardware
-    .qe     (reg2hw.pin_out_ctl.bat_en.qe),
-    .q      (reg2hw.pin_out_ctl.bat_en.q ),
+    .qe     (reg2hw.pin_out_ctl.bat_disable.qe),
+    .q      (reg2hw.pin_out_ctl.bat_disable.q ),
 
     // to register interface (read)
-    .qs     (pin_out_ctl_bat_en_qs)
+    .qs     (pin_out_ctl_bat_disable_qs)
   );
 
 
-  //   F[ec_in_rw]: 1:1
+  //   F[ec_rst_l]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pin_out_ctl_ec_in_rw (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pin_out_ctl_ec_in_rw_we),
-    .wd     (pin_out_ctl_ec_in_rw_wd),
-
-    // from internal hardware
-    .de     (hw2reg.pin_out_ctl.ec_in_rw.de),
-    .d      (hw2reg.pin_out_ctl.ec_in_rw.d ),
-
-    // to internal hardware
-    .qe     (reg2hw.pin_out_ctl.ec_in_rw.qe),
-    .q      (reg2hw.pin_out_ctl.ec_in_rw.q ),
-
-    // to register interface (read)
-    .qs     (pin_out_ctl_ec_in_rw_qs)
-  );
-
-
-  //   F[flash_wp_l]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pin_out_ctl_flash_wp_l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pin_out_ctl_flash_wp_l_we),
-    .wd     (pin_out_ctl_flash_wp_l_wd),
-
-    // from internal hardware
-    .de     (hw2reg.pin_out_ctl.flash_wp_l.de),
-    .d      (hw2reg.pin_out_ctl.flash_wp_l.d ),
-
-    // to internal hardware
-    .qe     (reg2hw.pin_out_ctl.flash_wp_l.qe),
-    .q      (reg2hw.pin_out_ctl.flash_wp_l.q ),
-
-    // to register interface (read)
-    .qs     (pin_out_ctl_flash_wp_l_qs)
-  );
-
-
-  //   F[ec_rst_l]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h1)
   ) u_pin_out_ctl_ec_rst_l (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -671,7 +1180,7 @@ module rbox_reg_top (
   );
 
 
-  //   F[pwrb_out]: 4:4
+  //   F[pwrb_out]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -697,7 +1206,7 @@ module rbox_reg_top (
   );
 
 
-  //   F[key0_out]: 5:5
+  //   F[key0_out]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -723,7 +1232,7 @@ module rbox_reg_top (
   );
 
 
-  //   F[key1_out]: 6:6
+  //   F[key1_out]: 4:4
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -749,7 +1258,7 @@ module rbox_reg_top (
   );
 
 
-  //   F[key2_out]: 7:7
+  //   F[key2_out]: 5:5
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -777,85 +1286,33 @@ module rbox_reg_top (
 
   // R[pin_out_value]: V(False)
 
-  //   F[bat_en]: 0:0
+  //   F[bat_disable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_pin_out_value_bat_en (
+  ) u_pin_out_value_bat_disable (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (pin_out_value_bat_en_we),
-    .wd     (pin_out_value_bat_en_wd),
+    .we     (pin_out_value_bat_disable_we),
+    .wd     (pin_out_value_bat_disable_wd),
 
     // from internal hardware
-    .de     (hw2reg.pin_out_value.bat_en.de),
-    .d      (hw2reg.pin_out_value.bat_en.d ),
+    .de     (hw2reg.pin_out_value.bat_disable.de),
+    .d      (hw2reg.pin_out_value.bat_disable.d ),
 
     // to internal hardware
-    .qe     (reg2hw.pin_out_value.bat_en.qe),
-    .q      (reg2hw.pin_out_value.bat_en.q ),
+    .qe     (reg2hw.pin_out_value.bat_disable.qe),
+    .q      (reg2hw.pin_out_value.bat_disable.q ),
 
     // to register interface (read)
-    .qs     (pin_out_value_bat_en_qs)
+    .qs     (pin_out_value_bat_disable_qs)
   );
 
 
-  //   F[ec_in_rw]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pin_out_value_ec_in_rw (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pin_out_value_ec_in_rw_we),
-    .wd     (pin_out_value_ec_in_rw_wd),
-
-    // from internal hardware
-    .de     (hw2reg.pin_out_value.ec_in_rw.de),
-    .d      (hw2reg.pin_out_value.ec_in_rw.d ),
-
-    // to internal hardware
-    .qe     (reg2hw.pin_out_value.ec_in_rw.qe),
-    .q      (reg2hw.pin_out_value.ec_in_rw.q ),
-
-    // to register interface (read)
-    .qs     (pin_out_value_ec_in_rw_qs)
-  );
-
-
-  //   F[flash_wp_l]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_pin_out_value_flash_wp_l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (pin_out_value_flash_wp_l_we),
-    .wd     (pin_out_value_flash_wp_l_wd),
-
-    // from internal hardware
-    .de     (hw2reg.pin_out_value.flash_wp_l.de),
-    .d      (hw2reg.pin_out_value.flash_wp_l.d ),
-
-    // to internal hardware
-    .qe     (reg2hw.pin_out_value.flash_wp_l.qe),
-    .q      (reg2hw.pin_out_value.flash_wp_l.q ),
-
-    // to register interface (read)
-    .qs     (pin_out_value_flash_wp_l_qs)
-  );
-
-
-  //   F[ec_rst_l]: 3:3
+  //   F[ec_rst_l]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -881,7 +1338,7 @@ module rbox_reg_top (
   );
 
 
-  //   F[pwrb_out]: 4:4
+  //   F[pwrb_out]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -907,7 +1364,7 @@ module rbox_reg_top (
   );
 
 
-  //   F[key0_out]: 5:5
+  //   F[key0_out]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -933,7 +1390,7 @@ module rbox_reg_top (
   );
 
 
-  //   F[key1_out]: 6:6
+  //   F[key1_out]: 4:4
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -959,7 +1416,7 @@ module rbox_reg_top (
   );
 
 
-  //   F[key2_out]: 7:7
+  //   F[key2_out]: 5:5
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -985,21 +1442,2235 @@ module rbox_reg_top (
   );
 
 
+  // R[pin_in_value]: V(False)
+
+  //   F[ac_present]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_pin_in_value_ac_present (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.pin_in_value.ac_present.de),
+    .d      (hw2reg.pin_in_value.ac_present.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_in_value.ac_present.qe),
+    .q      (reg2hw.pin_in_value.ac_present.q ),
+
+    // to register interface (read)
+    .qs     (pin_in_value_ac_present_qs)
+  );
 
 
-  logic [9:0] addr_hit;
+  //   F[ec_rst_l]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_pin_in_value_ec_rst_l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.pin_in_value.ec_rst_l.de),
+    .d      (hw2reg.pin_in_value.ec_rst_l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_in_value.ec_rst_l.qe),
+    .q      (reg2hw.pin_in_value.ec_rst_l.q ),
+
+    // to register interface (read)
+    .qs     (pin_in_value_ec_rst_l_qs)
+  );
+
+
+  //   F[pwrb_in]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_pin_in_value_pwrb_in (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.pin_in_value.pwrb_in.de),
+    .d      (hw2reg.pin_in_value.pwrb_in.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_in_value.pwrb_in.qe),
+    .q      (reg2hw.pin_in_value.pwrb_in.q ),
+
+    // to register interface (read)
+    .qs     (pin_in_value_pwrb_in_qs)
+  );
+
+
+  //   F[key0_in]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_pin_in_value_key0_in (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.pin_in_value.key0_in.de),
+    .d      (hw2reg.pin_in_value.key0_in.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_in_value.key0_in.qe),
+    .q      (reg2hw.pin_in_value.key0_in.q ),
+
+    // to register interface (read)
+    .qs     (pin_in_value_key0_in_qs)
+  );
+
+
+  //   F[key1_in]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_pin_in_value_key1_in (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.pin_in_value.key1_in.de),
+    .d      (hw2reg.pin_in_value.key1_in.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_in_value.key1_in.qe),
+    .q      (reg2hw.pin_in_value.key1_in.q ),
+
+    // to register interface (read)
+    .qs     (pin_in_value_key1_in_qs)
+  );
+
+
+  //   F[key2_in]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_pin_in_value_key2_in (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.pin_in_value.key2_in.de),
+    .d      (hw2reg.pin_in_value.key2_in.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.pin_in_value.key2_in.qe),
+    .q      (reg2hw.pin_in_value.key2_in.q ),
+
+    // to register interface (read)
+    .qs     (pin_in_value_key2_in_qs)
+  );
+
+
+  // R[key_intr_ctl]: V(False)
+
+  //   F[pwrb_in_h2l]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_intr_ctl_pwrb_in_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_ctl_pwrb_in_h2l_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_ctl_pwrb_in_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_ctl.pwrb_in_h2l.de),
+    .d      (hw2reg.key_intr_ctl.pwrb_in_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_ctl.pwrb_in_h2l.qe),
+    .q      (reg2hw.key_intr_ctl.pwrb_in_h2l.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_ctl_pwrb_in_h2l_qs)
+  );
+
+
+  //   F[key0_in_h2l]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_intr_ctl_key0_in_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_ctl_key0_in_h2l_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_ctl_key0_in_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_ctl.key0_in_h2l.de),
+    .d      (hw2reg.key_intr_ctl.key0_in_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_ctl.key0_in_h2l.qe),
+    .q      (reg2hw.key_intr_ctl.key0_in_h2l.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_ctl_key0_in_h2l_qs)
+  );
+
+
+  //   F[key1_in_h2l]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_intr_ctl_key1_in_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_ctl_key1_in_h2l_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_ctl_key1_in_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_ctl.key1_in_h2l.de),
+    .d      (hw2reg.key_intr_ctl.key1_in_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_ctl.key1_in_h2l.qe),
+    .q      (reg2hw.key_intr_ctl.key1_in_h2l.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_ctl_key1_in_h2l_qs)
+  );
+
+
+  //   F[key2_in_h2l]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_intr_ctl_key2_in_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_ctl_key2_in_h2l_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_ctl_key2_in_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_ctl.key2_in_h2l.de),
+    .d      (hw2reg.key_intr_ctl.key2_in_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_ctl.key2_in_h2l.qe),
+    .q      (reg2hw.key_intr_ctl.key2_in_h2l.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_ctl_key2_in_h2l_qs)
+  );
+
+
+  //   F[ac_present_h2l]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_intr_ctl_ac_present_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_ctl_ac_present_h2l_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_ctl_ac_present_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_ctl.ac_present_h2l.de),
+    .d      (hw2reg.key_intr_ctl.ac_present_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_ctl.ac_present_h2l.qe),
+    .q      (reg2hw.key_intr_ctl.ac_present_h2l.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_ctl_ac_present_h2l_qs)
+  );
+
+
+  //   F[ec_rst_l_h2l]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_intr_ctl_ec_rst_l_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_ctl_ec_rst_l_h2l_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_ctl_ec_rst_l_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_ctl.ec_rst_l_h2l.de),
+    .d      (hw2reg.key_intr_ctl.ec_rst_l_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_ctl.ec_rst_l_h2l.qe),
+    .q      (reg2hw.key_intr_ctl.ec_rst_l_h2l.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_ctl_ec_rst_l_h2l_qs)
+  );
+
+
+  //   F[pwrb_in_l2h]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_intr_ctl_pwrb_in_l2h (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_ctl_pwrb_in_l2h_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_ctl_pwrb_in_l2h_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_ctl.pwrb_in_l2h.de),
+    .d      (hw2reg.key_intr_ctl.pwrb_in_l2h.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_ctl.pwrb_in_l2h.qe),
+    .q      (reg2hw.key_intr_ctl.pwrb_in_l2h.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_ctl_pwrb_in_l2h_qs)
+  );
+
+
+  //   F[key0_in_l2h]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_intr_ctl_key0_in_l2h (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_ctl_key0_in_l2h_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_ctl_key0_in_l2h_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_ctl.key0_in_l2h.de),
+    .d      (hw2reg.key_intr_ctl.key0_in_l2h.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_ctl.key0_in_l2h.qe),
+    .q      (reg2hw.key_intr_ctl.key0_in_l2h.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_ctl_key0_in_l2h_qs)
+  );
+
+
+  //   F[key1_in_l2h]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_intr_ctl_key1_in_l2h (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_ctl_key1_in_l2h_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_ctl_key1_in_l2h_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_ctl.key1_in_l2h.de),
+    .d      (hw2reg.key_intr_ctl.key1_in_l2h.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_ctl.key1_in_l2h.qe),
+    .q      (reg2hw.key_intr_ctl.key1_in_l2h.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_ctl_key1_in_l2h_qs)
+  );
+
+
+  //   F[key2_in_l2h]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_intr_ctl_key2_in_l2h (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_ctl_key2_in_l2h_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_ctl_key2_in_l2h_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_ctl.key2_in_l2h.de),
+    .d      (hw2reg.key_intr_ctl.key2_in_l2h.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_ctl.key2_in_l2h.qe),
+    .q      (reg2hw.key_intr_ctl.key2_in_l2h.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_ctl_key2_in_l2h_qs)
+  );
+
+
+  //   F[ac_present_l2h]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_intr_ctl_ac_present_l2h (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_ctl_ac_present_l2h_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_ctl_ac_present_l2h_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_ctl.ac_present_l2h.de),
+    .d      (hw2reg.key_intr_ctl.ac_present_l2h.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_ctl.ac_present_l2h.qe),
+    .q      (reg2hw.key_intr_ctl.ac_present_l2h.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_ctl_ac_present_l2h_qs)
+  );
+
+
+  //   F[ec_rst_l_l2h]: 13:13
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_key_intr_ctl_ec_rst_l_l2h (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_ctl_ec_rst_l_l2h_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_ctl_ec_rst_l_l2h_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_ctl.ec_rst_l_l2h.de),
+    .d      (hw2reg.key_intr_ctl.ec_rst_l_l2h.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_ctl.ec_rst_l_l2h.qe),
+    .q      (reg2hw.key_intr_ctl.ec_rst_l_l2h.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_ctl_ec_rst_l_l2h_qs)
+  );
+
+
+  // R[key_intr_debounce_ctl]: V(False)
+
+  prim_subreg #(
+    .DW      (16),
+    .SWACCESS("RW"),
+    .RESVAL  (16'h0)
+  ) u_key_intr_debounce_ctl (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (key_intr_debounce_ctl_we & cfg_wen_ctl_qs),
+    .wd     (key_intr_debounce_ctl_wd),
+
+    // from internal hardware
+    .de     (hw2reg.key_intr_debounce_ctl.de),
+    .d      (hw2reg.key_intr_debounce_ctl.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.key_intr_debounce_ctl.qe),
+    .q      (reg2hw.key_intr_debounce_ctl.q ),
+
+    // to register interface (read)
+    .qs     (key_intr_debounce_ctl_qs)
+  );
+
+
+  // R[auto_block_debounce_ctl]: V(False)
+
+  //   F[debounce_timer]: 15:0
+  prim_subreg #(
+    .DW      (16),
+    .SWACCESS("RW"),
+    .RESVAL  (16'h0)
+  ) u_auto_block_debounce_ctl_debounce_timer (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (auto_block_debounce_ctl_debounce_timer_we & cfg_wen_ctl_qs),
+    .wd     (auto_block_debounce_ctl_debounce_timer_wd),
+
+    // from internal hardware
+    .de     (hw2reg.auto_block_debounce_ctl.debounce_timer.de),
+    .d      (hw2reg.auto_block_debounce_ctl.debounce_timer.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.auto_block_debounce_ctl.debounce_timer.qe),
+    .q      (reg2hw.auto_block_debounce_ctl.debounce_timer.q ),
+
+    // to register interface (read)
+    .qs     (auto_block_debounce_ctl_debounce_timer_qs)
+  );
+
+
+  //   F[auto_block_enable]: 16:16
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_auto_block_debounce_ctl_auto_block_enable (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (auto_block_debounce_ctl_auto_block_enable_we & cfg_wen_ctl_qs),
+    .wd     (auto_block_debounce_ctl_auto_block_enable_wd),
+
+    // from internal hardware
+    .de     (hw2reg.auto_block_debounce_ctl.auto_block_enable.de),
+    .d      (hw2reg.auto_block_debounce_ctl.auto_block_enable.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.auto_block_debounce_ctl.auto_block_enable.qe),
+    .q      (reg2hw.auto_block_debounce_ctl.auto_block_enable.q ),
+
+    // to register interface (read)
+    .qs     (auto_block_debounce_ctl_auto_block_enable_qs)
+  );
+
+
+  // R[auto_block_out_ctl]: V(False)
+
+  //   F[key0_out_sel]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_auto_block_out_ctl_key0_out_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (auto_block_out_ctl_key0_out_sel_we & cfg_wen_ctl_qs),
+    .wd     (auto_block_out_ctl_key0_out_sel_wd),
+
+    // from internal hardware
+    .de     (hw2reg.auto_block_out_ctl.key0_out_sel.de),
+    .d      (hw2reg.auto_block_out_ctl.key0_out_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.auto_block_out_ctl.key0_out_sel.qe),
+    .q      (reg2hw.auto_block_out_ctl.key0_out_sel.q ),
+
+    // to register interface (read)
+    .qs     (auto_block_out_ctl_key0_out_sel_qs)
+  );
+
+
+  //   F[key1_out_sel]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_auto_block_out_ctl_key1_out_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (auto_block_out_ctl_key1_out_sel_we & cfg_wen_ctl_qs),
+    .wd     (auto_block_out_ctl_key1_out_sel_wd),
+
+    // from internal hardware
+    .de     (hw2reg.auto_block_out_ctl.key1_out_sel.de),
+    .d      (hw2reg.auto_block_out_ctl.key1_out_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.auto_block_out_ctl.key1_out_sel.qe),
+    .q      (reg2hw.auto_block_out_ctl.key1_out_sel.q ),
+
+    // to register interface (read)
+    .qs     (auto_block_out_ctl_key1_out_sel_qs)
+  );
+
+
+  //   F[key2_out_sel]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_auto_block_out_ctl_key2_out_sel (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (auto_block_out_ctl_key2_out_sel_we & cfg_wen_ctl_qs),
+    .wd     (auto_block_out_ctl_key2_out_sel_wd),
+
+    // from internal hardware
+    .de     (hw2reg.auto_block_out_ctl.key2_out_sel.de),
+    .d      (hw2reg.auto_block_out_ctl.key2_out_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.auto_block_out_ctl.key2_out_sel.qe),
+    .q      (reg2hw.auto_block_out_ctl.key2_out_sel.q ),
+
+    // to register interface (read)
+    .qs     (auto_block_out_ctl_key2_out_sel_qs)
+  );
+
+
+  //   F[key0_out_value]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_auto_block_out_ctl_key0_out_value (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (auto_block_out_ctl_key0_out_value_we & cfg_wen_ctl_qs),
+    .wd     (auto_block_out_ctl_key0_out_value_wd),
+
+    // from internal hardware
+    .de     (hw2reg.auto_block_out_ctl.key0_out_value.de),
+    .d      (hw2reg.auto_block_out_ctl.key0_out_value.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.auto_block_out_ctl.key0_out_value.qe),
+    .q      (reg2hw.auto_block_out_ctl.key0_out_value.q ),
+
+    // to register interface (read)
+    .qs     (auto_block_out_ctl_key0_out_value_qs)
+  );
+
+
+  //   F[key1_out_value]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_auto_block_out_ctl_key1_out_value (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (auto_block_out_ctl_key1_out_value_we & cfg_wen_ctl_qs),
+    .wd     (auto_block_out_ctl_key1_out_value_wd),
+
+    // from internal hardware
+    .de     (hw2reg.auto_block_out_ctl.key1_out_value.de),
+    .d      (hw2reg.auto_block_out_ctl.key1_out_value.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.auto_block_out_ctl.key1_out_value.qe),
+    .q      (reg2hw.auto_block_out_ctl.key1_out_value.q ),
+
+    // to register interface (read)
+    .qs     (auto_block_out_ctl_key1_out_value_qs)
+  );
+
+
+  //   F[key2_out_value]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_auto_block_out_ctl_key2_out_value (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (auto_block_out_ctl_key2_out_value_we & cfg_wen_ctl_qs),
+    .wd     (auto_block_out_ctl_key2_out_value_wd),
+
+    // from internal hardware
+    .de     (hw2reg.auto_block_out_ctl.key2_out_value.de),
+    .d      (hw2reg.auto_block_out_ctl.key2_out_value.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.auto_block_out_ctl.key2_out_value.qe),
+    .q      (reg2hw.auto_block_out_ctl.key2_out_value.q ),
+
+    // to register interface (read)
+    .qs     (auto_block_out_ctl_key2_out_value_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg com_sel_ctl
+  // R[com_sel_ctl0]: V(False)
+
+  // F[key0_in_sel0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl0_key0_in_sel0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl0_key0_in_sel0_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl0_key0_in_sel0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[0].key0_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[0].key0_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[0].key0_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[0].key0_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl0_key0_in_sel0_qs)
+  );
+
+
+  // F[key1_in_sel0]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl0_key1_in_sel0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl0_key1_in_sel0_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl0_key1_in_sel0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[0].key1_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[0].key1_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[0].key1_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[0].key1_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl0_key1_in_sel0_qs)
+  );
+
+
+  // F[key2_in_sel0]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl0_key2_in_sel0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl0_key2_in_sel0_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl0_key2_in_sel0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[0].key2_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[0].key2_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[0].key2_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[0].key2_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl0_key2_in_sel0_qs)
+  );
+
+
+  // F[pwrb_in_sel0]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl0_pwrb_in_sel0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl0_pwrb_in_sel0_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl0_pwrb_in_sel0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[0].pwrb_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[0].pwrb_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[0].pwrb_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[0].pwrb_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl0_pwrb_in_sel0_qs)
+  );
+
+
+  // F[ac_present_sel0]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl0_ac_present_sel0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl0_ac_present_sel0_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl0_ac_present_sel0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[0].ac_present_sel.de),
+    .d      (hw2reg.com_sel_ctl[0].ac_present_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[0].ac_present_sel.qe),
+    .q      (reg2hw.com_sel_ctl[0].ac_present_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl0_ac_present_sel0_qs)
+  );
+
+
+  // Subregister 1 of Multireg com_sel_ctl
+  // R[com_sel_ctl1]: V(False)
+
+  // F[key0_in_sel1]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl1_key0_in_sel1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl1_key0_in_sel1_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl1_key0_in_sel1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[1].key0_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[1].key0_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[1].key0_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[1].key0_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl1_key0_in_sel1_qs)
+  );
+
+
+  // F[key1_in_sel1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl1_key1_in_sel1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl1_key1_in_sel1_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl1_key1_in_sel1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[1].key1_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[1].key1_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[1].key1_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[1].key1_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl1_key1_in_sel1_qs)
+  );
+
+
+  // F[key2_in_sel1]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl1_key2_in_sel1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl1_key2_in_sel1_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl1_key2_in_sel1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[1].key2_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[1].key2_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[1].key2_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[1].key2_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl1_key2_in_sel1_qs)
+  );
+
+
+  // F[pwrb_in_sel1]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl1_pwrb_in_sel1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl1_pwrb_in_sel1_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl1_pwrb_in_sel1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[1].pwrb_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[1].pwrb_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[1].pwrb_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[1].pwrb_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl1_pwrb_in_sel1_qs)
+  );
+
+
+  // F[ac_present_sel1]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl1_ac_present_sel1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl1_ac_present_sel1_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl1_ac_present_sel1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[1].ac_present_sel.de),
+    .d      (hw2reg.com_sel_ctl[1].ac_present_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[1].ac_present_sel.qe),
+    .q      (reg2hw.com_sel_ctl[1].ac_present_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl1_ac_present_sel1_qs)
+  );
+
+
+  // Subregister 2 of Multireg com_sel_ctl
+  // R[com_sel_ctl2]: V(False)
+
+  // F[key0_in_sel2]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl2_key0_in_sel2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl2_key0_in_sel2_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl2_key0_in_sel2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[2].key0_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[2].key0_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[2].key0_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[2].key0_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl2_key0_in_sel2_qs)
+  );
+
+
+  // F[key1_in_sel2]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl2_key1_in_sel2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl2_key1_in_sel2_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl2_key1_in_sel2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[2].key1_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[2].key1_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[2].key1_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[2].key1_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl2_key1_in_sel2_qs)
+  );
+
+
+  // F[key2_in_sel2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl2_key2_in_sel2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl2_key2_in_sel2_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl2_key2_in_sel2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[2].key2_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[2].key2_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[2].key2_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[2].key2_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl2_key2_in_sel2_qs)
+  );
+
+
+  // F[pwrb_in_sel2]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl2_pwrb_in_sel2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl2_pwrb_in_sel2_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl2_pwrb_in_sel2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[2].pwrb_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[2].pwrb_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[2].pwrb_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[2].pwrb_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl2_pwrb_in_sel2_qs)
+  );
+
+
+  // F[ac_present_sel2]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl2_ac_present_sel2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl2_ac_present_sel2_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl2_ac_present_sel2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[2].ac_present_sel.de),
+    .d      (hw2reg.com_sel_ctl[2].ac_present_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[2].ac_present_sel.qe),
+    .q      (reg2hw.com_sel_ctl[2].ac_present_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl2_ac_present_sel2_qs)
+  );
+
+
+  // Subregister 3 of Multireg com_sel_ctl
+  // R[com_sel_ctl3]: V(False)
+
+  // F[key0_in_sel3]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl3_key0_in_sel3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl3_key0_in_sel3_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl3_key0_in_sel3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[3].key0_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[3].key0_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[3].key0_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[3].key0_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl3_key0_in_sel3_qs)
+  );
+
+
+  // F[key1_in_sel3]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl3_key1_in_sel3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl3_key1_in_sel3_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl3_key1_in_sel3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[3].key1_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[3].key1_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[3].key1_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[3].key1_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl3_key1_in_sel3_qs)
+  );
+
+
+  // F[key2_in_sel3]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl3_key2_in_sel3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl3_key2_in_sel3_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl3_key2_in_sel3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[3].key2_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[3].key2_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[3].key2_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[3].key2_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl3_key2_in_sel3_qs)
+  );
+
+
+  // F[pwrb_in_sel3]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl3_pwrb_in_sel3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl3_pwrb_in_sel3_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl3_pwrb_in_sel3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[3].pwrb_in_sel.de),
+    .d      (hw2reg.com_sel_ctl[3].pwrb_in_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[3].pwrb_in_sel.qe),
+    .q      (reg2hw.com_sel_ctl[3].pwrb_in_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl3_pwrb_in_sel3_qs)
+  );
+
+
+  // F[ac_present_sel3]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_sel_ctl3_ac_present_sel3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_sel_ctl3_ac_present_sel3_we & cfg_wen_ctl_qs),
+    .wd     (com_sel_ctl3_ac_present_sel3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_sel_ctl[3].ac_present_sel.de),
+    .d      (hw2reg.com_sel_ctl[3].ac_present_sel.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_sel_ctl[3].ac_present_sel.qe),
+    .q      (reg2hw.com_sel_ctl[3].ac_present_sel.q ),
+
+    // to register interface (read)
+    .qs     (com_sel_ctl3_ac_present_sel3_qs)
+  );
+
+
+
+
+  // Subregister 0 of Multireg com_det_ctl
+  // R[com_det_ctl0]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_com_det_ctl0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_det_ctl0_we & cfg_wen_ctl_qs),
+    .wd     (com_det_ctl0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_det_ctl[0].de),
+    .d      (hw2reg.com_det_ctl[0].d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_det_ctl[0].qe),
+    .q      (reg2hw.com_det_ctl[0].q ),
+
+    // to register interface (read)
+    .qs     (com_det_ctl0_qs)
+  );
+
+  // Subregister 1 of Multireg com_det_ctl
+  // R[com_det_ctl1]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_com_det_ctl1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_det_ctl1_we & cfg_wen_ctl_qs),
+    .wd     (com_det_ctl1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_det_ctl[1].de),
+    .d      (hw2reg.com_det_ctl[1].d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_det_ctl[1].qe),
+    .q      (reg2hw.com_det_ctl[1].q ),
+
+    // to register interface (read)
+    .qs     (com_det_ctl1_qs)
+  );
+
+  // Subregister 2 of Multireg com_det_ctl
+  // R[com_det_ctl2]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_com_det_ctl2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_det_ctl2_we & cfg_wen_ctl_qs),
+    .wd     (com_det_ctl2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_det_ctl[2].de),
+    .d      (hw2reg.com_det_ctl[2].d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_det_ctl[2].qe),
+    .q      (reg2hw.com_det_ctl[2].q ),
+
+    // to register interface (read)
+    .qs     (com_det_ctl2_qs)
+  );
+
+  // Subregister 3 of Multireg com_det_ctl
+  // R[com_det_ctl3]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_com_det_ctl3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_det_ctl3_we & cfg_wen_ctl_qs),
+    .wd     (com_det_ctl3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_det_ctl[3].de),
+    .d      (hw2reg.com_det_ctl[3].d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_det_ctl[3].qe),
+    .q      (reg2hw.com_det_ctl[3].q ),
+
+    // to register interface (read)
+    .qs     (com_det_ctl3_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg com_out_ctl
+  // R[com_out_ctl0]: V(False)
+
+  // F[bat_disable0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl0_bat_disable0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl0_bat_disable0_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl0_bat_disable0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[0].bat_disable.de),
+    .d      (hw2reg.com_out_ctl[0].bat_disable.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[0].bat_disable.qe),
+    .q      (reg2hw.com_out_ctl[0].bat_disable.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl0_bat_disable0_qs)
+  );
+
+
+  // F[interrupt0]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl0_interrupt0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl0_interrupt0_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl0_interrupt0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[0].interrupt.de),
+    .d      (hw2reg.com_out_ctl[0].interrupt.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[0].interrupt.qe),
+    .q      (reg2hw.com_out_ctl[0].interrupt.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl0_interrupt0_qs)
+  );
+
+
+  // F[ec_rst0]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl0_ec_rst0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl0_ec_rst0_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl0_ec_rst0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[0].ec_rst.de),
+    .d      (hw2reg.com_out_ctl[0].ec_rst.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[0].ec_rst.qe),
+    .q      (reg2hw.com_out_ctl[0].ec_rst.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl0_ec_rst0_qs)
+  );
+
+
+  // F[gsc_rst0]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl0_gsc_rst0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl0_gsc_rst0_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl0_gsc_rst0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[0].gsc_rst.de),
+    .d      (hw2reg.com_out_ctl[0].gsc_rst.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[0].gsc_rst.qe),
+    .q      (reg2hw.com_out_ctl[0].gsc_rst.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl0_gsc_rst0_qs)
+  );
+
+
+  // Subregister 1 of Multireg com_out_ctl
+  // R[com_out_ctl1]: V(False)
+
+  // F[bat_disable1]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl1_bat_disable1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl1_bat_disable1_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl1_bat_disable1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[1].bat_disable.de),
+    .d      (hw2reg.com_out_ctl[1].bat_disable.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[1].bat_disable.qe),
+    .q      (reg2hw.com_out_ctl[1].bat_disable.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl1_bat_disable1_qs)
+  );
+
+
+  // F[interrupt1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl1_interrupt1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl1_interrupt1_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl1_interrupt1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[1].interrupt.de),
+    .d      (hw2reg.com_out_ctl[1].interrupt.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[1].interrupt.qe),
+    .q      (reg2hw.com_out_ctl[1].interrupt.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl1_interrupt1_qs)
+  );
+
+
+  // F[ec_rst1]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl1_ec_rst1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl1_ec_rst1_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl1_ec_rst1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[1].ec_rst.de),
+    .d      (hw2reg.com_out_ctl[1].ec_rst.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[1].ec_rst.qe),
+    .q      (reg2hw.com_out_ctl[1].ec_rst.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl1_ec_rst1_qs)
+  );
+
+
+  // F[gsc_rst1]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl1_gsc_rst1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl1_gsc_rst1_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl1_gsc_rst1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[1].gsc_rst.de),
+    .d      (hw2reg.com_out_ctl[1].gsc_rst.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[1].gsc_rst.qe),
+    .q      (reg2hw.com_out_ctl[1].gsc_rst.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl1_gsc_rst1_qs)
+  );
+
+
+  // Subregister 2 of Multireg com_out_ctl
+  // R[com_out_ctl2]: V(False)
+
+  // F[bat_disable2]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl2_bat_disable2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl2_bat_disable2_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl2_bat_disable2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[2].bat_disable.de),
+    .d      (hw2reg.com_out_ctl[2].bat_disable.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[2].bat_disable.qe),
+    .q      (reg2hw.com_out_ctl[2].bat_disable.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl2_bat_disable2_qs)
+  );
+
+
+  // F[interrupt2]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl2_interrupt2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl2_interrupt2_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl2_interrupt2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[2].interrupt.de),
+    .d      (hw2reg.com_out_ctl[2].interrupt.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[2].interrupt.qe),
+    .q      (reg2hw.com_out_ctl[2].interrupt.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl2_interrupt2_qs)
+  );
+
+
+  // F[ec_rst2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl2_ec_rst2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl2_ec_rst2_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl2_ec_rst2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[2].ec_rst.de),
+    .d      (hw2reg.com_out_ctl[2].ec_rst.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[2].ec_rst.qe),
+    .q      (reg2hw.com_out_ctl[2].ec_rst.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl2_ec_rst2_qs)
+  );
+
+
+  // F[gsc_rst2]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl2_gsc_rst2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl2_gsc_rst2_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl2_gsc_rst2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[2].gsc_rst.de),
+    .d      (hw2reg.com_out_ctl[2].gsc_rst.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[2].gsc_rst.qe),
+    .q      (reg2hw.com_out_ctl[2].gsc_rst.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl2_gsc_rst2_qs)
+  );
+
+
+  // Subregister 3 of Multireg com_out_ctl
+  // R[com_out_ctl3]: V(False)
+
+  // F[bat_disable3]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl3_bat_disable3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl3_bat_disable3_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl3_bat_disable3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[3].bat_disable.de),
+    .d      (hw2reg.com_out_ctl[3].bat_disable.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[3].bat_disable.qe),
+    .q      (reg2hw.com_out_ctl[3].bat_disable.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl3_bat_disable3_qs)
+  );
+
+
+  // F[interrupt3]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl3_interrupt3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl3_interrupt3_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl3_interrupt3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[3].interrupt.de),
+    .d      (hw2reg.com_out_ctl[3].interrupt.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[3].interrupt.qe),
+    .q      (reg2hw.com_out_ctl[3].interrupt.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl3_interrupt3_qs)
+  );
+
+
+  // F[ec_rst3]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl3_ec_rst3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl3_ec_rst3_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl3_ec_rst3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[3].ec_rst.de),
+    .d      (hw2reg.com_out_ctl[3].ec_rst.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[3].ec_rst.qe),
+    .q      (reg2hw.com_out_ctl[3].ec_rst.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl3_ec_rst3_qs)
+  );
+
+
+  // F[gsc_rst3]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_com_out_ctl3_gsc_rst3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (com_out_ctl3_gsc_rst3_we & cfg_wen_ctl_qs),
+    .wd     (com_out_ctl3_gsc_rst3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.com_out_ctl[3].gsc_rst.de),
+    .d      (hw2reg.com_out_ctl[3].gsc_rst.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.com_out_ctl[3].gsc_rst.qe),
+    .q      (reg2hw.com_out_ctl[3].gsc_rst.q ),
+
+    // to register interface (read)
+    .qs     (com_out_ctl3_gsc_rst3_qs)
+  );
+
+
+
+  // R[intr_status]: V(False)
+
+  //   F[combo0_h2l]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_combo0_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_combo0_h2l_we),
+    .wd     (intr_status_combo0_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.combo0_h2l.de),
+    .d      (hw2reg.intr_status.combo0_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.combo0_h2l.qe),
+    .q      (reg2hw.intr_status.combo0_h2l.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_combo0_h2l_qs)
+  );
+
+
+  //   F[combo1_h2l]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_combo1_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_combo1_h2l_we),
+    .wd     (intr_status_combo1_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.combo1_h2l.de),
+    .d      (hw2reg.intr_status.combo1_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.combo1_h2l.qe),
+    .q      (reg2hw.intr_status.combo1_h2l.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_combo1_h2l_qs)
+  );
+
+
+  //   F[combo2_h2l]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_combo2_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_combo2_h2l_we),
+    .wd     (intr_status_combo2_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.combo2_h2l.de),
+    .d      (hw2reg.intr_status.combo2_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.combo2_h2l.qe),
+    .q      (reg2hw.intr_status.combo2_h2l.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_combo2_h2l_qs)
+  );
+
+
+  //   F[combo3_h2l]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_combo3_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_combo3_h2l_we),
+    .wd     (intr_status_combo3_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.combo3_h2l.de),
+    .d      (hw2reg.intr_status.combo3_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.combo3_h2l.qe),
+    .q      (reg2hw.intr_status.combo3_h2l.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_combo3_h2l_qs)
+  );
+
+
+  //   F[pwrb_h2l]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_pwrb_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_pwrb_h2l_we),
+    .wd     (intr_status_pwrb_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.pwrb_h2l.de),
+    .d      (hw2reg.intr_status.pwrb_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.pwrb_h2l.qe),
+    .q      (reg2hw.intr_status.pwrb_h2l.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_pwrb_h2l_qs)
+  );
+
+
+  //   F[key0_in_h2l]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_key0_in_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_key0_in_h2l_we),
+    .wd     (intr_status_key0_in_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.key0_in_h2l.de),
+    .d      (hw2reg.intr_status.key0_in_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.key0_in_h2l.qe),
+    .q      (reg2hw.intr_status.key0_in_h2l.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_key0_in_h2l_qs)
+  );
+
+
+  //   F[key1_in_h2l]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_key1_in_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_key1_in_h2l_we),
+    .wd     (intr_status_key1_in_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.key1_in_h2l.de),
+    .d      (hw2reg.intr_status.key1_in_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.key1_in_h2l.qe),
+    .q      (reg2hw.intr_status.key1_in_h2l.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_key1_in_h2l_qs)
+  );
+
+
+  //   F[key2_in_h2l]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_key2_in_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_key2_in_h2l_we),
+    .wd     (intr_status_key2_in_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.key2_in_h2l.de),
+    .d      (hw2reg.intr_status.key2_in_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.key2_in_h2l.qe),
+    .q      (reg2hw.intr_status.key2_in_h2l.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_key2_in_h2l_qs)
+  );
+
+
+  //   F[ac_present_h2l]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_ac_present_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_ac_present_h2l_we),
+    .wd     (intr_status_ac_present_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.ac_present_h2l.de),
+    .d      (hw2reg.intr_status.ac_present_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.ac_present_h2l.qe),
+    .q      (reg2hw.intr_status.ac_present_h2l.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_ac_present_h2l_qs)
+  );
+
+
+  //   F[ec_rst_l_h2l]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_ec_rst_l_h2l (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_ec_rst_l_h2l_we),
+    .wd     (intr_status_ec_rst_l_h2l_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.ec_rst_l_h2l.de),
+    .d      (hw2reg.intr_status.ec_rst_l_h2l.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.ec_rst_l_h2l.qe),
+    .q      (reg2hw.intr_status.ec_rst_l_h2l.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_ec_rst_l_h2l_qs)
+  );
+
+
+  //   F[pwrb_l2h]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_pwrb_l2h (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_pwrb_l2h_we),
+    .wd     (intr_status_pwrb_l2h_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.pwrb_l2h.de),
+    .d      (hw2reg.intr_status.pwrb_l2h.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.pwrb_l2h.qe),
+    .q      (reg2hw.intr_status.pwrb_l2h.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_pwrb_l2h_qs)
+  );
+
+
+  //   F[key0_in_l2h]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_key0_in_l2h (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_key0_in_l2h_we),
+    .wd     (intr_status_key0_in_l2h_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.key0_in_l2h.de),
+    .d      (hw2reg.intr_status.key0_in_l2h.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.key0_in_l2h.qe),
+    .q      (reg2hw.intr_status.key0_in_l2h.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_key0_in_l2h_qs)
+  );
+
+
+  //   F[key1_in_l2h]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_key1_in_l2h (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_key1_in_l2h_we),
+    .wd     (intr_status_key1_in_l2h_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.key1_in_l2h.de),
+    .d      (hw2reg.intr_status.key1_in_l2h.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.key1_in_l2h.qe),
+    .q      (reg2hw.intr_status.key1_in_l2h.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_key1_in_l2h_qs)
+  );
+
+
+  //   F[key2_in_l2h]: 13:13
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_key2_in_l2h (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_key2_in_l2h_we),
+    .wd     (intr_status_key2_in_l2h_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.key2_in_l2h.de),
+    .d      (hw2reg.intr_status.key2_in_l2h.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.key2_in_l2h.qe),
+    .q      (reg2hw.intr_status.key2_in_l2h.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_key2_in_l2h_qs)
+  );
+
+
+  //   F[ac_present_l2h]: 14:14
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_ac_present_l2h (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_ac_present_l2h_we),
+    .wd     (intr_status_ac_present_l2h_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.ac_present_l2h.de),
+    .d      (hw2reg.intr_status.ac_present_l2h.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.ac_present_l2h.qe),
+    .q      (reg2hw.intr_status.ac_present_l2h.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_ac_present_l2h_qs)
+  );
+
+
+  //   F[ec_rst_l_l2h]: 15:15
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_status_ec_rst_l_l2h (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_status_ec_rst_l_l2h_we),
+    .wd     (intr_status_ec_rst_l_l2h_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_status.ec_rst_l_l2h.de),
+    .d      (hw2reg.intr_status.ec_rst_l_l2h.d ),
+
+    // to internal hardware
+    .qe     (reg2hw.intr_status.ec_rst_l_l2h.qe),
+    .q      (reg2hw.intr_status.ec_rst_l_l2h.q ),
+
+    // to register interface (read)
+    .qs     (intr_status_ec_rst_l_l2h_qs)
+  );
+
+
+
+
+  logic [26:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == RBOX_CFG_LOCK_CTL_OFFSET);
-    addr_hit[1] = (reg_addr == RBOX_EC_RST_CTL_OFFSET);
-    addr_hit[2] = (reg_addr == RBOX_FLASH_WP_CTL_OFFSET);
-    addr_hit[3] = (reg_addr == RBOX_KEY_COM0_DEBOUNCE_CTL_OFFSET);
-    addr_hit[4] = (reg_addr == RBOX_KEY_COM1_DEBOUNCE_CTL_OFFSET);
-    addr_hit[5] = (reg_addr == RBOX_KEY_COM2_DEBOUNCE_CTL_OFFSET);
-    addr_hit[6] = (reg_addr == RBOX_KEY_COM3_DEBOUNCE_CTL_OFFSET);
-    addr_hit[7] = (reg_addr == RBOX_KEY_INVERT_CTL_OFFSET);
-    addr_hit[8] = (reg_addr == RBOX_PIN_OUT_CTL_OFFSET);
-    addr_hit[9] = (reg_addr == RBOX_PIN_OUT_VALUE_OFFSET);
+    addr_hit[ 0] = (reg_addr == RBOX_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == RBOX_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == RBOX_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == RBOX_CFG_WEN_CTL_OFFSET);
+    addr_hit[ 4] = (reg_addr == RBOX_EC_RST_CTL_OFFSET);
+    addr_hit[ 5] = (reg_addr == RBOX_KEY_INVERT_CTL_OFFSET);
+    addr_hit[ 6] = (reg_addr == RBOX_PIN_ALLOWED_CTL_OFFSET);
+    addr_hit[ 7] = (reg_addr == RBOX_PIN_OUT_CTL_OFFSET);
+    addr_hit[ 8] = (reg_addr == RBOX_PIN_OUT_VALUE_OFFSET);
+    addr_hit[ 9] = (reg_addr == RBOX_PIN_IN_VALUE_OFFSET);
+    addr_hit[10] = (reg_addr == RBOX_KEY_INTR_CTL_OFFSET);
+    addr_hit[11] = (reg_addr == RBOX_KEY_INTR_DEBOUNCE_CTL_OFFSET);
+    addr_hit[12] = (reg_addr == RBOX_AUTO_BLOCK_DEBOUNCE_CTL_OFFSET);
+    addr_hit[13] = (reg_addr == RBOX_AUTO_BLOCK_OUT_CTL_OFFSET);
+    addr_hit[14] = (reg_addr == RBOX_COM_SEL_CTL0_OFFSET);
+    addr_hit[15] = (reg_addr == RBOX_COM_SEL_CTL1_OFFSET);
+    addr_hit[16] = (reg_addr == RBOX_COM_SEL_CTL2_OFFSET);
+    addr_hit[17] = (reg_addr == RBOX_COM_SEL_CTL3_OFFSET);
+    addr_hit[18] = (reg_addr == RBOX_COM_DET_CTL0_OFFSET);
+    addr_hit[19] = (reg_addr == RBOX_COM_DET_CTL1_OFFSET);
+    addr_hit[20] = (reg_addr == RBOX_COM_DET_CTL2_OFFSET);
+    addr_hit[21] = (reg_addr == RBOX_COM_DET_CTL3_OFFSET);
+    addr_hit[22] = (reg_addr == RBOX_COM_OUT_CTL0_OFFSET);
+    addr_hit[23] = (reg_addr == RBOX_COM_OUT_CTL1_OFFSET);
+    addr_hit[24] = (reg_addr == RBOX_COM_OUT_CTL2_OFFSET);
+    addr_hit[25] = (reg_addr == RBOX_COM_OUT_CTL3_OFFSET);
+    addr_hit[26] = (reg_addr == RBOX_INTR_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1007,144 +3678,414 @@ module rbox_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = 1'b0;
-    if (addr_hit[0] && reg_we && (RBOX_PERMIT[0] != (RBOX_PERMIT[0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[1] && reg_we && (RBOX_PERMIT[1] != (RBOX_PERMIT[1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[2] && reg_we && (RBOX_PERMIT[2] != (RBOX_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[3] && reg_we && (RBOX_PERMIT[3] != (RBOX_PERMIT[3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[4] && reg_we && (RBOX_PERMIT[4] != (RBOX_PERMIT[4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[5] && reg_we && (RBOX_PERMIT[5] != (RBOX_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[6] && reg_we && (RBOX_PERMIT[6] != (RBOX_PERMIT[6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[7] && reg_we && (RBOX_PERMIT[7] != (RBOX_PERMIT[7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[8] && reg_we && (RBOX_PERMIT[8] != (RBOX_PERMIT[8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[9] && reg_we && (RBOX_PERMIT[9] != (RBOX_PERMIT[9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 0] && reg_we && (RBOX_PERMIT[ 0] != (RBOX_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 1] && reg_we && (RBOX_PERMIT[ 1] != (RBOX_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 2] && reg_we && (RBOX_PERMIT[ 2] != (RBOX_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 3] && reg_we && (RBOX_PERMIT[ 3] != (RBOX_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 4] && reg_we && (RBOX_PERMIT[ 4] != (RBOX_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 5] && reg_we && (RBOX_PERMIT[ 5] != (RBOX_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 6] && reg_we && (RBOX_PERMIT[ 6] != (RBOX_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 7] && reg_we && (RBOX_PERMIT[ 7] != (RBOX_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 8] && reg_we && (RBOX_PERMIT[ 8] != (RBOX_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 9] && reg_we && (RBOX_PERMIT[ 9] != (RBOX_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[10] && reg_we && (RBOX_PERMIT[10] != (RBOX_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[11] && reg_we && (RBOX_PERMIT[11] != (RBOX_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[12] && reg_we && (RBOX_PERMIT[12] != (RBOX_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (RBOX_PERMIT[13] != (RBOX_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[14] && reg_we && (RBOX_PERMIT[14] != (RBOX_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[15] && reg_we && (RBOX_PERMIT[15] != (RBOX_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[16] && reg_we && (RBOX_PERMIT[16] != (RBOX_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[17] && reg_we && (RBOX_PERMIT[17] != (RBOX_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[18] && reg_we && (RBOX_PERMIT[18] != (RBOX_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[19] && reg_we && (RBOX_PERMIT[19] != (RBOX_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[20] && reg_we && (RBOX_PERMIT[20] != (RBOX_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[21] && reg_we && (RBOX_PERMIT[21] != (RBOX_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[22] && reg_we && (RBOX_PERMIT[22] != (RBOX_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[23] && reg_we && (RBOX_PERMIT[23] != (RBOX_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[24] && reg_we && (RBOX_PERMIT[24] != (RBOX_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[25] && reg_we && (RBOX_PERMIT[25] != (RBOX_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[26] && reg_we && (RBOX_PERMIT[26] != (RBOX_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign cfg_lock_ctl_we = addr_hit[0] & reg_we & ~wr_err;
-  assign cfg_lock_ctl_wd = reg_wdata[0];
+  assign intr_state_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_wd = reg_wdata[0];
 
-  assign ec_rst_ctl_we = addr_hit[1] & reg_we & ~wr_err;
-  assign ec_rst_ctl_wd = reg_wdata[31:0];
+  assign intr_enable_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_wd = reg_wdata[0];
 
-  assign flash_wp_ctl_we = addr_hit[2] & reg_we & ~wr_err;
-  assign flash_wp_ctl_wd = reg_wdata[0];
+  assign intr_test_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_wd = reg_wdata[0];
 
-  assign key_com0_debounce_ctl_we = addr_hit[3] & reg_we & ~wr_err;
-  assign key_com0_debounce_ctl_wd = reg_wdata[31:0];
+  assign cfg_wen_ctl_we = addr_hit[3] & reg_we & ~wr_err;
+  assign cfg_wen_ctl_wd = reg_wdata[0];
 
-  assign key_com1_debounce_ctl_we = addr_hit[4] & reg_we & ~wr_err;
-  assign key_com1_debounce_ctl_wd = reg_wdata[31:0];
+  assign ec_rst_ctl_we = addr_hit[4] & reg_we & ~wr_err;
+  assign ec_rst_ctl_wd = reg_wdata[15:0];
 
-  assign key_com2_debounce_ctl_we = addr_hit[5] & reg_we & ~wr_err;
-  assign key_com2_debounce_ctl_wd = reg_wdata[31:0];
-
-  assign key_com3_debounce_ctl_we = addr_hit[6] & reg_we & ~wr_err;
-  assign key_com3_debounce_ctl_wd = reg_wdata[31:0];
-
-  assign key_invert_ctl_key0_in_we = addr_hit[7] & reg_we & ~wr_err;
+  assign key_invert_ctl_key0_in_we = addr_hit[5] & reg_we & ~wr_err;
   assign key_invert_ctl_key0_in_wd = reg_wdata[0];
 
-  assign key_invert_ctl_key0_out_we = addr_hit[7] & reg_we & ~wr_err;
+  assign key_invert_ctl_key0_out_we = addr_hit[5] & reg_we & ~wr_err;
   assign key_invert_ctl_key0_out_wd = reg_wdata[1];
 
-  assign key_invert_ctl_key1_in_we = addr_hit[7] & reg_we & ~wr_err;
+  assign key_invert_ctl_key1_in_we = addr_hit[5] & reg_we & ~wr_err;
   assign key_invert_ctl_key1_in_wd = reg_wdata[2];
 
-  assign key_invert_ctl_key1_out_we = addr_hit[7] & reg_we & ~wr_err;
+  assign key_invert_ctl_key1_out_we = addr_hit[5] & reg_we & ~wr_err;
   assign key_invert_ctl_key1_out_wd = reg_wdata[3];
 
-  assign key_invert_ctl_key2_in_we = addr_hit[7] & reg_we & ~wr_err;
+  assign key_invert_ctl_key2_in_we = addr_hit[5] & reg_we & ~wr_err;
   assign key_invert_ctl_key2_in_wd = reg_wdata[4];
 
-  assign key_invert_ctl_key2_out_we = addr_hit[7] & reg_we & ~wr_err;
+  assign key_invert_ctl_key2_out_we = addr_hit[5] & reg_we & ~wr_err;
   assign key_invert_ctl_key2_out_wd = reg_wdata[5];
 
-  assign key_invert_ctl_pwrb_in_we = addr_hit[7] & reg_we & ~wr_err;
+  assign key_invert_ctl_pwrb_in_we = addr_hit[5] & reg_we & ~wr_err;
   assign key_invert_ctl_pwrb_in_wd = reg_wdata[6];
 
-  assign key_invert_ctl_pwrb_out_we = addr_hit[7] & reg_we & ~wr_err;
+  assign key_invert_ctl_pwrb_out_we = addr_hit[5] & reg_we & ~wr_err;
   assign key_invert_ctl_pwrb_out_wd = reg_wdata[7];
 
-  assign pin_out_ctl_bat_en_we = addr_hit[8] & reg_we & ~wr_err;
-  assign pin_out_ctl_bat_en_wd = reg_wdata[0];
+  assign key_invert_ctl_ac_present_we = addr_hit[5] & reg_we & ~wr_err;
+  assign key_invert_ctl_ac_present_wd = reg_wdata[8];
 
-  assign pin_out_ctl_ec_in_rw_we = addr_hit[8] & reg_we & ~wr_err;
-  assign pin_out_ctl_ec_in_rw_wd = reg_wdata[1];
+  assign key_invert_ctl_bat_disable_we = addr_hit[5] & reg_we & ~wr_err;
+  assign key_invert_ctl_bat_disable_wd = reg_wdata[9];
 
-  assign pin_out_ctl_flash_wp_l_we = addr_hit[8] & reg_we & ~wr_err;
-  assign pin_out_ctl_flash_wp_l_wd = reg_wdata[2];
+  assign pin_allowed_ctl_bat_disable_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign pin_allowed_ctl_bat_disable_0_wd = reg_wdata[0];
 
-  assign pin_out_ctl_ec_rst_l_we = addr_hit[8] & reg_we & ~wr_err;
-  assign pin_out_ctl_ec_rst_l_wd = reg_wdata[3];
+  assign pin_allowed_ctl_ec_rst_l_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign pin_allowed_ctl_ec_rst_l_0_wd = reg_wdata[1];
 
-  assign pin_out_ctl_pwrb_out_we = addr_hit[8] & reg_we & ~wr_err;
-  assign pin_out_ctl_pwrb_out_wd = reg_wdata[4];
+  assign pin_allowed_ctl_pwrb_out_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign pin_allowed_ctl_pwrb_out_0_wd = reg_wdata[2];
 
-  assign pin_out_ctl_key0_out_we = addr_hit[8] & reg_we & ~wr_err;
-  assign pin_out_ctl_key0_out_wd = reg_wdata[5];
+  assign pin_allowed_ctl_key0_out_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign pin_allowed_ctl_key0_out_0_wd = reg_wdata[3];
 
-  assign pin_out_ctl_key1_out_we = addr_hit[8] & reg_we & ~wr_err;
-  assign pin_out_ctl_key1_out_wd = reg_wdata[6];
+  assign pin_allowed_ctl_key1_out_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign pin_allowed_ctl_key1_out_0_wd = reg_wdata[4];
 
-  assign pin_out_ctl_key2_out_we = addr_hit[8] & reg_we & ~wr_err;
-  assign pin_out_ctl_key2_out_wd = reg_wdata[7];
+  assign pin_allowed_ctl_key2_out_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign pin_allowed_ctl_key2_out_0_wd = reg_wdata[5];
 
-  assign pin_out_value_bat_en_we = addr_hit[9] & reg_we & ~wr_err;
-  assign pin_out_value_bat_en_wd = reg_wdata[0];
+  assign pin_allowed_ctl_bat_disable_1_we = addr_hit[6] & reg_we & ~wr_err;
+  assign pin_allowed_ctl_bat_disable_1_wd = reg_wdata[6];
 
-  assign pin_out_value_ec_in_rw_we = addr_hit[9] & reg_we & ~wr_err;
-  assign pin_out_value_ec_in_rw_wd = reg_wdata[1];
+  assign pin_allowed_ctl_ec_rst_l_1_we = addr_hit[6] & reg_we & ~wr_err;
+  assign pin_allowed_ctl_ec_rst_l_1_wd = reg_wdata[7];
 
-  assign pin_out_value_flash_wp_l_we = addr_hit[9] & reg_we & ~wr_err;
-  assign pin_out_value_flash_wp_l_wd = reg_wdata[2];
+  assign pin_allowed_ctl_pwrb_out_1_we = addr_hit[6] & reg_we & ~wr_err;
+  assign pin_allowed_ctl_pwrb_out_1_wd = reg_wdata[8];
 
-  assign pin_out_value_ec_rst_l_we = addr_hit[9] & reg_we & ~wr_err;
-  assign pin_out_value_ec_rst_l_wd = reg_wdata[3];
+  assign pin_allowed_ctl_key0_out_1_we = addr_hit[6] & reg_we & ~wr_err;
+  assign pin_allowed_ctl_key0_out_1_wd = reg_wdata[9];
 
-  assign pin_out_value_pwrb_out_we = addr_hit[9] & reg_we & ~wr_err;
-  assign pin_out_value_pwrb_out_wd = reg_wdata[4];
+  assign pin_allowed_ctl_key1_out_1_we = addr_hit[6] & reg_we & ~wr_err;
+  assign pin_allowed_ctl_key1_out_1_wd = reg_wdata[10];
 
-  assign pin_out_value_key0_out_we = addr_hit[9] & reg_we & ~wr_err;
-  assign pin_out_value_key0_out_wd = reg_wdata[5];
+  assign pin_allowed_ctl_key2_out_1_we = addr_hit[6] & reg_we & ~wr_err;
+  assign pin_allowed_ctl_key2_out_1_wd = reg_wdata[11];
 
-  assign pin_out_value_key1_out_we = addr_hit[9] & reg_we & ~wr_err;
-  assign pin_out_value_key1_out_wd = reg_wdata[6];
+  assign pin_out_ctl_bat_disable_we = addr_hit[7] & reg_we & ~wr_err;
+  assign pin_out_ctl_bat_disable_wd = reg_wdata[0];
 
-  assign pin_out_value_key2_out_we = addr_hit[9] & reg_we & ~wr_err;
-  assign pin_out_value_key2_out_wd = reg_wdata[7];
+  assign pin_out_ctl_ec_rst_l_we = addr_hit[7] & reg_we & ~wr_err;
+  assign pin_out_ctl_ec_rst_l_wd = reg_wdata[1];
+
+  assign pin_out_ctl_pwrb_out_we = addr_hit[7] & reg_we & ~wr_err;
+  assign pin_out_ctl_pwrb_out_wd = reg_wdata[2];
+
+  assign pin_out_ctl_key0_out_we = addr_hit[7] & reg_we & ~wr_err;
+  assign pin_out_ctl_key0_out_wd = reg_wdata[3];
+
+  assign pin_out_ctl_key1_out_we = addr_hit[7] & reg_we & ~wr_err;
+  assign pin_out_ctl_key1_out_wd = reg_wdata[4];
+
+  assign pin_out_ctl_key2_out_we = addr_hit[7] & reg_we & ~wr_err;
+  assign pin_out_ctl_key2_out_wd = reg_wdata[5];
+
+  assign pin_out_value_bat_disable_we = addr_hit[8] & reg_we & ~wr_err;
+  assign pin_out_value_bat_disable_wd = reg_wdata[0];
+
+  assign pin_out_value_ec_rst_l_we = addr_hit[8] & reg_we & ~wr_err;
+  assign pin_out_value_ec_rst_l_wd = reg_wdata[1];
+
+  assign pin_out_value_pwrb_out_we = addr_hit[8] & reg_we & ~wr_err;
+  assign pin_out_value_pwrb_out_wd = reg_wdata[2];
+
+  assign pin_out_value_key0_out_we = addr_hit[8] & reg_we & ~wr_err;
+  assign pin_out_value_key0_out_wd = reg_wdata[3];
+
+  assign pin_out_value_key1_out_we = addr_hit[8] & reg_we & ~wr_err;
+  assign pin_out_value_key1_out_wd = reg_wdata[4];
+
+  assign pin_out_value_key2_out_we = addr_hit[8] & reg_we & ~wr_err;
+  assign pin_out_value_key2_out_wd = reg_wdata[5];
+
+
+
+
+
+
+
+  assign key_intr_ctl_pwrb_in_h2l_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_intr_ctl_pwrb_in_h2l_wd = reg_wdata[0];
+
+  assign key_intr_ctl_key0_in_h2l_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_intr_ctl_key0_in_h2l_wd = reg_wdata[1];
+
+  assign key_intr_ctl_key1_in_h2l_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_intr_ctl_key1_in_h2l_wd = reg_wdata[2];
+
+  assign key_intr_ctl_key2_in_h2l_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_intr_ctl_key2_in_h2l_wd = reg_wdata[3];
+
+  assign key_intr_ctl_ac_present_h2l_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_intr_ctl_ac_present_h2l_wd = reg_wdata[4];
+
+  assign key_intr_ctl_ec_rst_l_h2l_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_intr_ctl_ec_rst_l_h2l_wd = reg_wdata[5];
+
+  assign key_intr_ctl_pwrb_in_l2h_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_intr_ctl_pwrb_in_l2h_wd = reg_wdata[8];
+
+  assign key_intr_ctl_key0_in_l2h_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_intr_ctl_key0_in_l2h_wd = reg_wdata[9];
+
+  assign key_intr_ctl_key1_in_l2h_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_intr_ctl_key1_in_l2h_wd = reg_wdata[10];
+
+  assign key_intr_ctl_key2_in_l2h_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_intr_ctl_key2_in_l2h_wd = reg_wdata[11];
+
+  assign key_intr_ctl_ac_present_l2h_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_intr_ctl_ac_present_l2h_wd = reg_wdata[12];
+
+  assign key_intr_ctl_ec_rst_l_l2h_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_intr_ctl_ec_rst_l_l2h_wd = reg_wdata[13];
+
+  assign key_intr_debounce_ctl_we = addr_hit[11] & reg_we & ~wr_err;
+  assign key_intr_debounce_ctl_wd = reg_wdata[15:0];
+
+  assign auto_block_debounce_ctl_debounce_timer_we = addr_hit[12] & reg_we & ~wr_err;
+  assign auto_block_debounce_ctl_debounce_timer_wd = reg_wdata[15:0];
+
+  assign auto_block_debounce_ctl_auto_block_enable_we = addr_hit[12] & reg_we & ~wr_err;
+  assign auto_block_debounce_ctl_auto_block_enable_wd = reg_wdata[16];
+
+  assign auto_block_out_ctl_key0_out_sel_we = addr_hit[13] & reg_we & ~wr_err;
+  assign auto_block_out_ctl_key0_out_sel_wd = reg_wdata[0];
+
+  assign auto_block_out_ctl_key1_out_sel_we = addr_hit[13] & reg_we & ~wr_err;
+  assign auto_block_out_ctl_key1_out_sel_wd = reg_wdata[1];
+
+  assign auto_block_out_ctl_key2_out_sel_we = addr_hit[13] & reg_we & ~wr_err;
+  assign auto_block_out_ctl_key2_out_sel_wd = reg_wdata[2];
+
+  assign auto_block_out_ctl_key0_out_value_we = addr_hit[13] & reg_we & ~wr_err;
+  assign auto_block_out_ctl_key0_out_value_wd = reg_wdata[4];
+
+  assign auto_block_out_ctl_key1_out_value_we = addr_hit[13] & reg_we & ~wr_err;
+  assign auto_block_out_ctl_key1_out_value_wd = reg_wdata[5];
+
+  assign auto_block_out_ctl_key2_out_value_we = addr_hit[13] & reg_we & ~wr_err;
+  assign auto_block_out_ctl_key2_out_value_wd = reg_wdata[6];
+
+  assign com_sel_ctl0_key0_in_sel0_we = addr_hit[14] & reg_we & ~wr_err;
+  assign com_sel_ctl0_key0_in_sel0_wd = reg_wdata[0];
+
+  assign com_sel_ctl0_key1_in_sel0_we = addr_hit[14] & reg_we & ~wr_err;
+  assign com_sel_ctl0_key1_in_sel0_wd = reg_wdata[1];
+
+  assign com_sel_ctl0_key2_in_sel0_we = addr_hit[14] & reg_we & ~wr_err;
+  assign com_sel_ctl0_key2_in_sel0_wd = reg_wdata[2];
+
+  assign com_sel_ctl0_pwrb_in_sel0_we = addr_hit[14] & reg_we & ~wr_err;
+  assign com_sel_ctl0_pwrb_in_sel0_wd = reg_wdata[3];
+
+  assign com_sel_ctl0_ac_present_sel0_we = addr_hit[14] & reg_we & ~wr_err;
+  assign com_sel_ctl0_ac_present_sel0_wd = reg_wdata[4];
+
+  assign com_sel_ctl1_key0_in_sel1_we = addr_hit[15] & reg_we & ~wr_err;
+  assign com_sel_ctl1_key0_in_sel1_wd = reg_wdata[0];
+
+  assign com_sel_ctl1_key1_in_sel1_we = addr_hit[15] & reg_we & ~wr_err;
+  assign com_sel_ctl1_key1_in_sel1_wd = reg_wdata[1];
+
+  assign com_sel_ctl1_key2_in_sel1_we = addr_hit[15] & reg_we & ~wr_err;
+  assign com_sel_ctl1_key2_in_sel1_wd = reg_wdata[2];
+
+  assign com_sel_ctl1_pwrb_in_sel1_we = addr_hit[15] & reg_we & ~wr_err;
+  assign com_sel_ctl1_pwrb_in_sel1_wd = reg_wdata[3];
+
+  assign com_sel_ctl1_ac_present_sel1_we = addr_hit[15] & reg_we & ~wr_err;
+  assign com_sel_ctl1_ac_present_sel1_wd = reg_wdata[4];
+
+  assign com_sel_ctl2_key0_in_sel2_we = addr_hit[16] & reg_we & ~wr_err;
+  assign com_sel_ctl2_key0_in_sel2_wd = reg_wdata[0];
+
+  assign com_sel_ctl2_key1_in_sel2_we = addr_hit[16] & reg_we & ~wr_err;
+  assign com_sel_ctl2_key1_in_sel2_wd = reg_wdata[1];
+
+  assign com_sel_ctl2_key2_in_sel2_we = addr_hit[16] & reg_we & ~wr_err;
+  assign com_sel_ctl2_key2_in_sel2_wd = reg_wdata[2];
+
+  assign com_sel_ctl2_pwrb_in_sel2_we = addr_hit[16] & reg_we & ~wr_err;
+  assign com_sel_ctl2_pwrb_in_sel2_wd = reg_wdata[3];
+
+  assign com_sel_ctl2_ac_present_sel2_we = addr_hit[16] & reg_we & ~wr_err;
+  assign com_sel_ctl2_ac_present_sel2_wd = reg_wdata[4];
+
+  assign com_sel_ctl3_key0_in_sel3_we = addr_hit[17] & reg_we & ~wr_err;
+  assign com_sel_ctl3_key0_in_sel3_wd = reg_wdata[0];
+
+  assign com_sel_ctl3_key1_in_sel3_we = addr_hit[17] & reg_we & ~wr_err;
+  assign com_sel_ctl3_key1_in_sel3_wd = reg_wdata[1];
+
+  assign com_sel_ctl3_key2_in_sel3_we = addr_hit[17] & reg_we & ~wr_err;
+  assign com_sel_ctl3_key2_in_sel3_wd = reg_wdata[2];
+
+  assign com_sel_ctl3_pwrb_in_sel3_we = addr_hit[17] & reg_we & ~wr_err;
+  assign com_sel_ctl3_pwrb_in_sel3_wd = reg_wdata[3];
+
+  assign com_sel_ctl3_ac_present_sel3_we = addr_hit[17] & reg_we & ~wr_err;
+  assign com_sel_ctl3_ac_present_sel3_wd = reg_wdata[4];
+
+  assign com_det_ctl0_we = addr_hit[18] & reg_we & ~wr_err;
+  assign com_det_ctl0_wd = reg_wdata[31:0];
+
+  assign com_det_ctl1_we = addr_hit[19] & reg_we & ~wr_err;
+  assign com_det_ctl1_wd = reg_wdata[31:0];
+
+  assign com_det_ctl2_we = addr_hit[20] & reg_we & ~wr_err;
+  assign com_det_ctl2_wd = reg_wdata[31:0];
+
+  assign com_det_ctl3_we = addr_hit[21] & reg_we & ~wr_err;
+  assign com_det_ctl3_wd = reg_wdata[31:0];
+
+  assign com_out_ctl0_bat_disable0_we = addr_hit[22] & reg_we & ~wr_err;
+  assign com_out_ctl0_bat_disable0_wd = reg_wdata[0];
+
+  assign com_out_ctl0_interrupt0_we = addr_hit[22] & reg_we & ~wr_err;
+  assign com_out_ctl0_interrupt0_wd = reg_wdata[1];
+
+  assign com_out_ctl0_ec_rst0_we = addr_hit[22] & reg_we & ~wr_err;
+  assign com_out_ctl0_ec_rst0_wd = reg_wdata[2];
+
+  assign com_out_ctl0_gsc_rst0_we = addr_hit[22] & reg_we & ~wr_err;
+  assign com_out_ctl0_gsc_rst0_wd = reg_wdata[3];
+
+  assign com_out_ctl1_bat_disable1_we = addr_hit[23] & reg_we & ~wr_err;
+  assign com_out_ctl1_bat_disable1_wd = reg_wdata[0];
+
+  assign com_out_ctl1_interrupt1_we = addr_hit[23] & reg_we & ~wr_err;
+  assign com_out_ctl1_interrupt1_wd = reg_wdata[1];
+
+  assign com_out_ctl1_ec_rst1_we = addr_hit[23] & reg_we & ~wr_err;
+  assign com_out_ctl1_ec_rst1_wd = reg_wdata[2];
+
+  assign com_out_ctl1_gsc_rst1_we = addr_hit[23] & reg_we & ~wr_err;
+  assign com_out_ctl1_gsc_rst1_wd = reg_wdata[3];
+
+  assign com_out_ctl2_bat_disable2_we = addr_hit[24] & reg_we & ~wr_err;
+  assign com_out_ctl2_bat_disable2_wd = reg_wdata[0];
+
+  assign com_out_ctl2_interrupt2_we = addr_hit[24] & reg_we & ~wr_err;
+  assign com_out_ctl2_interrupt2_wd = reg_wdata[1];
+
+  assign com_out_ctl2_ec_rst2_we = addr_hit[24] & reg_we & ~wr_err;
+  assign com_out_ctl2_ec_rst2_wd = reg_wdata[2];
+
+  assign com_out_ctl2_gsc_rst2_we = addr_hit[24] & reg_we & ~wr_err;
+  assign com_out_ctl2_gsc_rst2_wd = reg_wdata[3];
+
+  assign com_out_ctl3_bat_disable3_we = addr_hit[25] & reg_we & ~wr_err;
+  assign com_out_ctl3_bat_disable3_wd = reg_wdata[0];
+
+  assign com_out_ctl3_interrupt3_we = addr_hit[25] & reg_we & ~wr_err;
+  assign com_out_ctl3_interrupt3_wd = reg_wdata[1];
+
+  assign com_out_ctl3_ec_rst3_we = addr_hit[25] & reg_we & ~wr_err;
+  assign com_out_ctl3_ec_rst3_wd = reg_wdata[2];
+
+  assign com_out_ctl3_gsc_rst3_we = addr_hit[25] & reg_we & ~wr_err;
+  assign com_out_ctl3_gsc_rst3_wd = reg_wdata[3];
+
+  assign intr_status_combo0_h2l_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_combo0_h2l_wd = reg_wdata[0];
+
+  assign intr_status_combo1_h2l_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_combo1_h2l_wd = reg_wdata[1];
+
+  assign intr_status_combo2_h2l_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_combo2_h2l_wd = reg_wdata[2];
+
+  assign intr_status_combo3_h2l_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_combo3_h2l_wd = reg_wdata[3];
+
+  assign intr_status_pwrb_h2l_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_pwrb_h2l_wd = reg_wdata[4];
+
+  assign intr_status_key0_in_h2l_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_key0_in_h2l_wd = reg_wdata[5];
+
+  assign intr_status_key1_in_h2l_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_key1_in_h2l_wd = reg_wdata[6];
+
+  assign intr_status_key2_in_h2l_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_key2_in_h2l_wd = reg_wdata[7];
+
+  assign intr_status_ac_present_h2l_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_ac_present_h2l_wd = reg_wdata[8];
+
+  assign intr_status_ec_rst_l_h2l_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_ec_rst_l_h2l_wd = reg_wdata[9];
+
+  assign intr_status_pwrb_l2h_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_pwrb_l2h_wd = reg_wdata[10];
+
+  assign intr_status_key0_in_l2h_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_key0_in_l2h_wd = reg_wdata[11];
+
+  assign intr_status_key1_in_l2h_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_key1_in_l2h_wd = reg_wdata[12];
+
+  assign intr_status_key2_in_l2h_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_key2_in_l2h_wd = reg_wdata[13];
+
+  assign intr_status_ac_present_l2h_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_ac_present_l2h_wd = reg_wdata[14];
+
+  assign intr_status_ec_rst_l_l2h_we = addr_hit[26] & reg_we & ~wr_err;
+  assign intr_status_ec_rst_l_l2h_wd = reg_wdata[15];
 
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = cfg_lock_ctl_qs;
+        reg_rdata_next[0] = intr_state_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[31:0] = ec_rst_ctl_qs;
+        reg_rdata_next[0] = intr_enable_qs;
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[0] = flash_wp_ctl_qs;
+        reg_rdata_next[0] = '0;
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[31:0] = key_com0_debounce_ctl_qs;
+        reg_rdata_next[0] = cfg_wen_ctl_qs;
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[31:0] = key_com1_debounce_ctl_qs;
+        reg_rdata_next[15:0] = ec_rst_ctl_qs;
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[31:0] = key_com2_debounce_ctl_qs;
-      end
-
-      addr_hit[6]: begin
-        reg_rdata_next[31:0] = key_com3_debounce_ctl_qs;
-      end
-
-      addr_hit[7]: begin
         reg_rdata_next[0] = key_invert_ctl_key0_in_qs;
         reg_rdata_next[1] = key_invert_ctl_key0_out_qs;
         reg_rdata_next[2] = key_invert_ctl_key1_in_qs;
@@ -1153,28 +4094,178 @@ module rbox_reg_top (
         reg_rdata_next[5] = key_invert_ctl_key2_out_qs;
         reg_rdata_next[6] = key_invert_ctl_pwrb_in_qs;
         reg_rdata_next[7] = key_invert_ctl_pwrb_out_qs;
+        reg_rdata_next[8] = key_invert_ctl_ac_present_qs;
+        reg_rdata_next[9] = key_invert_ctl_bat_disable_qs;
+      end
+
+      addr_hit[6]: begin
+        reg_rdata_next[0] = pin_allowed_ctl_bat_disable_0_qs;
+        reg_rdata_next[1] = pin_allowed_ctl_ec_rst_l_0_qs;
+        reg_rdata_next[2] = pin_allowed_ctl_pwrb_out_0_qs;
+        reg_rdata_next[3] = pin_allowed_ctl_key0_out_0_qs;
+        reg_rdata_next[4] = pin_allowed_ctl_key1_out_0_qs;
+        reg_rdata_next[5] = pin_allowed_ctl_key2_out_0_qs;
+        reg_rdata_next[6] = pin_allowed_ctl_bat_disable_1_qs;
+        reg_rdata_next[7] = pin_allowed_ctl_ec_rst_l_1_qs;
+        reg_rdata_next[8] = pin_allowed_ctl_pwrb_out_1_qs;
+        reg_rdata_next[9] = pin_allowed_ctl_key0_out_1_qs;
+        reg_rdata_next[10] = pin_allowed_ctl_key1_out_1_qs;
+        reg_rdata_next[11] = pin_allowed_ctl_key2_out_1_qs;
+      end
+
+      addr_hit[7]: begin
+        reg_rdata_next[0] = pin_out_ctl_bat_disable_qs;
+        reg_rdata_next[1] = pin_out_ctl_ec_rst_l_qs;
+        reg_rdata_next[2] = pin_out_ctl_pwrb_out_qs;
+        reg_rdata_next[3] = pin_out_ctl_key0_out_qs;
+        reg_rdata_next[4] = pin_out_ctl_key1_out_qs;
+        reg_rdata_next[5] = pin_out_ctl_key2_out_qs;
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[0] = pin_out_ctl_bat_en_qs;
-        reg_rdata_next[1] = pin_out_ctl_ec_in_rw_qs;
-        reg_rdata_next[2] = pin_out_ctl_flash_wp_l_qs;
-        reg_rdata_next[3] = pin_out_ctl_ec_rst_l_qs;
-        reg_rdata_next[4] = pin_out_ctl_pwrb_out_qs;
-        reg_rdata_next[5] = pin_out_ctl_key0_out_qs;
-        reg_rdata_next[6] = pin_out_ctl_key1_out_qs;
-        reg_rdata_next[7] = pin_out_ctl_key2_out_qs;
+        reg_rdata_next[0] = pin_out_value_bat_disable_qs;
+        reg_rdata_next[1] = pin_out_value_ec_rst_l_qs;
+        reg_rdata_next[2] = pin_out_value_pwrb_out_qs;
+        reg_rdata_next[3] = pin_out_value_key0_out_qs;
+        reg_rdata_next[4] = pin_out_value_key1_out_qs;
+        reg_rdata_next[5] = pin_out_value_key2_out_qs;
       end
 
       addr_hit[9]: begin
-        reg_rdata_next[0] = pin_out_value_bat_en_qs;
-        reg_rdata_next[1] = pin_out_value_ec_in_rw_qs;
-        reg_rdata_next[2] = pin_out_value_flash_wp_l_qs;
-        reg_rdata_next[3] = pin_out_value_ec_rst_l_qs;
-        reg_rdata_next[4] = pin_out_value_pwrb_out_qs;
-        reg_rdata_next[5] = pin_out_value_key0_out_qs;
-        reg_rdata_next[6] = pin_out_value_key1_out_qs;
-        reg_rdata_next[7] = pin_out_value_key2_out_qs;
+        reg_rdata_next[0] = pin_in_value_ac_present_qs;
+        reg_rdata_next[1] = pin_in_value_ec_rst_l_qs;
+        reg_rdata_next[2] = pin_in_value_pwrb_in_qs;
+        reg_rdata_next[3] = pin_in_value_key0_in_qs;
+        reg_rdata_next[4] = pin_in_value_key1_in_qs;
+        reg_rdata_next[5] = pin_in_value_key2_in_qs;
+      end
+
+      addr_hit[10]: begin
+        reg_rdata_next[0] = key_intr_ctl_pwrb_in_h2l_qs;
+        reg_rdata_next[1] = key_intr_ctl_key0_in_h2l_qs;
+        reg_rdata_next[2] = key_intr_ctl_key1_in_h2l_qs;
+        reg_rdata_next[3] = key_intr_ctl_key2_in_h2l_qs;
+        reg_rdata_next[4] = key_intr_ctl_ac_present_h2l_qs;
+        reg_rdata_next[5] = key_intr_ctl_ec_rst_l_h2l_qs;
+        reg_rdata_next[8] = key_intr_ctl_pwrb_in_l2h_qs;
+        reg_rdata_next[9] = key_intr_ctl_key0_in_l2h_qs;
+        reg_rdata_next[10] = key_intr_ctl_key1_in_l2h_qs;
+        reg_rdata_next[11] = key_intr_ctl_key2_in_l2h_qs;
+        reg_rdata_next[12] = key_intr_ctl_ac_present_l2h_qs;
+        reg_rdata_next[13] = key_intr_ctl_ec_rst_l_l2h_qs;
+      end
+
+      addr_hit[11]: begin
+        reg_rdata_next[15:0] = key_intr_debounce_ctl_qs;
+      end
+
+      addr_hit[12]: begin
+        reg_rdata_next[15:0] = auto_block_debounce_ctl_debounce_timer_qs;
+        reg_rdata_next[16] = auto_block_debounce_ctl_auto_block_enable_qs;
+      end
+
+      addr_hit[13]: begin
+        reg_rdata_next[0] = auto_block_out_ctl_key0_out_sel_qs;
+        reg_rdata_next[1] = auto_block_out_ctl_key1_out_sel_qs;
+        reg_rdata_next[2] = auto_block_out_ctl_key2_out_sel_qs;
+        reg_rdata_next[4] = auto_block_out_ctl_key0_out_value_qs;
+        reg_rdata_next[5] = auto_block_out_ctl_key1_out_value_qs;
+        reg_rdata_next[6] = auto_block_out_ctl_key2_out_value_qs;
+      end
+
+      addr_hit[14]: begin
+        reg_rdata_next[0] = com_sel_ctl0_key0_in_sel0_qs;
+        reg_rdata_next[1] = com_sel_ctl0_key1_in_sel0_qs;
+        reg_rdata_next[2] = com_sel_ctl0_key2_in_sel0_qs;
+        reg_rdata_next[3] = com_sel_ctl0_pwrb_in_sel0_qs;
+        reg_rdata_next[4] = com_sel_ctl0_ac_present_sel0_qs;
+      end
+
+      addr_hit[15]: begin
+        reg_rdata_next[0] = com_sel_ctl1_key0_in_sel1_qs;
+        reg_rdata_next[1] = com_sel_ctl1_key1_in_sel1_qs;
+        reg_rdata_next[2] = com_sel_ctl1_key2_in_sel1_qs;
+        reg_rdata_next[3] = com_sel_ctl1_pwrb_in_sel1_qs;
+        reg_rdata_next[4] = com_sel_ctl1_ac_present_sel1_qs;
+      end
+
+      addr_hit[16]: begin
+        reg_rdata_next[0] = com_sel_ctl2_key0_in_sel2_qs;
+        reg_rdata_next[1] = com_sel_ctl2_key1_in_sel2_qs;
+        reg_rdata_next[2] = com_sel_ctl2_key2_in_sel2_qs;
+        reg_rdata_next[3] = com_sel_ctl2_pwrb_in_sel2_qs;
+        reg_rdata_next[4] = com_sel_ctl2_ac_present_sel2_qs;
+      end
+
+      addr_hit[17]: begin
+        reg_rdata_next[0] = com_sel_ctl3_key0_in_sel3_qs;
+        reg_rdata_next[1] = com_sel_ctl3_key1_in_sel3_qs;
+        reg_rdata_next[2] = com_sel_ctl3_key2_in_sel3_qs;
+        reg_rdata_next[3] = com_sel_ctl3_pwrb_in_sel3_qs;
+        reg_rdata_next[4] = com_sel_ctl3_ac_present_sel3_qs;
+      end
+
+      addr_hit[18]: begin
+        reg_rdata_next[31:0] = com_det_ctl0_qs;
+      end
+
+      addr_hit[19]: begin
+        reg_rdata_next[31:0] = com_det_ctl1_qs;
+      end
+
+      addr_hit[20]: begin
+        reg_rdata_next[31:0] = com_det_ctl2_qs;
+      end
+
+      addr_hit[21]: begin
+        reg_rdata_next[31:0] = com_det_ctl3_qs;
+      end
+
+      addr_hit[22]: begin
+        reg_rdata_next[0] = com_out_ctl0_bat_disable0_qs;
+        reg_rdata_next[1] = com_out_ctl0_interrupt0_qs;
+        reg_rdata_next[2] = com_out_ctl0_ec_rst0_qs;
+        reg_rdata_next[3] = com_out_ctl0_gsc_rst0_qs;
+      end
+
+      addr_hit[23]: begin
+        reg_rdata_next[0] = com_out_ctl1_bat_disable1_qs;
+        reg_rdata_next[1] = com_out_ctl1_interrupt1_qs;
+        reg_rdata_next[2] = com_out_ctl1_ec_rst1_qs;
+        reg_rdata_next[3] = com_out_ctl1_gsc_rst1_qs;
+      end
+
+      addr_hit[24]: begin
+        reg_rdata_next[0] = com_out_ctl2_bat_disable2_qs;
+        reg_rdata_next[1] = com_out_ctl2_interrupt2_qs;
+        reg_rdata_next[2] = com_out_ctl2_ec_rst2_qs;
+        reg_rdata_next[3] = com_out_ctl2_gsc_rst2_qs;
+      end
+
+      addr_hit[25]: begin
+        reg_rdata_next[0] = com_out_ctl3_bat_disable3_qs;
+        reg_rdata_next[1] = com_out_ctl3_interrupt3_qs;
+        reg_rdata_next[2] = com_out_ctl3_ec_rst3_qs;
+        reg_rdata_next[3] = com_out_ctl3_gsc_rst3_qs;
+      end
+
+      addr_hit[26]: begin
+        reg_rdata_next[0] = intr_status_combo0_h2l_qs;
+        reg_rdata_next[1] = intr_status_combo1_h2l_qs;
+        reg_rdata_next[2] = intr_status_combo2_h2l_qs;
+        reg_rdata_next[3] = intr_status_combo3_h2l_qs;
+        reg_rdata_next[4] = intr_status_pwrb_h2l_qs;
+        reg_rdata_next[5] = intr_status_key0_in_h2l_qs;
+        reg_rdata_next[6] = intr_status_key1_in_h2l_qs;
+        reg_rdata_next[7] = intr_status_key2_in_h2l_qs;
+        reg_rdata_next[8] = intr_status_ac_present_h2l_qs;
+        reg_rdata_next[9] = intr_status_ec_rst_l_h2l_qs;
+        reg_rdata_next[10] = intr_status_pwrb_l2h_qs;
+        reg_rdata_next[11] = intr_status_key0_in_l2h_qs;
+        reg_rdata_next[12] = intr_status_key1_in_l2h_qs;
+        reg_rdata_next[13] = intr_status_key2_in_l2h_qs;
+        reg_rdata_next[14] = intr_status_ac_present_l2h_qs;
+        reg_rdata_next[15] = intr_status_ec_rst_l_l2h_qs;
       end
 
       default: begin

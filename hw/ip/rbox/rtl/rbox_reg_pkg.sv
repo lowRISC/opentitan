@@ -6,43 +6,34 @@
 
 package rbox_reg_pkg;
 
+  // Param list
+  parameter int NumCombo = 4;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
   typedef struct packed {
     logic        q;
-    logic        qe;
-  } rbox_reg2hw_cfg_lock_ctl_reg_t;
+  } rbox_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
-    logic [31:0] q;
-    logic        qe;
-  } rbox_reg2hw_ec_rst_ctl_reg_t;
+    logic        q;
+  } rbox_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     logic        q;
     logic        qe;
-  } rbox_reg2hw_flash_wp_ctl_reg_t;
+  } rbox_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
-    logic [31:0] q;
+    logic        q;
     logic        qe;
-  } rbox_reg2hw_key_com0_debounce_ctl_reg_t;
+  } rbox_reg2hw_cfg_wen_ctl_reg_t;
 
   typedef struct packed {
-    logic [31:0] q;
+    logic [15:0] q;
     logic        qe;
-  } rbox_reg2hw_key_com1_debounce_ctl_reg_t;
-
-  typedef struct packed {
-    logic [31:0] q;
-    logic        qe;
-  } rbox_reg2hw_key_com2_debounce_ctl_reg_t;
-
-  typedef struct packed {
-    logic [31:0] q;
-    logic        qe;
-  } rbox_reg2hw_key_com3_debounce_ctl_reg_t;
+  } rbox_reg2hw_ec_rst_ctl_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -77,21 +68,72 @@ package rbox_reg_pkg;
       logic        q;
       logic        qe;
     } pwrb_out;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ac_present;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } bat_disable;
   } rbox_reg2hw_key_invert_ctl_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } bat_en;
+    } bat_disable_0;
     struct packed {
       logic        q;
       logic        qe;
-    } ec_in_rw;
+    } ec_rst_l_0;
     struct packed {
       logic        q;
       logic        qe;
-    } flash_wp_l;
+    } pwrb_out_0;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key0_out_0;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key1_out_0;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key2_out_0;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } bat_disable_1;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ec_rst_l_1;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } pwrb_out_1;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key0_out_1;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key1_out_1;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key2_out_1;
+  } rbox_reg2hw_pin_allowed_ctl_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } bat_disable;
     struct packed {
       logic        q;
       logic        qe;
@@ -118,15 +160,7 @@ package rbox_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } bat_en;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } ec_in_rw;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } flash_wp_l;
+    } bat_disable;
     struct packed {
       logic        q;
       logic        qe;
@@ -149,41 +183,256 @@ package rbox_reg_pkg;
     } key2_out;
   } rbox_reg2hw_pin_out_value_reg_t;
 
+  typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ac_present;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ec_rst_l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } pwrb_in;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key0_in;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key1_in;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key2_in;
+  } rbox_reg2hw_pin_in_value_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } pwrb_in_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key0_in_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key1_in_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key2_in_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ac_present_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ec_rst_l_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } pwrb_in_l2h;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key0_in_l2h;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key1_in_l2h;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key2_in_l2h;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ac_present_l2h;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ec_rst_l_l2h;
+  } rbox_reg2hw_key_intr_ctl_reg_t;
+
+  typedef struct packed {
+    logic [15:0] q;
+    logic        qe;
+  } rbox_reg2hw_key_intr_debounce_ctl_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [15:0] q;
+      logic        qe;
+    } debounce_timer;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } auto_block_enable;
+  } rbox_reg2hw_auto_block_debounce_ctl_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key0_out_sel;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key1_out_sel;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key2_out_sel;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key0_out_value;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key1_out_value;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key2_out_value;
+  } rbox_reg2hw_auto_block_out_ctl_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key0_in_sel;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key1_in_sel;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key2_in_sel;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } pwrb_in_sel;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ac_present_sel;
+  } rbox_reg2hw_com_sel_ctl_mreg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } rbox_reg2hw_com_det_ctl_mreg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } bat_disable;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } interrupt;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ec_rst;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } gsc_rst;
+  } rbox_reg2hw_com_out_ctl_mreg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } combo0_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } combo1_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } combo2_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } combo3_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } pwrb_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key0_in_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key1_in_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key2_in_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ac_present_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ec_rst_l_h2l;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } pwrb_l2h;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key0_in_l2h;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key1_in_l2h;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } key2_in_l2h;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ac_present_l2h;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } ec_rst_l_l2h;
+  } rbox_reg2hw_intr_status_reg_t;
+
 
   typedef struct packed {
     logic        d;
     logic        de;
-  } rbox_hw2reg_cfg_lock_ctl_reg_t;
+  } rbox_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
-    logic [31:0] d;
+    logic        d;
+    logic        de;
+  } rbox_hw2reg_cfg_wen_ctl_reg_t;
+
+  typedef struct packed {
+    logic [15:0] d;
     logic        de;
   } rbox_hw2reg_ec_rst_ctl_reg_t;
-
-  typedef struct packed {
-    logic        d;
-    logic        de;
-  } rbox_hw2reg_flash_wp_ctl_reg_t;
-
-  typedef struct packed {
-    logic [31:0] d;
-    logic        de;
-  } rbox_hw2reg_key_com0_debounce_ctl_reg_t;
-
-  typedef struct packed {
-    logic [31:0] d;
-    logic        de;
-  } rbox_hw2reg_key_com1_debounce_ctl_reg_t;
-
-  typedef struct packed {
-    logic [31:0] d;
-    logic        de;
-  } rbox_hw2reg_key_com2_debounce_ctl_reg_t;
-
-  typedef struct packed {
-    logic [31:0] d;
-    logic        de;
-  } rbox_hw2reg_key_com3_debounce_ctl_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -218,21 +467,72 @@ package rbox_reg_pkg;
       logic        d;
       logic        de;
     } pwrb_out;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ac_present;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bat_disable;
   } rbox_hw2reg_key_invert_ctl_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } bat_en;
+    } bat_disable_0;
     struct packed {
       logic        d;
       logic        de;
-    } ec_in_rw;
+    } ec_rst_l_0;
     struct packed {
       logic        d;
       logic        de;
-    } flash_wp_l;
+    } pwrb_out_0;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_out_0;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_out_0;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_out_0;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bat_disable_1;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ec_rst_l_1;
+    struct packed {
+      logic        d;
+      logic        de;
+    } pwrb_out_1;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_out_1;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_out_1;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_out_1;
+  } rbox_hw2reg_pin_allowed_ctl_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } bat_disable;
     struct packed {
       logic        d;
       logic        de;
@@ -259,15 +559,7 @@ package rbox_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } bat_en;
-    struct packed {
-      logic        d;
-      logic        de;
-    } ec_in_rw;
-    struct packed {
-      logic        d;
-      logic        de;
-    } flash_wp_l;
+    } bat_disable;
     struct packed {
       logic        d;
       logic        de;
@@ -290,78 +582,378 @@ package rbox_reg_pkg;
     } key2_out;
   } rbox_hw2reg_pin_out_value_reg_t;
 
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } ac_present;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ec_rst_l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } pwrb_in;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_in;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_in;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_in;
+  } rbox_hw2reg_pin_in_value_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } pwrb_in_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_in_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_in_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_in_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ac_present_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ec_rst_l_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } pwrb_in_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_in_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_in_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_in_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ac_present_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ec_rst_l_l2h;
+  } rbox_hw2reg_key_intr_ctl_reg_t;
+
+  typedef struct packed {
+    logic [15:0] d;
+    logic        de;
+  } rbox_hw2reg_key_intr_debounce_ctl_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [15:0] d;
+      logic        de;
+    } debounce_timer;
+    struct packed {
+      logic        d;
+      logic        de;
+    } auto_block_enable;
+  } rbox_hw2reg_auto_block_debounce_ctl_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_out_sel;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_out_sel;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_out_sel;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_out_value;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_out_value;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_out_value;
+  } rbox_hw2reg_auto_block_out_ctl_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_in_sel;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_in_sel;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_in_sel;
+    struct packed {
+      logic        d;
+      logic        de;
+    } pwrb_in_sel;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ac_present_sel;
+  } rbox_hw2reg_com_sel_ctl_mreg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } rbox_hw2reg_com_det_ctl_mreg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } bat_disable;
+    struct packed {
+      logic        d;
+      logic        de;
+    } interrupt;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ec_rst;
+    struct packed {
+      logic        d;
+      logic        de;
+    } gsc_rst;
+  } rbox_hw2reg_com_out_ctl_mreg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } combo0_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } combo1_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } combo2_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } combo3_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } pwrb_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_in_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_in_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_in_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ac_present_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ec_rst_l_h2l;
+    struct packed {
+      logic        d;
+      logic        de;
+    } pwrb_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key0_in_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key1_in_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } key2_in_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ac_present_l2h;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ec_rst_l_l2h;
+  } rbox_hw2reg_intr_status_reg_t;
+
 
   ///////////////////////////////////////
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    rbox_reg2hw_cfg_lock_ctl_reg_t cfg_lock_ctl; // [216:215]
-    rbox_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl; // [214:182]
-    rbox_reg2hw_flash_wp_ctl_reg_t flash_wp_ctl; // [181:180]
-    rbox_reg2hw_key_com0_debounce_ctl_reg_t key_com0_debounce_ctl; // [179:147]
-    rbox_reg2hw_key_com1_debounce_ctl_reg_t key_com1_debounce_ctl; // [146:114]
-    rbox_reg2hw_key_com2_debounce_ctl_reg_t key_com2_debounce_ctl; // [113:81]
-    rbox_reg2hw_key_com3_debounce_ctl_reg_t key_com3_debounce_ctl; // [80:48]
-    rbox_reg2hw_key_invert_ctl_reg_t key_invert_ctl; // [47:32]
-    rbox_reg2hw_pin_out_ctl_reg_t pin_out_ctl; // [31:16]
-    rbox_reg2hw_pin_out_value_reg_t pin_out_value; // [15:0]
+    rbox_reg2hw_intr_state_reg_t intr_state; // [410:410]
+    rbox_reg2hw_intr_enable_reg_t intr_enable; // [409:409]
+    rbox_reg2hw_intr_test_reg_t intr_test; // [408:407]
+    rbox_reg2hw_cfg_wen_ctl_reg_t cfg_wen_ctl; // [406:405]
+    rbox_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl; // [404:388]
+    rbox_reg2hw_key_invert_ctl_reg_t key_invert_ctl; // [387:368]
+    rbox_reg2hw_pin_allowed_ctl_reg_t pin_allowed_ctl; // [367:344]
+    rbox_reg2hw_pin_out_ctl_reg_t pin_out_ctl; // [343:332]
+    rbox_reg2hw_pin_out_value_reg_t pin_out_value; // [331:320]
+    rbox_reg2hw_pin_in_value_reg_t pin_in_value; // [319:308]
+    rbox_reg2hw_key_intr_ctl_reg_t key_intr_ctl; // [307:284]
+    rbox_reg2hw_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl; // [283:267]
+    rbox_reg2hw_auto_block_debounce_ctl_reg_t auto_block_debounce_ctl; // [266:248]
+    rbox_reg2hw_auto_block_out_ctl_reg_t auto_block_out_ctl; // [247:236]
+    rbox_reg2hw_com_sel_ctl_mreg_t [3:0] com_sel_ctl; // [235:196]
+    rbox_reg2hw_com_det_ctl_mreg_t [3:0] com_det_ctl; // [195:64]
+    rbox_reg2hw_com_out_ctl_mreg_t [3:0] com_out_ctl; // [63:32]
+    rbox_reg2hw_intr_status_reg_t intr_status; // [31:0]
   } rbox_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    rbox_hw2reg_cfg_lock_ctl_reg_t cfg_lock_ctl; // [216:215]
-    rbox_hw2reg_ec_rst_ctl_reg_t ec_rst_ctl; // [214:182]
-    rbox_hw2reg_flash_wp_ctl_reg_t flash_wp_ctl; // [181:180]
-    rbox_hw2reg_key_com0_debounce_ctl_reg_t key_com0_debounce_ctl; // [179:147]
-    rbox_hw2reg_key_com1_debounce_ctl_reg_t key_com1_debounce_ctl; // [146:114]
-    rbox_hw2reg_key_com2_debounce_ctl_reg_t key_com2_debounce_ctl; // [113:81]
-    rbox_hw2reg_key_com3_debounce_ctl_reg_t key_com3_debounce_ctl; // [80:48]
-    rbox_hw2reg_key_invert_ctl_reg_t key_invert_ctl; // [47:32]
-    rbox_hw2reg_pin_out_ctl_reg_t pin_out_ctl; // [31:16]
-    rbox_hw2reg_pin_out_value_reg_t pin_out_value; // [15:0]
+    rbox_hw2reg_intr_state_reg_t intr_state; // [408:408]
+    rbox_hw2reg_cfg_wen_ctl_reg_t cfg_wen_ctl; // [407:406]
+    rbox_hw2reg_ec_rst_ctl_reg_t ec_rst_ctl; // [405:389]
+    rbox_hw2reg_key_invert_ctl_reg_t key_invert_ctl; // [388:369]
+    rbox_hw2reg_pin_allowed_ctl_reg_t pin_allowed_ctl; // [368:345]
+    rbox_hw2reg_pin_out_ctl_reg_t pin_out_ctl; // [344:333]
+    rbox_hw2reg_pin_out_value_reg_t pin_out_value; // [332:321]
+    rbox_hw2reg_pin_in_value_reg_t pin_in_value; // [320:309]
+    rbox_hw2reg_key_intr_ctl_reg_t key_intr_ctl; // [308:285]
+    rbox_hw2reg_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl; // [284:268]
+    rbox_hw2reg_auto_block_debounce_ctl_reg_t auto_block_debounce_ctl; // [267:249]
+    rbox_hw2reg_auto_block_out_ctl_reg_t auto_block_out_ctl; // [248:237]
+    rbox_hw2reg_com_sel_ctl_mreg_t [3:0] com_sel_ctl; // [236:197]
+    rbox_hw2reg_com_det_ctl_mreg_t [3:0] com_det_ctl; // [196:65]
+    rbox_hw2reg_com_out_ctl_mreg_t [3:0] com_out_ctl; // [64:33]
+    rbox_hw2reg_intr_status_reg_t intr_status; // [32:1]
   } rbox_hw2reg_t;
 
   // Register Address
-  parameter logic [5:0] RBOX_CFG_LOCK_CTL_OFFSET = 6'h 0;
-  parameter logic [5:0] RBOX_EC_RST_CTL_OFFSET = 6'h 4;
-  parameter logic [5:0] RBOX_FLASH_WP_CTL_OFFSET = 6'h 8;
-  parameter logic [5:0] RBOX_KEY_COM0_DEBOUNCE_CTL_OFFSET = 6'h c;
-  parameter logic [5:0] RBOX_KEY_COM1_DEBOUNCE_CTL_OFFSET = 6'h 10;
-  parameter logic [5:0] RBOX_KEY_COM2_DEBOUNCE_CTL_OFFSET = 6'h 14;
-  parameter logic [5:0] RBOX_KEY_COM3_DEBOUNCE_CTL_OFFSET = 6'h 18;
-  parameter logic [5:0] RBOX_KEY_INVERT_CTL_OFFSET = 6'h 1c;
-  parameter logic [5:0] RBOX_PIN_OUT_CTL_OFFSET = 6'h 20;
-  parameter logic [5:0] RBOX_PIN_OUT_VALUE_OFFSET = 6'h 24;
+  parameter logic [6:0] RBOX_INTR_STATE_OFFSET = 7'h 0;
+  parameter logic [6:0] RBOX_INTR_ENABLE_OFFSET = 7'h 4;
+  parameter logic [6:0] RBOX_INTR_TEST_OFFSET = 7'h 8;
+  parameter logic [6:0] RBOX_CFG_WEN_CTL_OFFSET = 7'h c;
+  parameter logic [6:0] RBOX_EC_RST_CTL_OFFSET = 7'h 10;
+  parameter logic [6:0] RBOX_KEY_INVERT_CTL_OFFSET = 7'h 14;
+  parameter logic [6:0] RBOX_PIN_ALLOWED_CTL_OFFSET = 7'h 18;
+  parameter logic [6:0] RBOX_PIN_OUT_CTL_OFFSET = 7'h 1c;
+  parameter logic [6:0] RBOX_PIN_OUT_VALUE_OFFSET = 7'h 20;
+  parameter logic [6:0] RBOX_PIN_IN_VALUE_OFFSET = 7'h 24;
+  parameter logic [6:0] RBOX_KEY_INTR_CTL_OFFSET = 7'h 28;
+  parameter logic [6:0] RBOX_KEY_INTR_DEBOUNCE_CTL_OFFSET = 7'h 2c;
+  parameter logic [6:0] RBOX_AUTO_BLOCK_DEBOUNCE_CTL_OFFSET = 7'h 30;
+  parameter logic [6:0] RBOX_AUTO_BLOCK_OUT_CTL_OFFSET = 7'h 34;
+  parameter logic [6:0] RBOX_COM_SEL_CTL0_OFFSET = 7'h 38;
+  parameter logic [6:0] RBOX_COM_SEL_CTL1_OFFSET = 7'h 3c;
+  parameter logic [6:0] RBOX_COM_SEL_CTL2_OFFSET = 7'h 40;
+  parameter logic [6:0] RBOX_COM_SEL_CTL3_OFFSET = 7'h 44;
+  parameter logic [6:0] RBOX_COM_DET_CTL0_OFFSET = 7'h 48;
+  parameter logic [6:0] RBOX_COM_DET_CTL1_OFFSET = 7'h 4c;
+  parameter logic [6:0] RBOX_COM_DET_CTL2_OFFSET = 7'h 50;
+  parameter logic [6:0] RBOX_COM_DET_CTL3_OFFSET = 7'h 54;
+  parameter logic [6:0] RBOX_COM_OUT_CTL0_OFFSET = 7'h 58;
+  parameter logic [6:0] RBOX_COM_OUT_CTL1_OFFSET = 7'h 5c;
+  parameter logic [6:0] RBOX_COM_OUT_CTL2_OFFSET = 7'h 60;
+  parameter logic [6:0] RBOX_COM_OUT_CTL3_OFFSET = 7'h 64;
+  parameter logic [6:0] RBOX_INTR_STATUS_OFFSET = 7'h 68;
 
 
   // Register Index
   typedef enum int {
-    RBOX_CFG_LOCK_CTL,
+    RBOX_INTR_STATE,
+    RBOX_INTR_ENABLE,
+    RBOX_INTR_TEST,
+    RBOX_CFG_WEN_CTL,
     RBOX_EC_RST_CTL,
-    RBOX_FLASH_WP_CTL,
-    RBOX_KEY_COM0_DEBOUNCE_CTL,
-    RBOX_KEY_COM1_DEBOUNCE_CTL,
-    RBOX_KEY_COM2_DEBOUNCE_CTL,
-    RBOX_KEY_COM3_DEBOUNCE_CTL,
     RBOX_KEY_INVERT_CTL,
+    RBOX_PIN_ALLOWED_CTL,
     RBOX_PIN_OUT_CTL,
-    RBOX_PIN_OUT_VALUE
+    RBOX_PIN_OUT_VALUE,
+    RBOX_PIN_IN_VALUE,
+    RBOX_KEY_INTR_CTL,
+    RBOX_KEY_INTR_DEBOUNCE_CTL,
+    RBOX_AUTO_BLOCK_DEBOUNCE_CTL,
+    RBOX_AUTO_BLOCK_OUT_CTL,
+    RBOX_COM_SEL_CTL0,
+    RBOX_COM_SEL_CTL1,
+    RBOX_COM_SEL_CTL2,
+    RBOX_COM_SEL_CTL3,
+    RBOX_COM_DET_CTL0,
+    RBOX_COM_DET_CTL1,
+    RBOX_COM_DET_CTL2,
+    RBOX_COM_DET_CTL3,
+    RBOX_COM_OUT_CTL0,
+    RBOX_COM_OUT_CTL1,
+    RBOX_COM_OUT_CTL2,
+    RBOX_COM_OUT_CTL3,
+    RBOX_INTR_STATUS
   } rbox_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] RBOX_PERMIT [10] = '{
-    4'b 0001, // index[0] RBOX_CFG_LOCK_CTL
-    4'b 1111, // index[1] RBOX_EC_RST_CTL
-    4'b 0001, // index[2] RBOX_FLASH_WP_CTL
-    4'b 1111, // index[3] RBOX_KEY_COM0_DEBOUNCE_CTL
-    4'b 1111, // index[4] RBOX_KEY_COM1_DEBOUNCE_CTL
-    4'b 1111, // index[5] RBOX_KEY_COM2_DEBOUNCE_CTL
-    4'b 1111, // index[6] RBOX_KEY_COM3_DEBOUNCE_CTL
-    4'b 0001, // index[7] RBOX_KEY_INVERT_CTL
-    4'b 0001, // index[8] RBOX_PIN_OUT_CTL
-    4'b 0001  // index[9] RBOX_PIN_OUT_VALUE
+  parameter logic [3:0] RBOX_PERMIT [27] = '{
+    4'b 0001, // index[ 0] RBOX_INTR_STATE
+    4'b 0001, // index[ 1] RBOX_INTR_ENABLE
+    4'b 0001, // index[ 2] RBOX_INTR_TEST
+    4'b 0001, // index[ 3] RBOX_CFG_WEN_CTL
+    4'b 0011, // index[ 4] RBOX_EC_RST_CTL
+    4'b 0011, // index[ 5] RBOX_KEY_INVERT_CTL
+    4'b 0011, // index[ 6] RBOX_PIN_ALLOWED_CTL
+    4'b 0001, // index[ 7] RBOX_PIN_OUT_CTL
+    4'b 0001, // index[ 8] RBOX_PIN_OUT_VALUE
+    4'b 0001, // index[ 9] RBOX_PIN_IN_VALUE
+    4'b 0011, // index[10] RBOX_KEY_INTR_CTL
+    4'b 0011, // index[11] RBOX_KEY_INTR_DEBOUNCE_CTL
+    4'b 0111, // index[12] RBOX_AUTO_BLOCK_DEBOUNCE_CTL
+    4'b 0001, // index[13] RBOX_AUTO_BLOCK_OUT_CTL
+    4'b 0001, // index[14] RBOX_COM_SEL_CTL0
+    4'b 0001, // index[15] RBOX_COM_SEL_CTL1
+    4'b 0001, // index[16] RBOX_COM_SEL_CTL2
+    4'b 0001, // index[17] RBOX_COM_SEL_CTL3
+    4'b 1111, // index[18] RBOX_COM_DET_CTL0
+    4'b 1111, // index[19] RBOX_COM_DET_CTL1
+    4'b 1111, // index[20] RBOX_COM_DET_CTL2
+    4'b 1111, // index[21] RBOX_COM_DET_CTL3
+    4'b 0001, // index[22] RBOX_COM_OUT_CTL0
+    4'b 0001, // index[23] RBOX_COM_OUT_CTL1
+    4'b 0001, // index[24] RBOX_COM_OUT_CTL2
+    4'b 0001, // index[25] RBOX_COM_OUT_CTL3
+    4'b 0011  // index[26] RBOX_INTR_STATUS
   };
 endpackage
 
