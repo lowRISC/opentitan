@@ -219,6 +219,9 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
+      tags: [ // Life cycle internal HW will update status so could not auto-predict its value,
+              // After reset, the field READY will be set to 1, so it is excluded from reset CSR test
+              "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits: "0"
           name: "READY"
@@ -375,6 +378,9 @@
         hwext:    "true",
         regwen:   "TRANSITION_REGWEN",
         cname:    "WORD",
+        tags: [ // To update this register, SW needs to claim the associated hardware mutex via
+                // CLAIM_TRANSITION_IF, so could not auto predict its value.
+                "excl:CsrNonInitTests:CsrExclCheck"],
         fields: [
           { bits: "31:0"
           }
@@ -396,6 +402,9 @@
                 In order to have exclusive access to this register, SW must first claim the associated
                 hardware mutex via !!CLAIM_TRANSITION_IF.
                 '''
+          tags: [ // To update this register, SW needs to claim the associated hardware mutex via
+                  // CLAIM_TRANSITION_IF, so could not auto predict its value.
+                  "excl:CsrNonInitTests:CsrExclCheck"],
           enum: [
             { value: "0",
               name:  "RAW",

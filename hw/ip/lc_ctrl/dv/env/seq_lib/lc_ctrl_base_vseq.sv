@@ -16,6 +16,12 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
+  virtual task pre_start();
+    // LC_CTRL does not have interrupts
+    do_clear_all_interrupts = 0;
+    super.pre_start();
+  endtask
+
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     cfg.lc_ctrl_vif.init();
