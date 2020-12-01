@@ -1,0 +1,165 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: top_earlgrey_verilator
+
+  // Top level dut name (sv module).
+  dut: "{name}"
+
+  // Top level testbench name (sv module).
+  tb: "{name}"
+
+  // Default simulator used to sign off.
+  tool: verilator
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: "lowrisc:systems:{name}:0.1"
+
+  // Testplan hjson file.
+  # testplan: "{proj_root}/hw/top_earlgrey/data/chip_testplan.hjson"
+
+  // Import additional common sim cfg files.
+  import_cfgs: [// Project wide common sim cfg file
+                "{proj_root}/hw/dv/tools/dvsim/verilator.hjson",
+               ]
+
+  overrides: [
+    // Use FuseSoC to build the Verilator executable. Skip the SV file list
+    // generation step entirely.
+    {
+      name: sv_flist_gen_cmd
+      value: ""
+    }
+    {
+      name: sv_flist_gen_opts
+      value: []
+    }
+    {
+      name: sv_flist_gen_dir
+      value: "{build_dir}"
+    }
+    // This defaults to 'ip' in `hw/data/common_project_cfg.hjson`. Override
+    // since we are building the top level.
+    {
+      name: design_level
+      value: top
+    }
+  ]
+
+  // Common run parameters. Each test entry can override any of these as needed.
+  reseed: 1
+  sw_build_device: sim_verilator
+
+  // Add run modes.
+  run_modes: [
+    {
+      name: sw_test_mode
+      sw_images: ["sw/device/boot_rom/boot_rom:0"]
+      run_opts: [
+        // The following shell snippet converts the SW images specification to what's
+        // needed as a run time switch to Verilator.
+        '''{eval_cmd} \
+        opts=;  \
+        types=(rom flash); \
+        images=`echo {sw_images}`; \
+        for image in $images; do \
+          path=`echo $image | cut -d: -f 1`;  \
+          index=`echo $image | cut -d: -f 2`; \
+          opts="$opts --meminit=${types[$index]},{sw_build_dir}/build-bin/$path""_{sw_build_device}.elf"; \
+        done; \
+        echo "$opts"''',
+      ]
+    }
+  ]
+
+  // All tests are SW based, so enable this by default.
+  en_run_modes: ["sw_test_mode"]
+
+  // List of test specifications.
+  //
+  // If you are adding a test that has been generated from the `sw_tests`
+  // dictionary declared in `sw/device/tests/meson.build`, the `sw_images` list
+  // below should contain `sw/device/tests/<sw_test_name>` (without any more
+  // subdirectories) because that is where the meson target is created. For
+  // example `dif_plic_smoketest` is added to `sw_tests` in
+  // `sw/device/tests/dif/meson.build`, but the final meson targets all start
+  // `sw/device/tests/dif_plic_smoketest_`.
+  //
+  // Each entry in `sw_images` is followed by an index separated with ':' which
+  // is used by the testbench to know what type of image is it:
+  // - 0 for boot_rom,
+  // - 1 for SW test,
+  // - 2 for OTBN and so on
+  // This allows an arbitrary number of SW images to be supplied to the TB.
+  tests: [
+    {
+      name: aes_test
+      sw_images: ["sw/device/tests/aes_test:1"]
+    }
+    {
+      name: crt_test
+      sw_images: ["sw/device/tests/crt_test:1"]
+    }
+    {
+      name: dif_otbn_smoketest_rtl
+      sw_images: ["sw/device/tests/dif_otbn_smoketest:1"]
+      run_opts: ['+OTBN_USE_MODEL=0']
+    }
+    // Using the model in CI isn't possible until #4097 is resolved.
+    //{
+    //  name: dif_otbn_smoketest_model
+    //  sw_images: ["sw/device/tests/dif_otbn_smoketest:1"]
+    //  run_opts: ['+OTBN_USE_MODEL=0']
+    //}
+    {
+      name: dif_otp_ctrl_smoketest
+      sw_images: ["sw/device/tests/dif_otp_ctrl_smoketest:1"]
+    }
+    {
+      name: dif_plic_smoketest
+      sw_images: ["sw/device/tests/dif_plic_smoketest:1"]
+    }
+    {
+      name: dif_rstmgr_smoketest
+      sw_images: ["sw/device/tests/dif_rstmgr_smoketest:1"]
+    }
+    {
+      name: dif_rv_timer_smoketest
+      sw_images: ["sw/device/tests/dif_rv_timer_smoketest:1"]
+    }
+    {
+      name: dif_uart_smoketest
+      sw_images: ["sw/device/tests/dif_uart_smoketest:1"]
+    }
+    {
+      name: flash_ctrl_test
+      sw_images: ["sw/device/tests/flash_ctrl_test:1"]
+    }
+    {
+      name: pmp_smoketest_napot
+      sw_images: ["sw/device/tests/pmp_smoketest_napot:1"]
+    }
+    {
+      name: pmp_smoketest_tor
+      sw_images: ["sw/device/tests/pmp_smoketest_tor:1"]
+    }
+    {
+      name: sha256_test
+      sw_images: ["sw/device/tests/sha256_test:1"]
+    }
+    {
+      name: usbdev_test
+      sw_images: ["sw/device/tests/usbdev_test:1"]
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: []
+    }
+  ]
+}
