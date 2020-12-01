@@ -426,11 +426,80 @@ Rough expected process:
 
 ## Error conditions
 
-<div class="bd-callout bd-callout-warning">
-  <h5>Note</h5>
-
-  To be filled in as we create the implementation.
-</div>
+<table>
+  <thead>
+    <tr>
+      <th>Identifier</th>
+      <th>Code</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ErrCodeNoError</td>
+      <td>0x00</td>
+      <td>Execution was successful.</td>
+    </tr>
+    <tr>
+      <td>ErrCodeBadDataAddr</td>
+      <td>0x01</td>
+      <td>
+      A DMEM read or write occurred with an out of bounds or unaligned address.
+      </td>
+    </tr>
+    <tr>
+      <td>ErrCodeBadInsnAddr</td>
+      <td>0x02</td>
+      <td>
+      An instruction fetch occurred with an out of bounds or unaligned address.
+      </td>
+    </tr>
+    <tr>
+      <td>ErrCodeCallStack</td>
+      <td>0x03</td>
+      <td>
+      A instruction tried to pop from an empty call stack or push to a full call
+      stack.
+      </td>
+    </tr>
+    <tr>
+      <td>ErrCodeIllegalInsn</td>
+      <td>0x04</td>
+      <td><ul>
+        <li>An instruction being excuted had an invalid encoding.</li>
+        <li>An access occurred for an invalid CSR or WSR.</li>
+        <li>
+          A CSR or WSR access occurred that is not permitted (e.g. writing to a
+          read-only CSR or WSR).
+        </li>
+      </ul></td>
+    </tr>
+    <tr>
+      <td>ErrCodeLoop</td>
+      <td>0x05</td>
+      <td><ul>
+        <li>A loop was started with a 0 iteration count.</li>
+        <li>The final instruction of a loop was a branch or another loop.</li>
+        <li>The loop stack would overflow (loop nesting level too deep).</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <td>ErrCodeFatalImem</td>
+      <td>0x80</td>
+      <td>A fatal failure was seen on an instruction fetch.</td>
+    </tr>
+    <tr>
+      <td>ErrCodeFatalDmem</td>
+      <td>0x81</td>
+      <td>A fatal failure was seen on a DMEM read.</td>
+    </tr>
+    <tr>
+      <td>ErrCodeFatalReg</td>
+      <td>0x82</td>
+      <td>A fatal failure was seen on a RF read.</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Device Interface Functions (DIFs)
 
