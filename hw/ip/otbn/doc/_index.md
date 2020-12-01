@@ -436,25 +436,25 @@ Rough expected process:
 
 {{< registers "hw/ip/otbn/data/otbn.hjson" >}}
 
-## Algorithic Example: Replacing BN.MULH with BN.MULQACC
+## Algorithic Examples: Multiplication with BN.MULQACC
 
-This specification gives the implementers the option to provide either a quarter-word multiply-accumulate instruction, `BN.MULQADD`, or a half-word multiply instruction, `BN.MULH`.
-Four `BN.MULQACC` can be used to replace one `BN.MULH` instruction, which is able to operate on twice the data size.
+The big number instruction subset of OTBN generally operates on WLEN bit numbers.
+`BN.MULQACC` operates with WLEN/4 bit operands (with a full WLEN accumulator).
+This section outlines two techniques to perform larger multiplies by composing multiple `BN.MULQACC` instructions.
 
-`BN.MULH w1, w0.l, w0.u` becomes
+### Multiplying two WLEN/2 numbers with BN.MULQACC
+
+This instruction sequence multiplies the lower half of `w0` by the upper half of
+`w0` placing the result in `w1`.
 
 ```
 BN.MULQACC.Z      w0.0, w0.2, 0
 BN.MULQACC        w0.0, w0.3, 64
 BN.MULQACC        w0.1, w0.2, 64
-BN.MULQACC.WO r1, w0.1, w0.3, 128
+BN.MULQACC.WO w1, w0.1, w0.3, 128
 ```
 
-## Algorithmic Example: Multiplying two WLEN numbers with BN.MULQACC
-
-The big number instruction subset of OTBN generally operates on WLEN bit numbers.
-However, the multiplication instructions only operate on half or quarter-words of WLEN bit.
-This section outlines a technique to multiply two WLEN-bit numbers with the use of the quarter-word multiply-accumulate instruction `BN.MULQACC`.
+### Multiplying two WLEN numbers with BN.MULQACC
 
 The shift out functionality can be used to perform larger multiplications without extra adds.
 The table below shows how two registers `w0` and `w1` can be multiplied together to give a result in `w2` and `w3`.
