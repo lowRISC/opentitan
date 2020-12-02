@@ -13,8 +13,9 @@
 <tbody>
 <tr>
 <td>CREATOR_DATA</td>
-<td colspan="3" style="text-align:center;vertical-align:middle">PROVISION_EN == ON</td>
-<td>Identical control to creator collateral in OTP.</td>
+<td colspan="2" style="text-align:center;vertical-align:middle">PROVISION_WR_EN == ON</td>
+<td style="text-align:center;vertical-align:middle">PROVISION_RD_EN == ON</td>
+<td>Similar control to creator collateral in OTP, with the difference that this item remains readable after personalization.</td>
 </tr>
 <tr>
 <td>OWNER_DATA</td>

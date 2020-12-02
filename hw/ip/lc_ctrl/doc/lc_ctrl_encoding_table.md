@@ -115,7 +115,7 @@
     <td style="background:#dadce0">B3</td>
     <td style="background:#dadce0">B4</td>
     <td style="background:#dadce0">B5</td>
-    <td style="background:#dadce0">A6</td>
+    <td style="background:#c9daf8">A6</td>
     <td style="background:#c9daf8">A7</td>
     <td style="background:#c9daf8">A8</td>
     <td style="background:#c9daf8">A9</td>

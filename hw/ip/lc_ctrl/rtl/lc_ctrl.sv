@@ -189,8 +189,7 @@ module lc_ctrl
   // Transition Interface and HW Mutex //
   ///////////////////////////////////////
 
-  // TODO: expose device ID
-  // TODO: expose other info to expose via CSRs / TAP?
+  // TODO: expose other info to via CSRs / TAP?
 
   // All registers are HWext
   logic          trans_success_d, trans_success_q;

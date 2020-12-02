@@ -150,6 +150,8 @@ They exist only after specific events, and are restored to normal once the devic
 
 {{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_signals_table.md" >}}
 
+Signals marked with an asterisk (Y\*) are only asserted under certain conditions as explained in detail below.
+
 ### DFT_EN
 
 As its name implies, this signal enables DFT functions.
@@ -193,18 +195,19 @@ This ensures that during specific states (RAW, TEST_LOCKED, SCRAP, INVALID) it i
 
 In conjunction with DFT_EN / HW_DEBUG_EN, this acts as the final layer in life cycle defense in depth.
 
-### PROVISION_EN
+### PROVISION_RD_EN and PROVISION_WR_EN
 
-The PROVISION_EN signal is a separate signal that controls whether the non-volatile provisioning of life cycle related collateral can be accessed (see [OTP]({{< relref "#otp-collateral" >}}) and [flash]({{< relref "#flash-collateral" >}}) sections for list of collateral and also what collateral in each area is affected by PROVISION_EN).
+The PROVISION_RD_EN and PROVISION_WR_EN signal are separate signals that controls whether the non-volatile provisioning of life cycle related collateral can be accessed (see [OTP]({{< relref "#otp-collateral" >}}) and [flash]({{< relref "#flash-collateral" >}}) sections for list of collateral and also what collateral in each area is affected by PROVISION_RD_EN and PROVISION_WR_EN).
 This satisfies the dependency requirement between the manufacturing state and the identity state.
 
-PROVISION_EN is active only during DEV / PROD / PROD_END / RMA.
+The PROVISION_RD_EN and PROVISION_WR_EN signals can only be active during DEV / PROD / PROD_END / RMA.
 During other states, it is not possible to either read or modify the collateral.
 This specifically limits the danger of rogue software images during any TEST_UNLOCKED state.
 
-However, as PROVISION_EN only gates functional access and not DFT access, it is still possible for a malicious agent to bypass this protection by abusing scan shift/capture mechanics.
+However, as PROVISION_RD_EN and PROVISION_WR_EN only gate functional access and not DFT access, it is still possible for a malicious agent to bypass this protection by abusing scan shift/capture mechanics.
 
-Note also, PROVISION_EN is a blanket control over all provision related collateral.  Each collateral contains more specific OTP / flash / Software based decoding that further limits accessibility.
+Note also that PROVISION_RD_EN and PROVISION_WR_EN provide blanket control over all provision related collateral.
+Each collateral contains more specific OTP / flash / Software based decoding that further limits accessibility.
 See the flash and OTP sections for more details.
 
 ### KEY_MANAGER_EN
@@ -214,10 +217,11 @@ When this signal is logically disabled, any existing key manager collateral is u
 
 The KEY_MANAGER_EN signal is active only during DEV / PROD / PROD_END / RMA.
 
-### CLK_BYP_EN
+### CLK_BYP_REQ
 
-The CLK_BYP_EN signal switches the main system clock to an external clock signal in RAW and TEST_LOCKED states when initiating a life cycle transition.
+The CLK_BYP_REQ signal switches the main system clock to an external clock signal in RAW and TEST_LOCKED states when initiating a life cycle transition.
 This is needed since the internal clock source may not be fully calibrated yet in those states, and the OTP macro requires a stable clock frequency in order to reliably program the fuse array.
+The CLK_BYP_REQ signal is only asserted when a transition command is issued.
 
 ### ESCALATE_EN
 
@@ -384,7 +388,7 @@ All consumers of these keys are supplied with an invalid all-zero value.
 
 If the SECRET2_DIGEST has a nonzero value, the device is considered "creator personalized", and the CREATOR_ROOT_KEY and CREATOR_DIV_KEY are no longer accessible to software.
 Actual values are supplied to the consumers.
-If SECRET2_DIGEST has a nonzero value, the PROVISION_EN signal will be disabled.
+If SECRET2_DIGEST has a nonzero value, the PROVISION_WR_EN signal will be disabled.
 
 #### Secret Collateral
 
@@ -405,9 +409,9 @@ If PUFs were available (either in memory form or fused form), it could become an
 
 See the [OTP controller]({{< relref "hw/ip/otp_ctrl/doc/_index.md#secret-vs-non-secret-partitions">}}) for more details.
 
-#### OTP Accessibility Summary and Impact of PROVISION_EN
+#### OTP Accessibility Summary and Impact of PROVISION_RD_EN and PROVISION_WR_EN
 
-A subset of secret collateral is further access-controlled by the life cycle PROVISION_EN signal.
+A subset of secret collateral is further access-controlled by the life cycle PROVISION_WR_EN signal.
 These are
 
 - RMA_UNLOCK_TOKEN
@@ -417,7 +421,7 @@ The table below summarizes the software accessibility of all life cycle collater
 
 {{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_otp_accessibility.md" >}}
 
-Note that PROVISION_EN is set to OFF if SECRET2_DIGEST has a nonzero value.
+Note that PROVISION_WR_EN is set to OFF if SECRET2_DIGEST has a nonzero value, while PROVISION_RD_EN remains active during DEV / PROD / PROD_END / RMA.
 
 ### Flash Collateral
 
@@ -434,7 +438,7 @@ Each collateral belongs to a separate flash partition, the table below enumerate
 
 The general flash partition refers to any software managed storage in flash, and is not a specific carve out in the non-memory mapped area.
 
-#### Flash Accessibility Summary and Impact of PROVISION_EN
+#### Flash Accessibility Summary and Impact of PROVISION_RD_EN and PROVISION_WR_EN
 
 At the moment (**TODO: link to Creator / Owner isolation**), the creator software is trusted to manage the owner partition (OWNER_DATA).
 As such, there is no additional hardware used to control the accessibility.
@@ -445,7 +449,7 @@ Just as with OTP, the table below enumerates accessibility of flash collateral.
 
 {{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_flash_accessibility.md" >}}
 
-Note that PROVISION_EN is set to OFF if SECRET2_DIGEST has a nonzero value.
+Note that PROVISION_WR_EN is set to OFF if SECRET2_DIGEST has a nonzero value, while PROVISION_RD_EN remains active during DEV / PROD / PROD_END / RMA.
 
 ### TAP Construction and Isolation
 
