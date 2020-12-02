@@ -33,7 +33,13 @@
     // device
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_rom"
+      name:   "tl_rom_ctrl__rom"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_rom_ctrl__regs"
       act:    "req"
       package: "tlul_pkg"
     }

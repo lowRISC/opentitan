@@ -1,0 +1,75 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "rom_ctrl"
+  clock_primary: "clk_i"
+  reset_primary: "rst_ni",
+  regwidth: "32"
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device", name: "regs" }
+    { protocol: "tlul", direction: "device", name: "rom" },
+  ],
+  param_list: [
+    { name:    "BootRomInitFile",
+      type:    "",
+      default: '""',
+      desc:    "Contents of mask ROM"
+      local:   "false",
+      expose:  "true"
+    }
+  ]
+  alert_list: [
+    { name: "fatal"
+      desc: "A fatal error. Fatal alerts are non-recoverable and will be asserted until a hard reset."
+    }
+  ],
+  inter_signal_list: [
+    // Interface to memory configuration
+    { name:    "rom_cfg",
+      package: "prim_rom_pkg",
+      struct:  "rom_cfg",
+      act:     "rcv"
+      type:    "uni",
+    }
+  ],
+  registers: {
+    regs: [
+      { name: "FATAL_ALERT_CAUSE",
+        desc: '''
+          The cause of a fatal alert.
+
+          The bits of this register correspond to errors that can cause a fatal
+          alert. Software can read these bits to see what went wrong. Once set,
+          these bits cannot be cleared.
+        '''
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0",
+            name: "integrity_error",
+            resval: 0,
+            desc: "Set on an integrity error from the register interface"
+          }
+
+          { bits: "1",
+            name: "dummy",
+            resval: 0,
+            desc: "Dummy index to prevent reggen from hiding the array."
+          }
+        ]
+      }
+    ],
+
+    rom: [
+      // ROM size (given as `items` below) must be a power of two.
+      { window: {
+          name: "ROM"
+          items: "4096" // 16 KiB
+          swaccess: "ro",
+          desc: '''ROM data'''
+        }
+      }
+    ]
+  }
+}

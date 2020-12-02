@@ -33,7 +33,8 @@ tl_if corei_tl_if(clk_main, rst_n);
 tl_if cored_tl_if(clk_main, rst_n);
 tl_if dm_sba_tl_if(clk_main, rst_n);
 
-tl_if rom_tl_if(clk_main, rst_n);
+tl_if rom_ctrl__rom_tl_if(clk_main, rst_n);
+tl_if rom_ctrl__regs_tl_if(clk_main, rst_n);
 tl_if debug_mem_tl_if(clk_main, rst_n);
 tl_if ram_main_tl_if(clk_main, rst_n);
 tl_if eflash_tl_if(clk_main, rst_n);
@@ -104,7 +105,8 @@ initial begin
     `DRIVE_CHIP_TL_HOST_IF(corei, rv_core_ibex, tl_i)
     `DRIVE_CHIP_TL_HOST_IF(cored, rv_core_ibex, tl_d)
     `DRIVE_CHIP_TL_HOST_IF(dm_sba, dm_top, tl_h)
-    `DRIVE_CHIP_TL_DEVICE_IF(rom, tl_adapter_rom, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__rom, rom_ctrl, rom_tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__regs, rom_ctrl, regs_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(debug_mem, dm_top, tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(ram_main, tl_adapter_ram_main, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(eflash, tl_adapter_eflash, tl)

@@ -1,0 +1,65 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:rom_ctrl:0.1"
+description: "ROM controller"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:alert
+      - lowrisc:prim:assert
+      - lowrisc:prim:rom_adv
+      - lowrisc:prim:subreg
+      - lowrisc:prim:util
+      - lowrisc:ip:tlul
+    files:
+      - rtl/rom_ctrl_pkg.sv
+      - rtl/rom_ctrl_reg_pkg.sv
+      - rtl/rom_ctrl_regs_reg_top.sv
+      - rtl/rom_ctrl_rom_reg_top.sv
+      - rtl/rom_ctrl.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/rom_ctrl.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/rom_ctrl.waiver
+    file_type: waiver
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - files_rtl
+    toplevel: rom_ctrl
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

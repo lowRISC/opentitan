@@ -709,16 +709,42 @@ extern "C" {
  */
 #define TOP_EARLGREY_OTBN_SIZE_BYTES 0x10000u
 
+/**
+ * Peripheral base address for regs device on rom_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR 0x411E0000u
 
 /**
- * Memory base address for rom in top earlgrey.
+ * Peripheral size for regs device on rom_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR and
+ * `TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_ROM_BASE_ADDR 0x8000u
+#define TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES 0x1000u
 
 /**
- * Memory size for rom in top earlgrey.
+ * Peripheral base address for rom device on rom_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ROM_SIZE_BYTES 0x4000u
+#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x8000u
+
+/**
+ * Peripheral size for rom device on rom_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR and
+ * `TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x4000u
+
 
 /**
  * Memory base address for ram_main in top earlgrey.
@@ -1017,7 +1043,8 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralEdn1 = 10, /**< edn1 */
   kTopEarlgreyAlertPeripheralSramCtrlMain = 11, /**< sram_ctrl_main */
   kTopEarlgreyAlertPeripheralOtbn = 12, /**< otbn */
-  kTopEarlgreyAlertPeripheralLast = 12, /**< \internal Final Alert peripheral */
+  kTopEarlgreyAlertPeripheralRomCtrl = 13, /**< rom_ctrl */
+  kTopEarlgreyAlertPeripheralLast = 13, /**< \internal Final Alert peripheral */
 } top_earlgrey_alert_peripheral_t;
 
 /**
@@ -1056,7 +1083,8 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdSramCtrlMainFatalParityError = 26, /**< sram_ctrl_main_fatal_parity_error */
   kTopEarlgreyAlertIdOtbnFatal = 27, /**< otbn_fatal */
   kTopEarlgreyAlertIdOtbnRecov = 28, /**< otbn_recov */
-  kTopEarlgreyAlertIdLast = 28, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdRomCtrlFatal = 29, /**< rom_ctrl_fatal */
+  kTopEarlgreyAlertIdLast = 29, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -1066,7 +1094,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[29];
+    top_earlgrey_alert_for_peripheral[30];
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 

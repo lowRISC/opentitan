@@ -391,14 +391,24 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_OTBN_SIZE_BYTES = 32'h10000;
 
   /**
-   * Memory base address for rom in top earlgrey.
+   * Peripheral base address for regs device on rom_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_BASE_ADDR = 32'h8000;
+  parameter int unsigned TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR = 32'h411E0000;
 
   /**
-   * Memory size for rom in top earlgrey.
+   * Peripheral size in bytes for regs device on rom_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_SIZE_BYTES = 32'h4000;
+  parameter int unsigned TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for rom device on rom_ctrl in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR = 32'h8000;
+
+  /**
+   * Peripheral size in bytes for rom device on rom_ctrl in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'h4000;
 
   /**
    * Memory base address for ram_main in top earlgrey.

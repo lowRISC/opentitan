@@ -6,7 +6,8 @@
 
 package tl_main_pkg;
 
-  localparam logic [31:0] ADDR_SPACE_ROM            = 32'h 00008000;
+  localparam logic [31:0] ADDR_SPACE_ROM_CTRL__ROM  = 32'h 00008000;
+  localparam logic [31:0] ADDR_SPACE_ROM_CTRL__REGS = 32'h 411e0000;
   localparam logic [31:0] ADDR_SPACE_DEBUG_MEM      = 32'h 1a110000;
   localparam logic [31:0] ADDR_SPACE_RAM_MAIN       = 32'h 10000000;
   localparam logic [31:0] ADDR_SPACE_EFLASH         = 32'h 20000000;
@@ -26,7 +27,8 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_KEYMGR         = 32'h 41130000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN = 32'h 411c0000;
 
-  localparam logic [31:0] ADDR_MASK_ROM            = 32'h 00003fff;
+  localparam logic [31:0] ADDR_MASK_ROM_CTRL__ROM  = 32'h 00003fff;
+  localparam logic [31:0] ADDR_MASK_ROM_CTRL__REGS = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_DEBUG_MEM      = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RAM_MAIN       = 32'h 0001ffff;
   localparam logic [31:0] ADDR_MASK_EFLASH         = 32'h 000fffff;
@@ -47,26 +49,27 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN = 32'h 00000fff;
 
   localparam int N_HOST   = 3;
-  localparam int N_DEVICE = 17;
+  localparam int N_DEVICE = 18;
 
   typedef enum int {
-    TlRom = 0,
-    TlDebugMem = 1,
-    TlRamMain = 2,
-    TlEflash = 3,
-    TlPeri = 4,
-    TlFlashCtrl = 5,
-    TlHmac = 6,
-    TlKmac = 7,
-    TlAes = 8,
-    TlEntropySrc = 9,
-    TlCsrng = 10,
-    TlEdn0 = 11,
-    TlEdn1 = 12,
-    TlRvPlic = 13,
-    TlOtbn = 14,
-    TlKeymgr = 15,
-    TlSramCtrlMain = 16
+    TlRomCtrlRom = 0,
+    TlRomCtrlRegs = 1,
+    TlDebugMem = 2,
+    TlRamMain = 3,
+    TlEflash = 4,
+    TlPeri = 5,
+    TlFlashCtrl = 6,
+    TlHmac = 7,
+    TlKmac = 8,
+    TlAes = 9,
+    TlEntropySrc = 10,
+    TlCsrng = 11,
+    TlEdn0 = 12,
+    TlEdn1 = 13,
+    TlRvPlic = 14,
+    TlOtbn = 15,
+    TlKeymgr = 16,
+    TlSramCtrlMain = 17
   } tl_device_e;
 
   typedef enum int {

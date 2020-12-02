@@ -34,6 +34,11 @@ esc_rst = top["reset_paths"]["sys_io_div4"]
 unused_resets = lib.get_unused_resets(top)
 unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["definitions"])
 
+has_toplevel_rom = False
+for m in top['memory']:
+  if m['type'] == 'rom':
+    has_toplevel_rom = True
+
 %>\
 module top_${top["name"]} #(
   // Auto-inferred parameters
@@ -47,10 +52,12 @@ module top_${top["name"]} #(
 % endfor
 
   // Manually defined parameters
+% if has_toplevel_rom:
+  parameter     BootRomInitFile = "",
+% endif
   parameter ibex_pkg::regfile_e IbexRegFile = ibex_pkg::RegFileFF,
   parameter bit IbexICache = 1,
-  parameter bit IbexPipeLine = 0,
-  parameter     BootRomInitFile = ""
+  parameter bit IbexPipeLine = 0
 ) (
   // Reset, clocks defined as part of intermodule
   input               rst_ni,
@@ -277,7 +284,7 @@ module top_${top["name"]} #(
     .ram_cfg_i            (ast_ram_1p_cfg),
     // static pinning
     .hart_id_i            (32'b0),
-    .boot_addr_i          (ADDR_SPACE_ROM),
+    .boot_addr_i          (ADDR_SPACE_ROM_CTRL__ROM),
     // TL-UL buses
     .tl_i_o               (main_tl_corei_req),
     .tl_i_i               (main_tl_corei_rsp),

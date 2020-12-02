@@ -327,6 +327,20 @@
  * registers associated with the peripheral (usually via a DIF).
  */
 #define TOP_EARLGREY_OTBN_BASE_ADDR 0x411D0000
+/**
+ * Peripheral base address for regs device on rom_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR 0x411E0000
+/**
+ * Peripheral base address for rom device on rom_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x8000
 #endif  // __ASSEMBLER__
 
 #endif  // OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_MEMORY_H_

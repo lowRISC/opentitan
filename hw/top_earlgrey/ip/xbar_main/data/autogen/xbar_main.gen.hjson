@@ -30,14 +30,15 @@
   {
     corei:
     [
-      rom
+      rom_ctrl.rom
       debug_mem
       ram_main
       eflash
     ]
     cored:
     [
-      rom
+      rom_ctrl.rom
+      rom_ctrl.regs
       debug_mem
       ram_main
       eflash
@@ -57,7 +58,8 @@
     ]
     dm_sba:
     [
-      rom
+      rom_ctrl.rom
+      rom_ctrl.regs
       ram_main
       eflash
       peri
@@ -110,17 +112,35 @@
       pipeline: "true"
     }
     {
-      name: rom
+      name: rom_ctrl.rom
       type: device
       clock: clk_main_i
       reset: rst_main_ni
       pipeline: "false"
-      inst_type: rom
+      inst_type: rom_ctrl
       addr_range:
       [
         {
           base_addr: 0x8000
           size_byte: 0x4000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: rom_ctrl.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "false"
+      inst_type: rom_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x411e0000
+          size_byte: 0x1000
         }
       ]
       xbar: false

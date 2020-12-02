@@ -75,7 +75,7 @@ package chip_env_pkg;
   // functions
   function automatic bit [bus_params_pkg::BUS_AW-1:0] get_chip_mem_base_addr(chip_mem_e mem);
     case (mem)
-      Rom:    return top_earlgrey_pkg::TOP_EARLGREY_ROM_BASE_ADDR;
+      Rom:    return top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR;
       RamMain:return top_earlgrey_pkg::TOP_EARLGREY_RAM_MAIN_BASE_ADDR;
       RamRet: return top_earlgrey_pkg::TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
       FlashBank0, FlashBank0Info: return top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR;

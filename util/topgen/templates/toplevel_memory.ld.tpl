@@ -23,6 +23,7 @@ def memory_to_flags(memory):
  * Partial linker script for chip memory configuration.
  */
 MEMORY {
+  rom(rx) : ORIGIN = 0x00008000, LENGTH = 0x4000
 % for m in top["memory"]:
   ${m["name"]}(${memory_to_flags(m)}) : ORIGIN = ${m["base_addr"]}, LENGTH = ${m["size"]}
 % endfor
