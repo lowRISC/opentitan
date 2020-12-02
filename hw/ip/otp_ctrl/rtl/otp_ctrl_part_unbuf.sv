@@ -286,8 +286,8 @@ module otp_ctrl_part_unbuf
                                                      {tlul_addr_q, 2'b00} >> OtpAddrShift;
   // Request 32bit except in case of the digest.
   assign otp_size_o = (otp_addr_sel == DigestAddr) ?
-                      OtpSizeWidth'(unsigned'(32 / OtpWidth - 1)) :
-                      OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1));
+                      OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1)) :
+                      OtpSizeWidth'(unsigned'(32 / OtpWidth - 1));
 
   ////////////////
   // Digest Reg //
