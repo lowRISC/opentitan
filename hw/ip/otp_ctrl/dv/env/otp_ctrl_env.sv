@@ -58,9 +58,9 @@ class otp_ctrl_env extends cip_base_env #(
     end
 
     // config lc pins
-    if (!uvm_config_db#(lc_provision_en_vif)::get(this, "", "lc_provision_en_vif",
-                                                  cfg.lc_provision_en_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get lc_provision_en_vif from uvm_config_db")
+    if (!uvm_config_db#(lc_provision_wr_en_vif)::get(this, "", "lc_provision_wr_en_vif",
+                                                     cfg.lc_provision_wr_en_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get lc_provision_wr_en_vif from uvm_config_db")
     end
     if (!uvm_config_db#(lc_dft_en_vif)::get(this, "", "lc_dft_en_vif", cfg.lc_dft_en_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get lc_dft_en_vif from uvm_config_db")
