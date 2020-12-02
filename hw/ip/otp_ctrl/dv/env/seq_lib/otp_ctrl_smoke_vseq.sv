@@ -81,7 +81,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
         // check read data
         `DV_CHECK_EQ(wdata0, rdata0, $sformatf("read data0 mismatch at addr %0h", dai_addr))
-        if (!is_secret(dai_addr)) begin
+        if (is_secret(dai_addr)) begin
           `DV_CHECK_EQ(wdata1, rdata1, $sformatf("read data1 mismatch at addr %0h", dai_addr))
         end
 
@@ -102,6 +102,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       // lock HW digests
       `uvm_info(`gfn, "Trigger HW digest calculation", UVM_HIGH)
       cal_hw_digests();
+      write_sw_digests();
       csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
       dut_init();
 

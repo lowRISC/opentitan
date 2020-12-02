@@ -61,7 +61,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
                       bit [TL_DW-1:0] wdata1 = 0);
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_wdata_0, wdata0);
-    if (!is_secret(addr)) csr_wr(ral.direct_access_wdata_1, wdata1);
+    if (is_secret(addr) || addr inside {CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset}) begin
+      csr_wr(ral.direct_access_wdata_1, wdata1);
+    end
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiWrite));
     csr_spinwait(ral.intr_state, 1 << OtpOperationDone);
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
@@ -76,7 +78,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_spinwait(ral.intr_state, 1 << OtpOperationDone);
 
     csr_rd(ral.direct_access_rdata_0, rdata0);
-    if (!is_secret(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
+    if (is_secret(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
   endtask : dai_rd
 
@@ -97,18 +99,29 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  // TODO: support checking all partitions within OTP
+  // SW digest data are calculated in sw and won't be checked in OTP.
+  // Here to simplify testbench, write random data to sw digest
+  virtual task write_sw_digests();
+    bit [TL_DW*2-1:0] rdata;
+    `DV_CHECK_STD_RANDOMIZE_FATAL(rdata);
+    dai_wr(CreatorSwCfgDigestOffset, rdata[TL_DW-1:0], rdata[TL_DW*2-1:TL_DW]);
+    `DV_CHECK_STD_RANDOMIZE_FATAL(rdata);
+    dai_wr(OwnerSwCfgDigestOffset, rdata[TL_DW-1:0], rdata[TL_DW*2-1:TL_DW]);
+  endtask
+
   // The digest CSR values are verified in otp_ctrl_scoreboard
   virtual task check_digests();
     bit [TL_DW-1:0] val;
-    csr_rd(.ptr(ral.hw_cfg_digest_0),  .value(val));
-    csr_rd(.ptr(ral.hw_cfg_digest_1),  .value(val));
-    csr_rd(.ptr(ral.secret0_digest_0), .value(val));
-    csr_rd(.ptr(ral.secret0_digest_1), .value(val));
-    csr_rd(.ptr(ral.secret1_digest_0), .value(val));
-    csr_rd(.ptr(ral.secret1_digest_1), .value(val));
-    csr_rd(.ptr(ral.secret2_digest_0), .value(val));
-    csr_rd(.ptr(ral.secret2_digest_1), .value(val));
+    csr_rd(.ptr(ral.creator_sw_cfg_digest_0), .value(val));
+    csr_rd(.ptr(ral.creator_sw_cfg_digest_1), .value(val));
+    csr_rd(.ptr(ral.hw_cfg_digest_0),         .value(val));
+    csr_rd(.ptr(ral.hw_cfg_digest_1),         .value(val));
+    csr_rd(.ptr(ral.secret0_digest_0),        .value(val));
+    csr_rd(.ptr(ral.secret0_digest_1),        .value(val));
+    csr_rd(.ptr(ral.secret1_digest_0),        .value(val));
+    csr_rd(.ptr(ral.secret1_digest_1),        .value(val));
+    csr_rd(.ptr(ral.secret2_digest_0),        .value(val));
+    csr_rd(.ptr(ral.secret2_digest_1),        .value(val));
   endtask
 
   virtual task req_sram_key(int index);

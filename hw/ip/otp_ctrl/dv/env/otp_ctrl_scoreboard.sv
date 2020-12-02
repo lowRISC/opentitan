@@ -10,10 +10,12 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(otp_ctrl_scoreboard)
 
   // local variables
-  bit [TL_DW-1:0] hw_cfg_a  [HW_CFG_ARRAY_SIZE];
-  bit [TL_DW-1:0] secret0_a [SECRET0_ARRAY_SIZE];
-  bit [TL_DW-1:0] secret1_a [SECRET1_ARRAY_SIZE];
-  bit [TL_DW-1:0] secret2_a [SECRET2_ARRAY_SIZE];
+  bit [TL_DW-1:0] creator_sw_cfg_a [CREATOR_SW_CFG_ARRAY_SIZE];
+  bit [TL_DW-1:0] owner_sw_cfg_a   [OWNER_SW_CFG_ARRAY_SIZE];
+  bit [TL_DW-1:0] hw_cfg_a         [HW_CFG_ARRAY_SIZE];
+  bit [TL_DW-1:0] secret0_a        [SECRET0_ARRAY_SIZE];
+  bit [TL_DW-1:0] secret1_a        [SECRET1_ARRAY_SIZE];
+  bit [TL_DW-1:0] secret2_a        [SECRET2_ARRAY_SIZE];
   bit key_size_80 = SCRAMBLE_KEY_SIZE == 80;
 
   // LC partition does not have digest
@@ -95,7 +97,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
     // memories
-    // TODO: memory read check, change hardcoded to parameters once design finalized
     end else if ((csr_addr & addr_mask) inside
         {[SW_WINDOW_BASE_ADDR : SW_WINDOW_BASE_ADDR + SW_WINDOW_SIZE],
          [TEST_ACCESS_BASE_ADDR : TEST_ACCESS_BASE_ADDR + TEST_ACCESS_WINDOW_SIZE]}) begin
@@ -131,6 +132,28 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             DaiDigest: cal_digest_val(get_part_index(dai_addr));
             DaiWrite: begin
               case (get_part_index(dai_addr))
+                CreatorSwCfgIdx: begin
+                  if (dai_addr < CreatorSwCfgDigestOffset) begin
+                    // write OTP
+                    int cal_addr = (dai_addr - CreatorSwCfgOffset) >> 2;
+                    creator_sw_cfg_a[cal_addr] = ral.direct_access_wdata_0.get_mirrored_value();
+                  end else begin
+                    // write digest
+                    digests[CreatorSwCfgIdx] = {ral.direct_access_wdata_1.get_mirrored_value(),
+                                                ral.direct_access_wdata_0.get_mirrored_value()};
+                  end
+                end
+                OwnerSwCfgIdx: begin
+                  if (dai_addr < OwnerSwCfgDigestOffset) begin
+                    // write OTP
+                    int cal_addr = (dai_addr - OwnerSwCfgOffset) >> 2;
+                    owner_sw_cfg_a[cal_addr] = ral.direct_access_wdata_0.get_mirrored_value();
+                  end else begin
+                    // write digest
+                    digests[OwnerSwCfgIdx] = {ral.direct_access_wdata_1.get_mirrored_value(),
+                                              ral.direct_access_wdata_0.get_mirrored_value()};
+                  end
+                end
                 HwCfgIdx: begin
                   int cal_addr = (dai_addr - HwCfgOffset) >> 2;
                   hw_cfg_a[cal_addr] = ral.direct_access_wdata_0.get_mirrored_value();
@@ -157,7 +180,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       // TODO: temp only enable this checking, should support all regs
       "hw_cfg_digest_0", "hw_cfg_digest_1", "", "secret0_digest_0", "secret0_digest_1",
-      "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1": begin
+      "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1",
+      "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
+      "owner_sw_cfg_digest_1": begin
         do_read_check = 1;
       end
       default: begin
@@ -186,6 +211,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // predict digest registers
   virtual function void predict_digest_csrs();
+    void'(ral.creator_sw_cfg_digest_0.predict(.value(digests[CreatorSwCfgIdx][31:0]),
+                                              .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.creator_sw_cfg_digest_1.predict(.value(digests[CreatorSwCfgIdx][63:32]),
+                                              .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.owner_sw_cfg_digest_0.predict(.value(digests[OwnerSwCfgIdx][31:0]),
+                                            .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.owner_sw_cfg_digest_1.predict(.value(digests[OwnerSwCfgIdx][63:32]),
+                                            .kind(UVM_PREDICT_DIRECT)));
     void'(ral.hw_cfg_digest_0.predict(.value(digests[HwCfgIdx][31:0]),
                                       .kind(UVM_PREDICT_DIRECT)));
     void'(ral.hw_cfg_digest_1.predict(.value(digests[HwCfgIdx][63:32]),
@@ -221,7 +254,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     int             array_size;
     real            key_factor  = SCRAMBLE_KEY_SIZE / TL_DW;
 
-    // TODO: currently only support HwCfg partition
     case (part_idx)
       HwCfgIdx: begin
         array_size = HW_CFG_ARRAY_SIZE;
@@ -238,6 +270,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       Secret2Idx: begin
         array_size = SECRET2_ARRAY_SIZE;
         mem_q = secret2_a;
+      end
+      CreatorSwCfgIdx, OwnerSwCfgIdx, LifeCycleIdx: begin
+        // access error
+        bit [TL_DW-1:0] status_val = OtpDaiErr || (1'b1 << part_idx);
+        void'(ral.status.predict(status_val));
+      end
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("Access unexpected partition %0d", part_idx))
       end
     endcase
 
