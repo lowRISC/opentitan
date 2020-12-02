@@ -32,7 +32,7 @@
 </tr>
 <tr>
 <td>RMA_UNLOCK_TOKEN</td>
-<td rowspan="3" colspan="2" style="text-align:center;vertical-align:middle">PROVISION_EN == ON</td>
+<td rowspan="3" colspan="2" style="text-align:center;vertical-align:middle">PROVISION_WR_EN == ON</td>
 <td></td>
 </tr>
 <tr>

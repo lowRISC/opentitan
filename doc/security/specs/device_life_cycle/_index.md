@@ -23,6 +23,8 @@ trusted identity.
 Manufacturing refers to the process in which a device is tested and prepared for
 silicon correctness prior to production.
 
+The technical specification of the corresponding life cycle controller IP can be found [here]({{< relref "hw/ip/lc_ctrl/doc" >}}).
+
 ## Background
 
 First see [here]({{< relref "doc/security/logical_security_model" >}}) for
