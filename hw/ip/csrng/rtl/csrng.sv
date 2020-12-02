@@ -4,6 +4,8 @@
 //
 // Description: csrng top level wrapper file
 
+`include "prim_assert.sv"
+
 module csrng import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
   parameter int NHwApps = 2
@@ -85,20 +87,16 @@ module csrng import csrng_pkg::*; #(
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(EsReqKnownO_A, entropy_src_hw_if_o.es_req)
-    // instance 0
-  `ASSERT_KNOWN(CsrngReqReady0KnownO_A, csrng_cmd_o[0].csrng_req_ready)
-  `ASSERT_KNOWN(CsrngRspAck0KnownO_A, csrng_cmd_o[0].csrng_rsp_ack)
-  `ASSERT_KNOWN(CsrngRspSts0KnownO_A, csrng_cmd_o[0].csrng_rsp_sts)
-  `ASSERT_KNOWN(CsrngGenbitsValid0KnownO_A, csrng_cmd_o[0].genbits_valid)
-  `ASSERT_KNOWN(CsrngGenbitsFips0KnownO_A, csrng_cmd_o[0].genbits_fips)
-  `ASSERT_KNOWN(CsrngGenbitsBus0KnownO_A, csrng_cmd_o[0].genbits_bus)
-    // instance 1
-  `ASSERT_KNOWN(CsrngReqReady1KnownO_A, csrng_cmd_o[1].csrng_req_ready)
-  `ASSERT_KNOWN(CsrngRspAck1KnownO_A, csrng_cmd_o[1].csrng_rsp_ack)
-  `ASSERT_KNOWN(CsrngRspSts1KnownO_A, csrng_cmd_o[1].csrng_rsp_sts)
-  `ASSERT_KNOWN(CsrngGenbitsValid1KnownO_A, csrng_cmd_o[1].genbits_valid)
-  `ASSERT_KNOWN(CsrngGenbitsFips1KnownO_A, csrng_cmd_o[1].genbits_fips)
-  `ASSERT_KNOWN(CsrngGenbitsBus1KnownO_A, csrng_cmd_o[1].genbits_bus)
+
+  // Application Interface Asserts
+  for (genvar i = 0; i < NHwApps; i = i+1) begin : gen_app_if_asserts
+    `ASSERT_KNOWN(CsrngReqReady0KnownO_A, csrng_cmd_o[i].csrng_req_ready)
+    `ASSERT_KNOWN(CsrngRspAck0KnownO_A, csrng_cmd_o[i].csrng_rsp_ack)
+    `ASSERT_KNOWN(CsrngRspSts0KnownO_A, csrng_cmd_o[i].csrng_rsp_sts)
+    `ASSERT_KNOWN(CsrngGenbitsValid0KnownO_A, csrng_cmd_o[i].genbits_valid)
+    `ASSERT_KNOWN(CsrngGenbitsFips0KnownO_A, csrng_cmd_o[i].genbits_fips)
+    `ASSERT_KNOWN(CsrngGenbitsBus0KnownO_A, csrng_cmd_o[i].genbits_bus)
+  end : gen_app_if_asserts
 
   `ASSERT_KNOWN(IntrCsCmdReqDoneKnownO_A, intr_cs_cmd_req_done_o)
   `ASSERT_KNOWN(IntrCsEntropyReqKnownO_A, intr_cs_entropy_req_o)
