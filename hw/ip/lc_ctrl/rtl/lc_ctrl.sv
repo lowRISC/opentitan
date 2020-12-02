@@ -222,7 +222,6 @@ module lc_ctrl
     hw2reg.status.flash_rma_error        = flash_rma_error_q;
     hw2reg.status.otp_error              = otp_prog_error_q;
     hw2reg.status.state_error            = state_invalid_error_q;
-    hw2reg.transition_regwen             = lc_idle_d;
     hw2reg.lc_state                      = dec_lc_state;
     hw2reg.lc_transition_cnt             = dec_lc_cnt;
     hw2reg.lc_id_state                   = dec_lc_id_state;
@@ -234,12 +233,14 @@ module lc_ctrl
     if (sw_claim_transition_if_q) begin
       hw2reg.transition_token  = transition_token_q;
       hw2reg.transition_target = transition_target_q;
+      hw2reg.transition_regwen = lc_idle_d;
     end
 
     tap_hw2reg.claim_transition_if = tap_claim_transition_if_q;
     if (tap_claim_transition_if_q) begin
       tap_hw2reg.transition_token  = transition_token_q;
       tap_hw2reg.transition_target = transition_target_q;
+      tap_hw2reg.transition_regwen = lc_idle_d;
     end
   end
 
