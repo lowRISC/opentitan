@@ -32,7 +32,7 @@
                 "{proj_root}/hw/ip/tlul/generic_dv/xbar_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["-top {dut}_bind"]
+  sim_tops: ["{dut}_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
