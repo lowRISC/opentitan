@@ -32,7 +32,9 @@ module kmac
   input  keymgr_pkg::kmac_data_req_t keymgr_kdf_i,
   output keymgr_pkg::kmac_data_rsp_t keymgr_kdf_o,
 
-  // TODO: CSRNG (EDN) interface
+  // EDN interface
+  output edn_pkg::edn_req_t entropy_o,
+  input  edn_pkg::edn_rsp_t entropy_i,
 
   // interrupts
   output logic intr_kmac_done_o,
@@ -108,9 +110,6 @@ module kmac
   // SHA3 Entropy interface
   logic sha3_rand_valid, sha3_rand_consumed;
   logic [sha3_pkg::StateW-1:0] sha3_rand_data;
-  // TODO: Connect to entropy when ready
-  assign sha3_rand_valid = 1'b 1;
-  assign sha3_rand_data = '0;
 
   // FIFO related signals
   logic msgfifo_empty, msgfifo_full;
@@ -179,6 +178,10 @@ module kmac
   // in KeyMgr interface logic.
   kmac_cmd_e sw_cmd, kmac_cmd;
 
+  // Entropy configurations
+  logic [31:0] entropy_refresh_period;
+  logic        entropy_seed_update;
+  logic [63:0] entropy_seed_data;
   // SHA3 Error response
   sha3_pkg::err_t sha3_err;
 
@@ -289,6 +292,13 @@ module kmac
   end
 
   assign sw_key_len = key_len_e'(reg2hw.key_len.q);
+
+  // Entropy configurations
+  assign entropy_refresh_period = reg2hw.entropy_period.q;
+  assign entropy_seed_update = reg2hw.entropy_seed_lower.qe
+                             | reg2hw.entropy_seed_upper.qe;
+  assign entropy_seed_data = { reg2hw.entropy_seed_lower.q,
+                               reg2hw.entropy_seed_upper.q};
 
   // Idle control (registered output)
   // The logic checks idle of SHA3 engine, MSG_FIFO, KMAC_CORE, KEYMGR interface
@@ -607,6 +617,55 @@ module kmac
 
     .endian_swap_i (reg2hw.cfg.state_endianness.q)
   );
+
+  // Entropy Generator
+  if (EnMasking == 1) begin : gen_entropy
+    kmac_entropy u_entropy (
+      .clk_i,
+      .rst_ni,
+
+      // EDN interface
+      .entropy_o,
+      .entropy_i,
+
+      // Entropy to internal logic (DOM AND)
+      .rand_valid_o    (sha3_rand_valid),
+      .rand_data_o     (sha3_rand_data),
+      .rand_consumed_i (sha3_rand_consumed),
+
+      // Status from internal logic
+      //// SHA3 engine run indicator
+      .in_progress_i (),
+      //// KMAC secret block handling indicator
+      .in_keyblock_i (),
+
+      // Configuration
+      //// Entropy refresh period in clk cycles
+      .refresh_period_i (entropy_refresh_period),
+
+      //// SW update of seed
+      .seed_update_i (entropy_seed_update),
+      .seed_data_i   (entropy_seed_data)
+    );
+  end else begin : gen_empty_entropy
+    // If Masking is not used, no need of entropy. Tieing 0
+    edn_pkg::edn_rsp_t unused_entropy_input;
+    assign unused_entropy_input = entropy_i;
+    assign entropy_o = '{default: '0};
+
+    logic unused_sha3_rand_consumed;
+    assign sha3_rand_valid = 1'b 1;
+    assign sha3_rand_data = '0;
+    assign unused_sha3_rand_consumed = sha3_rand_consumed;
+
+    logic unused_seed_update;
+    logic [63:0] unused_seed_data;
+    logic [31:0] unused_refresh_period;
+    assign unused_seed_data = entropy_seed_data;
+    assign unused_seed_update = entropy_seed_update;
+    assign unused_refresh_period = entropy_refresh_period;
+
+  end
 
   // Register top
   kmac_reg_top u_reg (
