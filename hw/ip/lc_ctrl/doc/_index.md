@@ -349,8 +349,8 @@ See diagram below
 
 #### Hardware Mutex
 
-In order to claim the hardware mutex, a non-zero value must be written to the claim register ({{< regref "CLAIM_TRANSITION_IF" >}}).
-If the value written is read back, then the mutex is claimed, and the interface that won arbitration can continue operations.
+In order to claim the hardware mutex, the value 0xA5 must be written to the claim register ({{< regref "CLAIM_TRANSITION_IF" >}}).
+If the register reads back as 0xA5, then the mutex is claimed, and the interface that won arbitration can continue operations.
 If the value is not read back, then the requesting interface should wait and try again later.
 
 When an agent is done with the mutex, it releases the mutex by explicitly writing a 0 to the claim register.

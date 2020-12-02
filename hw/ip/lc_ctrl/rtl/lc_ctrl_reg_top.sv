@@ -91,8 +91,8 @@ module lc_ctrl_reg_top (
   logic status_otp_error_re;
   logic status_state_error_qs;
   logic status_state_error_re;
-  logic claim_transition_if_qs;
-  logic claim_transition_if_wd;
+  logic [7:0] claim_transition_if_qs;
+  logic [7:0] claim_transition_if_wd;
   logic claim_transition_if_we;
   logic claim_transition_if_re;
   logic transition_regwen_qs;
@@ -284,7 +284,7 @@ module lc_ctrl_reg_top (
   // R[claim_transition_if]: V(True)
 
   prim_subreg_ext #(
-    .DW    (1)
+    .DW    (8)
   ) u_claim_transition_if (
     .re     (claim_transition_if_re),
     .we     (claim_transition_if_we),
@@ -528,7 +528,7 @@ module lc_ctrl_reg_top (
   assign status_state_error_re = addr_hit[1] && reg_re;
 
   assign claim_transition_if_we = addr_hit[2] & reg_we & ~wr_err;
-  assign claim_transition_if_wd = reg_wdata[0];
+  assign claim_transition_if_wd = reg_wdata[7:0];
   assign claim_transition_if_re = addr_hit[2] && reg_re;
 
   assign transition_regwen_re = addr_hit[3] && reg_re;
@@ -583,7 +583,7 @@ module lc_ctrl_reg_top (
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[0] = claim_transition_if_qs;
+        reg_rdata_next[7:0] = claim_transition_if_qs;
       end
 
       addr_hit[3]: begin
