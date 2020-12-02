@@ -53,12 +53,10 @@
   dut_instance: "{tb}.dut"
 
   // Top level simulation entities.
-  sim_tops: ["-top {tb}"]
+  sim_tops: ["{tb}"]
 
   // Default build and run opts
-  build_opts: [// List multiple tops for the simulation
-               "{sim_tops}",
-               // Standard UVM defines
+  build_opts: [// Standard UVM defines
                "+define+UVM",
                "+define+UVM_NO_DEPRECATED",
                "+define+UVM_REGEX_NO_DPI",
@@ -105,7 +103,7 @@
   // By default, two regressions are made available - "all" and "nightly". Both
   // run all available tests for the DUT. "nightly" enables coverage as well.
   // The 'tests' key is set to an empty list, which indicates "run everything".
-  // Test sets can enable sim modes, which are a set of build_opts and run_opts
+  // Regressions can enable sim modes, which are a set of build_opts and run_opts
   // that are grouped together. These are appended to the build modes used by the
   // tests.
   regressions: [

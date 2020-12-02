@@ -35,7 +35,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["-top pattgen_bind"]
+  sim_tops: ["pattgen_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

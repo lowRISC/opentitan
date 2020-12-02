@@ -40,7 +40,7 @@ name:
   en_build_modes: ["{tool}_otbn_memutil_build_opts"]
 
   // Add additional tops for simulation.
-  sim_tops: ["-top otbn_bind"]
+  sim_tops: ["otbn_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   //
