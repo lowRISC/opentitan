@@ -37,7 +37,7 @@ module otbn_core
   output logic [31:0]              imem_wdata_o,
   input  logic [31:0]              imem_rdata_i,
   input  logic                     imem_rvalid_i,
-  input  logic [1:0]               imem_rerror_i,
+  input  logic                     imem_rerror_i,
 
   // Data memory (DMEM)
   output logic                     dmem_req_o,
@@ -47,7 +47,7 @@ module otbn_core
   output logic [WLEN-1:0]          dmem_wmask_o,
   input  logic [WLEN-1:0]          dmem_rdata_i,
   input  logic                     dmem_rvalid_i,
-  input  logic [1:0]               dmem_rerror_i
+  input  logic                     dmem_rerror_i
 );
   // Random number
   // TODO: Hook up to RNG distribution network
@@ -102,7 +102,7 @@ module otbn_core
 
   logic [31:0]              lsu_base_rdata;
   logic [WLEN-1:0]          lsu_bignum_rdata;
-  logic [1:0]               lsu_rdata_err; // Bit1: Uncorrectable, Bit0: Correctable
+  logic                     lsu_rdata_err;
 
   logic [WdrAw-1:0] rf_bignum_wr_addr;
   logic [1:0]       rf_bignum_wr_en;
