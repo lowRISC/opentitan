@@ -1160,7 +1160,7 @@ module top_earlgrey #(
       .lc_otp_token_o(),
       .otp_lc_data_o(),
       .lc_escalate_en_i(lc_ctrl_pkg::Off),
-      .lc_provision_en_i(lc_ctrl_pkg::Off),
+      .lc_provision_wr_en_i(lc_ctrl_pkg::Off),
       .lc_dft_en_i(lc_ctrl_pkg::Off),
       .otp_keymgr_key_o(),
       .flash_otp_key_i('0),
