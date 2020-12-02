@@ -32,7 +32,7 @@ module otbn_lsu
   output logic [WLEN-1:0]          dmem_wmask_o,
   input  logic [WLEN-1:0]          dmem_rdata_i,
   input  logic                     dmem_rvalid_i,
-  input  logic [1:0]               dmem_rerror_i, // Bit1: Uncorrectable, Bit0: Correctable
+  input  logic                     dmem_rerror_i,
 
   input  logic                     lsu_load_req_i,
   input  logic                     lsu_store_req_i,
@@ -44,7 +44,7 @@ module otbn_lsu
 
   output logic [31:0]              lsu_base_rdata_o,
   output logic [WLEN-1:0]          lsu_bignum_rdata_o,
-  output logic [1:0]               lsu_rdata_err_o // Bit1: Uncorrectable, Bit0: Correctable
+  output logic                     lsu_rdata_err_o
 );
   localparam int BaseWordsPerWLen = WLEN / 32;
   localparam int BaseWordAddrW = prim_util_pkg::vbits(WLEN/8);

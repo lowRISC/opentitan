@@ -174,7 +174,8 @@ module otbn
   logic [31:0] imem_wmask;
   logic [31:0] imem_rdata;
   logic imem_rvalid;
-  logic [1:0] imem_rerror;
+  logic [1:0] imem_rerror_vec;
+  logic imem_rerror;
 
   logic imem_req_core;
   logic imem_write_core;
@@ -182,7 +183,7 @@ module otbn
   logic [31:0] imem_wdata_core;
   logic [31:0] imem_rdata_core;
   logic imem_rvalid_core;
-  logic [1:0] imem_rerror_core;
+  logic imem_rerror_core;
 
   logic imem_req_bus;
   logic imem_write_bus;
@@ -214,9 +215,14 @@ module otbn
     .wmask_i  (imem_wmask),
     .rdata_o  (imem_rdata),
     .rvalid_o (imem_rvalid),
-    .rerror_o (imem_rerror),
+    .rerror_o (imem_rerror_vec),
     .cfg_i    ('0)
   );
+
+  // imem_rerror_vec is 2 bits wide and is used to report ECC errors. Bit 1 is set if there's an
+  // uncorrectable error and bit 0 is set if there's a correctable error. However, we're treating
+  // all errors as fatal, so OR the two signals together.
+  assign imem_rerror = |imem_rerror_vec;
 
   // IMEM access from main TL-UL bus
   logic imem_gnt_bus;
@@ -274,9 +280,15 @@ module otbn
   assign imem_rvalid_bus  = !imem_access_core ? imem_rvalid : 1'b0;
   assign imem_rvalid_core = imem_access_core ? imem_rvalid : 1'b0;
 
-  // Since rerror depends on rvalid we could save this mux, but could
-  // potentially leak rerror to the bus. Err on the side of caution.
-  assign imem_rerror_bus  = !imem_access_core ? imem_rerror : 2'b00;
+  // imem_rerror_bus is passed to a TLUL adapter to report read errors back to the TL interface.
+  // We've squashed together the 2 bits from ECC into a single (uncorrectable) error, but the TLUL
+  // adapter expects the original ECC format. Send imem_rerror as bit 1, signalling an uncorrectable
+  // error.
+  //
+  // The mux ensures that imem_rerror doesn't appear on the bus (possibly leaking information) when
+  // the core is operating. Since rerror depends on rvalid, we could avoid this mux. However that
+  // seems a bit fragile, so we err on the side of caution.
+  assign imem_rerror_bus  = !imem_access_core ? {imem_rerror, 1'b0} : 2'b00;
   assign imem_rerror_core = imem_rerror;
 
 
@@ -295,7 +307,8 @@ module otbn
   logic [WLEN-1:0] dmem_wmask;
   logic [WLEN-1:0] dmem_rdata;
   logic dmem_rvalid;
-  logic [1:0] dmem_rerror;
+  logic [1:0] dmem_rerror_vec;
+  logic dmem_rerror;
 
   logic dmem_req_core;
   logic dmem_write_core;
@@ -304,7 +317,7 @@ module otbn
   logic [WLEN-1:0] dmem_wmask_core;
   logic [WLEN-1:0] dmem_rdata_core;
   logic dmem_rvalid_core;
-  logic [1:0] dmem_rerror_core;
+  logic dmem_rerror_core;
 
   logic dmem_req_bus;
   logic dmem_write_bus;
@@ -333,9 +346,13 @@ module otbn
     .wmask_i  (dmem_wmask),
     .rdata_o  (dmem_rdata),
     .rvalid_o (dmem_rvalid),
-    .rerror_o (dmem_rerror),
+    .rerror_o (dmem_rerror_vec),
     .cfg_i    ('0)
   );
+
+  // Combine uncorrectable / correctable errors. See note above definition of imem_rerror for
+  // details.
+  assign dmem_rerror = |dmem_rerror_vec;
 
   // DMEM access from main TL-UL bus
   logic dmem_gnt_bus;
@@ -382,9 +399,9 @@ module otbn
   assign dmem_rvalid_bus  = !dmem_access_core ? dmem_rvalid : 1'b0;
   assign dmem_rvalid_core = dmem_access_core  ? dmem_rvalid : 1'b0;
 
-  // Since rerror depends on rvalid we could save this mux, but could
-  // potentially leak rerror to the bus. Err on the side of caution.
-  assign dmem_rerror_bus  = !dmem_access_core ? dmem_rerror : 2'b00;
+  // Expand the error signal to 2 bits and mask when the core has access. See note above
+  // imem_rerror_bus for details.
+  assign dmem_rerror_bus  = !dmem_access_core ? {dmem_rerror, 1'b0} : 2'b00;
   assign dmem_rerror_core = dmem_rerror;
 
 
@@ -399,8 +416,8 @@ module otbn
                                               reg2hw.alert_test.reg_uncorrectable.qe;
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertImemUncorrectable] = imem_rerror[1];
-  assign alerts[AlertDmemUncorrectable] = dmem_rerror[1];
+  assign alerts[AlertImemUncorrectable] = imem_rvalid & imem_rerror;
+  assign alerts[AlertDmemUncorrectable] = dmem_rvalid & dmem_rerror;
   assign alerts[AlertRegUncorrectable] = 1'b0; // TODO: Implement
   for (genvar i = 0; i < NumAlerts; i++) begin: gen_alert_tx
     prim_alert_sender #(
