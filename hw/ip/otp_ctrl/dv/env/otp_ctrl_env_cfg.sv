@@ -13,7 +13,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
 
   // ext interfaces
   pwr_otp_vif              pwr_otp_vif;
-  lc_provision_en_vif      lc_provision_en_vif;
+  lc_provision_wr_en_vif   lc_provision_wr_en_vif;
   lc_dft_en_vif            lc_dft_en_vif;
   mem_bkdr_vif             mem_bkdr_vif;
   otp_ctrl_output_data_vif otp_ctrl_output_data_vif;

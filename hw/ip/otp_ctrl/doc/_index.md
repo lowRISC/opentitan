@@ -320,7 +320,7 @@ Signal                     | Direction        | Type                        | De
 `lc_otp_token_i`           | `input`          | `lc_otp_token_req_t`        | Life cycle RAW unlock token hashing request.
 `lc_otp_token_o`           | `output`         | `lc_otp_token_rsp_t`        | Life cycle RAW unlock token hashing response.
 `lc_escalate_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle escalation enable coming from life cycle controller. This signal moves all FSMs within OTP into the error state and triggers secret wiping mechanisms in the secret partitions.
-`lc_provision_en_i`        | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Provision enable qualifier coming from life cycle controller. This signal enables read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+`lc_provision_wr_en_i`     | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Provision enable qualifier coming from life cycle controller. This signal enables read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
 `lc_dft_en_i`              | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Test enable qualifier coming from from life cycle controller. This signals enables the TL-UL access port to the proprietary OTP IP.
 `otp_lc_data_o`            | `output`         | `otp_lc_data_t`             | life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
 `otp_keymgr_key_o`         | `output`         | `keymgr_key_t`              | Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
@@ -364,7 +364,7 @@ See also [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc" >}
 
 After initialization, the life cycle partition contents, as well as the tokens and personalization status is output to the life cycle controller via the `otp_lc_data_o` struct.
 The life cycle controller uses this information to determine the life cycle state, and steer the appropriate qualifier signals.
-Some of these qualifier signals (`lc_dft_en_i`, `lc_provision_en_i` and `lc_escalate_en_i`) are fed back to the OTP controller in order to ungate testing logic to the OTP macro; enable write access to the `SECRET2` partition; or to push the OTP controller into escalation state.
+Some of these qualifier signals (`lc_dft_en_i`, `lc_provision_wr_en_i` and `lc_escalate_en_i`) are fed back to the OTP controller in order to ungate testing logic to the OTP macro; enable write access to the `SECRET2` partition; or to push the OTP controller into escalation state.
 
 A possible sequence for the signals described is illustrated below.
 {{< wavejson >}}
@@ -378,7 +378,7 @@ A possible sequence for the signals described is illustrated below.
   {name: 'otp_lc_data_o.id_state',          wave: '0.|.3.|...|...|...'},
   {name: 'otp_lc_data_o.rma_token',         wave: '0.|.3.|...|...|...'},
   {},
-  {name: 'lc_provision_en_i',               wave: '0.|...|...|.4.|...'},
+  {name: 'lc_provision_wr_en_i',            wave: '0.|...|...|.4.|...'},
   {name: 'lc_dft_en_i',                     wave: '0.|...|...|.4.|...'},
   {},
   {name: 'lc_escalate_en_i',                wave: '0.|...|...|...|.5.'},
