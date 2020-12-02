@@ -7,11 +7,6 @@ class keymgr_smoke_vseq extends keymgr_base_vseq;
   `uvm_object_utils(keymgr_smoke_vseq)
   `uvm_object_new
 
-  // test op at StReset
-  constraint do_op_before_init_c {
-    do_op_before_init == 1;
-  }
-
   task body();
     `uvm_info(`gfn, "Key manager smoke check", UVM_HIGH)
     // check operation at StInit state
