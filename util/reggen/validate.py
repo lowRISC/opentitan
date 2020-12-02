@@ -1601,7 +1601,11 @@ def check_wen_regs(regs):
         except ValueError:
             log.error("Could not find register name matching %s" % target)
 
-        if not reg_list[idx][tuple_rstval]:
+        # If the REGWEN bit is SW controlled, enfore that this bit defaults to 1.
+        # If this bit is read-only by SW and hence hardware controlled, we do
+        # not enforce this requirement.
+        if reg_list[idx][tuple_swaccess] != "ro" and not reg_list[idx][
+                tuple_rstval]:
             error += 1
             log.error(x + " used as regwen fails requirement to default " +
                       "to 1")
