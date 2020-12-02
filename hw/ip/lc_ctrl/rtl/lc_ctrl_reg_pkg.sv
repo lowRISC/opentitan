@@ -28,7 +28,7 @@ package lc_ctrl_reg_pkg;
   } lc_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
-    logic        q;
+    logic [7:0]  q;
     logic        qe;
   } lc_ctrl_reg2hw_claim_transition_if_reg_t;
 
@@ -76,7 +76,7 @@ package lc_ctrl_reg_pkg;
   } lc_ctrl_hw2reg_status_reg_t;
 
   typedef struct packed {
-    logic        d;
+    logic [7:0]  d;
   } lc_ctrl_hw2reg_claim_transition_if_reg_t;
 
   typedef struct packed {
@@ -108,8 +108,8 @@ package lc_ctrl_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    lc_ctrl_reg2hw_alert_test_reg_t alert_test; // [144:141]
-    lc_ctrl_reg2hw_claim_transition_if_reg_t claim_transition_if; // [140:139]
+    lc_ctrl_reg2hw_alert_test_reg_t alert_test; // [151:148]
+    lc_ctrl_reg2hw_claim_transition_if_reg_t claim_transition_if; // [147:139]
     lc_ctrl_reg2hw_transition_cmd_reg_t transition_cmd; // [138:137]
     lc_ctrl_reg2hw_transition_token_mreg_t [3:0] transition_token; // [136:5]
     lc_ctrl_reg2hw_transition_target_reg_t transition_target; // [4:0]
@@ -119,8 +119,8 @@ package lc_ctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    lc_ctrl_hw2reg_status_reg_t status; // [152:153]
-    lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [152:151]
+    lc_ctrl_hw2reg_status_reg_t status; // [159:160]
+    lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [159:151]
     lc_ctrl_hw2reg_transition_regwen_reg_t transition_regwen; // [150:151]
     lc_ctrl_hw2reg_transition_token_mreg_t [3:0] transition_token; // [150:23]
     lc_ctrl_hw2reg_transition_target_reg_t transition_target; // [22:18]
