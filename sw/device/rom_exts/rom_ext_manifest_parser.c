@@ -84,8 +84,9 @@ uint32_t rom_ext_get_algorithm_id(rom_ext_manifest_t params) {
                             ROM_EXT_SIGNATURE_ALGORITHM_IDENTIFIER_OFFSET);
 }
 
-uint32_t rom_ext_get_exponent(rom_ext_manifest_t params) {
-  return mmio_region_read32(params.base_addr, ROM_EXT_EXPONENT_OFFSET);
+uint32_t rom_ext_get_signature_key_public_exponent(rom_ext_manifest_t params) {
+  return mmio_region_read32(params.base_addr,
+                            ROM_EXT_SIGNATURE_KEY_PUBLIC_EXPONENT_OFFSET);
 }
 
 uint32_t rom_ext_get_usage_constraints(rom_ext_manifest_t params) {
@@ -105,15 +106,15 @@ bool rom_ext_get_peripheral_lockdown_info(rom_ext_manifest_t params,
   return true;
 }
 
-bool rom_ext_get_public_key(rom_ext_manifest_t params,
-                            rom_ext_public_key_t *dst) {
+bool rom_ext_get_signature_key_modulus(rom_ext_manifest_t params,
+                                       rom_ext_signature_key_modulus_t *dst) {
   if (dst == NULL) {
     return false;
   }
 
   mmio_region_memcpy_from_mmio32(
-      params.base_addr, ROM_EXT_SIGNATURE_PUBLIC_KEY_OFFSET, &dst->data[0],
-      ROM_EXT_SIGNATURE_PUBLIC_KEY_SIZE_BYTES);
+      params.base_addr, ROM_EXT_SIGNATURE_KEY_MODULUS_OFFSET, &dst->data[0],
+      ROM_EXT_SIGNATURE_KEY_MODULUS_SIZE_BYTES);
 
   return true;
 }
