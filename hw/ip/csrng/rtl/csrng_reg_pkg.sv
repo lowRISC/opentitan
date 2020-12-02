@@ -7,7 +7,7 @@
 package csrng_reg_pkg;
 
   // Param list
-  parameter int NHwApps = 3;
+  parameter int NHwApps = 2;
 
   ////////////////////////////
   // Typedefs for registers //

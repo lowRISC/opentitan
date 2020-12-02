@@ -7,10 +7,7 @@
 package edn_reg_pkg;
 
   // Param list
-  parameter int EndPointBusWidth0 = 64;
-  parameter int EndPointBusWidth1 = 32;
-  parameter int EndPointBusWidth2 = 16;
-  parameter int EndPointBusWidth3 = 8;
+  parameter int NumEndPoints = 64;
   parameter int BootInsCmd = 1;
   parameter int BootGenCmd = 12291;
 
