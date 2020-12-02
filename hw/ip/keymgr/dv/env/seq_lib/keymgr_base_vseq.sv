@@ -60,6 +60,9 @@ class keymgr_base_vseq extends cip_base_vseq #(
     // manually clear here since ral is not aware this bet is self-clearing
     ral.control.start.set(1'b0);
 
+    // Add 1 cycle delay for working_state to be updated, which makes scb less complicated
+    cfg.clk_rst_vif.wait_clks(1);
+
     if (do_wait_for_init_done) begin
       csr_spinwait(.ptr(ral.working_state), .exp_data(keymgr_pkg::StInit));
       current_state = keymgr_pkg::StInit;

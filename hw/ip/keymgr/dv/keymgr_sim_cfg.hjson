@@ -55,6 +55,11 @@
     }
 
     {
+      name: keymgr_random
+      uvm_test_seq: keymgr_random_vseq
+    }
+
+    {
       name: keymgr_op_at_wipe_state
       uvm_test_seq: keymgr_op_at_wipe_state_vseq
       // StWipe only lasts for several cycles, don't add delay during CSR access
