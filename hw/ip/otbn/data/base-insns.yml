@@ -439,7 +439,7 @@
       doc: Name of the GPR containing the number of iterations
     - &bodysize-operand
       name: bodysize
-      type: uimm
+      type: uimm+1
       doc: Number of instructions in the loop body
   straight-line: false
   note: &loop-note |
