@@ -432,6 +432,10 @@ Rough expected process:
   To be filled in as we create the implementation.
 </div>
 
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_otbn.h" >}}
+
 ## Register Table
 
 {{< registers "hw/ip/otbn/data/otbn.hjson" >}}
