@@ -14,6 +14,8 @@ IPS ?= aes           \
        alert_handler \
        clkmgr        \
        entropy_src   \
+       csrng         \
+       edn           \
        flash_ctrl    \
        gpio          \
        hmac          \

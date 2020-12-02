@@ -515,7 +515,7 @@ module edn_reg_top (
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h1)
   ) u_sw_cmd_sts_cmd_rdy (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
