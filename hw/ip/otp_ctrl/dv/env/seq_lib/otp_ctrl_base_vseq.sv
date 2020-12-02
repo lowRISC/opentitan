@@ -23,7 +23,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     cfg.backdoor_clear_mem = 0;
     // reset power init pin and lc pins
     cfg.pwr_otp_vif.drive_pin(OtpPwrInitReq, 0);
-    cfg.lc_provision_en_vif.drive(lc_ctrl_pkg::Off);
+    cfg.lc_provision_wr_en_vif.drive(lc_ctrl_pkg::Off);
     cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::Off);
     if (do_otp_ctrl_init) otp_ctrl_init();
     if (do_otp_pwr_init) otp_pwr_init();

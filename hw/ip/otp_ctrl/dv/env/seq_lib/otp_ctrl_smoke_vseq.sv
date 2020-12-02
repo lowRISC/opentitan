@@ -38,7 +38,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
-    cfg.lc_provision_en_vif.drive(lc_ctrl_pkg::On);
+    cfg.lc_provision_wr_en_vif.drive(lc_ctrl_pkg::On);
     csr_wr(ral.intr_enable, en_intr);
   endtask
 
