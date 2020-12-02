@@ -24,7 +24,7 @@ module otbn_instruction_fetch
   output logic [ImemAddrWidth-1:0] imem_addr_o,
   input  logic [31:0]              imem_rdata_i,
   input  logic                     imem_rvalid_i,
-  input  logic [1:0]               imem_rerror_i, // Bit1: Uncorrectable, Bit0: Correctable
+  input  logic                     imem_rerror_i,
 
   // Next instruction selection (to instruction fetch)
   input  logic                     insn_fetch_req_valid_i,
@@ -48,7 +48,7 @@ module otbn_instruction_fetch
 
   // TODO: Need to handle imem_rerror somewhere, which need to be turned into alerts. Could be
   // handled either here or somewhere more up in the hierarchy.
-  logic [1:0] unused_imem_rerror;
+  logic unused_imem_rerror;
   assign unused_imem_rerror = imem_rerror_i;
 
   // Nothing is reset in this module so rst_ni is unused. Leaving it in so adding resettable flops

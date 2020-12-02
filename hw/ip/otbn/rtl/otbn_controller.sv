@@ -90,7 +90,7 @@ module otbn_controller
 
   input  logic [31:0]              lsu_base_rdata_i,
   input  logic [WLEN-1:0]          lsu_bignum_rdata_i,
-  input  logic [1:0]               lsu_rdata_err_i, // Bit1: Uncorrectable, Bit0: Correctable
+  input  logic                     lsu_rdata_err_i,
 
   // Internal Special-Purpose Registers (ISPRs)
   output ispr_e                       ispr_addr_o,
@@ -570,7 +570,7 @@ module otbn_controller
   assign unused_rf_ren_b_bignum = insn_dec_bignum_i.rf_ren_b;
 
   // TODO: Implement error handling
-  logic [1:0] unused_lsu_rdata_err;
+  logic unused_lsu_rdata_err;
   assign unused_lsu_rdata_err = lsu_rdata_err_i;
 
   // Unused for now, may be used in later security hardening work

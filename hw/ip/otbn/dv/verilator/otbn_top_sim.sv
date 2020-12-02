@@ -27,7 +27,8 @@ module otbn_top_sim (
   logic [ImemAddrWidth-1:0] imem_addr;
   logic [31:0]              imem_rdata;
   logic                     imem_rvalid;
-  logic [1:0]               imem_rerror;
+  logic [1:0]               imem_rerror_raw;
+  logic                     imem_rerror;
 
   // Data memory (DMEM) signals
   logic                     dmem_req;
@@ -37,8 +38,8 @@ module otbn_top_sim (
   logic [WLEN-1:0]          dmem_wmask;
   logic [WLEN-1:0]          dmem_rdata;
   logic                     dmem_rvalid;
-  logic [1:0]               dmem_rerror;
-
+  logic [1:0]               dmem_rerror_raw;
+  logic                     dmem_rerror;
 
   otbn_core #(
     .ImemSizeByte ( ImemSizeByte ),
@@ -102,18 +103,20 @@ module otbn_top_sim (
     .DataBitsPerMask ( 32            ),
     .CfgW            ( 8             )
   ) u_dmem (
-    .clk_i    ( IO_CLK      ),
-    .rst_ni   ( IO_RST_N    ),
-    .req_i    ( dmem_req    ),
-    .write_i  ( dmem_write  ),
-    .addr_i   ( dmem_index  ),
-    .wdata_i  ( dmem_wdata  ),
-    .wmask_i  ( dmem_wmask  ),
-    .rdata_o  ( dmem_rdata  ),
-    .rvalid_o ( dmem_rvalid ),
-    .rerror_o ( dmem_rerror ),
-    .cfg_i    ( '0          )
+    .clk_i    ( IO_CLK          ),
+    .rst_ni   ( IO_RST_N        ),
+    .req_i    ( dmem_req        ),
+    .write_i  ( dmem_write      ),
+    .addr_i   ( dmem_index      ),
+    .wdata_i  ( dmem_wdata      ),
+    .wmask_i  ( dmem_wmask      ),
+    .rdata_o  ( dmem_rdata      ),
+    .rvalid_o ( dmem_rvalid     ),
+    .rerror_o ( dmem_rerror_raw ),
+    .cfg_i    ( '0              )
   );
+
+  assign dmem_rerror = |dmem_rerror_raw;
 
   localparam int ImemSizeWords = ImemSizeByte / 4;
   localparam int ImemIndexWidth = prim_util_pkg::vbits(ImemSizeWords);
@@ -130,19 +133,20 @@ module otbn_top_sim (
     .DataBitsPerMask ( 32            ),
     .CfgW            ( 8             )
   ) u_imem (
-    .clk_i    ( IO_CLK      ),
-    .rst_ni   ( IO_RST_N    ),
-    .req_i    ( imem_req    ),
-    .write_i  ( 1'b0        ),
-    .addr_i   ( imem_index  ),
-    .wdata_i  ( '0          ),
-    .wmask_i  ( '0          ),
-    .rdata_o  ( imem_rdata  ),
-    .rvalid_o ( imem_rvalid ),
-    .rerror_o ( imem_rerror ),
-    .cfg_i    ( '0          )
+    .clk_i    ( IO_CLK          ),
+    .rst_ni   ( IO_RST_N        ),
+    .req_i    ( imem_req        ),
+    .write_i  ( 1'b0            ),
+    .addr_i   ( imem_index      ),
+    .wdata_i  ( '0              ),
+    .wmask_i  ( '0              ),
+    .rdata_o  ( imem_rdata      ),
+    .rvalid_o ( imem_rvalid     ),
+    .rerror_o ( imem_rerror_raw ),
+    .cfg_i    ( '0              )
   );
 
+  assign imem_rerror = |imem_rerror_raw;
 
   // When OTBN is done let a few more cycles run then finish simulation
   logic [1:0] finish_counter;
