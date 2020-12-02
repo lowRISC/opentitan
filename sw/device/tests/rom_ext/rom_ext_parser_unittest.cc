@@ -116,11 +116,11 @@ TEST_F(AlgorithmIdGetTest, Success) {
   EXPECT_EQ(rom_ext_get_algorithm_id(params_), 0xa5a5a5a5);
 }
 
-class ExponentGetTest : public ParserTest {};
+class SignatureKeyPublicExponentGetTest : public ParserTest {};
 
-TEST_F(ExponentGetTest, Success) {
-  EXPECT_READ32(ROM_EXT_EXPONENT_OFFSET, 0xa5a5a5a5);
-  EXPECT_EQ(rom_ext_get_exponent(params_), 0xa5a5a5a5);
+TEST_F(SignatureKeyPublicExponentGetTest, Success) {
+  EXPECT_READ32(ROM_EXT_SIGNATURE_KEY_PUBLIC_EXPONENT_OFFSET, 0xa5a5a5a5);
+  EXPECT_EQ(rom_ext_get_signature_key_public_exponent(params_), 0xa5a5a5a5);
 }
 
 class UsageConstraintsGetTest : public ParserTest {};
@@ -159,32 +159,32 @@ TEST_F(PeripheralLockdownInfoGetTest, Success) {
   EXPECT_THAT(src_.data, ElementsAreArray(dst.data));
 }
 
-class PublicKeyGetTest : public ParserTest {
+class SignatureKeyModulusGetTest : public ParserTest {
  protected:
-  PublicKeyGetTest() {
+  SignatureKeyModulusGetTest() {
     for (uint32_t i = 0; i < kSizeInWords_; ++i) {
       src_.data[i] = dev().GarbageMemory<uint32_t>();
     }
   }
 
-  const uint32_t kSizeInWords_ = ROM_EXT_SIGNATURE_PUBLIC_KEY_SIZE_WORDS;
-  rom_ext_public_key_t src_;
+  const uint32_t kSizeInWords_ = ROM_EXT_SIGNATURE_KEY_MODULUS_SIZE_WORDS;
+  rom_ext_signature_key_modulus_t src_;
 };
 
-TEST_F(PublicKeyGetTest, NullArgs) {
-  EXPECT_FALSE(rom_ext_get_public_key(params_, nullptr));
+TEST_F(SignatureKeyModulusGetTest, NullArgs) {
+  EXPECT_FALSE(rom_ext_get_signature_key_modulus(params_, nullptr));
 }
 
-TEST_F(PublicKeyGetTest, Success) {
-  rom_ext_public_key_t dst;
+TEST_F(SignatureKeyModulusGetTest, Success) {
+  rom_ext_signature_key_modulus_t dst;
 
-  auto offset_word_0 = ROM_EXT_SIGNATURE_PUBLIC_KEY_OFFSET;
+  auto offset_word_0 = ROM_EXT_SIGNATURE_KEY_MODULUS_OFFSET;
   for (size_t i = 0; i < kSizeInWords_; ++i) {
     auto offset = offset_word_0 + (i * sizeof(uint32_t));
     EXPECT_READ32(offset, src_.data[i]);
   }
 
-  EXPECT_TRUE(rom_ext_get_public_key(params_, &dst));
+  EXPECT_TRUE(rom_ext_get_signature_key_modulus(params_, &dst));
   EXPECT_THAT(src_.data, ElementsAreArray(dst.data));
 }
 
