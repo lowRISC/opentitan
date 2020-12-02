@@ -246,18 +246,21 @@ class ImmOperandType(OperandType):
     '''A class representing an immediate operand type'''
     def __init__(self,
                  width: Optional[int],
+                 enc_offset: int,
                  shift: int,
                  signed: bool,
                  pc_rel: bool) -> None:
         assert shift >= 0
 
         super().__init__(width)
+        self.enc_offset = enc_offset
         self.shift = shift
         self.signed = signed
         self.pc_rel = pc_rel
 
     @staticmethod
     def make(width: Optional[int],
+             enc_offset: int,
              shift: int,
              signed: bool,
              pc_rel: bool,
@@ -275,11 +278,11 @@ class ImmOperandType(OperandType):
                                  'but the operand claims to have width {}.'
                                  .format(what, scheme_field.bits.width, width))
 
-        return ImmOperandType(width, shift, signed, pc_rel)
+        return ImmOperandType(width, enc_offset, shift, signed, pc_rel)
 
     def markdown_doc(self) -> Optional[str]:
         # Override from OperandType base class
-        rel_rng = self.get_rel_range()
+        rel_rng = self.get_doc_range()
         if rel_rng is None:
             return None
 
@@ -315,41 +318,49 @@ class ImmOperandType(OperandType):
                 return None
 
             # Otherwise, we need to encode the offset.
-            offset_val = op_val - cur_pc
+            pc_relative_val = op_val - cur_pc
         else:
-            offset_val = op_val
+            pc_relative_val = op_val
 
-        # First, try to shift right. Check that we won't clobber any low bits.
+        # Try to shift right. Check that we won't clobber any low bits.
         shift_mask = (1 << self.shift) - 1
-        if offset_val & shift_mask:
+        if pc_relative_val & shift_mask:
             raise ValueError('Cannot encode the value {}: the operand has a '
                              'shift of {}, but that would clobber some bits '
                              '(because {} & {} = {}, not zero).'
-                             .format(offset_val, self.shift,
-                                     offset_val, shift_mask,
-                                     offset_val & shift_mask))
+                             .format(pc_relative_val, self.shift,
+                                     pc_relative_val, shift_mask,
+                                     pc_relative_val & shift_mask))
 
-        shifted = offset_val >> self.shift
+        # Compute offset encoded value by applying shift and enc_offset
+        shifted = pc_relative_val >> self.shift
+        offset_val = shifted - self.enc_offset
 
-        rng = self.get_rel_range()
-        assert rng is not None
-        lo, hi = rng
+        # Check offset encoded value sits in the allowable range for encoded
+        # values
+        enc_rng = self.get_enc_range()
+        assert enc_rng is not None
+        enc_lo, enc_hi = enc_rng
 
-        if not (lo <= offset_val <= hi):
-            shifted_msg = (', which shifts down to {}'.format(shifted)
-                           if self.shift != 0 else '')
+        if not (enc_lo <= offset_val <= enc_hi):
+            doc_rng = self.get_doc_range()
+            assert doc_rng is not None
+            doc_lo, doc_hi = doc_rng
+
+            encoded_msg = (', which encodes to {},'.format(offset_val)
+                           if self.shift != 0 or self.enc_offset != 0 else '')
             raise ValueError('Cannot encode the value {}{} as a {}-bit '
                              '{}signed value. Possible range: {}..{}.'
-                             .format(offset_val, shifted_msg,
+                             .format(pc_relative_val, encoded_msg,
                                      self.width,
                                      '' if self.signed else 'un',
-                                     lo, hi))
+                                     doc_lo, doc_hi))
 
         if self.signed:
-            encoded = (1 << self.width) + shifted if shifted < 0 else shifted
+            encoded = (1 << self.width) + offset_val if offset_val < 0 else offset_val
         else:
-            assert shifted >= 0
-            encoded = shifted
+            assert offset_val >= 0
+            encoded = offset_val
 
         assert (encoded >> self.width) == 0
         return encoded
@@ -369,6 +380,8 @@ class ImmOperandType(OperandType):
                 signed_val -= 1 << self.width
                 assert signed_val < 0
 
+        signed_val += self.enc_offset
+
         shifted = signed_val << self.shift
 
         # If this value is PC-relative, add the current PC. The point is that
@@ -379,8 +392,8 @@ class ImmOperandType(OperandType):
 
         return rel_val
 
-    def get_rel_range(self) -> Optional[Tuple[int, int]]:
-        '''Like get_op_val_range, but doesn't include any PC offset'''
+    def get_enc_range(self) -> Optional[Tuple[int, int]]:
+        '''Gets range of allowable encoded values'''
         if self.width is None:
             return None
 
@@ -391,10 +404,26 @@ class ImmOperandType(OperandType):
             sgn_lo = 0
             sgn_hi = (1 << self.width) - 1
 
+        return (sgn_lo, sgn_hi)
+
+    def get_doc_range(self) -> Optional[Tuple[int, int]]:
+        '''Gets range of allowable values as they will appear in
+        documentation
+        '''
+
+        enc_range = self.get_enc_range()
+        if enc_range is None:
+            return None
+
+        sgn_lo, sgn_hi = enc_range
+
+        sgn_lo += self.enc_offset
+        sgn_hi += self.enc_offset
+
         return (sgn_lo << self.shift, sgn_hi << self.shift)
 
     def get_op_val_range(self, cur_pc: int) -> Optional[Tuple[int, int]]:
-        rel_rng = self.get_rel_range()
+        rel_rng = self.get_doc_range()
         if rel_rng is None:
             return None
 
@@ -546,16 +575,17 @@ def parse_operand_type(fmt: str,
     for base, signed in [('simm', True), ('uimm', False)]:
         # The type of an immediate operand is encoded as
         #
-        #   BASE WIDTH? (<<SHIFT)?
+        #   BASE WIDTH? (+ENC_OFFSET)? (<<SHIFT)?
         #
-        # where BASE is 'simm' or 'uimm', WIDTH is a positive integer and SHIFT
-        # is a non-negative integer. The regex below captures WIDTH as group 1
-        # and SHIFT as group 2.
-        m = re.match(base + r'([1-9][0-9]*)?(?:<<([0-9]+))?$', fmt)
+        # where BASE is 'simm' or 'uimm', WIDTH is a positive integer and
+        # ENC_OFFSET and SHIFT are non-negative integers. The regex below
+        # captures WIDTH as group 1, OFFSET as group 2 and SHIFT as group 3.
+        m = re.match(base + r'([1-9][0-9]*)?(?:\+([0-9]+))?(?:<<([0-9]+))?$', fmt)
         if m is not None:
             width = int(m.group(1)) if m.group(1) is not None else None
-            shift = int(m.group(2)) if m.group(2) is not None else 0
-            return ImmOperandType.make(width, shift, signed, pc_rel,
+            enc_offset = int(m.group(2)) if m.group(2) is not None else 0
+            shift = int(m.group(3)) if m.group(3) is not None else 0
+            return ImmOperandType.make(width, enc_offset, shift, signed, pc_rel,
                                        what, scheme_field)
 
     m = re.match(r'enum\(([^\)]+)\)$', fmt)
