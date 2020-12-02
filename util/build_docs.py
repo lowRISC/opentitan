@@ -71,6 +71,7 @@ config = {
         "hw/ip/otp_ctrl/data/otp_ctrl.hjson",
         "hw/ip/pattgen/data/pattgen.hjson",
         "hw/ip/pwm/data/pwm.hjson",
+        "hw/ip/rom_ctrl/data/rom_ctrl.hjson",
         "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson",
         "hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson",
         "hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson",
