@@ -300,17 +300,15 @@
       hwaccess: "hrw",
       hwqe:     "true",
       hwext:    "true",
-      tags: [ // life cycle internal HW will set this enable register to 1 only when the hardware mutex
-              // claim was successful, which can cause readback failures when writing randomly
-              // to this register.
+      tags: [ // this register is only writable if the mutex has not been claimed already.
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
-        { bits: "0",
+        { bits: "7:0",
           name: "START",
           desc: '''
           In order to have exclusive access to the transition interface, SW must first claim the associated
-          hardware mutex by writing 1 to this register.
-          If the register reads back 1, the mutex claim has been successful, and !!TRANSITION_REGWEN
+          hardware mutex by writing 0xA5 to this register.
+          If the register reads back 0xA5, the mutex claim has been successful, and !!TRANSITION_REGWEN
           will be set automatically to 1 by HW.
           Write 0 to this register in order to release the HW mutex.
           '''
@@ -324,8 +322,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
-      tags: [ // life cycle internal HW will set this enable register to 0 when the life cycle controller
-              // is busy and not ready to accept a transition command.
+      tags: [ // life cycle internal HW will set this enable register to 0 when the hardware mutex has not been claimed or
+              // when the life cycle controller is busy and not ready to accept a transition command.
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         {
