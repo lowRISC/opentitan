@@ -24,12 +24,12 @@ module top_earlgrey #(
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
+  parameter  RomCtrlBootRomInitFile = "",
 
   // Manually defined parameters
   parameter ibex_pkg::regfile_e IbexRegFile = ibex_pkg::RegFileFF,
   parameter bit IbexICache = 1,
-  parameter bit IbexPipeLine = 0,
-  parameter     BootRomInitFile = ""
+  parameter bit IbexPipeLine = 0
 ) (
   // Reset, clocks defined as part of intermodule
   input               rst_ni,
@@ -248,6 +248,7 @@ module top_earlgrey #(
   // edn1
   // sram_ctrl_main
   // otbn
+  // rom_ctrl
 
 
   logic [176:0]  intr_vector;
@@ -499,8 +500,10 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
   logic [3:0] pwrmgr_aon_wakeups;
   logic       pwrmgr_aon_rstreqs;
-  tlul_pkg::tl_h2d_t       rom_tl_req;
-  tlul_pkg::tl_d2h_t       rom_tl_rsp;
+  tlul_pkg::tl_h2d_t       rom_ctrl_rom_tl_req;
+  tlul_pkg::tl_d2h_t       rom_ctrl_rom_tl_rsp;
+  tlul_pkg::tl_h2d_t       rom_ctrl_regs_tl_req;
+  tlul_pkg::tl_d2h_t       rom_ctrl_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       ram_main_tl_req;
   tlul_pkg::tl_d2h_t       ram_main_tl_rsp;
   tlul_pkg::tl_h2d_t       eflash_tl_req;
@@ -698,7 +701,7 @@ module top_earlgrey #(
     .ram_cfg_i            (ast_ram_1p_cfg),
     // static pinning
     .hart_id_i            (32'b0),
-    .boot_addr_i          (ADDR_SPACE_ROM),
+    .boot_addr_i          (ADDR_SPACE_ROM_CTRL__ROM),
     // TL-UL buses
     .tl_i_o               (main_tl_corei_req),
     .tl_i_i               (main_tl_corei_rsp),
@@ -751,53 +754,6 @@ module top_earlgrey #(
 
   assign rstmgr_aon_cpu.ndmreset_req = ndmreset_req;
   assign rstmgr_aon_cpu.rst_cpu_n = rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel];
-
-  // ROM device
-  logic        rom_req;
-  logic [11:0] rom_addr;
-  logic [39:0] rom_rdata;
-  logic        rom_rvalid;
-
-  tlul_adapter_sram #(
-    .SramAw(12),
-    .SramDw(32),
-    .Outstanding(2),
-    .ErrOnWrite(1),
-    .CmdIntgCheck(1),
-    .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1) // TODO: Needs to be updated for intgerity passthrough
-  ) u_tl_adapter_rom (
-    .clk_i   (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
-
-    .tl_i        (rom_tl_req),
-    .tl_o        (rom_tl_rsp),
-    .en_ifetch_i (tlul_pkg::InstrEn),
-    .req_o       (rom_req),
-    .gnt_i       (1'b1), // Always grant as only one requester exists
-    .we_o        (),
-    .addr_o      (rom_addr),
-    .wdata_o     (),
-    .wmask_o     (),
-    .intg_error_o(), // Connect to ROM checker and ROM scramble later
-    .rdata_i     (rom_rdata[31:0]),
-    .rvalid_i    (rom_rvalid),
-    .rerror_i    (2'b00)
-  );
-
-  prim_rom_adv #(
-    .Width(40),
-    .Depth(4096),
-    .MemInitFile(BootRomInitFile)
-  ) u_rom_rom (
-    .clk_i   (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
-    .req_i    (rom_req),
-    .addr_i   (rom_addr),
-    .rdata_o  (rom_rdata),
-    .rvalid_o (rom_rvalid),
-    .cfg_i    (rom_cfg_i)
-  );
 
   // sram device
   logic        ram_main_req;
@@ -2197,6 +2153,26 @@ module top_earlgrey #(
       .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
+  rom_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[29:29]),
+    .BootRomInitFile(RomCtrlBootRomInitFile)
+  ) u_rom_ctrl (
+      // [29]: fatal
+      .alert_tx_o  ( alert_tx[29:29] ),
+      .alert_rx_i  ( alert_rx[29:29] ),
+
+      // Inter-module signals
+      .rom_cfg_i(ast_rom_cfg),
+      .regs_tl_i(rom_ctrl_regs_tl_req),
+      .regs_tl_o(rom_ctrl_regs_tl_rsp),
+      .rom_tl_i(rom_ctrl_rom_tl_req),
+      .rom_tl_o(rom_ctrl_rom_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_main_infra),
+      .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
+  );
+
   // interrupt assignments
   assign intr_vector = {
       intr_otbn_done, // ID 145
@@ -2366,9 +2342,13 @@ module top_earlgrey #(
     .tl_dm_sba_i(main_tl_dm_sba_req),
     .tl_dm_sba_o(main_tl_dm_sba_rsp),
 
-    // port: tl_rom
-    .tl_rom_o(rom_tl_req),
-    .tl_rom_i(rom_tl_rsp),
+    // port: tl_rom_ctrl__rom
+    .tl_rom_ctrl__rom_o(rom_ctrl_rom_tl_req),
+    .tl_rom_ctrl__rom_i(rom_ctrl_rom_tl_rsp),
+
+    // port: tl_rom_ctrl__regs
+    .tl_rom_ctrl__regs_o(rom_ctrl_regs_tl_req),
+    .tl_rom_ctrl__regs_i(rom_ctrl_regs_tl_rsp),
 
     // port: tl_debug_mem
     .tl_debug_mem_o(main_tl_debug_mem_req),

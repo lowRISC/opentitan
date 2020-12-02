@@ -33,7 +33,8 @@ parameter string LIST_OF_ALERTS[] = {
   "sram_ctrl_main_fatal_intg_error",
   "sram_ctrl_main_fatal_parity_error",
   "otbn_fatal",
-  "otbn_recov"
+  "otbn_recov",
+  "rom_ctrl_fatal"
 };
 
-parameter uint NUM_ALERTS = 29;
+parameter uint NUM_ALERTS = 30;

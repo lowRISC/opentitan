@@ -33,3 +33,4 @@ assign alert_if[25].alert_tx = `CHIP_HIER.u_sram_ctrl_main.alert_tx_o[0];
 assign alert_if[26].alert_tx = `CHIP_HIER.u_sram_ctrl_main.alert_tx_o[1];
 assign alert_if[27].alert_tx = `CHIP_HIER.u_otbn.alert_tx_o[0];
 assign alert_if[28].alert_tx = `CHIP_HIER.u_otbn.alert_tx_o[1];
+assign alert_if[29].alert_tx = `CHIP_HIER.u_rom_ctrl.alert_tx_o[0];

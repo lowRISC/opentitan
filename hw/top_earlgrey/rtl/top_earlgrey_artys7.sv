@@ -194,7 +194,7 @@ module top_earlgrey_artys7  #(
     .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexPipeLine(1),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
-    .BootRomInitFile(BootRomInitFile)
+    .RomCtrlBootRomInitFile(BootRomInitFile)
   ) top_earlgrey (
     // Clocks, resets
     .rst_ni          ( rst_n         ),

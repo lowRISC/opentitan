@@ -26,11 +26,17 @@ module xbar_main_bind;
   );
 
   // Device interfaces
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rom (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rom_ctrl__rom (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_rom_o),
-    .d2h    (tl_rom_i)
+    .h2d    (tl_rom_ctrl__rom_o),
+    .d2h    (tl_rom_ctrl__rom_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rom_ctrl__regs (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_rom_ctrl__regs_o),
+    .d2h    (tl_rom_ctrl__regs_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_debug_mem (
     .clk_i  (clk_main_i),
