@@ -3001,6 +3001,16 @@
           index: -1
         }
         {
+          struct: edn
+          type: req_rsp
+          name: entropy
+          act: req
+          width: "1"
+          package: edn_pkg
+          inst_name: kmac
+          index: -1
+        }
+        {
           name: idle
           type: uni
           act: req
@@ -8116,6 +8126,16 @@
         width: 1
         default: ""
         top_signame: keymgr_kmac_data
+        index: -1
+      }
+      {
+        struct: edn
+        type: req_rsp
+        name: entropy
+        act: req
+        width: "1"
+        package: edn_pkg
+        inst_name: kmac
         index: -1
       }
       {

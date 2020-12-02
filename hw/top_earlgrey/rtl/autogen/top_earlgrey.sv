@@ -1116,6 +1116,8 @@ module top_earlgrey #(
       .keymgr_key_i(keymgr_kmac_key),
       .keymgr_kdf_i(keymgr_kmac_data_req),
       .keymgr_kdf_o(keymgr_kmac_data_rsp),
+      .entropy_o(),
+      .entropy_i(edn_pkg::EDN_RSP_DEFAULT),
       .idle_o(clkmgr_idle[2]),
       .tl_i(kmac_tl_req),
       .tl_o(kmac_tl_rsp),
