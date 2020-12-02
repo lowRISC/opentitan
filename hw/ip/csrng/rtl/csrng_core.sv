@@ -788,7 +788,7 @@ module csrng_core import csrng_pkg::*; #(
          update_req ? entropy_src_hw_if_i.es_bits :
          '0;
 
-  assign cmd_entropy_fips = entropy_src_hw_if_i.es_fips;
+  assign cmd_entropy_fips = (instant_req && !flag0_q) ? entropy_src_hw_if_i.es_fips : 1'b0;
 
   //-------------------------------------
   // csrng_ctr_drbg_cmd instantiation
