@@ -18,6 +18,8 @@
                "-f {sv_flist}",
                "-uvmhome CDNS-1.2",
                "-xmlibdirname {build_dir}/xcelium.d",
+               // List multiple tops for the simulation. Prepend each top level with `-top`.
+               "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
                // for uvm_hdl_* used by csr backdoor
                "-access +rw",
                // Use this to conditionally compile for Xcelium (example: LRM interpretations differ

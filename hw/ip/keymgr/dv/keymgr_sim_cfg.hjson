@@ -38,7 +38,7 @@
                 ]
 
   // Add additional tops for simulation.
-  sim_tops: ["-top keymgr_bind"]
+  sim_tops: ["keymgr_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
