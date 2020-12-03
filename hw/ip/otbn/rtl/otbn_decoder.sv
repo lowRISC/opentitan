@@ -715,9 +715,9 @@ module otbn_decoder
 
           3'b101: begin
             if (insn_alu[31:27] == 5'b0_0000) begin
-              alu_operator_base = AluOpBaseSrl;               // Shift Right Logical by Immediate
+              alu_operator_base = AluOpBaseSrl; // Shift Right Logical by Immediate
             end else if (insn_alu[31:27] == 5'b0_1000) begin
-              alu_operator_base = AluOpBaseSra;               // Shift Right Arithmetically by Immediate
+              alu_operator_base = AluOpBaseSra; // Shift Right Arithmetically by Immediate
             end
           end
 
@@ -951,7 +951,7 @@ module otbn_decoder
   `ASSERT(BignumRegIncReq, rf_wdata_sel_base == RfWdSelIncr
       |-> $onehot({a_inc_bignum, a_wlen_word_inc_bignum, b_inc_bignum, d_inc_bignum}))
 
-  `ASSERT(BaseRenOnBignumIndirectA, insn_valid_o & rf_a_indirect_bignum |-> rf_ren_a_base);
-  `ASSERT(BaseRenOnBignumIndirectB, insn_valid_o & rf_b_indirect_bignum |-> rf_ren_b_base);
-  `ASSERT(BaseRenOnBignumIndirectD, insn_valid_o & rf_d_indirect_bignum |-> rf_ren_b_base);
+  `ASSERT(BaseRenOnBignumIndirectA, insn_valid_o & rf_a_indirect_bignum |-> rf_ren_a_base)
+  `ASSERT(BaseRenOnBignumIndirectB, insn_valid_o & rf_b_indirect_bignum |-> rf_ren_b_base)
+  `ASSERT(BaseRenOnBignumIndirectD, insn_valid_o & rf_d_indirect_bignum |-> rf_ren_b_base)
 endmodule

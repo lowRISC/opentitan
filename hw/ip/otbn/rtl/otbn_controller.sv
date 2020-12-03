@@ -159,8 +159,9 @@ module otbn_controller
 
   // Branch taken when there is a valid branch instruction and comparison passes or a valid jump
   // instruction (which is always taken)
-  assign branch_taken = insn_valid_i & ((insn_dec_shared_i.branch_insn & alu_base_comparison_result_i) |
-                                        insn_dec_shared_i.jump_insn);
+  assign branch_taken = insn_valid_i &
+                        ((insn_dec_shared_i.branch_insn & alu_base_comparison_result_i) |
+                         insn_dec_shared_i.jump_insn);
   // Branch target computed by base ALU (PC + imm)
   // TODO: Implement error on branch out of range
   assign branch_target = alu_base_operation_result_i[ImemAddrWidth-1:0];
@@ -215,10 +216,11 @@ module otbn_controller
     endcase
   end
 
-  `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun, OtbnStateStall});
+  `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun, OtbnStateStall})
   // Branch only takes effect in OtbnStateRun so must not go into stall state for branch
   // instructions.
-  `ASSERT(NoStallOnBranch, insn_valid_i & insn_dec_shared_i.branch_insn |-> state_q != OtbnStateStall);
+  `ASSERT(NoStallOnBranch,
+      insn_valid_i & insn_dec_shared_i.branch_insn |-> state_q != OtbnStateStall)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -417,15 +419,15 @@ module otbn_controller
                                                                  insn_dec_bignum_i.d;
 
   // For the shift-out variant of BN.MULQACC the bottom half of the MAC result is written to one
-  // half of a desintation register specified by the instruction (mac_wr_hw_sel_upper). The bottom half of
-  // the MAC result must be placed in the appropriate half of the write data (the RF only accepts
-  // write data for the top half in the top half of the write data input). Otherwise (shift-out to
-  // bottom half and all other BN.MULQACC instructions) simply pass the MAC result through unchanged
-  // as write data.
+  // half of a desintation register specified by the instruction (mac_wr_hw_sel_upper). The bottom
+  // half of the MAC result must be placed in the appropriate half of the write data (the RF only
+  // accepts write data for the top half in the top half of the write data input). Otherwise
+  // (shift-out to bottom half and all other BN.MULQACC instructions) simply pass the MAC result
+  // through unchanged as write data.
   assign mac_bignum_rf_wr_data[WLEN-1:WLEN/2] =
-    insn_dec_bignum_i.mac_wr_hw_sel_upper &&
-    insn_dec_bignum_i.mac_shift_out         ? mac_bignum_operation_result_i[WLEN/2-1:0] :
-                                              mac_bignum_operation_result_i[WLEN-1:WLEN/2];
+      insn_dec_bignum_i.mac_wr_hw_sel_upper &&
+      insn_dec_bignum_i.mac_shift_out          ? mac_bignum_operation_result_i[WLEN/2-1:0] :
+                                                 mac_bignum_operation_result_i[WLEN-1:WLEN/2];
 
   assign mac_bignum_rf_wr_data[WLEN/2-1:0] = mac_bignum_operation_result_i[WLEN/2-1:0];
 
@@ -473,7 +475,8 @@ module otbn_controller
 
   for (genvar i_bit = 0; i_bit < 32; i_bit++) begin : g_csr_rdata_mux
     for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_csr_rdata_mux_inner
-      assign csr_rdata_mux[i_bit][i_word] = ispr_rdata_i[i_word*32 + i_bit] & ispr_word_sel_base[i_word];
+      assign csr_rdata_mux[i_bit][i_word] =
+          ispr_rdata_i[i_word*32 + i_bit] & ispr_word_sel_base[i_word];
     end
 
     assign csr_rdata_raw[i_bit] = |csr_rdata_mux[i_bit];
@@ -491,7 +494,8 @@ module otbn_controller
     endcase
   end
 
-  assign csr_wdata_raw = insn_dec_shared_i.ispr_rs_insn ? csr_rdata | rf_base_rd_data_a_i : rf_base_rd_data_a_i;
+  assign csr_wdata_raw = insn_dec_shared_i.ispr_rs_insn ? csr_rdata | rf_base_rd_data_a_i :
+                                                          rf_base_rd_data_a_i;
 
   // Specialised write data handling for CSR writes where raw write data needs modification.
   always_comb begin
@@ -525,11 +529,13 @@ module otbn_controller
     endcase
   end
 
-  assign wsr_wdata = insn_dec_shared_i.ispr_rs_insn ? ispr_rdata_i | rf_bignum_rd_data_a_i : rf_bignum_rd_data_a_i;
+  assign wsr_wdata = insn_dec_shared_i.ispr_rs_insn ? ispr_rdata_i | rf_bignum_rd_data_a_i :
+                                                      rf_bignum_rd_data_a_i;
 
   assign ispr_wr_insn = insn_dec_shared_i.ispr_wr_insn | insn_dec_shared_i.ispr_rs_insn;
 
-  assign ispr_addr_o         = insn_dec_shared_i.subset == InsnSubsetBase ? ispr_addr_base : ispr_addr_bignum;
+  assign ispr_addr_o         = insn_dec_shared_i.subset == InsnSubsetBase ? ispr_addr_base :
+                                                                            ispr_addr_bignum;
   assign ispr_base_wdata_o   = csr_wdata;
   assign ispr_base_wr_en_o   =
     {BaseWordsPerWLEN{(insn_dec_shared_i.subset == InsnSubsetBase) & ispr_wr_insn & insn_valid_i}}
