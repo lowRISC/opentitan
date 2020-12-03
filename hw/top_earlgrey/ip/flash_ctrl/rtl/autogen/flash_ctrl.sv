@@ -703,6 +703,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // Flash Interface
   assign flash_o.addr = flash_addr;
   assign flash_o.part = flash_part_sel;
+  assign flash_o.info_sel = flash_info_sel;
   assign flash_o.prog_type = flash_prog_type;
   assign flash_o.prog_data = flash_prog_data;
   assign flash_o.prog_last = flash_prog_last;

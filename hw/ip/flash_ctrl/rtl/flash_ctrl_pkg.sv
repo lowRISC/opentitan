@@ -270,6 +270,7 @@ package flash_ctrl_pkg;
     logic                 pg_erase;
     logic                 bk_erase;
     flash_part_e          part;
+    logic [InfoTypesWidth-1:0] info_sel;
     logic [BusAddrW-1:0]  addr;
     logic [BusWidth-1:0]  prog_data;
     logic                 prog_last;
@@ -282,15 +283,16 @@ package flash_ctrl_pkg;
 
   // default value of flash_req_t (for dangling ports)
   parameter flash_req_t FLASH_REQ_DEFAULT = '{
-    req:         1'b0,
-    scramble_en: 1'b0,
-    ecc_en:      1'b0,
-    he_en:       1'b0,
-    rd:          1'b0,
-    prog:        1'b0,
-    pg_erase:    1'b0,
-    bk_erase:    1'b0,
+    req:         '0,
+    scramble_en: '0,
+    ecc_en:      '0,
+    he_en:       '0,
+    rd:          '0,
+    prog:        '0,
+    pg_erase:    '0,
+    bk_erase:    '0,
     part:        FlashPartData,
+    info_sel:    '0,
     addr:        '0,
     prog_data:   '0,
     prog_last:   '0,
@@ -298,7 +300,7 @@ package flash_ctrl_pkg;
     region_cfgs: '0,
     addr_key:    128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
     data_key:    128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE,
-    rd_buf_en:   1'b0
+    rd_buf_en:   '0
   };
 
   // memory to flash controller
