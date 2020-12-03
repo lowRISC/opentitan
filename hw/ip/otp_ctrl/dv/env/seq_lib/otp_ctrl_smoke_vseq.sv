@@ -79,23 +79,25 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
         used_dai_addr_q.push_back(dai_addr);
 
-        // OTP read via DAI
-        dai_rd(dai_addr, rdata0, rdata1);
+        if ($urandom_range(0, 1)) begin
+          // OTP read via DAI
+          dai_rd(dai_addr, rdata0, rdata1);
 
-        // check read data
-        `DV_CHECK_EQ(wdata0, rdata0, $sformatf("read data0 mismatch at addr %0h", dai_addr))
-        if (is_secret(dai_addr)) begin
-          `DV_CHECK_EQ(wdata1, rdata1, $sformatf("read data1 mismatch at addr %0h", dai_addr))
+          // check read data
+          `DV_CHECK_EQ(wdata0, rdata0, $sformatf("read data0 mismatch at addr %0h", dai_addr))
+          if (is_secret(dai_addr)) begin
+            `DV_CHECK_EQ(wdata1, rdata1, $sformatf("read data1 mismatch at addr %0h", dai_addr))
+          end
         end
 
         // if write sw partitions, check tlul window
-        if (part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx}) begin
+        if (part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx} && ($urandom_range(0, 1))) begin
           uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
 
           // random issue reset, OTP content should not be cleared
           if ($urandom_range(0, 1)) dut_init();
           tl_access(.addr(tlul_addr), .write(0), .data(tlul_rdata), .blocking(1));
-          `DV_CHECK_EQ(tlul_rdata, rdata0, $sformatf("mem read out mismatch at addr %0h", tlul_addr))
+          `DV_CHECK_EQ(tlul_rdata, wdata0, $sformatf("mem read out mismatch at addr %0h", tlul_addr))
         end
       end
 
