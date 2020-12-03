@@ -17,7 +17,7 @@
  *
  * This parser is intended to parse in-memory ROM_EXT images, from either Slot A
  * or Slot B. The fields it is parsing are defined in
- * `sw/device/rom_exts/manifest.md` and `sw/device_rom_exts/manifes.hjson`.
+ * `sw/device/rom_exts/manifest.md` and `sw/device_rom_exts/manifest.hjson`.
  *
  * This parser does minimal validity checking of the returned values, which must
  * always be checked by the caller to ensure do not contain incorrect or
@@ -168,7 +168,7 @@ uint32_t rom_ext_get_identifier(rom_ext_manifest_t params);
  * The memory address where ROM_EXT identifier field resides, is relative.
  *
  * @param params Parameters required for manifest parsing.
- * @param dst The destination address where the signature is coppied to.
+ * @param dst The destination address where the signature is copied to.
  * @return `true` on success, `false` on failure.
  */
 bool rom_ext_get_signature(rom_ext_manifest_t params, rom_ext_signature_t *dst);
@@ -246,7 +246,7 @@ uint32_t rom_ext_get_usage_constraints(rom_ext_manifest_t params);
  * The memory address where ROM_EXT lockdown info field resides, is relative.
  *
  * @param params Parameters required for manifest parsing.
- * @param dst The destination address where the lockdown info is coppied to.
+ * @param dst The destination address where the lockdown info is copied to.
  * @return `true` on success, `false` on failure.
  */
 bool rom_ext_get_peripheral_lockdown_info(rom_ext_manifest_t params,
@@ -258,7 +258,7 @@ bool rom_ext_get_peripheral_lockdown_info(rom_ext_manifest_t params,
  * The memory address where ROM_EXT public key field resides, is relative.
  *
  * @param params Parameters required for manifest parsing.
- * @param dst The destination address where the public key is coppied to.
+ * @param dst The destination address where the public key is copied to.
  * @return `true` on success, `false` on failure.
  */
 bool rom_ext_get_public_key(rom_ext_manifest_t params,
