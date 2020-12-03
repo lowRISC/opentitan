@@ -82,14 +82,21 @@ package flash_ctrl_pkg;
   // parameters for connected components
   parameter int SeedWidth = 256;
 
-  // life cycle provision enable usage
-  typedef enum logic [2:0] {
-    FlashLcCreatorSeedPriv,
-    FlashLcOwnerSeedPriv,
-    FlashLcMgrIf,
-    FlashLcInfoCfg,
-    FlashLcLast
-  } flash_lc_provision_en_e;
+  // life cycle provision write enable usage
+  typedef enum logic [1:0] {
+    FlashWrLcCreatorSeedPriv,
+    FlashWrLcMgrIf,
+    FlashWrLcInfoCfg,
+    FlashWrLcLast
+  } flash_lc_provision_wr_en_e;
+
+  // life cycle provision read enable usage
+  typedef enum logic [1:0] {
+    FlashRdLcOwnerSeedPriv,
+    FlashRdLcMgrIf,
+    FlashRdLcInfoCfg,
+    FlashRdLcLast
+  } flash_lc_provision_rd_en_e;
 
   // lcmgr phase enum
   typedef enum logic [1:0] {
@@ -162,7 +169,8 @@ package flash_ctrl_pkg;
     prog_en:     1'b0,
     erase_en:    1'b0,
     scramble_en: 1'b0,
-    ecc_en:      1'b0  // TBD, update to 1 once tb supports ECC
+    ecc_en:      1'b0, // TBD, update to 1 once tb supports ECC
+    he_en:       1'b1
   };
 
   parameter info_page_cfg_t CfgAllowReadErase = '{
@@ -171,7 +179,8 @@ package flash_ctrl_pkg;
     prog_en:     1'b0,
     erase_en:    1'b1,
     scramble_en: 1'b0,
-    ecc_en:      1'b0  // TBD, update to 1 once tb supports ECC
+    ecc_en:      1'b0,  // TBD, update to 1 once tb supports ECC
+    he_en:       1'b1   // HW assumes high endurance
   };
 
   parameter info_page_attr_t HwInfoPageAttr[HwInfoRules] = '{
@@ -204,6 +213,7 @@ package flash_ctrl_pkg;
                  erase_en:    1'b1,
                  scramble_en: 1'b0,
                  ecc_en:      1'b0,
+                 he_en:       1'b1, // HW assumes high endurance
                  base:        '0,
                  size:        '{default:'1}
                 }
@@ -260,6 +270,7 @@ package flash_ctrl_pkg;
     logic                 req;
     logic                 scramble_en;
     logic                 ecc_en;
+    logic                 he_en;
     logic                 rd;
     logic                 prog;
     logic                 pg_erase;
@@ -280,6 +291,7 @@ package flash_ctrl_pkg;
     req:         1'b0,
     scramble_en: 1'b0,
     ecc_en:      1'b0,
+    he_en:       1'b0,
     rd:          1'b0,
     prog:        1'b0,
     pg_erase:    1'b0,
@@ -381,6 +393,14 @@ package flash_ctrl_pkg;
     entropy: '0
   };
 
+  // dft_en jtag selection
+  typedef enum logic [2:0] {
+    FlashLcTckSel,
+    FlashLcTdiSel,
+    FlashLcTmsSel,
+    FlashLcTdoSel,
+    FlashLcJtagLast
+  } flash_lc_jtag_e;
 
   // find the max number pages among info types
   function automatic integer max_info_pages(int infos[InfoTypes]);

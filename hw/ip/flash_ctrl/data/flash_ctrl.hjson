@@ -31,7 +31,21 @@
 
     { struct: "lc_tx",
       type: "uni",
-      name: "lc_provision_en",
+      name: "lc_provision_wr_en",
+      act:  "rcv",
+      package: "lc_ctrl_pkg"
+    },
+
+    { struct: "lc_tx",
+      type: "uni",
+      name: "lc_provision_rd_en",
+      act:  "rcv",
+      package: "lc_ctrl_pkg"
+    },
+
+    { struct: "lc_tx",
+      type: "uni",
+      name: "lc_iso_flash_wr_en",
       act:  "rcv",
       package: "lc_ctrl_pkg"
     },
