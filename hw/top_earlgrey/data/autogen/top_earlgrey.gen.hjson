@@ -2374,7 +2374,25 @@
         {
           struct: lc_tx
           type: uni
-          name: lc_provision_en
+          name: lc_provision_wr_en
+          act: rcv
+          package: lc_ctrl_pkg
+          inst_name: flash_ctrl
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_provision_rd_en
+          act: rcv
+          package: lc_ctrl_pkg
+          inst_name: flash_ctrl
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_iso_flash_wr_en
           act: rcv
           package: lc_ctrl_pkg
           inst_name: flash_ctrl
@@ -4339,6 +4357,15 @@
           default: ""
           external: true
           top_signame: flash_test_voltage_h
+          index: -1
+        }
+        {
+          struct: lc_tx
+          package: lc_ctrl
+          type: uni
+          act: rcv
+          name: lc_dft_en
+          inst_name: eflash
           index: -1
         }
       ]
@@ -7824,7 +7851,25 @@
       {
         struct: lc_tx
         type: uni
-        name: lc_provision_en
+        name: lc_provision_wr_en
+        act: rcv
+        package: lc_ctrl_pkg
+        inst_name: flash_ctrl
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_provision_rd_en
+        act: rcv
+        package: lc_ctrl_pkg
+        inst_name: flash_ctrl
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_iso_flash_wr_en
         act: rcv
         package: lc_ctrl_pkg
         inst_name: flash_ctrl
@@ -8476,6 +8521,15 @@
         default: ""
         external: true
         top_signame: flash_test_voltage_h
+        index: -1
+      }
+      {
+        struct: lc_tx
+        package: lc_ctrl
+        type: uni
+        act: rcv
+        name: lc_dft_en
+        inst_name: eflash
         index: -1
       }
       {

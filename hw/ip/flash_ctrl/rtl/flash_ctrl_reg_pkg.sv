@@ -138,6 +138,9 @@ package flash_ctrl_reg_pkg;
       logic        q;
     } ecc_en;
     struct packed {
+      logic        q;
+    } he_en;
+    struct packed {
       logic [8:0]  q;
     } base;
     struct packed {
@@ -161,6 +164,9 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        q;
     } ecc_en;
+    struct packed {
+      logic        q;
+    } he_en;
   } flash_ctrl_reg2hw_default_region_reg_t;
 
   typedef struct packed {
@@ -182,6 +188,9 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        q;
     } ecc_en;
+    struct packed {
+      logic        q;
+    } he_en;
   } flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t;
 
   typedef struct packed {
@@ -203,6 +212,9 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        q;
     } ecc_en;
+    struct packed {
+      logic        q;
+    } he_en;
   } flash_ctrl_reg2hw_bank0_info1_page_cfg_mreg_t;
 
   typedef struct packed {
@@ -224,6 +236,9 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        q;
     } ecc_en;
+    struct packed {
+      logic        q;
+    } he_en;
   } flash_ctrl_reg2hw_bank1_info0_page_cfg_mreg_t;
 
   typedef struct packed {
@@ -245,6 +260,9 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        q;
     } ecc_en;
+    struct packed {
+      logic        q;
+    } he_en;
   } flash_ctrl_reg2hw_bank1_info1_page_cfg_mreg_t;
 
   typedef struct packed {
@@ -365,17 +383,17 @@ package flash_ctrl_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [420:415]
-    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [414:409]
-    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [408:397]
-    flash_ctrl_reg2hw_control_reg_t control; // [396:378]
-    flash_ctrl_reg2hw_addr_reg_t addr; // [377:346]
-    flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [345:146]
-    flash_ctrl_reg2hw_default_region_reg_t default_region; // [145:141]
-    flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t [3:0] bank0_info0_page_cfg; // [140:117]
-    flash_ctrl_reg2hw_bank0_info1_page_cfg_mreg_t [3:0] bank0_info1_page_cfg; // [116:93]
-    flash_ctrl_reg2hw_bank1_info0_page_cfg_mreg_t [3:0] bank1_info0_page_cfg; // [92:69]
-    flash_ctrl_reg2hw_bank1_info1_page_cfg_mreg_t [3:0] bank1_info1_page_cfg; // [68:45]
+    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [445:440]
+    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [439:434]
+    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [433:422]
+    flash_ctrl_reg2hw_control_reg_t control; // [421:403]
+    flash_ctrl_reg2hw_addr_reg_t addr; // [402:371]
+    flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [370:163]
+    flash_ctrl_reg2hw_default_region_reg_t default_region; // [162:157]
+    flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t [3:0] bank0_info0_page_cfg; // [156:129]
+    flash_ctrl_reg2hw_bank0_info1_page_cfg_mreg_t [3:0] bank0_info1_page_cfg; // [128:101]
+    flash_ctrl_reg2hw_bank1_info0_page_cfg_mreg_t [3:0] bank1_info0_page_cfg; // [100:73]
+    flash_ctrl_reg2hw_bank1_info1_page_cfg_mreg_t [3:0] bank1_info1_page_cfg; // [72:45]
     flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [1:0] mp_bank_cfg; // [44:43]
     flash_ctrl_reg2hw_scratch_reg_t scratch; // [42:11]
     flash_ctrl_reg2hw_fifo_lvl_reg_t fifo_lvl; // [10:1]

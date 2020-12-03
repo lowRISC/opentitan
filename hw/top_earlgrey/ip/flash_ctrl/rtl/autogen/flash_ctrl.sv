@@ -19,7 +19,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   input        rst_ni,
 
   // life cycle interface
-  lc_ctrl_pkg::lc_tx_t lc_provision_en_i,
+  lc_ctrl_pkg::lc_tx_t lc_provision_wr_en_i,
+  lc_ctrl_pkg::lc_tx_t lc_provision_rd_en_i,
+  lc_ctrl_pkg::lc_tx_t lc_iso_flash_wr_en_i,
 
   // Bus Interface
   input        tlul_pkg::tl_h2d_t tl_i,
@@ -109,7 +111,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic prog_done, rd_done, erase_done;
   logic prog_err, rd_err, erase_err;
 
-  // Flash Memory Protection Connections
+  // Flash Memory Properties Connections
   logic [BusAddrW-1:0] flash_addr;
   logic flash_req;
   logic flash_rd_done, flash_prog_done, flash_erase_done;
@@ -171,17 +173,37 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic lfsr_en;
 
   // life cycle connections
-  lc_ctrl_pkg::lc_tx_t [FlashLcLast-1:0] lc_provision_en;
+  lc_ctrl_pkg::lc_tx_t [FlashWrLcLast-1:0] lc_provision_wr_en;
+  lc_ctrl_pkg::lc_tx_t [FlashRdLcLast-1:0] lc_provision_rd_en;
+  lc_ctrl_pkg::lc_tx_t lc_iso_flash_wr_en;
 
   // synchronize provision enable into local domain
   prim_lc_sync #(
-    .NumCopies(int'(FlashLcLast))
-  ) u_lc_provision_en_sync (
+    .NumCopies(int'(FlashWrLcLast))
+  ) u_lc_provision_wr_en_sync (
     .clk_i,
     .rst_ni,
-    .lc_en_i(lc_provision_en_i),
-    .lc_en_o(lc_provision_en)
+    .lc_en_i(lc_provision_wr_en_i),
+    .lc_en_o(lc_provision_wr_en)
   );
+
+  prim_lc_sync #(
+    .NumCopies(int'(FlashRdLcLast))
+  ) u_lc_provision_rd_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_provision_rd_en_i),
+    .lc_en_o(lc_provision_rd_en)
+  );
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_iso_flash_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_iso_flash_wr_en_i),
+    .lc_en_o(lc_iso_flash_wr_en)
+  );
+
 
   prim_lfsr #(
     .DefaultSeed(),
@@ -285,12 +307,21 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // hardware interface
 
   // software only has privilege to change creator seed when provision enable is set and
-  // before the the seed is set as valid in otp
-  assign creator_seed_priv = lc_provision_en[FlashLcCreatorSeedPriv] == lc_ctrl_pkg::On &
+  // before the the seed is set as valid in otp.
+  // lc provision write enable is used here as creator assets can only be changed when
+  // creator secrets are not yet locked.
+  assign creator_seed_priv = (lc_provision_wr_en[FlashWrLcCreatorSeedPriv] == lc_ctrl_pkg::On) &
                              ~otp_i.seed_valid;
 
   // owner seed is under software control and can be modided whenever provision enable is set
-  assign owner_seed_priv = lc_provision_en[FlashLcOwnerSeedPriv] == lc_ctrl_pkg::On;
+  // read enable is used here as this is mostly under the control of creator software and just
+  // needs to be locked out from specific life cycle states.
+  assign owner_seed_priv = lc_provision_rd_en[FlashRdLcOwnerSeedPriv] == lc_ctrl_pkg::On;
+
+  // the seed is only readable after it has been written and locked.
+  logic seed_rd_en;
+  assign seed_rd_en = lc_provision_wr_en[FlashWrLcMgrIf] == lc_ctrl_pkg::Off &
+                      lc_provision_rd_en[FlashRdLcMgrIf] == lc_ctrl_pkg::On;
 
   flash_ctrl_lcmgr u_flash_hw_if (
     .clk_i,
@@ -298,7 +329,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
     .init_i(pwrmgr_i.flash_init),
     .init_done_o(pwrmgr_o.flash_done),
-    .provision_en_i(lc_provision_en[FlashLcMgrIf] == lc_ctrl_pkg::On),
+    .provision_en_i(seed_rd_en),
 
     // interface to ctrl arb control ports
     .ctrl_o(hw_ctrl),
@@ -528,7 +559,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   end
 
   //////////////////////////////////////
-  // Data partition protection configuration
+  // Data partition properties configuration
   //////////////////////////////////////
   // extra region is the default region
   mp_region_cfg_t [MpRegions:0] region_cfgs;
@@ -543,9 +574,10 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign region_cfgs[MpRegions].erase_en.q = reg2hw.default_region.erase_en.q;
   assign region_cfgs[MpRegions].scramble_en.q = reg2hw.default_region.scramble_en.q;
   assign region_cfgs[MpRegions].ecc_en.q = reg2hw.default_region.ecc_en.q;
+  assign region_cfgs[MpRegions].he_en.q = reg2hw.default_region.he_en.q;
 
   //////////////////////////////////////
-  // Info partition protection configuration
+  // Info partition properties configuration
   //////////////////////////////////////
   info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] reg2hw_info_page_cfgs;
   info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs;
@@ -557,6 +589,10 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign reg2hw_info_page_cfgs[1][1] = reg2hw.bank1_info1_page_cfg;
 
   // qualify reg2hw settings with creator / owner privileges
+  logic iso_flash_wr_en;
+  assign iso_flash_wr_en = lc_provision_wr_en[FlashWrLcInfoCfg] == lc_ctrl_pkg::On |
+                           lc_iso_flash_wr_en == lc_ctrl_pkg::On;
+
   for(genvar i = 0; i < NumBanks; i++) begin : gen_info_priv_bank
     for (genvar j = 0; j < InfoTypes; j++) begin : gen_info_priv_type
       flash_ctrl_info_cfg # (
@@ -566,14 +602,15 @@ module flash_ctrl import flash_ctrl_pkg::*; (
         .cfgs_i(reg2hw_info_page_cfgs[i][j]),
         .creator_seed_priv_i(creator_seed_priv),
         .owner_seed_priv_i(owner_seed_priv),
-        .provision_en_i(lc_provision_en[FlashLcInfoCfg] == lc_ctrl_pkg::On),
+        .iso_flash_wr_en_i(iso_flash_wr_en),
+        .iso_flash_rd_en_i(lc_provision_rd_en[FlashRdLcInfoCfg] == lc_ctrl_pkg::On),
         .cfgs_o(info_page_cfgs[i][j])
       );
     end
   end
 
   //////////////////////////////////////
-  // flash memory protection
+  // flash memory properties
   //////////////////////////////////////
   // direct assignment since prog/rd/erase_ctrl do not make use of op_part
   flash_part_e flash_part_sel;
@@ -581,8 +618,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign flash_part_sel = op_part;
   assign flash_info_sel = op_info_sel;
 
-  // Flash memory protection
-  // Memory protection is page based and thus should use phy addressing
+  // Flash memory Properties
+  // Memory property is page based and thus should use phy addressing
   // This should move to flash_phy long term
   flash_mp u_flash_mp (
     .clk_i,
@@ -619,6 +656,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .req_o(flash_o.req),
     .scramble_en_o(flash_o.scramble_en),
     .ecc_en_o(flash_o.ecc_en),
+    .he_en_o(flash_o.he_en),
     .rd_o(flash_o.rd),
     .prog_o(flash_o.prog),
     .pg_erase_o(flash_o.pg_erase),
