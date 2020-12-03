@@ -6,22 +6,22 @@ It has been generated with hw/ip/otp_ctrl/util/translate-mmap.py
 |  Index  |   Partition    |  Size [B]  |  Access Granule  |                         Item                          |  Byte Address  |  Size [B]  |
 |:-------:|:--------------:|:----------:|:----------------:|:-----------------------------------------------------:|:--------------:|:----------:|
 |    0    | CREATOR_SW_CFG |    768     |      32bit       |                CREATOR_SW_CFG_CONTENT                 |     0x000      |    760     |
-|         |                |            |                  | [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0) |     0x2F8      |     8      |
+|         |                |            |      64bit       | [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0) |     0x2F8      |     8      |
 |    1    |  OWNER_SW_CFG  |    768     |      32bit       |                 OWNER_SW_CFG_CONTENT                  |     0x300      |    760     |
-|         |                |            |                  |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x5F8      |     8      |
+|         |                |            |      64bit       |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x5F8      |     8      |
 |    2    |     HW_CFG     |    208     |      32bit       |                       DEVICE_ID                       |     0x600      |     32     |
-|         |                |            |                  |                    HW_CFG_CONTENT                     |     0x620      |    168     |
-|         |                |            |                  |         [HW_CFG_DIGEST](#Reg_hw_cfg_digest_0)         |     0x6C8      |     8      |
+|         |                |            |      32bit       |                    HW_CFG_CONTENT                     |     0x620      |    168     |
+|         |                |            |      64bit       |         [HW_CFG_DIGEST](#Reg_hw_cfg_digest_0)         |     0x6C8      |     8      |
 |    3    |    SECRET0     |     40     |      64bit       |                   TEST_UNLOCK_TOKEN                   |     0x6D0      |     16     |
-|         |                |            |                  |                    TEST_EXIT_TOKEN                    |     0x6E0      |     16     |
-|         |                |            |                  |        [SECRET0_DIGEST](#Reg_secret0_digest_0)        |     0x6F0      |     8      |
+|         |                |            |      64bit       |                    TEST_EXIT_TOKEN                    |     0x6E0      |     16     |
+|         |                |            |      64bit       |        [SECRET0_DIGEST](#Reg_secret0_digest_0)        |     0x6F0      |     8      |
 |    4    |    SECRET1     |     88     |      64bit       |                  FLASH_ADDR_KEY_SEED                  |     0x6F8      |     32     |
-|         |                |            |                  |                  FLASH_DATA_KEY_SEED                  |     0x718      |     32     |
-|         |                |            |                  |                  SRAM_DATA_KEY_SEED                   |     0x738      |     16     |
-|         |                |            |                  |        [SECRET1_DIGEST](#Reg_secret1_digest_0)        |     0x748      |     8      |
+|         |                |            |      64bit       |                  FLASH_DATA_KEY_SEED                  |     0x718      |     32     |
+|         |                |            |      64bit       |                  SRAM_DATA_KEY_SEED                   |     0x738      |     16     |
+|         |                |            |      64bit       |        [SECRET1_DIGEST](#Reg_secret1_digest_0)        |     0x748      |     8      |
 |    5    |    SECRET2     |    120     |      64bit       |                       RMA_TOKEN                       |     0x750      |     16     |
-|         |                |            |                  |                CREATOR_ROOT_KEY_SHARE0                |     0x760      |     32     |
-|         |                |            |                  |                CREATOR_ROOT_KEY_SHARE1                |     0x780      |     32     |
-|         |                |            |                  |        [SECRET2_DIGEST](#Reg_secret2_digest_0)        |     0x7C0      |     8      |
+|         |                |            |      64bit       |                CREATOR_ROOT_KEY_SHARE0                |     0x760      |     32     |
+|         |                |            |      64bit       |                CREATOR_ROOT_KEY_SHARE1                |     0x780      |     32     |
+|         |                |            |      64bit       |        [SECRET2_DIGEST](#Reg_secret2_digest_0)        |     0x7C0      |     8      |
 |    6    |   LIFE_CYCLE   |     56     |      32bit       |                       LC_STATE                        |     0x7C8      |     24     |
-|         |                |            |                  |                   LC_TRANSITION_CNT                   |     0x7E0      |     32     |
+|         |                |            |      32bit       |                   LC_TRANSITION_CNT                   |     0x7E0      |     32     |
