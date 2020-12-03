@@ -495,7 +495,7 @@ Hence the following programming sequence applies to both SW running on the devic
 
 2. Read the {{< regref "LC_STATE" >}} and {{< regref "LC_TRANSITION_CNT" >}} registers to determine which life cycle state the device currently is in, and how many transition attempts are still available.
 
-3. Claim exclusive access to the transition interface by writing 1 to the {{< regref "CLAIM_TRANSITION_IF" >}} register, and reading it back. If the value read back equals to 1, the hardware mutex has successfully been claimed and SW can proceed to step 4. If the value read back equals to 0, the mutex has already been claimed by the other interface (either CSR or TAP), and SW should try claiming the mutex again.
+3. Claim exclusive access to the transition interface by writing 0xA5 to the {{< regref "CLAIM_TRANSITION_IF" >}} register, and reading it back. If the value read back equals to 0xA5, the hardware mutex has successfully been claimed and SW can proceed to step 4. If the value read back equals to 0, the mutex has already been claimed by the other interface (either CSR or TAP), and SW should try claiming the mutex again.
 
 4. Write the desired target state to {{< regref "TRANSITION_TARGET" >}}. If the transition is conditional, the corresponding token should be written to {{< regref "TRANSITION_TOKEN_0" >}} as well. An optional, but recommended step is to read back and verify the values written to these registers before proceeding with step 5.
 
