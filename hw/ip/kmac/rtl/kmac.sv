@@ -179,14 +179,25 @@ module kmac
   kmac_cmd_e sw_cmd, kmac_cmd;
 
   // Entropy configurations
-  logic [31:0] entropy_refresh_period;
+  logic [15:0] entropy_timer_limit;
+  logic [15:0] wait_timer_limit;
   logic        entropy_seed_update;
+  logic        unused_entropy_seed_upper_qe;
   logic [63:0] entropy_seed_data;
+
+  logic entropy_ready;
+  entropy_mode_e entropy_mode;
+
   // SHA3 Error response
   sha3_pkg::err_t sha3_err;
 
   // KeyMgr Error response
   kmac_pkg::err_t keymgr_err;
+
+  // Entropy Generator Error
+  kmac_pkg::err_t entropy_err;
+
+  logic err_processed;
 
   //////////////////////////////////////
   // Connecting Register IF to logics //
@@ -294,11 +305,23 @@ module kmac
   assign sw_key_len = key_len_e'(reg2hw.key_len.q);
 
   // Entropy configurations
-  assign entropy_refresh_period = reg2hw.entropy_period.q;
-  assign entropy_seed_update = reg2hw.entropy_seed_lower.qe
-                             | reg2hw.entropy_seed_upper.qe;
+  assign entropy_timer_limit = reg2hw.entropy_period.entropy_timer.q;
+  assign wait_timer_limit    = reg2hw.entropy_period.wait_timer.q;
+
+  // Seed updated when the software writes Entropy Seed [31:0]
+  assign unused_entropy_seed_upper_qe = reg2hw.entropy_seed_upper.qe;
+  assign entropy_seed_update = reg2hw.entropy_seed_lower.qe ;
   assign entropy_seed_data = { reg2hw.entropy_seed_lower.q,
                                reg2hw.entropy_seed_upper.q};
+
+  // Entropy config
+  assign entropy_ready = reg2hw.cfg.entropy_ready.q;
+  assign entropy_mode  = entropy_mode_e'(reg2hw.cfg.entropy_mode.q);
+
+  assign hw2reg.cfg.entropy_ready.de = entropy_ready;
+  assign hw2reg.cfg.entropy_ready.d = 1'b 0; // always clear when ready
+
+  `ASSERT(EntropyReadyLatched_A, $rose(entropy_ready) |=> !entropy_ready)
 
   // Idle control (registered output)
   // The logic checks idle of SHA3 engine, MSG_FIFO, KMAC_CORE, KEYMGR interface
@@ -311,6 +334,15 @@ module kmac
       idle_o <= 1'b 0;
     end
   end
+
+  // Clear the error processed
+  assign err_processed = reg2hw.cfg.err_processed.q;
+  assign hw2reg.cfg.err_processed.de = err_processed;
+  assign hw2reg.cfg.err_processed.d = 1'b 0;
+
+  // Make sure the field has latch in reg_top
+  `ASSERT(ErrProcessedLatched_A, $rose(err_processed) |=> !err_processed)
+
   ///////////////
   // Interrupt //
   ///////////////
@@ -357,7 +389,7 @@ module kmac
   // As of now, only SHA3 error exists. More error codes will be added.
 
   logic event_error;
-  assign event_error =  sha3_err.valid | keymgr_err.valid;
+  assign event_error =  sha3_err.valid | keymgr_err.valid | entropy_err.valid;
 
   // Assing error code to the register
   assign hw2reg.err_code.de = event_error;
@@ -367,6 +399,8 @@ module kmac
       hw2reg.err_code.d = {sha3_err.code , sha3_err.info};
     end else if (keymgr_err.valid) begin
       hw2reg.err_code.d = {keymgr_err.code, keymgr_err.info};
+    end else if (entropy_err.valid) begin
+      hw2reg.err_code.d = {entropy_err.code, entropy_err.info};
     end else begin
       hw2reg.err_code.d = '0;
     end
@@ -640,12 +674,20 @@ module kmac
       .in_keyblock_i (),
 
       // Configuration
+      .mode_i          (entropy_mode),
+      .entropy_ready_i (entropy_ready),
+
       //// Entropy refresh period in clk cycles
-      .refresh_period_i (entropy_refresh_period),
+      .entropy_timer_limit_i (entropy_timer_limit),
+      .wait_timer_limit_i    (wait_timer_limit),
 
       //// SW update of seed
       .seed_update_i (entropy_seed_update),
-      .seed_data_i   (entropy_seed_data)
+      .seed_data_i   (entropy_seed_data),
+
+      // Error
+      .err_o (entropy_err),
+      .err_processed_i (err_processed)
     );
   end else begin : gen_empty_entropy
     // If Masking is not used, no need of entropy. Tieing 0
@@ -663,8 +705,9 @@ module kmac
     logic [31:0] unused_refresh_period;
     assign unused_seed_data = entropy_seed_data;
     assign unused_seed_update = entropy_seed_update;
-    assign unused_refresh_period = entropy_refresh_period;
+    assign unused_refresh_period = {wait_timer_limit, entropy_timer_limit};
 
+    assign entropy_err = '{valid: 1'b 0, code: ErrNone, info: '0};
   end
 
   // Register top

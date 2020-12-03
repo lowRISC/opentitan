@@ -82,6 +82,17 @@ package kmac_pkg;
     CmdDone      = 4'b 1000
   } kmac_cmd_e;
 
+  // Timer
+  parameter int unsigned EntropyTimerW = 16;
+  parameter int unsigned EdnWaitTimerW = 16;
+
+  // Entropy Mode Selection : Should be matched to register package Enum value
+  typedef enum logic [1:0] {
+    EntropyModeNone = 2'h 0,
+    EntropyModeEdn  = 2'h 1,
+    EntropyModeSw   = 2'h 2
+  } entropy_mode_e;
+
   ////////////////////
   // Error Handling //
   ////////////////////
@@ -108,7 +119,15 @@ package kmac_pkg;
 
     // ErrSwPushWrongCmd
     //  - Sw writes any command except CmdStart when Idle.
-    ErrSwPushedWrongCmd = 8'h 03
+    ErrSwPushedWrongCmd = 8'h 03,
+
+    // ErrWaitTimerExpired
+    // Entropy Wait timer expired. Something wrong on EDN i/f
+    ErrWaitTimerExpired = 8'h 04,
+
+    // ErrIncorrectEntropyMode
+    // Incorrect Entropy mode when entropy is ready
+    ErrIncorrectEntropyMode = 8'h 05
   } err_code_e;
 
   typedef struct packed {
