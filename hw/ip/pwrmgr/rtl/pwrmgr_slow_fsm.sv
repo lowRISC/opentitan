@@ -67,11 +67,13 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   logic all_clks_invalid;
 
   // all clocks sources are valid
+  // if clocks (usb) not configured to be active, then just bypass check
   assign all_clks_valid = (ast_i.core_clk_val == DiffValid) &
      (ast_i.io_clk_val == DiffValid) &
      (~usb_clk_en_active_i | ast_i.usb_clk_val == DiffValid);
 
-  // if clock were configured to turn off, make sure val is invalid
+  // if clocks were configured to turn off, make sure val is invalid
+  // if clocks were not configured to turn off, just bypass the check
   assign all_clks_invalid = (core_clk_en_i | ast_i.core_clk_val != DiffValid) &
      (io_clk_en_i | ast_i.io_clk_val != DiffValid) &
      (usb_clk_en_lp_i | ast_i.usb_clk_val != DiffValid);
