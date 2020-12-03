@@ -33,12 +33,33 @@ package otp_ctrl_env_pkg;
   parameter uint TEST_ACCESS_WINDOW_SIZE = 16 * 4;
 
   // convert byte into TLUL width size
-  parameter uint CREATOR_SW_CFG_ARRAY_SIZE = CreatorSwCfgContentSize / (TL_DW / 8);
-  parameter uint OWNER_SW_CFG_ARRAY_SIZE   = OwnerSwCfgContentSize / (TL_DW / 8);
-  parameter uint HW_CFG_ARRAY_SIZE         = HwCfgContentSize / (TL_DW / 8);
-  parameter uint SECRET0_ARRAY_SIZE        = (Secret0Size - DIGEST_SIZE) / (TL_DW / 8);
-  parameter uint SECRET1_ARRAY_SIZE        = (Secret1Size - DIGEST_SIZE) / (TL_DW / 8);
-  parameter uint SECRET2_ARRAY_SIZE        = (Secret2Size - DIGEST_SIZE) / (TL_DW / 8);
+  parameter uint CREATOR_SW_CFG_START_ADDR  = CreatorSwCfgOffset / (TL_DW / 8);
+  parameter uint CREATOR_SW_CFG_DIGEST_ADDR = CreatorSwCfgDigestOffset / (TL_DW / 8);
+  parameter uint CREATOR_SW_CFG_END_ADDR    = CREATOR_SW_CFG_DIGEST_ADDR - 1;
+
+  parameter uint OWNER_SW_CFG_START_ADDR  = OwnerSwCfgOffset / (TL_DW / 8);
+  parameter uint OWNER_SW_CFG_DIGEST_ADDR = OwnerSwCfgDigestOffset / (TL_DW / 8);
+  parameter uint OWNER_SW_CFG_END_ADDR    = OWNER_SW_CFG_DIGEST_ADDR - 1;
+
+  parameter uint HW_CFG_START_ADDR  = HwCfgOffset / (TL_DW / 8);
+  parameter uint HW_CFG_DIGEST_ADDR = HwCfgDigestOffset / (TL_DW / 8);
+  parameter uint HW_CFG_END_ADDR    = HW_CFG_DIGEST_ADDR - 1;
+
+  parameter uint SECRET0_START_ADDR  = Secret0Offset / (TL_DW / 8);
+  parameter uint SECRET0_DIGEST_ADDR = Secret0DigestOffset / (TL_DW / 8);
+  parameter uint SECRET0_END_ADDR    = SECRET0_DIGEST_ADDR - 1;
+
+  parameter uint SECRET1_START_ADDR  = Secret1Offset / (TL_DW / 8);
+  parameter uint SECRET1_DIGEST_ADDR = Secret1DigestOffset / (TL_DW / 8);
+  parameter uint SECRET1_END_ADDR    = SECRET1_DIGEST_ADDR - 1;
+
+  parameter uint SECRET2_START_ADDR  = Secret2Offset / (TL_DW / 8);
+  parameter uint SECRET2_DIGEST_ADDR = Secret2DigestOffset / (TL_DW / 8);
+  parameter uint SECRET2_END_ADDR    = SECRET2_DIGEST_ADDR - 1;
+
+  // TODO: did not count for LC partition
+  parameter uint OTP_ARRAY_SIZE = (CreatorSwCfgSize + OwnerSwCfgSize + HwCfgSize + Secret0Size +
+                                   Secret1Size + Secret2Size)/ (TL_DW / 8);
 
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
   parameter uint SRAM_DATA_SIZE  = 1 + SramKeyWidth + SramNonceWidth;
