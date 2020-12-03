@@ -26,7 +26,8 @@ module flash_ctrl_info_cfg import flash_ctrl_pkg::*; # (
     prog_en: 1'b1,
     erase_en: 1'b1,
     scramble_en: 1'b1,
-    ecc_en: 1'b1
+    ecc_en: 1'b1,
+    he_en : 1'b1
   };
 
   for(genvar i = 0; i < InfosPerBank; i++) begin : gen_info_priv

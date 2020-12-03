@@ -103,7 +103,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic prog_done, rd_done, erase_done;
   logic prog_err, rd_err, erase_err;
 
-  // Flash Memory Protection Connections
+  // Flash Memory Properties Connections
   logic [BusAddrW-1:0] flash_addr;
   logic flash_req;
   logic flash_rd_done, flash_prog_done, flash_erase_done;
@@ -522,7 +522,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   end
 
   //////////////////////////////////////
-  // Data partition protection configuration
+  // Data partition properties configuration
   //////////////////////////////////////
   // extra region is the default region
   mp_region_cfg_t [MpRegions:0] region_cfgs;
@@ -537,9 +537,10 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign region_cfgs[MpRegions].erase_en.q = reg2hw.default_region.erase_en.q;
   assign region_cfgs[MpRegions].scramble_en.q = reg2hw.default_region.scramble_en.q;
   assign region_cfgs[MpRegions].ecc_en.q = reg2hw.default_region.ecc_en.q;
+  assign region_cfgs[MpRegions].he_en.q = reg2hw.default_region.he_en.q;
 
   //////////////////////////////////////
-  // Info partition protection configuration
+  // Info partition properties configuration
   //////////////////////////////////////
   info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] reg2hw_info_page_cfgs;
   info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs;
@@ -568,7 +569,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   end
 
   //////////////////////////////////////
-  // flash memory protection
+  // flash memory properties
   //////////////////////////////////////
   // direct assignment since prog/rd/erase_ctrl do not make use of op_part
   flash_part_e flash_part_sel;
@@ -576,8 +577,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign flash_part_sel = op_part;
   assign flash_info_sel = op_info_sel;
 
-  // Flash memory protection
-  // Memory protection is page based and thus should use phy addressing
+  // Flash memory Properties
+  // Memory property is page based and thus should use phy addressing
   // This should move to flash_phy long term
   flash_mp u_flash_mp (
     .clk_i,
@@ -614,6 +615,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .req_o(flash_o.req),
     .scramble_en_o(flash_o.scramble_en),
     .ecc_en_o(flash_o.ecc_en),
+    .he_en_o(flash_o.he_en),
     .rd_o(flash_o.rd),
     .prog_o(flash_o.prog),
     .pg_erase_o(flash_o.pg_erase),

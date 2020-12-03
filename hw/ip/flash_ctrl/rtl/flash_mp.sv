@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Flash Memory Protection
+// Flash Memory Properties
 //
 
 `include "prim_assert.sv"
@@ -42,6 +42,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   output logic prog_o,
   output logic scramble_en_o,
   output logic ecc_en_o,
+  output logic he_en_o,
   output logic pg_erase_o,
   output logic bk_erase_o,
   input rd_done_i,
@@ -73,13 +74,15 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   logic data_bk_erase_en;
   logic data_scramble_en;
   logic data_ecc_en;
+  logic data_he_en;
   logic info_rd_en;
   logic info_prog_en;
   logic info_erase_en;
   logic info_scramble_en;
   logic info_ecc_en;
+  logic info_he_en;
 
-  // Memory protection handling for hardware interface
+  // Memory properties handling for hardware interface
   logic hw_sel;
   assign hw_sel = if_sel_i == HwSel;
 
@@ -179,6 +182,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   assign data_bk_erase_en = data_en & bk_erase_i      & |bk_erase_en;
   assign data_scramble_en = data_en & (rd_i | prog_i) & data_region_cfg.scramble_en.q;
   assign data_ecc_en      = data_en & (rd_i | prog_i) & data_region_cfg.ecc_en.q;
+  assign data_he_en       = data_en &                   data_region_cfg.he_en.q;
 
 
   assign invalid_data_txn = req_i & data_part_sel &
@@ -232,6 +236,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   assign info_erase_en    = info_en & pg_erase_i      & page_cfg.erase_en.q;
   assign info_scramble_en = info_en & (rd_i | prog_i) & page_cfg.scramble_en.q;
   assign info_ecc_en      = info_en & (rd_i | prog_i) & page_cfg.ecc_en.q;
+  assign info_he_en       = info_en &                   page_cfg.he_en.q;
 
   // check for invalid transactions
   assign invalid_info_txn = req_i & info_part_sel &
@@ -247,6 +252,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   assign bk_erase_o    = req_i & data_bk_erase_en;
   assign scramble_en_o = req_i & (data_scramble_en | info_scramble_en);
   assign ecc_en_o      = req_i & (data_ecc_en | info_ecc_en);
+  assign he_en_o       = req_i & (data_he_en | info_he_en);
   assign req_o         = rd_o | prog_o | pg_erase_o | bk_erase_o;
 
   logic txn_err;
