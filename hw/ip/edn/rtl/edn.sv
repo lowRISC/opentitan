@@ -4,6 +4,7 @@
 //
 // Description: edn top level wrapper file
 
+`include "prim_assert.sv"
 
 module edn import edn_pkg::*; #(
   parameter int NumEndPoints = 4,
@@ -65,5 +66,23 @@ module edn import edn_pkg::*; #(
     .intr_edn_cmd_req_done_o,
     .intr_edn_fifo_err_o
   );
+
+
+  // Assertions
+
+  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+
+  // Endpoint Asserts
+  for (genvar i = 0; i < NumEndPoints; i = i+1) begin : gen_edn_if_asserts
+    `ASSERT_KNOWN(EdnEndPointOut_A, edn_o[i])
+  end : gen_edn_if_asserts
+
+  // CSRNG Asserts
+  `ASSERT_KNOWN(CsrngAppIfOut_A, csrng_cmd_o)
+
+  // Interrupt Asserts
+  `ASSERT_KNOWN(IntrEdnCmdReqDoneKnownO_A, intr_edn_cmd_req_done_o)
+  `ASSERT_KNOWN(IntrEdnFifoErrKnownO_A, intr_edn_fifo_err_o)
 
 endmodule
