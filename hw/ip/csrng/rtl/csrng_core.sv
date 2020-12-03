@@ -1117,15 +1117,14 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.hw_exc_sts.de = cs_enable;
   assign hw2reg.hw_exc_sts.d  = hw_exception_sts;
 
+  // TODO: add depths or remove
   assign hw2reg.sum_sts.fifo_depth_sts.de = cs_enable;
   assign hw2reg.sum_sts.fifo_depth_sts.d  =
          (fifo_sel == 4'h0) ? 24'b0 :
          24'b0;
 
-
   assign hw2reg.sum_sts.diag.de = !cs_enable;
   assign hw2reg.sum_sts.diag.d  =
-         1'b0                    &&
          (reg2hw.regen.q)        && // not used
          (|reg2hw.genbits.q);       // not used
 
