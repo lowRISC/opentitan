@@ -26,6 +26,7 @@ module prim_generic_flash_bank #(
   input flash_ctrl_pkg::flash_prog_e prog_type_i,
   input                              pg_erase_i,
   input                              bk_erase_i,
+  input                              he_i,
   input [AddrW-1:0]                  addr_i,
   input flash_ctrl_pkg::flash_part_e part_i,
   input [DataWidth-1:0]              prog_data_i,
@@ -411,5 +412,7 @@ module prim_generic_flash_bank #(
   flash_ctrl_pkg::flash_prog_e unused_prog_type;
   assign unused_prog_type = cmd_q.prog_type;
 
+  logic unused_he;
+  assign unused_he = he_i;
 
 endmodule // prim_generic_flash

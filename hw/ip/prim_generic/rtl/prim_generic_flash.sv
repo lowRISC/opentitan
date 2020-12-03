@@ -55,6 +55,7 @@ module prim_generic_flash #(
       .prog_type_i(flash_req_i[bank].prog_type),
       .pg_erase_i(flash_req_i[bank].pg_erase_req),
       .bk_erase_i(flash_req_i[bank].bk_erase_req),
+      .he_i(flash_req_i[bank].he),
       .addr_i(flash_req_i[bank].addr),
       .part_i(flash_req_i[bank].part),
       .prog_data_i(flash_req_i[bank].prog_full_data),

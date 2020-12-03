@@ -21,6 +21,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   input                              req_i,        // controller request
   input                              scramble_en_i,
   input                              ecc_en_i,
+  input                              he_en_i,
   input                              rd_i,
   input                              prog_i,
   input                              pg_erase_i,
@@ -371,6 +372,9 @@ module flash_phy_core import flash_phy_pkg::*; #(
     prog_type: prog_type_i,
     pg_erase_req: flash_pg_erase_req,
     bk_erase_req: flash_bk_erase_req,
+    // high endurance enable does not cause changes to
+    // transaction protocol and is forwarded directly to the wrapper
+    he: he_en_i,
     addr: muxed_addr[BusBankAddrW-1:LsbAddrBit],
     part: muxed_part,
     prog_full_data: prog_full_data

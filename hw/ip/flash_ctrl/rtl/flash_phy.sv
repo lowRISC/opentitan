@@ -175,6 +175,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .req_i(ctrl_req),
       .scramble_en_i(flash_ctrl_i.scramble_en),
       .ecc_en_i(flash_ctrl_i.ecc_en),
+      .he_en_i(flash_ctrl_i.he_en),
       // host request must be suppressed if response fifo cannot hold more
       // otherwise the flash_phy_core and flash_phy will get out of sync
       .host_req_i(host_req),

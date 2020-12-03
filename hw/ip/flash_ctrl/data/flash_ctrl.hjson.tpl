@@ -321,7 +321,7 @@
       ]
     },
 
-    // Data partition memory protection region setup
+    // Data partition memory properties region setup
     { multireg: {
         cname: "FLASH_CTRL",
         name: "REGION_CFG_REGWEN"
@@ -357,7 +357,7 @@
     { multireg: {
         cname: "FLASH_CTRL",
         name: "MP_REGION_CFG",
-        desc: "Memory protection configuration for data partition",
+        desc: "Memory property configuration for data partition",
         count: "NumRegions",
         swaccess: "rw",
         hwaccess: "hro",
@@ -406,6 +406,13 @@
               ''',
               resval: "0"
             }
+            { bits: "6",
+              name: "HE_EN",
+              desc: '''
+                Region is high endurance enabled.
+              ''',
+              resval: "0"
+            }
             { bits: "16:8",
               name: "BASE",
               desc: '''
@@ -424,9 +431,9 @@
       },
     },
 
-    // Default region permissions for data partition memory protection
+    // Default region properties for data partition
     { name: "DEFAULT_REGION",
-      desc: "Default region permissions",
+      desc: "Default region properties",
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
@@ -466,10 +473,17 @@
           ''',
           resval: "0"
         }
+        { bits: "5",
+          name: "HE_EN",
+          desc: '''
+            Region is high endurance enabled
+          ''',
+          resval: "0"
+        }
       ]
     },
 
-    // Info partition memory protection setup
+    // Info partition memory properties setup
     % for bank in range(cfg['banks']):
     %   for idx in range(cfg['info_types']):
     { multireg: {
@@ -508,8 +522,8 @@
         cname: "FLASH_CTRL",
         name: "BANK${bank}_INFO${idx}_PAGE_CFG",
         desc: '''
-                Memory protection configuration for info partition in bank${bank},
-                Unlike data partition, each page is individually protected.
+                Memory property configuration for info partition in bank${bank},
+                Unlike data partition, each page is individually configured.
               '''
         count: "NumInfos${idx}",
         swaccess: "rw",
@@ -559,6 +573,13 @@
               ''',
               resval: "0"
             }
+            { bits: "6",
+              name: "HE_EN",
+              desc: '''
+                Region is high endurance enabled.
+              ''',
+              resval: "0"
+            }
         ],
       },
     },
@@ -595,7 +616,7 @@
     { multireg: {
         cname: "FLASH_CTRL",
         name: "MP_BANK_CFG",
-        desc: "Memory protect bank configuration",
+        desc: "Memory properties bank configuration",
         count: "RegNumBanks",
         swaccess: "rw",
         hwaccess: "hro",
