@@ -48,7 +48,9 @@ module tb;
 
     // TODO: create and hook this up to an interface.
     .otp_i              (flash_ctrl_pkg::OTP_FLASH_DEFAULT),
-    .lc_provision_en_i  (lc_ctrl_pkg::On),
+    .lc_provision_wr_en_i (lc_ctrl_pkg::On),
+    .lc_provision_rd_en_i (lc_ctrl_pkg::On),
+    .lc_iso_flash_wr_en_i (lc_ctrl_pkg::On),
     .lc_i               (flash_ctrl_pkg::LC_FLASH_REQ_DEFAULT),
     .pwrmgr_o           (pwrmgr_pkg::PWR_FLASH_RSP_DEFAULT),
     .pwrmgr_i           (pwrmgr_pkg::PWR_FLASH_REQ_DEFAULT),
