@@ -65,6 +65,7 @@ module lc_ctrl_fsm
   output lc_tx_t                lc_cpu_en_o,
   output lc_tx_t                lc_provision_wr_en_o,
   output lc_tx_t                lc_provision_rd_en_o,
+  output lc_tx_t                lc_iso_flash_wr_en_o,
   output lc_tx_t                lc_keymgr_en_o,
   output lc_tx_t                lc_escalate_en_o,
     // Request and feedback to/from clock manager and AST.
@@ -441,6 +442,7 @@ module lc_ctrl_fsm
     .lc_cpu_en_o,
     .lc_provision_wr_en_o,
     .lc_provision_rd_en_o,
+    .lc_iso_flash_wr_en_o,
     .lc_keymgr_en_o,
     .lc_escalate_en_o,
     .lc_keymgr_div_o

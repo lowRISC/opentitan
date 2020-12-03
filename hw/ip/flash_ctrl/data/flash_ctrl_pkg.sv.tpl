@@ -78,14 +78,21 @@ package flash_ctrl_pkg;
   // parameters for connected components
   parameter int SeedWidth = 256;
 
-  // life cycle provision enable usage
-  typedef enum logic [2:0] {
-    FlashLcCreatorSeedPriv,
-    FlashLcOwnerSeedPriv,
-    FlashLcMgrIf,
-    FlashLcInfoCfg,
-    FlashLcLast
-  } flash_lc_provision_en_e;
+  // life cycle provision write enable usage
+  typedef enum logic [1:0] {
+    FlashWrLcCreatorSeedPriv,
+    FlashWrLcMgrIf,
+    FlashWrLcInfoCfg,
+    FlashWrLcLast
+  } flash_lc_provision_wr_en_e;
+
+  // life cycle provision read enable usage
+  typedef enum logic [1:0] {
+    FlashRdLcOwnerSeedPriv,
+    FlashRdLcMgrIf,
+    FlashRdLcInfoCfg,
+    FlashRdLcLast
+  } flash_lc_provision_rd_en_e;
 
   // lcmgr phase enum
   typedef enum logic [1:0] {
