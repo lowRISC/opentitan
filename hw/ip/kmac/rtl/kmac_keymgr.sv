@@ -189,6 +189,10 @@ module kmac_keymgr
   // Mux selection signal
   mux_sel_e mux_sel;
 
+  // Error checking logic
+
+  kmac_pkg::err_t fsm_err, mux_err;
+
   /////////
   // FSM //
   /////////
@@ -212,7 +216,7 @@ module kmac_keymgr
     absorbed_o = 1'b 0;
 
     // Error
-    error_o = '{valid: 1'b 0, code: ErrNone, info: '0};
+    fsm_err = '{valid: 1'b 0, code: ErrNone, info: '0};
 
     unique case (st)
       StIdle: begin
@@ -223,9 +227,9 @@ module kmac_keymgr
         end else if (keymgr_data_i.valid && !keymgr_key_i.valid) begin
           st_d = StKeyMgrErrKeyNotValid;
 
-          error_o.valid = 1'b 1;
-          error_o.code = ErrKeyNotValid;
-          error_o.info = '0;
+          fsm_err.valid = 1'b 1;
+          fsm_err.code = ErrKeyNotValid;
+          fsm_err.info = '0;
         end else if (sw_cmd_i == CmdStart) begin
           st_d = StSw;
           // Software initiates the sequence
@@ -311,7 +315,7 @@ module kmac_keymgr
   // to OutLen. OutLen is pre-defined values. See `EncodeOutLen` parameter above.
   always_comb begin
     keymgr_data_ready = 1'b 0;
-    sw_ready_o = 1'b 0;
+    sw_ready_o = 1'b 1;
 
     kmac_valid_o = 1'b 0;
     kmac_data_o = '0;
@@ -349,6 +353,29 @@ module kmac_keymgr
       end
 
     endcase
+  end
+
+  // Error checking for Mux
+  always_comb begin
+    mux_err = '{valid: 1'b 0, code: ErrNone, info: '0};
+
+    if (mux_sel != SelSw) begin
+      if (sw_valid_i) begin
+        // If SW writes message into FIFO
+        mux_err = '{
+          valid: 1'b 1,
+          code: ErrSwPushedMsgFifo,
+          info: 24'({8'h 00, 8'(st), 8'(mux_sel)})
+        };
+      end else if (!(sw_cmd_i inside {CmdNone, CmdStart})) begin
+        // If SW issues command except start
+        mux_err = '{
+          valid: 1'b 1,
+          code: ErrSwPushedWrongCmd,
+          info: 24'(sw_cmd_i)
+        };
+      end
+    end
   end
 
   // Keccak state Demux
@@ -407,6 +434,15 @@ module kmac_keymgr
     assign key_data_o[i] = (keymgr_key_en_i || (mux_sel == SelKeyMgr))
                          ? keymgr_key[i]
                          : reg_key_data_i[i] ;
+  end
+
+  // Error Reporting ==========================================================
+  always_comb begin
+    priority casez ({fsm_err.valid, mux_err.valid})
+      2'b ?1: error_o = mux_err;
+      2'b 1?: error_o = fsm_err;
+      default: error_o = '{valid: 1'b0, code: ErrNone, info: '0};
+    endcase
   end
 
   ////////////////

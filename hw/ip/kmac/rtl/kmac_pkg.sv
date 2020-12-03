@@ -97,7 +97,18 @@ package kmac_pkg;
 
     // ErrKeyNotValid: KeyMgr interface raises an error if the secret key is
     // not valid when KeyMgr initiates KDF.
-    ErrKeyNotValid = 8'h 01
+    ErrKeyNotValid = 8'h 01,
+
+    // ErrSwPushMsgFifo: Sw writes data into Msg FIFO abruptly.
+    // This error occurs in below scenario:
+    //   - Sw does not send "Start" command to KMAC then writes data into
+    //     Msg FIFO
+    //   - Sw writes data into Msg FIFO when KeyMgr is in operating
+    ErrSwPushedMsgFifo = 8'h 02,
+
+    // ErrSwPushWrongCmd
+    //  - Sw writes any command except CmdStart when Idle.
+    ErrSwPushedWrongCmd = 8'h 03
   } err_code_e;
 
   typedef struct packed {
