@@ -27,7 +27,7 @@ module otbn_top_sim (
   logic [ImemAddrWidth-1:0] imem_addr;
   logic [31:0]              imem_rdata;
   logic                     imem_rvalid;
-  logic [1:0]               imem_rerror_raw;
+  logic [1:0]               imem_rerror_vec;
   logic                     imem_rerror;
 
   // Data memory (DMEM) signals
@@ -38,7 +38,7 @@ module otbn_top_sim (
   logic [WLEN-1:0]          dmem_wmask;
   logic [WLEN-1:0]          dmem_rdata;
   logic                     dmem_rvalid;
-  logic [1:0]               dmem_rerror_raw;
+  logic [1:0]               dmem_rerror_vec;
   logic                     dmem_rerror;
 
   otbn_core #(
@@ -116,11 +116,12 @@ module otbn_top_sim (
     .wmask_i  ( dmem_wmask      ),
     .rdata_o  ( dmem_rdata      ),
     .rvalid_o ( dmem_rvalid     ),
-    .rerror_o ( dmem_rerror_raw ),
+    .rerror_o ( dmem_rerror_vec ),
     .cfg_i    ( '0              )
   );
 
-  assign dmem_rerror = |dmem_rerror_raw;
+  // Combine uncorrectable / correctable errors. See identical code in otbn.sv for details.
+  assign dmem_rerror = |dmem_rerror_vec;
 
   localparam int ImemSizeWords = ImemSizeByte / 4;
   localparam int ImemIndexWidth = prim_util_pkg::vbits(ImemSizeWords);
@@ -146,11 +147,12 @@ module otbn_top_sim (
     .wmask_i  ( '0              ),
     .rdata_o  ( imem_rdata      ),
     .rvalid_o ( imem_rvalid     ),
-    .rerror_o ( imem_rerror_raw ),
+    .rerror_o ( imem_rerror_vec ),
     .cfg_i    ( '0              )
   );
 
-  assign imem_rerror = |imem_rerror_raw;
+  // Combine uncorrectable / correctable errors. See identical code in otbn.sv for details.
+  assign imem_rerror = |imem_rerror_vec;
 
   // When OTBN is done let a few more cycles run then finish simulation
   logic [1:0] finish_counter;
