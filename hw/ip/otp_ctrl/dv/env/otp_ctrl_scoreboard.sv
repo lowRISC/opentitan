@@ -127,7 +127,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "direct_access_cmd": begin
         if (addr_phase_write && ral.direct_access_regwen.get_mirrored_value()) begin
-          int dai_addr = ral.direct_access_address.get_mirrored_value();
+          int rand_digit = is_secret(dai_addr) ? 3 : 2;
+          int dai_addr = ral.direct_access_address.get_mirrored_value() >>
+                         rand_digit << rand_digit;
+
           case (item.a_data)
             DaiDigest: cal_digest_val(get_part_index(dai_addr));
             DaiWrite: begin

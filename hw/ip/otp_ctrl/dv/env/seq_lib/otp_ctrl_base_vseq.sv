@@ -61,12 +61,16 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task dai_wr(bit [TL_DW-1:0] addr,
                       bit [TL_DW-1:0] wdata0,
                       bit [TL_DW-1:0] wdata1 = 0);
+    addr = randomize_dai_addr(addr);
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_wdata_0, wdata0);
     if (is_secret(addr) || addr inside {CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset}) begin
       csr_wr(ral.direct_access_wdata_1, wdata1);
     end
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiWrite));
+    `uvm_info(`gfn, $sformatf("DAI write, address %0h, data0 %0h data1 %0h, is_secret = %0b",
+              addr, wdata0, wdata1, is_secret(addr)), UVM_DEBUG)
+
     csr_spinwait(ral.intr_state, 1 << OtpOperationDone);
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
   endtask : dai_wr
@@ -75,6 +79,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task dai_rd(bit [TL_DW-1:0]        addr,
                       output bit [TL_DW-1:0] rdata0,
                       output bit [TL_DW-1:0] rdata1);
+    addr = randomize_dai_addr(addr);
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
     csr_spinwait(ral.intr_state, 1 << OtpOperationDone);
@@ -158,4 +163,14 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_send(flash_data_pull_seq)
   endtask
 
+  // first two or three LSB bits of DAI address can be randomized based on if it is secret
+  virtual function bit [TL_AW-1:0] randomize_dai_addr(bit [TL_AW-1:0] dai_addr);
+    if (is_secret(dai_addr)) begin
+      bit [2:0] rand_addr = $urandom();
+      randomize_dai_addr = {dai_addr[TL_DW-1:3], rand_addr};
+    end else begin
+      bit [1:0] rand_addr = $urandom();
+      randomize_dai_addr = {dai_addr[TL_DW-1:2], rand_addr};
+    end
+  endfunction
 endclass : otp_ctrl_base_vseq
