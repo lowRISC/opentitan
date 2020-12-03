@@ -289,24 +289,33 @@ module otp_ctrl_dai
       // transaction fails, latch the OTP error code, and jump to
       // terminal error state.
       ReadWaitSt: begin
-        if (otp_rvalid_i) begin
-          // Check OTP return code.
-          if ((!(otp_err_i inside {NoError, MacroEccCorrError}))) begin
-            state_d = ErrorSt;
-            error_d = otp_err_i;
-          end else begin
-            data_en = 1'b1;
-            if (PartInfo[part_idx].secret) begin
-              state_d = DescrSt;
-            end else begin
-              state_d = IdleSt;
-              dai_cmd_done_o = 1'b1;
-            end
-            // Signal soft ECC errors, but do not go into terminal error state.
-            if (otp_err_i == MacroEccCorrError) begin
+        // Continuously check read access and bail out if this is not consistent.
+        if (part_access_i[part_idx].read_lock == Unlocked) begin
+          if (otp_rvalid_i) begin
+            // Check OTP return code.
+            if ((!(otp_err_i inside {NoError, MacroEccCorrError}))) begin
+              state_d = ErrorSt;
               error_d = otp_err_i;
+            end else begin
+              data_en = 1'b1;
+              if (PartInfo[part_idx].secret) begin
+                state_d = DescrSt;
+              end else begin
+                state_d = IdleSt;
+                dai_cmd_done_o = 1'b1;
+              end
+              // Signal soft ECC errors, but do not go into terminal error state.
+              if (otp_err_i == MacroEccCorrError) begin
+                error_d = otp_err_i;
+              end
             end
           end
+        // At this point, this check MUST succeed - otherwise this means that
+        // there was a tampering attempt. Hence we go into a terminal error state
+        // when this check fails.
+        end else begin
+          state_d = ErrorSt;
+          error_d = FsmStateError;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -369,19 +378,37 @@ module otp_ctrl_dai
       // OTP transaction fails, latch the OTP error code, and jump to
       // terminal error state.
       WriteWaitSt: begin
-        if (otp_rvalid_i) begin
-          // Check OTP return code. Note that non-blank errors are recoverable.
-          if ((!(otp_err_i inside {NoError, MacroWriteBlankError}))) begin
-            state_d = ErrorSt;
-            error_d = otp_err_i;
-          end else begin
-            state_d = IdleSt;
-            dai_cmd_done_o = 1'b1;
-            // Signal non-blank state, but do not go to terminal error state.
-            if (otp_err_i == MacroWriteBlankError) begin
+        // Continuously check write access and bail out if this is not consistent.
+        if (part_access_i[part_idx].write_lock == Unlocked &&
+            // If this is a HW digest write to a buffered partition.
+            ((PartInfo[part_idx].variant == Buffered && PartInfo[part_idx].hw_digest &&
+              base_sel_q == PartOffset && otp_addr_o == digest_addr_lut[part_idx]) ||
+             // If this is a non HW digest write to a buffered partition.
+             (PartInfo[part_idx].variant == Buffered && PartInfo[part_idx].hw_digest &&
+              base_sel_q == DaiOffset && otp_addr_o < digest_addr_lut[part_idx]) ||
+             // If this is a write to an unbuffered partition
+             (PartInfo[part_idx].variant != Buffered && base_sel_q == DaiOffset))) begin
+
+          if (otp_rvalid_i) begin
+            // Check OTP return code. Note that non-blank errors are recoverable.
+            if ((!(otp_err_i inside {NoError, MacroWriteBlankError}))) begin
+              state_d = ErrorSt;
               error_d = otp_err_i;
+            end else begin
+              state_d = IdleSt;
+              dai_cmd_done_o = 1'b1;
+              // Signal non-blank state, but do not go to terminal error state.
+              if (otp_err_i == MacroWriteBlankError) begin
+                error_d = otp_err_i;
+              end
             end
           end
+        // At this point, this check MUST succeed - otherwise this means that
+        // there was a tampering attempt. Hence we go into a terminal error state
+        // when this check fails.
+        end else begin
+          state_d = ErrorSt;
+          error_d = FsmStateError;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -391,11 +418,23 @@ module otp_ctrl_dai
       // the mutex by deasserting scrmbl_mtx_req_o.
       ScrSt: begin
         scrmbl_mtx_req_o = 1'b1;
-        scrmbl_valid_o = 1'b1;
-        scrmbl_cmd_o = Encrypt;
-        scrmbl_sel_o = PartInfo[part_idx].key_sel;
-        if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
-          state_d = ScrWaitSt;
+        // Check write access and bail out if this is not consistent.
+        if (part_access_i[part_idx].write_lock == Unlocked &&
+            // If this is a non HW digest write to a buffered partition.
+            (PartInfo[part_idx].variant == Buffered && PartInfo[part_idx].secret &&
+             PartInfo[part_idx].hw_digest && base_sel_q == DaiOffset &&
+             otp_addr_o < digest_addr_lut[part_idx])) begin
+
+          scrmbl_valid_o = 1'b1;
+          scrmbl_cmd_o = Encrypt;
+          scrmbl_sel_o = PartInfo[part_idx].key_sel;
+          if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
+            state_d = ScrWaitSt;
+          end
+        end else begin
+          state_d = IdleSt;
+          error_d = AccessError; // Signal this error, but do not go into terminal error state.
+          dai_cmd_done_o = 1'b1;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -403,10 +442,23 @@ module otp_ctrl_dai
       // the mutex lock upon leaving this state.
       ScrWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
-        data_sel = ScrmblData;
-        if (scrmbl_valid_i) begin
-          state_d = WriteSt;
-          data_en = 1'b1;
+        // Continously check write access and bail out if this is not consistent.
+        if (part_access_i[part_idx].write_lock == Unlocked &&
+            // If this is a non HW digest write to a buffered partition.
+            (PartInfo[part_idx].variant == Buffered && PartInfo[part_idx].secret &&
+             PartInfo[part_idx].hw_digest && base_sel_q == DaiOffset &&
+             otp_addr_o < digest_addr_lut[part_idx])) begin
+          data_sel = ScrmblData;
+          if (scrmbl_valid_i) begin
+            state_d = WriteSt;
+            data_en = 1'b1;
+          end
+        // At this point, this check MUST succeed - otherwise this means that
+        // there was a tampering attempt. Hence we go into a terminal error state
+        // when this check fails.
+        end else begin
+          state_d = ErrorSt;
+          error_d = FsmStateError;
         end
       end
       ///////////////////////////////////////////////////////////////////
