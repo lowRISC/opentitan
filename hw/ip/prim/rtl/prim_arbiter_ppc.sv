@@ -118,7 +118,7 @@ module prim_arbiter_ppc #(
 
     always_comb begin
       idx_o = '0;
-      for (int i = 0 ; i < N ; i++) begin
+      for (int unsigned i = 0 ; i < N ; i++) begin
         if (winner[i]) begin
           idx_o = i[IdxW-1:0];
         end
@@ -222,4 +222,3 @@ end
 `endif
 
 endmodule : prim_arbiter_ppc
-
