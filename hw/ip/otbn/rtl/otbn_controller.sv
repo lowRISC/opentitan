@@ -100,9 +100,6 @@ module otbn_controller
   output logic                        ispr_bignum_wr_en_o,
   input  logic [WLEN-1:0]             ispr_rdata_i
 );
-
-  logic done_d, done_q;
-
   otbn_state_e state_q, state_d;
 
   logic stall;
@@ -158,17 +155,7 @@ module otbn_controller
   assign mem_stall = lsu_load_req_o;
 
   assign stall = mem_stall;
-  assign done_d = insn_valid_i && insn_dec_shared_i.ecall_insn;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      done_q <= 1'b0;
-    end else begin
-      done_q <= done_d;
-    end
-  end
-
-  assign done_o = done_q;
+  assign done_o = insn_valid_i && insn_dec_shared_i.ecall_insn;
 
   // Branch taken when there is a valid branch instruction and comparison passes or a valid jump
   // instruction (which is always taken)
@@ -198,7 +185,7 @@ module otbn_controller
       OtbnStateRun: begin
         insn_fetch_req_valid_o = 1'b1;
 
-        if (done_d) begin
+        if (done_o) begin
           state_d                = OtbnStateHalt;
           insn_fetch_req_valid_o = 1'b0;
         end else begin

@@ -18,7 +18,7 @@ module otbn_top_sim (
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte);
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte);
 
-  logic otbn_done;
+  logic otbn_done_d, otbn_done_q;
   logic otbn_start;
   logic otbn_start_done;
 
@@ -49,7 +49,7 @@ module otbn_top_sim (
     .rst_ni        ( IO_RST_N      ),
 
     .start_i       ( otbn_start    ),
-    .done_o        ( otbn_done     ),
+    .done_o        ( otbn_done_d   ),
 
     .start_addr_i  ( ImemStartAddr ),
 
@@ -73,11 +73,13 @@ module otbn_top_sim (
   bind otbn_core otbn_trace_intf #(.ImemAddrWidth, .DmemAddrWidth) i_otbn_trace_intf (.*);
   bind otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_intf));
 
-  // Pulse otbn_start for 1 cycle immediately out of reset
+  // Pulse otbn_start for 1 cycle immediately out of reset.
+  // Flop `done_o` from otbn_core to match up with model done signal.
   always @(posedge IO_CLK or negedge IO_RST_N) begin
     if(!IO_RST_N) begin
       otbn_start      <= 1'b0;
       otbn_start_done <= 1'b0;
+      otbn_done_q     <= 1'b0;
     end else begin
       if (!otbn_start_done) begin
         otbn_start      <= 1'b1;
@@ -85,6 +87,8 @@ module otbn_top_sim (
       end else if (otbn_start) begin
         otbn_start <= 1'b0;
       end
+
+      otbn_done_q <= otbn_done_d;
     end
   end
 
@@ -155,7 +159,7 @@ module otbn_top_sim (
     if (!IO_RST_N) begin
       finish_counter <= 2'd0;
     end else begin
-      if (otbn_done) begin
+      if (otbn_done_q) begin
         finish_counter <= 2'd1;
       end
 
@@ -209,9 +213,9 @@ module otbn_top_sim (
       done_mismatch_latched <= 1'b0;
       model_err_latched     <= 1'b0;
     end else begin
-      if (otbn_done != otbn_model_done) begin
-        $display("ERROR: At time %0t, otbn_done != otbn_model_done (%0d != %0d).",
-                 $time, otbn_done, otbn_model_done);
+      if (otbn_done_q != otbn_model_done) begin
+        $display("ERROR: At time %0t, otbn_done_q != otbn_model_done (%0d != %0d).",
+                 $time, otbn_done_q, otbn_model_done);
         done_mismatch_latched <= 1'b1;
       end
       model_err_latched <= model_err_latched | otbn_model_err;
