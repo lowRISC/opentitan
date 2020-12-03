@@ -15,6 +15,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   bit do_otp_pwr_init  = 1'b1;
 
   rand bit [NumOtpCtrlIntr-1:0] en_intr;
+  bit [TL_AW-1:0] used_dai_addr_q[$];
 
   `uvm_object_new
 
@@ -46,6 +47,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     // reset memory to avoid readout X
     cfg.mem_bkdr_vif.clear_mem();
     cfg.backdoor_clear_mem = 1;
+    used_dai_addr_q.delete();
   endtask
 
   // some registers won't set to default value until otp_init is done

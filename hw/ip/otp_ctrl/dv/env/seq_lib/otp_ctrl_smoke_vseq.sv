@@ -11,17 +11,18 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   `uvm_object_new
 
-  randc bit [TL_AW-1:0]          dai_addr;
-  rand  bit [TL_DW-1:0]          wdata0, wdata1;
-  rand  int                      num_dai_wr;
-  rand  otp_ctrl_part_pkg::part_idx_e part_idx;
+  rand bit [TL_AW-1:0]               dai_addr;
+  rand bit [TL_DW-1:0]               wdata0, wdata1;
+  rand int                           num_dai_wr;
+  rand otp_ctrl_part_pkg::part_idx_e part_idx;
 
-  // TODO: temp -> no life-cycle partition involved
+  // LC partition does not allow DAI access
   constraint partition_index_c {
     part_idx inside {[CreatorSwCfgIdx:Secret2Idx]};
   }
 
   constraint dai_addr_c {
+    dai_addr inside {used_dai_addr_q} == 0;
     if (part_idx == CreatorSwCfgIdx) dai_addr inside `PART_ADDR_RANGE(CreatorSwCfgIdx);
     if (part_idx == OwnerSwCfgIdx)   dai_addr inside `PART_ADDR_RANGE(OwnerSwCfgIdx);
     if (part_idx == HwCfgIdx)        dai_addr inside `PART_ADDR_RANGE(HwCfgIdx);
@@ -75,6 +76,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
         // OTP write via DAI
         dai_wr(dai_addr, wdata0, wdata1);
+
+        used_dai_addr_q.push_back(dai_addr);
 
         // OTP read via DAI
         dai_rd(dai_addr, rdata0, rdata1);
