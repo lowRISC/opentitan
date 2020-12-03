@@ -112,7 +112,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
     // wait for status to get out of OpWip and check
     csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip),
-                 .compare_op(CompareOpNe));
+                 .compare_op(CompareOpNe), .spinwait_delay_ns($urandom_range(0, 100)));
     exp_status = is_good_op ? keymgr_pkg::OpDoneSuccess : keymgr_pkg::OpDoneFail;
     `DV_CHECK_EQ(ral.op_status.status.get_mirrored_value(), exp_status)
 
