@@ -192,6 +192,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .pg_erase_i(flash_ctrl_i.pg_erase),
       .bk_erase_i(flash_ctrl_i.bk_erase),
       .part_i(flash_ctrl_i.part),
+      .info_sel_i(flash_ctrl_i.info_sel),
       .addr_i(flash_ctrl_i.addr[0 +: BusBankAddrW]),
       .prog_data_i(flash_ctrl_i.prog_data),
       .prog_last_i(flash_ctrl_i.prog_last),
@@ -229,6 +230,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   prim_flash #(
     .NumBanks(NumBanks),
     .InfosPerBank(InfosPerBank),
+    .InfoTypes(InfoTypes),
     .PagesPerBank(PagesPerBank),
     .WordsPerPage(WordsPerPage),
     .DataWidth(flash_phy_pkg::FullDataWidth),
