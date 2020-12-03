@@ -41,6 +41,8 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   `uvm_object_new
 
   virtual function void initialize(bit [bus_params_pkg::BUS_AW-1:0] csr_base_addr = '1);
+    import bus_params_pkg::*;
+
     // build the ral model
     if (has_ral) begin
       uvm_reg_addr_t base_addr;
@@ -56,7 +58,13 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       // Now the model is locked, we know its layout. Set the base address for the register block.
       // The function internally picks a random one if we pass '1 to it, and performs an integrity
       // check on the set address.
-      ral.set_base_addr(csr_base_addr);
+      //
+      // The definition of base_addr explicitly casts from a bus address to a uvm_reg_addr_t (to
+      // correctly handle the case where a bus address is narrower than a uvm_reg_addr_t).
+      base_addr = (&csr_base_addr ?
+                   {`UVM_REG_ADDR_WIDTH{1'b1}} :
+                   {{(`UVM_REG_ADDR_WIDTH - BUS_AW){1'b0}}, csr_base_addr});
+      ral.set_base_addr(base_addr);
 
       // Get list of valid csr addresses (useful in seq to randomize addr as well as in scb checks)
       get_csr_addrs(ral, csr_addrs);
