@@ -291,15 +291,17 @@ For more details on how the software programs the OTP, please refer to the [Prog
 ### Parameters
 
 The following table lists the instantiation parameters of OTP.
+Note that parameters prefixed with `RndCnst` are random netlist constants that need to be regenerated via topgen before the tapeout (typically by the silicon creator).
 
-Parameter                   | Default (Max)         | Top Earlgrey | Description
-----------------------------|-----------------------|--------------|---------------
-`AlertAsyncOn`              | 2'b11                 | 2'b11        |
-`NumSramKeyReqSlots`        | 2 (-)                 | 2            | Number of 32bit SRAM scrambling devices attached to OTP.
-`TimerLfsrSeed`             | 1                     | 1            | Seed to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
-`TimerLfsrPerm`             | (see RTL)             | (see RTL)    | Permutation to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
-
-**TODO: add more once it is clear how to distribute netlist constants on the top-level**
+Parameter                   | Default (Max) | Top Earlgrey | Description
+----------------------------|---------------|--------------|---------------
+`AlertAsyncOn`              | 2'b11         | 2'b11        |
+`RndCnstLfsrSeed`           | (see RTL)     | (see RTL)    | Seed to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
+`RndCnstLfsrPerm`           | (see RTL)     | (see RTL)    | Permutation to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
+`RndCnstKey`                | (see RTL)     | (see RTL)    | Random scrambling keys for secret partitions, to be used in the [scrambling datapath]({{< relref "#scrambling-datapath" >}}).
+`RndCnstDigestConst`        | (see RTL)     | (see RTL)    | Random digest finalization constants, to be used in the [scrambling datapath]({{< relref "#scrambling-datapath" >}}).
+`RndCnstDigestIV`           | (see RTL)     | (see RTL)    | Random digest initialization vectors, to be used in the [scrambling datapath]({{< relref "#scrambling-datapath" >}}).
+`RndCnstKeyMgrKey`          | (see RTL)     | (see RTL)    | Random default for the root key shares, to be output to the key manager if the key has not been provisioned yet (i.e. when `lc_seed_hw_rd_en_i == Off`).
 
 ### Signals
 
@@ -307,30 +309,31 @@ Parameter                   | Default (Max)         | Top Earlgrey | Description
 
 The table below lists other OTP controller signals.
 
-Signal                     | Direction        | Type                        | Description
----------------------------|------------------|-----------------------------|---------------
-`otp_ast_pwr_seq_o`        | `output`         | `otp_ast_req_t `            | Power sequencing signals going to AST (VDD domain).
-`otp_ast_pwr_seq_h_i`      | `input`          | `otp_ast_rsp_t `            | Power sequencing signals coming from AST (VCC domain).
-`otp_edn_o`                | `output`         | `otp_edn_req_t`             | Entropy request to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
-`otp_edn_i`                | `input`          | `otp_edn_rsp_t`             | Entropy acknowledgment to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
-`pwr_otp_i`                | `input`          | `pwrmgr::pwr_otp_req_t`     | Initialization request coming from power manager.
-`pwr_otp_o`                | `output`         | `pwrmgr::pwr_otp_rsp_t`     | Initialization response and programming idle state going to power manager.
-`lc_otp_program_i`         | `input`          | `lc_otp_program_req_t`      | Life cycle state transition request.
-`lc_otp_program_o`         | `output`         | `lc_otp_program_rsp_t`      | Life cycle state transition response.
-`lc_otp_token_i`           | `input`          | `lc_otp_token_req_t`        | Life cycle RAW unlock token hashing request.
-`lc_otp_token_o`           | `output`         | `lc_otp_token_rsp_t`        | Life cycle RAW unlock token hashing response.
-`lc_escalate_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle escalation enable coming from life cycle controller. This signal moves all FSMs within OTP into the error state and triggers secret wiping mechanisms in the secret partitions.
-`lc_provision_wr_en_i`     | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Provision enable qualifier coming from life cycle controller. This signal enables read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
-`lc_dft_en_i`              | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Test enable qualifier coming from from life cycle controller. This signals enables the TL-UL access port to the proprietary OTP IP.
-`otp_lc_data_o`            | `output`         | `otp_lc_data_t`             | life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
-`otp_keymgr_key_o`         | `output`         | `keymgr_key_t`              | Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
-`flash_otp_key_i`          | `input`          | `flash_otp_key_req_t`       | Key derivation request for FLASH scrambling.
-`flash_otp_key_o`          | `output`         | `flash_otp_key_rsp_t`       | Key output holding static scrambling keys derived from FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED.
-`sram_otp_key_i`           | `input`          | `sram_otp_key_req_t[NumSramKeyReqSlots-1:0]` | Array with key derivation requests from SRAM scrambling devices.
-`sram_otp_key_o`           | `output`         | `sram_otp_key_rsp_t[NumSramKeyReqSlots-1:0]` | Array with key outputs holding ephemeral scrambling keys derived from SRAM_DATA_KEY_SEED.
-`otbn_otp_key_i`           | `input`          | `otbn_otp_key_req_t`                         | Key derivation requests from OTBN DMEM scrambling device.
-`otbn_otp_key_o`           | `output`         | `otbn_otp_key_rsp_t`                         | Key output holding ephemeral scrambling key derived from SRAM_DATA_KEY_SEED.
-`otp_hw_cfg_o`             | `output`         | `otp_hw_cfg_t`                               | Output of the HW_CFG partition.
+Signal                       | Direction        | Type                        | Description
+-----------------------------|------------------|-----------------------------|---------------
+`otp_ast_pwr_seq_o`          | `output`         | `otp_ast_req_t `            | Power sequencing signals going to AST (VDD domain).
+`otp_ast_pwr_seq_h_i`        | `input`          | `otp_ast_rsp_t `            | Power sequencing signals coming from AST (VCC domain).
+`otp_edn_o`                  | `output`         | `otp_edn_req_t`             | Entropy request to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
+`otp_edn_i`                  | `input`          | `otp_edn_rsp_t`             | Entropy acknowledgment to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
+`pwr_otp_i`                  | `input`          | `pwrmgr::pwr_otp_req_t`     | Initialization request coming from power manager.
+`pwr_otp_o`                  | `output`         | `pwrmgr::pwr_otp_rsp_t`     | Initialization response and programming idle state going to power manager.
+`lc_otp_program_i`           | `input`          | `lc_otp_program_req_t`      | Life cycle state transition request.
+`lc_otp_program_o`           | `output`         | `lc_otp_program_rsp_t`      | Life cycle state transition response.
+`lc_otp_token_i`             | `input`          | `lc_otp_token_req_t`        | Life cycle RAW unlock token hashing request.
+`lc_otp_token_o`             | `output`         | `lc_otp_token_rsp_t`        | Life cycle RAW unlock token hashing response.
+`lc_escalate_en_i`           | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle escalation enable coming from life cycle controller. This signal moves all FSMs within OTP into the error state and triggers secret wiping mechanisms in the secret partitions.
+`lc_creator_seed_sw_rw_en_i` | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Provision enable qualifier coming from life cycle controller. This signal enables SW read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+`lc_seed_hw_rd_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Seed read enable coming from life cycle controller. This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+`lc_dft_en_i`                | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Test enable qualifier coming from from life cycle controller. This signals enables the TL-UL access port to the proprietary OTP IP.
+`otp_lc_data_o`              | `output`         | `otp_lc_data_t`             | Life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
+`otp_keymgr_key_o`           | `output`         | `keymgr_key_t`              | Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+`flash_otp_key_i`            | `input`          | `flash_otp_key_req_t`       | Key derivation request for FLASH scrambling.
+`flash_otp_key_o`            | `output`         | `flash_otp_key_rsp_t`       | Key output holding static scrambling keys derived from FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED.
+`sram_otp_key_i`             | `input`          | `sram_otp_key_req_t[NumSramKeyReqSlots-1:0]` | Array with key derivation requests from SRAM scrambling devices.
+`sram_otp_key_o`             | `output`         | `sram_otp_key_rsp_t[NumSramKeyReqSlots-1:0]` | Array with key outputs holding ephemeral scrambling keys derived from SRAM_DATA_KEY_SEED.
+`otbn_otp_key_i`             | `input`          | `otbn_otp_key_req_t`                         | Key derivation requests from OTBN DMEM scrambling device.
+`otbn_otp_key_o`             | `output`         | `otbn_otp_key_rsp_t`                         | Key output holding ephemeral scrambling key derived from SRAM_DATA_KEY_SEED.
+`otp_hw_cfg_o`               | `output`         | `otp_hw_cfg_t`                               | Output of the HW_CFG partition.
 
 The OTP controller contains various interfaces that connect to other comportable IPs within OpenTitan, and these are briefly explained further below.
 
@@ -364,7 +367,7 @@ See also [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc" >}
 
 After initialization, the life cycle partition contents, as well as the tokens and personalization status is output to the life cycle controller via the `otp_lc_data_o` struct.
 The life cycle controller uses this information to determine the life cycle state, and steer the appropriate qualifier signals.
-Some of these qualifier signals (`lc_dft_en_i`, `lc_provision_wr_en_i` and `lc_escalate_en_i`) are fed back to the OTP controller in order to ungate testing logic to the OTP macro; enable write access to the `SECRET2` partition; or to push the OTP controller into escalation state.
+Some of these qualifier signals (`lc_dft_en_i`, `lc_creator_seed_sw_rw_en_i`, `lc_seed_hw_rd_en_i` and `lc_escalate_en_i`) are fed back to the OTP controller in order to ungate testing logic to the OTP macro; enable SW write access to the `SECRET2` partition; enable hardware read access to the root key in the `SECRET2` partition; or to push the OTP controller into escalation state.
 
 A possible sequence for the signals described is illustrated below.
 {{< wavejson >}}
@@ -378,7 +381,8 @@ A possible sequence for the signals described is illustrated below.
   {name: 'otp_lc_data_o.id_state',          wave: '0.|.3.|...|...|...'},
   {name: 'otp_lc_data_o.rma_token',         wave: '0.|.3.|...|...|...'},
   {},
-  {name: 'lc_provision_wr_en_i',            wave: '0.|...|...|.4.|...'},
+  {name: 'lc_creator_seed_sw_rw_en_i',      wave: '0.|...|...|.4.|...'},
+  {name: 'lc_seed_hw_rd_en_i',              wave: '0.|...|...|.4.|...'},
   {name: 'lc_dft_en_i',                     wave: '0.|...|...|.4.|...'},
   {},
   {name: 'lc_escalate_en_i',                wave: '0.|...|...|...|.5.'},
@@ -813,6 +817,12 @@ The LIFE_CYCLE partition is the only partition that is modified in the field - b
 OTP words cannot be programmed twice, and doing so may damage the memory array.
 Hence the OTP controller performs a blank check and returns an error if a write operation is issued to an already programmed location.
 
+### Potential Side-Effects on Flash via Life Cycle
+
+It should be noted that the locked status of the partition holding the creator root key (i.e., the value of the {{< regref "SECRET2_DIGEST_0" >}}) determines the ID_STATUS of the device, which in turn determines SW accessibility of creator seed material in flash and OTP.
+That means that creator-seed-related collateral needs to be provisioned to Flash **before** the OTP digest lockdown mechanism is triggered, since otherwise accessibility to the corresponding flash region is lost.
+See the [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc/_index.md#id-state-of-the-device" >}}) for more details.
+
 ## Direct Access Interface
 
 OTP has to be programmed via the Direct Access Interface, which is comprised of the following CSRs:
@@ -952,6 +962,10 @@ For the HW_CFG and SECRET* partitions, this can be achieved as follows:
 1. [Trigger]({{< relref "#digest-calculation-sequence" >}}) a digest calculation via the DAI.
 2. [Read back]({{< relref "#readout-sequence" >}}) and verify the digest location via the DAI.
 3. Perform a full-system reset and verify that the corresponding CSRs exposing the 64bit digest have been populated ({{< regref "HW_CFG_DIGEST_0" >}}, {{< regref "SECRET0_DIGEST_0" >}}, {{< regref "SECRET1_DIGEST_0" >}} or {{< regref "SECRET2_DIGEST_0" >}}).
+
+It should be noted that locking only takes effect after a system reset since the affected partitions first have to re-sense the digest values.
+Hence, it is critical that SW ensures that no more data is written to the partition to be locked after triggering the hardware digest calculation.
+Otherwise, the device will likely be rendered inoperable as this can lead to permanent digest mismatch errors after system reboot.
 
 For the {{< regref "CREATOR_SW_CFG" >}} and {{< regref "OWNER_SW_CFG" >}} partitions, the process is similar, but computation and programming of the digest is entirely up to software:
 

@@ -259,18 +259,20 @@ def create_mmap_table(config):
     colalign = ("center", ) * len(header)
 
     for k, part in enumerate(config["partitions"]):
-        granule = "64bit" if check_bool(part["secret"]) else "32bit"
         for j, item in enumerate(part["items"]):
-            if j == 0:
-                row = [str(k), part["name"], str(part["size"]), granule]
-            else:
-                row = ["", "", "", ""]
+            granule = "64bit" if check_bool(part["secret"]) else "32bit"
 
             if check_bool(item["isdigest"]):
+                granule = "64bit"
                 name = "[{}](#Reg_{}_0)".format(item["name"],
                                                 item["name"].lower())
             else:
                 name = item["name"]
+
+            if j == 0:
+                row = [str(k), part["name"], str(part["size"]), granule]
+            else:
+                row = ["", "", "", granule]
 
             row.extend([
                 name, "0x{:03X}".format(check_int(item["offset"])),
