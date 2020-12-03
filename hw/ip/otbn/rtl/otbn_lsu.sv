@@ -95,11 +95,11 @@ module otbn_lsu
 
   // Data appears the cycle following the request, LSU assume lsu_addr_i is kept stable by the
   // controller to mux out the required 32-bit word.
-  `ASSERT(LsuLoadAddrStable, lsu_load_req_i |=> $stable(lsu_addr_i));
-  `ASSERT_KNOWN_IF(LsuAddrKnown, lsu_addr_i, lsu_load_req_i | lsu_store_req_i);
+  `ASSERT(LsuLoadAddrStable, lsu_load_req_i |=> $stable(lsu_addr_i))
+  `ASSERT_KNOWN_IF(LsuAddrKnown, lsu_addr_i, lsu_load_req_i | lsu_store_req_i)
 
   // TODO: Produce an error/alert if this doesn't hold?
-  `ASSERT(DMemRValidAfterReq, dmem_req_o & ~dmem_write_o |=> dmem_rvalid_i);
+  `ASSERT(DMemRValidAfterReq, dmem_req_o & ~dmem_write_o |=> dmem_rvalid_i)
 
   assign lsu_bignum_rdata_o = dmem_rdata_i;
   assign lsu_rdata_err_o    = dmem_rerror_i;

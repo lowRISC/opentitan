@@ -245,7 +245,8 @@ module otbn_alu_bignum
 
   assign adder_x_res = adder_x_op_a + adder_x_op_b;
 
-  assign x_res_operand_a_mux_out = x_res_operand_a_sel ? adder_x_res[WLEN:1] : operation_i.operand_a;
+  assign x_res_operand_a_mux_out = x_res_operand_a_sel ? adder_x_res[WLEN:1] :
+                                                         operation_i.operand_a;
   assign shift_mod_mux_out = shift_mod_sel ? shifter_res : mod_q;
 
   assign adder_y_op_a = {x_res_operand_a_mux_out, 1'b1};
@@ -406,7 +407,8 @@ module otbn_alu_bignum
     endcase
   end
 
-  `ASSERT(SelFlagValid, operation_i.op == AluOpBignumSel |-> operation_i.sel_flag inside {FlagC, FlagL, FlagM, FlagZ})
+  `ASSERT(SelFlagValid,
+      operation_i.op == AluOpBignumSel |-> operation_i.sel_flag inside {FlagC, FlagL, FlagM, FlagZ})
 
   assign sel_res = (sel_flag || operation_i.op == AluOpBignumMov) ? operation_i.operand_a :
                                                                     operation_i.operand_b;
