@@ -953,6 +953,10 @@ For the HW_CFG and SECRET* partitions, this can be achieved as follows:
 2. [Read back]({{< relref "#readout-sequence" >}}) and verify the digest location via the DAI.
 3. Perform a full-system reset and verify that the corresponding CSRs exposing the 64bit digest have been populated ({{< regref "HW_CFG_DIGEST_0" >}}, {{< regref "SECRET0_DIGEST_0" >}}, {{< regref "SECRET1_DIGEST_0" >}} or {{< regref "SECRET2_DIGEST_0" >}}).
 
+It should be noted that locking only takes effect after a system reset since the affected partitions first have to re-sense the digest values.
+Hence, it is critical that SW ensures that no more data is written to the partition to be locked after triggering the hardware digest calculation.
+Otherwise, the device will likely be rendered inoperable as this can lead to permanent digest mismatch errors after system reboot.
+
 For the {{< regref "CREATOR_SW_CFG" >}} and {{< regref "OWNER_SW_CFG" >}} partitions, the process is similar, but computation and programming of the digest is entirely up to software:
 
 1. Compute a 64bit digest over the relevant parts of the partition, and [program]({{< relref "#programming-sequence" >}}) that value to {{< regref "CREATOR_SW_CFG_DIGEST_0" >}} or {{< regref "OWNER_SW_CFG_DIGEST_0" >}} via the DAI. Note that digest accesses through the DAI have an access granule of 64bit.
