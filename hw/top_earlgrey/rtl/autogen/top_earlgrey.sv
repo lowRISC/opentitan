@@ -163,7 +163,7 @@ module top_earlgrey #(
   // otbn
 
 
-  logic [87:0]  intr_vector;
+  logic [86:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -234,7 +234,6 @@ module top_earlgrey #(
   logic intr_edn1_edn_cmd_req_done;
   logic intr_edn1_edn_fifo_err;
   logic intr_otbn_done;
-  logic intr_otbn_err;
 
 
 
@@ -1264,7 +1263,6 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_done_o (intr_otbn_done),
-      .intr_err_o  (intr_otbn_err),
 
       // [14]: imem_uncorrectable
       // [15]: dmem_uncorrectable
@@ -1287,7 +1285,6 @@ module top_earlgrey #(
       intr_kmac_kmac_done,
       intr_keymgr_err,
       intr_keymgr_op_done,
-      intr_otbn_err,
       intr_otbn_done,
       intr_pwrmgr_wakeup,
       intr_usbdev_link_out_err,

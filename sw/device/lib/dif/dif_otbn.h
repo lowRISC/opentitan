@@ -100,14 +100,6 @@ typedef enum dif_otbn_interrupt {
    */
   kDifOtbnInterruptDone = 0,
 
-  /**
-   * An error occurred.
-   *
-   * The error cause can be determined by calling dif_otbn_get_err_code().
-   *
-   * Associated with the `otbn.INTR_STATE.err` hardware interrupt.
-   */
-  kDifOtbnInterruptErr = 1,
 } dif_otbn_interrupt_t;
 
 /**

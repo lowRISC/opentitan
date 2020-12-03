@@ -17,7 +17,7 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
-  wire idle, intr_done, intr_err;
+  wire idle, intr_done;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
@@ -25,7 +25,7 @@ module tb;
   tl_if                         tl_if      (.clk(clk), .rst_n(rst_n));
   pins_if #(1)                  idle_if    (idle);
   pins_if #(NUM_MAX_INTERRUPTS) intr_if    (interrupts);
-  assign interrupts[1:0] = {intr_err, intr_done};
+  assign interrupts[0] = {intr_done};
 
   otbn_model_if #(
     .ImemSizeByte (otbn_reg_pkg::OTBN_IMEM_SIZE)
@@ -47,7 +47,6 @@ module tb;
     .idle_o      (idle),
 
     .intr_done_o (intr_done),
-    .intr_err_o  (intr_err),
 
     .alert_rx_i  (alert_rx),
     .alert_tx_o  (alert_tx)
