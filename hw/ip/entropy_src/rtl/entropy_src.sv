@@ -4,6 +4,8 @@
 //
 // Description: entropy_src top level wrapper file
 
+`include "prim_assert.sv"
+
 
 module entropy_src import entropy_src_pkg::*; #(
   parameter logic AlertAsyncOn = 1,
@@ -99,6 +101,8 @@ module entropy_src import entropy_src_pkg::*; #(
    );
 
   // Outputs should have a known value after reset
+  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
 
   // Entropy Interface
   `ASSERT_KNOWN(EsHwIfEsAckKnownO_A, entropy_src_hw_if_o.es_ack)
