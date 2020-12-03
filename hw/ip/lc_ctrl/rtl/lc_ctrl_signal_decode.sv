@@ -35,6 +35,7 @@ module lc_ctrl_signal_decode
   output lc_tx_t         lc_cpu_en_o,
   output lc_tx_t         lc_provision_wr_en_o,
   output lc_tx_t         lc_provision_rd_en_o,
+  output lc_tx_t         lc_iso_flash_wr_en_o,
   output lc_tx_t         lc_keymgr_en_o,
   output lc_tx_t         lc_escalate_en_o,
   // State group diversification value for keymgr
@@ -51,6 +52,7 @@ module lc_ctrl_signal_decode
   lc_tx_t lc_cpu_en_d, lc_cpu_en_q;
   lc_tx_t lc_provision_wr_en_d, lc_provision_wr_en_q;
   lc_tx_t lc_provision_rd_en_d, lc_provision_rd_en_q;
+  lc_tx_t lc_iso_flash_wr_en_d, lc_iso_flash_wr_en_q;
   lc_tx_t lc_keymgr_en_d, lc_keymgr_en_q;
   lc_tx_t lc_escalate_en_d, lc_escalate_en_q;
   lc_keymgr_div_t lc_keymgr_div_d, lc_keymgr_div_q;
@@ -63,6 +65,7 @@ module lc_ctrl_signal_decode
     lc_cpu_en_d          = Off;
     lc_provision_wr_en_d = Off;
     lc_provision_rd_en_d = Off;
+    lc_iso_flash_wr_en_d = Off;
     lc_keymgr_en_d       = Off;
     lc_escalate_en_d     = Off;
     // Set to invalid diversification value by default.
@@ -96,6 +99,7 @@ module lc_ctrl_signal_decode
           lc_hw_debug_en_d  = On;
           lc_cpu_en_d       = On;
           lc_keymgr_div_d   = RndCnstLcKeymgrDivTest;
+          lc_iso_flash_wr_en_d = On;
         end
         ///////////////////////////////////////////////////////////////////
         // Enable production functions
@@ -155,6 +159,7 @@ module lc_ctrl_signal_decode
   assign lc_cpu_en_o          = lc_cpu_en_q;
   assign lc_provision_wr_en_o = lc_provision_wr_en_q;
   assign lc_provision_rd_en_o = lc_provision_rd_en_q;
+  assign lc_iso_flash_wr_en_o = lc_iso_flash_wr_en_q;
   assign lc_keymgr_en_o       = lc_keymgr_en_q;
   assign lc_escalate_en_o     = lc_escalate_en_q;
   assign lc_keymgr_div_o      = lc_keymgr_div_q;
@@ -167,6 +172,7 @@ module lc_ctrl_signal_decode
       lc_cpu_en_q          <= Off;
       lc_provision_wr_en_q <= Off;
       lc_provision_rd_en_q <= Off;
+      lc_iso_flash_wr_en_q <= Off;
       lc_keymgr_en_q       <= Off;
       lc_escalate_en_q     <= Off;
       lc_keymgr_div_q      <= RndCnstLcKeymgrDivInv;
@@ -177,6 +183,7 @@ module lc_ctrl_signal_decode
       lc_cpu_en_q          <= lc_cpu_en_d;
       lc_provision_wr_en_q <= lc_provision_wr_en_d;
       lc_provision_rd_en_q <= lc_provision_rd_en_d;
+      lc_iso_flash_wr_en_q <= lc_iso_flash_wr_en_d;
       lc_keymgr_en_q       <= lc_keymgr_en_d;
       lc_escalate_en_q     <= lc_escalate_en_d;
       lc_keymgr_div_q      <= lc_keymgr_div_d;

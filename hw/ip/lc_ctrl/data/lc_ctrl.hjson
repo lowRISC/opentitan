@@ -191,6 +191,13 @@
     }
     { struct:  "lc_tx"
       type:    "uni"
+      name:    "lc_iso_flash_wr_en_o"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
       name:    "lc_keymgr_en"
       act:     "req"
       default: "lc_ctrl_pkg::Off"

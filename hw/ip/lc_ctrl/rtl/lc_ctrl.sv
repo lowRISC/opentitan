@@ -63,6 +63,7 @@ module lc_ctrl
   output lc_tx_t                                     lc_cpu_en_o,
   output lc_tx_t                                     lc_provision_wr_en_o,
   output lc_tx_t                                     lc_provision_rd_en_o,
+  output lc_tx_t                                     lc_iso_flash_wr_en_o,
   output lc_tx_t                                     lc_keymgr_en_o,
   output lc_tx_t                                     lc_escalate_en_o,
   // Request and feedback to/from clock manager and AST.
@@ -501,6 +502,7 @@ module lc_ctrl
     .lc_cpu_en_o,
     .lc_provision_wr_en_o,
     .lc_provision_rd_en_o,
+    .lc_iso_flash_wr_en_o,
     .lc_keymgr_en_o,
     .lc_escalate_en_o,
     .lc_clk_byp_req_o,
@@ -525,6 +527,7 @@ module lc_ctrl
   `ASSERT_KNOWN(LcCpuEnKnown_A,         lc_cpu_en_o          )
   `ASSERT_KNOWN(LcProvisionWrEnKnown_A, lc_provision_wr_en_o )
   `ASSERT_KNOWN(LcProvisionRdEnKnown_A, lc_provision_rd_en_o )
+  `ASSERT_KNOWN(LcIsoFlashWrEnKnown_A,  lc_iso_flash_wr_en_o )
   `ASSERT_KNOWN(LcKeymgrEnKnown_A,      lc_keymgr_en_o       )
   `ASSERT_KNOWN(LcEscalateEnKnown_A,    lc_escalate_en_o     )
   `ASSERT_KNOWN(LcClkBypReqKnown_A,     lc_clk_byp_req_o     )

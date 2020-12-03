@@ -14,7 +14,8 @@ module flash_ctrl_info_cfg import flash_ctrl_pkg::*; # (
   input info_page_cfg_t [InfosPerBank-1:0] cfgs_i,
   input creator_seed_priv_i,
   input owner_seed_priv_i,
-  input provision_en_i,
+  input iso_flash_wr_en_i,
+  input iso_flash_rd_en_i,
   output info_page_cfg_t [InfosPerBank-1:0] cfgs_o
 );
 
@@ -22,9 +23,9 @@ module flash_ctrl_info_cfg import flash_ctrl_pkg::*; # (
   info_page_cfg_t isolate_pg_cfg;
   assign isolate_pg_cfg = '{
     en: 1'b1,
-    rd_en: provision_en_i,
-    prog_en: 1'b1,
-    erase_en: 1'b1,
+    rd_en: iso_flash_rd_en_i,
+    prog_en: iso_flash_wr_en_i,
+    erase_en: iso_flash_wr_en_i,
     scramble_en: 1'b1,
     ecc_en: 1'b1,
     he_en : 1'b1
