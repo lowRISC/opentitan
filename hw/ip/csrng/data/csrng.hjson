@@ -114,6 +114,8 @@
       desc: "Summary status register",
       swaccess: "ro",
       hwaccess: "hwo",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "23:0",
           name: "FIFO_DEPTH_STS",

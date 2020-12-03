@@ -90,12 +90,12 @@ module csrng import csrng_pkg::*; #(
 
   // Application Interface Asserts
   for (genvar i = 0; i < NHwApps; i = i+1) begin : gen_app_if_asserts
-    `ASSERT_KNOWN(CsrngReqReady0KnownO_A, csrng_cmd_o[i].csrng_req_ready)
-    `ASSERT_KNOWN(CsrngRspAck0KnownO_A, csrng_cmd_o[i].csrng_rsp_ack)
-    `ASSERT_KNOWN(CsrngRspSts0KnownO_A, csrng_cmd_o[i].csrng_rsp_sts)
-    `ASSERT_KNOWN(CsrngGenbitsValid0KnownO_A, csrng_cmd_o[i].genbits_valid)
-    `ASSERT_KNOWN(CsrngGenbitsFips0KnownO_A, csrng_cmd_o[i].genbits_fips)
-    `ASSERT_KNOWN(CsrngGenbitsBus0KnownO_A, csrng_cmd_o[i].genbits_bus)
+    `ASSERT_KNOWN(CsrngReqReadyKnownO_A, csrng_cmd_o[i].csrng_req_ready)
+    `ASSERT_KNOWN(CsrngRspAckKnownO_A, csrng_cmd_o[i].csrng_rsp_ack)
+    `ASSERT_KNOWN(CsrngRspStsKnownO_A, csrng_cmd_o[i].csrng_rsp_sts)
+    `ASSERT_KNOWN(CsrngGenbitsValidKnownO_A, csrng_cmd_o[i].genbits_valid)
+    `ASSERT_KNOWN(CsrngGenbitsFipsKnownO_A, csrng_cmd_o[i].genbits_fips)
+    `ASSERT_KNOWN(CsrngGenbitsBusKnownO_A, csrng_cmd_o[i].genbits_bus)
   end : gen_app_if_asserts
 
   `ASSERT_KNOWN(IntrCsCmdReqDoneKnownO_A, intr_cs_cmd_req_done_o)
