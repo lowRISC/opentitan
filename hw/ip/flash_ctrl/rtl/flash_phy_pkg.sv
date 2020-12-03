@@ -8,23 +8,25 @@
 package flash_phy_pkg;
 
   // flash phy parameters
-  parameter int NumBanks      = flash_ctrl_pkg::NumBanks;
-  parameter int InfosPerBank  = flash_ctrl_pkg::InfosPerBank;
-  parameter int PagesPerBank  = flash_ctrl_pkg::PagesPerBank;
-  parameter int WordsPerPage  = flash_ctrl_pkg::WordsPerPage;
-  parameter int BankW         = flash_ctrl_pkg::BankW;
-  parameter int PageW         = flash_ctrl_pkg::PageW;
-  parameter int WordW         = flash_ctrl_pkg::WordW;
-  parameter int BankAddrW     = flash_ctrl_pkg::BankAddrW;
-  parameter int DataWidth     = flash_ctrl_pkg::DataWidth;
-  parameter int EccWidth      = 8;
-  parameter int MetaDataWidth = flash_ctrl_pkg::MetaDataWidth;
-  parameter int WidthMultiple = flash_ctrl_pkg::WidthMultiple;
-  parameter int NumBuf        = 4; // number of flash read buffers
-  parameter int RspOrderDepth = 2; // this should be DataWidth / BusWidth
-                                   // will switch to this after bus widening
-  parameter int ScrDataWidth  = DataWidth + EccWidth;
-  parameter int FullDataWidth = DataWidth + MetaDataWidth;
+  parameter int NumBanks       = flash_ctrl_pkg::NumBanks;
+  parameter int InfosPerBank   = flash_ctrl_pkg::InfosPerBank;
+  parameter int PagesPerBank   = flash_ctrl_pkg::PagesPerBank;
+  parameter int WordsPerPage   = flash_ctrl_pkg::WordsPerPage;
+  parameter int BankW          = flash_ctrl_pkg::BankW;
+  parameter int PageW          = flash_ctrl_pkg::PageW;
+  parameter int WordW          = flash_ctrl_pkg::WordW;
+  parameter int BankAddrW      = flash_ctrl_pkg::BankAddrW;
+  parameter int DataWidth      = flash_ctrl_pkg::DataWidth;
+  parameter int EccWidth       = 8;
+  parameter int MetaDataWidth  = flash_ctrl_pkg::MetaDataWidth;
+  parameter int WidthMultiple  = flash_ctrl_pkg::WidthMultiple;
+  parameter int NumBuf         = 4; // number of flash read buffers
+  parameter int RspOrderDepth  = 2; // this should be DataWidth / BusWidth
+                                    // will switch to this after bus widening
+  parameter int ScrDataWidth   = DataWidth + EccWidth;
+  parameter int FullDataWidth  = DataWidth + MetaDataWidth;
+  parameter int InfoTypes      = flash_ctrl_pkg::InfoTypes;
+  parameter int InfoTypesWidth = flash_ctrl_pkg::InfoTypesWidth;
 
   // flash ctrl / bus parameters
   parameter int BusWidth       = flash_ctrl_pkg::BusWidth;
@@ -59,6 +61,7 @@ package flash_phy_pkg;
     logic [DataWidth-1:0] data;
     logic [BankAddrW-1:0] addr; // all address bits preserved to pick return portion
     logic part;
+    logic [InfoTypesWidth-1:0] info_sel;
     rd_buf_attr_e attr;
   } rd_buf_t;
 
@@ -107,6 +110,7 @@ package flash_phy_pkg;
     logic he;
     logic [BankAddrW-1:0] addr;
     flash_ctrl_pkg::flash_part_e part;
+    logic [InfoTypesWidth-1:0] info_sel;
     logic [FullDataWidth-1:0] prog_full_data;
   } flash_phy_prim_flash_req_t;
 

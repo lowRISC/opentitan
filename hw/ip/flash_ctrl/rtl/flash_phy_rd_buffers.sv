@@ -28,6 +28,7 @@ module flash_phy_rd_buffers import flash_phy_pkg::*; (
   input wipe_i,
   input [BankAddrW-1:0] addr_i,
   input part_i,
+  input [InfoTypesWidth-1:0] info_sel_i,
   input [DataWidth-1:0] data_i,
   output rd_buf_t out_o
 );
@@ -37,6 +38,7 @@ module flash_phy_rd_buffers import flash_phy_pkg::*; (
       out_o.data <= '0;
       out_o.addr <= '0;
       out_o.part <= flash_ctrl_pkg::FlashPartData;
+      out_o.info_sel <= '0;
       out_o.attr <= Invalid;
     end else if (!en_i && out_o.attr != Invalid) begin
       out_o.attr <= Invalid;
@@ -45,6 +47,7 @@ module flash_phy_rd_buffers import flash_phy_pkg::*; (
     end else if (alloc_i && en_i) begin
       out_o.addr <= addr_i;
       out_o.part <= part_i;
+      out_o.info_sel <= info_sel_i;
       out_o.attr <= Wip;
     end else if (update_i && en_i) begin
       out_o.data <= data_i;

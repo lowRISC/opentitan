@@ -69,7 +69,7 @@ module tb;
       dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[``i``].u_prim_flash_bank.u_mem
 
   `define FLASH_INFO_MEM_HIER(i) \
-      dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[``i``].u_prim_flash_bank.u_info_mem
+      dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[``i``].u_prim_flash_bank.gen_info_types[0].u_info_mem
 
   generate
     for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : mem_bkdr_if_i
