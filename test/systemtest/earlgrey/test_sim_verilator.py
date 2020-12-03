@@ -222,7 +222,7 @@ def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
     log.debug("Waiting for pass string from device test")
 
     result_match = sim.find_in_uart0(re.compile(rb'^(PASS|FAIL)!$'),
-                                     timeout=240)
+                                     timeout=600)
     assert result_match is not None, "PASS/FAIL indication not found in test output."
 
     result_msg = result_match.group(1)
