@@ -25,9 +25,6 @@ static bool irq_bit_index_get(dif_otbn_interrupt_t irq_type,
     case kDifOtbnInterruptDone:
       offset = OTBN_INTR_COMMON_DONE_BIT;
       break;
-    case kDifOtbnInterruptErr:
-      offset = OTBN_INTR_COMMON_ERR_BIT;
-      break;
     default:
       return false;
   }

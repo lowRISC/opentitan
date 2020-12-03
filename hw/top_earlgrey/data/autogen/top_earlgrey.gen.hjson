@@ -3912,18 +3912,6 @@
           ]
           type: interrupt
         }
-        {
-          name: err
-          width: 1
-          bits: "1"
-          bitinfo:
-          [
-            2
-            1
-            1
-          ]
-          type: interrupt
-        }
       ]
       alert_list:
       [
@@ -6313,19 +6301,6 @@
         1
         1
         0
-      ]
-      type: interrupt
-      module_name: otbn
-    }
-    {
-      name: otbn_err
-      width: 1
-      bits: "1"
-      bitinfo:
-      [
-        2
-        1
-        1
       ]
       type: interrupt
       module_name: otbn
