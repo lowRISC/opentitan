@@ -532,7 +532,7 @@ module edn_core import edn_pkg::*; #(
   //--------------------------------------------
 
   assign     hw2reg.sum_sts.internal_use.de = !edn_enable;
-  assign     hw2reg.sum_sts.internal_use.d  = 1'b0 && reg2hw.regen;
+  assign     hw2reg.sum_sts.internal_use.d  = reg2hw.regen.q;
 
 
 endmodule
