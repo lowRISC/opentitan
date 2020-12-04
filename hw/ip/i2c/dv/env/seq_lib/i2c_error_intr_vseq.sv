@@ -17,18 +17,19 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
   constraint num_trans_c { num_trans inside {[40 : 50]}; }
 
   virtual task pre_start();
+    super.pre_start();
     // allow agent/target creating interference and unstable signals so
     // sda_interference, scl_interference, sda_unstable are asserted
     cfg.seq_cfg.en_sda_unstable     = 1'b1;
     cfg.seq_cfg.en_sda_interference = 1'b1;
     cfg.seq_cfg.en_scl_interference = 1'b1;
-    super.pre_start();
+    print_seq_cfg_vars("pre-start");
   endtask : pre_start
 
   virtual task body();
-
     `uvm_info(`gfn, "\n--> start of i2c_error_intr_vseq", UVM_DEBUG)
     initialization();
+    do_dut_init = 1'b1;
     for (int i = 1; i <= num_runs; i++) begin
       `uvm_info(`gfn, $sformatf("\n  run simulation %0d/%0d", i, num_runs), UVM_DEBUG)
       fork
@@ -38,10 +39,9 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
             begin
               process_error_interrupts();
               apply_reset("HARD");
-              `uvm_info(`gfn, $sformatf("\n  reset is issued"), UVM_DEBUG)
+              `uvm_info(`gfn, $sformatf("\n  reset is issued within error_intr_vseq"), UVM_DEBUG)
             end
             begin
-              `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
               host_send_trans(num_trans);
             end
           join_any
@@ -53,7 +53,7 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
           #1ps;
           if (do_reset) begin
             // re-initialize dut after on-the-fly reset
-            host_init();
+            initialization();
             do_reset = 1'b0;
           end
         end

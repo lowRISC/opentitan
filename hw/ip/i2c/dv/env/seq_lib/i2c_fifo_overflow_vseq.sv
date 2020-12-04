@@ -27,10 +27,11 @@ class i2c_fifo_overflow_vseq extends i2c_rx_tx_vseq;
   local uint cnt_rx_overflow;
 
   virtual task pre_start();
+    super.pre_start();
     // config fmt_overflow and rx_overflow tests
     cfg.seq_cfg.en_fmt_overflow = 1'b1;
     cfg.seq_cfg.en_rx_overflow  = 1'b1;
-    super.pre_start();
+    print_seq_cfg_vars("pre-start");
   endtask : pre_start
 
   virtual task body();
@@ -81,10 +82,10 @@ class i2c_fifo_overflow_vseq extends i2c_rx_tx_vseq;
           end
         end
         begin
-          while (check_fmt_overflow) process_fmt_overflow_intr();
+          while (!cfg.under_reset && check_fmt_overflow) process_fmt_overflow_intr();
         end
         begin
-          while (check_rx_overflow) process_rx_overflow_intr();
+          while (!cfg.under_reset && check_rx_overflow) process_rx_overflow_intr();
         end
       join
     end

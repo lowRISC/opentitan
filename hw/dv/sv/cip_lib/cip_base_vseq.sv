@@ -541,12 +541,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 end
               join
               wait(ongoing_reset == 0);
-              `uvm_info(`gfn, $sformatf("Finished run %0d/%0d w/o reset", i, num_times), UVM_LOW)
+              `uvm_info(`gfn, $sformatf("\nFinished run %0d/%0d w/o reset", i, num_times), UVM_LOW)
             end
             begin : issue_rand_reset
               cfg.clk_rst_vif.wait_clks(delay_to_reset);
               ongoing_reset = 1'b1;
-              `uvm_info(`gfn, $sformatf("Reset is issued for run %0d/%0d", i, num_times), UVM_LOW)
+              `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
               apply_reset("HARD");
               ongoing_reset = 1'b0;
               do_read_and_check_all_csrs = 1'b1;
@@ -554,7 +554,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           join_any
           p_sequencer.tl_sequencer_h.stop_sequences();
           disable fork;
-          `uvm_info(`gfn, $sformatf("Stress w/ reset is done for run %0d/%0d", i, num_times),
+          `uvm_info(`gfn, $sformatf("\nStress w/ reset is done for run %0d/%0d", i, num_times),
                     UVM_LOW)
           // delay to avoid race condition when sending item and checking no item after reset occur
           // at the same time
