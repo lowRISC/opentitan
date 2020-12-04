@@ -77,7 +77,7 @@ def github_qualify_references(log, repo_userorg, repo_name):
 
     r = re.compile(r"(^|[^\w])(?:#|[gG][hH]-)(\d+)\b")
     repl_str = r'\1%s/%s#\2' % (repo_userorg, repo_name)
-    return [r.sub(repl_str, l) for l in log]
+    return [r.sub(repl_str, line) for line in log]
 
 
 def test_github_qualify_references():
@@ -519,6 +519,12 @@ def ignore_patterns(base_dir, *patterns):
 
 def clone_git_repo(repo_url, clone_dir, rev='master'):
     log.info('Cloning upstream repository %s @ %s', repo_url, rev)
+
+    # Detatched head to be true
+    cmd = ['git', 'config', '--local', 'advice.detachedHead', 'false']
+    if not verbose:
+        cmd += ['-q']
+    subprocess.run(cmd, check=True)
 
     # Clone the whole repository
     cmd = ['git', 'clone', '--no-single-branch']
