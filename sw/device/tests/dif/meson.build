@@ -281,6 +281,7 @@ dif_otbn_smoketest_lib = declare_dependency(
       sw_lib_runtime_hart,
       top_earlgrey,
       sw_otbn['barrett384']['rv32embed_dependency'],
+      sw_otbn['err_test']['rv32embed_dependency'],
     ],
   ),
 )
