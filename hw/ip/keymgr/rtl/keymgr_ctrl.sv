@@ -148,13 +148,14 @@ module keymgr_ctrl import keymgr_pkg::*;(
     prng_en_o = 1'b0;
 
     op_done_o = 1'b0;
-    init_done_o = 1'b0;
+    init_done_o = 1'b1;
     wipe_key_o = 1'b0;
 
     unique case (state_q)
       // This state does not accept any command. Issuing any command
       // will cause an immediate error
       StReset: begin
+        init_done_o = 1'b0;
         // in reset state, don't enable entropy yet, since there are no users.
         // long term, this should be replaced by a req/ack with csrng
         prng_en_o = 1'b0;
@@ -174,6 +175,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
       // This state does not accept any command.
       StRandom: begin
+        init_done_o = 1'b0;
         prng_en_o = 1'b1;
 
         // populate both shares with the same entropy
