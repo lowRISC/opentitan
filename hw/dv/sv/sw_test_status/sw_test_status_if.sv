@@ -39,11 +39,11 @@ interface sw_test_status_if #(
       sw_test_done = sw_test_done | sw_test_status inside {SwTestStatusPassed, SwTestStatusFailed};
       sw_test_passed = sw_test_status == SwTestStatusPassed;
       if (sw_test_status == SwTestStatusPassed) begin
-        `DV_INFO("==== SW TEST PASSED ====")
+        `dv_info("==== SW TEST PASSED ====")
       end else if (sw_test_status == SwTestStatusFailed) begin
-        `DV_ERROR("==== SW TEST FAILED ====")
+        `dv_error("==== SW TEST FAILED ====")
       end else begin
-        `DV_INFO($sformatf("SW test status changed: %0s", sw_test_status.name()))
+        `dv_info($sformatf("SW test status changed: %0s", sw_test_status.name()))
       end
     end
   end
