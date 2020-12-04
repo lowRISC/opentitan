@@ -10,9 +10,6 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // drained time of phase_ready_to_end
   uint ok_to_end_delay_ns = 5000;
 
-  // set start_dev_seq at the first time m_dev_seq is started
-  bit start_dev_seq       = 1'b0;
-
   // i2c_agent cfg
   rand i2c_agent_cfg m_i2c_agent_cfg;
 

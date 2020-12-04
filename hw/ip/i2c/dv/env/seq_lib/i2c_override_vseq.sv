@@ -13,12 +13,12 @@ class i2c_override_vseq extends i2c_base_vseq;
   constraint txovrden_c { txovrden dist {1 :/ 3, 0 :/ 1}; };
 
   task pre_start();
+    super.pre_start();
     // for this vseq, $value$plusargs "+en_scb=0" is defined in i2c_sim_cfg.hjson
     // disable i2c_monitor and i2c_scoreboard since they can not handle this test
-
     // disable clear_all_interrupts task due to abnormal assertion of interrupts
     do_clear_all_interrupts = 1'b0;
-    super.pre_start();
+    print_seq_cfg_vars("pre-start");
   endtask : pre_start
 
   task body();

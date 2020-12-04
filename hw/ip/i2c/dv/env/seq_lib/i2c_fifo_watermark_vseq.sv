@@ -28,9 +28,10 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   local uint cnt_rx_watermark;
 
   virtual task pre_start();
+    super.pre_start();
     // config rx_watermark test (fmt_watermark test is auto configured)
     cfg.seq_cfg.en_rx_watermark = 1'b1;
-    super.pre_start();
+    print_seq_cfg_vars("pre-start");
   endtask : pre_start
 
   virtual task body();
@@ -93,10 +94,10 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
           end
         end
         begin
-          while (check_fmt_watermark) process_fmt_watermark_intr();
+          while (!cfg.under_reset && check_fmt_watermark) process_fmt_watermark_intr();
         end
         begin
-          while (check_rx_watermark) process_rx_watermark_intr();
+          while (!cfg.under_reset && check_rx_watermark) process_rx_watermark_intr();
         end
       join
     end

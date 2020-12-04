@@ -31,8 +31,9 @@ class i2c_fifo_full_vseq extends i2c_rx_tx_vseq;
 
   virtual task pre_start();
     // hold reading rx_fifo to ensure rx_fifo gets full
-    cfg.seq_cfg.en_rx_watermark = 1'b1;
     super.pre_start();
+    cfg.seq_cfg.en_rx_watermark = 1'b1;
+    print_seq_cfg_vars("pre-start");
   endtask : pre_start
 
   virtual task body();
@@ -48,7 +49,7 @@ class i2c_fifo_full_vseq extends i2c_rx_tx_vseq;
       end
     join
     // verify either fmt_fifo or rx_fifo has been in full status
-    `DV_CHECK_EQ((fmt_fifo_full | rx_fifo_full), 1'b1);
+    if (!cfg.under_reset) `DV_CHECK_EQ((fmt_fifo_full | rx_fifo_full), 1'b1);
     `uvm_info(`gfn, "\n--> end of i2c_fifo_full_vseq", UVM_DEBUG)
   endtask : body
 

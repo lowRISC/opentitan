@@ -20,7 +20,6 @@ class i2c_stretch_timeout_vseq extends i2c_rx_tx_vseq;
   local bit  check_rd_stretch;
 
   virtual task body();
-
     `uvm_info(`gfn, "\n--> start of i2c_stretch_timeout_vseq", UVM_DEBUG)
     initialization();
     for (int i = 1; i <= num_trans; i++) begin
@@ -52,7 +51,8 @@ class i2c_stretch_timeout_vseq extends i2c_rx_tx_vseq;
           end
         end
         begin
-          while (check_wr_stretch || check_rd_stretch) process_stretch_timeout_intr();
+          while (!cfg.under_reset &&
+                 (check_wr_stretch || check_rd_stretch)) process_stretch_timeout_intr();
         end
       join
     end

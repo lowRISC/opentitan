@@ -35,50 +35,54 @@ class i2c_monitor extends dv_base_monitor #(
 
   virtual task run_phase(uvm_phase phase);
     wait(cfg.vif.rst_ni);
-    collect_thread(phase);
+    forever begin
+      fork
+        begin: iso_fork
+          fork
+            begin
+              collect_thread(phase);
+            end
+            begin // if (on-the-fly) reset is monitored, drop the item
+              wait_for_reset_and_drop_item();
+              `uvm_info(`gfn, $sformatf("\nmonitor is reset, drop item\n%s",
+                  mon_dut_item.sprint()), UVM_DEBUG)
+            end
+          join_any
+          disable fork;
+        end: iso_fork
+      join
+    end
   endtask : run_phase
 
   // collect transactions forever
   virtual protected task collect_thread(uvm_phase phase);
-    i2c_item   complete_item;
+    i2c_item complete_item;
 
-    forever begin
-      fork
-        begin
-          wait(cfg.en_monitor);
-          if (mon_dut_item.stop ||
-             (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
-            cfg.vif.wait_for_host_start(cfg.timing_cfg);
-            `uvm_info(`gfn, "\nmonitor, detect HOST START", UVM_DEBUG)
-          end else begin
-            mon_dut_item.rstart = 1'b1;
-          end
-          num_dut_tran++;
-          mon_dut_item.start = 1'b1;
-          // monitor address for non-chained reads
-          address_thread();
-          // monitor read/write data
-          if (mon_dut_item.bus_op == BusOpRead) read_thread();
-          else                                  write_thread();
-          // send rsp_item to scoreboard
-          `downcast(complete_item, mon_dut_item.clone());
-          complete_item.stop = 1'b1;
-          if (complete_item.start) begin
-            if (complete_item.bus_op == BusOpRead) rd_item_port.write(complete_item);
-            else                                   wr_item_port.write(complete_item);
-            `uvm_info(`gfn, $sformatf("\nmonitor, send to scb, complete_item\n%s",
-                complete_item.sprint()), UVM_DEBUG)
-          end
-          mon_dut_item.clear_data();
-        end
-        begin // if (on-the-fly) reset is monitored, drop the item
-          wait_for_reset_and_drop_item();
-          `uvm_info(`gfn, $sformatf("\nmonitor is reset, drop item\n%s",
-              mon_dut_item.sprint()), UVM_DEBUG)
-        end
-      join_any
-      disable fork;
+    wait(cfg.en_monitor);
+    if (mon_dut_item.stop ||
+       (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
+      cfg.vif.wait_for_host_start(cfg.timing_cfg);
+      `uvm_info(`gfn, "\nmonitor, detect HOST START", UVM_DEBUG)
+    end else begin
+      mon_dut_item.rstart = 1'b1;
     end
+    num_dut_tran++;
+    mon_dut_item.start = 1'b1;
+    // monitor address for non-chained reads
+    address_thread();
+    // monitor read/write data
+    if (mon_dut_item.bus_op == BusOpRead) read_thread();
+    else                                  write_thread();
+    // send rsp_item to scoreboard
+    `downcast(complete_item, mon_dut_item.clone());
+    complete_item.stop = 1'b1;
+    if (cfg.vif.rst_ni && complete_item.stop && complete_item.start) begin
+      if (complete_item.bus_op == BusOpRead) rd_item_port.write(complete_item);
+      else                                   wr_item_port.write(complete_item);
+      `uvm_info(`gfn, $sformatf("\nmonitor, send complete item to scb\n%s",
+          complete_item.sprint()), UVM_DEBUG)
+    end
+    mon_dut_item.clear_data();
   endtask: collect_thread
 
   virtual protected task address_thread();
@@ -121,6 +125,8 @@ class i2c_monitor extends dv_base_monitor #(
       end
       mon_dut_item.data_q.push_back(mon_data);
       mon_dut_item.num_data++;
+      `uvm_info(`gfn, $sformatf("\nmonitor, rd_data, trans %0d, byte %0d 0x%0x",
+          mon_dut_item.tran_id, mon_dut_item.num_data, mon_data), UVM_DEBUG)
       // sample host ack/nack (in the last byte, nack can be issue if rcont is set)
       cfg.vif.wait_for_host_ack_or_nack(cfg.timing_cfg, mon_dut_item.ack, mon_dut_item.nack);
       `DV_CHECK_NE_FATAL({mon_dut_item.ack, mon_dut_item.nack}, 2'b11)

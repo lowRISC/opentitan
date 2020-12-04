@@ -88,7 +88,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           bit [7:0] fbyte;
           bit start, stop, read, rcont, nakok;
 
-          if (host_init) begin
+          if (!cfg.under_reset && host_init) begin
             fbyte = get_field_val(ral.fdata.fbyte, item.a_data);
             start = bit'(get_field_val(ral.fdata.start, item.a_data));
             stop  = bit'(get_field_val(ral.fdata.stop, item.a_data));
@@ -164,7 +164,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
                   if (cfg.seq_cfg.en_rx_overflow) exp_rd_item.num_data--;
                   // if not a chained read (stop is issued)
                   if (exp_rd_item.stop) begin
-                    `uvm_info(`gfn, $sformatf("\nscoreboard, exp_rd_item\n\%s",
+                    `uvm_info(`gfn, $sformatf("\nscoreboard, partial exp_rd_item\n\%s",
                         exp_rd_item.sprint()), UVM_DEBUG)
                     `downcast(tmp_rd_item, exp_rd_item.clone());
                     rd_pending_q.push_back(tmp_rd_item);
@@ -205,7 +205,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         end
       endcase
       // get full write transaction
-      if (host_init && sb_exp_wr_item.start && sb_exp_wr_item.stop) begin
+      if (!cfg.under_reset && host_init && sb_exp_wr_item.start && sb_exp_wr_item.stop) begin
         exp_wr_q.push_back(sb_exp_wr_item);
         num_exp_tran++;
         `uvm_info(`gfn, $sformatf("\nscoreboard, push to queue, exp_wr_item\n\%s",
@@ -305,7 +305,12 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     tran_id      = 0;
     rdata_cnt    = 0;
     num_exp_tran = 0;
-    `uvm_info(`gfn, "\n>>> scoreboard is reset", UVM_DEBUG)
+    `uvm_info(`gfn, "\n>>> finish resetting scoreboard", UVM_DEBUG)
+    `DV_EOT_PRINT_Q_CONTENTS(i2c_item, exp_wr_q)
+    `DV_EOT_PRINT_Q_CONTENTS(i2c_item, exp_rd_q)
+    `DV_EOT_PRINT_Q_CONTENTS(i2c_item, rd_pending_q)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(i2c_item, rd_item_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(i2c_item, wr_item_fifo)
   endfunction : reset
 
   function void report_phase(uvm_phase phase);

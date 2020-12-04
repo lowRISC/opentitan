@@ -29,8 +29,7 @@
                 // Common CIP test lists
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
-                //TODO: enable later in V2
-                //"{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
   // Add additional tops for simulation.
@@ -84,15 +83,6 @@
     {
       name: i2c_error_intr
       uvm_test_seq: i2c_error_intr_vseq
-    }
-
-    {
-      // TODO: remove later when i2c_stress_all_with_rand_reset is added
-      // (then stress_tests.hjson would be included)
-      name: i2c_stress_all
-      uvm_test_seq: i2c_stress_all_vseq
-      // 10ms
-      run_opts: ["+test_timeout_ns=10000000000"]
     }
   ]
 

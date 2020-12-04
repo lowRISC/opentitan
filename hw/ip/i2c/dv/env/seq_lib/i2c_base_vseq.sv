@@ -170,17 +170,17 @@ class i2c_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
-  task pre_start();
+  virtual task pre_start();
+    cfg.reset_seq_cfg();
     // sync monitor and scoreboard setting
     cfg.m_i2c_agent_cfg.en_monitor = cfg.en_scb;
     `uvm_info(`gfn, $sformatf("\n  %s monitor and scoreboard",
         cfg.en_scb ? "enable" : "disable"), UVM_DEBUG)
     num_runs.rand_mode(0);
     super.pre_start();
-    print_seq_cfg_vars("pre-start");
   endtask : pre_start
 
-  task post_start();
+  virtual task post_start();
     // env_cfg must be reset after vseq completion
     cfg.reset_seq_cfg();
     super.post_start();
@@ -188,22 +188,20 @@ class i2c_base_vseq extends cip_base_vseq #(
   endtask : post_start
 
   virtual task initialization();
+    wait(cfg.m_i2c_agent_cfg.vif.rst_ni);
     device_init();
     host_init();
+    `uvm_info(`gfn, "\n  initialization is done", UVM_DEBUG)
   endtask : initialization
 
   virtual task device_init();
     i2c_device_seq m_dev_seq;
 
-    if (!cfg.start_dev_seq) begin
-      m_dev_seq = i2c_device_seq::type_id::create("m_dev_seq");
-      `uvm_info(`gfn, "\n  start i2c_device sequence", UVM_DEBUG)
-      fork
-        m_dev_seq.start(p_sequencer.i2c_sequencer_h);
-      join_none
-      // prevent multiple starts of m_dev_seq
-      cfg.start_dev_seq = 1'b1;
-    end
+    m_dev_seq = i2c_device_seq::type_id::create("m_dev_seq");
+    `uvm_info(`gfn, "\n  start i2c_device sequence", UVM_DEBUG)
+    fork
+      m_dev_seq.start(p_sequencer.i2c_sequencer_h);
+    join_none
   endtask : device_init
 
   virtual task host_init();
@@ -226,7 +224,7 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     //enable then clear interrupts
     csr_wr(.csr(ral.intr_enable), .value({TL_DW{1'b1}}));
-    csr_wr(.csr(ral.intr_state), .value({TL_DW{1'b0}}));
+    process_interrupts();
   endtask : host_init
 
   virtual task wait_for_reprogram_registers();
@@ -327,7 +325,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     csr_update(ral.fifo_ctrl);
   endtask : program_registers
 
-  virtual task program_format_flag(i2c_item item, string msg = "", bit en_print = 1'b0);
+  virtual task program_format_flag(i2c_item item, string msg = "", bit do_print = 1'b0);
     bit fmtfull;
 
     ral.fdata.nakok.set(item.nakok);
@@ -350,44 +348,74 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmt_fifo_access_dly)
     cfg.clk_rst_vif.wait_clks(fmt_fifo_access_dly);
-    print_format_flag(item, msg, en_print);
+    print_format_flag(item, msg, do_print);
   endtask : program_format_flag
 
+  // read interrupts and randomly clear interrupts if set
+  virtual task process_interrupts();
+    bit [TL_DW-1:0] intr_state, intr_clear;
 
-  virtual function void print_seq_cfg_vars(string msg = "");
-    string str;
+    // read interrupt
+    csr_rd(.ptr(ral.intr_state), .value(intr_state));
+    // clear interrupt if it is set
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(intr_clear,
+                                       foreach (intr_clear[i]) {
+                                           intr_state[i] -> intr_clear[i] == 1;
+                                       })
 
-    str = {str, $sformatf("\n  %s, %s, i2c_seq_cfg", msg, get_name())};
-    str = {str, $sformatf("\n    en_scb                %b", cfg.en_scb)};
-    str = {str, $sformatf("\n    en_monitor            %b", cfg.m_i2c_agent_cfg.en_monitor)};
-    str = {str, $sformatf("\n    do_dut_init           %b", do_dut_init)};
-    str = {str, $sformatf("\n    en_fmt_overflow       %b", cfg.seq_cfg.en_fmt_overflow)};
-    str = {str, $sformatf("\n    en_rx_overflow        %b", cfg.seq_cfg.en_rx_overflow)};
-    str = {str, $sformatf("\n    en_rx_watermark       %b", cfg.seq_cfg.en_rx_watermark)};
-    str = {str, $sformatf("\n    en_sda_unstable       %b", cfg.seq_cfg.en_sda_unstable)};
-    str = {str, $sformatf("\n    en_scl_interference   %b", cfg.seq_cfg.en_scl_interference)};
-    str = {str, $sformatf("\n    en_sda_interference   %b", cfg.seq_cfg.en_sda_interference)};
-    `uvm_info(`gfn, $sformatf("%s", str), UVM_DEBUG)
+    if (bit'(get_field_val(ral.intr_state.fmt_watermark, intr_clear))) begin
+      `uvm_info(`gfn, "\n  clearing fmt_watermark", UVM_DEBUG)
+    end
+    if (bit'(get_field_val(ral.intr_state.rx_watermark, intr_clear))) begin
+      `uvm_info(`gfn, "\n  clearing rx_watermark", UVM_DEBUG)
+    end
+
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)
+    cfg.clk_rst_vif.wait_clks(clear_intr_dly);
+    csr_wr(.csr(ral.intr_state), .value(intr_clear));
+  endtask : process_interrupts
+
+  virtual task clear_interrupt(i2c_intr_e intr, bit verify_clear = 1'b1);
+    csr_wr(.csr(ral.intr_state), .value(1 << intr));
+    if (verify_clear) wait(!cfg.intr_vif.pins[intr]);
+  endtask : clear_interrupt
+
+  virtual function void print_seq_cfg_vars(string msg = "", bit do_print = 1'b0);
+    if (do_print) begin
+      string str;
+      str = {str, $sformatf("\n  %s, %s, i2c_seq_cfg", msg, get_name())};
+      str = {str, $sformatf("\n    en_scb                %b", cfg.en_scb)};
+      str = {str, $sformatf("\n    en_monitor            %b", cfg.m_i2c_agent_cfg.en_monitor)};
+      str = {str, $sformatf("\n    do_dut_init           %b", do_dut_init)};
+      str = {str, $sformatf("\n    en_fmt_overflow       %b", cfg.seq_cfg.en_fmt_overflow)};
+      str = {str, $sformatf("\n    en_rx_overflow        %b", cfg.seq_cfg.en_rx_overflow)};
+      str = {str, $sformatf("\n    en_rx_watermark       %b", cfg.seq_cfg.en_rx_watermark)};
+      str = {str, $sformatf("\n    en_sda_unstable       %b", cfg.seq_cfg.en_sda_unstable)};
+      str = {str, $sformatf("\n    en_scl_interference   %b", cfg.seq_cfg.en_scl_interference)};
+      str = {str, $sformatf("\n    en_sda_interference   %b", cfg.seq_cfg.en_sda_interference)};
+      `uvm_info(`gfn, $sformatf("%s", str), UVM_LOW)
+    end
   endfunction : print_seq_cfg_vars
 
-  task print_format_flag(i2c_item item, string msg = "", bit en_print = 1'b0);
-    string str;
-
-    str = {str, $sformatf("\n%s, format flags 0x%h \n", msg,
-                {item.nakok, item.rcont, item.read, item.stop, item.start, item.fbyte})};
-    if (item.start) begin
-      str = {str, $sformatf("  | %5s | %5s | %5s | %5s | %5s | %8s | %3s |\n",
-          "nakok", "rcont", "read", "stop", "start", "addr", "r/w")};
-      str = {str, $sformatf("  | %5d | %5d | %5d | %5d | %5d | %8x | %3s |",
-          item.nakok, item.rcont, item.read, item.stop, item.start, item.fbyte[7:1],
-          (item.fbyte[0]) ? "R" : "W")};
-    end else begin
-      str = {str, $sformatf("  | %5s | %5s | %5s | %5s | %5s | %8s |\n",
-          "nakok", "rcont", "read", "stop", "start", "fbyte")};
-      str = {str, $sformatf("  | %5d | %5d | %5d | %5d | %5d | %8x |",
-          item.nakok, item.rcont, item.read, item.stop, item.start, item.fbyte)};
+  virtual function print_format_flag(i2c_item item, string msg = "", bit do_print = 1'b0);
+    if (do_print) begin
+      string str;
+      str = {str, $sformatf("\n%s, format flags 0x%h \n", msg,
+                  {item.nakok, item.rcont, item.read, item.stop, item.start, item.fbyte})};
+      if (item.start) begin
+        str = {str, $sformatf("  | %5s | %5s | %5s | %5s | %5s | %8s | %3s |\n",
+            "nakok", "rcont", "read", "stop", "start", "addr", "r/w")};
+        str = {str, $sformatf("  | %5d | %5d | %5d | %5d | %5d | %8x | %3s |",
+            item.nakok, item.rcont, item.read, item.stop, item.start, item.fbyte[7:1],
+            (item.fbyte[0]) ? "R" : "W")};
+      end else begin
+        str = {str, $sformatf("  | %5s | %5s | %5s | %5s | %5s | %8s |\n",
+            "nakok", "rcont", "read", "stop", "start", "fbyte")};
+        str = {str, $sformatf("  | %5d | %5d | %5d | %5d | %5d | %8x |",
+            item.nakok, item.rcont, item.read, item.stop, item.start, item.fbyte)};
+      end
+      `uvm_info(`gfn, $sformatf("%s", str), UVM_LOW)
     end
-    if (en_print) `uvm_info(`gfn, $sformatf("%s", str), UVM_LOW)
-  endtask : print_format_flag
+  endfunction : print_format_flag
 
 endclass : i2c_base_vseq
