@@ -136,7 +136,7 @@ interface sw_logger_if #(
   function automatic void add_sw_log_db(string sw_image);
     string sw_dir;
     string sw_basename;
-    if (_ready) `DV_FATAL("This function cannot be called after calling ready()")
+    if (_ready) `dv_fatal("This function cannot be called after calling ready()")
     sw_dir = str_utils_pkg::str_path_dirname(sw_image);
     sw_basename = str_utils_pkg::str_path_basename(.filename(sw_image), .drop_extn(1'b1));
     sw_log_db_files[sw_basename] = {sw_dir, "/", sw_basename, ".logs.txt"};
@@ -217,7 +217,7 @@ interface sw_logger_if #(
         end
 
         if (sw_logs.exists(sw) && sw_logs[sw].exists(addr)) begin
-          `DV_WARNING($sformatf("Log entry for addr %0x already exists:\nOld: %p\nNew: %p",
+          `dv_warning($sformatf("Log entry for addr %0x already exists:\nOld: %p\nNew: %p",
                                 addr, sw_logs[sw][addr], sw_log))
         end
         sw_logs[sw][addr] = sw_log;
@@ -232,7 +232,7 @@ interface sw_logger_if #(
 
     // print parsed logs
     foreach (sw_logs[sw, addr]) begin
-      `DV_INFO($sformatf("sw_logs[%0s][%0h] = %p", sw, addr, sw_logs[sw][addr]), UVM_HIGH)
+      `dv_info($sformatf("sw_logs[%0s][%0h] = %p", sw, addr, sw_logs[sw][addr]), UVM_HIGH)
     end
 
     return result;
@@ -255,7 +255,7 @@ interface sw_logger_if #(
       void'(get_sw_log_field(fd, "string", field));
 
       if (sw_rodata.exists(sw) && sw_rodata[sw].exists(addr)) begin
-        `DV_WARNING($sformatf("Rodata entry for addr %0x already exists:\nOld: %s\nNew: %s",
+        `dv_warning($sformatf("Rodata entry for addr %0x already exists:\nOld: %s\nNew: %s",
                               addr, sw_rodata[sw][addr], field))
       end
       // Replace CRs in the middle of the string with NLs.
@@ -265,7 +265,7 @@ interface sw_logger_if #(
 
     // print parsed rodata
     foreach (sw_rodata[sw, addr]) begin
-      `DV_INFO($sformatf("sw_rodata[%0s][%0h] = %p", sw, addr, sw_rodata[sw][addr]), UVM_HIGH)
+      `dv_info($sformatf("sw_rodata[%0s][%0h] = %p", sw, addr, sw_rodata[sw][addr]), UVM_HIGH)
     end
 
     return (sw_rodata[sw].size() > 0);
@@ -394,7 +394,7 @@ interface sw_logger_if #(
                   if (sw_logs[sw][addr].str_arg.exists(i)) begin
                     // The arg[i] received is the addr in rodata where the string resides.
                     sw_logs[sw][addr].str_arg[i] = get_str_at_addr(sw, sw_logs[sw][addr].arg[i]);
-                    `DV_INFO($sformatf("String arg at addr %0h: %0s", sw_logs[sw][addr].arg[i],
+                    `dv_info($sformatf("String arg at addr %0h: %0s", sw_logs[sw][addr].arg[i],
                                        sw_logs[sw][addr].str_arg[i]), UVM_DEBUG)
                   end
                 end
@@ -458,7 +458,7 @@ interface sw_logger_if #(
       30: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(30));
       31: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(31));
       32: sw_log.format = $sformatf(sw_log.format, `_ADD_ARGS(32));
-      default: `DV_FATAL($sformatf("UNSUPPORTED: nargs = %0d (only 0:32 allowed)", sw_log.nargs))
+      default: `dv_fatal($sformatf("UNSUPPORTED: nargs = %0d (only 0:32 allowed)", sw_log.nargs))
     endcase
 
     begin
@@ -475,11 +475,11 @@ interface sw_logger_if #(
       endcase
 `endif
       case (sw_log.severity)
-        LogSeverityInfo:    `DV_INFO(sw_log.format, level, log_header)
-        LogSeverityWarning: `DV_WARNING(sw_log.format, log_header)
-        LogSeverityError:   `DV_ERROR(sw_log.format, log_header)
-        LogSeverityFatal:   `DV_FATAL(sw_log.format, log_header)
-        default:            `DV_INFO(sw_log.format, level, log_header)
+        LogSeverityInfo:    `dv_info(sw_log.format, level, log_header)
+        LogSeverityWarning: `dv_warning(sw_log.format, log_header)
+        LogSeverityError:   `dv_error(sw_log.format, log_header)
+        LogSeverityFatal:   `dv_fatal(sw_log.format, log_header)
+        default:            `dv_info(sw_log.format, level, log_header)
       endcase
     end
 
