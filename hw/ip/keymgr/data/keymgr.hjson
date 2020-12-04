@@ -534,14 +534,14 @@
               '''
             },
             { value: "1",
-              name: "Init_wip",
+              name: "Random",
               desc: '''
                 Key manager iniitalization in progress.  Please wait for initialization complete
                 before issuing operations
               '''
             },
             { value: "2",
-              name: "Init_done",
+              name: "Init",
               desc: '''
                 Key manager control has finished initialization and will now accept
                 software commands.
