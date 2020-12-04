@@ -84,7 +84,8 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
   // disable is selected whenever a normal operation is not, and when
   // keymgr is disabled
-  assign disable_sel    = !(gen_sel | advance_sel) | !en_i;
+  assign disable_sel    = (op_start_i & !(gen_sel | advance_sel)) |
+                          !en_i;
 
   assign adv_en_o   = op_accepted & (advance_sel | disable_sel);
   assign id_en_o    = op_accepted & gen_id_sel;
@@ -108,9 +109,10 @@ module keymgr_ctrl import keymgr_pkg::*;(
   end
 
   // prevents unknowns from reaching the outside world.
-  // whatever operation causes the input data select to be disabled should
-  // also not expose the key state
-  assign key_o = disable_sel ? {EntropyRounds * Shares {entropy_i}} : key_state_q;
+  // - whatever operation causes the input data select to be disabled should not expose the key
+  //   state.
+  // - when there are no operations, the key state also should be exposed.
+  assign key_o = (~op_start_i | disable_sel) ? {EntropyRounds * Shares {entropy_i}} : key_state_q;
 
   // key state is intentionally not reset
   always_ff @(posedge clk_i) begin
@@ -204,6 +206,10 @@ module keymgr_ctrl import keymgr_pkg::*;(
         op_done_o = op_start_i & kmac_done_i;
         op_accepted = op_start_i;
 
+        // when advancing select creator data, otherwise use random input
+        stage_sel_o = advance_sel ? Creator : Disable;
+        hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
+
         // key state is updated when it is an advance call
         if (!en_i) begin
           state_d = StWipe;
@@ -221,11 +227,11 @@ module keymgr_ctrl import keymgr_pkg::*;(
       // all commands are valid during this stage
       StCreatorRootKey: begin
         op_done_o = op_start_i & kmac_done_i;
+        op_accepted = op_start_i;
 
         // when generating, select creator data input
         // when advancing, select owner intermediate key as target
         // when disabling, select random data input
-        op_accepted = op_start_i;
         stage_sel_o = disable_sel ? Disable  :
                       advance_sel ? OwnerInt : Creator;
         hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
@@ -246,11 +252,11 @@ module keymgr_ctrl import keymgr_pkg::*;(
       // all commands are valid during this stage
       StOwnerIntKey: begin
         op_done_o = op_start_i & kmac_done_i;
+        op_accepted = op_start_i;
 
         // when generating, select owner intermediate data input
         // when advancing, select owner as target
         // when disabling, select random data input
-        op_accepted = op_start_i;
         stage_sel_o = disable_sel ? Disable  :
                       advance_sel ? Owner : OwnerInt;
         hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
@@ -270,12 +276,12 @@ module keymgr_ctrl import keymgr_pkg::*;(
       // however advance goes directly to disabled state
       StOwnerKey: begin
         op_done_o = op_start_i & kmac_done_i;
+        op_accepted = op_start_i;
 
         // when generating, select owner data input
         // when advancing, select disable as target
         // when disabling, select random data input
-        op_accepted = op_start_i;
-        stage_sel_o = disable_sel || advance_sel  ? Disable : Owner;
+        stage_sel_o = disable_sel | advance_sel ? Disable : Owner;
         hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
 
         // Calling advanced from ownerKey also leads to disable
