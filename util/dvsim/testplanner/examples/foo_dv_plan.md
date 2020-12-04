@@ -1,5 +1,5 @@
 ---
-title: "FOO DV plan"
+title: "FOO dv document"
 ---
 
 # Testplan

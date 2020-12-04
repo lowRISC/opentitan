@@ -1,8 +1,8 @@
 ---
-title: "OTP_CTRL DV Plan"
+title: "OTP_CTRL dv document"
 ---
 
-<!-- Copy this file to hw/ip/otp_ctrl/doc/otp_ctrl_dv_plan.md and make changes as needed.
+<!-- Copy this file to hw/ip/otp_ctrl/doc/otp_ctrl_dv_doc.md and make changes as needed.
 For convenience 'otp_ctrl' in the document can be searched and replaced easily with the
 desired IP (with case sensitivity!). Also, use the testbench block diagram
 located at OpenTitan team drive / 'design verification'

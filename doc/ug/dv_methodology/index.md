@@ -15,7 +15,7 @@ The following are the key techniques used to perform design verification within 
 *  Formal Property Verification (FPV)
 
 For running dynamic simulations, the strategy is to use the [UVM1.2 methodology](https://www.accellera.org/downloads/standards/uvm) on top of a foundation of SystemVerilog based verification to develop constrained-random functional tests.
-Each DUT will include within the repository, a UVM testbench, a testplan, DV plan, a suite of tests, and a method to build, run tests and report the current status.
+Each DUT will include within the repository, a UVM testbench, a testplan, dv document, a suite of tests, and a method to build, run tests and report the current status.
 For FPV, some DUTs may also include an SV testbench along with design properties captured in the SystemVerilog Assertions (SVA) language.
 As the project is still in development, the current status will not be completed for all IP, but that is the ultimate goal.
 See discussion below on tracking progress.
@@ -43,7 +43,7 @@ We will explain some of the key items in those checklists in the remainder of th
 ## Documentation
 
 DV effort needs to be well documented to not only provide a detailed description of what tests are being planned, but also how the overall effort is strategized and implemented.
-The first is provided by the **testplan** document and the second, by the **DV plan** document.
+The first is provided by the **testplan** document and the second, by the **dv document** document.
 The [**project status**]({{< relref "doc/project/development_stages.md#indicating-stages-and-making-transitions" >}}) document tracks to progression of the effort through the stages.
 
 In addition to these documents, a nightly **regression dashboard** tabulating the test and coverage results will provide ability to track progress towards completion of the verification stages.
@@ -58,23 +58,23 @@ It is written in Hjson format and is made available in the corresponding `data` 
 The Hjson schema enables this information to be human-writable and machine-parsable, which facilitates an automated and documentation-driven DV effort.
 The complete testplan is parsed into a data structure that serves the following purposes:
 
-*  Provide the ability to insert the testplan as a table into the DV plan document itself, so that all of the required information is in one place
+*  Provide the ability to insert the testplan as a table into the dv document itself, so that all of the required information is in one place
 *  Annotate the nightly regression results to allow us to track our progress towards executing the testplan
   *  this feature is not yet available and is [under active development](#pending-work-items)
 
 The [testplanner]({{< relref "util/dvsim/testplanner/README.md" >}}) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
-The [build_docs]({{< relref "README.md#documentation" >}}) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV plan as a table.
+The [build_docs]({{< relref "README.md#documentation" >}}) tool works in conjunction with the `testplanner` tool to enable its insertion into the dv document as a table.
 
-### DV Plan
+### dv document
 
-The DV plan document captures the overall strategy, intent, the testbench block diagram, a list of interfaces / agents, VIPs, reference models, the functional coverage model, assertions and checkers. It also covers FPV goals, if applicable.
+The dv document captures the overall strategy, intent, the testbench block diagram, a list of interfaces / agents, VIPs, reference models, the functional coverage model, assertions and checkers. It also covers FPV goals, if applicable.
 This is written in [Markdown]({{< relref "doc/rm/markdown_usage_style" >}}) and is made available in the corresponding `doc` directory of each DUT.
 
-A [template]({{< relref "hw/dv/doc/dv_plan_template" >}}) for the DV plan documentation as well as the testbench block diagram in the OpenTitan team drive  (under the 'design verification' directory) are available to help get started.
+A [template]({{< relref "hw/dv/doc/dv_doc_template" >}}) for the dv documentation as well as the testbench block diagram in the OpenTitan team drive  (under the 'design verification' directory) are available to help get started.
 
 ### Regression Dashboard
 
-The DV Plan document provides a link to the latest [nightly](#nightly) regression and coverage results dashboard uploaded to the web server.
+The dv document provides a link to the latest [nightly](#nightly) regression and coverage results dashboard uploaded to the web server.
 This dashboard contains information in a tabulated format mapping the written tests to planned tests (in the testplan) to provide ability to track progress towards executing the testplan.
 **This feature is currently not yet available and is under active development.**
 
@@ -89,7 +89,7 @@ These are described below.
 As is the case with design, we strive for conformity in our verification efforts as well.
 The motivation for this is not just aesthetics, but also to reap the advantages of [code reuse](#code-reuse), which we rely heavily on.
 To help achieve this, we provide a verification starter tool-kit called [uvmdvgen]({{< relref "util/uvmdvgen/README.md" >}}).
-It can be used to completely auto-generate the complete initial DV enviroment for a new DUT, including the [documentation](#documentation) pieces (testplan as well as DV plan), the complete UVM environment including the testbench, to the collaterals for building and running tests along with some common tests.
+It can be used to completely auto-generate the complete initial DV enviroment for a new DUT, including the [documentation](#documentation) pieces (testplan as well as dv document), the complete UVM environment including the testbench, to the collaterals for building and running tests along with some common tests.
 This significantly helps reduce the development time.
 It can also be used to auto-generate the initial skeleton source code for building a new reusable verification component for an interface (a complete UVM agent).
 
@@ -104,7 +104,7 @@ In future, we may move to a flow where it is not checked into the repository, bu
 
 For a parameterized DUT that may possibly have multiple flavors instantiated in the chip, it would be prohibitively difficult to manually maintain the DV testbenches for all those flavors.
 To cater to this, we develop a generic UVM testbench and rely on custom tooling to auto-generate the specific parameter sets that are required to undergo the full verification till signoff.
-<!-- TODO: have this point to TLUL DV plan -->
+<!-- TODO: have this point to TLUL dv document -->
 An effort of this sort is planned for verifying the [TileLink XBAR]({{< relref "hw/ip/tlul/doc" >}}).
 
 ## Code Reuse
@@ -161,14 +161,14 @@ To achieve our coverage goals, we take a constrained random approach to generate
 The DV environment models the behavior of the DUT more closely to perform checks (typically within the scoreboard) independently of the stimulus.
 In some IPs (specifically the ones that provide cryptographic functions), we also employ the use of open source third party C libraries as reference models to check the behavior of the DUT through DPI-C calls.
 
-Each of the IP level DV environments are described in further detail within their own [DV plan](#dv-plan) document.
+Each of the IP level DV environments are described in further detail within their own [dv document](#dv-plan) document.
 To find all of them, please navigate to this [landing page]({{< relref "hw" >}}).
-The [UART DV plan]({{< relref "hw/ip/uart/doc/dv_plan" >}}) documentation which can be found there can be used as an example / reference.
+The [UART dv document]({{< relref "hw/ip/uart/doc/dv_doc" >}}) documentation which can be found there can be used as an example / reference.
 
 ### Core Ibex Level DV
 
 The RISC-V CPU core Ibex used in OpenTitan has its own DV testbench and it is verified to full coverage closure.
-Please see the [Ibex DV documentation](https://github.com/lowRISC/opentitan/blob/master/hw/vendor/lowrisc_ibex/doc/verification.rst) for more details.
+Please see the [Ibex dv documentumentation](https://github.com/lowRISC/opentitan/blob/master/hw/vendor/lowrisc_ibex/doc/verification.rst) for more details.
 
 ### Chip Level DV
 
@@ -178,8 +178,8 @@ These are simple functional tests written in C which are cross-compiled and run 
 The software compilation flow to enable this is explained in further detail in the [getting started with SW]({{< relref "getting_started_sw.md" >}}) document.
 Further, there is a mechanism for the C test running on the CPU to signal the SystemVerilog testbench the test pass or fail indication based on the observed DUT behavior.
 We also provide an environment knob to 'stub' the CPU and use a TL agent to drive the traffic via the CPU's data channel instead, in cases where more intensive testing is needed.
-<!-- TODO: add link to chip DV plan -->
-The chip DV plan, which is currently under active development will explain these methodologies and flows in further detail.
+<!-- TODO: add link to chip dv document -->
+The chip dv document, which is currently under active development will explain these methodologies and flows in further detail.
 
 ## Key Test Focus Areas
 
@@ -195,7 +195,7 @@ These set of tests (not exhaustive) provide the confidence that the design is re
 At this stage, just a skeleton testbench environment is available and most components lack functionality.
 A basic sanity test drives the clock, brings the DUT out of reset, checks if all outputs are legal values (not unknown) and exercise a major datapath with simple set of checks.
 This paves the way for more complex testing.
-During the testplan and the DV plan review, the key stake holders at the higher level who consume the DUT as an IP (for example, design and DV engineers wotking at the chip level into which the IP is integrated) may drive the requirements for the level of testing to be done.
+During the testplan and the dv document review, the key stake holders at the higher level who consume the DUT as an IP (for example, design and DV engineers wotking at the chip level into which the IP is integrated) may drive the requirements for the level of testing to be done.
 This test (or set of tests) is also included as a part of the sanity regression to maintain the code health.
 
 #### CSR Suite of Tests
@@ -560,7 +560,7 @@ DV updates are scrutinized in sufficient detail to enforce coding style, identif
 
 ### Sign-off Reviews
 
-In the initial work stage of verification, the DV plan and the completed testplan documents are reviewed face-to-face with the following individuals:
+In the initial work stage of verification, the dv document and the completed testplan documents are reviewed face-to-face with the following individuals:
 
 *  Designer(s)
 *  DV peers

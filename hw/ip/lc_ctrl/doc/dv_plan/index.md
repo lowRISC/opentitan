@@ -1,8 +1,8 @@
 ---
-title: "LC_CTRL DV Plan"
+title: "LC_CTRL dv document"
 ---
 
-<!-- Copy this file to hw/ip/lc_ctrl/doc/lc_ctrl_dv_plan.md and make changes as needed.
+<!-- Copy this file to hw/ip/lc_ctrl/doc/lc_ctrl_dv_doc.md and make changes as needed.
 For convenience 'lc_ctrl' in the document can be searched and replaced easily with the
 desired IP (with case sensitivity!). Also, use the testbench block diagram
 located at OpenTitan team drive / 'design verification'
