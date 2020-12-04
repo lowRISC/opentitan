@@ -217,3 +217,18 @@ sw_lib_dif_lc_ctrl = declare_dependency(
     ],
   )
 )
+
+# Always-On Timer library
+sw_lib_dif_aon_timer = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_aon_timer',
+    sources: [
+      hw_ip_aon_timer_reg_h,
+      'dif_aon_timer.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_bitfield,
+    ],
+  )
+)
