@@ -41,6 +41,7 @@
   expand_uvm_verbosity_l: UVM_LOW
   expand_uvm_verbosity_m: UVM_MEDIUM
   expand_uvm_verbosity_h: UVM_HIGH
+  expand_uvm_verbosity_f: UVM_FULL
   expand_uvm_verbosity_d: UVM_DEBUG
 
   // Default simulation verbosity (l => UVM_LOW). Can be overridden by
