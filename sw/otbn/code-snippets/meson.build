@@ -29,4 +29,7 @@ sw_otbn_sources += {
     'rsa_1024_enc_test.s',
     'modexp.s',
   ),
+  'err_test': files(
+    'err_test.s',
+  ),
 }
