@@ -6,30 +6,49 @@
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
   entries: [
     {
       name: smoke
       desc: '''
-            Basic smoke test accessing a major datapath within the keymgr.
-            Most of other sequences are derived from this to have similar init and sequence.
+            Smoke test accessing a major datapath within the keymgr.
+            Test operations (advance, gen-id and gen-sw-out) in every state
 
             Stimulus:
-            - During init, configure ROM_EXT_DESC_*, SOFTWARE_BINDING_*, Salt_*, key_version.
             - Go through state from `StReset` to `StDisabled`.
-            - Issue SW and HW operation in each state, including invalid operations below
-              - advance state in `StDisabled`.
-              - generate output in states other than normal operating states (`StCreatorRootKey`,
-                `StOwnerIntKey` and `StOwnerIntKey`).
+            - Issue gen-id, gen-sw-output operation in each state, including invalid operations in
+              states other than normal operating states (`StCreatorRootKey`, `StOwnerIntKey` and
+              `StOwnerRootKey`).
 
             Checks:
             - Check STATUS reg for each operation.
             - Check interrupts `op_done` is triggered when operation is done.
             - Check `err` and alert `operation_err` are triggered after invalid operation.
             - Check KMAC key, KMAC data and output SW data for correctness.
+            - For invalid operations, check KMAC key, KMAC data and output SW data don't match to
+              any of saved meaningful data, which are collected from valid operations. This
+              checking method is also applied to other error cases.
             '''
       milestone: V1
       tests: ["keymgr_smoke"]
+    }
+    {
+      name: random
+      desc: '''
+            Extend from smoke to randomize all SW input data
+            - Fully randomize SW input: rom_ext_desc_*, software_binding_*, salt_*, max_*_key_ver,
+              *_key_ver_en.
+            - Randomize key_version any value less than max_*_key_ver, to avoid triggerring
+              `invalid_kmac_input` error.
+            - Fully randomize HW input from flash, otp and life cycle.
+
+            Most of other sequences are derived from this to have similar init and sequence.
+
+            Stimulus and checks are the same as smoke.
+            '''
+      milestone: V1
+      tests: ["keymgr_random"]
     }
     {
       name: cfgen_during_op
@@ -41,21 +60,21 @@
             Test command and reg access gated by CFGEN is ignored during operation.
             '''
       milestone: V2
-      tests: []
+      tests: ["keymgr_cfgen"]
     }
     {
-      name: op_at_wipe_state
+      name: cfgen_at_st_random
       desc: '''
-            `StWipe` is a temporary state during init operation, which will set CSR CFGEN.
+            `StRandom` is a temporary state during init operation, which will set CSR CFGEN.
 
             Stimulus and checks:
-            Test command and reg access gated by CFGEN is ignored during `StWipe`.
+            Test command and reg access gated by CFGEN is ignored during `StRandom`.
             '''
       milestone: V2
-      tests: []
+      tests: ["keymgr_cfgen"]
     }
     {
-      name: hw_sideload
+      name: sideload
       desc: '''
             Keymgr contains HW sideload interfaces to output keys for KMAC, HMAC, AES.
 
@@ -66,7 +85,7 @@
             Verify the sideload data and status for correctness.
             '''
       milestone: V2
-      tests: []
+      tests: ["keymgr_sideload"]
     }
     {
       name: init_n_start
@@ -77,7 +96,7 @@
             - If it's in other state, `init` is ignored.
             '''
       milestone: V2
-      tests: []
+      tests: ["keymgr_random"]
     }
     {
       name: direct_to_disabled_state
@@ -86,7 +105,7 @@
             Directly go to `StDisabled` from any state and check `StDisabled` is entered correctly.
             '''
       milestone: V2
-      tests: []
+      tests: ["keymgr_direct_to_disabled"]
     }
     {
       name: lc_disable
@@ -113,8 +132,10 @@
 
             Stimulus:
             Force one of these or both
-            - force advance, gen_id and gen_out to not one-hot
-            - force KMAC FSM to default branch to trigger FSM error
+            - Force advance, gen_id and gen_out to not one-hot
+              - Path: `dut.u_ctrl.adv_en_o/id_en_o/gen_en_o`
+            - Force KMAC FSM to default branch to trigger FSM error
+              - Path: `dut.u_kmac_if.state_d`
 
             Checks:
             - Check interrupts `err` is triggered.
@@ -168,10 +189,19 @@
             Checks:
             - Check interrupts `err` is triggered.
             - Check alert `operation_err` is triggered and err_code is `INVALID_KMAC_DATA`.
-            - Check KMAC output key is corrupted and working state remains the same.
+            - Check SW output isn't updated and working state remains the same.
             '''
       milestone: V2
       tests: []
+    }
+    {
+      name: stress_all
+      desc: '''
+            - Combine above sequences in one test to run sequentially, except csr sequence and
+              keymgr_cfgen (requires zero_delays)
+            - Randomly add reset between each sequence'''
+      milestone: V2
+      tests: ["keymgr_stress_all"]
     }
   ]
 }
