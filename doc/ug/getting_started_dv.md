@@ -31,8 +31,8 @@ One of these for example, is to create appropriate interfaces for the DUT-specif
 
 ## Documentation and Initial Review
 
-The skeleton [DV plan]({{< relref "dv_methodology/index.md#dv-plan" >}}) and the [Hjson testplan]({{< relref "dv_methodology/index.md#testplan" >}}) should be addressed first.
-The DV plan documentation is not expected to be completed in full detail at this point.
+The skeleton [dv document]({{< relref "dv_methodology/index.md#dv-plan" >}}) and the [Hjson testplan]({{< relref "dv_methodology/index.md#testplan" >}}) should be addressed first.
+The dv documentation is not expected to be completed in full detail at this point.
 However, it is expected to list all the verification components needed and depict the planned testbench as a block diagram.
 Under the 'design verification' directory in the OpenTitan team drive, some sample testbench block diagrams are available in the `.svg` format, which can be used as a template.
 The Hjson testplan on the other hand, is required to be completed.

@@ -1,5 +1,5 @@
 ---
-title: "PINMUX DV Plan"
+title: "PINMUX dv document"
 ---
 
 ## Goals

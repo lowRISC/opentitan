@@ -4,7 +4,7 @@ title: "Testplanner tool"
 
 Testplanner is a Python based tool for parsing testplans written in Hjson
 format into a data structure that can be used for:
-* Expanding the testplan inline within the DV plan as a table
+* Expanding the testplan inline within the dv document as a table
 * Annotating the regression results with testplan entries for a document driven DV execution
 
 Please see [DV methodology]({{< relref "doc/ug/dv_methodology/index.md#documentation" >}})
@@ -166,11 +166,11 @@ The following examples provided within `util/dvsim/testplanner/examples` can be 
 a starting point.
 * **`foo_testplan.hjson`**: DUT testplan
 * **`common_testplan.hjson`**: shared testplan imported within the DUT testplan
-* **`foo_dv_plan.md`**: DUT testplan imported within the DV plan doc in Markdown
+* **`foo_dv_doc.md`**: DUT testplan imported within the dv document doc in Markdown
 
-In addition, see the [UART DV Plan]({{< relref "hw/ip/uart/doc/dv_plan" >}}) for a
+In addition, see the [UART dv document]({{< relref "hw/ip/uart/doc/dv_doc" >}}) for a
 real 'production' example of inline expansion of an imported testplan as a table
-within the DV Plan document.
+within the dv document.
 The [UART testplan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson)
 imports the shared testplans located at `hw/dv/tools/dvsim/testplans` area.
 

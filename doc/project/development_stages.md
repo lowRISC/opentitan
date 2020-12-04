@@ -111,8 +111,8 @@ Once all coverage metrics have been met, waivers checked, the verification moves
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
 | V0 | Initial Work | Testbench being developed, not functional; testplan being written; decided which methodology to use (sim-based DV, FPV, or both). |
-| V1 | Under Test | <ul> <li> Documentation: <ul> <li> [DV plan]({{< relref "doc/ug/dv_methodology#documentation" >}}) available, [testplan]({{< relref "doc/ug/dv_methodology#documentation" >}}) completed and reviewed </ul> <li> Testbench: <ul> <li> DUT instantiated with major interfaces hooked up <li> All available interface assertion monitors hooked up <li> X / unknown checks on DUT outputs added <li> Skeleton environment created with UVCs <li> TLM connections made from interface monitors to the scoreboard </ul> <li> Tests (written and passing): <ul> <li> Sanity test accessing basic functionality <li> CSR / mem test suite </ul> <li> Regressions: Sanity and nightly regression set up</ul> |
-| V2 | Testing Complete | <ul> <li> Documentation: <ul> <li> DV plan completely written </ul> <li> Design Issues: <ul> <li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li> Testbench: <ul> <li> all interfaces hooked up and exercised <li> all assertions written and enabled </ul> <li> UVM environment: fully developed with end-to-end checks in scoreboard <li> Tests (written and passing): all tests planned for in the testplan <li> Regression: all tests passing in nightly regression with multiple seeds (> 90%)  <li> Coverage: 90% code coverage across the board, 100% functional coverpoints covered and 75% crosses covered</ul></ul> |
+| V1 | Under Test | <ul> <li> Documentation: <ul> <li> [dv document]({{< relref "doc/ug/dv_methodology#documentation" >}}) available, [testplan]({{< relref "doc/ug/dv_methodology#documentation" >}}) completed and reviewed </ul> <li> Testbench: <ul> <li> DUT instantiated with major interfaces hooked up <li> All available interface assertion monitors hooked up <li> X / unknown checks on DUT outputs added <li> Skeleton environment created with UVCs <li> TLM connections made from interface monitors to the scoreboard </ul> <li> Tests (written and passing): <ul> <li> Sanity test accessing basic functionality <li> CSR / mem test suite </ul> <li> Regressions: Sanity and nightly regression set up</ul> |
+| V2 | Testing Complete | <ul> <li> Documentation: <ul> <li> dv document completely written </ul> <li> Design Issues: <ul> <li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li> Testbench: <ul> <li> all interfaces hooked up and exercised <li> all assertions written and enabled </ul> <li> UVM environment: fully developed with end-to-end checks in scoreboard <li> Tests (written and passing): all tests planned for in the testplan <li> Regression: all tests passing in nightly regression with multiple seeds (> 90%)  <li> Coverage: 90% code coverage across the board, 100% functional coverpoints covered and 75% crosses covered</ul></ul> |
 | V3 | Verification Complete | <ul> <li> Design Issues: all bugs addressed <li> Tests (written and passing): all tests including newly added post-V2 tests (if any) <li> Regression: all tests with all seeds passing <li> Coverage: 100% code and 100% functional coverage with waivers </ul> </ul> |
 
 **Stages for FPV approaches**:
@@ -120,8 +120,8 @@ Once all coverage metrics have been met, waivers checked, the verification moves
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
 | V0 | Initial Work | Testbench being developed, not functional; testplan being written; decided which methodology to use (sim-based DV, FPV, or both). |
-| V1 | Under Test | <ul> <li> Documentation: <ul> <li> [DV plan]({{< relref "doc/ug/dv_methodology#documentation" >}}) available, [testplan]({{< relref "doc/ug/dv_methodology#documentation" >}}) completed and reviewed </ul> <li> Testbench: <ul> <li> Formal testbench with DUT bound to assertion module(s) <li> All available interface assertion monitors hooked up <li> X / unknown assertions on DUT outputs added </ul> <li> Assertions (written and proven): <ul> <li> All functional properties identified and described in testplan <li> Assertions for main functional path implemented and passing (sanity check)<li> Each input and each output is part of at least one assertion</ul> <li> Regressions: Sanity and nightly regression set up</ul> |
-| V2 | Testing Complete | <ul> <li> Documentation: <ul> <li> DV plan completely written </ul> <li> Design Issues: <ul> <li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li> Testbench: <ul> <li> all interfaces have assertions checking the protocol <li> all functional assertions written and enabled <li> assumptions for FPV specified and reviewed </ul> <li> Tests (written and passing): all tests planned for in the testplan <li> Regression: 90% of properties proven in nightly regression <li> Coverage: 90% code coverage and 75% logic cone of influence (COI) coverage </ul> |
+| V1 | Under Test | <ul> <li> Documentation: <ul> <li> [dv document]({{< relref "doc/ug/dv_methodology#documentation" >}}) available, [testplan]({{< relref "doc/ug/dv_methodology#documentation" >}}) completed and reviewed </ul> <li> Testbench: <ul> <li> Formal testbench with DUT bound to assertion module(s) <li> All available interface assertion monitors hooked up <li> X / unknown assertions on DUT outputs added </ul> <li> Assertions (written and proven): <ul> <li> All functional properties identified and described in testplan <li> Assertions for main functional path implemented and passing (sanity check)<li> Each input and each output is part of at least one assertion</ul> <li> Regressions: Sanity and nightly regression set up</ul> |
+| V2 | Testing Complete | <ul> <li> Documentation: <ul> <li> dv document completely written </ul> <li> Design Issues: <ul> <li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li> Testbench: <ul> <li> all interfaces have assertions checking the protocol <li> all functional assertions written and enabled <li> assumptions for FPV specified and reviewed </ul> <li> Tests (written and passing): all tests planned for in the testplan <li> Regression: 90% of properties proven in nightly regression <li> Coverage: 90% code coverage and 75% logic cone of influence (COI) coverage </ul> |
 | V3 | Verification Complete | <ul> <li> Design Issues: all bugs addressed <li> Assertions (written and proven): all assertions including newly added post-V2 assertions (if any) <li> Regression: 100% of properties proven (with reviewed assumptions) <li> Coverage: 100% code coverage and 100% COI coverage</ul> |
 
 ## Device Interface Function Stages (S)
@@ -215,14 +215,14 @@ The commit ID has its own entry in the project Hjson file, as shown below.
 
 ### Other optional fields
 
-Additionally, the tool that generates the dashboard accepts the following optional fields: the design specification, the DV plan and the checklist.
+Additionally, the tool that generates the dashboard accepts the following optional fields: the design specification, the dv document and the checklist.
 They are set as partial paths (reference relative to the top of the repository) to the respective documents as shown below.
 They are converted to complete URLs in the generated dashboard.
 
 ```hjson
 {
     design_spec:  "hw/ip/gpio/doc"
-    dv_plan:      "hw/ip/gpio/doc/dv_plan"
+    dv_doc:      "hw/ip/gpio/doc/dv_doc"
     hw_checklist: "hw/ip/gpio/doc/checklist"
     sw_checklist: "sw/device/lib/dif/dif_gpio"
 }

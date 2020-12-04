@@ -1,5 +1,5 @@
 ---
-title: "ENTROPY_SRC DV Plan"
+title: "ENTROPY_SRC dv document"
 ---
 
 ## Goals
