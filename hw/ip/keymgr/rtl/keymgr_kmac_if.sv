@@ -246,7 +246,8 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     end
   end
 
-  assign inputs_invalid_o = |inputs_invalid_q;
+  // immediately assert errors
+  assign inputs_invalid_o = |inputs_invalid_d;
 
   // The count is maintained as a downcount
   // so a subtract is necessary to send the right byte
