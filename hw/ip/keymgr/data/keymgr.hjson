@@ -66,6 +66,61 @@
   ],
 
   param_list: [
+    // Random netlist constants
+    { name:      "RndCnstLfsrSeed",
+      desc:      "Compile-time random bits for initial LFSR seed",
+      type:      "keymgr_pkg::lfsr_seed_t"
+      randcount: "64",
+      randtype:  "data",
+    }
+    { name:      "RndCnstLfsrPerm",
+      desc:      "Compile-time random permutation for LFSR output",
+      type:      "keymgr_pkg::lfsr_perm_t"
+      randcount: "64",
+      randtype:  "perm",
+    }
+    { name:      "RndCnstRevisionSeed",
+      desc:      "Compile-time random bits for revision seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstCreatorIdentitySeed",
+      desc:      "Compile-time random bits for creator identity seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstOwnerIntIdentitySeed",
+      desc:      "Compile-time random bits for owner intermediate identity seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstOwnerIdentitySeed",
+      desc:      "Compile-time random bits for owner identity seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstSoftOutputSeed",
+      desc:      "Compile-time random bits for software generation seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstHardOutputSeed",
+      desc:      "Compile-time random bits for hardware generation seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
     { name: "NumRomExtReg",
       desc: "Number of Registers for ROM_ext descriptor",
       type: "int",
