@@ -48,8 +48,8 @@ class LintCfg(OneShotCfg):
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
         results_str += "### Branch: " + self.branch + "\n"
         results_str += "\n"
 
@@ -115,8 +115,8 @@ class LintCfg(OneShotCfg):
         # Generate results table for runs.
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
         results_str += "### Branch: " + self.branch + "\n"
         results_str += "### Lint Tool: " + self.tool.upper() + "\n\n"
 

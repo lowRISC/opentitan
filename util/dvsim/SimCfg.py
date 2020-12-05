@@ -636,8 +636,8 @@ class SimCfg(FlowCfg):
         # Generate results table for runs.
         results_str = "## " + self.results_title + "\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
         results_str += "### Branch: " + self.branch + "\n"
 
         # Add path to testplan, only if it has entries (i.e., its not dummy).
@@ -717,8 +717,8 @@ class SimCfg(FlowCfg):
             table.append(row)
         self.results_summary_md = "## " + self.results_title + " (Summary)\n"
         self.results_summary_md += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            self.results_summary_md += "### " + self.revision_string + "\n"
+        if self.revision:
+            self.results_summary_md += "### " + self.revision + "\n"
         self.results_summary_md += "### Branch: " + self.branch + "\n"
         self.results_summary_md += tabulate(table,
                                             headers="firstrow",
