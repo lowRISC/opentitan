@@ -457,11 +457,10 @@ class FlowCfg():
     def gen_results(self):
         '''Public facing API for _gen_results().
         '''
-        results = []
         for item in self.cfgs:
             result = item._gen_results()
-            log.info("[results]: [%s]:\n%s\n\n", item.name, result)
-            results.append(result)
+            log.info("[results]: [%s]:\n%s\n", item.name, result)
+            log.info("[scratch_path]: [%s] [%s]", item.name, item.scratch_path)
             self.errors_seen |= item.errors_seen
 
         if self.is_primary_cfg:
@@ -492,7 +491,7 @@ class FlowCfg():
         f = open(results_html_file, 'w')
         f.write(results_html)
         f.close()
-        log.info("[results summary]: %s [%s]", "generated for email purpose", results_html_file)
+        log.info("[results:email]: [%s]", results_html_file)
 
     def _publish_results(self):
         '''Publish results to the opentitan web server.

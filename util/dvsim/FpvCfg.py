@@ -9,7 +9,7 @@ import hjson
 from tabulate import tabulate
 
 from OneShotCfg import OneShotCfg
-from utils import subst_wildcards
+from utils import VERBOSE, subst_wildcards
 
 
 class FpvCfg(OneShotCfg):
@@ -128,6 +128,7 @@ class FpvCfg(OneShotCfg):
         results_str += "### " + self.timestamp_long + "\n"
         if self.revision_string:
             results_str += "### " + self.revision_string + "\n"
+        results_str += "### Branch: " + self.branch + "\n"
         results_str += "\n"
 
         colalign = ("center", ) * len(self.summary_header)
@@ -221,6 +222,7 @@ class FpvCfg(OneShotCfg):
         results_str += "### " + self.timestamp_long + "\n"
         if self.revision_string:
             results_str += "### " + self.revision_string + "\n"
+        results_str += "### Branch: " + self.branch + "\n"
         results_str += "### FPV Tool: " + self.tool.upper() + "\n"
         results_str += "### LogFile dir: " + self.scratch_path + "/default\n\n"
 
@@ -266,13 +268,12 @@ class FpvCfg(OneShotCfg):
         with open(results_file, 'w') as f:
             f.write(self.results_md)
 
-        log.info("[results page]: [%s] [%s]", self.name, results_file)
-
         # Generate result summary
         if not self.cov:
             summary += ["N/A", "N/A", "N/A"]
         self.result_summary[self.name] = summary
 
+        log.log(VERBOSE, "[results page]: [%s] [%s]", self.name, results_file)
         return self.results_md
 
     def _publish_results(self):

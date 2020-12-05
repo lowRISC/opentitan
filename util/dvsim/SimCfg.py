@@ -183,8 +183,8 @@ class SimCfg(FlowCfg):
                     'and there was no --tool argument on the command line.')
                 sys.exit(1)
 
-            # Print info:
-            log.info("[scratch_dir]: [%s]: [%s]", self.name, self.scratch_path)
+            # Print scratch_path at the start:
+            log.info("[scratch_path]: [%s] [%s]", self.name, self.scratch_path)
 
             # Set directories with links for ease of debug / triage.
             self.links = {
@@ -638,6 +638,7 @@ class SimCfg(FlowCfg):
         results_str += "### " + self.timestamp_long + "\n"
         if self.revision_string:
             results_str += "### " + self.revision_string + "\n"
+        results_str += "### Branch: " + self.branch + "\n"
 
         # Add path to testplan, only if it has entries (i.e., its not dummy).
         if self.testplan.entries:
@@ -693,12 +694,10 @@ class SimCfg(FlowCfg):
 
         # Write results to the scratch area
         results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
-        f = open(results_file, 'w')
-        f.write(self.results_md)
-        f.close()
+        with open(results_file, 'w') as f:
+            f.write(self.results_md)
 
-        # Return only the tables
-        log.info("[results page]: [%s] [%s]", self.name, results_file)
+        log.log(VERBOSE, "[results page]: [%s] [%s]", self.name, results_file)
         return results_str
 
     def gen_results_summary(self):
@@ -720,6 +719,7 @@ class SimCfg(FlowCfg):
         self.results_summary_md += "### " + self.timestamp_long + "\n"
         if self.revision_string:
             self.results_summary_md += "### " + self.revision_string + "\n"
+        self.results_summary_md += "### Branch: " + self.branch + "\n"
         self.results_summary_md += tabulate(table,
                                             headers="firstrow",
                                             tablefmt="pipe",

@@ -12,7 +12,7 @@ import hjson
 from tabulate import tabulate
 
 from OneShotCfg import OneShotCfg
-from utils import print_msg_list, subst_wildcards
+from utils import VERBOSE, print_msg_list, subst_wildcards
 
 
 class SynCfg(OneShotCfg):
@@ -38,6 +38,7 @@ class SynCfg(OneShotCfg):
         results_str += "### " + self.timestamp_long + "\n"
         if self.revision_string:
             results_str += "### " + self.revision_string + "\n"
+        results_str += "### Branch: " + self.branch + "\n"
         results_str += "\n"
 
         self.results_summary_md = results_str + "\nNot supported yet.\n"
@@ -147,6 +148,7 @@ class SynCfg(OneShotCfg):
         results_str += "### " + self.timestamp_long + "\n"
         if self.revision_string:
             results_str += "### " + self.revision_string + "\n"
+        results_str += "### Branch: " + self.branch + "\n"
         results_str += "### Synthesis Tool: " + self.tool.upper() + "\n\n"
 
         # TODO: extend this to support multiple build modes
@@ -389,9 +391,9 @@ class SynCfg(OneShotCfg):
             # QoR history
 
         # Write results to the scratch area
-        self.results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
-        log.info("Detailed results are available at %s", self.results_file)
-        with open(self.results_file, 'w') as f:
+        results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
+        with open(results_file, 'w') as f:
             f.write(self.results_md)
 
+        log.log(VERBOSE, "[results page]: [%s] [%s]", self.name, results_file)
         return self.results_md

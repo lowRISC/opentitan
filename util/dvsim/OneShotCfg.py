@@ -13,7 +13,7 @@ from collections import OrderedDict
 from Deploy import CompileOneShot
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes
-from utils import find_and_substitute_wildcards
+from utils import VERBOSE, find_and_substitute_wildcards
 
 
 class OneShotCfg(FlowCfg):
@@ -94,8 +94,8 @@ class OneShotCfg(FlowCfg):
 
         # Stuff below only pertains to individual cfg (not primary cfg).
         if not self.is_primary_cfg:
-            # Print info
-            log.info("[scratch_dir]: [%s]: [%s]", self.name, self.scratch_path)
+            # Print scratch_path at the start:
+            log.info("[scratch_path]: [%s] [%s]", self.name, self.scratch_path)
 
             # Set directories with links for ease of debug / triage.
             self.links = {
