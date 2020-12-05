@@ -1104,7 +1104,16 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
-  keymgr u_keymgr (
+  keymgr #(
+    .RndCnstLfsrSeed(RndCnstKeymgrLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstKeymgrLfsrPerm),
+    .RndCnstRevisionSeed(RndCnstKeymgrRevisionSeed),
+    .RndCnstCreatorIdentitySeed(RndCnstKeymgrCreatorIdentitySeed),
+    .RndCnstOwnerIntIdentitySeed(RndCnstKeymgrOwnerIntIdentitySeed),
+    .RndCnstOwnerIdentitySeed(RndCnstKeymgrOwnerIdentitySeed),
+    .RndCnstSoftOutputSeed(RndCnstKeymgrSoftOutputSeed),
+    .RndCnstHardOutputSeed(RndCnstKeymgrHardOutputSeed)
+  ) u_keymgr (
 
       // Interrupt
       .intr_op_done_o (intr_keymgr_op_done),
