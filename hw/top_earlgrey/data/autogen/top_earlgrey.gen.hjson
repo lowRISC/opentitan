@@ -2956,7 +2956,105 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
-      param_list: []
+      param_list:
+      [
+        {
+          name: RndCnstLfsrSeed
+          desc: Compile-time random bits for initial LFSR seed
+          type: keymgr_pkg::lfsr_seed_t
+          randcount: "64"
+          randtype: data
+          local: "false"
+          default: 0xf4c3471c5def7861
+          expose: "false"
+          name_top: RndCnstKeymgrLfsrSeed
+          randwidth: 64
+        }
+        {
+          name: RndCnstLfsrPerm
+          desc: Compile-time random permutation for LFSR output
+          type: keymgr_pkg::lfsr_perm_t
+          randcount: "64"
+          randtype: perm
+          local: "false"
+          default: 0x26ac29e186c1f4dc6f959d6ed08dc044a0f3f1519e8dca131275df1e48bbf964ac772e613d0320adaebf38552dd822e6
+          expose: "false"
+          name_top: RndCnstKeymgrLfsrPerm
+          randwidth: 384
+        }
+        {
+          name: RndCnstRevisionSeed
+          desc: Compile-time random bits for revision seed
+          type: keymgr_pkg::seed_t
+          randcount: "256"
+          randtype: data
+          local: "false"
+          default: 0x96466a983e5346826a43628219e5a91389b9fe0d3b818e46ce7d846469a3b8e3
+          expose: "false"
+          name_top: RndCnstKeymgrRevisionSeed
+          randwidth: 256
+        }
+        {
+          name: RndCnstCreatorIdentitySeed
+          desc: Compile-time random bits for creator identity seed
+          type: keymgr_pkg::seed_t
+          randcount: "256"
+          randtype: data
+          local: "false"
+          default: 0xde094ca8f1435f85e0f7489a309cbe57b77f07ff3d7297200d5ab25561af49c6
+          expose: "false"
+          name_top: RndCnstKeymgrCreatorIdentitySeed
+          randwidth: 256
+        }
+        {
+          name: RndCnstOwnerIntIdentitySeed
+          desc: Compile-time random bits for owner intermediate identity seed
+          type: keymgr_pkg::seed_t
+          randcount: "256"
+          randtype: data
+          local: "false"
+          default: 0x12965c7de10023ec699679edd5369f11b49bac9198bd1ff344c5da2242d290be
+          expose: "false"
+          name_top: RndCnstKeymgrOwnerIntIdentitySeed
+          randwidth: 256
+        }
+        {
+          name: RndCnstOwnerIdentitySeed
+          desc: Compile-time random bits for owner identity seed
+          type: keymgr_pkg::seed_t
+          randcount: "256"
+          randtype: data
+          local: "false"
+          default: 0x738f30d9006289a1d7d9d0ce1dd7d7c60c06703b494b3ff9fbb73a9bf8c393c
+          expose: "false"
+          name_top: RndCnstKeymgrOwnerIdentitySeed
+          randwidth: 256
+        }
+        {
+          name: RndCnstSoftOutputSeed
+          desc: Compile-time random bits for software generation seed
+          type: keymgr_pkg::seed_t
+          randcount: "256"
+          randtype: data
+          local: "false"
+          default: 0x613e5324cbac660746bca7e0ae24af11fe8f673fba39bb679d58aa91aeb2691c
+          expose: "false"
+          name_top: RndCnstKeymgrSoftOutputSeed
+          randwidth: 256
+        }
+        {
+          name: RndCnstHardOutputSeed
+          desc: Compile-time random bits for hardware generation seed
+          type: keymgr_pkg::seed_t
+          randcount: "256"
+          randtype: data
+          local: "false"
+          default: 0x205ae5e5feed81e0cb15451e21ffdf7075a864cb4daab803225b91e3b1a7b12
+          expose: "false"
+          name_top: RndCnstKeymgrHardOutputSeed
+          randwidth: 256
+        }
+      ]
       interrupt_list:
       [
         {
