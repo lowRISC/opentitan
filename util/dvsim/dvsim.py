@@ -310,12 +310,12 @@ def parse_args():
     buildg = parser.add_argument_group('Options for building')
 
     buildg.add_argument("--build-only",
+                        "-bu",
                         action='store_true',
                         help=('Stop after building executables for the given '
                               'items.'))
 
     buildg.add_argument("--build-unique",
-                        "-bu",
                         action='store_true',
                         help=('Append a timestamp to the directory in which '
                               'files are built. This is suitable for the case '
@@ -342,6 +342,7 @@ def parse_args():
     rung = parser.add_argument_group('Options for running')
 
     rung.add_argument("--run-only",
+                      "-ru",
                       action='store_true',
                       help=('Skip the build step (assume that simulation '
                             'executables have already been built).'))
