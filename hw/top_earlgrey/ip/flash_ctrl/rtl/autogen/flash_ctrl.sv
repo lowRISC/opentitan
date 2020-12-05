@@ -14,9 +14,15 @@
 
 `include "prim_assert.sv"
 
-module flash_ctrl import flash_ctrl_pkg::*; (
+module flash_ctrl import flash_ctrl_pkg::*; #(
+  parameter flash_key_t RndCnstAddrKey = RndCnstAddrKeyDefault,
+  parameter flash_key_t RndCnstDataKey = RndCnstDataKeyDefault
+) (
   input        clk_i,
   input        rst_ni,
+
+  input        clk_otp_i,
+  input        rst_otp_ni,
 
   // life cycle interface
   lc_ctrl_pkg::lc_tx_t lc_provision_wr_en_i,
@@ -32,7 +38,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   output       flash_req_t flash_o,
 
   // otp/lc/pwrmgr/keymgr Interface
-  input        otp_flash_t otp_i,
+  output       otp_ctrl_pkg::flash_otp_key_req_t otp_o,
+  input        otp_ctrl_pkg::flash_otp_key_rsp_t otp_i,
   input        lc_flash_req_t lc_i,
   output       lc_flash_rsp_t lc_o,
   input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
@@ -129,6 +136,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   flash_lcmgr_phase_e phase;
 
   // Flash control arbitration connections to hardware interface
+  flash_key_t addr_key;
+  flash_key_t data_key;
   flash_ctrl_reg2hw_control_reg_t hw_ctrl;
   logic hw_req;
   logic [top_pkg::TL_AW-1:0] hw_addr;
@@ -208,8 +217,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   prim_lfsr #(
     .DefaultSeed(),
     .EntropyDw(4),
-    .LfsrDw(32),
-    .StateOutDw(32)
+    .LfsrDw(LfsrWidth),
+    .StateOutDw(LfsrWidth)
   ) u_lfsr (
     .clk_i,
     .rst_ni,
@@ -307,11 +316,9 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // hardware interface
 
   // software only has privilege to change creator seed when provision enable is set and
-  // before the the seed is set as valid in otp.
   // lc provision write enable is used here as creator assets can only be changed when
   // creator secrets are not yet locked.
-  assign creator_seed_priv = (lc_provision_wr_en[FlashWrLcCreatorSeedPriv] == lc_ctrl_pkg::On) &
-                             ~otp_i.seed_valid;
+  assign creator_seed_priv = (lc_provision_wr_en[FlashWrLcCreatorSeedPriv] == lc_ctrl_pkg::On);
 
   // owner seed is under software control and can be modided whenever provision enable is set
   // read enable is used here as this is mostly under the control of creator software and just
@@ -323,9 +330,14 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign seed_rd_en = lc_provision_wr_en[FlashWrLcMgrIf] == lc_ctrl_pkg::Off &
                       lc_provision_rd_en[FlashRdLcMgrIf] == lc_ctrl_pkg::On;
 
-  flash_ctrl_lcmgr u_flash_hw_if (
+  flash_ctrl_lcmgr #(
+    .RndCnstAddrKey(RndCnstAddrKey),
+    .RndCnstDataKey(RndCnstDataKey)
+  ) u_flash_hw_if (
     .clk_i,
     .rst_ni,
+    .clk_otp_i,
+    .rst_otp_ni,
 
     .init_i(pwrmgr_i.flash_init),
     .init_done_o(pwrmgr_o.flash_done),
@@ -363,6 +375,12 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
     // phy read buffer enable
     .rd_buf_en_o(flash_o.rd_buf_en),
+
+    // connection to otp
+    .otp_key_req_o(otp_o),
+    .otp_key_rsp_i(otp_i),
+    .addr_key_o(addr_key),
+    .data_key_o(data_key),
 
     // init ongoing
     .init_busy_o(ctrl_init_busy)
@@ -412,12 +430,11 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   );
 
   // Program handler is consumer of prog_fifo
-
-  // OTP control bits can be used to explicitly disable repair
-  logic [ProgTypes-1:0] otp_en;
-  assign otp_en[FlashProgNormal] = 1'b1;
-  assign otp_en[FlashProgRepair] = otp_i.prog_repair_en;
-
+  logic [1:0] prog_type_en;
+  assign prog_type_en[FlashProgNormal] = flash_i.prog_type_avail[FlashProgNormal] &
+                                         reg2hw.prog_type_en.normal.q;
+  assign prog_type_en[FlashProgRepair] = flash_i.prog_type_avail[FlashProgRepair] &
+                                         reg2hw.prog_type_en.repair.q;
   flash_ctrl_prog u_flash_ctrl_prog (
     .clk_i,
     .rst_ni,
@@ -429,7 +446,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .op_err_o       (prog_err),
     .op_addr_i      (op_addr),
     .op_type_i      (op_prog_type),
-    .type_avail_i   (flash_i.prog_type_avail & otp_en),
+    .type_avail_i   (prog_type_en),
 
     // FIFO Interface
     .data_i         (prog_fifo_rdata),
@@ -708,8 +725,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign flash_o.prog_data = flash_prog_data;
   assign flash_o.prog_last = flash_prog_last;
   assign flash_o.region_cfgs = region_cfgs;
-  assign flash_o.addr_key = otp_i.addr_key;
-  assign flash_o.data_key = otp_i.data_key;
+  assign flash_o.addr_key = addr_key;
+  assign flash_o.data_key = data_key;
   assign flash_rd_err = flash_i.rd_err;
   assign flash_rd_data = flash_i.rd_data;
   assign flash_phy_busy = flash_i.init_busy;

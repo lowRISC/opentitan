@@ -254,10 +254,16 @@ module top_earlgrey #(
 
 
   // define inter-module signals
+  alert_pkg::alert_crashdump_t       alert_handler_crashdump;
   csrng_pkg::csrng_req_t [1:0] csrng_csrng_cmd_req;
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
+  entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
+  entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
   flash_ctrl_pkg::flash_req_t       flash_ctrl_flash_req;
   flash_ctrl_pkg::flash_rsp_t       flash_ctrl_flash_rsp;
+  flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
+  otp_ctrl_pkg::flash_otp_key_req_t       flash_ctrl_otp_req;
+  otp_ctrl_pkg::flash_otp_key_rsp_t       flash_ctrl_otp_rsp;
   pwrmgr_pkg::pwr_flash_req_t       pwrmgr_pwr_flash_req;
   pwrmgr_pkg::pwr_flash_rsp_t       pwrmgr_pwr_flash_rsp;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_pwr_rst_req;
@@ -266,10 +272,6 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_pwr_clk_rsp;
   pwrmgr_pkg::pwr_otp_req_t       pwrmgr_pwr_otp_req;
   pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_pwr_otp_rsp;
-  flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
-  alert_pkg::alert_crashdump_t       alert_handler_crashdump;
-  entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
-  entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
@@ -818,8 +820,8 @@ module top_earlgrey #(
       .lc_provision_wr_en_i(lc_ctrl_pkg::Off),
       .lc_dft_en_i(lc_ctrl_pkg::Off),
       .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
-      .flash_otp_key_i('0),
-      .flash_otp_key_o(),
+      .flash_otp_key_i(flash_ctrl_otp_req),
+      .flash_otp_key_o(flash_ctrl_otp_rsp),
       .sram_otp_key_i('0),
       .sram_otp_key_o(),
       .otbn_otp_key_i('0),
@@ -1009,7 +1011,10 @@ module top_earlgrey #(
       .rst_usb_48mhz_ni (rstmgr_resets.rst_usb_n[rstmgr_pkg::DomainAonSel])
   );
 
-  flash_ctrl u_flash_ctrl (
+  flash_ctrl #(
+    .RndCnstAddrKey(RndCnstFlashCtrlAddrKey),
+    .RndCnstDataKey(RndCnstFlashCtrlDataKey)
+  ) u_flash_ctrl (
 
       // Interrupt
       .intr_prog_empty_o (intr_flash_ctrl_prog_empty),
@@ -1022,7 +1027,8 @@ module top_earlgrey #(
       // Inter-module signals
       .flash_o(flash_ctrl_flash_req),
       .flash_i(flash_ctrl_flash_rsp),
-      .otp_i(flash_ctrl_pkg::OTP_FLASH_DEFAULT),
+      .otp_o(flash_ctrl_otp_req),
+      .otp_i(flash_ctrl_otp_rsp),
       .lc_provision_wr_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
       .lc_provision_rd_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
       .lc_iso_flash_wr_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
@@ -1035,7 +1041,9 @@ module top_earlgrey #(
       .tl_i(flash_ctrl_tl_req),
       .tl_o(flash_ctrl_tl_rsp),
       .clk_i (clkmgr_clocks.clk_main_infra),
-      .rst_ni (rstmgr_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
+      .clk_otp_i (clkmgr_clocks.clk_io_div4_infra),
+      .rst_ni (rstmgr_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+      .rst_otp_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
 
   rv_plic u_rv_plic (
