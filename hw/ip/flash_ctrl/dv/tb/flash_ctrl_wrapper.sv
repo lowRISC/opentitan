@@ -6,6 +6,8 @@ module flash_ctrl_wrapper (
   // Clock and Reset
   input        clk_i,
   input        rst_ni,
+  input        clk_otp_i,
+  input        rst_otp_ni,
 
   // Bus Interface
   input        tlul_pkg::tl_h2d_t flash_ctrl_tl_i,
@@ -19,7 +21,8 @@ module flash_ctrl_wrapper (
   input        flash_power_down_h_i,
 
   // OTP interface
-  input        flash_ctrl_pkg::otp_flash_t otp_i,
+  input        otp_ctrl_pkg::flash_otp_key_req_t otp_i,
+  output       otp_ctrl_pkg::flash_otp_key_rsp_t otp_o,
   input        lc_ctrl_pkg::lc_tx_t lc_provision_wr_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_provision_rd_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_iso_flash_wr_en_i,
@@ -57,6 +60,7 @@ module flash_ctrl_wrapper (
     .flash_o           (flash_ctrl_flash_req),
     .flash_i           (flash_ctrl_flash_rsp),
     .otp_i             (otp_i),
+    .otp_o             (otp_o),
     .lc_provision_wr_en_i (lc_provision_wr_en_i),
     .lc_provision_rd_en_i (lc_provision_rd_en_i),
     .lc_iso_flash_wr_en_i (lc_iso_flash_wr_en_i),
@@ -66,7 +70,9 @@ module flash_ctrl_wrapper (
     .edn_i             (edn_i),
 
     .clk_i             (clk_i),
-    .rst_ni            (rst_ni)
+    .rst_ni            (rst_ni),
+    .clk_otp_i         (clk_otp_i),
+    .rst_otp_ni        (rst_otp_ni)
   );
 
   // host to flash communication

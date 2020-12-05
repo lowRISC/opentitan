@@ -36,6 +36,8 @@ module tb;
   flash_ctrl_wrapper dut (
     .clk_i              (clk      ),
     .rst_ni             (rst_n    ),
+    .clk_otp_i          (clk      ),
+    .rst_otp_ni         (rst_n    ),
 
     .flash_ctrl_tl_i    (tl_if.h2d),
     .flash_ctrl_tl_o    (tl_if.d2h),
@@ -47,7 +49,8 @@ module tb;
     .eflash_tl_o        (eflash_tl_if.d2h),
 
     // TODO: create and hook this up to an interface.
-    .otp_i              (flash_ctrl_pkg::OTP_FLASH_DEFAULT),
+    .otp_i              (otp_ctrl_pkg::FLASH_OTP_KEY_RSP_DEFAULT),
+    .otp_o              (),
     .lc_provision_wr_en_i (lc_ctrl_pkg::On),
     .lc_provision_rd_en_i (lc_ctrl_pkg::On),
     .lc_iso_flash_wr_en_i (lc_ctrl_pkg::On),

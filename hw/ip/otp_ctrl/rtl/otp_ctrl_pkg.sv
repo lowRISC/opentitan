@@ -282,6 +282,14 @@ package otp_ctrl_pkg;
     logic seed_valid;              // Set to 1 if the key seed has been provisioned and is valid.
   } flash_otp_key_rsp_t;
 
+  // Default for dangling connection
+  flash_otp_key_rsp_t FLASH_OTP_KEY_RSP_DEFAULT = '{
+    data_ack: 1'b1,
+    addr_ack: 1'b1,
+    key: '0,
+    seed_valid: 1'b1
+  };
+
   typedef struct packed {
     logic                      ack;   // Ack for key.
     logic [SramKeyWidth-1:0]   key;   // 128bit ephemeral scrambling key.
