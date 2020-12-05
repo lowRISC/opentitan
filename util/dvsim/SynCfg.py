@@ -36,8 +36,8 @@ class SynCfg(OneShotCfg):
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
         results_str += "### Branch: " + self.branch + "\n"
         results_str += "\n"
 
@@ -146,8 +146,8 @@ class SynCfg(OneShotCfg):
         # Generate results table for runs.
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
         results_str += "### Branch: " + self.branch + "\n"
         results_str += "### Synthesis Tool: " + self.tool.upper() + "\n\n"
 

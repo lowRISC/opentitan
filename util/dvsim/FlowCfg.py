@@ -72,7 +72,7 @@ class FlowCfg():
         self.errors_seen = False
         self.rel_path = ""
         self.results_title = ""
-        self.revision_string = ""
+        self.revision = ""
         self.results_server_prefix = ""
         self.results_server_url_prefix = ""
         self.results_server_cmd = ""

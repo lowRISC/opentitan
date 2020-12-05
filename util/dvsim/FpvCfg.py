@@ -126,8 +126,8 @@ class FpvCfg(OneShotCfg):
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
         results_str += "### Branch: " + self.branch + "\n"
         results_str += "\n"
 
@@ -220,8 +220,8 @@ class FpvCfg(OneShotCfg):
         #   }
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
         results_str += "### Branch: " + self.branch + "\n"
         results_str += "### FPV Tool: " + self.tool.upper() + "\n"
         results_str += "### LogFile dir: " + self.scratch_path + "/default\n\n"
