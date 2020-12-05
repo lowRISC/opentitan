@@ -9,6 +9,9 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "FLASH_CTRL",
   clock_primary: "clk_i",
+  other_clock_list: [ "clk_otp_i" ],
+  reset_primary: "rst_ni",
+  other_reset_list: [ "rst_otp_ni" ]
   bus_device: "tlul",
   interrupt_list: [
     { name: "prog_empty", desc: "Program FIFO empty" },
@@ -28,11 +31,11 @@
       package: "flash_ctrl_pkg", // Origin package (only needs for the requester)
     },
 
-    { struct: "otp_flash",
-      type: "uni",
+    { struct: "flash_otp_key",
+      type: "req_rsp",
       name: "otp",
-      act:  "rcv",
-      package: "flash_ctrl_pkg"
+      act:  "req",
+      package: "otp_ctrl_pkg"
     },
 
     { struct: "lc_tx",
@@ -89,6 +92,20 @@
   param_list: [
     // The reg parameters can be modified directly through top_*.hjson.
     // The template will automatically propagate the appropriate values.
+
+    // Random netlist constants
+    { name:      "RndCnstAddrKey",
+      desc:      "Compile-time random bits for default address key",
+      type:      "flash_ctrl_pkg::flash_key_t"
+      randcount: "128",
+      randtype:  "data", // randomize randcount databits
+    }
+    { name:      "RndCnstDataKey",
+      desc:      "Compile-time random bits for default data key",
+      type:      "flash_ctrl_pkg::flash_key_t"
+      randcount: "128",
+      randtype:  "data", // randomize randcount databits
+    }
     { name: "RegNumBanks",
       desc: "Number of flash banks",
       type: "int",
@@ -341,6 +358,29 @@
             lower bank aligned address.
             '''
           resval: "0"
+        },
+      ]
+    },
+
+    // Program type
+    { name: "PROG_TYPE_EN",
+      desc: "Enable different program types",
+      swaccess: "rw0c",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          resval: "1",
+          name: "NORMAL",
+          desc: '''
+            Normal prog type available
+            '''
+        },
+        { bits: "1",
+          resval: "1",
+          name: "REPAIR",
+          desc: '''
+            Repair prog type available
+            '''
         },
       ]
     },

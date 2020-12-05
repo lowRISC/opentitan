@@ -75,6 +75,10 @@ package flash_ctrl_pkg;
 
   // parameters for connected components
   parameter int SeedWidth = 256;
+  parameter int KeyWidth  = 128;
+  parameter int LfsrWidth = 32;
+
+  typedef logic [KeyWidth-1:0] flash_key_t;
 
   // life cycle provision write enable usage
   typedef enum logic [1:0] {
@@ -216,6 +220,14 @@ package flash_ctrl_pkg;
 
 
   ////////////////////////////
+  // Design time constants
+  ////////////////////////////
+  parameter flash_key_t RndCnstAddrKeyDefault =
+    128'h5d707f8a2d01d400928fa691c6a6e0a4;
+  parameter flash_key_t RndCnstDataKeyDefault =
+    128'h39953618f2ca6f674af39f64975ea1f5;
+
+  ////////////////////////////
   // Flash operation related enums
   ////////////////////////////
 
@@ -276,8 +288,8 @@ package flash_ctrl_pkg;
     logic                 prog_last;
     flash_prog_e          prog_type;
     mp_region_cfg_t [MpRegions:0] region_cfgs;
-    logic [127:0]         addr_key;
-    logic [127:0]         data_key;
+    logic [KeyWidth-1:0]  addr_key;
+    logic [KeyWidth-1:0]  data_key;
     logic                 rd_buf_en;
   } flash_req_t;
 
@@ -298,9 +310,9 @@ package flash_ctrl_pkg;
     prog_last:   '0,
     prog_type:   FlashProgNormal,
     region_cfgs: '0,
-    addr_key:    128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
-    data_key:    128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE,
-    rd_buf_en:   '0
+    addr_key:    RndCnstAddrKeyDefault,
+    data_key:    RndCnstDataKeyDefault,
+    rd_buf_en:   1'b0
   };
 
   // memory to flash controller
@@ -328,15 +340,6 @@ package flash_ctrl_pkg;
   ////////////////////////////
   // The following inter-module should be moved to OTP/LC
   ////////////////////////////
-
-  // otp to flash_ctrl
-  typedef struct packed {
-    logic [127:0] addr_key;
-    logic [127:0] data_key;
-    // TBD: this signal will become multi-bit in the future
-    logic seed_valid;
-    logic prog_repair_en;
-  } otp_flash_t;
 
   // lc to flash_ctrl
   typedef struct packed {
@@ -368,16 +371,6 @@ package flash_ctrl_pkg;
     logic valid;
     logic [3:0] entropy;
   } edn_entropy_t;
-
-  // default value of otp_flash_t
-  // These are hardwired default values that should never be used.
-  // Real values are individualized and supplied from OTP.
-  parameter otp_flash_t OTP_FLASH_DEFAULT = '{
-    addr_key: 128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
-    data_key: 128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE,
-    seed_valid: 1'b1,
-    prog_repair_en: 1'b1
-  };
 
   parameter lc_flash_req_t LC_FLASH_REQ_DEFAULT = '{
     rma_req: 1'b0,

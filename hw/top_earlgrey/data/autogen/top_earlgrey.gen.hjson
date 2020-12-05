@@ -1231,6 +1231,8 @@
           default: "'0"
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_signame: flash_ctrl_otp
           index: -1
         }
         {
@@ -2247,11 +2249,13 @@
       clock_srcs:
       {
         clk_i: main
+        clk_otp_i: io_div4
       }
       clock_group: infra
       reset_connections:
       {
         rst_ni: rstmgr_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]
+        rst_otp_ni: rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41000000
       generated: "true"
@@ -2259,6 +2263,7 @@
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_infra
+        clk_otp_i: clkmgr_clocks.clk_io_div4_infra
       }
       domain: "0"
       size: 0x1000
@@ -2267,7 +2272,33 @@
       available_input_list: []
       available_output_list: []
       available_inout_list: []
-      param_list: []
+      param_list:
+      [
+        {
+          name: RndCnstAddrKey
+          desc: Compile-time random bits for default address key
+          type: flash_ctrl_pkg::flash_key_t
+          randcount: "128"
+          randtype: data
+          local: "false"
+          default: 0x83d0550b80e84eb1f4c3471c5def7861
+          expose: "false"
+          name_top: RndCnstFlashCtrlAddrKey
+          randwidth: 128
+        }
+        {
+          name: RndCnstDataKey
+          desc: Compile-time random bits for default data key
+          type: flash_ctrl_pkg::flash_key_t
+          randcount: "128"
+          randtype: data
+          local: "false"
+          default: 0xfabd19450b238d4c2d73930d4cac3785
+          expose: "false"
+          name_top: RndCnstFlashCtrlDataKey
+          randwidth: 128
+        }
+      ]
       interrupt_list:
       [
         {
@@ -2363,12 +2394,15 @@
           index: -1
         }
         {
-          struct: otp_flash
-          type: uni
+          struct: flash_otp_key
+          type: req_rsp
           name: otp
-          act: rcv
-          package: flash_ctrl_pkg
+          act: req
+          package: otp_ctrl_pkg
           inst_name: flash_ctrl
+          width: 1
+          default: ""
+          top_signame: flash_ctrl_otp
           index: -1
         }
         {
@@ -4392,14 +4426,30 @@
   {
     connect:
     {
+      alert_handler.crashdump:
+      [
+        rstmgr.alert_dump
+      ]
       csrng.csrng_cmd:
       [
         edn0.csrng_cmd
         edn1.csrng_cmd
       ]
+      csrng.entropy_src_hw_if:
+      [
+        entropy_src.entropy_src_hw_if
+      ]
       flash_ctrl.flash:
       [
         eflash.flash_ctrl
+      ]
+      flash_ctrl.keymgr:
+      [
+        keymgr.flash
+      ]
+      flash_ctrl.otp:
+      [
+        otp_ctrl.flash_otp_key
       ]
       pwrmgr.pwr_flash:
       [
@@ -4416,18 +4466,6 @@
       pwrmgr.pwr_otp:
       [
         otp_ctrl.pwr_otp
-      ]
-      flash_ctrl.keymgr:
-      [
-        keymgr.flash
-      ]
-      alert_handler.crashdump:
-      [
-        rstmgr.alert_dump
-      ]
-      csrng.entropy_src_hw_if:
-      [
-        entropy_src.entropy_src_hw_if
       ]
       otp_ctrl.otp_keymgr_key:
       [
@@ -7348,6 +7386,8 @@
         default: "'0"
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_signame: flash_ctrl_otp
         index: -1
       }
       {
@@ -7840,12 +7880,15 @@
         index: -1
       }
       {
-        struct: otp_flash
-        type: uni
+        struct: flash_otp_key
+        type: req_rsp
         name: otp
-        act: rcv
-        package: flash_ctrl_pkg
+        act: req
+        package: otp_ctrl_pkg
         inst_name: flash_ctrl
+        width: 1
+        default: ""
+        top_signame: flash_ctrl_otp
         index: -1
       }
       {
@@ -9170,6 +9213,14 @@
     definitions:
     [
       {
+        package: alert_pkg
+        struct: alert_crashdump
+        signame: alert_handler_crashdump
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
         package: csrng_pkg
         struct: csrng_req
         signame: csrng_csrng_cmd_req
@@ -9186,6 +9237,22 @@
         default: ""
       }
       {
+        package: entropy_src_pkg
+        struct: entropy_src_hw_if_req
+        signame: csrng_entropy_src_hw_if_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_hw_if_rsp
+        signame: csrng_entropy_src_hw_if_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
         package: flash_ctrl_pkg
         struct: flash_req
         signame: flash_ctrl_flash_req
@@ -9197,6 +9264,30 @@
         package: flash_ctrl_pkg
         struct: flash_rsp
         signame: flash_ctrl_flash_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: flash_ctrl_pkg
+        struct: keymgr_flash
+        signame: flash_ctrl_keymgr
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: flash_otp_key_req
+        signame: flash_ctrl_otp_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: flash_otp_key_rsp
+        signame: flash_ctrl_otp_rsp
         width: 1
         type: req_rsp
         default: ""
@@ -9261,38 +9352,6 @@
         package: pwrmgr_pkg
         struct: pwr_otp_rsp
         signame: pwrmgr_pwr_otp_rsp
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: flash_ctrl_pkg
-        struct: keymgr_flash
-        signame: flash_ctrl_keymgr
-        width: 1
-        type: uni
-        default: ""
-      }
-      {
-        package: alert_pkg
-        struct: alert_crashdump
-        signame: alert_handler_crashdump
-        width: 1
-        type: uni
-        default: ""
-      }
-      {
-        package: entropy_src_pkg
-        struct: entropy_src_hw_if_req
-        signame: csrng_entropy_src_hw_if_req
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: entropy_src_pkg
-        struct: entropy_src_hw_if_rsp
-        signame: csrng_entropy_src_hw_if_rsp
         width: 1
         type: req_rsp
         default: ""

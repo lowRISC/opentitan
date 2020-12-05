@@ -46,6 +46,19 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   ////////////////////////////////////////////
+  // flash_ctrl
+  ////////////////////////////////////////////
+  // Compile-time random bits for default address key
+  parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlAddrKey = {
+    128'h83D0550B80E84EB1F4C3471C5DEF7861
+  };
+
+  // Compile-time random bits for default data key
+  parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlDataKey = {
+    128'hFABD19450B238D4C2D73930D4CAC3785
+  };
+
+  ////////////////////////////////////////////
   // keymgr
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
