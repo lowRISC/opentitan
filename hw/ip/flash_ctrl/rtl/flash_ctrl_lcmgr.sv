@@ -5,9 +5,14 @@
 // Flash Controller for life cycle / key management handling
 //
 
-module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
+module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
+  parameter flash_key_t RndCnstAddrKey = RndCnstAddrKeyDefault,
+  parameter flash_key_t RndCnstDataKey = RndCnstDataKeyDefault
+) (
   input clk_i,
   input rst_ni,
+  input clk_otp_i,
+  input rst_otp_ni,
 
   // initialization command
   input init_i,
@@ -52,6 +57,12 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   // enable read buffer in flash_phy
   output logic rd_buf_en_o,
 
+  // request otp keys
+  output otp_ctrl_pkg::flash_otp_key_req_t otp_key_req_o,
+  input otp_ctrl_pkg::flash_otp_key_rsp_t otp_key_rsp_i,
+  output flash_key_t addr_key_o,
+  output flash_key_t data_key_o,
+
   // init ongoing
   output logic init_busy_o
 );
@@ -76,6 +87,8 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   // This FSM should become sparse, especially for StRmaRsp
   typedef enum logic [3:0] {
     StIdle,
+    StReqAddrKey,
+    StReqDataKey,
     StReadSeeds,
     StWait,
     StWipeOwner,
@@ -205,6 +218,50 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
     .q_o(init_q)
   );
 
+  logic addr_key_req_d;
+  logic addr_key_ack_q;
+  logic data_key_req_d;
+  logic data_key_ack_q;
+
+  // req/ack to otp
+  prim_sync_reqack u_addr_sync_reqack (
+    .clk_src_i(clk_i),
+    .rst_src_ni(rst_ni),
+    .clk_dst_i(clk_otp_i),
+    .rst_dst_ni(rst_otp_ni),
+    .src_req_i(addr_key_req_d),
+    .src_ack_o(addr_key_ack_q),
+    .dst_req_o(otp_key_req_o.addr_req),
+    .dst_ack_i(otp_key_rsp_i.addr_ack)
+  );
+
+  // req/ack to otp
+  prim_sync_reqack u_data_sync_reqack (
+    .clk_src_i(clk_i),
+    .rst_src_ni(rst_ni),
+    .clk_dst_i(clk_otp_i),
+    .rst_dst_ni(rst_otp_ni),
+    .src_req_i(data_key_req_d),
+    .src_ack_o(data_key_ack_q),
+    .dst_req_o(otp_key_req_o.data_req),
+    .dst_ack_i(otp_key_rsp_i.data_ack)
+  );
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      addr_key_o <= RndCnstAddrKey;
+      data_key_o <= RndCnstDataKey;
+    end else begin
+      if (addr_key_req_d && addr_key_ack_q) begin
+        addr_key_o <= flash_key_t'(otp_key_rsp_i.key);
+      end
+
+      if (data_key_req_d && data_key_ack_q) begin
+        data_key_o <= flash_key_t'(otp_key_rsp_i.key);
+      end
+    end
+  end
+
   always_comb begin
 
     // phases of the hardware interface
@@ -243,15 +300,30 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
     // if required.
     init_done_d = 1'b1;
 
+    addr_key_req_d = 1'b0;
+    data_key_req_d = 1'b0;
+
     unique case (state_q)
 
       StIdle: begin
         init_done_d = 1'b0;
         phase = PhaseSeed;
-        // provision_en is only a "good" value after otp/lc initialization
         if (init_q) begin
-          // if provisioning is not enabled, do not read seeds and skip directly
-          // to wait state.
+          state_d = StReqAddrKey;
+        end
+      end
+
+      StReqAddrKey: begin
+        addr_key_req_d = 1'b1;
+        if (addr_key_ack_q) begin
+          state_d = StReqDataKey;
+        end
+      end
+
+      StReqDataKey: begin
+        data_key_req_d = 1'b1;
+        if (data_key_ack_q) begin
+          // provision_en is only a "good" value after otp/lc initialization
           state_d = provision_en_i ? StReadSeeds : StWait;
         end
       end
@@ -388,5 +460,8 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; (
   assign rready_o = 1'b1;
   assign seeds_o = seeds_q;
   assign phase_o = phase;
+
+  logic unused_seed_valid;
+  assign unused_seed_valid = otp_key_rsp_i.seed_valid;
 
 endmodule // flash_ctrl_lcmgr

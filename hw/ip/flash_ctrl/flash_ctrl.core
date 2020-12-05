@@ -15,6 +15,7 @@ filesets:
       - lowrisc:prim:flash
       - lowrisc:prim:gf_mult
       - lowrisc:prim:lc_sync
+      - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:flash_ctrl_pkg
       - "fileset_top ? (lowrisc:systems:flash_ctrl)"
     files:
