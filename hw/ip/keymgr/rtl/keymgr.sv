@@ -36,6 +36,7 @@ module keymgr import keymgr_pkg::*; #(
 
   // the following signals should eventually be wrapped into structs from other modules
   input lc_data_t lc_i,
+  input otp_ctrl_pkg::otp_keymgr_key_t otp_key_i,
   input otp_data_t otp_i,
   input flash_ctrl_pkg::keymgr_flash_t flash_i,
 
@@ -136,7 +137,7 @@ module keymgr import keymgr_pkg::*; #(
     .error_o(err_code),
     .data_valid_o(data_valid),
     .working_state_o(hw2reg.working_state.d),
-    .root_key_i(otp_i.root_key),
+    .root_key_i(otp_key_i),
     .hw_sel_o(key_sel),
     .stage_sel_o(stage_sel),
     .load_key_o(load_key),

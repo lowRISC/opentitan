@@ -37,6 +37,7 @@ module tb;
     .kmac_data_o          (keymgr_kmac_intf.kmac_data_req),
     .kmac_data_i          (keymgr_kmac_intf.kmac_data_rsp),
     .lc_i                 (keymgr_if.lc),
+    .otp_key_i            (keymgr_if.otp_key),
     .otp_i                (keymgr_if.otp),
     .flash_i              (keymgr_if.flash),
     .intr_op_done_o       (interrupts[IntrOpDone]),

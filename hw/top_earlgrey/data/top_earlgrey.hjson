@@ -220,7 +220,7 @@
       clock_group: "timers",
       reset_connections: {rst_ni: "lc_io_div4"},
       base_addr: "0x40130000",
-    }, 
+    },
     { name: "pwrmgr",
       type: "pwrmgr",
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
@@ -509,6 +509,7 @@
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
 
       // KeyMgr Sideload & KDF function
+      'otp_ctrl.otp_keymgr_key': ['keymgr.otp_key'],
       'keymgr.kmac_key' : ['kmac.keymgr_key']
       'keymgr.kmac_data': ['kmac.keymgr_kdf']
       // The idle connection is automatically connected through topgen.

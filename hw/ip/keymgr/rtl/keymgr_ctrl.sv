@@ -31,7 +31,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   output keymgr_working_state_e working_state_o,
 
   // Data input
-  input  [KeyWidth-1:0] root_key_i,
+  input  otp_ctrl_pkg::otp_keymgr_key_t root_key_i,
   output keymgr_gen_out_e hw_sel_o,
   output keymgr_stage_e stage_sel_o,
 
@@ -131,6 +131,18 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
   assign kmac_op_err = kmac_cmd_err_i | kmac_fsm_err_i | kmac_op_err_i;
 
+  // root key valid sync
+  logic root_key_valid_q;
+
+  prim_flop_2sync # (
+    .Width(1)
+  ) u_key_valid_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(root_key_i.valid),
+    .q_o(root_key_valid_q)
+  );
+
   always_comb begin
     // persistent data
     state_d = state_q;
@@ -193,7 +205,13 @@ module keymgr_ctrl import keymgr_pkg::*;(
         // the values here
         else begin
           cnt_clr = 1'b1;
-          key_state_d[0] = key_state_q[0] ^ root_key_i;
+
+          // absorb key if valid, otherwise use entropy
+          if (root_key_valid_q) begin
+            key_state_d[0] = root_key_i.key_share0;
+            key_state_d[1] = root_key_i.key_share1;
+          end
+
           init_done_o = 1'b1;
           state_d = StInit;
         end
