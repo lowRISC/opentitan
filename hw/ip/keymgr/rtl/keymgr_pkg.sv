@@ -179,23 +179,14 @@ package keymgr_pkg;
     keymgr_en:    1'b1
   };
 
+  // TODO: this will be removed later once the device ID information
+  // is broadcasted
   typedef struct packed {
     logic [DevIdWidth-1:0] devid;
-    logic [KeyWidth-1:0] root_key;
   } otp_data_t;
 
   parameter otp_data_t OTP_DATA_DEFAULT = '{
-    devid:    '0,
-    root_key: '0
+    devid:    '0
   };
 
-  typedef struct packed {
-    logic [KeyWidth-1:0] div_key;
-    logic [KeyWidth-1:0] owner_secret;
-  } flash_key_t;
-
-  parameter flash_key_t FLASH_KEY_DEFAULT = '{
-    div_key:      '0,
-    owner_secret: '0
-  };
 endpackage : keymgr_pkg

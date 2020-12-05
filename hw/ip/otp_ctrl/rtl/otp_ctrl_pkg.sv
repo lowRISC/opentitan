@@ -256,6 +256,12 @@ package otp_ctrl_pkg;
     logic [KeyMgrKeyWidth-1:0] key_share1;
   } otp_keymgr_key_t;
 
+  parameter otp_keymgr_key_t OTP_KEYMGR_KEY_DEFAULT = '{
+    valid: 1'b1,
+    key_share0: 256'hefb7ea7ee90093cf4affd9aaa2d6c0ec446cfdf5f2d5a0bfd7e2d93edc63a102,
+    key_share1: 256'h56d24a00181de99e0f690b447a8dde2a1ffb8bc306707107aa6e2410f15cfc37
+  };
+
   typedef struct packed {
     logic data_req; // Requests static key for data scrambling.
     logic addr_req; // Requests static key for address scrambling.
@@ -320,5 +326,3 @@ package otp_ctrl_pkg;
   } otp_ast_rsp_t;
 
 endpackage : otp_ctrl_pkg
-
-
