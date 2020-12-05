@@ -166,7 +166,7 @@ module sram_ctrl
         nonce_q           <= nonce_d;
       end
       // This scraps the keys
-      if (escalate_en.state != lc_ctrl_pkg::Off) begin
+      if (escalate_en != lc_ctrl_pkg::Off) begin
         key_seed_valid_q <= '0;
         key_q            <= '0;
         nonce_q          <= '0;
