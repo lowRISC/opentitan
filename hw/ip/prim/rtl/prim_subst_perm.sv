@@ -53,7 +53,7 @@ module prim_subst_perm #(
     ////////////////////////////////
     // encryption pass
     end else begin : gen_enc
-      always_comb begin : p_dec
+      always_comb begin : p_enc
         data_state_sbox = data_state[r] ^ key_i;
         // This SBox layer is aligned to nibbles, so the uppermost bits may not be affected by this.
         // However, the permutation below ensures that these bits get shuffled to a different
