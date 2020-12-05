@@ -384,11 +384,11 @@ def parse_args():
 
     rung.add_argument("--verbosity",
                       "-v",
-                      choices=['n', 'l', 'm', 'h', 'd'],
+                      choices=['n', 'l', 'm', 'h', 'f', 'd'],
                       metavar='V',
                       help=('Set tool/simulation verbosity to none (n), low '
-                            '(l), medium (m), high (h) or debug (d). '
-                            'The default value is set in config files.'))
+                            '(l), medium (m), high (h), full (f) or debug (d).'
+                            ' The default value is set in config files.'))
 
     seedg = parser.add_argument_group('Test seeds')
 
