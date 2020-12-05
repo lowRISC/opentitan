@@ -342,6 +342,13 @@ package flash_ctrl_pkg;
     logic [NumSeeds-1:0][SeedWidth-1:0] seeds;
   } keymgr_flash_t;
 
+  parameter keymgr_flash_t KEYMGR_FLASH_DEFAULT = '{
+    seeds: '{
+     256'h9152e32c9380a4bcc3e0ab263581e6b0e8825186e1e445631646e8bef8c45d47,
+     256'hfa365df52da48cd752fb3a026a8e608f0098cfe5fa9810494829d0cd9479eb78
+    }
+  };
+
   // place holder for interface to EDN, replace with real one later
   typedef struct packed {
     logic valid;

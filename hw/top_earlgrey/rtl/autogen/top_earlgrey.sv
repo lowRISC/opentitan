@@ -270,6 +270,7 @@ module top_earlgrey #(
   alert_pkg::alert_crashdump_t       alert_handler_crashdump;
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
+  otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
   keymgr_pkg::kmac_data_rsp_t       keymgr_kmac_data_rsp;
@@ -811,7 +812,7 @@ module top_earlgrey #(
       .lc_escalate_en_i(lc_ctrl_pkg::Off),
       .lc_provision_wr_en_i(lc_ctrl_pkg::Off),
       .lc_dft_en_i(lc_ctrl_pkg::Off),
-      .otp_keymgr_key_o(),
+      .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
       .flash_otp_key_i('0),
       .flash_otp_key_o(),
       .sram_otp_key_i('0),
@@ -1131,6 +1132,7 @@ module top_earlgrey #(
       .kmac_data_o(keymgr_kmac_data_req),
       .kmac_data_i(keymgr_kmac_data_rsp),
       .lc_i(keymgr_pkg::LC_DATA_DEFAULT),
+      .otp_key_i(otp_ctrl_otp_keymgr_key),
       .otp_i(keymgr_pkg::OTP_DATA_DEFAULT),
       .flash_i(flash_ctrl_keymgr),
       .tl_i(keymgr_tl_req),
