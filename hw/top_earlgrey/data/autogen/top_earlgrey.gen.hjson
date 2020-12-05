@@ -1218,6 +1218,9 @@
           default: "'0"
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: otp_ctrl_otp_keymgr_key
           index: -1
         }
         {
@@ -3170,6 +3173,18 @@
           index: -1
         }
         {
+          struct: otp_keymgr_key
+          type: uni
+          name: otp_key
+          act: rcv
+          package: otp_ctrl_pkg
+          inst_name: keymgr
+          width: 1
+          default: ""
+          top_signame: otp_ctrl_otp_keymgr_key
+          index: -1
+        }
+        {
           struct: otp_data
           type: uni
           name: otp
@@ -4352,6 +4367,10 @@
       csrng.entropy_src_hw_if:
       [
         entropy_src.entropy_src_hw_if
+      ]
+      otp_ctrl.otp_keymgr_key:
+      [
+        keymgr.otp_key
       ]
       keymgr.kmac_key:
       [
@@ -7255,6 +7274,9 @@
         default: "'0"
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: otp_ctrl_otp_keymgr_key
         index: -1
       }
       {
@@ -7987,6 +8009,18 @@
         act: rcv
         package: keymgr_pkg
         inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: otp_keymgr_key
+        type: uni
+        name: otp_key
+        act: rcv
+        package: otp_ctrl_pkg
+        inst_name: keymgr
+        width: 1
+        default: ""
+        top_signame: otp_ctrl_otp_keymgr_key
         index: -1
       }
       {
@@ -9165,6 +9199,14 @@
         width: 1
         type: req_rsp
         default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_keymgr_key
+        signame: otp_ctrl_otp_keymgr_key
+        width: 1
+        type: uni
+        default: "'0"
       }
       {
         package: keymgr_pkg
