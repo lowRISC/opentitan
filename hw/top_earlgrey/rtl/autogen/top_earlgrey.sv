@@ -1126,6 +1126,8 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[12:11] ),
 
       // Inter-module signals
+      .edn_o(),
+      .edn_i(edn_pkg::EDN_RSP_DEFAULT),
       .aes_key_o(),
       .hmac_key_o(),
       .kmac_key_o(keymgr_kmac_key),
@@ -1138,7 +1140,9 @@ module top_earlgrey #(
       .tl_i(keymgr_tl_req),
       .tl_o(keymgr_tl_rsp),
       .clk_i (clkmgr_clocks.clk_main_secure),
-      .rst_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
+      .clk_edn_i (clkmgr_clocks.clk_main_secure),
+      .rst_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+      .rst_edn_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
   csrng #(
