@@ -11,7 +11,6 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:lfsr
-      - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:keymgr_pkg
     files:
       - rtl/keymgr_reg_pkg.sv
@@ -22,6 +21,7 @@ filesets:
       - rtl/keymgr_cfg_en.sv
       - rtl/keymgr_kmac_if.sv
       - rtl/keymgr_input_checks.sv
+      - rtl/keymgr_reseed_ctrl.sv
       - rtl/keymgr.sv
     file_type: systemVerilogSource
 

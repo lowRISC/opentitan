@@ -9,6 +9,8 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
+      - lowrisc:ip:edn_pkg
+      - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:flash_ctrl_pkg
     files:
       - rtl/keymgr_pkg.sv

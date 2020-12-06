@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "KEYMGR",
   clock_primary: "clk_i",
+  other_clock_list: [ "clk_edn_i" ]
+  reset_primary: "rst_ni",
+  other_reset_list: [ "rst_edn_ni" ]
   bus_device: "tlul",
   interrupt_list: [
     { name: "op_done",   desc: "Operation complete" },
@@ -21,6 +24,12 @@
 
   // Define keymgr <-> kmac / aes / hmac struct packages
   inter_signal_list: [
+    { struct:  "edn",
+      type:    "req_rsp",
+      name:    "edn",
+      act:     "req",
+      package: "edn_pkg",
+    },
     { struct:  "hw_key_req",  // aes_key_req_t
       type:    "uni",
       name:    "aes_key",     // aes_key_o (req)
@@ -300,6 +309,21 @@
           ]
         },
       ],
+    },
+
+    { name: "RESEED_INTERVAL",
+      desc: "reseed internval for key manager entropy reseed",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "15:0",
+          name: "VAL",
+          resval: "0x100"
+          desc: '''
+            Number of key manager cycles before the entropy is reseeded
+          '''
+        },
+      ]
     },
 
     { name: "ROM_EXT_DESC_EN",
@@ -582,7 +606,7 @@
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-        { bits: "2:0",
+        { bits: "3:0",
           name: "STATE",
           resval: "0x0"
           desc: "Key manager control state",

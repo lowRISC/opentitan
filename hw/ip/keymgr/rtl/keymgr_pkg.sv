@@ -13,6 +13,7 @@ package keymgr_pkg;
   parameter int KeyMgrStages = 3;      // Number of key manager stages (creator, ownerInt, owner)
   parameter int RomExtDescWidth = 128; // Size of rom_ext hash, truncated
   parameter int Shares = 2; // number of key shares
+  parameter int EdnWidth = edn_pkg::ENDPOINT_BUS_WIDTH;
 
   // These should be defined in another module's package
   parameter int HealthStateWidth = 128;
@@ -91,15 +92,16 @@ package keymgr_pkg;
   } keymgr_ops_e;
 
   // Enumeration for working state
-  typedef enum logic [2:0] {
+  typedef enum logic [3:0] {
     StReset = 0,
-    StRandom = 1,
-    StInit = 2,
-    StCreatorRootKey = 3,
-    StOwnerIntKey = 4,
-    StOwnerKey = 5,
-    StWipe = 6,
-    StDisabled = 7
+    StEntropyReseed = 1,
+    StRandom = 2,
+    StInit = 3,
+    StCreatorRootKey = 4,
+    StOwnerIntKey = 5,
+    StOwnerKey = 6,
+    StWipe = 7,
+    StDisabled = 8
   } keymgr_working_state_e;
 
   // Enumeration for operation status

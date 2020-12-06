@@ -14,10 +14,6 @@ module keymgr_ctrl import keymgr_pkg::*;(
   // lifecycle enforcement
   input en_i,
 
-  // entropy input
-  input [(LfsrWidth/2)-1:0] entropy_i,
-  output logic prng_en_o,
-
   // Software interface
   input init_i,
   output logic init_done_o,
@@ -46,8 +42,15 @@ module keymgr_ctrl import keymgr_pkg::*;(
   input kmac_fsm_err_i, // asserted when kmac fsm reaches unexpected state
   input kmac_op_err_i,  // asserted when kmac itself reports an error
   input kmac_cmd_err_i, // asserted when more than one command given to kmac
-  input [Shares-1:0][KeyWidth-1:0] kmac_data_i
+  input [Shares-1:0][KeyWidth-1:0] kmac_data_i,
+
+  // prng control interface
+  input [(LfsrWidth/2)-1:0] entropy_i,
+  input prng_reseed_ack_i,
+  output logic prng_reseed_req_o,
+  output logic prng_en_o
 );
+
   localparam int EntropyWidth = LfsrWidth / 2;
   localparam int EntropyRounds = KeyWidth / EntropyWidth;
   localparam int CntWidth = $clog2(EntropyRounds + 1);
@@ -159,6 +162,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
     stage_sel_o = Disable;
 
     // enable prng toggling
+    prng_reseed_req_o = 1'b0;
     prng_en_o = 1'b0;
 
     op_done_o = 1'b0;
@@ -180,10 +184,18 @@ module keymgr_ctrl import keymgr_pkg::*;(
         // Note, if init is called at the same time as start, it is considered
         // an invalid command sequence.
         if (init_i && !invalid_op && en_i) begin
-          state_d = StRandom;
+          state_d = StEntropyReseed;
         end else begin
           state_d = StReset;
           init_done_o = init_i & invalid_op;
+        end
+      end
+
+      // reseed entropy
+      StEntropyReseed: begin
+        prng_reseed_req_o = 1'b1;
+        if (prng_reseed_ack_i) begin
+          state_d = StRandom;
         end
       end
 
