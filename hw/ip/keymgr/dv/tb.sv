@@ -39,6 +39,7 @@ module tb;
     .lc_i                 (keymgr_if.lc),
     .otp_key_i            (keymgr_if.otp_key),
     .otp_i                (keymgr_if.otp),
+    .edn_i                (keymgr_if.edn_rsp),
     .flash_i              (keymgr_if.flash),
     .intr_op_done_o       (interrupts[IntrOpDone]),
     .intr_err_o           (interrupts[IntrErr]),

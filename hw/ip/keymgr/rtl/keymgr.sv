@@ -20,6 +20,8 @@ module keymgr import keymgr_pkg::*; #(
 ) (
   input clk_i,
   input rst_ni,
+  input clk_edn_i,
+  input rst_edn_ni,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -39,6 +41,10 @@ module keymgr import keymgr_pkg::*; #(
   input otp_ctrl_pkg::otp_keymgr_key_t otp_key_i,
   input otp_data_t otp_i,
   input flash_ctrl_pkg::keymgr_flash_t flash_i,
+
+  // connection to edn
+  output edn_pkg::edn_req_t edn_o,
+  input edn_pkg::edn_rsp_t edn_i,
 
   // interrupts and alerts
   output logic intr_op_done_o,
@@ -82,6 +88,25 @@ module keymgr import keymgr_pkg::*; #(
   // The second case is less sensitive and is applied directly.  If the inputs
   // have more bits than the lfsr output, the lfsr value is simply replicated
 
+  logic seed_en;
+  logic [LfsrWidth-1:0] seed;
+  logic reseed_req;
+  logic reseed_ack;
+
+  keymgr_reseed_ctrl u_reseed_ctrl (
+    .clk_i,
+    .rst_ni,
+    .clk_edn_i,
+    .rst_edn_ni,
+    .reseed_req_i(reseed_req),
+    .reseed_ack_o(reseed_ack),
+    .reseed_interval_i(reg2hw.reseed_interval.q),
+    .edn_o,
+    .edn_i,
+    .seed_en_o(seed_en),
+    .seed_o(seed)
+  );
+
   logic [63:0] lfsr;
   logic ctrl_lfsr_en, data_lfsr_en, sideload_lfsr_en;
 
@@ -95,9 +120,14 @@ module keymgr import keymgr_pkg::*; #(
     .clk_i,
     .rst_ni,
     .lfsr_en_i(ctrl_lfsr_en | data_lfsr_en | sideload_lfsr_en),
-    .seed_en_i(1'b0),
-    .seed_i('0),
-    .entropy_i('0), // TBD, this should be hooked up to an entropy distribution pkg
+    // The seed update is skipped if there is an ongoing keymgr transaction.
+    // This is not really done for any functional purpose but more to simplify
+    // DV. When an invalid operation is selected, the keymgr just starts transmitting
+    // whatever is at the prng output, however, this may cause a dv protocol violation
+    // if a reseed happens to coincide.
+    .seed_en_i(seed_en & ~reg2hw.control.start.q),
+    .seed_i(seed),
+    .entropy_i('0),
     .state_o(lfsr)
   );
 
@@ -126,8 +156,10 @@ module keymgr import keymgr_pkg::*; #(
     .clk_i,
     .rst_ni,
     .en_i(lc_i.keymgr_en),
+    .prng_reseed_req_o(reseed_req),
+    .prng_reseed_ack_i(reseed_ack),
     .prng_en_o(ctrl_lfsr_en),
-    .entropy_i(lfsr[63:32]),  // TBD, recommend directly interfacing with DRBG for keymgr_ctrl
+    .entropy_i(lfsr[63:32]),
     .init_i(reg2hw.control.init.q),
     .init_done_o(init_done),
     .op_i(keymgr_ops_e'(reg2hw.control.operation.q)),
