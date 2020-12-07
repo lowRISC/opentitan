@@ -6,7 +6,13 @@
 
 module lc_ctrl_fsm
   import lc_ctrl_pkg::*;
-(
+#(// Random netlist constants
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInv  = LcKeymgrDivWidth'(0),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTest = LcKeymgrDivWidth'(1),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProd = LcKeymgrDivWidth'(2),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivDev  = LcKeymgrDivWidth'(3),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivRma  = LcKeymgrDivWidth'(4)
+) (
   // This module is combinational, but we
   // need the clock and reset for the assertions.
   input                         clk_i,
@@ -66,7 +72,9 @@ module lc_ctrl_fsm
   input  lc_tx_t                lc_clk_byp_ack_i,
   // Request and feedback to/from flash controller
   output lc_tx_t                lc_flash_rma_req_o,
-  input  lc_tx_t                lc_flash_rma_ack_i
+  input  lc_tx_t                lc_flash_rma_ack_i,
+  // State group diversification value for keymgr
+  output lc_keymgr_div_t        lc_keymgr_div_o
 );
 
   ///////////////
@@ -413,7 +421,13 @@ module lc_ctrl_fsm
   );
 
   // LC signal decoder and broadcasting logic.
-  lc_ctrl_signal_decode u_lc_ctrl_signal_decode (
+  lc_ctrl_signal_decode #(
+    .RndCnstLcKeymgrDivInv  ( RndCnstLcKeymgrDivInv  ),
+    .RndCnstLcKeymgrDivTest ( RndCnstLcKeymgrDivTest ),
+    .RndCnstLcKeymgrDivProd ( RndCnstLcKeymgrDivProd ),
+    .RndCnstLcKeymgrDivDev  ( RndCnstLcKeymgrDivDev  ),
+    .RndCnstLcKeymgrDivRma  ( RndCnstLcKeymgrDivRma  )
+  ) u_lc_ctrl_signal_decode (
     .clk_i,
     .rst_ni,
     .lc_state_valid_i   ( lc_state_valid_q ),
@@ -428,7 +442,8 @@ module lc_ctrl_fsm
     .lc_provision_wr_en_o,
     .lc_provision_rd_en_o,
     .lc_keymgr_en_o,
-    .lc_escalate_en_o
+    .lc_escalate_en_o,
+    .lc_keymgr_div_o
   );
 
   // Conditional signals set by main FSM.
