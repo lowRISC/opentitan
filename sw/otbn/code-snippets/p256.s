@@ -7,6 +7,12 @@
  * https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/dcrypto/dcrypto_p256.c
  */
 
+.globl p256init
+.globl p256isoncurve
+.globl p256scalarmult
+.globl p256sign
+.globl p256verify
+
 .text
 
 SetupP256PandMuLow:

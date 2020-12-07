@@ -9,6 +9,9 @@ sw_otbn_sources += {
   'modexp': files(
     'modexp.s'
   ),
+  'p256': files(
+    'p256.s'
+  ),
   'loop': files(
     'loop.s',
   ),
@@ -31,5 +34,21 @@ sw_otbn_sources += {
   ),
   'err_test': files(
     'err_test.s',
+  ),
+  'p256_curve_point_test': files(
+    'p256_curve_point_test.s',
+    'p256.s',
+  ),
+  'p256_scalar_mult_test': files(
+    'p256_scalar_mult_test.s',
+    'p256.s',
+  ),
+  'p256_ecdsa_sign_test': files(
+    'p256_ecdsa_sign_test.s',
+    'p256.s',
+  ),
+  'p256_ecdsa_verify_test': files(
+    'p256_ecdsa_verify_test.s',
+    'p256.s',
   ),
 }
