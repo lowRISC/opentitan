@@ -10,9 +10,9 @@
 //
 // The currently implemented architecture uses a reduced-round PRINCE cipher primitive in CTR mode
 // in order to (weakly) scramble the data written to the memory macro. Plain CTR mode does not
-// diffuse the data since the keystream is just XOR'ed onto it, hence we also we perform Byte-wise
+// diffuse the data since the keystream is just XOR'ed onto it, hence we also we perform byte-wise
 // diffusion using a (shallow) substitution/permutation network layers in order to provide a limited
-// avalanche effect within a Byte.
+// avalanche effect within a byte.
 //
 // In order to break the linear addressing space, the address is passed through a bijective
 // scrambling function constructed using a (shallow) substitution/permutation and a nonce. Due to
@@ -25,7 +25,7 @@
 
 module prim_ram_1p_scr #(
   parameter  int Depth                = 512, // Needs to be a power of 2 if NumAddrScrRounds > 0.
-  parameter  int Width                = 256, // Needs to be Byte aligned for parity
+  parameter  int Width                = 256, // Needs to be byte aligned for parity
   parameter  int DataBitsPerMask      = 8,   // Currently only 8 is supported
   parameter  int CfgWidth             = 8,   // WTC, RTC, etc
 
@@ -33,7 +33,7 @@ module prim_ram_1p_scr #(
   // amount of cipher rounds low. PRINCE has 5 half rounds in its original form, which corresponds
   // to 2*5 + 1 effective rounds. Setting this to 2 halves this to approximately 5 effective rounds.
   parameter  int NumPrinceRoundsHalf  = 2,   // Number of PRINCE half rounds, can be [1..5]
-  // Number of extra intra-Byte diffusion rounds. Setting this to 0 disables intra-Byte diffusion.
+  // Number of extra intra-byte diffusion rounds. Setting this to 0 disables intra-byte diffusion.
   parameter  int NumByteScrRounds     = 2,
   // Number of address scrambling rounds. Setting this to 0 disables address scrambling.
   parameter  int NumAddrScrRounds     = 2,
@@ -65,7 +65,7 @@ module prim_ram_1p_scr #(
   input                             write_i,
   input        [AddrWidth-1:0]      addr_i,
   input        [Width-1:0]          wdata_i,
-  input        [Width-1:0]          wmask_i,  // Needs to be Byte-aligned for parity
+  input        [Width-1:0]          wmask_i,  // Needs to be byte-aligned for parity
   output logic [Width-1:0]          rdata_o,
   output logic                      rvalid_o, // Read response (rdata_o) is valid
   output logic [1:0]                rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
@@ -86,40 +86,37 @@ module prim_ram_1p_scr #(
   // Pending Write and Address Registers //
   /////////////////////////////////////////
 
-  // Read / write strobes
-  logic read_en, write_en;
-  assign read_en = req_i & ~write_i;
-  assign write_en = req_i & write_i;
-
   // Writes are delayed by one cycle, such the same keystream generation primitive (prim_prince) can
   // be reused among reads and writes. Note however that with this arrangement, we have to introduce
   // a mechanism to hold a pending write transaction in cases where that transaction is immediately
   // followed by a read. The pending write transaction is written to memory as soon as there is no
-  // new read transaction incoming. The latter is a special case, and if that happens, we return the
-  // data from the write holding register.
-  logic macro_write;
-  logic write_pending_d, write_pending_q;
-  assign write_pending_d =
-      (write_en)                ? 1'b1            : // Set new write request
-      (macro_write)             ? 1'b0            : // Clear pending request when writing to memory
-                                  write_pending_q;  // Keep pending write request alive
+  // new read transaction incoming. The latter can be a special case if the incoming read goes to
+  // the same address as the pending write. To that end, we detect the address collision and return
+  // the data from the write holding register.
 
-  logic collision_d, collision_q;
+  // Read / write strobes
+  logic read_en, write_en_d, write_en_q;
+  assign read_en = req_i & ~write_i;
+  assign write_en_d = req_i & write_i;
+
+  logic write_pending_q;
+  logic addr_collision_d, addr_collision_q;
   logic [AddrWidth-1:0] waddr_q;
-  assign collision_d = read_en & write_pending_q & (addr_i == waddr_q);
+  assign addr_collision_d = read_en & (write_en_q | write_pending_q) & (addr_i == waddr_q);
 
   // Macro requests and write strobe
   logic macro_req;
-  assign macro_req   = read_en | write_pending_q;
+  assign macro_req   = read_en | write_en_q | write_pending_q;
   // We are allowed to write a pending write transaction to the memory if there is no incoming read
-  assign macro_write = write_pending_q & ~read_en;
+  logic macro_write;
+  assign macro_write = (write_en_q | write_pending_q) & ~read_en;
+  // New read write collision
+  logic rw_collision;
+  assign rw_collision = write_en_q & read_en;
 
   ////////////////////////
   // Address Scrambling //
   ////////////////////////
-
-  // TODO: check whether this is good enough for our purposes, or whether we should go for something
-  // else. Also, we may want to input some secret key material into this function as well.
 
   // We only select the pending write address in case there is no incoming read transaction.
   logic [AddrWidth-1:0] addr_mux;
@@ -132,7 +129,7 @@ module prim_ram_1p_scr #(
       .DataWidth ( AddrWidth        ),
       .NumRounds ( NumAddrScrRounds ),
       .Decrypt   ( 0                )
-    ) i_prim_subst_perm (
+    ) u_prim_subst_perm (
       .data_i ( addr_mux ),
       // Since the counter mode concatenates {nonce_i[NonceWidth-1-AddrWidth:0], addr_i} to form
       // the IV, the upper AddrWidth bits of the nonce are not used and can be used for address
@@ -146,8 +143,7 @@ module prim_ram_1p_scr #(
   end
 
   // We latch the non-scrambled address for error reporting.
-  logic [AddrWidth-1:0] raddr_d, raddr_q;
-  assign raddr_d = addr_mux;
+  logic [AddrWidth-1:0] raddr_q;
   assign raddr_o = raddr_q;
 
   //////////////////////////////////////////////
@@ -198,13 +194,13 @@ module prim_ram_1p_scr #(
   /////////////////////
 
   // Data scrambling is a two step process. First, we XOR the write data with the keystream obtained
-  // by operating a reduced-round PRINCE cipher in CTR-mode. Then, we diffuse data within each Byte
-  // in order to get a limited "avalanche" behavior in case parts of the Bytes are flipped as a
+  // by operating a reduced-round PRINCE cipher in CTR-mode. Then, we diffuse data within each byte
+  // in order to get a limited "avalanche" behavior in case parts of the bytes are flipped as a
   // result of a malicious attempt to tamper with the data in memory. We perform the diffusion only
-  // within Bytes in order to maintain the ability to write individual Bytes. Note that the
+  // within bytes in order to maintain the ability to write individual bytes. Note that the
   // keystream XOR is performed first for the write path such that it can be performed last for the
   // read path. This allows us to hide a part of the combinational delay of the PRINCE primitive
-  // behind the propagation delay of the SRAM macro and the per-Byte diffusion step.
+  // behind the propagation delay of the SRAM macro and the per-byte diffusion step.
 
   // Write path. Note that since this does not fan out into the interconnect, the write path is not
   // as critical as the read path below in terms of timing.
@@ -214,12 +210,12 @@ module prim_ram_1p_scr #(
     logic [7:0] wdata_xor;
     assign wdata_xor = wdata_q[k*8 +: 8] ^ keystream_repl[k*8 +: 8];
 
-    // Byte aligned diffusion using a substitution / permutation network
+    // byte aligned diffusion using a substitution / permutation network
     prim_subst_perm #(
       .DataWidth ( 8                ),
       .NumRounds ( NumByteScrRounds ),
       .Decrypt   ( 0                )
-    ) i_prim_subst_perm (
+    ) u_prim_subst_perm (
       .data_i ( wdata_xor             ),
       .key_i  ( '0                    ),
       .data_o ( wdata_scr_d[k*8 +: 8] )
@@ -228,7 +224,7 @@ module prim_ram_1p_scr #(
 
   // Read path. This is timing critical. The keystream XOR operation is performed last in order to
   // hide the combinational delay of the PRINCE primitive behind the propagation delay of the
-  // SRAM and the Byte diffusion.
+  // SRAM and the byte diffusion.
   logic [Width-1:0] rdata_scr, rdata;
   for (genvar k = 0; k < Width/8; k++) begin : gen_undiffuse_rdata
     // Reverse diffusion first
@@ -237,7 +233,7 @@ module prim_ram_1p_scr #(
       .DataWidth ( 8                ),
       .NumRounds ( NumByteScrRounds ),
       .Decrypt   ( 1                )
-    ) i_prim_subst_perm (
+    ) u_prim_subst_perm (
       .data_i ( rdata_scr[k*8 +: 8]  ),
       .key_i  ( '0                   ),
       .data_o ( rdata_xor            )
@@ -265,24 +261,28 @@ module prim_ram_1p_scr #(
   // need an additional holding register that can buffer the scrambled data of the first write in
   // cycle 1.
 
-  // Clear this if we can write the memory in this cycle, otherwise set if there is a pending write
-  logic write_scr_pending_d, write_scr_pending_q;
-  assign write_scr_pending_d = (macro_write) ? 1'b0 : write_pending_q;
+  // Clear this if we can write the memory in this cycle. Set only if the current write cannot
+  // proceed due to an incoming read operation.
+  logic write_scr_pending_d;
+  assign write_scr_pending_d = (macro_write)  ? 1'b0 :
+                               (rw_collision) ? 1'b1 :
+                                                write_pending_q;
+
   // Select the correct scrambled word to be written, based on whether the word in the scrambled
   // data holding register is valid or not. Note that the write_scr_q register could in theory be
   // combined with the wdata_q register. We don't do that here for timing reasons, since that would
   // require another read data mux to inject the scrambled data into the read descrambling path.
   logic [Width-1:0] wdata_scr;
-  assign wdata_scr = (write_scr_pending_q) ? wdata_scr_q : wdata_scr_d;
+  assign wdata_scr = (write_pending_q) ? wdata_scr_q : wdata_scr_d;
 
   // Output read valid strobe
   logic rvalid_q;
   assign rvalid_o = rvalid_q;
 
   // In case of a collision, we forward the write data from the unscrambled holding register
-  assign rdata_o = (collision_q) ? wdata_q   : // forward pending (unscrambled) write data
-                   (rvalid_q)    ? rdata     : // regular reads
-                                   '0;         // tie to zero otherwise
+  assign rdata_o = (addr_collision_q) ? wdata_q   : // forward pending (unscrambled) write data
+                   (rvalid_q)         ? rdata     : // regular reads
+                                        '0;         // tie to zero otherwise
 
   ///////////////
   // Registers //
@@ -292,8 +292,7 @@ module prim_ram_1p_scr #(
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_wdata_buf
     if (!rst_ni) begin
       write_pending_q     <= 1'b0;
-      write_scr_pending_q <= 1'b0;
-      collision_q         <= 1'b0;
+      addr_collision_q    <= 1'b0;
       rvalid_q            <= 1'b0;
       waddr_q             <= '0;
       wdata_q             <= '0;
@@ -301,17 +300,19 @@ module prim_ram_1p_scr #(
       wmask_q             <= '0;
       raddr_q             <= '0;
     end else begin
-      write_scr_pending_q <= write_scr_pending_d;
-      write_pending_q     <= write_pending_d;
-      collision_q         <= collision_d;
+      write_pending_q     <= write_scr_pending_d;
+      addr_collision_q    <= addr_collision_d;
       rvalid_q            <= read_en;
-      raddr_q             <= raddr_d;
-      if (write_en) begin
+      write_en_q          <= write_en_d;
+      if (read_en) begin
+        raddr_q           <= addr_i;
+      end
+      if (write_en_d) begin
         waddr_q <= addr_i;
         wmask_q <= wmask_i;
         wdata_q <= wdata_i;
       end
-      if (write_scr_pending_d) begin
+      if (rw_collision) begin
         wdata_scr_q <= wdata_scr_d;
       end
     end
@@ -327,7 +328,7 @@ module prim_ram_1p_scr #(
     .DataBitsPerMask(DataBitsPerMask),
     .CfgW(CfgWidth),
     .EnableECC(1'b0),
-    .EnableParity(1'b1), // We are using Byte parity
+    .EnableParity(1'b1), // We are using byte parity
     .EnableInputPipeline(1'b0),
     .EnableOutputPipeline(1'b0)
   ) u_prim_ram_1p_adv (
