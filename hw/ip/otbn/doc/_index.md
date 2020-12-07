@@ -356,9 +356,10 @@ The `L`, `M`, and `Z` flags are determined based on the result of the operation 
 
 ### Loop Stack
 
-The LOOP instruction allows for nested loops; the active loops are stored on the loop stack.
-Each loop stack entry is a tuple of loop count, start address, and end address.
-The number of entries in the loop stack is implementation-dependent.
+OTBN has two instructions for hardware-assisted loops: [`LOOP`]({{< relref "hw/ip/otbn/doc/isa#loop" >}}) and [`LOOPI`]({{< relref "hw/ip/otbn/doc/isa#loopi" >}}).
+Both use the same state for tracking control flow.
+This is a stack of tuples containing a loop count, start address and end address.
+The stack has a maximum depth of eight and the top of the stack is the current loop.
 
 # Theory of Operations
 
