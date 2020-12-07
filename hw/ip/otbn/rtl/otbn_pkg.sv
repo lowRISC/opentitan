@@ -43,6 +43,9 @@ package otbn_pkg;
   } regfile_e;
 
   // Error codes
+  //
+  // Note: This list is duplicated in the documentation (../doc/_index.md), the ISS
+  // (../dv/otbnsim/sim/alert.py), and the DIF. If updating it here, update those too.
   typedef enum logic [31:0] {
     ErrCodeNoError     = 32'h00,
     ErrCodeBadDataAddr = 32'h01,
