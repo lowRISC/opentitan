@@ -4,6 +4,7 @@
 
 from typing import List, Optional, Tuple
 
+from .alert import LoopError
 from .csr import CSRFile
 from .dmem import Dmem
 from .ext_regs import OTBNExtRegs
@@ -39,13 +40,13 @@ class LoopLevel:
     start_addr is the first instruction inside the loop (the instruction
     following the loop instruction). insn_count is the number of instructions
     in the loop (and must be positive). restarts is one less than the number of
-    iterations, and must be positive.
+    iterations, and must be non-negative.
 
     '''
     def __init__(self, start_addr: int, insn_count: int, restarts: int):
         assert 0 <= start_addr
         assert 0 < insn_count
-        assert 0 < restarts
+        assert 0 <= restarts
 
         self.loop_count = 1 + restarts
         self.restarts_left = restarts
@@ -56,57 +57,69 @@ class LoopLevel:
 class LoopStack:
     '''An object representing the loop stack
 
-    An entry on the loop stack represents a possible back edge: the
-    restarts_left counter tracks the number of these back edges. The entry is
-    removed when the counter gets to zero.
+    The loop stack holds up to 8 LoopLevel objects, corresponding to nested
+    loops.
 
     '''
+    stack_depth = 8
+
     def __init__(self) -> None:
         self.stack = []  # type: List[LoopLevel]
         self.trace = []  # type: List[Trace]
 
     def start_loop(self,
                    next_addr: int,
-                   insn_count: int,
-                   loop_count: int) -> Optional[int]:
+                   loop_count: int,
+                   insn_count: int) -> None:
         '''Start a loop.
 
-        Adds the loop to the stack and returns the next PC if it's not
-        straight-line. If the loop count is one, this acts as a NOP (and
-        doesn't change the stack). If the loop count is zero, this doesn't
-        change the stack but the next PC will be the match address.
+        next_addr is the address of the first instruction in the loop body.
+        loop_count must be positive and is the number of times to execute the
+        loop. insn_count must be positive and is the number of instructions in
+        the loop body.
 
         '''
         assert 0 <= next_addr
         assert 0 < insn_count
-        assert 0 <= loop_count
+        assert 0 < loop_count
+
+        if len(self.stack) == LoopStack.stack_depth:
+            raise LoopError('loop stack overflow')
 
         self.trace.append(TraceLoopStart(loop_count, insn_count))
+        self.stack.append(LoopLevel(next_addr, insn_count, loop_count - 1))
 
-        if loop_count == 0:
-            return next_addr + 4 * insn_count
-
-        if loop_count > 1:
-            self.stack.append(LoopLevel(next_addr, insn_count, loop_count - 1))
-
-        return None
+    def check_insn(self, pc: int, insn_affects_control: bool) -> None:
+        '''Check for branch instructions at the end of a loop body'''
+        if self.stack:
+            top = self.stack[-1]
+            if pc + 4 == top.match_addr:
+                # We're about to execute the last instruction in the loop body.
+                # Make sure that it isn't a jump, branch or another loop
+                # instruction.
+                if insn_affects_control:
+                    raise LoopError('control instruction at end of loop')
 
     def step(self, next_pc: int) -> Optional[int]:
         '''Update loop stack. If we should loop, return new PC'''
         if self.stack:
             top = self.stack[-1]
+
             if next_pc == top.match_addr:
-                assert top.restarts_left > 0
-                top.restarts_left -= 1
+                assert top.restarts_left >= 0
+
+                # 1-based iteration number
+                loop_idx = top.loop_count - top.restarts_left
 
                 if not top.restarts_left:
                     self.stack.pop()
+                    ret_val = None
+                else:
+                    top.restarts_left -= 1
+                    ret_val = top.start_addr
 
-                # 1-based iteration number
-                idx = top.loop_count - top.restarts_left
-                self.trace.append(TraceLoopIteration(idx, top.loop_count))
-
-                return top.start_addr
+                self.trace.append(TraceLoopIteration(loop_idx, top.loop_count))
+                return ret_val
 
         return None
 
@@ -151,9 +164,7 @@ class OTBNState:
 
     def loop_start(self, iterations: int, bodysize: int) -> None:
         next_pc = int(self.pc) + 4
-        skip_pc = self.loop_stack.start_loop(next_pc, bodysize, iterations)
-        if skip_pc is not None:
-            self.pc_next = skip_pc
+        self.loop_stack.start_loop(next_pc, iterations, bodysize)
 
     def loop_step(self) -> None:
         back_pc = self.loop_stack.step(self.pc + 4)
@@ -302,6 +313,10 @@ class OTBNState:
         '''Update M, L, Z flags for a flag group using the given result'''
         self.csrs.flags[fg] = \
             FlagReg.mlz_for_result(self.csrs.flags[fg].C, result)
+
+    def pre_insn(self, insn_affects_control: bool) -> None:
+        '''Run before running an instruction'''
+        self.loop_stack.check_insn(self.pc, insn_affects_control)
 
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''

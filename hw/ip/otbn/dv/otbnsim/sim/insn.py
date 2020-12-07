@@ -4,6 +4,7 @@
 
 from typing import Dict
 
+from .alert import LoopError
 from .flags import FlagReg
 from .isa import (OTBNInsn, RV32RegReg, RV32RegImm, RV32ImmShift,
                   insn_for_mnemonic, logical_byte_shift)
@@ -203,6 +204,7 @@ class SW(OTBNInsn):
 
 class BEQ(OTBNInsn):
     insn = insn_for_mnemonic('beq', 3)
+    affects_control = True
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
@@ -219,6 +221,7 @@ class BEQ(OTBNInsn):
 
 class BNE(OTBNInsn):
     insn = insn_for_mnemonic('bne', 3)
+    affects_control = True
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
@@ -235,6 +238,7 @@ class BNE(OTBNInsn):
 
 class JAL(OTBNInsn):
     insn = insn_for_mnemonic('jal', 2)
+    affects_control = True
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
@@ -249,6 +253,7 @@ class JAL(OTBNInsn):
 
 class JALR(OTBNInsn):
     insn = insn_for_mnemonic('jalr', 3)
+    affects_control = True
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
@@ -315,6 +320,7 @@ class ECALL(OTBNInsn):
 
 class LOOP(OTBNInsn):
     insn = insn_for_mnemonic('loop', 2)
+    affects_control = True
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)
@@ -323,11 +329,16 @@ class LOOP(OTBNInsn):
 
     def execute(self, state: OTBNState) -> None:
         num_iters = state.gprs.get_reg(self.grs).read_unsigned()
+        if num_iters == 0:
+            raise LoopError('loop count in x{} was zero'
+                            .format(self.grs))
+
         state.loop_start(num_iters, self.bodysize)
 
 
 class LOOPI(OTBNInsn):
     insn = insn_for_mnemonic('loopi', 2)
+    affects_control = True
 
     def __init__(self, op_vals: Dict[str, int]):
         super().__init__(op_vals)

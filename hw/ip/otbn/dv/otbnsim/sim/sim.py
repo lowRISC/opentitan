@@ -68,6 +68,7 @@ class OTBNSim:
                 if insn.insn.cycles > 1:
                     self.state.add_stall_cycles(insn.insn.cycles - 1)
 
+                self.state.pre_insn(insn.affects_control)
                 insn.execute(self.state)
                 self.state.post_insn()
 
