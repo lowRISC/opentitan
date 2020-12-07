@@ -36,6 +36,8 @@ The protocol controller currently supports the following features:
 *  Controller initiated read, program and erase of flash.
    *  Erase can be either of a page, or an entire bank.
 *  Support for differentiation between informational and data flash partitions.
+*  Support for accessing multiple types of information partition.
+   *  Some flash storage support multiple types of information storage for each information partition.
 *  Parameterized support for burst program / read, up to 64B.
    *  Longer programs / reads are supported, however the protocol controller will directly back-pressure the bus if software supplies more data than can be consumed, or if software reads more than there is data available.
    *  Software can also choose to operate by polling the current state of the FIFO or through FIFO interrupts (empty / full / level).
@@ -51,11 +53,9 @@ The protocol controller currently supports the following features:
       *  Flash may contain additional pages used to remap broken pages for yield recovery.
       *  The storage, loading and security of redundant pages may also be implemented in the physical controller or flash memory.
 
-Features to be implemented
-*  Ability to access multiple types of information partition.
-   * This feature is pending software / vendor  discussions.
+Features under consideration
 *  Ability to access flash metadata bits (see flash ECC)
-   * This feature is pending software discussions.
+   * This feature is pending software discussions and actual usecase need.
 
 
 ### Flash Physical Controller Features
@@ -95,12 +95,13 @@ Unlike sram, flash memory is not typically organized as a contiguous block of ge
 Instead it is organized into data partitions and information partitions.
 
 The data partition holds generic data like a generic memory would.
-The information partition holds metadata about the data partition as well design specific secret data.
+The information partition holds metadata about the data partition as well as design specific secret data.
 This includes but is not limited to:
 *  Redundancy information.
 *  Manufacturer specific information.
 *  Manufacturer flash timing information.
 *  Design specific unique seeds.
+*  The redundancy pages themselves, which are not accessible directly as data partitions.
 
 Note, there **can** be more than one information partition, and none of them are required to be the same size as the data partition.
 See the diagram below for an illustrative example.
@@ -312,16 +313,26 @@ Each of `flash_i` and `flash_o` is a struct that packs together additional signa
 | --------------  | ---------------------| ------------------- | -------------------------------------------------------
 | `req`           | protocol controller  | physical controller | Protocol controller initiated transaction
 | `addr`          | protocol controller  | physical controller | Protocol controller initiated transaction address
+| `part`          | protocol controller  | physical controller | Protocol controller initiated transaction partition type - data or informational
+| `info_sel`      | protocol controller  | physical controller | Protocol controller initiated transaction information partition select - 0 ~ N
+| `scramble_en`   | protocol controller  | physical controller | Protocol controller initiated transaction address is scramble enabled
+| `ecc_en`        | protocol controller  | physical controller | Protocol controller initiated transaction address is ecc enabled
+| `he_en`         | protocol controller  | physical controller | Protocol controller initiated transaction address is high endurance enabled
 | `rd`            | protocol controller  | physical controller | Protocol controller initiated read
 | `prog`          | protocol controller  | physical controller | Protocol controller initiated program
 | `pg_erase`      | protocol controller  | physical controller | Protocol controller initiated page erase
 | `prog_data`     | protocol controller  | physical controller | Protocol controller initiated program data, 1 flash word wide
+| `prog_type`     | protocol controller  | physical controller | Protocol controller initiated program type, normal program or repair program
+| `prog_last`     | protocol controller  | physical controller | Protocol controller last program beat
 | `bk_erase`      | protocol controller  | physical controller | Protocol controller initiated bank erase
+| `addr_key`      | protocol controller  | physical controller | Physical controller address scramble key
+| `data_key`      | protocol controller  | physical controller | Physical controller data scramble key
 | `rd_done`       | physical controller  | protocol controller | Physical controller read done
 | `prog_done`     | physical controller  | protocol controller | Physical controller program done
 | `erase_done`    | physical controller  | protocol controller | Physical controller erase done
 | `init_busy`     | physical controller  | protocol controller | Physical controller reset release initialization in progress
 | `rd_data`       | physical controller  | protocol controller | Physical Controller read data, 1 flash word wide
+
 
 The physical controller IOs are listed and described below.
 
