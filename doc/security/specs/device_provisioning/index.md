@@ -2,14 +2,6 @@
 title: "Device Provisioning"
 ---
 
-<p style="text-align: right">
-  Contributors:
-  <a href="https://github.com/moidx">Miguel Osorio</a>,
-  <a href="https://github.com/tjaychen">Timothy Chen</a>,
-  <a href="https://github.com/cdgori">Chris Gori</a>,
-  <a href="https://github.com/zi-v">Ziv Hershman</a>,
-</p>
-
 <p style="color: red; text-align: right;">
   Status: Pre-RFC
 </p>
@@ -49,7 +41,7 @@ The security model of the provisioning infrastructure is based on the following
 requirements:
 
 *   There is a provisioning appliance connected to an HSM in the manufacturing
-    floor. This device is the only component trusted with secrets other than 
+    floor. This device is the only component trusted with secrets other than
     the Device Under Test (DUT).
 *   There is a pre-personalization device authentication function that can be
     implemented by trusted components.
@@ -259,7 +251,7 @@ P1.1. The TESTER unlocks the DEVICE by sending the `TEST_UNLOCK` and `TEST_EXIT`
 tokens via TAP interface.
 
 P1.2. The TESTER loads personalization software on the DEVICE using the SPI
-bootstrap interface. The DEVICE verifies the personalization software 
+bootstrap interface. The DEVICE verifies the personalization software
 signature against one of the public keys stored in the ROM via secure boot.
 
 **P2. Device authentication and key exchange**
