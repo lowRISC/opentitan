@@ -36,6 +36,7 @@ module prim_subst_perm #(
       always_comb begin : p_dec
         data_state_sbox = data_state[r] ^ key_i;
         // Reverse odd/even grouping
+        data_state_flipped = data_state_sbox;
         for (int k = 0; k < DataWidth/2; k++) begin
           data_state_flipped[k * 2]     = data_state_sbox[k];
           data_state_flipped[k * 2 + 1] = data_state_sbox[k + DataWidth/2];
@@ -68,6 +69,7 @@ module prim_subst_perm #(
         // Regroup bits such that all even indices are stacked up first, followed by all odd
         // indices. Note that if the Width is odd, this is still ok, since
         // the uppermost bit just stays in place in that case.
+        data_state_sbox = data_state_flipped;
         for (int k = 0; k < DataWidth/2; k++) begin
           data_state_sbox[k]               = data_state_flipped[k * 2];
           data_state_sbox[k + DataWidth/2] = data_state_flipped[k * 2 + 1];
