@@ -36,10 +36,10 @@ $ ./meson_init.sh
 $ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_nexysvideo
 ```
 
-In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado 2018.3.
+In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado 2020.1.
 
 ```console
-$ . /tools/xilinx/Vivado/2018.3/settings64.sh
+$ . /tools/xilinx/Vivado/2020.1/settings64.sh
 $ cd $REPO_TOP
 $ ./meson_init.sh
 $ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_nexysvideo
@@ -66,7 +66,7 @@ To flash the bitstream onto the FPGA you need to use either the Vivado GUI or th
 Use the following command to program the FPGA with fusesoc.
 
 ```console
-$ . /tools/xilinx/Vivado/2018.3/settings64.sh
+$ . /tools/xilinx/Vivado/2020.1/settings64.sh
 $ cd $REPO_TOP
 $ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo:0.1
 ```
@@ -87,7 +87,7 @@ If you have having trouble with programming using the command line, try the GUI.
 ### Using the Vivado GUI
 
 ```console
-$ . /tools/xilinx/Vivado/2018.3/settings64.sh
+$ . /tools/xilinx/Vivado/2020.1/settings64.sh
 $ cd $REPO_TOP
 $ make -C build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado build-gui
 ```
@@ -96,7 +96,7 @@ Now the Vivado GUI opens and loads the project.
 
 * Connect the FPGA board to the PC and turn it on.
 * In the navigation on the left, click on *PROGRAM AND DEBUG* > *Open Hardware Manager* > *Open Target* > *Auto Connect*.
-* Vivado now enumerates all boards and connects to it. (Note on Vivado 2018.1 you may get an error the first time and have to do auto connect twice.)
+* Vivado now enumerates all boards and connects to it.
 * Click on *Program Device* in the menu on the left (or at the top of the screen).
 * A dialog titled *Program Device* pops up. Select the file `lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit` as *Bitstream file*, and leave the *Debug probes file* empty.
 * Click on *Program* to flash the FPGA with the bitstream.
