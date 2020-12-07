@@ -91,7 +91,7 @@ MulMod:
   bn.mulqacc.so w20.u, w24.3, w25.3, 0
   bn.add w20, w20, w31
   bn.sel w22, w28, w31, M
-  bn.rshi w21, w19, w20 >> 255
+  bn.rshi w21, w20, w19 >> 255
   bn.mulqacc.z w21.0, w28.0, 0
   bn.mulqacc w21.1, w28.0, 64
   bn.mulqacc.so w23.l, w21.0, w28.1, 64
@@ -109,12 +109,12 @@ MulMod:
   bn.mulqacc.so w24.l, w21.2, w28.3, 64
   bn.mulqacc.so w24.u, w21.3, w28.3, 0
   bn.add w20, w20, w31
-  bn.rshi w25, w20, w31 >> 255
+  bn.rshi w25, w31, w20 >> 255
   bn.add w24, w24, w21
   bn.addc w25, w25, w31
   bn.add w24, w24, w22
   bn.addc w25, w25, w31
-  bn.rshi w21, w24, w25 >> 1
+  bn.rshi w21, w25, w24 >> 1
   bn.mulqacc.z w29.0, w21.0, 0
   bn.mulqacc w29.1, w21.0, 64
   bn.mulqacc.so w22.l, w29.0, w21.1, 64
@@ -659,39 +659,39 @@ ModInvVar:
 impvt_Loop:
   bn.or w4, w4, w4
   csrrs x2, 1984, x0
-  andi x2, x2, 2
+  andi x2, x2, 4
   bne x2, x0, impvt_Uodd
-  bn.rshi w4, w4, w31 >> 1
+  bn.rshi w4, w31, w4 >> 1
   bn.or w2, w2, w2
   csrrs x2, 1984, x0
-  andi x2, x2, 2
+  andi x2, x2, 4
   bne x2, x0, impvt_Rodd
-  bn.rshi w2, w2, w31 >> 1
+  bn.rshi w2, w31, w2 >> 1
   jal x0, impvt_Loop
 
 impvt_Rodd:
   bn.add w2, w7, w2
   bn.addc w6, w31, w31
-  bn.rshi w2, w2, w6 >> 1
+  bn.rshi w2, w6, w2 >> 1
   jal x0, impvt_Loop
 
 impvt_Uodd:
   bn.or w5, w5, w5
   csrrs x2, 1984, x0
-  andi x2, x2, 2
+  andi x2, x2, 4
   bne x2, x0, impvt_UVodd
-  bn.rshi w5, w5, w31 >> 1
+  bn.rshi w5, w31, w5 >> 1
   bn.or w3, w3, w3
   csrrs x2, 1984, x0
-  andi x2, x2, 2
+  andi x2, x2, 4
   bne x2, x0, impvt_Sodd
-  bn.rshi w3, w3, w31 >> 1
+  bn.rshi w3, w31, w3 >> 1
   jal x0, impvt_Loop
 
 impvt_Sodd:
   bn.add w3, w7, w3
   bn.addc w6, w31, w31
-  bn.rshi w3, w3, w6 >> 1
+  bn.rshi w3, w6, w3 >> 1
   jal x0, impvt_Loop
 
 impvt_UVodd:
