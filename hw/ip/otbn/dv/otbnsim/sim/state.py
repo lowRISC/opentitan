@@ -4,35 +4,32 @@
 
 from typing import List, Optional, Tuple
 
-from riscvmodel.types import Trace, TracePC  # type: ignore
-
-
-from .alert import Alert
 from .csr import CSRFile
 from .dmem import Dmem
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
 from .gpr import GPRs
 from .reg import RegFile
+from .trace import Trace, TracePC
 from .wsr import WSRFile
 
 
-class TraceLoopStart(Trace):  # type: ignore
+class TraceLoopStart(Trace):
     def __init__(self, iterations: int, bodysize: int):
         self.iterations = iterations
         self.bodysize = bodysize
 
-    def __str__(self) -> str:
+    def trace(self) -> str:
         return "Start LOOP, {} iterations, bodysize: {}".format(
             self.iterations, self.bodysize)
 
 
-class TraceLoopIteration(Trace):  # type: ignore
+class TraceLoopIteration(Trace):
     def __init__(self, iteration: int, total: int):
         self.iteration = iteration
         self.total = total
 
-    def __str__(self) -> str:
+    def trace(self) -> str:
         return "LOOP iteration {}/{}".format(self.iteration, self.total)
 
 
@@ -164,7 +161,8 @@ class OTBNState:
             self.pc_next = back_pc
 
     def changes(self) -> List[Trace]:
-        c = self.gprs.changes()
+        c = []  # type: List[Trace]
+        c += self.gprs.changes()
         if self.pc_next is not None:
             c.append(TracePC(self.pc_next))
         c += self.dmem.changes()

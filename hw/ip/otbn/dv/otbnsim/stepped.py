@@ -94,7 +94,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> None:
     disasm = '(not running)' if insn is None else insn.disassemble(pc)
     print('EXEC {:#08x}:     {}'.format(pc, disasm))
     for trace in changes:
-        print('  {}'.format(trace))
+        print('  {}'.format(trace.trace()))
 
 
 def on_run(sim: OTBNSim, args: List[str]) -> None:
