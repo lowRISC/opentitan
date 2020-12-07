@@ -90,14 +90,14 @@ class OTBNSim:
         if verbose:
             disasm = ('(stall)' if insn is None
                       else insn.disassemble(pc_before))
-            self._print_trace(disasm, changes)
+            self._print_trace(pc_before, disasm, changes)
 
         return (insn, changes)
 
     def dump_data(self) -> bytes:
         return self.state.dmem.dump_le_words()
 
-    def _print_trace(self, disasm: str, changes: List[str]) -> None:
+    def _print_trace(self, pc: int, disasm: str, changes: List[str]) -> None:
         '''Print a trace of the current instruction to verbose_file'''
         changes_str = ', '.join([str(t) for t in changes])
-        print('{:35} | [{}]'.format(disasm, changes_str))
+        print('{:08x} | {:35} | [{}]'.format(pc, disasm, changes_str))
