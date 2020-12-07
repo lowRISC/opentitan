@@ -75,18 +75,21 @@ always_ff @( init_start, posedge main_pd_h_n, negedge main_pd_h_n ) begin
 end
 
 assign main_pwr_dly_o = mr_vcc_dly && mr_pd_dly;
+// synopsys translate_on
+`endif
 
 gen_pok #(
+`ifndef VERILATOR
 // synopsys translate_off
 /*P*/ .POK_RDLY ( VCMAIN_POK_RDLY ),
 /*P*/ .POK_FDLY ( VCMAIN_POK_FDLY )
 // synopsys translate_on
+`endif
 ) i_vcaon_pok (
 /*O*/ .gen_pok_o ( vcaon_pok_o )
 );
+
 assign vcaon_pok_h_o = vcaon_pok_o;  // Level Shifter
-// synopsys translate_on
-`endif
 
 
 ///////////////////////////////////////
