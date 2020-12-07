@@ -12,9 +12,7 @@
 
 `include "prim_assert.sv"
 
-module rv_dm
-  import rv_dm_pkg::*;
-#(
+module rv_dm #(
   parameter int              NrHarts = 1,
   parameter logic [31:0]     IdcodeValue = 32'h 0000_0001
 ) (
@@ -36,8 +34,8 @@ module rv_dm
   output tlul_pkg::tl_h2d_t  tl_h_o,
   input  tlul_pkg::tl_d2h_t  tl_h_i,
 
-  input  jtag_req_t          jtag_req_i,
-  output jtag_rsp_t          jtag_rsp_o
+  input  jtag_pkg::jtag_req_t jtag_req_i,
+  output jtag_pkg::jtag_rsp_t jtag_rsp_o
 );
 
   `ASSERT_INIT(paramCheckNrHarts, NrHarts > 0)

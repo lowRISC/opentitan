@@ -8,12 +8,12 @@ description: "RISC-V debug module"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:ip:jtag_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:tlul:adapter_host
       - pulp-platform:riscv-dbg:0.1
     files:
-      - rtl/rv_dm_pkg.sv
       - rtl/rv_dm.sv
     file_type: systemVerilogSource
 
