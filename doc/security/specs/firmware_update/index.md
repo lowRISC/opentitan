@@ -2,12 +2,6 @@
 title: "Firmware Update"
 ---
 
-<p style="text-align: right">
-Contributors(s):
-  <a href="https://github.com/moidx">Miguel Osorio</a>,
-  <a href="https://github.com/moidx">Garret Kelly</a>
-</p>
-
 <p style="color: red; text-align: right;">
   Status: Pre-RFC
 </p>

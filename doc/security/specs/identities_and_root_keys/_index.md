@@ -2,13 +2,6 @@
 title: "Identities and Root Keys"
 ---
 
-<p style="text-align: right">Version: 0.1</p>
-<p style="text-align: right">
-  Contributors:
-  <a href="https://github.com/moidx">Miguel Osorio</a>,
-  <a href="https://github.com/tjaychen">Timothy Chen</a>
-</p>
-
 ## Overview
 
 This document describes the composition of the Silicon Creator and Silicon Owner

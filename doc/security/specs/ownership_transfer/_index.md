@@ -2,13 +2,6 @@
 title: "Ownership Transfer"
 ---
 
-<p style="text-align: right">
-Author(s):
-  <a href="https://github.com/moidx">Miguel Osorio</a>
-</p>
-
-<p style="text-align: right">Version: 0.1</p>
-
 ## Overview
 
 The Silicon Owner is defined as a logical entity or entities allowed to sign
