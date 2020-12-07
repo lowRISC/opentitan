@@ -99,15 +99,18 @@ struct TmpDir {
   }
 };
 
-// Find the otbn Python model, based on our executable path, and
-// return it. On failure, throw a std::runtime_error with a
-// description of what went wrong.
+// Find the top of the OpenTitan repository
 //
-// This works by searching upwards from the binary location to find a git
-// directory (which is assumed to be the OpenTitan toplevel). It won't work if
-// you copy the binary somewhere else: if we need to support that sort of
-// thing, we'll have to figure out a "proper" installation procedure.
-static std::string find_otbn_model() {
+// If REPO_TOP is defined, use that. Otherwise, this will only work if we're
+// running from a binary inside the git repository. This happens with the
+// default paths (which put BUILD_BIN at $REPO_TOP/build-bin). If we can't find
+// an enclosing repository, throw a std::runtime_error.
+static std::string find_repo_top() {
+  const char *from_env = getenv("REPO_TOP");
+  if (from_env)
+    return std::string(from_env);
+
+  // No environment variable. Work from /proc/self/exe.
   c_str_ptr self_path(realpath("/proc/self/exe", NULL));
   if (!self_path) {
     std::ostringstream oss;
@@ -135,7 +138,9 @@ static std::string find_otbn_model() {
       // is probably not the path we want!). Give up.
       std::ostringstream oss;
       oss << "Cannot find a git top-level directory containing "
-          << self_path.get() << ".\n";
+          << self_path.get()
+          << (". To run the OTBN model outside of the repo, "
+              "set the $REPO_TOP environment variable.");
       throw std::runtime_error(oss.str());
     }
 
@@ -155,20 +160,25 @@ static std::string find_otbn_model() {
     }
   }
 
-  // If we get here, path_buf points at a .git directory. Resolve from there to
-  // the expected model name, then use realpath to canonicalise the path. If it
-  // fails, there was no script there.
-  path_buf += "/../hw/ip/otbn/dv/otbnsim/stepped.py";
-  c_str_ptr model_path(realpath(path_buf.c_str(), NULL));
-  if (!model_path) {
+  // If we get here, path_buf points at a .git directory, and also ends in
+  // ".git". Resize to trim off the trailing "/.git"
+  assert(path_buf.size() > 5);
+  path_buf.resize(path_buf.size() - 5);
+  return path_buf;
+}
+
+// Find the otbn Python model. On failure, throw a std::runtime_error with a
+// description of what went wrong.
+static std::string find_otbn_model() {
+  std::string path = find_repo_top() + "/hw/ip/otbn/dv/otbnsim/stepped.py";
+  c_str_ptr abs_path(realpath(path.c_str(), NULL));
+  if (!abs_path) {
     std::ostringstream oss;
-    oss << "Cannot find otbnsim.py, at '" << path_buf
-        << "' (guessed by searching upwards from '" << self_path.get()
-        << "').\n";
+    oss << "Cannot find otbnsim.py, at '" << path << "'.\n";
     throw std::runtime_error(oss.str());
   }
 
-  return std::string(model_path.get());
+  return std::string(abs_path.get());
 }
 
 // Read 8 hex characters from str as a uint32_t.
