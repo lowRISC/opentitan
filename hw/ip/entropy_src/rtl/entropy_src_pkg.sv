@@ -10,16 +10,15 @@ package entropy_src_pkg;
   // Entropy Interface
   //-------------------------
 
-  parameter int  RNG_BUS_WIDTH        = 4;
-  parameter int  CSRNG_BUS_WIDTH      = 384;
-  parameter int  FIPS_BUS_WIDTH       = 1;
-  parameter int  FIPS_CSRNG_BUS_WIDTH = CSRNG_BUS_WIDTH + FIPS_BUS_WIDTH;
+  parameter int  RNG_BUS_WIDTH   = 4;
+  parameter int  CSRNG_BUS_WIDTH = 384;
+  parameter int  FIPS_BUS_WIDTH  = 1;
 
   // es entropy i/f
   typedef struct packed {
     logic es_ack;
     logic [CSRNG_BUS_WIDTH-1:0] es_bits;
-    logic es_fips;
+    logic [FIPS_BUS_WIDTH-1:0] es_fips;
   } entropy_src_hw_if_rsp_t;
 
   typedef struct packed {
@@ -45,7 +44,7 @@ package entropy_src_pkg;
 
   // external health test i/f
   typedef struct packed {
-    logic [3:0] entropy_bit;
+    logic [RNG_BUS_WIDTH-1:0] entropy_bit;
     logic entropy_bit_valid;
     logic clear;
     logic active;
