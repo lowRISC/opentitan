@@ -434,8 +434,8 @@ module top_earlgrey #(
 
   // TODO: this will be routed to the pinmux for TAP selection
   // based on straps and LC control signals.
-  rv_dm_pkg::jtag_req_t jtag_req;
-  rv_dm_pkg::jtag_rsp_t jtag_rsp;
+  jtag_pkg::jtag_req_t jtag_req;
+  jtag_pkg::jtag_rsp_t jtag_rsp;
   logic unused_jtag_tdo_oe_o;
 
   assign jtag_req.tck    = jtag_tck_i;

@@ -28,8 +28,8 @@ module lc_ctrl
   input  tlul_pkg::tl_h2d_t                          tl_i,
   output tlul_pkg::tl_d2h_t                          tl_o,
   // JTAG TAP.
-  input  rv_dm_pkg::jtag_req_t                       jtag_req_i,
-  output rv_dm_pkg::jtag_rsp_t                       jtag_rsp_o,
+  input  jtag_pkg::jtag_req_t                        jtag_req_i,
+  output jtag_pkg::jtag_rsp_t                        jtag_rsp_o,
   // This bypasses the clock inverter inside the JTAG TAP for scanmmode.
   input                                              scanmode_i,
   // Alert outputs.
