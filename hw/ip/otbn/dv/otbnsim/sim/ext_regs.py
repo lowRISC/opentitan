@@ -2,13 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Sequence
 
 from shared.otbn_reggen import HjsonDict, load_registers
-from riscvmodel.types import Trace  # type: ignore
+
+from .trace import Trace
 
 
-class TraceExtRegChange(Trace):  # type: ignore
+class TraceExtRegChange(Trace):
     def __init__(self, name: str, op: str, written: int, from_hw: bool, new_value: int):
         self.name = name
         self.op = op
@@ -16,7 +17,7 @@ class TraceExtRegChange(Trace):  # type: ignore
         self.from_hw = from_hw
         self.new_value = new_value
 
-    def __str__(self) -> str:
+    def trace(self) -> str:
         return ("otbn.{} {} {:#08x}{} (now {:#08x})"
                 .format(self.name,
                         self.op,
@@ -206,7 +207,7 @@ class OTBNExtRegs:
             raise ValueError('Unknown register name: {!r}.'.format(reg_name))
         return reg.read(from_hw)
 
-    def changes(self) -> List[Trace]:
+    def changes(self) -> Sequence[Trace]:
         return self.trace
 
     def commit(self) -> None:

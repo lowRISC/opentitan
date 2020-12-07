@@ -4,10 +4,6 @@
 
 '''Code to load instruction words into a simulator'''
 
-# Lots of this probably belongs in the upstream riscv-python-sim simulator, but
-# let's get everything working first and then try to push anything sensible
-# afterwards.
-
 import struct
 from typing import List, Optional, Tuple, Type
 

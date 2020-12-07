@@ -4,16 +4,16 @@
 
 from typing import List, Optional, Set
 
-from riscvmodel.types import Trace  # type: ignore
+from .trace import Trace
 
 
-class TraceRegister(Trace):  # type: ignore
+class TraceRegister(Trace):
     def __init__(self, name: str, width: int, new_value: int):
         self.name = name
         self.width = width
         self.new_value = new_value
 
-    def __str__(self) -> str:
+    def trace(self) -> str:
         fmt_str = '{{}} = 0x{{:0{}x}}'.format(self.width // 4)
         return fmt_str.format(self.name, self.new_value)
 

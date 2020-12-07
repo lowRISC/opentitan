@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple
 from .alert import Alert
 from .isa import OTBNInsn
 from .state import OTBNState
+from .trace import Trace
 
 
 class OTBNSim:
@@ -33,7 +34,7 @@ class OTBNSim:
 
         return insn_count
 
-    def step(self, verbose: bool) -> Tuple[Optional[OTBNInsn], List[str]]:
+    def step(self, verbose: bool) -> Tuple[Optional[OTBNInsn], List[Trace]]:
         '''Run a single instruction.
 
         Returns the instruction, together with a list of the architectural
@@ -97,7 +98,7 @@ class OTBNSim:
     def dump_data(self) -> bytes:
         return self.state.dmem.dump_le_words()
 
-    def _print_trace(self, pc: int, disasm: str, changes: List[str]) -> None:
+    def _print_trace(self, pc: int, disasm: str, changes: List[Trace]) -> None:
         '''Print a trace of the current instruction to verbose_file'''
-        changes_str = ', '.join([str(t) for t in changes])
+        changes_str = ', '.join([t.trace() for t in changes])
         print('{:08x} | {:35} | [{}]'.format(pc, disasm, changes_str))

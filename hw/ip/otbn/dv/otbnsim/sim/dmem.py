@@ -3,20 +3,20 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import struct
-from typing import List
+from typing import List, Sequence
 
 from shared.mem_layout import get_memory_layout
 
-from riscvmodel.types import Trace  # type: ignore
+from .trace import Trace
 
 
-class TraceDmemStore(Trace):  # type: ignore
+class TraceDmemStore(Trace):
     def __init__(self, addr: int, value: int, is_wide: bool):
         self.addr = addr
         self.value = value
         self.is_wide = is_wide
 
-    def __str__(self) -> str:
+    def trace(self) -> str:
         num_bytes = 32 if self.is_wide else 4
         top = self.addr + num_bytes - 1
         return 'dmem[{:#x}..{:#x}] = {:#x}'.format(self.addr, top, self.value)
@@ -58,7 +58,7 @@ class Dmem:
             uninit = (uninit << 32) | 0xdeadbeef
 
         self.data = [uninit] * num_words
-        self.trace = []  # type: List[Trace]
+        self.trace = []  # type: List[TraceDmemStore]
 
     def _get_u32s(self, idx: int) -> List[int]:
         '''Return the value at idx as 8 uint32's
@@ -175,7 +175,7 @@ class Dmem:
         assert 0 <= value <= (1 << 32) - 1
         self.trace.append(TraceDmemStore(addr, value, False))
 
-    def changes(self) -> List[Trace]:
+    def changes(self) -> Sequence[Trace]:
         return self.trace
 
     def _commit_store(self, item: TraceDmemStore) -> None:
