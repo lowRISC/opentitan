@@ -442,15 +442,19 @@
       type: uimm+1
       doc: Number of instructions in the loop body
   straight-line: false
-  note: &loop-note |
-    The LOOP and LOOPI instructions are under-specified, and improvements
-    to them are being discussed. See
-    https://github.com/lowRISC/opentitan/issues/2496 for up-to-date
-    information.
   doc: |
     Repeats a sequence of code multiple times. The number of iterations is
     read from `grs`, treated as an unsigned value. The number of
     instructions in the loop is given in the `bodysize` immediate.
+
+    The `LOOP` instruction doesn't support a zero iteration count.
+    If the value in `grs` is zero, OTBN stops with the `ErrCodeLoop` error.
+    Starting a loop pushes an entry on to the loop stack.
+    If the stack is already full, OTBN stops with the `ErrCodeLoop` error.
+
+    There are also conditions on the code inside a loop.
+    A `LOOP`, `LOOPI`, jump or branch instruction may not appear as the last instruction in a loop.
+    OTBN will stop on that instruction with the `ErrCodeLoop` error.
   encoding:
     scheme: loop
     mapping:
@@ -465,12 +469,18 @@
       doc: Number of iterations
     - *bodysize-operand
   straight-line: false
-  note: *loop-note
   doc: |
     Repeats a sequence of code multiple times. The `iterations`
     unsigned immediate operand gives the number of iterations and
     the `bodysize` unsigned immediate operand gives the number of
     instructions in the body.
+
+    Starting a loop pushes an entry on to the loop stack.
+    If the stack is already full, OTBN stops with the `ErrCodeLoop` error.
+
+    There are also conditions on the code inside a loop.
+    A `LOOP`, `LOOPI`, jump or branch instruction may not appear as the last instruction in a loop.
+    OTBN will stop on that instruction with the `ErrCodeLoop` error.
   encoding:
     scheme: loopi
     mapping:
