@@ -14,7 +14,13 @@ module lc_ctrl
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   // Idcode value for the JTAG.
-  parameter logic [31:0]          IdcodeValue  = 32'h00000001
+  parameter logic [31:0]          IdcodeValue  = 32'h00000001,
+  // Random netlist constants
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInv  = LcKeymgrDivWidth'(0),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTest = LcKeymgrDivWidth'(1),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProd = LcKeymgrDivWidth'(2),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivDev  = LcKeymgrDivWidth'(3),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivRma  = LcKeymgrDivWidth'(4)
 ) (
   input                                              clk_i,
   input                                              rst_ni,
@@ -67,7 +73,9 @@ module lc_ctrl
   // The ack is synced to the lc clock domain using prim_lc_sync.
   output lc_flash_rma_seed_t                         lc_flash_rma_seed_o,
   output lc_tx_t                                     lc_flash_rma_req_o,
-  input  lc_tx_t                                     lc_flash_rma_ack_i
+  input  lc_tx_t                                     lc_flash_rma_ack_i,
+  // State group diversification value for keymgr
+  output lc_keymgr_div_t                             lc_keymgr_div_o
 );
 
   ////////////////////////
@@ -446,7 +454,13 @@ module lc_ctrl
   assign lc_otp_token_o.token_input = transition_token_q;
   assign lc_flash_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
 
-  lc_ctrl_fsm u_lc_ctrl_fsm (
+  lc_ctrl_fsm #(
+    .RndCnstLcKeymgrDivInv  ( RndCnstLcKeymgrDivInv  ),
+    .RndCnstLcKeymgrDivTest ( RndCnstLcKeymgrDivTest ),
+    .RndCnstLcKeymgrDivProd ( RndCnstLcKeymgrDivProd ),
+    .RndCnstLcKeymgrDivDev  ( RndCnstLcKeymgrDivDev  ),
+    .RndCnstLcKeymgrDivRma  ( RndCnstLcKeymgrDivRma  )
+  ) u_lc_ctrl_fsm (
     .clk_i,
     .rst_ni,
     .init_req_i             ( lc_init                         ),
@@ -492,7 +506,8 @@ module lc_ctrl
     .lc_clk_byp_req_o,
     .lc_clk_byp_ack_i      ( lc_clk_byp_ack                  ),
     .lc_flash_rma_req_o,
-    .lc_flash_rma_ack_i    ( lc_flash_rma_ack                )
+    .lc_flash_rma_ack_i    ( lc_flash_rma_ack                ),
+    .lc_keymgr_div_o
   );
 
   ////////////////
@@ -515,5 +530,6 @@ module lc_ctrl
   `ASSERT_KNOWN(LcClkBypReqKnown_A,     lc_clk_byp_req_o     )
   `ASSERT_KNOWN(LcFlashRmaSeedKnown_A,  lc_flash_rma_seed_o  )
   `ASSERT_KNOWN(LcFlashRmaReqKnown_A,   lc_flash_rma_req_o   )
+  `ASSERT_KNOWN(LcKeymgrDiv_A,          lc_keymgr_div_o      )
 
 endmodule : lc_ctrl

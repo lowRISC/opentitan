@@ -27,6 +27,38 @@
   ////////////////
 
   param_list: [
+    // Random netlist constants
+    { name:      "RndCnstLcKeymgrDivInv",
+      desc:      "Compile-time random bits for lc state group diversification value",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
+      randcount: "64",
+      randtype:  "data",
+    }
+    { name:      "RndCnstLcKeymgrDivTest",
+      desc:      "Compile-time random bits for lc state group diversification value",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
+      randcount: "64",
+      randtype:  "data",
+    }
+    { name:      "RndCnstLcKeymgrDivProd",
+      desc:      "Compile-time random bits for lc state group diversification value",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
+      randcount: "64",
+      randtype:  "data",
+    }
+    { name:      "RndCnstLcKeymgrDivDev",
+      desc:      "Compile-time random bits for lc state group diversification value",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
+      randcount: "64",
+      randtype:  "data",
+    }
+    { name:      "RndCnstLcKeymgrDivRma",
+      desc:      "Compile-time random bits for lc state group diversification value",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
+      randcount: "64",
+      randtype:  "data",
+    }
+    // Regular parameters
     { name:    "NumTokenWords",
       desc:    "Number of 32bit words in a token.",
       type:    "int"
@@ -204,6 +236,14 @@
       name:    "lc_flash_rma_ack"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    // LC state diversification value for keymgr
+    { struct:  "lc_keymgr_div"
+      type:    "uni"
+      name:    "lc_keymgr_div"
+      act:     "req"
+      default: "'0"
       package: "lc_ctrl_pkg"
     }
   ] // inter_signal_list
