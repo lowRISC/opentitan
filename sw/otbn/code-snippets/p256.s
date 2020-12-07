@@ -564,7 +564,7 @@ get_P256B:
   sw x2, 724(x0)
   lui x2, 1040808
   addi x2, x2, -101
-  sw x2, 278(x0)
+  sw x2, 728(x0)
   lui x2, 327220
   addi x2, x2, 738
   sw x2, 732(x0)
