@@ -193,28 +193,6 @@
       fields: [
         { bits: "0",
           hwaccess: "hrw",
-          name: "INIT",
-          desc: "Init key manager",
-          resval: "0"
-          enum: [
-            { value: "1",
-              name: "Valid state",
-              desc: '''
-                Requests key manager initialization.
-                This is not automated by hardware as software may want to initialize entropy sources
-                prior to calling key manager initlialization.
-
-                Note the Init command is only accepted by the key manager control logic if START is not set.
-                Once the control has been initialized, the field no longer serves a function.
-                '''
-            },
-          ]
-          tags: [// bit self clears, handle in directed test
-                 "excl:CsrNonInitTests:CsrExclWrite"]
-        },
-
-        { bits: "4",
-          hwaccess: "hrw",
           name: "START",
           desc: "Start key manager operations",
           resval: "0"
@@ -230,10 +208,10 @@
             "excl:CsrNonInitTests:CsrExclWrite"]
         },
 
-        { bits: "10:8",
+        { bits: "6:4",
           name: "OPERATION",
           desc: "Key manager operation selection. All values not enumerated below behave the same as disable",
-          resval: "1"
+          resval: "1",
           enum: [
             { value: "0",
               name: "Advance",
@@ -606,7 +584,7 @@
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-        { bits: "3:0",
+        { bits: "2:0",
           name: "STATE",
           resval: "0x0"
           desc: "Key manager control state",
@@ -619,38 +597,31 @@
               '''
             },
             { value: "1",
-              name: "Random",
-              desc: '''
-                Key manager iniitalization in progress.  Please wait for initialization complete
-                before issuing operations
-              '''
-            },
-            { value: "2",
               name: "Init",
               desc: '''
                 Key manager control has finished initialization and will now accept
                 software commands.
               '''
             },
-            { value: "3",
+            { value: "2",
               name: "Creator Root Key",
               desc: '''
                 Key manager control currently contains the creator root key.
               '''
             },
-            { value: "4",
+            { value: "3",
               name: "Owner Intermediate Key",
               desc: '''
                 Key manager control currently contains the owner intermediate key.
               '''
             },
-            { value: "5",
+            { value: "4",
               name: "Owner Key",
               desc: '''
                 Key manager control currently contains the owner key.
               '''
             },
-            { value: "6",
+            { value: "5",
               name: "Disabled",
               desc: '''
                 Key manager currently disabled. Please reset the key manager.

@@ -93,9 +93,6 @@ module keymgr_reg_top (
   logic alert_test_operation_err_we;
   logic cfgen_qs;
   logic cfgen_re;
-  logic control_init_qs;
-  logic control_init_wd;
-  logic control_init_we;
   logic control_start_qs;
   logic control_start_wd;
   logic control_start_we;
@@ -216,7 +213,7 @@ module keymgr_reg_top (
   logic [31:0] sw_share1_output_7_qs;
   logic [31:0] sw_share1_output_7_wd;
   logic sw_share1_output_7_we;
-  logic [3:0] working_state_qs;
+  logic [2:0] working_state_qs;
   logic [1:0] op_status_qs;
   logic [1:0] op_status_wd;
   logic op_status_we;
@@ -424,33 +421,7 @@ module keymgr_reg_top (
 
   // R[control]: V(False)
 
-  //   F[init]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_control_init (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (control_init_we & cfgen_qs),
-    .wd     (control_init_wd),
-
-    // from internal hardware
-    .de     (hw2reg.control.init.de),
-    .d      (hw2reg.control.init.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.control.init.q ),
-
-    // to register interface (read)
-    .qs     (control_init_qs)
-  );
-
-
-  //   F[start]: 4:4
+  //   F[start]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -476,7 +447,7 @@ module keymgr_reg_top (
   );
 
 
-  //   F[operation]: 10:8
+  //   F[operation]: 6:4
   prim_subreg #(
     .DW      (3),
     .SWACCESS("RW"),
@@ -1542,9 +1513,9 @@ module keymgr_reg_top (
   // R[working_state]: V(False)
 
   prim_subreg #(
-    .DW      (4),
+    .DW      (3),
     .SWACCESS("RO"),
-    .RESVAL  (4'h0)
+    .RESVAL  (3'h0)
   ) u_working_state (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -1830,14 +1801,11 @@ module keymgr_reg_top (
 
   assign cfgen_re = addr_hit[4] && reg_re;
 
-  assign control_init_we = addr_hit[5] & reg_we & ~wr_err;
-  assign control_init_wd = reg_wdata[0];
-
   assign control_start_we = addr_hit[5] & reg_we & ~wr_err;
-  assign control_start_wd = reg_wdata[4];
+  assign control_start_wd = reg_wdata[0];
 
   assign control_operation_we = addr_hit[5] & reg_we & ~wr_err;
-  assign control_operation_wd = reg_wdata[10:8];
+  assign control_operation_wd = reg_wdata[6:4];
 
   assign control_dest_sel_we = addr_hit[5] & reg_we & ~wr_err;
   assign control_dest_sel_wd = reg_wdata[13:12];
@@ -1998,9 +1966,8 @@ module keymgr_reg_top (
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[0] = control_init_qs;
-        reg_rdata_next[4] = control_start_qs;
-        reg_rdata_next[10:8] = control_operation_qs;
+        reg_rdata_next[0] = control_start_qs;
+        reg_rdata_next[6:4] = control_operation_qs;
         reg_rdata_next[13:12] = control_dest_sel_qs;
       end
 
@@ -2153,7 +2120,7 @@ module keymgr_reg_top (
       end
 
       addr_hit[43]: begin
-        reg_rdata_next[3:0] = working_state_qs;
+        reg_rdata_next[2:0] = working_state_qs;
       end
 
       addr_hit[44]: begin

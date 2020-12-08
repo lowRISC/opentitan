@@ -59,9 +59,6 @@ package keymgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } init;
-    struct packed {
-      logic        q;
     } start;
     struct packed {
       logic [2:0]  q;
@@ -138,10 +135,6 @@ package keymgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } init;
-    struct packed {
-      logic        d;
-      logic        de;
     } start;
   } keymgr_hw2reg_control_reg_t;
 
@@ -156,7 +149,7 @@ package keymgr_reg_pkg;
   } keymgr_hw2reg_sw_share1_output_mreg_t;
 
   typedef struct packed {
-    logic [3:0]  d;
+    logic [2:0]  d;
     logic        de;
   } keymgr_hw2reg_working_state_reg_t;
 
@@ -189,11 +182,11 @@ package keymgr_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    keymgr_reg2hw_intr_state_reg_t intr_state; // [550:549]
-    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [548:547]
-    keymgr_reg2hw_intr_test_reg_t intr_test; // [546:543]
-    keymgr_reg2hw_alert_test_reg_t alert_test; // [542:539]
-    keymgr_reg2hw_control_reg_t control; // [538:532]
+    keymgr_reg2hw_intr_state_reg_t intr_state; // [549:548]
+    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [547:546]
+    keymgr_reg2hw_intr_test_reg_t intr_test; // [545:542]
+    keymgr_reg2hw_alert_test_reg_t alert_test; // [541:538]
+    keymgr_reg2hw_control_reg_t control; // [537:532]
     keymgr_reg2hw_reseed_interval_reg_t reseed_interval; // [531:516]
     keymgr_reg2hw_rom_ext_desc_mreg_t [3:0] rom_ext_desc; // [515:388]
     keymgr_reg2hw_software_binding_mreg_t [3:0] software_binding; // [387:260]
@@ -209,12 +202,12 @@ package keymgr_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    keymgr_hw2reg_intr_state_reg_t intr_state; // [552:549]
-    keymgr_hw2reg_cfgen_reg_t cfgen; // [548:548]
-    keymgr_hw2reg_control_reg_t control; // [547:544]
-    keymgr_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [543:280]
-    keymgr_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [279:16]
-    keymgr_hw2reg_working_state_reg_t working_state; // [15:11]
+    keymgr_hw2reg_intr_state_reg_t intr_state; // [549:546]
+    keymgr_hw2reg_cfgen_reg_t cfgen; // [545:545]
+    keymgr_hw2reg_control_reg_t control; // [544:543]
+    keymgr_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [542:279]
+    keymgr_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [278:15]
+    keymgr_hw2reg_working_state_reg_t working_state; // [14:11]
     keymgr_hw2reg_op_status_reg_t op_status; // [10:8]
     keymgr_hw2reg_err_code_reg_t err_code; // [7:0]
   } keymgr_hw2reg_t;

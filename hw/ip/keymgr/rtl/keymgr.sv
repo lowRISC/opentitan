@@ -142,7 +142,6 @@ module keymgr import keymgr_pkg::*; #(
   logic wipe_key;
   logic [Shares-1:0][KeyWidth-1:0] kmac_key;
   logic op_done;
-  logic init_done;
   logic data_valid;
   logic kmac_done;
   logic kmac_input_invalid;
@@ -160,8 +159,6 @@ module keymgr import keymgr_pkg::*; #(
     .prng_reseed_ack_i(reseed_ack),
     .prng_en_o(ctrl_lfsr_en),
     .entropy_i(lfsr[63:32]),
-    .init_i(reg2hw.control.init.q),
-    .init_done_o(init_done),
     .op_i(keymgr_ops_e'(reg2hw.control.operation.q)),
     .op_start_i(reg2hw.control.start.q),
     .op_done_o(op_done),
@@ -188,8 +185,6 @@ module keymgr import keymgr_pkg::*; #(
 
   assign hw2reg.control.start.d  = '0;
   assign hw2reg.control.start.de = op_done;
-  assign hw2reg.control.init.d  = '0;
-  assign hw2reg.control.init.de = init_done;
   // as long as operation is ongoing, capture status
   assign hw2reg.op_status.de = reg2hw.control.start.q;
 
@@ -197,17 +192,12 @@ module keymgr import keymgr_pkg::*; #(
   assign hw2reg.working_state.de = 1'b1;
 
   // key manager registers cannot be changed once an operation starts
-  logic op_set;
-  logic init_set;
-  assign op_set = reg2hw.control.start.q & op_done;
-  assign init_set = reg2hw.control.init.q & init_done;
-
   keymgr_cfg_en u_cfgen (
     .clk_i,
     .rst_ni,
     .en_i(lc_i.keymgr_en),
-    .set_i(op_set | init_set),
-    .clr_i(reg2hw.control.start.q | reg2hw.control.init.q),
+    .set_i(reg2hw.control.start.q & op_done),
+    .clr_i(reg2hw.control.start.q),
     .out_o(hw2reg.cfgen.d)
   );
 
@@ -337,7 +327,7 @@ module keymgr import keymgr_pkg::*; #(
   keymgr_sideload_key_ctrl u_sideload_ctrl (
     .clk_i,
     .rst_ni,
-    .init_i(init_done),
+    .init_i(op_done),
     .entropy_i(key_entropy),
     .wipe_key_i(wipe_key),
     .dest_sel_i(keymgr_key_dest_e'(reg2hw.control.dest_sel)),
