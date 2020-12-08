@@ -246,8 +246,8 @@ Based on input from key manager control, this module selects the inputs for each
 
 ### Software Binding
 
-The identities flow employs an idea called [software binding](https://docs.opentitan.org/doc/security/specs/identities_and_root_keys/#software-binding) to ensure that a particular key derivation scheme is only reproducible for a given software configuration.
 
+The identities flow employs an idea called [software binding](https://docs.opentitan.org/doc/security/specs/identities_and_root_keys/#software-binding) to ensure that a particular key derivation scheme is only reproducible for a given software configuration.
 This software binding exists for every stage of key manager except for `OwnerKey`.
 The binding is created through the secure boot flow, where each stage sets the binding used for the next verified stage before advancing to it.
 In order to save on storage and not have a duplicate copy per stage, the software binding registers {{< regref SOFTWARE_BINDING >}} are shared between key manager stages.
