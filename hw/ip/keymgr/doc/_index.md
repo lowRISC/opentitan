@@ -15,7 +15,7 @@ This document specifies the functionality of the OpenTitan key manager.
 
 ## Description
 
-The key manager implements the hardware component of the [identities and root keys](https://github.com/lowRISC/opentitan/pull/3136) strategy of OpenTitan.
+The key manager implements the hardware component of the [identities and root keys](https://docs.opentitan.org/doc/security/specs/identities_and_root_keys/) strategy of OpenTitan.
 
 It enables the system to shield critical assets from software directly and provides a simple model for software to use derived key and identity outputs.
 
@@ -27,7 +27,7 @@ Key manager behavior can be summarized by the functional model below.
 
 In the diagram, the red boxes represent the working state and the associated secret value, the black ovals represent derivation functions, the green squares represent software inputs, and the remaining green / purple shapes represent outputs to both software and hardware.
 
-In OpenTitan, the derivation method selected is [KMAC]().
+In OpenTitan, the derivation method selected is [KMAC]({{< relref "hw/ip/kmac/doc" >}}).
 Each valid operation involves a KMAC invocation using the key manager working state as the "key" and other HW / SW supplied inputs as data.
 While KMAC can generate outputs of arbitrary length, this design fixes the size to 256b.
 
@@ -59,7 +59,6 @@ Instead at reset time, the state value is simply unknown - which is expected to 
 To begin operation, the state must first transition to Initialize.
 The advancement from `Reset` to `Initialized` is irreversible during the current power cycle.
 Until the initialize command is invoked, the key manager rejects all other software commands.
-
 
 ### Initialized
 
@@ -244,6 +243,19 @@ The KMAC interface control represents the bulk of key manager logic.
 Based on input from key manager control, this module selects the inputs for each given command and sequences the data to KMAC.
 
 ![Key Manager KMAC Interface Block Diagram](keymgr_kmac_if_diagram.svg)
+
+### Software Binding
+
+The identities flow employs an idea called [software binding](https://docs.opentitan.org/doc/security/specs/identities_and_root_keys/#software-binding) to ensure that a particular key derivation scheme is only reproducible for a given software configuration.
+
+This software binding exists for every stage of key manager except for `OwnerKey`.
+The binding is created through the secure boot flow, where each stage sets the binding used for the next verified stage before advancing to it.
+In order to save on storage and not have a duplicate copy per stage, the software binding registers {{< regref SOFTWARE_BINDING >}} are shared between key manager stages.
+
+Software sets the appropriate values and locks it by clearing {{< regref SOFT_BINDING_EN >}}.
+When later a successful `advance` call is made, the key manager then unlocks by setting {{< regref SOFT_BINDING_EN >}} to 1.
+An unsuccessful advance call (errors) does not unlock the binding.
+This allows the next stage of software to re-use the binding registers.
 
 ## Hardware Interfaces
 {{< hwcfg "hw/ip/keymgr/data/keymgr.hjson" >}}

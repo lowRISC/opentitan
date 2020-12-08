@@ -136,12 +136,6 @@
       randtype:  "data",
     },
 
-    { name: "NumRomExtReg",
-      desc: "Number of Registers for ROM_ext descriptor",
-      type: "int",
-      default: "4",
-      local: "true"
-    },
     { name: "NumInReg",
       desc: "Number of Registers for SW inputs (SW binding / keyID / Salt)",
       type: "int",
@@ -304,58 +298,37 @@
       ]
     },
 
-    { name: "ROM_EXT_DESC_EN",
-      desc: "Register write enable for ROM_EXT_DESC",
-      swaccess: "rw0c",
-      hwaccess: "none",
-      fields: [
-        { bits: "1:0",
-          name: "EN",
-          resval: "2"
-          desc: '''
-            ROM_ext descriptor configure enable.
-            All values except for 2 are interpreted as configuration disable.
-          '''
-        },
-      ]
-    },
-    { multireg: {
-        cname: "KEYMGR",
-        name: "ROM_EXT_DESC",
-        desc: '''
-          ROM_ext descriptor.
-          This value must be representative of the current ROM_ext contents.
-          For example, this could be a truncated hash of the ROM_ext
-        ''',
-        count: "NumRomExtReg",
-        swaccess: "rw",
-        hwaccess: "hro",
-        fields: [
-            { bits: "31:0",
-              name: "VAL",
-              desc: '''
-                Software binding value
-              ''',
-              resval: "0"
-            },
-        ],
-      },
-    },
-
     // The following can potentially be replaced by a RAM if it gets too large
     // Currently there are 32b * NumInReg * 3 bits for inputs
     //                     32b * NumOutReg * 2 (if key shares desired) for outputs
     //                     32b * NumOutReg * NumCryptos * 2 (if key shares desired) for hidden key bus
     // This totals to over 2kb of storage
+    { name: "SW_BINDING_EN",
+      desc: "Register write enable for SOFTWARE_BINDING",
+      swaccess: "rw0c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            Software binding register write enable.
+            This is locked by software and unlocked by hardware upon a successful advance call.
+          '''
+        },
+      ]
+    },
 
     { multireg: {
         cname: "KEYMGR",
-        name: "SOFTWARE_BINDING",
-        regwen: "CFGEN",
+        name: "SW_BINDING",
+        regwen: "SW_BINDING_EN",
         desc: '''
           Software binding input to key manager.
-          This register is non-lockable and shared between various software stages.
-          This binding value is not considered secret.
+          This register is lockable and shared between key manager stages.
+          This binding value is not considered secret, however its integrity is very important.
+
+          The software binding is locked by software and unlocked by hardware upon a successful advance operation.
         ''',
         count: "NumInReg",
         swaccess: "rw",

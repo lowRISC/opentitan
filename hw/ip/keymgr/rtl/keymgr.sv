@@ -150,6 +150,7 @@ module keymgr import keymgr_pkg::*; #(
   logic kmac_op_err;
   logic [Shares-1:0][KeyWidth-1:0] kmac_data;
   logic [ErrLastPos-1:0] err_code;
+  logic sw_binding_unlock;
 
   keymgr_ctrl u_ctrl (
     .clk_i,
@@ -162,6 +163,7 @@ module keymgr import keymgr_pkg::*; #(
     .op_i(keymgr_ops_e'(reg2hw.control.operation.q)),
     .op_start_i(reg2hw.control.start.q),
     .op_done_o(op_done),
+    .sw_binding_unlock_o(sw_binding_unlock),
     .status_o(hw2reg.op_status.d),
     .error_o(err_code),
     .data_valid_o(data_valid),
@@ -201,6 +203,10 @@ module keymgr import keymgr_pkg::*; #(
     .out_o(hw2reg.cfgen.d)
   );
 
+  // we can only unlock on a successful advance call
+  assign hw2reg.sw_binding_en.d = reg2hw.control.operation.q == OpAdvance;
+  assign hw2reg.sw_binding_en.de = sw_binding_unlock;
+
   /////////////////////////////////////
   //  Key Manager Input Construction
   /////////////////////////////////////
@@ -229,7 +235,7 @@ module keymgr import keymgr_pkg::*; #(
   // Advance to creator_root_key
   logic [KeyWidth-1:0] creator_seed;
   assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
-  assign adv_matrix[Creator] = AdvDataWidth'({reg2hw.rom_ext_desc,
+  assign adv_matrix[Creator] = AdvDataWidth'({reg2hw.sw_binding,
                                               RndCnstRevisionSeed,
                                               otp_i.devid,
                                               lc_i.health_state,
@@ -238,10 +244,10 @@ module keymgr import keymgr_pkg::*; #(
   // Advance to owner_intermediate_key
   logic [KeyWidth-1:0] owner_seed;
   assign owner_seed = flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx];
-  assign adv_matrix[OwnerInt] = AdvDataWidth'({reg2hw.software_binding,owner_seed});
+  assign adv_matrix[OwnerInt] = AdvDataWidth'({reg2hw.sw_binding,owner_seed});
 
   // Advance to owner_key
-  assign adv_matrix[Owner]   = AdvDataWidth'(reg2hw.software_binding);
+  assign adv_matrix[Owner]   = AdvDataWidth'(reg2hw.sw_binding);
 
 
   // Generate Identity operation input construction
