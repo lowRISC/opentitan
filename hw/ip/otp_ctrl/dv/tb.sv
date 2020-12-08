@@ -101,7 +101,7 @@ module tb;
     .otbn_otp_key_i            (otbn_req),
     .otbn_otp_key_o            (otbn_rsp),
 
-    .hw_cfg_o                  (otp_ctrl_output_data_if.hw_cfg)
+    .otp_hw_cfg_o              (otp_ctrl_output_data_if.otp_hw_cfg)
   );
 
   for (genvar i = 0; i < NumSramKeyReqSlots; i++) begin : gen_sram_pull_if
