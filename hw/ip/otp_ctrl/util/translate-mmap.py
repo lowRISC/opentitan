@@ -103,7 +103,6 @@ def validate(config):
         part["secret"] = check_bool(part["secret"])
         part["sw_digest"] = check_bool(part["sw_digest"])
         part["hw_digest"] = check_bool(part["hw_digest"])
-        part["bkout_type"] = check_bool(part["bkout_type"])
 
         # basic checks
         if part["variant"] not in ["Unbuffered", "Buffered", "LifeCycle"]:

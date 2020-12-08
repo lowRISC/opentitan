@@ -111,15 +111,4 @@ package otp_ctrl_part_pkg;
 
   parameter int NumAgents = int'(NumAgentsIdx);
 
-  // Breakout types for easier access of individual items.
-  typedef struct packed {
-      logic [63:0] hw_cfg_digest;
-      logic [1599:0] hw_cfg_content;
-  } otp_hw_cfg_data_t;
-  typedef struct packed {
-    // This reuses the same encoding as the life cycle signals for indicating valid status.
-    lc_ctrl_pkg::lc_tx_t valid;
-    otp_hw_cfg_data_t data;
-  } otp_hw_cfg_t;
-
 endpackage : otp_ctrl_part_pkg
