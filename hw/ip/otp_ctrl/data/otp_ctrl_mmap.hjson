@@ -33,6 +33,7 @@
             write_lock: "Digest",
             read_lock:  "CSR",
             key_sel:    "NoKey",
+            bkout_type: "False", // Do not generate a breakout type for this partition.
             items: [
                 {
                     name: "CREATOR_SW_CFG_CONTENT",
@@ -54,6 +55,7 @@
             write_lock: "Digest",
             read_lock:  "CSR",
             key_sel:    "NoKey",
+            bkout_type: "False",
             items: [
                 {
                     name: "OWNER_SW_CFG_CONTENT",
@@ -76,6 +78,7 @@
             write_lock: "Digest",
             read_lock:  "None",
             key_sel:    "NoKey",
+            bkout_type: "True",
             items: [
                 {
                     name: "HW_CFG_CONTENT",
@@ -97,6 +100,7 @@
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret0Key",
+            bkout_type: "False",
             items: [
                 {
                     name: "TEST_UNLOCK_TOKEN",
@@ -120,6 +124,7 @@
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret1Key",
+            bkout_type: "False",
             items: [
                 {
                     name: "FLASH_ADDR_KEY_SEED",
@@ -148,6 +153,7 @@
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret2Key",
+            bkout_type: "False",
             items: [
                 {
                     name: "RMA_TOKEN",
@@ -175,6 +181,7 @@
             write_lock: "None",
             read_lock:  "None",
             key_sel:    "NoKey",
+            bkout_type: "False",
             items: [
                 {
                     name: "LC_STATE",
