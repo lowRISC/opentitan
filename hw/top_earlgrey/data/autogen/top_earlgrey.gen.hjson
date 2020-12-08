@@ -1255,12 +1255,12 @@
           index: -1
         }
         {
-          struct: logic
+          struct: otp_hw_cfg
           type: uni
-          name: hw_cfg
+          name: otp_hw_cfg
           act: req
           default: "'0"
-          package: otp_ctrl_pkg
+          package: otp_ctrl_part_pkg
           inst_name: otp_ctrl
           index: -1
         }
@@ -7311,12 +7311,12 @@
         index: -1
       }
       {
-        struct: logic
+        struct: otp_hw_cfg
         type: uni
-        name: hw_cfg
+        name: otp_hw_cfg
         act: req
         default: "'0"
-        package: otp_ctrl_pkg
+        package: otp_ctrl_part_pkg
         inst_name: otp_ctrl
         index: -1
       }
