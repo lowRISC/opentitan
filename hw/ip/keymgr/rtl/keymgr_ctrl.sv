@@ -23,6 +23,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   output logic data_valid_o,
   output logic wipe_key_o,
   output keymgr_working_state_e working_state_o,
+  output logic sw_binding_unlock_o,
 
   // Data input
   input  otp_ctrl_pkg::otp_keymgr_key_t root_key_i,
@@ -105,6 +106,9 @@ module keymgr_ctrl import keymgr_pkg::*;(
   assign id_en_o    = op_accepted & gen_id_sel;
   assign gen_en_o   = op_accepted & gen_out_sel;
   assign load_key_o = adv_en_o & !adv_en_q;
+
+  // unlock sw binding configuration whenever an advance call is made without errors
+  assign sw_binding_unlock_o = adv_en_o & op_done_o & ~|error_o;
 
   // check incoming kmac data validity
   // also check inputs used during compute
