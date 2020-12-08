@@ -101,7 +101,8 @@ module aes_cipher_core import aes_pkg::*;
 
   localparam int        NumShares            = Masking ? 2 : 1, // derived parameter
 
-  parameter logic [WidthPRDMasking-1:0] SeedMasking = DefaultSeedMasking
+  parameter masking_lfsr_seed_t    RndCnstMaskingLfsrSeed   = RndCnstMaskingLfsrSeedDefault,
+  parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPerm = RndCnstMskgChunkLfsrPermDefault
 ) (
   input  logic                        clk_i,
   input  logic                        rst_ni,
@@ -248,10 +249,11 @@ module aes_cipher_core import aes_pkg::*;
     // - additional randomness required by SubBytes, as well as
     // - the randomness required by the key expand module.
     aes_prng_masking #(
-      .Width                ( WidthPRDMasking      ),
-      .ChunkSize            ( ChunkSizePRDMasking  ),
-      .SecAllowForcingMasks ( SecAllowForcingMasks ),
-      .DefaultSeed          ( SeedMasking          )
+      .Width                ( WidthPRDMasking          ),
+      .ChunkSize            ( ChunkSizePRDMasking      ),
+      .SecAllowForcingMasks ( SecAllowForcingMasks     ),
+      .RndCnstLfsrSeed      ( RndCnstMaskingLfsrSeed   ),
+      .RndCnstChunkLfsrPerm ( RndCnstMskgChunkLfsrPerm )
     ) u_aes_prng_masking (
       .clk_i              ( clk_i               ),
       .rst_ni             ( rst_ni              ),
@@ -270,9 +272,9 @@ module aes_cipher_core import aes_pkg::*;
   // prd_masking = { prd_key_expand, ... , sb_prd[4], sb_out_mask[4], sb_prd[0], sb_out_mask[0] }
   localparam int unsigned WidthPRDRow = 4*(8+WidthPRDSBox);
   for (genvar i = 0; i < 4; i++) begin : gen_sb_prd
-    assign sb_out_mask[i]    = aes_sb_out_mask_get(prd_masking[i*WidthPRDRow +: WidthPRDRow]);
-    assign data_in_mask_o[i] = aes_sb_out_mask_get(prd_masking[i*WidthPRDRow +: WidthPRDRow]);
-    assign prd_sub_bytes[i]  =      aes_sb_prd_get(prd_masking[i*WidthPRDRow +: WidthPRDRow]);
+    assign sb_out_mask[i]    = aes_sb_out_mask_get(prd_masking[i * WidthPRDRow +: WidthPRDRow]);
+    assign data_in_mask_o[i] = aes_sb_out_mask_get(prd_masking[i * WidthPRDRow +: WidthPRDRow]);
+    assign prd_sub_bytes[i]  =      aes_sb_prd_get(prd_masking[i * WidthPRDRow +: WidthPRDRow]);
   end
   // Extract randomness for key expand module.
   assign prd_key_expand = prd_masking[WidthPRDMasking-1 -: WidthPRDKey];

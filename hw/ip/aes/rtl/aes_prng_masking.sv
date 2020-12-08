@@ -26,8 +26,8 @@ module aes_prng_masking import aes_pkg::*;
   parameter  bit          SecAllowForcingMasks  = 0, // Allow forcing masks to 0 using
                                                      // force_zero_masks_i. Useful for SCA only.
 
-  // The chunks must not be initialized to 0. Every chunk should get a different seed.
-  parameter logic [NumChunks-1:0][ChunkSize-1:0] DefaultSeed = {NumChunks{ChunkSize'(1)}}
+  parameter masking_lfsr_seed_t    RndCnstLfsrSeed      = RndCnstMaskingLfsrSeedDefault,
+  parameter mskg_chunk_lfsr_perm_t RndCnstChunkLfsrPerm = RndCnstMskgChunkLfsrPermDefault
 ) (
   input  logic             clk_i,
   input  logic             rst_ni,
@@ -87,12 +87,12 @@ module aes_prng_masking import aes_pkg::*;
     assign prng_seed[c] = entropy_i[c * ChunkSize +: ChunkSize];
 
     prim_lfsr #(
-      .LfsrType    ( "GAL_XOR"                       ),
-      .LfsrDw      ( ChunkSize                       ),
-      .StateOutDw  ( ChunkSize                       ),
-      .DefaultSeed ( DefaultSeed[c]                  ),
-      .StatePermEn ( 1'b1                            ),
-      .StatePerm   ( RndCnstMskgChunkLfsrPermDefault )
+      .LfsrType    ( "GAL_XOR"                                   ),
+      .LfsrDw      ( ChunkSize                                   ),
+      .StateOutDw  ( ChunkSize                                   ),
+      .DefaultSeed ( RndCnstLfsrSeed[c * ChunkSize +: ChunkSize] ),
+      .StatePermEn ( 1'b1                                        ),
+      .StatePerm   ( RndCnstChunkLfsrPerm                        )
     ) u_lfsr_chunk (
       .clk_i     ( clk_i         ),
       .rst_ni    ( rst_ni        ),

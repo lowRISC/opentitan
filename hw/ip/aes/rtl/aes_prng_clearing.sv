@@ -8,9 +8,11 @@
 // pseudo-random data for the AES module for clearing registers. The LFSR can be reseeded
 // using an external interface.
 
-module aes_prng_clearing #(
-  parameter int unsigned Width            = 64, // At the moment we just support a width of 64.
-  parameter logic [Width-1:0] DefaultSeed = {Width'(1)}
+module aes_prng_clearing import aes_pkg::*;
+#(
+  parameter int unsigned Width = 64, // At the moment we just support a width of 64.
+  parameter clearing_lfsr_seed_t RndCnstLfsrSeed = RndCnstClearingLfsrSeedDefault,
+  parameter clearing_lfsr_perm_t RndCnstLfsrPerm = RndCnstClearingLfsrPermDefault
 ) (
   input  logic        clk_i,
   input  logic        rst_ni,
@@ -31,7 +33,6 @@ module aes_prng_clearing #(
   logic             seed_en;
   logic             lfsr_en;
   logic [Width-1:0] lfsr_state;
-  logic [Width-1:0] scrambled;
 
   // The data requests are fed from the LFSR, reseed requests have the highest priority.
   assign data_ack_o    = reseed_req_i ? 1'b0 : data_req_i;
@@ -46,10 +47,12 @@ module aes_prng_clearing #(
 
   // LFSR instance
   prim_lfsr #(
-    .LfsrType    ( "GAL_XOR"   ),
-    .LfsrDw      ( Width       ),
-    .StateOutDw  ( Width       ),
-    .DefaultSeed ( DefaultSeed )
+    .LfsrType    ( "GAL_XOR"       ),
+    .LfsrDw      ( Width           ),
+    .StateOutDw  ( Width           ),
+    .DefaultSeed ( RndCnstLfsrSeed ),
+    .StatePermEn ( 1'b1            ),
+    .StatePerm   ( RndCnstLfsrPerm )
   ) u_lfsr (
     .clk_i     ( clk_i      ),
     .rst_ni    ( rst_ni     ),
@@ -61,8 +64,7 @@ module aes_prng_clearing #(
   );
 
   // "Scramble" the LFSR state to break linear shift patterns.
-  assign scrambled = prim_cipher_pkg::sbox4_64bit(lfsr_state, prim_cipher_pkg::PRINCE_SBOX4);
-  assign data_o    = prim_cipher_pkg::perm_64bit(scrambled, prim_cipher_pkg::PRESENT_PERM64);
+  assign data_o = prim_cipher_pkg::sbox4_64bit(lfsr_state, prim_cipher_pkg::PRINCE_SBOX4);
 
   // Width must be 64.
   `ASSERT_INIT(AesPrngWidth, Width == 64)

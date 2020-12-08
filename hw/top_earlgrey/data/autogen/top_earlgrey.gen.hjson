@@ -2582,28 +2582,6 @@
           name_top: SecAesAllowForcingMasks
         }
         {
-          name: SeedClearing
-          type: logic [aes_pkg::WidthPRDClearing-1:0]
-          default: aes_pkg::DefaultSeedClearing
-          desc: Default seed of the PRNG used for register clearing.
-          local: "false"
-          expose: "false"
-          randcount: "0"
-          randtype: none
-          name_top: AesSeedClearing
-        }
-        {
-          name: SeedMasking
-          type: logic [aes_pkg::WidthPRDMasking-1:0]
-          default: aes_pkg::DefaultSeedMasking
-          desc: Default seed of the PRNG used for masking.
-          local: "false"
-          expose: "false"
-          randcount: "0"
-          randtype: none
-          name_top: AesSeedMasking
-        }
-        {
           name: AlertAsyncOn
           type: logic [aes_reg_pkg::NumAlerts-1:0]
           default: "{aes_reg_pkg::NumAlerts{1'b1}}"
@@ -2613,6 +2591,50 @@
           randcount: "0"
           randtype: none
           name_top: AesAlertAsyncOn
+        }
+        {
+          name: RndCnstClearingLfsrSeed
+          type: aes_pkg::clearing_lfsr_seed_t
+          default: aes_pkg::RndCnstClearingLfsrSeedDefault
+          desc: Default seed of the PRNG used for register clearing.
+          local: "false"
+          expose: "false"
+          randcount: "0"
+          randtype: none
+          name_top: RndCnstAesClearingLfsrSeed
+        }
+        {
+          name: RndCnstClearingLfsrPerm
+          type: aes_pkg::clearing_lfsr_perm_t
+          default: aes_pkg::RndCnstClearingLfsrPermDefault
+          desc: Permutation applied to the LFSR of the PRNG used for clearing.
+          local: "false"
+          expose: "false"
+          randcount: "0"
+          randtype: none
+          name_top: RndCnstAesClearingLfsrPerm
+        }
+        {
+          name: RndCnstMaskingLfsrSeed
+          type: aes_pkg::masking_lfsr_seed_t
+          default: aes_pkg::RndCnstMaskingLfsrSeedDefault
+          desc: Default seed of the PRNG used for masking.
+          local: "false"
+          expose: "false"
+          randcount: "0"
+          randtype: none
+          name_top: RndCnstAesMaskingLfsrSeed
+        }
+        {
+          name: RndCnstMskgChunkLfsrPerm
+          type: aes_pkg::mskg_chunk_lfsr_perm_t
+          default: aes_pkg::RndCnstMskgChunkLfsrPermDefault
+          desc: Permutation applied to the LFSR chunks of the PRNG used for masking.
+          local: "false"
+          expose: "false"
+          randcount: "0"
+          randtype: none
+          name_top: RndCnstAesMskgChunkLfsrPerm
         }
       ]
       interrupt_list: []

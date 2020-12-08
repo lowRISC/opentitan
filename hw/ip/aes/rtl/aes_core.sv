@@ -18,8 +18,10 @@ module aes_core
 
   localparam int         NumShares            = Masking ? 2 : 1, // derived parameter
 
-  parameter logic [WidthPRDClearing-1:0] SeedClearing = DefaultSeedClearing,
-  parameter logic  [WidthPRDMasking-1:0] SeedMasking  = DefaultSeedMasking
+  parameter clearing_lfsr_seed_t   RndCnstClearingLfsrSeed  = RndCnstClearingLfsrSeedDefault,
+  parameter clearing_lfsr_perm_t   RndCnstClearingLfsrPerm  = RndCnstClearingLfsrPermDefault,
+  parameter masking_lfsr_seed_t    RndCnstMaskingLfsrSeed   = RndCnstMaskingLfsrSeedDefault,
+  parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPerm = RndCnstMskgChunkLfsrPermDefault
 ) (
   input  logic                        clk_i,
   input  logic                        rst_ni,
@@ -130,8 +132,9 @@ module aes_core
 
   // The clearing PRNG provides pseudo-random data for register clearing purposes.
   aes_prng_clearing #(
-    .Width       ( WidthPRDClearing ),
-    .DefaultSeed ( SeedClearing     )
+    .Width           ( WidthPRDClearing        ),
+    .RndCnstLfsrSeed ( RndCnstClearingLfsrSeed ),
+    .RndCnstLfsrPerm ( RndCnstClearingLfsrPerm )
   ) u_aes_prng_clearing (
     .clk_i         ( clk_i                  ),
     .rst_ni        ( rst_ni                 ),
@@ -320,11 +323,12 @@ module aes_core
 
   // Cipher core
   aes_cipher_core #(
-    .AES192Enable         ( AES192Enable         ),
-    .Masking              ( Masking              ),
-    .SBoxImpl             ( SBoxImpl             ),
-    .SecAllowForcingMasks ( SecAllowForcingMasks ),
-    .SeedMasking          ( SeedMasking          )
+    .AES192Enable             ( AES192Enable             ),
+    .Masking                  ( Masking                  ),
+    .SBoxImpl                 ( SBoxImpl                 ),
+    .SecAllowForcingMasks     ( SecAllowForcingMasks     ),
+    .RndCnstMaskingLfsrSeed   ( RndCnstMaskingLfsrSeed   ),
+    .RndCnstMskgChunkLfsrPerm ( RndCnstMskgChunkLfsrPerm )
   ) u_aes_cipher_core (
     .clk_i              ( clk_i                      ),
     .rst_ni             ( rst_ni                     ),

@@ -1051,9 +1051,11 @@ module top_earlgrey #(
     .SBoxImpl(AesSBoxImpl),
     .SecStartTriggerDelay(SecAesStartTriggerDelay),
     .SecAllowForcingMasks(SecAesAllowForcingMasks),
-    .SeedClearing(aes_pkg::DefaultSeedClearing),
-    .SeedMasking(aes_pkg::DefaultSeedMasking),
-    .AlertAsyncOn({aes_reg_pkg::NumAlerts{1'b1}})
+    .AlertAsyncOn({aes_reg_pkg::NumAlerts{1'b1}}),
+    .RndCnstClearingLfsrSeed(aes_pkg::RndCnstClearingLfsrSeedDefault),
+    .RndCnstClearingLfsrPerm(aes_pkg::RndCnstClearingLfsrPermDefault),
+    .RndCnstMaskingLfsrSeed(aes_pkg::RndCnstMaskingLfsrSeedDefault),
+    .RndCnstMskgChunkLfsrPerm(aes_pkg::RndCnstMskgChunkLfsrPermDefault)
   ) u_aes (
 
       // [9]: ctrl_err_update

@@ -57,29 +57,47 @@
       local:   "false",
       expose:  "true"
     },
-    { name:    "SeedClearing",
-      type:    "logic [aes_pkg::WidthPRDClearing-1:0]",
-      default: "aes_pkg::DefaultSeedClearing",
+    { name:    "AlertAsyncOn",
+      type:    "logic [aes_reg_pkg::NumAlerts-1:0]",
+      default: "{aes_reg_pkg::NumAlerts{1'b1}}",
+      desc:    '''
+        One bit per alert specifying whether the corresponding sender in the AES module and the receiver in the alert handler are in the same clock domain (0) or whether there is an asynchronous boundary in between (1).
+      '''
+      local:   "false",
+      expose:  "false"
+    },
+    { name:    "RndCnstClearingLfsrSeed",
+      type:    "aes_pkg::clearing_lfsr_seed_t",
+      default: "aes_pkg::RndCnstClearingLfsrSeedDefault",
       desc:    '''
         Default seed of the PRNG used for register clearing.
       '''
       local:   "false",
       expose:  "false"
     },
-    { name:    "SeedMasking",
-      type:    "logic [aes_pkg::WidthPRDMasking-1:0]",
-      default: "aes_pkg::DefaultSeedMasking",
+    { name:    "RndCnstClearingLfsrPerm",
+      type:    "aes_pkg::clearing_lfsr_perm_t",
+      default: "aes_pkg::RndCnstClearingLfsrPermDefault",
+      desc:    '''
+        Permutation applied to the LFSR of the PRNG used for clearing.
+      '''
+      local:   "false",
+      expose:  "false"
+    },
+    { name:    "RndCnstMaskingLfsrSeed",
+      type:    "aes_pkg::masking_lfsr_seed_t",
+      default: "aes_pkg::RndCnstMaskingLfsrSeedDefault",
       desc:    '''
         Default seed of the PRNG used for masking.
       '''
       local:   "false",
       expose:  "false"
     },
-    { name:    "AlertAsyncOn",
-      type:    "logic [aes_reg_pkg::NumAlerts-1:0]",
-      default: "{aes_reg_pkg::NumAlerts{1'b1}}",
+    { name:    "RndCnstMskgChunkLfsrPerm",
+      type:    "aes_pkg::mskg_chunk_lfsr_perm_t",
+      default: "aes_pkg::RndCnstMskgChunkLfsrPermDefault",
       desc:    '''
-        One bit per alert specifying whether the corresponding sender in the AES module and the receiver in the alert handler are in the same clock domain (0) or whether there is an asynchronous boundary in between (1).
+        Permutation applied to the LFSR chunks of the PRNG used for masking.
       '''
       local:   "false",
       expose:  "false"
