@@ -60,6 +60,7 @@ To begin operation, the state must first transition to Initialize.
 The advancement from `Reset` to `Initialized` is irreversible during the current power cycle.
 Until the initialize command is invoked, the key manager rejects all other software commands.
 
+
 ### Initialized
 
 When transitioning from `Reset` to `Initialized`, random values obtained from the entropy source are used to populate the working state.
@@ -144,7 +145,10 @@ During each state, there are 3 valid commands software can issue:
 
 The software is able to select a command and trigger the key manager FSM to process one of the commands.
 If a command is valid during the current working state, it is processed and acknowledged when complete.
-If a command is invalid, the key manager FSM processes with random, dummy data, but does not update working state or relevant output registers.
+
+If a command is invalid, the behavior depends on the current state.
+If the current state is `Reset`, the invalid command is immediately rejected as the key manager FSM has not yet been initialized.
+If the current state is any other state, the key manager FSM processes with random, dummy data, but does not update working state or relevant output registers.
 For each valid command, a set of inputs are selected and sequenced to the KMAC module.
 
 During `Disable` state, working state and output registers are updated as usual.
@@ -205,7 +209,7 @@ Note that even though `Init` is not a legal operation in most states, it is trea
 
 | Current State  | Legal Operations               | Outcome                                                                                                                       |
 | -------------  | ------------------------------ | ------------------------------------------------------------                                                                  |
-| Reset          | Init                           | Advance to Initialized state upon completion.                                                                                 |
+| Reset          | Advance                        | Advance to Initialized state upon completion.                                                                                 |
 | Reset          | Disable / Advance / Generate   | Invalid operation error triggered with no other side effects.                                                                 |
 | Initialized    | Disable / Advance              | Advance to next Disabled state or CreatorRootKey.                                                                             |
 | Initialized    | Generate                       | Invalid operation error triggered with random data, output registers are updated.                                             |
