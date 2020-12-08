@@ -281,7 +281,7 @@ package lc_ctrl_pkg;
     ZeroTokenIdx,          // -> SCRAP
     RmaTokenIdx,           // -> RMA
     {11{InvalidTokenIdx}}, // -> TEST_LOCKED0-2, TEST_UNLOCKED0-3, DEV, PROD, PROD_END
-    // TEST_UNLOCKED2
+    // TEST_UNLOCKED3
     {2{ZeroTokenIdx}},     // -> SCRAP, RMA
     {3{TestExitTokenIdx}}, // -> PROD, PROD_END, DEV
     {8{InvalidTokenIdx}},  // -> TEST_LOCKED0-2, TEST_UNLOCKED0-3, RAW
