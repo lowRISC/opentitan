@@ -24,38 +24,52 @@ ROM_EXTs are supplied by the Silicon Creator.
 ROM_EXTs are programmed into the chip's flash.
 
 
+<!--
+The following ascii art diagram is generated with the following command,
+and changes are manually committed to this file.
+
+```
+$ util/rom-ext-manifest-generator.py \
+    --input-dir sw/device/rom_exts/ \
+    --output-dir ${OUT_DIR} \
+    --output-files=format
+```
+
+At which point you can find the format in `${OUT_DIR}/manifest.txt`
+-->
+
 ```
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  ROM_EXT Manifest Identifier                  |
+|                      manifest_identifier                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                            Reserved                           |
+|                          - reserved -                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
 |                                                               |
-+                  Image Signature (3072 bits)                  +
++                  image_signature (3072 bits)                  +
 |                                                               |
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  break  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Image Length                         |
+|                          image_length                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Image Version                         |
+|                         image_version                         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                        Image Timestamp                        +
++                        image_timestamp                        +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Signature Algorithm Identifier                |
+|                 signature_algorithm_identifier                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Signature Key Public Exponent                 |
+|                 signature_key_public_exponent                 |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
 |                                                               |
-+                  Usage Constraints (256 bits)                 +
++                  usage_constraints (256 bits)                 +
 |                                                               |
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  break  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 |                                                               |
@@ -63,7 +77,7 @@ ROM_EXTs are programmed into the chip's flash.
 |                                                               |
 +                                                               +
 |                                                               |
-+                 Peripheral Lockdown Info (TBC)                +
++                    peripheral_lockdown_info                   +
 |                                                               |
 +                                                               +
 |                                                               |
@@ -71,31 +85,31 @@ ROM_EXTs are programmed into the chip's flash.
 |                                                               |
 +                                                               +
 |                                                               |
-+               Signature Key Modulus (3072 bits)               +
++               signature_key_modulus (3072 bits)               +
 |                                                               |
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  break  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Extension0 Offset                       |
+|                       extension0_offset                       |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Extension0 Checksum                      |
+|                      extension0_checksum                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Extension1 Offset                       |
+|                       extension1_offset                       |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Extension1 Checksum                      |
+|                      extension1_checksum                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Extension2 Offset                       |
+|                       extension2_offset                       |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Extension2 Checksum                      |
+|                      extension2_checksum                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Extension3 Offset                       |
+|                       extension3_offset                       |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Extension3 Checksum                      |
+|                      extension3_checksum                      |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
 |                                                               |
-+                           Code Image                          +
++                           code image                          +
 |                                                               |
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  break  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 |                                                               |
