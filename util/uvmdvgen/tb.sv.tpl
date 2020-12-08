@@ -8,6 +8,9 @@ module tb;
   import dv_utils_pkg::*;
   import ${name}_env_pkg::*;
   import ${name}_test_pkg::*;
+% if has_edn:
+  import push_pull_agent_pkg::*;
+% endif
 
   // macro includes
   `include "uvm_macros.svh"
@@ -33,6 +36,9 @@ module tb;
 % for agent in env_agents:
   ${agent}_if ${agent}_if();
 % endfor
+% if has_edn:
+  push_pull_if #(.DeviceDataWidth(EDN_DATA_SIZE))   edn_if(.clk(clk), .rst_n(rst_n));
+% endif
 
 % if has_alerts:
   `DV_ALERT_IF_CONNECT
@@ -56,6 +62,10 @@ module tb;
     .rst_ni               (rst_n    )
 
 % endif
+% if has_edn:
+    .edn_o                (edn_if.req),
+    .edn_i                ({edn_if.ack, edn_if.d_data}),
+% endif
     // TODO: add remaining IOs and hook them
   );
 
@@ -73,6 +83,10 @@ module tb;
 % for agent in env_agents:
     uvm_config_db#(virtual ${agent}_if)::set(null, "*.env.m_${agent}_agent*", "vif", ${agent}_if);
 % endfor
+% if has_edn:
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(EDN_DATA_SIZE)))::set(null,
+                   "*env.m_edn_pull_agent*", "vif", edn_if);
+% endif
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

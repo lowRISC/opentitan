@@ -15,6 +15,9 @@ filesets:
 % else:
       - lowrisc:dv:dv_lib
 % endif
+% if has_edn:
+      - lowrisc:dv:push_pull_agent
+% endif
 % for agent in env_agents:
       - ${vendor}:dv:${agent}_agent
 % endfor

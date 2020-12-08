@@ -15,6 +15,9 @@ class ${name}_virtual_sequencer extends dv_base_virtual_sequencer #(
 % for agent in env_agents:
   ${agent}_sequencer ${agent}_sequencer_h;
 % endfor
+% if has_edn:
+  push_pull_sequencer#(.DeviceDataWidth(EDN_DATA_SIZE)) edn_pull_sequencer_h;
+% endif
 
   `uvm_component_new
 

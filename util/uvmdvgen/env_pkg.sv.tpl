@@ -19,6 +19,9 @@ package ${name}_env_pkg;
   import csr_utils_pkg::*;
   import ${name}_ral_pkg::*;
 % endif
+% if has_edn:
+  import push_pull_agent_pkg::*;
+% endif
 
   // macro includes
   `include "uvm_macros.svh"
@@ -29,6 +32,9 @@ package ${name}_env_pkg;
   // TODO: add the names of alerts in order
   parameter string LIST_OF_ALERTS[] = {};
   parameter uint   NUM_ALERTS = ;
+% endif
+% if has_edn:
+  parameter uint   EDN_DATA_SIZE = ;
 % endif
 
   // types

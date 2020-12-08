@@ -14,7 +14,9 @@ class ${name}_env_cfg extends dv_base_env_cfg;
 % for agent in env_agents:
   rand ${agent}_agent_cfg m_${agent}_agent_cfg;
 % endfor
-
+% if has_edn:
+  rand push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_SIZE)) m_edn_pull_agent_cfg;
+% endif
   `uvm_object_utils_begin(${name}_env_cfg)
 % for agent in env_agents:
     `uvm_field_object(m_${agent}_agent_cfg, UVM_DEFAULT)
@@ -34,6 +36,12 @@ class ${name}_env_cfg extends dv_base_env_cfg;
     // create ${agent} agent config obj
     m_${agent}_agent_cfg = ${agent}_agent_cfg::type_id::create("m_${agent}_agent_cfg");
 % endfor
+% if has_edn:
+    m_edn_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_SIZE))::type_id::create
+                           ("m_edn_pull_agent_cfg");
+    m_edn_pull_agent_cfg.agent_type = PullAgent;
+    m_edn_pull_agent_cfg.if_mode    = Device;
+% endif
 % if is_cip:
 
     // set num_interrupts & num_alerts

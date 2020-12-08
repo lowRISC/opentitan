@@ -21,6 +21,9 @@ class ${name}_scoreboard extends dv_base_scoreboard #(
 % for agent in env_agents:
   uvm_tlm_analysis_fifo #(${agent}_item) ${agent}_fifo;
 % endfor
+% if has_edn:
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(EDN_DATA_SIZE))) edn_fifo;
+% endif
 
   // local queues to hold incoming packets pending comparison
 % for agent in env_agents:
@@ -34,6 +37,9 @@ class ${name}_scoreboard extends dv_base_scoreboard #(
 % for agent in env_agents:
     ${agent}_fifo = new("${agent}_fifo", this);
 % endfor
+% if has_edn:
+    edn_fifo = new("edn_fifo", this);
+% endif
   endfunction
 
   function void connect_phase(uvm_phase phase);

@@ -20,6 +20,10 @@ class ${name}_env extends dv_base_env #(
 % endfor
 % endif
 
+% if has_edn:
+  push_pull_agent#(.DeviceDataWidth(EDN_DATA_SIZE)) m_edn_pull_agent;
+% endif
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -29,6 +33,14 @@ class ${name}_env extends dv_base_env #(
     m_${agent}_agent = ${agent}_agent::type_id::create("m_${agent}_agent", this);
     uvm_config_db#(${agent}_agent_cfg)::set(this, "m_${agent}_agent*", "cfg", cfg.m_${agent}_agent_cfg);
 % endfor
+
+% if has_edn:
+    // create edn pull agent
+    m_edn_pull_agent = push_pull_agent#(.DeviceDataWidth(EDN_DATA_SIZE))::type_id::create(
+                       "m_edn_pull_agent", this);
+    uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_SIZE)))::set(
+        this, "m_edn_pull_agent", "cfg", cfg.m_edn_pull_agent_cfg);
+% endif
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -47,6 +59,10 @@ class ${name}_env extends dv_base_env #(
       virtual_sequencer.${agent}_sequencer_h = m_${agent}_agent.sequencer;
     end
 % endfor
+% if has_edn:
+      virtual_sequencer.edn_pull_sequencer_h = m_edn_pull_agent.sequencer;
+      m_edn_pull_agent.monitor.req_port.connect(scoreboard.edn_fifo.analysis_export);
+% endif
   endfunction
 
 endclass
