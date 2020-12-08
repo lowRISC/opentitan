@@ -75,8 +75,10 @@ module lc_ctrl
   output lc_flash_rma_seed_t                         lc_flash_rma_seed_o,
   output lc_tx_t                                     lc_flash_rma_req_o,
   input  lc_tx_t                                     lc_flash_rma_ack_i,
-  // State group diversification value for keymgr
-  output lc_keymgr_div_t                             lc_keymgr_div_o
+  // State group diversification value for keymgr.
+  output lc_keymgr_div_t                             lc_keymgr_div_o,
+  // Hardware config input, needed for the DEVICE_ID field.
+  input  otp_ctrl_part_pkg::otp_hw_cfg_t             otp_hw_cfg_i
 );
 
   ////////////////////////
@@ -125,13 +127,12 @@ module lc_ctrl
     .devmode_i ( 1'b1       )
   );
 
-  // TODO: add this to the LC_CTRL spec.
-  // note that the DMI reset does not affect the LC controller in any way.
 
   // This reuses the JTAG DTM and DMI from the RISC-V external
   // debug v0.13 specification to read and write the lc_ctrl CSRs:
   // https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf
   // The register addresses correspond to the byte offsets of the lc_ctrl CSRs, divided by 4.
+  // Note that the DMI reset does not affect the LC controller in any way.
   dm::dmi_req_t dmi_req;
   logic dmi_req_valid;
   logic dmi_req_ready;
@@ -220,6 +221,11 @@ module lc_ctrl
 
   logic lc_idle_d;
 
+  logic unused_otp_hw_cfg_bits;
+  assign unused_otp_hw_cfg_bits = ^{otp_hw_cfg_i.valid,
+                                    otp_hw_cfg_i.data.hw_cfg_digest,
+                                    otp_hw_cfg_i.data.hw_cfg_content};
+
   always_comb begin : p_csr_assign_outputs
     hw2reg = '0;
     hw2reg.status.ready                  = lc_idle_d;
@@ -233,6 +239,8 @@ module lc_ctrl
     hw2reg.lc_state                      = dec_lc_state;
     hw2reg.lc_transition_cnt             = dec_lc_cnt;
     hw2reg.lc_id_state                   = dec_lc_id_state;
+    hw2reg.device_id                     = otp_hw_cfg_i.data.device_id;
+
     // The assignments above are identical for the TAP.
     tap_hw2reg = hw2reg;
 
