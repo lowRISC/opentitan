@@ -149,6 +149,7 @@
     // of the actual IMEM and DMEM sizes without changing the address map.
     { skipto: "0x4000" }
 
+    // Imem size (given as `items` below) must be a power of two.
     { window: {
         name: "IMEM"
         items: "1024" // 4 kB
@@ -167,6 +168,7 @@
 
     { skipto: "0x8000" }
 
+    // Dmem size (given as `items` below) must be a power of two.
     { window: {
         name: "DMEM"
         items: "1024" // 4 kB
