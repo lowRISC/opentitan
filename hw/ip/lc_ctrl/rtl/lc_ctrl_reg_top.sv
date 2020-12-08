@@ -23,7 +23,7 @@ module lc_ctrl_reg_top (
 
   import lc_ctrl_reg_pkg::* ;
 
-  localparam int AW = 6;
+  localparam int AW = 7;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -125,6 +125,22 @@ module lc_ctrl_reg_top (
   logic lc_transition_cnt_re;
   logic [1:0] lc_id_state_qs;
   logic lc_id_state_re;
+  logic [31:0] device_id_0_qs;
+  logic device_id_0_re;
+  logic [31:0] device_id_1_qs;
+  logic device_id_1_re;
+  logic [31:0] device_id_2_qs;
+  logic device_id_2_re;
+  logic [31:0] device_id_3_qs;
+  logic device_id_3_re;
+  logic [31:0] device_id_4_qs;
+  logic device_id_4_re;
+  logic [31:0] device_id_5_qs;
+  logic device_id_5_re;
+  logic [31:0] device_id_6_qs;
+  logic device_id_6_re;
+  logic [31:0] device_id_7_qs;
+  logic device_id_7_re;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -466,8 +482,138 @@ module lc_ctrl_reg_top (
 
 
 
+  // Subregister 0 of Multireg device_id
+  // R[device_id_0]: V(True)
 
-  logic [12:0] addr_hit;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_device_id_0 (
+    .re     (device_id_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.device_id[0].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (device_id_0_qs)
+  );
+
+  // Subregister 1 of Multireg device_id
+  // R[device_id_1]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_device_id_1 (
+    .re     (device_id_1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.device_id[1].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (device_id_1_qs)
+  );
+
+  // Subregister 2 of Multireg device_id
+  // R[device_id_2]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_device_id_2 (
+    .re     (device_id_2_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.device_id[2].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (device_id_2_qs)
+  );
+
+  // Subregister 3 of Multireg device_id
+  // R[device_id_3]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_device_id_3 (
+    .re     (device_id_3_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.device_id[3].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (device_id_3_qs)
+  );
+
+  // Subregister 4 of Multireg device_id
+  // R[device_id_4]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_device_id_4 (
+    .re     (device_id_4_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.device_id[4].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (device_id_4_qs)
+  );
+
+  // Subregister 5 of Multireg device_id
+  // R[device_id_5]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_device_id_5 (
+    .re     (device_id_5_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.device_id[5].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (device_id_5_qs)
+  );
+
+  // Subregister 6 of Multireg device_id
+  // R[device_id_6]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_device_id_6 (
+    .re     (device_id_6_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.device_id[6].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (device_id_6_qs)
+  );
+
+  // Subregister 7 of Multireg device_id
+  // R[device_id_7]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_device_id_7 (
+    .re     (device_id_7_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.device_id[7].d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (device_id_7_qs)
+  );
+
+
+
+
+  logic [20:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == LC_CTRL_ALERT_TEST_OFFSET);
@@ -483,6 +629,14 @@ module lc_ctrl_reg_top (
     addr_hit[10] = (reg_addr == LC_CTRL_LC_STATE_OFFSET);
     addr_hit[11] = (reg_addr == LC_CTRL_LC_TRANSITION_CNT_OFFSET);
     addr_hit[12] = (reg_addr == LC_CTRL_LC_ID_STATE_OFFSET);
+    addr_hit[13] = (reg_addr == LC_CTRL_DEVICE_ID_0_OFFSET);
+    addr_hit[14] = (reg_addr == LC_CTRL_DEVICE_ID_1_OFFSET);
+    addr_hit[15] = (reg_addr == LC_CTRL_DEVICE_ID_2_OFFSET);
+    addr_hit[16] = (reg_addr == LC_CTRL_DEVICE_ID_3_OFFSET);
+    addr_hit[17] = (reg_addr == LC_CTRL_DEVICE_ID_4_OFFSET);
+    addr_hit[18] = (reg_addr == LC_CTRL_DEVICE_ID_5_OFFSET);
+    addr_hit[19] = (reg_addr == LC_CTRL_DEVICE_ID_6_OFFSET);
+    addr_hit[20] = (reg_addr == LC_CTRL_DEVICE_ID_7_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -503,6 +657,14 @@ module lc_ctrl_reg_top (
     if (addr_hit[10] && reg_we && (LC_CTRL_PERMIT[10] != (LC_CTRL_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[11] && reg_we && (LC_CTRL_PERMIT[11] != (LC_CTRL_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[12] && reg_we && (LC_CTRL_PERMIT[12] != (LC_CTRL_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (LC_CTRL_PERMIT[13] != (LC_CTRL_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[14] && reg_we && (LC_CTRL_PERMIT[14] != (LC_CTRL_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[15] && reg_we && (LC_CTRL_PERMIT[15] != (LC_CTRL_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[16] && reg_we && (LC_CTRL_PERMIT[16] != (LC_CTRL_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[17] && reg_we && (LC_CTRL_PERMIT[17] != (LC_CTRL_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[18] && reg_we && (LC_CTRL_PERMIT[18] != (LC_CTRL_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[19] && reg_we && (LC_CTRL_PERMIT[19] != (LC_CTRL_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[20] && reg_we && (LC_CTRL_PERMIT[20] != (LC_CTRL_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign alert_test_lc_programming_failure_we = addr_hit[0] & reg_we & ~wr_err;
@@ -561,6 +723,22 @@ module lc_ctrl_reg_top (
   assign lc_transition_cnt_re = addr_hit[11] && reg_re;
 
   assign lc_id_state_re = addr_hit[12] && reg_re;
+
+  assign device_id_0_re = addr_hit[13] && reg_re;
+
+  assign device_id_1_re = addr_hit[14] && reg_re;
+
+  assign device_id_2_re = addr_hit[15] && reg_re;
+
+  assign device_id_3_re = addr_hit[16] && reg_re;
+
+  assign device_id_4_re = addr_hit[17] && reg_re;
+
+  assign device_id_5_re = addr_hit[18] && reg_re;
+
+  assign device_id_6_re = addr_hit[19] && reg_re;
+
+  assign device_id_7_re = addr_hit[20] && reg_re;
 
   // Read data return
   always_comb begin
@@ -624,6 +802,38 @@ module lc_ctrl_reg_top (
 
       addr_hit[12]: begin
         reg_rdata_next[1:0] = lc_id_state_qs;
+      end
+
+      addr_hit[13]: begin
+        reg_rdata_next[31:0] = device_id_0_qs;
+      end
+
+      addr_hit[14]: begin
+        reg_rdata_next[31:0] = device_id_1_qs;
+      end
+
+      addr_hit[15]: begin
+        reg_rdata_next[31:0] = device_id_2_qs;
+      end
+
+      addr_hit[16]: begin
+        reg_rdata_next[31:0] = device_id_3_qs;
+      end
+
+      addr_hit[17]: begin
+        reg_rdata_next[31:0] = device_id_4_qs;
+      end
+
+      addr_hit[18]: begin
+        reg_rdata_next[31:0] = device_id_5_qs;
+      end
+
+      addr_hit[19]: begin
+        reg_rdata_next[31:0] = device_id_6_qs;
+      end
+
+      addr_hit[20]: begin
+        reg_rdata_next[31:0] = device_id_7_qs;
       end
 
       default: begin
