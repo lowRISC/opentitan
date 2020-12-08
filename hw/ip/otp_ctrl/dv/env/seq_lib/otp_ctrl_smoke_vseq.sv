@@ -11,6 +11,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   `uvm_object_new
 
+  bit do_lc_trans;
+
   rand bit [TL_AW-1:0]               dai_addr;
   rand bit [TL_DW-1:0]               wdata0, wdata1;
   rand int                           num_dai_op;
@@ -110,6 +112,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
       // check digest
       check_digests();
+
+      if (do_lc_trans) req_lc_transition();
     end
 
   endtask : body

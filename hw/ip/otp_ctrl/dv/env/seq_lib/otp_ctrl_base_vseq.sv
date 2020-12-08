@@ -163,6 +163,20 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_send(flash_data_pull_seq)
   endtask
 
+  virtual task req_lc_transition();
+    // TODO: this two variables are constraints to lc_prog_pull_seq once it supports data
+    // constraint
+    lc_ctrl_pkg::lc_state_e lc_state;
+    lc_ctrl_pkg::lc_cnt_e lc_cnt;
+    push_pull_host_seq#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
+                        lc_prog_pull_seq;
+    `uvm_create_on(lc_prog_pull_seq, p_sequencer.lc_prog_pull_sequencer_h);
+    `DV_CHECK_STD_RANDOMIZE_FATAL(lc_state);
+    `DV_CHECK_STD_RANDOMIZE_FATAL(lc_cnt)
+    `DV_CHECK_RANDOMIZE_FATAL(lc_prog_pull_seq)
+    `uvm_send(lc_prog_pull_seq)
+  endtask
+
   // first two or three LSB bits of DAI address can be randomized based on if it is secret
   virtual function bit [TL_AW-1:0] randomize_dai_addr(bit [TL_AW-1:0] dai_addr);
     if (is_secret(dai_addr)) begin

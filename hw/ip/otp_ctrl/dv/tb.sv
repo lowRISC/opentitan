@@ -31,7 +31,6 @@ module tb;
 
   //TODO: use push-pull agent once support
   wire otp_ctrl_pkg::otp_ast_req_t        ast_req;
-  wire otp_ctrl_pkg::lc_otp_program_rsp_t otp_prog;
   wire otp_ctrl_pkg::lc_otp_token_rsp_t   otp_token;
 
   // interfaces
@@ -39,9 +38,11 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
 
-  push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))  sram_if[NumSramKeyReqSlots] (.clk(clk),
-                                                                                 .rst_n(rst_n));
-  push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE))  otbn_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
+                 lc_prog_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))
+                 sram_if[NumSramKeyReqSlots](.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(clk), .rst_n(rst_n));
@@ -82,8 +83,8 @@ module tb;
     .pwr_otp_i                 (pwr_otp[OtpPwrInitReq]),
     .pwr_otp_o                 (pwr_otp[OtpPwrDoneRsp:OtpPwrIdleRsp]),
     // lc
-    .lc_otp_program_i          ('0),
-    .lc_otp_program_o          (otp_prog),
+    .lc_otp_program_i          ({lc_prog_if.req, lc_prog_if.h_data}),
+    .lc_otp_program_o          ({lc_prog_if.d_data, lc_prog_if.ack}),
     .lc_otp_token_i            ('0),
     .lc_otp_token_o            (otp_token),
     .lc_escalate_en_i          (lc_ctrl_pkg::Off),
@@ -144,8 +145,10 @@ module tb;
                    "*env.m_flash_data_pull_agent*", "vif", flash_data_if);
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(null,
                    "*env.m_flash_addr_pull_agent*", "vif", flash_addr_if);
-    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)))::set
-                  (null, "*env.m_edn_pull_agent*", "vif", edn_if);
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)))::
+                   set(null, "*env.m_edn_pull_agent*", "vif", edn_if);
+    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1)))::
+                   set(null, "*env.m_lc_prog_pull_agent*", "vif", lc_prog_if);
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(pwr_otp_vif)::set(null, "*.env", "pwr_otp_vif", pwr_otp_if);
