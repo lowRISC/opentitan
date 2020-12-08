@@ -150,6 +150,9 @@ module aes_cipher_core import aes_pkg::*;
   logic                               state_we;
   state_sel_e                         state_sel;
 
+  logic                               sub_bytes_en;
+  logic                               sub_bytes_out_req;
+  logic                               sub_bytes_out_ack;
   logic               [3:0][3:0][7:0] sub_bytes_out;
   logic               [3:0][3:0][7:0] sb_in_mask;
   logic               [3:0][3:0][7:0] sb_out_mask;
@@ -170,7 +173,9 @@ module aes_cipher_core import aes_pkg::*;
   key_dec_sel_e                       key_dec_sel;
   logic                   [7:0][31:0] key_expand_out [NumShares];
   ciph_op_e                           key_expand_op;
-  logic                               key_expand_step;
+  logic                               key_expand_en;
+  logic                               key_expand_out_req;
+  logic                               key_expand_out_ack;
   logic                               key_expand_clear;
   logic                         [3:0] key_expand_round;
   key_words_sel_e                     key_words_sel;
@@ -283,12 +288,17 @@ module aes_cipher_core import aes_pkg::*;
   aes_sub_bytes #(
     .SBoxImpl ( SBoxImpl )
   ) u_aes_sub_bytes (
-    .op_i          ( op_i           ),
-    .data_i        ( state_q[0]     ),
-    .in_mask_i     ( sb_in_mask     ),
-    .out_mask_i    ( sb_out_mask    ),
-    .prd_masking_i ( prd_sub_bytes  ),
-    .data_o        ( sub_bytes_out  )
+    .clk_i         ( clk_i             ),
+    .rst_ni        ( rst_ni            ),
+    .en_i          ( sub_bytes_en      ),
+    .out_req_o     ( sub_bytes_out_req ),
+    .out_ack_i     ( sub_bytes_out_ack ),
+    .op_i          ( op_i              ),
+    .data_i        ( state_q[0]        ),
+    .in_mask_i     ( sb_in_mask        ),
+    .out_mask_i    ( sb_out_mask       ),
+    .prd_masking_i ( prd_sub_bytes     ),
+    .data_o        ( sub_bytes_out     )
   );
 
   for (genvar s = 0; s < NumShares; s++) begin : gen_shares_shift_mix
@@ -368,17 +378,19 @@ module aes_cipher_core import aes_pkg::*;
     .Masking      ( Masking      ),
     .SBoxImpl     ( SBoxImpl     )
   ) u_aes_key_expand (
-    .clk_i         ( clk_i            ),
-    .rst_ni        ( rst_ni           ),
-    .cfg_valid_i   ( cfg_valid_i      ),
-    .op_i          ( key_expand_op    ),
-    .step_i        ( key_expand_step  ),
-    .clear_i       ( key_expand_clear ),
-    .round_i       ( key_expand_round ),
-    .key_len_i     ( key_len_i        ),
-    .key_i         ( key_full_q       ),
-    .key_o         ( key_expand_out   ),
-    .prd_masking_i ( prd_key_expand   )
+    .clk_i         ( clk_i              ),
+    .rst_ni        ( rst_ni             ),
+    .cfg_valid_i   ( cfg_valid_i        ),
+    .op_i          ( key_expand_op      ),
+    .en_i          ( key_expand_en      ),
+    .out_req_o     ( key_expand_out_req ),
+    .out_ack_i     ( key_expand_out_ack ),
+    .clear_i       ( key_expand_clear   ),
+    .round_i       ( key_expand_round   ),
+    .key_len_i     ( key_len_i          ),
+    .key_i         ( key_full_q         ),
+    .key_o         ( key_expand_out     ),
+    .prd_masking_i ( prd_key_expand     )
   );
 
   for (genvar s = 0; s < NumShares; s++) begin : gen_shares_round_key
@@ -418,45 +430,50 @@ module aes_cipher_core import aes_pkg::*;
   aes_cipher_control #(
     .Masking ( Masking )
   ) u_aes_cipher_control (
-    .clk_i                  ( clk_i                ),
-    .rst_ni                 ( rst_ni               ),
+    .clk_i                ( clk_i                ),
+    .rst_ni               ( rst_ni               ),
 
-    .in_valid_i             ( in_valid_i           ),
-    .in_ready_o             ( in_ready_o           ),
+    .in_valid_i           ( in_valid_i           ),
+    .in_ready_o           ( in_ready_o           ),
 
-    .out_valid_o            ( out_valid_o          ),
-    .out_ready_i            ( out_ready_i          ),
+    .out_valid_o          ( out_valid_o          ),
+    .out_ready_i          ( out_ready_i          ),
 
-    .cfg_valid_i            ( cfg_valid_i          ),
-    .op_i                   ( op_i                 ),
-    .key_len_i              ( key_len_i            ),
-    .crypt_i                ( crypt_i              ),
-    .crypt_o                ( crypt_o              ),
-    .dec_key_gen_i          ( dec_key_gen_i        ),
-    .dec_key_gen_o          ( dec_key_gen_o        ),
-    .key_clear_i            ( key_clear_i          ),
-    .key_clear_o            ( key_clear_o          ),
-    .data_out_clear_i       ( data_out_clear_i     ),
-    .data_out_clear_o       ( data_out_clear_o     ),
+    .cfg_valid_i          ( cfg_valid_i          ),
+    .op_i                 ( op_i                 ),
+    .key_len_i            ( key_len_i            ),
+    .crypt_i              ( crypt_i              ),
+    .crypt_o              ( crypt_o              ),
+    .dec_key_gen_i        ( dec_key_gen_i        ),
+    .dec_key_gen_o        ( dec_key_gen_o        ),
+    .key_clear_i          ( key_clear_i          ),
+    .key_clear_o          ( key_clear_o          ),
+    .data_out_clear_i     ( data_out_clear_i     ),
+    .data_out_clear_o     ( data_out_clear_o     ),
 
-    .prng_update_o          ( prd_masking_upd      ),
-    .prng_reseed_req_o      ( prd_masking_rsd_req  ),
-    .prng_reseed_ack_i      ( prd_masking_rsd_ack  ),
+    .prng_update_o        ( prd_masking_upd      ),
+    .prng_reseed_req_o    ( prd_masking_rsd_req  ),
+    .prng_reseed_ack_i    ( prd_masking_rsd_ack  ),
 
-    .state_sel_o            ( state_sel            ),
-    .state_we_o             ( state_we             ),
-    .add_rk_sel_o           ( add_round_key_in_sel ),
+    .state_sel_o          ( state_sel            ),
+    .state_we_o           ( state_we             ),
+    .sub_bytes_en_o       ( sub_bytes_en         ),
+    .sub_bytes_out_req_i  ( sub_bytes_out_req    ),
+    .sub_bytes_out_ack_o  ( sub_bytes_out_ack    ),
+    .add_rk_sel_o         ( add_round_key_in_sel ),
 
-    .key_expand_op_o        ( key_expand_op        ),
-    .key_full_sel_o         ( key_full_sel         ),
-    .key_full_we_o          ( key_full_we          ),
-    .key_dec_sel_o          ( key_dec_sel          ),
-    .key_dec_we_o           ( key_dec_we           ),
-    .key_expand_step_o      ( key_expand_step      ),
-    .key_expand_clear_o     ( key_expand_clear     ),
-    .key_expand_round_o     ( key_expand_round     ),
-    .key_words_sel_o        ( key_words_sel        ),
-    .round_key_sel_o        ( round_key_sel        )
+    .key_expand_op_o      ( key_expand_op        ),
+    .key_full_sel_o       ( key_full_sel         ),
+    .key_full_we_o        ( key_full_we          ),
+    .key_dec_sel_o        ( key_dec_sel          ),
+    .key_dec_we_o         ( key_dec_we           ),
+    .key_expand_en_o      ( key_expand_en        ),
+    .key_expand_out_req_i ( key_expand_out_req   ),
+    .key_expand_out_ack_o ( key_expand_out_ack   ),
+    .key_expand_clear_o   ( key_expand_clear     ),
+    .key_expand_round_o   ( key_expand_round     ),
+    .key_words_sel_o      ( key_words_sel        ),
+    .round_key_sel_o      ( round_key_sel        )
   );
 
   /////////////
