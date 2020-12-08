@@ -12,18 +12,18 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))
-      push_pull_fifo;
+  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_env_pkg::FIPS_CSRNG_BUS_WIDTH)))
+      entropy_src_fifo;
 
   // local queues to hold incoming packets pending comparison
-  push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
-      push_pull_q[$];
+  push_pull_item#(.HostDataWidth(entropy_src_env_pkg::FIPS_CSRNG_BUS_WIDTH))
+      entropy_src_q[$];
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    push_pull_fifo = new("push_pull_fifo", this);
+    entropy_src_fifo = new("entropy_src_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -38,10 +38,10 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task process_push_pull_fifo();
-    push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  item;
+    push_pull_item#(.HostDataWidth(entropy_src_env_pkg::FIPS_CSRNG_BUS_WIDTH))  item;
     forever begin
-      push_pull_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received push_pull item:\n%0s", item.sprint()), UVM_HIGH)
+      entropy_src_fifo.get(item);
+      `uvm_info(`gfn, $sformatf("received item:\n%0s", item.sprint()), UVM_HIGH)
     end
   endtask
 

@@ -24,7 +24,7 @@
             Verify regen bit enables/disables write access to control registers
             '''
       milestone: V2
-      tests: ["csrng_firmware"]
+      tests: []
     }
     {
       name: interrupts
@@ -32,7 +32,7 @@
             Verify all csrng interrupts assert/clear when expected.
             '''
       milestone: V2
-      tests: ["csrng_interrupts"]
+      tests: []
     }
     {
       name: cmds
@@ -43,7 +43,7 @@
             Verify for multiple hw app interfaces running in parallel.
             '''
       milestone: V2
-      tests: ["csrng_cmds"]
+      tests: []
     }
     {
       name: genbits
@@ -53,7 +53,7 @@
             Verify for multiple hw app interfaces running in parallel.
             '''
       milestone: V2
-      tests: ["csrng_genbits"]
+      tests: []
     }
     {
       name: stress_all
