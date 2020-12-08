@@ -81,8 +81,16 @@
             bkout_type: "True",
             items: [
                 {
+                    name:    "DEVICE_ID",
+                    size:    "32",
+                    // Default value to be output in case partition has not
+                    // initialized or is in error state. If not specified,
+                    // a value of '0 will be used.
+                    inv_default: "{256{1'b1}}",
+                }
+                {
                     name: "HW_CFG_CONTENT",
-                    size: "200"
+                    size: "168"
                 }
             ],
             desc: '''Hardware configuration bits used to hardwire
