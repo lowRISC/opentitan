@@ -22,6 +22,7 @@
              "{proj_root}/hw/ip/keymgr/dv/keymgr_sim_cfg.hjson",
              "{proj_root}/hw/ip/kmac/dv/kmac_masked_sim_cfg.hjson",
              "{proj_root}/hw/ip/kmac/dv/kmac_unmasked_sim_cfg.hjson",
+             "{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson",
              "{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson",

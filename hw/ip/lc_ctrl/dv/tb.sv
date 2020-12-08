@@ -75,7 +75,9 @@ module tb;
 
     .lc_flash_rma_seed_o   (),
     .lc_flash_rma_req_o    (),
-    .lc_flash_rma_ack_i    (lc_ctrl_pkg::Off)
+    .lc_flash_rma_ack_i    (lc_ctrl_pkg::Off),
+
+    .otp_hw_cfg_i          (0)
   );
 
   initial begin
