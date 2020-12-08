@@ -62,7 +62,7 @@ module otp_ctrl
   input  otbn_otp_key_req_t                          otbn_otp_key_i,
   output otbn_otp_key_rsp_t                          otbn_otp_key_o,
   // Hardware config bits
-  output logic [HwCfgContentSize * 8-1:0]            hw_cfg_o
+  output otp_hw_cfg_t                                otp_hw_cfg_o
 );
 
   import prim_util_pkg::vbits;
@@ -994,11 +994,12 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
   // Buffered Data Output Mapping //
   //////////////////////////////////
 
-  // Output complete hardware config partition (without the digest).
-  // Actual mapping to other IPs can occur at the top-level.
-  assign hw_cfg_o = part_buf_data[HwCfgContentOffset +:
-                                  HwCfgContentSize];
-
+  // Output complete hardware config partition.
+  // Actual mapping to other IPs is done via the intersignal topgen feature,
+  // selection of fields can be done using the otp_hw_cfg_t struct fields.
+  assign otp_hw_cfg_o.valid = (part_init_done[HwCfgIdx]) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
+  assign otp_hw_cfg_o.data = otp_hw_cfg_data_t'(part_buf_data[HwCfgContentOffset +:
+                                                              $bits(otp_hw_cfg_t)]);
   // Root keys
   assign otp_keymgr_key_o.valid = part_init_done[Secret2Idx];
   assign otp_keymgr_key_o.key_share0 = part_buf_data[CreatorRootKeyShare0Offset +:
@@ -1069,6 +1070,6 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
   `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,       flash_otp_key_o)
   `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_o)
   `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_o)
-  `ASSERT_KNOWN(HwCfgKnown_A,                hw_cfg_o)
+  `ASSERT_KNOWN(OtpHwCfgKnown_A,             otp_hw_cfg_o)
 
 endmodule : otp_ctrl
