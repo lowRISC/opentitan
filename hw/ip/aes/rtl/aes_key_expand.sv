@@ -18,7 +18,9 @@ module aes_key_expand import aes_pkg::*;
   input  logic                   rst_ni,
   input  logic                   cfg_valid_i,
   input  ciph_op_e               op_i,
-  input  logic                   step_i,
+  input  logic                   en_i,
+  output logic                   out_req_o,
+  input  logic                   out_ack_i,
   input  logic                   clear_i,
   input  logic             [3:0] round_i,
   input  key_len_e               key_len_i,
@@ -40,6 +42,7 @@ module aes_key_expand import aes_pkg::*;
   logic               [31:0] rot_word_out [NumShares];
   logic                      use_rot_word;
   logic               [31:0] sub_word_in, sub_word_out;
+  logic                [3:0] sub_word_out_req;
   logic               [31:0] sw_in_mask, sw_out_mask;
   logic [4*WidthPRDSBox-1:0] sw_prd;
   logic                [7:0] rcon_add_in, rcon_add_out;
@@ -106,7 +109,8 @@ module aes_key_expand import aes_pkg::*;
     end
   end
 
-  assign rcon_we = clear_i | (step_i & use_rcon);
+  // Advance.
+  assign rcon_we = clear_i | (en_i & out_req_o & out_ack_i & use_rcon);
 
   // Rcon register
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_rcon
@@ -193,11 +197,16 @@ module aes_key_expand import aes_pkg::*;
   assign sw_out_mask = aes_sb_out_mask_get(prd_masking_i);
   assign sw_prd      = aes_sb_prd_get(prd_masking_i);
 
-  // SubWord - individually substitute bytes
+  // SubWord - individually substitute bytes.
   for (genvar i = 0; i < 4; i++) begin : gen_sbox
     aes_sbox #(
       .SBoxImpl ( SBoxImpl )
     ) u_aes_sbox_i (
+      .clk_i         ( clk_i                                  ),
+      .rst_ni        ( rst_ni                                 ),
+      .en_i          ( en_i                                   ),
+      .out_req_o     ( sub_word_out_req[i]                    ),
+      .out_ack_i     ( out_ack_i                              ),
       .op_i          ( CIPH_FWD                               ),
       .data_i        ( sub_word_in[8*i +: 8]                  ),
       .in_mask_i     ( sw_in_mask[8*i +: 8]                   ),
@@ -367,7 +376,8 @@ module aes_key_expand import aes_pkg::*;
   end // gen_shares_regular
 
   // Drive output
-  assign key_o = regular;
+  assign key_o     = regular;
+  assign out_req_o = &sub_word_out_req;
 
   ////////////////
   // Assertions //
