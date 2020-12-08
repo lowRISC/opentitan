@@ -29,13 +29,12 @@ TEST_APPS_SELFCHECKING = [
         "binary_name": "dif_otbn_smoketest",
         "verilator_extra_args": ['+OTBN_USE_MODEL=0'],
     },
-# Using the model in CI isn't possible until #4097 is resolved.
-#    {
-#        "name": "dif_otbn_smoketest_model",
-#        "binary_name": "dif_otbn_smoketest",
-#        "verilator_extra_args": ['+OTBN_USE_MODEL=1'],
-#        "targets": ["sim_verilator"],
-#    },
+    {
+        "name": "dif_otbn_smoketest_model",
+        "binary_name": "dif_otbn_smoketest",
+        "verilator_extra_args": ['+OTBN_USE_MODEL=1'],
+        "targets": ["sim_verilator"],
+    },
     {
         "name": "dif_otp_ctrl_smoketest",
     },
