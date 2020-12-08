@@ -815,6 +815,8 @@ def generate_top_ral(top, ip_objs, out_path):
             mem.name = item["name"]
             mem.base_addr = int(item["base_addr"], 0)
             mem.limit_addr = int(item["base_addr"], 0) + int(item["size"], 0)
+            mem.byte_write = ('byte_write' in item and
+                              item["byte_write"].lower() == "true")
             if "swaccess" in item.keys():
                 mem.dvrights = item["swaccess"]
             else:

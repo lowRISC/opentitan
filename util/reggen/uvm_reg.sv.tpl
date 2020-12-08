@@ -160,6 +160,9 @@ package ${block.name}_ral_pkg;
                  string           access = "${mem_right}",
                  int              has_coverage = UVM_NO_COVERAGE);
       super.new(name, size, n_bits, access, has_coverage);
+    % if w.byte_write:
+      set_mem_partial_write_support(1);
+    % endif
     endfunction : new
 
   endclass : ${gen_dv.mcname(block, w)}

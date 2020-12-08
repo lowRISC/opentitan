@@ -114,6 +114,7 @@ def parse_win(obj, width):
     win = Window()
     win.name = obj["name"]
     win.base_addr = obj["genoffset"]
+    win.byte_write = obj["genbyte-write"]
     win.limit_addr = obj["genoffset"] + int(obj["items"]) * (width // 8)
     win.dvrights = obj["swaccess"]
     win.n_bits = obj["genvalidbits"]

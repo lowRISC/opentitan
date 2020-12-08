@@ -175,6 +175,7 @@ class MultiReg(Reg):
 class Window():
     def __init__(self):
         self.base_addr = 0
+        self.byte_write = 0
         self.limit_addr = 0
         self.n_bits = 0
         self.tags = []

@@ -4139,6 +4139,7 @@
       type: ram_1p
       base_addr: 0x10000000
       size: 0x10000
+      byte_write: "true"
       inter_signal_list:
       [
         {
@@ -4176,6 +4177,7 @@
       type: ram_1p
       base_addr: 0x18000000
       size: 0x1000
+      byte_write: "true"
       inter_signal_list:
       [
         {
