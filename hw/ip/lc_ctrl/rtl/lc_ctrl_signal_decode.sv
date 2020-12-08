@@ -189,16 +189,16 @@ module lc_ctrl_signal_decode
 
   // Need to make sure that the random netlist constants
   // are unique.
-  `ASSERT_INIT(LcKeymgrDivUnique0_A, !(RndCnstLcKeymgrDivInvalid inside {RndCnstLcKeymgrDivTest,
-                                                                         RndCnstLcKeymgrDivProd,
-                                                                         RndCnstLcKeymgrDivDev,
-                                                                         RndCnstLcKeymgrDivRma}))
-  `ASSERT_INIT(LcKeymgrDivUnique1_A, !(RndCnstLcKeymgrDivTest    inside {RndCnstLcKeymgrDivProd,
-                                                                         RndCnstLcKeymgrDivDev,
-                                                                         RndCnstLcKeymgrDivRma}))
-  `ASSERT_INIT(LcKeymgrDivUnique2_A, !(RndCnstLcKeymgrDivProd    inside {RndCnstLcKeymgrDivDev,
-                                                                         RndCnstLcKeymgrDivRma}))
-  `ASSERT_INIT(LcKeymgrDivUnique3_A, !(RndCnstLcKeymgrDivDev     inside {RndCnstLcKeymgrDivRma}))
+  `ASSERT_INIT(LcKeymgrDivUnique0_A, !(RndCnstLcKeymgrDivInv  inside {RndCnstLcKeymgrDivTest,
+                                                                      RndCnstLcKeymgrDivProd,
+                                                                      RndCnstLcKeymgrDivDev,
+                                                                      RndCnstLcKeymgrDivRma}))
+  `ASSERT_INIT(LcKeymgrDivUnique1_A, !(RndCnstLcKeymgrDivTest inside {RndCnstLcKeymgrDivProd,
+                                                                      RndCnstLcKeymgrDivDev,
+                                                                      RndCnstLcKeymgrDivRma}))
+  `ASSERT_INIT(LcKeymgrDivUnique2_A, !(RndCnstLcKeymgrDivProd inside {RndCnstLcKeymgrDivDev,
+                                                                      RndCnstLcKeymgrDivRma}))
+  `ASSERT_INIT(LcKeymgrDivUnique3_A, !(RndCnstLcKeymgrDivDev  inside {RndCnstLcKeymgrDivRma}))
 
   `ASSERT(SignalsAreOffWhenNotEnabled_A,
       !lc_state_valid_i
