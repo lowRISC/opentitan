@@ -114,12 +114,51 @@ package otp_ctrl_part_pkg;
   // Breakout types for easier access of individual items.
   typedef struct packed {
       logic [63:0] hw_cfg_digest;
-      logic [1599:0] hw_cfg_content;
+      logic [1343:0] hw_cfg_content;
+      logic [255:0] device_id;
   } otp_hw_cfg_data_t;
   typedef struct packed {
     // This reuses the same encoding as the life cycle signals for indicating valid status.
     lc_ctrl_pkg::lc_tx_t valid;
     otp_hw_cfg_data_t data;
   } otp_hw_cfg_t;
+
+  // OTP invalid partition default for buffered partitions.
+  parameter logic [1023:0][7:0] PartInvDefault = 8192'({
+    448'({
+      256'h0,
+      192'h0
+    }),
+    960'({
+      {256{1'b1}},
+      256'h0,
+      256'h0,
+      128'h0
+    }),
+    704'({
+      {256{1'b1}},
+      128'h0,
+      256'h0,
+      256'h0
+    }),
+    320'({
+      {256{1'b1}},
+      128'h0,
+      128'h0
+    }),
+    1664'({
+      {256{1'b1}},
+      1344'h0,
+      {256{1'b1}}
+    }),
+    6144'({
+      {256{1'b1}},
+      6080'h0
+    }),
+    6144'({
+      {256{1'b1}},
+      6080'h0
+    })});
+
 
 endpackage : otp_ctrl_part_pkg

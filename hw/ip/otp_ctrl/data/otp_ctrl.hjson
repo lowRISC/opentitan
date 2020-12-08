@@ -205,16 +205,28 @@
       default: "208",
       local: "true"
     },
+    { name: "DeviceIdOffset",
+      desc: "Offset of DEVICE_ID",
+      type: "int",
+      default: "1536",
+      local: "true"
+    },
+    { name: "DeviceIdSize",
+      desc: "Size of DEVICE_ID",
+      type: "int",
+      default: "32",
+      local: "true"
+    },
     { name: "HwCfgContentOffset",
       desc: "Offset of HW_CFG_CONTENT",
       type: "int",
-      default: "1536",
+      default: "1568",
       local: "true"
     },
     { name: "HwCfgContentSize",
       desc: "Size of HW_CFG_CONTENT",
       type: "int",
-      default: "200",
+      default: "168",
       local: "true"
     },
     { name: "HwCfgDigestOffset",

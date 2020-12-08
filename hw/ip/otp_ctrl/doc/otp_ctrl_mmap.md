@@ -9,7 +9,8 @@ It has been generated with hw/ip/otp_ctrl/util/translate-mmap.py
 |         |                |            |                  | [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0) |     0x2F8      |     8      |
 |    1    |  OWNER_SW_CFG  |    768     |      32bit       |                 OWNER_SW_CFG_CONTENT                  |     0x300      |    760     |
 |         |                |            |                  |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x5F8      |     8      |
-|    2    |     HW_CFG     |    208     |      32bit       |                    HW_CFG_CONTENT                     |     0x600      |    200     |
+|    2    |     HW_CFG     |    208     |      32bit       |                       DEVICE_ID                       |     0x600      |     32     |
+|         |                |            |                  |                    HW_CFG_CONTENT                     |     0x620      |    168     |
 |         |                |            |                  |         [HW_CFG_DIGEST](#Reg_hw_cfg_digest_0)         |     0x6C8      |     8      |
 |    3    |    SECRET0     |     40     |      64bit       |                   TEST_UNLOCK_TOKEN                   |     0x6D0      |     16     |
 |         |                |            |                  |                    TEST_EXIT_TOKEN                    |     0x6E0      |     16     |
