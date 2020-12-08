@@ -49,12 +49,9 @@ void VerilatorSimCtrl::SetTop(VerilatedToplevel *top, CData *sig_clk,
 
 int VerilatorSimCtrl::Exec(int argc, char **argv) {
   bool exit_app = false;
-  if (!ParseCommandArgs(argc, argv, exit_app)) {
-    return 1;
-  }
+  bool good_cmdline = ParseCommandArgs(argc, argv, exit_app);
   if (exit_app) {
-    // Successful exit requested by command argument parsing
-    return 0;
+    return good_cmdline ? 0 : 1;
   }
 
   RunSimulation();
@@ -88,6 +85,7 @@ bool VerilatorSimCtrl::ParseCommandArgs(int argc, char **argv, bool &exit_app) {
         if (!tracing_possible_) {
           std::cerr << "ERROR: Tracing has not been enabled at compile time."
                     << std::endl;
+          exit_app = true;
           return false;
         }
         TraceOn();
@@ -101,6 +99,7 @@ bool VerilatorSimCtrl::ParseCommandArgs(int argc, char **argv, bool &exit_app) {
         break;
       case ':':  // missing argument
         std::cerr << "ERROR: Missing argument." << std::endl << std::endl;
+        exit_app = true;
         return false;
       case '?':
       default:;
@@ -115,6 +114,7 @@ bool VerilatorSimCtrl::ParseCommandArgs(int argc, char **argv, bool &exit_app) {
   // Parse arguments for all registered extensions
   for (auto it = extension_array_.begin(); it != extension_array_.end(); ++it) {
     if (!(*it)->ParseCLIArguments(argc, argv, exit_app)) {
+      exit_app = true;
       return false;
       if (exit_app) {
         return true;
