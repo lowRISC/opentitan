@@ -358,7 +358,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
         end
       endcase // case (csr.get_name())
 
-        if (output_item.data_out_valid()) begin
+      if (output_item.data_out_valid()) begin
         // if data_out is read multipletimes in a row we should not pop input more than once
         if (rcv_item_q.size() == 0) begin
           output_item                    = new();
@@ -374,8 +374,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
           output_item                    = new();
           complete_item                  = new();
           `uvm_info(`gfn,
-            $sformatf("\n\t ----|added data to item_fifo (output received) fifo entries %d",
-                     item_fifo.num()), UVM_MEDIUM)
+                    $sformatf("\n\t ----|added data to item_fifo (output received) fifo entries %d",
+                              item_fifo.num()), UVM_MEDIUM)
         end
       end
     end
@@ -398,7 +398,6 @@ class aes_scoreboard extends cip_base_scoreboard #(
         forever begin
           case (msg_state)
             MSG_START: begin
-              full_item = new();
               item_fifo.get(full_item);
               `uvm_info(`gfn, $sformatf("\n\t ----| got item from item fifo \n cleared? %b", full_item.data_was_cleared), UVM_MEDIUM)
               if (!full_item.message_start()) begin
@@ -416,7 +415,6 @@ class aes_scoreboard extends cip_base_scoreboard #(
             end
 
             MSG_RUN: begin
-              full_item = new();
               item_fifo.get(full_item);
               `uvm_info(`gfn, $sformatf("\n\t ----| got item from item fifo \n cleared? %b", full_item.data_was_cleared), UVM_MEDIUM)
               if (full_item.message_start() || (full_item.start_item && full_item.manual_op)) begin
