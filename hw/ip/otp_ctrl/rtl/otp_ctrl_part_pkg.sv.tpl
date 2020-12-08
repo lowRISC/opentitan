@@ -54,20 +54,4 @@ package otp_ctrl_part_pkg;
 
   parameter int NumAgents = int'(NumAgentsIdx);
 
-  // Breakout types for easier access of individual items.
-% for part in config["partitions"]:
-  % if part["bkout_type"]:
-  typedef struct packed {
-    % for item in part["items"][::-1]:
-      logic [${int(item["size"])*8-1}:0] ${item["name"].lower()};
-    % endfor
-  } otp_${part["name"].lower()}_data_t;
-  typedef struct packed {
-    // This reuses the same encoding as the life cycle signals for indicating valid status.
-    lc_ctrl_pkg::lc_tx_t valid;
-    otp_${part["name"].lower()}_data_t data;
-  } otp_${part["name"].lower()}_t;
-  % endif
-% endfor
-
 endpackage : otp_ctrl_part_pkg
