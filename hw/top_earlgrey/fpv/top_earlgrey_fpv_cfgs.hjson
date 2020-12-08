@@ -152,6 +152,12 @@
                cov: false
              }
              {
+               name: lc_ctrl
+               fusesoc_core: lowrisc:dv:lc_ctrl_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: false
+             }
+             {
                name: otp_ctrl
                fusesoc_core: lowrisc:dv:otp_ctrl_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
