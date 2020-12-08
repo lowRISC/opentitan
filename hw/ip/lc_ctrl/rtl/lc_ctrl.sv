@@ -125,13 +125,12 @@ module lc_ctrl
     .devmode_i ( 1'b1       )
   );
 
-  // TODO: add this to the LC_CTRL spec.
-  // note that the DMI reset does not affect the LC controller in any way.
 
   // This reuses the JTAG DTM and DMI from the RISC-V external
   // debug v0.13 specification to read and write the lc_ctrl CSRs:
   // https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf
   // The register addresses correspond to the byte offsets of the lc_ctrl CSRs, divided by 4.
+  // Note that the DMI reset does not affect the LC controller in any way.
   dm::dmi_req_t dmi_req;
   logic dmi_req_valid;
   logic dmi_req_ready;

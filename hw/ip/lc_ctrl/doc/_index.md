@@ -517,38 +517,26 @@ Note that PROVISION_WR_EN is set to OFF if SECRET2_DIGEST has a nonzero value, w
 
 ### TAP Construction and Isolation
 
-### TAP Isolation
-
-**TODO: add section on TAP isolation**
-As currently defined, the life cycle controller TAP is a separate entity from the main SOC DFT TAP and the processor TAP.
-This physical separation aids in logical isolation, as the SOC DFT tap can be disabled by DFT_EN, while the processor TAP can be disabled by DEBUG_EN.
-
-The actual disablement is implemented as a combination of 2 methods to prevent a single point of failure.
-The second of which may be difficult depending on partner SOC DFT TAP design.
-
 #### Life Cycle TAP Controller
 
-The life cycle TAP controller is functionally very similar to the processor TAP, in fact, it is almost identical.
-It provides a small interface to read-write a set of registers inside the life cycle controller.
-These registers allow an external entity to advance the life cycle state, but more importantly provide specific debug information.
-This information includes:
+The life cycle TAP controller is functionally very similar to the [RISC-V debug module](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rv_dm/rtl/rv_dm.sv) for the Ibex processor and reuses the same debug transport module (DTM) and the associated debug module interface (DMI).
+The DTM and DMI are specified as part of the [RISC-V external debug specification, v0.13](https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf) and essentially provide a simple mechanism to read and write to a register space.
+In the case of the life cycle TAP controller this register space is essentially the life cycle CSR space.
+Hence, the [register table]({{< relref "#register-table" >}}) is identical for both the SW view and the view through the DMI, with the only difference that the byte offsets have to be converted to word offsets for the DMI.
 
-- Device unique ID
-- Current life cycle state
-- Reasons for failed life cycle transition
-- Life cycle metadata, such as token usage count
-- Boot failures, especially if power-on-self-test is implemented
+The RISC-V external debug specification defines the two custom JTAG registers 0x10 (DTM control/status) and 0x11 (DMI).
+The former provides status info such as idle state, number of addrtess bits and RISC-V specification version plus reset control.
+The latter exposes an address, data and operation field for accessing a CSR space.
 
-**TODO: expand description of TAP registers, once known**
+In order to interact with the LC controller through JTAG, the debugging agent should read out the `abits` field from 0x10 in order to determine the address width in the DMI, and verify that the `version` field is indeed set to 1 to confirm that the DTM implements v0.13 of the spec.
+Then, the debbuger can issue a CSR read or write operation via the 0x11 register as explained in more detail in [the RISC-V external specification, Chapter 6.1.5](https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf).
 
 ### TAP Isolation
 
 As currently defined, the life cycle controller TAP is a separate entity from the main SOC DFT TAP and the processor TAP.
 This physical separation aids in logical isolation, as the SOC DFT tap can be disabled by DFT_EN, while the processor TAP can be disabled by DEBUG_EN.
 
-**TODO: add section explaining on how TAP disablement is implemented**
-
-**TODO: update blockdiagram accordingly, include how TAPs are connected to pinmux**
+**TODO: update this section and add blockdiagram once TAP selection/isolation is implemented in the pinmux**
 
 # Programmer's Guide
 
