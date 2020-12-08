@@ -553,13 +553,13 @@
       default: "'0"
       package: "otp_ctrl_pkg"
     }
-    // Key request from OTBN RAM Scrambler
-    { struct:  "logic"
+    // Hardware config partition
+    { struct:  "otp_hw_cfg"
       type:    "uni"
-      name:    "hw_cfg"
+      name:    "otp_hw_cfg"
       act:     "req"
       default: "'0"
-      package: "otp_ctrl_pkg"
+      package: "otp_ctrl_part_pkg"
     }
   ] // inter_signal_list
 
