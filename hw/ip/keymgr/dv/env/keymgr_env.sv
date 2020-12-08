@@ -13,6 +13,7 @@ class keymgr_env extends cip_base_env #(
   `uvm_component_new
 
   keymgr_kmac_agent m_keymgr_kmac_agent;
+  push_pull_agent#(.DeviceDataWidth(EDN_DATA_SIZE)) m_edn_pull_agent;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -25,10 +26,18 @@ class keymgr_env extends cip_base_env #(
     if (!uvm_config_db#(keymgr_vif)::get(this, "", "keymgr_vif", cfg.keymgr_vif)) begin
       `uvm_fatal(`gfn, "failed to get keymgr_vif from uvm_config_db")
     end
+
+    // build edn-otp push agent
+    m_edn_pull_agent = push_pull_agent#(.DeviceDataWidth(EDN_DATA_SIZE))::type_id::create("m_edn_pull_agent",
+                                                                          this);
+    uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_SIZE)))::set(
+      this, "m_edn_pull_agent", "cfg", cfg.m_edn_pull_agent_cfg);
   endfunction
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+    virtual_sequencer.edn_pull_sequencer_h = m_edn_pull_agent.sequencer;
+    m_edn_pull_agent.monitor.req_port.connect(scoreboard.edn_fifo.analysis_export);
   endfunction
 
 endclass
