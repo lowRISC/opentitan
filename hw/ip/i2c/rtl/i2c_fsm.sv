@@ -342,7 +342,7 @@ module i2c_fsm (
         host_idle_o = 1'b1;
         sda_temp = 1'b1;
         scl_temp = 1'b1;
-        if (sda_i == 0) event_sda_interference_o = 1'b1;
+        if (host_enable_i && sda_i == 0) event_sda_interference_o = 1'b1;
         if (!target_address0_i && !target_mask0_i && !target_address1_i && !target_mask1_i) begin
           acq_fifo_wvalid_o = 1'b0;
         end
