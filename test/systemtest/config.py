@@ -67,4 +67,9 @@ TEST_APPS_SELFCHECKING = [
         "name": "usbdev_test",
         "targets": ["sim_verilator"],
     },
+    # Cannot run on sim_verilator due to the differences in the top level.
+    {
+        "name": "dif_gpio_smoketest",
+        "targets": ["fpga_nexysvideo"],
+    },
 ]

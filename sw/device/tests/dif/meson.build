@@ -308,3 +308,20 @@ sw_tests += {
     'library': dif_otp_ctrl_smoketest_lib,
   }
 }
+
+dif_gpio_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_gpio_smoketest_lib',
+    sources: ['dif_gpio_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_gpio,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'dif_gpio_smoketest': {
+    'library': dif_gpio_smoketest_lib,
+  }
+}
