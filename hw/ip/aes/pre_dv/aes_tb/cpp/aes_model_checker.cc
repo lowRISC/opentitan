@@ -19,6 +19,7 @@ AESModelChecker::AESModelChecker(Vaes_sim *rtl)
   state_model_.done = false;
   state_model_.busy = false;
   state_model_.stall = false;
+  state_model_.step = false;
   state_model_.round = 0;
   state_model_.num_rounds = 0;
   state_model_.rcon = 0;
@@ -32,6 +33,7 @@ AESModelChecker::AESModelChecker(Vaes_sim *rtl)
   state_rtl_.done = false;
   state_rtl_.busy = false;
   state_rtl_.stall = false;
+  state_rtl_.step = false;
   state_rtl_.round = 0;
   state_rtl_.num_rounds = 0;
   state_rtl_.rcon = 0;
@@ -58,7 +60,8 @@ int AESModelChecker::CheckModel() {
 }
 
 void AESModelChecker::Print() {
-  if ((state_rtl_.busy) && (state_rtl_.key_expand_op == state_rtl_.cipher_op)) {
+  if ((state_rtl_.busy && state_rtl_.step) &&
+      (state_rtl_.key_expand_op == state_rtl_.cipher_op)) {
     if (state_model_.round == 0) {  // this was the initial round
       printf("Init state_q RTL         ");
       aes_print_block(&state_rtl_.state_q[0], 16);
@@ -103,8 +106,8 @@ int AESModelChecker::Compare() {
   int status;
 
   // compare model vs RTL
-  if (state_rtl_.busy && !state_rtl_.start && !state_rtl_.init &&
-      (state_rtl_.round >= 0)) {
+  if (state_rtl_.busy && state_rtl_.step && (state_rtl_.round >= 0) &&
+      !state_rtl_.start && !state_rtl_.init && !state_rtl_.stall) {
     // full key
     status = CompareBlock(state_model_.full_key, state_rtl_.full_key,
                           state_rtl_.key_len);
@@ -252,7 +255,7 @@ void AESModelChecker::UpdateModel() {
     // save iv and data_in for later check of final result
     CopyBlock(state_model_.data_in, state_rtl_.data_in);
     CopyBlock(state_model_.iv, state_rtl_.iv);
-  } else if (state_rtl_.busy && !state_rtl_.stall) {
+  } else if (state_rtl_.busy && state_rtl_.step && !state_rtl_.stall) {
     // Update model
     if (state_model_.round == -1) {
       // init:
@@ -379,6 +382,7 @@ void AESModelChecker::MonitorSignals() {
   state_rtl_.done = rtl_->aes_sim__DOT__done;
   state_rtl_.busy = rtl_->aes_sim__DOT__busy;
   state_rtl_.stall = rtl_->aes_sim__DOT__stall;
+  state_rtl_.step = rtl_->aes_sim__DOT__step;
 
   state_rtl_.round = rtl_->aes_sim__DOT__round;
 

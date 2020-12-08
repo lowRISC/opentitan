@@ -23,6 +23,7 @@ struct AESState {
   bool done;
   bool busy;
   bool stall;
+  bool step;
   int round;
   int num_rounds;
   unsigned char key_init[32];
