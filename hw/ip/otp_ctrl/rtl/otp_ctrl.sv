@@ -893,7 +893,7 @@ module otp_ctrl
     end else if (PartInfo[k].variant == Buffered) begin : gen_buffered
       otp_ctrl_part_buf #(
         .Info(PartInfo[k]),
-        .DataDefault('0)
+        .DataDefault(PartInvDefault[PartInfo[k].offset*8 +: PartInfo[k].size*8])
       ) u_part_buf (
         .clk_i,
         .rst_ni,

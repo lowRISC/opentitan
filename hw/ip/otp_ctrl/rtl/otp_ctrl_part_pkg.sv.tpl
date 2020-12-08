@@ -70,4 +70,14 @@ package otp_ctrl_part_pkg;
   % endif
 % endfor
 
+  // OTP invalid partition default for buffered partitions.
+  parameter logic [${int(config["otp"]["depth"])*int(config["otp"]["width"])*8-1}:0] PartInvDefault = ${int(config["otp"]["depth"])*int(config["otp"]["width"])*8}'({
+  % for k, part in enumerate(config["partitions"][::-1]):
+    ${int(part["size"])*8}'({
+    % for item in part["items"][::-1]:
+      ${item["inv_default"]}${("\n    })," if k < len(config["partitions"])-1 else "\n    })});") if loop.last else ","}
+    % endfor
+  % endfor
+
+
 endpackage : otp_ctrl_part_pkg
