@@ -170,7 +170,7 @@ fg:
 shift:
   fields:
     shift_type: 30
-    shift_bytes: 29-25
+    shift_bits: 29-25
 
 # A partial scheme for specialized 2 bit function field, we need a reduced
 # size in the lower two bits of funct3 as RSHI spills over 1 bit from its

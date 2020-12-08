@@ -184,17 +184,17 @@ bn.subb w17, w3, w4, FG1
 # x24 = {fg1, fg0} = 0x55
 csrrs x24, 0x7c8, x0
 
-# w18 = w1 + (w2 << 17B) = 0x1296659f_bbc28370_23634ee9_22168a4e_c79af825_69be586e_9866bb3b_53769ada
-bn.add w18, w1, w2 << 17B
+# w18 = w1 + (w2 << 136) = 0x1296659f_bbc28370_23634ee9_22168a4e_c79af825_69be586e_9866bb3b_53769ada
+bn.add w18, w1, w2 << 136
 
-# w19 = w1 & (w2 << 9B) = 0x18988800_00088990_89899109_88189108_81989801_09981800_00000000_00000000
-bn.and w19, w1, w2 << 9B
+# w19 = w1 & (w2 << 72) = 0x18988800_00088990_89899109_88189108_81989801_09981800_00000000_00000000
+bn.and w19, w1, w2 << 72
 
-# w20 = w1 - (w2 >> 23B) = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be57d4_fecd21a1_b9dd0141
-bn.sub w20, w1, w2 >> 23B
+# w20 = w1 - (w2 >> 184) = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be57d4_fecd21a1_b9dd0141
+bn.sub w20, w1, w2 >> 184
 
-# w21 = w1 | (w2 >> 15B) = 0x78fccc06_2228e9d6_89c9b54f_887cf1df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff9bdb
-bn.or  w21, w1, w2 >> 15B
+# w21 = w1 | (w2 >> 120) = 0x78fccc06_2228e9d6_89c9b54f_887cf1df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff9bdb
+bn.or  w21, w1, w2 >> 120
 
 # w22 = w21 + 0x1bd = 0x78fccc06_2228e9d6_89c9b54f_887cf1df_df9bf9bd_f9bfd9ff_99ffbbbb_dbff9d98
 bn.addi w22, w21, 0x1bd
