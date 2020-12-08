@@ -19,7 +19,7 @@ package csrng_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint NUMHWAPPS = 2;
+  parameter uint NUM_HW_APPS = 1;
   parameter bit [TL_DW-1:0] [3:0] ZERO_SEED_GENBITS = {32'h0,
                                                        32'h0,
                                                        32'h0,

@@ -11,7 +11,7 @@ title: "CSRNG DV document"
 
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [HW development stages]({{< relref "doc/project/development_stages" >}})
 * [Simulation results](https://reports.opentitan.org/hw/ip/csrng/dv/latest/results.html)
 
 ## Design features
@@ -21,7 +21,7 @@ For detailed information on CSRNG design features, please see the [CSRNG HWIP te
 CSRNG testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](csrng_tb.svg)
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/csrng/dv/tb/tb.sv`. It instantiates the CSRNG DUT module `hw/ip/csrng/rtl/csrng.sv`.
@@ -39,15 +39,17 @@ The following utilities provide generic helper tasks and functions to perform ac
 * [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/README.md" >}})
 * [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/README.md" >}})
 
-### Compile-time configurations
+<!--### Compile-time configurations
 [list compile time configurations, if any and what are they used for]
+TODO-->
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
 `csrng_env_pkg`. Some of them in use are:
 ```systemverilog
-[list a few parameters, types & methods; no need to mention all]
 ```
+<!--TODO [list a few parameters, types & methods; no need to mention all]-->
+
 ### TL_agent
 CSRNG testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 which provides the ability to drive and independently monitor random traffic via
@@ -96,5 +98,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/csrng/dv/csrng_sim_cfg.hjson -i 
 ```
 
 ## DV plan
-<!-- TODO: uncomment the line below after adding the DV plan -->
-{{</* testplan "hw/ip/csrng/data/csrng_testplan.hjson" */>}}
+{{< testplan "hw/ip/csrng/data/csrng_testplan.hjson" >}}

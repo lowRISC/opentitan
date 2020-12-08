@@ -25,9 +25,9 @@ module tb;
   pins_if#(1) efuse_es_sw_reg_en_if(efuse_es_sw_reg_en);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   push_pull_if#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))
-    rng_if(.clk(clk), .rst_n(rst_n));
+      rng_if(.clk(clk), .rst_n(rst_n));
   push_pull_if#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))
-    csrng_if(.clk(clk), .rst_n(rst_n));
+      csrng_if(.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
 
