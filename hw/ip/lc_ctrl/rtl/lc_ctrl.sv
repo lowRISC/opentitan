@@ -26,8 +26,8 @@ module lc_ctrl
   input  tlul_pkg::tl_h2d_t                          tl_i,
   output tlul_pkg::tl_d2h_t                          tl_o,
   // JTAG TAP.
-  input  jtag_pkg::jtag_req_t                        jtag_req_i,
-  output jtag_pkg::jtag_rsp_t                        jtag_rsp_o,
+  input  jtag_pkg::jtag_req_t                        jtag_i,
+  output jtag_pkg::jtag_rsp_t                        jtag_o,
   // This bypasses the clock inverter inside the JTAG TAP for scanmmode.
   input                                              scanmode_i,
   // Alert outputs.
@@ -153,12 +153,12 @@ module lc_ctrl
     .dmi_resp_i       ( dmi_resp          ),
     .dmi_resp_ready_o ( dmi_resp_ready    ),
     .dmi_resp_valid_i ( dmi_resp_valid    ),
-    .tck_i            ( jtag_req_i.tck    ),
-    .tms_i            ( jtag_req_i.tms    ),
-    .trst_ni          ( jtag_req_i.trst_n ),
-    .td_i             ( jtag_req_i.tdi    ),
-    .td_o             ( jtag_rsp_o.tdo    ),
-    .tdo_oe_o         ( jtag_rsp_o.tdo_oe )
+    .tck_i            ( jtag_i.tck        ),
+    .tms_i            ( jtag_i.tms        ),
+    .trst_ni          ( jtag_i.trst_n     ),
+    .td_i             ( jtag_i.tdi        ),
+    .td_o             ( jtag_o.tdo        ),
+    .tdo_oe_o         ( jtag_o.tdo_oe     )
   );
 
   // DMI to TL-UL transducing
@@ -291,7 +291,7 @@ module lc_ctrl
         end
 
         if (tap_reg2hw.transition_target.qe) begin
-          transition_target_d = tap_reg2hw.transition_target.q;
+          transition_target_d = dec_lc_state_e'(tap_reg2hw.transition_target.q);
         end
       end else if (sw_claim_transition_if_q == 8'hA5) begin
         transition_cmd = reg2hw.transition_cmd.q &
@@ -304,7 +304,7 @@ module lc_ctrl
         end
 
         if (reg2hw.transition_target.qe) begin
-          transition_target_d = reg2hw.transition_target.q;
+          transition_target_d = dec_lc_state_e'(reg2hw.transition_target.q);
         end
       end
     end
@@ -322,7 +322,7 @@ module lc_ctrl
       sw_claim_transition_if_q  <= '0;
       tap_claim_transition_if_q <= '0;
       transition_token_q        <= '0;
-      transition_target_q       <= '0;
+      transition_target_q       <= DecLcStRaw;
     end else begin
       // All status and error bits are terminal and require a reset cycle.
       trans_success_q           <= trans_success_d        | trans_success_q;
@@ -524,25 +524,25 @@ module lc_ctrl
   // Assertions //
   ////////////////
 
-  `ASSERT_KNOWN(TlOKnown,               tl_o                 )
-  `ASSERT_KNOWN(AlertTxKnown_A,         alert_tx_o           )
-  `ASSERT_KNOWN(PwrLcKnown_A,           pwr_lc_o             )
-  `ASSERT_KNOWN(LcOtpProgramKnwon_A,    lc_otp_program_o     )
-  `ASSERT_KNOWN(LcOtpTokenKnown_A,      lc_otp_token_o       )
-  `ASSERT_KNOWN(LcDftEnKnown_A,         lc_dft_en_o          )
-  `ASSERT_KNOWN(LcNvmDebugEnKnown_A,    lc_nvm_debug_en_o    )
-  `ASSERT_KNOWN(LcHwDebugEnKnown_A,     lc_hw_debug_en_o     )
-  `ASSERT_KNOWN(LcCpuEnKnown_A,         lc_cpu_en_o          )
-  `ASSERT_KNOWN(LcCreatorSwRwEn_A,      lc_creator_seed_sw_rw_en_o)
-  `ASSERT_KNOWN(LcOwnerSwRwEn_A,        lc_owner_seed_sw_rw_en_o)
-  `ASSERT_KNOWN(LcIsoSwRwEn_A,          lc_iso_part_sw_rd_en_o)
-  `ASSERT_KNOWN(LcIsoSwWrEn_A,          lc_iso_part_sw_wr_en_o)
-  `ASSERT_KNOWN(LcSeedHwRdEn_A,         lc_seed_hw_rd_en_o   )
-  `ASSERT_KNOWN(LcKeymgrEnKnown_A,      lc_keymgr_en_o       )
-  `ASSERT_KNOWN(LcEscalateEnKnown_A,    lc_escalate_en_o     )
-  `ASSERT_KNOWN(LcClkBypReqKnown_A,     lc_clk_byp_req_o     )
-  `ASSERT_KNOWN(LcFlashRmaSeedKnown_A,  lc_flash_rma_seed_o  )
-  `ASSERT_KNOWN(LcFlashRmaReqKnown_A,   lc_flash_rma_req_o   )
-  `ASSERT_KNOWN(LcKeymgrDiv_A,          lc_keymgr_div_o      )
+  `ASSERT_KNOWN(TlOKnown,               tl_o                       )
+  `ASSERT_KNOWN(AlertTxKnown_A,         alert_tx_o                 )
+  `ASSERT_KNOWN(PwrLcKnown_A,           pwr_lc_o                   )
+  `ASSERT_KNOWN(LcOtpProgramKnown_A,    lc_otp_program_o           )
+  `ASSERT_KNOWN(LcOtpTokenKnown_A,      lc_otp_token_o             )
+  `ASSERT_KNOWN(LcDftEnKnown_A,         lc_dft_en_o                )
+  `ASSERT_KNOWN(LcNvmDebugEnKnown_A,    lc_nvm_debug_en_o          )
+  `ASSERT_KNOWN(LcHwDebugEnKnown_A,     lc_hw_debug_en_o           )
+  `ASSERT_KNOWN(LcCpuEnKnown_A,         lc_cpu_en_o                )
+  `ASSERT_KNOWN(LcCreatorSwRwEn_A,      lc_creator_seed_sw_rw_en_o )
+  `ASSERT_KNOWN(LcOwnerSwRwEn_A,        lc_owner_seed_sw_rw_en_o   )
+  `ASSERT_KNOWN(LcIsoSwRwEn_A,          lc_iso_part_sw_rd_en_o     )
+  `ASSERT_KNOWN(LcIsoSwWrEn_A,          lc_iso_part_sw_wr_en_o     )
+  `ASSERT_KNOWN(LcSeedHwRdEn_A,         lc_seed_hw_rd_en_o         )
+  `ASSERT_KNOWN(LcKeymgrEnKnown_A,      lc_keymgr_en_o             )
+  `ASSERT_KNOWN(LcEscalateEnKnown_A,    lc_escalate_en_o           )
+  `ASSERT_KNOWN(LcClkBypReqKnown_A,     lc_clk_byp_req_o           )
+  `ASSERT_KNOWN(LcFlashRmaSeedKnown_A,  lc_flash_rma_seed_o        )
+  `ASSERT_KNOWN(LcFlashRmaReqKnown_A,   lc_flash_rma_req_o         )
+  `ASSERT_KNOWN(LcKeymgrDiv_A,          lc_keymgr_div_o            )
 
 endmodule : lc_ctrl

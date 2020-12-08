@@ -89,33 +89,40 @@
       type:    "req_rsp"
       name:    "jtag"
       act:     "rsp"
-      package: "rv_dm_pkg"
+      package: "jtag_pkg"
     }
     // Escalation inputs from alert handler
     { struct:  "esc_tx"
       type:    "uni"
-      name:    "esc1_tx"
+      name:    "esc_wipe_secrets_tx"
       act:     "rcv"
       package: "prim_esc_pkg"
     }
     { struct:  "esc_rx"
       type:    "uni"
-      name:    "esc1_rx"
+      name:    "esc_wipe_secrets_rx"
       act:     "req"
       package: "prim_esc_pkg"
     }
     { struct:  "esc_tx"
       type:    "uni"
-      name:    "esc2_tx"
+      name:    "esc_scrap_state_tx"
       act:     "rcv"
       package: "prim_esc_pkg"
     }
     { struct:  "esc_rx"
       type:    "uni"
-      name:    "esc2_rx"
+      name:    "esc_scrap_state_rx"
       act:     "req"
       package: "prim_esc_pkg"
     }
+    // Init request from power manager
+    { struct:  "pwr_lc",
+      type:    "req_rsp",
+      name:    "pwr_lc",
+      act:     "rsp",
+      package: "pwrmgr_pkg",
+    },
     // life cycle state broadcast from OTP
     { struct:  "otp_lc_data"
       type:    "uni"
@@ -171,49 +178,7 @@
     }
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_cpu_en"
-      act:     "req"
-      default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
-    }
-    { struct:  "lc_tx"
-      type:    "uni"
-      name:    "lc_cpu_en"
-      act:     "req"
-      default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
-    }
-    { struct:  "lc_tx"
-      type:    "uni"
-      name:    "lc_creator_seed_sw_rw_en"
-      act:     "req"
-      default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
-    }
-    { struct:  "lc_tx"
-      type:    "uni"
-      name:    "lc_owner_seed_sw_rw_en"
-      act:     "req"
-      default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
-    }
-    { struct:  "lc_tx"
-      type:    "uni"
-      name:    "lc_iso_part_sw_rd_en"
-      act:     "req"
-      default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
-    }
-    { struct:  "lc_tx"
-      type:    "uni"
-      name:    "lc_iso_part_sw_wr_en"
-      act:     "req"
-      default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
-    }
-    { struct:  "lc_tx"
-      type:    "uni"
-      name:    "lc_seed_hw_rd_en"
+      name:    "lc_keymgr_en"
       act:     "req"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
@@ -260,6 +225,41 @@
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_creator_seed_sw_rw_en"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_owner_seed_sw_rw_en"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_iso_part_sw_rd_en"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_iso_part_sw_wr_en"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_seed_hw_rd_en"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
     // LC state diversification value for keymgr
     { struct:  "lc_keymgr_div"
       type:    "uni"
@@ -267,6 +267,14 @@
       act:     "req"
       default: "'0"
       package: "lc_ctrl_pkg"
+    }
+    // HW config input for DEVICE_ID
+    { struct:  "otp_hw_cfg"
+      type:    "uni"
+      name:    "otp_hw_cfg"
+      act:     "rcv"
+      default: "'0"
+      package: "otp_ctrl_part_pkg"
     }
   ] // inter_signal_list
 
