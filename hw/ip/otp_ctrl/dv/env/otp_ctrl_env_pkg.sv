@@ -62,11 +62,13 @@ package otp_ctrl_env_pkg;
                                    Secret1Size + Secret2Size)/ (TL_DW / 8);
 
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
-  parameter uint SRAM_DATA_SIZE  = 1 + SramKeyWidth + SramNonceWidth;
+  parameter uint SRAM_DATA_SIZE = 1 + SramKeyWidth + SramNonceWidth;
   // otbn rsp data has 1 bit for seed_valid, the rest are for key and nonce
-  parameter uint OTBN_DATA_SIZE  = 1 + OtbnKeyWidth + OtbnNonceWidth;
+  parameter uint OTBN_DATA_SIZE = 1 + OtbnKeyWidth + OtbnNonceWidth;
   // flash rsp data has 1 bit for seed_valid, the rest are for key
   parameter uint FLASH_DATA_SIZE = 1 + FlashKeyWidth;
+  // lc program data has lc_state data and lc_cnt data
+  parameter uint LC_PROG_DATA_SIZE = LcStateWidth + LcCountWidth;
 
   // scramble related parameters
   parameter uint SCRAMBLE_DATA_SIZE = 64;

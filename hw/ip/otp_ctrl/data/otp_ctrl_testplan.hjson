@@ -102,7 +102,7 @@
             - Seq 3. Trigger escalation_en
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_lc"]
     }
     { name: otp_macro_errors
       desc: '''
