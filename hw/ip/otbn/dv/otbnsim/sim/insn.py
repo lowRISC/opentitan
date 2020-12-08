@@ -347,7 +347,7 @@ class BNADD(OTBNInsn):
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bytes']
+        self.shift_bytes = op_vals['shift_bits'] // 8
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
@@ -369,7 +369,7 @@ class BNADDC(OTBNInsn):
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bytes']
+        self.shift_bytes = op_vals['shift_bits'] // 8
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
@@ -540,7 +540,7 @@ class BNSUB(OTBNInsn):
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bytes']
+        self.shift_bytes = op_vals['shift_bits'] // 8
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
@@ -562,7 +562,7 @@ class BNSUBB(OTBNInsn):
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bytes']
+        self.shift_bytes = op_vals['shift_bits'] // 8
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
@@ -627,7 +627,7 @@ class BNAND(OTBNInsn):
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bytes']
+        self.shift_bytes = op_vals['shift_bits'] // 8
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
@@ -649,7 +649,7 @@ class BNOR(OTBNInsn):
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bytes']
+        self.shift_bytes = op_vals['shift_bits'] // 8
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
@@ -670,7 +670,7 @@ class BNNOT(OTBNInsn):
         self.wrd = op_vals['wrd']
         self.wrs = op_vals['wrs']
         self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bytes']
+        self.shift_bytes = op_vals['shift_bits'] // 8
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
@@ -691,7 +691,7 @@ class BNXOR(OTBNInsn):
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bytes']
+        self.shift_bytes = op_vals['shift_bits'] // 8
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
@@ -748,7 +748,7 @@ class BNCMP(OTBNInsn):
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bytes']
+        self.shift_bytes = op_vals['shift_bits'] // 8
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
@@ -768,7 +768,7 @@ class BNCMPB(OTBNInsn):
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bytes']
+        self.shift_bytes = op_vals['shift_bits'] // 8
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:

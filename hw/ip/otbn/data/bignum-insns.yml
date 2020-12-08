@@ -19,17 +19,17 @@
       type: enum(<<, >>)
       doc: |
         The direction of an optional shift applied to `<wrs2>`.
-    - &bn-shift-bytes-operand
-      name: shift_bytes
-      type: uimm5
+    - &bn-shift-bits-operand
+      name: shift_bits
+      type: uimm5<<3
       doc: |
-        Number of bytes by which to shift `<wrs2>`. Defaults to 0.
+        Number of bits by which to shift `<wrs2>`. Defaults to 0.
     - &bn-flag-group-operand
       name: flag_group
       type: uimm1
       doc: Flag group to use. Defaults to 0.
   syntax: &bn-add-syntax |
-    <wrd>, <wrs1>, <wrs2>[ <shift_type> <shift_bytes>B][, FG<flag_group>]
+    <wrd>, <wrs1>, <wrs2>[ <shift_type> <shift_bits>][, FG<flag_group>]
   doc: |
     Adds two WDR values, writes the result to the destination WDR and updates
     flags. The content of the second source WDR can be shifted by an unsigned
@@ -40,7 +40,7 @@
     b = UInt(wrs2)
 
     fg = DecodeFlagGroup(flag_group)
-    sb = UInt(shift_bytes)
+    sb = UInt(shift_bits) // 8
     st = DecodeShiftType(shift_type)
   operation: |
     b_shifted = ShiftReg(b, st, sb)
@@ -53,7 +53,7 @@
     mapping:
       fg: flag_group
       shift_type: shift_type
-      shift_bytes: shift_bytes
+      shift_bits: shift_bits
       wrs2: wrs2
       wrs1: wrs1
       funct3: b000
@@ -74,7 +74,7 @@
     b = UInt(wrs2)
 
     fg = DecodeFlagGroup(flag_group)
-    sb = UInt(shift_bytes)
+    sb = UInt(shift_bits) // 8
     st = DecodeShiftType(shift_type)
   operation: |
     b_shifted = ShiftReg(b, st, sb)
@@ -87,7 +87,7 @@
     mapping:
       fg: flag_group
       shift_type: shift_type
-      shift_bytes: shift_bytes
+      shift_bits: shift_bits
       wrs2: wrs2
       wrs1: wrs1
       funct3: b010
@@ -398,7 +398,7 @@
     - name: wrs2
       doc: Name of the second source WDR
     - *bn-shift-type-operand
-    - *bn-shift-bytes-operand
+    - *bn-shift-bits-operand
     - *bn-flag-group-operand
   syntax: *bn-add-syntax
   doc: |
@@ -410,7 +410,7 @@
     b = UInt(wrs2)
 
     fg = DecodeFlagGroup(flag_group)
-    sb = UInt(shift_bytes)
+    sb = UInt(shift_bits) // 8
     st = DecodeShiftType(shift_type)
   operation: |
     b_shifted = ShiftReg(b, st, sb)
@@ -423,7 +423,7 @@
     mapping:
       fg: flag_group
       shift_type: shift_type
-      shift_bytes: shift_bytes
+      shift_bits: shift_bits
       wrs2: wrs2
       wrs1: wrs1
       funct3: b001
@@ -448,7 +448,7 @@
     mapping:
       fg: flag_group
       shift_type: shift_type
-      shift_bytes: shift_bytes
+      shift_bits: shift_bits
       wrs2: wrs2
       wrs1: wrs1
       funct3: b011
@@ -534,10 +534,10 @@
     - name: wrs2
       doc: Name of the second source WDR
     - *bn-shift-type-operand
-    - *bn-shift-bytes-operand
+    - *bn-shift-bits-operand
     - *bn-flag-group-operand
   syntax: &bn-and-syntax |
-    <wrd>, <wrs1>, <wrs2>[ <shift_type> <shift_bytes>B][, FG<flag_group>]
+    <wrd>, <wrs1>, <wrs2>[ <shift_type> <shift_bits>][, FG<flag_group>]
   doc: |
     Performs a bitwise and operation.
     Takes the values stored in registers referenced by `wrs1` and `wrs2` and stores the result in the register referenced by `wrd`.
@@ -548,7 +548,7 @@
     a = UInt(wrs1)
     b = UInt(wrs2)
 
-    sb = UInt(shift_bytes)
+    sb = UInt(shift_bits) // 8
     st = DecodeShiftType(shift_type)
     fg = DecodeFlagGroup(flag_group)
   operation: |
@@ -563,7 +563,7 @@
     mapping:
       fg: flag_group
       shift_type: shift_type
-      shift_bytes: shift_bytes
+      shift_bits: shift_bits
       wrs2: wrs2
       wrs1: wrs1
       funct3: b010
@@ -591,7 +591,7 @@
     mapping:
       fg: flag_group
       shift_type: shift_type
-      shift_bytes: shift_bytes
+      shift_bits: shift_bits
       wrs2: wrs2
       wrs1: wrs1
       funct3: b100
@@ -605,10 +605,10 @@
     - name: wrs
       doc: Name of the source WDR
     - *bn-shift-type-operand
-    - *bn-shift-bytes-operand
+    - *bn-shift-bits-operand
     - *bn-flag-group-operand
   syntax: |
-    <wrd>, <wrs>[ <shift_type> <shift_bytes>B][, FG<flag_group>]
+    <wrd>, <wrs>[ <shift_type> <shift_bits>][, FG<flag_group>]
   doc: |
     Negates the value in `wrs` and stores the result in the register referenced by `wrd`.
     The source value can be shifted by an immediate before it is consumed by the operation.
@@ -617,7 +617,7 @@
     d = UInt(wrd)
     a = UInt(wrs1)
 
-    sb = UInt(shift_bytes)
+    sb = UInt(shift_bits) // 8
     st = DecodeShiftType(shift_type)
     fg = DecodeFlagGroup(flag_group)
   operation: |
@@ -632,7 +632,7 @@
     mapping:
       fg: flag_group
       shift_type: shift_type
-      shift_bytes: shift_bytes
+      shift_bits: shift_bits
       wrs1: wrs
       funct3: b101
       wrd: wrd
@@ -659,7 +659,7 @@
     mapping:
       fg: flag_group
       shift_type: shift_type
-      shift_bytes: shift_bytes
+      shift_bits: shift_bits
       wrs2: wrs2
       wrs1: wrs1
       funct3: b110
@@ -748,10 +748,10 @@
     - name: wrs2
       doc: Name of the second source WDR
     - *bn-shift-type-operand
-    - *bn-shift-bytes-operand
+    - *bn-shift-bits-operand
     - *bn-flag-group-operand
   syntax: &bn-cmp-syntax |
-    <wrs1>, <wrs2>[ <shift_type> <shift_bytes>B][, FG<flag_group>]
+    <wrs1>, <wrs2>[ <shift_type> <shift_bits>][, FG<flag_group>]
   doc: |
     Subtracts the second WDR value from the first one and updates flags.
     This instruction is identical to BN.SUB, except that no result register is written.
@@ -760,7 +760,7 @@
     b = UInt(wrs2)
 
     fg = DecodeFlagGroup(flag_group)
-    sb = UInt(shift_bytes)
+    sb = UInt(shift_bits) // 8
     st = DecodeShiftType(shift_type)
   operation: |
     b_shifted = ShiftReg(b, st, sb)
@@ -772,7 +772,7 @@
     mapping:
       fg: flag_group
       shift_type: shift_type
-      shift_bytes: shift_bytes
+      shift_bits: shift_bits
       wrs2: wrs2
       wrs1: wrs1
       funct3: b001
@@ -794,7 +794,7 @@
     mapping:
       fg: flag_group
       shift_type: shift_type
-      shift_bytes: shift_bytes
+      shift_bits: shift_bits
       wrs2: wrs2
       wrs1: wrs1
       funct3: b011
