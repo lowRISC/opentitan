@@ -22,6 +22,11 @@ package keymgr_env_pkg;
   // parameters and types
   parameter string LIST_OF_ALERTS[] = {"fault_err", "operation_err"};
   parameter uint NUM_ALERTS = 2;
+  parameter keymgr_pkg::keymgr_ops_e ILLEGAL_OPS_B4_INIT[] = {
+      keymgr_pkg::OpGenId,
+      keymgr_pkg::OpGenSwOut,
+      keymgr_pkg::OpGenHwOut,
+      keymgr_pkg::OpDisable};
   parameter keymgr_pkg::keymgr_working_state_e LIST_OF_NORMAL_STATES[] = {
       keymgr_pkg::StInit,
       keymgr_pkg::StCreatorRootKey,

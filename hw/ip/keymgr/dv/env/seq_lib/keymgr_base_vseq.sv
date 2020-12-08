@@ -16,6 +16,11 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   // do operations at StReset
   rand bit do_op_before_init;
+  rand keymgr_pkg::keymgr_ops_e op_before_init;
+
+  constraint invalid_ops_before_init {
+    op_before_init inside {ILLEGAL_OPS_B4_INIT};
+  }
 
   // save DUT returned current state here, rather than using it from RAL, it's needed info to
   // predict operation result in seq
@@ -41,7 +46,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
     // Any OP at StReset will trigger OP error. There are 5 kinds of OPs
     // Also test both start and init set to 1, which triggers OP error as well
     if (do_op_before_init) begin
-      repeat ($urandom_range(1, 5)) keymgr_random_op(.start(1), .init($urandom_range(0, 1)));
+      repeat ($urandom_range(1, 5)) keymgr_random_op(.start(1), .init(1));
     end
 
     `uvm_info(`gfn, "Initializating key manager", UVM_MEDIUM)
@@ -49,10 +54,11 @@ class keymgr_base_vseq extends cip_base_vseq #(
     `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
     csr_update(.csr(ral.intr_enable));
 
-    ral.control.init.set(1'b1);
+    ral.control.operation.set(keymgr_pkg::OpAdvance);
+    ral.control.start.set(1'b1);
     csr_update(.csr(ral.control));
     // manually clear here since ral is not aware this bet is self-clearing
-    ral.control.init.set(1'b0);
+    ral.control.start.set(1'b0);
 
     if (do_wait_for_init_done) begin
       csr_spinwait(.ptr(ral.working_state), .exp_data(keymgr_pkg::StInit));
@@ -196,10 +202,15 @@ class keymgr_base_vseq extends cip_base_vseq #(
   endtask : keymgr_rd_clr
 
   // issue any operation in a non-working state to trigger op error
-  virtual task keymgr_random_op(bit start, bit init);
+  virtual task keymgr_random_op(bit start, bit init=0);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.control,
-                                   init.value == local::init;
                                    start.value == local::start;)
+
+    if (init) begin
+      `DV_CHECK_RANDOMIZE_FATAL(this)
+      ral.control.operation.set(op_before_init);
+    end
+
     `uvm_info(`gfn, $sformatf("Issuing OP: %0d at state %0s",
                               ral.control.operation.get(), current_state), UVM_MEDIUM)
     csr_update(.csr(ral.control));
