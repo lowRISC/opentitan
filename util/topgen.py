@@ -379,7 +379,8 @@ def generate_pinmux_and_padctrl(top, out_path):
     data_path.mkdir(parents=True, exist_ok=True)
 
     # Template path
-    tpl_path = Path(__file__).resolve().parent / '../hw/ip/pinmux/data/pinmux.hjson.tpl'
+    tpl_path = Path(
+        __file__).resolve().parent / '../hw/ip/pinmux/data/pinmux.hjson.tpl'
 
     # Generate register package and RTLs
     gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
@@ -434,7 +435,8 @@ def generate_pinmux_and_padctrl(top, out_path):
     data_path.mkdir(parents=True, exist_ok=True)
 
     # Template path
-    tpl_path = Path(__file__).resolve().parent / '../hw/ip/padctrl/data/padctrl.hjson.tpl'
+    tpl_path = Path(
+        __file__).resolve().parent / '../hw/ip/padctrl/data/padctrl.hjson.tpl'
 
     # Generate register package and RTLs
     gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
@@ -779,8 +781,8 @@ def generate_top_only(top_only_list, out_path, topname):
     log.info("Generating top only modules")
 
     for ip in top_only_list:
-        hjson_path = Path(__file__).resolve().parent / "../hw/top_{}/ip/{}/data/{}.hjson".format(
-            topname, ip, ip)
+        hjson_path = Path(__file__).resolve(
+        ).parent / "../hw/top_{}/ip/{}/data/{}.hjson".format(topname, ip, ip)
         genrtl_dir = out_path / "ip/{}/rtl".format(ip)
         genrtl_dir.mkdir(parents=True, exist_ok=True)
         log.info("Generating top modules {}, hjson: {}, output: {}".format(
@@ -1013,10 +1015,10 @@ def main():
             # validation, use the template in hw/ip/{ip_name}/data .
             if x.stem in generated_list and not x.is_file():
                 hjson_file = ip_dir / "{}/data/{}.hjson".format(x.stem, x.stem)
-                log.info("Auto-generated hjson %s does not yet exist. "
-                         % str(x) +
-                         "Falling back to template %s for initial validation."
-                         % str(hjson_file))
+                log.info(
+                    "Auto-generated hjson %s does not yet exist. " % str(x) +
+                    "Falling back to template %s for initial validation." %
+                    str(hjson_file))
             else:
                 hjson_file = x
 
