@@ -221,6 +221,13 @@
       reset_connections: {rst_ni: "lc_io_div4"},
       base_addr: "0x40130000",
     },
+    { name: "lc_ctrl",
+      type: "lc_ctrl",
+      clock_srcs: {clk_i: "io_div4"},
+      clock_group: "timers",
+      reset_connections: {rst_ni: "lc_io_div4"},
+      base_addr: "0x40140000",
+    },
     { name: "pwrmgr",
       type: "pwrmgr",
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
@@ -463,6 +470,12 @@
           act: "rsp"
           name: "tl"
         },
+        { struct: "lc_tx",
+          package: "lc_ctrl_pkg",
+          type: "uni"
+          act: "rcv"
+          name: "lc_dft_en"
+        },
         { struct: "logic"
           package: ""
           type: "uni"
@@ -488,12 +501,6 @@
           act: "rcv"
           name: "flash_test_voltage_h"
         },
-        { struct: "lc_tx",
-          package: "lc_ctrl",
-          type: "uni"
-          act: "rcv"
-          name: "lc_dft_en"
-        },
       ],
     },
   ],
@@ -507,6 +514,13 @@
   inter_module: {
     'connect': {
       'alert_handler.crashdump': ['rstmgr.alert_dump'],
+      // TODO: uncomment once NMI gen is removed,
+      // the processor core wrapper supports intermodule signals
+      // and the reset manager has an escalation input.
+      //'alert_handler.esc_rx': ['lc_ctrl.esc_wipe_secrets_rx',
+      //                         'lc_ctrl.esc_scrap_state_rx'],
+      //'alert_handler.esc_tx': ['lc_ctrl.esc_wipe_secrets_tx',
+      //                         'lc_ctrl.esc_scrap_state_tx'],
       'csrng.csrng_cmd' : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       'flash_ctrl.flash' : ['eflash.flash_ctrl'],
@@ -516,15 +530,12 @@
       'pwrmgr.pwr_rst'   : ['rstmgr.pwr'],
       'pwrmgr.pwr_clk'   : ['clkmgr.pwr'],
       'pwrmgr.pwr_otp'   : ['otp_ctrl.pwr_otp'],
+      'pwrmgr.pwr_lc'    : ['lc_ctrl.pwr_lc'],
       'flash_ctrl.keymgr': ['keymgr.flash'],
       'alert_handler.crashdump': ['rstmgr.alert_dump'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       // TODO see #4447
       //'edn0.edn' : ['keymgr.edn'],
-
-      // life cycle connections
-      // Temporarily commented out because lc_ctrl not instantiated yet
-      //'lc_ctrl.lc_dft_en': ['eflash.lc_dft_en'],
 
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key': ['keymgr.otp_key'],
@@ -534,6 +545,44 @@
       // The user does not need to explicitly declare anything other than
       // an empty list.
       'clkmgr.idle'      : [],
+
+      // OTP LC interface
+      'otp_ctrl.otp_lc_data'   : ['lc_ctrl.otp_lc_data'],
+      'lc_ctrl.lc_otp_program' : ['otp_ctrl.lc_otp_program'],
+      'lc_ctrl.lc_otp_token'   : ['otp_ctrl.lc_otp_token'],
+
+      // HW_CFG broadcast
+       'otp_ctrl.otp_hw_cfg'   : ['lc_ctrl.otp_hw_cfg'],
+
+      // Diversification constant coming from life cycle
+      'lc_ctrl.lc_keymgr_div'  : [],
+
+      // LC function control signal broadcast
+      // TODO(#3920): connect all these signals once top-level sim and FPGA can backload LC state
+      'lc_ctrl.lc_dft_en'          : ['otp_ctrl.lc_dft_en', 'eflash.lc_dft_en'],
+      'lc_ctrl.lc_nvm_debug_en'    : [],
+      'lc_ctrl.lc_hw_debug_en'     : [],
+      'lc_ctrl.lc_cpu_en'          : [],
+      'lc_ctrl.lc_keymgr_en'       : [],
+      'lc_ctrl.lc_escalate_en'     : ['otp_ctrl.lc_escalate_en'],
+
+      // TODO: OTP Clock bypass signal going from LC to AST/clkmgr
+      'lc_ctrl.lc_clk_byp_req'  : [],
+      //'lc_ctrl.lc_clk_byp_ack'  : [],
+
+      // TODO: Flash RMA
+      'lc_ctrl.lc_flash_rma_req'    : [],
+      'lc_ctrl.lc_flash_rma_seed'   : [],
+      //'lc_ctrl.lc_flash_rma_ack'    : [],
+
+      // LC access control signal broadcast
+      'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['otp_ctrl.lc_creator_seed_sw_rw_en',
+                                      'flash_ctrl.lc_creator_seed_sw_rw_en'],
+      'lc_ctrl.lc_owner_seed_sw_rw_en'     : ['flash_ctrl.lc_owner_seed_sw_rw_en'],
+      'lc_ctrl.lc_iso_part_sw_rd_en'       : ['flash_ctrl.lc_iso_part_sw_rd_en'],
+      'lc_ctrl.lc_iso_part_sw_wr_en'       : ['flash_ctrl.lc_iso_part_sw_wr_en'],
+      'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en',
+                                              'flash_ctrl.lc_seed_hw_rd_en'],
     }
 
     // top is to connect to top net/struct.
@@ -608,7 +657,7 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
-  alert_module: [ "aes", "otbn", "sensor_ctrl", "keymgr", "otp_ctrl", "entropy_src" ]
+  alert_module: [ "aes", "otbn", "sensor_ctrl", "keymgr", "otp_ctrl", "lc_ctrl", "entropy_src"]
 
   // generated list of alerts:
   alert: [

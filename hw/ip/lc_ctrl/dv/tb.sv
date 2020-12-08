@@ -42,8 +42,8 @@ module tb;
     .alert_rx_i            (alert_rx ),
     .alert_tx_o            (alert_tx ),
 
-    .jtag_req_i            (0),
-    .jtag_rsp_o            (),
+    .jtag_i                (0),
+    .jtag_o                (),
 
     .esc_wipe_secrets_tx_i ({2'b01}),
     .esc_wipe_secrets_rx_o (),

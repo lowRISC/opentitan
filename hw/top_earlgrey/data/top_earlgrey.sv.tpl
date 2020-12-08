@@ -479,7 +479,7 @@ module top_${top["name"]} #(
     .host_rdata_o    (flash_host_rdata),
     .flash_ctrl_i    (${m["inter_signal_list"][0]["top_signame"]}_req),
     .flash_ctrl_o    (${m["inter_signal_list"][0]["top_signame"]}_rsp),
-    .lc_dft_en_i     (lc_ctrl_pkg::LC_TX_DEFAULT),
+    .lc_dft_en_i     (${m["inter_signal_list"][2]["top_signame"]}),
     .tck_i           ('0),
     .tdi_i           ('0),
     .tms_i           ('0),
@@ -605,8 +605,6 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .dio_attr_o,
     % endif
     % if m["type"] == "alert_handler":
-      // TODO: wire this to TRNG
-      .entropy_i   ( 1'b0     ),
       // alert signals
       .alert_rx_o  ( alert_rx ),
       .alert_tx_i  ( alert_tx ),

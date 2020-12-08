@@ -1051,7 +1051,7 @@ def main():
     else:
         random.seed()
         new_seed = random.getrandbits(64)
-        if topcfg.setdefault('rnd_cnst_seed', new_seed) != new_seed:
+        if topcfg.setdefault('rnd_cnst_seed', new_seed) == new_seed:
             log.warning(
                 'No rnd_cnst_seed specified, setting to {}.'.format(new_seed))
 
