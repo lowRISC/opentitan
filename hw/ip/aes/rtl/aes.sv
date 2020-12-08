@@ -25,9 +25,11 @@ module aes
   parameter bit          SecAllowForcingMasks  = 0, // Allow forcing masks to 0 using
                                                     // FORCE_ZERO_MASK bit in Control Register.
                                                     // Useful for SCA only.
-  parameter logic [WidthPRDClearing-1:0] SeedClearing = DefaultSeedClearing,
-  parameter logic  [WidthPRDMasking-1:0] SeedMasking  = DefaultSeedMasking,
-  parameter logic        [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter clearing_lfsr_seed_t   RndCnstClearingLfsrSeed  = RndCnstClearingLfsrSeedDefault,
+  parameter clearing_lfsr_perm_t   RndCnstClearingLfsrPerm  = RndCnstClearingLfsrPermDefault,
+  parameter masking_lfsr_seed_t    RndCnstMaskingLfsrSeed   = RndCnstMaskingLfsrSeedDefault,
+  parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPerm = RndCnstMskgChunkLfsrPermDefault
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
@@ -70,31 +72,33 @@ module aes
   );
 
   aes_core #(
-    .AES192Enable         ( AES192Enable         ),
-    .Masking              ( Masking              ),
-    .SBoxImpl             ( SBoxImpl             ),
-    .SecStartTriggerDelay ( SecStartTriggerDelay ),
-    .SecAllowForcingMasks ( SecAllowForcingMasks ),
-    .SeedClearing         ( SeedClearing         ),
-    .SeedMasking          ( SeedMasking          )
+    .AES192Enable             ( AES192Enable             ),
+    .Masking                  ( Masking                  ),
+    .SBoxImpl                 ( SBoxImpl                 ),
+    .SecStartTriggerDelay     ( SecStartTriggerDelay     ),
+    .SecAllowForcingMasks     ( SecAllowForcingMasks     ),
+    .RndCnstClearingLfsrSeed  ( RndCnstClearingLfsrSeed  ),
+    .RndCnstClearingLfsrPerm  ( RndCnstClearingLfsrPerm  ),
+    .RndCnstMaskingLfsrSeed   ( RndCnstMaskingLfsrSeed   ),
+    .RndCnstMskgChunkLfsrPerm ( RndCnstMskgChunkLfsrPerm )
   ) u_aes_core (
-    .clk_i                  ( clk_i               ),
-    .rst_ni                 ( rst_ni              ),
+    .clk_i                  ( clk_i                          ),
+    .rst_ni                 ( rst_ni                         ),
 
     // TODO: This still needs to be connected to the entropy source.
     // See https://github.com/lowRISC/opentitan/issues/1005
-    .entropy_clearing_req_o (                     ),
-    .entropy_clearing_ack_i ( 1'b1                ),
-    .entropy_clearing_i     ( DefaultSeedClearing ),
-    .entropy_masking_req_o  (                     ),
-    .entropy_masking_ack_i  ( 1'b1                ),
-    .entropy_masking_i      ( DefaultSeedMasking  ),
+    .entropy_clearing_req_o (                                ),
+    .entropy_clearing_ack_i ( 1'b1                           ),
+    .entropy_clearing_i     ( RndCnstClearingLfsrSeedDefault ),
+    .entropy_masking_req_o  (                                ),
+    .entropy_masking_ack_i  ( 1'b1                           ),
+    .entropy_masking_i      ( RndCnstMaskingLfsrSeedDefault  ),
 
-    .ctrl_err_update_o      ( alert[0]            ),
-    .ctrl_err_storage_o     ( alert[1]            ),
+    .ctrl_err_update_o      ( alert[0]                       ),
+    .ctrl_err_storage_o     ( alert[1]                       ),
 
-    .reg2hw                 ( reg2hw              ),
-    .hw2reg                 ( hw2reg              )
+    .reg2hw                 ( reg2hw                         ),
+    .hw2reg                 ( hw2reg                         )
   );
 
   assign idle_o = hw2reg.status.idle.d;

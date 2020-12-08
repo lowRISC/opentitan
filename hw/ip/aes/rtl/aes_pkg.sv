@@ -16,10 +16,29 @@ parameter int unsigned WidthPRDMasking  = WidthPRDData + WidthPRDKey;
 
 parameter int unsigned ChunkSizePRDMasking = WidthPRDMasking/10;
 
-// Default seeds for pseudo-random number generators
-parameter logic [WidthPRDClearing-1:0] DefaultSeedClearing = 64'hFEDCBA9876543210;
-parameter logic  [WidthPRDMasking-1:0] DefaultSeedMasking  = {36'ha, 36'h9, 36'h8, 36'h7, 36'h6,
-                                                              36'h5, 36'h4, 36'h3, 36'h2, 36'h1};
+// Clearing PRNG default LFSR seed and permutation
+// These LFSR parameters have been generated with
+// $ hw/ip/prim/util/gen-lfsr-seed.py --width 64 --seed 31468618 --prefix "Clearing"
+parameter int ClearingLfsrWidth = 64;
+typedef logic [ClearingLfsrWidth-1:0] clearing_lfsr_seed_t;
+typedef logic [ClearingLfsrWidth-1:0][$clog2(ClearingLfsrWidth)-1:0] clearing_lfsr_perm_t;
+parameter clearing_lfsr_seed_t RndCnstClearingLfsrSeedDefault = 64'hc32d580f74f1713a;
+parameter clearing_lfsr_perm_t RndCnstClearingLfsrPermDefault = {
+  128'hb33fdfc81deb6292c21f8a3102585067,
+  256'h9c2f4be1bbe937b4b7c9d7f4e57568d99c8ae291a899143e0d8459d31b143223
+};
+
+// Masking PRNG default LFSR seed and permutation
+// We use a single seed that is split down into chunks internally. All LFSR chunks use the same
+// permutation.
+// These LFSR parameters have been generated with
+// $ hw/ip/prim/util/gen-lfsr-seed.py --width 360 --seed 31468618 --prefix "Masking"
+parameter int MaskingLfsrWidth = 360;
+typedef logic [MaskingLfsrWidth-1:0] masking_lfsr_seed_t;
+parameter masking_lfsr_seed_t RndCnstMaskingLfsrSeedDefault = {
+  180'h5ae9b31605f9077a6b758a442031e1c4616ea343ec153,
+  180'h282a30c132b5723c5a4cf4743b3c7c32d580f74f1713a
+};
 
 // These LFSR parameters have been generated with
 // $ hw/ip/prim/util/gen-lfsr-seed.py --width 36 --seed 31468618 --prefix "MskgChunk"
