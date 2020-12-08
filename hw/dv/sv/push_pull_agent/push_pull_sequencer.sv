@@ -12,14 +12,14 @@ class push_pull_sequencer #(parameter int HostDataWidth = 32,
 
   // Analysis port through which device monitors can send transactions
   // to the sequencer.
-  uvm_tlm_analysis_fifo #(push_pull_item#(HostDataWidth, DeviceDataWidth)) req_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(HostDataWidth, DeviceDataWidth)) push_pull_req_fifo;
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     if (cfg.if_mode == dv_utils_pkg::Device) begin
-      req_fifo = new("req_fifo");
+      push_pull_req_fifo = new("push_pull_req_fifo", this);
     end
   endfunction : build_phase
 
