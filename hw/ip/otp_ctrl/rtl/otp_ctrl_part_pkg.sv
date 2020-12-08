@@ -124,7 +124,7 @@ package otp_ctrl_part_pkg;
   } otp_hw_cfg_t;
 
   // OTP invalid partition default for buffered partitions.
-  parameter logic [1023:0][7:0] PartInvDefault = 8192'({
+  parameter logic [16383:0] PartInvDefault = 16384'({
     448'({
       256'h0,
       192'h0
