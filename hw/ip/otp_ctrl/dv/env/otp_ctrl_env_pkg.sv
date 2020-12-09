@@ -67,8 +67,6 @@ package otp_ctrl_env_pkg;
   parameter uint OTBN_DATA_SIZE  = 1 + OtbnKeyWidth + OtbnNonceWidth;
   // flash rsp data has 1 bit for seed_valid, the rest are for key
   parameter uint FLASH_DATA_SIZE = 1 + FlashKeyWidth;
-  // edn rsp data are key width
-  parameter uint EDN_DATA_SIZE   = EdnDataWidth;
 
   // scramble related parameters
   parameter uint SCRAMBLE_DATA_SIZE = 64;

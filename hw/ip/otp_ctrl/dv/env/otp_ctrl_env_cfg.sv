@@ -9,7 +9,6 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
   rand push_pull_agent_cfg#(.DeviceDataWidth(OTBN_DATA_SIZE))  m_otbn_pull_agent_cfg;
   rand push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_data_pull_agent_cfg;
   rand push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_addr_pull_agent_cfg;
-  rand push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_SIZE))   m_edn_pull_agent_cfg;
 
   // ext interfaces
   pwr_otp_vif              pwr_otp_vif;
@@ -27,6 +26,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = otp_ctrl_env_pkg::LIST_OF_ALERTS;
+    has_edn = 1;
     super.initialize(csr_base_addr);
 
     // create push_pull agent config obj
@@ -46,12 +46,6 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
     m_flash_addr_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE))::type_id::create
                                   ("m_flash_addr_pull_agent_cfg");
     m_flash_addr_pull_agent_cfg.agent_type = PullAgent;
-
-    m_edn_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_SIZE))::type_id::create
-                           ("m_edn_pull_agent_cfg");
-    m_edn_pull_agent_cfg.agent_type = PullAgent;
-    m_edn_pull_agent_cfg.if_mode    = Device;
-
 
     // set num_interrupts & num_alerts
     begin

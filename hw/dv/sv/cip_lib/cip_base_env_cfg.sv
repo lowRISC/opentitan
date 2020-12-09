@@ -6,6 +6,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // ext component cfgs
   rand tl_agent_cfg        m_tl_agent_cfg;
   rand alert_esc_agent_cfg m_alert_agent_cfg[string];
+  rand push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent_cfg;
 
   // common interfaces - intrrupts and alerts
   intr_vif    intr_vif;
@@ -15,6 +16,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // TODO: enable random drive devmode once design supports
   bit  has_devmode = 1;
   bit  en_devmode = 1;
+  bit  has_edn = 0;
 
   uint num_interrupts;
 
@@ -43,7 +45,6 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
 
       foreach(list_of_alerts[i]) begin
         string alert_name = list_of_alerts[i];
-
         // create alert_esc_agent_cfg if the module has alerts
         m_alert_agent_cfg[alert_name] = alert_esc_agent_cfg::type_id::create("m_alert_agent_cfg");
         m_alert_agent_cfg[alert_name].if_mode = dv_utils_pkg::Device;
@@ -54,6 +55,13 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
           m_alert_agent_cfg[alert_name].alert_delay_max = 0;
         end
       end
+    end
+
+    if (has_edn) begin
+      m_edn_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH))::type_id::
+                             create("m_edn_pull_agent_cfg");
+      m_edn_pull_agent_cfg.agent_type = PullAgent;
+      m_edn_pull_agent_cfg.if_mode    = Device;
     end
   endfunction
 

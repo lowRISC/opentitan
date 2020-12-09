@@ -15,6 +15,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // Alert_fifo to notify scb if DUT sends an alert
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifos[string];
 
+  // EDN fifo
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(EDN_DATA_WIDTH))) edn_fifo;
+
   mem_model#() exp_mem;
 
   `uvm_component_new
@@ -27,6 +30,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       string alert_name = cfg.list_of_alerts[i];
       alert_fifos[alert_name] = new($sformatf("alert_fifo[%s]", alert_name), this);
     end
+    if (cfg.has_edn) edn_fifo = new("edn_fifo", this);
     exp_mem = mem_model#()::type_id::create("exp_mem", this);
   endfunction
 

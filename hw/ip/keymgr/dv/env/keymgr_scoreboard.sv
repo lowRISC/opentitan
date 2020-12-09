@@ -12,7 +12,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(EDN_DATA_SIZE))) edn_fifo;
 
   // local queues to hold incoming packets pending comparison
 
@@ -20,7 +19,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    edn_fifo = new("edn_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);

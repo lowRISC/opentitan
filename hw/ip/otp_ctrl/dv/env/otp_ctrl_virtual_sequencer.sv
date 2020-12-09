@@ -14,5 +14,4 @@ class otp_ctrl_virtual_sequencer extends cip_base_virtual_sequencer #(
   push_pull_sequencer#(.DeviceDataWidth(OTBN_DATA_SIZE))  otbn_pull_sequencer_h;
   push_pull_sequencer#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_pull_sequencer_h;
   push_pull_sequencer#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_pull_sequencer_h;
-  push_pull_sequencer#(.DeviceDataWidth(EDN_DATA_SIZE))   edn_pull_sequencer_h;
 endclass

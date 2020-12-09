@@ -9,7 +9,6 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:push_pull_agent
       - lowrisc:dv:keymgr_kmac_agent
     files:
       - keymgr_if.sv

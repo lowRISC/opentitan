@@ -8,7 +8,6 @@ module tb;
   import dv_utils_pkg::*;
   import keymgr_env_pkg::*;
   import keymgr_test_pkg::*;
-  import push_pull_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -25,7 +24,7 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   keymgr_if keymgr_if(.clk(clk), .rst_n(rst_n));
   keymgr_kmac_intf keymgr_kmac_intf(.clk(clk), .rst_n(rst_n));
-  push_pull_if #(.DeviceDataWidth(EDN_DATA_SIZE)) edn_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
 
@@ -65,8 +64,8 @@ module tb;
     uvm_config_db#(virtual keymgr_if)::set(null, "*.env", "keymgr_vif", keymgr_if);
     uvm_config_db#(virtual keymgr_kmac_intf)::set(null,
                    "*env.m_keymgr_kmac_agent*", "vif", keymgr_kmac_intf);
-    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(EDN_DATA_SIZE)))::set(null,
-                   "*env.m_edn_pull_agent*", "vif", edn_if);
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)))::set
+                   (null, "*env.m_edn_pull_agent*", "vif", edn_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
