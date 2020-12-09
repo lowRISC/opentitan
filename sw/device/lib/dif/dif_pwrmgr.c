@@ -120,7 +120,10 @@ static const request_reg_info_t request_reg_infos[2] = {
             .cur_req_sources_reg_offset = PWRMGR_WAKE_STATUS_REG_OFFSET,
             .bitfield =
                 {
-                    .mask = kDifPwrmgrWakeupRequestSourceOne,
+                    .mask = kDifPwrmgrWakeupRequestSourceOne |
+                            kDifPwrmgrWakeupRequestSourceTwo |
+                            kDifPwrmgrWakeupRequestSourceThree |
+                            kDifPwrmgrWakeupRequestSourceFour,
                     .index = 0,
                 },
         },

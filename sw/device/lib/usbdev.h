@@ -36,6 +36,11 @@ struct usbdev_ctx {
 };
 
 /**
+ * Select USB lines P or N
+ */
+typedef enum line_sel { kDpSel = 0, kDnSel = 1 } line_sel_t;
+
+/**
  * Allocate a buffer for the caller to use
  *
  * @param ctx usbdev context pointer
@@ -228,6 +233,21 @@ void usbdev_endpoint_setup(usbdev_ctx_t *ctx, int ep, int enableout,
  * @param diff_tx boolean to indicate if PHY uses differential TX
  */
 void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx, bool diff_tx);
+
+/**
+ * Force usbdev to output suspend state for testing purposes
+ */
+void usbdev_force_suspend(void);
+
+/**
+ * Force usbdev pull-up to specific value
+ */
+void usbdev_force_dx_pullup(line_sel_t line, bool set);
+
+/**
+ * Enable usb wake
+ */
+void usbdev_wake(bool set);
 
 // Used for tracing what is going on. This may impact timing which is critical
 // when simulating with the USB DPI module.

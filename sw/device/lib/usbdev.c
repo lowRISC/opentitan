@@ -300,3 +300,38 @@ void usbdev_init(usbdev_ctx_t *ctx, bool pinflip, bool diff_rx, bool diff_tx) {
   REG32(USBDEV_BASE_ADDR + USBDEV_USBCTRL_REG_OFFSET) =
       (1 << USBDEV_USBCTRL_ENABLE_BIT);
 }
+
+void usbdev_force_dx_pullup(line_sel_t line, bool set) {
+  // Force usb to pretend it is in suspend
+  uint32_t reg_val = REG32(USBDEV_BASE_ADDR + USBDEV_PHY_PINS_DRIVE_REG_OFFSET);
+  uint32_t mask;
+
+  mask = line == kDpSel ? USBDEV_PHY_PINS_DRIVE_DP_PULLUP_EN_O_BIT
+                        : USBDEV_PHY_PINS_DRIVE_DN_PULLUP_EN_O_BIT;
+
+  if (set) {
+    reg_val = SETBIT(reg_val, mask);
+  } else {
+    reg_val = CLRBIT(reg_val, mask);
+  }
+
+  reg_val = SETBIT(reg_val, USBDEV_PHY_PINS_DRIVE_EN_BIT);
+  REG32(USBDEV_BASE_ADDR + USBDEV_PHY_PINS_DRIVE_REG_OFFSET) = reg_val;
+}
+
+void usbdev_force_suspend() {
+  // Force usb to pretend it is in suspend
+  REG32(USBDEV_BASE_ADDR + USBDEV_PHY_PINS_DRIVE_REG_OFFSET) |=
+      1 << USBDEV_PHY_PINS_DRIVE_SUSPEND_O_BIT |
+      1 << USBDEV_PHY_PINS_DRIVE_EN_BIT;
+}
+
+void usbdev_wake(bool set) {
+  uint32_t reg_val = REG32(USBDEV_BASE_ADDR + USBDEV_WAKE_CONFIG_REG_OFFSET);
+  if (set) {
+    reg_val = SETBIT(reg_val, USBDEV_WAKE_CONFIG_WAKE_EN_BIT);
+  } else {
+    reg_val = CLRBIT(reg_val, USBDEV_WAKE_CONFIG_WAKE_EN_BIT);
+  }
+  REG32(USBDEV_BASE_ADDR + USBDEV_WAKE_CONFIG_REG_OFFSET) = reg_val;
+}
