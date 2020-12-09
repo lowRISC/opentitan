@@ -5,7 +5,7 @@
 {
     name:               "csrng",
     design_spec:        "hw/ip/csrng/doc",
-    dv_plan:            "hw/ip/csrng/doc/dv_plan",
+    dv_doc:            "hw/ip/csrng/doc/dv",
     hw_checklist:       "hw/ip/csrng/doc/checklist",
     version:            "0.5",
     life_stage:         "L1",

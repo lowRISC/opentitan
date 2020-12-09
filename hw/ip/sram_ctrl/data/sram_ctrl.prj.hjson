@@ -5,7 +5,7 @@
 {
     name:               "sram_ctrl",
     design_spec:        "hw/ip/sram_ctrl/doc",
-    dv_plan:            "",
+    dv_doc:            "",
     hw_checklist:       "hw/ip/sram_ctrl/doc/checklist",
     sw_checklist:       ""
     version:            "0.1",

@@ -5,7 +5,7 @@
 {
     name:               "otbn",
     design_spec:        "hw/ip/otbn/doc",
-//    dv_plan:            "hw/ip/otbn/doc/dv_plan",
+//    dv_doc:            "hw/ip/otbn/doc/dv",
     hw_checklist:       "hw/ip/otbn/doc/checklist",
     sw_checklist:       "sw/device/lib/dif/dif_otbn"
     version:            "0.1",

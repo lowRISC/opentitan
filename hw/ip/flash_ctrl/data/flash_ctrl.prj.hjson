@@ -5,7 +5,7 @@
 {
     name:               "flash_ctrl",
     design_spec:        "hw/ip/flash_ctrl/doc",
-    dv_plan:            "hw/ip/flash_ctrl/doc/dv_plan"
+    dv_doc:            "hw/ip/flash_ctrl/doc/dv"
     hw_checklist:       "hw/ip/flash_ctrl/doc/checklist",
     version:            "0.5",
     life_stage:         "L1",
