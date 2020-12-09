@@ -1,11 +1,11 @@
 ---
-title: "GPIO dv document"
+title: "GPIO DV document"
 ---
 
 ## Goals
 * **DV**
   * Verify all GPIO IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [dv_plan](#dv_plan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -112,5 +112,5 @@ Here's how to run a smoke test:
 $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/gpio/dv/gpio_sim_cfg.hjson -i gpio_smoke
 ```
 
-## Testplan
+## DV plan
 {{< testplan "hw/ip/gpio/data/gpio_testplan.hjson" >}}

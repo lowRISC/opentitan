@@ -110,8 +110,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]           | Not Started |
-Documentation | [DV_PLAN_COMPLETED][]                | Not Started |
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started |
+Documentation | [DV_PLAN_COMPLETED][]                 | Not Started |
 Testbench     | [TB_TOP_CREATED][]                    | Not Started |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
@@ -129,12 +129,12 @@ Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
 Code Quality  | [TB_LINT_SETUP][]                     | Not Started |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
-Review        | [DV_PLAN_REVIEWED][]         | Not Started |
+Review        | [DV_PLAN_REVIEWED][]                  | Not Started |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
 Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 
-[DV_DOC_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
-[DV_PLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
+[DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
+[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
 [TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb_top_created" >}}
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary_assertion_checks_added" >}}
 [SIM_TB_ENV_CREATED]:                 {{<relref "/doc/project/checklist.md#sim_tb_env_created" >}}
@@ -152,7 +152,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 [TB_LINT_SETUP]:                      {{<relref "/doc/project/checklist.md#tb_lint_setup" >}}
 [PRE_VERIFIED_SUB_MODULES_V1]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v1" >}}
 [DESIGN_SPEC_REVIEWED]:               {{<relref "/doc/project/checklist.md#design_spec_reviewed" >}}
-[DV_PLAN_REVIEWED]:          {{<relref "/doc/project/checklist.md#dv_plan_reviewed" >}}
+[DV_PLAN_REVIEWED]:                   {{<relref "/doc/project/checklist.md#dv_plan_reviewed" >}}
 [STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std_test_categories_planned" >}}
 [V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2_checklist_scoped" >}}
 

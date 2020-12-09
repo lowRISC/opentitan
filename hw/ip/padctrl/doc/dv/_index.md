@@ -1,5 +1,5 @@
 ---
-title: "PADCTRL dv document"
+title: "PADCTRL DV document"
 ---
 
 ## Goals
@@ -41,6 +41,6 @@ Due to there are large number of muxed and dedicated IOs, the symbolic variable 
 In padctrl_assert_fpv and padring_assert_fpv, we declared two symbolic variables `mio_sel` and `dio_sel` to represent the index for muxed IO and dedicated IO.
 Detailed explanation is listed in the [Symbolic Variables]({{< relref "hw/formal/README.md#symbolic-variables" >}}) section.
 
-## Testplan
+## DV plan
 {{< testplan "hw/ip/padctrl/data/padctrl_fpv_testplan.hjson" >}}
 

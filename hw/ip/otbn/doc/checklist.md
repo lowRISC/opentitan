@@ -110,8 +110,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]           | Done        | [OTBN dv document]({{<relref "hw/ip/otbn/doc/dv" >}})
-Documentation | [DV_PLAN_COMPLETED][]                | Done        | [OTBN dv_plan]({{<relref "hw/ip/otbn/doc/dv/index.md#dv_plan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [OTBN DV document]({{<relref "hw/ip/otbn/doc/dv" >}})
+Documentation | [DV_PLAN_COMPLETED][]                 | Done        | [OTBN DV plan]({{<relref "hw/ip/otbn/doc/dv/index.md#dv_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
@@ -128,12 +128,12 @@ Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        | No sub-blocks, so auto-generated framework will work
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
-Review        | [DV_PLAN_REVIEWED][]         | Not Started |
+Review        | [DV_PLAN_REVIEWED][]                  | Not Started |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
 Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 
-[DV_DOC_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
-[DV_PLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
+[DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
+[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
 [TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb_top_created" >}}
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary_assertion_checks_added" >}}
 [SIM_TB_ENV_CREATED]:                 {{<relref "/doc/project/checklist.md#sim_tb_env_created" >}}
@@ -150,7 +150,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 [SIM_COVERAGE_MODEL_ADDED]:           {{<relref "/doc/project/checklist.md#sim_coverage_model_added" >}}
 [PRE_VERIFIED_SUB_MODULES_V1]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v1" >}}
 [DESIGN_SPEC_REVIEWED]:               {{<relref "/doc/project/checklist.md#design_spec_reviewed" >}}
-[DV_PLAN_REVIEWED]:          {{<relref "/doc/project/checklist.md#dv_plan_reviewed" >}}
+[DV_PLAN_REVIEWED]:                   {{<relref "/doc/project/checklist.md#dv_plan_reviewed" >}}
 [STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std_test_categories_planned" >}}
 [V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2_checklist_scoped" >}}
 

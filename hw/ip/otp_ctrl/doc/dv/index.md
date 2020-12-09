@@ -1,5 +1,5 @@
 ---
-title: "OTP_CTRL dv document"
+title: "OTP_CTRL DV document"
 ---
 
 <!-- Copy this file to hw/ip/otp_ctrl/doc/otp_ctrl_dv_doc.md and make changes as needed.
@@ -14,7 +14,7 @@ applicable. Once done, remove this comment before making a PR. -->
 ## Goals
 * **DV**
   * Verify all OTP_CTRL IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [dv_plan](#dv_plan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -113,5 +113,5 @@ Here's how to run a smoke test:
 $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson -i otp_ctrl_smoke
 ```
 
-## Testplan
+## DV plan
 {{< testplan "hw/ip/otp_ctrl/data/otp_ctrl_testplan.hjson" >}}

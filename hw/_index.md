@@ -8,10 +8,10 @@ This page serves as the landing spot for all hardware development within the Ope
 We start off by providing links to the [results of various tool-flows](#results-of-toolflows) run on all of our [Comportable]({{< relref "doc/rm/comportability_specification" >}}) IPs.
 This includes DV simulations, FPV and lint, all of which are run with the `dvsim` tool which serves as the common frontend.
 
-The [Comportable IPs](#comportable-ips) following it provides links to their design specifications and dv documents, and tracks their current stage of development.
+The [Comportable IPs](#comportable-ips) following it provides links to their design specifications and DV documents, and tracks their current stage of development.
 See the [Hardware Development Stages]({{< relref "/doc/project/development_stages.md" >}}) for description of the hardware stages and how they are determined.
 
-Next, we focus on all available [processor cores](#processor-cores) and provide links to their design specifications, dv documents and the DV simulation results.
+Next, we focus on all available [processor cores](#processor-cores) and provide links to their design specifications, DV documents and the DV simulation results.
 
 Finally, we provide the same set of information for all available [top level designs](#top-level-designs), including an additional dashboard with preliminary synthesis results for some of these designs.
 
