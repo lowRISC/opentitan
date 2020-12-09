@@ -140,9 +140,10 @@ module keymgr import keymgr_pkg::*; #(
   logic adv_en, id_en, gen_en;
   logic load_key;
   logic wipe_key;
-  logic [Shares-1:0][KeyWidth-1:0] kmac_key;
+  hw_key_req_t kmac_key;
   logic op_done;
   logic data_valid;
+  logic data_en;
   logic kmac_done;
   logic kmac_input_invalid;
   logic kmac_cmd_err;
@@ -166,6 +167,7 @@ module keymgr import keymgr_pkg::*; #(
     .sw_binding_unlock_o(sw_binding_unlock),
     .status_o(hw2reg.op_status.d),
     .error_o(err_code),
+    .data_en_o(data_en),
     .data_valid_o(data_valid),
     .working_state_o(hw2reg.working_state.d),
     .root_key_i(otp_key_i),
@@ -213,6 +215,7 @@ module keymgr import keymgr_pkg::*; #(
 
   // The various arrays of inputs for each operation
   logic [2**StageWidth-1:0][AdvDataWidth-1:0] adv_matrix;
+  logic [2**StageWidth-1:0] adv_dvalid;
   logic [2**StageWidth-1:0][IdDataWidth-1:0] id_matrix;
   logic [GenDataWidth-1:0] gen_in;
 
@@ -224,12 +227,18 @@ module keymgr import keymgr_pkg::*; #(
   localparam int IdLfsrCopies = IdDataWidth / 32;
   localparam int GenLfsrCopies = GenDataWidth / 32;
 
-  // input checking - currently only MAX version, others TBD
-  logic key_version_good;
+  // input checking
+  logic creator_seed_vld;
+  logic owner_seed_vld;
+  logic devid_vld;
+  logic health_state_vld;
+  logic key_version_vld;
+
 
   // Advance state operation input construction
   for (genvar i = KeyMgrStages; i < 2**StageWidth; i++) begin : gen_adv_matrix_fill
     assign adv_matrix[i] = {AdvLfsrCopies{lfsr[31:0]}};
+    assign adv_dvalid[i] = 1'b0;
   end
 
   // Advance to creator_root_key
@@ -241,14 +250,19 @@ module keymgr import keymgr_pkg::*; #(
                                               lc_i.health_state,
                                               creator_seed});
 
+  assign adv_dvalid[Creator] = creator_seed_vld &
+                               devid_vld &
+                               health_state_vld;
+
   // Advance to owner_intermediate_key
   logic [KeyWidth-1:0] owner_seed;
   assign owner_seed = flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx];
   assign adv_matrix[OwnerInt] = AdvDataWidth'({reg2hw.sw_binding,owner_seed});
+  assign adv_dvalid[OwnerInt] = owner_seed_vld;
 
   // Advance to owner_key
-  assign adv_matrix[Owner]   = AdvDataWidth'(reg2hw.sw_binding);
-
+  assign adv_matrix[Owner] = AdvDataWidth'(reg2hw.sw_binding);
+  assign adv_dvalid[Owner] = 1'b1;
 
   // Generate Identity operation input construction
   for (genvar i = KeyMgrStages; i < 2**StageWidth; i++) begin : gen_id_matrix_fill
@@ -279,11 +293,22 @@ module keymgr import keymgr_pkg::*; #(
 
 
   // General module for checking inputs
+  logic key_vld;
   keymgr_input_checks u_checks (
     .max_key_versions_i(max_key_versions),
     .stage_sel_i(stage_sel),
     .key_version_i(reg2hw.key_version),
-    .key_version_good_o(key_version_good)
+    .creator_seed_i(creator_seed),
+    .owner_seed_i(owner_seed),
+    .key_i(kmac_key_o),
+    .devid_i(otp_i.devid),
+    .health_state_i(lc_i.health_state),
+    .creator_seed_vld_o(creator_seed_vld),
+    .owner_seed_vld_o(owner_seed_vld),
+    .devid_vld_o(devid_vld),
+    .health_state_vld_o(health_state_vld),
+    .key_version_vld_o(key_version_vld),
+    .key_vld_o(key_vld)
   );
 
 
@@ -291,15 +316,11 @@ module keymgr import keymgr_pkg::*; #(
   //  KMAC Control
   /////////////////////////////////////
 
-  logic key_version_err;
   logic [3:0] invalid_data;
-
-  assign key_version_err = !key_version_good;
-
-  assign invalid_data[OpAdvance]  = '0; // TBD
-  assign invalid_data[OpGenId]    = '0; // TBD
-  assign invalid_data[OpGenSwOut] = key_version_err; // TBD, more to come
-  assign invalid_data[OpGenHwOut] = key_version_err; // TBD, more to come
+  assign invalid_data[OpAdvance]  = ~key_vld | ~adv_dvalid[stage_sel];
+  assign invalid_data[OpGenId]    = ~key_vld;
+  assign invalid_data[OpGenSwOut] = ~key_vld | ~key_version_vld;
+  assign invalid_data[OpGenHwOut] = ~key_vld | ~key_version_vld;
 
   keymgr_kmac_if u_kmac_if (
     .clk_i,
@@ -339,6 +360,7 @@ module keymgr import keymgr_pkg::*; #(
     .dest_sel_i(keymgr_key_dest_e'(reg2hw.control.dest_sel)),
     .key_sel_i(key_sel),
     .load_key_i(load_key),
+    .data_en_i(data_en),
     .data_valid_i(data_valid),
     .key_i(kmac_key),
     .data_i(kmac_data),
@@ -349,8 +371,10 @@ module keymgr import keymgr_pkg::*; #(
   );
 
   for (genvar i = 0; i < 8; i++) begin : gen_sw_assigns
-    assign hw2reg.sw_share0_output[i].d  = wipe_key ? key_entropy : kmac_data[0][i*32 +: 32];
-    assign hw2reg.sw_share1_output[i].d  = wipe_key ? key_entropy : kmac_data[1][i*32 +: 32];
+    assign hw2reg.sw_share0_output[i].d  = ~data_en | wipe_key ? key_entropy :
+                                                                 kmac_data[0][i*32 +: 32];
+    assign hw2reg.sw_share1_output[i].d  = ~data_en | wipe_key ? key_entropy :
+                                                                 kmac_data[1][i*32 +: 32];
     assign hw2reg.sw_share0_output[i].de = wipe_key | data_valid & (key_sel == SwKey);
     assign hw2reg.sw_share1_output[i].de = wipe_key | data_valid & (key_sel == SwKey);
   end
