@@ -15,7 +15,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   input [AdvDataWidth-1:0] adv_data_i,
   input [IdDataWidth-1:0] id_data_i,
   input [GenDataWidth-1:0] gen_data_i,
-  input [3:0] inputs_invalid_i, // probably should break down into categories later
+  input [3:0] inputs_invalid_i,
   output logic inputs_invalid_o,
 
   // keymgr control to select appropriate inputs

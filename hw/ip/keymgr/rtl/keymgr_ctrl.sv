@@ -20,6 +20,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   output logic op_done_o,
   output keymgr_op_status_e status_o,
   output logic [ErrLastPos-1:0] error_o,
+  output logic data_en_o,
   output logic data_valid_o,
   output logic wipe_key_o,
   output keymgr_working_state_e working_state_o,
@@ -34,7 +35,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   output logic adv_en_o,
   output logic id_en_o,
   output logic gen_en_o,
-  output logic [Shares-1:0][KeyWidth-1:0] key_o,
+  output hw_key_req_t key_o,
   output logic load_key_o,
   input kmac_done_i,
   input kmac_input_invalid_i, // asserted when selected data fails criteria check
@@ -74,7 +75,6 @@ module keymgr_ctrl import keymgr_pkg::*;(
   logic cnt_en;
   logic cnt_clr;
   logic data_valid;
-  logic adv_en_q;
   logic op_accepted;
   logic invalid_op;
 
@@ -105,7 +105,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   assign adv_en_o   = op_accepted & (advance_sel | disable_sel);
   assign id_en_o    = op_accepted & gen_id_sel;
   assign gen_en_o   = op_accepted & gen_out_sel;
-  assign load_key_o = adv_en_o & !adv_en_q;
+  assign load_key_o = op_accepted;
 
   // unlock sw binding configuration whenever an advance call is made without errors
   assign sw_binding_unlock_o = adv_en_o & op_done_o & ~|error_o;
@@ -119,10 +119,8 @@ module keymgr_ctrl import keymgr_pkg::*;(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       state_q <= StCtrlReset;
-      adv_en_q <= 1'b0;
     end else begin
       state_q <= state_d;
-      adv_en_q <= adv_en_o;
     end
   end
 
@@ -130,7 +128,11 @@ module keymgr_ctrl import keymgr_pkg::*;(
   // - whatever operation causes the input data select to be disabled should not expose the key
   //   state.
   // - when there are no operations, the key state also should be exposed.
-  assign key_o = (~op_start_i | disable_sel) ? {EntropyRounds * Shares {entropy_i}} : key_state_q;
+  assign key_o.valid = op_accepted;
+  assign key_o.key_share0 = (~op_start_i | disable_sel) ? {EntropyRounds{entropy_i}} :
+                                                          key_state_q[0];
+  assign key_o.key_share1 = (~op_start_i | disable_sel) ? {EntropyRounds{entropy_i}} :
+                                                          key_state_q[1];
 
   // key state is intentionally not reset
   always_ff @(posedge clk_i) begin
@@ -413,6 +415,8 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
   // if operation was never accepted (ie a generate was called in StReset / StRandom), then
   // never update the sw / hw outputs when operation is complete
+  // TODO: This is a critical single point of failure, need to think deeply about how to
+  // enhance this.
   assign data_valid_o = op_done_o & op_accepted & data_valid & gen_sel;
 
   // data errors are not relevant when operation was not accepted.
@@ -429,6 +433,78 @@ module keymgr_ctrl import keymgr_pkg::*;(
       status_o = OpWip;
     end
   end
+
+
+  ///////////////////////////////
+  // Suppress kmac return data
+  ///////////////////////////////
+  // This is a separate data path from the FSM used to control the data_en_o output
+
+  typedef enum logic [1:0] {
+    StCtrlDataIdle,
+    StCtrlDataEn,
+    StCtrlDataDis,
+    StCtrlDataWait
+  } keymgr_ctrl_data_state_e;
+
+  keymgr_ctrl_data_state_e data_st_d, data_st_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      data_st_q <= StCtrlDataIdle;
+    end else begin
+      data_st_q <= data_st_d;
+    end
+  end
+
+  // The below control path is used for modulating the datapath to sideload and sw keys.
+  // This path is separate from the data_valid_o path, thus creating two separate attack points.
+  // The data is only enabled when a non-advance operation is invoked.
+  // When an advance operation is called, the data is disabled. It will stay disabled until an
+  // entire completion sequence is seen (op_done_o assert -> start_i de-assertion).
+  // When a generate operation is called, the data is enabled.  However, any indication of this
+  // supposedly being an advance call will force the path to disable again.
+  always_comb begin
+    data_st_d = data_st_q;
+    data_en_o = 1'b0;
+    unique case (data_st_q)
+
+      StCtrlDataIdle: begin
+        if (adv_en_o) begin
+          data_st_d = StCtrlDataDis;
+        end else if (id_en_o || gen_en_o) begin
+          data_st_d = StCtrlDataEn;
+        end
+      end
+
+      StCtrlDataEn: begin
+        data_en_o = 1'b1;
+        if (adv_en_o) begin
+          data_st_d = StCtrlDataDis;
+        end
+      end
+
+      StCtrlDataDis: begin
+        if (op_done_o) begin
+          data_st_d = StCtrlDataWait;
+        end
+      end
+
+      StCtrlDataWait: begin
+        if (!op_start_i) begin
+          data_st_d = StCtrlDataIdle;
+        end
+      end
+
+      default:;
+
+    endcase // unique case (data_st_q)
+  end
+
+
+
+
+
 
 
 

@@ -15,8 +15,9 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   input keymgr_key_dest_e dest_sel_i,
   input keymgr_gen_out_e key_sel_i,
   input load_key_i,
+  input data_en_i,
   input data_valid_i,
-  input [Shares-1:0][KeyWidth-1:0] key_i,
+  input hw_key_req_t key_i,
   input [Shares-1:0][KeyWidth-1:0] data_i,
   output logic prng_en_o,
   output hw_key_req_t aes_key_o,
@@ -100,6 +101,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
+    .set_en_i(data_en_i),
     .set_i(data_valid_i & aes_sel),
     .clr_i(clr), // TBD, should add an option for software clear later
     .entropy_i(entropy_i),
@@ -111,6 +113,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
+    .set_en_i(data_en_i),
     .set_i(data_valid_i & hmac_sel),
     .clr_i(clr), // TBD, should add an option for software clear later
     .entropy_i(entropy_i),
@@ -118,16 +121,21 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .key_o(hmac_key_o)
   );
 
+  hw_key_req_t kmac_sideload_key;
   keymgr_sideload_key u_kmac_key (
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
-    .set_i(load_key_i | (data_valid_i & kmac_sel)),
+    .set_en_i(data_en_i),
+    .set_i(data_valid_i & kmac_sel),
     .clr_i(clr), // TBD, should add an option for software clear laterclr
     .entropy_i(entropy_i),
-    .key_i(load_key_i ? key_i : data_i),
-    .key_o(kmac_key_o)
+    .key_i(data_i),
+    .key_o(kmac_sideload_key)
   );
+
+  // when directed by keymgr_ctrl, switch over to internal key and feed to kmac
+  assign kmac_key_o = load_key_i ? key_i : kmac_sideload_key;
 
   // when clearing, request prng
   assign prng_en_o = clr;
