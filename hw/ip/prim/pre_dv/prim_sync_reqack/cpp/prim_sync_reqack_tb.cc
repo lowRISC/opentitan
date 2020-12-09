@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "Vprim_sync_reqack_tb.h"
-#include "verilated_toplevel.h"
-#include "verilator_sim_ctrl.h"
-
 #include <functional>
 #include <iostream>
 #include <signal.h>
 
+#include "Vprim_sync_reqack_tb.h"
 #include "sim_ctrl_extension.h"
+#include "verilated_toplevel.h"
+#include "verilator_sim_ctrl.h"
 
 class PrimSyncReqAckTB : public SimCtrlExtension {
   using SimCtrlExtension::SimCtrlExtension;
@@ -56,7 +55,7 @@ int main(int argc, char **argv) {
             << std::endl;
 
   // Get pass / fail from Verilator
-  ret_code = simctrl.Exec(argc, argv);
+  ret_code = simctrl.Exec(argc, argv).first;
 
   return ret_code;
 }

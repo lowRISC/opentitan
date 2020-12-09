@@ -131,9 +131,11 @@ int main(int argc, char **argv) {
             << "==================" << std::endl
             << std::endl;
 
-  int ret_code = simctrl.Exec(argc, argv);
+  auto pr = simctrl.Exec(argc, argv);
+  int ret_code = pr.first;
+  bool ran_simulation = pr.second;
 
-  if (ret_code != 0) {
+  if (ret_code != 0 || !ran_simulation) {
     return ret_code;
   }
 
