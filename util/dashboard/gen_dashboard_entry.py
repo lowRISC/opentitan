@@ -66,9 +66,9 @@ def get_linked_design_spec(obj):
 
 # Provide the link to the DV plan.
 def get_linked_dv_plan(obj):
-    if 'dv_plan' in obj.keys():
-        url = docs_server + "/" + html.escape(obj['dv_plan'])
-        return "<span title='DV Plan'><a href=\"{}\">DV</a></span>".format(url)
+    if 'dv_doc' in obj.keys():
+        url = docs_server + "/" + html.escape(obj['dv_doc'])
+        return "<span title='DV Document'><a href=\"{}\">DV</a></span>".format(url)
     else:
         return ""
 
