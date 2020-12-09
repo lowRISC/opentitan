@@ -110,8 +110,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]           | In Progress | [USB Device dv document]({{<relref "hw/ip/usbdev/doc/dv_doc" >}})
-Documentation | [DV_PLAN_COMPLETED][]                | In Progress | [USB Device dv_plan]({{<relref "hw/ip/usbdev/doc/dv_doc/index.md#dv_plan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]           | In Progress | [USB Device dv document]({{<relref "hw/ip/usbdev/doc/dv" >}})
+Documentation | [DV_PLAN_COMPLETED][]                | In Progress | [USB Device dv_plan]({{<relref "hw/ip/usbdev/doc/dv/index.md#dv_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
