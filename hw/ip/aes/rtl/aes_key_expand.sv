@@ -390,4 +390,10 @@ module aes_key_expand import aes_pkg::*;
       AES_256
       })
 
+  // Make sure the output of the masking PRNG is properly extracted without creating overlaps
+  // of masks and PRD distributed to the individual S-Boxes.
+  logic [WidthPRDKey-1:0] unused_prd_masking;
+  assign unused_prd_masking = aes_sb_out_mask_prd_concat(sw_out_mask, sw_prd);
+  `ASSERT(AesMskgPrdExtraction, prd_masking_i == unused_prd_masking)
+
 endmodule

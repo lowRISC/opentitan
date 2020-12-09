@@ -495,4 +495,14 @@ module aes_cipher_core import aes_pkg::*;
   `ASSERT_KNOWN(AesKeyWordsSelKnown, key_words_sel)
   `ASSERT_KNOWN(AesRoundKeySelKnown, round_key_sel)
 
+  // Make sure the output of the masking PRNG is properly extracted without creating overlaps
+  // of masks and PRD distributed to the individual S-Boxes.
+  logic [WidthPRDMasking-1:0] unused_prd_masking;
+  for (genvar i = 0; i < 4; i++) begin : gen_unused_prd_masking
+    assign unused_prd_masking[i * WidthPRDRow +: WidthPRDRow] =
+        aes_sb_out_mask_prd_concat(sb_out_mask[i], prd_sub_bytes[i]);
+  end
+  assign unused_prd_masking[WidthPRDMasking-1 -: WidthPRDKey] = prd_key_expand;
+  `ASSERT(AesMskgPrdExtraction, prd_masking == unused_prd_masking)
+
 endmodule
