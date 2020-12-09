@@ -5,7 +5,7 @@ title: "OTBN dv document"
 ## Goals
 * **DV**
   * Verify the OTBN processor by running dynamic simulations with a SV/UVM based testbench
-  * These simulations are grouped in tests listed in the [testplan](#testplan) below.
+  * These simulations are grouped in tests listed in the [dv_plan](#dv_plan) below.
   * Close code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
@@ -138,5 +138,5 @@ $ util/dvsim/dvsim.py hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson -i otbn_single
 ```
 
 ## Testplan
-<!-- TODO: uncomment the line below after adding the testplan -->
+<!-- TODO: uncomment the line below after adding the dv_plan -->
 {{</* testplan "hw/ip/otbn/data/otbn_testplan.hjson" */>}}

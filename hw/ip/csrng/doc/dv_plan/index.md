@@ -5,7 +5,7 @@ title: "CSRNG dv document"
 ## Goals
 * **DV**
   * Verify all CSRNG IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [dv_plan](#dv_plan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -96,5 +96,5 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/csrng/dv/csrng_sim_cfg.hjson -i 
 ```
 
 ## Testplan
-<!-- TODO: uncomment the line below after adding the testplan -->
+<!-- TODO: uncomment the line below after adding the dv_plan -->
 {{</* testplan "hw/ip/csrng/data/csrng_testplan.hjson" */>}}

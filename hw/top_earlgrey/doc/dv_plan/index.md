@@ -130,7 +130,7 @@ The basic UART transmit and receive test can be run with the following command:
 ```console
 $ ./util/dvsim/dvsim.py hw/top_earlgrey/dv/chip_sim_cfg.hjson -i chip_uart_tx_rx
 ```
-For a list of available tests  to run, please see the 'Tests' column in the [testplan]({{< relref "#testplan" >}}) below.
+For a list of available tests  to run, please see the 'Tests' column in the [dv_plan]({{< relref "#dv_plan" >}}) below.
 
 ## Regressions
 

@@ -15,7 +15,7 @@ The following are the key techniques used to perform design verification within 
 *  Formal Property Verification (FPV)
 
 For running dynamic simulations, the strategy is to use the [UVM1.2 methodology](https://www.accellera.org/downloads/standards/uvm) on top of a foundation of SystemVerilog based verification to develop constrained-random functional tests.
-Each DUT will include within the repository, a UVM testbench, a testplan, dv document, a suite of tests, and a method to build, run tests and report the current status.
+Each DUT will include within the repository, a UVM testbench, a dv_plan, dv document, a suite of tests, and a method to build, run tests and report the current status.
 For FPV, some DUTs may also include an SV testbench along with design properties captured in the SystemVerilog Assertions (SVA) language.
 As the project is still in development, the current status will not be completed for all IP, but that is the ultimate goal.
 See discussion below on tracking progress.
@@ -43,7 +43,7 @@ We will explain some of the key items in those checklists in the remainder of th
 ## Documentation
 
 DV effort needs to be well documented to not only provide a detailed description of what tests are being planned, but also how the overall effort is strategized and implemented.
-The first is provided by the **testplan** document and the second, by the **dv document** document.
+The first is provided by the **dv_plan** document and the second, by the **dv document** document.
 The [**project status**]({{< relref "doc/project/development_stages.md#indicating-stages-and-making-transitions" >}}) document tracks to progression of the effort through the stages.
 
 In addition to these documents, a nightly **regression dashboard** tabulating the test and coverage results will provide ability to track progress towards completion of the verification stages.
@@ -52,18 +52,18 @@ To effectively document all these pieces, there are some key tooling components 
 
 ### Testplan
 
-A testplan document captures at a high level, a list of tests that are being planned to verify all design features listed in the design specification.
+A dv_plan document captures at a high level, a list of tests that are being planned to verify all design features listed in the design specification.
 It is written in Hjson format and is made available in the corresponding `data` directory of each DUT.
 
 The Hjson schema enables this information to be human-writable and machine-parsable, which facilitates an automated and documentation-driven DV effort.
-The complete testplan is parsed into a data structure that serves the following purposes:
+The complete dv_plan is parsed into a data structure that serves the following purposes:
 
-*  Provide the ability to insert the testplan as a table into the dv document itself, so that all of the required information is in one place
-*  Annotate the nightly regression results to allow us to track our progress towards executing the testplan
+*  Provide the ability to insert the dv_plan as a table into the dv document itself, so that all of the required information is in one place
+*  Annotate the nightly regression results to allow us to track our progress towards executing the dv_plan
   *  this feature is not yet available and is [under active development](#pending-work-items)
 
-The [testplanner]({{< relref "util/dvsim/testplanner/README.md" >}}) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
-The [build_docs]({{< relref "README.md#documentation" >}}) tool works in conjunction with the `testplanner` tool to enable its insertion into the dv document as a table.
+The [dv_planner]({{< relref "util/dvsim/testplanner/README.md" >}}) tool provides some additional information on the Hjson dv_plan anatomy and some of the features and constructs supported.
+The [build_docs]({{< relref "README.md#documentation" >}}) tool works in conjunction with the `dv_planner` tool to enable its insertion into the dv document as a table.
 
 ### dv document
 
@@ -75,7 +75,7 @@ A [template]({{< relref "hw/dv/doc/dv_doc_template" >}}) for the dv documentatio
 ### Regression Dashboard
 
 The dv document provides a link to the latest [nightly](#nightly) regression and coverage results dashboard uploaded to the web server.
-This dashboard contains information in a tabulated format mapping the written tests to planned tests (in the testplan) to provide ability to track progress towards executing the testplan.
+This dashboard contains information in a tabulated format mapping the written tests to planned tests (in the dv_plan) to provide ability to track progress towards executing the dv_plan.
 **This feature is currently not yet available and is under active development.**
 
 ## Automation
@@ -89,7 +89,7 @@ These are described below.
 As is the case with design, we strive for conformity in our verification efforts as well.
 The motivation for this is not just aesthetics, but also to reap the advantages of [code reuse](#code-reuse), which we rely heavily on.
 To help achieve this, we provide a verification starter tool-kit called [uvmdvgen]({{< relref "util/uvmdvgen/README.md" >}}).
-It can be used to completely auto-generate the complete initial DV enviroment for a new DUT, including the [documentation](#documentation) pieces (testplan as well as dv document), the complete UVM environment including the testbench, to the collaterals for building and running tests along with some common tests.
+It can be used to completely auto-generate the complete initial DV enviroment for a new DUT, including the [documentation](#documentation) pieces (dv_plan as well as dv document), the complete UVM environment including the testbench, to the collaterals for building and running tests along with some common tests.
 This significantly helps reduce the development time.
 It can also be used to auto-generate the initial skeleton source code for building a new reusable verification component for an interface (a complete UVM agent).
 
@@ -195,7 +195,7 @@ These set of tests (not exhaustive) provide the confidence that the design is re
 At this stage, just a skeleton testbench environment is available and most components lack functionality.
 A basic sanity test drives the clock, brings the DUT out of reset, checks if all outputs are legal values (not unknown) and exercise a major datapath with simple set of checks.
 This paves the way for more complex testing.
-During the testplan and the dv document review, the key stake holders at the higher level who consume the DUT as an IP (for example, design and DV engineers wotking at the chip level into which the IP is integrated) may drive the requirements for the level of testing to be done.
+During the dv_plan and the dv document review, the key stake holders at the higher level who consume the DUT as an IP (for example, design and DV engineers wotking at the chip level into which the IP is integrated) may drive the requirements for the level of testing to be done.
 This test (or set of tests) is also included as a part of the sanity regression to maintain the code health.
 
 #### CSR Suite of Tests
@@ -285,7 +285,7 @@ The main goals (for all DUTs) are:
 *  Spawn jobs via LSF to leverage compute resources at one's disposal
 *  Run resource intensive simulations without impacting daytime development
 *  Collect and merge coverage
-*  Publish testplan-annotated regression and coverage results in the regression dashboard
+*  Publish dv_plan-annotated regression and coverage results in the regression dashboard
 
 To re-iterate, these capabilities do not exist yet, but they will be made available soon.
 One of the key requirements of nightly regressions is to complete overnight, so that the results are available for analysis and triage the next morning.
@@ -401,8 +401,8 @@ Going back to our AND gate, let us say we take two of these and OR the outputs o
 If we only add the cover points from our original example, these will still exercise the new output of our system and therefore result in reaching 100% functional coverage, but half of the design was not exercised.
 This is called a coverage hole and code coverage would have indicated that a part of the code was never exercised.
 
-While functional coverage will tell you if your design is working correctly, code coverage will highlight if your testplan is incomplete, or if there are any uncovered/unreachable features in the design.
-Coverage holes can be addressed accordingly through either updating the design specification and argumenting the testplan / written tests, or by optimizing the design to remove unreachable logic if possible.
+While functional coverage will tell you if your design is working correctly, code coverage will highlight if your dv_plan is incomplete, or if there are any uncovered/unreachable features in the design.
+Coverage holes can be addressed accordingly through either updating the design specification and argumenting the dv_plan / written tests, or by optimizing the design to remove unreachable logic if possible.
 There may be features that cannot be tested and cannot be removed from the design either.
 These would have to be analyzed and excluded from the coverage collection as a waiver.
 This is an exercise the DV and the designer typically perform together.
@@ -560,7 +560,7 @@ DV updates are scrutinized in sufficient detail to enforce coding style, identif
 
 ### Sign-off Reviews
 
-In the initial work stage of verification, the dv document and the completed testplan documents are reviewed face-to-face with the following individuals:
+In the initial work stage of verification, the dv document and the completed dv_plan documents are reviewed face-to-face with the following individuals:
 
 *  Designer(s)
 *  DV peers
@@ -570,7 +570,7 @@ In the initial work stage of verification, the dv document and the completed tes
 *  Product architect
 
 The goal of this review is to achieve utmost clarity in the planning of the DV effort and resolve any queries or assumptions.
-The feedback in this review flows both ways - the language in the design specification could be made more precise, or missing items in both, the design specification as well as in the testplan could be identified and added.
+The feedback in this review flows both ways - the language in the design specification could be made more precise, or missing items in both, the design specification as well as in the dv_plan could be identified and added.
 This enables the development stage to progress smoothly.
 
 Subsequently, the intermediate transitions within the verification stages are reviewed within the GitHub pull-request made for updating the checklist and the [project status]({{< relref "doc/project/development_stages.md#indicating-stages-and-making-transitions" >}}).
