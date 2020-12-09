@@ -23,6 +23,7 @@ image_signature:
   .endr
 
 // Everything beyond this point is signed.
+signed_area_start:
 
 // Calculated by linker
 image_length:
@@ -38,22 +39,20 @@ image_version:
 image_timestamp:
   .dword 0x0
 
-// Overridden by signing script
-image_signature_algorithm:
+// Overriden by signing script
+image_signature_key_public_exponent:
+  .word 0x0
+
+// reserved
   .word 0x0
 
 // Overriden by signing script
-image_signature_exponent:
-  .word 0x0
-
-// Maybe: Overriden by signing script?
 image_usage_constraints:
-  .word 0x0
+  .rept 32
+  .byte 0x0
+  .endr
 
-// Reserved
-  .word 0x0
-
-// Maybe: Overriden by signing script?
+// Overriden by signing script
 image_peripheral_lockdown_info:
   .rept 16
   .byte 0x0
