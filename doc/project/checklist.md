@@ -194,6 +194,7 @@ Prefix "SIM" is applicable for simulation-based DV approach only, while "FPV" is
 ### DV_PLAN_COMPLETED
 
 A fully completed dv_plan written in Hjson, indicating the list of planned tests with descriptions indicating the goal of the test and optionally details on stimulus and the checking procedure.
+A fully completed functional coverage plan written in Hjson, indicating the list of functional coverage points and coverage crosses with a description of what feature is covered by this coverpoint.
 
 ### TB_TOP_CREATED
 
@@ -305,9 +306,13 @@ Prefix "SIM" is applicable for simulation-based DV approach only, while "FPV" is
 
 It is possible for the design to have undergone some changes since the dv document and dv_plan was reviewed prior to V1 stage. Please ensure that those deltas have been captured adequately in the dv document and the dv_plan documents.
 
-### DV_PLAN_COMPLETED
+### DV_DOC_COMPLETED
 
 Dv document is fully completed in terms of content.
+
+### FUNCTIONAL_COVERAGE_PLAN_IMPLEMENTED
+
+All coverage points have been written and implemented
 
 ### ALL_INTERFACES_EXERCISED
 
