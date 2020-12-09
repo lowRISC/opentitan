@@ -139,7 +139,6 @@ module otp_ctrl_lci
       // If the write data contains a 0 bit in a position where a bit has already been
       // programmed to 1 before, the OTP errors out.
       WriteSt: begin
-        // Check whether the OTP word is nonzero.
         otp_req_o = 1'b1;
         otp_cmd_o = OtpWrite;
         if (otp_gnt_i) begin
@@ -218,7 +217,7 @@ module otp_ctrl_lci
 
   logic [NumLcOtpWords-1:0][OtpWidth-1:0] data;
   assign data        = {lc_count_i, lc_state_i};
-  assign otp_wdata_o = OtpIfWidth'(data[cnt_q]);
+  assign otp_wdata_o = (otp_req_o) ? OtpIfWidth'(data[cnt_q]) : '0;
 
   logic unused_rdata;
   assign unused_rdata = ^otp_rdata_i;

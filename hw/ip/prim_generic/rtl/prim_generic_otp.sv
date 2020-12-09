@@ -295,7 +295,7 @@ module prim_generic_otp #(
   );
 
   // Currently it is assumed that no wrap arounds can occur.
-  `ASSERT(NoWrapArounds_A, addr >= addr_q)
+  `ASSERT(NoWrapArounds_A, req |-> (addr >= addr_q))
 
   //////////
   // Regs //
