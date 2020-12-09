@@ -11,7 +11,7 @@
 // Note: This module implements the original masked inversion algorithm without re-using masks.
 // For details, see Section 2.2 of the paper. In addition, a formal analysis using REBECCA (static
 // mode) shows that the intermediate masks cannot be created by re-using bits from the input and
-// output masks. Instead, fresh random bits need to be used for this intermediate masks.
+// output masks. Instead, fresh random bits need to be used for these intermediate masks.
 //
 // For details on the REBECCA tool, see the following paper:
 // Bloem, "Formal verification of masked hardware implementations in the presence of glitches"
@@ -145,8 +145,9 @@ module aes_masked_inverse_gf2p8_noreuse (
   ////////////////////
   // The paper states the following.
   // r:
-  // - must be indpendent of q, and
-  // - it is suggested to re-use bits of m.
+  // - must be independent of q,
+  // - it is suggested to re-use bits of m,
+  // - but further analysis shows that this is not sufficient (see below).
   //
   // q:
   // - must be independent of m.
@@ -155,12 +156,14 @@ module aes_masked_inverse_gf2p8_noreuse (
   // - must be independent of r,
   // - must be independent of m (for the final steps involving s),
   // - t1 must be independent of q0, t0 must be independent of q1,
-  // - it is suggested to use t = q.
+  // - it is suggested to use t = q,
+  // - but further analysis shows that this is not sufficient (see below).
   //
   // s:
   // - must be independent of t,
   // - s1 must be independent of m0, s0 must be independent of m1,
-  // - it is suggested to use s = m.
+  // - it is suggested to use s = m,
+  // - but further analysis shows that this is not sufficient (see below).
   //
   // Formally analyzing the implementation with REBECCA reveals that:
   // 1. Fresh random bits are required for r, q and t. Any re-use of other mask bits from m or n
@@ -236,7 +239,7 @@ module aes_masked_inverse_gf2p8_noreuse (
   assign a0_inv_2 = a0_inv_1 ^ mul_m1_b_inv;
   assign a0_inv   = a0_inv_2 ^ mul_m1_t;
 
-  // Note: a_inv is now masked by s = n, a was masked by m.
+  // Note: a_inv is masked by s (= n), a was masked by m.
   assign a_inv = {a1_inv, a0_inv};
 
 endmodule
