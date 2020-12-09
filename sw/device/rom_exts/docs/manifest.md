@@ -422,7 +422,7 @@ Notation:
     [`RSASSA-PKCS1-V1_5-VERIFY`][RSASSA-PKCS1-V1_5-VERIFY] for signatures and
     verification.
 *   RSA Signing and Verification is done with 3072-bit keys.
-*   The `Hash` operation may be done with SHA2-265, SHA3-256, SHA3-384, or
+*   The `Hash` operation may be done with SHA2-256, SHA3-256, SHA3-384, or
     SHA3-512, depending on the Signature Algorithm Identifier provided in the
     manifest. The `Hash` operation is required to provide a security level
     equivalent to that provided by the signature.
