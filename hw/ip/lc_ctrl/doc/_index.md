@@ -7,7 +7,7 @@ title: "Life Cycle Controller Technical Specification"
 
 This document specifies the functionality of the life cycle controller.
 The life cycle controller is a module that is a peripheral on the chip interconnect bus, and thus follows the [Comportability Specification]({{< relref "doc/rm/comportability_specification" >}}).
-For the high-level description of the life cycle architecture of OpenTitan, please refer to the [Device Life Cycle Spec]({{< relref "doc/security/specs/device_life_cycle" >}}).
+For the high-level description of the life cycle architecture of OpenTitan, please refer to the [Device Life Cycle Architecture]({{< relref "doc/security/specs/device_life_cycle" >}}).
 The life cycle implementation refers to the design that encompasses all life cycle functions.
 This touches on the functionality of the following modules, listed in no particular order:
 - The life cycle controller itself - A new peripheral
@@ -504,7 +504,7 @@ The general flash partition refers to any software managed storage in flash, and
 
 #### Flash Accessibility Summary and Impact of PROVISION_RD_EN and PROVISION_WR_EN
 
-At the moment (**TODO: link to Creator / Owner isolation**), the creator software is trusted to manage the owner partition (OWNER_DATA).
+At the moment, the creator software is trusted to manage the owner partition (OWNER_DATA).
 As such, there is no additional hardware used to control the accessibility.
 Instead, it is expected that ROM_ext during secure boot programs the protection correctly such that downstream software has appropriate permissions.
 
@@ -514,6 +514,8 @@ Just as with OTP, the table below enumerates accessibility of flash collateral.
 {{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_flash_accessibility.md" >}}
 
 Note that PROVISION_WR_EN is set to OFF if SECRET2_DIGEST has a nonzero value, while PROVISION_RD_EN remains active during DEV / PROD / PROD_END / RMA.
+
+See also [Device Life Cycle Architecture]({{< relref "doc/security/specs/device_life_cycle" >}}) for more information on creator/owner isolation.
 
 ### TAP Construction and Isolation
 
