@@ -18,6 +18,7 @@ package keymgr_pkg;
   // These should be defined in another module's package
   parameter int HealthStateWidth = 128;
   parameter int DevIdWidth = 256;
+  parameter int MaxWidth = 256;
 
   // Default seeds
   // These are generated using random.org byte dumper

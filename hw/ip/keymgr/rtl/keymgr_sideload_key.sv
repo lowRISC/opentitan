@@ -10,6 +10,7 @@ module keymgr_sideload_key import keymgr_pkg::*;(
   input clk_i,
   input rst_ni,
   input en_i,
+  input set_en_i,
   input set_i,
   input clr_i,
   input [31:0] entropy_i,
@@ -42,7 +43,9 @@ module keymgr_sideload_key import keymgr_pkg::*;(
         key_q[i] <= {EntropyCopies{entropy_i}};
       end
     end else if (set_i) begin
-      key_q <= key_i;
+      for (int i = 0; i < Shares; i++) begin
+        key_q[i] <= set_en_i ? key_i[i] : {EntropyCopies{entropy_i}};
+      end
     end
   end
 
