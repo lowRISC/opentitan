@@ -16,11 +16,9 @@ module lc_ctrl
   // Idcode value for the JTAG.
   parameter logic [31:0]          IdcodeValue  = 32'h00000001,
   // Random netlist constants
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInv  = LcKeymgrDivWidth'(0),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTest = LcKeymgrDivWidth'(1),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProd = LcKeymgrDivWidth'(2),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivDev  = LcKeymgrDivWidth'(3),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivRma  = LcKeymgrDivWidth'(4)
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2)
 ) (
   input                                              clk_i,
   input                                              rst_ni,
@@ -464,11 +462,9 @@ module lc_ctrl
   assign lc_flash_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
 
   lc_ctrl_fsm #(
-    .RndCnstLcKeymgrDivInv  ( RndCnstLcKeymgrDivInv  ),
-    .RndCnstLcKeymgrDivTest ( RndCnstLcKeymgrDivTest ),
-    .RndCnstLcKeymgrDivProd ( RndCnstLcKeymgrDivProd ),
-    .RndCnstLcKeymgrDivDev  ( RndCnstLcKeymgrDivDev  ),
-    .RndCnstLcKeymgrDivRma  ( RndCnstLcKeymgrDivRma  )
+    .RndCnstLcKeymgrDivInvalid    ( RndCnstLcKeymgrDivInvalid    ),
+    .RndCnstLcKeymgrDivTestDevRma ( RndCnstLcKeymgrDivTestDevRma ),
+    .RndCnstLcKeymgrDivProduction ( RndCnstLcKeymgrDivProduction )
   ) u_lc_ctrl_fsm (
     .clk_i,
     .rst_ni,

@@ -28,31 +28,19 @@
 
   param_list: [
     // Random netlist constants
-    { name:      "RndCnstLcKeymgrDivInv",
+    { name:      "RndCnstLcKeymgrDivInvalid",
       desc:      "Compile-time random bits for lc state group diversification value",
       type:      "lc_ctrl_pkg::lc_keymgr_div_t",
       randcount: "64",
       randtype:  "data",
     }
-    { name:      "RndCnstLcKeymgrDivTest",
+    { name:      "RndCnstLcKeymgrDivTestDevRma",
       desc:      "Compile-time random bits for lc state group diversification value",
       type:      "lc_ctrl_pkg::lc_keymgr_div_t",
       randcount: "64",
       randtype:  "data",
     }
-    { name:      "RndCnstLcKeymgrDivProd",
-      desc:      "Compile-time random bits for lc state group diversification value",
-      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
-      randcount: "64",
-      randtype:  "data",
-    }
-    { name:      "RndCnstLcKeymgrDivDev",
-      desc:      "Compile-time random bits for lc state group diversification value",
-      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
-      randcount: "64",
-      randtype:  "data",
-    }
-    { name:      "RndCnstLcKeymgrDivRma",
+    { name:      "RndCnstLcKeymgrDivProduction",
       desc:      "Compile-time random bits for lc state group diversification value",
       type:      "lc_ctrl_pkg::lc_keymgr_div_t",
       randcount: "64",

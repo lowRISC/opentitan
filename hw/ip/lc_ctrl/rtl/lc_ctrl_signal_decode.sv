@@ -9,16 +9,12 @@ module lc_ctrl_signal_decode
 #(
   // Random netlist constants
   // SCRAP, RAW, TEST_LOCKED*, INVALID
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInv  = LcKeymgrDivWidth'(0),
-  // TEST_UNLOCKED*
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTest = LcKeymgrDivWidth'(1),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
+  // TEST_UNLOCKED*, DEV, RMA
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
   // PROD, PROD_END
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProd = LcKeymgrDivWidth'(2),
-  // DEV
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivDev  = LcKeymgrDivWidth'(3),
-  // RMA
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivRma  = LcKeymgrDivWidth'(4)
-) (
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2)
+  ) (
   input                  clk_i,
   input                  rst_ni,
   // Life cycle state vector.
@@ -69,7 +65,7 @@ module lc_ctrl_signal_decode
     lc_keymgr_en_d       = Off;
     lc_escalate_en_d     = Off;
     // Set to invalid diversification value by default.
-    lc_keymgr_div_d      = RndCnstLcKeymgrDivInv;
+    lc_keymgr_div_d      = RndCnstLcKeymgrDivInvalid;
     // The escalation life cycle signal is always decoded, no matter
     // which state we currently are in.
     if (esc_wipe_secrets_i) begin
@@ -98,7 +94,7 @@ module lc_ctrl_signal_decode
           lc_nvm_debug_en_d = On;
           lc_hw_debug_en_d  = On;
           lc_cpu_en_d       = On;
-          lc_keymgr_div_d   = RndCnstLcKeymgrDivTest;
+          lc_keymgr_div_d      = RndCnstLcKeymgrDivTestDevRma;
           lc_iso_flash_wr_en_d = On;
         end
         ///////////////////////////////////////////////////////////////////
@@ -107,7 +103,7 @@ module lc_ctrl_signal_decode
           lc_cpu_en_d          = On;
           lc_keymgr_en_d       = On;
           lc_provision_rd_en_d = On;
-          lc_keymgr_div_d      = RndCnstLcKeymgrDivProd;
+          lc_keymgr_div_d      = RndCnstLcKeymgrDivProduction;
           // Only allow provisioning if the defice has not yet been personalized.
           if (lc_id_state_i == LcIdBlank) begin
             lc_provision_wr_en_d = On;
@@ -120,7 +116,7 @@ module lc_ctrl_signal_decode
           lc_cpu_en_d          = On;
           lc_keymgr_en_d       = On;
           lc_provision_rd_en_d = On;
-          lc_keymgr_div_d      = RndCnstLcKeymgrDivDev;
+          lc_keymgr_div_d      = RndCnstLcKeymgrDivTestDevRma;
           // Only allow provisioning if the defice has not yet been personalized.
           if (lc_id_state_i == LcIdBlank) begin
             lc_provision_wr_en_d = On;
@@ -135,7 +131,7 @@ module lc_ctrl_signal_decode
           lc_cpu_en_d          = On;
           lc_keymgr_en_d       = On;
           lc_provision_rd_en_d = On;
-          lc_keymgr_div_d      = RndCnstLcKeymgrDivRma;
+          lc_keymgr_div_d      = RndCnstLcKeymgrDivTestDevRma;
           // Only allow provisioning if the defice has not yet been personalized.
           if (lc_id_state_i == LcIdBlank) begin
             lc_provision_wr_en_d = On;
@@ -175,7 +171,7 @@ module lc_ctrl_signal_decode
       lc_iso_flash_wr_en_q <= Off;
       lc_keymgr_en_q       <= Off;
       lc_escalate_en_q     <= Off;
-      lc_keymgr_div_q      <= RndCnstLcKeymgrDivInv;
+      lc_keymgr_div_q      <= RndCnstLcKeymgrDivInvalid;
     end else begin
       lc_dft_en_q          <= lc_dft_en_d;
       lc_nvm_debug_en_q    <= lc_nvm_debug_en_d;
@@ -196,16 +192,10 @@ module lc_ctrl_signal_decode
 
   // Need to make sure that the random netlist constants
   // are unique.
-  `ASSERT_INIT(LcKeymgrDivUnique0_A, !(RndCnstLcKeymgrDivInv  inside {RndCnstLcKeymgrDivTest,
-                                                                      RndCnstLcKeymgrDivProd,
-                                                                      RndCnstLcKeymgrDivDev,
-                                                                      RndCnstLcKeymgrDivRma}))
-  `ASSERT_INIT(LcKeymgrDivUnique1_A, !(RndCnstLcKeymgrDivTest inside {RndCnstLcKeymgrDivProd,
-                                                                      RndCnstLcKeymgrDivDev,
-                                                                      RndCnstLcKeymgrDivRma}))
-  `ASSERT_INIT(LcKeymgrDivUnique2_A, !(RndCnstLcKeymgrDivProd inside {RndCnstLcKeymgrDivDev,
-                                                                      RndCnstLcKeymgrDivRma}))
-  `ASSERT_INIT(LcKeymgrDivUnique3_A, !(RndCnstLcKeymgrDivDev  inside {RndCnstLcKeymgrDivRma}))
+  `ASSERT_INIT(LcKeymgrDivUnique0_A,
+      !(RndCnstLcKeymgrDivInvalid inside {RndCnstLcKeymgrDivTestDevRma,
+                                          RndCnstLcKeymgrDivProduction}))
+  `ASSERT_INIT(LcKeymgrDivUnique1_A, RndCnstLcKeymgrDivProduction != RndCnstLcKeymgrDivTestDevRma)
 
   `ASSERT(SignalsAreOffWhenNotEnabled_A,
       !lc_state_valid_i
@@ -218,7 +208,7 @@ module lc_ctrl_signal_decode
       lc_provision_rd_en_o == Off &&
       lc_keymgr_en_o == Off &&
       lc_dft_en_o == Off &&
-      lc_keymgr_div_o == RndCnstLcKeymgrDivInv)
+      lc_keymgr_div_o == RndCnstLcKeymgrDivInvalid)
 
   `ASSERT(EscalationAlwaysDecoded_A,
       (lc_escalate_en_o == On) == $past(esc_wipe_secrets_i))

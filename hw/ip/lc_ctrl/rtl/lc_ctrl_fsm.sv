@@ -7,11 +7,9 @@
 module lc_ctrl_fsm
   import lc_ctrl_pkg::*;
 #(// Random netlist constants
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInv  = LcKeymgrDivWidth'(0),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTest = LcKeymgrDivWidth'(1),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProd = LcKeymgrDivWidth'(2),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivDev  = LcKeymgrDivWidth'(3),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivRma  = LcKeymgrDivWidth'(4)
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2)
 ) (
   // This module is combinational, but we
   // need the clock and reset for the assertions.
@@ -423,11 +421,9 @@ module lc_ctrl_fsm
 
   // LC signal decoder and broadcasting logic.
   lc_ctrl_signal_decode #(
-    .RndCnstLcKeymgrDivInv  ( RndCnstLcKeymgrDivInv  ),
-    .RndCnstLcKeymgrDivTest ( RndCnstLcKeymgrDivTest ),
-    .RndCnstLcKeymgrDivProd ( RndCnstLcKeymgrDivProd ),
-    .RndCnstLcKeymgrDivDev  ( RndCnstLcKeymgrDivDev  ),
-    .RndCnstLcKeymgrDivRma  ( RndCnstLcKeymgrDivRma  )
+    .RndCnstLcKeymgrDivInvalid    ( RndCnstLcKeymgrDivInvalid    ),
+    .RndCnstLcKeymgrDivTestDevRma ( RndCnstLcKeymgrDivTestDevRma ),
+    .RndCnstLcKeymgrDivProduction ( RndCnstLcKeymgrDivProduction )
   ) u_lc_ctrl_signal_decode (
     .clk_i,
     .rst_ni,
