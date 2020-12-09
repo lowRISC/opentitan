@@ -819,7 +819,7 @@ module top_earlgrey #(
       .sram_otp_key_o(),
       .otbn_otp_key_i('0),
       .otbn_otp_key_o(),
-      .hw_cfg_o(),
+      .otp_hw_cfg_o(),
       .tl_i(otp_ctrl_tl_req),
       .tl_o(otp_ctrl_tl_rsp),
       .clk_i (clkmgr_clocks.clk_io_div4_timers),
