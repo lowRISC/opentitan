@@ -1,12 +1,12 @@
 ---
-title: "SPI Device dv document"
+title: "SPI Device DV document"
 ---
 
 
 ## Goals
 * **DV**
   * Verify all SPI Device IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [dv_plan](#dv_plan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -102,5 +102,5 @@ Here's how to run a smoke test:
 $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/spi_device/dv/spi_device_sim_cfg.hjson -i spi_device_smoke
 ```
 
-## Testplan
+## DV plan
 {{< testplan "hw/ip/spi_device/data/spi_device_testplan.hjson" >}}

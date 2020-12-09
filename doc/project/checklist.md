@@ -188,12 +188,12 @@ Prefix "SIM" is applicable for simulation-based DV approach only, while "FPV" is
 
 ### DV_DOC_DRAFT_COMPLETED
 
-- Dv document drafted, indicating the overall DV strategy, intent and the testbench environment details with diagrams, details on TB, UVCs, checkers, scoreboard, interfaces, assertions, coverage objects (if applicable).
+- DV document drafted, indicating the overall DV strategy, intent and the testbench environment details with diagrams, details on TB, UVCs, checkers, scoreboard, interfaces, assertions, coverage objects (if applicable).
 - Details may be missing since most items are not expected to be fully developed at this stage.
 
 ### DV_PLAN_COMPLETED
 
-A fully completed dv_plan written in Hjson, indicating the list of planned tests with descriptions indicating the goal of the test and optionally details on stimulus and the checking procedure.
+A fully completed DV plan written in Hjson, indicating the list of planned tests with descriptions indicating the goal of the test and optionally details on stimulus and the checking procedure.
 A fully completed functional coverage plan written in Hjson, indicating the list of functional coverage points and coverage crosses with a description of what feature is covered by this coverpoint.
 
 ### TB_TOP_CREATED
@@ -225,7 +225,7 @@ Full testbench automation completed if applicable. This may be required for veri
 ### SIM_SANITY_TEST_PASSING
 
 - Sanity test exercising a basic functionality of a major DUT datapath passing.
-- What functionality to test and to what level may be governed by higher level (example: chip) integration requirements. These are to be captured when the dv_plan is reviewed with the key stakeholders.
+- What functionality to test and to what level may be governed by higher level (example: chip) integration requirements. These are to be captured when the DV plan is reviewed with the key stakeholders.
 
 ### SIM_CSR_MEM_TEST_SUITE_PASSING
 
@@ -282,11 +282,11 @@ RTL (uArch) specification reviewed and signed off.
 
 ### DV_PLAN_REVIEWED
 
-Dv document & dv_plan reviewed with key stakeholders - designer, design lead, DV lead, architects, higher level (chip) design and DV leads.
+DV document & DV plan reviewed with key stakeholders - designer, design lead, DV lead, architects, higher level (chip) design and DV leads.
 
 ### STD_TEST_CATEGORIES_PLANNED
 
-Following categories of post-V1 tests focused at in the dv_plan review (as applicable):
+Following categories of post-V1 tests focused at in the DV plan review (as applicable):
 - Security/error
 - Power
 - Performance
@@ -304,11 +304,11 @@ Prefix "SIM" is applicable for simulation-based DV approach only, while "FPV" is
 
 ### DESIGN_DELTAS_CAPTURED_V2
 
-It is possible for the design to have undergone some changes since the dv document and dv_plan was reviewed prior to V1 stage. Please ensure that those deltas have been captured adequately in the dv document and the dv_plan documents.
+It is possible for the design to have undergone some changes since the DV document and DV plan was reviewed prior to V1 stage. Please ensure that those deltas have been captured adequately in the DV document and the DV plan documents.
 
 ### DV_DOC_COMPLETED
 
-Dv document is fully completed in terms of content.
+DV document is fully completed in terms of content.
 
 ### FUNCTIONAL_COVERAGE_PLAN_IMPLEMENTED
 
@@ -329,7 +329,7 @@ UVM environment fully developed with end-2-end checks in scoreboard enabled.
 
 ### SIM_ALL_TESTS_PASSING
 
-All tests in the dv_plan written and passing with at least one random seed.
+All tests in the DV plan written and passing with at least one random seed.
 
 ### FPV_ALL_ASSERTIONS_WRITTEN
 
@@ -392,7 +392,7 @@ Prefix "SIM" is applicable for simulation-based DV approach only, while "FPV" is
 
 ### DESIGN_DELTAS_CAPTURED_V3
 
-It is possible for the design to undergo changes even at this stage (when it is expected to be mature). Please ensure that those new deltas have been captured adequately in the dv document and the dv_plan documents.
+It is possible for the design to undergo changes even at this stage (when it is expected to be mature). Please ensure that those new deltas have been captured adequately in the DV document and the DV plan documents.
 
 ### ALL_TODOS_RESOLVED
 

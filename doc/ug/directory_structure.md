@@ -41,7 +41,7 @@ hw
    │  │              status tracking
    │  │
    │  ├──doc      => All documentation sources including design specification
-   │  │              and dv document
+   │  │              and DV document
    │  │
    │  ├──dv       => SV/UVM testbench sources
    │  │
@@ -67,7 +67,7 @@ hw
    │                       project status tracking
    │
    ├──doc               => All documentation sources including chip
-   │                       specification and dv document
+   │                       specification and DV document
    │
    ├──dv                => Chip level SV/UVM testbench sources
    │  └──autogen        => auto-generated chip DV sources

@@ -1,11 +1,11 @@
 ---
-title: "OTBN dv document"
+title: "OTBN DV document"
 ---
 
 ## Goals
 * **DV**
   * Verify the OTBN processor by running dynamic simulations with a SV/UVM based testbench
-  * These simulations are grouped in tests listed in the [dv_plan](#dv_plan) below.
+  * These simulations are grouped in tests listed in the [DV plan](#dv-plan) below.
   * Close code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
@@ -137,6 +137,6 @@ To run a basic smoke test, go to the top of the repository and run:
 $ util/dvsim/dvsim.py hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson -i otbn_single
 ```
 
-## Testplan
-<!-- TODO: uncomment the line below after adding the dv_plan -->
+## DV plan
+<!-- TODO: uncomment the line below after adding the DV plan -->
 {{</* testplan "hw/ip/otbn/data/otbn_testplan.hjson" */>}}

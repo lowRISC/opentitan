@@ -1,11 +1,11 @@
 ---
-title: "FLASH_CTRL dv document"
+title: "FLASH_CTRL DV document"
 ---
 
 ## Goals
 * **DV**
   * Verify all `flash_ctrl` IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [dv_plan](#dv_plan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -127,5 +127,5 @@ $ cd $REPO_TOP
 $ ./util/dvsim/dvsim.py hw/ip/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson -i flash_ctrl_smoke
 ```
 
-## Testplan
+## DV plan
 {{< testplan "hw/ip/flash_ctrl/data/flash_ctrl_testplan.hjson" >}}

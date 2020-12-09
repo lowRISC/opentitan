@@ -1,5 +1,5 @@
 ---
-title: "PINMUX dv document"
+title: "PINMUX DV document"
 ---
 
 ## Goals
@@ -38,5 +38,5 @@ Due to there are large number of peripheral and muxed inputs, the symbolic varia
 In the pinmux_assert_fpv module, we declared two symbolic variables `mio_sel_i` and `periph_sel_i` to represent the index for muxed and peripheral IO.
 Detailed explanation is listed in the [Symbolic Variables]({{< relref "hw/formal/README.md#symbolic-variables" >}}) section.
 
-## Testplan
+## DV plan
 {{< testplan "hw/ip/pinmux/data/pinmux_fpv_testplan.hjson" >}}

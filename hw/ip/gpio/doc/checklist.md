@@ -114,8 +114,8 @@ Review        | Signoff date            | Done        | 2019-11-04
 
  Type         | Item                                  | Resolution      | Note/Collaterals
 --------------|---------------------------------------|-----------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]           | Done            | [gpio_dv_doc][]
-Documentation | [DV_PLAN_COMPLETED][]                | Done            |
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done            | [gpio_dv_doc][]
+Documentation | [DV_PLAN_COMPLETED][]                 | Done            |
 Testbench     | [TB_TOP_CREATED][]                    | Done            |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done            |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done            |
@@ -133,14 +133,14 @@ Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done            |
 Code Quality  | [TB_LINT_SETUP][]                     | Done            |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A             |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done            |
-Review        | [DV_PLAN_REVIEWED][]         | Done            |
+Review        | [DV_PLAN_REVIEWED][]                  | Done            |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done            | Exception (Security, Power, Debug)
 Review        | [V2_CHECKLIST_SCOPED][]               | Done            |
 
 [gpio_dv_doc]: {{<relref "/hw/ip/gpio/doc/dv/index.md">}}
 
-[DV_DOC_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
-[DV_PLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
+[DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
+[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
 [TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb_top_created" >}}
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary_assertion_checks_added" >}}
 [SIM_TB_ENV_CREATED]:                 {{<relref "/doc/project/checklist.md#sim_tb_env_created" >}}
@@ -158,7 +158,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done            |
 [TB_LINT_SETUP]:                      {{<relref "/doc/project/checklist.md#tb_lint_setup" >}}
 [PRE_VERIFIED_SUB_MODULES_V1]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v1" >}}
 [DESIGN_SPEC_REVIEWED]:               {{<relref "/doc/project/checklist.md#design_spec_reviewed" >}}
-[DV_PLAN_REVIEWED]:          {{<relref "/doc/project/checklist.md#dv_plan_reviewed" >}}
+[DV_PLAN_REVIEWED]:                   {{<relref "/doc/project/checklist.md#dv_plan_reviewed" >}}
 [STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std_test_categories_planned" >}}
 [V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2_checklist_scoped" >}}
 

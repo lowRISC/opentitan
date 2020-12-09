@@ -1,8 +1,8 @@
 ---
-title: "FOO dv document"
+title: "FOO DV document"
 ---
 
-<!-- Copy this file to hw/ip/foo/doc/foo_dv_doc.md and make changes as needed.
+<!-- Copy this file to hw/ip/foo/doc/index.md and make changes as needed.
 For convenience 'foo' in the document can be searched and replaced easily with the
 desired IP (with case sensitivity!). Also, use the testbench block diagram
 located at OpenTitan team drive / 'design verification'
@@ -14,7 +14,7 @@ applicable. Once done, remove this comment before making a PR. -->
 ## Goals
 * **DV**
   * Verify all FOO IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [dv_plan](#dv_plan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -115,6 +115,6 @@ $ cd hw/ip/foo/dv
 $ make TEST_NAME=foo_smoke
 ```
 
-## testplan
-<!-- TODO: uncomment the line below after adding the dv_plan -->
+## DV plan
+<!-- TODO: uncomment the line below after adding the DV plan -->
 {{</* testplan "hw/ip/foo/data/foo_testplan.hjson" */>}}

@@ -1,11 +1,11 @@
 ---
-title: "USBDEV dv document"
+title: "USBDEV DV document"
 ---
 
 ## Goals
 * **DV**
   * Verify all USBDEV IP features by running dynamic simulations with a SV/UVM based testbench.
-  * Develop and run all tests based on the [dv_plan](#dv_plan) below towards closing code and functional coverage on the IP and all of its sub-modules.
+  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules.
     * Note that code and functional coverage goals are TBD due to pending evaluation of where / how to source a USB20 UVM VIP.
     * The decision is trending towards hooking up a cocotb (Python) based open source USB20 compliance test suite with this UVM environment.
 * **FPV**
@@ -97,5 +97,5 @@ Here's how to run a smoke test:
 $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/usbdev/dv/usbdev_sim_cfg.hjson -i usbdev_smoke
 ```
 
-## Testplan
+## DV plan
 {{< testplan "hw/ip/usbdev/data/usbdev_testplan.hjson" >}}
