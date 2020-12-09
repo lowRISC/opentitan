@@ -407,3 +407,20 @@ sw_tests += {
     'library': dif_clkmgr_smoketest_lib,
   }
 }
+
+dif_pwrmgr_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_pwrmgr_smoketest_lib',
+    sources: ['dif_pwrmgr_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_pwrmgr,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'dif_pwrmgr_smoketest': {
+    'library': dif_pwrmgr_smoketest_lib,
+  }
+}
