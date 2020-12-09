@@ -30,3 +30,8 @@ targets:
       - tool_ascentlint  ? (files_ascentlint)
       - tool_veriblelint ? (files_veriblelint)
       - files_check_tool_requirements
+    tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+          - "-stop_on_error"
