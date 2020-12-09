@@ -114,7 +114,7 @@ Review        | Signoff date            | Not Started |
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_DOC_DRAFT_COMPLETED][]           | Not Started | [EDN dv document]({{<relref "hw/ip/edn/doc/dv_doc" >}})
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started | [EDN Testplan]({{<relref "hw/ip/edn/doc/dv_doc/index.md#testplan" >}})
+Documentation | [DV_PLAN_COMPLETED][]                | Not Started | [EDN dv_plan]({{<relref "hw/ip/edn/doc/dv_doc/index.md#dv_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Not Started |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
@@ -136,7 +136,7 @@ Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception 
 Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 
 [DV_DOC_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
-[TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan_completed" >}}
+[DV_PLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
 [TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb_top_created" >}}
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary_assertion_checks_added" >}}
 [SIM_TB_ENV_CREATED]:                 {{<relref "/doc/project/checklist.md#sim_tb_env_created" >}}

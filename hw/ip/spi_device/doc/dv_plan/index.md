@@ -6,7 +6,7 @@ title: "SPI Device dv document"
 ## Goals
 * **DV**
   * Verify all SPI Device IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [dv_plan](#dv_plan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 

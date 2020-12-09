@@ -116,7 +116,7 @@ Review        | [REVIEW_SW_ERRATA][]    | Not Started |
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_DOC_DRAFT_COMPLETED][]           | Waived      | Plan created, but does not conform to other templates
-Documentation | [TESTPLAN_COMPLETED][]                | Done        |
+Documentation | [DV_PLAN_COMPLETED][]                | Done        |
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| N/A         |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
@@ -138,7 +138,7 @@ Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | different 
 Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
 [DV_DOC_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
-[TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan_completed" >}}
+[DV_PLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
 [TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb_top_created" >}}
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary_assertion_checks_added" >}}
 [SIM_TB_ENV_CREATED]:                 {{<relref "/doc/project/checklist.md#sim_tb_env_created" >}}
