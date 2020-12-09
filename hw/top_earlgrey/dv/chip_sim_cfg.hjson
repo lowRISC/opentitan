@@ -198,10 +198,11 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_flash_ctrl_access
+      name: chip_dif_pwrmgr_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/flash_ctrl_test:1"]
+      sw_images: ["sw/device/tests/dif_pwrmgr_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
+      run_opts: ["+sw_test_timeout_ns=2000000"]
     }
     {
       name: chip_dif_otbn_smoketest
@@ -210,10 +211,23 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
+      name: chip_flash_ctrl_access
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/flash_ctrl_test:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
       name: chip_hmac_sha256_encr
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/sha256_test:1"]
       en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_pwrmgr_usbdev_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/pwrmgr_usbdev_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+      run_opts: ["+sw_test_timeout_ns=2000000"]
     }
     {
       name: chip_rv_timer_irq

@@ -69,3 +69,21 @@ sw_tests += {
     'library': spi_tx_rx_test_lib,
   }
 }
+
+pwrmgr_usbdev_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'pwrmgr_usbdev_smoketest_lib',
+    sources: ['pwrmgr_usbdev_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_pwrmgr,
+      sw_lib_usb,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'pwrmgr_usbdev_smoketest': {
+    'library': pwrmgr_usbdev_smoketest_lib,
+  }
+}

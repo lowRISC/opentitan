@@ -636,7 +636,8 @@ TEST_F(WakeupRecording, GetReason) {
                   .types = kDifPwrmgrWakeupTypeAbort |
                            kDifPwrmgrWakeupTypeFallThrough |
                            kDifPwrmgrWakeupTypeRequest,
-                  .request_sources = kDifPwrmgrWakeupRequestSourceOne,
+                  .request_sources = kDifPwrmgrWakeupRequestSourceOne |
+                                     kDifPwrmgrWakeupRequestSourceTwo,
               },
       },
       // Only abort.
