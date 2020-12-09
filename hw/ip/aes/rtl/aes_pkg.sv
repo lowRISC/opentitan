@@ -266,7 +266,8 @@ function automatic logic [3:0][7:0] aes_sb_out_mask_get(logic [4*(8+WidthPRDSBox
   return sb_out_mask;
 endfunction
 
-// Extract one row of PRD for SubBytes from PRNG output. The PRD part ins the MSBs of each segment.
+// Extract one row of PRD for SubBytes from PRNG output. The PRD part is in the MSBs of each
+// segment.
 function automatic logic [3:0][WidthPRDSBox-1:0] aes_sb_prd_get(logic [4*(8+WidthPRDSBox)-1:0] in);
   logic [3:0][WidthPRDSBox-1:0] sb_prd;
   for (int i=0; i<4; i++) begin
