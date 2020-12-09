@@ -15,7 +15,7 @@ The following are the key techniques used to perform design verification within 
 *  Formal Property Verification (FPV)
 
 For running dynamic simulations, the strategy is to use the [UVM1.2 methodology](https://www.accellera.org/downloads/standards/uvm) on top of a foundation of SystemVerilog based verification to develop constrained-random functional tests.
-Each DUT will include within the repository, a UVM testbench, a dv_plan, dv document, a suite of tests, and a method to build, run tests and report the current status.
+Each DUT will include within the repository, a UVM testbench, a [DV plan]({{< relref "doc/ug/dv_methodology/index.md" >}}), overall [DV documentation]({{< relref "doc/ug/dv_methodology/index.md" >}}), a suite of tests, and a method to build, run tests and report the current status.
 For FPV, some DUTs may also include an SV testbench along with design properties captured in the SystemVerilog Assertions (SVA) language.
 As the project is still in development, the current status will not be completed for all IP, but that is the ultimate goal.
 See discussion below on tracking progress.
@@ -43,7 +43,7 @@ We will explain some of the key items in those checklists in the remainder of th
 ## Documentation
 
 DV effort needs to be well documented to not only provide a detailed description of what tests are being planned, but also how the overall effort is strategized and implemented.
-The first is provided by the **dv_plan** document and the second, by the **dv document** document.
+The first is provided by the **dv_plan** document and the second, by the **dv document**.
 The [**project status**]({{< relref "doc/project/development_stages.md#indicating-stages-and-making-transitions" >}}) document tracks to progression of the effort through the stages.
 
 In addition to these documents, a nightly **regression dashboard** tabulating the test and coverage results will provide ability to track progress towards completion of the verification stages.
@@ -52,22 +52,23 @@ To effectively document all these pieces, there are some key tooling components 
 
 ### Testplan
 
-A dv_plan document captures at a high level, a list of tests that are being planned to verify all design features listed in the design specification.
-It is written in Hjson format and is made available in the corresponding `data` directory of each DUT.
+A dv plan consist of two parts a testplan that captures at a high level, a list of tests that are being planned to verify all design features listed in the design specification.
+A functional coverage plan that captures at high level a list of functional coverage points and coverage crosses needed to verify that the features listed in the design specification is tested by the list of tests.
+the dv plan is written in Hjson format and is made available in the corresponding `data` directory of each DUT
 
 The Hjson schema enables this information to be human-writable and machine-parsable, which facilitates an automated and documentation-driven DV effort.
 The complete dv_plan is parsed into a data structure that serves the following purposes:
 
-*  Provide the ability to insert the dv_plan as a table into the dv document itself, so that all of the required information is in one place
-*  Annotate the nightly regression results to allow us to track our progress towards executing the dv_plan
+*  Provide the ability to insert the testplan and coverage plan as tables into the dv document itself, so that all of the required information is in one place
+*  Annotate the nightly regression results to allow us to track our progress towards executing the testplan and coverage collection
   *  this feature is not yet available and is [under active development](#pending-work-items)
 
-The [dv_planner]({{< relref "util/dvsim/testplanner/README.md" >}}) tool provides some additional information on the Hjson dv_plan anatomy and some of the features and constructs supported.
-The [build_docs]({{< relref "README.md#documentation" >}}) tool works in conjunction with the `dv_planner` tool to enable its insertion into the dv document as a table.
+The [testplanner]({{< relref "util/dvsim/testplanner/README.md" >}}) tool provides some additional information on the Hjson dv_plan anatomy and some of the features and constructs supported.
+The [build_docs]({{< relref "README.md#documentation" >}}) tool works in conjunction with the `testplanner` tool to enable its insertion into the dv document as a table.
 
 ### dv document
 
-The dv document captures the overall strategy, intent, the testbench block diagram, a list of interfaces / agents, VIPs, reference models, the functional coverage model, assertions and checkers. It also covers FPV goals, if applicable.
+The dv document contains the dv plan and additionally it captures the overall strategy, intent, the testbench block diagram, a list of interfaces / agents, VIPs, reference models, the functional coverage model, assertions and checkers. It also covers FPV goals, if applicable.
 This is written in [Markdown]({{< relref "doc/rm/markdown_usage_style" >}}) and is made available in the corresponding `doc` directory of each DUT.
 
 A [template]({{< relref "hw/dv/doc/dv_doc_template" >}}) for the dv documentation as well as the testbench block diagram in the OpenTitan team drive  (under the 'design verification' directory) are available to help get started.
