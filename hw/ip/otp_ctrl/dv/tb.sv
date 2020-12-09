@@ -8,7 +8,6 @@ module tb;
   import dv_utils_pkg::*;
   import otp_ctrl_env_pkg::*;
   import otp_ctrl_test_pkg::*;
-  import push_pull_agent_pkg::*;
   import otp_ctrl_reg_pkg::*;
   import lc_ctrl_pkg::*;
 
@@ -45,7 +44,8 @@ module tb;
   push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE))  otbn_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if #(.DeviceDataWidth(EDN_DATA_SIZE))   edn_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(clk), .rst_n(rst_n));
+  wire [30:0] edn_extra_data = 0; // TODO: temp align, will remove once design update
 
   pins_if #(OtpPwrIfWidth) pwr_otp_if(pwr_otp);
   // TODO: use standard req/rsp agent
@@ -76,7 +76,8 @@ module tb;
     .otp_ast_pwr_seq_h_i       ('0),
     // edn
     .otp_edn_o                 (edn_if.req),
-    .otp_edn_i                 ({edn_if.ack, edn_if.d_data}),
+    // TODO: temp padding 0s, will update once design align with EDN
+    .otp_edn_i                 ({edn_if.ack, edn_extra_data, edn_if.d_data}),
     // pwrmgr
     .pwr_otp_i                 (pwr_otp[OtpPwrInitReq]),
     .pwr_otp_o                 (pwr_otp[OtpPwrDoneRsp:OtpPwrIdleRsp]),
@@ -143,8 +144,8 @@ module tb;
                    "*env.m_flash_data_pull_agent*", "vif", flash_data_if);
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(null,
                    "*env.m_flash_addr_pull_agent*", "vif", flash_addr_if);
-    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(EDN_DATA_SIZE)))::set(null,
-                   "*env.m_edn_pull_agent*", "vif", edn_if);
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)))::set
+                  (null, "*env.m_edn_pull_agent*", "vif", edn_if);
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(pwr_otp_vif)::set(null, "*.env", "pwr_otp_vif", pwr_otp_if);

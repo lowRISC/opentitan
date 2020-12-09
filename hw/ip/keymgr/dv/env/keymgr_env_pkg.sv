@@ -11,7 +11,6 @@ package keymgr_env_pkg;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
-  import push_pull_agent_pkg::*;
   import keymgr_ral_pkg::*;
   import keymgr_kmac_agent_pkg::*;
 
@@ -32,8 +31,6 @@ package keymgr_env_pkg;
       keymgr_pkg::StCreatorRootKey,
       keymgr_pkg::StOwnerIntKey,
       keymgr_pkg::StOwnerKey};
-
-  parameter uint EDN_DATA_SIZE = edn_pkg::ENDPOINT_BUS_WIDTH + 1;
 
   typedef virtual keymgr_if keymgr_vif;
   typedef enum {

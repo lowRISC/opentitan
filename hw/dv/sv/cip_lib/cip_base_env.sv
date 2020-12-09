@@ -10,9 +10,10 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
   `uvm_component_param_utils(cip_base_env #(CFG_T, VIRTUAL_SEQUENCER_T, SCOREBOARD_T, COV_T))
 
-  tl_agent                    m_tl_agent;
-  tl_reg_adapter              m_tl_reg_adapter;
-  alert_esc_agent             m_alert_agent[string];
+  tl_agent                                           m_tl_agent;
+  tl_reg_adapter                                     m_tl_reg_adapter;
+  alert_esc_agent                                    m_alert_agent[string];
+  push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent;
 
   `uvm_component_new
 
@@ -39,10 +40,11 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
       `uvm_fatal(get_full_name(), "failed to get devmode_vif from uvm_config_db")
     end
 
-    // create components
+    // create tl agent and set cfg
     m_tl_agent = tl_agent::type_id::create("m_tl_agent", this);
     m_tl_reg_adapter = tl_reg_adapter#()::type_id::create("m_tl_reg_adapter");
     m_tl_reg_adapter.cfg = cfg.m_tl_agent_cfg;
+    uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_agent*", "cfg", cfg.m_tl_agent_cfg);
 
     // create alert agents and set cfgs
     foreach(cfg.list_of_alerts[i]) begin
@@ -53,7 +55,13 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
           cfg.m_alert_agent_cfg[alert_name]);
     end
 
-    uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_agent*", "cfg", cfg.m_tl_agent_cfg);
+    // create edn pull agent and set cfg
+    if (cfg.has_edn) begin
+      m_edn_pull_agent = push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH))::type_id::create(
+                         "m_edn_pull_agent", this);
+      uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)))::set(
+                     this, "m_edn_pull_agent", "cfg", cfg.m_edn_pull_agent_cfg);
+    end
   endfunction
 
   virtual function void connect_phase(uvm_phase phase);
@@ -74,6 +82,11 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
         virtual_sequencer.alert_esc_sequencer_h[cfg.list_of_alerts[i]] =
             m_alert_agent[cfg.list_of_alerts[i]].sequencer;
       end
+    end
+
+    if (cfg.has_edn) begin
+      virtual_sequencer.edn_pull_sequencer_h = m_edn_pull_agent.sequencer;
+      m_edn_pull_agent.monitor.req_port.connect(scoreboard.edn_fifo.analysis_export);
     end
   endfunction
 
