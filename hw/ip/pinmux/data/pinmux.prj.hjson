@@ -5,7 +5,7 @@
 {
     name:               "pinmux",
     design_spec:        "hw/ip/pinmux/doc",
-    dv_plan:            "hw/ip/pinmux/doc/dv_plan",
+    dv_doc:            "hw/ip/pinmux/doc/dv",
     hw_checklist:       "hw/ip/pinmux/doc/checklist",
     version:            "0.5",
     life_stage:         "L1",

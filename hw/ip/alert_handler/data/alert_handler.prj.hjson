@@ -5,7 +5,7 @@
 {
     name:               "alert_handler",
     design_spec:        "hw/ip/alert_handler/doc",
-    dv_plan:            "hw/ip/alert_handler/doc/dv_plan",
+    dv_doc:            "hw/ip/alert_handler/doc/dv",
     hw_checklist:       "hw/ip/alert_handler/doc/checklist",
     sw_checklist:       "sw/device/lib/dif/dif_alert_handler"
     version:            "0.5",
