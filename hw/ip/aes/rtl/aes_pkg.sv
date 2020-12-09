@@ -252,6 +252,10 @@ function automatic logic [7:0] aes_mvm(
   return vec_c;
 endfunction
 
+// Functions for extracting  SubBytes output masks and additional pseudo-random data (PRD) from the
+// output of the masking PRNG on a row basis. We have:
+// prng_output = { prd_key_expand, ... , sb_prd[4], sb_out_mask[4], sb_prd[0], sb_out_mask[0] }
+
 // Extract one row of output masks for SubBytes from PRNG output. The output mask is in the LSBs of
 // each segment.
 function automatic logic [3:0][7:0] aes_sb_out_mask_get(logic [4*(8+WidthPRDSBox)-1:0] in);
@@ -269,6 +273,20 @@ function automatic logic [3:0][WidthPRDSBox-1:0] aes_sb_prd_get(logic [4*(8+Widt
     sb_prd[i] = in[i*(8+WidthPRDSBox)+8 +: WidthPRDSBox];
   end
   return sb_prd;
+endfunction
+
+// Undo extraction of output masks and PRD for SubBytes for one row. This can be used to verify
+// proper extraction (no overlap of masks and PRD, no unused PRNG output).
+function automatic logic [4*(8+WidthPRDSBox)-1:0] aes_sb_out_mask_prd_concat(
+  logic              [3:0][7:0] sb_out_mask,
+  logic [3:0][WidthPRDSBox-1:0] sb_prd
+);
+  logic [4*(8+WidthPRDSBox)-1:0] sb_out_mask_prd;
+  for (int i=0; i<4; i++) begin
+    sb_out_mask_prd[i*(8+WidthPRDSBox)   +: 8]            = sb_out_mask[i];
+    sb_out_mask_prd[i*(8+WidthPRDSBox)+8 +: WidthPRDSBox] = sb_prd[i];
+  end
+  return sb_out_mask_prd;
 endfunction
 
 endpackage
