@@ -168,7 +168,7 @@ a starting point.
 * **`common_testplan.hjson`**: shared dv_plan imported within the DUT dv_plan
 * **`foo_dv_doc.md`**: DUT dv_plan imported within the dv document doc in Markdown
 
-In addition, see the [UART dv document]({{< relref "hw/ip/uart/doc/dv_doc" >}}) for a
+In addition, see the [UART dv document]({{< relref "hw/ip/uart/doc/dv" >}}) for a
 real 'production' example of inline expansion of an imported dv_plan as a table
 within the dv document.
 The [UART dv_plan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson)

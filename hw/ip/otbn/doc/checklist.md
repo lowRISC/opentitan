@@ -110,8 +110,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]           | Done        | [OTBN dv document]({{<relref "hw/ip/otbn/doc/dv_doc" >}})
-Documentation | [DV_PLAN_COMPLETED][]                | Done        | [OTBN dv_plan]({{<relref "hw/ip/otbn/doc/dv_doc/index.md#dv_plan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]           | Done        | [OTBN dv document]({{<relref "hw/ip/otbn/doc/dv" >}})
+Documentation | [DV_PLAN_COMPLETED][]                | Done        | [OTBN dv_plan]({{<relref "hw/ip/otbn/doc/dv/index.md#dv_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |

@@ -140,7 +140,7 @@ Review        | Reviewer(s)                           | Done        | @eunchan @
 Review        | Signoff date                          | Done        | 2019-11-04
 
 
-[DV_PLAN]:                            {{<relref "/hw/ip/tlul/doc/dv_doc">}}
+[DV_PLAN]:                            {{<relref "/hw/ip/tlul/doc/dv">}}
 
 [DV_DOC_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv-plan-draft-completed" >}}
 [DV_PLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#dv_plan-completed" >}}

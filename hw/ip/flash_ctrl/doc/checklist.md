@@ -111,7 +111,7 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [flash_ctrl_dv_doc]({{<relref "dv_doc/index.md" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [flash_ctrl_dv_doc]({{<relref "dv/index.md" >}})
 Documentation | [DV_PLAN_COMPLETED][]                 | Done        |
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |

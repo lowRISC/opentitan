@@ -292,7 +292,7 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
 * `i2c_host_dv_doc.md`
 
   This is the initial dv document that will describe the entire testbench. This
-  is equivalent to the template available [here](https://github.com/lowRISC/opentitan/blob/master/hw/dv/doc/dv_doc_template.md).
+  is equivalent to the template available [here](https://github.com/lowRISC/opentitan/blob/master/hw/dv/doc/dv_template.md).
 
 The [VLNV](https://fusesoc.readthedocs.io/en/master/user/overview.html#core-naming-rules)
 name in the generated FuseSoC core files is set using the `--vendor` switch for

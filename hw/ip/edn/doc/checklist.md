@@ -113,8 +113,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]           | Not Started | [EDN dv document]({{<relref "hw/ip/edn/doc/dv_doc" >}})
-Documentation | [DV_PLAN_COMPLETED][]                | Not Started | [EDN dv_plan]({{<relref "hw/ip/edn/doc/dv_doc/index.md#dv_plan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]           | Not Started | [EDN dv document]({{<relref "hw/ip/edn/doc/dv" >}})
+Documentation | [DV_PLAN_COMPLETED][]                | Not Started | [EDN dv_plan]({{<relref "hw/ip/edn/doc/dv/index.md#dv_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Not Started |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |

@@ -222,7 +222,7 @@ They are converted to complete URLs in the generated dashboard.
 ```hjson
 {
     design_spec:  "hw/ip/gpio/doc"
-    dv_doc:      "hw/ip/gpio/doc/dv_doc"
+    dv_doc:      "hw/ip/gpio/doc/dv"
     hw_checklist: "hw/ip/gpio/doc/checklist"
     sw_checklist: "sw/device/lib/dif/dif_gpio"
 }

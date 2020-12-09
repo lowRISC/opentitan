@@ -110,8 +110,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]           | Not Started | [PWRMGR dv document]({{<relref "hw/top_earlgrey/doc/dv_doc/index.md" >}})
-Documentation | [DV_PLAN_COMPLETED][]                | Not Started | [PWRMGR dv_plan]()
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [PWRMGR dv document]({{<relref "hw/top_earlgrey/doc/dv/index.md" >}})
+Documentation | [DV_PLAN_COMPLETED][]                 | Not Started | [PWRMGR dv_plan1]()
 Testbench     | [TB_TOP_CREATED][]                    | Not Started |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |

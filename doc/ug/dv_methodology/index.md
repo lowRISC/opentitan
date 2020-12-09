@@ -164,7 +164,7 @@ In some IPs (specifically the ones that provide cryptographic functions), we als
 
 Each of the IP level DV environments are described in further detail within their own [dv document](#dv-plan) document.
 To find all of them, please navigate to this [landing page]({{< relref "hw" >}}).
-The [UART dv document]({{< relref "hw/ip/uart/doc/dv_doc" >}}) documentation which can be found there can be used as an example / reference.
+The [UART dv document]({{< relref "hw/ip/uart/doc/dv" >}}) documentation which can be found there can be used as an example / reference.
 
 ### Core Ibex Level DV
 
