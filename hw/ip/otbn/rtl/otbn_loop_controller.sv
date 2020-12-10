@@ -26,7 +26,7 @@ module otbn_loop_controller
 );
   // The loop controller has a current loop and then a stack of outer loops, this sets the size of
   // the stack so maximum loop nesting depth is LoopStackDepth + 1.
-  localparam int unsigned LoopStackDepth = 8;
+  localparam int unsigned LoopStackDepth = 7;
   // ISA has a fixed 12 bits for loop_bodysize. When IMEM size is less than 16 kB (ImemAddrWidth
   // < 14) some of these bits are ignored as a loop body cannot be greater than the IMEM size.
   localparam int unsigned LoopEndAddrWidth = ImemAddrWidth < 14 ? 14 : ImemAddrWidth;
