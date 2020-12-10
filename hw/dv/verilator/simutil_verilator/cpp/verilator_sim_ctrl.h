@@ -57,9 +57,7 @@ class VerilatorSimCtrl {
   /**
    * Parse command line arguments
    *
-   * Process all recognized command-line arguments from argc/argv. If a command
-   * line argument implies that we should exit immediately (like --help), sets
-   * exit_app. On failure, sets exit_app as well as returning false.
+   * Process all recognized command-line arguments from argc/argv.
    *
    * @param argc, argv Standard C command line arguments
    * @param exit_app Indicate that program should terminate
