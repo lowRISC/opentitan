@@ -103,7 +103,7 @@ module top_${top["name"]} #(
   import top_pkg::*;
   import tl_main_pkg::*;
   // Compile-time random constants
-  import top_earlgrey_rnd_cnst_pkg::*;
+  import top_${top["name"]}_rnd_cnst_pkg::*;
 
   // Signals
   logic [${num_mio_inputs + num_mio_inouts - 1}:0] mio_p2d;
