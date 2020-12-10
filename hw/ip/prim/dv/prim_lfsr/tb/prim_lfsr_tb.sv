@@ -166,7 +166,7 @@ module prim_lfsr_tb;
     lfsr_en = '0;
     err     = '0;
 
-    main_clk.set_period_ns(ClkPeriod);
+    main_clk.set_period_ps(ClkPeriod);
     main_clk.set_active();
     main_clk.apply_reset();
 
