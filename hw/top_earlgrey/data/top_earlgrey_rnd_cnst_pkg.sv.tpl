@@ -23,7 +23,7 @@ ${gencmd}
       numbits = 4*blockwidth
     return hexblocks
 %>
-package top_earlgrey_rnd_cnst_pkg;
+package top_${top["name"]}_rnd_cnst_pkg;
 
 % for m in top["module"]:
   % for p in filter(lambda p: p["randtype"] in ["data", "perm"], m["param_list"]):
@@ -41,4 +41,4 @@ package top_earlgrey_rnd_cnst_pkg;
 
   % endfor
 % endfor
-endpackage : top_earlgrey_rnd_cnst_pkg
+endpackage : top_${top["name"]}_rnd_cnst_pkg
