@@ -16,8 +16,8 @@ class aes_smoke_test extends aes_base_test;
   function void configure_env();
     super.configure_env();
     cfg.error_types              = 0;     // no errors in smoke test
-    cfg.num_messages_min         = 2;
-    cfg.num_messages_max         = 2;
+    cfg.num_messages_min         = 3;
+    cfg.num_messages_max         = 3;
     // message related knobs
     cfg.ecb_weight               = 10;
     cfg.cbc_weight               = 10;

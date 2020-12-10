@@ -184,7 +184,7 @@ class aes_message_item extends uvm_sequence_item;
    constraint c_manual_operation {
                   manual_operation dist { 0:/ (100 - manual_operation_pct),
                                           1:/ manual_operation_pct};
-   };
+   }
 
 
   function void add_data_item(aes_seq_item item);

@@ -82,26 +82,34 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task set_operation(bit operation);
-    ral.ctrl_shadowed.operation.set(operation);
-    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    if (ral.ctrl_shadowed.operation.get_mirrored_value() != operation) begin
+      ral.ctrl_shadowed.operation.set(operation);
+      csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    end
   endtask // set_operation
 
 
   virtual task set_mode(bit [5:0] mode);
-    ral.ctrl_shadowed.mode.set(mode);
-    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    if (ral.ctrl_shadowed.mode.get_mirrored_value() != mode) begin
+      ral.ctrl_shadowed.mode.set(mode);
+      csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    end
   endtask
 
 
   virtual task set_key_len(bit [2:0] key_len);
-    ral.ctrl_shadowed.key_len.set(key_len);
-    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    if (ral.ctrl_shadowed.key_len.get_mirrored_value() != key_len) begin
+      ral.ctrl_shadowed.key_len.set(key_len);
+      csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    end
   endtask
 
 
   virtual task set_manual_operation(bit manual_operation);
-    ral.ctrl_shadowed.manual_operation.set(manual_operation);
-    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    if (ral.ctrl_shadowed.manual_operation.get_mirrored_value() != manual_operation) begin
+      ral.ctrl_shadowed.manual_operation.set(manual_operation);
+      csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    end
   endtask
 
 
