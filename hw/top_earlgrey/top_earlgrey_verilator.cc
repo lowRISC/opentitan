@@ -37,5 +37,5 @@ int main(int argc, char **argv) {
             << "=================================" << std::endl
             << std::endl;
 
-  return simctrl.Exec(argc, argv).first;
+  return simctrl.Exec(argc, argv);
 }

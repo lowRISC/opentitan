@@ -47,17 +47,19 @@ void VerilatorSimCtrl::SetTop(VerilatedToplevel *top, CData *sig_clk,
   flags_ = flags;
 }
 
-std::pair<int, bool> VerilatorSimCtrl::Exec(int argc, char **argv) {
+int VerilatorSimCtrl::Exec(int argc, char **argv) {
   bool exit_app = false;
   bool good_cmdline = ParseCommandArgs(argc, argv, exit_app);
   if (exit_app) {
-    return std::make_pair(good_cmdline ? 0 : 1, false);
+    return good_cmdline ? 0 : 1;
   }
 
   RunSimulation();
 
-  int retcode = WasSimulationSuccessful() ? 0 : 1;
-  return std::make_pair(retcode, true);
+  if (!WasSimulationSuccessful()) {
+    return 1;
+  }
+  return 0;
 }
 
 bool VerilatorSimCtrl::ParseCommandArgs(int argc, char **argv, bool &exit_app) {

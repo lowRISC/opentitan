@@ -49,11 +49,10 @@ class VerilatorSimCtrl {
    * 1. Parses a C-style set of command line arguments (see ParseCommandArgs())
    * 2. Runs the simulation (see RunSimulation())
    *
-   * @return a pair with main()-compatible process exit code (0 for success, 1
-   *         in case of an error) and a boolean flag telling the calling
-   *         function whether the simulation actually ran.
+   * @return a main()-compatible process exit code: 0 for success, 1 in case
+   *         of an error.
    */
-  std::pair<int, bool> Exec(int argc, char **argv);
+  int Exec(int argc, char **argv);
 
   /**
    * Parse command line arguments
