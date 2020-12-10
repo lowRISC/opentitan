@@ -7,3 +7,4 @@
 `include "otp_ctrl_smoke_vseq.sv"
 `include "otp_ctrl_common_vseq.sv"
 `include "otp_ctrl_lc_vseq.sv"
+`include "otp_ctrl_dai_lock_vseq.sv"
