@@ -65,8 +65,6 @@ module tb;
     .lc_nvm_debug_en_o     (),
     .lc_hw_debug_en_o      (),
     .lc_cpu_en_o           (),
-    .lc_provision_wr_en_o  (),
-    .lc_provision_rd_en_o  (),
     .lc_keymgr_en_o        (),
     .lc_escalate_en_o      (),
 
