@@ -10,11 +10,11 @@
   tool_srcs:  ["{dv_root}/tools/riviera/*"]
 
   build_opts: ["-timescale 1ns/1ps",
-               "+incdir+\"{ALDEC_PATH}/vlib/uvm-1.2/src\"",
-               "\"{ALDEC_PATH}/vlib/uvm-1.2/src/uvm_pkg.sv\"",
+               "+incdir+\"{RIVIERA_HOME}/vlib/uvm-1.2/src\"",
+               "\"{RIVIERA_HOME}/vlib/uvm-1.2/src/uvm_pkg.sv\"",
                "-f {sv_flist}",
                // List multiple tops for the simulation. Prepend each top level with `-top`.
-               //"{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
+               "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
               ]
 
   run_opts:   ["-sv_seed={seed}",
@@ -23,7 +23,7 @@
                "-lib {sv_flist_gen_dir}/work",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}",
-               "-sv_lib \"{ALDEC_PATH}/bin/uvm_1_2_dpi\"",			   
+               "-sv_lib \"{RIVIERA_HOME}/bin/uvm_1_2_dpi\"",
                "-do {run_script}"]
 
 
