@@ -57,12 +57,17 @@ typedef enum integer {
                                  // see aes_sbox_canright_dom.sv
 } sbox_impl_e;
 
+
+// Parameters used for controlgroups in the coverage
+parameter int AES_MODE_WIDTH   = 6;
+parameter int AES_KEYLEN_WIDTH = 3;
+
 typedef enum logic {
   AES_ENC = 1'b0,
   AES_DEC = 1'b1
 } aes_op_e;
 
-typedef enum logic [5:0] {
+typedef enum logic [AES_MODE_WIDTH-1:0] {
   AES_ECB  = 6'b00_0001,
   AES_CBC  = 6'b00_0010,
   AES_CFB  = 6'b00_0100,
@@ -76,11 +81,28 @@ typedef enum logic {
   CIPH_INV = 1'b1
 } ciph_op_e;
 
-typedef enum logic [2:0] {
+typedef enum logic [AES_KEYLEN_WIDTH-1:0] {
   AES_128 = 3'b001,
   AES_192 = 3'b010,
   AES_256 = 3'b100
 } key_len_e;
+
+
+typedef struct packed {
+  logic [31:7] unused;
+  logic        alert_fatal_fault;
+  logic        alert_recov_ctrl_update_err;
+  logic        input_ready;
+  logic        output_valid;
+  logic        output_lost;
+  logic        stall;
+  logic        idle;
+} status_t;
+
+typedef struct packed {
+  logic        recov_ctrl_update_err;
+  logic        fatal_fault;
+} alert_test_t;
 
 // Generic, sparse mux selector encodings
 

@@ -26,6 +26,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   int          corrupt_cnt        = 0;        // number of aes_mode errors seen
   int          skipped_cnt        = 0;        // number of skipped messages
 
+  virtual      aes_cov_if   cov_if;          // handle to aes coverage interface
   // local queues to hold incoming packets pending comparison //
 
   // Items containing both input and output data, ready to be added to a message
@@ -42,6 +43,10 @@ class aes_scoreboard extends cip_base_scoreboard #(
     item_fifo   = new();
     input_item  = new("input_item");
     output_item = new ();
+
+    if (!uvm_config_db#(virtual aes_cov_if)::get(null, "*.env" , "aes_cov_if", cov_if)) begin
+      `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO COVER IF"))
+    end
   endfunction
 
 
@@ -87,13 +92,20 @@ class aes_scoreboard extends cip_base_scoreboard #(
       csr_name = csr.get_name();
       case (1)
         // add individual case item for each csr
+        (!uvm_re_match("alert_test", csr_name)): begin
+          // TODO
+          cov_if.cg_alert_test_sample(item.a_data);
+        end
+
+
         (!uvm_re_match("ctrl_shadowed", csr_name)): begin
           if (write) begin
-            input_item.manual_op = item.a_data[10];
-            input_item.key_len   = item.a_data[9:7];
-            `downcast(input_item.operation, item.a_data[0]);
+//            cov_if.cg_ctrl_sample(item.a_data);
+            input_item.manual_op = get_field_val(ral.ctrl_shadowed.manual_operation, item.a_data);
+            input_item.key_len   = get_field_val(ral.ctrl_shadowed.key_len, item.a_data);
+            `downcast(input_item.operation, get_field_val(ral.ctrl_shadowed.operation ,item.a_data));
             input_item.valid = 1'b1;
-            case (item.a_data[6:1])
+            case (get_field_val(ral.ctrl_shadowed.mode, item.a_data))
               6'b00_0001:  input_item.mode = AES_ECB;
               6'b00_0010:  input_item.mode = AES_CBC;
               6'b00_0100:  input_item.mode = AES_CFB;
@@ -101,7 +113,15 @@ class aes_scoreboard extends cip_base_scoreboard #(
               6'b01_0000:  input_item.mode = AES_CTR;
               6'b10_0000:  input_item.mode = AES_NONE;
               default:     input_item.mode = AES_NONE;
-            endcase // case item.a_data[4:1]
+            endcase
+            // sample coverage on ctrl register
+            cov_if.cg_ctrl_sample(get_field_val(ral.ctrl_shadowed.operation, item.a_data),
+                                  get_field_val(ral.ctrl_shadowed.mode, item.a_data),
+                                  get_field_val(ral.ctrl_shadowed.key_len, item.a_data),
+                                  get_field_val(ral.ctrl_shadowed.manual_operation, item.a_data),
+                                  get_field_val(ral.ctrl_shadowed.force_zero_masks, item.a_data)
+                                  );
+
             input_item.clean();
             input_item.start_item = 1;
           end
@@ -149,6 +169,11 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
       (!uvm_re_match("trigger", csr_name)): begin
         //start triggered
+        cov_if.cg_trigger_sample(get_field_val(ral.trigger.start, item.a_data),
+                                 get_field_val(ral.trigger.key_iv_data_in_clear, item.a_data),
+                                 get_field_val(ral.trigger.data_out_clear, item.a_data),
+                                 get_field_val(ral.trigger.prng_reseed, item.a_data)
+                                );
         `uvm_info(`gfn, $sformatf("\n CLEAR REGISTER SEEN 0x%h", item.a_data), UVM_MEDIUM)
         if (get_field_val(ral.trigger.start, item.a_data)) begin
           ok_to_fwd                = 1;
@@ -188,9 +213,9 @@ class aes_scoreboard extends cip_base_scoreboard #(
         end
        end
 
-      // "status": begin
-      //   //TBD
-      // end
+      // (!uvm_re_match("status", csr_name)): begin
+      //   // not used in scoreboard
+      //  end
 
        default: begin
          // DO nothing- trying to write to a read only register
@@ -359,7 +384,10 @@ class aes_scoreboard extends cip_base_scoreboard #(
           output_item.data_out[3]     = item.d_data;
           output_item.data_out_vld[3] = 1;
         end
+
         "status": begin
+          cov_if.cg_status_sample(item.d_data);
+
           // if dut IDLE and able to accept input
           // and no output is ready
           // there won't be a response for this item

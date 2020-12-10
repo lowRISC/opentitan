@@ -14,6 +14,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:csr_utils
       - lowrisc:dv:aes_model_dpi
+      - lowrisc:dv:aes_cov
     files:
       - aes_env_pkg.sv
       - aes_seq_item.sv: {is_include_file: true}
