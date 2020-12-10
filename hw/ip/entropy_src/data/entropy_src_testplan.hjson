@@ -22,7 +22,7 @@
             Verify es_regen bit enables/disables write access to control registers
             '''
       milestone: V2
-      tests: ["entropy_src_firmware"]
+      tests: []
     }
     {
       name: lfsr_mode
@@ -33,7 +33,7 @@
             Verify rng activity does not affect lfsr operation.
             '''
       milestone: V2
-      tests: ["entropy_src_lfsr"]
+      tests: []
     }
     {
       name: rng_mode
@@ -58,14 +58,14 @@
             Verify alerts
 	    '''
       milestone: V2
-      tests: ["entropy_src_health_checks"]
+      tests: []
     }
     {
       name: interrupts
       desc: '''
             Verify all entropy_src interrupts assert/clear when expected.'''
       milestone: V2
-      tests: ["entropy_src_interrupts"]
+      tests: []
     }
     {
       name: stress_all
