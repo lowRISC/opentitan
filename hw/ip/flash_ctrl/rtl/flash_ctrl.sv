@@ -19,9 +19,11 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   input        rst_otp_ni,
 
   // life cycle interface
-  lc_ctrl_pkg::lc_tx_t lc_provision_wr_en_i,
-  lc_ctrl_pkg::lc_tx_t lc_provision_rd_en_i,
-  lc_ctrl_pkg::lc_tx_t lc_iso_flash_wr_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_owner_seed_sw_rw_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
 
   // Bus Interface
   input        tlul_pkg::tl_h2d_t tl_i,
@@ -176,40 +178,59 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   logic lfsr_en;
 
   // life cycle connections
-  lc_ctrl_pkg::lc_tx_t [FlashWrLcLast-1:0] lc_provision_wr_en;
-  lc_ctrl_pkg::lc_tx_t [FlashRdLcLast-1:0] lc_provision_rd_en;
-  lc_ctrl_pkg::lc_tx_t lc_iso_flash_wr_en;
+  lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en;
+  lc_ctrl_pkg::lc_tx_t lc_owner_seed_sw_rw_en;
+  lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en;
+  lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en;
+  lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en;
 
-  // synchronize provision enable into local domain
-  prim_lc_sync #(
-    .NumCopies(int'(FlashWrLcLast))
-  ) u_lc_provision_wr_en_sync (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(lc_provision_wr_en_i),
-    .lc_en_o(lc_provision_wr_en)
-  );
-
-  prim_lc_sync #(
-    .NumCopies(int'(FlashRdLcLast))
-  ) u_lc_provision_rd_en_sync (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(lc_provision_rd_en_i),
-    .lc_en_o(lc_provision_rd_en)
-  );
+  // synchronize enables into local domain
   prim_lc_sync #(
     .NumCopies(1)
-  ) u_lc_iso_flash_en_sync (
+  ) u_lc_creator_seed_sw_rw_en_sync (
     .clk_i,
     .rst_ni,
-    .lc_en_i(lc_iso_flash_wr_en_i),
-    .lc_en_o(lc_iso_flash_wr_en)
+    .lc_en_i(lc_creator_seed_sw_rw_en_i),
+    .lc_en_o(lc_creator_seed_sw_rw_en)
   );
 
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_owner_seed_sw_rw_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_owner_seed_sw_rw_en_i),
+    .lc_en_o(lc_owner_seed_sw_rw_en)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_iso_part_sw_rd_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_iso_part_sw_rd_en_i),
+    .lc_en_o(lc_iso_part_sw_rd_en)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_iso_part_sw_wr_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_iso_part_sw_wr_en_i),
+    .lc_en_o(lc_iso_part_sw_wr_en)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_seed_hw_rd_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_seed_hw_rd_en_i),
+    .lc_en_o(lc_seed_hw_rd_en)
+  );
 
   prim_lfsr #(
-    .DefaultSeed(),
     .EntropyDw(4),
     .LfsrDw(LfsrWidth),
     .StateOutDw(LfsrWidth)
@@ -307,23 +328,13 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   assign erase_op      = op_type == FlashOpErase;
   assign sw_sel        = if_sel == SwSel;
 
+  // software privilege to creator seed
+  assign creator_seed_priv = lc_creator_seed_sw_rw_en == lc_ctrl_pkg::On;
+
+  // software privilege to owner seed
+  assign owner_seed_priv = lc_owner_seed_sw_rw_en == lc_ctrl_pkg::On;
+
   // hardware interface
-
-  // software only has privilege to change creator seed when provision enable is set and
-  // lc provision write enable is used here as creator assets can only be changed when
-  // creator secrets are not yet locked.
-  assign creator_seed_priv = (lc_provision_wr_en[FlashWrLcCreatorSeedPriv] == lc_ctrl_pkg::On);
-
-  // owner seed is under software control and can be modided whenever provision enable is set
-  // read enable is used here as this is mostly under the control of creator software and just
-  // needs to be locked out from specific life cycle states.
-  assign owner_seed_priv = lc_provision_rd_en[FlashRdLcOwnerSeedPriv] == lc_ctrl_pkg::On;
-
-  // the seed is only readable after it has been written and locked.
-  logic seed_rd_en;
-  assign seed_rd_en = lc_provision_wr_en[FlashWrLcMgrIf] == lc_ctrl_pkg::Off &
-                      lc_provision_rd_en[FlashRdLcMgrIf] == lc_ctrl_pkg::On;
-
   flash_ctrl_lcmgr #(
     .RndCnstAddrKey(RndCnstAddrKey),
     .RndCnstDataKey(RndCnstDataKey)
@@ -335,7 +346,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
 
     .init_i(pwrmgr_i.flash_init),
     .init_done_o(pwrmgr_o.flash_done),
-    .provision_en_i(seed_rd_en),
+    .provision_en_i(lc_seed_hw_rd_en == lc_ctrl_pkg::On),
 
     // interface to ctrl arb control ports
     .ctrl_o(hw_ctrl),
@@ -600,10 +611,6 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   assign reg2hw_info_page_cfgs[1][1] = reg2hw.bank1_info1_page_cfg;
 
   // qualify reg2hw settings with creator / owner privileges
-  logic iso_flash_wr_en;
-  assign iso_flash_wr_en = lc_provision_wr_en[FlashWrLcInfoCfg] == lc_ctrl_pkg::On |
-                           lc_iso_flash_wr_en == lc_ctrl_pkg::On;
-
   for(genvar i = 0; i < NumBanks; i++) begin : gen_info_priv_bank
     for (genvar j = 0; j < InfoTypes; j++) begin : gen_info_priv_type
       flash_ctrl_info_cfg # (
@@ -613,8 +620,8 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
         .cfgs_i(reg2hw_info_page_cfgs[i][j]),
         .creator_seed_priv_i(creator_seed_priv),
         .owner_seed_priv_i(owner_seed_priv),
-        .iso_flash_wr_en_i(iso_flash_wr_en),
-        .iso_flash_rd_en_i(lc_provision_rd_en[FlashRdLcInfoCfg] == lc_ctrl_pkg::On),
+        .iso_flash_wr_en_i(lc_iso_part_sw_wr_en == lc_ctrl_pkg::On),
+        .iso_flash_rd_en_i(lc_iso_part_sw_rd_en == lc_ctrl_pkg::On),
         .cfgs_o(info_page_cfgs[i][j])
       );
     end
