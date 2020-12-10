@@ -71,7 +71,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("DAI write, address %0h, data0 %0h data1 %0h, is_secret = %0b",
               addr, wdata0, wdata1, is_secret(addr)), UVM_DEBUG)
 
-    csr_spinwait(ral.intr_state, 1 << OtpOperationDone);
+    csr_spinwait(ral.intr_state.otp_operation_done, 1);
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
   endtask : dai_wr
 
@@ -82,7 +82,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     addr = randomize_dai_addr(addr);
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
-    csr_spinwait(ral.intr_state, 1 << OtpOperationDone);
+    csr_spinwait(ral.intr_state.otp_operation_done, 1);
 
     csr_rd(ral.direct_access_rdata_0, rdata0);
     if (is_secret(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
@@ -93,27 +93,36 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task cal_digest(int part_idx);
     csr_wr(ral.direct_access_address, PART_BASE_ADDRS[part_idx]);
     csr_wr(ral.direct_access_cmd, otp_ctrl_pkg::DaiDigest);
-    csr_spinwait(ral.intr_state, 1 << OtpOperationDone);
+    csr_spinwait(ral.intr_state.otp_operation_done, 1);
     csr_wr(ral.intr_state, 1 << OtpOperationDone);
   endtask
 
   // this task provisions all HW partitions
   // SW partitions could not be provisioned via DAI interface
   // LC partitions cannot be locked
-  virtual task cal_hw_digests();
+  virtual task cal_hw_digests(bit [3:0] trigger_digest = $urandom());
     for (int i = int'(HwCfgIdx); i < int'(LifeCycleIdx); i++) begin
-      cal_digest(i);
+      if (trigger_digest[i-HwCfgIdx]) cal_digest(i);
     end
   endtask
 
   // SW digest data are calculated in sw and won't be checked in OTP.
   // Here to simplify testbench, write random data to sw digest
-  virtual task write_sw_digests();
+  virtual task write_sw_digests(bit [1:0] wr_digest = $urandom());
     bit [TL_DW*2-1:0] rdata;
-    `DV_CHECK_STD_RANDOMIZE_FATAL(rdata);
-    dai_wr(CreatorSwCfgDigestOffset, rdata[TL_DW-1:0], rdata[TL_DW*2-1:TL_DW]);
-    `DV_CHECK_STD_RANDOMIZE_FATAL(rdata);
-    dai_wr(OwnerSwCfgDigestOffset, rdata[TL_DW-1:0], rdata[TL_DW*2-1:TL_DW]);
+    if (wr_digest[0]) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(rdata);
+      dai_wr(CreatorSwCfgDigestOffset, rdata[TL_DW-1:0], rdata[TL_DW*2-1:TL_DW]);
+    end
+    if (wr_digest[1]) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(rdata);
+      dai_wr(OwnerSwCfgDigestOffset, rdata[TL_DW-1:0], rdata[TL_DW*2-1:TL_DW]);
+    end
+  endtask
+
+  virtual task write_sw_rd_locks(bit [1:0] do_rd_lock= $urandom());
+    if (do_rd_lock[0]) csr_wr(ral.creator_sw_cfg_read_lock, 1);
+    if (do_rd_lock[1]) csr_wr(ral.owner_sw_cfg_read_lock, 1);
   endtask
 
   // The digest CSR values are verified in otp_ctrl_scoreboard

@@ -13,10 +13,13 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   bit do_lc_trans;
 
+  rand bit                           access_locked_parts;
   rand bit [TL_AW-1:0]               dai_addr;
   rand bit [TL_DW-1:0]               wdata0, wdata1;
   rand int                           num_dai_op;
   rand otp_ctrl_part_pkg::part_idx_e part_idx;
+
+  constraint no_access_err_c {access_locked_parts == 0;}
 
   // LC partition does not allow DAI access
   constraint partition_index_c {
@@ -55,14 +58,18 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   task body();
     for (int i = 1; i <= num_trans; i++) begin
-      `uvm_info(`gfn, $sformatf("starting seq %0d/%0d", i, num_trans), UVM_MEDIUM)
-      do_otp_ctrl_init = 1;
-      if (i > 1) dut_init();
-      do_otp_ctrl_init = 0;
+      bit [TL_DW-1:0] tlul_val;
+      `uvm_info(`gfn, $sformatf("starting seq %0d/%0d", i, num_trans), UVM_LOW)
 
-      // after otp-init done, check status
-      cfg.clk_rst_vif.wait_clks(1);
-      csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
+      // to avoid access locked OTP partions, issue reset and clear the OTP memory to all 0.
+      if (access_locked_parts == 0) begin
+        do_otp_ctrl_init = 1;
+        if (i > 1) dut_init();
+        // after otp-init done, check status
+        cfg.clk_rst_vif.wait_clks(1);
+        csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
+      end
+      do_otp_ctrl_init = 0;
 
       // get sram keys
       req_all_sram_keys();
@@ -75,7 +82,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       req_flash_data();
 
       for (int i = 0; i < num_dai_op; i++) begin
-        bit [TL_DW-1:0] rdata0, rdata1, tlul_rdata;
+        bit [TL_DW-1:0] rdata0, rdata1;
         `uvm_info(`gfn, $sformatf("starting dai access seq %0d/%0d", i, num_dai_op), UVM_DEBUG)
         `DV_CHECK_RANDOMIZE_FATAL(this)
 
@@ -96,18 +103,19 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
           // random issue reset, OTP content should not be cleared
           if ($urandom_range(0, 1)) dut_init();
-          tl_access(.addr(tlul_addr), .write(0), .data(tlul_rdata), .blocking(1));
+          tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1));
         end
-      end
 
-      // check no error
-      csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
+        if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
+      end
 
       // lock HW digests
       `uvm_info(`gfn, "Trigger HW digest calculation", UVM_HIGH)
       cal_hw_digests();
+      if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
       write_sw_digests();
-      csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
+      if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
+      write_sw_rd_locks();
       dut_init();
 
       // check digest
