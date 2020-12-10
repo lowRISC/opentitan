@@ -30,7 +30,7 @@ the frequency and duty cycle of the generated clock, use the following
 functions:
 * `set_freq_mhz` / `set_freq_khz`: set the clock frequency in MHz / KHz. This
   is 50MHz by default.
-* `set_period_ns`: set the clock period in nanoseconds. This is 20ns by default
+* `set_period_ps`: set the clock period in picoseconds. This is 20_000ps by default
   (giving a clock period of 50MHz).
 * `set_duty_cycle`: set the duty cycle (as a percentage: 1 - 99). This is 50 by
   default.

@@ -97,8 +97,8 @@ interface clk_rst_if #(
     end
   endfunction
 
-  // set the clk period in ns
-  function automatic void set_period_ns(int period_ps);
+  // set the clk period in ps
+  function automatic void set_period_ps(int period_ps);
     clk_period_ps = period_ps;
     clk_freq_mhz  = 1000_000 / clk_period_ps;
     recompute     = 1'b1;

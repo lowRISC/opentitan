@@ -237,7 +237,7 @@ module prim_prince_tb;
     bit [KeyWidth/2-1:0] k0, k1;
     bit [DataWidth-1:0] plaintext;
 
-    clk_if.set_period_ns(ClkPeriod);
+    clk_if.set_period_ps(ClkPeriod);
     clk_if.set_active();
     clk_if.apply_reset();
     $timeformat(-12, 0, " ps", 12);
