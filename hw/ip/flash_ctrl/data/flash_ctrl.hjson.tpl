@@ -32,26 +32,40 @@
       package: "otp_ctrl_pkg"
     },
 
-    { struct: "lc_tx",
-      type: "uni",
-      name: "lc_provision_wr_en",
-      act:  "rcv",
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_creator_seed_sw_rw_en"
+      act:     "rcv"
       package: "lc_ctrl_pkg"
     },
 
-    { struct: "lc_tx",
-      type: "uni",
-      name: "lc_provision_rd_en",
-      act:  "rcv",
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_owner_seed_sw_rw_en"
+      act:     "rcv"
       package: "lc_ctrl_pkg"
     },
 
-    { struct: "lc_tx",
-      type: "uni",
-      name: "lc_iso_flash_wr_en",
-      act:  "rcv",
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_iso_part_sw_rd_en"
+      act:     "rcv"
       package: "lc_ctrl_pkg"
     },
+
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_iso_part_sw_wr_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
+
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_seed_hw_rd_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    }
 
     { struct: "lc_flash",
       type: "req_rsp",
