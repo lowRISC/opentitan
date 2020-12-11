@@ -10,7 +10,7 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:prim:assert
-      - lowrisc:prim:multibit_sync
+      - lowrisc:prim:lc_sync
       - lowrisc:ip:tlul
       - lowrisc:ip:aes
       - lowrisc:ip:csrng_pkg

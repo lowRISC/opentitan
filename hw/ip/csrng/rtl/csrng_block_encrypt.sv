@@ -18,7 +18,7 @@ module csrng_block_encrypt #(
    // update interface
   input logic                block_encrypt_bypass_i,
   input logic                block_encrypt_enable_i,
-  input lc_ctrl_pkg::lc_tx_t block_encrypt_lc_dft_en_i,
+  input logic                block_encrypt_lc_hw_debug_not_on_i,
   input logic                block_encrypt_req_i,
   output logic               block_encrypt_rdy_o,
   input logic [KeyLen-1:0]   block_encrypt_key_i,
@@ -74,20 +74,7 @@ module csrng_block_encrypt #(
   // aes cipher core lifecycle enable
   //--------------------------------------------
 
-  lc_ctrl_pkg::lc_tx_t lc_dft_en;
-
-  prim_multibit_sync #(
-    .Width(lc_ctrl_pkg::TxWidth),
-    .NumChecks (2),
-    .ResetValue(lc_ctrl_pkg::TxWidth'(lc_ctrl_pkg::Off))
-  ) u_prim_multibit_sync (
-    .clk_i,
-    .rst_ni,
-    .data_i (block_encrypt_lc_dft_en_i),
-    .data_o (lc_dft_en)
-  );
-
-  assign aes_cipher_core_enable = (!block_encrypt_bypass_i) || (lc_dft_en != lc_ctrl_pkg::On);
+  assign aes_cipher_core_enable = (!block_encrypt_bypass_i) || block_encrypt_lc_hw_debug_not_on_i;
 
   //--------------------------------------------
   // aes cipher core
