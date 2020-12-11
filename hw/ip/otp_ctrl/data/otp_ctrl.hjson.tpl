@@ -83,6 +83,12 @@
       randcount: "320",  // 5*64
       randtype:  "data", // randomize randcount databits
     }
+    { name:      "RndCnstKeyMgrKey",
+      desc:      "Compile-time random default constant for the root key, to be output when key has not yet been provisioned.",
+      type:      "otp_ctrl_pkg::otp_keymgr_key_t"
+      randcount: "513",  // 2*256+1
+      randtype:  "data", // randomize randcount databits
+    }
     // Normal parameters
     { name: "NumSramKeyReqSlots",
       desc: "Number of key slots",
@@ -235,7 +241,14 @@
     }
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_provision_wr_en"
+      name:    "lc_creator_seed_sw_rw_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_seed_hw_rd_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"

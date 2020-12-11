@@ -17,7 +17,7 @@ module tb;
 
   wire clk, rst_n;
   wire devmode;
-  wire lc_ctrl_pkg::lc_tx_e lc_provision_wr_en, lc_dft_en;
+  wire lc_ctrl_pkg::lc_tx_e lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en, lc_dft_en, lc_escalate_en;
   wire [OtpPwrIfWidth-1:0] pwr_otp;
   wire otp_ctrl_pkg::flash_otp_key_req_t flash_req;
   wire otp_ctrl_pkg::flash_otp_key_rsp_t flash_rsp;
@@ -50,8 +50,10 @@ module tb;
 
   pins_if #(OtpPwrIfWidth) pwr_otp_if(pwr_otp);
   // TODO: use standard req/rsp agent
-  pins_if #(4) lc_provision_wr_en_if(lc_provision_wr_en);
+  pins_if #(4) lc_creator_seed_sw_rw_en_if(lc_creator_seed_sw_rw_en);
+  pins_if #(4) lc_seed_hw_rd_en_if(lc_seed_hw_rd_en);
   pins_if #(4) lc_dft_en_if(lc_dft_en);
+  pins_if #(4) lc_escalate_en_if(lc_escalate_en);
 
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
@@ -61,49 +63,50 @@ module tb;
 
   // dut
   otp_ctrl dut (
-    .clk_i                     (clk        ),
-    .rst_ni                    (rst_n      ),
+    .clk_i                      (clk        ),
+    .rst_ni                     (rst_n      ),
 
-    .tl_i                      (tl_if.h2d  ),
-    .tl_o                      (tl_if.d2h  ),
+    .tl_i                       (tl_if.h2d  ),
+    .tl_o                       (tl_if.d2h  ),
     // interrupt
-    .intr_otp_operation_done_o (intr_otp_operation_done),
-    .intr_otp_error_o          (intr_otp_error),
+    .intr_otp_operation_done_o  (intr_otp_operation_done),
+    .intr_otp_error_o           (intr_otp_error),
     // alert
-    .alert_rx_i                (alert_rx   ),
-    .alert_tx_o                (alert_tx   ),
+    .alert_rx_i                 (alert_rx   ),
+    .alert_tx_o                 (alert_tx   ),
     // ast
-    .otp_ast_pwr_seq_o         (ast_req),
-    .otp_ast_pwr_seq_h_i       ('0),
+    .otp_ast_pwr_seq_o          (ast_req),
+    .otp_ast_pwr_seq_h_i        ('0),
     // edn
-    .otp_edn_o                 (edn_if.req),
+    .otp_edn_o                  (edn_if.req),
     // TODO: temp padding 0s, will update once design align with EDN
-    .otp_edn_i                 ({edn_if.ack, edn_extra_data, edn_if.d_data}),
+    .otp_edn_i                  ({edn_if.ack, edn_extra_data, edn_if.d_data}),
     // pwrmgr
-    .pwr_otp_i                 (pwr_otp[OtpPwrInitReq]),
-    .pwr_otp_o                 (pwr_otp[OtpPwrDoneRsp:OtpPwrIdleRsp]),
+    .pwr_otp_i                  (pwr_otp[OtpPwrInitReq]),
+    .pwr_otp_o                  (pwr_otp[OtpPwrDoneRsp:OtpPwrIdleRsp]),
     // lc
-    .lc_otp_program_i          ({lc_prog_if.req, lc_prog_if.h_data}),
-    .lc_otp_program_o          ({lc_prog_if.d_data, lc_prog_if.ack}),
-    .lc_otp_token_i            ('0),
-    .lc_otp_token_o            (otp_token),
-    .lc_escalate_en_i          (lc_ctrl_pkg::Off),
-    .lc_provision_wr_en_i      (lc_provision_wr_en),
-    .lc_dft_en_i               (lc_dft_en),
-    .otp_lc_data_o             (otp_ctrl_output_data_if.lc_data),
+    .lc_otp_program_i           ({lc_prog_if.req, lc_prog_if.h_data}),
+    .lc_otp_program_o           ({lc_prog_if.d_data, lc_prog_if.ack}),
+    .lc_otp_token_i             ('0),
+    .lc_otp_token_o             (otp_token),
+    .lc_creator_seed_sw_rw_en_i (lc_creator_seed_sw_rw_en),
+    .lc_seed_hw_rd_en_i         (lc_seed_hw_rd_en),
+    .lc_dft_en_i                (lc_dft_en),
+    .lc_escalate_en_i           (lc_escalate_en),
+    .otp_lc_data_o              (otp_ctrl_output_data_if.lc_data),
     // keymgr
-    .otp_keymgr_key_o          (otp_ctrl_output_data_if.keymgr_key),
+    .otp_keymgr_key_o           (otp_ctrl_output_data_if.keymgr_key),
     // flash
-    .flash_otp_key_i           (flash_req),
-    .flash_otp_key_o           (flash_rsp),
+    .flash_otp_key_i            (flash_req),
+    .flash_otp_key_o            (flash_rsp),
     // sram
-    .sram_otp_key_i            (sram_req),
-    .sram_otp_key_o            (sram_rsp),
+    .sram_otp_key_i             (sram_req),
+    .sram_otp_key_o             (sram_rsp),
     // otbn
-    .otbn_otp_key_i            (otbn_req),
-    .otbn_otp_key_o            (otbn_rsp),
+    .otbn_otp_key_i             (otbn_req),
+    .otbn_otp_key_o             (otbn_rsp),
 
-    .otp_hw_cfg_o              (otp_ctrl_output_data_if.otp_hw_cfg)
+    .otp_hw_cfg_o               (otp_ctrl_output_data_if.otp_hw_cfg)
   );
 
   for (genvar i = 0; i < NumSramKeyReqSlots; i++) begin : gen_sram_pull_if
@@ -153,9 +156,12 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(pwr_otp_vif)::set(null, "*.env", "pwr_otp_vif", pwr_otp_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
-    uvm_config_db#(lc_provision_wr_en_vif)::set(null, "*.env", "lc_provision_wr_en_vif",
-                                                lc_provision_wr_en_if);
+    uvm_config_db#(lc_creator_seed_sw_rw_en_vif)::set(null, "*.env", "lc_creator_seed_sw_rw_en_vif",
+                                                      lc_creator_seed_sw_rw_en_if);
+    uvm_config_db#(lc_seed_hw_rd_en_vif)::set(null, "*.env", "lc_seed_hw_rd_en_vif",
+                                              lc_seed_hw_rd_en_if);
     uvm_config_db#(lc_dft_en_vif)::set(null, "*.env", "lc_dft_en_vif", lc_dft_en_if);
+    uvm_config_db#(lc_escalate_en_vif)::set(null, "*.env", "lc_escalate_en_vif", lc_escalate_en_if);
     uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif",
                                       `OTP_CTRL_MEM_HIER.mem_bkdr_if);
 
