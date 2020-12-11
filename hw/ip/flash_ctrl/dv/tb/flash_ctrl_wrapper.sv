@@ -31,7 +31,8 @@ module flash_ctrl_wrapper (
   input        flash_ctrl_pkg::lc_flash_req_t lc_i,
   output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
   input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
-  input        flash_ctrl_pkg::edn_entropy_t edn_i,
+  output       edn_pkg::edn_req_t edn_o,
+  input        edn_pkg::edn_rsp_t edn_i,
 
   // Interrupts
   output logic intr_prog_empty_o, // Program fifo is empty
@@ -71,6 +72,7 @@ module flash_ctrl_wrapper (
     .lc_i              (lc_i),
     .pwrmgr_i          (pwrmgr_i),
     .pwrmgr_o          (pwrmgr_o),
+    .edn_o             (edn_o),
     .edn_i             (edn_i),
 
     .clk_i             (clk_i),

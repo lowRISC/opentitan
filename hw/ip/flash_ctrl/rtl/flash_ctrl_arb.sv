@@ -70,10 +70,8 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   output flash_lcmgr_phase_e phase_o,
 
   // indication that sw has been selected
-  output flash_sel_e sel_o,
+  output flash_sel_e sel_o
 
-  // enable lfsr
-  output logic lfsr_en_o
 );
 
   // arbitration FSM
@@ -103,11 +101,9 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
     func_sel = NoneSel;
     fifo_clr_o = 1'b0;
     state_d = state_q;
-    lfsr_en_o = 1'b1;
 
     unique case (state_q)
       StReset: begin
-        lfsr_en_o = 1'b0;
         // until the flash phy is done with its own iniitlization,
         // no flash controller activity is allowed to commence
         if (!flash_phy_busy_i) begin

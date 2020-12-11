@@ -42,9 +42,6 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   output logic [BusWidth-1:0] rma_token_o,
   output logic rma_rsp_o,
 
-  // random value
-  input [BusWidth-1:0] rand_i,
-
   // seeds to the outside world,
   output logic [NumSeeds-1:0][SeedWidth-1:0] seeds_o,
 
@@ -62,6 +59,12 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   input otp_ctrl_pkg::flash_otp_key_rsp_t otp_key_rsp_i,
   output flash_key_t addr_key_o,
   output flash_key_t data_key_o,
+
+  // entropy interface
+  output logic edn_req_o,
+  input edn_ack_i,
+  output logic lfsr_en_o,
+  input [BusWidth-1:0] rand_i,
 
   // init ongoing
   output logic init_busy_o
@@ -91,6 +94,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     StReqDataKey,
     StReadSeeds,
     StWait,
+    StEntropyReseed,
     StWipeOwner,
     StWipeDataPart,
     StRmaRsp,
@@ -303,6 +307,10 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     addr_key_req_d = 1'b0;
     data_key_req_d = 1'b0;
 
+    // entropy handling
+    edn_req_o = 1'b0;
+    lfsr_en_o = 1'b0;
+
     unique case (state_q)
 
       StIdle: begin
@@ -371,12 +379,20 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       StWait: begin
         rd_buf_en_o = 1'b1;
         if (rma_i) begin
+          state_d = StEntropyReseed;
+        end
+      end
+
+      StEntropyReseed: begin
+        edn_req_o = 1'b1;
+        if(edn_ack_i) begin
           state_d = StWipeOwner;
         end
       end
 
       // wipe away owner seed partition
       StWipeOwner: begin
+        lfsr_en_o = 1'b1;
         phase = PhaseRma;
         start = 1'b1;
         addr = BusAddrW'(owner_page_addr);
@@ -400,6 +416,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       // wipe away data partitions
       // TBD: Add an alert if not address counts are seen
       StWipeDataPart: begin
+        lfsr_en_o = 1'b1;
         phase = PhaseRma;
         part_sel = FlashPartData;
         start = 1'b1;
