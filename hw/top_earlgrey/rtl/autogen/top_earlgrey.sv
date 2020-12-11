@@ -1262,7 +1262,7 @@ module top_earlgrey #(
       .entropy_src_hw_if_o(csrng_entropy_src_hw_if_req),
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_rsp),
       .efuse_sw_app_enable_i('0),
-      .lc_dft_en_i(lc_ctrl_pkg::Off),
+      .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
       .tl_i(csrng_tl_req),
       .tl_o(csrng_tl_rsp),
       .clk_i (clkmgr_clocks.clk_main_secure),

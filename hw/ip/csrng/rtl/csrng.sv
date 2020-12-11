@@ -21,7 +21,7 @@ module csrng import csrng_pkg::*; #(
   input logic efuse_sw_app_enable_i,
 
   // Lifecycle broadcast inputs
-  input  lc_ctrl_pkg::lc_tx_t  lc_dft_en_i,
+  input  lc_ctrl_pkg::lc_tx_t  lc_hw_debug_en_i,
 
   // Entropy Interface
   output entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_o,
@@ -66,7 +66,7 @@ module csrng import csrng_pkg::*; #(
 
     // misc inputs
     .efuse_sw_app_enable_i,
-    .lc_dft_en_i,
+    .lc_hw_debug_en_i,
 
     // Entropy Interface
     .entropy_src_hw_if_o,
