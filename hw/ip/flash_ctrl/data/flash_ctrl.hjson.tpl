@@ -74,11 +74,11 @@
       package: "flash_ctrl_pkg"
     },
 
-    { struct: "edn_entropy",
-      type: "uni",
+    { struct: "edn",
+      type: "req_rsp",
       name: "edn",
-      act:  "rcv",
-      package: "flash_ctrl_pkg"
+      act:  "req",
+      package: "edn_pkg"
     },
 
     { struct: "pwr_flash",
@@ -107,13 +107,26 @@
       type:      "flash_ctrl_pkg::flash_key_t"
       randcount: "128",
       randtype:  "data", // randomize randcount databits
-    }
+    },
     { name:      "RndCnstDataKey",
       desc:      "Compile-time random bits for default data key",
       type:      "flash_ctrl_pkg::flash_key_t"
       randcount: "128",
       randtype:  "data", // randomize randcount databits
-    }
+    },
+    { name:      "RndCnstLfsrSeed",
+      desc:      "Compile-time random bits for initial LFSR seed",
+      type:      "flash_ctrl_pkg::lfsr_seed_t"
+      randcount: "32",
+      randtype:  "data",
+    },
+    { name:      "RndCnstLfsrPerm",
+      desc:      "Compile-time random permutation for LFSR output",
+      type:      "flash_ctrl_pkg::lfsr_perm_t"
+      randcount: "32",
+      randtype:  "perm",
+    },
+
     { name: "RegNumBanks",
       desc: "Number of flash banks",
       type: "int",
@@ -404,7 +417,9 @@
             If erase ongoing, the request is fed to the flash_phy and cleared when the suspend is handled.
             '''
         },
-      ]
+      ],
+      tags: [// Erase suspend must be directly tested
+        "excl:CsrAllTests:CsrExclWrite"],
     },
 
     // Data partition memory properties region setup
