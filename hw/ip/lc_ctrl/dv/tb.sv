@@ -21,6 +21,7 @@ module tb;
   // TODO: use push-pull agent
   wire lc_otp_token_rsp_t lc_rsp;
   assign lc_rsp.ack = 1;
+  // TODO: temp constraint to 0 because it has to equal to otp_lc_data_i tokens
   assign lc_rsp.hashed_token = 0;
 
   // interfaces

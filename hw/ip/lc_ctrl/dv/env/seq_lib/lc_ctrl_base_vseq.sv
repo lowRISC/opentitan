@@ -47,10 +47,12 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 0);
   endtask
 
-  virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW-1:0] token_val);
+  virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*3-1:0] token_val);
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
     csr_wr(ral.transition_target, next_lc_state);
-    csr_wr(ral.transition_token_0, token_val);
+    csr_wr(ral.transition_token_0, token_val[TL_DW-1:0]);
+    csr_wr(ral.transition_token_1, token_val[TL_DW*2-1:TL_DW]);
+    csr_wr(ral.transition_token_2, token_val[TL_DW*3-1:TL_DW*2]);
     csr_wr(ral.transition_cmd, 'h01);
     csr_spinwait(ral.status.transition_successful, 1);
   endtask
