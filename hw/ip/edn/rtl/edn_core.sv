@@ -112,7 +112,6 @@ module edn_core import edn_pkg::*; #(
   logic                               sfifo_gencmd_not_full;
   logic                               sfifo_gencmd_not_empty;
 
-
   // flops
   logic [31:0]                        cs_cmd_req_q, cs_cmd_req_d;
   logic                               cs_cmd_req_vld_q, cs_cmd_req_vld_d;
@@ -513,7 +512,7 @@ module edn_core import edn_pkg::*; #(
 
     // gate returned data
     assign edn_o[i].edn_ack = packer_ep_ack[i];
-    assign edn_o[i].edn_bus = packer_ep_ack[i] ? packer_ep_rdata[i] : '0;
+    assign edn_o[i].edn_bus = packer_ep_rdata[i];
 
     edn_ack_sm u_edn_ack_sm_ep (
       .clk_i            (clk_i),
