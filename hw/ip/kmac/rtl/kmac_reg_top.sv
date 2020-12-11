@@ -166,6 +166,18 @@ module kmac_reg_top (
   logic cfg_sideload_qs;
   logic cfg_sideload_wd;
   logic cfg_sideload_we;
+  logic [1:0] cfg_entropy_mode_qs;
+  logic [1:0] cfg_entropy_mode_wd;
+  logic cfg_entropy_mode_we;
+  logic cfg_entropy_fast_process_qs;
+  logic cfg_entropy_fast_process_wd;
+  logic cfg_entropy_fast_process_we;
+  logic cfg_entropy_ready_qs;
+  logic cfg_entropy_ready_wd;
+  logic cfg_entropy_ready_we;
+  logic cfg_err_processed_qs;
+  logic cfg_err_processed_wd;
+  logic cfg_err_processed_we;
   logic [3:0] cmd_wd;
   logic cmd_we;
   logic status_sha3_idle_qs;
@@ -180,9 +192,12 @@ module kmac_reg_top (
   logic status_fifo_empty_re;
   logic status_fifo_full_qs;
   logic status_fifo_full_re;
-  logic [31:0] entropy_period_qs;
-  logic [31:0] entropy_period_wd;
-  logic entropy_period_we;
+  logic [15:0] entropy_period_entropy_timer_qs;
+  logic [15:0] entropy_period_entropy_timer_wd;
+  logic entropy_period_entropy_timer_we;
+  logic [15:0] entropy_period_wait_timer_qs;
+  logic [15:0] entropy_period_wait_timer_wd;
+  logic entropy_period_wait_timer_we;
   logic [31:0] entropy_seed_lower_qs;
   logic [31:0] entropy_seed_lower_wd;
   logic entropy_seed_lower_we;
@@ -672,6 +687,110 @@ module kmac_reg_top (
   );
 
 
+  //   F[entropy_mode]: 17:16
+  prim_subreg #(
+    .DW      (2),
+    .SWACCESS("RW"),
+    .RESVAL  (2'h0)
+  ) u_cfg_entropy_mode (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (cfg_entropy_mode_we & cfg_regwen_qs),
+    .wd     (cfg_entropy_mode_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cfg.entropy_mode.q ),
+
+    // to register interface (read)
+    .qs     (cfg_entropy_mode_qs)
+  );
+
+
+  //   F[entropy_fast_process]: 19:19
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cfg_entropy_fast_process (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (cfg_entropy_fast_process_we & cfg_regwen_qs),
+    .wd     (cfg_entropy_fast_process_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cfg.entropy_fast_process.q ),
+
+    // to register interface (read)
+    .qs     (cfg_entropy_fast_process_qs)
+  );
+
+
+  //   F[entropy_ready]: 24:24
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cfg_entropy_ready (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (cfg_entropy_ready_we & cfg_regwen_qs),
+    .wd     (cfg_entropy_ready_wd),
+
+    // from internal hardware
+    .de     (hw2reg.cfg.entropy_ready.de),
+    .d      (hw2reg.cfg.entropy_ready.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cfg.entropy_ready.q ),
+
+    // to register interface (read)
+    .qs     (cfg_entropy_ready_qs)
+  );
+
+
+  //   F[err_processed]: 25:25
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cfg_err_processed (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (cfg_err_processed_we & cfg_regwen_qs),
+    .wd     (cfg_err_processed_wd),
+
+    // from internal hardware
+    .de     (hw2reg.cfg.err_processed.de),
+    .d      (hw2reg.cfg.err_processed.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cfg.err_processed.q ),
+
+    // to register interface (read)
+    .qs     (cfg_err_processed_qs)
+  );
+
+
   // R[cmd]: V(True)
 
   prim_subreg_ext #(
@@ -782,17 +901,18 @@ module kmac_reg_top (
 
   // R[entropy_period]: V(False)
 
+  //   F[entropy_timer]: 15:0
   prim_subreg #(
-    .DW      (32),
+    .DW      (16),
     .SWACCESS("RW"),
-    .RESVAL  (32'h0)
-  ) u_entropy_period (
+    .RESVAL  (16'h0)
+  ) u_entropy_period_entropy_timer (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (entropy_period_we & cfg_regwen_qs),
-    .wd     (entropy_period_wd),
+    .we     (entropy_period_entropy_timer_we & cfg_regwen_qs),
+    .wd     (entropy_period_entropy_timer_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -800,10 +920,36 @@ module kmac_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.entropy_period.q ),
+    .q      (reg2hw.entropy_period.entropy_timer.q ),
 
     // to register interface (read)
-    .qs     (entropy_period_qs)
+    .qs     (entropy_period_entropy_timer_qs)
+  );
+
+
+  //   F[wait_timer]: 31:16
+  prim_subreg #(
+    .DW      (16),
+    .SWACCESS("RW"),
+    .RESVAL  (16'h0)
+  ) u_entropy_period_wait_timer (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (entropy_period_wait_timer_we & cfg_regwen_qs),
+    .wd     (entropy_period_wait_timer_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.entropy_period.wait_timer.q ),
+
+    // to register interface (read)
+    .qs     (entropy_period_wait_timer_qs)
   );
 
 
@@ -1899,6 +2045,18 @@ module kmac_reg_top (
   assign cfg_sideload_we = addr_hit[4] & reg_we & ~wr_err;
   assign cfg_sideload_wd = reg_wdata[12];
 
+  assign cfg_entropy_mode_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_entropy_mode_wd = reg_wdata[17:16];
+
+  assign cfg_entropy_fast_process_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_entropy_fast_process_wd = reg_wdata[19];
+
+  assign cfg_entropy_ready_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_entropy_ready_wd = reg_wdata[24];
+
+  assign cfg_err_processed_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_err_processed_wd = reg_wdata[25];
+
   assign cmd_we = addr_hit[5] & reg_we & ~wr_err;
   assign cmd_wd = reg_wdata[3:0];
 
@@ -1914,8 +2072,11 @@ module kmac_reg_top (
 
   assign status_fifo_full_re = addr_hit[6] && reg_re;
 
-  assign entropy_period_we = addr_hit[7] & reg_we & ~wr_err;
-  assign entropy_period_wd = reg_wdata[31:0];
+  assign entropy_period_entropy_timer_we = addr_hit[7] & reg_we & ~wr_err;
+  assign entropy_period_entropy_timer_wd = reg_wdata[15:0];
+
+  assign entropy_period_wait_timer_we = addr_hit[7] & reg_we & ~wr_err;
+  assign entropy_period_wait_timer_wd = reg_wdata[31:16];
 
   assign entropy_seed_lower_we = addr_hit[8] & reg_we & ~wr_err;
   assign entropy_seed_lower_wd = reg_wdata[31:0];
@@ -2089,6 +2250,10 @@ module kmac_reg_top (
         reg_rdata_next[8] = cfg_msg_endianness_qs;
         reg_rdata_next[9] = cfg_state_endianness_qs;
         reg_rdata_next[12] = cfg_sideload_qs;
+        reg_rdata_next[17:16] = cfg_entropy_mode_qs;
+        reg_rdata_next[19] = cfg_entropy_fast_process_qs;
+        reg_rdata_next[24] = cfg_entropy_ready_qs;
+        reg_rdata_next[25] = cfg_err_processed_qs;
       end
 
       addr_hit[5]: begin
@@ -2105,7 +2270,8 @@ module kmac_reg_top (
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[31:0] = entropy_period_qs;
+        reg_rdata_next[15:0] = entropy_period_entropy_timer_qs;
+        reg_rdata_next[31:16] = entropy_period_wait_timer_qs;
       end
 
       addr_hit[8]: begin

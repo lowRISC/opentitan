@@ -71,6 +71,18 @@ package kmac_reg_pkg;
     struct packed {
       logic        q;
     } sideload;
+    struct packed {
+      logic [1:0]  q;
+    } entropy_mode;
+    struct packed {
+      logic        q;
+    } entropy_fast_process;
+    struct packed {
+      logic        q;
+    } entropy_ready;
+    struct packed {
+      logic        q;
+    } err_processed;
   } kmac_reg2hw_cfg_reg_t;
 
   typedef struct packed {
@@ -79,7 +91,12 @@ package kmac_reg_pkg;
   } kmac_reg2hw_cmd_reg_t;
 
   typedef struct packed {
-    logic [31:0] q;
+    struct packed {
+      logic [15:0] q;
+    } entropy_timer;
+    struct packed {
+      logic [15:0] q;
+    } wait_timer;
   } kmac_reg2hw_entropy_period_reg_t;
 
   typedef struct packed {
@@ -133,6 +150,17 @@ package kmac_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
+      logic        de;
+    } entropy_ready;
+    struct packed {
+      logic        d;
+      logic        de;
+    } err_processed;
+  } kmac_hw2reg_cfg_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
     } sha3_idle;
     struct packed {
       logic        d;
@@ -161,10 +189,10 @@ package kmac_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    kmac_reg2hw_intr_state_reg_t intr_state; // [1534:1532]
-    kmac_reg2hw_intr_enable_reg_t intr_enable; // [1531:1529]
-    kmac_reg2hw_intr_test_reg_t intr_test; // [1528:1523]
-    kmac_reg2hw_cfg_reg_t cfg; // [1522:1514]
+    kmac_reg2hw_intr_state_reg_t intr_state; // [1539:1537]
+    kmac_reg2hw_intr_enable_reg_t intr_enable; // [1536:1534]
+    kmac_reg2hw_intr_test_reg_t intr_test; // [1533:1528]
+    kmac_reg2hw_cfg_reg_t cfg; // [1527:1514]
     kmac_reg2hw_cmd_reg_t cmd; // [1513:1509]
     kmac_reg2hw_entropy_period_reg_t entropy_period; // [1508:1477]
     kmac_reg2hw_entropy_seed_lower_reg_t entropy_seed_lower; // [1476:1444]
@@ -179,8 +207,9 @@ package kmac_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    kmac_hw2reg_intr_state_reg_t intr_state; // [49:44]
-    kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [43:43]
+    kmac_hw2reg_intr_state_reg_t intr_state; // [53:48]
+    kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [47:47]
+    kmac_hw2reg_cfg_reg_t cfg; // [46:43]
     kmac_hw2reg_status_reg_t status; // [42:33]
     kmac_hw2reg_err_code_reg_t err_code; // [32:0]
   } kmac_hw2reg_t;
@@ -313,7 +342,7 @@ package kmac_reg_pkg;
     4'b 0001, // index[ 1] KMAC_INTR_ENABLE
     4'b 0001, // index[ 2] KMAC_INTR_TEST
     4'b 0001, // index[ 3] KMAC_CFG_REGWEN
-    4'b 0011, // index[ 4] KMAC_CFG
+    4'b 1111, // index[ 4] KMAC_CFG
     4'b 0001, // index[ 5] KMAC_CMD
     4'b 0011, // index[ 6] KMAC_STATUS
     4'b 1111, // index[ 7] KMAC_ENTROPY_PERIOD
