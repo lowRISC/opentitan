@@ -213,6 +213,63 @@
                 Key Derivation Function (KDF).
                 '''
         } // f: sideload
+        { bits: "17:16"
+          name: entropy_mode
+          desc: '''Entropy Mode
+
+          Software selects the entropy source with this field. In EdnMode,
+          the entropy generator sends requests to EDN to get the entropy. The
+          received entropy is fed into internal LFSR.
+
+          In SwMode, the software should update the internal LFSR seed
+          through !!ENTROPY_SEED_LOWER and !!ENTROPY_SEED_UPPER.
+          '''
+
+          enum: [
+            { value: "0"
+              name: "idle_mode"
+              desc: '''At reset state, the entropy mode is Idle mode. It does
+              not operate in this mode.
+              '''
+            }
+            { value: "1"
+              name: "edn_mode"
+              desc: "Entropy generator module fetches entropy from EDN"
+            }
+            { value: "2"
+              name: "sw_mode"
+              desc: '''Software update the internal entropy via register
+              interface'''
+            }
+          ]
+        } // f: entropy_mode
+        { bits: "19"
+          name: entropy_fast_process
+          desc: '''Entropy Fast process mode.
+
+          If 1, entropy logic uses garbage data while not processing the KMAC
+          key block. It will re-use previous entropy value and will not
+          expand the entropy when it is consumed. Only it refreshes the
+          entropy while processing the secret key block.
+          '''
+        } // f: entropy_fast_process
+        { bits: "24"
+          name: entropy_ready
+          desc: '''Entropy Ready status.
+
+          Software sets this field to allow the entropy generator in KMAC to
+          fetch the entropy and run.
+          '''
+          hwaccess: "hrw"
+         } // f: entropy_ready
+         { bits: "25"
+           name: err_processed
+           desc: '''When error occurs and one of the state machine stays at
+                  Error handling state, SW may process the error based on
+                  ERR_CODE, then let FSM back to the reset state
+                 '''
+           hwaccess: "hrw"
+         } // f: err_processed
       ]
     } // R: CFG
     { name: "CMD"
@@ -315,23 +372,34 @@
       ]
     } // R: STATUS
     { name: "ENTROPY_PERIOD"
-      desc: '''Entropy Refresh Period.
-
-      This register determines the refresh period. The value is the number of
-      clock cycles. In every entropy period, the entropy generation logic in
-      KMAC requests new entropy to EDN and feed the value into LFSR seed.
-
-      If 0, the entropy generation logic does not refresh its seed. The
-      software manually updates the seed by writing into "ENTROPY_SEED"
-      registers.
+      desc: '''Entropy Timer Periods.
       '''
       swaccess: "rw"
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
       fields: [
-        { bits: "31:0"
-          name: "period"
-          desc: "entropy period in clock cycles"
+        { bits: "15:0"
+          name: "entropy_timer"
+          desc: '''Entropy period in clock cycles This register determines
+          the refresh period. The value is the number of clock cycles. In
+          every entropy period, the entropy generation logic in KMAC requests
+          new entropy to EDN and feed the value into LFSR seed.
+
+          If 0, the entropy generation logic does not refresh its seed. The
+          software manually updates the seed by writing into "ENTROPY_SEED"
+          registers. '''
+        }
+        { bits: "31:16"
+          name: "wait_timer"
+          desc: '''EDN request wait timer.
+
+          The entropy module in KMAC waits up to this field in clock cycles
+          after it sends request to EDN module. If the timer expires, the
+          entropy module moves to an error state and notifies to the system.
+
+          If 0, the entropy module waits the EDN response always. If EDN does
+          not respond in this configuration, the software shall reset the IP.
+          '''
         }
       ]
     } // R: ENTROPY_PERIOD
@@ -355,8 +423,9 @@
     { name: "ENTROPY_SEED_UPPER"
       desc: '''Entropy Seed [63:32].
 
-      Everytime when the software writes into this register, LFSR is reseeded
-      with the value of {ENTROPY_SEED_UPPER, ENTROPY_SEED_LOWER}.
+      Everytime when the software writes into !!ENTROPY_SEED_LOWER register,
+      LFSR is reseeded with the value of {ENTROPY_SEED_UPPER,
+      ENTROPY_SEED_LOWER}.
       '''
       swaccess: "rw"
       hwaccess: "hro"
