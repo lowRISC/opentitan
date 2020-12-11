@@ -102,6 +102,26 @@ package top_earlgrey_rnd_cnst_pkg;
     256'h205AE5E5FEED81E0CB15451E21FFDF7075A864CB4DAAB803225B91E3B1A7B12
   };
 
+  // Compile-time random bits for generation seed when aes destination selected
+  parameter keymgr_pkg::seed_t RndCnstKeymgrAesSeed = {
+    256'hA917F063C414964E46CE0FE8DDB271067884EBCC4F232C841702EF7147E71B5C
+  };
+
+  // Compile-time random bits for generation seed when hmac destination selected
+  parameter keymgr_pkg::seed_t RndCnstKeymgrHmacSeed = {
+    256'h84B1A5A63AF5FA0AAF8C6A6B90F868A3F2590E4A1004F9CF620D8C56137D9287
+  };
+
+  // Compile-time random bits for generation seed when kmac destination selected
+  parameter keymgr_pkg::seed_t RndCnstKeymgrKmacSeed = {
+    256'h32949CC3635D1F47C8F05AFFC85F7D889ECD94B67EB674BBDF38D62D3622493
+  };
+
+  // Compile-time random bits for generation seed when no destination selected
+  parameter keymgr_pkg::seed_t RndCnstKeymgrNoneSeed = {
+    256'hEEC5E43D4B16446726A27B8F0B30AD5048BAE844C87B69111A24D5E4442BCFB7
+  };
+
   ////////////////////////////////////////////
   // alert_handler
   ////////////////////////////////////////////

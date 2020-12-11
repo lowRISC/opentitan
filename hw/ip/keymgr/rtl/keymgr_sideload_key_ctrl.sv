@@ -10,7 +10,8 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   input clk_i,
   input rst_ni,
   input init_i,
-  input wipe_key_i,
+  input clr_key_i,   // clear key just deletes the key
+  input wipe_key_i,  // wipe key deletes and renders sideloads useless until reboot
   input [31:0] entropy_i,
   input keymgr_key_dest_e dest_sel_i,
   input keymgr_gen_out_e key_sel_i,
@@ -26,9 +27,10 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
 );
 
   // Enumeration for working state
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     StSideloadReset,
     StSideloadIdle,
+    StSideloadClear,
     StSideloadWipe,
     StSideloadStop
   } keymgr_sideload_e;
@@ -67,11 +69,24 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
         end
       end
 
+      // when clear is received, delete the key and return to idle.
+      // when wipe is received, delete the key and disable sideload until reboot.
       StSideloadIdle: begin
         keys_en = 1'b1;
-        if (wipe_key_i) begin
+        if (wipe_key_i || clr_key_i) begin
           keys_en = 1'b0;
+          state_d = wipe_key_i ? StSideloadWipe : StSideloadClear;
+        end
+      end
+
+      // if wipe asserts while clearing, follow the normal wipe protocol
+      StSideloadClear: begin
+        keys_en = 1'b0;
+        clr = 1'b1;
+        if (wipe_key_i) begin
           state_d = StSideloadWipe;
+        end else if (!clr_key_i) begin
+          state_d = StSideloadIdle;
         end
       end
 

@@ -3152,6 +3152,54 @@
           name_top: RndCnstKeymgrHardOutputSeed
           randwidth: 256
         }
+        {
+          name: RndCnstAesSeed
+          desc: Compile-time random bits for generation seed when aes destination selected
+          type: keymgr_pkg::seed_t
+          randcount: "256"
+          randtype: data
+          local: "false"
+          default: 0xa917f063c414964e46ce0fe8ddb271067884ebcc4f232c841702ef7147e71b5c
+          expose: "false"
+          name_top: RndCnstKeymgrAesSeed
+          randwidth: 256
+        }
+        {
+          name: RndCnstHmacSeed
+          desc: Compile-time random bits for generation seed when hmac destination selected
+          type: keymgr_pkg::seed_t
+          randcount: "256"
+          randtype: data
+          local: "false"
+          default: 0x84b1a5a63af5fa0aaf8c6a6b90f868a3f2590e4a1004f9cf620d8c56137d9287
+          expose: "false"
+          name_top: RndCnstKeymgrHmacSeed
+          randwidth: 256
+        }
+        {
+          name: RndCnstKmacSeed
+          desc: Compile-time random bits for generation seed when kmac destination selected
+          type: keymgr_pkg::seed_t
+          randcount: "256"
+          randtype: data
+          local: "false"
+          default: 0x32949cc3635d1f47c8f05affc85f7d889ecd94b67eb674bbdf38d62d3622493
+          expose: "false"
+          name_top: RndCnstKeymgrKmacSeed
+          randwidth: 256
+        }
+        {
+          name: RndCnstNoneSeed
+          desc: Compile-time random bits for generation seed when no destination selected
+          type: keymgr_pkg::seed_t
+          randcount: "256"
+          randtype: data
+          local: "false"
+          default: 0xeec5e43d4b16446726a27b8f0b30ad5048bae844c87b69111a24d5e4442bcfb7
+          expose: "false"
+          name_top: RndCnstKeymgrNoneSeed
+          randwidth: 256
+        }
       ]
       interrupt_list:
       [
@@ -3164,18 +3212,6 @@
             1
             1
             0
-          ]
-          type: interrupt
-        }
-        {
-          name: err
-          width: 1
-          bits: "1"
-          bitinfo:
-          [
-            2
-            1
-            1
           ]
           type: interrupt
         }
@@ -6534,19 +6570,6 @@
         1
         1
         0
-      ]
-      type: interrupt
-      module_name: keymgr
-    }
-    {
-      name: keymgr_err
-      width: 1
-      bits: "1"
-      bitinfo:
-      [
-        2
-        1
-        1
       ]
       type: interrupt
       module_name: keymgr

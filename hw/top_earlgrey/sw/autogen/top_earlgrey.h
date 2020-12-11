@@ -630,11 +630,10 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdPwrmgrWakeup = 80, /**< pwrmgr_wakeup */
   kTopEarlgreyPlicIrqIdOtbnDone = 81, /**< otbn_done */
   kTopEarlgreyPlicIrqIdKeymgrOpDone = 82, /**< keymgr_op_done */
-  kTopEarlgreyPlicIrqIdKeymgrErr = 83, /**< keymgr_err */
-  kTopEarlgreyPlicIrqIdKmacKmacDone = 84, /**< kmac_kmac_done */
-  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 85, /**< kmac_fifo_empty */
-  kTopEarlgreyPlicIrqIdKmacKmacErr = 86, /**< kmac_kmac_err */
-  kTopEarlgreyPlicIrqIdLast = 86, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdKmacKmacDone = 83, /**< kmac_kmac_done */
+  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 84, /**< kmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdKmacKmacErr = 85, /**< kmac_kmac_err */
+  kTopEarlgreyPlicIrqIdLast = 85, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -644,7 +643,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[87];
+    top_earlgrey_plic_interrupt_for_peripheral[86];
 
 /**
  * PLIC Interrupt Target.

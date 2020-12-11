@@ -120,7 +120,6 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
     // check and clear interrupt
     check_interrupts(.interrupts(1 << IntrOpDone), .check_set(1));
-    check_interrupts(.interrupts(1 << IntrErr), .check_set(!is_good_op));
 
     // check and clear err_code
     csr_rd_check(.ptr(ral.err_code.invalid_op), .compare_value(!is_good_op));

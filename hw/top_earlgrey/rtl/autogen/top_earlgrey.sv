@@ -163,7 +163,7 @@ module top_earlgrey #(
   // otbn
 
 
-  logic [86:0]  intr_vector;
+  logic [85:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -214,7 +214,6 @@ module top_earlgrey #(
   logic intr_kmac_fifo_empty;
   logic intr_kmac_kmac_err;
   logic intr_keymgr_op_done;
-  logic intr_keymgr_err;
   logic intr_csrng_cs_cmd_req_done;
   logic intr_csrng_cs_entropy_req;
   logic intr_csrng_cs_hw_inst_exc;
@@ -1132,12 +1131,15 @@ module top_earlgrey #(
     .RndCnstOwnerIntIdentitySeed(RndCnstKeymgrOwnerIntIdentitySeed),
     .RndCnstOwnerIdentitySeed(RndCnstKeymgrOwnerIdentitySeed),
     .RndCnstSoftOutputSeed(RndCnstKeymgrSoftOutputSeed),
-    .RndCnstHardOutputSeed(RndCnstKeymgrHardOutputSeed)
+    .RndCnstHardOutputSeed(RndCnstKeymgrHardOutputSeed),
+    .RndCnstAesSeed(RndCnstKeymgrAesSeed),
+    .RndCnstHmacSeed(RndCnstKeymgrHmacSeed),
+    .RndCnstKmacSeed(RndCnstKeymgrKmacSeed),
+    .RndCnstNoneSeed(RndCnstKeymgrNoneSeed)
   ) u_keymgr (
 
       // Interrupt
       .intr_op_done_o (intr_keymgr_op_done),
-      .intr_err_o     (intr_keymgr_err),
 
       // [11]: fault_err
       // [12]: operation_err
@@ -1317,7 +1319,6 @@ module top_earlgrey #(
       intr_kmac_kmac_err,
       intr_kmac_fifo_empty,
       intr_kmac_kmac_done,
-      intr_keymgr_err,
       intr_keymgr_op_done,
       intr_otbn_done,
       intr_pwrmgr_wakeup,
