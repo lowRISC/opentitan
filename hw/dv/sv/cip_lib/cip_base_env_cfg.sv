@@ -8,9 +8,13 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   alert_esc_agent_cfg      m_alert_agent_cfg[string];
   push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent_cfg;
 
-  // common interfaces - intrrupts and alerts
+  // edn clk freq
+  rand clk_freq_mhz_e edn_clk_freq_mhz;
+
+  // common interfaces - intrrupts, alerts, edn clk
   intr_vif    intr_vif;
   devmode_vif devmode_vif;
+  virtual clk_rst_if  edn_clk_rst_vif;
 
   // en_devmode default sets to 1 because all IPs' devmode_i is tied off internally to 1
   // TODO: enable random drive devmode once design supports

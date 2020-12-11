@@ -24,16 +24,18 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   keymgr_if keymgr_if(.clk(clk), .rst_n(rst_n));
   keymgr_kmac_intf keymgr_kmac_intf(.clk(clk), .rst_n(rst_n));
-  push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
+
+  // edn_clk, edn_rst_n and edn_if are defined and driven in below macro
+  `DV_EDN_IF_CONNECT
 
   // dut
   keymgr dut (
     .clk_i                (clk        ),
     .rst_ni               (rst_n      ),
-    .clk_edn_i            (clk        ),
-    .rst_edn_ni           (rst_n      ),
+    .clk_edn_i            (edn_clk    ),
+    .rst_edn_ni           (edn_rst_n  ),
     .aes_key_o            (keymgr_if.aes_key),
     .hmac_key_o           (keymgr_if.hmac_key),
     .kmac_key_o           (keymgr_if.kmac_key),
@@ -51,7 +53,6 @@ module tb;
     .alert_tx_o           (alert_tx   ),
     .tl_i                 (tl_if.h2d  ),
     .tl_o                 (tl_if.d2h  )
-    // TODO: add remaining IOs and hook them
   );
 
   initial begin
@@ -70,8 +71,6 @@ module tb;
     uvm_config_db#(virtual keymgr_if)::set(null, "*.env", "keymgr_vif", keymgr_if);
     uvm_config_db#(virtual keymgr_kmac_intf)::set(null,
                    "*env.m_keymgr_kmac_agent*", "vif", keymgr_kmac_intf);
-    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)))::set
-                   (null, "*env.m_edn_pull_agent*", "vif", edn_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

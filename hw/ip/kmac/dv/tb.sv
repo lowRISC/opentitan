@@ -36,6 +36,9 @@ module tb;
 
   kmac_sideload_if sideload_if();
 
+  // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
+  `DV_EDN_IF_CONNECT
+
   // dut
   kmac #(.EnMasking(`EN_MASKING), .ReuseShare(`REUSE_SHARE)) dut (
     .clk_i                (clk                      ),
@@ -60,12 +63,18 @@ module tb;
     .intr_kmac_err_o      (intr_kmac_err            ),
 
     // Idle interface
-    .idle_o               (idle                     )
+    .idle_o               (idle                     ),
 
     // TODO: hook up interfaces for:
     //
     // 1) KDF
     // 2) csrng/edn
+
+    // edn
+    .clk_edn_i                  (edn_clk    ),
+    .rst_edn_ni                 (edn_rst_n  ),
+    .entropy_o                  (edn_if.req ),
+    .entropy_i                  ({edn_if.ack, edn_if.d_data})
   );
 
   // Interface assignments
