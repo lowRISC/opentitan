@@ -11,7 +11,7 @@ containing a list of expected register values.
 '''
 
 import os
-import py  # type: ignore
+import py
 import re
 import subprocess
 from typing import Any, Dict, List, Tuple
@@ -25,27 +25,58 @@ _REG_RE = re.compile(r'\s*([xw][0-9]+)\s*=\s*((:?0x[0-9a-f]+)|([0-9]+))$')
 
 
 def find_simple_tests() -> List[Tuple[str, str]]:
-    '''Find all test directories below ./simple (relative to this file)
+    '''Find all tests below ./simple (relative to this file)
 
     Returns (asm, expected) pairs, with the paths to the assembly file and
-    expected.txt.
+    expected values.
 
     '''
     root = os.path.join(os.path.dirname(__file__), 'simple')
     ret = []
     for subdir, _, files in os.walk(root):
-        if 'expected.txt' not in files:
-            continue
+        # We're interested in pairs foo.s / foo.exp, which contain the assembly
+        # and expected values, respectively.
+        asm_files = {}
+        exp_files = {}
+
+        for filename in files:
+            basename, ext = os.path.splitext(filename)
+            if ext == '.s':
+                assert basename not in asm_files
+                asm_files[basename] = filename
+            elif ext == '.exp':
+                assert basename not in exp_files
+                exp_files[basename] = filename
+            else:
+                # Ignore any files that aren't called .s or .exp (which allows
+                # things like adding READMEs to the tree)
+                pass
 
         dirname = os.path.join(root, subdir)
-        asm_files = [name for name in files if name.endswith('.s')]
-        if len(asm_files) != 1:
-            raise RuntimeError('In the directory {!r}, there is an '
-                               'expected.txt, but there are {} files ending '
-                               'in .s (expected exactly one).'
-                               .format(dirname, len(asm_files)))
-        ret.append((os.path.join(dirname, asm_files[0]),
-                    os.path.join(dirname, 'expected.txt')))
+
+        # Pair up the files we found
+        for basename, asm_file in asm_files.items():
+            exp_file = exp_files.get(basename)
+            if exp_file is None:
+                raise RuntimeError('In the directory {!r}, there is {}, but '
+                                   'no {}.exp, which should contain expected '
+                                   'values.'
+                                   .format(dirname, asm_file, basename))
+
+            ret.append((os.path.join(dirname, asm_file),
+                        os.path.join(dirname, exp_file)))
+
+        # We've checked that every .s file has a matching .exp. Check the other
+        # way around too.
+        for basename, exp_file in exp_files.items():
+            if basename not in asm_files:
+                raise RuntimeError('In the directory {!r}, there is {}, but '
+                                   'no {}.s, which should contain the program '
+                                   'that generates the expected values.'
+                                   .format(dirname, exp_file, basename))
+
+        assert len(exp_files) == len(asm_files)
+
     return ret
 
 
