@@ -18,18 +18,38 @@ class push_pull_agent_cfg #(parameter int HostDataWidth = 32,
   bit in_bidirectional_mode = 1'b0;
 
   // Device-side delay range for both Push/Pull protocols.
-  int unsigned device_delay_min = 0;
-  int unsigned device_delay_max = 10;
+  rand int unsigned device_delay_min;
+  rand int unsigned device_delay_max;
+  rand int unsigned large_device_delay_max_weight = 10; // max 100
 
   // Host-side delay range for both Push/Pull protocols.
-  int unsigned host_delay_min = 0;
-  int unsigned host_delay_max = 10;
+  rand int unsigned host_delay_min;
+  rand int unsigned host_delay_max;
+  rand int unsigned large_host_delay_max_weight = 10; // max 100
 
   // Enables/disable all protocol delays.
   rand bit zero_delays;
 
   // Enable starting the device sequence by default if configured in Device mode.
   bit start_default_device_seq = 1;
+
+  constraint device_delay_min_c {
+    device_delay_min == 0;
+  }
+
+  constraint device_delay_max_c {
+    device_delay_max dist {1000 :/ large_device_delay_max_weight,
+                           100  :/ 100 - large_device_delay_max_weight};
+  }
+
+  constraint host_delay_min_c {
+    host_delay_min == 0;
+  }
+
+  constraint host_delay_max_c {
+    host_delay_max dist {1000 :/ large_host_delay_max_weight,
+                         100  :/ 100 - large_host_delay_max_weight};
+  }
 
   // Bias randomization in favor of enabling zero delays less often.
   constraint zero_delays_c {
