@@ -62,12 +62,18 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
           cfg.m_alert_agent_cfg[alert_name]);
     end
 
-    // create edn pull agent and set cfg
+    // create edn pull agent, set cfg and set clk freq
     if (cfg.has_edn) begin
       m_edn_pull_agent = push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH))::type_id::create(
                          "m_edn_pull_agent", this);
       uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)))::set(
                      this, "m_edn_pull_agent", "cfg", cfg.m_edn_pull_agent_cfg);
+
+      if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "edn_clk_rst_vif",
+          cfg.edn_clk_rst_vif)) begin
+        `uvm_fatal(get_full_name(), "failed to get edn_clk_rst_vif from uvm_config_db")
+      end
+      cfg.clk_rst_vif.set_freq_mhz(cfg.edn_clk_freq_mhz);
     end
   endfunction
 

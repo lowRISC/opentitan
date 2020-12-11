@@ -48,7 +48,6 @@ module tb;
   push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(clk), .rst_n(rst_n));
 
   pins_if #(OtpPwrIfWidth) pwr_otp_if(pwr_otp);
   // TODO: use standard req/rsp agent
@@ -64,14 +63,16 @@ module tb;
 
   `DV_ALERT_IF_CONNECT
 
+  // edn_clk, edn_rst_n and edn_if are defined and driven in below macro
+  `DV_EDN_IF_CONNECT
+
   // dut
   otp_ctrl dut (
     .clk_i                      (clk        ),
     .rst_ni                     (rst_n      ),
     // edn
-    // TODO: consider connecting this to a different clock.
-    .clk_edn_i                  (clk        ),
-    .rst_edn_ni                 (rst_n      ),
+    .clk_edn_i                  (edn_clk    ),
+    .rst_edn_ni                 (edn_rst_n  ),
     .edn_o                      (edn_if.req ),
     .edn_i                      ({edn_if.ack, edn_if.d_data}),
 
@@ -154,8 +155,6 @@ module tb;
                    "*env.m_flash_data_pull_agent*", "vif", flash_data_if);
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(null,
                    "*env.m_flash_addr_pull_agent*", "vif", flash_addr_if);
-    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)))::
-                   set(null, "*env.m_edn_pull_agent*", "vif", edn_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1)))::
                    set(null, "*env.m_lc_prog_pull_agent*", "vif", lc_prog_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))::
