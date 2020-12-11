@@ -107,6 +107,7 @@ package flash_phy_pkg;
     flash_ctrl_pkg::flash_prog_e prog_type;
     logic pg_erase_req;
     logic bk_erase_req;
+    logic erase_suspend_req;
     logic he;
     logic [BankAddrW-1:0] addr;
     flash_ctrl_pkg::flash_part_e part;
@@ -118,6 +119,7 @@ package flash_phy_pkg;
     logic ack;
     logic done;
     logic [FullDataWidth-1:0] rdata;
+    logic erase_suspend_done;
   } flash_phy_prim_flash_rsp_t;
 
 endpackage // flash_phy_pkg

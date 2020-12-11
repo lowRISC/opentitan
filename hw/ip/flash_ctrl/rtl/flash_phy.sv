@@ -68,6 +68,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   logic [NumBanks-1:0]  rd_done;
   logic [NumBanks-1:0]  prog_done;
   logic [NumBanks-1:0]  erase_done;
+  logic [NumBanks-1:0]  erase_suspend_done;
   logic                 init_busy;
   logic [ProgTypes-1:0] prog_type_avail;
 
@@ -92,6 +93,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   assign flash_ctrl_o.rd_done = rd_done[ctrl_bank_sel];
   assign flash_ctrl_o.prog_done = prog_done[ctrl_bank_sel];
   assign flash_ctrl_o.erase_done = erase_done[ctrl_bank_sel];
+  assign flash_ctrl_o.erase_suspend_done = erase_suspend_done[ctrl_bank_sel];
   assign flash_ctrl_o.rd_data = rd_data[ctrl_bank_sel];
   assign flash_ctrl_o.rd_err = rd_err[ctrl_bank_sel];
   assign flash_ctrl_o.init_busy = init_busy;
@@ -191,6 +193,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .prog_i(flash_ctrl_i.prog),
       .pg_erase_i(flash_ctrl_i.pg_erase),
       .bk_erase_i(flash_ctrl_i.bk_erase),
+      .erase_suspend_req_i(flash_ctrl_i.erase_suspend),
       .part_i(flash_ctrl_i.part),
       .info_sel_i(flash_ctrl_i.info_sel),
       .addr_i(flash_ctrl_i.addr[0 +: BusBankAddrW]),
@@ -207,6 +210,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .erase_done_o(erase_done[bank]),
       .rd_data_o(rd_data[bank]),
       .rd_err_o(rd_err[bank]),
+      .erase_suspend_done_o(erase_suspend_done[bank]),
       .prim_flash_req_o(prim_flash_req[bank]),
       .prim_flash_rsp_i(prim_flash_rsp[bank])
     );
@@ -241,6 +245,8 @@ module flash_phy import flash_ctrl_pkg::*; (
     .flash_req_i(prim_flash_req),
     .flash_rsp_o(prim_flash_rsp),
     .prog_type_avail_o(prog_type_avail),
+    // initialize whenever power is ready
+    .init_i(1'b1),
     .init_busy_o(init_busy),
     .tck_i(tck_i & (lc_dft_en[FlashLcTckSel] == lc_ctrl_pkg::On)),
     .tdi_i(tdi_i & (lc_dft_en[FlashLcTdiSel] == lc_ctrl_pkg::On)),
