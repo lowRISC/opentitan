@@ -38,6 +38,7 @@
       clkmgr
       ram_ret
       otp_ctrl
+      lc_ctrl
       sensor_ctrl
       ast_wrapper
     ]
@@ -229,6 +230,24 @@
         {
           base_addr: 0x40130000
           size_byte: 0x4000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: lc_ctrl
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: lc_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x40140000
+          size_byte: 0x1000
         }
       ]
       xbar: false

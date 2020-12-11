@@ -1039,6 +1039,18 @@
           name_top: RndCnstOtpCtrlDigestIV
           randwidth: 320
         }
+        {
+          name: RndCnstKeyMgrKey
+          desc: Compile-time random default constant for the root key, to be output when key has not yet been provisioned.
+          type: otp_ctrl_pkg::otp_keymgr_key_t
+          randcount: "513"
+          randtype: data
+          local: "false"
+          default: 0x160c06703b494b3ff9fbb73a9bf8c393c12965c7de10023ec699679edd5369f11b49bac9198bd1ff344c5da2242d290bede094ca8f1435f85e0f7489a309cbe57
+          expose: "false"
+          name_top: RndCnstOtpCtrlKeyMgrKey
+          randwidth: 513
+        }
       ]
       interrupt_list:
       [
@@ -1158,6 +1170,8 @@
           default: "'0"
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_signame: lc_ctrl_lc_otp_program
           index: -1
         }
         {
@@ -1168,6 +1182,8 @@
           default: "'0"
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_signame: lc_ctrl_lc_otp_token
           index: -1
         }
         {
@@ -1178,6 +1194,9 @@
           default: "'0"
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: otp_ctrl_otp_lc_data
           index: -1
         }
         {
@@ -1188,16 +1207,32 @@
           default: lc_ctrl_pkg::Off
           package: lc_ctrl_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_signame: lc_ctrl_lc_escalate_en
           index: -1
         }
         {
           struct: lc_tx
           type: uni
-          name: lc_provision_wr_en
+          name: lc_creator_seed_sw_rw_en
           act: rcv
           default: lc_ctrl_pkg::Off
           package: lc_ctrl_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_seed_hw_rd_en
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: otp_ctrl
+          width: 1
+          top_signame: lc_ctrl_lc_seed_hw_rd_en
           index: -1
         }
         {
@@ -1208,6 +1243,8 @@
           default: lc_ctrl_pkg::Off
           package: lc_ctrl_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_signame: lc_ctrl_lc_dft_en
           index: -1
         }
         {
@@ -1264,6 +1301,9 @@
           default: "'0"
           package: otp_ctrl_part_pkg
           inst_name: otp_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: otp_ctrl_otp_hw_cfg
           index: -1
         }
         {
@@ -1276,6 +1316,440 @@
           width: 1
           default: ""
           top_signame: otp_ctrl_tl
+          index: -1
+        }
+      ]
+    }
+    {
+      name: lc_ctrl
+      type: lc_ctrl
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: timers
+      reset_connections:
+      {
+        rst_ni: rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
+      }
+      base_addr: 0x40140000
+      clock_reset_export: []
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_div4_timers
+      }
+      domain: "0"
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list:
+      [
+        {
+          name: RndCnstLcKeymgrDivInvalid
+          desc: Compile-time random bits for lc state group diversification value
+          type: lc_ctrl_pkg::lc_keymgr_div_t
+          randcount: "64"
+          randtype: data
+          local: "false"
+          default: 0xf4c3471c5def7861
+          expose: "false"
+          name_top: RndCnstLcCtrlLcKeymgrDivInvalid
+          randwidth: 64
+        }
+        {
+          name: RndCnstLcKeymgrDivTestDevRma
+          desc: Compile-time random bits for lc state group diversification value
+          type: lc_ctrl_pkg::lc_keymgr_div_t
+          randcount: "64"
+          randtype: data
+          local: "false"
+          default: 0x83d0550b80e84eb1
+          expose: "false"
+          name_top: RndCnstLcCtrlLcKeymgrDivTestDevRma
+          randwidth: 64
+        }
+        {
+          name: RndCnstLcKeymgrDivProduction
+          desc: Compile-time random bits for lc state group diversification value
+          type: lc_ctrl_pkg::lc_keymgr_div_t
+          randcount: "64"
+          randtype: data
+          local: "false"
+          default: 0x2d73930d4cac3785
+          expose: "false"
+          name_top: RndCnstLcCtrlLcKeymgrDivProduction
+          randwidth: 64
+        }
+      ]
+      interrupt_list: []
+      alert_list:
+      [
+        {
+          name: lc_programming_failure
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: alert
+          async: 1
+        }
+        {
+          name: lc_state_failure
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: alert
+          async: 1
+        }
+      ]
+      wakeup_list: []
+      reset_request_list: []
+      scan: "true"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: jtag
+          type: req_rsp
+          name: jtag
+          act: rsp
+          package: jtag_pkg
+          inst_name: lc_ctrl
+          index: -1
+        }
+        {
+          struct: esc_tx
+          type: uni
+          name: esc_wipe_secrets_tx
+          act: rcv
+          package: prim_esc_pkg
+          inst_name: lc_ctrl
+          index: -1
+        }
+        {
+          struct: esc_rx
+          type: uni
+          name: esc_wipe_secrets_rx
+          act: req
+          package: prim_esc_pkg
+          inst_name: lc_ctrl
+          index: -1
+        }
+        {
+          struct: esc_tx
+          type: uni
+          name: esc_scrap_state_tx
+          act: rcv
+          package: prim_esc_pkg
+          inst_name: lc_ctrl
+          index: -1
+        }
+        {
+          struct: esc_rx
+          type: uni
+          name: esc_scrap_state_rx
+          act: req
+          package: prim_esc_pkg
+          inst_name: lc_ctrl
+          index: -1
+        }
+        {
+          struct: pwr_lc
+          type: req_rsp
+          name: pwr_lc
+          act: rsp
+          package: pwrmgr_pkg
+          inst_name: lc_ctrl
+          width: 1
+          default: ""
+          top_signame: pwrmgr_pwr_lc
+          index: -1
+        }
+        {
+          struct: otp_lc_data
+          type: uni
+          name: otp_lc_data
+          act: rcv
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_signame: otp_ctrl_otp_lc_data
+          index: -1
+        }
+        {
+          struct: lc_otp_program
+          type: req_rsp
+          name: lc_otp_program
+          act: req
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_signame: lc_ctrl_lc_otp_program
+          index: -1
+        }
+        {
+          struct: lc_otp_token
+          type: req_rsp
+          name: lc_otp_token
+          act: req
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_signame: lc_ctrl_lc_otp_token
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_dft_en
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_dft_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_nvm_debug_en
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_nvm_debug_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_hw_debug_en
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_hw_debug_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_cpu_en
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_cpu_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_keymgr_en
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_keymgr_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_escalate_en
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_clk_byp_req
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_clk_byp_req
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_clk_byp_ack
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_flash_rma_req
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_flash_rma_req
+          index: -1
+        }
+        {
+          struct: lc_flash_rma_seed
+          type: uni
+          name: lc_flash_rma_seed
+          act: req
+          default: "'0"
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_flash_rma_seed
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_flash_rma_ack
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_creator_seed_sw_rw_en
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_owner_seed_sw_rw_en
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_iso_part_sw_rd_en
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_iso_part_sw_rd_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_iso_part_sw_wr_en
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_iso_part_sw_wr_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_seed_hw_rd_en
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_seed_hw_rd_en
+          index: -1
+        }
+        {
+          struct: lc_keymgr_div
+          type: uni
+          name: lc_keymgr_div
+          act: req
+          default: "'0"
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_keymgr_div
+          index: -1
+        }
+        {
+          struct: otp_hw_cfg
+          type: uni
+          name: otp_hw_cfg
+          act: rcv
+          default: "'0"
+          package: otp_ctrl_part_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_signame: otp_ctrl_otp_hw_cfg
+          index: -1
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: lc_ctrl
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_tl
           index: -1
         }
       ]
@@ -1388,6 +1862,9 @@
           act: req
           package: pwrmgr_pkg
           inst_name: pwrmgr
+          width: 1
+          default: ""
+          top_signame: pwrmgr_pwr_lc
           index: -1
         }
         {
@@ -2412,6 +2889,9 @@
           act: rcv
           package: lc_ctrl_pkg
           inst_name: flash_ctrl
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
           index: -1
         }
         {
@@ -2421,6 +2901,9 @@
           act: rcv
           package: lc_ctrl_pkg
           inst_name: flash_ctrl
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
           index: -1
         }
         {
@@ -2430,6 +2913,9 @@
           act: rcv
           package: lc_ctrl_pkg
           inst_name: flash_ctrl
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_lc_iso_part_sw_rd_en
           index: -1
         }
         {
@@ -2439,6 +2925,9 @@
           act: rcv
           package: lc_ctrl_pkg
           inst_name: flash_ctrl
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_lc_iso_part_sw_wr_en
           index: -1
         }
         {
@@ -2448,6 +2937,9 @@
           act: rcv
           package: lc_ctrl_pkg
           inst_name: flash_ctrl
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_lc_seed_hw_rd_en
           index: -1
         }
         {
@@ -4006,6 +4498,15 @@
           index: -1
         }
         {
+          struct: logic
+          type: uni
+          name: entropy
+          default: " 1'b0"
+          act: rcv
+          inst_name: alert_handler
+          index: -1
+        }
+        {
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -4408,6 +4909,18 @@
           index: -1
         }
         {
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          name: lc_dft_en
+          inst_name: eflash
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_lc_dft_en
+          index: -1
+        }
+        {
           struct: logic
           package: ""
           type: uni
@@ -4457,15 +4970,6 @@
           default: ""
           external: true
           top_signame: flash_test_voltage_h
-          index: -1
-        }
-        {
-          struct: lc_tx
-          package: lc_ctrl
-          type: uni
-          act: rcv
-          name: lc_dft_en
-          inst_name: eflash
           index: -1
         }
       ]
@@ -4533,6 +5037,10 @@
       [
         otp_ctrl.pwr_otp
       ]
+      pwrmgr.pwr_lc:
+      [
+        lc_ctrl.pwr_lc
+      ]
       otp_ctrl.otp_keymgr_key:
       [
         keymgr.otp_key
@@ -4551,6 +5059,61 @@
         hmac.idle
         kmac.idle
         otbn.idle
+      ]
+      otp_ctrl.otp_lc_data:
+      [
+        lc_ctrl.otp_lc_data
+      ]
+      lc_ctrl.lc_otp_program:
+      [
+        otp_ctrl.lc_otp_program
+      ]
+      lc_ctrl.lc_otp_token:
+      [
+        otp_ctrl.lc_otp_token
+      ]
+      otp_ctrl.otp_hw_cfg:
+      [
+        lc_ctrl.otp_hw_cfg
+      ]
+      lc_ctrl.lc_keymgr_div: []
+      lc_ctrl.lc_dft_en:
+      [
+        otp_ctrl.lc_dft_en
+        eflash.lc_dft_en
+      ]
+      lc_ctrl.lc_nvm_debug_en: []
+      lc_ctrl.lc_hw_debug_en: []
+      lc_ctrl.lc_cpu_en: []
+      lc_ctrl.lc_keymgr_en: []
+      lc_ctrl.lc_escalate_en:
+      [
+        otp_ctrl.lc_escalate_en
+      ]
+      lc_ctrl.lc_clk_byp_req: []
+      lc_ctrl.lc_flash_rma_req: []
+      lc_ctrl.lc_flash_rma_seed: []
+      lc_ctrl.lc_creator_seed_sw_rw_en:
+      [
+        otp_ctrl.lc_creator_seed_sw_rw_en
+        flash_ctrl.lc_creator_seed_sw_rw_en
+      ]
+      lc_ctrl.lc_owner_seed_sw_rw_en:
+      [
+        flash_ctrl.lc_owner_seed_sw_rw_en
+      ]
+      lc_ctrl.lc_iso_part_sw_rd_en:
+      [
+        flash_ctrl.lc_iso_part_sw_rd_en
+      ]
+      lc_ctrl.lc_iso_part_sw_wr_en:
+      [
+        flash_ctrl.lc_iso_part_sw_wr_en
+      ]
+      lc_ctrl.lc_seed_hw_rd_en:
+      [
+        otp_ctrl.lc_seed_hw_rd_en
+        flash_ctrl.lc_seed_hw_rd_en
       ]
       pwrmgr.wakeups:
       [
@@ -4675,6 +5238,10 @@
       otp_ctrl.tl:
       [
         peri.tl_otp_ctrl
+      ]
+      lc_ctrl.tl:
+      [
+        peri.tl_lc_ctrl
       ]
       sensor_ctrl.tl:
       [
@@ -5507,6 +6074,7 @@
           clkmgr
           ram_ret
           otp_ctrl
+          lc_ctrl
           sensor_ctrl
           ast_wrapper
         ]
@@ -5705,6 +6273,24 @@
           pipeline_byp: "true"
         }
         {
+          name: lc_ctrl
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: lc_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x40140000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
+        }
+        {
           name: sensor_ctrl
           type: device
           clock: clk_peri_i
@@ -5874,6 +6460,18 @@
           width: 1
           default: ""
           top_signame: otp_ctrl_tl
+          index: -1
+        }
+        {
+          struct: tl
+          type: req_rsp
+          name: tl_lc_ctrl
+          act: req
+          package: tlul_pkg
+          inst_name: peri
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_tl
           index: -1
         }
         {
@@ -6631,6 +7229,7 @@
     sensor_ctrl
     keymgr
     otp_ctrl
+    lc_ctrl
     entropy_src
   ]
   alert:
@@ -6858,6 +7457,34 @@
       type: alert
       async: 1
       module_name: otp_ctrl
+    }
+    {
+      name: lc_ctrl_lc_programming_failure
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: alert
+      async: 1
+      module_name: lc_ctrl
+    }
+    {
+      name: lc_ctrl_lc_state_failure
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: alert
+      async: 1
+      module_name: lc_ctrl
     }
     {
       name: entropy_src_es_alert_count_met
@@ -7366,6 +7993,8 @@
         default: "'0"
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_signame: lc_ctrl_lc_otp_program
         index: -1
       }
       {
@@ -7376,6 +8005,8 @@
         default: "'0"
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_signame: lc_ctrl_lc_otp_token
         index: -1
       }
       {
@@ -7386,6 +8017,9 @@
         default: "'0"
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: otp_ctrl_otp_lc_data
         index: -1
       }
       {
@@ -7396,16 +8030,32 @@
         default: lc_ctrl_pkg::Off
         package: lc_ctrl_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_signame: lc_ctrl_lc_escalate_en
         index: -1
       }
       {
         struct: lc_tx
         type: uni
-        name: lc_provision_wr_en
+        name: lc_creator_seed_sw_rw_en
         act: rcv
         default: lc_ctrl_pkg::Off
         package: lc_ctrl_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_seed_hw_rd_en
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: otp_ctrl
+        width: 1
+        top_signame: lc_ctrl_lc_seed_hw_rd_en
         index: -1
       }
       {
@@ -7416,6 +8066,8 @@
         default: lc_ctrl_pkg::Off
         package: lc_ctrl_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_signame: lc_ctrl_lc_dft_en
         index: -1
       }
       {
@@ -7472,6 +8124,9 @@
         default: "'0"
         package: otp_ctrl_part_pkg
         inst_name: otp_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: otp_ctrl_otp_hw_cfg
         index: -1
       }
       {
@@ -7484,6 +8139,338 @@
         width: 1
         default: ""
         top_signame: otp_ctrl_tl
+        index: -1
+      }
+      {
+        struct: jtag
+        type: req_rsp
+        name: jtag
+        act: rsp
+        package: jtag_pkg
+        inst_name: lc_ctrl
+        index: -1
+      }
+      {
+        struct: esc_tx
+        type: uni
+        name: esc_wipe_secrets_tx
+        act: rcv
+        package: prim_esc_pkg
+        inst_name: lc_ctrl
+        index: -1
+      }
+      {
+        struct: esc_rx
+        type: uni
+        name: esc_wipe_secrets_rx
+        act: req
+        package: prim_esc_pkg
+        inst_name: lc_ctrl
+        index: -1
+      }
+      {
+        struct: esc_tx
+        type: uni
+        name: esc_scrap_state_tx
+        act: rcv
+        package: prim_esc_pkg
+        inst_name: lc_ctrl
+        index: -1
+      }
+      {
+        struct: esc_rx
+        type: uni
+        name: esc_scrap_state_rx
+        act: req
+        package: prim_esc_pkg
+        inst_name: lc_ctrl
+        index: -1
+      }
+      {
+        struct: pwr_lc
+        type: req_rsp
+        name: pwr_lc
+        act: rsp
+        package: pwrmgr_pkg
+        inst_name: lc_ctrl
+        width: 1
+        default: ""
+        top_signame: pwrmgr_pwr_lc
+        index: -1
+      }
+      {
+        struct: otp_lc_data
+        type: uni
+        name: otp_lc_data
+        act: rcv
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_signame: otp_ctrl_otp_lc_data
+        index: -1
+      }
+      {
+        struct: lc_otp_program
+        type: req_rsp
+        name: lc_otp_program
+        act: req
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_signame: lc_ctrl_lc_otp_program
+        index: -1
+      }
+      {
+        struct: lc_otp_token
+        type: req_rsp
+        name: lc_otp_token
+        act: req
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_signame: lc_ctrl_lc_otp_token
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_dft_en
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_dft_en
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_nvm_debug_en
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_nvm_debug_en
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_hw_debug_en
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_hw_debug_en
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_cpu_en
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_cpu_en
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_keymgr_en
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_keymgr_en
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_escalate_en
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_clk_byp_req
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_clk_byp_req
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_clk_byp_ack
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_flash_rma_req
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_flash_rma_req
+        index: -1
+      }
+      {
+        struct: lc_flash_rma_seed
+        type: uni
+        name: lc_flash_rma_seed
+        act: req
+        default: "'0"
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_flash_rma_seed
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_flash_rma_ack
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_creator_seed_sw_rw_en
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_owner_seed_sw_rw_en
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_iso_part_sw_rd_en
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_iso_part_sw_rd_en
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_iso_part_sw_wr_en
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_iso_part_sw_wr_en
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_seed_hw_rd_en
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_seed_hw_rd_en
+        index: -1
+      }
+      {
+        struct: lc_keymgr_div
+        type: uni
+        name: lc_keymgr_div
+        act: req
+        default: "'0"
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_keymgr_div
+        index: -1
+      }
+      {
+        struct: otp_hw_cfg
+        type: uni
+        name: otp_hw_cfg
+        act: rcv
+        default: "'0"
+        package: otp_ctrl_part_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_signame: otp_ctrl_otp_hw_cfg
+        index: -1
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: lc_ctrl
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_tl
         index: -1
       }
       {
@@ -7542,6 +8529,9 @@
         act: req
         package: pwrmgr_pkg
         inst_name: pwrmgr
+        width: 1
+        default: ""
+        top_signame: pwrmgr_pwr_lc
         index: -1
       }
       {
@@ -7951,6 +8941,9 @@
         act: rcv
         package: lc_ctrl_pkg
         inst_name: flash_ctrl
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
         index: -1
       }
       {
@@ -7960,6 +8953,9 @@
         act: rcv
         package: lc_ctrl_pkg
         inst_name: flash_ctrl
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
         index: -1
       }
       {
@@ -7969,6 +8965,9 @@
         act: rcv
         package: lc_ctrl_pkg
         inst_name: flash_ctrl
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_lc_iso_part_sw_rd_en
         index: -1
       }
       {
@@ -7978,6 +8977,9 @@
         act: rcv
         package: lc_ctrl_pkg
         inst_name: flash_ctrl
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_lc_iso_part_sw_wr_en
         index: -1
       }
       {
@@ -7987,6 +8989,9 @@
         act: rcv
         package: lc_ctrl_pkg
         inst_name: flash_ctrl
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_lc_seed_hw_rd_en
         index: -1
       }
       {
@@ -8476,6 +9481,15 @@
         index: -1
       }
       {
+        struct: logic
+        type: uni
+        name: entropy
+        default: " 1'b0"
+        act: rcv
+        inst_name: alert_handler
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -8596,6 +9610,18 @@
         index: -1
       }
       {
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        name: lc_dft_en
+        inst_name: eflash
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_lc_dft_en
+        index: -1
+      }
+      {
         struct: logic
         package: ""
         type: uni
@@ -8645,15 +9671,6 @@
         default: ""
         external: true
         top_signame: flash_test_voltage_h
-        index: -1
-      }
-      {
-        struct: lc_tx
-        package: lc_ctrl
-        type: uni
-        act: rcv
-        name: lc_dft_en
-        inst_name: eflash
         index: -1
       }
       {
@@ -9067,6 +10084,18 @@
       {
         struct: tl
         type: req_rsp
+        name: tl_lc_ctrl
+        act: req
+        package: tlul_pkg
+        inst_name: peri
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_tl
+        index: -1
+      }
+      {
+        struct: tl
+        type: req_rsp
         name: tl_sensor_ctrl
         act: req
         package: tlul_pkg
@@ -9438,6 +10467,22 @@
         default: ""
       }
       {
+        package: pwrmgr_pkg
+        struct: pwr_lc_req
+        signame: pwrmgr_pwr_lc_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_lc_rsp
+        signame: pwrmgr_pwr_lc_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
         package: otp_ctrl_pkg
         struct: otp_keymgr_key
         signame: otp_ctrl_otp_keymgr_key
@@ -9476,6 +10521,174 @@
         width: 4
         type: uni
         default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_lc_data
+        signame: otp_ctrl_otp_lc_data
+        width: 1
+        type: uni
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: lc_otp_program_req
+        signame: lc_ctrl_lc_otp_program_req
+        width: 1
+        type: req_rsp
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: lc_otp_program_rsp
+        signame: lc_ctrl_lc_otp_program_rsp
+        width: 1
+        type: req_rsp
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: lc_otp_token_req
+        signame: lc_ctrl_lc_otp_token_req
+        width: 1
+        type: req_rsp
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: lc_otp_token_rsp
+        signame: lc_ctrl_lc_otp_token_rsp
+        width: 1
+        type: req_rsp
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_part_pkg
+        struct: otp_hw_cfg
+        signame: otp_ctrl_otp_hw_cfg
+        width: 1
+        type: uni
+        default: "'0"
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_keymgr_div
+        signame: lc_ctrl_lc_keymgr_div
+        width: 1
+        type: uni
+        default: "'0"
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_dft_en
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_nvm_debug_en
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_hw_debug_en
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_cpu_en
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_keymgr_en
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_escalate_en
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_clk_byp_req
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_flash_rma_req
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_flash_rma_seed
+        signame: lc_ctrl_lc_flash_rma_seed
+        width: 1
+        type: uni
+        default: "'0"
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_creator_seed_sw_rw_en
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_owner_seed_sw_rw_en
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_iso_part_sw_rd_en
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_iso_part_sw_wr_en
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_seed_hw_rd_en
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
       }
       {
         package: ""
@@ -9953,6 +11166,22 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: otp_ctrl_tl_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: lc_ctrl_tl_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: lc_ctrl_tl_rsp
         width: 1
         type: req_rsp
         default: ""

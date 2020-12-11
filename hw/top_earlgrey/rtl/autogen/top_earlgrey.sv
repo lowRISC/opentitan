@@ -122,6 +122,7 @@ module top_earlgrey #(
   // rv_timer
   // sensor_ctrl
   // otp_ctrl
+  // lc_ctrl
   // pwrmgr
   // rstmgr
   // clkmgr
@@ -271,11 +272,34 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_pwr_clk_rsp;
   pwrmgr_pkg::pwr_otp_req_t       pwrmgr_pwr_otp_req;
   pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_pwr_otp_rsp;
+  pwrmgr_pkg::pwr_lc_req_t       pwrmgr_pwr_lc_req;
+  pwrmgr_pkg::pwr_lc_rsp_t       pwrmgr_pwr_lc_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
   keymgr_pkg::kmac_data_rsp_t       keymgr_kmac_data_rsp;
   logic [3:0] clkmgr_idle;
+  otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
+  otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
+  otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
+  otp_ctrl_pkg::lc_otp_token_req_t       lc_ctrl_lc_otp_token_req;
+  otp_ctrl_pkg::lc_otp_token_rsp_t       lc_ctrl_lc_otp_token_rsp;
+  otp_ctrl_part_pkg::otp_hw_cfg_t       otp_ctrl_otp_hw_cfg;
+  lc_ctrl_pkg::lc_keymgr_div_t       lc_ctrl_lc_keymgr_div;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_debug_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_keymgr_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_req;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
+  lc_ctrl_pkg::lc_flash_rma_seed_t       lc_ctrl_lc_flash_rma_seed;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_creator_seed_sw_rw_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_owner_seed_sw_rw_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_rd_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_wr_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
   logic       pwrmgr_wakeups;
   logic       pwrmgr_rstreqs;
   tlul_pkg::tl_h2d_t       rom_tl_req;
@@ -336,6 +360,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       ram_ret_tl_rsp;
   tlul_pkg::tl_h2d_t       otp_ctrl_tl_req;
   tlul_pkg::tl_d2h_t       otp_ctrl_tl_rsp;
+  tlul_pkg::tl_h2d_t       lc_ctrl_tl_req;
+  tlul_pkg::tl_d2h_t       lc_ctrl_tl_rsp;
   tlul_pkg::tl_h2d_t       sensor_ctrl_tl_req;
   tlul_pkg::tl_d2h_t       sensor_ctrl_tl_rsp;
   rstmgr_pkg::rstmgr_out_t       rstmgr_resets;
@@ -665,7 +691,7 @@ module top_earlgrey #(
     .host_rdata_o    (flash_host_rdata),
     .flash_ctrl_i    (flash_ctrl_flash_req),
     .flash_ctrl_o    (flash_ctrl_flash_rsp),
-    .lc_dft_en_i     (lc_ctrl_pkg::LC_TX_DEFAULT),
+    .lc_dft_en_i     (lc_ctrl_lc_dft_en),
     .tck_i           ('0),
     .tdi_i           ('0),
     .tms_i           ('0),
@@ -791,7 +817,8 @@ module top_earlgrey #(
     .RndCnstLfsrPerm(RndCnstOtpCtrlLfsrPerm),
     .RndCnstKey(RndCnstOtpCtrlKey),
     .RndCnstDigestConst(RndCnstOtpCtrlDigestConst),
-    .RndCnstDigestIV(RndCnstOtpCtrlDigestIV)
+    .RndCnstDigestIV(RndCnstOtpCtrlDigestIV),
+    .RndCnstKeyMgrKey(RndCnstOtpCtrlKeyMgrKey)
   ) u_otp_ctrl (
 
       // Interrupt
@@ -810,14 +837,15 @@ module top_earlgrey #(
       .otp_edn_i('0),
       .pwr_otp_i(pwrmgr_pwr_otp_req),
       .pwr_otp_o(pwrmgr_pwr_otp_rsp),
-      .lc_otp_program_i('0),
-      .lc_otp_program_o(),
-      .lc_otp_token_i('0),
-      .lc_otp_token_o(),
-      .otp_lc_data_o(),
-      .lc_escalate_en_i(lc_ctrl_pkg::Off),
-      .lc_provision_wr_en_i(lc_ctrl_pkg::Off),
-      .lc_dft_en_i(lc_ctrl_pkg::Off),
+      .lc_otp_program_i(lc_ctrl_lc_otp_program_req),
+      .lc_otp_program_o(lc_ctrl_lc_otp_program_rsp),
+      .lc_otp_token_i(lc_ctrl_lc_otp_token_req),
+      .lc_otp_token_o(lc_ctrl_lc_otp_token_rsp),
+      .otp_lc_data_o(otp_ctrl_otp_lc_data),
+      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+      .lc_creator_seed_sw_rw_en_i(lc_ctrl_lc_creator_seed_sw_rw_en),
+      .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
+      .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
       .flash_otp_key_i(flash_ctrl_otp_req),
       .flash_otp_key_o(flash_ctrl_otp_rsp),
@@ -825,9 +853,59 @@ module top_earlgrey #(
       .sram_otp_key_o(),
       .otbn_otp_key_i('0),
       .otbn_otp_key_o(),
-      .otp_hw_cfg_o(),
+      .otp_hw_cfg_o(otp_ctrl_otp_hw_cfg),
       .tl_i(otp_ctrl_tl_req),
       .tl_o(otp_ctrl_tl_rsp),
+      .clk_i (clkmgr_clocks.clk_io_div4_timers),
+      .rst_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
+  );
+
+  lc_ctrl #(
+    .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
+    .RndCnstLcKeymgrDivTestDevRma(RndCnstLcCtrlLcKeymgrDivTestDevRma),
+    .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction)
+  ) u_lc_ctrl (
+
+      // [9]: lc_programming_failure
+      // [10]: lc_state_failure
+      .alert_tx_o  ( alert_tx[10:9] ),
+      .alert_rx_i  ( alert_rx[10:9] ),
+
+      // Inter-module signals
+      .jtag_i(jtag_pkg::JTAG_REQ_DEFAULT),
+      .jtag_o(),
+      .esc_wipe_secrets_tx_i(prim_esc_pkg::ESC_TX_DEFAULT),
+      .esc_wipe_secrets_rx_o(),
+      .esc_scrap_state_tx_i(prim_esc_pkg::ESC_TX_DEFAULT),
+      .esc_scrap_state_rx_o(),
+      .pwr_lc_i(pwrmgr_pwr_lc_req),
+      .pwr_lc_o(pwrmgr_pwr_lc_rsp),
+      .otp_lc_data_i(otp_ctrl_otp_lc_data),
+      .lc_otp_program_o(lc_ctrl_lc_otp_program_req),
+      .lc_otp_program_i(lc_ctrl_lc_otp_program_rsp),
+      .lc_otp_token_o(lc_ctrl_lc_otp_token_req),
+      .lc_otp_token_i(lc_ctrl_lc_otp_token_rsp),
+      .lc_dft_en_o(lc_ctrl_lc_dft_en),
+      .lc_nvm_debug_en_o(lc_ctrl_lc_nvm_debug_en),
+      .lc_hw_debug_en_o(lc_ctrl_lc_hw_debug_en),
+      .lc_cpu_en_o(lc_ctrl_lc_cpu_en),
+      .lc_keymgr_en_o(lc_ctrl_lc_keymgr_en),
+      .lc_escalate_en_o(lc_ctrl_lc_escalate_en),
+      .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_req),
+      .lc_clk_byp_ack_i(lc_ctrl_pkg::Off),
+      .lc_flash_rma_req_o(lc_ctrl_lc_flash_rma_req),
+      .lc_flash_rma_seed_o(lc_ctrl_lc_flash_rma_seed),
+      .lc_flash_rma_ack_i(lc_ctrl_pkg::Off),
+      .lc_creator_seed_sw_rw_en_o(lc_ctrl_lc_creator_seed_sw_rw_en),
+      .lc_owner_seed_sw_rw_en_o(lc_ctrl_lc_owner_seed_sw_rw_en),
+      .lc_iso_part_sw_rd_en_o(lc_ctrl_lc_iso_part_sw_rd_en),
+      .lc_iso_part_sw_wr_en_o(lc_ctrl_lc_iso_part_sw_wr_en),
+      .lc_seed_hw_rd_en_o(lc_ctrl_lc_seed_hw_rd_en),
+      .lc_keymgr_div_o(lc_ctrl_lc_keymgr_div),
+      .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
+      .tl_i(lc_ctrl_tl_req),
+      .tl_o(lc_ctrl_tl_rsp),
+      .scanmode_i   (scanmode_i),
       .clk_i (clkmgr_clocks.clk_io_div4_timers),
       .rst_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
@@ -846,8 +924,8 @@ module top_earlgrey #(
       .pwr_clk_i(pwrmgr_pwr_clk_rsp),
       .pwr_otp_o(pwrmgr_pwr_otp_req),
       .pwr_otp_i(pwrmgr_pwr_otp_rsp),
-      .pwr_lc_o(),
-      .pwr_lc_i(pwrmgr_pkg::PWR_LC_RSP_DEFAULT),
+      .pwr_lc_o(pwrmgr_pwr_lc_req),
+      .pwr_lc_i(pwrmgr_pwr_lc_rsp),
       .pwr_flash_o(pwrmgr_pwr_flash_req),
       .pwr_flash_i(pwrmgr_pwr_flash_rsp),
       .pwr_cpu_i(pwrmgr_pwr_cpu),
@@ -1028,11 +1106,11 @@ module top_earlgrey #(
       .flash_i(flash_ctrl_flash_rsp),
       .otp_o(flash_ctrl_otp_req),
       .otp_i(flash_ctrl_otp_rsp),
-      .lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .lc_owner_seed_sw_rw_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .lc_iso_part_sw_rd_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .lc_iso_part_sw_wr_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .lc_seed_hw_rd_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .lc_creator_seed_sw_rw_en_i(lc_ctrl_lc_creator_seed_sw_rw_en),
+      .lc_owner_seed_sw_rw_en_i(lc_ctrl_lc_owner_seed_sw_rw_en),
+      .lc_iso_part_sw_rd_en_i(lc_ctrl_lc_iso_part_sw_rd_en),
+      .lc_iso_part_sw_wr_en_i(lc_ctrl_lc_iso_part_sw_wr_en),
+      .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
       .lc_i(flash_ctrl_pkg::LC_FLASH_REQ_DEFAULT),
       .lc_o(),
       .edn_i(flash_ctrl_pkg::EDN_ENTROPY_DEFAULT),
@@ -1074,10 +1152,10 @@ module top_earlgrey #(
     .RndCnstMskgChunkLfsrPerm(aes_pkg::RndCnstMskgChunkLfsrPermDefault)
   ) u_aes (
 
-      // [9]: ctrl_err_update
-      // [10]: ctrl_err_storage
-      .alert_tx_o  ( alert_tx[10:9] ),
-      .alert_rx_i  ( alert_rx[10:9] ),
+      // [11]: ctrl_err_update
+      // [12]: ctrl_err_storage
+      .alert_tx_o  ( alert_tx[12:11] ),
+      .alert_rx_i  ( alert_rx[12:11] ),
 
       // Inter-module signals
       .idle_o(clkmgr_idle[0]),
@@ -1143,10 +1221,10 @@ module top_earlgrey #(
       // Interrupt
       .intr_op_done_o (intr_keymgr_op_done),
 
-      // [11]: fault_err
-      // [12]: operation_err
-      .alert_tx_o  ( alert_tx[12:11] ),
-      .alert_rx_i  ( alert_rx[12:11] ),
+      // [13]: fault_err
+      // [14]: operation_err
+      .alert_tx_o  ( alert_tx[14:13] ),
+      .alert_rx_i  ( alert_rx[14:13] ),
 
       // Inter-module signals
       .edn_o(),
@@ -1198,9 +1276,9 @@ module top_earlgrey #(
       .intr_es_health_test_failed_o (intr_entropy_src_es_health_test_failed),
       .intr_es_fifo_err_o           (intr_entropy_src_es_fifo_err),
 
-      // [13]: es_alert_count_met
-      .alert_tx_o  ( alert_tx[13:13] ),
-      .alert_rx_i  ( alert_rx[13:13] ),
+      // [15]: es_alert_count_met
+      .alert_tx_o  ( alert_tx[15:15] ),
+      .alert_rx_i  ( alert_rx[15:15] ),
 
       // Inter-module signals
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
@@ -1263,10 +1341,9 @@ module top_earlgrey #(
 
       // Inter-module signals
       .crashdump_o(alert_handler_crashdump),
+      .entropy_i( 1'b0),
       .tl_i(alert_handler_tl_req),
       .tl_o(alert_handler_tl_rsp),
-      // TODO: wire this to TRNG
-      .entropy_i   ( 1'b0     ),
       // alert signals
       .alert_rx_o  ( alert_rx ),
       .alert_tx_i  ( alert_tx ),
@@ -1302,11 +1379,11 @@ module top_earlgrey #(
       // Interrupt
       .intr_done_o (intr_otbn_done),
 
-      // [14]: imem_uncorrectable
-      // [15]: dmem_uncorrectable
-      // [16]: reg_uncorrectable
-      .alert_tx_o  ( alert_tx[16:14] ),
-      .alert_rx_i  ( alert_rx[16:14] ),
+      // [16]: imem_uncorrectable
+      // [17]: dmem_uncorrectable
+      // [18]: reg_uncorrectable
+      .alert_tx_o  ( alert_tx[18:16] ),
+      .alert_rx_i  ( alert_rx[18:16] ),
 
       // Inter-module signals
       .idle_o(clkmgr_idle[3]),
@@ -1524,6 +1601,10 @@ module top_earlgrey #(
     // port: tl_otp_ctrl
     .tl_otp_ctrl_o(otp_ctrl_tl_req),
     .tl_otp_ctrl_i(otp_ctrl_tl_rsp),
+
+    // port: tl_lc_ctrl
+    .tl_lc_ctrl_o(lc_ctrl_tl_req),
+    .tl_lc_ctrl_i(lc_ctrl_tl_rsp),
 
     // port: tl_sensor_ctrl
     .tl_sensor_ctrl_o(sensor_ctrl_tl_req),

@@ -43,7 +43,7 @@
     { name: "NAlerts",
       desc: "Number of peripheral inputs",
       type: "int",
-      default: "17",
+      default: "19",
       local: "true"
     },
     { name: "EscCntDw",
@@ -61,7 +61,7 @@
     { name: "AsyncOn",
       desc: "Number of peripheral outputs",
       type: "logic [NAlerts-1:0]",
-      default: "17'b01100111111100000",
+      default: "19'b0111100111111100000",
       local: "true"
     },
     { name: "N_CLASSES",
@@ -115,6 +115,28 @@
       act:     "req",
       package: "alert_pkg"
     },
+    // TODO: connect this to EDN
+    { struct:  "logic",
+      type:    "uni",
+      name:    "entropy",
+      default: " 1'b0",
+      act:     "rcv",
+    },
+    // TODO: wire up once all endpoints support the intersig feature.
+    // { struct:  "esc_rx"
+    //   type:    "uni"
+    //   name:    "esc_rx"
+    //   act:     "rcv"
+    //   width:   "4", // N_ESC_SEV
+    //   package: "prim_esc_pkg"
+    // },
+    // { struct:  "esc_tx"
+    //   type:    "uni"
+    //   name:    "esc_tx"
+    //   act:     "req"
+    //   width:   "4", // N_ESC_SEV
+    //   package: "prim_esc_pkg"
+    // },
   ]
 # interrupt registers for the classes
   interrupt_list: [
