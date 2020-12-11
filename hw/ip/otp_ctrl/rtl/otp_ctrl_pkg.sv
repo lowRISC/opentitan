@@ -118,47 +118,6 @@ package otp_ctrl_pkg;
     ChainedMode
   } digest_mode_e;
 
-  ///////////////////////////////////////////
-  // Defaults for random netlist constants //
-  ///////////////////////////////////////////
-
-  // These LFSR parameters have been generated with
-  // $ hw/ip/prim/util/gen-lfsr-seed.py --width 40 --seed 4247488366
-  localparam int LfsrWidth = 40;
-  typedef logic [LfsrWidth-1:0]                        lfsr_seed_t;
-  typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
-  localparam lfsr_seed_t RndCnstLfsrSeedDefault = 40'h453d28ea98;
-  localparam lfsr_perm_t RndCnstLfsrPermDefault =
-      240'h4235171482c225f79289b32181a0163a760355d3447063d16661e44c12a5;
-
-
-  typedef logic [NumScrmblKeys-1:0][ScrmblKeyWidth-1:0] key_array_t;
-  parameter key_array_t RndCnstKeyDefault = {
-    128'h047288e1a65c839dae610bbbdf8c4525,
-    128'h38fe59a71a91a65636573a6513784e3b,
-    128'h4f48dcc45ace0770e9135bda73e56344
-  };
-
-  // Note: digest set 0 is used for computing the partition digests. Constants at
-  // higher indices are used to compute the scrambling keys.
-  typedef logic [NumDigestSets-1:0][ScrmblKeyWidth-1:0] digest_const_array_t;
-  parameter digest_const_array_t RndCnstDigestConstDefault = {
-    128'h9d40106e2dc2346ec96d61f0cc5295c7,
-    128'hafed2aa5c3284c01d71103edab1d8953,
-    128'h8a14fe0c08f8a3a190dd32c05f208474,
-    128'h9e6fac4ba15a3bce29d05a3e9e2d0846,
-    128'h3a0c6051392e00ef24073627319555b8
-  };
-
-  typedef logic [NumDigestSets-1:0][ScrmblBlockWidth-1:0] digest_iv_array_t;
-  parameter digest_iv_array_t RndCnstDigestIVDefault = {
-    64'ha5af72c1b813aec4,
-    64'h5d7aacd1db316407,
-    64'hd0ec83b7fe6ae2ae,
-    64'hc2993a0ea64e312d,
-    64'h899aac2ab7d91479
-  };
-
   /////////////////////////////////////
   // Typedefs for Partition Metadata //
   /////////////////////////////////////
@@ -283,7 +242,7 @@ package otp_ctrl_pkg;
   } flash_otp_key_rsp_t;
 
   // Default for dangling connection
-  flash_otp_key_rsp_t FLASH_OTP_KEY_RSP_DEFAULT = '{
+  parameter flash_otp_key_rsp_t FLASH_OTP_KEY_RSP_DEFAULT = '{
     data_ack: 1'b1,
     addr_ack: 1'b1,
     key: '0,
@@ -332,5 +291,52 @@ package otp_ctrl_pkg;
   typedef struct packed {
     logic [OtpPwrSeqWidth-1:0] pwr_seq_h;
   } otp_ast_rsp_t;
+
+  ///////////////////////////////////////////
+  // Defaults for random netlist constants //
+  ///////////////////////////////////////////
+
+  // These LFSR parameters have been generated with
+  // $ hw/ip/prim/util/gen-lfsr-seed.py --width 40 --seed 4247488366
+  localparam int LfsrWidth = 40;
+  typedef logic [LfsrWidth-1:0]                        lfsr_seed_t;
+  typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
+  localparam lfsr_seed_t RndCnstLfsrSeedDefault = 40'h453d28ea98;
+  localparam lfsr_perm_t RndCnstLfsrPermDefault =
+      240'h4235171482c225f79289b32181a0163a760355d3447063d16661e44c12a5;
+
+
+  typedef logic [NumScrmblKeys-1:0][ScrmblKeyWidth-1:0] key_array_t;
+  parameter key_array_t RndCnstKeyDefault = {
+    128'h047288e1a65c839dae610bbbdf8c4525,
+    128'h38fe59a71a91a65636573a6513784e3b,
+    128'h4f48dcc45ace0770e9135bda73e56344
+  };
+
+  // Note: digest set 0 is used for computing the partition digests. Constants at
+  // higher indices are used to compute the scrambling keys.
+  typedef logic [NumDigestSets-1:0][ScrmblKeyWidth-1:0] digest_const_array_t;
+  parameter digest_const_array_t RndCnstDigestConstDefault = {
+    128'h9d40106e2dc2346ec96d61f0cc5295c7,
+    128'hafed2aa5c3284c01d71103edab1d8953,
+    128'h8a14fe0c08f8a3a190dd32c05f208474,
+    128'h9e6fac4ba15a3bce29d05a3e9e2d0846,
+    128'h3a0c6051392e00ef24073627319555b8
+  };
+
+  typedef logic [NumDigestSets-1:0][ScrmblBlockWidth-1:0] digest_iv_array_t;
+  parameter digest_iv_array_t RndCnstDigestIVDefault = {
+    64'ha5af72c1b813aec4,
+    64'h5d7aacd1db316407,
+    64'hd0ec83b7fe6ae2ae,
+    64'hc2993a0ea64e312d,
+    64'h899aac2ab7d91479
+  };
+
+  parameter otp_keymgr_key_t RndCnstKeyMgrKeyDefault = '{
+    valid:      1'b1,
+    key_share0: 256'h091833106d26f6539ddf1d7446cece22d564d879f720163881849d2e3530f361,
+    key_share1: 256'h0ce300e36f30349fefa3ab17def703f17b6a074dd54581f5deb9a3c47fb2177f
+  };
 
 endpackage : otp_ctrl_pkg

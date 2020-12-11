@@ -58,12 +58,20 @@ class otp_ctrl_env extends cip_base_env #(
     end
 
     // config lc pins
-    if (!uvm_config_db#(lc_provision_wr_en_vif)::get(this, "", "lc_provision_wr_en_vif",
-                                                     cfg.lc_provision_wr_en_vif)) begin
+    if (!uvm_config_db#(lc_creator_seed_sw_rw_en_vif)::get(this, "", "lc_creator_seed_sw_rw_en_vif",
+                                                     cfg.lc_creator_seed_sw_rw_en_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get lc_provision_wr_en_vif from uvm_config_db")
+    end
+    if (!uvm_config_db#(lc_seed_hw_rd_en_vif)::get(this, "", "lc_seed_hw_rd_en_vif",
+                                                     cfg.lc_seed_hw_rd_en_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get lc_seed_hw_rd_en_vif from uvm_config_db")
     end
     if (!uvm_config_db#(lc_dft_en_vif)::get(this, "", "lc_dft_en_vif", cfg.lc_dft_en_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get lc_dft_en_vif from uvm_config_db")
+    end
+    if (!uvm_config_db#(lc_escalate_en_vif)::get(this, "", "lc_escalate_en_vif",
+                                                 cfg.lc_escalate_en_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get lc_escalate_en_vif from uvm_config_db")
     end
 
     // config mem virtual interface

@@ -12,11 +12,13 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
   rand push_pull_agent_cfg#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)) m_lc_prog_pull_agent_cfg;
 
   // ext interfaces
-  pwr_otp_vif              pwr_otp_vif;
-  lc_provision_wr_en_vif   lc_provision_wr_en_vif;
-  lc_dft_en_vif            lc_dft_en_vif;
-  mem_bkdr_vif             mem_bkdr_vif;
-  otp_ctrl_output_data_vif otp_ctrl_output_data_vif;
+  pwr_otp_vif                  pwr_otp_vif;
+  lc_creator_seed_sw_rw_en_vif lc_creator_seed_sw_rw_en_vif;
+  lc_seed_hw_rd_en_vif         lc_seed_hw_rd_en_vif;
+  lc_dft_en_vif                lc_dft_en_vif;
+  lc_escalate_en_vif           lc_escalate_en_vif;
+  mem_bkdr_vif                 mem_bkdr_vif;
+  otp_ctrl_output_data_vif     otp_ctrl_output_data_vif;
 
   bit backdoor_clear_mem;
 

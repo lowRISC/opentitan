@@ -19,7 +19,8 @@ module otp_ctrl
   parameter lfsr_perm_t          RndCnstLfsrPerm    = RndCnstLfsrPermDefault,
   parameter key_array_t          RndCnstKey         = RndCnstKeyDefault,
   parameter digest_const_array_t RndCnstDigestConst = RndCnstDigestConstDefault,
-  parameter digest_iv_array_t    RndCnstDigestIV    = RndCnstDigestIVDefault
+  parameter digest_iv_array_t    RndCnstDigestIV    = RndCnstDigestIVDefault,
+  parameter otp_keymgr_key_t     RndCnstKeyMgrKey   = RndCnstKeyMgrKeyDefault
 ) (
   input                                              clk_i,
   input                                              rst_ni,
@@ -48,9 +49,10 @@ module otp_ctrl
   input  lc_otp_token_req_t                          lc_otp_token_i,
   output lc_otp_token_rsp_t                          lc_otp_token_o,
   // Lifecycle broadcast inputs
-  input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
-  input  lc_ctrl_pkg::lc_tx_t                        lc_provision_wr_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                        lc_creator_seed_sw_rw_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                        lc_seed_hw_rd_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_dft_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
   // OTP broadcast outputs
   output otp_lc_data_t                               otp_lc_data_o,
   output otp_keymgr_key_t                            otp_keymgr_key_o,
@@ -100,7 +102,7 @@ module otp_ctrl
   // Life Cycle Signal Synchronization //
   ///////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t lc_escalate_en, lc_provision_wr_en;
+  lc_ctrl_pkg::lc_tx_t lc_escalate_en, lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en;
   lc_ctrl_pkg::lc_tx_t [1:0] lc_dft_en;
 
   prim_lc_sync #(
@@ -114,11 +116,20 @@ module otp_ctrl
 
   prim_lc_sync #(
     .NumCopies(1)
-  ) u_prim_lc_sync_provision_wr_en (
+  ) u_prim_lc_sync_creator_seed_sw_rw_en (
     .clk_i,
     .rst_ni,
-    .lc_en_i(lc_provision_wr_en_i),
-    .lc_en_o(lc_provision_wr_en)
+    .lc_en_i(lc_creator_seed_sw_rw_en_i),
+    .lc_en_o(lc_creator_seed_sw_rw_en)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync_seed_hw_rd_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_seed_hw_rd_en_i),
+    .lc_en_o(lc_seed_hw_rd_en)
   );
 
   prim_lc_sync #(
@@ -259,7 +270,7 @@ module otp_ctrl
     if (!reg2hw.creator_sw_cfg_read_lock) part_access_csrs[CreatorSwCfgIdx].read_lock = Locked;
     if (!reg2hw.owner_sw_cfg_read_lock) part_access_csrs[OwnerSwCfgIdx].read_lock = Locked;
     // The SECRET2 partition can only be accessed (write&read) when provisioning is enabled.
-    if (lc_provision_wr_en != lc_ctrl_pkg::On) part_access_csrs[Secret2Idx] = {2{Locked}};
+    if (lc_creator_seed_sw_rw_en != lc_ctrl_pkg::On) part_access_csrs[Secret2Idx] = {2{Locked}};
   end
 
   //////////////////////
@@ -1001,10 +1012,14 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
   assign otp_hw_cfg_o.data = otp_hw_cfg_data_t'(part_buf_data[HwCfgOffset +: HwCfgSize]);
   // Root keys
   assign otp_keymgr_key_o.valid = part_init_done[Secret2Idx];
-  assign otp_keymgr_key_o.key_share0 = part_buf_data[CreatorRootKeyShare0Offset +:
-                                                     CreatorRootKeyShare0Size];
-  assign otp_keymgr_key_o.key_share1 = part_buf_data[CreatorRootKeyShare1Offset +:
-                                                     CreatorRootKeyShare1Size];
+  assign otp_keymgr_key_o.key_share0 = (lc_seed_hw_rd_en == lc_ctrl_pkg::On) ?
+                                       part_buf_data[CreatorRootKeyShare0Offset +:
+                                                     CreatorRootKeyShare0Size] :
+                                       RndCnstKeyMgrKey.key_share0;
+  assign otp_keymgr_key_o.key_share1 = (lc_seed_hw_rd_en == lc_ctrl_pkg::On) ?
+                                       part_buf_data[CreatorRootKeyShare1Offset +:
+                                                     CreatorRootKeyShare1Size] :
+                                       RndCnstKeyMgrKey.key_share1;
 
   // Scrambling Keys
   assign scrmbl_key_seed_valid = part_init_done[Secret1Idx];
