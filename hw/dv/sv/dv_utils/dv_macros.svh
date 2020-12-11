@@ -514,6 +514,25 @@
   end
 `endif
 
+// Declare edn clock, reset and push_pull_if. Connect them and set edn_clk_rst_if and edn_if for
+// using them in env
+// Use this macro in tb.sv if the IP connects to a EDN interface
+// TODO, tie core reset with EDN reset for now
+`ifndef DV_EDN_IF_CONNECT
+`define DV_EDN_IF_CONNECT \
+  wire edn_rst_n = rst_n; \
+  wire edn_clk; \
+  clk_rst_if edn_clk_rst_if(.clk(edn_clk), .rst_n(edn_rst_n)); \
+  push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(edn_clk), \
+                                                                        .rst_n(edn_rst_n)); \
+  initial begin \
+    edn_clk_rst_if.set_active(.drive_rst_n_val(0)); \
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "edn_clk_rst_vif", edn_clk_rst_if); \
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)))::set \
+                   (null, "*env.m_edn_pull_agent*", "vif", edn_if); \
+  end
+`endif
+
 // Instantiates a covergroup in an interface or module.
 //
 // This macro assumes that a covergroup of the same name as the __CG_NAME arg is defined in the
