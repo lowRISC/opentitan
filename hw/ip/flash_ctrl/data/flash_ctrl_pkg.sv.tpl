@@ -267,6 +267,7 @@ package flash_ctrl_pkg;
     logic                 prog;
     logic                 pg_erase;
     logic                 bk_erase;
+    logic                 erase_suspend;
     flash_part_e          part;
     logic [InfoTypesWidth-1:0] info_sel;
     logic [BusAddrW-1:0]  addr;
@@ -281,24 +282,25 @@ package flash_ctrl_pkg;
 
   // default value of flash_req_t (for dangling ports)
   parameter flash_req_t FLASH_REQ_DEFAULT = '{
-    req:         '0,
-    scramble_en: '0,
-    ecc_en:      '0,
-    he_en:       '0,
-    rd:          '0,
-    prog:        '0,
-    pg_erase:    '0,
-    bk_erase:    '0,
-    part:        FlashPartData,
-    info_sel:    '0,
-    addr:        '0,
-    prog_data:   '0,
-    prog_last:   '0,
-    prog_type:   FlashProgNormal,
-    region_cfgs: '0,
-    addr_key:    RndCnstAddrKeyDefault,
-    data_key:    RndCnstDataKeyDefault,
-    rd_buf_en:   1'b0
+    req:           '0,
+    scramble_en:   '0,
+    ecc_en:        '0,
+    he_en:         '0,
+    rd:            '0,
+    prog:          '0,
+    pg_erase:      '0,
+    bk_erase:      '0,
+    erase_suspend: '0,
+    part:          FlashPartData,
+    info_sel:      '0,
+    addr:          '0,
+    prog_data:     '0,
+    prog_last:     '0,
+    prog_type:     FlashProgNormal,
+    region_cfgs:   '0,
+    addr_key:      RndCnstAddrKeyDefault,
+    data_key:      RndCnstDataKeyDefault,
+    rd_buf_en:     1'b0
   };
 
   // memory to flash controller
@@ -310,17 +312,19 @@ package flash_ctrl_pkg;
     logic                rd_err;
     logic [BusWidth-1:0] rd_data;
     logic                init_busy;
+    logic                erase_suspend_done;
   } flash_rsp_t;
 
   // default value of flash_rsp_t (for dangling ports)
   parameter flash_rsp_t FLASH_RSP_DEFAULT = '{
-    prog_type_avail: '{default: '1},
-    rd_done:    1'b0,
-    prog_done:  1'b0,
-    erase_done: 1'b0,
-    rd_err:     '0,
-    rd_data:    '0,
-    init_busy:  1'b0
+    prog_type_avail:    '{default: '1},
+    rd_done:            1'b0,
+    prog_done:          1'b0,
+    erase_done:         1'b0,
+    rd_err:             '0,
+    rd_data:            '0,
+    init_busy:          1'b0,
+    erase_suspend_done: 1'b1
   };
 
   ////////////////////////////

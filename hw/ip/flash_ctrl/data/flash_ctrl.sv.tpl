@@ -637,6 +637,9 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   assign flash_part_sel = op_part;
   assign flash_info_sel = op_info_sel;
 
+  // tie off hardware clear path
+  assign hw2reg.erase_suspend.d = 1'b0;
+
   // Flash memory Properties
   // Memory property is page based and thus should use phy addressing
   // This should move to flash_phy long term
@@ -665,6 +668,8 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .prog_i(prog_op),
     .pg_erase_i(erase_op & (erase_flash_type == FlashErasePage)),
     .bk_erase_i(erase_op & (erase_flash_type == FlashEraseBank)),
+    .erase_suspend_i(reg2hw.erase_suspend),
+    .erase_suspend_done_o(hw2reg.erase_suspend.de),
     .rd_done_o(flash_rd_done),
     .prog_done_o(flash_prog_done),
     .erase_done_o(flash_erase_done),
@@ -680,6 +685,8 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .prog_o(flash_o.prog),
     .pg_erase_o(flash_o.pg_erase),
     .bk_erase_o(flash_o.bk_erase),
+    .erase_suspend_o(flash_o.erase_suspend),
+    .erase_suspend_done_i(flash_i.erase_suspend_done),
     .rd_done_i(flash_i.rd_done),
     .prog_done_i(flash_i.prog_done),
     .erase_done_i(flash_i.erase_done)

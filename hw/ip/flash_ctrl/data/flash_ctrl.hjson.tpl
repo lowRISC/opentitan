@@ -389,6 +389,24 @@
       ]
     },
 
+    // erase suspend support
+    { name: "ERASE_SUSPEND",
+      desc: "Suspend erase",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          resval: "1",
+          name: "REQ",
+          desc: '''
+            When 1, request erase suspend.
+            If no erase ongoing, the request is immediately cleared by hardware
+            If erase ongoing, the request is fed to the flash_phy and cleared when the suspend is handled.
+            '''
+        },
+      ]
+    },
+
     // Data partition memory properties region setup
     { multireg: {
         cname: "FLASH_CTRL",
