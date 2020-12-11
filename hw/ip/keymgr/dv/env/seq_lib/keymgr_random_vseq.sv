@@ -21,10 +21,10 @@ class keymgr_random_vseq extends keymgr_smoke_vseq;
     bit [TL_DW-1:0] max_key_ver_val;
     uvm_reg         csr_update_q[$];
 
-    csr_random_n_add_to_q(ral.software_binding_0, csr_update_q);
-    csr_random_n_add_to_q(ral.software_binding_1, csr_update_q);
-    csr_random_n_add_to_q(ral.software_binding_2, csr_update_q);
-    csr_random_n_add_to_q(ral.software_binding_3, csr_update_q);
+    csr_random_n_add_to_q(ral.sw_binding_0, csr_update_q);
+    csr_random_n_add_to_q(ral.sw_binding_1, csr_update_q);
+    csr_random_n_add_to_q(ral.sw_binding_2, csr_update_q);
+    csr_random_n_add_to_q(ral.sw_binding_3, csr_update_q);
     csr_random_n_add_to_q(ral.salt_0, csr_update_q);
     csr_random_n_add_to_q(ral.salt_1, csr_update_q);
     csr_random_n_add_to_q(ral.salt_2, csr_update_q);
