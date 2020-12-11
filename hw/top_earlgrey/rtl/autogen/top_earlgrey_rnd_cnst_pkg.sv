@@ -45,6 +45,31 @@ package top_earlgrey_rnd_cnst_pkg;
     256'h0D5AB25561AF49C696466A983E5346826A43628219E5A91389B9FE0D3B818E46
   };
 
+  // Compile-time random default constant for the root key, to be output when key has not yet been provisioned.
+  parameter otp_ctrl_pkg::otp_keymgr_key_t RndCnstOtpCtrlKeyMgrKey = {
+    1'h1,
+    256'h60C06703B494B3FF9FBB73A9BF8C393C12965C7DE10023EC699679EDD5369F11,
+    256'hB49BAC9198BD1FF344C5DA2242D290BEDE094CA8F1435F85E0F7489A309CBE57
+  };
+
+  ////////////////////////////////////////////
+  // lc_ctrl
+  ////////////////////////////////////////////
+  // Compile-time random bits for lc state group diversification value
+  parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivInvalid = {
+    64'hF4C3471C5DEF7861
+  };
+
+  // Compile-time random bits for lc state group diversification value
+  parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivTestDevRma = {
+    64'h83D0550B80E84EB1
+  };
+
+  // Compile-time random bits for lc state group diversification value
+  parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivProduction = {
+    64'h2D73930D4CAC3785
+  };
+
   ////////////////////////////////////////////
   // flash_ctrl
   ////////////////////////////////////////////
