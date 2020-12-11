@@ -2775,6 +2775,30 @@
           name_top: RndCnstFlashCtrlDataKey
           randwidth: 128
         }
+        {
+          name: RndCnstLfsrSeed
+          desc: Compile-time random bits for initial LFSR seed
+          type: flash_ctrl_pkg::lfsr_seed_t
+          randcount: "32"
+          randtype: data
+          local: "false"
+          default: 0xd89f9dfc
+          expose: "false"
+          name_top: RndCnstFlashCtrlLfsrSeed
+          randwidth: 32
+        }
+        {
+          name: RndCnstLfsrPerm
+          desc: Compile-time random permutation for LFSR output
+          type: flash_ctrl_pkg::lfsr_perm_t
+          randcount: "32"
+          randtype: perm
+          local: "false"
+          default: 0x26ff203d990d87c5e8a98bafec7506855aa99c54
+          expose: "false"
+          name_top: RndCnstFlashCtrlLfsrPerm
+          randwidth: 160
+        }
       ]
       interrupt_list:
       [
@@ -2952,11 +2976,11 @@
           index: -1
         }
         {
-          struct: edn_entropy
-          type: uni
+          struct: edn
+          type: req_rsp
           name: edn
-          act: rcv
-          package: flash_ctrl_pkg
+          act: req
+          package: edn_pkg
           inst_name: flash_ctrl
           index: -1
         }
@@ -9004,11 +9028,11 @@
         index: -1
       }
       {
-        struct: edn_entropy
-        type: uni
+        struct: edn
+        type: req_rsp
         name: edn
-        act: rcv
-        package: flash_ctrl_pkg
+        act: req
+        package: edn_pkg
         inst_name: flash_ctrl
         index: -1
       }

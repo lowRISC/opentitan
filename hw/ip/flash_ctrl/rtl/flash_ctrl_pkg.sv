@@ -76,9 +76,23 @@ package flash_ctrl_pkg;
   // parameters for connected components
   parameter int SeedWidth = 256;
   parameter int KeyWidth  = 128;
-  parameter int LfsrWidth = 32;
-
+  parameter int EdnWidth  = edn_pkg::ENDPOINT_BUS_WIDTH;
   typedef logic [KeyWidth-1:0] flash_key_t;
+
+  // Default Lfsr configurations
+  // These LFSR parameters have been generated with
+  // $ hw/ip/prim/util/gen-lfsr-seed.py --width 32 --seed 1274809145 --prefix ""
+  parameter int LfsrWidth = 32;
+  typedef logic [LfsrWidth-1:0] lfsr_seed_t;
+  typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
+  parameter lfsr_seed_t RndCnstLfsrSeedDefault = 32'ha8cee782;
+  parameter lfsr_perm_t RndCnstLfsrPermDefault = {
+    160'hd60bc7d86445da9347e0ccdd05b281df95238bb5
+  };
+
+  // These LFSR parameters have been generated with
+  // $ hw/ip/prim/util/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""
+
 
   // lcmgr phase enum
   typedef enum logic [1:0] {
@@ -265,6 +279,7 @@ package flash_ctrl_pkg;
     logic                 prog;
     logic                 pg_erase;
     logic                 bk_erase;
+    logic                 erase_suspend;
     flash_part_e          part;
     logic [InfoTypesWidth-1:0] info_sel;
     logic [BusAddrW-1:0]  addr;
@@ -279,24 +294,25 @@ package flash_ctrl_pkg;
 
   // default value of flash_req_t (for dangling ports)
   parameter flash_req_t FLASH_REQ_DEFAULT = '{
-    req:         '0,
-    scramble_en: '0,
-    ecc_en:      '0,
-    he_en:       '0,
-    rd:          '0,
-    prog:        '0,
-    pg_erase:    '0,
-    bk_erase:    '0,
-    part:        FlashPartData,
-    info_sel:    '0,
-    addr:        '0,
-    prog_data:   '0,
-    prog_last:   '0,
-    prog_type:   FlashProgNormal,
-    region_cfgs: '0,
-    addr_key:    RndCnstAddrKeyDefault,
-    data_key:    RndCnstDataKeyDefault,
-    rd_buf_en:   1'b0
+    req:           '0,
+    scramble_en:   '0,
+    ecc_en:        '0,
+    he_en:         '0,
+    rd:            '0,
+    prog:          '0,
+    pg_erase:      '0,
+    bk_erase:      '0,
+    erase_suspend: '0,
+    part:          FlashPartData,
+    info_sel:      '0,
+    addr:          '0,
+    prog_data:     '0,
+    prog_last:     '0,
+    prog_type:     FlashProgNormal,
+    region_cfgs:   '0,
+    addr_key:      RndCnstAddrKeyDefault,
+    data_key:      RndCnstDataKeyDefault,
+    rd_buf_en:     1'b0
   };
 
   // memory to flash controller
@@ -308,17 +324,19 @@ package flash_ctrl_pkg;
     logic                rd_err;
     logic [BusWidth-1:0] rd_data;
     logic                init_busy;
+    logic                erase_suspend_done;
   } flash_rsp_t;
 
   // default value of flash_rsp_t (for dangling ports)
   parameter flash_rsp_t FLASH_RSP_DEFAULT = '{
-    prog_type_avail: '{default: '1},
-    rd_done:    1'b0,
-    prog_done:  1'b0,
-    erase_done: 1'b0,
-    rd_err:     '0,
-    rd_data:    '0,
-    init_busy:  1'b0
+    prog_type_avail:    '{default: '1},
+    rd_done:            1'b0,
+    prog_done:          1'b0,
+    erase_done:         1'b0,
+    rd_err:             '0,
+    rd_data:            '0,
+    init_busy:          1'b0,
+    erase_suspend_done: 1'b1
   };
 
   ////////////////////////////
@@ -350,20 +368,9 @@ package flash_ctrl_pkg;
     }
   };
 
-  // place holder for interface to EDN, replace with real one later
-  typedef struct packed {
-    logic valid;
-    logic [3:0] entropy;
-  } edn_entropy_t;
-
   parameter lc_flash_req_t LC_FLASH_REQ_DEFAULT = '{
     rma_req: 1'b0,
     rma_req_token: '0
-  };
-
-  parameter edn_entropy_t EDN_ENTROPY_DEFAULT = '{
-    valid: 1'b1,
-    entropy: '0
   };
 
   // dft_en jtag selection

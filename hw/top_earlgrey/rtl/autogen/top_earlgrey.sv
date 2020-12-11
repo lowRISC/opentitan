@@ -1090,7 +1090,9 @@ module top_earlgrey #(
 
   flash_ctrl #(
     .RndCnstAddrKey(RndCnstFlashCtrlAddrKey),
-    .RndCnstDataKey(RndCnstFlashCtrlDataKey)
+    .RndCnstDataKey(RndCnstFlashCtrlDataKey),
+    .RndCnstLfsrSeed(RndCnstFlashCtrlLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm)
   ) u_flash_ctrl (
 
       // Interrupt
@@ -1113,7 +1115,8 @@ module top_earlgrey #(
       .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
       .lc_i(flash_ctrl_pkg::LC_FLASH_REQ_DEFAULT),
       .lc_o(),
-      .edn_i(flash_ctrl_pkg::EDN_ENTROPY_DEFAULT),
+      .edn_o(),
+      .edn_i(edn_pkg::EDN_RSP_DEFAULT),
       .pwrmgr_i(pwrmgr_pwr_flash_req),
       .pwrmgr_o(pwrmgr_pwr_flash_rsp),
       .keymgr_o(flash_ctrl_keymgr),

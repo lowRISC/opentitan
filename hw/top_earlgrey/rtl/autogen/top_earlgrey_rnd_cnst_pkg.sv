@@ -83,6 +83,16 @@ package top_earlgrey_rnd_cnst_pkg;
     128'hFABD19450B238D4C2D73930D4CAC3785
   };
 
+  // Compile-time random bits for initial LFSR seed
+  parameter flash_ctrl_pkg::lfsr_seed_t RndCnstFlashCtrlLfsrSeed = {
+    32'hD89F9DFC
+  };
+
+  // Compile-time random permutation for LFSR output
+  parameter flash_ctrl_pkg::lfsr_perm_t RndCnstFlashCtrlLfsrPerm = {
+    160'h26FF203D990D87C5E8A98BAFEC7506855AA99C54
+  };
+
   ////////////////////////////////////////////
   // keymgr
   ////////////////////////////////////////////
