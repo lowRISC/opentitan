@@ -38,7 +38,8 @@ int main(int argc, char **argv) {
 
   CHECK(dif_spi_device_init(
             (dif_spi_device_params_t){
-                .base_addr = mmio_region_from_addr(0x40020000),
+                .base_addr =
+                    mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR),
             },
             &spi) == kDifSpiDeviceOk);
   CHECK(dif_spi_device_configure(
@@ -53,7 +54,7 @@ int main(int argc, char **argv) {
                   }) == kDifSpiDeviceOk);
 
   dif_gpio_params_t gpio_params = {
-      .base_addr = mmio_region_from_addr(0x40010000),
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
   };
   CHECK(dif_gpio_init(gpio_params, &gpio) == kDifGpioOk);
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
