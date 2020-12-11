@@ -498,7 +498,7 @@ module otbn
       .start_i (start),
       .done_o  (done),
 
-      .err_code_o (err_code_rtl),
+      .err_code_o (err_code),
 
       .start_addr_i  (start_addr),
 
