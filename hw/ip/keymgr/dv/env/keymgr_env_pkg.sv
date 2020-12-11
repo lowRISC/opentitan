@@ -35,7 +35,6 @@ package keymgr_env_pkg;
   typedef virtual keymgr_if keymgr_vif;
   typedef enum {
     IntrOpDone,
-    IntrErr,
     NumKeyMgrIntr
   } keymgr_intr_e;
 

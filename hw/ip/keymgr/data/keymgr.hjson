@@ -9,7 +9,6 @@
   bus_device: "tlul",
   interrupt_list: [
     { name: "op_done",   desc: "Operation complete" },
-    { name: "err",       desc: "keymanager error" },
   ],
   alert_list: [
     { name: "fault_err",
@@ -136,6 +135,34 @@
       randtype:  "data",
     },
 
+    { name:      "RndCnstAesSeed",
+      desc:      "Compile-time random bits for generation seed when aes destination selected",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstHmacSeed",
+      desc:      "Compile-time random bits for generation seed when hmac destination selected",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstKmacSeed",
+      desc:      "Compile-time random bits for generation seed when kmac destination selected",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstNoneSeed",
+      desc:      "Compile-time random bits for generation seed when no destination selected",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
     { name: "NumInReg",
       desc: "Number of Registers for SW inputs (SW binding / keyID / Salt)",
       type: "int",
@@ -249,8 +276,10 @@
         { bits: "13:12",
           name: "DEST_SEL",
           desc: '''
-            When the OPERATION field is programmed to generate HW output, this field selects
+            When the OPERATION field is programmed to generate output, this field selects
             the appropriate crypto cipher target.
+
+            This field should be programmed for both hw / sw generation, as this helps diverisifies the output.
           ''',
           resval: "0"
           enum: [
@@ -281,6 +310,22 @@
           ]
         },
       ],
+    },
+
+    { name: "SIDELOAD_CLEAR",
+      desc: "Clear all sideload keys",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "VAL",
+          resval: "0"
+          desc: '''
+            When 1, the sideload keys are continuously cleared with entropy.
+            When 0, the sideload keys are left as is.
+          '''
+        },
+      ]
     },
 
     { name: "RESEED_INTERVAL",
@@ -610,7 +655,8 @@
         Key manager status.
 
         Hardware sets the status based on software initiated operations.
-        When software reads the status, it is self cleared.
+        This register must be explicitly cleard by software.
+        Software clears by writing back whatever it reads.
       ''',
       swaccess: "rw1c",
       hwaccess: "hwo",
@@ -653,6 +699,8 @@
     { name: "ERR_CODE",
       desc: '''
         Key manager error code.
+        This register must be explicitly cleared by software.
+        Software clears by writing back whatever it reads.
       ''',
       swaccess: "rw1c",
       hwaccess: "hrw",
