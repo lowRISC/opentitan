@@ -5,8 +5,8 @@
 class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg #(RAL_T);
   // ext component cfgs
   rand tl_agent_cfg        m_tl_agent_cfg;
-  rand alert_esc_agent_cfg m_alert_agent_cfg[string];
-  rand push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent_cfg;
+  alert_esc_agent_cfg      m_alert_agent_cfg[string];
+  push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent_cfg;
 
   // common interfaces - intrrupts and alerts
   intr_vif    intr_vif;
@@ -47,19 +47,17 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
         string alert_name = list_of_alerts[i];
         // create alert_esc_agent_cfg if the module has alerts
         m_alert_agent_cfg[alert_name] = alert_esc_agent_cfg::type_id::create("m_alert_agent_cfg");
+        `DV_CHECK_RANDOMIZE_FATAL(m_alert_agent_cfg[alert_name])
         m_alert_agent_cfg[alert_name].if_mode = dv_utils_pkg::Device;
         m_alert_agent_cfg[alert_name].is_async = 1; // default async_on, can override this
         m_alert_agent_cfg[alert_name].en_ping_cov = 0;
-        if (zero_delays) begin
-          m_alert_agent_cfg[alert_name].alert_delay_min = 0;
-          m_alert_agent_cfg[alert_name].alert_delay_max = 0;
-        end
       end
     end
 
     if (has_edn) begin
       m_edn_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH))::type_id::
                              create("m_edn_pull_agent_cfg");
+      `DV_CHECK_RANDOMIZE_FATAL(m_edn_pull_agent_cfg)
       m_edn_pull_agent_cfg.agent_type = PullAgent;
       m_edn_pull_agent_cfg.if_mode    = Device;
     end
