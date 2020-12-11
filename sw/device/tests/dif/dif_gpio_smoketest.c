@@ -16,6 +16,17 @@ static dif_gpio_t gpio;
 const test_config_t kTestConfig;
 
 /**
+ * A known pattern written to GPIOs.
+ *
+ * On FPGA, these patterns are tested as-is. In DV, this symbol is overwritten
+ * by the testbench to test completely random patterns. This is done in
+ * `hw/top_earlgrey/dv/env/seq_lib/chip_sw_gpio_smoke_vseq.sv`. The DV test
+ * also checks GPIO pin values at the chip periphery for correctness.
+ */
+static const uint32_t kGpioVals[] = {0xAAAAAAAA, 0x55555555, 0xA5A5A5A5,
+                                     0xFFFFFFFF, 0};
+
+/**
  * Pins to be tested.
  *
  * This test only uses pins 0-15 to be compatible with both FPGA and DV:
@@ -60,9 +71,8 @@ bool test_main(void) {
             &gpio) == kDifGpioOk);
   CHECK(dif_gpio_output_set_enabled_all(&gpio, kGpioMask) == kDifGpioOk);
 
-  const uint32_t kVals[] = {0xAAAAAAAA, 0x55555555, 0xA5A5A5A5, 0xFFFFFFFF, 0};
-  for (uint8_t i = 0; i < ARRAYSIZE(kVals); ++i) {
-    test_gpio_write(kVals[i]);
+  for (uint8_t i = 0; i < ARRAYSIZE(kGpioVals); ++i) {
+    test_gpio_write(kGpioVals[i]);
   }
 
   // Walking 1s and 0s. Iterates over every integer with one bit set and every
