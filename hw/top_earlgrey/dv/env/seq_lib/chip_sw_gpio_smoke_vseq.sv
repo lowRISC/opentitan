@@ -7,8 +7,8 @@ class chip_sw_gpio_smoke_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_gpio_smoke_vseq)
 
   // We override the SW symbol `kGpioVals` with our own set of random values.
-  localparam string sw_symbol_gpio_vals = "kGpioVals";
-  localparam uint timeout_ns = 2_000_000;
+  localparam string SW_SYM_GPIO_VALS = "kGpioVals";
+  localparam uint TIMEOUT_NS = 2_000_000;
 
   // Declared as int to match the SW test.
   rand int gpio_vals[];
@@ -21,16 +21,16 @@ class chip_sw_gpio_smoke_vseq extends chip_sw_base_vseq;
 
   function void pre_randomize();
     int addr;
-    // Find how many bytes the SW allocate for sw_symbol_gpio_vals, then convert to word size.
+    // Find how many bytes the SW allocate for SW_SYM_GPIO_VALS, then convert to word size.
     sw_symbol_get_addr_size({p_sequencer.cfg.sw_images[SwTypeTest], ".elf"},
-                            sw_symbol_gpio_vals, addr, num_gpio_vals);
+                            SW_SYM_GPIO_VALS, addr, num_gpio_vals);
     num_gpio_vals /= 4;
   endfunction
 
   virtual task cpu_init();
     super.cpu_init();
     // Need to convert integer array to byte array.
-    sw_symbol_backdoor_overwrite(sw_symbol_gpio_vals, {<<byte{{<<int{gpio_vals}}}});
+    sw_symbol_backdoor_overwrite(SW_SYM_GPIO_VALS, {<<byte{{<<int{gpio_vals}}}});
   endtask
 
   virtual task body();
@@ -46,7 +46,7 @@ class chip_sw_gpio_smoke_vseq extends chip_sw_base_vseq;
     for (int i = 0; i < num_gpio_vals; i++) begin
       `DV_SPINWAIT(wait(cfg.gpio_vif.pins === gpio_vals[i][NUM_GPIOS-1:0]);,
                    $sformatf("Timed out waiting for GPIOs == %0h", gpio_vals[i][NUM_GPIOS-1:0]),
-                   timeout_ns,
+                   TIMEOUT_NS,
                   `gfn)
     end
 
@@ -55,13 +55,13 @@ class chip_sw_gpio_smoke_vseq extends chip_sw_base_vseq;
       logic [NUM_GPIOS-1:0] exp_gpios = (1 << i);
       `DV_SPINWAIT(wait(cfg.gpio_vif.pins === exp_gpios);,
                    $sformatf("Timed out waiting for GPIOs == %0h", exp_gpios),
-                   timeout_ns,
+                   TIMEOUT_NS,
                   `gfn)
 
       exp_gpios = ~exp_gpios;
       `DV_SPINWAIT(wait(cfg.gpio_vif.pins === exp_gpios);,
                    $sformatf("Timed out waiting for GPIOs == %0h", exp_gpios),
-                   timeout_ns,
+                   TIMEOUT_NS,
                   `gfn)
     end
   endtask
