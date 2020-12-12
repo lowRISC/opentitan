@@ -28,7 +28,27 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      check_lc_output();
     join_none
+  endtask
+
+  virtual task check_lc_output();
+    forever begin
+      @(posedge cfg.pwr_lc_vif.pins[LcPwrDoneRsp]) begin
+        // TODO: add coverage
+        dec_lc_state_e lc_state = dec_lc_state(cfg.lc_ctrl_vif.otp_i.state);
+        lc_outputs_t   exp_lc_o = EXP_LC_OUTPUTS[int'(lc_state)];
+        string         err_msg  = $sformatf("LC_St %0s", lc_state.name);
+        cfg.clk_rst_vif.wait_n_clks(1);
+
+        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_dft_en_o,       exp_lc_o.lc_dft_en_o,       err_msg)
+        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_nvm_debug_en_o, exp_lc_o.lc_nvm_debug_en_o, err_msg)
+        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_hw_debug_en_o,  exp_lc_o.lc_hw_debug_en_o,  err_msg)
+        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_cpu_en_o,       exp_lc_o.lc_cpu_en_o,       err_msg)
+        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_keymgr_en_o,    exp_lc_o.lc_keymgr_en_o,    err_msg)
+        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_escalate_en_o,  exp_lc_o.lc_escalate_en_o,  err_msg)
+      end
+    end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
