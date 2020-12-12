@@ -19,11 +19,5 @@
 <td>OWNER_DATA partition</td>
 <td>No</td>
 </tr>
-<tr>
-<td>OWNERSHIP_BLOB</td>
-<td>General flash partition</td>
-<td>
-Yes
-</td>
 </tbody>
 </table>
