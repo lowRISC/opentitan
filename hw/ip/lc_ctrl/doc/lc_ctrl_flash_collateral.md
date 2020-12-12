@@ -21,12 +21,5 @@
 <td>256</td>
 <td>OwnerRootSecret: diversification secret for owner identity.</td>
 </tr>
-<tr>
-<td>OWNERSHIP_BLOB</td>
-<td><=2048</td>
-<td>Software</td>
-<td>
-Non-secret information such as public keys, software tags diversification constants.
-</td>
 </tbody>
 </table>

@@ -374,7 +374,7 @@
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits: "7:0",
-          name: "START",
+          name: "MUTEX",
           desc: '''
           In order to have exclusive access to the transition interface, SW must first claim the associated
           hardware mutex by writing 0xA5 to this register.
