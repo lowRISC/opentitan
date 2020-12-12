@@ -1,6 +1,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+
 .DEFAULT_GOAL := all
 
 all: build
@@ -8,30 +9,31 @@ all: build
 ###################
 ## build targets ##
 ###################
-build: compile_result
+build: build_result
 
-pre_compile:
-	@echo "[make]: pre_compile"
-	mkdir -p ${build_dir} && env | sort > ${build_dir}/env_vars
-	mkdir -p ${tool_srcs_dir}
-	-cp -Ru ${tool_srcs} ${tool_srcs_dir}
+pre_build:
+	@echo "[make]: pre_build"
+	mkdir -p ${build_dir}
+ifneq (${pre_build_cmds},)
+	cd ${build_dir} && ${pre_build_cmds}
+endif
 
-compile: pre_compile
-	@echo "[make]: compile"
-	# we check the status in the parse script below
+do_build: pre_build
+	@echo "[make]: do_build"
 	-cd ${build_dir} && ${build_cmd} ${build_opts} 2>&1 | tee ${build_log}
 
-post_compile: compile
-	@echo "[make]: post_compile"
+post_build: do_build
+	@echo "[make]: post_build"
+ifneq (${post_build_cmds},)
+	cd ${build_dir} && ${post_build_cmds}
+endif
 
-# Parse out result
-compile_result: post_compile
-	@echo "[make]: compile_result"
+build_result: post_build
+	@echo "[make]: build_result"
 	${report_cmd} ${report_opts}
 
 .PHONY: build \
-	run \
-	pre_compile \
-	compile \
-	post_compile \
-	compile_result
+        pre_build \
+        do_build \
+        post_build \
+        build_result

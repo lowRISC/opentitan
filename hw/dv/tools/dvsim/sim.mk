@@ -4,7 +4,6 @@
 
 .DEFAULT_GOAL := all
 
-LOCK_TOOL_SRCS_DIR ?= flock --timeout 3600 ${tool_srcs_dir} --command
 LOCK_SW_BUILD_DIR  ?= flock --timeout 3600 ${sw_build_dir} --command
 
 all: build run
@@ -14,14 +13,7 @@ all: build run
 ###############################
 build: build_result
 
-prep_tool_srcs:
-	@echo "[make]: prep_tool_srcs"
-	mkdir -p ${tool_srcs_dir}
-ifneq (${tool_srcs},)
-	${LOCK_TOOL_SRCS_DIR} "cp -Ru ${tool_srcs} ${tool_srcs_dir}/."
-endif
-
-pre_build: prep_tool_srcs
+pre_build:
 	@echo "[make]: pre_build"
 	mkdir -p ${build_dir}
 ifneq (${pre_build_cmds},)
@@ -34,11 +26,11 @@ ifneq (${sv_flist_gen_cmd},)
 	cd ${build_dir} && ${sv_flist_gen_cmd} ${sv_flist_gen_opts}
 endif
 
-build_tb: gen_sv_flist
-	@echo "[make]: build the testbench"
+do_build: gen_sv_flist
+	@echo "[make]: build"
 	cd ${sv_flist_gen_dir} && ${build_cmd} ${build_opts}
 
-post_build: build_tb
+post_build: do_build
 	@echo "[make]: post_build"
 ifneq (${post_build_cmds},)
 	cd ${build_dir} && ${post_build_cmds}
@@ -49,7 +41,7 @@ build_result: post_build
 
 run: run_result
 
-pre_run: prep_tool_srcs
+pre_run:
 	@echo "[make]: pre_run"
 	mkdir -p ${run_dir}
 ifneq (${pre_run_cmds},)
@@ -138,24 +130,23 @@ cov_report:
 	${cov_report_cmd} ${cov_report_opts}
 
 # Open coverage tool to review and create report or exclusion file.
-cov_analyze: prep_tool_srcs
+cov_analyze:
 	@echo "[make]: cov_analyze"
 	${cov_analyze_cmd} ${cov_analyze_opts}
 
 .PHONY: build \
-				prep_tool_srcs \
-				pre_build \
-				gen_sv_flist \
-				build_tb \
-				post_build \
-				build_result \
-				run \
-				pre_run \
-				sw_build \
-				simulate \
-				post_run \
-				run_result \
-				debug_waves \
-				cov_merge \
-				cov_analyze \
-				cov_report
+        pre_build \
+        gen_sv_flist \
+        do_build \
+        post_build \
+        build_result \
+        run \
+        pre_run \
+        sw_build \
+        simulate \
+        post_run \
+        run_result \
+        debug_waves \
+        cov_merge \
+        cov_analyze \
+        cov_report

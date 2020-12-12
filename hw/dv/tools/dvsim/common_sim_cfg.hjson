@@ -3,10 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   flow:             sim
-  flow_makefile:    "{dv_root}/tools/dvsim/sim.mk"
-
   // Where to find DV code
   dv_root:          "{proj_root}/hw/dv"
+  flow_makefile:    "{dv_root}/tools/dvsim/sim.mk"
 
   import_cfgs:      ["{proj_root}/hw/data/common_project_cfg.hjson",
                      "{dv_root}/tools/dvsim/common_modes.hjson",
@@ -70,8 +69,7 @@
 
   // Default list of things to export to shell
   exports: [
-    { SCRATCH_BASE_PATH: "{scratch_base_path}" },
-    { TOOL_SRCS_DIR: "{tool_srcs_dir}" },
+    { dv_root: "{dv_root}" },
     { SIMULATOR: "{tool}" },
     { WAVES: "{waves}" },
     { DUT_TOP: "{dut}" },
@@ -129,27 +127,20 @@
     }
   ]
 
-  // Add waves.tcl to the set of sources to be copied over to
-  // {tool_srcs_dir}. This can be sourced by the tool-specific TCL
-  // script to set up wave dumping.
-  tool_srcs:  ["{dv_root}/tools/sim.tcl",
-               "{dv_root}/tools/common.tcl",
-               "{dv_root}/tools/waves.tcl"]
-
   // Project defaults for VCS
   vcs_cov_cfg_file: "{{build_mode}_vcs_cov_cfg_file}"
-  vcs_unr_cfg_file: "{tool_srcs_dir}/unr.cfg"
-  vcs_cov_excl_files: ["{tool_srcs_dir}/common_cov_excl.el"]
+  vcs_unr_cfg_file: "{dv_root}/tools/vcs/unr.cfg"
+  vcs_cov_excl_files: ["{dv_root}/tools/vcs/common_cov_excl.el"]
 
   // Build-specific coverage cfg files for VCS.
-  default_vcs_cov_cfg_file: "-cm_hier {tool_srcs_dir}/cover.cfg"
-  cover_reg_top_vcs_cov_cfg_file: "-cm_hier {tool_srcs_dir}/cover_reg_top.cfg"
+  default_vcs_cov_cfg_file: "-cm_hier {dv_root}/tools/vcs/cover.cfg"
+  cover_reg_top_vcs_cov_cfg_file: "-cm_hier {dv_root}/tools/vcs/cover_reg_top.cfg"
 
   // Project defaults for Xcelium
   // xcelium_cov_cfg_file: "{{build_mode}_xcelium_cov_cfg_file}"
-  // xcelium_cov_refine_files: ["{tool_srcs_dir}/common_cov.vRefine"]
+  // xcelium_cov_refine_files: ["{dv_root}/tools/xcelium/common_cov.vRefine"]
 
   // Build-specific coverage cfg files for Xcelium.
-  // default_xcelium_cov_cfg_file: "-covfile {tool_srcs_dir}/cover.ccf"
-  // cover_reg_top_xcelium_cov_cfg_file: "-covfile {tool_srcs_dir}/cover_reg_top.ccf"
+  // default_xcelium_cov_cfg_file: "-covfile {dv_root}/tools/xcelium/cover.ccf"
+  // cover_reg_top_xcelium_cov_cfg_file: "-covfile {dv_root}/tools/xcelium/cover_reg_top.ccf"
 }

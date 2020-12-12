@@ -23,12 +23,10 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
-  tool_srcs: ["{proj_root}/hw/ip/prim/dv/prim_prince/data/prim_prince_cover.cfg"]
-
   overrides: [
     {
       name: vcs_cov_cfg_file
-      value: "-cm_hier {tool_srcs_dir}/prim_prince_cover.cfg"
+      value: "-cm_hier {proj_root}/hw/ip/prim/dv/prim_prince/data/prim_prince_cover.cfg"
     }
   ]
 

@@ -21,6 +21,9 @@ name:
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/otbn/data/otbn_testplan.hjson"
 
+  exports: [
+    { REPO_TOP: "{proj_root}" },
+  ]
 
   // Import additional common sim cfg files.
   // TODO: remove imported cfgs that do not apply.

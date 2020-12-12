@@ -5,10 +5,6 @@
   build_cmd:  "{job_prefix} xrun"
   run_cmd:    "{job_prefix} xrun"
 
-  // Indicate the tool specific helper sources - these are copied over to the
-  // {tool_srcs_dir} before running the simulation.
-  tool_srcs:  ["{dv_root}/tools/xcelium/*"]
-
   build_opts: ["-elaborate -64bit -access +r -sv",
                "-licqueue",
                // TODO: duplicate primitives between OT and Ibex #1231
@@ -65,7 +61,7 @@
   supported_wave_formats: ["shm", "fsdb", "vcd"]
 
   // Default tcl script used when running the sim. Override if needed.
-  run_script: "{tool_srcs_dir}/sim.tcl"
+  run_script: "{dv_root}/tools/sim.tcl"
 
   // Coverage related.
   // By default, collect all coverage metrics: block:expr:fsm:toggle:functional.
@@ -90,26 +86,26 @@
 
   // Merging coverage.
   // It is constructed by the tool itself.
-  cov_merge_dir:    "{scratch_base_path}/cov_merge"
+  cov_merge_dir:    "{scratch_path}/cov_merge"
   cov_merge_db_dir: "{cov_merge_dir}/merged"
   cov_merge_cmd:    "{job_prefix} imc"
   cov_merge_opts:   ["-64bit",
                      "-licqueue",
-                     "-exec {tool_srcs_dir}/cov_merge.tcl"]
+                     "-exec {dv_root}/tools/xcelium/cov_merge.tcl"]
 
   // Generate covreage reports in text as well as html.
-  cov_report_dir:   "{scratch_base_path}/cov_report"
+  cov_report_dir:   "{scratch_path}/cov_report"
   cov_report_cmd:   "{job_prefix} imc"
   cov_report_opts:  ["-64bit",
                      "-licqueue",
-                     "-exec {tool_srcs_dir}/cov_report.tcl",
+                     "-exec {dv_root}/tools/xcelium/cov_report.tcl",
                      "{xcelium_cov_refine_files}"]
   cov_report_txt:   "{cov_report_dir}/cov_report.txt"
   cov_report_page:  "index.html"
 
   // Analyzing coverage - this is done by invoking --cov-analyze switch. It opens up the
   // GUI for visual analysis.
-  cov_analyze_dir:  "{scratch_base_path}/cov_analyze"
+  cov_analyze_dir:  "{scratch_path}/cov_analyze"
   cov_analyze_cmd:  "{job_prefix} imc"
   cov_analyze_opts: ["-gui",
                      "-64bit",

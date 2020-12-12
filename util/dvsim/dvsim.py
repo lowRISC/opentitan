@@ -28,12 +28,15 @@ import sys
 import textwrap
 from signal import SIGINT, signal
 
-from CfgFactory import make_cfg
 import Deploy
 import utils
+from CfgFactory import make_cfg
 
 # TODO: add dvsim_cfg.hjson to retrieve this info
 version = 0.1
+
+# By default, all build and run artifacts go here.
+DEFAULT_SCRATCH_ROOT = os.getcwd() + "/scratch"
 
 # The different categories that can be passed to the --list argument.
 _LIST_CATEGORIES = ["build_modes", "run_modes", "tests", "regressions"]
@@ -48,7 +51,7 @@ def resolve_scratch_root(arg_scratch_root):
     scratch_root = os.environ.get('SCRATCH_ROOT')
     if not arg_scratch_root:
         if scratch_root is None:
-            arg_scratch_root = os.getcwd() + "/scratch"
+            arg_scratch_root = DEFAULT_SCRATCH_ROOT
         else:
             # Scratch space could be mounted in a filesystem (such as NFS) on a network drive.
             # If the network is down, it could cause the access access check to hang. So run a
@@ -60,7 +63,7 @@ def resolve_scratch_root(arg_scratch_root):
             if status == 0 and out != "":
                 arg_scratch_root = scratch_root
             else:
-                arg_scratch_root = os.getcwd() + "/scratch"
+                arg_scratch_root = DEFAULT_SCRATCH_ROOT
                 log.warning(
                     "Env variable $SCRATCH_ROOT=\"{}\" is not accessible.\n"
                     "Using \"{}\" instead.".format(scratch_root,
@@ -150,12 +153,73 @@ def get_proj_root():
     return (proj_root)
 
 
+def resolve_proj_root(args):
+    '''Update proj_root based on how DVSim is invoked.
+
+    If --remote env var is set, a location in the scratch area is chosen as the
+    new proj_root. The entire repo is copied over to this location. Else, the
+    proj_root is discovered using get_proj_root() method, unless the user
+    overrides it on the command line.
+
+    This function returns the updated proj_root path.
+    '''
+    proj_root = args.proj_root or get_proj_root()
+
+    # Check if jobs are dispatched to external compute machines. If yes,
+    # then the repo needs to be copied over to the scratch area
+    # accessible to those machines.
+    if args.remote:
+        dest = os.path.join(args.scratch_root, args.branch, "repo_top")
+        copy_repo(proj_root, dest, args.dry_run)
+        proj_root = dest
+
+    return proj_root
+
+
 def sigint_handler(signal_received, frame):
     # Kill processes and background jobs.
     log.debug('SIGINT or CTRL-C detected. Exiting gracefully')
     cfg.kill()
     log.info('Exit due to SIGINT or CTRL-C ')
     exit(1)
+
+
+def copy_repo(src, dest, dry_run):
+    '''Copy over the repo to a new location.
+
+    The repo is copied over from src to dest area. It tentatively uses the
+    rsync utility which provides the ability to specify a file containing some
+    exclude patterns to skip certain things from being copied over. With GitHub
+    repos, an existing `.gitignore` serves this purpose pretty well.
+    '''
+    rsync_cmd = "rsync --archive --update --executability --inplace "
+
+    # Supply `.gitignore` from the src area to skip temp files.
+    ignore_patterns_file = os.path.join(src, ".gitignore")
+    if os.path.exists(ignore_patterns_file):
+        # TODO: hack - include hw/foundry since it is excluded in .gitignore.
+        rsync_cmd += "--include=hw/foundry "
+        rsync_cmd += "--exclude-from={} ".format(ignore_patterns_file)
+        rsync_cmd += "--exclude=*.git* "
+
+    rsync_cmd += src + "/. " + dest
+
+    cmd = ["flock", "--timeout", "600", dest, "--command", rsync_cmd]
+
+    log.info("[copy_repo] [dest]: %s", dest)
+    log.log(utils.VERBOSE, "[copy_repo] [cmd]: \n%s", ' '.join(cmd))
+    if not dry_run:
+        # Make sure the dest exists first.
+        os.makedirs(dest, exist_ok=True)
+        try:
+            proc = subprocess.run(cmd,
+                                  check=True,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError as e:
+            log.error("Failed to copy over %s to %s: %s", src, dest,
+                      e.stderr.decode("utf-8").strip())
+    log.info("Done.")
 
 
 def wrapped_docstring():
@@ -235,6 +299,10 @@ def parse_args():
                       metavar="PFX",
                       help=('Prepend this string when running each tool '
                             'command.'))
+
+    disg.add_argument("--remote",
+                      action='store_true',
+                      help=('Trigger copying of the repo to scratch area.'))
 
     disg.add_argument("--max-parallel",
                       "-mp",
@@ -530,6 +598,8 @@ def main():
     args.scratch_root = resolve_scratch_root(args.scratch_root)
     args.branch = resolve_branch(args.branch)
     args.cfg = os.path.abspath(args.cfg)
+    proj_root = resolve_proj_root(args)
+    log.info("[proj_root]: %s", proj_root)
 
     # Add timestamp to args that all downstream objects can use.
     # Static variables - indicate timestamp.
@@ -557,15 +627,6 @@ def main():
 
     # Build infrastructure from hjson file and create the list of items to
     # be deployed.
-
-    # Sets the project root directory: either specified from the command line
-    # or set by automatically assuming we are in a GitHub repository and
-    # automatically finding the root of this repository.
-    if args.proj_root:
-        proj_root = args.proj_root
-    else:
-        proj_root = get_proj_root()
-
     global cfg
     cfg = make_cfg(args.cfg, args, proj_root)
 

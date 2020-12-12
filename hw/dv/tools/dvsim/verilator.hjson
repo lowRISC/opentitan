@@ -47,11 +47,6 @@
   ex_name:    "{eval_cmd} echo \"{fusesoc_core}\" | cut -d: -f3"
   run_cmd:    "{build_dir}/sim-verilator/V{ex_name}"
 
-  // Indicate the tool specific helper sources - these are copied over to the
-  // {tool_srcs_dir} before running the simulation.
-  // TODO: none at the moment.
-  tool_srcs:  []
-
   // TODO: Verilator has a few useful build switches. Need to figure out how to
   // pass them via FuseSoC.
 
