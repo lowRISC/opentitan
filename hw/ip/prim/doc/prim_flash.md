@@ -48,21 +48,24 @@ flash_test_voltage_h_io | inout  | flash test mode voltage (high voltage connect
 
 ### Flash Request/Response Signals
 
-Name         | In/Out | Description
--------------|--------|---------------------------------
-rd           | input  | read request
-prog         | input  | program request
-prog_last    | input  | last program beat
-prog_type    | input  | type of program requested: currently there are only two types, program normal and program repair
-pg_erase     | input  | page erase request
-bk_erase     | output | bank erase request
-addr         | input  | requested transaction address
-part         | input  | requested transaction partition
-info_sel     | input  | if requested transaction is information partition, the type of information partition accessed
-he           | output | high endurance enable for requested address
-prog_data    | input  | program data
-ack          | output | transction acknowledgement
-rd_data      | output | transaction done
+Name               | In/Out | Description
+-------------------|--------|---------------------------------
+rd                 | input  | read request
+prog               | input  | program request
+prog_last          | input  | last program beat
+prog_type          | input  | type of program requested: currently there are only two types, program normal and program repair
+pg_erase           | input  | page erase request
+bk_erase           | output | bank erase request
+erase_suspend      | input  | erase suspend request
+addr               | input  | requested transaction address
+part               | input  | requested transaction partition
+info_sel           | input  | if requested transaction is information partition, the type of information partition accessed
+he                 | output | high endurance enable for requested address
+prog_data          | input  | program data
+ack                | output | transction acknowledge
+rd_data            | output | transaction read data
+done               | output | transaction done
+erase_suspend_done | output | erase suspend done
 
 
 # Theory of Operations
@@ -79,7 +82,42 @@ For example, a read may have only 1 or 2 cycles between transaction acknowledgem
 Whereas a program or erase may have a gap extending up to uS or even mS.
 
 It is the flash wrapper's decision on how many outstanding transaction to accept.
-The following diagram is one such example:
+The following are examples for read, program and erase transactions.
+
+### Read
+{{< wavejson >}}
+{signal: [
+  {name: 'clk_i',     wave: 'p................'},
+  {name: 'rd_i',      wave: '011..0.1..0......'},
+  {name: 'addr_i',    wave: 'x22..x.2..x......'},
+  {name: 'ack_o',     wave: '1.0.10...10......'},
+  {name: 'done_o',    wave: '0...10...10....10'},
+  {name: 'rd_data_o', wave: 'x...2x...2x....2x'},
+]}
+{{< /wavejson >}}
+
+### Program
+{{< wavejson >}}
+{signal: [
+  {name: 'clk_i',       wave: 'p................'},
+  {name: 'prog_i',      wave: '011...0.1....0...'},
+  {name: 'prog_type_i', wave: 'x22...x.2....x...'},
+  {name: 'prog_data_i', wave: 'x22...x.2....x...'},
+  {name: 'prog_last_i', wave: '0.......1....0...'},
+  {name: 'ack_o',       wave: '010..10.....10...'},
+  {name: 'done_o',      wave: '0..............10'},
+]}
+{{< /wavejson >}}
+
+### Erase
+{{< wavejson >}}
+{signal: [
+  {name: 'clk_i',     wave: 'p................'},
+  {name: '*_erase_i', wave: '01.0.........1.0.'},
+  {name: 'ack_o',     wave: '0.10..........10.'},
+  {name: 'done_o',    wave: '0.....10.........'},
+]}
+{{< /wavejson >}}
 
 ## Initlialization
 
@@ -100,3 +138,20 @@ On the 15th word, the `prog_last` signal asserts and informs the flash wrapper t
 ## Program Type
 The `prog_type` input informs the flash wrapper what type of program operation it should perform.
 A program type not supported by the wrapper, indicated through `prog_type_avail` shall never be issued to the flash wrapper.
+
+## Erase Suspend
+Since erase operations can take a significant amount of time, sometimes it is necessary for software or other components to suspend the operation.
+The suspend operation follows a similar request (`erase_suspend_req` and done (`erase_suspend_done`) interface.
+When the erase suspend completes, the flash wrapper circuitry also asserts `done` for the ongoing erase transaction to ensure all hardware gracefully completes.
+
+The following is an example diagram
+{{< wavejson >}}
+{signal: [
+  {name: 'clk_i',                wave: 'p................'},
+  {name: 'pg_erase_i',           wave: '01............0..'},
+  {name: 'ack_o',                wave: '1.0..............'},
+  {name: 'erase_suspend_i',      wave: '0.....1.......0..'},
+  {name: 'done_o',               wave: '0............10..'},
+  {name: 'erase_suspend_done_o', wave: '0............10..'},
+]}
+{{< /wavejson >}}
