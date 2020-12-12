@@ -409,7 +409,7 @@
       hwaccess: "hrw",
       fields: [
         { bits: "0",
-          resval: "1",
+          resval: "0",
           name: "REQ",
           desc: '''
             When 1, request erase suspend.
