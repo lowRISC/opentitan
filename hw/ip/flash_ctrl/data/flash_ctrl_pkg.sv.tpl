@@ -65,9 +65,15 @@ package flash_ctrl_pkg;
 
   // The end address in bus words for each kind of partition in each bank
   parameter logic [PageW-1:0] DataPartitionEndAddr = PagesPerBank - 1;
+  //parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
+  % for type in range((cfg['info_types'])):
+  //  ${cfg['infos_per_bank'][type]-1}${"," if not loop.last else ""}
+  % endfor
+  //};
   parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
-    InfoTypeSize[0] - 1,
-    InfoTypeSize[1] - 1
+  % for type in range((cfg['info_types'])):
+    InfoTypeSize[${type}] - 1${"," if not loop.last else ""}
+  % endfor
   };
 
   ////////////////////////////

@@ -169,11 +169,11 @@ class Flash:
         self.banks = mem['banks']
         self.pages_per_bank = mem['pages_per_bank']
         self.program_resolution = mem['program_resolution']
-        self.words_per_page = 128
+        self.words_per_page = 256
         self.data_width = 64
         self.metadata_width = 12
-        self.info_types = 2
-        self.infos_per_bank = [4, 4]
+        self.info_types = 3
+        self.infos_per_bank = [10, 1, 2]
 
     def is_pow2(self, n):
         return (n != 0) and (n & (n - 1) == 0)
