@@ -9,6 +9,12 @@ interface lc_ctrl_if(input clk, input rst_n);
   import otp_ctrl_pkg::*;
 
   otp_ctrl_pkg::otp_lc_data_t otp_i;
+  lc_ctrl_pkg::lc_tx_t        lc_dft_en_o;
+  lc_ctrl_pkg::lc_tx_t        lc_nvm_debug_en_o;
+  lc_ctrl_pkg::lc_tx_t        lc_hw_debug_en_o;
+  lc_ctrl_pkg::lc_tx_t        lc_cpu_en_o;
+  lc_ctrl_pkg::lc_tx_t        lc_keymgr_en_o;
+  lc_ctrl_pkg::lc_tx_t        lc_escalate_en_o;
 
   task automatic init(lc_ctrl_pkg::lc_state_e lc_state = LcStRaw,
                       lc_ctrl_pkg::lc_cnt_e   lc_cnt = LcCntRaw);

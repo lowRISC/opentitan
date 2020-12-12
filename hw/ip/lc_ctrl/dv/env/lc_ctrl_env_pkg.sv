@@ -23,6 +23,53 @@ package lc_ctrl_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"lc_programming_failure", "lc_state_failure"};
   parameter uint   NUM_ALERTS = 2;
   parameter uint   CLAIM_TRANS_VAL = 'ha5;
+  parameter uint   NUM_STATES = 16;
+
+  typedef struct packed {
+    lc_ctrl_pkg::lc_tx_e lc_dft_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_nvm_debug_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_hw_debug_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_cpu_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_keymgr_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_escalate_en_o;
+  } lc_outputs_t;
+
+  const lc_outputs_t EXP_LC_OUTPUTS[NUM_STATES] = {
+    // Order: lc_dft_en_o, lc_nvm_debug_en_o, lc_hw_debug_en_o, lc_cpu_en_o, lc_keymgr_en_o,
+    //        lc_escalate_en_o
+    // Raw (fixed size array index 0)
+    {Off, Off, Off, Off, Off, Off},
+    // TestUnlock0
+    {On,  On,  On,  On,  Off, Off},
+    // TestLock0
+    {Off, Off, Off, Off, Off, Off},
+    // TestUnlock1
+    {On,  On,  On,  On,  Off, Off},
+    // TestLock1
+    {Off, Off, Off, Off, Off, Off},
+    // TestUnlock2
+    {On,  On,  On,  On,  Off, Off},
+    // TestLock2
+    {Off, Off, Off, Off, Off, Off},
+    // TestUnlock3
+    {On,  On,  On,  On,  Off, Off},
+    // Dev
+    {Off, Off, On,  On,  On,  Off},
+    // Prod
+    {Off, Off, Off, On,  On,  Off},
+    // ProdEnd
+    {Off, Off, Off, On,  On,  Off},
+    // Rma
+    {On,  On,  On,  On,  On,  Off},
+    // Scrap
+    {Off, Off, Off, Off, Off, Off},
+    // PostTrans
+    {Off, Off, Off, Off, Off, Off},
+    // Escalate
+    {Off, Off, Off, Off, Off, On},
+    // Invalid
+    {Off, Off, Off, Off, Off, Off}
+  };
 
   // associative array cannot declare parameter here, so we used const instead
   const dec_lc_state_e VALID_NEXT_STATES [dec_lc_state_e][$] = '{
@@ -61,8 +108,8 @@ package lc_ctrl_env_pkg;
   function automatic bit valid_state_for_trans(lc_state_e curr_state);
     valid_state_for_trans = 0;
     if (curr_state inside {LcStRma, LcStProdEnd, LcStProd, LcStDev, LcStTestUnlocked3,
-                          LcStTestUnlocked2, LcStTestUnlocked1, LcStTestUnlocked0,
-                          LcStTestLocked2, LcStTestLocked1, LcStTestLocked0, LcStRaw}) begin
+                           LcStTestUnlocked2, LcStTestUnlocked1, LcStTestUnlocked0,
+                           LcStTestLocked2, LcStTestLocked1, LcStTestLocked0, LcStRaw}) begin
       valid_state_for_trans = 1;
     end
   endfunction

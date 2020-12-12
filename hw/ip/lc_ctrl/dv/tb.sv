@@ -62,12 +62,12 @@ module tb;
 
     .otp_lc_data_i         (lc_ctrl_if.otp_i),
 
-    .lc_dft_en_o           (),
-    .lc_nvm_debug_en_o     (),
-    .lc_hw_debug_en_o      (),
-    .lc_cpu_en_o           (),
-    .lc_keymgr_en_o        (),
-    .lc_escalate_en_o      (),
+    .lc_dft_en_o           (lc_ctrl_if.lc_dft_en_o),
+    .lc_nvm_debug_en_o     (lc_ctrl_if.lc_nvm_debug_en_o),
+    .lc_hw_debug_en_o      (lc_ctrl_if.lc_hw_debug_en_o),
+    .lc_cpu_en_o           (lc_ctrl_if.lc_cpu_en_o),
+    .lc_keymgr_en_o        (lc_ctrl_if.lc_keymgr_en_o),
+    .lc_escalate_en_o      (lc_ctrl_if.lc_escalate_en_o),
 
     .lc_clk_byp_req_o      (),
     .lc_clk_byp_ack_i      (lc_ctrl_pkg::On),
