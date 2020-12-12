@@ -93,9 +93,9 @@ package rv_timer_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    rv_timer_hw2reg_timer_v_lower0_reg_t timer_v_lower0; // [67:36]
-    rv_timer_hw2reg_timer_v_upper0_reg_t timer_v_upper0; // [35:4]
-    rv_timer_hw2reg_intr_state0_mreg_t [0:0] intr_state0; // [3:2]
+    rv_timer_hw2reg_timer_v_lower0_reg_t timer_v_lower0; // [67:35]
+    rv_timer_hw2reg_timer_v_upper0_reg_t timer_v_upper0; // [34:2]
+    rv_timer_hw2reg_intr_state0_mreg_t [0:0] intr_state0; // [1:0]
   } rv_timer_hw2reg_t;
 
   // Register Address

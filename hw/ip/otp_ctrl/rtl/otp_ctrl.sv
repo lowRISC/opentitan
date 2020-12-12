@@ -49,7 +49,7 @@ module otp_ctrl
   output lc_otp_token_rsp_t                          lc_otp_token_o,
   // Lifecycle broadcast inputs
   input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
-  input  lc_ctrl_pkg::lc_tx_t                        lc_provision_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                        lc_provision_wr_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_dft_en_i,
   // OTP broadcast outputs
   output otp_lc_data_t                               otp_lc_data_o,
@@ -62,7 +62,7 @@ module otp_ctrl
   input  otbn_otp_key_req_t                          otbn_otp_key_i,
   output otbn_otp_key_rsp_t                          otbn_otp_key_o,
   // Hardware config bits
-  output logic [HwCfgContentSize * 8-1:0]            hw_cfg_o
+  output otp_hw_cfg_t                                otp_hw_cfg_o
 );
 
   import prim_util_pkg::vbits;
@@ -100,7 +100,7 @@ module otp_ctrl
   // Life Cycle Signal Synchronization //
   ///////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t lc_escalate_en, lc_provision_en;
+  lc_ctrl_pkg::lc_tx_t lc_escalate_en, lc_provision_wr_en;
   lc_ctrl_pkg::lc_tx_t [1:0] lc_dft_en;
 
   prim_lc_sync #(
@@ -114,11 +114,11 @@ module otp_ctrl
 
   prim_lc_sync #(
     .NumCopies(1)
-  ) u_prim_lc_sync_provision_en (
+  ) u_prim_lc_sync_provision_wr_en (
     .clk_i,
     .rst_ni,
-    .lc_en_i(lc_provision_en_i),
-    .lc_en_o(lc_provision_en)
+    .lc_en_i(lc_provision_wr_en_i),
+    .lc_en_o(lc_provision_wr_en)
   );
 
   prim_lc_sync #(
@@ -259,7 +259,7 @@ module otp_ctrl
     if (!reg2hw.creator_sw_cfg_read_lock) part_access_csrs[CreatorSwCfgIdx].read_lock = Locked;
     if (!reg2hw.owner_sw_cfg_read_lock) part_access_csrs[OwnerSwCfgIdx].read_lock = Locked;
     // The SECRET2 partition can only be accessed (write&read) when provisioning is enabled.
-    if (lc_provision_en != lc_ctrl_pkg::On) part_access_csrs[Secret2Idx] = {2{Locked}};
+    if (lc_provision_wr_en != lc_ctrl_pkg::On) part_access_csrs[Secret2Idx] = {2{Locked}};
   end
 
   //////////////////////
@@ -893,7 +893,7 @@ module otp_ctrl
     end else if (PartInfo[k].variant == Buffered) begin : gen_buffered
       otp_ctrl_part_buf #(
         .Info(PartInfo[k]),
-        .DataDefault('0)
+        .DataDefault(PartInvDefault[PartInfo[k].offset*8 +: PartInfo[k].size*8])
       ) u_part_buf (
         .clk_i,
         .rst_ni,
@@ -994,11 +994,11 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
   // Buffered Data Output Mapping //
   //////////////////////////////////
 
-  // Output complete hardware config partition (without the digest).
-  // Actual mapping to other IPs can occur at the top-level.
-  assign hw_cfg_o = part_buf_data[HwCfgContentOffset +:
-                                  HwCfgContentSize];
-
+  // Output complete hardware config partition.
+  // Actual mapping to other IPs is done via the intersignal topgen feature,
+  // selection of fields can be done using the otp_hw_cfg_t struct fields.
+  assign otp_hw_cfg_o.valid = (part_init_done[HwCfgIdx]) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
+  assign otp_hw_cfg_o.data = otp_hw_cfg_data_t'(part_buf_data[HwCfgOffset +: HwCfgSize]);
   // Root keys
   assign otp_keymgr_key_o.valid = part_init_done[Secret2Idx];
   assign otp_keymgr_key_o.key_share0 = part_buf_data[CreatorRootKeyShare0Offset +:
@@ -1069,6 +1069,6 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
   `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,       flash_otp_key_o)
   `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_o)
   `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_o)
-  `ASSERT_KNOWN(HwCfgKnown_A,                hw_cfg_o)
+  `ASSERT_KNOWN(OtpHwCfgKnown_A,             otp_hw_cfg_o)
 
 endmodule : otp_ctrl

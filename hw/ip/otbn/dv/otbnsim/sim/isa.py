@@ -69,6 +69,11 @@ class OTBNInsn:
     # instruction.
     insn = DummyInsn()  # type: Insn
 
+    # A class variable that is set by Insn subclasses that represent
+    # instructions that affect control flow (and are not allowed at the end of
+    # a loop).
+    affects_control = False
+
     def __init__(self, op_vals: Dict[str, int]):
         self.op_vals = op_vals
 

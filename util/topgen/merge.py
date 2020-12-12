@@ -4,12 +4,12 @@
 
 import logging as log
 import random
+from collections import OrderedDict
 from copy import deepcopy
 from functools import partial
-from collections import OrderedDict
 from math import ceil, log2
 
-from topgen import lib, c
+from topgen import c, lib
 
 
 def _get_random_data_hex_literal(width):
@@ -130,13 +130,15 @@ def amend_ip(top, ip):
                 par_name = i["name"]
                 if par_name.lower().startswith("sec") and not i["expose"]:
                     log.warning("{} has security-critical parameter {} "
-                                "not exposed to top".format(mod_name, par_name))
+                                "not exposed to top".format(
+                                    mod_name, par_name))
                 # Move special prefixes to the beginnining of the parameter name.
                 param_prefixes = ["Sec", "RndCnst"]
                 cc_mod_name = c.Name.from_snake_case(mod_name).as_camel_case()
                 for prefix in param_prefixes:
                     if par_name.lower().startswith(prefix.lower()):
-                        i["name_top"] = prefix + cc_mod_name + par_name[len(prefix):]
+                        i["name_top"] = prefix + cc_mod_name + par_name[
+                            len(prefix):]
                         break
                 else:
                     i["name_top"] = cc_mod_name + par_name
@@ -149,7 +151,8 @@ def amend_ip(top, ip):
                 elif i["randtype"] == "perm":
                     i["default"] = _get_random_perm_hex_literal(i["randcount"])
                     # Effective width of the random vector
-                    i["randwidth"] = int(i["randcount"]) * int(ceil(log2(float(i["randcount"]))))
+                    i["randwidth"] = int(i["randcount"]) * int(
+                        ceil(log2(float(i["randcount"]))))
         else:
             ip_module["param_list"] = []
 
@@ -189,7 +192,8 @@ def amend_ip(top, ip):
 
         # reset request
         if "reset_request_list" in ip:
-            ip_module["reset_request_list"] = deepcopy(ip["reset_request_list"])
+            ip_module["reset_request_list"] = deepcopy(
+                ip["reset_request_list"])
             for i in ip_module["reset_request_list"]:
                 i.pop('desc', None)
         else:
@@ -313,9 +317,8 @@ def xbar_adddevice(top, xbar, device):
     xbar_list = [x["name"] for x in top["xbar"] if x["name"] != xbar["name"]]
 
     # case 1: another xbar --> check in xbar list
-    log.info("Handling xbar device {}, devlen {}, nodelen {}".format(device,
-                                                                     len(deviceobj),
-                                                                     len(nodeobj)))
+    log.info("Handling xbar device {}, devlen {}, nodelen {}".format(
+        device, len(deviceobj), len(nodeobj)))
     if device in xbar_list and len(nodeobj) == 0:
         log.error(
             "Another crossbar %s needs to be specified in the 'nodes' list" %
@@ -375,27 +378,24 @@ def xbar_adddevice(top, xbar, device):
         else:
             # Crossbar check
             if len(nodeobj) == 0:
-                log.error(
-                    """
+                log.error("""
                     Device %s doesn't exist in 'module', 'memory', predefined,
                     or as a node object
-                    """
-                    % device)
+                    """ % device)
             else:
                 node = nodeobj[0]
                 node["xbar"] = False
                 required_keys = ["addr_range"]
                 if "stub" in node and node["stub"]:
-                    log.info(
-                        """
+                    log.info("""
                         Device %s definition is a stub and does not exist in
                         'module', 'memory' or predefined
-                        """
-                        % device)
+                        """ % device)
 
                     if all(key in required_keys for key in node.keys()):
-                        log.error("{}, The xbar only node is missing fields, see {}".format(
-                            node['name'], required_keys))
+                        log.error(
+                            "{}, The xbar only node is missing fields, see {}".
+                            format(node['name'], required_keys))
                     process_pipeline_var(node)
                 else:
                     log.error("Device {} definition is not a stub!")
@@ -663,7 +663,8 @@ def amend_clocks(top: OrderedDict):
 
     # add entry to inter_module automatically
     for intf in top['exported_clks']:
-        top['inter_module']['external']['clkmgr.clocks_{}'.format(intf)] = "clks_{}".format(intf)
+        top['inter_module']['external']['clkmgr.clocks_{}'.format(
+            intf)] = "clks_{}".format(intf)
 
     # add to intermodule connections
     for ep in trans_eps:
@@ -672,7 +673,6 @@ def amend_clocks(top: OrderedDict):
 
 
 def amend_resets(top):
-
     """Generate exported reset structure and automatically connect to
        intermodule.
     """
@@ -699,14 +699,15 @@ def amend_resets(top):
 
     # add entry to inter_module automatically
     for intf in top['exported_rsts']:
-        top['inter_module']['external']['rstmgr.resets_{}'.format(intf)] = "rsts_{}".format(intf)
-
+        top['inter_module']['external']['rstmgr.resets_{}'.format(
+            intf)] = "rsts_{}".format(intf)
     """Discover the full path and selection to each reset connection.
        This is done by modifying the reset connection of each end point.
     """
     for end_point in top['module'] + top['memory'] + top['xbar']:
         for port, net in end_point['reset_connections'].items():
-            reset_path = lib.get_reset_path(net, end_point['domain'], top['resets'])
+            reset_path = lib.get_reset_path(net, end_point['domain'],
+                                            top['resets'])
             end_point['reset_connections'][port] = reset_path
 
     # reset paths are still needed temporarily until host only modules are properly automated
@@ -793,8 +794,10 @@ def amend_wkup(topcfg: OrderedDict):
             topcfg["wakeups"].append(signal)
 
     # add wakeup signals to pwrmgr connections
-    signal_names = ["{}.{}".format(s["module"].lower(), s["name"].lower())
-                    for s in topcfg["wakeups"]]
+    signal_names = [
+        "{}.{}".format(s["module"].lower(), s["name"].lower())
+        for s in topcfg["wakeups"]
+    ]
     # TBD: What's the best way to not hardcode this signal below?
     #      We could make this a top.hjson variable and validate it against pwrmgr hjson
     topcfg["inter_module"]["connect"]["pwrmgr.wakeups"] = signal_names
@@ -818,8 +821,10 @@ def amend_reset_request(topcfg: OrderedDict):
             topcfg["reset_requests"].append(signal)
 
     # add reset requests to pwrmgr connections
-    signal_names = ["{}.{}".format(s["module"].lower(), s["name"].lower())
-                    for s in topcfg["reset_requests"]]
+    signal_names = [
+        "{}.{}".format(s["module"].lower(), s["name"].lower())
+        for s in topcfg["reset_requests"]
+    ]
     # TBD: What's the best way to not hardcode this signal below?
     #      We could make this a top.hjson variable and validate it against pwrmgr hjson
     topcfg["inter_module"]["connect"]["pwrmgr.rstreqs"] = signal_names

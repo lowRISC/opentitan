@@ -23,5 +23,6 @@ package aes_test_pkg;
   `include "aes_stress_test.sv"
   `include "aes_b2b_test.sv"
   `include "aes_config_error_test.sv"
+  `include "aes_clear_test.sv"
 
 endpackage

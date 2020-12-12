@@ -1,0 +1,17 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:dv_test_status"
+description: "DV test status reporting utilities"
+
+filesets:
+  files_dv:
+    files:
+      - dv_test_status_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

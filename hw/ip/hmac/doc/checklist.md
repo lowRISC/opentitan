@@ -118,8 +118,8 @@ Review        | Signoff date            | Done        | 2019-11-22
 
  Type         | Item                                  | Resolution     | Note/Collaterals
 --------------|---------------------------------------|----------------|------------------
-Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Done           | [hmac_dv_plan]({{<relref "dv_plan/index.md" >}})
-Documentation | [TESTPLAN_COMPLETED][]                | Done           |
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done           | [hmac_dv_doc]({{<relref "dv/index.md" >}})
+Documentation | [DV_PLAN_COMPLETED][]                 | Done           |
 Testbench     | [TB_TOP_CREATED][]                    | Done           |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done           |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done           |
@@ -137,12 +137,12 @@ Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done           |
 Code Quality  | [TB_LINT_SETUP][]                     | Done           |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A            | Except for IP module
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done           |
-Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Done           |
+Review        | [DV_PLAN_REVIEWED][]                  | Done           |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done           | Exception (Security, Power, Debug)
 Review        | [V2_CHECKLIST_SCOPED][]               | Done           |
 
-[DV_PLAN_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv_plan_draft_completed" >}}
-[TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan_completed" >}}
+[DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
+[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
 [TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb_top_created" >}}
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary_assertion_checks_added" >}}
 [SIM_TB_ENV_CREATED]:                 {{<relref "/doc/project/checklist.md#sim_tb_env_created" >}}
@@ -160,7 +160,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done           |
 [TB_LINT_SETUP]:                      {{<relref "/doc/project/checklist.md#tb_lint_setup" >}}
 [PRE_VERIFIED_SUB_MODULES_V1]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v1" >}}
 [DESIGN_SPEC_REVIEWED]:               {{<relref "/doc/project/checklist.md#design_spec_reviewed" >}}
-[DV_PLAN_TESTPLAN_REVIEWED]:          {{<relref "/doc/project/checklist.md#dv_plan_testplan_reviewed" >}}
+[DV_PLAN_REVIEWED]:                   {{<relref "/doc/project/checklist.md#dv_plan_reviewed" >}}
 [STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std_test_categories_planned" >}}
 [V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2_checklist_scoped" >}}
 
@@ -169,7 +169,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done           |
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
 Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        |
-Documentation | [DV_PLAN_COMPLETED][]                   | Done        | Add testplan reflect D3 changes
+Documentation | [DV_PLAN_COMPLETED][]                   | Done        | Add DV plan reflect D3 changes
 Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        | No planned assertions for DV
 Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
@@ -191,7 +191,7 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 [#820]: https://github.com/lowRISC/opentitan/pull/820
 
 [DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design_deltas_captured_v2" >}}
-[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
+[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_doc_completed" >}}
 [ALL_INTERFACES_EXERCISED]:           {{<relref "/doc/project/checklist.md#all_interfaces_exercised" >}}
 [ALL_ASSERTION_CHECKS_ADDED]:         {{<relref "/doc/project/checklist.md#all_assertion_checks_added" >}}
 [SIM_TB_ENV_COMPLETED]:               {{<relref "/doc/project/checklist.md#sim_tb_env_completed" >}}
@@ -232,7 +232,7 @@ Review        | Signoff date                      | Done        | 2019-11-22
 
 [issue #385]: https://github.com/loWRISC/opentitan/issues/385
 [pr #749]:    https://github.com/loWRISC/opentitan/pull/749
-[pr #1042]:    https://github.com/loWRISC/opentitan/pull/1042
+[pr #1042]:   https://github.com/loWRISC/opentitan/pull/1042
 [hmac_cov_excl.el]: https://github.com/lowRISC/opentitan/blob/8fc17aac1dff9c5622fae2f5eb9203ef348c1ff5/hw/ip/hmac/dv/cov/hmac_cov_excl.el
 [issue #991]: https://github.com/loWRISC/opentitan/issues/523
 [issue #860]: https://github.com/loWRISC/opentitan/issues/860

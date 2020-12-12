@@ -6,14 +6,13 @@ r"""Top Module Generator
 """
 import argparse
 import logging as log
+import random
 import subprocess
 import sys
-import random
-
 from collections import OrderedDict
+from copy import deepcopy
 from io import StringIO
 from pathlib import Path
-from copy import deepcopy
 
 import hjson
 from mako import exceptions
@@ -21,9 +20,9 @@ from mako.template import Template
 
 import tlgen
 from reggen import gen_dv, gen_rtl, validate
-from topgen import (amend_clocks, get_hjsonobj_xbars, merge_top, search_ips,
-                    validate_top)
+from topgen import amend_clocks, get_hjsonobj_xbars
 from topgen import intermodule as im
+from topgen import merge_top, search_ips, validate_top
 from topgen.c import TopGenC
 
 # Common header for generated files
@@ -159,7 +158,7 @@ def generate_alert_handler(top, out_path):
 
     # Generating IP top module script is not generalized yet.
     # So, topgen reads template files from alert_handler directory directly.
-    tpl_path = out_path / '../ip/alert_handler/data'
+    tpl_path = Path(__file__).resolve().parent / '../hw/ip/alert_handler/data'
     hjson_tpl_path = tpl_path / 'alert_handler.hjson.tpl'
     dv_tpl_path = tpl_path / 'alert_handler_env_pkg__params.sv.tpl'
 
@@ -238,7 +237,7 @@ def generate_plic(top, out_path):
     # Generating IP top module script is not generalized yet.
     # So, topgen reads template files from rv_plic directory directly.
     # Next, if the ip top gen tool is placed in util/ we can import the library.
-    tpl_path = out_path / '../ip/rv_plic/data'
+    tpl_path = Path(__file__).resolve().parent / '../hw/ip/rv_plic/data'
     hjson_tpl_path = tpl_path / 'rv_plic.hjson.tpl'
     rtl_tpl_path = tpl_path / 'rv_plic.sv.tpl'
 
@@ -380,7 +379,8 @@ def generate_pinmux_and_padctrl(top, out_path):
     data_path.mkdir(parents=True, exist_ok=True)
 
     # Template path
-    tpl_path = out_path / '../ip/pinmux/data/pinmux.hjson.tpl'
+    tpl_path = Path(
+        __file__).resolve().parent / '../hw/ip/pinmux/data/pinmux.hjson.tpl'
 
     # Generate register package and RTLs
     gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
@@ -435,7 +435,8 @@ def generate_pinmux_and_padctrl(top, out_path):
     data_path.mkdir(parents=True, exist_ok=True)
 
     # Template path
-    tpl_path = out_path / '../ip/padctrl/data/padctrl.hjson.tpl'
+    tpl_path = Path(
+        __file__).resolve().parent / '../hw/ip/padctrl/data/padctrl.hjson.tpl'
 
     # Generate register package and RTLs
     gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
@@ -513,33 +514,25 @@ def generate_clkmgr(top, cfg_path, out_path):
     # This includes two groups of clocks
     # Clocks fed from the always-on source
     # Clocks fed to the powerup group
-    ft_clks = OrderedDict([
-        (clk, src)
-        for grp in grps for (clk, src) in grp['clocks'].items()
-        if src_aon_attr[src] or grp['name'] == 'powerup'
-    ])
+    ft_clks = OrderedDict([(clk, src) for grp in grps
+                           for (clk, src) in grp['clocks'].items()
+                           if src_aon_attr[src] or grp['name'] == 'powerup'])
 
     # root-gate clocks
-    rg_clks = OrderedDict([
-        (clk, src)
-        for grp in grps for (clk, src) in grp['clocks'].items()
-        if grp['name'] != 'powerup' and grp['sw_cg'] == 'no' and
-        not src_aon_attr[src]
-    ])
+    rg_clks = OrderedDict([(clk, src) for grp in grps
+                           for (clk, src) in grp['clocks'].items()
+                           if grp['name'] != 'powerup' and
+                           grp['sw_cg'] == 'no' and not src_aon_attr[src]])
 
     # direct sw control clocks
-    sw_clks = OrderedDict([
-        (clk, src)
-        for grp in grps for (clk, src) in grp['clocks'].items()
-        if grp['sw_cg'] == 'yes' and not src_aon_attr[src]
-    ])
+    sw_clks = OrderedDict([(clk, src) for grp in grps
+                           for (clk, src) in grp['clocks'].items()
+                           if grp['sw_cg'] == 'yes' and not src_aon_attr[src]])
 
     # sw hint clocks
-    hints = OrderedDict([
-        (clk, src)
-        for grp in grps for (clk, src) in grp['clocks'].items()
-        if grp['sw_cg'] == 'hint' and not src_aon_attr[src]
-    ])
+    hints = OrderedDict([(clk, src) for grp in grps
+                         for (clk, src) in grp['clocks'].items()
+                         if grp['sw_cg'] == 'hint' and not src_aon_attr[src]])
 
     # hint clocks dict
     for clk, src in hints.items():
@@ -605,7 +598,7 @@ def generate_pwrmgr(top, out_path):
     doc_path.mkdir(parents=True, exist_ok=True)
 
     # So, read template files from ip directory.
-    tpl_path = out_path / '../ip/pwrmgr/data'
+    tpl_path = Path(__file__).resolve().parent / '../hw/ip/pwrmgr/data'
     hjson_tpl_path = tpl_path / 'pwrmgr.hjson.tpl'
 
     # Render and write out hjson
@@ -645,7 +638,7 @@ def generate_rstmgr(topcfg, out_path):
     rtl_path.mkdir(parents=True, exist_ok=True)
     doc_path = out_path / 'ip/rstmgr/data/autogen'
     doc_path.mkdir(parents=True, exist_ok=True)
-    tpl_path = out_path / '../ip/rstmgr/data'
+    tpl_path = Path(__file__).resolve().parent / '../hw/ip/rstmgr/data'
 
     # Read template files from ip directory.
     tpls = []
@@ -671,10 +664,15 @@ def generate_rstmgr(topcfg, out_path):
             clks.append(rst['clk'])
 
     # resets sent to reset struct
-    output_rsts = [rst for rst in topcfg["resets"]["nodes"] if rst['type'] == "top"]
+    output_rsts = [
+        rst for rst in topcfg["resets"]["nodes"] if rst['type'] == "top"
+    ]
 
     # sw controlled resets
-    sw_rsts = [rst for rst in topcfg["resets"]["nodes"] if 'sw' in rst and rst['sw'] == 1]
+    sw_rsts = [
+        rst for rst in topcfg["resets"]["nodes"]
+        if 'sw' in rst and rst['sw'] == 1
+    ]
 
     # leaf resets
     leaf_rsts = [rst for rst in topcfg["resets"]["nodes"] if rst['gen']]
@@ -729,7 +727,7 @@ def generate_flash(topcfg, out_path):
     rtl_path.mkdir(parents=True, exist_ok=True)
     doc_path = out_path / 'ip/flash_ctrl/data/autogen'
     doc_path.mkdir(parents=True, exist_ok=True)
-    tpl_path = out_path / '../ip/flash_ctrl/data'
+    tpl_path = Path(__file__).resolve().parent / '../hw/ip/flash_ctrl/data'
 
     # Read template files from ip directory.
     tpls = []
@@ -779,14 +777,16 @@ def generate_flash(topcfg, out_path):
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
 
-def generate_top_only(top_only_list, out_path):
+def generate_top_only(top_only_list, out_path, topname):
     log.info("Generating top only modules")
 
     for ip in top_only_list:
-        rtl_path = out_path / "ip/{}/rtl".format(ip)
-        hjson_path = out_path / "ip/{}/data/{}.hjson".format(ip, ip)
+        hjson_path = Path(__file__).resolve(
+        ).parent / "../hw/top_{}/ip/{}/data/{}.hjson".format(topname, ip, ip)
+        genrtl_dir = out_path / "ip/{}/rtl".format(ip)
+        genrtl_dir.mkdir(parents=True, exist_ok=True)
         log.info("Generating top modules {}, hjson: {}, output: {}".format(
-            ip, hjson_path, rtl_path))
+            ip, hjson_path, genrtl_dir))
 
         # Generate reg files
         with open(str(hjson_path), 'r') as out:
@@ -794,7 +794,7 @@ def generate_top_only(top_only_list, out_path):
                                    use_decimal=True,
                                    object_pairs_hook=OrderedDict)
             validate.validate(hjson_obj)
-            gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+            gen_rtl.gen_rtl(hjson_obj, str(genrtl_dir))
 
 
 def generate_top_ral(top, ip_objs, out_path):
@@ -804,7 +804,7 @@ def generate_top_ral(top, ip_objs, out_path):
     top_block.base_addr = 0
     top_block.width = int(top["datawidth"])
 
-    # add blocks
+    # add all the IPs into blocks
     for ip_obj in ip_objs:
         top_block.blocks.append(gen_rtl.json_to_reg(ip_obj))
 
@@ -815,6 +815,8 @@ def generate_top_ral(top, ip_objs, out_path):
             mem.name = item["name"]
             mem.base_addr = int(item["base_addr"], 0)
             mem.limit_addr = int(item["base_addr"], 0) + int(item["size"], 0)
+            mem.byte_write = ('byte_write' in item and
+                              item["byte_write"].lower() == "true")
             if "swaccess" in item.keys():
                 mem.dvrights = item["swaccess"]
             else:
@@ -822,14 +824,14 @@ def generate_top_ral(top, ip_objs, out_path):
             mem.n_bits = top_block.width
             top_block.wins.append(mem)
 
-    # get sub-block base addresses from top cfg
+    # get sub-block base addresses, instance names from top cfg
     for block in top_block.blocks:
         for module in top["module"]:
-            if block.name == module["name"]:
-                block.base_addr = int(module["base_addr"], 0)
-                break
+            if block.name == module["type"]:
+                block.base_addr[module["name"]] = int(module["base_addr"], 0)
 
-    top_block.blocks.sort(key=lambda block: block.base_addr)
+    # sort by the base_addr of 1st instance of the block
+    top_block.blocks.sort(key=lambda block: next(iter(block.base_addr))[1])
     top_block.wins.sort(key=lambda win: win.base_addr)
 
     # generate the top ral model with template
@@ -895,10 +897,11 @@ def main():
         action='store_true',
         help="If set, the tool generates top level RAL model for DV")
     # Generator options for compile time random netlist constants
-    parser.add_argument('--rnd_cnst_seed',
-                        type=int,
-                        metavar='<seed>',
-                        help='Custom seed for RNG to compute netlist constants.')
+    parser.add_argument(
+        '--rnd_cnst_seed',
+        type=int,
+        metavar='<seed>',
+        help='Custom seed for RNG to compute netlist constants.')
 
     args = parser.parse_args()
 
@@ -986,14 +989,17 @@ def main():
 
     for ip in generated_list:
         log.info("Appending {}".format(ip))
-        ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
-            ip, ip)
+        if ip == 'clkmgr':
+            ip_hjson = Path(out_path) / "ip/{}/data/autogen/{}.hjson".format(
+                ip, ip)
+        else:
+            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
+                ip, ip)
         ips.append(ip_hjson)
 
     for ip in top_only_list:
         log.info("Appending {}".format(ip))
-        ip_hjson = hjson_dir.parent / "ip/{}/data/{}.hjson".format(
-            ip, ip)
+        ip_hjson = hjson_dir.parent / "ip/{}/data/{}.hjson".format(ip, ip)
         ips.append(ip_hjson)
 
     # load Hjson and pass validate from reggen
@@ -1006,7 +1012,19 @@ def main():
                          x.stem)
                 continue
 
-            obj = hjson.load(x.open('r'),
+            # The auto-generated hjson might not yet exist. It will be created
+            # later, see generate_{ip_name}() calls below. For the initial
+            # validation, use the template in hw/ip/{ip_name}/data .
+            if x.stem in generated_list and not x.is_file():
+                hjson_file = ip_dir / "{}/data/{}.hjson".format(x.stem, x.stem)
+                log.info(
+                    "Auto-generated hjson %s does not yet exist. " % str(x) +
+                    "Falling back to template %s for initial validation." %
+                    str(hjson_file))
+            else:
+                hjson_file = x
+
+            obj = hjson.load(hjson_file.open('r'),
                              use_decimal=True,
                              object_pairs_hook=OrderedDict)
             if validate.validate(obj) != 0:
@@ -1025,16 +1043,17 @@ def main():
 
     # If specified, override the seed for random netlist constant computation.
     if args.rnd_cnst_seed:
-        log.warning(
-            'Commandline override of rnd_cnst_seed with {}.'.format(args.rnd_cnst_seed))
+        log.warning('Commandline override of rnd_cnst_seed with {}.'.format(
+            args.rnd_cnst_seed))
         topcfg['rnd_cnst_seed'] = args.rnd_cnst_seed
-    # Otherwise, we either take it from the top_earlgrey.hjson if present, or
+    # Otherwise, we either take it from the top_{topname}.hjson if present, or
     # randomly generate a new seed if not.
     else:
         random.seed()
         new_seed = random.getrandbits(64)
         if topcfg.setdefault('rnd_cnst_seed', new_seed) != new_seed:
-            log.warning('No rnd_cnst_seed specified, setting to {}.'.format(new_seed))
+            log.warning(
+                'No rnd_cnst_seed specified, setting to {}.'.format(new_seed))
 
     topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
     if error != 0:
@@ -1074,7 +1093,7 @@ def main():
 
     # Generate top only modules
     # These modules are not templated, but are not in hw/ip
-    generate_top_only(top_only_list, out_path)
+    generate_top_only(top_only_list, out_path, topname)
 
     # Generate xbars
     if not args.no_xbar or args.xbar_only:
@@ -1090,9 +1109,9 @@ def main():
     top_name = completecfg["name"]
 
     # Generate top.gen.hjson right before rendering
-    hjson_dir = Path(args.topcfg).parent
-    genhjson_path = hjson_dir / ("autogen/top_%s.gen.hjson" %
-                                 completecfg["name"])
+    genhjson_dir = Path(out_path) / "data/autogen"
+    genhjson_dir.mkdir(parents=True, exist_ok=True)
+    genhjson_path = genhjson_dir / ("top_%s.gen.hjson" % completecfg["name"])
 
     # Header for HJSON
     gencmd = '''//
@@ -1125,31 +1144,27 @@ def main():
         # Header for SV files
         gencmd = warnhdr + '''//
 // util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
-//                --tpl hw/top_earlgrey/data/ \\
+//                --tpl hw/top_{topname}/data/ \\
 //                -o hw/top_{topname}/ \\
 //                --rnd_cnst_seed {seed}
 '''.format(topname=topname, seed=topcfg['rnd_cnst_seed'])
 
         # SystemVerilog Top:
-        # 'top_earlgrey.sv.tpl' -> 'rtl/autogen/top_earlgrey.sv'
-        render_template('top_%s.sv',
-                        'rtl/autogen',
-                        gencmd = gencmd)
+        render_template('top_%s.sv', 'rtl/autogen', gencmd=gencmd)
+        # 'top_{topname}.sv.tpl' -> 'rtl/autogen/top_{topname}.sv'
 
         # The C / SV file needs some complex information, so we initialize this
         # object to store it.
         c_helper = TopGenC(completecfg)
 
-        # 'top_earlgrey_pkg.sv.tpl' -> 'rtl/autogen/top_earlgrey_pkg.sv'
+        # 'top_{topname}_pkg.sv.tpl' -> 'rtl/autogen/top_{topname}_pkg.sv'
         render_template('top_%s_pkg.sv',
                         'rtl/autogen',
                         helper=c_helper,
-                        gencmd = gencmd)
+                        gencmd=gencmd)
 
         # compile-time random netlist constants
-        render_template('top_%s_rnd_cnst_pkg.sv',
-                        'rtl/autogen',
-                        gencmd = gencmd)
+        render_template('top_%s_rnd_cnst_pkg.sv', 'rtl/autogen', gencmd=gencmd)
 
         # C Header + C File + Clang-format file
 
@@ -1160,21 +1175,22 @@ def main():
         cformat_path = cformat_dir / '.clang-format'
         cformat_path.write_text(cformat_tplpath.read_text())
 
-        # 'top_earlgrey.h.tpl' -> 'sw/autogen/top_earlgrey.h'
-        cheader_path = render_template('top_%s.h', 'sw/autogen',
+        # 'top_{topname}.h.tpl' -> 'sw/autogen/top_{topname}.h'
+        cheader_path = render_template('top_%s.h',
+                                       'sw/autogen',
                                        helper=c_helper)
 
         # Save the relative header path into `c_gen_info`
         rel_header_path = cheader_path.relative_to(SRCTREE_TOP)
         c_helper.header_path = str(rel_header_path)
 
-        # 'top_earlgrey.c.tpl' -> 'sw/autogen/top_earlgrey.c'
+        # 'top_{topname}.c.tpl' -> 'sw/autogen/top_{topname}.c'
         render_template('top_%s.c', 'sw/autogen', helper=c_helper)
 
-        # 'top_earlgrey_memory.ld.tpl' -> 'sw/autogen/top_earlgrey_memory.ld'
+        # 'top_{topname}_memory.ld.tpl' -> 'sw/autogen/top_{topname}_memory.ld'
         render_template('top_%s_memory.ld', 'sw/autogen')
 
-        # 'top_earlgrey_memory.h.tpl' -> 'sw/autogen/top_earlgrey_memory.h'
+        # 'top_{topname}_memory.h.tpl' -> 'sw/autogen/top_{topname}_memory.h'
         memory_cheader_path = render_template('top_%s_memory.h', 'sw/autogen')
 
         # Fix the C header guards, which will have the wrong name
@@ -1188,15 +1204,17 @@ def main():
                        cwd=str(SRCTREE_TOP))  # yapf: disable
 
         # generate chip level xbar and alert_handler TB
-        tb_files = ["xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
-                    "tb__alert_handler_connect.sv"]
+        tb_files = [
+            "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
+            "tb__alert_handler_connect.sv"
+        ]
         for fname in tb_files:
             tpl_fname = "%s.tpl" % (fname)
             xbar_chip_data_path = tpl_path / tpl_fname
             template_contents = generate_top(completecfg,
                                              str(xbar_chip_data_path))
 
-            rendered_dir = tpl_path / '../dv/autogen'
+            rendered_dir = Path(out_path) / 'dv/autogen'
             rendered_dir.mkdir(parents=True, exist_ok=True)
             rendered_path = rendered_dir / fname
 
@@ -1209,7 +1227,7 @@ def main():
         template_contents = generate_top(completecfg,
                                          str(alert_handler_chip_data_path))
 
-        rendered_dir = tpl_path / '../dv/env/autogen'
+        rendered_dir = Path(out_path) / 'dv/env/autogen'
         rendered_dir.mkdir(parents=True, exist_ok=True)
         rendered_path = rendered_dir / 'alert_handler_env_pkg__params.sv'
 

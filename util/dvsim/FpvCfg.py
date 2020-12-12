@@ -9,20 +9,20 @@ import hjson
 from tabulate import tabulate
 
 from OneShotCfg import OneShotCfg
-from utils import subst_wildcards
+from utils import VERBOSE, subst_wildcards
 
 
 class FpvCfg(OneShotCfg):
     """Derivative class for FPV purposes.
     """
-    def __init__(self, flow_cfg_file, proj_root, args):
-        super().__init__(flow_cfg_file, proj_root, args)
+
+    flow = 'fpv'
+
+    def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
+        super().__init__(flow_cfg_file, hjson_data, args, mk_config)
         self.header = ["name", "errors", "warnings", "proven", "cex", "undetermined",
                        "covered", "unreachable", "pass_rate", "cov_rate"]
         self.summary_header = ["name", "pass_rate", "stimuli_cov", "coi_cov", "prove_cov"]
-
-    def __post_init__(self):
-        super().__post_init__()
         self.results_title = self.name.upper() + " FPV Results"
 
     def parse_dict_to_str(self, input_dict, excl_keys = []):
@@ -126,8 +126,9 @@ class FpvCfg(OneShotCfg):
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
+        results_str += "### Branch: " + self.branch + "\n"
         results_str += "\n"
 
         colalign = ("center", ) * len(self.summary_header)
@@ -219,8 +220,9 @@ class FpvCfg(OneShotCfg):
         #   }
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
+        results_str += "### Branch: " + self.branch + "\n"
         results_str += "### FPV Tool: " + self.tool.upper() + "\n"
         results_str += "### LogFile dir: " + self.scratch_path + "/default\n\n"
 
@@ -266,13 +268,12 @@ class FpvCfg(OneShotCfg):
         with open(results_file, 'w') as f:
             f.write(self.results_md)
 
-        log.info("[results page]: [%s] [%s]", self.name, results_file)
-
         # Generate result summary
         if not self.cov:
             summary += ["N/A", "N/A", "N/A"]
         self.result_summary[self.name] = summary
 
+        log.log(VERBOSE, "[results page]: [%s] [%s]", self.name, results_file)
         return self.results_md
 
     def _publish_results(self):

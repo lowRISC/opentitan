@@ -105,7 +105,7 @@ module keccak_round #(
   logic [Width-1:0] keccak_out [Share];
 
   // Keccak Round indicator: range from 0 .. MaxRound
-  logic [RndW-1:0] round, round_d;
+  logic [RndW-1:0] round;
 
   // Random value and valid signal used in Keccak_p
   // There's plan to make random value generation configurable.
@@ -289,7 +289,7 @@ module keccak_round #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       storage <= '{default:'0};
-    end else if (clear_i) begin
+    end else if (rst_storage) begin
       storage <= '{default:'0};
     end else if (update_storage) begin
       storage <= storage_d;

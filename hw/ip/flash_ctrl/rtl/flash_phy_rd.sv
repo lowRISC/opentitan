@@ -42,6 +42,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   input bk_erase_i,
   input [BusBankAddrW-1:0] addr_i,
   input flash_ctrl_pkg::flash_part_e part_i,
+  input [InfoTypesWidth-1:0] info_sel_i,
   output logic rdy_o,
   output logic data_valid_o,
   output logic data_err_o,
@@ -152,30 +153,36 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   // do not attempt to generate match unless the transaction is relevant
   for (genvar i = 0; i < NumBuf; i++) begin: gen_buf_match
+    logic part_match;
+    logic info_sel_match;
+
+    assign part_match = read_buf[i].part == part_i;
+    assign info_sel_match = read_buf[i].info_sel == info_sel_i;
+
     assign buf_match[i] = req_i &
                           buf_en_q &
                           (buf_valid[i] | buf_wip[i]) &
                           (read_buf[i].addr == flash_word_addr) &
-                          (read_buf[i].part == part_i);
+                          part_match &
+                          info_sel_match;
 
     // A data hazard should never happen to a wip buffer because it implies
     // that a read is in progress, so a hazard operation cannot start.
     // If bank erase, all buffers must be flushed.
     // If page erase, only if the buffer lands in the same page.
     // If program, only if it's the same flash word.
-
-    logic part_match;
     logic word_addr_match;
     logic page_addr_match;
 
-    assign part_match      = read_buf[i].part == part_i;
     assign word_addr_match = (read_buf[i].addr == flash_word_addr) &
-                             part_match;
+                             part_match &
+                             info_sel_match;
 
     // the read buffer address in on flash word boundary
     // while the incoming address in on the bus word boundary
     assign page_addr_match = (read_buf[i].addr[WordW +: PageW] == addr_i[BusWordW +: PageW]) &
-                             part_match;
+                             part_match &
+                             info_sel_match;
 
     assign data_hazard[i] = buf_valid[i] &
                             (bk_erase_i |
@@ -203,6 +210,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
       .wipe_i(data_hazard[i]),
       .addr_i(flash_word_addr),
       .part_i(part_i),
+      .info_sel_i(info_sel_i),
       .data_i(muxed_data),
       .out_o(read_buf[i])
     );

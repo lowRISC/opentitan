@@ -13,8 +13,8 @@ from pathlib import PurePath
 
 import hjson
 
-from reggen import (gen_cheader, gen_ctheader, gen_dv, gen_html, gen_json,
-                    gen_rtl, gen_fpv, gen_selfdoc, validate, version)
+from reggen import (gen_cheader, gen_ctheader, gen_dv, gen_fpv, gen_html,
+                    gen_json, gen_rtl, gen_selfdoc, validate, version)
 
 DESC = """regtool, generate register info from Hjson source"""
 
@@ -115,25 +115,18 @@ def main():
     # name of the format. dirspec is None if the output is a single file; if
     # the output needs a directory, it is a default path relative to the source
     # file (used when --outdir is not given).
-    arg_to_format = [
-        ('j', ('json', None)),
-        ('c', ('compact', None)),
-        ('d', ('html', None)),
-        ('doc', ('doc', None)),
-        ('r', ('rtl', 'rtl')),
-        ('s', ('dv', 'dv')),
-        ('f', ('fpv', 'fpv/vip')),
-        ('cdefines', ('cdh', None)),
-        ('ctdefines', ('cth', None))
-    ]
+    arg_to_format = [('j', ('json', None)), ('c', ('compact', None)),
+                     ('d', ('html', None)), ('doc', ('doc', None)),
+                     ('r', ('rtl', 'rtl')), ('s', ('dv', 'dv')),
+                     ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None)),
+                     ('ctdefines', ('cth', None))]
     format = None
     dirspec = None
     for arg_name, spec in arg_to_format:
         if getattr(args, arg_name):
             if format is not None:
                 log.error('Multiple output formats specified on '
-                          'command line ({} and {}).'
-                          .format(format, spec[0]))
+                          'command line ({} and {}).'.format(format, spec[0]))
                 sys.exit(1)
             format, dirspec = spec
     if format is None:
@@ -149,16 +142,14 @@ def main():
     if dirspec is None:
         if args.outdir is not None:
             log.error('The {} format expects an output file, '
-                      'not an output directory.'
-                      .format(format))
+                      'not an output directory.'.format(format))
             sys.exit(1)
 
         outfile = args.outfile
     else:
         if args.outfile is not sys.stdout:
             log.error('The {} format expects an output directory, '
-                      'not an output file.'
-                      .format(format))
+                      'not an output file.'.format(format))
             sys.exit(1)
 
         if args.outdir is not None:
@@ -167,10 +158,11 @@ def main():
             outdir = str(PurePath(infile.name).parents[1].joinpath(dirspec))
         else:
             # We're using sys.stdin, so can't infer an output directory name
-            log.error('The {} format writes to an output directory, which '
-                      'cannot be inferred automatically if the input comes '
-                      'from stdin. Use --outdir to specify it manually.'
-                      .format(format))
+            log.error(
+                'The {} format writes to an output directory, which '
+                'cannot be inferred automatically if the input comes '
+                'from stdin. Use --outdir to specify it manually.'.format(
+                    format))
             sys.exit(1)
 
     if format == 'doc':

@@ -14,22 +14,26 @@ from mako import exceptions
 from mako.template import Template
 from pkg_resources import resource_filename
 
+from .data import *
 from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
 from .gen_rtl import json_to_reg
-from .data import *
+
 
 # function get write property name
 def wpname(r):
     return r.name + "_wr_p"
 
+
 # function get read property name
 def rpname(r):
     return r.name + "_rd_p"
+
 
 def gen_fpv(obj, outdir):
     # obj: OrderedDict
     block = json_to_reg(obj)
     gen_assertion(block, outdir)
+
 
 def gen_assertion(block, outdir):
     # Read Register templates

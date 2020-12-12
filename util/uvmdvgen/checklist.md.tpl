@@ -115,8 +115,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Not Started | [${name.upper()} DV Plan]({{<relref "hw/ip/${name}/doc/dv_plan" >}})
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started | [${name.upper()} Testplan]({{<relref "hw/ip/${name}/doc/dv_plan/index.md#testplan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [${name.upper()} DV Plan]({{<relref "hw/ip/${name}/doc/dv_plan" >}})
+Documentation | [DV_PLAN_COMPLETED][]                 | Not Started | [${name.upper()} Testplan]({{<relref "hw/ip/${name}/doc/dv_plan/index.md#testplan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Not Started |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
@@ -138,8 +138,8 @@ Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Not Started |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
 Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 
-[DV_PLAN_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv_plan_draft_completed" >}}
-[TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan_completed" >}}
+[DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
+[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
 [TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb_top_created" >}}
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary_assertion_checks_added" >}}
 [SIM_TB_ENV_CREATED]:                 {{<relref "/doc/project/checklist.md#sim_tb_env_created" >}}
@@ -186,7 +186,7 @@ Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design_deltas_captured_v2" >}}
-[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
+[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_doc_completed" >}}
 [ALL_INTERFACES_EXERCISED]:           {{<relref "/doc/project/checklist.md#all_interfaces_exercised" >}}
 [ALL_ASSERTION_CHECKS_ADDED]:         {{<relref "/doc/project/checklist.md#all_assertion_checks_added" >}}
 [SIM_TB_ENV_COMPLETED]:               {{<relref "/doc/project/checklist.md#sim_tb_env_completed" >}}

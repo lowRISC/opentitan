@@ -33,6 +33,9 @@ module tb;
 % for agent in env_agents:
   ${agent}_if ${agent}_if();
 % endfor
+% if has_edn:
+  push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(clk), .rst_n(rst_n));
+% endif
 
 % if has_alerts:
   `DV_ALERT_IF_CONNECT
@@ -42,19 +45,18 @@ module tb;
   ${name} dut (
     .clk_i                (clk      ),
 % if is_cip:
-    .rst_ni               (rst_n    ),
+    .rst_ni               (rst_n    )${"," if is_cip else ""}
 
     .tl_i                 (tl_if.h2d),
-% if has_alerts:
-    .tl_o                 (tl_if.d2h),
+    .tl_o                 (tl_if.d2h)${"," if has_alert or has_edn else ""}
+  % if has_alerts:
     .alert_rx_i           (alert_rx ),
-    .alert_tx_o           (alert_tx )
-% else:
-    .tl_o                 (tl_if.d2h)
-% endif
-% else:
-    .rst_ni               (rst_n    )
-
+    .alert_tx_o           (alert_tx )${"," if has_edn else ""}
+  % endif
+  % if has_edn:
+    .edn_o                (edn_if.req),
+    .edn_i                ({edn_if.ack, edn_if.d_data})
+  % endif
 % endif
     // TODO: add remaining IOs and hook them
   );
@@ -73,6 +75,10 @@ module tb;
 % for agent in env_agents:
     uvm_config_db#(virtual ${agent}_if)::set(null, "*.env.m_${agent}_agent*", "vif", ${agent}_if);
 % endfor
+% if has_edn:
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)))::set
+                   (null, "*env.m_edn_pull_agent*", "vif", edn_if);
+% endif
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

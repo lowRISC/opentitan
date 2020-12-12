@@ -15,7 +15,7 @@ This document specifies the functionality of the OpenTitan key manager.
 
 ## Description
 
-The key manager implements the hardware component of the [identities and root keys](https://github.com/lowRISC/opentitan/pull/3136) strategy of OpenTitan.
+The key manager implements the hardware component of the [identities and root keys](https://docs.opentitan.org/doc/security/specs/identities_and_root_keys/) strategy of OpenTitan.
 
 It enables the system to shield critical assets from software directly and provides a simple model for software to use derived key and identity outputs.
 
@@ -27,7 +27,7 @@ Key manager behavior can be summarized by the functional model below.
 
 In the diagram, the red boxes represent the working state and the associated secret value, the black ovals represent derivation functions, the green squares represent software inputs, and the remaining green / purple shapes represent outputs to both software and hardware.
 
-In OpenTitan, the derivation method selected is [KMAC]().
+In OpenTitan, the derivation method selected is [KMAC]({{< relref "hw/ip/kmac/doc" >}}).
 Each valid operation involves a KMAC invocation using the key manager working state as the "key" and other HW / SW supplied inputs as data.
 While KMAC can generate outputs of arbitrary length, this design fixes the size to 256b.
 
@@ -144,7 +144,10 @@ During each state, there are 3 valid commands software can issue:
 
 The software is able to select a command and trigger the key manager FSM to process one of the commands.
 If a command is valid during the current working state, it is processed and acknowledged when complete.
-If a command is invalid, the key manager FSM processes with random, dummy data, but does not update working state or relevant output registers.
+
+If a command is invalid, the behavior depends on the current state.
+If the current state is `Reset`, the invalid command is immediately rejected as the key manager FSM has not yet been initialized.
+If the current state is any other state, the key manager FSM processes with random, dummy data, but does not update working state or relevant output registers.
 For each valid command, a set of inputs are selected and sequenced to the KMAC module.
 
 During `Disable` state, working state and output registers are updated as usual.
@@ -205,7 +208,7 @@ Note that even though `Init` is not a legal operation in most states, it is trea
 
 | Current State  | Legal Operations               | Outcome                                                                                                                       |
 | -------------  | ------------------------------ | ------------------------------------------------------------                                                                  |
-| Reset          | Init                           | Advance to Initialized state upon completion.                                                                                 |
+| Reset          | Advance                        | Advance to Initialized state upon completion.                                                                                 |
 | Reset          | Disable / Advance / Generate   | Invalid operation error triggered with no other side effects.                                                                 |
 | Initialized    | Disable / Advance              | Advance to next Disabled state or CreatorRootKey.                                                                             |
 | Initialized    | Generate                       | Invalid operation error triggered with random data, output registers are updated.                                             |
@@ -240,6 +243,19 @@ The KMAC interface control represents the bulk of key manager logic.
 Based on input from key manager control, this module selects the inputs for each given command and sequences the data to KMAC.
 
 ![Key Manager KMAC Interface Block Diagram](keymgr_kmac_if_diagram.svg)
+
+### Software Binding
+
+The identities flow employs an idea called [software binding](https://docs.opentitan.org/doc/security/specs/identities_and_root_keys/#software-binding) to ensure that a particular key derivation scheme is only reproducible for a given software configuration.
+
+This software binding exists for every stage of key manager except for `OwnerKey`.
+The binding is created through the secure boot flow, where each stage sets the binding used for the next verified stage before advancing to it.
+In order to save on storage and not have a duplicate copy per stage, the software binding registers {{< regref SOFTWARE_BINDING >}} are shared between key manager stages.
+
+Software sets the appropriate values and locks it by clearing {{< regref SOFT_BINDING_EN >}}.
+When later a successful `advance` call is made, the key manager then unlocks by setting {{< regref SOFT_BINDING_EN >}} to 1.
+An unsuccessful advance call (errors) does not unlock the binding.
+This allows the next stage of software to re-use the binding registers.
 
 ## Hardware Interfaces
 {{< hwcfg "hw/ip/keymgr/data/keymgr.hjson" >}}

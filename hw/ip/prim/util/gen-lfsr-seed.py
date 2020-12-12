@@ -40,6 +40,25 @@ def _get_random_data_hex_literal(width):
     return literal_str
 
 
+def _blockify(s, size, limit):
+    """ Make sure the output does not exceed a certain size per line"""
+
+    str_idx = 2
+    remain = size % (limit * 4)
+    numbits = remain if remain else limit * 4
+    s_list = []
+
+    remain = size
+    while remain > 0:
+        s_incr = int(numbits / 4)
+        s_list.append("{}'h{}".format(numbits, s[str_idx: str_idx + s_incr]))
+        str_idx += s_incr
+        remain -= numbits
+        numbits = limit * 4
+
+    return(",\n  ".join(s_list))
+
+
 def _get_random_perm_hex_literal(numel):
     """ Compute a random permutation of 'numel' elements and
     return as packed hex literal"""
@@ -52,8 +71,7 @@ def _get_random_perm_hex_literal(numel):
         literal_str += format(k, '0' + str(width) + 'b')
     # convert to hex for space efficiency
     literal_str = hex(int(literal_str, 2))
-    literal_str = str(width * numel) + "'h" + literal_str[2:]
-    return literal_str
+    return _blockify(literal_str, width * numel, 64)
 
 
 def _wrapped_docstring():
@@ -126,8 +144,9 @@ parameter int {}LfsrWidth = {};
 typedef logic [{}LfsrWidth-1:0] {}lfsr_seed_t;
 typedef logic [{}LfsrWidth-1:0][$clog2({}LfsrWidth)-1:0] {}lfsr_perm_t;
 parameter {}lfsr_seed_t RndCnst{}LfsrSeedDefault = {};
-parameter {}lfsr_perm_t RndCnst{}LfsrPermDefault =
-    {};
+parameter {}lfsr_perm_t RndCnst{}LfsrPermDefault = {{
+  {}
+}};
 '''.format(args.width, args.seed, args.prefix,
            args.prefix, args.width,
            args.prefix, type_prefix,

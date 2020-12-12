@@ -4,16 +4,16 @@
 
 from typing import List, Optional, cast
 
-from riscvmodel.types import Trace  # type: ignore
+from .trace import Trace
 
 
-class TraceFlag(Trace):  # type: ignore
+class TraceFlag(Trace):
     def __init__(self, group_name: str, flag_name: str, value: bool):
         self.group_name = group_name
         self.flag_name = flag_name
         self.value = value
 
-    def __str__(self) -> str:
+    def trace(self) -> str:
         return '{}.{} = {}'.format(self.group_name, self.flag_name, int(self.value))
 
 
@@ -22,8 +22,8 @@ class FlagReg:
 
     def __init__(self, C: bool, M: bool, L: bool, Z: bool):
         self.C = C
-        self.L = L
         self.M = M
+        self.L = L
         self.Z = Z
 
         self._new_val = None  # type: Optional['FlagReg']

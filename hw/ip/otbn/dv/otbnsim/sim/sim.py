@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple
 from .alert import Alert
 from .isa import OTBNInsn
 from .state import OTBNState
+from .trace import Trace
 
 
 class OTBNSim:
@@ -33,7 +34,7 @@ class OTBNSim:
 
         return insn_count
 
-    def step(self, verbose: bool) -> Tuple[Optional[OTBNInsn], List[str]]:
+    def step(self, verbose: bool) -> Tuple[Optional[OTBNInsn], List[Trace]]:
         '''Run a single instruction.
 
         Returns the instruction, together with a list of the architectural
@@ -67,6 +68,7 @@ class OTBNSim:
                 if insn.insn.cycles > 1:
                     self.state.add_stall_cycles(insn.insn.cycles - 1)
 
+                self.state.pre_insn(insn.affects_control)
                 insn.execute(self.state)
                 self.state.post_insn()
 
@@ -90,14 +92,14 @@ class OTBNSim:
         if verbose:
             disasm = ('(stall)' if insn is None
                       else insn.disassemble(pc_before))
-            self._print_trace(disasm, changes)
+            self._print_trace(pc_before, disasm, changes)
 
         return (insn, changes)
 
     def dump_data(self) -> bytes:
         return self.state.dmem.dump_le_words()
 
-    def _print_trace(self, disasm: str, changes: List[str]) -> None:
+    def _print_trace(self, pc: int, disasm: str, changes: List[Trace]) -> None:
         '''Print a trace of the current instruction to verbose_file'''
-        changes_str = ', '.join([str(t) for t in changes])
-        print('{:35} | [{}]'.format(disasm, changes_str))
+        changes_str = ', '.join([t.trace() for t in changes])
+        print('{:08x} | {:35} | [{}]'.format(pc, disasm, changes_str))

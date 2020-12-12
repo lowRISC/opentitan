@@ -78,7 +78,7 @@ package nmi_gen_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    nmi_gen_hw2reg_intr_state_reg_t intr_state; // [5:3]
+    nmi_gen_hw2reg_intr_state_reg_t intr_state; // [5:0]
   } nmi_gen_hw2reg_t;
 
   // Register Address

@@ -29,6 +29,7 @@
                 // Enable C compilation of AES model for DPI-C
                 "{proj_root}/hw/ip/aes/model/aes_model_sim_opts.hjson",
                 // Common CIP test lists
+                "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
@@ -36,7 +37,7 @@
                 // "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["-top aes_bind"]
+  sim_tops: ["aes_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
@@ -76,6 +77,11 @@
       name: aes_b2b
       uvm_test: aes_b2b_test
       uvm_test_seq: aes_stress_vseq
+    }
+    {
+      name: aes_clear
+      uvm_test: aes_clear_test
+      uvm_test_seq: aes_clear_vseq
     }
   ]
 

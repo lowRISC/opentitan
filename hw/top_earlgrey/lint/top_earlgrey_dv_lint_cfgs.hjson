@@ -13,6 +13,8 @@
                      // tool-specific configuration
                      "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
 
+  flow: "lint"
+
   // Different dashboard output path for each tool
   rel_path: "hw/top_earlgrey/dv/lint/{tool}"
 
@@ -71,6 +73,12 @@
                   fusesoc_core: lowrisc:dv:kmac_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/kmac/dv/lint/{tool}"
+             },
+             {
+                  name: lc_ctrl
+                  fusesoc_core: lowrisc:dv:lc_ctrl_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/lc_ctrl/dv/lint/{tool}"
              },
              {    name: otp_ctrl
                   fusesoc_core: lowrisc:dv:otp_ctrl_sim

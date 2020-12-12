@@ -2,8 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  // VW build_cmd:  "vlib work && {job_prefix} vlog"
-  build_cmd:  "qverilog "
+  build_cmd:  "vlib work && {job_prefix} vlog"
   run_cmd:    "{job_prefix} vsim"
 
   // Indicate the tool specific helper sources - these are copied over to the
@@ -13,7 +12,10 @@
   build_opts: ["-sv",
                "-timescale 1ns/1ps",
                "-uvmver 1.2",
-               "-f {sv_flist}"]
+               "-f {sv_flist}",
+               // List multiple tops for the simulation. Prepend each top level with `-top`.
+               "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
+              ]
 
   run_opts:   ["-sv_seed={seed}",
                "-c",
@@ -87,13 +89,5 @@
       is_sim_mode: 1
       build_opts: []
     }
-    {
-      // TODO: Add build and run options to enable zero delay loop detection.
-      name: riviera_loopdetect
-      is_sim_mode: 1
-      build_opts: []
-      run_opts:   []
-    }
-    
   ]
 }

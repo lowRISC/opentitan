@@ -43,10 +43,19 @@ package otbn_pkg;
   } regfile_e;
 
   // Error codes
+  //
+  // Note: This list is duplicated in the documentation (../doc/_index.md), the ISS
+  // (../dv/otbnsim/sim/alert.py), and the DIF. If updating it here, update those too.
   typedef enum logic [31:0] {
-    ErrCodeNoError     = 32'h 0000_0000,
-    ErrCodeBadDataAddr = 32'h 0000_0001,
-    ErrCodeCallStack   = 32'h 0000_0002
+    ErrCodeNoError     = 32'h00,
+    ErrCodeBadDataAddr = 32'h01,
+    ErrCodeBadInsnAddr = 32'h02,
+    ErrCodeCallStack   = 32'h03,
+    ErrCodeIllegalInsn = 32'h04,
+    ErrCodeLoop        = 32'h05,
+    ErrCodeFatalImem   = 32'h80,
+    ErrCodeFatalDmem   = 32'h81,
+    ErrCodeFatalReg    = 32'h82
   } err_code_e;
 
   // Constants =====================================================================================
@@ -232,7 +241,8 @@ package otbn_pkg;
     logic           branch_insn;
     logic           jump_insn;
     logic           loop_insn;
-    logic           ispr_rw_insn;
+    logic           ispr_rd_insn;
+    logic           ispr_wr_insn;
     logic           ispr_rs_insn;
   } insn_dec_shared_t;
 
@@ -282,12 +292,13 @@ package otbn_pkg;
     flag_group_t             alu_flag_group;
     flag_e                   alu_sel_flag;
     logic                    alu_flag_en;
+    logic                    mac_flag_en;
     alu_op_bignum_e          alu_op;
     op_b_sel_e               alu_op_b_sel;
 
     logic [1:0]              mac_op_a_qw_sel;
     logic [1:0]              mac_op_b_qw_sel;
-    logic                    mac_wr_hw_sel;
+    logic                    mac_wr_hw_sel_upper;
     logic [1:0]              mac_pre_acc_shift;
     logic                    mac_zero_acc;
     logic                    mac_shift_out;
@@ -319,7 +330,8 @@ package otbn_pkg;
     logic [$clog2(WLEN)-1:0] shift_amt;
     flag_group_t             flag_group;
     flag_e                   sel_flag;
-    logic                    flag_en;
+    logic                    alu_flag_en;
+    logic                    mac_flag_en;
   } alu_bignum_operation_t;
 
   typedef struct packed {
@@ -327,6 +339,7 @@ package otbn_pkg;
     logic [WLEN-1:0] operand_b;
     logic [1:0]      operand_a_qw_sel;
     logic [1:0]      operand_b_qw_sel;
+    logic            wr_hw_sel_upper;
     logic [1:0]      pre_acc_shift_imm;
     logic            zero_acc;
     logic            shift_acc;

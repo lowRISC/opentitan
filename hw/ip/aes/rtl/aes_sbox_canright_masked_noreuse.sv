@@ -9,7 +9,13 @@
 // available at https://eprint.iacr.org/2009/011.pdf
 //
 // Note: This module implements the original masked inversion algorithm without re-using masks.
-// For details, see Section 2.2 of the paper.
+// For details, see Section 2.2 of the paper. In addition, a formal analysis using REBECCA (static
+// mode) shows that the intermediate masks cannot be created by re-using bits from the input and
+// output masks. Instead, fresh random bits need to be used for this intermediate masks.
+//
+// For details on the REBECCA tool, see the following paper:
+// Bloem, "Formal verification of masked hardware implementations in the presence of glitches"
+// available at https://eprint.iacr.org/2017/897.pdf
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // IMPORTANT NOTE:                                                                               //
@@ -111,10 +117,11 @@ endmodule
 // Masked inverse in GF(2^8), using normal basis [y^16, y]
 // (see Formulas 3, 12, 18 and 19 in the paper)
 module aes_masked_inverse_gf2p8_noreuse (
-  input  logic [7:0] a,
-  input  logic [7:0] m,
-  input  logic [7:0] n,
-  output logic [7:0] a_inv
+  input  logic [7:0] a,    // input data masked by m
+  input  logic [7:0] m,    // input mask
+  input  logic [7:0] n,    // output mask
+  input  logic [9:0] prd,  // pseudo-random data, e.g. for intermediate masks
+  output logic [7:0] a_inv // output data masked by n
 );
 
   import aes_pkg::*;
@@ -133,8 +140,37 @@ module aes_masked_inverse_gf2p8_noreuse (
   assign m1 = m[7:4];
   assign m0 = m[3:0];
 
-  // q must be independent of m.
-  assign q = n[7:4];
+  ////////////////////
+  // Notes on masks //
+  ////////////////////
+  // The paper states the following.
+  // r:
+  // - must be indpendent of q, and
+  // - it is suggested to re-use bits of m.
+  //
+  // q:
+  // - must be independent of m.
+  //
+  // t:
+  // - must be independent of r,
+  // - must be independent of m (for the final steps involving s),
+  // - t1 must be independent of q0, t0 must be independent of q1,
+  // - it is suggested to use t = q.
+  //
+  // s:
+  // - must be independent of t,
+  // - s1 must be independent of m0, s0 must be independent of m1,
+  // - it is suggested to use s = m.
+  //
+  // Formally analyzing the implementation with REBECCA reveals that:
+  // 1. Fresh random bits are required for r, q and t. Any re-use of other mask bits from m or n
+  //    causes the static check to fail.
+  // 2. s can be the specified output mask n.
+  assign r  = prd[1:0];
+  assign q  = prd[5:2];
+  assign t  = prd[9:6];
+  assign s1 = n[7:4];
+  assign s0 = n[3:0];
 
   // Formula 12
   // IMPORTANT: The following ops must be executed in order (left to right):
@@ -159,20 +195,6 @@ module aes_masked_inverse_gf2p8_noreuse (
   assign b_4 = b_3 ^ mul_a0_m1;
   assign b   = b_4 ^ mul_m0_m1;
 
-  // r must be independent of q.
-  assign r = m1[3:2];
-
-  // Note that the paper states the following requirements on t:
-  // - t must be independent of r.
-  // - t1 must be independent of q0, t0 must be independent of q1.
-  // - t must be independent of m (for the final steps involving s)
-  // The paper suggests to use t = q. To select s = n for the output mask (s must be independent
-  // of t = q = n[7:4]), we would need t = m0 or similar (not r, m1[3:2] though), but this would
-  // break the random product distribution of aes_mul_gf2p4(m0, t), or aes_mul_gf2p4(m1, t) below
-  // (see Lemma 2 in the paper). For this reason, we select t = q here and apply a final mask
-  // switch from s = m to n after the inversion.
-  assign t = q;
-
   // b is masked by q, b_inv is masked by t.
   aes_masked_inverse_gf2p4_noreuse aes_masked_inverse_gf2p4 (
     .b     ( b     ),
@@ -181,14 +203,6 @@ module aes_masked_inverse_gf2p8_noreuse (
     .t     ( t     ),
     .b_inv ( b_inv )
   );
-
-  // Note that the paper states the following requirements on s:
-  // - s must be independent of t
-  // - s1 must be independent of m0, s0 must be independent of m1.
-  // The paper suggests to use s = m (the input mask). To still end up with the specified output
-  // mask n, we will apply a final mask switch after the inversion.
-  assign s1 = m1;
-  assign s0 = m0;
 
   // Formulas 18 and 19
   // IMPORTANT: The following ops must be executed in order (left to right):
@@ -222,27 +236,18 @@ module aes_masked_inverse_gf2p8_noreuse (
   assign a0_inv_2 = a0_inv_1 ^ mul_m1_b_inv;
   assign a0_inv   = a0_inv_2 ^ mul_m1_t;
 
-  // Note: a_inv is now masked by s = m, a was masked by m.
-  (* keep = "true" *) logic [7:0] a_inv_0;
-  assign a_inv_0 = {a1_inv, a0_inv};
-
-  // To have a_inv masked by n (the specified output mask), we perform a final mask switch.
-  // IMPORTANT: The following ops must be executed in order (left to right):
-  // a_inv = a_inv ^ n ^ m;
-  //
-  // Generate a_inv step by step.
-  (* keep = "true" *) logic [7:0] a_inv_1;
-  assign a_inv_1 = a_inv_0 ^ n;
-  assign a_inv   = a_inv_1 ^ m;
+  // Note: a_inv is now masked by s = n, a was masked by m.
+  assign a_inv = {a1_inv, a0_inv};
 
 endmodule
 
 module aes_sbox_canright_masked_noreuse (
   input  aes_pkg::ciph_op_e op_i,
-  input  logic [7:0]        data_i,     // masked, the actual input data is data_i ^ in_mask_i
-  input  logic [7:0]        in_mask_i,  // input mask, independent from actual input data
-  input  logic [7:0]        out_mask_i, // output mask, independent from input mask
-  output logic [7:0]        data_o      // masked, the actual output data is data_o ^ out_mask_i
+  input  logic [7:0]        data_i,        // masked, the actual input data is data_i ^ in_mask_i
+  input  logic [7:0]        in_mask_i,     // input mask, independent from actual input data
+  input  logic [7:0]        out_mask_i,    // output mask, independent from input mask
+  input  logic [9:0]        prd_masking_i, // pseudo-random data, e.g. for intermediate masks
+  output logic [7:0]        data_o         // masked, the actual output data is data_o ^ out_mask_i
 );
 
   import aes_pkg::*;
@@ -273,6 +278,7 @@ module aes_sbox_canright_masked_noreuse (
     .a     ( in_data_basis_x  ), // input
     .m     ( in_mask_basis_x  ), // input
     .n     ( out_mask_basis_x ), // input
+    .prd   ( prd_masking_i    ), // input
     .a_inv ( out_data_basis_x )  // output
   );
 

@@ -235,7 +235,7 @@
     }
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_provision_en"
+      name:    "lc_provision_wr_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
@@ -282,13 +282,13 @@
       default: "'0"
       package: "otp_ctrl_pkg"
     }
-    // Key request from OTBN RAM Scrambler
-    { struct:  "logic"
+    // Hardware config partition
+    { struct:  "otp_hw_cfg"
       type:    "uni"
-      name:    "hw_cfg"
+      name:    "otp_hw_cfg"
       act:     "req"
       default: "'0"
-      package: "otp_ctrl_pkg"
+      package: "otp_ctrl_part_pkg"
     }
   ] // inter_signal_list
 

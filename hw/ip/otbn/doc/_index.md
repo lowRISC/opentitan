@@ -356,9 +356,10 @@ The `L`, `M`, and `Z` flags are determined based on the result of the operation 
 
 ### Loop Stack
 
-The LOOP instruction allows for nested loops; the active loops are stored on the loop stack.
-Each loop stack entry is a tuple of loop count, start address, and end address.
-The number of entries in the loop stack is implementation-dependent.
+OTBN has two instructions for hardware-assisted loops: [`LOOP`]({{< relref "hw/ip/otbn/doc/isa#loop" >}}) and [`LOOPI`]({{< relref "hw/ip/otbn/doc/isa#loopi" >}}).
+Both use the same state for tracking control flow.
+This is a stack of tuples containing a loop count, start address and end address.
+The stack has a maximum depth of eight and the top of the stack is the current loop.
 
 # Theory of Operations
 
@@ -426,35 +427,108 @@ Rough expected process:
 
 ## Error conditions
 
-<div class="bd-callout bd-callout-warning">
-  <h5>Note</h5>
+<table>
+  <thead>
+    <tr>
+      <th>Identifier</th>
+      <th>Code</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ErrCodeNoError</td>
+      <td>0x00</td>
+      <td>Execution was successful.</td>
+    </tr>
+    <tr>
+      <td>ErrCodeBadDataAddr</td>
+      <td>0x01</td>
+      <td>
+      A DMEM read or write occurred with an out of bounds or unaligned address.
+      </td>
+    </tr>
+    <tr>
+      <td>ErrCodeBadInsnAddr</td>
+      <td>0x02</td>
+      <td>
+      An instruction fetch occurred with an out of bounds or unaligned address.
+      </td>
+    </tr>
+    <tr>
+      <td>ErrCodeCallStack</td>
+      <td>0x03</td>
+      <td>
+      A instruction tried to pop from an empty call stack or push to a full call
+      stack.
+      </td>
+    </tr>
+    <tr>
+      <td>ErrCodeIllegalInsn</td>
+      <td>0x04</td>
+      <td><ul>
+        <li>An instruction being excuted had an invalid encoding.</li>
+        <li>An access occurred for an invalid CSR or WSR.</li>
+        <li>
+          A CSR or WSR access occurred that is not permitted (e.g. writing to a
+          read-only CSR or WSR).
+        </li>
+      </ul></td>
+    </tr>
+    <tr>
+      <td>ErrCodeLoop</td>
+      <td>0x05</td>
+      <td><ul>
+        <li>A loop was started with a 0 iteration count.</li>
+        <li>The final instruction of a loop was a branch or another loop.</li>
+        <li>The loop stack would overflow (loop nesting level too deep).</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <td>ErrCodeFatalImem</td>
+      <td>0x80</td>
+      <td>A fatal failure was seen on an instruction fetch.</td>
+    </tr>
+    <tr>
+      <td>ErrCodeFatalDmem</td>
+      <td>0x81</td>
+      <td>A fatal failure was seen on a DMEM read.</td>
+    </tr>
+    <tr>
+      <td>ErrCodeFatalReg</td>
+      <td>0x82</td>
+      <td>A fatal failure was seen on a RF read.</td>
+    </tr>
+  </tbody>
+</table>
 
-  To be filled in as we create the implementation.
-</div>
+## Device Interface Functions (DIFs)
+
+{{< dif_listing "sw/device/lib/dif/dif_otbn.h" >}}
 
 ## Register Table
 
 {{< registers "hw/ip/otbn/data/otbn.hjson" >}}
 
-## Algorithic Example: Replacing BN.MULH with BN.MULQACC
+## Algorithic Examples: Multiplication with BN.MULQACC
 
-This specification gives the implementers the option to provide either a quarter-word multiply-accumulate instruction, `BN.MULQADD`, or a half-word multiply instruction, `BN.MULH`.
-Four `BN.MULQACC` can be used to replace one `BN.MULH` instruction, which is able to operate on twice the data size.
+The big number instruction subset of OTBN generally operates on WLEN bit numbers.
+`BN.MULQACC` operates with WLEN/4 bit operands (with a full WLEN accumulator).
+This section outlines two techniques to perform larger multiplies by composing multiple `BN.MULQACC` instructions.
 
-`BN.MULH w1, w0.l, w0.u` becomes
+### Multiplying two WLEN/2 numbers with BN.MULQACC
+
+This instruction sequence multiplies the lower half of `w0` by the upper half of
+`w0` placing the result in `w1`.
 
 ```
 BN.MULQACC.Z      w0.0, w0.2, 0
 BN.MULQACC        w0.0, w0.3, 64
 BN.MULQACC        w0.1, w0.2, 64
-BN.MULQACC.WO r1, w0.1, w0.3, 128
+BN.MULQACC.WO w1, w0.1, w0.3, 128
 ```
 
-## Algorithmic Example: Multiplying two WLEN numbers with BN.MULQACC
-
-The big number instruction subset of OTBN generally operates on WLEN bit numbers.
-However, the multiplication instructions only operate on half or quarter-words of WLEN bit.
-This section outlines a technique to multiply two WLEN-bit numbers with the use of the quarter-word multiply-accumulate instruction `BN.MULQACC`.
+### Multiplying two WLEN numbers with BN.MULQACC
 
 The shift out functionality can be used to perform larger multiplications without extra adds.
 The table below shows how two registers `w0` and `w1` can be multiplied together to give a result in `w2` and `w3`.

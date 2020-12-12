@@ -6,7 +6,11 @@
 
 module lc_ctrl_fsm
   import lc_ctrl_pkg::*;
-(
+#(// Random netlist constants
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2)
+) (
   // This module is combinational, but we
   // need the clock and reset for the assertions.
   input                         clk_i,
@@ -57,8 +61,11 @@ module lc_ctrl_fsm
   output lc_tx_t                lc_nvm_debug_en_o,
   output lc_tx_t                lc_hw_debug_en_o,
   output lc_tx_t                lc_cpu_en_o,
-  output lc_tx_t                lc_provision_wr_en_o,
-  output lc_tx_t                lc_provision_rd_en_o,
+  output lc_tx_t                lc_creator_seed_sw_rw_en_o,
+  output lc_tx_t                lc_owner_seed_sw_rw_en_o,
+  output lc_tx_t                lc_iso_part_sw_rd_en_o,
+  output lc_tx_t                lc_iso_part_sw_wr_en_o,
+  output lc_tx_t                lc_seed_hw_rd_en_o,
   output lc_tx_t                lc_keymgr_en_o,
   output lc_tx_t                lc_escalate_en_o,
     // Request and feedback to/from clock manager and AST.
@@ -66,7 +73,9 @@ module lc_ctrl_fsm
   input  lc_tx_t                lc_clk_byp_ack_i,
   // Request and feedback to/from flash controller
   output lc_tx_t                lc_flash_rma_req_o,
-  input  lc_tx_t                lc_flash_rma_ack_i
+  input  lc_tx_t                lc_flash_rma_ack_i,
+  // State group diversification value for keymgr
+  output lc_keymgr_div_t        lc_keymgr_div_o
 );
 
   ///////////////
@@ -140,6 +149,10 @@ module lc_ctrl_fsm
         init_done_o = 1'b0;
         if (init_req_i && lc_state_valid_q) begin
           fsm_state_d = IdleSt;
+          // Fetch LC state vector from OTP.
+          lc_state_d    = lc_state_i;
+          lc_cnt_d      = lc_cnt_i;
+          lc_id_state_d = lc_id_state_i;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -148,7 +161,7 @@ module lc_ctrl_fsm
       // in the lc_ctrl_signal_decode submodule.
       IdleSt: begin
         idle_o = 1'b1;
-        // Continuously fetch LC state from OTP.
+        // Continuously fetch LC state vector from OTP.
         lc_state_d    = lc_state_i;
         lc_cnt_d      = lc_cnt_i;
         lc_id_state_d = lc_id_state_i;
@@ -400,6 +413,7 @@ module lc_ctrl_fsm
     .lc_state_i            ( lc_state_q     ),
     .lc_cnt_i              ( lc_cnt_q       ),
     .dec_lc_state_i        ( dec_lc_state_o ),
+    .fsm_state_i           ( fsm_state_q    ),
     .trans_target_i,
     .next_lc_state_o       ( next_lc_state  ),
     .next_lc_cnt_o         ( next_lc_cnt    ),
@@ -408,7 +422,11 @@ module lc_ctrl_fsm
   );
 
   // LC signal decoder and broadcasting logic.
-  lc_ctrl_signal_decode u_lc_ctrl_signal_decode (
+  lc_ctrl_signal_decode #(
+    .RndCnstLcKeymgrDivInvalid    ( RndCnstLcKeymgrDivInvalid    ),
+    .RndCnstLcKeymgrDivTestDevRma ( RndCnstLcKeymgrDivTestDevRma ),
+    .RndCnstLcKeymgrDivProduction ( RndCnstLcKeymgrDivProduction )
+  ) u_lc_ctrl_signal_decode (
     .clk_i,
     .rst_ni,
     .lc_state_valid_i   ( lc_state_valid_q ),
@@ -420,10 +438,14 @@ module lc_ctrl_fsm
     .lc_nvm_debug_en_o,
     .lc_hw_debug_en_o,
     .lc_cpu_en_o,
-    .lc_provision_wr_en_o,
-    .lc_provision_rd_en_o,
+    .lc_creator_seed_sw_rw_en_o,
+    .lc_owner_seed_sw_rw_en_o,
+    .lc_iso_part_sw_rd_en_o,
+    .lc_iso_part_sw_wr_en_o,
+    .lc_seed_hw_rd_en_o,
     .lc_keymgr_en_o,
-    .lc_escalate_en_o
+    .lc_escalate_en_o,
+    .lc_keymgr_div_o
   );
 
   // Conditional signals set by main FSM.
@@ -435,9 +457,9 @@ module lc_ctrl_fsm
   ////////////////
 
   `ASSERT(ClkBypStaysOnOnceAsserted_A,
-      lc_escalate_en_q == On
+      lc_escalate_en_o == On
       |=>
-      lc_escalate_en_q == On)
+      lc_escalate_en_o == On)
 
   `ASSERT(FlashRmaStaysOnOnceAsserted_A,
       lc_flash_rma_req_o == On

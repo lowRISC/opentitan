@@ -55,6 +55,7 @@ config = {
     # Pre-generate register and hwcfg fragments from these files.
     "hardware_definitions": [
         "hw/ip/aes/data/aes.hjson",
+        "hw/ip/aon_timer/data/aon_timer.hjson",
         "hw/top_earlgrey/ip/alert_handler/data/autogen/alert_handler.hjson",
         "hw/ip/entropy_src/data/entropy_src.hjson",
         "hw/ip/csrng/data/csrng.hjson",
@@ -99,6 +100,7 @@ config = {
         "hw/ip/hmac/data/hmac_testplan.hjson",
         "hw/ip/i2c/data/i2c_testplan.hjson",
         "hw/ip/keymgr/data/keymgr_testplan.hjson",
+        "hw/ip/lc_ctrl/data/lc_ctrl_testplan.hjson",
         "hw/ip/otp_ctrl/data/otp_ctrl_testplan.hjson",
         "hw/ip/padctrl/data/padctrl_fpv_testplan.hjson",
         "hw/ip/pattgen/data/pattgen_testplan.hjson",

@@ -1,0 +1,176 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+{
+  name: "aon_timer",
+  clock_primary: "clk_i",
+  other_clock_list: [
+    "clk_aon_i"
+  ],
+  bus_device: "tlul",
+  interrupt_list: [
+    { name: "wkup_timer_expired",
+      desc: "Raised if the wakeup timer has hit the specified threshold"
+    },
+    { name: "wdog_timer_bark",
+      desc: "Raised if the watchdog timer has hit the bark threshold"
+    },
+  ],
+  wakeup_list: [
+    { name: "aon_timer",
+      desc: "Raised if the wakeup or watchdog timer has hit the specified threshold"
+    },
+  ],
+  inter_signal_list: [
+    { name:    "counter_run",
+      type:    "uni",
+      act:     "rsp",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    },
+    { name:    "sleep_mode",
+      type:    "uni",
+      act:     "rsp",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+  ],
+  no_auto_intr_regs: "true",
+  regwidth: "32",
+  registers: [
+    { name: "WKUP_CTRL",
+      desc: "Wakeup Timer Control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "enable",
+          desc: "When set to 1, the wakeup timer will count",
+        }
+        { bits: "12:1",
+          name: "prescaler",
+          desc: "Pre-scaler value for wakeup timer count",
+        }
+      ]
+    },
+    { name: "WKUP_THOLD",
+      desc: "Wakeup Timer Threshold Register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          name: "threshold",
+          desc: "The count at which a wakeup interrupt should be generated",
+        }
+      ]
+    },
+    { name: "WKUP_COUNT",
+      desc: "Wakeup Timer Count Register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "31:0",
+          name: "count",
+          desc: "The current wakeup counter value",
+        }
+      ]
+    },
+    { name: "WDOG_REGWEN",
+      desc: "Watchdog Timer Write Enable Register",
+      swaccess: "rw1c",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "regwen",
+          desc: "Once cleared, the watchdog configuration will be locked until the next reset",
+          resval: 1
+        }
+      ]
+    },
+    { name: "WDOG_CTRL",
+      desc: "Watchdog Timer Control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "WDOG_REGWEN",
+      fields: [
+        { bits: "0",
+          name: "enable",
+          desc: "When set to 1, the watchdog timer will count",
+        },
+        { bits: "1",
+          name: "pause_in_sleep",
+          desc: "When set to 1, the watchdog timer will not count during sleep",
+        }
+      ]
+    },
+    { name: "WDOG_BARK_THOLD",
+      desc: "Watchdog Timer Bark Threshold Register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "WDOG_REGWEN",
+      fields: [
+        { bits: "31:0",
+          name: "threshold",
+          desc: "The count at which a watchdog bark interrupt should be generated",
+        }
+      ]
+    },
+    { name: "WDOG_BITE_THOLD",
+      desc: "Watchdog Timer Bite Threshold Register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "WDOG_REGWEN",
+      fields: [
+        { bits: "31:0",
+          name: "threshold",
+          desc: "The count at which a watchdog bite reset should be generated",
+        }
+      ]
+    },
+    { name: "WDOG_COUNT",
+      desc: "Watchdog Timer Count Register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "31:0",
+          name: "count",
+          desc: "The current watchdog counter value",
+        }
+      ]
+    },
+    { name: "INTR_STATE",
+      desc: "Interrupt State Register",
+      swaccess: "rw1c",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "wkup_timer_expired",
+          desc: "Raised if the wakeup timer has hit the specified threshold",
+        }
+        { bits: "1",
+          name: "wdog_timer_expired",
+          desc: "Raised if the watchdog timer has hit the bark threshold",
+        }
+      ]
+    },
+    { name: "INTR_TEST",
+      desc: "Interrupt Test Register",
+      swaccess: "wo",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "wkup_timer_expired",
+          desc: "Write 1 to force wkup_timer_expired interrupt",
+        }
+        { bits: "1",
+          name: "wdog_timer_expired",
+          desc: "Write 1 to force wdog_timer_expired (watchdog bark) interrupt",
+        }
+      ]
+    },
+  ],
+}
+

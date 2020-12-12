@@ -3,31 +3,64 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "csrng"
-  // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
   entries: [
     {
       name: smoke
       desc: '''
-            Smoke test accessing a major datapath within the csrng.
-
-            **Stimulus**:
-            - TBD
-
-            **Checks**:
-            - TBD
+            Enable csrng, send instantiate/generate cmds, verify 0-seed genbits/interrupt.
             '''
       milestone: V1
       tests: ["csrng_smoke"]
     }
     {
-      name: feature1
-      desc: '''Add more test entries here like above.'''
-      milestone: V1
-      tests: []
+      name: firmware
+      desc: '''
+            Verify ability to access SW app registers based on value of efuse input
+            Verify regen bit enables/disables write access to control registers
+            '''
+      milestone: V2
+      tests: ["csrng_firmware"]
+    }
+    {
+      name: interrupts
+      desc: '''
+            Verify all csrng interrupts assert/clear when expected.
+            '''
+      milestone: V2
+      tests: ["csrng_interrupts"]
+    }
+    {
+      name: cmds
+      desc: '''
+            Verify all SW app csrng commands req/status behave as predicted.
+            Verify all HW app csrng commands req/status behave as predicted.
+            Verify above for all valid values of acmd, clen, flags, glen.
+            Verify for multiple hw app interfaces running in parallel.
+            '''
+      milestone: V2
+      tests: ["csrng_cmds"]
+    }
+    {
+      name: genbits
+      desc: '''
+            Verify genbits generated as predicted.
+            Verify fips bits as predicted.
+            Verify for multiple hw app interfaces running in parallel.
+            '''
+      milestone: V2
+      tests: ["csrng_genbits"]
+    }
+    {
+      name: stress_all
+      desc: '''
+            Combine the other individual testpoints while injecting TL errors and running CSR tests in parallel.'''
+      milestone: V2
+      tests: ["csrng_stress_all"]
     }
   ]
 }

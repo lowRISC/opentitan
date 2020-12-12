@@ -5,7 +5,7 @@
 {
     name:               "rv_timer",
     design_spec:        "hw/ip/rv_timer/doc",
-    dv_plan:            "hw/ip/rv_timer/doc/dv_plan",
+    dv_doc:             "hw/ip/rv_timer/doc/dv",
     hw_checklist:       "hw/ip/rv_timer/doc/checklist",
     sw_checklist:       "sw/device/lib/dif/dif_rv_timer",
     revisions: [

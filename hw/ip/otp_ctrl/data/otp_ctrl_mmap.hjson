@@ -33,6 +33,7 @@
             write_lock: "Digest",
             read_lock:  "CSR",
             key_sel:    "NoKey",
+            bkout_type: "False", // Do not generate a breakout type for this partition.
             items: [
                 {
                     name: "CREATOR_SW_CFG_CONTENT",
@@ -54,6 +55,7 @@
             write_lock: "Digest",
             read_lock:  "CSR",
             key_sel:    "NoKey",
+            bkout_type: "False",
             items: [
                 {
                     name: "OWNER_SW_CFG_CONTENT",
@@ -76,10 +78,19 @@
             write_lock: "Digest",
             read_lock:  "None",
             key_sel:    "NoKey",
+            bkout_type: "True",
             items: [
                 {
+                    name:    "DEVICE_ID",
+                    size:    "32",
+                    // Default value to be output in case partition has not
+                    // initialized or is in error state. If not specified,
+                    // a value of '0 will be used.
+                    inv_default: "{256{1'b1}}",
+                }
+                {
                     name: "HW_CFG_CONTENT",
-                    size: "200"
+                    size: "168"
                 }
             ],
             desc: '''Hardware configuration bits used to hardwire
@@ -97,6 +108,7 @@
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret0Key",
+            bkout_type: "False",
             items: [
                 {
                     name: "TEST_UNLOCK_TOKEN",
@@ -120,6 +132,7 @@
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret1Key",
+            bkout_type: "False",
             items: [
                 {
                     name: "FLASH_ADDR_KEY_SEED",
@@ -148,6 +161,7 @@
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret2Key",
+            bkout_type: "False",
             items: [
                 {
                     name: "RMA_TOKEN",
@@ -175,6 +189,7 @@
             write_lock: "None",
             read_lock:  "None",
             key_sel:    "NoKey",
+            bkout_type: "False",
             items: [
                 {
                     name: "LC_STATE",

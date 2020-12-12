@@ -18,9 +18,6 @@
     { name: "done"
       desc: "OTBN has completed the operation"
     }
-    { name: "err"
-      desc: "An error occurred. Read the ERR_CODE register for error details."
-    }
   ]
   alert_list: [
     { name: "imem_uncorrectable"
@@ -118,14 +115,16 @@
           desc: '''
             The error cause if an error occurred.
 
-            Software should read this register before clearing the err
-            interrupt to avoid race conditions.
+            This is set to zero (ErrCodeNoError) when OTBN successfully
+            completes an operation or a positive value when OTBN stops on an
+            error.
 
-            Possible values:
+            While OTBN is running (!!CMD.busy set), this has no meaning. When
+            OTBN stops this will be set to indicate the outcome. It is
+            guaranteed not to change until OTBN is run again (with !!CMD.start).
 
-            - 0x0 (ErrCodeNoError):     No error occurred.
-            - 0x1 (ErrCodeBadDataAddr): Load or store to invalid address
-            - 0x2 (ErrCodeCallStack):   Call stack underflow/overflow
+            See <a href='#error-conditions'>Error Conditions</a> for
+            details on the possible values.
           '''
         }
       ]
@@ -151,6 +150,7 @@
     // of the actual IMEM and DMEM sizes without changing the address map.
     { skipto: "0x4000" }
 
+    // Imem size (given as `items` below) must be a power of two.
     { window: {
         name: "IMEM"
         items: "1024" // 4 kB
@@ -169,6 +169,7 @@
 
     { skipto: "0x8000" }
 
+    // Dmem size (given as `items` below) must be a power of two.
     { window: {
         name: "DMEM"
         items: "1024" // 4 kB

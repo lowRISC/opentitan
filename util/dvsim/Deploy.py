@@ -256,6 +256,14 @@ class Deploy():
         exports = os.environ.copy()
         exports.update(self.exports)
 
+        # Clear the magic MAKEFLAGS variable from exports if necessary. This
+        # variable is used by recursive Make calls to pass variables from one
+        # level to the next. Here, self.cmd is a call to Make but it's
+        # logically a top-level invocation: we don't want to pollute the flow's
+        # Makefile with Make variables from any wrapper that called dvsim.
+        if 'MAKEFLAGS' in exports:
+            del exports['MAKEFLAGS']
+
         args = shlex.split(self.cmd)
         try:
             # If renew_odir flag is True - then move it.
@@ -841,6 +849,55 @@ class RunTest(Deploy):
                 seed = random.getrandbits(32)
                 RunTest.seeds.append(seed)
         return RunTest.seeds.pop(0)
+
+
+class CovUnr(Deploy):
+    """
+    Abstraction for coverage UNR flow.
+    """
+
+    # Register all builds with the class
+    items = []
+
+    def __init__(self, sim_cfg):
+        # Initialize common vars.
+        super().__init__(sim_cfg)
+
+        self.target = "cov_unr"
+        self.mandatory_cmd_attrs.update({
+            # tool srcs
+            "tool_srcs": False,
+            "tool_srcs_dir": False,
+
+            # Need to generate filelist based on build mode
+            "sv_flist_gen_cmd": False,
+            "sv_flist_gen_dir": False,
+            "sv_flist_gen_opts": False,
+            "build_dir": False,
+            "cov_unr_build_cmd": False,
+            "cov_unr_build_opts": False,
+            "cov_unr_run_cmd": False,
+            "cov_unr_run_opts": False
+        })
+
+        self.mandatory_misc_attrs.update({
+            "cov_unr_dir": False,
+            "build_fail_patterns": False
+        })
+
+        super().parse_dict(sim_cfg.__dict__)
+        self.__post_init__()
+
+        self.pass_patterns = []
+        # Reuse fail_patterns from sim build
+        self.fail_patterns = self.build_fail_patterns
+
+        # Start fail message construction
+        self.fail_msg = "\n**COV_UNR:** {}<br>\n".format(self.name)
+        log_sub_path = self.log.replace(self.sim_cfg.scratch_path + '/', '')
+        self.fail_msg += "**LOG:** $scratch_path/{}<br>\n".format(log_sub_path)
+
+        CovUnr.items.append(self)
 
 
 class CovMerge(Deploy):

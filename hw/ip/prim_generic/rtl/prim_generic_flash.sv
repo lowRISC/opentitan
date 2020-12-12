@@ -6,13 +6,15 @@
 //
 
 module prim_generic_flash #(
-  parameter int NumBanks      = 2,   // number of banks
-  parameter int InfosPerBank  = 1,   // info pages per bank
-  parameter int PagesPerBank  = 256, // data pages per bank
-  parameter int WordsPerPage  = 256, // words per page
-  parameter int DataWidth     = 32,  // bits per word
-  parameter int MetaDataWidth = 12,  // metadata such as ECC
-  parameter int TestModeWidth = 2
+  parameter int NumBanks       = 2,  // number of banks
+  parameter int InfosPerBank   = 1,  // info pages per bank
+  parameter int InfoTypes      = 1,  // different info types
+  parameter int InfoTypesWidth = 1,  // different info types
+  parameter int PagesPerBank   = 256,// data pages per bank
+  parameter int WordsPerPage   = 256,// words per page
+  parameter int DataWidth      = 32, // bits per word
+  parameter int MetaDataWidth  = 12, // metadata such as ECC
+  parameter int TestModeWidth  = 2
 ) (
   input clk_i,
   input rst_ni,
@@ -42,6 +44,8 @@ module prim_generic_flash #(
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_prim_flash_banks
     prim_generic_flash_bank #(
       .InfosPerBank(InfosPerBank),
+      .InfoTypes(InfoTypes),
+      .InfoTypesWidth(InfoTypesWidth),
       .PagesPerBank(PagesPerBank),
       .WordsPerPage(WordsPerPage),
       .DataWidth(DataWidth),
@@ -55,8 +59,10 @@ module prim_generic_flash #(
       .prog_type_i(flash_req_i[bank].prog_type),
       .pg_erase_i(flash_req_i[bank].pg_erase_req),
       .bk_erase_i(flash_req_i[bank].bk_erase_req),
+      .he_i(flash_req_i[bank].he),
       .addr_i(flash_req_i[bank].addr),
       .part_i(flash_req_i[bank].part),
+      .info_sel_i(flash_req_i[bank].info_sel),
       .prog_data_i(flash_req_i[bank].prog_full_data),
       .ack_o(flash_rsp_o[bank].ack),
       .done_o(flash_rsp_o[bank].done),

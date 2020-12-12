@@ -10,6 +10,7 @@ package kmac_env_pkg;
   import dv_lib_pkg::*;
   import tl_agent_pkg::*;
   import test_vectors_pkg::*;
+  import digestpp_dpi_pkg::*;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import push_pull_agent_pkg::*;

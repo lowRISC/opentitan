@@ -20,7 +20,9 @@
 `define FLASH_BANK1        `FLASH_HIER.gen_generic.u_impl_generic.gen_prim_flash_banks[1].u_prim_flash_bank
 `define FLASH0_MEM_HIER    `FLASH_BANK0.u_mem
 `define FLASH1_MEM_HIER    `FLASH_BANK1.u_mem
-`define FLASH0_INFO_HIER   `FLASH_BANK0.u_info_mem
-`define FLASH1_INFO_HIER   `FLASH_BANK1.u_info_mem
+// TODO: Temporarily only reference info type0 of the info partitions
+// in the future, this needs to be upgraded to support all info types
+`define FLASH0_INFO_HIER   `FLASH_BANK0.gen_info_types[0].u_info_mem
+`define FLASH1_INFO_HIER   `FLASH_BANK1.gen_info_types[0].u_info_mem
 `define OTP_MEM_HIER       `CHIP_HIER.u_otp_ctrl.u_otp.gen_generic.u_impl_generic.i_prim_ram_1p_adv.\
                            u_mem.gen_generic.u_impl_generic

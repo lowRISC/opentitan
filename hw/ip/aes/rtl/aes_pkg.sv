@@ -8,13 +8,44 @@ package aes_pkg;
 
 // Widths of signals carrying pseudo-random data for clearing and masking and purposes
 parameter int unsigned WidthPRDClearing = 64;
-parameter int unsigned WidthPRDData     = 128;
-parameter int unsigned WidthPRDKey      = 32;
+parameter int unsigned WidthPRDSBox     = 10; // Number PRD bits per S-Box, not incl. the 8 bits
+                                              // for the output mask
+parameter int unsigned WidthPRDData     = 16*(8+WidthPRDSBox); // 16 S-Boxes for the data path
+parameter int unsigned WidthPRDKey      = 4*(8+WidthPRDSBox);  // 4 S-Boxes for the key expand
 parameter int unsigned WidthPRDMasking  = WidthPRDData + WidthPRDKey;
 
-// Default seeds for pseudo-random number generators
-parameter logic [WidthPRDClearing-1:0] DefaultSeedClearing = 64'hFEDCBA9876543210;
-parameter logic  [WidthPRDMasking-1:0] DefaultSeedMasking  = {32'h5, 32'h4, 32'h3, 32'h2, 32'h1};
+parameter int unsigned ChunkSizePRDMasking = WidthPRDMasking/10;
+
+// Clearing PRNG default LFSR seed and permutation
+// These LFSR parameters have been generated with
+// $ hw/ip/prim/util/gen-lfsr-seed.py --width 64 --seed 31468618 --prefix "Clearing"
+parameter int ClearingLfsrWidth = 64;
+typedef logic [ClearingLfsrWidth-1:0] clearing_lfsr_seed_t;
+typedef logic [ClearingLfsrWidth-1:0][$clog2(ClearingLfsrWidth)-1:0] clearing_lfsr_perm_t;
+parameter clearing_lfsr_seed_t RndCnstClearingLfsrSeedDefault = 64'hc32d580f74f1713a;
+parameter clearing_lfsr_perm_t RndCnstClearingLfsrPermDefault = {
+  128'hb33fdfc81deb6292c21f8a3102585067,
+  256'h9c2f4be1bbe937b4b7c9d7f4e57568d99c8ae291a899143e0d8459d31b143223
+};
+
+// Masking PRNG default LFSR seed and permutation
+// We use a single seed that is split down into chunks internally. All LFSR chunks use the same
+// permutation.
+// These LFSR parameters have been generated with
+// $ hw/ip/prim/util/gen-lfsr-seed.py --width 360 --seed 31468618 --prefix "Masking"
+parameter int MaskingLfsrWidth = 360;
+typedef logic [MaskingLfsrWidth-1:0] masking_lfsr_seed_t;
+parameter masking_lfsr_seed_t RndCnstMaskingLfsrSeedDefault = {
+  180'h5ae9b31605f9077a6b758a442031e1c4616ea343ec153,
+  180'h282a30c132b5723c5a4cf4743b3c7c32d580f74f1713a
+};
+
+// These LFSR parameters have been generated with
+// $ hw/ip/prim/util/gen-lfsr-seed.py --width 36 --seed 31468618 --prefix "MskgChunk"
+parameter int MskgChunkLfsrWidth = 36;
+typedef logic [MskgChunkLfsrWidth-1:0][$clog2(MskgChunkLfsrWidth)-1:0] mskg_chunk_lfsr_perm_t;
+parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPermDefault =
+    216'h6587da04c59c02125750f35e7634e08951122874022ce19b143211;
 
 typedef enum integer {
   SBoxImplLut,                  // Unmasked LUT-based S-Box
@@ -219,6 +250,25 @@ function automatic logic [7:0] aes_mvm(
     end
   end
   return vec_c;
+endfunction
+
+// Extract one row of output masks for SubBytes from PRNG output. The output mask is in the LSBs of
+// each segment.
+function automatic logic [3:0][7:0] aes_sb_out_mask_get(logic [4*(8+WidthPRDSBox)-1:0] in);
+  logic [3:0][7:0] sb_out_mask;
+  for (int i=0; i<4; i++) begin
+    sb_out_mask[i] = in[i*(8+WidthPRDSBox) +: 8];
+  end
+  return sb_out_mask;
+endfunction
+
+// Extract one row of PRD for SubBytes from PRNG output. The PRD part ins the MSBs of each segment.
+function automatic logic [3:0][WidthPRDSBox-1:0] aes_sb_prd_get(logic [4*(8+WidthPRDSBox)-1:0] in);
+  logic [3:0][WidthPRDSBox-1:0] sb_prd;
+  for (int i=0; i<4; i++) begin
+    sb_prd[i] = in[i*(8+WidthPRDSBox)+8 +: WidthPRDSBox];
+  end
+  return sb_prd;
 endfunction
 
 endpackage

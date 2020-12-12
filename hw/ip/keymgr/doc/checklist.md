@@ -115,31 +115,31 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_PLAN_DRAFT_COMPLETED][]           | Not Started | [KEYMGR DV Plan]({{<relref "hw/ip/keymgr/doc/dv_plan" >}})
-Documentation | [TESTPLAN_COMPLETED][]                | Not Started | [KEYMGR Testplan]({{<relref "hw/ip/keymgr/doc/dv_plan/index.md#testplan" >}})
-Testbench     | [TB_TOP_CREATED][]                    | Not Started |
-Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
-Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |
-Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Not Started |
-Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Not Started |
-Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
-Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
-Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started |
-Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
-Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
-Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Not Started |
-Regression    | [FPV_REGRESSION_SETUP][]              | Not Started |
-Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Not Started |
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [KEYMGR DV document]({{<relref "hw/ip/keymgr/doc/dv" >}})
+Documentation | [DV_PLAN_COMPLETED][]                 | Done        | [KEYMGR DV plan]({{<relref "hw/ip/keymgr/doc/dv/index.md#dv_plan" >}})
+Testbench     | [TB_TOP_CREATED][]                    | Done        |
+Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
+Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
+Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done        |
+Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        |
+Testbench     | [TB_GEN_AUTOMATED][]                  | N/A         |
+Tests         | [SIM_SMOKE_TEST_PASSING][]            | Done        |
+Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        |
+Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | N/A         |
+Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Done        |
+Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Done        |
+Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        |
+Regression    | [FPV_REGRESSION_SETUP][]              | Done        |
+Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Code Quality  | [TB_LINT_SETUP][]                     | Done        |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
-Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
-Review        | [DV_PLAN_TESTPLAN_REVIEWED][]         | Not Started |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
-Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         |
+Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
+Review        | [DV_PLAN_REVIEWED][]                  | Done        |
+Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | Verification for security hasn't been planned yet. Will revisit it in V2. Exception (Power, Performance, Debug)
+Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
-[DV_PLAN_DRAFT_COMPLETED]:            {{<relref "/doc/project/checklist.md#dv_plan_draft_completed" >}}
-[TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan_completed" >}}
+[DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
+[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
 [TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb_top_created" >}}
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary_assertion_checks_added" >}}
 [SIM_TB_ENV_CREATED]:                 {{<relref "/doc/project/checklist.md#sim_tb_env_created" >}}
@@ -157,7 +157,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 [TB_LINT_SETUP]:                      {{<relref "/doc/project/checklist.md#tb_lint_setup" >}}
 [PRE_VERIFIED_SUB_MODULES_V1]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v1" >}}
 [DESIGN_SPEC_REVIEWED]:               {{<relref "/doc/project/checklist.md#design_spec_reviewed" >}}
-[DV_PLAN_TESTPLAN_REVIEWED]:          {{<relref "/doc/project/checklist.md#dv_plan_testplan_reviewed" >}}
+[DV_PLAN_REVIEWED]:                   {{<relref "/doc/project/checklist.md#dv_plan_reviewed" >}}
 [STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std_test_categories_planned" >}}
 [V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2_checklist_scoped" >}}
 
@@ -186,7 +186,7 @@ Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design_deltas_captured_v2" >}}
-[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
+[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_doc_completed" >}}
 [ALL_INTERFACES_EXERCISED]:           {{<relref "/doc/project/checklist.md#all_interfaces_exercised" >}}
 [ALL_ASSERTION_CHECKS_ADDED]:         {{<relref "/doc/project/checklist.md#all_assertion_checks_added" >}}
 [SIM_TB_ENV_COMPLETED]:               {{<relref "/doc/project/checklist.md#sim_tb_env_completed" >}}

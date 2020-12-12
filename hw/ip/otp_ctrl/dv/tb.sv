@@ -8,8 +8,8 @@ module tb;
   import dv_utils_pkg::*;
   import otp_ctrl_env_pkg::*;
   import otp_ctrl_test_pkg::*;
-  import push_pull_agent_pkg::*;
   import otp_ctrl_reg_pkg::*;
+  import lc_ctrl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -17,8 +17,7 @@ module tb;
 
   wire clk, rst_n;
   wire devmode;
-  wire [3:0] lc_provision_en, lc_dft_en;
-
+  wire lc_ctrl_pkg::lc_tx_e lc_provision_wr_en, lc_dft_en;
   wire [OtpPwrIfWidth-1:0] pwr_otp;
   wire otp_ctrl_pkg::flash_otp_key_req_t flash_req;
   wire otp_ctrl_pkg::flash_otp_key_rsp_t flash_rsp;
@@ -32,7 +31,6 @@ module tb;
 
   //TODO: use push-pull agent once support
   wire otp_ctrl_pkg::otp_ast_req_t        ast_req;
-  wire otp_ctrl_pkg::lc_otp_program_rsp_t otp_prog;
   wire otp_ctrl_pkg::lc_otp_token_rsp_t   otp_token;
 
   // interfaces
@@ -40,15 +38,19 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
 
-  push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))  sram_if[NumSramKeyReqSlots] (.clk(clk), .rst_n(rst_n));
-  push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE))  otbn_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
+                 lc_prog_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))
+                 sram_if[NumSramKeyReqSlots](.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if #(.DeviceDataWidth(EDN_DATA_SIZE))   edn_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(clk), .rst_n(rst_n));
+  wire [30:0] edn_extra_data = 0; // TODO: temp align, will remove once design update
 
   pins_if #(OtpPwrIfWidth) pwr_otp_if(pwr_otp);
   // TODO: use standard req/rsp agent
-  pins_if #(4) lc_provision_en_if(lc_provision_en);
+  pins_if #(4) lc_provision_wr_en_if(lc_provision_wr_en);
   pins_if #(4) lc_dft_en_if(lc_dft_en);
 
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
@@ -75,17 +77,18 @@ module tb;
     .otp_ast_pwr_seq_h_i       ('0),
     // edn
     .otp_edn_o                 (edn_if.req),
-    .otp_edn_i                 ({edn_if.ack, edn_if.d_data}),
+    // TODO: temp padding 0s, will update once design align with EDN
+    .otp_edn_i                 ({edn_if.ack, edn_extra_data, edn_if.d_data}),
     // pwrmgr
     .pwr_otp_i                 (pwr_otp[OtpPwrInitReq]),
     .pwr_otp_o                 (pwr_otp[OtpPwrDoneRsp:OtpPwrIdleRsp]),
     // lc
-    .lc_otp_program_i          ('0),
-    .lc_otp_program_o          (otp_prog),
+    .lc_otp_program_i          ({lc_prog_if.req, lc_prog_if.h_data}),
+    .lc_otp_program_o          ({lc_prog_if.d_data, lc_prog_if.ack}),
     .lc_otp_token_i            ('0),
     .lc_otp_token_o            (otp_token),
     .lc_escalate_en_i          (lc_ctrl_pkg::Off),
-    .lc_provision_en_i         (lc_provision_en),
+    .lc_provision_wr_en_i      (lc_provision_wr_en),
     .lc_dft_en_i               (lc_dft_en),
     .otp_lc_data_o             (otp_ctrl_output_data_if.lc_data),
     // keymgr
@@ -100,7 +103,7 @@ module tb;
     .otbn_otp_key_i            (otbn_req),
     .otbn_otp_key_o            (otbn_rsp),
 
-    .hw_cfg_o                  (otp_ctrl_output_data_if.hw_cfg)
+    .otp_hw_cfg_o              (otp_ctrl_output_data_if.otp_hw_cfg)
   );
 
   for (genvar i = 0; i < NumSramKeyReqSlots; i++) begin : gen_sram_pull_if
@@ -142,14 +145,16 @@ module tb;
                    "*env.m_flash_data_pull_agent*", "vif", flash_data_if);
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(null,
                    "*env.m_flash_addr_pull_agent*", "vif", flash_addr_if);
-    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(EDN_DATA_SIZE)))::set(null,
-                   "*env.m_edn_pull_agent*", "vif", edn_if);
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)))::
+                   set(null, "*env.m_edn_pull_agent*", "vif", edn_if);
+    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1)))::
+                   set(null, "*env.m_lc_prog_pull_agent*", "vif", lc_prog_if);
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(pwr_otp_vif)::set(null, "*.env", "pwr_otp_vif", pwr_otp_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
-    uvm_config_db#(lc_provision_en_vif)::set(null, "*.env", "lc_provision_en_vif",
-                                             lc_provision_en_if);
+    uvm_config_db#(lc_provision_wr_en_vif)::set(null, "*.env", "lc_provision_wr_en_vif",
+                                                lc_provision_wr_en_if);
     uvm_config_db#(lc_dft_en_vif)::set(null, "*.env", "lc_dft_en_vif", lc_dft_en_if);
     uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif",
                                       `OTP_CTRL_MEM_HIER.mem_bkdr_if);

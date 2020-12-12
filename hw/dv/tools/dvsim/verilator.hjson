@@ -1,0 +1,144 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Replicate settings from `common_sim_cfg.hjson`.
+  //
+  // Unfortunately, that file assumes that the tools are invoked natively as
+  // opposed to via FuseSoC. Verilator is setup to be invoked via FuseSoC,
+  // which causes FuseSoC to fail due to unknown {build_opts}. Hence, contents
+  // from `common_sim_cfg.hjson` are replicated here as appropriate.
+  // -- START --
+  dv_root:          "{proj_root}/hw/dv"
+  flow:             sim
+  flow_makefile:    "{dv_root}/tools/dvsim/sim.mk"
+
+  import_cfgs:      ["{proj_root}/hw/data/common_project_cfg.hjson",
+                     "{dv_root}/tools/dvsim/common_modes.hjson",
+                     "{dv_root}/tools/dvsim/fusesoc.hjson",
+                     ]
+
+  // Default directory structure for the output
+  build_dir:          "{scratch_path}/{build_mode}"
+  run_dir_name:       "{index}.{test}"
+  run_dir:            "{scratch_path}/{run_dir_name}/out"
+  sw_build_dir:       "{scratch_path}"
+  sw_root_dir:        "{proj_root}/sw"
+
+  regressions: [
+    {
+      name: smoke
+      reseed: 1
+    }
+    {
+      name: all
+    }
+    {
+      name: all_once
+      reseed: 1
+    }
+    {
+      name: nightly
+    }
+  ]
+  // -- END --
+
+  build_cmd:  "fusesoc {fusesoc_cores_root_dirs} run"
+  ex_name:    "{eval_cmd} echo \"{fusesoc_core}\" | cut -d: -f3"
+  run_cmd:    "{build_dir}/sim-verilator/V{ex_name}"
+
+  // Indicate the tool specific helper sources - these are copied over to the
+  // {tool_srcs_dir} before running the simulation.
+  // TODO: none at the moment.
+  tool_srcs:  []
+
+  // TODO: Verilator has a few useful build switches. Need to figure out how to
+  // pass them via FuseSoC.
+
+  build_opts: ["--flag=fileset_{design_level}",
+               "--target=sim",
+               "--build-root={build_dir}",
+               "--setup",
+               "--build",
+               "{fusesoc_core}"
+               // "--timescale 1ns/1ps",
+               // Enable all assertions.
+               // "--assert",
+               // Flush streams immediately after all $displays.
+               // "--autoflush",
+               // Enable multi-threading.
+               // "--threads 4",
+               // Randomize all 2-state vars if driven to unknown 'X'.
+               // "--x-assign unique",
+               // "--x-initial unique",
+               ]
+
+  run_opts: [// Set random seed.
+             // "+verilator+seed+{seed}",
+             ]
+
+  // Supported wave dumping formats (in order of preference).
+  supported_wave_formats: ["fst"]
+
+  // Vars that need to exported to the env.
+  exports: [
+  ]
+
+  // pass and fail patterns
+  build_pass_patterns: []
+  build_fail_patterns: [// Verilator compile error.
+                        "^%Error.*?:",
+                        // FuseSoC build error.
+                        "^ERROR:.*$",
+                        ]
+  run_pass_patterns:   ["^TEST PASSED CHECKS$"]
+  run_fail_patterns:   [// $warning/error/fatal messages.
+                        "^\\[[0-9]+\\] %Warning.*?: ",
+                        "^\\[[0-9]+\\] %Error.*?: ",
+                        "^\\[[0-9]+\\] %Fatal.*?: ",
+                        // Ninja / SW compile failure.
+                        "^FAILED: ",
+                        " error: ",
+                        // Failure signature pattern.
+                        "^TEST FAILED CHECKS$"
+                        ]
+
+  // Coverage related.
+  cov_db_dir: ""
+  cov_db_test_dir: ""
+
+  build_modes: [
+    {
+      name: verilator_waves
+      is_sim_mode: 1
+      // build_opts: ["--trace",
+      //              "--trace-fst"
+      //              "--trace-structs",
+      //              "--trace-params",
+      //              "-CFLAGS \"-DVM_TRACE_FMT_FST\"",
+      //              ]
+      run_opts: ["--trace"]
+    }
+    // TODO: These need to be fine-tuned.
+    {
+      name: verilator_cov
+      is_sim_mode: 1
+      // build_opts: ["--coverage"]
+    }
+    {
+      name: verilator_xprop
+      is_sim_mode: 1
+    }
+    {
+      name: verilator_profile
+      is_sim_mode: 1
+      // build_opts: ["--prof-cfuncs",
+      //              "--prof-threads",
+      //             ]
+    }
+    {
+      name: verilator_loopdetect
+      is_sim_mode: 1
+    }
+  ]
+}

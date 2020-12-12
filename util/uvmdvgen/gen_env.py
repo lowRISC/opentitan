@@ -12,8 +12,8 @@ from pkg_resources import resource_filename
 from uvmdvgen import VENDOR_DEFAULT
 
 
-def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, env_agents,
-            root_dir, vendor):
+def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, has_edn,
+            env_agents, root_dir, vendor):
     # yapf: disable
     # 4-tuple - sub-path, ip name, class name, file ext
     env_srcs = [('dv/env',          name + '_', 'env_cfg',            '.sv'),
@@ -79,6 +79,7 @@ def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, env_agents,
                                has_ral=has_ral,
                                has_interrupts=has_interrupts,
                                has_alerts=has_alerts,
+                               has_edn=has_edn,
                                env_agents=env_agents,
                                vendor=vendor))
             except Exception as e:

@@ -2,16 +2,6 @@
 title: "Device Life Cycle"
 ---
 
-<p style="text-align: right">
-    Version: 0.1</p>
-
-<p style="text-align: right">
-  Contributors:
-  <a href="https://github.com/tjaychen">@tjaychen</a>,
-  <a href="https://github.com/moidx">@moidx</a>,
-  <a href="https://github.com/cdgori">@cdgori</a>
-</p>
-
 ## Overview
 
 This document describes the OpenTitan device operational states supported for
@@ -22,6 +12,8 @@ trusted identity.
 
 Manufacturing refers to the process in which a device is tested and prepared for
 silicon correctness prior to production.
+
+The technical specification of the corresponding life cycle controller IP can be found [here]({{< relref "hw/ip/lc_ctrl/doc" >}}).
 
 ## Background
 

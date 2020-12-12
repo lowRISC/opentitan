@@ -1,0 +1,32 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:digestpp_dpi:0.1"
+description: "Vendored in C++ SHA3 model from kerukuro/digestpp open source repo"
+filesets:
+  files_dv:
+    files:
+      - vendor/kerukuro_digestpp/hasher.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/detail/absorb_data.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/detail/functions.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/detail/stream_width_fixer.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/detail/traits.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/detail/validate_hash_size.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/algorithm/mixin/cshake_mixin.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/algorithm/mixin/kmac_mixin.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/algorithm/mixin/null_mixin.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/algorithm/detail/constants/sha3_constants.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/algorithm/detail/kmac_provider.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/algorithm/detail/sha3_provider.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/algorithm/detail/shake_provider.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/algorithm/kmac.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/algorithm/sha3.hpp: {file_type: cppSource, is_include_file: true}
+      - vendor/kerukuro_digestpp/algorithm/shake.hpp: {file_type: cppSource, is_include_file: true}
+      - digestpp_dpi.cc: {file_type: cppSource}
+      - digestpp_dpi_pkg.sv: {file_type: systemVerilogSource}
+
+targets:
+  default:
+    filesets:
+      - files_dv

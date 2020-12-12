@@ -81,15 +81,10 @@ package flash_ctrl_pkg;
 
   // parameters for connected components
   parameter int SeedWidth = 256;
+  parameter int KeyWidth  = 128;
+  parameter int LfsrWidth = 32;
 
-  // life cycle provision enable usage
-  typedef enum logic [2:0] {
-    FlashLcCreatorSeedPriv,
-    FlashLcOwnerSeedPriv,
-    FlashLcMgrIf,
-    FlashLcInfoCfg,
-    FlashLcLast
-  } flash_lc_provision_en_e;
+  typedef logic [KeyWidth-1:0] flash_key_t;
 
   // lcmgr phase enum
   typedef enum logic [1:0] {
@@ -162,7 +157,8 @@ package flash_ctrl_pkg;
     prog_en:     1'b0,
     erase_en:    1'b0,
     scramble_en: 1'b0,
-    ecc_en:      1'b0  // TBD, update to 1 once tb supports ECC
+    ecc_en:      1'b0, // TBD, update to 1 once tb supports ECC
+    he_en:       1'b1
   };
 
   parameter info_page_cfg_t CfgAllowReadErase = '{
@@ -171,7 +167,8 @@ package flash_ctrl_pkg;
     prog_en:     1'b0,
     erase_en:    1'b1,
     scramble_en: 1'b0,
-    ecc_en:      1'b0  // TBD, update to 1 once tb supports ECC
+    ecc_en:      1'b0,  // TBD, update to 1 once tb supports ECC
+    he_en:       1'b1   // HW assumes high endurance
   };
 
   parameter info_page_attr_t HwInfoPageAttr[HwInfoRules] = '{
@@ -204,12 +201,21 @@ package flash_ctrl_pkg;
                  erase_en:    1'b1,
                  scramble_en: 1'b0,
                  ecc_en:      1'b0,
+                 he_en:       1'b1, // HW assumes high endurance
                  base:        '0,
                  size:        '{default:'1}
                 }
      }
   };
 
+
+  ////////////////////////////
+  // Design time constants
+  ////////////////////////////
+  parameter flash_key_t RndCnstAddrKeyDefault =
+    128'h5d707f8a2d01d400928fa691c6a6e0a4;
+  parameter flash_key_t RndCnstDataKeyDefault =
+    128'h39953618f2ca6f674af39f64975ea1f5;
 
   ////////////////////////////
   // Flash operation related enums
@@ -260,38 +266,42 @@ package flash_ctrl_pkg;
     logic                 req;
     logic                 scramble_en;
     logic                 ecc_en;
+    logic                 he_en;
     logic                 rd;
     logic                 prog;
     logic                 pg_erase;
     logic                 bk_erase;
     flash_part_e          part;
+    logic [InfoTypesWidth-1:0] info_sel;
     logic [BusAddrW-1:0]  addr;
     logic [BusWidth-1:0]  prog_data;
     logic                 prog_last;
     flash_prog_e          prog_type;
     mp_region_cfg_t [MpRegions:0] region_cfgs;
-    logic [127:0]         addr_key;
-    logic [127:0]         data_key;
+    logic [KeyWidth-1:0]  addr_key;
+    logic [KeyWidth-1:0]  data_key;
     logic                 rd_buf_en;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)
   parameter flash_req_t FLASH_REQ_DEFAULT = '{
-    req:         1'b0,
-    scramble_en: 1'b0,
-    ecc_en:      1'b0,
-    rd:          1'b0,
-    prog:        1'b0,
-    pg_erase:    1'b0,
-    bk_erase:    1'b0,
+    req:         '0,
+    scramble_en: '0,
+    ecc_en:      '0,
+    he_en:       '0,
+    rd:          '0,
+    prog:        '0,
+    pg_erase:    '0,
+    bk_erase:    '0,
     part:        FlashPartData,
+    info_sel:    '0,
     addr:        '0,
     prog_data:   '0,
     prog_last:   '0,
     prog_type:   FlashProgNormal,
     region_cfgs: '0,
-    addr_key:    128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
-    data_key:    128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE,
+    addr_key:    RndCnstAddrKeyDefault,
+    data_key:    RndCnstDataKeyDefault,
     rd_buf_en:   1'b0
   };
 
@@ -321,15 +331,6 @@ package flash_ctrl_pkg;
   // The following inter-module should be moved to OTP/LC
   ////////////////////////////
 
-  // otp to flash_ctrl
-  typedef struct packed {
-    logic [127:0] addr_key;
-    logic [127:0] data_key;
-    // TBD: this signal will become multi-bit in the future
-    logic seed_valid;
-    logic prog_repair_en;
-  } otp_flash_t;
-
   // lc to flash_ctrl
   typedef struct packed {
     // TBD: this signal will become multi-bit in the future
@@ -348,21 +349,18 @@ package flash_ctrl_pkg;
     logic [NumSeeds-1:0][SeedWidth-1:0] seeds;
   } keymgr_flash_t;
 
+  parameter keymgr_flash_t KEYMGR_FLASH_DEFAULT = '{
+    seeds: '{
+     256'h9152e32c9380a4bcc3e0ab263581e6b0e8825186e1e445631646e8bef8c45d47,
+     256'hfa365df52da48cd752fb3a026a8e608f0098cfe5fa9810494829d0cd9479eb78
+    }
+  };
+
   // place holder for interface to EDN, replace with real one later
   typedef struct packed {
     logic valid;
     logic [3:0] entropy;
   } edn_entropy_t;
-
-  // default value of otp_flash_t
-  // These are hardwired default values that should never be used.
-  // Real values are individualized and supplied from OTP.
-  parameter otp_flash_t OTP_FLASH_DEFAULT = '{
-    addr_key: 128'hDEADBEEFBEEFFACEDEADBEEF5A5AA5A5,
-    data_key: 128'hDEADBEEF5A5AA5A5DEADBEEFBEEFFACE,
-    seed_valid: 1'b1,
-    prog_repair_en: 1'b1
-  };
 
   parameter lc_flash_req_t LC_FLASH_REQ_DEFAULT = '{
     rma_req: 1'b0,
@@ -374,6 +372,14 @@ package flash_ctrl_pkg;
     entropy: '0
   };
 
+  // dft_en jtag selection
+  typedef enum logic [2:0] {
+    FlashLcTckSel,
+    FlashLcTdiSel,
+    FlashLcTmsSel,
+    FlashLcTdoSel,
+    FlashLcJtagLast
+  } flash_lc_jtag_e;
 
   // find the max number pages among info types
   function automatic integer max_info_pages(int infos[InfoTypes]);

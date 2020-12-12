@@ -265,7 +265,8 @@ class StraightLineInsn(SnippetGen):
             'mem-load': ('dmem', True),
             'mem-store': ('dmem', False),
             'csr': ('csr', True),
-            'wsr': ('wsr', True)
+            'wsr-load': ('wsr', True),
+            'wsr-store': ('wsr', False)
         }
         assert set(lsu_type_to_info.keys()) == set(LSUDesc.TYPES)
         mem_type, loads_value = lsu_type_to_info[insn.lsu.lsu_type]

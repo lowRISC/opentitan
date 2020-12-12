@@ -9,6 +9,8 @@
                      "{proj_root}/hw/data/common_project_cfg.hjson",
                      "{proj_root}/hw/formal/tools/{tool}/{tool}.hjson"]
 
+  tool:             "jaspergold"
+
   // Default directory structure for the output
   dut:              "{name}"
   build_dir:        "{scratch_path}/{build_mode}"

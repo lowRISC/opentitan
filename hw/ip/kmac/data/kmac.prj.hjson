@@ -5,7 +5,7 @@
 {
     name:               "kmac",
     design_spec:        "hw/ip/kmac/doc",
-    dv_plan:            "hw/ip/kmac/doc/dv_plan",
+    dv_doc:            "hw/ip/kmac/doc/dv",
     hw_checklist:       "hw/ip/kmac/doc/checklist",
     sw_checklist:       "sw/device/lib/dif/dif_kmac",
     revisions: [

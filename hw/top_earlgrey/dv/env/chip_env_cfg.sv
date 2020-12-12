@@ -120,11 +120,6 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   protected virtual function void apply_ral_fixes();
     // Out of reset, the link is in disconnected state.
     ral.usbdev.intr_state.disconnected.set_reset(1'b1);
-
-    // ram_main mem and hmac mem support partial write
-    ral.ram_main.set_mem_partial_write_support(1);
-    ral.ram_ret.set_mem_partial_write_support(1);
-    ral.hmac.msg_fifo.set_mem_partial_write_support(1);
   endfunction
 
   // Parse a space-separated list of sw_images supplied as a string.

@@ -27,10 +27,12 @@ class csr_excl_item extends uvm_object;
                                  csr_test_type_e csr_test_type = CsrAllTests);
     bit [2:0] val = CsrNoExcl;
     bit [NUM_CSR_TESTS-1:0] test = CsrInvalidTest;
-    csr_excl_s csr_excl_item;
+
     if (csr_test_type == CsrInvalidTest) begin
       `uvm_fatal(`gfn, $sformatf("add %s exclusion without a test", obj))
     end
+
+    if (!exclusions.exists(obj)) exclusions[obj] = '{default:CsrNoExcl};
     val = csr_excl_type | exclusions[obj].csr_excl_type;
     test = csr_test_type | exclusions[obj].csr_test_type;
     exclusions[obj].csr_excl_type = csr_excl_type_e'(val);

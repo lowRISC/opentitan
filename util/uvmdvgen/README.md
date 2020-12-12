@@ -62,8 +62,8 @@ optional arguments:
                         to './<name>')
   -eo [hw/ip/<ip>], --env-outdir [hw/ip/<ip>]
                         Path to place the full tetsbench code. It creates 3
-                        directories - dv, data and doc. The DV plan and the
-                        testplan Hjson files are placed in the doc and data
+                        directories - dv, data and doc. The DV document and the
+                        DV plan Hjson files are placed in the doc and data
                         directories respectively. These are to be merged into
                         the IP's root directory (with the existing data and
                         doc directories). Under dv, it creates 3 sub-
@@ -289,10 +289,10 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
     and DV dependencies to construct the complete filelist to pass to simulator's
     build step.
 
-* `i2c_host_dv_plan.md`
+* `i2c_host_dv_doc.md`
 
-  This is the initial DV plan document that will describe the entire testbench. This
-  is equivalent to the template available [here](https://github.com/lowRISC/opentitan/blob/master/hw/dv/doc/dv_plan_template.md).
+  This is the initial DV document that will describe the entire testbench. This
+  is equivalent to the template available [here](https://github.com/lowRISC/opentitan/blob/master/hw/dv/doc/dv_template.md).
 
 The [VLNV](https://fusesoc.readthedocs.io/en/master/user/overview.html#core-naming-rules)
 name in the generated FuseSoC core files is set using the `--vendor` switch for

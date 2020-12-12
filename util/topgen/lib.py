@@ -264,10 +264,12 @@ def get_unused_resets(top):
     """Return dict of unused resets and associated domain
     """
     unused_resets = OrderedDict()
-    unused_resets = {reset['name']: domain
-                     for reset in top['resets']['nodes']
-                     for domain in top['power']['domains']
-                     if reset['type'] == 'top' and domain not in reset['domains']}
+    unused_resets = {
+        reset['name']: domain
+        for reset in top['resets']['nodes']
+        for domain in top['power']['domains']
+        if reset['type'] == 'top' and domain not in reset['domains']
+    }
 
     log.debug("Unused resets are {}".format(unused_resets))
     return unused_resets

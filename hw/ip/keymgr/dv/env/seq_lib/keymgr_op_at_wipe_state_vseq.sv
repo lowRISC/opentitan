@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Test advance state and generate output at StWipe state
-class keymgr_op_at_wipe_state_vseq extends keymgr_smoke_vseq;
+class keymgr_op_at_wipe_state_vseq extends keymgr_random_vseq;
   `uvm_object_utils(keymgr_op_at_wipe_state_vseq)
   `uvm_object_new
 

@@ -12,19 +12,19 @@ from pathlib import Path
 from tabulate import tabulate
 
 from OneShotCfg import OneShotCfg
-from utils import print_msg_list, subst_wildcards
+from utils import VERBOSE, print_msg_list, subst_wildcards
 
 
 class LintCfg(OneShotCfg):
     """Derivative class for linting purposes.
     """
-    def __init__(self, flow_cfg_file, proj_root, args):
+
+    flow = 'lint'
+
+    def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
         # This is a lint-specific attribute
         self.is_style_lint = ""
-        super().__init__(flow_cfg_file, proj_root, args)
-
-    def __post_init__(self):
-        super().__post_init__()
+        super().__init__(flow_cfg_file, hjson_data, args, mk_config)
 
         # Convert to boolean
         if self.is_style_lint == "True":
@@ -48,10 +48,10 @@ class LintCfg(OneShotCfg):
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
+        results_str += "### Branch: " + self.branch + "\n"
         results_str += "\n"
-
 
         header = [
             "Name", "Tool Warnings", "Tool Errors", "Lint Warnings",
@@ -114,8 +114,9 @@ class LintCfg(OneShotCfg):
         # Generate results table for runs.
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
+        results_str += "### Branch: " + self.branch + "\n"
         results_str += "### Lint Tool: " + self.tool.upper() + "\n\n"
 
         header = [
@@ -137,7 +138,7 @@ class LintCfg(OneShotCfg):
             result_data = Path(
                 subst_wildcards(self.build_dir, {"build_mode": mode.name}) +
                 '/results.hjson')
-            log.info("looking for result data file at %s", result_data)
+            log.info("[results:hjson]: [%s]: [%s]", self.name, result_data)
 
             try:
                 with result_data.open() as results_file:
@@ -184,7 +185,6 @@ class LintCfg(OneShotCfg):
                              ("Lint Warnings", "lint_warnings"),
                              ("Lint Errors", "lint_errors")]
 
-
             # Lint fails if any warning or error message has occurred
             self.errors_seen = False
             for _, key in hdr_key_pairs:
@@ -219,9 +219,9 @@ class LintCfg(OneShotCfg):
             self.publish_results_md = self.results_md
 
         # Write results to the scratch area
-        self.results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
-        with open(self.results_file, 'w') as f:
+        results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
+        with open(results_file, 'w') as f:
             f.write(self.results_md)
 
-        log.info("[results page]: [%s] [%s]", self.name, self.results_file)
+        log.log(VERBOSE, "[results page]: [%s] [%s]", self.name, results_file)
         return self.results_md

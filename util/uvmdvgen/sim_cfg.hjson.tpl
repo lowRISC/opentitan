@@ -50,7 +50,7 @@
 % endif
 
   // Add additional tops for simulation.
-  sim_tops: ["-top ${name}_bind"]
+  sim_tops: ["${name}_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

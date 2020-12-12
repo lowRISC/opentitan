@@ -27,6 +27,26 @@
   ////////////////
 
   param_list: [
+    // Random netlist constants
+    { name:      "RndCnstLcKeymgrDivInvalid",
+      desc:      "Compile-time random bits for lc state group diversification value",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
+      randcount: "64",
+      randtype:  "data",
+    }
+    { name:      "RndCnstLcKeymgrDivTestDevRma",
+      desc:      "Compile-time random bits for lc state group diversification value",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
+      randcount: "64",
+      randtype:  "data",
+    }
+    { name:      "RndCnstLcKeymgrDivProduction",
+      desc:      "Compile-time random bits for lc state group diversification value",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
+      randcount: "64",
+      randtype:  "data",
+    }
+    // Regular parameters
     { name:    "NumTokenWords",
       desc:    "Number of 32bit words in a token.",
       type:    "int"
@@ -49,6 +69,12 @@
       desc:    "Number of life cycle id state enum bits.",
       type:    "int"
       default: "2",
+      local:   "true"
+    }
+    { name:    "NumDeviceIdWords",
+      desc:    "Number of 32bit words in the Device ID.",
+      type:    "int"
+      default: "8",
       local:   "true"
     }
   ]
@@ -145,21 +171,49 @@
     }
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_provision_wr_en"
+      name:    "lc_cpu_en"
       act:     "req"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_provision_rd_en"
+      name:    "lc_cpu_en"
       act:     "req"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_keymgr_en"
+      name:    "lc_creator_seed_sw_rw_en"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_owner_seed_sw_rw_en"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_iso_part_sw_rd_en"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_iso_part_sw_wr_en"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_seed_hw_rd_en"
       act:     "req"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
@@ -206,6 +260,14 @@
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     }
+    // LC state diversification value for keymgr
+    { struct:  "lc_keymgr_div"
+      type:    "uni"
+      name:    "lc_keymgr_div"
+      act:     "req"
+      default: "'0"
+      package: "lc_ctrl_pkg"
+    }
   ] // inter_signal_list
 
   registers: [
@@ -219,6 +281,9 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
+      tags: [ // Life cycle internal HW will update status so could not auto-predict its value,
+              // After reset, the field READY will be set to 1, so it is excluded from reset CSR test
+              "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits: "0"
           name: "READY"
@@ -297,17 +362,15 @@
       hwaccess: "hrw",
       hwqe:     "true",
       hwext:    "true",
-      tags: [ // life cycle internal HW will set this enable register to 1 only when the hardware mutex
-              // claim was successful, which can cause readback failures when writing randomly
-              // to this register.
+      tags: [ // this register is only writable if the mutex has not been claimed already.
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
-        { bits: "0",
+        { bits: "7:0",
           name: "START",
           desc: '''
           In order to have exclusive access to the transition interface, SW must first claim the associated
-          hardware mutex by writing 1 to this register.
-          If the register reads back 1, the mutex claim has been successful, and !!TRANSITION_REGWEN
+          hardware mutex by writing 0xA5 to this register.
+          If the register reads back 0xA5, the mutex claim has been successful, and !!TRANSITION_REGWEN
           will be set automatically to 1 by HW.
           Write 0 to this register in order to release the HW mutex.
           '''
@@ -321,18 +384,20 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
-      tags: [ // life cycle internal HW will set this enable register to 0 when the life cycle controller
-              // is busy and not ready to accept a transition command.
+      tags: [ // life cycle internal HW will set this enable register to 0 when the hardware mutex has not been claimed or
+              // when the life cycle controller is busy and not ready to accept a transition command.
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         {
             bits:   "0",
             desc: '''
             This bit is hardware-managed and only readable by software.
-            The life cycle controller sets this bit temporarily to 0 while executing an life cycle state
-            transition, or when the transition interface is claimed by the life cycle TAP controller.
+            By default, this bit is set to 0 by hardware.
+            Once SW has claimed the !!CLAIM_TRANSITION_IF mutex, this bit will be set to 1.
+            Note that the life cycle controller sets this bit temporarily to 0 while executing a life cycle state
+            transition.
             '''
-            resval: 1,
+            resval: 0,
         },
       ]
     },
@@ -375,6 +440,9 @@
         hwext:    "true",
         regwen:   "TRANSITION_REGWEN",
         cname:    "WORD",
+        tags: [ // To update this register, SW needs to claim the associated hardware mutex via
+                // CLAIM_TRANSITION_IF, so could not auto predict its value.
+                "excl:CsrNonInitTests:CsrExclCheck"],
         fields: [
           { bits: "31:0"
           }
@@ -396,6 +464,9 @@
                 In order to have exclusive access to this register, SW must first claim the associated
                 hardware mutex via !!CLAIM_TRANSITION_IF.
                 '''
+          tags: [ // To update this register, SW needs to claim the associated hardware mutex via
+                  // CLAIM_TRANSITION_IF, so could not auto predict its value.
+                  "excl:CsrNonInitTests:CsrExclCheck"],
           enum: [
             { value: "0",
               name:  "RAW",
@@ -587,6 +658,30 @@
           ]
         }
       ]
+    }
+
+    ///////////////
+    // Device ID //
+    ///////////////
+    { multireg: {
+        name:     "DEVICE_ID",
+        desc:     '''
+                  This is the 256bit DEVICE_ID value that is stored in the HW_CFG partition in OTP.
+                  If this register reads all-one, the HW_CFG partition has not been initialized yet or is in error state.
+                  If this register reads all-zero, this is indicative that the value has not been programmed to OTP yet.
+                  '''
+        count:    "NumDeviceIdWords", // 8 x 32bit = 256bit
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        cname:    "WORD",
+        tags: [ // This value is driven by hardware.
+                "excl:CsrNonInitTests:CsrExclCheck"],
+        fields: [
+          { bits: "31:0"
+          }
+        ]
+      }
     }
   ]
 }

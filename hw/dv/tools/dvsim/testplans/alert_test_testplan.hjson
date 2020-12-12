@@ -1,0 +1,28 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  entries: [
+    {
+      name: alert_test
+      desc: '''
+            Verify common `alert_test` CSR that allows SW to mock-inject alert requests.
+            - Enable a random set of alert requests by writing random value to
+              alert_test CSR.
+            - Check each `alert_tx.alert_p` pin to verify that only the requested alerts
+              are triggered.
+            - During alert_handshakes, write `alert_test` CSR again to verify that:
+              If `alert_test` writes to current ongoing alert handshake, the `alert_test`
+              request will be ignored.
+              If `alert_test` writes to current idle alert handshake, a new alert_handshake
+              should be triggered.
+            - Wait for the alert handshakes to finish and verify `alert_tx.alert_p` pins
+              all sets back to 0.
+            - Repeat the above steps a bunch of times.
+            '''
+      milestone: V2
+      tests: ["{name}{intf}_alert_test"]
+    }
+  ]
+}
+

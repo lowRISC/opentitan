@@ -22,6 +22,9 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
       - lowrisc:ip:aes
+      - lowrisc:ip:entropy_src
+      - lowrisc:ip:csrng
+      - lowrisc:ip:edn
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:otbn
@@ -109,10 +112,6 @@ targets:
     parameters:
       - SYNTHESIS=true
     tools:
-      ascentlint:
-        ascentlint_options:
-          - "-wait_license"
-          - "-stop_on_error"
       verilator:
         mode: lint-only
         verilator_options:

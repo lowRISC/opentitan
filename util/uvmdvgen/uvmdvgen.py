@@ -75,6 +75,13 @@ def main():
         help="""CIP has alerts. Create alerts interface in tb""")
 
     parser.add_argument(
+        "-he",
+        "--has-edn",
+        default=False,
+        action='store_true',
+        help="""CIP has EDN connection. Create edn pull interface in tb""")
+
+    parser.add_argument(
         "-ea",
         "--env-agents",
         nargs="+",
@@ -134,8 +141,8 @@ def main():
         if not args.env_agents:
             args.env_agents = []
         gen_env.gen_env(args.name, args.is_cip, args.has_ral,
-                        args.has_interrupts, args.has_alerts, args.env_agents,
-                        args.env_outdir, args.vendor)
+                        args.has_interrupts, args.has_alerts, args.has_edn,
+                        args.env_agents, args.env_outdir, args.vendor)
 
 
 if __name__ == '__main__':

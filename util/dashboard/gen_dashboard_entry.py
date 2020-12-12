@@ -66,9 +66,9 @@ def get_linked_design_spec(obj):
 
 # Provide the link to the DV plan.
 def get_linked_dv_plan(obj):
-    if 'dv_plan' in obj.keys():
-        url = docs_server + "/" + html.escape(obj['dv_plan'])
-        return "<span title='DV Plan'><a href=\"{}\">DV</a></span>".format(url)
+    if 'dv_doc' in obj.keys():
+        url = docs_server + "/" + html.escape(obj['dv_doc'])
+        return "<span title='DV Document'><a href=\"{}\">DV</a></span>".format(url)
     else:
         return ""
 
@@ -318,7 +318,7 @@ def gen_specboard_html(hjson_path, rel_hjson_path, outfile):
     if os.path.exists(dv_plan_md):
         genout(outfile, "        <td class=\"fixleft\"><a href=\"" +
                html.escape(dv_plan_html) + "\">" +
-               "DV plan</a>\n")
+               "DV document</a>\n")
     else:
         genout(outfile, "        <td>&nbsp;</td>\n")
 

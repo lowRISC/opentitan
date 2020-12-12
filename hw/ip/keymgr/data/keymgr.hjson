@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "KEYMGR",
   clock_primary: "clk_i",
+  other_clock_list: [ "clk_edn_i" ]
+  reset_primary: "rst_ni",
+  other_reset_list: [ "rst_edn_ni" ]
   bus_device: "tlul",
   interrupt_list: [
     { name: "op_done",   desc: "Operation complete" },
@@ -21,6 +24,12 @@
 
   // Define keymgr <-> kmac / aes / hmac struct packages
   inter_signal_list: [
+    { struct:  "edn",
+      type:    "req_rsp",
+      name:    "edn",
+      act:     "req",
+      package: "edn_pkg",
+    },
     { struct:  "hw_key_req",  // aes_key_req_t
       type:    "uni",
       name:    "aes_key",     // aes_key_o (req)
@@ -51,6 +60,12 @@
       act:     "rcv",
       package: "keymgr_pkg",
     },
+    { struct:  "otp_keymgr_key",
+      type:    "uni",
+      name:    "otp_key",
+      act:     "rcv",
+      package: "otp_ctrl_pkg",
+    },
     { struct:  "otp_data",
       type:    "uni",
       name:    "otp",
@@ -66,12 +81,61 @@
   ],
 
   param_list: [
-    { name: "NumRomExtReg",
-      desc: "Number of Registers for ROM_ext descriptor",
-      type: "int",
-      default: "4",
-      local: "true"
+    // Random netlist constants
+    { name:      "RndCnstLfsrSeed",
+      desc:      "Compile-time random bits for initial LFSR seed",
+      type:      "keymgr_pkg::lfsr_seed_t"
+      randcount: "64",
+      randtype:  "data",
+    }
+    { name:      "RndCnstLfsrPerm",
+      desc:      "Compile-time random permutation for LFSR output",
+      type:      "keymgr_pkg::lfsr_perm_t"
+      randcount: "64",
+      randtype:  "perm",
+    }
+    { name:      "RndCnstRevisionSeed",
+      desc:      "Compile-time random bits for revision seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
     },
+
+    { name:      "RndCnstCreatorIdentitySeed",
+      desc:      "Compile-time random bits for creator identity seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstOwnerIntIdentitySeed",
+      desc:      "Compile-time random bits for owner intermediate identity seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstOwnerIdentitySeed",
+      desc:      "Compile-time random bits for owner identity seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstSoftOutputSeed",
+      desc:      "Compile-time random bits for software generation seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstHardOutputSeed",
+      desc:      "Compile-time random bits for hardware generation seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
     { name: "NumInReg",
       desc: "Number of Registers for SW inputs (SW binding / keyID / Salt)",
       type: "int",
@@ -123,28 +187,6 @@
       fields: [
         { bits: "0",
           hwaccess: "hrw",
-          name: "INIT",
-          desc: "Init key manager",
-          resval: "0"
-          enum: [
-            { value: "1",
-              name: "Valid state",
-              desc: '''
-                Requests key manager initialization.
-                This is not automated by hardware as software may want to initialize entropy sources
-                prior to calling key manager initlialization.
-
-                Note the Init command is only accepted by the key manager control logic if START is not set.
-                Once the control has been initialized, the field no longer serves a function.
-                '''
-            },
-          ]
-          tags: [// bit self clears, handle in directed test
-                 "excl:CsrNonInitTests:CsrExclWrite"]
-        },
-
-        { bits: "4",
-          hwaccess: "hrw",
           name: "START",
           desc: "Start key manager operations",
           resval: "0"
@@ -160,10 +202,10 @@
             "excl:CsrNonInitTests:CsrExclWrite"]
         },
 
-        { bits: "10:8",
+        { bits: "6:4",
           name: "OPERATION",
           desc: "Key manager operation selection. All values not enumerated below behave the same as disable",
-          resval: "1"
+          resval: "1",
           enum: [
             { value: "0",
               name: "Advance",
@@ -241,42 +283,19 @@
       ],
     },
 
-    { name: "ROM_EXT_DESC_EN",
-      desc: "Register write enable for ROM_EXT_DESC",
-      swaccess: "rw0c",
-      hwaccess: "none",
+    { name: "RESEED_INTERVAL",
+      desc: "reseed internval for key manager entropy reseed",
+      swaccess: "rw",
+      hwaccess: "hro",
       fields: [
-        { bits: "1:0",
-          name: "EN",
-          resval: "2"
+        { bits: "15:0",
+          name: "VAL",
+          resval: "0x100"
           desc: '''
-            ROM_ext descriptor configure enable.
-            All values except for 2 are interpreted as configuration disable.
+            Number of key manager cycles before the entropy is reseeded
           '''
         },
       ]
-    },
-    { multireg: {
-        cname: "KEYMGR",
-        name: "ROM_EXT_DESC",
-        desc: '''
-          ROM_ext descriptor.
-          This value must be representative of the current ROM_ext contents.
-          For example, this could be a truncated hash of the ROM_ext
-        ''',
-        count: "NumRomExtReg",
-        swaccess: "rw",
-        hwaccess: "hro",
-        fields: [
-            { bits: "31:0",
-              name: "VAL",
-              desc: '''
-                Software binding value
-              ''',
-              resval: "0"
-            },
-        ],
-      },
     },
 
     // The following can potentially be replaced by a RAM if it gets too large
@@ -284,15 +303,32 @@
     //                     32b * NumOutReg * 2 (if key shares desired) for outputs
     //                     32b * NumOutReg * NumCryptos * 2 (if key shares desired) for hidden key bus
     // This totals to over 2kb of storage
+    { name: "SW_BINDING_EN",
+      desc: "Register write enable for SOFTWARE_BINDING",
+      swaccess: "rw0c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            Software binding register write enable.
+            This is locked by software and unlocked by hardware upon a successful advance call.
+          '''
+        },
+      ]
+    },
 
     { multireg: {
         cname: "KEYMGR",
-        name: "SOFTWARE_BINDING",
-        regwen: "CFGEN",
+        name: "SW_BINDING",
+        regwen: "SW_BINDING_EN",
         desc: '''
           Software binding input to key manager.
-          This register is non-lockable and shared between various software stages.
-          This binding value is not considered secret.
+          This register is lockable and shared between key manager stages.
+          This binding value is not considered secret, however its integrity is very important.
+
+          The software binding is locked by software and unlocked by hardware upon a successful advance operation.
         ''',
         count: "NumInReg",
         swaccess: "rw",
@@ -534,38 +570,31 @@
               '''
             },
             { value: "1",
-              name: "Init_wip",
-              desc: '''
-                Key manager iniitalization in progress.  Please wait for initialization complete
-                before issuing operations
-              '''
-            },
-            { value: "2",
-              name: "Init_done",
+              name: "Init",
               desc: '''
                 Key manager control has finished initialization and will now accept
                 software commands.
               '''
             },
-            { value: "3",
+            { value: "2",
               name: "Creator Root Key",
               desc: '''
                 Key manager control currently contains the creator root key.
               '''
             },
-            { value: "4",
+            { value: "3",
               name: "Owner Intermediate Key",
               desc: '''
                 Key manager control currently contains the owner intermediate key.
               '''
             },
-            { value: "5",
+            { value: "4",
               name: "Owner Key",
               desc: '''
                 Key manager control currently contains the owner key.
               '''
             },
-            { value: "6",
+            { value: "5",
               name: "Disabled",
               desc: '''
                 Key manager currently disabled. Please reset the key manager.

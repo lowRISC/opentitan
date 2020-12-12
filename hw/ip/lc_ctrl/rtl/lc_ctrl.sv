@@ -14,7 +14,11 @@ module lc_ctrl
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   // Idcode value for the JTAG.
-  parameter logic [31:0]          IdcodeValue  = 32'h00000001
+  parameter logic [31:0]          IdcodeValue  = 32'h00000001,
+  // Random netlist constants
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2)
 ) (
   input                                              clk_i,
   input                                              rst_ni,
@@ -22,8 +26,8 @@ module lc_ctrl
   input  tlul_pkg::tl_h2d_t                          tl_i,
   output tlul_pkg::tl_d2h_t                          tl_o,
   // JTAG TAP.
-  input  rv_dm_pkg::jtag_req_t                       jtag_req_i,
-  output rv_dm_pkg::jtag_rsp_t                       jtag_rsp_o,
+  input  jtag_pkg::jtag_req_t                        jtag_req_i,
+  output jtag_pkg::jtag_rsp_t                        jtag_rsp_o,
   // This bypasses the clock inverter inside the JTAG TAP for scanmmode.
   input                                              scanmode_i,
   // Alert outputs.
@@ -55,8 +59,11 @@ module lc_ctrl
   output lc_tx_t                                     lc_nvm_debug_en_o,
   output lc_tx_t                                     lc_hw_debug_en_o,
   output lc_tx_t                                     lc_cpu_en_o,
-  output lc_tx_t                                     lc_provision_wr_en_o,
-  output lc_tx_t                                     lc_provision_rd_en_o,
+  output lc_tx_t                                     lc_creator_seed_sw_rw_en_o,
+  output lc_tx_t                                     lc_owner_seed_sw_rw_en_o,
+  output lc_tx_t                                     lc_iso_part_sw_rd_en_o,
+  output lc_tx_t                                     lc_iso_part_sw_wr_en_o,
+  output lc_tx_t                                     lc_seed_hw_rd_en_o,
   output lc_tx_t                                     lc_keymgr_en_o,
   output lc_tx_t                                     lc_escalate_en_o,
   // Request and feedback to/from clock manager and AST.
@@ -67,7 +74,11 @@ module lc_ctrl
   // The ack is synced to the lc clock domain using prim_lc_sync.
   output lc_flash_rma_seed_t                         lc_flash_rma_seed_o,
   output lc_tx_t                                     lc_flash_rma_req_o,
-  input  lc_tx_t                                     lc_flash_rma_ack_i
+  input  lc_tx_t                                     lc_flash_rma_ack_i,
+  // State group diversification value for keymgr.
+  output lc_keymgr_div_t                             lc_keymgr_div_o,
+  // Hardware config input, needed for the DEVICE_ID field.
+  input  otp_ctrl_part_pkg::otp_hw_cfg_t             otp_hw_cfg_i
 );
 
   ////////////////////////
@@ -116,13 +127,12 @@ module lc_ctrl
     .devmode_i ( 1'b1       )
   );
 
-  // TODO: add this to the LC_CTRL spec.
-  // note that the DMI reset does not affect the LC controller in any way.
 
   // This reuses the JTAG DTM and DMI from the RISC-V external
   // debug v0.13 specification to read and write the lc_ctrl CSRs:
   // https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf
   // The register addresses correspond to the byte offsets of the lc_ctrl CSRs, divided by 4.
+  // Note that the DMI reset does not affect the LC controller in any way.
   dm::dmi_req_t dmi_req;
   logic dmi_req_valid;
   logic dmi_req_ready;
@@ -189,8 +199,7 @@ module lc_ctrl
   // Transition Interface and HW Mutex //
   ///////////////////////////////////////
 
-  // TODO: expose device ID
-  // TODO: expose other info to expose via CSRs / TAP?
+  // TODO: expose other info to via CSRs / TAP?
 
   // All registers are HWext
   logic          trans_success_d, trans_success_q;
@@ -200,8 +209,8 @@ module lc_ctrl
   logic          flash_rma_error_d, flash_rma_error_q;
   logic          otp_prog_error_d, otp_prog_error_q;
   logic          state_invalid_error_d, state_invalid_error_q;
-  logic          sw_claim_transition_if_d, sw_claim_transition_if_q;
-  logic          tap_claim_transition_if_d, tap_claim_transition_if_q;
+  logic [7:0]    sw_claim_transition_if_d, sw_claim_transition_if_q;
+  logic [7:0]    tap_claim_transition_if_d, tap_claim_transition_if_q;
   logic          transition_cmd;
   lc_token_t     transition_token_d, transition_token_q;
   dec_lc_state_e transition_target_d, transition_target_q;
@@ -211,6 +220,11 @@ module lc_ctrl
   dec_lc_id_state_e dec_lc_id_state;
 
   logic lc_idle_d;
+
+  logic unused_otp_hw_cfg_bits;
+  assign unused_otp_hw_cfg_bits = ^{otp_hw_cfg_i.valid,
+                                    otp_hw_cfg_i.data.hw_cfg_digest,
+                                    otp_hw_cfg_i.data.hw_cfg_content};
 
   always_comb begin : p_csr_assign_outputs
     hw2reg = '0;
@@ -222,24 +236,27 @@ module lc_ctrl
     hw2reg.status.flash_rma_error        = flash_rma_error_q;
     hw2reg.status.otp_error              = otp_prog_error_q;
     hw2reg.status.state_error            = state_invalid_error_q;
-    hw2reg.transition_regwen             = lc_idle_d;
     hw2reg.lc_state                      = dec_lc_state;
     hw2reg.lc_transition_cnt             = dec_lc_cnt;
     hw2reg.lc_id_state                   = dec_lc_id_state;
+    hw2reg.device_id                     = otp_hw_cfg_i.data.device_id;
+
     // The assignments above are identical for the TAP.
     tap_hw2reg = hw2reg;
 
     // Assignments gated by mutex.
     hw2reg.claim_transition_if = sw_claim_transition_if_q;
-    if (sw_claim_transition_if_q) begin
+    if (sw_claim_transition_if_q == 8'hA5) begin
       hw2reg.transition_token  = transition_token_q;
       hw2reg.transition_target = transition_target_q;
+      hw2reg.transition_regwen = lc_idle_d;
     end
 
     tap_hw2reg.claim_transition_if = tap_claim_transition_if_q;
-    if (tap_claim_transition_if_q) begin
+    if (tap_claim_transition_if_q == 8'hA5) begin
       tap_hw2reg.transition_token  = transition_token_q;
       tap_hw2reg.transition_target = transition_target_q;
+      tap_hw2reg.transition_regwen = lc_idle_d;
     end
   end
 
@@ -251,19 +268,19 @@ module lc_ctrl
     transition_cmd            = 1'b0;
 
     // SW mutex claim.
-    if (!tap_claim_transition_if_q &&
+    if (tap_claim_transition_if_q != 8'hA5 &&
         reg2hw.claim_transition_if.qe) begin
       sw_claim_transition_if_d = reg2hw.claim_transition_if.q;
     end
     // TAP mutex claim. This has prio over SW above.
-    if (!sw_claim_transition_if_q &&
+    if (sw_claim_transition_if_q != 8'hA5 &&
         tap_reg2hw.claim_transition_if.qe) begin
       tap_claim_transition_if_d = tap_reg2hw.claim_transition_if.q;
     end
 
     // The idle signal serves as the REGWEN in this case.
     if (lc_idle_d) begin
-      if (tap_claim_transition_if_q) begin
+      if (tap_claim_transition_if_q == 8'hA5) begin
         transition_cmd = tap_reg2hw.transition_cmd.q &
                          tap_reg2hw.transition_cmd.qe;
 
@@ -276,7 +293,7 @@ module lc_ctrl
         if (tap_reg2hw.transition_target.qe) begin
           transition_target_d = tap_reg2hw.transition_target.q;
         end
-      end else if (sw_claim_transition_if_q) begin
+      end else if (sw_claim_transition_if_q == 8'hA5) begin
         transition_cmd = reg2hw.transition_cmd.q &
                          reg2hw.transition_cmd.qe;
 
@@ -296,6 +313,7 @@ module lc_ctrl
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_csrs
     if (!rst_ni) begin
       trans_success_q           <= 1'b0;
+      trans_cnt_oflw_error_q    <= 1'b0;
       trans_invalid_error_q     <= 1'b0;
       token_invalid_error_q     <= 1'b0;
       flash_rma_error_q         <= 1'b0;
@@ -445,7 +463,11 @@ module lc_ctrl
   assign lc_otp_token_o.token_input = transition_token_q;
   assign lc_flash_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
 
-  lc_ctrl_fsm u_lc_ctrl_fsm (
+  lc_ctrl_fsm #(
+    .RndCnstLcKeymgrDivInvalid    ( RndCnstLcKeymgrDivInvalid    ),
+    .RndCnstLcKeymgrDivTestDevRma ( RndCnstLcKeymgrDivTestDevRma ),
+    .RndCnstLcKeymgrDivProduction ( RndCnstLcKeymgrDivProduction )
+  ) u_lc_ctrl_fsm (
     .clk_i,
     .rst_ni,
     .init_req_i             ( lc_init                         ),
@@ -484,14 +506,18 @@ module lc_ctrl
     .lc_nvm_debug_en_o,
     .lc_hw_debug_en_o,
     .lc_cpu_en_o,
-    .lc_provision_wr_en_o,
-    .lc_provision_rd_en_o,
+    .lc_creator_seed_sw_rw_en_o,
+    .lc_owner_seed_sw_rw_en_o,
+    .lc_iso_part_sw_rd_en_o,
+    .lc_iso_part_sw_wr_en_o,
+    .lc_seed_hw_rd_en_o,
     .lc_keymgr_en_o,
     .lc_escalate_en_o,
     .lc_clk_byp_req_o,
     .lc_clk_byp_ack_i      ( lc_clk_byp_ack                  ),
     .lc_flash_rma_req_o,
-    .lc_flash_rma_ack_i    ( lc_flash_rma_ack                )
+    .lc_flash_rma_ack_i    ( lc_flash_rma_ack                ),
+    .lc_keymgr_div_o
   );
 
   ////////////////
@@ -507,12 +533,16 @@ module lc_ctrl
   `ASSERT_KNOWN(LcNvmDebugEnKnown_A,    lc_nvm_debug_en_o    )
   `ASSERT_KNOWN(LcHwDebugEnKnown_A,     lc_hw_debug_en_o     )
   `ASSERT_KNOWN(LcCpuEnKnown_A,         lc_cpu_en_o          )
-  `ASSERT_KNOWN(LcProvisionWrEnKnown_A, lc_provision_wr_en_o )
-  `ASSERT_KNOWN(LcProvisionRdEnKnown_A, lc_provision_rd_en_o )
+  `ASSERT_KNOWN(LcCreatorSwRwEn_A,      lc_creator_seed_sw_rw_en_o)
+  `ASSERT_KNOWN(LcOwnerSwRwEn_A,        lc_owner_seed_sw_rw_en_o)
+  `ASSERT_KNOWN(LcIsoSwRwEn_A,          lc_iso_part_sw_rd_en_o)
+  `ASSERT_KNOWN(LcIsoSwWrEn_A,          lc_iso_part_sw_wr_en_o)
+  `ASSERT_KNOWN(LcSeedHwRdEn_A,         lc_seed_hw_rd_en_o   )
   `ASSERT_KNOWN(LcKeymgrEnKnown_A,      lc_keymgr_en_o       )
   `ASSERT_KNOWN(LcEscalateEnKnown_A,    lc_escalate_en_o     )
   `ASSERT_KNOWN(LcClkBypReqKnown_A,     lc_clk_byp_req_o     )
   `ASSERT_KNOWN(LcFlashRmaSeedKnown_A,  lc_flash_rma_seed_o  )
   `ASSERT_KNOWN(LcFlashRmaReqKnown_A,   lc_flash_rma_req_o   )
+  `ASSERT_KNOWN(LcKeymgrDiv_A,          lc_keymgr_div_o      )
 
 endmodule : lc_ctrl

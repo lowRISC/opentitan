@@ -248,7 +248,7 @@ module sha3pad
   // TODO: Decide if it needs to compare with the FSM in {StPad, StPad01} or not
   logic end_of_block;
 
-  assign end_of_block = ((sent_message+1) == block_addr_limit) ? 1'b 1 : 1'b 0;
+  assign end_of_block = ((sent_message + 1'b1) == block_addr_limit) ? 1'b 1 : 1'b 0;
 
 
   // Next logic and output logic ==============================================

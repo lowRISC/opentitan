@@ -2,13 +2,6 @@
 title: "Device Attestation"
 ---
 
-<p style="text-align: right">
-Contributors(s):
-  <a href="https://github.com/moidx">Miguel Osorio</a>
-</p>
-
-<p style="text-align: right">Version: 0.1</p>
-
 ## Overview
 
 Attestation is the mechanism in which software verifies the authenticity and

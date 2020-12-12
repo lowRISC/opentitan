@@ -5,7 +5,7 @@
 {
     name:               "lc_ctrl",
     design_spec:        "hw/ip/lc_ctrl/doc",
-    dv_plan:            "",
+    dv_doc:            "",
     hw_checklist:       "",
     version:            "0.1",
     life_stage:         "L0",

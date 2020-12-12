@@ -23,6 +23,8 @@
                "-c-opts -I{DSIM_HOME}/include",
                "-timescale 1ns/1ps",
                "-f {sv_flist}",
+               // List multiple tops for the simulation. Prepend each top level with `-top`.
+               "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
                "+incdir+{build_dir}",
                // Suppress following DSim errors and warnings:
                //   EnumMustBePositive - UVM 1.2 violates this
@@ -89,8 +91,8 @@
   cov_metrics: ""
 
   // pass and fail patterns
-  build_fail_patterns: ["^Error-.*$"]
-  run_fail_patterns:   ["^Error-.*$"] // Null pointer error
+  build_fail_patterns: ["^=E:"]
+  run_fail_patterns:   ["^=E:"]
 
   // waveform
   probe_file: "dsim.probe"

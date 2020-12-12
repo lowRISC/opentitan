@@ -788,7 +788,7 @@ module csrng_core import csrng_pkg::*; #(
          update_req ? entropy_src_hw_if_i.es_bits :
          '0;
 
-  assign cmd_entropy_fips = entropy_src_hw_if_i.es_fips;
+  assign cmd_entropy_fips = (instant_req && !flag0_q) ? entropy_src_hw_if_i.es_fips : 1'b0;
 
   //-------------------------------------
   // csrng_ctr_drbg_cmd instantiation
@@ -1117,15 +1117,15 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.hw_exc_sts.de = cs_enable;
   assign hw2reg.hw_exc_sts.d  = hw_exception_sts;
 
+  // TODO: add depths or remove
   assign hw2reg.sum_sts.fifo_depth_sts.de = cs_enable;
   assign hw2reg.sum_sts.fifo_depth_sts.d  =
          (fifo_sel == 4'h0) ? 24'b0 :
          24'b0;
 
-
   assign hw2reg.sum_sts.diag.de = !cs_enable;
   assign hw2reg.sum_sts.diag.d  =
-         (reg2hw.regen)          || // not used
+         (reg2hw.regen.q)        && // not used
          (|reg2hw.genbits.q);       // not used
 
 

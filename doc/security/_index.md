@@ -10,20 +10,20 @@ implementing strong logical security integrity guarantees in the hardware and
 firmware components, and restricting licensing of the OpenTitan trademark to
 those implementations conforming to OpenTitan standards.
 
-## Logical Security Model
+## [OpenTitan Security Model Specification][security_model]
+
+The [OpenTitan Security Model Specification][security_model] defines the logical
+security properties of the discrete IC. It covers device and software
+attestation, provisioning, secure boot, chip lifecycle, firmware update, chip
+identity, and chip ownership transfer.
+
+## [Logical Security Model][logical_security_model]
 
 The [OpenTitan Security Model][logical_security_model] provides a high level
 framework for device provisioning and run-time operations. It starts by
 enumerating the range of logical entities supported by the architecture, and
 their mapping into software stages. Runtime isolation properties and baseline
 identity concepts are introduced in this document.
-
-## Security Model Specifications
-
-The [OpenTitan Security Model Specification][security_model] defines the logical
-security properties of the discrete IC. It covers device and software
-attestation, provisioning, secure boot, chip lifecycle, firmware update, chip
-identity, and chip ownership transfer.
 
 ## Functional Guarantees
 

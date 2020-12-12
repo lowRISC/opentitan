@@ -6,6 +6,7 @@
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
@@ -101,7 +102,7 @@
             - Seq 3. Trigger escalation_en
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_lc"]
     }
     { name: otp_macro_errors
       desc: '''

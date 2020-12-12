@@ -12,6 +12,7 @@ package cip_base_pkg;
   import dv_base_reg_pkg::*;
   import tl_agent_pkg::*;
   import alert_esc_agent_pkg::*;
+  import push_pull_agent_pkg::*;
   import mem_model_pkg::*;
 
   // macro includes
@@ -20,6 +21,7 @@ package cip_base_pkg;
 
   // package variables
   string msg_id = "cip_base_pkg";
+  parameter uint EDN_DATA_WIDTH = 33; // 32 bits data, 1 bit fips
 
   typedef enum {
     err_update,

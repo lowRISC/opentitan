@@ -103,6 +103,7 @@ def validate(config):
         part["secret"] = check_bool(part["secret"])
         part["sw_digest"] = check_bool(part["sw_digest"])
         part["hw_digest"] = check_bool(part["hw_digest"])
+        part["bkout_type"] = check_bool(part["bkout_type"])
 
         # basic checks
         if part["variant"] not in ["Unbuffered", "Buffered", "LifeCycle"]:
@@ -162,6 +163,7 @@ def validate(config):
             item.setdefault("size", "0")
             item.setdefault("isdigest", "false")
             item.setdefault("offset", offset)
+            item.setdefault("inv_default", "{}'h0".format(check_int(item["size"])*8))
             log.info("> Item {} at offset {} with size {}".format(
                 item["name"], offset, item["size"]))
             offset += check_int(item["size"])
@@ -177,7 +179,9 @@ def validate(config):
                 check_int(part["offset"]) + check_int(part["size"]) -
                 DIGEST_SIZE,
                 "isdigest":
-                "True"
+                "True",
+                "inv_default":
+                "{256{1'b1}}"
             })
 
             log.info("> Adding digest {} at offset {} with size {}".format(

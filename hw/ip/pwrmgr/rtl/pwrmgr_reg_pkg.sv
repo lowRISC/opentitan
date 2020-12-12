@@ -143,13 +143,13 @@ package pwrmgr_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    pwrmgr_hw2reg_intr_state_reg_t intr_state; // [13:13]
-    pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [12:13]
-    pwrmgr_hw2reg_control_reg_t control; // [12:7]
-    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [6:5]
-    pwrmgr_hw2reg_wake_status_mreg_t [0:0] wake_status; // [4:3]
-    pwrmgr_hw2reg_reset_status_mreg_t [0:0] reset_status; // [2:1]
-    pwrmgr_hw2reg_wake_info_reg_t wake_info; // [0:-5]
+    pwrmgr_hw2reg_intr_state_reg_t intr_state; // [13:12]
+    pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [11:11]
+    pwrmgr_hw2reg_control_reg_t control; // [10:9]
+    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [8:7]
+    pwrmgr_hw2reg_wake_status_mreg_t [0:0] wake_status; // [6:5]
+    pwrmgr_hw2reg_reset_status_mreg_t [0:0] reset_status; // [4:3]
+    pwrmgr_hw2reg_wake_info_reg_t wake_info; // [2:0]
   } pwrmgr_hw2reg_t;
 
   // Register Address

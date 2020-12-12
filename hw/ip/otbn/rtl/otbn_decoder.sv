@@ -79,7 +79,7 @@ module otbn_decoder
 
   logic [1:0] mac_op_a_qw_sel_bignum;
   logic [1:0] mac_op_b_qw_sel_bignum;
-  logic       mac_wr_hw_sel_bignum;
+  logic       mac_wr_hw_sel_upper_bignum;
   logic [1:0] mac_pre_acc_shift_bignum;
   logic       mac_zero_acc_bignum;
   logic       mac_shift_out_bignum;
@@ -104,7 +104,7 @@ module otbn_decoder
   // l type immediate is for the loop count in the LOOPI instruction and is not from the RISC-V ISA
   assign imm_l_type_base = { 22'b0, insn[19:15], insn[11:7] };
   // x type immediate is for BN.LID/BN.SID instructions and is not from the RISC-V ISA
-  assign imm_x_type_base = { {17{insn[24]}}, insn[11:9], insn[31:25], 5'b0 };
+  assign imm_x_type_base = { {17{insn[11]}}, insn[11:9], insn[31:25], 5'b0 };
 
   logic [WLEN-1:0] imm_i_type_bignum;
 
@@ -131,6 +131,7 @@ module otbn_decoder
   assign alu_sel_flag_bignum = flag_e'(insn[26:25]);
 
   logic alu_flag_en_bignum;
+  logic mac_flag_en_bignum;
 
   // source registers
   assign insn_rs1 = insn[19:15];
@@ -149,12 +150,12 @@ module otbn_decoder
   assign loop_bodysize_base  = insn[31:20];
   assign loop_immediate_base = insn[12];
 
-  assign mac_op_a_qw_sel_bignum   = insn[26:25];
-  assign mac_op_b_qw_sel_bignum   = insn[28:27];
-  assign mac_wr_hw_sel_bignum     = insn[29];
-  assign mac_pre_acc_shift_bignum = insn[14:13];
-  assign mac_zero_acc_bignum      = insn[12];
-  assign mac_shift_out_bignum     = insn[31];
+  assign mac_op_a_qw_sel_bignum     = insn[26:25];
+  assign mac_op_b_qw_sel_bignum     = insn[28:27];
+  assign mac_wr_hw_sel_upper_bignum = insn[29];
+  assign mac_pre_acc_shift_bignum   = insn[14:13];
+  assign mac_zero_acc_bignum        = insn[12];
+  assign mac_shift_out_bignum       = insn[30];
 
   logic d_inc_bignum;
   logic a_inc_bignum;
@@ -167,7 +168,8 @@ module otbn_decoder
   logic branch_insn;
   logic jump_insn;
   logic loop_insn;
-  logic ispr_rw_insn;
+  logic ispr_rd_insn;
+  logic ispr_wr_insn;
   logic ispr_rs_insn;
 
   // Reduced main ALU immediate MUX for Operand B
@@ -216,35 +218,36 @@ module otbn_decoder
   };
 
   assign insn_dec_bignum_o = '{
-    a:                 insn_rs1,
-    b:                 insn_rs2,
-    d:                 insn_rd,
-    i:                 imm_i_type_bignum,
-    rf_a_indirect:     rf_a_indirect_bignum,
-    rf_b_indirect:     rf_b_indirect_bignum,
-    rf_d_indirect:     rf_d_indirect_bignum,
-    d_inc:             d_inc_bignum,
-    a_inc:             a_inc_bignum,
-    a_wlen_word_inc:   a_wlen_word_inc_bignum,
-    b_inc:             b_inc_bignum,
-    alu_shift_amt:     alu_shift_amt_bignum,
-    alu_shift_right:   alu_shift_right_bignum,
-    alu_flag_group:    alu_flag_group_bignum,
-    alu_sel_flag:      alu_sel_flag_bignum,
-    alu_flag_en:       alu_flag_en_bignum,
-    alu_op:            alu_operator_bignum,
-    alu_op_b_sel:      alu_op_b_mux_sel_bignum,
-    mac_op_a_qw_sel:   mac_op_a_qw_sel_bignum,
-    mac_op_b_qw_sel:   mac_op_b_qw_sel_bignum,
-    mac_wr_hw_sel:     mac_wr_hw_sel_bignum,
-    mac_pre_acc_shift: mac_pre_acc_shift_bignum,
-    mac_zero_acc:      mac_zero_acc_bignum,
-    mac_shift_out:     mac_shift_out_bignum,
-    mac_en:            mac_en_bignum,
-    rf_we:             rf_we_bignum,
-    rf_wdata_sel:      rf_wdata_sel_bignum,
-    rf_ren_a:          rf_ren_a_bignum,
-    rf_ren_b:          rf_ren_b_bignum
+    a:                   insn_rs1,
+    b:                   insn_rs2,
+    d:                   insn_rd,
+    i:                   imm_i_type_bignum,
+    rf_a_indirect:       rf_a_indirect_bignum,
+    rf_b_indirect:       rf_b_indirect_bignum,
+    rf_d_indirect:       rf_d_indirect_bignum,
+    d_inc:               d_inc_bignum,
+    a_inc:               a_inc_bignum,
+    a_wlen_word_inc:     a_wlen_word_inc_bignum,
+    b_inc:               b_inc_bignum,
+    alu_shift_amt:       alu_shift_amt_bignum,
+    alu_shift_right:     alu_shift_right_bignum,
+    alu_flag_group:      alu_flag_group_bignum,
+    alu_sel_flag:        alu_sel_flag_bignum,
+    alu_flag_en:         alu_flag_en_bignum,
+    mac_flag_en:         mac_flag_en_bignum,
+    alu_op:              alu_operator_bignum,
+    alu_op_b_sel:        alu_op_b_mux_sel_bignum,
+    mac_op_a_qw_sel:     mac_op_a_qw_sel_bignum,
+    mac_op_b_qw_sel:     mac_op_b_qw_sel_bignum,
+    mac_wr_hw_sel_upper: mac_wr_hw_sel_upper_bignum,
+    mac_pre_acc_shift:   mac_pre_acc_shift_bignum,
+    mac_zero_acc:        mac_zero_acc_bignum,
+    mac_shift_out:       mac_shift_out_bignum,
+    mac_en:              mac_en_bignum,
+    rf_we:               rf_we_bignum,
+    rf_wdata_sel:        rf_wdata_sel_bignum,
+    rf_ren_a:            rf_ren_a_bignum,
+    rf_ren_b:            rf_ren_b_bignum
   };
 
   assign insn_dec_shared_o = '{
@@ -255,7 +258,8 @@ module otbn_decoder
     branch_insn:   branch_insn,
     jump_insn:     jump_insn,
     loop_insn:     loop_insn,
-    ispr_rw_insn:  ispr_rw_insn,
+    ispr_rd_insn:  ispr_rd_insn,
+    ispr_wr_insn:  ispr_wr_insn,
     ispr_rs_insn:  ispr_rs_insn
   };
 
@@ -294,7 +298,8 @@ module otbn_decoder
     branch_insn            = 1'b0;
     jump_insn              = 1'b0;
     loop_insn              = 1'b0;
-    ispr_rw_insn           = 1'b0;
+    ispr_rd_insn           = 1'b0;
+    ispr_wr_insn           = 1'b0;
     ispr_rs_insn           = 1'b0;
 
     opcode                 = insn_opcode_e'(insn[6:0]);
@@ -457,7 +462,8 @@ module otbn_decoder
           rf_ren_a_base     = 1'b1;
 
           if (insn[14:12] == 3'b001) begin
-            ispr_rw_insn = 1'b1;
+            ispr_rd_insn = 1'b1;
+            ispr_wr_insn = 1'b1;
           end else if(insn[14:12] == 3'b010) begin
             ispr_rs_insn = 1'b1;
           end else begin
@@ -607,15 +613,14 @@ module otbn_decoder
               end
             end
           end
-          3'b111: begin //BN.WSRRS/BN.WSRRW
-            rf_we_bignum        = 1'b1;
-            rf_ren_a_bignum     = 1'b1;
-            rf_wdata_sel_bignum = RfWdSelIspr;
-
-            if (insn[31]) begin
-              ispr_rw_insn = 1'b1;
-            end else begin
-              ispr_rs_insn = 1'b1;
+          3'b111: begin
+            if (insn[31]) begin // BN.WSRW
+              rf_ren_a_bignum = 1'b1;
+              ispr_wr_insn    = 1'b1;
+            end else begin // BN.WSRR
+              rf_we_bignum        = 1'b1;
+              rf_wdata_sel_bignum = RfWdSelIspr;
+              ispr_rd_insn        = 1'b1;
             end
           end
           default: illegal_insn = 1'b1;
@@ -633,7 +638,7 @@ module otbn_decoder
         rf_wdata_sel_bignum = RfWdSelMac;
         mac_en_bignum       = 1'b1;
 
-        if (insn[31:30] != 2'b00) begin // BN.MULQACC.WO/BN.MULQACC.SO
+        if (insn[30] == 1'b1 || insn[29] == 1'b1) begin // BN.MULQACC.WO/BN.MULQACC.SO
           rf_we_bignum = 1'b1;
         end
       end
@@ -672,6 +677,7 @@ module otbn_decoder
     opcode_alu               = insn_opcode_e'(insn_alu[6:0]);
 
     alu_flag_en_bignum       = 1'b0;
+    mac_flag_en_bignum       = 1'b0;
 
     unique case (opcode_alu)
       //////////////
@@ -709,9 +715,9 @@ module otbn_decoder
 
           3'b101: begin
             if (insn_alu[31:27] == 5'b0_0000) begin
-              alu_operator_base = AluOpBaseSrl;               // Shift Right Logical by Immediate
+              alu_operator_base = AluOpBaseSrl; // Shift Right Logical by Immediate
             end else if (insn_alu[31:27] == 5'b0_1000) begin
-              alu_operator_base = AluOpBaseSra;               // Shift Right Arithmetically by Immediate
+              alu_operator_base = AluOpBaseSra; // Shift Right Arithmetically by Immediate
             end
           end
 
@@ -907,6 +913,16 @@ module otbn_decoder
           default: ;
         endcase
       end
+
+      ////////////////////////////////////////////
+      // BN.MULQACC/BN.MULQACC.WO/BN.MULQACC.SO //
+      ////////////////////////////////////////////
+
+      InsnOpcodeBignumMulqacc: begin
+        if (insn[30] == 1'b1 || insn[29] == 1'b1) begin // BN.MULQACC.WO/BN.MULQACC.SO
+          mac_flag_en_bignum = 1'b1;
+        end
+      end
     endcase
 
   end
@@ -935,7 +951,7 @@ module otbn_decoder
   `ASSERT(BignumRegIncReq, rf_wdata_sel_base == RfWdSelIncr
       |-> $onehot({a_inc_bignum, a_wlen_word_inc_bignum, b_inc_bignum, d_inc_bignum}))
 
-  `ASSERT(BaseRenOnBignumIndirectA, insn_valid_o & rf_a_indirect_bignum |-> rf_ren_a_base);
-  `ASSERT(BaseRenOnBignumIndirectB, insn_valid_o & rf_b_indirect_bignum |-> rf_ren_b_base);
-  `ASSERT(BaseRenOnBignumIndirectD, insn_valid_o & rf_d_indirect_bignum |-> rf_ren_b_base);
+  `ASSERT(BaseRenOnBignumIndirectA, insn_valid_o & rf_a_indirect_bignum |-> rf_ren_a_base)
+  `ASSERT(BaseRenOnBignumIndirectB, insn_valid_o & rf_b_indirect_bignum |-> rf_ren_b_base)
+  `ASSERT(BaseRenOnBignumIndirectD, insn_valid_o & rf_d_indirect_bignum |-> rf_ren_b_base)
 endmodule

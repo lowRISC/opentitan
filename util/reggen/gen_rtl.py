@@ -6,11 +6,11 @@
 
 import logging as log
 
-from mako.template import Template
 from mako import exceptions
+from mako.template import Template
 from pkg_resources import resource_filename
 
-from .data import Field, Reg, MultiReg, Window, Block
+from .data import Block, Field, MultiReg, Reg, Window
 from .field_enums import HwAccess, SwRdAccess, SwWrAccess
 
 
@@ -114,6 +114,7 @@ def parse_win(obj, width):
     win = Window()
     win.name = obj["name"]
     win.base_addr = obj["genoffset"]
+    win.byte_write = obj["genbyte-write"]
     win.limit_addr = obj["genoffset"] + int(obj["items"]) * (width // 8)
     win.dvrights = obj["swaccess"]
     win.n_bits = obj["genvalidbits"]

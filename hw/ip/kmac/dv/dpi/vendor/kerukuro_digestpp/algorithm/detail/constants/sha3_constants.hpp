@@ -1,0 +1,35 @@
+/*
+This code is written by kerukuro and released into public domain.
+*/
+
+#ifndef DIGESTPP_PROVIDERS_SHA3_CONSTANTS_HPP
+#define DIGESTPP_PROVIDERS_SHA3_CONSTANTS_HPP
+
+namespace digestpp
+{
+
+namespace detail
+{
+
+template<typename T>
+struct sha3_constants
+{
+	const static uint64_t RC[24];
+};
+
+template<typename T>
+const uint64_t sha3_constants<T>::RC[24] = {
+	0x0000000000000001ull, 0x0000000000008082ull, 0x800000000000808Aull, 0x8000000080008000ull,
+	0x000000000000808Bull, 0x0000000080000001ull, 0x8000000080008081ull, 0x8000000000008009ull,
+	0x000000000000008Aull, 0x0000000000000088ull, 0x0000000080008009ull, 0x000000008000000Aull,
+	0x000000008000808Bull, 0x800000000000008Bull, 0x8000000000008089ull, 0x8000000000008003ull,
+	0x8000000000008002ull, 0x8000000000000080ull, 0x000000000000800Aull, 0x800000008000000Aull,
+	0x8000000080008081ull, 0x8000000000008080ull, 0x0000000080000001ull, 0x8000000080008008ull
+};
+
+
+} // namespace detail
+
+} // namespace digestpp
+
+#endif // DIGESTPP_PROVIDERS_SHA3_CONSTANTS_HPP

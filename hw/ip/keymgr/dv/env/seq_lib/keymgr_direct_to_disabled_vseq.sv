@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Issue operation OpDisable in any state and check it enters StDisabled correctly
-class keymgr_direct_to_disabled_vseq extends keymgr_base_vseq;
+class keymgr_direct_to_disabled_vseq extends keymgr_random_vseq;
   `uvm_object_utils(keymgr_direct_to_disabled_vseq)
   `uvm_object_new
 

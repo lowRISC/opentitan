@@ -11,26 +11,45 @@ package keymgr_pkg;
   parameter int DigestWidth = 128;     // uses truncated hash
   parameter int KmacDataIfWidth = 64;  // KMAC interface data width
   parameter int KeyMgrStages = 3;      // Number of key manager stages (creator, ownerInt, owner)
-  parameter int RomExtDescWidth = 128; // Size of rom_ext hash, truncated
-  parameter int LfsrWidth = 64;
+  parameter int SwBindingWidth = 128; // Size of rom_ext hash, truncated
   parameter int Shares = 2; // number of key shares
+  parameter int EdnWidth = edn_pkg::ENDPOINT_BUS_WIDTH;
 
   // These should be defined in another module's package
   parameter int HealthStateWidth = 128;
   parameter int DevIdWidth = 256;
 
-  // These should eventually reference top_pkg so that they can be easily managed per
-  // device
-  parameter logic[KeyWidth-1:0] RevisionSecret      = 256'hAAAA5555;
-  parameter logic[KeyWidth-1:0] CreatorIdentityKey  = 256'hDEADBEEF;
-  parameter logic[KeyWidth-1:0] OwnerIntIdentityKey = 256'hDEADBEEF;
-  parameter logic[KeyWidth-1:0] OwnerIdentityKey    = 256'hDEADBEEF;
-  parameter logic[KeyWidth-1:0] SoftOutputKey       = 256'hDEADBEEF;
-  parameter logic[KeyWidth-1:0] HardOutputKey       = 256'hDEADBEEE;
+  // Default seeds
+  // These are generated using random.org byte dumper
+  typedef logic [KeyWidth-1:0] seed_t;
+  parameter seed_t RndCnstRevisionSeedDefault =
+    256'h3a0a6d73cd50897de4d744bd65ebdb3837ea77087d878651c517c18a5742b2f9;
+  parameter seed_t RndCnstCreatorIdentitySeedDefault =
+    256'h6d234651d535ebb0dce4d82f503096614355fc7b84595e4f67a866177d421df6;
+  parameter seed_t RndCnstOwnerIntIdentitySeedDefault =
+    256'hdba98db4fb1413b32fd5a4deac3ce546966a4bc2761235643358c8e76083d382;
+  parameter seed_t RndCnstOwnerIdentitySeedDefault =
+    256'h8c0a27ef53e0e0bf5f5f5e26a30a0d0db10761ed802c6d2fd22873209976021e;
+  parameter seed_t RndCnstSoftOutputSeedDefault =
+    256'h99cadb2c2d9b438591d943a89bc64dbb3bc2abc842eeea5faf74d27f7a7c99b6;
+  parameter seed_t RndCnstHardOutputSeedDefault =
+    256'hd551b351decbb6f687c7f5c845363f12d6411fae812e16b23bc8ae59885a56b1;
+
+  // Default Lfsr configurations
+  // These LFSR parameters have been generated with
+  // $ hw/ip/prim/util/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""
+  parameter int LfsrWidth = 64;
+  typedef logic [LfsrWidth-1:0] lfsr_seed_t;
+  typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
+  parameter lfsr_seed_t RndCnstLfsrSeedDefault = 64'h22d326255bd24320;
+  parameter lfsr_perm_t RndCnstLfsrPermDefault = {
+    128'h16108c9f9008aa37e5118d1ec1df64a7,
+    256'h24f3f1b73537f42d38383ee8f897286df81d49ab54b6bbbb666cbd1a16c41252
+  };
 
   // Width calculations
   // These are the largest calculations in use across all stages
-  parameter int AdvDataWidth = RomExtDescWidth + 2*KeyWidth + DevIdWidth + HealthStateWidth;
+  parameter int AdvDataWidth = SwBindingWidth + 2*KeyWidth + DevIdWidth + HealthStateWidth;
   parameter int IdDataWidth = KeyWidth;
   // key version + salt + key ID + constant
   parameter int GenDataWidth = 32 + 128 + KeyWidth;
@@ -72,16 +91,14 @@ package keymgr_pkg;
     OpDisable = 4
   } keymgr_ops_e;
 
-  // Enumeration for working state
+  // Enumeration for working state exposed to software
   typedef enum logic [2:0] {
     StReset = 0,
-    StRandom = 1,
-    StInit = 2,
-    StCreatorRootKey = 3,
-    StOwnerIntKey = 4,
-    StOwnerKey = 5,
-    StWipe = 6,
-    StDisabled = 7
+    StInit = 1,
+    StCreatorRootKey = 2,
+    StOwnerIntKey = 3,
+    StOwnerKey = 4,
+    StDisabled = 5
   } keymgr_working_state_e;
 
   // Enumeration for operation status
@@ -161,23 +178,14 @@ package keymgr_pkg;
     keymgr_en:    1'b1
   };
 
+  // TODO: this will be removed later once the device ID information
+  // is broadcasted
   typedef struct packed {
     logic [DevIdWidth-1:0] devid;
-    logic [KeyWidth-1:0] root_key;
   } otp_data_t;
 
   parameter otp_data_t OTP_DATA_DEFAULT = '{
-    devid:    '0,
-    root_key: '0
+    devid:    '0
   };
 
-  typedef struct packed {
-    logic [KeyWidth-1:0] div_key;
-    logic [KeyWidth-1:0] owner_secret;
-  } flash_key_t;
-
-  parameter flash_key_t FLASH_KEY_DEFAULT = '{
-    div_key:      '0,
-    owner_secret: '0
-  };
 endpackage : keymgr_pkg

@@ -7,6 +7,12 @@
  * https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/dcrypto/dcrypto_p256.c
  */
 
+.globl p256init
+.globl p256isoncurve
+.globl p256scalarmult
+.globl p256sign
+.globl p256verify
+
 .text
 
 SetupP256PandMuLow:
@@ -22,8 +28,7 @@ SetupP256PandMuLow:
   sw x2, 540(x0)
   addi x2, x0, 29
   bn.lid x2, 512(x0)
-  bn.wsrrw w31, 0, w29
-  bn.xor w31, w31, w31
+  bn.wsrw 0, w29
   sw x0, 548(x0)
   sw x0, 572(x0)
   addi x2, x0, -1
@@ -92,7 +97,7 @@ MulMod:
   bn.mulqacc.so w20.u, w24.3, w25.3, 0
   bn.add w20, w20, w31
   bn.sel w22, w28, w31, M
-  bn.rshi w21, w19, w20 >> 255
+  bn.rshi w21, w20, w19 >> 255
   bn.mulqacc.z w21.0, w28.0, 0
   bn.mulqacc w21.1, w28.0, 64
   bn.mulqacc.so w23.l, w21.0, w28.1, 64
@@ -110,12 +115,12 @@ MulMod:
   bn.mulqacc.so w24.l, w21.2, w28.3, 64
   bn.mulqacc.so w24.u, w21.3, w28.3, 0
   bn.add w20, w20, w31
-  bn.rshi w25, w20, w31 >> 255
+  bn.rshi w25, w31, w20 >> 255
   bn.add w24, w24, w21
   bn.addc w25, w25, w31
   bn.add w24, w24, w22
   bn.addc w25, w25, w31
-  bn.rshi w21, w24, w25 >> 1
+  bn.rshi w21, w25, w24 >> 1
   bn.mulqacc.z w29.0, w21.0, 0
   bn.mulqacc w29.1, w21.0, 64
   bn.mulqacc.so w22.l, w29.0, w21.1, 64
@@ -379,7 +384,7 @@ ProjToAffine:
   jalr x0, x1, 0
 
 ModInv:
-  bn.wsrrs w2, 0, w31
+  bn.wsrr w2, 0
   bn.subi w2, w2, 2
   bn.mov w1, w30
   loopi 256, 14
@@ -401,7 +406,7 @@ ModInv:
   jalr x0, x1, 0
 
 FetchBandRandomize:
-  bn.wsrrs w2, 1, w31
+  bn.wsrr w2, 1
   bn.addm w26, w2, w31
   bn.lid x10, 0(x21)
   bn.mov w25, w26
@@ -441,8 +446,7 @@ SetupP256NandMuLow:
   sw x2, 620(x0)
   addi x2, x0, 29
   bn.lid x2, 608(x0)
-  bn.wsrrw w31, 0, w29
-  bn.xor w31, w31, w31
+  bn.wsrw 0, w29
   addi x2, x0, 0
   sw x2, 668(x0)
   addi x2, x0, -1
@@ -500,10 +504,10 @@ ScalarMult_internal:
   bn.sel w10, w13, w7, M
   bn.rshi w0, w0, w0 >> 255
   bn.rshi w1, w1, w1 >> 255
-  bn.wsrrs w11, 1, w31
-  bn.wsrrs w12, 1, w31
-  bn.wsrrs w13, 1, w31
-  bn.wsrrs w2, 1, w31
+  bn.wsrr w11, 1
+  bn.wsrr w12, 1
+  bn.wsrr w13, 1
+  bn.wsrr w2, 1
   bn.mov w24, w3
   bn.mov w25, w2
   jal x1, MulMod
@@ -566,7 +570,7 @@ get_P256B:
   sw x2, 724(x0)
   lui x2, 1040808
   addi x2, x2, -101
-  sw x2, 278(x0)
+  sw x2, 728(x0)
   lui x2, 327220
   addi x2, x2, 738
   sw x2, 732(x0)
@@ -654,46 +658,46 @@ p256scalarbasemult:
 ModInvVar:
   bn.mov w2, w31
   bn.mov w3, w30
-  bn.wsrrs w4, 0, w31
-  bn.wsrrs w7, 0, w31
+  bn.wsrr w4, 0
+  bn.wsrr w7, 0
   bn.mov w5, w0
 
 impvt_Loop:
   bn.or w4, w4, w4
   csrrs x2, 1984, x0
-  andi x2, x2, 2
+  andi x2, x2, 4
   bne x2, x0, impvt_Uodd
-  bn.rshi w4, w4, w31 >> 1
+  bn.rshi w4, w31, w4 >> 1
   bn.or w2, w2, w2
   csrrs x2, 1984, x0
-  andi x2, x2, 2
+  andi x2, x2, 4
   bne x2, x0, impvt_Rodd
-  bn.rshi w2, w2, w31 >> 1
+  bn.rshi w2, w31, w2 >> 1
   jal x0, impvt_Loop
 
 impvt_Rodd:
   bn.add w2, w7, w2
   bn.addc w6, w31, w31
-  bn.rshi w2, w2, w6 >> 1
+  bn.rshi w2, w6, w2 >> 1
   jal x0, impvt_Loop
 
 impvt_Uodd:
   bn.or w5, w5, w5
   csrrs x2, 1984, x0
-  andi x2, x2, 2
+  andi x2, x2, 4
   bne x2, x0, impvt_UVodd
-  bn.rshi w5, w5, w31 >> 1
+  bn.rshi w5, w31, w5 >> 1
   bn.or w3, w3, w3
   csrrs x2, 1984, x0
-  andi x2, x2, 2
+  andi x2, x2, 4
   bne x2, x0, impvt_Sodd
-  bn.rshi w3, w3, w31 >> 1
+  bn.rshi w3, w31, w3 >> 1
   jal x0, impvt_Loop
 
 impvt_Sodd:
   bn.add w3, w7, w3
   bn.addc w6, w31, w31
-  bn.rshi w3, w3, w6 >> 1
+  bn.rshi w3, w6, w3 >> 1
   jal x0, impvt_Loop
 
 impvt_UVodd:

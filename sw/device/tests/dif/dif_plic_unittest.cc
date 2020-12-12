@@ -82,7 +82,8 @@ class IrqTest : public PlicTest {
     for (const auto &reg : kEnableRegisters) {
       number_of_sources += (reg.last_bit + 1);
     }
-    EXPECT_EQ(RV_PLIC_PARAM_NUMSRC, number_of_sources);
+    EXPECT_EQ(RV_PLIC_PARAM_NUMSRC, number_of_sources)
+        << "make sure to update the IrqTest register arrays!";
 
     EXPECT_EQ(RV_PLIC_PARAM_NUMTARGET, 1);
   }
@@ -95,19 +96,19 @@ class IrqTest : public PlicTest {
       kEnableRegisters{{
           {RV_PLIC_IE0_0_REG_OFFSET, RV_PLIC_IE0_0_E_31_BIT},
           {RV_PLIC_IE0_1_REG_OFFSET, RV_PLIC_IE0_1_E_63_BIT},
-          {RV_PLIC_IE0_2_REG_OFFSET, RV_PLIC_IE0_2_E_87_BIT},
+          {RV_PLIC_IE0_2_REG_OFFSET, RV_PLIC_IE0_2_E_86_BIT},
       }};
   static constexpr std::array<Register, RV_PLIC_LE_MULTIREG_COUNT>
       kTriggerRegisters{{
           {RV_PLIC_LE_0_REG_OFFSET, RV_PLIC_LE_0_LE_31_BIT},
           {RV_PLIC_LE_1_REG_OFFSET, RV_PLIC_LE_1_LE_63_BIT},
-          {RV_PLIC_LE_2_REG_OFFSET, RV_PLIC_LE_2_LE_87_BIT},
+          {RV_PLIC_LE_2_REG_OFFSET, RV_PLIC_LE_2_LE_86_BIT},
       }};
   static constexpr std::array<Register, RV_PLIC_IP_MULTIREG_COUNT>
       kPendingRegisters{{
           {RV_PLIC_IP_0_REG_OFFSET, RV_PLIC_IP_0_P_31_BIT},
           {RV_PLIC_IP_1_REG_OFFSET, RV_PLIC_IP_1_P_63_BIT},
-          {RV_PLIC_IP_2_REG_OFFSET, RV_PLIC_IP_2_P_87_BIT},
+          {RV_PLIC_IP_2_REG_OFFSET, RV_PLIC_IP_2_P_86_BIT},
       }};
 
   // Set enable/disable multireg expectations, one bit per call.

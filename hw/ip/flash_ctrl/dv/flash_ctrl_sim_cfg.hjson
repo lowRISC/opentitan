@@ -6,7 +6,7 @@
   name: flash_ctrl
 
   // Top level dut name (sv module).
-  dut: flash_ctrl
+  dut: flash_ctrl_wrapper
 
   // Top level testbench name (sv module).
   tb: tb
@@ -39,7 +39,7 @@
   ]
 
   // Add additional tops for simulation.
-  sim_tops: ["-top flash_ctrl_bind"]
+  sim_tops: ["flash_ctrl_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

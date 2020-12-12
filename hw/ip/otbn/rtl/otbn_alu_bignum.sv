@@ -84,6 +84,9 @@ module otbn_alu_bignum
   output logic [WLEN-1:0]             ispr_acc_wr_data_o,
   output logic                        ispr_acc_wr_en_o,
 
+  input  flags_t                      mac_operation_flags_i,
+  input  flags_t                      mac_operation_flags_en_i,
+
   input  logic [WLEN-1:0]             rnd_i
 );
   ///////////
@@ -100,16 +103,25 @@ module otbn_alu_bignum
   logic                                adder_update_flags_en, adder_update_flags_en_raw;
   flags_t                              logic_update_flags;
   logic                                logic_update_flags_en, logic_update_flags_en_raw;
+  flags_t                              mac_update_flags;
+  logic                                mac_update_flags_en;
   logic                                ispr_update_flags_en;
 
-  assign adder_update_flags_en = operation_i.flag_en & adder_update_flags_en_raw;
-  assign logic_update_flags_en = operation_i.flag_en & logic_update_flags_en_raw;
+  assign adder_update_flags_en = operation_i.alu_flag_en & adder_update_flags_en_raw;
+  assign logic_update_flags_en = operation_i.alu_flag_en & logic_update_flags_en_raw;
+  assign mac_update_flags_en   = operation_i.mac_flag_en;
 
   assign ispr_update_flags_en = (ispr_base_wr_en_i[0] & (ispr_addr_i == IsprFlags));
 
 
   `ASSERT(UpdateFlagsOnehot,
-          $onehot0({adder_update_flags_en, logic_update_flags_en, ispr_update_flags_en}))
+          $onehot0({adder_update_flags_en, logic_update_flags_en, mac_update_flags_en,
+                    ispr_update_flags_en}))
+
+  assign selected_flags = flags_q[operation_i.flag_group];
+
+  assign mac_update_flags = (selected_flags        & ~mac_operation_flags_en_i) |
+                            (mac_operation_flags_i &  mac_operation_flags_en_i);
 
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_groups
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -132,6 +144,7 @@ module otbn_alu_bignum
       unique case (1'b1)
         adder_update_flags_en: flags_d[i_fg] = adder_update_flags;
         logic_update_flags_en: flags_d[i_fg] = logic_update_flags;
+        mac_update_flags_en:   flags_d[i_fg] = mac_update_flags;
         ispr_update_flags_en:  flags_d[i_fg] = ispr_base_wdata_i[i_fg * FlagsWidth +: FlagsWidth];
         default: ;
       endcase
@@ -139,10 +152,10 @@ module otbn_alu_bignum
 
     assign flags_en[i_fg] = ispr_update_flags_en |
       (adder_update_flags_en & is_operation_flag_group[i_fg]) |
-      (logic_update_flags_en & is_operation_flag_group[i_fg]);
+      (logic_update_flags_en & is_operation_flag_group[i_fg]) |
+      (mac_update_flags_en   & is_operation_flag_group[i_fg]);
   end
 
-  assign selected_flags = flags_q[operation_i.flag_group];
 
   logic [WLEN-1:0]             mod_q;
   logic [WLEN-1:0]             mod_d;
@@ -232,7 +245,8 @@ module otbn_alu_bignum
 
   assign adder_x_res = adder_x_op_a + adder_x_op_b;
 
-  assign x_res_operand_a_mux_out = x_res_operand_a_sel ? adder_x_res[WLEN:1] : operation_i.operand_a;
+  assign x_res_operand_a_mux_out = x_res_operand_a_sel ? adder_x_res[WLEN:1] :
+                                                         operation_i.operand_a;
   assign shift_mod_mux_out = shift_mod_sel ? shifter_res : mod_q;
 
   assign adder_y_op_a = {x_res_operand_a_mux_out, 1'b1};
@@ -393,7 +407,8 @@ module otbn_alu_bignum
     endcase
   end
 
-  `ASSERT(SelFlagValid, operation_i.op == AluOpBignumSel |-> operation_i.sel_flag inside {FlagC, FlagL, FlagM, FlagZ})
+  `ASSERT(SelFlagValid,
+      operation_i.op == AluOpBignumSel |-> operation_i.sel_flag inside {FlagC, FlagL, FlagM, FlagZ})
 
   assign sel_res = (sel_flag || operation_i.op == AluOpBignumMov) ? operation_i.operand_a :
                                                                     operation_i.operand_b;

@@ -214,9 +214,9 @@ package aes_reg_pkg;
     aes_hw2reg_iv_mreg_t [3:0] iv; // [421:294]
     aes_hw2reg_data_in_mreg_t [3:0] data_in; // [293:162]
     aes_hw2reg_data_out_mreg_t [3:0] data_out; // [161:34]
-    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [33:17]
-    aes_hw2reg_trigger_reg_t trigger; // [16:11]
-    aes_hw2reg_status_reg_t status; // [10:11]
+    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [33:22]
+    aes_hw2reg_trigger_reg_t trigger; // [21:10]
+    aes_hw2reg_status_reg_t status; // [9:0]
   } aes_hw2reg_t;
 
   // Register Address

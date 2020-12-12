@@ -17,7 +17,7 @@
  *
  * This parser is intended to parse in-memory ROM_EXT images, from either Slot A
  * or Slot B. The fields it is parsing are defined in
- * `sw/device/rom_exts/manifest.md` and `sw/device_rom_exts/manifes.hjson`.
+ * `sw/device/rom_exts/manifest.md` and `sw/device_rom_exts/manifest.hjson`.
  *
  * This parser does minimal validity checking of the returned values, which must
  * always be checked by the caller to ensure do not contain incorrect or
@@ -100,11 +100,11 @@ typedef struct rom_ext_lockdown_info {
 } rom_ext_lockdown_info_t;
 
 /**
- * ROM Extension public key.
+ * ROM Extension Signature Key Modulus.
  */
-typedef struct rom_ext_public_key {
-  uint32_t data[ROM_EXT_SIGNATURE_PUBLIC_KEY_SIZE_WORDS];
-} rom_ext_public_key_t;
+typedef struct rom_ext_signature_key_modulus {
+  uint32_t data[ROM_EXT_SIGNATURE_KEY_MODULUS_SIZE_WORDS];
+} rom_ext_signature_key_modulus_t;
 
 /**
  * ROM Extension image extension IDs.
@@ -168,7 +168,7 @@ uint32_t rom_ext_get_identifier(rom_ext_manifest_t params);
  * The memory address where ROM_EXT identifier field resides, is relative.
  *
  * @param params Parameters required for manifest parsing.
- * @param dst The destination address where the signature is coppied to.
+ * @param dst The destination address where the signature is copied to.
  * @return `true` on success, `false` on failure.
  */
 bool rom_ext_get_signature(rom_ext_manifest_t params, rom_ext_signature_t *dst);
@@ -209,25 +209,14 @@ uint32_t rom_ext_get_version(rom_ext_manifest_t params);
 uint64_t rom_ext_get_timestamp(rom_ext_manifest_t params);
 
 /**
- * Retrieves the ROM_EXT signature algorithm identifier.
- *
- * The memory address where ROM_EXT signature algorithm identifier field
- * resides, is relative.
- *
- * @param params Parameters required for manifest parsing.
- * @return ROM_EXT signature algorithm identifier.
- */
-uint32_t rom_ext_get_algorithm_id(rom_ext_manifest_t params);
-
-/**
- * Retrieves the ROM_EXT exponent.
+ * Retrieves the ROM_EXT Signature Key Public Exponent.
  *
  * The memory address where ROM_EXT exponent field resides, is relative.
  *
  * @param params Parameters required for manifest parsing.
- * @return ROM_EXT exponent.
+ * @return ROM_EXT Signature Key Public Exponent.
  */
-uint32_t rom_ext_get_exponent(rom_ext_manifest_t params);
+uint32_t rom_ext_get_signature_key_public_exponent(rom_ext_manifest_t params);
 
 /**
  * Retrieves the ROM_EXT usage constraints.
@@ -246,23 +235,23 @@ uint32_t rom_ext_get_usage_constraints(rom_ext_manifest_t params);
  * The memory address where ROM_EXT lockdown info field resides, is relative.
  *
  * @param params Parameters required for manifest parsing.
- * @param dst The destination address where the lockdown info is coppied to.
+ * @param dst The destination address where the lockdown info is copied to.
  * @return `true` on success, `false` on failure.
  */
 bool rom_ext_get_peripheral_lockdown_info(rom_ext_manifest_t params,
                                           rom_ext_lockdown_info_t *dst);
 
 /**
- * Retrieves the ROM_EXT public key.
+ * Retrieves the ROM_EXT Signature Key Modulus.
  *
- * The memory address where ROM_EXT public key field resides, is relative.
+ * The memory address where ROM_EXT key modulus field resides, is relative.
  *
  * @param params Parameters required for manifest parsing.
- * @param dst The destination address where the public key is coppied to.
+ * @param dst The destination address where the key modulus is copied to.
  * @return `true` on success, `false` on failure.
  */
-bool rom_ext_get_public_key(rom_ext_manifest_t params,
-                            rom_ext_public_key_t *dst);
+bool rom_ext_get_signature_key_modulus(rom_ext_manifest_t params,
+                                       rom_ext_signature_key_modulus_t *dst);
 
 /**
  * Retrieves the ROM_EXT image extension specified in `id`.

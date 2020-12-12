@@ -186,14 +186,15 @@ Review Design Change with SW: Review known "Won't Fix" bugs and "Errata".
 For a transition from V0 to V1, the following items are expected be completed.
 Prefix "SIM" is applicable for simulation-based DV approach only, while "FPV" is for FPV approach only.
 
-### DV_PLAN_DRAFT_COMPLETED
+### DV_DOC_DRAFT_COMPLETED
 
-- DV Plan document drafted, indicating the overall DV strategy, intent and the testbench environment details with diagrams, details on TB, UVCs, checkers, scoreboard, interfaces, assertions, coverage objects (if applicable).
+- DV document drafted, indicating the overall DV strategy, intent and the testbench environment details with diagrams, details on TB, UVCs, checkers, scoreboard, interfaces, assertions, coverage objects (if applicable).
 - Details may be missing since most items are not expected to be fully developed at this stage.
 
-### TESTPLAN_COMPLETED
+### DV_PLAN_COMPLETED
 
-A fully completed Testplan written in Hjson, indicating the list of planned tests with descriptions indicating the goal of the test and optionally details on stimulus and the checking procedure.
+A fully completed DV plan written in Hjson, indicating the list of planned tests with descriptions indicating the goal of the test and optionally details on stimulus and the checking procedure.
+A fully completed functional coverage plan written in Hjson, indicating the list of functional coverage points and coverage crosses with a description of what feature is covered by this coverpoint.
 
 ### TB_TOP_CREATED
 
@@ -224,7 +225,7 @@ Full testbench automation completed if applicable. This may be required for veri
 ### SIM_SANITY_TEST_PASSING
 
 - Sanity test exercising a basic functionality of a major DUT datapath passing.
-- What functionality to test and to what level may be governed by higher level (example: chip) integration requirements. These are to be captured when the Testplan is reviewed with the key stakeholders.
+- What functionality to test and to what level may be governed by higher level (example: chip) integration requirements. These are to be captured when the DV plan is reviewed with the key stakeholders.
 
 ### SIM_CSR_MEM_TEST_SUITE_PASSING
 
@@ -279,13 +280,13 @@ Sub-modules that are pre-verified with their own testbenches have already reache
 
 RTL (uArch) specification reviewed and signed off.
 
-### DV_PLAN_TESTPLAN_REVIEWED
+### DV_PLAN_REVIEWED
 
-DV Plan & Testplan reviewed with key stakeholders - designer, design lead, DV lead, architects, higher level (chip) design and DV leads.
+DV document & DV plan reviewed with key stakeholders - designer, design lead, DV lead, architects, higher level (chip) design and DV leads.
 
 ### STD_TEST_CATEGORIES_PLANNED
 
-Following categories of post-V1 tests focused at in the Testplan review (as applicable):
+Following categories of post-V1 tests focused at in the DV plan review (as applicable):
 - Security/error
 - Power
 - Performance
@@ -303,11 +304,15 @@ Prefix "SIM" is applicable for simulation-based DV approach only, while "FPV" is
 
 ### DESIGN_DELTAS_CAPTURED_V2
 
-It is possible for the design to have undergone some changes since the DV plan and Testplan was reviewed prior to V1 stage. Please ensure that those deltas have been captured adequately in the DV Plan and the Testplan documents.
+It is possible for the design to have undergone some changes since the DV document and DV plan was reviewed prior to V1 stage. Please ensure that those deltas have been captured adequately in the DV document and the DV plan documents.
 
-### DV_PLAN_COMPLETED
+### DV_DOC_COMPLETED
 
-DV Plan is fully completed in terms of content.
+DV document is fully completed in terms of content.
+
+### FUNCTIONAL_COVERAGE_PLAN_IMPLEMENTED
+
+All coverage points have been written and implemented
 
 ### ALL_INTERFACES_EXERCISED
 
@@ -324,7 +329,7 @@ UVM environment fully developed with end-2-end checks in scoreboard enabled.
 
 ### SIM_ALL_TESTS_PASSING
 
-All tests in the Testplan written and passing with at least one random seed.
+All tests in the DV plan written and passing with at least one random seed.
 
 ### FPV_ALL_ASSERTIONS_WRITTEN
 
@@ -387,7 +392,7 @@ Prefix "SIM" is applicable for simulation-based DV approach only, while "FPV" is
 
 ### DESIGN_DELTAS_CAPTURED_V3
 
-It is possible for the design to undergo changes even at this stage (when it is expected to be mature). Please ensure that those new deltas have been captured adequately in the DV Plan and the Testplan documents.
+It is possible for the design to undergo changes even at this stage (when it is expected to be mature). Please ensure that those new deltas have been captured adequately in the DV document and the DV plan documents.
 
 ### ALL_TODOS_RESOLVED
 

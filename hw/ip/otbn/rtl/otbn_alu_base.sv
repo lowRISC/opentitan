@@ -45,7 +45,8 @@ module otbn_alu_base
   assign adder_op_b_negate = operation_i.op == AluOpBaseSub;
 
   assign adder_op_a = {operation_i.operand_a, 1'b1};
-  assign adder_op_b = adder_op_b_negate ? {~operation_i.operand_b, 1'b1} : {operation_i.operand_b, 1'b0};
+  assign adder_op_b = adder_op_b_negate ? {~operation_i.operand_b, 1'b1} :
+                                          { operation_i.operand_b, 1'b0};
 
   assign adder_result = adder_op_a + adder_op_b;
 
@@ -77,7 +78,8 @@ module otbn_alu_base
   // Shifter performs right arithmetic 33-bit shifts. Force top bit to 0 to get logical shifting
   // otherwise replicate top bit of shift_in. Left shifts performed by reversing the input and
   // output.
-  assign shift_in[31:0] = (operation_i.op == AluOpBaseSll) ? operand_a_reverse : operation_i.operand_a;
+  assign shift_in[31:0] = (operation_i.op == AluOpBaseSll) ? operand_a_reverse :
+                                                             operation_i.operand_a;
   assign shift_in[32] = (operation_i.op == AluOpBaseSra) ? operation_i.operand_a[31] : 1'b0;
 
   assign shift_out = signed'(shift_in) >>> shift_amt;

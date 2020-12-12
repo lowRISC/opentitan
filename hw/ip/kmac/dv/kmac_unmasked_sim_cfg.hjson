@@ -4,8 +4,8 @@
 
 // sim cfg file for the unmasked version of KMAc
 {
-  // Name of the sim cfg
-  name: kmac_unmasked
+  // Name of the sim cfg variant
+  variant: kmac_unmasked
 
   // Import additional common sim cfg files.
   import_cfgs: ["{proj_root}/hw/ip/kmac/dv/kmac_base_sim_cfg.hjson"]

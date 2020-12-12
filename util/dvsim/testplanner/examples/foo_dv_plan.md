@@ -1,7 +1,7 @@
 ---
-title: "FOO DV plan"
+title: "FOO DV document"
 ---
 
-# Testplan
+# testplan
 
 {{< testplan "util/dvsim/testplanner/examples/foo_testplan.hjson" >}}

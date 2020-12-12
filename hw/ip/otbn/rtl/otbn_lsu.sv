@@ -32,7 +32,7 @@ module otbn_lsu
   output logic [WLEN-1:0]          dmem_wmask_o,
   input  logic [WLEN-1:0]          dmem_rdata_i,
   input  logic                     dmem_rvalid_i,
-  input  logic [1:0]               dmem_rerror_i, // Bit1: Uncorrectable, Bit0: Correctable
+  input  logic                     dmem_rerror_i,
 
   input  logic                     lsu_load_req_i,
   input  logic                     lsu_store_req_i,
@@ -44,7 +44,7 @@ module otbn_lsu
 
   output logic [31:0]              lsu_base_rdata_o,
   output logic [WLEN-1:0]          lsu_bignum_rdata_o,
-  output logic [1:0]               lsu_rdata_err_o // Bit1: Uncorrectable, Bit0: Correctable
+  output logic                     lsu_rdata_err_o
 );
   localparam int BaseWordsPerWLen = WLEN / 32;
   localparam int BaseWordAddrW = prim_util_pkg::vbits(WLEN/8);
@@ -95,23 +95,19 @@ module otbn_lsu
 
   // Data appears the cycle following the request, LSU assume lsu_addr_i is kept stable by the
   // controller to mux out the required 32-bit word.
-  `ASSERT(LsuLoadAddrStable, lsu_load_req_i |=> $stable(lsu_addr_i));
-  `ASSERT_KNOWN_IF(LsuAddrKnown, lsu_addr_i, lsu_load_req_i | lsu_store_req_i);
+  `ASSERT(LsuLoadAddrStable, lsu_load_req_i |=> $stable(lsu_addr_i))
+  `ASSERT_KNOWN_IF(LsuAddrKnown, lsu_addr_i, lsu_load_req_i | lsu_store_req_i)
 
   // TODO: Produce an error/alert if this doesn't hold?
-  `ASSERT(DMemRValidAfterReq, dmem_req_o & ~dmem_write_o |=> dmem_rvalid_i);
+  `ASSERT(DMemRValidAfterReq, dmem_req_o & ~dmem_write_o |=> dmem_rvalid_i)
 
   assign lsu_bignum_rdata_o = dmem_rdata_i;
-  assign lsu_rdata_err_o    = dmem_rerror_i;
+  assign lsu_rdata_err_o    = dmem_rvalid_i & dmem_rerror_i;
 
-  // clk_i, rst_ni and dmem_rvalid_i are only used by assertions
+  // clk_i, rst_ni are only used by assertions
   logic unused_clk;
   logic unused_rst_n;
-  logic unused_dmem_rvalid;
 
   assign unused_clk = clk_i;
   assign unused_rst_n = rst_ni;
-  assign unused_dmem_rvalid = dmem_rvalid_i;
-
-
 endmodule

@@ -198,11 +198,11 @@
 			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>ack</text>		</g>
 		<g id="shape126-96" v:mID="126" v:groupContext="shape" transform="translate(147.977,-448.636)">
 			<title>Sheet.126</title>
-			<desc>bus[63:0]</desc>
+			<desc>bus[31:0]</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="33.8729" cy="602" width="67.75" height="20"/>
 			<rect x="0" y="592" width="67.7459" height="20" class="st8"/>
-			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>bus[63:0]</text>		</g>
+			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>bus[31:0]</text>		</g>
 		<g id="shape127-99" v:mID="127" v:groupContext="shape" transform="translate(72,-369)">
 			<title>Sheet.127</title>
 			<desc>otbn</desc>
@@ -238,11 +238,11 @@
 			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>ack</text>		</g>
 		<g id="shape133-123" v:mID="133" v:groupContext="shape" transform="translate(148.375,-378)">
 			<title>Sheet.133</title>
-			<desc>bus[15:0]</desc>
+			<desc>bus[31:0]</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="33.8729" cy="602" width="67.75" height="20"/>
 			<rect x="0" y="592" width="67.7459" height="20" class="st8"/>
-			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>bus[15:0]</text>		</g>
+			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>bus[31:0]</text>		</g>
 		<g id="shape134-126" v:mID="134" v:groupContext="shape" transform="translate(70.352,-485.364)">
 			<title>Sheet.134</title>
 			<desc>ep1</desc>
@@ -377,13 +377,13 @@
 			<v:textRect cx="23.75" cy="602" width="47.5" height="20"/>
 			<rect x="0" y="592" width="47.5" height="20" class="st8"/>
 			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>ack</text>		</g>
-		<g id="shape162-213" v:mID="162" v:groupContext="shape" transform="translate(148.375,-219.5)">
+		<g id="shape162-213" v:mID="162" v:groupContext="shape" transform="translate(148.254,-219.5)">
 			<title>Sheet.162</title>
-			<desc>bus[63:0]</desc>
+			<desc>bus[31:0]</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="33.8729" cy="602" width="67.75" height="20"/>
 			<rect x="0" y="592" width="67.7459" height="20" class="st8"/>
-			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>bus[63:0]</text>		</g>
+			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>bus[31:0]</text>		</g>
 		<g id="shape170-216" v:mID="170" v:groupContext="shape" transform="translate(72,-259.437)">
 			<title>Sheet.170</title>
 			<desc>ep0</desc>
@@ -485,11 +485,11 @@
 			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>ack</text>		</g>
 		<g id="shape201-276" v:mID="201" v:groupContext="shape" transform="translate(146.002,-129.15)">
 			<title>Sheet.201</title>
-			<desc>bus[0:0]</desc>
+			<desc>bus[31:0]</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="33.8729" cy="602" width="67.75" height="20"/>
 			<rect x="0" y="592" width="67.7459" height="20" class="st8"/>
-			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>bus[0:0]</text>		</g>
+			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>bus[31:0]</text>		</g>
 		<g id="shape202-279" v:mID="202" v:groupContext="shape" transform="translate(68,-173.25)">
 			<title>Sheet.202</title>
 			<desc>ep1</desc>
@@ -600,11 +600,11 @@
 			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>ack</text>		</g>
 		<g id="shape320-348" v:mID="320" v:groupContext="shape" transform="translate(148.375,-310.5)">
 			<title>Sheet.320</title>
-			<desc>bus[7:0]</desc>
+			<desc>bus[31:0]</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="33.8729" cy="602" width="67.75" height="20"/>
 			<rect x="0" y="592" width="67.7459" height="20" class="st8"/>
-			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>bus[7:0]</text>		</g>
+			<text x="4" y="605.3" class="st3" v:langID="1033"><v:paragraph/><v:tabList/>bus[31:0]</text>		</g>
 		<g id="shape321-351" v:mID="321" v:groupContext="shape" transform="translate(-218.454,292.5) rotate(-90)">
 			<title>Sheet.321</title>
 			<desc>peripheral port 3</desc>

@@ -31,17 +31,44 @@ package otp_ctrl_env_pkg;
   parameter uint TEST_ACCESS_BASE_ADDR   = 'h2000;
   parameter uint SW_WINDOW_SIZE          = 512 * 4;
   parameter uint TEST_ACCESS_WINDOW_SIZE = 16 * 4;
+
   // convert byte into TLUL width size
-  parameter uint HW_CFG_ARRAY_SIZE       = HwCfgContentSize / (TL_DW / 8);
+  parameter uint CREATOR_SW_CFG_START_ADDR  = CreatorSwCfgOffset / (TL_DW / 8);
+  parameter uint CREATOR_SW_CFG_DIGEST_ADDR = CreatorSwCfgDigestOffset / (TL_DW / 8);
+  parameter uint CREATOR_SW_CFG_END_ADDR    = CREATOR_SW_CFG_DIGEST_ADDR - 1;
+
+  parameter uint OWNER_SW_CFG_START_ADDR  = OwnerSwCfgOffset / (TL_DW / 8);
+  parameter uint OWNER_SW_CFG_DIGEST_ADDR = OwnerSwCfgDigestOffset / (TL_DW / 8);
+  parameter uint OWNER_SW_CFG_END_ADDR    = OWNER_SW_CFG_DIGEST_ADDR - 1;
+
+  parameter uint HW_CFG_START_ADDR  = HwCfgOffset / (TL_DW / 8);
+  parameter uint HW_CFG_DIGEST_ADDR = HwCfgDigestOffset / (TL_DW / 8);
+  parameter uint HW_CFG_END_ADDR    = HW_CFG_DIGEST_ADDR - 1;
+
+  parameter uint SECRET0_START_ADDR  = Secret0Offset / (TL_DW / 8);
+  parameter uint SECRET0_DIGEST_ADDR = Secret0DigestOffset / (TL_DW / 8);
+  parameter uint SECRET0_END_ADDR    = SECRET0_DIGEST_ADDR - 1;
+
+  parameter uint SECRET1_START_ADDR  = Secret1Offset / (TL_DW / 8);
+  parameter uint SECRET1_DIGEST_ADDR = Secret1DigestOffset / (TL_DW / 8);
+  parameter uint SECRET1_END_ADDR    = SECRET1_DIGEST_ADDR - 1;
+
+  parameter uint SECRET2_START_ADDR  = Secret2Offset / (TL_DW / 8);
+  parameter uint SECRET2_DIGEST_ADDR = Secret2DigestOffset / (TL_DW / 8);
+  parameter uint SECRET2_END_ADDR    = SECRET2_DIGEST_ADDR - 1;
+
+  // TODO: did not count for LC partition
+  parameter uint OTP_ARRAY_SIZE = (CreatorSwCfgSize + OwnerSwCfgSize + HwCfgSize + Secret0Size +
+                                   Secret1Size + Secret2Size)/ (TL_DW / 8);
 
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
-  parameter uint SRAM_DATA_SIZE  = 1 + SramKeyWidth + SramNonceWidth;
+  parameter uint SRAM_DATA_SIZE = 1 + SramKeyWidth + SramNonceWidth;
   // otbn rsp data has 1 bit for seed_valid, the rest are for key and nonce
-  parameter uint OTBN_DATA_SIZE  = 1 + OtbnKeyWidth + OtbnNonceWidth;
+  parameter uint OTBN_DATA_SIZE = 1 + OtbnKeyWidth + OtbnNonceWidth;
   // flash rsp data has 1 bit for seed_valid, the rest are for key
   parameter uint FLASH_DATA_SIZE = 1 + FlashKeyWidth;
-  // edn rsp data are key width
-  parameter uint EDN_DATA_SIZE   = EdnDataWidth;
+  // lc program data has lc_state data and lc_cnt data
+  parameter uint LC_PROG_DATA_SIZE = LcStateWidth + LcCountWidth;
 
   // scramble related parameters
   parameter uint SCRAMBLE_DATA_SIZE = 64;
@@ -91,7 +118,7 @@ package otp_ctrl_env_pkg;
   } otp_pwr_if_e;
 
   typedef virtual pins_if #(OtpPwrIfWidth) pwr_otp_vif;
-  typedef virtual pins_if #(4)             lc_provision_en_vif;
+  typedef virtual pins_if #(4)             lc_provision_wr_en_vif;
   typedef virtual pins_if #(4)             lc_dft_en_vif;
   typedef virtual mem_bkdr_if              mem_bkdr_vif;
   typedef virtual otp_ctrl_output_data_if  otp_ctrl_output_data_vif;
@@ -110,8 +137,8 @@ package otp_ctrl_env_pkg;
 
   function automatic bit is_secret(bit [TL_DW-1:0] addr);
     int part_index = get_part_index(addr);
-    if (part_index inside {[Secret0Idx:Secret2Idx]}) return 0;
-    else return 1;
+    if (part_index inside {[Secret0Idx:Secret2Idx]}) return 1;
+    else return 0;
   endfunction
 
   // Resolve an offset within the software window as an offset within the whole otp_ctrl block.

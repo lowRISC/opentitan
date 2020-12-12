@@ -202,3 +202,18 @@ sw_lib_dif_otp_ctrl = declare_dependency(
     ],
   )
 )
+
+# Lifecycle controller library
+sw_lib_dif_lc_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_lc_ctrl',
+    sources: [
+      hw_ip_lc_ctrl_reg_h,
+      'dif_lc_ctrl.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_bitfield,
+    ],
+  )
+)

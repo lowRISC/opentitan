@@ -24,6 +24,7 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   keymgr_if keymgr_if(.clk(clk), .rst_n(rst_n));
   keymgr_kmac_intf keymgr_kmac_intf(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
 
@@ -31,13 +32,18 @@ module tb;
   keymgr dut (
     .clk_i                (clk        ),
     .rst_ni               (rst_n      ),
+    .clk_edn_i            (clk        ),
+    .rst_edn_ni           (rst_n      ),
     .aes_key_o            (keymgr_if.aes_key),
     .hmac_key_o           (keymgr_if.hmac_key),
     .kmac_key_o           (keymgr_if.kmac_key),
     .kmac_data_o          (keymgr_kmac_intf.kmac_data_req),
     .kmac_data_i          (keymgr_kmac_intf.kmac_data_rsp),
     .lc_i                 (keymgr_if.lc),
+    .otp_key_i            (keymgr_if.otp_key),
     .otp_i                (keymgr_if.otp),
+    .edn_o                (edn_if.req),
+    .edn_i                ({edn_if.ack, edn_if.d_data}),
     .flash_i              (keymgr_if.flash),
     .intr_op_done_o       (interrupts[IntrOpDone]),
     .intr_err_o           (interrupts[IntrErr]),
@@ -58,6 +64,8 @@ module tb;
     uvm_config_db#(virtual keymgr_if)::set(null, "*.env", "keymgr_vif", keymgr_if);
     uvm_config_db#(virtual keymgr_kmac_intf)::set(null,
                    "*env.m_keymgr_kmac_agent*", "vif", keymgr_kmac_intf);
+    uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)))::set
+                   (null, "*env.m_edn_pull_agent*", "vif", edn_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

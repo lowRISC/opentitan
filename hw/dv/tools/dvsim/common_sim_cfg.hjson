@@ -53,40 +53,23 @@
   dut_instance: "{tb}.dut"
 
   // Top level simulation entities.
-  sim_tops: ["-top {tb}"]
+  sim_tops: ["{tb}"]
 
   // Default build and run opts
-  build_opts: [// List multiple tops for the simulation
-               // VW Questa "{sim_tops}",
-               // Standard UVM defines
+  build_opts: [// Standard UVM defines
                "+define+UVM",
                "+define+UVM_NO_DEPRECATED",
                "+define+UVM_REGEX_NO_DPI",
                "+define+UVM_REG_ADDR_WIDTH={tl_aw}",
                "+define+UVM_REG_DATA_WIDTH={tl_dw}",
                "+define+UVM_REG_BYTENABLE_WIDTH={tl_dbw}"]
-
-  // VW
-  // Questa/Riviera build and run opts
-  build_opts_qsta: [// List multiple tops for the simulation
-               // Standard UVM defines
-               "+define+UVM",
-               "+define+UVM_NO_DEPRECATED",
-               "+define+UVM_REGEX_NO_DPI",
-               "+define+UVM_REG_ADDR_WIDTH={tl_aw}",
-               "+define+UVM_REG_DATA_WIDTH={tl_dw}",
-               "+define+UVM_REG_BYTENABLE_WIDTH={tl_dbw}"]
-
 
   run_opts: ["+UVM_NO_RELNOTES",
              "+UVM_VERBOSITY={expand_uvm_verbosity_{verbosity}}"]
 
-  run_opts_qsta: ["+UVM_NO_RELNOTES",
-                  "{sim_tops}",
-                  "+UVM_VERBOSITY={expand_uvm_verbosity_{verbosity}}"]
-
   // Default list of things to export to shell
   exports: [
+    { SCRATCH_BASE_PATH: "{scratch_base_path}" },
     { TOOL_SRCS_DIR: "{tool_srcs_dir}" },
     { SIMULATOR: "{tool}" },
     { WAVES: "{waves}" },
@@ -120,7 +103,7 @@
   // By default, two regressions are made available - "all" and "nightly". Both
   // run all available tests for the DUT. "nightly" enables coverage as well.
   // The 'tests' key is set to an empty list, which indicates "run everything".
-  // Test sets can enable sim modes, which are a set of build_opts and run_opts
+  // Regressions can enable sim modes, which are a set of build_opts and run_opts
   // that are grouped together. These are appended to the build modes used by the
   // tests.
   regressions: [
@@ -154,6 +137,7 @@
 
   // Project defaults for VCS
   vcs_cov_cfg_file: "{{build_mode}_vcs_cov_cfg_file}"
+  vcs_unr_cfg_file: "{tool_srcs_dir}/unr.cfg"
   vcs_cov_excl_files: ["{tool_srcs_dir}/common_cov_excl.el"]
 
   // Build-specific coverage cfg files for VCS.

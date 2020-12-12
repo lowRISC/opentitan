@@ -27,7 +27,24 @@ package aes_env_pkg;
 
   typedef enum int { AES_CFG=0, AES_DATA=1, AES_ERR_INJ=2 } aes_item_type_e;
 
-  // functions
+  typedef struct packed {
+    bit          data_out;
+    bit          data_in;
+    bit          iv;
+    bit          key;
+  } clear_t;
+
+  typedef struct packed {
+    bit          reset;
+    bit          mal_inject;
+    bit          cfg;
+  } error_types_t;
+
+  typedef struct packed {
+    bit          key_len;
+    bit          mode;
+  } cfg_error_type_t;
+
 
   // package sources
  `include "aes_env_cfg.sv"

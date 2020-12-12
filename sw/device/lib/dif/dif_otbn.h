@@ -81,8 +81,20 @@ typedef enum dif_otbn_err_code {
   kDifOtbnErrCodeNoError = 0x0,
   /** Load or store to invalid address. */
   kDifOtbnErrCodeBadDataAddr = 0x1,
+  /** Instruction fetch from invalid address. */
+  kDifOtbnErrCodeBadInsnAddr = 0x2,
   /** Call stack underflow or overflow. */
-  kDifOtbnErrCodeCallStack = 0x2,
+  kDifOtbnErrCodeCallStack = 0x3,
+  /** Illegal instruction execution attempted */
+  kDifOtbnErrCodeIllegalInsn = 0x4,
+  /** LOOP[I] related error */
+  kDifOtbnErrCodeLoop = 0x5,
+  /** Error seen in Imem read */
+  kDifOtbnErrCodeFatalImem = 0x80,
+  /** Error seen in Dmem read */
+  kDifOtbnErrCodeFatalDmem = 0x81,
+  /** Error seen in RF */
+  kDifOtbnErrCodeFatalReg = 0x82
 } dif_otbn_err_code_t;
 
 /**
@@ -100,14 +112,6 @@ typedef enum dif_otbn_interrupt {
    */
   kDifOtbnInterruptDone = 0,
 
-  /**
-   * An error occurred.
-   *
-   * The error cause can be determined by calling dif_otbn_get_err_code().
-   *
-   * Associated with the `otbn.INTR_STATE.err` hardware interrupt.
-   */
-  kDifOtbnInterruptErr = 1,
 } dif_otbn_interrupt_t;
 
 /**

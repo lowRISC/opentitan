@@ -36,6 +36,8 @@ module tb;
   flash_ctrl_wrapper dut (
     .clk_i              (clk      ),
     .rst_ni             (rst_n    ),
+    .clk_otp_i          (clk      ),
+    .rst_otp_ni         (rst_n    ),
 
     .flash_ctrl_tl_i    (tl_if.h2d),
     .flash_ctrl_tl_o    (tl_if.d2h),
@@ -47,8 +49,13 @@ module tb;
     .eflash_tl_o        (eflash_tl_if.d2h),
 
     // TODO: create and hook this up to an interface.
-    .otp_i              (flash_ctrl_pkg::OTP_FLASH_DEFAULT),
-    .lc_provision_en_i  (lc_ctrl_pkg::On),
+    .otp_i              (otp_ctrl_pkg::FLASH_OTP_KEY_RSP_DEFAULT),
+    .otp_o              (),
+    .lc_creator_seed_sw_rw_en_i (lc_ctrl_pkg::Off),
+    .lc_owner_seed_sw_rw_en_i   (lc_ctrl_pkg::On),
+    .lc_iso_part_sw_rd_en_i     (lc_ctrl_pkg::On),
+    .lc_iso_part_sw_wr_en_i     (lc_ctrl_pkg::On),
+    .lc_seed_hw_rd_en_i         (lc_ctrl_pkg::On),
     .lc_i               (flash_ctrl_pkg::LC_FLASH_REQ_DEFAULT),
     .pwrmgr_o           (pwrmgr_pkg::PWR_FLASH_RSP_DEFAULT),
     .pwrmgr_i           (pwrmgr_pkg::PWR_FLASH_REQ_DEFAULT),
@@ -67,7 +74,7 @@ module tb;
       dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[``i``].u_prim_flash_bank.u_mem
 
   `define FLASH_INFO_MEM_HIER(i) \
-      dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[``i``].u_prim_flash_bank.u_info_mem
+      dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[``i``].u_prim_flash_bank.gen_info_types[0].u_info_mem
 
   generate
     for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : mem_bkdr_if_i

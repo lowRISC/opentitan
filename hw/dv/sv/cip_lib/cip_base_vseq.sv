@@ -69,6 +69,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   task pre_start();
+    if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
+    if (common_seq_type == "alert_test") en_auto_alerts_response = 0;
     csr_utils_pkg::max_outstanding_accesses = 1 << BUS_AIW;
     super.pre_start();
     extract_common_csrs();
@@ -303,6 +305,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     // check which test type
     case (common_seq_type)
       "intr_test":                  run_intr_test_vseq(num_times);
+      "alert_test":                 run_alert_test_vseq(num_times);
       "tl_errors":                  run_tl_errors_vseq(num_times);
       "stress_all_with_rand_reset": run_stress_all_with_rand_reset_vseq(num_times);
       "same_csr_outstanding":       run_same_csr_outstanding_vseq(num_times);
@@ -399,6 +402,91 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       end
     end
     if (!cfg.under_reset) `DV_CHECK_EQ(cfg.intr_vif.sample(), {NUM_MAX_INTERRUPTS{1'b0}})
+  endtask
+
+  virtual task run_alert_test_vseq(int num_times = 1);
+    int num_alerts = cfg.list_of_alerts.size();
+    dv_base_reg alert_test_csr = ral.get_dv_base_reg_by_name("alert_test");
+
+    for (int trans = 1; trans <= num_times; trans++) begin
+      `uvm_info(`gfn, $sformatf("Running alert test iteration %0d/%0d", trans, num_times), UVM_LOW)
+
+      repeat ($urandom_range(num_alerts, num_alerts * 10)) begin
+        bit [BUS_DW-1:0] alert_req = $urandom_range(0, (1'b1 << num_alerts) - 1);
+        csr_wr(.csr(alert_test_csr), .value(alert_req));
+        `uvm_info(`gfn, $sformatf("Write alert_test with val %0h", alert_req), UVM_HIGH)
+        fork
+          begin
+            for (int i = 0; i < num_alerts; i++) begin
+              automatic int index = i;
+              automatic string alert_name = cfg.list_of_alerts[index];
+              if (alert_req[index]) begin
+                fork
+                  begin
+                    // if previous alert_handler just finish, there is a max of two clock_cycle
+                    // pause in between
+                    `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
+                                      cfg.clk_rst_vif.wait_clks(1);,
+                                      cfg.clk_rst_vif.wait_clks(2);,
+                                      $sformatf("expect alert_%0d:%0s to fire", index, alert_name))
+
+                    // write alert_test during alert handshake will be ignored
+                    if ($urandom_range(1, 10) == 10) begin
+                      csr_wr(.csr(alert_test_csr), .value(1'b1 << index));
+                      `uvm_info(`gfn, "Write alert_test again during alert handshake", UVM_HIGH)
+                    end
+
+                    // drive alert response sequence
+                    drive_alert_rsp_and_check_handshake(alert_name, index);
+                  end
+                join_none
+              end else begin
+                fork
+                  begin
+                    cfg.clk_rst_vif.wait_clks($urandom_range(0, 3));
+                    `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 0,
+                                 $sformatf("alert_test did not set alert:%0s", alert_name))
+
+                    // test alert_test write when there is ongoing alert handshake
+                    if ($urandom_range(1, 10) == 10) begin
+                      `uvm_info(`gfn,
+                                $sformatf("Write alert_test with val %0h during alert_handshake",
+                                1'b1 << index), UVM_HIGH)
+                      csr_wr(.csr(alert_test_csr), .value(1'b1 << index));
+                      `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
+                                        cfg.clk_rst_vif.wait_clks(1);,
+                                        cfg.clk_rst_vif.wait_clks(2);,
+                                        $sformatf("expect alert_%0d:%0s to fire",
+                                                  index, alert_name))
+                      drive_alert_rsp_and_check_handshake(alert_name, index);
+                    end
+                  end
+                join_none
+              end
+            end // end for loop
+            wait fork;
+          end
+        join
+
+        // check no alert triggers continuously
+        foreach (cfg.list_of_alerts[i]) begin
+          `DV_CHECK_EQ(cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].vif.get_alert(), 0,
+                       $sformatf("expect alert:%0s to stay low", cfg.list_of_alerts[i]))
+        end
+      end // end repeat
+    end
+  endtask
+
+  virtual task drive_alert_rsp_and_check_handshake(string alert_name, int alert_index);
+    alert_receiver_alert_rsp_seq ack_seq =
+        alert_receiver_alert_rsp_seq::type_id::create("ack_seq");
+    `DV_CHECK_RANDOMIZE_FATAL(ack_seq);
+    ack_seq.start(p_sequencer.alert_esc_sequencer_h[alert_name]);
+
+    `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
+                 $sformatf("timeout wait for alert_%0d handshake:%0s", alert_index, alert_name))
+
+    if (cfg.m_alert_agent_cfg[alert_name].is_async) cfg.clk_rst_vif.wait_clks(2);
   endtask
 
   // override csr_vseq to control adapter to abort transaction
@@ -646,7 +734,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                            while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
                            cfg.clk_rst_vif.wait_clks(1);
                          end,
-                         $sformatf("%0s update_err alert not detected", test_csrs[i].get_name()));
+                         $sformatf("%0s update_err alert not detected", test_csrs[i].get_name()))
             `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
                          $sformatf("timeout for alert:%0s", alert_name))
             test_csrs[i].clear_shadow_update_err();

@@ -1,0 +1,9 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for edn
+
+waive -rules INPUT_NOT_READ -location {prim_arbiter_ppc.sv} \
+      -regexp {Input port 'data_i' is not read from, instance*} \
+      -comment "Because the parameter EnDataPort is not set, the data input is not used"

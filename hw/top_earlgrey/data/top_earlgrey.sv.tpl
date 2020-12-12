@@ -254,8 +254,8 @@ module top_${top["name"]} #(
 
   // TODO: this will be routed to the pinmux for TAP selection
   // based on straps and LC control signals.
-  rv_dm_pkg::jtag_req_t jtag_req;
-  rv_dm_pkg::jtag_rsp_t jtag_rsp;
+  jtag_pkg::jtag_req_t jtag_req;
+  jtag_pkg::jtag_rsp_t jtag_rsp;
   logic unused_jtag_tdo_oe_o;
 
   assign jtag_req.tck    = jtag_tck_i;
@@ -479,6 +479,11 @@ module top_${top["name"]} #(
     .host_rdata_o    (flash_host_rdata),
     .flash_ctrl_i    (${m["inter_signal_list"][0]["top_signame"]}_req),
     .flash_ctrl_o    (${m["inter_signal_list"][0]["top_signame"]}_rsp),
+    .lc_dft_en_i     (lc_ctrl_pkg::LC_TX_DEFAULT),
+    .tck_i           ('0),
+    .tdi_i           ('0),
+    .tms_i           ('0),
+    .tdo_o           (),
     .flash_power_down_h_i,
     .flash_power_ready_h_i,
     .flash_test_mode_a_i,

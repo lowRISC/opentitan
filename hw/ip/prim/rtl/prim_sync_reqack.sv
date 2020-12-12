@@ -150,9 +150,9 @@ module prim_sync_reqack (
   end
 
   // Source domain cannot de-assert REQ while waiting for ACK.
-  `ASSERT(ReqAckSyncHoldReq, $fell(src_req_i) |-> (src_fsm_cs != HANDSHAKE), clk_src_i, rst_src_ni)
+  `ASSERT(ReqAckSyncHoldReq, $fell(src_req_i) |-> (src_fsm_cs != HANDSHAKE), clk_src_i, !rst_src_ni)
 
   // Destination domain cannot assert ACK without REQ.
-  `ASSERT(ReqAckSyncAckNeedsReq, dst_ack_i |-> dst_req_o, clk_dst_i, rst_dst_ni)
+  `ASSERT(ReqAckSyncAckNeedsReq, dst_ack_i |-> dst_req_o, clk_dst_i, !rst_dst_ni)
 
 endmodule

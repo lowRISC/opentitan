@@ -4,15 +4,15 @@
 
 from typing import List, Optional
 
-from riscvmodel.types import Trace  # type: ignore
+from .trace import Trace
 
 
-class TraceWSR(Trace):  # type: ignore
+class TraceWSR(Trace):
     def __init__(self, wsr_name: str, new_value: int):
         self.wsr_name = wsr_name
         self.new_value = new_value
 
-    def __str__(self) -> str:
+    def trace(self) -> str:
         return '{} = {:#x}'.format(self.wsr_name, self.new_value)
 
 

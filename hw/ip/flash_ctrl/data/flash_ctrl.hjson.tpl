@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "FLASH_CTRL",
   clock_primary: "clk_i",
+  other_clock_list: [ "clk_otp_i" ],
+  reset_primary: "rst_ni",
+  other_reset_list: [ "rst_otp_ni" ]
   bus_device: "tlul",
   interrupt_list: [
     { name: "prog_empty", desc: "Program FIFO empty" },
@@ -22,19 +25,47 @@
       package: "flash_ctrl_pkg", // Origin package (only needs for the requester)
     },
 
-    { struct: "otp_flash",
-      type: "uni",
+    { struct: "flash_otp_key",
+      type: "req_rsp",
       name: "otp",
-      act:  "rcv",
-      package: "flash_ctrl_pkg"
+      act:  "req",
+      package: "otp_ctrl_pkg"
     },
 
-    { struct: "lc_tx",
-      type: "uni",
-      name: "lc_provision_en",
-      act:  "rcv",
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_creator_seed_sw_rw_en"
+      act:     "rcv"
       package: "lc_ctrl_pkg"
     },
+
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_owner_seed_sw_rw_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
+
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_iso_part_sw_rd_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
+
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_iso_part_sw_wr_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
+
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_seed_hw_rd_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    }
 
     { struct: "lc_flash",
       type: "req_rsp",
@@ -69,6 +100,20 @@
   param_list: [
     // The reg parameters can be modified directly through top_*.hjson.
     // The template will automatically propagate the appropriate values.
+
+    // Random netlist constants
+    { name:      "RndCnstAddrKey",
+      desc:      "Compile-time random bits for default address key",
+      type:      "flash_ctrl_pkg::flash_key_t"
+      randcount: "128",
+      randtype:  "data", // randomize randcount databits
+    }
+    { name:      "RndCnstDataKey",
+      desc:      "Compile-time random bits for default data key",
+      type:      "flash_ctrl_pkg::flash_key_t"
+      randcount: "128",
+      randtype:  "data", // randomize randcount databits
+    }
     { name: "RegNumBanks",
       desc: "Number of flash banks",
       type: "int",
@@ -321,7 +366,30 @@
       ]
     },
 
-    // Data partition memory protection region setup
+    // Program type
+    { name: "PROG_TYPE_EN",
+      desc: "Enable different program types",
+      swaccess: "rw0c",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          resval: "1",
+          name: "NORMAL",
+          desc: '''
+            Normal prog type available
+            '''
+        },
+        { bits: "1",
+          resval: "1",
+          name: "REPAIR",
+          desc: '''
+            Repair prog type available
+            '''
+        },
+      ]
+    },
+
+    // Data partition memory properties region setup
     { multireg: {
         cname: "FLASH_CTRL",
         name: "REGION_CFG_REGWEN"
@@ -357,7 +425,7 @@
     { multireg: {
         cname: "FLASH_CTRL",
         name: "MP_REGION_CFG",
-        desc: "Memory protection configuration for data partition",
+        desc: "Memory property configuration for data partition",
         count: "NumRegions",
         swaccess: "rw",
         hwaccess: "hro",
@@ -406,6 +474,13 @@
               ''',
               resval: "0"
             }
+            { bits: "6",
+              name: "HE_EN",
+              desc: '''
+                Region is high endurance enabled.
+              ''',
+              resval: "0"
+            }
             { bits: "16:8",
               name: "BASE",
               desc: '''
@@ -424,9 +499,9 @@
       },
     },
 
-    // Default region permissions for data partition memory protection
+    // Default region properties for data partition
     { name: "DEFAULT_REGION",
-      desc: "Default region permissions",
+      desc: "Default region properties",
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
@@ -466,10 +541,17 @@
           ''',
           resval: "0"
         }
+        { bits: "5",
+          name: "HE_EN",
+          desc: '''
+            Region is high endurance enabled
+          ''',
+          resval: "0"
+        }
       ]
     },
 
-    // Info partition memory protection setup
+    // Info partition memory properties setup
     % for bank in range(cfg['banks']):
     %   for idx in range(cfg['info_types']):
     { multireg: {
@@ -508,8 +590,8 @@
         cname: "FLASH_CTRL",
         name: "BANK${bank}_INFO${idx}_PAGE_CFG",
         desc: '''
-                Memory protection configuration for info partition in bank${bank},
-                Unlike data partition, each page is individually protected.
+                Memory property configuration for info partition in bank${bank},
+                Unlike data partition, each page is individually configured.
               '''
         count: "NumInfos${idx}",
         swaccess: "rw",
@@ -559,6 +641,13 @@
               ''',
               resval: "0"
             }
+            { bits: "6",
+              name: "HE_EN",
+              desc: '''
+                Region is high endurance enabled.
+              ''',
+              resval: "0"
+            }
         ],
       },
     },
@@ -595,7 +684,7 @@
     { multireg: {
         cname: "FLASH_CTRL",
         name: "MP_BANK_CFG",
-        desc: "Memory protect bank configuration",
+        desc: "Memory properties bank configuration",
         count: "RegNumBanks",
         swaccess: "rw",
         hwaccess: "hro",

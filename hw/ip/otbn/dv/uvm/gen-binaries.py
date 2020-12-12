@@ -189,8 +189,9 @@ def write_ninja(handle: TextIO, rig_count: int, start_seed: int,
                          otbn_ld=toolchain.otbn_ld))
 
     handle.write('rule ld1\n'
-                 '  command = {otbn_ld} -o $out $in\n\n'
-                 .format(otbn_ld=toolchain.otbn_ld))
+                 '  command = RV32_TOOL_LD={rv32_ld} {otbn_ld} -o $out $in\n\n'
+                 .format(rv32_ld=toolchain.rv32_tool_ld,
+                         otbn_ld=toolchain.otbn_ld))
 
     for seed in seeds:
         # Generate the .s and .ld files.

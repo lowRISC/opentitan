@@ -14,12 +14,22 @@
 
 `include "prim_assert.sv"
 
-module flash_ctrl import flash_ctrl_pkg::*; (
+module flash_ctrl import flash_ctrl_pkg::*; #(
+  parameter flash_key_t RndCnstAddrKey = RndCnstAddrKeyDefault,
+  parameter flash_key_t RndCnstDataKey = RndCnstDataKeyDefault
+) (
   input        clk_i,
   input        rst_ni,
 
+  input        clk_otp_i,
+  input        rst_otp_ni,
+
   // life cycle interface
-  lc_ctrl_pkg::lc_tx_t lc_provision_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_owner_seed_sw_rw_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
 
   // Bus Interface
   input        tlul_pkg::tl_h2d_t tl_i,
@@ -30,7 +40,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   output       flash_req_t flash_o,
 
   // otp/lc/pwrmgr/keymgr Interface
-  input        otp_flash_t otp_i,
+  output       otp_ctrl_pkg::flash_otp_key_req_t otp_o,
+  input        otp_ctrl_pkg::flash_otp_key_rsp_t otp_i,
   input        lc_flash_req_t lc_i,
   output       lc_flash_rsp_t lc_o,
   input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
@@ -109,7 +120,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic prog_done, rd_done, erase_done;
   logic prog_err, rd_err, erase_err;
 
-  // Flash Memory Protection Connections
+  // Flash Memory Properties Connections
   logic [BusAddrW-1:0] flash_addr;
   logic flash_req;
   logic flash_rd_done, flash_prog_done, flash_erase_done;
@@ -127,6 +138,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   flash_lcmgr_phase_e phase;
 
   // Flash control arbitration connections to hardware interface
+  flash_key_t addr_key;
+  flash_key_t data_key;
   flash_ctrl_reg2hw_control_reg_t hw_ctrl;
   logic hw_req;
   logic [top_pkg::TL_AW-1:0] hw_addr;
@@ -171,23 +184,62 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   logic lfsr_en;
 
   // life cycle connections
-  lc_ctrl_pkg::lc_tx_t [FlashLcLast-1:0] lc_provision_en;
+  lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en;
+  lc_ctrl_pkg::lc_tx_t lc_owner_seed_sw_rw_en;
+  lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en;
+  lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en;
+  lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en;
 
-  // synchronize provision enable into local domain
+  // synchronize enables into local domain
   prim_lc_sync #(
-    .NumCopies(int'(FlashLcLast))
-  ) u_lc_provision_en_sync (
+    .NumCopies(1)
+  ) u_lc_creator_seed_sw_rw_en_sync (
     .clk_i,
     .rst_ni,
-    .lc_en_i(lc_provision_en_i),
-    .lc_en_o(lc_provision_en)
+    .lc_en_i(lc_creator_seed_sw_rw_en_i),
+    .lc_en_o(lc_creator_seed_sw_rw_en)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_owner_seed_sw_rw_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_owner_seed_sw_rw_en_i),
+    .lc_en_o(lc_owner_seed_sw_rw_en)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_iso_part_sw_rd_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_iso_part_sw_rd_en_i),
+    .lc_en_o(lc_iso_part_sw_rd_en)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_iso_part_sw_wr_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_iso_part_sw_wr_en_i),
+    .lc_en_o(lc_iso_part_sw_wr_en)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_seed_hw_rd_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_seed_hw_rd_en_i),
+    .lc_en_o(lc_seed_hw_rd_en)
   );
 
   prim_lfsr #(
-    .DefaultSeed(),
     .EntropyDw(4),
-    .LfsrDw(32),
-    .StateOutDw(32)
+    .LfsrDw(LfsrWidth),
+    .StateOutDw(LfsrWidth)
   ) u_lfsr (
     .clk_i,
     .rst_ni,
@@ -282,23 +334,25 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign erase_op      = op_type == FlashOpErase;
   assign sw_sel        = if_sel == SwSel;
 
+  // software privilege to creator seed
+  assign creator_seed_priv = lc_creator_seed_sw_rw_en == lc_ctrl_pkg::On;
+
+  // software privilege to owner seed
+  assign owner_seed_priv = lc_owner_seed_sw_rw_en == lc_ctrl_pkg::On;
+
   // hardware interface
-
-  // software only has privilege to change creator seed when provision enable is set and
-  // before the the seed is set as valid in otp
-  assign creator_seed_priv = lc_provision_en[FlashLcCreatorSeedPriv] == lc_ctrl_pkg::On &
-                             ~otp_i.seed_valid;
-
-  // owner seed is under software control and can be modided whenever provision enable is set
-  assign owner_seed_priv = lc_provision_en[FlashLcOwnerSeedPriv] == lc_ctrl_pkg::On;
-
-  flash_ctrl_lcmgr u_flash_hw_if (
+  flash_ctrl_lcmgr #(
+    .RndCnstAddrKey(RndCnstAddrKey),
+    .RndCnstDataKey(RndCnstDataKey)
+  ) u_flash_hw_if (
     .clk_i,
     .rst_ni,
+    .clk_otp_i,
+    .rst_otp_ni,
 
     .init_i(pwrmgr_i.flash_init),
     .init_done_o(pwrmgr_o.flash_done),
-    .provision_en_i(lc_provision_en[FlashLcMgrIf] == lc_ctrl_pkg::On),
+    .provision_en_i(lc_seed_hw_rd_en == lc_ctrl_pkg::On),
 
     // interface to ctrl arb control ports
     .ctrl_o(hw_ctrl),
@@ -332,6 +386,12 @@ module flash_ctrl import flash_ctrl_pkg::*; (
 
     // phy read buffer enable
     .rd_buf_en_o(flash_o.rd_buf_en),
+
+    // connection to otp
+    .otp_key_req_o(otp_o),
+    .otp_key_rsp_i(otp_i),
+    .addr_key_o(addr_key),
+    .data_key_o(data_key),
 
     // init ongoing
     .init_busy_o(ctrl_init_busy)
@@ -381,12 +441,11 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   );
 
   // Program handler is consumer of prog_fifo
-
-  // OTP control bits can be used to explicitly disable repair
-  logic [ProgTypes-1:0] otp_en;
-  assign otp_en[FlashProgNormal] = 1'b1;
-  assign otp_en[FlashProgRepair] = otp_i.prog_repair_en;
-
+  logic [1:0] prog_type_en;
+  assign prog_type_en[FlashProgNormal] = flash_i.prog_type_avail[FlashProgNormal] &
+                                         reg2hw.prog_type_en.normal.q;
+  assign prog_type_en[FlashProgRepair] = flash_i.prog_type_avail[FlashProgRepair] &
+                                         reg2hw.prog_type_en.repair.q;
   flash_ctrl_prog u_flash_ctrl_prog (
     .clk_i,
     .rst_ni,
@@ -398,7 +457,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .op_err_o       (prog_err),
     .op_addr_i      (op_addr),
     .op_type_i      (op_prog_type),
-    .type_avail_i   (flash_i.prog_type_avail & otp_en),
+    .type_avail_i   (prog_type_en),
 
     // FIFO Interface
     .data_i         (prog_fifo_rdata),
@@ -528,7 +587,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   end
 
   //////////////////////////////////////
-  // Data partition protection configuration
+  // Data partition properties configuration
   //////////////////////////////////////
   // extra region is the default region
   mp_region_cfg_t [MpRegions:0] region_cfgs;
@@ -543,9 +602,10 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign region_cfgs[MpRegions].erase_en.q = reg2hw.default_region.erase_en.q;
   assign region_cfgs[MpRegions].scramble_en.q = reg2hw.default_region.scramble_en.q;
   assign region_cfgs[MpRegions].ecc_en.q = reg2hw.default_region.ecc_en.q;
+  assign region_cfgs[MpRegions].he_en.q = reg2hw.default_region.he_en.q;
 
   //////////////////////////////////////
-  // Info partition protection configuration
+  // Info partition properties configuration
   //////////////////////////////////////
   info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] reg2hw_info_page_cfgs;
   info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs;
@@ -566,14 +626,15 @@ module flash_ctrl import flash_ctrl_pkg::*; (
         .cfgs_i(reg2hw_info_page_cfgs[i][j]),
         .creator_seed_priv_i(creator_seed_priv),
         .owner_seed_priv_i(owner_seed_priv),
-        .provision_en_i(lc_provision_en[FlashLcInfoCfg] == lc_ctrl_pkg::On),
+        .iso_flash_wr_en_i(lc_iso_part_sw_wr_en == lc_ctrl_pkg::On),
+        .iso_flash_rd_en_i(lc_iso_part_sw_rd_en == lc_ctrl_pkg::On),
         .cfgs_o(info_page_cfgs[i][j])
       );
     end
   end
 
   //////////////////////////////////////
-  // flash memory protection
+  // flash memory properties
   //////////////////////////////////////
   // direct assignment since prog/rd/erase_ctrl do not make use of op_part
   flash_part_e flash_part_sel;
@@ -581,8 +642,8 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   assign flash_part_sel = op_part;
   assign flash_info_sel = op_info_sel;
 
-  // Flash memory protection
-  // Memory protection is page based and thus should use phy addressing
+  // Flash memory Properties
+  // Memory property is page based and thus should use phy addressing
   // This should move to flash_phy long term
   flash_mp u_flash_mp (
     .clk_i,
@@ -619,6 +680,7 @@ module flash_ctrl import flash_ctrl_pkg::*; (
     .req_o(flash_o.req),
     .scramble_en_o(flash_o.scramble_en),
     .ecc_en_o(flash_o.ecc_en),
+    .he_en_o(flash_o.he_en),
     .rd_o(flash_o.rd),
     .prog_o(flash_o.prog),
     .pg_erase_o(flash_o.pg_erase),
@@ -665,12 +727,13 @@ module flash_ctrl import flash_ctrl_pkg::*; (
   // Flash Interface
   assign flash_o.addr = flash_addr;
   assign flash_o.part = flash_part_sel;
+  assign flash_o.info_sel = flash_info_sel;
   assign flash_o.prog_type = flash_prog_type;
   assign flash_o.prog_data = flash_prog_data;
   assign flash_o.prog_last = flash_prog_last;
   assign flash_o.region_cfgs = region_cfgs;
-  assign flash_o.addr_key = otp_i.addr_key;
-  assign flash_o.data_key = otp_i.data_key;
+  assign flash_o.addr_key = addr_key;
+  assign flash_o.data_key = data_key;
   assign flash_rd_err = flash_i.rd_err;
   assign flash_rd_data = flash_i.rd_data;
   assign flash_phy_busy = flash_i.init_busy;

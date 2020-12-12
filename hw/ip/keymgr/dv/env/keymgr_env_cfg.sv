@@ -16,6 +16,7 @@ class keymgr_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_reg_block));
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = keymgr_env_pkg::LIST_OF_ALERTS;
+    has_edn = 1;
     super.initialize(csr_base_addr);
 
     m_keymgr_kmac_agent_cfg = keymgr_kmac_agent_cfg::type_id::create("m_keymgr_kmac_agent_cfg");

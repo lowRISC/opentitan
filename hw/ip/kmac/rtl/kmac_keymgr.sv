@@ -78,7 +78,10 @@ module kmac_keymgr
   // and re-initiate.
   // If error happens, regardless of SW-initiated or KeyMgr-initiated, the error
   // is reported to the ERR_CODE so that SW can look into.
-  input error_i
+  input error_i,
+
+  // error_o value is pushed to Error FIFO at KMAC/SHA3 top and reported to SW
+  output kmac_pkg::err_t error_o
 );
 
   /////////////////
@@ -143,7 +146,11 @@ module kmac_keymgr
     // SW Controlled
     // If start request comes from SW first, until the operation ends, all
     // requests from KeyMgr will be discarded.
-    StSw = 4'b 0100
+    StSw = 4'b 0100,
+
+    // Error KeyNotValid
+    // When KeyMgr operates, the secret key is not ready yet.
+    StKeyMgrErrKeyNotValid = 4'b 1111
   } keyctrl_st_e;
 
   typedef enum logic [2:0] {
@@ -182,6 +189,10 @@ module kmac_keymgr
   // Mux selection signal
   mux_sel_e mux_sel;
 
+  // Error checking logic
+
+  kmac_pkg::err_t fsm_err, mux_err;
+
   /////////
   // FSM //
   /////////
@@ -204,12 +215,21 @@ module kmac_keymgr
     // Software output
     absorbed_o = 1'b 0;
 
+    // Error
+    fsm_err = '{valid: 1'b 0, code: ErrNone, info: '0};
+
     unique case (st)
       StIdle: begin
-        if (keymgr_data_i.valid) begin
+        if (keymgr_data_i.valid && keymgr_key_i.valid) begin
           st_d = StKeyMgrMsg;
           // KeyMgr initiates the data
           cmd_o = CmdStart;
+        end else if (keymgr_data_i.valid && !keymgr_key_i.valid) begin
+          st_d = StKeyMgrErrKeyNotValid;
+
+          fsm_err.valid = 1'b 1;
+          fsm_err.code = ErrKeyNotValid;
+          fsm_err.info = '0;
         end else if (sw_cmd_i == CmdStart) begin
           st_d = StSw;
           // Software initiates the sequence
@@ -268,6 +288,10 @@ module kmac_keymgr
         end
       end
 
+      StKeyMgrErrKeyNotValid: begin
+        st_d = StKeyMgrErrKeyNotValid;
+      end
+
       default: begin
         st_d = StIdle;
       end
@@ -291,7 +315,7 @@ module kmac_keymgr
   // to OutLen. OutLen is pre-defined values. See `EncodeOutLen` parameter above.
   always_comb begin
     keymgr_data_ready = 1'b 0;
-    sw_ready_o = 1'b 0;
+    sw_ready_o = 1'b 1;
 
     kmac_valid_o = 1'b 0;
     kmac_data_o = '0;
@@ -329,6 +353,29 @@ module kmac_keymgr
       end
 
     endcase
+  end
+
+  // Error checking for Mux
+  always_comb begin
+    mux_err = '{valid: 1'b 0, code: ErrNone, info: '0};
+
+    if (mux_sel != SelSw) begin
+      if (sw_valid_i) begin
+        // If SW writes message into FIFO
+        mux_err = '{
+          valid: 1'b 1,
+          code: ErrSwPushedMsgFifo,
+          info: 24'({8'h 00, 8'(st), 8'(mux_sel)})
+        };
+      end else if (!(sw_cmd_i inside {CmdNone, CmdStart})) begin
+        // If SW issues command except start
+        mux_err = '{
+          valid: 1'b 1,
+          code: ErrSwPushedWrongCmd,
+          info: 24'(sw_cmd_i)
+        };
+      end
+    end
   end
 
   // Keccak state Demux
@@ -387,6 +434,15 @@ module kmac_keymgr
     assign key_data_o[i] = (keymgr_key_en_i || (mux_sel == SelKeyMgr))
                          ? keymgr_key[i]
                          : reg_key_data_i[i] ;
+  end
+
+  // Error Reporting ==========================================================
+  always_comb begin
+    priority casez ({fsm_err.valid, mux_err.valid})
+      2'b ?1: error_o = mux_err;
+      2'b 1?: error_o = fsm_err;
+      default: error_o = '{valid: 1'b0, code: ErrNone, info: '0};
+    endcase
   end
 
   ////////////////

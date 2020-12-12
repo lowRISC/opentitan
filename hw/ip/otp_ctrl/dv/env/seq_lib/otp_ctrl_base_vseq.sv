@@ -15,6 +15,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   bit do_otp_pwr_init  = 1'b1;
 
   rand bit [NumOtpCtrlIntr-1:0] en_intr;
+  bit [TL_AW-1:0] used_dai_addr_q[$];
 
   `uvm_object_new
 
@@ -23,7 +24,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     cfg.backdoor_clear_mem = 0;
     // reset power init pin and lc pins
     cfg.pwr_otp_vif.drive_pin(OtpPwrInitReq, 0);
-    cfg.lc_provision_en_vif.drive(lc_ctrl_pkg::Off);
+    cfg.lc_provision_wr_en_vif.drive(lc_ctrl_pkg::Off);
     cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::Off);
     if (do_otp_ctrl_init) otp_ctrl_init();
     if (do_otp_pwr_init) otp_pwr_init();
@@ -46,6 +47,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     // reset memory to avoid readout X
     cfg.mem_bkdr_vif.clear_mem();
     cfg.backdoor_clear_mem = 1;
+    used_dai_addr_q.delete();
   endtask
 
   // some registers won't set to default value until otp_init is done
@@ -59,10 +61,16 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task dai_wr(bit [TL_DW-1:0] addr,
                       bit [TL_DW-1:0] wdata0,
                       bit [TL_DW-1:0] wdata1 = 0);
+    addr = randomize_dai_addr(addr);
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_wdata_0, wdata0);
-    if (!is_secret(addr)) csr_wr(ral.direct_access_wdata_1, wdata1);
+    if (is_secret(addr) || addr inside {CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset}) begin
+      csr_wr(ral.direct_access_wdata_1, wdata1);
+    end
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiWrite));
+    `uvm_info(`gfn, $sformatf("DAI write, address %0h, data0 %0h data1 %0h, is_secret = %0b",
+              addr, wdata0, wdata1, is_secret(addr)), UVM_DEBUG)
+
     csr_spinwait(ral.intr_state, 1 << OtpOperationDone);
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
   endtask : dai_wr
@@ -71,12 +79,13 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task dai_rd(bit [TL_DW-1:0]        addr,
                       output bit [TL_DW-1:0] rdata0,
                       output bit [TL_DW-1:0] rdata1);
+    addr = randomize_dai_addr(addr);
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
     csr_spinwait(ral.intr_state, 1 << OtpOperationDone);
 
     csr_rd(ral.direct_access_rdata_0, rdata0);
-    if (!is_secret(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
+    if (is_secret(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
   endtask : dai_rd
 
@@ -97,12 +106,29 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  // TODO: support checking all partitions within OTP
+  // SW digest data are calculated in sw and won't be checked in OTP.
+  // Here to simplify testbench, write random data to sw digest
+  virtual task write_sw_digests();
+    bit [TL_DW*2-1:0] rdata;
+    `DV_CHECK_STD_RANDOMIZE_FATAL(rdata);
+    dai_wr(CreatorSwCfgDigestOffset, rdata[TL_DW-1:0], rdata[TL_DW*2-1:TL_DW]);
+    `DV_CHECK_STD_RANDOMIZE_FATAL(rdata);
+    dai_wr(OwnerSwCfgDigestOffset, rdata[TL_DW-1:0], rdata[TL_DW*2-1:TL_DW]);
+  endtask
+
   // The digest CSR values are verified in otp_ctrl_scoreboard
   virtual task check_digests();
     bit [TL_DW-1:0] val;
-    csr_rd(.ptr(ral.hw_cfg_digest_0), .value(val));
-    csr_rd(.ptr(ral.hw_cfg_digest_1), .value(val));
+    csr_rd(.ptr(ral.creator_sw_cfg_digest_0), .value(val));
+    csr_rd(.ptr(ral.creator_sw_cfg_digest_1), .value(val));
+    csr_rd(.ptr(ral.hw_cfg_digest_0),         .value(val));
+    csr_rd(.ptr(ral.hw_cfg_digest_1),         .value(val));
+    csr_rd(.ptr(ral.secret0_digest_0),        .value(val));
+    csr_rd(.ptr(ral.secret0_digest_1),        .value(val));
+    csr_rd(.ptr(ral.secret1_digest_0),        .value(val));
+    csr_rd(.ptr(ral.secret1_digest_1),        .value(val));
+    csr_rd(.ptr(ral.secret2_digest_0),        .value(val));
+    csr_rd(.ptr(ral.secret2_digest_1),        .value(val));
   endtask
 
   virtual task req_sram_key(int index);
@@ -137,4 +163,28 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_send(flash_data_pull_seq)
   endtask
 
+  virtual task req_lc_transition();
+    // TODO: this two variables are constraints to lc_prog_pull_seq once it supports data
+    // constraint
+    lc_ctrl_pkg::lc_state_e lc_state;
+    lc_ctrl_pkg::lc_cnt_e lc_cnt;
+    push_pull_host_seq#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
+                        lc_prog_pull_seq;
+    `uvm_create_on(lc_prog_pull_seq, p_sequencer.lc_prog_pull_sequencer_h);
+    `DV_CHECK_STD_RANDOMIZE_FATAL(lc_state);
+    `DV_CHECK_STD_RANDOMIZE_FATAL(lc_cnt)
+    `DV_CHECK_RANDOMIZE_FATAL(lc_prog_pull_seq)
+    `uvm_send(lc_prog_pull_seq)
+  endtask
+
+  // first two or three LSB bits of DAI address can be randomized based on if it is secret
+  virtual function bit [TL_AW-1:0] randomize_dai_addr(bit [TL_AW-1:0] dai_addr);
+    if (is_secret(dai_addr)) begin
+      bit [2:0] rand_addr = $urandom();
+      randomize_dai_addr = {dai_addr[TL_DW-1:3], rand_addr};
+    end else begin
+      bit [1:0] rand_addr = $urandom();
+      randomize_dai_addr = {dai_addr[TL_DW-1:2], rand_addr};
+    end
+  endfunction
 endclass : otp_ctrl_base_vseq

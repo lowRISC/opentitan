@@ -15,6 +15,8 @@
                "-Mdir={build_ex}.csrc",
                "-o {build_ex}",
                "-f {sv_flist}",
+               // List multiple tops for the simulation. Prepend each top level with `-top`.
+               "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
                "+incdir+{build_dir}",
                // Turn on warnings for non-void functions called with return values ignored
                "+warn=SV-NFIVC",
@@ -132,10 +134,7 @@
                      "-parallel",
                      "-parallel_split 20",
                      // Use cov_db_dirs var for dir args; append -dir in front of each
-                     '''{eval_cmd} dirs=`echo {cov_db_dirs}`; dir_args=; \
-                     for d in $dirs; do dir_args="$dir_args -dir $d"; done; \
-                     echo $dir_args
-                     ''',
+                     "{eval_cmd} echo {cov_db_dirs} | sed -E 's/(\\S+)/-dir \\1/g'",
                      "-dbname {cov_merge_db_dir}"]
 
   // Generate coverage reports in text as well as html.
@@ -151,6 +150,40 @@
                         "-report {cov_report_dir}"]
   cov_report_txt:       "{cov_report_dir}/dashboard.txt"
   cov_report_page:      "dashboard.html"
+
+  // UNR related.
+  // All code coverage, assert isn't supported
+  cov_unr_metrics: "line+cond+fsm+tgl+branch"
+  cov_unr_dir:     "{scratch_base_path}/cov_unr"
+
+  cov_unr_common_build_opts: ["-sverilog -full64 -licqueue -ntb_opts uvm-1.2",
+                              "-timescale=1ns/1ps"]
+
+  // Use recommended UUM (Unified usage model) 3 steps flow. The other flow defines macro
+  // "SYNTHESIS", which we have used in design
+  cov_unr_build_cmd: [// Step 1
+                      "{job_prefix} vlogan {cov_unr_common_build_opts} &&",
+                      // Step 2
+                      "{job_prefix} vlogan {cov_unr_common_build_opts}",
+                      // grep all defines from {build_opts} from step 2
+                      '''{eval_cmd} opts=`echo {build_opts}`; defines=; d=; \
+                      for o in $opts; \
+                      do \
+                        d=`echo $o | grep -o '+define+.*'`; \
+                        defines="$defines $d"; \
+                      done; \
+                      echo $defines
+                      ''',
+                      "-f {sv_flist} &&",
+                      // Step 3
+                      "{job_prefix} vcs {cov_unr_common_build_opts}"]
+  cov_unr_build_opts: ["-cm {cov_unr_metrics}",
+                       "{vcs_cov_cfg_file}",
+                       "-unr={vcs_unr_cfg_file}",
+                       "{dut}"]
+
+  cov_unr_run_cmd:   ["{job_prefix} ./unrSimv"]
+  cov_unr_run_opts:  ["-unr"]
 
   // Analyzing coverage - this is done by invoking --cov-analyze switch. It opens up the
   // GUI for visual analysis.

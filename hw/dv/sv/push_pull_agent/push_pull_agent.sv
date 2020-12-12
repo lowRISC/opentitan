@@ -33,7 +33,7 @@ class push_pull_agent #(parameter int HostDataWidth = 32,
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.if_mode == dv_utils_pkg::Device) begin
-      monitor.req_port.connect(sequencer.req_fifo.analysis_export);
+      monitor.req_port.connect(sequencer.push_pull_req_fifo.analysis_export);
     end
   endfunction
 

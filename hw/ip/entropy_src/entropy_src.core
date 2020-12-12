@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
+      - lowrisc:prim:assert
       - lowrisc:prim:lfsr
       - lowrisc:ip:tlul
       - lowrisc:ip:entropy_src_pkg
@@ -66,10 +67,6 @@ targets:
     parameters:
       - SYNTHESIS=true
     tools:
-      ascentlint:
-        ascentlint_options:
-          - "-wait_license"
-          - "-stop_on_error"
       verilator:
         mode: lint-only
         verilator_options:

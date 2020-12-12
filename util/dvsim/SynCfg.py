@@ -12,17 +12,17 @@ import hjson
 from tabulate import tabulate
 
 from OneShotCfg import OneShotCfg
-from utils import print_msg_list, subst_wildcards
+from utils import VERBOSE, print_msg_list, subst_wildcards
 
 
 class SynCfg(OneShotCfg):
     """Derivative class for synthesis purposes.
     """
-    def __init__(self, flow_cfg_file, proj_root, args):
-        super().__init__(flow_cfg_file, proj_root, args)
 
-    def __post_init__(self):
-        super().__post_init__()
+    flow = 'syn'
+
+    def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
+        super().__init__(flow_cfg_file, hjson_data, args, mk_config)
         # Set the title for synthesis results.
         self.results_title = self.name.upper() + " Synthesis Results"
 
@@ -36,8 +36,9 @@ class SynCfg(OneShotCfg):
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
+        results_str += "### Branch: " + self.branch + "\n"
         results_str += "\n"
 
         self.results_summary_md = results_str + "\nNot supported yet.\n"
@@ -145,8 +146,9 @@ class SynCfg(OneShotCfg):
         # Generate results table for runs.
         results_str = "## " + self.results_title + "\n\n"
         results_str += "### " + self.timestamp_long + "\n"
-        if self.revision_string:
-            results_str += "### " + self.revision_string + "\n"
+        if self.revision:
+            results_str += "### " + self.revision + "\n"
+        results_str += "### Branch: " + self.branch + "\n"
         results_str += "### Synthesis Tool: " + self.tool.upper() + "\n\n"
 
         # TODO: extend this to support multiple build modes
@@ -389,9 +391,9 @@ class SynCfg(OneShotCfg):
             # QoR history
 
         # Write results to the scratch area
-        self.results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
-        log.info("Detailed results are available at %s", self.results_file)
-        with open(self.results_file, 'w') as f:
+        results_file = self.scratch_path + "/results_" + self.timestamp + ".md"
+        with open(results_file, 'w') as f:
             f.write(self.results_md)
 
+        log.log(VERBOSE, "[results page]: [%s] [%s]", self.name, results_file)
         return self.results_md

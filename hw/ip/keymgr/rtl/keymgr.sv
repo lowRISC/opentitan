@@ -8,10 +8,20 @@
 `include "prim_assert.sv"
 
 module keymgr import keymgr_pkg::*; #(
-  parameter logic AlertAsyncOn = 1'b1
+  parameter logic AlertAsyncOn                 = 1'b1,
+  parameter lfsr_seed_t RndCnstLfsrSeed        = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t RndCnstLfsrPerm        = RndCnstLfsrPermDefault,
+  parameter seed_t RndCnstRevisionSeed         = RndCnstRevisionSeedDefault,
+  parameter seed_t RndCnstCreatorIdentitySeed  = RndCnstCreatorIdentitySeedDefault,
+  parameter seed_t RndCnstOwnerIntIdentitySeed = RndCnstOwnerIntIdentitySeedDefault,
+  parameter seed_t RndCnstOwnerIdentitySeed    = RndCnstOwnerIdentitySeedDefault,
+  parameter seed_t RndCnstSoftOutputSeed       = RndCnstSoftOutputSeedDefault,
+  parameter seed_t RndCnstHardOutputSeed       = RndCnstHardOutputSeedDefault
 ) (
   input clk_i,
   input rst_ni,
+  input clk_edn_i,
+  input rst_edn_ni,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -28,8 +38,13 @@ module keymgr import keymgr_pkg::*; #(
 
   // the following signals should eventually be wrapped into structs from other modules
   input lc_data_t lc_i,
+  input otp_ctrl_pkg::otp_keymgr_key_t otp_key_i,
   input otp_data_t otp_i,
   input flash_ctrl_pkg::keymgr_flash_t flash_i,
+
+  // connection to edn
+  output edn_pkg::edn_req_t edn_o,
+  input edn_pkg::edn_rsp_t edn_i,
 
   // interrupts and alerts
   output logic intr_op_done_o,
@@ -43,7 +58,7 @@ module keymgr import keymgr_pkg::*; #(
   `ASSERT_INIT(AdvDataWidth_A, AdvDataWidth <= KDFMaxWidth)
   `ASSERT_INIT(IdDataWidth_A,  IdDataWidth  <= KDFMaxWidth)
   `ASSERT_INIT(GenDataWidth_A, GenDataWidth <= KDFMaxWidth)
-  `ASSERT_INIT(OutputKeyDiff_A, HardOutputKey != SoftOutputKey)
+  `ASSERT_INIT(OutputKeyDiff_A, RndCnstHardOutputSeed != RndCnstSoftOutputSeed)
 
   // Register module
   keymgr_reg2hw_t reg2hw;
@@ -73,19 +88,46 @@ module keymgr import keymgr_pkg::*; #(
   // The second case is less sensitive and is applied directly.  If the inputs
   // have more bits than the lfsr output, the lfsr value is simply replicated
 
+  logic seed_en;
+  logic [LfsrWidth-1:0] seed;
+  logic reseed_req;
+  logic reseed_ack;
+
+  keymgr_reseed_ctrl u_reseed_ctrl (
+    .clk_i,
+    .rst_ni,
+    .clk_edn_i,
+    .rst_edn_ni,
+    .reseed_req_i(reseed_req),
+    .reseed_ack_o(reseed_ack),
+    .reseed_interval_i(reg2hw.reseed_interval.q),
+    .edn_o,
+    .edn_i,
+    .seed_en_o(seed_en),
+    .seed_o(seed)
+  );
+
   logic [63:0] lfsr;
   logic ctrl_lfsr_en, data_lfsr_en, sideload_lfsr_en;
 
   prim_lfsr #(
-    .LfsrDw(64),
-    .StateOutDw(64)
+    .LfsrDw(LfsrWidth),
+    .StateOutDw(LfsrWidth),
+    .DefaultSeed(RndCnstLfsrSeed),
+    .StatePermEn(1'b1),
+    .StatePerm(RndCnstLfsrPerm)
   ) u_lfsr (
     .clk_i,
     .rst_ni,
     .lfsr_en_i(ctrl_lfsr_en | data_lfsr_en | sideload_lfsr_en),
-    .seed_en_i(1'b0),
-    .seed_i('0),
-    .entropy_i('0), // TBD, this should be hooked up to an entropy distribution pkg
+    // The seed update is skipped if there is an ongoing keymgr transaction.
+    // This is not really done for any functional purpose but more to simplify
+    // DV. When an invalid operation is selected, the keymgr just starts transmitting
+    // whatever is at the prng output, however, this may cause a dv protocol violation
+    // if a reseed happens to coincide.
+    .seed_en_i(seed_en & ~reg2hw.control.start.q),
+    .seed_i(seed),
+    .entropy_i('0),
     .state_o(lfsr)
   );
 
@@ -100,7 +142,6 @@ module keymgr import keymgr_pkg::*; #(
   logic wipe_key;
   logic [Shares-1:0][KeyWidth-1:0] kmac_key;
   logic op_done;
-  logic init_done;
   logic data_valid;
   logic kmac_done;
   logic kmac_input_invalid;
@@ -109,23 +150,25 @@ module keymgr import keymgr_pkg::*; #(
   logic kmac_op_err;
   logic [Shares-1:0][KeyWidth-1:0] kmac_data;
   logic [ErrLastPos-1:0] err_code;
+  logic sw_binding_unlock;
 
   keymgr_ctrl u_ctrl (
     .clk_i,
     .rst_ni,
     .en_i(lc_i.keymgr_en),
+    .prng_reseed_req_o(reseed_req),
+    .prng_reseed_ack_i(reseed_ack),
     .prng_en_o(ctrl_lfsr_en),
-    .entropy_i(lfsr[63:32]),  // TBD, recommend directly interfacing with DRBG for keymgr_ctrl
-    .init_i(reg2hw.control.init.q),
-    .init_done_o(init_done),
+    .entropy_i(lfsr[63:32]),
     .op_i(keymgr_ops_e'(reg2hw.control.operation.q)),
     .op_start_i(reg2hw.control.start.q),
     .op_done_o(op_done),
+    .sw_binding_unlock_o(sw_binding_unlock),
     .status_o(hw2reg.op_status.d),
     .error_o(err_code),
     .data_valid_o(data_valid),
     .working_state_o(hw2reg.working_state.d),
-    .root_key_i(otp_i.root_key),
+    .root_key_i(otp_key_i),
     .hw_sel_o(key_sel),
     .stage_sel_o(stage_sel),
     .load_key_o(load_key),
@@ -144,8 +187,6 @@ module keymgr import keymgr_pkg::*; #(
 
   assign hw2reg.control.start.d  = '0;
   assign hw2reg.control.start.de = op_done;
-  assign hw2reg.control.init.d  = '0;
-  assign hw2reg.control.init.de = init_done;
   // as long as operation is ongoing, capture status
   assign hw2reg.op_status.de = reg2hw.control.start.q;
 
@@ -157,10 +198,14 @@ module keymgr import keymgr_pkg::*; #(
     .clk_i,
     .rst_ni,
     .en_i(lc_i.keymgr_en),
-    .set_i(op_done | init_done),
-    .clr_i(reg2hw.control.start.q | reg2hw.control.init.q),
+    .set_i(reg2hw.control.start.q & op_done),
+    .clr_i(reg2hw.control.start.q),
     .out_o(hw2reg.cfgen.d)
   );
+
+  // we can only unlock on a successful advance call
+  assign hw2reg.sw_binding_en.d = reg2hw.control.operation.q == OpAdvance;
+  assign hw2reg.sw_binding_en.de = sw_binding_unlock;
 
   /////////////////////////////////////
   //  Key Manager Input Construction
@@ -190,8 +235,8 @@ module keymgr import keymgr_pkg::*; #(
   // Advance to creator_root_key
   logic [KeyWidth-1:0] creator_seed;
   assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
-  assign adv_matrix[Creator] = AdvDataWidth'({reg2hw.rom_ext_desc,
-                                              RevisionSecret,
+  assign adv_matrix[Creator] = AdvDataWidth'({reg2hw.sw_binding,
+                                              RndCnstRevisionSeed,
                                               otp_i.devid,
                                               lc_i.health_state,
                                               creator_seed});
@@ -199,10 +244,10 @@ module keymgr import keymgr_pkg::*; #(
   // Advance to owner_intermediate_key
   logic [KeyWidth-1:0] owner_seed;
   assign owner_seed = flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx];
-  assign adv_matrix[OwnerInt] = AdvDataWidth'({reg2hw.software_binding,owner_seed});
+  assign adv_matrix[OwnerInt] = AdvDataWidth'({reg2hw.sw_binding,owner_seed});
 
   // Advance to owner_key
-  assign adv_matrix[Owner]   = AdvDataWidth'(reg2hw.software_binding);
+  assign adv_matrix[Owner]   = AdvDataWidth'(reg2hw.sw_binding);
 
 
   // Generate Identity operation input construction
@@ -210,15 +255,15 @@ module keymgr import keymgr_pkg::*; #(
     assign id_matrix[i] = {IdLfsrCopies{lfsr[31:0]}};
   end
 
-  assign id_matrix[Creator]  = CreatorIdentityKey;
-  assign id_matrix[OwnerInt] = OwnerIntIdentityKey;
-  assign id_matrix[Owner]    = OwnerIdentityKey;
+  assign id_matrix[Creator]  = RndCnstCreatorIdentitySeed;
+  assign id_matrix[OwnerInt] = RndCnstOwnerIntIdentitySeed;
+  assign id_matrix[Owner]    = RndCnstOwnerIdentitySeed;
 
 
   // Generate output operation input construction
   logic [KeyWidth-1:0] output_key;
 
-  assign output_key = (key_sel == HwKey) ? HardOutputKey : SoftOutputKey;
+  assign output_key = (key_sel == HwKey) ? RndCnstHardOutputSeed : RndCnstSoftOutputSeed;
   assign gen_in = (stage_sel == Disable) ? {GenLfsrCopies{lfsr[31:0]}} : {reg2hw.key_version,
                                                                           reg2hw.salt,
                                                                           output_key};
@@ -288,7 +333,7 @@ module keymgr import keymgr_pkg::*; #(
   keymgr_sideload_key_ctrl u_sideload_ctrl (
     .clk_i,
     .rst_ni,
-    .init_i(init_done),
+    .init_i(op_done),
     .entropy_i(key_entropy),
     .wipe_key_i(wipe_key),
     .dest_sel_i(keymgr_key_dest_e'(reg2hw.control.dest_sel)),

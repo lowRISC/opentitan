@@ -22,7 +22,8 @@ def check_keys(obj, required_keys, optional_keys, err_prefix):
         elif x in optional_keys:
             type = optional_keys[x][0]
         else:
-            log.warning(err_prefix + " contains extra key " + x)
+            log.warning(err_prefix + " contains extra key rmn " + x)
+#            log.warning('{} contains extra key {!r}'.format(err_prefix, x))
 
     return error
 
@@ -35,7 +36,7 @@ field_required = {
 field_optional = {
     'design_spec':
     ['s', "path to the design specification, relative to repo root"],
-    'dv_plan': ['s', "path to the DV plan, relative to repo root"],
+    'dv_doc': ['s', "path to the DV plan, relative to repo root"],
     'hw_checklist': ['s', "path to the hw_checklist, relative to repo root"],
     'sw_checklist': ['s', "path to the sw_checklist, relative to repo root"],
     'design_stage': ['s', "design stage of module"],

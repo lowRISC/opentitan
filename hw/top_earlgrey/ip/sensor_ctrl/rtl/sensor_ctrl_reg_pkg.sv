@@ -91,7 +91,7 @@ package sensor_ctrl_reg_pkg;
   ///////////////////////////////////////
   typedef struct packed {
     sensor_ctrl_hw2reg_alert_state_mreg_t [6:0] alert_state; // [16:3]
-    sensor_ctrl_hw2reg_status_reg_t status; // [2:3]
+    sensor_ctrl_hw2reg_status_reg_t status; // [2:0]
   } sensor_ctrl_hw2reg_t;
 
   // Register Address

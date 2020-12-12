@@ -26,7 +26,12 @@ module flash_phy import flash_ctrl_pkg::*; (
   input flash_power_ready_h_i,
   input flash_power_down_h_i,
   input [1:0] flash_test_mode_a_i,
-  input flash_test_voltage_h_i
+  input flash_test_voltage_h_i,
+  input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
+  input tck_i,
+  input tdi_i,
+  input tms_i,
+  output logic tdo_o
 );
 
   // Flash macro outstanding refers to how many reads we allow a macro to move ahead of an
@@ -175,6 +180,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .req_i(ctrl_req),
       .scramble_en_i(flash_ctrl_i.scramble_en),
       .ecc_en_i(flash_ctrl_i.ecc_en),
+      .he_en_i(flash_ctrl_i.he_en),
       // host request must be suppressed if response fifo cannot hold more
       // otherwise the flash_phy_core and flash_phy will get out of sync
       .host_req_i(host_req),
@@ -186,6 +192,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .pg_erase_i(flash_ctrl_i.pg_erase),
       .bk_erase_i(flash_ctrl_i.bk_erase),
       .part_i(flash_ctrl_i.part),
+      .info_sel_i(flash_ctrl_i.info_sel),
       .addr_i(flash_ctrl_i.addr[0 +: BusBankAddrW]),
       .prog_data_i(flash_ctrl_i.prog_data),
       .prog_last_i(flash_ctrl_i.prog_last),
@@ -205,9 +212,25 @@ module flash_phy import flash_ctrl_pkg::*; (
     );
   end // block: gen_flash_banks
 
+  // life cycle handling
+  logic tdo;
+  lc_ctrl_pkg::lc_tx_t [FlashLcJtagLast-1:0] lc_dft_en;
+
+  assign tdo_o = tdo & (lc_dft_en[FlashLcTdoSel] == lc_ctrl_pkg::On);
+
+  prim_lc_sync #(
+    .NumCopies(int'(FlashLcJtagLast))
+  ) u_lc_dft_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_dft_en_i),
+    .lc_en_o(lc_dft_en)
+  );
+
   prim_flash #(
     .NumBanks(NumBanks),
     .InfosPerBank(InfosPerBank),
+    .InfoTypes(InfoTypes),
     .PagesPerBank(PagesPerBank),
     .WordsPerPage(WordsPerPage),
     .DataWidth(flash_phy_pkg::FullDataWidth),
@@ -219,10 +242,10 @@ module flash_phy import flash_ctrl_pkg::*; (
     .flash_rsp_o(prim_flash_rsp),
     .prog_type_avail_o(prog_type_avail),
     .init_busy_o(init_busy),
-    .tck_i('0),
-    .tdi_i('0),
-    .tms_i('0),
-    .tdo_o(),
+    .tck_i(tck_i & (lc_dft_en[FlashLcTckSel] == lc_ctrl_pkg::On)),
+    .tdi_i(tdi_i & (lc_dft_en[FlashLcTdiSel] == lc_ctrl_pkg::On)),
+    .tms_i(tms_i & (lc_dft_en[FlashLcTmsSel] == lc_ctrl_pkg::On)),
+    .tdo_o(tdo),
     .scanmode_i,
     .scan_rst_ni,
     .flash_power_ready_h_i,

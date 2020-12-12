@@ -14,13 +14,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   // lifecycle enforcement
   input en_i,
 
-  // entropy input
-  input [(LfsrWidth/2)-1:0] entropy_i,
-  output logic prng_en_o,
-
   // Software interface
-  input init_i,
-  output logic init_done_o,
   input op_start_i,
   input keymgr_ops_e op_i,
   output logic op_done_o,
@@ -29,9 +23,10 @@ module keymgr_ctrl import keymgr_pkg::*;(
   output logic data_valid_o,
   output logic wipe_key_o,
   output keymgr_working_state_e working_state_o,
+  output logic sw_binding_unlock_o,
 
   // Data input
-  input  [KeyWidth-1:0] root_key_i,
+  input  otp_ctrl_pkg::otp_keymgr_key_t root_key_i,
   output keymgr_gen_out_e hw_sel_o,
   output keymgr_stage_e stage_sel_o,
 
@@ -46,13 +41,33 @@ module keymgr_ctrl import keymgr_pkg::*;(
   input kmac_fsm_err_i, // asserted when kmac fsm reaches unexpected state
   input kmac_op_err_i,  // asserted when kmac itself reports an error
   input kmac_cmd_err_i, // asserted when more than one command given to kmac
-  input [Shares-1:0][KeyWidth-1:0] kmac_data_i
+  input [Shares-1:0][KeyWidth-1:0] kmac_data_i,
+
+  // prng control interface
+  input [(LfsrWidth/2)-1:0] entropy_i,
+  input prng_reseed_ack_i,
+  output logic prng_reseed_req_o,
+  output logic prng_en_o
 );
+
   localparam int EntropyWidth = LfsrWidth / 2;
   localparam int EntropyRounds = KeyWidth / EntropyWidth;
   localparam int CntWidth = $clog2(EntropyRounds + 1);
 
-  keymgr_working_state_e state_q, state_d;
+  // Enumeration for working state
+  typedef enum logic [3:0] {
+    StCtrlReset = 0,
+    StCtrlEntropyReseed = 1,
+    StCtrlRandom = 2,
+    StCtrlInit = 3,
+    StCtrlCreatorRootKey = 4,
+    StCtrlOwnerIntKey = 5,
+    StCtrlOwnerKey = 6,
+    StCtrlWipe = 7,
+    StCtrlDisabled = 8
+  } keymgr_ctrl_state_e;
+
+  keymgr_ctrl_state_e state_q, state_d;
   logic [Shares-1:0][EntropyRounds-1:0][EntropyWidth-1:0] key_state_q, key_state_d;
 
   logic [CntWidth-1:0] cnt;
@@ -84,12 +99,16 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
   // disable is selected whenever a normal operation is not, and when
   // keymgr is disabled
-  assign disable_sel    = !(gen_sel | advance_sel) | !en_i;
+  assign disable_sel    = (op_start_i & !(gen_sel | advance_sel)) |
+                          !en_i;
 
   assign adv_en_o   = op_accepted & (advance_sel | disable_sel);
   assign id_en_o    = op_accepted & gen_id_sel;
   assign gen_en_o   = op_accepted & gen_out_sel;
   assign load_key_o = adv_en_o & !adv_en_q;
+
+  // unlock sw binding configuration whenever an advance call is made without errors
+  assign sw_binding_unlock_o = adv_en_o & op_done_o & ~|error_o;
 
   // check incoming kmac data validity
   // also check inputs used during compute
@@ -99,7 +118,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   // Unlike the key state, the working state can be safely reset.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      state_q <= StReset;
+      state_q <= StCtrlReset;
       adv_en_q <= 1'b0;
     end else begin
       state_q <= state_d;
@@ -108,9 +127,10 @@ module keymgr_ctrl import keymgr_pkg::*;(
   end
 
   // prevents unknowns from reaching the outside world.
-  // whatever operation causes the input data select to be disabled should
-  // also not expose the key state
-  assign key_o = disable_sel ? {EntropyRounds * Shares {entropy_i}} : key_state_q;
+  // - whatever operation causes the input data select to be disabled should not expose the key
+  //   state.
+  // - when there are no operations, the key state also should be exposed.
+  assign key_o = (~op_start_i | disable_sel) ? {EntropyRounds * Shares {entropy_i}} : key_state_q;
 
   // key state is intentionally not reset
   always_ff @(posedge clk_i) begin
@@ -129,6 +149,21 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
   assign kmac_op_err = kmac_cmd_err_i | kmac_fsm_err_i | kmac_op_err_i;
 
+  // root key valid sync
+  logic root_key_valid_q;
+
+  prim_flop_2sync # (
+    .Width(1)
+  ) u_key_valid_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(root_key_i.valid),
+    .q_o(root_key_valid_q)
+  );
+
+  // TODO: Create a no select option, do not leave this as binary
+  assign hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
+
   always_comb begin
     // persistent data
     state_d = state_q;
@@ -141,39 +176,45 @@ module keymgr_ctrl import keymgr_pkg::*;(
     invalid_op = 1'b0;
 
     // data update and select signals
-    hw_sel_o = HwKey;
     stage_sel_o = Disable;
 
     // enable prng toggling
+    prng_reseed_req_o = 1'b0;
     prng_en_o = 1'b0;
 
     op_done_o = 1'b0;
-    init_done_o = 1'b0;
     wipe_key_o = 1'b0;
 
     unique case (state_q)
-      // This state does not accept any command. Issuing any command
-      // will cause an immediate error
-      StReset: begin
+      // Only advance can be called from reset state
+      StCtrlReset: begin
         // in reset state, don't enable entropy yet, since there are no users.
-        // long term, this should be replaced by a req/ack with csrng
         prng_en_o = 1'b0;
-        op_done_o = op_start_i;
-        invalid_op = op_start_i;
 
-        // When initialization command is given, begin.
-        // Note, if init is called at the same time as start, it is considered
-        // an invalid command sequence.
-        if (init_i && !invalid_op && en_i) begin
-          state_d = StRandom;
-        end else begin
-          state_d = StReset;
-          init_done_o = init_i & invalid_op;
+        // always use random data for advance, since out of reset state
+        // the key state will be randomized.
+        stage_sel_o = Disable;
+
+        // key state is updated when it is an advance call
+        // all other operations are invalid, including disable
+        if (advance_sel) begin
+          state_d = StCtrlEntropyReseed;
+        end else if (op_start_i) begin
+          op_done_o = 1'b1;
+          invalid_op = 1'b1;
+        end
+      end
+
+      // reseed entropy
+      StCtrlEntropyReseed: begin
+        prng_reseed_req_o = 1'b1;
+        if (prng_reseed_ack_i) begin
+          state_d = StCtrlRandom;
         end
       end
 
       // This state does not accept any command.
-      StRandom: begin
+      StCtrlRandom: begin
         prng_en_o = 1'b1;
 
         // populate both shares with the same entropy
@@ -189,100 +230,106 @@ module keymgr_ctrl import keymgr_pkg::*;(
         // the values here
         else begin
           cnt_clr = 1'b1;
-          key_state_d[0] = key_state_q[0] ^ root_key_i;
-          init_done_o = 1'b1;
-          state_d = StInit;
+
+          // absorb key if valid, otherwise use entropy
+          if (root_key_valid_q) begin
+            key_state_d[0] = root_key_i.key_share0;
+            key_state_d[1] = root_key_i.key_share1;
+          end
+
+          op_done_o = 1'b1;
+          state_d = StCtrlInit;
         end
       end
 
       // Beginning from the Init state, operations are accepted.
       // Only valid operation is advance state. If invalid command received,
       // random data is selected for operation and no persistent state is changed.
-      StInit: begin
+      StCtrlInit: begin
         op_done_o = op_start_i & kmac_done_i;
         op_accepted = op_start_i;
 
+        // when advancing select creator data, otherwise use random input
+        stage_sel_o = advance_sel ? Creator : Disable;
+
         // key state is updated when it is an advance call
         if (!en_i) begin
-          state_d = StWipe;
+          state_d = StCtrlWipe;
         end else if (op_done_o && (disable_sel || kmac_op_err)) begin
           key_state_d = kmac_data_i;
-          state_d = StDisabled;
+          state_d = StCtrlDisabled;
         end else if (op_done_o && advance_sel) begin
           key_state_d = data_valid ? kmac_data_i : key_state_q;
-          state_d = StCreatorRootKey;
+          state_d = StCtrlCreatorRootKey;
         end else if (op_done_o) begin
           invalid_op = 1'b1;
         end
       end
 
       // all commands are valid during this stage
-      StCreatorRootKey: begin
+      StCtrlCreatorRootKey: begin
         op_done_o = op_start_i & kmac_done_i;
+        op_accepted = op_start_i;
 
         // when generating, select creator data input
         // when advancing, select owner intermediate key as target
         // when disabling, select random data input
-        op_accepted = op_start_i;
         stage_sel_o = disable_sel ? Disable  :
                       advance_sel ? OwnerInt : Creator;
-        hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
 
         // key state is updated when it is an advance call
         if (!en_i) begin
-          state_d = StWipe;
+          state_d = StCtrlWipe;
         end else if (op_done_o && (disable_sel || kmac_op_err)) begin
           key_state_d = kmac_data_i;
-          state_d = StDisabled;
+          state_d = StCtrlDisabled;
         end else if (op_done_o && advance_sel) begin
           key_state_d = data_valid ? kmac_data_i : key_state_q;
-          state_d = StOwnerIntKey;
+          state_d = StCtrlOwnerIntKey;
         end
       end
 
 
       // all commands are valid during this stage
-      StOwnerIntKey: begin
+      StCtrlOwnerIntKey: begin
         op_done_o = op_start_i & kmac_done_i;
+        op_accepted = op_start_i;
 
         // when generating, select owner intermediate data input
         // when advancing, select owner as target
         // when disabling, select random data input
-        op_accepted = op_start_i;
         stage_sel_o = disable_sel ? Disable  :
                       advance_sel ? Owner : OwnerInt;
-        hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
 
         if (!en_i) begin
-          state_d = StWipe;
+          state_d = StCtrlWipe;
         end else if (op_done_o && (disable_sel || kmac_op_err)) begin
           key_state_d = kmac_data_i;
-          state_d = StDisabled;
+          state_d = StCtrlDisabled;
         end else if (op_done_o && advance_sel) begin
           key_state_d = data_valid ? kmac_data_i : key_state_q;
-          state_d = StOwnerKey;
+          state_d = StCtrlOwnerKey;
         end
       end
 
       // all commands are valid during this stage
       // however advance goes directly to disabled state
-      StOwnerKey: begin
+      StCtrlOwnerKey: begin
         op_done_o = op_start_i & kmac_done_i;
+        op_accepted = op_start_i;
 
         // when generating, select owner data input
         // when advancing, select disable as target
         // when disabling, select random data input
-        op_accepted = op_start_i;
-        stage_sel_o = disable_sel || advance_sel  ? Disable : Owner;
-        hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
+        stage_sel_o = disable_sel | advance_sel ? Disable : Owner;
 
         // Calling advanced from ownerKey also leads to disable
         // Thus data_valid is not checked
         if (!en_i) begin
-          state_d = StWipe;
+          state_d = StCtrlWipe;
         end else if (op_done_o && (advance_sel || disable_sel || kmac_op_err)) begin
           key_state_d = kmac_data_i;
-          state_d = StDisabled;
+          state_d = StCtrlDisabled;
         end
       end
 
@@ -290,9 +337,8 @@ module keymgr_ctrl import keymgr_pkg::*;(
       // transaction to finish before going to disabled state.
       // Unlike the random state, this is an immedaite shutdown request, so all parts of the
       // key are wiped.
-      StWipe: begin
+      StCtrlWipe: begin
         stage_sel_o = Disable;
-        hw_sel_o = HwKey;
         op_done_o = op_start_i & kmac_done_i;
         op_accepted = op_start_i;
         wipe_key_o = 1'b1;
@@ -309,7 +355,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
         // 2. the operation completed before we started wiping, or there was never an operation to
         //    begin with (op_start_i == 0), in this case, don't wait and immediately transition
         if (!op_start_i) begin
-          state_d = StDisabled;
+          state_d = StCtrlDisabled;
         end
       end
 
@@ -321,14 +367,13 @@ module keymgr_ctrl import keymgr_pkg::*;(
         // accept any command, but always select fake data
         op_accepted = op_start_i;
         stage_sel_o = Disable;
-        hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
 
         // During disabled state, continue to update state
         key_state_d = (op_done_o && advance_sel) ? kmac_data_i : key_state_q;
 
         // Despite accepting all commands, operations are always
         // considered invalid in disabled state
-        // TBD this may be changed later if we decide to hide disable state from
+        // TODO this may be changed later if we decide to hide disable state from
         // software.
         invalid_op = op_start_i;
       end
@@ -338,7 +383,33 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
 
   // Current working state provided for software read
-  assign working_state_o = state_q;
+  // Certain states are collapsed for simplicity
+  always_comb begin
+    working_state_o = StDisabled;
+
+    unique case (state_q)
+      StCtrlReset, StCtrlEntropyReseed, StCtrlRandom:
+        working_state_o = StReset;
+
+      StCtrlInit:
+        working_state_o = StInit;
+
+      StCtrlCreatorRootKey:
+        working_state_o = StCreatorRootKey;
+
+      StCtrlOwnerIntKey:
+        working_state_o = StOwnerIntKey;
+
+      StCtrlOwnerKey:
+        working_state_o = StOwnerKey;
+
+      StCtrlWipe, StCtrlDisabled:
+        working_state_o = StDisabled;
+
+      default:
+        working_state_o = StDisabled;
+    endcase // unique case (state_q)
+  end
 
   // if operation was never accepted (ie a generate was called in StReset / StRandom), then
   // never update the sw / hw outputs when operation is complete

@@ -17,7 +17,9 @@ build: build_result
 prep_tool_srcs:
 	@echo "[make]: prep_tool_srcs"
 	mkdir -p ${tool_srcs_dir}
+ifneq (${tool_srcs},)
 	${LOCK_TOOL_SRCS_DIR} "cp -Ru ${tool_srcs} ${tool_srcs_dir}/."
+endif
 
 pre_build: prep_tool_srcs
 	@echo "[make]: pre_build"
@@ -28,7 +30,9 @@ endif
 
 gen_sv_flist: pre_build
 	@echo "[make]: gen_sv_flist"
+ifneq (${sv_flist_gen_cmd},)
 	cd ${build_dir} && ${sv_flist_gen_cmd} ${sv_flist_gen_opts}
+endif
 
 build_tb: gen_sv_flist
 	@echo "[make]: build the testbench"
@@ -115,6 +119,14 @@ debug_waves:
 ############################
 ## coverage rated targets ##
 ############################
+cov_unr_build: gen_sv_flist
+	@echo "[make]: cov_unr_build"
+	cd ${sv_flist_gen_dir} && ${cov_unr_build_cmd} ${cov_unr_build_opts}
+
+cov_unr: cov_unr_build
+	@echo "[make]: cov_unr"
+	cd ${sv_flist_gen_dir} && ${cov_unr_run_cmd} ${cov_unr_run_opts}
+
 # Merge coverage if there are multiple builds.
 cov_merge:
 	@echo "[make]: cov_merge"
