@@ -654,8 +654,7 @@ class CompileSim(Deploy):
 
         self.mandatory_cmd_attrs.update({
             # tool srcs
-            "tool_srcs": False,
-            "tool_srcs_dir": False,
+            "proj_root": False,
 
             # Flist gen
             "sv_flist_gen_cmd": False,
@@ -717,8 +716,7 @@ class CompileOneShot(Deploy):
 
         self.mandatory_cmd_attrs.update({
             # tool srcs
-            "tool_srcs": False,
-            "tool_srcs_dir": False,
+            "proj_root": False,
 
             # Flist gen
             "sv_flist_gen_cmd": False,
@@ -727,8 +725,10 @@ class CompileOneShot(Deploy):
 
             # Build
             "build_dir": False,
+            "pre_build_cmds": False,
             "build_cmd": False,
             "build_opts": False,
+            "post_build_cmds": False,
             "build_log": False,
 
             # Report processing
@@ -775,8 +775,6 @@ class RunTest(Deploy):
 
         self.mandatory_cmd_attrs.update({
             # tool srcs
-            "tool_srcs": False,
-            "tool_srcs_dir": False,
             "proj_root": False,
             "uvm_test": False,
             "uvm_test_seq": False,
@@ -866,8 +864,7 @@ class CovUnr(Deploy):
         self.target = "cov_unr"
         self.mandatory_cmd_attrs.update({
             # tool srcs
-            "tool_srcs": False,
-            "tool_srcs_dir": False,
+            "proj_root": False,
 
             # Need to generate filelist based on build mode
             "sv_flist_gen_cmd": False,
@@ -1066,8 +1063,7 @@ class CovAnalyze(Deploy):
 
         self.mandatory_cmd_attrs.update({
             # tool srcs
-            "tool_srcs": False,
-            "tool_srcs_dir": False,
+            "proj_root": False,
             "cov_analyze_cmd": False,
             "cov_analyze_opts": False
         })

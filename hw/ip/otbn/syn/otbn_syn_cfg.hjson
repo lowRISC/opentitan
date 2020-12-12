@@ -12,8 +12,7 @@
                 "{proj_root}/hw/syn/tools/dvsim/common_syn_cfg.hjson"]
 
   // Timing constraints for this module
-  sdc_path: "{proj_root}/hw/ip/otbn/syn/"
-  sdc_file: "constraints.sdc"
+  sdc_file: "{proj_root}/hw/ip/otbn/syn/constraints.sdc"
 
   // Configuration for result parser script
   area_depth: 1

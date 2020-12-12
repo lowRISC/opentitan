@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   flow:             fpv
-  flow_makefile:    "{proj_root}/hw/formal/tools/dvsim/fpv.mk"
+  fpv_root:         "{proj_root}/hw/formal"
+  flow_makefile:    "{fpv_root}/tools/dvsim/fpv.mk"
 
   import_cfgs:      [// common server configuration for results upload
                      "{proj_root}/hw/data/common_project_cfg.hjson",
-                     "{proj_root}/hw/formal/tools/{tool}/{tool}.hjson"]
+                     "{fpv_root}/tools/{tool}/{tool}.hjson"]
 
   tool:             "jaspergold"
 
@@ -29,16 +30,13 @@
                       "--setup {fusesoc_core}"]
   sv_flist_gen_dir:  "{build_dir}/formal-icarus"
 
-  // Indicate the tool specific helper sources
-  tool_srcs: ["{proj_root}/hw/formal/tools/{tool}/fpv.tcl"]
-
   // Vars that need to exported to the env
   exports: [
     { FPV_TOP: "{dut}" },
     { COV: "{cov}" }
   ]
 
-  report_cmd:  "python3 {proj_root}/hw/formal/tools/{tool}/parse-fpv-report.py"
+  report_cmd:  "python3 {fpv_root}/tools/{tool}/parse-fpv-report.py"
   report_opts: ["--logpath={build_dir}/fpv.log",
                 "--reppath={build_dir}/results.hjson",
                 "--cov={cov}",
