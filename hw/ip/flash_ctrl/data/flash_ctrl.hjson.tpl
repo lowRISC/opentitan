@@ -1,6 +1,14 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
+<%
+  page_width = (cfg['pages_per_bank']-1).bit_length()
+  bank_width = (cfg['banks']-1).bit_length()
+  all_data_width = (cfg['banks']*cfg['pages_per_bank']-1).bit_length()
+  info_type_width = (cfg['info_types']-1).bit_length()
+%>
+
 { name: "FLASH_CTRL",
   clock_primary: "clk_i",
   other_clock_list: [ "clk_otp_i" ],
@@ -145,6 +153,20 @@
       desc: "Number of pages per bank",
       type: "int",
       default: "${cfg['pgm_resolution_bytes']}",
+      local: "true"
+    },
+
+    { name: "RegPageWidth",
+      desc: "Number of bits needed to represent the pages within a bank",
+      type: "int",
+      default: "${page_width}",
+      local: "true"
+    },
+
+    { name: "RegBankWidth",
+      desc: "Number of bits needed to represent the number of banks",
+      type: "int",
+      default: "${bank_width}",
       local: "true"
     },
 
@@ -337,7 +359,7 @@
           '''
           resval: "0"
         },
-        { bits: "9",
+        { bits: "${9 + info_type_width -1}:9",
           name: "INFO_SEL",
           desc: '''
             Informational partions can have multiple types.
@@ -514,14 +536,14 @@
               ''',
               resval: "0"
             }
-            { bits: "16:8",
+            { bits: "${8 + bank_width + page_width - 1}:8",
               name: "BASE",
               desc: '''
                 Region base page. Note the granularity is page, not byte or word
               ''',
               resval: "0"
             },
-            { bits: "29:20", // need to template this term long term for flash size
+            { bits: "${8 + 2*bank_width + 2*page_width}:${8 + bank_width + page_width}",
               name: "SIZE",
               desc: '''
                 Region size in number of pages
@@ -755,7 +777,7 @@
         { bits: "2",    name: "prog_full",  desc: "Flash program FIFO full"},
         { bits: "3",    name: "prog_empty", desc: "Flash program FIFO empty, software must provide data", resval: "1"},
         { bits: "4",    name: "init_wip",   desc: "Flash controller undergoing init, inclusive of phy init"},
-        { bits: "16:8", name: "error_addr", desc: "Flash controller error address."},
+        { bits: "${8 + bank_width + page_width -1}:8", name: "error_addr", desc: "Flash controller error address."},
       ]
     },
 

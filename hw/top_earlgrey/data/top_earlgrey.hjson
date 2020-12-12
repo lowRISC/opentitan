@@ -455,8 +455,8 @@
       type: "eflash",
       base_addr: "0x20000000",
       banks: 2,
-      pages_per_bank: 256,
-      program_resolution: 128, // maximum number of flash words allowed to program at one time
+      pages_per_bank: 128,
+      program_resolution: 8, // maximum number of flash words allowed to program at one time
       swaccess: "ro",
       inter_signal_list: [
         { struct: "flash",    // flash_req_t, flash_rsp_t

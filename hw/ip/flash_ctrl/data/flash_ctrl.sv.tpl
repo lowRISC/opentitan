@@ -612,11 +612,13 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   //////////////////////////////////////
   info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] reg2hw_info_page_cfgs;
   info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs;
+  localparam int InfoBits = $bits(info_page_cfg_t) * InfosPerBank;
 
   // transform from reg output to structure
+  // Not all types have the maximum number of banks, so those are packed to 0
   % for bank in range(cfg['banks']):
   %   for idx in range(cfg['info_types']):
-  assign reg2hw_info_page_cfgs[${bank}][${idx}] = reg2hw.bank${bank}_info${idx}_page_cfg;
+  assign reg2hw_info_page_cfgs[${bank}][${idx}] = InfoBits'(reg2hw.bank${bank}_info${idx}_page_cfg);
   %   endfor
   % endfor
 

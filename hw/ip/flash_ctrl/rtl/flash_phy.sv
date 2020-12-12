@@ -235,6 +235,7 @@ module flash_phy import flash_ctrl_pkg::*; (
     .NumBanks(NumBanks),
     .InfosPerBank(InfosPerBank),
     .InfoTypes(InfoTypes),
+    .InfoTypesWidth(InfoTypesWidth),
     .PagesPerBank(PagesPerBank),
     .WordsPerPage(WordsPerPage),
     .DataWidth(flash_phy_pkg::FullDataWidth),
