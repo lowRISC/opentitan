@@ -34,7 +34,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
         cfg.m_alert_agent_cfg[i].alert_delay_max = 0;
       end
 
-      cfg.m_edn_pull_agent_cfg.zero_delays = 1;
+      if (cfg.has_edn) cfg.m_edn_pull_agent_cfg.zero_delays = 1;
     end
 
     // get vifs
