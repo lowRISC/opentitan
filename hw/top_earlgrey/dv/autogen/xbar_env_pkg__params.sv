@@ -73,6 +73,9 @@ tl_device_t xbar_devices[$] = '{
     '{"spi_device", '{
         '{32'h40050000, 32'h40050fff}
     }},
+    '{"i2c", '{
+        '{32'h40080000, 32'h40080fff}
+    }},
     '{"rv_timer", '{
         '{32'h40100000, 32'h40100fff}
     }},
@@ -130,6 +133,7 @@ tl_host_t xbar_hosts[$] = '{
         "sensor_ctrl",
         "ast_wrapper",
         "pattgen",
+        "i2c",
         "flash_ctrl",
         "aes",
         "entropy_src",
@@ -163,6 +167,7 @@ tl_host_t xbar_hosts[$] = '{
         "sensor_ctrl",
         "ast_wrapper",
         "pattgen",
+        "i2c",
         "flash_ctrl",
         "aes",
         "entropy_src",
