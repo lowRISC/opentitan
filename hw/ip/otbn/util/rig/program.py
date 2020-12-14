@@ -260,7 +260,7 @@ class Program:
         return ('/* Text section {} ([{:#06x}..{:#06x}]) */'
                 .format(idx, addr, addr + 4 * len(insns) - 1))
 
-    def dump_asm(self, out_file: TextIO, init_data: Dict[int, int]) -> None:
+    def dump_asm(self, out_file: TextIO, dsegs: Dict[int, List[int]]) -> None:
         '''Write an assembly representation of the program to out_file'''
         # Close any existing section, so that we can iterate over all the
         # instructions by iterating over self._sections.
@@ -274,15 +274,16 @@ class Program:
                 out_file.write(pi.to_asm(cur_pc) + '\n')
 
         # Generate data .words
-        for idx, (addr, value) in enumerate(sorted(init_data.items())):
+        for idx, (addr, values) in enumerate(sorted(dsegs.items())):
             out_file.write('\n/* Data section {} ({:#06x}-{:#06x}) */\n'
-                           .format(idx, addr, addr + 3))
+                           .format(idx, addr, addr + 4 * len(values) - 1))
             out_file.write('.section .data.sec{:04}\n'.format(idx))
-            out_file.write('.word {:#x}\n'.format(value))
+            for value in values:
+                out_file.write('.word {:#x}\n'.format(value))
 
     def dump_linker_script(self,
                            out_file: TextIO,
-                           init_data: Dict[int, int]) -> None:
+                           dsegs: Dict[int, List[int]]) -> None:
         '''Write a linker script to link the program
 
         This lays out the sections generated in dump_asm().
@@ -291,13 +292,13 @@ class Program:
         self.close_section()
 
         seg_descs = []
-        for idx, addr in enumerate(sorted(init_data.keys())):
+        for idx, (addr, values) in enumerate(sorted(dsegs.items())):
             seg_descs.append(('dseg{:04}'.format(idx),
                               addr,
                               addr + self.dmem_lma,
                               '.data.sec{:04}'.format(idx),
                               ('/* Data section {} ({:#06x}-{:#06x}) */'
-                               .format(idx, addr, addr + 3))))
+                               .format(idx, addr, addr + 4 * len(values) - 1))))
         for idx, (addr, insns) in enumerate(sorted(self._sections.items())):
             seg_descs.append(('iseg{:04}'.format(idx),
                               addr,
