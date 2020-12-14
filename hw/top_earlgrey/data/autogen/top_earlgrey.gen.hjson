@@ -727,102 +727,6 @@
       ]
     }
     {
-      name: pattgen
-      type: pattgen
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      clock_group: peri
-      reset_connections:
-      {
-        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
-      }
-      base_addr: 0x400e0000
-      clock_reset_export: []
-      clock_connections:
-      {
-        clk_i: clkmgr_clocks.clk_io_div4_peri
-      }
-      domain: "0"
-      size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_input_list: []
-      available_output_list:
-      [
-        {
-          name: pda0_tx
-          width: 1
-          type: output
-        }
-        {
-          name: pcl0_tx
-          width: 1
-          type: output
-        }
-        {
-          name: pda1_tx
-          width: 1
-          type: output
-        }
-        {
-          name: pcl1_tx
-          width: 1
-          type: output
-        }
-      ]
-      available_inout_list: []
-      param_list: []
-      interrupt_list:
-      [
-        {
-          name: done_ch0
-          width: 1
-          bits: "0"
-          bitinfo:
-          [
-            1
-            1
-            0
-          ]
-          type: interrupt
-        }
-        {
-          name: done_ch1
-          width: 1
-          bits: "1"
-          bitinfo:
-          [
-            2
-            1
-            1
-          ]
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
-      inter_signal_list:
-      [
-        {
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          name: tl
-          inst_name: pattgen
-          width: 1
-          default: ""
-          top_signame: pattgen_tl
-          index: -1
-        }
-      ]
-    }
-    {
       name: rv_timer
       type: rv_timer
       clock_srcs:
@@ -4730,10 +4634,6 @@
       [
         peri.tl_sensor_ctrl
       ]
-      pattgen.tl:
-      [
-        peri.tl_pattgen
-      ]
     }
     top:
     [
@@ -5563,7 +5463,6 @@
           otp_ctrl
           sensor_ctrl
           ast_wrapper
-          pattgen
         ]
       }
       nodes:
@@ -5794,24 +5693,6 @@
           xbar: false
           pipeline_byp: "true"
         }
-        {
-          name: pattgen
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: "false"
-          inst_type: pattgen
-          addr_range:
-          [
-            {
-              base_addr: 0x400e0000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline_byp: "true"
-        }
       ]
       clock: clk_peri_i
       type: xbar
@@ -5974,18 +5855,6 @@
           top_signame: ast_tl
           index: -1
         }
-        {
-          struct: tl
-          type: req_rsp
-          name: tl_pattgen
-          act: req
-          package: tlul_pkg
-          inst_name: peri
-          width: 1
-          default: ""
-          top_signame: pattgen_tl
-          index: -1
-        }
       ]
     }
   ]
@@ -6003,7 +5872,6 @@
     otbn
     keymgr
     kmac
-    pattgen
   ]
   interrupt:
   [
@@ -6722,32 +6590,6 @@
       type: interrupt
       module_name: kmac
     }
-    {
-      name: pattgen_done_ch0
-      width: 1
-      bits: "0"
-      bitinfo:
-      [
-        1
-        1
-        0
-      ]
-      type: interrupt
-      module_name: pattgen
-    }
-    {
-      name: pattgen_done_ch1
-      width: 1
-      bits: "1"
-      bitinfo:
-      [
-        2
-        1
-        1
-      ]
-      type: interrupt
-      module_name: pattgen
-    }
   ]
   alert_module:
   [
@@ -7030,7 +6872,6 @@
     [
       uart
       gpio
-      pattgen
     ]
     nc_modules:
     [
@@ -7238,33 +7079,7 @@
       }
     ]
     inputs: []
-    outputs:
-    [
-      {
-        name: pattgen_pda0_tx
-        width: 1
-        type: output
-        module_name: pattgen
-      }
-      {
-        name: pattgen_pcl0_tx
-        width: 1
-        type: output
-        module_name: pattgen
-      }
-      {
-        name: pattgen_pda1_tx
-        width: 1
-        type: output
-        module_name: pattgen
-      }
-      {
-        name: pattgen_pcl1_tx
-        width: 1
-        type: output
-        module_name: pattgen
-      }
-    ]
+    outputs: []
     inouts:
     [
       {
@@ -7410,18 +7225,6 @@
         width: 1
         default: ""
         top_signame: spi_device_tl
-        index: -1
-      }
-      {
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        name: tl
-        inst_name: pattgen
-        width: 1
-        default: ""
-        top_signame: pattgen_tl
         index: -1
       }
       {
@@ -9243,18 +9046,6 @@
         top_signame: ast_tl
         index: -1
       }
-      {
-        struct: tl
-        type: req_rsp
-        name: tl_pattgen
-        act: req
-        package: tlul_pkg
-        inst_name: peri
-        width: 1
-        default: ""
-        top_signame: pattgen_tl
-        index: -1
-      }
     ]
     external:
     [
@@ -10135,22 +9926,6 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: sensor_ctrl_tl_rsp
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: pattgen_tl_req
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: pattgen_tl_rsp
         width: 1
         type: req_rsp
         default: ""

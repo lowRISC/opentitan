@@ -80,24 +80,6 @@ extern "C" {
 #define TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for pattgen in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_PATTGEN_BASE_ADDR 0x400e0000u
-
-/**
- * Peripheral size for pattgen in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_PATTGEN_BASE_ADDR and
- * `TOP_EARLGREY_PATTGEN_BASE_ADDR + TOP_EARLGREY_PATTGEN_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_PATTGEN_SIZE_BYTES 0x1000u
-
-/**
  * Peripheral base address for rv_timer in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -555,8 +537,7 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralOtbn = 10, /**< otbn */
   kTopEarlgreyPlicPeripheralKeymgr = 11, /**< keymgr */
   kTopEarlgreyPlicPeripheralKmac = 12, /**< kmac */
-  kTopEarlgreyPlicPeripheralPattgen = 13, /**< pattgen */
-  kTopEarlgreyPlicPeripheralLast = 13, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralLast = 12, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -653,9 +634,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdKmacKmacDone = 84, /**< kmac_kmac_done */
   kTopEarlgreyPlicIrqIdKmacFifoEmpty = 85, /**< kmac_fifo_empty */
   kTopEarlgreyPlicIrqIdKmacKmacErr = 86, /**< kmac_kmac_err */
-  kTopEarlgreyPlicIrqIdPattgenDoneCh0 = 87, /**< pattgen_done_ch0 */
-  kTopEarlgreyPlicIrqIdPattgenDoneCh1 = 88, /**< pattgen_done_ch1 */
-  kTopEarlgreyPlicIrqIdLast = 88, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdLast = 86, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -665,7 +644,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[89];
+    top_earlgrey_plic_interrupt_for_peripheral[87];
 
 /**
  * PLIC Interrupt Target.
@@ -897,11 +876,7 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselGpioGpio29 = 32, /**< gpio_gpio 29 */
   kTopEarlgreyPinmuxOutselGpioGpio30 = 33, /**< gpio_gpio 30 */
   kTopEarlgreyPinmuxOutselGpioGpio31 = 34, /**< gpio_gpio 31 */
-  kTopEarlgreyPinmuxOutselPattgenPda0Tx = 35, /**< pattgen_pda0_tx */
-  kTopEarlgreyPinmuxOutselPattgenPcl0Tx = 36, /**< pattgen_pcl0_tx */
-  kTopEarlgreyPinmuxOutselPattgenPda1Tx = 37, /**< pattgen_pda1_tx */
-  kTopEarlgreyPinmuxOutselPattgenPcl1Tx = 38, /**< pattgen_pcl1_tx */
-  kTopEarlgreyPinmuxOutselLast = 38, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselLast = 34, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**
