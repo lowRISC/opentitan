@@ -2,13 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import random
 from typing import Dict, List, Tuple
 
 from shared.insn_yaml import InsnsFile
 from shared.mem_layout import get_memory_layout
 
-from .init_data import gen_init_data
+from .init_data import InitData
 from .program import Program
 from .model import Model
 from .snippet_gens import SnippetGens
@@ -17,8 +16,7 @@ from .snippet import Snippet
 
 def gen_program(start_addr: int,
                 size: int,
-                insns_file: InsnsFile) -> Tuple[Dict[int, int],
-                                                List[Snippet]]:
+                insns_file: InsnsFile) -> Tuple[InitData, List[Snippet]]:
     '''Generate a random program for OTBN
 
     start_addr is the reset address (the value that should be programmed into
@@ -48,7 +46,7 @@ def gen_program(start_addr: int,
     # Generate some initialised data to start with. Otherwise, it takes a while
     # before we start issuing loads (because we need stores to happen first).
     # Tell the model that we've done so.
-    init_data = gen_init_data(dmem_size)
+    init_data = InitData.gen(dmem_size)
     for addr in init_data.keys():
         model.touch_mem('dmem', addr, 4)
 
