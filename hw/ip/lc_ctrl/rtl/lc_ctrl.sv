@@ -349,22 +349,22 @@ module lc_ctrl
   logic [NumAlerts-1:0] tap_alert_test;
 
   assign alerts = {
-    otp_prog_error_q,
-    state_invalid_error_q
+    state_invalid_error_q,
+    otp_prog_error_q
   };
 
   assign alert_test = {
-    reg2hw.alert_test.lc_programming_failure.q &
-    reg2hw.alert_test.lc_programming_failure.qe,
     reg2hw.alert_test.lc_state_failure.q &
-    reg2hw.alert_test.lc_state_failure.qe
+    reg2hw.alert_test.lc_state_failure.qe,
+    reg2hw.alert_test.lc_programming_failure.q &
+    reg2hw.alert_test.lc_programming_failure.qe
   };
 
    assign tap_alert_test = {
-    tap_reg2hw.alert_test.lc_programming_failure.q &
-    tap_reg2hw.alert_test.lc_programming_failure.qe,
     tap_reg2hw.alert_test.lc_state_failure.q &
-    tap_reg2hw.alert_test.lc_state_failure.qe
+    tap_reg2hw.alert_test.lc_state_failure.qe,
+    tap_reg2hw.alert_test.lc_programming_failure.q &
+    tap_reg2hw.alert_test.lc_programming_failure.qe
   };
 
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
