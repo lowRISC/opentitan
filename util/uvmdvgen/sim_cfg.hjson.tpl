@@ -38,6 +38,9 @@
 % if has_interrupts:
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
 % endif
+% if has_alerts:
+                "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
+% endif
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 % else:
