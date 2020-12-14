@@ -44,8 +44,6 @@ import tempfile
 from pathlib import Path
 from typing import List, Optional
 
-log.basicConfig(level=log.INFO, format="%(message)s")
-
 REPO_TOP = Path(__file__).parent.parent.resolve()
 
 
@@ -131,6 +129,11 @@ def main() -> int:
         default=".",
         help="Output directory (default: %(default)s)")
     parser.add_argument(
+        '--verbose',
+        '-v',
+        action='store_true',
+        help='Print commands that are executed.')
+    parser.add_argument(
         '--script',
         '-T',
         dest="linker_script",
@@ -144,6 +147,9 @@ def main() -> int:
              "Default: basename of the first source file.")
     parser.add_argument('src_files', nargs='+', type=str, metavar='SRC_FILE')
     args = parser.parse_args()
+
+    log_level = log.INFO if args.verbose else log.WARNING
+    log.basicConfig(level=log_level, format="%(message)s")
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(exist_ok=True)
