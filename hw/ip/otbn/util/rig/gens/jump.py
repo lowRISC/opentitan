@@ -105,7 +105,7 @@ class Jump(SnippetGen):
         # Pick a branch target. "1" here is the minimum number of instructions
         # that must fit. One is enough (we'll just end up generating another
         # branch immediately)
-        tgt = program.pick_branch_target(1, tgt_min, tgt_max)
+        tgt = program.pick_branch_target(model.pc, 1, tgt_min, tgt_max)
         if tgt is None:
             return None
         assert tgt_min <= tgt <= tgt_max
