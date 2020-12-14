@@ -532,6 +532,45 @@ dif_uart_result_t dif_uart_loopback_set(const dif_uart_t *uart,
                                         dif_uart_loopback_t loopback,
                                         dif_uart_toggle_t enable);
 
+/**
+ * Enables the RX timeout with the given duration.
+ *
+ * @param uart A UART handle.
+ * @param duration_ticks RX timeout value in UART bit times (using the baud rate
+ * clock as reference) in the range [0,0xffffff].
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_uart_result_t dif_uart_enable_rx_timeout(const dif_uart_t *uart,
+                                             uint32_t duration_ticks);
+
+/**
+ * Disables the RX timeout.
+ *
+ * In addition to disabling the RX timeout the timeout duration is reset to 0
+ * ticks.
+ *
+ * @param uart A UART handle.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_uart_result_t dif_uart_disable_rx_timeout(const dif_uart_t *uart);
+
+/**
+ * Gets the current status of the RX timeout control.
+ *
+ * @param uart A UART handle.
+ * @param[out] status The status of the RX timeout control (enabled or
+ * disabled).
+ * @param[out] duration_ticks RX timeout value in UART bit times (using the baud
+ * rate clock as reference) in the range [0,0xffffff] (optional).
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_uart_result_t dif_uart_get_rx_timeout(const dif_uart_t *uart,
+                                          dif_uart_toggle_t *status,
+                                          uint32_t *duration_ticks);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

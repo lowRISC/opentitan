@@ -653,5 +653,76 @@ TEST_F(LoopbackSetTest, Success) {
             kDifUartOk);
 }
 
+class RxTimeoutTest : public UartTest {};
+
+TEST_F(RxTimeoutTest, NullArgs) {
+  EXPECT_EQ(dif_uart_enable_rx_timeout(nullptr, 1), kDifUartBadArg);
+  EXPECT_EQ(dif_uart_disable_rx_timeout(nullptr), kDifUartBadArg);
+
+  uint32_t value;            // optional
+  dif_uart_toggle_t status;  // mandatory
+  EXPECT_EQ(dif_uart_get_rx_timeout(nullptr, &status, &value), kDifUartBadArg);
+  EXPECT_EQ(dif_uart_get_rx_timeout(&uart_, nullptr, &value), kDifUartBadArg);
+}
+
+TEST_F(RxTimeoutTest, OutOfRange) {
+  // RX timeout value must be in the range [0,0xffffff].
+  EXPECT_EQ(dif_uart_enable_rx_timeout(&uart_, 0x01000000), kDifUartBadArg);
+  EXPECT_EQ(dif_uart_enable_rx_timeout(&uart_, 0xffffffff), kDifUartBadArg);
+}
+
+TEST_F(RxTimeoutTest, Enable) {
+  // Enable RX timeout and set to 0x123.
+  const uint32_t duration = 0x123;
+  EXPECT_WRITE32(UART_TIMEOUT_CTRL_REG_OFFSET,
+                 {{UART_TIMEOUT_CTRL_VAL_OFFSET, duration},
+                  {UART_TIMEOUT_CTRL_EN_BIT, true}});
+  EXPECT_EQ(dif_uart_enable_rx_timeout(&uart_, duration), kDifUartOk);
+}
+
+TEST_F(RxTimeoutTest, Disable) {
+  // Disable RX timeout.
+  EXPECT_WRITE32(
+      UART_TIMEOUT_CTRL_REG_OFFSET,
+      {{UART_TIMEOUT_CTRL_VAL_OFFSET, 0}, {UART_TIMEOUT_CTRL_EN_BIT, false}});
+  EXPECT_EQ(dif_uart_disable_rx_timeout(&uart_), kDifUartOk);
+}
+
+TEST_F(RxTimeoutTest, GetStatusOnly) {
+  // Enable RX timeout and set to 0x800000.
+  const uint32_t duration = 0x800000;
+  EXPECT_WRITE32(UART_TIMEOUT_CTRL_REG_OFFSET,
+                 {{UART_TIMEOUT_CTRL_VAL_OFFSET, duration},
+                  {UART_TIMEOUT_CTRL_EN_BIT, true}});
+  EXPECT_EQ(dif_uart_enable_rx_timeout(&uart_, duration), kDifUartOk);
+
+  // Read out status only.
+  dif_uart_toggle_t status = kDifUartToggleDisabled;
+  EXPECT_READ32(UART_TIMEOUT_CTRL_REG_OFFSET,
+                {{UART_TIMEOUT_CTRL_VAL_OFFSET, duration},
+                 {UART_TIMEOUT_CTRL_EN_BIT, true}});
+  EXPECT_EQ(dif_uart_get_rx_timeout(&uart_, &status, nullptr), kDifUartOk);
+  EXPECT_EQ(status, kDifUartToggleEnabled);
+}
+
+TEST_F(RxTimeoutTest, GetAll) {
+  // Enable RX timeout and set to 0xf0f0f0.
+  const uint32_t duration = 0xf0f0f0;
+  EXPECT_WRITE32(UART_TIMEOUT_CTRL_REG_OFFSET,
+                 {{UART_TIMEOUT_CTRL_VAL_OFFSET, duration},
+                  {UART_TIMEOUT_CTRL_EN_BIT, true}});
+  EXPECT_EQ(dif_uart_enable_rx_timeout(&uart_, duration), kDifUartOk);
+
+  // Read out duration and status.
+  uint32_t out = 0;
+  dif_uart_toggle_t status = kDifUartToggleDisabled;
+  EXPECT_READ32(UART_TIMEOUT_CTRL_REG_OFFSET,
+                {{UART_TIMEOUT_CTRL_VAL_OFFSET, duration},
+                 {UART_TIMEOUT_CTRL_EN_BIT, true}});
+  EXPECT_EQ(dif_uart_get_rx_timeout(&uart_, &status, &out), kDifUartOk);
+  EXPECT_EQ(status, kDifUartToggleEnabled);
+  EXPECT_EQ(out, duration);
+}
+
 }  // namespace
 }  // namespace dif_uart_unittest
