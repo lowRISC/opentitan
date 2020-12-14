@@ -727,248 +727,6 @@
       ]
     }
     {
-      name: i2c
-      type: i2c
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      clock_group: peri
-      reset_connections:
-      {
-        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
-      }
-      base_addr: 0x40080000
-      clock_reset_export: []
-      clock_connections:
-      {
-        clk_i: clkmgr_clocks.clk_io_div4_peri
-      }
-      domain: "0"
-      size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_input_list: []
-      available_output_list: []
-      available_inout_list:
-      [
-        {
-          name: sda
-          width: 1
-          type: inout
-        }
-        {
-          name: scl
-          width: 1
-          type: inout
-        }
-      ]
-      param_list: []
-      interrupt_list:
-      [
-        {
-          name: fmt_watermark
-          width: 1
-          bits: "0"
-          bitinfo:
-          [
-            1
-            1
-            0
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_watermark
-          width: 1
-          bits: "1"
-          bitinfo:
-          [
-            2
-            1
-            1
-          ]
-          type: interrupt
-        }
-        {
-          name: fmt_overflow
-          width: 1
-          bits: "2"
-          bitinfo:
-          [
-            4
-            1
-            2
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_overflow
-          width: 1
-          bits: "3"
-          bitinfo:
-          [
-            8
-            1
-            3
-          ]
-          type: interrupt
-        }
-        {
-          name: nak
-          width: 1
-          bits: "4"
-          bitinfo:
-          [
-            16
-            1
-            4
-          ]
-          type: interrupt
-        }
-        {
-          name: scl_interference
-          width: 1
-          bits: "5"
-          bitinfo:
-          [
-            32
-            1
-            5
-          ]
-          type: interrupt
-        }
-        {
-          name: sda_interference
-          width: 1
-          bits: "6"
-          bitinfo:
-          [
-            64
-            1
-            6
-          ]
-          type: interrupt
-        }
-        {
-          name: stretch_timeout
-          width: 1
-          bits: "7"
-          bitinfo:
-          [
-            128
-            1
-            7
-          ]
-          type: interrupt
-        }
-        {
-          name: sda_unstable
-          width: 1
-          bits: "8"
-          bitinfo:
-          [
-            256
-            1
-            8
-          ]
-          type: interrupt
-        }
-        {
-          name: trans_complete
-          width: 1
-          bits: "9"
-          bitinfo:
-          [
-            512
-            1
-            9
-          ]
-          type: interrupt
-        }
-        {
-          name: tx_empty
-          width: 1
-          bits: "10"
-          bitinfo:
-          [
-            1024
-            1
-            10
-          ]
-          type: interrupt
-        }
-        {
-          name: tx_nonempty
-          width: 1
-          bits: "11"
-          bitinfo:
-          [
-            2048
-            1
-            11
-          ]
-          type: interrupt
-        }
-        {
-          name: tx_overflow
-          width: 1
-          bits: "12"
-          bitinfo:
-          [
-            4096
-            1
-            12
-          ]
-          type: interrupt
-        }
-        {
-          name: acq_overflow
-          width: 1
-          bits: "13"
-          bitinfo:
-          [
-            8192
-            1
-            13
-          ]
-          type: interrupt
-        }
-        {
-          name: ack_stop
-          width: 1
-          bits: "14"
-          bitinfo:
-          [
-            16384
-            1
-            14
-          ]
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
-      inter_signal_list:
-      [
-        {
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          name: tl
-          inst_name: i2c
-          width: 1
-          default: ""
-          top_signame: i2c_tl
-          index: -1
-        }
-      ]
-    }
-    {
       name: pattgen
       type: pattgen
       clock_srcs:
@@ -4940,10 +4698,6 @@
       [
         peri.tl_spi_device
       ]
-      i2c.tl:
-      [
-        peri.tl_i2c
-      ]
       rv_timer.tl:
       [
         peri.tl_rv_timer
@@ -5810,7 +5564,6 @@
           sensor_ctrl
           ast_wrapper
           pattgen
-          i2c
         ]
       }
       nodes:
@@ -5873,24 +5626,6 @@
           [
             {
               base_addr: 0x40050000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline_byp: "true"
-        }
-        {
-          name: i2c
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: "false"
-          inst_type: i2c
-          addr_range:
-          [
-            {
-              base_addr: 0x40080000
               size_byte: 0x1000
             }
           ]
@@ -6133,18 +5868,6 @@
         {
           struct: tl
           type: req_rsp
-          name: tl_i2c
-          act: req
-          package: tlul_pkg
-          inst_name: peri
-          width: 1
-          default: ""
-          top_signame: i2c_tl
-          index: -1
-        }
-        {
-          struct: tl
-          type: req_rsp
           name: tl_rv_timer
           act: req
           package: tlul_pkg
@@ -6281,7 +6004,6 @@
     keymgr
     kmac
     pattgen
-    i2c
   ]
   interrupt:
   [
@@ -7026,201 +6748,6 @@
       type: interrupt
       module_name: pattgen
     }
-    {
-      name: i2c_fmt_watermark
-      width: 1
-      bits: "0"
-      bitinfo:
-      [
-        1
-        1
-        0
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_rx_watermark
-      width: 1
-      bits: "1"
-      bitinfo:
-      [
-        2
-        1
-        1
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_fmt_overflow
-      width: 1
-      bits: "2"
-      bitinfo:
-      [
-        4
-        1
-        2
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_rx_overflow
-      width: 1
-      bits: "3"
-      bitinfo:
-      [
-        8
-        1
-        3
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_nak
-      width: 1
-      bits: "4"
-      bitinfo:
-      [
-        16
-        1
-        4
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_scl_interference
-      width: 1
-      bits: "5"
-      bitinfo:
-      [
-        32
-        1
-        5
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_sda_interference
-      width: 1
-      bits: "6"
-      bitinfo:
-      [
-        64
-        1
-        6
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_stretch_timeout
-      width: 1
-      bits: "7"
-      bitinfo:
-      [
-        128
-        1
-        7
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_sda_unstable
-      width: 1
-      bits: "8"
-      bitinfo:
-      [
-        256
-        1
-        8
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_trans_complete
-      width: 1
-      bits: "9"
-      bitinfo:
-      [
-        512
-        1
-        9
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_tx_empty
-      width: 1
-      bits: "10"
-      bitinfo:
-      [
-        1024
-        1
-        10
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_tx_nonempty
-      width: 1
-      bits: "11"
-      bitinfo:
-      [
-        2048
-        1
-        11
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_tx_overflow
-      width: 1
-      bits: "12"
-      bitinfo:
-      [
-        4096
-        1
-        12
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_acq_overflow
-      width: 1
-      bits: "13"
-      bitinfo:
-      [
-        8192
-        1
-        13
-      ]
-      type: interrupt
-      module_name: i2c
-    }
-    {
-      name: i2c_ack_stop
-      width: 1
-      bits: "14"
-      bitinfo:
-      [
-        16384
-        1
-        14
-      ]
-      type: interrupt
-      module_name: i2c
-    }
   ]
   alert_module:
   [
@@ -7504,7 +7031,6 @@
       uart
       gpio
       pattgen
-      i2c
     ]
     nc_modules:
     [
@@ -7747,18 +7273,6 @@
         type: inout
         module_name: gpio
       }
-      {
-        name: i2c_sda
-        width: 1
-        type: inout
-        module_name: i2c
-      }
-      {
-        name: i2c_scl
-        width: 1
-        type: inout
-        module_name: i2c
-      }
     ]
   }
   padctrl:
@@ -7896,18 +7410,6 @@
         width: 1
         default: ""
         top_signame: spi_device_tl
-        index: -1
-      }
-      {
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        name: tl
-        inst_name: i2c
-        width: 1
-        default: ""
-        top_signame: i2c_tl
         index: -1
       }
       {
@@ -9635,18 +9137,6 @@
       {
         struct: tl
         type: req_rsp
-        name: tl_i2c
-        act: req
-        package: tlul_pkg
-        inst_name: peri
-        width: 1
-        default: ""
-        top_signame: i2c_tl
-        index: -1
-      }
-      {
-        struct: tl
-        type: req_rsp
         name: tl_rv_timer
         act: req
         package: tlul_pkg
@@ -10517,22 +10007,6 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: spi_device_tl_rsp
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: i2c_tl_req
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: i2c_tl_rsp
         width: 1
         type: req_rsp
         default: ""

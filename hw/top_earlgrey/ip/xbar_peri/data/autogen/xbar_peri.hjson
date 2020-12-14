@@ -39,12 +39,6 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_i2c"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
       name:   "tl_rv_timer"
       act:    "req"
       package: "tlul_pkg"

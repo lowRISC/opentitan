@@ -16,9 +16,6 @@ tl_device_t xbar_devices[$] = '{
     '{"spi_device", '{
         '{32'h40050000, 32'h40050fff}
     }},
-    '{"i2c", '{
-        '{32'h40080000, 32'h40080fff}
-    }},
     '{"rv_timer", '{
         '{32'h40100000, 32'h40100fff}
     }},
@@ -65,6 +62,5 @@ tl_host_t xbar_hosts[$] = '{
         "otp_ctrl",
         "sensor_ctrl",
         "ast_wrapper",
-        "pattgen",
-        "i2c"}}
+        "pattgen"}}
 };

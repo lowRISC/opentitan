@@ -7,7 +7,7 @@
 //
 // Interconnect
 // main
-//   -> s1n_15
+//   -> s1n_14
 //     -> uart
 //     -> gpio
 //     -> spi_device
@@ -21,7 +21,6 @@
 //     -> sensor_ctrl
 //     -> ast_wrapper
 //     -> pattgen
-//     -> i2c
 
 module xbar_peri (
   input clk_peri_i,
@@ -38,8 +37,6 @@ module xbar_peri (
   input  tlul_pkg::tl_d2h_t tl_gpio_i,
   output tlul_pkg::tl_h2d_t tl_spi_device_o,
   input  tlul_pkg::tl_d2h_t tl_spi_device_i,
-  output tlul_pkg::tl_h2d_t tl_i2c_o,
-  input  tlul_pkg::tl_d2h_t tl_i2c_i,
   output tlul_pkg::tl_h2d_t tl_rv_timer_o,
   input  tlul_pkg::tl_d2h_t tl_rv_timer_i,
   output tlul_pkg::tl_h2d_t tl_usbdev_o,
@@ -72,107 +69,101 @@ module xbar_peri (
   logic unused_scanmode;
   assign unused_scanmode = scanmode_i;
 
-  tl_h2d_t tl_s1n_15_us_h2d ;
-  tl_d2h_t tl_s1n_15_us_d2h ;
+  tl_h2d_t tl_s1n_14_us_h2d ;
+  tl_d2h_t tl_s1n_14_us_d2h ;
 
 
-  tl_h2d_t tl_s1n_15_ds_h2d [14];
-  tl_d2h_t tl_s1n_15_ds_d2h [14];
+  tl_h2d_t tl_s1n_14_ds_h2d [13];
+  tl_d2h_t tl_s1n_14_ds_d2h [13];
 
   // Create steering signal
-  logic [3:0] dev_sel_s1n_15;
+  logic [3:0] dev_sel_s1n_14;
 
 
 
-  assign tl_uart_o = tl_s1n_15_ds_h2d[0];
-  assign tl_s1n_15_ds_d2h[0] = tl_uart_i;
+  assign tl_uart_o = tl_s1n_14_ds_h2d[0];
+  assign tl_s1n_14_ds_d2h[0] = tl_uart_i;
 
-  assign tl_gpio_o = tl_s1n_15_ds_h2d[1];
-  assign tl_s1n_15_ds_d2h[1] = tl_gpio_i;
+  assign tl_gpio_o = tl_s1n_14_ds_h2d[1];
+  assign tl_s1n_14_ds_d2h[1] = tl_gpio_i;
 
-  assign tl_spi_device_o = tl_s1n_15_ds_h2d[2];
-  assign tl_s1n_15_ds_d2h[2] = tl_spi_device_i;
+  assign tl_spi_device_o = tl_s1n_14_ds_h2d[2];
+  assign tl_s1n_14_ds_d2h[2] = tl_spi_device_i;
 
-  assign tl_rv_timer_o = tl_s1n_15_ds_h2d[3];
-  assign tl_s1n_15_ds_d2h[3] = tl_rv_timer_i;
+  assign tl_rv_timer_o = tl_s1n_14_ds_h2d[3];
+  assign tl_s1n_14_ds_d2h[3] = tl_rv_timer_i;
 
-  assign tl_usbdev_o = tl_s1n_15_ds_h2d[4];
-  assign tl_s1n_15_ds_d2h[4] = tl_usbdev_i;
+  assign tl_usbdev_o = tl_s1n_14_ds_h2d[4];
+  assign tl_s1n_14_ds_d2h[4] = tl_usbdev_i;
 
-  assign tl_pwrmgr_o = tl_s1n_15_ds_h2d[5];
-  assign tl_s1n_15_ds_d2h[5] = tl_pwrmgr_i;
+  assign tl_pwrmgr_o = tl_s1n_14_ds_h2d[5];
+  assign tl_s1n_14_ds_d2h[5] = tl_pwrmgr_i;
 
-  assign tl_rstmgr_o = tl_s1n_15_ds_h2d[6];
-  assign tl_s1n_15_ds_d2h[6] = tl_rstmgr_i;
+  assign tl_rstmgr_o = tl_s1n_14_ds_h2d[6];
+  assign tl_s1n_14_ds_d2h[6] = tl_rstmgr_i;
 
-  assign tl_clkmgr_o = tl_s1n_15_ds_h2d[7];
-  assign tl_s1n_15_ds_d2h[7] = tl_clkmgr_i;
+  assign tl_clkmgr_o = tl_s1n_14_ds_h2d[7];
+  assign tl_s1n_14_ds_d2h[7] = tl_clkmgr_i;
 
-  assign tl_ram_ret_o = tl_s1n_15_ds_h2d[8];
-  assign tl_s1n_15_ds_d2h[8] = tl_ram_ret_i;
+  assign tl_ram_ret_o = tl_s1n_14_ds_h2d[8];
+  assign tl_s1n_14_ds_d2h[8] = tl_ram_ret_i;
 
-  assign tl_otp_ctrl_o = tl_s1n_15_ds_h2d[9];
-  assign tl_s1n_15_ds_d2h[9] = tl_otp_ctrl_i;
+  assign tl_otp_ctrl_o = tl_s1n_14_ds_h2d[9];
+  assign tl_s1n_14_ds_d2h[9] = tl_otp_ctrl_i;
 
-  assign tl_sensor_ctrl_o = tl_s1n_15_ds_h2d[10];
-  assign tl_s1n_15_ds_d2h[10] = tl_sensor_ctrl_i;
+  assign tl_sensor_ctrl_o = tl_s1n_14_ds_h2d[10];
+  assign tl_s1n_14_ds_d2h[10] = tl_sensor_ctrl_i;
 
-  assign tl_ast_wrapper_o = tl_s1n_15_ds_h2d[11];
-  assign tl_s1n_15_ds_d2h[11] = tl_ast_wrapper_i;
+  assign tl_ast_wrapper_o = tl_s1n_14_ds_h2d[11];
+  assign tl_s1n_14_ds_d2h[11] = tl_ast_wrapper_i;
 
-  assign tl_pattgen_o = tl_s1n_15_ds_h2d[12];
-  assign tl_s1n_15_ds_d2h[12] = tl_pattgen_i;
+  assign tl_pattgen_o = tl_s1n_14_ds_h2d[12];
+  assign tl_s1n_14_ds_d2h[12] = tl_pattgen_i;
 
-  assign tl_i2c_o = tl_s1n_15_ds_h2d[13];
-  assign tl_s1n_15_ds_d2h[13] = tl_i2c_i;
-
-  assign tl_s1n_15_us_h2d = tl_main_i;
-  assign tl_main_o = tl_s1n_15_us_d2h;
+  assign tl_s1n_14_us_h2d = tl_main_i;
+  assign tl_main_o = tl_s1n_14_us_d2h;
 
   always_comb begin
     // default steering to generate error response if address is not within the range
-    dev_sel_s1n_15 = 4'd14;
-    if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_UART)) == ADDR_SPACE_UART) begin
-      dev_sel_s1n_15 = 4'd0;
+    dev_sel_s1n_14 = 4'd13;
+    if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_UART)) == ADDR_SPACE_UART) begin
+      dev_sel_s1n_14 = 4'd0;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_GPIO)) == ADDR_SPACE_GPIO) begin
-      dev_sel_s1n_15 = 4'd1;
+    end else if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_GPIO)) == ADDR_SPACE_GPIO) begin
+      dev_sel_s1n_14 = 4'd1;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_SPI_DEVICE)) == ADDR_SPACE_SPI_DEVICE) begin
-      dev_sel_s1n_15 = 4'd2;
+    end else if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_SPI_DEVICE)) == ADDR_SPACE_SPI_DEVICE) begin
+      dev_sel_s1n_14 = 4'd2;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_RV_TIMER)) == ADDR_SPACE_RV_TIMER) begin
-      dev_sel_s1n_15 = 4'd3;
+    end else if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_RV_TIMER)) == ADDR_SPACE_RV_TIMER) begin
+      dev_sel_s1n_14 = 4'd3;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_USBDEV)) == ADDR_SPACE_USBDEV) begin
-      dev_sel_s1n_15 = 4'd4;
+    end else if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_USBDEV)) == ADDR_SPACE_USBDEV) begin
+      dev_sel_s1n_14 = 4'd4;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_PWRMGR)) == ADDR_SPACE_PWRMGR) begin
-      dev_sel_s1n_15 = 4'd5;
+    end else if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_PWRMGR)) == ADDR_SPACE_PWRMGR) begin
+      dev_sel_s1n_14 = 4'd5;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_RSTMGR)) == ADDR_SPACE_RSTMGR) begin
-      dev_sel_s1n_15 = 4'd6;
+    end else if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_RSTMGR)) == ADDR_SPACE_RSTMGR) begin
+      dev_sel_s1n_14 = 4'd6;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_CLKMGR)) == ADDR_SPACE_CLKMGR) begin
-      dev_sel_s1n_15 = 4'd7;
+    end else if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_CLKMGR)) == ADDR_SPACE_CLKMGR) begin
+      dev_sel_s1n_14 = 4'd7;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_RAM_RET)) == ADDR_SPACE_RAM_RET) begin
-      dev_sel_s1n_15 = 4'd8;
+    end else if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_RAM_RET)) == ADDR_SPACE_RAM_RET) begin
+      dev_sel_s1n_14 = 4'd8;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_OTP_CTRL)) == ADDR_SPACE_OTP_CTRL) begin
-      dev_sel_s1n_15 = 4'd9;
+    end else if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_OTP_CTRL)) == ADDR_SPACE_OTP_CTRL) begin
+      dev_sel_s1n_14 = 4'd9;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_SENSOR_CTRL)) == ADDR_SPACE_SENSOR_CTRL) begin
-      dev_sel_s1n_15 = 4'd10;
+    end else if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_SENSOR_CTRL)) == ADDR_SPACE_SENSOR_CTRL) begin
+      dev_sel_s1n_14 = 4'd10;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_AST_WRAPPER)) == ADDR_SPACE_AST_WRAPPER) begin
-      dev_sel_s1n_15 = 4'd11;
+    end else if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_AST_WRAPPER)) == ADDR_SPACE_AST_WRAPPER) begin
+      dev_sel_s1n_14 = 4'd11;
 
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_PATTGEN)) == ADDR_SPACE_PATTGEN) begin
-      dev_sel_s1n_15 = 4'd12;
-
-    end else if ((tl_s1n_15_us_h2d.a_address & ~(ADDR_MASK_I2C)) == ADDR_SPACE_I2C) begin
-      dev_sel_s1n_15 = 4'd13;
+    end else if ((tl_s1n_14_us_h2d.a_address & ~(ADDR_MASK_PATTGEN)) == ADDR_SPACE_PATTGEN) begin
+      dev_sel_s1n_14 = 4'd12;
 end
   end
 
@@ -181,17 +172,17 @@ end
   tlul_socket_1n #(
     .HReqDepth (4'h0),
     .HRspDepth (4'h0),
-    .DReqDepth (56'h0),
-    .DRspDepth (56'h0),
-    .N         (14)
-  ) u_s1n_15 (
+    .DReqDepth (52'h0),
+    .DRspDepth (52'h0),
+    .N         (13)
+  ) u_s1n_14 (
     .clk_i        (clk_peri_i),
     .rst_ni       (rst_peri_ni),
-    .tl_h_i       (tl_s1n_15_us_h2d),
-    .tl_h_o       (tl_s1n_15_us_d2h),
-    .tl_d_o       (tl_s1n_15_ds_h2d),
-    .tl_d_i       (tl_s1n_15_ds_d2h),
-    .dev_select_i (dev_sel_s1n_15)
+    .tl_h_i       (tl_s1n_14_us_h2d),
+    .tl_h_o       (tl_s1n_14_us_d2h),
+    .tl_d_o       (tl_s1n_14_ds_h2d),
+    .tl_d_i       (tl_s1n_14_ds_d2h),
+    .dev_select_i (dev_sel_s1n_14)
   );
 
 endmodule

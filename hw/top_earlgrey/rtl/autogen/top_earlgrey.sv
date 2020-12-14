@@ -99,9 +99,9 @@ module top_earlgrey #(
   import top_earlgrey_rnd_cnst_pkg::*;
 
   // Signals
-  logic [33:0] mio_p2d;
-  logic [37:0] mio_d2p;
-  logic [37:0] mio_d2p_en;
+  logic [31:0] mio_p2d;
+  logic [35:0] mio_d2p;
+  logic [35:0] mio_d2p_en;
   logic [14:0] dio_p2d;
   logic [14:0] dio_d2p;
   logic [14:0] dio_d2p_en;
@@ -119,13 +119,6 @@ module top_earlgrey #(
   logic        cio_spi_device_sdi_p2d;
   logic        cio_spi_device_sdo_d2p;
   logic        cio_spi_device_sdo_en_d2p;
-  // i2c
-  logic        cio_i2c_sda_p2d;
-  logic        cio_i2c_scl_p2d;
-  logic        cio_i2c_sda_d2p;
-  logic        cio_i2c_sda_en_d2p;
-  logic        cio_i2c_scl_d2p;
-  logic        cio_i2c_scl_en_d2p;
   // pattgen
   logic        cio_pattgen_pda0_tx_d2p;
   logic        cio_pattgen_pda0_tx_en_d2p;
@@ -179,7 +172,7 @@ module top_earlgrey #(
   // otbn
 
 
-  logic [103:0]  intr_vector;
+  logic [88:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -196,21 +189,6 @@ module top_earlgrey #(
   logic intr_spi_device_rxerr;
   logic intr_spi_device_rxoverflow;
   logic intr_spi_device_txunderflow;
-  logic intr_i2c_fmt_watermark;
-  logic intr_i2c_rx_watermark;
-  logic intr_i2c_fmt_overflow;
-  logic intr_i2c_rx_overflow;
-  logic intr_i2c_nak;
-  logic intr_i2c_scl_interference;
-  logic intr_i2c_sda_interference;
-  logic intr_i2c_stretch_timeout;
-  logic intr_i2c_sda_unstable;
-  logic intr_i2c_trans_complete;
-  logic intr_i2c_tx_empty;
-  logic intr_i2c_tx_nonempty;
-  logic intr_i2c_tx_overflow;
-  logic intr_i2c_acq_overflow;
-  logic intr_i2c_ack_stop;
   logic intr_pattgen_done_ch0;
   logic intr_pattgen_done_ch1;
   logic intr_rv_timer_timer_expired_0_0;
@@ -356,8 +334,6 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       gpio_tl_rsp;
   tlul_pkg::tl_h2d_t       spi_device_tl_req;
   tlul_pkg::tl_d2h_t       spi_device_tl_rsp;
-  tlul_pkg::tl_h2d_t       i2c_tl_req;
-  tlul_pkg::tl_d2h_t       i2c_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_timer_tl_req;
   tlul_pkg::tl_d2h_t       rv_timer_tl_rsp;
   tlul_pkg::tl_h2d_t       usbdev_tl_req;
@@ -788,42 +764,6 @@ module top_earlgrey #(
       .scanmode_i   (scanmode_i),
       .clk_i (clkmgr_clocks.clk_io_div4_peri),
       .rst_ni (rstmgr_resets.rst_spi_device_n[rstmgr_pkg::Domain0Sel])
-  );
-
-  i2c u_i2c (
-
-      // Input
-      .cio_sda_i    (cio_i2c_sda_p2d),
-      .cio_scl_i    (cio_i2c_scl_p2d),
-
-      // Output
-      .cio_sda_o    (cio_i2c_sda_d2p),
-      .cio_sda_en_o (cio_i2c_sda_en_d2p),
-      .cio_scl_o    (cio_i2c_scl_d2p),
-      .cio_scl_en_o (cio_i2c_scl_en_d2p),
-
-      // Interrupt
-      .intr_fmt_watermark_o    (intr_i2c_fmt_watermark),
-      .intr_rx_watermark_o     (intr_i2c_rx_watermark),
-      .intr_fmt_overflow_o     (intr_i2c_fmt_overflow),
-      .intr_rx_overflow_o      (intr_i2c_rx_overflow),
-      .intr_nak_o              (intr_i2c_nak),
-      .intr_scl_interference_o (intr_i2c_scl_interference),
-      .intr_sda_interference_o (intr_i2c_sda_interference),
-      .intr_stretch_timeout_o  (intr_i2c_stretch_timeout),
-      .intr_sda_unstable_o     (intr_i2c_sda_unstable),
-      .intr_trans_complete_o   (intr_i2c_trans_complete),
-      .intr_tx_empty_o         (intr_i2c_tx_empty),
-      .intr_tx_nonempty_o      (intr_i2c_tx_nonempty),
-      .intr_tx_overflow_o      (intr_i2c_tx_overflow),
-      .intr_acq_overflow_o     (intr_i2c_acq_overflow),
-      .intr_ack_stop_o         (intr_i2c_ack_stop),
-
-      // Inter-module signals
-      .tl_i(i2c_tl_req),
-      .tl_o(i2c_tl_rsp),
-      .clk_i (clkmgr_clocks.clk_io_div4_peri),
-      .rst_ni (rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
 
   pattgen u_pattgen (
@@ -1410,21 +1350,6 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
-      intr_i2c_ack_stop,
-      intr_i2c_acq_overflow,
-      intr_i2c_tx_overflow,
-      intr_i2c_tx_nonempty,
-      intr_i2c_tx_empty,
-      intr_i2c_trans_complete,
-      intr_i2c_sda_unstable,
-      intr_i2c_stretch_timeout,
-      intr_i2c_sda_interference,
-      intr_i2c_scl_interference,
-      intr_i2c_nak,
-      intr_i2c_rx_overflow,
-      intr_i2c_fmt_overflow,
-      intr_i2c_rx_watermark,
-      intr_i2c_fmt_watermark,
       intr_pattgen_done_ch1,
       intr_pattgen_done_ch0,
       intr_kmac_kmac_err,
@@ -1607,10 +1532,6 @@ module top_earlgrey #(
     .tl_spi_device_o(spi_device_tl_req),
     .tl_spi_device_i(spi_device_tl_rsp),
 
-    // port: tl_i2c
-    .tl_i2c_o(i2c_tl_req),
-    .tl_i2c_i(i2c_tl_rsp),
-
     // port: tl_rv_timer
     .tl_rv_timer_o(rv_timer_tl_req),
     .tl_rv_timer_i(rv_timer_tl_rsp),
@@ -1658,8 +1579,6 @@ module top_earlgrey #(
   // Pinmux connections
   assign mio_d2p = {
     cio_gpio_gpio_d2p,
-    cio_i2c_sda_d2p,
-    cio_i2c_scl_d2p,
     cio_pattgen_pda0_tx_d2p,
     cio_pattgen_pcl0_tx_d2p,
     cio_pattgen_pda1_tx_d2p,
@@ -1667,17 +1586,13 @@ module top_earlgrey #(
   };
   assign mio_d2p_en = {
     cio_gpio_gpio_en_d2p,
-    cio_i2c_sda_en_d2p,
-    cio_i2c_scl_en_d2p,
     cio_pattgen_pda0_tx_en_d2p,
     cio_pattgen_pcl0_tx_en_d2p,
     cio_pattgen_pda1_tx_en_d2p,
     cio_pattgen_pcl1_tx_en_d2p
   };
   assign {
-    cio_gpio_gpio_p2d,
-    cio_i2c_sda_p2d,
-    cio_i2c_scl_p2d
+    cio_gpio_gpio_p2d
   } = mio_p2d;
 
   // Dedicated IO connections
