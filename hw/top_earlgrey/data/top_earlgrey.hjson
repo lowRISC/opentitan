@@ -197,13 +197,6 @@
       reset_connections: {rst_ni: "spi_device"},
       base_addr: "0x40050000",
     },
-    { name: "i2c",
-      type: "i2c",
-      clock_srcs: {clk_i: "io_div4"},
-      clock_group: "peri",
-      reset_connections: {rst_ni: "sys_io_div4"},
-      base_addr: "0x40080000",
-    },
     { name: "pattgen",
       type: "pattgen",
       clock_srcs: {clk_i: "io_div4"},
@@ -609,7 +602,7 @@
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl",
                      "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr",
-                     "otbn", "keymgr", "kmac", "pattgen", "i2c" ]
+                     "otbn", "keymgr", "kmac", "pattgen" ]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
@@ -652,7 +645,7 @@
     //  between the modules and the IO PADS.
     //  If `mio_modules` aren't defined, it uses all remaining modules from
     //  module list except defined in `dio_modules`.
-    mio_modules: ["uart", "gpio", "pattgen", "i2c"]
+    mio_modules: ["uart", "gpio", "pattgen"]
 
     // If any module isn't defined in above two lists, its inputs will be tied
     //  to 0, and the output/OE signals will be floating (or connected to
