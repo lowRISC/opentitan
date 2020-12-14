@@ -194,7 +194,7 @@ When in PTRNG mode, this register must exactly match the sample rate required by
 
 ### Interrupts
 
-The ENTROPY_SRC module has several interrupts: `es_entropy_valid`, es_health_test_failed`, and `es_fifo_err`.
+The ENTROPY_SRC module has several interrupts: `es_entropy_valid`, `es_health_test_failed`, and `es_fifo_err`.
 
 The `es_entropy_valid` interrupt should be asserted when an entropy source has been implemented that is relatively slow.
 
