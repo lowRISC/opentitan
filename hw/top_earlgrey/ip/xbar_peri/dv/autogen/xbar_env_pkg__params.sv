@@ -42,9 +42,6 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"ast_wrapper", '{
         '{32'h40180000, 32'h40180fff}
-    }},
-    '{"pattgen", '{
-        '{32'h400e0000, 32'h400e0fff}
 }}};
 
   // List of Xbar hosts
@@ -61,6 +58,5 @@ tl_host_t xbar_hosts[$] = '{
         "ram_ret",
         "otp_ctrl",
         "sensor_ctrl",
-        "ast_wrapper",
-        "pattgen"}}
+        "ast_wrapper"}}
 };

@@ -7,7 +7,7 @@
 package rv_plic_reg_pkg;
 
   // Param list
-  parameter int NumSrc = 89;
+  parameter int NumSrc = 87;
   parameter int NumTarget = 1;
   parameter int PrioWidth = 2;
 
@@ -367,14 +367,6 @@ package rv_plic_reg_pkg;
   } rv_plic_reg2hw_prio86_reg_t;
 
   typedef struct packed {
-    logic [1:0]  q;
-  } rv_plic_reg2hw_prio87_reg_t;
-
-  typedef struct packed {
-    logic [1:0]  q;
-  } rv_plic_reg2hw_prio88_reg_t;
-
-  typedef struct packed {
     logic        q;
   } rv_plic_reg2hw_ie0_mreg_t;
 
@@ -407,97 +399,95 @@ package rv_plic_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    rv_plic_reg2hw_le_mreg_t [88:0] le; // [367:279]
-    rv_plic_reg2hw_prio0_reg_t prio0; // [278:277]
-    rv_plic_reg2hw_prio1_reg_t prio1; // [276:275]
-    rv_plic_reg2hw_prio2_reg_t prio2; // [274:273]
-    rv_plic_reg2hw_prio3_reg_t prio3; // [272:271]
-    rv_plic_reg2hw_prio4_reg_t prio4; // [270:269]
-    rv_plic_reg2hw_prio5_reg_t prio5; // [268:267]
-    rv_plic_reg2hw_prio6_reg_t prio6; // [266:265]
-    rv_plic_reg2hw_prio7_reg_t prio7; // [264:263]
-    rv_plic_reg2hw_prio8_reg_t prio8; // [262:261]
-    rv_plic_reg2hw_prio9_reg_t prio9; // [260:259]
-    rv_plic_reg2hw_prio10_reg_t prio10; // [258:257]
-    rv_plic_reg2hw_prio11_reg_t prio11; // [256:255]
-    rv_plic_reg2hw_prio12_reg_t prio12; // [254:253]
-    rv_plic_reg2hw_prio13_reg_t prio13; // [252:251]
-    rv_plic_reg2hw_prio14_reg_t prio14; // [250:249]
-    rv_plic_reg2hw_prio15_reg_t prio15; // [248:247]
-    rv_plic_reg2hw_prio16_reg_t prio16; // [246:245]
-    rv_plic_reg2hw_prio17_reg_t prio17; // [244:243]
-    rv_plic_reg2hw_prio18_reg_t prio18; // [242:241]
-    rv_plic_reg2hw_prio19_reg_t prio19; // [240:239]
-    rv_plic_reg2hw_prio20_reg_t prio20; // [238:237]
-    rv_plic_reg2hw_prio21_reg_t prio21; // [236:235]
-    rv_plic_reg2hw_prio22_reg_t prio22; // [234:233]
-    rv_plic_reg2hw_prio23_reg_t prio23; // [232:231]
-    rv_plic_reg2hw_prio24_reg_t prio24; // [230:229]
-    rv_plic_reg2hw_prio25_reg_t prio25; // [228:227]
-    rv_plic_reg2hw_prio26_reg_t prio26; // [226:225]
-    rv_plic_reg2hw_prio27_reg_t prio27; // [224:223]
-    rv_plic_reg2hw_prio28_reg_t prio28; // [222:221]
-    rv_plic_reg2hw_prio29_reg_t prio29; // [220:219]
-    rv_plic_reg2hw_prio30_reg_t prio30; // [218:217]
-    rv_plic_reg2hw_prio31_reg_t prio31; // [216:215]
-    rv_plic_reg2hw_prio32_reg_t prio32; // [214:213]
-    rv_plic_reg2hw_prio33_reg_t prio33; // [212:211]
-    rv_plic_reg2hw_prio34_reg_t prio34; // [210:209]
-    rv_plic_reg2hw_prio35_reg_t prio35; // [208:207]
-    rv_plic_reg2hw_prio36_reg_t prio36; // [206:205]
-    rv_plic_reg2hw_prio37_reg_t prio37; // [204:203]
-    rv_plic_reg2hw_prio38_reg_t prio38; // [202:201]
-    rv_plic_reg2hw_prio39_reg_t prio39; // [200:199]
-    rv_plic_reg2hw_prio40_reg_t prio40; // [198:197]
-    rv_plic_reg2hw_prio41_reg_t prio41; // [196:195]
-    rv_plic_reg2hw_prio42_reg_t prio42; // [194:193]
-    rv_plic_reg2hw_prio43_reg_t prio43; // [192:191]
-    rv_plic_reg2hw_prio44_reg_t prio44; // [190:189]
-    rv_plic_reg2hw_prio45_reg_t prio45; // [188:187]
-    rv_plic_reg2hw_prio46_reg_t prio46; // [186:185]
-    rv_plic_reg2hw_prio47_reg_t prio47; // [184:183]
-    rv_plic_reg2hw_prio48_reg_t prio48; // [182:181]
-    rv_plic_reg2hw_prio49_reg_t prio49; // [180:179]
-    rv_plic_reg2hw_prio50_reg_t prio50; // [178:177]
-    rv_plic_reg2hw_prio51_reg_t prio51; // [176:175]
-    rv_plic_reg2hw_prio52_reg_t prio52; // [174:173]
-    rv_plic_reg2hw_prio53_reg_t prio53; // [172:171]
-    rv_plic_reg2hw_prio54_reg_t prio54; // [170:169]
-    rv_plic_reg2hw_prio55_reg_t prio55; // [168:167]
-    rv_plic_reg2hw_prio56_reg_t prio56; // [166:165]
-    rv_plic_reg2hw_prio57_reg_t prio57; // [164:163]
-    rv_plic_reg2hw_prio58_reg_t prio58; // [162:161]
-    rv_plic_reg2hw_prio59_reg_t prio59; // [160:159]
-    rv_plic_reg2hw_prio60_reg_t prio60; // [158:157]
-    rv_plic_reg2hw_prio61_reg_t prio61; // [156:155]
-    rv_plic_reg2hw_prio62_reg_t prio62; // [154:153]
-    rv_plic_reg2hw_prio63_reg_t prio63; // [152:151]
-    rv_plic_reg2hw_prio64_reg_t prio64; // [150:149]
-    rv_plic_reg2hw_prio65_reg_t prio65; // [148:147]
-    rv_plic_reg2hw_prio66_reg_t prio66; // [146:145]
-    rv_plic_reg2hw_prio67_reg_t prio67; // [144:143]
-    rv_plic_reg2hw_prio68_reg_t prio68; // [142:141]
-    rv_plic_reg2hw_prio69_reg_t prio69; // [140:139]
-    rv_plic_reg2hw_prio70_reg_t prio70; // [138:137]
-    rv_plic_reg2hw_prio71_reg_t prio71; // [136:135]
-    rv_plic_reg2hw_prio72_reg_t prio72; // [134:133]
-    rv_plic_reg2hw_prio73_reg_t prio73; // [132:131]
-    rv_plic_reg2hw_prio74_reg_t prio74; // [130:129]
-    rv_plic_reg2hw_prio75_reg_t prio75; // [128:127]
-    rv_plic_reg2hw_prio76_reg_t prio76; // [126:125]
-    rv_plic_reg2hw_prio77_reg_t prio77; // [124:123]
-    rv_plic_reg2hw_prio78_reg_t prio78; // [122:121]
-    rv_plic_reg2hw_prio79_reg_t prio79; // [120:119]
-    rv_plic_reg2hw_prio80_reg_t prio80; // [118:117]
-    rv_plic_reg2hw_prio81_reg_t prio81; // [116:115]
-    rv_plic_reg2hw_prio82_reg_t prio82; // [114:113]
-    rv_plic_reg2hw_prio83_reg_t prio83; // [112:111]
-    rv_plic_reg2hw_prio84_reg_t prio84; // [110:109]
-    rv_plic_reg2hw_prio85_reg_t prio85; // [108:107]
-    rv_plic_reg2hw_prio86_reg_t prio86; // [106:105]
-    rv_plic_reg2hw_prio87_reg_t prio87; // [104:103]
-    rv_plic_reg2hw_prio88_reg_t prio88; // [102:101]
-    rv_plic_reg2hw_ie0_mreg_t [88:0] ie0; // [100:12]
+    rv_plic_reg2hw_le_mreg_t [86:0] le; // [359:273]
+    rv_plic_reg2hw_prio0_reg_t prio0; // [272:271]
+    rv_plic_reg2hw_prio1_reg_t prio1; // [270:269]
+    rv_plic_reg2hw_prio2_reg_t prio2; // [268:267]
+    rv_plic_reg2hw_prio3_reg_t prio3; // [266:265]
+    rv_plic_reg2hw_prio4_reg_t prio4; // [264:263]
+    rv_plic_reg2hw_prio5_reg_t prio5; // [262:261]
+    rv_plic_reg2hw_prio6_reg_t prio6; // [260:259]
+    rv_plic_reg2hw_prio7_reg_t prio7; // [258:257]
+    rv_plic_reg2hw_prio8_reg_t prio8; // [256:255]
+    rv_plic_reg2hw_prio9_reg_t prio9; // [254:253]
+    rv_plic_reg2hw_prio10_reg_t prio10; // [252:251]
+    rv_plic_reg2hw_prio11_reg_t prio11; // [250:249]
+    rv_plic_reg2hw_prio12_reg_t prio12; // [248:247]
+    rv_plic_reg2hw_prio13_reg_t prio13; // [246:245]
+    rv_plic_reg2hw_prio14_reg_t prio14; // [244:243]
+    rv_plic_reg2hw_prio15_reg_t prio15; // [242:241]
+    rv_plic_reg2hw_prio16_reg_t prio16; // [240:239]
+    rv_plic_reg2hw_prio17_reg_t prio17; // [238:237]
+    rv_plic_reg2hw_prio18_reg_t prio18; // [236:235]
+    rv_plic_reg2hw_prio19_reg_t prio19; // [234:233]
+    rv_plic_reg2hw_prio20_reg_t prio20; // [232:231]
+    rv_plic_reg2hw_prio21_reg_t prio21; // [230:229]
+    rv_plic_reg2hw_prio22_reg_t prio22; // [228:227]
+    rv_plic_reg2hw_prio23_reg_t prio23; // [226:225]
+    rv_plic_reg2hw_prio24_reg_t prio24; // [224:223]
+    rv_plic_reg2hw_prio25_reg_t prio25; // [222:221]
+    rv_plic_reg2hw_prio26_reg_t prio26; // [220:219]
+    rv_plic_reg2hw_prio27_reg_t prio27; // [218:217]
+    rv_plic_reg2hw_prio28_reg_t prio28; // [216:215]
+    rv_plic_reg2hw_prio29_reg_t prio29; // [214:213]
+    rv_plic_reg2hw_prio30_reg_t prio30; // [212:211]
+    rv_plic_reg2hw_prio31_reg_t prio31; // [210:209]
+    rv_plic_reg2hw_prio32_reg_t prio32; // [208:207]
+    rv_plic_reg2hw_prio33_reg_t prio33; // [206:205]
+    rv_plic_reg2hw_prio34_reg_t prio34; // [204:203]
+    rv_plic_reg2hw_prio35_reg_t prio35; // [202:201]
+    rv_plic_reg2hw_prio36_reg_t prio36; // [200:199]
+    rv_plic_reg2hw_prio37_reg_t prio37; // [198:197]
+    rv_plic_reg2hw_prio38_reg_t prio38; // [196:195]
+    rv_plic_reg2hw_prio39_reg_t prio39; // [194:193]
+    rv_plic_reg2hw_prio40_reg_t prio40; // [192:191]
+    rv_plic_reg2hw_prio41_reg_t prio41; // [190:189]
+    rv_plic_reg2hw_prio42_reg_t prio42; // [188:187]
+    rv_plic_reg2hw_prio43_reg_t prio43; // [186:185]
+    rv_plic_reg2hw_prio44_reg_t prio44; // [184:183]
+    rv_plic_reg2hw_prio45_reg_t prio45; // [182:181]
+    rv_plic_reg2hw_prio46_reg_t prio46; // [180:179]
+    rv_plic_reg2hw_prio47_reg_t prio47; // [178:177]
+    rv_plic_reg2hw_prio48_reg_t prio48; // [176:175]
+    rv_plic_reg2hw_prio49_reg_t prio49; // [174:173]
+    rv_plic_reg2hw_prio50_reg_t prio50; // [172:171]
+    rv_plic_reg2hw_prio51_reg_t prio51; // [170:169]
+    rv_plic_reg2hw_prio52_reg_t prio52; // [168:167]
+    rv_plic_reg2hw_prio53_reg_t prio53; // [166:165]
+    rv_plic_reg2hw_prio54_reg_t prio54; // [164:163]
+    rv_plic_reg2hw_prio55_reg_t prio55; // [162:161]
+    rv_plic_reg2hw_prio56_reg_t prio56; // [160:159]
+    rv_plic_reg2hw_prio57_reg_t prio57; // [158:157]
+    rv_plic_reg2hw_prio58_reg_t prio58; // [156:155]
+    rv_plic_reg2hw_prio59_reg_t prio59; // [154:153]
+    rv_plic_reg2hw_prio60_reg_t prio60; // [152:151]
+    rv_plic_reg2hw_prio61_reg_t prio61; // [150:149]
+    rv_plic_reg2hw_prio62_reg_t prio62; // [148:147]
+    rv_plic_reg2hw_prio63_reg_t prio63; // [146:145]
+    rv_plic_reg2hw_prio64_reg_t prio64; // [144:143]
+    rv_plic_reg2hw_prio65_reg_t prio65; // [142:141]
+    rv_plic_reg2hw_prio66_reg_t prio66; // [140:139]
+    rv_plic_reg2hw_prio67_reg_t prio67; // [138:137]
+    rv_plic_reg2hw_prio68_reg_t prio68; // [136:135]
+    rv_plic_reg2hw_prio69_reg_t prio69; // [134:133]
+    rv_plic_reg2hw_prio70_reg_t prio70; // [132:131]
+    rv_plic_reg2hw_prio71_reg_t prio71; // [130:129]
+    rv_plic_reg2hw_prio72_reg_t prio72; // [128:127]
+    rv_plic_reg2hw_prio73_reg_t prio73; // [126:125]
+    rv_plic_reg2hw_prio74_reg_t prio74; // [124:123]
+    rv_plic_reg2hw_prio75_reg_t prio75; // [122:121]
+    rv_plic_reg2hw_prio76_reg_t prio76; // [120:119]
+    rv_plic_reg2hw_prio77_reg_t prio77; // [118:117]
+    rv_plic_reg2hw_prio78_reg_t prio78; // [116:115]
+    rv_plic_reg2hw_prio79_reg_t prio79; // [114:113]
+    rv_plic_reg2hw_prio80_reg_t prio80; // [112:111]
+    rv_plic_reg2hw_prio81_reg_t prio81; // [110:109]
+    rv_plic_reg2hw_prio82_reg_t prio82; // [108:107]
+    rv_plic_reg2hw_prio83_reg_t prio83; // [106:105]
+    rv_plic_reg2hw_prio84_reg_t prio84; // [104:103]
+    rv_plic_reg2hw_prio85_reg_t prio85; // [102:101]
+    rv_plic_reg2hw_prio86_reg_t prio86; // [100:99]
+    rv_plic_reg2hw_ie0_mreg_t [86:0] ie0; // [98:12]
     rv_plic_reg2hw_threshold0_reg_t threshold0; // [11:10]
     rv_plic_reg2hw_cc0_reg_t cc0; // [9:1]
     rv_plic_reg2hw_msip0_reg_t msip0; // [0:0]
@@ -507,7 +497,7 @@ package rv_plic_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    rv_plic_hw2reg_ip_mreg_t [88:0] ip; // [184:7]
+    rv_plic_hw2reg_ip_mreg_t [86:0] ip; // [180:7]
     rv_plic_hw2reg_cc0_reg_t cc0; // [6:0]
   } rv_plic_hw2reg_t;
 
@@ -605,8 +595,6 @@ package rv_plic_reg_pkg;
   parameter logic [9:0] RV_PLIC_PRIO84_OFFSET = 10'h 168;
   parameter logic [9:0] RV_PLIC_PRIO85_OFFSET = 10'h 16c;
   parameter logic [9:0] RV_PLIC_PRIO86_OFFSET = 10'h 170;
-  parameter logic [9:0] RV_PLIC_PRIO87_OFFSET = 10'h 174;
-  parameter logic [9:0] RV_PLIC_PRIO88_OFFSET = 10'h 178;
   parameter logic [9:0] RV_PLIC_IE0_0_OFFSET = 10'h 200;
   parameter logic [9:0] RV_PLIC_IE0_1_OFFSET = 10'h 204;
   parameter logic [9:0] RV_PLIC_IE0_2_OFFSET = 10'h 208;
@@ -710,8 +698,6 @@ package rv_plic_reg_pkg;
     RV_PLIC_PRIO84,
     RV_PLIC_PRIO85,
     RV_PLIC_PRIO86,
-    RV_PLIC_PRIO87,
-    RV_PLIC_PRIO88,
     RV_PLIC_IE0_0,
     RV_PLIC_IE0_1,
     RV_PLIC_IE0_2,
@@ -721,108 +707,106 @@ package rv_plic_reg_pkg;
   } rv_plic_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] RV_PLIC_PERMIT [101] = '{
-    4'b 1111, // index[  0] RV_PLIC_IP_0
-    4'b 1111, // index[  1] RV_PLIC_IP_1
-    4'b 1111, // index[  2] RV_PLIC_IP_2
-    4'b 1111, // index[  3] RV_PLIC_LE_0
-    4'b 1111, // index[  4] RV_PLIC_LE_1
-    4'b 1111, // index[  5] RV_PLIC_LE_2
-    4'b 0001, // index[  6] RV_PLIC_PRIO0
-    4'b 0001, // index[  7] RV_PLIC_PRIO1
-    4'b 0001, // index[  8] RV_PLIC_PRIO2
-    4'b 0001, // index[  9] RV_PLIC_PRIO3
-    4'b 0001, // index[ 10] RV_PLIC_PRIO4
-    4'b 0001, // index[ 11] RV_PLIC_PRIO5
-    4'b 0001, // index[ 12] RV_PLIC_PRIO6
-    4'b 0001, // index[ 13] RV_PLIC_PRIO7
-    4'b 0001, // index[ 14] RV_PLIC_PRIO8
-    4'b 0001, // index[ 15] RV_PLIC_PRIO9
-    4'b 0001, // index[ 16] RV_PLIC_PRIO10
-    4'b 0001, // index[ 17] RV_PLIC_PRIO11
-    4'b 0001, // index[ 18] RV_PLIC_PRIO12
-    4'b 0001, // index[ 19] RV_PLIC_PRIO13
-    4'b 0001, // index[ 20] RV_PLIC_PRIO14
-    4'b 0001, // index[ 21] RV_PLIC_PRIO15
-    4'b 0001, // index[ 22] RV_PLIC_PRIO16
-    4'b 0001, // index[ 23] RV_PLIC_PRIO17
-    4'b 0001, // index[ 24] RV_PLIC_PRIO18
-    4'b 0001, // index[ 25] RV_PLIC_PRIO19
-    4'b 0001, // index[ 26] RV_PLIC_PRIO20
-    4'b 0001, // index[ 27] RV_PLIC_PRIO21
-    4'b 0001, // index[ 28] RV_PLIC_PRIO22
-    4'b 0001, // index[ 29] RV_PLIC_PRIO23
-    4'b 0001, // index[ 30] RV_PLIC_PRIO24
-    4'b 0001, // index[ 31] RV_PLIC_PRIO25
-    4'b 0001, // index[ 32] RV_PLIC_PRIO26
-    4'b 0001, // index[ 33] RV_PLIC_PRIO27
-    4'b 0001, // index[ 34] RV_PLIC_PRIO28
-    4'b 0001, // index[ 35] RV_PLIC_PRIO29
-    4'b 0001, // index[ 36] RV_PLIC_PRIO30
-    4'b 0001, // index[ 37] RV_PLIC_PRIO31
-    4'b 0001, // index[ 38] RV_PLIC_PRIO32
-    4'b 0001, // index[ 39] RV_PLIC_PRIO33
-    4'b 0001, // index[ 40] RV_PLIC_PRIO34
-    4'b 0001, // index[ 41] RV_PLIC_PRIO35
-    4'b 0001, // index[ 42] RV_PLIC_PRIO36
-    4'b 0001, // index[ 43] RV_PLIC_PRIO37
-    4'b 0001, // index[ 44] RV_PLIC_PRIO38
-    4'b 0001, // index[ 45] RV_PLIC_PRIO39
-    4'b 0001, // index[ 46] RV_PLIC_PRIO40
-    4'b 0001, // index[ 47] RV_PLIC_PRIO41
-    4'b 0001, // index[ 48] RV_PLIC_PRIO42
-    4'b 0001, // index[ 49] RV_PLIC_PRIO43
-    4'b 0001, // index[ 50] RV_PLIC_PRIO44
-    4'b 0001, // index[ 51] RV_PLIC_PRIO45
-    4'b 0001, // index[ 52] RV_PLIC_PRIO46
-    4'b 0001, // index[ 53] RV_PLIC_PRIO47
-    4'b 0001, // index[ 54] RV_PLIC_PRIO48
-    4'b 0001, // index[ 55] RV_PLIC_PRIO49
-    4'b 0001, // index[ 56] RV_PLIC_PRIO50
-    4'b 0001, // index[ 57] RV_PLIC_PRIO51
-    4'b 0001, // index[ 58] RV_PLIC_PRIO52
-    4'b 0001, // index[ 59] RV_PLIC_PRIO53
-    4'b 0001, // index[ 60] RV_PLIC_PRIO54
-    4'b 0001, // index[ 61] RV_PLIC_PRIO55
-    4'b 0001, // index[ 62] RV_PLIC_PRIO56
-    4'b 0001, // index[ 63] RV_PLIC_PRIO57
-    4'b 0001, // index[ 64] RV_PLIC_PRIO58
-    4'b 0001, // index[ 65] RV_PLIC_PRIO59
-    4'b 0001, // index[ 66] RV_PLIC_PRIO60
-    4'b 0001, // index[ 67] RV_PLIC_PRIO61
-    4'b 0001, // index[ 68] RV_PLIC_PRIO62
-    4'b 0001, // index[ 69] RV_PLIC_PRIO63
-    4'b 0001, // index[ 70] RV_PLIC_PRIO64
-    4'b 0001, // index[ 71] RV_PLIC_PRIO65
-    4'b 0001, // index[ 72] RV_PLIC_PRIO66
-    4'b 0001, // index[ 73] RV_PLIC_PRIO67
-    4'b 0001, // index[ 74] RV_PLIC_PRIO68
-    4'b 0001, // index[ 75] RV_PLIC_PRIO69
-    4'b 0001, // index[ 76] RV_PLIC_PRIO70
-    4'b 0001, // index[ 77] RV_PLIC_PRIO71
-    4'b 0001, // index[ 78] RV_PLIC_PRIO72
-    4'b 0001, // index[ 79] RV_PLIC_PRIO73
-    4'b 0001, // index[ 80] RV_PLIC_PRIO74
-    4'b 0001, // index[ 81] RV_PLIC_PRIO75
-    4'b 0001, // index[ 82] RV_PLIC_PRIO76
-    4'b 0001, // index[ 83] RV_PLIC_PRIO77
-    4'b 0001, // index[ 84] RV_PLIC_PRIO78
-    4'b 0001, // index[ 85] RV_PLIC_PRIO79
-    4'b 0001, // index[ 86] RV_PLIC_PRIO80
-    4'b 0001, // index[ 87] RV_PLIC_PRIO81
-    4'b 0001, // index[ 88] RV_PLIC_PRIO82
-    4'b 0001, // index[ 89] RV_PLIC_PRIO83
-    4'b 0001, // index[ 90] RV_PLIC_PRIO84
-    4'b 0001, // index[ 91] RV_PLIC_PRIO85
-    4'b 0001, // index[ 92] RV_PLIC_PRIO86
-    4'b 0001, // index[ 93] RV_PLIC_PRIO87
-    4'b 0001, // index[ 94] RV_PLIC_PRIO88
-    4'b 1111, // index[ 95] RV_PLIC_IE0_0
-    4'b 1111, // index[ 96] RV_PLIC_IE0_1
-    4'b 1111, // index[ 97] RV_PLIC_IE0_2
-    4'b 0001, // index[ 98] RV_PLIC_THRESHOLD0
-    4'b 0001, // index[ 99] RV_PLIC_CC0
-    4'b 0001  // index[100] RV_PLIC_MSIP0
+  parameter logic [3:0] RV_PLIC_PERMIT [99] = '{
+    4'b 1111, // index[ 0] RV_PLIC_IP_0
+    4'b 1111, // index[ 1] RV_PLIC_IP_1
+    4'b 0111, // index[ 2] RV_PLIC_IP_2
+    4'b 1111, // index[ 3] RV_PLIC_LE_0
+    4'b 1111, // index[ 4] RV_PLIC_LE_1
+    4'b 0111, // index[ 5] RV_PLIC_LE_2
+    4'b 0001, // index[ 6] RV_PLIC_PRIO0
+    4'b 0001, // index[ 7] RV_PLIC_PRIO1
+    4'b 0001, // index[ 8] RV_PLIC_PRIO2
+    4'b 0001, // index[ 9] RV_PLIC_PRIO3
+    4'b 0001, // index[10] RV_PLIC_PRIO4
+    4'b 0001, // index[11] RV_PLIC_PRIO5
+    4'b 0001, // index[12] RV_PLIC_PRIO6
+    4'b 0001, // index[13] RV_PLIC_PRIO7
+    4'b 0001, // index[14] RV_PLIC_PRIO8
+    4'b 0001, // index[15] RV_PLIC_PRIO9
+    4'b 0001, // index[16] RV_PLIC_PRIO10
+    4'b 0001, // index[17] RV_PLIC_PRIO11
+    4'b 0001, // index[18] RV_PLIC_PRIO12
+    4'b 0001, // index[19] RV_PLIC_PRIO13
+    4'b 0001, // index[20] RV_PLIC_PRIO14
+    4'b 0001, // index[21] RV_PLIC_PRIO15
+    4'b 0001, // index[22] RV_PLIC_PRIO16
+    4'b 0001, // index[23] RV_PLIC_PRIO17
+    4'b 0001, // index[24] RV_PLIC_PRIO18
+    4'b 0001, // index[25] RV_PLIC_PRIO19
+    4'b 0001, // index[26] RV_PLIC_PRIO20
+    4'b 0001, // index[27] RV_PLIC_PRIO21
+    4'b 0001, // index[28] RV_PLIC_PRIO22
+    4'b 0001, // index[29] RV_PLIC_PRIO23
+    4'b 0001, // index[30] RV_PLIC_PRIO24
+    4'b 0001, // index[31] RV_PLIC_PRIO25
+    4'b 0001, // index[32] RV_PLIC_PRIO26
+    4'b 0001, // index[33] RV_PLIC_PRIO27
+    4'b 0001, // index[34] RV_PLIC_PRIO28
+    4'b 0001, // index[35] RV_PLIC_PRIO29
+    4'b 0001, // index[36] RV_PLIC_PRIO30
+    4'b 0001, // index[37] RV_PLIC_PRIO31
+    4'b 0001, // index[38] RV_PLIC_PRIO32
+    4'b 0001, // index[39] RV_PLIC_PRIO33
+    4'b 0001, // index[40] RV_PLIC_PRIO34
+    4'b 0001, // index[41] RV_PLIC_PRIO35
+    4'b 0001, // index[42] RV_PLIC_PRIO36
+    4'b 0001, // index[43] RV_PLIC_PRIO37
+    4'b 0001, // index[44] RV_PLIC_PRIO38
+    4'b 0001, // index[45] RV_PLIC_PRIO39
+    4'b 0001, // index[46] RV_PLIC_PRIO40
+    4'b 0001, // index[47] RV_PLIC_PRIO41
+    4'b 0001, // index[48] RV_PLIC_PRIO42
+    4'b 0001, // index[49] RV_PLIC_PRIO43
+    4'b 0001, // index[50] RV_PLIC_PRIO44
+    4'b 0001, // index[51] RV_PLIC_PRIO45
+    4'b 0001, // index[52] RV_PLIC_PRIO46
+    4'b 0001, // index[53] RV_PLIC_PRIO47
+    4'b 0001, // index[54] RV_PLIC_PRIO48
+    4'b 0001, // index[55] RV_PLIC_PRIO49
+    4'b 0001, // index[56] RV_PLIC_PRIO50
+    4'b 0001, // index[57] RV_PLIC_PRIO51
+    4'b 0001, // index[58] RV_PLIC_PRIO52
+    4'b 0001, // index[59] RV_PLIC_PRIO53
+    4'b 0001, // index[60] RV_PLIC_PRIO54
+    4'b 0001, // index[61] RV_PLIC_PRIO55
+    4'b 0001, // index[62] RV_PLIC_PRIO56
+    4'b 0001, // index[63] RV_PLIC_PRIO57
+    4'b 0001, // index[64] RV_PLIC_PRIO58
+    4'b 0001, // index[65] RV_PLIC_PRIO59
+    4'b 0001, // index[66] RV_PLIC_PRIO60
+    4'b 0001, // index[67] RV_PLIC_PRIO61
+    4'b 0001, // index[68] RV_PLIC_PRIO62
+    4'b 0001, // index[69] RV_PLIC_PRIO63
+    4'b 0001, // index[70] RV_PLIC_PRIO64
+    4'b 0001, // index[71] RV_PLIC_PRIO65
+    4'b 0001, // index[72] RV_PLIC_PRIO66
+    4'b 0001, // index[73] RV_PLIC_PRIO67
+    4'b 0001, // index[74] RV_PLIC_PRIO68
+    4'b 0001, // index[75] RV_PLIC_PRIO69
+    4'b 0001, // index[76] RV_PLIC_PRIO70
+    4'b 0001, // index[77] RV_PLIC_PRIO71
+    4'b 0001, // index[78] RV_PLIC_PRIO72
+    4'b 0001, // index[79] RV_PLIC_PRIO73
+    4'b 0001, // index[80] RV_PLIC_PRIO74
+    4'b 0001, // index[81] RV_PLIC_PRIO75
+    4'b 0001, // index[82] RV_PLIC_PRIO76
+    4'b 0001, // index[83] RV_PLIC_PRIO77
+    4'b 0001, // index[84] RV_PLIC_PRIO78
+    4'b 0001, // index[85] RV_PLIC_PRIO79
+    4'b 0001, // index[86] RV_PLIC_PRIO80
+    4'b 0001, // index[87] RV_PLIC_PRIO81
+    4'b 0001, // index[88] RV_PLIC_PRIO82
+    4'b 0001, // index[89] RV_PLIC_PRIO83
+    4'b 0001, // index[90] RV_PLIC_PRIO84
+    4'b 0001, // index[91] RV_PLIC_PRIO85
+    4'b 0001, // index[92] RV_PLIC_PRIO86
+    4'b 1111, // index[93] RV_PLIC_IE0_0
+    4'b 1111, // index[94] RV_PLIC_IE0_1
+    4'b 0111, // index[95] RV_PLIC_IE0_2
+    4'b 0001, // index[96] RV_PLIC_THRESHOLD0
+    4'b 0001, // index[97] RV_PLIC_CC0
+    4'b 0001  // index[98] RV_PLIC_MSIP0
   };
 endpackage
 

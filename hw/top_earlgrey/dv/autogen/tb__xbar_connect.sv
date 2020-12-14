@@ -64,7 +64,6 @@ tl_if ram_ret_tl_if(clk_io_div4, rst_n);
 tl_if otp_ctrl_tl_if(clk_io_div4, rst_n);
 tl_if sensor_ctrl_tl_if(clk_io_div4, rst_n);
 tl_if ast_wrapper_tl_if(clk_io_div4, rst_n);
-tl_if pattgen_tl_if(clk_io_div4, rst_n);
 
 initial begin
   bit xbar_mode;
@@ -124,7 +123,6 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(otp_ctrl, otp_ctrl, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(sensor_ctrl, sensor_ctrl, tl)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast_wrapper, ast_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(pattgen, pattgen, tl)
   end
 end
 
