@@ -31,7 +31,7 @@
   revision: '''{eval_cmd}
             COMMIT_L=`git rev-parse HEAD`; \
             COMMIT_S=`git rev-parse --short HEAD`; \
-            echo "Revision: [\`$COMMIT_S\`]({repo_server}/tree/$COMMIT_L)";
+            echo "Revision: [\`$COMMIT_S\`]({results_server_url_prefix}{repo_server}/tree/$COMMIT_L)";
             '''
 
   // The current design level
