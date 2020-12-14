@@ -33,12 +33,6 @@
       reset:     "rst_peri_ni",
       pipeline: "false"
     },
-    { name:      "i2c",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  "false"
-    },
     { name:      "rv_timer",
       type:      "device",
       clock:     "clk_peri_i",
@@ -110,6 +104,6 @@
   ],
   connections: {
     main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr", "rstmgr", "clkmgr",
-            "ram_ret", "otp_ctrl", "sensor_ctrl", "ast_wrapper", "pattgen", "i2c"],
+            "ram_ret", "otp_ctrl", "sensor_ctrl", "ast_wrapper", "pattgen"],
   },
 }

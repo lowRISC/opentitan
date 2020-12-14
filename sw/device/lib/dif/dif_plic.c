@@ -16,7 +16,7 @@
 // If either of these static assertions fail, then the assumptions in this DIF
 // implementation should be revisited. In particular, `kPlicTargets`
 // may need updating,
-_Static_assert(RV_PLIC_PARAM_NUMSRC == 104,
+_Static_assert(RV_PLIC_PARAM_NUMSRC == 89,
                "PLIC instantiation parameters have changed.");
 _Static_assert(RV_PLIC_PARAM_NUMTARGET == 1,
                "PLIC instantiation parameters have changed.");

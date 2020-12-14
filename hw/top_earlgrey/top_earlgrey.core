@@ -42,7 +42,6 @@ filesets:
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr
       - lowrisc:ip:pattgen
-      - lowrisc:ip:i2c
       - lowrisc:systems:sensor_ctrl
       - lowrisc:systems:ast_wrapper_pkg
       - lowrisc:tlul:headers
