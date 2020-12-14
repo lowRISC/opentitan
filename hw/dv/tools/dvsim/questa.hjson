@@ -2,8 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  // VW build_cmd:  "vlib work && {job_prefix} vlog"
-  build_cmd:  "qverilog "
+  build_cmd:  "vlib work && {job_prefix} vlog"
   run_cmd:    "{job_prefix} vsim"
 
   // Indicate the tool specific helper sources - these are copied over to the
@@ -12,18 +11,24 @@
 
   build_opts: ["-sv",
                "-timescale 1ns/1ps",
-               "-L /${QUESTA_HOME}/uvm-1.2",
+               "+incdir+/${QUESTA_HOME}/verilog_src/uvm-1.2/src/",
+               "/${QUESTA_HOME}/verilog_src/uvm-1.2/src/uvm_pkg.sv",
                "-mfcu"
                "-f {sv_flist}"]
 
-  run_opts:   ["-sv_seed={seed}",
+  run_opts:   ["-sv_seed {seed}",
+               // List multiple tops for the simulation
+               "{sim_tops}",
+               "-suppress vsim-8323",
                "-c",
-               "-L /${QUESTA_HOME}/uvm-1.2",
-               "{tb}",
+               "-sv_lib /${QUESTA_HOME}/uvm-1.2/linux_x86_64/uvm_dpi",
                "-lib {sv_flist_gen_dir}/work",
+               "+show_file_path=1",
+               "-permit_unmatched_virtual_intf",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}",
-               "-do {run_script}"]
+               '''-do \"run -all; exit\"'''
+               ]
 
 
   // Supported wave dumping formats (in order of preference).
