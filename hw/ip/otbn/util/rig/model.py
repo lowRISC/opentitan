@@ -176,42 +176,66 @@ class KnownMem:
         # for a = base_addr; b = -offset_align; c = addr_align: find solutions
         # i, j.
         #
-        # This is a 2-variable linear Diophantine equation. Then, if gcd(b, c)
-        # does not divide a, there is no solution. Otherwise, the extended
-        # Euclidean algorithm yields (x0, y0) where
+        # This is a 2-variable linear Diophantine equation. If gcd(b, c) does
+        # not divide a, there is no solution. Otherwise, the extended Euclidean
+        # algorithm yields x0, y0 such that
         #
-        #   a = b x0 + c y0
+        #    gcd(b, c) = b x0 + c y0.
         #
-        # and where every solution to the problem is a pair (x0 + kv, y0 - ku)
-        # where u = b / gcd(b, c); v = c / gcd(b, c).
-        gcd, i0, j0 = extended_euclidean_algorithm(-offset_align, addr_align)
-        assert gcd == -offset_align * i0 + addr_align * j0
+        # Multiplying up by a / gcd(b, c) gives
+        #
+        #    a = b i0 + c j0
+        #
+        # where i0 = x0 * a / gcd(b, c) and j0 = y0 * a / gcd(b, c).
+        #
+        # This is the "inhomogeneous part". It's a solution to the equation,
+        # and every other solution, (i, j) is a translate of the form
+        #
+        #    i = i0 + k v
+        #    j = j0 - k u
+        #
+        # for some k, where u = b / gcd(b, c) and v = c / gcd(b, c).
+        gcd, x0, y0 = extended_euclidean_algorithm(-offset_align, addr_align)
+        assert gcd == -offset_align * x0 + addr_align * y0
         assert 0 < gcd
 
         if base_addr % gcd:
             return None
 
-        # If gcd divides base_addr, we can convert i0 and j0 to an initial
-        # solution by multiplying up by base_addr / gcd.
+        # If gcd divides base_addr, we convert x0 and y0 to an initial solution
+        # (i0, j0) as described above by multiplying up by base_addr / gcd.
         scale_factor = base_addr // gcd
-        x0 = i0 * scale_factor
-        y0 = j0 * scale_factor
-        u = -offset_align // gcd
+        i0 = x0 * scale_factor
+        j0 = y0 * scale_factor
+        minus_u = offset_align // gcd
         v = addr_align // gcd
-        assert u < 0 < v
+        assert 0 < v
+        assert 0 < minus_u
 
-        # offset_range constrains the possible values of offset. Re-arranging
-        # the initial equation, x0 + k v = b i = -offset, so
+        # offset_range gives the possible values of offset, which is - b i
+        # in the equations above. Re-arranging the equation for i gives:
         #
-        #   k v = -offset - x0
-        #   k   = (-offset - x0) / v
+        #   k v = i - i0
         #
-        # Since v is positive, this is an decreasing function of offset, so we
-        # can translate the endpoints in offset_range in the obvious way as
-        # long as we swap them.
-        k_min = (-(offset_range[1] + x0) + v - 1) // v
-        k_max = -(offset_range[0] + x0) // v
-        assert k_min <= k_max
+        # so
+        #
+        #   b k v = b i - b i0 = - offset - b i0
+        #
+        # or
+        #
+        #   k = (- offset - b i0) / (b v)
+        #
+        # Since b < 0 and v > 0, the denominator is negative and this is an
+        # increasing function of offset, so we can get the allowed range for k
+        # by evaluating it at the endpoints of offset_range.
+        bv = - offset_align * v
+        k_max = (-offset_range[1] + offset_align * i0) // bv
+        k_min = (-offset_range[0] + offset_align * i0 + (bv - 1)) // bv
+
+        # If k_min > k_max, this means b*v gives such big steps that none
+        # landed in the range of allowed offsets
+        if k_max < k_min:
+            return None
 
         # Now, we need to consider which memory locations we can actually use.
         # If we're writing memory, we have a single range of allowed addresses
@@ -219,12 +243,13 @@ class KnownMem:
         # either case, adjust for the fact that we need a width-byte access and
         # then rescale everything into "k units".
         #
-        # To do that rescaling, we know that c j = addr and that j = y0 - k u.
+        # To do that rescaling, we know that c j = addr and that j = j0 - k u.
         # So
         #
-        #   y0 - k u = addr / c
-        #   k u      = y0 - addr / c
-        #   k        = (y0 - addr / c) / u
+        #   j0 - k u = addr / c
+        #   k u      = j0 - addr / c
+        #   k        = (j0 - addr / c) / u
+        #            = (addr / c - j0) / (- u)
         #
         # Since u is negative, this is an increasing function of addr, so we
         # can use address endpoints to get (disjoint) ranges for k.
@@ -232,7 +257,7 @@ class KnownMem:
         k_weights = []
         byte_ranges = (self.known_ranges
                        if loads_value else [(0, self.top_addr - 1)])
-        minus_u = offset_align // gcd
+
         for byte_lo, byte_top in byte_ranges:
             # Since we're doing an access of width bytes, we round byte_top
             # down to the largest base address where the access lies completely
@@ -241,7 +266,7 @@ class KnownMem:
             if base_hi < byte_lo:
                 continue
 
-            # Compute the valid range for addr/c, rounding up if necessary.
+            # Compute the valid range for addr/c, rounding inwards.
             word_lo = (byte_lo + addr_align - 1) // addr_align
             word_hi = base_hi // addr_align
 
@@ -250,12 +275,12 @@ class KnownMem:
             if word_hi < word_lo:
                 continue
 
-            # Now translate by -y0 and divide through by -u.
-            k_lo = (-y0 + word_lo + minus_u - 1) // minus_u
-            k_hi = (-y0 + word_hi) // minus_u
+            # Now translate by -j0 and divide through by -u, rounding inwards.
+            k_hi = (word_hi - j0) // minus_u
+            k_lo = (word_lo - j0 + (minus_u - 1)) // minus_u
 
-            # If k_hi < k_lo, that means there are no multiples of minus_u in
-            # the range [-y0 + word_lo, -y0 + word_hi].
+            # If k_hi < k_lo, that means there are no multiples of u in the
+            # range [word_lo - j0, word_hi - j0].
             if k_hi < k_lo:
                 continue
 
@@ -280,11 +305,11 @@ class KnownMem:
         k = random.randrange(k_lo, k_hi + 1)
 
         # Convert back to a solution to the original problem
-        x = x0 + k * (addr_align // gcd)
-        y = y0 + k * minus_u
+        i = i0 + k * v
+        j = j0 + k * minus_u
 
-        offset = offset_align * x
-        addr = addr_align * y
+        offset = offset_align * i
+        addr = addr_align * j
 
         assert addr == base_addr + offset
         return addr
