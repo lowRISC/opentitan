@@ -80,24 +80,6 @@ extern "C" {
 #define TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for i2c in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_I2C_BASE_ADDR 0x40080000u
-
-/**
- * Peripheral size for i2c in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_I2C_BASE_ADDR and
- * `TOP_EARLGREY_I2C_BASE_ADDR + TOP_EARLGREY_I2C_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_I2C_SIZE_BYTES 0x1000u
-
-/**
  * Peripheral base address for pattgen in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -574,8 +556,7 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralKeymgr = 11, /**< keymgr */
   kTopEarlgreyPlicPeripheralKmac = 12, /**< kmac */
   kTopEarlgreyPlicPeripheralPattgen = 13, /**< pattgen */
-  kTopEarlgreyPlicPeripheralI2c = 14, /**< i2c */
-  kTopEarlgreyPlicPeripheralLast = 14, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralLast = 13, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -674,22 +655,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdKmacKmacErr = 86, /**< kmac_kmac_err */
   kTopEarlgreyPlicIrqIdPattgenDoneCh0 = 87, /**< pattgen_done_ch0 */
   kTopEarlgreyPlicIrqIdPattgenDoneCh1 = 88, /**< pattgen_done_ch1 */
-  kTopEarlgreyPlicIrqIdI2cFmtWatermark = 89, /**< i2c_fmt_watermark */
-  kTopEarlgreyPlicIrqIdI2cRxWatermark = 90, /**< i2c_rx_watermark */
-  kTopEarlgreyPlicIrqIdI2cFmtOverflow = 91, /**< i2c_fmt_overflow */
-  kTopEarlgreyPlicIrqIdI2cRxOverflow = 92, /**< i2c_rx_overflow */
-  kTopEarlgreyPlicIrqIdI2cNak = 93, /**< i2c_nak */
-  kTopEarlgreyPlicIrqIdI2cSclInterference = 94, /**< i2c_scl_interference */
-  kTopEarlgreyPlicIrqIdI2cSdaInterference = 95, /**< i2c_sda_interference */
-  kTopEarlgreyPlicIrqIdI2cStretchTimeout = 96, /**< i2c_stretch_timeout */
-  kTopEarlgreyPlicIrqIdI2cSdaUnstable = 97, /**< i2c_sda_unstable */
-  kTopEarlgreyPlicIrqIdI2cTransComplete = 98, /**< i2c_trans_complete */
-  kTopEarlgreyPlicIrqIdI2cTxEmpty = 99, /**< i2c_tx_empty */
-  kTopEarlgreyPlicIrqIdI2cTxNonempty = 100, /**< i2c_tx_nonempty */
-  kTopEarlgreyPlicIrqIdI2cTxOverflow = 101, /**< i2c_tx_overflow */
-  kTopEarlgreyPlicIrqIdI2cAcqOverflow = 102, /**< i2c_acq_overflow */
-  kTopEarlgreyPlicIrqIdI2cAckStop = 103, /**< i2c_ack_stop */
-  kTopEarlgreyPlicIrqIdLast = 103, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdLast = 88, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -699,7 +665,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[104];
+    top_earlgrey_plic_interrupt_for_peripheral[89];
 
 /**
  * PLIC Interrupt Target.
@@ -809,9 +775,7 @@ typedef enum top_earlgrey_pinmux_peripheral_in {
   kTopEarlgreyPinmuxPeripheralInGpioGpio29 = 29, /**< gpio_gpio 29 */
   kTopEarlgreyPinmuxPeripheralInGpioGpio30 = 30, /**< gpio_gpio 30 */
   kTopEarlgreyPinmuxPeripheralInGpioGpio31 = 31, /**< gpio_gpio 31 */
-  kTopEarlgreyPinmuxPeripheralInI2cSda = 32, /**< i2c_sda */
-  kTopEarlgreyPinmuxPeripheralInI2cScl = 33, /**< i2c_scl */
-  kTopEarlgreyPinmuxPeripheralInLast = 33, /**< \internal Last valid peripheral input */
+  kTopEarlgreyPinmuxPeripheralInLast = 31, /**< \internal Last valid peripheral input */
 } top_earlgrey_pinmux_peripheral_in_t;
 
 /**
@@ -933,13 +897,11 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselGpioGpio29 = 32, /**< gpio_gpio 29 */
   kTopEarlgreyPinmuxOutselGpioGpio30 = 33, /**< gpio_gpio 30 */
   kTopEarlgreyPinmuxOutselGpioGpio31 = 34, /**< gpio_gpio 31 */
-  kTopEarlgreyPinmuxOutselI2cSda = 35, /**< i2c_sda */
-  kTopEarlgreyPinmuxOutselI2cScl = 36, /**< i2c_scl */
-  kTopEarlgreyPinmuxOutselPattgenPda0Tx = 37, /**< pattgen_pda0_tx */
-  kTopEarlgreyPinmuxOutselPattgenPcl0Tx = 38, /**< pattgen_pcl0_tx */
-  kTopEarlgreyPinmuxOutselPattgenPda1Tx = 39, /**< pattgen_pda1_tx */
-  kTopEarlgreyPinmuxOutselPattgenPcl1Tx = 40, /**< pattgen_pcl1_tx */
-  kTopEarlgreyPinmuxOutselLast = 40, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselPattgenPda0Tx = 35, /**< pattgen_pda0_tx */
+  kTopEarlgreyPinmuxOutselPattgenPcl0Tx = 36, /**< pattgen_pcl0_tx */
+  kTopEarlgreyPinmuxOutselPattgenPda1Tx = 37, /**< pattgen_pda1_tx */
+  kTopEarlgreyPinmuxOutselPattgenPcl1Tx = 38, /**< pattgen_pcl1_tx */
+  kTopEarlgreyPinmuxOutselLast = 38, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**

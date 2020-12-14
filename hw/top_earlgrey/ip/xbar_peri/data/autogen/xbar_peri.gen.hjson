@@ -41,7 +41,6 @@
       sensor_ctrl
       ast_wrapper
       pattgen
-      i2c
     ]
   }
   nodes:
@@ -104,24 +103,6 @@
       [
         {
           base_addr: 0x40050000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline_byp: "true"
-    }
-    {
-      name: i2c
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: "false"
-      inst_type: i2c
-      addr_range:
-      [
-        {
-          base_addr: 0x40080000
           size_byte: 0x1000
         }
       ]

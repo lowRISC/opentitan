@@ -7,8 +7,8 @@
 package pinmux_reg_pkg;
 
   // Param list
-  parameter int NMioPeriphIn = 34;
-  parameter int NMioPeriphOut = 38;
+  parameter int NMioPeriphIn = 32;
+  parameter int NMioPeriphOut = 36;
   parameter int NMioPads = 32;
   parameter int NDioPads = 15;
   parameter int NWkupDetect = 8;
@@ -77,7 +77,7 @@ package pinmux_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    pinmux_reg2hw_periph_insel_mreg_t [33:0] periph_insel; // [672:469]
+    pinmux_reg2hw_periph_insel_mreg_t [31:0] periph_insel; // [660:469]
     pinmux_reg2hw_mio_outsel_mreg_t [31:0] mio_outsel; // [468:277]
     pinmux_reg2hw_mio_out_sleep_val_mreg_t [31:0] mio_out_sleep_val; // [276:213]
     pinmux_reg2hw_dio_out_sleep_val_mreg_t [14:0] dio_out_sleep_val; // [212:168]
@@ -176,7 +176,7 @@ package pinmux_reg_pkg;
     4'b 1111, // index[ 4] PINMUX_PERIPH_INSEL_3
     4'b 1111, // index[ 5] PINMUX_PERIPH_INSEL_4
     4'b 1111, // index[ 6] PINMUX_PERIPH_INSEL_5
-    4'b 0111, // index[ 7] PINMUX_PERIPH_INSEL_6
+    4'b 0011, // index[ 7] PINMUX_PERIPH_INSEL_6
     4'b 1111, // index[ 8] PINMUX_MIO_OUTSEL_0
     4'b 1111, // index[ 9] PINMUX_MIO_OUTSEL_1
     4'b 1111, // index[10] PINMUX_MIO_OUTSEL_2

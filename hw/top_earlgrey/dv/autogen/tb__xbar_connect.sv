@@ -55,7 +55,6 @@ tl_if keymgr_tl_if(clk_main, rst_n);
 tl_if uart_tl_if(clk_io_div4, rst_n);
 tl_if gpio_tl_if(clk_io_div4, rst_n);
 tl_if spi_device_tl_if(clk_io_div4, rst_n);
-tl_if i2c_tl_if(clk_io_div4, rst_n);
 tl_if rv_timer_tl_if(clk_io_div4, rst_n);
 tl_if usbdev_tl_if(clk_io_div4, rst_n);
 tl_if pwrmgr_tl_if(clk_io_div4, rst_n);
@@ -116,7 +115,6 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(uart, uart, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(i2c, i2c, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(usbdev, usbdev, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr, pwrmgr, tl)

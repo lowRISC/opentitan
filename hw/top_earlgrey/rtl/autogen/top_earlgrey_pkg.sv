@@ -42,16 +42,6 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for i2c in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_I2C_BASE_ADDR = 32'h40080000;
-
-  /**
-   * Peripheral size in bytes for i2c in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_I2C_SIZE_BYTES = 32'h1000;
-
-  /**
    * Peripheral base address for pattgen in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_PATTGEN_BASE_ADDR = 32'h400e0000;
