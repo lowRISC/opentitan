@@ -539,3 +539,51 @@ dif_uart_result_t dif_uart_loopback_set(const dif_uart_t *uart,
 
   return kDifUartOk;
 }
+
+dif_uart_result_t dif_uart_enable_rx_timeout(const dif_uart_t *uart,
+                                             uint32_t duration_ticks) {
+  if (uart == NULL || (duration_ticks & ~UART_TIMEOUT_CTRL_VAL_MASK) != 0) {
+    return kDifUartBadArg;
+  }
+
+  uint32_t reg = bitfield_bit32_write(0, UART_TIMEOUT_CTRL_EN_BIT, true);
+  reg =
+      bitfield_field32_write(reg, UART_TIMEOUT_CTRL_VAL_FIELD, duration_ticks);
+  mmio_region_write32(uart->params.base_addr, UART_TIMEOUT_CTRL_REG_OFFSET,
+                      reg);
+
+  return kDifUartOk;
+}
+
+dif_uart_result_t dif_uart_disable_rx_timeout(const dif_uart_t *uart) {
+  if (uart == NULL) {
+    return kDifUartBadArg;
+  }
+
+  uint32_t reg = bitfield_bit32_write(0, UART_TIMEOUT_CTRL_EN_BIT, false);
+  reg = bitfield_field32_write(reg, UART_TIMEOUT_CTRL_VAL_FIELD, 0);
+  mmio_region_write32(uart->params.base_addr, UART_TIMEOUT_CTRL_REG_OFFSET,
+                      reg);
+
+  return kDifUartOk;
+}
+
+dif_uart_result_t dif_uart_get_rx_timeout(const dif_uart_t *uart,
+                                          dif_uart_toggle_t *status,
+                                          uint32_t *duration_ticks) {
+  if (uart == NULL || status == NULL) {
+    return kDifUartBadArg;
+  }
+
+  uint32_t reg =
+      mmio_region_read32(uart->params.base_addr, UART_TIMEOUT_CTRL_REG_OFFSET);
+  *status = bitfield_bit32_read(reg, UART_TIMEOUT_CTRL_EN_BIT)
+                ? kDifUartToggleEnabled
+                : kDifUartToggleDisabled;
+
+  if (duration_ticks != NULL) {
+    *duration_ticks = bitfield_field32_read(reg, UART_TIMEOUT_CTRL_VAL_FIELD);
+  }
+
+  return kDifUartOk;
+}
