@@ -559,9 +559,6 @@ jobs:
         --log-cli-level=DEBUG \
         --test-run-title="Run system tests on Nexys Video FPGA board" \
         --napoleon-docstrings
-    # FPGA CI is using new infrastructure. Do not fail CI until we have more
-    # experience with it.
-    continueOnError: true
     displayName: Execute tests
 
 - job: deploy_release_artifacts
