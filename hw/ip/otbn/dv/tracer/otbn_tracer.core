@@ -11,6 +11,8 @@ filesets:
       - lowrisc:ip:otbn_pkg
     files:
       - cpp/otbn_trace_listener.h: { is_include_file: true, file_type: cppSource }
+      - cpp/otbn_trace_source.h: { is_include_file: true, file_type: cppSource }
+      - cpp/otbn_trace_source.cc: { file_type: cppSource }
       - cpp/log_trace_listener.h: { is_include_file: true, file_type: cppSource }
       - cpp/log_trace_listener.cc: { file_type: cppSource }
       - rtl/otbn_tracer.sv: { file_type: systemVerilogSource }
