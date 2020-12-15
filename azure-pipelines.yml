@@ -8,7 +8,7 @@
 variables:
   VERILATOR_VERSION: 4.104
   TOOLCHAIN_PATH: /opt/buildcache/riscv
-  VERIBLE_VERSION: v0.0-520-g650c6cc
+  VERIBLE_VERSION: v0.0-808-g1e17daa
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
   # if you update this, update the definition in util/container/Dockerfile
   TOOLCHAIN_VERSION: 20200904-1

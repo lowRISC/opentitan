@@ -8,6 +8,6 @@ __TOOL_REQUIREMENTS__ = {
     'edalize': '0.2.0',
     'hugo_extended': '0.71.0',
     'ninja-build': '1.8.2',
-    'verible': '0.0-520-g650c6cc',
+    'verible': '0.0-808-g1e17daa',
     'verilator': '4.104',
 }
