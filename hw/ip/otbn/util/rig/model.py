@@ -687,7 +687,7 @@ class Model:
         for operand, op_val in zip(insn.operands, prog_insn.operands):
             op_type = operand.op_type
             if isinstance(op_type, RegOperandType):
-                if op_type.is_dest:
+                if op_type.is_dest():
                     pending_writes.append((op_type.reg_type, op_val))
                 else:
                     self.read_reg(op_type.reg_type, op_val)
