@@ -394,7 +394,7 @@ jobs:
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.hasOTBNChanges'], '1'))
   pool:
     vmImage: ubuntu-18.04
-  timeoutInMinutes: 5
+  timeoutInMinutes: 10
   steps:
   - template: ci/install-package-dependencies.yml
   - bash: |
