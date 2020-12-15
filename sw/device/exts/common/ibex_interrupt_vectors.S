@@ -39,7 +39,7 @@
  * overlap the interrupt vector, which causes debugging confusion.
  *
  * More information about Ibex's interrupts can be found here:
- *   https://ibex-core.readthedocs.io/en/latest/exception_interrupts.html
+ *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
  */
   .balign 256
 crt_interrupt_vector:
