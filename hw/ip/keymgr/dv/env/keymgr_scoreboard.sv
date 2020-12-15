@@ -349,8 +349,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     act = {<<8{byte_data_q}};
 
     exp.DiversificationKey = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
-    exp.HealthMeasurement  = cfg.keymgr_vif.lc.health_state;
-    exp.DeviceIdentifier   = cfg.keymgr_vif.otp.devid;
+    exp.HealthMeasurement  = cfg.keymgr_vif.keymgr_div;
+    exp.DeviceIdentifier   = cfg.keymgr_vif.otp_hw_cfg.data.device_id;
     exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
     exp.RomExtSecurityDescriptor = {`gmv(ral.sw_binding_3), `gmv(ral.sw_binding_2),
                                     `gmv(ral.sw_binding_1), `gmv(ral.sw_binding_0)};
