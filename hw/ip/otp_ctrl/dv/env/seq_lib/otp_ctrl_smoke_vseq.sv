@@ -121,7 +121,10 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       // check digest
       check_digests();
 
-      if (do_lc_trans) req_lc_transition();
+      if (do_lc_trans) begin
+        req_lc_transition();
+        req_lc_token();
+      end
     end
 
   endtask : body

@@ -188,6 +188,13 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_send(lc_prog_pull_seq)
   endtask
 
+  virtual task req_lc_token();
+    push_pull_host_seq#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) lc_token_pull_seq;
+    `uvm_create_on(lc_token_pull_seq, p_sequencer.lc_token_pull_sequencer_h);
+    `DV_CHECK_RANDOMIZE_FATAL(lc_token_pull_seq)
+    `uvm_send(lc_token_pull_seq)
+  endtask
+
   // first two or three LSB bits of DAI address can be randomized based on if it is secret
   virtual function bit [TL_AW-1:0] randomize_dai_addr(bit [TL_AW-1:0] dai_addr);
     if (is_secret(dai_addr)) begin
