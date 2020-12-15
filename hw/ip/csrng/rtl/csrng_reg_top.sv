@@ -127,6 +127,11 @@ module csrng_reg_top (
   logic genbits_vld_genbits_fips_re;
   logic [31:0] genbits_qs;
   logic genbits_re;
+  logic [3:0] int_state_num_qs;
+  logic [3:0] int_state_num_wd;
+  logic int_state_num_we;
+  logic [31:0] int_state_val_qs;
+  logic int_state_val_re;
   logic [14:0] hw_exc_sts_qs;
   logic [14:0] hw_exc_sts_wd;
   logic hw_exc_sts_we;
@@ -748,6 +753,49 @@ module csrng_reg_top (
   );
 
 
+  // R[int_state_num]: V(False)
+
+  prim_subreg #(
+    .DW      (4),
+    .SWACCESS("RW"),
+    .RESVAL  (4'h0)
+  ) u_int_state_num (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (int_state_num_we & regen_qs),
+    .wd     (int_state_num_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.int_state_num.qe),
+    .q      (reg2hw.int_state_num.q ),
+
+    // to register interface (read)
+    .qs     (int_state_num_qs)
+  );
+
+
+  // R[int_state_val]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_int_state_val (
+    .re     (int_state_val_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.int_state_val.d),
+    .qre    (reg2hw.int_state_val.re),
+    .qe     (),
+    .q      (reg2hw.int_state_val.q ),
+    .qs     (int_state_val_qs)
+  );
+
+
   // R[hw_exc_sts]: V(False)
 
   prim_subreg #(
@@ -1273,7 +1321,7 @@ module csrng_reg_top (
 
 
 
-  logic [11:0] addr_hit;
+  logic [13:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CSRNG_INTR_STATE_OFFSET);
@@ -1286,8 +1334,10 @@ module csrng_reg_top (
     addr_hit[ 7] = (reg_addr == CSRNG_SW_CMD_STS_OFFSET);
     addr_hit[ 8] = (reg_addr == CSRNG_GENBITS_VLD_OFFSET);
     addr_hit[ 9] = (reg_addr == CSRNG_GENBITS_OFFSET);
-    addr_hit[10] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
-    addr_hit[11] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
+    addr_hit[10] = (reg_addr == CSRNG_INT_STATE_NUM_OFFSET);
+    addr_hit[11] = (reg_addr == CSRNG_INT_STATE_VAL_OFFSET);
+    addr_hit[12] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
+    addr_hit[13] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1307,6 +1357,8 @@ module csrng_reg_top (
     if (addr_hit[ 9] && reg_we && (CSRNG_PERMIT[ 9] != (CSRNG_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[10] && reg_we && (CSRNG_PERMIT[10] != (CSRNG_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[11] && reg_we && (CSRNG_PERMIT[11] != (CSRNG_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[12] && reg_we && (CSRNG_PERMIT[12] != (CSRNG_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (CSRNG_PERMIT[13] != (CSRNG_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_cs_cmd_req_done_we = addr_hit[0] & reg_we & ~wr_err;
@@ -1370,64 +1422,69 @@ module csrng_reg_top (
 
   assign genbits_re = addr_hit[9] && reg_re;
 
-  assign hw_exc_sts_we = addr_hit[10] & reg_we & ~wr_err;
+  assign int_state_num_we = addr_hit[10] & reg_we & ~wr_err;
+  assign int_state_num_wd = reg_wdata[3:0];
+
+  assign int_state_val_re = addr_hit[11] && reg_re;
+
+  assign hw_exc_sts_we = addr_hit[12] & reg_we & ~wr_err;
   assign hw_exc_sts_wd = reg_wdata[14:0];
 
-  assign err_code_sfifo_cmd_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_cmd_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_cmd_err_wd = reg_wdata[0];
 
-  assign err_code_sfifo_genbits_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_genbits_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_genbits_err_wd = reg_wdata[1];
 
-  assign err_code_sfifo_cmdreq_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_cmdreq_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_cmdreq_err_wd = reg_wdata[2];
 
-  assign err_code_sfifo_rcstage_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_rcstage_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_rcstage_err_wd = reg_wdata[3];
 
-  assign err_code_sfifo_keyvrc_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_keyvrc_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_keyvrc_err_wd = reg_wdata[4];
 
-  assign err_code_sfifo_updreq_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_updreq_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_updreq_err_wd = reg_wdata[5];
 
-  assign err_code_sfifo_bencreq_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_bencreq_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_bencreq_err_wd = reg_wdata[6];
 
-  assign err_code_sfifo_bencack_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_bencack_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_bencack_err_wd = reg_wdata[7];
 
-  assign err_code_sfifo_pdata_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_pdata_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_pdata_err_wd = reg_wdata[8];
 
-  assign err_code_sfifo_final_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_final_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_final_err_wd = reg_wdata[9];
 
-  assign err_code_sfifo_gbencack_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_gbencack_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_gbencack_err_wd = reg_wdata[10];
 
-  assign err_code_sfifo_grcstage_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_grcstage_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_grcstage_err_wd = reg_wdata[11];
 
-  assign err_code_sfifo_ggenreq_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_ggenreq_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_ggenreq_err_wd = reg_wdata[12];
 
-  assign err_code_sfifo_gadstage_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_gadstage_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_gadstage_err_wd = reg_wdata[13];
 
-  assign err_code_sfifo_ggenbits_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_ggenbits_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_ggenbits_err_wd = reg_wdata[14];
 
-  assign err_code_sfifo_blkenc_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_sfifo_blkenc_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_sfifo_blkenc_err_wd = reg_wdata[15];
 
-  assign err_code_fifo_write_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_fifo_write_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_fifo_write_err_wd = reg_wdata[28];
 
-  assign err_code_fifo_read_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_fifo_read_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_fifo_read_err_wd = reg_wdata[29];
 
-  assign err_code_fifo_state_err_we = addr_hit[11] & reg_we & ~wr_err;
+  assign err_code_fifo_state_err_we = addr_hit[13] & reg_we & ~wr_err;
   assign err_code_fifo_state_err_wd = reg_wdata[30];
 
   // Read data return
@@ -1489,10 +1546,18 @@ module csrng_reg_top (
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[14:0] = hw_exc_sts_qs;
+        reg_rdata_next[3:0] = int_state_num_qs;
       end
 
       addr_hit[11]: begin
+        reg_rdata_next[31:0] = int_state_val_qs;
+      end
+
+      addr_hit[12]: begin
+        reg_rdata_next[14:0] = hw_exc_sts_qs;
+      end
+
+      addr_hit[13]: begin
         reg_rdata_next[0] = err_code_sfifo_cmd_err_qs;
         reg_rdata_next[1] = err_code_sfifo_genbits_err_qs;
         reg_rdata_next[2] = err_code_sfifo_cmdreq_err_qs;

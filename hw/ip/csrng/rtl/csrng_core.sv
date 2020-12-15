@@ -258,6 +258,11 @@ module csrng_core import csrng_pkg::*; #(
 
   logic [14:0]             hw_exception_sts;
   logic                    lc_hw_debug_not_on;
+  logic                    lc_hw_debug_on;
+  logic                    state_db_reg_rd_sel;
+  logic                    state_db_reg_rd_id_pulse;
+  logic [StateId-1:0]      state_db_reg_rd_id;
+  logic [31:0]             state_db_reg_rd_val;
 
   // flops
   logic [2:0]  acmd_q, acmd_d;
@@ -349,7 +354,7 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   // set the interrupt sources
-  assign event_cs_fifo_err =
+  assign event_cs_fifo_err = cs_enable  && (
          (|cmd_stage_sfifo_cmd_err_sum) ||
          (|cmd_stage_sfifo_genbits_err_sum) ||
          (|ctr_drbg_cmd_sfifo_cmdreq_err) ||
@@ -365,7 +370,7 @@ module csrng_core import csrng_pkg::*; #(
          (|ctr_drbg_gen_sfifo_ggenreq_err) ||
          (|ctr_drbg_gen_sfifo_gadstage_err) ||
          (|ctr_drbg_gen_sfifo_ggenbits_err) ||
-         (|block_encrypt_sfifo_blkenc_err);
+         (|block_encrypt_sfifo_blkenc_err));
 
   // set the err code source bits
   assign hw2reg.err_code.sfifo_cmd_err.d = 1'b1;
@@ -722,6 +727,12 @@ module csrng_core import csrng_pkg::*; #(
 
   assign cmd_result_wr_req = cmd_result_ack && (cmd_result_ccmd != GEN);
 
+  // register read access
+  assign state_db_reg_rd_sel = reg2hw.int_state_val.re;
+  assign state_db_reg_rd_id = reg2hw.int_state_num.q;
+  assign state_db_reg_rd_id_pulse = reg2hw.int_state_num.qe;
+  assign hw2reg.int_state_val.d = cs_enable ? state_db_reg_rd_val : '0;
+
   csrng_state_db #(
     .NApps(NApps),
     .StateId(StateId),
@@ -751,6 +762,11 @@ module csrng_core import csrng_pkg::*; #(
     .state_db_wr_res_ctr_i(state_db_wr_rc),
     .state_db_wr_sts_i(state_db_wr_sts),
 
+    .state_db_lc_en_i(lc_hw_debug_on),
+    .state_db_reg_rd_sel_i(state_db_reg_rd_sel),
+    .state_db_reg_rd_id_i(state_db_reg_rd_id),
+    .state_db_reg_rd_id_pulse_i(state_db_reg_rd_id_pulse),
+    .state_db_reg_rd_val_o(state_db_reg_rd_val),
     .state_db_sts_ack_o(state_db_sts_ack),
     .state_db_sts_sts_o(state_db_sts_sts),
     .state_db_sts_id_o(state_db_sts_id)
@@ -972,10 +988,10 @@ module csrng_core import csrng_pkg::*; #(
   // provide control logic to determine
   // how certain debug features are controlled.
 
-  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_out;
+  lc_ctrl_pkg::lc_tx_t [1:0] lc_hw_debug_en_out;
 
   prim_lc_sync #(
-    .NumCopies(1)
+    .NumCopies(2)
   ) u_prim_lc_sync (
     .clk_i,
     .rst_ni,
@@ -983,7 +999,8 @@ module csrng_core import csrng_pkg::*; #(
     .lc_en_o(lc_hw_debug_en_out)
   );
 
-  assign      lc_hw_debug_not_on = (lc_hw_debug_en_out != lc_ctrl_pkg::On);
+  assign      lc_hw_debug_not_on = (lc_hw_debug_en_out[0] != lc_ctrl_pkg::On);
+  assign      lc_hw_debug_on = (lc_hw_debug_en_out[1] == lc_ctrl_pkg::On);
 
 
   //-------------------------------------
@@ -1148,7 +1165,8 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.sum_sts.diag.de = !cs_enable;
   assign hw2reg.sum_sts.diag.d  =
          (reg2hw.regen.q)        && // not used
-         (|reg2hw.genbits.q);       // not used
+         (|reg2hw.genbits.q)     && // not used
+         (|reg2hw.int_state_val.q); // not used
 
 
 

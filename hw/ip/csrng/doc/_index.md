@@ -173,19 +173,19 @@ The state_db has the follow attributes shown in the following table:
     </td>
   </tr>
   <tr>
-    <td>543:160</td>
+    <td>415:160</td>
     <td>Key</td>
     <td> Value required by NIST to be held in the state instance, and is of size <tt>SeedLen</tt>.
     </td>
   </tr>
   <tr>
-    <td>544</td>
+    <td>416</td>
     <td>Status</td>
     <td> Set when instantiated.
     </td>
   </tr>
   <tr>
-    <td>545</td>
+    <td>417</td>
     <td>Compliance</td>
     <td> Set when FIPS/CC compliant entropy was used to seed this instance.
     </td>

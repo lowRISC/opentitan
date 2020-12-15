@@ -87,6 +87,16 @@ package csrng_reg_pkg;
     logic        re;
   } csrng_reg2hw_genbits_reg_t;
 
+  typedef struct packed {
+    logic [3:0]  q;
+    logic        qe;
+  } csrng_reg2hw_int_state_num_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+    logic        re;
+  } csrng_reg2hw_int_state_val_reg_t;
+
 
   typedef struct packed {
     struct packed {
@@ -141,6 +151,10 @@ package csrng_reg_pkg;
   typedef struct packed {
     logic [31:0] d;
   } csrng_hw2reg_genbits_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+  } csrng_hw2reg_int_state_val_reg_t;
 
   typedef struct packed {
     logic [14:0] d;
@@ -231,24 +245,27 @@ package csrng_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    csrng_reg2hw_intr_state_reg_t intr_state; // [88:85]
-    csrng_reg2hw_intr_enable_reg_t intr_enable; // [84:81]
-    csrng_reg2hw_intr_test_reg_t intr_test; // [80:73]
-    csrng_reg2hw_regen_reg_t regen; // [72:72]
-    csrng_reg2hw_ctrl_reg_t ctrl; // [71:66]
-    csrng_reg2hw_cmd_req_reg_t cmd_req; // [65:33]
-    csrng_reg2hw_genbits_reg_t genbits; // [32:0]
+    csrng_reg2hw_intr_state_reg_t intr_state; // [126:123]
+    csrng_reg2hw_intr_enable_reg_t intr_enable; // [122:119]
+    csrng_reg2hw_intr_test_reg_t intr_test; // [118:111]
+    csrng_reg2hw_regen_reg_t regen; // [110:110]
+    csrng_reg2hw_ctrl_reg_t ctrl; // [109:104]
+    csrng_reg2hw_cmd_req_reg_t cmd_req; // [103:71]
+    csrng_reg2hw_genbits_reg_t genbits; // [70:38]
+    csrng_reg2hw_int_state_num_reg_t int_state_num; // [37:33]
+    csrng_reg2hw_int_state_val_reg_t int_state_val; // [32:0]
   } csrng_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [126:119]
-    csrng_hw2reg_sum_sts_reg_t sum_sts; // [118:92]
-    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [91:88]
-    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [87:86]
-    csrng_hw2reg_genbits_reg_t genbits; // [85:54]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [158:151]
+    csrng_hw2reg_sum_sts_reg_t sum_sts; // [150:124]
+    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [123:120]
+    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [119:118]
+    csrng_hw2reg_genbits_reg_t genbits; // [117:86]
+    csrng_hw2reg_int_state_val_reg_t int_state_val; // [85:54]
     csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [53:38]
     csrng_hw2reg_err_code_reg_t err_code; // [37:0]
   } csrng_hw2reg_t;
@@ -264,8 +281,10 @@ package csrng_reg_pkg;
   parameter logic [5:0] CSRNG_SW_CMD_STS_OFFSET = 6'h 1c;
   parameter logic [5:0] CSRNG_GENBITS_VLD_OFFSET = 6'h 20;
   parameter logic [5:0] CSRNG_GENBITS_OFFSET = 6'h 24;
-  parameter logic [5:0] CSRNG_HW_EXC_STS_OFFSET = 6'h 28;
-  parameter logic [5:0] CSRNG_ERR_CODE_OFFSET = 6'h 2c;
+  parameter logic [5:0] CSRNG_INT_STATE_NUM_OFFSET = 6'h 28;
+  parameter logic [5:0] CSRNG_INT_STATE_VAL_OFFSET = 6'h 2c;
+  parameter logic [5:0] CSRNG_HW_EXC_STS_OFFSET = 6'h 30;
+  parameter logic [5:0] CSRNG_ERR_CODE_OFFSET = 6'h 34;
 
 
   // Register Index
@@ -280,12 +299,14 @@ package csrng_reg_pkg;
     CSRNG_SW_CMD_STS,
     CSRNG_GENBITS_VLD,
     CSRNG_GENBITS,
+    CSRNG_INT_STATE_NUM,
+    CSRNG_INT_STATE_VAL,
     CSRNG_HW_EXC_STS,
     CSRNG_ERR_CODE
   } csrng_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CSRNG_PERMIT [12] = '{
+  parameter logic [3:0] CSRNG_PERMIT [14] = '{
     4'b 0001, // index[ 0] CSRNG_INTR_STATE
     4'b 0001, // index[ 1] CSRNG_INTR_ENABLE
     4'b 0001, // index[ 2] CSRNG_INTR_TEST
@@ -296,8 +317,10 @@ package csrng_reg_pkg;
     4'b 0001, // index[ 7] CSRNG_SW_CMD_STS
     4'b 0001, // index[ 8] CSRNG_GENBITS_VLD
     4'b 1111, // index[ 9] CSRNG_GENBITS
-    4'b 0011, // index[10] CSRNG_HW_EXC_STS
-    4'b 1111  // index[11] CSRNG_ERR_CODE
+    4'b 0001, // index[10] CSRNG_INT_STATE_NUM
+    4'b 1111, // index[11] CSRNG_INT_STATE_VAL
+    4'b 0011, // index[12] CSRNG_HW_EXC_STS
+    4'b 1111  // index[13] CSRNG_ERR_CODE
   };
 endpackage
 
