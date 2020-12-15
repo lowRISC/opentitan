@@ -39,12 +39,23 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // setup basic lc_ctrl features
-  virtual task lc_ctrl_init();
-    `DV_CHECK_RANDOMIZE_FATAL(this)
+  virtual task lc_ctrl_init(bit rand_otp_i = 1);
     cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 1);
+    if (rand_otp_i) begin
+      `DV_CHECK_RANDOMIZE_FATAL(this)
+    end else begin
+      lc_state = LcStRaw;
+      lc_cnt = LcCntRaw;
+    end
     cfg.lc_ctrl_vif.init(lc_state, lc_cnt);
     wait(cfg.pwr_lc_vif.pins[LcPwrDoneRsp] == 1);
     cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 0);
+  endtask
+
+  // some registers won't set to default value until otp_init is done
+  virtual task read_and_check_all_csrs_after_reset();
+    lc_ctrl_init(0);
+    super.read_and_check_all_csrs_after_reset();
   endtask
 
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*3-1:0] token_val);
