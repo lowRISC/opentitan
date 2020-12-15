@@ -91,7 +91,7 @@ def _decode_word(word_off: int, word: int) -> OTBNInsn:
     # shifting, sign interpretation etc.)
     op_vals = cls.insn.enc_vals_to_op_vals(4 * word_off, enc_vals)
 
-    return cls(op_vals)
+    return cls(word, op_vals)
 
 
 def decode_bytes(data: bytes) -> List[OTBNInsn]:

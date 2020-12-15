@@ -87,14 +87,20 @@ def on_step(sim: OTBNSim, args: List[str]) -> None:
         raise ValueError('step expects zero arguments. Got {}.'
                          .format(args))
 
-    pc = int(sim.state.pc)
-
+    pc = sim.state.pc
     assert 0 == pc & 3
+
     insn, changes = sim.step(verbose=False)
-    disasm = '(not running)' if insn is None else insn.disassemble(pc)
-    print('EXEC {:#08x}:     {}'.format(pc, disasm))
-    for trace in changes:
-        print('  {}'.format(trace.trace()))
+
+    if insn is None:
+        hdr = 'STALL'
+    else:
+        hdr = 'E PC: {:#010x}, insn: {:#010x}'.format(pc, insn.raw)
+    print(hdr)
+    for change in changes:
+        entry = change.rtl_trace()
+        if entry is not None:
+            print(entry)
 
 
 def on_run(sim: OTBNSim, args: List[str]) -> None:

@@ -25,6 +25,9 @@ class TraceExtRegChange(Trace):
                         ' (from HW)' if self.from_hw else '',
                         self.new_value))
 
+    def rtl_trace(self) -> str:
+        return '! otbn.{}: {:#010x}'.format(self.name, self.new_value)
+
 
 class RGField:
     '''A wrapper around a field in a register as parsed by reggen'''

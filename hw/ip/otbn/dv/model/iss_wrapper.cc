@@ -16,6 +16,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
+#include "otbn_trace_checker.h"
+
 // Guard class to safely delete C strings
 namespace {
 struct CStrDeleter {
@@ -197,8 +199,8 @@ static uint32_t read_ext_reg(const std::string &reg_name,
   // We're interested in lines that show an update to the external register
   // called reg_name. These look something like this:
   //
-  //   otbn.$REG_NAME &= ~ 0x000001 (from HW) (now 0x000000)
-  std::regex re("\\s*otbn\\." + reg_name + ".*0x([0-9a-f]{8})\\)");
+  //   ! otbn.$REG_NAME: 0x00000000
+  std::regex re("! otbn\\." + reg_name + ": 0x([0-9a-f]{8})");
   std::smatch match;
 
   uint32_t val = default_val;
@@ -320,9 +322,12 @@ void ISSWrapper::start(uint32_t addr) {
   run_command(oss.str(), nullptr);
 }
 
-std::pair<bool, uint32_t> ISSWrapper::step() {
+std::pair<bool, uint32_t> ISSWrapper::step(bool gen_trace) {
   std::vector<std::string> lines;
   run_command("step\n", &lines);
+  if (gen_trace) {
+    OtbnTraceChecker::get().OnIssTrace(lines);
+  }
 
   // The busy flag is bit 0 of the STATUS register, so is cleared on this cycle
   // if we see a write that sets the value to an even number.

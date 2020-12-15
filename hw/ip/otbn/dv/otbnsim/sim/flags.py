@@ -7,14 +7,26 @@ from typing import List, Optional, cast
 from .trace import Trace
 
 
-class TraceFlag(Trace):
-    def __init__(self, group_name: str, flag_name: str, value: bool):
-        self.group_name = group_name
-        self.flag_name = flag_name
+class TraceFlags(Trace):
+    def __init__(self, group: int, value: 'FlagReg'):
+        self.group = group
         self.value = value
 
     def trace(self) -> str:
-        return '{}.{} = {}'.format(self.group_name, self.flag_name, int(self.value))
+        return ('fg{} = {{C: {}, M: {}, L: {}, Z: {}}}'
+                .format(self.group,
+                        int(self.value.C),
+                        int(self.value.M),
+                        int(self.value.L),
+                        int(self.value.Z)))
+
+    def rtl_trace(self) -> str:
+        return ('> FLAGS{}: {{C: {}, M: {}, L: {}, Z: {}}}'
+                .format(self.group,
+                        int(self.value.C),
+                        int(self.value.M),
+                        int(self.value.L),
+                        int(self.value.Z)))
 
 
 class FlagReg:
@@ -40,11 +52,9 @@ class FlagReg:
         flag_name = FlagReg.FLAG_NAMES[flag_idx]
         return self.get_by_name(flag_name)
 
-    def changes(self, group_name: str) -> List[TraceFlag]:
-        if self._new_val is None:
-            return []
-        return [TraceFlag(group_name, n, self._new_val.get_by_name(n))
-                for n in FlagReg.FLAG_NAMES]
+    def changes(self, group: int) -> List[TraceFlags]:
+        return ([] if self._new_val is None
+                else [TraceFlags(group, self._new_val)])
 
     def commit(self) -> None:
         if self._new_val is not None:
@@ -106,8 +116,8 @@ class FlagGroups:
         self._dirty = True
         self._groups[key].set_flags(value)
 
-    def changes(self) -> List[TraceFlag]:
-        return self._groups[0].changes('FG0') + self._groups[1].changes('FG1')
+    def changes(self) -> List[TraceFlags]:
+        return self._groups[0].changes(0) + self._groups[1].changes(1)
 
     def commit(self) -> None:
         if self._dirty:

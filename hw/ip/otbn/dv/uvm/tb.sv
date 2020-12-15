@@ -53,6 +53,13 @@ module tb;
 
   );
 
+  bind otbn_core otbn_trace_if #(
+    .ImemAddrWidth (ImemAddrWidth),
+    .DmemAddrWidth (DmemAddrWidth)
+  ) i_otbn_trace_if (.*);
+
+  bind otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
+
   // OTBN model, wrapping an ISS.
   //
   // Note that we pull the "start" signal out of the DUT. This is because it's much more difficult

@@ -13,6 +13,7 @@
 #include <svdpi.h>
 
 #include "iss_wrapper.h"
+#include "otbn_trace_checker.h"
 #include "sv_scoped.h"
 
 extern "C" {
@@ -232,13 +233,14 @@ static int start_model(ISSWrapper *model, const char *imem_scope,
 }
 
 // Step once in the model. Returns 1 if the model has finished, 0 if not and -1
-// on failure. If the model has finished, writes otbn.ERR_CODE to *err_code.
-static int step_model(ISSWrapper *model, uint32_t *err_code) {
+// on failure. If gen_trace is true, pass trace entries to the trace checker.
+// If the model has finished, writes otbn.ERR_CODE to *err_code.
+static int step_model(ISSWrapper *model, bool gen_trace, uint32_t *err_code) {
   assert(model);
   assert(err_code);
 
   try {
-    std::pair<bool, uint32_t> ret = model->step();
+    std::pair<bool, uint32_t> ret = model->step(gen_trace);
     if (ret.first) {
       *err_code = ret.second;
       return 1;
@@ -499,6 +501,9 @@ int check_model(ISSWrapper *model, const char *dmem_scope, unsigned dmem_words,
   assert(design_scope);
 
   bool good = true;
+
+  good &= OtbnTraceChecker::get().Finish();
+
   try {
     good &= check_dmem(model, dmem_scope, dmem_words);
   } catch (const std::exception &err) {
@@ -575,7 +580,7 @@ extern "C" unsigned otbn_model_step(ISSWrapper *model, const char *imem_scope,
 
   // Step the model once
   uint32_t err_code;
-  switch (step_model(model, &err_code)) {
+  switch (step_model(model, check_rtl, &err_code)) {
     case 0:
       // Still running: no change
       break;

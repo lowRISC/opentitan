@@ -36,8 +36,9 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 // xbar tests
                 "{proj_root}/hw/ip/tlul/generic_dv/xbar_tests.hjson",
-                // Config file to pull in the correct flags for otbn_memutil
-                "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson"
+                // Config files to get the correct flags for otbn_memutil and otbn_tracer
+                "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
+                "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
                 ]
 
   // Override existing project defaults to supply chip-specific values.
@@ -95,8 +96,9 @@
     }
   ]
 
-  // Add options needed to compile against otbn_memutil
-  en_build_modes: ["{tool}_otbn_memutil_build_opts"]
+  // Add options needed to compile against otbn_memutil and otbn_tracer
+  en_build_modes: ["{tool}_otbn_memutil_build_opts",
+                   "{tool}_otbn_tracer_build_opts"]
 
   // Add run modes.
   run_modes: [

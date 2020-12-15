@@ -38,7 +38,10 @@ struct ISSWrapper {
 
   // Run simulation for a single cycle. Return true if it is now
   // finished (ECALL or error).
-  std::pair<bool, uint32_t> step();
+  //
+  // If gen_trace is true, pass trace data to the (singleton)
+  // OtbnTraceChecker object.
+  std::pair<bool, uint32_t> step(bool gen_trace);
 
   // Read contents of the register file
   void get_regs(std::array<uint32_t, 32> *gprs, std::array<u256_t, 32> *wdrs);

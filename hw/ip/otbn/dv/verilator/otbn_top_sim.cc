@@ -12,6 +12,7 @@
 
 #include "log_trace_listener.h"
 #include "otbn_memutil.h"
+#include "otbn_trace_checker.h"
 #include "otbn_trace_source.h"
 #include "verilated_toplevel.h"
 #include "verilator_memutil.h"
@@ -91,6 +92,7 @@ class OtbnTraceUtil : public SimCtrlExtension {
 
 int main(int argc, char **argv) {
   otbn_top_sim top;
+
   VerilatorMemUtil memutil(new OtbnMemUtil("TOP.otbn_top_sim"));
   OtbnTraceUtil traceutil;
 

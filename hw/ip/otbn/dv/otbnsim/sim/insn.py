@@ -33,8 +33,8 @@ class ADDI(RV32RegImm):
 class LUI(OTBNInsn):
     insn = insn_for_mnemonic('lui', 2)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grd = op_vals['grd']
         self.imm = op_vals['imm']
 
@@ -173,8 +173,8 @@ class XORI(RV32RegImm):
 class LW(OTBNInsn):
     insn = insn_for_mnemonic('lw', 3)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grd = op_vals['grd']
         self.offset = op_vals['offset']
         self.grs1 = op_vals['grs1']
@@ -189,8 +189,8 @@ class LW(OTBNInsn):
 class SW(OTBNInsn):
     insn = insn_for_mnemonic('sw', 3)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grs2 = op_vals['grs2']
         self.offset = op_vals['offset']
         self.grs1 = op_vals['grs1']
@@ -206,8 +206,8 @@ class BEQ(OTBNInsn):
     insn = insn_for_mnemonic('beq', 3)
     affects_control = True
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grs1 = op_vals['grs1']
         self.grs2 = op_vals['grs2']
         self.offset = op_vals['offset']
@@ -223,8 +223,8 @@ class BNE(OTBNInsn):
     insn = insn_for_mnemonic('bne', 3)
     affects_control = True
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grs1 = op_vals['grs1']
         self.grs2 = op_vals['grs2']
         self.offset = op_vals['offset']
@@ -240,8 +240,8 @@ class JAL(OTBNInsn):
     insn = insn_for_mnemonic('jal', 2)
     affects_control = True
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grd = op_vals['grd']
         self.offset = op_vals['offset']
 
@@ -255,8 +255,8 @@ class JALR(OTBNInsn):
     insn = insn_for_mnemonic('jalr', 3)
     affects_control = True
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grd = op_vals['grd']
         self.grs1 = op_vals['grs1']
         self.offset = op_vals['offset']
@@ -272,8 +272,8 @@ class JALR(OTBNInsn):
 class CSRRS(OTBNInsn):
     insn = insn_for_mnemonic('csrrs', 3)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grd = op_vals['grd']
         self.csr = op_vals['csr']
         self.grs1 = op_vals['grs1']
@@ -290,8 +290,8 @@ class CSRRS(OTBNInsn):
 class CSRRW(OTBNInsn):
     insn = insn_for_mnemonic('csrrw', 3)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grd = op_vals['grd']
         self.csr = op_vals['csr']
         self.grs1 = op_vals['grs1']
@@ -309,8 +309,8 @@ class CSRRW(OTBNInsn):
 class ECALL(OTBNInsn):
     insn = insn_for_mnemonic('ecall', 0)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         pass
 
     def execute(self, state: OTBNState) -> None:
@@ -322,8 +322,8 @@ class LOOP(OTBNInsn):
     insn = insn_for_mnemonic('loop', 2)
     affects_control = True
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grs = op_vals['grs']
         self.bodysize = op_vals['bodysize']
 
@@ -340,8 +340,8 @@ class LOOPI(OTBNInsn):
     insn = insn_for_mnemonic('loopi', 2)
     affects_control = True
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.iterations = op_vals['iterations']
         self.bodysize = op_vals['bodysize']
 
@@ -352,8 +352,8 @@ class LOOPI(OTBNInsn):
 class BNADD(OTBNInsn):
     insn = insn_for_mnemonic('bn.add', 6)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
@@ -374,8 +374,8 @@ class BNADD(OTBNInsn):
 class BNADDC(OTBNInsn):
     insn = insn_for_mnemonic('bn.addc', 6)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
@@ -397,8 +397,8 @@ class BNADDC(OTBNInsn):
 class BNADDI(OTBNInsn):
     insn = insn_for_mnemonic('bn.addi', 4)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs = op_vals['wrs']
         self.imm = op_vals['imm']
@@ -416,8 +416,8 @@ class BNADDI(OTBNInsn):
 class BNADDM(OTBNInsn):
     insn = insn_for_mnemonic('bn.addm', 3)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
@@ -438,8 +438,8 @@ class BNADDM(OTBNInsn):
 class BNMULQACC(OTBNInsn):
     insn = insn_for_mnemonic('bn.mulqacc', 6)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.zero_acc = op_vals['zero_acc']
         self.wrs1 = op_vals['wrs1']
         self.wrs1_qwsel = op_vals['wrs1_qwsel']
@@ -466,8 +466,8 @@ class BNMULQACC(OTBNInsn):
 class BNMULQACCWO(OTBNInsn):
     insn = insn_for_mnemonic('bn.mulqacc.wo', 8)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.zero_acc = op_vals['zero_acc']
         self.wrd = op_vals['wrd']
         self.wrs1 = op_vals['wrs1']
@@ -498,8 +498,8 @@ class BNMULQACCWO(OTBNInsn):
 class BNMULQACCSO(OTBNInsn):
     insn = insn_for_mnemonic('bn.mulqacc.so', 9)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.zero_acc = op_vals['zero_acc']
         self.wrd = op_vals['wrd']
         self.wrd_hwsel = op_vals['wrd_hwsel']
@@ -545,8 +545,8 @@ class BNMULQACCSO(OTBNInsn):
 class BNSUB(OTBNInsn):
     insn = insn_for_mnemonic('bn.sub', 6)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
@@ -567,8 +567,8 @@ class BNSUB(OTBNInsn):
 class BNSUBB(OTBNInsn):
     insn = insn_for_mnemonic('bn.subb', 6)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
@@ -590,8 +590,8 @@ class BNSUBB(OTBNInsn):
 class BNSUBI(OTBNInsn):
     insn = insn_for_mnemonic('bn.subi', 4)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs = op_vals['wrs']
         self.imm = op_vals['imm']
@@ -609,8 +609,8 @@ class BNSUBI(OTBNInsn):
 class BNSUBM(OTBNInsn):
     insn = insn_for_mnemonic('bn.subm', 3)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
@@ -632,8 +632,8 @@ class BNSUBM(OTBNInsn):
 class BNAND(OTBNInsn):
     insn = insn_for_mnemonic('bn.and', 6)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
@@ -654,8 +654,8 @@ class BNAND(OTBNInsn):
 class BNOR(OTBNInsn):
     insn = insn_for_mnemonic('bn.or', 6)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
@@ -676,8 +676,8 @@ class BNOR(OTBNInsn):
 class BNNOT(OTBNInsn):
     insn = insn_for_mnemonic('bn.not', 5)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs = op_vals['wrs']
         self.shift_type = op_vals['shift_type']
@@ -696,8 +696,8 @@ class BNNOT(OTBNInsn):
 class BNXOR(OTBNInsn):
     insn = insn_for_mnemonic('bn.xor', 6)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
@@ -718,8 +718,8 @@ class BNXOR(OTBNInsn):
 class BNRSHI(OTBNInsn):
     insn = insn_for_mnemonic('bn.rshi', 4)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
@@ -736,8 +736,8 @@ class BNRSHI(OTBNInsn):
 class BNRSEL(OTBNInsn):
     insn = insn_for_mnemonic('bn.sel', 5)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
@@ -754,8 +754,8 @@ class BNRSEL(OTBNInsn):
 class BNCMP(OTBNInsn):
     insn = insn_for_mnemonic('bn.cmp', 5)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
@@ -774,8 +774,8 @@ class BNCMP(OTBNInsn):
 class BNCMPB(OTBNInsn):
     insn = insn_for_mnemonic('bn.cmpb', 5)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrs1 = op_vals['wrs1']
         self.wrs2 = op_vals['wrs2']
         self.shift_type = op_vals['shift_type']
@@ -795,8 +795,8 @@ class BNCMPB(OTBNInsn):
 class BNLID(OTBNInsn):
     insn = insn_for_mnemonic('bn.lid', 5)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grd = op_vals['grd']
         self.grd_inc = op_vals['grd_inc']
         self.offset = op_vals['offset']
@@ -824,8 +824,8 @@ class BNLID(OTBNInsn):
 class BNSID(OTBNInsn):
     insn = insn_for_mnemonic('bn.sid', 5)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grs2 = op_vals['grs2']
         self.grs2_inc = op_vals['grs2_inc']
         self.offset = op_vals['offset']
@@ -854,8 +854,8 @@ class BNSID(OTBNInsn):
 class BNMOV(OTBNInsn):
     insn = insn_for_mnemonic('bn.mov', 2)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wrs = op_vals['wrs']
 
@@ -867,8 +867,8 @@ class BNMOV(OTBNInsn):
 class BNMOVR(OTBNInsn):
     insn = insn_for_mnemonic('bn.movr', 4)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grd = op_vals['grd']
         self.grd_inc = op_vals['grd_inc']
         self.grs = op_vals['grs']
@@ -896,8 +896,8 @@ class BNMOVR(OTBNInsn):
 class BNWSRR(OTBNInsn):
     insn = insn_for_mnemonic('bn.wsrr', 2)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wsr = op_vals['wsr']
 
@@ -909,8 +909,8 @@ class BNWSRR(OTBNInsn):
 class BNWSRW(OTBNInsn):
     insn = insn_for_mnemonic('bn.wsrw', 2)
 
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.wsr = op_vals['wsr']
         self.wrs = op_vals['wrs']
 

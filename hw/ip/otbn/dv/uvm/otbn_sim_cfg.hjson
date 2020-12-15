@@ -30,8 +30,9 @@ name:
   import_cfgs: [
       // Project wide common sim cfg file
       "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
-      // Config file to pull in the correct flags for otbn_memutil
+      // Config files to get the correct flags for otbn_memutil and otbn_tracer
       "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
+      "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
       // Common CIP test lists
       "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
       "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
@@ -39,8 +40,9 @@ name:
       "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"
   ]
 
-  // Add options needed to compile against otbn_memutil
-  en_build_modes: ["{tool}_otbn_memutil_build_opts"]
+  // Add options needed to compile against otbn_memutil and otbn_tracer
+  en_build_modes: ["{tool}_otbn_memutil_build_opts",
+                   "{tool}_otbn_tracer_build_opts"]
 
   // Add additional tops for simulation.
   sim_tops: ["otbn_bind"]
