@@ -41,9 +41,10 @@ module keymgr import keymgr_pkg::*; #(
   input kmac_data_rsp_t kmac_data_i,
 
   // the following signals should eventually be wrapped into structs from other modules
-  input lc_data_t lc_i,
+  input lc_ctrl_pkg::lc_tx_t lc_keymgr_en_i,
+  input lc_ctrl_pkg::lc_keymgr_div_t lc_keymgr_div_i,
   input otp_ctrl_pkg::otp_keymgr_key_t otp_key_i,
-  input otp_data_t otp_i,
+  input otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg_i,
   input flash_ctrl_pkg::keymgr_flash_t flash_i,
 
   // connection to edn
@@ -75,6 +76,22 @@ module keymgr import keymgr_pkg::*; #(
     .reg2hw,
     .hw2reg,
     .devmode_i  (1'b1) // connect to real devmode signal in the future
+  );
+
+
+  /////////////////////////////////////
+  //  Synchronize lc_ctrl control inputs
+  //  Data inputs are not synchronized and assumed quasi-static
+  /////////////////////////////////////
+  lc_ctrl_pkg::lc_tx_t [KeyMgrEnLast-1:0] lc_keymgr_en;
+
+  prim_lc_sync #(
+    .NumCopies(int'(KeyMgrEnLast))
+  ) u_lc_keymgr_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_keymgr_en_i),
+    .lc_en_o(lc_keymgr_en)
   );
 
 
@@ -145,6 +162,7 @@ module keymgr import keymgr_pkg::*; #(
   logic wipe_key;
   hw_key_req_t kmac_key;
   logic op_done;
+  logic init;
   logic data_valid;
   logic data_en;
   logic kmac_done;
@@ -159,7 +177,7 @@ module keymgr import keymgr_pkg::*; #(
   keymgr_ctrl u_ctrl (
     .clk_i,
     .rst_ni,
-    .en_i(lc_i.keymgr_en),
+    .en_i(lc_keymgr_en[KeyMgrEnCtrl] == lc_ctrl_pkg::On),
     .prng_reseed_req_o(reseed_req),
     .prng_reseed_ack_i(reseed_ack),
     .prng_en_o(ctrl_lfsr_en),
@@ -167,6 +185,7 @@ module keymgr import keymgr_pkg::*; #(
     .op_i(keymgr_ops_e'(reg2hw.control.operation.q)),
     .op_start_i(reg2hw.control.start.q),
     .op_done_o(op_done),
+    .init_o(init),
     .sw_binding_unlock_o(sw_binding_unlock),
     .status_o(hw2reg.op_status.d),
     .error_o(err_code),
@@ -202,7 +221,8 @@ module keymgr import keymgr_pkg::*; #(
   keymgr_cfg_en u_cfgen (
     .clk_i,
     .rst_ni,
-    .en_i(lc_i.keymgr_en),
+    .init_i(init),
+    .en_i(lc_keymgr_en[KeyMgrEnCfgEn] == lc_ctrl_pkg::On),
     .set_i(reg2hw.control.start.q & op_done),
     .clr_i(reg2hw.control.start.q),
     .out_o(hw2reg.cfgen.d)
@@ -245,13 +265,20 @@ module keymgr import keymgr_pkg::*; #(
   end
 
   // Advance to creator_root_key
+  // The values coming from otp_ctrl / lc_ctrl are treat as quasi-static for CDC purposes
   logic [KeyWidth-1:0] creator_seed;
   assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
   assign adv_matrix[Creator] = AdvDataWidth'({reg2hw.sw_binding,
                                               RndCnstRevisionSeed,
-                                              otp_i.devid,
-                                              lc_i.health_state,
+                                              otp_hw_cfg_i.data.device_id,
+                                              HealthStateWidth'(lc_keymgr_div_i),
                                               creator_seed});
+
+  logic unused_otp_bits;
+  assign unused_otp_bits = ^{otp_hw_cfg_i.valid,
+                             otp_hw_cfg_i.data.hw_cfg_digest,
+                             otp_hw_cfg_i.data.hw_cfg_content
+                            };
 
   assign adv_dvalid[Creator] = creator_seed_vld &
                                devid_vld &
@@ -311,8 +338,8 @@ module keymgr import keymgr_pkg::*; #(
     .creator_seed_i(creator_seed),
     .owner_seed_i(owner_seed),
     .key_i(kmac_key_o),
-    .devid_i(otp_i.devid),
-    .health_state_i(lc_i.health_state),
+    .devid_i(otp_hw_cfg_i.data.device_id),
+    .health_state_i(HealthStateWidth'(lc_keymgr_div_i)),
     .creator_seed_vld_o(creator_seed_vld),
     .owner_seed_vld_o(owner_seed_vld),
     .devid_vld_o(devid_vld),
@@ -364,7 +391,7 @@ module keymgr import keymgr_pkg::*; #(
   keymgr_sideload_key_ctrl u_sideload_ctrl (
     .clk_i,
     .rst_ni,
-    .init_i(op_done),
+    .init_i(init),
     .entropy_i(key_entropy),
     .clr_key_i(reg2hw.sideload_clear.q),
     .wipe_key_i(wipe_key),

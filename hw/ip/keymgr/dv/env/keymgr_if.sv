@@ -7,7 +7,7 @@ interface keymgr_if(input clk, input rst_n);
 
   import uvm_pkg::*;
 
-  keymgr_pkg::lc_data_t lc;
+  lc_ctrl_pkg::lc_keymgr_div_t keymgr_div;
   keymgr_pkg::otp_data_t otp;
   otp_ctrl_pkg::otp_keymgr_key_t otp_key;
   flash_ctrl_pkg::keymgr_flash_t flash;
@@ -24,7 +24,7 @@ interface keymgr_if(input clk, input rst_n);
   bit direct_to_disabled;
 
   task automatic init();
-    lc      = keymgr_pkg::LC_DATA_DEFAULT;
+    keymgr_div = 64'h5CFBD765CE33F34E;
     otp     = keymgr_pkg::OTP_DATA_DEFAULT;
     otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
     flash   = flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT;
