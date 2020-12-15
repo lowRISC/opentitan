@@ -93,7 +93,7 @@ class otp_ctrl_env extends cip_base_env #(
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
       virtual_sequencer.sram_pull_sequencer_h[i] = m_sram_pull_agent[i].sequencer;
       if (cfg.en_scb) begin
-        m_sram_pull_agent[i].monitor.req_port.connect(scoreboard.sram_fifo[i].analysis_export);
+        m_sram_pull_agent[i].monitor.analysis_port.connect(scoreboard.sram_fifo[i].analysis_export);
       end
     end
 
@@ -102,10 +102,10 @@ class otp_ctrl_env extends cip_base_env #(
     virtual_sequencer.flash_data_pull_sequencer_h = m_flash_data_pull_agent.sequencer;
     virtual_sequencer.lc_prog_pull_sequencer_h    = m_lc_prog_pull_agent.sequencer;
     if (cfg.en_scb) begin
-      m_otbn_pull_agent.monitor.req_port.connect(scoreboard.otbn_fifo.analysis_export);
-      m_flash_addr_pull_agent.monitor.req_port.connect(scoreboard.flash_addr_fifo.analysis_export);
-      m_flash_data_pull_agent.monitor.req_port.connect(scoreboard.flash_data_fifo.analysis_export);
-      m_lc_prog_pull_agent.monitor.req_port.connect(scoreboard.lc_prog_fifo.analysis_export);
+      m_otbn_pull_agent.monitor.analysis_port.connect(scoreboard.otbn_fifo.analysis_export);
+      m_flash_addr_pull_agent.monitor.analysis_port.connect(scoreboard.flash_addr_fifo.analysis_export);
+      m_flash_data_pull_agent.monitor.analysis_port.connect(scoreboard.flash_data_fifo.analysis_export);
+      m_lc_prog_pull_agent.monitor.analysis_port.connect(scoreboard.lc_prog_fifo.analysis_export);
     end
   endfunction
 
