@@ -67,7 +67,7 @@ steps:
       # specify that an older version of a package must be used for a certain
       # Python version. If that information is not read, pip installs the latest
       # version, which then fails to run.
-      pip3 install --user -U pip six
+      python3 -m pip install --user -U pip six
 
       # There's been a bit of a kerfuffle about setuptools version 50, which
       # breaks importing distutils on Debian/Ubuntu systems. Make sure we don't
