@@ -21,13 +21,13 @@
 #include "verilator_memutil.h"
 #include "verilator_sim_ctrl.h"
 
-std::vector<OTBNTraceListener *> otbn_trace_listeners;
+std::vector<OtbnTraceListener *> otbn_trace_listeners;
 
-void AddOTBNTraceListener(OTBNTraceListener *l) {
+void AddOtbnTraceListener(OtbnTraceListener *l) {
   otbn_trace_listeners.push_back(l);
 }
 
-void RemoveOTBNTraceListener(OTBNTraceListener *l) {
+void RemoveOtbnTraceListener(OtbnTraceListener *l) {
   auto l_iter =
       std::find(otbn_trace_listeners.begin(), otbn_trace_listeners.end(), l);
 
@@ -59,14 +59,14 @@ extern void accept_otbn_trace_string(const char *trace,
  * it sets up a LogTraceListener that will dump out the trace to the given log
  * file
  */
-class OTBNTraceUtil : public SimCtrlExtension {
+class OtbnTraceUtil : public SimCtrlExtension {
  private:
   std::unique_ptr<LogTraceListener> log_trace_listener_;
 
   bool SetupTraceLog(const std::string &log_filename) {
     try {
       log_trace_listener_ = std::make_unique<LogTraceListener>(log_filename);
-      AddOTBNTraceListener(log_trace_listener_.get());
+      AddOtbnTraceListener(log_trace_listener_.get());
       return true;
     } catch (const std::runtime_error &err) {
       std::cerr << "ERROR: Failed to set up trace log: " << err.what()
@@ -113,13 +113,13 @@ class OTBNTraceUtil : public SimCtrlExtension {
     return true;
   }
 
-  ~OTBNTraceUtil() { RemoveOTBNTraceListener(log_trace_listener_.get()); }
+  ~OtbnTraceUtil() { RemoveOtbnTraceListener(log_trace_listener_.get()); }
 };
 
 int main(int argc, char **argv) {
   otbn_top_sim top;
   VerilatorMemUtil memutil(new OtbnMemUtil("TOP.otbn_top_sim"));
-  OTBNTraceUtil traceutil;
+  OtbnTraceUtil traceutil;
 
   VerilatorSimCtrl &simctrl = VerilatorSimCtrl::GetInstance();
   simctrl.SetTop(&top, &top.IO_CLK, &top.IO_RST_N,
