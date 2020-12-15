@@ -117,15 +117,13 @@ module kmac_msgfifo
     .flush_done_o (packer_flush_done)
   );
 
-  // Convert packer wdata and wmask to FIFO struct
-  // As packer packs to right, it converts the data here again
-  // TODO: Is it true internal SHA3 is big-endian same as HMAC?
-  assign fifo_wdata.data = conv_endian64(packer_wdata, 1'b1);
-  always_comb begin
-    for (int i = 0 ; i < OutWidth/8 ; i++) begin
-      fifo_wdata.strb[i] = packer_wmask[8*(OutWidth/8-i-1)];
-    end
-  end
+  // Assign packer wdata and wmask to FIFO struct
+  // In contrast to HMAC case, KMAC SHA3 operates in little-endian. MSG fifo is
+  // converted into 3-D form so the endianess here is not a problem.
+  assign fifo_wdata = '{
+    data: packer_wdata,
+    strb: packer_wmask
+  } ;
 
   // MsgFIFO
   prim_fifo_sync #(
