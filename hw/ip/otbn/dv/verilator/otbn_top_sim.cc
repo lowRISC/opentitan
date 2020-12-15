@@ -2,56 +2,26 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <algorithm>
-#include <cassert>
 #include <fstream>
 #include <getopt.h>
 #include <iomanip>
 #include <iostream>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <svdpi.h>
-#include <vector>
 
 #include "log_trace_listener.h"
 #include "otbn_memutil.h"
-#include "otbn_trace_listener.h"
+#include "otbn_trace_source.h"
 #include "verilated_toplevel.h"
 #include "verilator_memutil.h"
 #include "verilator_sim_ctrl.h"
-
-std::vector<OtbnTraceListener *> otbn_trace_listeners;
-
-void AddOtbnTraceListener(OtbnTraceListener *l) {
-  otbn_trace_listeners.push_back(l);
-}
-
-void RemoveOtbnTraceListener(OtbnTraceListener *l) {
-  auto l_iter =
-      std::find(otbn_trace_listeners.begin(), otbn_trace_listeners.end(), l);
-
-  if (l_iter != otbn_trace_listeners.end()) {
-    otbn_trace_listeners.erase(l_iter);
-  }
-}
 
 extern "C" {
 extern unsigned int otbn_base_call_stack_get_size();
 extern unsigned int otbn_base_call_stack_get_element(int index);
 extern unsigned int otbn_base_reg_get(int index);
 extern unsigned int otbn_bignum_reg_get(int index, int quarter);
-
-extern void accept_otbn_trace_string(const char *trace,
-                                     unsigned int cycle_count) {
-  assert(trace != nullptr);
-
-  std::string trace_str(trace);
-
-  for (auto l : otbn_trace_listeners) {
-    l->AcceptTraceString(trace, cycle_count);
-  }
-}
 }
 
 /**
@@ -66,7 +36,7 @@ class OtbnTraceUtil : public SimCtrlExtension {
   bool SetupTraceLog(const std::string &log_filename) {
     try {
       log_trace_listener_ = std::make_unique<LogTraceListener>(log_filename);
-      AddOtbnTraceListener(log_trace_listener_.get());
+      OtbnTraceSource::get().AddListener(log_trace_listener_.get());
       return true;
     } catch (const std::runtime_error &err) {
       std::cerr << "ERROR: Failed to set up trace log: " << err.what()
@@ -113,7 +83,10 @@ class OtbnTraceUtil : public SimCtrlExtension {
     return true;
   }
 
-  ~OtbnTraceUtil() { RemoveOtbnTraceListener(log_trace_listener_.get()); }
+  ~OtbnTraceUtil() {
+    if (log_trace_listener_)
+      OtbnTraceSource::get().RemoveListener(log_trace_listener_.get());
+  }
 };
 
 int main(int argc, char **argv) {
