@@ -59,7 +59,14 @@ package otp_ctrl_env_pkg;
 
   // TODO: did not count for LC partition
   parameter uint OTP_ARRAY_SIZE = (CreatorSwCfgSize + OwnerSwCfgSize + HwCfgSize + Secret0Size +
-                                   Secret1Size + Secret2Size)/ (TL_DW / 8);
+                                   Secret1Size + Secret2Size) / (TL_DW / 8);
+
+  // Total num of valid dai address, secret partitions have a granulity of 8, the rest have
+  // a granulity of 4.
+  parameter uint DAI_ADDR_SIZE =
+      (CreatorSwCfgContentSize + OwnerSwCfgContentSize + HwCfgContentSize) / 4 +
+      // secret partitions does not have content size, so use total size
+      (Secret0Size + Secret1Size + Secret2Size) / 8 - 3;
 
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
   parameter uint SRAM_DATA_SIZE = 1 + SramKeyWidth + SramNonceWidth;
