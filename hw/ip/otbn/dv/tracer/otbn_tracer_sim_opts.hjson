@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Additional build-time options needed to compile C++ sources in
+  // simulators such as VCS and Xcelium for anything that uses
+  // otbn_tracer.
+  otbn_tracer_inc_dir: "{build_dir}/src/lowrisc_ip_otbn_tracer_0/cpp"
+
+  build_modes: [
+    {
+      name: vcs_otbn_tracer_build_opts
+      build_opts: ["-CFLAGS -I{otbn_tracer_inc_dir}"]
+    }
+    {
+      name: xcelium_otbn_tracer_build_opts
+      build_opts: ["-I{otbn_tracer_inc_dir}"]
+    }
+  ]
+}

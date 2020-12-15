@@ -139,3 +139,10 @@ is produced giving the full mask and data
 ```
 W [0x00000080]: Mask ERR Mask: 0xfffff800_0000ffff_ffffffff_00000000_00000000_00000000_00000000_00000000 Data: 0xcccccccc_bbbbbbbb_aaaaaaaa_facefeed_deadbeef_cafed00d_baadf00d_1234abcd
 ```
+
+## Using with dvsim
+
+To use this code, depend on the core file. If you're using dvsim,
+you'll also need to include `otbn_tracer_sim_opts.hjson` in your
+simulator configuration and add `"{tool}_otbn_tracer_build_opts"` to
+the `en_build_modes` variable.

@@ -74,7 +74,8 @@ class OTBNInsn:
     # a loop).
     affects_control = False
 
-    def __init__(self, op_vals: Dict[str, int]):
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        self.raw = raw
         self.op_vals = op_vals
 
         # Memoized disassembly for this instruction. We store the PC at which
@@ -105,8 +106,8 @@ class OTBNInsn:
 
 class RV32RegReg(OTBNInsn):
     '''A general class for register-register insns from the RV32I ISA'''
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grd = op_vals['grd']
         self.grs1 = op_vals['grs1']
         self.grs2 = op_vals['grs2']
@@ -114,8 +115,8 @@ class RV32RegReg(OTBNInsn):
 
 class RV32RegImm(OTBNInsn):
     '''A general class for register-immediate insns from the RV32I ISA'''
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grd = op_vals['grd']
         self.grs1 = op_vals['grs1']
         self.imm = op_vals['imm']
@@ -123,8 +124,8 @@ class RV32RegImm(OTBNInsn):
 
 class RV32ImmShift(OTBNInsn):
     '''A general class for immediate shift insns from the RV32I ISA'''
-    def __init__(self, op_vals: Dict[str, int]):
-        super().__init__(op_vals)
+    def __init__(self, raw: int, op_vals: Dict[str, int]):
+        super().__init__(raw, op_vals)
         self.grd = op_vals['grd']
         self.grs1 = op_vals['grs1']
         self.shamt = op_vals['shamt']

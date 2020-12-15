@@ -15,6 +15,10 @@ class TraceWSR(Trace):
     def trace(self) -> str:
         return '{} = {:#x}'.format(self.wsr_name, self.new_value)
 
+    def rtl_trace(self) -> str:
+        return '> {}: {}'.format(self.wsr_name,
+                                 Trace.hex_value(self.new_value, 256))
+
 
 class WSR:
     '''Models a Wide Status Register'''

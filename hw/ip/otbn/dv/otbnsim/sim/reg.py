@@ -17,6 +17,10 @@ class TraceRegister(Trace):
         fmt_str = '{{}} = 0x{{:0{}x}}'.format(self.width // 4)
         return fmt_str.format(self.name, self.new_value)
 
+    def rtl_trace(self) -> str:
+        return '> {}: {}'.format(self.name,
+                                 Trace.hex_value(self.new_value, self.width))
+
 
 class Reg:
     def __init__(self,
@@ -102,7 +106,7 @@ class RegFile:
             assert 0 <= idx < len(self._registers)
             next_val = self.get_reg(idx).read_next()
             assert next_val is not None
-            ret.append(TraceRegister(self._name_pfx + str(idx),
+            ret.append(TraceRegister('{}{:02}'.format(self._name_pfx, idx),
                                      self._width,
                                      next_val))
         return ret
