@@ -40,7 +40,7 @@
  * - Reset Handler (Entry 32)
  *
  * More information about Ibex's interrupts can be found here:
- *   https://ibex-core.readthedocs.io/en/latest/exception_interrupts.html
+ *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
  */
   .balign 256
   .globl _rom_ext_interrupt_vector
