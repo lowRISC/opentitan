@@ -17,6 +17,7 @@ class otp_ctrl_env extends cip_base_env #(
   push_pull_agent#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_addr_pull_agent;
   push_pull_agent#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_data_pull_agent;
   push_pull_agent#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)) m_lc_prog_pull_agent;
+  push_pull_agent#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) m_lc_token_pull_agent;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -51,6 +52,12 @@ class otp_ctrl_env extends cip_base_env #(
         ::type_id::create("m_lc_prog_pull_agent", this);
     uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1)))::
         set(this, "m_lc_prog_pull_agent", "cfg", cfg.m_lc_prog_pull_agent_cfg);
+
+    // build lc-otp token pull agent
+    m_lc_token_pull_agent = push_pull_agent#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth))
+        ::type_id::create("m_lc_token_pull_agent", this);
+    uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))::
+        set(this, "m_lc_token_pull_agent", "cfg", cfg.m_lc_token_pull_agent_cfg);
 
     // config power manager pin
     if (!uvm_config_db#(pwr_otp_vif)::get(this, "", "pwr_otp_vif", cfg.pwr_otp_vif)) begin
@@ -101,11 +108,13 @@ class otp_ctrl_env extends cip_base_env #(
     virtual_sequencer.flash_addr_pull_sequencer_h = m_flash_addr_pull_agent.sequencer;
     virtual_sequencer.flash_data_pull_sequencer_h = m_flash_data_pull_agent.sequencer;
     virtual_sequencer.lc_prog_pull_sequencer_h    = m_lc_prog_pull_agent.sequencer;
+    virtual_sequencer.lc_token_pull_sequencer_h   = m_lc_token_pull_agent.sequencer;
     if (cfg.en_scb) begin
       m_otbn_pull_agent.monitor.analysis_port.connect(scoreboard.otbn_fifo.analysis_export);
       m_flash_addr_pull_agent.monitor.analysis_port.connect(scoreboard.flash_addr_fifo.analysis_export);
       m_flash_data_pull_agent.monitor.analysis_port.connect(scoreboard.flash_data_fifo.analysis_export);
       m_lc_prog_pull_agent.monitor.analysis_port.connect(scoreboard.lc_prog_fifo.analysis_export);
+      m_lc_token_pull_agent.monitor.analysis_port.connect(scoreboard.lc_token_fifo.analysis_export);
     end
   endfunction
 

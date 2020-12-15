@@ -31,15 +31,17 @@ module tb;
 
   //TODO: use push-pull agent once support
   wire otp_ctrl_pkg::otp_ast_req_t        ast_req;
-  wire otp_ctrl_pkg::lc_otp_token_rsp_t   otp_token;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
 
+  // lc_otp interfaces
   push_pull_if #(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
                  lc_prog_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) lc_token_if(.clk(clk), .rst_n(rst_n));
+
   push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))
                  sram_if[NumSramKeyReqSlots](.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_if(.clk(clk), .rst_n(rst_n));
@@ -87,8 +89,8 @@ module tb;
     // lc
     .lc_otp_program_i           ({lc_prog_if.req, lc_prog_if.h_data}),
     .lc_otp_program_o           ({lc_prog_if.d_data, lc_prog_if.ack}),
-    .lc_otp_token_i             ('0),
-    .lc_otp_token_o             (otp_token),
+    .lc_otp_token_i             ({lc_token_if.req, lc_token_if.h_data}),
+    .lc_otp_token_o             ({lc_token_if.ack, lc_token_if.d_data}),
     .lc_creator_seed_sw_rw_en_i (lc_creator_seed_sw_rw_en),
     .lc_seed_hw_rd_en_i         (lc_seed_hw_rd_en),
     .lc_dft_en_i                (lc_dft_en),
@@ -152,6 +154,8 @@ module tb;
                    set(null, "*env.m_edn_pull_agent*", "vif", edn_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1)))::
                    set(null, "*env.m_lc_prog_pull_agent*", "vif", lc_prog_if);
+    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))::
+                   set(null, "*env.m_lc_token_pull_agent*", "vif", lc_token_if);
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(pwr_otp_vif)::set(null, "*.env", "pwr_otp_vif", pwr_otp_if);
