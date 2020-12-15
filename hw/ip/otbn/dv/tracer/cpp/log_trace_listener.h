@@ -7,10 +7,11 @@
 
 #include <fstream>
 #include <string>
+
 #include "otbn_trace_listener.h"
 
 /**
- * An OTBNTraceListener that dumps the trace to a log file, with some minimal
+ * An OtbnTraceListener that dumps the trace to a log file, with some minimal
  * pretty printing.
  *
  * It examines the first line of any trace output, expecting it to be an 'E' or
@@ -22,7 +23,7 @@
  * line that gives the cycle count and dumps the rest of the trace indented by
  * four spaces.
  */
-class LogTraceListener : public OTBNTraceListener {
+class LogTraceListener : public OtbnTraceListener {
  private:
   std::ofstream trace_log;
 

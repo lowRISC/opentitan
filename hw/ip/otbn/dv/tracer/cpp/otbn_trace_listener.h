@@ -14,7 +14,7 @@
  * simulation that hosts the tracer is responsible for setting up listeners and
  * routing the DPI `accept_otbn_trace_string` calls to them.
  */
-class OTBNTraceListener {
+class OtbnTraceListener {
  public:
   /**
    * Helper function to split an OTBN trace output up into individual lines.
@@ -43,7 +43,7 @@ class OTBNTraceListener {
    */
   virtual void AcceptTraceString(const std::string &trace,
                                  unsigned int cycle_count) = 0;
-  virtual ~OTBNTraceListener() {}
+  virtual ~OtbnTraceListener() {}
 };
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_TRACER_CPP_OTBN_TRACE_LISTENER_H_
