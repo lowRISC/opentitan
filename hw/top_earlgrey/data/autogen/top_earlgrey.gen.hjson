@@ -1573,9 +1573,6 @@
           default: lc_ctrl_pkg::Off
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
-          width: 1
-          top_type: broadcast
-          top_signame: lc_ctrl_lc_keymgr_en
           index: -1
         }
         {
@@ -3830,15 +3827,6 @@
           index: -1
         }
         {
-          struct: lc_data
-          type: uni
-          name: lc
-          act: rcv
-          package: keymgr_pkg
-          inst_name: keymgr
-          index: -1
-        }
-        {
           struct: otp_keymgr_key
           type: uni
           name: otp_key
@@ -3851,12 +3839,15 @@
           index: -1
         }
         {
-          struct: otp_data
+          struct: otp_hw_cfg
           type: uni
-          name: otp
+          name: otp_hw_cfg
           act: rcv
-          package: keymgr_pkg
+          package: otp_ctrl_part_pkg
           inst_name: keymgr
+          width: 1
+          default: ""
+          top_signame: otp_ctrl_otp_hw_cfg
           index: -1
         }
         {
@@ -3869,6 +3860,28 @@
           width: 1
           default: ""
           top_signame: flash_ctrl_keymgr
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_keymgr_en
+          act: rcv
+          package: lc_ctrl_pkg
+          default: lc_ctrl_pkg::On
+          inst_name: keymgr
+          index: -1
+        }
+        {
+          struct: lc_keymgr_div
+          type: uni
+          name: lc_keymgr_div
+          act: rcv
+          package: lc_ctrl_pkg
+          inst_name: keymgr
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_lc_keymgr_div
           index: -1
         }
         {
@@ -5099,8 +5112,12 @@
       otp_ctrl.otp_hw_cfg:
       [
         lc_ctrl.otp_hw_cfg
+        keymgr.otp_hw_cfg
       ]
-      lc_ctrl.lc_keymgr_div: []
+      lc_ctrl.lc_keymgr_div:
+      [
+        keymgr.lc_keymgr_div
+      ]
       lc_ctrl.lc_dft_en:
       [
         otp_ctrl.lc_dft_en
@@ -5109,7 +5126,6 @@
       lc_ctrl.lc_nvm_debug_en: []
       lc_ctrl.lc_hw_debug_en: []
       lc_ctrl.lc_cpu_en: []
-      lc_ctrl.lc_keymgr_en: []
       lc_ctrl.lc_escalate_en:
       [
         otp_ctrl.lc_escalate_en
@@ -8318,9 +8334,6 @@
         default: lc_ctrl_pkg::Off
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
-        width: 1
-        top_type: broadcast
-        top_signame: lc_ctrl_lc_keymgr_en
         index: -1
       }
       {
@@ -9244,15 +9257,6 @@
         index: -1
       }
       {
-        struct: lc_data
-        type: uni
-        name: lc
-        act: rcv
-        package: keymgr_pkg
-        inst_name: keymgr
-        index: -1
-      }
-      {
         struct: otp_keymgr_key
         type: uni
         name: otp_key
@@ -9265,12 +9269,15 @@
         index: -1
       }
       {
-        struct: otp_data
+        struct: otp_hw_cfg
         type: uni
-        name: otp
+        name: otp_hw_cfg
         act: rcv
-        package: keymgr_pkg
+        package: otp_ctrl_part_pkg
         inst_name: keymgr
+        width: 1
+        default: ""
+        top_signame: otp_ctrl_otp_hw_cfg
         index: -1
       }
       {
@@ -9283,6 +9290,28 @@
         width: 1
         default: ""
         top_signame: flash_ctrl_keymgr
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_keymgr_en
+        act: rcv
+        package: lc_ctrl_pkg
+        default: lc_ctrl_pkg::On
+        inst_name: keymgr
+        index: -1
+      }
+      {
+        struct: lc_keymgr_div
+        type: uni
+        name: lc_keymgr_div
+        act: rcv
+        package: lc_ctrl_pkg
+        inst_name: keymgr
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_lc_keymgr_div
         index: -1
       }
       {
@@ -10630,14 +10659,6 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: lc_ctrl_lc_cpu_en
-        width: 1
-        type: uni
-        default: lc_ctrl_pkg::Off
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: lc_ctrl_lc_keymgr_en
         width: 1
         type: uni
         default: lc_ctrl_pkg::Off

@@ -290,7 +290,6 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
-  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_keymgr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_req;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
@@ -889,7 +888,7 @@ module top_earlgrey #(
       .lc_nvm_debug_en_o(lc_ctrl_lc_nvm_debug_en),
       .lc_hw_debug_en_o(lc_ctrl_lc_hw_debug_en),
       .lc_cpu_en_o(lc_ctrl_lc_cpu_en),
-      .lc_keymgr_en_o(lc_ctrl_lc_keymgr_en),
+      .lc_keymgr_en_o(),
       .lc_escalate_en_o(lc_ctrl_lc_escalate_en),
       .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_req),
       .lc_clk_byp_ack_i(lc_ctrl_pkg::Off),
@@ -1237,10 +1236,11 @@ module top_earlgrey #(
       .kmac_key_o(keymgr_kmac_key),
       .kmac_data_o(keymgr_kmac_data_req),
       .kmac_data_i(keymgr_kmac_data_rsp),
-      .lc_i(keymgr_pkg::LC_DATA_DEFAULT),
       .otp_key_i(otp_ctrl_otp_keymgr_key),
-      .otp_i(keymgr_pkg::OTP_DATA_DEFAULT),
+      .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
       .flash_i(flash_ctrl_keymgr),
+      .lc_keymgr_en_i(lc_ctrl_pkg::On),
+      .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
       .tl_i(keymgr_tl_req),
       .tl_o(keymgr_tl_rsp),
       .clk_i (clkmgr_clocks.clk_main_secure),
