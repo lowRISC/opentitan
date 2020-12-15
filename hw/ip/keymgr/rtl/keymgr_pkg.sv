@@ -180,15 +180,13 @@ package keymgr_pkg;
 
   // The following structs should be sourced from other modules
   // defined here temporarily
-  typedef struct packed {
-    logic [HealthStateWidth-1:0] health_state;
-    logic keymgr_en;
-  } lc_data_t;
 
-  parameter lc_data_t LC_DATA_DEFAULT = '{
-    health_state: '0,
-    keymgr_en:    1'b1
-  };
+  // lc keymgr enable usage
+  typedef enum logic [1:0] {
+    KeyMgrEnCtrl,
+    KeyMgrEnCfgEn,
+    KeyMgrEnLast
+  } keymgr_lc_en_usage_e;
 
   // TODO: this will be removed later once the device ID information
   // is broadcasted

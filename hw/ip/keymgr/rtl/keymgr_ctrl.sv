@@ -25,6 +25,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   output logic wipe_key_o,
   output keymgr_working_state_e working_state_o,
   output logic sw_binding_unlock_o,
+  output logic init_o,
 
   // Data input
   input  otp_ctrl_pkg::otp_keymgr_key_t root_key_i,
@@ -187,6 +188,9 @@ module keymgr_ctrl import keymgr_pkg::*;(
     op_done_o = 1'b0;
     wipe_key_o = 1'b0;
 
+    // initialization complete
+    init_o = 1'b0;
+
     unique case (state_q)
       // Only advance can be called from reset state
       StCtrlReset: begin
@@ -238,7 +242,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
             key_state_d[0] = root_key_i.key_share0;
             key_state_d[1] = root_key_i.key_share1;
           end
-
+          init_o = 1'b1;
           op_done_o = 1'b1;
           state_d = StCtrlInit;
         end
