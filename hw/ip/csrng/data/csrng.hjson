@@ -207,6 +207,51 @@
         }
       ]
     },
+    { name: "INT_STATE_NUM",
+      desc: "Internal state number register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      hwqe: "true",
+      regwen: "REGEN",
+      fields: [
+        {
+            bits: "3:0",
+            name: "INT_STATE_NUM",
+            desc: '''
+                  Setting this field will set the number for which internal state can be
+                  selected for a read access. Up to 16 internal state values can be chosen
+                  from this register. The actual number of valid internal state fields
+                  is set by NHwApps plus 1 software app. For those selections that point
+                  to reserved locations (greater than NHwApps plus 1), the returned value
+                  will be zero. Writing this register will also reset the internal read
+                  pointer for the INT_STATE_VAL register.
+                  '''
+        },
+      ]
+    },
+    {
+      name: "INT_STATE_VAL",
+      desc: "Internal state read access register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwre: "true",
+      fields: [
+        { bits: "31:0",
+          name: "INT_STATE_VAL",
+          desc: '''
+                Reading this register will dump out the contents of the selected internal state field.
+                Since the internal state field is 448 bits wide, it will require 14 reads from this
+                register to gather the entire field. Once 14 reads have been done, the internal read
+                pointer (selects 32 bits of the 448 bit field) will reset to zero. The INT_STATE_NUM
+                can be re-written at this time (internal read pointer is also reset), and then
+                another internal state field can be read.
+                Also, the life cycle state must be one where the signal "lc_hw_debug_en" is asserted
+                in order to read any internal state field.
+                '''
+        }
+      ]
+    },
     {
       name: "HW_EXC_STS",
       desc: "Hardware instance exception status register",
