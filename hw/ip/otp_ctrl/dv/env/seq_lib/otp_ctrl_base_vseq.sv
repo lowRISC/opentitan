@@ -57,6 +57,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     // drive dft_en pins to access the test_access memory
     cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::On);
     otp_pwr_init();
+    super.read_and_check_all_csrs_after_reset();
   endtask
 
   // this task triggers an OTP write sequence via the DAI interface
