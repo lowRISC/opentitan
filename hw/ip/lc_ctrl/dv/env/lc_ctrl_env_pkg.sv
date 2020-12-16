@@ -30,45 +30,51 @@ package lc_ctrl_env_pkg;
     lc_ctrl_pkg::lc_tx_e lc_nvm_debug_en_o;
     lc_ctrl_pkg::lc_tx_e lc_hw_debug_en_o;
     lc_ctrl_pkg::lc_tx_e lc_cpu_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_creator_seed_sw_rw_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_owner_seed_sw_rw_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_seed_hw_rd_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_iso_part_sw_rd_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_iso_part_sw_wr_en_o;
     lc_ctrl_pkg::lc_tx_e lc_keymgr_en_o;
     lc_ctrl_pkg::lc_tx_e lc_escalate_en_o;
   } lc_outputs_t;
 
   const lc_outputs_t EXP_LC_OUTPUTS[NUM_STATES] = {
-    // Order: lc_dft_en_o, lc_nvm_debug_en_o, lc_hw_debug_en_o, lc_cpu_en_o, lc_keymgr_en_o,
-    //        lc_escalate_en_o
     // Raw (fixed size array index 0)
-    {Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock0
-    {On,  On,  On,  On,  Off, Off},
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
     // TestLock0
-    {Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock1
-    {On,  On,  On,  On,  Off, Off},
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
     // TestLock1
-    {Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock2
-    {On,  On,  On,  On,  Off, Off},
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
     // TestLock2
-    {Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // TestUnlock3
-    {On,  On,  On,  On,  Off, Off},
-    // Dev
-    {Off, Off, On,  On,  On,  Off},
-    // Prod
-    {Off, Off, Off, On,  On,  Off},
-    // ProdEnd
-    {Off, Off, Off, On,  On,  Off},
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    // Dev: lc_creator_seed_sw_rw_en_o (On if device is not personalized),
+    // lc_seed_hw_rd_en_o (On if device is personalized)
+    {Off, Off, On,  On,  On,  On,  On,  On,  On,  On,  Off},
+    // Prod: lc_creator_seed_sw_rw_en_o (On if device is not personalized),
+    // lc_seed_hw_rd_en_o (On if device is personalized)
+    {Off, Off, Off, On,  On,  On,  On,  On,  On,  On,  Off},
+    // ProdEnd: lc_creator_seed_sw_rw_en_o (On if device is not personalized),
+    // lc_seed_hw_rd_en_o (On if device is personalized)
+    {Off, Off, Off, On,  On,  On,  On,  On,  On,  On,  Off},
     // Rma
-    {On,  On,  On,  On,  On,  Off},
+    {On,  On,  On,  On,  On,  On,  On,  On,  On,  On,  Off},
     // Scrap
-    {Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // PostTrans
-    {Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
     // Escalate
-    {Off, Off, Off, Off, Off, On},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On},
     // Invalid
-    {Off, Off, Off, Off, Off, Off}
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off}
   };
 
   // associative array cannot declare parameter here, so we used const instead
