@@ -113,7 +113,7 @@ module otbn_tracer
                                             otbn_trace.rf_base_rd_data_b));
     end
 
-    if (otbn_trace.rf_base_wr_en) begin
+    if (otbn_trace.rf_base_wr_en && otbn_trace.rf_base_wr_addr != 0) begin
       output_trace(RegWritePrefix, $sformatf("x%02d: 0x%08x", otbn_trace.rf_base_wr_addr,
                                              otbn_trace.rf_base_wr_data));
     end
