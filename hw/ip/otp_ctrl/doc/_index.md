@@ -301,7 +301,7 @@ Parameter                   | Default (Max) | Top Earlgrey | Description
 `RndCnstKey`                | (see RTL)     | (see RTL)    | Random scrambling keys for secret partitions, to be used in the [scrambling datapath]({{< relref "#scrambling-datapath" >}}).
 `RndCnstDigestConst`        | (see RTL)     | (see RTL)    | Random digest finalization constants, to be used in the [scrambling datapath]({{< relref "#scrambling-datapath" >}}).
 `RndCnstDigestIV`           | (see RTL)     | (see RTL)    | Random digest initialization vectors, to be used in the [scrambling datapath]({{< relref "#scrambling-datapath" >}}).
-`RndCnstKeyMgrKey`          | (see RTL)     | (see RTL)    | Random default for the root key shares, to be output to the key manager if the key has not been provisioned yet (i.e. when `lc_seed_hw_rd_en_i == Off`).
+`RndCnstRawUnlockToken`     | (see RTL)     | (see RTL)    | Global RAW unlock token to be used for the first life cycle transition. See also [conditional life cycle transitions]({{< relref "hw/ip/lc_ctrl/doc/_index.md#conditional-transitions" >}}).
 
 ### Signals
 
