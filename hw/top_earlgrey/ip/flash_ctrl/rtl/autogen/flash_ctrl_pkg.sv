@@ -183,13 +183,13 @@ package flash_ctrl_pkg;
     he_en:       1'b1
   };
 
-  parameter info_page_cfg_t CfgAllowReadErase = '{
+  parameter info_page_cfg_t CfgAllowReadProgErase = '{
     en:          1'b1,
     rd_en:       1'b1,
-    prog_en:     1'b0,
+    prog_en:     1'b1,
     erase_en:    1'b1,
-    scramble_en: 1'b0,
-    ecc_en:      1'b0,  // TBD, update to 1 once tb supports ECC
+    scramble_en: 1'b1,
+    ecc_en:      1'b1,
     he_en:       1'b1   // HW assumes high endurance
   };
 
@@ -209,7 +209,7 @@ package flash_ctrl_pkg;
     '{
        page:  SeedInfoPageSel[OwnerSeedIdx],
        phase: PhaseRma,
-       cfg:   CfgAllowReadErase
+       cfg:   CfgAllowReadProgErase
      }
   };
 
@@ -219,10 +219,10 @@ package flash_ctrl_pkg;
        cfg:   '{
                  en:          1'b1,
                  rd_en:       1'b1,
-                 prog_en:     1'b0,
+                 prog_en:     1'b1,
                  erase_en:    1'b1,
-                 scramble_en: 1'b0,
-                 ecc_en:      1'b0,
+                 scramble_en: 1'b1,
+                 ecc_en:      1'b1,
                  he_en:       1'b1, // HW assumes high endurance
                  base:        '0,
                  size:        '{default:'1}
@@ -353,22 +353,43 @@ package flash_ctrl_pkg;
     erase_suspend_done: 1'b1
   };
 
-  ////////////////////////////
-  // The following inter-module should be moved to OTP/LC
-  ////////////////////////////
-
-  // lc to flash_ctrl
+  // RMA entries
   typedef struct packed {
-    // TBD: this signal will become multi-bit in the future
-    logic rma_req;
-    logic [BusWidth-1:0] rma_req_token;
-  } lc_flash_req_t;
+    logic [BankW-1:0] bank;
+    flash_part_e part;
+    logic [InfoTypesWidth-1:0] info_sel;
+    logic [PageW:0] start_page;
+    logic [PageW:0] num_pages;
+  } rma_wipe_entry_t;
 
-  // flash_ctrl to lc
-  typedef struct packed {
-    logic rma_ack;
-    logic [BusWidth-1:0] rma_ack_token;
-  } lc_flash_rsp_t;
+  // entries to be wiped
+  parameter int WipeEntries = 3;
+  parameter rma_wipe_entry_t RmaWipeEntries[WipeEntries] = '{
+    '{
+       bank: SeedBank,
+       part: FlashPartInfo,
+       info_sel: SeedInfoSel,
+       start_page: OwnerInfoPage,
+       num_pages: 1
+     },
+
+    '{
+       bank: 0,
+       part: FlashPartData,
+       info_sel: 0,
+       start_page: 0,
+       num_pages: PagesPerBank
+     },
+
+    '{
+       bank: 1,
+       part: FlashPartData,
+       info_sel: 0,
+       start_page: 0,
+       num_pages: PagesPerBank
+     }
+  };
+
 
   // flash_ctrl to keymgr
   typedef struct packed {
@@ -380,11 +401,6 @@ package flash_ctrl_pkg;
      256'h9152e32c9380a4bcc3e0ab263581e6b0e8825186e1e445631646e8bef8c45d47,
      256'hfa365df52da48cd752fb3a026a8e608f0098cfe5fa9810494829d0cd9479eb78
     }
-  };
-
-  parameter lc_flash_req_t LC_FLASH_REQ_DEFAULT = '{
-    rma_req: 1'b0,
-    rma_req_token: '0
   };
 
   // dft_en jtag selection

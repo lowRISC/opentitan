@@ -44,12 +44,11 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   // otp/lc/pwrmgr/keymgr Interface
   output       otp_ctrl_pkg::flash_otp_key_req_t otp_o,
   input        otp_ctrl_pkg::flash_otp_key_rsp_t otp_i,
-  input        lc_flash_req_t lc_i,
-  output       lc_flash_rsp_t lc_o,
+  input        lc_ctrl_pkg::lc_tx_t rma_req_i,
+  input        lc_ctrl_pkg::lc_flash_rma_seed_t rma_seed_i,
+  output       lc_ctrl_pkg::lc_tx_t rma_ack_o,
   input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
   output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
-  output       edn_pkg::edn_req_t edn_o,
-  input        edn_pkg::edn_rsp_t edn_i,
   output       keymgr_flash_t keymgr_o,
 
   // Interrupts
@@ -150,6 +149,9 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   logic hw_err;
   logic hw_rvalid;
   logic hw_rready;
+  logic hw_wvalid;
+  logic [BusWidth-1:0] hw_wdata;
+  logic hw_wready;
   flash_sel_e if_sel;
   logic sw_sel;
   flash_lcmgr_phase_e hw_phase;
@@ -179,12 +181,14 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   logic sw_rvalid;
   logic adapter_rvalid;
   logic sw_wvalid;
+  logic [BusWidth-1:0] sw_wdata;
   logic sw_wen;
   logic sw_wready;
 
   // lfsr for local entropy usage
   logic [31:0] rand_val;
   logic lfsr_en;
+  logic lfsr_seed_en;
 
   // life cycle connections
   lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en;
@@ -249,8 +253,8 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   ) u_lfsr (
     .clk_i,
     .rst_ni,
-    .seed_en_i(edn_i.edn_ack),
-    .seed_i(edn_i.edn_bus),
+    .seed_en_i(lfsr_seed_en),
+    .seed_i(rma_seed_i),
     .lfsr_en_i(lfsr_en),
     .entropy_i('0),
     .state_o(rand_val)
@@ -273,6 +277,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
 
     // software interface to prog_fifo
     .sw_wvalid_i(sw_wvalid & sw_wen),
+    .sw_wdata_i(sw_wdata),
     .sw_wready_o(sw_wready),
 
     // hardware interface to rd_ctrl / erase_ctrl
@@ -290,6 +295,9 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     // hardware interface to rd_fifo
     .hw_rvalid_o(hw_rvalid),
     .hw_rready_i(hw_rready),
+    .hw_wvalid_i(hw_wvalid),
+    .hw_wdata_i(hw_wdata),
+    .hw_wready_o(hw_wready),
 
     // hardware interface does not talk to prog_fifo
 
@@ -309,6 +317,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
 
     // muxed interface to prog_fifo
     .prog_fifo_wvalid_o(prog_fifo_wvalid),
+    .prog_fifo_wdata_o(prog_fifo_wdata),
     .prog_fifo_wready_i(prog_fifo_wready),
 
     // flash phy initilization ongoing
@@ -367,15 +376,16 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     // interface to ctrl_arb data ports
     .rready_o(hw_rready),
     .rvalid_i(hw_rvalid),
+    .wready_i(hw_wready),
+    .wvalid_o(hw_wvalid),
+    .wdata_o(hw_wdata),
 
     // direct form rd_fifo
     .rdata_i(rd_fifo_rdata),
 
     // external rma request
-    .rma_i(lc_i.rma_req),
-    .rma_token_i(lc_i.rma_req_token),
-    .rma_token_o(lc_o.rma_ack_token),
-    .rma_rsp_o(lc_o.rma_ack),
+    .rma_req_i,
+    .rma_ack_o,
 
     // outgoing seeds
     .seeds_o(keymgr_o.seeds),
@@ -394,17 +404,14 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .data_key_o(data_key),
 
     // entropy interface
-    .edn_req_o(edn_o.edn_req),
-    .edn_ack_i(edn_i.edn_ack),
+    .edn_req_o(lfsr_seed_en),
+    .edn_ack_i(1'b1),
     .lfsr_en_o(lfsr_en),
     .rand_i(rand_val),
 
     // init ongoing
     .init_busy_o(ctrl_init_busy)
   );
-
-  logic unused_edn_fips;
-  assign unused_edn_fips = edn_i.edn_fips;
 
   // Program FIFO
   // Since the program and read FIFOs are never used at the same time, it should really be one
@@ -427,7 +434,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .we_o       (sw_wen),
     .addr_o     (),
     .wmask_o    (),
-    .wdata_o    (prog_fifo_wdata),
+    .wdata_o    (sw_wdata),
     .rdata_i    (BusWidth'(0)),
     .rvalid_i   (1'b0),
     .rerror_i   (2'b0)

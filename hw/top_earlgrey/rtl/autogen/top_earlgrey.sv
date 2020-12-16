@@ -264,6 +264,9 @@ module top_earlgrey #(
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   otp_ctrl_pkg::flash_otp_key_req_t       flash_ctrl_otp_req;
   otp_ctrl_pkg::flash_otp_key_rsp_t       flash_ctrl_otp_rsp;
+  lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_req;
+  lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_ack;
+  lc_ctrl_pkg::lc_flash_rma_seed_t       flash_ctrl_rma_seed;
   pwrmgr_pkg::pwr_flash_req_t       pwrmgr_pwr_flash_req;
   pwrmgr_pkg::pwr_flash_rsp_t       pwrmgr_pwr_flash_rsp;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_pwr_rst_req;
@@ -292,8 +295,6 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_req;
-  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
-  lc_ctrl_pkg::lc_flash_rma_seed_t       lc_ctrl_lc_flash_rma_seed;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_creator_seed_sw_rw_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_owner_seed_sw_rw_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_rd_en;
@@ -892,9 +893,9 @@ module top_earlgrey #(
       .lc_escalate_en_o(lc_ctrl_lc_escalate_en),
       .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_req),
       .lc_clk_byp_ack_i(lc_ctrl_pkg::Off),
-      .lc_flash_rma_req_o(lc_ctrl_lc_flash_rma_req),
-      .lc_flash_rma_seed_o(lc_ctrl_lc_flash_rma_seed),
-      .lc_flash_rma_ack_i(lc_ctrl_pkg::Off),
+      .lc_flash_rma_req_o(flash_ctrl_rma_req),
+      .lc_flash_rma_seed_o(flash_ctrl_rma_seed),
+      .lc_flash_rma_ack_i(flash_ctrl_rma_ack),
       .lc_creator_seed_sw_rw_en_o(lc_ctrl_lc_creator_seed_sw_rw_en),
       .lc_owner_seed_sw_rw_en_o(lc_ctrl_lc_owner_seed_sw_rw_en),
       .lc_iso_part_sw_rd_en_o(lc_ctrl_lc_iso_part_sw_rd_en),
@@ -1112,10 +1113,9 @@ module top_earlgrey #(
       .lc_iso_part_sw_rd_en_i(lc_ctrl_lc_iso_part_sw_rd_en),
       .lc_iso_part_sw_wr_en_i(lc_ctrl_lc_iso_part_sw_wr_en),
       .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
-      .lc_i(flash_ctrl_pkg::LC_FLASH_REQ_DEFAULT),
-      .lc_o(),
-      .edn_o(),
-      .edn_i(edn_pkg::EDN_RSP_DEFAULT),
+      .rma_req_i(flash_ctrl_rma_req),
+      .rma_ack_o(flash_ctrl_rma_ack),
+      .rma_seed_i(flash_ctrl_rma_seed),
       .pwrmgr_i(pwrmgr_pwr_flash_req),
       .pwrmgr_o(pwrmgr_pwr_flash_rsp),
       .keymgr_o(flash_ctrl_keymgr),
