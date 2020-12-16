@@ -56,6 +56,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       process_backdoor_mem_clear();
+      process_lc_token_req();
     join_none
   endtask
 
@@ -87,6 +88,21 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, "clear internal memory and digest", UVM_HIGH)
         end
       end
+    end
+  endtask
+
+  virtual task process_lc_token_req();
+    forever begin
+      push_pull_item#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) rcv_item;
+      bit [SCRAMBLE_DATA_SIZE-1:0] exp_data_0, exp_data_1;
+      lc_token_fifo.get(rcv_item);
+      exp_data_0 = present_encode_with_final_const(.data(RndCnstDigestIVDefault[1]),
+                                                   .key(rcv_item.h_data),
+                                                   .final_const(RndCnstDigestConstDefault[1]));
+      exp_data_1 = present_encode_with_final_const(.data(exp_data_0),
+                                                   .key(rcv_item.h_data),
+                                                   .final_const(RndCnstDigestConstDefault[1]));
+      `DV_CHECK_EQ(rcv_item.d_data, {exp_data_1, exp_data_0}, "lc_token_encode_mismatch")
     end
   endtask
 
@@ -369,6 +385,20 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                                                    key_size_80,
                                                    output_data);
     descramble_data = output_data[NUM_ROUND-1];
+  endfunction
+
+  // this function go through present encode algo twice:
+  // one with input key, one with a final constant
+  // this is mainly used for unlock token hashing
+  virtual function bit [SCRAMBLE_DATA_SIZE-1:0] present_encode_with_final_const(
+                                                bit [SCRAMBLE_DATA_SIZE-1:0] data,
+                                                bit [SCRAMBLE_KEY_SIZE-1:0]  key,
+                                                bit [SCRAMBLE_KEY_SIZE-1:0]  final_const);
+    bit [NUM_ROUND-1:0] [SCRAMBLE_DATA_SIZE-1:0] enc_array;
+    crypto_dpi_present_pkg::sv_dpi_present_encrypt(data, key, key_size_80, enc_array);
+    crypto_dpi_present_pkg::sv_dpi_present_encrypt(enc_array[NUM_ROUND-1], final_const,
+                                                   key_size_80, enc_array);
+    present_encode_with_final_const = enc_array[NUM_ROUND-1];
   endfunction
 
   function bit [TL_AW-1:0] get_normalized_dai_addr();
