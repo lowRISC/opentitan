@@ -104,14 +104,15 @@ module otbn_core_model
   // Extract particular bits of the status value.
   //
   //   [0]     running:      The ISS is currently running
-  //   [1]     failed_step:  Something went wrong when trying to start or step the ISS.
-  //   [2]     failed_cmp:   The consistency check at the end of run failed.
+  //   [1]     check_due:    The ISS just finished but still needs to check results
+  //   [2]     failed_step:  Something went wrong when trying to start or step the ISS.
+  //   [3]     failed_cmp:   The consistency check at the end of run failed.
   //   [31:16] raw_err_code: The code to expose as the ERR_CODE register
   //
 
-  bit failed_cmp, failed_step, running;
+  bit failed_cmp, failed_step, check_due, running;
   bit [15:0] raw_err_code;
-  assign {failed_cmp, failed_step, running} = status[2:0];
+  assign {failed_cmp, failed_step, check_due, running} = status[3:0];
   assign raw_err_code = status[31:16];
   assign err_code_o = err_code_e'(raw_err_code);
 
@@ -120,7 +121,7 @@ module otbn_core_model
       // Clear status (stop running, and forget any errors)
       status <= 0;
     end else begin
-      if (start_i | running) begin
+      if (start_i | running | check_due) begin
         status <= otbn_model_step(model_handle,
                                   ImemScope, ImemSizeWords,
                                   DmemScope, DmemSizeWords,
