@@ -618,12 +618,16 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   //////////////////////////////////////
   info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] reg2hw_info_page_cfgs;
   info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs;
+  localparam int InfoBits = $bits(info_page_cfg_t) * InfosPerBank;
 
   // transform from reg output to structure
-  assign reg2hw_info_page_cfgs[0][0] = reg2hw.bank0_info0_page_cfg;
-  assign reg2hw_info_page_cfgs[0][1] = reg2hw.bank0_info1_page_cfg;
-  assign reg2hw_info_page_cfgs[1][0] = reg2hw.bank1_info0_page_cfg;
-  assign reg2hw_info_page_cfgs[1][1] = reg2hw.bank1_info1_page_cfg;
+  // Not all types have the maximum number of banks, so those are packed to 0
+  assign reg2hw_info_page_cfgs[0][0] = InfoBits'(reg2hw.bank0_info0_page_cfg);
+  assign reg2hw_info_page_cfgs[0][1] = InfoBits'(reg2hw.bank0_info1_page_cfg);
+  assign reg2hw_info_page_cfgs[0][2] = InfoBits'(reg2hw.bank0_info2_page_cfg);
+  assign reg2hw_info_page_cfgs[1][0] = InfoBits'(reg2hw.bank1_info0_page_cfg);
+  assign reg2hw_info_page_cfgs[1][1] = InfoBits'(reg2hw.bank1_info1_page_cfg);
+  assign reg2hw_info_page_cfgs[1][2] = InfoBits'(reg2hw.bank1_info2_page_cfg);
 
   // qualify reg2hw settings with creator / owner privileges
   for(genvar i = 0; i < NumBanks; i++) begin : gen_info_priv_bank
