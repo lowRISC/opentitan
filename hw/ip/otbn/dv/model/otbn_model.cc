@@ -29,9 +29,10 @@ int otbn_stack_element_peek(int index, svBitVecVal *val) __attribute__((weak));
 }
 
 #define RUNNING_BIT (1U << 0)
-#define FAILED_STEP_BIT (1U << 1)
-#define FAILED_CMP_BIT (1U << 2)
-#define STATUS_MASK ((1U << 3) - 1)
+#define CHECK_DUE_BIT (1U << 1)
+#define FAILED_STEP_BIT (1U << 2)
+#define FAILED_CMP_BIT (1U << 3)
+#define STATUS_MASK ((1U << 4) - 1)
 
 // The main entry point to the OTBN model, exported from here and used in
 // otbn_core_model.sv.
@@ -40,13 +41,15 @@ int otbn_stack_element_peek(int index, svBitVecVal *val) __attribute__((weak));
 // parameter, which has the following bits:
 //
 //    Bit 0:      running       True if the model is currently running
-//    Bit 1:      failed_step   Something failed when trying to start/step ISS
-//    Bit 2:      failed_cmp    Consistency check at end of run failed
+//    Bit 1:      check_due     True if the model finished running last cycle
+//    Bit 2:      failed_step   Something failed when trying to start/step ISS
+//    Bit 3:      failed_cmp    Consistency check at end of run failed
 //    Bits 31:16: err_code      Error code to report on negedge of running
 //
 // The otbn_model_step function should only be called when either the model is
-// running (bit 0 of status) or when start_i is asserted. At other times, it
-// will return immediately (but wastes a DPI call).
+// running (bit 0 of status), has a check due (bit 1 of status), or when
+// start_i is asserted. At other times, it will return immediately (but wastes
+// a DPI call).
 //
 // If the model is running and start_i is false, otbn_model_step steps the ISS
 // by a single cycle. If something goes wrong, it will set failed_step to true
@@ -530,6 +533,27 @@ extern "C" unsigned otbn_model_step(ISSWrapper *model, const char *imem_scope,
   // Clear out any ERR_CODE from a previous cycle
   status &= STATUS_MASK;
 
+  // Run model checks if needed. This usually happens just after an operation
+  // has finished.
+  bool check_rtl = (design_scope[0] != '\0');
+  if (check_rtl && (status & CHECK_DUE_BIT)) {
+    switch (check_model(model, dmem_scope, dmem_words, design_scope)) {
+      case 1:
+        // Match (success)
+        break;
+
+      case 0:
+        // Mismatch
+        status |= FAILED_CMP_BIT;
+        break;
+
+      default:
+        // Something went wrong
+        return (status & ~RUNNING_BIT) | FAILED_STEP_BIT;
+    }
+    status &= ~CHECK_DUE_BIT;
+  }
+
   // Start the model if requested
   if (start_i) {
     switch (start_model(model, imem_scope, imem_words, dmem_scope, dmem_words,
@@ -558,7 +582,7 @@ extern "C" unsigned otbn_model_step(ISSWrapper *model, const char *imem_scope,
 
     case 1:
       // Finished
-      status = (status & ~RUNNING_BIT) | (err_code << 16);
+      status = (status & ~RUNNING_BIT) | CHECK_DUE_BIT | (err_code << 16);
       break;
 
     default:
@@ -570,8 +594,9 @@ extern "C" unsigned otbn_model_step(ISSWrapper *model, const char *imem_scope,
   if (status & RUNNING_BIT)
     return status;
 
-  // If we've stopped running, either load DMEM or check against the RTL.
-  if (design_scope[0] == '\0') {
+  // If we've just stopped running and there's no RTL, load the contents of
+  // DMEM back from the ISS
+  if (!check_rtl) {
     switch (load_dmem(model, dmem_scope, dmem_words)) {
       case 0:
         // Success
@@ -579,21 +604,6 @@ extern "C" unsigned otbn_model_step(ISSWrapper *model, const char *imem_scope,
 
       default:
         // Failed to load DMEM
-        return (status & ~RUNNING_BIT) | FAILED_STEP_BIT;
-    }
-  } else {
-    switch (check_model(model, dmem_scope, dmem_words, design_scope)) {
-      case 1:
-        // Match (success)
-        break;
-
-      case 0:
-        // Mismatch
-        status |= FAILED_CMP_BIT;
-        break;
-
-      default:
-        // Something went wrong
         return (status & ~RUNNING_BIT) | FAILED_STEP_BIT;
     }
   }
