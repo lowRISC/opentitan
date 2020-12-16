@@ -16,7 +16,7 @@ filesets:
       - cpp/log_trace_listener.h: { is_include_file: true, file_type: cppSource }
       - cpp/log_trace_listener.cc: { file_type: cppSource }
       - rtl/otbn_tracer.sv: { file_type: systemVerilogSource }
-      - rtl/otbn_trace_intf.sv: { file_type: systemVerilogSource }
+      - rtl/otbn_trace_if.sv: { file_type: systemVerilogSource }
   files_verilator_waiver:
     files:
       - lint/otbn_tracer_waivers.vlt

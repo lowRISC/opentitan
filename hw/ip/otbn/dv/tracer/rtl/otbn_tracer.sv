@@ -4,7 +4,7 @@
 
 /**
  * Tracer module for OTBN. This produces a multi-line string as trace output at most once every
- * cycle and provides it to the simulation environment via a DPI call. It uses `otbn_trace_intf` to
+ * cycle and provides it to the simulation environment via a DPI call. It uses `otbn_trace_if` to
  * get the information it needs. For further information see `hw/ip/otbn/dv/tracer/README.md`.
  */
 module otbn_tracer
@@ -12,7 +12,7 @@ module otbn_tracer
   input  logic  clk_i,
   input  logic  rst_ni,
 
-  otbn_trace_intf otbn_trace
+  otbn_trace_if otbn_trace
 );
   import otbn_pkg::*;
 
@@ -87,9 +87,8 @@ module otbn_tracer
       IsprAcc: return "ACC";
       IsprRnd: return "RND";
       IsprFlags: return "FLAGS";
+      default: return "UNKNOWN_ISPR";
     endcase
-
-    return "UNKNOWN_ISPR";
   endfunction
 
   // Format flag information into a string

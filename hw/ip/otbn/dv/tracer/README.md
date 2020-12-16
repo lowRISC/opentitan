@@ -1,7 +1,7 @@
 # OTBN Tracer
 
 The tracer consists of a module (`otbn_tracer.sv`) and an interface
-(`otbn_trace_intf.sv`). The interface is responsible for directly probing the
+(`otbn_trace_if.sv`). The interface is responsible for directly probing the
 design and implementing any basic tracking logic that is required. The module
 takes an instance of this interface and uses it to produce trace data.
 
@@ -11,10 +11,10 @@ environment provides its implementation). Each call to
 `accept_otbn_trace_string` provides a trace record and a cycle count. There is
 at most one call per cycle. Further details are below.
 
-A typical setup would bind an instantiation of `otbn_trace_intf` and
-`otbn_tracer` into `otbn_core` passing the `otbn_trace_intf` instance into the
+A typical setup would bind an instantiation of `otbn_trace_if` and
+`otbn_tracer` into `otbn_core` passing the `otbn_trace_if` instance into the
 `otbn_tracer` instance. However this is no need for `otbn_tracer` to be bound
-into `otbn_core` provided it is given a `otbn_trace_intf` instance.
+into `otbn_core` provided it is given a `otbn_trace_if` instance.
 
 ## Trace Format
 
