@@ -479,6 +479,8 @@ module lc_ctrl
     .lc_state_i             ( otp_lc_data_i.state             ),
     .lc_id_state_i          ( otp_lc_data_i.id_state          ),
     .lc_cnt_i               ( otp_lc_data_i.count             ),
+    .all_zero_token_i       ( otp_lc_data_i.all_zero_token    ),
+    .raw_unlock_token_i     ( otp_lc_data_i.raw_unlock_token  ),
     .test_unlock_token_i    ( otp_lc_data_i.test_unlock_token ),
     .test_exit_token_i      ( otp_lc_data_i.test_exit_token   ),
     .rma_token_i            ( otp_lc_data_i.rma_token         ),

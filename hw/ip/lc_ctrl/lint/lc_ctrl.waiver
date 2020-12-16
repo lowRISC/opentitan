@@ -4,3 +4,5 @@
 #
 # waiver file for LC controller
 
+waive -rules CONST_FF -location {lc_ctrl_signal_decode.sv} -regexp {Flip-flop 'lc_keymgr_div_q\[.*\]' is driven by constant zeros.*} \
+      -comment {Some of these bits may be constantly zero, depending on the RndCnst parameters.}
