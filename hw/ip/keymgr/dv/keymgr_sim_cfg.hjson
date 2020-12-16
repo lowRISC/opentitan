@@ -55,6 +55,11 @@
     }
 
     {
+      name: keymgr_sideload
+      uvm_test_seq: keymgr_sideload_vseq
+    }
+
+    {
       name: keymgr_random
       uvm_test_seq: keymgr_random_vseq
     }
