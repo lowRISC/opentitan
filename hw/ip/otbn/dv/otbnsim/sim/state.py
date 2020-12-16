@@ -156,8 +156,13 @@ class OTBNState:
         # non-negative count of the number of stall cycles to wait). On
         # self.commit(), the self.stalled flag gets set if necessary and
         # self._stalls is decremented.
+        #
+        # As a special case, we stall for one cycle before fetching the first
+        # instruction (to match the behaviour of the RTL). This is modelled by
+        # setting self._start_stall and self.stalled.
         self.stalled = False
         self._stalls = 0
+        self._start_stall = False
 
         self.loop_stack = LoopStack()
         self.ext_regs = OTBNExtRegs()
@@ -200,6 +205,16 @@ class OTBNState:
         else:
             self.stalled = False
 
+        # If self._start_stall, this is the end of the stall cycle at the start
+        # of a run. We've just cleared self.stalled. Clear self._start_stall
+        # and commit self.ext_regs (so the start flag becomes visible) but then
+        # return rather than advancing the PC, ensuring we don't skip the first
+        # instruction.
+        if self._start_stall:
+            self._start_stall = False
+            self.ext_regs.commit()
+            return
+
         # If we're stalled, there's nothing more to do: we only commit when we
         # finish our stall cycles.
         if self.stalled:
@@ -235,12 +250,8 @@ class OTBNState:
         '''Set the running flag and the ext_reg busy flag'''
         self.ext_regs.set_bits('STATUS', 1 << 0)
         self.running = True
-        # Stall the first cycle immediately after start. The RTL issues its
-        # first instruction fetch the cycle after start so only begins executing
-        # the cycle following that. This stall ensures the ISS matches that
-        # behaviour so stays in sync with the RTL rather than one cycle ahead
-        # during simulation.
-        self.add_stall_cycles(1)
+        self._start_stall = True
+        self.stalled = True
 
     def get_quarter_word_unsigned(self, idx: int, qwsel: int) -> int:
         '''Select a 64-bit quarter of a wide register.
