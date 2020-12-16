@@ -37,6 +37,8 @@ module otp_ctrl_token_const import otp_ctrl_pkg::*; #(
     // Each hash takes four invocations, see diagram c) on
     // https://docs.opentitan.org/hw/ip/otp_ctrl/doc/index.html#scrambling-datapath
     for (genvar k = 0; k < 4; k++) begin : gen_invocations
+      logic [ScrmblBlockWidth-1:0] next_state;
+
       // This relies on constant propagation to
       // statically precompute the hashed token values.
       prim_present #(
@@ -46,10 +48,13 @@ module otp_ctrl_token_const import otp_ctrl_pkg::*; #(
         .data_i ( state[j][k]   ),
         .key_i  ( data[j][k%2]  ),
         .idx_i  ( 5'h1          ),
-        .data_o ( state[j][k+1] ),
+        .data_o ( next_state    ),
         .key_o  ( ),
         .idx_o  ( )
       );
+
+      // XOR in last state according to the Davies-Meyer scheme.
+      assign state[j][k+1] = next_state ^ state[j][k];
     end
   end
 

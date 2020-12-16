@@ -354,7 +354,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
       // Trigger 32 round of PRESENT encrypt
       crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data, key, key_size_80, enc_array);
-      digests[part_idx] = enc_array[NUM_ROUND-1];
+      // XOR the previous state into the digest result according to the Davies-Meyer scheme.
+      digests[part_idx] = enc_array[NUM_ROUND-1] ^ input_data;
     end
 
     // Last 32 round of digest is calculated with a digest constant
@@ -362,7 +363,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                                                    RndCnstDigestConstDefault[0],
                                                    key_size_80,
                                                    enc_array);
-    digests[part_idx] = enc_array[NUM_ROUND-1];
+    // XOR the previous state into the digest result according to the Davies-Meyer scheme.
+    digests[part_idx] ^= enc_array[NUM_ROUND-1];
   endfunction
 
   // when secret data write into otp_array, it will be scrambled
@@ -395,10 +397,13 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                                                 bit [SCRAMBLE_KEY_SIZE-1:0]  key,
                                                 bit [SCRAMBLE_KEY_SIZE-1:0]  final_const);
     bit [NUM_ROUND-1:0] [SCRAMBLE_DATA_SIZE-1:0] enc_array;
+    bit  [SCRAMBLE_DATA_SIZE-1:0] intermediate_state;
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(data, key, key_size_80, enc_array);
-    crypto_dpi_present_pkg::sv_dpi_present_encrypt(enc_array[NUM_ROUND-1], final_const,
+    // XOR the previous state into the digest result according to the Davies-Meyer scheme.
+    crypto_dpi_present_pkg::sv_dpi_present_encrypt(intermediate_state ^ data, final_const,
                                                    key_size_80, enc_array);
-    present_encode_with_final_const = enc_array[NUM_ROUND-1];
+    // XOR the previous state into the digest result according to the Davies-Meyer scheme.
+    present_encode_with_final_const = enc_array[NUM_ROUND-1] ^ intermediate_state;
   endfunction
 
   function bit [TL_AW-1:0] get_normalized_dai_addr();

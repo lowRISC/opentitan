@@ -54,6 +54,7 @@ module otp_ctrl_part_buf
   input                               scrmbl_mtx_gnt_i,
   // Scrambling datapath interface
   output otp_scrmbl_cmd_e             scrmbl_cmd_o,
+  output digest_mode_e                scrmbl_mode_o,
   output logic [ConstSelWidth-1:0]    scrmbl_sel_o,
   output logic [ScrmblBlockWidth-1:0] scrmbl_data_o,
   output logic                        scrmbl_valid_o,
@@ -167,6 +168,7 @@ module otp_ctrl_part_buf
     // Scrambling datapath
     scrmbl_cmd_o   = LoadShadow;
     scrmbl_sel_o   = CnstyDigest;
+    scrmbl_mode_o  = StandardMode;
     scrmbl_valid_o = 1'b0;
 
     // Counter
@@ -357,14 +359,14 @@ module otp_ctrl_part_buf
           // mode if this partition is scrambled.
           scrmbl_cmd_o = DigestInit;
           if (Info.secret) begin
-            scrmbl_sel_o = ChainedMode;
+            scrmbl_mode_o = ChainedMode;
             if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
               state_d = IntegScrSt;
             end
           // If this partition is not scrambled, we can just directly
           // jump to the digest state.
           end else begin
-            scrmbl_sel_o = StandardMode;
+            scrmbl_mode_o = StandardMode;
             if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
               state_d = IntegDigSt;
             end
@@ -652,6 +654,7 @@ module otp_ctrl_part_buf
   `ASSERT_KNOWN(OtpAddrKnown_A,      otp_addr_o)
   `ASSERT_KNOWN(ScrmblMtxReqKnown_A, scrmbl_mtx_req_o)
   `ASSERT_KNOWN(ScrmblCmdKnown_A,    scrmbl_cmd_o)
+  `ASSERT_KNOWN(ScrmblModeKnown_A,   scrmbl_mode_o)
   `ASSERT_KNOWN(ScrmblSelKnown_A,    scrmbl_sel_o)
   `ASSERT_KNOWN(ScrmblDataKnown_A,   scrmbl_data_o)
   `ASSERT_KNOWN(ScrmblValidKnown_A,  scrmbl_valid_o)
