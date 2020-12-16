@@ -29,11 +29,11 @@ module flash_ctrl_wrapper (
   input        lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
-  input        flash_ctrl_pkg::lc_flash_req_t lc_i,
   output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
   input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
-  output       edn_pkg::edn_req_t edn_o,
-  input        edn_pkg::edn_rsp_t edn_i,
+  input        lc_ctrl_pkg::lc_tx_t rma_req_i,
+  input        lc_ctrl_pkg::lc_flash_rma_seed_t rma_seed_i,
+  output       lc_ctrl_pkg::lc_tx_t rma_ack_o,
 
   // Interrupts
   output logic intr_prog_empty_o, // Program fifo is empty
@@ -70,11 +70,11 @@ module flash_ctrl_wrapper (
     .lc_iso_part_sw_rd_en_i,
     .lc_iso_part_sw_wr_en_i,
     .lc_seed_hw_rd_en_i,
-    .lc_i              (lc_i),
+    .rma_req_i         (rma_req_i),
+    .rma_seed_i        (rma_seed_i),
+    .rma_ack_o         (rma_ack_o),
     .pwrmgr_i          (pwrmgr_i),
     .pwrmgr_o          (pwrmgr_o),
-    .edn_o             (edn_o),
-    .edn_i             (edn_i),
 
     .clk_i             (clk_i),
     .rst_ni            (rst_ni),

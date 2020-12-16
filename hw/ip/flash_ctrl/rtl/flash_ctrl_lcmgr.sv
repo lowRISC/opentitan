@@ -31,16 +31,19 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   // interface to ctrl_arb data ports
   output logic rready_o,
   input rvalid_i,
+  output logic wvalid_o,
+  input wready_i,
 
   // direct form rd_fifo
   input [BusWidth-1:0] rdata_i,
 
+  // direct to wr_fifo
+  output logic [BusWidth-1:0] wdata_o,
+
   // external rma request
   // This should be simplified to just multi-bit request and multi-bit response
-  input rma_i,
-  input [BusWidth-1:0] rma_token_i, // just a random string
-  output logic [BusWidth-1:0] rma_token_o,
-  output logic rma_rsp_o,
+  input lc_ctrl_pkg::lc_tx_t rma_req_i,
+  output lc_ctrl_pkg::lc_tx_t rma_ack_o,
 
   // seeds to the outside world,
   output logic [NumSeeds-1:0][SeedWidth-1:0] seeds_o,
@@ -71,8 +74,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 );
 
   // total number of pages to be wiped during RMA entry
-  localparam int TotalDataPages = NumBanks * PagesPerBank;
-  localparam int CntWidth = $clog2(TotalDataPages + 1);
+  localparam int WipeIdxWidth = prim_util_pkg::vbits(WipeEntries);
 
   // seed related local params
   localparam int SeedReads = SeedWidth / BusWidth;
@@ -83,9 +85,6 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   // the various seed outputs
   logic [NumSeeds-1:0][SeedReads-1:0][BusWidth-1:0] seeds_q;
 
-  // rma related functions
-  logic [1:0][BusWidth-1:0] rsp_token;
-
   // progress through and read out the various pieces of content
   // This FSM should become sparse, especially for StRmaRsp
   typedef enum logic [3:0] {
@@ -95,19 +94,24 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     StReadSeeds,
     StWait,
     StEntropyReseed,
-    StWipeOwner,
-    StWipeDataPart,
+    StRmaWipe,
     StRmaRsp,
     StInvalid
   } state_e;
 
   state_e state_q, state_d;
+  lc_ctrl_pkg::lc_tx_t err_sts;
+  logic err_sts_set;
+  lc_ctrl_pkg::lc_tx_t rma_ack_d, rma_ack_q;
   logic init_done_d;
   logic validate_q, validate_d;
   logic [SeedCntWidth-1:0] seed_cnt_q;
-  logic [CntWidth-1:0] addr_cnt_q;
+  logic [SeedRdsWidth-1:0] addr_cnt_q;
   logic seed_cnt_en, seed_cnt_clr;
   logic addr_cnt_en, addr_cnt_clr;
+  logic rma_wipe_req, rma_wipe_done;
+  logic [WipeIdxWidth-1:0] rma_wipe_idx;
+  logic rma_wipe_idx_incr;
   flash_lcmgr_phase_e phase;
   logic seed_phase;
   logic rma_phase;
@@ -118,10 +122,12 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       state_q <= StIdle;
+      rma_ack_q <= lc_ctrl_pkg::Off;
       validate_q <= 1'b0;
       init_done_o <= 1'b0;
     end else begin
       state_q <= state_d;
+      rma_ack_q <= rma_ack_d;
       validate_q <= validate_d;
       init_done_o <= init_done_d;
     end
@@ -164,34 +170,12 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     end
   end
 
-  // capture the random token for return
-  // store token in 2-shares and continuously xor in data
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      rsp_token <= '0;
-    end else if (rma_i) begin
-      rsp_token[0] <= rma_token_i ^ rand_i ^ BusWidth'(StRmaRsp);
-      rsp_token[1] <= rand_i;
-    // token can be changed during validation portion of the rma phase
-    end else if (rma_phase && validate_q && rvalid_i) begin
-      rsp_token <= rsp_token ^ {rdata_i, rdata_i};
-    end
-  end
-
   page_addr_t seed_page;
   logic [InfoTypesWidth-1:0] seed_info_sel;
   logic [BusAddrW-1:0] seed_page_addr;
   assign seed_page = SeedInfoPageSel[seed_idx];
   assign seed_info_sel = seed_page.sel;
   assign seed_page_addr = BusAddrW'({seed_page.addr, BusWordW'(0)});
-
-  page_addr_t owner_page;
-  logic [InfoTypesWidth-1:0] owner_info_sel;
-  logic [BusAddrW-1:0] owner_page_addr;
-  assign owner_page = SeedInfoPageSel[OwnerSeedIdx];
-  assign owner_info_sel = owner_page.sel;
-  assign owner_page_addr = BusAddrW'({owner_page.addr, BusWordW'(0)});
-
 
   logic start;
   flash_op_e op;
@@ -201,16 +185,16 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   logic [InfoTypesWidth-1:0] info_sel;
   logic [11:0] num_words;
   logic [BusAddrW-1:0] addr;
-  logic [BusWidth-1:0] rsp_mask;
 
   assign prog_type = FlashProgNormal;
   assign erase_type = FlashErasePage;
   // seed phase is always read
   // rma phase is erase unless we are validating
-  assign op = seed_phase || validate_q ? FlashOpRead : FlashOpErase;
+  assign op = FlashOpRead;
 
   // synchronize inputs
   logic init_q;
+  lc_ctrl_pkg::lc_tx_t rma_req;
 
   prim_flop_2sync #(
     .Width(1),
@@ -220,6 +204,15 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     .rst_ni,
     .d_i(init_i),
     .q_o(init_q)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_sync_rma_req (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(rma_req_i),
+    .lc_en_o(rma_req)
   );
 
   logic addr_key_req_d;
@@ -266,6 +259,11 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     end
   end
 
+
+  ///////////////////////////////
+  // Hardware Interface FSM
+  // TODO: Merge the read/verify mechanism with RMA later
+  ///////////////////////////////
   always_comb begin
 
     // phases of the hardware interface
@@ -284,14 +282,11 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     info_sel = 0;
     num_words = SeedReads - 1'b1;
 
-    // rma responses
-    rma_rsp_o = 1'b0;
-    rsp_mask = {BusWidth{1'b1}};
-
     // seed status
     seed_err_o = 1'b0;
 
     state_d = state_q;
+    rma_ack_d = rma_ack_q;
     validate_d = validate_q;
 
     // read buffer enable
@@ -310,6 +305,10 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     // entropy handling
     edn_req_o = 1'b0;
     lfsr_en_o = 1'b0;
+
+    // rma realted
+    rma_wipe_req = 1'b0;
+    rma_wipe_idx_incr = 1'b0;
 
     unique case (state_q)
 
@@ -378,105 +377,290 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       // Waiting for an rma entry command
       StWait: begin
         rd_buf_en_o = 1'b1;
-        if (rma_i) begin
+        if (rma_req == lc_ctrl_pkg::On) begin
           state_d = StEntropyReseed;
         end
       end
 
+      // Reseed entropy
       StEntropyReseed: begin
         edn_req_o = 1'b1;
         if(edn_ack_i) begin
-          state_d = StWipeOwner;
+          state_d = StRmaWipe;
         end
       end
 
-      // wipe away owner seed partition
-      StWipeOwner: begin
-        lfsr_en_o = 1'b1;
+      StRmaWipe: begin
         phase = PhaseRma;
-        start = 1'b1;
-        addr = BusAddrW'(owner_page_addr);
-        info_sel = owner_info_sel;
-        num_words = BusWordsPerPage - 1'b1;
-
-        if (done_i && !err_i) begin
-          // if validate flag is set, erase and validation completed, proceed
-          // if validate flag not set, begin validation
-          if (validate_q) begin
-            validate_d = 1'b0;
-            state_d = StWipeDataPart;
-          end else begin
-            validate_d = 1'b1;
-          end
-        end else if (done_i && err_i) begin
-          state_d = StInvalid;
-        end
-      end
-
-      // wipe away data partitions
-      // TBD: Add an alert if not address counts are seen
-      StWipeDataPart: begin
         lfsr_en_o = 1'b1;
-        phase = PhaseRma;
-        part_sel = FlashPartData;
-        start = 1'b1;
-        addr = BusAddrW'({addr_cnt_q, BusWordW'(0)});
-        num_words = BusWordsPerPage - 1'b1;
+        rma_wipe_req = 1'b1;
 
-        // reached the final page
-        if (addr_cnt_q == TotalDataPages) begin
-          start = 1'b0;
-          addr_cnt_clr = 1'b1;
-
-          // completed wiping and validation, proceed
-          if (validate_q) begin
-            state_d = StRmaRsp;
-            validate_d = 1'b0;
-          // completed wiping, begin validation
-          end else begin
-            validate_d = 1'b1;
-          end
-
-        // still working through erasing / validating pages
-        end else if (done_i && !err_i) begin
-          addr_cnt_en = 1'b1;
+        if (rma_wipe_idx == WipeEntries-1 && rma_wipe_done) begin
+          state_d = StRmaRsp;
+        end else if (rma_wipe_done) begin
+          rma_wipe_idx_incr = 1;
         end
       end
 
       // response to rma request
       StRmaRsp: begin
         phase = PhaseRma;
-        rma_rsp_o = 1'b1;
-        rsp_mask = BusWidth'(StRmaRsp);
-        state_d = StInvalid;
+        if (err_sts != lc_ctrl_pkg::On) begin
+          rma_ack_d = lc_ctrl_pkg::Off;
+          state_d = StInvalid;
+        end
       end
 
-      StInvalid: begin
+      // Invalid catch-all state
+      default: begin
         phase = PhaseInvalid;
+        rma_ack_d = lc_ctrl_pkg::Off;
         state_d = StInvalid;
       end
-
-      default:;
 
     endcase // unique case (state_q)
 
   end // always_comb
 
-  assign rma_token_o = rsp_token[0] ^ rsp_token[1] ^ rsp_mask;
-  assign ctrl_o.start.q = start;
-  assign ctrl_o.op.q = op;
+  ///////////////////////////////
+  // RMA wiping Mechanism
+  ///////////////////////////////
+
+  localparam int PageCntWidth = prim_util_pkg::vbits(PagesPerBank + 1);
+  localparam int WordCntWidth = prim_util_pkg::vbits(BusWordsPerPage + 1);
+  localparam int BeatCntWidth = prim_util_pkg::vbits(WidthMultiple);
+
+  logic page_cnt_ld;
+  logic page_cnt_incr;
+  logic page_cnt_clr;
+  logic word_cnt_incr;
+  logic word_cnt_clr;
+  logic prog_cnt_en;
+  logic rd_cnt_en;
+  logic beat_cnt_clr;
+  logic [PageCntWidth-1:0] page_cnt, end_page;
+  logic [WordCntWidth-1:0] word_cnt;
+  logic [BeatCntWidth-1:0] beat_cnt;
+  logic [WidthMultiple-1:0][BusWidth-1:0] prog_data;
+
+  assign end_page = RmaWipeEntries[rma_wipe_idx].start_page +
+                    RmaWipeEntries[rma_wipe_idx].num_pages;
+
+  typedef enum logic [2:0] {
+    StRmaIdle,
+    StRmaPageSel,
+    StRmaErase,
+    StRmaWordSel,
+    StRmaProgram,
+    StRmaProgramWait,
+    StRmaRdVerify
+  } rma_state_e;
+
+  rma_state_e rma_state_d, rma_state_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rma_state_q <= StRmaIdle;
+    end else begin
+      rma_state_q <= rma_state_d;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      page_cnt <= '0;
+    end else if (page_cnt_clr) begin
+      page_cnt <= '0;
+    end else if (page_cnt_ld) begin
+      page_cnt <= RmaWipeEntries[rma_wipe_idx].start_page;
+    end else if (page_cnt_incr) begin
+      page_cnt <= page_cnt + 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      word_cnt <= '0;
+    end else if (word_cnt_clr) begin
+      word_cnt <= '0;
+    end else if (word_cnt_incr) begin
+      word_cnt <= word_cnt + WidthMultiple;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rma_wipe_idx <= '0;
+    end else if (rma_wipe_idx_incr) begin
+      rma_wipe_idx <= rma_wipe_idx + 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      beat_cnt <= '0;
+    end else if (beat_cnt_clr) begin
+      beat_cnt <= '0;
+    end else if (prog_cnt_en) begin
+      if (wvalid_o && wready_i) begin
+        beat_cnt <= beat_cnt + 1'b1;
+      end
+    end else if (rd_cnt_en) begin
+      if (rvalid_i && rready_o) begin
+        beat_cnt <= beat_cnt + 1'b1;
+      end
+    end
+  end
+
+  // latch data programmed
+  always_ff @(posedge clk_i) begin
+    if (prog_cnt_en && wvalid_o && wready_i) begin
+      prog_data[beat_cnt] <= rand_i;
+    end
+  end
+
+  // once error is set to off, it cannot be unset without a reboot
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      err_sts <= lc_ctrl_pkg::On;
+    end else if (err_sts_set) begin
+      err_sts <= lc_ctrl_pkg::Off;
+    end
+  end
+
+  logic rma_start;
+  logic [BusAddrW-1:0] rma_addr;
+  flash_op_e rma_op;
+  flash_part_e rma_part_sel;
+  logic [InfoTypesWidth-1:0] rma_info_sel;
+  logic [11:0] rma_num_words;
+
+  assign rma_addr = {RmaWipeEntries[rma_wipe_idx].bank,
+                     page_cnt[PageW-1:0],
+                     word_cnt[BusWordW-1:0]};
+
+  assign rma_part_sel = RmaWipeEntries[rma_wipe_idx].part;
+  assign rma_info_sel = RmaWipeEntries[rma_wipe_idx].info_sel;
+  assign rma_num_words = WidthMultiple - 1;
+
+
+  //fsm for handling the actual wipe
+  always_comb begin
+    rma_state_d = rma_state_q;
+    rma_wipe_done = 1'b0;
+    rma_start = 1'b0;
+    rma_op = FlashOpInvalid;
+    err_sts_set = 1'b0;
+    page_cnt_ld = 1'b0;
+    page_cnt_incr = 1'b0;
+    page_cnt_clr = 1'b0;
+    word_cnt_incr = 1'b0;
+    word_cnt_clr = 1'b0;
+    prog_cnt_en = 1'b0;
+    rd_cnt_en = 1'b0;
+    beat_cnt_clr = 1'b0;
+
+    unique case (rma_state_q)
+
+      StRmaIdle: begin
+        if (rma_wipe_req) begin
+          rma_state_d = StRmaPageSel;
+          page_cnt_ld = 1'b1;
+        end
+      end
+
+      StRmaPageSel: begin
+        if (page_cnt < end_page) begin
+          rma_state_d = StRmaErase;
+        end else begin
+          rma_wipe_done = 1'b1;
+          page_cnt_clr = 1'b1;
+          rma_state_d = StRmaIdle;
+        end
+      end
+
+      StRmaErase: begin
+        rma_start = 1'b1;
+        rma_op = FlashOpErase;
+        if (done_i) begin
+          err_sts_set = err_i;
+          rma_state_d = StRmaWordSel;
+        end
+      end
+
+      StRmaWordSel: begin
+        if (word_cnt < BusWordsPerPage) begin
+          rma_state_d = StRmaProgram;
+        end else begin
+          word_cnt_clr = 1'b1;
+          page_cnt_incr = 1'b1;
+          rma_state_d = StRmaPageSel;
+        end
+      end
+
+      StRmaProgram: begin
+        rma_start = 1'b1;
+        rma_op = FlashOpProgram;
+        prog_cnt_en = 1'b1;
+
+        if ((beat_cnt == WidthMultiple-1) && wready_i) begin
+          rma_state_d = StRmaProgramWait;
+        end
+      end
+
+      StRmaProgramWait: begin
+        rma_start = 1'b1;
+        rma_op = FlashOpProgram;
+
+        if (done_i) begin
+          beat_cnt_clr = 1'b1;
+          err_sts_set = err_i;
+          rma_state_d = StRmaRdVerify;
+        end
+      end
+
+      StRmaRdVerify: begin
+        rma_start = 1'b1;
+        rma_op = FlashOpRead;
+        rd_cnt_en = 1'b1;
+
+        if ((beat_cnt == WidthMultiple-1) && done_i) begin
+          beat_cnt_clr = 1'b1;
+          word_cnt_incr = 1'b1;
+          rma_state_d = StRmaWordSel;
+        end
+
+        if (rvalid_i && rready_o) begin
+          err_sts_set = prog_data[beat_cnt] != rdata_i;
+        end
+      end
+
+      default: begin
+        err_sts_set = 1'b1;
+      end
+
+    endcase // unique case (rma_state_q)
+  end // always_comb
+
+  assign wdata_o = rand_i;
+  assign wvalid_o = prog_cnt_en;
+  assign ctrl_o.start.q = seed_phase ? start : rma_start;
+  assign ctrl_o.op.q = seed_phase ? op : rma_op;
   assign ctrl_o.prog_sel.q = prog_type;
   assign ctrl_o.erase_sel.q = erase_type;
-  assign ctrl_o.partition_sel.q = part_sel;
-  assign ctrl_o.info_sel.q = info_sel;
-  assign ctrl_o.num = num_words;
+  assign ctrl_o.partition_sel.q = seed_phase ? part_sel : rma_part_sel;
+  assign ctrl_o.info_sel.q = seed_phase ? info_sel : rma_info_sel;
+  assign ctrl_o.num = seed_phase ? num_words : rma_num_words;
   // address is consistent with software width format (full bus)
-  assign addr_o = top_pkg::TL_AW'({addr, {BusByteWidth{1'b0}}});
+  assign addr_o = seed_phase ? top_pkg::TL_AW'({addr, {BusByteWidth{1'b0}}}) :
+                               top_pkg::TL_AW'({rma_addr, {BusByteWidth{1'b0}}});
   assign init_busy_o = seed_phase;
   assign req_o = seed_phase | rma_phase;
   assign rready_o = 1'b1;
   assign seeds_o = seeds_q;
   assign phase_o = phase;
+
+  assign rma_ack_o = rma_ack_q;
 
   logic unused_seed_valid;
   assign unused_seed_valid = otp_key_rsp_i.seed_valid;
