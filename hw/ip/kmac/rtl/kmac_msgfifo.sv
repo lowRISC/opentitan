@@ -97,8 +97,9 @@ module kmac_msgfifo
   logic msgfifo_flush_done;
 
   prim_packer #(
-    .InW      (OutWidth),
-    .OutW     (OutWidth)
+    .InW          (OutWidth),
+    .OutW         (OutWidth),
+    .HintByteData (1)
   ) u_packer (
     .clk_i,
     .rst_ni,
