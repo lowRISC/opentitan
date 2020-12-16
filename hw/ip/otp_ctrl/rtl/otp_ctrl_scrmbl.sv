@@ -22,9 +22,10 @@
 //                         state would be lost.
 //
 // The scrambling datapath is arranged such that it can also be used for calculating a digest using
-// the encryption primitive in a Merkle-Damgard construction. Note however that this makes the
-// digest block size 128bit wide, since the Merkle-Damgard construction leverages the cipher key
-// input to ingest data.
+// the encryption primitive in a Merkle-Damgard construction. To that end, the PRESENT block cipher
+// is turned into a one way function according to the Davies-Meyer scheme. Note however that this
+// makes the digest block size 128bit wide, since the Merkle-Damgard construction leverages the
+// cipher key input to ingest data.
 //
 // The scrambling datapath exposes a few simple commands and the FSM hides the complexity
 // of steering the appropriate muxes and keeping track of the cipher rounds. These commands are
@@ -44,10 +45,10 @@
 //             into the shadow register.
 //
 // DigestInit: This ensures that the digest initialization vector (IV) is selected upon the next
-//             call of the Digest command. Also, sel_i can be used to set the digest mode. If sel_i
-//             is set to "StandardMode", the data to be digested has to be provided via data_i and
-//             LoadShadow. If sel_i is set to "ChainedMode", the digest input is formed by
-//             concatenating the results of the revious two encryption commands.
+//             call of the Digest command. Also, mode_i can be used to set the digest mode. If
+//             mode_i is set to "StandardMode", the data to be digested has to be provided via
+//             data_i and LoadShadow. If mode_i is set to "ChainedMode", the digest input is formed
+//             by concatenating the results of the revious two encryption commands.
 //
 // Digest: In "StandardMode", this command concatenates the data input supplied via data_i with
 //         the shadow register in order to form a 128bit block ({data_i, data_shadow_q}). This block
@@ -62,6 +63,7 @@
 // References: - https://docs.opentitan.org/hw/ip/otp_ctrl/doc/index.html#design-details
 //             - https://docs.opentitan.org/hw/ip/prim/doc/prim_present/
 //             - https://en.wikipedia.org/wiki/Merkle-Damgard_construction
+//             - https://en.wikipedia.org/wiki/One-way_compression_function#Davies%E2%80%93Meyer
 //             - https://en.wikipedia.org/wiki/PRESENT
 //             - http://www.lightweightcrypto.org/present/present_ches2007.pdf
 //
@@ -76,6 +78,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
   input                               rst_ni,
   // input data and command
   input otp_scrmbl_cmd_e              cmd_i,
+  input digest_mode_e                 mode_i,
   input [ConstSelWidth-1:0]           sel_i,
   input [ScrmblBlockWidth-1:0]        data_i,
   input                               valid_i,
@@ -115,7 +118,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
   logic [ScrmblKeyWidth-1:0]    key_state_d, key_state_q;
   logic [ScrmblBlockWidth-1:0]  data_state_d, data_state_q, data_shadow_q;
   logic [ScrmblBlockWidth-1:0]  digest_state_d, digest_state_q;
-  logic [ScrmblBlockWidth-1:0]  enc_data_out, dec_data_out;
+  logic [ScrmblBlockWidth-1:0]  enc_data_out, enc_data_out_xor, dec_data_out;
   logic [ScrmblKeyWidth-1:0]    dec_key_out, enc_key_out;
   logic [4:0]                   dec_idx_out, enc_idx_out;
   logic [ScrmblKeyWidth-1:0]    otp_digest_const_mux, otp_enc_key_mux, otp_dec_key_mux;
@@ -124,7 +127,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
   typedef enum logic [2:0] {SelEncDataOut,
                             SelDecDataOut,
                             SelDigestState,
-                            SelDigestIV,
+                            SelEncDataOutXor,
                             SelDataInput} data_state_sel_e;
 
   typedef enum logic [2:0] {SelDecKeyOut,
@@ -135,31 +138,31 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
                             SelDigestInput,
                             SelDigestChained} key_state_sel_e;
 
+  logic digest_init;
   data_state_sel_e  data_state_sel;
   key_state_sel_e   key_state_sel;
   logic data_state_en, data_shadow_copy, data_shadow_load, digest_state_en, key_state_en;
-  logic [ConstSelWidth-1:0] sel_d, sel_q;
   digest_mode_e digest_mode_d, digest_mode_q;
 
-  assign otp_enc_key_mux      = (sel_d < NumScrmblKeys) ?
-                                RndCnstKey[sel_d[vbits(NumScrmblKeys)-1:0]]         : '0;
-  assign otp_dec_key_mux      = (sel_d < NumScrmblKeys) ?
-                                otp_dec_key_lut[sel_d[vbits(NumScrmblKeys)-1:0]]    : '0;
-  assign otp_digest_const_mux = (sel_d < NumDigestSets) ?
-                                RndCnstDigestConst[sel_d[vbits(NumDigestSets)-1:0]] : '0;
-  assign otp_digest_iv_mux    = (sel_d < NumDigestSets) ?
-                                RndCnstDigestIV[sel_d[vbits(NumDigestSets)-1:0]]    : '0;
+  assign otp_enc_key_mux      = (sel_i < NumScrmblKeys) ?
+                                RndCnstKey[sel_i[vbits(NumScrmblKeys)-1:0]]         : '0;
+  assign otp_dec_key_mux      = (sel_i < NumScrmblKeys) ?
+                                otp_dec_key_lut[sel_i[vbits(NumScrmblKeys)-1:0]]    : '0;
+  assign otp_digest_const_mux = (sel_i < NumDigestSets) ?
+                                RndCnstDigestConst[sel_i[vbits(NumDigestSets)-1:0]] : '0;
+  assign otp_digest_iv_mux    = (sel_i < NumDigestSets) ?
+                                RndCnstDigestIV[sel_i[vbits(NumDigestSets)-1:0]]    : '0;
 
   // Make sure we always select a valid key / digest constant.
-  `ASSERT(CheckNumEncKeys_A, key_state_sel == SelEncKeyInit  |-> sel_d < NumScrmblKeys)
-  `ASSERT(CheckNumDecKeys_A, key_state_sel == SelDecKeyInit  |-> sel_d < NumScrmblKeys)
-  `ASSERT(CheckNumDigest1_A, key_state_sel == SelDigestConst |-> sel_d < NumDigestSets)
+  `ASSERT(CheckNumEncKeys_A, key_state_sel == SelEncKeyInit  |-> sel_i < NumScrmblKeys)
+  `ASSERT(CheckNumDecKeys_A, key_state_sel == SelDecKeyInit  |-> sel_i < NumScrmblKeys)
+  `ASSERT(CheckNumDigest1_A, key_state_sel == SelDigestConst |-> sel_i < NumDigestSets)
 
-  assign data_state_d    = (data_state_sel == SelEncDataOut)  ? enc_data_out      :
-                           (data_state_sel == SelDecDataOut)  ? dec_data_out      :
-                           (data_state_sel == SelDigestState) ? digest_state_q    :
-                           (data_state_sel == SelDigestIV)    ? otp_digest_iv_mux :
-                                                                data_i;
+  assign data_state_d    = (data_state_sel == SelEncDataOut)    ? enc_data_out     :
+                           (data_state_sel == SelDecDataOut)    ? dec_data_out     :
+                           (data_state_sel == SelDigestState)   ? digest_state_q   :
+                           (data_state_sel == SelEncDataOutXor) ? enc_data_out_xor :
+                                                                  data_i;
 
   assign key_state_d     = (key_state_sel == SelDecKeyOut)      ? dec_key_out          :
                            (key_state_sel == SelEncKeyOut)      ? enc_key_out          :
@@ -175,7 +178,9 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
                            (key_state_sel == SelDecKeyInit)     ? unsigned'(5'(NumPresentRounds)) :
                                                                   5'd1;
 
-  assign digest_state_d  = enc_data_out;
+  // The XOR is for the Davies-Mayer one-way function construction.
+  assign enc_data_out_xor = enc_data_out ^ digest_state_q;
+  assign digest_state_d  = (digest_init) ? otp_digest_iv_mux : enc_data_out_xor;
 
   assign data_o = data_state_q;
 
@@ -214,7 +219,6 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
   logic [CntWidth-1:0] cnt_d, cnt_q;
   logic cnt_clr, cnt_en;
   logic valid_d, valid_q;
-  logic is_first_d, is_first_q;
 
   assign valid_o = valid_q;
 
@@ -224,11 +228,10 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
 
   always_comb begin : p_fsm
     state_d          = state_q;
-    is_first_d       = is_first_q;
-    sel_d            = sel_q;
     digest_mode_d    = digest_mode_q;
     data_state_sel   = SelDataInput;
     key_state_sel    = SelDigestInput;
+    digest_init      = 1'b0;
     data_state_en    = 1'b0;
     data_shadow_copy = 1'b0;
     data_shadow_load = 1'b0;
@@ -249,21 +252,18 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
         ready_o = 1'b1;
 
         if (valid_i) begin
-          sel_d = sel_q;
           unique case (cmd_i)
             Decrypt: begin
               state_d       = DecryptSt;
               key_state_sel = SelDecKeyInit;
               data_state_en = 1'b1;
               key_state_en  = 1'b1;
-              sel_d         = sel_i;
             end
             Encrypt: begin
               state_d       = EncryptSt;
               key_state_sel = SelEncKeyInit;
               data_state_en = 1'b1;
               key_state_en  = 1'b1;
-              sel_d         = sel_i;
             end
             LoadShadow: begin
               if (digest_mode_q == ChainedMode) begin
@@ -274,26 +274,23 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
             end
             Digest: begin
               state_d        = DigestSt;
-              data_state_sel = (is_first_q) ? SelDigestIV : SelDigestState;
+              data_state_sel = SelDigestState;
               key_state_sel  = (digest_mode_q == ChainedMode) ? SelDigestChained : SelDigestInput;
               data_state_en  = 1'b1;
               key_state_en   = 1'b1;
-              is_first_d     = 1'b0;
-              sel_d          = sel_i;
             end
             DigestInit: begin
-              digest_mode_d  = digest_mode_e'(sel_i);
-              is_first_d     = 1'b1;
+              digest_mode_d   = mode_i;
+              digest_init     = 1'b1;
+              digest_state_en = 1'b1;
             end
-            DigestFinalize:  begin
+            DigestFinalize: begin
               state_d        = DigestSt;
-              data_state_sel = (is_first_q) ? SelDigestIV : SelDigestState;
+              data_state_sel = SelDigestState;
               key_state_sel  = SelDigestConst;
               data_state_en  = 1'b1;
               key_state_en   = 1'b1;
-              is_first_d     = 1'b0;
               digest_mode_d  = StandardMode;
-              sel_d          = sel_i;
             end
             default: ; // ignore
           endcase // cmd_i
@@ -337,6 +334,8 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
         if (cnt_q == NumPresentRounds-1) begin
           state_d = IdleSt;
           valid_d = 1'b1;
+          // Apply XOR for Davies-Meyer construction.
+          data_state_sel = SelEncDataOutXor;
           // Backup digest state for next round of updates. We can't keep this state in the
           // data state register as a digest may be calculated together with encryption
           // operations in an interleaved way.
@@ -422,14 +421,10 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
       data_shadow_q  <= '0;
       digest_state_q <= '0;
       valid_q        <= 1'b0;
-      is_first_q     <= 1'b1;
-      sel_q          <= '0;
       digest_mode_q  <= StandardMode;
     end else begin
       cnt_q         <= cnt_d;
       valid_q       <= valid_d;
-      is_first_q    <= is_first_d;
-      sel_q         <= sel_d;
       digest_mode_q <= digest_mode_d;
 
       // enable regs

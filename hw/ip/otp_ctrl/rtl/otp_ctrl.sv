@@ -619,6 +619,7 @@ module otp_ctrl
   // See also https://docs.opentitan.org/hw/ip/otp_ctrl/doc/index.html#block-diagram for details.
   typedef struct packed {
     otp_scrmbl_cmd_e             cmd;
+    digest_mode_e                mode;
     logic [ConstSelWidth-1:0]    sel;
     logic [ScrmblBlockWidth-1:0] data;
     logic                        valid;
@@ -669,6 +670,7 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     .cmd_i         ( scrmbl_req_bundle.cmd   ),
+    .mode_i        ( scrmbl_req_bundle.mode  ),
     .sel_i         ( scrmbl_req_bundle.sel   ),
     .data_i        ( scrmbl_req_bundle.data  ),
     .valid_i       ( scrmbl_req_bundle.valid ),
@@ -760,6 +762,7 @@ module otp_ctrl
     .scrmbl_mtx_req_o ( part_scrmbl_mtx_req[DaiIdx]           ),
     .scrmbl_mtx_gnt_i ( part_scrmbl_mtx_gnt[DaiIdx]           ),
     .scrmbl_cmd_o     ( part_scrmbl_req_bundle[DaiIdx].cmd    ),
+    .scrmbl_mode_o    ( part_scrmbl_req_bundle[DaiIdx].mode   ),
     .scrmbl_sel_o     ( part_scrmbl_req_bundle[DaiIdx].sel    ),
     .scrmbl_data_o    ( part_scrmbl_req_bundle[DaiIdx].data   ),
     .scrmbl_valid_o   ( part_scrmbl_req_bundle[DaiIdx].valid  ),
@@ -839,6 +842,7 @@ module otp_ctrl
     .scrmbl_mtx_req_o        ( part_scrmbl_mtx_req[KdiIdx]          ),
     .scrmbl_mtx_gnt_i        ( part_scrmbl_mtx_gnt[KdiIdx]          ),
     .scrmbl_cmd_o            ( part_scrmbl_req_bundle[KdiIdx].cmd   ),
+    .scrmbl_mode_o           ( part_scrmbl_req_bundle[KdiIdx].mode  ),
     .scrmbl_sel_o            ( part_scrmbl_req_bundle[KdiIdx].sel   ),
     .scrmbl_data_o           ( part_scrmbl_req_bundle[KdiIdx].data  ),
     .scrmbl_valid_o          ( part_scrmbl_req_bundle[KdiIdx].valid ),
@@ -945,6 +949,7 @@ module otp_ctrl
         .scrmbl_mtx_req_o ( part_scrmbl_mtx_req[k]          ),
         .scrmbl_mtx_gnt_i ( part_scrmbl_mtx_gnt[k]          ),
         .scrmbl_cmd_o     ( part_scrmbl_req_bundle[k].cmd   ),
+        .scrmbl_mode_o    ( part_scrmbl_req_bundle[k].mode  ),
         .scrmbl_sel_o     ( part_scrmbl_req_bundle[k].sel   ),
         .scrmbl_data_o    ( part_scrmbl_req_bundle[k].data  ),
         .scrmbl_valid_o   ( part_scrmbl_req_bundle[k].valid ),
@@ -989,15 +994,17 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
         .otp_rvalid_i     ( part_otp_rvalid[k]              ),
         .otp_rdata_i      ( part_otp_rdata                  ),
         .otp_err_i        ( part_otp_err                    ),
-        .scrmbl_mtx_req_o ( part_scrmbl_mtx_req[k]          ),
-        .scrmbl_mtx_gnt_i ( part_scrmbl_mtx_gnt[k]          ),
-        .scrmbl_cmd_o     ( part_scrmbl_req_bundle[k].cmd   ),
-        .scrmbl_sel_o     ( part_scrmbl_req_bundle[k].sel   ),
-        .scrmbl_data_o    ( part_scrmbl_req_bundle[k].data  ),
-        .scrmbl_valid_o   ( part_scrmbl_req_bundle[k].valid ),
-        .scrmbl_ready_i   ( part_scrmbl_req_ready[k]        ),
-        .scrmbl_valid_i   ( part_scrmbl_rsp_valid[k]        ),
-        .scrmbl_data_i    ( part_scrmbl_rsp_data            )
+        // The LC partition does not need any scrambling features.
+        .scrmbl_mtx_req_o (                                 ),
+        .scrmbl_mtx_gnt_i ( 1'b0                            ),
+        .scrmbl_cmd_o     (                                 ),
+        .scrmbl_mode_o    (                                 ),
+        .scrmbl_sel_o     (                                 ),
+        .scrmbl_data_o    (                                 ),
+        .scrmbl_valid_o   (                                 ),
+        .scrmbl_ready_i   ( 1'b0                            ),
+        .scrmbl_valid_i   ( 1'b0                            ),
+        .scrmbl_data_i    ( '0                              )
       );
 
       // Buffered partitions are not accessible via the TL-UL window.
@@ -1007,6 +1014,16 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
       assign part_tlul_rerror[k] = '0;
       assign part_tlul_rvalid[k] = 1'b0;
       assign part_tlul_rdata[k]  = '0;
+
+      // Tie off unused connections.
+      assign part_scrmbl_mtx_req[k]    = '0;
+      assign part_scrmbl_req_bundle[k] = '0;
+
+      // This stops lint from complaining about unused signals.
+      logic unused_part_scrmbl_sigs;
+      assign unused_part_scrmbl_sigs = ^{part_scrmbl_mtx_gnt[k],
+                                         part_scrmbl_req_ready[k],
+                                         part_scrmbl_rsp_valid[k]};
 
     end else begin : gen_invalid
       // This is invalid and should break elaboration
