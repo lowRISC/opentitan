@@ -198,9 +198,7 @@ static uint32_t read_ext_reg(const std::string &reg_name,
   // called reg_name. These look something like this:
   //
   //   otbn.$REG_NAME &= ~ 0x000001 (from HW) (now 0x000000)
-  //
-  // The \n picks up the newline that we expect at the end of each line.
-  std::regex re("\\s*otbn\\." + reg_name + ".*0x([0-9a-f]{8})\\)\n");
+  std::regex re("\\s*otbn\\." + reg_name + ".*0x([0-9a-f]{8})\\)");
   std::smatch match;
 
   uint32_t val = default_val;
@@ -349,11 +347,11 @@ void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,
   //  x3  = 0x12345678
   //  w10 = 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
-  std::regex re("\\s*([wx][0-9]{1,2})\\s*=\\s*0x([0-9a-f]+)\n");
+  std::regex re("\\s*([wx][0-9]{1,2})\\s*=\\s*0x([0-9a-f]+)");
   std::smatch match;
 
   for (const std::string &line : lines) {
-    if (line == "PRINT_REGS\n")
+    if (line == "PRINT_REGS")
       continue;
 
     if (!std::regex_match(line, match, re)) {
@@ -418,12 +416,12 @@ std::vector<uint32_t> ISSWrapper::get_call_stack() {
   std::vector<std::string> lines;
   run_command("print_call_stack\n", &lines);
 
-  std::regex re("\\s*0x([0-9a-f]+)\n");
+  std::regex re("\\s*0x([0-9a-f]+)");
   std::smatch match;
   std::vector<uint32_t> call_stack;
 
   for (const std::string &line : lines) {
-    if (line == "PRINT_CALL_STACK\n")
+    if (line == "PRINT_CALL_STACK")
       continue;
 
     if (!std::regex_match(line, match, re)) {
@@ -477,8 +475,13 @@ bool ISSWrapper::read_child_response(std::vector<std::string> *dst) const {
       return true;
     }
 
-    // Otherwise it's some informative response from the child: take a copy if
-    // dst is not null.
+    // Have we read an entire line? If not, fgets will have written something
+    // other than \0 or \n to the second last entry in buf.
+    char canary = buf[sizeof buf - 2];
+    bool next_continuation = !(canary == '\0' || canary == '\n');
+
+    // We have some informative response from the child. Take a copy if dst is
+    // not null, stripping any trailing newline.
     if (dst) {
       if (continuation) {
         assert(dst->size());
@@ -486,13 +489,16 @@ bool ISSWrapper::read_child_response(std::vector<std::string> *dst) const {
       } else {
         dst->push_back(std::string(buf));
       }
+
+      // If !next_continuation then we read an entire line. If we didn't get to
+      // EOF, the last character of dst->back() is a newline. Drop it.
+      if (!next_continuation && dst->back().back() == '\n') {
+        dst->back().pop_back();
+      }
     }
 
-    // Set the continuation flag if we filled buf without a newline. Our
-    // "canary" value at the end will be \0 or \n if and only if we got a
-    // newline (or EOF) before the end of the buffer.
-    char canary = buf[sizeof buf - 2];
-    continuation = !(canary == '\0' || canary == '\n');
+    // Set the continuation flag if we filled buf without a newline.
+    continuation = next_continuation;
   }
 }
 
