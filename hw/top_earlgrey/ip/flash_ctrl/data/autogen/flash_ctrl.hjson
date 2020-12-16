@@ -76,18 +76,25 @@
       package: "lc_ctrl_pkg"
     }
 
-    { struct: "lc_flash",
-      type: "req_rsp",
-      name: "lc",
-      act:  "rsp",
-      package: "flash_ctrl_pkg"
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "rma_req"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
     },
 
-    { struct: "edn",
-      type: "req_rsp",
-      name: "edn",
-      act:  "req",
-      package: "edn_pkg"
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "rma_ack"
+      act:     "req"
+      package: "lc_ctrl_pkg"
+    },
+
+    { struct:  "lc_flash_rma_seed"
+      type:    "uni"
+      name:    "rma_seed"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
     },
 
     { struct: "pwr_flash",

@@ -1620,8 +1620,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
-          top_type: broadcast
-          top_signame: lc_ctrl_lc_flash_rma_req
+          top_signame: flash_ctrl_rma_req
           index: -1
         }
         {
@@ -1633,8 +1632,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
-          top_type: broadcast
-          top_signame: lc_ctrl_lc_flash_rma_seed
+          top_signame: flash_ctrl_rma_seed
           index: -1
         }
         {
@@ -1645,6 +1643,8 @@
           default: lc_ctrl_pkg::Off
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
+          width: 1
+          top_signame: flash_ctrl_rma_ack
           index: -1
         }
         {
@@ -2964,21 +2964,42 @@
           index: -1
         }
         {
-          struct: lc_flash
-          type: req_rsp
-          name: lc
-          act: rsp
-          package: flash_ctrl_pkg
+          struct: lc_tx
+          type: uni
+          name: rma_req
+          act: rcv
+          package: lc_ctrl_pkg
           inst_name: flash_ctrl
+          width: 1
+          default: ""
+          top_type: broadcast
+          top_signame: flash_ctrl_rma_req
           index: -1
         }
         {
-          struct: edn
-          type: req_rsp
-          name: edn
+          struct: lc_tx
+          type: uni
+          name: rma_ack
           act: req
-          package: edn_pkg
+          package: lc_ctrl_pkg
           inst_name: flash_ctrl
+          width: 1
+          default: ""
+          top_type: broadcast
+          top_signame: flash_ctrl_rma_ack
+          index: -1
+        }
+        {
+          struct: lc_flash_rma_seed
+          type: uni
+          name: rma_seed
+          act: rcv
+          package: lc_ctrl_pkg
+          inst_name: flash_ctrl
+          width: 1
+          default: ""
+          top_type: broadcast
+          top_signame: flash_ctrl_rma_seed
           index: -1
         }
         {
@@ -5059,6 +5080,18 @@
       [
         otp_ctrl.flash_otp_key
       ]
+      flash_ctrl.rma_req:
+      [
+        lc_ctrl.lc_flash_rma_req
+      ]
+      flash_ctrl.rma_ack:
+      [
+        lc_ctrl.lc_flash_rma_ack
+      ]
+      flash_ctrl.rma_seed:
+      [
+        lc_ctrl.lc_flash_rma_seed
+      ]
       pwrmgr.pwr_flash:
       [
         flash_ctrl.pwrmgr
@@ -5132,8 +5165,6 @@
         otp_ctrl.lc_escalate_en
       ]
       lc_ctrl.lc_clk_byp_req: []
-      lc_ctrl.lc_flash_rma_req: []
-      lc_ctrl.lc_flash_rma_seed: []
       lc_ctrl.lc_creator_seed_sw_rw_en:
       [
         otp_ctrl.lc_creator_seed_sw_rw_en
@@ -8382,8 +8413,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
-        top_type: broadcast
-        top_signame: lc_ctrl_lc_flash_rma_req
+        top_signame: flash_ctrl_rma_req
         index: -1
       }
       {
@@ -8395,8 +8425,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
-        top_type: broadcast
-        top_signame: lc_ctrl_lc_flash_rma_seed
+        top_signame: flash_ctrl_rma_seed
         index: -1
       }
       {
@@ -8407,6 +8436,8 @@
         default: lc_ctrl_pkg::Off
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
+        width: 1
+        top_signame: flash_ctrl_rma_ack
         index: -1
       }
       {
@@ -9033,21 +9064,42 @@
         index: -1
       }
       {
-        struct: lc_flash
-        type: req_rsp
-        name: lc
-        act: rsp
-        package: flash_ctrl_pkg
+        struct: lc_tx
+        type: uni
+        name: rma_req
+        act: rcv
+        package: lc_ctrl_pkg
         inst_name: flash_ctrl
+        width: 1
+        default: ""
+        top_type: broadcast
+        top_signame: flash_ctrl_rma_req
         index: -1
       }
       {
-        struct: edn
-        type: req_rsp
-        name: edn
+        struct: lc_tx
+        type: uni
+        name: rma_ack
         act: req
-        package: edn_pkg
+        package: lc_ctrl_pkg
         inst_name: flash_ctrl
+        width: 1
+        default: ""
+        top_type: broadcast
+        top_signame: flash_ctrl_rma_ack
+        index: -1
+      }
+      {
+        struct: lc_flash_rma_seed
+        type: uni
+        name: rma_seed
+        act: rcv
+        package: lc_ctrl_pkg
+        inst_name: flash_ctrl
+        width: 1
+        default: ""
+        top_type: broadcast
+        top_signame: flash_ctrl_rma_seed
         index: -1
       }
       {
@@ -10457,6 +10509,30 @@
         default: ""
       }
       {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: flash_ctrl_rma_req
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: flash_ctrl_rma_ack
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_flash_rma_seed
+        signame: flash_ctrl_rma_seed
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
         package: pwrmgr_pkg
         struct: pwr_flash_req
         signame: pwrmgr_pwr_flash_req
@@ -10679,22 +10755,6 @@
         width: 1
         type: uni
         default: lc_ctrl_pkg::Off
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: lc_ctrl_lc_flash_rma_req
-        width: 1
-        type: uni
-        default: lc_ctrl_pkg::Off
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_flash_rma_seed
-        signame: lc_ctrl_lc_flash_rma_seed
-        width: 1
-        type: uni
-        default: "'0"
       }
       {
         package: lc_ctrl_pkg
