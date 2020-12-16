@@ -23,9 +23,7 @@ class keymgr_direct_to_disabled_vseq extends keymgr_random_vseq;
                                                    keymgr_pkg::OpGenId,
                                                    keymgr_pkg::OpGenSwOut,
                                                    keymgr_pkg::OpGenHwOut});)
-    ral.control.operation.set(keymgr_pkg::OpDisable);
     csr_update(.csr(ral.control));
-    ral.control.start.set(1'b0);
 
     wait_op_done(.is_gen_output(0));
     `DV_CHECK_EQ(current_state, keymgr_pkg::StDisabled)
