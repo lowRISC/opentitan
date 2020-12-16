@@ -15,6 +15,10 @@
 //
 
 {
+    // Seed to be used for generation of partition item default values.
+    // Can be overridden on the command line with the --seed switch.
+    seed: "10556718629619452145"
+
     otp: {
         width: "2", // bytes
         depth: "1024"
@@ -112,10 +116,15 @@
             items: [
                 {
                     name: "TEST_UNLOCK_TOKEN",
+                    // This will generate a random default to be output in
+                    // case partition has not initialized or is in error state.
+                    // If not specified, a value of '0 will be used.
+                    rand_inv_default: "True",
                     size: "16"
                 }
                 {
                     name: "TEST_EXIT_TOKEN",
+                    rand_inv_default: "True",
                     size: "16"
                 }
             ],
@@ -136,14 +145,17 @@
             items: [
                 {
                     name: "FLASH_ADDR_KEY_SEED",
+                    rand_inv_default: "True",
                     size: "32"
                 }
                 {
                     name: "FLASH_DATA_KEY_SEED",
+                    rand_inv_default: "True",
                     size: "32"
                 }
                 {
                     name: "SRAM_DATA_KEY_SEED",
+                    rand_inv_default: "True",
                     size: "16"
                 }
             ],
@@ -165,14 +177,17 @@
             items: [
                 {
                     name: "RMA_TOKEN",
+                    rand_inv_default: "True",
                     size: "16"
                 }
                 {
                     name: "CREATOR_ROOT_KEY_SHARE0",
+                    rand_inv_default: "True",
                     size: "32"
                 }
                 {
                     name: "CREATOR_ROOT_KEY_SHARE1",
+                    rand_inv_default: "True",
                     size: "32"
                 }
             ],

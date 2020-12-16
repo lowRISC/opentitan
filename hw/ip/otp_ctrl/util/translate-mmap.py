@@ -7,6 +7,7 @@ r"""Convert mako template to Hjson register description
 import argparse
 import logging as log
 import textwrap
+import random
 from math import ceil, log2
 from pathlib import Path
 
@@ -163,7 +164,13 @@ def validate(config):
             item.setdefault("size", "0")
             item.setdefault("isdigest", "false")
             item.setdefault("offset", offset)
-            item.setdefault("inv_default", "{}'h0".format(check_int(item["size"])*8))
+            # Generate random constant to be used when partition has
+            # not been initialized yet or when it is in error state.
+            if check_bool(item.setdefault("rand_inv_default", "false")):
+                inv_default = random.getrandbits(check_int(item["size"])*8)
+            else:
+                inv_default = 0
+            item.setdefault("inv_default", "{}'h{:0X}".format(check_int(item["size"])*8, inv_default))
             log.info("> Item {} at offset {} with size {}".format(
                 item["name"], offset, item["size"]))
             offset += check_int(item["size"])
@@ -323,10 +330,35 @@ def main():
         description=wrapped_docstring(),
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    parser.parse_args()
+    # Generator options for compile time random netlist constants
+    parser.add_argument(
+        '--seed',
+        type=int,
+        metavar='<seed>',
+        help='Custom seed for RNG to compute default values.')
+
+    args = parser.parse_args()
 
     with open(MMAP_DEFINITION_FILE, 'r') as infile:
         config = hjson.load(infile)
+
+        # If specified, override the seed for random netlist constant computation.
+        if args.seed:
+            log.warning('Commandline override of seed with {}.'.format(
+                args.seed))
+            config['seed'] = args.seed
+        # Otherwise, we either take it from the .hjson if present, or
+        # randomly generate a new seed if not.
+        else:
+            random.seed()
+            new_seed = random.getrandbits(64)
+            if config.setdefault('seed', new_seed) == new_seed:
+                log.warning(
+                    'No seed specified, setting to {}.'.format(new_seed))
+
+        # Initialize RNG.
+        random.seed(int(config['seed']))
+
         validate(config)
 
         with open(PARTITIONS_TABLE_FILE, 'w') as outfile:

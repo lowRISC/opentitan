@@ -20,7 +20,6 @@ module otp_ctrl
   parameter key_array_t             RndCnstKey            = RndCnstKeyDefault,
   parameter digest_const_array_t    RndCnstDigestConst    = RndCnstDigestConstDefault,
   parameter digest_iv_array_t       RndCnstDigestIV       = RndCnstDigestIVDefault,
-  parameter otp_keymgr_key_t        RndCnstKeyMgrKey      = RndCnstKeyMgrKeyDefault,
   parameter lc_ctrl_pkg::lc_token_t RndCnstRawUnlockToken = RndCnstRawUnlockTokenDefault
 ) (
   input                                              clk_i,
@@ -1029,11 +1028,13 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
   assign otp_keymgr_key_o.key_share0 = (lc_seed_hw_rd_en == lc_ctrl_pkg::On) ?
                                        part_buf_data[CreatorRootKeyShare0Offset +:
                                                      CreatorRootKeyShare0Size] :
-                                       RndCnstKeyMgrKey.key_share0;
+                                       PartInvDefault[CreatorRootKeyShare0Offset*8 +:
+                                                      CreatorRootKeyShare0Size*8];
   assign otp_keymgr_key_o.key_share1 = (lc_seed_hw_rd_en == lc_ctrl_pkg::On) ?
                                        part_buf_data[CreatorRootKeyShare1Offset +:
                                                      CreatorRootKeyShare1Size] :
-                                       RndCnstKeyMgrKey.key_share1;
+                                       PartInvDefault[CreatorRootKeyShare1Offset*8 +:
+                                                      CreatorRootKeyShare1Size*8];
 
   // Scrambling Keys
   assign scrmbl_key_seed_valid = part_init_done[Secret1Idx];
