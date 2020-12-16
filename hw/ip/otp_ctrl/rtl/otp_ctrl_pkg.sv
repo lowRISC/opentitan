@@ -164,6 +164,9 @@ package otp_ctrl_pkg;
     logic                      valid;
     lc_ctrl_pkg::lc_state_e    state;
     lc_ctrl_pkg::lc_cnt_e      count;
+    // These are all hash post-images
+    lc_ctrl_pkg::lc_token_t    all_zero_token;
+    lc_ctrl_pkg::lc_token_t    raw_unlock_token;
     lc_ctrl_pkg::lc_token_t    test_unlock_token;
     lc_ctrl_pkg::lc_token_t    test_exit_token;
     lc_ctrl_pkg::lc_token_t    rma_token;
@@ -338,5 +341,8 @@ package otp_ctrl_pkg;
     key_share0: 256'h091833106d26f6539ddf1d7446cece22d564d879f720163881849d2e3530f361,
     key_share1: 256'h0ce300e36f30349fefa3ab17def703f17b6a074dd54581f5deb9a3c47fb2177f
   };
+
+  parameter lc_ctrl_pkg::lc_token_t RndCnstRawUnlockTokenDefault =
+    128'hcbbd013ff15eba2f3065461eeb88463e;
 
 endpackage : otp_ctrl_pkg
