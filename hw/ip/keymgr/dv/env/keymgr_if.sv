@@ -7,10 +7,11 @@ interface keymgr_if(input clk, input rst_n);
 
   import uvm_pkg::*;
 
-  lc_ctrl_pkg::lc_keymgr_div_t keymgr_div;
+  lc_ctrl_pkg::lc_tx_t            keymgr_en;
+  lc_ctrl_pkg::lc_keymgr_div_t    keymgr_div;
   otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg;
-  otp_ctrl_pkg::otp_keymgr_key_t otp_key;
-  flash_ctrl_pkg::keymgr_flash_t flash;
+  otp_ctrl_pkg::otp_keymgr_key_t  otp_key;
+  flash_ctrl_pkg::keymgr_flash_t  flash;
 
   keymgr_pkg::hw_key_req_t kmac_key;
   keymgr_pkg::hw_key_req_t hmac_key;
@@ -23,12 +24,48 @@ interface keymgr_if(input clk, input rst_n);
   // indicate keymgr entered disabled directly. kmac_key are wiped, don't check output it
   bit direct_to_disabled;
 
+  string msg_id = "keymgr_if";
+
   task automatic init();
+    // async delay as these signals are from different clock domain
+    #($urandom_range(1000, 0) * 1ns);
+    keymgr_en = lc_ctrl_pkg::On;
     keymgr_div = 64'h5CFBD765CE33F34E;
-    otp_hw_cfg = '0;
+    otp_hw_cfg.data.device_id = 'hF0F0;
     otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
     flash   = flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT;
     direct_to_disabled = 0;
+  endtask
+
+  // randomize otp, lc, flash input data
+  task automatic drive_random_hw_input_data();
+    lc_ctrl_pkg::lc_keymgr_div_t     local_keymgr_div;
+    bit [keymgr_pkg::DevIdWidth-1:0] local_otp_device_id;
+    otp_ctrl_pkg::otp_keymgr_key_t   local_otp_key;
+    flash_ctrl_pkg::keymgr_flash_t   local_flash;
+
+    // async delay as these signals are from different clock domain
+    #($urandom_range(1000, 0) * 1ns);
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_keymgr_div,
+                                       !(local_keymgr_div inside {0, '1});, , msg_id)
+    keymgr_div = local_keymgr_div;
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_device_id,
+                                       !(local_otp_device_id inside {0, '1});, , msg_id)
+    otp_hw_cfg.data.device_id = local_otp_device_id;
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
+                                       local_otp_key.valid == 1;
+                                       !(local_otp_key.key_share0 inside {0, '1});
+                                       !(local_otp_key.key_share1 inside {0, '1});, , msg_id)
+    otp_key = local_otp_key;
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_flash,
+                                       foreach (local_flash.seeds[i]) {
+                                         !(local_flash.seeds[i] inside {0, '1});
+                                       }, , msg_id)
+    flash   = local_flash;
   endtask
 
   task automatic update_exp_key(bit [keymgr_pkg::Shares-1:0][keymgr_pkg::KeyWidth-1:0] key_shares,

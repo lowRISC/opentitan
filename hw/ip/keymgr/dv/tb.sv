@@ -39,7 +39,7 @@ module tb;
     .kmac_key_o           (keymgr_if.kmac_key),
     .kmac_data_o          (keymgr_kmac_intf.kmac_data_req),
     .kmac_data_i          (keymgr_kmac_intf.kmac_data_rsp),
-    .lc_keymgr_en_i       (lc_ctrl_pkg::On),
+    .lc_keymgr_en_i       (keymgr_if.keymgr_en),
     .lc_keymgr_div_i      (keymgr_if.keymgr_div),
     .otp_key_i            (keymgr_if.otp_key),
     .otp_hw_cfg_i         (keymgr_if.otp_hw_cfg),
