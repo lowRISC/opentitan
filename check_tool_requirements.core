@@ -28,4 +28,5 @@ targets:
       - files_check_tool_requirements
     hooks:
       pre_build:
-        - tool_verilator ? (check_tool_requirements)
+        - tool_verilator   ? (check_tool_requirements)
+        - tool_veriblelint ? (check_tool_requirements)
