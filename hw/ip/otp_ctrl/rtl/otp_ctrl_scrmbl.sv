@@ -291,7 +291,7 @@ module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
               key_state_sel  = SelDigestConst;
               data_state_en  = 1'b1;
               key_state_en   = 1'b1;
-              is_first_d     = 1'b1;
+              is_first_d     = 1'b0;
               digest_mode_d  = StandardMode;
               sel_d          = sel_i;
             end
