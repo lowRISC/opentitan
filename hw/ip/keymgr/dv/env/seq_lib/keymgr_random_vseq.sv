@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Randomize sw control content: version, rom_ext_desc, salt, binding.
-class keymgr_random_vseq extends keymgr_smoke_vseq;
+class keymgr_random_vseq extends keymgr_sideload_vseq;
   `uvm_object_utils(keymgr_random_vseq)
   `uvm_object_new
 
@@ -65,6 +65,10 @@ class keymgr_random_vseq extends keymgr_smoke_vseq;
     if ($urandom_range(0, 1)) begin
       `uvm_info(`gfn, "Write random SW content", UVM_MEDIUM)
       write_random_sw_content();
+    end
+    if ($urandom_range(0, 1)) begin
+      `uvm_info(`gfn, "Drive random HW data", UVM_MEDIUM)
+      cfg.keymgr_vif.drive_random_hw_input_data();
     end
     super.keymgr_operations(advance_state, num_gen_op, clr_output, wait_done);
   endtask : keymgr_operations
