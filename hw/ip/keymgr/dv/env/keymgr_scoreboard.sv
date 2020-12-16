@@ -207,7 +207,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
         if (addr_phase_read) begin
           addr_phase_cfgen = current_op_status == keymgr_pkg::OpWip;
-        end else if (addr_phase_write) begin
+        end else if (data_phase_read) begin
           `DV_CHECK_EQ(item.d_data, addr_phase_cfgen)
         end
       end

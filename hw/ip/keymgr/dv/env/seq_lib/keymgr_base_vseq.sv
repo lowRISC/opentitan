@@ -27,9 +27,9 @@ class keymgr_base_vseq extends cip_base_vseq #(
     super.dut_init();
     cfg.keymgr_vif.init();
 
-    // design synchronizes life cycle value from async domain to update cfg_en
-    // wait until cfg_en=1, otherwise some register programming will be gated
-    csr_spinwait(.ptr(ral.cfgen), .exp_data(1'b1));
+    // Add 2 cycles for design to synchronize life cycle value from async domain to update cfg_en
+    // otherwise, some register programming will be gated
+    cfg.clk_rst_vif.wait_clks(2);
 
     if (do_keymgr_init) keymgr_init();
   endtask
