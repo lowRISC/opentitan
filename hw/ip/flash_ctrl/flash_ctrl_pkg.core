@@ -13,10 +13,11 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:edn_pkg
-      - fileset_top ? (lowrisc:systems:flash_ctrl_pkg)
+      - "fileset_top    ? (lowrisc:systems:flash_ctrl_pkg)"
+      - "fileset_topgen ? (lowrisc:systems:topgen)"
     files:
-      - fileset_ip ? (rtl/flash_ctrl_reg_pkg.sv)
-      - fileset_ip ? (rtl/flash_ctrl_pkg.sv)
+      - "fileset_ip ? (rtl/flash_ctrl_reg_pkg.sv)"
+      - "fileset_ip ? (rtl/flash_ctrl_pkg.sv)"
       - rtl/flash_phy_pkg.sv
     file_type: systemVerilogSource
 

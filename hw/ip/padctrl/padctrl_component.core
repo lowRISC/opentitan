@@ -10,6 +10,8 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      # padring.sv depends on padctrl_reg_pkg.sv
+      - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
     files:
       - rtl/jtag_mux.sv
       - rtl/padring.sv
