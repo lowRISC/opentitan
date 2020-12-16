@@ -336,12 +336,6 @@ package otp_ctrl_pkg;
     64'h899aac2ab7d91479
   };
 
-  parameter otp_keymgr_key_t RndCnstKeyMgrKeyDefault = '{
-    valid:      1'b1,
-    key_share0: 256'h091833106d26f6539ddf1d7446cece22d564d879f720163881849d2e3530f361,
-    key_share1: 256'h0ce300e36f30349fefa3ab17def703f17b6a074dd54581f5deb9a3c47fb2177f
-  };
-
   parameter lc_ctrl_pkg::lc_token_t RndCnstRawUnlockTokenDefault =
     128'hcbbd013ff15eba2f3065461eeb88463e;
 

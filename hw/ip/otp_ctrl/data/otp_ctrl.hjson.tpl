@@ -83,12 +83,6 @@
       randcount: "320",  // 5*64
       randtype:  "data", // randomize randcount databits
     }
-    { name:      "RndCnstKeyMgrKey",
-      desc:      "Compile-time random default constant for the root key, to be output when key has not yet been provisioned.",
-      type:      "otp_ctrl_pkg::otp_keymgr_key_t"
-      randcount: "513",  // 2*256+1
-      randtype:  "data", // randomize randcount databits
-    }
     { name:      "RndCnstRawUnlockToken",
       desc:      "Compile-time random value for RAW unlock token.",
       type:      "lc_ctrl_pkg::lc_token_t"
