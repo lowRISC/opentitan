@@ -52,6 +52,11 @@ package top_earlgrey_rnd_cnst_pkg;
     256'hB49BAC9198BD1FF344C5DA2242D290BEDE094CA8F1435F85E0F7489A309CBE57
   };
 
+  // Compile-time random value for RAW unlock token.
+  parameter lc_ctrl_pkg::lc_token_t RndCnstOtpCtrlRawUnlockToken = {
+    128'hAEB2691C0738F30D9006289A1D7D9D0C
+  };
+
   ////////////////////////////////////////////
   // lc_ctrl
   ////////////////////////////////////////////
