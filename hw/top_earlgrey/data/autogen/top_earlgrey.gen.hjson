@@ -1040,25 +1040,13 @@
           randwidth: 320
         }
         {
-          name: RndCnstKeyMgrKey
-          desc: Compile-time random default constant for the root key, to be output when key has not yet been provisioned.
-          type: otp_ctrl_pkg::otp_keymgr_key_t
-          randcount: "513"
-          randtype: data
-          local: "false"
-          default: 0x160c06703b494b3ff9fbb73a9bf8c393c12965c7de10023ec699679edd5369f11b49bac9198bd1ff344c5da2242d290bede094ca8f1435f85e0f7489a309cbe57
-          expose: "false"
-          name_top: RndCnstOtpCtrlKeyMgrKey
-          randwidth: 513
-        }
-        {
           name: RndCnstRawUnlockToken
           desc: Compile-time random value for RAW unlock token.
           type: lc_ctrl_pkg::lc_token_t
           randcount: "128"
           randtype: data
           local: "false"
-          default: 0xaeb2691c0738f30d9006289a1d7d9d0c
+          default: 0xde094ca8f1435f85e0f7489a309cbe57
           expose: "false"
           name_top: RndCnstOtpCtrlRawUnlockToken
           randwidth: 128
