@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/log.h"
@@ -52,6 +53,115 @@ static void init_uart(void) {
                            }) == kDifUartConfigOk,
         "failed to configure UART");
   base_uart_stdout(&uart0);
+}
+
+/**
+ * Test that crt_section_clear correctly zeros word aligned sections.
+ *
+ * Sections are simulated using word aligned regions of various sizes within an
+ * array.
+ *
+ * Does not return if the test fails.
+ */
+static void test_crt_section_clear(void) {
+  // Function to test (symbol in the CRT assembly library).
+  extern void crt_section_clear(void *start, void *end);
+
+  // Maximum end index of target section.
+  const size_t kLen = 32;
+
+  // Section indices (start inclusive, end exclusive).
+  const struct {
+    size_t start;
+    size_t end;
+  } kTests[] = {{.start = 0, .end = 0},           {.start = 0, .end = 1},
+                {.start = kLen - 1, .end = kLen}, {.start = 0, .end = kLen - 1},
+                {.start = 1, .end = kLen},        {.start = 0, .end = kLen}};
+
+  for (size_t t = 0; t < ARRAYSIZE(kTests); ++t) {
+    // Set target array to non-zero values.
+    uint32_t section[kLen];
+    const uint32_t kVal = ~0u;
+    for (size_t i = 0; i < kLen; ++i) {
+      section[i] = kVal;
+    }
+
+    // Clear section of target array.
+    const size_t start = kTests[t].start;
+    const size_t end = kTests[t].end;
+    crt_section_clear(&section[start], &section[end]);
+
+    // Check that section was cleared.
+    for (size_t i = 0; i < kLen; ++i) {
+      const uint32_t expect = i >= start && i < end ? 0 : kVal;
+      CHECK(section[i] == expect,
+            "%s case %u: section[%u] got 0x%08x, want 0x%08x", __func__, t, i,
+            section[i], expect);
+    }
+  }
+}
+
+/**
+ * Test that crt_section_copy correctly copies data between word aligned
+ * sections.
+ *
+ * Sections are simulated using word aligned regions of various sizes within
+ * arrays.
+ *
+ * Does not return if the test fails.
+ */
+static void test_crt_section_copy(void) {
+  // Function to test (symbol in the CRT assembly library).
+  extern void crt_section_copy(void *start, void *end, void *source);
+
+  // Maximum end index of target section.
+  const size_t kLen = 32;
+
+  // Section indices (start inclusive, end exclusive) and source index
+  // (inclusive).
+  const struct {
+    size_t start;
+    size_t end;
+    size_t source;
+  } kTests[] = {{.start = 0, .end = 0, .source = 0},
+                {.start = 0, .end = 1, .source = 1},
+                {.start = kLen - 1, .end = kLen, .source = 2},
+                {.start = 0, .end = kLen - 1, .source = 1},
+                {.start = 1, .end = kLen, .source = 1},
+                {.start = 0, .end = kLen, .source = 0},
+                {.start = 0, .end = kLen, .source = 0},
+                {.start = 1, .end = kLen, .source = 0},
+                {.start = 2, .end = kLen, .source = 0},
+                {.start = 3, .end = kLen, .source = 0},
+                {.start = 0, .end = kLen / 2, .source = 0},
+                {.start = 1, .end = kLen / 2, .source = 0},
+                {.start = 2, .end = kLen / 2, .source = 0},
+                {.start = 3, .end = kLen / 2, .source = 0}};
+
+  for (size_t t = 0; t < ARRAYSIZE(kTests); ++t) {
+    // Clear target array and setup source array with known values (index + 1).
+    uint32_t dst[kLen], src[kLen];
+    for (size_t i = 0; i < kLen; ++i) {
+      src[i] = (uint32_t)(i) + 1;
+      dst[i] = 0;
+    }
+
+    // Copy section from source to target array.
+    const size_t start = kTests[t].start;
+    const size_t end = kTests[t].end;
+    const size_t source = kTests[t].source;
+    crt_section_copy(&dst[start], &dst[end], &src[source]);
+
+    // First expected value.
+    uint32_t val = (uint32_t)(source) + 1;
+
+    // Check section was copied correctly.
+    for (size_t i = 0; i < kLen; ++i) {
+      const uint32_t expect = i >= start && i < end ? val++ : 0;
+      CHECK(dst[i] == expect, "%s case %u: dst[%u] got 0x%08x, want 0x%08x",
+            __func__, t, i, dst[i], expect);
+    }
+  }
 }
 
 int main(int argc, char **argv) {
@@ -125,6 +235,10 @@ int main(int argc, char **argv) {
   CHECK(bad_data_index == -1,
         "found bad .data byte at *0x%08x == 0x%02x, expected 0x%02x",
         data_start_addr + bad_data_index, (uint32_t)data_init[bad_data_index]);
+
+  // Unit test CRT utility functions.
+  test_crt_section_clear();
+  test_crt_section_copy();
 
   test_status_set(kTestStatusPassed);
 

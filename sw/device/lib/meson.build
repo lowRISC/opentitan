@@ -4,6 +4,7 @@
 
 subdir('base')
 subdir('arch')
+subdir('crt')
 subdir('dif')
 subdir('runtime')
 subdir('testing')

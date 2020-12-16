@@ -171,98 +171,83 @@ _mask_rom_start_boot:
    */
 
   // Zero all writable registers except x2 (sp).
-  mv x1,  zero
+  li x1,  0x0
   // NOT x2 (sp) - We have already set it to the right value above.
-  mv x3,  zero
-  mv x4,  zero
-  mv x5,  zero
-  mv x6,  zero
-  mv x7,  zero
-  mv x8,  zero
-  mv x9,  zero
-  mv x10, zero
-  mv x11, zero
-  mv x12, zero
-  mv x13, zero
-  mv x14, zero
-  mv x15, zero
-  mv x16, zero
-  mv x17, zero
-  mv x18, zero
-  mv x19, zero
-  mv x20, zero
-  mv x21, zero
-  mv x22, zero
-  mv x23, zero
-  mv x24, zero
-  mv x25, zero
-  mv x26, zero
-  mv x27, zero
-  mv x28, zero
-  mv x29, zero
-  mv x30, zero
-  mv x31, zero
+  li x3,  0x0
+  li x4,  0x0
+  li x5,  0x0
+  li x6,  0x0
+  li x7,  0x0
+  li x8,  0x0
+  li x9,  0x0
+  li x10, 0x0
+  li x11, 0x0
+  li x12, 0x0
+  li x13, 0x0
+  li x14, 0x0
+  li x15, 0x0
+  li x16, 0x0
+  li x17, 0x0
+  li x18, 0x0
+  li x19, 0x0
+  li x20, 0x0
+  li x21, 0x0
+  li x22, 0x0
+  li x23, 0x0
+  li x24, 0x0
+  li x25, 0x0
+  li x26, 0x0
+  li x27, 0x0
+  li x28, 0x0
+  li x29, 0x0
+  li x30, 0x0
+  li x31, 0x0
+
+  .extern crt_section_clear
+  .extern crt_section_copy
 
   // TODO: Setup SRAM Scrambling
   // Temporarily: Zero out ram_main
-  //
-  // `t0` is the address to start zeroing at.
-  // `t1` is the address to stop zeroing at.
-  li   t0, TOP_EARLGREY_RAM_MAIN_BASE_ADDR
-  li   t1, (TOP_EARLGREY_RAM_MAIN_BASE_ADDR + TOP_EARLGREY_RAM_MAIN_SIZE_BYTES)
-  bgeu t0, t1, sram_zero_end
-sram_zero_loop:
-  // TODO: Unroll loop
-  sw   zero, 0x0(t0)
-  addi t0, t0, 0x4
-  bltu t0, t1, sram_zero_loop
-sram_zero_end:
+  li   a0, TOP_EARLGREY_RAM_MAIN_BASE_ADDR
+  li   a1, (TOP_EARLGREY_RAM_MAIN_BASE_ADDR + TOP_EARLGREY_RAM_MAIN_SIZE_BYTES)
+  call crt_section_clear
 
   /**
    * Setup C Runtime
    */
 
   // Initialize the `.data` section.
-  //
-  // `t0` is the start address of `.data` (in RAM).
-  // `t1` is the end address of `.data` (in RAM).
-  // `t2` is the start address of `.data` (in ROM).
-  // `t3` is a scratch register for the copy.
-  la   t0, _data_start
-  la   t1, _data_end
-  la   t2, _data_init_start
-  bgeu t0, t1, data_copy_loop_end
-data_copy_loop:
-  // TODO: Unroll this loop
-  lw   t3, 0x0(t2)
-  sw   t3, 0x0(t0)
-  addi t0, t0, 0x4
-  addi t2, t2, 0x4
-  bltu t0, t1, data_copy_loop
-data_copy_loop_end:
+  la   a0, _data_start
+  la   a1, _data_end
+  la   a2, _data_init_start
+  call crt_section_copy
 
   // Initialize the `.bss` section.
   //
   // We do this despite zeroing all of SRAM above, so that we still zero `.bss`
   // once we've enabled SRAM scrambling.
-  //
-  // `t0` is the address to start zeroing at.
-  // `t1` is the address to stop zeroing at.
-  la   t0, _bss_start
-  la   t1, _bss_end
-  bgeu t0, t1, bss_zero_end
-bss_zero_loop:
-  // TODO: Unroll loop
-  sw   zero, 0x0(t0)
-  addi t0, t0, 0x4
-  bltu t0, t1, bss_zero_loop
-bss_zero_end:
+  la   a0, _bss_start
+  la   a1, _bss_end
+  call crt_section_clear
 
-  // Re-clobber all of the registers used to Setup the C Runtime.
-  mv t0, zero
-  mv t1, zero
-  mv t2, zero
-  mv t3, zero
+  // Re-clobber all of the temporary registers (may have been used in calls).
+  li t0, 0x0
+  li t1, 0x0
+  li t2, 0x0
+  li t3, 0x0
+  li t4, 0x0
+  li t5, 0x0
+  li t6, 0x0
+
+  // Re-clobber all of the argument registers (may have been used in calls).
+  li a0, 0x0
+  li a1, 0x0
+  li a2, 0x0
+  li a3, 0x0
+  li a4, 0x0
+  li a5, 0x0
+  li a6, 0x0
+  li a7, 0x0
 
   // Setup global pointer.
   //

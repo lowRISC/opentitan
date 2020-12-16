@@ -21,6 +21,8 @@
   .extern abort
   .extern main
   .extern crt_interrupt_vector
+  .extern crt_section_clear
+  .extern crt_section_copy
 
 /**
  * Callable entry point for flash.
@@ -47,49 +49,20 @@ _start:
   csrw mtvec, t0
 
   // Zero out the `.bss` segment.
-  //
-  // We use `t0` and `t1` to represent the start and end pointers
-  // of `.bss`.
-  la   t0, _bss_start
-  la   t1, _bss_end
-  bgeu t0, t1, bss_zero_loop_end
-bss_zero_loop:
-  sw    zero, 0(t0)
-  addi  t0, t0, 0x4
-  bltu  t0, t1, bss_zero_loop
-bss_zero_loop_end:
+  la   a0, _bss_start
+  la   a1, _bss_end
+  call crt_section_clear
 
   // Zero out the stack
-  //
-  // We use `t0` and `t1` to represent the start and end pointers of the stack.
-  // As the stack grows downwards and we zero going forwards the start pointer
-  // starts as _stack_start and the end pointer at _stack_end.
-  la   t0, _stack_start
-  la   t1, _stack_end
-  bgeu t0, t1, stack_zero_loop_end
-stack_zero_loop:
-  sw    zero, 0(t0)
-  addi  t0, t0, 0x4
-  bltu  t0, t1, stack_zero_loop
-stack_zero_loop_end:
+  la   a0, _stack_start
+  la   a1, _stack_end
+  call crt_section_clear
 
   // Initialize the `.data` segment from the `.idata` segment.
-  //
-  // We use `t0` and `t1` to represent the start and end pointers
-  // of `.data`, `t2` to represent the start pointer of `.idata`
-  // (which has the same length as `.data`) and `t3` is a scratch
-  // register for the copy.
-  la   t0, _data_start
-  la   t1, _data_end
-  la   t2, _data_init_start
-  bgeu t0, t1, data_copy_loop_end
-data_copy_loop:
-  lw   t3, 0(t2)
-  sw   t3, 0(t0)
-  addi t0, t0, 0x4
-  addi t2, t2, 0x4
-  bltu t0, t1, data_copy_loop
-data_copy_loop_end:
+  la   a0, _data_start
+  la   a1, _data_end
+  la   a2, _data_init_start
+  call crt_section_copy
 
   // Call the functions in the `.init_array` section.
   //
