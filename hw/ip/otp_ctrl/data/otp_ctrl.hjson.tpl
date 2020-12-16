@@ -89,6 +89,12 @@
       randcount: "513",  // 2*256+1
       randtype:  "data", // randomize randcount databits
     }
+    { name:      "RndCnstRawUnlockToken",
+      desc:      "Compile-time random value for RAW unlock token.",
+      type:      "lc_ctrl_pkg::lc_token_t"
+      randcount: "128",
+      randtype:  "data", // randomize randcount databits
+    }
     // Normal parameters
     { name: "NumSramKeyReqSlots",
       desc: "Number of key slots",
