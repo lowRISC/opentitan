@@ -68,6 +68,35 @@ def get_verilator_version():
         return None
 
 
+def convert_verible_version(version_string):
+    '''Convert Verible version string to semantic versioning format.'''
+    # Drop the hash suffix and convert into version string that
+    # is compatible with StrictVersion in check_version below.
+    # Example: v0.0-808-g1e17daa -> 0.0.808
+    m = re.fullmatch(r'v([0-9]+)\.([0-9]+)-([0-9]+)-g[0-9a-f]+$', version_string)
+
+    if m is None:
+        log.error("{} has invalid version string format.".format(version_string))
+        return None
+
+    return '.'.join(m.group(1, 2, 3))
+
+
+def get_verible_version():
+    '''Run Verible to check its version'''
+    try:
+        version_str = subprocess.run('verible-verilog-lint --version', shell=True,
+                                     check=True, stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT,
+                                     universal_newlines=True)
+        return version_str.stdout.split('\n')[0].strip()
+
+    except subprocess.CalledProcessError as e:
+        log.error("Unable to call Verible to check version: " + str(e))
+        log.error(e.stdout)
+        return None
+
+
 def pip3_get_version(tool):
     '''Run pip3 to find the version of an installed module'''
     cmd = ['pip3', 'show', tool]
@@ -96,7 +125,7 @@ def pip3_get_version(tool):
     return None
 
 
-def check_version(requirements, tool_name, getter):
+def check_version(requirements, tool_name, getter, version_converter=None):
     required_version = requirements.get(tool_name)
     if required_version is None:
         log.error('Requirements file does not specify version for {}.'
@@ -106,6 +135,12 @@ def check_version(requirements, tool_name, getter):
     actual_version = getter()
     if actual_version is None:
         return False
+
+    # If a version string converter is defined, call it. This is required
+    # for some version strings that are not compatible with StrictVersion.
+    if version_converter is not None:
+        required_version = version_converter(required_version)
+        actual_version = version_converter(actual_version)
 
     if StrictVersion(actual_version) < StrictVersion(required_version):
         log.error("%s is too old: found version %s, need at least %s",
@@ -127,6 +162,10 @@ def main():
     all_good &= check_version(tool_requirements,
                               'verilator',
                               get_verilator_version)
+    all_good &= check_version(tool_requirements,
+                              'verible',
+                              get_verible_version,
+                              convert_verible_version)
     all_good &= check_version(tool_requirements,
                               'edalize',
                               lambda: pip3_get_version('edalize'))
