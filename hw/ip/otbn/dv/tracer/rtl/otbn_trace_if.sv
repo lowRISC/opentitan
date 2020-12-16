@@ -22,7 +22,8 @@
  *    otbn_core.  Whatever binds the interface into otbn_core is responsible for connecting these
  *    up, e.g. using a wildcard '.*'.
  */
-interface otbn_trace_intf #(
+interface otbn_trace_if
+#(
   parameter int ImemAddrWidth,
   parameter int DmemAddrWidth,
   parameter otbn_pkg::regfile_e RegFile = otbn_pkg::RegFileFF
@@ -42,9 +43,9 @@ interface otbn_trace_intf #(
   input logic [31:0] rf_base_rd_data_b,
   input logic [31:0] rf_base_wr_data,
 
-  input logic [WdrAw-1:0] rf_bignum_rd_addr_a,
-  input logic [WdrAw-1:0] rf_bignum_rd_addr_b,
-  input logic [WdrAw-1:0] rf_bignum_wr_addr,
+  input logic [otbn_pkg::WdrAw-1:0] rf_bignum_rd_addr_a,
+  input logic [otbn_pkg::WdrAw-1:0] rf_bignum_rd_addr_b,
+  input logic [otbn_pkg::WdrAw-1:0] rf_bignum_wr_addr,
 
   input logic [otbn_pkg::WLEN-1:0] rf_bignum_rd_data_a,
   input logic [otbn_pkg::WLEN-1:0] rf_bignum_rd_data_b,
