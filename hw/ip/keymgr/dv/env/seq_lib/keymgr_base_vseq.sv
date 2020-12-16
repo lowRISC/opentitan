@@ -26,6 +26,11 @@ class keymgr_base_vseq extends cip_base_vseq #(
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     cfg.keymgr_vif.init();
+
+    // design synchronizes life cycle value from async domain to update cfg_en
+    // wait until cfg_en=1, otherwise some register programming will be gated
+    csr_spinwait(.ptr(ral.cfgen), .exp_data(1'b1));
+
     if (do_keymgr_init) keymgr_init();
   endtask
 
