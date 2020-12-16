@@ -817,7 +817,8 @@ module top_earlgrey #(
     .RndCnstKey(RndCnstOtpCtrlKey),
     .RndCnstDigestConst(RndCnstOtpCtrlDigestConst),
     .RndCnstDigestIV(RndCnstOtpCtrlDigestIV),
-    .RndCnstKeyMgrKey(RndCnstOtpCtrlKeyMgrKey)
+    .RndCnstKeyMgrKey(RndCnstOtpCtrlKeyMgrKey),
+    .RndCnstRawUnlockToken(RndCnstOtpCtrlRawUnlockToken)
   ) u_otp_ctrl (
 
       // Interrupt

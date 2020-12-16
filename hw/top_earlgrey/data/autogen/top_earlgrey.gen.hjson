@@ -1051,6 +1051,18 @@
           name_top: RndCnstOtpCtrlKeyMgrKey
           randwidth: 513
         }
+        {
+          name: RndCnstRawUnlockToken
+          desc: Compile-time random value for RAW unlock token.
+          type: lc_ctrl_pkg::lc_token_t
+          randcount: "128"
+          randtype: data
+          local: "false"
+          default: 0xaeb2691c0738f30d9006289a1d7d9d0c
+          expose: "false"
+          name_top: RndCnstOtpCtrlRawUnlockToken
+          randwidth: 128
+        }
       ]
       interrupt_list:
       [
