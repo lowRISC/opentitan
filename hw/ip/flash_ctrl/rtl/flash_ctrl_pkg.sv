@@ -15,20 +15,22 @@ package flash_ctrl_pkg;
   // fixed parameters of flash derived from topgen parameters
   parameter int DataWidth       = 64;
   parameter int MetaDataWidth   = 12;
-  parameter int InfoTypes       = 2; // How many types of info per bank
+  parameter int InfoTypes       = 3; // How many types of info per bank
 
 // The following hard-wired values are there to work-around verilator.
 // For some reason if the values are assigned through parameters verilator thinks
 // they are not constant
   parameter int InfoTypeSize [InfoTypes] = '{
-    4,
-    4
+    10,
+    1,
+    2
   };
   parameter int InfosPerBank    = max_info_pages('{
-    4,
-    4
+    10,
+    1,
+    2
   });
-  parameter int WordsPerPage    = 128; // Number of flash words per page
+  parameter int WordsPerPage    = 256; // Number of flash words per page
   parameter int BusWidth        = top_pkg::TL_DW;
   parameter int MpRegions       = 8;  // flash controller protection regions
   parameter int FifoDepth       = 16; // rd / prog fifos
@@ -63,9 +65,15 @@ package flash_ctrl_pkg;
 
   // The end address in bus words for each kind of partition in each bank
   parameter logic [PageW-1:0] DataPartitionEndAddr = PagesPerBank - 1;
+  //parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
+  //  9,
+  //  0,
+  //  1
+  //};
   parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
     InfoTypeSize[0] - 1,
-    InfoTypeSize[1] - 1
+    InfoTypeSize[1] - 1,
+    InfoTypeSize[2] - 1
   };
 
   ////////////////////////////

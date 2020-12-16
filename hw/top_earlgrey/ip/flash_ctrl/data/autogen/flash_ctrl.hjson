@@ -7,6 +7,9 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
+
+
 { name: "FLASH_CTRL",
   clock_primary: "clk_i",
   other_clock_list: [ "clk_otp_i" ],
@@ -143,14 +146,28 @@
     { name: "RegPagesPerBank",
       desc: "Number of pages per bank",
       type: "int",
-      default: "256",
+      default: "128",
       local: "true"
     },
 
     { name: "RegBusPgmResBytes",
       desc: "Number of pages per bank",
       type: "int",
-      default: "1024",
+      default: "64",
+      local: "true"
+    },
+
+    { name: "RegPageWidth",
+      desc: "Number of bits needed to represent the pages within a bank",
+      type: "int",
+      default: "7",
+      local: "true"
+    },
+
+    { name: "RegBankWidth",
+      desc: "Number of bits needed to represent the number of banks",
+      type: "int",
+      default: "1",
       local: "true"
     },
 
@@ -166,20 +183,26 @@
     { name: "NumInfos0",
       desc: "Number of configurable flash info pages for info type 0",
       type: "int",
-      default: "4",
+      default: "10",
       local: "true"
     },
     { name: "NumInfos1",
       desc: "Number of configurable flash info pages for info type 1",
       type: "int",
-      default: "4",
+      default: "1",
+      local: "true"
+    },
+    { name: "NumInfos2",
+      desc: "Number of configurable flash info pages for info type 2",
+      type: "int",
+      default: "2",
       local: "true"
     },
 
     { name: "WordsPerPage",
       desc: "Number of words per page",
       type: "int",
-      default: "128",
+      default: "256",
       local: "true"
     },
 
@@ -193,7 +216,7 @@
     { name: "BytesPerPage",
       desc: "Number of bytes per page",
       type: "int",
-      default: "1024",
+      default: "2048",
       local: "true"
     },
 
@@ -347,7 +370,7 @@
           '''
           resval: "0"
         },
-        { bits: "9",
+        { bits: "10:9",
           name: "INFO_SEL",
           desc: '''
             Informational partions can have multiple types.
@@ -524,14 +547,14 @@
               ''',
               resval: "0"
             }
-            { bits: "16:8",
+            { bits: "15:8",
               name: "BASE",
               desc: '''
                 Region base page. Note the granularity is page, not byte or word
               ''',
               resval: "0"
             },
-            { bits: "29:20", // need to template this term long term for flash size
+            { bits: "24:16",
               name: "SIZE",
               desc: '''
                 Region size in number of pages
@@ -791,6 +814,103 @@
     },
     { multireg: {
         cname: "FLASH_CTRL",
+        name: "BANK0_INFO2_REGWEN"
+        desc: "Memory region registers configuration enable.",
+        count: "NumInfos2",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        compact: false,
+        fields: [
+            { bits: "0",
+              name: "REGION",
+              resval: "1"
+              desc: "Info2 page write enable.  Once set to 0, it can longer be configured to 1",
+              enum: [
+                { value: "0",
+                  name: "Page locked",
+                  desc: '''
+                    Region can no longer be configured until next reset
+                    '''
+                },
+                { value: "1",
+                  name: "Page enabled",
+                  desc: '''
+                    Region can be configured
+                    '''
+                },
+              ]
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "BANK0_INFO2_PAGE_CFG",
+        desc: '''
+                Memory property configuration for info partition in bank0,
+                Unlike data partition, each page is individually configured.
+              '''
+        count: "NumInfos2",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "BANK0_INFO2_REGWEN",
+        regwen_multi: true,
+        fields: [
+            { bits: "0",
+              name: "EN",
+              desc: '''
+                Region enabled, following fields apply
+              ''',
+              resval: "0"
+            },
+            { bits: "1",
+              name: "RD_EN",
+              desc: '''
+                Region can be read
+              ''',
+              resval: "0"
+            },
+            { bits: "2",
+              name: "PROG_EN",
+              desc: '''
+                Region can be programmed
+              ''',
+              resval: "0"
+            }
+            { bits: "3",
+              name: "ERASE_EN",
+              desc: '''
+                Region can be erased
+              ''',
+              resval: "0"
+            }
+            { bits: "4",
+              name: "SCRAMBLE_EN",
+              desc: '''
+                Region is scramble enabled.
+              ''',
+              resval: "0"
+            }
+            { bits: "5",
+              name: "ECC_EN",
+              desc: '''
+                Region is ECC enabled.
+              ''',
+              resval: "0"
+            }
+            { bits: "6",
+              name: "HE_EN",
+              desc: '''
+                Region is high endurance enabled.
+              ''',
+              resval: "0"
+            }
+        ],
+      },
+    },
+    { multireg: {
+        cname: "FLASH_CTRL",
         name: "BANK1_INFO0_REGWEN"
         desc: "Memory region registers configuration enable.",
         count: "NumInfos0",
@@ -983,6 +1103,103 @@
         ],
       },
     },
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "BANK1_INFO2_REGWEN"
+        desc: "Memory region registers configuration enable.",
+        count: "NumInfos2",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        compact: false,
+        fields: [
+            { bits: "0",
+              name: "REGION",
+              resval: "1"
+              desc: "Info2 page write enable.  Once set to 0, it can longer be configured to 1",
+              enum: [
+                { value: "0",
+                  name: "Page locked",
+                  desc: '''
+                    Region can no longer be configured until next reset
+                    '''
+                },
+                { value: "1",
+                  name: "Page enabled",
+                  desc: '''
+                    Region can be configured
+                    '''
+                },
+              ]
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "FLASH_CTRL",
+        name: "BANK1_INFO2_PAGE_CFG",
+        desc: '''
+                Memory property configuration for info partition in bank1,
+                Unlike data partition, each page is individually configured.
+              '''
+        count: "NumInfos2",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "BANK1_INFO2_REGWEN",
+        regwen_multi: true,
+        fields: [
+            { bits: "0",
+              name: "EN",
+              desc: '''
+                Region enabled, following fields apply
+              ''',
+              resval: "0"
+            },
+            { bits: "1",
+              name: "RD_EN",
+              desc: '''
+                Region can be read
+              ''',
+              resval: "0"
+            },
+            { bits: "2",
+              name: "PROG_EN",
+              desc: '''
+                Region can be programmed
+              ''',
+              resval: "0"
+            }
+            { bits: "3",
+              name: "ERASE_EN",
+              desc: '''
+                Region can be erased
+              ''',
+              resval: "0"
+            }
+            { bits: "4",
+              name: "SCRAMBLE_EN",
+              desc: '''
+                Region is scramble enabled.
+              ''',
+              resval: "0"
+            }
+            { bits: "5",
+              name: "ECC_EN",
+              desc: '''
+                Region is ECC enabled.
+              ''',
+              resval: "0"
+            }
+            { bits: "6",
+              name: "HE_EN",
+              desc: '''
+                Region is high endurance enabled.
+              ''',
+              resval: "0"
+            }
+        ],
+      },
+    },
 
     { name: "BANK_CFG_REGWEN"
       desc: "Bank configuration registers configuration enable.",
@@ -1052,7 +1269,7 @@
         { bits: "2",    name: "prog_full",  desc: "Flash program FIFO full"},
         { bits: "3",    name: "prog_empty", desc: "Flash program FIFO empty, software must provide data", resval: "1"},
         { bits: "4",    name: "init_wip",   desc: "Flash controller undergoing init, inclusive of phy init"},
-        { bits: "16:8", name: "error_addr", desc: "Flash controller error address."},
+        { bits: "15:8", name: "error_addr", desc: "Flash controller error address."},
       ]
     },
 

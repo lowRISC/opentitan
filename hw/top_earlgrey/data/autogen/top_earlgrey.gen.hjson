@@ -4916,8 +4916,8 @@
       type: eflash
       base_addr: 0x20000000
       banks: 2
-      pages_per_bank: 256
-      program_resolution: 128
+      pages_per_bank: 128
+      program_resolution: 8
       swaccess: ro
       inter_signal_list:
       [
@@ -5015,17 +5015,18 @@
       {
         clk_i: clkmgr_clocks.clk_main_infra
       }
-      words_per_page: 128
+      words_per_page: 256
       data_width: 64
       metadata_width: 12
-      info_types: 2
+      info_types: 3
       infos_per_bank:
       [
-        4
-        4
+        10
+        1
+        2
       ]
       size: 0x80000
-      pgm_resolution_bytes: 1024
+      pgm_resolution_bytes: 64
       domain: "0"
     }
   ]
