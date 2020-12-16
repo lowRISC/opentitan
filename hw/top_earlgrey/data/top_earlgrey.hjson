@@ -521,21 +521,24 @@
       //                         'lc_ctrl.esc_scrap_state_rx'],
       //'alert_handler.esc_tx': ['lc_ctrl.esc_wipe_secrets_tx',
       //                         'lc_ctrl.esc_scrap_state_tx'],
-      'csrng.csrng_cmd' : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
+      'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
-      'flash_ctrl.flash' : ['eflash.flash_ctrl'],
-      'flash_ctrl.keymgr': ['keymgr.flash'],
-      'flash_ctrl.otp'   : ['otp_ctrl.flash_otp_key'],
-      'pwrmgr.pwr_flash' : ['flash_ctrl.pwrmgr'],
-      'pwrmgr.pwr_rst'   : ['rstmgr.pwr'],
-      'pwrmgr.pwr_clk'   : ['clkmgr.pwr'],
-      'pwrmgr.pwr_otp'   : ['otp_ctrl.pwr_otp'],
-      'pwrmgr.pwr_lc'    : ['lc_ctrl.pwr_lc'],
-      'flash_ctrl.keymgr': ['keymgr.flash'],
-      'alert_handler.crashdump': ['rstmgr.alert_dump'],
+      'flash_ctrl.flash'        : ['eflash.flash_ctrl'],
+      'flash_ctrl.keymgr'       : ['keymgr.flash'],
+      'flash_ctrl.otp'          : ['otp_ctrl.flash_otp_key'],
+      'flash_ctrl.rma_req'      : ['lc_ctrl.lc_flash_rma_req'],
+      'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
+      'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
+      'pwrmgr.pwr_flash'        : ['flash_ctrl.pwrmgr'],
+      'pwrmgr.pwr_rst'          : ['rstmgr.pwr'],
+      'pwrmgr.pwr_clk'          : ['clkmgr.pwr'],
+      'pwrmgr.pwr_otp'          : ['otp_ctrl.pwr_otp'],
+      'pwrmgr.pwr_lc'           : ['lc_ctrl.pwr_lc'],
+      'flash_ctrl.keymgr'       : ['keymgr.flash'],
+      'alert_handler.crashdump' : ['rstmgr.alert_dump'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       // TODO see #4447
-      //'edn0.edn' : ['keymgr.edn', 'flash_ctrl.edn'],
+      //'edn0.edn' : ['keymgr.edn'],
 
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key': ['keymgr.otp_key'],
@@ -569,11 +572,6 @@
       // TODO: OTP Clock bypass signal going from LC to AST/clkmgr
       'lc_ctrl.lc_clk_byp_req'  : [],
       //'lc_ctrl.lc_clk_byp_ack'  : [],
-
-      // TODO: Flash RMA
-      'lc_ctrl.lc_flash_rma_req'    : [],
-      'lc_ctrl.lc_flash_rma_seed'   : [],
-      //'lc_ctrl.lc_flash_rma_ack'    : [],
 
       // LC access control signal broadcast
       'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['otp_ctrl.lc_creator_seed_sw_rw_en',

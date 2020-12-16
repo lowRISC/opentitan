@@ -8,6 +8,9 @@
 waive -rules TERMINAL_STATE -location {flash_ctrl_lcmgr.sv} -regexp {.*StInvalid.*} \
       -comment "StInvalid is intended to be a terminal state"
 
+waive -rules MISSING_STATE -location {flash_ctrl_lcmgr.sv} -regexp {.*StInvalid.*} \
+      -comment "Behavior is part of default state"
+
 # Not all configurations for every info type is used
 waive -rules INPUT_NOT_READ: -location {flash_ctrl_info_cfg.sv} -regexp {.*cfgs_i.*} \
       -comment "For info types that have fewer pages, the full config is not used"
