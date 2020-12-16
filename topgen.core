@@ -1,0 +1,24 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:topgen"
+description: "Top-level generator tool."
+
+filesets:
+  rtl:
+    depend:
+      - lowrisc:systems:topgen-generator
+
+generate:
+  generated_topgen:
+    generator: topgen-generator
+    parameters:
+      topname: top_englishbreakfast
+
+targets:
+  default: &default
+    filesets:
+      - rtl
+    generate:
+      - generated_topgen

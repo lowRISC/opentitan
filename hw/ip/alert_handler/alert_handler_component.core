@@ -11,6 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:lfsr
+      - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
     files:
       - rtl/alert_pkg.sv
       - rtl/alert_handler_reg_wrap.sv
