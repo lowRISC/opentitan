@@ -10,7 +10,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(lc_ctrl_scoreboard)
 
   // local variables
-
+  bit is_personalized = 0;
   // TLM agent fifos
 
   // local queues to hold incoming packets pending comparison
@@ -47,6 +47,27 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_cpu_en_o,       exp_lc_o.lc_cpu_en_o,       err_msg)
         `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_keymgr_en_o,    exp_lc_o.lc_keymgr_en_o,    err_msg)
         `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_escalate_en_o,  exp_lc_o.lc_escalate_en_o,  err_msg)
+        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_owner_seed_sw_rw_en_o,
+                     exp_lc_o.lc_owner_seed_sw_rw_en_o, err_msg)
+        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_iso_part_sw_rd_en_o,
+                     exp_lc_o.lc_iso_part_sw_rd_en_o, err_msg)
+        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_iso_part_sw_wr_en_o,
+                     exp_lc_o.lc_iso_part_sw_wr_en_o, err_msg)
+
+        // lc_creator_seed_sw_rw_en_o is ON only when device has NOT been personalized or RMA state
+        if ((exp_lc_o.lc_creator_seed_sw_rw_en_o == lc_ctrl_pkg::On && !is_personalized) ||
+            lc_state == DecLcStRma) begin
+          `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_creator_seed_sw_rw_en_o, lc_ctrl_pkg::On, err_msg)
+        end else begin
+          `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_creator_seed_sw_rw_en_o, lc_ctrl_pkg::Off, err_msg)
+        end
+        // lc_seed_hw_rd_en_o is ON only when device has been personalized or RMA state
+        if ((exp_lc_o.lc_seed_hw_rd_en_o == lc_ctrl_pkg::On && is_personalized) ||
+            lc_state == DecLcStRma) begin
+          `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_seed_hw_rd_en_o, lc_ctrl_pkg::On, err_msg)
+        end else begin
+          `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_seed_hw_rd_en_o, lc_ctrl_pkg::Off, err_msg)
+        end
       end
     end
   endtask

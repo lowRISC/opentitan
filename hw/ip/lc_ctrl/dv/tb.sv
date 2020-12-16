@@ -35,48 +35,56 @@ module tb;
 
   // dut
   lc_ctrl dut (
-    .clk_i                 (clk      ),
-    .rst_ni                (rst_n    ),
+    .clk_i                      (clk      ),
+    .rst_ni                     (rst_n    ),
 
-    .tl_i                  (tl_if.h2d),
-    .tl_o                  (tl_if.d2h),
-    .alert_rx_i            (alert_rx ),
-    .alert_tx_o            (alert_tx ),
+    .tl_i                       (tl_if.h2d),
+    .tl_o                       (tl_if.d2h),
+    .alert_rx_i                 (alert_rx ),
+    .alert_tx_o                 (alert_tx ),
 
-    .jtag_i                (0),
-    .jtag_o                (),
+    .jtag_i                     (4'b0),
+    .jtag_o                     (),
+    .scanmode_i                 (1'b0     ),
 
-    .esc_wipe_secrets_tx_i ({2'b01}),
-    .esc_wipe_secrets_rx_o (),
-    .esc_scrap_state_tx_i  ({2'b01}),
-    .esc_scrap_state_rx_o  (),
+    .esc_wipe_secrets_tx_i      ({2'b01}),
+    .esc_wipe_secrets_rx_o      (),
+    .esc_scrap_state_tx_i       ({2'b01}),
+    .esc_scrap_state_rx_o       (),
 
-    .pwr_lc_i              (pwr_lc[LcPwrInitReq]),
-    .pwr_lc_o              (pwr_lc[LcPwrDoneRsp:LcPwrIdleRsp]),
+    .pwr_lc_i                   (pwr_lc[LcPwrInitReq]),
+    .pwr_lc_o                   (pwr_lc[LcPwrDoneRsp:LcPwrIdleRsp]),
 
-    .lc_otp_program_o      (),
-    .lc_otp_program_i      ('b01),
+    .lc_otp_program_o           (),
+    .lc_otp_program_i           (2'b01),
 
-    .lc_otp_token_o        (),
-    .lc_otp_token_i        (lc_rsp),
+    .lc_otp_token_o             (),
+    .lc_otp_token_i             (lc_rsp),
 
-    .otp_lc_data_i         (lc_ctrl_if.otp_i),
+    .otp_lc_data_i              (lc_ctrl_if.otp_i),
 
-    .lc_dft_en_o           (lc_ctrl_if.lc_dft_en_o),
-    .lc_nvm_debug_en_o     (lc_ctrl_if.lc_nvm_debug_en_o),
-    .lc_hw_debug_en_o      (lc_ctrl_if.lc_hw_debug_en_o),
-    .lc_cpu_en_o           (lc_ctrl_if.lc_cpu_en_o),
-    .lc_keymgr_en_o        (lc_ctrl_if.lc_keymgr_en_o),
-    .lc_escalate_en_o      (lc_ctrl_if.lc_escalate_en_o),
+    .lc_dft_en_o                (lc_ctrl_if.lc_dft_en_o),
+    .lc_nvm_debug_en_o          (lc_ctrl_if.lc_nvm_debug_en_o),
+    .lc_hw_debug_en_o           (lc_ctrl_if.lc_hw_debug_en_o),
+    .lc_cpu_en_o                (lc_ctrl_if.lc_cpu_en_o),
+    .lc_creator_seed_sw_rw_en_o (lc_ctrl_if.lc_creator_seed_sw_rw_en_o),
+    .lc_owner_seed_sw_rw_en_o   (lc_ctrl_if.lc_owner_seed_sw_rw_en_o),
+    .lc_iso_part_sw_rd_en_o     (lc_ctrl_if.lc_iso_part_sw_rd_en_o),
+    .lc_iso_part_sw_wr_en_o     (lc_ctrl_if.lc_iso_part_sw_wr_en_o),
+    .lc_seed_hw_rd_en_o         (lc_ctrl_if.lc_seed_hw_rd_en_o),
+    .lc_keymgr_en_o             (lc_ctrl_if.lc_keymgr_en_o),
+    .lc_escalate_en_o           (lc_ctrl_if.lc_escalate_en_o),
 
-    .lc_clk_byp_req_o      (),
-    .lc_clk_byp_ack_i      (lc_ctrl_pkg::On),
+    .lc_clk_byp_req_o           (),
+    .lc_clk_byp_ack_i           (lc_ctrl_pkg::On),
 
-    .lc_flash_rma_seed_o   (),
-    .lc_flash_rma_req_o    (),
-    .lc_flash_rma_ack_i    (lc_ctrl_pkg::Off),
+    .lc_flash_rma_seed_o        (),
+    .lc_flash_rma_req_o         (),
+    .lc_flash_rma_ack_i         (lc_ctrl_pkg::Off),
 
-    .otp_hw_cfg_i          (0)
+    .lc_keymgr_div_o            (),
+
+    .otp_hw_cfg_i               (lc_ctrl_if.otp_hw_cfg_i)
   );
 
   initial begin
