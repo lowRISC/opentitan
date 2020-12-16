@@ -343,16 +343,16 @@ Each flag is a single bit.
 - `C` (Carry flag).
   Set to 1 an overflow occurred in the last arithmetic instruction.
 
-- `L` (LSb flag).
-  The least significant bit of the result of the last arithmetic or shift instruction.
-
 - `M` (MSb flag)
   The most significant bit of the result of the last arithmetic or shift instruction.
+
+- `L` (LSb flag).
+  The least significant bit of the result of the last arithmetic or shift instruction.
 
 - `Z` (Zero Flag)
   Set to 1 if the result of the last operation was zero; otherwise 0.
 
-The `L`, `M`, and `Z` flags are determined based on the result of the operation as it is written back into the result register, without considering the overflow bit.
+The `M`, `L`, and `Z` flags are determined based on the result of the operation as it is written back into the result register, without considering the overflow bit.
 
 ### Loop Stack
 
