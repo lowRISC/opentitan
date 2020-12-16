@@ -45,6 +45,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     link_depends: rom_link_deps,
     dependencies: [
       chip_info_h,
+      sw_lib_crt,
       sw_lib_runtime_hart,
       sw_lib_runtime_print,
       sw_lib_flash_ctrl,

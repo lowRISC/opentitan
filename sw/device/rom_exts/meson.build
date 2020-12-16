@@ -88,6 +88,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       link_depends: slot_link_args[1],
       dependencies: [
         device_lib,
+        sw_lib_crt,
         sw_lib_dif_uart,
         sw_lib_runtime_hart,
         sw_lib_runtime_print,

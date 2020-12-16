@@ -183,50 +183,43 @@ _rom_ext_start_boot:
    */
 
   /**
-   * Initialize the `.data` section.
-   *
-   * `t0` is the start address of `.data` (in RAM).
-   * `t1` is the end address of `.data` (in RAM).
-   * `t2` is the start address of `.data` (in ROM).
-   * `t3` is a scratch register for the copy.
+   * Initialize the `.data` section in RAM from ROM.
    */
-  la   t0, _data_start
-  la   t1, _data_end
-  la   t2, _data_init_start
-  bgeu t0, t1, data_copy_loop_end
-data_copy_loop:
-  // TODO: Unroll this loop
-  lw   t3, 0x0(t2)
-  sw   t3, 0x0(t0)
-  addi t0, t0, 0x4
-  addi t2, t2, 0x4
-  bltu t0, t1, data_copy_loop
-data_copy_loop_end:
+  la   a0, _data_start
+  la   a1, _data_end
+  la   a2, _data_init_start
+  .extern crt_section_copy
+  call crt_section_copy
 
   /**
    * Initialize the `.bss` section.
    *
    * We do this despite zeroing all of SRAM above, so that we still zero `.bss`
    * once we've enabled SRAM scrambling.
-   *
-   * `t0` is the address to start zeroing at.
-   * `t1` is the address to stop zeroing at.
    */
-  la   t0, _bss_start
-  la   t1, _bss_end
-  bgeu t0, t1, bss_zero_end
-bss_zero_loop:
-  // TODO: Unroll loop
-  sw   zero, 0x0(t0)
-  addi t0, t0, 0x4
-  bltu t0, t1, bss_zero_loop
-bss_zero_end:
+  la   a0, _bss_start
+  la   a1, _bss_end
+  .extern crt_section_clear
+  call crt_section_clear
 
-  // Re-clobber all of the registers used to Setup the C Runtime.
-  mv t0, zero
-  mv t1, zero
-  mv t2, zero
-  mv t3, zero
+  // Re-clobber all of the temporary registers.
+  li t0, 0x0
+  li t1, 0x0
+  li t2, 0x0
+  li t3, 0x0
+  li t4, 0x0
+  li t5, 0x0
+  li t6, 0x0
+
+  // Re-clobber all of the argument registers.
+  li a0, 0x0
+  li a1, 0x0
+  li a2, 0x0
+  li a3, 0x0
+  li a4, 0x0
+  li a5, 0x0
+  li a6, 0x0
+  li a7, 0x0
 
   /**
    * Setup global pointer.
