@@ -4,7 +4,7 @@
 
 import math
 import random
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from shared.insn_yaml import Insn
 from shared.operand import (OperandType,
@@ -683,15 +683,18 @@ class Model:
         # destination operand as having an architectural value
         insn = prog_insn.insn
         assert len(insn.operands) == len(prog_insn.operands)
-        pending_writes = []  # type: List[Tuple[str, int]]
+        seen_writes = []  # type: List[Tuple[str, int]]
+        seen_reads = set()  # type: Set[Tuple[str, int]]
         for operand, op_val in zip(insn.operands, prog_insn.operands):
             op_type = operand.op_type
             if isinstance(op_type, RegOperandType):
                 if op_type.is_dest():
-                    pending_writes.append((op_type.reg_type, op_val))
+                    seen_writes.append((op_type.reg_type, op_val))
                 else:
-                    self.read_reg(op_type.reg_type, op_val)
-        for reg_type, op_val in pending_writes:
+                    seen_reads.add((op_type.reg_type, op_val))
+        for op_reg_type, op_val in seen_reads:
+            self.read_reg(op_reg_type, op_val)
+        for reg_type, op_val in seen_writes:
             self.write_reg(reg_type, op_val, None, False)
 
         # If this is a sufficiently simple operation that we understand the
