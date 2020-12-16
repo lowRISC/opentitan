@@ -19,4 +19,4 @@ opt-level = 2
 debug = true
 
 [dependencies]
-ring = "0.16.16"
+mundane = "0.4.3"
