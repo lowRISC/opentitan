@@ -27,7 +27,9 @@ module lc_ctrl_fsm
   input  lc_state_e             lc_state_i,
   input  lc_id_state_e          lc_id_state_i,
   input  lc_cnt_e               lc_cnt_i,
-  // Token input from OTP.
+  // Token input from OTP (these are all hash post-images).
+  input  lc_token_t             all_zero_token_i,
+  input  lc_token_t             raw_unlock_token_i,
   input  lc_token_t             test_unlock_token_i,
   input  lc_token_t             test_exit_token_i,
   input  lc_token_t             rma_token_i,
@@ -378,8 +380,8 @@ module lc_ctrl_fsm
   logic [TokenIdxWidth-1:0] token_idx;
   always_comb begin : p_token_assign
     hashed_tokens = '0;
-    hashed_tokens[ZeroTokenIdx]       = AllZeroTokenHashed;
-    hashed_tokens[RawUnlockTokenIdx]  = RawUnlockTokenHashed;
+    hashed_tokens[ZeroTokenIdx]       = all_zero_token_i;
+    hashed_tokens[RawUnlockTokenIdx]  = raw_unlock_token_i;
     hashed_tokens[TestUnlockTokenIdx] = test_unlock_token_i;
     hashed_tokens[TestExitTokenIdx]   = test_exit_token_i;
     hashed_tokens[RmaTokenIdx]        = rma_token_i;

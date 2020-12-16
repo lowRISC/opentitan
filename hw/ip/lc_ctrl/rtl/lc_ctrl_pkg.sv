@@ -184,10 +184,6 @@ package lc_ctrl_pkg;
     InvalidTokenIdx    = 3'h5
   } token_idx_e;
 
-  // TODO: precompute these values (probably have to do that in OTP at elab time).
-  parameter logic [LcTokenWidth-1:0] RawUnlockTokenHashed = '0;
-  parameter logic [LcTokenWidth-1:0] AllZeroTokenHashed = '0;
-
   ////////////////////////////////
   // Typedefs for LC Interfaces //
   ////////////////////////////////
