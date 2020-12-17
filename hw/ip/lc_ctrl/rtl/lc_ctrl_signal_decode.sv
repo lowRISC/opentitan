@@ -44,38 +44,38 @@ module lc_ctrl_signal_decode
   // Signal Decoder Logic //
   //////////////////////////
 
-  lc_tx_t lc_dft_en_d, lc_dft_en_q;
-  lc_tx_t lc_nvm_debug_en_d, lc_nvm_debug_en_q;
-  lc_tx_t lc_hw_debug_en_d, lc_hw_debug_en_q;
-  lc_tx_t lc_cpu_en_d, lc_cpu_en_q;
-  lc_tx_t lc_creator_seed_sw_rw_en_d, lc_creator_seed_sw_rw_en_q;
-  lc_tx_t lc_owner_seed_sw_rw_en_d, lc_owner_seed_sw_rw_en_q;
-  lc_tx_t lc_iso_part_sw_rd_en_d, lc_iso_part_sw_rd_en_q;
-  lc_tx_t lc_iso_part_sw_wr_en_d, lc_iso_part_sw_wr_en_q;
-  lc_tx_t lc_seed_hw_rd_en_d, lc_seed_hw_rd_en_q;
-  lc_tx_t lc_keymgr_en_d, lc_keymgr_en_q;
-  lc_tx_t lc_escalate_en_d, lc_escalate_en_q;
+  lc_tx_t lc_dft_en_d, lc_dft_en_q, lc_dft_en;
+  lc_tx_t lc_nvm_debug_en_d, lc_nvm_debug_en_q, lc_nvm_debug_en;
+  lc_tx_t lc_hw_debug_en_d, lc_hw_debug_en_q, lc_hw_debug_en;
+  lc_tx_t lc_cpu_en_d, lc_cpu_en_q, lc_cpu_en;
+  lc_tx_t lc_creator_seed_sw_rw_en_d, lc_creator_seed_sw_rw_en_q, lc_creator_seed_sw_rw_en;
+  lc_tx_t lc_owner_seed_sw_rw_en_d, lc_owner_seed_sw_rw_en_q, lc_owner_seed_sw_rw_en;
+  lc_tx_t lc_iso_part_sw_rd_en_d, lc_iso_part_sw_rd_en_q, lc_iso_part_sw_rd_en;
+  lc_tx_t lc_iso_part_sw_wr_en_d, lc_iso_part_sw_wr_en_q, lc_iso_part_sw_wr_en;
+  lc_tx_t lc_seed_hw_rd_en_d, lc_seed_hw_rd_en_q, lc_seed_hw_rd_en;
+  lc_tx_t lc_keymgr_en_d, lc_keymgr_en_q, lc_keymgr_en;
+  lc_tx_t lc_escalate_en_d, lc_escalate_en_q, lc_escalate_en;
   lc_keymgr_div_t lc_keymgr_div_d, lc_keymgr_div_q;
 
   always_comb begin : p_lc_signal_decode
     // Life cycle control signal defaults
-    lc_dft_en_d                = Off;
-    lc_nvm_debug_en_d          = Off;
-    lc_hw_debug_en_d           = Off;
-    lc_cpu_en_d                = Off;
-    lc_creator_seed_sw_rw_en_d = Off;
-    lc_owner_seed_sw_rw_en_d   = Off;
-    lc_iso_part_sw_rd_en_d     = Off;
-    lc_iso_part_sw_wr_en_d     = Off;
-    lc_seed_hw_rd_en_d         = Off;
-    lc_keymgr_en_d             = Off;
-    lc_escalate_en_d           = Off;
+    lc_dft_en                = Off;
+    lc_nvm_debug_en          = Off;
+    lc_hw_debug_en           = Off;
+    lc_cpu_en                = Off;
+    lc_creator_seed_sw_rw_en = Off;
+    lc_owner_seed_sw_rw_en   = Off;
+    lc_iso_part_sw_rd_en     = Off;
+    lc_iso_part_sw_wr_en     = Off;
+    lc_seed_hw_rd_en         = Off;
+    lc_keymgr_en             = Off;
+    lc_escalate_en           = Off;
     // Set to invalid diversification value by default.
-    lc_keymgr_div_d            = RndCnstLcKeymgrDivInvalid;
+    lc_keymgr_div_d          = RndCnstLcKeymgrDivInvalid;
     // The escalation life cycle signal is always decoded, no matter
     // which state we currently are in.
     if (esc_wipe_secrets_i) begin
-      lc_escalate_en_d = On;
+      lc_escalate_en = On;
     end
 
     // Only broadcast during the following main FSM states
@@ -96,65 +96,65 @@ module lc_ctrl_signal_decode
         LcStTestUnlocked1,
         LcStTestUnlocked2,
         LcStTestUnlocked3: begin
-          lc_dft_en_d            = On;
-          lc_nvm_debug_en_d      = On;
-          lc_hw_debug_en_d       = On;
-          lc_cpu_en_d            = On;
-          lc_iso_part_sw_wr_en_d = On;
-          lc_keymgr_div_d        = RndCnstLcKeymgrDivTestDevRma;
+          lc_dft_en            = On;
+          lc_nvm_debug_en      = On;
+          lc_hw_debug_en       = On;
+          lc_cpu_en            = On;
+          lc_iso_part_sw_wr_en = On;
+          lc_keymgr_div_d      = RndCnstLcKeymgrDivTestDevRma;
         end
         ///////////////////////////////////////////////////////////////////
         // Enable production functions
         LcStProd, LcStProdEnd: begin
-          lc_cpu_en_d              = On;
-          lc_keymgr_en_d           = On;
-          lc_owner_seed_sw_rw_en_d = On;
-          lc_iso_part_sw_wr_en_d   = On;
-          lc_iso_part_sw_rd_en_d   = On;
-          lc_keymgr_div_d          = RndCnstLcKeymgrDivProduction;
+          lc_cpu_en              = On;
+          lc_keymgr_en           = On;
+          lc_owner_seed_sw_rw_en = On;
+          lc_iso_part_sw_wr_en   = On;
+          lc_iso_part_sw_rd_en   = On;
+          lc_keymgr_div_d        = RndCnstLcKeymgrDivProduction;
           // Only allow provisioning if the device has not yet been personalized.
           if (lc_id_state_i == LcIdBlank) begin
-            lc_creator_seed_sw_rw_en_d = On;
+            lc_creator_seed_sw_rw_en = On;
           end
           // Only allow hardware to consume the seeds once personalized.
           if (lc_id_state_i == LcIdPersonalized) begin
-            lc_seed_hw_rd_en_d = On;
+            lc_seed_hw_rd_en = On;
           end
 
         end
         ///////////////////////////////////////////////////////////////////
         // Same functions as PROD, but with additional debug functionality.
         LcStDev: begin
-          lc_hw_debug_en_d         = On;
-          lc_cpu_en_d              = On;
-          lc_keymgr_en_d           = On;
-          lc_owner_seed_sw_rw_en_d = On;
-          lc_iso_part_sw_wr_en_d   = On;
-          lc_iso_part_sw_rd_en_d   = On;
-          lc_keymgr_div_d          = RndCnstLcKeymgrDivTestDevRma;
+          lc_hw_debug_en         = On;
+          lc_cpu_en              = On;
+          lc_keymgr_en           = On;
+          lc_owner_seed_sw_rw_en = On;
+          lc_iso_part_sw_wr_en   = On;
+          lc_iso_part_sw_rd_en   = On;
+          lc_keymgr_div_d        = RndCnstLcKeymgrDivTestDevRma;
           // Only allow provisioning if the device has not yet been personalized.
           if (lc_id_state_i == LcIdBlank) begin
-            lc_creator_seed_sw_rw_en_d = On;
+            lc_creator_seed_sw_rw_en = On;
           end
           // Only allow hardware to consume the seeds once personalized.
           if (lc_id_state_i == LcIdPersonalized) begin
-            lc_seed_hw_rd_en_d = On;
+            lc_seed_hw_rd_en = On;
           end
         end
         ///////////////////////////////////////////////////////////////////
         // Enable all test and production functions.
         LcStRma: begin
-          lc_dft_en_d                = On;
-          lc_nvm_debug_en_d          = On;
-          lc_hw_debug_en_d           = On;
-          lc_cpu_en_d                = On;
-          lc_keymgr_en_d             = On;
-          lc_creator_seed_sw_rw_en_d = On;
-          lc_owner_seed_sw_rw_en_d   = On;
-          lc_iso_part_sw_wr_en_d     = On;
-          lc_iso_part_sw_rd_en_d     = On;
-          lc_seed_hw_rd_en_d         = On;
-          lc_keymgr_div_d            = RndCnstLcKeymgrDivTestDevRma;
+          lc_dft_en                = On;
+          lc_nvm_debug_en          = On;
+          lc_hw_debug_en           = On;
+          lc_cpu_en                = On;
+          lc_keymgr_en             = On;
+          lc_creator_seed_sw_rw_en = On;
+          lc_owner_seed_sw_rw_en   = On;
+          lc_iso_part_sw_wr_en     = On;
+          lc_iso_part_sw_rd_en     = On;
+          lc_seed_hw_rd_en         = On;
+          lc_keymgr_div_d          = RndCnstLcKeymgrDivTestDevRma;
         end
         ///////////////////////////////////////////////////////////////////
         // Invalid or scrapped life cycle state, do not assert
@@ -167,6 +167,51 @@ module lc_ctrl_signal_decode
   /////////////////////////////////
   // Control signal output flops //
   /////////////////////////////////
+
+  prim_lc_sender u_prim_lc_sender_dft_en (
+    .lc_en_i(lc_dft_en),
+    .lc_en_o(lc_dft_en_d)
+  );
+  prim_lc_sender u_prim_lc_sender_nvm_debug_en (
+    .lc_en_i(lc_nvm_debug_en),
+    .lc_en_o(lc_nvm_debug_en_d)
+  );
+  prim_lc_sender u_prim_lc_sender_hw_debug_en (
+    .lc_en_i(lc_hw_debug_en),
+    .lc_en_o(lc_hw_debug_en_d)
+  );
+  prim_lc_sender u_prim_lc_sender_cpu_en (
+    .lc_en_i(lc_cpu_en),
+    .lc_en_o(lc_cpu_en_d)
+  );
+  prim_lc_sender u_prim_lc_sender_creator_seed_sw_rw_en (
+    .lc_en_i(lc_creator_seed_sw_rw_en),
+    .lc_en_o(lc_creator_seed_sw_rw_en_d)
+  );
+  prim_lc_sender u_prim_lc_sender_owner_seed_sw_rw_en (
+    .lc_en_i(lc_owner_seed_sw_rw_en),
+    .lc_en_o(lc_owner_seed_sw_rw_en_d)
+  );
+  prim_lc_sender u_prim_lc_sender_iso_part_sw_rd_en (
+    .lc_en_i(lc_iso_part_sw_rd_en),
+    .lc_en_o(lc_iso_part_sw_rd_en_d)
+  );
+  prim_lc_sender u_prim_lc_sender_iso_part_sw_wr_en (
+    .lc_en_i(lc_iso_part_sw_wr_en),
+    .lc_en_o(lc_iso_part_sw_wr_en_d)
+  );
+  prim_lc_sender u_prim_lc_sender_seed_hw_rd_en (
+    .lc_en_i(lc_seed_hw_rd_en),
+    .lc_en_o(lc_seed_hw_rd_en_d)
+  );
+  prim_lc_sender u_prim_lc_sender_keymgr_en (
+    .lc_en_i(lc_keymgr_en),
+    .lc_en_o(lc_keymgr_en_d)
+  );
+  prim_lc_sender u_prim_lc_sender_escalate_en (
+    .lc_en_i(lc_escalate_en),
+    .lc_en_o(lc_escalate_en_d)
+  );
 
   assign lc_dft_en_o                = lc_dft_en_q;
   assign lc_nvm_debug_en_o          = lc_nvm_debug_en_q;

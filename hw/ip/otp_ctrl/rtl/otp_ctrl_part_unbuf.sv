@@ -111,6 +111,8 @@ module otp_ctrl_part_unbuf
 
   logic [SwWindowAddrWidth-1:0] tlul_addr_d, tlul_addr_q;
 
+  part_access_t access;
+
   // Output partition error state.
   assign error_o = error_q;
 
@@ -203,7 +205,7 @@ module otp_ctrl_part_unbuf
         // Double check the address range.
         if ({tlul_addr_q, 2'b00} >= Info.offset &&
             {1'b0, tlul_addr_q, 2'b00} < PartEnd &&
-             access_o.read_lock == Unlocked) begin
+             access.read_lock == Unlocked) begin
           otp_req_o = 1'b1;
           otp_addr_sel = DataAddr;
           if (otp_gnt_i) begin
@@ -313,27 +315,39 @@ module otp_ctrl_part_unbuf
   // Aggregate all possible DAI write locks. The partition is also locked when uninitialized.
   // Note that the locks are redundantly encoded values.
   if (Info.write_lock) begin : gen_digest_write_lock
-    assign access_o.write_lock =
+    assign access.write_lock =
         (~init_done_o || access_i.write_lock != Unlocked || digest_o != '0) ? Locked : Unlocked;
 
-    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> access_o.write_lock == Locked)
+    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> access.write_lock == Locked)
 
   end else begin : gen_no_digest_write_lock
-      assign access_o.write_lock =
+      assign access.write_lock =
           (~init_done_o || access_i.write_lock != Unlocked) ? Locked : Unlocked;
   end
 
   // Aggregate all possible DAI read locks. The partition is also locked when uninitialized.
   // Note that the locks are redundantly encoded 16bit values.
   if (Info.read_lock) begin : gen_digest_read_lock
-    assign access_o.read_lock =
+    assign access.read_lock =
         (~init_done_o || access_i.read_lock != Unlocked || digest_o != '0) ? Locked : Unlocked;
 
-    `ASSERT(DigestReadLocksPartition_A, digest_o |-> access_o.read_lock == Locked)
+    `ASSERT(DigestReadLocksPartition_A, digest_o |-> access.read_lock == Locked)
 
   end else begin : gen_no_digest_read_lock
-      assign access_o.read_lock =
+      assign access.read_lock =
           (~init_done_o || access_i.read_lock != Unlocked) ? Locked : Unlocked;
+  end
+
+  // Make sure there is a hand-picked buffer on each bit to prevent
+  // the synthesis tool from optimizing the multibit signal.
+  logic [$bits(part_access_t)-1:0] access_in, access_out;
+  assign access_in = $bits(part_access_t)'(access);
+  assign access_o = part_access_t'(access_out);
+  for (genvar k = 0; k < $bits(part_access_t); k++) begin : gen_bits
+    prim_buf u_prim_buf (
+      .in_i(access_in[k]),
+      .out_o(access_out[k])
+    );
   end
 
   ///////////////
