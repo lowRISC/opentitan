@@ -56,6 +56,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   bit [keymgr_pkg::GenDataWidth-1:0] sw_data_a_array[keymgr_pkg::keymgr_working_state_e];
   bit [keymgr_pkg::GenDataWidth-1:0] hw_data_a_array[keymgr_pkg::keymgr_working_state_e];
 
+  // expected values
+  bit [NumKeyMgrIntr-1:0] intr_exp;
 
   `uvm_component_new
 
@@ -147,6 +149,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                   UVM_MEDIUM)
       end
     end
+
+    // IntrOpDone occurs after every KDF
+    intr_exp[IntrOpDone] = 1;
   endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
@@ -190,16 +195,37 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        // TODO update read check later
+        // Check in this block
         do_read_check = 1'b0;
+
+        if (addr_phase_write) begin
+          intr_exp &= ~item.a_data;
+        end else if (data_phase_read) begin
+          bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
+
+          foreach (intr_exp[i]) begin
+            keymgr_intr_e intr = keymgr_intr_e'(i);
+
+            `DV_CHECK_EQ(item.d_data[i], intr_exp[i],
+                         $sformatf("Interrupt: %0s", intr.name));
+            `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
+                           $sformatf("Interrupt_pin: %0s", intr.name));
+          end
+        end
       end
       "intr_enable": begin
-        // TODO update read check later
-        do_read_check = 1'b0;
+        // no speical handle is needed
       end
       "intr_test": begin
-        // TODO update read check later
-        do_read_check = 1'b0;
+        if (write && channel == AddrChannel) begin
+          bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
+          intr_exp |= item.a_data;
+          if (cfg.en_cov) begin
+            foreach (intr_exp[i]) begin
+              cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
+            end
+          end
+        end
       end
       "cfgen": begin
         // Check in this block
@@ -224,6 +250,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                 next_state        = get_next_state(current_state);
               end else if (start) begin
                 current_op_status = keymgr_pkg::OpDoneFail;
+                // No KDF issued, done interrupt is triggered immediately
+                intr_exp[IntrOpDone] = 1;
               end
             end
             keymgr_pkg::StInit: begin
@@ -296,18 +324,19 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
         if (addr_phase_write) begin
           // W1C
-          `downcast(current_op_status, int'(current_op_status) ^ item.a_data);
+          `downcast(current_op_status, int'(current_op_status) & ~item.a_data);
         end else if (addr_phase_read) begin
           addr_phase_op_status = current_op_status;
         end else if (data_phase_read) begin
           if (current_state == keymgr_pkg::StReset) begin
-            // when advance from StReset to StInit, we don't how long it will take, if it's ok when
-            // it's WIP or success
+            // when advance from StReset to StInit, we don't how long it will take, it's ok when
+            // status is WIP or success
             `DV_CHECK_EQ(item.d_data inside {current_op_status, next_op_status}, 1)
             if (item.d_data == next_op_status) begin
               current_op_status = next_op_status;
               current_state = next_state;
               next_op_status = keymgr_pkg::OpIdle;
+              intr_exp[IntrOpDone] = 1;
             end
           end else begin
             `DV_CHECK_EQ(item.d_data, addr_phase_op_status)
@@ -321,11 +350,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       default: begin
-        if (uvm_re_match("sw_share*", csr.get_name())) begin
+        if (uvm_re_match("sw_share*", csr.get_name())) begin // Not sw_share
           // TODO
-          do_read_check = 1'b0;
-        end else begin // sw_share
-          // TODO #4292
           do_read_check = 1'b0;
         end
       end
@@ -362,8 +388,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     `CREATE_CMP_STR(RomExtSecurityDescriptor)
 
     if (exp_match) begin
-      // TODO #4292
-      //`DV_CHECK_EQ(act, exp, str)
+      `DV_CHECK_EQ(act, exp, str)
     end else begin
       `DV_CHECK_NE(act, exp, str)
     end
@@ -491,6 +516,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     current_op_status = keymgr_pkg::OpIdle;
     next_op_status    = keymgr_pkg::OpIdle;
     current_hw_key    = 0;
+    intr_exp          = 0;
     adv_data_a_array.delete();
     id_data_a_array.delete();
     sw_data_a_array.delete();
