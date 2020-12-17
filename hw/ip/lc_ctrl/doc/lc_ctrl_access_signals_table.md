@@ -36,7 +36,7 @@
   </tr>
   <tr>
     <td style="text-align:left">RMA</td>
-    <td>Y*</td><td>Y</td><td>Y*</td><td>Y</td><td>Y</td>
+    <td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y</td>
   </tr>
   <tr>
     <td style="text-align:left">SCRAP</td>
