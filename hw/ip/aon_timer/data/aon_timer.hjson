@@ -5,8 +5,13 @@
 {
   name: "aon_timer",
   clock_primary: "clk_i",
+  reset_primary: "rst_ni",
   other_clock_list: [
     "clk_aon_i"
+  ],
+  other_reset_list:
+  [
+    "rst_aon_ni"
   ],
   bus_device: "tlul",
   interrupt_list: [
@@ -18,17 +23,18 @@
     },
   ],
   wakeup_list: [
-    { name: "aon_timer",
+    { name: "aon_timer_wkup_req",
       desc: "Raised if the wakeup or watchdog timer has hit the specified threshold"
     },
   ],
   inter_signal_list: [
-    { name:    "counter_run",
-      type:    "uni",
-      act:     "rsp",
-      package: "",
-      struct:  "logic",
-      width:   "1"
+    // Broadcast from LC
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_escalate_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     },
     { name:    "sleep_mode",
       type:    "uni",
@@ -44,7 +50,9 @@
     { name: "WKUP_CTRL",
       desc: "Wakeup Timer Control register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "0",
           name: "enable",
@@ -59,7 +67,9 @@
     { name: "WKUP_THOLD",
       desc: "Wakeup Timer Threshold Register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0",
           name: "threshold",
@@ -71,6 +81,8 @@
       desc: "Wakeup Timer Count Register",
       swaccess: "rw",
       hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0",
           name: "count",
@@ -81,7 +93,7 @@
     { name: "WDOG_REGWEN",
       desc: "Watchdog Timer Write Enable Register",
       swaccess: "rw0c",
-      hwaccess: "hro",
+      hwaccess: "none",
       fields: [
         { bits: "0",
           name: "regwen",
@@ -93,7 +105,9 @@
     { name: "WDOG_CTRL",
       desc: "Watchdog Timer Control register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       regwen: "WDOG_REGWEN",
       fields: [
         { bits: "0",
@@ -109,7 +123,9 @@
     { name: "WDOG_BARK_THOLD",
       desc: "Watchdog Timer Bark Threshold Register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       regwen: "WDOG_REGWEN",
       fields: [
         { bits: "31:0",
@@ -121,7 +137,9 @@
     { name: "WDOG_BITE_THOLD",
       desc: "Watchdog Timer Bite Threshold Register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       regwen: "WDOG_REGWEN",
       fields: [
         { bits: "31:0",
@@ -134,6 +152,8 @@
       desc: "Watchdog Timer Count Register",
       swaccess: "rw",
       hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0",
           name: "count",
@@ -160,6 +180,8 @@
       desc: "Interrupt Test Register",
       swaccess: "wo",
       hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "0",
           name: "wkup_timer_expired",
@@ -168,6 +190,19 @@
         { bits: "1",
           name: "wdog_timer_expired",
           desc: "Write 1 to force wdog_timer_expired (watchdog bark) interrupt",
+        }
+      ]
+    },
+    { name: "WKUP_CAUSE",
+      desc: "Wakeup request status",
+      swaccess: "rw0c",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "0",
+          name: "cause",
+          desc: "AON timer requested wakeup, write 0 to clear",
         }
       ]
     },

@@ -1,0 +1,65 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:aon_timer:0.1"
+description: "Always-On Timer"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:prim:lc_sync
+      - lowrisc:ip:tlul
+    files:
+      - rtl/aon_timer_reg_pkg.sv
+      - rtl/aon_timer_reg_top.sv
+      - rtl/aon_timer_core.sv
+      - rtl/aon_timer.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - files_rtl
+    toplevel: aon_timer
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      ascentlint:
+        ascentlint_options:
+          - "-wait_license"
+          - "-stop_on_error"
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
