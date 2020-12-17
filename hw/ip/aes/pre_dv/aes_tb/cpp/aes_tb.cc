@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
             << std::endl;
 
   // Get pass / fail from Verilator
-  ret_code = simctrl.Exec(argc, argv);
+  ret_code = simctrl.Exec(argc, argv).first;
 
   return ret_code;
 }
