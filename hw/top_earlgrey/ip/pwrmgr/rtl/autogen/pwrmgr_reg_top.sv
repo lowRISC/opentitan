@@ -116,6 +116,7 @@ module pwrmgr_reg_top (
   logic reset_en_wd;
   logic reset_en_we;
   logic reset_status_qs;
+  logic escalate_reset_status_qs;
   logic wake_info_capture_dis_qs;
   logic wake_info_capture_dis_wd;
   logic wake_info_capture_dis_we;
@@ -572,6 +573,32 @@ module pwrmgr_reg_top (
   );
 
 
+  // R[escalate_reset_status]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_escalate_reset_status (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.escalate_reset_status.de),
+    .d      (hw2reg.escalate_reset_status.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (escalate_reset_status_qs)
+  );
+
+
   // R[wake_info_capture_dis]: V(False)
 
   prim_subreg #(
@@ -648,7 +675,7 @@ module pwrmgr_reg_top (
 
 
 
-  logic [13:0] addr_hit;
+  logic [14:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == PWRMGR_INTR_STATE_OFFSET);
@@ -663,8 +690,9 @@ module pwrmgr_reg_top (
     addr_hit[ 9] = (reg_addr == PWRMGR_RESET_EN_REGWEN_OFFSET);
     addr_hit[10] = (reg_addr == PWRMGR_RESET_EN_OFFSET);
     addr_hit[11] = (reg_addr == PWRMGR_RESET_STATUS_OFFSET);
-    addr_hit[12] = (reg_addr == PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET);
-    addr_hit[13] = (reg_addr == PWRMGR_WAKE_INFO_OFFSET);
+    addr_hit[12] = (reg_addr == PWRMGR_ESCALATE_RESET_STATUS_OFFSET);
+    addr_hit[13] = (reg_addr == PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET);
+    addr_hit[14] = (reg_addr == PWRMGR_WAKE_INFO_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -686,6 +714,7 @@ module pwrmgr_reg_top (
     if (addr_hit[11] && reg_we && (PWRMGR_PERMIT[11] != (PWRMGR_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[12] && reg_we && (PWRMGR_PERMIT[12] != (PWRMGR_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[13] && reg_we && (PWRMGR_PERMIT[13] != (PWRMGR_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[14] && reg_we && (PWRMGR_PERMIT[14] != (PWRMGR_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_we = addr_hit[0] & reg_we & ~wr_err;
@@ -734,20 +763,21 @@ module pwrmgr_reg_top (
   assign reset_en_wd = reg_wdata[0];
 
 
-  assign wake_info_capture_dis_we = addr_hit[12] & reg_we & ~wr_err;
+
+  assign wake_info_capture_dis_we = addr_hit[13] & reg_we & ~wr_err;
   assign wake_info_capture_dis_wd = reg_wdata[0];
 
-  assign wake_info_reasons_we = addr_hit[13] & reg_we & ~wr_err;
+  assign wake_info_reasons_we = addr_hit[14] & reg_we & ~wr_err;
   assign wake_info_reasons_wd = reg_wdata[0];
-  assign wake_info_reasons_re = addr_hit[13] && reg_re;
+  assign wake_info_reasons_re = addr_hit[14] && reg_re;
 
-  assign wake_info_fall_through_we = addr_hit[13] & reg_we & ~wr_err;
+  assign wake_info_fall_through_we = addr_hit[14] & reg_we & ~wr_err;
   assign wake_info_fall_through_wd = reg_wdata[1];
-  assign wake_info_fall_through_re = addr_hit[13] && reg_re;
+  assign wake_info_fall_through_re = addr_hit[14] && reg_re;
 
-  assign wake_info_abort_we = addr_hit[13] & reg_we & ~wr_err;
+  assign wake_info_abort_we = addr_hit[14] & reg_we & ~wr_err;
   assign wake_info_abort_wd = reg_wdata[2];
-  assign wake_info_abort_re = addr_hit[13] && reg_re;
+  assign wake_info_abort_re = addr_hit[14] && reg_re;
 
   // Read data return
   always_comb begin
@@ -807,10 +837,14 @@ module pwrmgr_reg_top (
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[0] = wake_info_capture_dis_qs;
+        reg_rdata_next[0] = escalate_reset_status_qs;
       end
 
       addr_hit[13]: begin
+        reg_rdata_next[0] = wake_info_capture_dis_qs;
+      end
+
+      addr_hit[14]: begin
         reg_rdata_next[0] = wake_info_reasons_qs;
         reg_rdata_next[1] = wake_info_fall_through_qs;
         reg_rdata_next[2] = wake_info_abort_qs;

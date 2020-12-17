@@ -349,6 +349,40 @@
     ]
   }
   num_cores: "1"
+  host:
+  [
+    {
+      name: rv_core_ibex
+      type: rv_core_ibex
+      inter_signal_list:
+      [
+        {
+          struct: esc_tx
+          type: uni
+          name: esc_nmi_tx
+          act: rcv
+          package: prim_esc_pkg
+          inst_name: rv_core_ibex
+          width: 1
+          default: ""
+          top_signame: alert_handler_esc_tx
+          index: 0
+        }
+        {
+          struct: esc_rx
+          type: uni
+          name: esc_nmi_rx
+          act: req
+          package: prim_esc_pkg
+          inst_name: rv_core_ibex
+          width: 1
+          default: ""
+          top_signame: alert_handler_esc_rx
+          index: 0
+        }
+      ]
+    }
+  ]
   module:
   [
     {
@@ -1436,7 +1470,10 @@
           act: rcv
           package: prim_esc_pkg
           inst_name: lc_ctrl
-          index: -1
+          width: 1
+          default: ""
+          top_signame: alert_handler_esc_tx
+          index: 1
         }
         {
           struct: esc_rx
@@ -1445,7 +1482,10 @@
           act: req
           package: prim_esc_pkg
           inst_name: lc_ctrl
-          index: -1
+          width: 1
+          default: ""
+          top_signame: alert_handler_esc_rx
+          index: 1
         }
         {
           struct: esc_tx
@@ -1454,7 +1494,10 @@
           act: rcv
           package: prim_esc_pkg
           inst_name: lc_ctrl
-          index: -1
+          width: 1
+          default: ""
+          top_signame: alert_handler_esc_tx
+          index: 2
         }
         {
           struct: esc_rx
@@ -1463,7 +1506,10 @@
           act: req
           package: prim_esc_pkg
           inst_name: lc_ctrl
-          index: -1
+          width: 1
+          default: ""
+          top_signame: alert_handler_esc_rx
+          index: 2
         }
         {
           struct: pwr_lc
@@ -1891,6 +1937,32 @@
           index: -1
         }
         {
+          struct: esc_rx
+          type: uni
+          name: esc_rx
+          act: rcv
+          width: 4
+          package: prim_esc_pkg
+          inst_name: alert_handler
+          default: ""
+          top_type: one-to-N
+          top_signame: alert_handler_esc_rx
+          index: -1
+        }
+        {
+          struct: esc_tx
+          type: uni
+          name: esc_tx
+          act: req
+          width: 4
+          package: prim_esc_pkg
+          inst_name: alert_handler
+          default: ""
+          top_type: one-to-N
+          top_signame: alert_handler_esc_tx
+          index: -1
+        }
+        {
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -1991,6 +2063,25 @@
           inst_name: nmi_gen
           width: 1
           top_signame: pwrmgr_rstreqs
+          index: -1
+        }
+        {
+          struct: esc_tx
+          type: uni
+          name: esc_tx
+          act: rcv
+          package: prim_esc_pkg
+          default: "'{3{prim_esc_pkg::ESC_TX_DEFAULT}}"
+          inst_name: nmi_gen
+          index: -1
+        }
+        {
+          struct: esc_rx
+          type: uni
+          name: esc_rx
+          act: req
+          package: prim_esc_pkg
+          inst_name: nmi_gen
           index: -1
         }
         {
@@ -2131,6 +2222,30 @@
           default: ""
           top_signame: pwrmgr_pwr_flash
           index: -1
+        }
+        {
+          struct: esc_tx
+          type: uni
+          name: esc_rst_tx
+          act: rcv
+          package: prim_esc_pkg
+          inst_name: pwrmgr
+          width: 1
+          default: ""
+          top_signame: alert_handler_esc_tx
+          index: 3
+        }
+        {
+          struct: esc_rx
+          type: uni
+          name: esc_rst_rx
+          act: req
+          package: prim_esc_pkg
+          inst_name: pwrmgr
+          width: 1
+          default: ""
+          top_signame: alert_handler_esc_rx
+          index: 3
         }
         {
           struct: pwr_cpu
@@ -5045,6 +5160,20 @@
       alert_handler.crashdump:
       [
         rstmgr.alert_dump
+      ]
+      alert_handler.esc_rx:
+      [
+        rv_core_ibex.esc_nmi_rx
+        lc_ctrl.esc_wipe_secrets_rx
+        lc_ctrl.esc_scrap_state_rx
+        pwrmgr.esc_rst_rx
+      ]
+      alert_handler.esc_tx:
+      [
+        rv_core_ibex.esc_nmi_tx
+        lc_ctrl.esc_wipe_secrets_tx
+        lc_ctrl.esc_scrap_state_tx
+        pwrmgr.esc_rst_tx
       ]
       csrng.csrng_cmd:
       [
@@ -8376,7 +8505,10 @@
         act: rcv
         package: prim_esc_pkg
         inst_name: lc_ctrl
-        index: -1
+        width: 1
+        default: ""
+        top_signame: alert_handler_esc_tx
+        index: 1
       }
       {
         struct: esc_rx
@@ -8385,7 +8517,10 @@
         act: req
         package: prim_esc_pkg
         inst_name: lc_ctrl
-        index: -1
+        width: 1
+        default: ""
+        top_signame: alert_handler_esc_rx
+        index: 1
       }
       {
         struct: esc_tx
@@ -8394,7 +8529,10 @@
         act: rcv
         package: prim_esc_pkg
         inst_name: lc_ctrl
-        index: -1
+        width: 1
+        default: ""
+        top_signame: alert_handler_esc_tx
+        index: 2
       }
       {
         struct: esc_rx
@@ -8403,7 +8541,10 @@
         act: req
         package: prim_esc_pkg
         inst_name: lc_ctrl
-        index: -1
+        width: 1
+        default: ""
+        top_signame: alert_handler_esc_rx
+        index: 2
       }
       {
         struct: pwr_lc
@@ -8712,6 +8853,32 @@
         index: -1
       }
       {
+        struct: esc_rx
+        type: uni
+        name: esc_rx
+        act: rcv
+        width: 4
+        package: prim_esc_pkg
+        inst_name: alert_handler
+        default: ""
+        top_type: one-to-N
+        top_signame: alert_handler_esc_rx
+        index: -1
+      }
+      {
+        struct: esc_tx
+        type: uni
+        name: esc_tx
+        act: req
+        width: 4
+        package: prim_esc_pkg
+        inst_name: alert_handler
+        default: ""
+        top_type: one-to-N
+        top_signame: alert_handler_esc_tx
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -8733,6 +8900,25 @@
         inst_name: nmi_gen
         width: 1
         top_signame: pwrmgr_rstreqs
+        index: -1
+      }
+      {
+        struct: esc_tx
+        type: uni
+        name: esc_tx
+        act: rcv
+        package: prim_esc_pkg
+        default: "'{3{prim_esc_pkg::ESC_TX_DEFAULT}}"
+        inst_name: nmi_gen
+        index: -1
+      }
+      {
+        struct: esc_rx
+        type: uni
+        name: esc_rx
+        act: req
+        package: prim_esc_pkg
+        inst_name: nmi_gen
         index: -1
       }
       {
@@ -8819,6 +9005,30 @@
         default: ""
         top_signame: pwrmgr_pwr_flash
         index: -1
+      }
+      {
+        struct: esc_tx
+        type: uni
+        name: esc_rst_tx
+        act: rcv
+        package: prim_esc_pkg
+        inst_name: pwrmgr
+        width: 1
+        default: ""
+        top_signame: alert_handler_esc_tx
+        index: 3
+      }
+      {
+        struct: esc_rx
+        type: uni
+        name: esc_rst_rx
+        act: req
+        package: prim_esc_pkg
+        inst_name: pwrmgr
+        width: 1
+        default: ""
+        top_signame: alert_handler_esc_rx
+        index: 3
       }
       {
         struct: pwr_cpu
@@ -10371,6 +10581,30 @@
         top_signame: ast_tl
         index: -1
       }
+      {
+        struct: esc_tx
+        type: uni
+        name: esc_nmi_tx
+        act: rcv
+        package: prim_esc_pkg
+        inst_name: rv_core_ibex
+        width: 1
+        default: ""
+        top_signame: alert_handler_esc_tx
+        index: 0
+      }
+      {
+        struct: esc_rx
+        type: uni
+        name: esc_nmi_rx
+        act: req
+        package: prim_esc_pkg
+        inst_name: rv_core_ibex
+        width: 1
+        default: ""
+        top_signame: alert_handler_esc_rx
+        index: 0
+      }
     ]
     external:
     [
@@ -10580,6 +10814,22 @@
         struct: alert_crashdump
         signame: alert_handler_crashdump
         width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: prim_esc_pkg
+        struct: esc_rx
+        signame: alert_handler_esc_rx
+        width: 4
+        type: uni
+        default: ""
+      }
+      {
+        package: prim_esc_pkg
+        struct: esc_tx
+        signame: alert_handler_esc_tx
+        width: 4
         type: uni
         default: ""
       }

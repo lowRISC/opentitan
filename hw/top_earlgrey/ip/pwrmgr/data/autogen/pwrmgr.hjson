@@ -61,6 +61,20 @@
       package: "pwrmgr_pkg",
     },
 
+    { struct:  "esc_tx",
+      type:    "uni",
+      name:    "esc_rst_tx",
+      act:     "rcv",
+      package: "prim_esc_pkg",
+    },
+
+    { struct:  "esc_rx",
+      type:    "uni",
+      name:    "esc_rst_rx",
+      act:     "req",
+      package: "prim_esc_pkg",
+    },
+
     { struct:  "pwr_cpu",
       type:    "uni",
       name:    "pwr_cpu",
@@ -419,6 +433,22 @@
           },
         ]
       },
+    },
+
+    { name: "ESCALATE_RESET_STATUS",
+      desc: "A read only register of escalation reset request",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      resval: "0"
+      fields: [
+        { bits: "0",
+          name: "VAL",
+          desc: '''
+            When 1, an escalation reset has been seen.
+            When 0, there is no escalation reset.
+          ''',
+        },
+      ]
     },
 
     { name: "WAKE_INFO_CAPTURE_DIS",

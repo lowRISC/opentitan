@@ -9,6 +9,7 @@ package rstmgr_reg_pkg;
   // Param list
   parameter int RdWidth = 32;
   parameter int IdxWidth = 4;
+  parameter int NumHwResets = 2;
   parameter int NumSwResets = 2;
 
   ////////////////////////////
@@ -16,7 +17,7 @@ package rstmgr_reg_pkg;
   ////////////////////////////
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [1:0]  q;
     } hw_req;
   } rstmgr_reg2hw_reset_info_reg_t;
 
@@ -49,7 +50,7 @@ package rstmgr_reg_pkg;
       logic        de;
     } ndm_reset;
     struct packed {
-      logic        d;
+      logic [1:0]  d;
       logic        de;
     } hw_req;
   } rstmgr_hw2reg_reset_info_reg_t;
@@ -78,7 +79,7 @@ package rstmgr_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    rstmgr_reg2hw_reset_info_reg_t reset_info; // [11:11]
+    rstmgr_reg2hw_reset_info_reg_t reset_info; // [12:11]
     rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [10:6]
     rstmgr_reg2hw_sw_rst_regen_mreg_t [1:0] sw_rst_regen; // [5:4]
     rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [1:0] sw_rst_ctrl_n; // [3:0]
@@ -88,7 +89,7 @@ package rstmgr_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    rstmgr_hw2reg_reset_info_reg_t reset_info; // [45:40]
+    rstmgr_hw2reg_reset_info_reg_t reset_info; // [46:40]
     rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [39:38]
     rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [37:34]
     rstmgr_hw2reg_alert_info_reg_t alert_info; // [33:2]
