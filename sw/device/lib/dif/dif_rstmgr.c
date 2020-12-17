@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
+
 #include "rstmgr_regs.h"  // Generated.
 
 // This macro simplifies the `_Static_assert` check to make sure that the
@@ -21,10 +22,10 @@
 RSTMGR_RESET_INFO_CHECK(Por, INFO_POR);
 RSTMGR_RESET_INFO_CHECK(LowPowerExit, INFO_LOW_POWER_EXIT);
 RSTMGR_RESET_INFO_CHECK(Ndm, INFO_NDM_RESET);
-RSTMGR_RESET_INFO_CHECK(HwReq, INFO_HW_REQ);
 
-_Static_assert(kDifRstmgrResetInfoLast == kDifRstmgrResetInfoHwReq,
-               "Please add `RSTMGR_RESET_INFO_CHECK` for the new reset type!");
+_Static_assert(kDifRstmgrResetInfoHwReq == (RSTMGR_RESET_INFO_HW_REQ_MASK
+                                            << RSTMGR_RESET_INFO_HW_REQ_OFFSET),
+               "kDifRstmgrResetInfoHwReq must match the register definition!");
 
 _Static_assert(
     RSTMGR_PARAM_NUMSWRESETS == 2,

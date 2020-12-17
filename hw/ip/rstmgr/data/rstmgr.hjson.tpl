@@ -35,12 +35,21 @@
       local: "true"
     },
 
+    { name: "NumHwResets",
+      desc: "Number of hardware reset requests, inclusive of escalation",
+      type: "int",
+      default: "${num_rstreqs+1}",
+      local: "true"
+    },
+
     { name: "NumSwResets",
       desc: "Number of software resets",
       type: "int",
       default: "${len(sw_rsts)}",
       local: "true"
     },
+
+
   ],
 
   // Define rstmgr struct package
