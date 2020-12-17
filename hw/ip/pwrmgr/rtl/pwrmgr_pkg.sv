@@ -69,7 +69,7 @@ package pwrmgr_pkg;
   typedef struct packed {
     logic [PowerDomains-1:0] rst_lc_req;
     logic [PowerDomains-1:0] rst_sys_req;
-    logic [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs;
+    logic [pwrmgr_reg_pkg::NumRstReqs:0] rstreqs;
     reset_cause_e reset_cause;
   } pwr_rst_req_t;
 
@@ -166,7 +166,8 @@ package pwrmgr_pkg;
   // peripherals to pwrmgr
   typedef struct packed {
     logic [pwrmgr_reg_pkg::NumWkups-1:0] wakeups;
-    logic [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs;
+    // reset requests include external requests + escalation reset
+    logic [pwrmgr_reg_pkg::NumRstReqs:0] rstreqs;
   } pwr_peri_t;
 
   // power-up causes

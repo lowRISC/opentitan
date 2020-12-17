@@ -518,10 +518,12 @@
       // the processor core wrapper supports intermodule signals
       // and the reset manager has an escalation input.
       //'alert_handler.esc_rx': ['lc_ctrl.esc_wipe_secrets_rx',
-      //                         'lc_ctrl.esc_scrap_state_rx'],
+      //                         'lc_ctrl.esc_scrap_state_rx'
+      //                         'pwrmgr.esc_rst_rx'],
       //'alert_handler.esc_tx': ['lc_ctrl.esc_wipe_secrets_tx',
-      //                         'lc_ctrl.esc_scrap_state_tx'],
-      'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
+      //                         'lc_ctrl.esc_scrap_state_tx',
+      //                         'pwrmgr.esc_rst_tx'],
+      'csrng.csrng_cmd' : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       'flash_ctrl.flash'        : ['eflash.flash_ctrl'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],

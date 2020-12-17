@@ -50,9 +50,27 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   input  [NumWkups-1:0] wakeups_i,
   input  [NumRstReqs-1:0] rstreqs_i,
 
+  // escalation interface
+  input prim_esc_pkg::esc_tx_t esc_rst_tx_i,
+  output prim_esc_pkg::esc_rx_t esc_rst_rx_o,
+
   output intr_wakeup_o
 
 );
+
+  ////////////////////////////
+  ///  escalation detections
+  ////////////////////////////
+
+  logic esc_rst_req;
+
+  prim_esc_receiver u_esc_rx (
+    .clk_i,
+    .rst_ni,
+    .esc_en_o(esc_rst_req),
+    .esc_rx_o(esc_rst_rx_o),
+    .esc_tx_i(esc_rst_tx_i)
+  );
 
   ////////////////////////////
   ///  async declarations
@@ -60,7 +78,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   pwr_peri_t peri_reqs_raw;
 
   assign peri_reqs_raw.wakeups = wakeups_i;
-  assign peri_reqs_raw.rstreqs = rstreqs_i;
+  assign peri_reqs_raw.rstreqs = {esc_rst_req, rstreqs_i};
 
   ////////////////////////////
   ///  clk_i domain declarations
@@ -229,7 +247,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // and that would be very undesirable.
 
   assign slow_peri_reqs_masked.wakeups = slow_peri_reqs.wakeups & slow_wakeup_en;
-  assign slow_peri_reqs_masked.rstreqs = slow_peri_reqs.rstreqs & slow_reset_en;
+  // msb is escalation reset
+  assign slow_peri_reqs_masked.rstreqs = slow_peri_reqs.rstreqs & {1'b1, slow_reset_en};
 
   for (genvar i = 0; i < NumWkups; i++) begin : gen_wakeup_status
     assign hw2reg.wake_status[i].de = 1'b1;
@@ -241,6 +260,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     assign hw2reg.reset_status[i].d  = peri_reqs_masked.rstreqs[i];
   end
 
+  assign hw2reg.escalate_reset_status.de = 1'b1;
+  assign hw2reg.escalate_reset_status.d = peri_reqs_masked.rstreqs[NumRstReqs];
 
 
   ////////////////////////////
