@@ -11,6 +11,7 @@ edition = "2018"
 [workspace]
 members = [
     "config",
+    "image"
 ]
 
 [profile.dev]
@@ -26,3 +27,4 @@ debug = true
 [dependencies]
 mundane = "0.4.3"
 rom_ext_config = { path = "config" }
+rom_ext_image = { path = "image" }
