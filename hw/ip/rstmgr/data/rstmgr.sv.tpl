@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // This module is the overall reset manager wrapper
-// TODO: This module is only a draft implementation that covers most of the rstmgr
-// functoinality but is incomplete
 
 `include "prim_assert.sv"
 
@@ -33,6 +31,9 @@ module rstmgr import rstmgr_pkg::*; (
 
   // Interface to alert handler
   input alert_pkg::alert_crashdump_t alert_dump_i,
+
+  // Interface to cpu crash dump
+  input rv_core_ibex_pkg::crashdump_t cpu_dump_i,
 
   // dft bypass
   input scan_rst_ni,
@@ -272,6 +273,43 @@ module rstmgr import rstmgr_pkg::*; (
   assign hw2reg.reset_info.hw_req.d  = pwr_i.rstreqs | reg2hw.reset_info.hw_req.q;
   assign hw2reg.reset_info.hw_req.de = rst_hw_req;
 
+  ////////////////////////////////////////////////////
+  // Crash info capture                             //
+  ////////////////////////////////////////////////////
+
+  logic dump_capture;
+  assign dump_capture =  rst_hw_req | rst_ndm | rst_low_power;
+
+  rstmgr_crash_info #(
+    .CrashDumpWidth($bits(alert_pkg::alert_crashdump_t))
+  ) u_alert_info (
+    .clk_i,
+    .rst_ni,
+    .dump_i(alert_dump_i),
+    .dump_capture_i(dump_capture & reg2hw.alert_info_ctrl.en.q),
+    .slot_sel_i(reg2hw.alert_info_ctrl.index.q),
+    .slots_cnt_o(hw2reg.alert_info_attr.d),
+    .slot_o(hw2reg.alert_info.d)
+  );
+
+  rstmgr_crash_info #(
+    .CrashDumpWidth($bits(rv_core_ibex_pkg::crashdump_t))
+  ) u_cpu_info (
+    .clk_i,
+    .rst_ni,
+    .dump_i(cpu_dump_i),
+    .dump_capture_i(dump_capture & reg2hw.cpu_info_ctrl.en.q),
+    .slot_sel_i(reg2hw.cpu_info_ctrl.index.q),
+    .slots_cnt_o(hw2reg.cpu_info_attr.d),
+    .slot_o(hw2reg.cpu_info.d)
+  );
+
+  // once dump is captured, no more information is captured until
+  // re-eanbled by software.
+  assign hw2reg.alert_info_ctrl.en.d  = 1'b0;
+  assign hw2reg.alert_info_ctrl.en.de = dump_capture;
+  assign hw2reg.cpu_info_ctrl.en.d  = 1'b0;
+  assign hw2reg.cpu_info_ctrl.en.de = dump_capture;
 
   ////////////////////////////////////////////////////
   // Exported resets                                //
@@ -284,59 +322,12 @@ module rstmgr import rstmgr_pkg::*; (
   % endfor
 % endfor
 
-  ////////////////////////////////////////////////////
-  // Crash info capture                             //
-  ////////////////////////////////////////////////////
-  localparam int CrashRemainder = $bits(alert_pkg::alert_crashdump_t) % RdWidth > 0 ? 1 : 0;
-  localparam int CrashStoreSlot = $bits(alert_pkg::alert_crashdump_t) / RdWidth +
-      CrashRemainder;
-  localparam int TotalWidth     = CrashStoreSlot * RdWidth;
-  localparam int SlotCntWidth   = $clog2(CrashStoreSlot);
 
-  logic dump_capture;
-  logic [2**SlotCntWidth-1:0][RdWidth-1:0] slots;
-  logic [CrashStoreSlot-1:0][RdWidth-1:0] slots_q;
-
-  // capture on any legal reset request
-  assign dump_capture = reg2hw.alert_info_ctrl.en.q &
-                        (rst_hw_req | rst_ndm | rst_low_power);
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      slots_q <= '0;
-    end else if (dump_capture) begin
-      slots_q <= TotalWidth'(alert_dump_i);
-    end
-  end
-
-  always_comb begin
-    slots = '0;
-    slots[CrashStoreSlot-1:0] = slots_q;
-  end
-
-  // once dump is captured, no more information is captured until
-  // re-eanbled by software.
-  assign hw2reg.alert_info_ctrl.en.d  = 1'b0;
-  assign hw2reg.alert_info_ctrl.en.de = dump_capture;
-
-  // number of segments to read
-  assign hw2reg.alert_info_attr.d = CrashStoreSlot;
-
-  // the actual dump data
-  assign hw2reg.alert_info.d = slots[reg2hw.alert_info_ctrl.index.q[SlotCntWidth-1:0]];
-
-  if (SlotCntWidth < IdxWidth) begin : gen_tieoffs
-    logic [IdxWidth-SlotCntWidth-1:0] unused_idx;
-    assign unused_idx = reg2hw.alert_info_ctrl.index.q[IdxWidth-1:SlotCntWidth];
-  end
 
 
   ////////////////////////////////////////////////////
   // Assertions                                     //
   ////////////////////////////////////////////////////
-
-  // Make sure the crash dump isn't excessively large
-  `ASSERT_INIT(CntWidth_A, SlotCntWidth <= IdxWidth)
 
   // when upstream resets, downstream must also reset
 

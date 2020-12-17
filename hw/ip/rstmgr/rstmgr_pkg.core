@@ -12,9 +12,10 @@ filesets:
       - lowrisc:ip:rstmgr_reg
       - lowrisc:ip:alert_handler_reg
       - lowrisc:ip:alert_handler_component
-      - fileset_top ? (lowrisc:systems:rstmgr_pkg)
+      - lowrisc:ip:rv_core_ibex_pkg
+      - "fileset_top ? (lowrisc:systems:rstmgr_pkg)"
     files:
-      - fileset_ip ? (rtl/rstmgr_pkg.sv)
+      - "fileset_ip ? (rtl/rstmgr_pkg.sv)"
     file_type: systemVerilogSource
 
 targets:

@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:clock_gating
       - lowrisc:ip:tlul
       - lowrisc:tlul:adapter_host
+      - lowrisc:ip:rv_core_ibex_pkg
     files:
       - rtl/rv_core_ibex.sv
     file_type: systemVerilogSource
@@ -86,4 +87,3 @@ targets:
     default_tool: icarus
     parameters:
       - SYNTHESIS=true
-
