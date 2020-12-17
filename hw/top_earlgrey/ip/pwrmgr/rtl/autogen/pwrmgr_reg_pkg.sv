@@ -112,6 +112,11 @@ package pwrmgr_reg_pkg;
   } pwrmgr_hw2reg_reset_status_mreg_t;
 
   typedef struct packed {
+    logic        d;
+    logic        de;
+  } pwrmgr_hw2reg_escalate_reset_status_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic        d;
     } reasons;
@@ -143,12 +148,13 @@ package pwrmgr_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    pwrmgr_hw2reg_intr_state_reg_t intr_state; // [13:12]
-    pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [11:11]
-    pwrmgr_hw2reg_control_reg_t control; // [10:9]
-    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [8:7]
-    pwrmgr_hw2reg_wake_status_mreg_t [0:0] wake_status; // [6:5]
-    pwrmgr_hw2reg_reset_status_mreg_t [0:0] reset_status; // [4:3]
+    pwrmgr_hw2reg_intr_state_reg_t intr_state; // [15:14]
+    pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [13:13]
+    pwrmgr_hw2reg_control_reg_t control; // [12:11]
+    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [10:9]
+    pwrmgr_hw2reg_wake_status_mreg_t [0:0] wake_status; // [8:7]
+    pwrmgr_hw2reg_reset_status_mreg_t [0:0] reset_status; // [6:5]
+    pwrmgr_hw2reg_escalate_reset_status_reg_t escalate_reset_status; // [4:3]
     pwrmgr_hw2reg_wake_info_reg_t wake_info; // [2:0]
   } pwrmgr_hw2reg_t;
 
@@ -165,8 +171,9 @@ package pwrmgr_reg_pkg;
   parameter logic [5:0] PWRMGR_RESET_EN_REGWEN_OFFSET = 6'h 24;
   parameter logic [5:0] PWRMGR_RESET_EN_OFFSET = 6'h 28;
   parameter logic [5:0] PWRMGR_RESET_STATUS_OFFSET = 6'h 2c;
-  parameter logic [5:0] PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET = 6'h 30;
-  parameter logic [5:0] PWRMGR_WAKE_INFO_OFFSET = 6'h 34;
+  parameter logic [5:0] PWRMGR_ESCALATE_RESET_STATUS_OFFSET = 6'h 30;
+  parameter logic [5:0] PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET = 6'h 34;
+  parameter logic [5:0] PWRMGR_WAKE_INFO_OFFSET = 6'h 38;
 
 
   // Register Index
@@ -183,12 +190,13 @@ package pwrmgr_reg_pkg;
     PWRMGR_RESET_EN_REGWEN,
     PWRMGR_RESET_EN,
     PWRMGR_RESET_STATUS,
+    PWRMGR_ESCALATE_RESET_STATUS,
     PWRMGR_WAKE_INFO_CAPTURE_DIS,
     PWRMGR_WAKE_INFO
   } pwrmgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] PWRMGR_PERMIT [14] = '{
+  parameter logic [3:0] PWRMGR_PERMIT [15] = '{
     4'b 0001, // index[ 0] PWRMGR_INTR_STATE
     4'b 0001, // index[ 1] PWRMGR_INTR_ENABLE
     4'b 0001, // index[ 2] PWRMGR_INTR_TEST
@@ -201,8 +209,9 @@ package pwrmgr_reg_pkg;
     4'b 0001, // index[ 9] PWRMGR_RESET_EN_REGWEN
     4'b 0001, // index[10] PWRMGR_RESET_EN
     4'b 0001, // index[11] PWRMGR_RESET_STATUS
-    4'b 0001, // index[12] PWRMGR_WAKE_INFO_CAPTURE_DIS
-    4'b 0001  // index[13] PWRMGR_WAKE_INFO
+    4'b 0001, // index[12] PWRMGR_ESCALATE_RESET_STATUS
+    4'b 0001, // index[13] PWRMGR_WAKE_INFO_CAPTURE_DIS
+    4'b 0001  // index[14] PWRMGR_WAKE_INFO
   };
 endpackage
 

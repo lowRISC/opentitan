@@ -248,13 +248,12 @@ module top_earlgrey #(
   // Alert list
   prim_alert_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
   prim_alert_pkg::alert_rx_t [alert_pkg::NAlerts-1:0]  alert_rx;
-  // Escalation outputs
-  prim_esc_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0]  esc_tx;
-  prim_esc_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0]  esc_rx;
 
 
   // define inter-module signals
   alert_pkg::alert_crashdump_t       alert_handler_crashdump;
+  prim_esc_pkg::esc_rx_t [3:0] alert_handler_esc_rx;
+  prim_esc_pkg::esc_tx_t [3:0] alert_handler_esc_tx;
   csrng_pkg::csrng_req_t [1:0] csrng_csrng_cmd_req;
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
@@ -449,8 +448,8 @@ module top_earlgrey #(
     .irq_timer_i          (intr_rv_timer_timer_expired_0_0),
     .irq_external_i       (irq_plic),
     // escalation input from alert handler (NMI)
-    .esc_tx_i             (esc_tx[0]),
-    .esc_rx_o             (esc_rx[0]),
+    .esc_tx_i             (alert_handler_esc_tx[0]),
+    .esc_rx_o             (alert_handler_esc_rx[0]),
     // debug interface
     .debug_req_i          (debug_req),
     // CPU control signals
@@ -882,10 +881,10 @@ module top_earlgrey #(
       // Inter-module signals
       .jtag_i(jtag_pkg::JTAG_REQ_DEFAULT),
       .jtag_o(),
-      .esc_wipe_secrets_tx_i(prim_esc_pkg::ESC_TX_DEFAULT),
-      .esc_wipe_secrets_rx_o(),
-      .esc_scrap_state_tx_i(prim_esc_pkg::ESC_TX_DEFAULT),
-      .esc_scrap_state_rx_o(),
+      .esc_wipe_secrets_tx_i(alert_handler_esc_tx[1]),
+      .esc_wipe_secrets_rx_o(alert_handler_esc_rx[1]),
+      .esc_scrap_state_tx_i(alert_handler_esc_tx[2]),
+      .esc_scrap_state_rx_o(alert_handler_esc_rx[2]),
       .pwr_lc_i(pwrmgr_pwr_lc_req),
       .pwr_lc_o(pwrmgr_pwr_lc_rsp),
       .otp_lc_data_i(otp_ctrl_otp_lc_data),
@@ -932,14 +931,13 @@ module top_earlgrey #(
       // Inter-module signals
       .crashdump_o(alert_handler_crashdump),
       .entropy_i( 1'b0),
+      .esc_rx_i(alert_handler_esc_rx),
+      .esc_tx_o(alert_handler_esc_tx),
       .tl_i(alert_handler_tl_req),
       .tl_o(alert_handler_tl_rsp),
       // alert signals
       .alert_rx_o  ( alert_rx ),
       .alert_tx_i  ( alert_tx ),
-      // escalation outputs
-      .esc_rx_i    ( esc_rx   ),
-      .esc_tx_o    ( esc_tx   ),
       .clk_i (clkmgr_clocks.clk_io_div4_timers),
       .rst_ni (rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
@@ -953,11 +951,10 @@ module top_earlgrey #(
 
       // Inter-module signals
       .nmi_rst_req_o(pwrmgr_rstreqs),
+      .esc_tx_i('{3{prim_esc_pkg::ESC_TX_DEFAULT}}),
+      .esc_rx_o(),
       .tl_i(nmi_gen_tl_req),
       .tl_o(nmi_gen_tl_rsp),
-      // escalation signal inputs
-      .esc_rx_o    ( esc_rx[3:1] ),
-      .esc_tx_i    ( esc_tx[3:1] ),
       .clk_i (clkmgr_clocks.clk_io_div4_timers),
       .rst_ni (rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
@@ -980,6 +977,8 @@ module top_earlgrey #(
       .pwr_lc_i(pwrmgr_pwr_lc_rsp),
       .pwr_flash_o(pwrmgr_pwr_flash_req),
       .pwr_flash_i(pwrmgr_pwr_flash_rsp),
+      .esc_rst_tx_i(alert_handler_esc_tx[3]),
+      .esc_rst_rx_o(alert_handler_esc_rx[3]),
       .pwr_cpu_i(pwrmgr_pwr_cpu),
       .wakeups_i(pwrmgr_wakeups),
       .rstreqs_i(pwrmgr_rstreqs),
