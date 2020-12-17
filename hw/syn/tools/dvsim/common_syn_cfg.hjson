@@ -30,7 +30,7 @@
   fusesoc_core_:      "{eval_cmd} echo \"{fusesoc_core}\" | tr ':' '_'"
 
   // TODO: switch the tool to dc once the corresponding edalize backend is available
-  sv_flist_gen_opts:  ["--cores-root {proj_root}/hw",
+  sv_flist_gen_opts:  ["--cores-root {proj_root}",
                        "run"
                        "--flag=fileset_{design_level}",
                        "--target={flow}",
