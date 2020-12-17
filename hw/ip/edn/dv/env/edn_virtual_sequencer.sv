@@ -8,7 +8,7 @@ class edn_virtual_sequencer extends cip_base_virtual_sequencer #(
   );
   `uvm_component_utils(edn_virtual_sequencer)
 
-  push_pull_sequencer#(.HostDataWidth(edn_env_pkg::FIPS_ENDPOINT_BUS_WIDTH))
+  push_pull_sequencer#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
        endpoint_sequencer_h[NUM_ENDPOINTS-1:0];
 
   `uvm_component_new

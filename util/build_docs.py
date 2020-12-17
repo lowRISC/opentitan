@@ -97,6 +97,7 @@ config = {
         "hw/ip/alert_handler/data/alert_handler_testplan.hjson",
         "hw/ip/entropy_src/data/entropy_src_testplan.hjson",
         "hw/ip/csrng/data/csrng_testplan.hjson",
+        "hw/ip/edn/data/edn_testplan.hjson",
         "hw/ip/flash_ctrl/data/flash_ctrl_testplan.hjson",
         "hw/ip/gpio/data/gpio_testplan.hjson",
         "hw/ip/hmac/data/hmac_testplan.hjson",
