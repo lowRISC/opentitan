@@ -86,11 +86,11 @@ typedef enum dif_rstmgr_reset_info {
    * Device has reset due to a peripheral request. This can be an alert
    * escalation, watchdog or anything else.
    */
-  kDifRstmgrResetInfoHwReq = (0x1 << 3),
+  kDifRstmgrResetInfoHwReq = (0x3 << 3),
   /**
    * \internal used to catch missing `_Static_assert` for public variants.
    */
-  kDifRstmgrResetInfoLast = kDifRstmgrResetInfoHwReq,
+  kDifRstmgrResetInfoLast = (0x1 << 4),
 } dif_rstmgr_reset_info_t;
 
 /**
@@ -138,7 +138,9 @@ typedef struct dif_rstmgr_params {
  *
  * This type should be treated as opaque by users.
  */
-typedef struct dif_rstmgr { dif_rstmgr_params_t params; } dif_rstmgr_t;
+typedef struct dif_rstmgr {
+  dif_rstmgr_params_t params;
+} dif_rstmgr_t;
 
 /**
  * Creates a new handle for Reset Manager.
