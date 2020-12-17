@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This file is auto-generated.
+// Used parser: ${parser_info}
 
 % if num_techlibs > 1:
 `ifndef PRIM_DEFAULT_IMPL
