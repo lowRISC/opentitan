@@ -51,13 +51,18 @@ module aes_sbox_tb #(
   );
 
   // Mask Generation
+  parameter int unsigned WidthPRDSBoxCanrightMasked        = 8;
+  parameter int unsigned WidthPRDSBoxCanrightMaskedNoreuse = 18;
+
   logic              [7:0] masked_stimulus;
   logic              [7:0] in_mask;
-  logic              [7:0] out_mask;
-  logic [WidthPRDSBox-1:0] prd_masking;
+
   logic              [7:0] masked_response [NUM_SBOX_IMPLS_MASKED];
-  logic             [31:0] tmp;
-  logic              [5:0] unused_tmp;
+  logic              [7:0] out_mask [NUM_SBOX_IMPLS_MASKED];
+
+  logic                                       [31:0] tmp;
+  logic [31-(WidthPRDSBoxCanrightMaskedNoreuse+8):0] unused_tmp;
+  logic      [WidthPRDSBoxCanrightMaskedNoreuse-1:0] prd_masking;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_tmp
     if (!rst_ni) begin
@@ -67,34 +72,34 @@ module aes_sbox_tb #(
     end
   end
   assign in_mask     = tmp[7:0];
-  assign out_mask    = tmp[15:8];
-  assign prd_masking = tmp[WidthPRDSBox-1+16:16];
-  assign unused_tmp  = tmp[31:WidthPRDSBox+16];
+  assign prd_masking = tmp[8 +: WidthPRDSBoxCanrightMaskedNoreuse];
+  assign unused_tmp  = tmp[31:WidthPRDSBoxCanrightMaskedNoreuse+8];
 
   assign masked_stimulus = stimulus ^ in_mask;
 
   // Instantiate Masked SBox Implementations
   aes_sbox_canright_masked_noreuse aes_sbox_canright_masked_noreuse (
-    .op_i          ( op                 ),
-    .data_i        ( masked_stimulus    ),
-    .in_mask_i     ( in_mask            ),
-    .out_mask_i    ( out_mask           ),
-    .prd_masking_i ( prd_masking        ),
-    .data_o        ( masked_response[0] )
+    .op_i   ( op                                                 ),
+    .data_i ( masked_stimulus                                    ),
+    .mask_i ( in_mask                                            ),
+    .prd_i  ( prd_masking[WidthPRDSBoxCanrightMaskedNoreuse-1:0] ),
+    .data_o ( masked_response[0]                                 ),
+    .mask_o ( out_mask[0]                                        )
   );
 
   aes_sbox_canright_masked aes_sbox_canright_masked (
-    .op_i       ( op                 ),
-    .data_i     ( masked_stimulus    ),
-    .in_mask_i  ( in_mask            ),
-    .out_mask_i ( out_mask           ),
-    .data_o     ( masked_response[1] )
+    .op_i   ( op                                          ),
+    .data_i ( masked_stimulus                             ),
+    .mask_i ( in_mask                                     ),
+    .prd_i  ( prd_masking[WidthPRDSBoxCanrightMasked-1:0] ),
+    .data_o ( masked_response[1]                          ),
+    .mask_o ( out_mask[1]                                 )
   );
 
   // Unmask responses
   always_comb begin : unmask_resp
     for (int i=0; i<NUM_SBOX_IMPLS_MASKED; i++) begin
-      responses[NUM_SBOX_IMPLS+i] = masked_response[i] ^ out_mask;
+      responses[NUM_SBOX_IMPLS+i] = masked_response[i] ^ out_mask[i];
     end
   end
 
