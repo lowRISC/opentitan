@@ -286,7 +286,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     seed_err_o = 1'b0;
 
     state_d = state_q;
-    rma_ack_d = rma_ack_q;
+    rma_ack_d = lc_ctrl_pkg::Off;
     validate_d = validate_q;
 
     // read buffer enable
@@ -306,7 +306,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     edn_req_o = 1'b0;
     lfsr_en_o = 1'b0;
 
-    // rma realted
+    // rma related
     rma_wipe_req = 1'b0;
     rma_wipe_idx_incr = 1'b0;
 
@@ -396,18 +396,26 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         rma_wipe_req = 1'b1;
 
         if (rma_wipe_idx == WipeEntries-1 && rma_wipe_done) begin
-          state_d = StRmaRsp;
+          // first check for error status
+          // If error status is set, go directly to invalid terminal state
+          // If error status is good, go to second check
+          state_d = (err_sts != lc_ctrl_pkg::On) ? StInvalid : StRmaRsp;
         end else if (rma_wipe_done) begin
           rma_wipe_idx_incr = 1;
         end
       end
 
       // response to rma request
+      // Second check for error status:
+      // If error status indicates error, jump to invalid terminal state
+      // Otherwise assign output to error status;
+      // TODO: consider lengthening the check
       StRmaRsp: begin
         phase = PhaseRma;
         if (err_sts != lc_ctrl_pkg::On) begin
-          rma_ack_d = lc_ctrl_pkg::Off;
           state_d = StInvalid;
+        end else begin
+          rma_ack_d = err_sts;
         end
       end
 
@@ -520,10 +528,12 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   end
 
   // once error is set to off, it cannot be unset without a reboot
+  // On - no errors
+  // Off - errors were observed
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       err_sts <= lc_ctrl_pkg::On;
-    end else if (err_sts_set) begin
+    end else if (err_sts_set && (err_sts != lc_ctrl_pkg::Off)) begin
       err_sts <= lc_ctrl_pkg::Off;
     end
   end
