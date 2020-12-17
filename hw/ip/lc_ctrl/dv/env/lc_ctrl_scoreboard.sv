@@ -34,13 +34,14 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual task check_lc_output();
     forever begin
-      @(posedge cfg.pwr_lc_vif.pins[LcPwrDoneRsp]) begin
+      @(posedge cfg.pwr_lc_vif.pins[LcPwrDoneRsp] && cfg.en_scb) begin
         // TODO: add coverage
         dec_lc_state_e lc_state = dec_lc_state(cfg.lc_ctrl_vif.otp_i.state);
         lc_outputs_t   exp_lc_o = EXP_LC_OUTPUTS[int'(lc_state)];
         string         err_msg  = $sformatf("LC_St %0s", lc_state.name);
         cfg.clk_rst_vif.wait_n_clks(1);
 
+        // check LC broadcast output
         `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_dft_en_o,       exp_lc_o.lc_dft_en_o,       err_msg)
         `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_nvm_debug_en_o, exp_lc_o.lc_nvm_debug_en_o, err_msg)
         `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_hw_debug_en_o,  exp_lc_o.lc_hw_debug_en_o,  err_msg)
@@ -68,6 +69,10 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         end else begin
           `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_seed_hw_rd_en_o, lc_ctrl_pkg::Off, err_msg)
         end
+
+        // predict LC state and cnt csr
+        void'(ral.lc_state.predict(lc_state));
+        void'(ral.lc_transition_cnt.predict(dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count)));
       end
     end
   endtask
@@ -101,17 +106,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
     case (csr.get_name())
-      // add individual case item for each csr
-      "intr_state": begin
-        // FIXME
-        do_read_check = 1'b0;
-      end
-      "intr_enable": begin
-        // FIXME
-      end
-      "intr_test": begin
-        // FIXME
-      end
+      // TODO: temp enable read checking, once do_read_check default set to 1, should not need this.
+      "lc_transition_cnt", "lc_state": do_read_check = 1;
       default: begin
         // `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end

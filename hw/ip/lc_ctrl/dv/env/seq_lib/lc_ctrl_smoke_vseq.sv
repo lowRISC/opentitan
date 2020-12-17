@@ -20,6 +20,11 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
       `uvm_info(`gfn, $sformatf("starting seq %0d/%0d, init LC_state is %0s, LC_cnt is %0s",
                                 i, num_trans, lc_state.name, lc_cnt.name), UVM_MEDIUM)
 
+      if ($urandom_range(0, 1)) begin
+        csr_rd_check(.ptr(ral.status.ready), .compare_value(1));
+        rd_lc_state_and_cnt_csrs();
+      end
+
       // SW transition request
       if (valid_state_for_trans(lc_state) && lc_cnt != LcCnt16) begin
         bit [TL_DW*3-1:0] token_val = {$urandom(), $urandom(), $urandom()};

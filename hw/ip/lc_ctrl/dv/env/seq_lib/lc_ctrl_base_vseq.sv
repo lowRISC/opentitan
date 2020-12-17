@@ -68,4 +68,11 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     csr_spinwait(ral.status.transition_successful, 1);
   endtask
 
+  // checking of these two CSRs are done in scb
+  virtual task rd_lc_state_and_cnt_csrs();
+    bit [TL_DW-1:0] val;
+    csr_rd(ral.lc_state, val);
+    csr_rd(ral.lc_transition_cnt, val);
+  endtask
+
 endclass : lc_ctrl_base_vseq
