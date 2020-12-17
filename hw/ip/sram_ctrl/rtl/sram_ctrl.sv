@@ -8,10 +8,10 @@
 `include "prim_assert.sv"
 
 module sram_ctrl
+  import sram_ctrl_pkg::*;
   import sram_ctrl_reg_pkg::*;
 #(
   parameter  int Depth                = 512, // Needs to be a power of 2 if NumAddrScrRounds > 0.
-  parameter  int Width                = 32,  // Needs to be Byte aligned for parity
   parameter  int CfgWidth             = 8,   // WTC, RTC, etc
   // Scrambling parameters. Note that this needs to be low-latency, hence we have to keep the
   // amount of cipher rounds low. PRINCE has 5 half rounds in its original form, which corresponds
@@ -21,8 +21,11 @@ module sram_ctrl
   parameter  int NumByteScrRounds     = 2,
   // Number of address scrambling rounds. Setting this to 0 disables address scrambling.
   parameter  int NumAddrScrRounds     = 2,
+  // Random netlist constants
+  parameter otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
+  parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault,
   // Derived parameters
-  localparam int AddrWidth            = prim_util_pkg::vbits(Depth)
+  localparam int AddrWidth = prim_util_pkg::vbits(Depth)
 ) (
   // SRAM Clock
   input                                   clk_i,
@@ -155,8 +158,8 @@ module sram_ctrl
       key_req_pending_q <= 1'b0;
       key_valid_q       <= 1'b0;
       key_seed_valid_q  <= 1'b0;
-      key_q             <= '0;
-      nonce_q           <= '0;
+      key_q             <= RndCnstSramKey;
+      nonce_q           <= RndCnstSramNonce;
     end else begin
       key_req_pending_q <= key_req_pending_d;
       key_valid_q       <= key_valid_d;
@@ -168,8 +171,8 @@ module sram_ctrl
       // This scraps the keys
       if (escalate_en != lc_ctrl_pkg::Off) begin
         key_seed_valid_q <= '0;
-        key_q            <= '0;
-        nonce_q          <= '0;
+        key_q            <= RndCnstSramKey;
+        nonce_q          <= RndCnstSramNonce;
       end
     end
   end
