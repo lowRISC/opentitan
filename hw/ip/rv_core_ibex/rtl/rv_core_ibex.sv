@@ -8,7 +8,7 @@
  * 32 bit RISC-V core supporting the RV32I + optionally EMC instruction sets.
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
-module rv_core_ibex #(
+module rv_core_ibex import rv_core_ibex_pkg::*; #(
   parameter bit                 PMPEnable         = 1'b0,
   parameter int unsigned        PMPGranularity    = 0,
   parameter int unsigned        PMPNumRegions     = 4,
@@ -60,6 +60,9 @@ module rv_core_ibex #(
 
   // Debug Interface
   input  logic        debug_req_i,
+
+  // Crash dump information
+  output crashdump_t  crash_dump_o,
 
   // CPU Control Signals
   input  logic        fetch_enable_i,
@@ -319,6 +322,10 @@ module rv_core_ibex #(
     .spare_req_o (),
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
+
+
+  //hardwire crashdump for now
+  assign crash_dump_o = '0;
 
   //
   // Interception point for connecting simulation SRAM by disconnecting the tl_d output. The

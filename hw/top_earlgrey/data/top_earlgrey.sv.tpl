@@ -245,6 +245,8 @@ module top_${top["name"]} #(
     .esc_rx_o             (alert_handler_esc_rx[0]),
     // debug interface
     .debug_req_i          (debug_req),
+    // crash dump interface
+    .crash_dump_o         (rv_core_ibex_crashdump),
     // CPU control signals
     .fetch_enable_i       (1'b1),
     .core_sleep_o         (pwrmgr_pwr_cpu.core_sleeping)

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 <%
-
+  crash_dump_srcs = ['alert', 'cpu']
 %>
 
 # RSTMGR register template
@@ -88,6 +88,13 @@
       package: "alert_pkg",
     },
 
+    { struct:  "crashdump",
+      type:    "uni",
+      name:    "cpu_dump",
+      act:     "rcv",
+      package: "rv_core_ibex_pkg",
+    },
+
     // Exported resets
 % for intf in export_rsts:
     { struct:  "rstmgr_${intf}_out",
@@ -146,9 +153,10 @@
       ]
     },
 
-    { name: "ALERT_INFO_CTRL",
+    % for dump_src in crash_dump_srcs:
+    { name: "${dump_src.upper()}_INFO_CTRL",
       desc: '''
-            Alert info dump controls.
+            ${dump_src.capitalize()} info dump controls.
             ''',
       swaccess: "rw",
       hwaccess: "hro",
@@ -157,7 +165,7 @@
           name: "EN",
           hwaccess: "hrw",
           desc: '''
-            Enable alert dump to capture new information.
+            Enable ${dump_src} dump to capture new information.
             This field is automatically set to 0 upon system reset (even if rstmgr is not reset).
             '''
           resval: "0"
@@ -173,9 +181,9 @@
       ]
     },
 
-    { name: "ALERT_INFO_ATTR",
+    { name: "${dump_src.upper()}_INFO_ATTR",
       desc: '''
-            Alert info dump attributes.
+            ${dump_src.capitalize()} info dump attributes.
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
@@ -186,7 +194,7 @@
           swaccess: "ro",
           hwaccess: "hwo",
           desc: '''
-            The number of 32-bit values contained in the alert info dump.
+            The number of 32-bit values contained in the ${dump_src} info dump.
             '''
           resval: "0",
           tags: [// This field only reflects the status of the design, thus the
@@ -196,10 +204,10 @@
       ]
     },
 
-    { name: "ALERT_INFO",
+    { name: "${dump_src.upper()}_INFO",
       desc: '''
-              Alert dump information prior to last reset.
-              Which value read is controlled by the ALERT_INFO_CTRL register.
+              ${dump_src.capitalize()} dump information prior to last reset.
+              Which value read is controlled by the !${dump_src.upper()}_INFO_CTRL register.
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
@@ -208,13 +216,13 @@
         { bits: "31:0",
           name: "VALUE",
           desc: '''
-            The current 32-bit value of alert crash dump.
+            The current 32-bit value of crash dump.
             '''
           resval: "0",
         },
       ]
     },
-
+    % endfor
 
 
     ########################
