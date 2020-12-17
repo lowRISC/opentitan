@@ -635,9 +635,11 @@ Hence, no additional masking or diversification scheme is applied since only a v
 
 #### Digest Calculation
 
-The integrity digests used in the [partition checks]({{< relref "#partition-checks" >}}) are computed using a custom [Merkle-Damgard](https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction) construction as illustrated in subfigure b).
+The integrity digests used in the [partition checks]({{< relref "#partition-checks" >}}) are computed using a custom [Merkle-Damgard](https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction) scheme, where the employed one-way compression function F is constructed by using PRESENT in a [Davies-Meyer arrangement](https://en.wikipedia.org/wiki/One-way_compression_function#Davies%E2%80%93Meyer).
+This is illustrated in subfigure b).
+
 At the beginning of the digest calculation the 64bit state is initialized with an initialization vector (IV).
-Then, the data to be digested is split into 128bit chunks, each of which is used as a 128bit key input for updating the 64bit state with 31 PRESENT encryption rounds.
+Then, the data to be digested is split into 128bit chunks, each of which is used as a 128bit key input for updating the 64bit state with the compression function F.
 Chunks that are not aligned with 128bit are padded with zero, and the finalization operation consists of another 31-round encryption pass with a finalization constant.
 Note that both the IV as well as the finalization constant are global netlist constants chosen by the silicon creator.
 
