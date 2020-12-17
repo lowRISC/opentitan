@@ -201,16 +201,17 @@ package otp_ctrl_pkg;
 
   parameter int FlashKeySeedWidth = 256;
   parameter int SramKeySeedWidth  = 128;
-
   parameter int KeyMgrKeyWidth   = 256;
-
   parameter int FlashKeyWidth    = 128;
-
   parameter int SramKeyWidth     = 128;
   parameter int SramNonceWidth   = 64;
-
   parameter int OtbnKeyWidth     = 128;
   parameter int OtbnNonceWidth   = 256;
+
+  typedef logic [SramKeyWidth-1:0]   sram_key_t;
+  typedef logic [SramNonceWidth-1:0] sram_nonce_t;
+  typedef logic [OtbnKeyWidth-1:0]   otbn_key_t;
+  typedef logic [OtbnNonceWidth-1:0] otbn_nonce_t;
 
   typedef struct packed {
     logic valid;
@@ -253,17 +254,17 @@ package otp_ctrl_pkg;
   };
 
   typedef struct packed {
-    logic                      ack;   // Ack for key.
-    logic [SramKeyWidth-1:0]   key;   // 128bit ephemeral scrambling key.
-    logic [SramNonceWidth-1:0] nonce; // 64bit nonce.
-    logic seed_valid;                 // Set to 1 if the key seed has been provisioned and is valid.
+    logic        ack;         // Ack for key.
+    sram_key_t   key;        // 128bit ephemeral scrambling key.
+    sram_nonce_t nonce;      // 64bit nonce.
+    logic        seed_valid; // Set to 1 if the key seed has been provisioned and is valid.
   } sram_otp_key_rsp_t;
 
   typedef struct packed {
-    logic ack;                        // Ack for key.
-    logic [OtbnKeyWidth-1:0]   key;   // 128bit ephemeral scrambling key.
-    logic [OtbnNonceWidth-1:0] nonce; // 256bit nonce.
-    logic seed_valid;                 // Set to 1 if the key seed has been provisioned and is valid.
+    logic        ack;        // Ack for key.
+    otbn_key_t   key;        // 128bit ephemeral scrambling key.
+    otbn_nonce_t nonce;      // 256bit nonce.
+    logic        seed_valid; // Set to 1 if the key seed has been provisioned and is valid.
   } otbn_otp_key_rsp_t;
 
   ////////////////////////////////

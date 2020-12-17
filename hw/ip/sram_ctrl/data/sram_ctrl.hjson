@@ -28,7 +28,18 @@
   // Parameters //
   ////////////////
   param_list: [
-
+    { name:      "RndCnstSramKey",
+      desc:      "Compile-time random reset value for SRAM scrambling key.",
+      type:      "otp_ctrl_pkg::sram_key_t"
+      randcount: "128",
+      randtype:  "data", // randomize randcount databits
+    }
+    { name:      "RndCnstSramNonce",
+      desc:      "Compile-time random reset value for SRAM scrambling nonce.",
+      type:      "otp_ctrl_pkg::sram_nonce_t"
+      randcount: "64",
+      randtype:  "data", // randomize randcount databits
+    }
   ]
 
   /////////////////////////////
