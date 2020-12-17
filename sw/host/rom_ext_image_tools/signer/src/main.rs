@@ -7,15 +7,24 @@
 #![deny(unsafe_code)]
 
 use std::env;
-use std::path;
+use std::path::Path;
 
-use rom_ext_config::parser;
+use rom_ext_config::parser::ParsedConfig;
+use rom_ext_image::image::RawImage;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let arg: String = env::args().nth(1).expect("Config path is missing");
 
-    let config_path = path::Path::new(&args[1]);
+    let config_path = Path::new(&arg);
 
     // Parse the config.
-    let _config = parser::ParsedConfig::new(&config_path);
+    let config = ParsedConfig::new(&config_path);
+
+    // Read raw binary.
+    let image_path = Path::new(&config.input_files.image_path);
+    let mut raw_image = RawImage::new(&image_path);
+
+    // Modify raw binary.
+    raw_image.update_generic_fields(&config);
+    raw_image.write_file();
 }
