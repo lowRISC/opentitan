@@ -19,7 +19,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input ack_pwrdn_i,
   input low_power_entry_i,
   input main_pd_ni,
-  input [NumRstReqs-1:0] reset_reqs_i,
+  input [NumRstReqs:0] reset_reqs_i,
 
   // consumed in pwrmgr
   output logic wkup_o,        // generate wake interrupt

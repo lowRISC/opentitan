@@ -102,7 +102,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // So there is no general concern about recombining as there is
   // no intent to use them in a related manner.
   prim_flop_2sync # (
-    .Width(NumRstReqs + NumWkups)
+    .Width($bits(pwr_peri_t))
   ) i_slow_ext_req_sync (
     .clk_i  (clk_slow_i),
     .rst_ni (rst_slow_ni),
@@ -227,7 +227,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   end
 
   prim_flop_2sync #(
-    .Width(NumRstReqs + NumWkups)
+    .Width($bits(pwr_peri_t))
   ) i_ext_req_sync (
     .clk_i,
     .rst_ni,

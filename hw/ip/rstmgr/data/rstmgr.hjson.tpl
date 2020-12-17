@@ -124,7 +124,8 @@
           resval: "0"
         },
 
-        { bits: "${3 + num_rstreqs - 1}:3",
+        // reset requests include escalation reset + peripheral requests
+        { bits: "${3 + num_rstreqs}:3",
           hwaccess: "hrw",
           name: "HW_REQ",
           desc: '''
