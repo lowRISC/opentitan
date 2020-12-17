@@ -36,22 +36,39 @@ module prim_lc_sync #(
     .q_o(lc_en)
   );
 
-  logic [NumCopies-1:0][lc_ctrl_pkg::TxWidth-1:0] lc_en_copies;
   for (genvar j = 0; j < NumCopies; j++) begin : gen_buffs
-    for (genvar k = 0; k < lc_ctrl_pkg::TxWidth; k++) begin : gen_bits
-      // TODO: replace this with a normal buffer primitive, once available.
-      prim_clock_buf u_prim_clock_buf (
-        .clk_i(lc_en[k]),
-        .clk_o(lc_en_copies[j][k])
-      );
-    end
-    assign lc_en_o[j] = lc_ctrl_pkg::lc_tx_t'(lc_en_copies[j]);
+    prim_lc_sender u_prim_lc_sender (
+      .lc_en_i(lc_ctrl_pkg::lc_tx_t'(lc_en)),
+      .lc_en_o(lc_en_o[j])
+    );
   end
 
   ////////////////
   // Assertions //
   ////////////////
 
-  // TODO: add more assertions
+  // The outputs should be known at all times.
+  `ASSERT_KNOWN(OutputsKnown_A, lc_en_o)
+
+  // If the multibit signal is in a transient state, we expect it
+  // to be stable again within one clock cycle.
+  `ASSERT(CheckTransients_A,
+      !(lc_en_i inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off})
+      |=>
+      (lc_en_i inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off}))
+
+  // If a signal departs from passive state, we expect it to move to the active state
+  // with only one transient cycle in between.
+  `ASSERT(CheckTransients0_A,
+      $past(lc_en_i == lc_ctrl_pkg::Off) &&
+      !(lc_en_i inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off})
+      |=>
+      (lc_en_i == lc_ctrl_pkg::On))
+
+  `ASSERT(CheckTransients1_A,
+      $past(lc_en_i == lc_ctrl_pkg::On) &&
+      !(lc_en_i inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off})
+      |=>
+      (lc_en_i == lc_ctrl_pkg::Off))
 
 endmodule : prim_lc_sync

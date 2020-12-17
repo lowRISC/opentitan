@@ -15,6 +15,7 @@ filesets:
       - lowrisc:prim:otp
       - lowrisc:prim:lfsr
       - lowrisc:prim:lc_sync
+      - lowrisc:prim:buf
       - lowrisc:prim:secded
       - lowrisc:ip:pwrmgr_pkg
     files:

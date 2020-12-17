@@ -58,13 +58,13 @@ module prim_alert_sender
   ) i_decode_ping (
     .clk_i,
     .rst_ni,
-    .diff_pi  ( alert_rx_i.ping_p     ),
-    .diff_ni  ( alert_rx_i.ping_n     ),
-    .level_o  (             ),
-    .rise_o   (             ),
-    .fall_o   (             ),
-    .event_o  ( ping_event  ),
-    .sigint_o ( ping_sigint )
+    .diff_pi  ( alert_rx_i.ping_p ),
+    .diff_ni  ( alert_rx_i.ping_n ),
+    .level_o  (                   ),
+    .rise_o   (                   ),
+    .fall_o   (                   ),
+    .event_o  ( ping_event        ),
+    .sigint_o ( ping_sigint       )
   );
 
   logic ack_sigint, ack_level;
@@ -74,13 +74,13 @@ module prim_alert_sender
   ) i_decode_ack (
     .clk_i,
     .rst_ni,
-    .diff_pi  ( alert_rx_i.ack_p      ),
-    .diff_ni  ( alert_rx_i.ack_n      ),
-    .level_o  ( ack_level   ),
-    .rise_o   (             ),
-    .fall_o   (             ),
-    .event_o  (             ),
-    .sigint_o ( ack_sigint  )
+    .diff_pi  ( alert_rx_i.ack_p ),
+    .diff_ni  ( alert_rx_i.ack_n ),
+    .level_o  ( ack_level        ),
+    .rise_o   (                  ),
+    .fall_o   (                  ),
+    .event_o  (                  ),
+    .sigint_o ( ack_sigint       )
   );
 
 
@@ -98,10 +98,11 @@ module prim_alert_sender
     Pause1
     } state_e;
   state_e state_d, state_q;
-  logic alert_pq, alert_nq, alert_pd, alert_nd;
+  logic alert_p, alert_n, alert_pq, alert_nq, alert_pd, alert_nd;
   logic sigint_detected;
 
   assign sigint_detected = ack_sigint | ping_sigint;
+
 
   // diff pair output
   assign alert_tx_o.alert_p = alert_pq;
@@ -127,8 +128,8 @@ module prim_alert_sender
   always_comb begin : p_fsm
     // default
     state_d = state_q;
-    alert_pd   = 1'b0;
-    alert_nd   = 1'b1;
+    alert_p    = 1'b0;
+    alert_n    = 1'b1;
     ping_clr   = 1'b0;
     alert_clr  = 1'b0;
 
@@ -137,8 +138,8 @@ module prim_alert_sender
         // alert always takes precedence
         if (alert_req_i || alert_set_q || ping_event || ping_set_q) begin
           state_d   = (alert_req_i || alert_set_q) ? AlertHsPhase1 : PingHsPhase1;
-          alert_pd  = 1'b1;
-          alert_nd  = 1'b0;
+          alert_p   = 1'b1;
+          alert_n   = 1'b0;
         end
       end
       // waiting for ack from receiver
@@ -146,8 +147,8 @@ module prim_alert_sender
         if (ack_level) begin
           state_d  = AlertHsPhase2;
         end else begin
-          alert_pd = 1'b1;
-          alert_nd = 1'b0;
+          alert_p  = 1'b1;
+          alert_n  = 1'b0;
         end
       end
       // wait for deassertion of ack
@@ -162,8 +163,8 @@ module prim_alert_sender
         if (ack_level) begin
           state_d  = PingHsPhase2;
         end else begin
-          alert_pd = 1'b1;
-          alert_nd = 1'b0;
+          alert_p  = 1'b1;
+          alert_n  = 1'b0;
         end
       end
       // wait for deassertion of ack
@@ -192,8 +193,8 @@ module prim_alert_sender
         state_d  = Idle;
         if (sigint_detected) begin
           state_d  = SigInt;
-          alert_pd = ~alert_pq;
-          alert_nd = ~alert_pq;
+          alert_p  = ~alert_pq;
+          alert_n  = ~alert_pq;
         end
       end
       // catch parasitic states
@@ -202,12 +203,22 @@ module prim_alert_sender
     // bail out if a signal integrity issue has been detected
     if (sigint_detected && (state_q != SigInt)) begin
       state_d   = SigInt;
-      alert_pd  = 1'b0;
-      alert_nd  = 1'b0;
+      alert_p   = 1'b0;
+      alert_n   = 1'b0;
       ping_clr  = 1'b0;
       alert_clr = 1'b0;
     end
   end
+
+  // This prevents further tool optimizations of the differential signal.
+  prim_buf u_prim_buf_p (
+    .in_i(alert_p),
+    .out_o(alert_pd)
+  );
+  prim_buf u_prim_buf_n (
+    .in_i(alert_n),
+    .out_o(alert_nd)
+  );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_reg
     if (!rst_ni) begin

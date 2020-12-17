@@ -71,8 +71,18 @@ module prim_esc_sender
 
   // ping enable is 1 cycle pulse
   // escalation pulse is always longer than 2 cycles
-  assign esc_tx_o.esc_p = esc_req_i | esc_req_q | (ping_req_d & ~ping_req_q);
-  assign esc_tx_o.esc_n = ~esc_tx_o.esc_p;
+  logic esc_p;
+  assign esc_p = esc_req_i | esc_req_q | (ping_req_d & ~ping_req_q);
+
+  // This prevents further tool optimizations of the differential signal.
+  prim_buf u_prim_buf_p (
+    .in_i(esc_p),
+    .out_o(esc_tx_o.esc_p)
+  );
+  prim_buf u_prim_buf_n (
+    .in_i(~esc_p),
+    .out_o(esc_tx_o.esc_n)
+  );
 
   //////////////
   // RX Logic //
