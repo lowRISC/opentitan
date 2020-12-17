@@ -26,5 +26,10 @@
     // Do not include any DV code, which has a high chance of shadowing DV code in
     // OT. See https://github.com/lowRISC/opentitan/issues/2513.
     'dv',
+    // We should not vendor in the check tool requirements script and core, since
+    // they will collide with their OpenTitan counterparts.
+    'check_tool_requirements.core',
+    'util/check_tool_requirements.py',
+    'tool_requirements.py'
   ]
 }
