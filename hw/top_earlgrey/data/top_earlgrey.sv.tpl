@@ -167,9 +167,6 @@ module top_${top["name"]} #(
   // Alert list
   prim_alert_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
   prim_alert_pkg::alert_rx_t [alert_pkg::NAlerts-1:0]  alert_rx;
-  // Escalation outputs
-  prim_esc_pkg::esc_tx_t [alert_pkg::N_ESC_SEV-1:0]  esc_tx;
-  prim_esc_pkg::esc_rx_t [alert_pkg::N_ESC_SEV-1:0]  esc_rx;
 
 % if not top["alert"]:
   for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_tie_off
@@ -244,8 +241,8 @@ module top_${top["name"]} #(
     .irq_timer_i          (intr_rv_timer_timer_expired_0_0),
     .irq_external_i       (irq_plic),
     // escalation input from alert handler (NMI)
-    .esc_tx_i             (esc_tx[0]),
-    .esc_rx_o             (esc_rx[0]),
+    .esc_tx_i             (alert_handler_esc_tx[0]),
+    .esc_rx_o             (alert_handler_esc_rx[0]),
     // debug interface
     .debug_req_i          (debug_req),
     // CPU control signals
@@ -615,14 +612,6 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       // alert signals
       .alert_rx_o  ( alert_rx ),
       .alert_tx_i  ( alert_tx ),
-      // escalation outputs
-      .esc_rx_i    ( esc_rx   ),
-      .esc_tx_o    ( esc_tx   ),
-    % endif
-    % if m["type"] == "nmi_gen":
-      // escalation signal inputs
-      .esc_rx_o    ( esc_rx[3:1] ),
-      .esc_tx_i    ( esc_tx[3:1] ),
     % endif
     % if m["scan"] == "true":
       .scanmode_i   (scanmode_i),
