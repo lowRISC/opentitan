@@ -8,13 +8,12 @@ package edn_env_pkg;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import push_pull_agent_pkg::*;
+  import csrng_agent_pkg::*;
   import dv_lib_pkg::*;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import edn_ral_pkg::*;
-
-  parameter int  FIPS_ENDPOINT_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH + edn_pkg::ENDPOINT_BUS_WIDTH;
 
   // macro includes
   `include "uvm_macros.svh"

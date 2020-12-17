@@ -10,6 +10,8 @@ package edn_pkg;
   ///////////////////////////
 
   parameter int unsigned   ENDPOINT_BUS_WIDTH = 32;
+  parameter int unsigned   FIPS_ENDPOINT_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH +
+                           ENDPOINT_BUS_WIDTH;
 
   // EDN request interface
   typedef struct packed {

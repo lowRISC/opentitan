@@ -48,8 +48,8 @@ module tb;
                                CSRNG_BUS_WIDTH-1:0], entropy_src_if.h_data[entropy_src_pkg::
                                CSRNG_BUS_WIDTH]}),
 
-    .csrng_cmd_i             ('h0),
-    .csrng_cmd_o             (csrng_if.csrng_rsp),
+    .csrng_cmd_i             (csrng_if.cmd_req),
+    .csrng_cmd_o             (csrng_if.cmd_rsp),
 
     .intr_cs_cmd_req_done_o  (intr_cmd_req_done),
     .intr_cs_entropy_req_o   (intr_entropy_req),
