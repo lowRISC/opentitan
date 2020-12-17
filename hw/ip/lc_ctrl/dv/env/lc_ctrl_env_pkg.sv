@@ -139,6 +139,29 @@ package lc_ctrl_env_pkg;
     endcase
   endfunction
 
+  function automatic int dec_lc_cnt(lc_cnt_e curr_cnt);
+    case (curr_cnt)
+      LcCntRaw: return 0;
+      LcCnt1  : return 1;
+      LcCnt2  : return 2;
+      LcCnt3  : return 3;
+      LcCnt4  : return 4;
+      LcCnt5  : return 5;
+      LcCnt6  : return 6;
+      LcCnt7  : return 7;
+      LcCnt8  : return 8;
+      LcCnt9  : return 9;
+      LcCnt10 : return 10;
+      LcCnt11 : return 11;
+      LcCnt12 : return 12;
+      LcCnt13 : return 13;
+      LcCnt14 : return 14;
+      LcCnt15 : return 15;
+      LcCnt16 : return 16;
+      default: `uvm_fatal("lc_env_pkg", $sformatf("unknown lc_cnt 0x%0h", curr_cnt))
+    endcase
+  endfunction
+
   // package sources
   `include "lc_ctrl_env_cfg.sv"
   `include "lc_ctrl_env_cov.sv"
