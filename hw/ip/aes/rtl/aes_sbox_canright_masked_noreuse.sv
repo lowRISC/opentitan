@@ -246,11 +246,12 @@ endmodule
 
 module aes_sbox_canright_masked_noreuse (
   input  aes_pkg::ciph_op_e op_i,
-  input  logic [7:0]        data_i,        // masked, the actual input data is data_i ^ in_mask_i
-  input  logic [7:0]        in_mask_i,     // input mask, independent from actual input data
-  input  logic [7:0]        out_mask_i,    // output mask, independent from input mask
-  input  logic [9:0]        prd_masking_i, // pseudo-random data, e.g. for intermediate masks
-  output logic [7:0]        data_o         // masked, the actual output data is data_o ^ out_mask_i
+  input  logic        [7:0] data_i, // masked, the actual input data is data_i ^ mask_i
+  input  logic        [7:0] mask_i, // input mask, independent from actual input data
+  input  logic       [17:0] prd_i,  // pseudo-random data, for remasking and for intermediate
+                                    // masks, must be independent of input mask
+  output logic        [7:0] data_o, // masked, the actual output data is data_o ^ mask_o
+  output logic        [7:0] mask_o  // output mask
 );
 
   import aes_pkg::*;
@@ -267,21 +268,29 @@ module aes_sbox_canright_masked_noreuse (
   assign in_data_basis_x = (op_i == CIPH_FWD) ? aes_mvm(data_i, A2X) :
                                                 aes_mvm(data_i ^ 8'h63, S2X);
 
+  // For the masked Canright SBox with no re-use, the output mask directly corresponds to the
+  // LSBs of the pseduo-random data provided as input.
+  assign mask_o = prd_i[7:0];
+
+  // The remaining bits are used for intermediate masks.
+  logic [9:0] prd_masking;
+  assign prd_masking = prd_i[17:8];
+
   // Convert masks to normal basis X.
   // The addition of constant 8'h63 following the affine transformation is skipped.
-  assign in_mask_basis_x  = (op_i == CIPH_FWD) ? aes_mvm(in_mask_i, A2X) :
-                                                 aes_mvm(in_mask_i, S2X);
+  assign in_mask_basis_x  = (op_i == CIPH_FWD) ? aes_mvm(mask_i, A2X) :
+                                                 aes_mvm(mask_i, S2X);
 
   // The output mask is converted in the opposite direction.
-  assign out_mask_basis_x = (op_i == CIPH_INV) ? aes_mvm(out_mask_i, A2X) :
-                                                 aes_mvm(out_mask_i, S2X);
+  assign out_mask_basis_x = (op_i == CIPH_INV) ? aes_mvm(mask_o, A2X) :
+                                                 aes_mvm(mask_o, S2X);
 
   // Do the inversion in normal basis X.
   aes_masked_inverse_gf2p8_noreuse aes_masked_inverse_gf2p8 (
     .a     ( in_data_basis_x  ), // input
     .m     ( in_mask_basis_x  ), // input
     .n     ( out_mask_basis_x ), // input
-    .prd   ( prd_masking_i    ), // input
+    .prd   ( prd_masking      ), // input
     .a_inv ( out_data_basis_x )  // output
   );
 
