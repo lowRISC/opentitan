@@ -16,7 +16,7 @@
 <td>no</td>
 <td>no</td>
 <td>yes</td>
-<td rowspan="2">Advanced only by HW. Not that these two items are exposed in decoded form in the life cycle controller CSRs.</td>
+<td rowspan="2">Advanced only by HW. Note that these two items are exposed in decoded form in the life cycle controller CSRs.</td>
 </tr>
 <tr>
 <td>LC_TRANSITION_CNT</td>
