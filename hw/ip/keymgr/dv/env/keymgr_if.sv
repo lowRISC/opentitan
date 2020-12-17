@@ -27,6 +27,12 @@ interface keymgr_if(input clk, input rst_n);
   string msg_id = "keymgr_if";
 
   task automatic init();
+    // This life cycle signal must be stable before
+    // the key manager comes out of reset.
+    // The power/reset manager ensures that
+    // this sequencing is correct.
+    keymgr_en = lc_ctrl_pkg::Off;
+
     // async delay as these signals are from different clock domain
     #($urandom_range(1000, 0) * 1ns);
     keymgr_en = lc_ctrl_pkg::On;
