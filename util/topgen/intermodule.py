@@ -195,7 +195,8 @@ def elab_intermodule(topcfg: OrderedDict):
         topcfg["inter_signal"] = OrderedDict()
 
     # Gather the inter_signal_list
-    instances = topcfg["module"] + topcfg["memory"] + topcfg["xbar"]
+    instances = topcfg["module"] + topcfg["memory"] + topcfg["xbar"] + \
+        topcfg["host"]
 
     intermodule_instances = [x for x in instances if "inter_signal_list" in x]
 
@@ -687,7 +688,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
 
             # If not, error
             else:
-                log.error("'uni' type connection {req} should be either"
+                log.error("'uni' type connection {req} should be either "
                           "OneToN or Broadcast".format(req=req))
                 error += 1
         elif req_struct["type"] == "uni":
