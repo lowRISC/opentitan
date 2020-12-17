@@ -23,6 +23,7 @@ import argparse
 import datetime
 import logging as log
 import os
+import shutil
 import subprocess
 import sys
 import textwrap
@@ -168,8 +169,11 @@ def resolve_proj_root(args):
     # Check if jobs are dispatched to external compute machines. If yes,
     # then the repo needs to be copied over to the scratch area
     # accessible to those machines.
+    # If --purge arg is set, then purge the repo_top that was copied before.
     if args.remote:
         dest = os.path.join(args.scratch_root, args.branch, "repo_top")
+        if args.purge and os.path.exists(dest):
+            shutil.rmtree(dest)
         copy_repo(proj_root, dest, args.dry_run)
         proj_root = dest
 
