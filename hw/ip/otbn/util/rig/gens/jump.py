@@ -109,6 +109,7 @@ class Jump(SnippetGen):
         if tgt is None:
             return None
         assert tgt_min <= tgt <= tgt_max
+        assert tgt & 3 == 0
 
         # Adjust again for base_addr: we pick the offset from there
         op_val = tgt - base_addr
