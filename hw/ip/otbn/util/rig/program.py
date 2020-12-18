@@ -346,6 +346,13 @@ class Program:
 
         '''
 
+        # Round tgt_min and tgt_max inwards to multiples of 4 (because
+        # instructions always have to be word aligned)
+        if tgt_min is not None:
+            tgt_min = (tgt_min + 3) & ~3
+        if tgt_max is not None:
+            tgt_max = tgt_max & ~3
+
         # To pick the targets, we start by choosing a "gap" between existing
         # sections in which they should land. To do *that*, we start by making
         # a list of all the gaps between sections in ascending order of base
