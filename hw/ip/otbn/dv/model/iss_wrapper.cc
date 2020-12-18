@@ -189,6 +189,35 @@ static uint32_t read_hex_32(const char *str) {
   return strtoul(buf, nullptr, 16);
 }
 
+// Read through trace output (in the lines argument) to pick up any write to
+// the named CSR register. If there is no such write, return default_val.
+static uint32_t read_ext_reg(const std::string &reg_name,
+                             const std::vector<std::string> &lines,
+                             uint32_t default_val) {
+  // We're interested in lines that show an update to the external register
+  // called reg_name. These look something like this:
+  //
+  //   otbn.$REG_NAME &= ~ 0x000001 (from HW) (now 0x000000)
+  //
+  // The \n picks up the newline that we expect at the end of each line.
+  std::regex re("\\s*otbn\\." + reg_name + ".*0x([0-9a-f]{8})\\)\n");
+  std::smatch match;
+
+  uint32_t val = default_val;
+
+  for (const auto &line : lines) {
+    if (std::regex_match(line, match, re)) {
+      // Ahah! We have a match. We have captured exactly 8 hex digits, so know
+      // that we can safely parse them to a uint32_t without risking a parse
+      // failure or overflow.
+      assert(match.size() == 2);
+      val = (uint32_t)strtoul(match[1].str().c_str(), nullptr, 16);
+    }
+  }
+
+  return val;
+}
+
 ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
   std::string model_path(find_otbn_model());
 
@@ -293,10 +322,15 @@ void ISSWrapper::start(uint32_t addr) {
   run_command(oss.str(), nullptr);
 }
 
-bool ISSWrapper::step() {
+std::pair<bool, uint32_t> ISSWrapper::step() {
   std::vector<std::string> lines;
   run_command("step\n", &lines);
-  return saw_busy_cleared(lines);
+
+  // The busy flag is bit 0 of the STATUS register, so is cleared on this cycle
+  // if we see a write that sets the value to an even number.
+  bool done = (read_ext_reg("STATUS", lines, 1) & 1) == 0;
+  uint32_t err_code = done ? read_ext_reg("ERR_CODE", lines, 0) : 0;
+  return std::make_pair(done, err_code);
 }
 
 void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,
@@ -470,39 +504,4 @@ bool ISSWrapper::run_command(const std::string &cmd,
   fputs(cmd.c_str(), child_write_file);
   fflush(child_write_file);
   return read_child_response(dst);
-}
-
-bool ISSWrapper::saw_busy_cleared(std::vector<std::string> &lines) const {
-  // We're interested in lines that show an update to otbn.STATUS. These look
-  // something like this:
-  //
-  //   otbn.STATUS &= ~ 0x000001 (from HW) (now 0x000000)
-  //
-  // The \n picks up the newline that we expect at the end of each line.
-  std::regex re("\\s*otbn\\.STATUS.*0x[0-9]+\\)\n");
-
-  bool is_cleared = false;
-
-  for (const auto &line : lines) {
-    if (std::regex_match(line, re)) {
-      // Ahah! We have a match. At this point, we can cheat because we happen
-      // to know that the the busy bit is bit zero, so we just need to check
-      // whether the last character of the hex constant is even. Since the
-      // regex has a fixed number (2) of characters after the hex constant, we
-      // can just count back from the end of the string.
-      char last_digit = (&line.back())[-2];
-
-      int as_num;
-      if ('0' <= last_digit && last_digit <= '9') {
-        as_num = last_digit - '0';
-      } else {
-        assert('a' <= last_digit && last_digit <= 'f');
-        as_num = 10 + (last_digit - 'a');
-      }
-
-      is_cleared = !(as_num & 1);
-    }
-  }
-
-  return is_cleared;
 }

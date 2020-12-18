@@ -38,7 +38,7 @@ struct ISSWrapper {
 
   // Run simulation for a single cycle. Return true if it is now
   // finished (ECALL or error).
-  bool step();
+  std::pair<bool, uint32_t> step();
 
   // Read contents of the register file
   void get_regs(std::array<uint32_t, 32> *gprs, std::array<u256_t, 32> *wdrs);
@@ -60,10 +60,6 @@ struct ISSWrapper {
   // Send a command to the child and wait for its response. Return
   // value and dst argument behave as for read_child_response.
   bool run_command(const std::string &cmd, std::vector<std::string> *dst) const;
-
-  // Return true if lines contain a line that shows otbn.STATUS having
-  // its busy flag cleared.
-  bool saw_busy_cleared(std::vector<std::string> &lines) const;
 
   pid_t child_pid;
   FILE *child_write_file;

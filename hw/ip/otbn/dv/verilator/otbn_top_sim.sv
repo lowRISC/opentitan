@@ -18,9 +18,10 @@ module otbn_top_sim (
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte);
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte);
 
-  logic otbn_done_d, otbn_done_q;
-  logic otbn_start;
-  logic otbn_start_done;
+  logic      otbn_done_d, otbn_done_q;
+  err_code_e otbn_err_code_d, otbn_err_code_q;
+  logic      otbn_start;
+  logic      otbn_start_done;
 
   // Instruction memory (IMEM) signals
   logic                     imem_req;
@@ -45,31 +46,31 @@ module otbn_top_sim (
     .ImemSizeByte ( ImemSizeByte ),
     .DmemSizeByte ( DmemSizeByte )
   ) u_otbn_core (
-    .clk_i         ( IO_CLK        ),
-    .rst_ni        ( IO_RST_N      ),
+    .clk_i         ( IO_CLK          ),
+    .rst_ni        ( IO_RST_N        ),
 
-    .start_i       ( otbn_start    ),
-    .done_o        ( otbn_done_d   ),
+    .start_i       ( otbn_start      ),
+    .done_o        ( otbn_done_d     ),
 
-    .err_code_o    (               ),
+    .err_code_o    ( otbn_err_code_d ),
 
-    .start_addr_i  ( ImemStartAddr ),
+    .start_addr_i  ( ImemStartAddr   ),
 
-    .imem_req_o    ( imem_req      ),
-    .imem_addr_o   ( imem_addr     ),
-    .imem_wdata_o  (               ),
-    .imem_rdata_i  ( imem_rdata    ),
-    .imem_rvalid_i ( imem_rvalid   ),
-    .imem_rerror_i ( imem_rerror   ),
+    .imem_req_o    ( imem_req        ),
+    .imem_addr_o   ( imem_addr       ),
+    .imem_wdata_o  (                 ),
+    .imem_rdata_i  ( imem_rdata      ),
+    .imem_rvalid_i ( imem_rvalid     ),
+    .imem_rerror_i ( imem_rerror     ),
 
-    .dmem_req_o    ( dmem_req      ),
-    .dmem_write_o  ( dmem_write    ),
-    .dmem_addr_o   ( dmem_addr     ),
-    .dmem_wdata_o  ( dmem_wdata    ),
-    .dmem_wmask_o  ( dmem_wmask    ),
-    .dmem_rdata_i  ( dmem_rdata    ),
-    .dmem_rvalid_i ( dmem_rvalid   ),
-    .dmem_rerror_i ( dmem_rerror   )
+    .dmem_req_o    ( dmem_req        ),
+    .dmem_write_o  ( dmem_write      ),
+    .dmem_addr_o   ( dmem_addr       ),
+    .dmem_wdata_o  ( dmem_wdata      ),
+    .dmem_wmask_o  ( dmem_wmask      ),
+    .dmem_rdata_i  ( dmem_rdata      ),
+    .dmem_rvalid_i ( dmem_rvalid     ),
+    .dmem_rerror_i ( dmem_rerror     )
   );
 
   bind otbn_core otbn_trace_intf #(.ImemAddrWidth, .DmemAddrWidth) i_otbn_trace_intf (.*);
@@ -82,6 +83,7 @@ module otbn_top_sim (
       otbn_start      <= 1'b0;
       otbn_start_done <= 1'b0;
       otbn_done_q     <= 1'b0;
+      otbn_err_code_q <= ErrCodeNoError;
     end else begin
       if (!otbn_start_done) begin
         otbn_start      <= 1'b1;
@@ -91,6 +93,7 @@ module otbn_top_sim (
       end
 
       otbn_done_q <= otbn_done_d;
+      otbn_err_code_q <= otbn_err_code_d;
     end
   end
 
@@ -186,8 +189,9 @@ module otbn_top_sim (
   localparam string DmemScope = "..u_dmem.u_mem.gen_generic.u_impl_generic";
   localparam string DesignScope = "..u_otbn_core";
 
-  logic otbn_model_done;
-  bit   otbn_model_err;
+  logic      otbn_model_done;
+  err_code_e otbn_model_err_code;
+  bit        otbn_model_err;
 
   otbn_core_model #(
     .DmemSizeByte    ( DmemSizeByte ),
@@ -206,21 +210,31 @@ module otbn_top_sim (
 
     .start_addr_i ( ImemStartAddr ),
 
+    .err_code_o   ( otbn_model_err_code ),
+
     .err_o        ( otbn_model_err )
   );
 
-  bit done_mismatch_latched;
+  bit done_mismatch_latched, err_code_mismatch_latched;
   bit model_err_latched;
 
   always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
     if (!IO_RST_N) begin
-      done_mismatch_latched <= 1'b0;
-      model_err_latched     <= 1'b0;
+      done_mismatch_latched     <= 1'b0;
+      err_code_mismatch_latched <= 1'b0;
+      model_err_latched         <= 1'b0;
     end else begin
       if (otbn_done_q != otbn_model_done) begin
         $display("ERROR: At time %0t, otbn_done_q != otbn_model_done (%0d != %0d).",
                  $time, otbn_done_q, otbn_model_done);
         done_mismatch_latched <= 1'b1;
+      end
+      if (otbn_done_q && otbn_model_done) begin
+        if (otbn_err_code_q != otbn_model_err_code) begin
+          $display("ERROR: At time %0t, otbn_err_code != otbn_model_err_code (%0d != %0d).",
+                   $time, otbn_err_code_q, otbn_model_err_code);
+          err_code_mismatch_latched <= 1'b1;
+        end
       end
       model_err_latched <= model_err_latched | otbn_model_err;
     end
@@ -253,7 +267,7 @@ module otbn_top_sim (
   export "DPI-C" function otbn_err_get;
 
   function automatic bit otbn_err_get();
-    return model_err_latched | done_mismatch_latched;
+    return model_err_latched | done_mismatch_latched | err_code_mismatch_latched;
   endfunction
 
 endmodule
