@@ -4,7 +4,9 @@
 
 from typing import List, Optional, Tuple
 
-from .alert import LoopError
+from shared.mem_layout import get_memory_layout
+
+from .alert import BadAddrError, LoopError
 from .csr import CSRFile
 from .dmem import Dmem
 from .ext_regs import OTBNExtRegs
@@ -143,6 +145,10 @@ class OTBNState:
 
         self.pc = 0
         self.pc_next = None  # type: Optional[int]
+
+        _, imem_size = get_memory_layout()['IMEM']
+        self.imem_size = imem_size
+
         self.dmem = Dmem()
 
         # Stall cycle support: if an instruction causes one or more stall
@@ -318,8 +324,32 @@ class OTBNState:
         '''Run before running an instruction'''
         self.loop_stack.check_insn(self.pc, insn_affects_control)
 
+    def check_jump_dest(self) -> None:
+        '''Check whether self.pc_next is a valid jump/branch target
+
+        If not, raises a BadAddrError.
+
+        '''
+        if self.pc_next is None:
+            return
+
+        # The PC should always be non-negative (it's an error in the simulator
+        # if that's come unstuck)
+        assert 0 <= self.pc_next
+
+        # Check the new PC is word-aligned
+        if self.pc_next & 3:
+            raise BadAddrError('pc', self.pc_next,
+                               'address is not 4-byte aligned')
+
+        # Check the new PC lies in instruction memory
+        if self.pc_next >= self.imem_size:
+            raise BadAddrError('pc', self.pc_next,
+                               'address lies above the top of imem')
+
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''
+        self.check_jump_dest()
         self.loop_step()
 
     def read_csr(self, idx: int) -> int:

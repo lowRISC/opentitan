@@ -7,6 +7,7 @@ from typing import List, Sequence
 
 from shared.mem_layout import get_memory_layout
 
+from .alert import BadAddrError
 from .trace import Trace
 
 
@@ -139,13 +140,34 @@ class Dmem:
 
     def load_u256(self, addr: int) -> int:
         '''Read a u256 little-endian value from an aligned address'''
-        assert 0 == addr % 32
-        return self.data[addr // 32]
+        assert addr >= 0
+
+        if addr & 31:
+            raise BadAddrError('wide load', addr,
+                               'address is not 32-byte aligned')
+
+        word_addr = addr // 32
+
+        if word_addr >= len(self.data):
+            raise BadAddrError('wide load', addr,
+                               'address is above the top of dmem')
+
+        return self.data[word_addr]
 
     def store_u256(self, addr: int, value: int) -> None:
         '''Write a u256 little-endian value to an aligned address'''
-        assert 0 == addr % 32
+        assert addr >= 0
         assert 0 <= value < (1 << 256)
+
+        if addr & 31:
+            raise BadAddrError('wide store', addr,
+                               'address is not 32-byte aligned')
+
+        word_addr = addr // 32
+        if word_addr >= len(self.data):
+            raise BadAddrError('wide store', addr,
+                               'address is above the top of dmem')
+
         self.trace.append(TraceDmemStore(addr, value, True))
 
     def load_u32(self, addr: int) -> int:
@@ -155,8 +177,13 @@ class Dmem:
         32-bit integer.
 
         '''
-        assert 0 == addr % 4
-        assert addr < 32 * len(self.data)
+        assert addr >= 0
+        if addr & 3:
+            raise BadAddrError('narrow load', addr,
+                               'address is not 4-byte aligned')
+        if (addr + 31) // 32 >= len(self.data):
+            raise BadAddrError('narrow load', addr,
+                               'address is above the top of dmem')
 
         idx32 = addr // 4
         idxW = idx32 // 8
@@ -170,9 +197,16 @@ class Dmem:
         addr should be 4-byte aligned.
 
         '''
-        assert 0 == addr % 4
-        assert addr < 32 * len(self.data)
+        assert addr >= 0
         assert 0 <= value <= (1 << 32) - 1
+
+        if addr & 3:
+            raise BadAddrError('narrow load', addr,
+                               'address is not 4-byte aligned')
+        if (addr + 31) // 32 >= len(self.data):
+            raise BadAddrError('narrow load', addr,
+                               'address is above the top of dmem')
+
         self.trace.append(TraceDmemStore(addr, value, False))
 
     def changes(self) -> Sequence[Trace]:

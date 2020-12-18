@@ -24,12 +24,33 @@ class Alert(Exception):
     value that should be written to the ERR_CODE external register.
 
     '''
-    # Subclasses should override this class field
+    # Subclasses should override this class field or the error_code method
     err_code = None  # type: Optional[int]
 
     def error_code(self) -> int:
         assert self.err_code is not None
         return self.err_code
+
+
+class BadAddrError(Alert):
+    '''Raised when loading or storing or setting PC with a bad address'''
+
+    def __init__(self, operation: str, addr: int, what: str):
+        assert operation in ['pc',
+                             'narrow load', 'narrow store',
+                             'wide load', 'wide store']
+        self.operation = operation
+        self.addr = addr
+        self.what = what
+
+    def error_code(self) -> int:
+        return (ERR_CODE_BAD_INSN_ADDR
+                if self.operation == 'fetch'
+                else ERR_CODE_BAD_DATA_ADDR)
+
+    def __str__(self) -> str:
+        return ('Bad {} address of {:#08x}: {}.'
+                .format(self.operation, self.addr, self.what))
 
 
 class LoopError(Alert):
