@@ -11,7 +11,7 @@
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[86] = {
+    top_earlgrey_plic_interrupt_for_peripheral[99] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdGpioGpio0] = kTopEarlgreyPlicPeripheralGpio,
   [kTopEarlgreyPlicIrqIdGpioGpio1] = kTopEarlgreyPlicPeripheralGpio,
@@ -98,6 +98,19 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdKmacKmacDone] = kTopEarlgreyPlicPeripheralKmac,
   [kTopEarlgreyPlicIrqIdKmacFifoEmpty] = kTopEarlgreyPlicPeripheralKmac,
   [kTopEarlgreyPlicIrqIdKmacKmacErr] = kTopEarlgreyPlicPeripheralKmac,
+  [kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone] = kTopEarlgreyPlicPeripheralOtpCtrl,
+  [kTopEarlgreyPlicIrqIdOtpCtrlOtpError] = kTopEarlgreyPlicPeripheralOtpCtrl,
+  [kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone] = kTopEarlgreyPlicPeripheralCsrng,
+  [kTopEarlgreyPlicIrqIdCsrngCsEntropyReq] = kTopEarlgreyPlicPeripheralCsrng,
+  [kTopEarlgreyPlicIrqIdCsrngCsHwInstExc] = kTopEarlgreyPlicPeripheralCsrng,
+  [kTopEarlgreyPlicIrqIdCsrngCsFifoErr] = kTopEarlgreyPlicPeripheralCsrng,
+  [kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone] = kTopEarlgreyPlicPeripheralEdn0,
+  [kTopEarlgreyPlicIrqIdEdn0EdnFifoErr] = kTopEarlgreyPlicPeripheralEdn0,
+  [kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone] = kTopEarlgreyPlicPeripheralEdn1,
+  [kTopEarlgreyPlicIrqIdEdn1EdnFifoErr] = kTopEarlgreyPlicPeripheralEdn1,
+  [kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid] = kTopEarlgreyPlicPeripheralEntropySrc,
+  [kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed] = kTopEarlgreyPlicPeripheralEntropySrc,
+  [kTopEarlgreyPlicIrqIdEntropySrcEsFifoErr] = kTopEarlgreyPlicPeripheralEntropySrc,
 };
 
 
