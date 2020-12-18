@@ -198,6 +198,13 @@ When these errors occur, random data is fed to the KMAC for processing.
 Neither the working state nor the relevant output registers are updated.
 An error interrupt and operation alert are also generated.
 
+The following are the invalid input checks:
+*  Either share of the sideload key is all 0's or all 1's
+*  Creator seed is all 0's or all 1's
+*  Owner seed is all 0's or all 1's
+*  Device Id is all 0's or all 1's
+*  Health state diverification data is all 0's or all 1's
+
 ### Invalid Operation
 When these errors occur, an error interrupt and fault are generated.
 
@@ -244,8 +251,89 @@ Based on input from key manager control, this module selects the inputs for each
 
 ![Key Manager KMAC Interface Block Diagram](keymgr_kmac_if_diagram.svg)
 
-### Software Binding
+The KMAC interafce works on a simple `valid / ready` protocol.
+When there is data to send, the KMAC interface sends out a `valid` and keeps it active.
+When the destination accepts the transaction, the `ready` is asserted.
+Note just like with any bus interface, the `ready` may already be asserted when `valid` asserts, or it may assert some time later, there are no restrictions.
+Since the data to be sent is always pre-buffered in key manager, the valid once asserts, never de-asserts until the entire transaction is complete.
 
+The data interface itself is 64b wide.
+However, there may not always be 64b multiple aligned data to be sent.
+In these situations, the last transfer beat sent to KMAC has a byte mask / strobe attached.
+The byte mask indicates on the last beat which bytes are actually valid, and which are not.
+Not beats prior to the last always have fully asserted byte masks.
+
+Once KMAC receives all the required data and the last indication, it begins processing the data into a digest.
+This process may take an arbitrary number of cycles.
+When this process is complete, a `done` indication pulse is sent back with the digest.
+Note, the acceptance of `done` has no back-pressure and `keymgr` must accept it within one cycle.
+
+See diagram below for an example transfer:
+
+{{< wavejson >}}
+{signal: [
+  {name: 'kmac_data_o.valid',     wave: '01...........|....0..'},
+  {name: 'kmac_data_i.ready',     wave: '1...0..101...|.......'},
+  {name: 'kmac_data_o.data',      wave: 'x2222...2.222|2222x..'},
+  {name: 'kmac_data_o.last',      wave: '0................10..'},
+  {name: 'kmac_data_o.strb',      wave: 'x2...............2x..'},
+  {name: 'kmac_data_i.done',      wave: '0..................10'},
+  {name: 'kmac_data_i.digest*',   wave: 'x..................3x'},
+  ],
+}
+{{< /wavejson >}}
+
+### Side Load Keys
+
+There are three sideload keys.
+One for AES, one for HMAC, and one for KMAC.
+When a sideload key is generated successfully through the `generate-output-hw` command, the derived data is loaded into key storage registers.
+There is a set of storage registers for each destination.
+
+The KMAC key however is further overloaded as it is the main derivation mechanism for key manager internal stage.
+The KMAC key thus has two possible outputs, one is the sideload key, and the other is internal state key.
+
+When a valid operation is called, the internal state key is sent over the KMAC key.
+During all other times, the sideloaded value is presented.
+Note, there may not be a valid key in the sideload register if it has been cleared or never generated.
+The sideload key can be overwritten with another generate command, or cleared with entropy through {{< regref SIDELOAD_CLEAR >}}.
+
+The following diagram illustrates an example when there is no valid key in the KMAC sideload registers and an operation is called.
+During the duration of the operation, the key is valid and shows the internal key state.
+Once the operation is complete, it falls back to the sideload key state, which is invalid in this case.
+
+{{< wavejson >}}
+{signal: [
+  {name: 'u_sideload_ctrl.u_kmac_key.key_o.valid',     wave: '0................'},
+  {name: 'u_sideload_ctrl.u_kmac_key.key_o.key_share', wave: 'x................'},
+  {name: 'u_ctrl.key_o.valid',                         wave: '0................'},
+  {name: 'u_ctrl.key_o.key_share',                     wave: 'x................'},
+  {name: 'u_ctrl.op_start_i',                          wave: '0....1.....0.....'},
+  {name: 'kmac_key_o.valid',                           wave: '0....1.....0.....'},
+  {name: 'kmac_key_o.key_share*',                      wave: 'x....3.....x.....'},
+  ],
+}
+{{< /wavejson >}}
+
+The following diagram illustrates an example when there is a valid key in the KMAC sideload registers and an operation is called.
+During the duration of the operation, the key is valid and shows the internal key state.
+Once the operation is complete, it falls back to the sideload key state, which is valid and contains a different value.
+
+{{< wavejson >}}
+{signal: [
+  {name: 'u_sideload_ctrl.u_kmac_key.key_o.valid',     wave: '01...............'},
+  {name: 'u_sideload_ctrl.u_kmac_key.key_o.key_share', wave: 'x4...............'},
+  {name: 'u_ctrl.key_o.valid',                         wave: '0....1.....0.....'},
+  {name: 'u_ctrl.key_o.key_share',                     wave: 'x................'},
+  {name: 'u_ctrl.op_start_i',                          wave: '0....1.....0.....'},
+  {name: 'kmac_key_o.valid',                           wave: '01...............'},
+  {name: 'kmac_key_o.key_share*',                      wave: 'x4...3.....4.....'},
+  ],
+}
+{{< /wavejson >}}
+
+
+### Software Binding
 
 The identities flow employs an idea called [software binding](https://docs.opentitan.org/doc/security/specs/identities_and_root_keys/#software-binding) to ensure that a particular key derivation scheme is only reproducible for a given software configuration.
 This software binding exists for every stage of key manager except for `OwnerKey`.
