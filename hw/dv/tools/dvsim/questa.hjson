@@ -7,23 +7,30 @@
 
   // Indicate the tool specific helper sources - these are copied over to the
   // {tool_srcs_dir} before running the simulation.
-  tool_srcs:  ["{dv_root}/tools/questa/*"]
 
   build_opts: ["-sv",
                "-timescale 1ns/1ps",
                "+incdir+/${QUESTA_HOME}/verilog_src/uvm-1.2/src/",
                "/${QUESTA_HOME}/verilog_src/uvm-1.2/src/uvm_pkg.sv",
+               // Multi-file compilation unit option for Questa
+               // Needed to use macros across CU-s
                "-mfcu"
                "-f {sv_flist}"]
 
   run_opts:   ["-sv_seed {seed}",
                // List multiple tops for the simulation
                "{sim_tops}",
+               // dv_macros.svh has a macro printing null using %0d
+               // format specifier, this is illegal as per strict LRM
+               // compliance, for now we demote this error in Questa
                "-suppress vsim-8323",
                "-c",
                "-sv_lib /${QUESTA_HOME}/uvm-1.2/linux_x86_64/uvm_dpi",
                "-lib {sv_flist_gen_dir}/work",
-               "+show_file_path=1",
+               // Questa requires that all declared virtual interfaces
+               // be connected to physical/actual interface
+               // Else Questa issues a run-time error
+               // Below flag demotes this error
                "-permit_unmatched_virtual_intf",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}",
@@ -67,6 +74,7 @@
   cov_analyze_opts: []
 
   // pass and fail patterns
+  // TBD questa
   build_fail_patterns: ["\\*E.*$"]
   run_fail_patterns:   ["\\*E.*$"] // Null pointer error
 
