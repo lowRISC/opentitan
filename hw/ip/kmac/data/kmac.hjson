@@ -484,7 +484,7 @@
               800-185 specification.
 
               Order of Prefix is:
-              prefix[end:0] := {PREFIX0, PREFIX1, ... }
+              prefix[end:0] := {PREFIX(N-1), ..., PREFIX(1), PREFIX(0) }
 
               The registers are allowed to be updated when the engine is in Idle state.
               If the engine computes the hash, it discards any attempts to update the secret keys

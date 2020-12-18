@@ -195,7 +195,7 @@ module kmac
   // Function-name N and Customization input string S
   always_comb begin
     for (int i = 0 ; i < NumWordsPrefix; i++) begin
-      ns_prefix[32*i+:32] = reg2hw.prefix[NumWordsPrefix-1 - i].q;
+      ns_prefix[32*i+:32] = reg2hw.prefix[i].q;
     end
   end
 
