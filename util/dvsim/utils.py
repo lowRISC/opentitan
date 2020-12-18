@@ -285,43 +285,35 @@ def subst_wildcards(var, mdict, ignored_wildcards=[], ignore_error=False):
         sys.exit(1)
 
 
-def find_and_substitute_wildcards(sub_dict,
+def find_and_substitute_wildcards(value,
                                   full_dict,
                                   ignored_wildcards=[],
                                   ignore_error=False):
+    '''Expand wildcards in value, using definitions in full_dict.
+
+    If value is a dictionary, this expands the entries recursively. If value is
+    a list, it expands each entry.
+
     '''
-    Recursively find key values containing wildcards in sub_dict in full_dict
-    and return resolved sub_dict.
-    '''
-    for key in sub_dict.keys():
-        if type(sub_dict[key]) in [dict, OrderedDict]:
-            # Recursively call this funciton in sub-dicts
-            sub_dict[key] = find_and_substitute_wildcards(
-                sub_dict[key], full_dict, ignored_wildcards, ignore_error)
+    def _fasw(v):
+        return find_and_substitute_wildcards(v, full_dict,
+                                             ignored_wildcards, ignore_error)
 
-        elif type(sub_dict[key]) is list:
-            sub_dict_key_values = list(sub_dict[key])
-            # Loop through the list of key's values and substitute each var
-            # in case it contains a wildcard
-            for i in range(len(sub_dict_key_values)):
-                if type(sub_dict_key_values[i]) in [dict, OrderedDict]:
-                    # Recursively call this funciton in sub-dicts
-                    sub_dict_key_values[i] = \
-                        find_and_substitute_wildcards(sub_dict_key_values[i],
-                                                      full_dict, ignored_wildcards, ignore_error)
+    # Recurse into dictionaries
+    if isinstance(value, dict):
+        return {k: _fasw(v) for k, v in value.items()}
 
-                elif type(sub_dict_key_values[i]) is str:
-                    sub_dict_key_values[i] = subst_wildcards(
-                        sub_dict_key_values[i], full_dict, ignored_wildcards,
-                        ignore_error)
+    # Iterate over lists
+    if isinstance(value, list):
+        return [_fasw(v) for v in value]
 
-            # Set the substituted key values back
-            sub_dict[key] = sub_dict_key_values
+    # Expand strings
+    if isinstance(value, str):
+        return subst_wildcards(value, full_dict,
+                               ignored_wildcards, ignore_error)
 
-        elif type(sub_dict[key]) is str:
-            sub_dict[key] = subst_wildcards(sub_dict[key], full_dict,
-                                            ignored_wildcards, ignore_error)
-    return sub_dict
+    # Leave anything else untouched
+    return value
 
 
 def md_results_to_html(title, css_file, md_text):
