@@ -40,43 +40,84 @@ import os
 import shlex
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import List, Optional
 
-log.basicConfig(level=log.INFO, format="%(message)s")
-
 REPO_TOP = Path(__file__).parent.parent.resolve()
 
-def cmd_to_str(cmd):
+
+def cmd_to_str(cmd: List[str]) -> str:
     return ' '.join([shlex.quote(str(a)) for a in cmd])
 
 
-def run_cmd(cmd, **kwargs):
-    log.info(cmd_to_str(cmd))
-    subprocess.run(cmd, **kwargs)
+def run_cmd(args, display_cmd=None):
+    '''Run the command in args.
+
+    If display_cmd is not None, it should be a string that is printed instead
+    of the actual arguments that ran (for hiding the details of temporary
+    files).
+
+    '''
+    str_args = [str(a) for a in args]
+    info_msg = cmd_to_str(str_args) if display_cmd is None else display_cmd
+    log.info(info_msg)
+
+    subprocess.run(str_args, check=True)
+
+
+def run_tool(tool: str, out_file: Path, args) -> None:
+    '''Run tool to produce out_file (using an '-o' argument)
+
+    This works by writing to a temporary file (in the same directory) and then
+    atomically replacing any existing destination file when done. This is
+    needed if we need to run multiple otbn_build processes that generate the
+    same files in parallel (a requirement because of our current Meson-based
+    infrastructure).
+
+    '''
+    out_dir, out_base = os.path.split(out_file)
+    tmpfile = tempfile.NamedTemporaryFile(prefix=out_base, dir=out_dir,
+                                          delete=False)
+    try:
+        run_cmd([tool, '-o', tmpfile.name] + args,
+                cmd_to_str([tool, '-o', out_file] + args))
+
+        # If we get here, the tool ran successfully, producing the output file.
+        # Use os.replace to rename appropriately.
+        os.replace(tmpfile.name, out_file)
+    finally:
+        # When we're done, or if something went wrong, close and try to delete
+        # the temporary file. The unlink should fail if the os.replace call
+        # above succeeded. That's fine.
+        tmpfile.close()
+        try:
+            os.unlink(tmpfile.name)
+        except FileNotFoundError:
+            pass
 
 
 def call_otbn_as(src_file: Path, out_file: Path):
     otbn_as_cmd = os.environ.get('OTBN_AS',
                                  str(REPO_TOP / 'hw/ip/otbn/util/otbn-as'))
-    run_cmd([otbn_as_cmd, '-o', out_file, src_file], check=True)
+    run_tool(otbn_as_cmd, out_file, [src_file])
 
 
 def call_otbn_ld(src_files: List[Path], out_file: Path, linker_script: Optional[Path]):
     otbn_ld_cmd = os.environ.get('OTBN_LD',
                                  str(REPO_TOP / 'hw/ip/otbn/util/otbn-ld'))
 
-    cmd = [otbn_ld_cmd, '-o', out_file]
+    args = []
     if linker_script:
-        cmd += ['-T', linker_script]
-    cmd += src_files
-    run_cmd(cmd, check=True)
+        args += ['-T', linker_script]
+    args += src_files
+    run_tool(otbn_ld_cmd, out_file, args)
 
 
 def call_rv32_objcopy(args: List[str]):
     rv32_tool_objcopy = os.environ.get('RV32_TOOL_OBJCOPY',
                                        'riscv32-unknown-elf-objcopy')
-    run_cmd([rv32_tool_objcopy] + args, check=True)
+    run_cmd([rv32_tool_objcopy] + args)
 
 
 def main() -> int:
@@ -87,6 +128,11 @@ def main() -> int:
         required=False,
         default=".",
         help="Output directory (default: %(default)s)")
+    parser.add_argument(
+        '--verbose',
+        '-v',
+        action='store_true',
+        help='Print commands that are executed.')
     parser.add_argument(
         '--script',
         '-T',
@@ -101,6 +147,9 @@ def main() -> int:
              "Default: basename of the first source file.")
     parser.add_argument('src_files', nargs='+', type=str, metavar='SRC_FILE')
     args = parser.parse_args()
+
+    log_level = log.INFO if args.verbose else log.WARNING
+    log.basicConfig(level=log_level, format="%(message)s")
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(exist_ok=True)

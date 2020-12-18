@@ -20,10 +20,84 @@ package lc_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  // TODO: add the names of alerts in order
   parameter string LIST_OF_ALERTS[] = {"lc_programming_failure", "lc_state_failure"};
   parameter uint   NUM_ALERTS = 2;
   parameter uint   CLAIM_TRANS_VAL = 'ha5;
+  parameter uint   NUM_STATES = 16;
+
+  typedef struct packed {
+    lc_ctrl_pkg::lc_tx_e lc_dft_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_nvm_debug_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_hw_debug_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_cpu_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_creator_seed_sw_rw_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_owner_seed_sw_rw_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_seed_hw_rd_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_iso_part_sw_rd_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_iso_part_sw_wr_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_keymgr_en_o;
+    lc_ctrl_pkg::lc_tx_e lc_escalate_en_o;
+  } lc_outputs_t;
+
+  const lc_outputs_t EXP_LC_OUTPUTS[NUM_STATES] = {
+    // Raw (fixed size array index 0)
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    // TestUnlock0
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    // TestLock0
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    // TestUnlock1
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    // TestLock1
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    // TestUnlock2
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    // TestLock2
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    // TestUnlock3
+    {On,  On,  On,  On,  Off, Off, Off, Off, On,  Off, Off},
+    // Dev: lc_creator_seed_sw_rw_en_o (On if device is not personalized),
+    // lc_seed_hw_rd_en_o (On if device is personalized)
+    {Off, Off, On,  On,  On,  On,  On,  On,  On,  On,  Off},
+    // Prod: lc_creator_seed_sw_rw_en_o (On if device is not personalized),
+    // lc_seed_hw_rd_en_o (On if device is personalized)
+    {Off, Off, Off, On,  On,  On,  On,  On,  On,  On,  Off},
+    // ProdEnd: lc_creator_seed_sw_rw_en_o (On if device is not personalized),
+    // lc_seed_hw_rd_en_o (On if device is personalized)
+    {Off, Off, Off, On,  On,  On,  On,  On,  On,  On,  Off},
+    // Rma
+    {On,  On,  On,  On,  On,  On,  On,  On,  On,  On,  Off},
+    // Scrap
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    // PostTrans
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    // Escalate
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On},
+    // Invalid
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off}
+  };
+
+  // associative array cannot declare parameter here, so we used const instead
+  const dec_lc_state_e VALID_NEXT_STATES [dec_lc_state_e][$] = '{
+    DecLcStRma:     {DecLcStScrap},
+    DecLcStProdEnd: {DecLcStScrap},
+    DecLcStProd:    {DecLcStScrap, DecLcStRma},
+    DecLcStDev:     {DecLcStScrap, DecLcStRma},
+    DecLcStTestUnlocked3: {DecLcStScrap, DecLcStRma, DecLcStProdEnd, DecLcStProd, DecLcStDev},
+    DecLcStTestUnlocked2: {DecLcStScrap, DecLcStProdEnd, DecLcStProd, DecLcStDev,
+                           DecLcStTestLocked2},
+    DecLcStTestUnlocked1: {DecLcStScrap, DecLcStRma, DecLcStProdEnd, DecLcStProd, DecLcStDev,
+                           DecLcStTestLocked2, DecLcStTestLocked1},
+    DecLcStTestUnlocked0: {DecLcStScrap, DecLcStRma, DecLcStProdEnd, DecLcStProd, DecLcStDev,
+                           DecLcStTestLocked2, DecLcStTestLocked1, DecLcStTestLocked0},
+    DecLcStTestLocked2: {DecLcStScrap, DecLcStProdEnd, DecLcStProd,
+                         DecLcStDev, DecLcStTestUnlocked3},
+    DecLcStTestLocked1: {DecLcStScrap, DecLcStProdEnd, DecLcStProd, DecLcStDev,
+                         DecLcStTestUnlocked3, DecLcStTestUnlocked2},
+    DecLcStTestLocked0: {DecLcStScrap, DecLcStProdEnd, DecLcStProd, DecLcStDev,
+                         DecLcStTestUnlocked3, DecLcStTestUnlocked2, DecLcStTestUnlocked1},
+    DecLcStRaw: {DecLcStScrap, DecLcStTestUnlocked2, DecLcStTestUnlocked1, DecLcStTestUnlocked0}
+  };
 
   // types
   typedef enum bit [1:0] {
@@ -37,6 +111,33 @@ package lc_ctrl_env_pkg;
   typedef virtual lc_ctrl_if              lc_ctrl_vif;
 
   // functions
+  function automatic bit valid_state_for_trans(lc_state_e curr_state);
+    valid_state_for_trans = 0;
+    if (curr_state inside {LcStRma, LcStProdEnd, LcStProd, LcStDev, LcStTestUnlocked3,
+                           LcStTestUnlocked2, LcStTestUnlocked1, LcStTestUnlocked0,
+                           LcStTestLocked2, LcStTestLocked1, LcStTestLocked0, LcStRaw}) begin
+      valid_state_for_trans = 1;
+    end
+  endfunction
+
+  function automatic dec_lc_state_e dec_lc_state(lc_state_e curr_state);
+    case (curr_state)
+      LcStRaw:           return DecLcStRaw;
+      LcStTestUnlocked0: return DecLcStTestUnlocked0;
+      LcStTestLocked0:   return DecLcStTestLocked0;
+      LcStTestUnlocked1: return DecLcStTestUnlocked1;
+      LcStTestLocked1:   return DecLcStTestLocked1;
+      LcStTestUnlocked2: return DecLcStTestUnlocked2;
+      LcStTestLocked2:   return DecLcStTestLocked2;
+      LcStTestUnlocked3: return DecLcStTestUnlocked3;
+      LcStDev:           return DecLcStDev;
+      LcStProd:          return DecLcStProd;
+      LcStProdEnd:       return DecLcStProdEnd;
+      LcStRma:           return DecLcStRma;
+      LcStScrap:         return DecLcStScrap;
+      default: `uvm_fatal("lc_env_pkg", $sformatf("unknown lc_state 0x%0h", curr_state))
+    endcase
+  endfunction
 
   // package sources
   `include "lc_ctrl_env_cfg.sv"

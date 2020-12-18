@@ -15,12 +15,14 @@ filesets:
       - lowrisc:prim:otp
       - lowrisc:prim:lfsr
       - lowrisc:prim:lc_sync
+      - lowrisc:prim:buf
       - lowrisc:prim:secded
       - lowrisc:ip:pwrmgr_pkg
     files:
       - rtl/otp_ctrl_reg_top.sv
       - rtl/otp_ctrl_ecc_reg.sv
       - rtl/otp_ctrl_scrmbl.sv
+      - rtl/otp_ctrl_token_const.sv
       - rtl/otp_ctrl_lfsr_timer.sv
       - rtl/otp_ctrl_part_unbuf.sv
       - rtl/otp_ctrl_part_buf.sv

@@ -76,7 +76,13 @@ module kmac_staterd
     .rerror_i (tlram_rerror)
   );
 
-  assign tlram_rdata = conv_endian32(tlram_rdata_endian, endian_swap_i);
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      tlram_rdata <= '0;
+    end else if (tlram_req & ~tlram_we) begin
+      tlram_rdata <= conv_endian32(tlram_rdata_endian, endian_swap_i);
+    end
+  end
 
   // Always grant
   assign tlram_gnt = tlram_req & ~tlram_we;

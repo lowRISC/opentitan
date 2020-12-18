@@ -23,13 +23,8 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
-  // Add the coverage configuration and exclusion files so they get copied
-  // over to the scratch area.
-  tool_srcs: ["{proj_root}/hw/ip/prim/dv/prim_lfsr/data/prim_lfsr_cover.cfg",
-              "{proj_root}/hw/ip/prim/dv/prim_lfsr/data/prim_lfsr_cover_assert.cfg",
-              "{proj_root}/hw/ip/prim/dv/prim_lfsr/data/prim_lfsr_cov_excl.el"]
-
-  vcs_cov_excl_files: ["{tool_srcs_dir}/prim_lfsr_cov_excl.el"]
+  // Add PRIM_LSFR specific exclusion files.
+  vcs_cov_excl_files: ["{proj_root}/hw/ip/prim/dv/prim_lfsr/data/prim_lfsr_cov_excl.el"]
 
   build_modes: [
     {
@@ -44,8 +39,8 @@
 
   // dw_8 is only used for "smoke" sims, so coverage collection is not needed.
   prim_lfsr_dw_8_vcs_cov_cfg_file: ""
-  prim_lfsr_dw_24_vcs_cov_cfg_file: "-cm_hier {tool_srcs_dir}/prim_lfsr_cover.cfg"
-  vcs_cov_assert_cfg_file: "-cm_assert_hier {tool_srcs_dir}/prim_lfsr_cover_assert.cfg"
+  prim_lfsr_dw_24_vcs_cov_cfg_file: "-cm_hier {proj_root}/hw/ip/prim/dv/prim_lfsr/data/prim_lfsr_cover.cfg"
+  vcs_cov_assert_cfg_file: "-cm_assert_hier {proj_root}/hw/ip/prim/dv/prim_lfsr/data/prim_lfsr_cover_assert.cfg"
 
   prim_lfsr_dw_8_xcelium_cov_cfg_file: ""
   prim_lfsr_dw_24_xcelium_cov_cfg_file: ""

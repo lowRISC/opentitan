@@ -8,7 +8,8 @@
 
 module prim_packer #(
   parameter int InW  = 32,
-  parameter int OutW = 32
+  parameter int OutW = 32,
+  parameter int HintByteData = 0 // If 1, The input/output are byte granularity
 ) (
   input clk_i ,
   input rst_ni,
@@ -275,4 +276,22 @@ module prim_packer #(
           |=> ($past(mask_i) >>
                ($past(lod_idx)+OutW-$countones($past(stored_mask))))
               == stored_mask)
+
+  // Assertions for byte hint enabled
+  if (HintByteData != 0) begin : g_byte_assert
+    `ASSERT_INIT(InputDividedBy8_A,  InW  % 8 == 0)
+    `ASSERT_INIT(OutputDividedBy8_A, OutW % 8 == 0)
+
+    // Masking[8*i+:8] should be all zero or all one
+    for (genvar i = 0 ; i < InW/8 ; i++) begin : g_byte_input_masking
+      `ASSERT(InputMaskContiguous_A,
+              valid_i |-> (|mask_i[8*i+:8] == 1'b 0)
+                       || (&mask_i[8*i+:8] == 1'b 1))
+    end
+    for (genvar i = 0 ; i < OutW/8 ; i++) begin : g_byte_output_masking
+      `ASSERT(OutputMaskContiguous_A,
+              valid_o |-> (|mask_o[8*i+:8] == 1'b 0)
+                       || (&mask_o[8*i+:8] == 1'b 1))
+    end
+  end
 endmodule

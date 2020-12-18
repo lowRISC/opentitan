@@ -41,8 +41,8 @@
   // Need to override the default output directory
   overrides: [
     {
-      name: scratch_base_path
-      value: "{scratch_root}/{variant}.{flow}.{tool}"
+      name: scratch_path
+      value: "{scratch_base_path}/{variant}-{flow}-{tool}"
     }
   ]
 

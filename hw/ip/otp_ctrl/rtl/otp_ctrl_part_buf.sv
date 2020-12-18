@@ -54,6 +54,7 @@ module otp_ctrl_part_buf
   input                               scrmbl_mtx_gnt_i,
   // Scrambling datapath interface
   output otp_scrmbl_cmd_e             scrmbl_cmd_o,
+  output digest_mode_e                scrmbl_mode_o,
   output logic [ConstSelWidth-1:0]    scrmbl_sel_o,
   output logic [ScrmblBlockWidth-1:0] scrmbl_data_o,
   output logic                        scrmbl_valid_o,
@@ -167,6 +168,7 @@ module otp_ctrl_part_buf
     // Scrambling datapath
     scrmbl_cmd_o   = LoadShadow;
     scrmbl_sel_o   = CnstyDigest;
+    scrmbl_mode_o  = StandardMode;
     scrmbl_valid_o = 1'b0;
 
     // Counter
@@ -357,14 +359,14 @@ module otp_ctrl_part_buf
           // mode if this partition is scrambled.
           scrmbl_cmd_o = DigestInit;
           if (Info.secret) begin
-            scrmbl_sel_o = ChainedMode;
+            scrmbl_mode_o = ChainedMode;
             if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
               state_d = IntegScrSt;
             end
           // If this partition is not scrambled, we can just directly
           // jump to the digest state.
           end else begin
-            scrmbl_sel_o = StandardMode;
+            scrmbl_mode_o = StandardMode;
             if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
               state_d = IntegDigSt;
             end
@@ -579,28 +581,41 @@ module otp_ctrl_part_buf
   // DAI Access Control //
   ////////////////////////
 
+  part_access_t access;
   // Aggregate all possible DAI write locks. The partition is also locked when uninitialized.
   // Note that the locks are redundantly encoded values.
   if (Info.write_lock) begin : gen_digest_write_lock
-    assign access_o.write_lock = ((dout_gate_q != Unlocked) ||
-                                  (access_i.write_lock != Unlocked) ||
-                                  (digest_o != '0))  ? Locked : Unlocked;
-    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> access_o.write_lock == Locked)
+    assign access.write_lock = ((dout_gate_q != Unlocked) ||
+                                (access_i.write_lock != Unlocked) ||
+                                (digest_o != '0))  ? Locked : Unlocked;
+    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> access.write_lock == Locked)
   end else begin : gen_no_digest_write_lock
-    assign access_o.write_lock = ((dout_gate_q != Unlocked) ||
-                                  (access_i.write_lock != Unlocked)) ? Locked : Unlocked;
+    assign access.write_lock = ((dout_gate_q != Unlocked) ||
+                                (access_i.write_lock != Unlocked)) ? Locked : Unlocked;
   end
 
   // Aggregate all possible DAI read locks. The partition is also locked when uninitialized.
   // Note that the locks are redundantly encoded 16bit values.
   if (Info.read_lock) begin : gen_digest_read_lock
-    assign access_o.read_lock = ((dout_gate_q != Unlocked) ||
-                                 (access_i.read_lock != Unlocked) ||
-                                 (digest_o != '0)) ? Locked : Unlocked;
-    `ASSERT(DigestReadLocksPartition_A, digest_o |-> access_o.read_lock == Locked)
+    assign access.read_lock = ((dout_gate_q != Unlocked) ||
+                               (access_i.read_lock != Unlocked) ||
+                               (digest_o != '0)) ? Locked : Unlocked;
+    `ASSERT(DigestReadLocksPartition_A, digest_o |-> access.read_lock == Locked)
   end else begin : gen_no_digest_read_lock
-    assign access_o.read_lock = ((dout_gate_q != Unlocked) ||
-                                 (access_i.read_lock != Unlocked)) ? Locked : Unlocked;
+    assign access.read_lock = ((dout_gate_q != Unlocked) ||
+                               (access_i.read_lock != Unlocked)) ? Locked : Unlocked;
+  end
+
+  // Make sure there is a hand-picked buffer on each bit to prevent
+  // the synthesis tool from optimizing the multibit signal.
+  logic [$bits(part_access_t)-1:0] access_in, access_out;
+  assign access_in = $bits(part_access_t)'(access);
+  assign access_o = part_access_t'(access_out);
+  for (genvar k = 0; k < $bits(part_access_t); k++) begin : gen_bits
+    prim_buf u_prim_buf (
+      .in_i(access_in[k]),
+      .out_o(access_out[k])
+    );
   end
 
   ///////////////
@@ -652,6 +667,7 @@ module otp_ctrl_part_buf
   `ASSERT_KNOWN(OtpAddrKnown_A,      otp_addr_o)
   `ASSERT_KNOWN(ScrmblMtxReqKnown_A, scrmbl_mtx_req_o)
   `ASSERT_KNOWN(ScrmblCmdKnown_A,    scrmbl_cmd_o)
+  `ASSERT_KNOWN(ScrmblModeKnown_A,   scrmbl_mode_o)
   `ASSERT_KNOWN(ScrmblSelKnown_A,    scrmbl_sel_o)
   `ASSERT_KNOWN(ScrmblDataKnown_A,   scrmbl_data_o)
   `ASSERT_KNOWN(ScrmblValidKnown_A,  scrmbl_valid_o)

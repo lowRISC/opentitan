@@ -124,6 +124,10 @@ class FlowCfg():
             for entry in self.use_cfgs:
                 self._load_child_cfg(entry, mk_config)
 
+        if self.rel_path == "":
+            self.rel_path = os.path.dirname(self.flow_cfg_file).replace(
+                self.proj_root + '/', '')
+
         # Process overrides before substituting wildcards
         self._process_overrides()
 
@@ -131,10 +135,6 @@ class FlowCfg():
         # after merging the hjson but before expansion, they can override
         # _expand and add the code at the start.
         self._expand()
-
-        if self.rel_path == "":
-            self.rel_path = os.path.dirname(self.flow_cfg_file).replace(
-                self.proj_root + '/', '')
 
         # Run any final checks
         self._post_init()

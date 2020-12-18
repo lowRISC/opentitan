@@ -12,7 +12,5 @@
                 "{proj_root}/hw/syn/tools/dvsim/common_syn_cfg.hjson"]
 
   // Timing constraints for this module
-  sdc_path: "{proj_root}/hw/ip/rv_core_ibex/syn"
-  sdc_file: "constraints.sdc"
-
+  sdc_file: "{proj_root}/hw/ip/rv_core_ibex/syn/constraints.sdc"
  }

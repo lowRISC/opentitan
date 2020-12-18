@@ -72,6 +72,16 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_OTP_CTRL_SIZE_BYTES = 32'h4000;
 
   /**
+   * Peripheral base address for lc_ctrl in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_LC_CTRL_BASE_ADDR = 32'h40140000;
+
+  /**
+   * Peripheral size in bytes for lc_ctrl in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_LC_CTRL_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for pwrmgr in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_PWRMGR_BASE_ADDR = 32'h40400000;

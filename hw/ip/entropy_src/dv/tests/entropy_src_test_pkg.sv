@@ -18,5 +18,6 @@ package entropy_src_test_pkg;
 
   // package sources
   `include "entropy_src_base_test.sv"
+  `include "entropy_src_smoke_test.sv"
 
 endpackage

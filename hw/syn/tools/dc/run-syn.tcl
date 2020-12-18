@@ -8,9 +8,26 @@
 ##  PREPARE FLOW   ##
 #####################
 
-# tool setup
-set CONFIG_PATH "./"
-source ${CONFIG_PATH}/setup.tcl
+set syn_root ""
+if {[info exists ::env(syn_root)]} {
+  set syn_root "$::env(syn_root)"
+} else {
+  puts "ERROR: Script run without syn_root environment variable."
+  quit
+}
+
+set foundry_root ""
+if {[info exists ::env(foundry_root)]} {
+  set foundry_root "$::env(foundry_root)"
+} else {
+  puts "ERROR: Script run without foundry_root environment variable."
+  quit
+}
+
+# Tool setup.
+# TODO: The below path assumes a certain directory structure in the foundry area which does not
+# exist in the open repo.
+source ${foundry_root}/syn/dc/setup.tcl
 
 # if in interactive mode, do not exit at the end of the script
 if { [info exists ::env(INTERACTIVE)] } {

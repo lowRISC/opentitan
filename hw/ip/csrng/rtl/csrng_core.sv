@@ -20,7 +20,7 @@ module csrng_core import csrng_pkg::*; #(
   input efuse_sw_app_enable_i,
 
   // Lifecycle broadcast inputs
-  input  lc_ctrl_pkg::lc_tx_t  lc_dft_en_i,
+  input  lc_ctrl_pkg::lc_tx_t  lc_hw_debug_en_i,
 
   // Entropy Interface
   output entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_o,
@@ -257,6 +257,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                    genbits_stage_fips_sw;
 
   logic [14:0]             hw_exception_sts;
+  logic                    lc_hw_debug_not_on;
 
   // flops
   logic [2:0]  acmd_q, acmd_d;
@@ -965,6 +966,27 @@ module csrng_core import csrng_pkg::*; #(
 
 
   //-------------------------------------
+  // life cycle logic
+  //-------------------------------------
+  // The chip level life cycle control
+  // provide control logic to determine
+  // how certain debug features are controlled.
+
+  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_out;
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_hw_debug_en_i),
+    .lc_en_o(lc_hw_debug_en_out)
+  );
+
+  assign      lc_hw_debug_not_on = (lc_hw_debug_en_out != lc_ctrl_pkg::On);
+
+
+  //-------------------------------------
   // csrng_block_encrypt instantiation
   //-------------------------------------
   // The csrng_block_encrypt is shared
@@ -985,7 +1007,7 @@ module csrng_core import csrng_pkg::*; #(
     .rst_ni(rst_ni),
     .block_encrypt_bypass_i(!aes_cipher_enable),
     .block_encrypt_enable_i(cs_enable),
-    .block_encrypt_lc_dft_en_i(lc_dft_en_i),
+    .block_encrypt_lc_hw_debug_not_on_i(lc_hw_debug_not_on),
     .block_encrypt_req_i(benblk_arb_vld),
     .block_encrypt_rdy_o(benblk_arb_rdy),
     .block_encrypt_key_i(benblk_arb_key),

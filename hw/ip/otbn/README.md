@@ -8,15 +8,12 @@ See https://docs.opentitan.org/hw/ip/otbn/doc/index.html for documentation on
 the current version of OTBN; documentation matching the code in this directory
 can be found in the `doc` directory.
 
-OTBN is currently in early development. Please ask questions and report issues
+OTBN is under active development. Please ask questions and report issues
 through the [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).
 
 ## Develop OTBN
 
 ### Build OTBN software
-
-*Note the toolchain is still under active development. Full OTBN ISA support
-isn't complete*
 
 An assembler, linker and disassembler for OTBN can be found in
 `hw/ip/otbn/util`. These are wrappers around a RISC-V GCC and binutils toolchain
@@ -25,16 +22,16 @@ toolchain](https://docs.opentitan.org/doc/ug/install_instructions/#software-deve
 For more details about the toolchain, see the [user
 guide](https://docs.opentitan.org/doc/ug/otbn_sw)).
 
-`hw/ip/otbn/util/build.sh` provides a simple script to build a single OTBN
-assembly files using the toolchain:
+`otbn-as` and `otbn-ld` can be used to build .elf files for use with
+simulations. They work work similarly to binutils programs they wrap.
 
-```sh
-hw/ip/otbn/util/build.sh prog.s prog_bin/prog
+```
+hw/ip/otbn/util/otbn-as -o prog_bin/prog.o prog.s
+hw/ip/otbn/util/otbn-ld -o prog_bin/prog.elf prog_bin/prog.o
 ```
 
-Will assemble and link `prog.s` and produce various outputs using
-`prog_bin/prog` as a prefix for all output filenames. Run
-`./hw/ip/otbn/util/build.sh` without arguments for more information.
+Will assemble and link `prog.s` resulting in `prog_bin/prog.elf` that can be run
+directly on the ISS or the standalone RTL simulation.
 
 ### Work with the ISA
 
@@ -50,39 +47,32 @@ users include:
   - `util/otbn-rig`: A random instruction generator for OTBN. See
     util/rig/README.md for further information.
 
-### Run the standalone simulation
-*Note that OTBN is still in the early development stages so this simulation does
-not support the full ISA*
-
-A standalone environment to run OTBN alone in verilator is included. Build it
+### Run the standalone RTL simulation
+A standalone environment to run OTBN alone in Verilator is included. Build it
 with `fusesoc` as follows:
 
 ```sh
 fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ip:otbn_top_sim
 ```
 
-It includes functionality to set the initial DMem and IMem contents. The start
-address is hard coded to 0. Modify the `ImemStartAddr` parameter in
-`./dv/verilator/otbn_top_sim.sv` to change this. Combined with the build script
-described above, a single assembly file can be built and run on the simulation as
-follows:
+It includes functionality to set the initial Dmem and Imem contents from a .elf
+file. The start address is hard coded to 0. Modify the `ImemStartAddr` parameter
+in `./dv/verilator/otbn_top_sim.sv` to change this. A .elf (see above for build
+instructions) can be loaded and run as follows:
 
 ```sh
-# Create directory for build outputs
-mkdir otbn_build
-# Build smoke test
-hw/ip/otbn/util/build.sh ./hw/ip/otbn/dv/smoke/smoke_test.s ./otbn_build/smoke
-
-# Run the resulting binary on the OTBN standalone simulation
-./build/lowrisc_ip_otbn_top_sim_0.1/sim-verilator/Votbn_top_sim -t \
-  --meminit=imem,./otbn_build/smoke_imem.elf \
-  --meminit=dmem,./otbn_build/smoke_dmem.elf
+./build/lowrisc_ip_otbn_top_sim_0.1/sim-verilator/Votbn_top_sim \
+  --load-elf=prog_bin/prog.elf
 ```
 
-This will initialise the IMem with `./otbn_build/smoke_imem.elf` and the DMem
-with `./otbn_build/smoke_dmem.elf`. The `-t` argument enables tracing.  The
-simulation automatically halts on an `ecall` instruction and prints the final
-register values.
+The simulation automatically halts on an `ecall` instruction and prints the
+final register values. The ISS is run in parallel and final register and memory
+state will be cross-checked.
+
+Tracing functionality is available in the `Votbn_top_sim` binary. To obtain a
+full .fst wave trace pass the `-t` flag. To get an instruction level trace pass
+the `--otbn-trace-file=trace.log` argument. The instruction trace format is
+documented in `hw/ip/otbn/dv/tracer`.
 
 ### Run the smoke test
 
@@ -148,17 +138,3 @@ The ISS has a simple test suite, which runs various instructions and
 makes sure they behave as expected. You can find the tests in
 `dv/otbnsim/test` and can run them with `make -C dv/otbnsim test`.
 
-
-## Update the RISC-V part of the ISS
-
-The OTBN model is an instruction set simulator written in Python. It lives
-in the `opentitan` repository in the `util/otbnsim` directory, but builds on top
-of the `riscv-model` Python package. The code for this package can be found at
-https://github.com/wallento/riscv-python-model.
-
-To update the model to the latest recommended version, run `pip`.
-
-```sh
-# Ensure you have the latest Python dependencies installed
-pip3 install --user -U python-requirements.txt
-```

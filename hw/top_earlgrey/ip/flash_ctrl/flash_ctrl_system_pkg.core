@@ -7,6 +7,7 @@ name: "lowrisc:systems:flash_ctrl_pkg:0.1"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:ip:edn_pkg
       - lowrisc:constants:top_pkg
       - lowrisc:prim:util
     files:

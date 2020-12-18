@@ -44,6 +44,7 @@ module otp_ctrl_kdi
   input                                              scrmbl_mtx_gnt_i,
   // Scrambling datapath interface
   output otp_scrmbl_cmd_e                            scrmbl_cmd_o,
+  output digest_mode_e                               scrmbl_mode_o,
   output logic [ConstSelWidth-1:0]                   scrmbl_sel_o,
   output logic [ScrmblBlockWidth-1:0]                scrmbl_data_o,
   output logic                                       scrmbl_valid_o,
@@ -306,6 +307,8 @@ module otp_ctrl_kdi
     scrmbl_mtx_req_o = 1'b0;
     scrmbl_sel_o     = req_bundle.digest_sel;
     scrmbl_cmd_o     = LoadShadow;
+    scrmbl_mode_o    = StandardMode;
+
     scrmbl_valid_o   = 1'b0;
 
     // Request acknowledgement
@@ -334,7 +337,6 @@ module otp_ctrl_kdi
         scrmbl_mtx_req_o = 1'b1;
         scrmbl_valid_o = 1'b1;
         // Need to reset the digest state and set digest mode to "standard".
-        scrmbl_sel_o = StandardMode;
         scrmbl_cmd_o = DigestInit;
         if (scrmbl_mtx_gnt_i && scrmbl_ready_i) begin
           state_d = DigLoadSt;
@@ -514,6 +516,7 @@ module otp_ctrl_kdi
   `ASSERT_KNOWN(OtbnOtpKeyRspKnown_A,      otbn_otp_key_o)
   `ASSERT_KNOWN(ScrmblMtxReqKnown_A,       scrmbl_mtx_req_o)
   `ASSERT_KNOWN(ScrmblCmdKnown_A,          scrmbl_cmd_o)
+  `ASSERT_KNOWN(ScrmblModeKnown_A,         scrmbl_mode_o)
   `ASSERT_KNOWN(ScrmblSelKnown_A,          scrmbl_sel_o)
   `ASSERT_KNOWN(ScrmblDataKnown_A,         scrmbl_data_o)
   `ASSERT_KNOWN(ScrmblValidKnown_A,        scrmbl_valid_o)

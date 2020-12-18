@@ -45,6 +45,29 @@ package top_earlgrey_rnd_cnst_pkg;
     256'h0D5AB25561AF49C696466A983E5346826A43628219E5A91389B9FE0D3B818E46
   };
 
+  // Compile-time random value for RAW unlock token.
+  parameter lc_ctrl_pkg::lc_token_t RndCnstOtpCtrlRawUnlockToken = {
+    128'hDE094CA8F1435F85E0F7489A309CBE57
+  };
+
+  ////////////////////////////////////////////
+  // lc_ctrl
+  ////////////////////////////////////////////
+  // Compile-time random bits for lc state group diversification value
+  parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivInvalid = {
+    64'hF4C3471C5DEF7861
+  };
+
+  // Compile-time random bits for lc state group diversification value
+  parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivTestDevRma = {
+    64'h83D0550B80E84EB1
+  };
+
+  // Compile-time random bits for lc state group diversification value
+  parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivProduction = {
+    64'h2D73930D4CAC3785
+  };
+
   ////////////////////////////////////////////
   // flash_ctrl
   ////////////////////////////////////////////
@@ -56,6 +79,16 @@ package top_earlgrey_rnd_cnst_pkg;
   // Compile-time random bits for default data key
   parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlDataKey = {
     128'hFABD19450B238D4C2D73930D4CAC3785
+  };
+
+  // Compile-time random bits for initial LFSR seed
+  parameter flash_ctrl_pkg::lfsr_seed_t RndCnstFlashCtrlLfsrSeed = {
+    32'hD89F9DFC
+  };
+
+  // Compile-time random permutation for LFSR output
+  parameter flash_ctrl_pkg::lfsr_perm_t RndCnstFlashCtrlLfsrPerm = {
+    160'h26FF203D990D87C5E8A98BAFEC7506855AA99C54
   };
 
   ////////////////////////////////////////////
@@ -100,6 +133,26 @@ package top_earlgrey_rnd_cnst_pkg;
   // Compile-time random bits for hardware generation seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrHardOutputSeed = {
     256'h205AE5E5FEED81E0CB15451E21FFDF7075A864CB4DAAB803225B91E3B1A7B12
+  };
+
+  // Compile-time random bits for generation seed when aes destination selected
+  parameter keymgr_pkg::seed_t RndCnstKeymgrAesSeed = {
+    256'hA917F063C414964E46CE0FE8DDB271067884EBCC4F232C841702EF7147E71B5C
+  };
+
+  // Compile-time random bits for generation seed when hmac destination selected
+  parameter keymgr_pkg::seed_t RndCnstKeymgrHmacSeed = {
+    256'h84B1A5A63AF5FA0AAF8C6A6B90F868A3F2590E4A1004F9CF620D8C56137D9287
+  };
+
+  // Compile-time random bits for generation seed when kmac destination selected
+  parameter keymgr_pkg::seed_t RndCnstKeymgrKmacSeed = {
+    256'h32949CC3635D1F47C8F05AFFC85F7D889ECD94B67EB674BBDF38D62D3622493
+  };
+
+  // Compile-time random bits for generation seed when no destination selected
+  parameter keymgr_pkg::seed_t RndCnstKeymgrNoneSeed = {
+    256'hEEC5E43D4B16446726A27B8F0B30AD5048BAE844C87B69111A24D5E4442BCFB7
   };
 
   ////////////////////////////////////////////

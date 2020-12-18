@@ -10,6 +10,7 @@
 package test_vectors_pkg;
   // dep packages
   import uvm_pkg::*;
+  import str_utils_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -79,6 +80,16 @@ package test_vectors_pkg;
   } test_vectors_t;
 
   // Converts a string to an array of bytes.
+  //
+  // Note that we cannot use the str_utils_pkg::str_to_bytes() implementation here.
+  // The str_utils_pkg implementation is intended for general purpose usage to convert some
+  // arbitrary string, such as "abcd" into a stream of 4 bytes.
+  //
+  // However in the test_vectors_pkg, the test vector strings we parse in are string
+  // representations of the intended bytestream to begin with, e.g. if we parse in
+  // the string "0a1b" it should directly translate to the bytestream {0x0a, 0x1b}.
+  //
+  // This functionality is achieved by this custom byte conversion function.
   function automatic void str_to_bytes(string str, output bit [7:0] bytes[]);
     int array_size = str.len() / 2;
     `uvm_info(header, $sformatf("str_to_bytes: string = %s, len = %0d", str, array_size), UVM_HIGH)
@@ -88,67 +99,6 @@ package test_vectors_pkg;
       bytes[i] = tmp_str.atohex();
     end
   endfunction : str_to_bytes
-
-  // This function searches the string `str` for the first instance of the char `char`,
-  // and returns its index.
-  // If no matches are found, returns -1.
-  //
-  // `char` must be a string containing a single character.
-  //
-  // Future enhancement: allow a substring instead of a char.
-  function automatic int get_idx_of_char(string str, string char);
-    foreach (str[i]) begin
-      if (str[i] == char) begin
-        return i;
-      end
-    end
-    return -1;
-  endfunction : get_idx_of_char
-
-  // This function strips all whitespace and any errant newline characters
-  // from the LHS and RHS of the input string.
-  // Assumes that the input string has non-zero length.
-  //
-  // Future enhancement: allow queue of delimiters to strip to be passed in.
-  //                     If delimiter queue is empty, strip all whitespace.
-  //                     Delimiters will not necessarily be all same size.
-  function automatic void string_strip(string str, output string str_out);
-    // Clean LHS
-    while (str.getc(0) inside {" ", "\n", "\t", "\r"}) begin
-      str = str.substr(1, str.len()-1);
-    end
-    // Clean RHS
-    while (str.getc(str.len()-1) inside {" ", "\n", "\t", "\r"}) begin
-      str = str.substr(0, str.len()-2);
-    end
-    str_out = str;
-  endfunction : string_strip
-
-  // This function splits the input `string` on the given `delimiter`, strips each substring
-  // using `string_strip(...)`, and pushes them into the `result` queue.
-  //
-  // Future enhancement: allow arbitrary length delimiter.
-  function automatic void string_split(string str, string delimiter, ref string result[$]);
-    string tmp_str;
-    int i;
-    bit in_quotes;
-    result = {};
-    foreach (str[i]) begin
-      if (str[i] == "\"") begin
-        in_quotes = !in_quotes;
-      end else if ((str[i] == delimiter) && !in_quotes) begin
-        string_strip(tmp_str, tmp_str);
-        if (tmp_str != "") result.push_back(tmp_str);
-        tmp_str = "";
-      end else begin
-        tmp_str = {tmp_str, str[i]};
-      end
-      if (i == str.len()-1) begin
-        string_strip(tmp_str, tmp_str);
-        if (tmp_str != "") result.push_back(tmp_str);
-      end
-    end
-  endfunction : string_split
 
   // This function parses strings of the form "<stringA> = <stringB>" found in test vector files,
   // extracting <stringA> and <stringB> to the outputs.
@@ -160,7 +110,7 @@ package test_vectors_pkg;
   function automatic void get_entry_and_data(string line, output string entry, output string value);
     string entries[$];
 
-    string_split(line, "=", entries);
+    str_split(.s(line), .result(entries), .delim("="));
 
     entry = entries.pop_front();
     value = entries.pop_front();
@@ -294,12 +244,12 @@ package test_vectors_pkg;
 
       // Get global security strength, input length, output length
       if (line.getc(0) == "[") begin
-        bracket_end_idx = get_idx_of_char(line, "]");
+        bracket_end_idx = str_find(line, "]");
         if (bracket_end_idx == -1) begin
           `uvm_fatal(header, $sformatf("Malformed string in %s: %s", test_name, line))
         end
         line = line.substr(1, bracket_end_idx-1);
-        if (get_idx_of_char(line, "=") > 0) begin
+        if (str_find(line, "=") > 0) begin
           get_entry_and_data(line, entry_name, entry_data);
           // Globally set information should not be an empty string
           if (entry_data == "") begin
@@ -324,7 +274,7 @@ package test_vectors_pkg;
             end
           endcase
         end
-      end else if (get_idx_of_char(line, "=") > 0) begin
+      end else if (str_find(line, "=") > 0) begin
         // Line read in did not contain global information.
         // We can now search for actual test vector data.
         //

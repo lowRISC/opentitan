@@ -13,12 +13,14 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:sha3
+      - lowrisc:ip:edn_pkg
     files:
       - rtl/kmac_pkg.sv
       - rtl/kmac_core.sv
       - rtl/kmac_msgfifo.sv
       - rtl/kmac_staterd.sv
       - rtl/kmac_keymgr.sv
+      - rtl/kmac_entropy.sv
       - rtl/kmac_reg_pkg.sv
       - rtl/kmac_reg_top.sv
       - rtl/kmac.sv

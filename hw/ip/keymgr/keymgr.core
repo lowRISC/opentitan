@@ -11,6 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:lfsr
+      - lowrisc:prim:lc_sync
       - lowrisc:ip:keymgr_pkg
     files:
       - rtl/keymgr_reg_pkg.sv

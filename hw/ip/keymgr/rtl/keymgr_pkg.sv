@@ -18,6 +18,7 @@ package keymgr_pkg;
   // These should be defined in another module's package
   parameter int HealthStateWidth = 128;
   parameter int DevIdWidth = 256;
+  parameter int MaxWidth = 256;
 
   // Default seeds
   // These are generated using random.org byte dumper
@@ -34,6 +35,17 @@ package keymgr_pkg;
     256'h99cadb2c2d9b438591d943a89bc64dbb3bc2abc842eeea5faf74d27f7a7c99b6;
   parameter seed_t RndCnstHardOutputSeedDefault =
     256'hd551b351decbb6f687c7f5c845363f12d6411fae812e16b23bc8ae59885a56b1;
+
+  // Target based deriviation seeds
+  // These are used during the generation stages for sideload
+  parameter seed_t RndCnstNoneSeedDefault =
+    256'h6EECBF9FC3C64230421DA1EAEC48F871070A3582E71AD4059D5D550784E9B9DE;
+  parameter seed_t RndCnstAesSeedDefault =
+    256'hC1104CD94EBA084FA6438188038006489F3DF38771214AE0BBA65CEB9BC2366F;
+  parameter seed_t RndCnstHmacSeedDefault =
+    256'h075CF7939313EEC797019BD0036D9500374A8FD9121CC8E78E1E3359D5F77C4E;
+  parameter seed_t RndCnstKmacSeedDefault =
+    256'h0A5CCCD9627BF6169B3A765D3D6D0CD89DBDCB7B6DF8D3C03746D60A0145D3ED;
 
   // Default Lfsr configurations
   // These LFSR parameters have been generated with
@@ -52,7 +64,7 @@ package keymgr_pkg;
   parameter int AdvDataWidth = SwBindingWidth + 2*KeyWidth + DevIdWidth + HealthStateWidth;
   parameter int IdDataWidth = KeyWidth;
   // key version + salt + key ID + constant
-  parameter int GenDataWidth = 32 + 128 + KeyWidth;
+  parameter int GenDataWidth = 32 + 128 + KeyWidth*2;
   parameter int StageWidth = $clog2(KeyMgrStages);
 
   // Max Payload Width to derivation function
@@ -69,11 +81,11 @@ package keymgr_pkg;
   } keymgr_stage_e;
 
   // Enumeration for sideload sel
-  typedef enum logic [1:0] {
-    None   = 0,
-    Aes    = 1,
-    Hmac   = 2,
-    Kmac   = 3
+  typedef enum logic [2:0] {
+    None,
+    Aes,
+    Hmac,
+    Kmac
   } keymgr_key_dest_e;
 
   // Enumeration for key select
@@ -168,15 +180,13 @@ package keymgr_pkg;
 
   // The following structs should be sourced from other modules
   // defined here temporarily
-  typedef struct packed {
-    logic [HealthStateWidth-1:0] health_state;
-    logic keymgr_en;
-  } lc_data_t;
 
-  parameter lc_data_t LC_DATA_DEFAULT = '{
-    health_state: '0,
-    keymgr_en:    1'b1
-  };
+  // lc keymgr enable usage
+  typedef enum logic [1:0] {
+    KeyMgrEnCtrl,
+    KeyMgrEnCfgEn,
+    KeyMgrEnLast
+  } keymgr_lc_en_usage_e;
 
   // TODO: this will be removed later once the device ID information
   // is broadcasted

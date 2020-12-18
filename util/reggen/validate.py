@@ -1236,13 +1236,13 @@ def validate_multi(mreg, offset, addrsep, width, top):
         ('swaccess', mreg['swaccess']),
         ('hwaccess', mreg['hwaccess']),
         ('shadowed', mreg['shadowed']),
-        ('regwen_multi', mreg['regwen_multi']),
         ('compact', mreg['compact']),
         ('fields', []),
     ])
 
     template_reg['tags'] = mreg['tags'] if 'tags' in mreg else []
     template_reg['regwen'] = mreg['regwen'] if 'regwen' in mreg else []
+    template_reg['regwen_multi'] = False if mcount == 1 else mreg['regwen_multi']
 
     # msb of the field bitmask
     # Should probably consider making the validate_field return a class so that we do not

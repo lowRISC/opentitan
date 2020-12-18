@@ -28,10 +28,12 @@ module flash_ctrl_wrapper (
   input        lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
-  input        flash_ctrl_pkg::lc_flash_req_t lc_i,
+  input        lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
   output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
   input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
-  input        flash_ctrl_pkg::edn_entropy_t edn_i,
+  input        lc_ctrl_pkg::lc_tx_t rma_req_i,
+  input        lc_ctrl_pkg::lc_flash_rma_seed_t rma_seed_i,
+  output       lc_ctrl_pkg::lc_tx_t rma_ack_o,
 
   // Interrupts
   output logic intr_prog_empty_o, // Program fifo is empty
@@ -68,10 +70,11 @@ module flash_ctrl_wrapper (
     .lc_iso_part_sw_rd_en_i,
     .lc_iso_part_sw_wr_en_i,
     .lc_seed_hw_rd_en_i,
-    .lc_i              (lc_i),
+    .rma_req_i         (rma_req_i),
+    .rma_seed_i        (rma_seed_i),
+    .rma_ack_o         (rma_ack_o),
     .pwrmgr_i          (pwrmgr_i),
     .pwrmgr_o          (pwrmgr_o),
-    .edn_i             (edn_i),
 
     .clk_i             (clk_i),
     .rst_ni            (rst_ni),
@@ -111,17 +114,27 @@ module flash_ctrl_wrapper (
   );
 
   flash_phy u_flash_eflash (
-    .clk_i           (clk_i),
-    .rst_ni          (rst_ni),
-    .host_req_i      (flash_host_req),
-    .host_addr_i     (flash_host_addr),
-    .host_req_rdy_o  (flash_host_req_rdy),
-    .host_req_done_o (flash_host_req_done),
-    .host_rdata_o    (flash_host_rdata),
-    .flash_ctrl_i    (flash_ctrl_flash_req),
-    .flash_ctrl_o    (flash_ctrl_flash_rsp),
+    .clk_i,
+    .rst_ni,
+    .host_req_i             (flash_host_req     ),
+    .host_addr_i            (flash_host_addr    ),
+    .host_req_rdy_o         (flash_host_req_rdy ),
+    .host_req_done_o        (flash_host_req_done),
+    .host_rdata_o           (flash_host_rdata   ),
+    .host_rderr_o           ( ),
+    .flash_ctrl_i           (flash_ctrl_flash_req),
+    .flash_ctrl_o           (flash_ctrl_flash_rsp),
+    .scanmode_i             (1'b0),
+    .scan_rst_ni            (1'b0),
     .flash_power_ready_h_i,
-    .flash_power_down_h_i
+    .flash_power_down_h_i,
+    .flash_test_mode_a_i    (1'b0),
+    .flash_test_voltage_h_i (1'b0),
+    .lc_dft_en_i,
+    .tck_i                  (1'b0),
+    .tdi_i                  (1'b0),
+    .tms_i                  (1'b0),
+    .tdo_o                  ( )
   );
 
 endmodule

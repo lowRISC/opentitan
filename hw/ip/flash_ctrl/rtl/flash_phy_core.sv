@@ -26,6 +26,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   input                              prog_i,
   input                              pg_erase_i,
   input                              bk_erase_i,
+  input                              erase_suspend_req_i,
   input flash_ctrl_pkg::flash_part_e part_i,
   input [InfoTypesWidth-1:0]         info_sel_i,
   input [BusBankAddrW-1:0]           addr_i,
@@ -42,6 +43,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   output logic                       rd_done_o,
   output logic                       prog_done_o,
   output logic                       erase_done_o,
+  output logic                       erase_suspend_done_o,
   output logic [BusWidth-1:0]        rd_data_o,
   output logic                       rd_err_o
 );
@@ -375,6 +377,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
     prog_type: prog_type_i,
     pg_erase_req: flash_pg_erase_req,
     bk_erase_req: flash_bk_erase_req,
+    erase_suspend_req: erase_suspend_req_i,
     // high endurance enable does not cause changes to
     // transaction protocol and is forwarded directly to the wrapper
     he: he_en_i,
@@ -387,6 +390,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   assign ack = prim_flash_rsp_i.ack;
   assign done = prim_flash_rsp_i.done;
   assign flash_rdata = prim_flash_rsp_i.rdata;
+  assign erase_suspend_done_o = prim_flash_rsp_i.erase_suspend_done;
 
   /////////////////////////////////
   // Assertions

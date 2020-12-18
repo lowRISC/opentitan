@@ -9,8 +9,10 @@
 `include "prim_assert.sv"
 
 module flash_ctrl import flash_ctrl_pkg::*; #(
-  parameter flash_key_t RndCnstAddrKey = RndCnstAddrKeyDefault,
-  parameter flash_key_t RndCnstDataKey = RndCnstDataKeyDefault
+  parameter flash_key_t RndCnstAddrKey  = RndCnstAddrKeyDefault,
+  parameter flash_key_t RndCnstDataKey  = RndCnstDataKeyDefault,
+  parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
 ) (
   input        clk_i,
   input        rst_ni,
@@ -36,11 +38,11 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   // otp/lc/pwrmgr/keymgr Interface
   output       otp_ctrl_pkg::flash_otp_key_req_t otp_o,
   input        otp_ctrl_pkg::flash_otp_key_rsp_t otp_i,
-  input        lc_flash_req_t lc_i,
-  output       lc_flash_rsp_t lc_o,
+  input        lc_ctrl_pkg::lc_tx_t rma_req_i,
+  input        lc_ctrl_pkg::lc_flash_rma_seed_t rma_seed_i,
+  output       lc_ctrl_pkg::lc_tx_t rma_ack_o,
   input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
   output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
-  input        edn_entropy_t edn_i,
   output       keymgr_flash_t keymgr_o,
 
   // Interrupts
@@ -141,6 +143,9 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   logic hw_err;
   logic hw_rvalid;
   logic hw_rready;
+  logic hw_wvalid;
+  logic [BusWidth-1:0] hw_wdata;
+  logic hw_wready;
   flash_sel_e if_sel;
   logic sw_sel;
   flash_lcmgr_phase_e hw_phase;
@@ -170,12 +175,14 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   logic sw_rvalid;
   logic adapter_rvalid;
   logic sw_wvalid;
+  logic [BusWidth-1:0] sw_wdata;
   logic sw_wen;
   logic sw_wready;
 
   // lfsr for local entropy usage
   logic [31:0] rand_val;
   logic lfsr_en;
+  logic lfsr_seed_en;
 
   // life cycle connections
   lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en;
@@ -231,16 +238,19 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   );
 
   prim_lfsr #(
-    .EntropyDw(4),
+    .EntropyDw(EdnWidth),
     .LfsrDw(LfsrWidth),
-    .StateOutDw(LfsrWidth)
+    .StateOutDw(LfsrWidth),
+    .DefaultSeed(RndCnstLfsrSeed),
+    .StatePermEn(1),
+    .StatePerm(RndCnstLfsrPerm)
   ) u_lfsr (
     .clk_i,
     .rst_ni,
-    .seed_en_i('0),
-    .seed_i('0),
+    .seed_en_i(lfsr_seed_en),
+    .seed_i(rma_seed_i),
     .lfsr_en_i(lfsr_en),
-    .entropy_i(edn_i.valid ? edn_i.entropy : '0),
+    .entropy_i('0),
     .state_o(rand_val)
   );
 
@@ -261,6 +271,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
 
     // software interface to prog_fifo
     .sw_wvalid_i(sw_wvalid & sw_wen),
+    .sw_wdata_i(sw_wdata),
     .sw_wready_o(sw_wready),
 
     // hardware interface to rd_ctrl / erase_ctrl
@@ -278,6 +289,9 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     // hardware interface to rd_fifo
     .hw_rvalid_o(hw_rvalid),
     .hw_rready_i(hw_rready),
+    .hw_wvalid_i(hw_wvalid),
+    .hw_wdata_i(hw_wdata),
+    .hw_wready_o(hw_wready),
 
     // hardware interface does not talk to prog_fifo
 
@@ -297,6 +311,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
 
     // muxed interface to prog_fifo
     .prog_fifo_wvalid_o(prog_fifo_wvalid),
+    .prog_fifo_wdata_o(prog_fifo_wdata),
     .prog_fifo_wready_i(prog_fifo_wready),
 
     // flash phy initilization ongoing
@@ -309,10 +324,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .phase_o(phase),
 
     // indication that sw has been selected
-    .sel_o(if_sel),
-
-    // enable lfsr
-    .lfsr_en_o(lfsr_en)
+    .sel_o(if_sel)
   );
 
   assign op_start      = muxed_ctrl.start.q;
@@ -358,18 +370,16 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     // interface to ctrl_arb data ports
     .rready_o(hw_rready),
     .rvalid_i(hw_rvalid),
+    .wready_i(hw_wready),
+    .wvalid_o(hw_wvalid),
+    .wdata_o(hw_wdata),
 
     // direct form rd_fifo
     .rdata_i(rd_fifo_rdata),
 
     // external rma request
-    .rma_i(lc_i.rma_req),
-    .rma_token_i(lc_i.rma_req_token),
-    .rma_token_o(lc_o.rma_ack_token),
-    .rma_rsp_o(lc_o.rma_ack),
-
-    // random value
-    .rand_i(rand_val),
+    .rma_req_i,
+    .rma_ack_o,
 
     // outgoing seeds
     .seeds_o(keymgr_o.seeds),
@@ -386,6 +396,12 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .otp_key_rsp_i(otp_i),
     .addr_key_o(addr_key),
     .data_key_o(data_key),
+
+    // entropy interface
+    .edn_req_o(lfsr_seed_en),
+    .edn_ack_i(1'b1),
+    .lfsr_en_o(lfsr_en),
+    .rand_i(rand_val),
 
     // init ongoing
     .init_busy_o(ctrl_init_busy)
@@ -412,7 +428,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .we_o       (sw_wen),
     .addr_o     (),
     .wmask_o    (),
-    .wdata_o    (prog_fifo_wdata),
+    .wdata_o    (sw_wdata),
     .rdata_i    (BusWidth'(0)),
     .rvalid_i   (1'b0),
     .rerror_i   (2'b0)
@@ -603,11 +619,13 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   //////////////////////////////////////
   info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] reg2hw_info_page_cfgs;
   info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs;
+  localparam int InfoBits = $bits(info_page_cfg_t) * InfosPerBank;
 
   // transform from reg output to structure
+  // Not all types have the maximum number of banks, so those are packed to 0
   % for bank in range(cfg['banks']):
   %   for idx in range(cfg['info_types']):
-  assign reg2hw_info_page_cfgs[${bank}][${idx}] = reg2hw.bank${bank}_info${idx}_page_cfg;
+  assign reg2hw_info_page_cfgs[${bank}][${idx}] = InfoBits'(reg2hw.bank${bank}_info${idx}_page_cfg);
   %   endfor
   % endfor
 
@@ -637,6 +655,9 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   assign flash_part_sel = op_part;
   assign flash_info_sel = op_info_sel;
 
+  // tie off hardware clear path
+  assign hw2reg.erase_suspend.d = 1'b0;
+
   // Flash memory Properties
   // Memory property is page based and thus should use phy addressing
   // This should move to flash_phy long term
@@ -665,6 +686,8 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .prog_i(prog_op),
     .pg_erase_i(erase_op & (erase_flash_type == FlashErasePage)),
     .bk_erase_i(erase_op & (erase_flash_type == FlashEraseBank)),
+    .erase_suspend_i(reg2hw.erase_suspend),
+    .erase_suspend_done_o(hw2reg.erase_suspend.de),
     .rd_done_o(flash_rd_done),
     .prog_done_o(flash_prog_done),
     .erase_done_o(flash_erase_done),
@@ -680,6 +703,8 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .prog_o(flash_o.prog),
     .pg_erase_o(flash_o.pg_erase),
     .bk_erase_o(flash_o.bk_erase),
+    .erase_suspend_o(flash_o.erase_suspend),
+    .erase_suspend_done_i(flash_i.erase_suspend_done),
     .rd_done_i(flash_i.rd_done),
     .prog_done_i(flash_i.prog_done),
     .erase_done_i(flash_i.erase_done)

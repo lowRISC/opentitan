@@ -3,14 +3,20 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   flow:             syn
-  flow_makefile:    "{proj_root}/hw/syn/tools/dvsim/syn.mk"
+  syn_root:         "{proj_root}/hw/syn"
+  flow_makefile:    "{syn_root}/tools/dvsim/syn.mk"
+
+  // TODO: the path below is used to refer to the foundry area which does not exist in the open
+  // repo. This forces the closed "foundry" repo to be placed in that area. This might be subject to
+  // change in future.
+  foundry_root:     "{proj_root}/hw/foundry"
 
   import_cfgs:      [// common server configuration for results upload
                      // TODO: check whether this config file can be aligned such that it can
                      // be reused among different flow types
                      // "{proj_root}/hw/dv/tools/dvsim/fusesoc.hjson",
                      "{proj_root}/hw/data/common_project_cfg.hjson",
-                     "{proj_root}/hw/syn/tools/dvsim/{tool}.hjson"]
+                     "{syn_root}/tools/dvsim/{tool}.hjson"]
 
   // Default directory structure for the output
   dut:              "{name}"
@@ -34,4 +40,9 @@
                        "{fusesoc_core}"]
   sv_flist_gen_dir:   "{build_dir}/syn-icarus"
   sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
+
+  exports: [
+    { syn_root: "{syn_root}" },
+    { foundry_root: "{foundry_root}" },
+  ]
 }

@@ -11,6 +11,7 @@ filesets:
     files:
       - entropy_src_test_pkg.sv
       - entropy_src_base_test.sv: {is_include_file: true}
+      - entropy_src_smoke_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

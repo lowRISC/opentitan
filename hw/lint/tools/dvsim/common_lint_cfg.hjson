@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   flow:             lint
-  flow_makefile:    "{proj_root}/hw/lint/tools/dvsim/lint.mk"
+  lint_root:        "{proj_root}/hw/lint"
+  flow_makefile:    "{lint_root}/tools/dvsim/lint.mk"
 
   import_cfgs:      [// common server configuration for results upload
                      "{proj_root}/hw/data/common_project_cfg.hjson"
                      // tool-specific configuration
-                     "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
+                     "{lint_root}/tools/dvsim/{tool}.hjson"]
 
   // Name of the DUT / top-level to be run through lint
   dut:        "{name}"
@@ -30,5 +31,4 @@
   sv_flist_gen_cmd:   ""
   sv_flist_gen_opts:  []
   sv_flist_gen_dir:   ""
-  tool_srcs:          []
 }

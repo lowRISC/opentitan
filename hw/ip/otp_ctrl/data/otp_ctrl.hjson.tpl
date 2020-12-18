@@ -83,6 +83,12 @@
       randcount: "320",  // 5*64
       randtype:  "data", // randomize randcount databits
     }
+    { name:      "RndCnstRawUnlockToken",
+      desc:      "Compile-time random value for RAW unlock token.",
+      type:      "lc_ctrl_pkg::lc_token_t"
+      randcount: "128",
+      randtype:  "data", // randomize randcount databits
+    }
     // Normal parameters
     { name: "NumSramKeyReqSlots",
       desc: "Number of key slots",
@@ -235,7 +241,14 @@
     }
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_provision_wr_en"
+      name:    "lc_creator_seed_sw_rw_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_seed_hw_rd_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"

@@ -10,13 +10,15 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   input clk_i,
   input rst_ni,
   input init_i,
-  input wipe_key_i,
+  input clr_key_i,   // clear key just deletes the key
+  input wipe_key_i,  // wipe key deletes and renders sideloads useless until reboot
   input [31:0] entropy_i,
   input keymgr_key_dest_e dest_sel_i,
   input keymgr_gen_out_e key_sel_i,
   input load_key_i,
+  input data_en_i,
   input data_valid_i,
-  input [Shares-1:0][KeyWidth-1:0] key_i,
+  input hw_key_req_t key_i,
   input [Shares-1:0][KeyWidth-1:0] data_i,
   output logic prng_en_o,
   output hw_key_req_t aes_key_o,
@@ -25,9 +27,10 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
 );
 
   // Enumeration for working state
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     StSideloadReset,
     StSideloadIdle,
+    StSideloadClear,
     StSideloadWipe,
     StSideloadStop
   } keymgr_sideload_e;
@@ -66,11 +69,24 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
         end
       end
 
+      // when clear is received, delete the key and return to idle.
+      // when wipe is received, delete the key and disable sideload until reboot.
       StSideloadIdle: begin
         keys_en = 1'b1;
-        if (wipe_key_i) begin
+        if (wipe_key_i || clr_key_i) begin
           keys_en = 1'b0;
+          state_d = wipe_key_i ? StSideloadWipe : StSideloadClear;
+        end
+      end
+
+      // if wipe asserts while clearing, follow the normal wipe protocol
+      StSideloadClear: begin
+        keys_en = 1'b0;
+        clr = 1'b1;
+        if (wipe_key_i) begin
           state_d = StSideloadWipe;
+        end else if (!clr_key_i) begin
+          state_d = StSideloadIdle;
         end
       end
 
@@ -100,6 +116,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
+    .set_en_i(data_en_i),
     .set_i(data_valid_i & aes_sel),
     .clr_i(clr), // TBD, should add an option for software clear later
     .entropy_i(entropy_i),
@@ -111,6 +128,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
+    .set_en_i(data_en_i),
     .set_i(data_valid_i & hmac_sel),
     .clr_i(clr), // TBD, should add an option for software clear later
     .entropy_i(entropy_i),
@@ -118,16 +136,21 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .key_o(hmac_key_o)
   );
 
+  hw_key_req_t kmac_sideload_key;
   keymgr_sideload_key u_kmac_key (
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
-    .set_i(load_key_i | (data_valid_i & kmac_sel)),
+    .set_en_i(data_en_i),
+    .set_i(data_valid_i & kmac_sel),
     .clr_i(clr), // TBD, should add an option for software clear laterclr
     .entropy_i(entropy_i),
-    .key_i(load_key_i ? key_i : data_i),
-    .key_o(kmac_key_o)
+    .key_i(data_i),
+    .key_o(kmac_sideload_key)
   );
+
+  // when directed by keymgr_ctrl, switch over to internal key and feed to kmac
+  assign kmac_key_o = load_key_i ? key_i : kmac_sideload_key;
 
   // when clearing, request prng
   assign prng_en_o = clr;

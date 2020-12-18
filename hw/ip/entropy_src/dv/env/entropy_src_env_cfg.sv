@@ -7,14 +7,23 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   `uvm_object_utils_begin(entropy_src_env_cfg)
   `uvm_object_utils_end
 
-  // ext component cfgs
+  `uvm_object_new
+
+  // Ext component cfgs
   rand push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))  m_rng_agent_cfg;
   rand push_pull_agent_cfg#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))  m_csrng_agent_cfg;
 
   virtual pins_if  efuse_es_sw_reg_en_vif;
 
-  `uvm_object_new
+  // Knobs & Weights
+  uint      efuse_es_sw_reg_en_pct;
+  rand bit  efuse_es_sw_reg_en;
 
+  // Constraints
+  constraint c_efuse_es_sw_reg_en {efuse_es_sw_reg_en dist { 1 :/ efuse_es_sw_reg_en_pct,
+                                                             0 :/ (100 - efuse_es_sw_reg_en_pct) };}
+
+  // Functions
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = entropy_src_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
@@ -32,6 +41,18 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
         num_interrupts = ral.intr_state.get_n_used_bits();
       end
     end
+  endfunction
+
+  virtual function string convert2string();
+    string str = "";
+    str = {str, "\n"};
+    str = {str,  $sformatf("\n\t |********** entropy_src_env_cfg **********| \t")                        };
+    str = {str,  $sformatf("\n\t |***** efuse_es_sw_reg_en      : %3d *****| \t", efuse_es_sw_reg_en)    };
+    str = {str,  $sformatf("\n\t |---------- knobs ------------------------| \t")                        };
+    str = {str,  $sformatf("\n\t |***** efuse_es_sw_reg_en_pct  : %3d *****| \t", efuse_es_sw_reg_en_pct)};
+    str = {str,  $sformatf("\n\t |*****************************************| \t")                        };
+    str = {str, "\n"};
+    return str;
   endfunction
 
 endclass

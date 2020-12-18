@@ -6,16 +6,16 @@
 # VCS syntax: -ucli -do <this file>
 # Xcelium syntax: -input <this file>
 
-set tool_srcs_dir ""
-if {[info exists ::env(TOOL_SRCS_DIR)]} {
-  set tool_srcs_dir "$::env(TOOL_SRCS_DIR)"
+set dv_root ""
+if {[info exists ::env(dv_root)]} {
+  set dv_root "$::env(dv_root)"
 } else {
-  puts "ERROR: Script run without TOOL_SRCS_DIR environment variable."
+  puts "ERROR: Script run without dv_root environment variable."
   quit
 }
 
-source "${tool_srcs_dir}/common.tcl"
-source "${tool_srcs_dir}/waves.tcl"
+source "${dv_root}/tools/common.tcl"
+source "${dv_root}/tools/waves.tcl"
 
 run
 quit

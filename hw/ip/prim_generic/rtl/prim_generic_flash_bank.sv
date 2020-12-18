@@ -28,6 +28,7 @@ module prim_generic_flash_bank #(
   input flash_ctrl_pkg::flash_prog_e prog_type_i,
   input                              pg_erase_i,
   input                              bk_erase_i,
+  input                              erase_suspend_req_i,
   input                              he_i,
   input [AddrW-1:0]                  addr_i,
   input flash_ctrl_pkg::flash_part_e part_i,
@@ -35,7 +36,9 @@ module prim_generic_flash_bank #(
   input [DataWidth-1:0]              prog_data_i,
   output logic                       ack_o,
   output logic                       done_o,
+  output logic                       erase_suspend_done_o,
   output logic [DataWidth-1:0]       rd_data_o,
+  input                              init_i,
   output logic                       init_busy_o,
   input                              flash_power_ready_h_i,
   input                              flash_power_down_h_i
@@ -241,11 +244,12 @@ module prim_generic_flash_bank #(
     init_busy_o      = '0;
     pop_cmd          = '0;
     done_o           = '0;
+    erase_suspend_done_o = '0;
 
     unique case (st_q)
       StReset: begin
         init_busy_o = 1'b1;
-        if (flash_power_ready_h_i && !flash_power_down_h_i) begin
+        if (init_i && flash_power_ready_h_i && !flash_power_down_h_i) begin
           st_d = StInit;
         end
       end
@@ -326,7 +330,14 @@ module prim_generic_flash_bank #(
 
       StErase: begin
         // Actual erasing of the page
-        if (index_cnt < index_limit_q || time_cnt < time_limit_q) begin
+        if (erase_suspend_req_i) begin
+          st_d = StIdle;
+          pop_cmd = 1'b1;
+          done_o = 1'b1;
+          erase_suspend_done_o = 1'b1;
+          time_cnt_clr = 1'b1;
+          index_cnt_clr = 1'b1;
+        end else if (index_cnt < index_limit_q || time_cnt < time_limit_q) begin
           mem_req = 1'b1;
           mem_wr = 1'b1;
           mem_wdata = {DataWidth{1'b1}};

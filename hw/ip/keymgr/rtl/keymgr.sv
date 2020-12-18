@@ -16,7 +16,11 @@ module keymgr import keymgr_pkg::*; #(
   parameter seed_t RndCnstOwnerIntIdentitySeed = RndCnstOwnerIntIdentitySeedDefault,
   parameter seed_t RndCnstOwnerIdentitySeed    = RndCnstOwnerIdentitySeedDefault,
   parameter seed_t RndCnstSoftOutputSeed       = RndCnstSoftOutputSeedDefault,
-  parameter seed_t RndCnstHardOutputSeed       = RndCnstHardOutputSeedDefault
+  parameter seed_t RndCnstHardOutputSeed       = RndCnstHardOutputSeedDefault,
+  parameter seed_t RndCnstNoneSeed             = RndCnstNoneSeedDefault,
+  parameter seed_t RndCnstAesSeed              = RndCnstAesSeedDefault,
+  parameter seed_t RndCnstHmacSeed             = RndCnstHmacSeedDefault,
+  parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault
 ) (
   input clk_i,
   input rst_ni,
@@ -37,9 +41,10 @@ module keymgr import keymgr_pkg::*; #(
   input kmac_data_rsp_t kmac_data_i,
 
   // the following signals should eventually be wrapped into structs from other modules
-  input lc_data_t lc_i,
+  input lc_ctrl_pkg::lc_tx_t lc_keymgr_en_i,
+  input lc_ctrl_pkg::lc_keymgr_div_t lc_keymgr_div_i,
   input otp_ctrl_pkg::otp_keymgr_key_t otp_key_i,
-  input otp_data_t otp_i,
+  input otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg_i,
   input flash_ctrl_pkg::keymgr_flash_t flash_i,
 
   // connection to edn
@@ -48,7 +53,6 @@ module keymgr import keymgr_pkg::*; #(
 
   // interrupts and alerts
   output logic intr_op_done_o,
-  output logic intr_err_o,
   input  prim_alert_pkg::alert_rx_t [keymgr_reg_pkg::NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [keymgr_reg_pkg::NumAlerts-1:0] alert_tx_o
 );
@@ -72,6 +76,22 @@ module keymgr import keymgr_pkg::*; #(
     .reg2hw,
     .hw2reg,
     .devmode_i  (1'b1) // connect to real devmode signal in the future
+  );
+
+
+  /////////////////////////////////////
+  //  Synchronize lc_ctrl control inputs
+  //  Data inputs are not synchronized and assumed quasi-static
+  /////////////////////////////////////
+  lc_ctrl_pkg::lc_tx_t [KeyMgrEnLast-1:0] lc_keymgr_en;
+
+  prim_lc_sync #(
+    .NumCopies(int'(KeyMgrEnLast))
+  ) u_lc_keymgr_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_keymgr_en_i),
+    .lc_en_o(lc_keymgr_en)
   );
 
 
@@ -140,9 +160,11 @@ module keymgr import keymgr_pkg::*; #(
   logic adv_en, id_en, gen_en;
   logic load_key;
   logic wipe_key;
-  logic [Shares-1:0][KeyWidth-1:0] kmac_key;
+  hw_key_req_t kmac_key;
   logic op_done;
+  logic init;
   logic data_valid;
+  logic data_en;
   logic kmac_done;
   logic kmac_input_invalid;
   logic kmac_cmd_err;
@@ -155,7 +177,7 @@ module keymgr import keymgr_pkg::*; #(
   keymgr_ctrl u_ctrl (
     .clk_i,
     .rst_ni,
-    .en_i(lc_i.keymgr_en),
+    .en_i(lc_keymgr_en[KeyMgrEnCtrl] == lc_ctrl_pkg::On),
     .prng_reseed_req_o(reseed_req),
     .prng_reseed_ack_i(reseed_ack),
     .prng_en_o(ctrl_lfsr_en),
@@ -163,9 +185,11 @@ module keymgr import keymgr_pkg::*; #(
     .op_i(keymgr_ops_e'(reg2hw.control.operation.q)),
     .op_start_i(reg2hw.control.start.q),
     .op_done_o(op_done),
+    .init_o(init),
     .sw_binding_unlock_o(sw_binding_unlock),
     .status_o(hw2reg.op_status.d),
     .error_o(err_code),
+    .data_en_o(data_en),
     .data_valid_o(data_valid),
     .working_state_o(hw2reg.working_state.d),
     .root_key_i(otp_key_i),
@@ -197,7 +221,8 @@ module keymgr import keymgr_pkg::*; #(
   keymgr_cfg_en u_cfgen (
     .clk_i,
     .rst_ni,
-    .en_i(lc_i.keymgr_en),
+    .init_i(init),
+    .en_i(lc_keymgr_en[KeyMgrEnCfgEn] == lc_ctrl_pkg::On),
     .set_i(reg2hw.control.start.q & op_done),
     .clr_i(reg2hw.control.start.q),
     .out_o(hw2reg.cfgen.d)
@@ -213,6 +238,7 @@ module keymgr import keymgr_pkg::*; #(
 
   // The various arrays of inputs for each operation
   logic [2**StageWidth-1:0][AdvDataWidth-1:0] adv_matrix;
+  logic [2**StageWidth-1:0] adv_dvalid;
   logic [2**StageWidth-1:0][IdDataWidth-1:0] id_matrix;
   logic [GenDataWidth-1:0] gen_in;
 
@@ -224,31 +250,49 @@ module keymgr import keymgr_pkg::*; #(
   localparam int IdLfsrCopies = IdDataWidth / 32;
   localparam int GenLfsrCopies = GenDataWidth / 32;
 
-  // input checking - currently only MAX version, others TBD
-  logic key_version_good;
+  // input checking
+  logic creator_seed_vld;
+  logic owner_seed_vld;
+  logic devid_vld;
+  logic health_state_vld;
+  logic key_version_vld;
+
 
   // Advance state operation input construction
   for (genvar i = KeyMgrStages; i < 2**StageWidth; i++) begin : gen_adv_matrix_fill
     assign adv_matrix[i] = {AdvLfsrCopies{lfsr[31:0]}};
+    assign adv_dvalid[i] = 1'b0;
   end
 
   // Advance to creator_root_key
+  // The values coming from otp_ctrl / lc_ctrl are treat as quasi-static for CDC purposes
   logic [KeyWidth-1:0] creator_seed;
   assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
   assign adv_matrix[Creator] = AdvDataWidth'({reg2hw.sw_binding,
                                               RndCnstRevisionSeed,
-                                              otp_i.devid,
-                                              lc_i.health_state,
+                                              otp_hw_cfg_i.data.device_id,
+                                              HealthStateWidth'(lc_keymgr_div_i),
                                               creator_seed});
+
+  logic unused_otp_bits;
+  assign unused_otp_bits = ^{otp_hw_cfg_i.valid,
+                             otp_hw_cfg_i.data.hw_cfg_digest,
+                             otp_hw_cfg_i.data.hw_cfg_content
+                            };
+
+  assign adv_dvalid[Creator] = creator_seed_vld &
+                               devid_vld &
+                               health_state_vld;
 
   // Advance to owner_intermediate_key
   logic [KeyWidth-1:0] owner_seed;
   assign owner_seed = flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx];
   assign adv_matrix[OwnerInt] = AdvDataWidth'({reg2hw.sw_binding,owner_seed});
+  assign adv_dvalid[OwnerInt] = owner_seed_vld;
 
   // Advance to owner_key
-  assign adv_matrix[Owner]   = AdvDataWidth'(reg2hw.sw_binding);
-
+  assign adv_matrix[Owner] = AdvDataWidth'(reg2hw.sw_binding);
+  assign adv_dvalid[Owner] = 1'b1;
 
   // Generate Identity operation input construction
   for (genvar i = KeyMgrStages; i < 2**StageWidth; i++) begin : gen_id_matrix_fill
@@ -262,10 +306,17 @@ module keymgr import keymgr_pkg::*; #(
 
   // Generate output operation input construction
   logic [KeyWidth-1:0] output_key;
+  keymgr_key_dest_e cipher_sel;
+  logic [KeyWidth-1:0] cipher_seed;
 
+  assign cipher_sel = keymgr_key_dest_e'(reg2hw.control.dest_sel);
+  assign cipher_seed = cipher_sel == Aes  ? RndCnstAesSeed :
+                       cipher_sel == Hmac ? RndCnstHmacSeed :
+                       cipher_sel == Kmac ? RndCnstKmacSeed : RndCnstNoneSeed;
   assign output_key = (key_sel == HwKey) ? RndCnstHardOutputSeed : RndCnstSoftOutputSeed;
   assign gen_in = (stage_sel == Disable) ? {GenLfsrCopies{lfsr[31:0]}} : {reg2hw.key_version,
                                                                           reg2hw.salt,
+                                                                          cipher_seed,
                                                                           output_key};
 
   // Advance state operation input construction
@@ -279,11 +330,22 @@ module keymgr import keymgr_pkg::*; #(
 
 
   // General module for checking inputs
+  logic key_vld;
   keymgr_input_checks u_checks (
     .max_key_versions_i(max_key_versions),
     .stage_sel_i(stage_sel),
     .key_version_i(reg2hw.key_version),
-    .key_version_good_o(key_version_good)
+    .creator_seed_i(creator_seed),
+    .owner_seed_i(owner_seed),
+    .key_i(kmac_key_o),
+    .devid_i(otp_hw_cfg_i.data.device_id),
+    .health_state_i(HealthStateWidth'(lc_keymgr_div_i)),
+    .creator_seed_vld_o(creator_seed_vld),
+    .owner_seed_vld_o(owner_seed_vld),
+    .devid_vld_o(devid_vld),
+    .health_state_vld_o(health_state_vld),
+    .key_version_vld_o(key_version_vld),
+    .key_vld_o(key_vld)
   );
 
 
@@ -291,15 +353,11 @@ module keymgr import keymgr_pkg::*; #(
   //  KMAC Control
   /////////////////////////////////////
 
-  logic key_version_err;
   logic [3:0] invalid_data;
-
-  assign key_version_err = !key_version_good;
-
-  assign invalid_data[OpAdvance]  = '0; // TBD
-  assign invalid_data[OpGenId]    = '0; // TBD
-  assign invalid_data[OpGenSwOut] = key_version_err; // TBD, more to come
-  assign invalid_data[OpGenHwOut] = key_version_err; // TBD, more to come
+  assign invalid_data[OpAdvance]  = ~key_vld | ~adv_dvalid[stage_sel];
+  assign invalid_data[OpGenId]    = ~key_vld;
+  assign invalid_data[OpGenSwOut] = ~key_vld | ~key_version_vld;
+  assign invalid_data[OpGenHwOut] = ~key_vld | ~key_version_vld;
 
   keymgr_kmac_if u_kmac_if (
     .clk_i,
@@ -333,12 +391,14 @@ module keymgr import keymgr_pkg::*; #(
   keymgr_sideload_key_ctrl u_sideload_ctrl (
     .clk_i,
     .rst_ni,
-    .init_i(op_done),
+    .init_i(init),
     .entropy_i(key_entropy),
+    .clr_key_i(reg2hw.sideload_clear.q),
     .wipe_key_i(wipe_key),
-    .dest_sel_i(keymgr_key_dest_e'(reg2hw.control.dest_sel)),
+    .dest_sel_i(cipher_sel),
     .key_sel_i(key_sel),
     .load_key_i(load_key),
+    .data_en_i(data_en),
     .data_valid_i(data_valid),
     .key_i(kmac_key),
     .data_i(kmac_data),
@@ -349,8 +409,10 @@ module keymgr import keymgr_pkg::*; #(
   );
 
   for (genvar i = 0; i < 8; i++) begin : gen_sw_assigns
-    assign hw2reg.sw_share0_output[i].d  = wipe_key ? key_entropy : kmac_data[0][i*32 +: 32];
-    assign hw2reg.sw_share1_output[i].d  = wipe_key ? key_entropy : kmac_data[1][i*32 +: 32];
+    assign hw2reg.sw_share0_output[i].d  = ~data_en | wipe_key ? key_entropy :
+                                                                 kmac_data[0][i*32 +: 32];
+    assign hw2reg.sw_share1_output[i].d  = ~data_en | wipe_key ? key_entropy :
+                                                                 kmac_data[1][i*32 +: 32];
     assign hw2reg.sw_share0_output[i].de = wipe_key | data_valid & (key_sel == SwKey);
     assign hw2reg.sw_share1_output[i].de = wipe_key | data_valid & (key_sel == SwKey);
   end
@@ -364,16 +426,15 @@ module keymgr import keymgr_pkg::*; #(
     .clk_i,
     .rst_ni,
     .event_intr_i           (op_done),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.op_done.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.op_done.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.op_done.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.op_done.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.op_done.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.op_done.d),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.d),
     .intr_o                 (intr_op_done_o)
   );
 
-  logic [ErrLastPos-1:0] err_code_q;
   assign hw2reg.err_code.invalid_op.d          = reg2hw.err_code.invalid_op.q  |
                                                  err_code[ErrInvalidOp];
   assign hw2reg.err_code.invalid_cmd.d         = reg2hw.err_code.invalid_cmd.q |
@@ -386,30 +447,6 @@ module keymgr import keymgr_pkg::*; #(
   assign hw2reg.err_code.invalid_cmd.de        = 1'b1;
   assign hw2reg.err_code.invalid_kmac_input.de = 1'b1;
   assign hw2reg.err_code.invalid_kmac_data.de  = 1'b1;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      err_code_q <= '0;
-    end else begin
-      err_code_q <= err_code;
-    end
-  end
-
-  // interrupts are only generated on changes to avoid interrupt storms
-  prim_intr_hw #(.Width(1)) u_err_code (
-    .clk_i,
-    .rst_ni,
-    // assert interrupt whenever error code is non-zero and is different
-    // from its previous value
-    .event_intr_i           (|err_code & (err_code != err_code_q)),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.err.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.err.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.err.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.err.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.err.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.err.d),
-    .intr_o                 (intr_err_o)
-  );
 
   // There are two types of alerts
   // - alerts for hardware errors, these could not have been generated by software.
@@ -466,7 +503,7 @@ module keymgr import keymgr_pkg::*; #(
   // known asserts
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
-  `ASSERT_KNOWN(IntrKnownO_A, {intr_op_done_o, intr_err_o})
+  `ASSERT_KNOWN(IntrKnownO_A, intr_op_done_o)
   `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
 
   // the keys are not reset to any specific values

@@ -16,6 +16,11 @@
 NUM_PROCS=8
 REPORT_FILE="verible-format.rpt"
 VERIBLE_VERSION=`verible-verilog-format --version`
+VERIBLE_ARGS="--formal_parameters_indentation=indent \
+              --named_parameter_indentation=indent   \
+              --named_port_indentation=indent        \
+              --port_declarations_indentation=indent \
+              --inplace"
 
 if [ -z $VERIBLE_VERSION ]; then
     echo "verible-verilog-format either not installed or not visible in PATH"
@@ -27,9 +32,10 @@ fi
 git add -u
 
 # get all system verilog files and pipe through style formatter
-find hw/{ip,vendor,top_earlgrey} -type f -name "*.sv" -o -name "*.svh" | \
+find . -type f -name "*.sv" -o -name "*.svh" |                           \
     xargs -n 1 -P $NUM_PROCS verible-verilog-format                      \
-    --inplace
+    $VERIBLE_ARGS
+
 
 echo "Usign verible-verilog-format version $VERIBLE_VERSION" > $REPORT_FILE
 

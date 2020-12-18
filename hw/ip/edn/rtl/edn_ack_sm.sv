@@ -15,26 +15,29 @@ module edn_ack_sm (
   output logic               fifo_pop_o
 );
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 3 -m 3 -n 6 -s 4028491767
-  // Hamming distance histogram:
-  //
-  // 0: --
-  // 1: --
-  // 2: --
-  // 3: |||||||||||||||||||| (33.33%)
-  // 4: |||||||||||||||||||| (33.33%)
-  // 5: |||||||||||||||||||| (33.33%)
-  // 6: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 5
-  //
+// Encoding generated with:
+// $ ./sparse-fsm-encode.py -d 3 -m 4 -n 6 \
+//      -s 3468982201 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||||| (66.67%)
+//  4: ||||| (16.67%)
+//  5: --
+//  6: ||||| (16.67%)
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 6
+//
 
   localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
-    Idle      = 6'b110101, // idle (hamming distance = 3)
-    AckImmed  = 6'b001011, // ack the request immediately
-    AckWait   = 6'b111010  // wait until the fifo has an entry
+    Idle      = 6'b010011, // idle (hamming distance = 3)
+    DataWait  = 6'b001001, // wait for data to return
+    AckPls    = 6'b101100  // signal ack to endpoint TODO: regen states
   } state_e;
 
   state_e state_d, state_q;
@@ -63,23 +66,19 @@ module edn_ack_sm (
       Idle: begin
         if (req_i) begin
           if (fifo_not_empty_i) begin
-            state_d = AckImmed;
-          end else begin
-            state_d = AckWait;
+            fifo_pop_o = 1'b1;
           end
+          state_d = DataWait;
         end
       end
-      AckImmed: begin
-        ack_o = 1'b1;
-        fifo_pop_o = 1'b1;
-        state_d = Idle;
-      end
-      AckWait: begin
+      DataWait: begin
         if (fifo_not_empty_i) begin
-          ack_o = 1'b1;
-          fifo_pop_o = 1'b1;
-          state_d = Idle;
+          state_d = AckPls;
         end
+      end
+      AckPls: begin
+        ack_o = 1'b1;
+        state_d = Idle;
       end
       default: state_d = Idle;
     endcase

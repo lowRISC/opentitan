@@ -78,7 +78,7 @@
             operations are locked correctly, and check if the `AccessError` is set.
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_dai_lock"]
     }
     {
       name: interface_key_check

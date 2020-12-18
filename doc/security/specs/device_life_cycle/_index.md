@@ -198,7 +198,7 @@ This state is used for developing provisioning and mission mode software.
 During this state
 
   *   CPU execution is enabled
-  *   NVM backdoor functions are enabled
+  *   NVM backdoor functions are disabled
   *   Debug functions are enabled
   *   DFT functions are disabled
     </td>

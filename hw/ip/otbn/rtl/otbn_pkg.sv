@@ -217,8 +217,8 @@ package otbn_pkg;
 
   typedef enum logic [$clog2(FlagsWidth)-1:0] {
     FlagC = 'd0,
-    FlagL = 'd1,
-    FlagM = 'd2,
+    FlagM = 'd1,
+    FlagL = 'd2,
     FlagZ = 'd3
   } flag_e;
 

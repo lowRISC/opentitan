@@ -21,20 +21,22 @@ package flash_ctrl_pkg;
   // fixed parameters of flash derived from topgen parameters
   parameter int DataWidth       = 64;
   parameter int MetaDataWidth   = 12;
-  parameter int InfoTypes       = 2; // How many types of info per bank
+  parameter int InfoTypes       = 3; // How many types of info per bank
 
 // The following hard-wired values are there to work-around verilator.
 // For some reason if the values are assigned through parameters verilator thinks
 // they are not constant
   parameter int InfoTypeSize [InfoTypes] = '{
-    4,
-    4
+    10,
+    1,
+    2
   };
   parameter int InfosPerBank    = max_info_pages('{
-    4,
-    4
+    10,
+    1,
+    2
   });
-  parameter int WordsPerPage    = 128; // Number of flash words per page
+  parameter int WordsPerPage    = 256; // Number of flash words per page
   parameter int BusWidth        = top_pkg::TL_DW;
   parameter int MpRegions       = 8;  // flash controller protection regions
   parameter int FifoDepth       = 16; // rd / prog fifos
@@ -69,9 +71,15 @@ package flash_ctrl_pkg;
 
   // The end address in bus words for each kind of partition in each bank
   parameter logic [PageW-1:0] DataPartitionEndAddr = PagesPerBank - 1;
+  //parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
+  //  9,
+  //  0,
+  //  1
+  //};
   parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
     InfoTypeSize[0] - 1,
-    InfoTypeSize[1] - 1
+    InfoTypeSize[1] - 1,
+    InfoTypeSize[2] - 1
   };
 
   ////////////////////////////
@@ -82,9 +90,23 @@ package flash_ctrl_pkg;
   // parameters for connected components
   parameter int SeedWidth = 256;
   parameter int KeyWidth  = 128;
-  parameter int LfsrWidth = 32;
-
+  parameter int EdnWidth  = edn_pkg::ENDPOINT_BUS_WIDTH;
   typedef logic [KeyWidth-1:0] flash_key_t;
+
+  // Default Lfsr configurations
+  // These LFSR parameters have been generated with
+  // $ hw/ip/prim/util/gen-lfsr-seed.py --width 32 --seed 1274809145 --prefix ""
+  parameter int LfsrWidth = 32;
+  typedef logic [LfsrWidth-1:0] lfsr_seed_t;
+  typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
+  parameter lfsr_seed_t RndCnstLfsrSeedDefault = 32'ha8cee782;
+  parameter lfsr_perm_t RndCnstLfsrPermDefault = {
+    160'hd60bc7d86445da9347e0ccdd05b281df95238bb5
+  };
+
+  // These LFSR parameters have been generated with
+  // $ hw/ip/prim/util/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""
+
 
   // lcmgr phase enum
   typedef enum logic [1:0] {
@@ -161,13 +183,13 @@ package flash_ctrl_pkg;
     he_en:       1'b1
   };
 
-  parameter info_page_cfg_t CfgAllowReadErase = '{
+  parameter info_page_cfg_t CfgAllowReadProgErase = '{
     en:          1'b1,
     rd_en:       1'b1,
-    prog_en:     1'b0,
+    prog_en:     1'b1,
     erase_en:    1'b1,
-    scramble_en: 1'b0,
-    ecc_en:      1'b0,  // TBD, update to 1 once tb supports ECC
+    scramble_en: 1'b1,
+    ecc_en:      1'b1,
     he_en:       1'b1   // HW assumes high endurance
   };
 
@@ -187,7 +209,7 @@ package flash_ctrl_pkg;
     '{
        page:  SeedInfoPageSel[OwnerSeedIdx],
        phase: PhaseRma,
-       cfg:   CfgAllowReadErase
+       cfg:   CfgAllowReadProgErase
      }
   };
 
@@ -197,10 +219,10 @@ package flash_ctrl_pkg;
        cfg:   '{
                  en:          1'b1,
                  rd_en:       1'b1,
-                 prog_en:     1'b0,
+                 prog_en:     1'b1,
                  erase_en:    1'b1,
-                 scramble_en: 1'b0,
-                 ecc_en:      1'b0,
+                 scramble_en: 1'b1,
+                 ecc_en:      1'b1,
                  he_en:       1'b1, // HW assumes high endurance
                  base:        '0,
                  size:        '{default:'1}
@@ -271,6 +293,7 @@ package flash_ctrl_pkg;
     logic                 prog;
     logic                 pg_erase;
     logic                 bk_erase;
+    logic                 erase_suspend;
     flash_part_e          part;
     logic [InfoTypesWidth-1:0] info_sel;
     logic [BusAddrW-1:0]  addr;
@@ -285,24 +308,25 @@ package flash_ctrl_pkg;
 
   // default value of flash_req_t (for dangling ports)
   parameter flash_req_t FLASH_REQ_DEFAULT = '{
-    req:         '0,
-    scramble_en: '0,
-    ecc_en:      '0,
-    he_en:       '0,
-    rd:          '0,
-    prog:        '0,
-    pg_erase:    '0,
-    bk_erase:    '0,
-    part:        FlashPartData,
-    info_sel:    '0,
-    addr:        '0,
-    prog_data:   '0,
-    prog_last:   '0,
-    prog_type:   FlashProgNormal,
-    region_cfgs: '0,
-    addr_key:    RndCnstAddrKeyDefault,
-    data_key:    RndCnstDataKeyDefault,
-    rd_buf_en:   1'b0
+    req:           '0,
+    scramble_en:   '0,
+    ecc_en:        '0,
+    he_en:         '0,
+    rd:            '0,
+    prog:          '0,
+    pg_erase:      '0,
+    bk_erase:      '0,
+    erase_suspend: '0,
+    part:          FlashPartData,
+    info_sel:      '0,
+    addr:          '0,
+    prog_data:     '0,
+    prog_last:     '0,
+    prog_type:     FlashProgNormal,
+    region_cfgs:   '0,
+    addr_key:      RndCnstAddrKeyDefault,
+    data_key:      RndCnstDataKeyDefault,
+    rd_buf_en:     1'b0
   };
 
   // memory to flash controller
@@ -314,35 +338,58 @@ package flash_ctrl_pkg;
     logic                rd_err;
     logic [BusWidth-1:0] rd_data;
     logic                init_busy;
+    logic                erase_suspend_done;
   } flash_rsp_t;
 
   // default value of flash_rsp_t (for dangling ports)
   parameter flash_rsp_t FLASH_RSP_DEFAULT = '{
-    prog_type_avail: '{default: '1},
-    rd_done:    1'b0,
-    prog_done:  1'b0,
-    erase_done: 1'b0,
-    rd_err:     '0,
-    rd_data:    '0,
-    init_busy:  1'b0
+    prog_type_avail:    '{default: '1},
+    rd_done:            1'b0,
+    prog_done:          1'b0,
+    erase_done:         1'b0,
+    rd_err:             '0,
+    rd_data:            '0,
+    init_busy:          1'b0,
+    erase_suspend_done: 1'b1
   };
 
-  ////////////////////////////
-  // The following inter-module should be moved to OTP/LC
-  ////////////////////////////
-
-  // lc to flash_ctrl
+  // RMA entries
   typedef struct packed {
-    // TBD: this signal will become multi-bit in the future
-    logic rma_req;
-    logic [BusWidth-1:0] rma_req_token;
-  } lc_flash_req_t;
+    logic [BankW-1:0] bank;
+    flash_part_e part;
+    logic [InfoTypesWidth-1:0] info_sel;
+    logic [PageW:0] start_page;
+    logic [PageW:0] num_pages;
+  } rma_wipe_entry_t;
 
-  // flash_ctrl to lc
-  typedef struct packed {
-    logic rma_ack;
-    logic [BusWidth-1:0] rma_ack_token;
-  } lc_flash_rsp_t;
+  // entries to be wiped
+  parameter int WipeEntries = 3;
+  parameter rma_wipe_entry_t RmaWipeEntries[WipeEntries] = '{
+    '{
+       bank: SeedBank,
+       part: FlashPartInfo,
+       info_sel: SeedInfoSel,
+       start_page: OwnerInfoPage,
+       num_pages: 1
+     },
+
+    '{
+       bank: 0,
+       part: FlashPartData,
+       info_sel: 0,
+       start_page: 0,
+       num_pages: PagesPerBank
+     },
+
+    '{
+       bank: 1,
+       part: FlashPartData,
+       info_sel: 0,
+       start_page: 0,
+       num_pages: PagesPerBank
+     }
+  };
+
 
   // flash_ctrl to keymgr
   typedef struct packed {
@@ -354,22 +401,6 @@ package flash_ctrl_pkg;
      256'h9152e32c9380a4bcc3e0ab263581e6b0e8825186e1e445631646e8bef8c45d47,
      256'hfa365df52da48cd752fb3a026a8e608f0098cfe5fa9810494829d0cd9479eb78
     }
-  };
-
-  // place holder for interface to EDN, replace with real one later
-  typedef struct packed {
-    logic valid;
-    logic [3:0] entropy;
-  } edn_entropy_t;
-
-  parameter lc_flash_req_t LC_FLASH_REQ_DEFAULT = '{
-    rma_req: 1'b0,
-    rma_req_token: '0
-  };
-
-  parameter edn_entropy_t EDN_ENTROPY_DEFAULT = '{
-    valid: 1'b1,
-    entropy: '0
   };
 
   // dft_en jtag selection

@@ -18,6 +18,8 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   input mp_region_cfg_t [MpRegions:0] region_cfgs_i,
   input flash_ctrl_reg2hw_mp_bank_cfg_mreg_t [NumBanks-1:0] bank_cfgs_i,
   input info_page_cfg_t [NumBanks-1:0][InfoTypes-1:0][InfosPerBank-1:0] info_page_cfgs_i,
+  input erase_suspend_i,
+  output logic erase_suspend_done_o,
 
   // interface signals to/from *_ctrl
   input req_i,
@@ -45,9 +47,11 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   output logic he_en_o,
   output logic pg_erase_o,
   output logic bk_erase_o,
+  output logic erase_suspend_o,
   input rd_done_i,
   input prog_done_i,
-  input erase_done_i
+  input erase_done_i,
+  input erase_suspend_done_i
 );
 
   // Total number of regions including default region
@@ -276,6 +280,15 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   assign prog_done_o = prog_done_i | txn_err;
   assign erase_done_o = erase_done_i | txn_err;
   assign error_o = txn_err;
+
+  // if no onigoing erase operation, immediately return
+  // if ongoing erase operation, wait for flash phy return
+  logic erase_valid;
+  assign erase_valid = pg_erase_o | bk_erase_o;
+  assign erase_suspend_done_o = erase_valid ? erase_suspend_done_i :
+                                              erase_suspend_i;
+
+  assign erase_suspend_o = erase_valid & erase_suspend_i;
 
   //////////////////////////////////////////////
   // Assertions, Assumptions, and Coverpoints //

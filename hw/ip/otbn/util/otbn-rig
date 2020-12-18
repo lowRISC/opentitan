@@ -18,7 +18,7 @@ from shared.insn_yaml import InsnsFile, load_insns_yaml
 # can import modules like "shared.foo" and get the OTBN shared code.
 sys.path.append(os.path.dirname(__file__))
 
-from rig.init_data import init_data_to_json, read_init_data  # noqa: E402
+from rig.init_data import InitData  # noqa: E402
 from rig.rig import gen_program, snippets_to_program  # noqa: E402
 from rig.snippet import Snippet  # noqa: E402
 
@@ -44,7 +44,7 @@ def gen_main(args: argparse.Namespace) -> int:
     init_data, snippets = gen_program(args.start_addr, args.size, insns_file)
 
     # Write out the data and snippets to a JSON file
-    ser_data = init_data_to_json(init_data)
+    ser_data = init_data.as_json()
     ser_snippets = [snippet.to_json() for snippet in snippets]
     ser = [ser_data, ser_snippets]
     try:
@@ -87,7 +87,7 @@ def asm_main(args: argparse.Namespace) -> int:
             raise ValueError('Top-level structure should be a length 2 list.')
 
         json_init_data, json_snippets = json_data
-        init_data = read_init_data(json_init_data)
+        init_data = InitData.read(json_init_data)
         snippets = [Snippet.from_json(insns_file, idx, x)
                     for idx, x in enumerate(json_snippets)]
     except ValueError as err:
@@ -97,16 +97,17 @@ def asm_main(args: argparse.Namespace) -> int:
         return 1
 
     program = snippets_to_program(snippets)
+    dsegs = init_data.as_segs()
 
     # Dump the assembly output, and the linker script too if we're writing to
     # something other than stdout.
     if args.output is None or args.output == '-':
-        program.dump_asm(sys.stdout, init_data)
+        program.dump_asm(sys.stdout, dsegs)
     else:
         try:
             asm_path = args.output + '.s'
             with open(asm_path, 'w') as out_file:
-                program.dump_asm(out_file, init_data)
+                program.dump_asm(out_file, dsegs)
         except OSError as err:
             print('Failed to open asm output file {!r}: {}.'
                   .format(args.output, err),
@@ -116,7 +117,7 @@ def asm_main(args: argparse.Namespace) -> int:
         try:
             ld_path = args.output + '.ld'
             with open(ld_path, 'w') as out_file:
-                program.dump_linker_script(out_file, init_data)
+                program.dump_linker_script(out_file, dsegs)
         except OSError as err:
             print('Failed to open ld script output file {!r}: {}.'
                   .format(ld_path, err),

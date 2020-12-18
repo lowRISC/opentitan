@@ -54,14 +54,14 @@
     // IPs. See `hw/dv/tools/dvsim/common_sim_cfg.hjson` for the default value.
     {
       name: default_vcs_cov_cfg_file
-      value: "-cm_hier {tool_srcs_dir}/chip_cover.cfg"
+      value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover.cfg"
     }
     // Used by 'cover_reg_top' only builds - we only cover the *_reg_top of
     // the non-pre-verified modules at the chip level. See
     // `hw/dv/tools/dvsim//common_sim_cfg.hjson` for the default value.
     {
       name: cover_reg_top_vcs_cov_cfg_file
-      value: "-cm_hier {tool_srcs_dir}/chip_cover_reg_top.cfg"
+      value: "-cm_hier {proj_root)/hw/top_earlgrey/dv/cov/chip_cover_reg_top.cfg"
     }
 
     // This defaults to 'ip' in `hw/data/common_project_cfg.hjson`.
@@ -73,10 +73,7 @@
 
   // Set the vcs_cov_assert_hier to supply the chip specific assertion coverage
   // hierarchies.
-  vcs_cov_assert_hier: "-cm_assert_hier {tool_srcs_dir}/chip_assert_cover.cfg"
-
-  // Add these to tool_srcs so that they get copied over.
-  tool_srcs: ["{proj_root}/hw/top_earlgrey/dv/cov/*"]
+  vcs_cov_assert_hier: "-cm_assert_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_assert_cover.cfg"
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 1

@@ -20,13 +20,10 @@
   ]
 
   // Timing constraints for this module
-  sdc_path: "{proj_root}/hw/top_earlgrey/syn"
-  sdc_file: "constraints.sdc"
+  sdc_file: "{proj_root}/hw/top_earlgrey/syn/constraints.sdc"
 
   // Technology specific timing constraints for this module
-  foundry_sdc_path: "{proj_root}/hw/foundry/top_earlgrey/syn"
-  foundry_sdc_file: "foundry.constraints.sdc"
-  tool_srcs: ["{foundry_sdc_path}/{foundry_sdc_file}"]
+  foundry_sdc_file: "{proj_root}/hw/foundry/top_earlgrey/syn/foundry.constraints.sdc"
 
   // Configuration for result parser script
   area_depth: 1

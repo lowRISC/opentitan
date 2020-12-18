@@ -260,7 +260,7 @@ class Program:
         return ('/* Text section {} ([{:#06x}..{:#06x}]) */'
                 .format(idx, addr, addr + 4 * len(insns) - 1))
 
-    def dump_asm(self, out_file: TextIO, init_data: Dict[int, int]) -> None:
+    def dump_asm(self, out_file: TextIO, dsegs: Dict[int, List[int]]) -> None:
         '''Write an assembly representation of the program to out_file'''
         # Close any existing section, so that we can iterate over all the
         # instructions by iterating over self._sections.
@@ -274,15 +274,16 @@ class Program:
                 out_file.write(pi.to_asm(cur_pc) + '\n')
 
         # Generate data .words
-        for idx, (addr, value) in enumerate(sorted(init_data.items())):
+        for idx, (addr, values) in enumerate(sorted(dsegs.items())):
             out_file.write('\n/* Data section {} ({:#06x}-{:#06x}) */\n'
-                           .format(idx, addr, addr + 3))
+                           .format(idx, addr, addr + 4 * len(values) - 1))
             out_file.write('.section .data.sec{:04}\n'.format(idx))
-            out_file.write('.word {:#x}\n'.format(value))
+            for value in values:
+                out_file.write('.word {:#x}\n'.format(value))
 
     def dump_linker_script(self,
                            out_file: TextIO,
-                           init_data: Dict[int, int]) -> None:
+                           dsegs: Dict[int, List[int]]) -> None:
         '''Write a linker script to link the program
 
         This lays out the sections generated in dump_asm().
@@ -291,13 +292,13 @@ class Program:
         self.close_section()
 
         seg_descs = []
-        for idx, addr in enumerate(sorted(init_data.keys())):
+        for idx, (addr, values) in enumerate(sorted(dsegs.items())):
             seg_descs.append(('dseg{:04}'.format(idx),
                               addr,
                               addr + self.dmem_lma,
                               '.data.sec{:04}'.format(idx),
                               ('/* Data section {} ({:#06x}-{:#06x}) */'
-                               .format(idx, addr, addr + 3))))
+                               .format(idx, addr, addr + 4 * len(values) - 1))))
         for idx, (addr, insns) in enumerate(sorted(self._sections.items())):
             seg_descs.append(('iseg{:04}'.format(idx),
                               addr,
@@ -323,11 +324,16 @@ class Program:
         out_file.write('}\n')
 
     def pick_branch_targets(self,
+                            cur_pc: int,
                             min_len: int,
                             count: int,
                             tgt_min: Optional[int],
                             tgt_max: Optional[int]) -> Optional[List[int]]:
         '''Pick count random targets for a branch destination
+
+        As well as avoiding addresses that have program data, this also treats
+        behaves as if there is an instruction at cur_pc (this is the
+        instruction that's being picked).
 
         There is guaranteed to be at least space for min_len instructions at
         each target, but the weighting tries to favour places with some space
@@ -344,10 +350,12 @@ class Program:
         # sections in which they should land. To do *that*, we start by making
         # a list of all the gaps between sections in ascending order of base
         # address.
-        section_list = list(self._sections.items())
+        section_list = [(base, len(insns))
+                        for base, insns in self._sections.items()]
         if self._cur_section is not None:
-            cur_base, cur_open_section = self._cur_section
-            section_list.append((cur_base, cur_open_section.insns))
+            base, open_section = self._cur_section
+            section_list.append((base, len(open_section.insns)))
+        section_list.append((cur_pc, 1))
         section_list.sort()
 
         gap_vma = 0
@@ -375,7 +383,7 @@ class Program:
                 if gap_lo <= gap_hi:
                     gap_list.append((gap_lo, gap_hi - gap_lo + 1))
 
-            gap_vma = section_base + 4 * len(section_insns)
+            gap_vma = section_base + 4 * section_insns
 
         # Deal with any final gap above all known sections in the same way as
         # the internal gaps.
@@ -466,6 +474,7 @@ class Program:
         return ret
 
     def pick_branch_target(self,
+                           cur_pc: int,
                            min_len: int,
                            tgt_min: Optional[int],
                            tgt_max: Optional[int]) -> Optional[int]:
@@ -475,7 +484,7 @@ class Program:
         function.
 
         '''
-        tgts = self.pick_branch_targets(min_len, 1, tgt_min, tgt_max)
+        tgts = self.pick_branch_targets(cur_pc, min_len, 1, tgt_min, tgt_max)
         if tgts is None:
             return None
 

@@ -27,7 +27,9 @@ module lc_ctrl_fsm
   input  lc_state_e             lc_state_i,
   input  lc_id_state_e          lc_id_state_i,
   input  lc_cnt_e               lc_cnt_i,
-  // Token input from OTP.
+  // Token input from OTP (these are all hash post-images).
+  input  lc_token_t             all_zero_token_i,
+  input  lc_token_t             raw_unlock_token_i,
   input  lc_token_t             test_unlock_token_i,
   input  lc_token_t             test_exit_token_i,
   input  lc_token_t             rma_token_i,
@@ -100,8 +102,8 @@ module lc_ctrl_fsm
   assign otp_prog_lc_cnt_o   = lc_cnt_q;
 
   // Conditional LC signal outputs
-  lc_tx_t lc_clk_byp_req_d, lc_clk_byp_req_q;
-  lc_tx_t lc_flash_rma_req_d, lc_flash_rma_req_q;
+  lc_tx_t lc_clk_byp_req_d, lc_clk_byp_req_q, lc_clk_byp_req;
+  lc_tx_t lc_flash_rma_req_d, lc_flash_rma_req_q, lc_flash_rma_req;
 
   `ASSERT_KNOWN(LcStateKnown_A,   lc_state_q   )
   `ASSERT_KNOWN(LcCntKnown_A,     lc_cnt_q     )
@@ -138,8 +140,8 @@ module lc_ctrl_fsm
     // The clock bypass and RMA signals remain asserted once set to ON.
     // Note that the remaining life cycle signals are decoded in
     // the lc_ctrl_signal_decode submodule.
-    lc_clk_byp_req_d   = lc_clk_byp_req_q;
-    lc_flash_rma_req_d = lc_flash_rma_req_q;
+    lc_clk_byp_req   = lc_clk_byp_req_q;
+    lc_flash_rma_req = lc_flash_rma_req_q;
 
     unique case (fsm_state_q)
       ///////////////////////////////////////////////////////////////////
@@ -181,7 +183,7 @@ module lc_ctrl_fsm
                                LcStTestLocked0,
                                LcStTestLocked1,
                                LcStTestLocked2}) begin
-          lc_clk_byp_req_d = On;
+          lc_clk_byp_req = On;
           if (lc_clk_byp_ack_i == On) begin
             fsm_state_d = CntIncrSt;
           end
@@ -250,7 +252,7 @@ module lc_ctrl_fsm
       // two times later below.
       FlashRmaSt: begin
         if (trans_target_i == DecLcStRma) begin
-          lc_flash_rma_req_d = On;
+          lc_flash_rma_req = On;
           if (lc_flash_rma_ack_i == On) begin
             fsm_state_d = TokenCheck0St;
           end
@@ -346,6 +348,15 @@ module lc_ctrl_fsm
     .q_o ( fsm_state_raw_q )
   );
 
+  prim_lc_sender u_prim_lc_sender_clk_byp_req (
+    .lc_en_i(lc_clk_byp_req),
+    .lc_en_o(lc_clk_byp_req_d)
+  );
+  prim_lc_sender u_prim_lc_sender_flash_rma_req (
+    .lc_en_i(lc_flash_rma_req),
+    .lc_en_o(lc_flash_rma_req_d)
+  );
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       lc_state_q         <= LcStScrap;
@@ -378,8 +389,8 @@ module lc_ctrl_fsm
   logic [TokenIdxWidth-1:0] token_idx;
   always_comb begin : p_token_assign
     hashed_tokens = '0;
-    hashed_tokens[ZeroTokenIdx]       = AllZeroTokenHashed;
-    hashed_tokens[RawUnlockTokenIdx]  = RawUnlockTokenHashed;
+    hashed_tokens[ZeroTokenIdx]       = all_zero_token_i;
+    hashed_tokens[RawUnlockTokenIdx]  = raw_unlock_token_i;
     hashed_tokens[TestUnlockTokenIdx] = test_unlock_token_i;
     hashed_tokens[TestExitTokenIdx]   = test_exit_token_i;
     hashed_tokens[RmaTokenIdx]        = rma_token_i;
@@ -449,7 +460,7 @@ module lc_ctrl_fsm
   );
 
   // Conditional signals set by main FSM.
-  assign lc_clk_byp_req_o   = lc_clk_byp_req_q;
+  assign lc_clk_byp_req_o = lc_clk_byp_req_q;
   assign lc_flash_rma_req_o = lc_flash_rma_req_q;
 
   ////////////////
