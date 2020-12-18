@@ -31,6 +31,7 @@ int otbn_stack_element_peek(int index, svBitVecVal *val) __attribute__((weak));
 #define RUNNING_BIT (1U << 0)
 #define FAILED_STEP_BIT (1U << 1)
 #define FAILED_CMP_BIT (1U << 2)
+#define STATUS_MASK ((1U << 3) - 1)
 
 // The main entry point to the OTBN model, exported from here and used in
 // otbn_core_model.sv.
@@ -38,9 +39,10 @@ int otbn_stack_element_peek(int index, svBitVecVal *val) __attribute__((weak));
 // This communicates state with otbn_core_model.sv through the status
 // parameter, which has the following bits:
 //
-//    Bit 0:    running       True if the model is currently running
-//    Bit 1:    failed_step   Something failed when trying to start/step ISS
-//    Bit 2:    failed_cmp    Consistency check at end of run failed
+//    Bit 0:      running       True if the model is currently running
+//    Bit 1:      failed_step   Something failed when trying to start/step ISS
+//    Bit 2:      failed_cmp    Consistency check at end of run failed
+//    Bits 31:16: err_code      Error code to report on negedge of running
 //
 // The otbn_model_step function should only be called when either the model is
 // running (bit 0 of status) or when start_i is asserted. At other times, it
@@ -227,11 +229,19 @@ static int start_model(ISSWrapper *model, const char *imem_scope,
 }
 
 // Step once in the model. Returns 1 if the model has finished, 0 if not and -1
-// on failure.
-static int step_model(ISSWrapper *model) {
+// on failure. If the model has finished, writes otbn.ERR_CODE to *err_code.
+static int step_model(ISSWrapper *model, uint32_t *err_code) {
   assert(model);
+  assert(err_code);
+
   try {
-    return model->step() ? 1 : 0;
+    std::pair<bool, uint32_t> ret = model->step();
+    if (ret.first) {
+      *err_code = ret.second;
+      return 1;
+    } else {
+      return 0;
+    }
   } catch (const std::runtime_error &err) {
     std::cerr << "Error when stepping ISS: " << err.what() << "\n";
     return -1;
@@ -517,6 +527,9 @@ extern "C" unsigned otbn_model_step(ISSWrapper *model, const char *imem_scope,
                                     unsigned start_addr, unsigned status) {
   assert(model && imem_scope && dmem_scope && design_scope);
 
+  // Clear out any ERR_CODE from a previous cycle
+  status &= STATUS_MASK;
+
   // Start the model if requested
   if (start_i) {
     switch (start_model(model, imem_scope, imem_words, dmem_scope, dmem_words,
@@ -537,14 +550,15 @@ extern "C" unsigned otbn_model_step(ISSWrapper *model, const char *imem_scope,
     return status;
 
   // Step the model once
-  switch (step_model(model)) {
+  uint32_t err_code;
+  switch (step_model(model, &err_code)) {
     case 0:
       // Still running: no change
       break;
 
     case 1:
       // Finished
-      status = status & ~RUNNING_BIT;
+      status = (status & ~RUNNING_BIT) | (err_code << 16);
       break;
 
     default:

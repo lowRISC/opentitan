@@ -471,6 +471,8 @@ module otbn
       .start_i (start_model),
       .done_o (done_model),
 
+      .err_code_o (err_code_model),
+
       .start_addr_i (start_addr),
 
       .err_o ()

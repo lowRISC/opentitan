@@ -41,6 +41,8 @@ module otbn_core_model
   input  logic  start_i, // start the operation
   output bit    done_o,  // operation done
 
+  output err_code_e err_code_o, // valid when done_o is asserted
+
   input  logic [ImemAddrWidth-1:0] start_addr_i, // start byte address in IMEM
 
   output bit err_o        // something went wrong
@@ -101,11 +103,17 @@ module otbn_core_model
 
   // Extract particular bits of the status value.
   //
-  //   running: The ISS is currently running
-  //   failed_step: Something went wrong when trying to start or step the ISS.
-  //   failed_cmp:  The consistency check at the end of run failed.
+  //   [0]     running:      The ISS is currently running
+  //   [1]     failed_step:  Something went wrong when trying to start or step the ISS.
+  //   [2]     failed_cmp:   The consistency check at the end of run failed.
+  //   [31:16] raw_err_code: The code to expose as the ERR_CODE register
+  //
+
   bit failed_cmp, failed_step, running;
+  bit [15:0] raw_err_code;
   assign {failed_cmp, failed_step, running} = status[2:0];
+  assign raw_err_code = status[31:16];
+  assign err_code_o = err_code_e'(raw_err_code);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni || !enable_i) begin

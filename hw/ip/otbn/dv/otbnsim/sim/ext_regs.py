@@ -18,7 +18,7 @@ class TraceExtRegChange(Trace):
         self.new_value = new_value
 
     def trace(self) -> str:
-        return ("otbn.{} {} {:#08x}{} (now {:#08x})"
+        return ("otbn.{} {} {:#010x}{} (now {:#010x})"
                 .format(self.name,
                         self.op,
                         self.written,
