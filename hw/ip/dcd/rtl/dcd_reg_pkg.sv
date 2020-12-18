@@ -566,19 +566,19 @@ package dcd_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    dcd_hw2reg_intr_state_reg_t intr_state; // [669:669]
-    dcd_hw2reg_adc_en_ctl_reg_t adc_en_ctl; // [668:665]
-    dcd_hw2reg_adc_pd_ctl_reg_t adc_pd_ctl; // [664:633]
-    dcd_hw2reg_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [632:624]
-    dcd_hw2reg_adc_sample_ctl_reg_t adc_sample_ctl; // [623:607]
-    dcd_hw2reg_adc_fsm_rst_reg_t adc_fsm_rst; // [606:605]
-    dcd_hw2reg_adc_chn0_filter_ctl_mreg_t [7:0] adc_chn0_filter_ctl; // [604:365]
-    dcd_hw2reg_adc_chn1_filter_ctl_mreg_t [7:0] adc_chn1_filter_ctl; // [364:125]
-    dcd_hw2reg_adc_chn_val_mreg_t [1:0] adc_chn_val; // [124:69]
-    dcd_hw2reg_adc_wakeup_ctl_reg_t adc_wakeup_ctl; // [68:53]
-    dcd_hw2reg_adc_wakeup_status_reg_t adc_wakeup_status; // [52:37]
-    dcd_hw2reg_adc_intr_ctl_reg_t adc_intr_ctl; // [36:19]
-    dcd_hw2reg_adc_intr_status_reg_t adc_intr_status; // [18:1]
+    dcd_hw2reg_intr_state_reg_t intr_state; // [669:668]
+    dcd_hw2reg_adc_en_ctl_reg_t adc_en_ctl; // [667:664]
+    dcd_hw2reg_adc_pd_ctl_reg_t adc_pd_ctl; // [663:632]
+    dcd_hw2reg_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [631:623]
+    dcd_hw2reg_adc_sample_ctl_reg_t adc_sample_ctl; // [622:606]
+    dcd_hw2reg_adc_fsm_rst_reg_t adc_fsm_rst; // [605:604]
+    dcd_hw2reg_adc_chn0_filter_ctl_mreg_t [7:0] adc_chn0_filter_ctl; // [603:364]
+    dcd_hw2reg_adc_chn1_filter_ctl_mreg_t [7:0] adc_chn1_filter_ctl; // [363:124]
+    dcd_hw2reg_adc_chn_val_mreg_t [1:0] adc_chn_val; // [123:68]
+    dcd_hw2reg_adc_wakeup_ctl_reg_t adc_wakeup_ctl; // [67:52]
+    dcd_hw2reg_adc_wakeup_status_reg_t adc_wakeup_status; // [51:36]
+    dcd_hw2reg_adc_intr_ctl_reg_t adc_intr_ctl; // [35:18]
+    dcd_hw2reg_adc_intr_status_reg_t adc_intr_status; // [17:0]
   } dcd_hw2reg_t;
 
   // Register Address
@@ -590,24 +590,24 @@ package dcd_reg_pkg;
   parameter logic [6:0] DCD_ADC_LP_SAMPLE_CTL_OFFSET = 7'h 14;
   parameter logic [6:0] DCD_ADC_SAMPLE_CTL_OFFSET = 7'h 18;
   parameter logic [6:0] DCD_ADC_FSM_RST_OFFSET = 7'h 1c;
-  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL0_OFFSET = 7'h 20;
-  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL1_OFFSET = 7'h 24;
-  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL2_OFFSET = 7'h 28;
-  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL3_OFFSET = 7'h 2c;
-  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL4_OFFSET = 7'h 30;
-  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL5_OFFSET = 7'h 34;
-  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL6_OFFSET = 7'h 38;
-  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL7_OFFSET = 7'h 3c;
-  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL0_OFFSET = 7'h 40;
-  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL1_OFFSET = 7'h 44;
-  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL2_OFFSET = 7'h 48;
-  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL3_OFFSET = 7'h 4c;
-  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL4_OFFSET = 7'h 50;
-  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL5_OFFSET = 7'h 54;
-  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL6_OFFSET = 7'h 58;
-  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL7_OFFSET = 7'h 5c;
-  parameter logic [6:0] DCD_ADC_CHN_VAL0_OFFSET = 7'h 60;
-  parameter logic [6:0] DCD_ADC_CHN_VAL1_OFFSET = 7'h 64;
+  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL_0_OFFSET = 7'h 20;
+  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL_1_OFFSET = 7'h 24;
+  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL_2_OFFSET = 7'h 28;
+  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL_3_OFFSET = 7'h 2c;
+  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL_4_OFFSET = 7'h 30;
+  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL_5_OFFSET = 7'h 34;
+  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL_6_OFFSET = 7'h 38;
+  parameter logic [6:0] DCD_ADC_CHN0_FILTER_CTL_7_OFFSET = 7'h 3c;
+  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL_0_OFFSET = 7'h 40;
+  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL_1_OFFSET = 7'h 44;
+  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL_2_OFFSET = 7'h 48;
+  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL_3_OFFSET = 7'h 4c;
+  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL_4_OFFSET = 7'h 50;
+  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL_5_OFFSET = 7'h 54;
+  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL_6_OFFSET = 7'h 58;
+  parameter logic [6:0] DCD_ADC_CHN1_FILTER_CTL_7_OFFSET = 7'h 5c;
+  parameter logic [6:0] DCD_ADC_CHN_VAL_0_OFFSET = 7'h 60;
+  parameter logic [6:0] DCD_ADC_CHN_VAL_1_OFFSET = 7'h 64;
   parameter logic [6:0] DCD_ADC_WAKEUP_CTL_OFFSET = 7'h 68;
   parameter logic [6:0] DCD_ADC_WAKEUP_STATUS_OFFSET = 7'h 6c;
   parameter logic [6:0] DCD_ADC_INTR_CTL_OFFSET = 7'h 70;
@@ -624,24 +624,24 @@ package dcd_reg_pkg;
     DCD_ADC_LP_SAMPLE_CTL,
     DCD_ADC_SAMPLE_CTL,
     DCD_ADC_FSM_RST,
-    DCD_ADC_CHN0_FILTER_CTL0,
-    DCD_ADC_CHN0_FILTER_CTL1,
-    DCD_ADC_CHN0_FILTER_CTL2,
-    DCD_ADC_CHN0_FILTER_CTL3,
-    DCD_ADC_CHN0_FILTER_CTL4,
-    DCD_ADC_CHN0_FILTER_CTL5,
-    DCD_ADC_CHN0_FILTER_CTL6,
-    DCD_ADC_CHN0_FILTER_CTL7,
-    DCD_ADC_CHN1_FILTER_CTL0,
-    DCD_ADC_CHN1_FILTER_CTL1,
-    DCD_ADC_CHN1_FILTER_CTL2,
-    DCD_ADC_CHN1_FILTER_CTL3,
-    DCD_ADC_CHN1_FILTER_CTL4,
-    DCD_ADC_CHN1_FILTER_CTL5,
-    DCD_ADC_CHN1_FILTER_CTL6,
-    DCD_ADC_CHN1_FILTER_CTL7,
-    DCD_ADC_CHN_VAL0,
-    DCD_ADC_CHN_VAL1,
+    DCD_ADC_CHN0_FILTER_CTL_0,
+    DCD_ADC_CHN0_FILTER_CTL_1,
+    DCD_ADC_CHN0_FILTER_CTL_2,
+    DCD_ADC_CHN0_FILTER_CTL_3,
+    DCD_ADC_CHN0_FILTER_CTL_4,
+    DCD_ADC_CHN0_FILTER_CTL_5,
+    DCD_ADC_CHN0_FILTER_CTL_6,
+    DCD_ADC_CHN0_FILTER_CTL_7,
+    DCD_ADC_CHN1_FILTER_CTL_0,
+    DCD_ADC_CHN1_FILTER_CTL_1,
+    DCD_ADC_CHN1_FILTER_CTL_2,
+    DCD_ADC_CHN1_FILTER_CTL_3,
+    DCD_ADC_CHN1_FILTER_CTL_4,
+    DCD_ADC_CHN1_FILTER_CTL_5,
+    DCD_ADC_CHN1_FILTER_CTL_6,
+    DCD_ADC_CHN1_FILTER_CTL_7,
+    DCD_ADC_CHN_VAL_0,
+    DCD_ADC_CHN_VAL_1,
     DCD_ADC_WAKEUP_CTL,
     DCD_ADC_WAKEUP_STATUS,
     DCD_ADC_INTR_CTL,
@@ -658,24 +658,24 @@ package dcd_reg_pkg;
     4'b 0001, // index[ 5] DCD_ADC_LP_SAMPLE_CTL
     4'b 0011, // index[ 6] DCD_ADC_SAMPLE_CTL
     4'b 0001, // index[ 7] DCD_ADC_FSM_RST
-    4'b 1111, // index[ 8] DCD_ADC_CHN0_FILTER_CTL0
-    4'b 1111, // index[ 9] DCD_ADC_CHN0_FILTER_CTL1
-    4'b 1111, // index[10] DCD_ADC_CHN0_FILTER_CTL2
-    4'b 1111, // index[11] DCD_ADC_CHN0_FILTER_CTL3
-    4'b 1111, // index[12] DCD_ADC_CHN0_FILTER_CTL4
-    4'b 1111, // index[13] DCD_ADC_CHN0_FILTER_CTL5
-    4'b 1111, // index[14] DCD_ADC_CHN0_FILTER_CTL6
-    4'b 1111, // index[15] DCD_ADC_CHN0_FILTER_CTL7
-    4'b 1111, // index[16] DCD_ADC_CHN1_FILTER_CTL0
-    4'b 1111, // index[17] DCD_ADC_CHN1_FILTER_CTL1
-    4'b 1111, // index[18] DCD_ADC_CHN1_FILTER_CTL2
-    4'b 1111, // index[19] DCD_ADC_CHN1_FILTER_CTL3
-    4'b 1111, // index[20] DCD_ADC_CHN1_FILTER_CTL4
-    4'b 1111, // index[21] DCD_ADC_CHN1_FILTER_CTL5
-    4'b 1111, // index[22] DCD_ADC_CHN1_FILTER_CTL6
-    4'b 1111, // index[23] DCD_ADC_CHN1_FILTER_CTL7
-    4'b 1111, // index[24] DCD_ADC_CHN_VAL0
-    4'b 1111, // index[25] DCD_ADC_CHN_VAL1
+    4'b 1111, // index[ 8] DCD_ADC_CHN0_FILTER_CTL_0
+    4'b 1111, // index[ 9] DCD_ADC_CHN0_FILTER_CTL_1
+    4'b 1111, // index[10] DCD_ADC_CHN0_FILTER_CTL_2
+    4'b 1111, // index[11] DCD_ADC_CHN0_FILTER_CTL_3
+    4'b 1111, // index[12] DCD_ADC_CHN0_FILTER_CTL_4
+    4'b 1111, // index[13] DCD_ADC_CHN0_FILTER_CTL_5
+    4'b 1111, // index[14] DCD_ADC_CHN0_FILTER_CTL_6
+    4'b 1111, // index[15] DCD_ADC_CHN0_FILTER_CTL_7
+    4'b 1111, // index[16] DCD_ADC_CHN1_FILTER_CTL_0
+    4'b 1111, // index[17] DCD_ADC_CHN1_FILTER_CTL_1
+    4'b 1111, // index[18] DCD_ADC_CHN1_FILTER_CTL_2
+    4'b 1111, // index[19] DCD_ADC_CHN1_FILTER_CTL_3
+    4'b 1111, // index[20] DCD_ADC_CHN1_FILTER_CTL_4
+    4'b 1111, // index[21] DCD_ADC_CHN1_FILTER_CTL_5
+    4'b 1111, // index[22] DCD_ADC_CHN1_FILTER_CTL_6
+    4'b 1111, // index[23] DCD_ADC_CHN1_FILTER_CTL_7
+    4'b 1111, // index[24] DCD_ADC_CHN_VAL_0
+    4'b 1111, // index[25] DCD_ADC_CHN_VAL_1
     4'b 0001, // index[26] DCD_ADC_WAKEUP_CTL
     4'b 0001, // index[27] DCD_ADC_WAKEUP_STATUS
     4'b 0011, // index[28] DCD_ADC_INTR_CTL
