@@ -642,7 +642,8 @@
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl",
                      "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr",
-                     "otbn", "keymgr", "kmac" ]
+                     "otbn", "keymgr", "kmac", "otp_ctrl", "csrng", "edn0", "edn1",
+                     "entropy_src"]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
