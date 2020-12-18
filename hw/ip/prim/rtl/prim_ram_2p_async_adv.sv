@@ -86,7 +86,7 @@ module prim_ram_2p_async_adv #(
   logic [Aw-1:0]           a_addr_q,   a_addr_d ;
   logic [TotalWidth-1:0]   a_wdata_q,  a_wdata_d ;
   logic [TotalWidth-1:0]   a_wmask_q,  a_wmask_d ;
-  logic                    a_rvalid_q, a_rvalid_d, a_rvalid_sram ;
+  logic                    a_rvalid_q, a_rvalid_d, a_rvalid_sram_q ;
   logic [Width-1:0]        a_rdata_q,  a_rdata_d ;
   logic [TotalWidth-1:0]   a_rdata_sram ;
   logic [1:0]              a_rerror_q, a_rerror_d ;
@@ -96,7 +96,7 @@ module prim_ram_2p_async_adv #(
   logic [Aw-1:0]           b_addr_q,   b_addr_d ;
   logic [TotalWidth-1:0]   b_wdata_q,  b_wdata_d ;
   logic [TotalWidth-1:0]   b_wmask_q,  b_wmask_d ;
-  logic                    b_rvalid_q, b_rvalid_d, b_rvalid_sram ;
+  logic                    b_rvalid_q, b_rvalid_d, b_rvalid_sram_q ;
   logic [Width-1:0]        b_rdata_q,  b_rdata_d ;
   logic [TotalWidth-1:0]   b_rdata_sram ;
   logic [1:0]              b_rerror_q, b_rerror_d ;
@@ -128,16 +128,16 @@ module prim_ram_2p_async_adv #(
 
   always_ff @(posedge clk_a_i or negedge rst_a_ni) begin
     if (!rst_a_ni) begin
-      a_rvalid_sram <= 1'b0;
+      a_rvalid_sram_q <= 1'b0;
     end else begin
-      a_rvalid_sram <= a_req_q & ~a_write_q;
+      a_rvalid_sram_q <= a_req_q & ~a_write_q;
     end
   end
   always_ff @(posedge clk_b_i or negedge rst_b_ni) begin
     if (!rst_b_ni) begin
-      b_rvalid_sram <= 1'b0;
+      b_rvalid_sram_q <= 1'b0;
     end else begin
-      b_rvalid_sram <= b_req_q & ~b_write_q;
+      b_rvalid_sram_q <= b_req_q & ~b_write_q;
     end
   end
 
@@ -212,9 +212,6 @@ module prim_ram_2p_async_adv #(
         a_rerror_d[1] |= ~(^{a_rdata_sram[i*8 +: 8], a_rdata_sram[Width + i]});
         b_rerror_d[1] |= ~(^{b_rdata_sram[i*8 +: 8], b_rdata_sram[Width + i]});
       end
-      // tie to zero if the read data is not valid
-      a_rerror_d &= {2{a_rvalid_sram}};
-      b_rerror_d &= {2{b_rvalid_sram}};
     end
 
     assign a_rdata_d  = a_rdata_sram[0+:Width];
@@ -230,8 +227,8 @@ module prim_ram_2p_async_adv #(
     assign b_rerror_d = '0;
   end
 
-  assign a_rvalid_d = a_rvalid_sram;
-  assign b_rvalid_d = b_rvalid_sram;
+  assign a_rvalid_d = a_rvalid_sram_q;
+  assign b_rvalid_d = b_rvalid_sram_q;
 
   /////////////////////////////////////
   // Input/Output Pipeline Registers //
@@ -293,7 +290,8 @@ module prim_ram_2p_async_adv #(
       end else begin
         a_rvalid_q <= a_rvalid_d;
         a_rdata_q  <= a_rdata_d;
-        a_rerror_q <= a_rerror_d;
+        // tie to zero if the read data is not valid
+        a_rerror_q <= a_rerror_d & {2{a_rvalid_d}};
       end
     end
     always_ff @(posedge clk_b_i or negedge rst_b_ni) begin
@@ -304,17 +302,20 @@ module prim_ram_2p_async_adv #(
       end else begin
         b_rvalid_q <= b_rvalid_d;
         b_rdata_q  <= b_rdata_d;
-        b_rerror_q <= b_rerror_d;
+        // tie to zero if the read data is not valid
+        b_rerror_q <= b_rerror_d & {2{b_rvalid_d}};
       end
     end
   end else begin : gen_dirconnect_output
     assign a_rvalid_q = a_rvalid_d;
     assign a_rdata_q  = a_rdata_d;
-    assign a_rerror_q = a_rerror_d;
+    // tie to zero if the read data is not valid
+    assign a_rerror_q = a_rerror_d & {2{a_rvalid_d}};
 
     assign b_rvalid_q = b_rvalid_d;
     assign b_rdata_q  = b_rdata_d;
-    assign b_rerror_q = b_rerror_d;
+    // tie to zero if the read data is not valid
+    assign b_rerror_q = b_rerror_d & {2{b_rvalid_d}};
   end
 
 endmodule : prim_ram_2p_async_adv

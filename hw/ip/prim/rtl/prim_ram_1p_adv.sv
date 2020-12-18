@@ -75,7 +75,7 @@ module prim_ram_1p_adv #(
   logic [Aw-1:0]           addr_q,   addr_d ;
   logic [TotalWidth-1:0]   wdata_q,  wdata_d ;
   logic [TotalWidth-1:0]   wmask_q,  wmask_d ;
-  logic                    rvalid_q, rvalid_d, rvalid_sram ;
+  logic                    rvalid_q, rvalid_d, rvalid_sram_q ;
   logic [Width-1:0]        rdata_q,  rdata_d ;
   logic [TotalWidth-1:0]   rdata_sram ;
   logic [1:0]              rerror_q, rerror_d ;
@@ -99,9 +99,9 @@ module prim_ram_1p_adv #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      rvalid_sram <= 1'b0;
+      rvalid_sram_q <= 1'b0;
     end else begin
-      rvalid_sram <= req_q & ~write_q;
+      rvalid_sram_q <= req_q & ~write_q;
     end
   end
 
@@ -164,8 +164,6 @@ module prim_ram_1p_adv #(
         // parity decoding (errors are always uncorrectable)
         rerror_d[1] |= ~(^{rdata_sram[i*8 +: 8], rdata_sram[Width + i]});
       end
-      // tie to zero if the read data is not valid
-      rerror_d &= {2{rvalid_sram}};
     end
 
     assign rdata_d  = rdata_sram[0+:Width];
@@ -177,7 +175,7 @@ module prim_ram_1p_adv #(
     assign rerror_d = '0;
   end
 
-  assign rvalid_d = rvalid_sram;
+  assign rvalid_d = rvalid_sram_q;
 
   /////////////////////////////////////
   // Input/Output Pipeline Registers //
@@ -218,13 +216,15 @@ module prim_ram_1p_adv #(
       end else begin
         rvalid_q <= rvalid_d;
         rdata_q  <= rdata_d;
-        rerror_q <= rerror_d;
+        // tie to zero if the read data is not valid
+        rerror_q <= rerror_d & {2{rvalid_d}};
       end
     end
   end else begin : gen_dirconnect_output
     assign rvalid_q = rvalid_d;
     assign rdata_q  = rdata_d;
-    assign rerror_q = rerror_d;
+    // tie to zero if the read data is not valid
+    assign rerror_q = rerror_d & {2{rvalid_d}};
   end
 
 endmodule : prim_ram_1p_adv
