@@ -555,7 +555,12 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralOtbn = 10, /**< otbn */
   kTopEarlgreyPlicPeripheralKeymgr = 11, /**< keymgr */
   kTopEarlgreyPlicPeripheralKmac = 12, /**< kmac */
-  kTopEarlgreyPlicPeripheralLast = 12, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralOtpCtrl = 13, /**< otp_ctrl */
+  kTopEarlgreyPlicPeripheralCsrng = 14, /**< csrng */
+  kTopEarlgreyPlicPeripheralEdn0 = 15, /**< edn0 */
+  kTopEarlgreyPlicPeripheralEdn1 = 16, /**< edn1 */
+  kTopEarlgreyPlicPeripheralEntropySrc = 17, /**< entropy_src */
+  kTopEarlgreyPlicPeripheralLast = 17, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -651,7 +656,20 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdKmacKmacDone = 83, /**< kmac_kmac_done */
   kTopEarlgreyPlicIrqIdKmacFifoEmpty = 84, /**< kmac_fifo_empty */
   kTopEarlgreyPlicIrqIdKmacKmacErr = 85, /**< kmac_kmac_err */
-  kTopEarlgreyPlicIrqIdLast = 85, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone = 86, /**< otp_ctrl_otp_operation_done */
+  kTopEarlgreyPlicIrqIdOtpCtrlOtpError = 87, /**< otp_ctrl_otp_error */
+  kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 88, /**< csrng_cs_cmd_req_done */
+  kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 89, /**< csrng_cs_entropy_req */
+  kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 90, /**< csrng_cs_hw_inst_exc */
+  kTopEarlgreyPlicIrqIdCsrngCsFifoErr = 91, /**< csrng_cs_fifo_err */
+  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 92, /**< edn0_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn0EdnFifoErr = 93, /**< edn0_edn_fifo_err */
+  kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 94, /**< edn1_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn1EdnFifoErr = 95, /**< edn1_edn_fifo_err */
+  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 96, /**< entropy_src_es_entropy_valid */
+  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 97, /**< entropy_src_es_health_test_failed */
+  kTopEarlgreyPlicIrqIdEntropySrcEsFifoErr = 98, /**< entropy_src_es_fifo_err */
+  kTopEarlgreyPlicIrqIdLast = 98, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -661,7 +679,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[86];
+    top_earlgrey_plic_interrupt_for_peripheral[99];
 
 /**
  * PLIC Interrupt Target.

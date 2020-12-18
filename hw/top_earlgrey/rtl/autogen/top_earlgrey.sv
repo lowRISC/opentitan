@@ -164,7 +164,7 @@ module top_earlgrey #(
   // otbn
 
 
-  logic [85:0]  intr_vector;
+  logic [98:0]  intr_vector;
   // Interrupt source list
   logic intr_uart_tx_watermark;
   logic intr_uart_rx_watermark;
@@ -1403,6 +1403,19 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
+      intr_entropy_src_es_fifo_err,
+      intr_entropy_src_es_health_test_failed,
+      intr_entropy_src_es_entropy_valid,
+      intr_edn1_edn_fifo_err,
+      intr_edn1_edn_cmd_req_done,
+      intr_edn0_edn_fifo_err,
+      intr_edn0_edn_cmd_req_done,
+      intr_csrng_cs_fifo_err,
+      intr_csrng_cs_hw_inst_exc,
+      intr_csrng_cs_entropy_req,
+      intr_csrng_cs_cmd_req_done,
+      intr_otp_ctrl_otp_error,
+      intr_otp_ctrl_otp_operation_done,
       intr_kmac_kmac_err,
       intr_kmac_fifo_empty,
       intr_kmac_kmac_done,
