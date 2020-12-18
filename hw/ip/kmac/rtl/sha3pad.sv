@@ -322,6 +322,8 @@ module sha3pad
       end
 
       StPrefixWait: begin
+        sel_mux = MuxPrefix;
+
         if (keccak_complete_i) begin
           st_d = StMessage;
         end else begin
@@ -569,7 +571,7 @@ module sha3pad
       MuxZeroEnd: msg_ready_o = 1'b 0;
 
       // MuxNone
-      default: msg_ready_o = 1'b 1;
+      default: msg_ready_o = 1'b 0;
     endcase
   end
 
@@ -800,7 +802,7 @@ module sha3pad
   // if partial write comes and is acked, then no more msg_valid_i until
   // next message
   `ASSUME(PartialEndOfMsg_M,
-    keccak_ack && msg_partial |=>
+    msg_valid_i && msg_ready_o && msg_partial |=>
       !msg_valid_i ##[1:$] $stable(msg_valid_i) ##1 process_latched,
     clk_i, !rst_ni)
 

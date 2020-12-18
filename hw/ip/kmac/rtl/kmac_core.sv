@@ -248,16 +248,33 @@ module kmac_core
   // represent len(secret_key)
   // Note that if the secret_key is 128 bit, only lower 16 bits of
   // `encode_keylen` are valid. Refer `encoded_key` concatenation logic below.
+  // As the encoded string in the spec big-endian, The endian swap is a must.
   logic [MaxEncodedKeyLenSize + 8 - 1:0] encode_keylen [Share];
 
   always_comb begin
+    // the spec mentioned the key length is encoded in left_encode()
+    // The number is represented in big-endian. For example:
+    // 384 ==> 0x02 0x01 0x80
+    // The first byte is the number of bytes to represent 384
+    // The second byte represents 2**8 number, which is 256 here.
+    // The third byte represents 2**0 number, which is 128.
+    // The data put into MsgFIFO is little-endian and SHA3(Keccak) processes in
+    // little-endian. So, below keylen swaps the byte order
     unique case (key_len_i)
-      Key128: encode_keylen[0] = { MaxEncodedKeyLenSize'(128), 8'h 01};
-      Key192: encode_keylen[0] = { MaxEncodedKeyLenSize'(192), 8'h 01};
-      Key256: encode_keylen[0] = { MaxEncodedKeyLenSize'(256), 8'h 02};
-      Key384: encode_keylen[0] = { MaxEncodedKeyLenSize'(384), 8'h 02};
-      Key512: encode_keylen[0] = { MaxEncodedKeyLenSize'(512), 8'h 02};
+      //                           endian-swapped key_length          num_bytes
+      // Key128: encode_keylen[0] = {{<<8{MaxEncodedKeyLenSize'(128)}}, 8'h 01};
+      // Key192: encode_keylen[0] = {{<<8{MaxEncodedKeyLenSize'(192)}}, 8'h 01};
+      // Key256: encode_keylen[0] = {{<<8{MaxEncodedKeyLenSize'(256)}}, 8'h 02};
+      // Key384: encode_keylen[0] = {{<<8{MaxEncodedKeyLenSize'(384)}}, 8'h 02};
+      // Key512: encode_keylen[0] = {{<<8{MaxEncodedKeyLenSize'(512)}}, 8'h 02};
 
+      // Vivado does not support stream swap for non context value. So assign
+      // the value directly.
+      Key128: encode_keylen[0] = (MaxEncodedKeyLenSize+8)'('h 0080_01);
+      Key192: encode_keylen[0] = (MaxEncodedKeyLenSize+8)'('h 00C0_01);
+      Key256: encode_keylen[0] = (MaxEncodedKeyLenSize+8)'('h 0001_02);
+      Key384: encode_keylen[0] = (MaxEncodedKeyLenSize+8)'('h 8001_02);
+      Key512: encode_keylen[0] = (MaxEncodedKeyLenSize+8)'('h 0002_02);
       default: encode_keylen[0] = '0;
     endcase
   end
