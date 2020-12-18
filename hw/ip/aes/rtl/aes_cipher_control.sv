@@ -200,11 +200,13 @@ module aes_cipher_control
             key_expand_out_ack_o = 1'b1;
             state_we_o           = ~dec_key_gen_q;
             key_full_we_o        = 1'b1;
+            round_d              = round_q + 4'b0001;
             prng_update_o        = Masking;
             aes_cipher_ctrl_ns   = ROUND;
           end
         end else begin
           state_we_o         = ~dec_key_gen_q;
+          round_d            = round_q + 4'b0001;
           aes_cipher_ctrl_ns = ROUND;
         end
       end
@@ -362,11 +364,11 @@ module aes_cipher_control
   end
 
   // Use separate signal for number of regular rounds.
-  assign num_rounds_regular = num_rounds_q - 4'd2;
+  assign num_rounds_regular = num_rounds_q - 4'd1;
 
-  // Use separate signals for key expand operation and round.
+  // Use separate signal for key expand operation, forward round.
   assign key_expand_op_o    = (dec_key_gen_d || dec_key_gen_q) ? CIPH_FWD : op_i;
-  assign key_expand_round_o = round_d;
+  assign key_expand_round_o = round_q;
 
   // Let the main controller know whate we are doing.
   assign crypt_o          = crypt_q;
