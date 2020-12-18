@@ -96,6 +96,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   logic [BusWidth-1:0]  rd_fifo_wdata;
   logic [BusWidth-1:0]  rd_fifo_rdata;
   logic [FifoDepthW-1:0] rd_fifo_depth;
+  logic                 rd_fifo_full;
 
   // Program Control Connections
   logic prog_flash_req;
@@ -526,6 +527,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .wvalid_i(rd_fifo_wen),
     .wready_o(rd_fifo_wready),
     .wdata_i (rd_fifo_wdata),
+    .full_o  (rd_fifo_full),
     .depth_o (rd_fifo_depth),
     .rvalid_o(rd_fifo_rvalid),
     .rready_i(rd_fifo_rready),
@@ -719,7 +721,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   assign hw2reg.op_status.done.de    = sw_ctrl_done;
   assign hw2reg.op_status.err.d      = 1'b1;
   assign hw2reg.op_status.err.de     = sw_ctrl_err;
-  assign hw2reg.status.rd_full.d     = ~rd_fifo_wready;
+  assign hw2reg.status.rd_full.d     = rd_fifo_full;
   assign hw2reg.status.rd_full.de    = sw_sel;
   assign hw2reg.status.rd_empty.d    = ~rd_fifo_rvalid;
   assign hw2reg.status.rd_empty.de   = sw_sel;
@@ -785,7 +787,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
 
   assign intr_src = { ~prog_fifo_rvalid,
                       reg2hw.fifo_lvl.prog.q == prog_fifo_depth,
-                      ~rd_fifo_wready,
+                      rd_fifo_full,
                       reg2hw.fifo_lvl.rd.q == rd_fifo_depth
                     };
 
