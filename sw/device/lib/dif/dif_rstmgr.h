@@ -87,10 +87,6 @@ typedef enum dif_rstmgr_reset_info {
    * escalation, watchdog or anything else.
    */
   kDifRstmgrResetInfoHwReq = (0x3 << 3),
-  /**
-   * \internal used to catch missing `_Static_assert` for public variants.
-   */
-  kDifRstmgrResetInfoLast = (0x1 << 4),
 } dif_rstmgr_reset_info_t;
 
 /**

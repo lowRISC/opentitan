@@ -125,18 +125,24 @@ TEST_F(ResetIsLockedTest, Success) {
 
 class ResetCausesGetTest : public RstmgrTest {
  protected:
+  // Make sure that the test is up-to-date with the implementation.
   ResetCausesGetTest() {
-    // Make sure that the test is up-to-date with the implementation.
-    uint32_t bitfield =
-        bitfield_bit32_write(0, reset_info_reasons_.back(), true);
-    EXPECT_EQ(bitfield, kDifRstmgrResetInfoLast);
+    // Make sure that the last reset reason in the test matches the last reset
+    // reason in the DIF at the time of writing this test.
+    bitfield_field32_t last = reset_info_reasons_.back();
+    uint32_t bitfield = bitfield_field32_write(0, last, last.mask);
+    EXPECT_EQ(bitfield, kDifRstmgrResetInfoHwReq);
+
+    // Number of reset reasons between test and the peripheral match at the
+    // time of writing this test.
+    EXPECT_EQ(reset_info_reasons_.size(), 4);
   }
 
-  const std::vector<uint32_t> reset_info_reasons_{
-      RSTMGR_RESET_INFO_POR_BIT,
-      RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT,
-      RSTMGR_RESET_INFO_NDM_RESET_BIT,
-      RSTMGR_RESET_INFO_HW_REQ_OFFSET + RSTMGR_PARAM_NUMHWRESETS - 1,
+  const std::vector<bitfield_field32_t> reset_info_reasons_{
+      bitfield_bit32_to_field32(RSTMGR_RESET_INFO_POR_BIT),
+      bitfield_bit32_to_field32(RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT),
+      bitfield_bit32_to_field32(RSTMGR_RESET_INFO_NDM_RESET_BIT),
+      RSTMGR_RESET_INFO_HW_REQ_FIELD,
   };
 };
 
@@ -150,7 +156,7 @@ TEST_F(ResetCausesGetTest, NullArgs) {
 TEST_F(ResetCausesGetTest, Success) {
   // Single reason expectations.
   for (auto reason : reset_info_reasons_) {
-    uint32_t bitfield = bitfield_bit32_write(0, reason, true);
+    uint32_t bitfield = bitfield_field32_write(0, reason, reason.mask);
     EXPECT_READ32(RSTMGR_RESET_INFO_REG_OFFSET, bitfield);
 
     dif_rstmgr_reset_info_bitfield_t info;
@@ -159,18 +165,19 @@ TEST_F(ResetCausesGetTest, Success) {
   }
 
   // The first and the last reset causes.
-  EXPECT_READ32(RSTMGR_RESET_INFO_REG_OFFSET,
-                {
-                    {reset_info_reasons_.front(), true},
-                    {reset_info_reasons_.back(), true},
-                });
+  bitfield_field32_t first = reset_info_reasons_.front();
+  bitfield_field32_t last = reset_info_reasons_.back();
+  EXPECT_READ32(RSTMGR_RESET_INFO_REG_OFFSET, {
+                                                  {first.index, first.mask},
+                                                  {last.index, last.mask},
+                                              });
 
   dif_rstmgr_reset_info_bitfield_t info;
   EXPECT_EQ(dif_rstmgr_reset_info_get(&rstmgr_, &info), kDifRstmgrOk);
 
-  // Make sure that `kDifRstmgrResetInfoPor` and `kDifRstmgrResetInfoLast`
+  // Make sure that `kDifRstmgrResetInfoPor` and `kDifRstmgrResetInfoHwReq`
   // reset causes are set.
-  EXPECT_EQ(info & (kDifRstmgrResetInfoPor | kDifRstmgrResetInfoLast), info);
+  EXPECT_EQ(info & (kDifRstmgrResetInfoPor | kDifRstmgrResetInfoHwReq), info);
 }
 
 class ResetCausesClearTest : public RstmgrTest {};
