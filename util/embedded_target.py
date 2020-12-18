@@ -18,28 +18,29 @@ def run_objdump(objdump, input, basename, outdir):
     filename = basename + '.dis'
     output = os.path.join(outdir, filename)
     f = open(output, "w")
-    cmd = [
-        objdump,
-        '--disassemble-all',
-        '--headers',
-        '--line-numbers',
-        '--source',
-        input,
-    ]
-    subprocess.run(cmd, stdout=f, check=True)
+    #cmd = [
+    #    objdump,
+    #    '--disassemble-all',
+    #    '--headers',
+    #    '--line-numbers',
+    #    '--source',
+    #    input,
+    #]
+    #subprocess.run(cmd, stdout=f, check=True)
     return output
 
 
 def run_objcopy(objcopy, input, basename, outdir):
     filename = basename + '.bin'
     output = os.path.join(outdir, filename)
-    cmd = [
-        objcopy,
-        '--output-target', 'binary',
-        input, output,
-    ]
-    subprocess.run(cmd, check=True)
-    return output
+    f = open(output, "w")
+    #cmd = [
+    #    objcopy,
+    #    '--output-target', 'binary',
+    #    input, output,
+    #]
+    #subprocess.run(cmd, check=True)
+    #return output
 
 
 def run_srec_cat(srec_cat, input, basename, outdir, word_size_bytes):
@@ -47,19 +48,20 @@ def run_srec_cat(srec_cat, input, basename, outdir, word_size_bytes):
     # https://github.com/lowRISC/opentitan/issues/1107
     filename = basename + '.' + str(word_size_bytes * 8) + '.vmem'
     output = os.path.join(outdir, filename)
-    cmd = [
-        srec_cat,
-        # Input is to be interpreted as a pure binary
-        input, '--binary',
-        # Reverse the endianness of every word
-        '--offset', '0x0', '--byte-swap', str(word_size_bytes),
-        # Fill the entire range with garbage, to pad it up to a
-        # word alignment
-        '--fill', '0xff', '-within', input, '-binary', '-range-pad', str(word_size_bytes),
-        # Output as VMem file with specified word size
-        '--output', output, '--vmem', str(word_size_bytes * 8),
-    ]
-    subprocess.run(cmd, check=True)
+    f = open(output, "w")
+    #cmd = [
+    #    srec_cat,
+    #    # Input is to be interpreted as a pure binary
+    #    input, '--binary',
+    #    # Reverse the endianness of every word
+    #    '--offset', '0x0', '--byte-swap', str(word_size_bytes),
+    #    # Fill the entire range with garbage, to pad it up to a
+    #    # word alignment
+    #    '--fill', '0xff', '-within', input, '-binary', '-range-pad', str(word_size_bytes),
+    #    # Output as VMem file with specified word size
+    #    '--output', output, '--vmem', str(word_size_bytes * 8),
+    #]
+    #subprocess.run(cmd, check=True)
 
 
 def main():
