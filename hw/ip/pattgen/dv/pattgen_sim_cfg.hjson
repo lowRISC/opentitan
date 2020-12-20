@@ -50,6 +50,11 @@
       name: pattgen_smoke
       uvm_test_seq: pattgen_smoke_vseq
     }
+
+    {
+      name: pattgen_perf
+      uvm_test_seq: pattgen_perf_vseq
+    }
   ]
 
   // List of regressions.

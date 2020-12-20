@@ -37,14 +37,14 @@
             Checking ip operation at min/max bandwidth
 
             Stimulus:
-              - Program the pre-divider registers to highest/lowest values (lowest/highest data rate)
+              - Program the pre-divider registers to high/low values (slow/fast data rate)
               - Program the pattern data registers, the pattern length per output, and 
-                repeat counter registers to smallest values
+                repeat counter registers to high/low values
+              - Start and stop channels quickly
               - Clear interrupts quickly
-
             Checking:
               - Ensure patterns are correctly generated
-              - Ensure interrupts are robust asserted and cleared (e.g. at the highest data rate)
+              - Ensure interrupts are robust asserted and cleared (e.g. at the high data rate)
             '''
       milestone: V2
       tests: ["pattgen_perf"]
