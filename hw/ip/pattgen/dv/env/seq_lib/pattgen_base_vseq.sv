@@ -27,6 +27,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
   // random variables
   rand uint                num_runs;    // TODO: this variable is reserved for V2 tests
   rand uint                stop_channel_dly;
+  rand uint                clear_intr_dly;
   // if sync_all_channels bit is set: both channels can start simmultaneously
   rand bit                 sync_all_channels;
 
@@ -46,8 +47,11 @@ class pattgen_base_vseq extends cip_base_vseq #(
   constraint stop_channel_dly_c {
     stop_channel_dly inside {[cfg.seq_cfg.pattgen_min_dly : cfg.seq_cfg.pattgen_max_dly]};
   }
+  constraint clear_intr_dly_c {
+    clear_intr_dly inside {[cfg.seq_cfg.pattgen_min_dly : cfg.seq_cfg.pattgen_max_dly]};
+  }
 
-  task pre_start();
+  virtual task pre_start();
     num_runs.rand_mode(0);
     cfg.m_pattgen_agent_cfg.en_monitor = cfg.en_scb;
     // set time to stop test
@@ -253,11 +257,13 @@ class pattgen_base_vseq extends cip_base_vseq #(
       AllChannels: intr_clear = (1 << DoneCh1) | (1 << DoneCh0);
       default:     `uvm_fatal(`gfn, "  invalid argument")
     endcase
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)
+    cfg.clk_rst_vif.wait_clks(clear_intr_dly);
     csr_wr(.csr(ral.intr_state), .value(intr_clear));
   endtask : clear_interrupts
 
   // this function randomizes the channel config
-  function pattgen_channel_cfg get_random_channel_config(uint channel);
+  virtual function pattgen_channel_cfg get_random_channel_config(uint channel);
     pattgen_channel_cfg ch_cfg;
     ch_cfg = pattgen_channel_cfg::type_id::create($sformatf("channel_cfg_%0d", channel));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(ch_cfg,

@@ -4,4 +4,5 @@
 
 `include "pattgen_base_vseq.sv"
 `include "pattgen_smoke_vseq.sv"
+`include "pattgen_perf_vseq.sv"
 `include "pattgen_common_vseq.sv"
