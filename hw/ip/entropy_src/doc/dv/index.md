@@ -30,6 +30,8 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * ENTROPY_SRC IOs
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
+* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
+* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -51,6 +53,12 @@ All common types and methods defined at the package level can be found in
 ENTROPY_SRC testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into ENTROPY_SRC device.
+
+###  Rng_agent
+Entropy_src testbench instantiates this PUSH_pull_agent({{< relref "hw/dv/sv/push_pull_agent/README.md" >}}) which models the rng source.
+
+###  Csrng_agent
+Entropy_src testbench instantiates this push_PULL_agent({{< relref "hw/dv/sv/push_pull_agent/README.md" >}}) which models the csrng module.
 
 ### UVM RAL Model
 The ENTROPY_SRC RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
@@ -75,7 +83,8 @@ The following covergroups have been developed to prove that the test intent has 
 #### Scoreboard
 The `entropy_src_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo, tl_d_chan_fifo:           These 2 fifos provide transaction items at the end of Tilelink address channel and data channel respectively
+* tl_a_chan_fifo, tl_d_chan_fifo:  These 2 fifos provide transaction items at the end of Tilelink address channel and data channel respectively
+* rng_fifo, csrng_fifo:   The rng_fifo provides transaction items from the predictor and the csrng_fifo provide actual post-entropy_src transaction items to compare
 
 #### Assertions
 * TLUL assertions: The `tb/entropy_src_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
