@@ -4,11 +4,11 @@
 { name: "sram_ctrl",
   clock_primary: "clk_i",
   other_clock_list: [
-    "clk_fixed_i", // OTP clock
+    "clk_otp_i", // OTP clock
   ],
   reset_primary: "rst_ni",
   other_reset_list: [
-    "rst_fixed_ni" // OTP reset
+    "rst_otp_ni" // OTP reset
   ]
 
   bus_device: "tlul",
@@ -18,9 +18,9 @@
   // Interrupts and Alerts //
   ///////////////////////////
 
-  interrupt_list: [
-    { name: "sram_integ_error",
-      desc: "A correctable or uncorrectable integrity error has occurred in SRAM."
+  alert_list: [
+    { name: "sram_integ_alert",
+      desc: "An uncorrectable integrity error has occurred in SRAM."
     }
   ],
 
@@ -55,6 +55,22 @@
       default: "'0"
       package: "otp_ctrl_pkg"
     }
+    // Interface with SRAM scrambling wrapper
+    { struct:  "sram_scr"
+      type:    "req_rsp"
+      name:    "sram_scr"
+      act:     "req"
+      default: "'0"
+      package: "sram_ctrl_pkg"
+    }
+    // Broadcast from LC
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_escalate_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
   ] // inter_signal_list
 
   regwidth: "32",
@@ -74,12 +90,23 @@
         { bits: "0"
           name: "ERROR"
           desc: '''
-                Set to 1 if a correctable or uncorrectable error has occurred in the SRAM.
-                If set to 1, SW should check the !!ERROR_TYPE and !!ERROR_ADDRESS register for more information.
-                This bit will be cleared automatically if the errors are cleared in !!ERROR_TYPE.
+                Set to 1 if an uncorrectable parity error has occurred in the SRAM macro.
+                The address of the faulty access is exposed in the !!ERROR_ADDRESS register
+                for debugging purposes. This is an unrecoverable error condition and causes
+                the SRAM controller to continuously send out sram_integ_alert alerts.
+                The error bit is sticky and can only be cleared via a reset.
                 '''
         }
         { bits: "1"
+          name: "ESCALATED"
+          desc: '''
+                Set to 1 if the sram controller has received an escalate request.
+                If this is set to 1, the scrambling keys have been reset to the default values
+                and all subsequent memory requests will be blocked.
+                This condition is terminal.
+                '''
+        }
+        { bits: "2"
           name: "SCR_KEY_VALID"
           desc: '''
                 Set to 1 if a new scrambling key has been successfully obtained from OTP.
@@ -87,7 +114,7 @@
                 default all-zero key and nonce are used to do so.
                 '''
         }
-        { bits: "2"
+        { bits: "3"
           name: "SCR_KEY_SEED_VALID"
           desc: '''
                 Set to 1 if the scrambling key has been derived from a valid key seed in OTP.
@@ -123,76 +150,12 @@
         { bits: "0",
           name: "RENEW_SCR_KEY",
           desc: '''
-                Write 1 to request a new scrambling key from OTP. After writing to this register, software must not
-                use the SRAM until !!STATUS.SCR_KEY_VALID has been set to 1. If !!STATUS.SCR_KEY_VALID was already 1
+                Write 1 to request a new scrambling key from OTP. After writing to this register, SRAM transactions will
+                be blocked until !!STATUS.SCR_KEY_VALID has been set to 1. If !!STATUS.SCR_KEY_VALID was already 1
                 before triggering a key renewal, hardware will automatically clear that status bit such that software
                 can poll its status. Note that requesting a new scrambling key takes ~200 OTP cycles, which translates
                 to ~800 CPU cycles (OTP runs at 24MHz, CPU runs at 100MHz). Note that writing 1 to this register while
                 a key request is pending has no effect.
-                '''
-        }
-      ]
-    }
-
-    /////////////////////
-    // SRAM Attributes //
-    /////////////////////
-
-    { name: "SRAM_CFG_REGWEN",
-      desc: "Lock register for macro attributes.",
-      swaccess: "rw1c",
-      hwaccess: "none",
-      fields: [
-        { bits: "0",
-          desc: '''
-                When cleared to zero, !!SRAM_CFG can not be written anymore.
-                ''',
-          resval: 1
-        }
-      ]
-    }
-    { name: "SRAM_CFG",
-      desc: "Macro attributes.",
-      swaccess: "rw",
-      hwaccess: "hro",
-      hwqe:     "false",
-      hwext:    "false",
-      regwen:   "SRAM_CFG_REGWEN",
-      fields: [
-        { bits: "7:0"
-          name: "ATTRIBUTES"
-          desc: '''
-                Attributes of the physical SRAM macro.
-                '''
-        }
-      ]
-    }
-
-    /////////////////////
-    // Error Reporting //
-    /////////////////////
-
-    { name: "ERROR_TYPE",
-      desc: "Error type register.",
-      swaccess: "rw1c",
-      hwaccess: "hrw",
-      hwqe:     "false",
-      hwext:    "false",
-      fields: [
-        { bits: "0"
-          name: "CORRECTABLE"
-          desc: '''
-                A correctable integrity error has occurred in SRAM.
-                The address of the last error is exposed in !!ERROR_ADDRESS.
-                Write 1 to this register in order to clear the error.
-                '''
-        }
-        { bits: "1"
-          name: "UNCORRECTABLE"
-          desc: '''
-                A uncorrectable integrity error has occurred in SRAM.
-                The address of the last error is exposed in !!ERROR_ADDRESS.
-                Write 1 to this register in order to clear the error.
                 '''
         }
       ]
