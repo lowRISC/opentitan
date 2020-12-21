@@ -400,7 +400,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     bit  [SCRAMBLE_DATA_SIZE-1:0] intermediate_state;
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(data, key, key_size_80, enc_array);
     // XOR the previous state into the digest result according to the Davies-Meyer scheme.
-    crypto_dpi_present_pkg::sv_dpi_present_encrypt(intermediate_state ^ data, final_const,
+    intermediate_state = data ^ enc_array[NUM_ROUND-1];
+    crypto_dpi_present_pkg::sv_dpi_present_encrypt(intermediate_state, final_const,
                                                    key_size_80, enc_array);
     // XOR the previous state into the digest result according to the Davies-Meyer scheme.
     present_encode_with_final_const = enc_array[NUM_ROUND-1] ^ intermediate_state;
