@@ -57,11 +57,14 @@ module prim_ram_1p_scr #(
   input                             clk_i,
   input                             rst_ni,
 
+  // Key interface. Memory requests will not be granted if key_valid is set to 0.
+  input                             key_valid_i,
   input        [DataKeyWidth-1:0]   key_i,
   input        [NonceWidth-1:0]     nonce_i,
 
   // Interface to TL-UL SRAM adapter
   input                             req_i,
+  output logic                      gnt_o,
   input                             write_i,
   input        [AddrWidth-1:0]      addr_i,
   input        [Width-1:0]          wdata_i,
@@ -69,7 +72,7 @@ module prim_ram_1p_scr #(
   output logic [Width-1:0]          rdata_o,
   output logic                      rvalid_o, // Read response (rdata_o) is valid
   output logic [1:0]                rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
-  output logic [AddrWidth-1:0]      raddr_o,  // Read address for error reporting.
+  output logic [31:0]               raddr_o,  // Read address for error reporting.
 
   // config
   input [CfgWidth-1:0]              cfg_i
@@ -96,8 +99,10 @@ module prim_ram_1p_scr #(
 
   // Read / write strobes
   logic read_en, write_en_d, write_en_q;
-  assign read_en = req_i & ~write_i;
-  assign write_en_d = req_i & write_i;
+  assign gnt_o = req_i & key_valid_i;
+
+  assign read_en = gnt_o & ~write_i;
+  assign write_en_d = gnt_o & write_i;
 
   logic write_pending_q;
   logic addr_collision_d, addr_collision_q;
@@ -144,7 +149,7 @@ module prim_ram_1p_scr #(
 
   // We latch the non-scrambled address for error reporting.
   logic [AddrWidth-1:0] raddr_q;
-  assign raddr_o = raddr_q;
+  assign raddr_o = 32'(raddr_q);
 
   //////////////////////////////////////////////
   // Keystream Generation for Data Scrambling //
@@ -165,7 +170,7 @@ module prim_ram_1p_scr #(
     ) u_prim_prince (
       .clk_i,
       .rst_ni,
-      .valid_i ( req_i ),
+      .valid_i ( gnt_o ),
       // The IV is composed of a nonce and the row address
       .data_i  ( {nonce_i[k * (64 - AddrWidth) +: (64 - AddrWidth)], addr_i} ),
       // All parallel scramblers use the same key
@@ -294,16 +299,18 @@ module prim_ram_1p_scr #(
       write_pending_q     <= 1'b0;
       addr_collision_q    <= 1'b0;
       rvalid_q            <= 1'b0;
+      write_en_q          <= 1'b0;
+      raddr_q             <= '0;
       waddr_q             <= '0;
+      wmask_q             <= '0;
       wdata_q             <= '0;
       wdata_scr_q         <= '0;
-      wmask_q             <= '0;
-      raddr_q             <= '0;
     end else begin
       write_pending_q     <= write_scr_pending_d;
       addr_collision_q    <= addr_collision_d;
       rvalid_q            <= read_en;
       write_en_q          <= write_en_d;
+
       if (read_en) begin
         raddr_q           <= addr_i;
       end
