@@ -23,9 +23,10 @@ module aes_sbox import aes_pkg::*;
 
   import aes_pkg::*;
   localparam bit SBoxMasked = (SBoxImpl == SBoxImplCanrightMasked ||
-                               SBoxImpl == SBoxImplCanrightMaskedNoreuse) ? 1'b1 : 1'b0;
+                               SBoxImpl == SBoxImplCanrightMaskedNoreuse ||
+                               SBoxImpl == SBoxImplDom) ? 1'b1 : 1'b0;
 
-  localparam bit SBoxSingleCycle = 1'b1;
+  localparam bit SBoxSingleCycle = (SBoxImpl == SBoxImplDom) ? 1'b0 : 1'b1;
 
   if (!SBoxMasked) begin : gen_sbox_unmasked
     // Tie off unused inputs.
@@ -57,7 +58,22 @@ module aes_sbox import aes_pkg::*;
 
   end else begin : gen_sbox_masked
 
-    if (SBoxImpl == SBoxImplCanrightMaskedNoreuse) begin : gen_sbox_canright_masked_noreuse
+    if (SBoxImpl == SBoxImplDom) begin : gen_sbox_dom
+      aes_sbox_dom u_aes_sbox (
+        .clk_i      ( clk_i       ),
+        .rst_ni     ( rst_ni      ),
+        .en_i       ( en_i        ),
+        .out_req_o  ( out_req_o   ),
+        .out_ack_i  ( out_ack_i   ),
+        .op_i       ( op_i        ),
+        .data_i     ( data_i      ),
+        .mask_i     ( mask_i      ),
+        .prd_i      ( prd_i[27:0] ),
+        .data_o     ( data_o      ),
+        .mask_o     ( mask_o      )
+      );
+
+    end else if (SBoxImpl == SBoxImplCanrightMaskedNoreuse) begin : gen_sbox_canright_masked_noreuse
       // Tie off unused inputs.
       logic unused_clk;
       logic unused_rst;
@@ -107,25 +123,6 @@ module aes_sbox import aes_pkg::*;
 
     // Signal that we have valid output right away.
     assign out_req_o = en_i;
-  end else begin : gen_req_multicycle
-
-    // All currently implemented S-Boxes allow for single-cycle operation. Future S-Box
-    // implementations may require multiple clock cycles. The counter below is for mimicking such
-    // implementations. It's for testing purposes only.
-
-    // Counter register
-    logic [2:0] count_d, count_q;
-    assign count_d = (out_req_o && out_ack_i) ? '0                :
-                     out_req_o                ? count_q           :
-                     en_i                     ? count_q + 3'b001 : count_q;
-    always_ff @(posedge clk_i or negedge rst_ni) begin : reg_count
-      if (!rst_ni) begin
-        count_q <= '0;
-      end else begin
-        count_q <= count_d;
-      end
-    end
-    assign out_req_o = en_i & count_q == 3'b111;
   end
 
 endmodule

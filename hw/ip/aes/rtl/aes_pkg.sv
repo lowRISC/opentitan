@@ -49,12 +49,14 @@ parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPermDefault =
     216'h6587da04c59c02125750f35e7634e08951122874022ce19b143211;
 
 typedef enum integer {
-  SBoxImplLut,                  // Unmasked LUT-based S-Box
-  SBoxImplCanright,             // Unmasked Canright S-Box, see aes_sbox_canright.sv
-  SBoxImplCanrightMasked,       // First-order masked Canright S-Box
-                                // see aes_sbox_canright_masked.sv
-  SBoxImplCanrightMaskedNoreuse // First-order masked Canright S-Box without mask reuse,
-                                // see aes_sbox_canright_masked_noreuse.sv
+  SBoxImplLut,                   // Unmasked LUT-based S-Box
+  SBoxImplCanright,              // Unmasked Canright S-Box, see aes_sbox_canright.sv
+  SBoxImplCanrightMasked,        // First-order masked Canright S-Box
+                                 // see aes_sbox_canright_masked.sv
+  SBoxImplCanrightMaskedNoreuse, // First-order masked Canright S-Box without mask reuse,
+                                 // see aes_sbox_canright_masked_noreuse.sv
+  SBoxImplDom                    // First-order masked S-Box using domain-oriented masking,
+                                 // see aes_sbox_canright_dom.sv
 } sbox_impl_e;
 
 typedef enum logic {

@@ -20,7 +20,7 @@ module aes_sbox_tb #(
   ciph_op_e   op;
 
   localparam int NUM_SBOX_IMPLS = 2;
-  localparam int NUM_SBOX_IMPLS_MASKED = 2;
+  localparam int NUM_SBOX_IMPLS_MASKED = 3;
   localparam int NumSBoxImplsTotal = NUM_SBOX_IMPLS + NUM_SBOX_IMPLS_MASKED;
   logic [7:0] responses[NumSBoxImplsTotal];
 
@@ -29,7 +29,7 @@ module aes_sbox_tb #(
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_count
     if (!rst_ni) begin
       count_q <= '0;
-    end else begin
+    end else if (dom_done) begin
       count_q <= count_d;
     end
   end
@@ -53,27 +53,28 @@ module aes_sbox_tb #(
   // Mask Generation
   parameter int unsigned WidthPRDSBoxCanrightMasked        = 8;
   parameter int unsigned WidthPRDSBoxCanrightMaskedNoreuse = 18;
+  parameter int unsigned WidthPRDSBoxDOM                   = 28;
 
-  logic              [7:0] masked_stimulus;
-  logic              [7:0] in_mask;
+  logic                      [7:0] masked_stimulus;
+  logic                      [7:0] in_mask;
 
-  logic              [7:0] masked_response [NUM_SBOX_IMPLS_MASKED];
-  logic              [7:0] out_mask [NUM_SBOX_IMPLS_MASKED];
+  logic                      [7:0] masked_response [NUM_SBOX_IMPLS_MASKED];
+  logic                      [7:0] out_mask [NUM_SBOX_IMPLS_MASKED];
 
-  logic                                       [31:0] tmp;
-  logic [31-(WidthPRDSBoxCanrightMaskedNoreuse+8):0] unused_tmp;
-  logic      [WidthPRDSBoxCanrightMaskedNoreuse-1:0] prd_masking;
+  logic                     [63:0] tmp;
+  logic [63-(WidthPRDSBoxDOM+8):0] unused_tmp;
+  logic      [WidthPRDSBoxDOM-1:0] prd_masking;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_tmp
     if (!rst_ni) begin
-      tmp <= 32'hAAAFF;
-    end else begin
-      tmp <= $random;
+      tmp <= 64'hAAAFF;
+    end else if (dom_done) begin
+      tmp <= {$random, $random};
     end
   end
   assign in_mask     = tmp[7:0];
-  assign prd_masking = tmp[8 +: WidthPRDSBoxCanrightMaskedNoreuse];
-  assign unused_tmp  = tmp[31:WidthPRDSBoxCanrightMaskedNoreuse+8];
+  assign prd_masking = tmp[8 +: WidthPRDSBoxDOM];
+  assign unused_tmp  = tmp[63:WidthPRDSBoxDOM+8];
 
   assign masked_stimulus = stimulus ^ in_mask;
 
@@ -96,6 +97,22 @@ module aes_sbox_tb #(
     .mask_o ( out_mask[1]                                 )
   );
 
+  // Instantiate DOM SBox Implementation
+  logic dom_done;
+  aes_sbox_dom aes_sbox_dom (
+    .clk_i     ( clk_i                            ),
+    .rst_ni    ( rst_ni                           ),
+    .en_i      ( 1'b1                             ),
+    .out_req_o ( dom_done                         ),
+    .out_ack_i ( 1'b1                             ),
+    .op_i      ( op                               ),
+    .data_i    ( masked_stimulus                  ),
+    .mask_i    ( in_mask                          ),
+    .prd_i     ( prd_masking[WidthPRDSBoxDOM-1:0] ),
+    .data_o    ( masked_response[2]               ),
+    .mask_o    ( out_mask[2]                      )
+  );
+
   // Unmask responses
   always_comb begin : unmask_resp
     for (int i=0; i<NUM_SBOX_IMPLS_MASKED; i++) begin
@@ -109,7 +126,7 @@ module aes_sbox_tb #(
     test_passed_o <= 1'b1;
 
     for (int i=1; i<NumSBoxImplsTotal; i++) begin
-      if (rst_ni && (responses[i] != responses[0])) begin
+      if (rst_ni && dom_done && (responses[i] != responses[0])) begin
         $display("\nERROR: Mismatch between LUT-based S-Box and Implementation %0d found.", i);
         $display("op = %s, stimulus = 8'h%h, expected resp = 8'h%h, actual resp = 8'h%h\n",
             (op == CIPH_FWD) ? "CIPH_FWD" : "CIPH_INV", stimulus, responses[0], responses[i]);
