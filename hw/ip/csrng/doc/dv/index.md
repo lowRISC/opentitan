@@ -56,7 +56,10 @@ which provides the ability to drive and independently monitor random traffic via
 TL host interface into CSRNG device.
 
 ###  Entropy_src_agent
-CSRNG testbench instantiates this push_pull_agent({{< relref "hw/dv/sv/push_pull_agent/README.md" >}}) which models the entropy_src module.
+CSRNG testbench instantiates this push_pull_agent({{< relref "hw/dv/sv/push_pull_agent/README.md" >}}) which models the ENTROPY_SRC module.
+
+###  Csrng_agent
+<!--CSRNG testbench instantiates this agent({{< relref "hw/dv/sv/csrng_agent/README.md" >}}) which models the EDN module.-->
 
 ### UVM RAL Model
 The CSRNG RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
@@ -81,9 +84,9 @@ The following covergroups have been developed to prove that the test intent has 
 #### Scoreboard
 The `csrng_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo, tl_d_chan_fifo:           These 2 fifos provide transaction items at the end of Tilelink address channel and data channel respectively
-* analysis port1:
-* analysis port2:
+* tl_a_chan_fifo, tl_d_chan_fifo:  These 2 fifos provide transaction items at the end of Tilelink address channel and data channel respectively
+* entropy_src_fifo, genbits_fifo:  The entropy_src_fifo provides transaction items from the predictor and the genbits_fifo provide actual post-entropy_src transaction items to compare
+
 
 #### Assertions
 * TLUL assertions: The `tb/csrng_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.

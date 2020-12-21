@@ -29,7 +29,10 @@
     {
       name: interrupts
       desc: '''
-            Verify all csrng interrupts assert/clear when expected.
+            Verify csrng cmd_req_done interrupt assert/clear when expected/predicted.
+            Verify csrng entropy_req interrupt assert/clear when expected/predicted.
+            Verify csrng hw_inst_exc interrupt assert/clear when expected/predicted.
+            Verify csrng intr_fifo_err interrupt assert/clear when expected/predicted.
             '''
       milestone: V2
       tests: []
