@@ -25,6 +25,7 @@ See that document for integration overview within the broader top level system.
 - Support for the following optional capabilities:
     - Clock stretching in the host mode
     - Automatic clock stretching in the target mode when TX FIFO is empty during a read<sup>2</sup>
+    - Clock stretching in the target mode after any complete transaction
 - *No support at this time* for any of the features related to multi-host control:
     - No support for host-host clock synchronization
     - No support for host bus arbitration.
@@ -32,7 +33,7 @@ See that document for integration overview within the broader top level system.
 - Direct SCL and SDA control in "Override mode" (for debugging)
 - SCL and SDA ports mapped to I/O via the pinmux.
 - Interrupts in the host mode for FMT and RX FIFO overflow, target NACK, SCL/SDA signal interference, timeout, unstable SDA signal levels, and transaction complete
-- Interrupts in the target mode for TX FIFO empty during a read, TX FIFO nonempty at the end of a read, TX and ACQ FIFO overflow, and host sending STOP after ACK
+- Interrupts in the target mode for TX FIFO empty during a read, TX FIFO nonempty at the end of a read, TX and ACQ FIFO overflow, host sending STOP after ACK, and host ceasing to send SCL pulses during an ongoing transaction
 
 <sup>1</sup> lowRISC is avoiding the fraught terms master/slave and defaulting to host/target where applicable.
 
@@ -98,7 +99,7 @@ The SDA and SCL outputs are assumed to be connected to a tri-state buffer, with 
 
 Rather than toggling the buffer inputs, the buffer inputs are *continuously asserted low*, and instead the buffer *enable* signals are toggled.
 The SDA or SCL buffers are enabled for a logical "Low" output on the respective signal, and are disabled for logical "High" outputs.
-This arrangement allows the the output pins to float high if there is no conflict from external devices, or to be pulled low if there is a conflict (as is required for clock-stretching or--in future revisions-- muli-host functionality).
+This arrangement allows the the output pins to float high if there is no conflict from external devices, or to be pulled low if there is a conflict (as is required for clock-stretching or--in future revisions-- multi-host functionality).
 
 This arrangement is necessary for FPGA builds.
 
@@ -239,6 +240,13 @@ For instance, SMBus applications using this IP could in principle use this to su
 (Note: This is just an example application of this feature.
 Other features may also be required for complete SMBus functionality.)
 
+### Clock Stretching
+As described in the I2C specification, a target device can pause a transaction by holding SCL low.
+A target device stretches the clock automatically when a host device reads from the target and the target's TX FIFO is empty.
+The present implementation also supports a mode in which a target device can stretch the clock after completing a transaction, if it needs more time, e.g., to store the acquired data byte in flash memory.
+If {{< regref STRETCH_CTRL.EN >}} is asserted, a target stretches the clock after an ingoing transaction completes.
+However, the target stretches the clock only if it is certain that the next transaction is intended for it and not for another target device on the bus.
+The target device stops stretching the clock and resumes normal operation when {{< regref STRETCH_CTRL.RESUME >}} is asserted.
 
 ### Interrupts
 The I2C module has a few interrupts including general data flow interrupts and unexpected event interrupts.
@@ -314,6 +322,11 @@ In a case when a target receives an ACK and then a STOP/RESTART, the interrupt `
 
 If either TX or ACQ FIFO receives an additional write request when its FIFO is full, the interrupt `tx_overflow` or `acq_overflow` is asserted and the format indicator is dropped.
 
+If a host ceases to send SCL pulses at any point during an ongoing transaction, the target waits for a specified time period and then asserts the interrupt `host_timeout`.
+Host sending an address and R/W bit to all target devices, writing to the selected target, or reading from the target are examples of ongoing transactions.
+The time period is counted from the last low-to-high SCL transition.
+Firmware can configure the timeout value via the register {{< regref TIMEOUT_CTRL1 >}}.
+
 ### Implementation Details: Format Flag Parsing
 
 To illustrate the behavior induced by various flags added to the formatting queue, the following figure shows a simplified version of the I2C_Host state machine.
@@ -330,6 +343,10 @@ However, all transitions which are dependent on formatting flags are shown expli
 
 ![](I2C_state_diagram.svg)
 
+Similarly, the figure below shows a simplified version of the I2C_Target state machine.
+
+![](I2C_state_diagram_target.svg)
+
 # Programmers guide
 
 ## Initialization
@@ -342,7 +359,7 @@ After reset, the initialization of the I2C HWIP primarily consists of four steps
 
 ### Timing Parameter Tuning Algorithm
 
-Of the four initialization steps, the timing parameter initialization is the most involved.  With so many timing parameters, it is essential to have dedicated device interface functions (DIF's) to determine appropriate values for the 10 timing parameters.
+Of the four initialization steps, the timing parameter initialization is the most involved.  With so many timing parameters, it is essential to have dedicated device interface functions (DIFs) to determine appropriate values for the 10 timing parameters.
 
 The values of these parameters will depend primarily on three bus details:
 - The speed mode of the slowest device on the bus: standard mode (100 kbaud), fast mode (400 kbaud) or fast-mode plus (1 Mbaud).
