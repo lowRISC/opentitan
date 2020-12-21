@@ -57,12 +57,6 @@ tl_device_t xbar_devices[$] = '{
     '{"padctrl", '{
         '{32'h40470000, 32'h40470fff}
     }},
-    '{"alert_handler", '{
-        '{32'h411b0000, 32'h411b0fff}
-    }},
-    '{"nmi_gen", '{
-        '{32'h411c0000, 32'h411c0fff}
-    }},
     '{"otbn", '{
         '{32'h411d0000, 32'h411dffff}
     }},
@@ -94,8 +88,6 @@ tl_host_t xbar_hosts[$] = '{
         "rv_plic",
         "pinmux",
         "padctrl",
-        "alert_handler",
-        "nmi_gen",
         "otbn",
         "keymgr",
         "kmac"}}
@@ -115,8 +107,6 @@ tl_host_t xbar_hosts[$] = '{
         "rv_plic",
         "pinmux",
         "padctrl",
-        "alert_handler",
-        "nmi_gen",
         "otbn",
         "kmac"}}
 };

@@ -122,18 +122,6 @@ module xbar_main_bind;
     .h2d    (tl_padctrl_o),
     .d2h    (tl_padctrl_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_alert_handler (
-    .clk_i  (clk_main_i),
-    .rst_ni (rst_main_ni),
-    .h2d    (tl_alert_handler_o),
-    .d2h    (tl_alert_handler_i)
-  );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_nmi_gen (
-    .clk_i  (clk_main_i),
-    .rst_ni (rst_main_ni),
-    .h2d    (tl_nmi_gen_o),
-    .d2h    (tl_nmi_gen_i)
-  );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_otbn (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),

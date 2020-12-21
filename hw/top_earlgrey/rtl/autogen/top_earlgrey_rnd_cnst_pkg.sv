@@ -69,6 +69,19 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   ////////////////////////////////////////////
+  // alert_handler
+  ////////////////////////////////////////////
+  // Compile-time random bits for initial LFSR seed
+  parameter alert_pkg::lfsr_seed_t RndCnstAlertHandlerLfsrSeed = {
+    32'h5DEF7861
+  };
+
+  // Compile-time random permutation for LFSR output
+  parameter alert_pkg::lfsr_perm_t RndCnstAlertHandlerLfsrPerm = {
+    160'h5F00C4CAFD73FC4AC479A61068375F38956D84B3
+  };
+
+  ////////////////////////////////////////////
   // flash_ctrl
   ////////////////////////////////////////////
   // Compile-time random bits for default address key
@@ -153,19 +166,6 @@ package top_earlgrey_rnd_cnst_pkg;
   // Compile-time random bits for generation seed when no destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrNoneSeed = {
     256'hEEC5E43D4B16446726A27B8F0B30AD5048BAE844C87B69111A24D5E4442BCFB7
-  };
-
-  ////////////////////////////////////////////
-  // alert_handler
-  ////////////////////////////////////////////
-  // Compile-time random bits for initial LFSR seed
-  parameter alert_pkg::lfsr_seed_t RndCnstAlertHandlerLfsrSeed = {
-    32'h5DEF7861
-  };
-
-  // Compile-time random permutation for LFSR output
-  parameter alert_pkg::lfsr_perm_t RndCnstAlertHandlerLfsrPerm = {
-    160'h5F00C4CAFD73FC4AC479A61068375F38956D84B3
   };
 
 endpackage : top_earlgrey_rnd_cnst_pkg
