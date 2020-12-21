@@ -86,6 +86,9 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   int                clear_reg_pct              = 0;
 
 
+  // keep track of how many packets was split
+  int                split_cnt                  = 0;
+
 
   // rand variables
   // 0: C model 1: OPEN_SSL/BORING_SSL

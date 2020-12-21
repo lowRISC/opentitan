@@ -54,7 +54,7 @@ class aes_seq_item extends uvm_sequence_item;
 
 
   // used by the checker
-  bit [3:0][31:0] data_out;
+  bit [3:0][31:0] data_out            ='0;
   // set if data should be fixed and not randomized
   bit             fixed_data          = 0;
   // if set unused key bytes will be forced to 0 - controlled from test
@@ -192,6 +192,7 @@ class aes_seq_item extends uvm_sequence_item;
   // if ret_celan = 1
   // return 1 if all or none of the registers have been written
   function bit iv_clean(bit ret_clean, bit clear);
+    `uvm_info(`gfn, $sformatf("\n\t ----| IV status %b ", iv_vld), UVM_MEDIUM)
     if (clear) begin
       if (clear_reg_w_rand) begin
         iv = {4{$urandom()}};
