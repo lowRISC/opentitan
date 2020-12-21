@@ -162,22 +162,25 @@ def resolve_proj_root(args):
     proj_root is discovered using get_proj_root() method, unless the user
     overrides it on the command line.
 
-    This function returns the updated proj_root path.
+    This function returns the updated proj_root src and destination path. If
+    --remote env var is not set, the destination path is identical to the src path.
     '''
-    proj_root = args.proj_root or get_proj_root()
+    proj_root_src = args.proj_root or get_proj_root()
 
     # Check if jobs are dispatched to external compute machines. If yes,
     # then the repo needs to be copied over to the scratch area
     # accessible to those machines.
     # If --purge arg is set, then purge the repo_top that was copied before.
     if args.remote:
-        dest = os.path.join(args.scratch_root, args.branch, "repo_top")
-        if args.purge and os.path.exists(dest):
-            shutil.rmtree(dest)
-        copy_repo(proj_root, dest, args.dry_run)
-        proj_root = dest
+        proj_root_dest = os.path.join(args.scratch_root, args.branch,
+                                      "repo_top")
+        if args.purge and os.path.exists(proj_root_dest):
+            shutil.rmtree(proj_root_dest)
+        copy_repo(proj_root_src, proj_root_dest, args.dry_run)
+    else:
+        proj_root_dest = proj_root_src
 
-    return proj_root
+    return proj_root_src, proj_root_dest
 
 
 def sigint_handler(signal_received, frame):
@@ -601,9 +604,13 @@ def main():
 
     args.scratch_root = resolve_scratch_root(args.scratch_root)
     args.branch = resolve_branch(args.branch)
-    args.cfg = os.path.abspath(args.cfg)
-    proj_root = resolve_proj_root(args)
+    proj_root_src, proj_root = resolve_proj_root(args)
     log.info("[proj_root]: %s", proj_root)
+
+    args.cfg = os.path.abspath(args.cfg)
+    if args.remote:
+        cfg_path = args.cfg.replace(proj_root_src + "/", "")
+        args.cfg = os.path.join(proj_root, cfg_path)
 
     # Add timestamp to args that all downstream objects can use.
     # Static variables - indicate timestamp.
