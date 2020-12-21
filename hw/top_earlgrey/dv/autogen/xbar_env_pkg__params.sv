@@ -58,6 +58,9 @@ tl_device_t xbar_devices[$] = '{
     '{"keymgr", '{
         '{32'h41130000, 32'h41130fff}
     }},
+    '{"sram_ctrl_main", '{
+        '{32'h411c0000, 32'h411c0fff}
+    }},
     '{"uart", '{
         '{32'h40000000, 32'h40000fff}
     }},
@@ -97,6 +100,9 @@ tl_device_t xbar_devices[$] = '{
     '{"alert_handler", '{
         '{32'h40150000, 32'h40150fff}
     }},
+    '{"sram_ctrl_ret", '{
+        '{32'h40510000, 32'h40510fff}
+    }},
     '{"nmi_gen", '{
         '{32'h40160000, 32'h40160fff}
     }},
@@ -132,6 +138,7 @@ tl_host_t xbar_hosts[$] = '{
         "alert_handler",
         "nmi_gen",
         "ast_wrapper",
+        "sram_ctrl_ret",
         "flash_ctrl",
         "aes",
         "entropy_src",
@@ -144,7 +151,8 @@ tl_host_t xbar_hosts[$] = '{
         "padctrl",
         "otbn",
         "keymgr",
-        "kmac"}}
+        "kmac",
+        "sram_ctrl_main"}}
     ,
     '{"dm_sba", 2, '{
         "rom",
@@ -165,6 +173,7 @@ tl_host_t xbar_hosts[$] = '{
         "alert_handler",
         "nmi_gen",
         "ast_wrapper",
+        "sram_ctrl_ret",
         "flash_ctrl",
         "aes",
         "entropy_src",
@@ -176,5 +185,6 @@ tl_host_t xbar_hosts[$] = '{
         "pinmux",
         "padctrl",
         "otbn",
-        "kmac"}}
+        "kmac",
+        "sram_ctrl_main"}}
 };

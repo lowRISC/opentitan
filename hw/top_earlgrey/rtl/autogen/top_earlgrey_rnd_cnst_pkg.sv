@@ -82,6 +82,19 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   ////////////////////////////////////////////
+  // sram_ctrl_ret
+  ////////////////////////////////////////////
+  // Compile-time random reset value for SRAM scrambling key.
+  parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlRetSramKey = {
+    128'h83D0550B80E84EB1F4C3471C5DEF7861
+  };
+
+  // Compile-time random reset value for SRAM scrambling nonce.
+  parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlRetSramNonce = {
+    64'h2D73930D4CAC3785
+  };
+
+  ////////////////////////////////////////////
   // flash_ctrl
   ////////////////////////////////////////////
   // Compile-time random bits for default address key
@@ -166,6 +179,19 @@ package top_earlgrey_rnd_cnst_pkg;
   // Compile-time random bits for generation seed when no destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrNoneSeed = {
     256'hEEC5E43D4B16446726A27B8F0B30AD5048BAE844C87B69111A24D5E4442BCFB7
+  };
+
+  ////////////////////////////////////////////
+  // sram_ctrl_main
+  ////////////////////////////////////////////
+  // Compile-time random reset value for SRAM scrambling key.
+  parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlMainSramKey = {
+    128'hB6D4B556D89F9DFCFABD19450B238D4C
+  };
+
+  // Compile-time random reset value for SRAM scrambling nonce.
+  parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlMainSramNonce = {
+    64'h160733E752CAD615
   };
 
 endpackage : top_earlgrey_rnd_cnst_pkg

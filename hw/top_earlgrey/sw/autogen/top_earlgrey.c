@@ -121,7 +121,7 @@ const top_earlgrey_plic_peripheral_t
  * `top_earlgrey_alert_peripheral_t`.
  */
 const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[18] = {
+    top_earlgrey_alert_for_peripheral[20] = {
   [kTopEarlgreyAlertIdAesCtrlErrUpdate] = kTopEarlgreyAlertPeripheralAes,
   [kTopEarlgreyAlertIdAesCtrlErrStorage] = kTopEarlgreyAlertPeripheralAes,
   [kTopEarlgreyAlertIdOtbnFatal] = kTopEarlgreyAlertPeripheralOtbn,
@@ -140,5 +140,7 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdLcCtrlLcProgrammingFailure] = kTopEarlgreyAlertPeripheralLcCtrl,
   [kTopEarlgreyAlertIdLcCtrlLcStateFailure] = kTopEarlgreyAlertPeripheralLcCtrl,
   [kTopEarlgreyAlertIdEntropySrcEsAlertCountMet] = kTopEarlgreyAlertPeripheralEntropySrc,
+  [kTopEarlgreyAlertIdSramCtrlMainSramIntegAlert] = kTopEarlgreyAlertPeripheralSramCtrlMain,
+  [kTopEarlgreyAlertIdSramCtrlRetSramIntegAlert] = kTopEarlgreyAlertPeripheralSramCtrlRet,
 };
 

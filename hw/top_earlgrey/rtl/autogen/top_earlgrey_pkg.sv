@@ -162,6 +162,16 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_USBDEV_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for sram_ctrl_ret in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_BASE_ADDR = 32'h40510000;
+
+  /**
+   * Peripheral size in bytes for sram_ctrl_ret in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for flash_ctrl in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_FLASH_CTRL_BASE_ADDR = 32'h41000000;
@@ -262,9 +272,19 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_EDN1_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for sram_ctrl_main in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR = 32'h411C0000;
+
+  /**
+   * Peripheral size in bytes for sram_ctrl_main in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for otbn in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_OTBN_BASE_ADDR = 32'h411d0000;
+  parameter int unsigned TOP_EARLGREY_OTBN_BASE_ADDR = 32'h411D0000;
 
   /**
    * Peripheral size in bytes for otbn in top earlgrey.

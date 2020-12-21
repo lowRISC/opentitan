@@ -22,7 +22,7 @@ tl_device_t xbar_devices[$] = '{
     '{"peri", '{
         '{32'h18000000, 32'h18000fff},
         '{32'h40000000, 32'h40420fff},
-        '{32'h40500000, 32'h40500fff}
+        '{32'h40500000, 32'h4051ffff}
     }},
     '{"flash_ctrl", '{
         '{32'h41000000, 32'h41000fff}
@@ -62,6 +62,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"keymgr", '{
         '{32'h41130000, 32'h41130fff}
+    }},
+    '{"sram_ctrl_main", '{
+        '{32'h411c0000, 32'h411c0fff}
 }}};
 
   // List of Xbar hosts
@@ -90,7 +93,8 @@ tl_host_t xbar_hosts[$] = '{
         "padctrl",
         "otbn",
         "keymgr",
-        "kmac"}}
+        "kmac",
+        "sram_ctrl_main"}}
     ,
     '{"dm_sba", 2, '{
         "rom",
@@ -108,5 +112,6 @@ tl_host_t xbar_hosts[$] = '{
         "pinmux",
         "padctrl",
         "otbn",
-        "kmac"}}
+        "kmac",
+        "sram_ctrl_main"}}
 };

@@ -19,6 +19,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_LC_CTRL       = 32'h 40140000;
   localparam logic [31:0] ADDR_SPACE_SENSOR_CTRL   = 32'h 40110000;
   localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER = 32'h 40150000;
+  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET = 32'h 40510000;
   localparam logic [31:0] ADDR_SPACE_NMI_GEN       = 32'h 40160000;
   localparam logic [31:0] ADDR_SPACE_AST_WRAPPER   = 32'h 40180000;
 
@@ -35,11 +36,12 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_LC_CTRL       = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_SENSOR_CTRL   = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_ALERT_HANDLER = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_SRAM_CTRL_RET = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_NMI_GEN       = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AST_WRAPPER   = 32'h 00000fff;
 
   localparam int N_HOST   = 1;
-  localparam int N_DEVICE = 15;
+  localparam int N_DEVICE = 16;
 
   typedef enum int {
     TlUart = 0,
@@ -55,8 +57,9 @@ package tl_peri_pkg;
     TlLcCtrl = 10,
     TlSensorCtrl = 11,
     TlAlertHandler = 12,
-    TlNmiGen = 13,
-    TlAstWrapper = 14
+    TlSramCtrlRet = 13,
+    TlNmiGen = 14,
+    TlAstWrapper = 15
   } tl_device_e;
 
   typedef enum int {
