@@ -33,6 +33,9 @@ impl_list = glob.glob(rtl_path + 'aes_sbox_*.sv')
 impl_list = [
     impl_dut.replace(rtl_path, '').replace('.sv', '') for impl_dut in impl_list
 ]
+# Remove multicycle implementations, we can't perform LEC for those.
+impl_list.remove('aes_sbox_dom')
+# Remove reference implementation and package files.
 impl_list.remove(impl_gold)
 impl_list.remove(file_pkg_canright)
 file_pkg_canright = file_pkg_canright + '.sv'

@@ -28,6 +28,7 @@ filesets:
       - rtl/aes_sbox_canright.sv
       - rtl/aes_sbox_canright_masked_noreuse.sv
       - rtl/aes_sbox_canright_masked.sv
+      - rtl/aes_sbox_dom.sv
       - rtl/aes_shift_rows.sv
       - rtl/aes_mix_columns.sv
       - rtl/aes_mix_single_column.sv

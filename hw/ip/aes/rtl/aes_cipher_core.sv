@@ -636,7 +636,8 @@ module aes_cipher_core import aes_pkg::*;
   `ASSERT_INIT(AesMaskedCoreAndSBox,
       (Masking &&
       (SBoxImpl == SBoxImplCanrightMasked ||
-       SBoxImpl == SBoxImplCanrightMaskedNoreuse)) ||
+       SBoxImpl == SBoxImplCanrightMaskedNoreuse ||
+       SBoxImpl == SBoxImplDom)) ||
       (!Masking &&
       (SBoxImpl == SBoxImplLut ||
        SBoxImpl == SBoxImplCanright)))
