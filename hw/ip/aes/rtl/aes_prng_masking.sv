@@ -17,6 +17,8 @@
 // for masking purposes.                                                                         //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+`include "prim_assert.sv"
+
 module aes_prng_masking import aes_pkg::*;
 #(
   parameter  int unsigned Width     = WidthPRDMasking,     // Must be divisble by ChunkSize and 8.

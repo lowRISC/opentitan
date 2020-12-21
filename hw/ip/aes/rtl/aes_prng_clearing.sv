@@ -8,6 +8,8 @@
 // pseudo-random data for the AES module for clearing registers. The LFSR can be reseeded
 // using an external interface.
 
+`include "prim_assert.sv"
+
 module aes_prng_clearing import aes_pkg::*;
 #(
   parameter int unsigned Width = 64, // At the moment we just support a width of 64.
