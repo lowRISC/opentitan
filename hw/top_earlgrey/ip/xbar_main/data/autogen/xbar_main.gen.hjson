@@ -53,8 +53,6 @@
       rv_plic
       pinmux
       padctrl
-      alert_handler
-      nmi_gen
       otbn
       keymgr
       kmac
@@ -75,8 +73,6 @@
       rv_plic
       pinmux
       padctrl
-      alert_handler
-      nmi_gen
       otbn
       kmac
     ]
@@ -407,40 +403,6 @@
         }
       ]
       pipeline_byp: "false"
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: alert_handler
-      type: device
-      clock: clk_main_i
-      inst_type: alert_handler
-      pipeline_byp: "false"
-      addr_range:
-      [
-        {
-          base_addr: 0x411b0000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: nmi_gen
-      type: device
-      clock: clk_main_i
-      inst_type: nmi_gen
-      pipeline_byp: "false"
-      addr_range:
-      [
-        {
-          base_addr: 0x411c0000
-          size_byte: 0x1000
-        }
-      ]
       xbar: false
       stub: false
       pipeline: "true"

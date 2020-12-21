@@ -123,6 +123,8 @@ module top_earlgrey #(
   // sensor_ctrl
   // otp_ctrl
   // lc_ctrl
+  // alert_handler
+  // nmi_gen
   // pwrmgr
   // rstmgr
   // clkmgr
@@ -159,8 +161,6 @@ module top_earlgrey #(
   // entropy_src
   // edn0
   // edn1
-  // alert_handler
-  // nmi_gen
   // otbn
 
 
@@ -184,6 +184,13 @@ module top_earlgrey #(
   logic intr_rv_timer_timer_expired_0_0;
   logic intr_otp_ctrl_otp_operation_done;
   logic intr_otp_ctrl_otp_error;
+  logic intr_alert_handler_classa;
+  logic intr_alert_handler_classb;
+  logic intr_alert_handler_classc;
+  logic intr_alert_handler_classd;
+  logic intr_nmi_gen_esc0;
+  logic intr_nmi_gen_esc1;
+  logic intr_nmi_gen_esc2;
   logic intr_pwrmgr_wakeup;
   logic intr_usbdev_pkt_received;
   logic intr_usbdev_pkt_sent;
@@ -226,13 +233,6 @@ module top_earlgrey #(
   logic intr_edn0_edn_fifo_err;
   logic intr_edn1_edn_cmd_req_done;
   logic intr_edn1_edn_fifo_err;
-  logic intr_alert_handler_classa;
-  logic intr_alert_handler_classb;
-  logic intr_alert_handler_classc;
-  logic intr_alert_handler_classd;
-  logic intr_nmi_gen_esc0;
-  logic intr_nmi_gen_esc1;
-  logic intr_nmi_gen_esc2;
   logic intr_otbn_done;
 
 
@@ -332,10 +332,6 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       pinmux_tl_rsp;
   tlul_pkg::tl_h2d_t       padctrl_tl_req;
   tlul_pkg::tl_d2h_t       padctrl_tl_rsp;
-  tlul_pkg::tl_h2d_t       alert_handler_tl_req;
-  tlul_pkg::tl_d2h_t       alert_handler_tl_rsp;
-  tlul_pkg::tl_h2d_t       nmi_gen_tl_req;
-  tlul_pkg::tl_d2h_t       nmi_gen_tl_rsp;
   tlul_pkg::tl_h2d_t       otbn_tl_req;
   tlul_pkg::tl_d2h_t       otbn_tl_rsp;
   tlul_pkg::tl_h2d_t       keymgr_tl_req;
@@ -364,6 +360,10 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       lc_ctrl_tl_rsp;
   tlul_pkg::tl_h2d_t       sensor_ctrl_tl_req;
   tlul_pkg::tl_d2h_t       sensor_ctrl_tl_rsp;
+  tlul_pkg::tl_h2d_t       alert_handler_tl_req;
+  tlul_pkg::tl_d2h_t       alert_handler_tl_rsp;
+  tlul_pkg::tl_h2d_t       nmi_gen_tl_req;
+  tlul_pkg::tl_d2h_t       nmi_gen_tl_rsp;
   rstmgr_pkg::rstmgr_out_t       rstmgr_resets;
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_cpu;
   pwrmgr_pkg::pwr_cpu_t       pwrmgr_pwr_cpu;
@@ -433,6 +433,8 @@ module top_earlgrey #(
     // clock and reset
     .clk_i                (clkmgr_clocks.clk_proc_main),
     .rst_ni               (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+    .clk_esc_i            (clkmgr_clocks.clk_io_div4_timers),
+    .rst_esc_ni           (rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]),
     .test_en_i            (1'b0),
     // static pinning
     .hart_id_i            (32'b0),
@@ -447,8 +449,6 @@ module top_earlgrey #(
     .irq_timer_i          (intr_rv_timer_timer_expired_0_0),
     .irq_external_i       (irq_plic),
     // escalation input from alert handler (NMI)
-    // TODO: need to put the escalation receiver
-    // into the alert handler clock domain.
     .esc_tx_i             (esc_tx[0]),
     .esc_rx_o             (esc_rx[0]),
     // debug interface
@@ -918,6 +918,50 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
 
+  alert_handler #(
+    .RndCnstLfsrSeed(RndCnstAlertHandlerLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstAlertHandlerLfsrPerm)
+  ) u_alert_handler (
+
+      // Interrupt
+      .intr_classa_o (intr_alert_handler_classa),
+      .intr_classb_o (intr_alert_handler_classb),
+      .intr_classc_o (intr_alert_handler_classc),
+      .intr_classd_o (intr_alert_handler_classd),
+
+      // Inter-module signals
+      .crashdump_o(alert_handler_crashdump),
+      .entropy_i( 1'b0),
+      .tl_i(alert_handler_tl_req),
+      .tl_o(alert_handler_tl_rsp),
+      // alert signals
+      .alert_rx_o  ( alert_rx ),
+      .alert_tx_i  ( alert_tx ),
+      // escalation outputs
+      .esc_rx_i    ( esc_rx   ),
+      .esc_tx_o    ( esc_tx   ),
+      .clk_i (clkmgr_clocks.clk_io_div4_timers),
+      .rst_ni (rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel])
+  );
+
+  nmi_gen u_nmi_gen (
+
+      // Interrupt
+      .intr_esc0_o (intr_nmi_gen_esc0),
+      .intr_esc1_o (intr_nmi_gen_esc1),
+      .intr_esc2_o (intr_nmi_gen_esc2),
+
+      // Inter-module signals
+      .nmi_rst_req_o(pwrmgr_rstreqs),
+      .tl_i(nmi_gen_tl_req),
+      .tl_o(nmi_gen_tl_rsp),
+      // escalation signal inputs
+      .esc_rx_o    ( esc_rx[3:1] ),
+      .esc_tx_i    ( esc_tx[3:1] ),
+      .clk_i (clkmgr_clocks.clk_io_div4_timers),
+      .rst_ni (rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel])
+  );
+
   pwrmgr u_pwrmgr (
 
       // Interrupt
@@ -1339,50 +1383,6 @@ module top_earlgrey #(
       .rst_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
-  alert_handler #(
-    .RndCnstLfsrSeed(RndCnstAlertHandlerLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstAlertHandlerLfsrPerm)
-  ) u_alert_handler (
-
-      // Interrupt
-      .intr_classa_o (intr_alert_handler_classa),
-      .intr_classb_o (intr_alert_handler_classb),
-      .intr_classc_o (intr_alert_handler_classc),
-      .intr_classd_o (intr_alert_handler_classd),
-
-      // Inter-module signals
-      .crashdump_o(alert_handler_crashdump),
-      .entropy_i( 1'b0),
-      .tl_i(alert_handler_tl_req),
-      .tl_o(alert_handler_tl_rsp),
-      // alert signals
-      .alert_rx_o  ( alert_rx ),
-      .alert_tx_i  ( alert_tx ),
-      // escalation outputs
-      .esc_rx_i    ( esc_rx   ),
-      .esc_tx_o    ( esc_tx   ),
-      .clk_i (clkmgr_clocks.clk_main_secure),
-      .rst_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
-  );
-
-  nmi_gen u_nmi_gen (
-
-      // Interrupt
-      .intr_esc0_o (intr_nmi_gen_esc0),
-      .intr_esc1_o (intr_nmi_gen_esc1),
-      .intr_esc2_o (intr_nmi_gen_esc2),
-
-      // Inter-module signals
-      .nmi_rst_req_o(pwrmgr_rstreqs),
-      .tl_i(nmi_gen_tl_req),
-      .tl_o(nmi_gen_tl_rsp),
-      // escalation signal inputs
-      .esc_rx_o    ( esc_rx[3:1] ),
-      .esc_tx_i    ( esc_tx[3:1] ),
-      .clk_i (clkmgr_clocks.clk_main_secure),
-      .rst_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
-  );
-
   otbn #(
     .RegFile(OtbnRegFile)
   ) u_otbn (
@@ -1558,14 +1558,6 @@ module top_earlgrey #(
     .tl_padctrl_o(padctrl_tl_req),
     .tl_padctrl_i(padctrl_tl_rsp),
 
-    // port: tl_alert_handler
-    .tl_alert_handler_o(alert_handler_tl_req),
-    .tl_alert_handler_i(alert_handler_tl_rsp),
-
-    // port: tl_nmi_gen
-    .tl_nmi_gen_o(nmi_gen_tl_req),
-    .tl_nmi_gen_i(nmi_gen_tl_rsp),
-
     // port: tl_otbn
     .tl_otbn_o(otbn_tl_req),
     .tl_otbn_i(otbn_tl_rsp),
@@ -1632,6 +1624,14 @@ module top_earlgrey #(
     // port: tl_sensor_ctrl
     .tl_sensor_ctrl_o(sensor_ctrl_tl_req),
     .tl_sensor_ctrl_i(sensor_ctrl_tl_rsp),
+
+    // port: tl_alert_handler
+    .tl_alert_handler_o(alert_handler_tl_req),
+    .tl_alert_handler_i(alert_handler_tl_rsp),
+
+    // port: tl_nmi_gen
+    .tl_nmi_gen_o(nmi_gen_tl_req),
+    .tl_nmi_gen_i(nmi_gen_tl_rsp),
 
     // port: tl_ast_wrapper
     .tl_ast_wrapper_o(ast_tl_req_o),

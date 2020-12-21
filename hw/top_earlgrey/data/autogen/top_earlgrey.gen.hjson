@@ -825,7 +825,7 @@
             0
           ]
           type: alert
-          async: 1
+          async: 0
         }
         {
           name: cg
@@ -838,7 +838,7 @@
             1
           ]
           type: alert
-          async: 1
+          async: 0
         }
         {
           name: gd
@@ -851,7 +851,7 @@
             2
           ]
           type: alert
-          async: 1
+          async: 0
         }
         {
           name: ts_hi
@@ -864,7 +864,7 @@
             3
           ]
           type: alert
-          async: 1
+          async: 0
         }
         {
           name: ts_lo
@@ -877,7 +877,7 @@
             4
           ]
           type: alert
-          async: 1
+          async: 0
         }
         {
           name: ls
@@ -890,7 +890,7 @@
             5
           ]
           type: alert
-          async: 1
+          async: 0
         }
         {
           name: ot
@@ -903,7 +903,7 @@
             6
           ]
           type: alert
-          async: 1
+          async: 0
         }
       ]
       wakeup_list: []
@@ -1092,7 +1092,7 @@
             0
           ]
           type: alert
-          async: 1
+          async: 0
         }
         {
           name: otp_check_failure
@@ -1105,7 +1105,7 @@
             1
           ]
           type: alert
-          async: 1
+          async: 0
         }
       ]
       wakeup_list: []
@@ -1398,7 +1398,7 @@
             0
           ]
           type: alert
-          async: 1
+          async: 0
         }
         {
           name: lc_state_failure
@@ -1411,7 +1411,7 @@
             1
           ]
           type: alert
-          async: 1
+          async: 0
         }
       ]
       wakeup_list: []
@@ -1747,6 +1747,262 @@
           width: 1
           default: ""
           top_signame: lc_ctrl_tl
+          index: -1
+        }
+      ]
+    }
+    {
+      name: alert_handler
+      type: alert_handler
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: timers
+      reset_connections:
+      {
+        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
+      }
+      base_addr: 0x40150000
+      generated: "true"
+      localparam:
+      {
+        EscCntDw: 32
+        AccuCntDw: 16
+        LfsrSeed: 0x7FFFFFFF
+      }
+      clock_reset_export: []
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_div4_timers
+      }
+      domain: "0"
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list:
+      [
+        {
+          name: RndCnstLfsrSeed
+          desc: Compile-time random bits for initial LFSR seed
+          type: alert_pkg::lfsr_seed_t
+          randcount: "32"
+          randtype: data
+          local: "false"
+          default: 0x5def7861
+          expose: "false"
+          name_top: RndCnstAlertHandlerLfsrSeed
+          randwidth: 32
+        }
+        {
+          name: RndCnstLfsrPerm
+          desc: Compile-time random permutation for LFSR output
+          type: alert_pkg::lfsr_perm_t
+          randcount: "32"
+          randtype: perm
+          local: "false"
+          default: 0x5f00c4cafd73fc4ac479a61068375f38956d84b3
+          expose: "false"
+          name_top: RndCnstAlertHandlerLfsrPerm
+          randwidth: 160
+        }
+      ]
+      interrupt_list:
+      [
+        {
+          name: classa
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: classb
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: classc
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+        {
+          name: classd
+          width: 1
+          bits: "3"
+          bitinfo:
+          [
+            8
+            1
+            3
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      wakeup_list: []
+      reset_request_list: []
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: alert_crashdump
+          type: uni
+          name: crashdump
+          act: req
+          package: alert_pkg
+          inst_name: alert_handler
+          width: 1
+          default: ""
+          top_type: broadcast
+          top_signame: alert_handler_crashdump
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: entropy
+          default: " 1'b0"
+          act: rcv
+          inst_name: alert_handler
+          index: -1
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: alert_handler
+          width: 1
+          default: ""
+          top_signame: alert_handler_tl
+          index: -1
+        }
+      ]
+    }
+    {
+      name: nmi_gen
+      type: nmi_gen
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: timers
+      reset_connections:
+      {
+        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
+      }
+      base_addr: 0x40160000
+      clock_reset_export: []
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_div4_timers
+      }
+      domain: "0"
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list: []
+      interrupt_list:
+      [
+        {
+          name: esc0
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: esc1
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+        {
+          name: esc2
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      wakeup_list: []
+      reset_request_list:
+      [
+        {
+          name: nmi_rst_req
+        }
+      ]
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: logic
+          type: uni
+          name: nmi_rst_req
+          act: req
+          package: ""
+          default: 1'b0
+          inst_name: nmi_gen
+          width: 1
+          top_signame: pwrmgr_rstreqs
+          index: -1
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: nmi_gen
+          width: 1
+          default: ""
+          top_signame: nmi_gen_tl
           index: -1
         }
       ]
@@ -3255,7 +3511,7 @@
             0
           ]
           type: alert
-          async: 0
+          async: 1
         }
         {
           name: ctrl_err_storage
@@ -3268,7 +3524,7 @@
             1
           ]
           type: alert
-          async: 0
+          async: 1
         }
       ]
       wakeup_list: []
@@ -3773,7 +4029,7 @@
             0
           ]
           type: alert
-          async: 0
+          async: 1
         }
         {
           name: operation_err
@@ -3786,7 +4042,7 @@
             1
           ]
           type: alert
-          async: 0
+          async: 1
         }
       ]
       wakeup_list: []
@@ -4152,7 +4408,7 @@
             0
           ]
           type: alert
-          async: 0
+          async: 1
         }
       ]
       wakeup_list: []
@@ -4426,262 +4682,6 @@
       ]
     }
     {
-      name: alert_handler
-      type: alert_handler
-      clock_srcs:
-      {
-        clk_i: main
-      }
-      clock_group: secure
-      reset_connections:
-      {
-        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
-      }
-      base_addr: 0x411b0000
-      generated: "true"
-      localparam:
-      {
-        EscCntDw: 32
-        AccuCntDw: 16
-        LfsrSeed: 0x7FFFFFFF
-      }
-      clock_reset_export: []
-      clock_connections:
-      {
-        clk_i: clkmgr_clocks.clk_main_secure
-      }
-      domain: "0"
-      size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_input_list: []
-      available_output_list: []
-      available_inout_list: []
-      param_list:
-      [
-        {
-          name: RndCnstLfsrSeed
-          desc: Compile-time random bits for initial LFSR seed
-          type: alert_pkg::lfsr_seed_t
-          randcount: "32"
-          randtype: data
-          local: "false"
-          default: 0x5def7861
-          expose: "false"
-          name_top: RndCnstAlertHandlerLfsrSeed
-          randwidth: 32
-        }
-        {
-          name: RndCnstLfsrPerm
-          desc: Compile-time random permutation for LFSR output
-          type: alert_pkg::lfsr_perm_t
-          randcount: "32"
-          randtype: perm
-          local: "false"
-          default: 0x5f00c4cafd73fc4ac479a61068375f38956d84b3
-          expose: "false"
-          name_top: RndCnstAlertHandlerLfsrPerm
-          randwidth: 160
-        }
-      ]
-      interrupt_list:
-      [
-        {
-          name: classa
-          width: 1
-          bits: "0"
-          bitinfo:
-          [
-            1
-            1
-            0
-          ]
-          type: interrupt
-        }
-        {
-          name: classb
-          width: 1
-          bits: "1"
-          bitinfo:
-          [
-            2
-            1
-            1
-          ]
-          type: interrupt
-        }
-        {
-          name: classc
-          width: 1
-          bits: "2"
-          bitinfo:
-          [
-            4
-            1
-            2
-          ]
-          type: interrupt
-        }
-        {
-          name: classd
-          width: 1
-          bits: "3"
-          bitinfo:
-          [
-            8
-            1
-            3
-          ]
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
-      inter_signal_list:
-      [
-        {
-          struct: alert_crashdump
-          type: uni
-          name: crashdump
-          act: req
-          package: alert_pkg
-          inst_name: alert_handler
-          width: 1
-          default: ""
-          top_type: broadcast
-          top_signame: alert_handler_crashdump
-          index: -1
-        }
-        {
-          struct: logic
-          type: uni
-          name: entropy
-          default: " 1'b0"
-          act: rcv
-          inst_name: alert_handler
-          index: -1
-        }
-        {
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          name: tl
-          inst_name: alert_handler
-          width: 1
-          default: ""
-          top_signame: alert_handler_tl
-          index: -1
-        }
-      ]
-    }
-    {
-      name: nmi_gen
-      type: nmi_gen
-      clock_srcs:
-      {
-        clk_i: main
-      }
-      clock_group: secure
-      reset_connections:
-      {
-        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
-      }
-      base_addr: 0x411c0000
-      clock_reset_export: []
-      clock_connections:
-      {
-        clk_i: clkmgr_clocks.clk_main_secure
-      }
-      domain: "0"
-      size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_input_list: []
-      available_output_list: []
-      available_inout_list: []
-      param_list: []
-      interrupt_list:
-      [
-        {
-          name: esc0
-          width: 1
-          bits: "0"
-          bitinfo:
-          [
-            1
-            1
-            0
-          ]
-          type: interrupt
-        }
-        {
-          name: esc1
-          width: 1
-          bits: "1"
-          bitinfo:
-          [
-            2
-            1
-            1
-          ]
-          type: interrupt
-        }
-        {
-          name: esc2
-          width: 1
-          bits: "2"
-          bitinfo:
-          [
-            4
-            1
-            2
-          ]
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list:
-      [
-        {
-          name: nmi_rst_req
-        }
-      ]
-      scan: "false"
-      scan_reset: "false"
-      inter_signal_list:
-      [
-        {
-          struct: logic
-          type: uni
-          name: nmi_rst_req
-          act: req
-          package: ""
-          default: 1'b0
-          inst_name: nmi_gen
-          width: 1
-          top_signame: pwrmgr_rstreqs
-          index: -1
-        }
-        {
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          name: tl
-          inst_name: nmi_gen
-          width: 1
-          default: ""
-          top_signame: nmi_gen_tl
-          index: -1
-        }
-      ]
-    }
-    {
       name: otbn
       type: otbn
       clock_srcs:
@@ -4748,7 +4748,7 @@
             0
           ]
           type: alert
-          async: 0
+          async: 1
         }
         {
           name: recoverable
@@ -4761,7 +4761,7 @@
             1
           ]
           type: alert
-          async: 0
+          async: 1
         }
       ]
       wakeup_list: []
@@ -5242,14 +5242,6 @@
       [
         main.tl_padctrl
       ]
-      alert_handler.tl:
-      [
-        main.tl_alert_handler
-      ]
-      nmi_gen.tl:
-      [
-        main.tl_nmi_gen
-      ]
       otbn.tl:
       [
         main.tl_otbn
@@ -5305,6 +5297,14 @@
       sensor_ctrl.tl:
       [
         peri.tl_sensor_ctrl
+      ]
+      alert_handler.tl:
+      [
+        peri.tl_alert_handler
+      ]
+      nmi_gen.tl:
+      [
+        peri.tl_nmi_gen
       ]
     }
     top:
@@ -5390,8 +5390,6 @@
           rv_plic
           pinmux
           padctrl
-          alert_handler
-          nmi_gen
           otbn
           keymgr
           kmac
@@ -5412,8 +5410,6 @@
           rv_plic
           pinmux
           padctrl
-          alert_handler
-          nmi_gen
           otbn
           kmac
         ]
@@ -5749,40 +5745,6 @@
           pipeline: "true"
         }
         {
-          name: alert_handler
-          type: device
-          clock: clk_main_i
-          inst_type: alert_handler
-          pipeline_byp: "false"
-          addr_range:
-          [
-            {
-              base_addr: 0x411b0000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline: "true"
-        }
-        {
-          name: nmi_gen
-          type: device
-          clock: clk_main_i
-          inst_type: nmi_gen
-          pipeline_byp: "false"
-          addr_range:
-          [
-            {
-              base_addr: 0x411c0000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline: "true"
-        }
-        {
           name: otbn
           type: device
           clock: clk_main_i
@@ -6054,30 +6016,6 @@
         {
           struct: tl
           type: req_rsp
-          name: tl_alert_handler
-          act: req
-          package: tlul_pkg
-          inst_name: main
-          width: 1
-          default: ""
-          top_signame: alert_handler_tl
-          index: -1
-        }
-        {
-          struct: tl
-          type: req_rsp
-          name: tl_nmi_gen
-          act: req
-          package: tlul_pkg
-          inst_name: main
-          width: 1
-          default: ""
-          top_signame: nmi_gen_tl
-          index: -1
-        }
-        {
-          struct: tl
-          type: req_rsp
           name: tl_otbn
           act: req
           package: tlul_pkg
@@ -6135,6 +6073,8 @@
           otp_ctrl
           lc_ctrl
           sensor_ctrl
+          alert_handler
+          nmi_gen
           ast_wrapper
         ]
       }
@@ -6368,6 +6308,42 @@
           pipeline_byp: "true"
         }
         {
+          name: alert_handler
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: alert_handler
+          addr_range:
+          [
+            {
+              base_addr: 0x40150000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
+        }
+        {
+          name: nmi_gen
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: nmi_gen
+          addr_range:
+          [
+            {
+              base_addr: 0x40160000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
+        }
+        {
           name: ast_wrapper
           type: device
           clock: clk_peri_i
@@ -6543,6 +6519,30 @@
           width: 1
           default: ""
           top_signame: sensor_ctrl_tl
+          index: -1
+        }
+        {
+          struct: tl
+          type: req_rsp
+          name: tl_alert_handler
+          act: req
+          package: tlul_pkg
+          inst_name: peri
+          width: 1
+          default: ""
+          top_signame: alert_handler_tl
+          index: -1
+        }
+        {
+          struct: tl
+          type: req_rsp
+          name: tl_nmi_gen
+          act: req
+          package: tlul_pkg
+          inst_name: peri
+          width: 1
+          default: ""
+          top_signame: nmi_gen_tl
           index: -1
         }
         {
@@ -7478,7 +7478,7 @@
         0
       ]
       type: alert
-      async: 0
+      async: 1
       module_name: aes
     }
     {
@@ -7492,7 +7492,7 @@
         1
       ]
       type: alert
-      async: 0
+      async: 1
       module_name: aes
     }
     {
@@ -7506,7 +7506,7 @@
         0
       ]
       type: alert
-      async: 0
+      async: 1
       module_name: otbn
     }
     {
@@ -7520,7 +7520,7 @@
         1
       ]
       type: alert
-      async: 0
+      async: 1
       module_name: otbn
     }
     {
@@ -7534,7 +7534,7 @@
         0
       ]
       type: alert
-      async: 1
+      async: 0
       module_name: sensor_ctrl
     }
     {
@@ -7548,7 +7548,7 @@
         1
       ]
       type: alert
-      async: 1
+      async: 0
       module_name: sensor_ctrl
     }
     {
@@ -7562,7 +7562,7 @@
         2
       ]
       type: alert
-      async: 1
+      async: 0
       module_name: sensor_ctrl
     }
     {
@@ -7576,7 +7576,7 @@
         3
       ]
       type: alert
-      async: 1
+      async: 0
       module_name: sensor_ctrl
     }
     {
@@ -7590,7 +7590,7 @@
         4
       ]
       type: alert
-      async: 1
+      async: 0
       module_name: sensor_ctrl
     }
     {
@@ -7604,7 +7604,7 @@
         5
       ]
       type: alert
-      async: 1
+      async: 0
       module_name: sensor_ctrl
     }
     {
@@ -7618,7 +7618,7 @@
         6
       ]
       type: alert
-      async: 1
+      async: 0
       module_name: sensor_ctrl
     }
     {
@@ -7632,7 +7632,7 @@
         0
       ]
       type: alert
-      async: 0
+      async: 1
       module_name: keymgr
     }
     {
@@ -7646,7 +7646,7 @@
         1
       ]
       type: alert
-      async: 0
+      async: 1
       module_name: keymgr
     }
     {
@@ -7660,7 +7660,7 @@
         0
       ]
       type: alert
-      async: 1
+      async: 0
       module_name: otp_ctrl
     }
     {
@@ -7674,7 +7674,7 @@
         1
       ]
       type: alert
-      async: 1
+      async: 0
       module_name: otp_ctrl
     }
     {
@@ -7688,7 +7688,7 @@
         0
       ]
       type: alert
-      async: 1
+      async: 0
       module_name: lc_ctrl
     }
     {
@@ -7702,7 +7702,7 @@
         1
       ]
       type: alert
-      async: 1
+      async: 0
       module_name: lc_ctrl
     }
     {
@@ -7716,7 +7716,7 @@
         0
       ]
       type: alert
-      async: 0
+      async: 1
       module_name: entropy_src
     }
   ]
@@ -8687,6 +8687,64 @@
         width: 1
         default: ""
         top_signame: lc_ctrl_tl
+        index: -1
+      }
+      {
+        struct: alert_crashdump
+        type: uni
+        name: crashdump
+        act: req
+        package: alert_pkg
+        inst_name: alert_handler
+        width: 1
+        default: ""
+        top_type: broadcast
+        top_signame: alert_handler_crashdump
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: entropy
+        default: " 1'b0"
+        act: rcv
+        inst_name: alert_handler
+        index: -1
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: alert_handler
+        width: 1
+        default: ""
+        top_signame: alert_handler_tl
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: nmi_rst_req
+        act: req
+        package: ""
+        default: 1'b0
+        inst_name: nmi_gen
+        width: 1
+        top_signame: pwrmgr_rstreqs
+        index: -1
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: nmi_gen
+        width: 1
+        default: ""
+        top_signame: nmi_gen_tl
         index: -1
       }
       {
@@ -9721,64 +9779,6 @@
         index: -1
       }
       {
-        struct: alert_crashdump
-        type: uni
-        name: crashdump
-        act: req
-        package: alert_pkg
-        inst_name: alert_handler
-        width: 1
-        default: ""
-        top_type: broadcast
-        top_signame: alert_handler_crashdump
-        index: -1
-      }
-      {
-        struct: logic
-        type: uni
-        name: entropy
-        default: " 1'b0"
-        act: rcv
-        inst_name: alert_handler
-        index: -1
-      }
-      {
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        name: tl
-        inst_name: alert_handler
-        width: 1
-        default: ""
-        top_signame: alert_handler_tl
-        index: -1
-      }
-      {
-        struct: logic
-        type: uni
-        name: nmi_rst_req
-        act: req
-        package: ""
-        default: 1'b0
-        inst_name: nmi_gen
-        width: 1
-        top_signame: pwrmgr_rstreqs
-        index: -1
-      }
-      {
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        name: tl
-        inst_name: nmi_gen
-        width: 1
-        default: ""
-        top_signame: nmi_gen_tl
-        index: -1
-      }
-      {
         name: idle
         type: uni
         struct: logic
@@ -10157,30 +10157,6 @@
       {
         struct: tl
         type: req_rsp
-        name: tl_alert_handler
-        act: req
-        package: tlul_pkg
-        inst_name: main
-        width: 1
-        default: ""
-        top_signame: alert_handler_tl
-        index: -1
-      }
-      {
-        struct: tl
-        type: req_rsp
-        name: tl_nmi_gen
-        act: req
-        package: tlul_pkg
-        inst_name: main
-        width: 1
-        default: ""
-        top_signame: nmi_gen_tl
-        index: -1
-      }
-      {
-        struct: tl
-        type: req_rsp
         name: tl_otbn
         act: req
         package: tlul_pkg
@@ -10356,6 +10332,30 @@
         width: 1
         default: ""
         top_signame: sensor_ctrl_tl
+        index: -1
+      }
+      {
+        struct: tl
+        type: req_rsp
+        name: tl_alert_handler
+        act: req
+        package: tlul_pkg
+        inst_name: peri
+        width: 1
+        default: ""
+        top_signame: alert_handler_tl
+        index: -1
+      }
+      {
+        struct: tl
+        type: req_rsp
+        name: tl_nmi_gen
+        act: req
+        package: tlul_pkg
+        inst_name: peri
+        width: 1
+        default: ""
+        top_signame: nmi_gen_tl
         index: -1
       }
       {
@@ -11202,38 +11202,6 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: alert_handler_tl_req
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: alert_handler_tl_rsp
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: nmi_gen_tl_req
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: nmi_gen_tl_rsp
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
         signame: otbn_tl_req
         width: 1
         type: req_rsp
@@ -11451,6 +11419,38 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: sensor_ctrl_tl_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: alert_handler_tl_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: alert_handler_tl_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: nmi_gen_tl_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: nmi_gen_tl_rsp
         width: 1
         type: req_rsp
         default: ""

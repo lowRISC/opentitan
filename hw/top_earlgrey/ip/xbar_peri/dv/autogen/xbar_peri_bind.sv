@@ -86,6 +86,18 @@ module xbar_peri_bind;
     .h2d    (tl_sensor_ctrl_o),
     .d2h    (tl_sensor_ctrl_i)
   );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_alert_handler (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_alert_handler_o),
+    .d2h    (tl_alert_handler_i)
+  );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_nmi_gen (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_nmi_gen_o),
+    .d2h    (tl_nmi_gen_i)
+  );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_ast_wrapper (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),

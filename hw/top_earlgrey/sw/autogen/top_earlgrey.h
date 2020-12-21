@@ -152,6 +152,42 @@ extern "C" {
 #define TOP_EARLGREY_LC_CTRL_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for alert_handler in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0x40150000u
+
+/**
+ * Peripheral size for alert_handler in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR and
+ * `TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR + TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for nmi_gen in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_NMI_GEN_BASE_ADDR 0x40160000u
+
+/**
+ * Peripheral size for nmi_gen in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_NMI_GEN_BASE_ADDR and
+ * `TOP_EARLGREY_NMI_GEN_BASE_ADDR + TOP_EARLGREY_NMI_GEN_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_NMI_GEN_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for pwrmgr in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -438,42 +474,6 @@ extern "C" {
  * `TOP_EARLGREY_EDN1_BASE_ADDR + TOP_EARLGREY_EDN1_SIZE_BYTES`.
  */
 #define TOP_EARLGREY_EDN1_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for alert_handler in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0x411b0000u
-
-/**
- * Peripheral size for alert_handler in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR and
- * `TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR + TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for nmi_gen in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_NMI_GEN_BASE_ADDR 0x411c0000u
-
-/**
- * Peripheral size for nmi_gen in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_NMI_GEN_BASE_ADDR and
- * `TOP_EARLGREY_NMI_GEN_BASE_ADDR + TOP_EARLGREY_NMI_GEN_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_NMI_GEN_SIZE_BYTES 0x1000u
 
 /**
  * Peripheral base address for otbn in top earlgrey.

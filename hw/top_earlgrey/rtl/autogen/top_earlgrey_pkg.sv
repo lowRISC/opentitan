@@ -82,6 +82,26 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_LC_CTRL_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for alert_handler in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR = 32'h40150000;
+
+  /**
+   * Peripheral size in bytes for alert_handler in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for nmi_gen in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_NMI_GEN_BASE_ADDR = 32'h40160000;
+
+  /**
+   * Peripheral size in bytes for nmi_gen in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_NMI_GEN_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for pwrmgr in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_PWRMGR_BASE_ADDR = 32'h40400000;
@@ -240,26 +260,6 @@ package top_earlgrey_pkg;
    * Peripheral size in bytes for edn1 in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_EDN1_SIZE_BYTES = 32'h1000;
-
-  /**
-   * Peripheral base address for alert_handler in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR = 32'h411b0000;
-
-  /**
-   * Peripheral size in bytes for alert_handler in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES = 32'h1000;
-
-  /**
-   * Peripheral base address for nmi_gen in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_NMI_GEN_BASE_ADDR = 32'h411c0000;
-
-  /**
-   * Peripheral size in bytes for nmi_gen in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_NMI_GEN_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for otbn in top earlgrey.
