@@ -302,7 +302,7 @@ module top_${top["name"]} #(
   resets = m['reset_connections']
   clocks = m['clock_connections']
 %>\
-  % if m["type"] == "ram_1p":
+  % if m["type"] == "ram_1p_scr":
 <%
      data_width = int(top["datawidth"])
      dw_byte = data_width // 8
@@ -312,6 +312,7 @@ module top_${top["name"]} #(
 %>\
   // sram device
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_req;
+  logic ${lib.bitarray(1,          max_char)} ${m["name"]}_gnt;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_we;
   logic ${lib.bitarray(addr_width, max_char)} ${m["name"]}_addr;
   logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wdata;
@@ -335,7 +336,7 @@ module top_${top["name"]} #(
     .tl_o     (${m["name"]}_tl_rsp),
 
     .req_o    (${m["name"]}_req),
-    .gnt_i    (1'b1), // Always grant as only one requester exists
+    .gnt_i    (${m["name"]}_gnt),
     .we_o     (${m["name"]}_we),
     .addr_o   (${m["name"]}_addr),
     .wdata_o  (${m["name"]}_wdata),
@@ -358,10 +359,12 @@ module top_${top["name"]} #(
     .${key}   (${value}),
     % endfor
 
-    .key_i    ( '0 ),
-    .nonce_i  ( '0 ),
+    .key_valid_i ( ${m["inter_signal_list"][1]["top_signame"]}_req.valid ),
+    .key_i       ( ${m["inter_signal_list"][1]["top_signame"]}_req.key   ),
+    .nonce_i     ( ${m["inter_signal_list"][1]["top_signame"]}_req.nonce ),
 
     .req_i    (${m["name"]}_req),
+    .gnt_o    (${m["name"]}_gnt),
     .write_i  (${m["name"]}_we),
     .addr_i   (${m["name"]}_addr),
     .wdata_i  (${m["name"]}_wdata),
@@ -369,9 +372,11 @@ module top_${top["name"]} #(
     .rdata_o  (${m["name"]}_rdata),
     .rvalid_o (${m["name"]}_rvalid),
     .rerror_o (${m["name"]}_rerror),
-    .raddr_o  (  ),
-    .cfg_i    ('0)
+    .raddr_o  ( ${m["inter_signal_list"][1]["top_signame"]}_rsp.raddr ),
+    .cfg_i    ( '0 )
   );
+
+  assign ${m["inter_signal_list"][1]["top_signame"]}_rsp.rerror = ${m["name"]}_rerror;
 
   % elif m["type"] == "rom":
 <%

@@ -345,6 +345,14 @@
       domain: "Aon",
       base_addr: "0x40500000",
     },
+    { name: "sram_ctrl_ret",
+      type: "sram_ctrl",
+      clock_srcs: {clk_i: "io_div4", clk_otp_i: "io_div4"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "sys_io_div4", rst_otp_ni: "lc_io_div4"},
+      domain: "Aon",
+      base_addr: "0x40510000"
+    },
     { name: "flash_ctrl",
       type: "flash_ctrl",
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
@@ -417,12 +425,19 @@
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x41180000",
     },
+    { name: "sram_ctrl_main",
+      type: "sram_ctrl",
+      clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "sys", rst_otp_ni: "lc_io_div4"},
+      base_addr: "0x411C0000",
+    },
     { name: "otbn",
       type: "otbn",
       clock_srcs: {clk_i: "main"},
       clock_group: "trans",
       reset_connections: {rst_ni: "sys"},
-      base_addr: "0x411d0000",
+      base_addr: "0x411D0000",
     },
   ]
 
@@ -450,7 +465,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "sys"},
-      type: "ram_1p",
+      type: "ram_1p_scr",
       base_addr: "0x10000000",
       size: "0x10000"
       byte_write: "true",
@@ -460,6 +475,13 @@
           type: "req_rsp"
           act: "rsp"
           name: "tl"
+        },
+        // Interface to SRAM controller
+        { struct:  "sram_scr",
+          package: "sram_ctrl_pkg"
+          type:    "req_rsp",
+          name:    "sram_scr",
+          act:     "rsp",
         }
       ]
     },
@@ -468,7 +490,7 @@
       clock_group: "infra",
       reset_connections: {rst_ni: "sys_io_div4"},
       domain: "Aon",
-      type: "ram_1p",
+      type: "ram_1p_scr",
       base_addr: "0x18000000",
       size: "0x1000",
       byte_write: "true",
@@ -478,6 +500,13 @@
           type: "req_rsp"
           act: "rsp"
           name: "tl"
+        },
+        // Interface to SRAM controller
+        { struct:  "sram_scr",
+          package: "sram_ctrl_pkg"
+          type:    "req_rsp",
+          name:    "sram_scr",
+          act:     "rsp",
         }
       ]
     },
@@ -563,6 +592,10 @@
       'flash_ctrl.rma_req'      : ['lc_ctrl.lc_flash_rma_req'],
       'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
+      'sram_ctrl_main.sram_scr' : ['ram_main.sram_scr'],
+      'sram_ctrl_ret.sram_scr'  : ['ram_ret.sram_scr'],
+      'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
+                                   'sram_ctrl_ret.sram_otp_key']
       'pwrmgr.pwr_flash'        : ['flash_ctrl.pwrmgr'],
       'pwrmgr.pwr_rst'          : ['rstmgr.pwr'],
       'pwrmgr.pwr_clk'          : ['clkmgr.pwr'],
@@ -602,7 +635,9 @@
       'lc_ctrl.lc_hw_debug_en'     : [],
       'lc_ctrl.lc_cpu_en'          : [],
       //'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
-      'lc_ctrl.lc_escalate_en'     : ['otp_ctrl.lc_escalate_en'],
+      'lc_ctrl.lc_escalate_en'     : ['otp_ctrl.lc_escalate_en',
+                                      'sram_ctrl_main.lc_escalate_en',
+                                      'sram_ctrl_ret.lc_escalate_en'],
 
       // TODO: OTP Clock bypass signal going from LC to AST/clkmgr
       'lc_ctrl.lc_clk_byp_req'  : [],
@@ -691,7 +726,8 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
-  alert_module: [ "aes", "otbn", "sensor_ctrl", "keymgr", "otp_ctrl", "lc_ctrl", "entropy_src"]
+  alert_module: [ "aes", "otbn", "sensor_ctrl", "keymgr", "otp_ctrl", "lc_ctrl",
+                  "entropy_src", "sram_ctrl_main", "sram_ctrl_ret"]
 
   // generated list of alerts:
   alert: [
