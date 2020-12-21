@@ -22,7 +22,9 @@ parameter string LIST_OF_ALERTS[] = {
   "otp_ctrl_otp_check_failure",
   "lc_ctrl_lc_programming_failure",
   "lc_ctrl_lc_state_failure",
-  "entropy_src_es_alert_count_met"
+  "entropy_src_es_alert_count_met",
+  "sram_ctrl_main_sram_integ_alert",
+  "sram_ctrl_ret_sram_integ_alert"
 };
 
-parameter uint NUM_ALERTS = 18;
+parameter uint NUM_ALERTS = 20;

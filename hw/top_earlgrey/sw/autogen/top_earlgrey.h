@@ -296,6 +296,24 @@ extern "C" {
 #define TOP_EARLGREY_USBDEV_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for sram_ctrl_ret in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SRAM_CTRL_RET_BASE_ADDR 0x40510000u
+
+/**
+ * Peripheral size for sram_ctrl_ret in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SRAM_CTRL_RET_BASE_ADDR and
+ * `TOP_EARLGREY_SRAM_CTRL_RET_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_RET_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SRAM_CTRL_RET_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for flash_ctrl in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -476,12 +494,30 @@ extern "C" {
 #define TOP_EARLGREY_EDN1_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for sram_ctrl_main in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR 0x411C0000u
+
+/**
+ * Peripheral size for sram_ctrl_main in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR and
+ * `TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_MAIN_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SRAM_CTRL_MAIN_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for otbn in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_OTBN_BASE_ADDR 0x411d0000u
+#define TOP_EARLGREY_OTBN_BASE_ADDR 0x411D0000u
 
 /**
  * Peripheral size for otbn in top earlgrey.
@@ -706,7 +742,9 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralOtpCtrl = 4, /**< otp_ctrl */
   kTopEarlgreyAlertPeripheralLcCtrl = 5, /**< lc_ctrl */
   kTopEarlgreyAlertPeripheralEntropySrc = 6, /**< entropy_src */
-  kTopEarlgreyAlertPeripheralLast = 6, /**< \internal Final Alert peripheral */
+  kTopEarlgreyAlertPeripheralSramCtrlMain = 7, /**< sram_ctrl_main */
+  kTopEarlgreyAlertPeripheralSramCtrlRet = 8, /**< sram_ctrl_ret */
+  kTopEarlgreyAlertPeripheralLast = 8, /**< \internal Final Alert peripheral */
 } top_earlgrey_alert_peripheral_t;
 
 /**
@@ -734,7 +772,9 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdLcCtrlLcProgrammingFailure = 15, /**< lc_ctrl_lc_programming_failure */
   kTopEarlgreyAlertIdLcCtrlLcStateFailure = 16, /**< lc_ctrl_lc_state_failure */
   kTopEarlgreyAlertIdEntropySrcEsAlertCountMet = 17, /**< entropy_src_es_alert_count_met */
-  kTopEarlgreyAlertIdLast = 17, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdSramCtrlMainSramIntegAlert = 18, /**< sram_ctrl_main_sram_integ_alert */
+  kTopEarlgreyAlertIdSramCtrlRetSramIntegAlert = 19, /**< sram_ctrl_ret_sram_integ_alert */
+  kTopEarlgreyAlertIdLast = 19, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -744,7 +784,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[18];
+    top_earlgrey_alert_for_peripheral[20];
 
 #define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
 

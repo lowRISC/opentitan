@@ -99,6 +99,12 @@
     }
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_sram_ctrl_ret"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_nmi_gen"
       act:    "req"
       package: "tlul_pkg"

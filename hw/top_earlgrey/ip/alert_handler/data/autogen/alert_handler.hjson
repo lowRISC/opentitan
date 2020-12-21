@@ -43,7 +43,7 @@
     { name: "NAlerts",
       desc: "Number of peripheral inputs",
       type: "int",
-      default: "18",
+      default: "20",
       local: "true"
     },
     { name: "EscCntDw",
@@ -61,7 +61,7 @@
     { name: "AsyncOn",
       desc: "Number of peripheral outputs",
       type: "logic [NAlerts-1:0]",
-      default: "18'b100001100000001111",
+      default: "20'b01100001100000001111",
       local: "true"
     },
     { name: "N_CLASSES",

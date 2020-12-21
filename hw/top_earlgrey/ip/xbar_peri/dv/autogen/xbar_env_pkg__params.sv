@@ -46,6 +46,9 @@ tl_device_t xbar_devices[$] = '{
     '{"alert_handler", '{
         '{32'h40150000, 32'h40150fff}
     }},
+    '{"sram_ctrl_ret", '{
+        '{32'h40510000, 32'h40510fff}
+    }},
     '{"nmi_gen", '{
         '{32'h40160000, 32'h40160fff}
     }},
@@ -70,5 +73,6 @@ tl_host_t xbar_hosts[$] = '{
         "sensor_ctrl",
         "alert_handler",
         "nmi_gen",
-        "ast_wrapper"}}
+        "ast_wrapper",
+        "sram_ctrl_ret"}}
 };

@@ -1321,13 +1321,14 @@
         }
         {
           struct: sram_otp_key
-          width: "2"
+          width: 2
           type: req_rsp
           name: sram_otp_key
           act: rsp
           default: "'0"
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
+          top_signame: otp_ctrl_sram_otp_key
           index: -1
         }
         {
@@ -3114,6 +3115,134 @@
       ]
     }
     {
+      name: sram_ctrl_ret
+      type: sram_ctrl
+      clock_srcs:
+      {
+        clk_i: io_div4
+        clk_otp_i: io_div4
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
+        rst_otp_ni: rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]
+      }
+      domain: Aon
+      base_addr: 0x40510000
+      clock_reset_export: []
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_io_div4_peri
+        clk_otp_i: clkmgr_clocks.clk_io_div4_peri
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list:
+      [
+        {
+          name: RndCnstSramKey
+          desc: Compile-time random reset value for SRAM scrambling key.
+          type: otp_ctrl_pkg::sram_key_t
+          randcount: "128"
+          randtype: data
+          local: "false"
+          default: 0x83d0550b80e84eb1f4c3471c5def7861
+          expose: "false"
+          name_top: RndCnstSramCtrlRetSramKey
+          randwidth: 128
+        }
+        {
+          name: RndCnstSramNonce
+          desc: Compile-time random reset value for SRAM scrambling nonce.
+          type: otp_ctrl_pkg::sram_nonce_t
+          randcount: "64"
+          randtype: data
+          local: "false"
+          default: 0x2d73930d4cac3785
+          expose: "false"
+          name_top: RndCnstSramCtrlRetSramNonce
+          randwidth: 64
+        }
+      ]
+      interrupt_list: []
+      alert_list:
+      [
+        {
+          name: sram_integ_alert
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: alert
+          async: 0
+        }
+      ]
+      wakeup_list: []
+      reset_request_list: []
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: sram_otp_key
+          type: req_rsp
+          name: sram_otp_key
+          act: req
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: sram_ctrl_ret
+          width: 1
+          top_signame: otp_ctrl_sram_otp_key
+          index: 1
+        }
+        {
+          struct: sram_scr
+          type: req_rsp
+          name: sram_scr
+          act: req
+          default: "'0"
+          package: sram_ctrl_pkg
+          inst_name: sram_ctrl_ret
+          width: 1
+          top_signame: sram_ctrl_ret_sram_scr
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_escalate_en
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: sram_ctrl_ret
+          width: 1
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: sram_ctrl_ret
+          width: 1
+          default: ""
+          top_signame: sram_ctrl_ret_tl
+          index: -1
+        }
+      ]
+    }
+    {
       name: flash_ctrl
       type: flash_ctrl
       clock_srcs:
@@ -4822,6 +4951,134 @@
       ]
     }
     {
+      name: sram_ctrl_main
+      type: sram_ctrl
+      clock_srcs:
+      {
+        clk_i: main
+        clk_otp_i: io_div4
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
+        rst_otp_ni: rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
+      }
+      base_addr: 0x411C0000
+      clock_reset_export: []
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks.clk_main_secure
+        clk_otp_i: clkmgr_clocks.clk_io_div4_secure
+      }
+      domain: "0"
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list:
+      [
+        {
+          name: RndCnstSramKey
+          desc: Compile-time random reset value for SRAM scrambling key.
+          type: otp_ctrl_pkg::sram_key_t
+          randcount: "128"
+          randtype: data
+          local: "false"
+          default: 0xb6d4b556d89f9dfcfabd19450b238d4c
+          expose: "false"
+          name_top: RndCnstSramCtrlMainSramKey
+          randwidth: 128
+        }
+        {
+          name: RndCnstSramNonce
+          desc: Compile-time random reset value for SRAM scrambling nonce.
+          type: otp_ctrl_pkg::sram_nonce_t
+          randcount: "64"
+          randtype: data
+          local: "false"
+          default: 0x160733e752cad615
+          expose: "false"
+          name_top: RndCnstSramCtrlMainSramNonce
+          randwidth: 64
+        }
+      ]
+      interrupt_list: []
+      alert_list:
+      [
+        {
+          name: sram_integ_alert
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: alert
+          async: 1
+        }
+      ]
+      wakeup_list: []
+      reset_request_list: []
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: sram_otp_key
+          type: req_rsp
+          name: sram_otp_key
+          act: req
+          default: "'0"
+          package: otp_ctrl_pkg
+          inst_name: sram_ctrl_main
+          width: 1
+          top_signame: otp_ctrl_sram_otp_key
+          index: 0
+        }
+        {
+          struct: sram_scr
+          type: req_rsp
+          name: sram_scr
+          act: req
+          default: "'0"
+          package: sram_ctrl_pkg
+          inst_name: sram_ctrl_main
+          width: 1
+          top_signame: sram_ctrl_main_sram_scr
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_escalate_en
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: sram_ctrl_main
+          width: 1
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: sram_ctrl_main
+          width: 1
+          default: ""
+          top_signame: sram_ctrl_main_tl
+          index: -1
+        }
+      ]
+    }
+    {
       name: otbn
       type: otbn
       clock_srcs:
@@ -4833,7 +5090,7 @@
       {
         rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x411d0000
+      base_addr: 0x411D0000
       clock_reset_export: []
       clock_connections:
       {
@@ -4987,7 +5244,7 @@
       {
         rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      type: ram_1p
+      type: ram_1p_scr
       base_addr: 0x10000000
       size: 0x10000
       byte_write: "true"
@@ -5003,6 +5260,18 @@
           width: 1
           default: ""
           top_signame: ram_main_tl
+          index: -1
+        }
+        {
+          struct: sram_scr
+          package: sram_ctrl_pkg
+          type: req_rsp
+          name: sram_scr
+          act: rsp
+          inst_name: ram_main
+          width: 1
+          default: ""
+          top_signame: sram_ctrl_main_sram_scr
           index: -1
         }
       ]
@@ -5025,7 +5294,7 @@
         rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
       }
       domain: Aon
-      type: ram_1p
+      type: ram_1p_scr
       base_addr: 0x18000000
       size: 0x1000
       byte_write: "true"
@@ -5041,6 +5310,18 @@
           width: 1
           default: ""
           top_signame: ram_ret_tl
+          index: -1
+        }
+        {
+          struct: sram_scr
+          package: sram_ctrl_pkg
+          type: req_rsp
+          name: sram_scr
+          act: rsp
+          inst_name: ram_ret
+          width: 1
+          default: ""
+          top_signame: sram_ctrl_ret_sram_scr
           index: -1
         }
       ]
@@ -5233,6 +5514,19 @@
       [
         lc_ctrl.lc_flash_rma_seed
       ]
+      sram_ctrl_main.sram_scr:
+      [
+        ram_main.sram_scr
+      ]
+      sram_ctrl_ret.sram_scr:
+      [
+        ram_ret.sram_scr
+      ]
+      otp_ctrl.sram_otp_key:
+      [
+        sram_ctrl_main.sram_otp_key
+        sram_ctrl_ret.sram_otp_key
+      ]
       pwrmgr.pwr_flash:
       [
         flash_ctrl.pwrmgr
@@ -5308,6 +5602,8 @@
       lc_ctrl.lc_escalate_en:
       [
         otp_ctrl.lc_escalate_en
+        sram_ctrl_main.lc_escalate_en
+        sram_ctrl_ret.lc_escalate_en
       ]
       lc_ctrl.lc_clk_byp_req: []
       lc_ctrl.lc_creator_seed_sw_rw_en:
@@ -5408,6 +5704,10 @@
       [
         main.tl_keymgr
       ]
+      sram_ctrl_main.tl:
+      [
+        main.tl_sram_ctrl_main
+      ]
       uart.tl:
       [
         peri.tl_uart
@@ -5459,6 +5759,10 @@
       alert_handler.tl:
       [
         peri.tl_alert_handler
+      ]
+      sram_ctrl_ret.tl:
+      [
+        peri.tl_sram_ctrl_ret
       ]
       nmi_gen.tl:
       [
@@ -5551,6 +5855,7 @@
           otbn
           keymgr
           kmac
+          sram_ctrl_main
         ]
         dm_sba:
         [
@@ -5570,6 +5875,7 @@
           padctrl
           otbn
           kmac
+          sram_ctrl_main
         ]
       }
       nodes:
@@ -5649,7 +5955,7 @@
           clock: clk_main_i
           reset: rst_main_ni
           pipeline: "false"
-          inst_type: ram_1p
+          inst_type: ram_1p_scr
           addr_range:
           [
             {
@@ -5700,7 +6006,7 @@
             }
             {
               base_addr: 0x40500000
-              size_byte: 0x1000
+              size_byte: 0x20000
             }
           ]
         }
@@ -5912,7 +6218,7 @@
           addr_range:
           [
             {
-              base_addr: 0x411d0000
+              base_addr: 0x411D0000
               size_byte: 0x10000
             }
           ]
@@ -5937,6 +6243,24 @@
           xbar: false
           stub: false
           pipeline: "true"
+        }
+        {
+          name: sram_ctrl_main
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: "false"
+          inst_type: sram_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x411C0000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
         }
       ]
       clock: clk_main_i
@@ -6195,6 +6519,18 @@
           top_signame: keymgr_tl
           index: -1
         }
+        {
+          struct: tl
+          type: req_rsp
+          name: tl_sram_ctrl_main
+          act: req
+          package: tlul_pkg
+          inst_name: main
+          width: 1
+          default: ""
+          top_signame: sram_ctrl_main_tl
+          index: -1
+        }
       ]
     }
     {
@@ -6234,6 +6570,7 @@
           alert_handler
           nmi_gen
           ast_wrapper
+          sram_ctrl_ret
         ]
       }
       nodes:
@@ -6399,7 +6736,7 @@
           clock: clk_peri_i
           reset: rst_peri_ni
           pipeline: "false"
-          inst_type: ram_1p
+          inst_type: ram_1p_scr
           addr_range:
           [
             {
@@ -6476,6 +6813,24 @@
           [
             {
               base_addr: 0x40150000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
+        }
+        {
+          name: sram_ctrl_ret
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: sram_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x40510000
               size_byte: 0x1000
             }
           ]
@@ -6689,6 +7044,18 @@
           width: 1
           default: ""
           top_signame: alert_handler_tl
+          index: -1
+        }
+        {
+          struct: tl
+          type: req_rsp
+          name: tl_sram_ctrl_ret
+          act: req
+          package: tlul_pkg
+          inst_name: peri
+          width: 1
+          default: ""
+          top_signame: sram_ctrl_ret_tl
           index: -1
         }
         {
@@ -7622,6 +7989,8 @@
     otp_ctrl
     lc_ctrl
     entropy_src
+    sram_ctrl_main
+    sram_ctrl_ret
   ]
   alert:
   [
@@ -7876,6 +8245,34 @@
       type: alert
       async: 1
       module_name: entropy_src
+    }
+    {
+      name: sram_ctrl_main_sram_integ_alert
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: alert
+      async: 1
+      module_name: sram_ctrl_main
+    }
+    {
+      name: sram_ctrl_ret_sram_integ_alert
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: alert
+      async: 0
+      module_name: sram_ctrl_ret
     }
   ]
   pinmux:
@@ -8474,13 +8871,14 @@
       }
       {
         struct: sram_otp_key
-        width: "2"
+        width: 2
         type: req_rsp
         name: sram_otp_key
         act: rsp
         default: "'0"
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
+        top_signame: otp_ctrl_sram_otp_key
         index: -1
       }
       {
@@ -9436,6 +9834,54 @@
         index: -1
       }
       {
+        struct: sram_otp_key
+        type: req_rsp
+        name: sram_otp_key
+        act: req
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: sram_ctrl_ret
+        width: 1
+        top_signame: otp_ctrl_sram_otp_key
+        index: 1
+      }
+      {
+        struct: sram_scr
+        type: req_rsp
+        name: sram_scr
+        act: req
+        default: "'0"
+        package: sram_ctrl_pkg
+        inst_name: sram_ctrl_ret
+        width: 1
+        top_signame: sram_ctrl_ret_sram_scr
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_escalate_en
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: sram_ctrl_ret
+        width: 1
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: sram_ctrl_ret
+        width: 1
+        default: ""
+        top_signame: sram_ctrl_ret_tl
+        index: -1
+      }
+      {
         struct: flash
         type: req_rsp
         name: flash
@@ -10030,6 +10476,54 @@
         index: -1
       }
       {
+        struct: sram_otp_key
+        type: req_rsp
+        name: sram_otp_key
+        act: req
+        default: "'0"
+        package: otp_ctrl_pkg
+        inst_name: sram_ctrl_main
+        width: 1
+        top_signame: otp_ctrl_sram_otp_key
+        index: 0
+      }
+      {
+        struct: sram_scr
+        type: req_rsp
+        name: sram_scr
+        act: req
+        default: "'0"
+        package: sram_ctrl_pkg
+        inst_name: sram_ctrl_main
+        width: 1
+        top_signame: sram_ctrl_main_sram_scr
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_escalate_en
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: sram_ctrl_main
+        width: 1
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: sram_ctrl_main
+        width: 1
+        default: ""
+        top_signame: sram_ctrl_main_tl
+        index: -1
+      }
+      {
         name: idle
         type: uni
         struct: logic
@@ -10078,6 +10572,18 @@
         index: -1
       }
       {
+        struct: sram_scr
+        package: sram_ctrl_pkg
+        type: req_rsp
+        name: sram_scr
+        act: rsp
+        inst_name: ram_main
+        width: 1
+        default: ""
+        top_signame: sram_ctrl_main_sram_scr
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -10087,6 +10593,18 @@
         width: 1
         default: ""
         top_signame: ram_ret_tl
+        index: -1
+      }
+      {
+        struct: sram_scr
+        package: sram_ctrl_pkg
+        type: req_rsp
+        name: sram_scr
+        act: rsp
+        inst_name: ram_ret
+        width: 1
+        default: ""
+        top_signame: sram_ctrl_ret_sram_scr
         index: -1
       }
       {
@@ -10432,6 +10950,18 @@
       {
         struct: tl
         type: req_rsp
+        name: tl_sram_ctrl_main
+        act: req
+        package: tlul_pkg
+        inst_name: main
+        width: 1
+        default: ""
+        top_signame: sram_ctrl_main_tl
+        index: -1
+      }
+      {
+        struct: tl
+        type: req_rsp
         name: tl_main
         act: rsp
         package: tlul_pkg
@@ -10595,6 +11125,18 @@
         width: 1
         default: ""
         top_signame: alert_handler_tl
+        index: -1
+      }
+      {
+        struct: tl
+        type: req_rsp
+        name: tl_sram_ctrl_ret
+        act: req
+        package: tlul_pkg
+        inst_name: peri
+        width: 1
+        default: ""
+        top_signame: sram_ctrl_ret_tl
         index: -1
       }
       {
@@ -10982,6 +11524,54 @@
         width: 1
         type: uni
         default: ""
+      }
+      {
+        package: sram_ctrl_pkg
+        struct: sram_scr_req
+        signame: sram_ctrl_main_sram_scr_req
+        width: 1
+        type: req_rsp
+        default: "'0"
+      }
+      {
+        package: sram_ctrl_pkg
+        struct: sram_scr_rsp
+        signame: sram_ctrl_main_sram_scr_rsp
+        width: 1
+        type: req_rsp
+        default: "'0"
+      }
+      {
+        package: sram_ctrl_pkg
+        struct: sram_scr_req
+        signame: sram_ctrl_ret_sram_scr_req
+        width: 1
+        type: req_rsp
+        default: "'0"
+      }
+      {
+        package: sram_ctrl_pkg
+        struct: sram_scr_rsp
+        signame: sram_ctrl_ret_sram_scr_rsp
+        width: 1
+        type: req_rsp
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: sram_otp_key_req
+        signame: otp_ctrl_sram_otp_key_req
+        width: 2
+        type: req_rsp
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: sram_otp_key_rsp
+        signame: otp_ctrl_sram_otp_key_rsp
+        width: 2
+        type: req_rsp
+        default: "'0"
       }
       {
         package: pwrmgr_pkg
@@ -11546,6 +12136,22 @@
       {
         package: tlul_pkg
         struct: tl_h2d
+        signame: sram_ctrl_main_tl_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: sram_ctrl_main_tl_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
         signame: uart_tl_req
         width: 1
         type: req_rsp
@@ -11747,6 +12353,22 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: alert_handler_tl_rsp
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: sram_ctrl_ret_tl_req
+        width: 1
+        type: req_rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: sram_ctrl_ret_tl_rsp
         width: 1
         type: req_rsp
         default: ""

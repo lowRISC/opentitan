@@ -50,6 +50,7 @@ tl_if pinmux_tl_if(clk_main, rst_n);
 tl_if padctrl_tl_if(clk_main, rst_n);
 tl_if otbn_tl_if(clk_main, rst_n);
 tl_if keymgr_tl_if(clk_main, rst_n);
+tl_if sram_ctrl_main_tl_if(clk_main, rst_n);
 tl_if uart_tl_if(clk_io_div4, rst_n);
 tl_if gpio_tl_if(clk_io_div4, rst_n);
 tl_if spi_device_tl_if(clk_io_div4, rst_n);
@@ -63,6 +64,7 @@ tl_if otp_ctrl_tl_if(clk_io_div4, rst_n);
 tl_if lc_ctrl_tl_if(clk_io_div4, rst_n);
 tl_if sensor_ctrl_tl_if(clk_io_div4, rst_n);
 tl_if alert_handler_tl_if(clk_io_div4, rst_n);
+tl_if sram_ctrl_ret_tl_if(clk_io_div4, rst_n);
 tl_if nmi_gen_tl_if(clk_io_div4, rst_n);
 tl_if ast_wrapper_tl_if(clk_io_div4, rst_n);
 
@@ -110,6 +112,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(padctrl, padctrl, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(otbn, otbn, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(keymgr, keymgr, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main, sram_ctrl_main, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(uart, uart, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl)
@@ -123,6 +126,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl, lc_ctrl, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(sensor_ctrl, sensor_ctrl, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(alert_handler, alert_handler, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret, sram_ctrl_ret, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(nmi_gen, nmi_gen, tl)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast_wrapper, ast_tl)
   end

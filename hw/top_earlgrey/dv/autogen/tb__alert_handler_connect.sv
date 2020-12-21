@@ -22,3 +22,5 @@ assign alert_if[14].alert_tx = `CHIP_HIER.u_otp_ctrl.alert_tx_o[1];
 assign alert_if[15].alert_tx = `CHIP_HIER.u_lc_ctrl.alert_tx_o[0];
 assign alert_if[16].alert_tx = `CHIP_HIER.u_lc_ctrl.alert_tx_o[1];
 assign alert_if[17].alert_tx = `CHIP_HIER.u_entropy_src.alert_tx_o[0];
+assign alert_if[18].alert_tx = `CHIP_HIER.u_sram_ctrl_main.alert_tx_o[0];
+assign alert_if[19].alert_tx = `CHIP_HIER.u_sram_ctrl_ret.alert_tx_o[0];
