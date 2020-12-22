@@ -197,9 +197,9 @@ module edn_core import edn_pkg::*; #(
   assign event_edn_cmd_req_done = csrng_cmd_ack;
 
   // set the interrupt sources
-  assign event_edn_fifo_err =
+  assign event_edn_fifo_err = edn_enable && (
          (|sfifo_rescmd_err) ||
-         (|sfifo_gencmd_err);
+         (|sfifo_gencmd_err));
 
 
   // set the err code source bits
