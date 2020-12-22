@@ -51,10 +51,10 @@ def main():
          hjson_file.write(orighdr + hjson.dumps(cfg, hjson_file))
 
     # update value
-    log.info("Updating flash pages_per_bank to 32")
+    log.info("Updating flash pages_per_bank to 16")
     for mem in cfg["memory"]:
         if mem['type'] == 'eflash':
-            mem['pages_per_bank'] = 32
+            mem['pages_per_bank'] = 16
 
     # write back updated hjson
     with open(top_hjson, "w") as hjson_file:
