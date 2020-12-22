@@ -474,12 +474,12 @@ module kmac
   assign tlram_rerror = '0;
 
   // Convert endian here
-  //    prim_packer always packs to the right, but SHA engine assumes incoming
-  //    to be big-endian, [31:24] comes first. So, the data is reverted after
-  //    prim_packer before the message fifo. here to reverse if not big-endian
-  //    before pushing to the packer.
-  assign tlram_wdata_endian = conv_endian32(tlram_wdata, ~reg2hw.cfg.msg_endianness.q);
-  assign tlram_wmask_endian = conv_endian32(tlram_wmask, ~reg2hw.cfg.msg_endianness.q);
+  //    prim_packer always packs to the right(bit0). If the input DWORD is
+  //    big-endian, it needs to be swapped to little-endian to maintain the
+  //    order. Internal SHA3(Keccak) runs in little-endian in contrast to HMAC
+  //    So, no endian-swap after prim_packer.
+  assign tlram_wdata_endian = conv_endian32(tlram_wdata, reg2hw.cfg.msg_endianness.q);
+  assign tlram_wmask_endian = conv_endian32(tlram_wmask, reg2hw.cfg.msg_endianness.q);
 
   // TL Adapter
   tlul_adapter_sram #(

@@ -185,15 +185,14 @@
         } // f: mode
         { bits: "8"
           name: "msg_endianness"
-          desc: '''Message and Secret Key Endianness.
+          desc: '''Message Endianness.
 
-                Convert TL-UL write data[31:0] to big-endian style
-                {d[7:0], d[15:8], ...}
+                If 1, Convert TL-UL write data[31:0] to {d[7:0], d[15:8], ...}
 
                 0: Little-endian. Keep input value as it is
                 1: Big-endian. Convert incoming value
                 '''
-          resval: "1"
+          resval: "0"
         } // f: msg_endianness
         { bits: "9"
           name: "state_endianness"
