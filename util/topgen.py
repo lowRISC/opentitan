@@ -1201,6 +1201,14 @@ def main():
             # 'top_{topname}_memory.h.tpl' -> 'sw/autogen/top_{topname}_memory.h'
             memory_cheader_path = render_template('top_%s_memory.h', cformat_dir)
 
+            try:
+                cheader_path.relative_to(SRCTREE_TOP)
+            except ValueError:
+                log.error("cheader_path %s is not within SRCTREE_TOP %s",
+                          cheader_path, SRCTREE_TOP)
+                log.error("Thus skipping util/fix_include_guard.py")
+                continue
+
             # Fix the C header guards, which will have the wrong name
             subprocess.run(["util/fix_include_guard.py",
                             str(cheader_path),
