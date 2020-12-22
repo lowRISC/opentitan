@@ -18,11 +18,9 @@ module tb;
   wire clk, rst_n;
   wire devmode;
   wire [LcPwrIfWidth-1:0] pwr_lc;
-  // TODO: use push-pull agent
-  wire lc_otp_token_rsp_t lc_rsp;
-  assign lc_rsp.ack = 1;
-  // TODO: temp constraint to 0 because it has to equal to otp_lc_data_i tokens
-  assign lc_rsp.hashed_token = 0;
+  // TODO: can delete once push-pull agent support constraint data
+  wire otp_ctrl_pkg::lc_otp_program_rsp_t otp_prog_rsp;
+  wire otp_ctrl_pkg::lc_otp_token_rsp_t   otp_token_rsp;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -30,8 +28,18 @@ module tb;
   pins_if #(LcPwrIfWidth) pwr_lc_if(pwr_lc);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   lc_ctrl_if lc_ctrl_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.HostDataWidth(OTP_PROG_HDATA_WIDTH), .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))
+               otp_prog_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) otp_token_if(.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
+
+  // TODO: remove once OTP_PROG_DDATA_WIDTH is set to 1
+  assign otp_prog_rsp.err = 0;
+  assign otp_prog_rsp.ack = otp_prog_if.ack;
+  assign otp_token_rsp.ack = otp_token_if.ack;
+  // TODO: temp constraint to 0 because it has to equal to otp_lc_data_i tokens
+  assign otp_token_rsp.hashed_token = 0;
 
   // dut
   lc_ctrl dut (
@@ -55,11 +63,11 @@ module tb;
     .pwr_lc_i                   (pwr_lc[LcPwrInitReq]),
     .pwr_lc_o                   (pwr_lc[LcPwrDoneRsp:LcPwrIdleRsp]),
 
-    .lc_otp_program_o           (),
-    .lc_otp_program_i           (2'b01),
+    .lc_otp_program_o           ({otp_prog_if.req, otp_prog_if.h_data}),
+    .lc_otp_program_i           (otp_prog_rsp),
 
-    .lc_otp_token_o             (),
-    .lc_otp_token_i             (lc_rsp),
+    .lc_otp_token_o             ({otp_token_if.req, otp_token_if.h_data}),
+    .lc_otp_token_i             (otp_token_rsp),
 
     .otp_lc_data_i              (lc_ctrl_if.otp_i),
 
@@ -95,6 +103,12 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(pwr_lc_vif)::set(null, "*.env", "pwr_lc_vif", pwr_lc_if);
     uvm_config_db#(virtual lc_ctrl_if)::set(null, "*.env", "lc_ctrl_vif", lc_ctrl_if);
+
+    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
+                                         .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)))::
+                   set(null, "*env.m_otp_prog_pull_agent*", "vif", otp_prog_if);
+    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))::
+                   set(null, "*env.m_otp_token_pull_agent*", "vif", otp_token_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
