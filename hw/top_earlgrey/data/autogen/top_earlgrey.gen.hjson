@@ -1542,7 +1542,7 @@
           type: uni
           name: otp_lc_data
           act: rcv
-          default: "'0"
+          default: otp_ctrl_pkg::OTP_LC_DATA_DEFAULT
           package: otp_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
@@ -8990,7 +8990,7 @@
         type: uni
         name: otp_lc_data
         act: rcv
-        default: "'0"
+        default: otp_ctrl_pkg::OTP_LC_DATA_DEFAULT
         package: otp_ctrl_pkg
         inst_name: lc_ctrl
         width: 1

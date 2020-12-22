@@ -173,6 +173,19 @@ package otp_ctrl_pkg;
     lc_ctrl_pkg::lc_id_state_e id_state;
   } otp_lc_data_t;
 
+  // Default for dangling connection
+  parameter otp_lc_data_t OTP_LC_DATA_DEFAULT = '{
+    valid: 1'b1,
+    state: '0,
+    count: '0,
+    all_zero_token: '0,
+    raw_unlock_token: '0,
+    test_unlock_token: '0,
+    test_exit_token: '0,
+    rma_token: '0,
+    id_state: '0
+  };
+
   typedef struct packed {
     logic req;
     lc_ctrl_pkg::lc_state_e state;
