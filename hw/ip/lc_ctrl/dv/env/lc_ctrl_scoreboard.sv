@@ -41,34 +41,16 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         string         err_msg  = $sformatf("LC_St %0s", lc_state.name);
         cfg.clk_rst_vif.wait_n_clks(1);
 
-        // check LC broadcast output
-        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_dft_en_o,       exp_lc_o.lc_dft_en_o,       err_msg)
-        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_nvm_debug_en_o, exp_lc_o.lc_nvm_debug_en_o, err_msg)
-        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_hw_debug_en_o,  exp_lc_o.lc_hw_debug_en_o,  err_msg)
-        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_cpu_en_o,       exp_lc_o.lc_cpu_en_o,       err_msg)
-        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_keymgr_en_o,    exp_lc_o.lc_keymgr_en_o,    err_msg)
-        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_escalate_en_o,  exp_lc_o.lc_escalate_en_o,  err_msg)
-        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_owner_seed_sw_rw_en_o,
-                     exp_lc_o.lc_owner_seed_sw_rw_en_o, err_msg)
-        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_iso_part_sw_rd_en_o,
-                     exp_lc_o.lc_iso_part_sw_rd_en_o, err_msg)
-        `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_iso_part_sw_wr_en_o,
-                     exp_lc_o.lc_iso_part_sw_wr_en_o, err_msg)
-
         // lc_creator_seed_sw_rw_en_o is ON only when device has NOT been personalized or RMA state
-        if ((exp_lc_o.lc_creator_seed_sw_rw_en_o == lc_ctrl_pkg::On && !is_personalized) ||
-            lc_state == DecLcStRma) begin
-          `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_creator_seed_sw_rw_en_o, lc_ctrl_pkg::On, err_msg)
-        end else begin
-          `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_creator_seed_sw_rw_en_o, lc_ctrl_pkg::Off, err_msg)
+        if (is_personalized && lc_state != DecLcStRma) begin
+          exp_lc_o.lc_creator_seed_sw_rw_en_o = lc_ctrl_pkg::Off;
         end
         // lc_seed_hw_rd_en_o is ON only when device has been personalized or RMA state
-        if ((exp_lc_o.lc_seed_hw_rd_en_o == lc_ctrl_pkg::On && is_personalized) ||
-            lc_state == DecLcStRma) begin
-          `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_seed_hw_rd_en_o, lc_ctrl_pkg::On, err_msg)
-        end else begin
-          `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_seed_hw_rd_en_o, lc_ctrl_pkg::Off, err_msg)
+        if (!is_personalized && lc_state != DecLcStRma) begin
+          exp_lc_o.lc_seed_hw_rd_en_o = lc_ctrl_pkg::Off;
         end
+
+        check_lc_outputs(exp_lc_o, err_msg);
 
         // predict LC state and cnt csr
         void'(ral.lc_state.predict(lc_state));
@@ -76,6 +58,23 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       end
     end
   endtask
+
+  // check lc outputs, default all off
+  virtual function void check_lc_outputs(lc_outputs_t exp_o = '{default:lc_ctrl_pkg::Off},
+                                         string       msg   = "expect all output OFF");
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_dft_en_o,              exp_o.lc_dft_en_o,              msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_nvm_debug_en_o,        exp_o.lc_nvm_debug_en_o,        msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_hw_debug_en_o,         exp_o.lc_hw_debug_en_o,         msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_cpu_en_o,              exp_o.lc_cpu_en_o,              msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_keymgr_en_o,           exp_o.lc_keymgr_en_o,           msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_escalate_en_o,         exp_o.lc_escalate_en_o,         msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_owner_seed_sw_rw_en_o, exp_o.lc_owner_seed_sw_rw_en_o, msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_iso_part_sw_rd_en_o,   exp_o.lc_iso_part_sw_rd_en_o,   msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_iso_part_sw_wr_en_o,   exp_o.lc_iso_part_sw_wr_en_o,   msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_seed_hw_rd_en_o,       exp_o.lc_seed_hw_rd_en_o,       msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_creator_seed_sw_rw_en_o,
+                 exp_o.lc_creator_seed_sw_rw_en_o, msg)
+  endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
@@ -108,6 +107,12 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // TODO: temp enable read checking, once do_read_check default set to 1, should not need this.
       "lc_transition_cnt", "lc_state": do_read_check = 1;
+      "status": begin
+        if (data_phase_read) begin
+          // when lc successfully req a transition, all outputs are turned off
+          if (item.d_data[ral.status.transition_successful.get_lsb_pos()]) check_lc_outputs();
+        end
+      end
       default: begin
         // `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
