@@ -41,7 +41,7 @@
       desc: '''
            Randomly select key length to verify all supported key lengths are working.'''
            milestone: V2
-      tests: ["aes_stress", "aes_smoke", "aes_config_error", "aes_clear"]
+      tests: ["aes_stress", "aes_smoke", "aes_config_error"]
     }
     {
       name: back2back
@@ -49,7 +49,7 @@
            Randomly select the spacing between consecutive messages and blocks from 0 - n clock cycles.
            The distribution will be weighted toward no and small gaps (0-10 cycles) but will also cover larger gaps.'''
       milestone: V2
-      tests: ["aes_b2b", "aes_stress", "aes_clear"]
+      tests: ["aes_b2b", "aes_stress"]
     }
     {
       name: backpressure
@@ -64,7 +64,7 @@
         Run multiple messages in a random mix of encryption / decryption.
         Each message should select its mode randomly.'''
       milestone: V2
-      tests: ["aes_stress", "aes_smoke", "aes_config_error", "aes_clear"]
+      tests: ["aes_stress", "aes_smoke", "aes_config_error"]
     }
     {
       name: failure_test
@@ -85,7 +85,7 @@
             Exercise trigger and clear registers at random times to make sure we handle the different cornercases correctly.
             Example of a cornercases clearing data input or data output before the data is consumed or the DUT finishes an operation.'''
       milestone: V2
-      tests: ["aes_clear"]
+      tests: []
     }
     {
       name: nist_test_vectors
