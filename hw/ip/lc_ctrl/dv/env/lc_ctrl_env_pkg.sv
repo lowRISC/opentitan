@@ -14,6 +14,7 @@ package lc_ctrl_env_pkg;
   import lc_ctrl_ral_pkg::*;
   import lc_ctrl_pkg::*;
   import otp_ctrl_pkg::*;
+  import push_pull_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -24,6 +25,11 @@ package lc_ctrl_env_pkg;
   parameter uint   NUM_ALERTS = 2;
   parameter uint   CLAIM_TRANS_VAL = 'ha5;
   parameter uint   NUM_STATES = 16;
+
+  // lc_otp_program host data width: lc_state_e width + lc_cnt_e width
+  parameter uint OTP_PROG_HDATA_WIDTH = lc_ctrl_pkg::LcStateWidth + lc_ctrl_pkg::LcCountWidth;
+  // TODO: temp set to 0, once push-pull agent can constraint data, it will set to 1 for error bit
+  parameter uint OTP_PROG_DDATA_WIDTH = 0;
 
   typedef struct packed {
     lc_ctrl_pkg::lc_tx_e lc_dft_en_o;

@@ -11,7 +11,12 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // local variables
   bit is_personalized = 0;
+
   // TLM agent fifos
+  uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
+                        .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))) otp_prog_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))
+                        otp_token_fifo;
 
   // local queues to hold incoming packets pending comparison
 
@@ -19,6 +24,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    otp_prog_fifo = new("otp_prog_fifo", this);
+    otp_token_fifo = new("otp_token_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
