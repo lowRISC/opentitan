@@ -24,6 +24,8 @@ interface lc_ctrl_if(input clk, input rst_n);
   lc_ctrl_pkg::lc_tx_t lc_keymgr_en_o;
   lc_ctrl_pkg::lc_tx_t lc_escalate_en_o;
 
+  lc_ctrl_pkg::lc_keymgr_div_t lc_keymgr_div_o;
+
   task automatic init(lc_ctrl_pkg::lc_state_e lc_state = LcStRaw,
                       lc_ctrl_pkg::lc_cnt_e   lc_cnt = LcCntRaw);
     otp_i.valid = 1;

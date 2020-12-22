@@ -90,7 +90,7 @@ module tb;
     .lc_flash_rma_req_o         (),
     .lc_flash_rma_ack_i         (lc_ctrl_pkg::Off),
 
-    .lc_keymgr_div_o            (),
+    .lc_keymgr_div_o            (lc_ctrl_if.lc_keymgr_div_o),
 
     .otp_hw_cfg_i               (lc_ctrl_if.otp_hw_cfg_i)
   );
