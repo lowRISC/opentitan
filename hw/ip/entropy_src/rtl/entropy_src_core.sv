@@ -376,9 +376,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   // set the interrupt sources
-  assign event_es_fifo_err =
+  assign event_es_fifo_err = es_enable && (
          (|sfifo_esrng_err) ||
-         (sfifo_esfinal_err);
+         (sfifo_esfinal_err));
 
   // set the err code source bits
   assign hw2reg.err_code.sfifo_esrng_err.d = 1'b1;
