@@ -316,8 +316,8 @@ int main(int argc, char **argv) {
   CHECK(dif_rv_timer_irq_enable(&timer, kHart, kComparator,
                                 kDifRvTimerEnabled) == kDifRvTimerOk);
 
-  dif_gpio_params_t gpio_params = {.base_addr =
-                                       mmio_region_from_addr(0x40010000)};
+  dif_gpio_params_t gpio_params = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR)};
   CHECK(dif_gpio_init(gpio_params, &gpio) == kDifGpioOk);
   CHECK(dif_gpio_output_set_enabled_all(&gpio, 0x08200) == kDifGpioOk);
   CHECK(dif_gpio_write_all(&gpio, kGpioCaptureTriggerLow) == kDifGpioOk);
