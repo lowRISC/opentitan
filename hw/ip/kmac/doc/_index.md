@@ -304,6 +304,24 @@ After the software reads all the digest values, it issues Done command to !!CMD 
 Done command clears the Keccak state, FSM in SHA3 and KMAC, and a few internal variables.
 Secret key and other software programmed values won't be reset.
 
+
+## Endianness
+
+This KMAC HWIP operates in little-endian.
+Internal SHA3 hashing engine receives in 64-bit granularity.
+The data written to SHA3 is assumed to be little endian.
+
+The software may write/read the data in big-endian order if !!CFG.msg_endianness or !!CFG.state_endianness is set.
+If the endianness bit is 1, the data is assumed to be big-endian.
+So, the internal logic byte-swap the data.
+For example, when the software writes `0xDEADBEEF` with endianness as 1, the logic converts it to `0xEFBEADDE` then writes into MSG_FIFO.
+
+The software managed secret key, and the prefix are always little-endian values.
+For example, if the software configures the function name `N` in KMAC operation, it writes `encode_string("KMAC")`.
+The `encode_string("KMAC")` represents `0x01 0x20 0x4b 0x4d 0x41 0x43` in byte order.
+The software writes `0x4d4b2001` into !!PREFIX0 and `0x????4341` into !!PREFIX1 .
+Upper 2 bytes can vary depending on the customization input string `S`.
+
 ## KMAC/SHA3 context switching
 
 This version of KMAC/SHA3 HWIP _does not_ support the software context switching.
