@@ -80,6 +80,13 @@
       package: "alert_pkg",
     },
 
+    { struct:  "crashdump",
+      type:    "uni",
+      name:    "cpu_dump",
+      act:     "rcv",
+      package: "rv_core_ibex_pkg",
+    },
+
     // Exported resets
     { struct:  "rstmgr_ast_out",
       type:    "uni",
