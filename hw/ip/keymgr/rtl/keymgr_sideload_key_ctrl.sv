@@ -118,7 +118,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .en_i(keys_en),
     .set_en_i(data_en_i),
     .set_i(data_valid_i & aes_sel),
-    .clr_i(clr), // TBD, should add an option for software clear later
+    .clr_i(clr),
     .entropy_i(entropy_i),
     .key_i(data_i),
     .key_o(aes_key_o)
@@ -130,7 +130,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .en_i(keys_en),
     .set_en_i(data_en_i),
     .set_i(data_valid_i & hmac_sel),
-    .clr_i(clr), // TBD, should add an option for software clear later
+    .clr_i(clr),
     .entropy_i(entropy_i),
     .key_i(data_i),
     .key_o(hmac_key_o)
@@ -143,7 +143,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .en_i(keys_en),
     .set_en_i(data_en_i),
     .set_i(data_valid_i & kmac_sel),
-    .clr_i(clr), // TBD, should add an option for software clear laterclr
+    .clr_i(clr),
     .entropy_i(entropy_i),
     .key_i(data_i),
     .key_o(kmac_sideload_key)
@@ -160,7 +160,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   //  Assertions
   /////////////////////////////////////
 
-  // Only 1 entity should be trying to use the secret kmac key input
-  `ASSERT(KmacKeyLoadExclusive_a, $onehot0({load_key_i, data_valid_i & kmac_sel}))
+  // When updating a sideload key, the secret key state must always be used as the source
+  `ASSERT(KmacKeySource_a, data_valid_i |-> load_key_i)
 
 endmodule // keymgr_sideload_key_ctrl

@@ -130,10 +130,12 @@ module keymgr_ctrl import keymgr_pkg::*;(
   //   state.
   // - when there are no operations, the key state also should be exposed.
   assign key_o.valid = op_accepted;
-  assign key_o.key_share0 = (~op_start_i | disable_sel) ? {EntropyRounds{entropy_i}} :
-                                                          key_state_q[0];
-  assign key_o.key_share1 = (~op_start_i | disable_sel) ? {EntropyRounds{entropy_i}} :
-                                                          key_state_q[1];
+  assign key_o.key_share0 = (~op_start_i | stage_sel_o == Disable) ?
+                            {EntropyRounds{entropy_i}} :
+                            key_state_q[0];
+  assign key_o.key_share1 = (~op_start_i | stage_sel_o == Disable) ?
+                            {EntropyRounds{entropy_i}} :
+                            key_state_q[1];
 
   // key state is intentionally not reset
   always_ff @(posedge clk_i) begin
@@ -508,20 +510,35 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
 
 
-
-
-
-
   ///////////////////////////////
   // Functions
   ///////////////////////////////
 
   // unclear what this is supposed to be yet
   // right now just check to see if it not all 0's and not all 1's
-  function automatic logic valid_data_chk (logic [KeyWidth-1:0] value);
+ function automatic logic valid_data_chk (logic [KeyWidth-1:0] value);
 
     return |value & ~&value;
 
   endfunction // byte_mask
+
+  /////////////////////////////////
+  // Assertions
+  /////////////////////////////////
+
+  // stage select should always be Disable whenever it is not enabled
+  `ASSERT(StageDisableSel_A, !en_i |-> stage_sel_o == Disable)
+
+  // Unless it is a legal command, only select disable
+  `ASSERT(InitLegalCommands_A, op_start_i & en_i & state_q inside {StCtrlInit} &
+                               !(op_i inside {OpAdvance}) |-> stage_sel_o == Disable)
+
+  // All commands are legal, so select disable only if operation is disable
+  `ASSERT(GeneralLegalCommands_A, op_start_i & en_i &
+                                  state_q inside {StCtrlCreatorRootKey, StCtrlOwnerIntKey} &
+                                  (op_i inside {OpDisable}) |-> stage_sel_o == Disable)
+
+  `ASSERT(OwnerLegalCommands_A, op_start_i & en_i & state_q inside {StCtrlOwnerKey} &
+                                (op_i inside {OpAdvance, OpDisable}) |-> stage_sel_o == Disable)
 
 endmodule
