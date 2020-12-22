@@ -392,9 +392,7 @@ module otbn
 
   // Latch any error that we consider fatal.
   logic fatal_err_q, fatal_err_d;
-  assign fatal_err_d = (fatal_err_q |
-                        (imem_rvalid & imem_rerror) |
-                        (dmem_rvalid & dmem_rerror));
+  assign fatal_err_d = fatal_err_q | imem_rerror | dmem_rerror;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       fatal_err_q <= 1'b0;
