@@ -276,6 +276,7 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_pwr_otp_rsp;
   pwrmgr_pkg::pwr_lc_req_t       pwrmgr_pwr_lc_req;
   pwrmgr_pkg::pwr_lc_rsp_t       pwrmgr_pwr_lc_rsp;
+  rv_core_ibex_pkg::crashdump_t       rv_core_ibex_crashdump;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
@@ -452,6 +453,8 @@ module top_earlgrey #(
     .esc_rx_o             (alert_handler_esc_rx[0]),
     // debug interface
     .debug_req_i          (debug_req),
+    // crash dump interface
+    .crash_dump_o         (rv_core_ibex_crashdump),
     // CPU control signals
     .fetch_enable_i       (1'b1),
     .core_sleep_o         (pwrmgr_pwr_cpu.core_sleeping)
@@ -999,6 +1002,7 @@ module top_earlgrey #(
       .ast_i(rstmgr_ast_i),
       .cpu_i(rstmgr_cpu),
       .alert_dump_i(alert_handler_crashdump),
+      .cpu_dump_i(rv_core_ibex_crashdump),
       .resets_ast_o(rsts_ast_o),
       .tl_i(rstmgr_tl_req),
       .tl_o(rstmgr_tl_rsp),

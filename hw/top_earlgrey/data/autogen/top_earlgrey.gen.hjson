@@ -380,6 +380,19 @@
           top_signame: alert_handler_esc_rx
           index: 0
         }
+        {
+          struct: crashdump
+          type: uni
+          name: crashdump
+          act: req
+          package: rv_core_ibex_pkg
+          inst_name: rv_core_ibex
+          width: 1
+          default: ""
+          top_type: broadcast
+          top_signame: rv_core_ibex_crashdump
+          index: -1
+        }
       ]
     }
   ]
@@ -2405,6 +2418,18 @@
           width: 1
           default: ""
           top_signame: alert_handler_crashdump
+          index: -1
+        }
+        {
+          struct: crashdump
+          type: uni
+          name: cpu_dump
+          act: rcv
+          package: rv_core_ibex_pkg
+          inst_name: rstmgr
+          width: 1
+          default: ""
+          top_signame: rv_core_ibex_crashdump
           index: -1
         }
         {
@@ -5227,6 +5252,10 @@
       pwrmgr.pwr_lc:
       [
         lc_ctrl.pwr_lc
+      ]
+      rv_core_ibex.crashdump:
+      [
+        rstmgr.cpu_dump
       ]
       otp_ctrl.otp_keymgr_key:
       [
@@ -9142,6 +9171,18 @@
         index: -1
       }
       {
+        struct: crashdump
+        type: uni
+        name: cpu_dump
+        act: rcv
+        package: rv_core_ibex_pkg
+        inst_name: rstmgr
+        width: 1
+        default: ""
+        top_signame: rv_core_ibex_crashdump
+        index: -1
+      }
+      {
         struct: rstmgr_ast_out
         type: uni
         name: resets_ast
@@ -10605,6 +10646,19 @@
         top_signame: alert_handler_esc_rx
         index: 0
       }
+      {
+        struct: crashdump
+        type: uni
+        name: crashdump
+        act: req
+        package: rv_core_ibex_pkg
+        inst_name: rv_core_ibex
+        width: 1
+        default: ""
+        top_type: broadcast
+        top_signame: rv_core_ibex_crashdump
+        index: -1
+      }
     ]
     external:
     [
@@ -11007,6 +11061,14 @@
         signame: pwrmgr_pwr_lc_rsp
         width: 1
         type: req_rsp
+        default: ""
+      }
+      {
+        package: rv_core_ibex_pkg
+        struct: crashdump
+        signame: rv_core_ibex_crashdump
+        width: 1
+        type: uni
         default: ""
       }
       {
