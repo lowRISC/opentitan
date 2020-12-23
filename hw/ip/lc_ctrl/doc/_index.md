@@ -207,15 +207,21 @@ When this signal is logically disabled, any existing key manager collateral is u
 
 The KEY_MANAGER_EN signal is active only during DEV / PROD / PROD_END / RMA.
 
+#### ESCALATE_EN
+
+The ESCALATE_EN signal is available in all life cycle states and is asserted if for any reason the alert subsystem decides to move the life cycle state into the ESCALATION state.
+
+#### CHECK_BYP_EN
+
+The CHECK_BYP_EN signal is used to disable the [background consistency checks]({{< relref "hw/ip/otp_ctrl/doc/_index.md#partition-checks" >}}) of the life cycle OTP partition during life cycle transitions to prevent spurious consistency checkl failures (the OTP contents and the buffer registers can get out of sync during state transitions).
+The CHECK_BYP_EN signal is only asserted when a transition command is issued.
+
 #### CLK_BYP_REQ
 
 The CLK_BYP_REQ signal switches the main system clock to an external clock signal in RAW and TEST_LOCKED states when initiating a life cycle transition.
 This is needed since the internal clock source may not be fully calibrated yet in those states, and the OTP macro requires a stable clock frequency in order to reliably program the fuse array.
 The CLK_BYP_REQ signal is only asserted when a transition command is issued.
 
-#### ESCALATE_EN
-
-The ESCALATE_EN signal is available in all life cycle states and is asserted if for any reason the alert subsystem decides to move the life cycle state into the ESCALATION state.
 
 ### Life Cycle Access Control Signals
 
@@ -387,6 +393,7 @@ Signal                       | Direction        | Type                          
 `lc_seed_hw_rd_en_o`         | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
 `lc_keymgr_en_o`             | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
 `lc_escalate_en_o`           | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_check_byp_en_o`          | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
 `lc_clk_byp_req_o`           | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
 `lc_clk_byp_ack_i`           | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
 `lc_flash_rma_req_o`         | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
