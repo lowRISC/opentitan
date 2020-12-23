@@ -34,7 +34,7 @@ Finally, we provide the same set of information for all available [top level des
 
 * `core_ibex`
   * [User manual](https://ibex-core.readthedocs.io/en/latest)
-  * [dv document](https://ibex-core.readthedocs.io/en/latest/verification.html)
+  * [dv document](https://ibex-core.readthedocs.io/en/latest/03_reference/verification.html)
   * DV simulation results, with coverage (nightly) (TBD)
 
 ## Top level designs

@@ -185,7 +185,7 @@ Performance improvements are ongoing, including the following items being consid
 
 The method for including these features, e.g. whether they will be configurable options or not, is still being discussed.
 
-The Ibex documentation has more details on the current pipeline operation, including stall behaviour for each instruction in the [Pipeline Details](https://ibex-core.readthedocs.io/en/latest/pipeline_details.html) section.
+The Ibex documentation has more details on the current pipeline operation, including stall behaviour for each instruction in the [Pipeline Details](https://ibex-core.readthedocs.io/en/latest/03_reference/pipeline_details.html) section.
 
 The CoreMark performance achieved relies in part on single-cycle access to instruction memory.
 An instruction cache is planned to help maintain this performance when using flash memory that will likely not have single-cycle access times.
