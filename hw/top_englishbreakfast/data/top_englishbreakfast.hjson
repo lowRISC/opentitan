@@ -247,13 +247,6 @@
       base_addr: "0x40110000",
       top_only: "true"
     },
-    { name: "otp_ctrl",
-      type: "otp_ctrl",
-      clock_srcs: {clk_i: "io_div4"},
-      clock_group: "timers",
-      reset_connections: {rst_ni: "lc_io_div4"},
-      base_addr: "0x40130000",
-    },
     { name: "lc_ctrl",
       type: "lc_ctrl",
       clock_srcs: {clk_i: "io_div4"},
@@ -383,61 +376,12 @@
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x41110000",
     },
-    { name: "kmac"
-      type: "kmac"
-      clock_srcs: {clk_i: "main"}
-      clock_group: "trans"
-      reset_connections: {rst_ni: "sys"}
-      base_addr: "0x41120000"
-    },
-    { name: "keymgr",
-      type: "keymgr",
-      clock_srcs: {clk_i: "main", clk_edn_i: "main"},
-      clock_group: "secure",
-      reset_connections: {rst_ni: "sys", rst_edn_ni: "sys"},
-      base_addr: "0x41130000",
-    },
-    { name: "csrng",
-      type: "csrng",
-      clock_srcs: {clk_i: "main"},
-      clock_group: "secure",
-      reset_connections: {rst_ni: "sys"},
-      base_addr: "0x41150000",
-    },
-    { name: "entropy_src",
-      type: "entropy_src",
-      clock_srcs: {clk_i: "main"},
-      clock_group: "secure",
-      reset_connections: {rst_ni: "sys"},
-      base_addr: "0x41160000",
-    },
-    { name: "edn0",
-      type: "edn",
-      clock_srcs: {clk_i: "main"},
-      clock_group: "secure",
-      reset_connections: {rst_ni: "sys"},
-      base_addr: "0x41170000",
-    },
-    { name: "edn1",
-      type: "edn",
-      clock_srcs: {clk_i: "main"},
-      clock_group: "secure",
-      reset_connections: {rst_ni: "sys"},
-      base_addr: "0x41180000",
-    },
     { name: "sram_ctrl_main",
       type: "sram_ctrl",
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys", rst_otp_ni: "lc_io_div4"},
       base_addr: "0x411C0000",
-    },
-    { name: "otbn",
-      type: "otbn",
-      clock_srcs: {clk_i: "main"},
-      clock_group: "trans",
-      reset_connections: {rst_ni: "sys"},
-      base_addr: "0x411D0000",
     },
   ]
 
@@ -517,7 +461,7 @@
       type: "eflash",
       base_addr: "0x20000000",
       banks: 2,
-      pages_per_bank: 128,
+      pages_per_bank: 16,
       program_resolution: 8, // maximum number of flash words allowed to program at one time
       swaccess: "ro",
       inter_signal_list: [
@@ -584,73 +528,42 @@
                                    'lc_ctrl.esc_wipe_secrets_tx',
                                    'lc_ctrl.esc_scrap_state_tx',
                                    'pwrmgr.esc_rst_tx'],
-      'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
-      'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       'flash_ctrl.flash'        : ['eflash.flash_ctrl'],
-      'flash_ctrl.keymgr'       : ['keymgr.flash'],
-      'flash_ctrl.otp'          : ['otp_ctrl.flash_otp_key'],
       'flash_ctrl.rma_req'      : ['lc_ctrl.lc_flash_rma_req'],
       'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'sram_ctrl_main.sram_scr' : ['ram_main.sram_scr'],
       'sram_ctrl_ret.sram_scr'  : ['ram_ret.sram_scr'],
-      'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
-                                   'sram_ctrl_ret.sram_otp_key']
       'pwrmgr.pwr_flash'        : ['flash_ctrl.pwrmgr'],
       'pwrmgr.pwr_rst'          : ['rstmgr.pwr'],
       'pwrmgr.pwr_clk'          : ['clkmgr.pwr'],
-      'pwrmgr.pwr_otp'          : ['otp_ctrl.pwr_otp'],
       'pwrmgr.pwr_lc'           : ['lc_ctrl.pwr_lc'],
-      'flash_ctrl.keymgr'       : ['keymgr.flash'],
-      'alert_handler.crashdump' : ['rstmgr.alert_dump'],
       'rv_core_ibex.crashdump'  : ['rstmgr.cpu_dump'],
-      'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       // TODO see #4447
       //'edn0.edn' : ['keymgr.edn'],
 
-      // KeyMgr Sideload & KDF function
-      'otp_ctrl.otp_keymgr_key': ['keymgr.otp_key'],
-      'keymgr.kmac_key' : ['kmac.keymgr_key']
-      'keymgr.kmac_data': ['kmac.keymgr_kdf']
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
       // an empty list.
       'clkmgr.idle'      : [],
 
-      // OTP LC interface
-      'otp_ctrl.otp_lc_data'   : ['lc_ctrl.otp_lc_data'],
-      'lc_ctrl.lc_otp_program' : ['otp_ctrl.lc_otp_program'],
-      'lc_ctrl.lc_otp_token'   : ['otp_ctrl.lc_otp_token'],
-
-      // HW_CFG broadcast
-      'otp_ctrl.otp_hw_cfg'    : ['lc_ctrl.otp_hw_cfg', 'keymgr.otp_hw_cfg'],
-
-      // Diversification constant coming from life cycle
-      'lc_ctrl.lc_keymgr_div'  : ['keymgr.lc_keymgr_div'],
-
       // LC function control signal broadcast
       // TODO(#3920): connect all these signals once top-level sim and FPGA can backload LC state
-      'lc_ctrl.lc_dft_en'          : ['otp_ctrl.lc_dft_en', 'eflash.lc_dft_en'],
+      'lc_ctrl.lc_dft_en'          : ['eflash.lc_dft_en'],
       'lc_ctrl.lc_nvm_debug_en'    : [],
       'lc_ctrl.lc_hw_debug_en'     : [],
       'lc_ctrl.lc_cpu_en'          : [],
-      //'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
-      'lc_ctrl.lc_escalate_en'     : ['otp_ctrl.lc_escalate_en',
-                                      'sram_ctrl_main.lc_escalate_en',
-                                      'sram_ctrl_ret.lc_escalate_en'],
 
       // TODO: OTP Clock bypass signal going from LC to AST/clkmgr
       'lc_ctrl.lc_clk_byp_req'  : [],
       //'lc_ctrl.lc_clk_byp_ack'  : [],
 
       // LC access control signal broadcast
-      'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['otp_ctrl.lc_creator_seed_sw_rw_en',
-                                              'flash_ctrl.lc_creator_seed_sw_rw_en'],
+      'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['flash_ctrl.lc_creator_seed_sw_rw_en'],
       'lc_ctrl.lc_owner_seed_sw_rw_en'     : ['flash_ctrl.lc_owner_seed_sw_rw_en'],
       'lc_ctrl.lc_iso_part_sw_rd_en'       : ['flash_ctrl.lc_iso_part_sw_rd_en'],
       'lc_ctrl.lc_iso_part_sw_wr_en'       : ['flash_ctrl.lc_iso_part_sw_wr_en'],
-      'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en',
-                                              'flash_ctrl.lc_seed_hw_rd_en'],
+      'lc_ctrl.lc_seed_hw_rd_en'           : ['flash_ctrl.lc_seed_hw_rd_en'],
     }
 
     // top is to connect to top net/struct.
@@ -676,8 +589,6 @@
         'usbdev.usb_ref_val': '',
         'usbdev.usb_ref_pulse': '',
         'peri.tl_ast_wrapper': 'ast_tl',
-        'otp_ctrl.otp_ast_pwr_seq': '',
-        'otp_ctrl.otp_ast_pwr_seq_h': '',
         'eflash.flash_power_down_h': 'flash_power_down_h',
         'eflash.flash_power_ready_h': 'flash_power_ready_h',
         'eflash.flash_test_mode_a': 'flash_test_mode_a',
@@ -711,9 +622,7 @@
   // and include every modules.
   // first item goes to LSB of the interrupt source
   interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl",
-                     "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr",
-                     "otbn", "keymgr", "kmac", "otp_ctrl", "csrng", "edn0", "edn1",
-                     "entropy_src"]
+                     "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr"]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
@@ -726,8 +635,8 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
-  alert_module: [ "aes", "otbn", "sensor_ctrl", "keymgr", "otp_ctrl", "lc_ctrl",
-                  "entropy_src", "sram_ctrl_main", "sram_ctrl_ret"]
+  alert_module: [ "aes", "sensor_ctrl", "lc_ctrl",
+                  "sram_ctrl_main", "sram_ctrl_ret"]
 
   // generated list of alerts:
   alert: [
