@@ -8,13 +8,23 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
   `uvm_object_new
 
+  rand bit clk_byp_error_rsp;
+  rand bit flash_rma_error_rsp;
   dec_lc_state_e next_lc_state;
 
   constraint lc_cnt_c {
     lc_state != LcStRaw -> lc_cnt != LcCntRaw;
   }
 
+  constraint no_err_rsps_c {
+    clk_byp_error_rsp   == 0;
+    flash_rma_error_rsp == 0;
+  }
+
   task body();
+    run_clk_byp_rsp_nonblocking(clk_byp_error_rsp);
+    run_flash_rma_rsp_nonblocking(flash_rma_error_rsp);
+
     for (int i = 1; i <= num_trans; i++) begin
       if (i != 1) dut_init();
       `uvm_info(`gfn, $sformatf("starting seq %0d/%0d, init LC_state is %0s, LC_cnt is %0s",
@@ -43,8 +53,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
   // need to randomize here because associative array's index cannot be a rand input in constraint
   virtual function void randomize_next_lc_state(dec_lc_state_e curr_lc_state);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(next_lc_state,
-        // TODO: temp constraint for no DecLcStRma
-        next_lc_state inside {VALID_NEXT_STATES[curr_lc_state]}; next_lc_state != DecLcStRma;)
+        next_lc_state inside {VALID_NEXT_STATES[curr_lc_state]};)
   endfunction
 
 endclass : lc_ctrl_smoke_vseq

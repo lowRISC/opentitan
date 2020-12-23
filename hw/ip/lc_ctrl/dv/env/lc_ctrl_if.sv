@@ -25,10 +25,18 @@ interface lc_ctrl_if(input clk, input rst_n);
   lc_ctrl_pkg::lc_tx_t lc_escalate_en_o;
   lc_ctrl_pkg::lc_tx_t lc_check_byp_en_o;
 
-  lc_ctrl_pkg::lc_keymgr_div_t lc_keymgr_div_o;
+  lc_ctrl_pkg::lc_tx_t clk_byp_req_o;
+  lc_ctrl_pkg::lc_tx_t clk_byp_ack_i;
+  lc_ctrl_pkg::lc_tx_t flash_rma_req_o;
+  lc_ctrl_pkg::lc_tx_t flash_rma_ack_i;
+
+  lc_ctrl_pkg::lc_keymgr_div_t     keymgr_div_o;
+  lc_ctrl_pkg::lc_flash_rma_seed_t flash_rma_seed_o;
 
   task automatic init(lc_ctrl_pkg::lc_state_e lc_state = LcStRaw,
-                      lc_ctrl_pkg::lc_cnt_e   lc_cnt = LcCntRaw);
+                      lc_ctrl_pkg::lc_cnt_e   lc_cnt = LcCntRaw,
+                      lc_ctrl_pkg::lc_tx_t    clk_byp_ack = lc_ctrl_pkg::Off,
+                      lc_ctrl_pkg::lc_tx_t    flash_rma_ack = lc_ctrl_pkg::Off);
     otp_i.valid = 1;
     otp_i.state = lc_state;
     otp_i.count = lc_cnt;
@@ -41,6 +49,17 @@ interface lc_ctrl_if(input clk, input rst_n);
 
     otp_hw_cfg_i.valid = lc_ctrl_pkg::Off;
     otp_hw_cfg_i.data = 0;
+
+    clk_byp_ack_i = clk_byp_ack;
+    flash_rma_ack_i = flash_rma_ack;
+  endtask
+
+  task automatic set_clk_byp_ack(lc_ctrl_pkg::lc_tx_t val);
+    clk_byp_ack_i = val;
+  endtask
+
+  task automatic set_flash_rma_ack(lc_ctrl_pkg::lc_tx_t val);
+    flash_rma_ack_i = val;
   endtask
 
 endinterface

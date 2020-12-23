@@ -58,6 +58,44 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     super.read_and_check_all_csrs_after_reset();
   endtask
 
+  virtual task run_clk_byp_rsp_nonblocking(bit has_err = 0);
+    fork
+      forever begin
+        lc_ctrl_pkg::lc_tx_t rsp;
+        wait(cfg.lc_ctrl_vif.clk_byp_req_o == lc_ctrl_pkg::On);
+        rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
+                          lc_ctrl_pkg::On;
+        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+        cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
+
+        wait (cfg.lc_ctrl_vif.clk_byp_req_o != lc_ctrl_pkg::On);
+        rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
+                          lc_ctrl_pkg::Off;
+        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+        cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
+      end
+    join_none
+  endtask
+
+  virtual task run_flash_rma_rsp_nonblocking(bit has_err = 0);
+    fork
+      forever begin
+        lc_ctrl_pkg::lc_tx_t rsp;
+        wait(cfg.lc_ctrl_vif.flash_rma_req_o == lc_ctrl_pkg::On);
+        rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
+                          lc_ctrl_pkg::On;
+        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+
+        wait (cfg.lc_ctrl_vif.flash_rma_req_o != lc_ctrl_pkg::On);
+        rsp = (has_err) ? $urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off :
+                          lc_ctrl_pkg::Off;
+        cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+        cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
+      end
+    join_none
+  endtask
+
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*3-1:0] token_val);
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
     csr_wr(ral.transition_target, next_lc_state);
