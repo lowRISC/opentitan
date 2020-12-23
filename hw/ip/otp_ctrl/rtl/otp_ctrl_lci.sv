@@ -129,6 +129,7 @@ module otp_ctrl_lci
       ///////////////////////////////////////////////////////////////////
       // Wait for a request from the life cycle controller
       IdleSt: begin
+        lci_idle_o = 1'b1;
         if (lc_req_i) begin
           state_d = WriteSt;
           cnt_clr = 1'b1;
