@@ -38,19 +38,19 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
     csr_random_n_add_to_q(ral.max_owner_int_key_ver_en, csr_update_q);
     csr_random_n_add_to_q(ral.max_owner_key_ver_en, csr_update_q);
 
-    max_creator_key_ver_val   = ral.max_creator_key_ver.get();
-    max_owner_int_key_ver_val = ral.max_owner_int_key_ver.get();
-    max_owner_key_ver_val     = ral.max_owner_key_ver.get();
+    csr_update_q.shuffle();
+    foreach (csr_update_q[i]) csr_update(csr_update_q[i]);
+
+    max_creator_key_ver_val   = `gmv(ral.max_creator_key_ver);
+    max_owner_int_key_ver_val = `gmv(ral.max_owner_int_key_ver);
+    max_owner_key_ver_val     = `gmv(ral.max_owner_key_ver);
     max_key_ver_val = (current_state == keymgr_pkg::StCreatorRootKey)
         ? max_creator_key_ver_val : (current_state == keymgr_pkg::StOwnerIntKey)
         ? max_owner_int_key_ver_val : (current_state == keymgr_pkg::StOwnerKey)
         ? max_owner_key_ver_val : '1;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(key_version_val,
                                        !is_key_version_err -> key_version_val <= max_key_ver_val;)
-    csr_update_q.push_back(ral.key_version);
-
-    csr_update_q.shuffle();
-    foreach (csr_update_q[i]) csr_update(csr_update_q[i]);
+    csr_update(ral.key_version);
   endtask : write_random_sw_content
 
   task csr_random_n_add_to_q(uvm_reg csr, ref uvm_reg csr_q[$]);
@@ -72,5 +72,20 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
     end
     super.keymgr_operations(advance_state, num_gen_op, clr_output, wait_done);
   endtask : keymgr_operations
+
+  // override body to add more randomization
+  task body();
+    keymgr_pkg::keymgr_working_state_e state;
+    `uvm_info(`gfn, "Key manager seq start", UVM_HIGH)
+    // Advance from StReset to last state StDisabled and advance one extra time,
+    // then it should stay at StDisabled
+    // In each state check SW/HW output
+    repeat (state.num() + 1) begin
+      keymgr_operations(.advance_state(1),
+                        .num_gen_op($urandom_range(0, 5)),
+                        .clr_output($urandom_range(0, 1)));
+    end
+
+  endtask : body
 
 endclass : keymgr_random_vseq

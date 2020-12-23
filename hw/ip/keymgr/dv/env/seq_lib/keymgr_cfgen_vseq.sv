@@ -5,7 +5,7 @@
 // SW starts operation and HW will set cfgen=0 to prevent write to registers gated by cfgen
 // Test those registers can't be written during OpWip
 // Also check cfgen value is updated by design correctly
-class keymgr_cfgen_vseq extends keymgr_smoke_vseq;
+class keymgr_cfgen_vseq extends keymgr_random_vseq;
   `uvm_object_utils(keymgr_cfgen_vseq)
   `uvm_object_new
 

@@ -13,11 +13,12 @@ class keymgr_smoke_vseq extends keymgr_base_vseq;
   }
 
   task body();
-    `uvm_info(`gfn, "Key manager smoke check", UVM_HIGH)
-    // Advance 6 times
-    // StReset -> StCreatorRootKey -> StOwnerIntKey -> StOwnerIntKey -> StDisabled -> StDisabled
-    // In each state check SW output and clear output
-    repeat (6) begin
+    keymgr_pkg::keymgr_working_state_e state;
+    `uvm_info(`gfn, "Key manager seq start", UVM_HIGH)
+    // Advance from StReset to last state StDisabled and advance one extra time,
+    // then it should stay at StDisabled
+    // In each state check SW/HW output
+    repeat (state.num() + 1) begin
       keymgr_operations(.advance_state(1), .num_gen_op(1), .clr_output(1));
     end
 
