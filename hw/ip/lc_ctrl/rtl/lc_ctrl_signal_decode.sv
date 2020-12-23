@@ -44,17 +44,9 @@ module lc_ctrl_signal_decode
   // Signal Decoder Logic //
   //////////////////////////
 
-  lc_tx_t lc_dft_en_d, lc_dft_en_q, lc_dft_en;
-  lc_tx_t lc_nvm_debug_en_d, lc_nvm_debug_en_q, lc_nvm_debug_en;
-  lc_tx_t lc_hw_debug_en_d, lc_hw_debug_en_q, lc_hw_debug_en;
-  lc_tx_t lc_cpu_en_d, lc_cpu_en_q, lc_cpu_en;
-  lc_tx_t lc_creator_seed_sw_rw_en_d, lc_creator_seed_sw_rw_en_q, lc_creator_seed_sw_rw_en;
-  lc_tx_t lc_owner_seed_sw_rw_en_d, lc_owner_seed_sw_rw_en_q, lc_owner_seed_sw_rw_en;
-  lc_tx_t lc_iso_part_sw_rd_en_d, lc_iso_part_sw_rd_en_q, lc_iso_part_sw_rd_en;
-  lc_tx_t lc_iso_part_sw_wr_en_d, lc_iso_part_sw_wr_en_q, lc_iso_part_sw_wr_en;
-  lc_tx_t lc_seed_hw_rd_en_d, lc_seed_hw_rd_en_q, lc_seed_hw_rd_en;
-  lc_tx_t lc_keymgr_en_d, lc_keymgr_en_q, lc_keymgr_en;
-  lc_tx_t lc_escalate_en_d, lc_escalate_en_q, lc_escalate_en;
+  lc_tx_t lc_dft_en, lc_nvm_debug_en, lc_hw_debug_en, lc_cpu_en, lc_keymgr_en, lc_escalate_en;
+  lc_tx_t lc_creator_seed_sw_rw_en, lc_owner_seed_sw_rw_en, lc_iso_part_sw_rd_en;
+  lc_tx_t lc_iso_part_sw_wr_en, lc_seed_hw_rd_en;
   lc_keymgr_div_t lc_keymgr_div_d, lc_keymgr_div_q;
 
   always_comb begin : p_lc_signal_decode
@@ -169,90 +161,79 @@ module lc_ctrl_signal_decode
   /////////////////////////////////
 
   prim_lc_sender u_prim_lc_sender_dft_en (
+    .clk_i,
+    .rst_ni,
     .lc_en_i(lc_dft_en),
-    .lc_en_o(lc_dft_en_d)
+    .lc_en_o(lc_dft_en_o)
   );
   prim_lc_sender u_prim_lc_sender_nvm_debug_en (
+    .clk_i,
+    .rst_ni,
     .lc_en_i(lc_nvm_debug_en),
-    .lc_en_o(lc_nvm_debug_en_d)
+    .lc_en_o(lc_nvm_debug_en_o)
   );
   prim_lc_sender u_prim_lc_sender_hw_debug_en (
+    .clk_i,
+    .rst_ni,
     .lc_en_i(lc_hw_debug_en),
-    .lc_en_o(lc_hw_debug_en_d)
+    .lc_en_o(lc_hw_debug_en_o)
   );
   prim_lc_sender u_prim_lc_sender_cpu_en (
+    .clk_i,
+    .rst_ni,
     .lc_en_i(lc_cpu_en),
-    .lc_en_o(lc_cpu_en_d)
+    .lc_en_o(lc_cpu_en_o)
   );
   prim_lc_sender u_prim_lc_sender_creator_seed_sw_rw_en (
+    .clk_i,
+    .rst_ni,
     .lc_en_i(lc_creator_seed_sw_rw_en),
-    .lc_en_o(lc_creator_seed_sw_rw_en_d)
+    .lc_en_o(lc_creator_seed_sw_rw_en_o)
   );
   prim_lc_sender u_prim_lc_sender_owner_seed_sw_rw_en (
+    .clk_i,
+    .rst_ni,
     .lc_en_i(lc_owner_seed_sw_rw_en),
-    .lc_en_o(lc_owner_seed_sw_rw_en_d)
+    .lc_en_o(lc_owner_seed_sw_rw_en_o)
   );
   prim_lc_sender u_prim_lc_sender_iso_part_sw_rd_en (
+    .clk_i,
+    .rst_ni,
     .lc_en_i(lc_iso_part_sw_rd_en),
-    .lc_en_o(lc_iso_part_sw_rd_en_d)
+    .lc_en_o(lc_iso_part_sw_rd_en_o)
   );
   prim_lc_sender u_prim_lc_sender_iso_part_sw_wr_en (
+    .clk_i,
+    .rst_ni,
     .lc_en_i(lc_iso_part_sw_wr_en),
-    .lc_en_o(lc_iso_part_sw_wr_en_d)
+    .lc_en_o(lc_iso_part_sw_wr_en_o)
   );
   prim_lc_sender u_prim_lc_sender_seed_hw_rd_en (
+    .clk_i,
+    .rst_ni,
     .lc_en_i(lc_seed_hw_rd_en),
-    .lc_en_o(lc_seed_hw_rd_en_d)
+    .lc_en_o(lc_seed_hw_rd_en_o)
   );
   prim_lc_sender u_prim_lc_sender_keymgr_en (
+    .clk_i,
+    .rst_ni,
     .lc_en_i(lc_keymgr_en),
-    .lc_en_o(lc_keymgr_en_d)
+    .lc_en_o(lc_keymgr_en_o)
   );
   prim_lc_sender u_prim_lc_sender_escalate_en (
+    .clk_i,
+    .rst_ni,
     .lc_en_i(lc_escalate_en),
-    .lc_en_o(lc_escalate_en_d)
+    .lc_en_o(lc_escalate_en_o)
   );
 
-  assign lc_dft_en_o                = lc_dft_en_q;
-  assign lc_nvm_debug_en_o          = lc_nvm_debug_en_q;
-  assign lc_hw_debug_en_o           = lc_hw_debug_en_q;
-  assign lc_cpu_en_o                = lc_cpu_en_q;
-  assign lc_creator_seed_sw_rw_en_o = lc_creator_seed_sw_rw_en_q;
-  assign lc_owner_seed_sw_rw_en_o   = lc_owner_seed_sw_rw_en_q;
-  assign lc_iso_part_sw_rd_en_o     = lc_iso_part_sw_rd_en_q;
-  assign lc_iso_part_sw_wr_en_o     = lc_iso_part_sw_wr_en_q;
-  assign lc_seed_hw_rd_en_o         = lc_seed_hw_rd_en_q;
-  assign lc_keymgr_en_o             = lc_keymgr_en_q;
-  assign lc_escalate_en_o           = lc_escalate_en_q;
-  assign lc_keymgr_div_o            = lc_keymgr_div_q;
+  assign lc_keymgr_div_o = lc_keymgr_div_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      lc_dft_en_q                <= Off;
-      lc_nvm_debug_en_q          <= Off;
-      lc_hw_debug_en_q           <= Off;
-      lc_cpu_en_q                <= Off;
-      lc_creator_seed_sw_rw_en_q <= Off;
-      lc_owner_seed_sw_rw_en_q   <= Off;
-      lc_iso_part_sw_rd_en_q     <= Off;
-      lc_iso_part_sw_wr_en_q     <= Off;
-      lc_seed_hw_rd_en_q         <= Off;
-      lc_keymgr_en_q             <= Off;
-      lc_escalate_en_q           <= Off;
-      lc_keymgr_div_q            <= RndCnstLcKeymgrDivInvalid;
+      lc_keymgr_div_q <= RndCnstLcKeymgrDivInvalid;
     end else begin
-      lc_dft_en_q                <= lc_dft_en_d;
-      lc_nvm_debug_en_q          <= lc_nvm_debug_en_d;
-      lc_hw_debug_en_q           <= lc_hw_debug_en_d;
-      lc_cpu_en_q                <= lc_cpu_en_d;
-      lc_creator_seed_sw_rw_en_q <= lc_creator_seed_sw_rw_en_d;
-      lc_owner_seed_sw_rw_en_q   <= lc_owner_seed_sw_rw_en_d;
-      lc_iso_part_sw_rd_en_q     <= lc_iso_part_sw_rd_en_d;
-      lc_iso_part_sw_wr_en_q     <= lc_iso_part_sw_wr_en_d;
-      lc_seed_hw_rd_en_q         <= lc_seed_hw_rd_en_d;
-      lc_keymgr_en_q             <= lc_keymgr_en_d;
-      lc_escalate_en_q           <= lc_escalate_en_d;
-      lc_keymgr_div_q            <= lc_keymgr_div_d;
+      lc_keymgr_div_q <= lc_keymgr_div_d;
     end
   end
 

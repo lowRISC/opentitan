@@ -103,9 +103,7 @@ module lc_ctrl_fsm
   assign otp_prog_lc_cnt_o   = lc_cnt_q;
 
   // Conditional LC signal outputs
-  lc_tx_t lc_clk_byp_req, lc_clk_byp_req_d, lc_clk_byp_req_q;
-  lc_tx_t lc_flash_rma_req, lc_flash_rma_req_d, lc_flash_rma_req_q;
-  lc_tx_t lc_check_byp_en, lc_check_byp_en_d, lc_check_byp_en_q;
+  lc_tx_t lc_clk_byp_req, lc_flash_rma_req, lc_check_byp_en;
 
   `ASSERT_KNOWN(LcStateKnown_A,   lc_state_q   )
   `ASSERT_KNOWN(LcCntKnown_A,     lc_cnt_q     )
@@ -142,9 +140,9 @@ module lc_ctrl_fsm
     // These signals remain asserted once set to On.
     // Note that the remaining life cycle signals are decoded in
     // the lc_ctrl_signal_decode submodule.
-    lc_clk_byp_req   = lc_clk_byp_req_q;
-    lc_flash_rma_req = lc_flash_rma_req_q;
-    lc_check_byp_en  = lc_check_byp_en_q;
+    lc_clk_byp_req   = lc_clk_byp_req_o;
+    lc_flash_rma_req = lc_flash_rma_req_o;
+    lc_check_byp_en  = lc_check_byp_en_o;
 
     unique case (fsm_state_q)
       ///////////////////////////////////////////////////////////////////
@@ -285,10 +283,10 @@ module lc_ctrl_fsm
           // If any of these RMA are conditions are true,
           // all of them must be true at the same time.
           if ((trans_target_i != DecLcStRma &&
-               lc_flash_rma_req_q == Off    &&
+               lc_flash_rma_req_o == Off    &&
                lc_flash_rma_ack_i == Off)   ||
               (trans_target_i == DecLcStRma &&
-               lc_flash_rma_req_q == On     &&
+               lc_flash_rma_req_o == On     &&
                lc_flash_rma_ack_i == On)) begin
             if (hashed_token_i == hashed_token_mux) begin
               if (fsm_state_q == TokenCheck1St) begin
@@ -361,38 +359,19 @@ module lc_ctrl_fsm
     .q_o ( fsm_state_raw_q )
   );
 
-  prim_lc_sender u_prim_lc_sender_clk_byp_req (
-    .lc_en_i(lc_clk_byp_req),
-    .lc_en_o(lc_clk_byp_req_d)
-  );
-  prim_lc_sender u_prim_lc_sender_flash_rma_req (
-    .lc_en_i(lc_flash_rma_req),
-    .lc_en_o(lc_flash_rma_req_d)
-  );
-  prim_lc_sender u_prim_lc_sender_check_byp_en (
-    .lc_en_i(lc_check_byp_en),
-    .lc_en_o(lc_check_byp_en_d)
-  );
-
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      lc_state_q         <= LcStScrap;
-      lc_cnt_q           <= LcCnt16;
-      lc_id_state_q      <= LcIdPersonalized;
-      lc_state_valid_q   <= 1'b0;
-      hashed_token_q     <= {LcTokenWidth{1'b1}};
-      lc_clk_byp_req_q   <= Off;
-      lc_flash_rma_req_q <= Off;
-      lc_check_byp_en_q  <= Off;
+      lc_state_q           <= LcStScrap;
+      lc_cnt_q             <= LcCnt16;
+      lc_id_state_q        <= LcIdPersonalized;
+      lc_state_valid_q     <= 1'b0;
+      hashed_token_q       <= {LcTokenWidth{1'b1}};
     end else begin
-      lc_state_q         <= lc_state_d;
-      lc_cnt_q           <= lc_cnt_d;
-      lc_id_state_q      <= lc_id_state_d;
-      lc_state_valid_q   <= lc_state_valid_d;
-      hashed_token_q     <= hashed_token_d;
-      lc_clk_byp_req_q   <= lc_clk_byp_req_d;
-      lc_flash_rma_req_q <= lc_flash_rma_req_d;
-      lc_check_byp_en_q  <= lc_check_byp_en_d;
+      lc_state_q           <= lc_state_d;
+      lc_cnt_q             <= lc_cnt_d;
+      lc_id_state_q        <= lc_id_state_d;
+      lc_state_valid_q     <= lc_state_valid_d;
+      hashed_token_q       <= hashed_token_d;
     end
   end
 
@@ -478,10 +457,26 @@ module lc_ctrl_fsm
     .lc_keymgr_div_o
   );
 
+
   // Conditional signals set by main FSM.
-  assign lc_clk_byp_req_o   = lc_clk_byp_req_q;
-  assign lc_flash_rma_req_o = lc_flash_rma_req_q;
-  assign lc_check_byp_en_o  = lc_check_byp_en_q;
+  prim_lc_sender u_prim_lc_sender_clk_byp_req (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_clk_byp_req),
+    .lc_en_o(lc_clk_byp_req_o)
+  );
+  prim_lc_sender u_prim_lc_sender_flash_rma_req (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_flash_rma_req),
+    .lc_en_o(lc_flash_rma_req_o)
+  );
+  prim_lc_sender u_prim_lc_sender_check_byp_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_check_byp_en),
+    .lc_en_o(lc_check_byp_en_o)
+  );
 
   ////////////////
   // Assertions //
