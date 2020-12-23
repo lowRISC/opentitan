@@ -9,7 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
-      - lowrisc:prim:buf
+      - lowrisc:prim:flop
       - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/prim_lc_sender.sv

@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:prim:lc_sync
+      - lowrisc:prim:lc_sender
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:tlul
       - lowrisc:ip:pwrmgr_pkg
