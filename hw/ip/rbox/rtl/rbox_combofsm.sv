@@ -60,12 +60,12 @@ module rbox_combofsm #(
                             IDLE = 2'h0,
                             WAIT1 = 2'h1,
                             WAIT2 = 2'h2,
-                            DONE = 2'h3,
+                            DONE = 2'h3
                             } timer_state_e;
 
   timer_state_e timer_state_q, timer_state_d;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: timer_state_regs
+  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_timer_state_reg
     if (!rst_slow_ni) begin
       timer_state_q    <= IDLE;
     end else begin
@@ -76,27 +76,25 @@ module rbox_combofsm #(
   assign timer1_cnt_d = (timer1_cnt_en) ? timer1_cnt_q + 1'b1 : timer1_cnt_q;
   assign timer2_cnt_d = (timer2_cnt_en) ? timer2_cnt_q + 1'b1 : timer2_cnt_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: timer1_cnt_regs
+  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_timer1_cnt_reg
     if (!rst_slow_ni) begin
       timer1_cnt_q    <= '0;
     end
-      else if (timer1_cnt_clr) begin
-         timer1_cnt_q <= '0;
-      end else begin
-         timer1_cnt_q <= timer1_cnt_d;
-      end
+    else if (timer1_cnt_clr) begin
+      timer1_cnt_q <= '0;
+    end else begin
+      timer1_cnt_q <= timer1_cnt_d;
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: timer2_cnt_regs
+  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_timer2_cnt_reg
     if (!rst_slow_ni) begin
       timer2_cnt_q    <= '0;
     end
-      else if (timer2_cnt_clr) begin
-         timer2_cnt_q <= '0;
-      end else begin
-         timer2_cnt_q <= timer2_cnt_d;
-      end
+    else if (timer2_cnt_clr) begin
+      timer2_cnt_q <= '0;
+    end else begin
+      timer2_cnt_q <= timer2_cnt_d;
     end
   end
 

@@ -44,6 +44,10 @@ module rbox (
   rbox_reg2hw_t reg2hw;
   rbox_hw2reg_t hw2reg;
 
+  logic pwrb_int, key0_int, key1_int, key2_int, ac_present_int;
+  logic pwrb_out_hw, key0_out_hw, key1_out_hw, key2_out_hw, ec_rst_l_hw;
+  logic pwrb_out_int, key0_out_int, key1_out_int, key2_out_int, bat_disable_int;
+
   //Always-on pins
   assign cio_ec_rst_l_en_o = 1'b1;
   assign cio_pwrb_out_en_o = 1'b1;
@@ -54,127 +58,127 @@ module rbox (
 
   // Register module
   rbox_reg_top i_reg_top (
-    .clk_i,
-    .rst_ni,
-    .tl_i,
-    .tl_o,
-    .reg2hw,
-    .hw2reg,
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .tl_i(tl_i),
+    .tl_o(tl_o),
+    .reg2hw(reg2hw),
+    .hw2reg(hw2reg),
     .devmode_i  (1'b1)
   );
 
   //Instantiate the autoblock module
   rbox_autoblock i_autoblock (
-    .clk_i,
-    .rst_ni,
-    .clk_aon_i,
-    .rst_slow_ni,
-    .reg2hw,
-    .pwrb_int,
-    .key0_int,
-    .key1_int,
-    .key2_int,
-    .pwrb_out_hw,
-    .key0_out_hw,
-    .key1_out_hw,
-    .key2_out_hw
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .clk_aon_i(clk_aon_i),
+    .rst_slow_ni(rst_slow_ni),
+    .reg2hw(reg2hw),
+    .pwrb_int(pwrb_int),
+    .key0_int(key0_int),
+    .key1_int(key1_int),
+    .key2_int(key2_int),
+    .pwrb_out_hw(pwrb_out_hw),
+    .key0_out_hw(key0_out_hw),
+    .key1_out_hw(key1_out_hw),
+    .key2_out_hw(key2_out_hw)
   );
 
   //Instantiate the pin inversion module
   rbox_inv i_inversion (
-    .clk_aon_i,
-    .rst_slow_ni,
-    .reg2hw,
-    .cio_pwrb_in_i,
-    .cio_key0_in_i,
-    .cio_key1_in_i,
-    .cio_key2_in_i,
-    .cio_ac_present_i,
-    .pwrb_out_int,
-    .key0_out_int,
-    .key1_out_int,
-    .key2_out_int,
-    .bat_disable_int,
-    .pwrb_int,
-    .key0_int,
-    .key1_int,
-    .key2_int,
-    .ac_present_int,
-    .cio_bat_disable_o,
-    .cio_pwrb_out_o,
-    .cio_key0_out_o,
-    .cio_key1_out_o,
-    .cio_key2_out_o
+    .clk_aon_i(clk_aon_i),
+    .rst_slow_ni(rst_slow_ni),
+    .reg2hw(reg2hw),
+    .cio_pwrb_in_i(cio_pwrb_in_i),
+    .cio_key0_in_i(cio_key0_in_i),
+    .cio_key1_in_i(cio_key1_in_i),
+    .cio_key2_in_i(cio_key2_in_i),
+    .cio_ac_present_i(cio_ac_present_i),
+    .pwrb_out_int(pwrb_out_int),
+    .key0_out_int(key0_out_int),
+    .key1_out_int(key1_out_int),
+    .key2_out_int(key2_out_int),
+    .bat_disable_int(bat_disable_int),
+    .pwrb_int(pwrb_int),
+    .key0_int(key0_int),
+    .key1_int(key1_int),
+    .key2_int(key2_int),
+    .ac_present_int(ac_present_int),
+    .cio_bat_disable_o(cio_bat_disable_o),
+    .cio_pwrb_out_o(cio_pwrb_out_o),
+    .cio_key0_out_o(cio_key0_out_o),
+    .cio_key1_out_o(cio_key1_out_o),
+    .cio_key2_out_o(cio_key2_out_o)
   );
 
   //Instantiate the pin visibility and override module
   rbox_pin i_pin_vis_ovd (
-    .clk_i,
-    .rst_ni,
-    .clk_aon_i,
-    .rst_slow_ni,
-    .reg2hw,
-    .hw2reg,
-    .cio_pwrb_in_i,
-    .cio_key0_in_i,
-    .cio_key1_in_i,
-    .cio_key2_in_i,
-    .cio_ac_present_i,
-    .cio_ec_rst_l_i,
-    .pwrb_out_hw,
-    .key0_out_hw,
-    .key1_out_hw,
-    .key2_out_hw,
-    .bat_disable_hw,
-    .ec_rst_l_hw,
-    .pwrb_out_int,
-    .key0_out_int,
-    .key1_out_int,
-    .key2_out_int,
-    .bat_disable_int,
-    .cio_ec_rst_l_o
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .clk_aon_i(clk_aon_i),
+    .rst_slow_ni(rst_slow_ni),
+    .reg2hw(reg2hw),
+    .hw2reg(hw2reg),
+    .cio_pwrb_in_i(cio_pwrb_in_i),
+    .cio_key0_in_i(cio_key0_in_i),
+    .cio_key1_in_i(cio_key1_in_i),
+    .cio_key2_in_i(cio_key2_in_i),
+    .cio_ac_present_i(cio_ac_present_i),
+    .cio_ec_rst_l_i(cio_ec_rst_l_i),
+    .pwrb_out_hw(pwrb_out_hw),
+    .key0_out_hw(key0_out_hw),
+    .key1_out_hw(key1_out_hw),
+    .key2_out_hw(key2_out_hw),
+    .bat_disable_hw(bat_disable_hw),
+    .ec_rst_l_hw(ec_rst_l_hw),
+    .pwrb_out_int(pwrb_out_int),
+    .key0_out_int(key0_out_int),
+    .key1_out_int(key1_out_int),
+    .key2_out_int(key2_out_int),
+    .bat_disable_int(bat_disable_int),
+    .cio_ec_rst_l_o(cio_ec_rst_l_o)
   );
 
   //Instantiate key-triggered interrupt module
   rbox_keyintr i_keyintr (
-    .clk_i,
-    .rst_ni,
-    .clk_aon_i,
-    .rst_slow_ni,
-    .reg2hw,
-    .hw2reg,
-    .pwrb_int,
-    .key0_int,
-    .key1_int,
-    .key2_int,
-    .ac_present_int,
-    .cio_ec_rst_l_i
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .clk_aon_i(clk_aon_i),
+    .rst_slow_ni(rst_slow_ni),
+    .reg2hw(reg2hw),
+    .hw2reg(hw2reg),
+    .pwrb_int(pwrb_int),
+    .key0_int(key0_int),
+    .key1_int(key1_int),
+    .key2_int(key2_int),
+    .ac_present_int(ac_present_int),
+    .cio_ec_rst_l_i(cio_ec_rst_l_i)
   );
 
   //Instantiate combo module
   rbox_combo i_combo (
-    .clk_i,
-    .rst_ni,
-    .clk_aon_i,
-    .rst_slow_ni,
-    .reg2hw,
-    .hw2reg,
-    .pwrb_int,
-    .key0_int,
-    .key1_int,
-    .key2_int,
-    .ac_present_int,
-    .cio_ec_rst_l_i,
-    .bat_disable_hw,
-    .gsc_rst_o,
-    .ec_rst_l_hw
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .clk_aon_i(clk_aon_i),
+    .rst_slow_ni(rst_slow_ni),
+    .reg2hw(reg2hw),
+    .hw2reg(hw2reg),
+    .pwrb_int(pwr_int),
+    .key0_int(key0_int),
+    .key1_int(key1_int),
+    .key2_int(key2_int),
+    .ac_present_int(ac_present_int),
+    .cio_ec_rst_l_i(cio_ec_rst_l_i),
+    .bat_disable_hw(bat_disable_hw),
+    .gsc_rst_o(gsc_rst_o),
+    .ec_rst_l_hw(ec_rst_l_hw)
   );
 
   //Instantiate the interrupt module
   rbox_intr i_intr (
-    .reg2hw,
-    .hw2reg,
-    .rbox_intr_o
+    .reg2hw(reg2hw),
+    .hw2reg(hw2reg),
+    .rbox_intr_o(rbox_intr_o)
   );
 
 

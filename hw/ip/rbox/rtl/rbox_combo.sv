@@ -29,19 +29,19 @@ module rbox_combo (
 
   //There are four possible combos
   //Each key combo can select different triggers
-  logic [NumCombo-1] cfg_key0_in_sel_com;
-  logic [NumCombo-1] cfg_key1_in_sel_com;
-  logic [NumCombo-1] cfg_key2_in_sel_com;
-  logic [NumCombo-1] cfg_pwrb_in_sel_com;
-  logic [NumCombo-1] cfg_ac_present_sel_com;
+  logic [NumCombo-1:0] cfg_key0_in_sel_com;
+  logic [NumCombo-1:0] cfg_key1_in_sel_com;
+  logic [NumCombo-1:0] cfg_key2_in_sel_com;
+  logic [NumCombo-1:0] cfg_pwrb_in_sel_com;
+  logic [NumCombo-1:0] cfg_ac_present_sel_com;
 
   logic [31:0] cfg_combo_timer [NumCombo-1];
   logic [15:0] cfg_debounce_timer;
 
-  logic [NumCombo-1] cfg_bat_disable_com;
-  logic [NumCombo-1] cfg_intr_com;
-  logic [NumCombo-1] cfg_ec_rst_com;
-  logic [NumCombo-1] cfg_gsc_rst_com;
+  logic [NumCombo-1:0] cfg_bat_disable_com;
+  logic [NumCombo-1:0] cfg_intr_com;
+  logic [NumCombo-1:0] cfg_ec_rst_com;
+  logic [NumCombo-1:0] cfg_gsc_rst_com;
 
   logic pwrb_int_i;
   logic key0_int_i, key1_int_i, key2_int_i;

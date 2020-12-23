@@ -27,8 +27,14 @@ package dcd_reg_pkg;
   } dcd_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
-    logic        q;
-    logic        qe;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } adc_enable;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } oneshot_mode;
   } dcd_reg2hw_adc_en_ctl_reg_t;
 
   typedef struct packed {
@@ -43,18 +49,12 @@ package dcd_reg_pkg;
     struct packed {
       logic [23:0] q;
       logic        qe;
-    } wakeup_timer;
+    } wakeup_time;
   } dcd_reg2hw_adc_pd_ctl_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [7:0]  q;
-      logic        qe;
-    } sample_cnt;
-    struct packed {
-      logic [7:0]  q;
-      logic        qe;
-    } latency;
+    logic [7:0]  q;
+    logic        qe;
   } dcd_reg2hw_adc_lp_sample_ctl_reg_t;
 
   typedef struct packed {
@@ -125,11 +125,11 @@ package dcd_reg_pkg;
     struct packed {
       logic [1:0]  q;
       logic        qe;
-    } adc_chn_value_int_ext;
+    } adc_chn_value_intr_ext;
     struct packed {
       logic [9:0] q;
       logic        qe;
-    } adc_chn_value_int;
+    } adc_chn_value_intr;
   } dcd_reg2hw_adc_chn_val_mreg_t;
 
   typedef struct packed {
@@ -235,7 +235,11 @@ package dcd_reg_pkg;
       logic        q;
       logic        qe;
     } chn0_1_filter7_en;
-  } dcd_reg2hw_adc_filter_ctl_reg_t;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } oneshot_intr_en;
+  } dcd_reg2hw_adc_intr_ctl_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -270,7 +274,11 @@ package dcd_reg_pkg;
       logic        q;
       logic        qe;
     } cc_discon;
-  } dcd_reg2hw_adc_filter_status_reg_t;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } oneshot;
+  } dcd_reg2hw_adc_intr_status_reg_t;
 
 
   typedef struct packed {
@@ -279,8 +287,14 @@ package dcd_reg_pkg;
   } dcd_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
-    logic        d;
-    logic        de;
+    struct packed {
+      logic        d;
+      logic        de;
+    } adc_enable;
+    struct packed {
+      logic        d;
+      logic        de;
+    } oneshot_mode;
   } dcd_hw2reg_adc_en_ctl_reg_t;
 
   typedef struct packed {
@@ -295,18 +309,12 @@ package dcd_reg_pkg;
     struct packed {
       logic [23:0] d;
       logic        de;
-    } wakeup_timer;
+    } wakeup_time;
   } dcd_hw2reg_adc_pd_ctl_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [7:0]  d;
-      logic        de;
-    } sample_cnt;
-    struct packed {
-      logic [7:0]  d;
-      logic        de;
-    } latency;
+    logic [7:0]  d;
+    logic        de;
   } dcd_hw2reg_adc_lp_sample_ctl_reg_t;
 
   typedef struct packed {
@@ -377,11 +385,11 @@ package dcd_reg_pkg;
     struct packed {
       logic [1:0]  d;
       logic        de;
-    } adc_chn_value_int_ext;
+    } adc_chn_value_intr_ext;
     struct packed {
       logic [9:0] d;
       logic        de;
-    } adc_chn_value_int;
+    } adc_chn_value_intr;
   } dcd_hw2reg_adc_chn_val_mreg_t;
 
   typedef struct packed {
@@ -487,7 +495,11 @@ package dcd_reg_pkg;
       logic        d;
       logic        de;
     } chn0_1_filter7_en;
-  } dcd_hw2reg_adc_filter_ctl_reg_t;
+    struct packed {
+      logic        d;
+      logic        de;
+    } oneshot_intr_en;
+  } dcd_hw2reg_adc_intr_ctl_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -522,47 +534,51 @@ package dcd_reg_pkg;
       logic        d;
       logic        de;
     } cc_discon;
-  } dcd_hw2reg_adc_filter_status_reg_t;
+    struct packed {
+      logic        d;
+      logic        de;
+    } oneshot;
+  } dcd_hw2reg_adc_intr_status_reg_t;
 
 
   ///////////////////////////////////////
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    dcd_reg2hw_intr_state_reg_t intr_state; // [674:674]
-    dcd_reg2hw_intr_enable_reg_t intr_enable; // [673:673]
-    dcd_reg2hw_intr_test_reg_t intr_test; // [672:671]
-    dcd_reg2hw_adc_en_ctl_reg_t adc_en_ctl; // [670:669]
-    dcd_reg2hw_adc_pd_ctl_reg_t adc_pd_ctl; // [668:637]
-    dcd_reg2hw_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [636:619]
-    dcd_reg2hw_adc_sample_ctl_reg_t adc_sample_ctl; // [618:602]
-    dcd_reg2hw_adc_fsm_rst_reg_t adc_fsm_rst; // [601:600]
-    dcd_reg2hw_adc_chn0_filter_ctl_mreg_t [7:0] adc_chn0_filter_ctl; // [599:360]
-    dcd_reg2hw_adc_chn1_filter_ctl_mreg_t [7:0] adc_chn1_filter_ctl; // [359:120]
-    dcd_reg2hw_adc_chn_val_mreg_t [1:0] adc_chn_val; // [119:64]
-    dcd_reg2hw_adc_wakeup_ctl_reg_t adc_wakeup_ctl; // [63:48]
-    dcd_reg2hw_adc_wakeup_status_reg_t adc_wakeup_status; // [47:32]
-    dcd_reg2hw_adc_filter_ctl_reg_t adc_filter_ctl; // [31:16]
-    dcd_reg2hw_adc_filter_status_reg_t adc_filter_status; // [15:0]
+    dcd_reg2hw_intr_state_reg_t intr_state; // [671:671]
+    dcd_reg2hw_intr_enable_reg_t intr_enable; // [670:670]
+    dcd_reg2hw_intr_test_reg_t intr_test; // [669:668]
+    dcd_reg2hw_adc_en_ctl_reg_t adc_en_ctl; // [667:664]
+    dcd_reg2hw_adc_pd_ctl_reg_t adc_pd_ctl; // [663:632]
+    dcd_reg2hw_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [631:623]
+    dcd_reg2hw_adc_sample_ctl_reg_t adc_sample_ctl; // [622:606]
+    dcd_reg2hw_adc_fsm_rst_reg_t adc_fsm_rst; // [605:604]
+    dcd_reg2hw_adc_chn0_filter_ctl_mreg_t [7:0] adc_chn0_filter_ctl; // [603:364]
+    dcd_reg2hw_adc_chn1_filter_ctl_mreg_t [7:0] adc_chn1_filter_ctl; // [363:124]
+    dcd_reg2hw_adc_chn_val_mreg_t [1:0] adc_chn_val; // [123:68]
+    dcd_reg2hw_adc_wakeup_ctl_reg_t adc_wakeup_ctl; // [67:52]
+    dcd_reg2hw_adc_wakeup_status_reg_t adc_wakeup_status; // [51:36]
+    dcd_reg2hw_adc_intr_ctl_reg_t adc_intr_ctl; // [35:18]
+    dcd_reg2hw_adc_intr_status_reg_t adc_intr_status; // [17:0]
   } dcd_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    dcd_hw2reg_intr_state_reg_t intr_state; // [672:672]
-    dcd_hw2reg_adc_en_ctl_reg_t adc_en_ctl; // [671:670]
-    dcd_hw2reg_adc_pd_ctl_reg_t adc_pd_ctl; // [669:638]
-    dcd_hw2reg_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [637:620]
-    dcd_hw2reg_adc_sample_ctl_reg_t adc_sample_ctl; // [619:603]
-    dcd_hw2reg_adc_fsm_rst_reg_t adc_fsm_rst; // [602:601]
-    dcd_hw2reg_adc_chn0_filter_ctl_mreg_t [7:0] adc_chn0_filter_ctl; // [600:361]
-    dcd_hw2reg_adc_chn1_filter_ctl_mreg_t [7:0] adc_chn1_filter_ctl; // [360:121]
-    dcd_hw2reg_adc_chn_val_mreg_t [1:0] adc_chn_val; // [120:65]
-    dcd_hw2reg_adc_wakeup_ctl_reg_t adc_wakeup_ctl; // [64:49]
-    dcd_hw2reg_adc_wakeup_status_reg_t adc_wakeup_status; // [48:33]
-    dcd_hw2reg_adc_filter_ctl_reg_t adc_filter_ctl; // [32:17]
-    dcd_hw2reg_adc_filter_status_reg_t adc_filter_status; // [16:1]
+    dcd_hw2reg_intr_state_reg_t intr_state; // [669:669]
+    dcd_hw2reg_adc_en_ctl_reg_t adc_en_ctl; // [668:665]
+    dcd_hw2reg_adc_pd_ctl_reg_t adc_pd_ctl; // [664:633]
+    dcd_hw2reg_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [632:624]
+    dcd_hw2reg_adc_sample_ctl_reg_t adc_sample_ctl; // [623:607]
+    dcd_hw2reg_adc_fsm_rst_reg_t adc_fsm_rst; // [606:605]
+    dcd_hw2reg_adc_chn0_filter_ctl_mreg_t [7:0] adc_chn0_filter_ctl; // [604:365]
+    dcd_hw2reg_adc_chn1_filter_ctl_mreg_t [7:0] adc_chn1_filter_ctl; // [364:125]
+    dcd_hw2reg_adc_chn_val_mreg_t [1:0] adc_chn_val; // [124:69]
+    dcd_hw2reg_adc_wakeup_ctl_reg_t adc_wakeup_ctl; // [68:53]
+    dcd_hw2reg_adc_wakeup_status_reg_t adc_wakeup_status; // [52:37]
+    dcd_hw2reg_adc_intr_ctl_reg_t adc_intr_ctl; // [36:19]
+    dcd_hw2reg_adc_intr_status_reg_t adc_intr_status; // [18:1]
   } dcd_hw2reg_t;
 
   // Register Address
@@ -594,8 +610,8 @@ package dcd_reg_pkg;
   parameter logic [6:0] DCD_ADC_CHN_VAL1_OFFSET = 7'h 64;
   parameter logic [6:0] DCD_ADC_WAKEUP_CTL_OFFSET = 7'h 68;
   parameter logic [6:0] DCD_ADC_WAKEUP_STATUS_OFFSET = 7'h 6c;
-  parameter logic [6:0] DCD_ADC_FILTER_CTL_OFFSET = 7'h 70;
-  parameter logic [6:0] DCD_ADC_FILTER_STATUS_OFFSET = 7'h 74;
+  parameter logic [6:0] DCD_ADC_INTR_CTL_OFFSET = 7'h 70;
+  parameter logic [6:0] DCD_ADC_INTR_STATUS_OFFSET = 7'h 74;
 
 
   // Register Index
@@ -628,8 +644,8 @@ package dcd_reg_pkg;
     DCD_ADC_CHN_VAL1,
     DCD_ADC_WAKEUP_CTL,
     DCD_ADC_WAKEUP_STATUS,
-    DCD_ADC_FILTER_CTL,
-    DCD_ADC_FILTER_STATUS
+    DCD_ADC_INTR_CTL,
+    DCD_ADC_INTR_STATUS
   } dcd_id_e;
 
   // Register width information to check illegal writes
@@ -639,7 +655,7 @@ package dcd_reg_pkg;
     4'b 0001, // index[ 2] DCD_INTR_TEST
     4'b 0001, // index[ 3] DCD_ADC_EN_CTL
     4'b 1111, // index[ 4] DCD_ADC_PD_CTL
-    4'b 0011, // index[ 5] DCD_ADC_LP_SAMPLE_CTL
+    4'b 0001, // index[ 5] DCD_ADC_LP_SAMPLE_CTL
     4'b 0011, // index[ 6] DCD_ADC_SAMPLE_CTL
     4'b 0001, // index[ 7] DCD_ADC_FSM_RST
     4'b 1111, // index[ 8] DCD_ADC_CHN0_FILTER_CTL0
@@ -662,8 +678,8 @@ package dcd_reg_pkg;
     4'b 1111, // index[25] DCD_ADC_CHN_VAL1
     4'b 0001, // index[26] DCD_ADC_WAKEUP_CTL
     4'b 0001, // index[27] DCD_ADC_WAKEUP_STATUS
-    4'b 0001, // index[28] DCD_ADC_FILTER_CTL
-    4'b 0001  // index[29] DCD_ADC_FILTER_STATUS
+    4'b 0011, // index[28] DCD_ADC_INTR_CTL
+    4'b 0011  // index[29] DCD_ADC_INTR_STATUS
   };
 endpackage
 

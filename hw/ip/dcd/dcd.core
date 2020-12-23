@@ -36,18 +36,10 @@ targets:
     parameters:
       - SYNTHESIS=true
     tools:
-<<<<<<< HEAD
-=======
       ascentlint:
         ascentlint_options:
           - "-wait_license"
->>>>>>> d5ad1a942b7283ba208f2822e091c179f30fa5f2
       verilator:
         mode: lint-only
         verilator_options:
           - "-Wall"
-<<<<<<< HEAD
-
-
-=======
->>>>>>> d5ad1a942b7283ba208f2822e091c179f30fa5f2

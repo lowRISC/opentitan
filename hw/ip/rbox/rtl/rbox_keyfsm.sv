@@ -53,12 +53,12 @@ module rbox_keyfsm #(
                             WAITL2H = 3'h1,
                             WAITH2L = 3'h2,
                             DONEL2H = 3'h3,
-                            DONEH2L = 3'h4,
+                            DONEH2L = 3'h4
                             } timer_state_e;
 
   timer_state_e timer_state_q, timer_state_d;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: timer_state_regs
+  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_timer_state_reg
     if (!rst_slow_ni) begin
       timer_state_q    <= IDLE;
     end else begin
@@ -68,15 +68,14 @@ module rbox_keyfsm #(
 
   assign timer_cnt_d = (timer_cnt_en) ? timer_cnt_q + 1'b1 : timer_cnt_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: timer_cnt_regs
+  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_timer_cnt_reg
     if (!rst_slow_ni) begin
       timer_cnt_q    <= '0;
     end
-      else if (timer_cnt_clr) begin
-         timer_cnt_q <= '0;
-      end else begin
-         timer_cnt_q <= timer_cnt_d;
-      end
+    else if (timer_cnt_clr) begin
+      timer_cnt_q <= '0;
+    end else begin
+      timer_cnt_q <= timer_cnt_d;
     end
   end
 

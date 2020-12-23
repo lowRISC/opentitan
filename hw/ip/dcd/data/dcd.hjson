@@ -9,14 +9,14 @@
   reset_primary: "rst_ni",
   bus_device: "tlul",
   bus_host: "none",
-  inter_signal_list: [
-    { struct: "adc_ast",
-      type: "req_rsp",
-      act: "req",
-      name: "adc",
-      package: "ast_wrapper_pkg",
-    }
-  ],
+  //inter_signal_list: [
+  //  { struct: "adc_ast",
+  //    type: "req_rsp",
+  //    act: "req",
+  //    name: "adc",
+  //    package: "ast_wrapper_pkg",
+  //  }
+  //],
   interrupt_list: [
     { name: "debug_cable_update",
       desc: "USB-C debug cable is attached or disconnected",
@@ -46,8 +46,12 @@
       resval: "0",
       fields: [
         { bits: "0",
-          name: "ADC enable",
+          name: "adc_enable",
           desc: "1’b0: to power down ADC and DCD FSM will enter the reset state; 1’b1: to power up ADC and DCD FSM will start",
+        }
+        { bits: "1",
+          name: "oneshot_mode",
+          desc: "Oneshot mode does not care about the filter value. 1’b0: disable; 1’b1: enable",
         }
       ]
     }
@@ -64,12 +68,12 @@
         }
         { bits: "7:4",
           name: "pwrup_time",
-          desc: "Configure ADC power up time in cycles, 200KHz(5us)",
+          desc: "ADC power up time. unit in cycles, 200KHz(5us)",
           resval: "6",
         }
         { bits: "31:8",
-          name: "wakeup_timer",
-          desc: "Configure the timer in cycles, 200KHz(5us) to wake up ADC in low-power mode",
+          name: "wakeup_time",
+          desc: "How often FSM wakes up from ADC PD mode to take a sample. unit in cycles, 200KHz(5us)",
           resval: "1600",
         }
       ]
@@ -81,14 +85,9 @@
       hwqe:  "true",
       fields: [
         { bits: "7:0",
-          name: "sample_cnt",
-          desc: "The number of samples in low-power mode when adc_pd_ctl is enabled. After the programmed number is met, ADC won’t be powered down any more.",
+          name: "lp_sample_cnt",
+          desc: "The number of samples in low-power mode when the low-power mode is enabled. After the programmed number is met, ADC won’t be powered down any more.",
           resval: "4",
-        }
-        { bits: "15:8",
-          name: "latency",
-          desc: "The number of cycles(200KHz; 5us) ADC takes to output the value",
-          resval: "44",
         }
       ],
     }
@@ -100,8 +99,8 @@
       resval: "155",
       fields: [
         { bits: "15:0",
-          name: "regular_sample_count",
-          desc: "The number of samples to meet the debounce spec. used after the low-power mode condition is met or in the regular power mode",
+          name: "np_sample_cnt",
+          desc: "The number of samples in normal-power mode to meet the debounce spec. used after the low-power mode condition is met or in the normal power mode",
         }
       ]
     }
@@ -145,7 +144,7 @@
 	  }
           { bits: "12",
 	    name: "cond",
-	    desc: "1-bit for the condition; 1'b0 means min<ADC<max, 1'b1 means ADC>=max or ADC=<min ",
+	    desc: "1-bit for the condition; 1'b0 means min<=ADC<=max, 1'b1 means ADC>max or ADC<min ",
 	  }
           { bits: "17:16",
 	    name: "max_ext",
@@ -185,7 +184,7 @@
 	  }
           { bits: "12",
 	    name: "cond",
-	    desc: "1-bit for the condition; 1'b0 means min<ADC<max, 1'b1 means ADC>=max or ADC=<min ",
+	    desc: "1-bit for the condition; 1'b0 means min<=ADC<=max, 1'b1 means ADC>max or ADC<min ",
 	  }
           { bits: "17:16",
 	    name: "max_ext",
@@ -204,7 +203,7 @@
         count: "NumAdcChannel",
         cname: "DCD",
         hwqe : "true",
-        swaccess: "rw",
+        swaccess: "ro",
         hwaccess: "hrw",
         resval: "0",
         fields: [
@@ -217,11 +216,11 @@
 	    desc: "Latest ADC value sampled on channel. each step is 2.148mV",
 	  }
           { bits: "17:16",
-	    name: "adc_chn_value_int_ext",
+	    name: "adc_chn_value_intr_ext",
 	    desc: "2-bit extension; RO 0",
 	  }
           { bits: "27:18",
-	    name: "adc_chn_value_int",
+	    name: "adc_chn_value_intr",
 	    desc: "ADC value sampled on channel when the interrupt is raised(debug cable is attached or disconnected)each step is 2.148mV",
 	  }
         ],
@@ -269,7 +268,7 @@
       ]
     }
     { name: "adc_wakeup_status",
-      desc: "Wakeup internal status", 
+      desc: "Wakeup internal status",
       swaccess: "rw1c",
       hwaccess: "hrw",
       hwqe: "true",
@@ -309,8 +308,8 @@
         }
       ]
     }
-    { name: "adc_filter_ctl",
-      desc: "Debug cable internal control", 
+    { name: "adc_intr_ctl",
+      desc: "Debug cable internal control",
       swaccess: "rw",
       hwaccess: "hrw",
       hwqe: "true",
@@ -348,10 +347,14 @@
 	  name: "chn0_1_filter7_en",
           desc: "0: disable; 1: enable",
         }
+        { bits: "8",
+	  name: "oneshot_intr_en",
+          desc: "0: disable; 1: enable",
+        }
       ]
     }
-    { name: "adc_filter_status",
-      desc: "Debug cable internal status", 
+    { name: "adc_intr_status",
+      desc: "Debug cable internal status",
       swaccess: "rw1c",
       hwaccess: "hrw",
       hwqe: "true",
@@ -388,6 +391,10 @@
 	{ bits: "7",
           name: "cc_discon",
           desc: "0: filter7 condition is not met; 1: filter7 condition is met",
+        }
+	{ bits: "8",
+          name: "oneshot",
+          desc: "0: oneshot sample is not done ; 1: oneshot sample is done",
         }
       ]
     }
