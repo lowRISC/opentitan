@@ -1295,6 +1295,18 @@
           index: -1
         }
         {
+          struct: lc_tx
+          type: uni
+          name: lc_check_byp_en
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: otp_ctrl
+          width: 1
+          top_signame: lc_ctrl_lc_check_byp_en
+          index: -1
+        }
+        {
           struct: otp_keymgr_key
           type: uni
           name: otp_keymgr_key
@@ -1705,6 +1717,19 @@
           inst_name: lc_ctrl
           width: 1
           top_signame: flash_ctrl_rma_ack
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_check_byp_en
+          act: req
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_check_byp_en
           index: -1
         }
         {
@@ -5605,6 +5630,10 @@
         sram_ctrl_main.lc_escalate_en
         sram_ctrl_ret.lc_escalate_en
       ]
+      lc_ctrl.lc_check_byp_en:
+      [
+        otp_ctrl.lc_check_byp_en
+      ]
       lc_ctrl.lc_clk_byp_req: []
       lc_ctrl.lc_creator_seed_sw_rw_en:
       [
@@ -8845,6 +8874,18 @@
         index: -1
       }
       {
+        struct: lc_tx
+        type: uni
+        name: lc_check_byp_en
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: otp_ctrl
+        width: 1
+        top_signame: lc_ctrl_lc_check_byp_en
+        index: -1
+      }
+      {
         struct: otp_keymgr_key
         type: uni
         name: otp_keymgr_key
@@ -9153,6 +9194,19 @@
         inst_name: lc_ctrl
         width: 1
         top_signame: flash_ctrl_rma_ack
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_check_byp_en
+        act: req
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_check_byp_en
         index: -1
       }
       {
@@ -11793,6 +11847,14 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: lc_ctrl_lc_escalate_en
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_check_byp_en
         width: 1
         type: uni
         default: lc_ctrl_pkg::Off

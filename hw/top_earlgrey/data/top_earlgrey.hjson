@@ -639,6 +639,7 @@
                                       'sram_ctrl_main.lc_escalate_en',
                                       'sram_ctrl_ret.lc_escalate_en'],
 
+      'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en'],
       // TODO: OTP Clock bypass signal going from LC to AST/clkmgr
       'lc_ctrl.lc_clk_byp_req'  : [],
       //'lc_ctrl.lc_clk_byp_ack'  : [],
