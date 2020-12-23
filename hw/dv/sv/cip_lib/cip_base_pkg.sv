@@ -21,7 +21,8 @@ package cip_base_pkg;
 
   // package variables
   string msg_id = "cip_base_pkg";
-  parameter uint EDN_DATA_WIDTH = 33; // 32 bits data, 1 bit fips
+  parameter uint EDN_BUS_WIDTH = 32;
+  parameter uint EDN_DATA_WIDTH = EDN_BUS_WIDTH + 1; // 32 bits bus data, 1 bit fips
 
   typedef enum {
     err_update,
