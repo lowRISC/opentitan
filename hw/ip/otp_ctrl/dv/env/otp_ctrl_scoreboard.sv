@@ -12,6 +12,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   // local variables
   bit [TL_DW-1:0] otp_a [OTP_ARRAY_SIZE];
   bit key_size_80 = SCRAMBLE_KEY_SIZE == 80;
+  bit [EDN_BUS_WIDTH-1:0] edn_data_q[$];
 
   // LC partition does not have digest
   bit [SCRAMBLE_DATA_SIZE-1:0] digests[NumPart-1];
@@ -57,12 +58,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     fork
       process_backdoor_mem_clear();
       process_lc_token_req();
+      process_edn_req();
+      check_otbn_rsp();
     join_none
   endtask
 
   virtual task process_backdoor_mem_clear();
     forever begin
-      @(posedge cfg.pwr_otp_vif.pins[OtpPwrInitReq]) begin
+      @(posedge cfg.pwr_otp_vif.pins[OtpPwrInitReq] && cfg.en_scb) begin
         if (cfg.backdoor_clear_mem) begin
           bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, 0);
           otp_a   = '{default:0};
@@ -103,6 +106,72 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                                                    .key(rcv_item.h_data),
                                                    .final_const(RndCnstDigestConstDefault[1]));
       `DV_CHECK_EQ(rcv_item.d_data, {exp_data_1, exp_data_0}, "lc_token_encode_mismatch")
+    end
+  endtask
+
+  virtual task process_edn_req();
+    forever begin
+      push_pull_item#(.DeviceDataWidth(EDN_DATA_WIDTH)) edn_item;
+      edn_fifo.get(edn_item);
+      edn_data_q.push_back(edn_item.d_data[EDN_BUS_WIDTH-1:0]);
+    end
+  endtask
+
+  virtual task check_otbn_rsp();
+    forever begin
+      push_pull_item#(.DeviceDataWidth(OTBN_DATA_SIZE)) rcv_item;
+      bit [SCRAMBLE_KEY_SIZE-1:0]  edn_key2, edn_key1;
+      bit [SCRAMBLE_KEY_SIZE-1:0]  sram_key;
+      bit [SCRAMBLE_DATA_SIZE-1:0] exp_key_lower, exp_key_higher;
+      bit [OtbnKeyWidth-1:0]       key, exp_key;
+      bit [OtbnNonceWidth-1:0]     nonce, exp_nonce;
+      bit                          seed_valid;
+      bit                          part_locked;
+
+      otbn_fifo.get(rcv_item);
+      seed_valid  = rcv_item.d_data[0];
+      nonce       = rcv_item.d_data[1+:OtbnNonceWidth];
+      key         = rcv_item.d_data[OtbnNonceWidth+1+:OtbnKeyWidth];
+      part_locked = {`gmv(ral.secret1_digest_0), `gmv(ral.secret1_digest_1)} != '0;
+
+      // seed is valid as long as secret1 is locked
+      `DV_CHECK_EQ(seed_valid, part_locked, "otbn seed_valid mismatch")
+
+      // get edn CSRNG
+       `DV_CHECK_EQ(edn_data_q.size(), 16);
+       {exp_nonce, edn_key2, edn_key1} = {<<32{edn_data_q}};
+
+      // TODO: temp delete here, once all edn request supported, can remove
+      edn_data_q.delete();
+
+      // calculate key
+      if (!part_locked) begin
+        // constants are all zeros
+        sram_key = 0;
+      end else begin
+        int sram_key_idx = SramDataKeySeedOffset / 4;
+        for (int i = 0; i < SramDataKeySeedSize / 8; i++) begin
+          bit [TL_DW*2-1:0] key_in_word = {otp_a[sram_key_idx+i*2+1], otp_a[sram_key_idx+i*2]};
+          sram_key = sram_key | key_in_word << TL_DW * 2 * i ;
+        end
+      end
+
+      exp_key_lower = present_encode_with_final_const(.data(RndCnstDigestIVDefault[4]),
+                                                      .key(sram_key),
+                                                      .final_const(RndCnstDigestConstDefault[4]),
+                                                      .second_key(edn_key1),
+                                                      .num_round(2));
+
+      exp_key_higher = present_encode_with_final_const(.data(RndCnstDigestIVDefault[4]),
+                                                      .key(sram_key),
+                                                      .final_const(RndCnstDigestConstDefault[4]),
+                                                      .second_key(edn_key2),
+                                                      .num_round(2));
+      exp_key = {exp_key_higher, exp_key_lower};
+      `DV_CHECK_EQ(key, exp_key, "otbn key mismatch")
+
+      // check nonce value
+      `DV_CHECK_EQ(nonce, exp_nonce, "otbn nonce mismatch")
     end
   endtask
 
@@ -262,6 +331,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     // digest values are updated after a power cycle
     predict_digest_csrs();
     void'(ral.status.predict(OtpDaiIdle));
+    edn_data_q.delete();
   endfunction
 
   // predict digest registers
@@ -389,18 +459,31 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     descramble_data = output_data[NUM_ROUND-1];
   endfunction
 
-  // this function go through present encode algo twice:
-  // one with input key, one with a final constant
-  // this is mainly used for unlock token hashing
+  // this function go through present encode algo two or three iterations:
+  // first iteration with input key,
+  // second iteration with second_key, this iteration only happens if num_round is 2
+  // third iteration with a final constant as key
+  // this is mainly used for unlock token hashing, key derivation
   virtual function bit [SCRAMBLE_DATA_SIZE-1:0] present_encode_with_final_const(
                                                 bit [SCRAMBLE_DATA_SIZE-1:0] data,
                                                 bit [SCRAMBLE_KEY_SIZE-1:0]  key,
-                                                bit [SCRAMBLE_KEY_SIZE-1:0]  final_const);
+                                                bit [SCRAMBLE_KEY_SIZE-1:0]  final_const,
+                                                bit [SCRAMBLE_KEY_SIZE-1:0]  second_key = '0,
+                                                int                          num_round = 1);
     bit [NUM_ROUND-1:0] [SCRAMBLE_DATA_SIZE-1:0] enc_array;
-    bit  [SCRAMBLE_DATA_SIZE-1:0] intermediate_state;
+    bit [SCRAMBLE_DATA_SIZE-1:0] intermediate_state;
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(data, key, key_size_80, enc_array);
     // XOR the previous state into the digest result according to the Davies-Meyer scheme.
     intermediate_state = data ^ enc_array[NUM_ROUND-1];
+
+    if (num_round == 2) begin
+      crypto_dpi_present_pkg::sv_dpi_present_encrypt(intermediate_state, second_key,
+                                                     key_size_80, enc_array);
+      intermediate_state = intermediate_state ^ enc_array[NUM_ROUND-1];
+    end else if (num_round > 2) begin
+      `uvm_fatal(`gfn, $sformatf("does not support num_round: %0d > 2", num_round))
+    end
+
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(intermediate_state, final_const,
                                                    key_size_80, enc_array);
     // XOR the previous state into the digest result according to the Davies-Meyer scheme.
@@ -416,4 +499,5 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     void'(ral.intr_state.otp_error.predict(.value(1)));
     if (dai_err) void'(ral.status.predict(OtpDaiErr | OtpDaiIdle));
   endfunction
+
 endclass
