@@ -92,9 +92,18 @@ package dv_utils_pkg;
     return val >= 0 ? val : -val;
   endfunction
 
-  // endian swap
+  // endian swaps a 32-bit data word
   function automatic logic [31:0] endian_swap(logic [31:0] data);
     return {<<8{data}};
+  endfunction
+
+  // endian swaps bytes at a word granularity, while preserving overall word ordering.
+  //
+  // e.g. if `arr[] = '{'h0, 'h1, 'h2, 'h3, 'h4, 'h5, 'h6, 'h7}`, this function will produce:
+  //      `'{'h3, 'h2, 'h1, 'h0, 'h7, 'h6, 'h5, 'h4}`
+  function automatic void endian_swap_byte_arr(ref bit [7:0] arr[]);
+    arr = {<< byte {arr}};
+    arr = {<< 32 {arr}};
   endfunction
 
 `ifdef UVM

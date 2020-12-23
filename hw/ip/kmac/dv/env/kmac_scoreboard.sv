@@ -31,9 +31,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
+    bit     do_read_check         = 1'b1;
+    bit     write                 = item.is_write();
+    uvm_reg_addr_t csr_addr       = ral.get_word_aligned_addr(item.a_addr);
+    bit [TL_AW-1:0] csr_addr_mask = ral.get_addr_mask();
 
     bit addr_phase_read   = (!write && channel == AddrChannel);
     bit addr_phase_write  = (write && channel == AddrChannel);
@@ -44,8 +45,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     if (csr_addr inside {cfg.csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
-    end
-    else begin
+    end else if ((csr_addr & csr_addr_mask) inside {[KMAC_FIFO_BASE:KMAC_FIFO_END]}) begin
+      // msgfifo window
+      return;
+    end else if ((csr_addr & csr_addr_mask) inside
+      {[KMAC_STATE_SHARE0_BASE:KMAC_STATE_SHARE0_END],
+       [KMAC_STATE_SHARE1_BASE:KMAC_STATE_SHARE1_END]}) begin
+      // state digest window
+      return;
+    end else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
@@ -69,8 +77,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       "intr_test": begin
         // FIXME
       end
+      "status": begin
+        // STATUS is read only
+        do_read_check = 1'b0;
+      end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        // TODO: uncomment after implementing scoreboard
+        //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
     endcase
 

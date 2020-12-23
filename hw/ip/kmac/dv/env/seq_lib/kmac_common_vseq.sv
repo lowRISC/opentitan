@@ -11,6 +11,7 @@ class kmac_common_vseq extends kmac_base_vseq;
   `uvm_object_new
 
   virtual task body();
+    do_kmac_init = 1'b0;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
