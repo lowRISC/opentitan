@@ -68,6 +68,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
     if (advance_state) keymgr_advance(wait_done);
 
     repeat (num_gen_op) begin
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gen_operation)
       keymgr_generate(.operation(gen_operation), .wait_done(wait_done));
       if (clr_output) keymgr_rd_clr();
     end
@@ -154,7 +155,10 @@ class keymgr_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.control));
     ral.control.start.set(1'b0);
 
-    if (wait_done) wait_op_done(.is_gen_output(1));
+    if (wait_done) begin
+      wait_op_done(.is_gen_output(operation inside {keymgr_pkg::OpGenSwOut,
+                                                    keymgr_pkg::OpGenHwOut}));
+    end
   endtask : keymgr_generate
 
   virtual task keymgr_rd_clr();
