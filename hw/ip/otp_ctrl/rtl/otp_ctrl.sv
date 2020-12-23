@@ -56,6 +56,7 @@ module otp_ctrl
   input  lc_ctrl_pkg::lc_tx_t                        lc_seed_hw_rd_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_dft_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                        lc_check_byp_en_i,
   // OTP broadcast outputs
   output otp_lc_data_t                               otp_lc_data_o,
   output otp_keymgr_key_t                            otp_keymgr_key_o,
@@ -113,11 +114,13 @@ module otp_ctrl
   // Life Cycle Signal Synchronization //
   ///////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t lc_escalate_en, lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en;
+  lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en, lc_check_byp_en;
   lc_ctrl_pkg::lc_tx_t [1:0] lc_dft_en;
+  // NumAgents + lfsr timer and scrambling datapath.
+  lc_ctrl_pkg::lc_tx_t [NumAgentsIdx+1:0] lc_escalate_en;
 
   prim_lc_sync #(
-    .NumCopies(1)
+    .NumCopies(NumAgentsIdx+2)
   ) u_prim_lc_sync_escalate_en (
     .clk_i,
     .rst_ni,
@@ -150,6 +153,15 @@ module otp_ctrl
     .rst_ni,
     .lc_en_i(lc_dft_en_i),
     .lc_en_o(lc_dft_en)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync_check_byp_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_check_byp_en_i),
+    .lc_en_o(lc_check_byp_en)
   );
 
   /////////////////////////////////////
@@ -485,7 +497,7 @@ module otp_ctrl
     .cnsty_chk_req_o    ( cnsty_chk_req             ),
     .integ_chk_ack_i    ( integ_chk_ack             ),
     .cnsty_chk_ack_i    ( cnsty_chk_ack             ),
-    .escalate_en_i      ( lc_escalate_en            ),
+    .escalate_en_i      ( lc_escalate_en[NumAgents] ),
     .chk_timeout_o      ( chk_timeout               ),
     .fsm_err_o          ( lfsr_fsm_err              )
   );
@@ -683,16 +695,16 @@ module otp_ctrl
   ) u_scrmbl (
     .clk_i,
     .rst_ni,
-    .cmd_i         ( scrmbl_req_bundle.cmd   ),
-    .mode_i        ( scrmbl_req_bundle.mode  ),
-    .sel_i         ( scrmbl_req_bundle.sel   ),
-    .data_i        ( scrmbl_req_bundle.data  ),
-    .valid_i       ( scrmbl_req_bundle.valid ),
-    .ready_o       ( scrmbl_arb_req_ready    ),
-    .data_o        ( part_scrmbl_rsp_data    ),
-    .valid_o       ( scrmbl_arb_rsp_valid    ),
-    .escalate_en_i ( lc_escalate_en          ),
-    .fsm_err_o     ( scrmbl_fsm_err          )
+    .cmd_i         ( scrmbl_req_bundle.cmd       ),
+    .mode_i        ( scrmbl_req_bundle.mode      ),
+    .sel_i         ( scrmbl_req_bundle.sel       ),
+    .data_i        ( scrmbl_req_bundle.data      ),
+    .valid_i       ( scrmbl_req_bundle.valid     ),
+    .ready_o       ( scrmbl_arb_req_ready        ),
+    .data_o        ( part_scrmbl_rsp_data        ),
+    .valid_o       ( scrmbl_arb_rsp_valid        ),
+    .escalate_en_i ( lc_escalate_en[NumAgents+1] ),
+    .fsm_err_o     ( scrmbl_fsm_err              )
   );
 
   // steer back responses
@@ -754,7 +766,7 @@ module otp_ctrl
     .init_done_o      ( pwr_otp_rsp_d                         ),
     .part_init_req_o  ( part_init_req                         ),
     .part_init_done_i ( part_init_done                        ),
-    .escalate_en_i    ( lc_escalate_en                        ),
+    .escalate_en_i    ( lc_escalate_en[DaiIdx]                ),
     .error_o          ( part_error[DaiIdx]                    ),
     .part_access_i    ( part_access_dai                       ),
     .dai_addr_i       ( dai_addr                              ),
@@ -795,7 +807,7 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     .lci_en_i         ( pwr_otp_o.otp_done                ),
-    .escalate_en_i    ( lc_escalate_en                    ),
+    .escalate_en_i    ( lc_escalate_en[LciIdx]            ),
     .error_o          ( part_error[LciIdx]                ),
     .lci_idle_o       ( lci_idle                          ),
     .lc_req_i         ( lc_otp_program_i.req              ),
@@ -836,7 +848,7 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     .kdi_en_i                ( pwr_otp_o.otp_done      ),
-    .escalate_en_i           ( lc_escalate_en          ),
+    .escalate_en_i           ( lc_escalate_en[KdiIdx]  ),
     .fsm_err_o               ( key_deriv_fsm_err       ),
     .scrmbl_key_seed_valid_i ( scrmbl_key_seed_valid   ),
     .flash_data_key_seed_i   ( flash_data_key_seed     ),
@@ -890,7 +902,7 @@ module otp_ctrl
         .rst_ni,
         .init_req_i    ( part_init_req                ),
         .init_done_o   ( part_init_done[k]            ),
-        .escalate_en_i ( lc_escalate_en               ),
+        .escalate_en_i ( lc_escalate_en[k]            ),
         .error_o       ( part_error[k]                ),
         .access_i      ( part_access_csrs[k]          ),
         .access_o      ( part_access_dai[k]           ),
@@ -939,37 +951,39 @@ module otp_ctrl
       ) u_part_buf (
         .clk_i,
         .rst_ni,
-        .init_req_i       ( part_init_req                   ),
-        .init_done_o      ( part_init_done[k]               ),
-        .integ_chk_req_i  ( integ_chk_req[k]                ),
-        .integ_chk_ack_o  ( integ_chk_ack[k]                ),
-        .cnsty_chk_req_i  ( cnsty_chk_req[k]                ),
-        .cnsty_chk_ack_o  ( cnsty_chk_ack[k]                ),
-        .escalate_en_i    ( lc_escalate_en                  ),
-        .error_o          ( part_error[k]                   ),
-        .access_i         ( part_access_csrs[k]             ),
-        .access_o         ( part_access_dai[k]              ),
-        .digest_o         ( part_digest[k]                  ),
-        .data_o           ( part_buf_data[PartInfo[k].offset +: PartInfo[k].size] ),
-        .otp_req_o        ( part_otp_arb_req[k]             ),
-        .otp_cmd_o        ( part_otp_arb_bundle[k].cmd      ),
-        .otp_size_o       ( part_otp_arb_bundle[k].size     ),
-        .otp_wdata_o      ( part_otp_arb_bundle[k].wdata    ),
-        .otp_addr_o       ( part_otp_arb_bundle[k].addr     ),
-        .otp_gnt_i        ( part_otp_arb_gnt[k]             ),
-        .otp_rvalid_i     ( part_otp_rvalid[k]              ),
-        .otp_rdata_i      ( part_otp_rdata                  ),
-        .otp_err_i        ( part_otp_err                    ),
-        .scrmbl_mtx_req_o ( part_scrmbl_mtx_req[k]          ),
-        .scrmbl_mtx_gnt_i ( part_scrmbl_mtx_gnt[k]          ),
-        .scrmbl_cmd_o     ( part_scrmbl_req_bundle[k].cmd   ),
-        .scrmbl_mode_o    ( part_scrmbl_req_bundle[k].mode  ),
-        .scrmbl_sel_o     ( part_scrmbl_req_bundle[k].sel   ),
-        .scrmbl_data_o    ( part_scrmbl_req_bundle[k].data  ),
-        .scrmbl_valid_o   ( part_scrmbl_req_bundle[k].valid ),
-        .scrmbl_ready_i   ( part_scrmbl_req_ready[k]        ),
-        .scrmbl_valid_i   ( part_scrmbl_rsp_valid[k]        ),
-        .scrmbl_data_i    ( part_scrmbl_rsp_data            )
+        .init_req_i        ( part_init_req                   ),
+        .init_done_o       ( part_init_done[k]               ),
+        .integ_chk_req_i   ( integ_chk_req[k]                ),
+        .integ_chk_ack_o   ( integ_chk_ack[k]                ),
+        .cnsty_chk_req_i   ( cnsty_chk_req[k]                ),
+        .cnsty_chk_ack_o   ( cnsty_chk_ack[k]                ),
+        .escalate_en_i     ( lc_escalate_en[k]               ),
+        // Only supported by life cycle partition (see further below).
+        .check_byp_en_i ( lc_ctrl_pkg::Off                ),
+        .error_o           ( part_error[k]                   ),
+        .access_i          ( part_access_csrs[k]             ),
+        .access_o          ( part_access_dai[k]              ),
+        .digest_o          ( part_digest[k]                  ),
+        .data_o            ( part_buf_data[PartInfo[k].offset +: PartInfo[k].size] ),
+        .otp_req_o         ( part_otp_arb_req[k]             ),
+        .otp_cmd_o         ( part_otp_arb_bundle[k].cmd      ),
+        .otp_size_o        ( part_otp_arb_bundle[k].size     ),
+        .otp_wdata_o       ( part_otp_arb_bundle[k].wdata    ),
+        .otp_addr_o        ( part_otp_arb_bundle[k].addr     ),
+        .otp_gnt_i         ( part_otp_arb_gnt[k]             ),
+        .otp_rvalid_i      ( part_otp_rvalid[k]              ),
+        .otp_rdata_i       ( part_otp_rdata                  ),
+        .otp_err_i         ( part_otp_err                    ),
+        .scrmbl_mtx_req_o  ( part_scrmbl_mtx_req[k]          ),
+        .scrmbl_mtx_gnt_i  ( part_scrmbl_mtx_gnt[k]          ),
+        .scrmbl_cmd_o      ( part_scrmbl_req_bundle[k].cmd   ),
+        .scrmbl_mode_o     ( part_scrmbl_req_bundle[k].mode  ),
+        .scrmbl_sel_o      ( part_scrmbl_req_bundle[k].sel   ),
+        .scrmbl_data_o     ( part_scrmbl_req_bundle[k].data  ),
+        .scrmbl_valid_o    ( part_scrmbl_req_bundle[k].valid ),
+        .scrmbl_ready_i    ( part_scrmbl_req_ready[k]        ),
+        .scrmbl_valid_i    ( part_scrmbl_rsp_valid[k]        ),
+        .scrmbl_data_i     ( part_scrmbl_rsp_data            )
       );
 
       // Buffered partitions are not accessible via the TL-UL window.
@@ -987,38 +1001,42 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
       ) u_part_buf (
         .clk_i,
         .rst_ni,
-        .init_req_i       ( part_init_req                   ),
-        .init_done_o      ( part_init_done[k]               ),
-        .integ_chk_req_i  ( integ_chk_req[k]                ),
-        .integ_chk_ack_o  ( integ_chk_ack[k]                ),
-        .cnsty_chk_req_i  ( cnsty_chk_req[k]                ),
-        .cnsty_chk_ack_o  ( cnsty_chk_ack[k]                ),
-        .escalate_en_i    ( lc_escalate_en                  ),
-        .error_o          ( part_error[k]                   ),
-        .access_i         ( part_access_csrs[k]             ),
-        .access_o         ( part_access_dai[k]              ),
-        .digest_o         ( part_digest[k]                  ),
-        .data_o           ( part_buf_data[PartInfo[k].offset +: PartInfo[k].size] ),
-        .otp_req_o        ( part_otp_arb_req[k]             ),
-        .otp_cmd_o        ( part_otp_arb_bundle[k].cmd      ),
-        .otp_size_o       ( part_otp_arb_bundle[k].size     ),
-        .otp_wdata_o      ( part_otp_arb_bundle[k].wdata    ),
-        .otp_addr_o       ( part_otp_arb_bundle[k].addr     ),
-        .otp_gnt_i        ( part_otp_arb_gnt[k]             ),
-        .otp_rvalid_i     ( part_otp_rvalid[k]              ),
-        .otp_rdata_i      ( part_otp_rdata                  ),
-        .otp_err_i        ( part_otp_err                    ),
+        .init_req_i        ( part_init_req                   ),
+        .init_done_o       ( part_init_done[k]               ),
+        .integ_chk_req_i   ( integ_chk_req[k]                ),
+        .integ_chk_ack_o   ( integ_chk_ack[k]                ),
+        .cnsty_chk_req_i   ( cnsty_chk_req[k]                ),
+        .cnsty_chk_ack_o   ( cnsty_chk_ack[k]                ),
+        .escalate_en_i     ( lc_escalate_en[k]               ),
+        // This is only supported by the life cycle partition. We need to prevent this partition
+        // from escalating once the life cycle state in memory is being updated (and hence not
+        // consistent with the values in the buffer regs anymore).
+        .check_byp_en_i ( lc_check_byp_en              ),
+        .error_o           ( part_error[k]                   ),
+        .access_i          ( part_access_csrs[k]             ),
+        .access_o          ( part_access_dai[k]              ),
+        .digest_o          ( part_digest[k]                  ),
+        .data_o            ( part_buf_data[PartInfo[k].offset +: PartInfo[k].size] ),
+        .otp_req_o         ( part_otp_arb_req[k]             ),
+        .otp_cmd_o         ( part_otp_arb_bundle[k].cmd      ),
+        .otp_size_o        ( part_otp_arb_bundle[k].size     ),
+        .otp_wdata_o       ( part_otp_arb_bundle[k].wdata    ),
+        .otp_addr_o        ( part_otp_arb_bundle[k].addr     ),
+        .otp_gnt_i         ( part_otp_arb_gnt[k]             ),
+        .otp_rvalid_i      ( part_otp_rvalid[k]              ),
+        .otp_rdata_i       ( part_otp_rdata                  ),
+        .otp_err_i         ( part_otp_err                    ),
         // The LC partition does not need any scrambling features.
-        .scrmbl_mtx_req_o (                                 ),
-        .scrmbl_mtx_gnt_i ( 1'b0                            ),
-        .scrmbl_cmd_o     (                                 ),
-        .scrmbl_mode_o    (                                 ),
-        .scrmbl_sel_o     (                                 ),
-        .scrmbl_data_o    (                                 ),
-        .scrmbl_valid_o   (                                 ),
-        .scrmbl_ready_i   ( 1'b0                            ),
-        .scrmbl_valid_i   ( 1'b0                            ),
-        .scrmbl_data_i    ( '0                              )
+        .scrmbl_mtx_req_o  (                                 ),
+        .scrmbl_mtx_gnt_i  ( 1'b0                            ),
+        .scrmbl_cmd_o      (                                 ),
+        .scrmbl_mode_o     (                                 ),
+        .scrmbl_sel_o      (                                 ),
+        .scrmbl_data_o     (                                 ),
+        .scrmbl_valid_o    (                                 ),
+        .scrmbl_ready_i    ( 1'b0                            ),
+        .scrmbl_valid_i    ( 1'b0                            ),
+        .scrmbl_data_i     ( '0                              )
       );
 
       // Buffered partitions are not accessible via the TL-UL window.

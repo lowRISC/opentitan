@@ -70,6 +70,7 @@ module lc_ctrl_fsm
   output lc_tx_t                lc_seed_hw_rd_en_o,
   output lc_tx_t                lc_keymgr_en_o,
   output lc_tx_t                lc_escalate_en_o,
+  output lc_tx_t                lc_check_byp_en_o,
     // Request and feedback to/from clock manager and AST.
   output lc_tx_t                lc_clk_byp_req_o,
   input  lc_tx_t                lc_clk_byp_ack_i,
@@ -102,8 +103,9 @@ module lc_ctrl_fsm
   assign otp_prog_lc_cnt_o   = lc_cnt_q;
 
   // Conditional LC signal outputs
-  lc_tx_t lc_clk_byp_req_d, lc_clk_byp_req_q, lc_clk_byp_req;
-  lc_tx_t lc_flash_rma_req_d, lc_flash_rma_req_q, lc_flash_rma_req;
+  lc_tx_t lc_clk_byp_req, lc_clk_byp_req_d, lc_clk_byp_req_q;
+  lc_tx_t lc_flash_rma_req, lc_flash_rma_req_d, lc_flash_rma_req_q;
+  lc_tx_t lc_check_byp_en, lc_check_byp_en_d, lc_check_byp_en_q;
 
   `ASSERT_KNOWN(LcStateKnown_A,   lc_state_q   )
   `ASSERT_KNOWN(LcCntKnown_A,     lc_cnt_q     )
@@ -137,11 +139,12 @@ module lc_ctrl_fsm
     init_done_o = 1'b1;
     idle_o      = 1'b1;
 
-    // The clock bypass and RMA signals remain asserted once set to ON.
+    // These signals remain asserted once set to On.
     // Note that the remaining life cycle signals are decoded in
     // the lc_ctrl_signal_decode submodule.
     lc_clk_byp_req   = lc_clk_byp_req_q;
     lc_flash_rma_req = lc_flash_rma_req_q;
+    lc_check_byp_en  = lc_check_byp_en_q;
 
     unique case (fsm_state_q)
       ///////////////////////////////////////////////////////////////////
@@ -149,6 +152,9 @@ module lc_ctrl_fsm
       // power manager sends an initialization request.
       ResetSt: begin
         init_done_o = 1'b0;
+        lc_clk_byp_req   = Off;
+        lc_flash_rma_req = Off;
+        lc_check_byp_en  = Off;
         if (init_req_i && lc_state_valid_q) begin
           fsm_state_d = IdleSt;
           // Fetch LC state vector from OTP.
@@ -163,6 +169,9 @@ module lc_ctrl_fsm
       // in the lc_ctrl_signal_decode submodule.
       IdleSt: begin
         idle_o = 1'b1;
+        lc_clk_byp_req   = Off;
+        lc_flash_rma_req = Off;
+        lc_check_byp_en  = Off;
         // Continuously fetch LC state vector from OTP.
         lc_state_d    = lc_state_i;
         lc_cnt_d      = lc_cnt_i;
@@ -177,8 +186,12 @@ module lc_ctrl_fsm
       ///////////////////////////////////////////////////////////////////
       // Clock mux state. If in RAW or TEST_LOCKED the bypass request is
       // asserted and we have to wait until the clock mux and clock manager
-      // have switched the mux and the clock divider.
+      // have switched the mux and the clock divider. Also, we disable the
+      // life cycle partition checks at this point since we are going to
+      // alter the contents in the OTP memory array, which could lead to
+      // spurious escalations.
       ClkMuxSt: begin
+        lc_check_byp_en = On;
         if (lc_state_q inside {LcStRaw,
                                LcStTestLocked0,
                                LcStTestLocked1,
@@ -356,6 +369,10 @@ module lc_ctrl_fsm
     .lc_en_i(lc_flash_rma_req),
     .lc_en_o(lc_flash_rma_req_d)
   );
+  prim_lc_sender u_prim_lc_sender_check_byp_en (
+    .lc_en_i(lc_check_byp_en),
+    .lc_en_o(lc_check_byp_en_d)
+  );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
@@ -366,6 +383,7 @@ module lc_ctrl_fsm
       hashed_token_q     <= {LcTokenWidth{1'b1}};
       lc_clk_byp_req_q   <= Off;
       lc_flash_rma_req_q <= Off;
+      lc_check_byp_en_q  <= Off;
     end else begin
       lc_state_q         <= lc_state_d;
       lc_cnt_q           <= lc_cnt_d;
@@ -374,6 +392,7 @@ module lc_ctrl_fsm
       hashed_token_q     <= hashed_token_d;
       lc_clk_byp_req_q   <= lc_clk_byp_req_d;
       lc_flash_rma_req_q <= lc_flash_rma_req_d;
+      lc_check_byp_en_q  <= lc_check_byp_en_d;
     end
   end
 
@@ -460,8 +479,9 @@ module lc_ctrl_fsm
   );
 
   // Conditional signals set by main FSM.
-  assign lc_clk_byp_req_o = lc_clk_byp_req_q;
+  assign lc_clk_byp_req_o   = lc_clk_byp_req_q;
   assign lc_flash_rma_req_o = lc_flash_rma_req_q;
+  assign lc_check_byp_en_o  = lc_check_byp_en_q;
 
   ////////////////
   // Assertions //

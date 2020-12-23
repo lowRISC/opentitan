@@ -66,6 +66,7 @@ module lc_ctrl
   output lc_tx_t                                     lc_seed_hw_rd_en_o,
   output lc_tx_t                                     lc_keymgr_en_o,
   output lc_tx_t                                     lc_escalate_en_o,
+  output lc_tx_t                                     lc_check_byp_en_o,
   // Request and feedback to/from clock manager and AST.
   // The ack is synced to the lc clock domain using prim_lc_sync.
   output lc_tx_t                                     lc_clk_byp_req_o,
@@ -515,6 +516,7 @@ module lc_ctrl
     .lc_seed_hw_rd_en_o,
     .lc_keymgr_en_o,
     .lc_escalate_en_o,
+    .lc_check_byp_en_o,
     .lc_clk_byp_req_o,
     .lc_clk_byp_ack_i      ( lc_clk_byp_ack                  ),
     .lc_flash_rma_req_o,
@@ -542,6 +544,7 @@ module lc_ctrl
   `ASSERT_KNOWN(LcSeedHwRdEn_A,         lc_seed_hw_rd_en_o         )
   `ASSERT_KNOWN(LcKeymgrEnKnown_A,      lc_keymgr_en_o             )
   `ASSERT_KNOWN(LcEscalateEnKnown_A,    lc_escalate_en_o           )
+  `ASSERT_KNOWN(LcCheckBypassEnKnown_A, lc_check_byp_en_o          )
   `ASSERT_KNOWN(LcClkBypReqKnown_A,     lc_clk_byp_req_o           )
   `ASSERT_KNOWN(LcFlashRmaSeedKnown_A,  lc_flash_rma_seed_o        )
   `ASSERT_KNOWN(LcFlashRmaReqKnown_A,   lc_flash_rma_req_o         )

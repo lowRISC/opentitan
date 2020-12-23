@@ -29,6 +29,9 @@ module otp_ctrl_part_buf
   // Escalation input. This moves the FSM into a terminal state and locks down
   // the partition.
   input  lc_ctrl_pkg::lc_tx_t         escalate_en_i,
+  // Check bypass enable. This bypasses integrity and consistency checks and
+  // acknowledges all incoming check requests (only used by life cycle).
+  input  lc_ctrl_pkg::lc_tx_t         check_byp_en_i,
   // Output error state of partition, to be consumed by OTP error/alert logic.
   // Note that most errors are not recoverable and move the partition FSM into
   // a terminal error state.
@@ -79,6 +82,11 @@ module otp_ctrl_part_buf
   `ASSERT(ScrambledImpliesDigest_A, Info.secret |-> Info.hw_digest)
   `ASSERT(WriteLockImpliesDigest_A, Info.read_lock |-> Info.hw_digest)
   `ASSERT(ReadLockImpliesDigest_A, Info.write_lock |-> Info.hw_digest)
+
+  // This feature is only supposed to be used with partitions that are not scrambled
+  // and that do not have a digest.
+  `ASSERT(BypassEnable0_A, Info.secret    |-> check_byp_en_i == lc_ctrl_pkg::Off)
+  `ASSERT(BypassEnable1_A, Info.hw_digest |-> check_byp_en_i == lc_ctrl_pkg::Off)
 
   ///////////////////////
   // OTP Partition FSM //
@@ -328,7 +336,8 @@ module otp_ctrl_part_buf
               end
             end else begin
               // Check whether the read data corresponds with the data buffered in regs.
-              if (scrmbl_data_o == data_mux) begin
+              // Note that this particular check can be bypassed in case a transition is ongoing.
+              if (scrmbl_data_o == data_mux || check_byp_en_i == lc_ctrl_pkg::On) begin
                 // Can go back to idle and acknowledge the
                 // request if this is the last block.
                 if (cnt_q == NumScrmblBlocks-1) begin
