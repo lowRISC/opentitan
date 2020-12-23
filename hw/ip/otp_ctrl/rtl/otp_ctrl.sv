@@ -20,7 +20,10 @@ module otp_ctrl
   parameter key_array_t             RndCnstKey            = RndCnstKeyDefault,
   parameter digest_const_array_t    RndCnstDigestConst    = RndCnstDigestConstDefault,
   parameter digest_iv_array_t       RndCnstDigestIV       = RndCnstDigestIVDefault,
-  parameter lc_ctrl_pkg::lc_token_t RndCnstRawUnlockToken = RndCnstRawUnlockTokenDefault
+  parameter lc_ctrl_pkg::lc_token_t RndCnstRawUnlockToken = RndCnstRawUnlockTokenDefault,
+  // Hexfile file to initialize the OTP macro.
+  // Note that the hexdump needs to account for ECC.
+  parameter MemInitFile = ""
 ) (
   input                                              clk_i,
   input                                              rst_ni,
@@ -75,6 +78,14 @@ module otp_ctrl
 
   // This ensures that we can transfer scrambler data blocks in and out of OTP atomically.
   `ASSERT_INIT(OtpIfWidth_A, OtpIfWidth == ScrmblBlockWidth)
+
+  // These error codes need to be identical.
+  `ASSERT_INIT(ErrorCodeWidth_A, OtpErrWidth == prim_otp_pkg::ErrWidth)
+  `ASSERT_INIT(OtpErrorCode0_A, NoError == prim_otp_pkg::NoError)
+  `ASSERT_INIT(OtpErrorCode1_A, MacroError == prim_otp_pkg::MacroError)
+  `ASSERT_INIT(OtpErrorCode2_A, MacroEccCorrError == prim_otp_pkg::MacroEccCorrError)
+  `ASSERT_INIT(OtpErrorCode3_A, MacroEccUncorrError == prim_otp_pkg::MacroEccUncorrError)
+  `ASSERT_INIT(OtpErrorCode4_A, MacroWriteBlankError == prim_otp_pkg::MacroWriteBlankError)
 
   /////////////
   // Regfile //
@@ -506,7 +517,7 @@ module otp_ctrl
   ///////////////////////////////
 
   typedef struct packed {
-    prim_otp_cmd_e               cmd;
+    prim_otp_pkg::cmd_e          cmd;
     logic [OtpSizeWidth-1:0]     size; // Number of native words to write.
     logic [OtpIfWidth-1:0]       wdata;
     logic [OtpAddrWidth-1:0]     addr; // Halfword address.
@@ -535,7 +546,7 @@ module otp_ctrl
     .ready_i ( otp_arb_ready       )
   );
 
-  otp_err_e              part_otp_err;
+  prim_otp_pkg::err_e    part_otp_err;
   logic [OtpIfWidth-1:0] part_otp_rdata;
   logic                  otp_rvalid;
   tlul_pkg::tl_h2d_t     tl_win_h2d_gated;
@@ -548,9 +559,12 @@ module otp_ctrl
                                          tl_win_d2h_gated : '0;
 
   prim_otp #(
-    .Width(OtpWidth),
-    .Depth(OtpDepth),
-    .TlDepth(NumDebugWindowWords)
+    .Width       ( OtpWidth            ),
+    .Depth       ( OtpDepth            ),
+    .SizeWidth   ( OtpSizeWidth        ),
+    .PwrSeqWidth ( OtpPwrSeqWidth      ),
+    .TlDepth     ( NumDebugWindowWords ),
+    .MemInitFile ( MemInitFile         )
   ) u_otp (
     .clk_i,
     .rst_ni,
@@ -558,19 +572,19 @@ module otp_ctrl
     .pwr_seq_o   ( otp_ast_pwr_seq_o.pwr_seq     ),
     .pwr_seq_h_i ( otp_ast_pwr_seq_h_i.pwr_seq_h ),
     // Test interface
-    .test_tl_i   ( tl_win_h2d_gated     ),
-    .test_tl_o   ( tl_win_d2h_gated     ),
+    .test_tl_i   ( tl_win_h2d_gated              ),
+    .test_tl_o   ( tl_win_d2h_gated              ),
     // Read / Write command interface
-    .ready_o     ( otp_arb_ready        ),
-    .valid_i     ( otp_arb_valid        ),
-    .cmd_i       ( otp_arb_bundle.cmd   ),
-    .size_i      ( otp_arb_bundle.size  ),
-    .addr_i      ( otp_arb_bundle.addr  ),
-    .wdata_i     ( otp_arb_bundle.wdata ),
+    .ready_o     ( otp_arb_ready                 ),
+    .valid_i     ( otp_arb_valid                 ),
+    .cmd_i       ( otp_arb_bundle.cmd            ),
+    .size_i      ( otp_arb_bundle.size           ),
+    .addr_i      ( otp_arb_bundle.addr           ),
+    .wdata_i     ( otp_arb_bundle.wdata          ),
     // Read data out
-    .valid_o     ( otp_rvalid           ),
-    .rdata_o     ( part_otp_rdata       ),
-    .err_o       ( part_otp_err         )
+    .valid_o     ( otp_rvalid                    ),
+    .rdata_o     ( part_otp_rdata                ),
+    .err_o       ( part_otp_err                  )
   );
 
   logic otp_fifo_valid;

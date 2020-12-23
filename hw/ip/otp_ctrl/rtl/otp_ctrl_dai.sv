@@ -39,14 +39,14 @@ module otp_ctrl_dai
   output logic [NumDaiWords-1:0][31:0]   dai_rdata_o,
   // OTP interface
   output logic                           otp_req_o,
-  output prim_otp_cmd_e                  otp_cmd_o,
+  output prim_otp_pkg::cmd_e             otp_cmd_o,
   output logic [OtpSizeWidth-1:0]        otp_size_o,
   output logic [OtpIfWidth-1:0]          otp_wdata_o,
   output logic [OtpAddrWidth-1:0]        otp_addr_o,
   input                                  otp_gnt_i,
   input                                  otp_rvalid_i,
   input  [ScrmblBlockWidth-1:0]          otp_rdata_i,
-  input  otp_err_e                       otp_err_i,
+  input  prim_otp_pkg::err_e             otp_err_i,
   // Scrambling mutex request
   output logic                           scrmbl_mtx_req_o,
   input                                  scrmbl_mtx_gnt_i,
@@ -164,7 +164,7 @@ module otp_ctrl_dai
 
     // OTP signals
     otp_req_o = 1'b0;
-    otp_cmd_o = OtpInit;
+    otp_cmd_o = prim_otp_pkg::Init;
 
     // Scrambling mutex
     scrmbl_mtx_req_o = 1'b0;
@@ -211,9 +211,9 @@ module otp_ctrl_dai
       InitOtpSt: begin
         init_done_o = 1'b0;
         if (otp_rvalid_i) begin
-          if ((!(otp_err_i inside {NoError, MacroEccCorrError}))) begin
+          if ((!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}))) begin
             state_d = ErrorSt;
-            error_d = otp_err_i;
+            error_d = otp_err_e'(otp_err_i);
           end else begin
             state_d = InitPartSt;
           end
@@ -275,7 +275,7 @@ module otp_ctrl_dai
       ReadSt: begin
         if (part_access_i[part_idx].read_lock == Unlocked) begin
           otp_req_o = 1'b1;
-          otp_cmd_o = OtpRead;
+          otp_cmd_o = prim_otp_pkg::Read;
           if (otp_gnt_i) begin
             state_d = ReadWaitSt;
           end
@@ -295,9 +295,9 @@ module otp_ctrl_dai
         if (part_access_i[part_idx].read_lock == Unlocked) begin
           if (otp_rvalid_i) begin
             // Check OTP return code.
-            if ((!(otp_err_i inside {NoError, MacroEccCorrError}))) begin
+            if ((!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}))) begin
               state_d = ErrorSt;
-              error_d = otp_err_i;
+              error_d = otp_err_e'(otp_err_i);
             end else begin
               data_en = 1'b1;
               if (PartInfo[part_idx].secret) begin
@@ -307,8 +307,8 @@ module otp_ctrl_dai
                 dai_cmd_done_o = 1'b1;
               end
               // Signal soft ECC errors, but do not go into terminal error state.
-              if (otp_err_i == MacroEccCorrError) begin
-                error_d = otp_err_i;
+              if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
+                error_d = otp_err_e'(otp_err_i);
               end
             end
           end
@@ -365,7 +365,7 @@ module otp_ctrl_dai
              // If this is a write to an unbuffered partition
              (PartInfo[part_idx].variant != Buffered && base_sel_q == DaiOffset))) begin
           otp_req_o = 1'b1;
-          otp_cmd_o = OtpWrite;
+          otp_cmd_o = prim_otp_pkg::Write;
           if (otp_gnt_i) begin
             state_d = WriteWaitSt;
           end
@@ -393,15 +393,15 @@ module otp_ctrl_dai
 
           if (otp_rvalid_i) begin
             // Check OTP return code. Note that non-blank errors are recoverable.
-            if ((!(otp_err_i inside {NoError, MacroWriteBlankError}))) begin
+            if ((!(otp_err_e'(otp_err_i) inside {NoError, MacroWriteBlankError}))) begin
               state_d = ErrorSt;
-              error_d = otp_err_i;
+              error_d = otp_err_e'(otp_err_i);
             end else begin
               state_d = IdleSt;
               dai_cmd_done_o = 1'b1;
               // Signal non-blank state, but do not go to terminal error state.
-              if (otp_err_i == MacroWriteBlankError) begin
-                error_d = otp_err_i;
+              if (otp_err_e'(otp_err_i) == MacroWriteBlankError) begin
+                error_d = otp_err_e'(otp_err_i);
               end
             end
           end
@@ -482,7 +482,7 @@ module otp_ctrl_dai
         if (part_access_i[part_idx].read_lock == Unlocked &&
             part_access_i[part_idx].write_lock == Unlocked) begin
           otp_req_o = 1'b1;
-          otp_cmd_o = OtpRead;
+          otp_cmd_o = prim_otp_pkg::Read;
           if (otp_gnt_i) begin
             state_d = DigReadWaitSt;
           end
@@ -502,15 +502,15 @@ module otp_ctrl_dai
         if (otp_rvalid_i) begin
           cnt_en = 1'b1;
           // Check OTP return code.
-          if ((!(otp_err_i inside {NoError, MacroEccCorrError}))) begin
+          if ((!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}))) begin
             state_d = ErrorSt;
-            error_d = otp_err_i;
+            error_d = otp_err_e'(otp_err_i);
           end else begin
             data_en = 1'b1;
             state_d = DigSt;
             // Signal soft ECC errors, but do not go into terminal error state.
-            if (otp_err_i == MacroEccCorrError) begin
-              error_d = otp_err_i;
+            if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
+              error_d = otp_err_e'(otp_err_i);
             end
           end
         end
@@ -753,8 +753,8 @@ module otp_ctrl_dai
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitOtpSt, ReadWaitSt, WriteWaitSt, DigReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_i inside {NoError, MacroEccCorrError, MacroWriteBlankError})
+      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError, MacroWriteBlankError})
       |=>
-      state_q == ErrorSt && error_o == $past(otp_err_i))
+      state_q == ErrorSt && error_o == $past(otp_err_e'(otp_err_i)))
 
 endmodule : otp_ctrl_dai

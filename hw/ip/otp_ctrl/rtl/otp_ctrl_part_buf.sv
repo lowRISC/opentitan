@@ -41,14 +41,14 @@ module otp_ctrl_part_buf
   output logic [Info.size*8-1:0]      data_o,
   // OTP interface
   output logic                        otp_req_o,
-  output prim_otp_cmd_e               otp_cmd_o,
+  output prim_otp_pkg::cmd_e          otp_cmd_o,
   output logic [OtpSizeWidth-1:0]     otp_size_o,
   output logic [OtpIfWidth-1:0]       otp_wdata_o,
   output logic [OtpAddrWidth-1:0]     otp_addr_o,
   input                               otp_gnt_i,
   input                               otp_rvalid_i,
   input  [ScrmblBlockWidth-1:0]       otp_rdata_i,
-  input  otp_err_e                    otp_err_i,
+  input  prim_otp_pkg::err_e          otp_err_i,
   // Scrambling mutex request
   output logic                        scrmbl_mtx_req_o,
   input                               scrmbl_mtx_gnt_i,
@@ -151,7 +151,7 @@ module otp_ctrl_part_buf
   // This partition cannot do any write accesses, hence we tie this
   // constantly off.
   assign otp_wdata_o = '0;
-  assign otp_cmd_o   = OtpRead;
+  assign otp_cmd_o   = prim_otp_pkg::Read;
 
   always_comb begin : p_fsm
     state_d = state_q;
@@ -216,9 +216,9 @@ module otp_ctrl_part_buf
           buffer_reg_en = 1'b1;
           // The pnly error we tolerate is an ECC soft error. However,
           // we still signal that error via the error state output.
-          if (!(otp_err_i inside {NoError, MacroEccCorrError})) begin
+          if (!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError})) begin
             state_d = ErrorSt;
-            error_d = otp_err_i;
+            error_d = otp_err_e'(otp_err_i);
           end else begin
             // Once we've read and descrambled the whole partition, we can go to integrity
             // verification. Note that the last block is the digest value, which does not
@@ -234,8 +234,8 @@ module otp_ctrl_part_buf
               cnt_en = 1'b1;
             end
             // Signal ECC soft errors, but do not go into terminal error state.
-            if (otp_err_i == MacroEccCorrError) begin
-              error_d = otp_err_i;
+            if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
+              error_d = otp_err_e'(otp_err_i);
             end
           end
         end
@@ -310,9 +310,9 @@ module otp_ctrl_part_buf
         if (otp_rvalid_i) begin
           // The only error we tolerate is an ECC soft error. However,
           // we still signal that error via the error state output.
-          if (!(otp_err_i inside {NoError, MacroEccCorrError})) begin
+          if (!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError})) begin
             state_d = ErrorSt;
-            error_d = otp_err_i;
+            error_d = otp_err_e'(otp_err_i);
           end else begin
             // Check whether we need to compare the digest or the full partition
             // contents here.
@@ -698,8 +698,8 @@ module otp_ctrl_part_buf
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitWaitSt, CnstyReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_i inside {NoError, MacroEccCorrError}) && !ecc_err
+      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) && !ecc_err
       |=>
-      state_q == ErrorSt && error_o == $past(otp_err_i))
+      state_q == ErrorSt && error_o == $past(otp_err_e'(otp_err_i)))
 
 endmodule : otp_ctrl_part_buf

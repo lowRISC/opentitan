@@ -2,16 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module prim_generic_otp #(
+module prim_generic_otp
+  import prim_otp_pkg::*;
+#(
   // Native OTP word size. This determines the size_i granule.
   parameter  int Width       = 16,
   parameter  int Depth       = 1024,
-  parameter  int CmdWidth    = otp_ctrl_pkg::OtpCmdWidth,
   // This determines the maximum number of native words that
   // can be transferred accross the interface in one cycle.
-  parameter  int SizeWidth   = otp_ctrl_pkg::OtpSizeWidth,
+  parameter  int SizeWidth   = 2,
   // Width of the power sequencing signal.
-  parameter  int PwrSeqWidth = otp_ctrl_pkg::OtpPwrSeqWidth,
+  parameter  int PwrSeqWidth = 2,
   // Number of Test TL-UL words
   parameter  int TlDepth     = 16,
   // Derived parameters
@@ -20,25 +21,25 @@ module prim_generic_otp #(
   // VMEM file to initialize the memory with
   parameter      MemInitFile = ""
 ) (
-  input                          clk_i,
-  input                          rst_ni,
+  input                              clk_i,
+  input                              rst_ni,
   // Macro-specific power sequencing signals to/from AST
-  output logic [PwrSeqWidth-1:0] pwr_seq_o,
-  input        [PwrSeqWidth-1:0] pwr_seq_h_i,
+  output logic [PwrSeqWidth-1:0]     pwr_seq_o,
+  input        [PwrSeqWidth-1:0]     pwr_seq_h_i,
   // Test interface
-  input  tlul_pkg::tl_h2d_t      test_tl_i,
-  output tlul_pkg::tl_d2h_t      test_tl_o,
+  input  tlul_pkg::tl_h2d_t          test_tl_i,
+  output tlul_pkg::tl_d2h_t          test_tl_o,
   // Ready valid handshake for read/write command
-  output logic                   ready_o,
-  input                          valid_i,
-  input [SizeWidth-1:0]          size_i, // #(Native words)-1, e.g. size == 0 for 1 native word.
-  input [CmdWidth-1:0]           cmd_i,  // 00: read command, 01: write command, 11: init command
-  input [AddrWidth-1:0]          addr_i,
-  input [IfWidth-1:0]            wdata_i,
+  output logic                       ready_o,
+  input                              valid_i,
+  input [SizeWidth-1:0]              size_i, // #(Native words)-1, e.g. size == 0 for 1 native word.
+  input  cmd_e                       cmd_i,  // 00: read command, 01: write command, 11: init command
+  input [AddrWidth-1:0]              addr_i,
+  input [IfWidth-1:0]                wdata_i,
   // Response channel
-  output logic                   valid_o,
-  output logic [IfWidth-1:0]     rdata_o,
-  output otp_ctrl_pkg::otp_err_e err_o
+  output logic                       valid_o,
+  output logic [IfWidth-1:0]         rdata_o,
+  output err_e                       err_o
 );
 
   // Not supported in open-source emulation model.
@@ -131,7 +132,7 @@ module prim_generic_otp #(
   } state_e;
 
   state_e state_d, state_q;
-  otp_ctrl_pkg::otp_err_e err_d, err_q;
+  err_e err_d, err_q;
   logic valid_d, valid_q;
   logic req, wren, rvalid;
   logic [1:0] rerror;
@@ -154,7 +155,7 @@ module prim_generic_otp #(
     state_d = state_q;
     ready_o = 1'b0;
     valid_d = 1'b0;
-    err_d   = otp_ctrl_pkg::NoError;
+    err_d   = NoError;
     req     = 1'b0;
     wren    = 1'b0;
     cnt_clr = 1'b0;
@@ -165,12 +166,12 @@ module prim_generic_otp #(
       ResetSt: begin
         ready_o = 1'b1;
         if (valid_i) begin
-          if (cmd_i == otp_ctrl_pkg::OtpInit) begin
+          if (cmd_i == Init) begin
             state_d = InitSt;
           end else begin
             // Invalid commands get caught here
             valid_d = 1'b1;
-            err_d = otp_ctrl_pkg::MacroError;
+            err_d = MacroError;
           end
         end
       end
@@ -184,14 +185,14 @@ module prim_generic_otp #(
         ready_o = 1'b1;
         if (valid_i) begin
           cnt_clr = 1'b1;
-          err_d = otp_ctrl_pkg::NoError;
+          err_d = NoError;
           unique case (cmd_i)
-            otp_ctrl_pkg::OtpRead:  state_d = ReadSt;
-            otp_ctrl_pkg::OtpWrite: state_d = WriteCheckSt;
+            Read:  state_d = ReadSt;
+            Write: state_d = WriteCheckSt;
             default:  begin
               // Invalid commands get caught here
               valid_d = 1'b1;
-              err_d = otp_ctrl_pkg::MacroError;
+              err_d = MacroError;
             end
           endcase // cmd_i
         end
@@ -209,7 +210,7 @@ module prim_generic_otp #(
           if (rerror[1]) begin
             state_d = IdleSt;
             valid_d = 1'b1;
-            err_d = otp_ctrl_pkg::MacroEccUncorrError;
+            err_d = MacroEccUncorrError;
           end else begin
             if (cnt_q == size_q) begin
               state_d = IdleSt;
@@ -219,7 +220,7 @@ module prim_generic_otp #(
             end
             // Correctable error, carry on but signal back.
             if (rerror[0]) begin
-              err_d = otp_ctrl_pkg::MacroEccCorrError;
+              err_d = MacroEccCorrError;
             end
           end
         end
@@ -239,7 +240,7 @@ module prim_generic_otp #(
           if (rerror[1] || (rdata_d & wdata_q[cnt_q]) != rdata_d) begin
             state_d = IdleSt;
             valid_d = 1'b1;
-            err_d = otp_ctrl_pkg::MacroWriteBlankError;
+            err_d = MacroWriteBlankError;
           end else begin
             if (cnt_q == size_q) begin
               cnt_clr = 1'b1;
@@ -318,7 +319,7 @@ module prim_generic_otp #(
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       valid_q <= '0;
-      err_q   <= otp_ctrl_pkg::NoError;
+      err_q   <= NoError;
       addr_q  <= '0;
       wdata_q <= '0;
       rdata_q <= '0;

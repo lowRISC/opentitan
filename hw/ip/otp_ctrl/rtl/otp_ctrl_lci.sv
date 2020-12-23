@@ -37,14 +37,14 @@ module otp_ctrl_lci
   output logic                              lci_idle_o,
   // OTP interface
   output logic                              otp_req_o,
-  output prim_otp_cmd_e                     otp_cmd_o,
+  output prim_otp_pkg::cmd_e                otp_cmd_o,
   output logic [OtpSizeWidth-1:0]           otp_size_o,
   output logic [OtpIfWidth-1:0]             otp_wdata_o,
   output logic [OtpAddrWidth-1:0]           otp_addr_o,
   input                                     otp_gnt_i,
   input                                     otp_rvalid_i,
   input  [ScrmblBlockWidth-1:0]             otp_rdata_i,
-  input  otp_err_e                          otp_err_i
+  input  prim_otp_pkg::err_e                otp_err_i
 );
 
   ////////////////////////
@@ -109,7 +109,7 @@ module otp_ctrl_lci
 
     // OTP signals
     otp_req_o = 1'b0;
-    otp_cmd_o = OtpRead;
+    otp_cmd_o = prim_otp_pkg::Read;
 
     // Respone to LC controller
     lc_err_o = 1'b0;
@@ -140,7 +140,7 @@ module otp_ctrl_lci
       // programmed to 1 before, the OTP errors out.
       WriteSt: begin
         otp_req_o = 1'b1;
-        otp_cmd_o = OtpWrite;
+        otp_cmd_o = prim_otp_pkg::Write;
         if (otp_gnt_i) begin
           state_d = WriteWaitSt;
         end
@@ -153,8 +153,8 @@ module otp_ctrl_lci
         if (otp_rvalid_i) begin
           // Check OTP return code.
           // No errors are tolerated here.
-          if (otp_err_i != NoError) begin
-            error_d = otp_err_i;
+          if (otp_err_e'(otp_err_i) != NoError) begin
+            error_d = otp_err_e'(otp_err_i);
             lc_ack_o = 1'b1;
             lc_err_o = 1'b1;
             state_d = ErrorSt;
