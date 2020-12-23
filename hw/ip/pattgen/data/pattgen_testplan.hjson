@@ -56,7 +56,7 @@
 
             Stimulus:
               - Programm the configuration registers of the output channels
-              - Randomly reset the output channel in progress
+              - Randomly reset the in progress output channels
               - Re-program the configuration registers of the output channels
 
             Checking:

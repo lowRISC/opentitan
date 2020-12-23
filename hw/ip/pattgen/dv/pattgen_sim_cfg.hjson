@@ -12,7 +12,7 @@
   tb: tb
 
   // Simulator used to sign off this block
-  tool: vcs
+  tool: xcelium
 
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:pattgen_sim:0.1
@@ -54,6 +54,11 @@
     {
       name: pattgen_perf
       uvm_test_seq: pattgen_perf_vseq
+    }
+
+    {
+      name: pattgen_error
+      uvm_test_seq: pattgen_error_vseq
     }
   ]
 
