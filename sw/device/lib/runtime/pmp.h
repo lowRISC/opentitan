@@ -47,7 +47,7 @@
  * Ibex PMP address granularity.
  *
  * Please see:
- * https://ibex-core.readthedocs.io/en/latest/pmp.html#pmp-granularity .
+ * https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html#pmp-granularity
  */
 #define PMP_GRANULARITY_IBEX 0
 

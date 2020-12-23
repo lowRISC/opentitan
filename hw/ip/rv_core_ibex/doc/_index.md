@@ -20,7 +20,7 @@ The pipelining of the bus adapters is configurable.
 
 ## Compatibility
 
-Ibex is a compliant RV32 RISC-V CPU core, as [documented in the Ibex documentation](https://ibex-core.readthedocs.io/en/latest/introduction.html#standards-compliance).
+Ibex is a compliant RV32 RISC-V CPU core, as [documented in the Ibex documentation](https://ibex-core.readthedocs.io/en/latest/01_overview/compliance.html).
 
 The TL-UL bus interfaces exposed by this wrapper block are compliant to the [TileLink Uncached Lite Specification version 1.7.1](https://sifive.cdn.prismic.io/sifive%2F57f93ecf-2c42-46f7-9818-bcdd7d39400a_tilelink-spec-1.7.1.pdf).
 
@@ -29,7 +29,7 @@ The TL-UL bus interfaces exposed by this wrapper block are compliant to the [Til
 ## Hardware Interfaces
 
 All ports and parameters of Ibex are exposed through this wrapper module, except for the instruction and data memory interfaces (signals starting with `instr_` and `data_`).
-Refer to the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/integration.html) for a detailed description of these signals and parameters.
+Refer to the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/02_user/integration.html) for a detailed description of these signals and parameters.
 
 The instruction and data memory ports are exposed as TL-UL ports.
 
