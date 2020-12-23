@@ -24,5 +24,5 @@
 // in the future, this needs to be upgraded to support all info types
 `define FLASH0_INFO_HIER   `FLASH_BANK0.gen_info_types[0].u_info_mem
 `define FLASH1_INFO_HIER   `FLASH_BANK1.gen_info_types[0].u_info_mem
-`define OTP_MEM_HIER       `CHIP_HIER.u_otp_ctrl.u_otp.gen_generic.u_impl_generic.i_prim_ram_1p_adv.\
+`define OTP_MEM_HIER       `CHIP_HIER.u_otp_ctrl.u_otp.gen_generic.u_impl_generic.u_prim_ram_1p_adv.\
                            u_mem.gen_generic.u_impl_generic
