@@ -302,6 +302,7 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_check_byp_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_req;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_creator_seed_sw_rw_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_owner_seed_sw_rw_en;
@@ -878,6 +879,7 @@ module top_earlgrey #(
       .lc_creator_seed_sw_rw_en_i(lc_ctrl_lc_creator_seed_sw_rw_en),
       .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
+      .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
       .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
       .flash_otp_key_i(flash_ctrl_otp_req),
       .flash_otp_key_o(flash_ctrl_otp_rsp),
@@ -928,6 +930,7 @@ module top_earlgrey #(
       .lc_flash_rma_req_o(flash_ctrl_rma_req),
       .lc_flash_rma_seed_o(flash_ctrl_rma_seed),
       .lc_flash_rma_ack_i(flash_ctrl_rma_ack),
+      .lc_check_byp_en_o(lc_ctrl_lc_check_byp_en),
       .lc_creator_seed_sw_rw_en_o(lc_ctrl_lc_creator_seed_sw_rw_en),
       .lc_owner_seed_sw_rw_en_o(lc_ctrl_lc_owner_seed_sw_rw_en),
       .lc_iso_part_sw_rd_en_o(lc_ctrl_lc_iso_part_sw_rd_en),
