@@ -119,6 +119,15 @@ package str_utils_pkg;
     end
   endfunction : str_to_bytes
 
+  // Converts an array of bytes to a string.
+  function automatic string bytes_to_str(byte bytes[]);
+    string s;
+    foreach (bytes[i]) begin
+      s = {s, string'(bytes[i])};
+    end
+    return s;
+  endfunction
+
   /************************/
   /* File path functions. */
   /************************/
