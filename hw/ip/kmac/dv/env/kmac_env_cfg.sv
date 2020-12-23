@@ -8,6 +8,9 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
   idle_vif        idle_vif;
   sideload_vif    sideload_vif;
 
+  // Masked KMAC is the default configuration
+  bit enable_masking = 1;
+
   `uvm_object_utils_begin(kmac_env_cfg)
   `uvm_object_utils_end
 

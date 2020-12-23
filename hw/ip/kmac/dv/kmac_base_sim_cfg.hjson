@@ -50,12 +50,12 @@
     {
       name: enable_mask_mode
       build_opts: ["+define+EN_MASKING=1", "+define+REUSE_SHARE=0"]
-      run_opts: ["+enable_masking=1"]
+      run_opts: ["+enable_masking=1", "+test_timeout_ns=2000000000"]
     }
     {
       name: disable_mask_mode
       build_opts: ["+define+EN_MASKING=0", "+define+REUSE_SHARE=0"]
-      run_opts: ["+enable_masking=0"]
+      run_opts: ["+enable_masking=0", "+test_timeout_ns=2000000000"]
     }
   ]
 
