@@ -543,6 +543,13 @@
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_check_byp_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
     // Broadcast to Key Manager
     { struct:  "otp_keymgr_key"
       type:    "uni"

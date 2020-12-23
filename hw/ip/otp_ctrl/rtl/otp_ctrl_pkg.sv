@@ -88,8 +88,8 @@ package otp_ctrl_pkg;
   parameter int NumScrmblKeys = 3;
   parameter int NumDigestSets = 5;
   parameter int ConstSelWidth = (NumScrmblKeys > NumDigestSets) ?
-                               vbits(NumScrmblKeys) :
-                               vbits(NumDigestSets);
+                                vbits(NumScrmblKeys) :
+                                vbits(NumDigestSets);
 
   typedef enum logic [ConstSelWidth-1:0] {
     Secret0Key,
