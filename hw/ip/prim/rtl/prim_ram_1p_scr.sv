@@ -24,9 +24,8 @@
 `include "prim_assert.sv"
 
 module prim_ram_1p_scr #(
-  parameter  int Depth                = 512, // Needs to be a power of 2 if NumAddrScrRounds > 0.
-  parameter  int Width                = 256, // Needs to be byte aligned for parity
-  parameter  int DataBitsPerMask      = 8,   // Currently only 8 is supported
+  parameter  int Depth                = 16*1024, // Needs to be a power of 2 if NumAddrScrRounds > 0.
+  parameter  int Width                = 32, // Needs to be byte aligned for parity
   parameter  int CfgWidth             = 8,   // WTC, RTC, etc
 
   // Scrambling parameters. Note that this needs to be low-latency, hence we have to keep the
@@ -332,7 +331,7 @@ module prim_ram_1p_scr #(
   prim_ram_1p_adv #(
     .Depth(Depth),
     .Width(Width),
-    .DataBitsPerMask(DataBitsPerMask),
+    .DataBitsPerMask(8),
     .CfgW(CfgWidth),
     .EnableECC(1'b0),
     .EnableParity(1'b1), // We are using byte parity

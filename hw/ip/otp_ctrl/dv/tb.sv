@@ -135,7 +135,7 @@ module tb;
 
   // bind mem_bkdr_if
   `define OTP_CTRL_MEM_HIER \
-      dut.u_otp.gen_generic.u_impl_generic.i_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic
+      dut.u_otp.gen_generic.u_impl_generic.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic
 
   assign interrupts[OtpOperationDone] = intr_otp_operation_done;
   assign interrupts[OtpErr]           = intr_otp_error;

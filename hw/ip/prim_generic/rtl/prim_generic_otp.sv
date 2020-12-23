@@ -281,7 +281,7 @@ module prim_generic_otp
     .EnableECC            (1'b1),
     .EnableInputPipeline  (1),
     .EnableOutputPipeline (1)
-  ) i_prim_ram_1p_adv (
+  ) u_prim_ram_1p_adv (
     .clk_i,
     .rst_ni,
     .req_i    ( req            ),

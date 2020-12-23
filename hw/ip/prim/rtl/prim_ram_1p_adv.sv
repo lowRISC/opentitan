@@ -5,8 +5,8 @@
 // Single-Port SRAM Wrapper
 //
 // Supported configurations:
-// - ECC for 32b wide memories with no write mask
-//   (Width == 32 && DataBitsPerMask == 32).
+// - ECC for 32b and 64b wide memories with no write mask
+//   (Width == 32 or Width == 64, DataBitsPerMask is ignored).
 // - Byte parity if Width is a multiple of 8 bit and write masks have Byte
 //   granularity (DataBitsPerMask == 8).
 //
@@ -51,11 +51,6 @@ module prim_ram_1p_adv #(
 
   `ASSERT_INIT(CannotHaveEccAndParity_A, !(EnableParity && EnableECC))
 
-  // While we require DataBitsPerMask to be per Byte (8) at the interface in case Byte parity is
-  // enabled, we need to switch this to a per-bit mask locally such that we can individually enable
-  // the parity bits to be written alongside the data.
-  localparam int LocalDataBitsPerMask = (EnableParity) ? 1 : DataBitsPerMask;
-
   // Calculate ECC width
   localparam int ParWidth  = (EnableParity) ? Width/8 :
                              (!EnableECC)   ? 0 :
@@ -65,6 +60,13 @@ module prim_ram_1p_adv #(
                              (Width <=  57) ? 7 :
                              (Width <= 120) ? 8 : 8 ;
   localparam int TotalWidth = Width + ParWidth;
+
+  // If byte parity is enabled, the write enable bits are used to write memory colums
+  // with 8 + 1 = 9 bit width (data plus corresponding parity bit).
+  // If ECC is enabled, the DataBitsPerMask is ignored.
+  localparam int LocalDataBitsPerMask = (EnableParity) ? 9          :
+                                        (EnableECC)    ? TotalWidth :
+                                                         DataBitsPerMask;
 
   ////////////////////////////
   // RAM Primitive Instance //
@@ -154,19 +156,21 @@ module prim_ram_1p_adv #(
 
     always_comb begin : p_parity
       rerror_d = '0;
-      wmask_d[0+:Width] = wmask_i;
-      wdata_d[0+:Width] = wdata_i;
-
       for (int i = 0; i < Width/8; i ++) begin
+        // Data mapping. We have to make 8+1 = 9 bit groups
+        // that have the same write enable such that FPGA tools
+        // can map this correctly to BRAM resources.
+        wmask_d[i*9 +: 8] = wmask_i[i*8 +: 8];
+        wdata_d[i*9 +: 8] = wdata_i[i*8 +: 8];
+        rdata_d[i*8 +: 8] = rdata_sram[i*9 +: 8];
+
         // parity generation (odd parity)
-        wdata_d[Width + i] = ~(^wdata_i[i*8 +: 8]);
-        wmask_d[Width + i] = &wmask_i[i*8 +: 8];
+        wdata_d[i*9 + 8] = ~(^wdata_i[i*8 +: 8]);
+        wmask_d[i*9 + 8] = &wmask_i[i*8 +: 8];
         // parity decoding (errors are always uncorrectable)
-        rerror_d[1] |= ~(^{rdata_sram[i*8 +: 8], rdata_sram[Width + i]});
+        rerror_d[1] |= ~(^{rdata_sram[i*9 +: 8], rdata_sram[i*9 + 8]});
       end
     end
-
-    assign rdata_d  = rdata_sram[0+:Width];
   end else begin : gen_nosecded_noparity
     assign wmask_d = wmask_i;
     assign wdata_d = wdata_i;

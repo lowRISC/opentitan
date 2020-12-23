@@ -5,8 +5,8 @@
 // Dual-Port SRAM Wrapper
 //
 // Supported configurations:
-// - ECC for 32b wide memories with no write mask
-//   (Width == 32 && DataBitsPerMask == 32).
+// - ECC for 32b and 64b wide memories with no write mask
+//   (Width == 32 or Width == 64, DataBitsPerMask is ignored).
 // - Byte parity if Width is a multiple of 8 bit and write masks have Byte
 //   granularity (DataBitsPerMask == 8).
 //

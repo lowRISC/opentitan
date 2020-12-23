@@ -349,7 +349,6 @@ module top_${top["name"]} #(
   prim_ram_1p_scr #(
     .Width(${data_width}),
     .Depth(${sram_depth}),
-    .DataBitsPerMask(8),
     .CfgWidth(8)
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
