@@ -147,9 +147,12 @@ module otp_ctrl_dai
   // Output partition error state.
   assign error_o       = error_q;
   // Working register is connected to data outputs.
-  assign dai_rdata_o   = data_q;
   assign otp_wdata_o   = data_q;
   assign scrmbl_data_o = data_q;
+  // Only expose this working register in IdleSt.
+  // The FSM below makes sure to clear this register
+  // after digest and write ops.
+  assign dai_rdata_o   = (state_q == IdleSt) ? data_q : '0;
 
   always_comb begin : p_fsm
     state_d = state_q;
@@ -370,6 +373,8 @@ module otp_ctrl_dai
             state_d = WriteWaitSt;
           end
         end else begin
+          // Clear working register state.
+          data_clr = 1'b1;
           state_d = IdleSt;
           error_d = AccessError; // Signal this error, but do not go into terminal error state.
           dai_cmd_done_o = 1'b1;
@@ -397,6 +402,8 @@ module otp_ctrl_dai
               state_d = ErrorSt;
               error_d = otp_err_e'(otp_err_i);
             end else begin
+              // Clear working register state.
+              data_clr = 1'b1;
               state_d = IdleSt;
               dai_cmd_done_o = 1'b1;
               // Signal non-blank state, but do not go to terminal error state.
