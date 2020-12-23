@@ -82,6 +82,7 @@ module tb;
     .lc_seed_hw_rd_en_o         (lc_ctrl_if.lc_seed_hw_rd_en_o),
     .lc_keymgr_en_o             (lc_ctrl_if.lc_keymgr_en_o),
     .lc_escalate_en_o           (lc_ctrl_if.lc_escalate_en_o),
+    .lc_check_byp_en_o          (lc_ctrl_if.lc_check_byp_en_o),
 
     .lc_clk_byp_req_o           (),
     .lc_clk_byp_ack_i           (lc_ctrl_pkg::On),

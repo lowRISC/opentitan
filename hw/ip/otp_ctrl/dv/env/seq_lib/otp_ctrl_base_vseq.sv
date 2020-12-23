@@ -28,6 +28,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     cfg.lc_seed_hw_rd_en_vif.drive(lc_ctrl_pkg::Off);
     cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::Off);
     cfg.lc_escalate_en_vif.drive(lc_ctrl_pkg::Off);
+    cfg.lc_check_byp_en_vif.drive(lc_ctrl_pkg::Off);
     if (do_otp_ctrl_init) otp_ctrl_init();
     if (do_otp_pwr_init) otp_pwr_init();
   endtask

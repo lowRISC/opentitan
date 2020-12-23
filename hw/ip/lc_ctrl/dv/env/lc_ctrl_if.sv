@@ -23,6 +23,7 @@ interface lc_ctrl_if(input clk, input rst_n);
   lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_o;
   lc_ctrl_pkg::lc_tx_t lc_keymgr_en_o;
   lc_ctrl_pkg::lc_tx_t lc_escalate_en_o;
+  lc_ctrl_pkg::lc_tx_t lc_check_byp_en_o;
 
   lc_ctrl_pkg::lc_keymgr_div_t lc_keymgr_div_o;
 

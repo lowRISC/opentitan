@@ -129,6 +129,7 @@ package otp_ctrl_env_pkg;
   typedef virtual pins_if #(4)             lc_seed_hw_rd_en_vif;
   typedef virtual pins_if #(4)             lc_dft_en_vif;
   typedef virtual pins_if #(4)             lc_escalate_en_vif;
+  typedef virtual pins_if #(4)             lc_check_byp_en_vif;
   typedef virtual mem_bkdr_if              mem_bkdr_vif;
   typedef virtual otp_ctrl_output_data_if  otp_ctrl_output_data_vif;
 

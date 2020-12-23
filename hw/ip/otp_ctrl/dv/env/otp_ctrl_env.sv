@@ -80,6 +80,10 @@ class otp_ctrl_env extends cip_base_env #(
                                                  cfg.lc_escalate_en_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get lc_escalate_en_vif from uvm_config_db")
     end
+    if (!uvm_config_db#(lc_check_byp_en_vif)::get(this, "", "lc_check_byp_en_vif",
+                                                     cfg.lc_check_byp_en_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get lc_check_byp_en_vif from uvm_config_db")
+    end
 
     // config mem virtual interface
     if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "mem_bkdr_vif", cfg.mem_bkdr_vif)) begin

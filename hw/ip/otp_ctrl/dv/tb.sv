@@ -17,7 +17,8 @@ module tb;
 
   wire clk, rst_n;
   wire devmode;
-  wire lc_ctrl_pkg::lc_tx_e lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en, lc_dft_en, lc_escalate_en;
+  wire lc_ctrl_pkg::lc_tx_e lc_dft_en, lc_escalate_en, lc_check_byp_en;
+  wire lc_ctrl_pkg::lc_tx_e lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en;
   wire [OtpPwrIfWidth-1:0] pwr_otp;
   wire otp_ctrl_pkg::flash_otp_key_req_t flash_req;
   wire otp_ctrl_pkg::flash_otp_key_rsp_t flash_rsp;
@@ -56,6 +57,7 @@ module tb;
   pins_if #(4) lc_seed_hw_rd_en_if(lc_seed_hw_rd_en);
   pins_if #(4) lc_dft_en_if(lc_dft_en);
   pins_if #(4) lc_escalate_en_if(lc_escalate_en);
+  pins_if #(4) lc_check_byp_en_if(lc_check_byp_en);
 
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
@@ -95,6 +97,7 @@ module tb;
     .lc_seed_hw_rd_en_i         (lc_seed_hw_rd_en),
     .lc_dft_en_i                (lc_dft_en),
     .lc_escalate_en_i           (lc_escalate_en),
+    .lc_check_byp_en_i          (lc_check_byp_en),
     .otp_lc_data_o              (otp_ctrl_output_data_if.lc_data),
     // keymgr
     .otp_keymgr_key_o           (otp_ctrl_output_data_if.keymgr_key),
@@ -166,6 +169,8 @@ module tb;
                                               lc_seed_hw_rd_en_if);
     uvm_config_db#(lc_dft_en_vif)::set(null, "*.env", "lc_dft_en_vif", lc_dft_en_if);
     uvm_config_db#(lc_escalate_en_vif)::set(null, "*.env", "lc_escalate_en_vif", lc_escalate_en_if);
+    uvm_config_db#(lc_check_byp_en_vif)::set(null, "*.env", "lc_check_byp_en_vif",
+                                             lc_check_byp_en_if);
     uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif",
                                       `OTP_CTRL_MEM_HIER.mem_bkdr_if);
 
