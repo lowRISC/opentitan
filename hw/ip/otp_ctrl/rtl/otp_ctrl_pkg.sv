@@ -19,7 +19,6 @@ package otp_ctrl_pkg;
 
   parameter int SwWindowAddrWidth = vbits(NumSwCfgWindowWords);
 
-  // TODO: may need to tune this and make sure that this encoding not optimized away.
   // Redundantly encoded and complementary values are used to for signalling to the partition
   // controller FSMs and the DAI whether a partition is locked or not. Any other value than
   // "Unlocked" is interpreted as "Locked" in those FSMs.
@@ -49,19 +48,12 @@ package otp_ctrl_pkg;
   parameter int OtpWidth         = 16;
   parameter int OtpAddrWidth     = OtpByteAddrWidth - $clog2(OtpWidth/8);
   parameter int OtpDepth         = 2**OtpAddrWidth;
-  parameter int OtpCmdWidth      = 2;
   parameter int OtpSizeWidth     = 2; // Allows to transfer up to 4 native OTP words at once.
   parameter int OtpErrWidth      = 3;
   parameter int OtpPwrSeqWidth   = 2;
   parameter int OtpIfWidth       = 2**OtpSizeWidth*OtpWidth;
   // Number of Byte address bits to cut off in order to get the native OTP word address.
   parameter int OtpAddrShift     = OtpByteAddrWidth - OtpAddrWidth;
-
-  typedef enum logic [OtpCmdWidth-1:0] {
-    OtpRead  = 2'b00,
-    OtpWrite = 2'b01,
-    OtpInit  = 2'b11
-  } prim_otp_cmd_e;
 
   typedef enum logic [OtpErrWidth-1:0] {
     NoError              = 3'h0,

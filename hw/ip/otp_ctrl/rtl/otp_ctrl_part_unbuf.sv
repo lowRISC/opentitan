@@ -40,14 +40,14 @@ module otp_ctrl_part_unbuf
   output logic [31:0]                 tlul_rdata_o,
   // OTP interface
   output logic                        otp_req_o,
-  output prim_otp_cmd_e               otp_cmd_o,
+  output prim_otp_pkg::cmd_e          otp_cmd_o,
   output logic [OtpSizeWidth-1:0]     otp_size_o,
   output logic [OtpIfWidth-1:0]       otp_wdata_o,
   output logic [OtpAddrWidth-1:0]     otp_addr_o,
   input                               otp_gnt_i,
   input                               otp_rvalid_i,
   input  [ScrmblBlockWidth-1:0]       otp_rdata_i,
-  input  otp_err_e                    otp_err_i
+  input  prim_otp_pkg::err_e          otp_err_i
 );
 
   ////////////////////////
@@ -119,7 +119,7 @@ module otp_ctrl_part_unbuf
   // This partition cannot do any write accesses, hence we tie this
   // constantly off.
   assign otp_wdata_o = '0;
-  assign otp_cmd_o   = OtpRead;
+  assign otp_cmd_o   = prim_otp_pkg::Read;
 
   `ASSERT_KNOWN(FsmStateKnown_A, state_q)
   always_comb begin : p_fsm
@@ -172,14 +172,14 @@ module otp_ctrl_part_unbuf
           digest_reg_en = 1'b1;
           // The only error we tolerate is an ECC soft error. However,
           // we still signal that error via the error state output.
-          if (!(otp_err_i inside {NoError, MacroEccCorrError})) begin
+          if (!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError})) begin
             state_d = ErrorSt;
-            error_d = otp_err_i;
+            error_d = otp_err_e'(otp_err_i);
           end else begin
             state_d = IdleSt;
             // Signal ECC soft errors, but do not go into terminal error state.
-            if (otp_err_i == MacroEccCorrError) begin
-              error_d = otp_err_i;
+            if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
+              error_d = otp_err_e'(otp_err_i);
             end
           end
         end
@@ -227,16 +227,16 @@ module otp_ctrl_part_unbuf
         if (otp_rvalid_i) begin
           tlul_rvalid_o = 1'b1;
           // Check OTP return code.
-          if (!(otp_err_i inside {NoError, MacroEccCorrError})) begin
+          if (!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError})) begin
             state_d = ErrorSt;
-            error_d = otp_err_i;
+            error_d = otp_err_e'(otp_err_i);
             // This causes the TL-UL adapter to return a bus error.
             tlul_rerror_o = 2'b11;
           end else begin
             state_d = IdleSt;
             // Latch soft ECC errors, but do not go into terminal error state.
-            if (otp_err_i == MacroEccCorrError) begin
-              error_d = otp_err_i;
+            if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
+              error_d = otp_err_e'(otp_err_i);
             end
           end
         end
@@ -430,8 +430,8 @@ module otp_ctrl_part_unbuf
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitWaitSt, ReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_i inside {NoError, MacroEccCorrError}) && !ecc_err
+      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) && !ecc_err
       |=>
-      state_q == ErrorSt && error_o == $past(otp_err_i))
+      state_q == ErrorSt && error_o == $past(otp_err_e'(otp_err_i)))
 
 endmodule : otp_ctrl_part_unbuf
