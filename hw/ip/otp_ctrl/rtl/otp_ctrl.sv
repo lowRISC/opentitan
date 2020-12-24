@@ -142,7 +142,7 @@ module otp_ctrl
   ///////////////
 
   logic otp_init_req, otp_init_done;
-  logic [OtpErrWidth-1:0] otp_err_code;
+  prim_otp_pkg::err_e otp_err_code;
   logic otp_valid, otp_ready;
   logic [OtpAddrWidth-1:0] otp_addr;
   logic [OtpIfWidth-1:0] otp_wdata, otp_rdata;
@@ -156,9 +156,11 @@ module otp_ctrl
   assign otp_init_req = 1'b1;
 
   prim_otp #(
-    .Width(OtpWidth),
-    .Depth(OtpDepth),
-    .TlDepth(NumDebugWindowWords)
+    .Width       ( OtpWidth            ),
+    .Depth       ( OtpDepth            ),
+    .SizeWidth   ( OtpSizeWidth        ),
+    .PwrSeqWidth ( OtpPwrSeqWidth      ),
+    .TlDepth     ( NumDebugWindowWords )
   ) i_prim_otp (
     .clk_i,
     .rst_ni,
@@ -169,12 +171,12 @@ module otp_ctrl
     .test_tl_i   ( tl_win_h2d[1] ),
     .test_tl_o   ( tl_win_d2h[1] ),
     // Read / Write command interface
-    .ready_o     ( otp_ready     ),
-    .valid_i     ( otp_valid     ),
-    .size_i      ( '0            ),
-    .cmd_i       ( '0            ),
-    .addr_i      ( otp_addr      ),
-    .wdata_i     ( otp_wdata     ),
+    .ready_o     ( otp_ready          ),
+    .valid_i     ( otp_valid          ),
+    .size_i      ( '0                 ),
+    .cmd_i       ( prim_otp_pkg::Read ),
+    .addr_i      ( otp_addr           ),
+    .wdata_i     ( otp_wdata          ),
     // Read data out
     .rdata_o     ( otp_rdata     ),
     .valid_o     ( otp_out_valid ),
