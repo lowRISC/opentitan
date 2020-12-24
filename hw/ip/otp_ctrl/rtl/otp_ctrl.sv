@@ -1073,7 +1073,7 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
   assign otp_hw_cfg_o.valid = (part_init_done[HwCfgIdx]) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
   assign otp_hw_cfg_o.data = otp_hw_cfg_data_t'(part_buf_data[HwCfgOffset +: HwCfgSize]);
   // Root keys
-  assign otp_keymgr_key_o.valid = part_init_done[Secret2Idx];
+  assign otp_keymgr_key_o.valid = part_digest[Secret2Idx] != '0;
   assign otp_keymgr_key_o.key_share0 = (lc_seed_hw_rd_en == lc_ctrl_pkg::On) ?
                                        part_buf_data[CreatorRootKeyShare0Offset +:
                                                      CreatorRootKeyShare0Size] :
@@ -1086,7 +1086,7 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
                                                       CreatorRootKeyShare1Size*8];
 
   // Scrambling Keys
-  assign scrmbl_key_seed_valid = part_init_done[Secret1Idx];
+  assign scrmbl_key_seed_valid = part_digest[Secret1Idx] != '0;
   assign sram_data_key_seed    = part_buf_data[SramDataKeySeedOffset +:
                                                SramDataKeySeedSize];
   assign flash_data_key_seed   = part_buf_data[FlashDataKeySeedOffset +:
