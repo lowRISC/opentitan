@@ -34,6 +34,7 @@ filesets:
       - rtl/prim_fifo_sync.sv
       - rtl/prim_slicer.sv
       - rtl/prim_sync_reqack.sv
+      - rtl/prim_sync_reqack_data.sv
       - rtl/prim_keccak.sv
       - rtl/prim_packer.sv
       - rtl/prim_packer_fifo.sv
