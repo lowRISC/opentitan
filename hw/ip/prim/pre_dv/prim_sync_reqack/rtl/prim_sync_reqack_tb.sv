@@ -57,7 +57,8 @@ module prim_sync_reqack_tb #(
   logic rst_done;
 
   // Instantiate DUT
-  logic [WidthTrans-1:0] out_data, unused_out_data;
+  logic [WidthTrans-1:0] in_data, out_data, unused_out_data;
+  assign in_data = DataSrc2Dst ? src_count_q : dst_count_q;
   prim_sync_reqack_data #(
     .Width       ( WidthTrans  ),
     .DataSrc2Dst ( DataSrc2Dst ),
@@ -73,7 +74,7 @@ module prim_sync_reqack_tb #(
     .dst_req_o  (dst_req),
     .dst_ack_i  (dst_ack),
 
-    .data_i (dst_count_q),
+    .data_i (in_data),
     .data_o (out_data)
   );
   assign unused_out_data = out_data;

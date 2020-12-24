@@ -7,8 +7,8 @@
 // This module synchronizes a REQ/ACK handshake with associated data across a clock domain
 // crossing (CDC). Both domains will see a handshake with the duration of one clock cycle. By
 // default, the data itself is not registered. The main purpose of feeding the data through this
-// module to have an anchor point for waiving CDC violations. If the data is configured to
-// flow from the destination (DST) to the source (SRC) domain, an additional register stage can be
+// module to have an anchor point for waiving CDC violations. If the data is configured to flow
+// from the destination (DST) to the source (SRC) domain, an additional register stage can be
 // inserted for data buffering.
 //
 // Under the hood, this module uses a prim_sync_reqack primitive for synchronizing the
@@ -86,18 +86,19 @@ module prim_sync_reqack_data #(
   ////////////////
   if (DataSrc2Dst == 1'b1) begin : gen_assert_data_src2dst
     // SRC domain cannot change data while waiting for ACK.
-    `ASSERT(ReqAckSyncDataHoldSrc2Dst, !$stable(data_i) |->
-        !(src_req_i == 1'b1 && u_prim_sync_reqack.src_fsm_cs == u_prim_sync_reqack.HANDSHAKE),
+    `ASSERT(SyncReqAckDataHoldSrc2Dst, !$stable(data_i) |->
+        (!src_req_i || (src_req_i && src_ack_o)),
         clk_src_i, !rst_src_ni)
 
     // Register stage cannot be used.
-    `ASSERT_INIT(ReqAckSyncDataReg, DataSrc2Dst && !DataReg)
+    `ASSERT_INIT(SyncReqAckDataReg, DataSrc2Dst && !DataReg)
 
   end else if (DataSrc2Dst == 1'b0 && DataReg == 1'b0) begin : gen_assert_data_dst2src
-    // DST domain cannot change data while waiting for SRC domain to receive the ACK.
-    `ASSERT(ReqAckSyncDataHoldDst2Src, !$stable(data_i) |->
-        (u_prim_sync_reqack.dst_fsm_cs != u_prim_sync_reqack.SYNC),
-        clk_dst_i, !rst_dst_ni)
+    // DST domain shall not change data while waiting for SRC domain to latch it (together with
+    // receiving ACK). Assert that the data is stable +/- 2 SRC cycles around the SRC handshake.
+    `ASSERT(SyncReqAckDataHoldDst2Src,
+        src_req_i && src_ack_o |-> $past(data_o,2) == data_o && $stable(data_o) [*3],
+        clk_src_i, !rst_src_ni)
   end
 
 endmodule
