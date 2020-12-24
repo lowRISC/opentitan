@@ -8,19 +8,18 @@
 // Both domains will see a handshake with the duration of one clock cycle.
 //
 // Notes:
-// - Once asserted, the source domain is not allowed to de-assert REQ without ACK.
-// - The destination domain is not allowed to send an ACK without a REQ.
+// - Once asserted, the source (SRC) domain is not allowed to de-assert REQ without ACK.
+// - The destination (DST) domain is not allowed to send an ACK without a REQ.
 // - This module works both when syncing from a faster to a slower clock domain and vice versa.
-// - Internally, this module uses a return-to-zero, four-phase handshake protocol. Assuming the
-//   destination side responds with an ACK immediately, the latency from asserting the REQ on the
-//   source side is:
-//   - 1 source + 2 destination clock cycles until the handshake is performed on the
-//     destination side,
+// - Internally, this module uses a non-return-to-zero, two-phase handshake protocol. Assuming the
+//   DST domain responds with an ACK immediately, the latency from asserting the REQ in the
+//   SRC domain is:
+//   - 1 source + 2 destination clock cycles until the handshake is performed in the DST domain,
 //   - 1 source + 2 destination + 1 destination + 2 source clock cycles until the handshake is
-//     performed on the source side.
-//   - It takes another round trip (3 source + 3 destination clock cycles) before the next
-//     REQ is starting to be propagated to the destination side. The module is thus not suitable
-//     for high-bandwidth communication.
+//     performed in the SRC domain.
+//
+// For further information, see Section 8.2.4 in H. Kaeslin, "Top-Down Digital VLSI Design: From
+// Architecture to Gate-Level Circuits and FPGAs", 2015.
 
 `include "prim_assert.sv"
 
@@ -38,7 +37,7 @@ module prim_sync_reqack (
 
   // Types
   typedef enum logic {
-    HANDSHAKE, SYNC
+    EVEN, ODD
   } sync_reqack_fsm_e;
 
   // Signals
@@ -46,8 +45,12 @@ module prim_sync_reqack (
   sync_reqack_fsm_e dst_fsm_ns, dst_fsm_cs;
   logic src_req_d, src_req_q, src_ack;
   logic dst_ack_d, dst_ack_q, dst_req;
+  logic src_handshake, dst_handshake;
 
-  // Move REQ over to ACK side.
+  assign src_handshake = src_req_i & src_ack_o;
+  assign dst_handshake = dst_req_o & dst_ack_i;
+
+  // Move REQ over to DST domain.
   prim_flop_2sync #(
     .Width(1)
   ) req_sync (
@@ -57,7 +60,7 @@ module prim_sync_reqack (
     .q_o    (dst_req)
   );
 
-  // Move ACK over to REQ side.
+  // Move ACK over to SRC domain.
   prim_flop_2sync #(
     .Width(1)
   ) ack_sync (
@@ -67,31 +70,36 @@ module prim_sync_reqack (
     .q_o    (src_ack)
   );
 
-  // REQ-side FSM (source domain)
+  // REQ-side FSM (SRC domain)
   always_comb begin : src_fsm
     src_fsm_ns = src_fsm_cs;
 
-    // By default, we forward the REQ and ACK.
-    src_req_d = src_req_i;
-    src_ack_o = src_ack;
+    // By default, we keep the internal REQ value and don't ACK.
+    src_req_d = src_req_q;
+    src_ack_o = 1'b0;
 
     unique case (src_fsm_cs)
 
-      HANDSHAKE: begin
-        // The handshake on the REQ side is done for exactly 1 clock cycle.
-        if (src_req_i && src_ack) begin
-          src_fsm_ns = SYNC;
-          // Tell ACK side that we are done.
-          src_req_d  = 1'b0;
+      EVEN: begin
+        // Simply forward REQ and ACK.
+        src_req_d = src_req_i;
+        src_ack_o = src_ack;
+
+        // The handshake is done for exactly 1 clock cycle.
+        if (src_handshake) begin
+          src_fsm_ns = ODD;
         end
       end
 
-      SYNC: begin
-        // Make sure ACK side knows that we are done.
-        src_req_d = 1'b0;
-        src_ack_o = 1'b0;
-        if (!src_ack) begin
-          src_fsm_ns = HANDSHAKE;
+      ODD: begin
+        // Internal REQ and ACK have inverted meaning now. If src_req_i is high again, this signals
+        // a new transaction.
+        src_req_d = ~src_req_i;
+        src_ack_o = ~src_ack;
+
+        // The handshake is done for exactly 1 clock cycle.
+        if (src_handshake) begin
+          src_fsm_ns = EVEN;
         end
       end
 
@@ -99,29 +107,36 @@ module prim_sync_reqack (
     endcase
   end
 
-  // ACK-side FSM (destination domain)
+  // ACK-side FSM (DST domain)
   always_comb begin : dst_fsm
     dst_fsm_ns = dst_fsm_cs;
 
-    // By default, we forward the REQ and ACK.
-    dst_req_o = dst_req;
-    dst_ack_d = dst_ack_i;
+    // By default, we don't REQ and keep the internal ACK.
+    dst_req_o = 1'b0;
+    dst_ack_d = dst_ack_q;
 
     unique case (dst_fsm_cs)
 
-      HANDSHAKE: begin
-        // The handshake on the ACK side is done for exactly 1 clock cycle.
-        if (dst_req && dst_ack_i) begin
-          dst_fsm_ns = SYNC;
+      EVEN: begin
+        // Simply forward REQ and ACK.
+        dst_req_o = dst_req;
+        dst_ack_d = dst_ack_i;
+
+        // The handshake is done for exactly 1 clock cycle.
+        if (dst_handshake) begin
+          dst_fsm_ns = ODD;
         end
       end
 
-      SYNC: begin
-        // Don't forward REQ, hold ACK, wait for REQ side.
-        dst_req_o  = 1'b0;
-        dst_ack_d  = 1'b1;
-        if (!dst_req) begin
-          dst_fsm_ns = HANDSHAKE;
+      ODD: begin
+        // Internal REQ and ACK have inverted meaning now. If dst_req goes low, this signals a new
+        // transaction.
+        dst_req_o = ~dst_req;
+        dst_ack_d = ~dst_ack_i;
+
+        // The handshake is done for exactly 1 clock cycle.
+        if (dst_handshake) begin
+          dst_fsm_ns = EVEN;
         end
       end
 
@@ -132,7 +147,7 @@ module prim_sync_reqack (
   // Registers
   always_ff @(posedge clk_src_i or negedge rst_src_ni) begin
     if (!rst_src_ni) begin
-      src_fsm_cs <= HANDSHAKE;
+      src_fsm_cs <= EVEN;
       src_req_q  <= 1'b0;
     end else begin
       src_fsm_cs <= src_fsm_ns;
@@ -141,7 +156,7 @@ module prim_sync_reqack (
   end
   always_ff @(posedge clk_dst_i or negedge rst_dst_ni) begin
     if (!rst_dst_ni) begin
-      dst_fsm_cs <= HANDSHAKE;
+      dst_fsm_cs <= EVEN;
       dst_ack_q  <= 1'b0;
     end else begin
       dst_fsm_cs <= dst_fsm_ns;
@@ -149,10 +164,10 @@ module prim_sync_reqack (
     end
   end
 
-  // Source domain cannot de-assert REQ while waiting for ACK.
-  `ASSERT(ReqAckSyncHoldReq, $fell(src_req_i) |-> (src_fsm_cs != HANDSHAKE), clk_src_i, !rst_src_ni)
+  // SRC domain can only de-assert REQ after receiving ACK.
+  `ASSERT(SyncReqAckHoldReq, $fell(src_req_i) |-> $fell(src_ack_o), clk_src_i, !rst_src_ni)
 
-  // Destination domain cannot assert ACK without REQ.
-  `ASSERT(ReqAckSyncAckNeedsReq, dst_ack_i |-> dst_req_o, clk_dst_i, !rst_dst_ni)
+  // DST domain cannot assert ACK without REQ.
+  `ASSERT(SyncReqAckAckNeedsReq, dst_ack_i |-> dst_req_o, clk_dst_i, !rst_dst_ni)
 
 endmodule
