@@ -6,7 +6,7 @@
 //
 // This module is only meant to be used in special cases where a handshake synchronizer
 // is not viable (this is for instance the case for the multibit life cycle signals).
-// For handshake-based synchronization, consider using prim_sync_reqack.
+// For handshake-based synchronization, consider using prim_sync_reqack_data.
 //
 //
 // Description:

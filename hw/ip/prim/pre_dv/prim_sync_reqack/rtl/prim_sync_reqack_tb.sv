@@ -17,6 +17,8 @@ module prim_sync_reqack_tb #(
   localparam int unsigned NumTransactions = 8;
   localparam logic        FastToSlow = 1'b1; // Select 1'b0 for SlowToFast
   localparam int unsigned Ratio = 4; // must be even and greater equal 2
+  localparam bit          DataSrc2Dst = 1'b1; // Select 1'b0 for Dst2Src
+  localparam bit          DataReg = 1'b0; // Select 1'b1 if data flows from Dst2Src
 
   // Derivation of parameters
   localparam int unsigned Ticks = Ratio/2;
@@ -55,7 +57,12 @@ module prim_sync_reqack_tb #(
   logic rst_done;
 
   // Instantiate DUT
-  prim_sync_reqack prim_sync_reqack (
+  logic [WidthTrans-1:0] out_data, unused_out_data;
+  prim_sync_reqack_data #(
+    .Width       ( WidthTrans  ),
+    .DataSrc2Dst ( DataSrc2Dst ),
+    .DataReg     ( DataReg     )
+  ) u_prim_sync_reqack_data (
     .clk_src_i  (clk_src),
     .rst_src_ni (rst_slow_n),
     .clk_dst_i  (clk_dst),
@@ -64,8 +71,12 @@ module prim_sync_reqack_tb #(
     .src_req_i  (src_req),
     .src_ack_o  (src_ack),
     .dst_req_o  (dst_req),
-    .dst_ack_i  (dst_ack)
+    .dst_ack_i  (dst_ack),
+
+    .data_i (dst_count_q),
+    .data_o (out_data)
   );
+  assign unused_out_data = out_data;
 
   // Make sure we do not apply stimuli before the reset.
   always_ff @(posedge clk_slow or negedge rst_slow_n) begin
