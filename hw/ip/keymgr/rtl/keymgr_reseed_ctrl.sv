@@ -94,7 +94,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
           seed_q <= {seed_q[0 +: DeltaWidth-EdnWidth], edn_data};
         end
       end
-    end begin : gen_double_width
+    end else begin : gen_double_width
       always_ff @(posedge clk_i) begin
         if (edn_txn_done) begin
           seed_q <= edn_data;
