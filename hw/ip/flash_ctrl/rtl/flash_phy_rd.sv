@@ -341,7 +341,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // This check is only valid when read data returns.
   assign data_erased = rd_done & (data_i == {FullDataWidth{1'b1}});
 
-  prim_secded_72_64_dec u_dec (
+  prim_secded_hamming_72_64_dec u_dec (
     .in(data_i[ScrDataWidth-1:0]),
     .d_o(data_ecc_chk),
     .syndrome_o(),

@@ -234,7 +234,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   // ECC handling
   logic [ScrDataWidth-1:0] ecc_data;
 
-  prim_secded_72_64_enc u_enc (
+  prim_secded_hamming_72_64_enc u_enc (
     .in(packed_data),
     .out(ecc_data)
   );
