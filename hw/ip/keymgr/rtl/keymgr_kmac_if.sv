@@ -92,6 +92,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   logic cnt_clr, cnt_set, cnt_en;
   logic start;
   logic [3:0] inputs_invalid_d, inputs_invalid_q;
+  logic clr_err;
 
   data_state_e state_q, state_d;
 
@@ -138,6 +139,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     state_d = state_q;
     rounds  = '0;
 
+    clr_err = '0;
     fsm_error_o = '0;
     kmac_error_o = '0;
 
@@ -206,6 +208,8 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 
         // wait for control side to ack done by waiting start de-assertion
         if (!start) begin
+          done_o = 1'b0;
+          clr_err = 1'b1;
           state_d = StIdle;
         end
       end
@@ -232,7 +236,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   always_comb begin
     inputs_invalid_d = inputs_invalid_q;
 
-    if (start && done_o) begin
+    if (clr_err) begin
       inputs_invalid_d = '0;
     end else if (valid) begin
       inputs_invalid_d[OpAdvance]  = adv_en_i & (inputs_invalid_i[OpAdvance] |
