@@ -25,7 +25,7 @@ COPYRIGHT = """// Copyright lowRISC contributors.
 // SPDX-License-Identifier: Apache-2.0
 //
 """
-
+CODE_OPTIONS = ['hsiao', 'hamming']
 
 def min_paritysize(k):
     # SECDED --> Hamming distance 'd': 4
@@ -123,90 +123,20 @@ def print_enc(n, k, m, codes):
 
 
 def calc_syndrome(code):
+    log.info("in syncrome {}".format(code))
     return sum(map((lambda x: 2**x), code))
 
+# return whether an integer is a power of 2
+def is_pow2(n):
+    return (n & (n-1) == 0) and n != 0
 
-def print_dec(n, k, m, codes):
-    outstr = ""
-    outstr += "  logic single_error;\n"
-    outstr += "\n"
-    outstr += "  // Syndrome calculation\n"
-    for i in range(m):
-        # Print combination
-        outstr += print_comb(n, k, m, i, codes, 1, 100,
-                             "  assign syndrome_o[%d] = in[%d] ^" % (i, k + i),
-                             len(" in[%d] ^" % (k + i)) + 2)
+def is_odd(n):
+    return (n % 2) > 0
 
-    outstr += "\n"
-    outstr += "  // Corrected output calculation\n"
-    for i in range(k):
-        synd_v = calc_syndrome(codes[i])
-        outstr += "  assign d_o[%d] = (syndrome_o == %d'h%x) ^ in[%d];\n" % (
-            i, m, calc_syndrome(codes[i]), i)
-    outstr += "\n"
-    outstr += "  // err_o calc. bit0: single error, bit1: double error\n"
-    outstr += "  assign single_error = ^syndrome_o;\n"
-    outstr += "  assign err_o[0] =  single_error;\n"
-    outstr += "  assign err_o[1] = ~single_error & (|syndrome_o);\n"
-    return outstr
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        prog="secded_gen",
-        description='''This tool generates Single Error Correction Double Error
-        Detection(SECDED) encoder and decoder modules in SystemVerilog.
-        ''')
-    parser.add_argument(
-        '-m',
-        type=int,
-        default=7,
-        help=
-        'parity length. If fan-in is too big, increasing m helps. (default: %(default)s)'
-    )
-    parser.add_argument(
-        '-k',
-        type=int,
-        default=32,
-        help=
-        'code length. Minimum \'m\' is calculated by the tool (default: %(default)s)'
-    )
-    parser.add_argument(
-        '--outdir',
-        default='../rtl',
-        help=
-        'output directory. The output file will be named `prim_secded_<n>_<k>_enc/dec.sv` (default: %(default)s)'
-    )
-    parser.add_argument('--verbose', '-v', action='store_true', help='Verbose')
-
-    args = parser.parse_args()
-
-    if (args.verbose):
-        log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
-    else:
-        log.basicConfig(format="%(levelname)s: %(message)s")
-
-    # Error checking
-    if (args.k <= 1 or args.k > 120):
-        log.error("Current tool doesn't support the value k (%d)", args.k)
-    k = args.k
-
-    if (args.m <= 1 or args.m > 20):
-        log.error("Current tool doesn't support the value m (%d)", args.m)
-
-    # Calculate 'm' (parity size)
-    min_m = min_paritysize(k)
-    if (args.m < min_m):
-        log.error("given \'m\' argument is smaller than minimum requirement")
-        m = min_m
-    else:
-        m = args.m
-
-    n = m + k
-    log.info("n(%d), k(%d), m(%d)", n, k, m)
-
-    random.seed(time.time())
-
+# k = data bits
+# m = parity bits
+# generate hsiao code
+def hsiao_code(k, m):
     # using itertools combinations, generate odd number of 1 in a row
 
     required_row = k  # k rows are needed, decreasing everytime when it acquite
@@ -285,13 +215,153 @@ def main():
             # Found everything!
             break
 
-    log.info(codes)
+    log.info("Hsiao codes {}".format(codes))
+    return codes
+
+# n = total bits
+# k = data bits
+# m = parity bits
+# generate hamming code
+def hamming_code(n, k, m):
+
+    # construct a list of code tuples.
+    # Tuple corresponds to each bit position and shows which parity bit it participates in
+    # Only the data bits are shown, the parity bits are not.
+    codes = []
+    for pos in range(1, n+1):
+        # this is a valid parity bit position or the final parity bit
+        if (is_pow2(pos) or pos == n):
+            continue
+        else:
+            code = ()
+            for p in range(m):
+
+                # this is the starting parity position
+                parity_pos = 2**p
+
+                # back-track to the closest parity bit multiple and see if it is even or odd
+                # If even, we are in the skip phase, do not include
+                # If odd, we are in the include phase
+                parity_chk = int((pos - (pos % parity_pos)) / parity_pos)
+                log.debug("At position {} parity value {}, {}" \
+                         .format(pos, parity_pos, parity_chk))
+
+                # valid for inclusion or final parity bit that includes everything
+                if is_odd(parity_chk) or p == m-1:
+                    code = code + (p,)
+                    log.info("add {} to tuple {}".format(p, code))
+
+            codes.append(code)
+
+    log.info("Hamming codes {}".format(codes))
+    return codes
+
+
+def print_dec(n, k, m, codes):
+    outstr = ""
+    outstr += "  logic single_error;\n"
+    outstr += "\n"
+    outstr += "  // Syndrome calculation\n"
+    for i in range(m):
+        # Print combination
+        outstr += print_comb(n, k, m, i, codes, 1, 100,
+                             "  assign syndrome_o[%d] = in[%d] ^" % (i, k + i),
+                             len(" in[%d] ^" % (k + i)) + 2)
+
+    outstr += "\n"
+    outstr += "  // Corrected output calculation\n"
+    for i in range(k):
+        synd_v = calc_syndrome(codes[i])
+        outstr += "  assign d_o[%d] = (syndrome_o == %d'h%x) ^ in[%d];\n" % (
+            i, m, calc_syndrome(codes[i]), i)
+    outstr += "\n"
+    outstr += "  // err_o calc. bit0: single error, bit1: double error\n"
+    outstr += "  assign single_error = ^syndrome_o;\n"
+    outstr += "  assign err_o[0] =  single_error;\n"
+    outstr += "  assign err_o[1] = ~single_error & (|syndrome_o);\n"
+    return outstr
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="secded_gen",
+        description='''This tool generates Single Error Correction Double Error
+        Detection(SECDED) encoder and decoder modules in SystemVerilog.
+        ''')
+    parser.add_argument(
+        '-m',
+        type=int,
+        default=7,
+        help=
+        'parity length. If fan-in is too big, increasing m helps. (default: %(default)s)'
+    )
+    parser.add_argument(
+        '-k',
+        type=int,
+        default=32,
+        help=
+        'code length. Minimum \'m\' is calculated by the tool (default: %(default)s)'
+    )
+    parser.add_argument(
+        '-c',
+        default='hsiao',
+        help=
+        'ECC code used. Options: hsiao / hamming (default: %(default)s)'
+    )
+    parser.add_argument(
+        '--outdir',
+        default='../rtl',
+        help=
+        'output directory. The output file will be named `prim_secded_<n>_<k>_enc/dec.sv` (default: %(default)s)'
+    )
+    parser.add_argument('--verbose', '-v', action='store_true', help='Verbose')
+
+    args = parser.parse_args()
+
+    if (args.verbose):
+        log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
+    else:
+        log.basicConfig(format="%(levelname)s: %(message)s")
+
+    # Error checking
+    if (args.k <= 1 or args.k > 120):
+        log.error("Current tool doesn't support the value k (%d)", args.k)
+    k = args.k
+
+    if (args.m <= 1 or args.m > 20):
+        log.error("Current tool doesn't support the value m (%d)", args.m)
+
+    # Calculate 'm' (parity size)
+    min_m = min_paritysize(k)
+    if (args.m < min_m):
+        log.warning("given \'m\' argument is smaller than minimum requirement " +
+                    "using calculated minimum")
+        m = min_m
+    else:
+        m = args.m
+
+    n = m + k
+    log.info("n(%d), k(%d), m(%d)", n, k, m)
+
+    random.seed(time.time())
+
+    # Error check code selection
+    codes = []
+    name = ''
+    if (args.c == 'hsiao'):
+        codes = hsiao_code(k, m)
+    elif (args.c == 'hamming'):
+        name = '_hamming'
+        codes = hamming_code(n, k, m)
+    else:
+        log.error("Invalid code {} selected, use one of {}".format(args.c, CODE_OPTIONS))
+        return
 
     # Print Encoder
     enc_out = print_enc(n, k, m, codes)
     #log.info(enc_out)
 
-    module_name = "prim_secded_%d_%d" % (n, k)
+    module_name = "prim_secded%s_%d_%d" % (name, n, k)
 
     with open(args.outdir + "/" + module_name + "_enc.sv", "w") as f:
         f.write(COPYRIGHT)
@@ -318,7 +388,6 @@ def main():
         f.write(");\n\n")
         f.write(dec_out)
         f.write("endmodule\n\n")
-
 
 if __name__ == "__main__":
     main()
