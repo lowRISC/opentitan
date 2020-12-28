@@ -261,7 +261,7 @@ module keymgr import keymgr_pkg::*; #(
   // Advance state operation input construction
   for (genvar i = KeyMgrStages; i < 2**StageWidth; i++) begin : gen_adv_matrix_fill
     assign adv_matrix[i] = {AdvLfsrCopies{lfsr[31:0]}};
-    assign adv_dvalid[i] = 1'b0;
+    assign adv_dvalid[i] = 1'b1;
   end
 
   // Advance to creator_root_key
