@@ -80,7 +80,7 @@ module sim_sram #(
   assign tl_out_o = tl_socket_h2d[0];
   assign tl_socket_d2h[0] = tl_out_i;
 
-  if (InstantiateSram) begin : sram_inst
+  if (InstantiateSram) begin : gen_sram_inst
 
     localparam int SramAddrWidth = $clog2(Depth);
 
@@ -137,8 +137,8 @@ module sim_sram #(
       end
     end
 
-  end : sram_inst
-  else begin : no_sram
+  end : gen_sram_inst
+  else begin : gen_no_sram
 
     tlul_sink u_tlul_sink (
       .clk_i,
@@ -147,7 +147,7 @@ module sim_sram #(
       .tl_o(tl_socket_d2h[1])
     );
 
-  end : no_sram
+  end : gen_no_sram
 
 `endif
 

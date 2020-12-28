@@ -190,13 +190,13 @@ module tb;
   );
 
   // connect alert rx/tx to alert_if
-  for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins
+  for (genvar k = 0; k < NUM_ALERTS; k++) begin : gen_connect_alerts_pins
     assign alert_if[k].alert_rx = `ALERT_HANDLER_HIER.alert_rx_o[k];
     initial begin
       uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
           LIST_OF_ALERTS[k]), "vif", alert_if[k]);
     end
-  end
+  end : gen_connect_alerts_pins
 
   initial begin
     // Set clk_rst_vifs
