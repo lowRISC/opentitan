@@ -176,7 +176,8 @@ def resolve_proj_root(args):
                                       "repo_top")
         if args.purge and os.path.exists(proj_root_dest):
             shutil.rmtree(proj_root_dest)
-        copy_repo(proj_root_src, proj_root_dest, args.dry_run)
+        if not args.run_only:
+            copy_repo(proj_root_src, proj_root_dest, args.dry_run)
     else:
         proj_root_dest = proj_root_src
 
