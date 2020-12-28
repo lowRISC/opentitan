@@ -51,11 +51,9 @@ module tb;
   // gpio pins are represented by bi-directional gpio_if interface
   // drive the pins only if en_o bit from the dut is high
   assign gpio_i = gpio_pins[NUM_GPIOS-1:0];
-  generate
-    for (genvar i = 0; i < NUM_GPIOS; i++) begin : each_gpio
-      assign gpio_pins[i] = gpio_oe[i] ? gpio_o[i] : 1'bz;
-    end
-  endgenerate
+  for (genvar i = 0; i < NUM_GPIOS; i++) begin : gen_each_gpio
+    assign gpio_pins[i] = gpio_oe[i] ? gpio_o[i] : 1'bz;
+  end : gen_each_gpio
 
   initial begin
     // drive clk and rst_n from clk_if

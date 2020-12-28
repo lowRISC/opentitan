@@ -72,7 +72,7 @@ interface pins_if #(
   endfunction
 
   // make connections
-  for (genvar i = 0; i < Width; i++) begin : each_pin
+  for (genvar i = 0; i < Width; i++) begin : gen_each_pin
 `ifdef VERILATOR
     assign pins[i] = pins_oe[i] ? pins_o[i] :
                      pins_pu[i] ? 1'b1 :
@@ -91,7 +91,7 @@ interface pins_if #(
     // between 'value to be driven out' and the external driver's value.
     assign pins[i] = pins_oe[i] ? pins_o[i] : 1'bz;
 `endif
-  end
+  end : gen_each_pin
 
 endinterface
 `endif

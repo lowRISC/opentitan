@@ -78,22 +78,20 @@ module tb;
   `define FLASH_INFO_MEM_HIER(i) \
       dut.u_flash_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[``i``].u_prim_flash_bank.gen_info_types[0].u_info_mem
 
-  generate
-    for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : mem_bkdr_if_i
-      bind `FLASH_DATA_MEM_HIER(i) mem_bkdr_if mem_bkdr_if();
-      bind `FLASH_INFO_MEM_HIER(i) mem_bkdr_if mem_bkdr_if();
-      initial begin
-        flash_part_e part;
-        part = flash_ctrl_pkg::FlashPartData;
-        uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", $sformatf("mem_bkdr_vifs[%0s][%0d]",
-            part.name(), i), `FLASH_DATA_MEM_HIER(i).mem_bkdr_if);
+  for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : gen_mem_bkdr_if_i
+    bind `FLASH_DATA_MEM_HIER(i) mem_bkdr_if mem_bkdr_if();
+    bind `FLASH_INFO_MEM_HIER(i) mem_bkdr_if mem_bkdr_if();
+    initial begin
+      flash_part_e part;
+      part = flash_ctrl_pkg::FlashPartData;
+      uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", $sformatf("mem_bkdr_vifs[%0s][%0d]",
+          part.name(), i), `FLASH_DATA_MEM_HIER(i).mem_bkdr_if);
 
-        part = flash_ctrl_pkg::FlashPartInfo;
-        uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", $sformatf("mem_bkdr_vifs[%0s][%0d]",
-            part.name(), i), `FLASH_INFO_MEM_HIER(i).mem_bkdr_if);
-      end
+      part = flash_ctrl_pkg::FlashPartInfo;
+      uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", $sformatf("mem_bkdr_vifs[%0s][%0d]",
+          part.name(), i), `FLASH_INFO_MEM_HIER(i).mem_bkdr_if);
     end
-  endgenerate
+  end : gen_mem_bkdr_if_i
 
   `undef FLASH_DATA_MEM_HIER
   `undef FLASH_INFO_MEM_HIER
