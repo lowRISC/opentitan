@@ -60,6 +60,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
       `DV_CHECK_RANDOMIZE_FATAL(m_edn_pull_agent_cfg)
       m_edn_pull_agent_cfg.agent_type = PullAgent;
       m_edn_pull_agent_cfg.if_mode    = Device;
+      m_edn_pull_agent_cfg.hold_d_data_until_next_req = 1;
     end
   endfunction
 

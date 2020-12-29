@@ -57,7 +57,7 @@ class push_pull_device_driver #(parameter int HostDataWidth = 32,
     @(`PUSH_DRIVER);
     if (!in_reset) begin
       `PUSH_DRIVER.ready_int  <= 1'b0;
-      `PUSH_DRIVER.d_data_int <= 'x;
+      if (!cfg.hold_d_data_until_next_req) `PUSH_DRIVER.d_data_int <= 'x;
     end
   endtask
 
@@ -76,7 +76,7 @@ class push_pull_device_driver #(parameter int HostDataWidth = 32,
     @(`PULL_DRIVER);
     if (!in_reset) begin
       `PULL_DRIVER.ack_int    <= 1'b0;
-      `PULL_DRIVER.d_data_int <= 'x;
+      if (!cfg.hold_d_data_until_next_req) `PULL_DRIVER.d_data_int <= 'x;
     end
   endtask
 

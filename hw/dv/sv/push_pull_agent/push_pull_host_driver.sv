@@ -63,8 +63,8 @@ class push_pull_host_driver #(parameter int HostDataWidth = 32,
       @(`PUSH_DRIVER);
     end while (!`PUSH_DRIVER.ready && !in_reset);
     if (!in_reset) begin
-      `PUSH_DRIVER.valid_int  <= 1'b0;
-      `PUSH_DRIVER.h_data_int <= 'x;
+      `PUSH_DRIVER.valid_int <= 1'b0;
+      if (!cfg.hold_h_data_until_next_req) `PUSH_DRIVER.h_data_int <= 'x;
     end
   endtask
 
@@ -82,8 +82,8 @@ class push_pull_host_driver #(parameter int HostDataWidth = 32,
       @(`PULL_DRIVER);
     end while (!`PULL_DRIVER.ack && !in_reset);
     if (!in_reset) begin
-      `PULL_DRIVER.req_int    <= 1'b0;
-      `PULL_DRIVER.h_data_int <= 'x;
+      `PULL_DRIVER.req_int <= 1'b0;
+      if (!cfg.hold_h_data_until_next_req) `PULL_DRIVER.h_data_int <= 'x;
     end
   endtask
 
