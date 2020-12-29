@@ -174,8 +174,8 @@ def resolve_proj_root(args):
     if args.remote:
         proj_root_dest = os.path.join(args.scratch_root, args.branch,
                                       "repo_top")
-        if args.purge and os.path.exists(proj_root_dest):
-            shutil.rmtree(proj_root_dest)
+        if args.purge:
+            shutil.rmtree(proj_root_dest, ignore_errors=True)
         copy_repo(proj_root_src, proj_root_dest, args.dry_run)
     else:
         proj_root_dest = proj_root_src
@@ -199,7 +199,7 @@ def copy_repo(src, dest, dry_run):
     exclude patterns to skip certain things from being copied over. With GitHub
     repos, an existing `.gitignore` serves this purpose pretty well.
     '''
-    rsync_cmd = "rsync --archive --update --executability --inplace "
+    rsync_cmd = "rsync --recursive --links --checksum --update --inplace "
 
     # Supply `.gitignore` from the src area to skip temp files.
     ignore_patterns_file = os.path.join(src, ".gitignore")
@@ -207,7 +207,7 @@ def copy_repo(src, dest, dry_run):
         # TODO: hack - include hw/foundry since it is excluded in .gitignore.
         rsync_cmd += "--include=hw/foundry "
         rsync_cmd += "--exclude-from={} ".format(ignore_patterns_file)
-        rsync_cmd += "--exclude=*.git* "
+        rsync_cmd += "--exclude=.* "
 
     rsync_cmd += src + "/. " + dest
 
