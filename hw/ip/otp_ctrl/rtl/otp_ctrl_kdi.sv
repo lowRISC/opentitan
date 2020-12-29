@@ -240,27 +240,30 @@ module otp_ctrl_kdi
 
   // Select correct 64bit block.
   data_sel_e data_sel;
-  assign scrmbl_data_o = (data_sel == EntropyData) ? edn_data_i  :
+  assign scrmbl_data_o = (data_sel == EntropyData) ? nonce_out_q[entropy_cnt_q[0]] :
                         // Gate seed value to '0 if invalid.
-                         (req_bundle.seed_valid)   ? req_bundle.seed[seed_cnt_q] : '0;
+                         (req_bundle.seed_valid)   ? req_bundle.seed[seed_cnt_q]   : '0;
 
   /////////////////
   // Control FSM //
   /////////////////
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 5 -m 10 -n 10 -s 2544133835
+  // Encoding generated with:
+  // $ ./sparse-fsm-encode.py -d 5 -m 11 -n 10 \
+  //      -s 2544133835 --language=sv
+  //
   // Hamming distance histogram:
   //
-  // 0:  --
-  // 1:  --
-  // 2:  --
-  // 3:  --
-  // 4:  --
-  // 5:  |||||||||||||||||||| (55.56%)
-  // 6:  |||||||||||||||| (44.44%)
-  // 7:  --
-  // 8:  --
-  // 9:  --
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (54.55%)
+  //  6: |||||||||||||||| (45.45%)
+  //  7: --
+  //  8: --
+  //  9: --
   // 10: --
   //
   // Minimum Hamming distance: 5
@@ -268,16 +271,17 @@ module otp_ctrl_kdi
   //
   localparam int StateWidth = 10;
   typedef enum logic [StateWidth-1:0] {
-    ResetSt      = 10'b0111100000,
-    IdleSt       = 10'b0001111101,
-    DigClrSt     = 10'b1101101011,
-    DigLoadSt    = 10'b0100011010,
-    DigEntropySt = 10'b0010001001,
-    DigFinSt     = 10'b0110110111,
-    DigWaitSt    = 10'b0001000110,
-    FetchNonceSt = 10'b1100000101,
-    FinishSt     = 10'b1010101110,
-    ErrorSt      = 10'b1111011100
+    ResetSt        = 10'b0111100000,
+    IdleSt         = 10'b0001111101,
+    DigClrSt       = 10'b1101101011,
+    DigLoadSt      = 10'b0100011010,
+    FetchEntropySt = 10'b0010001001,
+    DigEntropySt   = 10'b0110110111,
+    DigFinSt       = 10'b0001000110,
+    DigWaitSt      = 10'b1100000101,
+    FetchNonceSt   = 10'b1010101110,
+    FinishSt       = 10'b1111011100,
+    ErrorSt        = 10'b1011010011
   } state_e;
 
   state_e state_d, state_q;
@@ -353,7 +357,7 @@ module otp_ctrl_kdi
           if (scrmbl_ready_i) begin
             // Go and ingest a block of entropy if required.
             if (req_bundle.ingest_entropy) begin
-              state_d = DigEntropySt;
+              state_d = FetchEntropySt;
             // Otherwise go to digest finalization state.
             end else begin
               state_d = DigFinSt;
@@ -365,9 +369,26 @@ module otp_ctrl_kdi
         end
       end
       ///////////////////////////////////////////////////////////////////
+      // Fetch random data to ingest for key derivation.
+      FetchEntropySt: begin
+        edn_req_o = 1'b1;
+        if (edn_ack_i) begin
+          nonce_reg_en = 1'b1;
+          // Finished, go and acknowledge this request.
+          if (entropy_cnt_q == 2'h1) begin
+            state_d = DigEntropySt;
+            entropy_cnt_clr = 1'b1;
+          // Keep on requesting entropy.
+          end else begin
+            entropy_cnt_en = 1'b1;
+          end
+        end
+      end
+      ///////////////////////////////////////////////////////////////////
       // Load two 64bit blocks of entropy data.
       DigEntropySt: begin
         scrmbl_mtx_req_o = 1'b1;
+        data_sel = EntropyData;
         scrmbl_valid_o = 1'b1;
         // Trigger digest round in case this is the second block in a row,
         // and go to digest finalization.
@@ -382,7 +403,6 @@ module otp_ctrl_kdi
           entropy_cnt_en = 1'b1;
         end
       end
-
       ///////////////////////////////////////////////////////////////////
       // Trigger digest finalization and go wait for the result.
       DigFinSt: begin

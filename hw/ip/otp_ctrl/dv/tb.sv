@@ -49,7 +49,6 @@ module tb;
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(clk), .rst_n(rst_n));
-  wire [30:0] edn_extra_data = 0; // TODO: temp align, will remove once design update
 
   pins_if #(OtpPwrIfWidth) pwr_otp_if(pwr_otp);
   // TODO: use standard req/rsp agent
@@ -69,6 +68,12 @@ module tb;
   otp_ctrl dut (
     .clk_i                      (clk        ),
     .rst_ni                     (rst_n      ),
+    // edn
+    // TODO: consider connecting this to a different clock.
+    .clk_edn_i                  (clk        ),
+    .rst_edn_ni                 (rst_n      ),
+    .edn_o                      (edn_if.req ),
+    .edn_i                      ({edn_if.ack, edn_if.d_data}),
 
     .tl_i                       (tl_if.h2d  ),
     .tl_o                       (tl_if.d2h  ),
@@ -81,10 +86,6 @@ module tb;
     // ast
     .otp_ast_pwr_seq_o          (ast_req),
     .otp_ast_pwr_seq_h_i        ('0),
-    // edn
-    .otp_edn_o                  (edn_if.req),
-    // TODO: temp padding 0s, will update once design align with EDN
-    .otp_edn_i                  ({edn_if.ack, edn_extra_data, edn_if.d_data}),
     // pwrmgr
     .pwr_otp_i                  (pwr_otp[OtpPwrInitReq]),
     .pwr_otp_o                  (pwr_otp[OtpPwrDoneRsp:OtpPwrIdleRsp]),
