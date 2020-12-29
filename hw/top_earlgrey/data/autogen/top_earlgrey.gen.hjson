@@ -3983,7 +3983,7 @@
       [
         {
           name: EnMasking
-          type: int
+          type: bit
           default: "0"
           desc:
             '''
