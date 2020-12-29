@@ -13,6 +13,9 @@ class lc_ctrl_env extends cip_base_env #(
   push_pull_agent#(.HostDataWidth(OTP_PROG_HDATA_WIDTH), .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))
                    m_otp_prog_pull_agent;
   push_pull_agent#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) m_otp_token_pull_agent;
+  alert_esc_agent m_esc_wipe_secrets_agent;
+  alert_esc_agent m_esc_scrap_state_agent;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -25,6 +28,13 @@ class lc_ctrl_env extends cip_base_env #(
     if (!uvm_config_db#(lc_ctrl_vif)::get(this, "", "lc_ctrl_vif", cfg.lc_ctrl_vif)) begin
       `uvm_fatal(`gfn, "failed to get lc_ctrl_vif from uvm_config_db")
     end
+
+    m_esc_wipe_secrets_agent = alert_esc_agent::type_id::create("m_esc_wipe_secrets_agent", this);
+    uvm_config_db#(alert_esc_agent_cfg)::set(this, "m_esc_wipe_secrets_agent", "cfg",
+                                             cfg.m_esc_wipe_secrets_agent_cfg);
+    m_esc_scrap_state_agent = alert_esc_agent::type_id::create("m_esc_scrap_state_agent", this);
+    uvm_config_db#(alert_esc_agent_cfg)::set(this, "m_esc_scrap_state_agent", "cfg",
+                                             cfg.m_esc_scrap_state_agent_cfg);
 
     m_otp_prog_pull_agent = push_pull_agent#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
         .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))::type_id::create("m_otp_prog_pull_agent", this);
@@ -42,11 +52,17 @@ class lc_ctrl_env extends cip_base_env #(
     super.connect_phase(phase);
     virtual_sequencer.otp_prog_pull_sequencer_h = m_otp_prog_pull_agent.sequencer;
     virtual_sequencer.otp_token_pull_sequencer_h = m_otp_token_pull_agent.sequencer;
+    virtual_sequencer.esc_wipe_secrets_sequencer_h = m_esc_wipe_secrets_agent.sequencer;
+    virtual_sequencer.esc_scrap_state_sequencer_h = m_esc_scrap_state_agent.sequencer;
     if (cfg.en_scb) begin
       m_otp_prog_pull_agent.monitor.analysis_port.connect(
           scoreboard.otp_prog_fifo.analysis_export);
       m_otp_token_pull_agent.monitor.analysis_port.connect(
           scoreboard.otp_token_fifo.analysis_export);
+      m_esc_wipe_secrets_agent.monitor.analysis_port.connect(
+          scoreboard.esc_wipe_secrets_fifo.analysis_export);
+      m_esc_scrap_state_agent.monitor.analysis_port.connect(
+          scoreboard.esc_scrap_state_fifo.analysis_export);
     end
   endfunction
 

@@ -28,6 +28,8 @@ module tb;
   pins_if #(LcPwrIfWidth) pwr_lc_if(pwr_lc);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   lc_ctrl_if lc_ctrl_if(.clk(clk), .rst_n(rst_n));
+  alert_esc_if esc_wipe_secrets_if(.clk(clk), .rst_n(rst_n));
+  alert_esc_if esc_scrap_state_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.HostDataWidth(OTP_PROG_HDATA_WIDTH), .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))
                otp_prog_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) otp_token_if(.clk(clk), .rst_n(rst_n));
@@ -55,10 +57,10 @@ module tb;
     .jtag_o                     (),
     .scanmode_i                 (1'b0     ),
 
-    .esc_wipe_secrets_tx_i      ({2'b01}),
-    .esc_wipe_secrets_rx_o      (),
-    .esc_scrap_state_tx_i       ({2'b01}),
-    .esc_scrap_state_rx_o       (),
+    .esc_wipe_secrets_tx_i      (esc_wipe_secrets_if.esc_tx),
+    .esc_wipe_secrets_rx_o      (esc_wipe_secrets_if.esc_rx),
+    .esc_scrap_state_tx_i       (esc_scrap_state_if.esc_tx),
+    .esc_scrap_state_rx_o       (esc_scrap_state_if.esc_rx),
 
     .pwr_lc_i                   (pwr_lc[LcPwrInitReq]),
     .pwr_lc_o                   (pwr_lc[LcPwrDoneRsp:LcPwrIdleRsp]),
@@ -104,6 +106,11 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(pwr_lc_vif)::set(null, "*.env", "pwr_lc_vif", pwr_lc_if);
     uvm_config_db#(virtual lc_ctrl_if)::set(null, "*.env", "lc_ctrl_vif", lc_ctrl_if);
+
+    uvm_config_db#(virtual alert_esc_if)::set(null, "*env.m_esc_wipe_secrets_agent*", "vif",
+                                              esc_wipe_secrets_if);
+    uvm_config_db#(virtual alert_esc_if)::set(null, "*env.m_esc_scrap_state_agent*", "vif",
+                                              esc_scrap_state_if);
 
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                                          .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)))::
