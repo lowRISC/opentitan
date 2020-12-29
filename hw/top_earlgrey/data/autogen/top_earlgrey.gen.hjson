@@ -150,6 +150,7 @@
         clocks:
         {
           clk_io_div4_timers: io_div4
+          clk_main_timers: main
         }
       }
       {
@@ -1005,17 +1006,20 @@
       clock_srcs:
       {
         clk_i: io_div4
+        clk_edn_i: main
       }
       clock_group: timers
       reset_connections:
       {
         rst_ni: rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
+        rst_edn_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40130000
       clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_timers
+        clk_edn_i: clkmgr_clocks.clk_main_timers
       }
       domain: "0"
       size: 0x4000
@@ -1188,12 +1192,11 @@
           index: -1
         }
         {
-          struct: otp_edn
+          struct: edn
           type: req_rsp
-          name: otp_edn
+          name: edn
           act: req
-          default: "'0"
-          package: otp_ctrl_pkg
+          package: edn_pkg
           inst_name: otp_ctrl
           index: -1
         }
@@ -8767,12 +8770,11 @@
         index: -1
       }
       {
-        struct: otp_edn
+        struct: edn
         type: req_rsp
-        name: otp_edn
+        name: edn
         act: req
-        default: "'0"
-        package: otp_ctrl_pkg
+        package: edn_pkg
         inst_name: otp_ctrl
         index: -1
       }

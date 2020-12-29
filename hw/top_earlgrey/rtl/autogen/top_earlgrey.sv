@@ -864,8 +864,8 @@ module top_earlgrey #(
       // Inter-module signals
       .otp_ast_pwr_seq_o(otp_ctrl_otp_ast_pwr_seq_o),
       .otp_ast_pwr_seq_h_i(otp_ctrl_otp_ast_pwr_seq_h_i),
-      .otp_edn_o(),
-      .otp_edn_i('0),
+      .edn_o(),
+      .edn_i(edn_pkg::EDN_RSP_DEFAULT),
       .pwr_otp_i(pwrmgr_pwr_otp_req),
       .pwr_otp_o(pwrmgr_pwr_otp_rsp),
       .lc_otp_program_i(lc_ctrl_lc_otp_program_req),
@@ -889,7 +889,9 @@ module top_earlgrey #(
       .tl_i(otp_ctrl_tl_req),
       .tl_o(otp_ctrl_tl_rsp),
       .clk_i (clkmgr_clocks.clk_io_div4_timers),
-      .rst_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
+      .clk_edn_i (clkmgr_clocks.clk_main_timers),
+      .rst_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+      .rst_edn_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
   lc_ctrl #(
