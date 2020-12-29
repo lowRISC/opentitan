@@ -876,6 +876,7 @@
           '''
       },
     },
+
     { window: {
         name: "rd_fifo",
         items: "1",
@@ -887,6 +888,21 @@
           Flash read FIFO.
 
           The FIFO is 16 entries of 4B flash words
+          '''
+      },
+    },
+
+    { window: {
+        name: "prim_flash_cfg",
+        items: "21",
+        validbits: "32",
+        byte-write: "true",
+        unusual: "false"
+        swaccess: "rw",
+        desc: '''
+          Configuration window for prim_flash.
+
+          This window contains proprietary registers that is not exposed in open-source.
           '''
       },
     },

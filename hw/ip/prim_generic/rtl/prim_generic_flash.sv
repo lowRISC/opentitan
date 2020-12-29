@@ -18,10 +18,11 @@ module prim_generic_flash #(
 ) (
   input clk_i,
   input rst_ni,
+  input tlul_pkg::tl_h2d_t tl_i,
+  output tlul_pkg::tl_d2h_t tl_o,
   input flash_phy_pkg::flash_phy_prim_flash_req_t [NumBanks-1:0] flash_req_i,
   output flash_phy_pkg::flash_phy_prim_flash_rsp_t [NumBanks-1:0] flash_rsp_o,
   output logic [flash_phy_pkg::ProgTypes-1:0] prog_type_avail_o,
-  input init_i,
   output init_busy_o,
   input tck_i,
   input tdi_i,
@@ -34,6 +35,13 @@ module prim_generic_flash #(
   input [TestModeWidth-1:0] flash_test_mode_a_i,
   input flash_test_voltage_h_i
 );
+
+  localparam int CfgRegs = 21;
+  localparam int CfgAddrWidth = $clog2(CfgRegs);
+
+  // convert this into a tlul write later
+  logic init;
+  assign init = 1'b1;
 
   logic [NumBanks-1:0] init_busy;
   assign init_busy_o = |init_busy;
@@ -73,7 +81,7 @@ module prim_generic_flash #(
       .ack_o(flash_rsp_o[bank].ack),
       .done_o(flash_rsp_o[bank].done),
       .rd_data_o(flash_rsp_o[bank].rdata),
-      .init_i,
+      .init_i(init),
       .init_busy_o(init_busy[bank]),
       .erase_suspend_done_o(flash_rsp_o[bank].erase_suspend_done),
       .flash_power_ready_h_i,
@@ -97,5 +105,56 @@ module prim_generic_flash #(
   assign unused_tdi = tdi_i;
   assign unused_tms = tms_i;
   assign tdo_o = '0;
+
+  // fake memory used to emulate configuration
+  logic cfg_req;
+  logic cfg_we;
+  logic [CfgAddrWidth-1:0] cfg_addr;
+  logic [31:0] cfg_wdata;
+  logic cfg_rvalid;
+  logic [31:0] cfg_rdata;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      cfg_rvalid <= 1'b0;
+    end else begin
+      cfg_rvalid <= cfg_req & !cfg_we;
+    end
+  end
+
+  tlul_adapter_sram #(
+    .SramAw(CfgAddrWidth),
+    .SramDw(32),
+    .Outstanding(2),
+    .ErrOnWrite(1)
+  ) u_cfg (
+    .clk_i,
+    .rst_ni,
+    .tl_i,
+    .tl_o,
+    .req_o(cfg_req),
+    .gnt_i(1'b1),
+    .we_o(cfg_we),
+    .addr_o(cfg_addr),
+    .wdata_o(cfg_wdata),
+    .wmask_o(),
+    .rdata_i(cfg_rdata),
+    .rvalid_i(cfg_rvalid),
+    .rerror_i('0)
+  );
+
+  prim_ram_1p #(
+    .Width(32),
+    .Depth(CfgRegs)
+  ) u_cfg_ram (
+    .clk_i,
+    .req_i(cfg_req),
+    .write_i(cfg_we),
+    .addr_i(cfg_addr),
+    .wdata_i(cfg_wdata),
+    .wmask_i({32{1'b1}}),
+    .rdata_o(cfg_rdata)
+  );
+
 
 endmodule // prim_generic_flash

@@ -298,6 +298,7 @@ package flash_ctrl_pkg;
     logic [KeyWidth-1:0]  addr_key;
     logic [KeyWidth-1:0]  data_key;
     logic                 rd_buf_en;
+    tlul_pkg::tl_h2d_t    tl_flash_c2p;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)
@@ -320,7 +321,8 @@ package flash_ctrl_pkg;
     region_cfgs:   '0,
     addr_key:      RndCnstAddrKeyDefault,
     data_key:      RndCnstDataKeyDefault,
-    rd_buf_en:     1'b0
+    rd_buf_en:     1'b0,
+    tl_flash_c2p:  '0
   };
 
   // memory to flash controller
@@ -333,6 +335,7 @@ package flash_ctrl_pkg;
     logic [BusWidth-1:0] rd_data;
     logic                init_busy;
     logic                erase_suspend_done;
+    tlul_pkg::tl_d2h_t   tl_flash_p2c;
   } flash_rsp_t;
 
   // default value of flash_rsp_t (for dangling ports)
@@ -344,7 +347,8 @@ package flash_ctrl_pkg;
     rd_err:             '0,
     rd_data:            '0,
     init_busy:          1'b0,
-    erase_suspend_done: 1'b1
+    erase_suspend_done: 1'b1,
+    tl_flash_p2c:       '0
   };
 
   // RMA entries
