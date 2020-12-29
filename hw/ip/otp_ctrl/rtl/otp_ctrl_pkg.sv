@@ -134,20 +134,6 @@ package otp_ctrl_pkg;
     logic read_lock;  // Whether the partition is read lockable (via digest)
   } part_info_t;
 
-  ////////////////////////
-  // Typedefs for CSRNG //
-  ////////////////////////
-
-  // Bidirectional entropy requests for scramble key derivation.
-  typedef struct packed {
-    logic        req;
-  } otp_edn_req_t;
-
-  typedef struct packed {
-    logic                    ack;
-    logic [EdnDataWidth-1:0] data;
-  } otp_edn_rsp_t;
-
   ///////////////////////////////
   // Typedefs for LC Interface //
   ///////////////////////////////

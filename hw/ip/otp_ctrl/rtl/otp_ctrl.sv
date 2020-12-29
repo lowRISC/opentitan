@@ -25,8 +25,14 @@ module otp_ctrl
   // Note that the hexdump needs to account for ECC.
   parameter MemInitFile = ""
 ) (
+  // OTP clock
   input                                              clk_i,
   input                                              rst_ni,
+  // EDN clock and interface
+  logic                                              clk_edn_i,
+  logic                                              rst_edn_ni,
+  output edn_pkg::edn_req_t                          edn_o,
+  input  edn_pkg::edn_rsp_t                          edn_i,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t                          tl_i,
   output tlul_pkg::tl_d2h_t                          tl_o,
@@ -39,9 +45,6 @@ module otp_ctrl
   // Macro-specific power sequencing signals to/from AST.
   output otp_ast_req_t                               otp_ast_pwr_seq_o,
   input  otp_ast_rsp_t                               otp_ast_pwr_seq_h_i,
-  // TODO: Refine and connect EDN interface
-  output otp_edn_req_t                               otp_edn_o,
-  input  otp_edn_rsp_t                               otp_edn_i,
   // Power manager interface (inputs are synced to OTP clock domain)
   input  pwrmgr_pkg::pwr_otp_req_t                   pwr_otp_i,
   output pwrmgr_pkg::pwr_otp_rsp_t                   pwr_otp_o,
@@ -465,6 +468,7 @@ module otp_ctrl
   logic [NumPart-1:0] integ_chk_req, integ_chk_ack;
   logic [NumPart-1:0] cnsty_chk_req, cnsty_chk_ack;
   logic lfsr_edn_req, lfsr_edn_ack;
+  logic [EdnDataWidth-1:0] edn_data;
 
   assign integ_chk_trig   = reg2hw.check_trigger.integrity.q &
                             reg2hw.check_trigger.integrity.qe;
@@ -479,7 +483,7 @@ module otp_ctrl
     .rst_ni,
     .edn_req_o          ( lfsr_edn_req              ),
     .edn_ack_i          ( lfsr_edn_ack              ),
-    .edn_data_i         ( otp_edn_i.data            ),
+    .edn_data_i         ( edn_data                  ),
     // We can enable the timer once OTP has initialized.
     // Note that this is only the initial release that gets
     // the timer FSM into an operational state.
@@ -502,12 +506,13 @@ module otp_ctrl
     .fsm_err_o          ( lfsr_fsm_err              )
   );
 
-  /////////////////////
-  // EDN Arbitration //
-  /////////////////////
+  ///////////////////////////////////////
+  // EDN Arbitration, Request and Sync //
+  ///////////////////////////////////////
 
   // Both the key derivation and LFSR reseeding are low bandwidth,
   // hence they can share the same EDN interface.
+  logic edn_req, edn_ack;
   logic key_edn_req, key_edn_ack;
   prim_arbiter_tree #(
     .N(2),
@@ -519,9 +524,25 @@ module otp_ctrl
     .data_i  ( '{default: '0}              ),
     .gnt_o   ( {lfsr_edn_ack, key_edn_ack} ),
     .idx_o   (                             ), // unused
-    .valid_o ( otp_edn_o.req               ),
+    .valid_o ( edn_req                     ),
     .data_o  (                             ), // unused
-    .ready_i ( otp_edn_i.ack               )
+    .ready_i ( edn_ack                     )
+  );
+
+  // This synchronizes the data coming from EDN and stacks the
+  // 32bit EDN words to achieve an internal entropy width of 64bit.
+  prim_edn_req #(
+    .OutWidth(EdnDataWidth)
+  ) u_prim_edn_req (
+    .clk_i,
+    .rst_ni,
+    .req_i      ( edn_req  ),
+    .ack_o      ( edn_ack  ),
+    .data_o     ( edn_data ),
+    .clk_edn_i,
+    .rst_edn_ni,
+    .edn_o,
+    .edn_i
   );
 
   ///////////////////////////////
@@ -856,7 +877,7 @@ module otp_ctrl
     .sram_data_key_seed_i    ( sram_data_key_seed      ),
     .edn_req_o               ( key_edn_req             ),
     .edn_ack_i               ( key_edn_ack             ),
-    .edn_data_i              ( otp_edn_i.data          ),
+    .edn_data_i              ( edn_data                ),
     .lc_otp_token_i ,
     .lc_otp_token_o ,
     .flash_otp_key_i,

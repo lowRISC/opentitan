@@ -10,6 +10,13 @@
 
 { name: "otp_ctrl",
   clock_primary: "clk_i",
+  other_clock_list: [
+    "clk_edn_i"
+  ],
+  reset_primary: "rst_ni",
+  other_reset_list: [
+    "rst_edn_ni"
+  ]
   bus_device: "tlul",
   bus_host: "none",
 
@@ -475,12 +482,11 @@
       package: "otp_ctrl_pkg"
     }
     // EDN interface
-    { struct:  "otp_edn"
+    { struct:  "edn"
       type:    "req_rsp"
-      name:    "otp_edn"
+      name:    "edn"
       act:     "req"
-      default: "'0"
-      package: "otp_ctrl_pkg"
+      package: "edn_pkg"
     }
     // Power manager init command
     { struct:  "pwr_otp"
