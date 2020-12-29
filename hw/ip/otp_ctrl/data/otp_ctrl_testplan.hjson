@@ -117,7 +117,7 @@
             - If error is unrecoverable, ensure that OTP entered terminal state
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_macro_errs"]
     }
     {
       name: otp_ctrl_errors

@@ -26,6 +26,7 @@ filesets:
       - seq_lib/otp_ctrl_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_lc_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_dai_lock_vseq.sv: {is_include_file: true}
+      - seq_lib/otp_ctrl_macro_errs_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

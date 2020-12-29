@@ -67,7 +67,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     forever begin
       @(posedge cfg.pwr_otp_vif.pins[OtpPwrInitReq] && cfg.en_scb) begin
         if (cfg.backdoor_clear_mem) begin
-          bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, 0);
+          bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
           otp_a   = '{default:0};
           digests = '{default:0};
           sw_read_lock = 0;
@@ -77,12 +77,12 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             otp_a[i] = ((i - SECRET0_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
                                                         data[TL_DW-1:0];
           end
-          data = descramble_data(0, 1);
+          data = descramble_data(0, Secret1Idx);
           for (int i = SECRET1_START_ADDR; i <= SECRET1_END_ADDR; i++) begin
             otp_a[i] = ((i - SECRET1_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
                                                         data[TL_DW-1:0];
           end
-          data = descramble_data(0, 2);
+          data = descramble_data(0, Secret2Idx);
           for (int i = SECRET2_START_ADDR; i <= SECRET2_END_ADDR; i++) begin
             otp_a[i] = ((i - SECRET2_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
                                                         data[TL_DW-1:0];
@@ -263,9 +263,21 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                 // write OTP memory
                 end else begin
                   bit[TL_AW-1:0] normalized_dai_addr = get_normalized_dai_addr();
-                  otp_a[normalized_dai_addr] = `gmv(ral.direct_access_wdata_0);
-                  if (is_secret(dai_addr)) begin
-                    otp_a[normalized_dai_addr + 1] = `gmv(ral.direct_access_wdata_1);
+                  if (!is_secret(dai_addr)) begin
+                    if (otp_a[normalized_dai_addr] == 0) begin
+                      otp_a[normalized_dai_addr] = `gmv(ral.direct_access_wdata_0);
+                    end else begin
+                      predict_status_err(1);
+                    end
+                  end else begin
+                    bit [SCRAMBLE_DATA_SIZE-1:0] secret_data = {otp_a[normalized_dai_addr + 1],
+                                                                otp_a[normalized_dai_addr]};
+                    if (scramble_data(secret_data, part_idx) == 0) begin
+                      otp_a[normalized_dai_addr] = `gmv(ral.direct_access_wdata_0);
+                      otp_a[normalized_dai_addr + 1] = `gmv(ral.direct_access_wdata_1);
+                    end else begin
+                      predict_status_err(1);
+                    end
                   end
                   // TODO: LC partition, raise status error
                 end
@@ -402,7 +414,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       bit [TL_DW-1:0] scrambled_mem_q[$];
       for (int i = 0; i < array_size/2; i++) begin
         bit [SCRAMBLE_DATA_SIZE-1:0] scrambled_data;
-        scrambled_data = scramble_data({mem_q[i*2+1], mem_q[i*2]}, part_idx - Secret0Idx);
+        scrambled_data = scramble_data({mem_q[i*2+1], mem_q[i*2]}, part_idx);
         scrambled_mem_q.push_back(scrambled_data[TL_DW-1:0]);
         scrambled_mem_q.push_back(scrambled_data[SCRAMBLE_DATA_SIZE-1:TL_DW]);
       end
@@ -438,7 +450,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // when secret data write into otp_array, it will be scrambled
   function bit [SCRAMBLE_DATA_SIZE-1:0] scramble_data(bit [SCRAMBLE_DATA_SIZE-1:0] input_data,
-                                                      int secret_idx);
+                                                      int part_idx);
+    int secret_idx = part_idx - Secret0Idx;
     bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data,
                                                    RndCnstKeyDefault[secret_idx],
@@ -449,7 +462,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // when secret data read out of otp_array, it will be descrambled
   function bit [SCRAMBLE_DATA_SIZE-1:0] descramble_data(bit [SCRAMBLE_DATA_SIZE-1:0] input_data,
-                                                        int secret_idx);
+                                                        int part_idx);
+    int secret_idx = part_idx - Secret0Idx;
     bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
     crypto_dpi_present_pkg::sv_dpi_present_decrypt(input_data,
                                                    RndCnstKeyDefault[secret_idx],

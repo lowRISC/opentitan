@@ -12,6 +12,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   `uvm_object_new
 
   bit do_lc_trans;
+  bit collect_used_addr = 1;
 
   rand bit                           access_locked_parts;
   rand bit [TL_AW-1:0]               dai_addr;
@@ -92,7 +93,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         // OTP write via DAI
         if ($urandom_range(0, 1)) begin
           dai_wr(dai_addr, wdata0, wdata1);
-          used_dai_addr_q.push_back(dai_addr);
+          if (collect_used_addr) used_dai_addr_q.push_back(dai_addr);
         end
 
         if ($urandom_range(0, 1)) begin
