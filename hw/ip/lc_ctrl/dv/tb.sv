@@ -10,6 +10,7 @@ module tb;
   import lc_ctrl_test_pkg::*;
   import lc_ctrl_pkg::*;
   import otp_ctrl_pkg::*;
+  import jtag_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -23,13 +24,14 @@ module tb;
   wire otp_ctrl_pkg::lc_otp_token_rsp_t   otp_token_rsp;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
-  pins_if #(1) devmode_if(devmode);
-  pins_if #(LcPwrIfWidth) pwr_lc_if(pwr_lc);
-  tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  lc_ctrl_if lc_ctrl_if(.clk(clk), .rst_n(rst_n));
+  clk_rst_if   clk_rst_if(.clk(clk), .rst_n(rst_n));
+  pins_if      #(1) devmode_if(devmode);
+  pins_if      #(LcPwrIfWidth) pwr_lc_if(pwr_lc);
+  tl_if        tl_if(.clk(clk), .rst_n(rst_n));
+  lc_ctrl_if   lc_ctrl_if(.clk(clk), .rst_n(rst_n));
   alert_esc_if esc_wipe_secrets_if(.clk(clk), .rst_n(rst_n));
   alert_esc_if esc_scrap_state_if(.clk(clk), .rst_n(rst_n));
+  jtag_if      jtag_if();
   push_pull_if #(.HostDataWidth(OTP_PROG_HDATA_WIDTH), .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))
                otp_prog_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) otp_token_if(.clk(clk), .rst_n(rst_n));
@@ -53,8 +55,8 @@ module tb;
     .alert_rx_i                 (alert_rx ),
     .alert_tx_o                 (alert_tx ),
 
-    .jtag_i                     (4'b0),
-    .jtag_o                     (),
+    .jtag_i                     ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
+    .jtag_o                     ({jtag_if.tdo, lc_ctrl_if.tdo_oe}),
     .scanmode_i                 (1'b0     ),
 
     .esc_wipe_secrets_tx_i      (esc_wipe_secrets_if.esc_tx),
@@ -106,6 +108,7 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(pwr_lc_vif)::set(null, "*.env", "pwr_lc_vif", pwr_lc_if);
     uvm_config_db#(virtual lc_ctrl_if)::set(null, "*.env", "lc_ctrl_vif", lc_ctrl_if);
+    uvm_config_db#(virtual jtag_if)::set(null, "*env.m_jtag_agent*", "vif", jtag_if);
 
     uvm_config_db#(virtual alert_esc_if)::set(null, "*env.m_esc_wipe_secrets_agent*", "vif",
                                               esc_wipe_secrets_if);

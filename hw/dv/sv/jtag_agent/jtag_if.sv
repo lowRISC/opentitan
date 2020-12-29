@@ -11,7 +11,6 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
   wire  tms;
   wire  tdi;
   wire  tdo;
-  wire  tdo_oe;
 
   // generate local tck
   bit   tck_en;
@@ -21,7 +20,6 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
     output  tms;
     output  tdi;
     input   tdo;
-    input   tdo_oe;
   endclocking
   modport host_mp(clocking host_cb, output trst_n);
 
@@ -29,7 +27,6 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
     input  tms;
     input  tdi;
     output tdo;
-    output tdo_oe;
   endclocking
   modport device_mp(clocking device_cb, input trst_n);
 
@@ -38,8 +35,7 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
     input trst_n,
     input tms,
     input tdi,
-    input tdo,
-    input tdo_oe
+    input tdo
   );
 
   // debug signals
@@ -60,6 +56,7 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
   // Generate the tck, with UartDefaultClkPeriodNs period as default
   initial begin
     tck = 1'b1;
+    do_trst_n($urandom_range(1, 10));
     forever begin
       if (tck_en) begin
         #(tck_period_ns / 2);
