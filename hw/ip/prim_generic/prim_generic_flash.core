@@ -8,6 +8,7 @@ description: "prim"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:ip:tlul
       - lowrisc:prim:ram_1p
       - lowrisc:ip:flash_ctrl_pkg
     files:

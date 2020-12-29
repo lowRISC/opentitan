@@ -243,11 +243,11 @@ module flash_phy import flash_ctrl_pkg::*; (
   ) u_flash (
     .clk_i,
     .rst_ni,
+    .tl_i(flash_ctrl_i.tl_flash_c2p),
+    .tl_o(flash_ctrl_o.tl_flash_p2c),
     .flash_req_i(prim_flash_req),
     .flash_rsp_o(prim_flash_rsp),
     .prog_type_avail_o(prog_type_avail),
-    // initialize whenever power is ready
-    .init_i(1'b1),
     .init_busy_o(init_busy),
     .tck_i(tck_i & (lc_dft_en[FlashLcTckSel] == lc_ctrl_pkg::On)),
     .tdi_i(tdi_i & (lc_dft_en[FlashLcTdiSel] == lc_ctrl_pkg::On)),
