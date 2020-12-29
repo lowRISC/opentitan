@@ -27,7 +27,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     end
     else begin
       `DEVICE_CB.tdo <= 1'b0;
-      `DEVICE_CB.tdo_oe <= 1'b0;
     end
   endtask
 

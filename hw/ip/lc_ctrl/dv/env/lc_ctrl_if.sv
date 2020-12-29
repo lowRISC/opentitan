@@ -9,6 +9,7 @@ interface lc_ctrl_if(input clk, input rst_n);
   import otp_ctrl_pkg::*;
   import otp_ctrl_part_pkg::*;
 
+  logic tdo_oe; // TODO: add assertions
   otp_ctrl_pkg::otp_lc_data_t     otp_i;
   otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg_i;
 

@@ -10,6 +10,7 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
   push_pull_agent_cfg#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) m_otp_token_pull_agent_cfg;
   alert_esc_agent_cfg m_esc_wipe_secrets_agent_cfg;
   alert_esc_agent_cfg m_esc_scrap_state_agent_cfg;
+  jtag_agent_cfg      m_jtag_agent_cfg;
 
   // ext interfaces
   pwr_lc_vif  pwr_lc_vif;
@@ -45,6 +46,9 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
         "m_esc_scrap_state_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_esc_scrap_state_agent_cfg)
     m_esc_scrap_state_agent_cfg.is_alert = 0;
+
+    m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
+    `DV_CHECK_RANDOMIZE_FATAL(m_jtag_agent_cfg)
   endfunction
 
 endclass
