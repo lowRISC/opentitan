@@ -260,6 +260,7 @@ module clkmgr import clkmgr_pkg::*; (
   assign clocks_o.clk_io_div4_secure = clk_io_div4_root;
   assign clocks_o.clk_main_secure = clk_main_root;
   assign clocks_o.clk_io_div4_timers = clk_io_div4_root;
+  assign clocks_o.clk_main_timers = clk_main_root;
   assign clocks_o.clk_proc_main = clk_main_root;
 
   ////////////////////////////////////////////////////

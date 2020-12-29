@@ -36,6 +36,7 @@ package clkmgr_pkg;
   logic clk_io_div4_secure;
   logic clk_main_secure;
   logic clk_io_div4_timers;
+  logic clk_main_timers;
   logic clk_proc_main;
   logic clk_io_div4_peri;
   logic clk_usb_peri;
