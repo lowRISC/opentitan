@@ -24,11 +24,9 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   // LC partition does not allow DAI access
   constraint partition_index_c {
     part_idx inside {[CreatorSwCfgIdx:Secret2Idx]};
-    part_idx != HwCfgIdx;
   }
 
-  constraint dai_addr_c {
-    dai_addr inside {used_dai_addr_q} == 0;
+  constraint dai_wr_legal_addr_c {
     if (part_idx == CreatorSwCfgIdx) dai_addr inside `PART_ADDR_RANGE(CreatorSwCfgIdx);
     if (part_idx == OwnerSwCfgIdx)   dai_addr inside `PART_ADDR_RANGE(OwnerSwCfgIdx);
     if (part_idx == HwCfgIdx)        dai_addr inside `PART_ADDR_RANGE(HwCfgIdx);
@@ -36,7 +34,10 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
     if (part_idx == Secret1Idx)      dai_addr inside `PART_ADDR_RANGE(Secret1Idx);
     if (part_idx == Secret2Idx)      dai_addr inside `PART_ADDR_RANGE(Secret2Idx);
     if (part_idx == LifeCycleIdx)    dai_addr inside `PART_ADDR_RANGE(LifeCycleIdx);
+  }
 
+  constraint dai_wr_blank_addr_c {
+    dai_addr inside {used_dai_addr_q} == 0;
     dai_addr % 4 == 0;
     if (part_idx inside {[Secret0Idx:Secret2Idx]}) dai_addr % 8 == 0;
   }
