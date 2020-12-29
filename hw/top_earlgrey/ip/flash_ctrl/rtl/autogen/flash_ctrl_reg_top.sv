@@ -15,8 +15,8 @@ module flash_ctrl_reg_top (
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o  [2],
-  input  tlul_pkg::tl_d2h_t tl_win_i  [2],
+  output tlul_pkg::tl_h2d_t tl_win_o  [3],
+  input  tlul_pkg::tl_d2h_t tl_win_i  [3],
 
   // To HW
   output flash_ctrl_reg_pkg::flash_ctrl_reg2hw_t reg2hw, // Write
@@ -48,31 +48,33 @@ module flash_ctrl_reg_top (
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
-  tlul_pkg::tl_h2d_t tl_socket_h2d [3];
-  tlul_pkg::tl_d2h_t tl_socket_d2h [3];
+  tlul_pkg::tl_h2d_t tl_socket_h2d [4];
+  tlul_pkg::tl_d2h_t tl_socket_d2h [4];
 
-  logic [1:0] reg_steer;
+  logic [2:0] reg_steer;
 
   // socket_1n connection
-  assign tl_reg_h2d = tl_socket_h2d[2];
-  assign tl_socket_d2h[2] = tl_reg_d2h;
+  assign tl_reg_h2d = tl_socket_h2d[3];
+  assign tl_socket_d2h[3] = tl_reg_d2h;
 
   assign tl_win_o[0] = tl_socket_h2d[0];
   assign tl_socket_d2h[0] = tl_win_i[0];
   assign tl_win_o[1] = tl_socket_h2d[1];
   assign tl_socket_d2h[1] = tl_win_i[1];
+  assign tl_win_o[2] = tl_socket_h2d[2];
+  assign tl_socket_d2h[2] = tl_win_i[2];
 
   // Create Socket_1n
   tlul_socket_1n #(
-    .N          (3),
+    .N          (4),
     .HReqPass   (1'b1),
     .HRspPass   (1'b1),
-    .DReqPass   ({3{1'b1}}),
-    .DRspPass   ({3{1'b1}}),
+    .DReqPass   ({4{1'b1}}),
+    .DRspPass   ({4{1'b1}}),
     .HReqDepth  (4'h0),
     .HRspDepth  (4'h0),
-    .DReqDepth  ({3{4'h0}}),
-    .DRspDepth  ({3{4'h0}})
+    .DReqDepth  ({4{4'h0}}),
+    .DRspDepth  ({4{4'h0}})
   ) u_socket (
     .clk_i,
     .rst_ni,
@@ -85,7 +87,7 @@ module flash_ctrl_reg_top (
 
   // Create steering logic
   always_comb begin
-    reg_steer = 2;       // Default set to register
+    reg_steer = 3;       // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
     if (tl_i.a_address[AW-1:0] >= 340 && tl_i.a_address[AW-1:0] < 344) begin
@@ -93,6 +95,9 @@ module flash_ctrl_reg_top (
     end
     if (tl_i.a_address[AW-1:0] >= 344 && tl_i.a_address[AW-1:0] < 348) begin
       reg_steer = 1;
+    end
+    if (tl_i.a_address[AW-1:0] >= 384 && tl_i.a_address[AW-1:0] < 468) begin
+      reg_steer = 2;
     end
   end
 

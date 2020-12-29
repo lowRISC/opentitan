@@ -578,6 +578,8 @@ package flash_ctrl_reg_pkg;
   parameter logic [8:0] FLASH_CTRL_PROG_FIFO_SIZE   = 9'h 4;
   parameter logic [8:0] FLASH_CTRL_RD_FIFO_OFFSET = 9'h 158;
   parameter logic [8:0] FLASH_CTRL_RD_FIFO_SIZE   = 9'h 4;
+  parameter logic [8:0] FLASH_CTRL_PRIM_FLASH_CFG_OFFSET = 9'h 180;
+  parameter logic [8:0] FLASH_CTRL_PRIM_FLASH_CFG_SIZE   = 9'h 54;
 
   // Register Index
   typedef enum int {
