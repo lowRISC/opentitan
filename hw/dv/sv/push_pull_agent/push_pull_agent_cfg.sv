@@ -17,6 +17,11 @@ class push_pull_agent_cfg #(parameter int HostDataWidth = 32,
   // transferring data on both sides of the handshake.
   bit in_bidirectional_mode = 1'b0;
 
+  // A knob to keep the data until next req, rather than driving unknown after handshake
+  // completes. See #4465 for the detailed discussion
+  bit hold_h_data_until_next_req = 0;
+  bit hold_d_data_until_next_req = 0;
+
   // Device-side delay range for both Push/Pull protocols.
   rand int unsigned device_delay_min;
   rand int unsigned device_delay_max;
