@@ -75,3 +75,39 @@ platform(
     },
     parents = [":cortex_m"],
 )
+
+platform(
+    name = "stm32f2xx",
+    parents = [":cortex_m3"],
+    visibility = ['//visibility:public'],
+)
+
+platform(
+    name = "stm32f3xx",
+    parents = [":cortex_m4_fpu"],
+    visibility = ['//visibility:public'],
+)
+
+platform(
+    name = "stm32f4xx",
+    parents = [":cortex_m4"],
+    visibility = ['//visibility:public'],
+)
+
+platform(
+    name = "stm32f7xx",
+    parents = [":cortex_m7_fpu"],
+    visibility = ['//visibility:public'],
+)
+
+platform(
+    name = "stm32g4xx",
+    parents = [":cortex_m4_fpu"],
+    visibility = ['//visibility:public'],
+)
+
+platform(
+    name = "stm32h7xx",
+    parents = [":cortex_m7_fpu"],
+    visibility = ['//visibility:public'],
+)
