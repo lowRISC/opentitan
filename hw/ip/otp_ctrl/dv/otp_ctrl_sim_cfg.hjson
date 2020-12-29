@@ -70,6 +70,11 @@
       uvm_test_seq: otp_ctrl_dai_lock_vseq
     }
 
+    {
+      name: otp_ctrl_macro_errs
+      uvm_test_seq: otp_ctrl_macro_errs_vseq
+    }
+
   ]
 
   // List of regressions.
