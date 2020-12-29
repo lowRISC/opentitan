@@ -226,8 +226,8 @@
           name: "sense",
           desc: '''
                 Reflects the state of the sense pin.
-		1 indicates that the host is providing VBUS.
-		Note that this bit always shows the state of the actual pin and does not take account of the override control.
+                1 indicates that the host is providing VBUS.
+                Note that this bit always shows the state of the actual pin and does not take account of the override control.
                 '''
         }
         {
@@ -502,7 +502,7 @@
     }
     { name: "phy_pins_sense",
       desc: '''
-            USB PHY pins sense. 
+            USB PHY pins sense.
             This register can be used to read out the state of the USB device inputs and outputs from software.
             This is designed to be used for debugging purposes or during chip testing.
             '''

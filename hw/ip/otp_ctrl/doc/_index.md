@@ -29,14 +29,14 @@ Together, the OTP controller and IP provide secure one-time-programming function
 ## Features
 
 - Multiple logical partitions of the underlying OTP IP
-	- Each partition is lockable and integrity checked
-	- Integrity digests are stored alongside each logical bank
+  - Each partition is lockable and integrity checked
+  - Integrity digests are stored alongside each logical bank
 - Periodic / persistent checks of OTP values
-	- Periodic checks of shadowed content vs digests
-	- Periodic checks of OTP stored content and shadowed content
-	- Persistent checks for immediate errors
+  - Periodic checks of shadowed content vs digests
+  - Periodic checks of OTP stored content and shadowed content
+  - Persistent checks for immediate errors
 - Separate life cycle partition and interface to life cycle controller
-	- Supports life cycle functions, but cannot be integrity locked
+  - Supports life cycle functions, but cannot be integrity locked
 - Lightweight scrambling of secret OTP partition using a global netlist constant
 - Lightweight ephemeral key derivation function for RAM scrambling mechanisms
 - Lightweight key derivation function for FLASH scrambling mechanism

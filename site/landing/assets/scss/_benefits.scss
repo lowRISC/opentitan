@@ -91,14 +91,14 @@
 }
 
 @keyframes rot {
-	from {
-		transform: rotate(0deg)
-		           translate(-3em)
-		           rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg)
-		           translate(-3em)
-		           rotate(-360deg);
-	}
+  from {
+    transform: rotate(0deg)
+               translate(-3em)
+               rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg)
+               translate(-3em)
+               rotate(-360deg);
+  }
 }

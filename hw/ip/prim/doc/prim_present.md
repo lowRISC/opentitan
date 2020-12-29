@@ -72,9 +72,9 @@ round_keys = key_derivation(key_i, idx_i);
 state = data_i;
 
 for (int i=0; i < NumRounds; i++) {
-	state = state ^ round_keys[i];
-	state = sbox4_layer(state);
-	state = perm_layer(state);
+  state = state ^ round_keys[i];
+  state = sbox4_layer(state);
+  state = perm_layer(state);
 }
 
 data_o = state ^ round_keys[NumRounds-1];

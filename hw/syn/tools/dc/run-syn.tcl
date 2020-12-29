@@ -31,9 +31,9 @@ source ${foundry_root}/syn/dc/setup.tcl
 
 # if in interactive mode, do not exit at the end of the script
 if { [info exists ::env(INTERACTIVE)] } {
-    set RUN_INTERACTIVE 1
+  set RUN_INTERACTIVE 1
 } else {
-	set RUN_INTERACTIVE 0
+  set RUN_INTERACTIVE 0
 }
 
 # path to directory containing the source list file
@@ -70,12 +70,9 @@ saif_map -start
 ###The following variable helps verification when there are differences between DC and FM while inferring logical hierarchies
 set_app_var hdlin_enable_hier_map true
 
-
-
 #######################
 ##  DESIGN SOURCES  ###
 #######################
-
 
 # this PRIM_DEFAULT_IMPL selects the appropriate technology by defining
 # PRIM_DEFAULT_IMPL=prim_pkg::Impl<tech identifier>
@@ -191,5 +188,5 @@ saif_map -type ptpx -write_map ${RESULTDIR}/${DUT}.mapped.SAIF.namemap
 # write_file -format verilog -hierarchy -output "${VLOGDIR}/flat.v"
 
 if { $RUN_INTERACTIVE == 0 } {
-    exit
+  exit
 }
