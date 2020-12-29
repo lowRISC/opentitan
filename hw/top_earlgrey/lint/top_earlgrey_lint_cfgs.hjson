@@ -49,6 +49,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/edn/lint/{tool}"
              },
+             {    name: dcd
+                  fusesoc_core: lowrisc:ip:dcd
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/dcd/lint/{tool}"
+             },
              {    name: flash_ctrl
                   fusesoc_core: lowrisc:ip:flash_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -147,6 +152,10 @@
                       value: "top"
                     }
                   ]
+             {    name: rbox
+                  fusesoc_core: lowrisc:ip:rbox
+                  import_cfgs: ["{proj_root}/hw/lint/data/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rbox/lint/{tool}"
              },
              {    name: rv_core_ibex
                   fusesoc_core: lowrisc:ip:rv_core_ibex
