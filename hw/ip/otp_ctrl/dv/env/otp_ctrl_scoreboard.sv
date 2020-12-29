@@ -232,9 +232,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         // FIXME
       end
       "direct_access_cmd": begin
-        if (addr_phase_write && ral.direct_access_regwen.get_mirrored_value()) begin
+        if (addr_phase_write && `gmv(ral.direct_access_regwen)) begin
           // here only normalize to 2 lsb, if is secret, will be reduced further
-          bit [TL_AW-1:0] dai_addr = ral.direct_access_address.get_mirrored_value() >> 2 << 2;
+          bit [TL_AW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int part_idx = get_part_index(dai_addr);
           case (item.a_data)
             DaiDigest: cal_digest_val(part_idx);
@@ -258,15 +258,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                 void'(ral.status.predict(OtpDaiIdle));
                 // write digest
                 if (dai_addr inside {CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset}) begin
-                  digests[part_idx] = {ral.direct_access_wdata_1.get_mirrored_value(),
-                                       ral.direct_access_wdata_0.get_mirrored_value()};
+                  digests[part_idx] = {`gmv(ral.direct_access_wdata_1),
+                                       `gmv(ral.direct_access_wdata_0)};
                 // write OTP memory
                 end else begin
                   bit[TL_AW-1:0] normalized_dai_addr = get_normalized_dai_addr();
-                  otp_a[normalized_dai_addr] = ral.direct_access_wdata_0.get_mirrored_value();
+                  otp_a[normalized_dai_addr] = `gmv(ral.direct_access_wdata_0);
                   if (is_secret(dai_addr)) begin
-                    otp_a[normalized_dai_addr + 1] = ral.direct_access_wdata_1.
-                                                     get_mirrored_value();
+                    otp_a[normalized_dai_addr + 1] = `gmv(ral.direct_access_wdata_1);
                   end
                   // TODO: LC partition, raise status error
                 end
@@ -280,7 +279,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "direct_access_rdata_0", "direct_access_rdata_1": begin
         // TODO: need to check last cmd is READ
-        if (data_phase_read && ral.direct_access_regwen.get_mirrored_value()) begin
+        if (data_phase_read && `gmv(ral.direct_access_regwen)) begin
           bit [TL_AW-1:0] dai_addr = get_normalized_dai_addr();
           if (csr.get_name() == "direct_access_rdata_0") begin
             bit [TL_DW-1:0] exp_val = dai_read_valid ? otp_a[dai_addr] : 0;
@@ -288,7 +287,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                          $sformatf("DAI read mismatch at addr %0h", dai_addr))
             do_read_check = 0;
           end else begin
-            if (is_secret(ral.direct_access_address.get_mirrored_value())) begin
+            if (is_secret(`gmv(ral.direct_access_address))) begin
               bit [TL_DW-1:0] exp_val = dai_read_valid ? otp_a[dai_addr + 1] : 0;
               `DV_CHECK_EQ(item.d_data, exp_val,
                            $sformatf("DAI read mismatch at addr %0h", dai_addr + 1))
@@ -491,7 +490,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   function bit [TL_AW-1:0] get_normalized_dai_addr();
-    bit [TL_DW-1:0] dai_addr = ral.direct_access_address.get_mirrored_value();
+    bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address);
     get_normalized_dai_addr = is_secret(dai_addr) ? dai_addr >> 3 << 1 : dai_addr >> 2;
   endfunction
 
