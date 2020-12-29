@@ -38,12 +38,14 @@ tck_i                   | input  | jtag tck
 tdi_i                   | input  | jtag tdi
 tms_i                   | input  | jtag tms
 tdo_o                   | output | jtag tdo
+tl_i                    | input  | tlul input bus for configuration
+tl_o                    | output | tlul output bus for configuration
 scanmode_i              | input  | dft scanmode input
 scan_rst_n_i            | input  | dft scanmode reset
-flash_power_ready_h_io  | inout  | flash power is ready (high voltage connection)
-flash_power_down_h_io   | inout  | flash wrapper is powering down (high voltage connection)
-flash_test_mode_a_io    | inout  | flash test mode values (analog connection)
-flash_test_voltage_h_io | inout  | flash test mode voltage (high voltage connection)
+flash_power_ready_h_i   | input  | flash power is ready (high voltage connection)
+flash_power_down_h_i    | input  | flash wrapper is powering down (high voltage connection)
+flash_test_mode_a_i     | input  | flash test mode values (analog connection)
+flash_test_voltage_h_i  | input  | flash test mode voltage (high voltage connection)
 
 
 ### Flash Request/Response Signals
