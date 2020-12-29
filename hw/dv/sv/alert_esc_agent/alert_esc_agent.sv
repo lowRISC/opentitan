@@ -52,7 +52,7 @@ class alert_esc_agent extends dv_base_agent#(
       `uvm_fatal(`gfn, "failed to get alert_esc_if handle from uvm_config_db")
     end
     // get esc_en signal for esc_monitor
-    if (cfg.is_active && !cfg.is_alert) begin
+    if (cfg.is_active && !cfg.is_alert && cfg.if_mode == Device) begin
       if (!uvm_config_db#(virtual alert_esc_probe_if)::get(this, "", "probe_vif", cfg.probe_vif))
           begin
         `uvm_fatal(`gfn, "failed to get probe_vif handle from uvm_config_db")
