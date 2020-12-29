@@ -21,8 +21,8 @@
 
   /*
     Check wrapping and incrementing on the grd side. Set x3 to 32+2 and load
-	with increment from address 0x40. We should get data from 0x40 in w2 and x3
-	should equal 3
+    with increment from address 0x40. We should get data from 0x40 in w2 and x3
+    should equal 3
   */
   addi      x3, x0, 34
   bn.lid    x3++, 64(x0)

@@ -43,11 +43,11 @@ aliases:
 4. This website is intended only to give you information about us and our
    products and services. We do not intend, through this website:
 
-	1. make you any promises;
+  1. make you any promises;
 
-	1. make any contractual offer to you;
+  1. make any contractual offer to you;
 
-	1. supply any products or services to you.
+  1. supply any products or services to you.
 
 5. You have our permission to browse this website and in so doing make use of
    its content through a web browser. Unless we explicitly say otherwise, you
@@ -118,14 +118,14 @@ aliases:
      duties under data protection law), we have no liability to you connected
      with your use of our website. For example, we are not liable for
 
-	1. any missing or inaccurate content;
+  1. any missing or inaccurate content;
 
-	1. any unavailability of the website;
+  1. any unavailability of the website;
 
   1. any incompatibility of this website with any particular browser or browser
      plugin; or
 
-	1. economic loss or other loss of turnover, profit, business or goodwill.
+  1. economic loss or other loss of turnover, profit, business or goodwill.
 
 1. These terms are to be interpreted in accordance with English law and the
    courts of England shall have jurisdiction to settle any disputes arising
