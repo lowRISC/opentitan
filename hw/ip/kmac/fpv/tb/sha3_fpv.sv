@@ -6,7 +6,7 @@ module sha3_fpv
   import sha3_pkg::*;
 #(
   // Enable Masked Keccak if 1
-  parameter  int EnMasking = 0,
+  parameter  bit EnMasking = 0,
   localparam int Share = (EnMasking) ? 2 : 1
 )(
   input clk_i,

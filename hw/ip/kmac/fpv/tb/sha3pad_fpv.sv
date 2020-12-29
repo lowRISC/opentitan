@@ -6,7 +6,7 @@
 module sha3pad_fpv
   import sha3_pkg::*;
 #(
-  parameter int EnMasking = 0,
+  parameter  bit EnMasking = 0,
   localparam int Share = (EnMasking) ? 2 : 1
 ) (
   input clk_i,

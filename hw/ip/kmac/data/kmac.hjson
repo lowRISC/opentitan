@@ -20,7 +20,7 @@
   ]
   param_list: [
     { name:    "EnMasking"
-      type:    "int"
+      type:    "bit"
       default: "0"
       desc:    '''
         Disable(0) or enable(1) first-order masking of Keccak round.

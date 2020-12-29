@@ -12,14 +12,14 @@ module sha3
   import sha3_pkg::*;
 #(
   // Enable Masked Keccak if 1
-  parameter  int EnMasking = 0,
+  parameter  bit EnMasking = 0,
   // derived parameter
   localparam int Share = (EnMasking) ? 2 : 1,
 
   // Configurations
   // Decide if implements Re-use the adjacent shares as entropy
   // in DOM AND logic
-  parameter int ReuseShare = 0
+  parameter bit ReuseShare = 0
 ) (
   input clk_i,
   input rst_ni,

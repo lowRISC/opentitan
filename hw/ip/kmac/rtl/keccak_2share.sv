@@ -16,7 +16,7 @@ module keccak_2share #(
   localparam int RndW     = $clog2(MaxRound+1), // Representing up to MaxRound
 
   // Control parameters
-  parameter  int EnMasking = 0,                // Enable secure hardening
+  parameter  bit EnMasking = 0,                // Enable secure hardening
   localparam int Share     = EnMasking ? 2 : 1
 ) (
   input clk_i,
@@ -61,7 +61,7 @@ module keccak_2share #(
   // Unused nets //
   /////////////////
   // clk_i, rst_ni, rand_valid_i are not used when EnMasking is 0. Tying them.
-  if (EnMasking == 0) begin : gen_tie_unused
+  if (!EnMasking) begin : gen_tie_unused
     logic unused_clk, unused_rst_n, unused_rand_valid;
     logic [Width-1:0] unused_rand_data;
     logic unused_sel;
@@ -91,7 +91,7 @@ module keccak_2share #(
     assign s_o[i]      = box_to_bitarray(state_out[i]);
   end : g_state_inout
 
-  if (EnMasking == 1) begin : g_2share_data
+  if (EnMasking) begin : g_2share_data
     assign phase1_in = (sel_i == 1'b 0) ? state_in : '{default:'0};
     assign phase2_in = (sel_i == 1'b 1) ? state_in : '{default:'0};
 
@@ -128,14 +128,14 @@ module keccak_2share #(
   end : g_datapath
 
   // Iota adds Round Constants(RC), so only one share should be XORed
-  if (EnMasking == 1) begin : g_2share_iota
+  if (EnMasking) begin : g_2share_iota
     assign iota_data[0]  = iota(chi_data[0], rnd_i);
     assign iota_data[1]  = chi_data[1];
   end else begin : g_single_iota
     assign iota_data[0]  = iota(chi_data[0], rnd_i);
   end
 
-  if (EnMasking == 1) begin : g_2share_chi
+  if (EnMasking) begin : g_2share_chi
     // Domain-Oriented Masking
     // reference: https://eprint.iacr.org/2017/395.pdf
 
@@ -254,7 +254,7 @@ module keccak_2share #(
   `ASSERT_INIT(ValidRound_A, MaxRound <= 24) // Keccak-f only
 
   // sel_i shall stay for two cycle after change to 1.
-  if (EnMasking == 1) begin : gen_selperiod_chk
+  if (EnMasking) begin : gen_selperiod_chk
     `ASSUME(SelStayTwoCycleIf1_A, $rose(sel_i) |=> sel_i, clk_i, !rst_ni)
   end
 

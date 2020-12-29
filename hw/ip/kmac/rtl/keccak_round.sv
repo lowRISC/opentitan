@@ -22,7 +22,7 @@ module keccak_round #(
   localparam int DInAddr  = $clog2(DInEntry),
 
   // Control parameters
-  parameter  int EnMasking = 0,  // Enable secure hardening
+  parameter  bit EnMasking = 0,  // Enable secure hardening
   localparam int Share     = EnMasking ? 2 : 1,
 
   // If ReuseShare is not 0, the logic will use unused sheet as an entropy

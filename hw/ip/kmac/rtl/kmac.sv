@@ -11,13 +11,13 @@ module kmac
 #(
   // EnMasking: Enable masking security hardening inside keccak_round
   // If it is enabled, the result digest will be two set of 1600bit.
-  parameter int EnMasking = 0,
+  parameter bit EnMasking = 1,
 
   // ReuseShare: If set, keccak_round logic only consumes small portion of
   // entropy, not 1600bit of entropy at every round. It uses adjacent shares
   // as entropy inside Domain-Oriented Masking AND logic.
   // This parameter only affects when `EnMasking` is set.
-  parameter int ReuseShare = 0
+  parameter bit ReuseShare = 0
 ) (
   input clk_i,
   input rst_ni,
