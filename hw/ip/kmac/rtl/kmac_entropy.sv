@@ -31,6 +31,11 @@ module kmac_entropy
   //// interface.
   input entropy_ready_i,
 
+  //// Garbage random value when not processing Keyblock, if this config is
+  //// turned on, the logic sending garbage value and never de-assert
+  //// rand_valid_o unless it is not processing KeyBlock.
+  input fast_process_i,
+
   //// SW update of seed
   input        seed_update_i,
   input [63:0] seed_data_i,
@@ -288,7 +293,7 @@ module kmac_entropy
       rand_valid_o <= 1'b 0;
     end else if (rand_valid_set) begin
       rand_valid_o <= 1'b 1;
-    end else if (rand_valid_clear || rand_consumed_i) begin
+    end else if (rand_valid_clear) begin
       rand_valid_o <= 1'b 0;
     end
   end
@@ -403,7 +408,12 @@ module kmac_entropy
       StRandReady: begin
         timer_enable = 1'b 1; // If limit is zero, timer won't work
 
-        if (rand_consumed_i) begin
+        if ( (fast_process_i && in_keyblock_i && rand_consumed_i)
+          || (!fast_process_i && rand_consumed_i)) begin
+          // If fast_process is set, don't clear the rand valid, even
+          // consumed. So, the logic does not expand the entropy again.
+          // If fast_process is not set, then every rand_consume signal
+          // triggers rand expansion.
           st_d = StRandExpand;
 
           lfsr_en           = 1'b 1;

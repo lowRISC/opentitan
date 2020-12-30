@@ -55,6 +55,10 @@ module sha3
   output logic absorbed_o,
   output logic squeezing_o,
 
+  // Indicate of one block processed. KMAC main state tracks the progression
+  // based on this signal.
+  output logic block_processed_o,
+
   output sha3_st_e sha3_fsm_o,
 
   // digest output
@@ -129,6 +133,8 @@ module sha3
 
   // Squeezing output
   assign squeezing_o = squeezing;
+
+  assign block_processed_o = keccak_complete;
 
   // State connection
   assign state_valid_o = state_valid;

@@ -55,6 +55,26 @@ module kmac
   /////////////////
   // Definitions //
   /////////////////
+  // This state machine is to track the current process based on SW input and
+  // KMAC operation.
+  typedef enum logic [2:0] {
+    // Idle state
+    KmacIdle,
+
+    // When software writes CmdStart @ KmacIdle and kmac_en, FSM moves to this
+    KmacPrefix,
+
+    // When SHA3 engine processes Key block, FSM moves to here.
+    KmacKeyBlock,
+
+    // Message Feed
+    KmacMsgFeed,
+
+    // Complete and squeeze
+    KmacDigest
+
+  } kmac_st_e;
+  kmac_st_e kmac_st, kmac_st_d;
 
   /////////////
   // Signals //
@@ -79,6 +99,12 @@ module kmac
   // SHA3 core control signals and its response.
   // Sequence: start --> process(multiple) --> get absorbed event --> {run -->} done
   logic sha3_start, sha3_run, sha3_done, sha3_absorbed, unused_sha3_squeeze;
+
+  // Indicate one block processed
+  logic sha3_block_processed;
+
+  // EStatus for entropy
+  logic entropy_in_progress, entropy_in_keyblock;
 
   // KeyMgr interface logic generates event_absorbed from sha3_absorbed.
   // It is active only if SW initiates the hashing engine.
@@ -187,6 +213,7 @@ module kmac
 
   logic entropy_ready;
   entropy_mode_e entropy_mode;
+  logic entropy_fast_process;
 
   // SHA3 Error response
   sha3_pkg::err_t sha3_err;
@@ -317,6 +344,7 @@ module kmac
   // Entropy config
   assign entropy_ready = reg2hw.cfg.entropy_ready.q;
   assign entropy_mode  = entropy_mode_e'(reg2hw.cfg.entropy_mode.q);
+  assign entropy_fast_process = reg2hw.cfg.entropy_fast_process.q;
 
   assign hw2reg.cfg.entropy_ready.de = entropy_ready;
   assign hw2reg.cfg.entropy_ready.d = 1'b 0; // always clear when ready
@@ -419,6 +447,87 @@ module kmac
     .intr_o                 (intr_kmac_err_o)
   );
 
+  ///////////////////
+  // State Machine //
+  ///////////////////
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      kmac_st <= KmacIdle;
+    end else begin
+      kmac_st <= kmac_st_d;
+    end
+  end
+
+  always_comb begin
+    // Default value
+    kmac_st_d = KmacIdle;
+
+    entropy_in_progress = 1'b 0;
+    entropy_in_keyblock = 1'b 0;
+
+    unique case (kmac_st)
+      KmacIdle: begin
+        if (kmac_cmd == CmdStart) begin
+          // If cSHAKE turned on
+          if (sha3_pkg::CShake == sha3_pkg::sha3_mode_e'(reg2hw.cfg.mode.q)) begin
+            kmac_st_d = KmacPrefix;
+          end else begin
+            // Jump to Msg feed directly
+            kmac_st_d = KmacMsgFeed;
+          end
+        end else begin
+          kmac_st_d = KmacIdle;
+        end
+      end
+
+      KmacPrefix: begin
+        entropy_in_progress =1'b 1;
+        // Wait until SHA3 processes one block
+        if (sha3_block_processed) begin
+          kmac_st_d = (reg2hw.cfg.kmac_en.q) ? KmacKeyBlock : KmacMsgFeed ;
+        end else begin
+          kmac_st_d = KmacPrefix;
+        end
+      end
+
+      KmacKeyBlock: begin
+        entropy_in_progress = 1'b 1;
+        entropy_in_keyblock = 1'b 1;
+        if (sha3_block_processed) begin
+          kmac_st_d = KmacMsgFeed;
+        end else begin
+          kmac_st_d = KmacKeyBlock;
+        end
+      end
+
+      KmacMsgFeed: begin
+        entropy_in_progress = 1'b 1;
+        // If absorbed, move to Digest
+        if (sha3_absorbed) begin
+          kmac_st_d = KmacDigest;
+        end else begin
+          kmac_st_d = KmacMsgFeed;
+        end
+      end
+
+      KmacDigest: begin
+        entropy_in_progress = 1'b 1;
+        // SW can manually run it, wait till done
+        if (sha3_done) begin
+          kmac_st_d = KmacIdle;
+        end else begin
+          kmac_st_d = KmacDigest;
+        end
+      end
+
+      default: begin
+        kmac_st_d = KmacIdle;
+      end
+    endcase
+  end
+  `ASSERT_KNOWN(KmacStKnown_A, kmac_st)
+
   ///////////////
   // Instances //
   ///////////////
@@ -492,6 +601,8 @@ module kmac
 
     .absorbed_o  (sha3_absorbed),
     .squeezing_o (unused_sha3_squeeze),
+
+    .block_processed_o (sha3_block_processed),
 
     .sha3_fsm_o (sha3_fsm),
 
@@ -669,13 +780,14 @@ module kmac
 
       // Status from internal logic
       //// SHA3 engine run indicator
-      .in_progress_i (),
+      .in_progress_i (entropy_in_progress),
       //// KMAC secret block handling indicator
-      .in_keyblock_i (),
+      .in_keyblock_i (entropy_in_keyblock),
 
       // Configuration
       .mode_i          (entropy_mode),
       .entropy_ready_i (entropy_ready),
+      .fast_process_i  (entropy_fast_process),
 
       //// Entropy refresh period in clk cycles
       .entropy_timer_limit_i (entropy_timer_limit),
@@ -708,6 +820,9 @@ module kmac
     assign unused_refresh_period = {wait_timer_limit, entropy_timer_limit};
 
     assign entropy_err = '{valid: 1'b 0, code: ErrNone, info: '0};
+
+    logic [1:0] unused_entropy_status;
+    assign unused_entropy_status = {entropy_in_keyblock, entropy_in_progress};
   end
 
   // Register top
