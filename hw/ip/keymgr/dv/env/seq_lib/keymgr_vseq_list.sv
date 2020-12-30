@@ -9,3 +9,4 @@
 `include "keymgr_random_vseq.sv"
 `include "keymgr_cfgen_vseq.sv"
 `include "keymgr_direct_to_disabled_vseq.sv"
+`include "keymgr_lc_disable_vseq.sv"

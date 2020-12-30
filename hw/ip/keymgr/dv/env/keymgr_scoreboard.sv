@@ -38,7 +38,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   keymgr_pkg::keymgr_op_status_e     current_op_status;
   keymgr_pkg::keymgr_op_status_e     next_op_status;
 
-  bit [keymgr_pkg::Shares-1:0][keymgr_pkg::KeyWidth-1:0] current_hw_key;
+  // HW internal key, used for OP in current state
+  bit [keymgr_pkg::Shares-1:0][keymgr_pkg::KeyWidth-1:0] current_internal_key;
 
   // preserve value at TL read address phase and compare it at read data phase
   keymgr_pkg::keymgr_op_status_e     addr_phase_op_status;
@@ -55,6 +56,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   bit [keymgr_pkg::IdDataWidth-1:0]  id_data_a_array[keymgr_pkg::keymgr_working_state_e];
   bit [keymgr_pkg::GenDataWidth-1:0] sw_data_a_array[keymgr_pkg::keymgr_working_state_e];
   bit [keymgr_pkg::GenDataWidth-1:0] hw_data_a_array[keymgr_pkg::keymgr_working_state_e];
+  bit [keymgr_pkg::Shares-1:0][keymgr_pkg::KeyWidth-1:0]
+      internal_key_a_array[keymgr_pkg::keymgr_working_state_e];
 
   // expected values
   bit [NumKeyMgrIntr-1:0] intr_exp;
@@ -83,6 +86,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         keymgr_kmac_item item;
         rsp_fifo.get(item);
         process_kmac_data_rsp(item);
+      end
+      forever begin
+        wait(!cfg.under_reset);
+        wait(cfg.keymgr_vif.keymgr_en != lc_ctrl_pkg::On);
+        wipe_hw_keys();
+        wait(cfg.keymgr_vif.keymgr_en == lc_ctrl_pkg::On);
       end
     join_none
   endtask
@@ -134,8 +143,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     if (get_operation() inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) begin
       `uvm_info(`gfn, $sformatf("Keymgr State from %0s to %0s", current_state.name,
                                 next_state.name), UVM_LOW)
-      current_hw_key = {item.rsp_digest_share1, item.rsp_digest_share0};
+      current_internal_key = {item.rsp_digest_share1, item.rsp_digest_share0};
       current_state = next_state;
+      internal_key_a_array[current_state] = current_internal_key;
     end else if (get_operation() inside {keymgr_pkg::OpGenId, keymgr_pkg::OpGenSwOut}) begin
       bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
 
@@ -176,7 +186,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     // if incoming access is a write to a valid csr, then make updates right away
     if (addr_phase_write) begin
-      if ((current_op_status == keymgr_pkg::OpWip) &&
+      // if OP WIP or keymgr_en=0, will clear cfgen and below csr can't be written
+      if ((current_op_status == keymgr_pkg::OpWip || cfg.keymgr_vif.keymgr_en != lc_ctrl_pkg::On) &&
           csr.get_name() inside {"control", "key_version",
           // TODO enable these after #4564 is solved
           //"sw_binding_0", "sw_binding_1", "sw_binding_2", "sw_binding_3",
@@ -232,7 +243,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1'b0;
 
         if (addr_phase_read) begin
-          addr_phase_cfgen = current_op_status != keymgr_pkg::OpWip;
+          addr_phase_cfgen = current_op_status != keymgr_pkg::OpWip &&
+                             cfg.keymgr_vif.keymgr_en == lc_ctrl_pkg::On;
         end else if (data_phase_read) begin
           `DV_CHECK_EQ(item.d_data, addr_phase_cfgen)
         end
@@ -264,8 +276,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                   // the 1st kmac key is from OTP
                   // TODO, need to confirm what happens when valid is low
                   if (cfg.keymgr_vif.otp_key.valid) begin
-                    cfg.keymgr_vif.update_exp_key({cfg.keymgr_vif.otp_key.key_share1,
-                                                   cfg.keymgr_vif.otp_key.key_share0});
+                    internal_key_a_array[keymgr_pkg::StInit] = {cfg.keymgr_vif.otp_key.key_share1,
+                                                                cfg.keymgr_vif.otp_key.key_share0};
+                    cfg.keymgr_vif.update_exp_key(internal_key_a_array[keymgr_pkg::StInit]);
                   end
                 end else if (op == keymgr_pkg::OpDisable) begin
                   next_op_status = keymgr_pkg::OpDoneSuccess;
@@ -283,7 +296,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
                 if (op == keymgr_pkg::OpAdvance) begin
                   next_state = get_next_state(current_state);
-                  cfg.keymgr_vif.update_exp_key(current_hw_key);
+                  cfg.keymgr_vif.update_exp_key(current_internal_key);
                 end else if (op == keymgr_pkg::OpDisable) begin
                   enter_disabled_directly();
                 end
@@ -292,7 +305,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             end
             keymgr_pkg::StDisabled: begin
               if (start) begin
-                if (op == keymgr_pkg::OpAdvance) cfg.keymgr_vif.update_exp_key(current_hw_key);
+                if (op == keymgr_pkg::OpAdvance) begin
+                  cfg.keymgr_vif.update_exp_key(current_internal_key);
+                end
                 current_op_status = keymgr_pkg::OpWip;
                 next_op_status    = keymgr_pkg::OpDoneFail;
               end
@@ -350,7 +365,15 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       default: begin
-        if (uvm_re_match("sw_share*", csr.get_name())) begin // Not sw_share
+        if (!uvm_re_match("sw_share*", csr.get_name())) begin // sw_share
+          // if keymgr isn't On, SW output should be entropy and not match to predict value
+          if (data_phase_read && cfg.keymgr_vif.keymgr_en != lc_ctrl_pkg::On) begin
+            if (item.d_data != 0) begin
+              do_read_check = 1'b0;
+              `DV_CHECK_NE(item.d_data, `gmv(csr))
+            end
+          end
+        end else begin // Not sw_share
           // TODO
           do_read_check = 1'b0;
         end
@@ -360,7 +383,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (data_phase_read) begin
       if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+        `DV_CHECK_EQ(item.d_data, `gmv(csr),
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
@@ -508,6 +531,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     return op;
   endfunction
 
+  // TODO, need designer to update for #4680
+  virtual function void wipe_hw_keys();
+  endfunction
+
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
@@ -515,7 +542,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     next_state        = keymgr_pkg::StReset;
     current_op_status = keymgr_pkg::OpIdle;
     next_op_status    = keymgr_pkg::OpIdle;
-    current_hw_key    = 0;
+    current_internal_key = 0;
     intr_exp          = 0;
     adv_data_a_array.delete();
     id_data_a_array.delete();

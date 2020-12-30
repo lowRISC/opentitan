@@ -75,6 +75,11 @@
       name: keymgr_direct_to_disabled
       uvm_test_seq: keymgr_direct_to_disabled_vseq
     }
+
+    {
+      name: keymgr_lc_disable
+      uvm_test_seq: keymgr_lc_disable_vseq
+    }
   ]
 
   // List of regressions.
