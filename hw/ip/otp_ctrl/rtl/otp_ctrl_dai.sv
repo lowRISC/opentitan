@@ -34,8 +34,9 @@ module otp_ctrl_dai
   input dai_cmd_e                        dai_cmd_i,
   input logic                            dai_req_i,
   input        [NumDaiWords-1:0][31:0]   dai_wdata_i,
-  output logic                           dai_idle_o,     // wired to the status CSRs
-  output logic                           dai_cmd_done_o, // this is used to raise an IRQ
+  output logic                           dai_idle_o,      // wired to the status CSRs
+  output logic                           dai_prog_idle_o, // wired to lfsr timer and pwrmgr
+  output logic                           dai_cmd_done_o,  // this is used to raise an IRQ
   output logic [NumDaiWords-1:0][31:0]   dai_rdata_o,
   // OTP interface
   output logic                           otp_req_o,
@@ -163,6 +164,7 @@ module otp_ctrl_dai
 
     // DAI signals
     dai_idle_o = 1'b0;
+    dai_prog_idle_o = 1'b1;
     dai_cmd_done_o = 1'b0;
 
     // OTP signals
@@ -358,6 +360,7 @@ module otp_ctrl_dai
       // check is not needed in that case. The LC partition is
       // permanently write locked and can hence not be written via the DAI.
       WriteSt: begin
+        dai_prog_idle_o = 1'b0;
         if (part_access_i[part_idx].write_lock == Unlocked &&
             // If this is a HW digest write to a buffered partition.
             ((PartInfo[part_idx].variant == Buffered && PartInfo[part_idx].hw_digest &&
@@ -385,6 +388,7 @@ module otp_ctrl_dai
       // OTP transaction fails, latch the OTP error code, and jump to
       // terminal error state.
       WriteWaitSt: begin
+        dai_prog_idle_o = 1'b0;
         // Continuously check write access and bail out if this is not consistent.
         if (part_access_i[part_idx].write_lock == Unlocked &&
             // If this is a HW digest write to a buffered partition.
