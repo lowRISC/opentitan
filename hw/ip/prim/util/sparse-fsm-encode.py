@@ -55,6 +55,7 @@ RUST_INSTRUCTIONS = """
 """
 
 
+# TODO: Consolidate the subfunctions below in a shared utility package.
 def _wrapped_docstring():
     '''Return a text-wrapped version of the module docstring'''
     paras = []

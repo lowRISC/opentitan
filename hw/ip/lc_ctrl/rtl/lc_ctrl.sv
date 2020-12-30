@@ -200,8 +200,6 @@ module lc_ctrl
   // Transition Interface and HW Mutex //
   ///////////////////////////////////////
 
-  // TODO: expose other info to via CSRs / TAP?
-
   // All registers are HWext
   logic          trans_success_d, trans_success_q;
   logic          trans_cnt_oflw_error_d, trans_cnt_oflw_error_q;
