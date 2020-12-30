@@ -6,74 +6,7 @@
 package lc_ctrl_pkg;
 
   import prim_util_pkg::vbits;
-
-  // TODO: need to generate these randomly, based on ECC
-  // polynomial used inside the OTP macro.
-  // The A/B values are used for the encoded LC state.
-  parameter logic [15:0] A0 = 16'h0000;
-  parameter logic [15:0] A1 = 16'h0000;
-  parameter logic [15:0] A2 = 16'h0000;
-  parameter logic [15:0] A3 = 16'h0000;
-  parameter logic [15:0] A4 = 16'h0000;
-  parameter logic [15:0] A5 = 16'h0000;
-  parameter logic [15:0] A6 = 16'h0000;
-  parameter logic [15:0] A7 = 16'h0000;
-  parameter logic [15:0] A8 = 16'h0000;
-  parameter logic [15:0] A9 = 16'h0000;
-  parameter logic [15:0] A10 = 16'h0000;
-  parameter logic [15:0] A11 = 16'h0000;
-
-  parameter logic [15:0] B0 = 16'hFFFF;
-  parameter logic [15:0] B1 = 16'hFFFF;
-  parameter logic [15:0] B2 = 16'hFFFF;
-  parameter logic [15:0] B3 = 16'hFFFF;
-  parameter logic [15:0] B4 = 16'hFFFF;
-  parameter logic [15:0] B5 = 16'hFFFF;
-  parameter logic [15:0] B6 = 16'hFFFF;
-  parameter logic [15:0] B7 = 16'hFFFF;
-  parameter logic [15:0] B8 = 16'hFFFF;
-  parameter logic [15:0] B9 = 16'hFFFF;
-  parameter logic [15:0] B10 = 16'hFFFF;
-  parameter logic [15:0] B11 = 16'hFFFF;
-
-  // The C/D values are used for the encoded LC transition counter.
-  parameter logic [15:0] C0 = 16'h0000;
-  parameter logic [15:0] C1 = 16'h0000;
-  parameter logic [15:0] C2 = 16'h0000;
-  parameter logic [15:0] C3 = 16'h0000;
-  parameter logic [15:0] C4 = 16'h0000;
-  parameter logic [15:0] C5 = 16'h0000;
-  parameter logic [15:0] C6 = 16'h0000;
-  parameter logic [15:0] C7 = 16'h0000;
-  parameter logic [15:0] C8 = 16'h0000;
-  parameter logic [15:0] C9 = 16'h0000;
-  parameter logic [15:0] C10 = 16'h0000;
-  parameter logic [15:0] C11 = 16'h0000;
-  parameter logic [15:0] C12 = 16'h0000;
-  parameter logic [15:0] C13 = 16'h0000;
-  parameter logic [15:0] C14 = 16'h0000;
-  parameter logic [15:0] C15 = 16'h0000;
-
-  parameter logic [15:0] D0 = 16'hFFFF;
-  parameter logic [15:0] D1 = 16'hFFFF;
-  parameter logic [15:0] D2 = 16'hFFFF;
-  parameter logic [15:0] D3 = 16'hFFFF;
-  parameter logic [15:0] D4 = 16'hFFFF;
-  parameter logic [15:0] D5 = 16'hFFFF;
-  parameter logic [15:0] D6 = 16'hFFFF;
-  parameter logic [15:0] D7 = 16'hFFFF;
-  parameter logic [15:0] D8 = 16'hFFFF;
-  parameter logic [15:0] D9 = 16'hFFFF;
-  parameter logic [15:0] D10 = 16'hFFFF;
-  parameter logic [15:0] D11 = 16'hFFFF;
-  parameter logic [15:0] D12 = 16'hFFFF;
-  parameter logic [15:0] D13 = 16'hFFFF;
-  parameter logic [15:0] D14 = 16'hFFFF;
-  parameter logic [15:0] D15 = 16'hFFFF;
-
-  // The E/F values are used for the encoded ID state.
-  parameter logic [15:0] E0 = 16'h0000;
-  parameter logic [15:0] F0 = 16'hFFFF;
+  import lc_ctrl_state_pkg::*;
 
   /////////////////////////////////
   // General Typedefs and Params //
@@ -93,7 +26,6 @@ package lc_ctrl_pkg;
 
   typedef logic [LcTokenWidth-1:0] lc_token_t;
 
-  // TODO: make this secret and generate randomly, given a specific ECC polynomial.
   typedef enum logic [LcStateWidth-1:0] {
     // Halfword idx   :  11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0
     LcStRaw           = '0,
