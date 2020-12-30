@@ -7,9 +7,9 @@
     design_spec:        "hw/ip/rbox/doc",
     dv_plan:            "hw/ip/rbox/doc/dv_plan",
     hw_checklist:       "hw/ip/rbox/doc/checklist",
-    version:            "0.1",
+    version:            "1.0",
     life_stage:         "L1",
-    design_stage:       "D0",
+    design_stage:       "D1",
     verification_stage: "V0",
-    notes:              "Getting started for Bronze Integration",
+    notes:              "prepare for Silver Integration",
 }

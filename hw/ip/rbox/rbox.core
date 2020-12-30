@@ -2,23 +2,29 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:dcd:1.0"
-description: "dcd"
+name: "lowrisc:ip:rbox:1.0"
+description: "rbox"
 filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - lowrisc:systems:ast_wrapper_pkg
     files:
-      - rtl/dcd_reg_pkg.sv
-      - rtl/dcd_reg_top.sv
-      - rtl/dcd_pkg.sv
-      - rtl/dcd_fsm.sv
-      - rtl/dcd_intr.sv
-      - rtl/dcd_core.sv
-      - rtl/dcd.sv
+      - rtl/rbox_reg_pkg.sv
+      - rtl/rbox_reg_top.sv
+      - rtl/rbox_autoblock.sv
+      - rtl/rbox_comboact.sv
+      - rtl/rbox_combotrg.sv
+      - rtl/rbox_intr.sv
+      - rtl/rbox_inv.sv
+      - rtl/rbox_pin.sv
+      - rtl/rbox_keyintr.sv
+      - rtl/rbox_timerfsm.sv
+      - rtl/rbox_keyfsm.sv
+      - rtl/rbox_combofsm.sv
+      - rtl/rbox_combo.sv
+      - rtl/rbox.sv
     file_type: systemVerilogSource
 
   files_ascentlint_waiver:
@@ -43,7 +49,7 @@ targets:
     filesets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - files_rtl
-    toplevel: dcd
+    toplevel: rbox
 
 
   lint:
