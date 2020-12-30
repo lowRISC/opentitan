@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <ios>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 #include "log_trace_listener.h"
