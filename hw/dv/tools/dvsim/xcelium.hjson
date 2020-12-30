@@ -16,6 +16,9 @@
                "-xmlibdirname {build_dir}/xcelium.d",
                // List multiple tops for the simulation. Prepend each top level with `-top`.
                "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
+               // Set the top level elaborated entity (snapshot name) correctly since there are
+               // multiple tops.
+               "-snapshot {tb}",
                // for uvm_hdl_* used by csr backdoor
                "-access +rw",
                // Use this to conditionally compile for Xcelium (example: LRM interpretations differ
@@ -31,7 +34,9 @@
 
   run_opts:   ["-input {run_script}",
                "-licqueue",
-               "-64bit -xmlibdirname {build_dir}/xcelium.d -R",
+               "-64bit -xmlibdirname {build_dir}/xcelium.d",
+               // Use the same snapshot name set during the build step.
+               "-r {tb}",
                "+SVSEED={seed}",
                "+UVM_TESTNAME={uvm_test}",
                "+UVM_TEST_SEQ={uvm_test_seq}",
