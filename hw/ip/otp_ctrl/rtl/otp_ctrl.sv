@@ -303,7 +303,7 @@ module otp_ctrl
   // DAI-related CSRs //
   //////////////////////
 
-  logic                         dai_idle;
+  logic                         dai_idle, dai_prog_idle;
   logic                         dai_req;
   dai_cmd_e                     dai_cmd;
   logic [OtpByteAddrWidth-1:0]  dai_addr;
@@ -330,7 +330,7 @@ module otp_ctrl
   // power manager. This signal is flopped here as it has to
   // cross a clock boundary to the power manager.
   logic lci_idle, otp_idle_d, otp_idle_q;
-  assign otp_idle_d = lci_idle & dai_idle;
+  assign otp_idle_d = lci_idle & dai_prog_idle;
   assign pwr_otp_o.otp_idle = otp_idle_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_idle_reg
@@ -491,6 +491,13 @@ module otp_ctrl
     // activated depends on the CSR configuration (by default
     // they are switched off).
     .timer_en_i         ( pwr_otp_o.otp_done        ),
+    // This idle signal is the same that is output to the power
+    // manager, and indicates whether there is an ongoing OTP programming
+    // operation. It is used to pause the consistency check timeout
+    // counter in order to prevent spurious timeouts (OTP programming
+    // operations are very slow compared to readout operations and can
+    // hence interfere with the timeout mechanism).
+    .otp_prog_busy_i    ( ~otp_idle_d               ),
     .integ_chk_trig_i   ( integ_chk_trig            ),
     .cnsty_chk_trig_i   ( cnsty_chk_trig            ),
     .chk_pending_o      ( chk_pending               ),
@@ -795,6 +802,7 @@ module otp_ctrl
     .dai_req_i        ( dai_req                               ),
     .dai_wdata_i      ( dai_wdata                             ),
     .dai_idle_o       ( dai_idle                              ),
+    .dai_prog_idle_o  ( dai_prog_idle                         ),
     .dai_cmd_done_o   ( otp_operation_done                    ),
     .dai_rdata_o      ( dai_rdata                             ),
     .otp_req_o        ( part_otp_arb_req[DaiIdx]              ),

@@ -44,6 +44,7 @@ module otp_ctrl_lfsr_timer
   input                            edn_ack_i,          // ack from EDN
   input        [EdnDataWidth-1:0]  edn_data_i,         // from EDN
   input                            timer_en_i,         // enable timer
+  input                            otp_prog_busy_i,    // indicates whether prog ops are in progress
   input                            integ_chk_trig_i,   // one-off trigger for integrity check
   input                            cnsty_chk_trig_i,   // one-off trigger for consistency check
   output logic                     chk_pending_o,      // indicates whether there are pending checks
@@ -111,20 +112,21 @@ module otp_ctrl_lfsr_timer
   logic [LfsrWidth-1:0] integ_mask, cnsty_mask;
   logic integ_load_period, integ_load_timeout, integ_cnt_zero;
   logic cnsty_load_period, cnsty_load_timeout, cnsty_cnt_zero;
-  logic timeout_zero, integ_msk_zero, cnsty_msk_zero;
+  logic timeout_zero, integ_msk_zero, cnsty_msk_zero, cnsty_cnt_pause;
 
   assign integ_mask  = {integ_period_msk_i, {LfsrWidth-32{1'b1}}};
   assign cnsty_mask  = {cnsty_period_msk_i, {LfsrWidth-32{1'b1}}};
 
   assign integ_cnt_d = (integ_load_period)  ? lfsr_state & integ_mask :
-                       (integ_load_timeout) ? LfsrWidth'(timeout_i)  :
+                       (integ_load_timeout) ? LfsrWidth'(timeout_i)   :
                        (integ_cnt_zero)     ? '0                      :
                                               integ_cnt_q - 1'b1;
 
 
   assign cnsty_cnt_d = (cnsty_load_period)  ? lfsr_state & cnsty_mask :
-                       (cnsty_load_timeout) ? LfsrWidth'(timeout_i)  :
+                       (cnsty_load_timeout) ? LfsrWidth'(timeout_i)   :
                        (cnsty_cnt_zero)     ? '0                      :
+                       (cnsty_cnt_pause)    ? cnsty_cnt_q             :
                                               cnsty_cnt_q - 1'b1;
 
   assign timeout_zero   = (timeout_i == '0);
@@ -192,6 +194,7 @@ module otp_ctrl_lfsr_timer
     cnsty_load_period  = 1'b0;
     integ_load_timeout = 1'b0;
     cnsty_load_timeout = 1'b0;
+    cnsty_cnt_pause    = 1'b0;
 
     // Requests going to partitions.
     set_all_integ_reqs = '0;
@@ -248,6 +251,12 @@ module otp_ctrl_lfsr_timer
       // if the timeout counter expires (this will raise an alert).
       CnstyWaitSt: begin
         chk_pending_o = 1'b1;
+        // Note that consistency checks go back and read from OTP. Hence,
+        // life cycle transitions and DAI programming operations
+        // may interfere with these checks and cause them to take longer
+        // than typically expected. Therefore, the timeout counter is stopped
+        // during programming operations.
+        cnsty_cnt_pause = otp_prog_busy_i;
         if (!timeout_zero && cnsty_cnt_zero) begin
           state_d = ErrorSt;
           chk_timeout_d = 1'b1;
