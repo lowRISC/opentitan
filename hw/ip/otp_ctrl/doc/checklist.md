@@ -40,25 +40,25 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | Not Started |
-Documentation | [BLOCK_DIAGRAM][]       | Not Started |
-Documentation | [DOC_INTERFACE][]       | Not Started |
-Documentation | [MISSING_FUNC][]        | Not Started |
-Documentation | [FEATURE_FROZEN][]      | Not Started |
-RTL           | [FEATURE_COMPLETE][]    | Not Started |
-RTL           | [AREA_CHECK][]          | Not Started |
-RTL           | [PORT_FROZEN][]         | Not Started |
-RTL           | [ARCHITECTURE_FROZEN][] | Not Started |
-RTL           | [REVIEW_TODO][]         | Not Started |
-RTL           | [STYLE_X][]             | Not Started |
-Code Quality  | [LINT_PASS][]           | Not Started |
-Code Quality  | [CDC_SETUP][]           | Not Started |
-Code Quality  | [FPGA_TIMING][]         | Not Started |
-Code Quality  | [CDC_SYNCMACRO][]       | Not Started |
-Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
-Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
-Security      | [SEC_SHADOW_REGS][]     | Not Started |
-Security      | [SEC_RND_CNST][]        | Not Started |
+Documentation | [NEW_FEATURES][]        | Done        |
+Documentation | [BLOCK_DIAGRAM][]       | Done        |
+Documentation | [DOC_INTERFACE][]       | Done        |
+Documentation | [MISSING_FUNC][]        | Done        |
+Documentation | [FEATURE_FROZEN][]      | Done        |
+RTL           | [FEATURE_COMPLETE][]    | Done        |
+RTL           | [AREA_CHECK][]          | Done        | Note, area will be impacted by how many HW_CFG bits will be used eventually. The current area is a worst case scenario, since all available HW_CFG bits are buffered at the moment. Memory map will be finalized by D3.
+RTL           | [PORT_FROZEN][]         | Done        |
+RTL           | [ARCHITECTURE_FROZEN][] | Done        | Note that the KMAC token hashing interface change is deferred to after D2 (this is a security hardening task). Also, the closed source OTP wrapper is still outstanding.
+RTL           | [REVIEW_TODO][]         | Done        |
+RTL           | [STYLE_X][]             | Done        |
+Code Quality  | [LINT_PASS][]           | Done        |
+Code Quality  | [CDC_SETUP][]           | Waived      | CDC flow is not available yet.
+Code Quality  | [FPGA_TIMING][]         | Done        |
+Code Quality  | [CDC_SYNCMACRO][]       | Done        |
+Security      | [SEC_CM_IMPLEMENTED][]  | Done        |
+Security      | [SEC_NON_RESET_FLOPS][] | N/A         |
+Security      | [SEC_SHADOW_REGS][]     | N/A         |
+Security      | [SEC_RND_CNST][]        | Done        |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
 [BLOCK_DIAGRAM]:       {{<relref "/doc/project/checklist.md#block_diagram" >}}
@@ -84,7 +84,7 @@ Security      | [SEC_RND_CNST][]        | Not Started |
 
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES_D3][]     | Not Started |
+Documentation | [NEW_FEATURES_D3][]     | Not Started | TODO: Finalize memory map, make memory map top-specific.
 RTL           | [TODO_COMPLETE][]       | Not Started |
 Code Quality  | [LINT_COMPLETE][]       | Not Started |
 Code Quality  | [CDC_COMPLETE][]        | Not Started |
