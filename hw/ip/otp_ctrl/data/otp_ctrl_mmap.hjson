@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Use the translate-mmap.py script to update dependent files (like documentation
+// Use the gen-otp-mmap.py script to update dependent files (like documentation
 // tables the comportable hjson and metadata SV package):
 //
 // $ cd ${PROJ_ROOT}/hw/ip/otp_ctrl/util/
-// $ ./translate-mmap.py
+// $ ./gen-otp-mmap.py
 //
 // Make sure to regenerate the CSRs after converting the memory map:
 //
