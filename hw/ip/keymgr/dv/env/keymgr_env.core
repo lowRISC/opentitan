@@ -27,6 +27,7 @@ filesets:
       - seq_lib/keymgr_cfgen_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_direct_to_disabled_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_lc_disable_vseq.sv: {is_include_file: true}
+      - seq_lib/keymgr_invalid_kmac_input_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
