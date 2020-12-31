@@ -80,6 +80,11 @@
       name: keymgr_lc_disable
       uvm_test_seq: keymgr_lc_disable_vseq
     }
+
+    {
+      name: keymgr_invalid_kmac_input
+      uvm_test_seq: keymgr_invalid_kmac_input_vseq
+    }
   ]
 
   // List of regressions.

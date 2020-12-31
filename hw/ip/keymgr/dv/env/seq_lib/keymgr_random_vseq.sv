@@ -48,8 +48,14 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
         ? max_creator_key_ver_val : (current_state == keymgr_pkg::StOwnerIntKey)
         ? max_owner_int_key_ver_val : (current_state == keymgr_pkg::StOwnerKey)
         ? max_owner_key_ver_val : '1;
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(is_key_version_err)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(key_version_val,
-                                       !is_key_version_err -> key_version_val <= max_key_ver_val;)
+                                       if (is_key_version_err) {
+                                         max_key_ver_val != '1 -> key_version_val > max_key_ver_val;
+                                       } else {
+                                         key_version_val <= max_key_ver_val;
+                                       })
+    ral.key_version.set(key_version_val);
     csr_update(ral.key_version);
   endtask : write_random_sw_content
 

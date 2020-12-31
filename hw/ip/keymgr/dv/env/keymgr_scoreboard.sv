@@ -299,6 +299,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                   cfg.keymgr_vif.update_exp_key(current_internal_key);
                 end else if (op == keymgr_pkg::OpDisable) begin
                   enter_disabled_directly();
+                end else if (op inside {keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut}) begin
+                  // for gen-sw/hw, key_version is used as kmac data. If it's bigger than max
+                  // version, status will be failed
+                  if (get_current_max_version() < `gmv(ral.key_version)) begin
+                    next_op_status = keymgr_pkg::OpDoneFail;
+                  end
                 end
 
               end // if (start)
@@ -389,6 +395,15 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask
+
+  virtual function bit [TL_DW-1:0] get_current_max_version();
+    case (current_state)
+      keymgr_pkg::StCreatorRootKey: return `gmv(ral.max_creator_key_ver);
+      keymgr_pkg::StOwnerIntKey:    return `gmv(ral.max_owner_int_key_ver);
+      keymgr_pkg::StOwnerKey:       return `gmv(ral.max_owner_key_ver);
+      default: `uvm_fatal(`gfn, $sformatf("unexpected state %s", current_state.name))
+    endcase
+  endfunction
 
   virtual function void compare_adv_creator_data(bit exp_match, const ref byte byte_data_q[$]);
     adv_creator_data_t exp, act;
