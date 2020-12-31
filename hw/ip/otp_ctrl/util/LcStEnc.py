@@ -1,100 +1,13 @@
-#!/usr/bin/env python3
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Given an ECC encoding matrix, this script generates random life cycle
-state encodings that can be incrementally written to a memory protected with
-the ECC code specified.
+r"""Contains life cycle state encoding class which is
+used to generate new life cycle encodings.
 """
-import argparse
 import logging as log
 import random
-import textwrap
-from pathlib import Path
 
-import hjson
-from mako.template import Template
-
-# State encoding definition
-LC_STATE_DEFINITION_FILE = "../data/lc_ctrl_state.hjson"
-# Code templates to render
-TEMPLATES = ["../rtl/lc_ctrl_state_pkg.sv.tpl"]
-
-
-def wrapped_docstring():
-    '''Return a text-wrapped version of the module docstring'''
-    paras = []
-    para = []
-    for line in __doc__.strip().split('\n'):
-        line = line.strip()
-        if not line:
-            if para:
-                paras.append('\n'.join(para))
-                para = []
-        else:
-            para.append(line)
-    if para:
-        paras.append('\n'.join(para))
-
-    return '\n\n'.join(textwrap.fill(p) for p in paras)
-
-
-def _check_int(x):
-    '''Check_int checks if input 'x' is decimal integer.'''
-    if isinstance(x, int):
-        return x
-    if not x.isdecimal():
-        log.error("{} is not a decimal number".format(x))
-        exit(1)
-    return int(x)
-
-
-def validate(config):
-    '''Validate configuration dict.'''
-
-    if 'secded' not in config:
-        log.error('Missing secded configuration')
-        exit(1)
-
-    config['secded'].setdefault('data_width', 0)
-    config['secded'].setdefault('ecc_width', 0)
-    config['secded'].setdefault('ecc_matrix', [[]])
-    config.setdefault('num_ab_words', 0)
-    config.setdefault('num_cd_words', 0)
-    config.setdefault('num_ef_words', 0)
-    config.setdefault('min_hw', 0)
-    config.setdefault('max_hw', 0)
-    config.setdefault('min_hd', 0)
-
-    config['secded']['data_width'] = _check_int(config['secded']['data_width'])
-    config['secded']['ecc_width'] = _check_int(config['secded']['ecc_width'])
-    config['num_ab_words'] = _check_int(config['num_ab_words'])
-    config['num_cd_words'] = _check_int(config['num_cd_words'])
-    config['num_ef_words'] = _check_int(config['num_ef_words'])
-    config['min_hw'] = _check_int(config['min_hw'])
-    config['max_hw'] = _check_int(config['max_hw'])
-    config['min_hd'] = _check_int(config['min_hd'])
-
-    total_width = config['secded']['data_width'] + config['secded']['ecc_width']
-
-    if config['min_hw'] >= total_width or \
-       config['max_hw'] > total_width or \
-       config['min_hw'] >= config['max_hw']:
-        log.error('Hamming weight constraints are inconsistent.')
-        exit(1)
-
-    if config['max_hw'] - config['min_hw'] + 1 < config['min_hd']:
-        log.error('Hamming distance constraint is inconsistent.')
-        exit(1)
-
-    if config['secded']['ecc_width'] != len(config['secded']['ecc_matrix']):
-        log.error('ECC matrix does not have correct number of rows')
-        exit(1)
-
-    for i, l in enumerate(config['secded']['ecc_matrix']):
-        for j, e in enumerate(l):
-            e = _check_int(e)
-            config['secded']['ecc_matrix'][i][j] = e
+from common import check_int
 
 
 def _is_valid_codeword(config, codeword):
@@ -234,10 +147,8 @@ def _get_new_state_word_pair(config, existing_words):
                     incr_cand_ecc = random.choice(incr_cands_ecc)
                     log.info('word {}: {}|{} -> {}|{}'.format(
                         int(len(existing_words) / 2),
-                        base_cand_ecc[ecc_width:],
-                        base_cand_ecc[0:ecc_width],
-                        incr_cand_ecc[ecc_width:],
-                        incr_cand_ecc[0:ecc_width]))
+                        base_cand_ecc[ecc_width:], base_cand_ecc[0:ecc_width],
+                        incr_cand_ecc[ecc_width:], incr_cand_ecc[0:ecc_width]))
                     existing_words.append(base_cand_ecc)
                     existing_words.append(incr_cand_ecc)
                     return (base_cand_ecc, incr_cand_ecc)
@@ -310,91 +221,122 @@ def hd_histogram(existing_words):
     return stats
 
 
-def generate_encoding(config):
-    '''Generates AB, CD and EF encodings and augments config structure.'''
+class LcStEnc():
+    '''Life cycle state encoding generator class
 
-    word_types = ['ab_words', 'cd_words', 'ef_words']
+    The constructor expects the parsed configuration
+    hjson to be passed in.
+    '''
 
-    # Inititalize with empty lists
-    for w in word_types:
-        config.setdefault(w, [])
+    # This holds the config dict.
+    config = {}
+    # Holds generated life cycle words.
+    gen = {
+        'ab_words': [],
+        'cd_words': [],
+        'ef_words': [],
+        'stats': [],
+    }
 
-    # Generate new encoding words
-    existing_words = []
-    for w in word_types:
-        while len(config[w]) < config['num_' + w]:
-            new_word = _get_new_state_word_pair(config, existing_words)
-            config[w].append(new_word)
+    def __init__(self, config):
+        '''The constructor validates the configuration dict.'''
 
-    # Validate words (this must not fail at this point).
-    _validate_words(config, existing_words)
+        log.info('')
+        log.info('Generate life cycle state')
+        log.info('')
 
-    # Print out HD histogram
-    config['stats'] = hd_histogram(existing_words)
+        if 'seed' not in config:
+            log.error('Missing seed in configuration')
+            exit(1)
 
-    log.info('')
-    log.info('Hamming distance histogram:')
-    log.info('')
-    for bar in config['stats']["bars"]:
-        log.info(bar)
-    log.info('')
-    log.info('Minimum HD: {}'.format(config['stats']['min_hd']))
-    log.info('Maximum HD: {}'.format(config['stats']['max_hd']))
-    log.info('Minimum HW: {}'.format(config['stats']['min_hw']))
-    log.info('Maximum HW: {}'.format(config['stats']['max_hw']))
+        if 'secded' not in config:
+            log.error('Missing secded configuration')
+            exit(1)
 
+        config['secded'].setdefault('data_width', 0)
+        config['secded'].setdefault('ecc_width', 0)
+        config['secded'].setdefault('ecc_matrix', [[]])
+        config.setdefault('num_ab_words', 0)
+        config.setdefault('num_cd_words', 0)
+        config.setdefault('num_ef_words', 0)
+        config.setdefault('min_hw', 0)
+        config.setdefault('max_hw', 0)
+        config.setdefault('min_hd', 0)
 
-def main():
-    log.basicConfig(level=log.INFO,
-                    format="%(asctime)s - %(message)s",
-                    datefmt="%Y-%m-%d %H:%M")
+        config['seed'] = check_int(config['seed'])
 
-    parser = argparse.ArgumentParser(
-        prog="gen-lc-state-enc",
-        description=wrapped_docstring(),
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        log.info('Seed: {0:x}'.format(config['seed']))
+        log.info('')
 
-    parser.add_argument('-s',
-                        '--seed',
-                        type=int,
-                        metavar='<seed>',
-                        help='Custom seed for RNG.')
+        config['secded']['data_width'] = check_int(
+            config['secded']['data_width'])
+        config['secded']['ecc_width'] = check_int(
+            config['secded']['ecc_width'])
+        config['num_ab_words'] = check_int(config['num_ab_words'])
+        config['num_cd_words'] = check_int(config['num_cd_words'])
+        config['num_ef_words'] = check_int(config['num_ef_words'])
+        config['min_hw'] = check_int(config['min_hw'])
+        config['max_hw'] = check_int(config['max_hw'])
+        config['min_hd'] = check_int(config['min_hd'])
 
-    args = parser.parse_args()
+        total_width = config['secded']['data_width'] + config['secded'][
+            'ecc_width']
 
-    with open(LC_STATE_DEFINITION_FILE, 'r') as infile:
-        config = hjson.load(infile)
+        if config['min_hw'] >= total_width or \
+           config['max_hw'] > total_width or \
+           config['min_hw'] >= config['max_hw']:
+            log.error('Hamming weight constraints are inconsistent.')
+            exit(1)
 
-        # If specified, override the seed for random netlist constant computation.
-        if args.seed:
-            log.warning('Commandline override of seed with {}.'.format(
-                args.seed))
-            config['seed'] = args.seed
-        # Otherwise, we either take it from the .hjson if present, or
-        # randomly generate a new seed if not.
-        else:
-            random.seed()
-            new_seed = random.getrandbits(64)
-            if config.setdefault('seed', new_seed) == new_seed:
-                log.warning(
-                    'No seed specified, setting to {}.'.format(new_seed))
+        if config['max_hw'] - config['min_hw'] + 1 < config['min_hd']:
+            log.error('Hamming distance constraint is inconsistent.')
+            exit(1)
 
-        # Initialize RNG.
-        random.seed(int(config['seed']))
+        if config['secded']['ecc_width'] != len(
+                config['secded']['ecc_matrix']):
+            log.error('ECC matrix does not have correct number of rows')
+            exit(1)
 
-        # validate config and generate encoding
-        validate(config)
-        generate_encoding(config)
+        log.info('SECDED Matrix:')
+        for i, l in enumerate(config['secded']['ecc_matrix']):
+            log.info('ECC Bit {} Fanin: {}'.format(i, l))
+            for j, e in enumerate(l):
+                e = check_int(e)
+                config['secded']['ecc_matrix'][i][j] = e
 
-        # render all templates
-        for template in TEMPLATES:
-            with open(template, 'r') as tplfile:
-                tpl = Template(tplfile.read())
-                with open(
-                        Path(template).parent.joinpath(Path(template).stem),
-                        'w') as outfile:
-                    outfile.write(tpl.render(config=config))
+        log.info('')
 
+        self.config = config
 
-if __name__ == "__main__":
-    main()
+        # Re-initialize with seed to make results reproducible.
+        random.seed(int(self.config['seed']))
+
+        # Generate new encoding words
+        word_types = ['ab_words', 'cd_words', 'ef_words']
+        existing_words = []
+        for w in word_types:
+            while len(self.gen[w]) < self.config['num_' + w]:
+                new_word = _get_new_state_word_pair(self.config,
+                                                    existing_words)
+                self.gen[w].append(new_word)
+
+        # Validate words (this must not fail at this point).
+        _validate_words(self.config, existing_words)
+
+        # Print out HD histogram
+        self.gen['stats'] = hd_histogram(existing_words)
+
+        log.info('')
+        log.info('Hamming distance histogram:')
+        log.info('')
+        for bar in self.gen['stats']["bars"]:
+            log.info(bar)
+        log.info('')
+        log.info('Minimum HD: {}'.format(self.gen['stats']['min_hd']))
+        log.info('Maximum HD: {}'.format(self.gen['stats']['max_hd']))
+        log.info('Minimum HW: {}'.format(self.gen['stats']['min_hw']))
+        log.info('Maximum HW: {}'.format(self.gen['stats']['max_hw']))
+
+        log.info('')
+        log.info('Successfully generated life cycle state.')
+        log.info('')
