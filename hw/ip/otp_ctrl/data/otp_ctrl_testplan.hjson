@@ -83,11 +83,12 @@
     {
       name: interface_key_check
       desc: '''
-            OTP_CTRL can output keys to key_manager, flash, sram, and OTBN. This test will modify
-            inputs and OTP storage, the check if generated keys are correct.
+            OTP_CTRL will generate keys to flash, sram, and OTBN upon their requests.
+            This test will randomly issue key requests from the above modules either before or
+            after partitions are locked, and check if generated keys are correct.
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_rand_key_rsp"]
     }
     {
       name: lc_interactions

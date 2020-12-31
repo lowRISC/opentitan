@@ -74,16 +74,6 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       end
       do_otp_ctrl_init = 0;
 
-      // get otbn keys
-      req_otbn_key();
-
-      // get flash addr and data
-      req_flash_addr_key();
-      req_flash_data_key();
-
-      // get sram keys
-      req_all_sram_keys();
-
       for (int i = 0; i < num_dai_op; i++) begin
         bit [TL_DW-1:0] rdata0, rdata1;
 

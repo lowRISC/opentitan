@@ -75,6 +75,11 @@
       uvm_test_seq: otp_ctrl_dai_errs_vseq
     }
 
+    {
+      name: otp_ctrl_rand_key_rsp
+      uvm_test_seq: otp_ctrl_rand_key_rsp_vseq
+    }
+
   ]
 
   // List of regressions.
