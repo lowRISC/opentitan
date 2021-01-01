@@ -34,18 +34,17 @@ interface.
 
 ## Compatibility
 
-The UART is compatible with the interface provided by the Comportable UART.
+The USBUART is software compatible with the interface provided by the Comportable UART.
+It is hardware compatible with the USBDEV interface.
 
 # Theory of Operations
 
-The register inteface to the USBUART matches the standard UART. There
-are two additional registers {{< regref "USBSTAT" >}} and {{< regref "USBPARAM" >}} that provide
-information about the USB interface that may be useful for software
-that knows this is more than the simple uart. In particular when the
-interface is used to bridge from USB to a real uart interface (for
-example for [Case closed
-debugging](https://chromium.googlesource.com/chromiumos/platform/ec/+/master/board/servo_micro/ccd.md))
-the requested Baud rate and parity may be read.
+The register inteface to the USBUART matches the standard UART.
+There are three additional registers.
+{{< regref "USBCTRL" >}} controls the USB PHY parameters (in most cases the default will work).
+{{< regref "USBSTAT" >}} and {{< regref "USBPARAM" >}} provide information about the USB interface.
+These may be useful for software that knows this is more than the simple uart.
+In particular when the interface is used to bridge from USB to a real uart interface (for example for [Case closed debugging](https://chromium.googlesource.com/chromiumos/platform/ec/+/master/board/servo_micro/ccd.md)) the requested Baud rate and parity may be read.
 
 
 ## Block Diagram
@@ -62,15 +61,20 @@ the requested Baud rate and parity may be read.
 
 The USB device interface supports only Full Speed (12Mb) operation and
 complies with the USB2.0 standard using the Google Simple Stream
-class. The USB physical interface is implemented using two general
+class. The USB physical interface matches USBDEV (see more detail in
+that documentation) and could be implemented with a full USB PHY or
+(if passing USB signal compliance is not essential) using two general
 3.3V I/O pins for the USB D+/D- wires. These should be connected
 through 22-48 Ohm series resistors to the USB connector (exact value
 and SI depends on the implementation and the resistor could be
 incorporated in the output driver if the implementation allows).
 
 The USB FS interface needs a 1.5kOhm pullup to 3.3V on the D+ wire to
-indicate the presenece of the peripheral. This resistor is connected
-between the D+ line and the 3.3V usb_pullup output pin, so the device
+indicate the presenece of the peripheral. If a USB PHY is used the
+usb_[dp|dn]pullup_en signal should be used to enable the pullup on D+/D-.
+If the simple interface is used then a 3.3V output pin should be connected
+to usb_dppullup_o/usb_dppullup_en and the 1.5kOhm resistor is connected
+between pin and the D+. The device
 is disconnected until the pin is driven high. This is done when either
 the UART transmit or receive interface is enabled.
 
@@ -80,7 +84,8 @@ happened, or because the host is attempting to hard reset the
 device). This is detected on the usb_sense input which should signal
 the presence of VBUS. Depending on the implementation the chip pin may
 connect directly to VBUS (5V logic) or be connected using a resisor
-divider.
+divider. Note that this signal is only available in the {{< regref "USBSTAT" >}}
+register it is not used by the interface.
 
 The implementation provides the USB end-point zero descriptors
 required (with no strings provided), OUT endpoint 1 that carries data
@@ -124,17 +129,25 @@ In any case, if any FIFO receives write request when FIFO is full,
 
 `intr_rx_frame_err` signal is not used.
 
-A break condition is signalled if either the VBUS is removed or the
-host has not sent a Start-of-Frame for 2.048ms (an SOF should happen
-every 1ms).
+A break condition is signalled if the host has not sent a Start-of-Frame for 4.096ms (an SOF should happen every 1ms).
+Note that this will happen if the link is reset or suspended which can be observed in the {{< regref "USBSTAT" >}} register.
 
 # Programmers Guide
 
 ## Initialization
 
-The UART does not need initialization (default is for usb_pullup to be
-applied).  However, since the settings will be ignored it is possible
-to run the initialization sequence for the standard UART.
+The USB section in most cases does not need initialization unless the D+/D- pins need to be flipped or a USB PHY is used when bits must be set in the {{< regref "USBCTRL" >}} register.
+ * Flipping the pins is done by setting the `pinflip` bit.
+ * The interface always produces both D+/D- (single ended mode) and D/SE0 ("differential" mode) output signals.
+ In most cases this will allow a USB PHY to transmit correctly because only one set of signals will be connected.
+ Some PHYs may need the `tx_mode_se` output to be set to select the output mode, this must be set in the `tx_diff` bit.
+ * By default the interface will use a single ended receiver.
+ If the PHY contains a differential receiver then the interface should be switched to using it by setting the `rx_diff` bit.
+ * By default the interface will produce the clock calibration signals.
+ These may be disabled by setting the `ref_disable` bit.
+
+The USB device is enabled (and the pullup presented) when the UART rx or tx are enabled in the {{< regref "CTRL" >}} register.
+This would be done as part of normal UART initialization.
 
 
 ## Common Examples

@@ -10,12 +10,12 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
       - lowrisc:ip:usb_fs_nb_pe
-      - lowrisc:ip:usbdev
     files:
       - rtl/usbuart_reg_pkg.sv
       - rtl/usbuart_reg_top.sv
       - rtl/usbuart_core.sv
       - rtl/usbuart_usbif.sv
+      - rtl/usbuart_iomux.sv
       - rtl/usb_serial_fifo_ep.sv
       - rtl/usb_serial_ctrl_ep.sv
       - rtl/usbuart.sv
@@ -83,5 +83,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
-

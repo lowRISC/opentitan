@@ -304,6 +304,7 @@ module usbdev_usbif  #(
     .in_ep_current_o       (in_ep_current),
     .in_ep_rollback_o      (link_in_err_o),
     .in_ep_xfr_end_o       (in_ep_xfr_end),
+    .in_ep_acked_o         (), // us xfr_end to include iso transactions
     .in_ep_get_addr_o      (in_ep_get_addr),
     .in_ep_data_get_o      (in_ep_data_get),
     .in_ep_newpkt_o        (in_ep_newpkt),

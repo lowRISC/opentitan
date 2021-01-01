@@ -71,70 +71,142 @@ module usbuart_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic intr_state_tx_watermark_qs;
-  logic intr_state_tx_watermark_wd;
-  logic intr_state_tx_watermark_we;
-  logic intr_state_rx_watermark_qs;
-  logic intr_state_rx_watermark_wd;
-  logic intr_state_rx_watermark_we;
-  logic intr_state_tx_overflow_qs;
-  logic intr_state_tx_overflow_wd;
-  logic intr_state_tx_overflow_we;
-  logic intr_state_rx_overflow_qs;
-  logic intr_state_rx_overflow_wd;
-  logic intr_state_rx_overflow_we;
-  logic intr_state_rx_frame_err_qs;
-  logic intr_state_rx_frame_err_wd;
-  logic intr_state_rx_frame_err_we;
-  logic intr_state_rx_break_err_qs;
-  logic intr_state_rx_break_err_wd;
-  logic intr_state_rx_break_err_we;
-  logic intr_state_rx_timeout_qs;
-  logic intr_state_rx_timeout_wd;
-  logic intr_state_rx_timeout_we;
-  logic intr_state_rx_parity_err_qs;
-  logic intr_state_rx_parity_err_wd;
-  logic intr_state_rx_parity_err_we;
-  logic intr_enable_tx_watermark_qs;
-  logic intr_enable_tx_watermark_wd;
-  logic intr_enable_tx_watermark_we;
-  logic intr_enable_rx_watermark_qs;
-  logic intr_enable_rx_watermark_wd;
-  logic intr_enable_rx_watermark_we;
-  logic intr_enable_tx_overflow_qs;
-  logic intr_enable_tx_overflow_wd;
-  logic intr_enable_tx_overflow_we;
-  logic intr_enable_rx_overflow_qs;
-  logic intr_enable_rx_overflow_wd;
-  logic intr_enable_rx_overflow_we;
-  logic intr_enable_rx_frame_err_qs;
-  logic intr_enable_rx_frame_err_wd;
-  logic intr_enable_rx_frame_err_we;
-  logic intr_enable_rx_break_err_qs;
-  logic intr_enable_rx_break_err_wd;
-  logic intr_enable_rx_break_err_we;
-  logic intr_enable_rx_timeout_qs;
-  logic intr_enable_rx_timeout_wd;
-  logic intr_enable_rx_timeout_we;
-  logic intr_enable_rx_parity_err_qs;
-  logic intr_enable_rx_parity_err_wd;
-  logic intr_enable_rx_parity_err_we;
-  logic intr_test_tx_watermark_wd;
-  logic intr_test_tx_watermark_we;
-  logic intr_test_rx_watermark_wd;
-  logic intr_test_rx_watermark_we;
-  logic intr_test_tx_overflow_wd;
-  logic intr_test_tx_overflow_we;
-  logic intr_test_rx_overflow_wd;
-  logic intr_test_rx_overflow_we;
-  logic intr_test_rx_frame_err_wd;
-  logic intr_test_rx_frame_err_we;
-  logic intr_test_rx_break_err_wd;
-  logic intr_test_rx_break_err_we;
-  logic intr_test_rx_timeout_wd;
-  logic intr_test_rx_timeout_we;
-  logic intr_test_rx_parity_err_wd;
-  logic intr_test_rx_parity_err_we;
+  logic intr_state_pkt_received_qs;
+  logic intr_state_pkt_received_wd;
+  logic intr_state_pkt_received_we;
+  logic intr_state_pkt_sent_qs;
+  logic intr_state_pkt_sent_wd;
+  logic intr_state_pkt_sent_we;
+  logic intr_state_disconnected_qs;
+  logic intr_state_disconnected_wd;
+  logic intr_state_disconnected_we;
+  logic intr_state_host_lost_qs;
+  logic intr_state_host_lost_wd;
+  logic intr_state_host_lost_we;
+  logic intr_state_link_reset_qs;
+  logic intr_state_link_reset_wd;
+  logic intr_state_link_reset_we;
+  logic intr_state_link_suspend_qs;
+  logic intr_state_link_suspend_wd;
+  logic intr_state_link_suspend_we;
+  logic intr_state_link_resume_qs;
+  logic intr_state_link_resume_wd;
+  logic intr_state_link_resume_we;
+  logic intr_state_av_empty_qs;
+  logic intr_state_av_empty_wd;
+  logic intr_state_av_empty_we;
+  logic intr_state_rx_full_qs;
+  logic intr_state_rx_full_wd;
+  logic intr_state_rx_full_we;
+  logic intr_state_av_overflow_qs;
+  logic intr_state_av_overflow_wd;
+  logic intr_state_av_overflow_we;
+  logic intr_state_link_in_err_qs;
+  logic intr_state_link_in_err_wd;
+  logic intr_state_link_in_err_we;
+  logic intr_state_rx_crc_err_qs;
+  logic intr_state_rx_crc_err_wd;
+  logic intr_state_rx_crc_err_we;
+  logic intr_state_rx_pid_err_qs;
+  logic intr_state_rx_pid_err_wd;
+  logic intr_state_rx_pid_err_we;
+  logic intr_state_rx_bitstuff_err_qs;
+  logic intr_state_rx_bitstuff_err_wd;
+  logic intr_state_rx_bitstuff_err_we;
+  logic intr_state_frame_qs;
+  logic intr_state_frame_wd;
+  logic intr_state_frame_we;
+  logic intr_state_connected_qs;
+  logic intr_state_connected_wd;
+  logic intr_state_connected_we;
+  logic intr_state_link_out_err_qs;
+  logic intr_state_link_out_err_wd;
+  logic intr_state_link_out_err_we;
+  logic intr_enable_pkt_received_qs;
+  logic intr_enable_pkt_received_wd;
+  logic intr_enable_pkt_received_we;
+  logic intr_enable_pkt_sent_qs;
+  logic intr_enable_pkt_sent_wd;
+  logic intr_enable_pkt_sent_we;
+  logic intr_enable_disconnected_qs;
+  logic intr_enable_disconnected_wd;
+  logic intr_enable_disconnected_we;
+  logic intr_enable_host_lost_qs;
+  logic intr_enable_host_lost_wd;
+  logic intr_enable_host_lost_we;
+  logic intr_enable_link_reset_qs;
+  logic intr_enable_link_reset_wd;
+  logic intr_enable_link_reset_we;
+  logic intr_enable_link_suspend_qs;
+  logic intr_enable_link_suspend_wd;
+  logic intr_enable_link_suspend_we;
+  logic intr_enable_link_resume_qs;
+  logic intr_enable_link_resume_wd;
+  logic intr_enable_link_resume_we;
+  logic intr_enable_av_empty_qs;
+  logic intr_enable_av_empty_wd;
+  logic intr_enable_av_empty_we;
+  logic intr_enable_rx_full_qs;
+  logic intr_enable_rx_full_wd;
+  logic intr_enable_rx_full_we;
+  logic intr_enable_av_overflow_qs;
+  logic intr_enable_av_overflow_wd;
+  logic intr_enable_av_overflow_we;
+  logic intr_enable_link_in_err_qs;
+  logic intr_enable_link_in_err_wd;
+  logic intr_enable_link_in_err_we;
+  logic intr_enable_rx_crc_err_qs;
+  logic intr_enable_rx_crc_err_wd;
+  logic intr_enable_rx_crc_err_we;
+  logic intr_enable_rx_pid_err_qs;
+  logic intr_enable_rx_pid_err_wd;
+  logic intr_enable_rx_pid_err_we;
+  logic intr_enable_rx_bitstuff_err_qs;
+  logic intr_enable_rx_bitstuff_err_wd;
+  logic intr_enable_rx_bitstuff_err_we;
+  logic intr_enable_frame_qs;
+  logic intr_enable_frame_wd;
+  logic intr_enable_frame_we;
+  logic intr_enable_connected_qs;
+  logic intr_enable_connected_wd;
+  logic intr_enable_connected_we;
+  logic intr_enable_link_out_err_qs;
+  logic intr_enable_link_out_err_wd;
+  logic intr_enable_link_out_err_we;
+  logic intr_test_pkt_received_wd;
+  logic intr_test_pkt_received_we;
+  logic intr_test_pkt_sent_wd;
+  logic intr_test_pkt_sent_we;
+  logic intr_test_disconnected_wd;
+  logic intr_test_disconnected_we;
+  logic intr_test_host_lost_wd;
+  logic intr_test_host_lost_we;
+  logic intr_test_link_reset_wd;
+  logic intr_test_link_reset_we;
+  logic intr_test_link_suspend_wd;
+  logic intr_test_link_suspend_we;
+  logic intr_test_link_resume_wd;
+  logic intr_test_link_resume_we;
+  logic intr_test_av_empty_wd;
+  logic intr_test_av_empty_we;
+  logic intr_test_rx_full_wd;
+  logic intr_test_rx_full_we;
+  logic intr_test_av_overflow_wd;
+  logic intr_test_av_overflow_we;
+  logic intr_test_link_in_err_wd;
+  logic intr_test_link_in_err_we;
+  logic intr_test_rx_crc_err_wd;
+  logic intr_test_rx_crc_err_we;
+  logic intr_test_rx_pid_err_wd;
+  logic intr_test_rx_pid_err_we;
+  logic intr_test_rx_bitstuff_err_wd;
+  logic intr_test_rx_bitstuff_err_we;
+  logic intr_test_frame_wd;
+  logic intr_test_frame_we;
+  logic intr_test_connected_wd;
+  logic intr_test_connected_we;
+  logic intr_test_link_out_err_wd;
+  logic intr_test_link_out_err_we;
   logic ctrl_tx_qs;
   logic ctrl_tx_wd;
   logic ctrl_tx_we;
@@ -178,10 +250,8 @@ module usbuart_reg_top (
   logic rdata_re;
   logic [7:0] wdata_wd;
   logic wdata_we;
-  logic fifo_ctrl_rxrst_qs;
   logic fifo_ctrl_rxrst_wd;
   logic fifo_ctrl_rxrst_we;
-  logic fifo_ctrl_txrst_qs;
   logic fifo_ctrl_txrst_wd;
   logic fifo_ctrl_txrst_we;
   logic [2:0] fifo_ctrl_rxilvl_qs;
@@ -208,12 +278,28 @@ module usbuart_reg_top (
   logic timeout_ctrl_en_qs;
   logic timeout_ctrl_en_wd;
   logic timeout_ctrl_en_we;
+  logic usbctrl_pinflip_qs;
+  logic usbctrl_pinflip_wd;
+  logic usbctrl_pinflip_we;
+  logic usbctrl_tx_diff_qs;
+  logic usbctrl_tx_diff_wd;
+  logic usbctrl_tx_diff_we;
+  logic usbctrl_rx_diff_qs;
+  logic usbctrl_rx_diff_wd;
+  logic usbctrl_rx_diff_we;
+  logic usbctrl_ref_disable_qs;
+  logic usbctrl_ref_disable_wd;
+  logic usbctrl_ref_disable_we;
   logic [10:0] usbstat_frame_qs;
   logic usbstat_frame_re;
-  logic usbstat_host_timeout_qs;
-  logic usbstat_host_timeout_re;
+  logic usbstat_link_reset_qs;
+  logic usbstat_link_reset_re;
+  logic usbstat_link_suspend_qs;
+  logic usbstat_link_suspend_re;
   logic usbstat_host_lost_qs;
   logic usbstat_host_lost_re;
+  logic usbstat_pwr_sense_qs;
+  logic usbstat_pwr_sense_re;
   logic [6:0] usbstat_device_address_qs;
   logic usbstat_device_address_re;
   logic [15:0] usbparam_baud_req_qs;
@@ -224,228 +310,462 @@ module usbuart_reg_top (
   // Register instances
   // R[intr_state]: V(False)
 
-  //   F[tx_watermark]: 0:0
+  //   F[pkt_received]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_tx_watermark (
+  ) u_intr_state_pkt_received (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_tx_watermark_we),
-    .wd     (intr_state_tx_watermark_wd),
+    .we     (intr_state_pkt_received_we),
+    .wd     (intr_state_pkt_received_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.tx_watermark.de),
-    .d      (hw2reg.intr_state.tx_watermark.d ),
+    .de     (hw2reg.intr_state.pkt_received.de),
+    .d      (hw2reg.intr_state.pkt_received.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.tx_watermark.q ),
+    .q      (reg2hw.intr_state.pkt_received.q ),
 
     // to register interface (read)
-    .qs     (intr_state_tx_watermark_qs)
+    .qs     (intr_state_pkt_received_qs)
   );
 
 
-  //   F[rx_watermark]: 1:1
+  //   F[pkt_sent]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_rx_watermark (
+  ) u_intr_state_pkt_sent (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_rx_watermark_we),
-    .wd     (intr_state_rx_watermark_wd),
+    .we     (intr_state_pkt_sent_we),
+    .wd     (intr_state_pkt_sent_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.rx_watermark.de),
-    .d      (hw2reg.intr_state.rx_watermark.d ),
+    .de     (hw2reg.intr_state.pkt_sent.de),
+    .d      (hw2reg.intr_state.pkt_sent.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_watermark.q ),
+    .q      (reg2hw.intr_state.pkt_sent.q ),
 
     // to register interface (read)
-    .qs     (intr_state_rx_watermark_qs)
+    .qs     (intr_state_pkt_sent_qs)
   );
 
 
-  //   F[tx_overflow]: 2:2
+  //   F[disconnected]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_tx_overflow (
+  ) u_intr_state_disconnected (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_tx_overflow_we),
-    .wd     (intr_state_tx_overflow_wd),
+    .we     (intr_state_disconnected_we),
+    .wd     (intr_state_disconnected_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.tx_overflow.de),
-    .d      (hw2reg.intr_state.tx_overflow.d ),
+    .de     (hw2reg.intr_state.disconnected.de),
+    .d      (hw2reg.intr_state.disconnected.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.tx_overflow.q ),
+    .q      (reg2hw.intr_state.disconnected.q ),
 
     // to register interface (read)
-    .qs     (intr_state_tx_overflow_qs)
+    .qs     (intr_state_disconnected_qs)
   );
 
 
-  //   F[rx_overflow]: 3:3
+  //   F[host_lost]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_rx_overflow (
+  ) u_intr_state_host_lost (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_rx_overflow_we),
-    .wd     (intr_state_rx_overflow_wd),
+    .we     (intr_state_host_lost_we),
+    .wd     (intr_state_host_lost_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.rx_overflow.de),
-    .d      (hw2reg.intr_state.rx_overflow.d ),
+    .de     (hw2reg.intr_state.host_lost.de),
+    .d      (hw2reg.intr_state.host_lost.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_overflow.q ),
+    .q      (reg2hw.intr_state.host_lost.q ),
 
     // to register interface (read)
-    .qs     (intr_state_rx_overflow_qs)
+    .qs     (intr_state_host_lost_qs)
   );
 
 
-  //   F[rx_frame_err]: 4:4
+  //   F[link_reset]: 4:4
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_rx_frame_err (
+  ) u_intr_state_link_reset (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_rx_frame_err_we),
-    .wd     (intr_state_rx_frame_err_wd),
+    .we     (intr_state_link_reset_we),
+    .wd     (intr_state_link_reset_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.rx_frame_err.de),
-    .d      (hw2reg.intr_state.rx_frame_err.d ),
+    .de     (hw2reg.intr_state.link_reset.de),
+    .d      (hw2reg.intr_state.link_reset.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_frame_err.q ),
+    .q      (reg2hw.intr_state.link_reset.q ),
 
     // to register interface (read)
-    .qs     (intr_state_rx_frame_err_qs)
+    .qs     (intr_state_link_reset_qs)
   );
 
 
-  //   F[rx_break_err]: 5:5
+  //   F[link_suspend]: 5:5
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_rx_break_err (
+  ) u_intr_state_link_suspend (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_rx_break_err_we),
-    .wd     (intr_state_rx_break_err_wd),
+    .we     (intr_state_link_suspend_we),
+    .wd     (intr_state_link_suspend_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.rx_break_err.de),
-    .d      (hw2reg.intr_state.rx_break_err.d ),
+    .de     (hw2reg.intr_state.link_suspend.de),
+    .d      (hw2reg.intr_state.link_suspend.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_break_err.q ),
+    .q      (reg2hw.intr_state.link_suspend.q ),
 
     // to register interface (read)
-    .qs     (intr_state_rx_break_err_qs)
+    .qs     (intr_state_link_suspend_qs)
   );
 
 
-  //   F[rx_timeout]: 6:6
+  //   F[link_resume]: 6:6
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_rx_timeout (
+  ) u_intr_state_link_resume (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_rx_timeout_we),
-    .wd     (intr_state_rx_timeout_wd),
+    .we     (intr_state_link_resume_we),
+    .wd     (intr_state_link_resume_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.rx_timeout.de),
-    .d      (hw2reg.intr_state.rx_timeout.d ),
+    .de     (hw2reg.intr_state.link_resume.de),
+    .d      (hw2reg.intr_state.link_resume.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_timeout.q ),
+    .q      (reg2hw.intr_state.link_resume.q ),
 
     // to register interface (read)
-    .qs     (intr_state_rx_timeout_qs)
+    .qs     (intr_state_link_resume_qs)
   );
 
 
-  //   F[rx_parity_err]: 7:7
+  //   F[av_empty]: 7:7
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_rx_parity_err (
+  ) u_intr_state_av_empty (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_rx_parity_err_we),
-    .wd     (intr_state_rx_parity_err_wd),
+    .we     (intr_state_av_empty_we),
+    .wd     (intr_state_av_empty_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.rx_parity_err.de),
-    .d      (hw2reg.intr_state.rx_parity_err.d ),
+    .de     (hw2reg.intr_state.av_empty.de),
+    .d      (hw2reg.intr_state.av_empty.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_parity_err.q ),
+    .q      (reg2hw.intr_state.av_empty.q ),
 
     // to register interface (read)
-    .qs     (intr_state_rx_parity_err_qs)
+    .qs     (intr_state_av_empty_qs)
+  );
+
+
+  //   F[rx_full]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_rx_full (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_rx_full_we),
+    .wd     (intr_state_rx_full_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.rx_full.de),
+    .d      (hw2reg.intr_state.rx_full.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.rx_full.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_rx_full_qs)
+  );
+
+
+  //   F[av_overflow]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_av_overflow (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_av_overflow_we),
+    .wd     (intr_state_av_overflow_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.av_overflow.de),
+    .d      (hw2reg.intr_state.av_overflow.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.av_overflow.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_av_overflow_qs)
+  );
+
+
+  //   F[link_in_err]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_link_in_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_link_in_err_we),
+    .wd     (intr_state_link_in_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.link_in_err.de),
+    .d      (hw2reg.intr_state.link_in_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.link_in_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_link_in_err_qs)
+  );
+
+
+  //   F[rx_crc_err]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_rx_crc_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_rx_crc_err_we),
+    .wd     (intr_state_rx_crc_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.rx_crc_err.de),
+    .d      (hw2reg.intr_state.rx_crc_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.rx_crc_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_rx_crc_err_qs)
+  );
+
+
+  //   F[rx_pid_err]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_rx_pid_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_rx_pid_err_we),
+    .wd     (intr_state_rx_pid_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.rx_pid_err.de),
+    .d      (hw2reg.intr_state.rx_pid_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.rx_pid_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_rx_pid_err_qs)
+  );
+
+
+  //   F[rx_bitstuff_err]: 13:13
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_rx_bitstuff_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_rx_bitstuff_err_we),
+    .wd     (intr_state_rx_bitstuff_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.rx_bitstuff_err.de),
+    .d      (hw2reg.intr_state.rx_bitstuff_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.rx_bitstuff_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_rx_bitstuff_err_qs)
+  );
+
+
+  //   F[frame]: 14:14
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_frame (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_frame_we),
+    .wd     (intr_state_frame_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.frame.de),
+    .d      (hw2reg.intr_state.frame.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.frame.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_frame_qs)
+  );
+
+
+  //   F[connected]: 15:15
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_connected (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_connected_we),
+    .wd     (intr_state_connected_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.connected.de),
+    .d      (hw2reg.intr_state.connected.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.connected.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_connected_qs)
+  );
+
+
+  //   F[link_out_err]: 16:16
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intr_state_link_out_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_state_link_out_err_we),
+    .wd     (intr_state_link_out_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.link_out_err.de),
+    .d      (hw2reg.intr_state.link_out_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.link_out_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_state_link_out_err_qs)
   );
 
 
   // R[intr_enable]: V(False)
 
-  //   F[tx_watermark]: 0:0
+  //   F[pkt_received]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_tx_watermark (
+  ) u_intr_enable_pkt_received (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_tx_watermark_we),
-    .wd     (intr_enable_tx_watermark_wd),
+    .we     (intr_enable_pkt_received_we),
+    .wd     (intr_enable_pkt_received_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -453,25 +773,25 @@ module usbuart_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.tx_watermark.q ),
+    .q      (reg2hw.intr_enable.pkt_received.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_tx_watermark_qs)
+    .qs     (intr_enable_pkt_received_qs)
   );
 
 
-  //   F[rx_watermark]: 1:1
+  //   F[pkt_sent]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_rx_watermark (
+  ) u_intr_enable_pkt_sent (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_rx_watermark_we),
-    .wd     (intr_enable_rx_watermark_wd),
+    .we     (intr_enable_pkt_sent_we),
+    .wd     (intr_enable_pkt_sent_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -479,25 +799,25 @@ module usbuart_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_watermark.q ),
+    .q      (reg2hw.intr_enable.pkt_sent.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_rx_watermark_qs)
+    .qs     (intr_enable_pkt_sent_qs)
   );
 
 
-  //   F[tx_overflow]: 2:2
+  //   F[disconnected]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_tx_overflow (
+  ) u_intr_enable_disconnected (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_tx_overflow_we),
-    .wd     (intr_enable_tx_overflow_wd),
+    .we     (intr_enable_disconnected_we),
+    .wd     (intr_enable_disconnected_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -505,25 +825,25 @@ module usbuart_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.tx_overflow.q ),
+    .q      (reg2hw.intr_enable.disconnected.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_tx_overflow_qs)
+    .qs     (intr_enable_disconnected_qs)
   );
 
 
-  //   F[rx_overflow]: 3:3
+  //   F[host_lost]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_rx_overflow (
+  ) u_intr_enable_host_lost (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_rx_overflow_we),
-    .wd     (intr_enable_rx_overflow_wd),
+    .we     (intr_enable_host_lost_we),
+    .wd     (intr_enable_host_lost_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -531,25 +851,25 @@ module usbuart_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_overflow.q ),
+    .q      (reg2hw.intr_enable.host_lost.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_rx_overflow_qs)
+    .qs     (intr_enable_host_lost_qs)
   );
 
 
-  //   F[rx_frame_err]: 4:4
+  //   F[link_reset]: 4:4
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_rx_frame_err (
+  ) u_intr_enable_link_reset (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_rx_frame_err_we),
-    .wd     (intr_enable_rx_frame_err_wd),
+    .we     (intr_enable_link_reset_we),
+    .wd     (intr_enable_link_reset_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -557,25 +877,25 @@ module usbuart_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_frame_err.q ),
+    .q      (reg2hw.intr_enable.link_reset.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_rx_frame_err_qs)
+    .qs     (intr_enable_link_reset_qs)
   );
 
 
-  //   F[rx_break_err]: 5:5
+  //   F[link_suspend]: 5:5
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_rx_break_err (
+  ) u_intr_enable_link_suspend (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_rx_break_err_we),
-    .wd     (intr_enable_rx_break_err_wd),
+    .we     (intr_enable_link_suspend_we),
+    .wd     (intr_enable_link_suspend_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -583,25 +903,25 @@ module usbuart_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_break_err.q ),
+    .q      (reg2hw.intr_enable.link_suspend.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_rx_break_err_qs)
+    .qs     (intr_enable_link_suspend_qs)
   );
 
 
-  //   F[rx_timeout]: 6:6
+  //   F[link_resume]: 6:6
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_rx_timeout (
+  ) u_intr_enable_link_resume (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_rx_timeout_we),
-    .wd     (intr_enable_rx_timeout_wd),
+    .we     (intr_enable_link_resume_we),
+    .wd     (intr_enable_link_resume_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -609,25 +929,25 @@ module usbuart_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_timeout.q ),
+    .q      (reg2hw.intr_enable.link_resume.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_rx_timeout_qs)
+    .qs     (intr_enable_link_resume_qs)
   );
 
 
-  //   F[rx_parity_err]: 7:7
+  //   F[av_empty]: 7:7
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_rx_parity_err (
+  ) u_intr_enable_av_empty (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_rx_parity_err_we),
-    .wd     (intr_enable_rx_parity_err_wd),
+    .we     (intr_enable_av_empty_we),
+    .wd     (intr_enable_av_empty_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -635,131 +955,500 @@ module usbuart_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_parity_err.q ),
+    .q      (reg2hw.intr_enable.av_empty.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_rx_parity_err_qs)
+    .qs     (intr_enable_av_empty_qs)
+  );
+
+
+  //   F[rx_full]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_rx_full (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_rx_full_we),
+    .wd     (intr_enable_rx_full_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.rx_full.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_rx_full_qs)
+  );
+
+
+  //   F[av_overflow]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_av_overflow (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_av_overflow_we),
+    .wd     (intr_enable_av_overflow_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.av_overflow.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_av_overflow_qs)
+  );
+
+
+  //   F[link_in_err]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_link_in_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_link_in_err_we),
+    .wd     (intr_enable_link_in_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.link_in_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_link_in_err_qs)
+  );
+
+
+  //   F[rx_crc_err]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_rx_crc_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_rx_crc_err_we),
+    .wd     (intr_enable_rx_crc_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.rx_crc_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_rx_crc_err_qs)
+  );
+
+
+  //   F[rx_pid_err]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_rx_pid_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_rx_pid_err_we),
+    .wd     (intr_enable_rx_pid_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.rx_pid_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_rx_pid_err_qs)
+  );
+
+
+  //   F[rx_bitstuff_err]: 13:13
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_rx_bitstuff_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_rx_bitstuff_err_we),
+    .wd     (intr_enable_rx_bitstuff_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.rx_bitstuff_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_rx_bitstuff_err_qs)
+  );
+
+
+  //   F[frame]: 14:14
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_frame (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_frame_we),
+    .wd     (intr_enable_frame_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.frame.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_frame_qs)
+  );
+
+
+  //   F[connected]: 15:15
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_connected (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_connected_we),
+    .wd     (intr_enable_connected_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.connected.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_connected_qs)
+  );
+
+
+  //   F[link_out_err]: 16:16
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intr_enable_link_out_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intr_enable_link_out_err_we),
+    .wd     (intr_enable_link_out_err_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.link_out_err.q ),
+
+    // to register interface (read)
+    .qs     (intr_enable_link_out_err_qs)
   );
 
 
   // R[intr_test]: V(True)
 
-  //   F[tx_watermark]: 0:0
+  //   F[pkt_received]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_tx_watermark (
+  ) u_intr_test_pkt_received (
     .re     (1'b0),
-    .we     (intr_test_tx_watermark_we),
-    .wd     (intr_test_tx_watermark_wd),
+    .we     (intr_test_pkt_received_we),
+    .wd     (intr_test_pkt_received_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.tx_watermark.qe),
-    .q      (reg2hw.intr_test.tx_watermark.q ),
+    .qe     (reg2hw.intr_test.pkt_received.qe),
+    .q      (reg2hw.intr_test.pkt_received.q ),
     .qs     ()
   );
 
 
-  //   F[rx_watermark]: 1:1
+  //   F[pkt_sent]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_rx_watermark (
+  ) u_intr_test_pkt_sent (
     .re     (1'b0),
-    .we     (intr_test_rx_watermark_we),
-    .wd     (intr_test_rx_watermark_wd),
+    .we     (intr_test_pkt_sent_we),
+    .wd     (intr_test_pkt_sent_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_watermark.qe),
-    .q      (reg2hw.intr_test.rx_watermark.q ),
+    .qe     (reg2hw.intr_test.pkt_sent.qe),
+    .q      (reg2hw.intr_test.pkt_sent.q ),
     .qs     ()
   );
 
 
-  //   F[tx_overflow]: 2:2
+  //   F[disconnected]: 2:2
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_tx_overflow (
+  ) u_intr_test_disconnected (
     .re     (1'b0),
-    .we     (intr_test_tx_overflow_we),
-    .wd     (intr_test_tx_overflow_wd),
+    .we     (intr_test_disconnected_we),
+    .wd     (intr_test_disconnected_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.tx_overflow.qe),
-    .q      (reg2hw.intr_test.tx_overflow.q ),
+    .qe     (reg2hw.intr_test.disconnected.qe),
+    .q      (reg2hw.intr_test.disconnected.q ),
     .qs     ()
   );
 
 
-  //   F[rx_overflow]: 3:3
+  //   F[host_lost]: 3:3
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_rx_overflow (
+  ) u_intr_test_host_lost (
     .re     (1'b0),
-    .we     (intr_test_rx_overflow_we),
-    .wd     (intr_test_rx_overflow_wd),
+    .we     (intr_test_host_lost_we),
+    .wd     (intr_test_host_lost_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_overflow.qe),
-    .q      (reg2hw.intr_test.rx_overflow.q ),
+    .qe     (reg2hw.intr_test.host_lost.qe),
+    .q      (reg2hw.intr_test.host_lost.q ),
     .qs     ()
   );
 
 
-  //   F[rx_frame_err]: 4:4
+  //   F[link_reset]: 4:4
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_rx_frame_err (
+  ) u_intr_test_link_reset (
     .re     (1'b0),
-    .we     (intr_test_rx_frame_err_we),
-    .wd     (intr_test_rx_frame_err_wd),
+    .we     (intr_test_link_reset_we),
+    .wd     (intr_test_link_reset_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_frame_err.qe),
-    .q      (reg2hw.intr_test.rx_frame_err.q ),
+    .qe     (reg2hw.intr_test.link_reset.qe),
+    .q      (reg2hw.intr_test.link_reset.q ),
     .qs     ()
   );
 
 
-  //   F[rx_break_err]: 5:5
+  //   F[link_suspend]: 5:5
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_rx_break_err (
+  ) u_intr_test_link_suspend (
     .re     (1'b0),
-    .we     (intr_test_rx_break_err_we),
-    .wd     (intr_test_rx_break_err_wd),
+    .we     (intr_test_link_suspend_we),
+    .wd     (intr_test_link_suspend_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_break_err.qe),
-    .q      (reg2hw.intr_test.rx_break_err.q ),
+    .qe     (reg2hw.intr_test.link_suspend.qe),
+    .q      (reg2hw.intr_test.link_suspend.q ),
     .qs     ()
   );
 
 
-  //   F[rx_timeout]: 6:6
+  //   F[link_resume]: 6:6
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_rx_timeout (
+  ) u_intr_test_link_resume (
     .re     (1'b0),
-    .we     (intr_test_rx_timeout_we),
-    .wd     (intr_test_rx_timeout_wd),
+    .we     (intr_test_link_resume_we),
+    .wd     (intr_test_link_resume_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_timeout.qe),
-    .q      (reg2hw.intr_test.rx_timeout.q ),
+    .qe     (reg2hw.intr_test.link_resume.qe),
+    .q      (reg2hw.intr_test.link_resume.q ),
     .qs     ()
   );
 
 
-  //   F[rx_parity_err]: 7:7
+  //   F[av_empty]: 7:7
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_rx_parity_err (
+  ) u_intr_test_av_empty (
     .re     (1'b0),
-    .we     (intr_test_rx_parity_err_we),
-    .wd     (intr_test_rx_parity_err_wd),
+    .we     (intr_test_av_empty_we),
+    .wd     (intr_test_av_empty_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.rx_parity_err.qe),
-    .q      (reg2hw.intr_test.rx_parity_err.q ),
+    .qe     (reg2hw.intr_test.av_empty.qe),
+    .q      (reg2hw.intr_test.av_empty.q ),
+    .qs     ()
+  );
+
+
+  //   F[rx_full]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_rx_full (
+    .re     (1'b0),
+    .we     (intr_test_rx_full_we),
+    .wd     (intr_test_rx_full_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.rx_full.qe),
+    .q      (reg2hw.intr_test.rx_full.q ),
+    .qs     ()
+  );
+
+
+  //   F[av_overflow]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_av_overflow (
+    .re     (1'b0),
+    .we     (intr_test_av_overflow_we),
+    .wd     (intr_test_av_overflow_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.av_overflow.qe),
+    .q      (reg2hw.intr_test.av_overflow.q ),
+    .qs     ()
+  );
+
+
+  //   F[link_in_err]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_link_in_err (
+    .re     (1'b0),
+    .we     (intr_test_link_in_err_we),
+    .wd     (intr_test_link_in_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.link_in_err.qe),
+    .q      (reg2hw.intr_test.link_in_err.q ),
+    .qs     ()
+  );
+
+
+  //   F[rx_crc_err]: 11:11
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_rx_crc_err (
+    .re     (1'b0),
+    .we     (intr_test_rx_crc_err_we),
+    .wd     (intr_test_rx_crc_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.rx_crc_err.qe),
+    .q      (reg2hw.intr_test.rx_crc_err.q ),
+    .qs     ()
+  );
+
+
+  //   F[rx_pid_err]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_rx_pid_err (
+    .re     (1'b0),
+    .we     (intr_test_rx_pid_err_we),
+    .wd     (intr_test_rx_pid_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.rx_pid_err.qe),
+    .q      (reg2hw.intr_test.rx_pid_err.q ),
+    .qs     ()
+  );
+
+
+  //   F[rx_bitstuff_err]: 13:13
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_rx_bitstuff_err (
+    .re     (1'b0),
+    .we     (intr_test_rx_bitstuff_err_we),
+    .wd     (intr_test_rx_bitstuff_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.rx_bitstuff_err.qe),
+    .q      (reg2hw.intr_test.rx_bitstuff_err.q ),
+    .qs     ()
+  );
+
+
+  //   F[frame]: 14:14
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_frame (
+    .re     (1'b0),
+    .we     (intr_test_frame_we),
+    .wd     (intr_test_frame_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.frame.qe),
+    .q      (reg2hw.intr_test.frame.q ),
+    .qs     ()
+  );
+
+
+  //   F[connected]: 15:15
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_connected (
+    .re     (1'b0),
+    .we     (intr_test_connected_we),
+    .wd     (intr_test_connected_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.connected.qe),
+    .q      (reg2hw.intr_test.connected.q ),
+    .qs     ()
+  );
+
+
+  //   F[link_out_err]: 16:16
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_link_out_err (
+    .re     (1'b0),
+    .we     (intr_test_link_out_err_we),
+    .wd     (intr_test_link_out_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.intr_test.link_out_err.qe),
+    .q      (reg2hw.intr_test.link_out_err.q ),
     .qs     ()
   );
 
@@ -1139,7 +1828,7 @@ module usbuart_reg_top (
   //   F[rxrst]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_fifo_ctrl_rxrst (
     .clk_i   (clk_i    ),
@@ -1150,22 +1839,21 @@ module usbuart_reg_top (
     .wd     (fifo_ctrl_rxrst_wd),
 
     // from internal hardware
-    .de     (hw2reg.fifo_ctrl.rxrst.de),
-    .d      (hw2reg.fifo_ctrl.rxrst.d ),
+    .de     (1'b0),
+    .d      ('0  ),
 
     // to internal hardware
     .qe     (reg2hw.fifo_ctrl.rxrst.qe),
     .q      (reg2hw.fifo_ctrl.rxrst.q ),
 
-    // to register interface (read)
-    .qs     (fifo_ctrl_rxrst_qs)
+    .qs     ()
   );
 
 
   //   F[txrst]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_fifo_ctrl_txrst (
     .clk_i   (clk_i    ),
@@ -1176,15 +1864,14 @@ module usbuart_reg_top (
     .wd     (fifo_ctrl_txrst_wd),
 
     // from internal hardware
-    .de     (hw2reg.fifo_ctrl.txrst.de),
-    .d      (hw2reg.fifo_ctrl.txrst.d ),
+    .de     (1'b0),
+    .d      ('0  ),
 
     // to internal hardware
     .qe     (reg2hw.fifo_ctrl.txrst.qe),
     .q      (reg2hw.fifo_ctrl.txrst.q ),
 
-    // to register interface (read)
-    .qs     (fifo_ctrl_txrst_qs)
+    .qs     ()
   );
 
 
@@ -1396,6 +2083,112 @@ module usbuart_reg_top (
   );
 
 
+  // R[usbctrl]: V(False)
+
+  //   F[pinflip]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_usbctrl_pinflip (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (usbctrl_pinflip_we),
+    .wd     (usbctrl_pinflip_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.usbctrl.pinflip.q ),
+
+    // to register interface (read)
+    .qs     (usbctrl_pinflip_qs)
+  );
+
+
+  //   F[tx_diff]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_usbctrl_tx_diff (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (usbctrl_tx_diff_we),
+    .wd     (usbctrl_tx_diff_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.usbctrl.tx_diff.q ),
+
+    // to register interface (read)
+    .qs     (usbctrl_tx_diff_qs)
+  );
+
+
+  //   F[rx_diff]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_usbctrl_rx_diff (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (usbctrl_rx_diff_we),
+    .wd     (usbctrl_rx_diff_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.usbctrl.rx_diff.q ),
+
+    // to register interface (read)
+    .qs     (usbctrl_rx_diff_qs)
+  );
+
+
+  //   F[ref_disable]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_usbctrl_ref_disable (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (usbctrl_ref_disable_we),
+    .wd     (usbctrl_ref_disable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.usbctrl.ref_disable.q ),
+
+    // to register interface (read)
+    .qs     (usbctrl_ref_disable_qs)
+  );
+
+
   // R[usbstat]: V(True)
 
   //   F[frame]: 10:0
@@ -1413,22 +2206,37 @@ module usbuart_reg_top (
   );
 
 
-  //   F[host_timeout]: 14:14
+  //   F[link_reset]: 12:12
   prim_subreg_ext #(
     .DW    (1)
-  ) u_usbstat_host_timeout (
-    .re     (usbstat_host_timeout_re),
+  ) u_usbstat_link_reset (
+    .re     (usbstat_link_reset_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.usbstat.host_timeout.d),
+    .d      (hw2reg.usbstat.link_reset.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (usbstat_host_timeout_qs)
+    .qs     (usbstat_link_reset_qs)
   );
 
 
-  //   F[host_lost]: 15:15
+  //   F[link_suspend]: 13:13
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_usbstat_link_suspend (
+    .re     (usbstat_link_suspend_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.usbstat.link_suspend.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (usbstat_link_suspend_qs)
+  );
+
+
+  //   F[host_lost]: 14:14
   prim_subreg_ext #(
     .DW    (1)
   ) u_usbstat_host_lost (
@@ -1440,6 +2248,21 @@ module usbuart_reg_top (
     .qe     (),
     .q      (),
     .qs     (usbstat_host_lost_qs)
+  );
+
+
+  //   F[pwr_sense]: 15:15
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_usbstat_pwr_sense (
+    .re     (usbstat_pwr_sense_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.usbstat.pwr_sense.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (usbstat_pwr_sense_qs)
   );
 
 
@@ -1492,7 +2315,7 @@ module usbuart_reg_top (
 
 
 
-  logic [13:0] addr_hit;
+  logic [14:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == USBUART_INTR_STATE_OFFSET);
@@ -1507,8 +2330,9 @@ module usbuart_reg_top (
     addr_hit[ 9] = (reg_addr == USBUART_OVRD_OFFSET);
     addr_hit[10] = (reg_addr == USBUART_VAL_OFFSET);
     addr_hit[11] = (reg_addr == USBUART_TIMEOUT_CTRL_OFFSET);
-    addr_hit[12] = (reg_addr == USBUART_USBSTAT_OFFSET);
-    addr_hit[13] = (reg_addr == USBUART_USBPARAM_OFFSET);
+    addr_hit[12] = (reg_addr == USBUART_USBCTRL_OFFSET);
+    addr_hit[13] = (reg_addr == USBUART_USBSTAT_OFFSET);
+    addr_hit[14] = (reg_addr == USBUART_USBPARAM_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1530,79 +2354,161 @@ module usbuart_reg_top (
     if (addr_hit[11] && reg_we && (USBUART_PERMIT[11] != (USBUART_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[12] && reg_we && (USBUART_PERMIT[12] != (USBUART_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[13] && reg_we && (USBUART_PERMIT[13] != (USBUART_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[14] && reg_we && (USBUART_PERMIT[14] != (USBUART_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_tx_watermark_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_tx_watermark_wd = reg_wdata[0];
+  assign intr_state_pkt_received_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_pkt_received_wd = reg_wdata[0];
 
-  assign intr_state_rx_watermark_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_rx_watermark_wd = reg_wdata[1];
+  assign intr_state_pkt_sent_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_pkt_sent_wd = reg_wdata[1];
 
-  assign intr_state_tx_overflow_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_tx_overflow_wd = reg_wdata[2];
+  assign intr_state_disconnected_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_disconnected_wd = reg_wdata[2];
 
-  assign intr_state_rx_overflow_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_rx_overflow_wd = reg_wdata[3];
+  assign intr_state_host_lost_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_host_lost_wd = reg_wdata[3];
 
-  assign intr_state_rx_frame_err_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_rx_frame_err_wd = reg_wdata[4];
+  assign intr_state_link_reset_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_link_reset_wd = reg_wdata[4];
 
-  assign intr_state_rx_break_err_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_rx_break_err_wd = reg_wdata[5];
+  assign intr_state_link_suspend_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_link_suspend_wd = reg_wdata[5];
 
-  assign intr_state_rx_timeout_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_rx_timeout_wd = reg_wdata[6];
+  assign intr_state_link_resume_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_link_resume_wd = reg_wdata[6];
 
-  assign intr_state_rx_parity_err_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_rx_parity_err_wd = reg_wdata[7];
+  assign intr_state_av_empty_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_av_empty_wd = reg_wdata[7];
 
-  assign intr_enable_tx_watermark_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_tx_watermark_wd = reg_wdata[0];
+  assign intr_state_rx_full_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_full_wd = reg_wdata[8];
 
-  assign intr_enable_rx_watermark_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_rx_watermark_wd = reg_wdata[1];
+  assign intr_state_av_overflow_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_av_overflow_wd = reg_wdata[9];
 
-  assign intr_enable_tx_overflow_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_tx_overflow_wd = reg_wdata[2];
+  assign intr_state_link_in_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_link_in_err_wd = reg_wdata[10];
 
-  assign intr_enable_rx_overflow_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_rx_overflow_wd = reg_wdata[3];
+  assign intr_state_rx_crc_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_crc_err_wd = reg_wdata[11];
 
-  assign intr_enable_rx_frame_err_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_rx_frame_err_wd = reg_wdata[4];
+  assign intr_state_rx_pid_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_pid_err_wd = reg_wdata[12];
 
-  assign intr_enable_rx_break_err_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_rx_break_err_wd = reg_wdata[5];
+  assign intr_state_rx_bitstuff_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_bitstuff_err_wd = reg_wdata[13];
 
-  assign intr_enable_rx_timeout_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_rx_timeout_wd = reg_wdata[6];
+  assign intr_state_frame_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_frame_wd = reg_wdata[14];
 
-  assign intr_enable_rx_parity_err_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_rx_parity_err_wd = reg_wdata[7];
+  assign intr_state_connected_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_connected_wd = reg_wdata[15];
 
-  assign intr_test_tx_watermark_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_tx_watermark_wd = reg_wdata[0];
+  assign intr_state_link_out_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_link_out_err_wd = reg_wdata[16];
 
-  assign intr_test_rx_watermark_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_rx_watermark_wd = reg_wdata[1];
+  assign intr_enable_pkt_received_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_pkt_received_wd = reg_wdata[0];
 
-  assign intr_test_tx_overflow_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_tx_overflow_wd = reg_wdata[2];
+  assign intr_enable_pkt_sent_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_pkt_sent_wd = reg_wdata[1];
 
-  assign intr_test_rx_overflow_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_rx_overflow_wd = reg_wdata[3];
+  assign intr_enable_disconnected_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_disconnected_wd = reg_wdata[2];
 
-  assign intr_test_rx_frame_err_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_rx_frame_err_wd = reg_wdata[4];
+  assign intr_enable_host_lost_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_host_lost_wd = reg_wdata[3];
 
-  assign intr_test_rx_break_err_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_rx_break_err_wd = reg_wdata[5];
+  assign intr_enable_link_reset_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_link_reset_wd = reg_wdata[4];
 
-  assign intr_test_rx_timeout_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_rx_timeout_wd = reg_wdata[6];
+  assign intr_enable_link_suspend_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_link_suspend_wd = reg_wdata[5];
 
-  assign intr_test_rx_parity_err_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_rx_parity_err_wd = reg_wdata[7];
+  assign intr_enable_link_resume_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_link_resume_wd = reg_wdata[6];
+
+  assign intr_enable_av_empty_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_av_empty_wd = reg_wdata[7];
+
+  assign intr_enable_rx_full_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_full_wd = reg_wdata[8];
+
+  assign intr_enable_av_overflow_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_av_overflow_wd = reg_wdata[9];
+
+  assign intr_enable_link_in_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_link_in_err_wd = reg_wdata[10];
+
+  assign intr_enable_rx_crc_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_crc_err_wd = reg_wdata[11];
+
+  assign intr_enable_rx_pid_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_pid_err_wd = reg_wdata[12];
+
+  assign intr_enable_rx_bitstuff_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_bitstuff_err_wd = reg_wdata[13];
+
+  assign intr_enable_frame_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_frame_wd = reg_wdata[14];
+
+  assign intr_enable_connected_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_connected_wd = reg_wdata[15];
+
+  assign intr_enable_link_out_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_link_out_err_wd = reg_wdata[16];
+
+  assign intr_test_pkt_received_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_pkt_received_wd = reg_wdata[0];
+
+  assign intr_test_pkt_sent_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_pkt_sent_wd = reg_wdata[1];
+
+  assign intr_test_disconnected_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_disconnected_wd = reg_wdata[2];
+
+  assign intr_test_host_lost_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_host_lost_wd = reg_wdata[3];
+
+  assign intr_test_link_reset_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_link_reset_wd = reg_wdata[4];
+
+  assign intr_test_link_suspend_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_link_suspend_wd = reg_wdata[5];
+
+  assign intr_test_link_resume_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_link_resume_wd = reg_wdata[6];
+
+  assign intr_test_av_empty_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_av_empty_wd = reg_wdata[7];
+
+  assign intr_test_rx_full_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_full_wd = reg_wdata[8];
+
+  assign intr_test_av_overflow_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_av_overflow_wd = reg_wdata[9];
+
+  assign intr_test_link_in_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_link_in_err_wd = reg_wdata[10];
+
+  assign intr_test_rx_crc_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_crc_err_wd = reg_wdata[11];
+
+  assign intr_test_rx_pid_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_pid_err_wd = reg_wdata[12];
+
+  assign intr_test_rx_bitstuff_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_bitstuff_err_wd = reg_wdata[13];
+
+  assign intr_test_frame_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_frame_wd = reg_wdata[14];
+
+  assign intr_test_connected_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_connected_wd = reg_wdata[15];
+
+  assign intr_test_link_out_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_link_out_err_wd = reg_wdata[16];
 
   assign ctrl_tx_we = addr_hit[3] & reg_we & ~wr_err;
   assign ctrl_tx_wd = reg_wdata[0];
@@ -1678,42 +2584,76 @@ module usbuart_reg_top (
   assign timeout_ctrl_en_we = addr_hit[11] & reg_we & ~wr_err;
   assign timeout_ctrl_en_wd = reg_wdata[31];
 
-  assign usbstat_frame_re = addr_hit[12] && reg_re;
+  assign usbctrl_pinflip_we = addr_hit[12] & reg_we & ~wr_err;
+  assign usbctrl_pinflip_wd = reg_wdata[0];
 
-  assign usbstat_host_timeout_re = addr_hit[12] && reg_re;
+  assign usbctrl_tx_diff_we = addr_hit[12] & reg_we & ~wr_err;
+  assign usbctrl_tx_diff_wd = reg_wdata[1];
 
-  assign usbstat_host_lost_re = addr_hit[12] && reg_re;
+  assign usbctrl_rx_diff_we = addr_hit[12] & reg_we & ~wr_err;
+  assign usbctrl_rx_diff_wd = reg_wdata[2];
 
-  assign usbstat_device_address_re = addr_hit[12] && reg_re;
+  assign usbctrl_ref_disable_we = addr_hit[12] & reg_we & ~wr_err;
+  assign usbctrl_ref_disable_wd = reg_wdata[3];
 
-  assign usbparam_baud_req_re = addr_hit[13] && reg_re;
+  assign usbstat_frame_re = addr_hit[13] && reg_re;
 
-  assign usbparam_parity_req_re = addr_hit[13] && reg_re;
+  assign usbstat_link_reset_re = addr_hit[13] && reg_re;
+
+  assign usbstat_link_suspend_re = addr_hit[13] && reg_re;
+
+  assign usbstat_host_lost_re = addr_hit[13] && reg_re;
+
+  assign usbstat_pwr_sense_re = addr_hit[13] && reg_re;
+
+  assign usbstat_device_address_re = addr_hit[13] && reg_re;
+
+  assign usbparam_baud_req_re = addr_hit[14] && reg_re;
+
+  assign usbparam_parity_req_re = addr_hit[14] && reg_re;
 
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = intr_state_tx_watermark_qs;
-        reg_rdata_next[1] = intr_state_rx_watermark_qs;
-        reg_rdata_next[2] = intr_state_tx_overflow_qs;
-        reg_rdata_next[3] = intr_state_rx_overflow_qs;
-        reg_rdata_next[4] = intr_state_rx_frame_err_qs;
-        reg_rdata_next[5] = intr_state_rx_break_err_qs;
-        reg_rdata_next[6] = intr_state_rx_timeout_qs;
-        reg_rdata_next[7] = intr_state_rx_parity_err_qs;
+        reg_rdata_next[0] = intr_state_pkt_received_qs;
+        reg_rdata_next[1] = intr_state_pkt_sent_qs;
+        reg_rdata_next[2] = intr_state_disconnected_qs;
+        reg_rdata_next[3] = intr_state_host_lost_qs;
+        reg_rdata_next[4] = intr_state_link_reset_qs;
+        reg_rdata_next[5] = intr_state_link_suspend_qs;
+        reg_rdata_next[6] = intr_state_link_resume_qs;
+        reg_rdata_next[7] = intr_state_av_empty_qs;
+        reg_rdata_next[8] = intr_state_rx_full_qs;
+        reg_rdata_next[9] = intr_state_av_overflow_qs;
+        reg_rdata_next[10] = intr_state_link_in_err_qs;
+        reg_rdata_next[11] = intr_state_rx_crc_err_qs;
+        reg_rdata_next[12] = intr_state_rx_pid_err_qs;
+        reg_rdata_next[13] = intr_state_rx_bitstuff_err_qs;
+        reg_rdata_next[14] = intr_state_frame_qs;
+        reg_rdata_next[15] = intr_state_connected_qs;
+        reg_rdata_next[16] = intr_state_link_out_err_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = intr_enable_tx_watermark_qs;
-        reg_rdata_next[1] = intr_enable_rx_watermark_qs;
-        reg_rdata_next[2] = intr_enable_tx_overflow_qs;
-        reg_rdata_next[3] = intr_enable_rx_overflow_qs;
-        reg_rdata_next[4] = intr_enable_rx_frame_err_qs;
-        reg_rdata_next[5] = intr_enable_rx_break_err_qs;
-        reg_rdata_next[6] = intr_enable_rx_timeout_qs;
-        reg_rdata_next[7] = intr_enable_rx_parity_err_qs;
+        reg_rdata_next[0] = intr_enable_pkt_received_qs;
+        reg_rdata_next[1] = intr_enable_pkt_sent_qs;
+        reg_rdata_next[2] = intr_enable_disconnected_qs;
+        reg_rdata_next[3] = intr_enable_host_lost_qs;
+        reg_rdata_next[4] = intr_enable_link_reset_qs;
+        reg_rdata_next[5] = intr_enable_link_suspend_qs;
+        reg_rdata_next[6] = intr_enable_link_resume_qs;
+        reg_rdata_next[7] = intr_enable_av_empty_qs;
+        reg_rdata_next[8] = intr_enable_rx_full_qs;
+        reg_rdata_next[9] = intr_enable_av_overflow_qs;
+        reg_rdata_next[10] = intr_enable_link_in_err_qs;
+        reg_rdata_next[11] = intr_enable_rx_crc_err_qs;
+        reg_rdata_next[12] = intr_enable_rx_pid_err_qs;
+        reg_rdata_next[13] = intr_enable_rx_bitstuff_err_qs;
+        reg_rdata_next[14] = intr_enable_frame_qs;
+        reg_rdata_next[15] = intr_enable_connected_qs;
+        reg_rdata_next[16] = intr_enable_link_out_err_qs;
       end
 
       addr_hit[2]: begin
@@ -1725,6 +2665,15 @@ module usbuart_reg_top (
         reg_rdata_next[5] = '0;
         reg_rdata_next[6] = '0;
         reg_rdata_next[7] = '0;
+        reg_rdata_next[8] = '0;
+        reg_rdata_next[9] = '0;
+        reg_rdata_next[10] = '0;
+        reg_rdata_next[11] = '0;
+        reg_rdata_next[12] = '0;
+        reg_rdata_next[13] = '0;
+        reg_rdata_next[14] = '0;
+        reg_rdata_next[15] = '0;
+        reg_rdata_next[16] = '0;
       end
 
       addr_hit[3]: begin
@@ -1757,8 +2706,8 @@ module usbuart_reg_top (
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[0] = fifo_ctrl_rxrst_qs;
-        reg_rdata_next[1] = fifo_ctrl_txrst_qs;
+        reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
         reg_rdata_next[4:2] = fifo_ctrl_rxilvl_qs;
         reg_rdata_next[6:5] = fifo_ctrl_txilvl_qs;
       end
@@ -1783,13 +2732,22 @@ module usbuart_reg_top (
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[10:0] = usbstat_frame_qs;
-        reg_rdata_next[14] = usbstat_host_timeout_qs;
-        reg_rdata_next[15] = usbstat_host_lost_qs;
-        reg_rdata_next[22:16] = usbstat_device_address_qs;
+        reg_rdata_next[0] = usbctrl_pinflip_qs;
+        reg_rdata_next[1] = usbctrl_tx_diff_qs;
+        reg_rdata_next[2] = usbctrl_rx_diff_qs;
+        reg_rdata_next[3] = usbctrl_ref_disable_qs;
       end
 
       addr_hit[13]: begin
+        reg_rdata_next[10:0] = usbstat_frame_qs;
+        reg_rdata_next[12] = usbstat_link_reset_qs;
+        reg_rdata_next[13] = usbstat_link_suspend_qs;
+        reg_rdata_next[14] = usbstat_host_lost_qs;
+        reg_rdata_next[15] = usbstat_pwr_sense_qs;
+        reg_rdata_next[22:16] = usbstat_device_address_qs;
+      end
+
+      addr_hit[14]: begin
         reg_rdata_next[15:0] = usbparam_baud_req_qs;
         reg_rdata_next[17:16] = usbparam_parity_req_qs;
       end

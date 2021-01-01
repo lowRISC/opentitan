@@ -30,6 +30,7 @@ module usb_fs_nb_in_pe #(
   output logic [3:0]            in_ep_current_o, // Other signals addressed to this ep
   output logic                  in_ep_rollback_o, // Bad termination, rollback transaction
   output logic                  in_ep_xfr_end_o, // good termination, transaction complete
+  output logic                  in_ep_acked_o,   // good term completed by ack (subset of xfr_end)
   output logic [PktW - 1:0]     in_ep_get_addr_o, // Offset requested (0..pktlen)
   output logic                  in_ep_data_get_o, // Accept data (get_addr advances too)
   output logic                  in_ep_newpkt_o, // New IN packet starting (updates in_ep_current_o)
@@ -91,9 +92,11 @@ module usb_fs_nb_in_pe #(
   state_in_e  in_xfr_state;
   state_in_e  in_xfr_state_next;
 
-  logic in_xfr_end;
+  logic in_xfr_iso_end;
+  logic in_xfr_acked;
 
-  assign in_ep_xfr_end_o = in_xfr_end;
+  assign in_ep_xfr_end_o = in_xfr_iso_end | in_xfr_acked;
+  assign in_ep_acked_o = in_xfr_acked;
 
   // data toggle state
   logic [NumInEps-1:0] data_toggle_q, data_toggle_d;
@@ -155,7 +158,8 @@ module usb_fs_nb_in_pe #(
 
   always_comb begin
     in_xfr_state_next = in_xfr_state;
-    in_xfr_end = 1'b0;
+    in_xfr_iso_end = 1'b0;
+    in_xfr_acked = 1'b0;
     tx_pkt_start_o = 1'b0;
     tx_pid_o = 4'b0000;
     rollback_in_xfr = 1'b0;
@@ -199,7 +203,7 @@ module usb_fs_nb_in_pe #(
         if ((!more_data_to_send) || ((&in_ep_get_addr_o) && tx_data_get_i)) begin
           if (in_ep_iso_i[in_ep_index]) begin
             in_xfr_state_next = StIdle; // no ACK for ISO EPs
-            in_xfr_end = 1'b1;
+            in_xfr_iso_end = 1'b1;
           end else begin
             in_xfr_state_next = StWaitAck;
           end
@@ -212,7 +216,7 @@ module usb_fs_nb_in_pe #(
         // FIXME: need to handle smash/timeout
         if (ack_received) begin
           in_xfr_state_next = StIdle;
-          in_xfr_end = 1'b1;
+          in_xfr_acked = 1'b1;
         end else if (in_token_received) begin
           in_xfr_state_next = StRcvdIn;
           rollback_in_xfr = 1'b1;
