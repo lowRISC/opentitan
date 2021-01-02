@@ -20,6 +20,7 @@ def bazel_embedded_deps():
             name = "rules_cc",
             commit = "a636005ba28c0344da5110bd8532184c74b6ffdf",
             remote = "https://github.com/bazelbuild/rules_cc.git",
+            shallow_since = "1583316607 -0800",
         )
     if not native.existing_rule("bazel_skylib"):
         http_archive(
