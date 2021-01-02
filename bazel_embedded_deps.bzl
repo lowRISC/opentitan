@@ -12,6 +12,7 @@ def bazel_embedded_deps():
         name = "platforms",
         remote = "https://github.com/curtin-space/platforms.git",
         commit = "a9fb73e46ab4a7558d53d65ed8e608724f07d4cc",
+        shallow_since = "1585009972 +0800"
     )
 
     if not native.existing_rule("rules_cc"):
