@@ -470,9 +470,16 @@ class Model:
 
             return random.choice(known_list)
 
-        # This operand isn't treated as a source. Pick any register!
+        # This operand isn't treated as a source. Pick any register, but "roll
+        # again" if we pick x1 and the call stack is full.
         assert op_type.width is not None
-        return random.getrandbits(op_type.width)
+        while True:
+            idx = random.getrandbits(op_type.width)
+            if ((idx == 1 and
+                 op_type.reg_type == 'gpr' and
+                 len(self._call_stack) >= 8)):
+                continue
+            return idx
 
     def regs_with_known_vals(self, reg_type: str) -> List[Tuple[int, int]]:
         '''Find registers whose values are known
