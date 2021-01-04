@@ -31,14 +31,17 @@ module prim_edn_req
   input  edn_pkg::edn_rsp_t   edn_i
 );
 
+  // Stop requesting words from EDN once desired amount of data is available.
+  logic word_req, word_ack;
+  assign word_req = req_i & ~ack_o;
+
   // TODO: swap this for prim_sync_reqack_data, once available.
-  logic word_ack;
   prim_sync_reqack u_prim_sync_reqack (
     .clk_src_i  ( clk_i         ),
     .rst_src_ni ( rst_ni        ),
     .clk_dst_i  ( clk_edn_i     ),
     .rst_dst_ni ( rst_edn_ni    ),
-    .src_req_i  ( req_i         ),
+    .src_req_i  ( word_req      ),
     .src_ack_o  ( word_ack      ),
     .dst_req_o  ( edn_o.edn_req ),
     .dst_ack_i  ( edn_i.edn_ack )
