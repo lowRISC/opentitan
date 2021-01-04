@@ -143,9 +143,9 @@ module otbn_controller
 
   // Computed increments for indirect register index and memory address in BN.LID/BN.SID/BN.MOVR
   // instructions.
-  logic [4:0]               rf_base_rd_data_a_inc;
-  logic [4:0]               rf_base_rd_data_b_inc;
-  logic [DmemAddrWidth-1:0] rf_base_rd_data_a_wlen_word_inc;
+  logic [4:0]  rf_base_rd_data_a_inc;
+  logic [4:0]  rf_base_rd_data_b_inc;
+  logic [26:0] rf_base_rd_data_a_wlen_word_inc;
 
   // Output of mux taking the above increments as inputs and choosing one to write back to base
   // register file with appropriate zero extension and padding to give a 32-bit result.
@@ -335,7 +335,9 @@ module otbn_controller
   // addresses in BN.LID/BN.SID/BN.MOVR instructions.
   assign rf_base_rd_data_a_inc           = rf_base_rd_data_a_i[4:0] + 1'b1;
   assign rf_base_rd_data_b_inc           = rf_base_rd_data_b_i[4:0] + 1'b1;
-  assign rf_base_rd_data_a_wlen_word_inc = {rf_base_rd_data_a_i[DmemAddrWidth-1:5] + 1'b1, 5'b0};
+  // We can avoid a full 32-bit adder here because the offset is 32-bit aligned, so we know the
+  // load/store address will only be valid if rf_base_rd_data_a_i[4:0] is zero.
+  assign rf_base_rd_data_a_wlen_word_inc = rf_base_rd_data_a_i[31:5] + 27'h1;
 
   // Choose increment to write back to base register file, only one increment can be written as
   // there is only one write port. Note that where an instruction is incrementing the indirect
@@ -353,7 +355,7 @@ module otbn_controller
         increment_out = {27'b0, rf_base_rd_data_b_inc};
       end
       insn_dec_bignum_i.a_wlen_word_inc: begin
-        increment_out = {{32-DmemAddrWidth{1'b0}}, rf_base_rd_data_a_wlen_word_inc};
+        increment_out = {rf_base_rd_data_a_wlen_word_inc, 5'b0};
       end
       default: begin
         // Whenever increment_out is written back to the register file, exactly one of the
