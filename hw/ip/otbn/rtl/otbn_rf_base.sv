@@ -34,6 +34,7 @@ module otbn_rf_base
   input  logic [4:0]   rd_addr_b_i,
   input  logic         rd_en_b_i,
   output logic [31:0]  rd_data_b_o,
+  input  logic         rd_commit_i,
 
   output logic         call_stack_err_o
 );
@@ -60,7 +61,7 @@ module otbn_rf_base
 
   assign pop_stack_a = rd_en_a_i & (rd_addr_a_i == CallStackRegIndex[4:0]);
   assign pop_stack_b = rd_en_b_i & (rd_addr_b_i == CallStackRegIndex[4:0]);
-  assign pop_stack   = pop_stack_a | pop_stack_b;
+  assign pop_stack   = rd_commit_i & (pop_stack_a | pop_stack_b);
 
   assign push_stack = wr_en_i & (wr_addr_i == CallStackRegIndex[4:0]);
 
