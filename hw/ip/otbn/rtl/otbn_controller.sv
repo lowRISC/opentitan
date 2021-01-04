@@ -119,8 +119,8 @@ module otbn_controller
   logic branch_taken;
   logic [ImemAddrWidth-1:0] branch_target;
   logic                     branch_target_overflow;
+  logic [ImemAddrWidth:0]   next_insn_addr_wide;
   logic [ImemAddrWidth-1:0] next_insn_addr;
-  logic                     next_insn_addr_overflow;
 
   csr_e                                csr_addr;
   logic [31:0]                         csr_rdata_raw;
@@ -189,7 +189,8 @@ module otbn_controller
   assign branch_target = alu_base_operation_result_i[ImemAddrWidth-1:0];
   assign branch_target_overflow = |alu_base_operation_result_i[31:ImemAddrWidth];
 
-  assign {next_insn_addr_overflow, next_insn_addr} = insn_addr_i + 'd4;
+  assign next_insn_addr_wide = {1'b0, insn_addr_i} + 'd4;
+  assign next_insn_addr = next_insn_addr_wide[ImemAddrWidth-1:0];
 
   always_comb begin
     // `state_raw` and `insn_fetch_req_valid_raw` are the values of `state_d` and
@@ -256,7 +257,7 @@ module otbn_controller
       end else if (branch_taken) begin
         imem_addr_err = branch_target_overflow;
       end else begin
-        imem_addr_err = next_insn_addr_overflow;
+        imem_addr_err = next_insn_addr_wide[ImemAddrWidth];
       end
     end
   end
@@ -421,7 +422,7 @@ module otbn_controller
     unique case (insn_dec_base_i.rf_wdata_sel)
       RfWdSelEx:     rf_base_wr_data_o = alu_base_operation_result_i;
       RfWdSelLsu:    rf_base_wr_data_o = lsu_base_rdata_i;
-      RfWdSelNextPc: rf_base_wr_data_o = {{(32-ImemAddrWidth){1'b0}}, next_insn_addr};
+      RfWdSelNextPc: rf_base_wr_data_o = {{(32-(ImemAddrWidth+1)){1'b0}}, next_insn_addr_wide};
       RfWdSelIspr:   rf_base_wr_data_o = csr_rdata;
       RfWdSelIncr:   rf_base_wr_data_o = increment_out;
       default:       rf_base_wr_data_o = alu_base_operation_result_i;
