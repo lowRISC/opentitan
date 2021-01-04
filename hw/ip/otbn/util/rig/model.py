@@ -590,7 +590,7 @@ class Model:
                                'Model.update_for_lui.')
 
         assert op_vals[1] >= 0
-        self.write_reg('gpr', op_vals[0], op_vals[1], True)
+        self.write_reg('gpr', op_vals[0], op_vals[1] << 12, True)
 
     def update_for_addi(self, insn: Insn, op_vals: List[int]) -> None:
         '''Update model state after an ADDI
