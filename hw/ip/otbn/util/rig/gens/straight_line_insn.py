@@ -29,9 +29,9 @@ class StraightLineInsn(SnippetGen):
             if not insn.straight_line:
                 continue
 
-            # Skip bn.sid and bn.movr (these have special "LSU behaviour" and
-            # aren't yet implemented)
-            if insn.mnemonic in ['bn.sid', 'bn.movr']:
+            # Skip bn.movr (this has special "LSU behaviour" and isn't yet
+            # implemented)
+            if insn.mnemonic in ['bn.movr']:
                 continue
 
             self.insns.append(insn)
@@ -102,8 +102,8 @@ class StraightLineInsn(SnippetGen):
         # Special-case BN load/store instructions by mnemonic. These use
         # complicated indirect addressing, so it's probably more sensible to
         # give them special code.
-        if insn.mnemonic == 'bn.lid':
-            return self._fill_bn_lid(insn, model)
+        if insn.mnemonic in ['bn.lid', 'bn.sid']:
+            return self._fill_bn_xid(insn, model)
 
         return self._fill_lsu_insn(insn, model)
 
@@ -125,42 +125,91 @@ class StraightLineInsn(SnippetGen):
         assert len(op_vals) == len(insn.operands)
         return ProgInsn(insn, op_vals, None)
 
-    def _fill_bn_lid(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
-        '''Fill out a BN.LID instruction'''
-        assert insn.mnemonic == 'bn.lid'
-        # bn.lid expects the operands: grd, grs1, offset, grs1_inc, grd_inc
-        if len(insn.operands) != 5:
-            raise RuntimeError('Unexpected number of operands for bn.lid')
+    def _fill_bn_xid(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
+        '''Fill out a BN.LID or BN.SID instruction'''
+        if insn.mnemonic == 'bn.lid':
+            is_load = True
+            # bn.lid expects the operands: grd, grs1, offset, grs1_inc, grd_inc
+            if len(insn.operands) != 5:
+                raise RuntimeError('Unexpected number of operands for bn.lid')
 
-        grd, grs1, offset, grs1_inc, grd_inc = insn.operands
-        exp_shape = (
-            # grd
-            isinstance(grd.op_type, RegOperandType) and
-            grd.op_type.reg_type == 'gpr' and
-            not grd.op_type.is_dest() and
-            # grs1
-            isinstance(grs1.op_type, RegOperandType) and
-            grs1.op_type.reg_type == 'gpr' and
-            not grs1.op_type.is_dest() and
-            # offset
-            isinstance(offset.op_type, ImmOperandType) and
-            offset.op_type.signed and
-            # grs1_inc
-            isinstance(grs1_inc.op_type, OptionOperandType) and
-            # grd_inc
-            isinstance(grd_inc.op_type, OptionOperandType)
-        )
+            grd, grs1, offset, grs1_inc, grd_inc = insn.operands
+            exp_shape = (
+                # grd
+                isinstance(grd.op_type, RegOperandType) and
+                grd.op_type.reg_type == 'gpr' and
+                not grd.op_type.is_dest() and
+                # grs1
+                isinstance(grs1.op_type, RegOperandType) and
+                grs1.op_type.reg_type == 'gpr' and
+                not grs1.op_type.is_dest() and
+                # offset
+                isinstance(offset.op_type, ImmOperandType) and
+                offset.op_type.signed and
+                # grs1_inc
+                isinstance(grs1_inc.op_type, OptionOperandType) and
+                # grd_inc
+                isinstance(grd_inc.op_type, OptionOperandType)
+            )
+        else:
+            assert insn.mnemonic == 'bn.sid'
+            is_load = False
+            # bn.sid expects the operands: grs1, grs2, offset, grs1_inc,
+            # grs2_inc
+            if len(insn.operands) != 5:
+                raise RuntimeError('Unexpected number of operands for bn.sid')
+
+            grs1, grs2, offset, grs1_inc, grs2_inc = insn.operands
+            exp_shape = (
+                # grs1
+                isinstance(grs1.op_type, RegOperandType) and
+                grs1.op_type.reg_type == 'gpr' and
+                not grs1.op_type.is_dest() and
+                # grs2
+                isinstance(grs2.op_type, RegOperandType) and
+                grs2.op_type.reg_type == 'gpr' and
+                not grs2.op_type.is_dest() and
+                # offset
+                isinstance(offset.op_type, ImmOperandType) and
+                offset.op_type.signed and
+                # grs1_inc
+                isinstance(grs1_inc.op_type, OptionOperandType) and
+                # grs2_inc
+                isinstance(grs2_inc.op_type, OptionOperandType)
+            )
+
         if not exp_shape:
-            raise RuntimeError('Unexpected shape for bn.lid')
+            raise RuntimeError('Unexpected shape for {}'.format(insn.mnemonic))
 
         # Assertions to guide mypy
         assert isinstance(offset.op_type, ImmOperandType)
 
-        # bn.lid reads the bottom 5 bits of grd to get the index of the
-        # destination WDR. So look at the registers with architectural values.
-        # Since this is a destination register, we can safely pick anything.
         known_regs = model.regs_with_known_vals('gpr')
-        grd_idx, grd_val = random.choices(known_regs)[0]
+        if is_load:
+            # bn.lid reads the bottom 5 bits of grd to get the index of the
+            # destination WDR. We can pick any GPR that has an architectural
+            # value.
+            arch_gprs = model.regs_with_architectural_vals('gpr')
+            assert arch_gprs
+            wdr_gpr_idx = random.choices(arch_gprs)[0]
+        else:
+            # bn.sid looks at the bottom 5 bits of grs2 to get a source WDR.
+            # Unlike bn.lid above, we need an architectural value in the
+            # corresponding WDR. Thus we have to pick a GPR with a known value
+            # which, in turn, points at a WDR with an architectural value.
+            arch_wdrs = set(model.regs_with_architectural_vals('wdr'))
+            valid_grs2_indices = []
+            for grs2_idx, grs2_val in known_regs:
+                if grs2_val is None:
+                    continue
+                wdr_idx = grs2_val & 31
+                if wdr_idx in arch_wdrs:
+                    valid_grs2_indices.append(grs2_idx)
+
+            if not valid_grs2_indices:
+                return None
+
+            wdr_gpr_idx = random.choices(valid_grs2_indices)[0]
 
         # Now pick the source register and offset. The range for offset
         # shouldn't be none (because we know the width of the underlying bit
@@ -170,7 +219,7 @@ class StraightLineInsn(SnippetGen):
 
         op_to_known_regs = {'grs1': known_regs}
         tgt = model.pick_lsu_target('dmem',
-                                    True,
+                                    is_load,
                                     op_to_known_regs,
                                     offset_rng,
                                     offset.op_type.shift,
@@ -187,19 +236,29 @@ class StraightLineInsn(SnippetGen):
         offset_val = offset.op_type.op_val_to_enc_val(imm_val, model.pc)
         assert offset_val is not None
 
-        # Do we increment grs1 / grd? We can increment up to one of them.
+        # Do we increment the GPRs? We can increment up to one of them.
         inc_idx = random.randint(0, 2)
         if inc_idx == 0:
             grs1_inc_val = 0
-            grd_inc_val = 0
+            wdr_gpr_inc_val = 0
         elif inc_idx == 1:
             grs1_inc_val = 1
-            grd_inc_val = 0
+            wdr_gpr_inc_val = 0
         else:
             grs1_inc_val = 0
-            grd_inc_val = 1
+            wdr_gpr_inc_val = 1
 
-        enc_vals = [grd_idx, grs1_val, offset_val, grs1_inc_val, grd_inc_val]
+        # Finally, package up the operands properly for the instruction we're
+        # building.
+        if is_load:
+            # bn.lid: grd, grs1, offset, grs1_inc, grd_inc
+            enc_vals = [wdr_gpr_idx, grs1_val, offset_val,
+                        grs1_inc_val, wdr_gpr_inc_val]
+        else:
+            # bn.sid: grs1, grs2, offset, grs1_inc, grs2_inc
+            enc_vals = [grs1_val, wdr_gpr_idx, offset_val,
+                        grs1_inc_val, wdr_gpr_inc_val]
+
         return ProgInsn(insn, enc_vals, ('dmem', addr))
 
     def _fill_lsu_insn(self, insn: Insn, model: Model) -> Optional[ProgInsn]:

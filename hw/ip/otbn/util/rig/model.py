@@ -503,6 +503,20 @@ class Model:
 
         return ret
 
+    def regs_with_architectural_vals(self, reg_type: str) -> List[int]:
+        '''List registers that have an architectural value'''
+        known_regs = self._known_regs.setdefault(reg_type, {})
+        arch_regs = list(known_regs.keys())
+
+        # Handle x1, which has an architectural (and known) value iff the call
+        # stack is not empty.
+        if reg_type == 'gpr':
+            assert 1 not in arch_regs
+            if self._call_stack:
+                arch_regs.append(1)
+
+        return arch_regs
+
     def pick_lsu_target(self,
                         mem_type: str,
                         loads_value: bool,
@@ -702,6 +716,43 @@ class Model:
         elif grd_inc:
             self._inc_gpr(grd, 1, 31)
 
+    def update_for_bnsid(self, prog_insn: ProgInsn) -> None:
+        '''Update model state after an BN.SID'''
+        insn = prog_insn.insn
+        op_vals = prog_insn.operands
+        assert insn.mnemonic == 'bn.sid'
+        assert len(insn.operands) == len(op_vals)
+
+        grs1_op, grs2_op, offset_op, grs1_inc_op, grs2_inc_op = insn.operands
+        exp_shape = (
+            # grs1
+            isinstance(grs1_op.op_type, RegOperandType) and
+            grs1_op.op_type.reg_type == 'gpr' and
+            not grs1_op.op_type.is_dest() and
+            # grs2
+            isinstance(grs2_op.op_type, RegOperandType) and
+            grs2_op.op_type.reg_type == 'gpr' and
+            not grs2_op.op_type.is_dest() and
+            # offset
+            isinstance(offset_op.op_type, ImmOperandType) and
+            offset_op.op_type.signed and
+            # grs1_inc
+            isinstance(grs1_inc_op.op_type, OptionOperandType) and
+            # grs2_inc
+            isinstance(grs2_inc_op.op_type, OptionOperandType)
+        )
+        if not exp_shape:
+            raise RuntimeError('Unexpected shape for bn.sid')
+
+        grs1, grs2, offset, grs1_inc, grs2_inc = op_vals
+
+        self._generic_update_for_insn(prog_insn)
+
+        if grs1_inc:
+            self._inc_gpr(grs1, 32, (1 << 32) - 1)
+        elif grs2_inc:
+            self._inc_gpr(grs2, 1, 31)
+
     def _generic_update_for_insn(self, prog_insn: ProgInsn) -> None:
         '''Update registers and memory for prog_insn
 
@@ -744,7 +795,8 @@ class Model:
         updaters = {
             'lui': self.update_for_lui,
             'addi': self.update_for_addi,
-            'bn.lid': self.update_for_bnlid
+            'bn.lid': self.update_for_bnlid,
+            'bn.sid': self.update_for_bnsid
         }
         updater = updaters.get(prog_insn.insn.mnemonic)
         if updater is not None:
