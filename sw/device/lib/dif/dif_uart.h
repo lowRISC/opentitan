@@ -499,10 +499,11 @@ dif_uart_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
 /**
  * UART TX reset RX/TX FIFO.
  *
- * Reset both FIFOs, or the requested one.
+ * Resets one or both FIFOs. If the byte is in transit, this function will
+ * not abort the operation.
  *
  * @param uart A UART handle.
- * @param reset FIFO to reset (RX or TX).
+ * @param reset FIFO to reset (RX, TX or both).
  * @return The result of the operation.
  */
 dif_uart_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
