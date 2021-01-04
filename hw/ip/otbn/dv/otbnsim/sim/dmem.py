@@ -181,7 +181,7 @@ class Dmem:
         if addr & 3:
             raise BadAddrError('narrow load', addr,
                                'address is not 4-byte aligned')
-        if (addr + 31) // 32 >= len(self.data):
+        if (addr + 3) // 32 >= len(self.data):
             raise BadAddrError('narrow load', addr,
                                'address is above the top of dmem')
 
@@ -203,7 +203,7 @@ class Dmem:
         if addr & 3:
             raise BadAddrError('narrow load', addr,
                                'address is not 4-byte aligned')
-        if (addr + 31) // 32 >= len(self.data):
+        if (addr + 3) // 32 >= len(self.data):
             raise BadAddrError('narrow load', addr,
                                'address is above the top of dmem')
 
