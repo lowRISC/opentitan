@@ -46,7 +46,7 @@ class UartTest : public Test, public MmioTest {
 
   // NCO is calculated as NCO = 2^20 * fbaud / fpclk, so the following values
   // should result in NCO of 1. This is the default configuration, which will
-  // be used unless the values are overriden.
+  // be used unless the values are overridden.
   dif_uart_config_t config_ = {
       .baudrate = 1,
       .clk_freq_hz = 1048576,
@@ -77,12 +77,6 @@ TEST_F(ConfigTest, Default) {
                                            {UART_CTRL_NCO_OFFSET, 1},
                                        });
 
-  EXPECT_WRITE32(UART_FIFO_CTRL_REG_OFFSET,
-                 {
-                     {UART_FIFO_CTRL_RXRST_BIT, true},
-                     {UART_FIFO_CTRL_TXRST_BIT, true},
-                 });
-
   EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
 
   EXPECT_EQ(dif_uart_configure(&uart_, config_), kDifUartConfigOk);
@@ -100,12 +94,6 @@ TEST_F(ConfigTest, ParityEven) {
                                            {UART_CTRL_PARITY_EN_BIT, true},
                                            {UART_CTRL_NCO_OFFSET, 1},
                                        });
-
-  EXPECT_WRITE32(UART_FIFO_CTRL_REG_OFFSET,
-                 {
-                     {UART_FIFO_CTRL_RXRST_BIT, true},
-                     {UART_FIFO_CTRL_TXRST_BIT, true},
-                 });
 
   EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
 
@@ -125,12 +113,6 @@ TEST_F(ConfigTest, ParityOdd) {
                                            {UART_CTRL_PARITY_ODD_BIT, true},
                                            {UART_CTRL_NCO_OFFSET, 1},
                                        });
-
-  EXPECT_WRITE32(UART_FIFO_CTRL_REG_OFFSET,
-                 {
-                     {UART_FIFO_CTRL_RXRST_BIT, true},
-                     {UART_FIFO_CTRL_TXRST_BIT, true},
-                 });
 
   EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
 
@@ -525,14 +507,14 @@ TEST_F(IrqForceTest, NullArgs) {
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
-  EXPECT_MASK32(UART_INTR_TEST_REG_OFFSET,
-                {{UART_INTR_TEST_TX_WATERMARK_BIT, 0x1, true}});
+  EXPECT_WRITE32(UART_INTR_TEST_REG_OFFSET,
+                 {{UART_INTR_TEST_TX_WATERMARK_BIT, true}});
 
   EXPECT_EQ(dif_uart_irq_force(&uart_, kDifUartIrqTxWatermark), kDifUartOk);
 
   // Force last IRQ.
-  EXPECT_MASK32(UART_INTR_TEST_REG_OFFSET,
-                {{UART_INTR_TEST_RX_PARITY_ERR_BIT, 0x1, true}});
+  EXPECT_WRITE32(UART_INTR_TEST_REG_OFFSET,
+                 {{UART_INTR_TEST_RX_PARITY_ERR_BIT, true}});
 
   EXPECT_EQ(dif_uart_irq_force(&uart_, kDifUartIrqRxParityErr), kDifUartOk);
 }
@@ -607,19 +589,20 @@ TEST_F(FifoResetTest, NullArgs) {
 }
 
 TEST_F(FifoResetTest, Success) {
-  EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET,
-                {{UART_FIFO_CTRL_RXRST_BIT, 0x1, true}});
+  EXPECT_READ32(UART_FIFO_CTRL_REG_OFFSET, 0);
+  EXPECT_WRITE32(UART_FIFO_CTRL_REG_OFFSET, {{UART_FIFO_CTRL_RXRST_BIT, true}});
   EXPECT_EQ(dif_uart_fifo_reset(&uart_, kDifUartFifoResetRx), kDifUartOk);
 
-  EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET,
-                {{UART_FIFO_CTRL_TXRST_BIT, 0x1, true}});
+  EXPECT_READ32(UART_FIFO_CTRL_REG_OFFSET, 0);
+  EXPECT_WRITE32(UART_FIFO_CTRL_REG_OFFSET, {{UART_FIFO_CTRL_TXRST_BIT, true}});
   EXPECT_EQ(dif_uart_fifo_reset(&uart_, kDifUartFifoResetTx), kDifUartOk);
 
-  EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET,
-                {
-                    {UART_FIFO_CTRL_RXRST_BIT, 0x1, true},
-                    {UART_FIFO_CTRL_TXRST_BIT, 0x1, true},
-                });
+  EXPECT_READ32(UART_FIFO_CTRL_REG_OFFSET, 0);
+  EXPECT_WRITE32(UART_FIFO_CTRL_REG_OFFSET,
+                 {
+                     {UART_FIFO_CTRL_RXRST_BIT, true},
+                     {UART_FIFO_CTRL_TXRST_BIT, true},
+                 });
   EXPECT_EQ(dif_uart_fifo_reset(&uart_, kDifUartFifoResetAll), kDifUartOk);
 }
 
