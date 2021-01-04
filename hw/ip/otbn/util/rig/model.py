@@ -627,15 +627,14 @@ class Model:
         if src_val is None:
             return
 
-        value = src_val + op_vals[2]
-        if value < 0:
-            value += 1 << 32
-            assert value >= 0
-        if value >> 32:
-            value -= 1 << 32
-            assert (value >> 32) == 0
+        # op_vals[2] is the immediate, but is already "encoded" as an unsigned
+        # value. Turn it back into the signed operand that actually gets added.
+        imm_op = insn.operands[2]
+        imm_val = imm_op.op_type.enc_val_to_op_val(op_vals[2], self.pc)
+        assert imm_val is not None
+        result = (src_val + imm_val) & ((1 << 32) - 1)
 
-        self.write_reg('gpr', op_vals[0], value, True)
+        self.write_reg('gpr', op_vals[0], result, True)
 
     def update_for_bnlid(self, insn: Insn, op_vals: List[int]) -> None:
         '''Update model state after an BN.LID
