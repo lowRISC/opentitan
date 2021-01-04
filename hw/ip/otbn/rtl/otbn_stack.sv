@@ -37,7 +37,7 @@ module otbn_stack
 
   logic [StackWidth-1:0]  stack_storage [StackDepth];
   logic [StackDepthW:0]   stack_wr_ptr_q, stack_wr_ptr_d;
-  logic [StackDepthW-1:0] stack_rd_ptr;
+  logic [StackDepthW-1:0] stack_top_idx, stack_rd_idx, stack_wr_idx;
 
   logic stack_empty;
   logic stack_full;
@@ -50,6 +50,10 @@ module otbn_stack
 
   assign stack_write = push_i & (~full_o | pop_i);
   assign stack_read  = top_valid_o & pop_i;
+
+  assign stack_top_idx = stack_wr_ptr_q[StackDepthW-1:0];
+  assign stack_rd_idx = stack_top_idx - 1'b1;
+  assign stack_wr_idx = pop_i ? stack_rd_idx : stack_top_idx;
 
   always_comb begin
     stack_wr_ptr_d = stack_wr_ptr_q;
@@ -73,14 +77,12 @@ module otbn_stack
 
   always_ff @(posedge clk_i) begin
     if (stack_write) begin
-      stack_storage[stack_wr_ptr_q[StackDepthW-1:0]] <= push_data_i;
+      stack_storage[stack_wr_idx] <= push_data_i;
     end
   end
 
-  assign stack_rd_ptr = stack_wr_ptr_q[StackDepthW-1:0] - 1'b1;
-
   assign full_o      = stack_full;
-  assign top_data_o  = stack_storage[stack_rd_ptr];
+  assign top_data_o  = stack_storage[stack_rd_idx];
   assign top_valid_o = ~stack_empty;
 endmodule
 
