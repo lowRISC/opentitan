@@ -521,9 +521,10 @@ class BNMULQACCSO(OTBNInsn):
             acc = 0
 
         acc += (mul_res << self.acc_shift_imm)
+        truncated = acc & ((1 << 256) - 1)
 
-        lo_part = acc & ((1 << 128) - 1)
-        hi_part = acc >> 128
+        lo_part = truncated & ((1 << 128) - 1)
+        hi_part = truncated >> 128
 
         state.set_half_word_unsigned(self.wrd, self.wrd_hwsel, lo_part)
         state.wsrs.ACC.write_unsigned(hi_part)
