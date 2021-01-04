@@ -35,8 +35,12 @@ module prim_edn_req
   logic word_req, word_ack;
   assign word_req = req_i & ~ack_o;
 
-  // TODO: swap this for prim_sync_reqack_data, once available.
-  prim_sync_reqack u_prim_sync_reqack (
+  logic [edn_pkg::ENDPOINT_BUS_WIDTH-1:0] word_data;
+  prim_sync_reqack_data #(
+    .Width(edn_pkg::ENDPOINT_BUS_WIDTH),
+    .DataSrc2Dst(1'b0),
+    .DataReg(1'b0)
+  ) u_prim_sync_reqack_data (
     .clk_src_i  ( clk_i         ),
     .rst_src_ni ( rst_ni        ),
     .clk_dst_i  ( clk_edn_i     ),
@@ -44,7 +48,9 @@ module prim_edn_req
     .src_req_i  ( word_req      ),
     .src_ack_o  ( word_ack      ),
     .dst_req_o  ( edn_o.edn_req ),
-    .dst_ack_i  ( edn_i.edn_ack )
+    .dst_ack_i  ( edn_i.edn_ack ),
+    .data_i     ( edn_i.edn_bus ),
+    .data_o     ( word_data     )
   );
 
   logic unused_edn_fips;
@@ -58,7 +64,7 @@ module prim_edn_req
     .rst_ni,
     .clr_i    ( 1'b0          ), // not needed
     .wvalid_i ( word_ack      ),
-    .wdata_i  ( edn_i.edn_bus ),
+    .wdata_i  ( word_data     ),
     // no need for backpressure since we're always ready to
     // sink data at this point.
     .wready_o (               ),
