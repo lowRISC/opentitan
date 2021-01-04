@@ -55,6 +55,7 @@ module otbn_controller
   output logic [4:0]   rf_base_rd_addr_b_o,
   output logic         rf_base_rd_en_b_o,
   input  logic [31:0]  rf_base_rd_data_b_i,
+  output logic         rf_base_rd_commit_o,
 
   input  logic         rf_base_call_stack_err_i,
 
@@ -370,6 +371,7 @@ module otbn_controller
     rf_base_rd_addr_b_o = insn_dec_base_i.b;
     rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & insn_valid_i;
     rf_base_wr_addr_o   = insn_dec_base_i.d;
+    rf_base_rd_commit_o = !stall;
 
     if (insn_dec_shared_i.subset == InsnSubsetBignum) begin
       unique case (1'b1)
