@@ -379,12 +379,16 @@ class StraightLineInsn(SnippetGen):
         # Ask the model to try to find a target we can use. If this is a load
         # or a CSR operation, it will have to be an address that already has an
         # architectural value. If a store, it can be any address in range.
+        #
+        # We cheat a bit for WSR stores. These don't actually load a value, but
+        # we still want to make sure we pick a valid WSR index, so we claim we
+        # loaded one anyway.
         lsu_type_to_info = {
             'mem-load': ('dmem', True),
             'mem-store': ('dmem', False),
             'csr': ('csr', True),
             'wsr-load': ('wsr', True),
-            'wsr-store': ('wsr', False)
+            'wsr-store': ('wsr', True)
         }
         assert set(lsu_type_to_info.keys()) == set(LSUDesc.TYPES)
         mem_type, loads_value = lsu_type_to_info[insn.lsu.lsu_type]

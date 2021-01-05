@@ -168,8 +168,6 @@ class RegOperandType(OperandType):
     TYPE_FMTS = {
         'gpr': (5, 'x'),
         'wdr': (5, 'w'),
-        'csr': (12, None),
-        'wsr': (8, None)
     }
 
     def __init__(self, reg_type: str, is_dest: bool) -> None:
@@ -569,8 +567,6 @@ def parse_operand_type(fmt: str,
         'grd': ('gpr', True),
         'wrs': ('wdr', False),
         'wrd': ('wdr', True),
-        'csr': ('csr', True),
-        'wsr': ('wsr', True)
     }
     reg_match = reg_fmts.get(fmt)
     if reg_match is not None:
@@ -581,6 +577,18 @@ def parse_operand_type(fmt: str,
                              .format(what, fmt))
         reg_type, is_dest = reg_match
         return RegOperandType.make(reg_type, is_dest, what, scheme_field)
+
+    # CSR and WSR indices. These are treated like unsigned immediates, with
+    # width 12 and 8, respectively.
+    xsr_fmts = {
+        'csr': 12,
+        'wsr': 8
+    }
+    xsr_match = xsr_fmts.get(fmt)
+    if xsr_match is not None:
+        assert not pc_rel
+        return ImmOperandType.make(xsr_match, 0, 0, False, False,
+                                   what, scheme_field)
 
     # Immediates
     for base, signed in [('simm', True), ('uimm', False)]:
