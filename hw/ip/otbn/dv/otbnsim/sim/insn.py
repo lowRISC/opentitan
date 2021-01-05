@@ -886,11 +886,11 @@ class BNMOVR(OTBNInsn):
         state.wdrs.get_reg(wrd).write_unsigned(value)
 
         if self.grd_inc:
-            new_grd_val = (grd_val + 1) & ((1 << 32) - 1)
+            new_grd_val = (grd_val + 1) & 0x1f
             state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
 
         if self.grs_inc:
-            new_grs_val = (grs_val + 1) & ((1 << 32) - 1)
+            new_grs_val = (grs_val + 1) & 0x1f
             state.gprs.get_reg(self.grs).write_unsigned(new_grs_val)
 
 
