@@ -984,7 +984,12 @@
     <grd>[<grd_inc>], <grs>[<grs_inc>]
   doc: |
     Copies WDR contents between registers with indirect addressing.
-    Optionally, either the source or the destination register address can be incremented by 1.
+
+    After the operation, either the value in the GPR `grd`, or the value in `grs` can be optionally incremented.
+
+    - If `grd_inc` is set, `grd` is updated to be `(*grd + 1) & 0x1f`.
+    - If `grs_inc` is set, `grs` is updated to be `(*grs + 1) & 0x1f`.
+
   decode: |
     s = UInt(grs)
     d = UInt(grd)
