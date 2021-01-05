@@ -172,9 +172,12 @@ def write_ninja(handle: TextIO, rig_count: int, start_seed: int,
 
     seeds = [start_seed + idx for idx in range(rig_count)]
 
-    handle.write('rule rig\n'
-                 '  command = {rig} gen --size 100 --seed $seed |'
-                 ' {rig} asm -o $seed\n'
+    handle.write('rule rig-gen\n'
+                 '  command = {rig} gen --size 100 --seed $seed -o $out\n'
+                 .format(rig=otbn_rig))
+
+    handle.write('rule rig-asm\n'
+                 '  command = {rig} asm -o $seed $in\n'
                  .format(rig=otbn_rig))
 
     handle.write('rule as\n'
@@ -195,7 +198,11 @@ def write_ninja(handle: TextIO, rig_count: int, start_seed: int,
 
     for seed in seeds:
         # Generate the .s and .ld files.
-        handle.write('build {seed}.s {seed}.ld: rig\n'
+        handle.write('build {seed}.json: rig-gen\n'
+                     '  seed = {seed}\n'
+                     .format(seed=seed))
+
+        handle.write('build {seed}.s {seed}.ld: rig-asm {seed}.json\n'
                      '  seed = {seed}\n'
                      .format(seed=seed))
 
