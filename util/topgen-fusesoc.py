@@ -37,8 +37,6 @@ def write_core(core_filepath, generated_core):
         yaml.dump(generated_core,
                   f,
                   encoding="utf-8",
-                  default_flow_style=False,
-                  sort_keys=False,
                   Dumper=YamlDumper)
     print("Core file written to %s" % (core_filepath, ))
 

@@ -99,9 +99,7 @@ def main():
         f.write("CAPI=2:\n")
         yaml.dump(ral_pkg_core_text,
                   f,
-                  encoding="utf-8",
-                  default_flow_style=False,
-                  sort_keys=False)
+                  encoding="utf-8")
     print("RAL core file written to {}".format(ral_pkg_core_file))
 
 

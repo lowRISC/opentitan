@@ -378,8 +378,6 @@ def _generate_abstract_impl(gapi):
         yaml.dump(abstract_prim_core,
                   f,
                   encoding="utf-8",
-                  default_flow_style=False,
-                  sort_keys=False,
                   Dumper=YamlDumper)
     print("Core file written to %s" % (abstract_prim_core_filepath, ))
 
