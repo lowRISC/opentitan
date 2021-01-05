@@ -261,15 +261,19 @@
           fetch the entropy and run.
           '''
           hwaccess: "hrw"
-         } // f: entropy_ready
-         { bits: "25"
-           name: err_processed
-           desc: '''When error occurs and one of the state machine stays at
-                  Error handling state, SW may process the error based on
-                  ERR_CODE, then let FSM back to the reset state
-                 '''
-           hwaccess: "hrw"
-         } // f: err_processed
+          tags: [// Randomly write mem will cause this reg updated by design
+                 "excl:CsrNonInitTests:CsrExclCheck"]
+        } // f: entropy_ready
+        { bits: "25"
+          name: err_processed
+          desc: '''When error occurs and one of the state machine stays at
+                 Error handling state, SW may process the error based on
+                 ERR_CODE, then let FSM back to the reset state
+                '''
+          hwaccess: "hrw"
+          tags: [// Randomly write mem will cause this reg updated by design
+                 "excl:CsrNonInitTests:CsrExclCheck"]
+        } // f: err_processed
       ]
     } // R: CFG
     { name: "CMD"
