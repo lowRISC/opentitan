@@ -176,9 +176,7 @@ def main():
             f.write("CAPI=2:\n")
             yaml.dump(core['text'],
                       f,
-                      encoding="utf-8",
-                      default_flow_style=False,
-                      sort_keys=False)
+                      encoding="utf-8")
             print("core file written to {}".format(core['path']))
 
 
