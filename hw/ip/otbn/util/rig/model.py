@@ -574,7 +574,7 @@ class Model:
 
         return (addr, addr - reg_sum, reg_indices)
 
-    def update_for_lui(self, insn: Insn, op_vals: List[int]) -> None:
+    def update_for_lui(self, prog_insn: ProgInsn) -> None:
         '''Update model state after a LUI
 
         A lui instruction looks like "lui x2, 80000" or similar. This operation
@@ -582,6 +582,8 @@ class Model:
         appropriately.
 
         '''
+        insn = prog_insn.insn
+        op_vals = prog_insn.operands
         assert insn.mnemonic == 'lui'
         assert len(insn.operands) == len(op_vals)
 
@@ -596,16 +598,20 @@ class Model:
                                'not the shape expected by '
                                'Model.update_for_lui.')
 
+        self._generic_update_for_insn(prog_insn)
+
         assert op_vals[1] >= 0
         self.write_reg('gpr', op_vals[0], op_vals[1] << 12, True)
 
-    def update_for_addi(self, insn: Insn, op_vals: List[int]) -> None:
+    def update_for_addi(self, prog_insn: ProgInsn) -> None:
         '''Update model state after an ADDI
 
         If the source register happens to have a known value, we can do the
         addition and store the known result.
 
         '''
+        insn = prog_insn.insn
+        op_vals = prog_insn.operands
         assert insn.mnemonic == 'addi'
         assert len(insn.operands) == len(op_vals)
 
@@ -625,24 +631,40 @@ class Model:
 
         src_val = self.get_reg('gpr', op_vals[1])
         if src_val is None:
-            return
+            result = None
+        else:
+            # op_vals[2] is the immediate, but is already "encoded" as an unsigned
+            # value. Turn it back into the signed operand that actually gets added.
+            imm_op = insn.operands[2]
+            imm_val = imm_op.op_type.enc_val_to_op_val(op_vals[2], self.pc)
+            assert imm_val is not None
+            result = (src_val + imm_val) & ((1 << 32) - 1)
 
-        # op_vals[2] is the immediate, but is already "encoded" as an unsigned
-        # value. Turn it back into the signed operand that actually gets added.
-        imm_op = insn.operands[2]
-        imm_val = imm_op.op_type.enc_val_to_op_val(op_vals[2], self.pc)
-        assert imm_val is not None
-        result = (src_val + imm_val) & ((1 << 32) - 1)
+        self._generic_update_for_insn(prog_insn)
 
         self.write_reg('gpr', op_vals[0], result, True)
 
-    def update_for_bnlid(self, insn: Insn, op_vals: List[int]) -> None:
+    def _inc_gpr(self, gpr: int, delta: int, mask: int) -> None:
+        '''Mark gpr as having a value and increment it if known
+
+        This passes update=False to self.write_reg: it should be used for
+        registers that haven't already been marked as updated by the
+        instruction.
+
+        '''
+        gpr_val = self.get_reg('gpr', gpr)
+        new_val = (gpr_val + delta) & mask if gpr_val is not None else None
+        self.write_reg('gpr', gpr, new_val, False)
+
+    def update_for_bnlid(self, prog_insn: ProgInsn) -> None:
         '''Update model state after an BN.LID
 
         We need this special case code because of the indirect access to the
         wide-side register file.
 
         '''
+        insn = prog_insn.insn
+        op_vals = prog_insn.operands
         assert insn.mnemonic == 'bn.lid'
         assert len(insn.operands) == len(op_vals)
 
@@ -668,29 +690,33 @@ class Model:
             raise RuntimeError('Unexpected shape for bn.lid')
 
         grd, grs1, offset, grs1_inc, grd_inc = op_vals
-
         grd_val = self.get_reg('gpr', grd)
+
+        self._generic_update_for_insn(prog_insn)
+
         if grd_val is not None:
             self.write_reg('wdr', grd_val & 31, None, False)
 
         if grs1_inc:
-            grs1_val = self.get_reg('gpr', grs1)
-            if grs1_val is not None:
-                self.write_reg('gpr', grs1,
-                               (grs1_val + 32) & ((1 << 32) - 1),
-                               False)
+            self._inc_gpr(grs1, 32, (1 << 32) - 1)
         elif grd_inc:
-            grd_val = self.get_reg('gpr', grd)
-            if grd_val is not None:
-                self.write_reg('gpr', grd, (grd_val + 1) & 31, False)
+            self._inc_gpr(grd, 1, 31)
 
-    def update_for_insn(self, prog_insn: ProgInsn) -> None:
-        # Apply side-effecting reads (relevant for x1) then mark any
-        # destination operand as having an architectural value
-        insn = prog_insn.insn
-        assert len(insn.operands) == len(prog_insn.operands)
+    def _generic_update_for_insn(self, prog_insn: ProgInsn) -> None:
+        '''Update registers and memory for prog_insn
+
+        Apply side-effecting reads (relevant for x1) then mark any destination
+        operand as having an architectural value. Finally, apply any memory
+        changes.
+
+        This is called by update_for_insn, either by the specialized updater if
+        there is one or on its own if there's none.
+
+        '''
         seen_writes = []  # type: List[Tuple[str, int]]
         seen_reads = set()  # type: Set[Tuple[str, int]]
+        insn = prog_insn.insn
+        assert len(insn.operands) == len(prog_insn.operands)
         for operand, op_val in zip(insn.operands, prog_insn.operands):
             op_type = operand.op_type
             if isinstance(op_type, RegOperandType):
@@ -703,6 +729,15 @@ class Model:
         for reg_type, op_val in seen_writes:
             self.write_reg(reg_type, op_val, None, False)
 
+        # If this is an LSU operation, we've either loaded a value (in which
+        # case, the memory hopefully had a value already) or we've stored
+        # something. In either case, we mark the memory as having a value now.
+        if prog_insn.lsu_info is not None:
+            assert insn.lsu is not None
+            mem_type, addr = prog_insn.lsu_info
+            self.touch_mem(mem_type, addr, insn.lsu.idx_width)
+
+    def update_for_insn(self, prog_insn: ProgInsn) -> None:
         # If this is a sufficiently simple operation that we understand the
         # result, or a complicated instruction where we have to do something
         # clever, actually set the destination register with a value.
@@ -711,14 +746,8 @@ class Model:
             'addi': self.update_for_addi,
             'bn.lid': self.update_for_bnlid
         }
-        updater = updaters.get(insn.mnemonic)
+        updater = updaters.get(prog_insn.insn.mnemonic)
         if updater is not None:
-            updater(insn, prog_insn.operands)
-
-        # If this is an LSU operation, we've either loaded a value (in which
-        # case, the memory hopefully had a value already) or we've stored
-        # something. In either case, we mark the memory as having a value now.
-        if prog_insn.lsu_info is not None:
-            assert insn.lsu is not None
-            mem_type, addr = prog_insn.lsu_info
-            self.touch_mem(mem_type, addr, insn.lsu.idx_width)
+            updater(prog_insn)
+        else:
+            self._generic_update_for_insn(prog_insn)
