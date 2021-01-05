@@ -24,6 +24,7 @@ import datetime
 import logging as log
 import os
 import shutil
+import shlex
 import subprocess
 import sys
 import textwrap
@@ -207,7 +208,7 @@ def copy_repo(src, dest, dry_run):
         # TODO: hack - include hw/foundry since it is excluded in .gitignore.
         rsync_cmd += "--include=hw/foundry "
         rsync_cmd += "--exclude-from={} ".format(ignore_patterns_file)
-        rsync_cmd += "--exclude=.* "
+        rsync_cmd += "--exclude={} ".format(shlex.quote('.*'))
 
     rsync_cmd += src + "/. " + dest
 
@@ -219,10 +220,10 @@ def copy_repo(src, dest, dry_run):
         # Make sure the dest exists first.
         os.makedirs(dest, exist_ok=True)
         try:
-            proc = subprocess.run(cmd,
-                                  check=True,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE)
+            subprocess.run(cmd,
+                           check=True,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:
             log.error("Failed to copy over %s to %s: %s", src, dest,
                       e.stderr.decode("utf-8").strip())
