@@ -424,9 +424,13 @@ class Program:
 
             # Now we have to decide what part of the gap to use. We choose the
             # offset in instructions from the start of the gap. Set
-            # max_insn_off to the maximum allowed value.
+            # max_insn_off to the maximum allowed value (calculated as the
+            # maximum byte offset, divided by the size of an instruction and
+            # then minus the number of extra instructions that need to fit
+            # afterwards).
             gap_vma, gap_len = gap_list[idx]
-            max_insn_off = gap_len // 4 - min_len
+            max_insn_off = (gap_len - 1) // 4 - (min_len - 1)
+            assert 0 <= max_insn_off
 
             # To try to avoid splitting gaps too much, we want to make it more
             # likely that we'll pick stuff "at the edges". Rather than doing
