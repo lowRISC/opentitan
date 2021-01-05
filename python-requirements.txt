@@ -19,7 +19,7 @@ pyserial
 pygments
 pytest
 pytest-timeout
-pyyaml >= 5.1
+pyyaml
 tabulate
 yapf
 
