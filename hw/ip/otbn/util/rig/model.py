@@ -753,6 +753,44 @@ class Model:
         elif grs2_inc:
             self._inc_gpr(grs2, 1, 31)
 
+    def update_for_bnmovr(self, prog_insn: ProgInsn) -> None:
+        '''Update model state after an BN.MOVR'''
+        insn = prog_insn.insn
+        op_vals = prog_insn.operands
+        assert insn.mnemonic == 'bn.movr'
+        assert len(insn.operands) == len(op_vals)
+
+        grd_op, grs_op, grd_inc_op, grs_inc_op = insn.operands
+        exp_shape = (
+            # grd
+            isinstance(grd_op.op_type, RegOperandType) and
+            grd_op.op_type.reg_type == 'gpr' and
+            not grd_op.op_type.is_dest() and
+            # grs
+            isinstance(grs_op.op_type, RegOperandType) and
+            grs_op.op_type.reg_type == 'gpr' and
+            not grs_op.op_type.is_dest() and
+            # grd_inc
+            isinstance(grd_inc_op.op_type, OptionOperandType) and
+            # grs_inc
+            isinstance(grs_inc_op.op_type, OptionOperandType)
+        )
+        if not exp_shape:
+            raise RuntimeError('Unexpected shape for bn.movr')
+
+        grd, grs, grd_inc, grs_inc = op_vals
+        grd_val = self.get_reg('gpr', grd)
+
+        self._generic_update_for_insn(prog_insn)
+
+        if grd_val is not None:
+            self.write_reg('wdr', grd_val & 31, None, False)
+
+        if grd_inc:
+            self._inc_gpr(grd, 1, 31)
+        elif grs_inc:
+            self._inc_gpr(grs, 1, 31)
+
     def _generic_update_for_insn(self, prog_insn: ProgInsn) -> None:
         '''Update registers and memory for prog_insn
 
@@ -796,7 +834,8 @@ class Model:
             'lui': self.update_for_lui,
             'addi': self.update_for_addi,
             'bn.lid': self.update_for_bnlid,
-            'bn.sid': self.update_for_bnsid
+            'bn.sid': self.update_for_bnsid,
+            'bn.movr': self.update_for_bnmovr
         }
         updater = updaters.get(prog_insn.insn.mnemonic)
         if updater is not None:
