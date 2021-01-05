@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import random
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 from shared.insn_yaml import Insn, InsnsFile
 from shared.lsu_desc import LSUDesc
@@ -27,11 +27,6 @@ class StraightLineInsn(SnippetGen):
 
             # Skip anything that isn't straight-line
             if not insn.straight_line:
-                continue
-
-            # Skip bn.movr (this has special "LSU behaviour" and isn't yet
-            # implemented)
-            if insn.mnemonic in ['bn.movr']:
                 continue
 
             self.insns.append(insn)
@@ -94,16 +89,18 @@ class StraightLineInsn(SnippetGen):
 
         '''
 
-        # If this is not an LSU operation, or it is an LSU operation that
-        # operates on CSR/WSRs, we can pick operands independently.
-        if insn.lsu is None:
-            return self._fill_non_lsu_insn(insn, model)
-
         # Special-case BN load/store instructions by mnemonic. These use
         # complicated indirect addressing, so it's probably more sensible to
         # give them special code.
         if insn.mnemonic in ['bn.lid', 'bn.sid']:
             return self._fill_bn_xid(insn, model)
+        if insn.mnemonic == 'bn.movr':
+            return self._fill_bn_movr(insn, model)
+
+        # If this is not an LSU operation, or it is an LSU operation that
+        # operates on CSR/WSRs, we can pick operands independently.
+        if insn.lsu is None:
+            return self._fill_non_lsu_insn(insn, model)
 
         return self._fill_lsu_insn(insn, model)
 
@@ -124,6 +121,46 @@ class StraightLineInsn(SnippetGen):
 
         assert len(op_vals) == len(insn.operands)
         return ProgInsn(insn, op_vals, None)
+
+    def _pick_gpr_with_arch_val(self, model: Model) -> int:
+        '''Return the index of a GPR with an architectural value'''
+        arch_gprs = model.regs_with_architectural_vals('gpr')
+        # Since x0 always has a value, there will always be at least something
+        assert arch_gprs
+        return random.choices(arch_gprs)[0]
+
+    def _pick_gpr_for_arch_wdr(self,
+                               known_regs: List[Tuple[int, int]],
+                               model: Model) -> Optional[int]:
+        '''Return index of a GPR pointing to a WDR with architectural value'''
+        arch_wdrs = set(model.regs_with_architectural_vals('wdr'))
+        valid_gprs = []
+        for gpr, gpr_val in known_regs:
+            if gpr_val is None:
+                continue
+            wdr_idx = gpr_val & 31
+            if wdr_idx in arch_wdrs:
+                valid_gprs.append(gpr)
+
+        if not valid_gprs:
+            return None
+
+        return random.choices(valid_gprs)[0]
+
+    def _pick_inc_vals(self) -> Tuple[int, int]:
+        '''Pick two values in 0, 1 that aren't both 1
+
+        These are appropriate to use as the increment flags for
+        BN.LID/BN.SID/BN.MOVR.
+
+        '''
+        idx = random.randint(0, 2)
+        if idx == 0:
+            return (0, 0)
+        elif idx == 1:
+            return (1, 0)
+        else:
+            return (0, 1)
 
     def _fill_bn_xid(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
         '''Fill out a BN.LID or BN.SID instruction'''
@@ -189,27 +226,17 @@ class StraightLineInsn(SnippetGen):
             # bn.lid reads the bottom 5 bits of grd to get the index of the
             # destination WDR. We can pick any GPR that has an architectural
             # value.
-            arch_gprs = model.regs_with_architectural_vals('gpr')
-            assert arch_gprs
-            wdr_gpr_idx = random.choices(arch_gprs)[0]
+            wdr_gpr_idx = self._pick_gpr_with_arch_val(model)
         else:
             # bn.sid looks at the bottom 5 bits of grs2 to get a source WDR.
             # Unlike bn.lid above, we need an architectural value in the
             # corresponding WDR. Thus we have to pick a GPR with a known value
             # which, in turn, points at a WDR with an architectural value.
-            arch_wdrs = set(model.regs_with_architectural_vals('wdr'))
-            valid_grs2_indices = []
-            for grs2_idx, grs2_val in known_regs:
-                if grs2_val is None:
-                    continue
-                wdr_idx = grs2_val & 31
-                if wdr_idx in arch_wdrs:
-                    valid_grs2_indices.append(grs2_idx)
-
-            if not valid_grs2_indices:
+            grs2_idx = self._pick_gpr_for_arch_wdr(known_regs, model)
+            if grs2_idx is None:
                 return None
 
-            wdr_gpr_idx = random.choices(valid_grs2_indices)[0]
+            wdr_gpr_idx = grs2_idx
 
         # Now pick the source register and offset. The range for offset
         # shouldn't be none (because we know the width of the underlying bit
@@ -237,16 +264,7 @@ class StraightLineInsn(SnippetGen):
         assert offset_val is not None
 
         # Do we increment the GPRs? We can increment up to one of them.
-        inc_idx = random.randint(0, 2)
-        if inc_idx == 0:
-            grs1_inc_val = 0
-            wdr_gpr_inc_val = 0
-        elif inc_idx == 1:
-            grs1_inc_val = 1
-            wdr_gpr_inc_val = 0
-        else:
-            grs1_inc_val = 0
-            wdr_gpr_inc_val = 1
+        grs1_inc_val, wdr_gpr_inc_val = self._pick_inc_vals()
 
         # Finally, package up the operands properly for the instruction we're
         # building.
@@ -260,6 +278,47 @@ class StraightLineInsn(SnippetGen):
                         grs1_inc_val, wdr_gpr_inc_val]
 
         return ProgInsn(insn, enc_vals, ('dmem', addr))
+
+    def _fill_bn_movr(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
+        '''Fill out a BN.MOVR instruction'''
+        # bn.lid expects the operands: grd, grs, grd_inc, grs_inc
+        if len(insn.operands) != 4:
+            raise RuntimeError('Unexpected number of operands for bn.movr')
+
+        grd, grs, grd_inc, grs_inc = insn.operands
+        exp_shape = (
+            # grd
+            isinstance(grd.op_type, RegOperandType) and
+            grd.op_type.reg_type == 'gpr' and
+            not grd.op_type.is_dest() and
+            # grs
+            isinstance(grs.op_type, RegOperandType) and
+            grs.op_type.reg_type == 'gpr' and
+            not grs.op_type.is_dest() and
+            # grd_inc
+            isinstance(grd_inc.op_type, OptionOperandType) and
+            # grs_inc
+            isinstance(grs_inc.op_type, OptionOperandType)
+        )
+        if not exp_shape:
+            raise RuntimeError('Unexpected shape for bn.movr')
+
+        # For grs, we need to pick a GPR that points at a WDR with an
+        # architectural value (since it will be the source of the move).
+        known_regs = model.regs_with_known_vals('gpr')
+        grs_idx = self._pick_gpr_for_arch_wdr(known_regs, model)
+        if grs_idx is None:
+            return None
+
+        # For grd, we can pick any GPR with an architectural value (since it
+        # defines the destination WDR)
+        grd_idx = self._pick_gpr_with_arch_val(model)
+
+        grd_inc_val, grs_inc_val = self._pick_inc_vals()
+
+        return ProgInsn(insn,
+                        [grd_idx, grs_idx, grd_inc_val, grs_inc_val],
+                        None)
 
     def _fill_lsu_insn(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
         '''Fill out a generic load/store instruction'''

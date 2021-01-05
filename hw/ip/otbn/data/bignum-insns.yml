@@ -968,6 +968,10 @@
   operands:
     - name: grd
       doc: Name of the GPR containing the destination WDR.
+      # The grd register is read to pick the WDR that should be written, so
+      # it's sort of logically a destination (hence the name) but should be
+      # treated as a source by tools like the random instruction generator.
+      type: grs
     - name: grs
       doc: Name of the GPR referencing the source WDR.
     - name: grd_inc
