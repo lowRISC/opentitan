@@ -6,7 +6,6 @@ import math
 import random
 from typing import Dict, List, Optional, Set, Tuple
 
-from shared.insn_yaml import Insn
 from shared.operand import (OperandType,
                             ImmOperandType, OptionOperandType, RegOperandType)
 
@@ -49,7 +48,7 @@ class KnownMem:
         self.known_ranges = []  # type: List[Tuple[int, int]]
 
     def touch_range(self, base: int, width: int) -> None:
-        '''Mark {base .. base+width} as known'''
+        '''Mark {base .. base + width - 1} as known'''
         assert 0 <= width
         assert 0 <= base <= self.top_addr - width
         for off in range(width):
@@ -349,13 +348,24 @@ class Model:
         self._call_stack = []  # type: List[Optional[int]]
 
         # Known values for memory, keyed by memory type ('dmem', 'csr', 'wsr').
+        csrs = KnownMem(4096)
+        wsrs = KnownMem(4096)
         self._known_mem = {
             'dmem': KnownMem(dmem_size),
-            # TODO: How many CSRs/WSRs? Is that written down somewhere we can
-            # extract?
-            'csr': KnownMem(4096),
-            'wsr': KnownMem(4096)
+            'csr': csrs,
+            'wsr': wsrs
         }
+
+        # Valid CSRs and WSRs
+        csrs.touch_addr(0x7c0)      # FG0
+        csrs.touch_addr(0x7c1)      # FG1
+        csrs.touch_addr(0x7c8)      # FLAGS
+        csrs.touch_range(0x7d0, 8)  # MOD0 - MOD7
+        csrs.touch_addr(0xfc0)      # RND
+
+        wsrs.touch_addr(0x0)        # MOD
+        wsrs.touch_addr(0x1)        # RND
+        wsrs.touch_addr(0x2)        # ACC
 
         # The current PC (the address of the next instruction that needs
         # generating)
