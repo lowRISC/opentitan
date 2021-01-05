@@ -64,7 +64,7 @@ steps:
       # version, which then fails to run.
       python3 -m pip install --user -U pip setuptools
 
-      pip3 install --user -U -r python-requirements.txt
+      pip3 install --user -r python-requirements.txt
 
       # Install Verible
       mkdir -p build/verible
