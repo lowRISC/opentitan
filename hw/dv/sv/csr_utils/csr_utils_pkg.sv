@@ -213,7 +213,9 @@ package csr_utils_pkg;
             // when reset occurs, all items will be dropped immediately. This may end up getting
             // d_error = 1 from previous item on the bus. Skip checking it during reset
             if (check == UVM_CHECK && !under_reset) begin
-              `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
+              `DV_CHECK_EQ(status, UVM_IS_OK,
+                           $sformatf("trying to update csr %0s", csr.get_full_name()),
+                           error, msg_id)
             end
             decrement_outstanding_access();
           end
@@ -274,7 +276,9 @@ package csr_utils_pkg;
             csr.write(.status(status), .value(value), .path(path), .map(map), .prior(100));
             csr_post_write_sub(csr, en_shadow_wr);
             if (check == UVM_CHECK && !under_reset) begin
-              `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
+              `DV_CHECK_EQ(status, UVM_IS_OK,
+                           $sformatf("trying to write csr %0s", csr.get_full_name()),
+                           error, msg_id)
             end
             // Only update the predicted value if status is ok (otherwise the write isn't completed
             // successfully and the design shouldn't have accepted the written value)
@@ -397,7 +401,9 @@ package csr_utils_pkg;
                                   .prior(100));
             end
             if (check == UVM_CHECK && !under_reset) begin
-              `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
+              `DV_CHECK_EQ(status, UVM_IS_OK,
+                           $sformatf("trying to read csr/field %0s", ptr.get_full_name()),
+                           error, msg_id)
             end
             decrement_outstanding_access();
           end
@@ -630,7 +636,8 @@ package csr_utils_pkg;
             increment_outstanding_access();
             ptr.read(.status(status), .offset(offset), .value(data), .map(map), .prior(100));
             if (check == UVM_CHECK && !under_reset) begin
-              `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
+              `DV_CHECK_EQ(status, UVM_IS_OK,
+                           $sformatf("trying to read mem %0s", ptr.get_full_name()), error, msg_id)
             end
             decrement_outstanding_access();
           end
@@ -679,7 +686,9 @@ package csr_utils_pkg;
             increment_outstanding_access();
             ptr.write(.status(status), .offset(offset), .value(data), .map(map), .prior(100));
             if (check == UVM_CHECK && !under_reset) begin
-              `DV_CHECK_EQ(status, UVM_IS_OK, "", error, msg_id)
+              `DV_CHECK_EQ(status, UVM_IS_OK,
+                           $sformatf("trying to write mem %0s", ptr.get_full_name()),
+                           error, msg_id)
             end
             decrement_outstanding_access();
           end
