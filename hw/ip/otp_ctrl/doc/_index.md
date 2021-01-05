@@ -750,28 +750,31 @@ The returned values depend on the command type and whether an error occurred or 
 {{< wavejson >}}
 {
   signal: [
-    { name: 'clk_i',    wave: 'p...........' },
-    { name: 'ready_o',  wave: '0...10|.....' , node: '....a'},
-    { name: 'valid_i',  wave: '0.1..0|.....' },
-    { name: 'size_i',   wave: '0.3..0|.....' },
-    { name: 'cmd_i',    wave: '0.4..0|.....' },
-    { name: 'wdata_i',  wave: '0.5..0|.....' },
-    { name: 'valid_o',  wave: '0.....|..10.' , node: '.........b'},
-    { name: 'rdata_o',  wave: '0.....|..50.' },
-    { name: 'err_o',    wave: '0.....|..40.' },
+    { name: 'clk_i',    wave: 'p.............' },
+    { name: 'ready_o',  wave: '0..10|.10.|...' , node: '...a...c'},
+    { name: 'valid_i',  wave: '01..0|1.0.|...' },
+    { name: 'size_i',   wave: '03..0|3.0.|...' },
+    { name: 'cmd_i',    wave: '04..0|4.0.|...' },
+    { name: 'wdata_i',  wave: '05..0|5.0.|...' },
+    { name: 'valid_o',  wave: '0....|..10|.10' , node: '........b...d'},
+    { name: 'rdata_o',  wave: '0....|..50|.50' },
+    { name: 'err_o',    wave: '0....|..40|.40' },
   ],
   edge: [
    'a~>b',
+   'c~>d',
   ],
   head: {
     text: 'Timing of an OTP command.',
   },
   foot: {
-    text: 'The command is accepted in cycle 4 and a response is returned in cycle 8.',
+    text: "Cmd's are accepted in cycles 3/7, and the corresponding responses return in cycles 8/12.",
     tick: 0,
   }
 }
 {{< /wavejson >}}
+
+Note that the open source OTP controller allows up to two outstanding OTP commands, meaning that it is permissible to acknowledge an incoming command and start working on it while the results of the last command are still in the process of being output (e.g., due to an output register stage).
 
 #### Generic Simulation and FPGA Emulation Model
 
