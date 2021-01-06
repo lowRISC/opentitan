@@ -92,7 +92,7 @@ def asm_main(args: argparse.Namespace) -> int:
                     for idx, x in enumerate(json_snippets)]
     except ValueError as err:
         print('Failed to parse snippets from {!r}: {}'
-              .format(args.snippets, err),
+              .format(args.snippets.name, err),
               file=sys.stderr)
         return 1
 
