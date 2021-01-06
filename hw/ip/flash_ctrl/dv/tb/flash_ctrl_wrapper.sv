@@ -131,10 +131,8 @@ module flash_ctrl_wrapper (
     .flash_test_mode_a_i    (1'b0),
     .flash_test_voltage_h_i (1'b0),
     .lc_dft_en_i,
-    .tck_i                  (1'b0),
-    .tdi_i                  (1'b0),
-    .tms_i                  (1'b0),
-    .tdo_o                  ( )
+    .jtag_req_i             ('0),
+    .jtag_rsp_o             ()
   );
 
 endmodule
