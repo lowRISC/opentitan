@@ -35,20 +35,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   output pwr_ast_req_t ast_o
 );
 
-  // state enum
-  typedef enum logic [3:0] {
-    StReset,
-    StLowPower,
-    StMainPowerOn,
-    StClocksOn,
-    StReqPwrUp,
-    StIdle,
-    StAckPwrDn,
-    StClocksOff,
-    StMainPowerOff
-  } state_e;
-
-  state_e state_q, state_d;
+  slow_pwr_state_e state_q, state_d;
 
   // All signals crossing over to other domain must be flopped
   pwrup_cause_e cause_q, cause_d;
@@ -80,7 +67,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      state_q        <= StReset;
+      state_q        <= SlowPwrStateReset;
       cause_q        <= Por;
       cause_toggle_q <= 1'b0;
       pd_nq          <= 1'b0;
@@ -119,71 +106,71 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
     unique case(state_q)
 
-      StReset: begin
-        state_d = StMainPowerOn;
+      SlowPwrStateReset: begin
+        state_d = SlowPwrStateMainPowerOn;
         cause_d = Por;
       end
 
-      StLowPower: begin
+      SlowPwrStateLowPower: begin
         // reset request behaves identically to a wakeup, other than the power-up cause being
         // different
         if (wakeup_i || reset_req_i) begin
-          state_d = StMainPowerOn;
+          state_d = SlowPwrStateMainPowerOn;
           cause_toggle_d = ~cause_toggle_q;
           cause_d = reset_req_i ? Reset : Wake;
         end
       end
 
-      StMainPowerOn: begin
+      SlowPwrStateMainPowerOn: begin
         pd_nd = 1'b1;
 
         if (ast_i.main_pok) begin
           pwr_clamp_d = 1'b0;
-          state_d = StClocksOn;
+          state_d = SlowPwrStateClocksOn;
         end
       end
 
-      StClocksOn: begin
+      SlowPwrStateClocksOn: begin
         core_clk_en_d = 1'b1;
         io_clk_en_d = 1'b1;
         usb_clk_en_d = usb_clk_en_active_i;
 
         if (all_clks_valid) begin
-          state_d = StReqPwrUp;
+          state_d = SlowPwrStateReqPwrUp;
         end
       end
 
-      StReqPwrUp: begin
+      SlowPwrStateReqPwrUp: begin
         req_pwrup_d = 1'b1;
 
         // req_pwrdn_i should be 0 here to indicate
         // the request from the previous round has definitely completed
         if (ack_pwrup_i && !req_pwrdn_i) begin
           req_pwrup_d = 1'b0;
-          state_d = StIdle;
+          state_d = SlowPwrStateIdle;
         end
       end
 
-      StIdle: begin
+      SlowPwrStateIdle: begin
         // ack_pwrup_i should be 0 here to indicate
         // the ack from the previous round has definitively completed
         usb_clk_en_d = usb_clk_en_active_i;
 
         if (req_pwrdn_i && !ack_pwrup_i) begin
-          state_d = StAckPwrDn;
+          state_d = SlowPwrStateAckPwrDn;
         end
       end
 
-      StAckPwrDn: begin
+      SlowPwrStateAckPwrDn: begin
         ack_pwrdn_d = 1'b1;
 
         if (!req_pwrdn_i) begin
           ack_pwrdn_d = 1'b0;
-          state_d = StClocksOff;
+          state_d = SlowPwrStateClocksOff;
         end
       end
 
-      StClocksOff: begin
+      SlowPwrStateClocksOff: begin
         core_clk_en_d = core_clk_en_i;
         io_clk_en_d = io_clk_en_i;
         usb_clk_en_d = usb_clk_en_lp_i;
@@ -191,16 +178,16 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
         if (all_clks_invalid) begin
           // if main power is turned off, assert clamp ahead
           pwr_clamp_d = ~main_pd_ni;
-          state_d = StMainPowerOff;
+          state_d = SlowPwrStateMainPowerOff;
         end
       end
 
-      StMainPowerOff: begin
+      SlowPwrStateMainPowerOff: begin
         pd_nd = main_pd_ni;
 
         // if power is never turned off, proceed directly to low power state
         if (!ast_i.main_pok | main_pd_ni) begin
-          state_d = StLowPower;
+          state_d = SlowPwrStateLowPower;
         end
       end
 

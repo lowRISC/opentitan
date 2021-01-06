@@ -183,5 +183,36 @@ package pwrmgr_pkg;
     LowPower = 1'b1
   } low_power_hint_e;
 
+  // fast fsm state enum
+  typedef enum logic [4:0] {
+    FastPwrStateLowPower,
+    FastPwrStateEnableClocks,
+    FastPwrStateReleaseLcRst,
+    FastPwrStateOtpInit,
+    FastPwrStateLcInit,
+    FastPwrStateFlashInit,
+    FastPwrStateAckPwrUp,
+    FastPwrStateActive,
+    FastPwrStateDisClks,
+    FastPwrStateFallThrough,
+    FastPwrStateNvmIdleChk,
+    FastPwrStateLowPowerPrep,
+    FastPwrStateNvmShutDown,
+    FastPwrStateResetPrep,
+    FastPwrStateReqPwrDn
+  } fast_pwr_state_e;
+
+  // slow fsm state enum
+  typedef enum logic [3:0] {
+    SlowPwrStateReset,
+    SlowPwrStateLowPower,
+    SlowPwrStateMainPowerOn,
+    SlowPwrStateClocksOn,
+    SlowPwrStateReqPwrUp,
+    SlowPwrStateIdle,
+    SlowPwrStateAckPwrDn,
+    SlowPwrStateClocksOff,
+    SlowPwrStateMainPowerOff
+  } slow_pwr_state_e;
 
 endpackage // pwrmgr_pkg
