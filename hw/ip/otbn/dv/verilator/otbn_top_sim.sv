@@ -21,7 +21,10 @@ module otbn_top_sim (
   logic      otbn_done_d, otbn_done_q;
   err_code_e otbn_err_code_d, otbn_err_code_q;
   logic      otbn_start;
-  logic      otbn_start_done;
+
+  // Intialise otbn_start_done to 1 so that we only signal otbn_start after we have seen a reset. If
+  // you don't do this, we start OTBN before the reset, which can generate confusing trace messages.
+  logic      otbn_start_done = 1'b1;
 
   // Instruction memory (IMEM) signals
   logic                     imem_req;
