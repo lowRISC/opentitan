@@ -35,7 +35,13 @@ package keymgr_env_pkg;
       keymgr_pkg::keymgr_working_state_e current_state);
 
     uint next_state = int'(current_state) + 1;
-    if (!$cast(get_next_state, next_state)) return keymgr_pkg::StDisabled;
+    if (next_state >= int'(keymgr_pkg::StDisabled)) begin
+      return keymgr_pkg::StDisabled;
+    end else begin
+      return next_state;
+    end
+
+
   endfunction
 
   // package sources
