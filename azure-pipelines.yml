@@ -183,7 +183,11 @@ jobs:
       if [[ "$(Build.Reason)" = "PullRequest" ]]; then
         # Conservative way of checking for documentation-only and OTBN changes.
         # Only relevant for pipelines triggered from pull requests
-        fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
+        fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)" || {
+          echo >&2 Failed to find merge base with origin/$SYSTEM_PULLREQUEST_TARGETBRANCH
+          echo >&2 HEAD is $(git rev-parse HEAD)
+          exit 1
+        }
         echo "Using $fork_origin as fork point from the target branch."
 
         echo "Checking for doc-only changes in this pull request"
