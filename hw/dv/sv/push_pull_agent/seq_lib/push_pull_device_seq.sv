@@ -32,10 +32,9 @@ class push_pull_device_seq #(parameter int HostDataWidth = 32,
           } else {
             device_delay inside {[cfg.device_delay_min : cfg.device_delay_max]};
           }
-          if (!cfg.in_bidirectional_mode) {
-            d_data == 0;
-          }
         )
+        // If user-provided data is available, use this instead of randomized data.
+        if (cfg.has_d_user_data()) req.d_data = cfg.get_d_user_data();
         finish_item(req);
         get_response(rsp);
         `uvm_info(`gfn, $sformatf("Received response: %0s", rsp.convert2string()), UVM_HIGH)
@@ -58,6 +57,8 @@ class push_pull_device_seq #(parameter int HostDataWidth = 32,
               device_delay inside {[cfg.device_delay_min : cfg.device_delay_max]};
             }
           )
+          // If user-provided data is availabe, use this instead of randomized data.
+          if (cfg.has_d_user_data()) rsp.d_data = cfg.get_d_user_data();
           finish_item(rsp);
           get_response(rsp);
           `uvm_info(`gfn, $sformatf("Received response: %0s", rsp.convert2string()), UVM_HIGH)

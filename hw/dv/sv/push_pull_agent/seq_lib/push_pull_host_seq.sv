@@ -28,10 +28,9 @@ class push_pull_host_seq #(parameter int HostDataWidth = 32,
         } else {
           host_delay inside {[cfg.host_delay_min : cfg.host_delay_max]};
         }
-        if (cfg.agent_type == PullAgent && !cfg.in_bidirectional_mode) {
-          h_data == 0;
-        }
       )
+      // If user-provided data is ready, use this instead of random data.
+      if (cfg.has_h_user_data()) req.h_data = cfg.get_h_user_data();
       `uvm_info(`gfn, $sformatf("Starting sequence item: %0s", req.convert2string()), UVM_HIGH)
       // We don't care about response data here, the monitor will log all complete transactions.
       finish_item(req);
