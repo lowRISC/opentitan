@@ -58,15 +58,16 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
   // Enumeration for working state
   typedef enum logic [3:0] {
-    StCtrlReset = 0,
-    StCtrlEntropyReseed = 1,
-    StCtrlRandom = 2,
-    StCtrlInit = 3,
-    StCtrlCreatorRootKey = 4,
-    StCtrlOwnerIntKey = 5,
-    StCtrlOwnerKey = 6,
-    StCtrlWipe = 7,
-    StCtrlDisabled = 8
+    StCtrlReset,
+    StCtrlEntropyReseed,
+    StCtrlRandom,
+    StCtrlInit,
+    StCtrlCreatorRootKey,
+    StCtrlOwnerIntKey,
+    StCtrlOwnerKey,
+    StCtrlDisabled,
+    StCtrlWipe,
+    StCtrlInvalid
   } keymgr_ctrl_state_e;
 
   keymgr_ctrl_state_e state_q, state_d;
@@ -171,6 +172,9 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
   // TODO: Create a no select option, do not leave this as binary
   assign hw_sel_o = gen_out_hw_sel ? HwKey : SwKey;
+
+  logic in_disabled;
+  assign in_disabled = (state_q == StCtrlDisabled);
 
   always_comb begin
     // persistent data
@@ -366,28 +370,33 @@ module keymgr_ctrl import keymgr_pkg::*;(
         // 2. the operation completed before we started wiping, or there was never an operation to
         //    begin with (op_start_i == 0), in this case, don't wait and immediately transition
         if (!op_start_i) begin
-          state_d = StCtrlDisabled;
+          state_d = StCtrlInvalid;
         end
       end
 
-      // Terminal state (StDisabled is included)
-      // However, it will continue to kick off dummy transactions
+      // Default state (StCtrlDisabled and StCtrlInvalid included)
+      // Continue to kick off random transactions
       default: begin
-        op_done_o = op_start_i & kmac_done_i;
+        if (!en_i && in_disabled) begin
+          state_d = StCtrlWipe;
+        end else begin
+          op_done_o = op_start_i & kmac_done_i;
 
-        // accept any command, but always select fake data
-        op_accepted = op_start_i;
-        stage_sel_o = Disable;
+          // accept any command, but always select fake data
+          op_accepted = op_start_i;
+          stage_sel_o = Disable;
 
-        // During disabled state, continue to update state
-        key_state_d = (op_done_o && advance_sel) ? kmac_data_i : key_state_q;
+          // During disabled state, continue to update state
+          key_state_d = (op_done_o && advance_sel) ? kmac_data_i : key_state_q;
 
-        // Despite accepting all commands, operations are always
-        // considered invalid in disabled state
-        // TODO this may be changed later if we decide to hide disable state from
-        // software.
-        invalid_op = op_start_i;
+          // Despite accepting all commands, operations are always
+          // considered invalid in disabled state
+          // TODO this may be changed later if we decide to hide disable state from
+          // software.
+          invalid_op = op_start_i;
+        end
       end
+
 
     endcase // unique case (state_q)
   end
@@ -396,7 +405,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   // Current working state provided for software read
   // Certain states are collapsed for simplicity
   always_comb begin
-    working_state_o = StDisabled;
+    working_state_o = StInvalid;
 
     unique case (state_q)
       StCtrlReset, StCtrlEntropyReseed, StCtrlRandom:
@@ -414,11 +423,14 @@ module keymgr_ctrl import keymgr_pkg::*;(
       StCtrlOwnerKey:
         working_state_o = StOwnerKey;
 
-      StCtrlWipe, StCtrlDisabled:
+      StCtrlDisabled:
         working_state_o = StDisabled;
 
+      StCtrlWipe, StCtrlInvalid:
+        working_state_o = StInvalid;
+
       default:
-        working_state_o = StDisabled;
+        working_state_o = StInvalid;
     endcase // unique case (state_q)
   end
 
