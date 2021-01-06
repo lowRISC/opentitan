@@ -140,6 +140,7 @@ package otp_ctrl_pkg;
 
   typedef struct packed {
     logic                      valid;
+    logic                      error;
     lc_ctrl_pkg::lc_state_e    state;
     lc_ctrl_pkg::lc_cnt_e      count;
     // These are all hash post-images
@@ -154,6 +155,7 @@ package otp_ctrl_pkg;
   // Default for dangling connection
   parameter otp_lc_data_t OTP_LC_DATA_DEFAULT = '{
     valid: 1'b1,
+    error: 1'b0,
     state: '0,
     count: '0,
     all_zero_token: '0,

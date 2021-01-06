@@ -364,6 +364,15 @@
                 automatically to ESCALATE and raise an lc_state_failure alert.
                 '''
         }
+        { bits: "8"
+          name: "OTP_PARTITION_ERROR"
+          desc: '''
+                This bit is set to 1 if the life cycle partition in OTP is in error state.
+                This bit is intended for production testing during the RAW life cycle state,
+                where the OTP control and status registers are not accessible.
+                This error does not trigger an alert in the life cycle controller.
+                '''
+        }
       ]
     }
 

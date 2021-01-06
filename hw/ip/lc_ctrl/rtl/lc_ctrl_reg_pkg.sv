@@ -74,6 +74,9 @@ package lc_ctrl_reg_pkg;
     struct packed {
       logic        d;
     } state_error;
+    struct packed {
+      logic        d;
+    } otp_partition_error;
   } lc_ctrl_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -124,7 +127,7 @@ package lc_ctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    lc_ctrl_hw2reg_status_reg_t status; // [415:408]
+    lc_ctrl_hw2reg_status_reg_t status; // [416:408]
     lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [407:400]
     lc_ctrl_hw2reg_transition_regwen_reg_t transition_regwen; // [399:399]
     lc_ctrl_hw2reg_transition_token_mreg_t [3:0] transition_token; // [398:271]
@@ -187,7 +190,7 @@ package lc_ctrl_reg_pkg;
   // Register width information to check illegal writes
   parameter logic [3:0] LC_CTRL_PERMIT [21] = '{
     4'b 0001, // index[ 0] LC_CTRL_ALERT_TEST
-    4'b 0001, // index[ 1] LC_CTRL_STATUS
+    4'b 0011, // index[ 1] LC_CTRL_STATUS
     4'b 0001, // index[ 2] LC_CTRL_CLAIM_TRANSITION_IF
     4'b 0001, // index[ 3] LC_CTRL_TRANSITION_REGWEN
     4'b 0001, // index[ 4] LC_CTRL_TRANSITION_CMD
