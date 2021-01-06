@@ -12,11 +12,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH)))  csrng_fifo;
+  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))  csrng_fifo;
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH)))  rng_fifo;
 
   // local queues to hold incoming packets pending comparison
-  push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))  csrng_q[$];
+  push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  csrng_q[$];
   push_pull_item#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))  rng_q[$];
 
   `uvm_component_new

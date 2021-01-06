@@ -14,8 +14,6 @@ package entropy_src_env_pkg;
   import entropy_src_ral_pkg::*;
   import push_pull_agent_pkg::*;
 
-  parameter int  FIPS_CSRNG_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH + entropy_src_pkg::CSRNG_BUS_WIDTH;
-
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"

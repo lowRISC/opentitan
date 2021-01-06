@@ -8,7 +8,7 @@ class csrng_virtual_sequencer extends cip_base_virtual_sequencer #(
   );
   `uvm_component_utils(csrng_virtual_sequencer)
 
-  push_pull_sequencer#(.HostDataWidth(entropy_src_env_pkg::FIPS_CSRNG_BUS_WIDTH))
+  push_pull_sequencer#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
     entropy_src_sequencer_h;
 
   `uvm_component_new
