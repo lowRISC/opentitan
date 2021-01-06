@@ -336,7 +336,7 @@
     },
 
     { name: "RESEED_INTERVAL",
-      desc: "reseed internval for key manager entropy reseed",
+      desc: "reseed interval for key manager entropy reseed",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
@@ -664,7 +664,7 @@
         Key manager status.
 
         Hardware sets the status based on software initiated operations.
-        This register must be explicitly cleard by software.
+        This register must be explicitly cleared by software.
         Software clears by writing back whatever it reads.
       ''',
       swaccess: "rw1c",
