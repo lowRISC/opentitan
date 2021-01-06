@@ -53,25 +53,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input flash_idle_i
 );
 
-  // state enum
-  typedef enum logic [4:0] {
-    StLowPower,
-    StEnableClocks,
-    StReleaseLcRst,
-    StOtpInit,
-    StLcInit,
-    StFlashInit,
-    StAckPwrUp,
-    StActive,
-    StDisClks,
-    StFallThrough,
-    StNvmIdleChk,
-    StLowPowerPrep,
-    StNvmShutDown,
-    StResetPrep,
-    StReqPwrDn
-  } state_e;
-
   // The code below always assumes the always on domain is index 0
   `ASSERT_INIT(AlwaysOnIndex_A, ALWAYS_ON_DOMAIN == 0)
 
@@ -93,7 +74,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   // reset request
   logic reset_req;
 
-  state_e state_d, state_q;
+  fast_pwr_state_e state_d, state_q;
   logic reset_ongoing_q, reset_ongoing_d;
   logic req_pwrdn_q, req_pwrdn_d;
   logic ack_pwrup_q, ack_pwrup_d;
@@ -120,7 +101,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      state_q <= StLowPower;
+      state_q <= FastPwrStateLowPower;
       ack_pwrup_q <= 1'b0;
       req_pwrdn_q <= 1'b0;
       reset_ongoing_q <= 1'b0;
@@ -162,55 +143,55 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
     unique case(state_q)
 
-      StLowPower: begin
+      FastPwrStateLowPower: begin
         if (req_pwrup_i || reset_ongoing_q) begin
-          state_d = StEnableClocks;
+          state_d = FastPwrStateEnableClocks;
         end
       end
 
-      StEnableClocks: begin
+      FastPwrStateEnableClocks: begin
         ip_clk_en_d = 1'b1;
 
         if (clk_en_status_i) begin
-          state_d = StReleaseLcRst;
+          state_d = FastPwrStateReleaseLcRst;
         end
       end
 
-      StReleaseLcRst: begin
+      FastPwrStateReleaseLcRst: begin
         rst_lc_req_d = '0;  // release rst_lc_n for all power domains
 
         if (&pwr_rst_i.rst_lc_src_n) begin // once all resets are released
-          state_d = StOtpInit;
+          state_d = FastPwrStateOtpInit;
         end
       end
 
-      StOtpInit: begin
+      FastPwrStateOtpInit: begin
         otp_init = 1'b1;
 
         if (otp_done_i) begin
-          state_d = StLcInit;
+          state_d = FastPwrStateLcInit;
         end
       end
 
-      StLcInit: begin
+      FastPwrStateLcInit: begin
         lc_init = 1'b1;
 
         if (lc_done_i) begin
-          state_d = StFlashInit;
+          state_d = FastPwrStateFlashInit;
 
         end
       end
 
-      StFlashInit: begin
+      FastPwrStateFlashInit: begin
         flash_init_d = 1'b1;
 
         if (flash_done_i) begin
-          state_d = StAckPwrUp;
+          state_d = FastPwrStateAckPwrUp;
         end
       end
 
 
-      StAckPwrUp: begin
+      FastPwrStateAckPwrUp: begin
         // only ack the slow_fsm if we actually transitioned through it
         ack_pwrup_d = !reset_ongoing_q;
 
@@ -219,31 +200,31 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
           ack_pwrup_d = 1'b0;
           clr_cfg_lock_o = 1'b1;
           wkup_o = pwrup_cause_i == Wake;
-          state_d = StActive;
+          state_d = FastPwrStateActive;
         end
       end
 
-      StActive: begin
+      FastPwrStateActive: begin
         rst_sys_req_d = '0;
         reset_cause_d = ResetNone;
 
         if (reset_req || low_power_entry_i) begin
           reset_cause_d = ResetUndefined;
-          state_d = StDisClks;
+          state_d = FastPwrStateDisClks;
         end
       end
 
-      StDisClks: begin
+      FastPwrStateDisClks: begin
         ip_clk_en_d = 1'b0;
 
         if (!clk_en_status_i) begin
-          state_d = reset_req ? StNvmShutDown : StFallThrough;
+          state_d = reset_req ? FastPwrStateNvmShutDown : FastPwrStateFallThrough;
           wkup_record_o = ~reset_req;
         end
       end
 
       // Low Power Path
-      StFallThrough: begin
+      FastPwrStateFallThrough: begin
         clr_hint_o = 1'b1;
 
         // the processor was interrupted after it asserted WFI and is executing again
@@ -251,25 +232,25 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
           ip_clk_en_d = 1'b1;
           wkup_o = 1'b1;
           fall_through_o = 1'b1;
-          state_d = StActive;
+          state_d = FastPwrStateActive;
         end else begin
-          state_d = StNvmIdleChk;
+          state_d = FastPwrStateNvmIdleChk;
         end
       end
 
-      StNvmIdleChk: begin
+      FastPwrStateNvmIdleChk: begin
 
         if (otp_idle_i && lc_idle_i && flash_idle_i) begin
-          state_d = StLowPowerPrep;
+          state_d = FastPwrStateLowPowerPrep;
         end else begin
           ip_clk_en_d = 1'b1;
           wkup_o = 1'b1;
           abort_o = 1'b1;
-          state_d = StActive;
+          state_d = FastPwrStateActive;
         end
       end
 
-      StLowPowerPrep: begin
+      FastPwrStateLowPowerPrep: begin
         reset_cause_d = LowPwrEntry;
 
         // reset non-always-on domains if requested
@@ -281,34 +262,34 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         end
 
         if (reset_valid) begin
-          state_d = StReqPwrDn;
+          state_d = FastPwrStateReqPwrDn;
         end
       end
 
-      StReqPwrDn: begin
+      FastPwrStateReqPwrDn: begin
         req_pwrdn_d = 1'b1;
 
         if (ack_pwrdn_i) begin
           req_pwrdn_d = 1'b0;
-          state_d = StLowPower;
+          state_d = FastPwrStateLowPower;
         end
       end
 
       // Reset Path
       // This state is TODO, the details are still under discussion
-      StNvmShutDown: begin
+      FastPwrStateNvmShutDown: begin
         clr_hint_o = 1'b1;
         reset_ongoing_d = 1'b1;
-        state_d = StResetPrep;
+        state_d = FastPwrStateResetPrep;
       end
 
-      StResetPrep: begin
+      FastPwrStateResetPrep: begin
         reset_cause_d = HwReq;
         rst_lc_req_d = {PowerDomains{1'b1}};
         rst_sys_req_d = {PowerDomains{1'b1}};
 
         if (reset_valid) begin
-          state_d = StLowPower;
+          state_d = FastPwrStateLowPower;
         end
       end
 
