@@ -13,14 +13,14 @@ module dcd_core (
   output debug_cable_wakeup,
   output intr_debug_cable_o,
 
-  input  dcd_reg_pkg::dcd_reg2hw_t reg2hw,
-  output dcd_reg_pkg::dcd_hw2reg_t hw2reg,
-
   input  ast_wrapper_pkg::adc_ast_rsp_t adc_i,
   output ast_wrapper_pkg::adc_ast_req_t adc_o
 );
 
   import dcd_reg_pkg::* ;
+
+  dcd_reg2hw_t reg2hw;
+  dcd_hw2reg_t hw2reg;
 
   logic cfg_adc_enable;
   logic cfg_oneshot_mode;
@@ -65,8 +65,8 @@ module dcd_core (
   ) i_cfg_adc_enable (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_en_ctl.adc_enable.q),
-    .q(cfg_adc_enable)
+    .d_i(reg2hw.adc_en_ctl.adc_enable.q),
+    .q_o(cfg_adc_enable)
   );
 
   prim_flop_2sync # (
@@ -74,8 +74,8 @@ module dcd_core (
   ) i_cfg_oneshot_mode (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_en_ctl.oneshot_mode.q),
-    .q(cfg_oneshot_mode)
+    .d_i(reg2hw.adc_en_ctl.oneshot_mode.q),
+    .q_o(cfg_oneshot_mode)
   );
 
   prim_flop_2sync # (
@@ -83,12 +83,12 @@ module dcd_core (
   ) i_cfg_lp_mode (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_pd_ctl.lp_mode.q),
-    .q(cfg_lp_mode)
+    .d_i(reg2hw.adc_pd_ctl.lp_mode.q),
+    .q_o(cfg_lp_mode)
   );
   prim_fifo_async #(
     .Width(4),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_pwrup_time (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -107,7 +107,7 @@ module dcd_core (
 
   prim_fifo_async #(
     .Width(24),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_wakeup_time (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -126,7 +126,7 @@ module dcd_core (
 
   prim_fifo_async #(
     .Width(8),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_lp_sample_cnt (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -145,7 +145,7 @@ module dcd_core (
 
   prim_fifo_async #(
     .Width(16),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_np_sample_cnt (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -167,8 +167,8 @@ module dcd_core (
   ) i_cfg_fsm_rst (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_fsm_rst.q),
-    .q(cfg_fsm_rst)
+    .d_i(reg2hw.adc_fsm_rst.q),
+    .q_o(cfg_fsm_rst)
   );
 
   //synchronize between cfg(24MHz) and always-on(200KHz) for the filters
@@ -178,8 +178,8 @@ module dcd_core (
   ) i_cfg_chn0_cond (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_chn0_filter_ctl[k].cond.q),
-    .q(cfg_chn0_cond[k])
+    .d_i(reg2hw.adc_chn0_filter_ctl[k].cond.q),
+    .q_o(cfg_chn0_cond[k])
   );
 
     prim_flop_2sync # (
@@ -187,13 +187,13 @@ module dcd_core (
   ) i_cfg_chn1_cond (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_chn1_filter_ctl[k].cond.q),
-    .q(cfg_chn1_cond[k])
+    .d_i(reg2hw.adc_chn1_filter_ctl[k].cond.q),
+    .q_o(cfg_chn1_cond[k])
   );
 
     prim_fifo_async #(
     .Width(10),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_chn0_min_v (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -212,7 +212,7 @@ module dcd_core (
 
     prim_fifo_async #(
     .Width(10),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_chn1_min_v (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -231,7 +231,7 @@ module dcd_core (
 
     prim_fifo_async #(
     .Width(10),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_chn0_max_v (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -250,7 +250,7 @@ module dcd_core (
 
     prim_fifo_async #(
     .Width(10),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_chn1_max_v (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -273,8 +273,8 @@ module dcd_core (
   ) i_cfg_wakeup_en0 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_wakeup_ctl.chn0_1_filter0_en.q),
-    .q(cfg_wakeup_en[0])
+    .d_i(reg2hw.adc_wakeup_ctl.chn0_1_filter0_en.q),
+    .q_o(cfg_wakeup_en[0])
   );
 
   prim_flop_2sync # (
@@ -282,8 +282,8 @@ module dcd_core (
   ) i_cfg_wakeup_en1 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_wakeup_ctl.chn0_1_filter1_en.q),
-    .q(cfg_wakeup_en[1])
+    .d_i(reg2hw.adc_wakeup_ctl.chn0_1_filter1_en.q),
+    .q_o(cfg_wakeup_en[1])
   );
 
   prim_flop_2sync # (
@@ -291,8 +291,8 @@ module dcd_core (
   ) i_cfg_wakeup_en2 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_wakeup_ctl.chn0_1_filter2_en.q),
-    .q(cfg_wakeup_en[2])
+    .d_i(reg2hw.adc_wakeup_ctl.chn0_1_filter2_en.q),
+    .q_o(cfg_wakeup_en[2])
   );
 
   prim_flop_2sync # (
@@ -300,8 +300,8 @@ module dcd_core (
   ) i_cfg_wakeup_en3 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_wakeup_ctl.chn0_1_filter3_en.q),
-    .q(cfg_wakeup_en[3])
+    .d_i(reg2hw.adc_wakeup_ctl.chn0_1_filter3_en.q),
+    .q_o(cfg_wakeup_en[3])
   );
 
   prim_flop_2sync # (
@@ -309,8 +309,8 @@ module dcd_core (
   ) i_cfg_wakeup_en4 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_wakeup_ctl.chn0_1_filter4_en.q),
-    .q(cfg_wakeup_en[4])
+    .d_i(reg2hw.adc_wakeup_ctl.chn0_1_filter4_en.q),
+    .q_o(cfg_wakeup_en[4])
   );
 
   prim_flop_2sync # (
@@ -318,8 +318,8 @@ module dcd_core (
   ) i_cfg_wakeup_en5 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_wakeup_ctl.chn0_1_filter5_en.q),
-    .q(cfg_wakeup_en[5])
+    .d_i(reg2hw.adc_wakeup_ctl.chn0_1_filter5_en.q),
+    .q_o(cfg_wakeup_en[5])
   );
 
   prim_flop_2sync # (
@@ -327,8 +327,8 @@ module dcd_core (
   ) i_cfg_wakeup_en6 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_wakeup_ctl.chn0_1_filter6_en.q),
-    .q(cfg_wakeup_en[6])
+    .d_i(reg2hw.adc_wakeup_ctl.chn0_1_filter6_en.q),
+    .q_o(cfg_wakeup_en[6])
   );
 
   prim_flop_2sync # (
@@ -336,8 +336,8 @@ module dcd_core (
   ) i_cfg_wakeup_en7 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_wakeup_ctl.chn0_1_filter7_en.q),
-    .q(cfg_wakeup_en[7])
+    .d_i(reg2hw.adc_wakeup_ctl.chn0_1_filter7_en.q),
+    .q_o(cfg_wakeup_en[7])
   );
 
   prim_flop_2sync # (
@@ -345,8 +345,8 @@ module dcd_core (
   ) i_cfg_intr_en0 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_intr_ctl.chn0_1_filter0_en.q),
-    .q(cfg_intr_en[0])
+    .d_i(reg2hw.adc_intr_ctl.chn0_1_filter0_en.q),
+    .q_o(cfg_intr_en[0])
   );
 
   prim_flop_2sync # (
@@ -354,8 +354,8 @@ module dcd_core (
   ) i_cfg_intr_en1 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_intr_ctl.chn0_1_filter1_en.q),
-    .q(cfg_intr_en[1])
+    .d_i(reg2hw.adc_intr_ctl.chn0_1_filter1_en.q),
+    .q_o(cfg_intr_en[1])
   );
 
   prim_flop_2sync # (
@@ -363,8 +363,8 @@ module dcd_core (
   ) i_cfg_intr_en2 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_intr_ctl.chn0_1_filter2_en.q),
-    .q(cfg_intr_en[2])
+    .d_i(reg2hw.adc_intr_ctl.chn0_1_filter2_en.q),
+    .q_o(cfg_intr_en[2])
   );
 
   prim_flop_2sync # (
@@ -372,8 +372,8 @@ module dcd_core (
   ) i_cfg_intr_en3 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_intr_ctl.chn0_1_filter3_en.q),
-    .q(cfg_intr_en[3])
+    .d_i(reg2hw.adc_intr_ctl.chn0_1_filter3_en.q),
+    .q_o(cfg_intr_en[3])
   );
 
   prim_flop_2sync # (
@@ -381,8 +381,8 @@ module dcd_core (
   ) i_cfg_intr_en4 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_intr_ctl.chn0_1_filter4_en.q),
-    .q(cfg_intr_en[4])
+    .d_i(reg2hw.adc_intr_ctl.chn0_1_filter4_en.q),
+    .q_o(cfg_intr_en[4])
   );
 
   prim_flop_2sync # (
@@ -390,8 +390,8 @@ module dcd_core (
   ) i_cfg_intr_en5 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_intr_ctl.chn0_1_filter5_en.q),
-    .q(cfg_intr_en[5])
+    .d_i(reg2hw.adc_intr_ctl.chn0_1_filter5_en.q),
+    .q_o(cfg_intr_en[5])
   );
 
   prim_flop_2sync # (
@@ -399,8 +399,8 @@ module dcd_core (
   ) i_cfg_intr_en6 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_intr_ctl.chn0_1_filter6_en.q),
-    .q(cfg_intr_en[6])
+    .d_i(reg2hw.adc_intr_ctl.chn0_1_filter6_en.q),
+    .q_o(cfg_intr_en[6])
   );
 
   prim_flop_2sync # (
@@ -408,8 +408,8 @@ module dcd_core (
   ) i_cfg_intr_en7 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_intr_ctl.chn0_1_filter7_en.q),
-    .q(cfg_intr_en[7])
+    .d_i(reg2hw.adc_intr_ctl.chn0_1_filter7_en.q),
+    .q_o(cfg_intr_en[7])
   );
 
   prim_flop_2sync # (
@@ -417,8 +417,8 @@ module dcd_core (
   ) i_cfg_oneshot_intr_en (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.adc_intr_ctl.oneshot_intr_en.q),
-    .q(cfg_oneshot_intr_en)
+    .d_i(reg2hw.adc_intr_ctl.oneshot_intr_en.q),
+    .q_o(cfg_oneshot_intr_en)
   );
 
   //Synchronize from 200KHz always-onclock to 24MHz cfg clock
@@ -460,7 +460,7 @@ module dcd_core (
 
   prim_fifo_async #(
     .Width(10),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_chn0_val (
     .clk_wr_i  (clk_aon_i),
     .rst_wr_ni (rst_slow_ni),
@@ -479,7 +479,7 @@ module dcd_core (
 
   prim_fifo_async #(
     .Width(10),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_chn1_val (
     .clk_wr_i  (clk_aon_i),
     .rst_wr_ni (rst_slow_ni),
@@ -546,8 +546,10 @@ module dcd_core (
 
   //Instantiate the interrupt module
   dcd_intr i_dcd_intr (
-    .reg2hw(reg2hw),
-    .hw2reg(hw2reg),
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .clk_aon_i(clk_aon_i),
+    .rst_slow_ni(rst_slow_ni),
     .cfg_wakeup_en(cfg_wakeup_en),
     .cfg_intr_en(cfg_intr_en),
     .cfg_oneshot_intr_en(cfg_oneshot_intr_en),

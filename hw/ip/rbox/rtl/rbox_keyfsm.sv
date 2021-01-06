@@ -13,8 +13,8 @@ module rbox_keyfsm #(
   input [timerBit-1:0] cfg_timer_i,
   input                cfg_l2h_en_i,
   input                cfg_h2l_en_i,
-  output               timer_l2h_cond_met,
-  output               timer_h2l_cond_met
+  output logic         timer_l2h_cond_met,
+  output logic         timer_h2l_cond_met
 
 );
 

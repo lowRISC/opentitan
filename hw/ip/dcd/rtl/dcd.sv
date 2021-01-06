@@ -58,8 +58,6 @@ module dcd import dcd_pkg::*;(
     .rst_ni(rst_ni),
     .debug_cable_wakeup(debug_cable_wakeup),
     .intr_debug_cable_o(intr_debug_cable_o),
-    .reg2hw(reg2hw),
-    .hw2reg(hw2reg),
     .adc_i(adc_i),
     .adc_o(adc_o)
   );

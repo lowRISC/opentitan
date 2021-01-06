@@ -11,9 +11,6 @@ module rbox_pin (
   input               clk_i,
   input               rst_ni,
 
-  input   rbox_reg_pkg::rbox_reg2hw_t reg2hw,
-  output  rbox_reg_pkg::rbox_hw2reg_t hw2reg,
-
   input               cio_pwrb_in_i,
   input               cio_key0_in_i,
   input               cio_key1_in_i,
@@ -38,6 +35,9 @@ module rbox_pin (
 );
 
   import rbox_reg_pkg::*;
+
+  rbox_reg2hw_t reg2hw;
+  rbox_hw2reg_t hw2reg;
 
   logic cfg_ac_present_i_pin;
   logic cfg_ec_rst_l_i_pin;
@@ -79,8 +79,8 @@ module rbox_pin (
   ) i_cfg_ac_present_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d(cio_ac_present_i),
-    .q(cfg_ac_present_i_pin)
+    .d_i(cio_ac_present_i),
+    .q_o(cfg_ac_present_i_pin)
   );
 
   prim_flop_2sync # (
@@ -88,8 +88,8 @@ module rbox_pin (
   ) i_cfg_ec_rst_l_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d(cio_ec_rst_l_i),
-    .q(cfg_ec_rst_l_i_pin)
+    .d_i(cio_ec_rst_l_i),
+    .q_o(cfg_ec_rst_l_i_pin)
   );
 
   prim_flop_2sync # (
@@ -97,8 +97,8 @@ module rbox_pin (
   ) i_cfg_pwrb_in_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d(cio_pwrb_in_i),
-    .q(cfg_pwrb_in_i_pin)
+    .d_i(cio_pwrb_in_i),
+    .q_o(cfg_pwrb_in_i_pin)
   );
 
   prim_flop_2sync # (
@@ -106,8 +106,8 @@ module rbox_pin (
   ) i_cfg_key0_in_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d(cio_key0_in_i),
-    .q(cfg_key0_in_i_pin)
+    .d_i(cio_key0_in_i),
+    .q_o(cfg_key0_in_i_pin)
   );
 
   prim_flop_2sync # (
@@ -115,8 +115,8 @@ module rbox_pin (
   ) i_cfg_key1_in_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d(cio_key1_in_i),
-    .q(cfg_key1_in_i_pin)
+    .d_i(cio_key1_in_i),
+    .q_o(cfg_key1_in_i_pin)
   );
 
   prim_flop_2sync # (
@@ -124,8 +124,8 @@ module rbox_pin (
   ) i_cfg_key2_in_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d(cio_key2_in_i),
-    .q(cfg_key2_in_i_pin)
+    .d_i(cio_key2_in_i),
+    .q_o(cfg_key2_in_i_pin)
   );
 
   //Use the raw input(not inverted)
@@ -150,8 +150,8 @@ module rbox_pin (
   ) i_cfg_bat_disable_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_allowed_ctl.bat_disable_0.q),
-    .q(cfg_bat_disable_0_allow)
+    .d_i(reg2hw.pin_allowed_ctl.bat_disable_0.q),
+    .q_o(cfg_bat_disable_0_allow)
   );
 
   prim_flop_2sync # (
@@ -160,8 +160,8 @@ module rbox_pin (
   ) i_cfg_ec_rst_l_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_allowed_ctl.ec_rst_l_0.q),
-    .q(cfg_ec_rst_l_0_allow)
+    .d_i(reg2hw.pin_allowed_ctl.ec_rst_l_0.q),
+    .q_o(cfg_ec_rst_l_0_allow)
   );
 
   prim_flop_2sync # (
@@ -170,8 +170,8 @@ module rbox_pin (
   ) i_cfg_pwrb_out_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_allowed_ctl.pwrb_out_0.q),
-    .q(cfg_pwrb_out_0_allow)
+    .d_i(reg2hw.pin_allowed_ctl.pwrb_out_0.q),
+    .q_o(cfg_pwrb_out_0_allow)
   );
 
   prim_flop_2sync # (
@@ -180,8 +180,8 @@ module rbox_pin (
   ) i_cfg_key0_out_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_allowed_ctl.key0_out_0.q),
-    .q(cfg_key0_out_0_allow)
+    .d_i(reg2hw.pin_allowed_ctl.key0_out_0.q),
+    .q_o(cfg_key0_out_0_allow)
   );
 
   prim_flop_2sync # (
@@ -190,8 +190,8 @@ module rbox_pin (
   ) i_cfg_key1_out_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_allowed_ctl.key1_out_0.q),
-    .q(cfg_key1_out_0_allow)
+    .d_i(reg2hw.pin_allowed_ctl.key1_out_0.q),
+    .q_o(cfg_key1_out_0_allow)
   );
 
   prim_flop_2sync # (
@@ -200,8 +200,8 @@ module rbox_pin (
   ) i_cfg_key2_out_0_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_allowed_ctl.key2_out_0.q),
-    .q(cfg_key2_out_0_allow)
+    .d_i(reg2hw.pin_allowed_ctl.key2_out_0.q),
+    .q_o(cfg_key2_out_0_allow)
   );
 
   prim_flop_2sync # (
@@ -210,8 +210,8 @@ module rbox_pin (
   ) i_cfg_bat_disable_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_allowed_ctl.bat_disable_1.q),
-    .q(cfg_bat_disable_1_allow)
+    .d_i(reg2hw.pin_allowed_ctl.bat_disable_1.q),
+    .q_o(cfg_bat_disable_1_allow)
   );
 
   prim_flop_2sync # (
@@ -220,8 +220,8 @@ module rbox_pin (
   ) i_cfg_ec_rst_l_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_allowed_ctl.ec_rst_l_1.q),
-    .q(cfg_ec_rst_l_1_allow)
+    .d_i(reg2hw.pin_allowed_ctl.ec_rst_l_1.q),
+    .q_o(cfg_ec_rst_l_1_allow)
   );
 
   prim_flop_2sync # (
@@ -230,8 +230,8 @@ module rbox_pin (
   ) i_cfg_pwrb_out_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_allowed_ctl.pwrb_out_1.q),
-    .q(cfg_pwrb_out_1_allow)
+    .d_i(reg2hw.pin_allowed_ctl.pwrb_out_1.q),
+    .q_o(cfg_pwrb_out_1_allow)
   );
 
   prim_flop_2sync # (
@@ -240,8 +240,8 @@ module rbox_pin (
   ) i_cfg_key0_out_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_allowed_ctl.key0_out_1.q),
-    .q(cfg_key0_out_1_allow)
+    .d_i(reg2hw.pin_allowed_ctl.key0_out_1.q),
+    .q_o(cfg_key0_out_1_allow)
   );
 
   prim_flop_2sync # (
@@ -250,8 +250,8 @@ module rbox_pin (
   ) i_cfg_key1_out_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_allowed_ctl.key1_out_1.q),
-    .q(cfg_key1_out_1_allow)
+    .d_i(reg2hw.pin_allowed_ctl.key1_out_1.q),
+    .q_o(cfg_key1_out_1_allow)
   );
 
   prim_flop_2sync # (
@@ -260,8 +260,8 @@ module rbox_pin (
   ) i_cfg_key2_out_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_allowed_ctl.key2_out_1.q),
-    .q(cfg_key2_out_1_allow)
+    .d_i(reg2hw.pin_allowed_ctl.key2_out_1.q),
+    .q_o(cfg_key2_out_1_allow)
   );
 
   prim_flop_2sync # (
@@ -270,8 +270,8 @@ module rbox_pin (
   ) i_cfg_bat_disable_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_out_ctl.bat_disable.q),
-    .q(cfg_bat_disable_ov)
+    .d_i(reg2hw.pin_out_ctl.bat_disable.q),
+    .q_o(cfg_bat_disable_ov)
   );
 
   prim_flop_2sync # (
@@ -280,8 +280,8 @@ module rbox_pin (
   ) i_cfg_ec_rst_l_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_out_ctl.ec_rst_l.q),
-    .q(cfg_ec_rst_l_ov)
+    .d_i(reg2hw.pin_out_ctl.ec_rst_l.q),
+    .q_o(cfg_ec_rst_l_ov)
   );
 
   prim_flop_2sync # (
@@ -290,8 +290,8 @@ module rbox_pin (
   ) i_cfg_pwrb_out_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_out_ctl.pwrb_out.q),
-    .q(cfg_pwrb_out_ov)
+    .d_i(reg2hw.pin_out_ctl.pwrb_out.q),
+    .q_o(cfg_pwrb_out_ov)
   );
 
   prim_flop_2sync # (
@@ -300,8 +300,8 @@ module rbox_pin (
   ) i_cfg_key0_out_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_out_ctl.key0_out.q),
-    .q(cfg_key0_out_ov)
+    .d_i(reg2hw.pin_out_ctl.key0_out.q),
+    .q_o(cfg_key0_out_ov)
   );
 
   prim_flop_2sync # (
@@ -310,8 +310,8 @@ module rbox_pin (
   ) i_cfg_key1_out_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_out_ctl.key1_out.q),
-    .q(cfg_key1_out_ov)
+    .d_i(reg2hw.pin_out_ctl.key1_out.q),
+    .q_o(cfg_key1_out_ov)
   );
 
   prim_flop_2sync # (
@@ -320,8 +320,8 @@ module rbox_pin (
   ) i_cfg_key2_out_ov (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_out_ctl.key2_out.q),
-    .q(cfg_key2_out_ov)
+    .d_i(reg2hw.pin_out_ctl.key2_out.q),
+    .q_o(cfg_key2_out_ov)
   );
 
   prim_flop_2sync # (
@@ -330,8 +330,8 @@ module rbox_pin (
   ) i_cfg_bat_disable_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_out_value.bat_disable.q),
-    .q(cfg_bat_disable_q)
+    .d_i(reg2hw.pin_out_value.bat_disable.q),
+    .q_o(cfg_bat_disable_q)
   );
 
   prim_flop_2sync # (
@@ -340,8 +340,8 @@ module rbox_pin (
   ) i_cfg_ec_rst_l_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_out_value.ec_rst_l.q),
-    .q(cfg_ec_rst_l_q)
+    .d_i(reg2hw.pin_out_value.ec_rst_l.q),
+    .q_o(cfg_ec_rst_l_q)
   );
 
   prim_flop_2sync # (
@@ -350,8 +350,8 @@ module rbox_pin (
   ) i_cfg_pwrb_out_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_out_value.pwrb_out.q),
-    .q(cfg_pwrb_out_q)
+    .d_i(reg2hw.pin_out_value.pwrb_out.q),
+    .q_o(cfg_pwrb_out_q)
   );
 
   prim_flop_2sync # (
@@ -360,8 +360,8 @@ module rbox_pin (
   ) i_cfg_key0_out_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_out_value.key0_out.q),
-    .q(cfg_key0_out_q)
+    .d_i(reg2hw.pin_out_value.key0_out.q),
+    .q_o(cfg_key0_out_q)
   );
 
   prim_flop_2sync # (
@@ -370,8 +370,8 @@ module rbox_pin (
   ) i_cfg_key1_out_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_out_value.key1_out.q),
-    .q(cfg_key1_out_q)
+    .d_i(reg2hw.pin_out_value.key1_out.q),
+    .q_o(cfg_key1_out_q)
   );
 
   prim_flop_2sync # (
@@ -380,8 +380,8 @@ module rbox_pin (
   ) i_cfg_key2_out_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.pin_out_value.key2_out.q),
-    .q(cfg_key2_out_q)
+    .d_i(reg2hw.pin_out_value.key2_out.q),
+    .q_o(cfg_key2_out_q)
   );
 
   assign pwrb_out_int = (cfg_pwrb_out_ov && cfg_pwrb_out_0_allow && !cfg_pwrb_out_q) ? 1'b0 :

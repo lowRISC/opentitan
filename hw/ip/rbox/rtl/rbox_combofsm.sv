@@ -5,7 +5,7 @@
 // Description RBOX combo detection FSM module
 
 module rbox_combofsm #(
-  parameter int unsigned timer1Bit = 16
+  parameter int unsigned timer1Bit = 16,
   parameter int unsigned timer2Bit = 32
   ) (
   input                clk_aon_i,
@@ -15,7 +15,7 @@ module rbox_combofsm #(
   input [timer1Bit-1:0] cfg_timer1_i,//debounce
   input [timer2Bit-1:0] cfg_timer2_i,//detection
   input                cfg_h2l_en_i,
-  output               timer_h2l_cond_met
+  output logic         timer_h2l_cond_met
 
 );
 
@@ -110,7 +110,7 @@ module rbox_combofsm #(
     unique case (timer_state_q)
       IDLE: begin
         if (cfg_h2l_en_i &&  trigger_h2l) begin
-          timer_state_d = WAITL2H;
+          timer_state_d = WAIT1;
         end
       end
 

@@ -10,9 +10,6 @@ module rbox_comboact (
   input               clk_i,
   input               rst_ni,
 
-  input   rbox_reg_pkg::rbox_reg2hw_t reg2hw,
-  output  rbox_reg_pkg::rbox_hw2reg_t hw2reg,
-
   input               cfg_intr_en,
   input               cfg_bat_disable_en,
   input               cfg_ec_rst_en,
@@ -27,6 +24,9 @@ module rbox_comboact (
 );
 
   import rbox_reg_pkg::*;
+
+  rbox_reg2hw_t reg2hw;
+  rbox_hw2reg_t hw2reg;
 
   logic [15:0]  cfg_ec_rst_timer;
 
@@ -74,7 +74,7 @@ module rbox_comboact (
   //synchronize between cfg(24MHz) and always-on(200KHz)
   prim_fifo_async #(
     .Width(16),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_ec_rst_pulse (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -127,11 +127,10 @@ module rbox_comboact (
     if (!rst_slow_ni) begin
       timer_cnt_q    <= '0;
     end
-      else if (timer_cnt_clr) begin
-         timer_cnt_q <= '0;
-      end else begin
-         timer_cnt_q <= timer_cnt_d;
-      end
+    else if (timer_cnt_clr) begin
+      timer_cnt_q <= '0;
+    end else begin
+      timer_cnt_q <= timer_cnt_d;
     end
   end
 

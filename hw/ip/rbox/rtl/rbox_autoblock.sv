@@ -10,8 +10,6 @@ module rbox_autoblock (
   input               clk_i,
   input               rst_ni,
 
-  input   rbox_reg_pkg::rbox_reg2hw_t reg2hw,
-
   input               pwrb_int,
   input               key0_int,
   input               key1_int,
@@ -24,6 +22,8 @@ module rbox_autoblock (
 
 );
   import rbox_reg_pkg::*;
+
+  rbox_reg2hw_t reg2hw;
 
   logic         cfg_auto_block_en;
   logic [15:0]  cfg_auto_block_timer;
@@ -46,13 +46,13 @@ module rbox_autoblock (
   ) i_cfg_auto_block_en (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.auto_block_debounce_ctl.auto_block_enable.q),
-    .q(cfg_auto_block_en)
+    .d_i(reg2hw.auto_block_debounce_ctl.auto_block_enable.q),
+    .q_o(cfg_auto_block_en)
   );
 
   prim_fifo_async #(
     .Width(16),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_auto_block_timer (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -74,8 +74,8 @@ module rbox_autoblock (
   ) i_cfg_key0_o_sel (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.auto_block_out_ctl.key0_out_sel.q),
-    .q(cfg_key0_o_sel)
+    .d_i(reg2hw.auto_block_out_ctl.key0_out_sel.q),
+    .q_o(cfg_key0_o_sel)
   );
 
   prim_flop_2sync # (
@@ -83,8 +83,8 @@ module rbox_autoblock (
   ) i_cfg_key1_o_sel (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.auto_block_out_ctl.key1_out_sel.q),
-    .q(cfg_key1_o_sel)
+    .d_i(reg2hw.auto_block_out_ctl.key1_out_sel.q),
+    .q_o(cfg_key1_o_sel)
   );
 
   prim_flop_2sync # (
@@ -92,8 +92,8 @@ module rbox_autoblock (
   ) i_cfg_key2_o_sel (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.auto_block_out_ctl.key2_out_sel.q),
-    .q(cfg_key2_o_sel)
+    .d_i(reg2hw.auto_block_out_ctl.key2_out_sel.q),
+    .q_o(cfg_key2_o_sel)
   );
 
   prim_flop_2sync # (
@@ -101,8 +101,8 @@ module rbox_autoblock (
   ) i_cfg_key0_o_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.auto_block_out_ctl.key0_out_value.q),
-    .q(cfg_key0_o_q)
+    .d_i(reg2hw.auto_block_out_ctl.key0_out_value.q),
+    .q_o(cfg_key0_o_q)
   );
 
   prim_flop_2sync # (
@@ -110,8 +110,8 @@ module rbox_autoblock (
   ) i_cfg_key1_o_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.auto_block_out_ctl.key1_out_value.q),
-    .q(cfg_key1_o_q)
+    .d_i(reg2hw.auto_block_out_ctl.key1_out_value.q),
+    .q_o(cfg_key1_o_q)
   );
 
   prim_flop_2sync # (
@@ -119,8 +119,8 @@ module rbox_autoblock (
   ) i_cfg_key2_o_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.auto_block_out_ctl.key2_out_value.q),
-    .q(cfg_key2_o_q)
+    .d_i(reg2hw.auto_block_out_ctl.key2_out_value.q),
+    .q_o(cfg_key2_o_q)
   );
 
   //synchronize between GPIO and always-on(200KHz)
@@ -129,8 +129,8 @@ module rbox_autoblock (
   ) i_pwrb_in_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(pwrb_int),
-    .q(pwrb_int_i)
+    .d_i(pwrb_int),
+    .q_o(pwrb_int_i)
   );
 
   rbox_timerfsm # (

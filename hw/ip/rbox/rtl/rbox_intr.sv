@@ -5,13 +5,15 @@
 // Description: RBOX interrupt Module
 //
 module rbox_intr (
-  input   rbox_reg_pkg::rbox_reg2hw_t reg2hw,
-  output  rbox_reg_pkg::rbox_hw2reg_t hw2reg,
-
-  output              rbox_intr_o
+  input  clk_i,
+  input  rst_ni,
+  output rbox_intr_o
 );
 
   import rbox_reg_pkg::*;
+
+  rbox_reg2hw_t reg2hw;
+  rbox_hw2reg_t hw2reg;
 
   logic rbox_event;
   logic rbox_combo0_h2l_intr, rbox_combo1_h2l_intr, rbox_combo2_h2l_intr, rbox_combo3_h2l_intr;
@@ -50,6 +52,8 @@ module rbox_intr (
 
   // instantiate interrupt hardware primitive
   prim_intr_hw #(.Width(1)) i_rbox_intr_o (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
     .event_intr_i           (rbox_event),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.q),

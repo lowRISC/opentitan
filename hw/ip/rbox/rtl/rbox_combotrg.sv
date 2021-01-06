@@ -15,8 +15,8 @@ module rbox_combotrg (
   input                in2,
   input                in3,
   input                in4,
-  output               trigger_h_o,
-  output               trigger_l_o
+  output logic         trigger_h_o,
+  output logic         trigger_l_o
 );
 
   logic [4:0] cfg_input_sel;
@@ -149,6 +149,7 @@ module rbox_combotrg (
       default: begin
 	 trigger_h_o = 1'b0;
 	 trigger_l_o = 1'b0;
+      end
     endcase
   end
 

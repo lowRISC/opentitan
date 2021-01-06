@@ -18,15 +18,17 @@ module dcd_fsm (
   input [NumAdcFilter-1:0] dcd_match,
   input [9:0] adc_d,
   input       adc_d_val,//valid bit for ADC value
-  output      adc_pd,
-  output [1:0] adc_chn_sel,
-  output       chn0_val_we,
-  output       chn1_val_we,
-  output [9:0] chn0_val,
-  output [9:0] chn1_val,
-  output       dcd_done,
-  output       oneshot_done
+  output logic      adc_pd,
+  output logic[1:0] adc_chn_sel,
+  output logic      chn0_val_we,
+  output logic      chn1_val_we,
+  output logic [9:0] chn0_val,
+  output logic [9:0] chn1_val,
+  output logic       dcd_done,
+  output logic       oneshot_done
 );
+
+  import dcd_reg_pkg::* ;
 
   logic trigger_q;
   logic trigger_l2h, trigger_h2l;
@@ -111,11 +113,11 @@ module dcd_fsm (
     end
   end
 
-  assign fsm_chn0_sel = (fsm_state_q == ONEST_0) || (fsm_state_q == LP_0) || (fsm_state_q == NP_0));
+  assign fsm_chn0_sel = (fsm_state_q == ONEST_0) || (fsm_state_q == LP_0) || (fsm_state_q == NP_0);
   assign chn0_val_we_d = fsm_chn0_sel && adc_d_val;//adc_d_val is a valid pulse
   assign chn0_val_d = (chn0_val_we_d) ? adc_d : chn0_val;
 
-  assign fsm_chn1_sel = (fsm_state_q == ONEST_1) || (fsm_state_q == LP_1) || (fsm_state_q == NP_1));
+  assign fsm_chn1_sel = (fsm_state_q == ONEST_1) || (fsm_state_q == LP_1) || (fsm_state_q == NP_1);
   assign chn1_val_we_d = fsm_chn1_sel && adc_d_val;
   assign chn1_val_d = (chn1_val_we_d) ? adc_d : chn1_val;
 
@@ -205,7 +207,7 @@ module dcd_fsm (
                             NP_0 = 4'hc,//ADC is in normal-power mode, sample channel0 value
                             NP_021 = 4'hd,//ADC is in normal-power mode, transition from chn0 to chn1
                             NP_1 = 4'he,//ADC is in normal-power mode, sample channel1 value
-                            NP_EVAL = 4'hf,//ADC is in normal-power mode, detection is done
+                            NP_EVAL = 4'hf//ADC is in normal-power mode, detection is done
                             } fsm_state_e;
 
   fsm_state_e fsm_state_q, fsm_state_d;
@@ -246,10 +248,10 @@ module dcd_fsm (
 
       PWRUP: begin
 	adc_pd = 1'b0;
-	if (pwrup_timer_cnt != cfg_pwrup_time) begin
+	if (pwrup_timer_cnt_q != cfg_pwrup_time) begin
 	  pwrup_timer_cnt_en = 1'b1;
         end
-	else if (pwrup_timer_cnt == cfg_pwrup_time) begin
+	else if (pwrup_timer_cnt_q == cfg_pwrup_time) begin
           pwrup_timer_cnt_clr = 1'b1;
 	  fsm_state_d = IDLE;
         end
@@ -270,7 +272,7 @@ module dcd_fsm (
 
       ONEST_0: begin
 	adc_pd = 1'b0;
-	adc_chn_sel = 2'b01
+	adc_chn_sel = 2'b01;
         if (adc_d_val) begin//sample chn0 value
           fsm_state_d = ONEST_021;
         end
@@ -283,7 +285,7 @@ module dcd_fsm (
 
       ONEST_1: begin
 	adc_pd = 1'b0;
-	adc_chn_sel = 2'b10
+	adc_chn_sel = 2'b10;
         if (adc_d_val) begin//sample chn1 value
 	  oneshot_done = 1'b1;
           fsm_state_d = PWRDN;
@@ -292,7 +294,7 @@ module dcd_fsm (
 
       LP_0: begin
 	adc_pd = 1'b0;
-        adc_chn_sel = 2'b01
+        adc_chn_sel = 2'b01;
         if (adc_d_val) begin//sample chn0 value
           fsm_state_d = LP_021;
         end
@@ -305,7 +307,7 @@ module dcd_fsm (
 
       LP_1: begin
 	adc_pd = 1'b0;
-	adc_chn_sel = 2'b10
+	adc_chn_sel = 2'b10;
         if (adc_d_val) begin//sample chn1 value
           fsm_state_d = LP_EVAL;
 	  lp_sample_cnt_en = 1'b1;
@@ -314,14 +316,14 @@ module dcd_fsm (
 
       LP_EVAL: begin
 	adc_pd = 1'b0;
-        if ((lp_sample_cnt != cfg_lp_sample_cnt) && (stay_match == 1'b1)) begin
+        if ((lp_sample_cnt_q != cfg_lp_sample_cnt) && (stay_match == 1'b1)) begin
           fsm_state_d = LP_SLP;
         end
-        else if ((lp_sample_cnt != cfg_lp_sample_cnt) && (stay_match != 1'b1)) begin
+        else if ((lp_sample_cnt_q != cfg_lp_sample_cnt) && (stay_match != 1'b1)) begin
           fsm_state_d = LP_SLP;
 	  lp_sample_cnt_clr = 1'b1;
         end
-        else if ((lp_sample_cnt == cfg_lp_sample_cnt) && (stay_match == 1'b1)) begin
+        else if ((lp_sample_cnt_q == cfg_lp_sample_cnt) && (stay_match == 1'b1)) begin
           fsm_state_d = NP_0;
 	  lp_sample_cnt_clr = 1'b1;
         end
@@ -340,10 +342,10 @@ module dcd_fsm (
 
       LP_PWRUP: begin
         adc_pd = 1'b0;
-	if (pwrup_timer_cnt != cfg_pwrup_time) begin
+	if (pwrup_timer_cnt_q != cfg_pwrup_time) begin
           pwrup_timer_cnt_en = 1'b1;
         end
-        else if (pwrup_timer_cnt == cfg_pwrup_time) begin
+        else if (pwrup_timer_cnt_q == cfg_pwrup_time) begin
           pwrup_timer_cnt_clr = 1'b1;
           fsm_state_d = LP_0;
         end
@@ -351,7 +353,7 @@ module dcd_fsm (
 
       NP_0: begin
         adc_pd = 1'b0;
-	adc_chn_sel = 2'b01
+	adc_chn_sel = 2'b01;
         if (adc_d_val) begin//sample chn0 value
           fsm_state_d = NP_021;
         end
@@ -364,7 +366,7 @@ module dcd_fsm (
 
       NP_1: begin
         adc_pd = 1'b0;
-        adc_chn_sel = 2'b10
+        adc_chn_sel = 2'b10;
         if (adc_d_val) begin//sample chn1 value
           fsm_state_d = NP_EVAL;
           np_sample_cnt_en = 1'b1;
@@ -373,14 +375,14 @@ module dcd_fsm (
 
       NP_EVAL: begin
         adc_pd = 1'b0;
-        if ((np_sample_cnt != cfg_np_sample_cnt) && (stay_match == 1'b1)) begin
+        if ((np_sample_cnt_q != cfg_np_sample_cnt) && (stay_match == 1'b1)) begin
           fsm_state_d = NP_0;
         end
-        else if ((np_sample_cnt != cfg_np_sample_cnt) && (stay_match != 1'b1)) begin
+        else if ((np_sample_cnt_q != cfg_np_sample_cnt) && (stay_match != 1'b1)) begin
           fsm_state_d = NP_0;
           np_sample_cnt_clr = 1'b1;
         end
-        else if ((np_sample_cnt == cfg_np_sample_cnt) && (stay_match == 1'b1)) begin
+        else if ((np_sample_cnt_q == cfg_np_sample_cnt) && (stay_match == 1'b1)) begin
           fsm_state_d = NP_0;
           np_sample_cnt_clr = 1'b1;
           dcd_done = 1'b1;

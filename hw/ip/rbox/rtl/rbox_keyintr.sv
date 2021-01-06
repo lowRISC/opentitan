@@ -10,9 +10,6 @@ module rbox_keyintr (
   input               clk_i,
   input               rst_ni,
 
-  input   rbox_reg_pkg::rbox_reg2hw_t reg2hw,
-  output  rbox_reg_pkg::rbox_hw2reg_t hw2reg,
-
   input               pwrb_int,
   input               key0_int,
   input               key1_int,
@@ -23,6 +20,9 @@ module rbox_keyintr (
 );
 
   import rbox_reg_pkg::*;
+
+  rbox_reg2hw_t reg2hw;
+  rbox_hw2reg_t hw2reg;
 
   logic         cfg_pwrb_in_h2l;
   logic         cfg_key0_in_h2l;
@@ -62,8 +62,8 @@ module rbox_keyintr (
   ) i_cfg_pwrb_in_h2l (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_intr_ctl.pwrb_in_h2l.q),
-    .q(cfg_pwrb_in_h2l)
+    .d_i(reg2hw.key_intr_ctl.pwrb_in_h2l.q),
+    .q_o(cfg_pwrb_in_h2l)
   );
 
   prim_flop_2sync # (
@@ -71,8 +71,8 @@ module rbox_keyintr (
   ) i_cfg_key0_in_h2l (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_intr_ctl.key0_in_h2l.q),
-    .q(cfg_key0_in_h2l)
+    .d_i(reg2hw.key_intr_ctl.key0_in_h2l.q),
+    .q_o(cfg_key0_in_h2l)
   );
 
   prim_flop_2sync # (
@@ -80,8 +80,8 @@ module rbox_keyintr (
   ) i_cfg_key1_in_h2l (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_intr_ctl.key1_in_h2l.q),
-    .q(cfg_key1_in_h2l)
+    .d_i(reg2hw.key_intr_ctl.key1_in_h2l.q),
+    .q_o(cfg_key1_in_h2l)
   );
 
   prim_flop_2sync # (
@@ -89,8 +89,8 @@ module rbox_keyintr (
   ) i_cfg_key2_in_h2l (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_intr_ctl.key2_in_h2l.q),
-    .q(cfg_key2_in_h2l)
+    .d_i(reg2hw.key_intr_ctl.key2_in_h2l.q),
+    .q_o(cfg_key2_in_h2l)
   );
 
   prim_flop_2sync # (
@@ -98,8 +98,8 @@ module rbox_keyintr (
   ) i_cfg_ac_present_h2l (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_intr_ctl.ac_present_h2l.q),
-    .q(cfg_ac_present_h2l)
+    .d_i(reg2hw.key_intr_ctl.ac_present_h2l.q),
+    .q_o(cfg_ac_present_h2l)
   );
 
   prim_flop_2sync # (
@@ -107,8 +107,8 @@ module rbox_keyintr (
   ) i_cfg_ec_rst_l_h2l (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_intr_ctl.ec_rst_l_h2l.q),
-    .q(cfg_ec_rst_l_h2l)
+    .d_i(reg2hw.key_intr_ctl.ec_rst_l_h2l.q),
+    .q_o(cfg_ec_rst_l_h2l)
   );
 
   prim_flop_2sync # (
@@ -116,8 +116,8 @@ module rbox_keyintr (
   ) i_cfg_pwrb_in_l2h (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_intr_ctl.pwrb_in_l2h.q),
-    .q(cfg_pwrb_in_l2h)
+    .d_i(reg2hw.key_intr_ctl.pwrb_in_l2h.q),
+    .q_o(cfg_pwrb_in_l2h)
   );
 
   prim_flop_2sync # (
@@ -125,8 +125,8 @@ module rbox_keyintr (
   ) i_cfg_key0_in_l2h (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_intr_ctl.key0_in_l2h.q),
-    .q(cfg_key0_in_l2h)
+    .d_i(reg2hw.key_intr_ctl.key0_in_l2h.q),
+    .q_o(cfg_key0_in_l2h)
   );
 
   prim_flop_2sync # (
@@ -134,8 +134,8 @@ module rbox_keyintr (
   ) i_cfg_key1_in_l2h (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_intr_ctl.key1_in_l2h.q),
-    .q(cfg_key1_in_l2h)
+    .d_i(reg2hw.key_intr_ctl.key1_in_l2h.q),
+    .q_o(cfg_key1_in_l2h)
   );
 
   prim_flop_2sync # (
@@ -143,8 +143,8 @@ module rbox_keyintr (
   ) i_cfg_key2_in_l2h (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_intr_ctl.key2_in_l2h.q),
-    .q(cfg_key2_in_l2h)
+    .d_i(reg2hw.key_intr_ctl.key2_in_l2h.q),
+    .q_o(cfg_key2_in_l2h)
   );
 
   prim_flop_2sync # (
@@ -152,8 +152,8 @@ module rbox_keyintr (
   ) i_cfg_ac_present_l2h (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_intr_ctl.ac_present_l2h.q),
-    .q(cfg_ac_present_l2h)
+    .d_i(reg2hw.key_intr_ctl.ac_present_l2h.q),
+    .q_o(cfg_ac_present_l2h)
   );
 
   prim_flop_2sync # (
@@ -161,13 +161,13 @@ module rbox_keyintr (
   ) i_cfg_ec_rst_l_l2h (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_intr_ctl.ec_rst_l_l2h.q),
-    .q(cfg_ec_rst_l_l2h)
+    .d_i(reg2hw.key_intr_ctl.ec_rst_l_l2h.q),
+    .q_o(cfg_ec_rst_l_l2h)
   );
 
   prim_fifo_async #(
     .Width(16),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_key_intr_timer (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -190,8 +190,8 @@ module rbox_keyintr (
   ) i_pwrb_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(pwrb_int),
-    .q(pwrb_int_i)
+    .d_i(pwrb_int),
+    .q_o(pwrb_int_i)
   );
 
   prim_flop_2sync # (
@@ -199,8 +199,8 @@ module rbox_keyintr (
   ) i_key0_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(key0_int),
-    .q(key0_int_i)
+    .d_i(key0_int),
+    .q_o(key0_int_i)
   );
 
   prim_flop_2sync # (
@@ -208,8 +208,8 @@ module rbox_keyintr (
   ) i_key1_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(key1_int),
-    .q(key1_int_i)
+    .d_i(key1_int),
+    .q_o(key1_int_i)
   );
 
   prim_flop_2sync # (
@@ -217,8 +217,8 @@ module rbox_keyintr (
   ) i_key2_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(key2_int),
-    .q(key2_int_i)
+    .d_i(key2_int),
+    .q_o(key2_int_i)
   );
 
   prim_flop_2sync # (
@@ -226,8 +226,8 @@ module rbox_keyintr (
   ) i_ac_present_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(ac_present_int),
-    .q(ac_present_int_i)
+    .d_i(ac_present_int),
+    .q_o(ac_present_int_i)
   );
 
   prim_flop_2sync # (
@@ -235,8 +235,8 @@ module rbox_keyintr (
   ) i_ec_rst_l_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(cio_ec_rst_l_i),
-    .q(ec_rst_l_int_i)
+    .d_i(cio_ec_rst_l_i),
+    .q_o(ec_rst_l_int_i)
   );
 
   //Instantiate the key state machine

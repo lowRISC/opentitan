@@ -10,9 +10,6 @@ module rbox_combo (
   input               clk_i,
   input               rst_ni,
 
-  input   rbox_reg_pkg::rbox_reg2hw_t reg2hw,
-  output  rbox_reg_pkg::rbox_hw2reg_t hw2reg,
-
   input               pwrb_int,
   input               key0_int,
   input               key1_int,
@@ -27,6 +24,9 @@ module rbox_combo (
 
   import rbox_reg_pkg::*;
 
+  rbox_reg2hw_t reg2hw;
+  rbox_hw2reg_t hw2reg;
+
   //There are four possible combos
   //Each key combo can select different triggers
   logic [NumCombo-1:0] cfg_key0_in_sel_com;
@@ -35,7 +35,7 @@ module rbox_combo (
   logic [NumCombo-1:0] cfg_pwrb_in_sel_com;
   logic [NumCombo-1:0] cfg_ac_present_sel_com;
 
-  logic [31:0] cfg_combo_timer [NumCombo-1];
+  logic [31:0] cfg_combo_timer [NumCombo-1:0];
   logic [15:0] cfg_debounce_timer;
 
   logic [NumCombo-1:0] cfg_bat_disable_com;
@@ -65,8 +65,8 @@ module rbox_combo (
   ) i_ec_rst_l_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(cio_ec_rst_l_i),
-    .q(ec_rst_l_int_i)
+    .d_i(cio_ec_rst_l_i),
+    .q_o(ec_rst_l_int_i)
   );
 
   //synchronize between cfg(24MHz) and always-on(200KHz)
@@ -76,8 +76,8 @@ module rbox_combo (
   ) i_cfg_com_sel_key0 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.com_sel_ctl[k].key0_in_sel.q),
-    .q(cfg_key0_in_sel_com[k])
+    .d_i(reg2hw.com_sel_ctl[k].key0_in_sel.q),
+    .q_o(cfg_key0_in_sel_com[k])
   );
 
     prim_flop_2sync # (
@@ -85,8 +85,8 @@ module rbox_combo (
   ) i_cfg_com_sel_key1 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.com_sel_ctl[k].key1_in_sel.q),
-    .q(cfg_key1_in_sel_com[k])
+    .d_i(reg2hw.com_sel_ctl[k].key1_in_sel.q),
+    .q_o(cfg_key1_in_sel_com[k])
   );
 
     prim_flop_2sync # (
@@ -94,8 +94,8 @@ module rbox_combo (
   ) i_cfg_com_sel_key2 (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.com_sel_ctl[k].key2_in_sel.q),
-    .q(cfg_key2_in_sel_com[k])
+    .d_i(reg2hw.com_sel_ctl[k].key2_in_sel.q),
+    .q_o(cfg_key2_in_sel_com[k])
   );
 
     prim_flop_2sync # (
@@ -103,8 +103,8 @@ module rbox_combo (
   ) i_cfg_com_sel_pwrb (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.com_sel_ctl[k].pwrb_in_sel.q),
-    .q(cfg_pwrb_in_sel_com[k])
+    .d_i(reg2hw.com_sel_ctl[k].pwrb_in_sel.q),
+    .q_o(cfg_pwrb_in_sel_com[k])
   );
 
     prim_flop_2sync # (
@@ -112,15 +112,15 @@ module rbox_combo (
   ) i_cfg_com_sel_ac_present (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.com_sel_ctl[k].ac_present_sel.q),
-    .q(cfg_ac_present_sel_com[k])
+    .d_i(reg2hw.com_sel_ctl[k].ac_present_sel.q),
+    .q_o(cfg_ac_present_sel_com[k])
   );
   end
 
   for (genvar k = 0 ; k < NumCombo ; k++) begin : gen_com_det
     prim_fifo_async #(
     .Width(32),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_combo_timer (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -140,7 +140,7 @@ module rbox_combo (
 
   prim_fifo_async #(
     .Width(16),
-    .Depth(1)
+    .Depth(2)
   ) i_cfg_debounce_timer (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -163,8 +163,8 @@ module rbox_combo (
   ) i_cfg_com_bat_disable (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.com_out_ctl[k].bat_disable.q),
-    .q(cfg_bat_disable_com[k])
+    .d_i(reg2hw.com_out_ctl[k].bat_disable.q),
+    .q_o(cfg_bat_disable_com[k])
   );
 
     prim_flop_2sync # (
@@ -172,8 +172,8 @@ module rbox_combo (
   ) i_cfg_com_intr (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.com_out_ctl[k].interrupt.q),
-    .q(cfg_intr_com[k])
+    .d_i(reg2hw.com_out_ctl[k].interrupt.q),
+    .q_o(cfg_intr_com[k])
   );
 
     prim_flop_2sync # (
@@ -181,8 +181,8 @@ module rbox_combo (
   ) i_cfg_com_ec_rst (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.com_out_ctl[k].ec_rst.q),
-    .q(cfg_ec_rst_com[k])
+    .d_i(reg2hw.com_out_ctl[k].ec_rst.q),
+    .q_o(cfg_ec_rst_com[k])
   );
 
     prim_flop_2sync # (
@@ -190,8 +190,8 @@ module rbox_combo (
   ) i_cfg_com_gsc_rst (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.com_out_ctl[k].gsc_rst.q),
-    .q(cfg_gsc_rst_com[k])
+    .d_i(reg2hw.com_out_ctl[k].gsc_rst.q),
+    .q_o(cfg_gsc_rst_com[k])
   );
   end
 
@@ -201,8 +201,8 @@ module rbox_combo (
   ) i_pwrb_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(pwrb_int),
-    .q(pwrb_int_i)
+    .d_i(pwrb_int),
+    .q_o(pwrb_int_i)
   );
 
   prim_flop_2sync # (
@@ -210,8 +210,8 @@ module rbox_combo (
   ) i_key0_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(key0_int),
-    .q(key0_int_i)
+    .d_i(key0_int),
+    .q_o(key0_int_i)
   );
 
   prim_flop_2sync # (
@@ -219,8 +219,8 @@ module rbox_combo (
   ) i_key1_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(key1_int),
-    .q(key1_int_i)
+    .d_i(key1_int),
+    .q_o(key1_int_i)
   );
 
   prim_flop_2sync # (
@@ -228,8 +228,8 @@ module rbox_combo (
   ) i_key2_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(key2_int),
-    .q(key2_int_i)
+    .d_i(key2_int),
+    .q_o(key2_int_i)
   );
 
   prim_flop_2sync # (
@@ -237,8 +237,8 @@ module rbox_combo (
   ) i_ac_present_int_i (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(ac_present_int),
-    .q(ac_present_int_i)
+    .d_i(ac_present_int),
+    .q_o(ac_present_int_i)
   );
 
   //generate the trigger for each combo

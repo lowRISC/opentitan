@@ -9,7 +9,6 @@ module rbox_inv (
   input               clk_aon_i,
   input               rst_slow_ni,
 
-  input  rbox_reg_pkg::rbox_reg2hw_t reg2hw,
   input               cio_pwrb_in_i,
   input               cio_key0_in_i,
   input               cio_key1_in_i,
@@ -38,6 +37,8 @@ module rbox_inv (
 
   import rbox_reg_pkg::*;
 
+  rbox_reg2hw_t reg2hw;
+
   logic		cfg_pwrb_i_inv;
   logic		cfg_key0_i_inv;
   logic		cfg_key1_i_inv;
@@ -55,8 +56,8 @@ module rbox_inv (
   ) i_cfg_pwrb_i_inv (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_invert_ctl.pwrb_in.q),
-    .q(cfg_pwrb_i_inv)
+    .d_i(reg2hw.key_invert_ctl.pwrb_in.q),
+    .q_o(cfg_pwrb_i_inv)
   );
 
   prim_flop_2sync # (
@@ -64,8 +65,8 @@ module rbox_inv (
   ) i_cfg_key0_i_inv (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_invert_ctl.key0_in.q),
-    .q(cfg_key0_i_inv)
+    .d_i(reg2hw.key_invert_ctl.key0_in.q),
+    .q_o(cfg_key0_i_inv)
   );
 
   prim_flop_2sync # (
@@ -73,8 +74,8 @@ module rbox_inv (
   ) i_cfg_key1_i_inv (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_invert_ctl.key1_in.q),
-    .q(cfg_key1_i_inv)
+    .d_i(reg2hw.key_invert_ctl.key1_in.q),
+    .q_o(cfg_key1_i_inv)
   );
 
   prim_flop_2sync # (
@@ -82,8 +83,8 @@ module rbox_inv (
   ) i_cfg_key2_i_inv (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_invert_ctl.key2_in.q),
-    .q(cfg_key2_i_inv)
+    .d_i(reg2hw.key_invert_ctl.key2_in.q),
+    .q_o(cfg_key2_i_inv)
   );
 
   prim_flop_2sync # (
@@ -91,8 +92,8 @@ module rbox_inv (
   ) i_cfg_ac_present_i_inv (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_invert_ctl.ac_present.q),
-    .q(cfg_ac_present_i_inv)
+    .d_i(reg2hw.key_invert_ctl.ac_present.q),
+    .q_o(cfg_ac_present_i_inv)
   );
 
   prim_flop_2sync # (
@@ -100,8 +101,8 @@ module rbox_inv (
   ) i_cfg_pwrb_o_inv (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_invert_ctl.pwrb_out.q),
-    .q(cfg_pwrb_o_inv)
+    .d_i(reg2hw.key_invert_ctl.pwrb_out.q),
+    .q_o(cfg_pwrb_o_inv)
   );
 
   prim_flop_2sync # (
@@ -109,8 +110,8 @@ module rbox_inv (
   ) i_cfg_key0_o_inv (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_invert_ctl.key0_out.q),
-    .q(cfg_key0_o_inv)
+    .d_i(reg2hw.key_invert_ctl.key0_out.q),
+    .q_o(cfg_key0_o_inv)
   );
 
   prim_flop_2sync # (
@@ -118,8 +119,8 @@ module rbox_inv (
   ) i_cfg_key1_o_inv (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_invert_ctl.key1_out.q),
-    .q(cfg_key1_o_inv)
+    .d_i(reg2hw.key_invert_ctl.key1_out.q),
+    .q_o(cfg_key1_o_inv)
   );
 
   prim_flop_2sync # (
@@ -127,8 +128,8 @@ module rbox_inv (
   ) i_cfg_key2_o_inv (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_invert_ctl.key2_out.q),
-    .q(cfg_key2_o_inv)
+    .d_i(reg2hw.key_invert_ctl.key2_out.q),
+    .q_o(cfg_key2_o_inv)
   );
 
   prim_flop_2sync # (
@@ -136,8 +137,8 @@ module rbox_inv (
   ) i_cfg_bat_disable_o_inv (
     .clk_i(clk_aon_i),
     .rst_ni(rst_slow_ni),
-    .d(reg2hw.key_invert_ctl.bat_disable.q),
-    .q(cfg_bat_disable_o_inv)
+    .d_i(reg2hw.key_invert_ctl.bat_disable.q),
+    .q_o(cfg_bat_disable_o_inv)
   );
 
   assign cio_pwrb_out_o = cfg_pwrb_o_inv ? ~pwrb_out_int : pwrb_out_int;

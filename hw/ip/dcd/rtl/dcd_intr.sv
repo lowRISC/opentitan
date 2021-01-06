@@ -5,8 +5,10 @@
 // Description: DCD interrupt Module
 //
 module dcd_intr (
-  input   dcd_reg_pkg::dcd_reg2hw_t reg2hw,
-  output  dcd_reg_pkg::dcd_hw2reg_t hw2reg,
+  input  clk_i,
+  input  rst_ni,
+  input  clk_aon_i,
+  input  rst_slow_ni,
 
   input [NumAdcFilter-1:0] cfg_wakeup_en,
   input [NumAdcFilter-1:0] cfg_intr_en,
@@ -19,6 +21,9 @@ module dcd_intr (
 );
 
   import dcd_reg_pkg::*;
+
+  dcd_reg2hw_t reg2hw;
+  dcd_hw2reg_t hw2reg;
 
   logic [NumAdcFilter-1:0] cfg_dcd_match_done;
   logic dcd_event;
@@ -122,6 +127,8 @@ module dcd_intr (
 
   // instantiate interrupt hardware primitive
   prim_intr_hw #(.Width(1)) i_dcd_intr_o (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
     .event_intr_i           (dcd_event),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.q),

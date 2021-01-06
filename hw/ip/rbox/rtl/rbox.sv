@@ -73,7 +73,6 @@ module rbox (
     .rst_ni(rst_ni),
     .clk_aon_i(clk_aon_i),
     .rst_slow_ni(rst_slow_ni),
-    .reg2hw(reg2hw),
     .pwrb_int(pwrb_int),
     .key0_int(key0_int),
     .key1_int(key1_int),
@@ -88,7 +87,6 @@ module rbox (
   rbox_inv i_inversion (
     .clk_aon_i(clk_aon_i),
     .rst_slow_ni(rst_slow_ni),
-    .reg2hw(reg2hw),
     .cio_pwrb_in_i(cio_pwrb_in_i),
     .cio_key0_in_i(cio_key0_in_i),
     .cio_key1_in_i(cio_key1_in_i),
@@ -117,8 +115,6 @@ module rbox (
     .rst_ni(rst_ni),
     .clk_aon_i(clk_aon_i),
     .rst_slow_ni(rst_slow_ni),
-    .reg2hw(reg2hw),
-    .hw2reg(hw2reg),
     .cio_pwrb_in_i(cio_pwrb_in_i),
     .cio_key0_in_i(cio_key0_in_i),
     .cio_key1_in_i(cio_key1_in_i),
@@ -145,8 +141,6 @@ module rbox (
     .rst_ni(rst_ni),
     .clk_aon_i(clk_aon_i),
     .rst_slow_ni(rst_slow_ni),
-    .reg2hw(reg2hw),
-    .hw2reg(hw2reg),
     .pwrb_int(pwrb_int),
     .key0_int(key0_int),
     .key1_int(key1_int),
@@ -161,8 +155,6 @@ module rbox (
     .rst_ni(rst_ni),
     .clk_aon_i(clk_aon_i),
     .rst_slow_ni(rst_slow_ni),
-    .reg2hw(reg2hw),
-    .hw2reg(hw2reg),
     .pwrb_int(pwr_int),
     .key0_int(key0_int),
     .key1_int(key1_int),
@@ -176,8 +168,8 @@ module rbox (
 
   //Instantiate the interrupt module
   rbox_intr i_intr (
-    .reg2hw(reg2hw),
-    .hw2reg(hw2reg),
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
     .rbox_intr_o(rbox_intr_o)
   );
 
