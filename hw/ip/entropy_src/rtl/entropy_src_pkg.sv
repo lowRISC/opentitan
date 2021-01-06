@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-
 package entropy_src_pkg;
 
   //-------------------------
@@ -13,6 +12,7 @@ package entropy_src_pkg;
   parameter int  RNG_BUS_WIDTH   = 4;
   parameter int  CSRNG_BUS_WIDTH = 384;
   parameter int  FIPS_BUS_WIDTH  = 1;
+  parameter int  FIPS_CSRNG_BUS_WIDTH = FIPS_BUS_WIDTH + CSRNG_BUS_WIDTH;
 
   // es entropy i/f
   typedef struct packed {
@@ -61,6 +61,5 @@ package entropy_src_pkg;
 
   parameter entropy_src_xht_req_t ENTROPY_SRC_XHT_REQ_DEFAULT = '{default: '0};
   parameter entropy_src_xht_rsp_t ENTROPY_SRC_XHT_RSP_DEFAULT = '{default: '0};
-
 
 endpackage : entropy_src_pkg

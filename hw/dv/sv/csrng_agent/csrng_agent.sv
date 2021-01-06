@@ -1,0 +1,85 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+class csrng_agent extends dv_base_agent #(
+  .CFG_T          (csrng_agent_cfg),
+  .DRIVER_T       (csrng_driver),
+  .HOST_DRIVER_T  (csrng_host_driver),
+  .DEVICE_DRIVER_T(csrng_device_driver),
+  .SEQUENCER_T    (csrng_sequencer),
+  .MONITOR_T      (csrng_monitor),
+  .COV_T          (csrng_agent_cov)
+);
+
+  `uvm_component_utils(csrng_agent)
+  `uvm_component_new
+
+  push_pull_agent#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))          m_csrng_req_push_agent;
+  push_pull_agent#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))          m_csrng_ack_pull_agent;
+  push_pull_agent#(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))   m_genbits_push_agent;
+
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    // get csrng_if handle
+    if (!uvm_config_db#(virtual csrng_if)::get(this, "", "vif", cfg.vif)) begin
+      `uvm_fatal(`gfn, "failed to get csrng_if handle from uvm_config_db")
+    end
+
+    // create agents, agent_cfgs
+    m_csrng_req_push_agent = push_pull_agent#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::
+                             create("m_csrng_req_push_agent", this);
+    cfg.m_csrng_req_push_agent_cfg = push_pull_agent_cfg#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::
+                                     create("m_csrng_req_push_agent.cfg");
+    cfg.m_csrng_req_push_agent_cfg.is_active   = cfg.is_active;
+    cfg.m_csrng_req_push_agent_cfg.agent_type  = PushAgent;
+    cfg.m_csrng_req_push_agent_cfg.if_mode     = cfg.if_mode;
+
+    m_csrng_ack_pull_agent = push_pull_agent#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::
+                             create("m_csrng_ack_pull_agent", this);
+    cfg.m_csrng_ack_pull_agent_cfg = push_pull_agent_cfg#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::
+                                     create("m_csrng_ack_pull_agent_cfg");
+    cfg.m_csrng_ack_pull_agent_cfg.is_active   = cfg.is_active;
+    cfg.m_csrng_ack_pull_agent_cfg.agent_type  = PullAgent;
+    cfg.m_csrng_ack_pull_agent_cfg.if_mode     = cfg.if_mode;
+
+    m_genbits_push_agent = push_pull_agent#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)::type_id::
+                           create("m_genbits_push_agent", this);
+    cfg.m_genbits_push_agent_cfg = push_pull_agent_cfg#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)::type_id::
+                                   create("m_genbits_push_agent_cfg");
+    cfg.m_genbits_push_agent_cfg.is_active  = cfg.is_active;
+    cfg.m_genbits_push_agent_cfg.agent_type = PushAgent;
+    // TODO: change to commented-code
+    cfg.m_csrng_ack_pull_agent_cfg.if_mode  = cfg.if_mode;
+//    if (cfg.if_mode == dv_utils_pkg::Host)
+//      cfg.m_genbits_push_agent_cfg.if_mode = dv_utils_pkg::Device;
+//    else
+//      cfg.m_genbits_push_agent_cfg.if_mode = dv_utils_pkg::Host;
+
+    cfg.vif.if_mode = cfg.if_mode;
+
+    // pass cfg and vif
+    uvm_config_db#(push_pull_agent_cfg#(csrng_pkg::CSRNG_CMD_WIDTH))::set(this,
+         "m_csrng_req_push_agent*", "cfg", cfg.m_csrng_req_push_agent_cfg);
+    uvm_config_db#(push_pull_agent_cfg#(csrng_pkg::CSRNG_CMD_WIDTH))::set(this,
+         "m_csrng_ack_pull_agent*", "cfg", cfg.m_csrng_ack_pull_agent_cfg);
+    uvm_config_db#(push_pull_agent_cfg#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))::set(this,
+         "m_genbits_push_agent*", "cfg", cfg.m_genbits_push_agent_cfg);
+
+    uvm_config_db#(virtual push_pull_if#(csrng_pkg::CSRNG_CMD_WIDTH))::set(this,
+         "m_csrng_req_push_agent*", "vif", cfg.vif.csrng_req_push_if);
+    uvm_config_db#(virtual push_pull_if#(csrng_pkg::CSRNG_CMD_WIDTH))::set(this,
+         "m_csrng_ack_pull_agent*", "vif", cfg.vif.csrng_ack_pull_if);
+    uvm_config_db#(virtual push_pull_if#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))::set(this,
+         "m_genbits_push_agent*", "vif", cfg.vif.genbits_push_if);
+  endfunction
+
+  function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    // TODO
+  endfunction
+
+  virtual task run_phase(uvm_phase phase);
+    // TODO
+  endtask
+endclass

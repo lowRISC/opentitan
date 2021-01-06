@@ -1,0 +1,30 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:csrng_agent:0.1"
+description: "CSRNG DV UVM agent"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
+      - lowrisc:dv:push_pull_agent
+    files:
+      - csrng_agent_pkg.sv
+      - csrng_if.sv
+      - csrng_item.sv: {is_include_file: true}
+      - csrng_agent_cfg.sv: {is_include_file: true}
+      - csrng_sequencer.sv: {is_include_file: true}
+      - csrng_agent_cov.sv: {is_include_file: true}
+      - csrng_driver.sv: {is_include_file: true}
+      - csrng_host_driver.sv: {is_include_file: true}
+      - csrng_device_driver.sv: {is_include_file: true}
+      - csrng_monitor.sv: {is_include_file: true}
+      - csrng_agent.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

@@ -26,7 +26,7 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   push_pull_if#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))
       rng_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))
+  push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       csrng_if(.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
@@ -76,7 +76,7 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH)))::set
                                         (null, "*.env.m_rng_agent*", "vif", rng_if);
-    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH)))::set
+    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))::set
                                         (null, "*.env.m_csrng_agent*", "vif", csrng_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();

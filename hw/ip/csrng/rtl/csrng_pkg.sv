@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-
 package csrng_pkg;
 
   //-------------------------
@@ -11,11 +10,13 @@ package csrng_pkg;
   //-------------------------
 
   parameter int unsigned   GENBITS_BUS_WIDTH = 128;
+  parameter int unsigned   CSRNG_CMD_WIDTH = 32;
+  parameter int unsigned   FIPS_GENBITS_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH + GENBITS_BUS_WIDTH;
 
   // instantiation interface
   typedef struct packed {
     logic         csrng_req_valid;
-    logic [31:0]  csrng_req_bus;
+    logic [CSRNG_CMD_WIDTH-1:0]  csrng_req_bus;
     logic         genbits_ready;
   } csrng_req_t;
 
@@ -31,7 +32,6 @@ package csrng_pkg;
   parameter csrng_req_t CSRNG_REQ_DEFAULT = '{default: '0};
   parameter csrng_rsp_t CSRNG_RSP_DEFAULT = '{default: '0};
 
-
   typedef enum logic [2:0] {
     INV = 3'h0,
     INS = 3'h1,
@@ -42,7 +42,5 @@ package csrng_pkg;
     GENB = 3'h6,
     GENU = 3'h7
   } acmd_e;
-
-
 
 endpackage : csrng_pkg
