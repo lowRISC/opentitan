@@ -200,19 +200,22 @@ def copy_repo(src, dest, dry_run):
     exclude patterns to skip certain things from being copied over. With GitHub
     repos, an existing `.gitignore` serves this purpose pretty well.
     '''
-    rsync_cmd = "rsync --recursive --links --checksum --update --inplace "
+    rsync_cmd = ["rsync",
+                 "--recursive", "--links", "--checksum", "--update",
+                 "--inplace", "--no-group"]
 
     # Supply `.gitignore` from the src area to skip temp files.
     ignore_patterns_file = os.path.join(src, ".gitignore")
     if os.path.exists(ignore_patterns_file):
         # TODO: hack - include hw/foundry since it is excluded in .gitignore.
-        rsync_cmd += "--include=hw/foundry "
-        rsync_cmd += "--exclude-from={} ".format(ignore_patterns_file)
-        rsync_cmd += "--exclude={} ".format(shlex.quote('.*'))
+        rsync_cmd += ["--include=hw/foundry",
+                      "--exclude-from={}".format(ignore_patterns_file),
+                      "--exclude=.*"]
 
-    rsync_cmd += src + "/. " + dest
+    rsync_cmd += [src + "/.", dest]
+    rsync_str = ' '.join([shlex.quote(w) for w in rsync_cmd])
 
-    cmd = ["flock", "--timeout", "600", dest, "--command", rsync_cmd]
+    cmd = ["flock", "--timeout", "600", dest, "--command", rsync_str]
 
     log.info("[copy_repo] [dest]: %s", dest)
     log.log(utils.VERBOSE, "[copy_repo] [cmd]: \n%s", ' '.join(cmd))
