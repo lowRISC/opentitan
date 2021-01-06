@@ -139,20 +139,6 @@ class ProgInsn:
         return ProgInsn(insn, op_vals, lsu_info)
 
 
-class OpenSection:
-    '''A section of instructions that are currently being added to'''
-    def __init__(self, insns_left: int, insns: List[ProgInsn]):
-        assert insns_left > 0
-        self.insns_left = insns_left
-        self.insns = insns
-
-    def add_insns(self, insns: List[ProgInsn]) -> None:
-        '''Add some instructions to the section'''
-        assert self.insns_left >= len(insns)
-        self.insns.extend(insns)
-        self.insns_left -= len(insns)
-
-
 class Program:
     '''An object representing the random program that is being generated.
 
@@ -178,27 +164,23 @@ class Program:
         # size 4N bytes.
         self._sections = {}  # type: Dict[int, List[ProgInsn]]
 
-        # The current section's address and data, if there is one.
-        self._cur_section = None  # type: Optional[Tuple[int, OpenSection]]
-
-    def open_section(self, addr: int) -> None:
-        '''Start a new section at addr'''
+    def add_insns(self, addr: int, insns: List[ProgInsn]) -> None:
+        '''Add a sequence of instructions, starting at addr'''
         assert addr & 3 == 0
         assert addr <= self.imem_size
 
-        # Close any existing section
-        self.close_section()
-
-        assert self._cur_section is None
+        sec_top = addr + 4 * len(insns)
 
         # This linear search is a bit naff, but I doubt it will have a
         # significant performance impact.
         next_above = self.imem_size
+        sec_above = None
         prev_sec_base = None  # type: Optional[int]
-        for section_base in self._sections.keys():
+        for section_base, section_insns in self._sections.items():
             if addr <= section_base:
                 if section_base < next_above:
                     next_above = section_base
+                    sec_above = section_insns
             else:
                 if prev_sec_base is None or prev_sec_base < section_base:
                     prev_sec_base = section_base
@@ -208,7 +190,11 @@ class Program:
         # prev_sec_base is None if addr is below all existing sections or is
         # the address of the highest section that starts below addr.
         assert addr < next_above
-        insns_left = (next_above - addr) // 4
+
+        # If next_above < sec_top, we've not got space to fit the instructions
+        # we're trying to add. The caller's not supposed to do that, so fail an
+        # assertion.
+        assert sec_top <= next_above
 
         if prev_sec_base is not None:
             # If there is a previous section, check there is no overlap.
@@ -216,42 +202,35 @@ class Program:
             prev_sec_top = prev_sec_base + 4 * len(prev_sec)
             assert prev_sec_top <= addr
 
-            # If prev_sec_top *equals* addr, we can merge the sections (neater
-            # than generating two adjacent sections).
+            # If prev_sec_top *equals* addr, we must merge the sections to
+            # avoid generating two adjacent sections.
             if prev_sec_top == addr:
-                del self._sections[prev_sec_base]
-                self._cur_section = (prev_sec_base, OpenSection(insns_left, prev_sec))
+                if sec_above is not None and sec_top == next_above:
+                    # We exactly bridge the gap between the two sections. In
+                    # which case, add to the lower section and remove the upper
+                    # one.
+                    prev_sec += insns + sec_above
+                    del self._sections[next_above]
+                else:
+                    # There's space (or the top of memory) above us. Add insns
+                    # to the lower section.
+                    prev_sec += insns
                 return
 
-        # If we get here then there either was no previous section, or it
-        # didn't butt up against our address. Open a new one.
-        self._cur_section = (addr, OpenSection(insns_left, []))
-
-    def close_section(self) -> None:
-        '''Finalize any current section'''
-        if self._cur_section is None:
-            return
-
-        sec_addr, open_section = self._cur_section
-
-        # The "insns_left" tracking in OpenSection should ensure that this
-        # section doesn't collide with anything else in self._sections. To
-        # catch really silly errors, we make sure the base address isn't
-        # duplicated (of course, that's not a full check, but it can't hurt).
-        assert sec_addr not in self._sections
-        self._sections[sec_addr] = open_section.insns
-
-        self._cur_section = None
-
-    def get_cur_section(self) -> Optional[OpenSection]:
-        '''Returns the current section if there is one'''
-        return self._cur_section[1] if self._cur_section is not None else None
-
-    def add_insns(self, addr: int, insns: List[ProgInsn]) -> None:
-        '''Add a sequence of instructions, starting at addr'''
-        self.open_section(addr)
-        assert self._cur_section is not None
-        self._cur_section[1].add_insns(insns)
+        # Either there are no sections below addr or there is a gap between
+        # addr and the previous section.
+        if sec_above is not None and sec_top == next_above:
+            # We're inserting instructions just below an existing section. Add
+            # a new section consisting of insns and then the old section and
+            # delete the latter.
+            self._sections[addr] = insns + sec_above
+            del self._sections[next_above]
+        else:
+            # The new section isn't touching anything else. Insert it, proud
+            # and free! We explicitly take a copy of insns here so that we can
+            # update entries in self._sections without modifying our input
+            # argument.
+            self._sections[addr] = list(insns)
 
     @staticmethod
     def _get_section_comment(idx: int,
@@ -264,7 +243,6 @@ class Program:
         '''Write an assembly representation of the program to out_file'''
         # Close any existing section, so that we can iterate over all the
         # instructions by iterating over self._sections.
-        self.close_section()
         for idx, (addr, insns) in enumerate(sorted(self._sections.items())):
             comment = Program._get_section_comment(idx, addr, insns)
             out_file.write('{}{}\n'.format('\n' if idx else '', comment))
@@ -289,8 +267,6 @@ class Program:
         This lays out the sections generated in dump_asm().
 
         '''
-        self.close_section()
-
         seg_descs = []
         for idx, (addr, values) in enumerate(sorted(dsegs.items())):
             seg_descs.append(('dseg{:04}'.format(idx),
@@ -359,9 +335,6 @@ class Program:
         # address.
         section_list = [(base, len(insns))
                         for base, insns in self._sections.items()]
-        if self._cur_section is not None:
-            base, open_section = self._cur_section
-            section_list.append((base, len(open_section.insns)))
         section_list.append((cur_pc, 1))
         section_list.sort()
 
@@ -514,11 +487,5 @@ class Program:
                 space = min(space, sec_start - addr)
                 if space <= 0:
                     return 0
-
-        if self._cur_section is not None:
-            sec_start, open_section = self._cur_section
-            sec_end = sec_start + 4 * len(open_section.insns)
-            if addr < sec_end:
-                space = min(space, sec_start - addr)
 
         return max(0, space // 4)
