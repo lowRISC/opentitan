@@ -358,7 +358,9 @@
     { name: "SW_BINDING_EN",
       desc: "Register write enable for SOFTWARE_BINDING",
       swaccess: "rw0c",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "0",
           name: "EN",
@@ -376,7 +378,7 @@
     { multireg: {
         cname: "KEYMGR",
         name: "SW_BINDING",
-        regwen: "SW_BINDING_EN",
+        regwen: "CFGEN",
         desc: '''
           Software binding input to key manager.
           This register is lockable and shared between key manager stages.

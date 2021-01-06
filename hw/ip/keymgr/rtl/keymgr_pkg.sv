@@ -186,6 +186,7 @@ package keymgr_pkg;
   typedef enum logic [1:0] {
     KeyMgrEnCtrl,
     KeyMgrEnCfgEn,
+    KeyMgrEnSwBindingEn,
     KeyMgrEnLast
   } keymgr_lc_en_usage_e;
 
