@@ -289,11 +289,16 @@ void VerilatorSimCtrl::Run() {
   time_begin_ = std::chrono::steady_clock::now();
   UnsetReset();
   Trace();
+
+  unsigned long start_reset_cycle_ = initial_reset_delay_cycles_;
+  unsigned long end_reset_cycle_ = start_reset_cycle_ + reset_duration_cycles_;
+
   while (1) {
-    if (time_ / 2 >= initial_reset_delay_cycles_) {
+    unsigned long cycle_ = time_ / 2;
+
+    if (cycle_ == start_reset_cycle_) {
       SetReset();
-    }
-    if (time_ / 2 >= reset_duration_cycles_ + initial_reset_delay_cycles_) {
+    } else if (cycle_ == end_reset_cycle_) {
       UnsetReset();
     }
 
