@@ -19,6 +19,7 @@ class CSRFile:
     @staticmethod
     def _set_field(field_idx: int, field_size: int, field_val: int,
                    old_val: int) -> int:
+        assert 0 <= field_val < (1 << field_size)
         mask = (1 << field_size) - 1
         shift = field_size * field_idx
         return (old_val & ~(mask << shift)) | (field_val << shift)
@@ -51,7 +52,7 @@ class CSRFile:
             # FG0/FG1
             fg = idx - 0x7c0
             old = self.flags.read_unsigned()
-            self.flags.write_unsigned(self._set_field(fg, 4, value, old))
+            self.flags.write_unsigned(self._set_field(fg, 4, value & 0xf, old))
             return
 
         if idx == 0x7c8:
