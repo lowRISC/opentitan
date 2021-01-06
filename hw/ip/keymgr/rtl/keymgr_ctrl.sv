@@ -75,6 +75,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   logic [CntWidth-1:0] cnt;
   logic cnt_en;
   logic cnt_clr;
+  logic data_update;
   logic data_valid;
   logic op_accepted;
   logic invalid_op;
@@ -112,9 +113,11 @@ module keymgr_ctrl import keymgr_pkg::*;(
   assign sw_binding_unlock_o = adv_en_o & op_done_o & ~|error_o;
 
   // check incoming kmac data validity
-  // also check inputs used during compute
   assign data_valid = valid_data_chk(kmac_data_i[0]) & valid_data_chk(kmac_data_i[1])
-    & !kmac_input_invalid_i & !kmac_op_err;
+    & !kmac_op_err;
+
+  // only update data if input is valid and returning data is valid
+  assign data_update = data_valid & !kmac_input_invalid_i;
 
   // Unlike the key state, the working state can be safely reset.
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -267,7 +270,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
           key_state_d = kmac_data_i;
           state_d = StCtrlDisabled;
         end else if (op_done_o && advance_sel) begin
-          key_state_d = data_valid ? kmac_data_i : key_state_q;
+          key_state_d = data_update ? kmac_data_i : key_state_q;
           state_d = StCtrlCreatorRootKey;
         end else if (op_done_o) begin
           invalid_op = 1'b1;
@@ -292,7 +295,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
           key_state_d = kmac_data_i;
           state_d = StCtrlDisabled;
         end else if (op_done_o && advance_sel) begin
-          key_state_d = data_valid ? kmac_data_i : key_state_q;
+          key_state_d = data_update ? kmac_data_i : key_state_q;
           state_d = StCtrlOwnerIntKey;
         end
       end
@@ -315,7 +318,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
           key_state_d = kmac_data_i;
           state_d = StCtrlDisabled;
         end else if (op_done_o && advance_sel) begin
-          key_state_d = data_valid ? kmac_data_i : key_state_q;
+          key_state_d = data_update ? kmac_data_i : key_state_q;
           state_d = StCtrlOwnerKey;
         end
       end
@@ -423,7 +426,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   // never update the sw / hw outputs when operation is complete
   // TODO: This is a critical single point of failure, need to think deeply about how to
   // enhance this.
-  assign data_valid_o = op_done_o & op_accepted & data_valid & gen_sel;
+  assign data_valid_o = op_done_o & op_accepted & data_update & gen_sel;
 
   // data errors are not relevant when operation was not accepted.
   assign error_o[ErrInvalidOp]  = invalid_op;
