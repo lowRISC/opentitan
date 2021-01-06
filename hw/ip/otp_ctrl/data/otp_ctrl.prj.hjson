@@ -5,7 +5,7 @@
 {
     name:               "otp_ctrl",
     design_spec:        "hw/ip/otp_ctrl/doc",
-    dv_doc:            "hw/ip/otp_ctrl/doc/dv",
+    dv_doc:             "hw/ip/otp_ctrl/doc/dv",
     hw_checklist:       "hw/ip/otp_ctrl/doc/checklist",
     sw_checklist:       "sw/device/lib/dif/dif_otp_ctrl",
     version:            "0.1",
