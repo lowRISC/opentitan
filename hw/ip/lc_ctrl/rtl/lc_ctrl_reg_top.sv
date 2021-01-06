@@ -91,6 +91,8 @@ module lc_ctrl_reg_top (
   logic status_otp_error_re;
   logic status_state_error_qs;
   logic status_state_error_re;
+  logic status_otp_partition_error_qs;
+  logic status_otp_partition_error_re;
   logic [7:0] claim_transition_if_qs;
   logic [7:0] claim_transition_if_wd;
   logic claim_transition_if_we;
@@ -294,6 +296,21 @@ module lc_ctrl_reg_top (
     .qe     (),
     .q      (),
     .qs     (status_state_error_qs)
+  );
+
+
+  //   F[otp_partition_error]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_otp_partition_error (
+    .re     (status_otp_partition_error_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.otp_partition_error.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (status_otp_partition_error_qs)
   );
 
 
@@ -689,6 +706,8 @@ module lc_ctrl_reg_top (
 
   assign status_state_error_re = addr_hit[1] && reg_re;
 
+  assign status_otp_partition_error_re = addr_hit[1] && reg_re;
+
   assign claim_transition_if_we = addr_hit[2] & reg_we & ~wr_err;
   assign claim_transition_if_wd = reg_wdata[7:0];
   assign claim_transition_if_re = addr_hit[2] && reg_re;
@@ -758,6 +777,7 @@ module lc_ctrl_reg_top (
         reg_rdata_next[5] = status_flash_rma_error_qs;
         reg_rdata_next[6] = status_otp_error_qs;
         reg_rdata_next[7] = status_state_error_qs;
+        reg_rdata_next[8] = status_otp_partition_error_qs;
       end
 
       addr_hit[2]: begin

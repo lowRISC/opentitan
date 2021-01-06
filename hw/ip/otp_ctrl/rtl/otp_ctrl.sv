@@ -1145,6 +1145,10 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
 
   // Assert life cycle state valid signal only when all partitions have initialized.
   assign otp_lc_data_o.valid    = &part_init_done;
+  // Signal whether there are any errors in the life cycle partition (both correctable and
+  // uncorrectable ones). This bit is made available via the JTAG TAP, which is useful for
+  // production testing in RAW life cycle state where the OTP regs are not accessible.
+  assign otp_lc_data_o.error    = |part_error[LifeCycleIdx];
 
   // Not all bits of part_buf_data are used here.
   logic unused_buf_data;

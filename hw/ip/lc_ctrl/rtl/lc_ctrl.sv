@@ -208,6 +208,7 @@ module lc_ctrl
   logic          flash_rma_error_d, flash_rma_error_q;
   logic          otp_prog_error_d, otp_prog_error_q;
   logic          state_invalid_error_d, state_invalid_error_q;
+  logic          otp_part_error_q;
   logic [7:0]    sw_claim_transition_if_d, sw_claim_transition_if_q;
   logic [7:0]    tap_claim_transition_if_d, tap_claim_transition_if_q;
   logic          transition_cmd;
@@ -235,6 +236,7 @@ module lc_ctrl
     hw2reg.status.flash_rma_error        = flash_rma_error_q;
     hw2reg.status.otp_error              = otp_prog_error_q;
     hw2reg.status.state_error            = state_invalid_error_q;
+    hw2reg.status.otp_partition_error    = otp_part_error_q;
     hw2reg.lc_state                      = dec_lc_state;
     hw2reg.lc_transition_cnt             = dec_lc_cnt;
     hw2reg.lc_id_state                   = dec_lc_id_state;
@@ -322,6 +324,7 @@ module lc_ctrl
       tap_claim_transition_if_q <= '0;
       transition_token_q        <= '0;
       transition_target_q       <= DecLcStRaw;
+      otp_part_error_q          <= '0;
     end else begin
       // All status and error bits are terminal and require a reset cycle.
       trans_success_q           <= trans_success_d        | trans_success_q;
@@ -331,6 +334,7 @@ module lc_ctrl
       flash_rma_error_q         <= flash_rma_error_d      | flash_rma_error_q;
       otp_prog_error_q          <= otp_prog_error_d       | otp_prog_error_q;
       state_invalid_error_q     <= state_invalid_error_d  | state_invalid_error_q;
+      otp_part_error_q          <= otp_lc_data_i.error    | otp_part_error_q;
       // Other regs, gated by mutex further below.
       sw_claim_transition_if_q  <= sw_claim_transition_if_d;
       tap_claim_transition_if_q <= tap_claim_transition_if_d;

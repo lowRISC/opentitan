@@ -39,6 +39,7 @@ interface lc_ctrl_if(input clk, input rst_n);
                       lc_ctrl_pkg::lc_tx_t    clk_byp_ack = lc_ctrl_pkg::Off,
                       lc_ctrl_pkg::lc_tx_t    flash_rma_ack = lc_ctrl_pkg::Off);
     otp_i.valid = 1;
+    otp_i.error = 0;
     otp_i.state = lc_state;
     otp_i.count = lc_cnt;
     otp_i.all_zero_token = 0;
