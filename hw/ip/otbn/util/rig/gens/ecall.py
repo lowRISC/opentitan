@@ -2,14 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Optional, Tuple
+from typing import Optional
 
 from shared.insn_yaml import InsnsFile
 
 from ..program import ProgInsn, Program
 from ..model import Model
-from ..snippet import Snippet
-from ..snippet_gen import SnippetGen
+from ..snippet import ProgSnippet
+from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class ECall(SnippetGen):
@@ -28,20 +28,24 @@ class ECall(SnippetGen):
         self.insn = ProgInsn(ecall_insn, [], None)
 
     def gen(self,
-            size: int,
+            cont: GenCont,
             model: Model,
-            program: Program) -> Optional[Tuple[Snippet, bool, int]]:
-        snippet = Snippet([(model.pc, [self.insn])])
+            program: Program) -> Optional[GenRet]:
+        snippet = ProgSnippet(model.pc, [self.insn])
         snippet.insert_into_program(program)
-        return (snippet, True, 0)
+        return (snippet, None)
 
     def pick_weight(self,
-                    size: int,
                     model: Model,
                     program: Program) -> float:
-        # Choose small weights when size is large and large ones when it's
-        # small.
-        assert size > 0
-        return (1e-10 if size > 5
-                else 0.1 if size > 1
+        # Choose small weights when we've got lots of room and large ones when
+        # we haven't.
+        fuel = model.fuel
+        space = program.get_insn_space_left()
+        assert fuel > 0
+        assert space > 0
+
+        room = min(fuel, space)
+        return (1e-10 if room > 5
+                else 0.1 if room > 1
                 else 1e10)

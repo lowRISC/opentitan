@@ -19,7 +19,7 @@ from shared.insn_yaml import InsnsFile, load_insns_yaml
 sys.path.append(os.path.dirname(__file__))
 
 from rig.init_data import InitData  # noqa: E402
-from rig.rig import gen_program, snippets_to_program  # noqa: E402
+from rig.rig import gen_program  # noqa: E402
 from rig.snippet import Snippet  # noqa: E402
 
 
@@ -41,12 +41,12 @@ def gen_main(args: argparse.Namespace) -> int:
         return 1
 
     # Run the generator
-    init_data, snippets = gen_program(args.start_addr, args.size, insns_file)
+    init_data, snippet = gen_program(args.start_addr, args.size, insns_file)
 
     # Write out the data and snippets to a JSON file
     ser_data = init_data.as_json()
-    ser_snippets = [snippet.to_json() for snippet in snippets]
-    ser = [ser_data, ser_snippets]
+    ser_snippet = snippet.to_json()
+    ser = [ser_data, ser_snippet]
     try:
         if args.output == '-':
             json.dump(ser, sys.stdout)
@@ -86,17 +86,16 @@ def asm_main(args: argparse.Namespace) -> int:
         if not (isinstance(json_data, list) and len(json_data) == 2):
             raise ValueError('Top-level structure should be a length 2 list.')
 
-        json_init_data, json_snippets = json_data
+        json_init_data, json_snippet = json_data
         init_data = InitData.read(json_init_data)
-        snippets = [Snippet.from_json(insns_file, idx, x)
-                    for idx, x in enumerate(json_snippets)]
+        snippet = Snippet.from_json(insns_file, [], json_snippet)
     except ValueError as err:
         print('Failed to parse snippets from {!r}: {}'
               .format(args.snippets.name, err),
               file=sys.stderr)
         return 1
 
-    program = snippets_to_program(snippets)
+    program = snippet.to_program()
     dsegs = init_data.as_segs()
 
     # Dump the assembly output, and the linker script too if we're writing to

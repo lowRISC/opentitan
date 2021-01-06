@@ -10,8 +10,8 @@ from shared.operand import ImmOperandType, RegOperandType
 
 from ..program import ProgInsn, Program
 from ..model import Model
-from ..snippet import Snippet
-from ..snippet_gen import SnippetGen
+from ..snippet import ProgSnippet, Snippet
+from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class Jump(SnippetGen):
@@ -49,9 +49,15 @@ class Jump(SnippetGen):
         self.jalr = jalr
 
     def gen(self,
-            size: int,
+            cont: GenCont,
             model: Model,
-            program: Program) -> Optional[Tuple[Snippet, bool, int]]:
+            program: Program) -> Optional[GenRet]:
+        return self.gen_tgt(model, program, None)
+
+    def gen_tgt(self,
+                model: Model,
+                program: Program,
+                tgt_addr: Optional[int]) -> Optional[Tuple[Snippet, Model]]:
 
         # Decide whether to generate JALR or JAL. In the future, we'll load
         # this weighting from somewhere else.
@@ -64,17 +70,23 @@ class Jump(SnippetGen):
         # wrapper will disable us entirely this time around.
         is_jalr = random.random() < jalr_weight / sum_weights
         if is_jalr:
-            ret = self.gen_jalr(size, model, program)
-            if ret is not None:
-                return ret
+            ret = self.gen_jalr(model, program, tgt_addr)
+        else:
+            ret = self.gen_jal(model, program, tgt_addr)
 
-        return self.gen_jal(size, model, program)
+        if ret is None:
+            return None
+        else:
+            snippet, new_model = ret
+            assert new_model is not None
+            return (snippet, new_model)
 
     def _pick_jump(self,
                    base_addr: int,
                    imm_optype: ImmOperandType,
                    model: Model,
-                   program: Program) -> Optional[Tuple[int, int, int]]:
+                   program: Program,
+                   tgt_addr: Optional[int]) -> Optional[Tuple[int, int, int]]:
         '''Pick target and link register for a jump instruction
 
         For a JALR instruction, base_addr is the address stored in the register
@@ -102,6 +114,15 @@ class Jump(SnippetGen):
         tgt_min = imm_min + base_addr
         tgt_max = imm_max + base_addr
 
+        # If there is a desired target, check it's representable. If not,
+        # return None. Otherwise, narrow the range to just that.
+        if tgt_addr is not None:
+            if tgt_min <= tgt_addr <= tgt_max:
+                tgt_min = tgt_addr
+                tgt_max = tgt_addr
+            else:
+                return None
+
         # Pick a branch target. "1" here is the minimum number of instructions
         # that must fit. One is enough (we'll just end up generating another
         # branch immediately)
@@ -128,12 +149,11 @@ class Jump(SnippetGen):
                      prog_insn: ProgInsn,
                      link_reg_idx: int,
                      new_pc: int,
-                     size: int,
                      model: Model,
-                     program: Program) -> Tuple[Snippet, bool, int]:
+                     program: Program) -> GenRet:
         '''Generate a 1-instruction snippet for prog_insn; finish generation'''
         # Generate our one-instruction snippet and add it to the program
-        snippet = Snippet([(model.pc, [prog_insn])])
+        snippet = ProgSnippet(model.pc, [prog_insn])
         snippet.insert_into_program(program)
 
         # Update the model with the instruction
@@ -152,31 +172,30 @@ class Jump(SnippetGen):
         # And update the PC, which is now tgt
         model.pc = new_pc
 
-        return (snippet, False, size - 1)
+        return (snippet, model)
 
     def gen_jal(self,
-                size: int,
                 model: Model,
-                program: Program) -> Optional[Tuple[Snippet, bool, int]]:
+                program: Program,
+                tgt_addr: Optional[int]) -> Optional[GenRet]:
         '''Generate a random JAL instruction'''
         assert len(self.jal.operands) == 2
         offset_optype = self.jal.operands[1].op_type
         assert isinstance(offset_optype, ImmOperandType)
 
-        jmp_data = self._pick_jump(0, offset_optype, model, program)
+        jmp_data = self._pick_jump(0, offset_optype, model, program, tgt_addr)
         if jmp_data is None:
             return None
 
         tgt, enc_offset, link_reg_idx = jmp_data
 
         prog_insn = ProgInsn(self.jal, [link_reg_idx, enc_offset], None)
-        return self._add_snippet(prog_insn, link_reg_idx, tgt,
-                                 size, model, program)
+        return self._add_snippet(prog_insn, link_reg_idx, tgt, model, program)
 
     def gen_jalr(self,
-                 size: int,
                  model: Model,
-                 program: Program) -> Optional[Tuple[Snippet, bool, int]]:
+                 program: Program,
+                 tgt_addr: Optional[int]) -> Optional[GenRet]:
         '''Generate a random JALR instruction'''
 
         assert len(self.jalr.operands) == 3
@@ -192,7 +211,8 @@ class Jump(SnippetGen):
 
         base_reg_idx, base_reg_val = random.choice(known_regs)
 
-        jmp_data = self._pick_jump(base_reg_val, offset_optype, model, program)
+        jmp_data = self._pick_jump(base_reg_val, offset_optype,
+                                   model, program, tgt_addr)
         if jmp_data is None:
             return None
 
@@ -202,4 +222,4 @@ class Jump(SnippetGen):
                              [link_reg_idx, base_reg_idx, enc_offset],
                              None)
         return self._add_snippet(prog_insn, link_reg_idx, tgt,
-                                 size, model, program)
+                                 model, program)
