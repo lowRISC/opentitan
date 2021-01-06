@@ -54,13 +54,13 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
   // Alert handling
   ///////////////////////////
 
-  logic [NumAlerts-1:0] diff_err;
   logic [NumAlerts-1:0] alert_test;
   logic [NumAlerts-1:0] alerts_vld, alerts_clr;
   logic [NumAlerts-1:0] sw_ack_mode;
 
-  // a particular alert is only valid if differential
-  assign alerts_vld = ast_alert_i.alerts_p ^ ast_alert_i.alerts_n;
+  // While the alerts are differential, they are not perfectly aligned.
+  // Instead, each alert is treated independently.
+  assign alerts_vld = ast_alert_i.alerts_p | ~ast_alert_i.alerts_n;
 
   // alert test connection
   assign alert_test[AsSel]   = reg2hw.alert_test.as.qe    & reg2hw.alert_test.as.q;
@@ -71,16 +71,6 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
   assign alert_test[LsSel]   = reg2hw.alert_test.ls.qe    & reg2hw.alert_test.ls.q;
   assign alert_test[OtSel]   = reg2hw.alert_test.ot.qe    & reg2hw.alert_test.ot.q;
 
-  // Differential errors are devasting and should never happen.
-  // If differential errors are detected, hold state on that permanently until reboot.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      diff_err <= '0;
-    end else if (&alerts_vld == '0) begin
-      diff_err <= diff_err | ~alerts_vld;
-    end
-  end
-
   // fire an alert whenever indicated, or whenever input no longer differential
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
 
@@ -90,11 +80,12 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
     assign sw_ack_mode[i] = ast_ack_mode_e'(reg2hw.ack_mode[i].q) == SwAck;
 
     // if differential checks fail, generate alert
-    assign valid_alert = ast_alert_i.alerts_p[i] | diff_err[i];
+    assign valid_alert = alerts_vld[i];
     assign hw2reg.alert_state[i].d  = sw_ack_mode[i];
     assign hw2reg.alert_state[i].de = valid_alert;
 
     logic alert_req;
+    logic alert_ack;
     assign alert_req = alert_test[i] | (sw_ack_mode[i] ? reg2hw.alert_state[i].q : valid_alert);
     prim_alert_sender #(
       .AsyncOn(AsyncOn)
@@ -102,24 +93,21 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
       .clk_i,
       .rst_ni,
       .alert_req_i(alert_req),
-      .alert_ack_o(),
+      .alert_ack_o(alert_ack),
       .alert_rx_i(alert_rx_i[i]),
       .alert_tx_o(alert_tx_o[i])
     );
 
-    assign alerts_clr[i] = sw_ack_mode[i] & reg2hw.alert_state[i].q & reg2hw.alert_state[i].qe;
+    assign alerts_clr[i] = sw_ack_mode[i] ? reg2hw.alert_state[i].q & reg2hw.alert_state[i].qe :
+                                            alert_req & alert_ack;
   end
 
-  // When in immediate ack mode, ack alerts as they come
+  // When in immediate ack mode, ack alerts as they are received by the sender
   // When in software ack mode, only ack when software issues the command to clear alert_state
   always_comb begin
     ast_alert_o.alerts_ack = '0;
     for (int i = 0; i < NumAlerts; i++) begin
-      if (!sw_ack_mode[i]) begin
-        ast_alert_o.alerts_ack[i] = ast_alert_i.alerts_p[i] & alerts_vld[i];
-      end else begin
-        ast_alert_o.alerts_ack[i] = alerts_clr[i];
-      end
+      ast_alert_o.alerts_ack[i] = alerts_clr[i];
     end
   end
 
