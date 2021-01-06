@@ -218,7 +218,9 @@ module keymgr import keymgr_pkg::*; #(
   assign hw2reg.working_state.de = 1'b1;
 
   // key manager registers cannot be changed once an operation starts
-  keymgr_cfg_en u_cfgen (
+  keymgr_cfg_en #(
+    .NonInitClr(1'b1) // clear has effect even when non-init
+  ) u_cfgen (
     .clk_i,
     .rst_ni,
     .init_i(init),
@@ -228,9 +230,33 @@ module keymgr import keymgr_pkg::*; #(
     .out_o(hw2reg.cfgen.d)
   );
 
-  // we can only unlock on a successful advance call
-  assign hw2reg.sw_binding_en.d = reg2hw.control.operation.q == OpAdvance;
-  assign hw2reg.sw_binding_en.de = sw_binding_unlock;
+
+  logic sw_binding_set;
+  logic sw_binding_clr;
+  logic sw_binding_en;
+
+  // set on a successful advance
+  assign sw_binding_set = reg2hw.control.operation.q == OpAdvance &
+                          sw_binding_unlock;
+
+  // this is w0c
+  assign sw_binding_clr = reg2hw.sw_binding_en.qe & ~reg2hw.sw_binding_en.q;
+
+  // software clears the enable
+  // hardware restores it upon successful advance
+  keymgr_cfg_en #(
+    .NonInitClr(1'b0)  // clear has no effect until init
+  ) u_sw_binding_en (
+    .clk_i,
+    .rst_ni,
+    .init_i(init),
+    .en_i(lc_keymgr_en[KeyMgrEnSwBindingEn] == lc_ctrl_pkg::On),
+    .set_i(sw_binding_set),
+    .clr_i(sw_binding_clr),
+    .out_o(sw_binding_en)
+  );
+
+  assign hw2reg.sw_binding_en.d = sw_binding_en & hw2reg.cfgen.d;
 
   /////////////////////////////////////
   //  Key Manager Input Construction

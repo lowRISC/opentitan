@@ -103,6 +103,7 @@ module keymgr_reg_top (
   logic sw_binding_en_qs;
   logic sw_binding_en_wd;
   logic sw_binding_en_we;
+  logic sw_binding_en_re;
   logic [31:0] sw_binding_0_qs;
   logic [31:0] sw_binding_0_wd;
   logic sw_binding_0_we;
@@ -466,29 +467,18 @@ module keymgr_reg_top (
   );
 
 
-  // R[sw_binding_en]: V(False)
+  // R[sw_binding_en]: V(True)
 
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W0C"),
-    .RESVAL  (1'h1)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_sw_binding_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
+    .re     (sw_binding_en_re),
     .we     (sw_binding_en_we),
     .wd     (sw_binding_en_wd),
-
-    // from internal hardware
-    .de     (hw2reg.sw_binding_en.de),
-    .d      (hw2reg.sw_binding_en.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
+    .d      (hw2reg.sw_binding_en.d),
+    .qre    (),
+    .qe     (reg2hw.sw_binding_en.qe),
+    .q      (reg2hw.sw_binding_en.q ),
     .qs     (sw_binding_en_qs)
   );
 
@@ -506,7 +496,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (sw_binding_0_we & sw_binding_en_qs),
+    .we     (sw_binding_0_we & cfgen_qs),
     .wd     (sw_binding_0_wd),
 
     // from internal hardware
@@ -533,7 +523,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (sw_binding_1_we & sw_binding_en_qs),
+    .we     (sw_binding_1_we & cfgen_qs),
     .wd     (sw_binding_1_wd),
 
     // from internal hardware
@@ -560,7 +550,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (sw_binding_2_we & sw_binding_en_qs),
+    .we     (sw_binding_2_we & cfgen_qs),
     .wd     (sw_binding_2_wd),
 
     // from internal hardware
@@ -587,7 +577,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (sw_binding_3_we & sw_binding_en_qs),
+    .we     (sw_binding_3_we & cfgen_qs),
     .wd     (sw_binding_3_wd),
 
     // from internal hardware
@@ -1633,6 +1623,7 @@ module keymgr_reg_top (
 
   assign sw_binding_en_we = addr_hit[8] & reg_we & ~wr_err;
   assign sw_binding_en_wd = reg_wdata[0];
+  assign sw_binding_en_re = addr_hit[8] && reg_re;
 
   assign sw_binding_0_we = addr_hit[9] & reg_we & ~wr_err;
   assign sw_binding_0_wd = reg_wdata[31:0];
