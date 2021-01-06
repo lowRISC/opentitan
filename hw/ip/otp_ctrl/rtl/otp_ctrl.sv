@@ -546,6 +546,7 @@ module otp_ctrl
     .req_i      ( edn_req  ),
     .ack_o      ( edn_ack  ),
     .data_o     ( edn_data ),
+    .fips_o     (          ), // unused
     .clk_edn_i,
     .rst_edn_ni,
     .edn_o,
