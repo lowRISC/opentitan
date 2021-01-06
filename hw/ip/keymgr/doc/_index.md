@@ -121,20 +121,25 @@ The advancement from this state to the next is irreversible during the current p
 
 ### Disabled
 
-`Disabled` is a terminal state where the key manager is no longer operational.
-When entering Disabled random values are used to compute a new random value.
+`Disabled` is a state where the key manager is no longer operational.
+The internal key is a random value and cannot be used to compute new valid keys or identities.
+However, sideload keys are not wiped upon `Disabled` entry.
+This allows the software to keep the last valid sideload keys while preventing the system from advancing further.
+
+### Invalid
+`Invalid` state is entered whenever key manager is disabled through the [life cycle connection](#life-cycle-connection).
+During this state, both the internal key and the sideload keys are wiped with random data and are no longer valid.
 
 ## Life Cycle Connection
 The function of the key manager is directly tied to the life cycle controller.
-During specific life cycle states, the key manager is explicitly disabled.
+During specific life cycle states, the key manager is explicitly invalidated.
 
-When disabled, the following key manager behavior applies:
+When invalidated, the following key manager behavior applies:
 -  If the key manager has not been initialized, it cannot be initialized until life cycle enables key manager.
--  If the key manager has been initialized and is currently in a valid state, it immediately wipes its key contents (working state, sideload keys and software keys) and transitions to `Disabled`.
+-  If the key manager has been initialized and is currently in a valid state (including `Disabled`), it immediately wipes its key contents (working state, sideload keys and software keys) and transitions to `Invalid`.
    -  Note, unlike a normal software requested disable, this path does not gracefully interact with KMAC, instead the secret contents are forcibly wiped.
    -  If there is an ongoing transaction with KMAC, the handshake with KMAC is still completed as usual, however the results are discarded and the value sent to KMAC are also not real.
--  Once the system settles to `Disabled` state, the behavior is consistent with normal behavior.
-
+-  Once the system settles to `Invalid` state, the behavior is consistent with `Disabled` state.
 
 ## Commands in Each State
 During each state, there are 3 valid commands software can issue:
@@ -150,8 +155,8 @@ If the current state is `Reset`, the invalid command is immediately rejected as 
 If the current state is any other state, the key manager FSM processes with random, dummy data, but does not update working state or relevant output registers.
 For each valid command, a set of inputs are selected and sequenced to the KMAC module.
 
-During `Disable` state, working state and output registers are updated as usual.
-The only difference during `Disabled` state is that random data is used and invalid operations are reported.
+During `Disable` and `Invalid` states, working state and output registers are updated as usual.
+The only difference during these states is that random data is used and invalid operations are reported.
 
 ## Generating Output Key
 The generate output command is composed of 2 options

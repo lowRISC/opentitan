@@ -652,6 +652,14 @@
               name: "Disabled",
               desc: '''
                 Key manager currently disabled. Please reset the key manager.
+                Sideload keys are still valid.
+              '''
+            },
+            { value: "6",
+              name: "Invalid",
+              desc: '''
+                Key manager currently invalid. Please reset the key manager.
+                Sideload keys are no longer valid.
               '''
             },
           ]
