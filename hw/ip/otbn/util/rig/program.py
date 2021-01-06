@@ -164,10 +164,32 @@ class Program:
         # size 4N bytes.
         self._sections = {}  # type: Dict[int, List[ProgInsn]]
 
+        # The number of instructions' space available. If we aren't below any
+        # branches, this is the space available in imem. When we're branching,
+        # this might be less.
+        self._space = self.imem_size // 4
+
+    def copy(self) -> 'Program':
+        '''Return a a shallow copy of the program
+
+        This is a shallow copy, so shares ProgInsn instances, but it can be
+        modified by adding instructions without affecting the original.
+
+        '''
+        ret = Program(self.imem_lma, self.imem_size,
+                      self.dmem_lma, self.dmem_size)
+        ret._sections = {base: section.copy()
+                         for base, section in self._sections.items()}
+        ret._space = self._space
+        return ret
+
     def add_insns(self, addr: int, insns: List[ProgInsn]) -> None:
         '''Add a sequence of instructions, starting at addr'''
         assert addr & 3 == 0
         assert addr <= self.imem_size
+
+        assert len(insns) <= self._space
+        self._space -= len(insns)
 
         sec_top = addr + 4 * len(insns)
 
@@ -489,3 +511,12 @@ class Program:
                     return 0
 
         return max(0, space // 4)
+
+    def get_insn_space_left(self) -> int:
+        '''Return how many more instructions there is space for'''
+        return self._space
+
+    def constrain_space(self, space: int) -> None:
+        '''Constrain the amount of space available'''
+        assert space <= self._space
+        self._space = space

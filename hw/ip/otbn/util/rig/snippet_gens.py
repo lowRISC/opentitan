@@ -3,26 +3,28 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import random
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from shared.insn_yaml import InsnsFile
 
 from .program import Program
 from .model import Model
-from .snippet import Snippet
-from .snippet_gen import SnippetGen
+from .snippet import SeqSnippet, Snippet
+from .snippet_gen import GenRet, SnippetGen
 
+from .gens.branch import Branch
 from .gens.ecall import ECall
-from .gens.straight_line_insn import StraightLineInsn
 from .gens.jump import Jump
+from .gens.straight_line_insn import StraightLineInsn
 
 
 class SnippetGens:
     '''A collection of snippet generators'''
     _WEIGHTED_CLASSES = [
+        (Branch, 0.1),
         (ECall, 1.0),
-        (StraightLineInsn, 1.0),
-        (Jump, 0.1)
+        (Jump, 0.1),
+        (StraightLineInsn, 1.0)
     ]
 
     def __init__(self, insns_file: InsnsFile) -> None:
@@ -31,23 +33,33 @@ class SnippetGens:
             self.generators.append((cls(insns_file), weight))
 
     def gen(self,
-            size: int,
             model: Model,
-            program: Program) -> Tuple[Snippet, bool, int]:
+            program: Program,
+            ecall: bool) -> Optional[GenRet]:
         '''Pick a snippet and update model, program with its contents.
 
-        Returns a pair (snippet, done, new_size) with the same meanings as
-        Snippet.gen, except that new_size is clamped to be at least 1 if done
-        is false. This avoids snippets having to special-case to make sure they
-        aren't chosen when size is near zero. The end result might be a
-        slightly longer instruction stream than we intended, but it shouldn't
-        be much bigger.
+        Normally returns a GenRet tuple with the same meanings as Snippet.gen.
+        If the chosen snippet would generate an ECALL and ecall is False, this
+        instead returns None (and leaves model and program unchanged).
 
         '''
         real_weights = []
         for generator, weight in self.generators:
-            weight_mult = generator.pick_weight(size, model, program)
+            weight_mult = generator.pick_weight(model, program)
             real_weights.append(weight * weight_mult)
+
+        # Define a continuation (which basically just calls self.gens()) to
+        # pass to each generator. This allows recursive generation and avoids
+        # needing circular imports to get the types right.
+        def cont(md: Model, prg: Program) -> Optional[Tuple[Snippet, Model]]:
+            ret = self.gens(md, prg, False)
+            if ret is None:
+                return None
+            snippet, model = ret
+            # We should always have a Model returned (because the ecall
+            # argument was False)
+            assert model is not None
+            return (snippet, model)
 
         while True:
             # Pick a generator based on the weights in real_weights.
@@ -62,15 +74,56 @@ class SnippetGens:
             # that the choice we made had positive weight.
             assert real_weights[idx] > 0
 
-            # Run the generator to generate a snippet
-            gen_res = generator.gen(size, model, program)
-            if gen_res is not None:
-                snippet, done, new_size = gen_res
-                if not done:
-                    new_size = max(new_size, 1)
+            if isinstance(generator, ECall) and not ecall:
+                return None
 
-                return (snippet, done, new_size)
+            # Run the generator to generate a snippet
+            gen_res = generator.gen(cont, model, program)
+            if gen_res is not None:
+                return gen_res
 
             # If gen_res is None, the generator failed. Set that weight to zero
             # and try again.
             real_weights[idx] = 0.0
+
+    def gens(self,
+             model: Model,
+             program: Program,
+             ecall: bool) -> Optional[GenRet]:
+        '''Generate some snippets to continue program.
+
+        This will try to run down model.fuel and program.size. If ecall is
+        True, it will eventually generate an ECALL instruction. If ecall is
+        False then instead of generating the ECALL instruction, it will instead
+        stop (leaving model.pc where the ECALL instruction would have been
+        inserted).
+
+        '''
+        children = []  # type: List[Snippet]
+        next_model = model  # type: Optional[Model]
+        while True:
+            assert next_model is not None
+            old_fuel = next_model.fuel
+            gr = self.gen(next_model, program, ecall)
+            if gr is None:
+                assert ecall is False
+                break
+
+            snippet, next_model = gr
+
+            # Merge adjacent program snippets if possible. Otherwise, add a new
+            # one.
+            if not children or not children[-1].merge(snippet):
+                children.append(snippet)
+
+            if next_model is None:
+                break
+
+            assert next_model.fuel < old_fuel
+
+        if not children:
+            assert ecall is False
+            return None
+
+        snippet = children[0] if len(children) == 1 else SeqSnippet(children)
+        return (snippet, next_model)

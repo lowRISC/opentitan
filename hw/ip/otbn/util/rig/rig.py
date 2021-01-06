@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List, Tuple
+from typing import Tuple
 
 from shared.insn_yaml import InsnsFile
 from shared.mem_layout import get_memory_layout
@@ -15,12 +15,12 @@ from .snippet import Snippet
 
 
 def gen_program(start_addr: int,
-                size: int,
-                insns_file: InsnsFile) -> Tuple[InitData, List[Snippet]]:
+                fuel: int,
+                insns_file: InsnsFile) -> Tuple[InitData, Snippet]:
     '''Generate a random program for OTBN
 
     start_addr is the reset address (the value that should be programmed into
-    the START_ADDR register). size gives a rough upper bound for the number of
+    the START_ADDR register). fuel gives a rough upper bound for the number of
     instructions that will be executed by the generated program.
 
     Returns (init_data, snippets, program). init_data is a dict mapping (4-byte
@@ -41,7 +41,7 @@ def gen_program(start_addr: int,
     assert start_addr & 3 == 0
 
     program = Program(imem_lma, imem_size, dmem_lma, dmem_size)
-    model = Model(dmem_size, start_addr)
+    model = Model(dmem_size, start_addr, fuel)
 
     # Generate some initialised data to start with. Otherwise, it takes a while
     # before we start issuing loads (because we need stores to happen first).
@@ -50,34 +50,8 @@ def gen_program(start_addr: int,
     for addr in init_data.keys():
         model.touch_mem('dmem', addr, 4)
 
-    generators = SnippetGens(insns_file)
-    snippets = []
+    ret = SnippetGens(insns_file).gens(model, program, True)
+    assert ret is not None
+    snippet, _ = ret
 
-    while size > 0:
-        snippet, done, new_size = generators.gen(size, model, program)
-        snippets.append(snippet)
-        if done:
-            break
-
-        # Each new snippet should consume some of size to guarantee
-        # termination.
-        assert new_size < size
-        size = new_size
-
-    return init_data, snippets
-
-
-def snippets_to_program(snippets: List[Snippet]) -> Program:
-    '''Write a series of disjoint snippets to make a program'''
-    # Find the size of the memory that we can access. Both memories start
-    # at address 0: a strict Harvard architecture. (mems[x][0] is the LMA
-    # for memory x, not the VMA)
-    mems = get_memory_layout()
-    imem_lma, imem_size = mems['IMEM']
-    dmem_lma, dmem_size = mems['DMEM']
-    program = Program(imem_lma, imem_size, dmem_lma, dmem_size)
-
-    for snippet in snippets:
-        snippet.insert_into_program(program)
-
-    return program
+    return init_data, snippet

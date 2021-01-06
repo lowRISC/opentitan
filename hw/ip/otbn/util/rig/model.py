@@ -37,6 +37,28 @@ def extended_euclidean_algorithm(a: int, b: int) -> Tuple[int, int, int]:
     return (r, s, t)
 
 
+def intersect_ranges(a: List[Tuple[int, int]],
+                     b: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+    ret = []
+    paired = ([(r, False) for r in a] + [(r, True) for r in b])
+    arng = None  # type: Optional[Tuple[int, int]]
+    brng = None  # type: Optional[Tuple[int, int]]
+    for (lo, hi), is_b in sorted(paired):
+        if is_b:
+            if arng is not None:
+                a0, a1 = arng
+                if a0 <= hi and lo <= a1:
+                    ret.append((max(a0, lo), min(a1, hi)))
+            brng = (lo, hi)
+        else:
+            if brng is not None:
+                b0, b1 = brng
+                if b0 <= hi and lo <= b1:
+                    ret.append((max(lo, b0), min(hi, b1)))
+            arng = (lo, hi)
+    return ret
+
+
 class KnownMem:
     '''A representation of what memory/CSRs have architectural values'''
     def __init__(self, top_addr: int):
@@ -46,6 +68,18 @@ class KnownMem:
         # A list of pairs of addresses. If the pair (lo, hi) is in the list
         # then each byte in the address range {lo..hi - 1} has a known value.
         self.known_ranges = []  # type: List[Tuple[int, int]]
+
+    def copy(self) -> 'KnownMem':
+        '''Return a shallow copy of the object'''
+        ret = KnownMem(self.top_addr)
+        ret.known_ranges = self.known_ranges.copy()
+        return ret
+
+    def merge(self, other: 'KnownMem') -> None:
+        '''Merge in values from another KnownMem object'''
+        assert self.top_addr == other.top_addr
+        self.known_ranges = intersect_ranges(self.known_ranges,
+                                             other.known_ranges)
 
     def touch_range(self, base: int, width: int) -> None:
         '''Mark {base .. base + width - 1} as known'''
@@ -314,6 +348,82 @@ class KnownMem:
         return addr
 
 
+class CallStack:
+    '''An abstract model of the x1 call stack'''
+    def __init__(self) -> None:
+        self._min_depth = 0
+        self._max_depth = 0
+        self._elts_at_top = []  # type: List[Optional[int]]
+
+    def copy(self) -> 'CallStack':
+        '''Return a deep copy of the call stack'''
+        ret = CallStack()
+        ret._min_depth = self._min_depth
+        ret._max_depth = self._max_depth
+        ret._elts_at_top = self._elts_at_top.copy()
+        return ret
+
+    def merge(self, other: 'CallStack') -> None:
+        self._min_depth = min(self._min_depth, other._min_depth)
+        self._max_depth = max(self._max_depth, other._max_depth)
+        new_top = []
+        for a, b in zip(reversed(self._elts_at_top),
+                        reversed(other._elts_at_top)):
+            if a == b:
+                new_top.append(a)
+            else:
+                break
+        new_top.reverse()
+        self._elts_at_top = new_top
+        assert self._min_depth <= self._max_depth
+        assert len(self._elts_at_top) <= self._max_depth
+
+    def empty(self) -> bool:
+        assert 0 <= self._min_depth
+        return self._min_depth == 0
+
+    def full(self) -> bool:
+        assert self._max_depth <= 8
+        return self._max_depth == 8
+
+    def pop(self) -> None:
+        assert 0 < self._min_depth
+        self._min_depth -= 1
+        self._max_depth -= 1
+        if self._elts_at_top:
+            self._elts_at_top.pop()
+
+    def peek(self) -> Optional[int]:
+        assert 0 < self._min_depth
+        ret = self._elts_at_top[-1] if self._elts_at_top else None
+        return self._elts_at_top[-1] if self._elts_at_top else None
+
+    def write(self, value: Optional[int], update: bool) -> None:
+        '''Write a value to the call stack.
+
+        The update flag works as described for Model.write_reg
+
+        '''
+        if update:
+            # If we're updating a write to x1, check that the new value refines
+            # the top of the call stack.
+            assert self._min_depth > 0
+            if self._elts_at_top:
+                assert self._elts_at_top[-1] in [None, value]
+                self._elts_at_top[-1] = value
+            else:
+                self._elts_at_top.append(value)
+        else:
+            assert not self.full()
+            self._min_depth += 1
+            self._max_depth += 1
+            self._elts_at_top.append(value)
+
+    def XXXshow(self) -> str:
+        return ('CallStack({}, {}, {})'
+                .format(self._min_depth, self._max_depth, self._elts_at_top))
+
+
 class Model:
     '''An abstract model of the processor and memories
 
@@ -322,7 +432,11 @@ class Model:
     following the instruction stream to this point.
 
     '''
-    def __init__(self, dmem_size: int, reset_addr: int) -> None:
+    def __init__(self, dmem_size: int, reset_addr: int, fuel: int) -> None:
+        assert fuel >= 0
+        self.initial_fuel = fuel
+        self.fuel = fuel
+
         self.dmem_size = dmem_size
 
         # Known values for registers. This is a dictionary mapping register
@@ -345,7 +459,7 @@ class Model:
         # entry of None means an entry with an architectural value, but where
         # we don't actually know what it is (usually a result of some
         # arithmetic operation that got written to x1).
-        self._call_stack = []  # type: List[Optional[int]]
+        self._call_stack = CallStack()
 
         # Known values for memory, keyed by memory type ('dmem', 'csr', 'wsr').
         csrs = KnownMem(4096)
@@ -371,6 +485,74 @@ class Model:
         # generating)
         self.pc = reset_addr
 
+    def copy(self) -> 'Model':
+        '''Return a deep copy of the model'''
+        ret = Model(self.dmem_size, self.pc, self.initial_fuel)
+        ret.fuel = self.fuel
+        ret._known_regs = {n: regs.copy()
+                           for n, regs in self._known_regs.items()}
+        ret._call_stack = self._call_stack.copy()
+        ret._known_mem = {n: mem.copy()
+                          for n, mem in self._known_mem.items()}
+        return ret
+
+    def merge(self, other: 'Model') -> None:
+        '''Merge in values from another model'''
+        assert self.initial_fuel == other.initial_fuel
+        self.fuel = min(self.fuel, other.fuel)
+        assert self.dmem_size == other.dmem_size
+
+        reg_types = self._known_regs.keys() | other._known_regs.keys()
+        for reg_type in reg_types:
+            sregs = self._known_regs.get(reg_type)
+            oregs = other._known_regs.get(reg_type)
+            if sregs is None:
+                # If sregs is None, we have no registers that are known to have
+                # architectural values.
+                continue
+            if oregs is None:
+                # If oregs is None, other has no registers with architectural
+                # values. Thus the merged model shouldn't have any either.
+                del self._known_regs[reg_type]
+                continue
+
+            # Both register files have at least some architectural values.
+            # Build a new, merged version.
+            merged = {}  # type: Dict[int, Optional[int]]
+            for reg_name, svalue in sregs.items():
+                ovalue = oregs.get(reg_name, 'missing')
+                if ovalue == 'missing':
+                    # The register is missing from oregs. This means it might
+                    # not have an architectural value, so we should skip it
+                    # from sregs too.
+                    pass
+                elif ovalue is None:
+                    # The register has an architectural value in other, but not
+                    # one we know. Make sure it's unknown here too.
+                    merged[reg_name] = None
+                else:
+                    assert isinstance(ovalue, int)
+                    if svalue is None:
+                        # The register has an unknown architectural value in
+                        # self and a known value in other. So we don't know its
+                        # value (but it is still architecturally specified): no
+                        # change.
+                        merged[reg_name] = None
+                    else:
+                        # self and other both have a known value for the
+                        # register. Do they match? If so, take that value.
+                        # Otherwise, make it unknown.
+                        merged[reg_name] = None if svalue != ovalue else svalue
+
+            self._known_regs[reg_type] = merged
+
+        self._call_stack.merge(other._call_stack)
+
+        for mem_type, self_mem in self._known_mem.items():
+            self_mem.merge(other._known_mem[mem_type])
+
+        assert self.pc == other.pc
+
     def read_reg(self, reg_type: str, idx: int) -> None:
         '''Update the model for a read of the given register
 
@@ -379,7 +561,6 @@ class Model:
 
         '''
         if reg_type == 'gpr' and idx == 1:
-            assert self._call_stack
             self._call_stack.pop()
 
     def write_reg(self,
@@ -406,12 +587,7 @@ class Model:
 
             if idx == 1:
                 # Special-case writes to x1
-                if update:
-                    assert self._call_stack
-                    assert self._call_stack[-1] in [None, value]
-                    self._call_stack[-1] = value
-                else:
-                    self._call_stack.append(value)
+                self._call_stack.write(value, update)
                 return
 
         self._known_regs.setdefault(reg_type, {})[idx] = value
@@ -419,7 +595,7 @@ class Model:
     def get_reg(self, reg_type: str, idx: int) -> Optional[int]:
         '''Get a register value, if known.'''
         if reg_type == 'gpr' and idx == 1:
-            return self._call_stack[-1] if self._call_stack else None
+            return self._call_stack.peek()
 
         return self._known_regs.setdefault(reg_type, {}).get(idx)
 
@@ -475,7 +651,7 @@ class Model:
                 # architectural value). This won't appear in known_regs,
                 # because we don't track x1 there.
                 assert 1 not in known_regs
-                if self._call_stack:
+                if not self._call_stack.empty():
                     known_list.append(1)
 
             return random.choice(known_list)
@@ -487,7 +663,7 @@ class Model:
             idx = random.getrandbits(op_type.width)
             if ((idx == 1 and
                  op_type.reg_type == 'gpr' and
-                 len(self._call_stack) >= 8)):
+                 self._call_stack.full())):
                 continue
             return idx
 
@@ -508,8 +684,10 @@ class Model:
         # not None
         if reg_type == 'gpr':
             assert 1 not in known_regs
-            if self._call_stack and self._call_stack[-1] is not None:
-                ret.append((1, self._call_stack[-1]))
+            if not self._call_stack.empty():
+                x1 = self._call_stack.peek()
+                if x1 is not None:
+                    ret.append((1, x1))
 
         return ret
 
@@ -522,7 +700,7 @@ class Model:
         # stack is not empty.
         if reg_type == 'gpr':
             assert 1 not in arch_regs
-            if self._call_stack:
+            if not self._call_stack.empty():
                 arch_regs.append(1)
 
         return arch_regs
@@ -843,6 +1021,10 @@ class Model:
             mem_type, addr = prog_insn.lsu_info
             self.touch_mem(mem_type, addr, insn.lsu.idx_width)
 
+    def consume_fuel(self) -> None:
+        '''Consume one item of fuel, but bottom out at fuel == 1'''
+        self.fuel = max(1, self.fuel - 1)
+
     def update_for_insn(self, prog_insn: ProgInsn) -> None:
         # If this is a sufficiently simple operation that we understand the
         # result, or a complicated instruction where we have to do something
@@ -859,3 +1041,5 @@ class Model:
             updater(prog_insn)
         else:
             self._generic_update_for_insn(prog_insn)
+
+        self.consume_fuel()

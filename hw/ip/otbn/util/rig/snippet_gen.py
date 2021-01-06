@@ -9,13 +9,24 @@ actually generate some snippets, use the wrapper in snippet_gens.py.
 
 '''
 
-from typing import Optional, Tuple
+from typing import Callable, Optional, Tuple
 
 from shared.insn_yaml import Insn, InsnsFile
 
 from .program import Program
 from .model import Model
 from .snippet import Snippet
+
+# A continuation type that allows a generator to recursively generate some more
+# stuff.
+GenCont = Callable[[Model, Program], Optional[Tuple[Snippet, Model]]]
+
+# The return type of a single generator. This is a tuple (snippet, model).
+# snippet is a generated snippet. If the program is done (i.e. every execution
+# ends with ecall) then model is None. Otherwise it is a Model object
+# representing the state of the processor after executing the code in the
+# snippet(s).
+GenRet = Tuple[Snippet, Optional[Model]]
 
 
 class SnippetGen:
@@ -26,21 +37,14 @@ class SnippetGen:
 
     '''
     def gen(self,
-            size: int,
+            cont: GenCont,
             model: Model,
-            program: Program) -> Optional[Tuple[Snippet, bool, int]]:
+            program: Program) -> Optional[GenRet]:
         '''Try to generate instructions for this type of snippet.
 
-        size is always positive and gives an upper bound on the number of
-        instructions in the dynamic instruction stream that this should
-        generate. For example, a loop of 10 instructions that goes around 10
-        times would consume 100 from size.
-
         On success, inserts the instructions into program, updates the model,
-        and returns a tuple (snippet, done, new_size). snippet is the generated
-        snippet. done is true if the program is finished (if snippet ends with
-        ecall) and is false otherwise. new_size is the size left after the
-        generated snippet.
+        and returns a GenRet tuple. See comment above the type definition for
+        more information.
 
         On failure, leaves program and model unchanged and returns None. There
         should always be at least one snippet generator with positive weight
@@ -49,19 +53,24 @@ class SnippetGen:
         with the current program state", but the generator may be retried
         later.
 
+        The cont argument is a continuation, used to call out to more
+        generators in order to do recursive generation. It takes a (mutable)
+        model and program and picks a sequence of instructions. The paths
+        through the generated code don't terminate with an ECALL but instead
+        end up at the resulting model.pc.
+
         '''
         raise NotImplementedError('gen not implemented by subclass')
 
     def pick_weight(self,
-                    size: int,
                     model: Model,
                     program: Program) -> float:
         '''Pick a weight by which to multiply this generator's default weight
 
         This is called for each generator before we start trying to generate a
         snippet for a given program and model state. This can be used to
-        disable a generator when we know it won't work (if size is too small, for
-        example).
+        disable a generator when we know it won't work (if model.fuel is too
+        small, for example).
 
         It can also be used to alter weights depending on where we are in the
         program. For example, a generator that generates ecall to end the

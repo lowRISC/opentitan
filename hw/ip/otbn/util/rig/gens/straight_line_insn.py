@@ -11,8 +11,8 @@ from shared.operand import ImmOperandType, OptionOperandType, RegOperandType
 
 from ..program import ProgInsn, Program
 from ..model import Model
-from ..snippet import Snippet
-from ..snippet_gen import SnippetGen
+from ..snippet import ProgSnippet
+from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class StraightLineInsn(SnippetGen):
@@ -32,9 +32,9 @@ class StraightLineInsn(SnippetGen):
             self.insns.append(insn)
 
     def gen(self,
-            size: int,
+            cont: GenCont,
             model: Model,
-            program: Program) -> Optional[Tuple[Snippet, bool, int]]:
+            program: Program) -> Optional[GenRet]:
 
         # Return None if this is the last instruction in the current gap
         # because we need to either jump or do an ECALL to avoid getting stuck.
@@ -68,14 +68,14 @@ class StraightLineInsn(SnippetGen):
 
         # Success! We have generated an instruction. Put it in a snippet and
         # add that to the program
-        snippet = Snippet([(model.pc, [prog_insn])])
+        snippet = ProgSnippet(model.pc, [prog_insn])
         snippet.insert_into_program(program)
 
         # Then update the model with the instruction and update the model PC
         model.update_for_insn(prog_insn)
         model.pc += 4
 
-        return (snippet, False, size - 1)
+        return (snippet, model)
 
     def fill_insn(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
         '''Try to fill out an instruction
