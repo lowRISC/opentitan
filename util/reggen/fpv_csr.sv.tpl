@@ -41,6 +41,8 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
   `define REGWEN_PATH dut.${block.hier_path}.u_reg
   % elif block.name == "flash_ctrl":
   `define REGWEN_PATH dut.u_flash_ctrl.u_reg
+  % elif block.name == "sram_ctrl":
+  `define REGWEN_PATH dut.u_sram_ctrl.u_reg
   % else:
   `define REGWEN_PATH dut.u_reg
   % endif

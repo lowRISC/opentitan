@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// sim cfg file for the main SRAM variant
+{
+  // Name of the sim cfg variant
+  variant: sram_ctrl_main
+
+  // Import the base sram_ctrl sim_cfg file
+  import_cfgs: ["{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_base_sim_cfg.hjson"]
+
+  // Enable the appropriate build mode for all tests
+  en_build_modes: ["sram_ctrl_main"]
+}
