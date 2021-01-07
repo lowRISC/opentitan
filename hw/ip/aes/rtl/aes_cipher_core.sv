@@ -218,8 +218,10 @@ module aes_cipher_core import aes_pkg::*;
     endcase
   end
 
-  always_ff @(posedge clk_i) begin : state_reg
-    if (state_we) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin : state_reg
+    if (!rst_ni) begin
+      state_q <= '{default: '0};
+    end else if (state_we) begin
       state_q <= state_d;
     end
   end
@@ -351,8 +353,10 @@ module aes_cipher_core import aes_pkg::*;
     endcase
   end
 
-  always_ff @(posedge clk_i) begin : key_full_reg
-    if (key_full_we) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin : key_full_reg
+    if (!rst_ni) begin
+      key_full_q <= '{default: '0};
+    end else if (key_full_we) begin
       key_full_q <= key_full_d;
     end
   end
@@ -366,8 +370,10 @@ module aes_cipher_core import aes_pkg::*;
     endcase
   end
 
-  always_ff @(posedge clk_i) begin : key_dec_reg
-    if (key_dec_we) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin : key_dec_reg
+    if (!rst_ni) begin
+      key_dec_q <= '{default: '0};
+    end else if (key_dec_we) begin
       key_dec_q <= key_dec_d;
     end
   end
