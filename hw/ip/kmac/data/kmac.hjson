@@ -4,6 +4,9 @@
 
 { name: "kmac"
   clock_primary: "clk_i"
+  other_clock_list: [ "clk_edn_i" ]
+  reset_primary: "rst_ni",
+  other_reset_list: [ "rst_edn_ni" ]
   bus_device: "tlul"
   bus_host: "none"
 
