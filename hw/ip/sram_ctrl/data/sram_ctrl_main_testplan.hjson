@@ -1,0 +1,9 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// testplan for the main SRAM variant
+{
+  name: "sram_ctrl_main"
+  import_testplans: ["hw/ip/sram_ctrl/data/sram_ctrl_base_testplan.hjson"]
+}

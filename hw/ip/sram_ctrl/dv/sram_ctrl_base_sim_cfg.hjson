@@ -1,0 +1,83 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: sram_ctrl
+
+  // Top level dut name (sv module).
+  dut: sram_ctrl_wrapper
+
+  // Top level testbench name (sv module).
+  tb: tb
+
+  // Simulator used to sign off this block
+  tool: vcs
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:sram_ctrl_sim:0.1
+
+  // Testplan hjson file.
+  testplan: "{proj_root}/hw/ip/sram_ctrl/data/{variant}_testplan.hjson"
+
+  // RAL spec - used to generate the RAL model.
+  ral_spec: "{proj_root}/hw/ip/sram_ctrl/data/sram_ctrl.hjson"
+
+  // Import additional common sim cfg files.
+  // TODO: remove imported cfgs that do not apply.
+  import_cfgs: [// Project wide common sim cfg file
+                "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
+                // Common CIP test lists
+                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+
+  // Add additional tops for simulation.
+  sim_tops: ["sram_ctrl_bind"]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 50
+
+  // Need to override the default output directory
+  overrides: [
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{variant}-{flow}-{tool}"
+    }
+  ]
+
+  build_modes: [
+    {
+      name: sram_ctrl_main
+      build_opts: ["+define+ADDR_BITS=14", "+define+WIDTH=32"]
+    }
+    {
+      name: sram_ctrl_ret
+      build_opts: ["+define+ADDR_BITS=10", "+define+WIDTH=32"]
+    }
+  ]
+
+  // Default UVM test and seq class name.
+  uvm_test: sram_ctrl_base_test
+  uvm_test_seq: sram_ctrl_base_vseq
+
+  // List of test specifications.
+  tests: [
+    {
+      name: "{variant}_smoke"
+      uvm_test_seq: sram_ctrl_smoke_vseq
+    }
+
+    // TODO: add more tests here
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: ["{variant}_smoke"]
+    }
+  ]
+}
