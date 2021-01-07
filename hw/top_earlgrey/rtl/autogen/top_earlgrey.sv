@@ -1260,8 +1260,8 @@ module top_earlgrey #(
     .RndCnstMskgChunkLfsrPerm(aes_pkg::RndCnstMskgChunkLfsrPermDefault)
   ) u_aes (
 
-      // [12]: ctrl_err_update
-      // [13]: ctrl_err_storage
+      // [12]: recoverable
+      // [13]: fatal
       .alert_tx_o  ( alert_tx[13:12] ),
       .alert_rx_i  ( alert_rx[13:12] ),
 

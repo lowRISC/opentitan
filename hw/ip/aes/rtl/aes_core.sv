@@ -35,8 +35,8 @@ module aes_core
   input  logic  [WidthPRDMasking-1:0] entropy_masking_i,
 
   // Alerts
-  output logic                        ctrl_err_update_o,
-  output logic                        ctrl_err_storage_o,
+  output logic                        alert_recoverable_o,
+  output logic                        alert_fatal_o,
 
   // Bus Interface
   input  aes_reg2hw_t                 reg2hw,
@@ -56,6 +56,16 @@ module aes_core
   logic                        manual_operation_q;
   logic                        force_zero_masks_q;
   ctrl_reg_t                   ctrl_d, ctrl_q;
+  logic                        ctrl_err_update_we;
+  logic                        ctrl_err_update;
+  logic                        ctrl_err_update_d;
+  logic                        ctrl_err_update_q;
+  logic                        ctrl_err_storage_we;
+  logic                        ctrl_err_storage;
+  logic                        ctrl_err_storage_d;
+  logic                        ctrl_err_storage_q;
+  logic                        ctrl_alert;
+
 
   logic        [3:0][3:0][7:0] state_in;
   si_sel_e                     state_in_sel;
@@ -86,6 +96,7 @@ module aes_core
   logic            [7:0]       ctr_we;
   logic                        ctr_incr;
   logic                        ctr_ready;
+  logic                        ctr_alert;
 
   logic            [3:0][31:0] data_in_prev_d;
   logic            [3:0][31:0] data_in_prev_q;
@@ -116,6 +127,7 @@ module aes_core
   logic                        cipher_key_clear_busy;
   logic                        cipher_data_out_clear;
   logic                        cipher_data_out_clear_busy;
+  logic                        cipher_alert;
 
   // Pseudo-random data for clearing purposes
   logic [WidthPRDClearing-1:0] prd_clearing;
@@ -268,6 +280,7 @@ module aes_core
 
     .incr_i   ( ctr_incr  ),
     .ready_o  ( ctr_ready ),
+    .alert_o  ( ctr_alert ),
 
     .ctr_i    ( iv_q      ),
     .ctr_o    ( ctr       ),
@@ -345,7 +358,7 @@ module aes_core
     .out_valid_o        ( cipher_out_valid           ),
     .out_ready_i        ( cipher_out_ready           ),
 
-    .cfg_valid_i        ( ~ctrl_err_storage_o        ),
+    .cfg_valid_i        ( ~ctrl_err_storage          ), // Used for gating assertions only.
     .op_i               ( cipher_op                  ),
     .key_len_i          ( key_len_q                  ),
     .crypt_i            ( cipher_crypt               ),
@@ -356,6 +369,7 @@ module aes_core
     .key_clear_o        ( cipher_key_clear_busy      ),
     .data_out_clear_i   ( cipher_data_out_clear      ),
     .data_out_clear_o   ( cipher_data_out_clear_busy ),
+    .alert_o            ( cipher_alert               ),
 
     .prd_clearing_i     ( prd_clearing               ),
 
@@ -453,13 +467,9 @@ module aes_core
     .qe          (                    ),
     .q           ( ctrl_q             ),
     .qs          (                    ),
-    .err_update  ( ctrl_err_update_o  ),
-    .err_storage ( ctrl_err_storage_o )
+    .err_update  ( ctrl_err_update_d  ),
+    .err_storage ( ctrl_err_storage_d )
   );
-
-  // Make sure the storage error is observable via status register.
-  assign hw2reg.status.ctrl_err_storage.d  = ctrl_err_storage_o;
-  assign hw2reg.status.ctrl_err_storage.de = ctrl_err_storage_o;
 
   // Get shorter references.
   assign aes_op_q           = ctrl_q.operation;
@@ -467,10 +477,6 @@ module aes_core
   assign key_len_q          = ctrl_q.key_len;
   assign manual_operation_q = ctrl_q.manual_operation;
   assign force_zero_masks_q = ctrl_q.force_zero_masks;
-
-  // Unused alert signals
-  logic unused_alert_signals;
-  assign unused_alert_signals = ^reg2hw.alert_test;
 
   /////////////
   // Control //
@@ -485,7 +491,7 @@ module aes_core
 
     .ctrl_qe_i               ( ctrl_qe                          ),
     .ctrl_we_o               ( ctrl_we                          ),
-    .ctrl_err_storage_i      ( ctrl_err_storage_o               ),
+    .ctrl_err_storage_i      ( ctrl_err_storage                 ),
     .op_i                    ( aes_op_q                         ),
     .mode_i                  ( aes_mode_q                       ),
     .cipher_op_i             ( cipher_op                        ),
@@ -496,6 +502,8 @@ module aes_core
     .data_in_clear_i         ( reg2hw.trigger.data_in_clear.q   ),
     .data_out_clear_i        ( reg2hw.trigger.data_out_clear.q  ),
     .prng_reseed_i           ( reg2hw.trigger.prng_reseed.q     ),
+    .alert_fatal_i           ( alert_fatal_o                    ),
+    .alert_o                 ( ctrl_alert                       ),
 
     .key_init_qe_i           ( key_init_qe                      ),
     .iv_qe_i                 ( iv_qe                            ),
@@ -608,6 +616,48 @@ module aes_core
   assign hw2reg.ctrl_shadowed.manual_operation.d = manual_operation_q;
   assign hw2reg.ctrl_shadowed.force_zero_masks.d = force_zero_masks_q;
 
+  ////////////
+  // Alerts //
+  ////////////
+
+  // Recoverable alert conditions remain asserted until AES operation is restarted by rewriting the
+  // Control Register.
+  assign ctrl_err_update_we = ctrl_err_update_d | ctrl_we;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_err_update_reg
+    if (!rst_ni) begin
+      ctrl_err_update_q <= 1'b0;
+    end else if (ctrl_err_update_we) begin
+      ctrl_err_update_q <= ctrl_err_update_d;
+    end
+  end
+  assign ctrl_err_update = ctrl_err_update_d | ctrl_err_update_q;
+
+  // Fatal alert conditions need to remain asserted until reset.
+  assign ctrl_err_storage_we = ctrl_err_storage_d;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_err_storage_reg
+    if (!rst_ni) begin
+      ctrl_err_storage_q <= 1'b0;
+    end else if (ctrl_err_storage_we) begin
+      ctrl_err_storage_q <= 1'b1;
+    end
+  end
+  assign ctrl_err_storage = ctrl_err_storage_d | ctrl_err_storage_q;
+
+  // Collect alert signals.
+  assign alert_recoverable_o = ctrl_err_update;
+  assign alert_fatal_o       = ctrl_err_storage | ctr_alert | cipher_alert | ctrl_alert;
+
+  // Make alerts observable via status register.
+  assign hw2reg.status.alert_recoverable.d  = alert_recoverable_o;
+  assign hw2reg.status.alert_recoverable.de = ctrl_err_update_we;
+
+  assign hw2reg.status.alert_fatal.d  = alert_fatal_o;
+  assign hw2reg.status.alert_fatal.de = alert_fatal_o;
+
+  // Unused alert signals
+  logic unused_alert_signals;
+  assign unused_alert_signals = ^reg2hw.alert_test;
+
   ////////////////
   // Assertions //
   ////////////////
@@ -623,7 +673,7 @@ module aes_core
       IV_CLEAR
       })
   `ASSERT_KNOWN(AesDataInPrevSelKnown, data_in_prev_sel)
-  `ASSERT(AesModeValid, !ctrl_err_storage_o |-> aes_mode_q inside {
+  `ASSERT(AesModeValid, !ctrl_err_storage |-> aes_mode_q inside {
       AES_ECB,
       AES_CBC,
       AES_CFB,

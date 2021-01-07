@@ -3822,7 +3822,7 @@
       alert_list:
       [
         {
-          name: ctrl_err_update
+          name: recoverable
           width: 1
           bits: "0"
           bitinfo:
@@ -3835,7 +3835,7 @@
           async: 1
         }
         {
-          name: ctrl_err_storage
+          name: fatal
           width: 1
           bits: "1"
           bitinfo:
@@ -8086,7 +8086,7 @@
   alert:
   [
     {
-      name: aes_ctrl_err_update
+      name: aes_recoverable
       width: 1
       bits: "0"
       bitinfo:
@@ -8100,7 +8100,7 @@
       module_name: aes
     }
     {
-      name: aes_ctrl_err_storage
+      name: aes_fatal
       width: 1
       bits: "1"
       bitinfo:

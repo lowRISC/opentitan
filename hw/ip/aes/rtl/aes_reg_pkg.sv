@@ -19,11 +19,11 @@ package aes_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } ctrl_err_update;
+    } recoverable;
     struct packed {
       logic        q;
       logic        qe;
-    } ctrl_err_storage;
+    } fatal;
   } aes_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -187,7 +187,11 @@ package aes_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } ctrl_err_storage;
+    } alert_recoverable;
+    struct packed {
+      logic        d;
+      logic        de;
+    } alert_fatal;
   } aes_hw2reg_status_reg_t;
 
 
@@ -209,14 +213,14 @@ package aes_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [933:678]
-    aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [677:422]
-    aes_hw2reg_iv_mreg_t [3:0] iv; // [421:294]
-    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [293:162]
-    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [161:34]
-    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [33:22]
-    aes_hw2reg_trigger_reg_t trigger; // [21:10]
-    aes_hw2reg_status_reg_t status; // [9:0]
+    aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [935:680]
+    aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [679:424]
+    aes_hw2reg_iv_mreg_t [3:0] iv; // [423:296]
+    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [295:164]
+    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [163:36]
+    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [35:24]
+    aes_hw2reg_trigger_reg_t trigger; // [23:12]
+    aes_hw2reg_status_reg_t status; // [11:0]
   } aes_hw2reg_t;
 
   // Register Address

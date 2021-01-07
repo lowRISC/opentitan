@@ -29,6 +29,8 @@ module aes_control
   input  logic                    data_in_clear_i,
   input  logic                    data_out_clear_i,
   input  logic                    prng_reseed_i,
+  input  logic                    alert_fatal_i,
+  output logic                    alert_o,
 
   // I/O register read/write enables
   input  logic [7:0]              key_init_qe_i [2],
@@ -108,8 +110,30 @@ module aes_control
   import aes_pkg::*;
 
   // Types
-  typedef enum logic [2:0] {
-    IDLE, LOAD, UPDATE_PRNG, FINISH, CLEAR
+  // $ ./sparse-fsm-encode.py -d 3 -m 6 -n 6 \
+  //      -s 31468618 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (53.33%)
+  //  4: ||||||||||||||| (40.00%)
+  //  5: || (6.67%)
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 5
+  //
+  localparam int StateWidth = 6;
+  typedef enum logic [StateWidth-1:0] {
+    IDLE        = 6'b011101,
+    LOAD        = 6'b110000,
+    UPDATE_PRNG = 6'b001000,
+    FINISH      = 6'b000011,
+    CLEAR       = 6'b111110,
+    ERROR       = 6'b100101
   } aes_ctrl_e;
 
   aes_ctrl_e aes_ctrl_ns, aes_ctrl_cs;
@@ -137,6 +161,7 @@ module aes_control
 
   logic       start_trigger;
   logic       cfg_valid;
+  logic       no_alert;
   logic       start, finish;
   logic       cipher_crypt;
   logic       cipher_out_done;
@@ -175,13 +200,14 @@ module aes_control
                   iv_qe_i[1], iv_qe_i[1], iv_qe_i[0], iv_qe_i[0]};
 
   // The cipher core is only ever allowed to start or finish if the control register holds a valid
-  // configuration.
+  // configuration and if no fatal alert condition occured.
   assign cfg_valid = ~((mode_i == AES_NONE) | ctrl_err_storage_i);
+  assign no_alert  = ~alert_fatal_i;
 
   // If set to start manually, we just wait for the trigger. Otherwise, we start once we have valid
   // data available. If the IV (and counter) is needed, we only start if also the IV (and counter)
   // is ready.
-  assign start = cfg_valid &
+  assign start = cfg_valid & no_alert &
       ( manual_operation_i ? start_trigger                                           :
        (mode_i == AES_ECB) ? (key_init_ready & data_in_new)                          :
        (mode_i == AES_CBC) ? (key_init_ready & data_in_new & iv_ready)               :
@@ -192,7 +218,8 @@ module aes_control
   // If not set to overwrite data, we wait for any previous output data to be read. data_out_read
   // synchronously clears output_valid_q, unless new output data is written in the exact same
   // clock cycle.
-  assign finish = cfg_valid & (manual_operation_i ? 1'b1 : (~output_valid_q | data_out_read));
+  assign finish = cfg_valid & no_alert &
+      (manual_operation_i ? 1'b1 : (~output_valid_q | data_out_read));
 
   // Helper signals for FSM
   assign cipher_crypt  = cipher_crypt_o | cipher_crypt_i;
@@ -237,6 +264,9 @@ module aes_control
 
     // Control register
     ctrl_we_o = 1'b0;
+
+    // Alert
+    alert_o = 1'b0;
 
     // Pseudo-random number generator control
     prng_data_req_o   = 1'b0;
@@ -504,17 +534,32 @@ module aes_control
         end
       end
 
-      default: aes_ctrl_ns = IDLE;
+      ERROR: begin
+        // Terminal error state
+        alert_o = 1'b1;
+      end
+
+      // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
+      default: begin
+        alert_o     = 1'b1;
+        aes_ctrl_ns = ERROR;
+      end
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_fsm
-    if (!rst_ni) begin
-      aes_ctrl_cs <= IDLE;
-    end else begin
-      aes_ctrl_cs <= aes_ctrl_ns;
-    end
-  end
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] aes_ctrl_cs_raw;
+  assign aes_ctrl_cs = aes_ctrl_e'(aes_ctrl_cs_raw);
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(IDLE))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( aes_ctrl_ns     ),
+    .q_o ( aes_ctrl_cs_raw )
+  );
 
   // We only use clean initial keys. Either software/counter has updated
   // - all initial key registers, or
@@ -634,6 +679,12 @@ module aes_control
       })
   `ASSERT_KNOWN(AesOpKnown, op_i)
   `ASSERT_KNOWN(AesCiphOpKnown, cipher_op_i)
-  `ASSERT_KNOWN(AesControlStateValid, aes_ctrl_cs)
+  `ASSERT(AesControlStateValid, !alert_o |-> aes_ctrl_cs inside {
+      IDLE,
+      LOAD,
+      UPDATE_PRNG,
+      FINISH,
+      CLEAR
+      })
 
 endmodule
