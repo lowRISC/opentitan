@@ -10,15 +10,16 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
   rand bit clk_byp_error_rsp;
   rand bit flash_rma_error_rsp;
+  rand bit trans_success;
   dec_lc_state_e next_lc_state;
-
-  constraint lc_cnt_c {
-    lc_state != LcStRaw -> lc_cnt != LcCntRaw;
-  }
 
   constraint no_err_rsps_c {
     clk_byp_error_rsp   == 0;
     flash_rma_error_rsp == 0;
+  }
+
+  constraint trans_success_c {
+    trans_success == 1;
   }
 
   task body();
@@ -41,7 +42,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf("next_LC_state is %0s, input token is %0h", next_lc_state.name,
                                   token_val), UVM_DEBUG)
-        sw_transition_req(next_lc_state, token_val);
+        sw_transition_req(next_lc_state, token_val, trans_success);
       end else begin
         // wait at least two clks for scb to finish checking lc outputs
         cfg.clk_rst_vif.wait_clks($urandom_range(2, 10));

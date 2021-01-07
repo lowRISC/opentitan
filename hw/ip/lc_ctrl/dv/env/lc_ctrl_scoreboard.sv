@@ -40,6 +40,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       check_lc_output();
+      process_otp_prog_rsp();
     join_none
   endtask
 
@@ -66,6 +67,17 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         // predict LC state and cnt csr
         void'(ral.lc_state.predict(lc_state));
         void'(ral.lc_transition_cnt.predict(dec_lc_cnt(cfg.lc_ctrl_vif.otp_i.count)));
+      end
+    end
+  endtask
+
+  virtual task process_otp_prog_rsp();
+    forever begin
+      push_pull_item#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
+                      .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)) item_rcv;
+      otp_prog_fifo.get(item_rcv);
+      if (cfg.lc_ctrl_vif.prog_err == 1) begin
+        void'(set_exp_alert(.alert_name("lc_programming_failure"), .max_delay(0), .always_on(1)));
       end
     end
   endtask

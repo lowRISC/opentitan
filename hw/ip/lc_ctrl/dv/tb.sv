@@ -39,7 +39,7 @@ module tb;
   `DV_ALERT_IF_CONNECT
 
   // TODO: remove once OTP_PROG_DDATA_WIDTH is set to 1
-  assign otp_prog_rsp.err = 0;
+  assign otp_prog_rsp.err = lc_ctrl_if.prog_err;
   assign otp_prog_rsp.ack = otp_prog_if.ack;
   assign otp_token_rsp.ack = otp_token_if.ack;
   // TODO: temp constraint to 0 because it has to equal to otp_lc_data_i tokens
