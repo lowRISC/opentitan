@@ -8,7 +8,6 @@ filesets:
   files_rtl_generic:
     depend:
       - lowrisc:ip:uart:0.1
-      - lowrisc:top_earlgrey:clkmgr
       - lowrisc:ip:alert_handler
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
@@ -43,6 +42,7 @@ filesets:
       - lowrisc:top_earlgrey:xbar_peri
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr
+      - lowrisc:systems:clkmgr
       - lowrisc:systems:sensor_ctrl
       - lowrisc:systems:ast_wrapper_pkg
       - lowrisc:tlul:headers

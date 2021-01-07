@@ -13,7 +13,7 @@ filesets:
       - lowrisc:systems:ast_wrapper_pkg
       - lowrisc:systems:ast
       - lowrisc:systems:sensor_ctrl_reg
-      - "fileset_top    ? (lowrisc:ip:clkmgr_pkg)"
+      - lowrisc:systems:clkmgr_pkg
       - "fileset_top    ? (lowrisc:ip:pwrmgr_pkg)"
       - "fileset_topgen ? (lowrisc:systems:topgen)"
       - lowrisc:ip:rstmgr
