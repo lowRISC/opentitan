@@ -119,7 +119,6 @@ package flash_phy_pkg;
     logic ack;
     logic done;
     logic [FullDataWidth-1:0] rdata;
-    logic erase_suspend_done;
   } flash_phy_prim_flash_rsp_t;
 
 endpackage // flash_phy_pkg

@@ -276,6 +276,7 @@ module top_earlgrey_asic (
     .ast_tl_rsp_i                 ( ast_base_bus               ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .flash_bist_enable_i          ( ast_base_eflash.flash_bist_enable   ),
     .flash_power_down_h_i         ( ast_base_eflash.flash_power_down_h  ),
     .flash_power_ready_h_i        ( ast_base_eflash.flash_power_ready_h ),
 

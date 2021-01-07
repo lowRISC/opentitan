@@ -230,5 +230,7 @@ module ast_wrapper import ast_wrapper_pkg::*;
     .scan_reset_ni
   );
 
+  // TODO hook-up to ast
+  assign ast_eflash_o.flash_bist_enable = 1'b0;
 
 endmodule // ast_wrapper

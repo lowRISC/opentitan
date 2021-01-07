@@ -27,7 +27,8 @@ module flash_phy import flash_ctrl_pkg::*; (
   input flash_power_down_h_i,
   input [1:0] flash_test_mode_a_i,
   input flash_test_voltage_h_i,
-  input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
+  input flash_bist_enable_i,
+  input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
   input jtag_pkg::jtag_req_t jtag_req_i,
   output jtag_pkg::jtag_rsp_t jtag_rsp_o
 );
@@ -66,7 +67,6 @@ module flash_phy import flash_ctrl_pkg::*; (
   logic [NumBanks-1:0]  rd_done;
   logic [NumBanks-1:0]  prog_done;
   logic [NumBanks-1:0]  erase_done;
-  logic [NumBanks-1:0]  erase_suspend_done;
   logic                 init_busy;
   logic [ProgTypes-1:0] prog_type_avail;
 
@@ -91,7 +91,6 @@ module flash_phy import flash_ctrl_pkg::*; (
   assign flash_ctrl_o.rd_done = rd_done[ctrl_bank_sel];
   assign flash_ctrl_o.prog_done = prog_done[ctrl_bank_sel];
   assign flash_ctrl_o.erase_done = erase_done[ctrl_bank_sel];
-  assign flash_ctrl_o.erase_suspend_done = erase_suspend_done[ctrl_bank_sel];
   assign flash_ctrl_o.rd_data = rd_data[ctrl_bank_sel];
   assign flash_ctrl_o.rd_err = rd_err[ctrl_bank_sel];
   assign flash_ctrl_o.init_busy = init_busy;
@@ -208,7 +207,6 @@ module flash_phy import flash_ctrl_pkg::*; (
       .erase_done_o(erase_done[bank]),
       .rd_data_o(rd_data[bank]),
       .rd_err_o(rd_err[bank]),
-      .erase_suspend_done_o(erase_suspend_done[bank]),
       .prim_flash_req_o(prim_flash_req[bank]),
       .prim_flash_rsp_i(prim_flash_rsp[bank])
     );
@@ -216,17 +214,17 @@ module flash_phy import flash_ctrl_pkg::*; (
 
   // life cycle handling
   logic tdo;
-  lc_ctrl_pkg::lc_tx_t [FlashLcJtagLast-1:0] lc_dft_en;
+  lc_ctrl_pkg::lc_tx_t [FlashLcDftLast-1:0] lc_nvm_debug_en;
 
-  assign jtag_rsp_o.tdo = tdo & (lc_dft_en[FlashLcTdoSel] == lc_ctrl_pkg::On);
+  assign jtag_rsp_o.tdo = tdo & (lc_nvm_debug_en[FlashLcTdoSel] == lc_ctrl_pkg::On);
 
   prim_lc_sync #(
-    .NumCopies(int'(FlashLcJtagLast))
-  ) u_lc_dft_en_sync (
+    .NumCopies(int'(FlashLcDftLast))
+  ) u_lc_nvm_debug_en_sync (
     .clk_i,
     .rst_ni,
-    .lc_en_i(lc_dft_en_i),
-    .lc_en_o(lc_dft_en)
+    .lc_en_i(lc_nvm_debug_en_i),
+    .lc_en_o(lc_nvm_debug_en)
   );
 
   prim_flash #(
@@ -247,10 +245,11 @@ module flash_phy import flash_ctrl_pkg::*; (
     .flash_rsp_o(prim_flash_rsp),
     .prog_type_avail_o(prog_type_avail),
     .init_busy_o(init_busy),
-    .tck_i(jtag_req_i.tck & (lc_dft_en[FlashLcTckSel] == lc_ctrl_pkg::On)),
-    .tdi_i(jtag_req_i.tdi & (lc_dft_en[FlashLcTdiSel] == lc_ctrl_pkg::On)),
-    .tms_i(jtag_req_i.tms & (lc_dft_en[FlashLcTmsSel] == lc_ctrl_pkg::On)),
+    .tck_i(jtag_req_i.tck & (lc_nvm_debug_en[FlashLcTckSel] == lc_ctrl_pkg::On)),
+    .tdi_i(jtag_req_i.tdi & (lc_nvm_debug_en[FlashLcTdiSel] == lc_ctrl_pkg::On)),
+    .tms_i(jtag_req_i.tms & (lc_nvm_debug_en[FlashLcTmsSel] == lc_ctrl_pkg::On)),
     .tdo_o(tdo),
+    .bist_enable_i(flash_bist_enable_i & (lc_nvm_debug_en[FlashBistSel] == lc_ctrl_pkg::On)),
     .scanmode_i,
     .scan_rst_ni,
     .flash_power_ready_h_i,

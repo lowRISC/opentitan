@@ -20,6 +20,9 @@ module flash_ctrl_wrapper (
   input        flash_power_ready_h_i,
   input        flash_power_down_h_i,
 
+  // DFT Interface
+  input        flash_bist_enable_i,
+
   // OTP interface
   input        otp_ctrl_pkg::flash_otp_key_req_t otp_i,
   output       otp_ctrl_pkg::flash_otp_key_rsp_t otp_o,
@@ -28,7 +31,7 @@ module flash_ctrl_wrapper (
   input        lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
   input        lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
-  input        lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
+  input        lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
   output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
   input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
   input        lc_ctrl_pkg::lc_tx_t rma_req_i,
@@ -128,9 +131,10 @@ module flash_ctrl_wrapper (
     .scan_rst_ni            (1'b0),
     .flash_power_ready_h_i,
     .flash_power_down_h_i,
+    .flash_bist_enable_i,
     .flash_test_mode_a_i    (1'b0),
     .flash_test_voltage_h_i (1'b0),
-    .lc_dft_en_i,
+    .lc_nvm_debug_en_i,
     .jtag_req_i             ('0),
     .jtag_rsp_o             ()
   );

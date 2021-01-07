@@ -50,8 +50,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   output logic erase_suspend_o,
   input rd_done_i,
   input prog_done_i,
-  input erase_done_i,
-  input erase_suspend_done_i
+  input erase_done_i
 );
 
   // Total number of regions including default region
@@ -285,10 +284,9 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   // if ongoing erase operation, wait for flash phy return
   logic erase_valid;
   assign erase_valid = pg_erase_o | bk_erase_o;
-  assign erase_suspend_done_o = erase_valid ? erase_suspend_done_i :
-                                              erase_suspend_i;
-
   assign erase_suspend_o = erase_valid & erase_suspend_i;
+  assign erase_suspend_done_o = erase_suspend_o & erase_done_o;
+
 
   //////////////////////////////////////////////
   // Assertions, Assumptions, and Coverpoints //
