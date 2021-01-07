@@ -5446,11 +5446,24 @@
           package: lc_ctrl_pkg
           type: uni
           act: rcv
-          name: lc_dft_en
+          name: lc_nvm_debug_en
           inst_name: eflash
           width: 1
           default: ""
-          top_signame: lc_ctrl_lc_dft_en
+          top_signame: lc_ctrl_lc_nvm_debug_en
+          index: -1
+        }
+        {
+          struct: logic
+          package: ""
+          type: uni
+          act: rcv
+          name: flash_bist_enable
+          inst_name: eflash
+          width: 1
+          default: ""
+          external: true
+          top_signame: flash_bist_enable
           index: -1
         }
         {
@@ -5661,9 +5674,11 @@
       lc_ctrl.lc_dft_en:
       [
         otp_ctrl.lc_dft_en
-        eflash.lc_dft_en
       ]
-      lc_ctrl.lc_nvm_debug_en: []
+      lc_ctrl.lc_nvm_debug_en:
+      [
+        eflash.lc_nvm_debug_en
+      ]
       lc_ctrl.lc_hw_debug_en: []
       lc_ctrl.lc_cpu_en: []
       lc_ctrl.lc_escalate_en:
@@ -5870,6 +5885,7 @@
       peri.tl_ast_wrapper: ast_tl
       otp_ctrl.otp_ast_pwr_seq: ""
       otp_ctrl.otp_ast_pwr_seq_h: ""
+      eflash.flash_bist_enable: flash_bist_enable
       eflash.flash_power_down_h: flash_power_down_h
       eflash.flash_power_ready_h: flash_power_ready_h
       eflash.flash_test_mode_a: flash_test_mode_a
@@ -10759,11 +10775,24 @@
         package: lc_ctrl_pkg
         type: uni
         act: rcv
-        name: lc_dft_en
+        name: lc_nvm_debug_en
         inst_name: eflash
         width: 1
         default: ""
-        top_signame: lc_ctrl_lc_dft_en
+        top_signame: lc_ctrl_lc_nvm_debug_en
+        index: -1
+      }
+      {
+        struct: logic
+        package: ""
+        type: uni
+        act: rcv
+        name: flash_bist_enable
+        inst_name: eflash
+        width: 1
+        default: ""
+        external: true
+        top_signame: flash_bist_enable
         index: -1
       }
       {
@@ -11469,6 +11498,15 @@
         width: 1
         type: uni
         default: "'0"
+        direction: in
+      }
+      {
+        package: ""
+        struct: logic
+        signame: flash_bist_enable_i
+        width: 1
+        type: uni
+        default: ""
         direction: in
       }
       {
