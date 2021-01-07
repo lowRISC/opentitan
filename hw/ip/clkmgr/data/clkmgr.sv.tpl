@@ -46,6 +46,10 @@ module clkmgr import clkmgr_pkg::*; (
   // idle hints
   input [${len(hint_clks)-1}:0] idle_i,
 
+  // clock bypass control
+  input lc_ctrl_pkg::lc_tx_t ast_clk_bypass_ack_i,
+  output lc_ctrl_pkg::lc_tx_t lc_clk_bypass_ack_o,
+
   // clock output interface
 % for intf in export_clks:
   output clkmgr_${intf}_out_t clocks_${intf}_o,
@@ -74,6 +78,17 @@ module clkmgr import clkmgr_pkg::*; (
   ////////////////////////////////////////////////////
   // Divided clocks
   ////////////////////////////////////////////////////
+
+  lc_ctrl_pkg::lc_tx_t step_down_req;
+  logic [${len(div_srcs)-1}:0] step_down_acks;
+
+  prim_lc_sync u_rcv (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(ast_clk_bypass_ack_i),
+    .lc_en_o(step_down_req)
+  );
+
 % for src in div_srcs:
   logic clk_${src['name']}_i;
 % endfor
@@ -84,11 +99,19 @@ module clkmgr import clkmgr_pkg::*; (
   ) u_${src['name']}_div (
     .clk_i(clk_${src['src']}_i),
     .rst_ni(rst_${src['src']}_ni),
+    .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
+    .step_down_ack_o(step_down_acks[${loop.index}]),
     .test_en_i(scanmode_i),
     .clk_o(clk_${src['name']}_i)
   );
 % endfor
 
+  prim_lc_sender u_send (
+   .clk_i,
+   .rst_ni,
+   .lc_en_i(&step_down_acks ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off),
+   .lc_en_o(lc_clk_bypass_ack_o)
+  );
 
   ////////////////////////////////////////////////////
   // Feed through clocks

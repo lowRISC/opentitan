@@ -641,8 +641,8 @@
 
       'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en'],
       // TODO: OTP Clock bypass signal going from LC to AST/clkmgr
-      'lc_ctrl.lc_clk_byp_req'  : [],
-      //'lc_ctrl.lc_clk_byp_ack'  : [],
+      'lc_ctrl.lc_clk_byp_req'     : [],
+      'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr.lc_clk_bypass_ack'],
 
       // LC access control signal broadcast
       'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['otp_ctrl.lc_creator_seed_sw_rw_en',

@@ -49,6 +49,10 @@ module clkmgr import clkmgr_pkg::*; (
   // idle hints
   input [3:0] idle_i,
 
+  // clock bypass control
+  input lc_ctrl_pkg::lc_tx_t ast_clk_bypass_ack_i,
+  output lc_ctrl_pkg::lc_tx_t lc_clk_bypass_ack_o,
+
   // clock output interface
   output clkmgr_ast_out_t clocks_ast_o,
   output clkmgr_out_t clocks_o
@@ -75,6 +79,17 @@ module clkmgr import clkmgr_pkg::*; (
   ////////////////////////////////////////////////////
   // Divided clocks
   ////////////////////////////////////////////////////
+
+  lc_ctrl_pkg::lc_tx_t step_down_req;
+  logic [1:0] step_down_acks;
+
+  prim_lc_sync u_rcv (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(ast_clk_bypass_ack_i),
+    .lc_en_o(step_down_req)
+  );
+
   logic clk_io_div2_i;
   logic clk_io_div4_i;
 
@@ -83,6 +98,8 @@ module clkmgr import clkmgr_pkg::*; (
   ) u_io_div2_div (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
+    .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
+    .step_down_ack_o(step_down_acks[0]),
     .test_en_i(scanmode_i),
     .clk_o(clk_io_div2_i)
   );
@@ -91,10 +108,18 @@ module clkmgr import clkmgr_pkg::*; (
   ) u_io_div4_div (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
+    .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
+    .step_down_ack_o(step_down_acks[1]),
     .test_en_i(scanmode_i),
     .clk_o(clk_io_div4_i)
   );
 
+  prim_lc_sender u_send (
+   .clk_i,
+   .rst_ni,
+   .lc_en_i(&step_down_acks ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off),
+   .lc_en_o(lc_clk_bypass_ack_o)
+  );
 
   ////////////////////////////////////////////////////
   // Feed through clocks

@@ -1684,6 +1684,9 @@
           default: lc_ctrl_pkg::Off
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
+          width: 1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_clk_byp_ack
           index: -1
         }
         {
@@ -2538,6 +2541,27 @@
           width: 1
           default: ""
           top_signame: clkmgr_clocks
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: ast_clk_bypass_ack
+          act: rcv
+          package: lc_ctrl_pkg
+          inst_name: clkmgr
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_clk_bypass_ack
+          act: req
+          package: lc_ctrl_pkg
+          inst_name: clkmgr
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_lc_clk_byp_ack
           index: -1
         }
         {
@@ -5638,6 +5662,10 @@
         otp_ctrl.lc_check_byp_en
       ]
       lc_ctrl.lc_clk_byp_req: []
+      lc_ctrl.lc_clk_byp_ack:
+      [
+        clkmgr.lc_clk_bypass_ack
+      ]
       lc_ctrl.lc_creator_seed_sw_rw_en:
       [
         otp_ctrl.lc_creator_seed_sw_rw_en
@@ -9160,6 +9188,9 @@
         default: lc_ctrl_pkg::Off
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
+        width: 1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_clk_byp_ack
         index: -1
       }
       {
@@ -9671,6 +9702,27 @@
         width: 1
         default: ""
         top_signame: clkmgr_clocks
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: ast_clk_bypass_ack
+        act: rcv
+        package: lc_ctrl_pkg
+        inst_name: clkmgr
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_clk_bypass_ack
+        act: req
+        package: lc_ctrl_pkg
+        inst_name: clkmgr
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_lc_clk_byp_ack
         index: -1
       }
       {
@@ -11865,6 +11917,14 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: lc_ctrl_lc_clk_byp_req
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_clk_byp_ack
         width: 1
         type: uni
         default: lc_ctrl_pkg::Off
