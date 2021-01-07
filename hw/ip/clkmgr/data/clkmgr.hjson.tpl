@@ -48,6 +48,20 @@ num_grps = len(grps)
       package: "clkmgr_pkg",
     },
 
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "ast_clk_bypass_ack",
+      act:     "rcv",
+      package: "lc_ctrl_pkg",
+    },
+
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "lc_clk_bypass_ack",
+      act:     "req",
+      package: "lc_ctrl_pkg",
+    },
+
   // All clock inputs
 % for src in srcs:
     { struct:  "logic",

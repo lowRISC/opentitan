@@ -3,3 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for prim_clock_div
+
+waive -rules DUAL_EDGE_CLOCK -location {prim_clock_div.sv} -regexp {.*} \
+      -comment "The clock switch signal is synchronized on negative edge to ensure it is away from any transition"

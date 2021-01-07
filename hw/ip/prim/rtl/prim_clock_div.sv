@@ -10,10 +10,16 @@ module prim_clock_div #(
 ) (
   input clk_i,
   input rst_ni,
+  input step_down_req_i, // step down divisor by 2x
+  output logic step_down_ack_o, // step down acknowledge
   input test_en_i,
   output logic clk_o
 );
 
+
+  // Only even divide is supported at the moment
+  // For odd divide we need to introduce more parameters to control duty cycle
+  `ASSERT_INIT(DivEven_A, (Divisor % 2) == 0)
 
   logic clk_int;
 
@@ -38,26 +44,54 @@ module prim_clock_div #(
       .clk_no(q_n)
     );
 
-    assign clk_int = q_p;
+    logic step_down_nq;
+    always_ff @(negedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        step_down_nq <= 1'b0;
+      end else begin
+        step_down_nq <= step_down_req_i;
+      end
+    end
+
+    // make sure selection point is away from both edges
+    prim_clock_mux2 #(
+      .NoFpgaBufG(1'b1)
+    ) u_step_down_mux (
+      .clk0_i(q_p),
+      .clk1_i(clk_i),
+      .sel_i(step_down_nq),
+      .clk_o(clk_int)
+    );
+
+  assign step_down_ack_o = step_down_nq;
 
   end else begin : gen_div
-    // Only even divide is supported at the moment
-    // For odd divide we need to introduce more parameters to control duty cycle
-    `ASSERT_INIT(DivEven_A, (Divisor % 2) == 0)
 
     localparam int ToggleCnt = Divisor / 2;
     localparam int CntWidth = $clog2(ToggleCnt);
     logic [CntWidth-1:0] cnt;
+    logic [CntWidth-1:0] limit;
+
+    assign limit = !step_down_req_i     ? ToggleCnt - 1 :
+                   (ToggleCnt / 2) == 2 ? '0 : (ToggleCnt / 2) - 1;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         cnt <= '0;
         clk_int <= ResetValue;
-      end else if (cnt == ToggleCnt-1) begin
+      end else if (cnt >= limit) begin
         cnt <= '0;
         clk_int <= ~clk_o;
       end else begin
         cnt <= cnt + 1'b1;
+      end
+    end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        step_down_ack_o <= 1'b0;
+      end else begin
+        step_down_ack_o <= step_down_req_i;
       end
     end
   end

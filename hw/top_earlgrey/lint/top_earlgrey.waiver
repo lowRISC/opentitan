@@ -6,7 +6,7 @@
 
 # dedicated reset drivers / muxes
 set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
-set_clock_drivers prim_clock_buf
+set_clock_drivers prim_clock_buf prim_clock_mux2
 
 # All leaf resets have a reset multiplex
 waive -rules RESET_MUX -location {top_earlgrey.sv} -regexp {Asynchronous reset .*rstmgr_resets\.rst.* is driven by a multiplexer} \

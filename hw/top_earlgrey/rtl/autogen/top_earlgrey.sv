@@ -304,6 +304,7 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_check_byp_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_req;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_ack;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_creator_seed_sw_rw_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_owner_seed_sw_rw_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_rd_en;
@@ -924,7 +925,7 @@ module top_earlgrey #(
       .lc_keymgr_en_o(),
       .lc_escalate_en_o(lc_ctrl_lc_escalate_en),
       .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_req),
-      .lc_clk_byp_ack_i(lc_ctrl_pkg::Off),
+      .lc_clk_byp_ack_i(lc_ctrl_lc_clk_byp_ack),
       .lc_flash_rma_req_o(flash_ctrl_rma_req),
       .lc_flash_rma_seed_o(flash_ctrl_rma_seed),
       .lc_flash_rma_ack_i(flash_ctrl_rma_ack),
@@ -1045,6 +1046,8 @@ module top_earlgrey #(
 
       // Inter-module signals
       .clocks_o(clkmgr_clocks),
+      .ast_clk_bypass_ack_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .lc_clk_bypass_ack_o(lc_ctrl_lc_clk_byp_ack),
       .clk_main_i(clk_main_i),
       .clk_io_i(clk_io_i),
       .clk_usb_i(clk_usb_i),
