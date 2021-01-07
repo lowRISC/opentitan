@@ -36,7 +36,6 @@ module prim_generic_flash_bank #(
   input [DataWidth-1:0]              prog_data_i,
   output logic                       ack_o,
   output logic                       done_o,
-  output logic                       erase_suspend_done_o,
   output logic [DataWidth-1:0]       rd_data_o,
   input                              init_i,
   output logic                       init_busy_o,
@@ -244,7 +243,6 @@ module prim_generic_flash_bank #(
     init_busy_o      = '0;
     pop_cmd          = '0;
     done_o           = '0;
-    erase_suspend_done_o = '0;
 
     unique case (st_q)
       StReset: begin
@@ -334,7 +332,6 @@ module prim_generic_flash_bank #(
           st_d = StIdle;
           pop_cmd = 1'b1;
           done_o = 1'b1;
-          erase_suspend_done_o = 1'b1;
           time_cnt_clr = 1'b1;
           index_cnt_clr = 1'b1;
         end else if (index_cnt < index_limit_q || time_cnt < time_limit_q) begin

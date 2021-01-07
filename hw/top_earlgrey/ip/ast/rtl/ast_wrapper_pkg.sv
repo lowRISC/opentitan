@@ -64,6 +64,7 @@ package ast_wrapper_pkg;
   };
 
   typedef struct packed {
+    logic flash_bist_enable;
     logic flash_power_down_h;
     logic flash_power_ready_h;
   } ast_eflash_t;

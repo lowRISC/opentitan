@@ -18,8 +18,6 @@ module prim_generic_flash #(
 ) (
   input clk_i,
   input rst_ni,
-  input tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
   input flash_phy_pkg::flash_phy_prim_flash_req_t [NumBanks-1:0] flash_req_i,
   output flash_phy_pkg::flash_phy_prim_flash_rsp_t [NumBanks-1:0] flash_rsp_o,
   output logic [flash_phy_pkg::ProgTypes-1:0] prog_type_avail_o,
@@ -28,12 +26,15 @@ module prim_generic_flash #(
   input tdi_i,
   input tms_i,
   output logic tdo_o,
+  input bist_enable_i,
   input scanmode_i,
   input scan_rst_ni,
   input flash_power_ready_h_i,
   input flash_power_down_h_i,
   input [TestModeWidth-1:0] flash_test_mode_a_i,
-  input flash_test_voltage_h_i
+  input flash_test_voltage_h_i,
+  input tlul_pkg::tl_h2d_t tl_i,
+  output tlul_pkg::tl_d2h_t tl_o
 );
 
   localparam int CfgRegs = 21;
@@ -83,7 +84,6 @@ module prim_generic_flash #(
       .rd_data_o(flash_rsp_o[bank].rdata),
       .init_i(init),
       .init_busy_o(init_busy[bank]),
-      .erase_suspend_done_o(flash_rsp_o[bank].erase_suspend_done),
       .flash_power_ready_h_i,
       .flash_power_down_h_i
     );
@@ -156,5 +156,7 @@ module prim_generic_flash #(
     .rdata_o(cfg_rdata)
   );
 
+  logic unused_bist_enable;
+  assign unused_bist_enable = bist_enable_i;
 
 endmodule // prim_generic_flash

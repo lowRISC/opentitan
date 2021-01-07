@@ -43,7 +43,6 @@ module flash_phy_core import flash_phy_pkg::*; #(
   output logic                       rd_done_o,
   output logic                       prog_done_o,
   output logic                       erase_done_o,
-  output logic                       erase_suspend_done_o,
   output logic [BusWidth-1:0]        rd_data_o,
   output logic                       rd_err_o
 );
@@ -390,7 +389,6 @@ module flash_phy_core import flash_phy_pkg::*; #(
   assign ack = prim_flash_rsp_i.ack;
   assign done = prim_flash_rsp_i.done;
   assign flash_rdata = prim_flash_rsp_i.rdata;
-  assign erase_suspend_done_o = prim_flash_rsp_i.erase_suspend_done;
 
   /////////////////////////////////
   // Assertions
@@ -401,7 +399,10 @@ module flash_phy_core import flash_phy_pkg::*; #(
   `ASSERT_INIT(NoRemainder_A, AddrBitsRemain == 0)
   `ASSERT_INIT(Pow2Multiple_A, $onehot(WidthMultiple))
 
+  // once arb count maxes, the host request should be masked
   `ASSERT(ArbCntMax_A, arb_cnt == ArbCnt |-> !inc_arb_cnt)
-  `ASSERT(CtrlPrio_A, arb_cnt == ArbCnt |-> strong(##[0:20] clr_arb_cnt))
+
+  // once arb count maxes, the host request needs to be masked until the arb count is cleared
+  `ASSERT(CtrlPrio_A, arb_cnt == ArbCnt |-> (!host_req_masked throughout (clr_arb_cnt[->1])))
 
 endmodule // flash_phy_core

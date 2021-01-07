@@ -536,7 +536,13 @@
           package: "lc_ctrl_pkg",
           type: "uni"
           act: "rcv"
-          name: "lc_dft_en"
+          name: "lc_nvm_debug_en"
+        },
+        { struct: "logic"
+          package: ""
+          type: "uni"
+          act: "rcv"
+          name: "flash_bist_enable"
         },
         { struct: "logic"
           package: ""
@@ -630,8 +636,8 @@
 
       // LC function control signal broadcast
       // TODO(#3920): connect all these signals once top-level sim and FPGA can backload LC state
-      'lc_ctrl.lc_dft_en'          : ['otp_ctrl.lc_dft_en', 'eflash.lc_dft_en'],
-      'lc_ctrl.lc_nvm_debug_en'    : [],
+      'lc_ctrl.lc_dft_en'          : ['otp_ctrl.lc_dft_en'],
+      'lc_ctrl.lc_nvm_debug_en'    : ['eflash.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_en'     : [],
       'lc_ctrl.lc_cpu_en'          : [],
       //'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
@@ -679,6 +685,7 @@
         'peri.tl_ast_wrapper': 'ast_tl',
         'otp_ctrl.otp_ast_pwr_seq': '',
         'otp_ctrl.otp_ast_pwr_seq_h': '',
+        'eflash.flash_bist_enable': 'flash_bist_enable',
         'eflash.flash_power_down_h': 'flash_power_down_h',
         'eflash.flash_power_ready_h': 'flash_power_ready_h',
         'eflash.flash_test_mode_a': 'flash_test_mode_a',

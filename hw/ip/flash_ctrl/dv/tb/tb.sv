@@ -56,7 +56,7 @@ module tb;
     .lc_iso_part_sw_rd_en_i     (lc_ctrl_pkg::On),
     .lc_iso_part_sw_wr_en_i     (lc_ctrl_pkg::On),
     .lc_seed_hw_rd_en_i         (lc_ctrl_pkg::On),
-    .lc_dft_en_i                (lc_ctrl_pkg::Off),
+    .lc_nvm_debug_en_i          (lc_ctrl_pkg::Off),
     .pwrmgr_o                   (pwrmgr_pkg::PWR_FLASH_RSP_DEFAULT),
     .pwrmgr_i                   (pwrmgr_pkg::PWR_FLASH_REQ_DEFAULT),
     .rma_req_i                  (lc_ctrl_pkg::Off),

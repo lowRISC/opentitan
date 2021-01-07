@@ -705,7 +705,6 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .pg_erase_o(flash_o.pg_erase),
     .bk_erase_o(flash_o.bk_erase),
     .erase_suspend_o(flash_o.erase_suspend),
-    .erase_suspend_done_i(flash_i.erase_suspend_done),
     .rd_done_i(flash_i.rd_done),
     .prog_done_i(flash_i.prog_done),
     .erase_done_i(flash_i.erase_done)
