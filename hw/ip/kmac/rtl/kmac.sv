@@ -22,6 +22,9 @@ module kmac
   input clk_i,
   input rst_ni,
 
+  input clk_edn_i,
+  input rst_edn_ni,
+
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
@@ -765,13 +768,37 @@ module kmac
 
   // Entropy Generator
   if (EnMasking == 1) begin : gen_entropy
+    logic entropy_req, entropy_ack, entropy_fips;
+    logic [MsgWidth-1:0] entropy_data;
+    logic unused_entropy_fips;
+    assign unused_entropy_fips = entropy_fips;
+
+    // EDN Request
+    prim_edn_req #(
+      .OutWidth (MsgWidth)
+    ) u_edn_req (
+      // Design side
+      .clk_i,
+      .rst_ni,
+      .req_i (entropy_req),
+      .ack_o (entropy_ack),
+      .data_o(entropy_data),
+      .fips_o(entropy_fips),
+      // EDN side
+      .clk_edn_i,
+      .rst_edn_ni,
+      .edn_o (entropy_o),
+      .edn_i (entropy_i)
+    );
+
     kmac_entropy u_entropy (
       .clk_i,
       .rst_ni,
 
       // EDN interface
-      .entropy_o,
-      .entropy_i,
+      .entropy_req_o (entropy_req),
+      .entropy_ack_i (entropy_ack),
+      .entropy_data_i(entropy_data),
 
       // Entropy to internal logic (DOM AND)
       .rand_valid_o    (sha3_rand_valid),

@@ -13,8 +13,9 @@ module kmac_entropy
   input rst_ni,
 
   // EDN interface
-  output edn_pkg::edn_req_t entropy_o,
-  input  edn_pkg::edn_rsp_t entropy_i,
+  output logic          entropy_req_o,
+  input                 entropy_ack_i,
+  input  [MsgWidth-1:0] entropy_data_i,
 
   // Entropy to internal
   output logic                  rand_valid_o,
@@ -177,10 +178,6 @@ module kmac_entropy
   // other tasks.
   logic rand_valid_set, rand_valid_clear;
 
-  // unused signals
-  logic unused_edn_fips;
-  assign unused_edn_fips = entropy_i.edn_fips;
-
   //////////////
   // Datapath //
   //////////////
@@ -227,7 +224,7 @@ module kmac_entropy
     unique case (mode_i)
       EntropyModeNone: lfsr_seed = '0;
       // TODO: Check EDN Bus width
-      EntropyModeEdn:  lfsr_seed = {2{entropy_i.edn_bus}};
+      EntropyModeEdn:  lfsr_seed = entropy_data_i;
       EntropyModeSw:   lfsr_seed = seed_data_i;
       default:         lfsr_seed = '0;
     endcase
@@ -347,7 +344,7 @@ module kmac_entropy
     timer_sel    = NoTimer;
 
     // EDN request
-    entropy_o = '{edn_req: 1'b 0};
+    entropy_req_o = 1'b 0;
 
     // rand is valid when this logic expands the entropy.
     // FSM sets the valid signal, the signal is cleared by `consume` signal
@@ -446,7 +443,7 @@ module kmac_entropy
 
       StRandEdn: begin
         // Send request
-        entropy_o = '{edn_req: 1'b 1};
+        entropy_req_o = 1'b 1;
 
         // Wait timer
         timer_enable = 1'b 1;
@@ -455,7 +452,7 @@ module kmac_entropy
           // If timer count is non-zero and expired;
           st_d = StRandErrWaitExpired;
 
-        end else if (entropy_i.edn_ack) begin
+        end else if (entropy_ack_i) begin
           st_d = StRandExpand;
 
           lfsr_en = 1'b 1;
