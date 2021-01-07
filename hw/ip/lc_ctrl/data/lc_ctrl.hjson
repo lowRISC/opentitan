@@ -624,7 +624,9 @@
             }
           ]
         }
-      ]
+      ],
+      tags: [ // This value is driven by hardware.
+        "excl:CsrNonInitTests:CsrExclCheck"],
     }
 
     { name: "LC_TRANSITION_CNT",
@@ -645,7 +647,9 @@
           value 31 (i.e., all counter bits will be set).
           '''
         }
-      ]
+      ],
+      tags: [ // This value is driven by hardware.
+        "excl:CsrNonInitTests:CsrExclCheck"],
     }
 
     { name: "LC_ID_STATE",
@@ -672,7 +676,9 @@
             }
           ]
         }
-      ]
+      ],
+      tags: [ // This value is driven by hardware.
+        "excl:CsrNonInitTests:CsrExclCheck"],
     }
 
     ///////////////
