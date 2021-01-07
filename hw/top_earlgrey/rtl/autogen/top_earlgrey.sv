@@ -1303,7 +1303,9 @@ module top_earlgrey #(
       .tl_i(kmac_tl_req),
       .tl_o(kmac_tl_rsp),
       .clk_i (clkmgr_clocks.clk_main_kmac),
-      .rst_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
+      .clk_edn_i (clkmgr_clocks.clk_main_kmac),
+      .rst_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+      .rst_edn_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
   keymgr #(
