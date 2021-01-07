@@ -123,11 +123,9 @@ class OperandType:
         '''
         return enc_val
 
-    def op_val_to_str(self, op_val: int) -> str:
-        '''Render an operand value as a string
-
-        The default implemention just prints the integer.'''
-        return str(op_val)
+    def op_val_to_str(self, op_val: int, cur_pc: Optional[int]) -> str:
+        '''Render an operand value as a string'''
+        raise NotImplementedError()
 
     def get_max_enc_val(self) -> Optional[int]:
         '''Return the range of valid encoded values for this operand type
@@ -223,7 +221,7 @@ class RegOperandType(OperandType):
 
         return idx
 
-    def op_val_to_str(self, op_val: int) -> str:
+    def op_val_to_str(self, op_val: int, cur_pc: Optional[int]) -> str:
         fmt = RegOperandType.TYPE_FMTS.get(self.reg_type)
         assert fmt is not None
         _, pfx = fmt
@@ -304,6 +302,19 @@ class ImmOperandType(OperandType):
             return int(as_str, 0)
         except ValueError:
             return None
+
+    def op_val_to_str(self, op_val: int, cur_pc: Optional[int]) -> str:
+        if self.pc_rel and cur_pc is not None:
+            # When we're generating code to be assembled (in the random
+            # instruction generator), we need to make write PC-relative
+            # addresses as offsets. Otherwise the assembler can't know they'll
+            # fit (since *it* doesn't know PC).
+            #
+            # The other time this is used is objdump, where either version
+            # works fine.
+            return '.+{}'.format(op_val - cur_pc)
+        else:
+            return str(op_val)
 
     def op_val_to_enc_val(self,
                           op_val: int,
@@ -488,7 +499,7 @@ class EnumOperandType(OperandType):
                          'Supported values: {}.'
                          .format(as_str, known_vals))
 
-    def op_val_to_str(self, op_val: int) -> str:
+    def op_val_to_str(self, op_val: int, cur_pc: Optional[int]) -> str:
         # On a bad value, we have to return *something*. Since this is just
         # going into disassembly, let's be vaguely helpful and return something
         # that looks clearly bogus.
@@ -539,7 +550,7 @@ class OptionOperandType(OperandType):
                          'If specified, it should have been {!r}.'
                          .format(as_str, self.option))
 
-    def op_val_to_str(self, op_val: int) -> str:
+    def op_val_to_str(self, op_val: int, cur_pc: Optional[int]) -> str:
         assert op_val in [0, 1]
         return self.option if op_val else ''
 

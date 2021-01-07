@@ -172,6 +172,7 @@ class Insn:
         return op_vals
 
     def disassemble(self,
+                    cur_pc: int,
                     op_vals: Dict[str, int],
                     mnem_width: int) -> str:
         '''Return disassembly for this instruction
@@ -186,7 +187,7 @@ class Insn:
 
         return (padded_mnem +
                 ('' if self.glued_ops else ' ') +
-                self.syntax.render(op_vals, self.name_to_operand))
+                self.syntax.render(cur_pc, op_vals, self.name_to_operand))
 
 
 def find_ambiguous_encodings(insns: List[Insn]) -> List[Tuple[str, str, int]]:

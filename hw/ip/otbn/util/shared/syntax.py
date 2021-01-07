@@ -68,15 +68,24 @@ class SyntaxToken:
         # We also split out ++ and -- separately, to disambiguate things like
         # x1++, which must be parsed as x1 followed by ++.
         #
+        # However, we do want to allow things like ".+123". To get this right,
+        # suppose S matches any character other than elements of " ,+-". Then
+        # we can use a regex like "-?S(\+?-?S)*". This avoids two consecutive +
+        # or - signs. It also allows .+-3 (i.e. the current PC minus 3). It
+        # doesn't allow .-+3, but we probably don't care.
+        #
         # If we want to do better and allow things like
         #
         #    addi x0, x1, 1 + 3
         #
         # then we need to use something more serious than just regexes for
         # parsing.
-        return r'(-?[^ ,+\-]+|[+\-]+)\s*'
+        s_re = r'[^ ,+\-]'
+        not_inc_or_dec = ''.join([r'(?:-?', s_re, r'(?:\+?-?', s_re, r')*)'])
+        return ''.join([r'(\+\+|--|', not_inc_or_dec, r')\s*'])
 
     def render(self,
+               cur_pc: int,
                op_vals: Dict[str, int],
                operands: Dict[str, Operand]) -> str:
         '''Generate an assembly listing for this syntax token
@@ -92,7 +101,7 @@ class SyntaxToken:
         assert self.text in operands
 
         op_type = operands[self.text].op_type
-        return op_type.op_val_to_str(op_vals[self.text])
+        return op_type.op_val_to_str(op_vals[self.text], cur_pc)
 
 
 class SyntaxHunk:
@@ -189,6 +198,7 @@ class SyntaxHunk:
         return '(?:{})?'.format(body) if self.is_optional else body
 
     def render(self,
+               cur_pc: int,
                op_vals: Dict[str, int],
                operands: Dict[str, Operand]) -> str:
         '''Return an assembly listing for the hunk given operand values
@@ -207,7 +217,7 @@ class SyntaxHunk:
             if not required:
                 return ''
 
-        return ''.join(token.render(op_vals, operands)
+        return ''.join(token.render(cur_pc, op_vals, operands)
                        for token in self.tokens)
 
 
@@ -349,10 +359,11 @@ class InsnSyntax:
         return (pattern, op_to_grp)
 
     def render(self,
+               cur_pc: int,
                op_vals: Dict[str, int],
                operands: Dict[str, Operand]) -> str:
         '''Return an assembly listing for the given operand fields'''
         parts = []
         for hunk in self.hunks:
-            parts.append(hunk.render(op_vals, operands))
+            parts.append(hunk.render(cur_pc, op_vals, operands))
         return ''.join(parts)

@@ -93,7 +93,7 @@ class OTBNInsn:
             assert pc == old_pc
             return old_disasm
 
-        disasm = self.insn.disassemble(self.op_vals, 12)
+        disasm = self.insn.disassemble(pc, self.op_vals, 12)
         self._disasm = (pc, disasm)
         return disasm
 

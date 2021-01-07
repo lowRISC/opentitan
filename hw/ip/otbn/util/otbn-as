@@ -489,7 +489,7 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
                            'operand is wrong: {}'
                            .format(where, err))
 
-    grd_txt = gpr_type.op_val_to_str(grd_op_val)
+    grd_txt = gpr_type.op_val_to_str(grd_op_val, None)
 
     try:
         imm_int = int(imm, 0)
