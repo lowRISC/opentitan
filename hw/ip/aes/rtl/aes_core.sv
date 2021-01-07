@@ -206,10 +206,12 @@ module aes_core
     endcase
   end
 
-  always_ff @(posedge clk_i) begin : key_init_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : key_init_reg
     for (int s=0; s<2; s++) begin
       for (int i=0; i<8; i++) begin
-        if (key_init_we[s][i]) begin
+        if (!rst_ni) begin
+          key_init_q[s][i] <= '0;
+        end else if (key_init_we[s][i]) begin
           key_init_q[s][i] <= key_init_d[s][i];
         end
       end
@@ -229,9 +231,11 @@ module aes_core
     endcase
   end
 
-  always_ff @(posedge clk_i) begin : iv_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : iv_reg
     for (int i=0; i<8; i++) begin
-      if (iv_we[i]) begin
+      if (!rst_ni) begin
+        iv_q[i] <= '0;
+      end else if (iv_we[i]) begin
         iv_q[i] <= iv_d[i];
       end
     end
@@ -246,8 +250,10 @@ module aes_core
     endcase
   end
 
-  always_ff @(posedge clk_i) begin : data_in_prev_reg
-    if (data_in_prev_we) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin : data_in_prev_reg
+    if (!rst_ni) begin
+      data_in_prev_q <= '0;
+    end else if (data_in_prev_we) begin
       data_in_prev_q <= data_in_prev_d;
     end
   end
@@ -567,8 +573,10 @@ module aes_core
   // Outputs //
   /////////////
 
-  always_ff @(posedge clk_i) begin : data_out_reg
-    if (data_out_we) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin : data_out_reg
+    if (!rst_ni) begin
+      data_out_q <= '0;
+    end else if (data_out_we) begin
       data_out_q <= data_out_d;
     end
   end

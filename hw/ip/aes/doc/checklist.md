@@ -51,7 +51,7 @@ Code Quality  | [CDC_SETUP][]           | Not Started |
 Code Quality  | [FPGA_TIMING][]         | Not Started |
 Code Quality  | [CDC_SYNCMACRO][]       | Not Started |
 Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
-Security      | [SEC_NON_RESET_FLOPS][] | Not Started |
+Security      | [SEC_NON_RESET_FLOPS][] | Done        |
 Security      | [SEC_SHADOW_REGS][]     | Not Started |
 Security      | [SEC_RND_CNST][]        | Not Started |
 
