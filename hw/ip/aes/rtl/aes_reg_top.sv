@@ -71,10 +71,10 @@ module aes_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic alert_test_ctrl_err_update_wd;
-  logic alert_test_ctrl_err_update_we;
-  logic alert_test_ctrl_err_storage_wd;
-  logic alert_test_ctrl_err_storage_we;
+  logic alert_test_recoverable_wd;
+  logic alert_test_recoverable_we;
+  logic alert_test_fatal_wd;
+  logic alert_test_fatal_we;
   logic [31:0] key_share0_0_wd;
   logic key_share0_0_we;
   logic [31:0] key_share0_1_wd;
@@ -167,37 +167,38 @@ module aes_reg_top (
   logic status_stall_qs;
   logic status_output_valid_qs;
   logic status_input_ready_qs;
-  logic status_ctrl_err_storage_qs;
+  logic status_alert_recoverable_qs;
+  logic status_alert_fatal_qs;
 
   // Register instances
   // R[alert_test]: V(True)
 
-  //   F[ctrl_err_update]: 0:0
+  //   F[recoverable]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_ctrl_err_update (
+  ) u_alert_test_recoverable (
     .re     (1'b0),
-    .we     (alert_test_ctrl_err_update_we),
-    .wd     (alert_test_ctrl_err_update_wd),
+    .we     (alert_test_recoverable_we),
+    .wd     (alert_test_recoverable_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.ctrl_err_update.qe),
-    .q      (reg2hw.alert_test.ctrl_err_update.q ),
+    .qe     (reg2hw.alert_test.recoverable.qe),
+    .q      (reg2hw.alert_test.recoverable.q ),
     .qs     ()
   );
 
 
-  //   F[ctrl_err_storage]: 1:1
+  //   F[fatal]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_ctrl_err_storage (
+  ) u_alert_test_fatal (
     .re     (1'b0),
-    .we     (alert_test_ctrl_err_storage_we),
-    .wd     (alert_test_ctrl_err_storage_wd),
+    .we     (alert_test_fatal_we),
+    .wd     (alert_test_fatal_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.ctrl_err_storage.qe),
-    .q      (reg2hw.alert_test.ctrl_err_storage.q ),
+    .qe     (reg2hw.alert_test.fatal.qe),
+    .q      (reg2hw.alert_test.fatal.q ),
     .qs     ()
   );
 
@@ -1031,12 +1032,12 @@ module aes_reg_top (
   );
 
 
-  //   F[ctrl_err_storage]: 4:4
+  //   F[alert_recoverable]: 4:4
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
-  ) u_status_ctrl_err_storage (
+  ) u_status_alert_recoverable (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -1044,15 +1045,40 @@ module aes_reg_top (
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.status.ctrl_err_storage.de),
-    .d      (hw2reg.status.ctrl_err_storage.d ),
+    .de     (hw2reg.status.alert_recoverable.de),
+    .d      (hw2reg.status.alert_recoverable.d ),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (status_ctrl_err_storage_qs)
+    .qs     (status_alert_recoverable_qs)
+  );
+
+
+  //   F[alert_fatal]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_status_alert_fatal (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.alert_fatal.de),
+    .d      (hw2reg.status.alert_fatal.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (status_alert_fatal_qs)
   );
 
 
@@ -1134,11 +1160,11 @@ module aes_reg_top (
     if (addr_hit[31] && reg_we && (AES_PERMIT[31] != (AES_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign alert_test_ctrl_err_update_we = addr_hit[0] & reg_we & ~wr_err;
-  assign alert_test_ctrl_err_update_wd = reg_wdata[0];
+  assign alert_test_recoverable_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recoverable_wd = reg_wdata[0];
 
-  assign alert_test_ctrl_err_storage_we = addr_hit[0] & reg_we & ~wr_err;
-  assign alert_test_ctrl_err_storage_wd = reg_wdata[1];
+  assign alert_test_fatal_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_fatal_wd = reg_wdata[1];
 
   assign key_share0_0_we = addr_hit[1] & reg_we & ~wr_err;
   assign key_share0_0_wd = reg_wdata[31:0];
@@ -1257,6 +1283,7 @@ module aes_reg_top (
 
   assign trigger_prng_reseed_we = addr_hit[30] & reg_we & ~wr_err;
   assign trigger_prng_reseed_wd = reg_wdata[5];
+
 
 
 
@@ -1406,7 +1433,8 @@ module aes_reg_top (
         reg_rdata_next[1] = status_stall_qs;
         reg_rdata_next[2] = status_output_valid_qs;
         reg_rdata_next[3] = status_input_ready_qs;
-        reg_rdata_next[4] = status_ctrl_err_storage_qs;
+        reg_rdata_next[4] = status_alert_recoverable_qs;
+        reg_rdata_next[5] = status_alert_fatal_qs;
       end
 
       default: begin

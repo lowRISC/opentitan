@@ -754,8 +754,8 @@ typedef enum top_earlgrey_alert_peripheral {
  * the same peripheral are guaranteed to be consecutive.
  */
 typedef enum top_earlgrey_alert_id {
-  kTopEarlgreyAlertIdAesCtrlErrUpdate = 0, /**< aes_ctrl_err_update */
-  kTopEarlgreyAlertIdAesCtrlErrStorage = 1, /**< aes_ctrl_err_storage */
+  kTopEarlgreyAlertIdAesRecoverable = 0, /**< aes_recoverable */
+  kTopEarlgreyAlertIdAesFatal = 1, /**< aes_fatal */
   kTopEarlgreyAlertIdOtbnFatal = 2, /**< otbn_fatal */
   kTopEarlgreyAlertIdOtbnRecoverable = 3, /**< otbn_recoverable */
   kTopEarlgreyAlertIdSensorCtrlAs = 4, /**< sensor_ctrl_as */

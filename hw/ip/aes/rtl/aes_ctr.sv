@@ -14,6 +14,7 @@ module aes_ctr(
 
   input  logic             incr_i,
   output logic             ready_o,
+  output logic             alert_o,
 
   input  logic [7:0][15:0] ctr_i, // 8 times 2 bytes
   output logic [7:0][15:0] ctr_o, // 8 times 2 bytes
@@ -39,8 +40,26 @@ module aes_ctr(
   endfunction
 
   // Types
-  typedef enum logic {
-    IDLE, INCR
+  // $ ./sparse-fsm-encode.py -d 3 -m 3 -n 5 \
+  //      -s 31468618 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (66.67%)
+  //  4: |||||||||| (33.33%)
+  //  5: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  //
+  localparam int StateWidth = 5;
+  typedef enum logic [StateWidth-1:0] {
+    IDLE  = 5'b01110,
+    INCR  = 5'b11000,
+    ERROR = 5'b00001
   } aes_ctr_e;
 
   // Signals
@@ -83,6 +102,7 @@ module aes_ctr(
     // Outputs
     ready_o         = 1'b0;
     ctr_we          = 1'b0;
+    alert_o         = 1'b0;
 
     // FSM
     aes_ctr_ns      = aes_ctr_cs;
@@ -111,22 +131,44 @@ module aes_ctr(
         end
       end
 
-      default: aes_ctr_ns = IDLE;
+      ERROR: begin
+        // Terminal error state
+        alert_o = 1'b1;
+      end
+
+      // We should never get here. If we do (e.g. via a malicious
+      // glitch), error out immediately.
+      default: begin
+        alert_o    = 1'b1;
+        aes_ctr_ns = ERROR;
+      end
     endcase
   end
 
   // Registers
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      aes_ctr_cs      <= IDLE;
       ctr_slice_idx_q <= '0;
       ctr_carry_q     <= '0;
     end else begin
-      aes_ctr_cs      <= aes_ctr_ns;
       ctr_slice_idx_q <= ctr_slice_idx_d;
       ctr_carry_q     <= ctr_carry_d;
     end
   end
+
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] aes_ctr_cs_raw;
+  assign aes_ctr_cs = aes_ctr_e'(aes_ctr_cs_raw);
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(IDLE))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( aes_ctr_ns     ),
+    .q_o ( aes_ctr_cs_raw )
+  );
 
   /////////////
   // Outputs //
@@ -151,6 +193,9 @@ module aes_ctr(
   ////////////////
   // Assertions //
   ////////////////
-  `ASSERT_KNOWN(AesCtrStateKnown, aes_ctr_cs)
+  `ASSERT(AesCtrStateValid, !alert_o |-> aes_ctr_cs inside {
+      IDLE,
+      INCR
+      })
 
 endmodule

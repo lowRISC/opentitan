@@ -35,6 +35,7 @@ module aes_cipher_control
   output logic                    key_clear_o,
   input  logic                    data_out_clear_i,
   output logic                    data_out_clear_o,
+  output logic                    alert_o,
 
   // Control signals for masking PRNG
   output logic                    prng_update_o,
@@ -67,8 +68,31 @@ module aes_cipher_control
   import aes_pkg::*;
 
   // Types
-  typedef enum logic [2:0] {
-    IDLE, INIT, ROUND, FINISH, CLEAR_S, CLEAR_KD
+  // $ ./sparse-fsm-encode.py -d 3 -m 7 -n 6 \
+  //      -s 31468618 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  //
+  localparam int StateWidth = 6;
+  typedef enum logic [StateWidth-1:0] {
+    IDLE     = 6'b111100,
+    INIT     = 6'b101001,
+    ROUND    = 6'b010000,
+    FINISH   = 6'b100010,
+    CLEAR_S  = 6'b011011,
+    CLEAR_KD = 6'b110111,
+    ERROR    = 6'b001110
   } aes_cipher_ctrl_e;
 
   aes_cipher_ctrl_e aes_cipher_ctrl_ns, aes_cipher_ctrl_cs;
@@ -125,6 +149,9 @@ module aes_cipher_control
     key_clear_d          = key_clear_q;
     data_out_clear_d     = data_out_clear_q;
     prng_reseed_done_d   = prng_reseed_done_q | prng_reseed_ack_i;
+
+    // Alert
+    alert_o              = 1'b0;
 
     unique case (aes_cipher_ctrl_cs)
 
@@ -335,13 +362,35 @@ module aes_cipher_control
         end
       end
 
-      default: aes_cipher_ctrl_ns = IDLE;
+      ERROR: begin
+        // Terminal error state
+        alert_o = 1'b1;
+      end
+
+      // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
+      default: begin
+        alert_o            = 1'b1;
+        aes_cipher_ctrl_ns = ERROR;
+      end
     endcase
   end
 
+  // This primitive is used to place a size-only constraint on the
+  // flops in order to prevent FSM state encoding optimizations.
+  logic [StateWidth-1:0] aes_cipher_ctrl_cs_raw;
+  assign aes_cipher_ctrl_cs = aes_cipher_ctrl_e'(aes_cipher_ctrl_cs_raw);
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(IDLE))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( aes_cipher_ctrl_ns     ),
+    .q_o ( aes_cipher_ctrl_cs_raw )
+  );
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_fsm
     if (!rst_ni) begin
-      aes_cipher_ctrl_cs <= IDLE;
       round_q            <= '0;
       num_rounds_q       <= '0;
       crypt_q            <= 1'b0;
@@ -350,7 +399,6 @@ module aes_cipher_control
       data_out_clear_q   <= 1'b0;
       prng_reseed_done_q <= 1'b0;
     end else begin
-      aes_cipher_ctrl_cs <= aes_cipher_ctrl_ns;
       round_q            <= round_d;
       num_rounds_q       <= num_rounds_d;
       crypt_q            <= crypt_d;
@@ -385,7 +433,7 @@ module aes_cipher_control
       AES_192,
       AES_256
       })
-  `ASSERT(AesControlStateValid, aes_cipher_ctrl_cs inside {
+  `ASSERT(AesControlStateValid, !alert_o |-> aes_cipher_ctrl_cs inside {
       IDLE,
       INIT,
       ROUND,

@@ -323,7 +323,7 @@ Before initialization, software must ensure that the AES unit is idle by checkin
 If the AES unit is not idle, write operations to {{< regref "CTRL" >}}, the Initial Key registers {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}} and initialization vector (IV) registers {{< regref "IV_0" >}} - {{< regref "IV_3" >}} are ignored.
 
 To initialize the AES unit, software must first provide the configuration to the {{< regref "CTRL_SHADOWED" >}} register.
-Then software must write the initial key to the Initial Key registers {< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}}.
+Then software must write the initial key to the Initial Key registers {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}}.
 The key is provided in two shares:
 The first share is written to {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE0_7" >}} and the second share is written to {{< regref "KEY_SHARE1_0" >}} - {{< regref "KEY_SHARE1_7" >}}.
 The actual initial key used for encryption corresponds to the value obtained by XORing {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE0_7" >}} with {{< regref "KEY_SHARE1_0" >}} - {{< regref "KEY_SHARE1_7" >}}.

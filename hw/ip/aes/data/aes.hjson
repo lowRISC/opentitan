@@ -133,17 +133,24 @@
     }
   ],
   alert_list: [
-    { name: "ctrl_err_update",
+    //{ name: "informative",
+    //  desc: '''
+    //    The informative alert can currently not be triggered.
+    //    The AES unit recovers from such a condition automatically.
+    //    No further action needs to be taken but this should be monitored by the system.
+    //  '''
+    //}
+    { name: "recoverable",
       desc: '''
-        This minor alert is triggered upon detecting an update error in the Control Register.
-        The AES unit recovers from such a condition automatically.
-        No further action needs to be taken but this should be monitored by the system.
+        The recoverable alert is triggered upon detecting an update error in the Control Register.
+        The content of the Control Register is not modified (See Control Register).
+        The AES unit can be recovered from such a condition by restarting the AES operation, i.e., by successfully updating the Control Register.
+        This should be monitored by the system.
       '''
     }
-    { name: "ctrl_err_storage",
+    { name: "fatal",
       desc: '''
-        This major alert is triggered upon detecting a storage error in the Control Register.
-        It is fatal.
+        The fatal alert is triggered i) upon detecting a storage error in the Control Register, or ii) if any internal FSM enters an invalid state.
         The AES unit cannot recover from such an error and needs to be reset.
       '''
     }
@@ -278,7 +285,8 @@
       Control Register. Can only be updated when the AES unit is idle. If the
       AES unit is non-idle, writes to this register are ignored.
       This register is shadowed, meaning two subsequent write operations are required to change its content.
-      If the two write operations try to set a different value, a ctrl_err alert is triggered.
+      If the two write operations try to set a different value, a recoverable alert is triggered (See Status Register).
+      A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence. 
       Any write operation to this register will clear the status tracking required for automatic mode (See MANUAL_OPERATION field).
       A write to the Control Register is considered the start of a new message.
       Hence, software needs to provide new key, IV and input data afterwards.
@@ -519,11 +527,21 @@
         tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       }
       { bits: "4",
-        name: "CTRL_ERR_STORAGE",
+        name: "ALERT_RECOVERABLE",
         resval: "0",
         desc:  '''
-          No storage error detected in the Control Register (0).
-          A storage error has been detected in the Control Register and the AES unit needs to be reset (1).
+          No recoverable alert condition has occurred (0).
+          A recoverable alert condition has occurred and AES operation needs to be restarted by successfully updating the Control Register (1).
+          Examples for recoverable alert conditions include update errors in the Control Register.
+        '''
+      }
+      { bits: "5",
+        name: "ALERT_FATAL",
+        resval: "0",
+        desc:  '''
+          No fatal alert condition has occurred (0).
+          A fatal alert condition has occurred and the AES unit needs to be reset (1).
+          Examples for fatal alert conditions include i) storage errors in the Control Register, and ii) if any internal FSM enters an invalid state.
         '''
       }
     ]

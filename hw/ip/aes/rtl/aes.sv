@@ -94,8 +94,8 @@ module aes
     .entropy_masking_ack_i  ( 1'b1                           ),
     .entropy_masking_i      ( RndCnstMaskingLfsrSeedDefault  ),
 
-    .ctrl_err_update_o      ( alert[0]                       ),
-    .ctrl_err_storage_o     ( alert[1]                       ),
+    .alert_recoverable_o    ( alert[0]                       ),
+    .alert_fatal_o          ( alert[1]                       ),
 
     .reg2hw                 ( reg2hw                         ),
     .hw2reg                 ( hw2reg                         )
@@ -105,10 +105,10 @@ module aes
 
   logic [NumAlerts-1:0] alert_test;
   assign alert_test = {
-    reg2hw.alert_test.ctrl_err_storage.q &
-    reg2hw.alert_test.ctrl_err_storage.qe,
-    reg2hw.alert_test.ctrl_err_update.q &
-    reg2hw.alert_test.ctrl_err_update.qe
+    reg2hw.alert_test.fatal.q &
+    reg2hw.alert_test.fatal.qe,
+    reg2hw.alert_test.recoverable.q &
+    reg2hw.alert_test.recoverable.qe
   };
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx

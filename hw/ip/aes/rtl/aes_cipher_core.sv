@@ -127,6 +127,7 @@ module aes_cipher_core import aes_pkg::*;
   output logic                        key_clear_o,
   input  logic                        data_out_clear_i, // Re-use the cipher core muxes.
   output logic                        data_out_clear_o,
+  output logic                        alert_o,
 
   // Pseudo-random data for register clearing
   input  logic [WidthPRDClearing-1:0] prd_clearing_i,
@@ -450,6 +451,7 @@ module aes_cipher_core import aes_pkg::*;
     .key_clear_o          ( key_clear_o          ),
     .data_out_clear_i     ( data_out_clear_i     ),
     .data_out_clear_o     ( data_out_clear_o     ),
+    .alert_o              ( alert_o              ),
 
     .prng_update_o        ( prd_masking_upd      ),
     .prng_reseed_req_o    ( prd_masking_rsd_req  ),

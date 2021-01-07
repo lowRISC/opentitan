@@ -105,6 +105,7 @@ module csrng_block_encrypt #(
     .key_clear_o        (                            ),
     .data_out_clear_i   ( 1'b0                       ), // Disable
     .data_out_clear_o   (                            ),
+    .alert_o            (                            ), // Currently unused.
     .prd_clearing_i     ( '0                         ),
     .force_zero_masks_i ( 1'b0                       ),
     .data_in_mask_o     (                            ),
