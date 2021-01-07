@@ -340,7 +340,6 @@ package flash_ctrl_pkg;
     logic                rd_err;
     logic [BusWidth-1:0] rd_data;
     logic                init_busy;
-    logic                erase_suspend_done;
     tlul_pkg::tl_d2h_t   tl_flash_p2c;
   } flash_rsp_t;
 
@@ -353,7 +352,6 @@ package flash_ctrl_pkg;
     rd_err:             '0,
     rd_data:            '0,
     init_busy:          1'b0,
-    erase_suspend_done: 1'b1,
     tl_flash_p2c:       '0
   };
 
@@ -413,7 +411,8 @@ package flash_ctrl_pkg;
     FlashLcTdiSel,
     FlashLcTmsSel,
     FlashLcTdoSel,
-    FlashLcJtagLast
+    FlashBistSel,
+    FlashLcDftLast
   } flash_lc_jtag_e;
 
   // find the max number pages among info types
