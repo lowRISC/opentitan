@@ -38,8 +38,9 @@ module prim_edn_req
 
   logic [edn_pkg::ENDPOINT_BUS_WIDTH-1:0] word_data;
   logic word_fips;
+  localparam int SyncWidth = $bits({edn_i.edn_fips, edn_i.edn_bus});
   prim_sync_reqack_data #(
-    .Width(edn_pkg::ENDPOINT_BUS_WIDTH),
+    .Width(SyncWidth),
     .DataSrc2Dst(1'b0),
     .DataReg(1'b0)
   ) u_prim_sync_reqack_data (
