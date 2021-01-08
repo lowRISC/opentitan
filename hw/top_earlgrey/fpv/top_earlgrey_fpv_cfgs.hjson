@@ -116,6 +116,18 @@
                cov: false
              }
              {
+               name: csrng
+               fusesoc_core: lowrisc:dv:csrng_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: false
+             }
+             {
+               name: edn
+               fusesoc_core: lowrisc:dv:edn_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: false
+             }
+             {
                name: entropy_src
                fusesoc_core: lowrisc:dv:entropy_src_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
@@ -146,6 +158,12 @@
                cov: false
              }
              {
+               name: pattgen
+               fusesoc_core: lowrisc:dv:pattgen_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: false
+             }
+             {
                name: keymgr
                fusesoc_core: lowrisc:dv:keymgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
@@ -164,6 +182,12 @@
                cov: false
              }
              {
+               name: otbn
+               fusesoc_core: lowrisc:dv:otbn_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: false
+             }
+             {
                name: rv_timer
                fusesoc_core: lowrisc:dv:rv_timer_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
@@ -172,6 +196,12 @@
              {
                name: spi_device
                fusesoc_core: lowrisc:dv:spi_device_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: false
+             }
+             {
+               name: sram_ctrl
+               fusesoc_core: lowrisc:dv:sram_ctrl_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                cov: false
              }
