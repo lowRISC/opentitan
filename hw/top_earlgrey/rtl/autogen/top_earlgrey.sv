@@ -1309,6 +1309,7 @@ module top_earlgrey #(
   keymgr #(
     .RndCnstLfsrSeed(RndCnstKeymgrLfsrSeed),
     .RndCnstLfsrPerm(RndCnstKeymgrLfsrPerm),
+    .RndCnstRandPerm(RndCnstKeymgrRandPerm),
     .RndCnstRevisionSeed(RndCnstKeymgrRevisionSeed),
     .RndCnstCreatorIdentitySeed(RndCnstKeymgrCreatorIdentitySeed),
     .RndCnstOwnerIntIdentitySeed(RndCnstKeymgrOwnerIntIdentitySeed),

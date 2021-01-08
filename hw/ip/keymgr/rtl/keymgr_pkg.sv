@@ -59,6 +59,13 @@ package keymgr_pkg;
     256'h24f3f1b73537f42d38383ee8f897286df81d49ab54b6bbbb666cbd1a16c41252
   };
 
+  // Random permutation
+  parameter int RandWidth = LfsrWidth / 2;
+  typedef logic [RandWidth-1:0][$clog2(RandWidth)-1:0] rand_perm_t;
+  parameter rand_perm_t RndCnstRandPermDefault = {
+    160'h62089181d2a6be2ce145e2e27099ededbd7dceb0
+  };
+
   // Width calculations
   // These are the largest calculations in use across all stages
   parameter int AdvDataWidth = SwBindingWidth + 2*KeyWidth + DevIdWidth + HealthStateWidth;
@@ -132,6 +139,15 @@ package keymgr_pkg;
     ErrLastPos
   } keymgr_err_pos_e;
 
+  typedef enum logic [2:0] {
+    KeyUpdateIdle,
+    KeyUpdateRandom,
+    KeyUpdateRoot,
+    KeyUpdateKmac,
+    KeyUpdateInvalid,
+    KeyUpdateWipe
+  } keymgr_key_update_e;
+
   // Key connection to various modules
   typedef struct packed {
     logic valid;
@@ -199,5 +215,16 @@ package keymgr_pkg;
   parameter otp_data_t OTP_DATA_DEFAULT = '{
     devid:    '0
   };
+
+
+  // perm_data
+  function automatic logic[RandWidth-1:0] perm_data (logic [RandWidth-1:0] data,
+    rand_perm_t perm_sel);
+
+    for (int k = 0; k < 32; k++) begin : gen_data_loop
+      perm_data[k] = data[perm_sel[k]];
+    end
+
+  endfunction
 
 endpackage : keymgr_pkg

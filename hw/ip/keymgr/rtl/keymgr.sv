@@ -11,6 +11,7 @@ module keymgr import keymgr_pkg::*; #(
   parameter logic AlertAsyncOn                 = 1'b1,
   parameter lfsr_seed_t RndCnstLfsrSeed        = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm        = RndCnstLfsrPermDefault,
+  parameter rand_perm_t RndCnstRandPerm        = RndCnstRandPermDefault,
   parameter seed_t RndCnstRevisionSeed         = RndCnstRevisionSeedDefault,
   parameter seed_t RndCnstCreatorIdentitySeed  = RndCnstCreatorIdentitySeedDefault,
   parameter seed_t RndCnstOwnerIntIdentitySeed = RndCnstOwnerIntIdentitySeedDefault,
@@ -151,6 +152,16 @@ module keymgr import keymgr_pkg::*; #(
     .state_o(lfsr)
   );
 
+
+  logic [Shares-1:0][RandWidth-1:0] ctrl_rand;
+  logic [Shares-1:0][RandWidth-1:0] data_rand;
+
+  assign ctrl_rand[0] = lfsr[63:32];
+  assign ctrl_rand[1] = perm_data(lfsr[31:0], RndCnstRandPerm);
+
+  assign data_rand[0] = lfsr[31:0];
+  assign data_rand[1] = perm_data(lfsr[63:32], RndCnstRandPerm);
+
   /////////////////////////////////////
   //  Key Manager Control
   /////////////////////////////////////
@@ -181,7 +192,7 @@ module keymgr import keymgr_pkg::*; #(
     .prng_reseed_req_o(reseed_req),
     .prng_reseed_ack_i(reseed_ack),
     .prng_en_o(ctrl_lfsr_en),
-    .entropy_i(lfsr[63:32]),
+    .entropy_i(ctrl_rand),
     .op_i(keymgr_ops_e'(reg2hw.control.operation.q)),
     .op_start_i(reg2hw.control.start.q),
     .op_done_o(op_done),
@@ -286,7 +297,7 @@ module keymgr import keymgr_pkg::*; #(
 
   // Advance state operation input construction
   for (genvar i = KeyMgrStages; i < 2**StageWidth; i++) begin : gen_adv_matrix_fill
-    assign adv_matrix[i] = {AdvLfsrCopies{lfsr[31:0]}};
+    assign adv_matrix[i] = {AdvLfsrCopies{data_rand[0]}};
     assign adv_dvalid[i] = 1'b1;
   end
 
@@ -322,7 +333,7 @@ module keymgr import keymgr_pkg::*; #(
 
   // Generate Identity operation input construction
   for (genvar i = KeyMgrStages; i < 2**StageWidth; i++) begin : gen_id_matrix_fill
-    assign id_matrix[i] = {IdLfsrCopies{lfsr[31:0]}};
+    assign id_matrix[i] = {IdLfsrCopies{data_rand[0]}};
   end
 
   assign id_matrix[Creator]  = RndCnstCreatorIdentitySeed;
@@ -401,7 +412,7 @@ module keymgr import keymgr_pkg::*; #(
     .data_o(kmac_data),
     .kmac_data_o,
     .kmac_data_i,
-    .entropy_i(lfsr[31:0]),
+    .entropy_i(data_rand),
     .fsm_error_o(kmac_fsm_err),
     .kmac_error_o(kmac_op_err),
     .cmd_error_o(kmac_cmd_err)
@@ -411,14 +422,11 @@ module keymgr import keymgr_pkg::*; #(
   /////////////////////////////////////
   //  Side load key storage
   /////////////////////////////////////
-  logic [31:0] key_entropy;
-  assign key_entropy = lfsr[63:32];
-
   keymgr_sideload_key_ctrl u_sideload_ctrl (
     .clk_i,
     .rst_ni,
     .init_i(init),
-    .entropy_i(key_entropy),
+    .entropy_i(data_rand),
     .clr_key_i(reg2hw.sideload_clear.q),
     .wipe_key_i(wipe_key),
     .dest_sel_i(cipher_sel),
@@ -435,9 +443,9 @@ module keymgr import keymgr_pkg::*; #(
   );
 
   for (genvar i = 0; i < 8; i++) begin : gen_sw_assigns
-    assign hw2reg.sw_share0_output[i].d  = ~data_en | wipe_key ? key_entropy :
+    assign hw2reg.sw_share0_output[i].d  = ~data_en | wipe_key ? data_rand[0] :
                                                                  kmac_data[0][i*32 +: 32];
-    assign hw2reg.sw_share1_output[i].d  = ~data_en | wipe_key ? key_entropy :
+    assign hw2reg.sw_share1_output[i].d  = ~data_en | wipe_key ? data_rand[1] :
                                                                  kmac_data[1][i*32 +: 32];
     assign hw2reg.sw_share0_output[i].de = wipe_key | data_valid & (key_sel == SwKey);
     assign hw2reg.sw_share1_output[i].de = wipe_key | data_valid & (key_sel == SwKey);

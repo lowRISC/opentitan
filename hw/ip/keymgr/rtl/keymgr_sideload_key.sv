@@ -13,7 +13,7 @@ module keymgr_sideload_key import keymgr_pkg::*;(
   input set_en_i,
   input set_i,
   input clr_i,
-  input [31:0] entropy_i,
+  input [Shares-1:0][RandWidth-1:0] entropy_i,
   input [Shares-1:0][KeyWidth-1:0] key_i,
   output hw_key_req_t key_o
 );
@@ -40,11 +40,11 @@ module keymgr_sideload_key import keymgr_pkg::*;(
   always_ff @(posedge clk_i) begin
     if (clr_i) begin
       for (int i = 0; i < Shares; i++) begin
-        key_q[i] <= {EntropyCopies{entropy_i}};
+        key_q[i] <= {EntropyCopies{entropy_i[i]}};
       end
     end else if (set_i) begin
       for (int i = 0; i < Shares; i++) begin
-        key_q[i] <= set_en_i ? key_i[i] : {EntropyCopies{entropy_i}};
+        key_q[i] <= set_en_i ? key_i[i] : {EntropyCopies{entropy_i[i]}};
       end
     end
   end

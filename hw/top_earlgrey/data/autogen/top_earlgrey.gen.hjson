@@ -4178,13 +4178,25 @@
           randwidth: 384
         }
         {
+          name: RndCnstRandPerm
+          desc: Compile-time random permutation for entropy used in share overriding
+          type: keymgr_pkg::rand_perm_t
+          randcount: "64"
+          randtype: perm
+          local: "false"
+          default: 0x4f0714285ba12d9a4df2f7fb6d6caa4a08dd5787b52422005f6a3ef6bc6c0641f79c4ebf99140cb790d894f68688ecf4
+          expose: "false"
+          name_top: RndCnstKeymgrRandPerm
+          randwidth: 384
+        }
+        {
           name: RndCnstRevisionSeed
           desc: Compile-time random bits for revision seed
           type: keymgr_pkg::seed_t
           randcount: "256"
           randtype: data
           local: "false"
-          default: 0x96466a983e5346826a43628219e5a91389b9fe0d3b818e46ce7d846469a3b8e3
+          default: 0xf70a5b088fefbc18548dfcb2fd145395d417df2f55255e182efed724cf837046
           expose: "false"
           name_top: RndCnstKeymgrRevisionSeed
           randwidth: 256
@@ -4196,7 +4208,7 @@
           randcount: "256"
           randtype: data
           local: "false"
-          default: 0xde094ca8f1435f85e0f7489a309cbe57b77f07ff3d7297200d5ab25561af49c6
+          default: 0xc761467ee390fce7275f3bce5145a3b8edb5f33fd64e96a5b7a45278102f4c28
           expose: "false"
           name_top: RndCnstKeymgrCreatorIdentitySeed
           randwidth: 256
@@ -4208,7 +4220,7 @@
           randcount: "256"
           randtype: data
           local: "false"
-          default: 0x12965c7de10023ec699679edd5369f11b49bac9198bd1ff344c5da2242d290be
+          default: 0x586239c405f0e50f0c4cdf307b6cf85bd7669c05b0e5dbc9627c050e4936e54c
           expose: "false"
           name_top: RndCnstKeymgrOwnerIntIdentitySeed
           randwidth: 256
@@ -4220,7 +4232,7 @@
           randcount: "256"
           randtype: data
           local: "false"
-          default: 0x738f30d9006289a1d7d9d0ce1dd7d7c60c06703b494b3ff9fbb73a9bf8c393c
+          default: 0x82989aa7c19175299f2746ea860d6c0dd7a42245f8e1d251d66cef31bce5f18f
           expose: "false"
           name_top: RndCnstKeymgrOwnerIdentitySeed
           randwidth: 256
@@ -4232,7 +4244,7 @@
           randcount: "256"
           randtype: data
           local: "false"
-          default: 0x613e5324cbac660746bca7e0ae24af11fe8f673fba39bb679d58aa91aeb2691c
+          default: 0xaf06b42350bb6b68440934dcb834f93689fe9e88ebd53404a1d7296f0cbdb8b
           expose: "false"
           name_top: RndCnstKeymgrSoftOutputSeed
           randwidth: 256
@@ -4244,7 +4256,7 @@
           randcount: "256"
           randtype: data
           local: "false"
-          default: 0x205ae5e5feed81e0cb15451e21ffdf7075a864cb4daab803225b91e3b1a7b12
+          default: 0x478b95e538de6eb34dfa33f033a4ac96ed204633871cb178192aadbb7c918acb
           expose: "false"
           name_top: RndCnstKeymgrHardOutputSeed
           randwidth: 256
@@ -4256,7 +4268,7 @@
           randcount: "256"
           randtype: data
           local: "false"
-          default: 0xa917f063c414964e46ce0fe8ddb271067884ebcc4f232c841702ef7147e71b5c
+          default: 0xf7b0ce3cffda0e9782216c0746509e39f6d4e529c9f758f873d25a17251fbe68
           expose: "false"
           name_top: RndCnstKeymgrAesSeed
           randwidth: 256
@@ -4268,7 +4280,7 @@
           randcount: "256"
           randtype: data
           local: "false"
-          default: 0x84b1a5a63af5fa0aaf8c6a6b90f868a3f2590e4a1004f9cf620d8c56137d9287
+          default: 0x2a0b3c4bee57f5d184c6556972bb2473aa3cf1c7fec9f29fde876aa58dab46f4
           expose: "false"
           name_top: RndCnstKeymgrHmacSeed
           randwidth: 256
@@ -4280,7 +4292,7 @@
           randcount: "256"
           randtype: data
           local: "false"
-          default: 0x32949cc3635d1f47c8f05affc85f7d889ecd94b67eb674bbdf38d62d3622493
+          default: 0xaa6f96b90dab292385d4c54b84f64fc4ca34017bd3d719864ad181a3be2d2767
           expose: "false"
           name_top: RndCnstKeymgrKmacSeed
           randwidth: 256
@@ -4292,7 +4304,7 @@
           randcount: "256"
           randtype: data
           local: "false"
-          default: 0xeec5e43d4b16446726a27b8f0b30ad5048bae844c87b69111a24d5e4442bcfb7
+          default: 0x1bc49bc3169634f35079421849a93e1372402aa2853e37caeda025cda5ac342d
           expose: "false"
           name_top: RndCnstKeymgrNoneSeed
           randwidth: 256

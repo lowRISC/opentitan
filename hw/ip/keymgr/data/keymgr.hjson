@@ -99,6 +99,12 @@
       type:      "keymgr_pkg::lfsr_perm_t"
       randcount: "64",
       randtype:  "perm",
+    },
+    { name:      "RndCnstRandPerm",
+      desc:      "Compile-time random permutation for entropy used in share overriding",
+      type:      "keymgr_pkg::rand_perm_t"
+      randcount: "64",
+      randtype:  "perm",
     }
     { name:      "RndCnstRevisionSeed",
       desc:      "Compile-time random bits for revision seed",

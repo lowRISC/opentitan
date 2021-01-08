@@ -131,54 +131,60 @@ package top_earlgrey_rnd_cnst_pkg;
     256'hA0F3F1519E8DCA131275DF1E48BBF964AC772E613D0320ADAEBF38552DD822E6
   };
 
+  // Compile-time random permutation for entropy used in share overriding
+  parameter keymgr_pkg::rand_perm_t RndCnstKeymgrRandPerm = {
+    128'h4F0714285BA12D9A4DF2F7FB6D6CAA4A,
+    256'h08DD5787B52422005F6A3EF6BC6C0641F79C4EBF99140CB790D894F68688ECF4
+  };
+
   // Compile-time random bits for revision seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrRevisionSeed = {
-    256'h96466A983E5346826A43628219E5A91389B9FE0D3B818E46CE7D846469A3B8E3
+    256'hF70A5B088FEFBC18548DFCB2FD145395D417DF2F55255E182EFED724CF837046
   };
 
   // Compile-time random bits for creator identity seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrCreatorIdentitySeed = {
-    256'hDE094CA8F1435F85E0F7489A309CBE57B77F07FF3D7297200D5AB25561AF49C6
+    256'hC761467EE390FCE7275F3BCE5145A3B8EDB5F33FD64E96A5B7A45278102F4C28
   };
 
   // Compile-time random bits for owner intermediate identity seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrOwnerIntIdentitySeed = {
-    256'h12965C7DE10023EC699679EDD5369F11B49BAC9198BD1FF344C5DA2242D290BE
+    256'h586239C405F0E50F0C4CDF307B6CF85BD7669C05B0E5DBC9627C050E4936E54C
   };
 
   // Compile-time random bits for owner identity seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrOwnerIdentitySeed = {
-    256'h738F30D9006289A1D7D9D0CE1DD7D7C60C06703B494B3FF9FBB73A9BF8C393C
+    256'h82989AA7C19175299F2746EA860D6C0DD7A42245F8E1D251D66CEF31BCE5F18F
   };
 
   // Compile-time random bits for software generation seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrSoftOutputSeed = {
-    256'h613E5324CBAC660746BCA7E0AE24AF11FE8F673FBA39BB679D58AA91AEB2691C
+    256'hAF06B42350BB6B68440934DCB834F93689FE9E88EBD53404A1D7296F0CBDB8B
   };
 
   // Compile-time random bits for hardware generation seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrHardOutputSeed = {
-    256'h205AE5E5FEED81E0CB15451E21FFDF7075A864CB4DAAB803225B91E3B1A7B12
+    256'h478B95E538DE6EB34DFA33F033A4AC96ED204633871CB178192AADBB7C918ACB
   };
 
   // Compile-time random bits for generation seed when aes destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrAesSeed = {
-    256'hA917F063C414964E46CE0FE8DDB271067884EBCC4F232C841702EF7147E71B5C
+    256'hF7B0CE3CFFDA0E9782216C0746509E39F6D4E529C9F758F873D25A17251FBE68
   };
 
   // Compile-time random bits for generation seed when hmac destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrHmacSeed = {
-    256'h84B1A5A63AF5FA0AAF8C6A6B90F868A3F2590E4A1004F9CF620D8C56137D9287
+    256'h2A0B3C4BEE57F5D184C6556972BB2473AA3CF1C7FEC9F29FDE876AA58DAB46F4
   };
 
   // Compile-time random bits for generation seed when kmac destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrKmacSeed = {
-    256'h32949CC3635D1F47C8F05AFFC85F7D889ECD94B67EB674BBDF38D62D3622493
+    256'hAA6F96B90DAB292385D4C54B84F64FC4CA34017BD3D719864AD181A3BE2D2767
   };
 
   // Compile-time random bits for generation seed when no destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrNoneSeed = {
-    256'hEEC5E43D4B16446726A27B8F0B30AD5048BAE844C87B69111A24D5E4442BCFB7
+    256'h1BC49BC3169634F35079421849A93E1372402AA2853E37CAEDA025CDA5AC342D
   };
 
   ////////////////////////////////////////////
