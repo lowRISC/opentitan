@@ -62,7 +62,7 @@
     // `hw/dv/tools/dvsim//common_sim_cfg.hjson` for the default value.
     {
       name: cover_reg_top_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root)/hw/top_earlgrey/dv/cov/chip_cover_reg_top.cfg"
+      value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover_reg_top.cfg"
     }
 
     // This defaults to 'ip' in `hw/data/common_project_cfg.hjson`.
