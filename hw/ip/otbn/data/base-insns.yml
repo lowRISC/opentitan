@@ -374,14 +374,10 @@
   lsu:
     type: csr
     target: [csr]
-  decode: |
-    csr_num = UInt(csr)
-    d = UInt(grd)
-    s = UInt(grs1)
   operation: |
-    gpr_s_val = GPR[s]
-    GPR[d] = CSR[csr_num]
-    CSR[csr_num] |= gpr_s_val
+    gpr_s_val = GPR[grs1]
+    GPR[grd] = CSR[csr]
+    CSR[csr] |= gpr_s_val
 
 - mnemonic: csrrw
   rv32i: true
@@ -403,17 +399,13 @@
   lsu:
     type: csr
     target: [csr]
-  decode: |
-    csr_num = UInt(csr)
-    d = UInt(grd)
-    s = UInt(grs1)
   operation: |
-    gpr_s_val = GPR[s]
+    gpr_s_val = GPR[grs1]
 
     if d != 0:
-      GPR[d] = CSR[csr_num]
+      GPR[grd] = CSR[csr]
 
-    CSR[csr_num] = gpr_s_val
+    CSR[csr] = gpr_s_val
 
 - mnemonic: ecall
   rv32i: true

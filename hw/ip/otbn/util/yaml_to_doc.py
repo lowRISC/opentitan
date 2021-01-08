@@ -8,15 +8,18 @@
 import argparse
 import os
 import sys
-from typing import Dict, List, TextIO
+from typing import Dict, List, Optional, TextIO, Tuple
 
 from shared.bool_literal import BoolLiteral
 from shared.encoding import Encoding
 from shared.insn_yaml import Insn, InsnsFile, InsnGroup, load_file
-from shared.operand import ImmOperandType, Operand
+from shared.operand import Operand
+
+_O2EDicts = Tuple[Dict[str, List[str]], Dict[int, str]]
 
 
-def render_operand_row(operand: Operand) -> str:
+def render_operand_row(operand: Operand,
+                       op_ranges: Optional[List[str]]) -> str:
     '''Generate the single row of a markdown table for an operand'''
 
     # This is in <tr><td> form, but we want to embed arbitrary markup (and
@@ -25,7 +28,7 @@ def render_operand_row(operand: Operand) -> str:
     # flavoured markdown switch back to "markdown mode" for the contents.
     parts = []
     parts.append('<tr><td>\n\n')
-    parts.append('`<{}>`'.format(operand.name))
+    parts.append('`{}`'.format(operand.name))
     parts.append('\n\n</td><td>')
 
     # The "description" cell contains any documentation supplied in the file,
@@ -41,11 +44,17 @@ def render_operand_row(operand: Operand) -> str:
             parts.append('\n\n')
             parts.append(ot_doc)
 
+        if op_ranges is not None:
+            parts.append('\n\n')
+            dec_str = operand.op_type.describe_decode(op_ranges)
+            parts.append('Decode as `{}`\n\n'.format(dec_str))
+
     parts.append('\n\n</td></tr>')
     return ''.join(parts)
 
 
-def render_operand_table(insn: Insn) -> str:
+def render_operand_table(operands: List[Operand],
+                         o2e: Optional[Dict[str, List[str]]]) -> str:
     '''Generate the operand table for an instruction'''
 
     # We have to generate this in <tr><td> form because we want to put
@@ -53,18 +62,27 @@ def render_operand_table(insn: Insn) -> str:
     # support inline elements).
     parts = []
     parts.append('<table><thead>'
-                 '<tr><th>Assembly symbol</th><th>Description</th></tr>'
+                 '<tr><th>Operand</th><th>Description</th></tr>'
                  '</thead>'
                  '<tbody>')
-    for operand in insn.operands:
-        parts.append(render_operand_row(operand))
+    for operand in operands:
+        if o2e is None:
+            op_ranges = None
+        else:
+            op_ranges = o2e.get(operand.name)
+            # If we had an encoding, it should have encoded every operand, so
+            # name_op_enc_fields should have picked up operand.
+            assert op_ranges is not None
+
+        parts.append(render_operand_row(operand, op_ranges))
+
     parts.append('</tbody></table>\n\n')
     return ''.join(parts)
 
 
 def render_encoding(mnemonic: str,
-                    name_to_operand: Dict[str, Operand],
-                    encoding: Encoding) -> str:
+                    encoding: Encoding,
+                    e2o: Dict[int, str]) -> str:
     '''Generate a table displaying an instruction encoding'''
     parts = []
     parts.append('<table style="font-size: 75%">')
@@ -97,31 +115,12 @@ def render_encoding(mnemonic: str,
                     by_msb[lsb + idx] = (1, '' if desc == 'x' else desc)
             continue
 
-        # Otherwise this field's value is an operand name
+        # Otherwise this field's value is an operand name. name_op_enc_fields
+        # should have added the MSBs of its ranges to e2o.
         assert isinstance(field.value, str)
-        operand_name = field.value
-
-        # Figure out whether there's any shifting going on.
-        op_type = name_to_operand[operand_name].op_type
-        shift = op_type.shift if isinstance(op_type, ImmOperandType) else 0
-
-        # If there is only one range (and no shifting), that's easy.
-        if len(scheme_field.bits.ranges) == 1 and shift == 0:
-            msb, lsb = scheme_field.bits.ranges[0]
-            by_msb[msb] = (msb - lsb + 1, operand_name)
-            continue
-
-        # Otherwise, we have to split up the operand into things like "foo[8:5]"
-        bits_seen = 0
         for msb, lsb in scheme_field.bits.ranges:
-            val_msb = shift + scheme_field.bits.width - 1 - bits_seen
-            val_lsb = val_msb - msb + lsb
-            bits_seen += msb - lsb + 1
-            if msb == lsb:
-                desc = '{}[{}]'.format(operand_name, val_msb)
-            else:
-                desc = '{}[{}:{}]'.format(operand_name, val_msb, val_lsb)
-            by_msb[msb] = (msb - lsb + 1, desc)
+            assert msb in e2o
+            by_msb[msb] = (msb - lsb + 1, e2o[msb])
 
     parts.append('<tr>')
     parts.append('<td>{}</td>'.format(mnemonic.upper()))
@@ -155,6 +154,70 @@ def render_literal_pseudo_op(rewrite: List[str]) -> str:
         parts.append('\n')
     parts.append('```\n\n')
     return ''.join(parts)
+
+
+def name_op_enc_fields(encoding: Encoding) -> _O2EDicts:
+    '''Name the encoding fields corresponding to operators
+
+    In the generated documentation, we name encoding fields based on the
+    operand that the encode. For example, if the operand "foo" is encoded in a
+    field, the field will be labelled "FOO" in the table. If the field is split
+    over multiple bit ranges, they will be labelled like "FOO_0", "FOO_1" etc,
+    counting from the LSB.
+
+    Returns a pair of dicts: (o2e, e2o). o2e maps an operand name to the list
+    of (our names for) encoding fields that contribute to it, MSB first. e2o
+    maps the MSB of a bit range in an encoding field to the name that should
+    appear for that range in the documentation.
+
+    In the example above, o2e['foo'] = ["FOO_1", "FOO_0"]. Suppose that the
+    upper range of bits for the encoding field for 'foo' had MSB 10. Then
+    e2o[10] = 'FOO_1'.
+
+    '''
+    o2e = {}  # type: Dict[str, List[str]]
+    e2o = {}  # type: Dict[int, str]
+
+    for field_name, field in encoding.fields.items():
+        # Ignore literal values: these don't correspond to operands
+        if isinstance(field.value, BoolLiteral):
+            continue
+
+        # Otherwise this field's value is an operand name
+        assert isinstance(field.value, str)
+        operand_name = field.value
+
+        # An encoding should never use an operand more than once
+        assert operand_name not in o2e
+
+        # There should always be at least one bit range for the field
+        scheme_field = field.scheme_field
+        assert scheme_field.bits.ranges
+
+        # If there is just one bit range, we generate a single named range by
+        # capitalizing the operand name.
+        if len(scheme_field.bits.ranges) == 1:
+            msb = scheme_field.bits.ranges[0][0]
+            assert msb not in e2o
+            range_name = operand_name.upper()
+            o2e[operand_name] = [range_name]
+            e2o[msb] = range_name
+            continue
+
+        # Otherwise, we need to label the operands. Sorting ranges ensures that
+        # they appear LSB-first.
+        o2e_list = []
+        range_basename = operand_name.upper()
+        for idx, (msb, lsb) in enumerate(sorted(scheme_field.bits.ranges)):
+            range_name = '{}_{}'.format(range_basename, idx)
+            o2e_list.append(range_name)
+            assert msb not in e2o
+            e2o[msb] = range_name
+        # We want to store o2e_list MSB-first, so reverse it here.
+        o2e_list.reverse()
+        o2e[operand_name] = o2e_list
+
+    return (o2e, e2o)
 
 
 def render_insn(insn: Insn, heading_level: int) -> str:
@@ -212,29 +275,28 @@ def render_insn(insn: Insn, heading_level: int) -> str:
         parts.append(insn.trailing_doc)
         parts.append('\n\n')
 
-    # Show the operand table if at least one operand has an associated
-    # description.
-    if any(op.doc is not None for op in insn.operands):
-        parts.append(render_operand_table(insn))
+    is_pseudo = insn.literal_pseudo_op or insn.python_pseudo_op
+
+    # If we have an encoding, match up encoding fields with operands
+    if is_pseudo or insn.encoding is None:
+        o2e = None
+        e2o = None
+    else:
+        o2e, e2o = name_op_enc_fields(insn.encoding)
+
+    # Show the operand table if there is at least one operand and this isn't a
+    # pseudo-op.
+    if insn.operands and not is_pseudo:
+        parts.append(render_operand_table(insn.operands, o2e))
 
     # Show encoding if we have one
-    if insn.encoding is not None:
-        parts.append(render_encoding(insn.mnemonic,
-                                     insn.name_to_operand,
-                                     insn.encoding))
+    if e2o is not None:
+        assert insn.encoding is not None
+        parts.append(render_encoding(insn.mnemonic, insn.encoding, e2o))
 
     # If this is a pseudo-op with a literal translation, show it
     if insn.literal_pseudo_op is not None:
         parts.append(render_literal_pseudo_op(insn.literal_pseudo_op))
-
-    # Show decode pseudo-code if given
-    if insn.decode is not None:
-        parts.append('{} Decode\n\n'
-                     '```python3\n'
-                     '{}\n'
-                     '```\n\n'
-                     .format('#' * (heading_level + 1),
-                             insn.decode))
 
     # Show operation pseudo-code if given
     if insn.operation is not None:

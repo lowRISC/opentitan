@@ -52,6 +52,25 @@ class OperandType:
         '''
         return None
 
+    @staticmethod
+    def _describe_bits_lst(bits_lst: List[str]) -> str:
+        assert bits_lst
+        if len(bits_lst) == 1:
+            return bits_lst[0]
+        else:
+            return '{{{}}}'.format(', '.join(bits_lst))
+
+    def describe_decode(self, bits_lst: List[str]) -> str:
+        '''Return string saying how to interpret the raw bits of bits_str
+
+        bits_lst is a nonempty list of string describing which bits are used to
+        get the raw value.
+
+        Overridden in subclasses if they do something non-trivial.
+
+        '''
+        return 'unsigned({})'.format(OperandType._describe_bits_lst(bits_lst))
+
     def syntax_determines_value(self) -> bool:
         '''Can the value of this operand always be inferred from asm syntax?
 
@@ -276,6 +295,17 @@ class ImmOperandType(OperandType):
 
         return ImmOperandType(width, enc_offset, shift, signed, pc_rel)
 
+    def doc_rel_to_abs(self, value: int) -> str:
+        if not self.pc_rel:
+            return str(value)
+
+        if value < 0:
+            return '.-{}'.format(-value)
+        elif value == 0:
+            return '.'
+        else:
+            return '.+{}'.format(value)
+
     def markdown_doc(self) -> Optional[str]:
         # Override from OperandType base class
         rel_rng = self.get_doc_range()
@@ -288,9 +318,52 @@ class ImmOperandType(OperandType):
         else:
             stp_msg = ' in steps of `{}`'.format(1 << self.shift)
 
-        pc_pfx = '.+' if self.pc_rel else ''
-        return ('Valid range: `{}{}..{}{}`{}'
-                .format(pc_pfx, rel_lo, pc_pfx, rel_hi, stp_msg))
+        abs_lo = self.doc_rel_to_abs(rel_lo)
+        abs_hi = self.doc_rel_to_abs(rel_hi)
+
+        return ('Valid range: `{} to {}`{}'
+                .format(abs_lo, abs_hi, stp_msg))
+
+    def describe_decode(self, bits_lst: List[str]) -> str:
+        # The "most general" result is something like this:
+        #
+        #   PC + (signed({A, B, C} + enc_offset) << shift)
+        #
+        # But if enc_offset is zero and shift is positive, we'd like results
+        # that look like
+        #
+        #   PC + signed({A, B, C, 2'b0})
+
+        # Show shift with a concatenation if there is no offset
+        shift = self.shift
+        if shift and not self.enc_offset:
+            bits_lst = bits_lst + ["{}'b0".format(shift)]
+            shift = 0
+
+        # Render as a concatenation and make the conversion to an integer
+        # explicit.
+        xsigned = 'signed' if self.signed else 'unsigned'
+        acc = '{}({})'.format(xsigned,
+                              OperandType._describe_bits_lst(bits_lst))
+        acc_prec = 2
+
+        if self.enc_offset:
+            acc = '{} + {}'.format(acc, self.enc_offset)
+            if shift:
+                # Although a + b << c is logically the same as (a + b) << c, we add
+                # the parentheses to make it easier to read.
+                acc = '({}) << {}'.format(acc, self.shift)
+                acc_prec = 0
+        else:
+            assert not shift
+
+        if self.pc_rel:
+            if acc_prec < 1:
+                acc = '({})'.format(acc)
+
+            acc = 'PC + {}'.format(acc)
+
+        return acc
 
     def str_to_op_val(self, as_str: str) -> Optional[int]:
         # Try to parse the literal as an integer. Give up safely if we can't
