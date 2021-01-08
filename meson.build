@@ -19,6 +19,10 @@ project(
   ],
 )
 
+# We allow both GCC and Clang, but these minimum versions.
+required_gcc_version = '>=5'
+required_clang_version = '>=3.5'
+
 ot_version = get_option('ot_version')
 if ot_version == 'undef'
   error('ot_version option not set. Please run meson with a valid OpenTitan version option.')
@@ -40,6 +44,29 @@ coverage = get_option('coverage')
 if coverage and meson.get_compiler('c').get_id() != 'clang'
   error('Coverage requires clang.')
 endif
+
+# Check C/C++ compiler version numbers.
+c_compilers = {
+  'C compiler for host': meson.get_compiler('c', native: true),
+  'C compiler for device': meson.get_compiler('c', native: false),
+  'C++ compiler for host': meson.get_compiler('cpp', native: true),
+}
+foreach kind, compiler : c_compilers
+  if compiler.get_id() == 'clang'
+    if not compiler.version().version_compare(required_clang_version)
+      error('@0@ version mismatch, @1@ required.'.format(kind, required_clang_version))
+    endif
+  elif compiler.get_id() == 'gcc'
+    if not compiler.version().version_compare(required_gcc_version)
+      error('@0@ version mismatch, @1@ required.'.format(kind, required_gcc_version))
+    endif
+  else
+    warning('Unsupported @0@: @1@'.format(kind, compiler.get_id()))
+    message('Please ensure this compiler satisfies the OpenTitan requirements in:')
+    message(' https://docs.opentitan.org/doc/ug/install_instructions/#system-requirements')
+  endif
+endforeach
+
 
 # C compiler arguments to to catch common errors, used on all builds.
 extra_warning_args = [
