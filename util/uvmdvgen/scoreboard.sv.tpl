@@ -34,6 +34,10 @@ class ${name}_scoreboard extends dv_base_scoreboard #(
 % for agent in env_agents:
     ${agent}_fifo = new("${agent}_fifo", this);
 % endfor
+% if has_alerts:
+    // TODO: remove once support alert checking
+    do_alert_check = 0;
+% endif
   endfunction
 
   function void connect_phase(uvm_phase phase);

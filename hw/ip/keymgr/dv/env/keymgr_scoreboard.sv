@@ -70,6 +70,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     super.build_phase(phase);
     req_fifo = new("req_fifo", this);
     rsp_fifo = new("rsp_fifo", this);
+    // TODO: remove once support alert checking
+    do_alert_check = 0;
   endfunction
 
   function void connect_phase(uvm_phase phase);
