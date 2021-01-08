@@ -60,7 +60,7 @@ module prim_lfsr #(
   output logic [StateOutDw-1:0] state_o    // (partial) LFSR state output
 );
 
-  // automatically generated with get-lfsr-coeffs.py script
+  // automatically generated with util/design/get-lfsr-coeffs.py script
   localparam int unsigned GAL_XOR_LUT_OFF = 4;
   localparam logic [63:0] GAL_XOR_COEFFS [61] =
     '{ 64'h9,

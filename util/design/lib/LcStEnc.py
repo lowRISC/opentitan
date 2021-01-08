@@ -7,45 +7,8 @@ used to generate new life cycle encodings.
 import logging as log
 import random
 
-from common import check_int
-
-
-def _is_valid_codeword(config, codeword):
-    '''Checks whether the bitstring is a valid ECC codeword.'''
-
-    data_width = config['secded']['data_width']
-    ecc_width = config['secded']['ecc_width']
-    if len(codeword) != (data_width + ecc_width):
-        log.error("Invalid codeword length {}".format(len(codeword)))
-        exit(1)
-
-    # Build syndrome and check whether it is zero.
-    syndrome = [0 for k in range(ecc_width)]
-
-    # The bitstring must be formatted as "data bits[N-1:0]" + "ecc bits[M-1:0]".
-    for j, fanin in enumerate(config['secded']['ecc_matrix']):
-        syndrome[j] = int(codeword[ecc_width - 1 - j])
-        for k in fanin:
-            syndrome[j] ^= int(codeword[ecc_width + data_width - 1 - k])
-
-    return sum(syndrome) == 0
-
-
-def _ecc_encode(config, dataword):
-    '''Calculate and prepend ECC bits.'''
-    if len(dataword) != config['secded']['data_width']:
-        log.error("Invalid codeword length {}".format(len(dataword)))
-        exit(1)
-
-    # Build syndrome
-    eccbits = ""
-    for fanin in config['secded']['ecc_matrix']:
-        bit = 0
-        for k in fanin:
-            bit ^= int(dataword[config['secded']['data_width'] - 1 - k])
-        eccbits += format(bit, '01b')
-
-    return eccbits[::-1] + dataword
+from lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
+                        is_valid_codeword, scatter_bits)
 
 
 def _is_incremental_codeword(word1, word2):
@@ -62,28 +25,6 @@ def _is_incremental_codeword(word1, word2):
     return ((_word1 & _word2) == _word1)
 
 
-def _scatter_bits(mask, bits):
-    '''Scatter the bits into unset positions of mask.'''
-    j = 0
-    scatterword = ''
-    for b in mask:
-        if b == '1':
-            scatterword += '1'
-        else:
-            scatterword += bits[j]
-            j += 1
-
-    return scatterword
-
-
-def _get_hd(word1, word2):
-    '''Calculate Hamming distance between two words.'''
-    if len(word1) != len(word2):
-        log.error('Words are not of equal size')
-        exit(1)
-    return bin(int(word1, 2) ^ int(word2, 2)).count('1')
-
-
 def _get_incremental_codewords(config, base_ecc, existing_words):
     '''Get all possible incremental codewords fulfilling the constraints.'''
 
@@ -93,15 +34,15 @@ def _get_incremental_codewords(config, base_ecc, existing_words):
     # Hence, we first count how many bits are zero (and hence still
     # modifyable). Then, we enumerate all possible combinations and scatter
     # the bits of the enumerated values into the correct bit positions using
-    # the _scatter_bits() function.
+    # the scatter_bits() function.
     incr_cands = []
     free_bits = base_data.count('0')
     for k in range(1, 2**free_bits):
         # Get incremental dataword by scattering the enumeration bits
         # into the zero bit positions in base_data.
-        incr_cand = _scatter_bits(base_data,
-                                  format(k, '0' + str(free_bits) + 'b'))
-        incr_cand_ecc = _ecc_encode(config, incr_cand)
+        incr_cand = scatter_bits(base_data,
+                                 format(k, '0' + str(free_bits) + 'b'))
+        incr_cand_ecc = ecc_encode(config, incr_cand)
 
         # Dataword is correct by construction, but we need to check whether
         # the ECC bits are incremental.
@@ -111,7 +52,7 @@ def _get_incremental_codewords(config, base_ecc, existing_words):
             if incr_cand_ecc.count('1') <= config['max_hw']:
                 # Check Hamming distance wrt all existing words.
                 for w in existing_words + [base_ecc]:
-                    if _get_hd(incr_cand_ecc, w) < config['min_hd']:
+                    if get_hd(incr_cand_ecc, w) < config['min_hd']:
                         break
                 else:
                     incr_cands.append(incr_cand_ecc)
@@ -128,14 +69,14 @@ def _get_new_state_word_pair(config, existing_words):
         ecc_width = config['secded']['ecc_width']
         base = random.getrandbits(width)
         base = format(base, '0' + str(width) + 'b')
-        base_cand_ecc = _ecc_encode(config, base)
+        base_cand_ecc = ecc_encode(config, base)
         # disallow all-zero and all-one states
         pop_cnt = base_cand_ecc.count('1')
         if pop_cnt >= config['min_hw'] and pop_cnt <= config['max_hw']:
 
             # Check Hamming distance wrt all existing words
             for w in existing_words:
-                if _get_hd(base_cand_ecc, w) < config['min_hd']:
+                if get_hd(base_cand_ecc, w) < config['min_hd']:
                     break
             else:
                 # Get encoded incremental candidates.
@@ -158,7 +99,7 @@ def _validate_words(config, words):
     '''Validate generated words (base and incremental).'''
     for k, w in enumerate(words):
         # Check whether word is valid wrt to ECC polynomial.
-        if not _is_valid_codeword(config, w):
+        if not is_valid_codeword(config, w):
             log.error('Codeword {} at index {} is not valid'.format(w, k))
             exit(1)
         # Check that word fulfills the Hamming weight constraints.
@@ -172,53 +113,12 @@ def _validate_words(config, words):
         # If the constraint is larger than 0 this implies uniqueness.
         if k < len(words) - 1:
             for k2, w2 in enumerate(words[k + 1:]):
-                if _get_hd(w, w2) < config['min_hd']:
+                if get_hd(w, w2) < config['min_hd']:
                     log.error(
                         'Hamming distance between codeword {} at index {} '
                         'and codeword {} at index {} is too low.'.format(
                             w, k, w2, k + 1 + k2))
                     exit(1)
-
-
-def _hist_to_bars(hist, m):
-    '''Convert histogramm list into ASCII bar plot'''
-    bars = []
-    for i, j in enumerate(hist):
-        bar_prefix = "{:2}: ".format(i)
-        spaces = len(str(m)) - len(bar_prefix)
-        hist_bar = bar_prefix + (" " * spaces)
-        for k in range(j * 20 // max(hist)):
-            hist_bar += "|"
-        hist_bar += " ({:.2f}%)".format(100.0 * j / sum(hist)) if j else "--"
-        bars += [hist_bar]
-    return bars
-
-
-def hd_histogram(existing_words):
-    '''Build Hamming distance histogram'''
-    minimum_hd = len(existing_words[0])
-    maximum_hd = 0
-    minimum_hw = len(existing_words[0])
-    maximum_hw = 0
-    hist = [0] * (len(existing_words[0]) + 1)
-    for i, j in enumerate(existing_words):
-        minimum_hw = min(j.count('1'), minimum_hw)
-        maximum_hw = max(j.count('1'), maximum_hw)
-        if i < len(existing_words) - 1:
-            for k in existing_words[i + 1:]:
-                dist = _get_hd(j, k)
-                hist[dist] += 1
-                minimum_hd = min(dist, minimum_hd)
-                maximum_hd = max(dist, maximum_hd)
-
-    stats = {}
-    stats["hist"] = hist
-    stats["bars"] = _hist_to_bars(hist, len(existing_words))
-    stats["min_hd"] = minimum_hd
-    stats["max_hd"] = maximum_hd
-    stats["min_hw"] = minimum_hw
-    stats["max_hw"] = maximum_hw
-    return stats
 
 
 class LcStEnc():

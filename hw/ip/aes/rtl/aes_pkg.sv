@@ -18,7 +18,7 @@ parameter int unsigned ChunkSizePRDMasking = WidthPRDMasking/10;
 
 // Clearing PRNG default LFSR seed and permutation
 // These LFSR parameters have been generated with
-// $ hw/ip/prim/util/gen-lfsr-seed.py --width 64 --seed 31468618 --prefix "Clearing"
+// $ util/design/gen-lfsr-seed.py --width 64 --seed 31468618 --prefix "Clearing"
 parameter int ClearingLfsrWidth = 64;
 typedef logic [ClearingLfsrWidth-1:0] clearing_lfsr_seed_t;
 typedef logic [ClearingLfsrWidth-1:0][$clog2(ClearingLfsrWidth)-1:0] clearing_lfsr_perm_t;
@@ -32,7 +32,7 @@ parameter clearing_lfsr_perm_t RndCnstClearingLfsrPermDefault = {
 // We use a single seed that is split down into chunks internally. All LFSR chunks use the same
 // permutation.
 // These LFSR parameters have been generated with
-// $ hw/ip/prim/util/gen-lfsr-seed.py --width 360 --seed 31468618 --prefix "Masking"
+// $ util/design/gen-lfsr-seed.py --width 360 --seed 31468618 --prefix "Masking"
 parameter int MaskingLfsrWidth = 360;
 typedef logic [MaskingLfsrWidth-1:0] masking_lfsr_seed_t;
 parameter masking_lfsr_seed_t RndCnstMaskingLfsrSeedDefault = {
@@ -41,7 +41,7 @@ parameter masking_lfsr_seed_t RndCnstMaskingLfsrSeedDefault = {
 };
 
 // These LFSR parameters have been generated with
-// $ hw/ip/prim/util/gen-lfsr-seed.py --width 36 --seed 31468618 --prefix "MskgChunk"
+// $ util/design/gen-lfsr-seed.py --width 36 --seed 31468618 --prefix "MskgChunk"
 parameter int MskgChunkLfsrWidth = 36;
 typedef logic [MskgChunkLfsrWidth-1:0][$clog2(MskgChunkLfsrWidth)-1:0] mskg_chunk_lfsr_perm_t;
 parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPermDefault =
