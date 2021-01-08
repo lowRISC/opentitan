@@ -40,8 +40,8 @@ elaborate -bbox_a 3600 -top $env(FPV_TOP) -enable_sva_isunknown
 
 if {$env(FPV_TOP) == "rv_dm"} {
   clock clk_i -both_edges
-  clock tck_i
-  reset -expr {!rst_ni !trst_ni}
+  clock jtag_req_i.tck
+  reset -expr {!rst_ni !jtag_req_i.trst_n}
 } elseif {$env(FPV_TOP) == "spi_device"} {
   clock clk_i -both_edges
   clock cio_sck_i
