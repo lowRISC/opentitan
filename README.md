@@ -2,6 +2,9 @@
 
 ![CI](https://github.com/silvergasp/bazel-embedded/workflows/CI/badge.svg)
 
+
+<img src="https://upload.wikimedia.org/wikipedia/en/7/7d/Bazel_logo.svg" alt="drawing" width="200"/>
+
 At this point it is relatively easy to add support for new architectures, that have gcc based compilers. In future we will be adding clang support, so that we can make use of clangs static-analyzers. If you would like an architecture added to this repository let us know.
 
 Currently supported hosts:
@@ -20,7 +23,7 @@ Current support is limited to Arm Cortex-M Devices:
 List of support;
 - [x] Toolchains
 - [ ] Static analysers 
-- [ ] A collection of BUILD file templates for common embedded libraries
+- [X] A collection of BUILD file templates for common embedded libraries
 - [x] Utilities for programming targets
 - [x] Utilities for debugging targets
 - [ ] Parralell execution for a test "farm" of embedded test devices
@@ -166,30 +169,3 @@ From here you may use each feature from the command line, the following example 
 ```bash
 bazel build //toolchains/compilation_tests/... --platforms=@bazel_embedded//platforms:cortex_m0 --features=all_warnings_as_errors,opt
 ```
-## Caveats
-If your repository contains platform independent you will not be able to automatically exclude platform dependant code. For example;
-package/BUILD
-```py
-cc_library(
-    name = "can_run_on_microcontroller_only"
-    ...
-)
-cc_library(
-    name = "can_run_on_anything"
-    ...
-)
-```
-You may compile for your host;
-```sh
-bazel build //package:can_run_on_anything
-```
-You may cross compile for your microcontroller
-```sh
-bazel build //package/... --platforms=@bazel_embedded//platforms:cortex_m7_fpu
-```
-But automated skipping of targets based on compatibility is not supported. So bazel will happily attempt to compile the //package:can_run_on_microcontroller_only using your host compiler, which in almost all cases will fail.
-```sh
-bazel build //package/... 
-```
-
-
