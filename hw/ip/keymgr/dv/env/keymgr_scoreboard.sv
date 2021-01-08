@@ -377,12 +377,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       default: begin
         if (!uvm_re_match("sw_share*", csr.get_name())) begin // sw_share
           // if keymgr isn't On, SW output should be entropy and not match to predict value
-          if (data_phase_read && cfg.keymgr_vif.keymgr_en != lc_ctrl_pkg::On) begin
-            if (item.d_data != 0) begin
-              do_read_check = 1'b0;
-              `DV_CHECK_NE(item.d_data, `gmv(csr))
-            end
-          end
+          //if (data_phase_read && cfg.keymgr_vif.keymgr_en != lc_ctrl_pkg::On) begin
+          //  if (item.d_data != 0) begin
+          //    do_read_check = 1'b0;
+          //    `DV_CHECK_NE(item.d_data, `gmv(csr))
+          //  end
+          //end
+          do_read_check = 1'b0;
         end else begin // Not sw_share
           // TODO
           do_read_check = 1'b0;

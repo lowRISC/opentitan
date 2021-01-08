@@ -25,7 +25,7 @@ Key manager behavior can be summarized by the functional model below.
 
 ![Key Manager Functional Model](keymgr_functional_model.svg)
 
-In the diagram, the red boxes represent the working state and the associated secret value, the black ovals represent derivation functions, the green squares represent software inputs, and the remaining green / purple shapes represent outputs to both software and hardware.
+In the diagram, the red boxes represent the working state and the associated internal key, the black ovals represent derivation functions, the green squares represent software inputs, and the remaining green / purple shapes represent outputs to both software and hardware.
 
 In OpenTitan, the derivation method selected is [KMAC]({{< relref "hw/ip/kmac/doc" >}}).
 Each valid operation involves a KMAC invocation using the key manager working state as the "key" and other HW / SW supplied inputs as data.
@@ -47,7 +47,9 @@ They differ only in how software chooses to deploy the outputs.
 ## Key Manager State
 
 The key manager working state (red boxes in the functional model) represents both the current state of the key manager as well as its related secret material.
-Each state, when valid, supplies its secret material as the "key" input to a KMAC operation.
+Each valid state (`Initialized` / `CreatorRootKey` / `OwnerIntermediateKey` / `OwnerRootKey`), supplies its secret material as the "key" input to a KMAC operation.
+Invalid states, such as `Reset / Disabled` on the other hand, either do not honor operation requests, or supplies random data when invoked.
+
 The data input is dependent on each state, see below.
 
 ### Reset
@@ -79,10 +81,8 @@ See below:
    *  Please see the life cycle controller for more details.
 *  `DeviceIdentifier`: Unique device identification.
 *  `HardwareRevisionSecret`: A global design time constant.
-*  `RomExtSecurityDescriptor`: A software digest of the ROM_ext stage.
 
 Other than the `DiversificationKey`, none of the values above are considered secret.
-The `RomExtSecurityDescriptor` is a 256b value calculated by ROM and loaded into key manager registers.
 
 Once the `CreatorRootKey` is reached, software can request key manager to advance state, generate output key or generate output identity.
 The key used for all 3 functions is the `CreatorRootKey`.
@@ -120,15 +120,16 @@ The generate output and generate identity functions use `OwnerRootKey` as the KM
 The advancement from this state to the next is irreversible during the current power cycle.
 
 ### Disabled
-
 `Disabled` is a state where the key manager is no longer operational.
-The internal key is a random value and cannot be used to compute new valid keys or identities.
-However, sideload keys are not wiped upon `Disabled` entry.
-This allows the software to keep the last valid sideload keys while preventing the system from advancing further.
+Upon `Disabled` entry, the working state is updated with KMAC computed random values; however, sideload keys are preserved.
+This allows the software to keep the last valid sideload keys while preventing the system from further advancing the valid key.
+
+When advance and generate calls are invoked from this state, the outputs and keys are indiscriminately updated with randomly computed values.
 
 ### Invalid
 `Invalid` state is entered whenever key manager is disabled through the [life cycle connection](#life-cycle-connection).
-During this state, both the internal key and the sideload keys are wiped with random data and are no longer valid.
+Upon `Invalid` entry, both the working state and the sideload keys are wiped with entropy directly.
+Note, this is different from `Disabled` state entry, which updates with KMAC outputs.
 
 ## Life Cycle Connection
 The function of the key manager is directly tied to the life cycle controller.
@@ -136,7 +137,7 @@ During specific life cycle states, the key manager is explicitly invalidated.
 
 When invalidated, the following key manager behavior applies:
 -  If the key manager has not been initialized, it cannot be initialized until life cycle enables key manager.
--  If the key manager has been initialized and is currently in a valid state (including `Disabled`), it immediately wipes its key contents (working state, sideload keys and software keys) and transitions to `Invalid`.
+-  If the key manager has been initialized and is currently in a valid state (including `Disabled`), it immediately wipes its key contents with entropy (working state, sideload keys and software keys) and transitions to `Invalid`.
    -  Note, unlike a normal software requested disable, this path does not gracefully interact with KMAC, instead the secret contents are forcibly wiped.
    -  If there is an ongoing transaction with KMAC, the handshake with KMAC is still completed as usual, however the results are discarded and the value sent to KMAC are also not real.
 -  Once the system settles to `Invalid` state, the behavior is consistent with `Disabled` state.
@@ -155,8 +156,11 @@ If the current state is `Reset`, the invalid command is immediately rejected as 
 If the current state is any other state, the key manager FSM processes with random, dummy data, but does not update working state or relevant output registers.
 For each valid command, a set of inputs are selected and sequenced to the KMAC module.
 
-During `Disable` and `Invalid` states, working state and output registers are updated as usual.
-The only difference during these states is that random data is used and invalid operations are reported.
+During `Disable` and `Invalid` states, working state and output registers are updated based on the input commands as with normal states.
+There are however a few differences:
+-  Working state and output registers are updated regardless of any error status to ensure their values are further scrambled.
+-  Instead of normal input data, random data is selected for KMAC processing.
+-  All operations return an invalid operations error, in addition to any other error that might naturally occur.
 
 ## Generating Output Key
 The generate output command is composed of 2 options
@@ -178,56 +182,73 @@ An error code register is maintained {{< regref ERR_CODE >}} to check issues tha
 There are two categories of errors
 *  Hardware fault errors - These errors indicate something fundamental has gone wrong and are errors that could not have been caused by software.
    *  Invalid command - A non-one-hot command was issued from the key manager controller to the KMAC data interface. This is not possible by software and indicates a hardware fault.  This error can also happen if the KMCA data fsm gets into an invalid state.
+   *  Invalid fsm state - The fsm reached an invalid state.  This is not possible by software and indicates a hardware fault.
+   *  Invalid kmac operation - The KMAC module itself reported an error.  This is not possible given the set of KMAC data interface inputs.
    *  Invalid output - The data return from KMAC is all 0's or all 1's.  This is not possible given the set of KMAC data interface inputs.
 
 *  Software operation errors - These errors could have been caused by user errors and is a sign that software should examine its usage of key manager.
-   *  Invalid operation - An invalid operation (for example `generate` while in Idle) was invoked.
+   *  Invalid operation - An invalid operation (for example `generate` while in Reset) was invoked.
    *  Invalid input - Invalid software input was supplied (for example a greater key version than allowed in {{< regref MAX_OWNER_KEY_VER >}}.
 
-Whenever the error code changes from its previous value to a non-zero value, an interrupt is generated.
-Two separate alerts are also generated, one corresponding to each category above.
+Two separate alerts are generated, one corresponding to each category above.
 
-### Invalid Command
-When these errors occur, random data is fed to the KMAC for processing.
-At the completion of KMAC processing, the working state is over-written with KMAC's output and the state is transitioned to `Disabled`.
-An error interrupt and fault alert are also generated.
-Note the KMAC module itself may error during the derivation process.
-When this happens, the error is also registered as an invalid command and the same mechanisms apply.
+### Invalid Command/Fsm/Kmac Operation
+When these errors occur, a fault alert is generated.
 
 ### Invalid Output
-When these errors occur, an error interrupt and fault alert are generated.
-Neither the working state nor the relevant output registers are updated.
+When these errors occur, a fault alert is generated.
 
 ### Invalid Input
-When these errors occur, random data is fed to the KMAC for processing.
-Neither the working state nor the relevant output registers are updated.
-An error interrupt and operation alert are also generated.
+When these errors occur, an operation alert is generated
+What is considered invalid input depends on the current state and the operation called.
 
-The following are the invalid input checks:
-*  Either share of the sideload key is all 0's or all 1's
-*  Creator seed is all 0's or all 1's
-*  Owner seed is all 0's or all 1's
-*  Device Id is all 0's or all 1's
-*  Health state diverification data is all 0's or all 1's
+When an advance operation is invoked:
+- The working state key is checked for all 0's and all 1's.
+- During `Initialized` state, creator seed, device ID and health state data is checked for all 0's and all 1's.
+- During `CreatorRootKey` state, the owner seed is checked for all 0's and all 1's.
+- During all other states, nothing is explicitly checked.
+
+When a generate output key operation is invoked:
+- The working state key is checked for all 0's and all 1's.
+- The key version is less than or equal to the max key version.
+
+When a generate output identity is invoked:
+- The working state key is checked for all 0's and all 1's.
 
 ### Invalid Operation
-When these errors occur, an error interrupt and fault are generated.
+When these errors occur, an operation alert is generated.
 
-The effects of an invalid operation vary depending on state.
 The table below enumerates the legal operations in a given state.
 When an illegal operation is supplied, the error code is updated and the operation is flagged as `done with error`.
-Note that even though `Init` is not a legal operation in most states, it is treated as an ignored command rather as an explicit error.
 
-| Current State  | Legal Operations               | Outcome                                                                                                                       |
-| -------------  | ------------------------------ | ------------------------------------------------------------                                                                  |
-| Reset          | Advance                        | Advance to Initialized state upon completion.                                                                                 |
-| Reset          | Disable / Advance / Generate   | Invalid operation error triggered with no other side effects.                                                                 |
-| Initialized    | Disable / Advance              | Advance to next Disabled state or CreatorRootKey.                                                                             |
-| Initialized    | Generate                       | Invalid operation error triggered with random data, output registers are updated.                                             |
-| CreatorRootKey | Disable / Advance / Generate   | Behave as expected.                                                                                                           |
-| OwnerIntKey    | Disable / Advance / Generate   | Behave as expected.                                                                                                           |
-| OwnerKey       | Disable / Advance / Generate   | Behave as expected.                                                                                                           |
-| Disabled       | Disable / Advance / Generate   | Invalid operation error triggered with random data, both working state and output registers are updated depending on command. |
+| Current State    | Legal Operations               |
+| -------------    | ------------------------------ |
+| Reset            | Advance                        |
+| Initialized      | Disable / Advance              |
+| CreatorRootKey   | Disable / Advance / Generate   |
+| OwnerIntKey      | Disable / Advance / Generate   |
+| OwnerRootKey     | Disable / Advance / Generate   |
+| Invalid/Disabled | None                           |
+
+*  All operations invoked during `Invalid` and `Disabled` states lead to invalid operation error.
+
+### Error Response
+In addition to alerts and interrupts, key manager may also update the working state key and relevant outputs based on current state.
+See the tables below for an enumeration.
+
+| Current State    | Invalid Command | Invalid Output | Invalid Input | Invalid Operation   |
+| -------------    | ----------------| -----------------------------------------------------|
+| Reset            | Not Possible    | Not Possible   | Not possible  | Not updated         |
+| Initialized      | Updated         | Updated        | Not updated   | Not updated         |
+| CreatorRootKey   | Updated         | Updated        | Not updated   | Not possible        |
+| OwnerIntKey      | Updated         | Updated        | Not updated   | Not possible        |
+| OwnerRootKey     | Updated         | Updated        | Not updated   | Not possible        |
+| Invalid/Disabled | Updated         | Updated        | Updated       | Updated             |
+
+*  During `Reset` state, the KMAC module is never invoked, thus certain errors are not possible.
+*  During `Initialized`, `CreatorRootKey`, `OwnerIntermediateKey` and `OwnerRootKey` states, a fault error causes the relevant key / outputs to be updated; however an operational error does not.
+*  During `Invalid` and `Disabled` states, the relevant key / outputs are updated regardless of the error.
+*  Only the relevant collateral is updated -> ie, advance / disable command leads to working key update, and generate command leads to software or sideload key update.
 
 
 ## Block Diagram
@@ -341,8 +362,12 @@ Once the operation is complete, it falls back to the sideload key state, which i
 ### Software Binding
 
 The identities flow employs an idea called [software binding](https://docs.opentitan.org/doc/security/specs/identities_and_root_keys/#software-binding) to ensure that a particular key derivation scheme is only reproducible for a given software configuration.
-This software binding exists for every stage of key manager except for `OwnerKey`.
 The binding is created through the secure boot flow, where each stage sets the binding used for the next verified stage before advancing to it.
+The software binding is used during the following state transitions only:
+-  `Initialized` to `CreatorRootKey`
+-  `CreatorRootKey` to `OwnerIntermedaiteKey`
+-  `OwnerIntermediateKey` to `OwnerRootKey`
+
 In order to save on storage and not have a duplicate copy per stage, the software binding registers {{< regref SOFTWARE_BINDING >}} are shared between key manager stages.
 
 Software sets the appropriate values and locks it by clearing {{< regref SOFT_BINDING_EN >}}.
@@ -363,7 +388,7 @@ If the command is valid and successful, key manager indicates done and no errors
 If the command is invalid or unsuccessful, key manager indicates done with error.
 Regardless of the validity of the command, the hardware sequences are triggered to avoid leaking timing information.
 
-The software is able to read the current state of key manager, however it never has access to the associated secret value
+The software is able to read the current state of key manager, however it never has access to the associated internal key.
 
 When issuing the `generate-output-hw` command, software must select a destination primitive (aes, hmac or kmac).
 At the conclusion of the command, key and valid signals are forwarded by the key manager to the selected destination primitive.

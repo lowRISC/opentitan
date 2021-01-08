@@ -12,7 +12,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   input init_i,
   input clr_key_i,   // clear key just deletes the key
   input wipe_key_i,  // wipe key deletes and renders sideloads useless until reboot
-  input [31:0] entropy_i,
+  input [Shares-1:0][RandWidth-1:0] entropy_i,
   input keymgr_key_dest_e dest_sel_i,
   input keymgr_gen_out_e key_sel_i,
   input load_key_i,

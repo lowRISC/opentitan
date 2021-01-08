@@ -31,7 +31,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 
   // entropy input
   output logic prng_en_o,
-  input [31:0] entropy_i,
+  input [Shares-1:0][RandWidth-1:0] entropy_i,
 
   // error outputs
   output logic fsm_error_o,
@@ -229,7 +229,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   // Allow the transaction to terminate early with random data.
   assign data_o = start && done_o && !fsm_error_o ? {kmac_data_i.digest_share1,
                                                      kmac_data_i.digest_share0} :
-                                                    {DecoyOutputCopies{entropy_i}};
+                                                    {DecoyOutputCopies{entropy_i[0]}};
 
   // The input invalid check is done whenever transactions are ongoing with kmac
   // once set, it cannot be unset until transactions are fully complete
@@ -256,7 +256,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   // The count is maintained as a downcount
   // so a subtract is necessary to send the right byte
   // alternatively we can also reverse the order of the input
-  assign decoy_data = {DecoyCopies{entropy_i}};
+  assign decoy_data = {DecoyCopies{entropy_i[1]}};
   always_comb begin
     kmac_data_o.data  = decoy_data;
     if (|cmd_error_o || inputs_invalid_o || fsm_error_o) begin
