@@ -148,10 +148,6 @@ module sram_ctrl
   assign key_valid_d       = (key_req) ? 1'b0 :
                              (key_ack) ? 1'b1 : key_valid_q;
 
-  assign key_d            = sram_otp_key_i.key;
-  assign nonce_d          = sram_otp_key_i.nonce;
-  assign key_seed_valid_d = sram_otp_key_i.seed_valid;
-
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       key_req_pending_q <= 1'b0;
@@ -180,7 +176,9 @@ module sram_ctrl
     end
   end
 
-  prim_sync_reqack u_prim_sync_reqack (
+  prim_sync_reqack_data #(
+    .Width($bits(otp_ctrl_pkg::sram_otp_key_rsp_t)-1)
+  ) u_prim_sync_reqack_data (
     .clk_src_i  ( clk_i              ),
     .rst_src_ni ( rst_ni             ),
     .clk_dst_i  ( clk_otp_i          ),
@@ -188,7 +186,13 @@ module sram_ctrl
     .src_req_i  ( key_req_pending_q  ),
     .src_ack_o  ( key_ack            ),
     .dst_req_o  ( sram_otp_key_o.req ),
-    .dst_ack_i  ( sram_otp_key_i.ack )
+    .dst_ack_i  ( sram_otp_key_i.ack ),
+    .data_i     ( {sram_otp_key_i.key,
+                   sram_otp_key_i.nonce,
+                   sram_otp_key_i.seed_valid} ),
+    .data_o     ( {key_d,
+                   nonce_d,
+                   key_seed_valid_d}          )
   );
 
   ////////////////
