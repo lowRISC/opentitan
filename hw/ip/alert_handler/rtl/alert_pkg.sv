@@ -28,7 +28,7 @@ package alert_pkg;
                             Phase3 = 3'b111} cstate_e;
 
   // These LFSR parameters have been generated with
-  // $ hw/ip/prim/util/gen-lfsr-seed.py --width 32 --seed 2700182644
+  // $ util/design/gen-lfsr-seed.py --width 32 --seed 2700182644
   localparam int LfsrWidth = 32;
   typedef logic [LfsrWidth-1:0]                        lfsr_seed_t;
   typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;

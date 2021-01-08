@@ -5,8 +5,7 @@
 // Use the gen-otp-mmap.py script to update dependent files (like documentation
 // tables the comportable hjson and metadata SV package):
 //
-// $ cd ${PROJ_ROOT}/hw/ip/otp_ctrl/util/
-// $ ./gen-otp-mmap.py
+// $ ./util/design/gen-otp-mmap.py
 //
 // Make sure to regenerate the CSRs after converting the memory map:
 //

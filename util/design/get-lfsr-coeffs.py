@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-import glob
 import os
 import shutil
 import subprocess
@@ -56,7 +55,7 @@ def dump_coeffs(lfsrType, widths, coeffs, outfile):
             % (lfsrType, min(widths))
         outfile.write(decl_str)
         decl_str = "localparam logic [%d:0] %s_COEFFS [%d] = '{ " \
-            % (max(widths) - 1, lfsrType, max(widths)-min(widths)+1)
+            % (max(widths) - 1, lfsrType, max(widths) - min(widths) + 1)
         outfile.write(decl_str)
         comma = ',\n'
         spaces = ''
@@ -64,10 +63,9 @@ def dump_coeffs(lfsrType, widths, coeffs, outfile):
             if k == max(widths):
                 comma = ""
             if k == min(widths) + 1:
-                for l in range(len(decl_str)):
-                    spaces += ' '
-            outfile.write("%s%d'h%s%s" % \
-                (spaces, max(widths), coeffs[k-widths[0]], comma))
+                spaces += ' ' * len(decl_str)
+            outfile.write("%s%d'h%s%s" %
+                          (spaces, max(widths), coeffs[k - widths[0]], comma))
         outfile.write(' };\n')
 
 
@@ -125,8 +123,10 @@ to (defaults to lfsr_tmp)""",
             cmd = ['pdftotext %s.pdf' % PDF_NAME, '> %s.txt' % PDF_NAME]
             subprocess.call(cmd, shell=True)
             print("")
-            cmd = ['grep -A 350 "%s" %s.txt > table.txt' \
-                % (LINE_FILTER[0], PDF_NAME)]
+            cmd = [
+                'grep -A 350 "%s" %s.txt > table.txt' %
+                (LINE_FILTER[0], PDF_NAME)
+            ]
             subprocess.call(cmd, shell=True)
 
             # parse the table

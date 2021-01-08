@@ -49,7 +49,7 @@ package keymgr_pkg;
 
   // Default Lfsr configurations
   // These LFSR parameters have been generated with
-  // $ hw/ip/prim/util/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""
+  // $ util/design/gen-lfsr-seed.py --width 64 --seed 691876113 --prefix ""
   parameter int LfsrWidth = 64;
   typedef logic [LfsrWidth-1:0] lfsr_seed_t;
   typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;

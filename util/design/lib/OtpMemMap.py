@@ -11,8 +11,7 @@ import random
 from math import ceil, log2
 
 from tabulate import tabulate
-
-from common import check_bool, check_int
+from lib.common import check_bool, check_int
 
 DIGEST_SUFFIX = "_DIGEST"
 DIGEST_SIZE = 8

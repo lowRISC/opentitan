@@ -84,7 +84,7 @@ $(ips_reg): pre_reg
 	fi
 
 otp-mmap:
-	cd ${PRJ_DIR}/hw/ip/otp_ctrl/util && ./gen-otp-mmap.py
+	cd ${PRJ_DIR} && ./util/design/gen-otp-mmap.py
 
 regs-header: $(ips_reg_header) banner
 
