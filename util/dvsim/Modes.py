@@ -118,9 +118,10 @@ class Modes():
             if type(self_attr_val) != type(mode_attr_val):
                 log.error(
                     "Mode %s cannot be merged into %s due to a conflict "
-                    "(type mismatch): %s: {%s(%s), %s(%s)}", name, self.name,
-                    attr, str(self_attr_val), str(type(self_attr_val)),
-                    str(mode_attr_val), str(type(mode_attr_val)))
+                    "(type mismatch): %s: {%s(%s), %s(%s)}", mode.name,
+                    self.name, attr, str(self_attr_val),
+                    str(type(self_attr_val)), str(mode_attr_val),
+                    str(type(mode_attr_val)))
                 sys.exit(1)
 
             # Check if they are different non-default values.
@@ -128,8 +129,8 @@ class Modes():
                 log.error(
                     "Mode %s cannot be merged into %s due to a conflict "
                     "(unable to pick one from different values): "
-                    "%s: {%s, %s}", name, self.name, attr, str(self_attr_val),
-                    str(mode_attr_val))
+                    "%s: {%s, %s}", mode.name, self.name, attr,
+                    str(self_attr_val), str(mode_attr_val))
                 sys.exit(1)
 
         # Check newly appended sub_modes, remove 'self' and duplicates
