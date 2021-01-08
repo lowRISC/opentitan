@@ -150,7 +150,7 @@
     }
     { name: "fatal",
       desc: '''
-        The fatal alert is triggered i) upon detecting a storage error in the Control Register, or ii) if any internal FSM enters an invalid state.
+        The fatal alert is triggered i) upon detecting a storage error in the Control Register, ii) if any internal FSM enters an invalid state, or iii) if a mux selector signal takes on an invalid value.
         The AES unit cannot recover from such an error and needs to be reset.
       '''
     }
@@ -526,7 +526,7 @@
         desc:  '''
           No fatal alert condition has occurred (0).
           A fatal alert condition has occurred and the AES unit needs to be reset (1).
-          Examples for fatal alert conditions include i) storage errors in the Control Register, and ii) if any internal FSM enters an invalid state.
+          Examples for fatal alert conditions include i) storage errors in the Control Register, ii) if any internal FSM enters an invalid state, and iii) if a mux selector signal takes on an invalid value.
         '''
       }
     ]
