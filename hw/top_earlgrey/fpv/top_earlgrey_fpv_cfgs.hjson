@@ -188,6 +188,12 @@
                cov: false
              }
              {
+               name: rv_dm
+               fusesoc_core: lowrisc:dv:rv_dm_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: false
+             }
+             {
                name: rv_timer
                fusesoc_core: lowrisc:dv:rv_timer_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]

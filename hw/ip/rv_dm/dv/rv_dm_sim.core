@@ -14,7 +14,7 @@ filesets:
       - lowrisc:dv:rv_dm_test
       - lowrisc:dv:rv_dm_sva
     files:
-      - tb/tb.sv
+      - tb.sv
     file_type: systemVerilogSource
 
 targets:
