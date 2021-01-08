@@ -149,7 +149,10 @@ module aes_cipher_core import aes_pkg::*;
   logic               [3:0][3:0][7:0] state_d [NumShares];
   logic               [3:0][3:0][7:0] state_q [NumShares];
   logic                               state_we;
+  logic           [StateSelWidth-1:0] state_sel_raw;
+  state_sel_e                         state_sel_ctrl;
   state_sel_e                         state_sel;
+  logic                               state_sel_err;
 
   logic                               sub_bytes_en;
   logic                               sub_bytes_out_req;
@@ -162,16 +165,25 @@ module aes_cipher_core import aes_pkg::*;
   logic               [3:0][3:0][7:0] mix_columns_out [NumShares];
   logic               [3:0][3:0][7:0] add_round_key_in [NumShares];
   logic               [3:0][3:0][7:0] add_round_key_out [NumShares];
-  add_rk_sel_e                        add_round_key_in_sel;
+  logic           [AddRKSelWidth-1:0] add_rk_sel_raw;
+  add_rk_sel_e                        add_rk_sel_ctrl;
+  add_rk_sel_e                        add_rk_sel;
+  logic                               add_rk_sel_err;
 
   logic                   [7:0][31:0] key_full_d [NumShares];
   logic                   [7:0][31:0] key_full_q [NumShares];
   logic                               key_full_we;
+  logic         [KeyFullSelWidth-1:0] key_full_sel_raw;
+  key_full_sel_e                      key_full_sel_ctrl;
   key_full_sel_e                      key_full_sel;
+  logic                               key_full_sel_err;
   logic                   [7:0][31:0] key_dec_d [NumShares];
   logic                   [7:0][31:0] key_dec_q [NumShares];
   logic                               key_dec_we;
+  logic          [KeyDecSelWidth-1:0] key_dec_sel_raw;
+  key_dec_sel_e                       key_dec_sel_ctrl;
   key_dec_sel_e                       key_dec_sel;
+  logic                               key_dec_sel_err;
   logic                   [7:0][31:0] key_expand_out [NumShares];
   ciph_op_e                           key_expand_op;
   logic                               key_expand_en;
@@ -179,12 +191,20 @@ module aes_cipher_core import aes_pkg::*;
   logic                               key_expand_out_ack;
   logic                               key_expand_clear;
   logic                         [3:0] key_expand_round;
+  logic        [KeyWordsSelWidth-1:0] key_words_sel_raw;
+  key_words_sel_e                     key_words_sel_ctrl;
   key_words_sel_e                     key_words_sel;
+  logic                               key_words_sel_err;
   logic                   [3:0][31:0] key_words [NumShares];
   logic               [3:0][3:0][7:0] key_bytes [NumShares];
   logic               [3:0][3:0][7:0] key_mix_columns_out [NumShares];
   logic               [3:0][3:0][7:0] round_key [NumShares];
+  logic        [RoundKeySelWidth-1:0] round_key_sel_raw;
+  round_key_sel_e                     round_key_sel_ctrl;
   round_key_sel_e                     round_key_sel;
+  logic                               round_key_sel_err;
+
+  logic                               mux_sel_err;
 
   // Pseudo-random data for clearing and masking purposes
   logic                       [127:0] prd_clearing_128;
@@ -327,7 +347,7 @@ module aes_cipher_core import aes_pkg::*;
   end
 
   always_comb begin : add_round_key_in_mux
-    unique case (add_round_key_in_sel)
+    unique case (add_rk_sel)
       ADD_RK_INIT:  add_round_key_in = state_q;
       ADD_RK_ROUND: add_round_key_in = mix_columns_out;
       ADD_RK_FINAL: add_round_key_in = shift_rows_out;
@@ -437,52 +457,140 @@ module aes_cipher_core import aes_pkg::*;
   aes_cipher_control #(
     .Masking ( Masking )
   ) u_aes_cipher_control (
-    .clk_i                ( clk_i                ),
-    .rst_ni               ( rst_ni               ),
+    .clk_i                ( clk_i               ),
+    .rst_ni               ( rst_ni              ),
 
-    .in_valid_i           ( in_valid_i           ),
-    .in_ready_o           ( in_ready_o           ),
+    .in_valid_i           ( in_valid_i          ),
+    .in_ready_o           ( in_ready_o          ),
 
-    .out_valid_o          ( out_valid_o          ),
-    .out_ready_i          ( out_ready_i          ),
+    .out_valid_o          ( out_valid_o         ),
+    .out_ready_i          ( out_ready_i         ),
 
-    .cfg_valid_i          ( cfg_valid_i          ),
-    .op_i                 ( op_i                 ),
-    .key_len_i            ( key_len_i            ),
-    .crypt_i              ( crypt_i              ),
-    .crypt_o              ( crypt_o              ),
-    .dec_key_gen_i        ( dec_key_gen_i        ),
-    .dec_key_gen_o        ( dec_key_gen_o        ),
-    .key_clear_i          ( key_clear_i          ),
-    .key_clear_o          ( key_clear_o          ),
-    .data_out_clear_i     ( data_out_clear_i     ),
-    .data_out_clear_o     ( data_out_clear_o     ),
-    .alert_o              ( alert_o              ),
+    .cfg_valid_i          ( cfg_valid_i         ),
+    .op_i                 ( op_i                ),
+    .key_len_i            ( key_len_i           ),
+    .crypt_i              ( crypt_i             ),
+    .crypt_o              ( crypt_o             ),
+    .dec_key_gen_i        ( dec_key_gen_i       ),
+    .dec_key_gen_o        ( dec_key_gen_o       ),
+    .key_clear_i          ( key_clear_i         ),
+    .key_clear_o          ( key_clear_o         ),
+    .data_out_clear_i     ( data_out_clear_i    ),
+    .data_out_clear_o     ( data_out_clear_o    ),
+    .mux_sel_err_i        ( mux_sel_err         ),
+    .alert_o              ( alert_o             ),
 
-    .prng_update_o        ( prd_masking_upd      ),
-    .prng_reseed_req_o    ( prd_masking_rsd_req  ),
-    .prng_reseed_ack_i    ( prd_masking_rsd_ack  ),
+    .prng_update_o        ( prd_masking_upd     ),
+    .prng_reseed_req_o    ( prd_masking_rsd_req ),
+    .prng_reseed_ack_i    ( prd_masking_rsd_ack ),
 
-    .state_sel_o          ( state_sel            ),
-    .state_we_o           ( state_we             ),
-    .sub_bytes_en_o       ( sub_bytes_en         ),
-    .sub_bytes_out_req_i  ( sub_bytes_out_req    ),
-    .sub_bytes_out_ack_o  ( sub_bytes_out_ack    ),
-    .add_rk_sel_o         ( add_round_key_in_sel ),
+    .state_sel_o          ( state_sel_ctrl      ),
+    .state_we_o           ( state_we            ),
+    .sub_bytes_en_o       ( sub_bytes_en        ),
+    .sub_bytes_out_req_i  ( sub_bytes_out_req   ),
+    .sub_bytes_out_ack_o  ( sub_bytes_out_ack   ),
+    .add_rk_sel_o         ( add_rk_sel_ctrl     ),
 
-    .key_expand_op_o      ( key_expand_op        ),
-    .key_full_sel_o       ( key_full_sel         ),
-    .key_full_we_o        ( key_full_we          ),
-    .key_dec_sel_o        ( key_dec_sel          ),
-    .key_dec_we_o         ( key_dec_we           ),
-    .key_expand_en_o      ( key_expand_en        ),
-    .key_expand_out_req_i ( key_expand_out_req   ),
-    .key_expand_out_ack_o ( key_expand_out_ack   ),
-    .key_expand_clear_o   ( key_expand_clear     ),
-    .key_expand_round_o   ( key_expand_round     ),
-    .key_words_sel_o      ( key_words_sel        ),
-    .round_key_sel_o      ( round_key_sel        )
+    .key_expand_op_o      ( key_expand_op       ),
+    .key_full_sel_o       ( key_full_sel_ctrl   ),
+    .key_full_we_o        ( key_full_we         ),
+    .key_dec_sel_o        ( key_dec_sel_ctrl    ),
+    .key_dec_we_o         ( key_dec_we          ),
+    .key_expand_en_o      ( key_expand_en       ),
+    .key_expand_out_req_i ( key_expand_out_req  ),
+    .key_expand_out_ack_o ( key_expand_out_ack  ),
+    .key_expand_clear_o   ( key_expand_clear    ),
+    .key_expand_round_o   ( key_expand_round    ),
+    .key_words_sel_o      ( key_words_sel_ctrl  ),
+    .round_key_sel_o      ( round_key_sel_ctrl  )
   );
+
+  ///////////////
+  // Selectors //
+  ///////////////
+
+  // We use sparse encodings for these mux selector signals and must ensure that:
+  // 1. The synthesis tool doesn't optimize away the sparse encoding.
+  // 2. The selector signal is always valid. More precisely, an alert or SVA is triggered if a
+  //    selector signal takes on an invalid value.
+  // 3. The error/alert signal remains asserted until reset even if the selector signal becomes
+  //    valid again.
+
+  aes_sel_buf_chk #(
+    .Num   ( StateSelNum   ),
+    .Width ( StateSelWidth )
+  ) u_aes_state_sel_buf_chk (
+    .clk_i  ( clk_i          ),
+    .rst_ni ( rst_ni         ),
+    .sel_i  ( state_sel_ctrl ),
+    .sel_o  ( state_sel_raw  ),
+    .err_o  ( state_sel_err  )
+  );
+  assign state_sel = state_sel_e'(state_sel_raw);
+
+  aes_sel_buf_chk #(
+    .Num   ( AddRKSelNum   ),
+    .Width ( AddRKSelWidth )
+  ) u_aes_add_rk_sel_buf_chk (
+    .clk_i  ( clk_i           ),
+    .rst_ni ( rst_ni          ),
+    .sel_i  ( add_rk_sel_ctrl ),
+    .sel_o  ( add_rk_sel_raw  ),
+    .err_o  ( add_rk_sel_err  )
+  );
+  assign add_rk_sel = add_rk_sel_e'(add_rk_sel_raw);
+
+  aes_sel_buf_chk #(
+    .Num   ( KeyFullSelNum   ),
+    .Width ( KeyFullSelWidth )
+  ) u_aes_key_full_sel_buf_chk (
+    .clk_i  ( clk_i             ),
+    .rst_ni ( rst_ni            ),
+    .sel_i  ( key_full_sel_ctrl ),
+    .sel_o  ( key_full_sel_raw  ),
+    .err_o  ( key_full_sel_err  )
+  );
+  assign key_full_sel = key_full_sel_e'(key_full_sel_raw);
+
+  aes_sel_buf_chk #(
+    .Num   ( KeyDecSelNum   ),
+    .Width ( KeyDecSelWidth )
+  ) u_aes_key_dec_sel_buf_chk (
+    .clk_i  ( clk_i            ),
+    .rst_ni ( rst_ni           ),
+    .sel_i  ( key_dec_sel_ctrl ),
+    .sel_o  ( key_dec_sel_raw  ),
+    .err_o  ( key_dec_sel_err  )
+  );
+  assign key_dec_sel = key_dec_sel_e'(key_dec_sel_raw);
+
+  aes_sel_buf_chk #(
+    .Num   ( KeyWordsSelNum   ),
+    .Width ( KeyWordsSelWidth )
+  ) u_aes_key_words_sel_buf_chk (
+    .clk_i  ( clk_i              ),
+    .rst_ni ( rst_ni             ),
+    .sel_i  ( key_words_sel_ctrl ),
+    .sel_o  ( key_words_sel_raw  ),
+    .err_o  ( key_words_sel_err  )
+  );
+  assign key_words_sel = key_words_sel_e'(key_words_sel_raw);
+
+  aes_sel_buf_chk #(
+    .Num   ( RoundKeySelNum   ),
+    .Width ( RoundKeySelWidth )
+  ) u_aes_round_key_sel_buf_chk (
+    .clk_i  ( clk_i              ),
+    .rst_ni ( rst_ni             ),
+    .sel_i  ( round_key_sel_ctrl ),
+    .sel_o  ( round_key_sel_raw  ),
+    .err_o  ( round_key_sel_err  )
+  );
+  assign round_key_sel = round_key_sel_e'(round_key_sel_raw);
+
+  // Signal invalid mux selector signals to control FSM which will lock up and trigger an alert.
+  assign mux_sel_err = state_sel_err | add_rk_sel_err | key_full_sel_err |
+      key_dec_sel_err | key_words_sel_err | round_key_sel_err;
 
   /////////////
   // Outputs //
@@ -503,22 +611,6 @@ module aes_cipher_core import aes_pkg::*;
       (!Masking &&
       (SBoxImpl == SBoxImplLut ||
        SBoxImpl == SBoxImplCanright)))
-
-  // Selectors must be known/valid
-  `ASSERT(AesStateSelValid, state_sel inside {
-      STATE_INIT,
-      STATE_ROUND,
-      STATE_CLEAR
-      })
-  `ASSERT(AesAddRKSelValid, add_round_key_in_sel inside {
-      ADD_RK_INIT,
-      ADD_RK_ROUND,
-      ADD_RK_FINAL
-      })
-  `ASSERT_KNOWN(AesKeyFullSelKnown, key_full_sel)
-  `ASSERT_KNOWN(AesKeyDecSelKnown, key_dec_sel)
-  `ASSERT_KNOWN(AesKeyWordsSelKnown, key_words_sel)
-  `ASSERT_KNOWN(AesRoundKeySelKnown, round_key_sel)
 
   // Make sure the output of the masking PRNG is properly extracted without creating overlaps
   // of masks and PRD distributed to the individual S-Boxes.

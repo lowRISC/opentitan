@@ -65,12 +65,18 @@ module aes_core
   logic                        ctrl_err_storage_d;
   logic                        ctrl_err_storage_q;
   logic                        ctrl_alert;
-
+  logic                        mux_sel_err;
 
   logic        [3:0][3:0][7:0] state_in;
+  logic       [SISelWidth-1:0] state_in_sel_raw;
+  si_sel_e                     state_in_sel_ctrl;
   si_sel_e                     state_in_sel;
+  logic                        state_in_sel_err;
   logic        [3:0][3:0][7:0] add_state_in;
+  logic    [AddSISelWidth-1:0] add_state_in_sel_raw;
+  add_si_sel_e                 add_state_in_sel_ctrl;
   add_si_sel_e                 add_state_in_sel;
+  logic                        add_state_in_sel_err;
 
   logic        [3:0][3:0][7:0] state_mask;
   logic        [3:0][3:0][7:0] state_init [NumShares];
@@ -83,14 +89,20 @@ module aes_core
   logic            [7:0][31:0] key_init_q [2];
   logic            [7:0][31:0] key_init_cipher [NumShares];
   logic            [7:0]       key_init_we [2];
+  logic  [KeyInitSelWidth-1:0] key_init_sel_raw;
+  key_init_sel_e               key_init_sel_ctrl;
   key_init_sel_e               key_init_sel;
+  logic                        key_init_sel_err;
 
   logic            [3:0][31:0] iv;
   logic            [3:0]       iv_qe;
   logic            [7:0][15:0] iv_d;
   logic            [7:0][15:0] iv_q;
   logic            [7:0]       iv_we;
+  logic       [IVSelWidth-1:0] iv_sel_raw;
+  iv_sel_e                     iv_sel_ctrl;
   iv_sel_e                     iv_sel;
+  logic                        iv_sel_err;
 
   logic            [7:0][15:0] ctr;
   logic            [7:0]       ctr_we;
@@ -101,14 +113,20 @@ module aes_core
   logic            [3:0][31:0] data_in_prev_d;
   logic            [3:0][31:0] data_in_prev_q;
   logic                        data_in_prev_we;
+  logic      [DIPSelWidth-1:0] data_in_prev_sel_raw;
+  dip_sel_e                    data_in_prev_sel_ctrl;
   dip_sel_e                    data_in_prev_sel;
+  logic                        data_in_prev_sel_err;
 
   logic            [3:0][31:0] data_in;
   logic            [3:0]       data_in_qe;
   logic                        data_in_we;
 
   logic        [3:0][3:0][7:0] add_state_out;
+  logic    [AddSOSelWidth-1:0] add_state_out_sel_raw;
+  add_so_sel_e                 add_state_out_sel_ctrl;
   add_so_sel_e                 add_state_out_sel;
+  logic                        add_state_out_sel_err;
 
   logic            [3:0][31:0] data_out_d;
   logic            [3:0][31:0] data_out_q;
@@ -500,6 +518,7 @@ module aes_core
     .key_iv_data_in_clear_i    ( reg2hw.trigger.key_iv_data_in_clear.q  ),
     .data_out_clear_i          ( reg2hw.trigger.data_out_clear.q        ),
     .prng_reseed_i             ( reg2hw.trigger.prng_reseed.q           ),
+    .mux_sel_err_i             ( mux_sel_err                            ),
     .alert_fatal_i             ( alert_fatal_o                          ),
     .alert_o                   ( ctrl_alert                             ),
 
@@ -510,12 +529,12 @@ module aes_core
     .data_in_we_o              ( data_in_we                             ),
     .data_out_we_o             ( data_out_we                            ),
 
-    .data_in_prev_sel_o        ( data_in_prev_sel                       ),
+    .data_in_prev_sel_o        ( data_in_prev_sel_ctrl                  ),
     .data_in_prev_we_o         ( data_in_prev_we                        ),
 
-    .state_in_sel_o            ( state_in_sel                           ),
-    .add_state_in_sel_o        ( add_state_in_sel                       ),
-    .add_state_out_sel_o       ( add_state_out_sel                      ),
+    .state_in_sel_o            ( state_in_sel_ctrl                      ),
+    .add_state_in_sel_o        ( add_state_in_sel_ctrl                  ),
+    .add_state_out_sel_o       ( add_state_out_sel_ctrl                 ),
 
     .ctr_incr_o                ( ctr_incr                               ),
     .ctr_ready_i               ( ctr_ready                              ),
@@ -534,9 +553,9 @@ module aes_core
     .cipher_data_out_clear_o   ( cipher_data_out_clear                  ),
     .cipher_data_out_clear_i   ( cipher_data_out_clear_busy             ),
 
-    .key_init_sel_o            ( key_init_sel                           ),
+    .key_init_sel_o            ( key_init_sel_ctrl                      ),
     .key_init_we_o             ( key_init_we                            ),
-    .iv_sel_o                  ( iv_sel                                 ),
+    .iv_sel_o                  ( iv_sel_ctrl                            ),
     .iv_we_o                   ( iv_we                                  ),
 
     .prng_data_req_o           ( prd_clearing_upd_req                   ),
@@ -573,6 +592,93 @@ module aes_core
       hw2reg.data_in[i].de = data_in_we;
     end
   end
+
+  ///////////////
+  // Selectors //
+  ///////////////
+
+  // We use sparse encodings for these mux selector signals and must ensure that:
+  // 1. The synthesis tool doesn't optimize away the sparse encoding.
+  // 2. The selector signal is always valid. More precisely, an alert or SVA is triggered if a
+  //    selector signal takes on an invalid value.
+  // 3. The error/alert signal remains asserted until reset even if the selector signal becomes
+  //    valid again.
+
+  aes_sel_buf_chk #(
+    .Num   ( DIPSelNum   ),
+    .Width ( DIPSelWidth )
+  ) u_aes_data_in_prev_sel_buf_chk (
+    .clk_i  ( clk_i                 ),
+    .rst_ni ( rst_ni                ),
+    .sel_i  ( data_in_prev_sel_ctrl ),
+    .sel_o  ( data_in_prev_sel_raw  ),
+    .err_o  ( data_in_prev_sel_err  )
+  );
+  assign data_in_prev_sel = dip_sel_e'(data_in_prev_sel_raw);
+
+  aes_sel_buf_chk #(
+    .Num   ( SISelNum   ),
+    .Width ( SISelWidth )
+  ) u_aes_state_in_sel_buf_chk (
+    .clk_i  ( clk_i             ),
+    .rst_ni ( rst_ni            ),
+    .sel_i  ( state_in_sel_ctrl ),
+    .sel_o  ( state_in_sel_raw  ),
+    .err_o  ( state_in_sel_err  )
+  );
+  assign state_in_sel = si_sel_e'(state_in_sel_raw);
+
+  aes_sel_buf_chk #(
+    .Num   ( AddSISelNum   ),
+    .Width ( AddSISelWidth )
+  ) u_aes_add_state_in_sel_buf_chk (
+    .clk_i  ( clk_i                 ),
+    .rst_ni ( rst_ni                ),
+    .sel_i  ( add_state_in_sel_ctrl ),
+    .sel_o  ( add_state_in_sel_raw  ),
+    .err_o  ( add_state_in_sel_err  )
+  );
+  assign add_state_in_sel = add_si_sel_e'(add_state_in_sel_raw);
+
+  aes_sel_buf_chk #(
+    .Num   ( AddSOSelNum   ),
+    .Width ( AddSOSelWidth )
+  ) u_aes_add_state_out_sel_buf_chk (
+    .clk_i  ( clk_i                  ),
+    .rst_ni ( rst_ni                 ),
+    .sel_i  ( add_state_out_sel_ctrl ),
+    .sel_o  ( add_state_out_sel_raw  ),
+    .err_o  ( add_state_out_sel_err  )
+  );
+  assign add_state_out_sel = add_so_sel_e'(add_state_out_sel_raw);
+
+  aes_sel_buf_chk #(
+    .Num   ( KeyInitSelNum   ),
+    .Width ( KeyInitSelWidth )
+  ) u_aes_key_init_sel_buf_chk (
+    .clk_i  ( clk_i             ),
+    .rst_ni ( rst_ni            ),
+    .sel_i  ( key_init_sel_ctrl ),
+    .sel_o  ( key_init_sel_raw  ),
+    .err_o  ( key_init_sel_err  )
+  );
+  assign key_init_sel = key_init_sel_e'(key_init_sel_raw);
+
+  aes_sel_buf_chk #(
+    .Num   ( IVSelNum   ),
+    .Width ( IVSelWidth )
+  ) u_aes_iv_sel_buf_chk (
+    .clk_i  ( clk_i       ),
+    .rst_ni ( rst_ni      ),
+    .sel_i  ( iv_sel_ctrl ),
+    .sel_o  ( iv_sel_raw  ),
+    .err_o  ( iv_sel_err  )
+  );
+  assign iv_sel = iv_sel_e'(iv_sel_raw);
+
+  // Signal invalid mux selector signals to control FSM which will lock up and trigger an alert.
+  assign mux_sel_err = data_in_prev_sel_err | state_in_sel_err | add_state_in_sel_err |
+      add_state_out_sel_err | key_init_sel_err | iv_sel_err;
 
   /////////////
   // Outputs //
@@ -660,16 +766,6 @@ module aes_core
   ////////////////
 
   // Selectors must be known/valid
-  `ASSERT_KNOWN(AesKeyInitSelKnown, key_init_sel)
-  `ASSERT(AesIvSelValid, iv_sel inside {
-      IV_INPUT,
-      IV_DATA_OUT,
-      IV_DATA_OUT_RAW,
-      IV_DATA_IN_PREV,
-      IV_CTR,
-      IV_CLEAR
-      })
-  `ASSERT_KNOWN(AesDataInPrevSelKnown, data_in_prev_sel)
   `ASSERT(AesModeValid, !ctrl_err_storage |-> aes_mode_q inside {
       AES_ECB,
       AES_CBC,
@@ -679,12 +775,5 @@ module aes_core
       AES_NONE
       })
   `ASSERT_KNOWN(AesOpKnown, aes_op_q)
-  `ASSERT_KNOWN(AesStateInSelKnown, state_in_sel)
-  `ASSERT_KNOWN(AesAddStateInSelKnown, add_state_in_sel)
-  `ASSERT(AesAddStateOutSelValid, add_state_out_sel inside {
-      ADD_SO_ZERO,
-      ADD_SO_IV,
-      ADD_SO_DIP
-      })
 
 endmodule

@@ -27,6 +27,7 @@ module aes_control
   input  logic                    key_iv_data_in_clear_i,
   input  logic                    data_out_clear_i,
   input  logic                    prng_reseed_i,
+  input  logic                    mux_sel_err_i,
   input  logic                    alert_fatal_i,
   output logic                    alert_o,
 
@@ -536,6 +537,13 @@ module aes_control
         aes_ctrl_ns = ERROR;
       end
     endcase
+
+    // Unconditionally jump into the terminal error state in case a mux selector signal becomes
+    // invalid.
+    if (mux_sel_err_i) begin
+      alert_o     = 1'b1;
+      aes_ctrl_ns = ERROR;
+    end
   end
 
   // This primitive is used to place a size-only constraint on the
