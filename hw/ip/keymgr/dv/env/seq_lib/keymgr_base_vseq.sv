@@ -22,6 +22,12 @@ class keymgr_base_vseq extends cip_base_vseq #(
   // predict operation result in seq
   keymgr_pkg::keymgr_working_state_e current_state;
 
+  rand bit is_key_version_err;
+
+  constraint is_key_version_err_c {
+    is_key_version_err == 0;
+  }
+
   `uvm_object_new
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -67,11 +73,47 @@ class keymgr_base_vseq extends cip_base_vseq #(
     if (advance_state) keymgr_advance(wait_done);
 
     repeat (num_gen_op) begin
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(is_key_version_err)
+      update_key_version();
+
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gen_operation)
       keymgr_generate(.operation(gen_operation), .wait_done(wait_done));
       if (clr_output) keymgr_rd_clr();
     end
   endtask : keymgr_operations
+
+  // update key_version to match knob `is_key_version_err` and current_state value
+  task update_key_version();
+    bit [TL_DW-1:0] key_version_val;
+    bit [TL_DW-1:0] max_creator_key_ver_val;
+    bit [TL_DW-1:0] max_owner_int_key_ver_val;
+    bit [TL_DW-1:0] max_owner_key_ver_val;
+    bit [TL_DW-1:0] max_key_ver_val;
+
+    key_version_val           = `gmv(ral.key_version);
+    max_creator_key_ver_val   = `gmv(ral.max_creator_key_ver);
+    max_owner_int_key_ver_val = `gmv(ral.max_owner_int_key_ver);
+    max_owner_key_ver_val     = `gmv(ral.max_owner_key_ver);
+    max_key_ver_val = (current_state == keymgr_pkg::StCreatorRootKey)
+        ? max_creator_key_ver_val : (current_state == keymgr_pkg::StOwnerIntKey)
+        ? max_owner_int_key_ver_val : (current_state == keymgr_pkg::StOwnerKey)
+        ? max_owner_key_ver_val : '1;
+
+    // if current key_version already match to what we need, return without updating it
+    if (is_key_version_err && key_version_val > max_key_ver_val ||
+        !is_key_version_err && key_version_val <= max_key_ver_val) begin
+      return;
+    end
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(key_version_val,
+                                       if (is_key_version_err) {
+                                         max_key_ver_val != '1 -> key_version_val > max_key_ver_val;
+                                       } else {
+                                         key_version_val <= max_key_ver_val;
+                                       })
+    ral.key_version.set(key_version_val);
+    csr_update(ral.key_version);
+  endtask
 
   virtual task wait_op_done();
     keymgr_pkg::keymgr_op_status_e exp_status;
