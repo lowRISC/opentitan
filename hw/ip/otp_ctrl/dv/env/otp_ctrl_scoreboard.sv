@@ -102,13 +102,13 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       bit [SCRAMBLE_DATA_SIZE-1:0] exp_data_0, exp_data_1;
       lc_token_fifo.get(rcv_item);
       exp_data_0 = present_encode_with_final_const(
-                   .data(RndCnstDigestIVDefault[LcRawDigest]),
+                   .data(RndCnstDigestIV[LcRawDigest]),
                    .key(rcv_item.h_data),
-                   .final_const(RndCnstDigestConstDefault[LcRawDigest]));
+                   .final_const(RndCnstDigestConst[LcRawDigest]));
       exp_data_1 = present_encode_with_final_const(
                    .data(exp_data_0),
                    .key(rcv_item.h_data),
-                   .final_const(RndCnstDigestConstDefault[LcRawDigest]));
+                   .final_const(RndCnstDigestConst[LcRawDigest]));
       `DV_CHECK_EQ(rcv_item.d_data, {exp_data_1, exp_data_0}, "lc_token_encode_mismatch")
     end
   endtask
@@ -152,16 +152,16 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       // calculate key
       sram_key = get_key_from_otp(part_locked, SramDataKeySeedOffset / 4);
       exp_key_lower = present_encode_with_final_const(
-                      .data(RndCnstDigestIVDefault[SramDataKey]),
+                      .data(RndCnstDigestIV[SramDataKey]),
                       .key(sram_key),
-                      .final_const(RndCnstDigestConstDefault[SramDataKey]),
+                      .final_const(RndCnstDigestConst[SramDataKey]),
                       .second_key(edn_key1),
                       .num_round(2));
 
       exp_key_higher = present_encode_with_final_const(
-                       .data(RndCnstDigestIVDefault[SramDataKey]),
+                       .data(RndCnstDigestIV[SramDataKey]),
                        .key(sram_key),
-                       .final_const(RndCnstDigestConstDefault[SramDataKey]),
+                       .final_const(RndCnstDigestConst[SramDataKey]),
                        .second_key(edn_key2),
                        .num_round(2));
       exp_key = {exp_key_higher, exp_key_lower};
@@ -197,15 +197,15 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           // calculate key
           flash_key = get_key_from_otp(part_locked, flash_key_index);
           exp_key_lower = present_encode_with_final_const(
-                          .data(RndCnstDigestIVDefault[sel_flash]),
+                          .data(RndCnstDigestIV[sel_flash]),
                           .key(flash_key),
-                          .final_const(RndCnstDigestConstDefault[sel_flash]));
+                          .final_const(RndCnstDigestConst[sel_flash]));
 
           flash_key = get_key_from_otp(part_locked, flash_key_index + 4);
           exp_key_higher = present_encode_with_final_const(
-                           .data(RndCnstDigestIVDefault[sel_flash]),
+                           .data(RndCnstDigestIV[sel_flash]),
                            .key(flash_key),
-                           .final_const(RndCnstDigestConstDefault[sel_flash]));
+                           .final_const(RndCnstDigestConst[sel_flash]));
           exp_key = {exp_key_higher, exp_key_lower};
           `DV_CHECK_EQ(key, exp_key, $sformatf("flash %s key mismatch", sel_flash.name()))
         end
@@ -244,16 +244,16 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           // calculate key
           sram_key = get_key_from_otp(part_locked, SramDataKeySeedOffset / 4);
           exp_key_lower = present_encode_with_final_const(
-                          .data(RndCnstDigestIVDefault[SramDataKey]),
+                          .data(RndCnstDigestIV[SramDataKey]),
                           .key(sram_key),
-                          .final_const(RndCnstDigestConstDefault[SramDataKey]),
+                          .final_const(RndCnstDigestConst[SramDataKey]),
                           .second_key(edn_key1),
                           .num_round(2));
 
           exp_key_higher = present_encode_with_final_const(
-                           .data(RndCnstDigestIVDefault[SramDataKey]),
+                           .data(RndCnstDigestIV[SramDataKey]),
                            .key(sram_key),
-                           .final_const(RndCnstDigestConstDefault[SramDataKey]),
+                           .final_const(RndCnstDigestConst[SramDataKey]),
                            .second_key(edn_key2),
                            .num_round(2));
           exp_key = {exp_key_higher, exp_key_lower};
@@ -502,7 +502,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   // The last 64-round PRESENT calculation will use a global digest constant as key input
   function void cal_digest_val(int part_idx);
     bit [NUM_ROUND-1:0] [SCRAMBLE_DATA_SIZE-1:0] enc_array;
-    bit [SCRAMBLE_DATA_SIZE-1:0]                 init_vec = RndCnstDigestIVDefault[0];
+    bit [SCRAMBLE_DATA_SIZE-1:0]                 init_vec = RndCnstDigestIV[0];
     bit [TL_DW-1:0] mem_q[$];
     int             array_size;
     real            key_factor  = SCRAMBLE_KEY_SIZE / TL_DW;
@@ -558,7 +558,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
     // Last 32 round of digest is calculated with a digest constant
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(digests[part_idx],
-                                                   RndCnstDigestConstDefault[0],
+                                                   RndCnstDigestConst[0],
                                                    key_size_80,
                                                    enc_array);
     // XOR the previous state into the digest result according to the Davies-Meyer scheme.
@@ -571,7 +571,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     int secret_idx = part_idx - Secret0Idx;
     bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data,
-                                                   RndCnstKeyDefault[secret_idx],
+                                                   RndCnstKey[secret_idx],
                                                    key_size_80,
                                                    output_data);
     scramble_data = output_data[NUM_ROUND-1];
@@ -583,7 +583,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     int secret_idx = part_idx - Secret0Idx;
     bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
     crypto_dpi_present_pkg::sv_dpi_present_decrypt(input_data,
-                                                   RndCnstKeyDefault[secret_idx],
+                                                   RndCnstKey[secret_idx],
                                                    key_size_80,
                                                    output_data);
     descramble_data = output_data[NUM_ROUND-1];

@@ -59,30 +59,6 @@
       randcount: "40",
       randtype:  "perm", // random permutation for randcount elements
     }
-    { name:      "RndCnstKey",
-      desc:      "Compile-time random scrambling keys",
-      type:      "otp_ctrl_pkg::key_array_t"
-      randcount: "384",  // 3*128
-      randtype:  "data", // randomize randcount databits
-    }
-    { name:      "RndCnstDigestConst",
-      desc:      "Compile-time random digest constant",
-      type:      "otp_ctrl_pkg::digest_const_array_t"
-      randcount: "640",  // 5*128
-      randtype:  "data", // randomize randcount databits
-    }
-    { name:      "RndCnstDigestIV",
-      desc:      "Compile-time random digest IV",
-      type:      "otp_ctrl_pkg::digest_iv_array_t"
-      randcount: "320",  // 5*64
-      randtype:  "data", // randomize randcount databits
-    }
-    { name:      "RndCnstRawUnlockToken",
-      desc:      "Compile-time random value for RAW unlock token.",
-      type:      "lc_ctrl_pkg::lc_token_t"
-      randcount: "128",
-      randtype:  "data", // randomize randcount databits
-    }
     // Normal parameters
     { name: "NumSramKeyReqSlots",
       desc: "Number of key slots",

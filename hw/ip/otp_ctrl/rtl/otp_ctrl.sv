@@ -13,14 +13,10 @@ module otp_ctrl
   import otp_ctrl_part_pkg::*;
 #(
   // Enable asynchronous transitions on alerts.
-  parameter logic [NumAlerts-1:0] AlertAsyncOn      = {NumAlerts{1'b1}},
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   // Compile time random constants, to be overriden by topgen.
-  parameter lfsr_seed_t             RndCnstLfsrSeed       = RndCnstLfsrSeedDefault,
-  parameter lfsr_perm_t             RndCnstLfsrPerm       = RndCnstLfsrPermDefault,
-  parameter key_array_t             RndCnstKey            = RndCnstKeyDefault,
-  parameter digest_const_array_t    RndCnstDigestConst    = RndCnstDigestConstDefault,
-  parameter digest_iv_array_t       RndCnstDigestIV       = RndCnstDigestIVDefault,
-  parameter lc_ctrl_pkg::lc_token_t RndCnstRawUnlockToken = RndCnstRawUnlockTokenDefault,
+  parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   // Hexfile file to initialize the OTP macro.
   // Note that the hexdump needs to account for ECC.
   parameter MemInitFile = ""
@@ -720,11 +716,7 @@ module otp_ctrl
   logic scrmbl_arb_req_ready, scrmbl_arb_rsp_valid;
   logic [NumAgents-1:0] part_scrmbl_req_ready, part_scrmbl_rsp_valid;
 
-  otp_ctrl_scrmbl #(
-    .RndCnstKey(RndCnstKey),
-    .RndCnstDigestConst(RndCnstDigestConst),
-    .RndCnstDigestIV(RndCnstDigestIV)
-  ) u_scrmbl (
+  otp_ctrl_scrmbl u_scrmbl (
     .clk_i,
     .rst_ni,
     .cmd_i         ( scrmbl_req_bundle.cmd       ),
@@ -746,19 +738,6 @@ module otp_ctrl
     part_scrmbl_req_ready[scrmbl_mtx_idx] = scrmbl_arb_req_ready;
     part_scrmbl_rsp_valid[scrmbl_mtx_idx] = scrmbl_arb_rsp_valid;
   end
-
-  /////////////////////////////////////////////
-  // Static fife cycle token precomputations //
-  /////////////////////////////////////////////
-
-  otp_ctrl_token_const #(
-    .RndCnstDigestConst    ( RndCnstDigestConst    ),
-    .RndCnstDigestIV       ( RndCnstDigestIV       ),
-    .RndCnstRawUnlockToken ( RndCnstRawUnlockToken )
-  ) u_otp_ctrl_token_const (
-    .all_zero_token_hashed_o   ( otp_lc_data_o.all_zero_token   ),
-    .raw_unlock_token_hashed_o ( otp_lc_data_o.raw_unlock_token )
-  );
 
   /////////////////////////////
   // Direct Access Interface //

@@ -11,8 +11,95 @@
 
 package otp_ctrl_part_pkg;
 
+  import prim_util_pkg::vbits;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_pkg::*;
+
+  ////////////////////////////////////
+  // Scrambling Constants and Types //
+  ////////////////////////////////////
+
+  parameter int NumScrmblKeys = 3;
+  parameter int NumDigestSets = 5;
+  parameter int ConstSelWidth = (NumScrmblKeys > NumDigestSets) ?
+                                vbits(NumScrmblKeys) :
+                                vbits(NumDigestSets);
+
+  typedef enum logic [ConstSelWidth-1:0] {
+    StandardMode,
+    ChainedMode
+  } digest_mode_e;
+
+  typedef logic [NumScrmblKeys-1:0][ScrmblKeyWidth-1:0] key_array_t;
+  typedef logic [NumDigestSets-1:0][ScrmblKeyWidth-1:0] digest_const_array_t;
+  typedef logic [NumDigestSets-1:0][ScrmblBlockWidth-1:0] digest_iv_array_t;
+
+  typedef enum logic [ConstSelWidth-1:0] {
+    Secret0Key,
+    Secret1Key,
+    Secret2Key
+  } key_sel_e;
+
+  typedef enum logic [ConstSelWidth-1:0] {
+    CnstyDigest,
+    LcRawDigest,
+    FlashDataKey,
+    FlashAddrKey,
+    SramDataKey
+  } digest_sel_e;
+
+  parameter key_array_t RndCnstKey = {
+    128'h111726B87A8DA7734528FE65ACF2E91C,
+    128'h299E94734DB9ADC6E4F933346ABB52C3,
+    128'h4B75748FF0382D870340676BD2414F29
+  };
+
+  // Note: digest set 0 is used for computing the partition digests. Constants at
+  // higher indices are used to compute the scrambling keys.
+  parameter digest_const_array_t RndCnstDigestConst = {
+    128'h8E0C348CA8E4395F0EFCA49A4E5EB112,
+    128'hC7E4407BD9F59142D45FA53EB0D0F448,
+    128'h33097F8516255FC2544E8ABF449BF43D,
+    128'h250EA46FD91AB2A83D5E6030EE24C8F2,
+    128'hAF9FA146B03363A90511ECF5677CAA8A
+  };
+
+  parameter digest_iv_array_t RndCnstDigestIV = {
+    64'hD223F9F96B3AF018,
+    64'hA856DBEA82CE4F60,
+    64'h795369DD1E832668,
+    64'hB6CAD24622EEB3FC,
+    64'hD2367D979F3792E6
+  };
+
+
+  /////////////////////////////////////
+  // Typedefs for Partition Metadata //
+  /////////////////////////////////////
+
+  typedef enum logic [1:0] {
+    Unbuffered,
+    Buffered,
+    LifeCycle
+  } part_variant_e;
+
+  typedef struct packed {
+    part_variant_e variant;
+    // Offset and size within the OTP array, in Bytes.
+    logic [OtpByteAddrWidth-1:0] offset;
+    logic [OtpByteAddrWidth-1:0] size;
+    // Key index to use for scrambling.
+    key_sel_e key_sel;
+    // Attributes
+    logic secret;     // Whether the partition is secret (and hence scrambled)
+    logic hw_digest;  // Whether the partition has a hardware digest
+    logic write_lock; // Whether the partition is write lockable (via digest)
+    logic read_lock;  // Whether the partition is read lockable (via digest)
+  } part_info_t;
+
+  ////////////////////////
+  // Partition Metadata //
+  ////////////////////////
 
   localparam part_info_t PartInfo [NumPart] = '{
     // CREATOR_SW_CFG
@@ -132,35 +219,34 @@ package otp_ctrl_part_pkg;
       192'h0
     }),
     960'({
-      {256{1'b1}},
-      256'h9ED083876F9B45F8EA1D657FDC80B705FC8924E565C353A28E0C348CA8E4395F,
-      256'hEFCA49A4E5EB112D223F9F96B3AF018C7E4407BD9F59142D45FA53EB0D0F448,
-      128'hA856DBEA82CE4F6033097F8516255FC2
+      64'h7A8F190A7B1D49A5,
+      256'h802C7A6E3D1C112059AE8F16A03C02CF9D80A110C00FE4A62422357CD36F3FC9,
+      256'h643B3F6AB70C8616D71DB2F32F19B944B7172CA9558B5AA504FF281CE77D9A44,
+      128'hE9260D8600B44DB3FC18B776639287E9
     }),
     704'({
-      {256{1'b1}},
-      128'h544E8ABF449BF43D795369DD1E832668,
-      256'h250EA46FD91AB2A83D5E6030EE24C8F2B6CAD24622EEB3FCAF9FA146B03363A9,
-      256'h511ECF5677CAA8AD2367D979F3792E6111726B87A8DA7734528FE65ACF2E91C
+      64'h61758EC952F1A1D,
+      128'hB40DCDFC699B861395454DACB648013D,
+      256'hCCF53B7AFA27198CE7E98FC2D1C99DDD9278BCA26D2B916BB12C647D32C9A4EF,
+      256'hBCC41D60D86650FD69951800D0E052B49C213B2BAEFBA438D579305E26ED25AF
     }),
     320'({
-      {256{1'b1}},
-      128'h299E94734DB9ADC6E4F933346ABB52C3,
-      128'h4B75748FF0382D870340676BD2414F29
+      64'h46CAA9DDBB9EBC86,
+      128'h54C4BC30BA8D41DEE99396872E5F45DD,
+      128'hFF60D27A6D4879A390B7F9A66D065A09
     }),
     1664'({
-      {256{1'b1}},
+      64'hC7409D6C7A2009AE,
       1344'h0,
-      {256{1'b1}}
+      256'hE50D60613825E913269174353E22EACF80BAA225DDFD1DE49ED083876F9B45F8
     }),
     6144'({
-      {256{1'b1}},
+      64'hEA1D657FDC80B705,
       6080'h0
     }),
     6144'({
-      {256{1'b1}},
+      64'hFC8924E565C353A2,
       6080'h0
     })});
-
 
 endpackage : otp_ctrl_part_pkg
