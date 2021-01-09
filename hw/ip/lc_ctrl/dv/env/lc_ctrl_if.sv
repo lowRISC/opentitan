@@ -43,8 +43,6 @@ interface lc_ctrl_if(input clk, input rst_n);
     otp_i.error = 0;
     otp_i.state = lc_state;
     otp_i.count = lc_cnt;
-    otp_i.all_zero_token = 0;
-    otp_i.raw_unlock_token = 0;
     otp_i.test_unlock_token = 0;
     otp_i.test_exit_token = 0;
     otp_i.rma_token = 0;

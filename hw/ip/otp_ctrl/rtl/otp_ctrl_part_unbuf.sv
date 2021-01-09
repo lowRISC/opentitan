@@ -10,6 +10,7 @@
 module otp_ctrl_part_unbuf
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
+  import otp_ctrl_part_pkg::*;
 #(
   // Partition information.
   parameter part_info_t Info = part_info_t'(0)

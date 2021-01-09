@@ -6,6 +6,7 @@
 
 module lc_ctrl_fsm
   import lc_ctrl_pkg::*;
+  import lc_ctrl_state_pkg::*;
 #(// Random netlist constants
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
@@ -28,8 +29,6 @@ module lc_ctrl_fsm
   input  lc_id_state_e          lc_id_state_i,
   input  lc_cnt_e               lc_cnt_i,
   // Token input from OTP (these are all hash post-images).
-  input  lc_token_t             all_zero_token_i,
-  input  lc_token_t             raw_unlock_token_i,
   input  lc_token_t             test_unlock_token_i,
   input  lc_token_t             test_exit_token_i,
   input  lc_token_t             rma_token_i,
@@ -111,7 +110,7 @@ module lc_ctrl_fsm
   `ASSERT_KNOWN(FsmStateKnown_A,  fsm_state_q  )
 
   // Hashed token to compare against.
-  logic [LcTokenWidth-1:0] hashed_token_mux;
+  lc_token_t hashed_token_mux;
 
   always_comb begin : p_fsm
     // FSM default state assignments.
@@ -383,12 +382,12 @@ module lc_ctrl_fsm
   // Note that we always perform a token comparison, even in case of
   // unconditional transitions. In the case of unconditional tokens
   // we just pass an all-zero constant through the hashing function.
-  logic [2**TokenIdxWidth-1:0][LcTokenWidth-1:0] hashed_tokens;
+  lc_token_t [2**TokenIdxWidth-1:0] hashed_tokens;
   logic [TokenIdxWidth-1:0] token_idx;
   always_comb begin : p_token_assign
     hashed_tokens = '0;
-    hashed_tokens[ZeroTokenIdx]       = all_zero_token_i;
-    hashed_tokens[RawUnlockTokenIdx]  = raw_unlock_token_i;
+    hashed_tokens[ZeroTokenIdx]       = AllZeroTokenHashed;
+    hashed_tokens[RawUnlockTokenIdx]  = RndCnstRawUnlockTokenHashed;
     hashed_tokens[TestUnlockTokenIdx] = test_unlock_token_i;
     hashed_tokens[TestExitTokenIdx]   = test_exit_token_i;
     hashed_tokens[RmaTokenIdx]        = rma_token_i;

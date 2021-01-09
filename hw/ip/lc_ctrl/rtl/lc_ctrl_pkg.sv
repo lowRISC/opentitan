@@ -13,7 +13,6 @@ package lc_ctrl_pkg;
   /////////////////////////////////
 
   parameter int LcValueWidth = 16;
-  parameter int LcTokenWidth = 128;
   parameter int NumLcStateValues = 12;
   parameter int LcStateWidth = NumLcStateValues * LcValueWidth;
   parameter int NumLcCountValues = 16;
@@ -24,6 +23,7 @@ package lc_ctrl_pkg;
   parameter int LcIdStateWidth = LcValueWidth;
   parameter int DecLcIdStateWidth = 2;
 
+  parameter int LcTokenWidth = 128;
   typedef logic [LcTokenWidth-1:0] lc_token_t;
 
   typedef enum logic [LcStateWidth-1:0] {

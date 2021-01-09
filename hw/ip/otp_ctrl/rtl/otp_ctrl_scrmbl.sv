@@ -68,12 +68,10 @@
 //             - http://www.lightweightcrypto.org/present/present_ches2007.pdf
 //
 
-module otp_ctrl_scrmbl import otp_ctrl_pkg::*; #(
-  // Compile time random constants, to be overriden by topgen.
-  parameter key_array_t          RndCnstKey         = RndCnstKeyDefault,
-  parameter digest_const_array_t RndCnstDigestConst = RndCnstDigestConstDefault,
-  parameter digest_iv_array_t    RndCnstDigestIV    = RndCnstDigestIVDefault
-) (
+module otp_ctrl_scrmbl
+  import otp_ctrl_pkg::*;
+  import otp_ctrl_part_pkg::*;
+(
   input                               clk_i,
   input                               rst_ni,
   // input data and command

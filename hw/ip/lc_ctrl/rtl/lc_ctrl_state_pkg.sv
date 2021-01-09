@@ -10,6 +10,11 @@
 //
 package lc_ctrl_state_pkg;
 
+
+  /////////////////////////////////////////////
+  // Life cycle manufacturing state encoding //
+  /////////////////////////////////////////////
+
   // These values have been generated such that they are incrementally writeable with respect
   // to the ECC polynomial specified. The values are used to define the life cycle manufacturing
   // state and transition counter encoding in lc_ctrl_pkg.sv.
@@ -144,5 +149,22 @@ package lc_ctrl_state_pkg;
   parameter logic [15:0] E0 = 16'b1111010010011100; // ECC: 6'b000100
   parameter logic [15:0] F0 = 16'b1111011110111110; // ECC: 6'b101100
 
+
+  ///////////////////////////////////////////
+  // Hashed RAW unlock and all-zero tokens //
+  ///////////////////////////////////////////
+
+  parameter logic [127:0] AllZeroToken = {
+    128'h0
+  };
+  parameter logic [127:0] RndCnstRawUnlockToken = {
+    128'hF7968F592FD0C739C407F369AEBEB941
+  };
+  parameter logic [127:0] AllZeroTokenHashed = {
+    128'h0
+  };
+  parameter logic [127:0] RndCnstRawUnlockTokenHashed = {
+    128'hF7968F592FD0C739C407F369AEBEB941
+  };
 
 endpackage : lc_ctrl_state_pkg

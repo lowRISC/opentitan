@@ -85,55 +85,6 @@ package otp_ctrl_pkg;
     DigestFinalize
   } otp_scrmbl_cmd_e;
 
-  parameter int NumScrmblKeys = 3;
-  parameter int NumDigestSets = 5;
-  parameter int ConstSelWidth = (NumScrmblKeys > NumDigestSets) ?
-                                vbits(NumScrmblKeys) :
-                                vbits(NumDigestSets);
-
-  typedef enum logic [ConstSelWidth-1:0] {
-    Secret0Key,
-    Secret1Key,
-    Secret2Key
-  } key_sel_e;
-
-  typedef enum logic [ConstSelWidth-1:0] {
-    CnstyDigest,
-    LcRawDigest,
-    FlashDataKey,
-    FlashAddrKey,
-    SramDataKey
-  } digest_sel_e;
-
-  typedef enum logic [ConstSelWidth-1:0] {
-    StandardMode,
-    ChainedMode
-  } digest_mode_e;
-
-  /////////////////////////////////////
-  // Typedefs for Partition Metadata //
-  /////////////////////////////////////
-
-  typedef enum logic [1:0] {
-    Unbuffered,
-    Buffered,
-    LifeCycle
-  } part_variant_e;
-
-  typedef struct packed {
-    part_variant_e variant;
-    // Offset and size within the OTP array, in Bytes.
-    logic [OtpByteAddrWidth-1:0] offset;
-    logic [OtpByteAddrWidth-1:0] size;
-    // Key index to use for scrambling.
-    key_sel_e key_sel;
-    // Attributes
-    logic secret;     // Whether the partition is secret (and hence scrambled)
-    logic hw_digest;  // Whether the partition has a hardware digest
-    logic write_lock; // Whether the partition is write lockable (via digest)
-    logic read_lock;  // Whether the partition is read lockable (via digest)
-  } part_info_t;
-
   ///////////////////////////////
   // Typedefs for LC Interface //
   ///////////////////////////////
@@ -144,8 +95,6 @@ package otp_ctrl_pkg;
     lc_ctrl_pkg::lc_state_e    state;
     lc_ctrl_pkg::lc_cnt_e      count;
     // These are all hash post-images
-    lc_ctrl_pkg::lc_token_t    all_zero_token;
-    lc_ctrl_pkg::lc_token_t    raw_unlock_token;
     lc_ctrl_pkg::lc_token_t    test_unlock_token;
     lc_ctrl_pkg::lc_token_t    test_exit_token;
     lc_ctrl_pkg::lc_token_t    rma_token;
@@ -158,8 +107,6 @@ package otp_ctrl_pkg;
     error: 1'b0,
     state: lc_ctrl_pkg::LcStRaw,
     count: lc_ctrl_pkg::LcCntRaw,
-    all_zero_token: '0,
-    raw_unlock_token: '0,
     test_unlock_token: '0,
     test_exit_token: '0,
     rma_token: '0,
@@ -301,36 +248,5 @@ package otp_ctrl_pkg;
   localparam lfsr_seed_t RndCnstLfsrSeedDefault = 40'h453d28ea98;
   localparam lfsr_perm_t RndCnstLfsrPermDefault =
       240'h4235171482c225f79289b32181a0163a760355d3447063d16661e44c12a5;
-
-
-  typedef logic [NumScrmblKeys-1:0][ScrmblKeyWidth-1:0] key_array_t;
-  parameter key_array_t RndCnstKeyDefault = {
-    128'h047288e1a65c839dae610bbbdf8c4525,
-    128'h38fe59a71a91a65636573a6513784e3b,
-    128'h4f48dcc45ace0770e9135bda73e56344
-  };
-
-  // Note: digest set 0 is used for computing the partition digests. Constants at
-  // higher indices are used to compute the scrambling keys.
-  typedef logic [NumDigestSets-1:0][ScrmblKeyWidth-1:0] digest_const_array_t;
-  parameter digest_const_array_t RndCnstDigestConstDefault = {
-    128'h9d40106e2dc2346ec96d61f0cc5295c7,
-    128'hafed2aa5c3284c01d71103edab1d8953,
-    128'h8a14fe0c08f8a3a190dd32c05f208474,
-    128'h9e6fac4ba15a3bce29d05a3e9e2d0846,
-    128'h3a0c6051392e00ef24073627319555b8
-  };
-
-  typedef logic [NumDigestSets-1:0][ScrmblBlockWidth-1:0] digest_iv_array_t;
-  parameter digest_iv_array_t RndCnstDigestIVDefault = {
-    64'ha5af72c1b813aec4,
-    64'h5d7aacd1db316407,
-    64'hd0ec83b7fe6ae2ae,
-    64'hc2993a0ea64e312d,
-    64'h899aac2ab7d91479
-  };
-
-  parameter lc_ctrl_pkg::lc_token_t RndCnstRawUnlockTokenDefault =
-    128'hcbbd013ff15eba2f3065461eeb88463e;
 
 endpackage : otp_ctrl_pkg

@@ -10,6 +10,7 @@
 module otp_ctrl_kdi
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
+  import otp_ctrl_part_pkg::*;
 (
   input                                              clk_i,
   input                                              rst_ni,
