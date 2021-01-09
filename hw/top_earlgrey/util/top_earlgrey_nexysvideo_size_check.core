@@ -1,0 +1,31 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:tool:top_earlgrey_nexysvideo_size_check"
+description: "Check if design size has been reduced for nexysvideo target"
+
+filesets:
+  files_top_earlgrey_size_check:
+    files:
+      - ./top_earlgrey_size_check.py : { copyto: util/top_earlgrey_size_check.py }
+
+scripts:
+  top_earlgrey_size_check:
+    cmd:
+      - python3
+      - util/top_earlgrey_size_check.py
+      - --target=nexysvideo
+    # TODO: Use this syntax once https://github.com/olofk/fusesoc/issues/353 is
+    # fixed. Remove the filesets from the default target, and also remove the
+    # copyto.
+    #filesets:
+    #  - top_earlgrey_size_check
+
+targets:
+  default:
+    filesets:
+      - files_top_earlgrey_size_check
+    hooks:
+      pre_build:
+        - top_earlgrey_size_check
