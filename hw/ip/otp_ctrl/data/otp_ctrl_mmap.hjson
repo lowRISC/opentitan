@@ -22,6 +22,58 @@
         width: "2", // bytes
         depth: "1024"
     }
+
+    // Definition of scrambling and digest constants and keys.
+    scrambling: {
+        key_size:  "16",
+        iv_size:   "8",
+        cnst_size: "16",
+        keys: [
+            {
+                name:  "Secret0Key",
+                value: "<random>",
+            }
+            {
+                name:  "Secret1Key",
+                value: "<random>",
+            }
+            {
+                name:  "Secret2Key",
+                value: "<random>",
+            }
+        ]
+        digests: [
+            // This is the consistency digest used by all partitions.
+            {
+                name:       "CnstyDigest",
+                iv_value:   "<random>",
+                cnst_value: "<random>",
+            }
+            // The other digest configurations below are used for
+            // key derivation and token hashing.
+            {
+                name:       "LcRawDigest",
+                iv_value:   "<random>",
+                cnst_value: "<random>",
+            }
+            {
+                name:       "FlashDataKey",
+                iv_value:   "<random>",
+                cnst_value: "<random>",
+            }
+            {
+                name:       "FlashAddrKey",
+                iv_value:   "<random>",
+                cnst_value: "<random>",
+            }
+            {
+                name:       "SramDataKey",
+                iv_value:   "<random>",
+                cnst_value: "<random>",
+            }
+        ]
+    }
+
     // The enumeration order below defines the address map of the OTP controller,
     // if the offsets are not defined explicitly via the "offset" key.
     // Note that the digest items are added automatically to the address map.
@@ -89,7 +141,7 @@
                     // Default value to be output in case partition has not
                     // initialized or is in error state. If not specified,
                     // a value of '0 will be used.
-                    inv_default: "{256{1'b1}}",
+                    inv_default: "<random>",
                 }
                 {
                     name: "HW_CFG_CONTENT",
@@ -118,12 +170,12 @@
                     // This will generate a random default to be output in
                     // case partition has not initialized or is in error state.
                     // If not specified, a value of '0 will be used.
-                    rand_inv_default: "True",
+                    inv_default: "<random>",
                     size: "16"
                 }
                 {
                     name: "TEST_EXIT_TOKEN",
-                    rand_inv_default: "True",
+                    inv_default: "<random>",
                     size: "16"
                 }
             ],
@@ -144,17 +196,17 @@
             items: [
                 {
                     name: "FLASH_ADDR_KEY_SEED",
-                    rand_inv_default: "True",
+                    inv_default: "<random>",
                     size: "32"
                 }
                 {
                     name: "FLASH_DATA_KEY_SEED",
-                    rand_inv_default: "True",
+                    inv_default: "<random>",
                     size: "32"
                 }
                 {
                     name: "SRAM_DATA_KEY_SEED",
-                    rand_inv_default: "True",
+                    inv_default: "<random>",
                     size: "16"
                 }
             ],
@@ -176,17 +228,17 @@
             items: [
                 {
                     name: "RMA_TOKEN",
-                    rand_inv_default: "True",
+                    inv_default: "<random>",
                     size: "16"
                 }
                 {
                     name: "CREATOR_ROOT_KEY_SHARE0",
-                    rand_inv_default: "True",
+                    inv_default: "<random>",
                     size: "32"
                 }
                 {
                     name: "CREATOR_ROOT_KEY_SHARE1",
-                    rand_inv_default: "True",
+                    inv_default: "<random>",
                     size: "32"
                 }
             ],

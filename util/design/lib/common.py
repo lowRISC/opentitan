@@ -204,3 +204,26 @@ def scatter_bits(mask, bits):
             j += 1
 
     return scatterword
+
+
+def random_or_hexvalue(dict_obj, key, num_bits):
+    '''Convert hex value at "key" to an integer or draw a random number.'''
+
+    # Initialize to default if this key does not exist.
+    dict_obj.setdefault(key, '0x0')
+
+    # Generate a random number of requested size in this case.
+    if dict_obj[key] == '<random>':
+        dict_obj[key] = random.getrandbits(num_bits)
+    # Otherwise attempt to convert this number to an int.
+    # Check that the range is correct.
+    else:
+        try:
+            dict_obj[key] = int(dict_obj[key], 16)
+            if dict_obj[key] >= 2**num_bits:
+                log.error('Value is out of range.')
+                exit(1)
+        except ValueError:
+            log.error('Invalid value "{}". Must be hex or "<random>".'
+                      .format(dict_obj[key]))
+            exit(1)

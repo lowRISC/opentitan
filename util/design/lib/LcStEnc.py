@@ -6,9 +6,10 @@ used to generate new life cycle encodings.
 """
 import logging as log
 import random
+from collections import OrderedDict
 
 from lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
-                        is_valid_codeword, scatter_bits)
+                        is_valid_codeword, scatter_bits, random_or_hexvalue)
 
 
 def _is_incremental_codeword(word1, word2):
@@ -153,6 +154,10 @@ class LcStEnc():
             log.error('Missing secded configuration')
             exit(1)
 
+        if 'tokens' not in config:
+            log.error('Missing token configuration')
+            exit(1)
+
         config['secded'].setdefault('data_width', 0)
         config['secded'].setdefault('ecc_width', 0)
         config['secded'].setdefault('ecc_matrix', [[]])
@@ -162,6 +167,7 @@ class LcStEnc():
         config.setdefault('min_hw', 0)
         config.setdefault('max_hw', 0)
         config.setdefault('min_hd', 0)
+        config.setdefault('token_size', 128)
 
         config['seed'] = check_int(config['seed'])
 
@@ -178,6 +184,7 @@ class LcStEnc():
         config['min_hw'] = check_int(config['min_hw'])
         config['max_hw'] = check_int(config['max_hw'])
         config['min_hd'] = check_int(config['min_hd'])
+        config['token_size'] = check_int(config['token_size'])
 
         total_width = config['secded']['data_width'] + config['secded'][
             'ecc_width']
@@ -206,6 +213,18 @@ class LcStEnc():
 
         log.info('')
 
+        hashed_tokens = []
+        for token in config['tokens']:
+            random_or_hexvalue(token, 'value', config['token_size'])
+            hashed_token = OrderedDict()
+            hashed_token['name'] = token['name'] + 'Hashed'
+            # TODO: plug in PRESENT-based hashing algo or KMAC
+            hashed_token['value'] = token['value']
+            hashed_tokens.append(hashed_token)
+
+        config['tokens'] += hashed_tokens
+
+        print(config['tokens'])
         self.config = config
 
         # Re-initialize with seed to make results reproducible.
