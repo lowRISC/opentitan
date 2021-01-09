@@ -37,4 +37,17 @@
     min_hw       : 5,
     max_hw       : 17,
     min_hd       : 5
+
+    // LC token size in bit
+    token_size   : 128
+    tokens       : [
+        {
+            name:  "AllZeroToken"
+            value: "0x0"
+        }
+        {
+            name:  "RndCnstRawUnlockToken"
+            value: "<random>"
+        }
+    ]
 }

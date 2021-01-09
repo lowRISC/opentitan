@@ -13,6 +13,11 @@ package lc_ctrl_state_pkg;
 data_width = lc_st_enc.config['secded']['data_width']
 ecc_width  = lc_st_enc.config['secded']['ecc_width']
 %>
+
+  /////////////////////////////////////////////
+  // Life cycle manufacturing state encoding //
+  /////////////////////////////////////////////
+
   // These values have been generated such that they are incrementally writeable with respect
   // to the ECC polynomial specified. The values are used to define the life cycle manufacturing
   // state and transition counter encoding in lc_ctrl_pkg.sv.
@@ -54,6 +59,16 @@ ecc_width  = lc_st_enc.config['secded']['ecc_width']
   parameter logic [${data_width-1}:0] E${loop.index} = ${data_width}'b${word[0][ecc_width:]}; // ECC: ${ecc_width}'b${word[0][0:ecc_width]}
   parameter logic [${data_width-1}:0] F${loop.index} = ${data_width}'b${word[1][ecc_width:]}; // ECC: ${ecc_width}'b${word[1][0:ecc_width]}
 
+% endfor
+
+  ///////////////////////////////////////////
+  // Hashed RAW unlock and all-zero tokens //
+  ///////////////////////////////////////////
+<% token_size = lc_st_enc.config['token_size'] %>
+% for token in lc_st_enc.config['tokens']:
+  parameter logic [${token_size-1}:0] ${token['name']} = {
+    ${"{0:}'h{1:0X}".format(token_size, token['value'])}
+  };
 % endfor
 
 endpackage : lc_ctrl_state_pkg
