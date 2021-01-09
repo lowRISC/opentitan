@@ -242,11 +242,15 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         // Check in this block
         do_read_check = 1'b0;
 
-        if (addr_phase_read) begin
-          addr_phase_cfgen = current_op_status != keymgr_pkg::OpWip &&
-                             cfg.keymgr_vif.keymgr_en == lc_ctrl_pkg::On;
-        end else if (data_phase_read) begin
-          `DV_CHECK_EQ(item.d_data, addr_phase_cfgen)
+        // skip checking cfgen value when it's advance OP in Reset, as it's hard to know what exact
+        // time OP will complete
+        if (current_state != keymgr_pkg::StReset || current_op_status != keymgr_pkg::OpWip) begin
+          if (addr_phase_read) begin
+            addr_phase_cfgen = current_op_status != keymgr_pkg::OpWip &&
+                               cfg.keymgr_vif.keymgr_en == lc_ctrl_pkg::On;
+          end else if (data_phase_read) begin
+            `DV_CHECK_EQ(item.d_data, addr_phase_cfgen)
+          end
         end
       end
       "control": begin
