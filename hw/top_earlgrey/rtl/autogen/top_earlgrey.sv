@@ -846,11 +846,7 @@ module top_earlgrey #(
 
   otp_ctrl #(
     .RndCnstLfsrSeed(RndCnstOtpCtrlLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstOtpCtrlLfsrPerm),
-    .RndCnstKey(RndCnstOtpCtrlKey),
-    .RndCnstDigestConst(RndCnstOtpCtrlDigestConst),
-    .RndCnstDigestIV(RndCnstOtpCtrlDigestIV),
-    .RndCnstRawUnlockToken(RndCnstOtpCtrlRawUnlockToken)
+    .RndCnstLfsrPerm(RndCnstOtpCtrlLfsrPerm)
   ) u_otp_ctrl (
 
       // Interrupt

@@ -1054,54 +1054,6 @@
           name_top: RndCnstOtpCtrlLfsrPerm
           randwidth: 240
         }
-        {
-          name: RndCnstKey
-          desc: Compile-time random scrambling keys
-          type: otp_ctrl_pkg::key_array_t
-          randcount: "384"
-          randtype: data
-          local: "false"
-          default: 0x79ee911ce801484ba8373086f9dd4eee6faf88f22bccd612d1c09f5c02b2c8d1fdb92558e2d9c5d24440722325a93144
-          expose: "false"
-          name_top: RndCnstOtpCtrlKey
-          randwidth: 384
-        }
-        {
-          name: RndCnstDigestConst
-          desc: Compile-time random digest constant
-          type: otp_ctrl_pkg::digest_const_array_t
-          randcount: "640"
-          randtype: data
-          local: "false"
-          default: 0xce7d846469a3b8e35a6bd38295bd2fb366b3d62126c75eeaeb93d32f5cbc77463c91917516d51a2fa4400adc2669e2530ee2a465fd4dabcbd877afb6bcfeed7e03a0b091dc41d062dd10ca2d7b93136f
-          expose: "false"
-          name_top: RndCnstOtpCtrlDigestConst
-          randwidth: 640
-        }
-        {
-          name: RndCnstDigestIV
-          desc: Compile-time random digest IV
-          type: otp_ctrl_pkg::digest_iv_array_t
-          randcount: "320"
-          randtype: data
-          local: "false"
-          default: 0xb77f07ff3d7297200d5ab25561af49c696466a983e5346826a43628219e5a91389b9fe0d3b818e46
-          expose: "false"
-          name_top: RndCnstOtpCtrlDigestIV
-          randwidth: 320
-        }
-        {
-          name: RndCnstRawUnlockToken
-          desc: Compile-time random value for RAW unlock token.
-          type: lc_ctrl_pkg::lc_token_t
-          randcount: "128"
-          randtype: data
-          local: "false"
-          default: 0xde094ca8f1435f85e0f7489a309cbe57
-          expose: "false"
-          name_top: RndCnstOtpCtrlRawUnlockToken
-          randwidth: 128
-        }
       ]
       interrupt_list:
       [
