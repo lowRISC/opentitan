@@ -24,7 +24,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(SRAM_DATA_SIZE)))
-                        sram_fifo[NumSramKeyReqSlots];
+                        sram_fifos[NumSramKeyReqSlots];
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(OTBN_DATA_SIZE)))  otbn_fifo;
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_addr_fifo;
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_data_fifo;
@@ -40,7 +40,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
-      sram_fifo[i] = new($sformatf("sram_fifo[%0d]", i), this);
+      sram_fifos[i] = new($sformatf("sram_fifos[%0d]", i), this);
     end
     otbn_fifo       = new("otbn_fifo", this);
     flash_addr_fifo = new("flash_addr_fifo", this);
@@ -60,6 +60,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       process_lc_token_req();
       process_edn_req();
       check_otbn_rsp();
+      check_flash_rsps();
     join_none
   endtask
 
@@ -99,12 +100,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       push_pull_item#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) rcv_item;
       bit [SCRAMBLE_DATA_SIZE-1:0] exp_data_0, exp_data_1;
       lc_token_fifo.get(rcv_item);
-      exp_data_0 = present_encode_with_final_const(.data(RndCnstDigestIVDefault[1]),
-                                                   .key(rcv_item.h_data),
-                                                   .final_const(RndCnstDigestConstDefault[1]));
-      exp_data_1 = present_encode_with_final_const(.data(exp_data_0),
-                                                   .key(rcv_item.h_data),
-                                                   .final_const(RndCnstDigestConstDefault[1]));
+      exp_data_0 = present_encode_with_final_const(
+                   .data(RndCnstDigestIVDefault[LcRawDigest]),
+                   .key(rcv_item.h_data),
+                   .final_const(RndCnstDigestConstDefault[LcRawDigest]));
+      exp_data_1 = present_encode_with_final_const(
+                   .data(exp_data_0),
+                   .key(rcv_item.h_data),
+                   .final_const(RndCnstDigestConstDefault[LcRawDigest]));
       `DV_CHECK_EQ(rcv_item.d_data, {exp_data_1, exp_data_0}, "lc_token_encode_mismatch")
     end
   endtask
@@ -145,33 +148,69 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       edn_data_q.delete();
 
       // calculate key
-      if (!part_locked) begin
-        // constants are all zeros
-        sram_key = 0;
-      end else begin
-        int sram_key_idx = SramDataKeySeedOffset / 4;
-        for (int i = 0; i < SramDataKeySeedSize / 8; i++) begin
-          bit [TL_DW*2-1:0] key_in_word = {otp_a[sram_key_idx+i*2+1], otp_a[sram_key_idx+i*2]};
-          sram_key = sram_key | key_in_word << TL_DW * 2 * i ;
-        end
-      end
+      sram_key = get_key_from_otp(part_locked, SramDataKeySeedOffset / 4);
+      exp_key_lower = present_encode_with_final_const(
+                      .data(RndCnstDigestIVDefault[SramDataKey]),
+                      .key(sram_key),
+                      .final_const(RndCnstDigestConstDefault[SramDataKey]),
+                      .second_key(edn_key1),
+                      .num_round(2));
 
-      exp_key_lower = present_encode_with_final_const(.data(RndCnstDigestIVDefault[4]),
-                                                      .key(sram_key),
-                                                      .final_const(RndCnstDigestConstDefault[4]),
-                                                      .second_key(edn_key1),
-                                                      .num_round(2));
-
-      exp_key_higher = present_encode_with_final_const(.data(RndCnstDigestIVDefault[4]),
-                                                      .key(sram_key),
-                                                      .final_const(RndCnstDigestConstDefault[4]),
-                                                      .second_key(edn_key2),
-                                                      .num_round(2));
+      exp_key_higher = present_encode_with_final_const(
+                       .data(RndCnstDigestIVDefault[SramDataKey]),
+                       .key(sram_key),
+                       .final_const(RndCnstDigestConstDefault[SramDataKey]),
+                       .second_key(edn_key2),
+                       .num_round(2));
       exp_key = {exp_key_higher, exp_key_lower};
       `DV_CHECK_EQ(key, exp_key, "otbn key mismatch")
 
       // check nonce value
       `DV_CHECK_EQ(nonce, exp_nonce, "otbn nonce mismatch")
+    end
+  endtask
+
+  virtual task check_flash_rsps();
+    for (int i = FlashDataKey; i <= FlashAddrKey; i++) begin
+      automatic digest_sel_e sel_flash = i;
+      fork
+        forever begin
+          push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE)) rcv_item;
+          bit [SCRAMBLE_KEY_SIZE-1:0]  flash_key;
+          bit [SCRAMBLE_DATA_SIZE-1:0] exp_key_lower, exp_key_higher;
+          bit [FlashKeyWidth-1:0]      key, exp_key;
+          bit                          seed_valid, part_locked;
+          int                          flash_key_index;
+
+          if (sel_flash == FlashAddrKey) begin
+            flash_addr_fifo.get(rcv_item);
+            flash_key_index = FlashAddrKeySeedOffset / 4;
+          end else begin
+            flash_data_fifo.get(rcv_item);
+            flash_key_index = FlashDataKeySeedOffset / 4;
+          end
+          seed_valid  = rcv_item.d_data[0];
+          key         = rcv_item.d_data[1+:FlashKeyWidth];
+          part_locked = {`gmv(ral.secret1_digest_0), `gmv(ral.secret1_digest_1)} != '0;
+          `DV_CHECK_EQ(seed_valid, part_locked,
+                      $sformatf("flash %0s seed_valid mismatch", sel_flash.name()))
+
+          // calculate key
+          flash_key = get_key_from_otp(part_locked, flash_key_index);
+          exp_key_lower = present_encode_with_final_const(
+                          .data(RndCnstDigestIVDefault[sel_flash]),
+                          .key(flash_key),
+                          .final_const(RndCnstDigestConstDefault[sel_flash]));
+
+          flash_key = get_key_from_otp(part_locked, flash_key_index + 4);
+          exp_key_higher = present_encode_with_final_const(
+                           .data(RndCnstDigestIVDefault[sel_flash]),
+                           .key(flash_key),
+                           .final_const(RndCnstDigestConstDefault[sel_flash]));
+          exp_key = {exp_key_higher, exp_key_lower};
+          `DV_CHECK_EQ(key, exp_key, $sformatf("flash %s key mismatch", sel_flash.name()))
+        end
+      join_none;
     end
   endtask
 
@@ -511,6 +550,16 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   virtual function void predict_status_err(bit dai_err, int part_idx = 0);
     void'(ral.intr_state.otp_error.predict(.value(1)));
     if (dai_err) void'(ral.status.predict(OtpDaiErr | OtpDaiIdle));
+  endfunction
+
+  // this function retrieves keys (128 bits) from scb's otp_array with a starting address
+  // if not locked, it will return 0
+  // this is mainly used for scrambling key algo
+  virtual function bit [SCRAMBLE_KEY_SIZE-1:0] get_key_from_otp(bit locked, int start_i);
+    bit [SCRAMBLE_KEY_SIZE-1:0] key;
+    if (!locked) return 0;
+    for (int i = 0; i < 4; i++) key |= otp_a[i + start_i] << (TL_DW * i);
+    return key;
   endfunction
 
 endclass

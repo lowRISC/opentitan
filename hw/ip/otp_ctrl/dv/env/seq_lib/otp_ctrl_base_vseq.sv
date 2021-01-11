@@ -162,14 +162,14 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_send(otbn_pull_seq)
   endtask
 
-  virtual task req_flash_addr();
+  virtual task req_flash_addr_key();
     push_pull_host_seq#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_pull_seq;
     `uvm_create_on(flash_addr_pull_seq, p_sequencer.flash_addr_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(flash_addr_pull_seq)
     `uvm_send(flash_addr_pull_seq)
   endtask
 
-  virtual task req_flash_data();
+  virtual task req_flash_data_key();
     push_pull_host_seq#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_pull_seq;
     `uvm_create_on(flash_data_pull_seq, p_sequencer.flash_data_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(flash_data_pull_seq)

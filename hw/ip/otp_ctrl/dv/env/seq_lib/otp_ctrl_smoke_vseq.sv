@@ -78,8 +78,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       req_otbn_key();
 
       // get flash addr and data
-      req_flash_addr();
-      req_flash_data();
+      req_flash_addr_key();
+      req_flash_data_key();
 
       // get sram keys
       req_all_sram_keys();
