@@ -142,6 +142,7 @@ package otp_ctrl_env_pkg;
         break;
       end
     end
+    if (index == NumPart) index--;
     return index;
   endfunction
 
@@ -149,6 +150,24 @@ package otp_ctrl_env_pkg;
     int part_index = get_part_index(addr);
     if (part_index inside {[Secret0Idx:Secret2Idx]}) return 1;
     else return 0;
+  endfunction
+
+  function automatic bit is_sw_digest(bit [TL_DW-1:0] addr);
+    if ({addr[TL_DW-1:3], 3'b0} inside {CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset}) begin
+      return 1;
+    end else begin
+      return 0;
+    end
+  endfunction
+
+  function automatic bit is_digest(bit [TL_DW-1:0] addr);
+    if (is_sw_digest(addr)) return 1;
+    if ({addr[TL_DW-1:3], 3'b0} inside {HwCfgDigestOffset, Secret0DigestOffset,
+                                        Secret1DigestOffset, Secret2DigestOffset}) begin
+      return 1;
+    end else begin
+      return 0;
+    end
   endfunction
 
   // Resolve an offset within the software window as an offset within the whole otp_ctrl block.

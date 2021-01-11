@@ -68,9 +68,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     addr = randomize_dai_addr(addr);
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_wdata_0, wdata0);
-    if (is_secret(addr) || addr inside {CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset}) begin
-      csr_wr(ral.direct_access_wdata_1, wdata1);
-    end
+    if (is_secret(addr) || is_sw_digest(addr)) csr_wr(ral.direct_access_wdata_1, wdata1);
+
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiWrite));
     `uvm_info(`gfn, $sformatf("DAI write, address %0h, data0 %0h data1 %0h, is_secret = %0b",
               addr, wdata0, wdata1, is_secret(addr)), UVM_DEBUG)
@@ -134,6 +133,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] val;
     csr_rd(.ptr(ral.creator_sw_cfg_digest_0), .value(val));
     csr_rd(.ptr(ral.creator_sw_cfg_digest_1), .value(val));
+    csr_rd(.ptr(ral.owner_sw_cfg_digest_0),   .value(val));
+    csr_rd(.ptr(ral.owner_sw_cfg_digest_1),   .value(val));
     csr_rd(.ptr(ral.hw_cfg_digest_0),         .value(val));
     csr_rd(.ptr(ral.hw_cfg_digest_1),         .value(val));
     csr_rd(.ptr(ral.secret0_digest_0),        .value(val));

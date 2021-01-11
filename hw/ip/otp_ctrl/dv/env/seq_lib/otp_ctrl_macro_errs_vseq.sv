@@ -16,11 +16,14 @@ class otp_ctrl_macro_errs_vseq extends otp_ctrl_smoke_vseq;
     num_dai_op inside {[100:500]};
   }
 
+  constraint dai_wr_legal_addr_c {
+    {dai_addr[TL_AW-1:2], 2'b0} inside {[CreatorSwCfgOffset : (LifeCycleOffset + LifeCycleSize)]};
+  }
+
   function void pre_randomize();
-    // TODO: enable this once support
-    // this.partition_index_c.constraint_mode(0);
-    // this.dai_wr_legal_addr_c.constraint_mode(0);
+    this.partition_index_c.constraint_mode(0);
     this.dai_wr_blank_addr_c.constraint_mode(0);
+    this.no_access_err_c.constraint_mode(0);
     collect_used_addr = 0;
   endfunction
 
