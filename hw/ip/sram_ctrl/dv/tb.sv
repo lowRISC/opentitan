@@ -14,8 +14,10 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  wire clk, rst_n;
-  wire clk_otp, rst_otp_n;
+  wire clk;
+  wire rst_n;
+  wire clk_otp;
+  wire rst_otp_n = rst_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
@@ -51,20 +53,23 @@ module tb;
   `DV_ALERT_IF_CONNECT
 
   // DUT
-  //
-  // Top level parameters for SRAM are:
-  // - ADDR_BITS: The number of address bits.
-  //              This will be set to 10 for the retention SRAM,
-  //              and 14 for the Main SRAM.
-  //
-  // - WIDTH: width of the SRAM data.
-  //          This is set to 32 for both the Main and Retention SRAMS,
-  //          but is parameterizable in case we want to test the SRAM variant
-  //          used in OTBN.
+
+  // The exact number of address bits.
+  // Will be set to 10 for retention SRAM and 14 for main SRAM.
+`ifndef SRAM_ADDR_WIDTH
+  `define SRAM_ADDR_WIDTH 32
+`endif
+
+  // Width of the SRAM data.
+  // Will be 32-bit wide for both main and retention SRAM,
+  // potentially wider for the OTBN SRAM.
+`ifndef SRAM_DATA_WIDTH
+  `define SRAM_DATA_WIDTH 32
+`endif
 
   sram_ctrl_wrapper #(
-    .AddrWidth(`ADDR_BITS),
-    .DataWidth(`WIDTH)
+    .AddrWidth(`SRAM_ADDR_WIDTH),
+    .DataWidth(`SRAM_DATA_WIDTH)
   ) dut (
     // main clock
     .clk_i(clk),
@@ -82,7 +87,7 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
     // Life cycle escalation
-    .lc_escalate_en_i(lc_esc_en),
+    .lc_escalate_en_i(lc_if.lc_esc_en),
     // OTP key derivation interface
     .sram_otp_key_o(key_req),
     .sram_otp_key_i(key_rsp)
@@ -97,18 +102,17 @@ module tb;
   // key, nonce, seed_valid all driven by push_pull Device interface
   assign {key, nonce, seed_valid} = kdi_if.d_data;
 
-  // LC interface assignment
-  assign lc_esc_en = lc_if.lc_esc_en;
-
   // bind mem_bkdr_if
   `define SRAM_CTRL_MEM_HIER \
-    dut.u_ram1p_sram.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic
-  bind `SRAM_CTRL_MEM_HIER mem_bkdr_if mem_bkdr_if();
+    dut.u_ram1p_sram.u_prim_ram_1p_adv.u_mem
+  bind `SRAM_CTRL_MEM_HIER mem_bkdr_if #(.MEM_ADDR_WIDTH(`SRAM_ADDR_WIDTH),
+                                         .MEM_BYTES_PER_WORD(`SRAM_DATA_WIDTH >> 3),
+                                         .MEM_PARITY(1)) mem_bkdr_if ();
 
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
-    otp_clk_rst_if.set_active();
+    otp_clk_rst_if.set_active(.drive_rst_n_val(1'b0));
 
     // set interfaces into uvm_config_db
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);

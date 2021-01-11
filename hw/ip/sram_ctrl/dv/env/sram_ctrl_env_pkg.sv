@@ -16,6 +16,7 @@ package sram_ctrl_env_pkg;
   import sram_ctrl_pkg::*;
   import otp_ctrl_pkg::*;
   import lc_ctrl_pkg::*;
+  import crypto_dpi_prince_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -30,10 +31,9 @@ package sram_ctrl_env_pkg;
   parameter int KDI_DATA_SIZE = 1 + otp_ctrl_pkg::SramKeyWidth + otp_ctrl_pkg::SramNonceWidth;
 
   // types
-  typedef virtual mem_bkdr_if mem_bkdr_vif;
+  typedef virtual mem_bkdr_if #(.MEM_ADDR_WIDTH(`SRAM_ADDR_WIDTH),
+                                .MEM_BYTES_PER_WORD(`SRAM_DATA_WIDTH >> 3)) mem_bkdr_vif;
   typedef virtual sram_ctrl_lc_if lc_vif;
-
-  // functions
 
   // package sources
   `include "sram_ctrl_env_cfg.sv"
