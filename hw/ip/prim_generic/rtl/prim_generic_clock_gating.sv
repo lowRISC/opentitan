@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Common Library: Clock Gating cell
+//
+// The logic assumes that en_i is synchronized (so the instantiation site might need to put a
+// synchronizer before en_i).
 
 module prim_generic_clock_gating #(
   parameter bit NoFpgaGate = 1'b0 // this parameter has no function in generic
@@ -13,8 +16,7 @@ module prim_generic_clock_gating #(
   output logic clk_o
 );
 
-  // Assume en_i synchronized, if not put synchronizer prior to en_i
-  logic en_latch;
+  logic en_latch /* verilator clock_enable */;
   always_latch begin
     if (!clk_i) begin
       en_latch = en_i | test_en_i;
