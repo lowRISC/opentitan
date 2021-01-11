@@ -30,7 +30,9 @@ package flash_ctrl_env_pkg;
   parameter uint FlashNumBusWordsPerBank  = FlashNumBusWords / flash_ctrl_pkg::NumBanks;
   parameter uint FlashNumBusWordsPerPage  = FlashNumBusWordsPerBank / flash_ctrl_pkg::PagesPerBank;
 
-  parameter uint FlashDataByteWidth       = $clog2(flash_ctrl_pkg::DataWidth / 8);
+  parameter uint FlashBankBytesPerWord    = flash_ctrl_pkg::DataWidth / 8;
+
+  parameter uint FlashDataByteWidth       = $clog2(FlashBankBytesPerWord);
   parameter uint FlashWordLineWidth       = $clog2(flash_ctrl_pkg::WordsPerPage);
   parameter uint FlashPageWidth           = $clog2(flash_ctrl_pkg::PagesPerBank);
   parameter uint FlashBankWidth           = $clog2(flash_ctrl_pkg::NumBanks);
@@ -88,7 +90,8 @@ package flash_ctrl_env_pkg;
     bit [TL_AW-1:0] addr;       // starting addr for the op
   } flash_op_t;
 
-  typedef virtual mem_bkdr_if mem_bkdr_vif;
+  // 8 bytes per word of flash memory
+  typedef virtual mem_bkdr_if #(.MEM_BYTES_PER_WORD(8)) mem_bkdr_vif;
 
   // functions
 
