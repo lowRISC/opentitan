@@ -234,10 +234,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     end else if ((csr_addr & addr_mask) inside
         {[SW_WINDOW_BASE_ADDR : SW_WINDOW_BASE_ADDR + SW_WINDOW_SIZE]}) begin
       if (data_phase_read) begin
-        bit [TL_AW-1:0] dai_addr = (csr_addr & addr_mask - SW_WINDOW_BASE_ADDR) >> 2;
-        int part_idx = get_part_index(dai_addr);
-        bit [TL_DW-1:0] exp_val = sw_read_lock[part_idx] ? 0 : otp_a[dai_addr];
-        `DV_CHECK_EQ(item.d_data, exp_val, $sformatf("mem read mismatch at addr %0h", dai_addr))
+        bit [TL_AW-1:0] otp_addr = (csr_addr & addr_mask - SW_WINDOW_BASE_ADDR) >> 2;
+        int part_idx = get_part_index(otp_addr << 2);
+        bit [TL_DW-1:0] exp_val = sw_read_lock[part_idx] ? 0 : otp_a[otp_addr];
+        `DV_CHECK_EQ(item.d_data, exp_val, $sformatf("mem read mismatch at addr %0h", otp_addr))
       end
       return;
     // TEST ACCESS window
@@ -301,19 +301,16 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                                        `gmv(ral.direct_access_wdata_0)};
                 // write OTP memory
                 end else begin
-                  bit[TL_AW-1:0] normalized_dai_addr = get_normalized_dai_addr();
+                  bit[TL_AW-1:0] otp_addr = get_scb_otp_addr();
                   if (!is_secret(dai_addr)) begin
-                    if (otp_a[normalized_dai_addr] == 0) begin
-                      otp_a[normalized_dai_addr] = `gmv(ral.direct_access_wdata_0);
-                    end else begin
-                      predict_status_err(1);
-                    end
+                    if (otp_a[otp_addr] == 0) otp_a[otp_addr] = `gmv(ral.direct_access_wdata_0);
+                    else predict_status_err(1);
                   end else begin
-                    bit [SCRAMBLE_DATA_SIZE-1:0] secret_data = {otp_a[normalized_dai_addr + 1],
-                                                                otp_a[normalized_dai_addr]};
+                    bit [SCRAMBLE_DATA_SIZE-1:0] secret_data = {otp_a[otp_addr + 1],
+                                                                otp_a[otp_addr]};
                     if (scramble_data(secret_data, part_idx) == 0) begin
-                      otp_a[normalized_dai_addr] = `gmv(ral.direct_access_wdata_0);
-                      otp_a[normalized_dai_addr + 1] = `gmv(ral.direct_access_wdata_1);
+                      otp_a[otp_addr]     = `gmv(ral.direct_access_wdata_0);
+                      otp_a[otp_addr + 1] = `gmv(ral.direct_access_wdata_1);
                     end else begin
                       predict_status_err(1);
                     end
@@ -331,17 +328,17 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       "direct_access_rdata_0", "direct_access_rdata_1": begin
         // TODO: need to check last cmd is READ
         if (data_phase_read && `gmv(ral.direct_access_regwen)) begin
-          bit [TL_AW-1:0] dai_addr = get_normalized_dai_addr();
+          bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
           if (csr.get_name() == "direct_access_rdata_0") begin
-            bit [TL_DW-1:0] exp_val = dai_read_valid ? otp_a[dai_addr] : 0;
+            bit [TL_DW-1:0] exp_val = dai_read_valid ? otp_a[otp_addr] : 0;
             `DV_CHECK_EQ(item.d_data, exp_val,
-                         $sformatf("DAI read mismatch at addr %0h", dai_addr))
+                         $sformatf("DAI read mismatch at addr %0h", csr_addr))
             do_read_check = 0;
           end else begin
             if (is_secret(`gmv(ral.direct_access_address))) begin
-              bit [TL_DW-1:0] exp_val = dai_read_valid ? otp_a[dai_addr + 1] : 0;
+              bit [TL_DW-1:0] exp_val = dai_read_valid ? otp_a[otp_addr + 1] : 0;
               `DV_CHECK_EQ(item.d_data, exp_val,
-                           $sformatf("DAI read mismatch at addr %0h", dai_addr + 1))
+                           $sformatf("DAI read mismatch at addr %0h", otp_addr + 1))
               do_read_check = 0;
             end
           end
@@ -542,9 +539,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     present_encode_with_final_const = enc_array[NUM_ROUND-1] ^ intermediate_state;
   endfunction
 
-  function bit [TL_AW-1:0] get_normalized_dai_addr();
+  function bit [TL_AW-1:0] get_scb_otp_addr();
     bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address);
-    get_normalized_dai_addr = is_secret(dai_addr) ? dai_addr >> 3 << 1 : dai_addr >> 2;
+    get_scb_otp_addr = is_secret(dai_addr) ? dai_addr >> 3 << 1 : dai_addr >> 2;
   endfunction
 
   virtual function void predict_status_err(bit dai_err, int part_idx = 0);

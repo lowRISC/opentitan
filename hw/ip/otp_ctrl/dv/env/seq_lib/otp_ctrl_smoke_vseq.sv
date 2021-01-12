@@ -122,8 +122,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       write_sw_rd_locks();
       dut_init();
 
-      // check digest
-      check_digests();
+      // read and check digest in scb
+      rd_digests();
 
       if (do_lc_trans) begin
         req_lc_transition();
