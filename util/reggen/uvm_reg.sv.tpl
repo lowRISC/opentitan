@@ -22,6 +22,9 @@ package ${block.name}_ral_pkg;
   // dep packages
   import uvm_pkg::*;
   import dv_base_reg_pkg::*;
+% if dv_base_prefix != "dv_base":
+  import ${dv_base_prefix}_reg_pkg::*;
+% endif
 % for b in block.blocks:
   import ${b.name}_ral_pkg::*;
 % endfor
@@ -46,10 +49,10 @@ package ${block.name}_ral_pkg;
   reg_shadowed = r.shadowed
 %>\
   // Class: ${gen_dv.rcname(block, r)}
-  class ${gen_dv.rcname(block, r)} extends dv_base_reg;
+  class ${gen_dv.rcname(block, r)} extends ${dv_base_prefix}_reg;
     // fields
 % for f in r.fields:
-    rand dv_base_reg_field ${f.name};
+    rand ${dv_base_prefix}_reg_field ${f.name};
 % endfor
 
     `uvm_object_utils(${gen_dv.rcname(block, r)})
@@ -85,7 +88,7 @@ package ${block.name}_ral_pkg;
   else:
     reg_field_name = reg_name + "_" + f.name
 %>\
-      ${f.name} = dv_base_reg_field::type_id::create("${f.name}");
+      ${f.name} = ${dv_base_prefix}_reg_field::type_id::create("${f.name}");
       ${f.name}.configure(
         .parent(this),
         .size(${field_size}),
@@ -150,7 +153,7 @@ package ${block.name}_ral_pkg;
   mem_size = int((w.limit_addr - w.base_addr) / (mem_n_bits / 8))
 %>\
   // Class: ${gen_dv.mcname(block, w)}
-  class ${gen_dv.mcname(block, w)} extends dv_base_mem;
+  class ${gen_dv.mcname(block, w)} extends ${dv_base_prefix}_mem;
 
     `uvm_object_utils(${gen_dv.mcname(block, w)})
 
@@ -169,7 +172,7 @@ package ${block.name}_ral_pkg;
 
 % endfor
   // Class: ${gen_dv.bcname(block)}
-  class ${gen_dv.bcname(block)} extends dv_base_reg_block;
+  class ${gen_dv.bcname(block)} extends ${dv_base_prefix}_reg_block;
 % if block.blocks:
     // sub blocks
 % endif

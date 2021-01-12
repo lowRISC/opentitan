@@ -797,7 +797,7 @@ def generate_top_only(top_only_list, out_path, topname):
             gen_rtl.gen_rtl(hjson_obj, str(genrtl_dir))
 
 
-def generate_top_ral(top, ip_objs, out_path):
+def generate_top_ral(top, ip_objs, dv_base_prefix, out_path):
     # construct top ral block
     top_block = gen_rtl.Block()
     top_block.name = "chip"
@@ -835,7 +835,7 @@ def generate_top_ral(top, ip_objs, out_path):
     top_block.wins.sort(key=lambda win: win.base_addr)
 
     # generate the top ral model with template
-    gen_dv.gen_ral(top_block, str(out_path))
+    gen_dv.gen_ral(top_block, dv_base_prefix, str(out_path))
 
 
 def main():
@@ -896,6 +896,10 @@ def main():
         default=False,
         action='store_true',
         help="If set, the tool generates top level RAL model for DV")
+    parser.add_argument('--dv-base-prefix',
+                        default='dv_base',
+                        help='Prefix for the DV register classes from which '
+                        'the register models are derived.')
     # Generator options for compile time random netlist constants
     parser.add_argument(
         '--rnd_cnst_seed',
@@ -1062,7 +1066,7 @@ def main():
     completecfg = merge_top(topcfg, ip_objs, xbar_objs)
 
     if args.top_ral:
-        generate_top_ral(completecfg, ip_objs, out_path)
+        generate_top_ral(completecfg, ip_objs, args.dv_base_prefix, out_path)
         sys.exit()
 
     # Generate PLIC

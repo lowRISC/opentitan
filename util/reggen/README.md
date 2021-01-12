@@ -59,8 +59,44 @@ $ cd $REPO_TOP/util
 $ mkdir /tmp/dv
 $ ./regtool.py -s -t /tmp/dv ../hw/ip/uart/data/uart.hjson
 $ ls /tmp/dv
-    uart_reg_block.sv
+    uart_ral_pkg.sv
 ```
+
+By default, the generated block, register and field models are derived from
+`dv_base_reg` classes provided at `hw/dv/sv/dv_base_reg`. If required, the user
+can supply the `--dv-base-prefix my_base` switch to have the models derive from
+a custom, user-defined RAL classes instead:
+
+```console
+$ cd $REPO_TOP/util
+$ mkdir /tmp/dv
+$ ./regtool.py -s -t /tmp/dv ../hw/ip/uart/data/uart.hjson \
+  --dv-base-prefix my_base
+$ ls /tmp/dv
+    uart_ral_pkg.sv
+```
+
+This makes the following assumptions:
+- A FuseSoC core file aggregating the `my_base` RAL classes with the VLNV
+  name `lowrisc:dv:my_base_reg` is provided in the cores search path.
+- These custom classes are derived from the corresponding `dv_base_reg` classes
+  and have the following names:
+  - `my_base_reg_pkg.sv`: The RAL package that includes the below sources
+  - `my_base_reg_block.sv`: The register block abstraction
+  - `my_base_reg.sv`: The register abstraction
+  - `my_base_reg_field.sv`: The register field abstraction
+  - `my_base_mem.sv`: The memory abstraction
+- If any of the above class specializations is not needed, it can be
+  `typedef`'ed in `my_base_reg_pkg`:
+  ```systemverilog
+  package my_base_reg_pkg;
+    import dv_base_reg_pkg::*;
+    typedef dv_base_reg_field my_base_reg_field;
+    typedef dv_base_mem my_base_mem;
+    `include "my_base_reg.sv"
+    `include "my_base_reg_block.sv"
+  endpackage
+  ```
 
 The following shows an example of how to generate a FPV csr read write assertion
 module from a register description:
