@@ -39,12 +39,12 @@ def sv_base_addr(b, inst):
     return "{}'h{:x}".format(b.width, b.base_addr[inst])
 
 
-def gen_dv(obj, outdir):
+def gen_dv(obj, dv_base_prefix, outdir):
     '''Generate DV files using a raw dict object parsed from hjson'''
-    gen_ral(json_to_reg(obj), outdir)
+    gen_ral(json_to_reg(obj), dv_base_prefix, outdir)
 
 
-def gen_ral(block, outdir):
+def gen_ral(block, dv_base_prefix, outdir):
     '''Generate DV RAL model from a gen_rtl.Block specification'''
 
     # Read template
@@ -54,6 +54,7 @@ def gen_ral(block, outdir):
     # Expand template
     try:
         to_write = uvm_reg_tpl.render(block=block,
+                                      dv_base_prefix=dv_base_prefix,
                                       HwAccess=HwAccess,
                                       SwRdAccess=SwRdAccess,
                                       SwWrAccess=SwWrAccess)
