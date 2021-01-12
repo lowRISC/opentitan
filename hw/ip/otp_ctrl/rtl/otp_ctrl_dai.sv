@@ -278,7 +278,9 @@ module otp_ctrl_dai
       // that is the case, we immediately bail out. Otherwise, we
       // request a block of data from OTP.
       ReadSt: begin
-        if (part_access_i[part_idx].read_lock == Unlocked) begin
+        if (part_access_i[part_idx].read_lock == Unlocked ||
+            // HW digests always remain readable.
+            PartInfo[part_idx].hw_digest && otp_addr_o == digest_addr_lut[part_idx]) begin
           otp_req_o = 1'b1;
           otp_cmd_o = prim_otp_pkg::Read;
           if (otp_gnt_i) begin
@@ -297,7 +299,9 @@ module otp_ctrl_dai
       // terminal error state.
       ReadWaitSt: begin
         // Continuously check read access and bail out if this is not consistent.
-        if (part_access_i[part_idx].read_lock == Unlocked) begin
+        if (part_access_i[part_idx].read_lock == Unlocked ||
+            // HW digests always remain readable.
+            PartInfo[part_idx].hw_digest && otp_addr_o == digest_addr_lut[part_idx]) begin
           if (otp_rvalid_i) begin
             // Check OTP return code.
             if ((!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}))) begin
@@ -305,7 +309,8 @@ module otp_ctrl_dai
               error_d = otp_err_e'(otp_err_i);
             end else begin
               data_en = 1'b1;
-              if (PartInfo[part_idx].secret) begin
+              // We do not need to descramble the digest values.
+              if (PartInfo[part_idx].secret && otp_addr_o != digest_addr_lut[part_idx]) begin
                 state_d = DescrSt;
               end else begin
                 state_d = IdleSt;
