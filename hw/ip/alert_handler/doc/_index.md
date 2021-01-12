@@ -228,7 +228,8 @@ The wave pattern below illustrates differential full handshake mechanism.
 {
   signal: [
     { name: 'clk_i',                wave: 'p...............' },
-    { name: 'alert_i',              wave: '01.|..|..|...|..' },
+    { name: 'alert_req_i',          wave: '01.|..|..|...|..' },
+    { name: 'alert_ack_o',          wave: '0..|..|..|10.|..' },
     { name: 'alert_tx_o/i.alert_p', wave: '01.|..|0.|..1|..' , node: '.a.....c....e'},
     { name: 'alert_tx_o/i.alert_n', wave: '10.|..|1.|..0|..' },
     { name: 'alert_rx_i/o.ack_p',   wave: '0..|1.|..|0..|1.' , node: '....b.....d..'},
