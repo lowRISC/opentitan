@@ -95,9 +95,11 @@ module prim_sync_reqack_data #(
 
   end else if (DataSrc2Dst == 1'b0 && DataReg == 1'b0) begin : gen_assert_data_dst2src
     // DST domain shall not change data while waiting for SRC domain to latch it (together with
-    // receiving ACK). Assert that the data is stable +/- 2 SRC cycles around the SRC handshake.
+    // receiving ACK). It takes 2 SRC cycles for ACK to cross over from DST to SRC, and 1 SRC cycle
+    // for the next REQ to cross over from SRC to DST. Assert that the data is stable during that
+    // window, i.e. [-2,+1] SRC cycles around the SRC handshake.
     `ASSERT(SyncReqAckDataHoldDst2Src,
-        src_req_i && src_ack_o |-> $past(data_o,2) == data_o && $stable(data_o) [*3],
+        src_req_i && src_ack_o |-> $past(data_o,2) == data_o && $stable(data_o) [*2],
         clk_src_i, !rst_src_ni)
   end
 
