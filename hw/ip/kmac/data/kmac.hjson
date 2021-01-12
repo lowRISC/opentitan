@@ -407,6 +407,9 @@
           If 0, the entropy module waits the EDN response always. If EDN does
           not respond in this configuration, the software shall reset the IP.
           '''
+          tags: [// Writing this timer may cause EDN wait timeout, which triggers a SVA error
+                 // We will do that in functional tests
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
       ]
     } // R: ENTROPY_PERIOD
