@@ -49,6 +49,7 @@ def main():
     name = gapi['parameters'].get('name')
     ip_hjson = gapi['parameters'].get('ip_hjson')
     top_hjson = gapi['parameters'].get('top_hjson')
+    dv_base_prefix = gapi['parameters'].get('dv_base_prefix')
     if not name or (bool(ip_hjson) == bool(top_hjson)):
         print("Error: ralgen requires the \"name\" and exactly one of "
               "{\"ip_hjson\" and \"top_hjson\"} parameters to be set.")
@@ -65,6 +66,11 @@ def main():
         cmd = os.path.join(util_path, "topgen.py")
         args = [cmd, "-r", "-o", ".", "-t", ral_spec]
 
+    depends = ["lowrisc:dv:dv_base_reg"]
+    if dv_base_prefix and dv_base_prefix != "dv_base":
+        args.extend(["--dv-base-prefix", dv_base_prefix])
+        depends.append("lowrisc:dv:{}_reg".format(dv_base_prefix))
+
     try:
         subprocess.run(args, check=True)
     except subprocess.CalledProcessError as e:
@@ -77,9 +83,7 @@ def main():
         'name': "lowrisc:dv:{}_ral_pkg".format(name),
         'filesets': {
             'files_dv': {
-                'depend': [
-                    "lowrisc:dv:dv_base_reg",
-                ],
+                'depend': depends,
                 'files': [
                     ral_pkg_file,
                 ],
