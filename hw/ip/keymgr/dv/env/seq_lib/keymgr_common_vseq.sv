@@ -19,4 +19,10 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
+  virtual task read_and_check_all_csrs_after_reset();
+    delay_after_reset_before_access_csr();
+
+    super.read_and_check_all_csrs_after_reset();
+  endtask
+
 endclass
