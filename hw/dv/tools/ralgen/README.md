@@ -15,6 +15,10 @@ The adjoining `ralgen.core` file registers the `ralgen` generator. The FuseSoC
 core file that 'calls' the generator adds it as a dependency. When calling the
 generator, the following parameters are set:
 * **name (mandatory)**: Name of the RAL package (typically, same is the IP).
+* **dv_base_prefix (optional)**: The prefix added to the base classes from
+  which the register classes are derived. Set this option to derive the register
+  classes not from the default `dv_base_reg`, but from user defined custom
+  class definitions.
 * **ip_hjson**: Path to the hjson specification written for an IP which includes
   the register descriptions. This needs to be a valid input for `reggen`.
 * **top_hjson**: Path to the hjson specification for a top level design. This
@@ -30,7 +34,9 @@ generate:
     generator: ralgen
     parameters:
       name: <name>
-      <ip_hjson|top_hjson>: <path-to-hjson-spec>
+      ip_hjson|top_hjson: <path-to-hjson-spec>
+      [dv_base_prefix: my_base]
+
 
 targets:
   default:
@@ -63,11 +69,15 @@ the `name` parameter to derive the
 [VLNV](https://fusesoc.readthedocs.io/en/master/user/overview.html#core-naming-rules)
 name for the generated core file.
 
-The generated core file adds **`lowrisc:dv:dv_lib`** as a dependency for the
-generated RAL package. This is required because our DV register block, register
-and field models are derived from the
+The generated core file adds **`lowrisc:dv:dv_base_reg`** as a dependency for
+the generated RAL package. This is required because our DV register block,
+register and field models are derived from the
 [DV library]({{< relref "hw/dv/sv/dv_lib/README.md" >}}) of classes. This
-ensures the right compilation order is maintained.
+ensures the right compilation order is maintained. If the `dv_base_prefix`
+argument is set, then it adds **`lowrisc:dv:my_base_reg`** as an extra
+dependency, where `my_base` is the value of the argument as shown in the
+example above. This core file and the associated sources are assumed to be
+available in the provided FuseSoC search paths.
 
 ## Limitations
 
