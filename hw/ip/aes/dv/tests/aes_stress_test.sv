@@ -16,7 +16,10 @@ class aes_stress_test extends aes_base_test;
   virtual function void configure_env();
     //   cfg.ref_model          = OpenSSL;
     // env related knobs
-
+ // should the read vs write be unbalanced.
+    cfg.unbalanced               = 1;
+    cfg.read_prob                = 60;
+    cfg.write_prob               = 80;
     cfg.error_types              = 0;
     cfg.num_messages_min         = 1;
     cfg.num_messages_max         = 50;

@@ -45,6 +45,15 @@ package aes_env_pkg;
     bit          mode;
   } cfg_error_type_t;
 
+  typedef struct packed {
+    logic [31:5] unused;
+    logic        ctrl_error_storage;
+    logic        input_ready;
+    logic        output_valid;
+    logic        stall;
+    logic        idle;
+  } status_t;
+
 
   // package sources
  `include "aes_env_cfg.sv"
