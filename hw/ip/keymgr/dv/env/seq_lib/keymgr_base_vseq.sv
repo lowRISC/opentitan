@@ -124,7 +124,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
     bit is_good_op = 1;
     int key_verion = `gmv(ral.key_version);
     keymgr_pkg::keymgr_ops_e operation = `gmv(ral.control.operation);
-    bit intr_err_exp;
+    bit[TL_DW-1:0] rd_val;
 
     if (operation inside {keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut}) begin
       // only when it's in 3 working state and key_verion less than max version
@@ -172,14 +172,10 @@ class keymgr_base_vseq extends cip_base_vseq #(
     // check and clear interrupt
     check_interrupts(.interrupts(1 << IntrOpDone), .check_set(1));
 
-    // check and clear err_code
-    csr_rd_check(.ptr(ral.err_code.invalid_op), .compare_value(!is_good_op));
-    if (!is_good_op) begin
-      bit [TL_DW-1:0] err_code_wdata;
-      err_code_wdata = get_csr_val_with_updated_field(.field(ral.err_code.invalid_op),
-                                                      .csr_value(err_code_wdata),
-                                                      .field_value(1));
-      csr_wr(.csr(ral.err_code), .value(err_code_wdata));
+    // check for chech in scb and clear err_code
+    csr_rd(.ptr(ral.err_code), .value(rd_val));
+    if (rd_val != 0) begin
+      csr_wr(.csr(ral.err_code), .value(rd_val));
     end
   endtask : wait_op_done
 
