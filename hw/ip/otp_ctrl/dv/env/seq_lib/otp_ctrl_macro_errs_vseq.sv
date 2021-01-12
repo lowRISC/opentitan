@@ -16,13 +16,12 @@ class otp_ctrl_macro_errs_vseq extends otp_ctrl_smoke_vseq;
     num_dai_op inside {[100:500]};
   }
 
-  virtual task pre_start();
-    super.pre_start();
+  function void pre_randomize();
     // TODO: enable this once support
     // this.partition_index_c.constraint_mode(0);
     // this.dai_wr_legal_addr_c.constraint_mode(0);
     this.dai_wr_blank_addr_c.constraint_mode(0);
     collect_used_addr = 0;
-  endtask
+  endfunction
 
 endclass
