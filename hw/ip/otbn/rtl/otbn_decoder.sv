@@ -589,11 +589,11 @@ module otbn_decoder
             insn_subset     = InsnSubsetBignum;
             rf_we_bignum    = 1'b1;
             rf_ren_a_bignum = 1'b1;
-            rf_ren_a_base   = 1'b1;
 
-            if (insn[31]) begin
+            if (insn[31]) begin // BN.MOVR
               rf_a_indirect_bignum = 1'b1;
               rf_d_indirect_bignum = 1'b1;
+              rf_ren_a_base        = 1'b1;
               rf_ren_b_base        = 1'b1;
 
               if (insn[9]) begin
