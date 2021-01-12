@@ -14,13 +14,15 @@ class aes_base_test extends cip_base_test #(
      configure_env();
    endfunction // build_phase
 
-
-
   //this will serve as the default setting.
   // overrides should happen in the specific testcase.
   virtual function void configure_env();
-    // cfg.ref_model          = OpenSSL;
 
+
+ // should the read vs write be unbalanced.
+    cfg.unbalanced                  = 0;
+    cfg.read_prob                   = 80;
+    cfg.write_prob                  = 80;
     cfg.num_messages_min            = 1;
     cfg.num_messages_max            = 31;
     cfg.message_len_min             = 1;

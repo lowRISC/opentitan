@@ -15,10 +15,6 @@ class aes_smoke_test extends aes_base_test;
 
   function void configure_env();
     super.configure_env();
-
-//    the feature below is waiting in anther PR
-//    cfg.zero_delay_pct           = 100;
-
     cfg.error_types              = 0;     // no errors in smoke test
     cfg.num_messages_min         = 2;
     cfg.num_messages_max         = 2;
@@ -31,7 +27,7 @@ class aes_smoke_test extends aes_base_test;
 
     cfg.message_len_min          = 16;    // one block (16bytes=128bits)
     cfg.message_len_max          = 32;    //
-    cfg.manual_operation_pct     = 0;
+    cfg.manual_operation_pct     = 100;
     cfg.use_key_mask             = 0;
 
     cfg.fixed_data_en            = 0;
@@ -46,6 +42,8 @@ class aes_smoke_test extends aes_base_test;
     cfg.fixed_iv_en              = 0;
 
     cfg.random_data_key_iv_order = 0;
+    cfg.read_prob                = 100;
+    cfg.write_prob               = 100;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
   endfunction

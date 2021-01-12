@@ -57,7 +57,6 @@
       uvm_test_seq: aes_wake_up_vseq
       reseed: 1
     }
-
     {
       name: aes_smoke
       uvm_test: aes_smoke_test
@@ -81,7 +80,7 @@
     {
       name: aes_clear
       uvm_test: aes_clear_test
-      uvm_test_seq: aes_clear_vseq
+      uvm_test_seq: aes_stress_vseq
     }
   ]
 

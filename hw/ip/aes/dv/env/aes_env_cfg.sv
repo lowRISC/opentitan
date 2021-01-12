@@ -6,7 +6,6 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   `uvm_object_utils_begin(aes_env_cfg)
   `uvm_object_utils_end
-
   `uvm_object_new
 
   // TODO sort knobs into test/SEQUENCE/message/item
@@ -85,10 +84,20 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // one or more registers
   int                clear_reg_pct              = 0;
 
+  // should the read vs write be unbalanced.
+  bit                unbalanced = 0;
+  // chance of reading valid output (for each status poll)
+  int                read_prob = 80;
+  // chance of writing data when DUT is ready (for each status poll)
+  int                write_prob = 90;
+
+
+  ///////////////////////////////
+  // dont touch updated by env //
+  ///////////////////////////////
 
   // keep track of how many packets was split
   int                split_cnt                  = 0;
-
 
   // rand variables
   // 0: C model 1: OPEN_SSL/BORING_SSL
