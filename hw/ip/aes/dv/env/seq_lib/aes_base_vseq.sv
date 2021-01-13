@@ -473,7 +473,7 @@ class aes_base_vseq extends cip_base_vseq #(
       //read the status register to see that we have triggered the operation
       csr_rd(.ptr(ral.status), .value(status), .blocking(is_blocking));
       // check status and act accordingly //
-      if (status.ctrl_error_storage) begin
+      if (status.alert_fatal) begin
         // stuck pull reset //
       end else begin
         // state 0
@@ -546,7 +546,7 @@ class aes_base_vseq extends cip_base_vseq #(
           `uvm_fatal(`gfn, $sformatf("\n\t %s",txt))
         end
         `uvm_info(`gfn, $sformatf("\n\t %s",txt), UVM_MEDIUM)
-      end // else: !if(status.ctrl_error_storage)
+      end // else: !if(status.alert_fatal)
     end // while (!done)
 
   endtask // transmit_fsm

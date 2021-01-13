@@ -485,7 +485,7 @@
     # Tag info (CSR test exclusions):
     #  Updated by the HW.
     #  Updates based on writes to other regs.
-    #  -> Exclude all fields (except CTRL_STORAGE_ERROR) from init and write-read checks.
+    #  -> Exclude all fields (except ALERT_FATAL) from init and write-read checks.
     #  Upon reset, internal operations are triggered that temporarily change the IDLE field.
     #  -> Exclude IDLE field from init and write-read checks (also in reset test).
     fields: [
@@ -534,6 +534,7 @@
           A recoverable alert condition has occurred and AES operation needs to be restarted by successfully updating the Control Register (1).
           Examples for recoverable alert conditions include update errors in the Control Register.
         '''
+        tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       }
       { bits: "5",
         name: "ALERT_FATAL",
