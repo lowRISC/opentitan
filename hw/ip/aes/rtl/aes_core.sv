@@ -560,7 +560,10 @@ module aes_core
     .idle_o                    ( hw2reg.status.idle.d                   ),
     .idle_we_o                 ( hw2reg.status.idle.de                  ),
     .stall_o                   ( hw2reg.status.stall.d                  ),
-    .stall_we_o                ( hw2reg.status.stall.de                 )
+    .stall_we_o                ( hw2reg.status.stall.de                 ),
+    .output_lost_i             ( reg2hw.status.output_lost.q            ),
+    .output_lost_o             ( hw2reg.status.output_lost.d            ),
+    .output_lost_we_o          ( hw2reg.status.output_lost.de           )
   );
 
   // Input data register clear

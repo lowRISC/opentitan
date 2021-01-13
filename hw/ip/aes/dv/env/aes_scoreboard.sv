@@ -356,7 +356,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
           // and no output is ready
           // there won't be a response for this item
           // reset/clear was triggered
-          if (item.d_data[3:0] == 4'b1001) begin
+          if (get_field_val(ral.status.idle, item.d_data) &&
+              get_field_val(ral.status.output_lost, item.d_data)) begin
             if (rcv_item_q.size() != 0) begin
               void'(rcv_item_q.pop_back());
               `uvm_info(`gfn, $sformatf("\n\t ----| removing item from input queue"), UVM_MEDIUM)
@@ -580,10 +581,11 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
     super.report_phase(phase);
     txt = $sformatf("\n\t ----|        TEST FINISHED        |----");
-    txt = {   txt, $sformatf("\n\t Saw %d Good messages ", good_cnt)};
-    txt = {   txt, $sformatf("\n\t Skipped %d messages " , skipped_cnt)};
-    txt = {   txt, $sformatf("\n\t Split %d messages "   , cfg.split_cnt)};
-    txt = {   txt, $sformatf("\n\t Expected %d messages ", cfg.num_messages)};
+    txt = { txt, $sformatf("\n\t Saw %d Good messages  ", good_cnt)};
+    txt = { txt, $sformatf("\n\t Skipped %d messages  " , skipped_cnt)};
+    txt = { txt, $sformatf("\n\t Split %d messages  "   , cfg.split_cnt)};
+    txt = { txt, $sformatf("\n\t Expected %d messages  ", cfg.num_messages)};
+    txt = { txt, $sformatf("\n\t Expected %d corrupted ", cfg.num_corrupt_messages)};
     rpt_srvr = uvm_report_server::get_server();
     if (rpt_srvr.get_severity_count(UVM_FATAL)+rpt_srvr.get_severity_count(UVM_ERROR)>0) begin
       `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)

@@ -365,12 +365,19 @@ class aes_base_vseq extends cip_base_vseq #(
     cfg_item = aes_item_queue.pop_back();
 
     // TODO when dut is updated to flag output overwritten
-    // the manual operation should be included in the stress =1 also
+    // the manual operation should be included in the unbalanced =1 also
+    if (new_msg) setup_dut(cfg_item);
     if (unbalanced == 0 || manual_operation) begin
       while (aes_item_queue.size() > 0) begin
-        data_item = aes_item_queue.pop_back();
-        config_and_transmit(cfg_item, data_item, new_msg, manual_operation, 1);
-        new_msg = 0;
+        status_fsm(cfg_item, data_item, new_msg, manual_operation, 0, status);
+        if (status.input_ready) begin
+          data_item = aes_item_queue.pop_back();
+          config_and_transmit(cfg_item, data_item, new_msg, manual_operation, 1);
+          new_msg = 0;
+        end else if (cfg_item.mode == AES_NONE) begin
+          // just write the data - don't expect and output
+          config_and_transmit(cfg_item, data_item, new_msg, manual_operation, 0);
+        end
       end
     end else begin
 
@@ -426,7 +433,6 @@ class aes_base_vseq extends cip_base_vseq #(
     bit                   is_blocking = cfg_item.do_b2b;
 
     if (new_msg) begin
-      setup_dut(cfg_item);
       write_data_key_iv(cfg_item, data_item.data_in);
     end else begin
       add_data(data_item.data_in, is_blocking);

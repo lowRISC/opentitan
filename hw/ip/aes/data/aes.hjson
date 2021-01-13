@@ -489,18 +489,30 @@
           The AES unit is not stalled (0) or stalled (1) because there is previous
           output data that must be read by the processor before the AES unit can
           overwrite this data.
-          This flag not meaningful if MANUAL_OPERATION=1 (see Control Register).
+          This flag is not meaningful if MANUAL_OPERATION=1 (see Control Register).
         '''
         tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       }
       { bits: "2",
+        name: "OUTPUT_LOST",
+        hwaccess: "hrw",
+        desc:  '''
+          All previous output data has been fully read by the processor (0) or at least one previous output data block has been lost (1).
+          It has been overwritten by the AES unit before the processor could fully read it.
+          Once set to `1`, this flag remains set until AES operation is restarted by successfully updating the Control Register.
+          The primary use of this flag is for design verification.
+          This flag is not meaningful if MANUAL_OPERATION=0 (see Control Register).
+        '''
+        tags: ["excl:CsrNonInitTests:CsrExclCheck"]
+      }
+      { bits: "3",
         name: "OUTPUT_VALID",
         desc:  '''
           The AES unit has no valid output (0) or has valid output data (1).
         '''
         tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       }
-      { bits: "3",
+      { bits: "4",
         name: "INPUT_READY",
         resval: "1",
         desc:  '''
@@ -510,7 +522,7 @@
         '''
         tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       }
-      { bits: "4",
+      { bits: "5",
         name: "ALERT_RECOVERABLE",
         resval: "0",
         desc:  '''
@@ -520,7 +532,7 @@
         '''
         tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       }
-      { bits: "5",
+      { bits: "6",
         name: "ALERT_FATAL",
         resval: "0",
         desc:  '''
