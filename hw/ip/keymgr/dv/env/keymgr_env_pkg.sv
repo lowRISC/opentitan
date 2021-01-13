@@ -24,6 +24,7 @@ package keymgr_env_pkg;
   parameter uint DIGEST_SHARE_WORD_NUM = keymgr_pkg::KeyWidth / TL_DW;
 
   typedef virtual keymgr_if keymgr_vif;
+  typedef bit [keymgr_pkg::Shares-1:0][keymgr_pkg::KeyWidth-1:0] key_shares_t;
   typedef enum {
     IntrOpDone,
     NumKeyMgrIntr

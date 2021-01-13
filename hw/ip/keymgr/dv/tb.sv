@@ -25,6 +25,10 @@ module tb;
   keymgr_if keymgr_if(.clk(clk), .rst_n(rst_n));
   keymgr_kmac_intf keymgr_kmac_intf(.clk(clk), .rst_n(rst_n));
 
+  // connect KDF interface for assertion check
+  assign keymgr_if.kmac_data_req = keymgr_kmac_intf.kmac_data_req;
+  assign keymgr_if.kmac_data_rsp = keymgr_kmac_intf.kmac_data_rsp;
+
   `DV_ALERT_IF_CONNECT
 
   // edn_clk, edn_rst_n and edn_if are defined and driven in below macro

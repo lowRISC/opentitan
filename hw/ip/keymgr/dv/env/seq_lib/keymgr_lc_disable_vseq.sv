@@ -54,7 +54,7 @@ class keymgr_lc_disable_vseq extends keymgr_random_vseq;
         cfg.clk_rst_vif.wait_clks(delay_cycles);
 
         forever begin
-          bit [TL_DW-1] op_status_val;
+          bit [TL_DW-1:0] op_status_val;
           csr_rd(ral.op_status, op_status_val);
 
           if (op_status_val == keymgr_pkg::OpWip) break;
