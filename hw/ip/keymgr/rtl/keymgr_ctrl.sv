@@ -110,10 +110,11 @@ module keymgr_ctrl import keymgr_pkg::*;(
   assign disable_sel    = (op_start_i & !(gen_sel | advance_sel)) |
                           !en_i;
 
-  assign adv_en_o   = op_accept & (advance_sel | disable_sel);
-  assign id_en_o    = op_accept & gen_id_sel;
-  assign gen_en_o   = op_accept & gen_out_sel;
-  assign load_key_o = op_accept;
+  assign load_key_o = op_start_i & op_accept;
+  assign adv_en_o   = load_key_o & (advance_sel | disable_sel);
+  assign id_en_o    = load_key_o & gen_id_sel;
+  assign gen_en_o   = load_key_o & gen_out_sel;
+
 
   // unlock sw binding configuration whenever an advance call is made without errors
   assign op_ack = op_accept & op_done_o;
@@ -145,7 +146,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
   // - whatever operation causes the input data select to be disabled should not expose the key
   //   state.
   // - when there are no operations, the key state also should be exposed.
-  assign key_o.valid = op_accept;
+  assign key_o.valid = load_key_o;
   assign key_o.key_share0 = (~op_start_i | stage_sel_o == Disable) ?
                             {EntropyRounds{entropy_i[0]}} :
                             key_state_q[0];
@@ -584,5 +585,8 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
   `ASSERT(OwnerLegalCommands_A, op_start_i & en_i & state_q inside {StCtrlOwnerKey} &
                                 (op_i inside {OpAdvance, OpDisable}) |-> stage_sel_o == Disable)
+
+  // load_key should not be high if there is no ongoing operation
+  `ASSERT(LoadKey_A, load_key_o |-> op_start_i)
 
 endmodule
