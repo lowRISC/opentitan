@@ -668,7 +668,11 @@ class Model:
 
         self.write_reg('gpr', op_vals[0], result, True)
 
-    def _inc_gpr(self, gpr: int, delta: int, mask: int) -> None:
+    def _inc_gpr(self,
+                 gpr: int,
+                 gpr_val: Optional[int],
+                 delta: int,
+                 mask: int) -> None:
         '''Mark gpr as having a value and increment it if known
 
         This passes update=False to self.write_reg: it should be used for
@@ -676,7 +680,6 @@ class Model:
         instruction.
 
         '''
-        gpr_val = self.get_reg('gpr', gpr)
         new_val = (gpr_val + delta) & mask if gpr_val is not None else None
         self.write_reg('gpr', gpr, new_val, False)
 
@@ -715,6 +718,7 @@ class Model:
 
         grd, grs1, offset, grs1_inc, grd_inc = op_vals
         grd_val = self.get_reg('gpr', grd)
+        grs1_val = self.get_reg('gpr', grs1)
 
         self._generic_update_for_insn(prog_insn)
 
@@ -722,9 +726,9 @@ class Model:
             self.write_reg('wdr', grd_val & 31, None, False)
 
         if grs1_inc:
-            self._inc_gpr(grs1, 32, (1 << 32) - 1)
+            self._inc_gpr(grs1, grs1_val, 32, (1 << 32) - 1)
         elif grd_inc:
-            self._inc_gpr(grd, 1, 31)
+            self._inc_gpr(grd, grd_val, 1, 31)
 
     def update_for_bnsid(self, prog_insn: ProgInsn) -> None:
         '''Update model state after an BN.SID'''
@@ -755,13 +759,15 @@ class Model:
             raise RuntimeError('Unexpected shape for bn.sid')
 
         grs1, grs2, offset, grs1_inc, grs2_inc = op_vals
+        grs1_val = self.get_reg('gpr', grs1)
+        grs2_val = self.get_reg('gpr', grs2)
 
         self._generic_update_for_insn(prog_insn)
 
         if grs1_inc:
-            self._inc_gpr(grs1, 32, (1 << 32) - 1)
+            self._inc_gpr(grs1, grs1_val, 32, (1 << 32) - 1)
         elif grs2_inc:
-            self._inc_gpr(grs2, 1, 31)
+            self._inc_gpr(grs2, grs2_val, 1, 31)
 
     def update_for_bnmovr(self, prog_insn: ProgInsn) -> None:
         '''Update model state after an BN.MOVR'''
@@ -790,6 +796,7 @@ class Model:
 
         grd, grs, grd_inc, grs_inc = op_vals
         grd_val = self.get_reg('gpr', grd)
+        grs_val = self.get_reg('gpr', grs)
 
         self._generic_update_for_insn(prog_insn)
 
@@ -797,9 +804,9 @@ class Model:
             self.write_reg('wdr', grd_val & 31, None, False)
 
         if grd_inc:
-            self._inc_gpr(grd, 1, 31)
+            self._inc_gpr(grd, grd_val, 1, 31)
         elif grs_inc:
-            self._inc_gpr(grs, 1, 31)
+            self._inc_gpr(grs, grs_val, 1, 31)
 
     def _generic_update_for_insn(self, prog_insn: ProgInsn) -> None:
         '''Update registers and memory for prog_insn
