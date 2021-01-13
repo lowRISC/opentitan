@@ -373,6 +373,22 @@ TEST_F(ImemWriteTest, BadOffset) {
   EXPECT_EQ(result, kDifOtbnBadArg);
 }
 
+TEST_F(ImemWriteTest, BadAddressBeyondMemorySize) {
+  dif_otbn_result_t result;
+  uint32_t test_data[] = {0};
+
+  result = dif_otbn_imem_write(&dif_otbn_, OTBN_IMEM_SIZE_BYTES, test_data, 4);
+  EXPECT_EQ(result, kDifOtbnBadArg);
+}
+
+TEST_F(ImemWriteTest, BadAddressIntegerOverflow) {
+  dif_otbn_result_t result;
+  uint32_t test_data[4] = {0};
+
+  result = dif_otbn_imem_write(&dif_otbn_, 0xFFFFFFFC, test_data, 16);
+  EXPECT_EQ(result, kDifOtbnBadArg);
+}
+
 TEST_F(ImemWriteTest, SuccessWithoutOffset) {
   // Test assumption.
   ASSERT_GE(OTBN_IMEM_SIZE_BYTES, 8);
