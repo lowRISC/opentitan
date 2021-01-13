@@ -161,6 +161,7 @@ module aes_reg_top (
   logic trigger_prng_reseed_we;
   logic status_idle_qs;
   logic status_stall_qs;
+  logic status_output_lost_qs;
   logic status_output_valid_qs;
   logic status_input_ready_qs;
   logic status_alert_recoverable_qs;
@@ -928,7 +929,32 @@ module aes_reg_top (
   );
 
 
-  //   F[output_valid]: 2:2
+  //   F[output_lost]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_status_output_lost (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.status.output_lost.de),
+    .d      (hw2reg.status.output_lost.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.status.output_lost.q ),
+
+    // to register interface (read)
+    .qs     (status_output_lost_qs)
+  );
+
+
+  //   F[output_valid]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
@@ -953,7 +979,7 @@ module aes_reg_top (
   );
 
 
-  //   F[input_ready]: 3:3
+  //   F[input_ready]: 4:4
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
@@ -978,7 +1004,7 @@ module aes_reg_top (
   );
 
 
-  //   F[alert_recoverable]: 4:4
+  //   F[alert_recoverable]: 5:5
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
@@ -1003,7 +1029,7 @@ module aes_reg_top (
   );
 
 
-  //   F[alert_fatal]: 5:5
+  //   F[alert_fatal]: 6:6
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
@@ -1230,6 +1256,7 @@ module aes_reg_top (
 
 
 
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -1369,10 +1396,11 @@ module aes_reg_top (
       addr_hit[31]: begin
         reg_rdata_next[0] = status_idle_qs;
         reg_rdata_next[1] = status_stall_qs;
-        reg_rdata_next[2] = status_output_valid_qs;
-        reg_rdata_next[3] = status_input_ready_qs;
-        reg_rdata_next[4] = status_alert_recoverable_qs;
-        reg_rdata_next[5] = status_alert_fatal_qs;
+        reg_rdata_next[2] = status_output_lost_qs;
+        reg_rdata_next[3] = status_output_valid_qs;
+        reg_rdata_next[4] = status_input_ready_qs;
+        reg_rdata_next[5] = status_alert_recoverable_qs;
+        reg_rdata_next[6] = status_alert_fatal_qs;
       end
 
       default: begin

@@ -46,11 +46,12 @@ package aes_env_pkg;
   } cfg_error_type_t;
 
   typedef struct packed {
-    logic [31:6] unused;
+    logic [31:7] unused;
     logic        alert_fatal;
     logic        alert_recoverable;
     logic        input_ready;
     logic        output_valid;
+    logic        output_lost;
     logic        stall;
     logic        idle;
   } status_t;

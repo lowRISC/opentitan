@@ -98,7 +98,10 @@ module aes_control
   output logic                    idle_o,
   output logic                    idle_we_o,
   output logic                    stall_o,
-  output logic                    stall_we_o
+  output logic                    stall_we_o,
+  input  logic                    output_lost_i,
+  output logic                    output_lost_o,
+  output logic                    output_lost_we_o
 );
 
   import aes_pkg::*;
@@ -647,6 +650,13 @@ module aes_control
       output_valid_q <= output_valid_o;
     end
   end
+
+  // Output lost status register bit
+  // Cleared when updating the Control Register. Set when overwriting previous output data that has
+  // not yet been read.
+  assign output_lost_o    = ctrl_we_o     ? 1'b0 :
+                            output_lost_i ? 1'b1 : output_valid_q & ~data_out_read;
+  assign output_lost_we_o = ctrl_we_o | data_out_we_o;
 
   // Trigger register, the control only ever clears these
   assign start_o                = 1'b0;
