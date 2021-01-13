@@ -61,6 +61,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       process_edn_req();
       check_otbn_rsp();
       check_flash_rsps();
+      check_sram_rsps();
     join_none
   endtask
 
@@ -141,11 +142,12 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_EQ(seed_valid, part_locked, "otbn seed_valid mismatch")
 
       // get edn CSRNG
-       `DV_CHECK_EQ(edn_data_q.size(), 16);
-       {exp_nonce, edn_key2, edn_key1} = {<<32{edn_data_q}};
-
-      // TODO: temp delete here, once all edn request supported, can remove
+      `DV_CHECK_EQ(edn_data_q.size(), 16);
+      {exp_nonce, edn_key2, edn_key1} = {<<32{edn_data_q}};
       edn_data_q.delete();
+
+      // check nonce value
+      `DV_CHECK_EQ(nonce, exp_nonce, "otbn nonce mismatch")
 
       // calculate key
       sram_key = get_key_from_otp(part_locked, SramDataKeySeedOffset / 4);
@@ -164,9 +166,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                        .num_round(2));
       exp_key = {exp_key_higher, exp_key_lower};
       `DV_CHECK_EQ(key, exp_key, "otbn key mismatch")
-
-      // check nonce value
-      `DV_CHECK_EQ(nonce, exp_nonce, "otbn nonce mismatch")
     end
   endtask
 
@@ -211,6 +210,56 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           `DV_CHECK_EQ(key, exp_key, $sformatf("flash %s key mismatch", sel_flash.name()))
         end
       join_none;
+    end
+  endtask
+
+  virtual task check_sram_rsps();
+    for (int i = 0; i < NumSramKeyReqSlots; i++) begin
+      automatic int index = i;
+      fork
+        forever begin
+          push_pull_item#(.DeviceDataWidth(SRAM_DATA_SIZE)) rcv_item;
+          sram_key_t                   key, exp_key;
+          sram_nonce_t                 nonce, exp_nonce;
+          bit                          seed_valid, part_locked;
+          bit [SCRAMBLE_KEY_SIZE-1:0]  edn_key2, edn_key1;
+          bit [SCRAMBLE_KEY_SIZE-1:0]  sram_key; // key used as input to present algo
+          bit [SCRAMBLE_DATA_SIZE-1:0] exp_key_lower, exp_key_higher;
+
+          sram_fifos[index].get(rcv_item);
+          seed_valid = rcv_item.d_data[0];
+          part_locked = {`gmv(ral.secret1_digest_0), `gmv(ral.secret1_digest_1)} != '0;
+
+          // seed is valid as long as secret1 is locked
+          `DV_CHECK_EQ(seed_valid, part_locked, $sformatf("sram_%0d seed_valid mismatch", index))
+
+          // get edn CSRNG
+          `DV_CHECK_EQ(edn_data_q.size(), 10);
+          {exp_nonce, edn_key2, edn_key1} = {<<32{edn_data_q}};
+          edn_data_q.delete();
+
+          // check nonce value
+          `DV_CHECK_EQ(nonce, exp_nonce, $sformatf("sram_%0d nonce mismatch", index))
+
+          // calculate key
+          sram_key = get_key_from_otp(part_locked, SramDataKeySeedOffset / 4);
+          exp_key_lower = present_encode_with_final_const(
+                          .data(RndCnstDigestIVDefault[SramDataKey]),
+                          .key(sram_key),
+                          .final_const(RndCnstDigestConstDefault[SramDataKey]),
+                          .second_key(edn_key1),
+                          .num_round(2));
+
+          exp_key_higher = present_encode_with_final_const(
+                           .data(RndCnstDigestIVDefault[SramDataKey]),
+                           .key(sram_key),
+                           .final_const(RndCnstDigestConstDefault[SramDataKey]),
+                           .second_key(edn_key2),
+                           .num_round(2));
+          exp_key = {exp_key_higher, exp_key_lower};
+          `DV_CHECK_EQ(key, exp_key, $sformatf("sram_%0d key mismatch", index))
+        end
+      join_none
     end
   endtask
 
