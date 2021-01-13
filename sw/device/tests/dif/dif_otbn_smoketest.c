@@ -194,16 +194,16 @@ static void zero_dmem(void) {
 }
 
 /**
- * Get OTBN error code, check this succeeds and code matches `expected_err_code`
+ * Get OTBN error bits, check this succeeds and code matches `expected_err_bits`
  */
-static void check_otbn_err_code(dif_otbn_err_code_t expected_err_code) {
-  LOG_INFO("Checking error code");
-  dif_otbn_err_code_t otbn_err_code;
-  dif_otbn_result_t rv = dif_otbn_get_err_code(&otbn, &otbn_err_code);
-  CHECK(rv == kDifOtbnOk, "dif_otbn_get_err_code() failed: %d", rv);
-  CHECK(otbn_err_code == expected_err_code,
-        "dif_otbn_get_err_code() produced unexpected error code: %d",
-        otbn_err_code);
+static void check_otbn_err_bits(dif_otbn_err_bits_t expected_err_bits) {
+  LOG_INFO("Checking error bits");
+  dif_otbn_err_bits_t otbn_err_bits;
+  dif_otbn_result_t rv = dif_otbn_get_err_bits(&otbn, &otbn_err_bits);
+  CHECK(rv == kDifOtbnOk, "dif_otbn_get_err_bits() failed: %d", rv);
+  CHECK(otbn_err_bits == expected_err_bits,
+        "dif_otbn_get_err_bits() produced unexpected error bits: %x",
+        otbn_err_bits);
 }
 
 /**
@@ -276,7 +276,7 @@ static void test_barrett384(void) {
   LOG_INFO("Function execution on OTBN took %d cycles (end-to-end).",
            t_end - t_start);
 
-  check_otbn_err_code(kDifOtbnErrCodeNoError);
+  check_otbn_err_bits(kDifOtbnErrBitsNoError);
 
   LOG_INFO("Reading back result (c)");
   dif_otbn_dmem_read(&otbn, 512, &c, sizeof(c));
@@ -291,8 +291,8 @@ static void test_barrett384(void) {
 /**
  * Run err_test on OTBN and check it produces the expected error
  *
- * This test tries to load from an invalid address which should result in a
- * kDifOtbnErrCodeBadDataAddr error code
+ * This test tries to load from an invalid address which should result in the
+ * kDifOtbnErrBitsBadDataAddr error bit being set
  *
  * The code executed on OTBN can be found in sw/otbn/code-snippets/err_test.s.
  * The entry point wrap_err_test() is called, no arguments are passed or results
@@ -312,7 +312,7 @@ static void test_err_test(void) {
   LOG_INFO("Function execution on OTBN took %d cycles (end-to-end).",
            t_end - t_start);
 
-  check_otbn_err_code(kDifOtbnErrCodeBadDataAddr);
+  check_otbn_err_bits(kDifOtbnErrBitsBadDataAddr);
 }
 
 bool test_main() {

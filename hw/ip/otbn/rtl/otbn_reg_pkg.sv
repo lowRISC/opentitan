@@ -70,9 +70,39 @@ package otbn_reg_pkg;
   } otbn_hw2reg_status_reg_t;
 
   typedef struct packed {
-    logic [31:0] d;
-    logic        de;
-  } otbn_hw2reg_err_code_reg_t;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bad_data_addr;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bad_insn_addr;
+    struct packed {
+      logic        d;
+      logic        de;
+    } call_stack;
+    struct packed {
+      logic        d;
+      logic        de;
+    } illegal_insn;
+    struct packed {
+      logic        d;
+      logic        de;
+    } loop;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fatal_imem;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fatal_dmem;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fatal_reg;
+  } otbn_hw2reg_err_bits_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -106,9 +136,9 @@ package otbn_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [42:41]
-    otbn_hw2reg_status_reg_t status; // [40:39]
-    otbn_hw2reg_err_code_reg_t err_code; // [38:6]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [25:24]
+    otbn_hw2reg_status_reg_t status; // [23:22]
+    otbn_hw2reg_err_bits_reg_t err_bits; // [21:6]
     otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [5:0]
   } otbn_hw2reg_t;
 
@@ -119,7 +149,7 @@ package otbn_reg_pkg;
   parameter logic [BlockAw-1:0] OTBN_ALERT_TEST_OFFSET = 16'h c;
   parameter logic [BlockAw-1:0] OTBN_CMD_OFFSET = 16'h 10;
   parameter logic [BlockAw-1:0] OTBN_STATUS_OFFSET = 16'h 14;
-  parameter logic [BlockAw-1:0] OTBN_ERR_CODE_OFFSET = 16'h 18;
+  parameter logic [BlockAw-1:0] OTBN_ERR_BITS_OFFSET = 16'h 18;
   parameter logic [BlockAw-1:0] OTBN_START_ADDR_OFFSET = 16'h 1c;
   parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
 
@@ -137,7 +167,7 @@ package otbn_reg_pkg;
     OTBN_ALERT_TEST,
     OTBN_CMD,
     OTBN_STATUS,
-    OTBN_ERR_CODE,
+    OTBN_ERR_BITS,
     OTBN_START_ADDR,
     OTBN_FATAL_ALERT_CAUSE
   } otbn_id_e;
@@ -150,7 +180,7 @@ package otbn_reg_pkg;
     4'b 0001, // index[3] OTBN_ALERT_TEST
     4'b 0001, // index[4] OTBN_CMD
     4'b 0001, // index[5] OTBN_STATUS
-    4'b 1111, // index[6] OTBN_ERR_CODE
+    4'b 0001, // index[6] OTBN_ERR_BITS
     4'b 1111, // index[7] OTBN_START_ADDR
     4'b 0001  // index[8] OTBN_FATAL_ALERT_CAUSE
   };

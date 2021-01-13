@@ -256,7 +256,7 @@
   doc: |
     Loads a 32b word from address `offset + grs1` in data memory, writing the result to `grd`.
     Unaligned loads are not supported.
-    Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+    Any address that is unaligned or is above the top of memory will result in an error (setting bit `bad_data_addr` in `ERR_BITS`).
   cycles: 2
   lsu:
     type: mem-load
@@ -283,7 +283,7 @@
   doc: |
     Stores a 32b word in `grs2` to address `offset + grs1` in data memory.
     Unaligned stores are not supported.
-    Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+    Any address that is unaligned or is above the top of memory will result in an error (setting bit `bad_data_addr` in `ERR_BITS`).
   lsu:
     type: mem-store
     target: [offset, grs1]
@@ -450,12 +450,12 @@
     The number of instructions in the loop is given in the `bodysize` immediate.
 
     The `LOOP` instruction doesn't support a zero iteration count.
-    If the value in `grs` is zero, OTBN stops with the `ErrCodeLoop` error.
+    If the value in `grs` is zero, OTBN stops, setting bit `loop` in `ERR_BITS`.
     Starting a loop pushes an entry on to the [loop stack](../#loop-stack).
-    If the stack is already full, OTBN stops with the `ErrCodeLoop` error.
+    If the stack is already full, OTBN stops, setting bit `loop` in `ERR_BITS`.
 
     `LOOP`, `LOOPI`, jump and branch instructions are all permitted inside a loop but may not appear as the last instruction in a loop.
-    OTBN will stop on that instruction with the `ErrCodeLoop` error.
+    OTBN will stop on that instruction with the, setting bit `loop` in `ERR_BITS`.
 
     For more information on how to correctly use `LOOP` see [loop nesting](../#loop-nesting).
   encoding:
@@ -480,10 +480,10 @@
     The `LOOPI` instruction doesn't support a zero iteration count.
     If the value of `iterations` is zero, OTBN stops with the `ErrCodeLoop` error.
     Starting a loop pushes an entry on to the [loop stack](../#loop-stack).
-    If the stack is already full, OTBN stops with the `ErrCodeLoop` error.
+    If the stack is already full, OTBN stops, setting bit `loop` in `ERR_BITS`.
 
     `LOOP`, `LOOPI`, jump and branch instructions are all permitted inside a loop but may not appear as the last instruction in a loop.
-    OTBN will stop on that instruction with the `ErrCodeLoop` error.
+    OTBN will stop on that instruction, setting bit `loop` in `ERR_BITS`.
 
     For more information on how to correctly use `LOOPI` see [loop nesting](../#loop-nesting).
   encoding:

@@ -19,7 +19,7 @@ module otbn_top_sim (
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte);
 
   logic      otbn_done_d, otbn_done_q;
-  err_code_e otbn_err_code_d, otbn_err_code_q;
+  err_bits_t otbn_err_bits_d, otbn_err_bits_q;
   logic      otbn_start;
 
   // Intialise otbn_start_done to 1 so that we only signal otbn_start after we have seen a reset. If
@@ -55,7 +55,7 @@ module otbn_top_sim (
     .start_i       ( otbn_start      ),
     .done_o        ( otbn_done_d     ),
 
-    .err_code_o    ( otbn_err_code_d ),
+    .err_bits_o    ( otbn_err_bits_d ),
 
     .start_addr_i  ( ImemStartAddr   ),
 
@@ -86,7 +86,7 @@ module otbn_top_sim (
       otbn_start      <= 1'b0;
       otbn_start_done <= 1'b0;
       otbn_done_q     <= 1'b0;
-      otbn_err_code_q <= ErrCodeNoError;
+      otbn_err_bits_q <= '0;
     end else begin
       if (!otbn_start_done) begin
         otbn_start      <= 1'b1;
@@ -96,7 +96,7 @@ module otbn_top_sim (
       end
 
       otbn_done_q <= otbn_done_d;
-      otbn_err_code_q <= otbn_err_code_d;
+      otbn_err_bits_q <= otbn_err_bits_d;
     end
   end
 
@@ -193,7 +193,7 @@ module otbn_top_sim (
   localparam string DesignScope = "..u_otbn_core";
 
   logic      otbn_model_done;
-  err_code_e otbn_model_err_code;
+  err_bits_t otbn_model_err_bits;
   bit        otbn_model_err;
 
   otbn_core_model #(
@@ -213,18 +213,18 @@ module otbn_top_sim (
 
     .start_addr_i ( ImemStartAddr ),
 
-    .err_code_o   ( otbn_model_err_code ),
+    .err_bits_o   ( otbn_model_err_bits ),
 
     .err_o        ( otbn_model_err )
   );
 
-  bit done_mismatch_latched, err_code_mismatch_latched;
+  bit done_mismatch_latched, err_bits_mismatch_latched;
   bit model_err_latched;
 
   always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
     if (!IO_RST_N) begin
       done_mismatch_latched     <= 1'b0;
-      err_code_mismatch_latched <= 1'b0;
+      err_bits_mismatch_latched <= 1'b0;
       model_err_latched         <= 1'b0;
     end else begin
       if (otbn_done_q != otbn_model_done) begin
@@ -233,10 +233,10 @@ module otbn_top_sim (
         done_mismatch_latched <= 1'b1;
       end
       if (otbn_done_q && otbn_model_done) begin
-        if (otbn_err_code_q != otbn_model_err_code) begin
-          $display("ERROR: At time %0t, otbn_err_code != otbn_model_err_code (%0d != %0d).",
-                   $time, otbn_err_code_q, otbn_model_err_code);
-          err_code_mismatch_latched <= 1'b1;
+        if (otbn_err_bits_q != otbn_model_err_bits) begin
+          $display("ERROR: At time %0t, otbn_err_bits != otbn_model_err_bits (%0x != %0x).",
+                   $time, otbn_err_bits_q, otbn_model_err_bits);
+          err_bits_mismatch_latched <= 1'b1;
         end
       end
       model_err_latched <= model_err_latched | otbn_model_err;
@@ -270,7 +270,7 @@ module otbn_top_sim (
   export "DPI-C" function otbn_err_get;
 
   function automatic bit otbn_err_get();
-    return model_err_latched | done_mismatch_latched | err_code_mismatch_latched;
+    return model_err_latched | done_mismatch_latched | err_bits_mismatch_latched;
   endfunction
 
 endmodule

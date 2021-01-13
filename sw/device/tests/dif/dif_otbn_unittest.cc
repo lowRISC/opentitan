@@ -293,44 +293,32 @@ TEST_F(IsBusyTest, Success) {
   EXPECT_EQ(busy, true);
 }
 
-class GetErrCodeTest : public OtbnTest {};
+class GetErrBitsTest : public OtbnTest {};
 
-TEST_F(GetErrCodeTest, NullArgs) {
+TEST_F(GetErrBitsTest, NullArgs) {
   dif_otbn_result_t result;
-  dif_otbn_err_code_t err_code;
+  dif_otbn_err_bits_t err_bits;
 
-  result = dif_otbn_get_err_code(nullptr, nullptr);
+  result = dif_otbn_get_err_bits(nullptr, nullptr);
   EXPECT_EQ(result, kDifOtbnBadArg);
 
-  result = dif_otbn_get_err_code(&dif_otbn_, nullptr);
+  result = dif_otbn_get_err_bits(&dif_otbn_, nullptr);
   EXPECT_EQ(result, kDifOtbnBadArg);
 
-  err_code = kDifOtbnErrCodeBadDataAddr;
-  result = dif_otbn_get_err_code(nullptr, &err_code);
+  err_bits = kDifOtbnErrBitsBadDataAddr;
+  result = dif_otbn_get_err_bits(nullptr, &err_bits);
   EXPECT_EQ(result, kDifOtbnBadArg);
-  EXPECT_EQ(err_code, kDifOtbnErrCodeBadDataAddr);
+  EXPECT_EQ(err_bits, kDifOtbnErrBitsBadDataAddr);
 }
 
-TEST_F(GetErrCodeTest, Success) {
-  EXPECT_READ32(OTBN_ERR_CODE_REG_OFFSET, kDifOtbnErrCodeBadDataAddr);
+TEST_F(GetErrBitsTest, Success) {
+  EXPECT_READ32(OTBN_ERR_BITS_REG_OFFSET,
+                kDifOtbnErrBitsIllegalInsn | kDifOtbnErrBitsFatalReg);
 
-  dif_otbn_err_code_t err_code;
-  dif_otbn_result_t result = dif_otbn_get_err_code(&dif_otbn_, &err_code);
+  dif_otbn_err_bits_t err_bits;
+  dif_otbn_result_t result = dif_otbn_get_err_bits(&dif_otbn_, &err_bits);
   EXPECT_EQ(result, kDifOtbnOk);
-  EXPECT_EQ(err_code, kDifOtbnErrCodeBadDataAddr);
-}
-
-TEST_F(GetErrCodeTest, HardwareReturnsUnknownErrorCode) {
-  // Fragile test ahead! False positives possible if "1234" becomes a valid
-  // error code.
-  EXPECT_READ32(OTBN_ERR_CODE_REG_OFFSET, 1234);
-
-  dif_otbn_err_code_t err_code = kDifOtbnErrCodeBadDataAddr;
-  dif_otbn_result_t result = dif_otbn_get_err_code(&dif_otbn_, &err_code);
-  EXPECT_EQ(result, kDifOtbnUnexpectedData);
-
-  // Should stay unchanged.
-  EXPECT_EQ(err_code, kDifOtbnErrCodeBadDataAddr);
+  EXPECT_EQ(err_bits, kDifOtbnErrBitsIllegalInsn | kDifOtbnErrBitsFatalReg);
 }
 
 class ImemWriteTest : public OtbnTest {};

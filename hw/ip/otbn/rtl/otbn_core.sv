@@ -29,7 +29,7 @@ module otbn_core
   input  logic  start_i, // start the operation
   output logic  done_o,  // operation done
 
-  output err_code_e err_code_o, // valid when done_o is asserted
+  output err_bits_t err_bits_o, // valid when done_o is asserted
 
   input  logic [ImemAddrWidth-1:0] start_addr_i, // start byte address in IMEM
 
@@ -199,7 +199,7 @@ module otbn_core
     .start_i,
     .done_o,
 
-    .err_code_o,
+    .err_bits_o,
 
     .start_addr_i,
 

@@ -41,7 +41,7 @@ module otbn_core_model
   input  logic  start_i, // start the operation
   output bit    done_o,  // operation done
 
-  output err_code_e err_code_o, // valid when done_o is asserted
+  output err_bits_t err_bits_o, // valid when done_o is asserted
 
   input  logic [ImemAddrWidth-1:0] start_addr_i, // start byte address in IMEM
 
@@ -112,12 +112,13 @@ module otbn_core_model
   bit failed_cmp, failed_step, check_due, running;
   assign {failed_cmp, failed_step, check_due, running} = status[3:0];
 
-  bit [31:0] raw_err_code_d, raw_err_code_q;
+  bit [31:0] raw_err_bits_d, raw_err_bits_q;
+  bit unused_raw_err_bits;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni || !enable_i) begin
       // Clear status (stop running, and forget any errors)
       status <= 0;
-      raw_err_code_q <= 0;
+      raw_err_bits_q <= 0;
     end else begin
       if (start_i | running | check_due) begin
         status <= otbn_model_step(model_handle,
@@ -125,15 +126,16 @@ module otbn_core_model
                                   DmemScope, DmemSizeWords,
                                   DesignScope,
                                   start_i, start_addr_32,
-                                  status, raw_err_code_d);
-        raw_err_code_q <= raw_err_code_d;
+                                  status, raw_err_bits_d);
+        raw_err_bits_q <= raw_err_bits_d;
       end else begin
         // If we're not running and we're not being told to start, there's nothing to do.
       end
     end
   end
 
-  assign err_code_o = err_code_e'(raw_err_code_q);
+  assign err_bits_o = raw_err_bits_q[7:0];
+  assign unused_raw_err_bits = ^raw_err_bits_q[31:8];
 
   // Track negedges of running_q and expose that as a "done" output.
   bit running_r = 1'b0;

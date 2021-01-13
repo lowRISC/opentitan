@@ -63,11 +63,11 @@ otbn_result_t otbn_busy_wait_for_done(otbn_t *ctx) {
     }
   }
 
-  dif_otbn_err_code_t err_code;
-  if (dif_otbn_get_err_code(&ctx->dif, &err_code) != kDifOtbnOk) {
+  dif_otbn_err_bits_t err_bits;
+  if (dif_otbn_get_err_bits(&ctx->dif, &err_bits) != kDifOtbnOk) {
     return kOtbnError;
   }
-  if (err_code != kDifOtbnErrCodeNoError) {
+  if (err_bits != kDifOtbnErrBitsNoError) {
     return kOtbnExecutionFailed;
   }
   return kOtbnOk;

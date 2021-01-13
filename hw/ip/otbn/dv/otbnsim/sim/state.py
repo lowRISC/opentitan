@@ -378,7 +378,7 @@ class OTBNState:
     def stop(self, err_code: Optional[int]) -> None:
         '''Set flags to stop the processor.
 
-        If err_code is not None, it is the value to write to the ERR_CODE
+        If err_code is not None, it is the value to write to the ERR_BITS
         register.
 
         '''
@@ -389,6 +389,6 @@ class OTBNState:
         self.ext_regs.clear_bits('STATUS', 1 << 0)
 
         if err_code is not None:
-            self.ext_regs.write('ERR_CODE', err_code, True)
+            self.ext_regs.write('ERR_BITS', err_code, True)
 
         self.running = False
