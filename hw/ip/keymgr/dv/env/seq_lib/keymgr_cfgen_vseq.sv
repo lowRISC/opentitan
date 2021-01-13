@@ -26,7 +26,7 @@ class keymgr_cfgen_vseq extends keymgr_random_vseq;
     // randomly add 0-100 cycle delay, backdoor check op_status again
     // When status is still OpWip, call write_cfgen_gated_reg and the write will be ignored
     while (!regular_vseq_done) begin
-      bit [TL_DW-1] op_status_val, cfgen_val;
+      bit [TL_DW-1:0] op_status_val, cfgen_val;
       uint delay;
 
       forever begin
@@ -57,7 +57,7 @@ class keymgr_cfgen_vseq extends keymgr_random_vseq;
   endtask
 
   virtual task write_cfgen_gated_reg();
-    bit [TL_DW-1] val = $urandom;
+    bit [TL_DW-1:0] val = $urandom;
 
     `uvm_info(`gfn, "Write cfgen gated reg, and this write should be ignored", UVM_HIGH)
     // since it's timing sensitive, only write one of these reg

@@ -11,8 +11,8 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:keymgr_kmac_agent
     files:
-      - keymgr_if.sv
       - keymgr_env_pkg.sv
+      - keymgr_if.sv
       - keymgr_env_cfg.sv: {is_include_file: true}
       - keymgr_env_cov.sv: {is_include_file: true}
       - keymgr_virtual_sequencer.sv: {is_include_file: true}

@@ -26,6 +26,10 @@ module tb;
   keymgr_kmac_intf keymgr_kmac_intf(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(clk), .rst_n(rst_n));
 
+  // connect KDF interface for assertion check
+  assign keymgr_if.kmac_data_req = keymgr_kmac_intf.kmac_data_req;
+  assign keymgr_if.kmac_data_rsp = keymgr_kmac_intf.kmac_data_rsp;
+
   `DV_ALERT_IF_CONNECT
 
   // dut
