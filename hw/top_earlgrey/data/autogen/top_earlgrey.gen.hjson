@@ -4686,7 +4686,7 @@
       alert_list:
       [
         {
-          name: es_alert_count_met
+          name: recov_alert_count_met
           width: 1
           bits: "0"
           bitinfo:
@@ -8276,7 +8276,7 @@
       module_name: lc_ctrl
     }
     {
-      name: entropy_src_es_alert_count_met
+      name: entropy_src_recov_alert_count_met
       width: 1
       bits: "0"
       bitinfo:

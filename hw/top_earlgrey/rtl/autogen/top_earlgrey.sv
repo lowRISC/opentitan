@@ -1384,7 +1384,7 @@ module top_earlgrey #(
       .intr_es_health_test_failed_o (intr_entropy_src_es_health_test_failed),
       .intr_es_fifo_err_o           (intr_entropy_src_es_fifo_err),
 
-      // [16]: es_alert_count_met
+      // [16]: recov_alert_count_met
       .alert_tx_o  ( alert_tx[16:16] ),
       .alert_rx_i  ( alert_rx[16:16] ),
 

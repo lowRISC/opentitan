@@ -49,8 +49,8 @@
     }
   ],
   alert_list: [
-    { name: "es_alert_count_met",
-      desc: '''This alert is triggered upon the alert count being met.
+    { name: "recov_alert_count_met",
+      desc: '''This alert is triggered upon the alert health test threshold criteria not met.
             '''
     }
   ],
@@ -167,10 +167,10 @@
           name: "ENTROPY_RATE",
           desc: '''This register determines the rate that entropy bits will be supplied.
                    In LFSR mode, this is the rate that the LFSR value will be advanced.
-                   In PTRNG mode, this is the rate that the raw entropy source will be sampled at.
-                   The default rate is 50 KHz, or 4 physcial bits per 20 micro-seconds.
+                   The number in this register represents how many clocks there are between
+                   each newLFSR value generation.
                 '''
-          resval: "0x000007d0"
+          resval: "0x00000008"
         }
       ]
     },
@@ -790,6 +790,98 @@
         }
       ]
     },
+    { name: "FW_OV_CONTROL",
+      desc: "Firmware override control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "0",
+          name: "FW_OV_MODE",
+          desc: '''Setting this bit will put the entropy flow in firmware override mode.
+                In this mode, firmware can explicitly control the flow in and out of the
+                pre-conditioner FIFO. Once data has been written or read out of the FIFO to the extent that
+                the override function has been completed, this bit can be
+                cleared and normal entropy flow will resume.
+                '''
+        }
+        { bits: "1",
+          name: "FW_OV_FIFO_REG_RD",
+          desc: '''Setting this bit will prevent entropy flow out of the pre-conditioner
+                FIFO and into the normal downstream stages, either the conditioner stage or
+                the bypass path. Register reads of the FIFO output will be done in this mode.
+                '''
+        }
+        { bits: "2",
+          name: "FW_OV_FIFO_REG_WR",
+          desc: '''Setting this bit will switch the input into the pre-conditioner FIFO.
+                Firmware can directly write into the FIFO, up to the full size of the FIFO.
+                '''
+        }
+      ]
+    },
+    { name: "FW_OV_RD_DATA",
+      desc: "Firwware override FIFO read register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwre: "true",
+      fields: [
+        { bits: "31:0",
+          desc: '''A read of this register pops the top entry off of the pre-conditioner
+                 FIFO. The result is transfered to this register for firmware operations.
+                '''
+        }
+      ]
+    },
+    { name: "FW_OV_WR_DATA",
+      desc: "Firwware override FIFO write register",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "31:0",
+          desc: '''A read of this register pops the top entry off of the pre-conditioner
+                 FIFO. The result is transfered to this register for firmware operations.
+                '''
+        }
+      ]
+    },
+    { name: "FW_OV_FIFO_STS",
+      desc: "Firwware override FIFO status register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "6:0",
+          desc: '''A read of this register will show what the current depth of the
+                pre-conditioner FIFO. Firmware can use this value when updated the
+                contents of the FIFO. The physical maximum depth is 64 entries, the
+                maximum value of this register is also 64, or 0x40. This depth can
+                be logically lowered by the `PRE_COND_FIFO_DEPTH` register.
+                '''
+        }
+      ]
+    },
+    { name: "PRE_COND_FIFO_DEPTH",
+      desc: "Pre-conditioner FIFO depth control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "REGEN",
+      fields: [
+        { bits: "6:0",
+          desc: '''This field to set the logical depth of the
+                pre-conditioner FIFO. Firmware can set this value to be less
+                (a logical depth) than the actual physical size of the FIFO.
+                This field with be compared with the actual size of the FIFO
+                and indicate full to the upstream entropy flow.
+                The default value of this register is 64, or 0x40.
+                '''
+          resval: "0x40"
+        }
+      ]
+    },
     { name:     "DEBUG_STATUS",
       desc:     "Debug status register",
       swaccess: "ro",
@@ -834,6 +926,15 @@
                 '''
         }
         { bits: "1",
+          name: "SFIFO_PRECON_ERR",
+          desc: '''
+                This bit will be set to one when an error has been detected for the
+                precon FIFO. The type of error is reflected in the type status
+                bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "2",
           name: "SFIFO_ESFINAL_ERR",
           desc: '''
                 This bit will be set to one when an error has been detected for the
