@@ -34,6 +34,21 @@ static bool irq_bit_index_get(dif_otbn_interrupt_t irq_type,
   return true;
 }
 
+/**
+ * Ensures that `offset` and `size` are valid for a given `mem_size`.
+ *
+ * Valid are 32b word accesses to 32b-aligned memory locations within
+ * `mem_size`.
+ */
+static bool check_offset_len(uint32_t offset_bytes, size_t len_bytes,
+                             size_t mem_size) {
+  // The overflow check below assumes/requires two unsigned inputs.
+  return (len_bytes % sizeof(uint32_t) == 0 &&
+          offset_bytes % sizeof(uint32_t) == 0 &&
+          offset_bytes + len_bytes >= len_bytes &&
+          offset_bytes + len_bytes <= mem_size);
+}
+
 dif_otbn_result_t dif_otbn_init(const dif_otbn_config_t *config,
                                 dif_otbn_t *otbn) {
   if (config == NULL || otbn == NULL) {
@@ -173,7 +188,7 @@ dif_otbn_result_t dif_otbn_irq_force(const dif_otbn_t *otbn,
 
 dif_otbn_result_t dif_otbn_start(const dif_otbn_t *otbn,
                                  unsigned int start_addr) {
-  if (otbn == NULL || start_addr % 4 != 0 ||
+  if (otbn == NULL || start_addr % sizeof(uint32_t) != 0 ||
       start_addr >= OTBN_IMEM_SIZE_BYTES) {
     return kDifOtbnBadArg;
   }
@@ -193,10 +208,7 @@ dif_otbn_result_t dif_otbn_is_busy(const dif_otbn_t *otbn, bool *busy) {
   }
 
   uint32_t status = mmio_region_read32(otbn->base_addr, OTBN_STATUS_REG_OFFSET);
-  *busy = bitfield_field32_read(status, (bitfield_field32_t){
-                                            .mask = 1,
-                                            .index = OTBN_STATUS_BUSY_BIT,
-                                        });
+  *busy = bitfield_bit32_read(status, OTBN_STATUS_BUSY_BIT);
 
   return kDifOtbnOk;
 }
@@ -233,10 +245,8 @@ dif_otbn_result_t dif_otbn_get_err_code(const dif_otbn_t *otbn,
 dif_otbn_result_t dif_otbn_imem_write(const dif_otbn_t *otbn,
                                       uint32_t offset_bytes, const void *src,
                                       size_t len_bytes) {
-  // Only 32b-aligned 32b word accesses are allowed.
-  if (otbn == NULL || src == NULL || len_bytes % 4 != 0 ||
-      offset_bytes % 4 != 0 ||
-      offset_bytes + len_bytes > OTBN_IMEM_SIZE_BYTES) {
+  if (otbn == NULL || src == NULL ||
+      !check_offset_len(offset_bytes, len_bytes, OTBN_IMEM_SIZE_BYTES)) {
     return kDifOtbnBadArg;
   }
 
@@ -249,10 +259,8 @@ dif_otbn_result_t dif_otbn_imem_write(const dif_otbn_t *otbn,
 dif_otbn_result_t dif_otbn_imem_read(const dif_otbn_t *otbn,
                                      uint32_t offset_bytes, void *dest,
                                      size_t len_bytes) {
-  // Only 32b-aligned 32b word accesses are allowed.
-  if (otbn == NULL || dest == NULL || len_bytes % 4 != 0 ||
-      offset_bytes % 4 != 0 ||
-      offset_bytes + len_bytes > OTBN_IMEM_SIZE_BYTES) {
+  if (otbn == NULL || dest == NULL ||
+      !check_offset_len(offset_bytes, len_bytes, OTBN_IMEM_SIZE_BYTES)) {
     return kDifOtbnBadArg;
   }
 
@@ -265,10 +273,8 @@ dif_otbn_result_t dif_otbn_imem_read(const dif_otbn_t *otbn,
 dif_otbn_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn,
                                       uint32_t offset_bytes, const void *src,
                                       size_t len_bytes) {
-  // Only 32b-aligned 32b word accesses are allowed.
-  if (otbn == NULL || src == NULL || len_bytes % 4 != 0 ||
-      offset_bytes % 4 != 0 ||
-      offset_bytes + len_bytes > OTBN_DMEM_SIZE_BYTES) {
+  if (otbn == NULL || src == NULL ||
+      !check_offset_len(offset_bytes, len_bytes, OTBN_DMEM_SIZE_BYTES)) {
     return kDifOtbnBadArg;
   }
 
@@ -281,10 +287,8 @@ dif_otbn_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn,
 dif_otbn_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn,
                                      uint32_t offset_bytes, void *dest,
                                      size_t len_bytes) {
-  // Only 32b-aligned 32b word accesses are allowed.
-  if (otbn == NULL || dest == NULL || len_bytes % 4 != 0 ||
-      offset_bytes % 4 != 0 ||
-      offset_bytes + len_bytes > OTBN_DMEM_SIZE_BYTES) {
+  if (otbn == NULL || dest == NULL ||
+      !check_offset_len(offset_bytes, len_bytes, OTBN_IMEM_SIZE_BYTES)) {
     return kDifOtbnBadArg;
   }
 
