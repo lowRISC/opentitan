@@ -24,7 +24,7 @@ module otbn_controller
   input  logic  start_i, // start the processing at start_addr_i
   output logic  done_o,  // processing done, signaled by ECALL or error occurring
 
-  output err_code_e err_code_o, // valid when done_o is asserted
+  output err_bits_t err_bits_o, // valid when done_o is asserted
 
   input  logic [ImemAddrWidth-1:0] start_addr_i,
 
@@ -267,31 +267,30 @@ module otbn_controller
   // Err signal and code generation and prioritisation
   always_comb begin
     err        = 1'b1;
-    err_code_o = ErrCodeNoError;
+    err_bits_o = '0;
 
     if (insn_fetch_err_i) begin
-      err_code_o = ErrCodeFatalImem;
+      err_bits_o.fatal_imem = 1'b1;
     end else if (lsu_rdata_err_i) begin
-      err_code_o = ErrCodeFatalDmem;
+      err_bits_o.fatal_dmem = 1'b1;
     end else if (insn_illegal_i) begin
-      err_code_o = ErrCodeIllegalInsn;
+      err_bits_o.illegal_insn = 1'b1;
     end else if (ispr_err) begin
-      err_code_o = ErrCodeIllegalInsn;
+      err_bits_o.illegal_insn = 1'b1;
     end else if (dmem_addr_err) begin
-      err_code_o = ErrCodeBadDataAddr;
+      err_bits_o.bad_data_addr = 1'b1;
     end else if (loop_err) begin
-      err_code_o = ErrCodeLoop;
+      err_bits_o.loop = 1'b1;
     end else if (rf_base_call_stack_err_i) begin
-      err_code_o = ErrCodeCallStack;
+      err_bits_o.call_stack = 1'b1;
     end else if (imem_addr_err) begin
-      err_code_o = ErrCodeBadInsnAddr;
+      err_bits_o.bad_insn_addr = 1'b1;
     end else begin
       err        = 1'b0;
-      err_code_o = ErrCodeNoError;
     end
   end
 
-  `ASSERT(ErrCodeOnErr, err |-> err_code_o != ErrCodeNoError)
+  `ASSERT(ErrBitSetOnErr, err |-> |err_bits_o)
 
   `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun, OtbnStateStall})
   // Branch only takes effect in OtbnStateRun so must not go into stall state for branch

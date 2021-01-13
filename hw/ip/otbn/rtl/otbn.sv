@@ -52,7 +52,7 @@ module otbn
   logic busy_d, busy_q;
   logic done;
 
-  logic [31:0] err_code;
+  err_bits_t err_bits;
 
   logic [ImemAddrWidth-1:0] start_addr;
 
@@ -92,7 +92,6 @@ module otbn
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.d),
     .intr_o                 (intr_done_o)
   );
-
 
   // Instruction Memory (IMEM) =================================================
 
@@ -366,11 +365,32 @@ module otbn
   assign hw2reg.status.busy.d = busy_q;
   assign hw2reg.status.dummy.d = 1'b0;
 
-  // ERR_CODE register
-  // The error code (stored as ERR_CODE) for an OTBN operation gets stored on the cycle that done is
-  // asserted. Software is expected to read out this value before starting the next operation.
-  assign hw2reg.err_code.de = done;
-  assign hw2reg.err_code.d  = err_code;
+  // ERR_BITS register
+  // The error bits for an OTBN operation get stored on the cycle that done is
+  // asserted. Software is expected to read them out before starting the next operation.
+  assign hw2reg.err_bits.bad_data_addr.de = done;
+  assign hw2reg.err_bits.bad_data_addr.d = err_bits.bad_data_addr;
+
+  assign hw2reg.err_bits.bad_insn_addr.de = done;
+  assign hw2reg.err_bits.bad_insn_addr.d = err_bits.bad_insn_addr;
+
+  assign hw2reg.err_bits.call_stack.de = done;
+  assign hw2reg.err_bits.call_stack.d = err_bits.call_stack;
+
+  assign hw2reg.err_bits.illegal_insn.de = done;
+  assign hw2reg.err_bits.illegal_insn.d = err_bits.illegal_insn;
+
+  assign hw2reg.err_bits.loop.de = done;
+  assign hw2reg.err_bits.loop.d = err_bits.loop;
+
+  assign hw2reg.err_bits.fatal_imem.de = done;
+  assign hw2reg.err_bits.fatal_imem.d = err_bits.fatal_imem;
+
+  assign hw2reg.err_bits.fatal_dmem.de = done;
+  assign hw2reg.err_bits.fatal_dmem.d = err_bits.fatal_dmem;
+
+  assign hw2reg.err_bits.fatal_reg.de = done;
+  assign hw2reg.err_bits.fatal_reg.d = err_bits.fatal_reg;
 
   // START_ADDR register
   assign start_addr = reg2hw.start_addr.q[ImemAddrWidth-1:0];
@@ -440,10 +460,10 @@ module otbn
     // Mux between model and RTL implementation at runtime.
     logic      done_model, done_rtl;
     logic      start_model, start_rtl;
-    err_code_e err_code_model, err_code_rtl;
+    err_bits_t err_bits_model, err_bits_rtl;
 
     assign done = otbn_use_model ? done_model : done_rtl;
-    assign err_code = otbn_use_model ? err_code_model : err_code_rtl;
+    assign err_bits = otbn_use_model ? err_bits_model : err_bits_rtl;
     assign start_model = start & otbn_use_model;
     assign start_rtl = start & ~otbn_use_model;
 
@@ -466,7 +486,7 @@ module otbn
       .start_i (start_model),
       .done_o (done_model),
 
-      .err_code_o (err_code_model),
+      .err_bits_o (err_bits_model),
 
       .start_addr_i (start_addr),
 
@@ -485,7 +505,7 @@ module otbn
       .start_i (start_rtl),
       .done_o  (done_rtl),
 
-      .err_code_o (err_code_rtl),
+      .err_bits_o (err_bits_rtl),
 
       .start_addr_i  (start_addr),
 
@@ -517,7 +537,7 @@ module otbn
       .start_i (start),
       .done_o  (done),
 
-      .err_code_o (err_code),
+      .err_bits_o (err_bits),
 
       .start_addr_i  (start_addr),
 

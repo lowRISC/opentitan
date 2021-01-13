@@ -8,6 +8,26 @@
 
 #include "otbn_regs.h"  // Generated.
 
+_Static_assert(kDifOtbnErrBitsBadDataAddr ==
+                   (1 << OTBN_ERR_BITS_BAD_DATA_ADDR_BIT),
+               "Layout of error bits changed.");
+_Static_assert(kDifOtbnErrBitsBadInsnAddr ==
+                   (1 << OTBN_ERR_BITS_BAD_INSN_ADDR_BIT),
+               "Layout of error bits changed.");
+_Static_assert(kDifOtbnErrBitsCallStack == (1 << OTBN_ERR_BITS_CALL_STACK_BIT),
+               "Layout of error bits changed.");
+_Static_assert(kDifOtbnErrBitsIllegalInsn ==
+                   (1 << OTBN_ERR_BITS_ILLEGAL_INSN_BIT),
+               "Layout of error bits changed.");
+_Static_assert(kDifOtbnErrBitsLoop == (1 << OTBN_ERR_BITS_LOOP_BIT),
+               "Layout of error bits changed.");
+_Static_assert(kDifOtbnErrBitsFatalImem == (1 << OTBN_ERR_BITS_FATAL_IMEM_BIT),
+               "Layout of error bits changed.");
+_Static_assert(kDifOtbnErrBitsFatalDmem == (1 << OTBN_ERR_BITS_FATAL_DMEM_BIT),
+               "Layout of error bits changed.");
+_Static_assert(kDifOtbnErrBitsFatalReg == (1 << OTBN_ERR_BITS_FATAL_REG_BIT),
+               "Layout of error bits changed.");
+
 /**
  * Data width of big number subset, in bytes.
  */
@@ -213,33 +233,17 @@ dif_otbn_result_t dif_otbn_is_busy(const dif_otbn_t *otbn, bool *busy) {
   return kDifOtbnOk;
 }
 
-dif_otbn_result_t dif_otbn_get_err_code(const dif_otbn_t *otbn,
-                                        dif_otbn_err_code_t *err_code) {
-  if (otbn == NULL || err_code == NULL) {
+dif_otbn_result_t dif_otbn_get_err_bits(const dif_otbn_t *otbn,
+                                        dif_otbn_err_bits_t *err_bits) {
+  if (otbn == NULL || err_bits == NULL) {
     return kDifOtbnBadArg;
   }
 
-  uint32_t err_code_raw =
-      mmio_region_read32(otbn->base_addr, OTBN_ERR_CODE_REG_OFFSET);
+  uint32_t err_bits_raw =
+      mmio_region_read32(otbn->base_addr, OTBN_ERR_BITS_REG_OFFSET);
 
-  // Ensure that all values returned from hardware match explicitly defined
-  // values in the DIF.
-  switch (err_code_raw) {
-    case kDifOtbnErrCodeNoError:
-    case kDifOtbnErrCodeBadDataAddr:
-    case kDifOtbnErrCodeBadInsnAddr:
-    case kDifOtbnErrCodeCallStack:
-    case kDifOtbnErrCodeIllegalInsn:
-    case kDifOtbnErrCodeLoop:
-    case kDifOtbnErrCodeFatalImem:
-    case kDifOtbnErrCodeFatalDmem:
-    case kDifOtbnErrCodeFatalReg:
-      *err_code = (dif_otbn_err_code_t)err_code_raw;
-      return kDifOtbnOk;
-
-    default:
-      return kDifOtbnUnexpectedData;
-  }
+  *err_bits = err_bits_raw;
+  return kDifOtbnOk;
 }
 
 dif_otbn_result_t dif_otbn_imem_write(const dif_otbn_t *otbn,

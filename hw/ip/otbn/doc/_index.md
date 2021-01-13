@@ -99,7 +99,7 @@ See the documentation for [`JAL`]({{< relref "hw/ip/otbn/doc/isa#jal" >}}) and [
 The call stack has a maximum depth of 8 elements.
 Each instruction that reads from `x1` pops a single element from the stack.
 Each instruction that writes to `x1` pushes a single element onto the stack.
-An instruction that reads from an empty stack or writes to a full stack, causes OTBN to stop, raising an alert and setting the `ERR_CODE` register to `ErrCodeCallStack`.
+An instruction that reads from an empty stack or writes to a full stack causes OTBN to stop, raising an alert and setting the `ErrBitCallStack` bit in the {{< regref "ERR_BITS" >}} register.
 
 A single instruction can both read and write to the stack.
 In this case, the read is ordered before the write.
@@ -468,16 +468,16 @@ By design, OTBN is a simple processor and provides no error handling support to 
 
 Whenever OTBN observes an error, it will generate an alert.
 This gets sent to the alert manager.
-The alert will either be fatal or recoverable, depending on the class of error: see [Alerts]({{< relref "hw/ip/otbn/doc#alerts" >}}) and [Error Conditions]({{< relref "hw/ip/otbn/doc#error-conditions" >}}) below for details.
+The alert will either be fatal or recoverable, depending on the class of error: see [Alerts]({{< relref "hw/ip/otbn/doc#alerts" >}}) and {{< regref "ERR_BITS" >}} below for details.
 
 If OTBN was running when the alert occurred (this is true whenever {{< regref "STATUS.busy" >}} is high), it will also:
 - Immediately stop fetching and executing instructions.
 - Set {{< regref "INTR_STATE.done" >}} and clear {{< regref "STATUS.busy" >}}, marking the operation as completed.
-- Set the {{< regref "ERR_CODE" >}} register to a non-zero value describing the error.
+- Set the {{< regref "ERR_BITS" >}} register to a non-zero value describing the error.
 
 Note that OTBN can detect some errors even when it isn't running.
 One example of this is an error caused by an ECC failure when reading or programming OTBN's memories over the bus.
-In this case, the {{< regref "ERR_CODE" >}} register will not change.
+In this case, the {{< regref "ERR_BITS" >}} register will not change.
 This avoids race conditions with the host processor's error handling software.
 However, every error that OTBN detects when it isn't running causes a fatal alert.
 This means that the cause will be reflected in {{< regref "FATAL_ALERT_CAUSE" >}}, as described below in [Alerts]({{< relref "hw/ip/otbn/doc#alerts" >}}).
@@ -496,15 +496,15 @@ This way, no alert is generated without setting an error code somewhere.
 ### Alerts
 
 OTBN has two alerts, one recoverable and one fatal.
-The [Error Conditions]({{< relref "hw/ip/otbn/doc#error-conditions" >}}) section has a detailed list of error conditions and the alerts that they raise.
+The {{< regref "ERR_BITS" >}} register documentation has a detailed list of error conditions, those with 'fatal' in the name raise a **fatal alert**, otherwise they raise a **recoverable alert**.
 
 A **recoverable alert** is a one-time triggered alert for recoverable error conditions.
-Recoverable alerts are only triggered when OTBN is running, so will always imply a write to {{< regref "ERR_CODE" >}}.
-The error that caused the alert can be determined by reading the {{< regref "ERR_CODE" >}} register.
+Recoverable alerts are only triggered when OTBN is running, so will always imply a write to {{< regref "ERR_BITS" >}}.
+The error that caused the alert can be determined by reading the {{< regref "ERR_BITS" >}} register.
 
 A **fatal alert** is a continuously triggered alert after unrecoverable error conditions.
 The error that caused the alert can be determined by reading the {{< regref "FATAL_ALERT_CAUSE" >}} register.
-If OTBN was running, this value will also be reflected in the {{< regref "ERR_CODE" >}} register.
+If OTBN was running, this value will also be reflected in the {{< regref "ERR_BITS" >}} register.
 A fatal alert can only be cleared by resetting OTBN through the `rst_ni` line.
 
 
@@ -525,7 +525,7 @@ The high-level sequence by which the host processor should use OTBN is as follow
    After it has been started the OTBN application runs to completion without further interaction with the host.
 4. Wait for the operation to complete (see below).
    As soon as the OTBN operation has completed the data and instruction memories can be accessed again from the host CPU.
-5. Check if the operation was successful by reading the {{< regref "ERR_CODE" >}} register.
+5. Check if the operation was successful by reading the {{< regref "ERR_BITS" >}} register.
 6. Optional: Retrieve results by reading {{< regref "DMEM" >}}, as mandated by the calling convention of the loaded application.
 
 OTBN applications are run to completion.
@@ -552,84 +552,6 @@ A higher-level driver for the OTBN block is available at `sw/device/lib/runtime/
 ## Register Table
 
 {{< registers "hw/ip/otbn/data/otbn.hjson" >}}
-
-## Error conditions
-
-<table>
-  <thead>
-    <tr>
-      <th>Identifier</th>
-      <th>Code</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>ErrCodeNoError</td>
-      <td>0x00</td>
-      <td>Execution was successful.</td>
-    </tr>
-    <tr>
-      <td>ErrCodeBadDataAddr</td>
-      <td>0x01</td>
-      <td>
-      A DMEM read or write occurred with an out of bounds or unaligned address.
-      </td>
-    </tr>
-    <tr>
-      <td>ErrCodeBadInsnAddr</td>
-      <td>0x02</td>
-      <td>
-      An instruction fetch occurred with an out of bounds or unaligned address.
-      </td>
-    </tr>
-    <tr>
-      <td>ErrCodeCallStack</td>
-      <td>0x03</td>
-      <td>
-      A instruction tried to pop from an empty call stack or push to a full call
-      stack.
-      </td>
-    </tr>
-    <tr>
-      <td>ErrCodeIllegalInsn</td>
-      <td>0x04</td>
-      <td><ul>
-        <li>An instruction being excuted had an invalid encoding.</li>
-        <li>An access occurred for an invalid CSR or WSR.</li>
-        <li>
-          A CSR or WSR access occurred that is not permitted (e.g. writing to a
-          read-only CSR or WSR).
-        </li>
-      </ul></td>
-    </tr>
-    <tr>
-      <td>ErrCodeLoop</td>
-      <td>0x05</td>
-      <td><ul>
-        <li>A loop was started with a 0 iteration count.</li>
-        <li>The final instruction of a loop was a branch or another loop.</li>
-        <li>The loop stack would overflow (loop nesting level too deep).</li>
-      </ul></td>
-    </tr>
-    <tr>
-      <td>ErrCodeFatalImem</td>
-      <td>0x80</td>
-      <td>A fatal failure was seen on an instruction fetch.</td>
-    </tr>
-    <tr>
-      <td>ErrCodeFatalDmem</td>
-      <td>0x81</td>
-      <td>A fatal failure was seen on a DMEM read.</td>
-    </tr>
-    <tr>
-      <td>ErrCodeFatalReg</td>
-      <td>0x82</td>
-      <td>A fatal failure was seen on a RF read.</td>
-    </tr>
-  </tbody>
-</table>
-
 
 # Writing OTBN applications {#writing-otbn-applications}
 
@@ -663,7 +585,7 @@ The software running on OTBN signals completion by executing the [`ECALL`]({{< r
 When it executes this instruction, OTBN:
 - Stops fetching and executing instructions.
 - Sets {{< regref "INTR_STATE.done" >}} and clears {{< regref "STATUS.busy" >}}, marking the operation as completed.
-- Writes zero to {{< regref "ERR_CODE" >}}.
+- Writes zero to {{< regref "ERR_BITS" >}}.
 
 The DMEM can be used to pass data back to the host processor, e.g. a "return value" or an "exit code".
 Refer to the section [Passing of data between the host CPU and OTBN]({{<relref "#writing-otbn-applications-datapassing" >}}) for more information.

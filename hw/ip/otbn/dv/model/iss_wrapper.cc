@@ -332,7 +332,7 @@ std::pair<bool, uint32_t> ISSWrapper::step(bool gen_trace) {
   // The busy flag is bit 0 of the STATUS register, so is cleared on this cycle
   // if we see a write that sets the value to an even number.
   bool done = (read_ext_reg("STATUS", lines, 1) & 1) == 0;
-  uint32_t err_code = done ? read_ext_reg("ERR_CODE", lines, 0) : 0;
+  uint32_t err_code = done ? read_ext_reg("ERR_BITS", lines, 0) : 0;
   return std::make_pair(done, err_code);
 }
 

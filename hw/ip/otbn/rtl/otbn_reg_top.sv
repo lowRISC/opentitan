@@ -141,7 +141,14 @@ module otbn_reg_top (
   logic status_busy_re;
   logic status_dummy_qs;
   logic status_dummy_re;
-  logic [31:0] err_code_qs;
+  logic err_bits_bad_data_addr_qs;
+  logic err_bits_bad_insn_addr_qs;
+  logic err_bits_call_stack_qs;
+  logic err_bits_illegal_insn_qs;
+  logic err_bits_loop_qs;
+  logic err_bits_fatal_imem_qs;
+  logic err_bits_fatal_dmem_qs;
+  logic err_bits_fatal_reg_qs;
   logic [31:0] start_addr_wd;
   logic start_addr_we;
   logic fatal_alert_cause_imem_error_qs;
@@ -315,13 +322,14 @@ module otbn_reg_top (
   );
 
 
-  // R[err_code]: V(False)
+  // R[err_bits]: V(False)
 
+  //   F[bad_data_addr]: 0:0
   prim_subreg #(
-    .DW      (32),
+    .DW      (1),
     .SWACCESS("RO"),
-    .RESVAL  (32'h0)
-  ) u_err_code (
+    .RESVAL  (1'h0)
+  ) u_err_bits_bad_data_addr (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -329,15 +337,190 @@ module otbn_reg_top (
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.err_code.de),
-    .d      (hw2reg.err_code.d ),
+    .de     (hw2reg.err_bits.bad_data_addr.de),
+    .d      (hw2reg.err_bits.bad_data_addr.d ),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (err_code_qs)
+    .qs     (err_bits_bad_data_addr_qs)
+  );
+
+
+  //   F[bad_insn_addr]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_err_bits_bad_insn_addr (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_bits.bad_insn_addr.de),
+    .d      (hw2reg.err_bits.bad_insn_addr.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_bits_bad_insn_addr_qs)
+  );
+
+
+  //   F[call_stack]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_err_bits_call_stack (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_bits.call_stack.de),
+    .d      (hw2reg.err_bits.call_stack.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_bits_call_stack_qs)
+  );
+
+
+  //   F[illegal_insn]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_err_bits_illegal_insn (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_bits.illegal_insn.de),
+    .d      (hw2reg.err_bits.illegal_insn.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_bits_illegal_insn_qs)
+  );
+
+
+  //   F[loop]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_err_bits_loop (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_bits.loop.de),
+    .d      (hw2reg.err_bits.loop.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_bits_loop_qs)
+  );
+
+
+  //   F[fatal_imem]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_err_bits_fatal_imem (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_bits.fatal_imem.de),
+    .d      (hw2reg.err_bits.fatal_imem.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_bits_fatal_imem_qs)
+  );
+
+
+  //   F[fatal_dmem]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_err_bits_fatal_dmem (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_bits.fatal_dmem.de),
+    .d      (hw2reg.err_bits.fatal_dmem.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_bits_fatal_dmem_qs)
+  );
+
+
+  //   F[fatal_reg]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_err_bits_fatal_reg (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_bits.fatal_reg.de),
+    .d      (hw2reg.err_bits.fatal_reg.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_bits_fatal_reg_qs)
   );
 
 
@@ -455,7 +638,7 @@ module otbn_reg_top (
     addr_hit[3] = (reg_addr == OTBN_ALERT_TEST_OFFSET);
     addr_hit[4] = (reg_addr == OTBN_CMD_OFFSET);
     addr_hit[5] = (reg_addr == OTBN_STATUS_OFFSET);
-    addr_hit[6] = (reg_addr == OTBN_ERR_CODE_OFFSET);
+    addr_hit[6] = (reg_addr == OTBN_ERR_BITS_OFFSET);
     addr_hit[7] = (reg_addr == OTBN_START_ADDR_OFFSET);
     addr_hit[8] = (reg_addr == OTBN_FATAL_ALERT_CAUSE_OFFSET);
   end
@@ -502,6 +685,13 @@ module otbn_reg_top (
   assign status_dummy_re = addr_hit[5] && reg_re;
 
 
+
+
+
+
+
+
+
   assign start_addr_we = addr_hit[7] & reg_we & ~wr_err;
   assign start_addr_wd = reg_wdata[31:0];
 
@@ -540,7 +730,14 @@ module otbn_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[31:0] = err_code_qs;
+        reg_rdata_next[0] = err_bits_bad_data_addr_qs;
+        reg_rdata_next[1] = err_bits_bad_insn_addr_qs;
+        reg_rdata_next[2] = err_bits_call_stack_qs;
+        reg_rdata_next[3] = err_bits_illegal_insn_qs;
+        reg_rdata_next[4] = err_bits_loop_qs;
+        reg_rdata_next[5] = err_bits_fatal_imem_qs;
+        reg_rdata_next[6] = err_bits_fatal_dmem_qs;
+        reg_rdata_next[7] = err_bits_fatal_reg_qs;
       end
 
       addr_hit[7]: begin
