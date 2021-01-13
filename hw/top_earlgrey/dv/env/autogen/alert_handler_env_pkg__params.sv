@@ -22,7 +22,7 @@ parameter string LIST_OF_ALERTS[] = {
   "otp_ctrl_fatal_check_error",
   "lc_ctrl_fatal_prog_error",
   "lc_ctrl_fatal_state_error",
-  "entropy_src_es_alert_count_met",
+  "entropy_src_recov_alert_count_met",
   "sram_ctrl_main_fatal_parity_error",
   "sram_ctrl_ret_fatal_parity_error"
 };

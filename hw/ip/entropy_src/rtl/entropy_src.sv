@@ -48,7 +48,7 @@ module entropy_src import entropy_src_pkg::*; #(
   entropy_src_reg2hw_t reg2hw;
   entropy_src_hw2reg_t hw2reg;
 
-  logic alert_event;
+  logic recov_alert_event;
   logic alert_test;
 
   entropy_src_reg_top u_reg (
@@ -81,7 +81,7 @@ module entropy_src import entropy_src_pkg::*; #(
     .entropy_src_rng_o,
     .entropy_src_rng_i,
 
-    .alert_event_o(alert_event),
+    .recov_alert_event_o(recov_alert_event),
     .alert_test_o(alert_test),
 
     .intr_es_entropy_valid_o,
@@ -91,16 +91,16 @@ module entropy_src import entropy_src_pkg::*; #(
 
    prim_alert_sender #(
      .AsyncOn(AlertAsyncOn),
-      .IsFatal(0)
-   ) u_prim_alert_sender (
-     .clk_i,
-     .rst_ni,
-     .alert_test_i ( alert_test  ),
-     .alert_req_i  ( alert_event ),
-     .alert_ack_o  (             ),
-     .alert_state_o(             ),
-     .alert_rx_i   ( alert_rx_i  ),
-     .alert_tx_o   ( alert_tx_o  )
+     .IsFatal(0)
+   ) u_alert_sender_i (
+     .clk_i         ( clk_i      ),
+     .rst_ni        ( rst_ni     ),
+     .alert_test_i  ( alert_test ),
+     .alert_req_i   ( recov_alert_event),
+     .alert_ack_o   (            ),
+     .alert_state_o (            ),
+     .alert_rx_i    ( alert_rx_i ),
+     .alert_tx_o    ( alert_tx_o )
    );
 
   // Outputs should have a known value after reset

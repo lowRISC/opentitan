@@ -134,8 +134,29 @@ See the timing diagrams below for more details on how the health tests work.
 It should be noted that for all error counter registers, they are sized for 16 bits, which prevents any case where counters might wrap.
 
 
-The Mailbox test and Vendor-specific tests are planned, but not yet implemented.
-The theory of operation for these tests will therefore be described in a future update.
+The firmware override function has the capability to completely override the hardware health tests and the conditioner paths.
+In the case of health tests, firwmare can turn off one or all of the health tests and perform the tests in firmware.
+A data path is provided in the hardware such that the inbound entropy can be trapped in the pre-conditioner FIFO.
+Once a pre-determined threshold of entropy has been reached in this FIFO, the firmware can then read the entropy bits out of the FIFO.
+At this point, firmware can do additional health checks on the entropy.
+Optionally, firmware can do the conditioning function, assuming the the hardware is configured to bypass the conditioner block.
+Once firmware has processed the entropy, it will write the entropy back into the pre-conditioner FIFO.
+The firmware override control bits will be set such that the new entropy will resume normal flow operation.
+
+Vendor-specific tests are supported through an external health test interface (xht).
+This is the same interface that is used for the internal health tests.
+Below is a description of this interface:
+- entropy_bit: 4-bit wide bus of entropy to be tested.
+- entropy_bit_valid: indication of when the entropy is valid.
+- clear: signal to clear counters, and is register driven.
+- active: signal to indicate when the test should run, and is register driven.
+- thresh_hi: field to indicate what high threshold the test should use, and is register driven.
+- thresh_lo: field to indicate what low threshold the test should use, and is register driven.
+- window: field to indicate what the size of the test window is, and is register driven.
+- test_cnt: generic test count result, to be read from a register.
+- test_fail_hi_pulse: indication that a high threshold comparison failed, to be read from a register.
+- test_fail_lo_pulse: indication that a low threshold comparison failed, to be read from a register.
+
 
 The {{< regref "ALERT_THRESHOLD" >}} register determines how many fails can occur before an alert is issued.
 By default, the current threshold is set to two, such that the occurrence of two failing test cycles back-to-back would provide a very low &alpha; value.
