@@ -429,6 +429,7 @@
     fields: [
       { bits: "0",
         name: "START",
+        resval: "0"
         desc:  '''
           Keep AES unit paused (0) or trigger the encryption/decryption of one data block (1).
           This trigger is ignored if MANUAL_OPERATION=0 (see Control Register).
