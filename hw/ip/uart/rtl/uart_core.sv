@@ -67,10 +67,16 @@ module uart_core (
   assign sys_loopback     = reg2hw.ctrl.slpbk.q;
   assign line_loopback    = reg2hw.ctrl.llpbk.q;
 
-  assign uart_fifo_rxrst  = reg2hw.fifo_ctrl.rxrst.q & reg2hw.fifo_ctrl.rxrst.qe;
-  assign uart_fifo_txrst  = reg2hw.fifo_ctrl.txrst.q & reg2hw.fifo_ctrl.txrst.qe;
+  assign uart_fifo_rxrst  = reg2hw.fifo_ctrl.rxrst.q;
+  assign uart_fifo_txrst  = reg2hw.fifo_ctrl.txrst.q;
   assign uart_fifo_rxilvl = reg2hw.fifo_ctrl.rxilvl.q;
   assign uart_fifo_txilvl = reg2hw.fifo_ctrl.txilvl.q;
+
+  // clear FIFO Reset signal
+  assign hw2reg.fifo_ctrl.rxrst.de = reg2hw.fifo_ctrl.rxrst.q;
+  assign hw2reg.fifo_ctrl.rxrst.d  = 1'b 0;
+  assign hw2reg.fifo_ctrl.txrst.de = reg2hw.fifo_ctrl.txrst.q;
+  assign hw2reg.fifo_ctrl.txrst.d  = 1'b 0;
 
   assign ovrd_tx_en       = reg2hw.ovrd.txen.q;
   assign ovrd_tx_val      = reg2hw.ovrd.txval.q;
