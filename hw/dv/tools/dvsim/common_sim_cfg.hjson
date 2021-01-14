@@ -62,7 +62,8 @@
                "+define+UVM_REGEX_NO_DPI",
                "+define+UVM_REG_ADDR_WIDTH={tl_aw}",
                "+define+UVM_REG_DATA_WIDTH={tl_dw}",
-               "+define+UVM_REG_BYTENABLE_WIDTH={tl_dbw}"]
+               "+define+UVM_REG_BYTENABLE_WIDTH={tl_dbw}",
+               "+define+SIMULATION"]
 
   run_opts: ["+UVM_NO_RELNOTES",
              "+UVM_VERBOSITY={expand_uvm_verbosity_{verbosity}}"]
