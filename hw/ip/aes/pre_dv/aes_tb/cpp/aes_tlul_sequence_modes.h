@@ -153,7 +153,8 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
     if (TEST_STALL && j < 3) {
       tl_i_transactions[i_trx] = {true,       4,   0, 2, 0,
                                   AES_STATUS, 0xF, 0, 0, true};
-      tl_o_exp_resp[i_resp] = {0x2, 0x2};
+      tl_o_exp_resp[i_resp] = {1 << AES_STATUS_STALL_OFFSET,
+                               1 << AES_STATUS_STALL_OFFSET};
       i_trx++;
       i_resp++;
     }

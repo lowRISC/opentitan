@@ -10,7 +10,7 @@
 
 // Example 0 - encrypt/decrypt all key lenghts
 
-static const int num_transactions_max = 1 + 3 * (21 + 8 + 8) + 7 + 4 + 6;
+static const int num_transactions_max = 1 + 3 * (21 + 8 + 8) + 7 + 4 + 6 + 4;
 static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     // AES-128
@@ -62,10 +62,16 @@ static const TLI tl_i_transactions[num_transactions_max] = {
      0, true},  // ctrl - encrypt, 128-bit
     {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0, true},  // start
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0,
+     true},  // start, causes output lost
+    {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x0, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x4, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0x8, 0xF, 0x0, 0, true},
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0xC, 0xF, 0x0, 0, true},
+    {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
+    {true, 0, 0, 2, 0, AES_TRIGGER, 0xF, 0x1, 0,
+     true},  // start, output lost remains high
     {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0x0, 0, true},
 
     // AES-192
@@ -218,7 +224,7 @@ static const TLI tl_i_transactions[num_transactions_max] = {
     {true, 4, 0, 2, 0, AES_DATA_OUT_0 + 0xC, 0xF, 0x0, 0, true},
 };
 
-static const int num_responses_max = 1 + 18 + 18 + 1 + 1 + 5;
+static const int num_responses_max = 1 + 18 + 18 + 1 + 1 + 5 + 2;
 static const EXP_RESP tl_o_exp_resp[num_responses_max] = {
     {1 << AES_STATUS_IDLE_OFFSET,
      1 << AES_STATUS_IDLE_OFFSET},  // status shows idle
@@ -232,14 +238,26 @@ static const EXP_RESP tl_o_exp_resp[num_responses_max] = {
     {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
      0},  // status shows output valid no longer valid
 
-    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
-     1 << AES_STATUS_OUTPUT_VALID_OFFSET},  // status shows output valid
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET | 1 << AES_STATUS_IDLE_OFFSET,
+     1 << AES_STATUS_OUTPUT_VALID_OFFSET |
+         1 << AES_STATUS_IDLE_OFFSET},  // status shows output valid and idle
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET | 1 << AES_STATUS_OUTPUT_LOST_OFFSET |
+         1 << AES_STATUS_IDLE_OFFSET,
+     1 << AES_STATUS_OUTPUT_VALID_OFFSET | 1 << AES_STATUS_OUTPUT_LOST_OFFSET |
+         1 << AES_STATUS_IDLE_OFFSET},  // status shows output valid, output
+                                        // lost and idle
     {0xFFFFFFFF, 0x1D842539},
     {0xFFFFFFFF, 0xFB09DC02},
     {0xFFFFFFFF, 0x978511DC},
     {0xFFFFFFFF, 0x320B6A19},
-    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
-     0},  // status shows output valid no longer valid
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET | 1 << AES_STATUS_OUTPUT_LOST_OFFSET,
+     0 << AES_STATUS_OUTPUT_VALID_OFFSET |
+         1 << AES_STATUS_OUTPUT_LOST_OFFSET},  // status shows output no longer
+                                               // valid and output lost
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET | 1 << AES_STATUS_OUTPUT_LOST_OFFSET |
+         1 << AES_STATUS_IDLE_OFFSET,
+     1 << AES_STATUS_OUTPUT_VALID_OFFSET | 1 << AES_STATUS_OUTPUT_LOST_OFFSET |
+         1 << AES_STATUS_IDLE_OFFSET},  // status shows output valid and idle
 
     {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
      1 << AES_STATUS_OUTPUT_VALID_OFFSET},  // status shows output valid
