@@ -204,27 +204,27 @@ module edn_core import edn_pkg::*; #(
 
   // set the err code source bits
   assign hw2reg.err_code.sfifo_rescmd_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_rescmd_err.de = (|sfifo_rescmd_err);
+  assign hw2reg.err_code.sfifo_rescmd_err.de = edn_enable && (|sfifo_rescmd_err);
 
   assign hw2reg.err_code.sfifo_gencmd_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_gencmd_err.de = (|sfifo_gencmd_err);
+  assign hw2reg.err_code.sfifo_gencmd_err.de = edn_enable && (|sfifo_gencmd_err);
 
 
  // set the err code type bits
   assign hw2reg.err_code.fifo_write_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_write_err.de =
+  assign hw2reg.err_code.fifo_write_err.de = edn_enable && (
          sfifo_rescmd_err[2] ||
-         sfifo_gencmd_err[2];
+         sfifo_gencmd_err[2]);
 
   assign hw2reg.err_code.fifo_read_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_read_err.de =
+  assign hw2reg.err_code.fifo_read_err.de = edn_enable && (
          sfifo_rescmd_err[1] ||
-         sfifo_gencmd_err[1];
+         sfifo_gencmd_err[1]);
 
   assign hw2reg.err_code.fifo_state_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_state_err.de =
+  assign hw2reg.err_code.fifo_state_err.de = edn_enable && (
          sfifo_rescmd_err[0] ||
-         sfifo_gencmd_err[0];
+         sfifo_gencmd_err[0]);
 
 
 
