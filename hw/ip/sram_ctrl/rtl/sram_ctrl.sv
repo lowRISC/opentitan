@@ -81,8 +81,8 @@ module sram_ctrl
 
   // Parity error (the error is sticky and cannot be cleared).
   assign hw2reg.error_address.d             = sram_scr_i.raddr;
-  assign hw2reg.error_address.de            = |sram_scr_i.rerror;
-  assign parity_error_d                     = parity_error_q | (|sram_scr_i.rerror);
+  assign hw2reg.error_address.de            = sram_scr_i.rerror[1];
+  assign parity_error_d                     = parity_error_q | sram_scr_i.rerror[1];
 
 
   //////////////////
@@ -203,5 +203,7 @@ module sram_ctrl
   `ASSERT_KNOWN(AlertOutKnown_A,   alert_tx_o)
   `ASSERT_KNOWN(SramOtpKeyKnown_A, sram_otp_key_o)
   `ASSERT_KNOWN(SramScrOutKnown_A, sram_scr_o)
+  // Correctable RAM errors are not supported, so rerror[0] should never go high.
+  `ASSERT_NEVER(NoCorrectableErr_A, sram_scr_i.rerror[0])
 
 endmodule : sram_ctrl
