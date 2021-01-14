@@ -56,7 +56,7 @@ formal/             @cindychip
 # lint/             # TBD
 
 # SW related
-/sw/                @mcy @moidx @gkelly @sriyerg @lenary
+/sw/                @mcy @moidx @gkelly @sriyerg
 
 # Common docs
 /doc/               @sjgitty @asb
@@ -64,7 +64,7 @@ formal/             @cindychip
 # License related files
 LICENSE*            @asb
 COPYING*            @asb
-/util/licence-checker.hjson  @asb @lenary
+/util/licence-checker.hjson  @asb
 
 # CI and testing
 /ci/                @mcy @imphil
