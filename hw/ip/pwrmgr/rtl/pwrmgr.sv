@@ -260,8 +260,9 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     assign hw2reg.reset_status[i].d  = peri_reqs_masked.rstreqs[i];
   end
 
-  assign hw2reg.escalate_reset_status.de = 1'b1;
-  assign hw2reg.escalate_reset_status.d = peri_reqs_masked.rstreqs[NumRstReqs];
+  // TODO: this CSR does not seem to exist anymore?
+  // assign hw2reg.escalate_reset_status.de = 1'b1;
+  // assign hw2reg.escalate_reset_status.d = peri_reqs_masked.rstreqs[NumRstReqs];
 
 
   ////////////////////////////
