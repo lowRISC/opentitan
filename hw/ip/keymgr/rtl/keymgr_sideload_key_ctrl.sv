@@ -74,7 +74,6 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
       StSideloadIdle: begin
         keys_en = 1'b1;
         if (wipe_key_i || clr_key_i) begin
-          keys_en = 1'b0;
           state_d = wipe_key_i ? StSideloadWipe : StSideloadClear;
         end
       end
