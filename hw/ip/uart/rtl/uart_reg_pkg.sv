@@ -168,19 +168,15 @@ package uart_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        qe;
     } rxrst;
     struct packed {
       logic        q;
-      logic        qe;
     } txrst;
     struct packed {
       logic [2:0]  q;
-      logic        qe;
     } rxilvl;
     struct packed {
       logic [1:0]  q;
-      logic        qe;
     } txilvl;
   } uart_reg2hw_fifo_ctrl_reg_t;
 
@@ -265,6 +261,14 @@ package uart_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic        d;
+      logic        de;
+    } rxrst;
+    struct packed {
+      logic        d;
+      logic        de;
+    } txrst;
+    struct packed {
       logic [2:0]  d;
       logic        de;
     } rxilvl;
@@ -292,14 +296,14 @@ package uart_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    uart_reg2hw_intr_state_reg_t intr_state; // [124:117]
-    uart_reg2hw_intr_enable_reg_t intr_enable; // [116:109]
-    uart_reg2hw_intr_test_reg_t intr_test; // [108:93]
-    uart_reg2hw_ctrl_reg_t ctrl; // [92:68]
-    uart_reg2hw_status_reg_t status; // [67:56]
-    uart_reg2hw_rdata_reg_t rdata; // [55:47]
-    uart_reg2hw_wdata_reg_t wdata; // [46:38]
-    uart_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [37:27]
+    uart_reg2hw_intr_state_reg_t intr_state; // [120:113]
+    uart_reg2hw_intr_enable_reg_t intr_enable; // [112:105]
+    uart_reg2hw_intr_test_reg_t intr_test; // [104:89]
+    uart_reg2hw_ctrl_reg_t ctrl; // [88:64]
+    uart_reg2hw_status_reg_t status; // [63:52]
+    uart_reg2hw_rdata_reg_t rdata; // [51:43]
+    uart_reg2hw_wdata_reg_t wdata; // [42:34]
+    uart_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [33:27]
     uart_reg2hw_ovrd_reg_t ovrd; // [26:25]
     uart_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [24:0]
   } uart_reg2hw_t;
@@ -308,10 +312,10 @@ package uart_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    uart_hw2reg_intr_state_reg_t intr_state; // [64:49]
-    uart_hw2reg_status_reg_t status; // [48:43]
-    uart_hw2reg_rdata_reg_t rdata; // [42:35]
-    uart_hw2reg_fifo_ctrl_reg_t fifo_ctrl; // [34:28]
+    uart_hw2reg_intr_state_reg_t intr_state; // [68:53]
+    uart_hw2reg_status_reg_t status; // [52:47]
+    uart_hw2reg_rdata_reg_t rdata; // [46:39]
+    uart_hw2reg_fifo_ctrl_reg_t fifo_ctrl; // [38:28]
     uart_hw2reg_fifo_status_reg_t fifo_status; // [27:16]
     uart_hw2reg_val_reg_t val; // [15:0]
   } uart_hw2reg_t;

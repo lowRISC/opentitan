@@ -1136,11 +1136,11 @@ module uart_reg_top (
     .wd     (fifo_ctrl_rxrst_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.fifo_ctrl.rxrst.de),
+    .d      (hw2reg.fifo_ctrl.rxrst.d ),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.rxrst.qe),
+    .qe     (),
     .q      (reg2hw.fifo_ctrl.rxrst.q ),
 
     .qs     ()
@@ -1161,11 +1161,11 @@ module uart_reg_top (
     .wd     (fifo_ctrl_txrst_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.fifo_ctrl.txrst.de),
+    .d      (hw2reg.fifo_ctrl.txrst.d ),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.txrst.qe),
+    .qe     (),
     .q      (reg2hw.fifo_ctrl.txrst.q ),
 
     .qs     ()
@@ -1190,7 +1190,7 @@ module uart_reg_top (
     .d      (hw2reg.fifo_ctrl.rxilvl.d ),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.rxilvl.qe),
+    .qe     (),
     .q      (reg2hw.fifo_ctrl.rxilvl.q ),
 
     // to register interface (read)
@@ -1216,7 +1216,7 @@ module uart_reg_top (
     .d      (hw2reg.fifo_ctrl.txilvl.d ),
 
     // to internal hardware
-    .qe     (reg2hw.fifo_ctrl.txilvl.qe),
+    .qe     (),
     .q      (reg2hw.fifo_ctrl.txilvl.q ),
 
     // to register interface (read)
