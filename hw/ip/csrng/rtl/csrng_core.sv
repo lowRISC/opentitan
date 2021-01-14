@@ -374,57 +374,57 @@ module csrng_core import csrng_pkg::*; #(
 
   // set the err code source bits
   assign hw2reg.err_code.sfifo_cmd_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_cmd_err.de = (|cmd_stage_sfifo_cmd_err_sum);
+  assign hw2reg.err_code.sfifo_cmd_err.de = cs_enable  && (|cmd_stage_sfifo_cmd_err_sum);
 
   assign hw2reg.err_code.sfifo_genbits_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_genbits_err.de = (|cmd_stage_sfifo_genbits_err_sum);
+  assign hw2reg.err_code.sfifo_genbits_err.de = cs_enable  && (|cmd_stage_sfifo_genbits_err_sum);
 
   assign hw2reg.err_code.sfifo_cmdreq_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_cmdreq_err.de = (|ctr_drbg_cmd_sfifo_cmdreq_err);
+  assign hw2reg.err_code.sfifo_cmdreq_err.de = cs_enable  && (|ctr_drbg_cmd_sfifo_cmdreq_err);
 
   assign hw2reg.err_code.sfifo_rcstage_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_rcstage_err.de = (|ctr_drbg_cmd_sfifo_rcstage_err);
+  assign hw2reg.err_code.sfifo_rcstage_err.de = cs_enable  && (|ctr_drbg_cmd_sfifo_rcstage_err);
 
   assign hw2reg.err_code.sfifo_keyvrc_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_keyvrc_err.de = (|ctr_drbg_cmd_sfifo_keyvrc_err);
+  assign hw2reg.err_code.sfifo_keyvrc_err.de = cs_enable  && (|ctr_drbg_cmd_sfifo_keyvrc_err);
 
   assign hw2reg.err_code.sfifo_updreq_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_updreq_err.de = (|ctr_drbg_upd_sfifo_updreq_err);
+  assign hw2reg.err_code.sfifo_updreq_err.de = cs_enable  && (|ctr_drbg_upd_sfifo_updreq_err);
 
   assign hw2reg.err_code.sfifo_bencreq_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_bencreq_err.de = (|ctr_drbg_upd_sfifo_bencreq_err);
+  assign hw2reg.err_code.sfifo_bencreq_err.de = cs_enable  && (|ctr_drbg_upd_sfifo_bencreq_err);
 
   assign hw2reg.err_code.sfifo_bencack_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_bencack_err.de = (|ctr_drbg_upd_sfifo_bencack_err);
+  assign hw2reg.err_code.sfifo_bencack_err.de = cs_enable  && (|ctr_drbg_upd_sfifo_bencack_err);
 
   assign hw2reg.err_code.sfifo_pdata_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_pdata_err.de = (|ctr_drbg_upd_sfifo_pdata_err);
+  assign hw2reg.err_code.sfifo_pdata_err.de = cs_enable  && (|ctr_drbg_upd_sfifo_pdata_err);
 
   assign hw2reg.err_code.sfifo_final_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_final_err.de = (|ctr_drbg_upd_sfifo_final_err);
+  assign hw2reg.err_code.sfifo_final_err.de = cs_enable  && (|ctr_drbg_upd_sfifo_final_err);
 
   assign hw2reg.err_code.sfifo_gbencack_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_gbencack_err.de = (|ctr_drbg_gen_sfifo_gbencack_err);
+  assign hw2reg.err_code.sfifo_gbencack_err.de = cs_enable  && (|ctr_drbg_gen_sfifo_gbencack_err);
 
   assign hw2reg.err_code.sfifo_grcstage_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_grcstage_err.de = (|ctr_drbg_gen_sfifo_grcstage_err);
+  assign hw2reg.err_code.sfifo_grcstage_err.de = cs_enable  && (|ctr_drbg_gen_sfifo_grcstage_err);
 
   assign hw2reg.err_code.sfifo_ggenreq_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_ggenreq_err.de = (|ctr_drbg_gen_sfifo_ggenreq_err);
+  assign hw2reg.err_code.sfifo_ggenreq_err.de = cs_enable  && (|ctr_drbg_gen_sfifo_ggenreq_err);
 
   assign hw2reg.err_code.sfifo_gadstage_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_gadstage_err.de = (|ctr_drbg_gen_sfifo_gadstage_err);
+  assign hw2reg.err_code.sfifo_gadstage_err.de = cs_enable  && (|ctr_drbg_gen_sfifo_gadstage_err);
 
   assign hw2reg.err_code.sfifo_ggenbits_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_ggenbits_err.de = (|ctr_drbg_gen_sfifo_ggenbits_err);
+  assign hw2reg.err_code.sfifo_ggenbits_err.de = cs_enable  && (|ctr_drbg_gen_sfifo_ggenbits_err);
 
   assign hw2reg.err_code.sfifo_blkenc_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_blkenc_err.de = (|block_encrypt_sfifo_blkenc_err);
+  assign hw2reg.err_code.sfifo_blkenc_err.de = cs_enable  && (|block_encrypt_sfifo_blkenc_err);
 
 
  // set the err code type bits
   assign hw2reg.err_code.fifo_write_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_write_err.de =
+  assign hw2reg.err_code.fifo_write_err.de =cs_enable  && (
          block_encrypt_sfifo_blkenc_err[2] ||
          ctr_drbg_gen_sfifo_ggenbits_err[2] ||
          ctr_drbg_gen_sfifo_gadstage_err[2] ||
@@ -440,10 +440,10 @@ module csrng_core import csrng_pkg::*; #(
          ctr_drbg_cmd_sfifo_rcstage_err[2] ||
          ctr_drbg_cmd_sfifo_cmdreq_err[2] ||
          (|cmd_stage_sfifo_genbits_err_wr) ||
-         (|cmd_stage_sfifo_cmd_err_wr);
+         (|cmd_stage_sfifo_cmd_err_wr));
 
   assign hw2reg.err_code.fifo_read_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_read_err.de =
+  assign hw2reg.err_code.fifo_read_err.de =cs_enable  && (
          block_encrypt_sfifo_blkenc_err[1] ||
          ctr_drbg_gen_sfifo_ggenbits_err[1] ||
          ctr_drbg_gen_sfifo_gadstage_err[1] ||
@@ -459,10 +459,10 @@ module csrng_core import csrng_pkg::*; #(
          ctr_drbg_cmd_sfifo_rcstage_err[1] ||
          ctr_drbg_cmd_sfifo_cmdreq_err[1] ||
          (|cmd_stage_sfifo_genbits_err_rd) ||
-         (|cmd_stage_sfifo_cmd_err_rd);
+         (|cmd_stage_sfifo_cmd_err_rd));
 
   assign hw2reg.err_code.fifo_state_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_state_err.de =
+  assign hw2reg.err_code.fifo_state_err.de =cs_enable  && (
          block_encrypt_sfifo_blkenc_err[0] ||
          ctr_drbg_gen_sfifo_ggenbits_err[0] ||
          ctr_drbg_gen_sfifo_gadstage_err[0] ||
@@ -478,7 +478,7 @@ module csrng_core import csrng_pkg::*; #(
          ctr_drbg_cmd_sfifo_rcstage_err[0] ||
          ctr_drbg_cmd_sfifo_cmdreq_err[0] ||
          (|cmd_stage_sfifo_genbits_err_st) ||
-         (|cmd_stage_sfifo_cmd_err_st);
+         (|cmd_stage_sfifo_cmd_err_st));
 
 
 
