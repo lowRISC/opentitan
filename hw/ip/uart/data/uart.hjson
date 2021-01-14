@@ -175,17 +175,16 @@
       desc: "UART FIFO control register",
       swaccess: "rw",
       hwaccess: "hrw",
-      hwqe:     "true",
       fields: [
         { bits: "0",
           swaccess: "wo",
-          hwaccess: "hro",
+          hwaccess: "hrw",
           name: "RXRST",
           desc: "RX fifo reset. Write 1 to the register resets RX_FIFO. Read returns 0"
         }
         { bits: "1",
           swaccess: "wo",
-          hwaccess: "hro",
+          hwaccess: "hrw",
           name: "TXRST",
           desc: "TX fifo reset. Write 1 to the register resets TX_FIFO. Read returns 0"
         }
