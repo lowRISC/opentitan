@@ -394,7 +394,7 @@ LOOP x2, 5
     ADDI x4, x4, 1
   NOP
 
-# Control flow leaves the immediate body of the outer loop but eventually 
+# Control flow leaves the immediate body of the outer loop but eventually
 # returns to it
 LOOP x2, 4
   BEQ x4, x5, some_label
@@ -438,6 +438,29 @@ outer_body:
 {{< hwcfg "hw/ip/otbn/data/otbn.hjson" >}}
 
 ## Design Details
+
+### Memories
+
+The OTBN processor core has access to two dedicated memories: an instruction memory (IMEM), and a data memory (DMEM).
+Each memory is 4 kiB in size.
+
+The memory layout follows the Harvard architecture.
+Both memories are byte-addressed, with addresses starting at 0.
+
+The instruction memory (IMEM) is 32b wide and provides the instruction stream to the OTBN processor.
+It cannot be read from or written to by user code through load or store instructions.
+
+The data memory (DMEM) is 256b wide and read-write accessible from the base and big number instruction subsets of the OTBN processor core.
+There are four instructions that can access data memory.
+In the base instruction subset, there are `LW` (load word) and `SW` (store word).
+These access 32b-aligned 32b words.
+In the big number instruction subset, there are `BN.LID` (load indirect) and `BN.SID` (store indirect).
+These access 256b-aligned 256b words.
+
+Both memories can be accessed through OTBN's register interface ({{< regref "DMEM" >}} and {{< regref "IMEM" >}}).
+These accesses are ignored if OTBN is busy.
+A host processor can check whether OTBN is busy by reading the {{< regref "STATUS.busy">}} flag.
+All memory accesses through the register interface must be word-aligned 32b word accesses.
 
 ### Error Handling and Reporting
 
@@ -484,48 +507,51 @@ The error that caused the alert can be determined by reading the {{< regref "FAT
 If OTBN was running, this value will also be reflected in the {{< regref "ERR_CODE" >}} register.
 A fatal alert can only be cleared by resetting OTBN through the `rst_ni` line.
 
-# Programmers Guide
 
-<div class="bd-callout bd-callout-warning">
-  <h5>Note</h5>
+# Running applications on OTBN
 
-  This section will be written as we move on in the design and implementation process.
-</div>
+OTBN is a specialized coprocessor which is used from the host CPU.
+This section describes how to interact with OTBN from the host CPU to execute an existing OTBN application.
+The section [Writing OTBN applications]({{< ref "#writing-otbn-applications" >}}) describes how to write such applications.
 
-## Memories
+## High-level operation sequence
 
-The OTBN processor core has access to two dedicated memories:
-an instruction memory (IMEM), and a data memory (DMEM).
-Each memory is 4 kiB in size.
+The high-level sequence by which the host processor should use OTBN is as follows.
 
-The memory layout follows the Harvard architecture.
-Both memories are byte-addressed, with addresses starting at 0.
+1. Write the OTBN application binary to {{< regref "IMEM" >}}, starting at address 0.
+2. Optional: Write constants and input arguments, as mandated by the calling convention of the loaded application, to {{< regref "DMEM" >}}.
+3. Start the operation on OTBN by writing `1` to {{< regref "CMD.start" >}}.
+   Now neither data nor instruction memory may be accessed from the host CPU.
+   After it has been started the OTBN application runs to completion without further interaction with the host.
+4. Wait for the operation to complete (see below).
+   As soon as the OTBN operation has completed the data and instruction memories can be accessed again from the host CPU.
+5. Check if the operation was successful by reading the {{< regref "ERR_CODE" >}} register.
+6. Optional: Retrieve results by reading {{< regref "DMEM" >}}, as mandated by the calling convention of the loaded application.
 
-The instruction memory (IMEM) is 32b wide and provides the instruction stream to the OTBN processor;
-it cannot be read or written from user code through load or store instructions.
+OTBN applications are run to completion.
+The host CPU can determine if an application has completed by either polling {{< regref "STATUS.busy">}} or listening for an interrupt.
 
-The data memory (DMEM) is 256b wide and read-write accessible from the base and big number instruction subsets of the OTBN processor core.
-When accessed from the base instruction subset through the `LW` or `SW` instructions, accesses must read or write 32b-aligned 32b words.
-When accessed from the big number instruction subset through the `BN.LID` or `BN.SID` instructions, accesses must read or write 256b-aligned 256b words.
+* To poll for a completed operation, software should repeatedly read the {{< regref "STATUS.busy" >}} register.
+  While the operation is in progress, {{< regref "STATUS.busy" >}} reads as `1`.
+  The operation is completed if {{< regref "STATUS.busy" >}} is `0`.
+* Alternatively, software can listen for the `done` interrupt to determine if the operation has completed.
+  The standard sequence of working with interrupts has to be followed, i.e. the interrupt has to be enabled, an interrupt service routine has to be registered, etc.
+  The [DIF]({{<relref "#dif" >}}) contains helpers to do so conveniently.
 
-Both memories can be accessed through OTBN's register interface ({{< regref "DMEM" >}} and {{< regref "IMEM" >}}) only when OTBN is idle, as indicated by the {{< regref "STATUS.busy">}} flag.
-All memory accesses through the register interface must be word-aligned 32b word accesses.
+Note: This operation sequence only covers functional aspects.
+Depending on the application additional steps might be necessary, such as deleting secrets from the memories.
 
-## Operation
+## Device Interface Functions (DIFs) {#dif}
 
-The high-level sequence by which the host processor should use OTBN is as follows:
+{{< dif_listing "sw/device/lib/dif/dif_otbn.h" >}}
 
-1. Write {{< regref "IMEM" >}} and {{< regref "DMEM" >}}.
-1. Write `1` to {{< regref "CMD.start" >}}.
-1. Wait for `done` interrupt (or poll {{< regref "STATUS.busy" >}})
-1. Check the operation was successful by reading {{< regref "ERR_CODE" >}}
-1. Retrieve results by reading {{< regref "DMEM" >}}
+## Driver {#driver}
 
-The software running on OTBN signals completion by executing the [`ECALL`]({{< relref "hw/ip/otbn/doc/isa#ecall" >}}) instruction.
-When it executes this instruction, OTBN:
-- Stops fetching and executing instructions.
-- Sets {{< regref "INTR_STATE.done" >}} and clears {{< regref "STATUS.busy" >}}, marking the operation as completed.
-- Writes zero to {{< regref "ERR_CODE" >}}.
+A higher-level driver for the OTBN block is available at `sw/device/lib/runtime/otbn.h` ([API documentation](/sw/apis/otbn_8h.html)).
+
+## Register Table
+
+{{< registers "hw/ip/otbn/data/otbn.hjson" >}}
 
 ## Error conditions
 
@@ -604,13 +630,43 @@ When it executes this instruction, OTBN:
   </tbody>
 </table>
 
-## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_otbn.h" >}}
+# Writing OTBN applications {#writing-otbn-applications}
 
-## Register Table
+OTBN applications are (small) pieces of software written in OTBN assembly.
+The full instruction set is described in the [ISA manual]({{< relref "hw/ip/otbn/doc/isa" >}}), and example software is available in the `sw/otbn` directory of the OpenTitan source tree.
 
-{{< registers "hw/ip/otbn/data/otbn.hjson" >}}
+A hands-on user guide to develop OTBN software can be found in the section [Writing and building software for OTBN]({{<relref "doc/ug/otbn_sw.md" >}}).
+
+## Toolchain support
+
+OTBN comes with a toolchain consisting of an assembler, a linker, and helper tools such as objdump.
+The toolchain wraps a RV32 GCC toolchain and supports many of its features.
+
+The following tools are available:
+* `otbn-as`: The OTBN assembler.
+* `otbn-ld`: The OTBN linker.
+* `otbn-objdump`: objdump for OTBN.
+
+Other tools from the RV32 toolchain can be used directly, such as objcopy.
+
+## Passing of data between the host CPU and OTBN {#writing-otbn-applications-datapassing}
+
+Passing data between the host CPU and OTBN is done through the data memory (DMEM).
+No standard or required calling convention exists, every application is free to pass data in and out of OTBN in whatever format it finds convenient.
+All data passing must be done when OTBN is not running, as indicated by the {{< regref "STATUS.busy" >}} bit; during the OTBN operation both the instruction and the data memory are inaccessible from the host CPU.
+
+## Returning from an application
+
+The software running on OTBN signals completion by executing the [`ECALL`]({{< relref "hw/ip/otbn/doc/isa#ecall" >}}) instruction.
+
+When it executes this instruction, OTBN:
+- Stops fetching and executing instructions.
+- Sets {{< regref "INTR_STATE.done" >}} and clears {{< regref "STATUS.busy" >}}, marking the operation as completed.
+- Writes zero to {{< regref "ERR_CODE" >}}.
+
+The DMEM can be used to pass data back to the host processor, e.g. a "return value" or an "exit code".
+Refer to the section [Passing of data between the host CPU and OTBN]({{<relref "#writing-otbn-applications-datapassing" >}}) for more information.
 
 ## Algorithic Examples: Multiplication with BN.MULQACC
 
