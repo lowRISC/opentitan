@@ -156,14 +156,14 @@ package otp_ctrl_pkg;
   parameter otp_lc_data_t OTP_LC_DATA_DEFAULT = '{
     valid: 1'b1,
     error: 1'b0,
-    state: '0,
-    count: '0,
+    state: lc_ctrl_pkg::LcStRaw,
+    count: lc_ctrl_pkg::LcCntRaw,
     all_zero_token: '0,
     raw_unlock_token: '0,
     test_unlock_token: '0,
     test_exit_token: '0,
     rma_token: '0,
-    id_state: '0
+    id_state: lc_ctrl_pkg::LcIdBlank
   };
 
   typedef struct packed {
