@@ -152,9 +152,11 @@ class aes_scoreboard extends cip_base_scoreboard #(
         if (get_field_val(ral.trigger.start, item.a_data)) begin
           ok_to_fwd                = 1;
         end
-        // clear key
-        if (get_field_val(ral.trigger.key_clear, item.a_data)) begin
+        // clear key, IV, data_in
+        if (get_field_val(ral.trigger.key_iv_data_in_clear, item.a_data)) begin
           void'(input_item.key_clean(0, 1));
+          void'(input_item.iv_clean(0, 1));
+          input_item.clean_data_in();
           // if in the middle of a message
           // this is seen as the beginning of a new message
           if (!input_item.start_item) begin
@@ -162,21 +164,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
             `uvm_info(`gfn, $sformatf("splitting message"), UVM_MEDIUM)
           end
           `uvm_info(`gfn, $sformatf("\n\t ----clearing KEY"), UVM_MEDIUM)
-        end
-        // clear IV
-        if (get_field_val(ral.trigger.iv_clear, item.a_data)) begin
-          void'(input_item.iv_clean(0, 1));
-          // if in the middle of a message
-          // this is seen as the beginning of a new message
-          if (!input_item.start_item) begin
-            input_item.start_item = 1;
-            `uvm_info(`gfn, $sformatf("splitting message"), UVM_MEDIUM)
-          end
           `uvm_info(`gfn, $sformatf("\n\t ----| clearing IV"), UVM_MEDIUM)
-        end
-        // clear data_in
-        if (get_field_val(ral.trigger.data_in_clear, item.a_data)) begin
-          input_item.clean_data_in();
           `uvm_info(`gfn, $sformatf("\n\t ----| clearing DATA_IN"), UVM_MEDIUM)
         end
         // clear data out

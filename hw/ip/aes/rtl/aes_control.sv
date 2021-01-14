@@ -24,9 +24,7 @@ module aes_control
   input  aes_pkg::ciph_op_e       cipher_op_i,
   input  logic                    manual_operation_i,
   input  logic                    start_i,
-  input  logic                    key_clear_i,
-  input  logic                    iv_clear_i,
-  input  logic                    data_in_clear_i,
+  input  logic                    key_iv_data_in_clear_i,
   input  logic                    data_out_clear_i,
   input  logic                    prng_reseed_i,
   input  logic                    alert_fatal_i,
@@ -85,12 +83,8 @@ module aes_control
   // Trigger register
   output logic                    start_o,
   output logic                    start_we_o,
-  output logic                    key_clear_o,
-  output logic                    key_clear_we_o,
-  output logic                    iv_clear_o,
-  output logic                    iv_clear_we_o,
-  output logic                    data_in_clear_o,
-  output logic                    data_in_clear_we_o,
+  output logic                    key_iv_data_in_clear_o,
+  output logic                    key_iv_data_in_clear_we_o,
   output logic                    data_out_clear_o,
   output logic                    data_out_clear_we_o,
   output logic                    prng_reseed_o,
@@ -273,12 +267,10 @@ module aes_control
     prng_reseed_req_o = 1'b0;
 
     // Trigger register control
-    start_we_o          = 1'b0;
-    key_clear_we_o      = 1'b0;
-    iv_clear_we_o       = 1'b0;
-    data_in_clear_we_o  = 1'b0;
-    data_out_clear_we_o = 1'b0;
-    prng_reseed_we_o    = 1'b0;
+    start_we_o                = 1'b0;
+    key_iv_data_in_clear_we_o = 1'b0;
+    data_out_clear_we_o       = 1'b0;
+    prng_reseed_we_o          = 1'b0;
 
     // Status register
     idle_o     = 1'b0;
@@ -305,8 +297,8 @@ module aes_control
     unique case (aes_ctrl_cs)
 
       IDLE: begin
-        idle_o    = (start || key_clear_i || iv_clear_i ||
-                    data_in_clear_i || data_out_clear_i || prng_reseed_i) ? 1'b0 : 1'b1;
+        idle_o    = (start || key_iv_data_in_clear_i || data_out_clear_i ||
+                    prng_reseed_i) ? 1'b0 : 1'b1;
         idle_we_o = 1'b1;
 
         if (idle_o) begin
@@ -331,7 +323,7 @@ module aes_control
             prng_reseed_we_o = 1'b1;
           end
 
-        end else if (key_clear_i || data_out_clear_i || iv_clear_i || data_in_clear_i) begin
+        end else if (key_iv_data_in_clear_i || data_out_clear_i) begin
           // To clear registers, we must first request fresh pseudo-random data.
           aes_ctrl_ns = UPDATE_PRNG;
 
@@ -414,11 +406,11 @@ module aes_control
           if (cipher_crypt_i) begin
             aes_ctrl_ns = FINISH;
 
-          end else if (key_clear_i || data_out_clear_i) begin
+          end else begin // (key_iv_data_in_clear_i || data_out_clear_i)
             // To clear the output data registers, we re-use the muxing resources of the cipher
             // core. To clear all key material, some key registers inside the cipher core need to
             // be cleared.
-            cipher_key_clear_o      = key_clear_i;
+            cipher_key_clear_o      = key_iv_data_in_clear_i;
             cipher_data_out_clear_o = data_out_clear_i;
 
             // We have work for the cipher core, perform handshake.
@@ -426,12 +418,8 @@ module aes_control
             if (cipher_in_ready_i) begin
               aes_ctrl_ns = CLEAR;
             end
-          end else begin // (iv_clear_i || data_in_clear_i)
-            // To clear the IV or input data registers, no handshake with the cipher core is
-            // needed.
-            aes_ctrl_ns = CLEAR;
-          end
-        end
+          end // cipher_crypt_i
+        end // prng_data_ack_i
       end
 
       FINISH: begin
@@ -493,43 +481,43 @@ module aes_control
       end
 
       CLEAR: begin
-        // The IV and input data registers can be cleared independently of the cipher core.
-        if (iv_clear_i) begin
-          iv_sel_o      = IV_CLEAR;
-          iv_we_o       = 8'hFF;
-          iv_clear_we_o = 1'b1;
-          iv_clear      = 1'b1;
-        end
-        if (data_in_clear_i) begin
+        // Initial Key, IV and input data registers can be cleared right away.
+        if (key_iv_data_in_clear_i) begin
+          // Initial Key
+          key_init_sel_o = KEY_INIT_CLEAR;
+          key_init_we_o  = '{8'hFF, 8'hFF};
+          key_init_clear = 1'b1;
+
+          // IV
+          iv_sel_o = IV_CLEAR;
+          iv_we_o  = 8'hFF;
+          iv_clear = 1'b1;
+
+          // Input data
           data_in_we_o       = 1'b1;
-          data_in_clear_we_o = 1'b1;
           data_in_prev_sel_o = DIP_CLEAR;
           data_in_prev_we_o  = 1'b1;
         end
 
-        // To clear the output data registers, we re-use the muxing resources of the cipher core.
-        // To clear all key material, some key registers inside the cipher core need to be cleared.
-        if (cipher_key_clear_i || cipher_data_out_clear_i) begin
+        // Perform handshake with cipher core.
+        cipher_out_ready_o = 1'b1;
+        if (cipher_out_valid_i) begin
 
-          // Perform handshake.
-          cipher_out_ready_o = 1'b1;
-          if (cipher_out_valid_i) begin
-
-            if (cipher_key_clear_i) begin
-              key_init_sel_o      = KEY_INIT_CLEAR;
-              key_init_we_o       = '{8'hFF, 8'hFF};
-              key_clear_we_o      = 1'b1;
-              key_init_clear      = 1'b1;
-            end
-
-            if (cipher_data_out_clear_i) begin
-              data_out_we_o       = 1'b1;
-              data_out_clear_we_o = 1'b1;
-            end
-            aes_ctrl_ns = IDLE;
+          // Full Key and Decryption Key registers are cleared by the cipher core.
+          // key_iv_data_in_clear_i is acknowledged by the cipher core with cipher_key_clear_i.
+          if (cipher_key_clear_i) begin
+            // Clear the trigger bit.
+            key_iv_data_in_clear_we_o = 1'b1;
           end
 
-        end else begin
+          // To clear the output data registers, we re-use the muxing resources of the cipher core.
+          // data_out_clear_i is acknowledged by the cipher core with cipher_data_out_clear_i.
+          if (cipher_data_out_clear_i) begin
+            // Clear output data and the trigger bit.
+            data_out_we_o       = 1'b1;
+            data_out_clear_we_o = 1'b1;
+          end
+
           aes_ctrl_ns = IDLE;
         end
       end
@@ -661,12 +649,10 @@ module aes_control
   end
 
   // Trigger register, the control only ever clears these
-  assign start_o          = 1'b0;
-  assign key_clear_o      = 1'b0;
-  assign iv_clear_o       = 1'b0;
-  assign data_in_clear_o  = 1'b0;
-  assign data_out_clear_o = 1'b0;
-  assign prng_reseed_o    = 1'b0;
+  assign start_o                = 1'b0;
+  assign key_iv_data_in_clear_o = 1'b0;
+  assign data_out_clear_o       = 1'b0;
+  assign prng_reseed_o          = 1'b0;
 
   // Selectors must be known/valid
   `ASSERT(AesModeValid, !ctrl_err_storage_i |-> mode_i inside {

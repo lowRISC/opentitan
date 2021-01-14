@@ -416,7 +416,7 @@
       While executing any of the triggered operations, the AES unit will set the IDLE bit in the Status Register to zero.
       The processor must check the Status Register before triggering further actions.
       For example, writes to Initial Key and IV Registers are ignored while the AES unit is busy.
-      Writes to the Input Data Registers are not ignored but the data will be cleared if a DATA_IN_CLEAR operation is pending.
+      Writes to the Input Data Registers are not ignored but the data will be cleared if a KEY_IV_DATA_IN_CLEAR operation is pending.
     '''
     swaccess: "wo",
     hwaccess: "hrw",
@@ -437,39 +437,22 @@
         tags: ["excl:CsrNonInitTests:CsrExclWriteCheck"]
       }
       { bits: "1",
-        name: "KEY_CLEAR",
+        name: "KEY_IV_DATA_IN_CLEAR",
         resval: "1"
         desc:  '''
-          Keep current values in Initial Key, internal Full Key and Decryption Key registers (0)
-          or clear those registers with pseudo-random data (1).
+          Keep current values in Initial Key, internal Full Key and Decryption Key registers, IV registers and Input Data registers (0) or clear all those registers with pseudo-random data (1).
         '''
         tags: ["excl:CsrAllTests:CsrExclCheck"]
       }
       { bits: "2",
-        name: "IV_CLEAR",
+        name: "DATA_OUT_CLEAR",
         resval: "1"
         desc:  '''
-          Keep current values in IV registers (0) or clear those registers with pseudo-random data (1).
+          Keep current values in Output Data registers (0) or clear those registers with pseudo-random data (1).
         '''
         tags: ["excl:CsrAllTests:CsrExclCheck"]
       }
       { bits: "3",
-        name: "DATA_IN_CLEAR",
-        resval: "1"
-        desc:  '''
-          Keep current values in input registers (0) or clear those registers with pseudo-random data (1).
-        '''
-        tags: ["excl:CsrAllTests:CsrExclCheck"]
-      }
-      { bits: "4",
-        name: "DATA_OUT_CLEAR",
-        resval: "1"
-        desc:  '''
-          Keep current values in output registers (0) or clear those registers with pseudo-random data (1).
-        '''
-        tags: ["excl:CsrAllTests:CsrExclCheck"]
-      }
-      { bits: "5",
         name: "PRNG_RESEED",
         resval: "1"
         desc:  '''

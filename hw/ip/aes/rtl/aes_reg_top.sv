@@ -153,12 +153,8 @@ module aes_reg_top (
   logic ctrl_shadowed_force_zero_masks_re;
   logic trigger_start_wd;
   logic trigger_start_we;
-  logic trigger_key_clear_wd;
-  logic trigger_key_clear_we;
-  logic trigger_iv_clear_wd;
-  logic trigger_iv_clear_we;
-  logic trigger_data_in_clear_wd;
-  logic trigger_data_in_clear_we;
+  logic trigger_key_iv_data_in_clear_wd;
+  logic trigger_key_iv_data_in_clear_we;
   logic trigger_data_out_clear_wd;
   logic trigger_data_out_clear_we;
   logic trigger_prng_reseed_wd;
@@ -805,82 +801,32 @@ module aes_reg_top (
   );
 
 
-  //   F[key_clear]: 1:1
+  //   F[key_iv_data_in_clear]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("WO"),
     .RESVAL  (1'h1)
-  ) u_trigger_key_clear (
+  ) u_trigger_key_iv_data_in_clear (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (trigger_key_clear_we),
-    .wd     (trigger_key_clear_wd),
+    .we     (trigger_key_iv_data_in_clear_we),
+    .wd     (trigger_key_iv_data_in_clear_wd),
 
     // from internal hardware
-    .de     (hw2reg.trigger.key_clear.de),
-    .d      (hw2reg.trigger.key_clear.d ),
+    .de     (hw2reg.trigger.key_iv_data_in_clear.de),
+    .d      (hw2reg.trigger.key_iv_data_in_clear.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.trigger.key_clear.q ),
+    .q      (reg2hw.trigger.key_iv_data_in_clear.q ),
 
     .qs     ()
   );
 
 
-  //   F[iv_clear]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("WO"),
-    .RESVAL  (1'h1)
-  ) u_trigger_iv_clear (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (trigger_iv_clear_we),
-    .wd     (trigger_iv_clear_wd),
-
-    // from internal hardware
-    .de     (hw2reg.trigger.iv_clear.de),
-    .d      (hw2reg.trigger.iv_clear.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.trigger.iv_clear.q ),
-
-    .qs     ()
-  );
-
-
-  //   F[data_in_clear]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("WO"),
-    .RESVAL  (1'h1)
-  ) u_trigger_data_in_clear (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (trigger_data_in_clear_we),
-    .wd     (trigger_data_in_clear_wd),
-
-    // from internal hardware
-    .de     (hw2reg.trigger.data_in_clear.de),
-    .d      (hw2reg.trigger.data_in_clear.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.trigger.data_in_clear.q ),
-
-    .qs     ()
-  );
-
-
-  //   F[data_out_clear]: 4:4
+  //   F[data_out_clear]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("WO"),
@@ -905,7 +851,7 @@ module aes_reg_top (
   );
 
 
-  //   F[prng_reseed]: 5:5
+  //   F[prng_reseed]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("WO"),
@@ -1269,20 +1215,14 @@ module aes_reg_top (
   assign trigger_start_we = addr_hit[30] & reg_we & ~wr_err;
   assign trigger_start_wd = reg_wdata[0];
 
-  assign trigger_key_clear_we = addr_hit[30] & reg_we & ~wr_err;
-  assign trigger_key_clear_wd = reg_wdata[1];
-
-  assign trigger_iv_clear_we = addr_hit[30] & reg_we & ~wr_err;
-  assign trigger_iv_clear_wd = reg_wdata[2];
-
-  assign trigger_data_in_clear_we = addr_hit[30] & reg_we & ~wr_err;
-  assign trigger_data_in_clear_wd = reg_wdata[3];
+  assign trigger_key_iv_data_in_clear_we = addr_hit[30] & reg_we & ~wr_err;
+  assign trigger_key_iv_data_in_clear_wd = reg_wdata[1];
 
   assign trigger_data_out_clear_we = addr_hit[30] & reg_we & ~wr_err;
-  assign trigger_data_out_clear_wd = reg_wdata[4];
+  assign trigger_data_out_clear_wd = reg_wdata[2];
 
   assign trigger_prng_reseed_we = addr_hit[30] & reg_we & ~wr_err;
-  assign trigger_prng_reseed_wd = reg_wdata[5];
+  assign trigger_prng_reseed_wd = reg_wdata[3];
 
 
 
@@ -1424,8 +1364,6 @@ module aes_reg_top (
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
         reg_rdata_next[3] = '0;
-        reg_rdata_next[4] = '0;
-        reg_rdata_next[5] = '0;
       end
 
       addr_hit[31]: begin
