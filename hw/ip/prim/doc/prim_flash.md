@@ -38,16 +38,21 @@ tck_i                   | input  | jtag tck
 tdi_i                   | input  | jtag tdi
 tms_i                   | input  | jtag tms
 tdo_o                   | output | jtag tdo
-tl_i                    | input  | tlul input bus for configuration
-tl_o                    | output | tlul output bus for configuration
+bist_enable_i           | input  | lc_ctrl_pkg :: On for bist_enable input
 scanmode_i              | input  | dft scanmode input
+scan_en_i               | input  | dft scan shift input
 scan_rst_n_i            | input  | dft scanmode reset
 flash_power_ready_h_i   | input  | flash power is ready (high voltage connection)
 flash_power_down_h_i    | input  | flash wrapper is powering down (high voltage connection)
 flash_test_mode_a_i     | input  | flash test mode values (analog connection)
 flash_test_voltage_h_i  | input  | flash test mode voltage (high voltage connection)
-
-
+flash_err_o             | output | flash level error interrupt indication, cleared on write 1 to status register
+flash_alert_po          | output | flash positive detector alert 
+flash_alert_no          | output | flash negative detector alert 
+flash_alert_ack         | input  | single pulse ack
+flash_alert_trig        | input  | alert force trig by SW
+tl_i                    | input  | TL_UL  interface for rd/wr registers access
+tl_o                    | output | TL_UL  interface for rd/wr registers access
 ### Flash Request/Response Signals
 
 Name               | In/Out | Description
@@ -62,12 +67,12 @@ erase_suspend      | input  | erase suspend request
 addr               | input  | requested transaction address
 part               | input  | requested transaction partition
 info_sel           | input  | if requested transaction is information partition, the type of information partition accessed
-he                 | output | high endurance enable for requested address
+he                 | input  | high endurance enable for requested address
 prog_data          | input  | program data
 ack                | output | transction acknowledge
 rd_data            | output | transaction read data
 done               | output | transaction done
-erase_suspend_done | output | erase suspend done
+
 
 
 # Theory of Operations
@@ -83,18 +88,18 @@ Depending on the type of transaction, there may be a significant gap between `ac
 For example, a read may have only 1 or 2 cycles between transaction acknowledgement and transaction complete.
 Whereas a program or erase may have a gap extending up to uS or even mS.
 
-It is the flash wrapper's decision on how many outstanding transaction to accept.
+It is the flash wrapper decision on how many outstanding transaction to accept.
 The following are examples for read, program and erase transactions.
 
 ### Read
 {{< wavejson >}}
 {signal: [
-  {name: 'clk_i',     wave: 'p................'},
-  {name: 'rd_i',      wave: '011..0.1..0......'},
-  {name: 'addr_i',    wave: 'x22..x.2..x......'},
-  {name: 'ack_o',     wave: '1.0.10...10......'},
-  {name: 'done_o',    wave: '0...10...10....10'},
-  {name: 'rd_data_o', wave: 'x...2x...2x....2x'},
+  {name: 'clk_i',     wave: 'p.................'},
+  {name: 'rd_i',      wave: '011..0.1..0.......'},
+  {name: 'addr_i',    wave: 'x22..x.2..x.......'},
+  {name: 'ack_o',     wave: '010.10...10.......'},
+  {name: 'done_o',    wave: '0....10...10....10'},
+  {name: 'rd_data_o', wave: 'x....2x...2x....2x'},
 ]}
 {{< /wavejson >}}
 
@@ -143,17 +148,22 @@ A program type not supported by the wrapper, indicated through `prog_type_avail`
 
 ## Erase Suspend
 Since erase operations can take a significant amount of time, sometimes it is necessary for software or other components to suspend the operation.
-The suspend operation follows a similar request (`erase_suspend_req` and done (`erase_suspend_done`) interface.
+The suspend operation input request starts with `erase_suspend_req` assertion. Flash wrapper circuit acks when wrapper starts suspend. 
 When the erase suspend completes, the flash wrapper circuitry also asserts `done` for the ongoing erase transaction to ensure all hardware gracefully completes.
 
 The following is an example diagram
 {{< wavejson >}}
 {signal: [
   {name: 'clk_i',                wave: 'p................'},
-  {name: 'pg_erase_i',           wave: '01............0..'},
-  {name: 'ack_o',                wave: '1.0..............'},
-  {name: 'erase_suspend_i',      wave: '0.....1.......0..'},
+  {name: 'pg_erase_i',           wave: '01.0..............'},
+  {name: 'ack_o',                wave: '0.10...10........'},
+  {name: 'erase_suspend_i',      wave: '0.....1.0........'},
   {name: 'done_o',               wave: '0............10..'},
-  {name: 'erase_suspend_done_o', wave: '0............10..'},
-]}
+ ]
+  }
 {{< /wavejson >}}
+
+## Error Interrupt
+The `flash_err_o` is a level interrupt indication, that is asserted whenever an error event occurs in one of the Flash banks.
+An Error status register is used to hold the error source of both banks, and it is cleared on writing 1 to the relevant bit.
+Clearing the status register trigs deassertion of the interrupt.
