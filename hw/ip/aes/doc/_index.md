@@ -447,7 +447,7 @@ It is recommended that software discards the padding bits after reading the outp
 
 After finishing operation, software must:
 1. Disable the AES unit to no longer automatically start encryption/decryption by setting the MANUAL_OPERATION bit in {{< regref "CTRL_SHADOWED" >}} to `1`.
-1. Clear all key registers with pseudo-random data, IV registers as well as the Input Data and the Output Data registers by setting the KEY_CLEAR, IV_CLEAR, DATA_IN_CLEAR and DATA_OUT_CLEAR bits in {{< regref "TRIGGER" >}} to `1`.
+1. Clear all key registers, IV registers as well as the Input Data and the Output Data registers with pseudo-random data by setting the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR bits in {{< regref "TRIGGER" >}} to `1`.
 
 The code snippet below shows how to perform this task.
 
@@ -457,11 +457,9 @@ The code snippet below shows how to perform this task.
   REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
   REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
 
-  // Clear all key register, Input Data and Output Data registers
+  // Clear all key, IV, Input Data and Output Data registers.
   REG32(AES_TRIGGER(0)) =
-      (0x1 << AES_TRIGGER_KEY_CLEAR) |
-      (0x1 << AES_TRIGGER_IV_CLEAR) |
-      (0x1 << AES_TRIGGER_DATA_IN_CLEAR) |
+      (0x1 << AES_TRIGGER_KEY_IV_DATA_IN_CLEAR) |
       (0x1 << AES_TRIGGER_DATA_OUT_CLEAR);
 ```
 

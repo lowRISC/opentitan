@@ -129,8 +129,7 @@ void aes_clear(void) {
 
   // Clear internal key and output registers
   REG32(AES0_BASE_ADDR + AES_TRIGGER_REG_OFFSET) =
-      (0x1u << AES_TRIGGER_KEY_CLEAR_BIT) | (0x1u << AES_TRIGGER_IV_CLEAR_BIT) |
-      (0x1u << AES_TRIGGER_DATA_IN_CLEAR_BIT) |
+      (0x1u << AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT) |
       (0x1u << AES_TRIGGER_DATA_OUT_CLEAR_BIT);
 
   // Wait for output not valid, and input ready

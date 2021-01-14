@@ -71,9 +71,7 @@ class aes_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("%s",txt), UVM_MEDIUM)
 
     ral.trigger.set(0);
-    ral.trigger.key_clear.set(clr_vector.key);
-    ral.trigger.iv_clear.set(clr_vector.iv);
-    ral.trigger.data_in_clear.set(clr_vector.data_in);
+    ral.trigger.key_iv_data_in_clear.set(|clr_vector[2:0]);
     ral.trigger.data_out_clear.set(clr_vector.data_out);
     csr_update(ral.trigger);
   endtask // clear_registers

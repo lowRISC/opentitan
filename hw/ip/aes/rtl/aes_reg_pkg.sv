@@ -85,13 +85,7 @@ package aes_reg_pkg;
     } start;
     struct packed {
       logic        q;
-    } key_clear;
-    struct packed {
-      logic        q;
-    } iv_clear;
-    struct packed {
-      logic        q;
-    } data_in_clear;
+    } key_iv_data_in_clear;
     struct packed {
       logic        q;
     } data_out_clear;
@@ -148,15 +142,7 @@ package aes_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } key_clear;
-    struct packed {
-      logic        d;
-      logic        de;
-    } iv_clear;
-    struct packed {
-      logic        d;
-      logic        de;
-    } data_in_clear;
+    } key_iv_data_in_clear;
     struct packed {
       logic        d;
       logic        de;
@@ -199,27 +185,27 @@ package aes_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_reg2hw_alert_test_reg_t alert_test; // [950:947]
-    aes_reg2hw_key_share0_mreg_t [7:0] key_share0; // [946:683]
-    aes_reg2hw_key_share1_mreg_t [7:0] key_share1; // [682:419]
-    aes_reg2hw_iv_mreg_t [3:0] iv; // [418:287]
-    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [286:155]
-    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [154:23]
-    aes_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [22:6]
-    aes_reg2hw_trigger_reg_t trigger; // [5:0]
+    aes_reg2hw_alert_test_reg_t alert_test; // [948:945]
+    aes_reg2hw_key_share0_mreg_t [7:0] key_share0; // [944:681]
+    aes_reg2hw_key_share1_mreg_t [7:0] key_share1; // [680:417]
+    aes_reg2hw_iv_mreg_t [3:0] iv; // [416:285]
+    aes_reg2hw_data_in_mreg_t [3:0] data_in; // [284:153]
+    aes_reg2hw_data_out_mreg_t [3:0] data_out; // [152:21]
+    aes_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [20:4]
+    aes_reg2hw_trigger_reg_t trigger; // [3:0]
   } aes_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [935:680]
-    aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [679:424]
-    aes_hw2reg_iv_mreg_t [3:0] iv; // [423:296]
-    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [295:164]
-    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [163:36]
-    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [35:24]
-    aes_hw2reg_trigger_reg_t trigger; // [23:12]
+    aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [931:676]
+    aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [675:420]
+    aes_hw2reg_iv_mreg_t [3:0] iv; // [419:292]
+    aes_hw2reg_data_in_mreg_t [3:0] data_in; // [291:160]
+    aes_hw2reg_data_out_mreg_t [3:0] data_out; // [159:32]
+    aes_hw2reg_ctrl_shadowed_reg_t ctrl_shadowed; // [31:20]
+    aes_hw2reg_trigger_reg_t trigger; // [19:12]
     aes_hw2reg_status_reg_t status; // [11:0]
   } aes_hw2reg_t;
 
