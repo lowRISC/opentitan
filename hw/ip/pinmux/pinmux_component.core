@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:ip:usbdev
       # pinmux_wkup.sv depends on pinmux_reg_pkg.sv
       - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
     files:

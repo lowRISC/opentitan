@@ -13,6 +13,12 @@ package pinmux_reg_pkg;
   parameter int NDioPads = 15;
   parameter int NWkupDetect = 8;
   parameter int WkupCntWidth = 8;
+  parameter int NUsbDevPads = 9;
+  parameter int NDioPadUsbDevStart = 0;
+  parameter int UsbDpSel = 1;
+  parameter int UsbDnSel = 0;
+  parameter int UsbDpPullUpSel = 6;
+  parameter int UsbDnPullUpSel = 5;
 
   // Address width within the block
   parameter int BlockAw = 7;

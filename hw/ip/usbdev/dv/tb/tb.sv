@@ -47,12 +47,16 @@ module tb;
   usbdev dut (
     .clk_i                (clk        ),
     .rst_ni               (rst_n      ),
-
+    .clk_aon_i            (clk        ),
+    .rst_aon_ni           (rst_n      ),
     .clk_usb_48mhz_i      (usb_clk    ),
     .rst_usb_48mhz_ni     (usb_rst_n  ),
 
     .tl_i                 (tl_if.h2d  ),
     .tl_o                 (tl_if.d2h  ),
+
+    // pinmux wakeup interface
+    .usb_state_debug_i    ('0),
 
     // USB Interface
     // TOOD: need to hook up an interface

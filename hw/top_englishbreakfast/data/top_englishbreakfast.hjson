@@ -331,10 +331,10 @@
     },
     { name: "usbdev",
       type: "usbdev",
-      clock_srcs: {clk_i: "io_div4", clk_usb_48mhz_i: "usb"},
+      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},
       clock_group: "peri",
       clock_reset_export: ["ast"],
-      reset_connections: {rst_ni: "sys_io_div4", rst_usb_48mhz_ni: "usb"},
+      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usb"},
       domain: "Aon",
       base_addr: "0x40500000",
     },
@@ -545,6 +545,14 @@
       'pwrmgr.pwr_clk'          : ['clkmgr.pwr'],
       'pwrmgr.pwr_lc'           : ['lc_ctrl.pwr_lc'],
       'rv_core_ibex.crashdump'  : ['rstmgr.cpu_dump'],
+
+      // usbdev connection to pinmux
+      'usbdev.usb_out_of_rst'   : ['pinmux.usb_out_of_rst'],
+      'usbdev.usb_aon_wake_en'  : ['pinmux.usb_aon_wake_en'],
+      'usbdev.usb_aon_wake_ack' : ['pinmux.usb_aon_wake_ack'],
+      'usbdev.usb_suspend'      : ['pinmux.usb_suspend'],
+      'pinmux.usb_state_debug'  : ['usbdev.usb_state_debug'],
+
       // TODO see #4447
       //'edn0.edn' : ['keymgr.edn'],
 
