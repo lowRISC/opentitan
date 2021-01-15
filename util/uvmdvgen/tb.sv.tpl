@@ -49,7 +49,7 @@ module tb;
     .rst_ni               (rst_n    )${"," if is_cip else ""}
 
     .tl_i                 (tl_if.h2d),
-    .tl_o                 (tl_if.d2h)${"," if has_alert or has_edn else ""}
+    .tl_o                 (tl_if.d2h)${"," if has_alerts or has_edn else ""}
   % if has_alerts:
     .alert_rx_i           (alert_rx ),
     .alert_tx_o           (alert_tx )${"," if has_edn else ""}
