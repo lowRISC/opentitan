@@ -25,9 +25,9 @@ if {[info exists ::env(foundry_root)]} {
 }
 
 # Tool setup.
-# TODO: The below path assumes a certain directory structure in the foundry area which does not
-# exist in the open repo.
-source ${foundry_root}/syn/dc/setup.tcl
+# TODO: The below path assumes a certain directory structure in the foundry
+# area which does not exist in the open repo.
+source "${foundry_root}/syn/dc/setup.tcl"
 
 # if in interactive mode, do not exit at the end of the script
 if { [info exists ::env(INTERACTIVE)] } {
@@ -115,7 +115,7 @@ write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
 ###########################
 
 puts "Applying constraints for ${DUT}"
-source ${CONSTRAINT}
+source "${CONSTRAINT}"
 puts "Done applying constraints for ${DUT}"
 
 # If hold time should be fixed
