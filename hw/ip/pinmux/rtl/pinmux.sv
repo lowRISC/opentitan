@@ -15,6 +15,7 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   input                            rst_aon_ni,
   // Wakeup request, running on clk_aon_i
   output logic                     aon_wkup_req_o,
+  output logic                     usb_wkup_req_o,
   // Sleep enable, running on clk_i
   input                            sleep_en_i,
   // IO Power OK signal
@@ -23,6 +24,12 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   input  lc_strap_req_t            lc_pinmux_strap_i,
   output lc_strap_rsp_t            lc_pinmux_strap_o,
   output dft_strap_test_req_t      dft_strap_test_o,
+  // Direct USB connection
+  input                            usb_out_of_rst_i,
+  input                            usb_aon_wake_en_i,
+  input                            usb_aon_wake_ack_i,
+  input                            usb_suspend_i,
+  output usbdev_pkg::awk_state_t   usb_state_debug_o,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t        tl_i,
   output tlul_pkg::tl_d2h_t        tl_o,
@@ -75,6 +82,32 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
     .reg2hw ,
     .hw2reg ,
     .devmode_i(1'b1)
+  );
+
+  ///////////////////////////////////////
+  // USB wake detect module connection //
+  ///////////////////////////////////////
+
+  // Dedicated Peripheral side
+  usbdev_aon_wake u_usbdev_aon_wake (
+    .clk_aon_i,
+    .rst_aon_ni,
+
+    // input signals for resume detection
+    .usb_dp_async_alw_i(dio_to_periph_o[UsbDpSel]),
+    .usb_dn_async_alw_i(dio_to_periph_o[UsbDnSel]),
+    .usb_dppullup_en_alw_i(dio_oe_o[UsbDpPullUpSel]),
+    .usb_dnpullup_en_alw_i(dio_oe_o[UsbDnPullUpSel]),
+
+    // tie this to something from usbdev to indicate its out of reset
+    .usb_out_of_rst_alw_i(usb_out_of_rst_i),
+    .usb_aon_wake_en_upwr_i(usb_aon_wake_en_i),
+    .usb_aon_woken_upwr_i(usb_aon_wake_ack_i),
+    .usb_suspended_upwr_i(usb_suspend_i),
+
+    // wake/powerup request
+    .wake_req_alw_o(usb_wkup_req_o),
+    .state_debug_o(usb_state_debug_o)
   );
 
   /////////////////////

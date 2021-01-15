@@ -153,9 +153,9 @@
       { name: "lc_io_div4",  gen: true,  type: "top", domains: [       "0"], parent: "lc_src",  clk: "io_div4" }
       { name: "sys",         gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "main"    }
       { name: "sys_io_div4", gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "io_div4" }
-      { name: "sys_aon",     gen: true,  type: "top", domains: ["Aon",    ], parent: "sys_src", clk: "aon"     }
+      { name: "sys_aon",     gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "aon"     }
       { name: "spi_device",  gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "io_div2", sw: 1 }
-      { name: "usb",         gen: true,  type: "top", domains: ["Aon",    ], parent: "sys_src", clk: "usb",     sw: 1 }
+      { name: "usb",         gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "usb",     sw: 1 }
     ]
   }
 
@@ -383,11 +383,10 @@
     },
     { name: "usbdev",
       type: "usbdev",
-      clock_srcs: {clk_i: "io_div4", clk_usb_48mhz_i: "usb"},
+      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},
       clock_group: "peri",
       clock_reset_export: ["ast"],
-      reset_connections: {rst_ni: "sys_io_div4", rst_usb_48mhz_ni: "usb"},
-      domain: "Aon",
+      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usb"},
       base_addr: "0x40500000",
     },
     { name: "sram_ctrl_ret",
@@ -656,6 +655,14 @@
       'alert_handler.crashdump' : ['rstmgr.alert_dump'],
       'rv_core_ibex.crashdump'  : ['rstmgr.cpu_dump'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
+
+      // usbdev connection to pinmux
+      'usbdev.usb_out_of_rst'   : ['pinmux.usb_out_of_rst'],
+      'usbdev.usb_aon_wake_en'  : ['pinmux.usb_aon_wake_en'],
+      'usbdev.usb_aon_wake_ack' : ['pinmux.usb_aon_wake_ack'],
+      'usbdev.usb_suspend'      : ['pinmux.usb_suspend'],
+      'pinmux.usb_state_debug'  : ['usbdev.usb_state_debug'],
+
       // TODO see #4447
       //'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn'],
 

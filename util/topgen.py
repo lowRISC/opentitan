@@ -288,6 +288,48 @@ def generate_plic(top, out_path):
         fout.write(genhdr + gencmd + out)
 
 
+# returns the dedicated pin positions of a particular module
+# For example, if a module is connected to 6:1 of the dio connections,
+# [6, 1] will be returned.
+def _calc_dio_pin_pos(top, mname):
+    dios = top["pinmux"]["dio"]
+
+    last_index = dios.index(dios[-1])
+    bit_pos = []
+    first_index = False
+
+    for dio in dios:
+        if dio['module_name'] == mname and not first_index:
+            bit_pos.append(last_index - dios.index(dio))
+            first_index = True
+        elif first_index and dio['module_name'] != mname:
+            bit_pos.append(last_index - dios.index(dio) - 1)
+
+    # The last one, need to insert last element if only the msb
+    # position is found
+    if len(bit_pos) == 1:
+        bit_pos.append(0)
+
+    log.debug("bit pos {}".format(bit_pos))
+    return bit_pos
+
+
+def _find_dio_pin_pos(top, sname):
+    dios = top["pinmux"]["dio"]
+
+    last_index = dios.index(dios[-1])
+    bit_pos = -1
+
+    for dio in dios:
+        if dio['name'] == sname:
+            bit_pos = last_index - dios.index(dio)
+
+    if bit_pos < 0:
+        log.error("Could not find bit position of {} in dios".format(sname))
+
+    return bit_pos
+
+
 def generate_pinmux_and_padctrl(top, out_path):
     topname = top["name"]
     # MIO Pads
@@ -354,6 +396,15 @@ def generate_pinmux_and_padctrl(top, out_path):
                   "without DIOs.")
         return
 
+    # find the start and end pin positions for usbdev
+    usb_pin_pos = _calc_dio_pin_pos(top, "usbdev")
+    usb_start_pos = usb_pin_pos[-1]
+    n_usb_pins = usb_pin_pos[0] - usb_pin_pos[-1] + 1
+    usb_dp_sel = _find_dio_pin_pos(top, "usbdev_dp")
+    usb_dn_sel = _find_dio_pin_pos(top, "usbdev_dn")
+    usb_dp_pull_sel = _find_dio_pin_pos(top, "usbdev_dp_pullup")
+    usb_dn_pull_sel = _find_dio_pin_pos(top, "usbdev_dn_pullup")
+
     log.info("Generating pinmux with following info from hjson:")
     log.info("num_mio_inputs:  %d" % num_mio_inputs)
     log.info("num_mio_outputs: %d" % num_mio_outputs)
@@ -369,6 +420,8 @@ def generate_pinmux_and_padctrl(top, out_path):
     log.info("n_dio_periph_in:  %d" % n_dio_periph_in)
     log.info("n_dio_periph_out: %d" % n_dio_periph_out)
     log.info("n_dio_pads:       %d" % n_dio_pads)
+    log.info("usb_start_pos:    %d" % usb_start_pos)
+    log.info("n_usb_pins:       %d" % n_usb_pins)
 
     # Target path
     #   rtl: pinmux_reg_pkg.sv & pinmux_reg_top.sv
@@ -408,7 +461,14 @@ def generate_pinmux_and_padctrl(top, out_path):
                 n_dio_periph_out=n_dio_pads,
                 n_dio_pads=n_dio_pads,
                 n_wkup_detect=num_wkup_detect,
-                wkup_cnt_width=wkup_cnt_width)
+                wkup_cnt_width=wkup_cnt_width,
+                usb_start_pos=usb_start_pos,
+                n_usb_pins=n_usb_pins,
+                usb_dp_sel=usb_dp_sel,
+                usb_dn_sel=usb_dn_sel,
+                usb_dp_pull_sel=usb_dp_pull_sel,
+                usb_dn_pull_sel=usb_dn_pull_sel
+            )
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
         log.info("PINMUX HJSON: %s" % out)

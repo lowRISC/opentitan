@@ -64,6 +64,7 @@ package rstmgr_pkg;
   typedef struct packed {
     logic [PowerDomains-1:0] rst_ast_sensor_ctrl_sys_io_div4_n;
     logic [PowerDomains-1:0] rst_ast_usbdev_sys_io_div4_n;
+    logic [PowerDomains-1:0] rst_ast_usbdev_sys_aon_n;
     logic [PowerDomains-1:0] rst_ast_usbdev_usb_n;
   } rstmgr_ast_out_t;
 
