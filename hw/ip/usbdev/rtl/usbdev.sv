@@ -43,6 +43,12 @@ module usbdev (
   output logic       cio_tx_mode_se_o,
   output logic       cio_tx_mode_se_en_o,
 
+  // Direct pinmux aon detect connections
+  output logic       usb_out_of_rst_o,
+  output logic       usb_aon_wake_en_o,
+  output logic       usb_aon_wake_ack_o,
+  output logic       usb_suspend_o,
+
   // SOF reference for clock calibration
   output logic       usb_ref_val_o,
   output logic       usb_ref_pulse_o,
@@ -1044,5 +1050,21 @@ module usbdev (
   end
 
   assign usb_ref_val_o = usb_ref_val_q;
+
+  /////////////////////////////////////////
+  // USB aon detector signaling          //
+  /////////////////////////////////////////
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      usb_out_of_rst_o <= 1'b0;
+    end else begin
+      usb_out_of_rst_o <= 1'b1;
+    end
+  end
+
+  assign usb_aon_wake_en_o = reg2hw.wake_config.wake_en.q;
+  assign usb_aon_wake_ack_o = reg2hw.wake_config.wake_ack.q;
+  assign usb_suspend_o = usb_event_link_suspend;
 
 endmodule

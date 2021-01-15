@@ -18,6 +18,7 @@ filesets:
       - rtl/usbdev_flop_2syncpulse.sv
       - rtl/usbdev_linkstate.sv
       - rtl/usbdev_iomux.sv
+      - rtl/usbdev_aon_wake.sv
       - rtl/usbdev.sv
     file_type: systemVerilogSource
 
@@ -82,5 +83,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
-

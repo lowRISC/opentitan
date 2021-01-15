@@ -323,6 +323,15 @@ package usbdev_reg_pkg;
     } tx_osc_test_mode;
   } usbdev_reg2hw_phy_config_reg_t;
 
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } wake_en;
+    struct packed {
+      logic        q;
+    } wake_ack;
+  } usbdev_reg2hw_wake_config_reg_t;
+
 
   typedef struct packed {
     struct packed {
@@ -503,20 +512,21 @@ package usbdev_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    usbdev_reg2hw_intr_state_reg_t intr_state; // [360:344]
-    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [343:327]
-    usbdev_reg2hw_intr_test_reg_t intr_test; // [326:293]
-    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [292:285]
-    usbdev_reg2hw_avbuffer_reg_t avbuffer; // [284:279]
-    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [278:258]
-    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [257:246]
-    usbdev_reg2hw_rxenable_out_mreg_t [11:0] rxenable_out; // [245:234]
-    usbdev_reg2hw_stall_mreg_t [11:0] stall; // [233:222]
-    usbdev_reg2hw_configin_mreg_t [11:0] configin; // [221:54]
-    usbdev_reg2hw_iso_mreg_t [11:0] iso; // [53:42]
-    usbdev_reg2hw_data_toggle_clear_mreg_t [11:0] data_toggle_clear; // [41:18]
-    usbdev_reg2hw_phy_pins_drive_reg_t phy_pins_drive; // [17:8]
-    usbdev_reg2hw_phy_config_reg_t phy_config; // [7:0]
+    usbdev_reg2hw_intr_state_reg_t intr_state; // [362:346]
+    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [345:329]
+    usbdev_reg2hw_intr_test_reg_t intr_test; // [328:295]
+    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [294:287]
+    usbdev_reg2hw_avbuffer_reg_t avbuffer; // [286:281]
+    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [280:260]
+    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [259:248]
+    usbdev_reg2hw_rxenable_out_mreg_t [11:0] rxenable_out; // [247:236]
+    usbdev_reg2hw_stall_mreg_t [11:0] stall; // [235:224]
+    usbdev_reg2hw_configin_mreg_t [11:0] configin; // [223:56]
+    usbdev_reg2hw_iso_mreg_t [11:0] iso; // [55:44]
+    usbdev_reg2hw_data_toggle_clear_mreg_t [11:0] data_toggle_clear; // [43:20]
+    usbdev_reg2hw_phy_pins_drive_reg_t phy_pins_drive; // [19:10]
+    usbdev_reg2hw_phy_config_reg_t phy_config; // [9:2]
+    usbdev_reg2hw_wake_config_reg_t wake_config; // [1:0]
   } usbdev_reg2hw_t;
 
   ///////////////////////////////////////
@@ -596,11 +606,12 @@ package usbdev_reg_pkg;
     USBDEV_DATA_TOGGLE_CLEAR,
     USBDEV_PHY_PINS_SENSE,
     USBDEV_PHY_PINS_DRIVE,
-    USBDEV_PHY_CONFIG
+    USBDEV_PHY_CONFIG,
+    USBDEV_WAKE_CONFIG
   } usbdev_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] USBDEV_PERMIT [28] = '{
+  parameter logic [3:0] USBDEV_PERMIT [29] = '{
     4'b 0111, // index[ 0] USBDEV_INTR_STATE
     4'b 0111, // index[ 1] USBDEV_INTR_ENABLE
     4'b 0111, // index[ 2] USBDEV_INTR_TEST
@@ -628,7 +639,7 @@ package usbdev_reg_pkg;
     4'b 0011, // index[24] USBDEV_DATA_TOGGLE_CLEAR
     4'b 0111, // index[25] USBDEV_PHY_PINS_SENSE
     4'b 0111, // index[26] USBDEV_PHY_PINS_DRIVE
-    4'b 0001  // index[27] USBDEV_PHY_CONFIG
+    4'b 0001, // index[27] USBDEV_PHY_CONFIG
+    4'b 0001  // index[28] USBDEV_WAKE_CONFIG
   };
 endpackage
-

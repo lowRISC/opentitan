@@ -37,7 +37,35 @@
       package: "",
       struct:  "logic",
       width:   "1"
-    }
+    },
+    { name:    "usb_out_of_rst",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    },
+    { name:    "usb_aon_wake_en",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    },
+    { name:    "usb_aon_wake_ack",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    },
+    { name:    "usb_suspend",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    },
   ]
   param_list: [
     { name:    "NEndpoints",
@@ -709,6 +737,36 @@
         }
       ]
     }
+
+    { name: "wake_config",
+      desc: "USB wake configuration for suspend / resume",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          resval: "0",
+          name: "wake_en",
+          desc: '''
+                Enable the usb resume wake function.  When this is set, a resume indication from
+                a usb host can used to drive a wake from sleep event.
+                '''
+        }
+        {
+          bits: "1",
+          resval: "0",
+          name: "wake_ack",
+          desc: '''
+                Wake acknowledgement. Once the usb device resumes from suspend, this acknowledgement is used
+                to transition the module back to normal operaiton.
+
+                Note wake acknowledgement is only necessary if wake_en was '1' when the usb device was suspended.
+                However, setting/clearing this bit during other conditions has no side effects.
+                '''
+        },
+      ]
+    }
+
 
     { window: {
         name: "buffer",
