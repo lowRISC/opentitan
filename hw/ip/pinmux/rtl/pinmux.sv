@@ -23,6 +23,11 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   input  lc_strap_req_t            lc_pinmux_strap_i,
   output lc_strap_rsp_t            lc_pinmux_strap_o,
   output dft_strap_test_req_t      dft_strap_test_o,
+  // Direct USB connection
+  input                            usb_out_of_rst_i,
+  input                            usb_aon_wake_en_i,
+  input                            usb_aon_wake_ack_i,
+  input                            usb_suspend_i,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t        tl_i,
   output tlul_pkg::tl_d2h_t        tl_o,
@@ -76,6 +81,61 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
     .hw2reg ,
     .devmode_i(1'b1)
   );
+
+  ///////////////////////////////////////
+  // USB wake detect module connection //
+  ///////////////////////////////////////
+
+  // Dedicated Peripheral side
+  localparam int NDioPadUsbDevEnd = NDioPadUsbDevStart + NUsbDevPads - 1;
+
+  logic [NDioPads-1:0] periph_to_dio;
+  logic [NDioPads-1:0] periph_to_dio_oe;
+
+  //logic [NUsbDevPads-1:0] usbdev_o_aon_wake;
+  //logic [NUsbDevPads-1:0] usbdev_oe_aon_wake;
+  //logic [NUsbDevPads-1:0] usbdev_i_aon_wake;
+
+  usbdev_aon_wake #(
+    .NUsbDevPads(NUsbDevPads)
+  ) u_usbdev_aon_wake (
+    .clk_aon_i,
+    .rst_aon_ni,
+
+    // input signals for resume detection
+    .usb_dp_async_alw_i(dio_to_periph_o[UsbDpSel]),
+    .usb_dn_async_alw_i(dio_to_periph_o[UsbDnSel]),
+    .usb_dppullup_en_alw_i(dio_oe_o[UsbDpPullUpSel]),
+    .usb_dnpullup_en_alw_i(dio_oe_o[UsbDnPullUpSel]),
+
+    // tie this to something from usbdev to indicate its out of reset
+    .usb_out_of_rst_alw_i(usb_out_of_rst_i),
+    .usb_aon_wake_en_upwr_i(usb_aon_wake_en_i),
+    .usb_aon_woken_upwr_i(usb_aon_wake_ack_i),
+    .usb_suspended_upwr_i(usb_suspend_i),
+
+    // these should be all the usbdev IO lines
+    //.usb_o_upwr_i(periph_to_dio_i[NDioPadUsbDevEnd:NDioPadUsbDevStart]),
+    //.usb_oe_upwr_i(periph_to_dio_oe_i[NDioPadUsbDevEnd:NDioPadUsbDevStart]),
+
+    // Pass through enables to the pins
+    //.usb_o_alw_o(usbdev_o_aon_wake),
+    //.usb_oe_alw_o(usbdev_oe_aon_wake),
+
+    // wake/powerup request
+    .wake_req_alw_o()
+  );
+
+  always_comb begin
+    periph_to_dio = periph_to_dio_i;
+    periph_to_dio_oe = periph_to_dio_oe_i;
+
+    //if (NUsbDevPads > 0) begin : gen_usb_con
+    //  periph_to_dio[NDioPadUsbDevEnd:NDioPadUsbDevStart] = usbdev_o_aon_wake;
+    //  periph_to_dio_oe[NDioPadUsbDevEnd:NDioPadUsbDevStart] = usbdev_oe_aon_wake;
+    //end
+  end
+
 
   /////////////////////
   // Sleep registers //
@@ -200,11 +260,11 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_out
     // Since this is a DIO, this can be determined at design time
     if (DioPeriphHasSleepMode[k]) begin : gen_sleep
-      assign dio_out_o[k] = (sleep_en_q) ? dio_out_sleep_q[k] : periph_to_dio_i[k];
-      assign dio_oe_o[k]  = (sleep_en_q) ? dio_oe_sleep_q[k]  : periph_to_dio_oe_i[k];
+      assign dio_out_o[k] = (sleep_en_q) ? dio_out_sleep_q[k] : periph_to_dio[k];
+      assign dio_oe_o[k]  = (sleep_en_q) ? dio_oe_sleep_q[k]  : periph_to_dio_oe[k];
     end else begin : gen_nosleep
-      assign dio_out_o[k] = periph_to_dio_i[k];
-      assign dio_oe_o[k]  = periph_to_dio_oe_i[k];
+      assign dio_out_o[k] = periph_to_dio[k];
+      assign dio_oe_o[k]  = periph_to_dio_oe[k];
     end
   end
 

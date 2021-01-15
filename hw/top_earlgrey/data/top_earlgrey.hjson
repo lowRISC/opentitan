@@ -611,6 +611,13 @@
       'alert_handler.crashdump' : ['rstmgr.alert_dump'],
       'rv_core_ibex.crashdump'  : ['rstmgr.cpu_dump'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
+
+      // usbdev connection to pinmux
+      'usbdev.usb_out_of_rst'   : ['pinmux.usb_out_of_rst'],
+      'usbdev.usb_aon_wake_en'  : ['pinmux.usb_aon_wake_en'],
+      'usbdev.usb_aon_wake_ack' : ['pinmux.usb_aon_wake_ack'],
+      'usbdev.usb_suspend'      : ['pinmux.usb_suspend'],
+
       // TODO see #4447
       //'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn'],
 
