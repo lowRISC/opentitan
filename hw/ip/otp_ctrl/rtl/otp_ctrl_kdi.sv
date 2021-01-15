@@ -371,6 +371,7 @@ module otp_ctrl_kdi
       ///////////////////////////////////////////////////////////////////
       // Fetch random data to ingest for key derivation.
       FetchEntropySt: begin
+        scrmbl_mtx_req_o = 1'b1;
         edn_req_o = 1'b1;
         if (edn_ack_i) begin
           nonce_reg_en = 1'b1;
