@@ -572,7 +572,7 @@ module aes_core
   // Input data register clear
   always_comb begin : data_in_reg_clear
     for (int i=0; i<4; i++) begin
-      hw2reg.data_in[i].d  = '0;
+      hw2reg.data_in[i].d  = prd_clearing_128[i*32 +: 32];
       hw2reg.data_in[i].de = data_in_we;
     end
   end
