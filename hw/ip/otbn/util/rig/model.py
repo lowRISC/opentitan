@@ -395,7 +395,6 @@ class CallStack:
 
     def peek(self) -> Optional[int]:
         assert 0 < self._min_depth
-        ret = self._elts_at_top[-1] if self._elts_at_top else None
         return self._elts_at_top[-1] if self._elts_at_top else None
 
     def write(self, value: Optional[int], update: bool) -> None:
@@ -418,10 +417,6 @@ class CallStack:
             self._min_depth += 1
             self._max_depth += 1
             self._elts_at_top.append(value)
-
-    def XXXshow(self) -> str:
-        return ('CallStack({}, {}, {})'
-                .format(self._min_depth, self._max_depth, self._elts_at_top))
 
 
 class Model:
