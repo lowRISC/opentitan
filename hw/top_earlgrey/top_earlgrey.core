@@ -81,13 +81,6 @@ parameters:
   SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
-  # For value definition, please see ip/prim/rtl/prim_pkg.sv
-  PRIM_DEFAULT_IMPL:
-    datatype: str
-    paramtype: vlogdefine
-    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
-    default: prim_pkg::ImplGeneric
-
 
 targets:
   default: &default_target
@@ -96,16 +89,12 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl_generic
-    parameters:
-      - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
     toplevel: top_earlgrey
 
   sim:
     default_tool: icarus
     filesets:
       - files_rtl_generic
-    parameters:
-      - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
     toplevel: top_earlgrey
 
   lint:
