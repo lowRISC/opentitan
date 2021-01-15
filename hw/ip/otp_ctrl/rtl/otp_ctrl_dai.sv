@@ -665,27 +665,26 @@ module otp_ctrl_dai
   /////////////////////////////////////
 
   // Depending on whether this is a 32bit or 64bit partition, we cut off the lower address bits.
+  // Access sizes are either 64bit or 32bit, depending on what region the access goes to.
   logic [OtpByteAddrWidth-1:0] addr_base;
-  assign addr_base = (base_sel_q == PartOffset)  ? PartInfo[part_idx].offset :
-                     (PartInfo[part_idx].secret) ? {dai_addr_i[OtpByteAddrWidth-1:3], 3'h0} :
-                                                   {dai_addr_i[OtpByteAddrWidth-1:2], 2'h0};
-
-  // Access sizes are either 64bit or 32bit, depending on what partition and region the
-  // access goes to.
   always_comb begin : p_size_sel
     otp_size_o = OtpSizeWidth'(unsigned'(32 / OtpWidth - 1));
+    addr_base = {dai_addr_i[OtpByteAddrWidth-1:2], 2'h0};
 
     // 64bit transaction for scrambled partitions.
     if (PartInfo[part_idx].secret) begin
       otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1));
+      addr_base = {dai_addr_i[OtpByteAddrWidth-1:3], 3'h0};
     // 64bit transaction if computing a digest.
     end else if (PartInfo[part_idx].hw_digest && (base_sel_q == PartOffset)) begin
         otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1));
+        addr_base = PartInfo[part_idx].offset;
     // 64bit transaction if this partition does not have a HW digest, and the DAI address points to
     // the digest offset.
     end else if (!PartInfo[part_idx].hw_digest && (base_sel_q == DaiOffset) &&
-        ({dai_addr_i[OtpByteAddrWidth-1:2], 1'b0} == digest_addr_lut[part_idx])) begin
+        ({dai_addr_i[OtpByteAddrWidth-1:3], 2'b0} == digest_addr_lut[part_idx])) begin
       otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1));
+      addr_base = {dai_addr_i[OtpByteAddrWidth-1:3], 3'h0};
     end
   end
 
