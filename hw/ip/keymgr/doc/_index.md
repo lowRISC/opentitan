@@ -188,7 +188,7 @@ There are two categories of errors
 
 *  Software operation errors - These errors could have been caused by user errors and is a sign that software should examine its usage of key manager.
    *  Invalid operation - An invalid operation (for example `generate` while in Reset) was invoked.
-   *  Invalid input - Invalid software input was supplied (for example a greater key version than allowed in {{< regref MAX_OWNER_KEY_VER >}}.
+   *  Invalid input - Invalid software and hardware inputs were supplied (for example a greater key version than allowed in {{< regref MAX_OWNER_KEY_VER >}}, or a root key or seed that has never been initialized.
 
 Two separate alerts are generated, one corresponding to each category above.
 
@@ -237,7 +237,7 @@ In addition to alerts and interrupts, key manager may also update the working st
 See the tables below for an enumeration.
 
 | Current State    | Invalid Command | Invalid Output | Invalid Input | Invalid Operation   |
-| -------------    | ----------------| -----------------------------------------------------|
+| -------------    | ----------------| ---------------|---------------|---------------------|
 | Reset            | Not Possible    | Not Possible   | Not possible  | Not updated         |
 | Initialized      | Updated         | Updated        | Not updated   | Not updated         |
 | CreatorRootKey   | Updated         | Updated        | Not updated   | Not possible        |
