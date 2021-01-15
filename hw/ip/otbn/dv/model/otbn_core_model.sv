@@ -51,15 +51,16 @@ module otbn_core_model
   import "DPI-C" function chandle otbn_model_init();
   import "DPI-C" function void otbn_model_destroy(chandle handle);
   import "DPI-C" context function
-    int unsigned otbn_model_step(chandle      model,
-                                 string       imem_scope,
-                                 int unsigned imem_size,
-                                 string       dmem_scope,
-                                 int unsigned dmem_size,
-                                 string       design_scope,
-                                 logic        start_i,
-                                 int unsigned start_addr,
-                                 int unsigned status);
+    int unsigned otbn_model_step(chandle           model,
+                                 string            imem_scope,
+                                 int unsigned      imem_size,
+                                 string            dmem_scope,
+                                 int unsigned      dmem_size,
+                                 string            design_scope,
+                                 logic             start_i,
+                                 int unsigned      start_addr,
+                                 int unsigned      status,
+                                 inout bit [31:0]  err_code);
 
   localparam int ImemSizeWords = ImemSizeByte / 4;
   localparam int DmemSizeWords = DmemSizeByte / (WLEN / 8);
@@ -107,19 +108,16 @@ module otbn_core_model
   //   [1]     check_due:    The ISS just finished but still needs to check results
   //   [2]     failed_step:  Something went wrong when trying to start or step the ISS.
   //   [3]     failed_cmp:   The consistency check at the end of run failed.
-  //   [31:16] raw_err_code: The code to expose as the ERR_CODE register
-  //
 
   bit failed_cmp, failed_step, check_due, running;
-  bit [15:0] raw_err_code;
   assign {failed_cmp, failed_step, check_due, running} = status[3:0];
-  assign raw_err_code = status[31:16];
-  assign err_code_o = err_code_e'(raw_err_code);
 
+  bit [31:0] raw_err_code_d, raw_err_code_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni || !enable_i) begin
       // Clear status (stop running, and forget any errors)
       status <= 0;
+      raw_err_code_q <= 0;
     end else begin
       if (start_i | running | check_due) begin
         status <= otbn_model_step(model_handle,
@@ -127,12 +125,15 @@ module otbn_core_model
                                   DmemScope, DmemSizeWords,
                                   DesignScope,
                                   start_i, start_addr_32,
-                                  status);
+                                  status, raw_err_code_d);
+        raw_err_code_q <= raw_err_code_d;
       end else begin
         // If we're not running and we're not being told to start, there's nothing to do.
       end
     end
   end
+
+  assign err_code_o = err_code_e'(raw_err_code_q);
 
   // Track negedges of running_q and expose that as a "done" output.
   bit running_r = 1'b0;
