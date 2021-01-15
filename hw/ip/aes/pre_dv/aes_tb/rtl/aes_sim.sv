@@ -47,23 +47,36 @@ module aes_sim import aes_pkg::*;
   logic        stall /*verilator public_flat*/;
   logic        step  /*verilator public_flat*/;
 
-  assign start = ({u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.aes_cipher_ctrl_cs} == 3'b000) && // IDLE -> INIT
-                 ({u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.aes_cipher_ctrl_ns} == 3'b001);
-  assign init  = ({u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.aes_cipher_ctrl_cs} == 3'b001);   // INIT
-  assign done  = ({u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.aes_cipher_ctrl_cs} == 3'b011) && // FINISH -> IDLE
-                 ({u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.aes_cipher_ctrl_ns} == 3'b000);
+  // From aes_cipher_control.sv:
+  typedef enum logic [5:0] {
+    IDLE     = 6'b111100,
+    INIT     = 6'b101001,
+    ROUND    = 6'b010000,
+    FINISH   = 6'b100010,
+    CLEAR_S  = 6'b011011,
+    CLEAR_KD = 6'b110111,
+    ERROR    = 6'b001110
+  } aes_cipher_ctrl_e;
+  aes_cipher_ctrl_e aes_cipher_ctrl_ns, aes_cipher_ctrl_cs;
+  //
+
+  assign aes_cipher_ctrl_cs = u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.aes_cipher_ctrl_cs;
+  assign aes_cipher_ctrl_ns = u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.aes_cipher_ctrl_ns;
+
+  assign start = (aes_cipher_ctrl_cs == IDLE) && (aes_cipher_ctrl_ns == INIT);   // IDLE -> INIT
+  assign init  = (aes_cipher_ctrl_cs == INIT);                                   // INIT
+  assign done  = (aes_cipher_ctrl_cs == FINISH) && (aes_cipher_ctrl_ns == IDLE); // FINISH -> IDLE
   assign busy  = u_aes.u_aes_core.u_aes_control.cipher_crypt_i |
                  u_aes.u_aes_core.u_aes_control.cipher_crypt_o |
                  u_aes.u_aes_core.u_aes_control.cipher_dec_key_gen_i |
                  u_aes.u_aes_core.u_aes_control.cipher_dec_key_gen_o;
   assign stall = u_aes.u_aes_core.u_aes_control.stall_o;
 
-  assign step  = (({u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.aes_cipher_ctrl_cs} == 3'b001) && // INIT -> ROUND
-                  ({u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.aes_cipher_ctrl_ns} == 3'b010)) ||
-                 (({u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.aes_cipher_ctrl_cs} == 3'b010) && // ROUND + updating state or full key
+  assign step  = ((aes_cipher_ctrl_cs == INIT) && (aes_cipher_ctrl_ns == ROUND)) || // INIT -> ROUND
+                 ((aes_cipher_ctrl_cs == ROUND) && // ROUND + updating state or full key
                    (u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.key_full_we_o ||
                     u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.state_we_o)) ||
-                 (({u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.aes_cipher_ctrl_cs} == 3'b011) && // FINISH + performing handshake
+                 ((aes_cipher_ctrl_cs == FINISH) && // FINISH + performing handshake
                     u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.out_valid_o &&
                     u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.out_ready_i);
 
