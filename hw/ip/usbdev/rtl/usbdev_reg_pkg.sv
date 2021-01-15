@@ -507,6 +507,11 @@ package usbdev_reg_pkg;
     } pwr_sense;
   } usbdev_hw2reg_phy_pins_sense_reg_t;
 
+  typedef struct packed {
+    logic [2:0]  d;
+    logic        de;
+  } usbdev_hw2reg_wake_debug_reg_t;
+
 
   ///////////////////////////////////////
   // Register to internal design logic //
@@ -533,14 +538,15 @@ package usbdev_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    usbdev_hw2reg_intr_state_reg_t intr_state; // [188:155]
-    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [154:147]
-    usbdev_hw2reg_usbstat_reg_t usbstat; // [146:123]
-    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [122:106]
-    usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [105:82]
-    usbdev_hw2reg_stall_mreg_t [11:0] stall; // [81:58]
-    usbdev_hw2reg_configin_mreg_t [11:0] configin; // [57:10]
-    usbdev_hw2reg_phy_pins_sense_reg_t phy_pins_sense; // [9:0]
+    usbdev_hw2reg_intr_state_reg_t intr_state; // [192:159]
+    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [158:151]
+    usbdev_hw2reg_usbstat_reg_t usbstat; // [150:127]
+    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [126:110]
+    usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [109:86]
+    usbdev_hw2reg_stall_mreg_t [11:0] stall; // [85:62]
+    usbdev_hw2reg_configin_mreg_t [11:0] configin; // [61:14]
+    usbdev_hw2reg_phy_pins_sense_reg_t phy_pins_sense; // [13:4]
+    usbdev_hw2reg_wake_debug_reg_t wake_debug; // [3:0]
   } usbdev_hw2reg_t;
 
   // Register Address
@@ -572,6 +578,8 @@ package usbdev_reg_pkg;
   parameter logic [BlockAw-1:0] USBDEV_PHY_PINS_SENSE_OFFSET = 12'h 64;
   parameter logic [BlockAw-1:0] USBDEV_PHY_PINS_DRIVE_OFFSET = 12'h 68;
   parameter logic [BlockAw-1:0] USBDEV_PHY_CONFIG_OFFSET = 12'h 6c;
+  parameter logic [BlockAw-1:0] USBDEV_WAKE_CONFIG_OFFSET = 12'h 70;
+  parameter logic [BlockAw-1:0] USBDEV_WAKE_DEBUG_OFFSET = 12'h 74;
 
   // Window parameter
   parameter logic [BlockAw-1:0] USBDEV_BUFFER_OFFSET = 12'h 800;
@@ -607,11 +615,12 @@ package usbdev_reg_pkg;
     USBDEV_PHY_PINS_SENSE,
     USBDEV_PHY_PINS_DRIVE,
     USBDEV_PHY_CONFIG,
-    USBDEV_WAKE_CONFIG
+    USBDEV_WAKE_CONFIG,
+    USBDEV_WAKE_DEBUG
   } usbdev_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] USBDEV_PERMIT [29] = '{
+  parameter logic [3:0] USBDEV_PERMIT [30] = '{
     4'b 0111, // index[ 0] USBDEV_INTR_STATE
     4'b 0111, // index[ 1] USBDEV_INTR_ENABLE
     4'b 0111, // index[ 2] USBDEV_INTR_TEST
@@ -640,6 +649,8 @@ package usbdev_reg_pkg;
     4'b 0111, // index[25] USBDEV_PHY_PINS_SENSE
     4'b 0111, // index[26] USBDEV_PHY_PINS_DRIVE
     4'b 0001, // index[27] USBDEV_PHY_CONFIG
-    4'b 0001  // index[28] USBDEV_WAKE_CONFIG
+    4'b 0001, // index[28] USBDEV_WAKE_CONFIG
+    4'b 0001  // index[29] USBDEV_WAKE_DEBUG
   };
 endpackage
+

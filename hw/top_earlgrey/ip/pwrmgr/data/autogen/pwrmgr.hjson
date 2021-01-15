@@ -83,7 +83,7 @@
     },
 
     { struct:  "logic",
-      width:   1,
+      width:   2,
       type:    "uni",
       name:    "wakeups",
       act:     "rcv",
@@ -104,7 +104,7 @@
     { name: "NumWkups",
       desc: "Number of wakeups",
       type: "int",
-      default: "1",
+      default: "2",
       local: "true"
     },
     { name: "NumRstReqs",
@@ -481,11 +481,11 @@
       hwqe: "true",
       resval: "0"
       fields: [
-        { bits: "0:0",
+        { bits: "1:0",
           name: "REASONS",
           desc: "Various peripheral wake reasons"
         },
-        { bits: "1",
+        { bits: "2",
           name: "FALL_THROUGH",
           desc: '''
             The fall through wakeup reason indicates that despite setting a WFI and providing a low power
@@ -494,7 +494,7 @@
             The power manager detects this condition, halts low power entry and reports as a wakeup reason
           ''',
         },
-        { bits: "2",
+        { bits: "3",
           name: "ABORT",
           desc: '''
             The abort wakeup reason indicates that despite setting a WFI and providing a low power

@@ -139,6 +139,7 @@
         clocks:
         {
           clk_io_div4_peri: io_div4
+          clk_aon_peri: aon
           clk_usb_peri: usb
         }
       }
@@ -319,6 +320,7 @@
         domains:
         [
           Aon
+          "0"
         ]
         parent: sys_src
         clk: aon
@@ -2258,14 +2260,14 @@
         }
         {
           struct: logic
-          width: 1
+          width: 2
           type: uni
           name: wakeups
           act: rcv
           package: ""
           inst_name: pwrmgr
           default: ""
-          top_type: broadcast
+          top_type: one-to-N
           top_signame: pwrmgr_wakeups
           index: -1
         }
@@ -2659,6 +2661,10 @@
           name: aon_wkup_req
           width: "1"
         }
+        {
+          name: usb_wkup_req
+          width: "1"
+        }
       ]
       reset_request_list: []
       scan: "false"
@@ -2715,6 +2721,79 @@
           inst_name: pinmux
           width: 1
           top_signame: pwrmgr_wakeups
+          index: 0
+        }
+        {
+          struct: logic
+          type: uni
+          name: usb_wkup_req
+          act: req
+          package: ""
+          default: 1'b0
+          inst_name: pinmux
+          width: 1
+          top_signame: pwrmgr_wakeups
+          index: 1
+        }
+        {
+          name: usb_out_of_rst
+          type: uni
+          act: rcv
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: pinmux
+          default: ""
+          top_signame: usbdev_usb_out_of_rst
+          index: -1
+        }
+        {
+          name: usb_aon_wake_en
+          type: uni
+          act: rcv
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: pinmux
+          default: ""
+          top_signame: usbdev_usb_aon_wake_en
+          index: -1
+        }
+        {
+          name: usb_aon_wake_ack
+          type: uni
+          act: rcv
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: pinmux
+          default: ""
+          top_signame: usbdev_usb_aon_wake_ack
+          index: -1
+        }
+        {
+          name: usb_suspend
+          type: uni
+          act: rcv
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: pinmux
+          default: ""
+          top_signame: usbdev_usb_suspend
+          index: -1
+        }
+        {
+          name: usb_state_debug
+          type: uni
+          act: req
+          package: usbdev_pkg
+          struct: awk_state
+          inst_name: pinmux
+          width: 1
+          default: ""
+          top_type: broadcast
+          top_signame: pinmux_usb_state_debug
           index: -1
         }
         {
@@ -2787,6 +2866,7 @@
       clock_srcs:
       {
         clk_i: io_div4
+        clk_aon_i: aon
         clk_usb_48mhz_i: usb
       }
       clock_group: peri
@@ -2796,16 +2876,18 @@
       ]
       reset_connections:
       {
-        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
-        rst_usb_48mhz_ni: rstmgr_resets.rst_usb_n[rstmgr_pkg::DomainAonSel]
+        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
+        rst_aon_ni: rstmgr_resets.rst_sys_aon_n[rstmgr_pkg::Domain0Sel]
+        rst_usb_48mhz_ni: rstmgr_resets.rst_usb_n[rstmgr_pkg::Domain0Sel]
       }
-      domain: Aon
       base_addr: 0x40500000
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_peri
+        clk_aon_i: clkmgr_clocks.clk_aon_peri
         clk_usb_48mhz_i: clkmgr_clocks.clk_usb_peri
       }
+      domain: "0"
       size: 0x1000
       bus_device: tlul
       bus_host: none
@@ -3102,6 +3184,70 @@
           default: ""
           external: true
           top_signame: usbdev_usb_ref_pulse
+          index: -1
+        }
+        {
+          name: usb_out_of_rst
+          type: uni
+          act: req
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: usbdev
+          default: ""
+          top_type: broadcast
+          top_signame: usbdev_usb_out_of_rst
+          index: -1
+        }
+        {
+          name: usb_aon_wake_en
+          type: uni
+          act: req
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: usbdev
+          default: ""
+          top_type: broadcast
+          top_signame: usbdev_usb_aon_wake_en
+          index: -1
+        }
+        {
+          name: usb_aon_wake_ack
+          type: uni
+          act: req
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: usbdev
+          default: ""
+          top_type: broadcast
+          top_signame: usbdev_usb_aon_wake_ack
+          index: -1
+        }
+        {
+          name: usb_suspend
+          type: uni
+          act: req
+          package: ""
+          struct: logic
+          width: 1
+          inst_name: usbdev
+          default: ""
+          top_type: broadcast
+          top_signame: usbdev_usb_suspend
+          index: -1
+        }
+        {
+          name: usb_state_debug
+          type: uni
+          act: rcv
+          package: usbdev_pkg
+          struct: awk_state
+          inst_name: usbdev
+          width: 1
+          default: ""
+          top_signame: pinmux_usb_state_debug
           index: -1
         }
         {
@@ -5583,6 +5729,26 @@
       [
         rstmgr.cpu_dump
       ]
+      usbdev.usb_out_of_rst:
+      [
+        pinmux.usb_out_of_rst
+      ]
+      usbdev.usb_aon_wake_en:
+      [
+        pinmux.usb_aon_wake_en
+      ]
+      usbdev.usb_aon_wake_ack:
+      [
+        pinmux.usb_aon_wake_ack
+      ]
+      usbdev.usb_suspend:
+      [
+        pinmux.usb_suspend
+      ]
+      pinmux.usb_state_debug:
+      [
+        usbdev.usb_state_debug
+      ]
       otp_ctrl.otp_keymgr_key:
       [
         keymgr.otp_key
@@ -5673,6 +5839,7 @@
       pwrmgr.wakeups:
       [
         pinmux.aon_wkup_req
+        pinmux.usb_wkup_req
       ]
       pwrmgr.rstreqs:
       [
@@ -8613,6 +8780,7 @@
       usbdev:
       [
         io_div4_peri
+        aon_peri
         usb_peri
       ]
     }
@@ -8621,6 +8789,11 @@
   [
     {
       name: aon_wkup_req
+      width: "1"
+      module: pinmux
+    }
+    {
+      name: usb_wkup_req
       width: "1"
       module: pinmux
     }
@@ -8643,6 +8816,7 @@
       usbdev:
       [
         sys_io_div4
+        sys_aon
         usb
       ]
     }
@@ -9541,14 +9715,14 @@
       }
       {
         struct: logic
-        width: 1
+        width: 2
         type: uni
         name: wakeups
         act: rcv
         package: ""
         inst_name: pwrmgr
         default: ""
-        top_type: broadcast
+        top_type: one-to-N
         top_signame: pwrmgr_wakeups
         index: -1
       }
@@ -9860,6 +10034,79 @@
         inst_name: pinmux
         width: 1
         top_signame: pwrmgr_wakeups
+        index: 0
+      }
+      {
+        struct: logic
+        type: uni
+        name: usb_wkup_req
+        act: req
+        package: ""
+        default: 1'b0
+        inst_name: pinmux
+        width: 1
+        top_signame: pwrmgr_wakeups
+        index: 1
+      }
+      {
+        name: usb_out_of_rst
+        type: uni
+        act: rcv
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: pinmux
+        default: ""
+        top_signame: usbdev_usb_out_of_rst
+        index: -1
+      }
+      {
+        name: usb_aon_wake_en
+        type: uni
+        act: rcv
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: pinmux
+        default: ""
+        top_signame: usbdev_usb_aon_wake_en
+        index: -1
+      }
+      {
+        name: usb_aon_wake_ack
+        type: uni
+        act: rcv
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: pinmux
+        default: ""
+        top_signame: usbdev_usb_aon_wake_ack
+        index: -1
+      }
+      {
+        name: usb_suspend
+        type: uni
+        act: rcv
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: pinmux
+        default: ""
+        top_signame: usbdev_usb_suspend
+        index: -1
+      }
+      {
+        name: usb_state_debug
+        type: uni
+        act: req
+        package: usbdev_pkg
+        struct: awk_state
+        inst_name: pinmux
+        width: 1
+        default: ""
+        top_type: broadcast
+        top_signame: pinmux_usb_state_debug
         index: -1
       }
       {
@@ -9910,6 +10157,70 @@
         default: ""
         external: true
         top_signame: usbdev_usb_ref_pulse
+        index: -1
+      }
+      {
+        name: usb_out_of_rst
+        type: uni
+        act: req
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: usbdev
+        default: ""
+        top_type: broadcast
+        top_signame: usbdev_usb_out_of_rst
+        index: -1
+      }
+      {
+        name: usb_aon_wake_en
+        type: uni
+        act: req
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: usbdev
+        default: ""
+        top_type: broadcast
+        top_signame: usbdev_usb_aon_wake_en
+        index: -1
+      }
+      {
+        name: usb_aon_wake_ack
+        type: uni
+        act: req
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: usbdev
+        default: ""
+        top_type: broadcast
+        top_signame: usbdev_usb_aon_wake_ack
+        index: -1
+      }
+      {
+        name: usb_suspend
+        type: uni
+        act: req
+        package: ""
+        struct: logic
+        width: 1
+        inst_name: usbdev
+        default: ""
+        top_type: broadcast
+        top_signame: usbdev_usb_suspend
+        index: -1
+      }
+      {
+        name: usb_state_debug
+        type: uni
+        act: rcv
+        package: usbdev_pkg
+        struct: awk_state
+        inst_name: usbdev
+        width: 1
+        default: ""
+        top_signame: pinmux_usb_state_debug
         index: -1
       }
       {
@@ -11775,6 +12086,46 @@
         default: ""
       }
       {
+        package: ""
+        struct: logic
+        signame: usbdev_usb_out_of_rst
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: ""
+        struct: logic
+        signame: usbdev_usb_aon_wake_en
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: ""
+        struct: logic
+        signame: usbdev_usb_aon_wake_ack
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: ""
+        struct: logic
+        signame: usbdev_usb_suspend
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
+        package: usbdev_pkg
+        struct: awk_state
+        signame: pinmux_usb_state_debug
+        width: 1
+        type: uni
+        default: ""
+      }
+      {
         package: otp_ctrl_pkg
         struct: otp_keymgr_key
         signame: otp_ctrl_otp_keymgr_key
@@ -11978,7 +12329,7 @@
         package: ""
         struct: logic
         signame: pwrmgr_wakeups
-        width: 1
+        width: 2
         type: uni
         default: ""
       }

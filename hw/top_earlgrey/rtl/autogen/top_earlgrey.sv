@@ -286,6 +286,11 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_lc_req_t       pwrmgr_pwr_lc_req;
   pwrmgr_pkg::pwr_lc_rsp_t       pwrmgr_pwr_lc_rsp;
   rv_core_ibex_pkg::crashdump_t       rv_core_ibex_crashdump;
+  logic       usbdev_usb_out_of_rst;
+  logic       usbdev_usb_aon_wake_en;
+  logic       usbdev_usb_aon_wake_ack;
+  logic       usbdev_usb_suspend;
+  usbdev_pkg::awk_state_t       pinmux_usb_state_debug;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
@@ -311,7 +316,7 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_rd_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_wr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
-  logic       pwrmgr_wakeups;
+  logic [1:0] pwrmgr_wakeups;
   logic       pwrmgr_rstreqs;
   tlul_pkg::tl_h2d_t       rom_tl_req;
   tlul_pkg::tl_d2h_t       rom_tl_rsp;
@@ -402,7 +407,6 @@ module top_earlgrey #(
   logic unused_d0_rst_por_usb;
   logic unused_daon_rst_lc;
   logic unused_daon_rst_lc_io_div4;
-  logic unused_d0_rst_sys_aon;
   logic unused_daon_rst_spi_device;
   logic unused_d0_rst_usb;
   assign unused_d0_rst_por_aon = rstmgr_resets.rst_por_aon_n[rstmgr_pkg::Domain0Sel];
@@ -413,7 +417,6 @@ module top_earlgrey #(
   assign unused_d0_rst_por_usb = rstmgr_resets.rst_por_usb_n[rstmgr_pkg::Domain0Sel];
   assign unused_daon_rst_lc = rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainAonSel];
   assign unused_daon_rst_lc_io_div4 = rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel];
-  assign unused_d0_rst_sys_aon = rstmgr_resets.rst_sys_aon_n[rstmgr_pkg::Domain0Sel];
   assign unused_daon_rst_spi_device = rstmgr_resets.rst_spi_device_n[rstmgr_pkg::DomainAonSel];
   assign unused_d0_rst_usb = rstmgr_resets.rst_usb_n[rstmgr_pkg::Domain0Sel];
 
@@ -1074,7 +1077,13 @@ module top_earlgrey #(
       .dft_strap_test_o(),
       .io_pok_i({pinmux_pkg::NIOPokSignals{1'b1}}),
       .sleep_en_i(1'b0),
-      .aon_wkup_req_o(pwrmgr_wakeups),
+      .aon_wkup_req_o(pwrmgr_wakeups[0]),
+      .usb_wkup_req_o(pwrmgr_wakeups[1]),
+      .usb_out_of_rst_i(usbdev_usb_out_of_rst),
+      .usb_aon_wake_en_i(usbdev_usb_aon_wake_en),
+      .usb_aon_wake_ack_i(usbdev_usb_aon_wake_ack),
+      .usb_suspend_i(usbdev_usb_suspend),
+      .usb_state_debug_o(pinmux_usb_state_debug),
       .tl_i(pinmux_tl_req),
       .tl_o(pinmux_tl_rsp),
 
@@ -1159,12 +1168,19 @@ module top_earlgrey #(
       // Inter-module signals
       .usb_ref_val_o(usbdev_usb_ref_val_o),
       .usb_ref_pulse_o(usbdev_usb_ref_pulse_o),
+      .usb_out_of_rst_o(usbdev_usb_out_of_rst),
+      .usb_aon_wake_en_o(usbdev_usb_aon_wake_en),
+      .usb_aon_wake_ack_o(usbdev_usb_aon_wake_ack),
+      .usb_suspend_o(usbdev_usb_suspend),
+      .usb_state_debug_i(pinmux_usb_state_debug),
       .tl_i(usbdev_tl_req),
       .tl_o(usbdev_tl_rsp),
       .clk_i (clkmgr_clocks.clk_io_div4_peri),
+      .clk_aon_i (clkmgr_clocks.clk_aon_peri),
       .clk_usb_48mhz_i (clkmgr_clocks.clk_usb_peri),
-      .rst_ni (rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
-      .rst_usb_48mhz_ni (rstmgr_resets.rst_usb_n[rstmgr_pkg::DomainAonSel])
+      .rst_ni (rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]),
+      .rst_aon_ni (rstmgr_resets.rst_sys_aon_n[rstmgr_pkg::Domain0Sel]),
+      .rst_usb_48mhz_ni (rstmgr_resets.rst_usb_n[rstmgr_pkg::Domain0Sel])
   );
 
   sram_ctrl #(

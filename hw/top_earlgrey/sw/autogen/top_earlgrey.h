@@ -961,7 +961,8 @@ typedef enum top_earlgrey_pinmux_outsel {
  */
 typedef enum top_earlgrey_power_manager_wake_ups {
   kTopEarlgreyPowerManagerWakeUpsPinmuxAonWkupReq = 0, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsLast = 0, /**< \internal Last valid pwrmgr wakeup signal */
+  kTopEarlgreyPowerManagerWakeUpsPinmuxUsbWkupReq = 1, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsLast = 1, /**< \internal Last valid pwrmgr wakeup signal */
 } top_earlgrey_power_manager_wake_ups_t;
 
 /**
