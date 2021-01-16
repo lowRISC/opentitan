@@ -104,20 +104,32 @@
       milestone: V2
       tests: ["otp_ctrl_lc"]
     }
+    { name: otp_dai_errors
+      desc: '''
+            This test will randomly run the following OTP errors:
+            - DAI interface write non-blank OTP address
+            - DAI interface access LC partition
+            - DAI interface write HW digests
+
+            The test will check:
+            - The value of err_code and status registers
+            '''
+      milestone: V2
+      tests: ["otp_ctrl_dai_errs"]
+    }
     { name: otp_macro_errors
       desc: '''
             This test will randomly run the following OTP errors:
             - MacroError
             - MacroEccCorrError
             - MacroEccUncorrError
-            - MacroWriteBlankError
 
             The test will check:
             - The value of err_code and status registers
             - If error is unrecoverable, ensure that OTP entered terminal state
             '''
       milestone: V2
-      tests: ["otp_ctrl_macro_errs"]
+      tests: []
     }
     {
       name: otp_ctrl_errors
