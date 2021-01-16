@@ -63,7 +63,12 @@ module flash_phy_rd import flash_phy_pkg::*; (
   output logic req_o,
   input ack_i,  // request has been accepted
   input done_i, // actual data return
-  input [FullDataWidth-1:0] data_i
+  input [FullDataWidth-1:0] data_i,
+
+  // error status reporting
+  output logic ecc_single_err_o,
+  output logic ecc_multi_err_o,
+  output logic [BusBankAddrW-1:0] ecc_addr_o
   );
 
   /////////////////////////////////
@@ -327,9 +332,6 @@ module flash_phy_rd import flash_phy_pkg::*; (
   /////////////////////////////////
 
   // only uncorrectable errors are passed on to the fabric
-  logic ecc_single_err;
-  logic ecc_err;
-  logic unused_err;
   logic data_err;
 
   // scrambled data must pass through ECC first
@@ -345,10 +347,11 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .in(data_i[ScrDataWidth-1:0]),
     .d_o(data_ecc_chk),
     .syndrome_o(),
-    .err_o({ecc_err, ecc_single_err})
+    .err_o({ecc_multi_err_o, ecc_single_err_o})
   );
 
-  assign unused_err = ecc_single_err;
+  // ecc address return is always the full flash word
+  assign ecc_addr_o = {rd_attrs.addr, {LsbAddrBit{1'b0}}};
 
   // If data needs to be de-scrambled and has not been erased, pass through ecc decoder.
   // Otherwise, pass the data through untouched.
@@ -357,7 +360,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // rd_done signal below is duplicated (already in data_erased) to show clear intent of the code.
   assign data_int = (rd_done && rd_attrs.ecc && !data_erased) ? data_ecc_chk :
                                                                 data_i[DataWidth-1:0];
-  assign data_err = (rd_done && rd_attrs.ecc && !data_erased) ? ecc_err : 1'b0;
+  assign data_err = (rd_done && rd_attrs.ecc && !data_erased) ? ecc_multi_err_o : 1'b0;
 
   /////////////////////////////////
   // De-scrambling stage

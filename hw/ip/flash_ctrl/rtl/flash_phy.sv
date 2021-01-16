@@ -27,7 +27,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   input flash_power_down_h_i,
   input [1:0] flash_test_mode_a_i,
   input flash_test_voltage_h_i,
-  input flash_bist_enable_i,
+  input lc_ctrl_pkg::lc_tx_t flash_bist_enable_i,
   input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
   input jtag_pkg::jtag_req_t jtag_req_i,
   output jtag_pkg::jtag_rsp_t jtag_rsp_o
@@ -145,6 +145,13 @@ module flash_phy import flash_ctrl_pkg::*; (
   // Prim flash to flash_phy_core connections
   flash_phy_pkg::flash_phy_prim_flash_req_t [NumBanks-1:0] prim_flash_req;
   flash_phy_pkg::flash_phy_prim_flash_rsp_t [NumBanks-1:0] prim_flash_rsp;
+  logic [NumBanks-1:0] ecc_single_err;
+  logic [NumBanks-1:0] ecc_multi_err;
+  logic [NumBanks-1:0][BusAddrW-1:0] ecc_addr;
+
+  assign flash_ctrl_o.ecc_single_err = ecc_single_err;
+  assign flash_ctrl_o.ecc_multi_err = ecc_multi_err;
+  assign flash_ctrl_o.ecc_addr = ecc_addr;
 
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_flash_cores
 
@@ -172,6 +179,7 @@ module flash_phy import flash_ctrl_pkg::*; (
     logic ctrl_req;
     assign host_req = host_req_i & (host_bank_sel == bank) & host_rsp_avail[bank];
     assign ctrl_req = flash_ctrl_i.req & (ctrl_bank_sel == bank);
+    assign ecc_addr[bank][BusBankAddrW +: BankW] = bank;
 
     flash_phy_core u_core (
       .clk_i,
@@ -208,7 +216,10 @@ module flash_phy import flash_ctrl_pkg::*; (
       .rd_data_o(rd_data[bank]),
       .rd_err_o(rd_err[bank]),
       .prim_flash_req_o(prim_flash_req[bank]),
-      .prim_flash_rsp_i(prim_flash_rsp[bank])
+      .prim_flash_rsp_i(prim_flash_rsp[bank]),
+      .ecc_single_err_o(ecc_single_err[bank]),
+      .ecc_multi_err_o(ecc_multi_err[bank]),
+      .ecc_addr_o(ecc_addr[bank][BusBankAddrW-1:0])
     );
   end // block: gen_flash_banks
 
@@ -249,13 +260,18 @@ module flash_phy import flash_ctrl_pkg::*; (
     .tdi_i(jtag_req_i.tdi & (lc_nvm_debug_en[FlashLcTdiSel] == lc_ctrl_pkg::On)),
     .tms_i(jtag_req_i.tms & (lc_nvm_debug_en[FlashLcTmsSel] == lc_ctrl_pkg::On)),
     .tdo_o(tdo),
-    .bist_enable_i(flash_bist_enable_i & (lc_nvm_debug_en[FlashBistSel] == lc_ctrl_pkg::On)),
+    .bist_enable_i(flash_bist_enable_i & lc_nvm_debug_en[FlashBistSel]),
     .scanmode_i,
     .scan_rst_ni,
     .flash_power_ready_h_i,
     .flash_power_down_h_i,
     .flash_test_mode_a_i,
-    .flash_test_voltage_h_i
+    .flash_test_voltage_h_i,
+    .flash_err_o(flash_ctrl_o.flash_err),
+    .flash_alert_po(flash_ctrl_o.flash_alert_p),
+    .flash_alert_no(flash_ctrl_o.flash_alert_n),
+    .flash_alert_ack_i(flash_ctrl_i.alert_ack),
+    .flash_alert_trig_i(flash_ctrl_i.alert_trig)
   );
 
   logic unused_trst_n;

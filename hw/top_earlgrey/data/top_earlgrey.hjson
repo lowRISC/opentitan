@@ -583,8 +583,8 @@
           act: "rcv"
           name: "lc_nvm_debug_en"
         },
-        { struct: "logic"
-          package: ""
+        { struct: "lc_tx"
+          package: "lc_ctrl_pkg"
           type: "uni"
           act: "rcv"
           name: "flash_bist_enable"
@@ -781,7 +781,7 @@
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
   alert_module: [ "aes", "otbn", "sensor_ctrl", "keymgr", "otp_ctrl", "lc_ctrl",
-                  "entropy_src", "sram_ctrl_main", "sram_ctrl_ret"]
+                  "entropy_src", "sram_ctrl_main", "sram_ctrl_ret", "flash_ctrl"]
 
   // generated list of alerts:
   alert: [

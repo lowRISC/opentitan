@@ -231,6 +231,6 @@ module ast_wrapper import ast_wrapper_pkg::*;
   );
 
   // TODO hook-up to ast
-  assign ast_eflash_o.flash_bist_enable = 1'b0;
+  assign ast_eflash_o.flash_bist_enable = lc_ctrl_pkg::Off;
 
 endmodule // ast_wrapper
