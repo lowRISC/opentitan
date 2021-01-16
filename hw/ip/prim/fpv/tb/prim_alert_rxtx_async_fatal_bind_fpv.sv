@@ -3,18 +3,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-module prim_alert_rxtx_bind_fpv;
+module prim_alert_rxtx_async_fatal_bind_fpv;
 
-  bind prim_alert_rxtx_fpv
-        prim_alert_rxtx_assert_fpv prim_alert_rxtx_assert_fpv (
+  bind prim_alert_rxtx_async_fpv
+        prim_alert_rxtx_async_assert_fpv prim_alert_rxtx_async_assert_fpv (
     .clk_i,
     .rst_ni,
     .ping_err_pi,
     .ping_err_ni,
+    .ping_skew_i,
     .ack_err_pi,
     .ack_err_ni,
+    .ack_skew_i,
     .alert_err_pi,
     .alert_err_ni,
+    .alert_skew_i,
     .alert_test_i,
     .alert_req_i,
     .alert_ack_o,
@@ -25,4 +28,4 @@ module prim_alert_rxtx_bind_fpv;
     .alert_o
   );
 
-endmodule : prim_alert_rxtx_bind_fpv
+endmodule : prim_alert_rxtx_async_fatal_bind_fpv
