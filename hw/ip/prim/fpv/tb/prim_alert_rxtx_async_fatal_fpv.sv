@@ -5,7 +5,7 @@
 // Testbench module for alert sender/receiver pair. Intended to use with
 // a formal tool.
 
-module prim_alert_rxtx_async_fpv
+module prim_alert_rxtx_async_fatal_fpv
   import prim_alert_pkg::*;
   import prim_esc_pkg::*;
 (
@@ -34,6 +34,7 @@ module prim_alert_rxtx_async_fpv
 
   // asynchronous case
   localparam bit AsyncOn = 1'b1;
+  localparam bit IsFatal = 1'b1;
 
   logic ping_pd;
   logic ping_nd;
@@ -69,7 +70,8 @@ module prim_alert_rxtx_async_fpv
   assign alert_tx_in.alert_n = alert_nq[alert_skew_i[1]] ^ alert_err_ni;
 
   prim_alert_sender #(
-    .AsyncOn ( AsyncOn )
+    .AsyncOn ( AsyncOn ),
+    .IsFatal ( IsFatal )
   ) i_prim_alert_sender (
     .clk_i      ,
     .rst_ni     ,
@@ -112,4 +114,4 @@ module prim_alert_rxtx_async_fpv
     end
   end
 
-endmodule : prim_alert_rxtx_async_fpv
+endmodule : prim_alert_rxtx_async_fatal_fpv

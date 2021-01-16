@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-module prim_alert_rxtx_bind_fpv;
+module prim_alert_rxtx_fatal_bind_fpv;
 
+  // this reuses the synchronous VIP.
   bind prim_alert_rxtx_fpv
         prim_alert_rxtx_assert_fpv prim_alert_rxtx_assert_fpv (
     .clk_i,
@@ -25,4 +26,4 @@ module prim_alert_rxtx_bind_fpv;
     .alert_o
   );
 
-endmodule : prim_alert_rxtx_bind_fpv
+endmodule : prim_alert_rxtx_fatal_bind_fpv

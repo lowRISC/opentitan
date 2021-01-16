@@ -53,8 +53,20 @@
                cov: true
              }
              {
+               name: prim_alert_rxtx_fatal_fpv
+               fusesoc_core: lowrisc:fpv:prim_alert_rxtx_fatal_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: true
+             }
+             {
                name: prim_alert_rxtx_async_fpv
                fusesoc_core: lowrisc:fpv:prim_alert_rxtx_async_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: true
+             }
+             {
+               name: prim_alert_rxtx_async_fatal_fpv
+               fusesoc_core: lowrisc:fpv:prim_alert_rxtx_async_fatal_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                cov: true
              }

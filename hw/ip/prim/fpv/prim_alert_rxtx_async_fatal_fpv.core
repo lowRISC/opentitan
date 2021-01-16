@@ -1,0 +1,31 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:fpv:prim_alert_rxtx_async_fatal_fpv:0.1"
+description: "ALERT_HANDLER rxtx async fatal FPV target"
+filesets:
+  files_formal:
+    depend:
+      - lowrisc:prim:all
+    files:
+      - vip/prim_alert_rxtx_async_assert_fpv.sv
+      - tb/prim_alert_rxtx_async_fatal_fpv.sv
+      - tb/prim_alert_rxtx_async_fatal_bind_fpv.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    # note, this setting is just used
+    # to generate a file list for jg
+    default_tool: icarus
+    filesets:
+      - files_formal
+    toplevel:
+      - prim_alert_rxtx_async_fatal_fpv
+
+  formal:
+    <<: *default_target
+
+  lint:
+    <<: *default_target
