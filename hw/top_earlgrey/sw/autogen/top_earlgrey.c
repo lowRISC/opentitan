@@ -11,7 +11,7 @@
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[123] = {
+    top_earlgrey_plic_interrupt_for_peripheral[122] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdUart0TxWatermark] = kTopEarlgreyPlicPeripheralUart0,
   [kTopEarlgreyPlicIrqIdUart0RxWatermark] = kTopEarlgreyPlicPeripheralUart0,
@@ -88,7 +88,6 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdFlashCtrlRdFull] = kTopEarlgreyPlicPeripheralFlashCtrl,
   [kTopEarlgreyPlicIrqIdFlashCtrlRdLvl] = kTopEarlgreyPlicPeripheralFlashCtrl,
   [kTopEarlgreyPlicIrqIdFlashCtrlOpDone] = kTopEarlgreyPlicPeripheralFlashCtrl,
-  [kTopEarlgreyPlicIrqIdFlashCtrlOpError] = kTopEarlgreyPlicPeripheralFlashCtrl,
   [kTopEarlgreyPlicIrqIdHmacHmacDone] = kTopEarlgreyPlicPeripheralHmac,
   [kTopEarlgreyPlicIrqIdHmacFifoEmpty] = kTopEarlgreyPlicPeripheralHmac,
   [kTopEarlgreyPlicIrqIdHmacHmacErr] = kTopEarlgreyPlicPeripheralHmac,
@@ -145,7 +144,7 @@ const top_earlgrey_plic_peripheral_t
  * `top_earlgrey_alert_peripheral_t`.
  */
 const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[20] = {
+    top_earlgrey_alert_for_peripheral[23] = {
   [kTopEarlgreyAlertIdAesRecovCtrlUpdateErr] = kTopEarlgreyAlertPeripheralAes,
   [kTopEarlgreyAlertIdAesFatalFault] = kTopEarlgreyAlertPeripheralAes,
   [kTopEarlgreyAlertIdOtbnFatal] = kTopEarlgreyAlertPeripheralOtbn,
@@ -166,5 +165,8 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdEntropySrcRecovAlertCountMet] = kTopEarlgreyAlertPeripheralEntropySrc,
   [kTopEarlgreyAlertIdSramCtrlMainFatalParityError] = kTopEarlgreyAlertPeripheralSramCtrlMain,
   [kTopEarlgreyAlertIdSramCtrlRetFatalParityError] = kTopEarlgreyAlertPeripheralSramCtrlRet,
+  [kTopEarlgreyAlertIdFlashCtrlRecovErr] = kTopEarlgreyAlertPeripheralFlashCtrl,
+  [kTopEarlgreyAlertIdFlashCtrlRecovMpErr] = kTopEarlgreyAlertPeripheralFlashCtrl,
+  [kTopEarlgreyAlertIdFlashCtrlRecovEccErr] = kTopEarlgreyAlertPeripheralFlashCtrl,
 };
 

@@ -24,7 +24,10 @@ parameter string LIST_OF_ALERTS[] = {
   "lc_ctrl_fatal_state_error",
   "entropy_src_recov_alert_count_met",
   "sram_ctrl_main_fatal_parity_error",
-  "sram_ctrl_ret_fatal_parity_error"
+  "sram_ctrl_ret_fatal_parity_error",
+  "flash_ctrl_recov_err",
+  "flash_ctrl_recov_mp_err",
+  "flash_ctrl_recov_ecc_err"
 };
 
-parameter uint NUM_ALERTS = 20;
+parameter uint NUM_ALERTS = 23;
