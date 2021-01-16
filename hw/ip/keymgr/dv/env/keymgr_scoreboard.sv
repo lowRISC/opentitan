@@ -91,7 +91,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       forever begin
         wait(!cfg.under_reset);
         wait(cfg.keymgr_vif.keymgr_en != lc_ctrl_pkg::On);
-        wipe_hw_keys();
+        if (current_state != keymgr_pkg::StReset) wipe_hw_keys();
         wait(cfg.keymgr_vif.keymgr_en == lc_ctrl_pkg::On);
       end
     join_none
@@ -200,6 +200,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             if (current_state == keymgr_pkg::StOwnerKey) update_result = NotUpdate;
             else                                         update_result = UpdateInternalKey;
             current_state = get_next_state(current_state);
+
+            // set sw_binding_en after advance OP
+            void'(ral.sw_binding_en.predict(.value(1)));
           end
           keymgr_pkg::OpDisable: begin
             update_result = UpdateInternalKey;
@@ -263,11 +266,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       // if OP WIP or keymgr_en=0, will clear cfgen and below csr can't be written
       if ((current_op_status == keymgr_pkg::OpWip || cfg.keymgr_vif.keymgr_en != lc_ctrl_pkg::On) &&
           csr.get_name() inside {"control", "key_version",
-          // TODO enable these after #4564 is solved
-          //"sw_binding_0", "sw_binding_1", "sw_binding_2", "sw_binding_3",
+          "sw_binding_0", "sw_binding_1", "sw_binding_2", "sw_binding_3",
           "salt_0", "salt_1", "salt_2", "salt_3"}) begin
         `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to cfgen=0", csr.get_name()),
                   UVM_MEDIUM)
+        return;
+      end else if (`gmv(ral.sw_binding_en) == 0 && csr.get_name() inside {"sw_binding_0",
+               "sw_binding_1", "sw_binding_2", "sw_binding_3"}) begin
         return;
       end else begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
@@ -622,7 +627,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   // TODO, need designer to update for #4680
   virtual function void wipe_hw_keys();
-    if (current_state != keymgr_pkg::StReset) current_state = keymgr_pkg::StInvalid;
+    `uvm_info(`gfn, "Keymgr_en is Off, wipe secret and move state to Invalid", UVM_LOW)
+    current_state = keymgr_pkg::StInvalid;
   endfunction
 
   virtual function void reset(string kind = "HARD");

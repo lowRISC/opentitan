@@ -10,6 +10,7 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
   task write_random_sw_content();
     uvm_reg         csr_update_q[$];
 
+    csr_random_n_add_to_q(ral.sw_binding_en, csr_update_q);
     csr_random_n_add_to_q(ral.sw_binding_0, csr_update_q);
     csr_random_n_add_to_q(ral.sw_binding_1, csr_update_q);
     csr_random_n_add_to_q(ral.sw_binding_2, csr_update_q);
