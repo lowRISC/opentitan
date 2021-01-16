@@ -50,8 +50,7 @@ package flash_ctrl_env_pkg;
     FlashCtrlIntrRdFull     = 2,
     FlashCtrlIntrRdLvl      = 3,
     FlashCtrlIntrOpDone     = 4,
-    FlashCtrlIntrOpError    = 5,
-    NumFlashCtrlIntr        = 6
+    NumFlashCtrlIntr        = 5
   } flash_ctrl_intr_e;
 
   typedef enum {
