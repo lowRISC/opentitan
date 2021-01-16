@@ -44,7 +44,10 @@ module flash_phy_core import flash_phy_pkg::*; #(
   output logic                       prog_done_o,
   output logic                       erase_done_o,
   output logic [BusWidth-1:0]        rd_data_o,
-  output logic                       rd_err_o
+  output logic                       rd_err_o,
+  output logic                       ecc_single_err_o,
+  output logic                       ecc_multi_err_o,
+  output logic [BusBankAddrW-1:0]    ecc_addr_o
 );
 
 
@@ -273,7 +276,10 @@ module flash_phy_core import flash_phy_pkg::*; #(
     .calc_ack_i(calc_ack),
     .descramble_ack_i(op_ack),
     .mask_i(scramble_mask),
-    .descrambled_data_i(rd_descrambled_data)
+    .descrambled_data_i(rd_descrambled_data),
+    .ecc_single_err_o,
+    .ecc_multi_err_o,
+    .ecc_addr_o
     );
 
   ////////////////////////

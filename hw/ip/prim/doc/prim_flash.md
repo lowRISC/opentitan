@@ -29,7 +29,7 @@ TestModeWidth  | int    | The number of test modes for a bank of flash
 Name                    | In/Out | Description
 ------------------------|--------|---------------------------------
 clk_i                   | input  | Clock input
-rst_n_i                 | input  | Reset input
+rst_ni                  | input  | Reset input
 flash_req_i             | input  | Inputs from flash protocol and physical controllers
 flash_rsp_o             | output | Outputs to flash protocol and physical controllers
 prog_type_avail_o       | output | Available program types in this flash wrapper: Currently there are only two types, program normal and program repair
@@ -41,14 +41,14 @@ tdo_o                   | output | jtag tdo
 bist_enable_i           | input  | lc_ctrl_pkg :: On for bist_enable input
 scanmode_i              | input  | dft scanmode input
 scan_en_i               | input  | dft scan shift input
-scan_rst_n_i            | input  | dft scanmode reset
+scan_rst_ni             | input  | dft scanmode reset
 flash_power_ready_h_i   | input  | flash power is ready (high voltage connection)
 flash_power_down_h_i    | input  | flash wrapper is powering down (high voltage connection)
 flash_test_mode_a_i     | input  | flash test mode values (analog connection)
 flash_test_voltage_h_i  | input  | flash test mode voltage (high voltage connection)
 flash_err_o             | output | flash level error interrupt indication, cleared on write 1 to status register
-flash_alert_po          | output | flash positive detector alert 
-flash_alert_no          | output | flash negative detector alert 
+flash_alert_po          | output | flash positive detector alert
+flash_alert_no          | output | flash negative detector alert
 flash_alert_ack         | input  | single pulse ack
 flash_alert_trig        | input  | alert force trig by SW
 tl_i                    | input  | TL_UL  interface for rd/wr registers access
@@ -148,7 +148,7 @@ A program type not supported by the wrapper, indicated through `prog_type_avail`
 
 ## Erase Suspend
 Since erase operations can take a significant amount of time, sometimes it is necessary for software or other components to suspend the operation.
-The suspend operation input request starts with `erase_suspend_req` assertion. Flash wrapper circuit acks when wrapper starts suspend. 
+The suspend operation input request starts with `erase_suspend_req` assertion. Flash wrapper circuit acks when wrapper starts suspend.
 When the erase suspend completes, the flash wrapper circuitry also asserts `done` for the ongoing erase transaction to ensure all hardware gracefully completes.
 
 The following is an example diagram

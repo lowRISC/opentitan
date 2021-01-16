@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
+      - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/ast_wrapper_pkg.sv
     file_type: systemVerilogSource

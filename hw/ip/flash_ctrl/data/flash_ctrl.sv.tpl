@@ -9,6 +9,7 @@
 `include "prim_assert.sv"
 
 module flash_ctrl import flash_ctrl_pkg::*; #(
+  parameter logic AlertAsyncOn          = 1'b1,
   parameter flash_key_t RndCnstAddrKey  = RndCnstAddrKeyDefault,
   parameter flash_key_t RndCnstDataKey  = RndCnstDataKeyDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
@@ -51,7 +52,12 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   output logic intr_rd_full_o,    // Read fifo is full
   output logic intr_rd_lvl_o,     // Read fifo is full
   output logic intr_op_done_o,    // Requested flash operation (wr/erase) done
-  output logic intr_op_error_o    // Requested flash operation (wr/erase) done
+
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_tx_o
+
+
 );
 
   import flash_ctrl_reg_pkg::*;
@@ -730,8 +736,6 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   assign hw2reg.status.prog_empty.de = sw_sel;
   assign hw2reg.status.init_wip.d    = flash_phy_busy | ctrl_init_busy;
   assign hw2reg.status.init_wip.de   = 1'b1;
-  assign hw2reg.status.error_addr.d  = err_addr;
-  assign hw2reg.status.error_addr.de = sw_sel;
   assign hw2reg.control.start.d      = 1'b0;
   assign hw2reg.control.start.de     = sw_ctrl_done;
   // if software operation selected, based on transaction start
@@ -757,6 +761,8 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   assign flash_o.addr_key = addr_key;
   assign flash_o.data_key = data_key;
   assign flash_o.tl_flash_c2p = tl_win_h2d[2];
+  assign flash_o.alert_trig = reg2hw.phy_alert_cfg.alert_trig.q;
+  assign flash_o.alert_ack = reg2hw.phy_alert_cfg.alert_ack.q;
   assign flash_rd_err = flash_i.rd_err;
   assign flash_rd_data = flash_i.rd_data;
   assign flash_phy_busy = flash_i.init_busy;
@@ -777,8 +783,69 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .q_o(pwrmgr_o.flash_idle)
   );
 
+  //////////////////////////////////////
+  // Alert senders
+  //////////////////////////////////////
 
-  // Interrupts
+  logic [NumAlerts-1:0] alert_srcs;
+  logic [NumAlerts-1:0] alert_tests;
+
+  logic fatal_err;
+  assign fatal_err = flash_i.flash_alert_p | ~flash_i.flash_alert_n;
+
+  logic recov_mp_err;
+  assign recov_mp_err = flash_mp_error;
+
+  logic recov_ecc_err;
+  assign recov_ecc_err = |flash_i.ecc_single_err | |flash_i.ecc_multi_err;
+
+  assign alert_srcs = { recov_ecc_err,
+                        recov_mp_err,
+                        fatal_err
+                      };
+
+  assign alert_tests = { reg2hw.alert_test.recov_ecc_err.q & reg2hw.alert_test.recov_ecc_err.qe,
+                         reg2hw.alert_test.recov_mp_err.q  & reg2hw.alert_test.recov_mp_err.qe,
+                         reg2hw.alert_test.fatal_err.q     & reg2hw.alert_test.fatal_err.qe
+                       };
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn)
+    ) u_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_req_i(alert_srcs[i] | alert_tests[i]),
+      .alert_ack_o(),
+      .alert_rx_i(alert_rx_i[i]),
+      .alert_tx_o(alert_tx_o[i])
+    );
+  end
+
+
+  //////////////////////////////////////
+  // Errors and Interrupts
+  //////////////////////////////////////
+
+  assign hw2reg.err_code.mp_err.d = 1'b1;
+  assign hw2reg.err_code.ecc_single_err.d = 1'b1;
+  assign hw2reg.err_code.ecc_multi_err.d = 1'b1;
+  assign hw2reg.err_code.flash_err.d = 1'b1;
+  assign hw2reg.err_code.flash_alert.d = 1'b1;
+  assign hw2reg.err_code.mp_err.de = flash_mp_error;
+  assign hw2reg.err_code.ecc_single_err.de = |flash_i.ecc_single_err;
+  assign hw2reg.err_code.ecc_multi_err.de = |flash_i.ecc_multi_err;
+  assign hw2reg.err_code.flash_err.de = flash_i.flash_err;
+  assign hw2reg.err_code.flash_alert.de = flash_i.flash_alert_p | ~flash_i.flash_alert_n;
+  assign hw2reg.err_addr.d = err_addr;
+  assign hw2reg.err_addr.de = flash_mp_error;
+
+  for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_err_cons
+    assign hw2reg.ecc_err_addr[bank].d  = {flash_i.ecc_addr[bank], {BusByteWidth{1'b0}}};
+    assign hw2reg.ecc_err_addr[bank].de = flash_i.ecc_single_err[bank] |
+                                          flash_i.ecc_multi_err[bank];
+  end
+
   // Generate edge triggered signals for sources that are level
   logic [3:0] intr_src;
   logic [3:0] intr_src_q;
@@ -806,7 +873,6 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   assign intr_rd_full_o = reg2hw.intr_enable.rd_full.q & reg2hw.intr_state.rd_full.q;
   assign intr_rd_lvl_o = reg2hw.intr_enable.rd_lvl.q & reg2hw.intr_state.rd_lvl.q;
   assign intr_op_done_o = reg2hw.intr_enable.op_done.q & reg2hw.intr_state.op_done.q;
-  assign intr_op_error_o = reg2hw.intr_enable.op_error.q & reg2hw.intr_state.op_error.q;
 
   assign hw2reg.intr_state.prog_empty.d  = 1'b1;
   assign hw2reg.intr_state.prog_empty.de = intr_assert[3]  |
@@ -834,12 +900,6 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
                                         (reg2hw.intr_test.op_done.qe  &
                                         reg2hw.intr_test.op_done.q);
 
-  assign hw2reg.intr_state.op_error.d  = 1'b1;
-  assign hw2reg.intr_state.op_error.de = sw_ctrl_err  |
-                                        (reg2hw.intr_test.op_error.qe  &
-                                        reg2hw.intr_test.op_error.q);
-
-
 
   // Unused bits
   logic [BusByteWidth-1:0] unused_byte_sel;
@@ -865,6 +925,5 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   `ASSERT_KNOWN(IntrProgRdFullKnownO_A, intr_rd_full_o   )
   `ASSERT_KNOWN(IntrRdLvlKnownO_A,      intr_rd_lvl_o    )
   `ASSERT_KNOWN(IntrOpDoneKnownO_A,     intr_op_done_o   )
-  `ASSERT_KNOWN(IntrOpErrorKnownO_A,    intr_op_error_o  )
 
 endmodule
