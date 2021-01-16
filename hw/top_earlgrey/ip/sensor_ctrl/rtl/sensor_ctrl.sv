@@ -86,14 +86,17 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
 
     logic alert_req;
     logic alert_ack;
-    assign alert_req = alert_test[i] | (sw_ack_mode[i] ? reg2hw.alert_state[i].q : valid_alert);
+    assign alert_req = sw_ack_mode[i] ? reg2hw.alert_state[i].q : valid_alert;
     prim_alert_sender #(
-      .AsyncOn(AsyncOn)
-    ) i_prim_alert_sender (
+      .AsyncOn(AsyncOn),
+      .IsFatal(1)
+    ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
+      .alert_test_i(alert_test[i]),
       .alert_req_i(alert_req),
       .alert_ack_o(alert_ack),
+      .alert_state_o(),
       .alert_rx_i(alert_rx_i[i]),
       .alert_tx_o(alert_tx_o[i])
     );

@@ -410,14 +410,17 @@ module otbn
 
   for (genvar i = 0; i < NumAlerts; i++) begin: gen_alert_tx
     prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn[i])
-    ) i_prim_alert_sender (
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(0)
+    ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
-      .alert_req_i (alerts[i] | alert_test[i]),
-      .alert_ack_o (             ),
-      .alert_rx_i  (alert_rx_i[i]),
-      .alert_tx_o  (alert_tx_o[i])
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alerts[i]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
     );
   end
 
