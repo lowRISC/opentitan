@@ -449,14 +449,17 @@ module otp_ctrl
 
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
     prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn[k])
+      .AsyncOn(AlertAsyncOn[k]),
+      .IsFatal(1)
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
-      .alert_req_i ( alerts[k] | alert_test[k] ),
-      .alert_ack_o (                 ),
-      .alert_rx_i  ( alert_rx_i[k]   ),
-      .alert_tx_o  ( alert_tx_o[k]   )
+      .alert_test_i  ( alert_test[k] ),
+      .alert_req_i   ( alerts[k]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[k] ),
+      .alert_tx_o    ( alert_tx_o[k] )
     );
   end
 

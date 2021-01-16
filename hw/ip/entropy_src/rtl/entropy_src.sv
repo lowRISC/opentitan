@@ -90,14 +90,17 @@ module entropy_src import entropy_src_pkg::*; #(
   );
 
    prim_alert_sender #(
-     .AsyncOn(AlertAsyncOn)
-   ) u_alert_sender_i (
-     .clk_i      ( clk_i      ),
-     .rst_ni     ( rst_ni     ),
-     .alert_req_i( alert_event || alert_test),
-     .alert_ack_o(            ),
-     .alert_rx_i ( alert_rx_i ),
-     .alert_tx_o ( alert_tx_o )
+     .AsyncOn(AlertAsyncOn),
+      .IsFatal(0)
+   ) u_prim_alert_sender (
+     .clk_i,
+     .rst_ni,
+     .alert_test_i ( alert_test  ),
+     .alert_req_i  ( alert_event ),
+     .alert_ack_o  (             ),
+     .alert_state_o(             ),
+     .alert_rx_i   ( alert_rx_i  ),
+     .alert_tx_o   ( alert_tx_o  )
    );
 
   // Outputs should have a known value after reset
