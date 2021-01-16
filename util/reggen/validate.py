@@ -1344,7 +1344,7 @@ def make_intr_alert_reg(regs, name, offset, swaccess, hwaccess, desc):
     genreg['hwqe'] = 'true' if name in testreg_names else 'false'
     genreg['hwre'] = 'false'
     # Add tags.
-    if name in testreg_names:
+    if name == 'INTR_TEST':
         # intr_test csr is WO which - it reads back 0s
         genreg['tags'] = ["excl:CsrNonInitTests:CsrExclWrite"]
     elif name == 'INTR_STATE':

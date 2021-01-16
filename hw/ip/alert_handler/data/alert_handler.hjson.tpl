@@ -195,7 +195,10 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   hwaccess: "hro",
                   regwen:   "REGEN",
                   cname:    "alert",
-                  fields: [
+                  tags:     [// Enable `alert_en` might cause top-level escalators to trigger
+                             // unexpected reset
+                             "excl:CsrAllTests:CsrExclWrite"]
+                 fields: [
                     { bits: "0",
                       name: "EN_A",
                       desc: "Alert enable "
