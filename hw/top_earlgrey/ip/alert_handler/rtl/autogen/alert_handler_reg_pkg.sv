@@ -7,10 +7,10 @@
 package alert_handler_reg_pkg;
 
   // Param list
-  parameter int NAlerts = 20;
+  parameter int NAlerts = 23;
   parameter int EscCntDw = 32;
   parameter int AccuCntDw = 16;
-  parameter logic [NAlerts-1:0] AsyncOn = 20'b01100001100000001111;
+  parameter logic [NAlerts-1:0] AsyncOn = 23'b11101100001100000001111;
   parameter int N_CLASSES = 4;
   parameter int N_ESC_SEV = 4;
   parameter int N_PHASES = 4;
@@ -457,14 +457,14 @@ package alert_handler_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    alert_handler_reg2hw_intr_state_reg_t intr_state; // [904:901]
-    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [900:897]
-    alert_handler_reg2hw_intr_test_reg_t intr_test; // [896:889]
-    alert_handler_reg2hw_regen_reg_t regen; // [888:888]
-    alert_handler_reg2hw_ping_timeout_cyc_reg_t ping_timeout_cyc; // [887:864]
-    alert_handler_reg2hw_alert_en_mreg_t [19:0] alert_en; // [863:844]
-    alert_handler_reg2hw_alert_class_mreg_t [19:0] alert_class; // [843:804]
-    alert_handler_reg2hw_alert_cause_mreg_t [19:0] alert_cause; // [803:784]
+    alert_handler_reg2hw_intr_state_reg_t intr_state; // [916:913]
+    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [912:909]
+    alert_handler_reg2hw_intr_test_reg_t intr_test; // [908:901]
+    alert_handler_reg2hw_regen_reg_t regen; // [900:900]
+    alert_handler_reg2hw_ping_timeout_cyc_reg_t ping_timeout_cyc; // [899:876]
+    alert_handler_reg2hw_alert_en_mreg_t [22:0] alert_en; // [875:853]
+    alert_handler_reg2hw_alert_class_mreg_t [22:0] alert_class; // [852:807]
+    alert_handler_reg2hw_alert_cause_mreg_t [22:0] alert_cause; // [806:784]
     alert_handler_reg2hw_loc_alert_en_mreg_t [3:0] loc_alert_en; // [783:780]
     alert_handler_reg2hw_loc_alert_class_mreg_t [3:0] loc_alert_class; // [779:772]
     alert_handler_reg2hw_loc_alert_cause_mreg_t [3:0] loc_alert_cause; // [771:768]
@@ -506,8 +506,8 @@ package alert_handler_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    alert_handler_hw2reg_intr_state_reg_t intr_state; // [267:260]
-    alert_handler_hw2reg_alert_cause_mreg_t [19:0] alert_cause; // [259:220]
+    alert_handler_hw2reg_intr_state_reg_t intr_state; // [273:266]
+    alert_handler_hw2reg_alert_cause_mreg_t [22:0] alert_cause; // [265:220]
     alert_handler_hw2reg_loc_alert_cause_mreg_t [3:0] loc_alert_cause; // [219:212]
     alert_handler_hw2reg_classa_clren_reg_t classa_clren; // [211:210]
     alert_handler_hw2reg_classa_accum_cnt_reg_t classa_accum_cnt; // [209:194]
@@ -663,7 +663,7 @@ package alert_handler_reg_pkg;
     4'b 0111, // index[ 4] ALERT_HANDLER_PING_TIMEOUT_CYC
     4'b 0111, // index[ 5] ALERT_HANDLER_ALERT_EN
     4'b 1111, // index[ 6] ALERT_HANDLER_ALERT_CLASS_0
-    4'b 0001, // index[ 7] ALERT_HANDLER_ALERT_CLASS_1
+    4'b 0011, // index[ 7] ALERT_HANDLER_ALERT_CLASS_1
     4'b 0111, // index[ 8] ALERT_HANDLER_ALERT_CAUSE
     4'b 0001, // index[ 9] ALERT_HANDLER_LOC_ALERT_EN
     4'b 0001, // index[10] ALERT_HANDLER_LOC_ALERT_CLASS

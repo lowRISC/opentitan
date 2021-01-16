@@ -193,7 +193,6 @@ module rv_plic_reg_top (
   logic ip_3_p_119_qs;
   logic ip_3_p_120_qs;
   logic ip_3_p_121_qs;
-  logic ip_3_p_122_qs;
   logic le_0_le_0_qs;
   logic le_0_le_0_wd;
   logic le_0_le_0_we;
@@ -560,9 +559,6 @@ module rv_plic_reg_top (
   logic le_3_le_121_qs;
   logic le_3_le_121_wd;
   logic le_3_le_121_we;
-  logic le_3_le_122_qs;
-  logic le_3_le_122_wd;
-  logic le_3_le_122_we;
   logic [1:0] prio0_qs;
   logic [1:0] prio0_wd;
   logic prio0_we;
@@ -929,9 +925,6 @@ module rv_plic_reg_top (
   logic [1:0] prio121_qs;
   logic [1:0] prio121_wd;
   logic prio121_we;
-  logic [1:0] prio122_qs;
-  logic [1:0] prio122_wd;
-  logic prio122_we;
   logic ie0_0_e_0_qs;
   logic ie0_0_e_0_wd;
   logic ie0_0_e_0_we;
@@ -1298,9 +1291,6 @@ module rv_plic_reg_top (
   logic ie0_3_e_121_qs;
   logic ie0_3_e_121_wd;
   logic ie0_3_e_121_we;
-  logic ie0_3_e_122_qs;
-  logic ie0_3_e_122_wd;
-  logic ie0_3_e_122_we;
   logic [1:0] threshold0_qs;
   logic [1:0] threshold0_wd;
   logic threshold0_we;
@@ -4373,31 +4363,6 @@ module rv_plic_reg_top (
 
     // to register interface (read)
     .qs     (ip_3_p_121_qs)
-  );
-
-
-  // F[p_122]: 26:26
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RO"),
-    .RESVAL  (1'h0)
-  ) u_ip_3_p_122 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (hw2reg.ip[122].de),
-    .d      (hw2reg.ip[122].d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (ip_3_p_122_qs)
   );
 
 
@@ -7584,32 +7549,6 @@ module rv_plic_reg_top (
 
     // to register interface (read)
     .qs     (le_3_le_121_qs)
-  );
-
-
-  // F[le_122]: 26:26
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_le_3_le_122 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (le_3_le_122_we),
-    .wd     (le_3_le_122_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.le[122].q ),
-
-    // to register interface (read)
-    .qs     (le_3_le_122_qs)
   );
 
 
@@ -10908,33 +10847,6 @@ module rv_plic_reg_top (
   );
 
 
-  // R[prio122]: V(False)
-
-  prim_subreg #(
-    .DW      (2),
-    .SWACCESS("RW"),
-    .RESVAL  (2'h0)
-  ) u_prio122 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (prio122_we),
-    .wd     (prio122_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.prio122.q ),
-
-    // to register interface (read)
-    .qs     (prio122_qs)
-  );
-
-
 
   // Subregister 0 of Multireg ie0
   // R[ie0_0]: V(False)
@@ -14120,32 +14032,6 @@ module rv_plic_reg_top (
   );
 
 
-  // F[e_122]: 26:26
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_ie0_3_e_122 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (ie0_3_e_122_we),
-    .wd     (ie0_3_e_122_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ie0[122].q ),
-
-    // to register interface (read)
-    .qs     (ie0_3_e_122_qs)
-  );
-
-
 
   // R[threshold0]: V(False)
 
@@ -14219,7 +14105,7 @@ module rv_plic_reg_top (
 
 
 
-  logic [137:0] addr_hit;
+  logic [136:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[  0] = (reg_addr == RV_PLIC_IP_0_OFFSET);
@@ -14352,14 +14238,13 @@ module rv_plic_reg_top (
     addr_hit[127] = (reg_addr == RV_PLIC_PRIO119_OFFSET);
     addr_hit[128] = (reg_addr == RV_PLIC_PRIO120_OFFSET);
     addr_hit[129] = (reg_addr == RV_PLIC_PRIO121_OFFSET);
-    addr_hit[130] = (reg_addr == RV_PLIC_PRIO122_OFFSET);
-    addr_hit[131] = (reg_addr == RV_PLIC_IE0_0_OFFSET);
-    addr_hit[132] = (reg_addr == RV_PLIC_IE0_1_OFFSET);
-    addr_hit[133] = (reg_addr == RV_PLIC_IE0_2_OFFSET);
-    addr_hit[134] = (reg_addr == RV_PLIC_IE0_3_OFFSET);
-    addr_hit[135] = (reg_addr == RV_PLIC_THRESHOLD0_OFFSET);
-    addr_hit[136] = (reg_addr == RV_PLIC_CC0_OFFSET);
-    addr_hit[137] = (reg_addr == RV_PLIC_MSIP0_OFFSET);
+    addr_hit[130] = (reg_addr == RV_PLIC_IE0_0_OFFSET);
+    addr_hit[131] = (reg_addr == RV_PLIC_IE0_1_OFFSET);
+    addr_hit[132] = (reg_addr == RV_PLIC_IE0_2_OFFSET);
+    addr_hit[133] = (reg_addr == RV_PLIC_IE0_3_OFFSET);
+    addr_hit[134] = (reg_addr == RV_PLIC_THRESHOLD0_OFFSET);
+    addr_hit[135] = (reg_addr == RV_PLIC_CC0_OFFSET);
+    addr_hit[136] = (reg_addr == RV_PLIC_MSIP0_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -14504,9 +14389,7 @@ module rv_plic_reg_top (
     if (addr_hit[134] && reg_we && (RV_PLIC_PERMIT[134] != (RV_PLIC_PERMIT[134] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[135] && reg_we && (RV_PLIC_PERMIT[135] != (RV_PLIC_PERMIT[135] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[136] && reg_we && (RV_PLIC_PERMIT[136] != (RV_PLIC_PERMIT[136] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[137] && reg_we && (RV_PLIC_PERMIT[137] != (RV_PLIC_PERMIT[137] & reg_be))) wr_err = 1'b1 ;
   end
-
 
 
 
@@ -14996,9 +14879,6 @@ module rv_plic_reg_top (
   assign le_3_le_121_we = addr_hit[7] & reg_we & ~wr_err;
   assign le_3_le_121_wd = reg_wdata[25];
 
-  assign le_3_le_122_we = addr_hit[7] & reg_we & ~wr_err;
-  assign le_3_le_122_wd = reg_wdata[26];
-
   assign prio0_we = addr_hit[8] & reg_we & ~wr_err;
   assign prio0_wd = reg_wdata[1:0];
 
@@ -15365,386 +15245,380 @@ module rv_plic_reg_top (
   assign prio121_we = addr_hit[129] & reg_we & ~wr_err;
   assign prio121_wd = reg_wdata[1:0];
 
-  assign prio122_we = addr_hit[130] & reg_we & ~wr_err;
-  assign prio122_wd = reg_wdata[1:0];
-
-  assign ie0_0_e_0_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_0_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_0_wd = reg_wdata[0];
 
-  assign ie0_0_e_1_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_1_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_1_wd = reg_wdata[1];
 
-  assign ie0_0_e_2_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_2_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_2_wd = reg_wdata[2];
 
-  assign ie0_0_e_3_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_3_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_3_wd = reg_wdata[3];
 
-  assign ie0_0_e_4_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_4_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_4_wd = reg_wdata[4];
 
-  assign ie0_0_e_5_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_5_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_5_wd = reg_wdata[5];
 
-  assign ie0_0_e_6_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_6_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_6_wd = reg_wdata[6];
 
-  assign ie0_0_e_7_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_7_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_7_wd = reg_wdata[7];
 
-  assign ie0_0_e_8_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_8_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_8_wd = reg_wdata[8];
 
-  assign ie0_0_e_9_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_9_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_9_wd = reg_wdata[9];
 
-  assign ie0_0_e_10_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_10_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_10_wd = reg_wdata[10];
 
-  assign ie0_0_e_11_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_11_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_11_wd = reg_wdata[11];
 
-  assign ie0_0_e_12_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_12_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_12_wd = reg_wdata[12];
 
-  assign ie0_0_e_13_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_13_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_13_wd = reg_wdata[13];
 
-  assign ie0_0_e_14_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_14_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_14_wd = reg_wdata[14];
 
-  assign ie0_0_e_15_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_15_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_15_wd = reg_wdata[15];
 
-  assign ie0_0_e_16_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_16_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_16_wd = reg_wdata[16];
 
-  assign ie0_0_e_17_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_17_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_17_wd = reg_wdata[17];
 
-  assign ie0_0_e_18_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_18_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_18_wd = reg_wdata[18];
 
-  assign ie0_0_e_19_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_19_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_19_wd = reg_wdata[19];
 
-  assign ie0_0_e_20_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_20_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_20_wd = reg_wdata[20];
 
-  assign ie0_0_e_21_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_21_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_21_wd = reg_wdata[21];
 
-  assign ie0_0_e_22_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_22_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_22_wd = reg_wdata[22];
 
-  assign ie0_0_e_23_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_23_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_23_wd = reg_wdata[23];
 
-  assign ie0_0_e_24_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_24_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_24_wd = reg_wdata[24];
 
-  assign ie0_0_e_25_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_25_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_25_wd = reg_wdata[25];
 
-  assign ie0_0_e_26_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_26_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_26_wd = reg_wdata[26];
 
-  assign ie0_0_e_27_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_27_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_27_wd = reg_wdata[27];
 
-  assign ie0_0_e_28_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_28_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_28_wd = reg_wdata[28];
 
-  assign ie0_0_e_29_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_29_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_29_wd = reg_wdata[29];
 
-  assign ie0_0_e_30_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_30_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_30_wd = reg_wdata[30];
 
-  assign ie0_0_e_31_we = addr_hit[131] & reg_we & ~wr_err;
+  assign ie0_0_e_31_we = addr_hit[130] & reg_we & ~wr_err;
   assign ie0_0_e_31_wd = reg_wdata[31];
 
-  assign ie0_1_e_32_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_32_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_32_wd = reg_wdata[0];
 
-  assign ie0_1_e_33_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_33_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_33_wd = reg_wdata[1];
 
-  assign ie0_1_e_34_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_34_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_34_wd = reg_wdata[2];
 
-  assign ie0_1_e_35_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_35_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_35_wd = reg_wdata[3];
 
-  assign ie0_1_e_36_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_36_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_36_wd = reg_wdata[4];
 
-  assign ie0_1_e_37_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_37_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_37_wd = reg_wdata[5];
 
-  assign ie0_1_e_38_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_38_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_38_wd = reg_wdata[6];
 
-  assign ie0_1_e_39_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_39_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_39_wd = reg_wdata[7];
 
-  assign ie0_1_e_40_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_40_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_40_wd = reg_wdata[8];
 
-  assign ie0_1_e_41_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_41_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_41_wd = reg_wdata[9];
 
-  assign ie0_1_e_42_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_42_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_42_wd = reg_wdata[10];
 
-  assign ie0_1_e_43_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_43_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_43_wd = reg_wdata[11];
 
-  assign ie0_1_e_44_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_44_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_44_wd = reg_wdata[12];
 
-  assign ie0_1_e_45_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_45_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_45_wd = reg_wdata[13];
 
-  assign ie0_1_e_46_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_46_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_46_wd = reg_wdata[14];
 
-  assign ie0_1_e_47_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_47_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_47_wd = reg_wdata[15];
 
-  assign ie0_1_e_48_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_48_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_48_wd = reg_wdata[16];
 
-  assign ie0_1_e_49_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_49_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_49_wd = reg_wdata[17];
 
-  assign ie0_1_e_50_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_50_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_50_wd = reg_wdata[18];
 
-  assign ie0_1_e_51_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_51_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_51_wd = reg_wdata[19];
 
-  assign ie0_1_e_52_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_52_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_52_wd = reg_wdata[20];
 
-  assign ie0_1_e_53_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_53_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_53_wd = reg_wdata[21];
 
-  assign ie0_1_e_54_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_54_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_54_wd = reg_wdata[22];
 
-  assign ie0_1_e_55_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_55_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_55_wd = reg_wdata[23];
 
-  assign ie0_1_e_56_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_56_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_56_wd = reg_wdata[24];
 
-  assign ie0_1_e_57_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_57_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_57_wd = reg_wdata[25];
 
-  assign ie0_1_e_58_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_58_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_58_wd = reg_wdata[26];
 
-  assign ie0_1_e_59_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_59_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_59_wd = reg_wdata[27];
 
-  assign ie0_1_e_60_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_60_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_60_wd = reg_wdata[28];
 
-  assign ie0_1_e_61_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_61_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_61_wd = reg_wdata[29];
 
-  assign ie0_1_e_62_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_62_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_62_wd = reg_wdata[30];
 
-  assign ie0_1_e_63_we = addr_hit[132] & reg_we & ~wr_err;
+  assign ie0_1_e_63_we = addr_hit[131] & reg_we & ~wr_err;
   assign ie0_1_e_63_wd = reg_wdata[31];
 
-  assign ie0_2_e_64_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_64_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_64_wd = reg_wdata[0];
 
-  assign ie0_2_e_65_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_65_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_65_wd = reg_wdata[1];
 
-  assign ie0_2_e_66_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_66_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_66_wd = reg_wdata[2];
 
-  assign ie0_2_e_67_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_67_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_67_wd = reg_wdata[3];
 
-  assign ie0_2_e_68_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_68_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_68_wd = reg_wdata[4];
 
-  assign ie0_2_e_69_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_69_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_69_wd = reg_wdata[5];
 
-  assign ie0_2_e_70_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_70_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_70_wd = reg_wdata[6];
 
-  assign ie0_2_e_71_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_71_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_71_wd = reg_wdata[7];
 
-  assign ie0_2_e_72_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_72_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_72_wd = reg_wdata[8];
 
-  assign ie0_2_e_73_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_73_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_73_wd = reg_wdata[9];
 
-  assign ie0_2_e_74_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_74_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_74_wd = reg_wdata[10];
 
-  assign ie0_2_e_75_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_75_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_75_wd = reg_wdata[11];
 
-  assign ie0_2_e_76_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_76_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_76_wd = reg_wdata[12];
 
-  assign ie0_2_e_77_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_77_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_77_wd = reg_wdata[13];
 
-  assign ie0_2_e_78_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_78_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_78_wd = reg_wdata[14];
 
-  assign ie0_2_e_79_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_79_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_79_wd = reg_wdata[15];
 
-  assign ie0_2_e_80_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_80_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_80_wd = reg_wdata[16];
 
-  assign ie0_2_e_81_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_81_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_81_wd = reg_wdata[17];
 
-  assign ie0_2_e_82_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_82_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_82_wd = reg_wdata[18];
 
-  assign ie0_2_e_83_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_83_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_83_wd = reg_wdata[19];
 
-  assign ie0_2_e_84_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_84_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_84_wd = reg_wdata[20];
 
-  assign ie0_2_e_85_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_85_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_85_wd = reg_wdata[21];
 
-  assign ie0_2_e_86_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_86_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_86_wd = reg_wdata[22];
 
-  assign ie0_2_e_87_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_87_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_87_wd = reg_wdata[23];
 
-  assign ie0_2_e_88_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_88_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_88_wd = reg_wdata[24];
 
-  assign ie0_2_e_89_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_89_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_89_wd = reg_wdata[25];
 
-  assign ie0_2_e_90_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_90_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_90_wd = reg_wdata[26];
 
-  assign ie0_2_e_91_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_91_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_91_wd = reg_wdata[27];
 
-  assign ie0_2_e_92_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_92_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_92_wd = reg_wdata[28];
 
-  assign ie0_2_e_93_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_93_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_93_wd = reg_wdata[29];
 
-  assign ie0_2_e_94_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_94_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_94_wd = reg_wdata[30];
 
-  assign ie0_2_e_95_we = addr_hit[133] & reg_we & ~wr_err;
+  assign ie0_2_e_95_we = addr_hit[132] & reg_we & ~wr_err;
   assign ie0_2_e_95_wd = reg_wdata[31];
 
-  assign ie0_3_e_96_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_96_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_96_wd = reg_wdata[0];
 
-  assign ie0_3_e_97_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_97_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_97_wd = reg_wdata[1];
 
-  assign ie0_3_e_98_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_98_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_98_wd = reg_wdata[2];
 
-  assign ie0_3_e_99_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_99_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_99_wd = reg_wdata[3];
 
-  assign ie0_3_e_100_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_100_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_100_wd = reg_wdata[4];
 
-  assign ie0_3_e_101_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_101_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_101_wd = reg_wdata[5];
 
-  assign ie0_3_e_102_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_102_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_102_wd = reg_wdata[6];
 
-  assign ie0_3_e_103_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_103_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_103_wd = reg_wdata[7];
 
-  assign ie0_3_e_104_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_104_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_104_wd = reg_wdata[8];
 
-  assign ie0_3_e_105_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_105_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_105_wd = reg_wdata[9];
 
-  assign ie0_3_e_106_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_106_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_106_wd = reg_wdata[10];
 
-  assign ie0_3_e_107_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_107_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_107_wd = reg_wdata[11];
 
-  assign ie0_3_e_108_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_108_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_108_wd = reg_wdata[12];
 
-  assign ie0_3_e_109_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_109_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_109_wd = reg_wdata[13];
 
-  assign ie0_3_e_110_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_110_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_110_wd = reg_wdata[14];
 
-  assign ie0_3_e_111_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_111_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_111_wd = reg_wdata[15];
 
-  assign ie0_3_e_112_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_112_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_112_wd = reg_wdata[16];
 
-  assign ie0_3_e_113_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_113_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_113_wd = reg_wdata[17];
 
-  assign ie0_3_e_114_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_114_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_114_wd = reg_wdata[18];
 
-  assign ie0_3_e_115_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_115_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_115_wd = reg_wdata[19];
 
-  assign ie0_3_e_116_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_116_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_116_wd = reg_wdata[20];
 
-  assign ie0_3_e_117_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_117_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_117_wd = reg_wdata[21];
 
-  assign ie0_3_e_118_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_118_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_118_wd = reg_wdata[22];
 
-  assign ie0_3_e_119_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_119_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_119_wd = reg_wdata[23];
 
-  assign ie0_3_e_120_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_120_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_120_wd = reg_wdata[24];
 
-  assign ie0_3_e_121_we = addr_hit[134] & reg_we & ~wr_err;
+  assign ie0_3_e_121_we = addr_hit[133] & reg_we & ~wr_err;
   assign ie0_3_e_121_wd = reg_wdata[25];
 
-  assign ie0_3_e_122_we = addr_hit[134] & reg_we & ~wr_err;
-  assign ie0_3_e_122_wd = reg_wdata[26];
-
-  assign threshold0_we = addr_hit[135] & reg_we & ~wr_err;
+  assign threshold0_we = addr_hit[134] & reg_we & ~wr_err;
   assign threshold0_wd = reg_wdata[1:0];
 
-  assign cc0_we = addr_hit[136] & reg_we & ~wr_err;
+  assign cc0_we = addr_hit[135] & reg_we & ~wr_err;
   assign cc0_wd = reg_wdata[6:0];
-  assign cc0_re = addr_hit[136] && reg_re;
+  assign cc0_re = addr_hit[135] && reg_re;
 
-  assign msip0_we = addr_hit[137] & reg_we & ~wr_err;
+  assign msip0_we = addr_hit[136] & reg_we & ~wr_err;
   assign msip0_wd = reg_wdata[0];
 
   // Read data return
@@ -15883,7 +15757,6 @@ module rv_plic_reg_top (
         reg_rdata_next[23] = ip_3_p_119_qs;
         reg_rdata_next[24] = ip_3_p_120_qs;
         reg_rdata_next[25] = ip_3_p_121_qs;
-        reg_rdata_next[26] = ip_3_p_122_qs;
       end
 
       addr_hit[4]: begin
@@ -16018,7 +15891,6 @@ module rv_plic_reg_top (
         reg_rdata_next[23] = le_3_le_119_qs;
         reg_rdata_next[24] = le_3_le_120_qs;
         reg_rdata_next[25] = le_3_le_121_qs;
-        reg_rdata_next[26] = le_3_le_122_qs;
       end
 
       addr_hit[8]: begin
@@ -16510,10 +16382,6 @@ module rv_plic_reg_top (
       end
 
       addr_hit[130]: begin
-        reg_rdata_next[1:0] = prio122_qs;
-      end
-
-      addr_hit[131]: begin
         reg_rdata_next[0] = ie0_0_e_0_qs;
         reg_rdata_next[1] = ie0_0_e_1_qs;
         reg_rdata_next[2] = ie0_0_e_2_qs;
@@ -16548,7 +16416,7 @@ module rv_plic_reg_top (
         reg_rdata_next[31] = ie0_0_e_31_qs;
       end
 
-      addr_hit[132]: begin
+      addr_hit[131]: begin
         reg_rdata_next[0] = ie0_1_e_32_qs;
         reg_rdata_next[1] = ie0_1_e_33_qs;
         reg_rdata_next[2] = ie0_1_e_34_qs;
@@ -16583,7 +16451,7 @@ module rv_plic_reg_top (
         reg_rdata_next[31] = ie0_1_e_63_qs;
       end
 
-      addr_hit[133]: begin
+      addr_hit[132]: begin
         reg_rdata_next[0] = ie0_2_e_64_qs;
         reg_rdata_next[1] = ie0_2_e_65_qs;
         reg_rdata_next[2] = ie0_2_e_66_qs;
@@ -16618,7 +16486,7 @@ module rv_plic_reg_top (
         reg_rdata_next[31] = ie0_2_e_95_qs;
       end
 
-      addr_hit[134]: begin
+      addr_hit[133]: begin
         reg_rdata_next[0] = ie0_3_e_96_qs;
         reg_rdata_next[1] = ie0_3_e_97_qs;
         reg_rdata_next[2] = ie0_3_e_98_qs;
@@ -16645,18 +16513,17 @@ module rv_plic_reg_top (
         reg_rdata_next[23] = ie0_3_e_119_qs;
         reg_rdata_next[24] = ie0_3_e_120_qs;
         reg_rdata_next[25] = ie0_3_e_121_qs;
-        reg_rdata_next[26] = ie0_3_e_122_qs;
       end
 
-      addr_hit[135]: begin
+      addr_hit[134]: begin
         reg_rdata_next[1:0] = threshold0_qs;
       end
 
-      addr_hit[136]: begin
+      addr_hit[135]: begin
         reg_rdata_next[6:0] = cc0_qs;
       end
 
-      addr_hit[137]: begin
+      addr_hit[136]: begin
         reg_rdata_next[0] = msip0_qs;
       end
 

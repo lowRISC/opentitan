@@ -3868,20 +3868,49 @@
           ]
           type: interrupt
         }
+      ]
+      alert_list:
+      [
         {
-          name: op_error
+          name: recov_err
           width: 1
-          bits: "5"
+          bits: "0"
           bitinfo:
           [
-            32
             1
-            5
+            1
+            0
           ]
-          type: interrupt
+          type: alert
+          async: 1
+        }
+        {
+          name: recov_mp_err
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: alert
+          async: 1
+        }
+        {
+          name: recov_ecc_err
+          width: 1
+          bits: "2"
+          bitinfo:
+          [
+            4
+            1
+            2
+          ]
+          type: alert
+          async: 1
         }
       ]
-      alert_list: []
       wakeup_list: []
       reset_request_list: []
       scan: "false"
@@ -5886,8 +5915,8 @@
           index: -1
         }
         {
-          struct: logic
-          package: ""
+          struct: lc_tx
+          package: lc_ctrl_pkg
           type: uni
           act: rcv
           name: flash_bist_enable
@@ -8308,19 +8337,6 @@
       module_name: flash_ctrl
     }
     {
-      name: flash_ctrl_op_error
-      width: 1
-      bits: "5"
-      bitinfo:
-      [
-        32
-        1
-        5
-      ]
-      type: interrupt
-      module_name: flash_ctrl
-    }
-    {
       name: hmac_hmac_done
       width: 1
       bits: "0"
@@ -8930,6 +8946,7 @@
     entropy_src
     sram_ctrl_main
     sram_ctrl_ret
+    flash_ctrl
   ]
   alert:
   [
@@ -9212,6 +9229,48 @@
       type: alert
       async: 0
       module_name: sram_ctrl_ret
+    }
+    {
+      name: flash_ctrl_recov_err
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: alert
+      async: 1
+      module_name: flash_ctrl
+    }
+    {
+      name: flash_ctrl_recov_mp_err
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: alert
+      async: 1
+      module_name: flash_ctrl
+    }
+    {
+      name: flash_ctrl_recov_ecc_err
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: alert
+      async: 1
+      module_name: flash_ctrl
     }
   ]
   pinmux:
@@ -11709,8 +11768,8 @@
         index: -1
       }
       {
-        struct: logic
-        package: ""
+        struct: lc_tx
+        package: lc_ctrl_pkg
         type: uni
         act: rcv
         name: flash_bist_enable
@@ -12463,8 +12522,8 @@
         direction: in
       }
       {
-        package: ""
-        struct: logic
+        package: lc_ctrl_pkg
+        struct: lc_tx
         signame: flash_bist_enable_i
         width: 1
         type: uni

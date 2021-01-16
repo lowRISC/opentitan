@@ -70,7 +70,7 @@ module top_earlgrey #(
   input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
   output otp_ctrl_pkg::otp_ast_req_t       otp_ctrl_otp_ast_pwr_seq_o,
   input  otp_ctrl_pkg::otp_ast_rsp_t       otp_ctrl_otp_ast_pwr_seq_h_i,
-  input  logic       flash_bist_enable_i,
+  input  lc_ctrl_pkg::lc_tx_t       flash_bist_enable_i,
   input  logic       flash_power_down_h_i,
   input  logic       flash_power_ready_h_i,
   input  logic [1:0] flash_test_mode_a_i,
@@ -179,7 +179,7 @@ module top_earlgrey #(
   // otbn
 
 
-  logic [122:0]  intr_vector;
+  logic [121:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -253,7 +253,6 @@ module top_earlgrey #(
   logic intr_flash_ctrl_rd_full;
   logic intr_flash_ctrl_rd_lvl;
   logic intr_flash_ctrl_op_done;
-  logic intr_flash_ctrl_op_error;
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
@@ -1323,7 +1322,12 @@ module top_earlgrey #(
       .intr_rd_full_o    (intr_flash_ctrl_rd_full),
       .intr_rd_lvl_o     (intr_flash_ctrl_rd_lvl),
       .intr_op_done_o    (intr_flash_ctrl_op_done),
-      .intr_op_error_o   (intr_flash_ctrl_op_error),
+
+      // [12]: recov_err
+      // [13]: recov_mp_err
+      // [14]: recov_ecc_err
+      .alert_tx_o  ( alert_tx[14:12] ),
+      .alert_rx_i  ( alert_rx[14:12] ),
 
       // Inter-module signals
       .flash_o(flash_ctrl_flash_req),
@@ -1376,10 +1380,10 @@ module top_earlgrey #(
     .RndCnstMskgChunkLfsrPerm(aes_pkg::RndCnstMskgChunkLfsrPermDefault)
   ) u_aes (
 
-      // [12]: recov_ctrl_update_err
-      // [13]: fatal_fault
-      .alert_tx_o  ( alert_tx[13:12] ),
-      .alert_rx_i  ( alert_rx[13:12] ),
+      // [15]: recov_ctrl_update_err
+      // [16]: fatal_fault
+      .alert_tx_o  ( alert_tx[16:15] ),
+      .alert_rx_i  ( alert_rx[16:15] ),
 
       // Inter-module signals
       .idle_o(clkmgr_idle[0]),
@@ -1448,10 +1452,10 @@ module top_earlgrey #(
       // Interrupt
       .intr_op_done_o (intr_keymgr_op_done),
 
-      // [14]: fault_err
-      // [15]: operation_err
-      .alert_tx_o  ( alert_tx[15:14] ),
-      .alert_rx_i  ( alert_rx[15:14] ),
+      // [17]: fault_err
+      // [18]: operation_err
+      .alert_tx_o  ( alert_tx[18:17] ),
+      .alert_rx_i  ( alert_rx[18:17] ),
 
       // Inter-module signals
       .edn_o(),
@@ -1504,9 +1508,9 @@ module top_earlgrey #(
       .intr_es_health_test_failed_o (intr_entropy_src_es_health_test_failed),
       .intr_es_fifo_err_o           (intr_entropy_src_es_fifo_err),
 
-      // [16]: recov_alert_count_met
-      .alert_tx_o  ( alert_tx[16:16] ),
-      .alert_rx_i  ( alert_rx[16:16] ),
+      // [19]: recov_alert_count_met
+      .alert_tx_o  ( alert_tx[19:19] ),
+      .alert_rx_i  ( alert_rx[19:19] ),
 
       // Inter-module signals
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
@@ -1561,9 +1565,9 @@ module top_earlgrey #(
     .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce)
   ) u_sram_ctrl_main (
 
-      // [17]: fatal_parity_error
-      .alert_tx_o  ( alert_tx[17:17] ),
-      .alert_rx_i  ( alert_rx[17:17] ),
+      // [20]: fatal_parity_error
+      .alert_tx_o  ( alert_tx[20:20] ),
+      .alert_rx_i  ( alert_rx[20:20] ),
 
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
@@ -1586,10 +1590,10 @@ module top_earlgrey #(
       // Interrupt
       .intr_done_o (intr_otbn_done),
 
-      // [18]: fatal
-      // [19]: recov
-      .alert_tx_o  ( alert_tx[19:18] ),
-      .alert_rx_i  ( alert_rx[19:18] ),
+      // [21]: fatal
+      // [22]: recov
+      .alert_tx_o  ( alert_tx[22:21] ),
+      .alert_rx_i  ( alert_rx[22:21] ),
 
       // Inter-module signals
       .idle_o(clkmgr_idle[3]),
@@ -1647,7 +1651,6 @@ module top_earlgrey #(
       intr_hmac_hmac_err,
       intr_hmac_fifo_empty,
       intr_hmac_hmac_done,
-      intr_flash_ctrl_op_error,
       intr_flash_ctrl_op_done,
       intr_flash_ctrl_rd_lvl,
       intr_flash_ctrl_rd_full,

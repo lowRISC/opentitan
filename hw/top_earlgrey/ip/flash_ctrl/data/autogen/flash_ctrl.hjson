@@ -22,7 +22,18 @@
     { name: "rd_full",    desc: "Read FIFO full" },
     { name: "rd_lvl",     desc: "Read FIFO filled to level" },
     { name: "op_done",    desc: "Operation complete" },
-    { name: "op_error",   desc: "Operation failed with error" },
+  ],
+
+  alert_list: [
+    { name: "recov_err",
+      desc: "flash alerts directly from prim_flash",
+    },
+    { name: "recov_mp_err",
+      desc: "recoverable flash alert for permission error"
+    },
+    { name: "recov_ecc_err",
+      desc: "recoverable flash alert for ecc error"
+    },
   ],
 
   // Define flash_ctrl <-> flash_phy struct package
@@ -1263,9 +1274,10 @@
         { bits: "0", name: "done",
           desc: "Flash operation done. Set by HW, cleared by SW" },
         { bits: "1", name: "err",
-          desc: "Flash operation error. Set by HW, cleared by SW"},
+          desc: "Flash operation error. Set by HW, cleared by SW. See !!ERR_CODE for more details."},
       ]
     },
+
     { name: "STATUS",
       desc: "Flash Controller Status",
       swaccess: "ro",
@@ -1276,8 +1288,97 @@
         { bits: "2",    name: "prog_full",  desc: "Flash program FIFO full"},
         { bits: "3",    name: "prog_empty", desc: "Flash program FIFO empty, software must provide data", resval: "1"},
         { bits: "4",    name: "init_wip",   desc: "Flash controller undergoing init, inclusive of phy init"},
-        { bits: "16:8", name: "error_addr", desc: "Flash controller error address."},
       ]
+    },
+
+    { name: "ERR_CODE",
+      desc: '''
+        Flash error code register.
+        This register tabulates detailed error status of the flash.
+        This is separate from !!OP_STATUS, which is used to indicate the current state of the software initiated
+        flash operation.
+      '''
+      swaccess: "rw",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "flash_err",
+          desc: '''
+            The flash memory itself has an error, please check the vendor specs for details of the error.
+          '''
+        },
+        { bits: "1",
+          name: "flash_alert",
+          desc: '''
+            The flash memory itself has triggered an alert, please check the vendor specs for details of the error.
+          '''
+        },
+        { bits: "2",
+          name: "mp_err",
+          desc: '''
+            Flash access has encountered an access permission error.
+            Please see !!ERR_ADDR for exact address.
+          '''
+        },
+        { bits: "3",
+          name: "ecc_single_err",
+          desc: '''
+            Flash access has encountered a single bit ECC error.
+            Please see !!ECC_ERR_ADDR for exact address.
+          '''
+        },
+        { bits: "4",
+          name: "ecc_multi_err",
+          desc: '''
+            Flash access has encountered a multi bit ECC error.
+            Please see !!ECC_ERR_ADDR for exact address.
+          '''
+        },
+      ]
+    },
+
+    { name: "ERR_ADDR",
+      desc: "Access permission error address",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "8:0",
+          resval: 0,
+        },
+      ]
+    },
+
+    { multireg: {
+        cname: "ECC_ERR"
+        name: "ECC_ERR_ADDR",
+        desc: "ecc error address",
+        count: "RegNumBanks",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "19:0",
+            resval: 0,
+          },
+        ]
+      }
+    },
+
+    { name: "PHY_ALERT_CFG",
+      desc: "Phy alert configuration",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "alert_ack",
+          desc: "Acknowledge flash phy alert"
+        },
+        { bits: "1",
+          name: "alert_trig",
+          desc: "Trigger flash phy alert"
+        }
+      ]
+      tags: [ // alert triggers should be tested by directed tests
+             "excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "PHY_STATUS",
