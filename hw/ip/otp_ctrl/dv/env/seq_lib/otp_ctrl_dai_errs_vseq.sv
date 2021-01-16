@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// otp_ctrl_marco_errs_vseq is developed to randomly read/write to any address within OTP:
+// otp_ctrl_dai_errs_vseq is developed to randomly read/write to any address within OTP:
 // - A writeblank error will be triggered if write to a non-empty address
 // - An access error will be triggered if write to lc partition via DAI interface, or if DAI write
 //   to digest addrs for non-sw partitions
-class otp_ctrl_macro_errs_vseq extends otp_ctrl_smoke_vseq;
-  `uvm_object_utils(otp_ctrl_macro_errs_vseq)
+class otp_ctrl_dai_errs_vseq extends otp_ctrl_smoke_vseq;
+  `uvm_object_utils(otp_ctrl_dai_errs_vseq)
 
   `uvm_object_new
 
