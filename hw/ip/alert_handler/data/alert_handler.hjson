@@ -201,6 +201,9 @@
                   hwaccess: "hro",
                   regwen:   "REGEN",
                   cname:    "alert",
+                  tags:     [// Enable `alert_en` might cause top-level escalators to trigger
+                             // unexpected reset
+                             "excl:CsrAllTests:CsrExclWrite"]
                   fields: [
                     { bits: "0",
                       name: "EN_A",
