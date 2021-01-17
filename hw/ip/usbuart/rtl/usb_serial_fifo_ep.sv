@@ -33,13 +33,13 @@ module usb_serial_fifo_ep  #(
   output logic        in_ep_data_done_o,
 
   // fifo interface
-  input               tx_empty,
-  input               rx_full,
-  output logic        tx_read,
-  output logic        rx_write,
-  output logic        rx_err, // Signals fifo overflow
-  output logic [7:0]  rx_fifo_wdata,
-  input [7:0]         tx_fifo_rdata,
+  input               tx_empty_i,
+  input               rx_full_i,
+  output logic        tx_read_o,
+  output logic        rx_write_o,
+  output logic        rx_err_o, // Signals fifo overflow
+  output logic [7:0]  rx_fifo_wdata_o,
+  input [7:0]         tx_fifo_rdata_i,
 
   // information
   output logic [15:0] baud_o,
@@ -64,62 +64,96 @@ module usb_serial_fifo_ep  #(
   // In future probably better to eliminate this buffer and add rollback to async FIFO
   // Will receive the 2 bytes of CRC, so may get MAX_PACKET_SIZE+2 bytes
   logic [7:0] out_pkt_buffer [MaxPktSizeByte];
-  logic [PktW - 1:0] ob_rptr;
-  logic [PktW:0]     ob_max_used;
-  logic          ob_unload;
+  logic [PktW - 1:0] ob_rptr_d, ob_rptr_q;
+  logic [PktW:0]     ob_max_used_d, ob_max_used_q;
+  logic              ob_unload_d, ob_unload_q, ob_write, rx_write_d, rx_write_q;
 
-  always_ff @(posedge clk_i) begin
-    if (!do_setup && out_ep_data_put_i && !ob_unload) begin
-      // don't write if the address has wrapped (happens for two CRC bytes after max data)
-      if (!ob_max_used[PktW]) begin
+  // Track the highest buffer addr written and if data should be written
+  always_comb begin
+    // clear if unloading finishes or an error cancels transaction
+    // out_ep_rollback also asserts on sending a NACK because emptying buffer
+    if ((!ob_unload_d && ob_unload_q) || (out_ep_rollback_i && !ob_unload_q)) begin
+      ob_max_used_d = 0;
+      ob_write = 0;
+    end else if (!do_setup && out_ep_data_put_i && !ob_unload_q) begin
+      if (int'(ob_max_used_q) < MaxPktSizeByte - 1) begin
+        ob_max_used_d = {1'b0, out_ep_put_addr_i};
+        ob_write = 1;
+      end else if (int'(ob_max_used_q) < MaxPktSizeByte + 1) begin
+        ob_max_used_d = ob_max_used_q + 1;
+        ob_write = 0;
+      end else begin
+        ob_max_used_d = ob_max_used_q;
+        ob_write = 0;
+      end
+    end else begin
+      ob_max_used_d = ob_max_used_q;
+      ob_write = 0;
+    end
+  end // always_comb
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      ob_max_used_q <= 0;
+    end else begin
+      ob_max_used_q <= ob_max_used_d;
+      if (ob_write) begin
         out_pkt_buffer[out_ep_put_addr_i] <= out_ep_data_i;
       end
-      // In the normal case <MAX_PACKET_SIZE this is ob_max_used <= out_ep_put_addr_i
-      // Following all ones ob_max_used will get 1,00..00 and 1,00..01 to cover
-      // one and two bytes of the CRC overflowing, then stick at 1,00..01
-      ob_max_used[0] <= (ob_max_used[PktW] & ob_max_used[0]) ? 1'b1 : out_ep_put_addr_i[0];
-      ob_max_used[PktW - 1: 1] <= ob_max_used[PktW] ? 0 : out_ep_put_addr_i[PktW - 1:1];
-      ob_max_used[PktW] <= (&ob_max_used[PktW - 1:0]) | ob_max_used[PktW];
+    end
+  end
+
+  always_comb begin
+    if (!do_setup && out_ep_acked_i) begin
+      ob_unload_d = 1'b1;
+    end else if (({1'b0, ob_rptr_q} == (ob_max_used_q - {1'b0, PktW'(2)})) && rx_write_d) begin
+      ob_unload_d = 1'b0;
+    end else begin
+      ob_unload_d = ob_unload_q;
     end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      ob_unload <= 1'b0;
+      ob_unload_q <= 1'b0;
     end else begin
-      if (!do_setup && out_ep_acked_i) begin
-        ob_unload <= 1'b1;
-      end else if (({1'b0, ob_rptr} == (ob_max_used - {1'b0, PktW'(2)})) && !rx_full) begin
-        ob_unload <= 1'b0;
-      end
+      ob_unload_q <= ob_unload_d;
     end
   end
 
+  always_comb begin
+    if (!ob_unload_q) begin
+      ob_rptr_d = '0;
+      rx_write_d = 1'b0;
+    end else if (!rx_full_i && !rx_write_q) begin // implicit && ob_unload
+      rx_write_d = 1'b1;
+      ob_rptr_d = ob_rptr_q + 1'b1;
+    end else begin
+      rx_write_d = 1'b0;
+      ob_rptr_d = ob_rptr_q;
+    end
+  end
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      ob_rptr <= '0;
-      rx_write <= 1'b0;
+      ob_rptr_q <= '0;
+      rx_write_q <= 1'b0;
     end else begin
-      if (!ob_unload) begin
-        ob_rptr <= '0;
-        rx_write <= 1'b0;
-      end else if (!rx_full) begin // implicit && ob_unload
-        rx_write <= 1'b1;
-        rx_fifo_wdata <= out_pkt_buffer[ob_rptr];
-        ob_rptr <= ob_rptr + 1'b1;
-      end else begin
-        rx_write <= 1'b0;
+      rx_write_q <= rx_write_d;
+      ob_rptr_q <= ob_rptr_d;
+      if (rx_write_d) begin
+        rx_fifo_wdata_o <= out_pkt_buffer[ob_rptr_q];
       end
     end
   end
+  assign rx_write_o = rx_write_q;
 
   // rx_err indicates data loss prior to item it is attached to
   // won't do that here, backpressure the usb instead
-  assign rx_err = 1'b0;
+  assign rx_err_o = 1'b0;
 
-  // ob should unload in 32 cycles i.e. 32/4 = 8 bit times, so this will only
+  // ob should unload in 64 cycles i.e. 64/4 = 16 bit times, so this will only
   // happen if the FIFO really gets full
-  assign out_ep_full_o = ~do_setup && ob_unload;
+  assign out_ep_full_o = ~do_setup && ob_unload_q;
 
   ///////////////////////////////////////
   // IN endpoint (from tx_fifo to usb) //
@@ -160,10 +194,10 @@ module usb_serial_fifo_ep  #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      tx_read <= 0;
+      tx_read_o <= 0;
     end else begin
       // Limits to every other cycle, but that is still ((4/2)*8) = 16* line byte rate
-      tx_read <= !tx_read && !tx_empty && !pb_done && !pb_freeze && !pb_wptr[PktW];
+      tx_read_o <= !tx_read_o && !tx_empty_i && !pb_done && !pb_freeze && !pb_wptr[PktW];
     end
   end
 
@@ -171,8 +205,8 @@ module usb_serial_fifo_ep  #(
     if (!rst_ni) begin
       pb_wptr <= '0;
     end else begin
-      if (tx_read) begin
-        in_pkt_buffer[pb_wptr[PktW - 1:0]] <= tx_fifo_rdata;
+      if (tx_read_o) begin
+        in_pkt_buffer[pb_wptr[PktW - 1:0]] <= tx_fifo_rdata_i;
         pb_wptr <= pb_wptr + 1'b1;
       end else if (!do_setup && in_ep_acked_i) begin
         pb_wptr <= '0;
@@ -361,7 +395,7 @@ module usb_serial_fifo_ep  #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       baud_o <= 16'd1152; // spec is default to 115,200 baud
-      parity_o <= 1'b0;   // with no parity
+      parity_o <= 2'b0;   // with no parity
       bytes_sent <= '0;
       send_length <= '0;
       return_data <= '0;

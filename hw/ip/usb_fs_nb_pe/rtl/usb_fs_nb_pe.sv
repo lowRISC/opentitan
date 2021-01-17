@@ -54,6 +54,7 @@ module usb_fs_nb_pe #(
   output logic [3:0]             in_ep_current_o, // Other signals addressed to this ep
   output logic                   in_ep_rollback_o, // Bad termination, rollback transaction
   output logic                   in_ep_xfr_end_o, // good termination, transaction complete
+  output logic                   in_ep_acked_o,   // good term, completed by ack (subset of xfr_end)
   output logic [PktW - 1:0]      in_ep_get_addr_o, // Offset requested (0..pktlen)
   output logic                   in_ep_data_get_o, // Accept data (get_addr advances too)
   output logic                   in_ep_newpkt_o, // New IN pkt start (with in_ep_current_o update)
@@ -138,6 +139,7 @@ module usb_fs_nb_pe #(
     .in_ep_current_o       (in_ep_current_o),
     .in_ep_rollback_o      (in_ep_rollback_o),
     .in_ep_xfr_end_o       (in_ep_xfr_end_o),
+    .in_ep_acked_o         (in_ep_acked_o),
     .in_ep_get_addr_o      (in_ep_get_addr_o),
     .in_ep_data_get_o      (in_ep_data_get_o),
     .in_ep_newpkt_o        (in_ep_newpkt_o),

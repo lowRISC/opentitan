@@ -15,7 +15,8 @@ module usb_serial_ctrl_ep  #(
 ) (
   input              clk_i,
   input              rst_ni,
-  output logic [6:0] dev_addr,
+  input              link_reset_i,
+  output logic [6:0] dev_addr_o,
 
   ////////////////////////////
   // out endpoint interface //
@@ -71,7 +72,7 @@ module usb_serial_ctrl_ep  #(
   logic [6:0] dev_addr_int;
   logic [6:0] new_dev_addr;
 
-  assign dev_addr = dev_addr_int;
+  assign dev_addr_o = dev_addr_int;
 
   assign out_ep_stall_o = 1'b0;
   assign out_ep_full_o = 1'b0;
@@ -237,6 +238,10 @@ module usb_serial_ctrl_ep  #(
   assign dscr_type = usb_dscr_type_e'(wValue[15:8]);
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      dev_addr_int <= '0;
+      save_dev_addr <= 1'b0;
+      in_ep_stall_o <= 1'b0;
+    end else if (link_reset_i) begin
       dev_addr_int <= '0;
       save_dev_addr <= 1'b0;
       in_ep_stall_o <= 1'b0;

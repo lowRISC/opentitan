@@ -6,96 +6,189 @@
 
 package usbuart_reg_pkg;
 
+  // Param list
+  parameter int NEndpoints = 12;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
   typedef struct packed {
     struct packed {
       logic        q;
-    } tx_watermark;
+    } pkt_received;
     struct packed {
       logic        q;
-    } rx_watermark;
+    } pkt_sent;
     struct packed {
       logic        q;
-    } tx_overflow;
+    } disconnected;
     struct packed {
       logic        q;
-    } rx_overflow;
+    } host_lost;
     struct packed {
       logic        q;
-    } rx_frame_err;
+    } link_reset;
     struct packed {
       logic        q;
-    } rx_break_err;
+    } link_suspend;
     struct packed {
       logic        q;
-    } rx_timeout;
+    } link_resume;
     struct packed {
       logic        q;
-    } rx_parity_err;
+    } av_empty;
+    struct packed {
+      logic        q;
+    } rx_full;
+    struct packed {
+      logic        q;
+    } av_overflow;
+    struct packed {
+      logic        q;
+    } link_in_err;
+    struct packed {
+      logic        q;
+    } rx_crc_err;
+    struct packed {
+      logic        q;
+    } rx_pid_err;
+    struct packed {
+      logic        q;
+    } rx_bitstuff_err;
+    struct packed {
+      logic        q;
+    } frame;
+    struct packed {
+      logic        q;
+    } connected;
+    struct packed {
+      logic        q;
+    } link_out_err;
   } usbuart_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } tx_watermark;
+    } pkt_received;
     struct packed {
       logic        q;
-    } rx_watermark;
+    } pkt_sent;
     struct packed {
       logic        q;
-    } tx_overflow;
+    } disconnected;
     struct packed {
       logic        q;
-    } rx_overflow;
+    } host_lost;
     struct packed {
       logic        q;
-    } rx_frame_err;
+    } link_reset;
     struct packed {
       logic        q;
-    } rx_break_err;
+    } link_suspend;
     struct packed {
       logic        q;
-    } rx_timeout;
+    } link_resume;
     struct packed {
       logic        q;
-    } rx_parity_err;
+    } av_empty;
+    struct packed {
+      logic        q;
+    } rx_full;
+    struct packed {
+      logic        q;
+    } av_overflow;
+    struct packed {
+      logic        q;
+    } link_in_err;
+    struct packed {
+      logic        q;
+    } rx_crc_err;
+    struct packed {
+      logic        q;
+    } rx_pid_err;
+    struct packed {
+      logic        q;
+    } rx_bitstuff_err;
+    struct packed {
+      logic        q;
+    } frame;
+    struct packed {
+      logic        q;
+    } connected;
+    struct packed {
+      logic        q;
+    } link_out_err;
   } usbuart_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } tx_watermark;
+    } pkt_received;
     struct packed {
       logic        q;
       logic        qe;
-    } rx_watermark;
+    } pkt_sent;
     struct packed {
       logic        q;
       logic        qe;
-    } tx_overflow;
+    } disconnected;
     struct packed {
       logic        q;
       logic        qe;
-    } rx_overflow;
+    } host_lost;
     struct packed {
       logic        q;
       logic        qe;
-    } rx_frame_err;
+    } link_reset;
     struct packed {
       logic        q;
       logic        qe;
-    } rx_break_err;
+    } link_suspend;
     struct packed {
       logic        q;
       logic        qe;
-    } rx_timeout;
+    } link_resume;
     struct packed {
       logic        q;
       logic        qe;
-    } rx_parity_err;
+    } av_empty;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } rx_full;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } av_overflow;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } link_in_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } rx_crc_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } rx_pid_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } rx_bitstuff_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } frame;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } connected;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } link_out_err;
   } usbuart_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -175,40 +268,91 @@ package usbuart_reg_pkg;
     } en;
   } usbuart_reg2hw_timeout_ctrl_reg_t;
 
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } pinflip;
+    struct packed {
+      logic        q;
+    } tx_diff;
+    struct packed {
+      logic        q;
+    } rx_diff;
+    struct packed {
+      logic        q;
+    } ref_disable;
+  } usbuart_reg2hw_usbctrl_reg_t;
+
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } tx_watermark;
+    } pkt_received;
     struct packed {
       logic        d;
       logic        de;
-    } rx_watermark;
+    } pkt_sent;
     struct packed {
       logic        d;
       logic        de;
-    } tx_overflow;
+    } disconnected;
     struct packed {
       logic        d;
       logic        de;
-    } rx_overflow;
+    } host_lost;
     struct packed {
       logic        d;
       logic        de;
-    } rx_frame_err;
+    } link_reset;
     struct packed {
       logic        d;
       logic        de;
-    } rx_break_err;
+    } link_suspend;
     struct packed {
       logic        d;
       logic        de;
-    } rx_timeout;
+    } link_resume;
     struct packed {
       logic        d;
       logic        de;
-    } rx_parity_err;
+    } av_empty;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rx_full;
+    struct packed {
+      logic        d;
+      logic        de;
+    } av_overflow;
+    struct packed {
+      logic        d;
+      logic        de;
+    } link_in_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rx_crc_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rx_pid_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rx_bitstuff_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } frame;
+    struct packed {
+      logic        d;
+      logic        de;
+    } connected;
+    struct packed {
+      logic        d;
+      logic        de;
+    } link_out_err;
   } usbuart_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -238,14 +382,6 @@ package usbuart_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        d;
-      logic        de;
-    } rxrst;
-    struct packed {
-      logic        d;
-      logic        de;
-    } txrst;
-    struct packed {
       logic [2:0]  d;
       logic        de;
     } rxilvl;
@@ -274,10 +410,16 @@ package usbuart_reg_pkg;
     } frame;
     struct packed {
       logic        d;
-    } host_timeout;
+    } link_reset;
+    struct packed {
+      logic        d;
+    } link_suspend;
     struct packed {
       logic        d;
     } host_lost;
+    struct packed {
+      logic        d;
+    } pwr_sense;
     struct packed {
       logic [6:0]  d;
     } device_address;
@@ -297,28 +439,29 @@ package usbuart_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    usbuart_reg2hw_intr_state_reg_t intr_state; // [112:105]
-    usbuart_reg2hw_intr_enable_reg_t intr_enable; // [104:97]
-    usbuart_reg2hw_intr_test_reg_t intr_test; // [96:81]
-    usbuart_reg2hw_ctrl_reg_t ctrl; // [80:56]
-    usbuart_reg2hw_rdata_reg_t rdata; // [55:47]
-    usbuart_reg2hw_wdata_reg_t wdata; // [46:38]
-    usbuart_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [37:27]
-    usbuart_reg2hw_ovrd_reg_t ovrd; // [26:25]
-    usbuart_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [24:0]
+    usbuart_reg2hw_intr_state_reg_t intr_state; // [152:136]
+    usbuart_reg2hw_intr_enable_reg_t intr_enable; // [135:119]
+    usbuart_reg2hw_intr_test_reg_t intr_test; // [118:85]
+    usbuart_reg2hw_ctrl_reg_t ctrl; // [84:60]
+    usbuart_reg2hw_rdata_reg_t rdata; // [59:51]
+    usbuart_reg2hw_wdata_reg_t wdata; // [50:42]
+    usbuart_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [41:31]
+    usbuart_reg2hw_ovrd_reg_t ovrd; // [30:29]
+    usbuart_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [28:4]
+    usbuart_reg2hw_usbctrl_reg_t usbctrl; // [3:0]
   } usbuart_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    usbuart_hw2reg_intr_state_reg_t intr_state; // [106:91]
-    usbuart_hw2reg_status_reg_t status; // [90:85]
-    usbuart_hw2reg_rdata_reg_t rdata; // [84:77]
-    usbuart_hw2reg_fifo_ctrl_reg_t fifo_ctrl; // [76:66]
-    usbuart_hw2reg_fifo_status_reg_t fifo_status; // [65:54]
-    usbuart_hw2reg_val_reg_t val; // [53:38]
-    usbuart_hw2reg_usbstat_reg_t usbstat; // [37:18]
+    usbuart_hw2reg_intr_state_reg_t intr_state; // [122:89]
+    usbuart_hw2reg_status_reg_t status; // [88:83]
+    usbuart_hw2reg_rdata_reg_t rdata; // [82:75]
+    usbuart_hw2reg_fifo_ctrl_reg_t fifo_ctrl; // [74:68]
+    usbuart_hw2reg_fifo_status_reg_t fifo_status; // [67:56]
+    usbuart_hw2reg_val_reg_t val; // [55:40]
+    usbuart_hw2reg_usbstat_reg_t usbstat; // [39:18]
     usbuart_hw2reg_usbparam_reg_t usbparam; // [17:0]
   } usbuart_hw2reg_t;
 
@@ -335,8 +478,9 @@ package usbuart_reg_pkg;
   parameter logic [5:0] USBUART_OVRD_OFFSET = 6'h 24;
   parameter logic [5:0] USBUART_VAL_OFFSET = 6'h 28;
   parameter logic [5:0] USBUART_TIMEOUT_CTRL_OFFSET = 6'h 2c;
-  parameter logic [5:0] USBUART_USBSTAT_OFFSET = 6'h 30;
-  parameter logic [5:0] USBUART_USBPARAM_OFFSET = 6'h 34;
+  parameter logic [5:0] USBUART_USBCTRL_OFFSET = 6'h 30;
+  parameter logic [5:0] USBUART_USBSTAT_OFFSET = 6'h 34;
+  parameter logic [5:0] USBUART_USBPARAM_OFFSET = 6'h 38;
 
 
   // Register Index
@@ -353,15 +497,16 @@ package usbuart_reg_pkg;
     USBUART_OVRD,
     USBUART_VAL,
     USBUART_TIMEOUT_CTRL,
+    USBUART_USBCTRL,
     USBUART_USBSTAT,
     USBUART_USBPARAM
   } usbuart_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] USBUART_PERMIT [14] = '{
-    4'b 0001, // index[ 0] USBUART_INTR_STATE
-    4'b 0001, // index[ 1] USBUART_INTR_ENABLE
-    4'b 0001, // index[ 2] USBUART_INTR_TEST
+  parameter logic [3:0] USBUART_PERMIT [15] = '{
+    4'b 0111, // index[ 0] USBUART_INTR_STATE
+    4'b 0111, // index[ 1] USBUART_INTR_ENABLE
+    4'b 0111, // index[ 2] USBUART_INTR_TEST
     4'b 1111, // index[ 3] USBUART_CTRL
     4'b 0001, // index[ 4] USBUART_STATUS
     4'b 0001, // index[ 5] USBUART_RDATA
@@ -371,8 +516,9 @@ package usbuart_reg_pkg;
     4'b 0001, // index[ 9] USBUART_OVRD
     4'b 0011, // index[10] USBUART_VAL
     4'b 1111, // index[11] USBUART_TIMEOUT_CTRL
-    4'b 0111, // index[12] USBUART_USBSTAT
-    4'b 0111  // index[13] USBUART_USBPARAM
+    4'b 0001, // index[12] USBUART_USBCTRL
+    4'b 0111, // index[13] USBUART_USBSTAT
+    4'b 0111  // index[14] USBUART_USBPARAM
   };
 endpackage
 

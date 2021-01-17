@@ -2,51 +2,127 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name: "usbuart",
-  clock_primary: "clk_fixed",
-  other_clock_list: [ "clk_48mhz" ]
+  clock_primary: "clk_i",
+  other_clock_list: [ "clk_usb_48mhz_i" ]
+  reset_primary: "rst_ni",
+  other_reset_list: [ "rst_usb_48mhz_ni" ]
   bus_device: "tlul",
   bus_host: "none",
   available_inout_list: [
-    { name: "usb_dp", desc: "USB data D+" }
-    { name: "usb_dm", desc: "USB data D-" }
+    { name: "d", desc: "USB data differential" }
+    { name: "dp", desc: "USB data D+" }
+    { name: "dn", desc: "USB data D-" }
   ],
   available_input_list: [
-    {  name: "usb_sense", desc: "USB host VBUS sense" }
+    {  name: "sense", desc: "USB host VBUS sense" }
   ],
   available_output_list: [
-    { name: "usb_pullup", desc: "USB FS pullup control" }
+    { name: "se0", desc: "USB single-ended zero link state" }
+    { name: "dp_pullup", desc: "USB D+ pullup control" }
+    { name: "dn_pullup", desc: "USB D- pullup control" }
+    { name: "tx_mode_se", desc: "USB single-ended transmit mode control" }
+    { name: "suspend", desc: "USB link suspend state" }
+  ],
+  inter_signal_list: [
+    { name:    "usb_ref_val",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+    { name:    "usb_ref_pulse",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+  ]
+  param_list: [
+    { name:    "NEndpoints",
+      type:    "int",
+      default: "12",
+      desc:    "Number of endpoints",
+      local:   "true"
+    }
   ],
   interrupt_list: [
-    { name: "tx_watermark"
-      desc: "raised if the transmit FIFO is past the highwater mark."}
-    { name: "rx_watermark"
-      desc: "raised if the receive FIFO is past the highwater mark."}
-    { name: "tx_overflow"
-      desc: "raised if the transmit FIFO has overflowed."}
-    { name: "rx_overflow"
-      desc: "raised if the receive FIFO has overflowed."}
-    { name: "rx_frame_err"
+    { name: "pkt_received"
+      desc: "UART tx_watermark: raised if the transmit FIFO is past the high-water mark."}
+    { name: "pkt_sent"
+      desc: "UART rx_watermark: raised if the receive FIFO is past the high-water mark."}
+    { name: "disconnected",
+      desc: "UART tx_empty: raised if the transmit FIFO has emptied and no transmit is ongoing."}
+    { name: "host_lost",
+      desc: "UART rx_overflow: raised if the receive FIFO has overflowed."}
+    { name: "link_reset",
       desc: '''
-            raised if a framing error has been detected on receive,
+            UART rx_frame_err: raised if a framing error has been detected on receive,
             which will never happen on the USB interface.
             '''}
-    { name: "rx_break_err"
+    { name: "link_suspend",
       desc: '''
-            raised if break condition has been detected on receive.
+            UART rx_break_err: raised if break condition has been detected on receive.
             This is done if either the host is not providing VBUS or has not
             provided a Start of Frame indication in 2.048ms.
             '''}
-    { name: "rx_timeout"
+    { name: "link_resume",
       desc: '''
-            raised if RX FIFO has characters remaining in the FIFO without being
-            retrieved for the programmed time period.
-            '''
+          UART rx_timeout: raised if RX FIFO has characters remaining in the FIFO without being
+          retrieved for the programmed time period.
+          '''
     }
-    { name: "rx_parity_err"
+    { name: "av_empty",
       desc: '''
-            raised if the receiver has detected a parity error,
+            UART rx_parity_err: raised if the receiver has detected a parity error,
             which will never happen on the USB interface.
             '''}
+    { name: "rx_full",
+      desc: '''
+            Dummy to meet usbdev.
+            '''
+    }
+    { name: "av_overflow",
+      desc: '''
+            Dummy to meet usbdev.
+            '''
+    }
+    { name: "link_in_err",
+      desc: '''
+            Dummy to meet usbdev.
+            '''
+    }
+    { name: "rx_crc_err",
+      desc: '''
+            Dummy to meet usbdev.
+            '''
+    }
+    { name: "rx_pid_err",
+      desc: '''
+            Dummy to meet usbdev.
+            '''
+    }
+    { name: "rx_bitstuff_err",
+      desc: '''
+            Dummy to meet usbdev.
+            '''
+    }
+    { name: "frame",
+      desc: '''
+            Dummy to meet usbdev.
+            '''
+    }
+    { name: "connected",
+      desc: '''
+            Dummy to meet usbdev.
+            '''
+    }
+    { name: "link_out_err",
+      desc: '''
+            Dummy to meet usbdev.
+            '''
+    }
   ]
   regwidth: "32",
   registers: [
@@ -136,18 +212,22 @@
         { bits: "2"
           name: "TXEMPTY"
           desc: "TX FIFO is empty"
+          resval: "1"
         }
         { bits: "3"
           name: "TXIDLE"
           desc: "TX is idle. At the moment this matches the TXEMPTY bit."
+          resval: "1"
         }
         { bits: "4"
           name: "RXIDLE"
           desc: "RX is idle. At the moment this matches the RXEMPTY bit."
+          resval: "1"
         }
         { bits: "5"
           name: "RXEMPTY"
           desc: "RX FIFO is empty"
+          resval: "1"
         }
       ]
     }
@@ -177,16 +257,22 @@
       hwqe:     "true",
       fields: [
         { bits: "0",
+          swaccess: "wo",
+          hwaccess: "hro",
           name: "RXRST",
-          desc: "RX fifo reset"
+          desc: "RX fifo reset. Write 1 to the register resets RX_FIFO. Read returns 0"
         }
         { bits: "1",
+          swaccess: "wo",
+          hwaccess: "hro",
           name: "TXRST",
-          desc: "TX fifo reset"
+          desc: "TX fifo reset. Write 1 to the register resets TX_FIFO. Read returns 0"
         }
         { bits: "4:2",
           name: "RXILVL",
-          desc: "Trigger level for RX interrupts",
+          desc: '''Trigger level for RX interrupts. If the FIFO depth is greater than or equal to
+                the setting, it raises rx_watermark interrupt.
+                ''',
           enum: [
             { value: "0",
               name: "rxlvl1",
@@ -208,16 +294,17 @@
               name: "rxlvl30",
               desc: "30 characters"
             },
-            // TODO expect generator to make others reserved
           ]
         }
         { bits: "6:5",
           name: "TXILVL",
-          desc: "Trigger level for TX interrupts",
+          desc: '''Trigger level for TX interrupts. If the FIFO depth is less than the setting, it
+                raises tx_watermark interrupt.
+                ''',
           enum: [
             { value: "0",
               name: "txlvl1",
-              desc: "1 character"
+              desc: "2 characters"
             },
             { value: "1",
               name: "txlvl4",
@@ -295,6 +382,29 @@
         }
       ]
     }
+    { name: "USBCTRL",
+      desc: "USB control",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "pinflip",
+          desc: "Set to swap D+ and D- pins"
+        }
+        { bits: "1",
+          name: "tx_diff",
+          desc: "Set to configure programmable PHY for differential mode (d and se0)"
+        }
+        { bits: "2",
+          name: "rx_diff",
+          desc: "Set to configure receiver for differential PHY"
+        }
+        { bits: "3",
+          name: "ref_disable",
+          desc: "Set to disable SOF reference pulses for clocking"
+        }
+      ]
+    }
     { name: "USBSTAT",
       desc: "USB Status",
       swaccess: "ro",
@@ -310,17 +420,34 @@
                 '''
         }
         {
-          bits: "14",
-          name: "host_timeout",
+          bits: "12",
+          name: "link_reset",
           desc: '''
-                Start of frame not received from host for 1s.
+                Link is in the reset state.
+                '''
+        }
+        {
+          bits: "13",
+          name: "link_suspend",
+          desc: '''
+                Link is in the suspend state.
+                '''
+        }
+        {
+          bits: "14",
+          name: "host_lost",
+          desc: '''
+                Start of frame not received from host for 4.096ms. This also triggers a
+                break interrupt. A SoF is required every 1ms on a functioning USB link.
+                Note that this bit (and break condition) will be set if the link is
+                suspended or in reset.
                 '''
         }
         {
           bits: "15",
-          name: "host_lost",
+          name: "pwr_sense",
           desc: '''
-                Start of frame not received from host for 2.048ms.
+                State of the VBUS sense pin (note this is not used by the hardware).
                 '''
         }
         {

@@ -5,54 +5,47 @@
 // Description: USB uart interface in USB clock domain
 //
 module usbuart_usbif (
-  input               clk_48mhz_i,
-  input               rst_ni,
+  input logic         clk_48mhz_i,
+  input logic         rst_ni,
 
-  // USB lines.  Split into input vs. output and oe control signal to maintain
-  // highest level of compatibility with synthesis tools.
-  input  logic        usb_d_i,
-  input  logic        usb_se0_i,
+  // USB lines
+  input logic         usb_d_i,
+  input logic         usb_dp_i,
+  input logic         usb_dn_i,
 
   output logic        usb_d_o,
   output logic        usb_se0_o,
   output logic        usb_oe_o,
+  input logic         rx_diff_mode_i,
+
+  // SOF reference for clock calibration
+  input logic         usb_ref_disable_i,
+  output logic        usb_ref_val_o,
+  output logic        usb_ref_pulse_o,
 
   // Fifo used to communicate with system
-  input               tx_empty,
-  input               rx_full,
-  output              tx_read,
-  output              rx_write,
-  output              rx_err, // Also becomes bit 8 to the fifo
-  output [7:0]        rx_fifo_wdata,
-  input [7:0]         tx_fifo_rdata,
+  input logic         tx_empty,
+  input logic         rx_full,
+  output logic        tx_read,
+  output logic        rx_write,
+  output logic        rx_err, // Also becomes bit 8 to the fifo
+  output logic [7:0]  rx_fifo_wdata,
+  input logic [7:0]   tx_fifo_rdata,
 
   // Status
-  output logic [10:0] status_frame_o,
-  output logic        status_host_lost_o,
-  output logic        status_host_timeout_o,
-  output logic [6:0]  status_device_address_o,
+  output logic [10:0] frame_o,
+  output logic        host_lost_o,
+  output logic        link_reset_o,
+  output logic        link_suspend_o,
+  output logic [6:0]  device_address_o,
   output logic [1:0]  parity_o,
   output logic [15:0] baud_o
 );
 
   localparam int unsigned MaxPktSizeByte = 32;
   localparam int unsigned PktW = $clog2(MaxPktSizeByte);
-  localparam int unsigned CtrlEp = 0;
-  localparam int unsigned FifoEp = 1;
-
-  // us_tick ticks for one cycle every us
-  logic [5:0]   ns_cnt;
-  logic         us_tick;
-  assign us_tick = (ns_cnt == 6'd48);
-  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ns_cnt <= '0;
-    end  else if (us_tick) begin
-      ns_cnt <= '0;
-    end else begin
-      ns_cnt <= ns_cnt + 1'b1;
-    end
-  end
+  localparam bit [3:0]    CtrlEp = 4'd0;
+  localparam bit [3:0]    FifoEp = 4'd1;
 
   logic [6:0] dev_addr;
   logic [7:0] out_ep_data;
@@ -89,10 +82,9 @@ module usbuart_usbif (
 
   logic sof_valid;
   logic [10:0] frame_index_raw;
+  logic see_js;
 
-  logic [19:0]  host_presence_timer;
-
-  assign status_device_address_o = dev_addr;
+  assign device_address_o = dev_addr;
 
   logic  out_ctrl_put, out_ctrl_acked, out_ctrl_rollback;
   logic  in_ctrl_get, in_ctrl_acked, in_ctrl_rollback;
@@ -108,7 +100,8 @@ module usbuart_usbif (
   ) u_usb_serial_ctrl_ep (
     .clk_i(clk_48mhz_i),
     .rst_ni(rst_ni),
-    .dev_addr(dev_addr),
+    .link_reset_i(link_reset_o),
+    .dev_addr_o(dev_addr),
 
     // out endpoint interface
     .out_ep_data_put_i(out_ctrl_put),
@@ -166,13 +159,13 @@ module usbuart_usbif (
     .in_ep_data_done_o(serial_in_ep_data_done),
 
     // fifo interface
-    .tx_empty(tx_empty),
-    .rx_full(rx_full),
-    .tx_read(tx_read),
-    .rx_write(rx_write),
-    .rx_err(rx_err), // Also becomes bit 8 to the fifo
-    .rx_fifo_wdata(rx_fifo_wdata),
-    .tx_fifo_rdata(tx_fifo_rdata),
+    .tx_empty_i(tx_empty),
+    .rx_full_i(rx_full),
+    .tx_read_o(tx_read),
+    .rx_write_o(rx_write),
+    .rx_err_o(rx_err), // Also becomes bit 8 to the fifo
+    .rx_fifo_wdata_o(rx_fifo_wdata),
+    .tx_fifo_rdata_i(tx_fifo_rdata),
     // information
     .parity_o(parity_o),
     .baud_o(baud_o)
@@ -185,30 +178,23 @@ module usbuart_usbif (
   ) u_usb_fs_nb_pe (
     .clk_48mhz_i                (clk_48mhz_i),
     .rst_ni                     (rst_ni),
-    .link_reset_i               (1'b0), // TODO need to reset if link resets
-
-    // USB TRX interface (sync)
-    .usb_d_i                    (usb_d_i),
-    .usb_se0_i                  (usb_se0_i),
-    .usb_d_o                    (usb_d_o),
-    .usb_se0_o                  (usb_se0_o),
-    .usb_oe_o                   (usb_oe_o),
+    .link_reset_i               (link_reset_o),
+    .dev_addr_i                 (dev_addr),
 
     // Global configuration (static)
     .cfg_eop_single_bit_i       (1'b1),
+    .cfg_rx_differential_i      (rx_diff_mode_i),
     .tx_osc_test_mode_i         (1'b0),
     .data_toggle_clear_i        (2'b0),
-
-    .dev_addr_i                 (dev_addr),
 
     // out endpoint interfaces
     .out_ep_current_o           (out_ep_current),
     .out_ep_data_put_o          (out_ep_data_put),
     .out_ep_put_addr_o          (out_ep_put_addr),
     .out_ep_data_o              (out_ep_data),
+    .out_ep_newpkt_o            (),
     .out_ep_acked_o             (out_ep_acked),
     .out_ep_rollback_o          (out_ep_rollback),
-    .out_ep_newpkt_o            (),
     .out_ep_setup_o             ({serial_out_ep_setup, ctrl_out_ep_setup}),
     .out_ep_full_i              ({serial_out_ep_full, ctrl_out_ep_full}),
     .out_ep_stall_i             ({serial_out_ep_stall, ctrl_out_ep_stall}),
@@ -217,7 +203,8 @@ module usbuart_usbif (
     // in endpoint interfaces
     .in_ep_current_o            (in_ep_current),
     .in_ep_rollback_o           (in_ep_rollback),
-    .in_ep_acked_o              (in_ep_acked),
+    .in_ep_xfr_end_o            (),             // using this has logic loop because of iso case
+    .in_ep_acked_o              (in_ep_acked),  // must get ack
     .in_ep_get_addr_o           (in_ep_get_addr),
     .in_ep_data_get_o           (in_ep_data_get),
     .in_ep_newpkt_o             (),
@@ -227,35 +214,137 @@ module usbuart_usbif (
     .in_ep_data_done_i          ({serial_in_ep_data_done, ctrl_in_ep_data_done}),
     .in_ep_iso_i                (2'b0),
 
-    // Errors
-    .rx_crc_err_o               (),
-    .rx_pid_err_o               (),
-    .rx_bitstuff_err_o          (),
-
     // sof interface
     .sof_valid_o                (sof_valid),
-    .frame_index_o              (frame_index_raw)
+    .frame_index_o              (frame_index_raw),
+    // RX line status
+    .rx_jjj_det_o               (see_js),
+
+    // Errors
+    .rx_crc_err_o (),
+    .rx_pid_err_o (),
+    .rx_bitstuff_err_o (),
+
+    // USB TRX interface (sync)
+    .usb_d_i                    (usb_d_i),
+    .usb_dp_i                   (usb_dp_i),
+    .usb_dn_i                   (usb_dn_i),
+    .usb_d_o                    (usb_d_o),
+    .usb_se0_o                  (usb_se0_o),
+    .usb_oe_o                   (usb_oe_o)
   );
 
-  // host presence detection
-  // host_lost if no sof in 2.048ms (supposed to be every 1ms)
-  // host_presence_timeout if no sof in 1s (spec)
-  assign status_host_lost_o = host_presence_timer[19:12] != 0;
+
+  // Simple detection of reset, suspend and lack of SOF
+  // Lack of SOF for 4.096ms will cause a break condition to be reported
+
+  // us_tick ticks for one cycle every us
+  logic [5:0]   ns_cnt;
+  logic         us_tick;
+  assign us_tick = (ns_cnt == 6'd48);
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      host_presence_timer <= '0;
-      status_host_timeout_o <= 1'b0;
-      status_frame_o <= '0;
+      ns_cnt <= '0;
+    end  else if (us_tick) begin
+      ns_cnt <= '0;
     end else begin
-      if (sof_valid) begin
-        host_presence_timer <= 0;
-        status_host_timeout_o <= 0;
-        status_frame_o <= frame_index_raw;
-      end else if (host_presence_timer > 1000000) begin
-        status_host_timeout_o <= 1;
-      end else if (us_tick) begin
-        host_presence_timer <= host_presence_timer + 1;
+      ns_cnt <= ns_cnt + 1'b1;
+    end
+  end
+
+
+
+  // suspend must be detected if line is J for 3ms
+  logic [12:0] sus_timer_us;
+
+  assign link_suspend_o = sus_timer_us > 3000; // 3000us == 3ms
+
+  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      sus_timer_us <= '0;
+    end else begin
+      if (!see_js) begin
+        sus_timer_us <= '0;
+      end else if (us_tick && !link_suspend_o) begin
+        sus_timer_us <= sus_timer_us + 1;
       end
     end
   end
+
+  // reset detected if line is SE0 for >=2.5us, but host must hold at least 10ms
+  // This will detect in 3-4us depending if the reset started immediately before (3us)
+  // or immediately after (4us) a us_tick pulse
+  logic [2:0] res_timer_us;
+  logic       see_se0;
+
+  assign link_reset_o = res_timer_us[2];
+  assign see_se0 = (usb_dp_i == 0) && (usb_dn_i == 0);
+
+  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      res_timer_us <= '0;
+    end else begin
+      if (!see_se0) begin
+        res_timer_us <= '0;
+      end else if (us_tick && !link_reset_o) begin
+        res_timer_us <= res_timer_us + 1;
+      end
+    end
+  end
+
+  // host_lost if no sof in 4.096ms (supposed to be every 1ms)
+  // (don't take account of link state so this will trigger for suspend and reset)
+  logic [12:0] no_sof_timer_us;
+
+  assign host_lost_o = no_sof_timer_us[12];
+  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      no_sof_timer_us <= '0;
+    end else begin
+      if (sof_valid) begin  // removed  || link_suspend_o || link_reset_o
+        no_sof_timer_us <= '0;
+      end else if (us_tick && !host_lost_o) begin
+        no_sof_timer_us <= no_sof_timer_us + 1;
+      end
+    end
+  end
+
+  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      frame_o <= '0;
+    end else begin
+      if (sof_valid) begin
+        frame_o <= frame_index_raw;
+      end
+    end
+  end
+
+  /////////////////////////////////////////
+  // SOF Reference for Clock Calibration //
+  /////////////////////////////////////////
+
+  logic usb_ref_val_d, usb_ref_val_q;
+
+  // Directly forward the pulse unless disabled.
+  assign usb_ref_pulse_o = usb_ref_disable_i ? 1'b0 : sof_valid;
+
+  // The first pulse is always ignored, but causes the valid to be asserted.
+  // The valid signal is deasserted when:
+  // - The link is no longer active. TODO
+  // - The host is lost (no SOF for 4ms).
+  // - The reference generation is disabled.
+  assign usb_ref_val_d = usb_ref_pulse_o                           ? 1'b1 :
+    (host_lost_o || link_reset_o || link_suspend_o || usb_ref_disable_i) ? 1'b0 : usb_ref_val_q;
+
+  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      usb_ref_val_q <= 1'b0;
+    end else begin
+      usb_ref_val_q <= usb_ref_val_d;
+    end
+  end
+
+  assign usb_ref_val_o = usb_ref_val_q;
+
+
 endmodule
