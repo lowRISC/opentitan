@@ -75,9 +75,7 @@ Note that `screen` will only show output that has been generated after `screen` 
 
 You can exit `screen` (in the default configuration) by pressing `CTRL-a k` and confirm with `y`.
 
-If everything is working correctly you should expect to see text like
-the following from the virtual UART (replacing `/dev/pts/11` with the reported
-device):
+If everything is working correctly you should expect to see text like the following from the virtual UART (replacing `/dev/pts/11` with the reported device):
 
 ```console
 $ cat /dev/pts/11
