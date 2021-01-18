@@ -2,7 +2,12 @@
 // HTML & Body
 
 html {
-  font-size: 1rem;
+  /*
+  Explicitly set the font size to the typical browser default to work around a
+  bug in Chrome where <code> elements don't get the right font size when using
+  @font-size=1rem (https://bugs.chromium.org/p/chromium/issues/detail?id=833697)
+  */
+  font-size: 16px;
   scroll-behavior: smooth;
 }
 
