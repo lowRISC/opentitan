@@ -1,5 +1,6 @@
 /* Colorful style (`hugo gen chromastyles --style=colorful`) */
 /* Changes: default background color */
+:not([data-user-color-scheme]),
 [data-user-color-scheme='light'] {
 /* Background */ .chroma { background-color: adjust-color($white, $lightness: -3%) }
 /* Other */ .chroma .x {  }
