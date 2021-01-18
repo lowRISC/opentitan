@@ -351,8 +351,8 @@ class aes_base_vseq extends cip_base_vseq #(
      );
 
     status_t     status;                     // AES status
-    aes_seq_item cfg_item   = new();         // the configuration for this message
-    aes_seq_item data_item  = new();         // the next data to transmit
+    aes_seq_item cfg_item;                   // the configuration for this message
+    aes_seq_item data_item;                  // the next data to transmit
     aes_seq_item read_item;                  // the read item to store output in
     aes_seq_item clone_item;
     bit  new_msg            = 1;             // set when starting a new msg
@@ -380,6 +380,8 @@ class aes_base_vseq extends cip_base_vseq #(
         end
       end
     end else begin
+      // initialize data item to avoid null pointer
+      data_item = new();
 
       while ((aes_item_queue.size() > 0) || (read_queue.size() > 0)) begin
         // get the status to make sure we can provide data - but don't wait for output //
