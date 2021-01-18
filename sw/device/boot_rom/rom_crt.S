@@ -18,6 +18,13 @@
 
   .extern crt_section_clear
   .extern crt_section_copy
+  .extern crt_global_pointer_init
+
+  // Linker Relaxation is disabled until `gp` is setup, below, because
+  // otherwise some sequences may be turned into gp-relative sequences,
+  // which is incorrect when `gp` is not initialized.
+  .option push
+  .option norelax
 
 /**
  * Entry point after reset. This symbol is jumped to from the handler
@@ -63,11 +70,10 @@ _reset_start:
   // Set up the stack.
   la  sp, _stack_end
 
-  // Set up the global pointer. This requires that we disable linker relaxations
-  // (or it will be relaxed to `mv gp, gp`).
-  .option push
-  .option norelax
-  la  gp, __global_pointer$
+  // Set up the global pointer (`gp`).
+  call crt_global_pointer_init
+
+  // Re-enable linker relaxations now that `gp` is setup.
   .option pop
 
   // Explicit fall-through to `_start`.

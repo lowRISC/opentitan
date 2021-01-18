@@ -114,8 +114,8 @@ _mask_rom_interrupt_vector:
   // is allocated executable space in ROM by the linker.
   .section .crt, "ax"
 
-  // Linker Relaxation is disabled until `__global_pointer$` is setup, below,
-  // because otherwise some sequences may be turned into gp-relative sequences,
+  // Linker Relaxation is disabled until `gp` is setup, below, because
+  // otherwise some sequences may be turned into gp-relative sequences,
   // which is incorrect when `gp` is not initialized.
   .option push
   .option norelax
@@ -205,6 +205,7 @@ _mask_rom_start_boot:
 
   .extern crt_section_clear
   .extern crt_section_copy
+  .extern crt_global_pointer_init
 
   // TODO: Setup SRAM Scrambling
   // Temporarily: Zero out ram_main
@@ -230,6 +231,12 @@ _mask_rom_start_boot:
   la   a1, _bss_end
   call crt_section_clear
 
+  // Setup global pointer (`gp`).
+  call crt_global_pointer_init
+
+  // Re-enable linker relaxations now that `gp` is initialized.
+  .option pop
+
   // Re-clobber all of the temporary registers (may have been used in calls).
   li t0, 0x0
   li t1, 0x0
@@ -249,12 +256,6 @@ _mask_rom_start_boot:
   li a6, 0x0
   li a7, 0x0
 
-  // Setup global pointer.
-  //
-  // This requires that we disable linker relaxations, or it will be relaxed to
-  // `mv gp, gp`, so we disabled relaxations for all of `_mask_rom_start_boot`.
-  la gp, __global_pointer$
-
   /**
    * Jump to C Code
    */
@@ -263,6 +264,3 @@ _mask_rom_start_boot:
 
   // Set size so this function can be disassembled.
   .size _mask_rom_start_boot, .-_mask_rom_start_boot
-
-  // Re-enable linker relaxation.
-  .option pop
