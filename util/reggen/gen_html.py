@@ -211,7 +211,7 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
         genout(outfile, "</td></tr>\n")
         nextbit = fieldlsb + field.bits.width()
 
-    genout(outfile, "</table>\n<br><br>\n")
+    genout(outfile, "</table>\n<br>\n")
 
     return
 
@@ -261,7 +261,7 @@ def gen_html_window(outfile, win, comp, regwidth, rnames, toc, toclvl):
     genout(outfile, '</td></tr></table>')
     genout(outfile,
            '<tr>{}</tr>'.format(render_td(win['desc'], rnames, 'regde')))
-    genout(outfile, "</table>\n<br><br>\n")
+    genout(outfile, "</table>\n<br>\n")
     if toc is not None:
         toc.append((toclvl, comp + "." + wname, "Reg_" + wname.lower()))
 
