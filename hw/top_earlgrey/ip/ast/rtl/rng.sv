@@ -38,7 +38,7 @@ rng_osc #(
 /*P*/ .RNG_EN_RDLY ( RNG_EN_RDLY )
 // synopsys translate_on
 `endif
-) i_rng_osc (
+) u_rng_osc (
 /*I*/ .vcaon_pok_i ( vcaon_pok_i ),
 /*I*/ .rng_en_i ( rng_en_i ),
 /*O*/ .rng_clk_o ( rng_clk_o )
@@ -55,10 +55,12 @@ assign rng_rst_n = rst_ni && rng_en_i;
 
 always_ff @(posedge rng_clk_o, negedge rng_rst_n ) begin
   if ( !rng_rst_n ) begin
-    lfsr_val       <= 32'h1234_5678;
+    lfsr_val       <= 32'h0000_0001;
+  end else if ( lfsr_val == {32{1'b1}} ) begin  // Skip one problematic value
+    lfsr_val       <= {{31{1'b1}}, 1'b0};
   end else begin
     lfsr_val[31:1] <= lfsr_val[30:0];
-    lfsr_val[0]    <= ~(lfsr_val[31] ^ lfsr_val[21] ^ lfsr_val[1] ^ lfsr_val[0]);
+    lfsr_val[0]    <= !(lfsr_val[31] ^ lfsr_val[21] ^ lfsr_val[1] ^ lfsr_val[0]);
   end
 end
 

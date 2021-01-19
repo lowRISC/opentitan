@@ -7,24 +7,30 @@
 //############################################################################
 `timescale 1ns / 10ps
 
-module sys_clk #(
+module sys_clk
+#(
 `ifndef VERILATOR
 // synopsys translate_off
   parameter time SYS_EN_RDLY = 5us
 // synopsys translate_on
 `endif
 ) (
-  input vcmain_pok_i,               // VCMAIN POK @1.1V
   input clk_src_sys_en_i,           // System Source Clock Enable
   input clk_src_sys_jen_i,          // System Source Clock Jitter Enable
+  input clk_sys_pd_ni,              // System Clock Power-down
+  input rst_sys_clk_ni,             // System Clock Logic reset
+  input vcore_pok_h_i,              // VCORE POK @3.3V (for OSC)
   output logic clk_src_sys_o,       // System Source Clock
   output logic clk_src_sys_val_o    // System Source Clock Valid
 );
 
-logic clk, sys_clk_val, rst_n;
+logic clk, sys_clk_en, sys_clk_val, rst_n;
+
+assign rst_n = rst_sys_clk_ni;
+
+assign sys_clk_en = clk_src_sys_en_i && clk_sys_pd_ni;
 
 // Behavioral Model
-assign rst_n = vcmain_pok_i;
 
 // Clock Oscilator
 sys_osc #(
@@ -33,9 +39,9 @@ sys_osc #(
 /*P*/ .SYS_EN_RDLY ( SYS_EN_RDLY )
 // synopsys translate_on
 `endif
-) i_sys_osc (
-/*I*/ .vcmain_pok_i ( vcmain_pok_i ),
-/*I*/ .sys_en_i ( clk_src_sys_en_i ),
+) u_sys_osc (
+/*I*/ .vcore_pok_h_i ( vcore_pok_h_i ),
+/*I*/ .sys_en_i ( sys_clk_en ),
 /*I*/ .sys_jen_i ( clk_src_sys_jen_i ),
 /*O*/ .sys_clk_o ( clk )
 );
@@ -44,7 +50,7 @@ sys_osc #(
 // Clock & Valid
 assign clk_src_sys_o = clk;
 
-wire rst_val_n = rst_n && clk_src_sys_en_i;
+wire rst_val_n = rst_n && sys_clk_en;
 
 // 2-stage deassertion
 always_ff @( posedge clk, negedge rst_val_n ) begin

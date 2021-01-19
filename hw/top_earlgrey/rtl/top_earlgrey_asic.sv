@@ -139,6 +139,13 @@ module top_earlgrey_asic (
     .dio_attr_i          ( dio_attr         )
   );
 
+  // TODO: Do I need the imports?
+  // For nettype real awire;
+  import ana_pkg::*;
+  // For new typdef's
+  import ast_pkg::*;
+
+
   //////////////////////
   // JTAG Overlay Mux //
   //////////////////////
@@ -191,56 +198,306 @@ module top_earlgrey_asic (
     .in_padring_i  ( {dio_in_padring , mio_in_padring } )
   );
 
+
   //////////////////////
   // AST              //
   //////////////////////
+//tlul_pkg::tl_h2d_t base_ast_bus;
+//tlul_pkg::tl_d2h_t ast_base_bus;
+//ast_wrapper_pkg::ast_status_t ast_base_status;
+//ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
+//ast_wrapper_pkg::ast_alert_rsp_t base_ast_alerts;
+//ast_wrapper_pkg::ast_rst_t ast_base_rst;
+//ast_wrapper_pkg::ast_clks_t ast_base_clks;
+//ast_wrapper_pkg::ast_eflash_t ast_base_eflash;
+//pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
+//pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+//clkmgr_pkg::clkmgr_ast_out_t clks_ast;
+//rstmgr_pkg::rstmgr_ast_out_t rsts_ast;
+//otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
+//otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
+////ast_wrapper_pkg::ast_func_clks_rsts base_ast_aux;
+//logic usb_ref_pulse;
+//logic usb_ref_val;
+//
+//// TODO: connect once available in AST
+//logic unused_otp_ctrl_otp_ast_pwr_seq;
+//assign unused_otp_ctrl_otp_ast_pwr_seq = otp_ctrl_otp_ast_pwr_seq;
+//assign otp_ctrl_otp_ast_pwr_seq_h = '0;
+//
+//ast_wrapper ast_wrapper (
+//  .clk_ext_i(clk),
+//  .por_ni(rst_n),
+//  .bus_i(base_ast_bus),
+//  .bus_o(ast_base_bus),
+//  .pwr_i(base_ast_pwr),
+//  .pwr_o(ast_base_pwr),
+//  .rst_o(ast_base_rst),
+//  .clks_o(ast_base_clks),
+//  .usb_ref_pulse_i(usb_ref_pulse),
+//  .usb_ref_val_i(usb_ref_val),
+//  .clks_ast_i(clks_ast),
+//  .rsts_ast_i(rsts_ast),
+//  .adc_i('0),
+//  .adc_o(),
+//  .es_i('0), // not in top_earlgrey
+//  .es_o(),   // not in top_earlgrey
+//  .alert_i(base_ast_alerts),
+//  .alert_o(ast_base_alerts),
+//  .status_o(ast_base_status),
+//  .usb_io_pu_cal_o(),
+//  .ast_eflash_o(ast_base_eflash),
+//  .scanmode_i(1'b0),
+//  .scan_reset_ni(1'b1)
+//);
+
+  // TLUL interface
   tlul_pkg::tl_h2d_t base_ast_bus;
   tlul_pkg::tl_d2h_t ast_base_bus;
-  ast_wrapper_pkg::ast_status_t ast_base_status;
-  ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
-  ast_wrapper_pkg::ast_alert_rsp_t base_ast_alerts;
-  ast_wrapper_pkg::ast_rst_t ast_base_rst;
-  ast_wrapper_pkg::ast_clks_t ast_base_clks;
-  ast_wrapper_pkg::ast_eflash_t ast_base_eflash;
+
+  // assorted ast status
+  ast_pkg::ast_status_t status_o;
+
+  ast_pkg::ast_rst_t ast_base_rst;
+  ast_pkg::ast_clks_t ast_base_clks;
+
+  // pwrmgr interface
   pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+
+  // synchronization clocks / rests
   clkmgr_pkg::clkmgr_ast_out_t clks_ast;
   rstmgr_pkg::rstmgr_ast_out_t rsts_ast;
+
+  // otp power sequence
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
   otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
-  //ast_wrapper_pkg::ast_func_clks_rsts base_ast_aux;
+
   logic usb_ref_pulse;
   logic usb_ref_val;
 
-  // TODO: connect once available in AST
-  logic unused_otp_ctrl_otp_ast_pwr_seq;
-  assign unused_otp_ctrl_otp_ast_pwr_seq = otp_ctrl_otp_ast_pwr_seq;
-  assign otp_ctrl_otp_ast_pwr_seq_h = '0;
+  // adc
+  // The adc package definition should eventually be moved to the adc module
+  ast_pkg::adc_ast_req_t adc_i;
+  ast_pkg::adc_ast_rsp_t adc_o;
 
-  ast_wrapper ast_wrapper (
-    .clk_ext_i(clk),
-    .por_ni(rst_n),
-    .bus_i(base_ast_bus),
-    .bus_o(ast_base_bus),
-    .pwr_i(base_ast_pwr),
-    .pwr_o(ast_base_pwr),
-    .rst_o(ast_base_rst),
-    .clks_o(ast_base_clks),
-    .usb_ref_pulse_i(usb_ref_pulse),
-    .usb_ref_val_i(usb_ref_val),
-    .clks_ast_i(clks_ast),
-    .rsts_ast_i(rsts_ast),
-    .adc_i('0),
-    .adc_o(),
-    .es_i('0), // not in top_earlgrey
-    .es_o(),   // not in top_earlgrey
-    .alert_i(base_ast_alerts),
-    .alert_o(ast_base_alerts),
-    .status_o(ast_base_status),
-    .usb_io_pu_cal_o(),
-    .ast_eflash_o(ast_base_eflash),
-    .scanmode_i(1'b0),
-    .scan_reset_ni(1'b1)
+  // entropy source interface
+  // The entropy source pacakge definition should eventually be moved to es
+  entropy_src_pkg::entropy_src_rng_req_t es_i;
+  entropy_src_pkg::entropy_src_rng_rsp_t es_o;
+
+  // alerts interface
+  ast_pkg::ast_alert_rsp_t alert_i;
+  ast_pkg::ast_alert_req_t alert_o;
+
+  // Switch these to prim_mux cells
+  logic core_clk_val;
+  assign ast_base_pwr.core_clk_val = core_clk_val ? pwrmgr_pkg::DiffValid :
+                                                    pwrmgr_pkg::DiffInvalid;
+  logic slow_clk_val;
+  assign ast_base_pwr.slow_clk_val = slow_clk_val ? pwrmgr_pkg::DiffValid :
+                                                    pwrmgr_pkg::DiffInvalid;
+  logic io_clk_val;
+  assign ast_base_pwr.io_clk_val   = io_clk_val   ? pwrmgr_pkg::DiffValid :
+                                                    pwrmgr_pkg::DiffInvalid;
+  logic usb_clk_val;
+  assign ast_base_pwr.usb_clk_val  = usb_clk_val  ? pwrmgr_pkg::DiffValid :
+                                                    pwrmgr_pkg::DiffInvalid;
+
+// need to hookup later
+`ifndef VERILATOR
+`ifndef SYNTHESIS
+  awire adc_a0_a; // ADC A0 Analog Input
+  awire adc_a1_a; // ADC A1 Analog Input
+  assign adc_a0_a = 0.0;
+  assign adc_a1_a = 0.0;
+  awire pad2ast_t0_a; // T0 Analog Input
+  awire pad2ast_t1_a; // T1 Analog Input
+  assign pad2ast_t0_a = 0.0;
+  assign pad2ast_t1_a = 0.0;
+`else
+  wire adc_a0_a;  // ADC A0 Analog Input
+  wire adc_a1_a;  // ADC A1 Analog Input
+  assign adc_a0_a = 1'b0;
+  assign adc_a1_a = 1'b0;
+  wire pad2ast_t0_a; // T0 Analog Input
+  wire pad2ast_t1_a; // T1 Analog Input
+  assign pad2ast_t0_a = 1'b0;
+  assign pad2ast_t1_a = 1'b0;
+`endif
+`else
+  wire adc_a0_a;  // ADC A0 Analog Input
+  wire adc_a1_a;  // ADC A1 Analog Input
+  assign adc_a0_a = 1'b0;
+  assign adc_a1_a = 1'b0;
+  wire pad2ast_t0_a; // T0 Analog Input
+  wire pad2ast_t1_a; // T1 Analog Input
+  assign pad2ast_t0_a = 1'b0;
+  assign pad2ast_t1_a = 1'b0;
+`endif
+
+  // TODO: Need to use lc_tx_t for flash_bist_enable after Dana's PR 
+  lc_ctrl_pkg::lc_tx_t flash_bist_en_o;
+  ast_pkg::ast_eflash_t ast_base_eflash;
+  assign ast_base_eflash.flash_bist_enable = (flash_bist_en_o == lc_ctrl_pkg::On);
+
+  // Typedefs adjustment...
+  ast_pkg::ast_dif_t as_alert_o;
+  assign alert_o.alerts_p[sensor_ctrl_reg_pkg::AsSel] = as_alert_o.p;
+  assign alert_o.alerts_n[sensor_ctrl_reg_pkg::AsSel] = as_alert_o.n;
+
+  ast_pkg::ast_dif_t cg_alert_o;
+  assign alert_o.alerts_p[sensor_ctrl_reg_pkg::CgSel] = cg_alert_o.p;
+  assign alert_o.alerts_n[sensor_ctrl_reg_pkg::CgSel] = cg_alert_o.n;
+
+  ast_pkg::ast_dif_t gd_alert_o;
+  assign alert_o.alerts_p[sensor_ctrl_reg_pkg::GdSel] = gd_alert_o.p;
+  assign alert_o.alerts_n[sensor_ctrl_reg_pkg::GdSel] = gd_alert_o.n;
+
+  ast_pkg::ast_dif_t ts_alert_hi_o;
+  assign alert_o.alerts_p[sensor_ctrl_reg_pkg::TsHiSel] = ts_alert_hi_o.p;
+  assign alert_o.alerts_n[sensor_ctrl_reg_pkg::TsHiSel] = ts_alert_hi_o.n;
+
+  ast_pkg::ast_dif_t ts_alert_lo_o;
+  assign alert_o.alerts_p[sensor_ctrl_reg_pkg::TsLoSel] = ts_alert_lo_o.p;
+  assign alert_o.alerts_n[sensor_ctrl_reg_pkg::TsLoSel] = ts_alert_lo_o.n;
+
+  ast_pkg::ast_dif_t ls_alert_o;
+  assign alert_o.alerts_p[sensor_ctrl_reg_pkg::LsSel] = ls_alert_o.p;
+  assign alert_o.alerts_n[sensor_ctrl_reg_pkg::LsSel] = ls_alert_o.n;
+
+  ast_pkg::ast_dif_t ot_alert_o;
+  assign alert_o.alerts_p[sensor_ctrl_reg_pkg::OtSel] = ot_alert_o.p;
+  assign alert_o.alerts_n[sensor_ctrl_reg_pkg::OtSel] = ot_alert_o.n;
+
+
+  ast #(
+    .EntropyStreams ( EntropyStreams ),    // Parameter moved to ast_pkg.sv
+    .AdcChannels ( AdcChannels ),          // Parameter moved to ast_pkg.sv
+    .AdcDataWidth ( AdcDataWidth ),        // Parameter moved to ast_pkg.sv
+    .UsbCalibWidth ( UsbCalibWidth ),      // Parameter moved to ast_pkg.sv
+    .Ast2PadOutWidth ( Ast2PadOutWidth ),  // Parameter moved to ast_pkg.sv
+    .Pad2AstInWidth ( Pad2AstInWidth )     // Parameter moved to ast_pkg.sv
+  ) u_ast (
+    // tlul
+    .tl_i ( base_ast_bus ),
+    .tl_o ( ast_base_bus ),
+    // buffered clocks & resets
+    .clk_ast_adc_i ( 1'b0 ),                        // TODO: Connect
+    .rst_ast_adc_ni ( 1'b0 ),                       // TODO: Coonect
+    .clk_ast_alert_i ( clks_ast.clk_ast_sensor_ctrl_io_div4_secure ),
+    // TODO: Which reset domain? See GH issue #5022
+    .rst_ast_alert_ni ( rsts_ast.rst_ast_sensor_ctrl_sys_io_div4_n[0] ),
+    .clk_ast_es_i ( 1'b0 ),                         // TODO: Connect
+    .rst_ast_es_ni ( 1'b0 ),                        // TODO: Connect
+    .clk_ast_rng_i ( 1'b0 ),                        // TODO: Connect
+    .rst_ast_rng_ni ( 1'b0 ),                       // TODO: Connect
+    .clk_ast_tlul_i ( clks_ast.clk_ast_sensor_ctrl_io_div4_secure ),
+    // TODO: Which reset domain? See GH issue #5022
+    .rst_ast_tlul_ni ( rsts_ast.rst_ast_sensor_ctrl_sys_io_div4_n[0] ),
+    .clk_ast_usb_i ( clks_ast.clk_ast_usbdev_usb_peri ),
+    // TODO: which reset domain? See GH issue #5022  
+    .rst_ast_usb_ni ( rsts_ast.rst_ast_usbdev_usb_n[0] ),
+    .clk_ast_ext_i ( clk ),
+    .por_ni ( rst_n ),
+    // pok test for FPGA
+    .vcc_supp_i ( 1'b1 ),     // VCC Supply Test for FPGA
+    .vcaon_supp_i ( 1'b1 ),   // AON Supply Test for FPGA
+    .vcmain_supp_i ( 1'b1 ),  // MAIN Supply Test for FPGA
+    .vioa_supp_i ( 1'b1 ),    // IO Rails Supply Test for FPGA
+    .viob_supp_i ( 1'b1 ),    // IO Rails Supply Test for FPGA
+    // pok
+    .vcaon_pok_o ( ast_base_rst.aon_pok ),
+    .vcmain_pok_o ( ast_base_pwr.main_pok ),
+    .vioa_pok_o ( status_o.io_pok[0] ),
+    .viob_pok_o ( status_o.io_pok[1] ),
+    // main regulator
+    .main_iso_en_i ( base_ast_pwr.pwr_clamp ),
+    .main_pd_ni ( base_ast_pwr.main_pd_n ),
+    // pdm control (flash)/otp
+    .flash_power_down_h_o ( ast_base_eflash.flash_power_down_h ),
+    .flash_power_ready_h_o ( ast_base_eflash.flash_power_ready_h ),
+    .otp_power_seq_i ( otp_ctrl_otp_ast_pwr_seq ),          //TODO: Connect
+    .otp_power_seq_h_o ( otp_ctrl_otp_ast_pwr_seq_h ),      //TODO: Connect
+    // system source clock
+    .clk_src_sys_en_i ( base_ast_pwr.core_clk_en ),
+    .clk_src_sys_jen_i ( 1'b0 ),           // need to add function in clkmgr
+    .clk_src_sys_o ( ast_base_clks.clk_sys  ),
+    .clk_src_sys_val_o ( core_clk_val ),
+    // aon source clock
+    .clk_src_aon_o ( ast_base_clks.clk_aon ),
+    .clk_src_aon_val_o ( slow_clk_val ),
+    // io source clock
+    .clk_src_io_en_i ( base_ast_pwr.io_clk_en ),
+    .clk_src_io_o ( ast_base_clks.clk_io ),
+    .clk_src_io_val_o ( io_clk_val ),
+    // usb source clock
+    .usb_ref_pulse_i ( usb_ref_pulse ),
+    .usb_ref_val_i ( usb_ref_val ),
+    .clk_src_usb_en_i ( base_ast_pwr.usb_clk_en ),
+    .clk_src_usb_o ( ast_base_clks.clk_usb ),
+    .clk_src_usb_val_o ( usb_clk_val ),
+    .usb_io_pu_cal_o ( ),                  // USB IO Pull-up Calibration Setting
+    // adc
+    .adc_pd_i ( adc_i.pd ),
+    .adc_a0_ai ( adc_a0_a ),
+    .adc_a1_ai ( adc_a1_a ),
+    .adc_chnsel_i ( adc_i.channel_sel ),
+    .adc_d_o ( adc_o.data ),
+    .adc_d_val_o ( adc_o.data_valid ),
+    // rng
+    .rng_en_i ( es_i.rng_enable ),
+    .rng_val_o ( es_o.rng_valid ),
+    .rng_b_o ( es_o.rng_b ),
+    // entropy
+    .entropy_rsp_i ( '{edn_ack: 1'b0, edn_fips: 1'b1,  edn_bus: '0} ),
+    .entropy_req_o ( ),                                     //TODO: Connect
+    // alerts
+    .as_alert_trig_i ( '{ p: 1'b0, n: 1'b1 } ),             //TODO: Connect
+    .as_alert_ack_i ( '{ p: 1'b0, n: 1'b1 } ),              //TODO: Connect
+    .as_alert_o ( as_alert_o ),
+    .cg_alert_trig_i ( '{ p: 1'b0, n: 1'b1 } ),             //TODO: Connect
+    .cg_alert_ack_i ( '{ p: 1'b0, n: 1'b1 } ),              //TODO: Connect
+    .cg_alert_o ( cg_alert_o ),
+    .gd_alert_trig_i ( '{ p: 1'b0, n: 1'b1 } ),             //TODO: Connect
+    .gd_alert_ack_i ( '{ p: 1'b0, n: 1'b1 } ),              //TODO: Connect
+    .gd_alert_o ( gd_alert_o ),
+    .ts_alert_hi_trig_i ( '{ p: 1'b0, n: 1'b1 } ),          //TODO: Connect
+    .ts_alert_hi_ack_i ( '{ p: 1'b0, n: 1'b1 } ),           //TODO: Connect
+    .ts_alert_hi_o ( ts_alert_hi_o ),
+    .ts_alert_lo_trig_i ( '{ p: 1'b0, n: 1'b1 } ),          //TODO: Connect
+    .ts_alert_lo_ack_i ( '{ p: 1'b0, n: 1'b1 } ),           //TODO: Connect
+    .ts_alert_lo_o ( ts_alert_lo_o ),
+    .ls_alert_trig_i ( '{ p: 1'b0, n: 1'b1 } ),             //TODO: Connect
+    .ls_alert_ack_i ( '{ p: 1'b0, n: 1'b1 } ),              //TODO: Connect
+    .ls_alert_o ( ls_alert_o ),
+    .ot_alert_trig_i ( '{ p: 1'b0, n: 1'b1 } ),             //TODO: Connect
+    .ot_alert_ack_i ( '{ p: 1'b0, n: 1'b1 } ),              //TODO: Connect
+    .ot_alert_o ( ot_alert_o ),
+    // dft
+    .dft_strap_test_i ( '{valid: 1'b0, straps: 2'b00} ),    //TODO: Connect
+    .lc_dft_en_i ( lc_ctrl_pkg::On ),                       //TODO: Connect
+    // pad mux related
+    .padmux2ast_i ( '0 ),              //TODO: Connect to pinmux
+    .ast2padmux_o ( ),                 //TODO: Connect to pinmux
+    .pad2ast_t0_ai ( pad2ast_t0_a ),   //TODO: Connect to PAD
+    .pad2ast_t1_ai ( pad2ast_t1_a  ),  //TODO: Connect tp PAD
+    .ast2pad_t0_ao ( ),                //TODO: Connect to PAD
+    .ast2pad_t1_ao ( ),                //TODO: Connect tp PAD
+    //
+    .lc_clk_byp_req_i ( lc_ctrl_pkg::Off ),                 //TODO: Connect
+    .lc_clk_byp_ack_o ( ),                                  //TODO: Connect
+    .flash_bist_en_o ( flash_bist_en_o ),                   //TODO: Connect
+    //
+    .dpram_rmf_o ( ),  //TODO: Connect to memories
+    .dpram_rml_o ( ),  //TODO: Connect to memories
+    .spram_rm_o ( ),   //TODO: Connect to memories
+    .sprgf_rm_o ( ),   //TODO: Connect to memories
+    .sprom_rm_o ( ),   //TODO: Connect to memories
+    // scan
+    .dft_scan_md_o ( ),     //TODO: Connect rstmgr
+    .scan_shift_en_o ( ),   //TODO: Connect ???
+    .scan_reset_no ( )      //TODO: Connect rstmgr
   );
 
 
