@@ -47,7 +47,7 @@ void _boot_start(void) {
                                .parity = kDifUartParityEven,
                            }) == kDifUartConfigOk,
         "failed to configure UART");
-  base_uart_stdout(&uart0);
+  base_set_stdout((buffer_sink_t){.data = NULL, .sink = NULL});
 
   LOG_INFO("%s", chip_info);
 

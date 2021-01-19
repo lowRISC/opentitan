@@ -30,7 +30,7 @@ static void init_uart(void) {
                                .parity = kDifUartParityEven,
                            }) == kDifUartConfigOk,
         "failed to configure UART");
-  base_uart_stdout(&uart0);
+  base_set_stdout((buffer_sink_t){.data = NULL, .sink = NULL});
 }
 
 int main(int argc, char **argv) {
