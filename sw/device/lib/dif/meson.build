@@ -232,3 +232,15 @@ sw_lib_dif_aon_timer = declare_dependency(
     ],
   )
 )
+
+# AES DIF library
+sw_lib_dif_aes = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_aes',
+    sources: [
+      hw_ip_aes_reg_h,
+      'dif_aes.c',
+    ],
+    dependencies: [sw_lib_mmio],
+  )
+)
