@@ -31,7 +31,6 @@ const test_config_t kTestConfig;
  */
 static void check_otbn_err_bits(otbn_t *otbn_ctx,
                                 dif_otbn_err_bits_t expected_err_bits) {
-  LOG_INFO("Checking error bits");
   dif_otbn_err_bits_t otbn_err_bits;
   dif_otbn_result_t rv = dif_otbn_get_err_bits(&otbn_ctx->dif, &otbn_err_bits);
   CHECK(rv == kDifOtbnOk, "dif_otbn_get_err_bits() failed: %d", rv);
@@ -86,7 +85,6 @@ static void test_barrett384(otbn_t *otbn_ctx) {
   // c = (a * b) % m = (10 * 20) % m = 200
   static const uint8_t c_expected[kDataSizeBytes] = {200};
 
-  LOG_INFO("Writing input arguments to DMEM");
   // TODO: Use symbols from the application to load these parameters once they
   // are available (#3998).
   CHECK(dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/0, &a,
@@ -98,17 +96,10 @@ static void test_barrett384(otbn_t *otbn_ctx) {
   CHECK(dif_otbn_dmem_write(&otbn_ctx->dif, /*offset_bytes=*/320, &u,
                             sizeof(u)) == kDifOtbnOk);
 
-  int t_start = ibex_mcycle_read();
-
-  LOG_INFO("Calling wrap_barrett384()");
   CHECK(otbn_call_function(otbn_ctx, kFuncWrapBarrett384) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
-  int t_end = ibex_mcycle_read();
-  LOG_INFO("Function execution on OTBN took %d cycles (end-to-end).",
-           t_end - t_start);
-
-  LOG_INFO("Reading back result (c)");
+  // Reading back result (c).
   dif_otbn_dmem_read(&otbn_ctx->dif, 512, &c, sizeof(c));
 
   for (int i = 0; i < sizeof(c); ++i) {
@@ -131,15 +122,8 @@ static void test_barrett384(otbn_t *otbn_ctx) {
 static void test_err_test(otbn_t *otbn_ctx) {
   CHECK(otbn_load_app(otbn_ctx, kAppErrTest) == kOtbnOk);
 
-  int t_start = ibex_mcycle_read();
-
-  LOG_INFO("Calling wrap_err_test()");
   CHECK(otbn_call_function(otbn_ctx, kFuncWrapErrTest) == kOtbnOk);
   CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnExecutionFailed);
-
-  int t_end = ibex_mcycle_read();
-  LOG_INFO("Function execution on OTBN took %d cycles (end-to-end).",
-           t_end - t_start);
 
   check_otbn_err_bits(otbn_ctx, kDifOtbnErrBitsBadDataAddr);
 }
@@ -152,10 +136,7 @@ bool test_main() {
   otbn_t otbn_ctx;
   CHECK(otbn_init(&otbn_ctx, otbn_config) == kOtbnOk);
 
-  LOG_INFO("Running barrett384 code on OTBN");
   test_barrett384(&otbn_ctx);
-
-  LOG_INFO("Running err_test code on OTBN");
   test_err_test(&otbn_ctx);
 
   return true;

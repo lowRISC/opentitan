@@ -292,7 +292,6 @@ dif_otbn_smoketest_lib = declare_dependency(
     sources: ['dif_otbn_smoketest.c'],
     dependencies: [
       sw_lib_dif_otbn,
-      sw_lib_runtime_log,
       sw_lib_runtime_hart,
       sw_lib_runtime_otbn,
       top_earlgrey,
