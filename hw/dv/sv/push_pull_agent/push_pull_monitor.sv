@@ -20,6 +20,7 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
   uvm_analysis_port #(push_pull_item#(HostDataWidth, DeviceDataWidth)) req_port;
 
   `uvm_component_new
+  bit in_reset;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -43,8 +44,10 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
   virtual protected task handle_reset();
     forever begin
       @(negedge cfg.vif.rst_n);
+      in_reset = 1;
       // TODO: sample any reset-related covergroups
       @(posedge cfg.vif.rst_n);
+      in_reset = 0;
     end
   endtask
 
@@ -96,7 +99,7 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
         req_port.write(item);
         // After picking up a request, wait until a response is sent before
         // detecting another request, as this is not a pipelined protocol.
-        while (!cfg.vif.mon_cb.ack) @(cfg.vif.mon_cb);
+        while (!cfg.vif.mon_cb.ack && !in_reset) @(cfg.vif.mon_cb);
       end
     end
   endtask
