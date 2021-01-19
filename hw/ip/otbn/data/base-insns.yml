@@ -239,7 +239,11 @@
 - mnemonic: lw
   rv32i: true
   synopsis: Load Word
-  operands: [grd, offset, grs1]
+  operands:
+    - grd
+    - name: offset
+      abbrev: "off"
+    - grs1
   syntax: <grd>, <offset>(<grs1>)
   encoding:
     scheme: I
@@ -262,7 +266,11 @@
 - mnemonic: sw
   rv32i: true
   synopsis: Store Word
-  operands: [grs2, offset, grs1]
+  operands:
+    - grs2
+    - name: offset
+      abbrev: "off"
+    - grs1
   syntax: <grs2>, <offset>(<grs1>)
   encoding:
     scheme: S
@@ -289,6 +297,7 @@
     - grs2
     - &branch-offset-operand
       name: offset
+      abbrev: "off"
       pc-rel: true
       type: simm<<1
   straight-line: false
@@ -431,6 +440,7 @@
       doc: Name of the GPR containing the number of iterations
     - &bodysize-operand
       name: bodysize
+      abbrev: sz
       type: uimm+1
       doc: Number of instructions in the loop body
   straight-line: false

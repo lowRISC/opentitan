@@ -156,14 +156,16 @@ def render_literal_pseudo_op(rewrite: List[str]) -> str:
     return ''.join(parts)
 
 
-def name_op_enc_fields(encoding: Encoding) -> _O2EDicts:
+def name_op_enc_fields(name_to_operand: Dict[str, Operand],
+                       encoding: Encoding) -> _O2EDicts:
     '''Name the encoding fields corresponding to operators
 
     In the generated documentation, we name encoding fields based on the
     operand that the encode. For example, if the operand "foo" is encoded in a
     field, the field will be labelled "FOO" in the table. If the field is split
     over multiple bit ranges, they will be labelled like "FOO_0", "FOO_1" etc,
-    counting from the LSB.
+    counting from the LSB. If an operand has an abbreviated name, this will be
+    used for the field instead of the full operand name.
 
     Returns a pair of dicts: (o2e, e2o). o2e maps an operand name to the list
     of (our names for) encoding fields that contribute to it, MSB first. e2o
@@ -190,6 +192,14 @@ def name_op_enc_fields(encoding: Encoding) -> _O2EDicts:
         # An encoding should never use an operand more than once
         assert operand_name not in o2e
 
+        # Get the base name to use for fields. This is either an upper-case
+        # version of the operand name, or uses the operand's abbreviated name
+        # if available.
+        operand = name_to_operand.get(operand_name)
+        assert operand is not None
+        basename = operand_name if operand.abbrev is None else operand.abbrev
+        basename = basename.upper()
+
         # There should always be at least one bit range for the field
         scheme_field = field.scheme_field
         assert scheme_field.bits.ranges
@@ -199,7 +209,7 @@ def name_op_enc_fields(encoding: Encoding) -> _O2EDicts:
         if len(scheme_field.bits.ranges) == 1:
             msb = scheme_field.bits.ranges[0][0]
             assert msb not in e2o
-            range_name = operand_name.upper()
+            range_name = basename
             o2e[operand_name] = [range_name]
             e2o[msb] = range_name
             continue
@@ -207,9 +217,8 @@ def name_op_enc_fields(encoding: Encoding) -> _O2EDicts:
         # Otherwise, we need to label the operands. Sorting ranges ensures that
         # they appear LSB-first.
         o2e_list = []
-        range_basename = operand_name.upper()
         for idx, (msb, lsb) in enumerate(sorted(scheme_field.bits.ranges)):
-            range_name = '{}_{}'.format(range_basename, idx)
+            range_name = '{}_{}'.format(basename, idx)
             o2e_list.append(range_name)
             assert msb not in e2o
             e2o[msb] = range_name
@@ -282,7 +291,7 @@ def render_insn(insn: Insn, heading_level: int) -> str:
         o2e = None
         e2o = None
     else:
-        o2e, e2o = name_op_enc_fields(insn.encoding)
+        o2e, e2o = name_op_enc_fields(insn.name_to_operand, insn.encoding)
 
     # Show the operand table if there is at least one operand and this isn't a
     # pseudo-op.

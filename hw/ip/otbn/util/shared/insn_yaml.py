@@ -53,6 +53,19 @@ class Insn:
                                           self.operands,
                                           lambda op: op.name)
 
+        # The call to index_list has checked that operand names are distinct.
+        # We also need to check that no operand abbreviation clashes with
+        # anything else.
+        operand_names = set(self.name_to_operand.keys())
+        for op in self.operands:
+            if op.abbrev is not None:
+                if op.abbrev in operand_names:
+                    raise ValueError('The name {!r} appears as an operand or '
+                                     'abbreviation more than once for '
+                                     'instruction {!r}.'
+                                     .format(op.abbrev, self.mnemonic))
+                operand_names.add(op.abbrev)
+
         if self.encoding is not None:
             # If we have an encoding, we passed it to the Operand constructors
             # above. This ensured that each operand has a field. However, it's
