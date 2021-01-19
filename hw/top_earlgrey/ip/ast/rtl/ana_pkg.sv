@@ -11,11 +11,26 @@
 `define __ANA_PKG
 package ana_pkg;
 
-// NETTYPE Definition
 `ifndef VERILATOR
 `ifndef SYNTHESIS
-  nettype real awire;
+// User define datatype A (UDT)
+// typedef struct {
+//     real AW;
+// } A;
+//
+// User define resulotion function Ares (UDR)
+// function automatic A Ares ( input A driver[] );
+//   Ares.AW = 0.0;
+//   foreach ( driver[i] )
+//     Ares.AW += driver[i].AW;
+// endfunction
+//
+// Nettype awire
+// nettype A awire with Ares;
+
+nettype real awire;
 `endif
 `endif
+
 endpackage  // of ana_pkg
 `endif  // of __ANA_PKG

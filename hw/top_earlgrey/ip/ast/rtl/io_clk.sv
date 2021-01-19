@@ -7,23 +7,29 @@
 //############################################################################
 `timescale 1ns / 10ps
 
-module io_clk #(
+module io_clk
+#(
 `ifndef VERILATOR
 // synopsys translate_off
   parameter time IO_EN_RDLY = 5us
 // synopsys translate_on
 `endif
 ) (
-  input vcmain_pok_i,              // VCMAIN POK @1.1V
   input clk_src_io_en_i,           // IO Source Clock Enable
+  input clk_io_pd_ni,              // IO Clock Power-down
+  input rst_io_clk_ni,             // IO Clock Logic reset
+  input vcore_pok_h_i,             // VCORE POK @3.3V (for OSC)
   output logic clk_src_io_o,       // IO Source Clock
   output logic clk_src_io_val_o    // IO Source Clock Valid
 );
 
-logic clk, io_clk_val, rst_n;
+logic clk, io_clk_en, io_clk_val, rst_n;
+
+assign rst_n = rst_io_clk_ni;
+
+assign io_clk_en = clk_src_io_en_i && clk_io_pd_ni;
 
 // Behavioral Model
-assign rst_n = vcmain_pok_i;
 
 // Clock Oscilator
 io_osc #(
@@ -32,9 +38,9 @@ io_osc #(
 /*P*/ .IO_EN_RDLY ( IO_EN_RDLY )
 // synopsys translate_on
 `endif
-) i_io_osc (
-/*I*/ .vcmain_pok_i ( vcmain_pok_i ),
-/*I*/ .io_en_i ( clk_src_io_en_i ),
+) u_io_osc (
+/*I*/ .vcore_pok_h_i ( vcore_pok_h_i ),
+/*I*/ .io_en_i ( io_clk_en ),
 /*O*/ .io_clk_o ( clk )
 );
 
@@ -42,7 +48,7 @@ io_osc #(
 // Clock & Valid
 assign clk_src_io_o = clk;
 
-wire rst_val_n = rst_n && clk_src_io_en_i;
+wire rst_val_n = rst_n && io_clk_en;
 
 // 2-stage deassertion
 always_ff @( posedge clk, negedge rst_val_n ) begin
