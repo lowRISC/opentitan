@@ -32,6 +32,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     bit [3:0][TL_DW-1:0] SoftwareBinding;
   } adv_owner_data_t;
 
+  typedef struct packed {
+    bit [TL_DW-1:0]      KeyVersion;
+    bit [3:0][TL_DW-1:0] Salt;
+    keymgr_pkg::seed_t   KeyID;
+    keymgr_pkg::seed_t   SoftwareExportConstant;
+  } gen_out_data_t;
+
   typedef enum int {
     UpdateSwOut,
     UpdateHwOut,
@@ -60,6 +67,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   bit [keymgr_pkg::AdvDataWidth-1:0] adv_data_a_array[keymgr_pkg::keymgr_working_state_e];
   bit [keymgr_pkg::IdDataWidth-1:0]  id_data_a_array[keymgr_pkg::keymgr_working_state_e];
   bit [keymgr_pkg::GenDataWidth-1:0] sw_data_a_array[keymgr_pkg::keymgr_working_state_e];
+  bit [keymgr_pkg::GenDataWidth-1:0] hw_data_a_array[keymgr_pkg::keymgr_working_state_e];
 
   `uvm_component_new
 
@@ -125,14 +133,17 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         endcase
       end
       keymgr_pkg::OpGenId: begin
-        compare_id_data(item.byte_data_q);
+        if (get_is_kmac_data_correct()) compare_id_data(item.byte_data_q);
+        else                            compare_invalid_data(item.byte_data_q);
       end
-      keymgr_pkg::OpGenSwOut: begin
-        // TODO
+      keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut: begin
+        if (get_is_kmac_data_correct()) compare_gen_out_data(item.byte_data_q);
+        else                            compare_invalid_data(item.byte_data_q);
       end
-      keymgr_pkg::OpGenHwOut: begin
-        // TODO
+      keymgr_pkg::OpDisable: begin
+        compare_invalid_data(item.byte_data_q);
       end
+      default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
     endcase
   endfunction
 
@@ -218,7 +229,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
               update_result = UpdateSwOut;
             end
           end
-          default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0d", op.name))
+          default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
         endcase
       end
       keymgr_pkg::StDisabled: begin
@@ -232,10 +243,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           keymgr_pkg::OpGenHwOut: begin
             update_result = UpdateHwOut;
           end
-          default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0d", op.name))
+          default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
         endcase
       end
-      default: `uvm_fatal(`gfn, $sformatf("Unexpected current_state: %0d", current_state))
+      default: `uvm_fatal(`gfn, $sformatf("Unexpected current_state: %0s", current_state.name))
     endcase
 
     return update_result;
@@ -355,22 +366,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                 end
                 void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
               end
-              keymgr_pkg::StDisabled: begin
-                cfg.keymgr_vif.update_kdf_key(current_internal_key, current_state, .good_key(0));
-              end
               default: begin // other than StReset and StDisabled
-                bit good_key;
+                bit good_key = get_is_kmac_key_correct();
 
-                // when advance from StOwnerKey, it is to StDisabled and key is random value
-                if (current_state == keymgr_pkg::StOwnerKey && op == keymgr_pkg::OpAdvance ||
-                    op == keymgr_pkg::OpDisable) begin
-                  good_key = 0;
-                end else if (current_state == keymgr_pkg::StInit) begin
-                  good_key = (get_err_code() == 0);
-                end else begin
-                  // TODO should be "good_key = (get_err_code() == 0)", but dut acts as below #4826
-                  good_key = 1;
-                end
                 // update kmac key for check
                 cfg.keymgr_vif.update_kdf_key(current_internal_key, current_state, good_key);
               end
@@ -496,6 +494,34 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     return get_current_max_version() < `gmv(ral.key_version);
   endfunction
 
+  // in normal operational states, invalid command etc lead to random data for gen-out OP
+  virtual function bit get_is_kmac_data_correct();
+    bit [TL_DW-1:0] err_code = get_err_code();
+    keymgr_pkg::keymgr_ops_e op = get_operation();
+
+    if (current_state inside {keymgr_pkg::StCreatorRootKey, keymgr_pkg::StOwnerIntKey,
+                              keymgr_pkg::StOwnerKey}) begin
+      return !(err_code[keymgr_pkg::ErrInvalidCmd] |
+               err_code[keymgr_pkg::ErrInvalidOut] |
+               err_code[keymgr_pkg::ErrInvalidIn]);
+    end else begin
+      return 0;
+    end
+  endfunction
+
+  // Entering StDisable or invalid op leads to random key
+  virtual function bit get_is_kmac_key_correct();
+    bit [TL_DW-1:0] err_code = get_err_code();
+    keymgr_pkg::keymgr_ops_e op = get_operation();
+
+    if ((current_state == keymgr_pkg::StOwnerKey && op == keymgr_pkg::OpAdvance) ||
+        op == keymgr_pkg::OpDisable) begin
+      return 0;
+    end else begin
+      return !(err_code[keymgr_pkg::ErrInvalidOp]);
+    end
+  endfunction
+
   virtual function void compare_adv_creator_data(bit exp_match, const ref byte byte_data_q[$]);
     adv_creator_data_t exp, act;
     string str;
@@ -586,6 +612,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     foreach (sw_data_a_array[i]) begin
       `DV_CHECK_NE(act, sw_data_a_array[i], $sformatf("SW data at state %0s", i.name))
     end
+    foreach (hw_data_a_array[i]) begin
+      `DV_CHECK_NE(act, hw_data_a_array[i], $sformatf("HW data at state %0s", i.name))
+    end
     foreach (cfg.keymgr_vif.keys_a_array[i, j]) begin
       `DV_CHECK_NE(act, cfg.keymgr_vif.keys_a_array[i][j],
                    $sformatf("key at state %0s from %0s", i, j))
@@ -599,16 +628,55 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       keymgr_pkg::StCreatorRootKey: exp = keymgr_pkg::RndCnstCreatorIdentitySeedDefault;
       keymgr_pkg::StOwnerIntKey:    exp = keymgr_pkg::RndCnstOwnerIntIdentitySeedDefault;
       keymgr_pkg::StOwnerKey:       exp = keymgr_pkg::RndCnstOwnerIdentitySeedDefault;
-      default: begin
-        compare_invalid_data(byte_data_q);
-        return;
-      end
+      default: `uvm_fatal(`gfn, $sformatf("unexpected state %s", current_state.name))
     endcase
     act = {<<8{byte_data_q}};
 
     `DV_CHECK_EQ(act, exp, $sformatf("Gen ID at %0s", current_state.name))
 
     id_data_a_array[current_state] = act;
+  endfunction
+
+  virtual function void compare_gen_out_data(const ref byte byte_data_q[$]);
+    gen_out_data_t exp, act;
+    keymgr_pkg::keymgr_ops_e op = get_operation();
+    keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
+            `gmv(ral.control.dest_sel));
+    string str;
+
+    act = {<<8{byte_data_q}};
+
+    exp.KeyVersion = `gmv(ral.key_version);
+    exp.Salt[0]    = `gmv(ral.salt_0);
+    exp.Salt[1]    = `gmv(ral.salt_1);
+    exp.Salt[2]    = `gmv(ral.salt_2);
+    exp.Salt[3]    = `gmv(ral.salt_3);
+    case (dest)
+      keymgr_pkg::Kmac: exp.KeyID = keymgr_pkg::RndCnstKmacSeedDefault;
+      keymgr_pkg::Hmac: exp.KeyID = keymgr_pkg::RndCnstHmacSeedDefault;
+      keymgr_pkg::Aes:  exp.KeyID = keymgr_pkg::RndCnstAesSeedDefault;
+      keymgr_pkg::None: exp.KeyID = keymgr_pkg::RndCnstNoneSeedDefault;
+      default: `uvm_fatal(`gfn, $sformatf("Unexpected dest_sel: %0s", dest.name))
+    endcase
+
+    case (op)
+      keymgr_pkg::OpGenSwOut: begin
+        exp.SoftwareExportConstant = keymgr_pkg::RndCnstSoftOutputSeedDefault;
+        sw_data_a_array[current_state] = act;
+      end
+      keymgr_pkg::OpGenHwOut: begin
+        exp.SoftwareExportConstant = keymgr_pkg::RndCnstHardOutputSeedDefault;
+        hw_data_a_array[current_state] = act;
+      end
+      default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
+    endcase
+
+    `CREATE_CMP_STR(KeyVersion)
+    `CREATE_CMP_STR(Salt)
+    `CREATE_CMP_STR(KeyID)
+    `CREATE_CMP_STR(SoftwareExportConstant)
+
+    `DV_CHECK_EQ(act, exp, str)
   endfunction
 
   // if it's not defined operation, treat as OpDisable
@@ -640,7 +708,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     adv_data_a_array.delete();
     id_data_a_array.delete();
     sw_data_a_array.delete();
-
+    hw_data_a_array.delete();
   endfunction
 
   function void check_phase(uvm_phase phase);
