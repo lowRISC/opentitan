@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, TextIO, Tuple
 from shared.bool_literal import BoolLiteral
 from shared.encoding import Encoding
 from shared.insn_yaml import Insn, InsnsFile, InsnGroup, load_file
-from shared.operand import Operand
+from shared.operand import EnumOperandType, OptionOperandType, Operand
 
 _O2EDicts = Tuple[Dict[str, List[str]], Dict[int, str]]
 
@@ -301,11 +301,35 @@ def render_insn(insn: Insn, heading_level: int) -> str:
     # Show operation pseudo-code if given
     if insn.operation is not None:
         parts.append('{} Operation\n\n'
-                     '```python3\n'
+                     .format('#' * (heading_level + 1)))
+
+        # Add a handy header to remind readers that enum operands and option
+        # operands are referred to by their integer values.
+        not_num_ops = []
+        for operand in insn.operands:
+            if ((isinstance(operand.op_type, EnumOperandType) or
+                 isinstance(operand.op_type, OptionOperandType))):
+                not_num_ops.append(operand.name)
+
+        if not_num_ops:
+            if len(not_num_ops) == 1:
+                op_str = ('operand `{}` is referred to by its'
+                          .format(not_num_ops[0]))
+            else:
+                op_str = ('operands {} and `{}` are referred to by their'
+                          .format(', '.join('`{}`'.format(e)
+                                            for e in not_num_ops[:-1]),
+                                  not_num_ops[-1]))
+
+            parts.append('In the listing below, {} integer value.\n'
+                         'The operand table above shows how this corresponds '
+                         'to assembly syntax.\n\n'
+                         .format(op_str))
+
+        parts.append('```python3\n'
                      '{}\n'
                      '```\n\n'
-                     .format('#' * (heading_level + 1),
-                             insn.operation))
+                     .format(insn.operation))
     return ''.join(parts)
 
 

@@ -548,9 +548,8 @@ class EnumOperandType(OperandType):
 
     def markdown_doc(self) -> Optional[str]:
         # Override from OperandType base class
-        parts = ['Syntax table:\n\n'
-                 '| Syntax | Value of immediate |\n'
-                 '|--------|--------------------|\n']
+        parts = ['| Assembly Syntax | Value |\n'
+                 '|-----------------|-------|\n']
         for idx, item in enumerate(self.items):
             parts.append('| `{}` | `{}` |\n'
                          .format(item, idx))
