@@ -70,7 +70,7 @@ void base_log_internal_core(log_fields_t log, ...) {
 }
 
 /**
- * Logs `log and the values that follow in an efficient, DV-testbench
+ * Logs `log` and the values that follow in an efficient, DV-testbench
  * specific way, which bypasses the UART.
  *
  * @param log a pointer to log data to log. Note that this pointer is likely to
