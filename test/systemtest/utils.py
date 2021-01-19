@@ -425,6 +425,7 @@ def find_in_files(file_objects,
         for file_object in file_objects:
             file_object.seek(0)
 
+    end_loop = False
     while True:
         for file_object in file_objects:
             for line in file_object:
@@ -432,12 +433,17 @@ def find_in_files(file_objects,
                 if m is not None:
                     return m
 
+        if end_loop:
+            break
+
         if timeout is not None and time.time() >= t_end:
             raise subprocess.TimeoutExpired(None, timeout)
 
+        # The wait function returns True to indicate that no more data will be
+        # produced (e.g. because the producing process terminated). But we still
+        # need to check one last time if the already produced data is matching
+        # the `pattern`.
         end_loop = wait_func()
-        if end_loop:
-            break
 
     return None
 
