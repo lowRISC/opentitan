@@ -18,6 +18,13 @@ using mock_mmio::MmioTest;
 using mock_mmio::MockDevice;
 using testing::Test;
 
+// If either of these static assertions fail, then the unit-tests for related
+// API should be revisited.
+static_assert(RV_PLIC_PARAM_NUMSRC == 99,
+              "PLIC instantiation parameters have changed.");
+static_assert(RV_PLIC_PARAM_NUMTARGET == 1,
+              "PLIC instantiation parameters have changed.");
+
 constexpr uint32_t kTarget0 = 0;
 constexpr uint32_t kFirstIrq = 1;
 
@@ -31,12 +38,6 @@ class PlicTest : public Test, public MmioTest {
 class InitTest : public PlicTest {
  protected:
   void ExpectInitReset() {
-    // Interrupt enable multireg.
-    EXPECT_WRITE32(RV_PLIC_IE0_0_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_IE0_1_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_IE0_2_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_IE0_3_REG_OFFSET, 0);
-
     // Level/edge multireg.
     EXPECT_WRITE32(RV_PLIC_LE_0_REG_OFFSET, 0);
     EXPECT_WRITE32(RV_PLIC_LE_1_REG_OFFSET, 0);
@@ -48,6 +49,12 @@ class InitTest : public PlicTest {
       ptrdiff_t offset = RV_PLIC_PRIO0_REG_OFFSET + (sizeof(uint32_t) * i);
       EXPECT_WRITE32(offset, 0);
     }
+
+    // Interrupt enable multireg.
+    EXPECT_WRITE32(RV_PLIC_IE0_0_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_1_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_2_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_3_REG_OFFSET, 0);
 
     // Target threshold registers.
     EXPECT_WRITE32(RV_PLIC_THRESHOLD0_REG_OFFSET, 0);
