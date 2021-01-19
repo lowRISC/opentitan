@@ -12,7 +12,8 @@
 const device_type_t kDeviceType = kDeviceSimVerilator;
 
 // Changes to the clock frequency or UART baud rate must also be reflected at
-// `hw/top_earlgrey/rtl/top_earlgrey_verilator.sv`.
+// `hw/top_earlgrey/rtl/top_earlgrey_verilator.sv` and
+// `test/systemtest/earlgrey/test_sim_verilator.py`.
 const uint64_t kClockFreqCpuHz = 500 * 1000;  // 500kHz
 
 const uint64_t kClockFreqPeripheralHz = 125 * 1000;  // 125kHz
