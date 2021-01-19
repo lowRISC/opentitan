@@ -757,16 +757,22 @@ class Operand:
         # dict.
         what = 'operand for {!r} instruction'.format(mnemonic)
         if isinstance(yml, str):
-            name = yml
+            name = yml.lower()
+            abbrev = None
             op_type = None
             doc = None
             pc_rel = False
             op_what = '{!r} {}'.format(name, what)
         elif isinstance(yml, dict):
-            yd = check_keys(yml, what, ['name'], ['type', 'pc-rel', 'doc'])
-            name = check_str(yd['name'], 'name of ' + what)
+            yd = check_keys(yml, what,
+                            ['name'],
+                            ['type', 'pc-rel', 'doc', 'abbrev'])
+            name = check_str(yd['name'], 'name of ' + what).lower()
 
             op_what = '{!r} {}'.format(name, what)
+            abbrev = get_optional_str(yd, 'abbrev', op_what)
+            if abbrev is not None:
+                abbrev = abbrev.lower()
             op_type = get_optional_str(yd, 'type', op_what)
             pc_rel = check_bool(yd.get('pc-rel', False),
                                 'pc-rel field of ' + op_what)
@@ -784,7 +790,14 @@ class Operand:
                                  .format(mnemonic, name))
             enc_scheme_field = insn_encoding.fields[field_name].scheme_field
 
+        if abbrev is not None:
+            if name == abbrev:
+                raise ValueError('Operand {!r} of the {!r} instruction has '
+                                 'an abbreviated name the same as its '
+                                 'actual name.'
+                                 .format(name, mnemonic))
         self.name = name
+        self.abbrev = abbrev
         self.op_type = make_operand_type(op_type, pc_rel, name,
                                          mnemonic, enc_scheme_field)
         self.doc = doc

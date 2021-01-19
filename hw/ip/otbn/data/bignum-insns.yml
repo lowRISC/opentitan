@@ -16,16 +16,19 @@
       doc: Name of the second source WDR
     - &bn-shift-type-operand
       name: shift_type
+      abbrev: st
       type: enum(<<, >>)
       doc: |
         The direction of an optional shift applied to `<wrs2>`.
     - &bn-shift-bits-operand
       name: shift_bits
+      abbrev: sb
       type: uimm5<<3
       doc: |
         Number of bits by which to shift `<wrs2>`. Defaults to 0.
     - &bn-flag-group-operand
       name: flag_group
+      abbrev: fg
       type: uimm1
       doc: Flag group to use. Defaults to 0.
   syntax: &bn-add-syntax |
@@ -143,6 +146,7 @@
   operands:
     - &mulqacc-zero-acc
       name: zero_acc
+      abbrev: za
       type: option(.Z)
       doc: Zero the accumulator before accumulating the multiply result.
     - &mulqacc-wrs1
@@ -150,6 +154,7 @@
       doc: First source WDR
     - &mulqacc-wrs1-qwsel
       name: wrs1_qwsel
+      abbrev: q1
       type: uimm2
       doc: |
         Quarter-word select for `<wrs1>`.
@@ -164,6 +169,7 @@
       doc: Second source WDR
     - &mulqacc-wrs2-qwsel
       name: wrs2_qwsel
+      abbrev: q2
       type: uimm2
       doc: |
         Quarter-word select for `<wrs2>`.
@@ -175,6 +181,7 @@
         - `3`: Select `wrs1[WLEN-1:WLEN/4*3]` (most significant quarter-word)
     - &mulqacc-acc-shift-imm
       name: acc_shift_imm
+      abbrev: shift
       type: uimm2<<6
       doc: |
         The number of bits to shift the `WLEN/2`-bit multiply result before accumulating.
@@ -264,6 +271,7 @@
     - *mulqacc-zero-acc
     - *mulqacc-wrd
     - name: wrd_hwsel
+      abbrev: dh
       type: enum(L,U)
       doc: |
         Half-word select for `<wrd>`.
@@ -698,16 +706,19 @@
         Name of the GPR containing the memory byte address.
         The value contained in the referenced GPR must be WLEN-aligned.
     - name: offset
+      abbrev: "off"
       doc: |
         Offset value.
         Must be WLEN-aligned.
       type: simm<<5
     - name: grs1_inc
+      abbrev: inc1
       type: option(++)
       doc: |
         Increment the value in `<grs1>` by WLEN/8 (one word).
         Cannot be specified together with `grd_inc`.
     - name: grd_inc
+      abbrev: incd
       type: option(++)
       doc: |
         Increment the value in `<grd>` by one.
@@ -768,17 +779,20 @@
     - name: grs2
       doc: Name of the GPR referencing the source WDR.
     - name: offset
+      abbrev: "off"
       doc: |
         Offset value.
         Must be WLEN-aligned.
       type: simm<<5
     - name: grs1_inc
       type: option(++)
+      abbrev: inc1
       doc: |
         Increment the value in `<grs1>` by WLEN/8 (one word).
         Cannot be specified together with `grs2_inc`.
     - name: grs2_inc
       type: option(++)
+      abbrev: inc2
       doc: |
         Increment the value in `<grs2>` by one.
         Cannot be specified together with `grs1_inc`.
