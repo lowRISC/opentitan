@@ -156,7 +156,7 @@ the ideal baud rate.
 
 The baud rate is set by writing to the {{< regref "CTRL.NCO" >}} register field. This should be
 set using the equation below, where `f_pclk` is the system clock frequency
-provided to the UART. and `f_baud` is the desired baud rate (in bits per second).
+provided to the UART, and `f_baud` is the desired baud rate (in bits per second).
 
 $$ NCO = 16 \times {{2^{$bits(NCO)} \times f\_{baud}} \over {f\_{pclk}}} $$
 
@@ -316,7 +316,7 @@ character from the RX FIFO and right after it there is a baud clock tick and the
 start of a new RX transaction from the host, the timeout time is reduced by 1
 and half baud clock periods.
 
-## rx_partity_err
+#### rx_partity_err
 The `rx_parity_err` interrupt is triggered if parity is enabled and
 the RX parity bit does not match the expected polarity as programmed
 in {{< regref "CTRL.PARITY_ODD" >}}.
@@ -391,7 +391,7 @@ void uart_send_char(char val) {
 }
 
 void uart_send_str(char *str) {
-  while(*str != \0) {
+  while(*str != '\0') {
     uart_send_char(*str++);
 }
 ```
