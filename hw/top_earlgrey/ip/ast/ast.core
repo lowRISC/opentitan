@@ -3,13 +3,15 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:systems:ast:0.1"
-description: "Analog sensor top (AST) generic views"
-
+description: "Analog Sensor Top generic views"
 filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
+      - lowrisc:top_earlgrey:pinmux_reg
+      - lowrisc:ip:pinmux_component
       - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:ip:edn_pkg
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_pkg.sv
@@ -20,7 +22,7 @@ filesets:
       - rtl/aon_osc.sv
       - rtl/ast_reg_top.sv
       - rtl/entropy.sv
-      - rtl/gen_alert.sv
+      - rtl/alert.sv
       - rtl/gen_pok.sv
       - rtl/io_clk.sv
       - rtl/io_osc.sv
@@ -35,11 +37,20 @@ filesets:
     file_type: systemVerilogSource
 
 
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
 targets:
   default: &default_target
     filesets:
       - files_rtl
     toplevel: ast
+    parameters:
+     - SYNTHESIS
+
 
   lint:
     <<: *default_target
@@ -51,11 +62,12 @@ targets:
           - "-Wall"
 
   sim:
+    <<: *default_target
     default_tool: vcs
     filesets:
       - files_rtl
     tools:
       vcs:
-        vcs_options: [-timescale=1ns/1ps]
+        vcs_options: [-timescale=1ns/1ps -l vcs.log]
     toplevel: ast
 

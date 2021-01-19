@@ -10,6 +10,10 @@ package ast_reg_pkg;
   // Typedefs for registers //
   ////////////////////////////
   typedef struct packed {
+    logic [7:0]  q;
+  } ast_reg2hw_revid_reg_t;
+
+  typedef struct packed {
     logic [31:0] q;
   } ast_reg2hw_rwtype0_reg_t;
 
@@ -39,6 +43,7 @@ package ast_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
+    ast_reg2hw_revid_reg_t revid; // [50:43]
     ast_reg2hw_rwtype0_reg_t rwtype0; // [42:11]
     ast_reg2hw_rwtype1_reg_t rwtype1; // [10:0]
   } ast_reg2hw_t;
@@ -47,24 +52,27 @@ package ast_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    ast_hw2reg_rwtype0_reg_t rwtype0; // [32:1]
+    ast_hw2reg_rwtype0_reg_t rwtype0; // [32:0]
   } ast_hw2reg_t;
 
   // Register Address
-  parameter logic [2:0] AST_RWTYPE0_OFFSET = 3'h 0;
-  parameter logic [2:0] AST_RWTYPE1_OFFSET = 3'h 4;
+  parameter logic [3:0] AST_REVID_OFFSET = 4'h 0;
+  parameter logic [3:0] AST_RWTYPE0_OFFSET = 4'h 4;
+  parameter logic [3:0] AST_RWTYPE1_OFFSET = 4'h 8;
 
 
   // Register Index
   typedef enum int {
+    AST_REVID,
     AST_RWTYPE0,
     AST_RWTYPE1
   } ast_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] AST_PERMIT [2] = '{
-    4'b 1111, // index[0] AST_RWTYPE0
-    4'b 0011  // index[1] AST_RWTYPE1
+  parameter logic [3:0] AST_PERMIT [3] = '{
+    4'b 0001, // index[0] AST_REVID
+    4'b 1111, // index[1] AST_RWTYPE0
+    4'b 0011  // index[2] AST_RWTYPE1
   };
 endpackage
 

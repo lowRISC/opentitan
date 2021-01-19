@@ -6,6 +6,9 @@
 // *Module Description: AST Package
 //############################################################################
 
+`ifdef __AST_PKG
+`else
+`define __AST_PKG
 package ast_pkg;
 
 `ifndef VERILATOR
@@ -42,4 +45,25 @@ parameter time RNG_EN_RDLY     = 5us;
 // ADC
 parameter int AdcCnvtClks      = 22;
 
-endpackage  // of ana_pkg
+// Alert interface
+typedef struct packed {
+  logic        p;
+  logic        n;
+} ast_dif_t;
+
+// Read-Write Margin interface
+typedef struct packed {
+  logic       marg_en_a;
+  logic [3:0] marg_a;
+  logic       marg_en_b;
+  logic [3:0] marg_b;
+} dpm_rm_t;
+
+typedef struct packed {
+  logic       marg_en;
+  logic [3:0] marg;
+} spm_rm_t;
+
+
+endpackage  // of ast_pkg
+`endif  // of __AST_PKG

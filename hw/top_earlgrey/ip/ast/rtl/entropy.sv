@@ -10,60 +10,43 @@
 module entropy #(
   parameter int EntropyRateWidth = 4
 ) (
-  input entropy_ack_i,
-  input entropy_i,
-  input [EntropyRateWidth-1:0] entropy_rate_i,
+  input edn_pkg::edn_rsp_t entropy_rsp_i,          // Entropy Response
+  input [EntropyRateWidth-1:0] entropy_rate_i,     // Entropy Rate
+  input clk_ast_es_i,                              // Entropy Clock
+  input rst_ast_es_ni,                             // Entropy Reset
+  input clk_src_sys_en_i,                          // System Source Clock Enable
   input clk_src_sys_jen_i,                         // System Source Clock Jitter Enable
-  input clk_ast_es_i,
-  input rst_ast_es_ni,
-  input clk_src_sys_i,
-  input rst_src_sys_ni,
-  input scan_mode_i,
-  output logic entropy_req_o
+  output edn_pkg::edn_req_t entropy_req_o          // Entropy Request
 );
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Entropy Logic @clk_ast_es_i clock domain
-
 
 ///////////////////////////////////////
 // Entropy Enable
 ///////////////////////////////////////
-logic entropy_enable;
-assign entropy_enable = rst_ast_es_ni && clk_src_sys_jen_i;
-
+// Entropy Logic @clk_ast_es_i clock domain
 // Reset De-Assert syncronizer
-//JL TODO: Concider using Prim cell
-// prim_generic_flop_2sync #(
-//    .Width ( 1 )
-// ) rst_es_da_sync (
-//    .clk_i ( clk_ast_es_i ),
-//    .rst_ni ( entropy_enable ),
-//    .d_i ( 1'b1 ),
-//    .q_o ( rst_es_n )
-// );
-logic sync1_rst_es_n, sync2_rst_es_n, rst_es_n;
+logic entropy_enable, sync_rst_es_n, rst_es_n;
 
-always_ff @( posedge clk_ast_es_i, negedge entropy_enable ) begin
-  if ( !entropy_enable ) begin
-    sync1_rst_es_n <= 1'b0;
-    sync2_rst_es_n <= 1'b0;
-  end
-  else begin
-    sync1_rst_es_n <= 1'b1;
-    sync2_rst_es_n <= sync1_rst_es_n;
-  end
-end
+assign entropy_enable = (rst_ast_es_ni && clk_src_sys_en_i && clk_src_sys_jen_i);
 
-assign rst_es_n = scan_mode_i ? rst_ast_es_ni : sync2_rst_es_n;
+prim_generic_flop_2sync #(
+  .Width ( 1 )
+) rst_es_da_sync (
+  .clk_i ( clk_ast_es_i ),
+  .rst_ni ( entropy_enable ),
+  .d_i ( 1'b1 ),
+  .q_o ( sync_rst_es_n )
+);
+assign rst_es_n = sync_rst_es_n;
 
 
 ///////////////////////////////////////
 // Entropy Rate
 ///////////////////////////////////////
-logic read_entropy;
+logic read_entropy, fast_start;
 logic [(1<<EntropyRateWidth)-1:0] erate_cnt;
 logic [32-1:0] entropy_rate;
+logic [6-1:0] fast_cnt;
+logic inc_fifo_cnt, dec_fifo_cnt;
 
 always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
   if ( !rst_es_n )         erate_cnt <= {(1<<EntropyRateWidth){1'b0}};
@@ -71,21 +54,73 @@ always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
   else                     erate_cnt <= erate_cnt + 1'b1;
 end
 
-assign entropy_rate = (1 << entropy_rate_i);
-assign read_entropy = (erate_cnt == entropy_rate[(1<<EntropyRateWidth)-1:0]);
+always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
+  if ( !rst_es_n ) begin
+    fast_start <= 1'b1;
+    fast_cnt   <= 6'h00;
+  end
+  else if ( fast_cnt == 6'h20 )
+    fast_start <= 1'b0;
+  else if ( fast_start && dec_fifo_cnt )
+    fast_cnt   <= fast_cnt + 1'b1;
+end
+
+assign entropy_rate = fast_start ? 1 : (1 << entropy_rate_i);
+assign read_entropy = (entropy_rate == 1) || (erate_cnt == entropy_rate[(1<<EntropyRateWidth)-1:0]);
 
 
 ///////////////////////////////////////
 // Entropy FIFO
 ///////////////////////////////////////
+//
+//                            64-bit FIFO
+//          32 +----------------------------------------+ 1
+// edn_bus =/=>|+--------------------+ +---------------+|-/-> To LFSR
+// edn_ack --->|| 32-bit prim_packer |-| 32 1-bit fifo ||---> valid (!empty)
+// edn_req <---|+--------------------+ +---------------+|<--- read_entropy
+//             +----------------------------------------+
+//
+// The FIFO level should be calculated by (32*n - bits_to_LFSR)
+// A request will be issue when the 32-bit buffer is empty!
+// That means, the FIFO level <= 31 (?Air? bubble cleared from the fifo)
+// So, making sure the req_o is/was issued when the FIFO level < 16 will be true at all time.
+
 // FIFO RDP/WRP/Level
 logic [6-1:0] fifo_cnt;            // For 32 1-bit FIFO
 logic [5-1:0] fifo_rdp, fifo_wrp;  // FIFO read pointer & write pointer
-logic [32-1:0] fifo_data;          // 32 1-bi FIFOt
-logic inc_fifo_cnt, dec_fifo_cnt;
+logic [32-1:0] fifo_data;          // 32 1-bit FIFO
+logic fifo_full, fifo_empty;
 
-assign inc_fifo_cnt = (fifo_cnt < 6'h20) && entropy_ack_i;
-assign dec_fifo_cnt = (fifo_cnt != 6'h00) && read_entropy;
+logic entropy_req, entropy_ack, entropy_bit, entropy_bit_valid;
+logic [6-1:0] entropy_depth_o;
+logic [32-1:0] entropy_bus;
+
+assign entropy_req_o.edn_req = entropy_req;
+assign entropy_ack = entropy_rsp_i.edn_ack;
+assign entropy_bus = entropy_rsp_i.edn_bus;
+
+prim_packer_fifo #(
+  .InW ( 32 ),
+  .OutW ( 1 )
+) u_pached_fifo (
+  .clk_i ( clk_ast_es_i ),
+  .rst_ni ( rst_es_n ),
+  .clr_i ( 1'b0 ),                      // Not used
+  .wvalid_i ( entropy_ack ),            // EDN_ACK
+  .wdata_i (  entropy_bus ),            // EDN_BUS (32-bit)
+  .wready_o ( entropy_req ),            // EDN_REQ
+  //
+  .rvalid_o ( entropy_bit_valid ),      // Entropy bit is valid
+  .rdata_o ( entropy_bit ),             // Entropy bit
+  .rready_i ( !fifo_full ),             // FIFO is not full
+  .depth_o ( entropy_depth_o[6-1:0] )   // empty when (entropy_depth_o == `0)
+);
+
+assign fifo_full  = (fifo_cnt == 6'h20);
+assign fifo_empty = (fifo_cnt == 6'h00);
+
+assign inc_fifo_cnt = !fifo_full && entropy_bit_valid;
+assign dec_fifo_cnt = !fifo_empty && read_entropy;
 
 always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
   if ( !rst_es_n ) begin
@@ -107,20 +142,10 @@ always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
   end
 end
 
-// Request
-always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
-  if ( !rst_es_n )
-    entropy_req_o <= 1'b0;
-  else if ( fifo_cnt < 6'h10 )
-    entropy_req_o <= 1'b1;  // Half
-  else if ( (fifo_cnt == 6'h1f) && inc_fifo_cnt && ~dec_fifo_cnt )
-    entropy_req_o <= 1'b0;  // Full
-end
-
 // FIFO Write
 always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
   if ( !rst_es_n )         fifo_data[32-1:0]   <= {32{1'b0}};
-  else if ( inc_fifo_cnt ) fifo_data[fifo_wrp] <= entropy_i;
+  else if ( inc_fifo_cnt ) fifo_data[fifo_wrp] <= entropy_bit;
 end
 
 // FIFO Read Out

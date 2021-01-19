@@ -16,18 +16,24 @@ module usb_clk #(
 // synopsys translate_on
 `endif
 ) (
-  input vcmain_pok_i,              // VCMAIN POK @1.1V
   input clk_src_usb_en_i,          // USB Source Clock Enable
   input usb_ref_pulse_i,           // USB Reference Pulse
   input usb_ref_val_i,             // USB Reference (Pulse) Valid
+  input clk_usb_pd_ni,             // USB Clock Power-down
+  input rst_usb_clk_ni,            // USB Clock Logic reset
+  input vcore_pok_h_i,             // VCORE POK @3.3V (for OSC)
+  //
   output logic clk_src_usb_o,      // USB Source Clock
   output logic clk_src_usb_val_o   // USB Source Clock Valid
 );
 
-logic clk, usb_clk_val, rst_n;
+logic clk, usb_clk_en, usb_clk_val, rst_n;
+
+assign rst_n = rst_usb_clk_ni;
+
+assign usb_clk_en = clk_src_usb_en_i && clk_usb_pd_ni;
 
 // Behavioral Model
-assign rst_n = vcmain_pok_i;
 
 // Clock Oscilator
 usb_osc #(
@@ -38,9 +44,9 @@ usb_osc #(
 /*P*/ .USB_VAL_FDLY ( USB_VAL_FDLY )
 // synopsys translate_on
 `endif
-) i_usb_osc (
-/*I*/ .vcmain_pok_i ( vcmain_pok_i ),
-/*I*/ .usb_en_i ( clk_src_usb_en_i ),
+) u_usb_osc (
+/*I*/ .vcore_pok_h_i ( vcore_pok_h_i ),
+/*I*/ .usb_en_i (usb_clk_en ),
 /*I*/ .usb_ref_val_i ( usb_ref_val_i ),
 /*O*/ .usb_clk_o ( clk )
 );
@@ -52,7 +58,7 @@ assign clk_src_usb_o = clk;
 // 2-stage assertion
 logic rst_val_n;
 
-assign rst_val_n = rst_n && clk_src_usb_en_i;
+assign rst_val_n = rst_n && usb_clk_en;
 
 always_ff @( posedge clk, negedge rst_val_n ) begin
   if ( !rst_val_n )  begin
