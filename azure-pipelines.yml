@@ -54,6 +54,39 @@ jobs:
       printenv
     displayName: Display environment information
   - bash: |
+      commit_range="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)..HEAD"
+      # Notes:
+      # * Merge commits are not checked. We always use rebases instead of
+      #   merges to keep a linear history, which makes merge commits disappear
+      #   ultimately, making them only a CI artifact which should not be
+      #   checked.
+      # * 'type=error' is used even for warnings. Only "errors" are shown in
+      #   the GitHub checks API. However, warnings don't return a non-zero
+      #   error code and don't fail the build step.
+      util/lint_commits.py \
+        --no-merges \
+        --error-msg-prefix="##vso[task.logissue type=error]" \
+        --warning-msg-prefix="##vso[task.logissue type=error]" \
+        "$commit_range"
+    # Only run on pull requests to check new commits only
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Check commit metadata
+  - bash: |
+      fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
+      changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin")"
+      licence_checker="util/lowrisc_misc-linters/licence-checker/licence-checker.py --config util/licence-checker.hjson"
+      if [[ -n "$changed_files" ]]; then
+        set -o pipefail
+        xargs $licence_checker <<< "$changed_files" | tee licence-checker-output
+        if [[ $? != 0 ]]; then
+          echo -n "##vso[task.logissue type=error]"
+          echo "Licence header check failed. Please check output of $licence_checker on the noted failures."
+          exit 1
+        fi
+      fi
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Check Licence Headers
+  - bash: |
       fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
       changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin" | grep -v /vendor/ | grep -v /lowrisc_misc-linters/ | grep -E '.py$')"
       if [[ -n "$changed_files" ]]; then
@@ -85,24 +118,6 @@ jobs:
       fi
     condition: always()
     displayName: Ensure all generated files are clean and up-to-date
-  - bash: |
-      set -e
-      util/build_docs.py
-      # Upload Doxygen Warnings if Present
-      if [[ -f "build/docs-generated/sw/doxygen_warnings.log" ]]; then
-        echo -n "##vso[task.uploadfile]"
-        echo "${PWD}/build/docs-generated/sw/doxygen_warnings.log"
-        # Doxygen currently generates lots of warnings.
-        # echo -n "##vso[task.issue type=warning]"
-        # echo "Doxygen generated warnings. Use 'util/build_docs.py' to generate warning logfile."
-      fi
-    condition: always()
-    displayName: Render documentation
-  - bash: |
-      cd site/landing
-      ../../build/docs-hugo/hugo
-    condition: always()
-    displayName: Render landing site
   - bash: |
       # XXX: As of today, task.logissue comments with 'sourcepath' set don't
       # get reported to GitHub Checks annotations. Upstream bug report:
@@ -159,23 +174,23 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Style-Lint DV Verilog source files with Verible
   - bash: |
-      commit_range="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)..HEAD"
-      # Notes:
-      # * Merge commits are not checked. We always use rebases instead of
-      #   merges to keep a linear history, which makes merge commits disappear
-      #   ultimately, making them only a CI artifact which should not be
-      #   checked.
-      # * 'type=error' is used even for warnings. Only "errors" are shown in
-      #   the GitHub checks API. However, warnings don't return a non-zero
-      #   error code and don't fail the build step.
-      util/lint_commits.py \
-        --no-merges \
-        --error-msg-prefix="##vso[task.logissue type=error]" \
-        --warning-msg-prefix="##vso[task.logissue type=error]" \
-        "$commit_range"
-    # Only run on pull requests to check new commits only
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Check commit metadata
+      set -e
+      util/build_docs.py
+      # Upload Doxygen Warnings if Present
+      if [[ -f "build/docs-generated/sw/doxygen_warnings.log" ]]; then
+        echo -n "##vso[task.uploadfile]"
+        echo "${PWD}/build/docs-generated/sw/doxygen_warnings.log"
+        # Doxygen currently generates lots of warnings.
+        # echo -n "##vso[task.issue type=warning]"
+        # echo "Doxygen generated warnings. Use 'util/build_docs.py' to generate warning logfile."
+      fi
+    condition: always()
+    displayName: Render documentation
+  - bash: |
+      cd site/landing
+      ../../build/docs-hugo/hugo
+    condition: always()
+    displayName: Render landing site
   - bash: |
       set -e
       only_doc_changes=0
@@ -216,21 +231,6 @@ jobs:
       echo "##vso[task.setvariable variable=hasOTBNChanges;isOutput=true]${has_otbn_changes}"
     displayName: Check what kinds of changes the PR contains
     name: DetermineBuildType
-  - bash: |
-      fork_origin="$(git merge-base --fork-point origin/$SYSTEM_PULLREQUEST_TARGETBRANCH)"
-      changed_files="$(git diff --name-only --diff-filter=ACMRTUXB "$fork_origin")"
-      licence_checker="util/lowrisc_misc-linters/licence-checker/licence-checker.py --config util/licence-checker.hjson"
-      if [[ -n "$changed_files" ]]; then
-        set -o pipefail
-        xargs $licence_checker <<< "$changed_files" | tee licence-checker-output
-        if [[ $? != 0 ]]; then
-          echo -n "##vso[task.logissue type=error]"
-          echo "Licence header check failed. Please check output of $licence_checker on the noted failures."
-          exit 1
-        fi
-      fi
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Check Licence Headers
 
 - job: slow_lints
   displayName: Run code quality checks (in-depth lint)
