@@ -293,8 +293,8 @@ dif_otbn_smoketest_lib = declare_dependency(
     dependencies: [
       sw_lib_dif_otbn,
       sw_lib_runtime_log,
-      sw_lib_mmio,
       sw_lib_runtime_hart,
+      sw_lib_runtime_otbn,
       top_earlgrey,
       sw_otbn['barrett384']['rv32embed_dependency'],
       sw_otbn['err_test']['rv32embed_dependency'],
