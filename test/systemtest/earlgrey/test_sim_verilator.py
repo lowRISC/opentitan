@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 class VerilatorSimEarlgrey:
-    UART0_SPEED = 9600  # see device/lib/arch/device_sim_verilator.c
+    UART0_SPEED = 7200  # see device/lib/arch/device_sim_verilator.c
 
     def __init__(self, sim_path: Path, rom_elf_path: Path, work_dir: Path):
         """ A verilator simulation of the Earl Grey toplevel """
