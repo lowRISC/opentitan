@@ -197,7 +197,7 @@ Once the appropriate partitions have been locked, the hardware integrity checker
 The purpose of this check is NOT to check between the storage flops and the OTP, but whether the buffer register contents remain consistent with the calculated digest.
 This verification is primarily concerned with whether the storage flops have experienced fault attacks.
 This check applies to only the HW_CFG and SECRET* partitions.
-If a failure is encountered, the OTP controller will send out an `otp_integrity_mismatch` alert and reset all of its hardware outputs to their defaults.
+If a failure is encountered, the OTP controller will send out a `fatal_check_error` alert and reset all of its hardware outputs to their defaults.
 
 ### Storage Consistency
 
@@ -208,7 +208,7 @@ If there is an integrity digest, only the digest needs to be read; otherwise, al
 
 
 This check applies to LIFE_CYCLE, HW_CFG and SECRET* partitions.
-If a failure is encountered, the OTP controller will send out an `otp_consistency_mismatch` alert and reset all of its hardware outputs to their defaults.
+If a failure is encountered, the OTP controller will send out a `fatal_check_error` alert and reset all of its hardware outputs to their defaults.
 
 Note that checks applied to life cycle could cause a failure if life cycle is updated, because life cycle is the only partition that may contain live updates.
 The controller hence detects this condition and makes sure that the buffer registers are kept up to date in order to prevent false positives.
@@ -915,7 +915,7 @@ Error Code | Enum Name            | Recoverable | DAI | LCI | Unbuf | Buf   | De
 0x7        | FsmStateError        | no          |  x  |  x  |   x   |  x    | The FSM has been glitched into an invalid state, or escalation has been triggered and the FSM has been moved into a terminal error state.
 
 All non-zero error codes listed above trigger an `otp_error` interrupt.
-In addition, all unrecoverable OTP `Macro*` errors (codes 0x1, 0x3) trigger an `otp_macro_failure` alert, while all remaining unrecoverable errors trigger an `otp_check_failure` alert.
+In addition, all unrecoverable OTP `Macro*` errors (codes 0x1, 0x3) trigger a `fatal_macro_error` alert, while all remaining unrecoverable errors trigger a `fatal_check_error` alert.
 
 ## Direct Access Memory Map
 

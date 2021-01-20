@@ -857,8 +857,8 @@ module top_earlgrey #(
       .intr_otp_operation_done_o (intr_otp_ctrl_otp_operation_done),
       .intr_otp_error_o          (intr_otp_ctrl_otp_error),
 
-      // [7]: otp_macro_failure
-      // [8]: otp_check_failure
+      // [7]: fatal_macro_error
+      // [8]: fatal_check_error
       .alert_tx_o  ( alert_tx[8:7] ),
       .alert_rx_i  ( alert_rx[8:7] ),
 
