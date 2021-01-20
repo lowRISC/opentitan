@@ -19,8 +19,8 @@
   ///////////////////////////
 
   alert_list: [
-    { name: "sram_integ_alert",
-      desc: "An uncorrectable integrity error has occurred in SRAM."
+    { name: "fatal_parity_error",
+      desc: "An uncorrectable parity error has occurred in the SRAM."
     }
   ],
 
@@ -93,7 +93,7 @@
                 Set to 1 if an uncorrectable parity error has occurred in the SRAM macro.
                 The address of the faulty access is exposed in the !!ERROR_ADDRESS register
                 for debugging purposes. This is an unrecoverable error condition and causes
-                the SRAM controller to continuously send out sram_integ_alert alerts.
+                the SRAM controller to continuously send out fatal_parity_error alerts.
                 The error bit is sticky and can only be cleared via a reset.
                 '''
         }

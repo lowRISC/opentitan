@@ -1176,7 +1176,7 @@ module top_earlgrey #(
     .RndCnstSramNonce(RndCnstSramCtrlRetSramNonce)
   ) u_sram_ctrl_ret (
 
-      // [11]: sram_integ_alert
+      // [11]: fatal_parity_error
       .alert_tx_o  ( alert_tx[11:11] ),
       .alert_rx_i  ( alert_rx[11:11] ),
 
@@ -1445,7 +1445,7 @@ module top_earlgrey #(
     .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce)
   ) u_sram_ctrl_main (
 
-      // [17]: sram_integ_alert
+      // [17]: fatal_parity_error
       .alert_tx_o  ( alert_tx[17:17] ),
       .alert_rx_i  ( alert_rx[17:17] ),
 

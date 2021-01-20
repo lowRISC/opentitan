@@ -3225,7 +3225,7 @@
       alert_list:
       [
         {
-          name: sram_integ_alert
+          name: fatal_parity_error
           width: 1
           bits: "0"
           bitinfo:
@@ -5076,7 +5076,7 @@
       alert_list:
       [
         {
-          name: sram_integ_alert
+          name: fatal_parity_error
           width: 1
           bits: "0"
           bitinfo:
@@ -8338,7 +8338,7 @@
       module_name: entropy_src
     }
     {
-      name: sram_ctrl_main_sram_integ_alert
+      name: sram_ctrl_main_fatal_parity_error
       width: 1
       bits: "0"
       bitinfo:
@@ -8352,7 +8352,7 @@
       module_name: sram_ctrl_main
     }
     {
-      name: sram_ctrl_ret_sram_integ_alert
+      name: sram_ctrl_ret_fatal_parity_error
       width: 1
       bits: "0"
       bitinfo:

@@ -140,7 +140,7 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdLcCtrlFatalProgError] = kTopEarlgreyAlertPeripheralLcCtrl,
   [kTopEarlgreyAlertIdLcCtrlFatalStateError] = kTopEarlgreyAlertPeripheralLcCtrl,
   [kTopEarlgreyAlertIdEntropySrcEsAlertCountMet] = kTopEarlgreyAlertPeripheralEntropySrc,
-  [kTopEarlgreyAlertIdSramCtrlMainSramIntegAlert] = kTopEarlgreyAlertPeripheralSramCtrlMain,
-  [kTopEarlgreyAlertIdSramCtrlRetSramIntegAlert] = kTopEarlgreyAlertPeripheralSramCtrlRet,
+  [kTopEarlgreyAlertIdSramCtrlMainFatalParityError] = kTopEarlgreyAlertPeripheralSramCtrlMain,
+  [kTopEarlgreyAlertIdSramCtrlRetFatalParityError] = kTopEarlgreyAlertPeripheralSramCtrlRet,
 };
 
