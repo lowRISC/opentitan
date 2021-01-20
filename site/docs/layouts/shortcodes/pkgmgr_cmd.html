@@ -1,0 +1,8 @@
+{{- $pkgmgr := .Get 0 -}}
+{{- $file := (print $pkgmgr "_cmd.txt") -}}
+{{- $path := path.Join .Site.Params.generatedRoot $file -}}
+{{- if not (fileExists $path) -}}
+  {{- errorf (print $file " has not been generated") -}}
+{{- end -}}
+
+<pre><code class="language-console" data-lang="console">{{ readFile $path | safeHTML }}</code></pre>

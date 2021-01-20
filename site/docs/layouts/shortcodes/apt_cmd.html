@@ -1,6 +1,0 @@
-{{ $path := path.Join .Site.Params.generatedRoot "apt_cmd.txt" }}
-{{ if not (fileExists $path) }}
-  {{ errorf "apt_cmd.txt has not been generated" }}
-{{ end }}
-
-<pre><code class="language-console" data-lang="console">{{ readFile $path | safeHTML }}</code></pre>
