@@ -30,6 +30,16 @@ sw_lib_runtime_pmp = declare_dependency(
   )
 )
 
+sw_lib_runtime_epmp = declare_dependency(
+  link_with: static_library(
+    'runtime_epmp_ot',
+    sources: ['epmp.c'],
+    dependencies: [
+      sw_lib_bitfield,
+    ],
+  )
+)
+
 sw_lib_runtime_print = declare_dependency(
   link_with: static_library(
     'runtime_print_ot',
