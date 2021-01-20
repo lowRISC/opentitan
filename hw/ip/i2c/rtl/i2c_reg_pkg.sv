@@ -6,6 +6,9 @@
 
 package i2c_reg_pkg;
 
+  // Address width within the block
+  parameter int BlockAw = 7;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -504,26 +507,26 @@ package i2c_reg_pkg;
   } i2c_hw2reg_t;
 
   // Register Address
-  parameter logic [6:0] I2C_INTR_STATE_OFFSET = 7'h 0;
-  parameter logic [6:0] I2C_INTR_ENABLE_OFFSET = 7'h 4;
-  parameter logic [6:0] I2C_INTR_TEST_OFFSET = 7'h 8;
-  parameter logic [6:0] I2C_CTRL_OFFSET = 7'h c;
-  parameter logic [6:0] I2C_STATUS_OFFSET = 7'h 10;
-  parameter logic [6:0] I2C_RDATA_OFFSET = 7'h 14;
-  parameter logic [6:0] I2C_FDATA_OFFSET = 7'h 18;
-  parameter logic [6:0] I2C_FIFO_CTRL_OFFSET = 7'h 1c;
-  parameter logic [6:0] I2C_FIFO_STATUS_OFFSET = 7'h 20;
-  parameter logic [6:0] I2C_OVRD_OFFSET = 7'h 24;
-  parameter logic [6:0] I2C_VAL_OFFSET = 7'h 28;
-  parameter logic [6:0] I2C_TIMING0_OFFSET = 7'h 2c;
-  parameter logic [6:0] I2C_TIMING1_OFFSET = 7'h 30;
-  parameter logic [6:0] I2C_TIMING2_OFFSET = 7'h 34;
-  parameter logic [6:0] I2C_TIMING3_OFFSET = 7'h 38;
-  parameter logic [6:0] I2C_TIMING4_OFFSET = 7'h 3c;
-  parameter logic [6:0] I2C_TIMEOUT_CTRL_OFFSET = 7'h 40;
-  parameter logic [6:0] I2C_TARGET_ID_OFFSET = 7'h 44;
-  parameter logic [6:0] I2C_ACQDATA_OFFSET = 7'h 48;
-  parameter logic [6:0] I2C_TXDATA_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] I2C_INTR_STATE_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] I2C_INTR_ENABLE_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] I2C_INTR_TEST_OFFSET = 7'h 8;
+  parameter logic [BlockAw-1:0] I2C_CTRL_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] I2C_STATUS_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] I2C_RDATA_OFFSET = 7'h 14;
+  parameter logic [BlockAw-1:0] I2C_FDATA_OFFSET = 7'h 18;
+  parameter logic [BlockAw-1:0] I2C_FIFO_CTRL_OFFSET = 7'h 1c;
+  parameter logic [BlockAw-1:0] I2C_FIFO_STATUS_OFFSET = 7'h 20;
+  parameter logic [BlockAw-1:0] I2C_OVRD_OFFSET = 7'h 24;
+  parameter logic [BlockAw-1:0] I2C_VAL_OFFSET = 7'h 28;
+  parameter logic [BlockAw-1:0] I2C_TIMING0_OFFSET = 7'h 2c;
+  parameter logic [BlockAw-1:0] I2C_TIMING1_OFFSET = 7'h 30;
+  parameter logic [BlockAw-1:0] I2C_TIMING2_OFFSET = 7'h 34;
+  parameter logic [BlockAw-1:0] I2C_TIMING3_OFFSET = 7'h 38;
+  parameter logic [BlockAw-1:0] I2C_TIMING4_OFFSET = 7'h 3c;
+  parameter logic [BlockAw-1:0] I2C_TIMEOUT_CTRL_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] I2C_TARGET_ID_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] I2C_ACQDATA_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] I2C_TXDATA_OFFSET = 7'h 4c;
 
 
   // Register Index

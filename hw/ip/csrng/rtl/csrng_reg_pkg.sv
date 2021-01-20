@@ -9,6 +9,9 @@ package csrng_reg_pkg;
   // Param list
   parameter int NHwApps = 2;
 
+  // Address width within the block
+  parameter int BlockAw = 6;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -271,20 +274,20 @@ package csrng_reg_pkg;
   } csrng_hw2reg_t;
 
   // Register Address
-  parameter logic [5:0] CSRNG_INTR_STATE_OFFSET = 6'h 0;
-  parameter logic [5:0] CSRNG_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter logic [5:0] CSRNG_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [5:0] CSRNG_REGEN_OFFSET = 6'h c;
-  parameter logic [5:0] CSRNG_CTRL_OFFSET = 6'h 10;
-  parameter logic [5:0] CSRNG_SUM_STS_OFFSET = 6'h 14;
-  parameter logic [5:0] CSRNG_CMD_REQ_OFFSET = 6'h 18;
-  parameter logic [5:0] CSRNG_SW_CMD_STS_OFFSET = 6'h 1c;
-  parameter logic [5:0] CSRNG_GENBITS_VLD_OFFSET = 6'h 20;
-  parameter logic [5:0] CSRNG_GENBITS_OFFSET = 6'h 24;
-  parameter logic [5:0] CSRNG_INT_STATE_NUM_OFFSET = 6'h 28;
-  parameter logic [5:0] CSRNG_INT_STATE_VAL_OFFSET = 6'h 2c;
-  parameter logic [5:0] CSRNG_HW_EXC_STS_OFFSET = 6'h 30;
-  parameter logic [5:0] CSRNG_ERR_CODE_OFFSET = 6'h 34;
+  parameter logic [BlockAw-1:0] CSRNG_INTR_STATE_OFFSET = 6'h 0;
+  parameter logic [BlockAw-1:0] CSRNG_INTR_ENABLE_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] CSRNG_INTR_TEST_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] CSRNG_REGEN_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] CSRNG_CTRL_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] CSRNG_SUM_STS_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] CSRNG_CMD_REQ_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] CSRNG_SW_CMD_STS_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] CSRNG_GENBITS_VLD_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] CSRNG_GENBITS_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_NUM_OFFSET = 6'h 28;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_VAL_OFFSET = 6'h 2c;
+  parameter logic [BlockAw-1:0] CSRNG_HW_EXC_STS_OFFSET = 6'h 30;
+  parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_OFFSET = 6'h 34;
 
 
   // Register Index

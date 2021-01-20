@@ -10,6 +10,9 @@ package rv_plic_reg_pkg;
   parameter int NumSrc = 32;
   parameter int NumTarget = 1;
 
+  // Address width within the block
+  parameter int BlockAw = 9;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -226,44 +229,44 @@ package rv_plic_reg_pkg;
   } rv_plic_hw2reg_t;
 
   // Register Address
-  parameter logic [8:0] RV_PLIC_IP_OFFSET = 9'h 0;
-  parameter logic [8:0] RV_PLIC_LE_OFFSET = 9'h 4;
-  parameter logic [8:0] RV_PLIC_PRIO0_OFFSET = 9'h 8;
-  parameter logic [8:0] RV_PLIC_PRIO1_OFFSET = 9'h c;
-  parameter logic [8:0] RV_PLIC_PRIO2_OFFSET = 9'h 10;
-  parameter logic [8:0] RV_PLIC_PRIO3_OFFSET = 9'h 14;
-  parameter logic [8:0] RV_PLIC_PRIO4_OFFSET = 9'h 18;
-  parameter logic [8:0] RV_PLIC_PRIO5_OFFSET = 9'h 1c;
-  parameter logic [8:0] RV_PLIC_PRIO6_OFFSET = 9'h 20;
-  parameter logic [8:0] RV_PLIC_PRIO7_OFFSET = 9'h 24;
-  parameter logic [8:0] RV_PLIC_PRIO8_OFFSET = 9'h 28;
-  parameter logic [8:0] RV_PLIC_PRIO9_OFFSET = 9'h 2c;
-  parameter logic [8:0] RV_PLIC_PRIO10_OFFSET = 9'h 30;
-  parameter logic [8:0] RV_PLIC_PRIO11_OFFSET = 9'h 34;
-  parameter logic [8:0] RV_PLIC_PRIO12_OFFSET = 9'h 38;
-  parameter logic [8:0] RV_PLIC_PRIO13_OFFSET = 9'h 3c;
-  parameter logic [8:0] RV_PLIC_PRIO14_OFFSET = 9'h 40;
-  parameter logic [8:0] RV_PLIC_PRIO15_OFFSET = 9'h 44;
-  parameter logic [8:0] RV_PLIC_PRIO16_OFFSET = 9'h 48;
-  parameter logic [8:0] RV_PLIC_PRIO17_OFFSET = 9'h 4c;
-  parameter logic [8:0] RV_PLIC_PRIO18_OFFSET = 9'h 50;
-  parameter logic [8:0] RV_PLIC_PRIO19_OFFSET = 9'h 54;
-  parameter logic [8:0] RV_PLIC_PRIO20_OFFSET = 9'h 58;
-  parameter logic [8:0] RV_PLIC_PRIO21_OFFSET = 9'h 5c;
-  parameter logic [8:0] RV_PLIC_PRIO22_OFFSET = 9'h 60;
-  parameter logic [8:0] RV_PLIC_PRIO23_OFFSET = 9'h 64;
-  parameter logic [8:0] RV_PLIC_PRIO24_OFFSET = 9'h 68;
-  parameter logic [8:0] RV_PLIC_PRIO25_OFFSET = 9'h 6c;
-  parameter logic [8:0] RV_PLIC_PRIO26_OFFSET = 9'h 70;
-  parameter logic [8:0] RV_PLIC_PRIO27_OFFSET = 9'h 74;
-  parameter logic [8:0] RV_PLIC_PRIO28_OFFSET = 9'h 78;
-  parameter logic [8:0] RV_PLIC_PRIO29_OFFSET = 9'h 7c;
-  parameter logic [8:0] RV_PLIC_PRIO30_OFFSET = 9'h 80;
-  parameter logic [8:0] RV_PLIC_PRIO31_OFFSET = 9'h 84;
-  parameter logic [8:0] RV_PLIC_IE0_OFFSET = 9'h 100;
-  parameter logic [8:0] RV_PLIC_THRESHOLD0_OFFSET = 9'h 104;
-  parameter logic [8:0] RV_PLIC_CC0_OFFSET = 9'h 108;
-  parameter logic [8:0] RV_PLIC_MSIP0_OFFSET = 9'h 10c;
+  parameter logic [BlockAw-1:0] RV_PLIC_IP_OFFSET = 9'h 0;
+  parameter logic [BlockAw-1:0] RV_PLIC_LE_OFFSET = 9'h 4;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO0_OFFSET = 9'h 8;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO1_OFFSET = 9'h c;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO2_OFFSET = 9'h 10;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO3_OFFSET = 9'h 14;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO4_OFFSET = 9'h 18;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO5_OFFSET = 9'h 1c;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO6_OFFSET = 9'h 20;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO7_OFFSET = 9'h 24;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO8_OFFSET = 9'h 28;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO9_OFFSET = 9'h 2c;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO10_OFFSET = 9'h 30;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO11_OFFSET = 9'h 34;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO12_OFFSET = 9'h 38;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO13_OFFSET = 9'h 3c;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO14_OFFSET = 9'h 40;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO15_OFFSET = 9'h 44;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO16_OFFSET = 9'h 48;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO17_OFFSET = 9'h 4c;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO18_OFFSET = 9'h 50;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO19_OFFSET = 9'h 54;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO20_OFFSET = 9'h 58;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO21_OFFSET = 9'h 5c;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO22_OFFSET = 9'h 60;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO23_OFFSET = 9'h 64;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO24_OFFSET = 9'h 68;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO25_OFFSET = 9'h 6c;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO26_OFFSET = 9'h 70;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO27_OFFSET = 9'h 74;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO28_OFFSET = 9'h 78;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO29_OFFSET = 9'h 7c;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO30_OFFSET = 9'h 80;
+  parameter logic [BlockAw-1:0] RV_PLIC_PRIO31_OFFSET = 9'h 84;
+  parameter logic [BlockAw-1:0] RV_PLIC_IE0_OFFSET = 9'h 100;
+  parameter logic [BlockAw-1:0] RV_PLIC_THRESHOLD0_OFFSET = 9'h 104;
+  parameter logic [BlockAw-1:0] RV_PLIC_CC0_OFFSET = 9'h 108;
+  parameter logic [BlockAw-1:0] RV_PLIC_MSIP0_OFFSET = 9'h 10c;
 
 
   // Register Index

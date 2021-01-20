@@ -6,6 +6,9 @@
 
 package gpio_reg_pkg;
 
+  // Address width within the block
+  parameter int BlockAw = 6;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -187,21 +190,21 @@ package gpio_reg_pkg;
   } gpio_hw2reg_t;
 
   // Register Address
-  parameter logic [5:0] GPIO_INTR_STATE_OFFSET = 6'h 0;
-  parameter logic [5:0] GPIO_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter logic [5:0] GPIO_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [5:0] GPIO_DATA_IN_OFFSET = 6'h c;
-  parameter logic [5:0] GPIO_DIRECT_OUT_OFFSET = 6'h 10;
-  parameter logic [5:0] GPIO_MASKED_OUT_LOWER_OFFSET = 6'h 14;
-  parameter logic [5:0] GPIO_MASKED_OUT_UPPER_OFFSET = 6'h 18;
-  parameter logic [5:0] GPIO_DIRECT_OE_OFFSET = 6'h 1c;
-  parameter logic [5:0] GPIO_MASKED_OE_LOWER_OFFSET = 6'h 20;
-  parameter logic [5:0] GPIO_MASKED_OE_UPPER_OFFSET = 6'h 24;
-  parameter logic [5:0] GPIO_INTR_CTRL_EN_RISING_OFFSET = 6'h 28;
-  parameter logic [5:0] GPIO_INTR_CTRL_EN_FALLING_OFFSET = 6'h 2c;
-  parameter logic [5:0] GPIO_INTR_CTRL_EN_LVLHIGH_OFFSET = 6'h 30;
-  parameter logic [5:0] GPIO_INTR_CTRL_EN_LVLLOW_OFFSET = 6'h 34;
-  parameter logic [5:0] GPIO_CTRL_EN_INPUT_FILTER_OFFSET = 6'h 38;
+  parameter logic [BlockAw-1:0] GPIO_INTR_STATE_OFFSET = 6'h 0;
+  parameter logic [BlockAw-1:0] GPIO_INTR_ENABLE_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] GPIO_INTR_TEST_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] GPIO_DATA_IN_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] GPIO_DIRECT_OUT_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] GPIO_MASKED_OUT_LOWER_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] GPIO_MASKED_OUT_UPPER_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] GPIO_DIRECT_OE_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] GPIO_MASKED_OE_LOWER_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] GPIO_MASKED_OE_UPPER_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_RISING_OFFSET = 6'h 28;
+  parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_FALLING_OFFSET = 6'h 2c;
+  parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_LVLHIGH_OFFSET = 6'h 30;
+  parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_LVLLOW_OFFSET = 6'h 34;
+  parameter logic [BlockAw-1:0] GPIO_CTRL_EN_INPUT_FILTER_OFFSET = 6'h 38;
 
 
   // Register Index

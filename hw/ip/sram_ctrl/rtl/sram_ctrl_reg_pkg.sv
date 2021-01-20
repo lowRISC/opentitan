@@ -9,6 +9,9 @@ package sram_ctrl_reg_pkg;
   // Param list
   parameter int NumAlerts = 1;
 
+  // Address width within the block
+  parameter int BlockAw = 5;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -61,11 +64,11 @@ package sram_ctrl_reg_pkg;
   } sram_ctrl_hw2reg_t;
 
   // Register Address
-  parameter logic [4:0] SRAM_CTRL_ALERT_TEST_OFFSET = 5'h 0;
-  parameter logic [4:0] SRAM_CTRL_STATUS_OFFSET = 5'h 4;
-  parameter logic [4:0] SRAM_CTRL_CTRL_REGWEN_OFFSET = 5'h 8;
-  parameter logic [4:0] SRAM_CTRL_CTRL_OFFSET = 5'h c;
-  parameter logic [4:0] SRAM_CTRL_ERROR_ADDRESS_OFFSET = 5'h 10;
+  parameter logic [BlockAw-1:0] SRAM_CTRL_ALERT_TEST_OFFSET = 5'h 0;
+  parameter logic [BlockAw-1:0] SRAM_CTRL_STATUS_OFFSET = 5'h 4;
+  parameter logic [BlockAw-1:0] SRAM_CTRL_CTRL_REGWEN_OFFSET = 5'h 8;
+  parameter logic [BlockAw-1:0] SRAM_CTRL_CTRL_OFFSET = 5'h c;
+  parameter logic [BlockAw-1:0] SRAM_CTRL_ERROR_ADDRESS_OFFSET = 5'h 10;
 
 
   // Register Index

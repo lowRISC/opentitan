@@ -9,6 +9,9 @@ package usbdev_reg_pkg;
   // Param list
   parameter int NEndpoints = 12;
 
+  // Address width within the block
+  parameter int BlockAw = 12;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -531,38 +534,38 @@ package usbdev_reg_pkg;
   } usbdev_hw2reg_t;
 
   // Register Address
-  parameter logic [11:0] USBDEV_INTR_STATE_OFFSET = 12'h 0;
-  parameter logic [11:0] USBDEV_INTR_ENABLE_OFFSET = 12'h 4;
-  parameter logic [11:0] USBDEV_INTR_TEST_OFFSET = 12'h 8;
-  parameter logic [11:0] USBDEV_USBCTRL_OFFSET = 12'h c;
-  parameter logic [11:0] USBDEV_USBSTAT_OFFSET = 12'h 10;
-  parameter logic [11:0] USBDEV_AVBUFFER_OFFSET = 12'h 14;
-  parameter logic [11:0] USBDEV_RXFIFO_OFFSET = 12'h 18;
-  parameter logic [11:0] USBDEV_RXENABLE_SETUP_OFFSET = 12'h 1c;
-  parameter logic [11:0] USBDEV_RXENABLE_OUT_OFFSET = 12'h 20;
-  parameter logic [11:0] USBDEV_IN_SENT_OFFSET = 12'h 24;
-  parameter logic [11:0] USBDEV_STALL_OFFSET = 12'h 28;
-  parameter logic [11:0] USBDEV_CONFIGIN_0_OFFSET = 12'h 2c;
-  parameter logic [11:0] USBDEV_CONFIGIN_1_OFFSET = 12'h 30;
-  parameter logic [11:0] USBDEV_CONFIGIN_2_OFFSET = 12'h 34;
-  parameter logic [11:0] USBDEV_CONFIGIN_3_OFFSET = 12'h 38;
-  parameter logic [11:0] USBDEV_CONFIGIN_4_OFFSET = 12'h 3c;
-  parameter logic [11:0] USBDEV_CONFIGIN_5_OFFSET = 12'h 40;
-  parameter logic [11:0] USBDEV_CONFIGIN_6_OFFSET = 12'h 44;
-  parameter logic [11:0] USBDEV_CONFIGIN_7_OFFSET = 12'h 48;
-  parameter logic [11:0] USBDEV_CONFIGIN_8_OFFSET = 12'h 4c;
-  parameter logic [11:0] USBDEV_CONFIGIN_9_OFFSET = 12'h 50;
-  parameter logic [11:0] USBDEV_CONFIGIN_10_OFFSET = 12'h 54;
-  parameter logic [11:0] USBDEV_CONFIGIN_11_OFFSET = 12'h 58;
-  parameter logic [11:0] USBDEV_ISO_OFFSET = 12'h 5c;
-  parameter logic [11:0] USBDEV_DATA_TOGGLE_CLEAR_OFFSET = 12'h 60;
-  parameter logic [11:0] USBDEV_PHY_PINS_SENSE_OFFSET = 12'h 64;
-  parameter logic [11:0] USBDEV_PHY_PINS_DRIVE_OFFSET = 12'h 68;
-  parameter logic [11:0] USBDEV_PHY_CONFIG_OFFSET = 12'h 6c;
+  parameter logic [BlockAw-1:0] USBDEV_INTR_STATE_OFFSET = 12'h 0;
+  parameter logic [BlockAw-1:0] USBDEV_INTR_ENABLE_OFFSET = 12'h 4;
+  parameter logic [BlockAw-1:0] USBDEV_INTR_TEST_OFFSET = 12'h 8;
+  parameter logic [BlockAw-1:0] USBDEV_USBCTRL_OFFSET = 12'h c;
+  parameter logic [BlockAw-1:0] USBDEV_USBSTAT_OFFSET = 12'h 10;
+  parameter logic [BlockAw-1:0] USBDEV_AVBUFFER_OFFSET = 12'h 14;
+  parameter logic [BlockAw-1:0] USBDEV_RXFIFO_OFFSET = 12'h 18;
+  parameter logic [BlockAw-1:0] USBDEV_RXENABLE_SETUP_OFFSET = 12'h 1c;
+  parameter logic [BlockAw-1:0] USBDEV_RXENABLE_OUT_OFFSET = 12'h 20;
+  parameter logic [BlockAw-1:0] USBDEV_IN_SENT_OFFSET = 12'h 24;
+  parameter logic [BlockAw-1:0] USBDEV_STALL_OFFSET = 12'h 28;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_0_OFFSET = 12'h 2c;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_1_OFFSET = 12'h 30;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_2_OFFSET = 12'h 34;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_3_OFFSET = 12'h 38;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_4_OFFSET = 12'h 3c;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_5_OFFSET = 12'h 40;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_6_OFFSET = 12'h 44;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_7_OFFSET = 12'h 48;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_8_OFFSET = 12'h 4c;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_9_OFFSET = 12'h 50;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_10_OFFSET = 12'h 54;
+  parameter logic [BlockAw-1:0] USBDEV_CONFIGIN_11_OFFSET = 12'h 58;
+  parameter logic [BlockAw-1:0] USBDEV_ISO_OFFSET = 12'h 5c;
+  parameter logic [BlockAw-1:0] USBDEV_DATA_TOGGLE_CLEAR_OFFSET = 12'h 60;
+  parameter logic [BlockAw-1:0] USBDEV_PHY_PINS_SENSE_OFFSET = 12'h 64;
+  parameter logic [BlockAw-1:0] USBDEV_PHY_PINS_DRIVE_OFFSET = 12'h 68;
+  parameter logic [BlockAw-1:0] USBDEV_PHY_CONFIG_OFFSET = 12'h 6c;
 
   // Window parameter
-  parameter logic [11:0] USBDEV_BUFFER_OFFSET = 12'h 800;
-  parameter logic [11:0] USBDEV_BUFFER_SIZE   = 12'h 800;
+  parameter logic [BlockAw-1:0] USBDEV_BUFFER_OFFSET = 12'h 800;
+  parameter logic [BlockAw-1:0] USBDEV_BUFFER_SIZE   = 12'h 800;
 
   // Register Index
   typedef enum int {

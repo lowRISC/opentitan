@@ -9,6 +9,9 @@ package otbn_reg_pkg;
   // Param list
   parameter int NumAlerts = 2;
 
+  // Address width within the block
+  parameter int BlockAw = 16;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -110,21 +113,21 @@ package otbn_reg_pkg;
   } otbn_hw2reg_t;
 
   // Register Address
-  parameter logic [15:0] OTBN_INTR_STATE_OFFSET = 16'h 0;
-  parameter logic [15:0] OTBN_INTR_ENABLE_OFFSET = 16'h 4;
-  parameter logic [15:0] OTBN_INTR_TEST_OFFSET = 16'h 8;
-  parameter logic [15:0] OTBN_ALERT_TEST_OFFSET = 16'h c;
-  parameter logic [15:0] OTBN_CMD_OFFSET = 16'h 10;
-  parameter logic [15:0] OTBN_STATUS_OFFSET = 16'h 14;
-  parameter logic [15:0] OTBN_ERR_CODE_OFFSET = 16'h 18;
-  parameter logic [15:0] OTBN_START_ADDR_OFFSET = 16'h 1c;
-  parameter logic [15:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
+  parameter logic [BlockAw-1:0] OTBN_INTR_STATE_OFFSET = 16'h 0;
+  parameter logic [BlockAw-1:0] OTBN_INTR_ENABLE_OFFSET = 16'h 4;
+  parameter logic [BlockAw-1:0] OTBN_INTR_TEST_OFFSET = 16'h 8;
+  parameter logic [BlockAw-1:0] OTBN_ALERT_TEST_OFFSET = 16'h c;
+  parameter logic [BlockAw-1:0] OTBN_CMD_OFFSET = 16'h 10;
+  parameter logic [BlockAw-1:0] OTBN_STATUS_OFFSET = 16'h 14;
+  parameter logic [BlockAw-1:0] OTBN_ERR_CODE_OFFSET = 16'h 18;
+  parameter logic [BlockAw-1:0] OTBN_START_ADDR_OFFSET = 16'h 1c;
+  parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
 
   // Window parameter
-  parameter logic [15:0] OTBN_IMEM_OFFSET = 16'h 4000;
-  parameter logic [15:0] OTBN_IMEM_SIZE   = 16'h 1000;
-  parameter logic [15:0] OTBN_DMEM_OFFSET = 16'h 8000;
-  parameter logic [15:0] OTBN_DMEM_SIZE   = 16'h 1000;
+  parameter logic [BlockAw-1:0] OTBN_IMEM_OFFSET = 16'h 4000;
+  parameter logic [BlockAw-1:0] OTBN_IMEM_SIZE   = 16'h 1000;
+  parameter logic [BlockAw-1:0] OTBN_DMEM_OFFSET = 16'h 8000;
+  parameter logic [BlockAw-1:0] OTBN_DMEM_SIZE   = 16'h 1000;
 
   // Register Index
   typedef enum int {

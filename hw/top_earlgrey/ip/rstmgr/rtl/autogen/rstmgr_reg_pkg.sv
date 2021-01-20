@@ -12,6 +12,9 @@ package rstmgr_reg_pkg;
   parameter int NumHwResets = 2;
   parameter int NumSwResets = 2;
 
+  // Address width within the block
+  parameter int BlockAw = 6;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -125,15 +128,15 @@ package rstmgr_reg_pkg;
   } rstmgr_hw2reg_t;
 
   // Register Address
-  parameter logic [5:0] RSTMGR_RESET_INFO_OFFSET = 6'h 0;
-  parameter logic [5:0] RSTMGR_ALERT_INFO_CTRL_OFFSET = 6'h 4;
-  parameter logic [5:0] RSTMGR_ALERT_INFO_ATTR_OFFSET = 6'h 8;
-  parameter logic [5:0] RSTMGR_ALERT_INFO_OFFSET = 6'h c;
-  parameter logic [5:0] RSTMGR_CPU_INFO_CTRL_OFFSET = 6'h 10;
-  parameter logic [5:0] RSTMGR_CPU_INFO_ATTR_OFFSET = 6'h 14;
-  parameter logic [5:0] RSTMGR_CPU_INFO_OFFSET = 6'h 18;
-  parameter logic [5:0] RSTMGR_SW_RST_REGEN_OFFSET = 6'h 1c;
-  parameter logic [5:0] RSTMGR_SW_RST_CTRL_N_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] RSTMGR_RESET_INFO_OFFSET = 6'h 0;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_CTRL_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_ATTR_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_CTRL_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_ATTR_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGEN_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_OFFSET = 6'h 20;
 
 
   // Register Index

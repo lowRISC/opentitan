@@ -11,6 +11,9 @@ package padctrl_reg_pkg;
   parameter int NMioPads = 32;
   parameter int AttrDw = 10;
 
+  // Address width within the block
+  parameter int BlockAw = 7;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -51,23 +54,23 @@ package padctrl_reg_pkg;
   } padctrl_hw2reg_t;
 
   // Register Address
-  parameter logic [6:0] PADCTRL_REGEN_OFFSET = 7'h 0;
-  parameter logic [6:0] PADCTRL_DIO_PADS_0_OFFSET = 7'h 4;
-  parameter logic [6:0] PADCTRL_DIO_PADS_1_OFFSET = 7'h 8;
-  parameter logic [6:0] PADCTRL_DIO_PADS_2_OFFSET = 7'h c;
-  parameter logic [6:0] PADCTRL_DIO_PADS_3_OFFSET = 7'h 10;
-  parameter logic [6:0] PADCTRL_DIO_PADS_4_OFFSET = 7'h 14;
-  parameter logic [6:0] PADCTRL_MIO_PADS_0_OFFSET = 7'h 18;
-  parameter logic [6:0] PADCTRL_MIO_PADS_1_OFFSET = 7'h 1c;
-  parameter logic [6:0] PADCTRL_MIO_PADS_2_OFFSET = 7'h 20;
-  parameter logic [6:0] PADCTRL_MIO_PADS_3_OFFSET = 7'h 24;
-  parameter logic [6:0] PADCTRL_MIO_PADS_4_OFFSET = 7'h 28;
-  parameter logic [6:0] PADCTRL_MIO_PADS_5_OFFSET = 7'h 2c;
-  parameter logic [6:0] PADCTRL_MIO_PADS_6_OFFSET = 7'h 30;
-  parameter logic [6:0] PADCTRL_MIO_PADS_7_OFFSET = 7'h 34;
-  parameter logic [6:0] PADCTRL_MIO_PADS_8_OFFSET = 7'h 38;
-  parameter logic [6:0] PADCTRL_MIO_PADS_9_OFFSET = 7'h 3c;
-  parameter logic [6:0] PADCTRL_MIO_PADS_10_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] PADCTRL_REGEN_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] PADCTRL_DIO_PADS_0_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] PADCTRL_DIO_PADS_1_OFFSET = 7'h 8;
+  parameter logic [BlockAw-1:0] PADCTRL_DIO_PADS_2_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] PADCTRL_DIO_PADS_3_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] PADCTRL_DIO_PADS_4_OFFSET = 7'h 14;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_0_OFFSET = 7'h 18;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_1_OFFSET = 7'h 1c;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_2_OFFSET = 7'h 20;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_3_OFFSET = 7'h 24;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_4_OFFSET = 7'h 28;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_5_OFFSET = 7'h 2c;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_6_OFFSET = 7'h 30;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_7_OFFSET = 7'h 34;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_8_OFFSET = 7'h 38;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_9_OFFSET = 7'h 3c;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_10_OFFSET = 7'h 40;
 
 
   // Register Index

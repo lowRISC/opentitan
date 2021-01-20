@@ -18,6 +18,9 @@ package ${block.name}_reg_pkg;
   parameter ${param["type"]} ${param["name"]} = ${param["default"]};
 % endfor
 
+  // Address width within the block
+  parameter int BlockAw = ${block.addr_width};
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -152,15 +155,15 @@ packbit = 0
 
   // Register Address
 % for r in block.get_regs_flat():
-  parameter logic [${block.addr_width-1}:0] ${block.name.upper()}_${r.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % r.offset};
+  parameter logic [BlockAw-1:0] ${block.name.upper()}_${r.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % r.offset};
 % endfor
 
 % if len(block.wins) > 0:
   // Window parameter
 % endif
 % for i,w in enumerate(block.wins):
-  parameter logic [${block.addr_width-1}:0] ${block.name.upper()}_${w.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % w.base_addr};
-  parameter logic [${block.addr_width-1}:0] ${block.name.upper()}_${w.name.upper()}_SIZE   = ${block.addr_width}'h ${"%x" % (w.limit_addr - w.base_addr)};
+  parameter logic [BlockAw-1:0] ${block.name.upper()}_${w.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % w.base_addr};
+  parameter logic [BlockAw-1:0] ${block.name.upper()}_${w.name.upper()}_SIZE   = ${block.addr_width}'h ${"%x" % (w.limit_addr - w.base_addr)};
 % endfor
 
   // Register Index

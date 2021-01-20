@@ -6,6 +6,9 @@
 
 package spi_device_reg_pkg;
 
+  // Address width within the block
+  parameter int BlockAw = 12;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -251,22 +254,22 @@ package spi_device_reg_pkg;
   } spi_device_hw2reg_t;
 
   // Register Address
-  parameter logic [11:0] SPI_DEVICE_INTR_STATE_OFFSET = 12'h 0;
-  parameter logic [11:0] SPI_DEVICE_INTR_ENABLE_OFFSET = 12'h 4;
-  parameter logic [11:0] SPI_DEVICE_INTR_TEST_OFFSET = 12'h 8;
-  parameter logic [11:0] SPI_DEVICE_CONTROL_OFFSET = 12'h c;
-  parameter logic [11:0] SPI_DEVICE_CFG_OFFSET = 12'h 10;
-  parameter logic [11:0] SPI_DEVICE_FIFO_LEVEL_OFFSET = 12'h 14;
-  parameter logic [11:0] SPI_DEVICE_ASYNC_FIFO_LEVEL_OFFSET = 12'h 18;
-  parameter logic [11:0] SPI_DEVICE_STATUS_OFFSET = 12'h 1c;
-  parameter logic [11:0] SPI_DEVICE_RXF_PTR_OFFSET = 12'h 20;
-  parameter logic [11:0] SPI_DEVICE_TXF_PTR_OFFSET = 12'h 24;
-  parameter logic [11:0] SPI_DEVICE_RXF_ADDR_OFFSET = 12'h 28;
-  parameter logic [11:0] SPI_DEVICE_TXF_ADDR_OFFSET = 12'h 2c;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_INTR_STATE_OFFSET = 12'h 0;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_INTR_ENABLE_OFFSET = 12'h 4;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_INTR_TEST_OFFSET = 12'h 8;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CONTROL_OFFSET = 12'h c;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_CFG_OFFSET = 12'h 10;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_FIFO_LEVEL_OFFSET = 12'h 14;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_ASYNC_FIFO_LEVEL_OFFSET = 12'h 18;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_STATUS_OFFSET = 12'h 1c;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_RXF_PTR_OFFSET = 12'h 20;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_TXF_PTR_OFFSET = 12'h 24;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_RXF_ADDR_OFFSET = 12'h 28;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_TXF_ADDR_OFFSET = 12'h 2c;
 
   // Window parameter
-  parameter logic [11:0] SPI_DEVICE_BUFFER_OFFSET = 12'h 800;
-  parameter logic [11:0] SPI_DEVICE_BUFFER_SIZE   = 12'h 800;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_BUFFER_OFFSET = 12'h 800;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_BUFFER_SIZE   = 12'h 800;
 
   // Register Index
   typedef enum int {
