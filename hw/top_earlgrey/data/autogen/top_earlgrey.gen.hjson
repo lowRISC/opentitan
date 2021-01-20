@@ -1133,7 +1133,7 @@
       alert_list:
       [
         {
-          name: otp_macro_failure
+          name: fatal_macro_error
           width: 1
           bits: "0"
           bitinfo:
@@ -1146,7 +1146,7 @@
           async: 0
         }
         {
-          name: otp_check_failure
+          name: fatal_check_error
           width: 1
           bits: "1"
           bitinfo:
@@ -8268,7 +8268,7 @@
       module_name: keymgr
     }
     {
-      name: otp_ctrl_otp_macro_failure
+      name: otp_ctrl_fatal_macro_error
       width: 1
       bits: "0"
       bitinfo:
@@ -8282,7 +8282,7 @@
       module_name: otp_ctrl
     }
     {
-      name: otp_ctrl_otp_check_failure
+      name: otp_ctrl_fatal_check_error
       width: 1
       bits: "1"
       bitinfo:

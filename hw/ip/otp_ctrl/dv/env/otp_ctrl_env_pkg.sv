@@ -23,7 +23,7 @@ package otp_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[]      = {"otp_macro_failure", "otp_check_failure"};
+  parameter string LIST_OF_ALERTS[]      = {"fatal_macro_error", "fatal_check_error"};
   parameter uint NUM_ALERTS              = 2;
 
   parameter uint DIGEST_SIZE             = 8;

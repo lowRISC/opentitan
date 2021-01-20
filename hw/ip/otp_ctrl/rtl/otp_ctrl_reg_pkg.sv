@@ -110,11 +110,11 @@ package otp_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } otp_macro_failure;
+    } fatal_macro_error;
     struct packed {
       logic        q;
       logic        qe;
-    } otp_check_failure;
+    } fatal_check_error;
   } otp_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {

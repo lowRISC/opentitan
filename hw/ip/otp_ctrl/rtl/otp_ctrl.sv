@@ -349,26 +349,26 @@ module otp_ctrl
   otp_err_e [NumPart+1:0] part_error;
   logic [NumPart+1:0] part_errors_reduced;
   logic otp_operation_done, otp_error;
-  logic otp_macro_failure_d, otp_macro_failure_q;
-  logic otp_check_failure_d, otp_check_failure_q;
+  logic fatal_macro_error_d, fatal_macro_error_q;
+  logic fatal_check_error_d, fatal_check_error_q;
   logic chk_pending, chk_timeout;
   logic lfsr_fsm_err, key_deriv_fsm_err, scrmbl_fsm_err;
   always_comb begin : p_errors_alerts
     hw2reg.err_code = part_error;
     // Note: since these are all fatal alert events, we latch them and keep on sending
     // alert events via the alert senders. These regs can only be cleared via a system reset.
-    otp_macro_failure_d = otp_macro_failure_q;
-    otp_check_failure_d = otp_check_failure_q;
+    fatal_macro_error_d = fatal_macro_error_q;
+    fatal_check_error_d = fatal_check_error_q;
     // Aggregate all the errors from the partitions and the DAI/LCI
     for (int k = 0; k < NumPart+2; k++) begin
       // Set the error bit if the error status of the corresponding partition is nonzero.
       // Need to reverse the order here since the field enumeration in hw2reg.status is reversed.
       part_errors_reduced[NumPart+1-k] = |part_error[k];
       // Filter for critical error codes that should not occur in the field.
-      otp_macro_failure_d |= part_error[k] inside {MacroError, MacroEccUncorrError};
+      fatal_macro_error_d |= part_error[k] inside {MacroError, MacroEccUncorrError};
 
       // Filter for integrity and consistency check failures.
-      otp_check_failure_d |= part_error[k] inside {CheckFailError, FsmStateError} |
+      fatal_check_error_d |= part_error[k] inside {CheckFailError, FsmStateError} |
                              chk_timeout       |
                              lfsr_fsm_err      |
                              scrmbl_fsm_err    |
@@ -390,11 +390,11 @@ module otp_ctrl
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_alert_regs
     if (!rst_ni) begin
-      otp_macro_failure_q <= '0;
-      otp_check_failure_q <= '0;
+      fatal_macro_error_q <= '0;
+      fatal_check_error_q <= '0;
     end else begin
-      otp_macro_failure_q <= otp_macro_failure_d;
-      otp_check_failure_q <= otp_check_failure_d;
+      fatal_macro_error_q <= fatal_macro_error_d;
+      fatal_check_error_q <= fatal_check_error_d;
     end
   end
 
@@ -436,15 +436,15 @@ module otp_ctrl
   logic [NumAlerts-1:0] alert_test;
 
   assign alerts = {
-    otp_check_failure_q,
-    otp_macro_failure_q
+    fatal_check_error_q,
+    fatal_macro_error_q
   };
 
   assign alert_test = {
-    reg2hw.alert_test.otp_check_failure.q &
-    reg2hw.alert_test.otp_check_failure.qe,
-    reg2hw.alert_test.otp_macro_failure.q &
-    reg2hw.alert_test.otp_macro_failure.qe
+    reg2hw.alert_test.fatal_check_error.q &
+    reg2hw.alert_test.fatal_check_error.qe,
+    reg2hw.alert_test.fatal_macro_error.q &
+    reg2hw.alert_test.fatal_macro_error.qe
   };
 
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
