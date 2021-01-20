@@ -6,6 +6,9 @@
 
 package nmi_gen_reg_pkg;
 
+  // Address width within the block
+  parameter int BlockAw = 4;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -82,9 +85,9 @@ package nmi_gen_reg_pkg;
   } nmi_gen_hw2reg_t;
 
   // Register Address
-  parameter logic [3:0] NMI_GEN_INTR_STATE_OFFSET = 4'h 0;
-  parameter logic [3:0] NMI_GEN_INTR_ENABLE_OFFSET = 4'h 4;
-  parameter logic [3:0] NMI_GEN_INTR_TEST_OFFSET = 4'h 8;
+  parameter logic [BlockAw-1:0] NMI_GEN_INTR_STATE_OFFSET = 4'h 0;
+  parameter logic [BlockAw-1:0] NMI_GEN_INTR_ENABLE_OFFSET = 4'h 4;
+  parameter logic [BlockAw-1:0] NMI_GEN_INTR_TEST_OFFSET = 4'h 8;
 
 
   // Register Index

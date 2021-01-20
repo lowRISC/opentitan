@@ -11,6 +11,9 @@ package edn_reg_pkg;
   parameter int BootInsCmd = 1;
   parameter int BootGenCmd = 12291;
 
+  // Address width within the block
+  parameter int BlockAw = 6;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -170,18 +173,18 @@ package edn_reg_pkg;
   } edn_hw2reg_t;
 
   // Register Address
-  parameter logic [5:0] EDN_INTR_STATE_OFFSET = 6'h 0;
-  parameter logic [5:0] EDN_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter logic [5:0] EDN_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [5:0] EDN_REGEN_OFFSET = 6'h c;
-  parameter logic [5:0] EDN_CTRL_OFFSET = 6'h 10;
-  parameter logic [5:0] EDN_SUM_STS_OFFSET = 6'h 14;
-  parameter logic [5:0] EDN_SW_CMD_REQ_OFFSET = 6'h 18;
-  parameter logic [5:0] EDN_SW_CMD_STS_OFFSET = 6'h 1c;
-  parameter logic [5:0] EDN_RESEED_CMD_OFFSET = 6'h 20;
-  parameter logic [5:0] EDN_GENERATE_CMD_OFFSET = 6'h 24;
-  parameter logic [5:0] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET = 6'h 28;
-  parameter logic [5:0] EDN_ERR_CODE_OFFSET = 6'h 2c;
+  parameter logic [BlockAw-1:0] EDN_INTR_STATE_OFFSET = 6'h 0;
+  parameter logic [BlockAw-1:0] EDN_INTR_ENABLE_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] EDN_INTR_TEST_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] EDN_REGEN_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] EDN_CTRL_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] EDN_SUM_STS_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] EDN_SW_CMD_REQ_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] EDN_SW_CMD_STS_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] EDN_RESEED_CMD_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] EDN_GENERATE_CMD_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET = 6'h 28;
+  parameter logic [BlockAw-1:0] EDN_ERR_CODE_OFFSET = 6'h 2c;
 
 
   // Register Index

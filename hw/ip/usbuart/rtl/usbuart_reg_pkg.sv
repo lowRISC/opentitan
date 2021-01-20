@@ -6,6 +6,9 @@
 
 package usbuart_reg_pkg;
 
+  // Address width within the block
+  parameter int BlockAw = 6;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -323,20 +326,20 @@ package usbuart_reg_pkg;
   } usbuart_hw2reg_t;
 
   // Register Address
-  parameter logic [5:0] USBUART_INTR_STATE_OFFSET = 6'h 0;
-  parameter logic [5:0] USBUART_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter logic [5:0] USBUART_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [5:0] USBUART_CTRL_OFFSET = 6'h c;
-  parameter logic [5:0] USBUART_STATUS_OFFSET = 6'h 10;
-  parameter logic [5:0] USBUART_RDATA_OFFSET = 6'h 14;
-  parameter logic [5:0] USBUART_WDATA_OFFSET = 6'h 18;
-  parameter logic [5:0] USBUART_FIFO_CTRL_OFFSET = 6'h 1c;
-  parameter logic [5:0] USBUART_FIFO_STATUS_OFFSET = 6'h 20;
-  parameter logic [5:0] USBUART_OVRD_OFFSET = 6'h 24;
-  parameter logic [5:0] USBUART_VAL_OFFSET = 6'h 28;
-  parameter logic [5:0] USBUART_TIMEOUT_CTRL_OFFSET = 6'h 2c;
-  parameter logic [5:0] USBUART_USBSTAT_OFFSET = 6'h 30;
-  parameter logic [5:0] USBUART_USBPARAM_OFFSET = 6'h 34;
+  parameter logic [BlockAw-1:0] USBUART_INTR_STATE_OFFSET = 6'h 0;
+  parameter logic [BlockAw-1:0] USBUART_INTR_ENABLE_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] USBUART_INTR_TEST_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] USBUART_CTRL_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] USBUART_STATUS_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] USBUART_RDATA_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] USBUART_WDATA_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] USBUART_FIFO_CTRL_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] USBUART_FIFO_STATUS_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] USBUART_OVRD_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] USBUART_VAL_OFFSET = 6'h 28;
+  parameter logic [BlockAw-1:0] USBUART_TIMEOUT_CTRL_OFFSET = 6'h 2c;
+  parameter logic [BlockAw-1:0] USBUART_USBSTAT_OFFSET = 6'h 30;
+  parameter logic [BlockAw-1:0] USBUART_USBPARAM_OFFSET = 6'h 34;
 
 
   // Register Index

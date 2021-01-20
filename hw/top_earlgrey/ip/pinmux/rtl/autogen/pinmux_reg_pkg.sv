@@ -14,6 +14,9 @@ package pinmux_reg_pkg;
   parameter int NWkupDetect = 8;
   parameter int WkupCntWidth = 8;
 
+  // Address width within the block
+  parameter int BlockAw = 7;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -97,38 +100,38 @@ package pinmux_reg_pkg;
   } pinmux_hw2reg_t;
 
   // Register Address
-  parameter logic [6:0] PINMUX_REGEN_OFFSET = 7'h 0;
-  parameter logic [6:0] PINMUX_PERIPH_INSEL_0_OFFSET = 7'h 4;
-  parameter logic [6:0] PINMUX_PERIPH_INSEL_1_OFFSET = 7'h 8;
-  parameter logic [6:0] PINMUX_PERIPH_INSEL_2_OFFSET = 7'h c;
-  parameter logic [6:0] PINMUX_PERIPH_INSEL_3_OFFSET = 7'h 10;
-  parameter logic [6:0] PINMUX_PERIPH_INSEL_4_OFFSET = 7'h 14;
-  parameter logic [6:0] PINMUX_PERIPH_INSEL_5_OFFSET = 7'h 18;
-  parameter logic [6:0] PINMUX_PERIPH_INSEL_6_OFFSET = 7'h 1c;
-  parameter logic [6:0] PINMUX_MIO_OUTSEL_0_OFFSET = 7'h 20;
-  parameter logic [6:0] PINMUX_MIO_OUTSEL_1_OFFSET = 7'h 24;
-  parameter logic [6:0] PINMUX_MIO_OUTSEL_2_OFFSET = 7'h 28;
-  parameter logic [6:0] PINMUX_MIO_OUTSEL_3_OFFSET = 7'h 2c;
-  parameter logic [6:0] PINMUX_MIO_OUTSEL_4_OFFSET = 7'h 30;
-  parameter logic [6:0] PINMUX_MIO_OUTSEL_5_OFFSET = 7'h 34;
-  parameter logic [6:0] PINMUX_MIO_OUTSEL_6_OFFSET = 7'h 38;
-  parameter logic [6:0] PINMUX_MIO_OUT_SLEEP_VAL_0_OFFSET = 7'h 3c;
-  parameter logic [6:0] PINMUX_MIO_OUT_SLEEP_VAL_1_OFFSET = 7'h 40;
-  parameter logic [6:0] PINMUX_DIO_OUT_SLEEP_VAL_OFFSET = 7'h 44;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_EN_OFFSET = 7'h 48;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_0_OFFSET = 7'h 4c;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_1_OFFSET = 7'h 50;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_2_OFFSET = 7'h 54;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_3_OFFSET = 7'h 58;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_4_OFFSET = 7'h 5c;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_5_OFFSET = 7'h 60;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_6_OFFSET = 7'h 64;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_7_OFFSET = 7'h 68;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_CNT_TH_0_OFFSET = 7'h 6c;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_CNT_TH_1_OFFSET = 7'h 70;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_PADSEL_0_OFFSET = 7'h 74;
-  parameter logic [6:0] PINMUX_WKUP_DETECTOR_PADSEL_1_OFFSET = 7'h 78;
-  parameter logic [6:0] PINMUX_WKUP_CAUSE_OFFSET = 7'h 7c;
+  parameter logic [BlockAw-1:0] PINMUX_REGEN_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_0_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_1_OFFSET = 7'h 8;
+  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_2_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_3_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_4_OFFSET = 7'h 14;
+  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_5_OFFSET = 7'h 18;
+  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_6_OFFSET = 7'h 1c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_0_OFFSET = 7'h 20;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_1_OFFSET = 7'h 24;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_2_OFFSET = 7'h 28;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_3_OFFSET = 7'h 2c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_4_OFFSET = 7'h 30;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_5_OFFSET = 7'h 34;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_6_OFFSET = 7'h 38;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_0_OFFSET = 7'h 3c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_1_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_EN_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_0_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_1_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_2_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_3_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_4_OFFSET = 7'h 5c;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_5_OFFSET = 7'h 60;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_6_OFFSET = 7'h 64;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_7_OFFSET = 7'h 68;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_CNT_TH_0_OFFSET = 7'h 6c;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_CNT_TH_1_OFFSET = 7'h 70;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_0_OFFSET = 7'h 74;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_1_OFFSET = 7'h 78;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_CAUSE_OFFSET = 7'h 7c;
 
 
   // Register Index

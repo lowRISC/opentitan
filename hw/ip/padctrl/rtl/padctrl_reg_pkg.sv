@@ -11,6 +11,9 @@ package padctrl_reg_pkg;
   parameter int NMioPads = 16;
   parameter int AttrDw = 10;
 
+  // Address width within the block
+  parameter int BlockAw = 6;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -51,15 +54,15 @@ package padctrl_reg_pkg;
   } padctrl_hw2reg_t;
 
   // Register Address
-  parameter logic [5:0] PADCTRL_REGEN_OFFSET = 6'h 0;
-  parameter logic [5:0] PADCTRL_DIO_PADS_0_OFFSET = 6'h 4;
-  parameter logic [5:0] PADCTRL_DIO_PADS_1_OFFSET = 6'h 8;
-  parameter logic [5:0] PADCTRL_MIO_PADS_0_OFFSET = 6'h c;
-  parameter logic [5:0] PADCTRL_MIO_PADS_1_OFFSET = 6'h 10;
-  parameter logic [5:0] PADCTRL_MIO_PADS_2_OFFSET = 6'h 14;
-  parameter logic [5:0] PADCTRL_MIO_PADS_3_OFFSET = 6'h 18;
-  parameter logic [5:0] PADCTRL_MIO_PADS_4_OFFSET = 6'h 1c;
-  parameter logic [5:0] PADCTRL_MIO_PADS_5_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] PADCTRL_REGEN_OFFSET = 6'h 0;
+  parameter logic [BlockAw-1:0] PADCTRL_DIO_PADS_0_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] PADCTRL_DIO_PADS_1_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_0_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_1_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_2_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_3_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_4_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_5_OFFSET = 6'h 20;
 
 
   // Register Index
