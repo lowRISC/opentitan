@@ -142,7 +142,7 @@ module tlul_adapter_sram #(
       d_source : (d_valid) ? reqfifo_rdata.source : '0,
       d_sink   : 1'b0,
       d_data   : (d_valid && rspfifo_rvalid && reqfifo_rdata.op == OpRead)
-                 ? rspfifo_rdata.data : '0,
+                 ? rspfifo_rdata.data[top_pkg::TL_DW-1:0] : '0,
       d_user   : '0,
       d_error  : d_valid && d_error,
 
@@ -256,7 +256,7 @@ module tlul_adapter_sram #(
   assign rdata_tlword = rdata[sramreqfifo_rdata.woffset];
 
   assign rspfifo_wdata  = '{
-    data : rdata_tlword,
+    data : {{SramDw - top_pkg::TL_DW{1'b0}}, rdata_tlword},
     error: rerror_i[1] // Only care for Uncorrectable error
   };
   assign rspfifo_rready = (reqfifo_rdata.op == OpRead & ~reqfifo_rdata.error)
