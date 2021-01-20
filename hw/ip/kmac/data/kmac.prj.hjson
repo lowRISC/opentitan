@@ -13,9 +13,9 @@
         version:            "1.0",
         life_stage:         "L1",
         design_stage:       "D1",
-        verification_stage: "V0",
-        commit_id:          "40979092",
-        notes:              "Reaching D1"
+        verification_stage: "V1",
+        commit_id:          "7488dff2",
+        notes:              "Reaching V1"
       }
     ]
 }
