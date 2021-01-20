@@ -16,6 +16,7 @@ IPS ?= aes           \
        clkmgr        \
        entropy_src   \
        csrng         \
+       dcd           \
        edn           \
        flash_ctrl    \
        gpio          \
