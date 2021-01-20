@@ -266,6 +266,9 @@ module otbn
   logic [DmemAddrWidth-1:0] dmem_addr_core;
   assign dmem_index_core = dmem_addr_core[DmemAddrWidth-1:DmemAddrWidth-DmemIndexWidth];
 
+  logic unused_dmem_addr_core_wordbits;
+  assign unused_dmem_addr_core_wordbits = ^dmem_addr_core[DmemAddrWidth-DmemIndexWidth-1:0];
+
   prim_ram_1p_adv #(
     .Width           (WLEN),
     .Depth           (DmemSizeWords),
