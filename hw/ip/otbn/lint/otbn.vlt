@@ -9,3 +9,6 @@
 lint_off -rule WIDTH -file "*/rtl/otbn_lsu.sv" -match "*'addr' generates 3 bits*"
 
 lint_off -rule UNUSED -file "*/rtl/otbn_decoder.sv" -match "Bits of signal are not used: 'insn_alu'[24:15,11:7]"
+
+// imem_wmask_bus is only used in an assertion (which Verilator doesn't see).
+lint_off -rule UNUSED -file "*/rtl/otbn.sv" -match "Signal is not used: 'imem_wmask_bus'"
