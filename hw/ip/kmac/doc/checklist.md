@@ -110,7 +110,7 @@ Review        | Signoff date            |             |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started |
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        |
 Documentation | [DV_PLAN_COMPLETED][]                 | Done        |
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
@@ -118,7 +118,7 @@ Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
 Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done        |
 Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        |
 Testbench     | [TB_GEN_AUTOMATED][]                  | N/A         |
-Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
+Tests         | [SIM_SMOKE_TEST_PASSING][]            | Done        |
 Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        |
 Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | N/A         |
 Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Done        |
