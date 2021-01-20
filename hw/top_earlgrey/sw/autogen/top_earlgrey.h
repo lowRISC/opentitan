@@ -769,8 +769,8 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdKeymgrOperationErr = 12, /**< keymgr_operation_err */
   kTopEarlgreyAlertIdOtpCtrlFatalMacroError = 13, /**< otp_ctrl_fatal_macro_error */
   kTopEarlgreyAlertIdOtpCtrlFatalCheckError = 14, /**< otp_ctrl_fatal_check_error */
-  kTopEarlgreyAlertIdLcCtrlLcProgrammingFailure = 15, /**< lc_ctrl_lc_programming_failure */
-  kTopEarlgreyAlertIdLcCtrlLcStateFailure = 16, /**< lc_ctrl_lc_state_failure */
+  kTopEarlgreyAlertIdLcCtrlFatalProgError = 15, /**< lc_ctrl_fatal_prog_error */
+  kTopEarlgreyAlertIdLcCtrlFatalStateError = 16, /**< lc_ctrl_fatal_state_error */
   kTopEarlgreyAlertIdEntropySrcEsAlertCountMet = 17, /**< entropy_src_es_alert_count_met */
   kTopEarlgreyAlertIdSramCtrlMainSramIntegAlert = 18, /**< sram_ctrl_main_sram_integ_alert */
   kTopEarlgreyAlertIdSramCtrlRetSramIntegAlert = 19, /**< sram_ctrl_ret_sram_integ_alert */

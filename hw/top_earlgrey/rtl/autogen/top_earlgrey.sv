@@ -901,8 +901,8 @@ module top_earlgrey #(
     .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction)
   ) u_lc_ctrl (
 
-      // [9]: lc_programming_failure
-      // [10]: lc_state_failure
+      // [9]: fatal_prog_error
+      // [10]: fatal_state_error
       .alert_tx_o  ( alert_tx[10:9] ),
       .alert_rx_i  ( alert_rx[10:9] ),
 
