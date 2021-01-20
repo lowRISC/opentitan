@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "rbox",
+    design_spec:        "hw/ip/rbox/doc",
+    dv_doc:             "hw/ip/rbox/doc/dv",
+    hw_checklist:       "hw/ip/rbox/doc/checklist",
+    version:            "1.0",
+    life_stage:         "L1",
+    design_stage:       "D0",
+    verification_stage: "V0",
+    notes:              "",
+}
