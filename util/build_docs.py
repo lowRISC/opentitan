@@ -201,34 +201,38 @@ def generate_selfdocs():
                 fout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
 
 
-def generate_apt_reqs():
-    """Generate an apt-get command line invocation from apt-requirements.txt
+def generate_pkg_reqs():
+    """Generate an apt/yum command line invocation from
+    apt/yum-requirements.txt
 
-    This will be saved in outdir-generated/apt_cmd.txt
+    This will be saved in outdir-generated/apt_cmd.txt and
+    outdir-generated/yum_cmd.txt, respectively.
     """
-    # Read the apt-requirements.txt
-    apt_requirements = []
-    requirements_file = open(str(SRCTREE_TOP.joinpath("apt-requirements.txt")))
-    for package_line in requirements_file.readlines():
-        # Ignore everything after `#` on each line, and strip whitespace
-        package = package_line.split('#', 1)[0].strip()
-        if package:
-            # only add non-empty lines to packages
-            apt_requirements.append(package)
 
-    apt_cmd = "$ sudo apt-get install " + " ".join(apt_requirements)
-    apt_cmd_lines = textwrap.wrap(apt_cmd,
+    for pkgmgr in ["apt", "yum"]:
+        # Read the apt/yum-requirements.txt
+        requirements = []
+        requirements_file = open(str(SRCTREE_TOP.joinpath(pkgmgr + "-requirements.txt")))
+        for package_line in requirements_file.readlines():
+            # Ignore everything after `#` on each line, and strip whitespace
+            package = package_line.split('#', 1)[0].strip()
+            if package:
+                # only add non-empty lines to packages
+                requirements.append(package)
+
+        cmd = "$ sudo " + pkgmgr + " install " + " ".join(requirements)
+        cmd_lines = textwrap.wrap(cmd,
                                   width=78,
                                   replace_whitespace=True,
                                   subsequent_indent='    ')
-    # Newlines need to be escaped
-    apt_cmd = " \\\n".join(apt_cmd_lines)
+        # Newlines need to be escaped
+        cmd = " \\\n".join(cmd_lines)
 
-    # And then to write the generated string directly to the file.
-    apt_cmd_path = config["outdir-generated"].joinpath('apt_cmd.txt')
-    apt_cmd_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(str(apt_cmd_path), mode='w') as fout:
-        fout.write(apt_cmd)
+        # And then to write the generated string directly to the file.
+        cmd_path = config["outdir-generated"].joinpath(pkgmgr + '_cmd.txt')
+        cmd_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(str(cmd_path), mode='w') as fout:
+            fout.write(cmd)
 
 
 def generate_tool_versions():
@@ -446,7 +450,7 @@ def main():
     generate_dashboards()
     generate_testplans()
     generate_selfdocs()
-    generate_apt_reqs()
+    generate_pkg_reqs()
     generate_tool_versions()
     generate_dif_docs()
     generate_otbn_isa()

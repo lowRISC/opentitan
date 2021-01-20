@@ -111,11 +111,21 @@ The repository will be checked out into `<working-area>/opentitan` (this is the 
 
 ### Install required software
 
-A number of software packages from the distribution's package manager is required.
-All installation instructions below are for Ubuntu 18.04.
-Adjust as necessary for other Linux distributions.
+A number of software packages from the distribution's package manager are required.
+On Ubuntu 18.04, the required packages can be installed with the following command.
 
-{{< apt_cmd >}}
+{{< pkgmgr_cmd "apt" >}}
+
+Our recommended reference platform is Ubuntu 18.04, but the command can be adjusted as necessary for other Linux distributions.
+
+For example, for Red Hat Enterprise Linux (RHEL) 7 and derivatives (such as CentOS 7) the following packages are required.
+Note that we don't have the possibilities to actively verify that our instructions continue work on RHEL/CentOS and hence also can't test anything on these distributions.
+The following instructions are effectively community contributed and we encourage users to raise pull requests if they find the package requirements to be outdated.
+First of all, the [EPEL repository](https://fedoraproject.org/wiki/EPEL) has to be enabled.
+A sufficiently recent version of GCC or LLVM (clang) can be obtained through [Red Hat Software Collections](https://www.softwarecollections.org/en/).
+Then run the following command to install the required package dependencies on RHEL/CentOS 7.
+
+{{< pkgmgr_cmd "yum" >}}
 
 Some tools in this repository are written in Python 3 and require Python dependencies to be installed through `pip`.
 
