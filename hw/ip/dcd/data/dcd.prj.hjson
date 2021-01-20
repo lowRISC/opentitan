@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "dcd",
+    design_spec:        "hw/ip/dcd/doc",
+    dv_doc:             "hw/ip/dcd/doc/dv",
+    hw_checklist:       "hw/ip/dcd/doc/checklist",
+    version:            "1.0",
+    life_stage:         "L1",
+    design_stage:       "D0",
+    verification_stage: "V0",
+    notes:              "",
+}
