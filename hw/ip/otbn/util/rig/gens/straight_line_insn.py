@@ -11,7 +11,7 @@ from shared.operand import ImmOperandType, OptionOperandType, RegOperandType
 
 from ..program import ProgInsn, Program
 from ..model import Model
-from ..snippet import ProgSnippet
+from ..snippet import ProgSnippet, Snippet
 from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
@@ -35,7 +35,32 @@ class StraightLineInsn(SnippetGen):
             cont: GenCont,
             model: Model,
             program: Program) -> Optional[GenRet]:
+        return self._gen(model, program)
 
+    def gen_some(self,
+                 count: int,
+                 model: Model,
+                 program: Program) -> Optional[Tuple[Snippet, Model]]:
+        '''Generate a block of count straight-line instructions'''
+        assert 0 < count
+
+        # Take a copy of model, so that we fail atomically
+        model = model.copy()
+
+        children = []  # type: List[Snippet]
+        for i in range(count):
+            gen_ret = self._gen(model, program)
+            if gen_ret is None:
+                return None
+
+            snippet, model = gen_ret
+            children.append(snippet)
+
+        return (Snippet.merge_list(children), model)
+
+    def _gen(self,
+             model: Model,
+             program: Program) -> Optional[Tuple[Snippet, Model]]:
         # Return None if this is the last instruction in the current gap
         # because we need to either jump or do an ECALL to avoid getting stuck.
         #
