@@ -1451,7 +1451,7 @@
       alert_list:
       [
         {
-          name: lc_programming_failure
+          name: fatal_prog_error
           width: 1
           bits: "0"
           bitinfo:
@@ -1464,7 +1464,7 @@
           async: 0
         }
         {
-          name: lc_state_failure
+          name: fatal_state_error
           width: 1
           bits: "1"
           bitinfo:
@@ -8296,7 +8296,7 @@
       module_name: otp_ctrl
     }
     {
-      name: lc_ctrl_lc_programming_failure
+      name: lc_ctrl_fatal_prog_error
       width: 1
       bits: "0"
       bitinfo:
@@ -8310,7 +8310,7 @@
       module_name: lc_ctrl
     }
     {
-      name: lc_ctrl_lc_state_failure
+      name: lc_ctrl_fatal_state_error
       width: 1
       bits: "1"
       bitinfo:

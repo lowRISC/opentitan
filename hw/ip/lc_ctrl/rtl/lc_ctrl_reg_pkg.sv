@@ -24,11 +24,11 @@ package lc_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } lc_programming_failure;
+    } fatal_prog_error;
     struct packed {
       logic        q;
       logic        qe;
-    } lc_state_failure;
+    } fatal_state_error;
   } lc_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {

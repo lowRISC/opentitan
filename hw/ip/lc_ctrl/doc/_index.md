@@ -569,7 +569,7 @@ This transition is not permanent, and will clear upon the next power cycle.
 
 The FSM has been designed to have a linear control flow that always moves in the same direction, and that always ends in a terminal state after initiating a transition request in order to make glitch attacks harder.
 A sparse FSM state encoding is employed, where each state is encoded as a 16bit word with a minimum Hamming distance of 5 w.r.t. any other state.
-The FSM state and the life cycle state vector are concurrently monitored, and if an erroneous encoding is detected, the life cycle FSM is immediately moved into the terminal `InvalidSt`, and a `lc_state_failure` alert is asserted.
+The FSM state and the life cycle state vector are concurrently monitored, and if an erroneous encoding is detected, the life cycle FSM is immediately moved into the terminal `InvalidSt`, and a `fatal_state_error` alert is asserted.
 
 #### Life Cycle Request Interface
 
