@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -28,7 +29,7 @@ void mask_rom_boot(void) {
   if (rom_ext_get_identifier(rom_ext) == kRomExtIdentifierExpected) {
     // Set mtvec for ROM_EXT.
     uintptr_t interrupt_vector = rom_ext_get_interrupt_vector(rom_ext);
-    asm volatile("csrw mtvec, %0" ::"r"(interrupt_vector));
+    CSR_WRITE(CSR_REG_MTVEC, (uint32_t)interrupt_vector);
 
     boot_fn *rom_ext_entry = (boot_fn *)rom_ext_get_entry(rom_ext);
 

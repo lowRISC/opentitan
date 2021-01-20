@@ -4,55 +4,47 @@
 
 #include "sw/device/lib/irq.h"
 
-#include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/base/csr.h"
 
 static const uint32_t IRQ_EXT_ENABLE_OFFSET = 11;
 static const uint32_t IRQ_TIMER_ENABLE_OFFSET = 7;
 static const uint32_t IRQ_SW_ENABLE_OFFSET = 3;
 
 void irq_set_vector_offset(uintptr_t address) {
-  asm volatile("csrw mtvec, %0" ::"r"(address));
-}
-
-static void irq_mie_set(uint32_t value) {
-  asm volatile("csrrs zero, mie, %0" : : "r"(value) :);
-}
-
-static void irq_mie_clr(uint32_t value) {
-  asm volatile("csrrc zero, mie, %0" : : "r"(value) :);
+  CSR_WRITE(CSR_REG_MTVEC, (uint32_t)address);
 }
 
 void irq_global_ctrl(bool en) {
   if (en) {
-    asm volatile("csrsi mstatus, 0x8" : : :);
+    CSR_SET_BITS(CSR_REG_MSTATUS, 0x8);
   } else {
-    asm volatile("csrci mstatus, 0x8" : : :);
+    CSR_CLEAR_BITS(CSR_REG_MSTATUS, 0x8);
   }
 }
 
 void irq_external_ctrl(bool en) {
-  const uint32_t value = 1 << IRQ_EXT_ENABLE_OFFSET;
+  const uint32_t mask = 1 << IRQ_EXT_ENABLE_OFFSET;
   if (en) {
-    irq_mie_set(value);
+    CSR_SET_BITS(CSR_REG_MIE, mask);
   } else {
-    irq_mie_clr(value);
+    CSR_CLEAR_BITS(CSR_REG_MIE, mask);
   }
 }
 
 void irq_timer_ctrl(bool en) {
-  const uint32_t value = 1 << IRQ_TIMER_ENABLE_OFFSET;
+  const uint32_t mask = 1 << IRQ_TIMER_ENABLE_OFFSET;
   if (en) {
-    irq_mie_set(value);
+    CSR_SET_BITS(CSR_REG_MIE, mask);
   } else {
-    irq_mie_clr(value);
+    CSR_CLEAR_BITS(CSR_REG_MIE, mask);
   }
 }
 
 void irq_software_ctrl(bool en) {
-  const uint32_t value = 1 << IRQ_SW_ENABLE_OFFSET;
+  const uint32_t mask = 1 << IRQ_SW_ENABLE_OFFSET;
   if (en) {
-    irq_mie_set(value);
+    CSR_SET_BITS(CSR_REG_MIE, mask);
   } else {
-    irq_mie_clr(value);
+    CSR_CLEAR_BITS(CSR_REG_MIE, mask);
   }
 }

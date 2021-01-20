@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/handler.h"
 
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/runtime/log.h"
 
@@ -12,7 +13,7 @@
  */
 static uint32_t get_mtval(void) {
   uint32_t mtval;
-  asm volatile("csrr %0, mtval" : "=r"(mtval) : :);
+  CSR_READ(CSR_REG_MTVAL, &mtval);
   return mtval;
 }
 
@@ -33,7 +34,7 @@ __attribute__((weak)) void handler_exception(void) {
   uint32_t mcause;
   exc_id_t exc_cause;
 
-  asm volatile("csrr %0 , mcause" : "=r"(mcause) : :);
+  CSR_READ(CSR_REG_MCAUSE, &mcause);
   exc_cause = (exc_id_t)(mcause & kIdMax);
 
   switch (exc_cause) {

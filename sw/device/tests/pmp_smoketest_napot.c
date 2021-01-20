@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/runtime/pmp.h"
-
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/handler.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/pmp.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_main.h"
 #include "sw/device/lib/testing/test_status.h"
@@ -32,13 +32,11 @@ static volatile char pmp_load_store_test_data[PMP_LOAD_RANGE_BUFFER_SIZE];
 
 static uint32_t get_mepc(void) {
   uint32_t mepc;
-  asm volatile("csrr %0, mepc" : "=r"(mepc) :);
+  CSR_READ(CSR_REG_MEPC, &mepc);
   return mepc;
 }
 
-static void set_mepc(uint32_t mepc) {
-  asm volatile("csrw mepc, %0" : : "r"(mepc));
-}
+static void set_mepc(uint32_t mepc) { CSR_WRITE(CSR_REG_MEPC, mepc); }
 
 void handler_lsu_fault(void) {
   pmp_load_exception = true;

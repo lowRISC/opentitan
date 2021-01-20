@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/base/csr.h"
 
 // "Volume II: RISC-V Privileged Architectures V20190608-Priv-MSU-Ratified",
 // "3.6.1 Physical Memory Protection CSRs",
@@ -55,12 +55,10 @@ static const bitfield_field32_t kPmpCfgModeField = {
 PMP_WARN_UNUSED_RESULT
 static bool pmp_cfg_csr_read(pmp_region_index_t region, uint32_t *value) {
   switch (region) {
-#define PMP_REGION(region_id, config_reg_id)                               \
-  case region_id: {                                                        \
-    uint32_t read_value;                                                   \
-    asm volatile("csrr %0, pmpcfg" #config_reg_id ";" : "=r"(read_value)); \
-    *value = read_value;                                                   \
-    return true;                                                           \
+#define PMP_REGION(region_id, config_reg_id)        \
+  case region_id: {                                 \
+    CSR_READ(CSR_REG_PMPCFG##config_reg_id, value); \
+    return true;                                    \
   }
 #include "sw/device/lib/runtime/pmp_regions.def"
     default:
@@ -82,10 +80,10 @@ static bool pmp_cfg_csr_read(pmp_region_index_t region, uint32_t *value) {
 PMP_WARN_UNUSED_RESULT
 static bool pmp_cfg_csr_write(pmp_region_index_t region, uint32_t value) {
   switch (region) {
-#define PMP_REGION(region_id, config_reg_id)                         \
-  case region_id: {                                                  \
-    asm volatile("csrw pmpcfg" #config_reg_id ", %0;" ::"r"(value)); \
-    return true;                                                     \
+#define PMP_REGION(region_id, config_reg_id)         \
+  case region_id: {                                  \
+    CSR_WRITE(CSR_REG_PMPCFG##config_reg_id, value); \
+    return true;                                     \
   }
 #include "sw/device/lib/runtime/pmp_regions.def"
     default:
@@ -104,10 +102,10 @@ static bool pmp_cfg_csr_write(pmp_region_index_t region, uint32_t value) {
 PMP_WARN_UNUSED_RESULT
 static bool pmp_addr_csr_read(pmp_region_index_t region, uint32_t *value) {
   switch (region) {
-#define PMP_REGION(region_id, _)                                    \
-  case region_id: {                                                 \
-    asm volatile("csrr %0, pmpaddr" #region_id ";" : "=r"(*value)); \
-    return true;                                                    \
+#define PMP_REGION(region_id, _)                 \
+  case region_id: {                              \
+    CSR_READ(CSR_REG_PMPADDR##region_id, value); \
+    return true;                                 \
   }
 #include "sw/device/lib/runtime/pmp_regions.def"
     default:
@@ -125,10 +123,10 @@ static bool pmp_addr_csr_read(pmp_region_index_t region, uint32_t *value) {
 PMP_WARN_UNUSED_RESULT
 static bool pmp_addr_csr_write(pmp_region_index_t region, uint32_t value) {
   switch (region) {
-#define PMP_REGION(region_id, _)                                    \
-  case region_id: {                                                 \
-    asm volatile("csrw pmpaddr" #region_id ", %0;" : : "r"(value)); \
-    return true;                                                    \
+#define PMP_REGION(region_id, _)                  \
+  case region_id: {                               \
+    CSR_WRITE(CSR_REG_PMPADDR##region_id, value); \
+    return true;                                  \
   }
 #include "sw/device/lib/runtime/pmp_regions.def"
     default:
