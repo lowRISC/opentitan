@@ -96,6 +96,8 @@ class Model:
     following the instruction stream to this point.
 
     '''
+    max_loop_depth = 8
+
     def __init__(self, dmem_size: int, reset_addr: int, fuel: int) -> None:
         assert fuel >= 0
         self.initial_fuel = fuel
@@ -135,6 +137,9 @@ class Model:
         # arithmetic operation that got written to x1).
         self._call_stack = CallStack()
 
+        # The depth of the loop stack.
+        self.loop_depth = 0
+
         # Known values for memory, keyed by memory type ('dmem', 'csr', 'wsr').
         csrs = KnownMem(4096)
         wsrs = KnownMem(4096)
@@ -171,6 +176,7 @@ class Model:
             ret._const_stack.append({n: regs.copy()
                                      for n, regs in entry.items()})
         ret._call_stack = self._call_stack.copy()
+        ret.loop_depth = self.loop_depth
         ret._known_mem = {n: mem.copy()
                           for n, mem in self._known_mem.items()}
         return ret
@@ -239,6 +245,8 @@ class Model:
         assert self._const_stack == other._const_stack
 
         self._call_stack.merge(other._call_stack)
+
+        assert self.loop_depth == other.loop_depth
 
         for mem_type, self_mem in self._known_mem.items():
             self_mem.merge(other._known_mem[mem_type])

@@ -15,6 +15,7 @@ from .snippet_gen import GenRet, SnippetGen
 from .gens.branch import Branch
 from .gens.ecall import ECall
 from .gens.jump import Jump
+from .gens.loop import Loop
 from .gens.straight_line_insn import StraightLineInsn
 
 
@@ -24,6 +25,7 @@ class SnippetGens:
         (Branch, 0.1),
         (ECall, 1.0),
         (Jump, 0.1),
+        (Loop, 0.1),
         (StraightLineInsn, 1.0)
     ]
 

@@ -61,10 +61,12 @@ class Snippet:
         if not isinstance(key, str):
             raise ValueError('Key for snippet {} is not a string.'.format(idx))
 
-        if key == 'PS':
-            return ProgSnippet._from_json_lst(insns_file, idx, json[1:])
-        elif key == 'BS':
+        if key == 'BS':
             return BranchSnippet._from_json_lst(insns_file, idx, json[1:])
+        if key == 'LS':
+            return LoopSnippet._from_json_lst(insns_file, idx, json[1:])
+        elif key == 'PS':
+            return ProgSnippet._from_json_lst(insns_file, idx, json[1:])
         elif key == 'SS':
             return SeqSnippet._from_json_lst(insns_file, idx, json[1:])
         else:
@@ -272,3 +274,41 @@ class BranchSnippet(Snippet):
                              .format(idx))
 
         return BranchSnippet(addr, branch_insn, snippet0, snippet1)
+
+
+class LoopSnippet(Snippet):
+    '''A snippet representing a loop'''
+    def __init__(self, addr: int, hd_insn: ProgInsn, body: Snippet):
+        self.addr = addr
+        self.hd_insn = hd_insn
+        self.body = body
+
+    def insert_into_program(self, program: Program) -> None:
+        program.add_insns(self.addr, [self.hd_insn])
+        self.body.insert_into_program(program)
+
+    def to_json(self) -> object:
+        return ['LS',
+                self.addr,
+                self.hd_insn.to_json(),
+                self.body.to_json()]
+
+    @staticmethod
+    def _from_json_lst(insns_file: InsnsFile,
+                       idx: List[int],
+                       json: List[object]) -> Snippet:
+        if len(json) != 3:
+            raise ValueError('List for snippet {} is of the wrong '
+                             'length for a LoopSnippet ({}, not 4)'
+                             .format(idx, len(json)))
+
+        j_addr, j_hd_insn, j_body = json
+
+        addr_where = 'address for snippet {}'.format(idx)
+        addr = Snippet._addr_from_json(addr_where, j_addr)
+
+        hi_where = 'head instruction for snippet {}'.format(idx)
+        hd_insn = ProgInsn.from_json(insns_file, hi_where, j_hd_insn)
+        body = Snippet.from_json(insns_file, idx + [0], j_body)
+
+        return LoopSnippet(addr, hd_insn, body)
