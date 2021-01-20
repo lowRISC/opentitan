@@ -295,10 +295,9 @@ class ImmOperandType(OperandType):
 
         return ImmOperandType(width, enc_offset, shift, signed, pc_rel)
 
-    def doc_rel_to_abs(self, value: int) -> str:
-        if not self.pc_rel:
-            return str(value)
-
+    @staticmethod
+    def _doc_rel_to_abs(value: int) -> str:
+        '''Turn X to . + X or . - X, as appropriate.'''
         if value < 0:
             return '.-{}'.format(-value)
         elif value == 0:
@@ -308,21 +307,27 @@ class ImmOperandType(OperandType):
 
     def markdown_doc(self) -> Optional[str]:
         # Override from OperandType base class
-        rel_rng = self.get_doc_range()
-        if rel_rng is None:
+        rng = self.get_doc_range()
+        if rng is None:
             return None
 
-        rel_lo, rel_hi = rel_rng
+        lo, hi = rng
         if self.shift == 0:
             stp_msg = ''
         else:
             stp_msg = ' in steps of `{}`'.format(1 << self.shift)
 
-        abs_lo = self.doc_rel_to_abs(rel_lo)
-        abs_hi = self.doc_rel_to_abs(rel_hi)
+        rel_suffix = ''
+        if self.pc_rel:
+            rel_suffix = (' This is encoded PC-relative but appears '
+                          'as an absolute value in assembly. To write a raw '
+                          'value in an assembly file, write something in the '
+                          'range `{}` to `{}`.'
+                          .format(ImmOperandType._doc_rel_to_abs(lo),
+                                  ImmOperandType._doc_rel_to_abs(hi)))
 
-        return ('Valid range: `{} to {}`{}'
-                .format(abs_lo, abs_hi, stp_msg))
+        return ('Valid range: `{}` to `{}`{}.{}'
+                .format(lo, hi, stp_msg, rel_suffix))
 
     def describe_decode(self, bits_lst: List[str]) -> str:
         # The "most general" result is something like this:
