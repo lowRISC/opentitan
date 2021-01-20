@@ -42,9 +42,8 @@ void flash_init_block(void) {
 /* Return status error and clear internal status register */
 static int get_clr_err(void) {
   uint32_t err_status =
-      REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_INTR_STATE_REG_OFFSET) &
-      (0x1 << FLASH_CTRL_INTR_STATE_OP_ERROR_BIT);
-  REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_INTR_STATE_REG_OFFSET) = err_status;
+      REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_ERR_CODE_REG_OFFSET);
+  REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_ERR_CODE_REG_OFFSET) = 0;
   return err_status;
 }
 
