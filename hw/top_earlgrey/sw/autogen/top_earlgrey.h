@@ -772,8 +772,8 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdLcCtrlFatalProgError = 15, /**< lc_ctrl_fatal_prog_error */
   kTopEarlgreyAlertIdLcCtrlFatalStateError = 16, /**< lc_ctrl_fatal_state_error */
   kTopEarlgreyAlertIdEntropySrcEsAlertCountMet = 17, /**< entropy_src_es_alert_count_met */
-  kTopEarlgreyAlertIdSramCtrlMainSramIntegAlert = 18, /**< sram_ctrl_main_sram_integ_alert */
-  kTopEarlgreyAlertIdSramCtrlRetSramIntegAlert = 19, /**< sram_ctrl_ret_sram_integ_alert */
+  kTopEarlgreyAlertIdSramCtrlMainFatalParityError = 18, /**< sram_ctrl_main_fatal_parity_error */
+  kTopEarlgreyAlertIdSramCtrlRetFatalParityError = 19, /**< sram_ctrl_ret_fatal_parity_error */
   kTopEarlgreyAlertIdLast = 19, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 

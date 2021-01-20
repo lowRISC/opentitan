@@ -259,7 +259,7 @@ It should also be noted that data and address scrambling is never entirely disab
 ## Error Handling
 
 Data in the SRAM is integrity protected with byte parity.
-In case an integrity failure is detected, the SRAM controller sets the {{< regref "STATUS.ERROR" >}} bit in the CSRs and continuously sends out an `sram_integ_alert`.
+In case an integrity failure is detected, the SRAM controller sets the {{< regref "STATUS.ERROR" >}} bit in the CSRs and continuously sends out a `fatal_parity_error` alert.
 At the same time, the affected TL-UL transaction will error out.
 
 SRAM integrity failures are considered unrecoverable and cannot be cleared.
