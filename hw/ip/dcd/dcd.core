@@ -1,0 +1,59 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:dcd:1.0"
+description: "dcd"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:constants:top_pkg
+      - lowrisc:prim:all
+      - lowrisc:ip:tlul
+      - lowrisc:systems:ast_pkg
+    files:
+      - rtl/dcd_reg_pkg.sv
+      - rtl/dcd_reg_top.sv
+      - rtl/dcd_pkg.sv
+      - rtl/dcd_fsm.sv
+      - rtl/dcd_intr.sv
+      - rtl/dcd_core.sv
+      - rtl/dcd.sv
+    file_type: systemVerilogSource
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    file_type: waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - files_rtl
+    toplevel: dcd
+
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      vdcd.hjsonerilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
