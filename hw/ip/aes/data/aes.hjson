@@ -140,17 +140,18 @@
     //    No further action needs to be taken but this should be monitored by the system.
     //  '''
     //}
-    { name: "recoverable",
+    { name: "recov_ctrl_update_err",
       desc: '''
-        The recoverable alert is triggered upon detecting an update error in the Control Register.
+        This recoverable alert is triggered upon detecting an update error in the shadowed Control Register.
         The content of the Control Register is not modified (See Control Register).
-        The AES unit can be recovered from such a condition by restarting the AES operation, i.e., by successfully updating the Control Register.
+        The AES unit can be recovered from such a condition by restarting the AES operation, i.e., by re-writing the Control Register.
         This should be monitored by the system.
       '''
     }
-    { name: "fatal",
+    { name: "fatal_fault",
       desc: '''
-        The fatal alert is triggered i) upon detecting a storage error in the Control Register, ii) if any internal FSM enters an invalid state, or iii) if a mux selector signal takes on an invalid value.
+        This fatal alert is triggered upon detecting a fatal fault inside the AES unit.
+        Examples for such faults include i) storage errors in the shadowed Control Register, ii) any internal FSM entering an invalid state, or iii) a mux selector signal taking on an invalid value.
         The AES unit cannot recover from such an error and needs to be reset.
       '''
     }
@@ -286,7 +287,7 @@
       AES unit is non-idle, writes to this register are ignored.
       This register is shadowed, meaning two subsequent write operations are required to change its content.
       If the two write operations try to set a different value, a recoverable alert is triggered (See Status Register).
-      A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence. 
+      A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence.
       Any write operation to this register will clear the status tracking required for automatic mode (See MANUAL_OPERATION field).
       A write to the Control Register is considered the start of a new message.
       Hence, software needs to provide new key, IV and input data afterwards.
@@ -499,7 +500,7 @@
         desc:  '''
           All previous output data has been fully read by the processor (0) or at least one previous output data block has been lost (1).
           It has been overwritten by the AES unit before the processor could fully read it.
-          Once set to `1`, this flag remains set until AES operation is restarted by successfully updating the Control Register.
+          Once set to `1`, this flag remains set until AES operation is restarted by re-writing the Control Register.
           The primary use of this flag is for design verification.
           This flag is not meaningful if MANUAL_OPERATION=0 (see Control Register).
         '''
@@ -523,22 +524,21 @@
         tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       }
       { bits: "5",
-        name: "ALERT_RECOVERABLE",
+        name: "ALERT_RECOV_CTRL_UPDATE_ERR",
         resval: "0",
         desc:  '''
-          No recoverable alert condition has occurred (0).
-          A recoverable alert condition has occurred and AES operation needs to be restarted by successfully updating the Control Register (1).
-          Examples for recoverable alert conditions include update errors in the Control Register.
+          An update error has not occurred (0) or has occurred (1) in the shadowed Control Register.
+          AES operation needs to be restarted by re-writing the Control Register.
         '''
         tags: ["excl:CsrNonInitTests:CsrExclCheck"]
       }
       { bits: "6",
-        name: "ALERT_FATAL",
+        name: "ALERT_FATAL_FAULT",
         resval: "0",
         desc:  '''
-          No fatal alert condition has occurred (0).
-          A fatal alert condition has occurred and the AES unit needs to be reset (1).
-          Examples for fatal alert conditions include i) storage errors in the Control Register, ii) if any internal FSM enters an invalid state, and iii) if a mux selector signal takes on an invalid value.
+          No fatal fault has occurred inside the AES unit (0).
+          A fatal fault has occurred and the AES unit needs to be reset (1).
+          Examples for fatal faults include i) storage errors in the Control Register, ii) if any internal FSM enters an invalid state, and iii) if a mux selector signal takes on an invalid value.
         '''
       }
     ]

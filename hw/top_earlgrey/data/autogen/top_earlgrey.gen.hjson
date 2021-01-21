@@ -3774,7 +3774,7 @@
       alert_list:
       [
         {
-          name: recoverable
+          name: recov_ctrl_update_err
           width: 1
           bits: "0"
           bitinfo:
@@ -3787,7 +3787,7 @@
           async: 1
         }
         {
-          name: fatal
+          name: fatal_fault
           width: 1
           bits: "1"
           bitinfo:
@@ -8038,7 +8038,7 @@
   alert:
   [
     {
-      name: aes_recoverable
+      name: aes_recov_ctrl_update_err
       width: 1
       bits: "0"
       bitinfo:
@@ -8052,7 +8052,7 @@
       module_name: aes
     }
     {
-      name: aes_fatal
+      name: aes_fatal_fault
       width: 1
       bits: "1"
       bitinfo:
