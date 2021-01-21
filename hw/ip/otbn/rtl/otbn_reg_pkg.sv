@@ -40,14 +40,8 @@ package otbn_reg_pkg;
   } otbn_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-      logic        qe;
-    } start;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } dummy;
+    logic        q;
+    logic        qe;
   } otbn_reg2hw_cmd_reg_t;
 
   typedef struct packed {
@@ -61,12 +55,7 @@ package otbn_reg_pkg;
   } otbn_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        d;
-    } busy;
-    struct packed {
-      logic        d;
-    } dummy;
+    logic        d;
   } otbn_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -124,11 +113,11 @@ package otbn_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [43:43]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [42:42]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [41:40]
-    otbn_reg2hw_alert_test_reg_t alert_test; // [39:36]
-    otbn_reg2hw_cmd_reg_t cmd; // [35:32]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [41:41]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [40:40]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [39:38]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [37:34]
+    otbn_reg2hw_cmd_reg_t cmd; // [33:32]
     otbn_reg2hw_start_addr_reg_t start_addr; // [31:0]
   } otbn_reg2hw_t;
 
@@ -136,8 +125,8 @@ package otbn_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [25:24]
-    otbn_hw2reg_status_reg_t status; // [23:22]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [24:23]
+    otbn_hw2reg_status_reg_t status; // [22:22]
     otbn_hw2reg_err_bits_reg_t err_bits; // [21:6]
     otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [5:0]
   } otbn_hw2reg_t;
