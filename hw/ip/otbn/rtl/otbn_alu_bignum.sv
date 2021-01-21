@@ -200,7 +200,7 @@ module otbn_alu_bignum
   logic [WLEN-1:0]   shifter_in_upper, shifter_in_lower, shifter_in_lower_reverse;
   logic [WLEN*2-1:0] shifter_in;
   logic [WLEN*2-1:0] shifter_out;
-  logic [WLEN-1:0]   shifter_out_lower_reverse, shifter_res;
+  logic [WLEN-1:0]   shifter_out_lower_reverse, shifter_res, unused_shifter_out_upper;
 
   assign shifter_in_upper = operation_i.op == AluOpBignumRshi ? operation_i.operand_a : '0;
   assign shifter_in_lower = operation_i.operand_b;
@@ -219,6 +219,9 @@ module otbn_alu_bignum
   end
 
   assign shifter_res = shift_right ? shifter_out[WLEN-1:0] : shifter_out_lower_reverse;
+
+  // Only the lower WLEN bits of the shift result are returned.
+  assign unused_shifter_out_upper = shifter_out[WLEN*2-1:WLEN];
 
   //////////////////
   // Adders X & Y //
@@ -261,6 +264,11 @@ module otbn_alu_bignum
   assign adder_update_flags.M = adder_y_res[WLEN];
   assign adder_update_flags.L = adder_y_res[1];
   assign adder_update_flags.Z = ~|adder_y_res[WLEN:1];
+
+  // The LSb of the adder results are unused.
+  logic unused_adder_x_res_lsb, unused_adder_y_res_lsb;
+  assign unused_adder_x_res_lsb = adder_x_res[0];
+  assign unused_adder_y_res_lsb = adder_y_res[0];
 
   //////////////////////////////
   // Shifter & Adders control //
@@ -435,8 +443,8 @@ module otbn_alu_bignum
 
       // BN.ADDM - X = a + b, Y = X - mod, subtract mod if a + b >= mod
       // * If X generates carry a + b > mod (as mod is 256-bit) - Select Y result
-      // * If Y generates carry X - mod == (a + b) - mod >= 0 hence a + b >= mod, note this is only valid if
-      //   X does not generate carry - Select Y result
+      // * If Y generates carry X - mod == (a + b) - mod >= 0 hence a + b >= mod, note this is only
+      //   valid if X does not generate carry - Select Y result
       // * If neither happen a + b < mod - Select X result
       AluOpBignumAddm: begin
         if (adder_x_res[WLEN+1] || adder_y_res[WLEN+1]) begin

@@ -124,6 +124,7 @@ module otbn_controller
   logic [ImemAddrWidth-1:0] next_insn_addr;
 
   csr_e                                csr_addr;
+  logic [$clog2(BaseWordsPerWLEN)-1:0] csr_sub_addr;
   logic [31:0]                         csr_rdata_raw;
   logic [31:0]                         csr_rdata;
   logic [BaseWordsPerWLEN-1:0]         csr_rdata_mux [32];
@@ -527,7 +528,8 @@ module otbn_controller
   // ISPRs (Internal Special Purpose Registers) are the internal registers. CSRs and WSRs are the
   // ISA visible versions of those registers in the base and bignum ISAs respectively.
 
-  assign csr_addr = csr_e'(insn_dec_base_i.i[11:0]);
+  assign csr_addr     = csr_e'(insn_dec_base_i.i[11:0]);
+  assign csr_sub_addr = insn_dec_base_i.i[$clog2(BaseWordsPerWLEN)-1:0];
 
   always_comb begin
     ispr_addr_base      = IsprMod;
@@ -539,9 +541,9 @@ module otbn_controller
         ispr_addr_base      = IsprFlags;
         ispr_word_addr_base = '0;
       end
-      CsrMod0,CsrMod1,CsrMod2,CsrMod3,CsrMod4,CsrMod5,CsrMod6,CsrMod7: begin
+      CsrMod0, CsrMod1, CsrMod2, CsrMod3, CsrMod4, CsrMod5, CsrMod6, CsrMod7: begin
         ispr_addr_base      = IsprMod;
-        ispr_word_addr_base = csr_addr[2:0];
+        ispr_word_addr_base = csr_sub_addr;
       end
       CsrRnd: begin
         ispr_addr_base      = IsprRnd;
@@ -615,7 +617,8 @@ module otbn_controller
   assign wsr_wdata = insn_dec_shared_i.ispr_rs_insn ? ispr_rdata_i | rf_bignum_rd_data_a_i :
                                                       rf_bignum_rd_data_a_i;
 
-  assign ispr_illegal_addr = insn_dec_shared_i.subset == InsnSubsetBase ? csr_illegal_addr : wsr_illegal_addr;
+  assign ispr_illegal_addr = insn_dec_shared_i.subset == InsnSubsetBase ? csr_illegal_addr :
+                                                                          wsr_illegal_addr;
 
   assign ispr_err = ispr_illegal_addr & insn_valid_i & (insn_dec_shared_i.ispr_rd_insn |
                                                         insn_dec_shared_i.ispr_wr_insn |
@@ -627,12 +630,12 @@ module otbn_controller
                                                                             ispr_addr_bignum;
   assign ispr_base_wdata_o   = csr_wdata;
   assign ispr_base_wr_en_o   =
-    {BaseWordsPerWLEN{(insn_dec_shared_i.subset == InsnSubsetBase) & ispr_wr_insn & insn_valid_i}}
-    & ispr_word_sel_base;
+      {BaseWordsPerWLEN{(insn_dec_shared_i.subset == InsnSubsetBase) & ispr_wr_insn & insn_valid_i}}
+      & ispr_word_sel_base;
 
   assign ispr_bignum_wdata_o = wsr_wdata;
   assign ispr_bignum_wr_en_o = (insn_dec_shared_i.subset == InsnSubsetBignum) & ispr_wr_insn
-    & insn_valid_i;
+      & insn_valid_i;
 
   assign lsu_load_req_o   = insn_valid_i & insn_dec_shared_i.ld_insn & (state_q == OtbnStateRun);
   assign lsu_store_req_o  = insn_valid_i & insn_dec_shared_i.st_insn & (state_q == OtbnStateRun);
@@ -642,8 +645,10 @@ module otbn_controller
   assign lsu_base_wdata_o   = rf_base_rd_data_b_i;
   assign lsu_bignum_wdata_o = rf_bignum_rd_data_b_i;
 
-  assign dmem_addr_unaligned_bignum = (lsu_req_subset_o == InsnSubsetBignum) & (|lsu_addr_o[$clog2(WLEN/8)-1:0]);
-  assign dmem_addr_unaligned_base   = (lsu_req_subset_o == InsnSubsetBase)   & (|lsu_addr_o[1:0]);
+  assign dmem_addr_unaligned_bignum =
+      (lsu_req_subset_o == InsnSubsetBignum) & (|lsu_addr_o[$clog2(WLEN/8)-1:0]);
+  assign dmem_addr_unaligned_base   =
+      (lsu_req_subset_o == InsnSubsetBase)   & (|lsu_addr_o[1:0]);
   assign dmem_addr_overflow         = |alu_base_operation_result_i[31:DmemAddrWidth];
 
   assign dmem_addr_err = (lsu_load_req_o | lsu_store_req_o) & (dmem_addr_overflow    |

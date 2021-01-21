@@ -3,3 +3,30 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for otbn
+
+waive -rules {IFDEF_CODE} -location {otbn.sv}  \
+      -regexp {'otbn_core' instance 'u_otbn_core' contained within `else block} \
+      -comment {It's true, and expected.}
+
+waive -rules {CLOCK_USE RESET_USE} -location {otbn_core.sv} \
+      -regexp {'(clk_i|rst_ni)' is connected to 'otbn_decoder'} \
+      -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
+
+waive -rules {CLOCK_USE RESET_USE} -location {otbn_core.sv}  \
+      -regexp {'(clk_i|rst_ni)' is connected to 'otbn_lsu'} \
+      -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
+
+waive -rules {CLOCK_USE RESET_USE} -location {otbn_core.sv}  \
+      -regexp {'(clk_i|rst_ni)' is connected to 'otbn_alu_base'} \
+      -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
+
+waive -rules {RESET_USE} -location {otbn_core.sv}  \
+      -regexp {'rst_ni' is connected to 'otbn_instruction_fetch'} \
+      -comment {The only flop in this module is not reset.}
+
+waive -rules {ONE_BRANCH} -location {otbn_decoder.sv}  \
+      -comment {For consistency in the decoder some case statements have only one branch.}
+
+waive -rules {HIER_NET_NOT_READ NOT_READ} -location {otbn.sv}  \
+      -regexp {(Net|Signal) 'imem_wmask_bus' is not read from} \
+      -comment {Signal is used in an assertion.}

@@ -53,6 +53,15 @@ filesets:
       - lint/otbn.vlt
     file_type: vlt
 
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/otbn.waiver
+    file_type: waiver
+
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -73,6 +82,7 @@ targets:
   default: &default_target
     filesets:
       - tool_verilator ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
       - files_rtl_core
       - files_rtl_top
     toplevel: otbn

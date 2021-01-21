@@ -10,9 +10,8 @@
  * replaces this with a new piece of data). Internal checking is performed for full & empty
  * conditions so a push on full/pop on empty is allowable, though meaningless. For a push on full
  * the data will be dropped, for a pop no empty there is no valid data to pop. The exception is
- * a combined push & pop on full, here the top is popped off and replaced with what is pushed, no data is
- * dropped.
- *
+ * a combined push & pop on full, here the top is popped off and replaced with what is pushed, no
+ * data is dropped.
  */
 module otbn_stack
   import otbn_pkg::*;
@@ -85,4 +84,3 @@ module otbn_stack
   assign top_data_o  = stack_storage[stack_rd_idx];
   assign top_valid_o = ~stack_empty;
 endmodule
-
