@@ -183,8 +183,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         cfg.clk_rst_vif.wait_n_clks(1);
         if (under_alert_handshake[alert_name] || exp_alert[alert_name]) begin
           `uvm_info(`gfn, $sformatf("Current %0s alert status under_alert_handshake=%0b,\
-                    exp_alert=%0b, request ignored", under_alert_handshake[alert_name],
-                    exp_alert[alert_name], alert_name), UVM_MEDIUM)
+                    exp_alert=%0b, request ignored", alert_name, under_alert_handshake[alert_name],
+                    exp_alert[alert_name]), UVM_MEDIUM)
+        end else begin
+          `uvm_info(`gfn, $sformatf("alert %0s is expected to trigger", alert_name), UVM_MEDIUM)
         end
         is_fatal_alert[alert_name] = is_fatal;
         exp_alert[alert_name] = 1;
