@@ -317,7 +317,7 @@ module prim_alert_sender
   end
 
   // Test the alert state output.
-  `ASSERT(AlertState0_A, alert_set_q <-> alert_state_o)
+  `ASSERT(AlertState0_A, alert_set_q === alert_state_o)
 
   if (IsFatal) begin : gen_fatal_assert
     `ASSERT(AlertState1_A, alert_req_i |=> alert_state_o)
