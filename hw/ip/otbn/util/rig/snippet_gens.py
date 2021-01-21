@@ -9,7 +9,7 @@ from shared.insn_yaml import InsnsFile
 
 from .program import Program
 from .model import Model
-from .snippet import SeqSnippet, Snippet
+from .snippet import Snippet
 from .snippet_gen import GenRet, SnippetGen
 
 from .gens.branch import Branch
@@ -110,11 +110,7 @@ class SnippetGens:
                 break
 
             snippet, next_model = gr
-
-            # Merge adjacent program snippets if possible. Otherwise, add a new
-            # one.
-            if not children or not children[-1].merge(snippet):
-                children.append(snippet)
+            children.append(snippet)
 
             if next_model is None:
                 break
@@ -125,5 +121,5 @@ class SnippetGens:
             assert ecall is False
             return None
 
-        snippet = children[0] if len(children) == 1 else SeqSnippet(children)
+        snippet = Snippet.merge_list(children)
         return (snippet, next_model)

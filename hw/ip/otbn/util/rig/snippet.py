@@ -71,13 +71,47 @@ class Snippet:
             raise ValueError('Snippet {} has unknown key {!r}.'
                              .format(idx, key))
 
-    def merge(self, snippet: 'Snippet') -> bool:
+    def _merge(self, snippet: 'Snippet') -> bool:
         '''Merge snippet after this one and return True if possible.
 
         If not possible, leaves self unchanged and returns False.
 
         '''
         return False
+
+    def merge(self, snippet: 'Snippet') -> 'Snippet':
+        '''Merge snippet after this one
+
+        On a successful merge, this will alter and return self. If a merge
+        isn't possible, this generates and returns a SeqSnippet.
+
+        '''
+        if self._merge(snippet):
+            return self
+
+        return SeqSnippet([self, snippet])
+
+    @staticmethod
+    def merge_list(snippets: List['Snippet']) -> 'Snippet':
+        '''Merge a non-empty list of snippets as much as possible'''
+        assert snippets
+        acc = []
+        cur = snippets[0]
+        for snippet in snippets[1:]:
+            if cur._merge(snippet):
+                continue
+
+            acc.append(cur)
+            cur = snippet
+
+        acc.append(cur)
+        return SeqSnippet(acc)
+
+    @staticmethod
+    def cons_option(snippet0: Optional['Snippet'],
+                    snippet1: 'Snippet') -> 'Snippet':
+        '''Cons together one or two snippets'''
+        return snippet1 if snippet0 is None else snippet0.merge(snippet1)
 
     def to_program(self) -> Program:
         '''Write a series of disjoint snippets to make a program'''
@@ -136,7 +170,7 @@ class ProgSnippet(Snippet):
 
         return ProgSnippet(addr, insns)
 
-    def merge(self, snippet: Snippet) -> bool:
+    def _merge(self, snippet: Snippet) -> bool:
         if not isinstance(snippet, ProgSnippet):
             return False
 
