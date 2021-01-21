@@ -18,7 +18,7 @@ class aes_common_vseq extends aes_base_vseq;
   endtask
 
   virtual function void shadow_reg_storage_err_post_write();
-    void'(ral.status.alert_fatal.predict(1));
+    void'(ral.status.alert_fatal_fault.predict(1));
   endfunction
 
   // for AES ctrl_shadowed register, the write transaction is valid only if the status is Idle

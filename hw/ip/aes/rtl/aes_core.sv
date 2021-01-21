@@ -35,7 +35,7 @@ module aes_core
   input  logic  [WidthPRDMasking-1:0] entropy_masking_i,
 
   // Alerts
-  output logic                        alert_recoverable_o,
+  output logic                        alert_recov_o,
   output logic                        alert_fatal_o,
 
   // Bus Interface
@@ -56,11 +56,7 @@ module aes_core
   logic                        manual_operation_q;
   logic                        force_zero_masks_q;
   ctrl_reg_t                   ctrl_d, ctrl_q;
-  logic                        ctrl_err_update_we;
   logic                        ctrl_err_update;
-  logic                        ctrl_err_update_d;
-  logic                        ctrl_err_update_q;
-  logic                        ctrl_err_storage_we;
   logic                        ctrl_err_storage;
   logic                        ctrl_err_storage_d;
   logic                        ctrl_err_storage_q;
@@ -485,7 +481,7 @@ module aes_core
     .qe          (                    ),
     .q           ( ctrl_q             ),
     .qs          (                    ),
-    .err_update  ( ctrl_err_update_d  ),
+    .err_update  ( ctrl_err_update    ),
     .err_storage ( ctrl_err_storage_d )
   );
 
@@ -723,39 +719,30 @@ module aes_core
   // Alerts //
   ////////////
 
-  // Recoverable alert conditions remain asserted until AES operation is restarted by rewriting the
-  // Control Register.
-  assign ctrl_err_update_we = ctrl_err_update_d | ctrl_we;
-  always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_err_update_reg
-    if (!rst_ni) begin
-      ctrl_err_update_q <= 1'b0;
-    end else if (ctrl_err_update_we) begin
-      ctrl_err_update_q <= ctrl_err_update_d;
-    end
-  end
-  assign ctrl_err_update = ctrl_err_update_d | ctrl_err_update_q;
+  // Recoverable alert conditions are signaled as a single alert event.
+  assign alert_recov_o = ctrl_err_update;
+
+  // The recoverable alert is observable via status register until the AES operation is restarted
+  // by re-writing the Control Register.
+  assign hw2reg.status.alert_recov_ctrl_update_err.d  = ctrl_err_update;
+  assign hw2reg.status.alert_recov_ctrl_update_err.de = ctrl_err_update | ctrl_we;
 
   // Fatal alert conditions need to remain asserted until reset.
-  assign ctrl_err_storage_we = ctrl_err_storage_d;
   always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_err_storage_reg
     if (!rst_ni) begin
       ctrl_err_storage_q <= 1'b0;
-    end else if (ctrl_err_storage_we) begin
+    end else if (ctrl_err_storage_d) begin
       ctrl_err_storage_q <= 1'b1;
     end
   end
   assign ctrl_err_storage = ctrl_err_storage_d | ctrl_err_storage_q;
 
-  // Collect alert signals.
-  assign alert_recoverable_o = ctrl_err_update;
-  assign alert_fatal_o       = ctrl_err_storage | ctr_alert | cipher_alert | ctrl_alert;
+  // Collect fatal alert signals.
+  assign alert_fatal_o = ctrl_err_storage | ctr_alert | cipher_alert | ctrl_alert;
 
-  // Make alerts observable via status register.
-  assign hw2reg.status.alert_recoverable.d  = alert_recoverable_o;
-  assign hw2reg.status.alert_recoverable.de = ctrl_err_update_we;
-
-  assign hw2reg.status.alert_fatal.d  = alert_fatal_o;
-  assign hw2reg.status.alert_fatal.de = alert_fatal_o;
+  // Make the fatal alert observable via status register.
+  assign hw2reg.status.alert_fatal_fault.d  = alert_fatal_o;
+  assign hw2reg.status.alert_fatal_fault.de = alert_fatal_o;
 
   // Unused alert signals
   logic unused_alert_signals;

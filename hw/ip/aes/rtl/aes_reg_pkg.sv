@@ -22,11 +22,11 @@ package aes_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } recoverable;
+    } recov_ctrl_update_err;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal;
+    } fatal_fault;
   } aes_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -186,11 +186,11 @@ package aes_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } alert_recoverable;
+    } alert_recov_ctrl_update_err;
     struct packed {
       logic        d;
       logic        de;
-    } alert_fatal;
+    } alert_fatal_fault;
   } aes_hw2reg_status_reg_t;
 
 
