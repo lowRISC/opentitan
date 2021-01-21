@@ -624,7 +624,11 @@ TEST_F(WakeupRecording, GetReason) {
                            .value = 1,
                        },
                        {
-                           .offset = PWRMGR_WAKE_INFO_REASONS_BIT,
+                           .offset = PWRMGR_PARAM_USB_WKUP_REQ_IDX,
+                           .value = 1,
+                       },
+                       {
+                           .offset = PWRMGR_PARAM_AON_WKUP_REQ_IDX,
                            .value = 1,
                        }},
           .exp_output =
@@ -662,7 +666,7 @@ TEST_F(WakeupRecording, GetReason) {
       // Only requests from peripherals.
       {
           .read_val = {{
-              .offset = PWRMGR_WAKE_INFO_REASONS_BIT,
+              .offset = PWRMGR_PARAM_AON_WKUP_REQ_IDX,
               .value = 1,
           }},
           .exp_output =
