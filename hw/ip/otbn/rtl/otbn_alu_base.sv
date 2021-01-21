@@ -82,7 +82,9 @@ module otbn_alu_base
                                                              operation_i.operand_a;
   assign shift_in[32] = (operation_i.op == AluOpBaseSra) ? operation_i.operand_a[31] : 1'b0;
 
-  assign shift_out = signed'(shift_in) >>> shift_amt;
+  logic signed [32:0] shift_in_signed;
+  assign shift_in_signed = signed'(shift_in);
+  assign shift_out = unsigned'(shift_in_signed >>> shift_amt);
 
   ////////////////
   // Output Mux //
@@ -115,8 +117,8 @@ module otbn_alu_base
 
   assign comparison_result_o = (comparison_i.op == ComparisonOpBaseEq) ? is_equal : ~is_equal;
 
-  // The bottom bit of adder_result is discarded. It simply corresponds to the carry in used to produce
-  // twos complement subtraction from an addition.
+  // The bottom bit of adder_result is discarded. It simply corresponds to the carry in used to
+  // produce twos complement subtraction from an addition.
   logic unused_adder_result_bit;
 
   // The top bit of shift_out is discarded. shift_in contains an extra bit to deal with sign

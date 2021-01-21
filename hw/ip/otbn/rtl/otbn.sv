@@ -60,9 +60,9 @@ module otbn
   otbn_hw2reg_t hw2reg;
 
   // Bus device windows, as specified in otbn.hjson
-  typedef enum int {
-    TlWinImem = 0,
-    TlWinDmem = 1
+  typedef enum logic {
+    TlWinImem = 1'b0,
+    TlWinDmem = 1'b1
   } tl_win_e;
 
   tlul_pkg::tl_h2d_t tl_win_h2d [2];
@@ -374,6 +374,8 @@ module otbn
 
   // START_ADDR register
   assign start_addr = reg2hw.start_addr.q[ImemAddrWidth-1:0];
+  logic [top_pkg::TL_DW-ImemAddrWidth-1:0] unused_start_addr_bits;
+  assign unused_start_addr_bits = reg2hw.start_addr.q[top_pkg::TL_DW-1:ImemAddrWidth];
 
   // FATAL_ALERT_CAUSE register. The .de and .d values are equal for each bit, so that it can only
   // be set, not cleared.
