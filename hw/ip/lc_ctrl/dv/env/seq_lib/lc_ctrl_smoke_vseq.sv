@@ -42,6 +42,10 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf("next_LC_state is %0s, input token is %0h", next_lc_state.name,
                                   token_val), UVM_DEBUG)
+        if (lc_state == LcStRaw && next_lc_state inside {DecLcStTestUnlocked0,
+            DecLcStTestUnlocked1, DecLcStTestUnlocked2, DecLcStTestUnlocked3}) begin
+          cfg.lc_ctrl_vif.set_hashed_token(lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed);
+        end
         sw_transition_req(next_lc_state, token_val, trans_success);
       end else begin
         // wait at least two clks for scb to finish checking lc outputs

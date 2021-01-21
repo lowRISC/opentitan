@@ -13,6 +13,7 @@ interface lc_ctrl_if(input clk, input rst_n);
   logic prog_err; // TODO: remove once push-pull can constrain data
   otp_ctrl_pkg::otp_lc_data_t     otp_i;
   otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg_i;
+  lc_ctrl_pkg::lc_token_t hashed_token;
 
   lc_ctrl_pkg::lc_tx_t lc_dft_en_o;
   lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_o;
@@ -54,6 +55,7 @@ interface lc_ctrl_if(input clk, input rst_n);
     clk_byp_ack_i = clk_byp_ack;
     flash_rma_ack_i = flash_rma_ack;
     prog_err = 0;
+    hashed_token = '0;
   endtask
 
   task automatic set_clk_byp_ack(lc_ctrl_pkg::lc_tx_t val);
@@ -64,4 +66,7 @@ interface lc_ctrl_if(input clk, input rst_n);
     flash_rma_ack_i = val;
   endtask
 
+  task automatic set_hashed_token(lc_ctrl_pkg::lc_token_t val);
+    hashed_token = val;
+  endtask
 endinterface
