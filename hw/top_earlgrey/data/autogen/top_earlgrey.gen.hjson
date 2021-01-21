@@ -3851,14 +3851,14 @@
         }
         {
           struct: logic
-          width: 1
+          width: 2
           type: uni
           name: wakeups
           act: rcv
           package: ""
           inst_name: pwrmgr_aon
           default: ""
-          top_type: broadcast
+          top_type: one-to-N
           top_signame: pwrmgr_aon_wakeups
           index: -1
         }
@@ -4249,6 +4249,10 @@
           name: aon_wkup_req
           width: "1"
         }
+        {
+          name: usb_wkup_req
+          width: "1"
+        }
       ]
       reset_request_list: []
       scan: "false"
@@ -4305,7 +4309,7 @@
           inst_name: pinmux_aon
           width: 1
           top_signame: pwrmgr_aon_wakeups
-          index: -1
+          index: 0
         }
         {
           struct: logic
@@ -4315,7 +4319,9 @@
           package: ""
           default: 1'b0
           inst_name: pinmux_aon
-          index: -1
+          width: 1
+          top_signame: pwrmgr_aon_wakeups
+          index: 1
         }
         {
           name: usb_out_of_rst
@@ -7201,6 +7207,7 @@
       pwrmgr_aon.wakeups:
       [
         pinmux_aon.aon_wkup_req
+        pinmux_aon.usb_wkup_req
       ]
       pwrmgr_aon.rstreqs:
       [
@@ -11491,6 +11498,11 @@
       width: "1"
       module: pinmux_aon
     }
+    {
+      name: usb_wkup_req
+      width: "1"
+      module: pinmux_aon
+    }
   ]
   reset_requests:
   [
@@ -12560,14 +12572,14 @@
       }
       {
         struct: logic
-        width: 1
+        width: 2
         type: uni
         name: wakeups
         act: rcv
         package: ""
         inst_name: pwrmgr_aon
         default: ""
-        top_type: broadcast
+        top_type: one-to-N
         top_signame: pwrmgr_aon_wakeups
         index: -1
       }
@@ -12879,7 +12891,7 @@
         inst_name: pinmux_aon
         width: 1
         top_signame: pwrmgr_aon_wakeups
-        index: -1
+        index: 0
       }
       {
         struct: logic
@@ -12889,7 +12901,9 @@
         package: ""
         default: 1'b0
         inst_name: pinmux_aon
-        index: -1
+        width: 1
+        top_signame: pwrmgr_aon_wakeups
+        index: 1
       }
       {
         name: usb_out_of_rst
@@ -15194,7 +15208,7 @@
         package: ""
         struct: logic
         signame: pwrmgr_aon_wakeups
-        width: 1
+        width: 2
         type: uni
         default: ""
       }

@@ -432,7 +432,7 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_rd_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_wr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
-  logic       pwrmgr_aon_wakeups;
+  logic [1:0] pwrmgr_aon_wakeups;
   logic       pwrmgr_aon_rstreqs;
   tlul_pkg::tl_h2d_t       rom_tl_req;
   tlul_pkg::tl_d2h_t       rom_tl_rsp;
@@ -1505,8 +1505,8 @@ module top_earlgrey #(
       .dft_strap_test_o(),
       .io_pok_i({pinmux_pkg::NIOPokSignals{1'b1}}),
       .sleep_en_i(1'b0),
-      .aon_wkup_req_o(pwrmgr_aon_wakeups),
-      .usb_wkup_req_o(),
+      .aon_wkup_req_o(pwrmgr_aon_wakeups[0]),
+      .usb_wkup_req_o(pwrmgr_aon_wakeups[1]),
       .usb_out_of_rst_i(usbdev_usb_out_of_rst),
       .usb_aon_wake_en_i(usbdev_usb_aon_wake_en),
       .usb_aon_wake_ack_i(usbdev_usb_aon_wake_ack),

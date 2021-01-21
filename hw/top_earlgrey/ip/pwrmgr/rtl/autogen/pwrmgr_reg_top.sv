@@ -105,10 +105,14 @@ module pwrmgr_reg_top (
   logic wakeup_en_regwen_qs;
   logic wakeup_en_regwen_wd;
   logic wakeup_en_regwen_we;
-  logic wakeup_en_qs;
-  logic wakeup_en_wd;
-  logic wakeup_en_we;
-  logic wake_status_qs;
+  logic wakeup_en_en_0_qs;
+  logic wakeup_en_en_0_wd;
+  logic wakeup_en_en_0_we;
+  logic wakeup_en_en_1_qs;
+  logic wakeup_en_en_1_wd;
+  logic wakeup_en_en_1_we;
+  logic wake_status_val_0_qs;
+  logic wake_status_val_1_qs;
   logic reset_en_regwen_qs;
   logic reset_en_regwen_wd;
   logic reset_en_regwen_we;
@@ -120,8 +124,8 @@ module pwrmgr_reg_top (
   logic wake_info_capture_dis_qs;
   logic wake_info_capture_dis_wd;
   logic wake_info_capture_dis_we;
-  logic wake_info_reasons_qs;
-  logic wake_info_reasons_wd;
+  logic [1:0] wake_info_reasons_qs;
+  logic [1:0] wake_info_reasons_wd;
   logic wake_info_reasons_we;
   logic wake_info_reasons_re;
   logic wake_info_fall_through_qs;
@@ -436,17 +440,18 @@ module pwrmgr_reg_top (
   // Subregister 0 of Multireg wakeup_en
   // R[wakeup_en]: V(False)
 
+  // F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_wakeup_en (
+  ) u_wakeup_en_en_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wakeup_en_we & wakeup_en_regwen_qs),
-    .wd     (wakeup_en_wd),
+    .we     (wakeup_en_en_0_we & wakeup_en_regwen_qs),
+    .wd     (wakeup_en_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -457,19 +462,47 @@ module pwrmgr_reg_top (
     .q      (reg2hw.wakeup_en[0].q ),
 
     // to register interface (read)
-    .qs     (wakeup_en_qs)
+    .qs     (wakeup_en_en_0_qs)
   );
+
+
+  // F[en_1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_wakeup_en_en_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (wakeup_en_en_1_we & wakeup_en_regwen_qs),
+    .wd     (wakeup_en_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.wakeup_en[1].q ),
+
+    // to register interface (read)
+    .qs     (wakeup_en_en_1_qs)
+  );
+
 
 
 
   // Subregister 0 of Multireg wake_status
   // R[wake_status]: V(False)
 
+  // F[val_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
-  ) u_wake_status (
+  ) u_wake_status_val_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -485,8 +518,34 @@ module pwrmgr_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (wake_status_qs)
+    .qs     (wake_status_val_0_qs)
   );
+
+
+  // F[val_1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_wake_status_val_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.wake_status[1].de),
+    .d      (hw2reg.wake_status[1].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (wake_status_val_1_qs)
+  );
+
 
 
   // R[reset_en_regwen]: V(False)
@@ -628,9 +687,9 @@ module pwrmgr_reg_top (
 
   // R[wake_info]: V(True)
 
-  //   F[reasons]: 0:0
+  //   F[reasons]: 1:0
   prim_subreg_ext #(
-    .DW    (1)
+    .DW    (2)
   ) u_wake_info_reasons (
     .re     (wake_info_reasons_re),
     .we     (wake_info_reasons_we),
@@ -643,7 +702,7 @@ module pwrmgr_reg_top (
   );
 
 
-  //   F[fall_through]: 1:1
+  //   F[fall_through]: 2:2
   prim_subreg_ext #(
     .DW    (1)
   ) u_wake_info_fall_through (
@@ -658,7 +717,7 @@ module pwrmgr_reg_top (
   );
 
 
-  //   F[abort]: 2:2
+  //   F[abort]: 3:3
   prim_subreg_ext #(
     .DW    (1)
   ) u_wake_info_abort (
@@ -752,8 +811,12 @@ module pwrmgr_reg_top (
   assign wakeup_en_regwen_we = addr_hit[6] & reg_we & ~wr_err;
   assign wakeup_en_regwen_wd = reg_wdata[0];
 
-  assign wakeup_en_we = addr_hit[7] & reg_we & ~wr_err;
-  assign wakeup_en_wd = reg_wdata[0];
+  assign wakeup_en_en_0_we = addr_hit[7] & reg_we & ~wr_err;
+  assign wakeup_en_en_0_wd = reg_wdata[0];
+
+  assign wakeup_en_en_1_we = addr_hit[7] & reg_we & ~wr_err;
+  assign wakeup_en_en_1_wd = reg_wdata[1];
+
 
 
   assign reset_en_regwen_we = addr_hit[9] & reg_we & ~wr_err;
@@ -768,15 +831,15 @@ module pwrmgr_reg_top (
   assign wake_info_capture_dis_wd = reg_wdata[0];
 
   assign wake_info_reasons_we = addr_hit[14] & reg_we & ~wr_err;
-  assign wake_info_reasons_wd = reg_wdata[0];
+  assign wake_info_reasons_wd = reg_wdata[1:0];
   assign wake_info_reasons_re = addr_hit[14] && reg_re;
 
   assign wake_info_fall_through_we = addr_hit[14] & reg_we & ~wr_err;
-  assign wake_info_fall_through_wd = reg_wdata[1];
+  assign wake_info_fall_through_wd = reg_wdata[2];
   assign wake_info_fall_through_re = addr_hit[14] && reg_re;
 
   assign wake_info_abort_we = addr_hit[14] & reg_we & ~wr_err;
-  assign wake_info_abort_wd = reg_wdata[2];
+  assign wake_info_abort_wd = reg_wdata[3];
   assign wake_info_abort_re = addr_hit[14] && reg_re;
 
   // Read data return
@@ -817,11 +880,13 @@ module pwrmgr_reg_top (
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[0] = wakeup_en_qs;
+        reg_rdata_next[0] = wakeup_en_en_0_qs;
+        reg_rdata_next[1] = wakeup_en_en_1_qs;
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[0] = wake_status_qs;
+        reg_rdata_next[0] = wake_status_val_0_qs;
+        reg_rdata_next[1] = wake_status_val_1_qs;
       end
 
       addr_hit[9]: begin
@@ -845,9 +910,9 @@ module pwrmgr_reg_top (
       end
 
       addr_hit[14]: begin
-        reg_rdata_next[0] = wake_info_reasons_qs;
-        reg_rdata_next[1] = wake_info_fall_through_qs;
-        reg_rdata_next[2] = wake_info_abort_qs;
+        reg_rdata_next[1:0] = wake_info_reasons_qs;
+        reg_rdata_next[2] = wake_info_fall_through_qs;
+        reg_rdata_next[3] = wake_info_abort_qs;
       end
 
       default: begin
