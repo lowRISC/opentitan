@@ -147,20 +147,21 @@ class StraightLineInsn(SnippetGen):
 
         return random.choices(valid_gprs)[0]
 
-    def _pick_inc_vals(self) -> Tuple[int, int]:
+    def _pick_inc_vals(self,
+                       idx0: int,
+                       idx1: int,
+                       model: Model) -> Tuple[int, int]:
         '''Pick two values in 0, 1 that aren't both 1
 
         These are appropriate to use as the increment flags for
-        BN.LID/BN.SID/BN.MOVR.
+        BN.LID/BN.SID/BN.MOVR. idx0 and idx1 are the indices of the GPRs in
+        question.
 
         '''
-        idx = random.randint(0, 2)
-        if idx == 0:
-            return (0, 0)
-        elif idx == 1:
-            return (1, 0)
-        else:
-            return (0, 1)
+        options = [(0, 0), (1, 0), (0, 1)]
+        wt10 = 0.0 if model.is_const('gpr', idx0) else 1.0
+        wt01 = 0.0 if model.is_const('gpr', idx1) else 1.0
+        return random.choices(options, weights=[1.0, wt10, wt01])[0]
 
     def _fill_bn_xid(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
         '''Fill out a BN.LID or BN.SID instruction'''
@@ -258,23 +259,24 @@ class StraightLineInsn(SnippetGen):
         assert offset_rng[0] <= imm_val <= offset_rng[1]
 
         assert list(reg_indices.keys()) == ['grs1']
-        grs1_val = reg_indices['grs1']
+        grs1_idx = reg_indices['grs1']
 
         offset_val = offset.op_type.op_val_to_enc_val(imm_val, model.pc)
         assert offset_val is not None
 
         # Do we increment the GPRs? We can increment up to one of them.
-        grs1_inc_val, wdr_gpr_inc_val = self._pick_inc_vals()
+        grs1_inc_val, wdr_gpr_inc_val = \
+            self._pick_inc_vals(grs1_idx, wdr_gpr_idx, model)
 
         # Finally, package up the operands properly for the instruction we're
         # building.
         if is_load:
             # bn.lid: grd, grs1, offset, grs1_inc, grd_inc
-            enc_vals = [wdr_gpr_idx, grs1_val, offset_val,
+            enc_vals = [wdr_gpr_idx, grs1_idx, offset_val,
                         grs1_inc_val, wdr_gpr_inc_val]
         else:
             # bn.sid: grs1, grs2, offset, grs1_inc, grs2_inc
-            enc_vals = [grs1_val, wdr_gpr_idx, offset_val,
+            enc_vals = [grs1_idx, wdr_gpr_idx, offset_val,
                         grs1_inc_val, wdr_gpr_inc_val]
 
         return ProgInsn(insn, enc_vals, ('dmem', addr))
@@ -314,7 +316,7 @@ class StraightLineInsn(SnippetGen):
         # defines the destination WDR)
         grd_idx = self._pick_gpr_with_arch_val(model)
 
-        grd_inc_val, grs_inc_val = self._pick_inc_vals()
+        grd_inc_val, grs_inc_val = self._pick_inc_vals(grd_idx, grs_idx, model)
 
         return ProgInsn(insn,
                         [grd_idx, grs_idx, grd_inc_val, grs_inc_val],
