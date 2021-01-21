@@ -221,8 +221,9 @@ class BranchSnippet(Snippet):
     def __init__(self,
                  addr: int,
                  branch_insn: ProgInsn,
-                 snippet0: Snippet,
-                 snippet1: Snippet):
+                 snippet0: Optional[Snippet],
+                 snippet1: Optional[Snippet]):
+        assert snippet0 is not None or snippet1 is not None
         self.addr = addr
         self.branch_insn = branch_insn
         self.snippet0 = snippet0
@@ -230,16 +231,18 @@ class BranchSnippet(Snippet):
 
     def insert_into_program(self, program: Program) -> None:
         program.add_insns(self.addr, [self.branch_insn])
-        self.snippet0.insert_into_program(program)
+        if self.snippet0 is not None:
+            self.snippet0.insert_into_program(program)
         if self.snippet1 is not None:
             self.snippet1.insert_into_program(program)
 
     def to_json(self) -> object:
+        js0 = None if self.snippet0 is None else self.snippet0.to_json()
         js1 = None if self.snippet1 is None else self.snippet1.to_json()
         return ['BS',
                 self.addr,
                 self.branch_insn.to_json(),
-                self.snippet0.to_json(),
+                js0,
                 js1]
 
     @staticmethod
@@ -259,7 +262,13 @@ class BranchSnippet(Snippet):
         bi_where = 'branch instruction for snippet {}'.format(idx)
         branch_insn = ProgInsn.from_json(insns_file, bi_where, j_branch_insn)
 
-        snippet0 = Snippet.from_json(insns_file, idx + [0], j_snippet0)
-        snippet1 = Snippet.from_json(insns_file, idx + [1], j_snippet1)
+        snippet0 = (None if j_snippet0 is None
+                    else Snippet.from_json(insns_file, idx + [0], j_snippet0))
+        snippet1 = (None if j_snippet1 is None
+                    else Snippet.from_json(insns_file, idx + [1], j_snippet1))
+
+        if snippet0 is None and snippet1 is None:
+            raise ValueError('Both sides of branch snippet {} are None.'
+                             .format(idx))
 
         return BranchSnippet(addr, branch_insn, snippet0, snippet1)

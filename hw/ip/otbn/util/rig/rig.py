@@ -50,8 +50,5 @@ def gen_program(start_addr: int,
     for addr in init_data.keys():
         model.touch_mem('dmem', addr, 4)
 
-    ret = SnippetGens(insns_file).gens(model, program, True)
-    assert ret is not None
-    snippet, _ = ret
-
+    snippet = SnippetGens(insns_file).gen_rest(model, program)
     return init_data, snippet

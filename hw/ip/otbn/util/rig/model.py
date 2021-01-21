@@ -788,8 +788,9 @@ class Model:
             self.touch_mem(mem_type, addr, insn.lsu.idx_width)
 
     def consume_fuel(self) -> None:
-        '''Consume one item of fuel, but bottom out at fuel == 1'''
-        self.fuel = max(1, self.fuel - 1)
+        '''Consume one item of fuel'''
+        assert self.fuel > 0
+        self.fuel -= 1
 
     def update_for_insn(self, prog_insn: ProgInsn) -> None:
         # If this is a sufficiently simple operation that we understand the

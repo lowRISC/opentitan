@@ -167,7 +167,7 @@ class Program:
         # The number of instructions' space available. If we aren't below any
         # branches, this is the space available in imem. When we're branching,
         # this might be less.
-        self._space = self.imem_size // 4
+        self.space = self.imem_size // 4
 
     def copy(self) -> 'Program':
         '''Return a a shallow copy of the program
@@ -180,7 +180,7 @@ class Program:
                       self.dmem_lma, self.dmem_size)
         ret._sections = {base: section.copy()
                          for base, section in self._sections.items()}
-        ret._space = self._space
+        ret.space = self.space
         return ret
 
     def add_insns(self, addr: int, insns: List[ProgInsn]) -> None:
@@ -188,8 +188,8 @@ class Program:
         assert addr & 3 == 0
         assert addr <= self.imem_size
 
-        assert len(insns) <= self._space
-        self._space -= len(insns)
+        assert len(insns) <= self.space
+        self.space -= len(insns)
 
         sec_top = addr + 4 * len(insns)
 
@@ -498,7 +498,12 @@ class Program:
         return tgts[0]
 
     def get_insn_space_at(self, addr: int) -> int:
-        '''Return how many instructions there is space for, starting at addr'''
+        '''Return how many instructions there is space for, starting at addr
+
+        Note that this doesn't take the global space constraint into
+        account.
+
+        '''
         space = self.imem_size - addr
         if space <= 0:
             return 0
@@ -511,12 +516,3 @@ class Program:
                     return 0
 
         return max(0, space // 4)
-
-    def get_insn_space_left(self) -> int:
-        '''Return how many more instructions there is space for'''
-        return self._space
-
-    def constrain_space(self, space: int) -> None:
-        '''Constrain the amount of space available'''
-        assert space <= self._space
-        self._space = space

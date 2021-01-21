@@ -8,7 +8,7 @@ from shared.insn_yaml import InsnsFile
 
 from ..program import ProgInsn, Program
 from ..model import Model
-from ..snippet import ProgSnippet
+from ..snippet import ProgSnippet, Snippet
 from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
@@ -27,25 +27,25 @@ class ECall(SnippetGen):
 
         self.insn = ProgInsn(ecall_insn, [], None)
 
+    def gen_at(self, pc: int, program: Program) -> Snippet:
+        '''Generate an ECALL instruction at pc and insert into program'''
+        snippet = ProgSnippet(pc, [self.insn])
+        snippet.insert_into_program(program)
+        return snippet
+
     def gen(self,
             cont: GenCont,
             model: Model,
             program: Program) -> Optional[GenRet]:
-        snippet = ProgSnippet(model.pc, [self.insn])
-        snippet.insert_into_program(program)
-        return (snippet, None)
+        return (self.gen_at(model.pc, program), None)
 
     def pick_weight(self,
                     model: Model,
                     program: Program) -> float:
         # Choose small weights when we've got lots of room and large ones when
         # we haven't.
-        fuel = model.fuel
-        space = program.get_insn_space_left()
-        assert fuel > 0
-        assert space > 0
-
-        room = min(fuel, space)
+        room = min(model.fuel, program.space)
+        assert 0 < room
         return (1e-10 if room > 5
                 else 0.1 if room > 1
                 else 1e10)
