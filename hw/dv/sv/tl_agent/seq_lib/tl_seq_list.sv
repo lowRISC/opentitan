@@ -4,7 +4,7 @@
 
 `include "tl_host_base_seq.sv"
 `include "tl_host_seq.sv"
-`include "tl_host_single_seq.sv"
+`include "tl_host_directed_seq.sv"
 `include "tl_host_custom_seq.sv"
 `include "tl_host_protocol_err_seq.sv"
 `include "tl_device_seq.sv"

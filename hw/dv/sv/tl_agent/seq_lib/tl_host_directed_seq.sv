@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Extend host seq to send single specific item constructed by the caller
-class tl_host_single_seq extends tl_host_seq;
+// Extends the tl_host_seq to send fully customizable sequence items constructed by the caller
+class tl_host_directed_seq extends tl_host_seq;
     rand bit                    write;
     rand bit [AddrWidth-1:0]    addr;
     rand bit [OpcodeWidth-1:0]  opcode;
@@ -19,10 +19,11 @@ class tl_host_single_seq extends tl_host_seq;
     bit control_rand_source    = 0;
     bit control_rand_opcode    = 0;
 
-  `uvm_object_utils(tl_host_single_seq)
+  `uvm_object_utils(tl_host_directed_seq)
   `uvm_object_new
 
-  constraint req_cnt_eq_1_c { req_cnt == 1; }
+  // Default to a single customizable transaction, but can be overridden by caller.
+  constraint req_cnt_eq_1_c { soft req_cnt == 1; }
 
   virtual function void randomize_req(tl_seq_item req, int idx);
     if (!(req.randomize() with {

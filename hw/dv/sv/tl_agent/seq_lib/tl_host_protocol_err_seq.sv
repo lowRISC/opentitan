@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This seq will send an item that triggers d_error due to protocol violation
-class tl_host_protocol_err_seq extends tl_host_single_seq;
+class tl_host_protocol_err_seq extends tl_host_directed_seq;
 
   `uvm_object_utils(tl_host_protocol_err_seq)
   `uvm_object_new

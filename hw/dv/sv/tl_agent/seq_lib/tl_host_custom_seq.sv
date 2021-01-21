@@ -4,7 +4,7 @@
 
 // Disable TL protocol related constraint on a_chan to create a fully customized tl_item for error
 // cases
-class tl_host_custom_seq extends tl_host_single_seq;
+class tl_host_custom_seq extends tl_host_directed_seq;
 
   `uvm_object_utils(tl_host_custom_seq)
   `uvm_object_new
