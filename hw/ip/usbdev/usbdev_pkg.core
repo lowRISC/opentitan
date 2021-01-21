@@ -1,0 +1,18 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:usbdev_pkg:0.1"
+description: "Usb device package"
+filesets:
+  files_rtl:
+    depend:
+    files:
+      - rtl/usbdev_pkg.sv
+    file_type: systemVerilogSource
+
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl

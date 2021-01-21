@@ -287,7 +287,10 @@ def generate_plic(top, out_path):
     with rtl_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
 
-def _calc_pin_pos(top, mname):
+# returns the dedicated pin positions of a particular module
+# For example, if a module is connected to 6:1 of the dio connections,
+# [6, 1] will be returned.
+def _calc_dio_pin_pos(top, mname):
     dios = top["pinmux"]["dio"]
 
     last_index = dios.index(dios[-1])
@@ -299,16 +302,17 @@ def _calc_pin_pos(top, mname):
             bit_pos.append(last_index - dios.index(dio))
             first_index = True
         elif first_index and dio['module_name'] != mname:
-            bit_pos.append(last_index - dios.index(dio))
+            bit_pos.append(last_index - dios.index(dio) - 1)
 
-    # The last one, need to insert last element
+    # The last one, need to insert last element if only the msb
+    # position is found
     if len(bit_pos) == 1:
         bit_pos.append(0)
 
     log.debug("bit pos {}".format(bit_pos))
     return bit_pos
 
-def _find_pin_pos(top, sname):
+def _find_dio_pin_pos(top, sname):
     dios = top["pinmux"]["dio"]
 
     last_index = dios.index(dios[-1])
@@ -391,13 +395,13 @@ def generate_pinmux_and_padctrl(top, out_path):
         return
 
     # find the start and end pin positions for usbdev
-    usb_pin_pos = _calc_pin_pos(top, "usbdev")
+    usb_pin_pos = _calc_dio_pin_pos(top, "usbdev")
     usb_start_pos = usb_pin_pos[-1]
     n_usb_pins = usb_pin_pos[0] - usb_pin_pos[-1] + 1
-    usb_dp_sel = _find_pin_pos(top, "usbdev_dp")
-    usb_dn_sel = _find_pin_pos(top, "usbdev_dn")
-    usb_dp_pull_sel = _find_pin_pos(top, "usbdev_dp_pullup")
-    usb_dn_pull_sel = _find_pin_pos(top, "usbdev_dn_pullup")
+    usb_dp_sel = _find_dio_pin_pos(top, "usbdev_dp")
+    usb_dn_sel = _find_dio_pin_pos(top, "usbdev_dn")
+    usb_dp_pull_sel = _find_dio_pin_pos(top, "usbdev_dp_pullup")
+    usb_dn_pull_sel = _find_dio_pin_pos(top, "usbdev_dn_pullup")
 
     log.info("Generating pinmux with following info from hjson:")
     log.info("num_mio_inputs:  %d" % num_mio_inputs)

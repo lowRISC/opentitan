@@ -31,6 +31,9 @@
   wakeup_list: [
     { name: "aon_wkup_req",
       desc: "pin wake request"
+    },
+    { name: "usb_wkup_req",
+      desc: "usb wake request"
     }
   ],
 
@@ -74,6 +77,13 @@
       package: "",
       default: "1'b0"
     },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "usb_wkup_req",
+      act:     "req",
+      package: "",
+      default: "1'b0"
+    },
     { name:    "usb_out_of_rst",
       type:    "uni",
       act:     "rcv",
@@ -101,6 +111,12 @@
       package: "",
       struct:  "logic",
       width:   "1"
+    },
+    { name:    "usb_state_debug",
+      type:    "uni",
+      act:     "req",
+      package: "usbdev_pkg",
+      struct:  "awk_state",
     },
   ]
 
