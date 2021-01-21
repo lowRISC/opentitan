@@ -24,5 +24,6 @@ waive -rules NOT_READ -msg {Signal 'rspfifo_wready' is not read from in module '
       -comment "This signal is only used by an assertion"
 waive -rules VAR_INDEX_RANGE -regexp {.*woffset' of length 1 is larger than the 0 bits required to address.*} \
       -comment "The woffset signal is tied to constant 0 in this case. Fixing this warning in RTL would complicate \
-      the design since multiple generage blocks would be needed with almost identical content."
-
+      the design since multiple generate blocks would be needed with almost identical content."
+waive -rules ZERO_REP -location {tlul_adapter_sram.sv} -regexp {Replication count is zero in '\{SramDw - top_pkg::TL_DW\{1'b0\}\}'} \
+      -comment "The zero-expansion is done for cases when SramDw != top_pkg::TL_DW."
