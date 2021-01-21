@@ -16,7 +16,7 @@ waive -rules {RESET_USE} -location {aes_cipher_core.sv} -regexp {'rst_ni' is con
       -comment "when using fully combinational S-Box implementations, no reset is used inside aes_sub_bytes"
 
 waive -rules {RESET_USE} -location {aes_key_expand.sv} -regexp {'rst_ni' is connected to 'aes_sbox' port} \
-       -comment "when using fully combinational S-Box implementations, no reset is used inside aes_sbox"
+      -comment "when using fully combinational S-Box implementations, no reset is used inside aes_sbox"
 
 waive -rules {CLOCK_USE} -location {aes_core.sv} -regexp {clk_i' is connected to 'aes_sel_buf_chk' port} \
       -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
@@ -29,3 +29,6 @@ waive -rules {RESET_USE} -location {aes_core.sv} -regexp {'rst_ni' is connected 
 
 waive -rules {RESET_USE} -location {aes_cipher_core.sv} -regexp {'rst_ni' is connected to 'aes_sel_buf_chk' port} \
       -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
+
+waive -rules {ONE_BRANCH} -location {aes_sel_buf_chk.sv} -regexp {unique case statement has only one branch} \
+      -comment "check for legal combinations only, assert error signal otherwise"
