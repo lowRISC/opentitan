@@ -101,6 +101,7 @@ module aes_cipher_control
   // Signals
   logic [3:0] rnd_ctr_d, rnd_ctr_q;
   logic [3:0] rnd_ctr_rem_d, rnd_ctr_rem_q;
+  logic [3:0] rnd_ctr_sum;
   logic [3:0] num_rounds_d, num_rounds_q;
   logic [3:0] num_rounds_regular;
   logic       rnd_ctr_parity, rnd_ctr_parity_d, rnd_ctr_parity_q;
@@ -451,7 +452,7 @@ module aes_cipher_control
   // In addition, we use one parity bit for the rnd_ctr_d/q counter.
   //
   // An alert is signaled and the FSM goes into the terminal error state if
-  // i) the sum of the counters doesn't add up, i.e. if rnd_ctr_q + rnd_ctr_rem_q != num_rounds_q, or
+  // i) the sum of the counters doesn't add up, i.e. rnd_ctr_q + rnd_ctr_rem_q != num_rounds_q, or
   // ii) the parity information is incorrect.
 
   // The following primitives are used to place size-only constraints on the
@@ -486,12 +487,13 @@ module aes_cipher_control
     .q_o ( rnd_ctr_parity_q )
   );
 
-  // Generate parity bits.
+  // Generate parity bits and sum.
   assign rnd_ctr_parity_d = ^rnd_ctr_d;
   assign rnd_ctr_parity   = ^rnd_ctr_q;
+  assign rnd_ctr_sum      = rnd_ctr_q + rnd_ctr_rem_q;
 
   // Detect faults.
-  assign rnd_ctr_err_sum    = (rnd_ctr_q + rnd_ctr_rem_q != num_rounds_q) ? 1'b1 : 1'b0;
+  assign rnd_ctr_err_sum    = (rnd_ctr_sum != num_rounds_q)        ? 1'b1 : 1'b0;
   assign rnd_ctr_err_parity = (rnd_ctr_parity != rnd_ctr_parity_q) ? 1'b1 : 1'b0;
 
   assign rnd_ctr_err = rnd_ctr_err_sum | rnd_ctr_err_parity;
