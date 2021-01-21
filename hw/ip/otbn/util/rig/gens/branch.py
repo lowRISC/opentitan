@@ -11,7 +11,7 @@ from shared.operand import ImmOperandType, RegOperandType
 from .jump import Jump
 from ..program import ProgInsn, Program
 from ..model import Model
-from ..snippet import BranchSnippet, ProgSnippet
+from ..snippet import BranchSnippet, ProgSnippet, Snippet
 from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
@@ -58,8 +58,8 @@ class Branch(SnippetGen):
         #
         # We'll need at least 4 instructions' space for a proper branch: the
         # branch instruction, the fall-through instruction, the branch target
-        # (which will jump back if necessary), and an eventual ECALL)
-        if program.get_insn_space_left() < 4:
+        # (which will jump back if necessary), and a continuation.
+        if program.space < 4:
             fall_thru = True
         else:
             fall_thru = random.random() < 0.01
@@ -71,12 +71,6 @@ class Branch(SnippetGen):
             cont: GenCont,
             model: Model,
             program: Program) -> Optional[GenRet]:
-
-        if model.fuel <= 1:
-            # The shortest possible branch sequence (branch to PC + 4) takes an
-            # instruction and needs at least one instruction afterwards for the
-            # ECALL, so don't generate anything if fuel is less than 2.
-            return None
 
         # Return None if this is the last instruction in the current gap
         # because we need to either jump or do an ECALL to avoid getting stuck
@@ -139,6 +133,7 @@ class Branch(SnippetGen):
                             (1, (0.5, 1.0))]
         fuel_frac = self.pick_from_weighted_ranges(fuel_frac_ranges)
         assert 0 <= fuel_frac <= 1
+        assert 0 < model.fuel
         branch_fuel = max(1, int(0.5 + fuel_frac * model.fuel))
 
         # Similarly, decide how much of our remaining space to give the code
@@ -147,14 +142,20 @@ class Branch(SnippetGen):
         space_frac_ranges = fuel_frac_ranges
         space_frac = self.pick_from_weighted_ranges(space_frac_ranges)
         assert 0 <= space_frac <= 1
-        # Subtract 2: one for the branch instruction and one for an eventual
-        # ECALL. We checked earlier we had at least 4 instructions' space left,
-        # so there should always be at least 2 instructions' space left
-        # afterwards.
-        max_space_for_branches = program.get_insn_space_left() - 2
-        assert max_space_for_branches >= 2
-        branch_space = max(1, int(space_frac * (max_space_for_branches / 2)))
-        assert 2 * branch_space <= max_space_for_branches
+        # Subtract 2: one for the branch instruction and one for the start of
+        # whatever happens after we re-merge. We checked earlier we had at
+        # least 4 instructions' space left, so there should always be at least
+        # 2 instructions' space left afterwards.
+        #
+        # Divide that by two (to apportion it between the branches) and then
+        # subtract one more. This last subtraction is to allow the jump to
+        # recombine.
+        space_for_branches = program.space - 2
+        assert space_for_branches >= 2
+        total_branch_space = max(1, int(space_frac * (space_for_branches / 2)))
+        assert 1 <= 2 * total_branch_space <= space_for_branches
+        branch_space = total_branch_space - 1
+        assert 0 <= branch_space
 
         # Make an updated copy of program that includes the branch instruction.
         # Similarly, take a copy of the model and update it as if we've fallen
@@ -173,60 +174,66 @@ class Branch(SnippetGen):
         model0.pc += 4
         prog0.add_insns(tgt_addr, [branch_insn])
 
-        model0.fuel = branch_fuel
-        prog0.constrain_space(branch_space)
+        # Pass branch_fuel - 1 here to give ourselves space for a jump to
+        # branch 1 (if we decide to do it that way around)
+        model0.fuel = branch_fuel - 1
+        prog0.space = branch_space
 
-        ret0 = cont(model0, prog0)
-        if ret0 is None:
-            return None
+        snippet0, model0 = cont(model0, prog0)
+        # If snippet0 is None then we didn't manage to generate anything, but
+        # that's fine. model0 will be unchanged and we just have an empty
+        # sequence on the fall-through side of the branch.
 
-        snippet0, model0 = ret0
-
-        # We successfully generated the fall-through branch. Now we want to
-        # generate the other side. Make another copy of program and insert the
-        # instructions from snippet0 into it. Add the bogus instruction at
-        # model.pc, as above. Also add a bogus instruction at model0.pc: this
-        # represents "the next thing" that happens at the end of the first
-        # branch, and we mustn't allow snippet1 to use that space.
+        # Now generate the other side. Make another copy of program and insert
+        # any instructions from snippet0 into it. Add the bogus instruction at
+        # model.pc, as above. Also add a bogus instruction at model0.pc (if it
+        # doesn't equal model.pc): this represents "the next thing" that
+        # happens at the end of the first branch, and we mustn't allow snippet1
+        # to use that space.
         prog1 = program.copy()
-        snippet0.insert_into_program(prog1)
         prog1.add_insns(model.pc, [branch_insn])
-        prog1.add_insns(model0.pc, [branch_insn])
+        if snippet0 is None:
+            assert model0.pc == model.pc + 4
+        else:
+            snippet0.insert_into_program(prog1)
+            prog1.add_insns(model0.pc, [branch_insn])
 
         model1 = model.copy()
         model1.update_for_insn(branch_insn)
         model1.pc = tgt_addr
 
-        prog1.constrain_space(branch_space)
-        model1.fuel = branch_fuel
+        prog1.space = branch_space
+        model1.fuel = branch_fuel - 1
 
-        ret1 = cont(model1, prog1)
-        if ret1 is None:
-            return None
+        snippet1, model1 = cont(model1, prog1)
+        # If snippet1 is None, we didn't manage to generate anything here
+        # either. As before, that's fine.
 
-        snippet1, model1 = ret1
-
-        # We've managed to generate both sides of the branch. All that's left
-        # to do is fix up the execution paths to converge again. To do this, we
-        # need to add a jump to one side or the other. (Alternatively, we could
-        # jump from both to another address, but this shouldn't provide any
-        # extra coverage, so there's not much point)
+        # We've now generated both sides of the branch. All that's left to do
+        # is fix up the execution paths to converge again. To do this, we need
+        # to add a jump to one side or the other. (Alternatively, we could jump
+        # from both to another address, but this shouldn't provide any extra
+        # coverage, so there's not much point)
         if random.random() < 0.5:
-            # Add the jump to go from branch 0 to branch 1
+            # Add the jump to go from branch 0 to branch 1.
+            model0.fuel += 1
+            prog0.space += 1
             jump_ret = self.jump_gen.gen_tgt(model0, prog0, model1.pc)
             if jump_ret is None:
                 return None
 
             jmp_snippet, model0 = jump_ret
-            snippet0 = snippet0.merge(jmp_snippet)
+            snippet0 = Snippet.cons_option(snippet0, jmp_snippet)
         else:
             # Add the jump to go from branch 1 to branch 0
+            model1.fuel += 1
+            prog1.space += 1
             jump_ret = self.jump_gen.gen_tgt(model1, prog1, model0.pc)
             if jump_ret is None:
                 return None
 
             jmp_snippet, model1 = jump_ret
-            snippet1 = snippet1.merge(jmp_snippet)
+            snippet1 = Snippet.cons_option(snippet1, jmp_snippet)
 
         assert model0.pc == model1.pc
         model0.merge(model1)
