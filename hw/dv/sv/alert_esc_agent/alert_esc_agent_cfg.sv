@@ -33,7 +33,9 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
   int unsigned ping_delay_min = 0;
   int unsigned ping_delay_max = 10;
 
-  int unsigned handshake_timeout_cycle = 200;
+  // this timeout is to ensure handshake protocol did not hang, this timeout is not implemented in
+  // design. In design, if protocol hangs, the period ping check will catch the issue
+  int unsigned handshake_timeout_cycle = 100_000;
   int unsigned ping_timeout_cycle = 32;
 
   `uvm_object_utils_begin(alert_esc_agent_cfg)

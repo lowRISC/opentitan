@@ -118,6 +118,7 @@ class alert_monitor extends alert_esc_base_monitor;
                 req.alert_handshake_sta = AlertComplete;
                 wait_ack_complete();
                 req.alert_handshake_sta = AlertAckComplete;
+                @(cfg.vif.monitor_cb);
               end
               begin
                 wait(under_reset);

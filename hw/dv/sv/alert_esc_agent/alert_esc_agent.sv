@@ -70,7 +70,7 @@ class alert_esc_agent extends dv_base_agent#(
         int min_freq_mhz = (cfg.clk_freq_mhz / 10) ? (cfg.clk_freq_mhz / 10) : 1;
         cfg.vif.clk_rst_async_if.set_freq_mhz($urandom_range(min_freq_mhz, cfg.clk_freq_mhz * 10));
       end else begin
-        cfg.vif.clk_rst_async_if.set_freq_mhz($urandom_range(1, 200));
+        cfg.vif.clk_rst_async_if.set_freq_mhz($urandom_range(10, 240));
       end
     end
   endfunction
