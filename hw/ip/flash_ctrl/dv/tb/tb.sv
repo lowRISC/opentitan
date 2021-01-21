@@ -31,6 +31,8 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   tl_if eflash_tl_if(.clk(clk), .rst_n(rst_n));
 
+  `DV_ALERT_IF_CONNECT
+
   // dut
   flash_ctrl_wrapper dut (
     .clk_i              (clk      ),
@@ -67,7 +69,9 @@ module tb;
     .intr_prog_lvl_o    (intr_prog_lvl  ),
     .intr_rd_full_o     (intr_rd_full   ),
     .intr_rd_lvl_o      (intr_rd_lvl    ),
-    .intr_op_done_o     (intr_op_done   )
+    .intr_op_done_o     (intr_op_done   ),
+    .alert_rx_i         (alert_rx       ),
+    .alert_tx_o         (alert_tx       )
   );
 
   // bind mem_bkdr_if

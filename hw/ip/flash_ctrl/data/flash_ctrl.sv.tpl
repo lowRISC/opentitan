@@ -815,8 +815,10 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     ) u_alert_sender (
       .clk_i,
       .rst_ni,
-      .alert_req_i(alert_srcs[i] | alert_tests[i]),
+      .alert_req_i(alert_srcs[i]),
+      .alert_test_i(alert_tests[i]),
       .alert_ack_o(),
+      .alert_state_o(),
       .alert_rx_i(alert_rx_i[i]),
       .alert_tx_o(alert_tx_o[i])
     );

@@ -335,9 +335,14 @@ module flash_phy_rd import flash_phy_pkg::*; (
   logic data_err;
 
   // scrambled data must pass through ECC first
+  logic valid_ecc;
+  logic ecc_multi_err;
+  logic ecc_single_err;
   logic [DataWidth-1:0] data_ecc_chk;
   logic [DataWidth-1:0] data_int;
   logic data_erased;
+
+  assign valid_ecc = rd_done && rd_attrs.ecc && !data_erased;
 
   // When all bits are 1, the data has been erased
   // This check is only valid when read data returns.
@@ -347,20 +352,21 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .in(data_i[ScrDataWidth-1:0]),
     .d_o(data_ecc_chk),
     .syndrome_o(),
-    .err_o({ecc_multi_err_o, ecc_single_err_o})
+    .err_o({ecc_multi_err, ecc_single_err})
   );
-
-  // ecc address return is always the full flash word
-  assign ecc_addr_o = {rd_attrs.addr, {LsbAddrBit{1'b0}}};
 
   // If data needs to be de-scrambled and has not been erased, pass through ecc decoder.
   // Otherwise, pass the data through untouched.
   // Likewise, ecc error is only observed if the data needs to be de-scrambled and has not been
   // erased.
   // rd_done signal below is duplicated (already in data_erased) to show clear intent of the code.
-  assign data_int = (rd_done && rd_attrs.ecc && !data_erased) ? data_ecc_chk :
-                                                                data_i[DataWidth-1:0];
-  assign data_err = (rd_done && rd_attrs.ecc && !data_erased) ? ecc_multi_err_o : 1'b0;
+  assign data_int = valid_ecc ? data_ecc_chk :
+                                data_i[DataWidth-1:0];
+  assign data_err = valid_ecc & ecc_multi_err;
+  assign ecc_multi_err_o = data_err;
+  assign ecc_single_err_o = valid_ecc & ecc_single_err;
+  // ecc address return is always the full flash word
+  assign ecc_addr_o = {rd_attrs.addr, {LsbAddrBit{1'b0}}};
 
   /////////////////////////////////
   // De-scrambling stage
