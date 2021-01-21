@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Test Invalid_kmac_input error by setting key_version > current_max_key_ver
-class keymgr_invalid_kmac_input_vseq extends keymgr_random_vseq;
-  `uvm_object_utils(keymgr_invalid_kmac_input_vseq)
+// Test SW invalid input error by setting key_version > current_max_key_ver
+class keymgr_sw_invalid_input_vseq extends keymgr_random_vseq;
+  `uvm_object_utils(keymgr_sw_invalid_input_vseq)
   `uvm_object_new
 
   // enable key_version error with 1/3 chance
@@ -12,4 +12,4 @@ class keymgr_invalid_kmac_input_vseq extends keymgr_random_vseq;
     is_key_version_err dist {0 :/ 2, 1 :/ 1};
   }
 
-endclass : keymgr_invalid_kmac_input_vseq
+endclass : keymgr_sw_invalid_input_vseq

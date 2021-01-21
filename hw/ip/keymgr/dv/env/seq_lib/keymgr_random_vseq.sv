@@ -7,6 +7,13 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
   `uvm_object_utils(keymgr_random_vseq)
   `uvm_object_new
 
+  rand uint num_invalid_hw_input;
+
+  // don't test invalid HW input in this test
+  constraint num_invalid_hw_input_c {
+    num_invalid_hw_input == 0;
+  }
+
   task write_random_sw_content();
     uvm_reg         csr_update_q[$];
 
@@ -47,8 +54,10 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
       write_random_sw_content();
     end
     if ($urandom_range(0, 1)) begin
-      `uvm_info(`gfn, "Drive random HW data", UVM_MEDIUM)
-      cfg.keymgr_vif.drive_random_hw_input_data();
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_invalid_hw_input)
+      `uvm_info(`gfn, $sformatf("Drive random HW data with %0d invalid inputs",
+                                num_invalid_hw_input), UVM_MEDIUM)
+      cfg.keymgr_vif.drive_random_hw_input_data(num_invalid_hw_input);
     end
     super.keymgr_operations(advance_state, num_gen_op, clr_output, wait_done);
   endtask : keymgr_operations
