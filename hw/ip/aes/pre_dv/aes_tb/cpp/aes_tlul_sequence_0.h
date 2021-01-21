@@ -220,59 +220,74 @@ static const TLI tl_i_transactions[num_transactions_max] = {
 
 static const int num_responses_max = 1 + 18 + 18 + 1 + 1 + 5;
 static const EXP_RESP tl_o_exp_resp[num_responses_max] = {
-    {0x1, 0x1},  // status shows idle
+    {1 << AES_STATUS_IDLE_OFFSET,
+     1 << AES_STATUS_IDLE_OFFSET},  // status shows idle
 
-    {0x4, 0x4},  // status shows output valid
-    {0x0, 0x0},  // don't care
-    {0x0, 0x0},  // don't care
-    {0x0, 0x0},  // don't care
-    {0x0, 0x0},  // don't care
-    {0x4, 0x0},  // status shows output valid no longer valid
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+     1 << AES_STATUS_OUTPUT_VALID_OFFSET},  // status shows output valid
+    {0x0, 0x0},                             // don't care
+    {0x0, 0x0},                             // don't care
+    {0x0, 0x0},                             // don't care
+    {0x0, 0x0},                             // don't care
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+     0},  // status shows output valid no longer valid
 
-    {0x4, 0x4},  // status shows output valid
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+     1 << AES_STATUS_OUTPUT_VALID_OFFSET},  // status shows output valid
     {0xFFFFFFFF, 0x1D842539},
     {0xFFFFFFFF, 0xFB09DC02},
     {0xFFFFFFFF, 0x978511DC},
     {0xFFFFFFFF, 0x320B6A19},
-    {0x4, 0x0},  // status shows output valid no longer valid
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+     0},  // status shows output valid no longer valid
 
-    {0x4, 0x4},  // status shows output valid
-    {0x0, 0x0},  // don't care
-    {0x0, 0x0},  // don't care
-    {0x0, 0x0},  // don't care
-    {0x0, 0x0},  // don't care
-    {0x4, 0x0},  // status shows output valid no longer valid
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+     1 << AES_STATUS_OUTPUT_VALID_OFFSET},  // status shows output valid
+    {0x0, 0x0},                             // don't care
+    {0x0, 0x0},                             // don't care
+    {0x0, 0x0},                             // don't care
+    {0x0, 0x0},                             // don't care
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+     0},  // status shows output valid no longer valid
 
-    {0x4, 0x4},  // status shows output valid
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+     1 << AES_STATUS_OUTPUT_VALID_OFFSET},  // status shows output valid
     {0xFFFFFFFF, 0xB69F5E58},
     {0xFFFFFFFF, 0x9A2B72C2},
     {0xFFFFFFFF, 0xC192F4F4},
     {0xFFFFFFFF, 0xC124B02B},
-    {0x4, 0x0},  // status shows output valid no longer valid
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+     0},  // status shows output valid no longer valid
 
-    {0x1, 0x1},  // status shows idle
+    {1 << AES_STATUS_IDLE_OFFSET,
+     1 << AES_STATUS_IDLE_OFFSET},  // status shows idle
 
-    {0x4, 0x4},  // status shows output valid
-    {0x0, 0x0},  // don't care
-    {0x0, 0x0},  // don't care
-    {0x0, 0x0},  // don't care
-    {0x0, 0x0},  // don't care
-    {0x4, 0x0},  // status shows output valid no longer valid
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+     1 << AES_STATUS_OUTPUT_VALID_OFFSET},  // status shows output valid
+    {0x0, 0x0},                             // don't care
+    {0x0, 0x0},                             // don't care
+    {0x0, 0x0},                             // don't care
+    {0x0, 0x0},                             // don't care
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+     0},  // status shows output valid no longer valid
 
-    {0x1, 0x0},  // status shows busy
+    {1 << AES_STATUS_IDLE_OFFSET, 0},  // status shows busy
 
-    {0x4, 0x4},  // status shows output valid
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+     1 << AES_STATUS_OUTPUT_VALID_OFFSET},  // status shows output valid
     {0xFFFFFFFF, 0x3A612130},
     {0xFFFFFFFF, 0x2F583E97},
     {0xFFFFFFFF, 0x4123294A},
     {0xFFFFFFFF, 0x94C4AE37},
-    {0x4, 0x0},  // status shows output valid no longer valid
+    {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+     0},  // status shows output valid no longer valid
 
-    {0x1, 0x1},  // status shows idle
-    {0x0, 0x0},  // data_out0 cleared to random value
-    {0x0, 0x0},  // data_out1 cleared to random value
-    {0x0, 0x0},  // data_out2 cleared to random value
-    {0x0, 0x0},  // data_out3 cleared to random value
+    {1 << AES_STATUS_IDLE_OFFSET,
+     1 << AES_STATUS_IDLE_OFFSET},  // status shows idle
+    {0x0, 0x0},                     // data_out0 cleared to random value
+    {0x0, 0x0},                     // data_out1 cleared to random value
+    {0x0, 0x0},                     // data_out2 cleared to random value
+    {0x0, 0x0},                     // data_out3 cleared to random value
 };
 
 #endif  // OPENTITAN_HW_IP_AES_PRE_DV_AES_TB_CPP_AES_TLUL_SEQUENCE_0_H_

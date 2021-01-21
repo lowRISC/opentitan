@@ -36,7 +36,8 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
 
   // check status idle
   tl_i_transactions[i_trx] = {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0, 0, true};
-  tl_o_exp_resp[i_resp] = {0x1, 0x1};
+  tl_o_exp_resp[i_resp] = {1 << AES_STATUS_IDLE_OFFSET,
+                           1 << AES_STATUS_IDLE_OFFSET};
   i_trx++;
   i_resp++;
 
@@ -122,7 +123,8 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
 
   // check input ready
   tl_i_transactions[i_trx] = {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0, 0, true};
-  tl_o_exp_resp[i_resp] = {0x8, 0x8};
+  tl_o_exp_resp[i_resp] = {1 << AES_STATUS_INPUT_READY_OFFSET,
+                           1 << AES_STATUS_INPUT_READY_OFFSET};
   i_trx++;
   i_resp++;
 
@@ -142,7 +144,8 @@ static void aes_tlul_sequence_modes_gen(int *i_transaction, int *i_exp_resp,
 
     // check output valid
     tl_i_transactions[i_trx] = {true, 4, 0, 2, 0, AES_STATUS, 0xF, 0, 0, true};
-    tl_o_exp_resp[i_resp] = {0x4, 0x4};
+    tl_o_exp_resp[i_resp] = {1 << AES_STATUS_OUTPUT_VALID_OFFSET,
+                             1 << AES_STATUS_OUTPUT_VALID_OFFSET};
     i_trx++;
     i_resp++;
 
