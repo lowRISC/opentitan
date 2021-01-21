@@ -43,7 +43,10 @@ module flash_ctrl_wrapper (
   output logic intr_prog_lvl_o,   // Program fifo is empty
   output logic intr_rd_full_o,    // Read fifo is full
   output logic intr_rd_lvl_o,     // Read fifo is full
-  output logic intr_op_done_o     // Requested flash operation (wr/erase) done
+  output logic intr_op_done_o,    // Requested flash operation (wr/erase) done
+
+  input  prim_alert_pkg::alert_rx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_tx_o
 );
 
   // define inter-module signals
@@ -60,6 +63,10 @@ module flash_ctrl_wrapper (
     .intr_rd_full_o   (intr_rd_full_o),
     .intr_rd_lvl_o    (intr_rd_lvl_o),
     .intr_op_done_o   (intr_op_done_o),
+
+    // Alerts
+    .alert_rx_i,
+    .alert_tx_o,
 
     // Inter-module signals
     .flash_o           (flash_ctrl_flash_req),
