@@ -23,7 +23,7 @@
     { name: "fatal"
       desc: "A fatal error. Fatal alerts are non-recoverable and will be asserted until a hard reset."
     }
-    { name: "recoverable"
+    { name: "recov"
       desc: "A recoverable error. Just sent once (as the processor stops)."
     }
   ]

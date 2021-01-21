@@ -5167,7 +5167,7 @@
           async: 1
         }
         {
-          name: recoverable
+          name: recov
           width: 1
           bits: "1"
           bitinfo:
@@ -8080,7 +8080,7 @@
       module_name: otbn
     }
     {
-      name: otbn_recoverable
+      name: otbn_recov
       width: 1
       bits: "1"
       bitinfo:

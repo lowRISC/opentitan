@@ -757,7 +757,7 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdAesRecoverable = 0, /**< aes_recoverable */
   kTopEarlgreyAlertIdAesFatal = 1, /**< aes_fatal */
   kTopEarlgreyAlertIdOtbnFatal = 2, /**< otbn_fatal */
-  kTopEarlgreyAlertIdOtbnRecoverable = 3, /**< otbn_recoverable */
+  kTopEarlgreyAlertIdOtbnRecov = 3, /**< otbn_recov */
   kTopEarlgreyAlertIdSensorCtrlAs = 4, /**< sensor_ctrl_as */
   kTopEarlgreyAlertIdSensorCtrlCg = 5, /**< sensor_ctrl_cg */
   kTopEarlgreyAlertIdSensorCtrlGd = 6, /**< sensor_ctrl_gd */

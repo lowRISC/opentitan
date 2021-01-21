@@ -8,7 +8,7 @@ parameter string LIST_OF_ALERTS[] = {
   "aes_recoverable",
   "aes_fatal",
   "otbn_fatal",
-  "otbn_recoverable",
+  "otbn_recov",
   "sensor_ctrl_as",
   "sensor_ctrl_cg",
   "sensor_ctrl_gd",
