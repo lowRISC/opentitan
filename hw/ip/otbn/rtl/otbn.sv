@@ -359,11 +359,12 @@ module otbn
   );
 
   // CMD register
-  assign start = reg2hw.cmd.start.qe & reg2hw.cmd.start.q;
+  // CMD.start ("start" is omitted by reggen since it is the only field)
+  assign start = reg2hw.cmd.qe & reg2hw.cmd.q;
 
   // STATUS register
-  assign hw2reg.status.busy.d = busy_q;
-  assign hw2reg.status.dummy.d = 1'b0;
+  // STATUS.busy ("busy" is omitted by reggen since since it is the only field)
+  assign hw2reg.status.d = busy_q;
 
   // ERR_BITS register
   // The error bits for an OTBN operation get stored on the cycle that done is

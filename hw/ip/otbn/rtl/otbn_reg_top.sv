@@ -133,14 +133,10 @@ module otbn_reg_top (
   logic alert_test_fatal_we;
   logic alert_test_recov_wd;
   logic alert_test_recov_we;
-  logic cmd_start_wd;
-  logic cmd_start_we;
-  logic cmd_dummy_wd;
-  logic cmd_dummy_we;
-  logic status_busy_qs;
-  logic status_busy_re;
-  logic status_dummy_qs;
-  logic status_dummy_re;
+  logic cmd_wd;
+  logic cmd_we;
+  logic status_qs;
+  logic status_re;
   logic err_bits_bad_data_addr_qs;
   logic err_bits_bad_insn_addr_qs;
   logic err_bits_call_stack_qs;
@@ -260,65 +256,33 @@ module otbn_reg_top (
 
   // R[cmd]: V(True)
 
-  //   F[start]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_cmd_start (
+  ) u_cmd (
     .re     (1'b0),
-    .we     (cmd_start_we),
-    .wd     (cmd_start_wd),
+    .we     (cmd_we),
+    .wd     (cmd_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.cmd.start.qe),
-    .q      (reg2hw.cmd.start.q ),
-    .qs     ()
-  );
-
-
-  //   F[dummy]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_cmd_dummy (
-    .re     (1'b0),
-    .we     (cmd_dummy_we),
-    .wd     (cmd_dummy_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.cmd.dummy.qe),
-    .q      (reg2hw.cmd.dummy.q ),
+    .qe     (reg2hw.cmd.qe),
+    .q      (reg2hw.cmd.q ),
     .qs     ()
   );
 
 
   // R[status]: V(True)
 
-  //   F[busy]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_status_busy (
-    .re     (status_busy_re),
+  ) u_status (
+    .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.status.busy.d),
+    .d      (hw2reg.status.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (status_busy_qs)
-  );
-
-
-  //   F[dummy]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_status_dummy (
-    .re     (status_dummy_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.status.dummy.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .qs     (status_dummy_qs)
+    .qs     (status_qs)
   );
 
 
@@ -674,15 +638,10 @@ module otbn_reg_top (
   assign alert_test_recov_we = addr_hit[3] & reg_we & ~wr_err;
   assign alert_test_recov_wd = reg_wdata[1];
 
-  assign cmd_start_we = addr_hit[4] & reg_we & ~wr_err;
-  assign cmd_start_wd = reg_wdata[0];
+  assign cmd_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cmd_wd = reg_wdata[0];
 
-  assign cmd_dummy_we = addr_hit[4] & reg_we & ~wr_err;
-  assign cmd_dummy_wd = reg_wdata[1];
-
-  assign status_busy_re = addr_hit[5] && reg_re;
-
-  assign status_dummy_re = addr_hit[5] && reg_re;
+  assign status_re = addr_hit[5] && reg_re;
 
 
 
@@ -721,12 +680,10 @@ module otbn_reg_top (
 
       addr_hit[4]: begin
         reg_rdata_next[0] = '0;
-        reg_rdata_next[1] = '0;
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[0] = status_busy_qs;
-        reg_rdata_next[1] = status_dummy_qs;
+        reg_rdata_next[0] = status_qs;
       end
 
       addr_hit[6]: begin
