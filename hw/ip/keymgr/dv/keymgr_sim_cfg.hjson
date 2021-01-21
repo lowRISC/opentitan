@@ -81,8 +81,13 @@
     }
 
     {
-      name: keymgr_invalid_kmac_input
-      uvm_test_seq: keymgr_invalid_kmac_input_vseq
+      name: keymgr_sw_invalid_input
+      uvm_test_seq: keymgr_sw_invalid_input_vseq
+    }
+
+    {
+      name: keymgr_hwsw_invalid_input
+      uvm_test_seq: keymgr_hwsw_invalid_input_vseq
     }
 
     {

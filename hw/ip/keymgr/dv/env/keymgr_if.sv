@@ -65,7 +65,7 @@ interface keymgr_if(input clk, input rst_n);
   endtask
 
   // randomize otp, lc, flash input data
-  task automatic drive_random_hw_input_data();
+  task automatic drive_random_hw_input_data(int num_invalid_input = 0);
     lc_ctrl_pkg::lc_keymgr_div_t     local_keymgr_div;
     bit [keymgr_pkg::DevIdWidth-1:0] local_otp_device_id;
     otp_ctrl_pkg::otp_keymgr_key_t   local_otp_key;
@@ -74,24 +74,51 @@ interface keymgr_if(input clk, input rst_n);
     // async delay as these signals are from different clock domain
     #($urandom_range(1000, 0) * 1ns);
 
+    // randomize all data to be non all 0s or 1s
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_keymgr_div,
                                        !(local_keymgr_div inside {0, '1});, , msg_id)
-    keymgr_div = local_keymgr_div;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_device_id,
                                        !(local_otp_device_id inside {0, '1});, , msg_id)
-    otp_hw_cfg.data.device_id = local_otp_device_id;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
                                        local_otp_key.valid == 1;
                                        !(local_otp_key.key_share0 inside {0, '1});
                                        !(local_otp_key.key_share1 inside {0, '1});, , msg_id)
-    otp_key = local_otp_key;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_flash,
                                        foreach (local_flash.seeds[i]) {
                                          !(local_flash.seeds[i] inside {0, '1});
                                        }, , msg_id)
+
+    // make HW input to be all 0s or 1s
+    repeat (num_invalid_input) begin
+      randcase
+        1: begin
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_keymgr_div,
+                                             local_keymgr_div inside {0, '1};, , msg_id)
+        end
+        1: begin
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_device_id,
+                                             local_otp_device_id inside {0, '1};, , msg_id)
+        end
+        1: begin
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
+                                             local_otp_key.valid == 1; // TODO this is tie to 1
+                                             local_otp_key.key_share0 inside {0, '1} ||
+                                             local_otp_key.key_share1 inside {0, '1};, , msg_id)
+        end
+        1: begin
+          int idx = $urandom_range(0, flash_ctrl_pkg::NumSeeds - 1);
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_flash,
+                                             local_flash.seeds[idx] inside {0, '1};, , msg_id)
+        end
+      endcase
+    end
+
+    keymgr_div = local_keymgr_div;
+    otp_hw_cfg.data.device_id = local_otp_device_id;
+    otp_key = local_otp_key;
     flash   = local_flash;
   endtask
 
