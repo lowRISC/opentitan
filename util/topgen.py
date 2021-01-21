@@ -666,7 +666,9 @@ def generate_pwrmgr(top, out_path):
     with hjson_tpl_path.open(mode='r', encoding='UTF-8') as fin:
         hjson_tpl = Template(fin.read())
         try:
-            out = hjson_tpl.render(NumWkups=n_wkups, NumRstReqs=n_rstreqs)
+            out = hjson_tpl.render(NumWkups=n_wkups,
+                                   Wkups=top["wakeups"],
+                                   NumRstReqs=n_rstreqs)
 
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())

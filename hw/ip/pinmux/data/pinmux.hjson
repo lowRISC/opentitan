@@ -31,7 +31,10 @@
   wakeup_list: [
     { name: "aon_wkup_req",
       desc: "pin wake request"
-    }
+    },
+    { name: "usb_wkup_req",
+      desc: "usb wake request"
+    },
   ],
 
   inter_signal_list: [
