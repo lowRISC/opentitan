@@ -107,6 +107,22 @@
       default: "2",
       local: "true"
     },
+
+    { name: "AON_WKUP_REQ_IDX",
+      desc: "Vector index for aon_wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+      type: "int",
+      default: "0",
+      local: "true"
+    },
+
+    { name: "USB_WKUP_REQ_IDX",
+      desc: "Vector index for usb_wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+
+
     { name: "NumRstReqs",
       desc: "Number of reset requets",
       type: "int",

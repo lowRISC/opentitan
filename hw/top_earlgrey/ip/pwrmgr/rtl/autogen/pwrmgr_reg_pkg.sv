@@ -8,6 +8,8 @@ package pwrmgr_reg_pkg;
 
   // Param list
   parameter int NumWkups = 2;
+  parameter int AON_WKUP_REQ_IDX = 0;
+  parameter int USB_WKUP_REQ_IDX = 1;
   parameter int NumRstReqs = 1;
 
   // Address width within the block
