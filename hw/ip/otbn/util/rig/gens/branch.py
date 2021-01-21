@@ -11,7 +11,7 @@ from shared.operand import ImmOperandType, RegOperandType
 from .jump import Jump
 from ..program import ProgInsn, Program
 from ..model import Model
-from ..snippet import BranchSnippet, ProgSnippet, SeqSnippet
+from ..snippet import BranchSnippet, ProgSnippet
 from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
@@ -218,8 +218,7 @@ class Branch(SnippetGen):
                 return None
 
             jmp_snippet, model0 = jump_ret
-            if not snippet0.merge(jmp_snippet):
-                snippet0 = SeqSnippet([snippet0, jmp_snippet])
+            snippet0 = snippet0.merge(jmp_snippet)
         else:
             # Add the jump to go from branch 1 to branch 0
             jump_ret = self.jump_gen.gen_tgt(model1, prog1, model0.pc)
@@ -227,8 +226,7 @@ class Branch(SnippetGen):
                 return None
 
             jmp_snippet, model1 = jump_ret
-            if not snippet1.merge(jmp_snippet):
-                snippet1 = SeqSnippet([snippet1, jmp_snippet])
+            snippet1 = snippet1.merge(jmp_snippet)
 
         assert model0.pc == model1.pc
         model0.merge(model1)
