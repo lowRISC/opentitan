@@ -89,3 +89,24 @@ $ ./meson_init -t /path/to/toolchain/file
 
 If you do not specify your own toolchain configuration file (using `./meson_init.sh -t`), and `meson_init.sh` cannot find the default configuration in your toolchain, the legacy `toolchain.txt` from the main OpenTitan repository will be used.
 If `TOOLCHAIN_PATH` is set, this will be used to update any paths within the legacy configuration.
+
+## Debugging device software
+
+### Attaching a debugger
+
+GDB can be used to debug device software running on an FPGA or in a Verilator simulation.
+Refer to the [Getting started on FPGAs]({{<relref getting_started_fpga >}}) and [Verilator]({{<relref getting_started_verilator >}}) guides for more details.
+
+### Disassembling device code
+
+A disassembly of all executable sections is produced by the build system by default.
+It can be found by looking for files with the `.dis` extension next to the corresponding ELF file.
+
+To get a different type of disassembly, e.g. one which includes data sections in addition to executable sections, objdump can be called manually.
+For example the following command shows how to disassemble all sections of the UART DIF smoke test interleaved with the actual source code.
+
+```console
+$ riscv32-unknown-elf-objdump --disassemble-all --headers --line-numbers --source build-bin/sw/device/tests/dif_uart_smoketest_sim_verilator.elf
+```
+
+Refer to the output of `riscv32-unknown-elf-objdump --help` for a full list of options.
