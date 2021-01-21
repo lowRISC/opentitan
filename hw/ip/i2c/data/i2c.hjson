@@ -58,6 +58,9 @@
     { name: "ack_stop"
       desc: "raised if STOP is received after ACK (host sends both signals)."
     }
+    { name: "host_timeout"
+      desc: "raised if the host stops sending the clock during an ongoing transaction."
+    }
   ]
 
   // REGISTER definition
@@ -491,6 +494,37 @@
       hwqe: "true"
       fields: [
         { bits: "7:0" }
+      ]
+    }
+    { name: "STRETCH_CTRL"
+      desc: "I2C target clock stretching control"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0"
+          name: "ENABLEADDR"
+          desc: "Enable clock stretching after address matching completes"
+        }
+        { bits: "1"
+          name: "ENABLETX"
+          desc: "Enable clock stretching after ongoing transmit (read) transaction completes"
+        }
+        { bits: "2"
+          name: "ENABLEACQ"
+          desc: "Enable clock stretching after ongoing acquire (write) transaction completes"
+        }
+        { bits: "3"
+          name: "STOP"
+          desc: "Stop clock stretching and resume normal operation"
+        }
+      ]
+    }
+    { name: "HOST_TIMEOUT_CTRL"
+      desc: "I2C host clock generation timeout value (in units of input clock frequency)"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0" }
       ]
     }
   ]

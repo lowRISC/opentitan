@@ -37,7 +37,8 @@ module i2c (
   output logic              intr_tx_nonempty_o,
   output logic              intr_tx_overflow_o,
   output logic              intr_acq_overflow_o,
-  output logic              intr_ack_stop_o
+  output logic              intr_ack_stop_o,
+  output logic              intr_host_timeout_o
 );
 
   import i2c_reg_pkg::*;
@@ -83,7 +84,8 @@ module i2c (
     .intr_tx_nonempty_o,
     .intr_tx_overflow_o,
     .intr_acq_overflow_o,
-    .intr_ack_stop_o
+    .intr_ack_stop_o,
+    .intr_host_timeout_o
   );
 
   // For I2C, in standard, fast and fast-plus modes, outputs simulated as open-drain outputs.
@@ -117,5 +119,6 @@ module i2c (
   `ASSERT_KNOWN(IntrTxOflwKnownO_A, intr_tx_overflow_o)
   `ASSERT_KNOWN(IntrAcqOflwKnownO_A, intr_acq_overflow_o)
   `ASSERT_KNOWN(IntrAckStopKnownO_A, intr_ack_stop_o)
+  `ASSERT_KNOWN(IntrHostTimeoutKnownO_A, intr_host_timeout_o)
 
 endmodule
