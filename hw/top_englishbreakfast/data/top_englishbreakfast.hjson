@@ -643,7 +643,7 @@
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
   alert_module: [ "aes", "sensor_ctrl", "lc_ctrl",
-                  "sram_ctrl_main", "sram_ctrl_ret"]
+                  "sram_ctrl_main", "sram_ctrl_ret", "flash_ctrl"]
 
   // generated list of alerts:
   alert: [

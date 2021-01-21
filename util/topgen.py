@@ -22,7 +22,7 @@ import tlgen
 from reggen import gen_dv, gen_rtl, validate
 from topgen import amend_clocks, get_hjsonobj_xbars
 from topgen import intermodule as im
-from topgen import merge_top, search_ips, validate_top
+from topgen import merge_top, search_ips, check_flash, validate_top
 from topgen.c import TopGenC
 
 # Common header for generated files
@@ -880,6 +880,9 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     hjson_dir = Path(args.topcfg).parent
 
     for ip in generated_list:
+        # For modules that are generated prior to gathering, we need to take it from
+        # the ouptput path.  For modules not generated before, it may exist in a
+        # pre-defined area already.
         log.info("Appending {}".format(ip))
         if ip == 'clkmgr' or (pass_idx > 0):
             ip_hjson = Path(out_path) / "ip/{}/data/autogen/{}.hjson".format(
@@ -953,6 +956,9 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
 
     completecfg = merge_top(topcfg, ip_objs, xbar_objs)
 
+    # Generate flash controller and flash memory
+    generate_flash(topcfg, out_path)
+
     # Generate PLIC
     if not args.no_plic and \
        not args.alert_handler_only and \
@@ -975,9 +981,6 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
 
     # Generate rstmgr
     generate_rstmgr(completecfg, out_path)
-
-    # Generate flash
-    generate_flash(completecfg, out_path)
 
     # Generate top only modules
     # These modules are not templated, but are not in hw/ip
