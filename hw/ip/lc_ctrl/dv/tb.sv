@@ -43,7 +43,7 @@ module tb;
   assign otp_prog_rsp.ack = otp_prog_if.ack;
   assign otp_token_rsp.ack = otp_token_if.ack;
   // TODO: temp constraint to 0 because it has to equal to otp_lc_data_i tokens
-  assign otp_token_rsp.hashed_token = 0;
+  assign otp_token_rsp.hashed_token = lc_ctrl_if.hashed_token;
 
   // dut
   lc_ctrl dut (
