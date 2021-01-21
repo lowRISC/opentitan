@@ -131,8 +131,8 @@ module otbn_reg_top (
   logic intr_test_we;
   logic alert_test_fatal_wd;
   logic alert_test_fatal_we;
-  logic alert_test_recoverable_wd;
-  logic alert_test_recoverable_we;
+  logic alert_test_recov_wd;
+  logic alert_test_recov_we;
   logic cmd_start_wd;
   logic cmd_start_we;
   logic cmd_dummy_wd;
@@ -236,17 +236,17 @@ module otbn_reg_top (
   );
 
 
-  //   F[recoverable]: 1:1
+  //   F[recov]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_recoverable (
+  ) u_alert_test_recov (
     .re     (1'b0),
-    .we     (alert_test_recoverable_we),
-    .wd     (alert_test_recoverable_wd),
+    .we     (alert_test_recov_we),
+    .wd     (alert_test_recov_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.recoverable.qe),
-    .q      (reg2hw.alert_test.recoverable.q ),
+    .qe     (reg2hw.alert_test.recov.qe),
+    .q      (reg2hw.alert_test.recov.q ),
     .qs     ()
   );
 
@@ -488,8 +488,8 @@ module otbn_reg_top (
   assign alert_test_fatal_we = addr_hit[3] & reg_we & ~wr_err;
   assign alert_test_fatal_wd = reg_wdata[0];
 
-  assign alert_test_recoverable_we = addr_hit[3] & reg_we & ~wr_err;
-  assign alert_test_recoverable_wd = reg_wdata[1];
+  assign alert_test_recov_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_recov_wd = reg_wdata[1];
 
   assign cmd_start_we = addr_hit[4] & reg_we & ~wr_err;
   assign cmd_start_wd = reg_wdata[0];

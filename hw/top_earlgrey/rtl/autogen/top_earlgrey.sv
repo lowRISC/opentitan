@@ -1467,7 +1467,7 @@ module top_earlgrey #(
       .intr_done_o (intr_otbn_done),
 
       // [18]: fatal
-      // [19]: recoverable
+      // [19]: recov
       .alert_tx_o  ( alert_tx[19:18] ),
       .alert_rx_i  ( alert_rx[19:18] ),
 

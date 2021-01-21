@@ -33,7 +33,7 @@ package otbn_pkg;
   // Toplevel constants ============================================================================
 
   parameter int AlertFatal = 0;
-  parameter int AlertRecoverable = 1;
+  parameter int AlertRecov = 1;
 
   // Register file implementation selection enum.
   typedef enum integer {

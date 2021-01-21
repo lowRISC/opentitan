@@ -125,7 +125,7 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdAesRecoverable] = kTopEarlgreyAlertPeripheralAes,
   [kTopEarlgreyAlertIdAesFatal] = kTopEarlgreyAlertPeripheralAes,
   [kTopEarlgreyAlertIdOtbnFatal] = kTopEarlgreyAlertPeripheralOtbn,
-  [kTopEarlgreyAlertIdOtbnRecoverable] = kTopEarlgreyAlertPeripheralOtbn,
+  [kTopEarlgreyAlertIdOtbnRecov] = kTopEarlgreyAlertPeripheralOtbn,
   [kTopEarlgreyAlertIdSensorCtrlAs] = kTopEarlgreyAlertPeripheralSensorCtrl,
   [kTopEarlgreyAlertIdSensorCtrlCg] = kTopEarlgreyAlertPeripheralSensorCtrl,
   [kTopEarlgreyAlertIdSensorCtrlGd] = kTopEarlgreyAlertPeripheralSensorCtrl,

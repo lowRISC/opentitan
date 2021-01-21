@@ -36,7 +36,7 @@ package otbn_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } recoverable;
+    } recov;
   } otbn_reg2hw_alert_test_reg_t;
 
   typedef struct packed {

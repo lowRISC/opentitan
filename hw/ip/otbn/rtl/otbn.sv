@@ -390,28 +390,17 @@ module otbn
   logic [NumAlerts-1:0] alert_test;
   assign alert_test[AlertFatal] = reg2hw.alert_test.fatal.q &
                                   reg2hw.alert_test.fatal.qe;
-  assign alert_test[AlertRecoverable] = reg2hw.alert_test.recoverable.q &
-                                        reg2hw.alert_test.recoverable.qe;
-
-  // Latch any error that we consider fatal.
-  logic fatal_err_q, fatal_err_d;
-  assign fatal_err_d = fatal_err_q | imem_rerror | dmem_rerror;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      fatal_err_q <= 1'b0;
-    end else begin
-      fatal_err_q <= fatal_err_d;
-    end
-  end
+  assign alert_test[AlertRecov] = reg2hw.alert_test.recov.q &
+                                  reg2hw.alert_test.recov.qe;
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertFatal]       = fatal_err_d;
-  assign alerts[AlertRecoverable] = 1'b0; // TODO: Implement
+  assign alerts[AlertFatal] = imem_rerror | dmem_rerror;
+  assign alerts[AlertRecov] = 1'b0; // TODO: Implement
 
   for (genvar i = 0; i < NumAlerts; i++) begin: gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
-      .IsFatal(0)
+      .IsFatal(i == AlertFatal)
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
