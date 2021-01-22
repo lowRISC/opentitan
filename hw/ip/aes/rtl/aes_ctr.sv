@@ -139,7 +139,6 @@ module aes_ctr(
       // We should never get here. If we do (e.g. via a malicious
       // glitch), error out immediately.
       default: begin
-        alert_o    = 1'b1;
         aes_ctr_ns = ERROR;
       end
     endcase

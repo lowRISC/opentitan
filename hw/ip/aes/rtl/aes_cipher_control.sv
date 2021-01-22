@@ -177,18 +177,18 @@ module aes_cipher_control
             dec_key_gen_d =  dec_key_gen_i;
 
             // Load input data to state
-            state_sel_o = dec_key_gen_d ? STATE_CLEAR : STATE_INIT;
+            state_sel_o = dec_key_gen_i ? STATE_CLEAR : STATE_INIT;
             state_we_o  = 1'b1;
 
             // Make the masking PRNG advance. The current pseudo-random data is used to mask the
             // input data.
-            prng_update_o = dec_key_gen_d ? 1'b0 : Masking;
+            prng_update_o = dec_key_gen_i ? 1'b0 : Masking;
 
             // Init key expand
             key_expand_clear_o = 1'b1;
 
             // Load full key
-            key_full_sel_o = dec_key_gen_d ? KEY_FULL_ENC_INIT :
+            key_full_sel_o = dec_key_gen_i ? KEY_FULL_ENC_INIT :
                         (op_i == CIPH_FWD) ? KEY_FULL_ENC_INIT :
                                              KEY_FULL_DEC_INIT;
             key_full_we_o  = 1'b1;
@@ -311,19 +311,24 @@ module aes_cipher_control
         // Skip mix_columns
         add_rk_sel_o = ADD_RK_FINAL;
 
+        // Once we're done, we won't need the state anymore. We actually clear it when progressing
+        // to the next state.
+        state_sel_o = STATE_CLEAR;
+
         // Advance in sync with SubBytes. Based on the S-Box implementation, it can take multiple
         // cycles to finish. Only indicate that we are done if:
-        // - we have valid output (SubBytes finished), and
-        // - the masking PRNG has been reseeded (if masking is used).
+        // - we have valid output (SubBytes finished),
+        // - the masking PRNG has been reseeded (if masking is used), and
+        // - all mux selector signals are valid (don't release data in that case of errors).
         // Perform both handshakes simultaneously.
         sub_bytes_en_o = ~dec_key_gen_q;
-        out_valid_o    = (dec_key_gen_q | sub_bytes_out_req_i) & (Masking == prng_reseed_done_q);
+        out_valid_o    = (dec_key_gen_q | sub_bytes_out_req_i) & (Masking == prng_reseed_done_q) &
+            ~mux_sel_err_i;
         if (out_valid_o && out_ready_i) begin
           sub_bytes_out_ack_o = ~dec_key_gen_q;
 
-          // We don't need the state anymore, clear it.
+          // Clear the state.
           state_we_o          = 1'b1;
-          state_sel_o         = STATE_CLEAR;
           crypt_d             = 1'b0;
           // Make the masking PRNG advance once only. Updating it while being stalled would
           // cause the SBoxes to be re-evaluated, thereby creating additional SCA leakage.
@@ -372,7 +377,6 @@ module aes_cipher_control
 
       // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
       default: begin
-        alert_o            = 1'b1;
         aes_cipher_ctrl_ns = ERROR;
       end
     endcase
@@ -380,7 +384,6 @@ module aes_cipher_control
     // Unconditionally jump into the terminal error state in case a mux selector signal becomes
     // invalid.
     if (mux_sel_err_i) begin
-      alert_o            = 1'b1;
       aes_cipher_ctrl_ns = ERROR;
     end
   end

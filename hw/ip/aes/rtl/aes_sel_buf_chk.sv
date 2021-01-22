@@ -5,9 +5,9 @@
 // AES mux selector buffer and checker
 //
 // When using sparse encodings for mux selector signals, this module can be used to:
-// 1. Prevent aggressive synthesis optimizations on the selector signal, to
-// 2. check that the selector signal is valid, i.e., doesn't take on invalid values, and to
-// 3. keep outputting an error until reset even if the selector signal becomes valid again.
+// 1. Prevent aggressive synthesis optimizations on the selector signal, and
+// 2. to check that the selector signal is valid, i.e., doesn't take on invalid values.
+// Whenever the selector signal takes on an invalid value, an error is signaled.
 
 `include "prim_assert.sv"
 
@@ -24,8 +24,11 @@ module aes_sel_buf_chk #(
 
   import aes_pkg::*;
 
-  // Signals
-  logic err, err_d, err_q;
+  // Tie off unused inputs.
+  logic unused_clk;
+  logic unused_rst;
+  assign unused_clk = clk_i;
+  assign unused_rst = rst_ni;
 
   ////////////
   // Buffer //
@@ -51,13 +54,13 @@ module aes_sel_buf_chk #(
     always_comb begin : mux2_sel_chk
       unique case (sel_chk)
         MUX2_SEL_0,
-        MUX2_SEL_1: err = 1'b0;
-        default:    err = 1'b1;
+        MUX2_SEL_1: err_o = 1'b0;
+        default:    err_o = 1'b1;
       endcase
     end
 
     // Assertion
-    `ASSERT(AesMux2SelValid, !err |-> sel_chk inside {
+    `ASSERT(AesMux2SelValid, !err_o |-> sel_chk inside {
         MUX2_SEL_0,
         MUX2_SEL_1
         })
@@ -72,13 +75,13 @@ module aes_sel_buf_chk #(
       unique case (sel_chk)
         MUX3_SEL_0,
         MUX3_SEL_1,
-        MUX3_SEL_2: err = 1'b0;
-        default:    err = 1'b1;
+        MUX3_SEL_2: err_o = 1'b0;
+        default:    err_o = 1'b1;
       endcase
     end
 
     // Assertion
-    `ASSERT(AesMux3SelValid, !err |-> sel_chk inside {
+    `ASSERT(AesMux3SelValid, !err_o |-> sel_chk inside {
         MUX3_SEL_0,
         MUX3_SEL_1,
         MUX3_SEL_2
@@ -95,13 +98,13 @@ module aes_sel_buf_chk #(
         MUX4_SEL_0,
         MUX4_SEL_1,
         MUX4_SEL_2,
-        MUX4_SEL_3: err = 1'b0;
-        default:    err = 1'b1;
+        MUX4_SEL_3: err_o = 1'b0;
+        default:    err_o = 1'b1;
       endcase
     end
 
     // Assertion
-    `ASSERT(AesMux4SelValid, !err |-> sel_chk inside {
+    `ASSERT(AesMux4SelValid, !err_o |-> sel_chk inside {
         MUX4_SEL_0,
         MUX4_SEL_1,
         MUX4_SEL_2,
@@ -121,13 +124,13 @@ module aes_sel_buf_chk #(
         MUX6_SEL_2,
         MUX6_SEL_3,
         MUX6_SEL_4,
-        MUX6_SEL_5: err = 1'b0;
-        default:    err = 1'b1;
+        MUX6_SEL_5: err_o = 1'b0;
+        default:    err_o = 1'b1;
       endcase
     end
 
     // Assertion
-    `ASSERT(AesMux6SelValid, !err |-> sel_chk inside {
+    `ASSERT(AesMux6SelValid, !err_o |-> sel_chk inside {
         MUX6_SEL_0,
         MUX6_SEL_1,
         MUX6_SEL_2,
@@ -138,19 +141,8 @@ module aes_sel_buf_chk #(
 
   end else begin : gen_width_unsupported
     // Selected width not supported, signal error.
-    assign err = 1'b1;
+    assign err_o = 1'b1;
   end
-
-  // Make sure the error remains asserted until reset.
-  assign err_d = err | err_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_err
-    if (!rst_ni) begin
-      err_q <= '0;
-    end else if (err_d) begin
-      err_q <= err_d;
-    end
-  end
-  assign err_o = err_q;
 
   ////////////////
   // Assertions //
