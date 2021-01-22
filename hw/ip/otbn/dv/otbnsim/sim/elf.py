@@ -133,7 +133,7 @@ def load_elf(sim: OTBNSim, path: str) -> None:
                            'not a multiple of 4.'
                            .format(path, len(imem_bytes)))
 
-    imem_insns = decode_bytes(imem_bytes)
+    imem_insns = decode_bytes(0, imem_bytes)
 
     sim.load_program(imem_insns)
     sim.load_data(dmem_bytes)
