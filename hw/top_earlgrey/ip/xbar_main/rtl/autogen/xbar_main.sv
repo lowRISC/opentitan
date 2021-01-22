@@ -746,8 +746,8 @@ end
     .dev_select_i (dev_sel_s1n_27)
   );
   tlul_fifo_async #(
-    .ReqDepth        (3),// At least 3 to make async work
-    .RspDepth        (3) // At least 3 to make async work
+    .ReqDepth        (4),// At least 4 to make async work
+    .RspDepth        (4) // At least 4 to make async work
   ) u_asf_28 (
     .clk_h_i      (clk_main_i),
     .rst_h_ni     (rst_main_ni),

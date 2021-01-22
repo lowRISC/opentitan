@@ -198,8 +198,8 @@ ${"end" if loop.last else ""}
 % for block in xbar.nodes:
   % if block.node_type.name   == "ASYNC_FIFO":
   tlul_fifo_async #(
-    .ReqDepth        (3),// At least 3 to make async work
-    .RspDepth        (3) // At least 3 to make async work
+    .ReqDepth        (4),// At least 4 to make async work
+    .RspDepth        (4) // At least 4 to make async work
   ) u_${block.name} (
     .clk_h_i      (${block.clocks[0]}),
     .rst_h_ni     (${block.resets[0]}),
