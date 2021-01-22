@@ -19,25 +19,8 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    if (cfg.zero_delays) begin
-      cfg.m_tl_agent_cfg.a_valid_delay_min = 0;
-      cfg.m_tl_agent_cfg.a_valid_delay_max = 0;
-      cfg.m_tl_agent_cfg.d_valid_delay_min = 0;
-      cfg.m_tl_agent_cfg.d_valid_delay_max = 0;
-      cfg.m_tl_agent_cfg.a_ready_delay_min = 0;
-      cfg.m_tl_agent_cfg.a_ready_delay_max = 0;
-      cfg.m_tl_agent_cfg.d_ready_delay_min = 0;
-      cfg.m_tl_agent_cfg.d_ready_delay_max = 0;
 
-      foreach (cfg.m_alert_agent_cfg[i]) begin
-        cfg.m_alert_agent_cfg[i].alert_delay_min = 0;
-        cfg.m_alert_agent_cfg[i].alert_delay_max = 0;
-      end
-
-      if (cfg.has_edn) cfg.m_edn_pull_agent_cfg.zero_delays = 1;
-    end
-
-    // get vifs
+    // Retrieve the virtual interfaces from uvm_config_db.
     if (!uvm_config_db#(intr_vif)::get(this, "", "intr_vif", cfg.intr_vif) &&
         cfg.num_interrupts > 0) begin
       `uvm_fatal(get_full_name(), "failed to get intr_vif from uvm_config_db")
@@ -47,33 +30,54 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
       `uvm_fatal(get_full_name(), "failed to get devmode_vif from uvm_config_db")
     end
 
-    // create tl agent and set cfg
+    // Create & configure the TL agent.
     m_tl_agent = tl_agent::type_id::create("m_tl_agent", this);
     m_tl_reg_adapter = tl_reg_adapter#()::type_id::create("m_tl_reg_adapter");
     m_tl_reg_adapter.cfg = cfg.m_tl_agent_cfg;
     uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_agent*", "cfg", cfg.m_tl_agent_cfg);
+    cfg.m_tl_agent_cfg.en_cov = cfg.en_cov;
 
-    // create alert agents and set cfgs
+    // Create & configure the alert agents.
     foreach(cfg.list_of_alerts[i]) begin
       string alert_name = cfg.list_of_alerts[i];
       string agent_name = {"m_alert_agent_", alert_name};
       m_alert_agent[alert_name] = alert_esc_agent::type_id::create(agent_name, this);
       uvm_config_db#(alert_esc_agent_cfg)::set(this, agent_name, "cfg",
           cfg.m_alert_agent_cfg[alert_name]);
+      cfg.m_alert_agent_cfg[alert_name].en_cov = cfg.en_cov;
     end
 
-    // create edn pull agent, set cfg and set clk freq
+    // Create and configure the EDN agent if available.
     if (cfg.has_edn) begin
       m_edn_pull_agent = push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH))::type_id::create(
                          "m_edn_pull_agent", this);
       uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)))::set(
                      this, "m_edn_pull_agent", "cfg", cfg.m_edn_pull_agent_cfg);
+      cfg.m_edn_pull_agent_cfg.en_cov = cfg.en_cov;
 
       if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "edn_clk_rst_vif",
           cfg.edn_clk_rst_vif)) begin
         `uvm_fatal(get_full_name(), "failed to get edn_clk_rst_vif from uvm_config_db")
       end
-      cfg.clk_rst_vif.set_freq_mhz(cfg.edn_clk_freq_mhz);
+      // TODO: is this correct?
+      cfg.edn_clk_rst_vif.set_freq_mhz(cfg.edn_clk_freq_mhz);
+    end
+
+    // Pass on the zero_delays setting.
+    if (cfg.zero_delays) begin
+      cfg.m_tl_agent_cfg.a_valid_delay_min = 0;
+      cfg.m_tl_agent_cfg.a_valid_delay_max = 0;
+      cfg.m_tl_agent_cfg.d_valid_delay_min = 0;
+      cfg.m_tl_agent_cfg.d_valid_delay_max = 0;
+      cfg.m_tl_agent_cfg.a_ready_delay_min = 0;
+      cfg.m_tl_agent_cfg.a_ready_delay_max = 0;
+      cfg.m_tl_agent_cfg.d_ready_delay_min = 0;
+      cfg.m_tl_agent_cfg.d_ready_delay_max = 0;
+      foreach (cfg.m_alert_agent_cfg[i]) begin
+        cfg.m_alert_agent_cfg[i].alert_delay_min = 0;
+        cfg.m_alert_agent_cfg[i].alert_delay_max = 0;
+      end
+      if (cfg.has_edn) cfg.m_edn_pull_agent_cfg.zero_delays = 1;
     end
   endfunction
 

@@ -18,6 +18,7 @@ class pattgen_env extends cip_base_env #(
     m_pattgen_agent = pattgen_agent::type_id::create("m_pattgen_agent", this);
     uvm_config_db#(pattgen_agent_cfg)::set(this, "m_pattgen_agent*", "cfg",
                                            cfg.m_pattgen_agent_cfg);
+    cfg.m_pattgen_agent_cfg.en_cov = cfg.en_cov;
   endfunction : build_phase
 
   virtual function void connect_phase(uvm_phase phase);

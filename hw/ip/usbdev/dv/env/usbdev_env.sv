@@ -26,6 +26,7 @@ class usbdev_env extends cip_base_env #(
     // create components
     m_usb20_agent = usb20_agent::type_id::create("m_usb20_agent", this);
     uvm_config_db#(usb20_agent_cfg)::set(this, "m_usb20_agent*", "cfg", cfg.m_usb20_agent_cfg);
+    cfg.m_usb20_agent_cfg.en_cov = cfg.en_cov;
   endfunction
 
   function void connect_phase(uvm_phase phase);

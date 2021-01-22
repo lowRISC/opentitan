@@ -22,6 +22,7 @@ class otbn_env extends cip_base_env #(
 
     model_agent = otbn_model_agent::type_id::create("model_agent", this);
     uvm_config_db#(otbn_model_agent_cfg)::set(this, "model_agent*", "cfg", cfg.model_agent_cfg);
+    cfg.model_agent_cfg.en_cov = cfg.en_cov;
   endfunction
 
   function void connect_phase(uvm_phase phase);

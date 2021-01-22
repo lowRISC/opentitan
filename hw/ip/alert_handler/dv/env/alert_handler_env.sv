@@ -25,6 +25,7 @@ class alert_handler_env extends cip_base_env #(
           $sformatf("alert_host_agent[%0d]", i), this);
       uvm_config_db#(alert_esc_agent_cfg)::set(this,
           $sformatf("alert_host_agent[%0d]", i), "cfg", cfg.alert_host_cfg[i]);
+      cfg.alert_host_cfg[i].en_cov = cfg.en_cov;
       cfg.alert_host_cfg[i].clk_freq_mhz = int'(cfg.clk_freq_mhz);
     end
     // build escalator agents
@@ -35,6 +36,7 @@ class alert_handler_env extends cip_base_env #(
           $sformatf("esc_device_agent[%0d]", i), this);
       uvm_config_db#(alert_esc_agent_cfg)::set(this,
           $sformatf("esc_device_agent[%0d]", i), "cfg", cfg.esc_device_cfg[i]);
+      cfg.esc_device_cfg[i].en_cov = cfg.en_cov;
     end
     // get vifs
     if (!uvm_config_db#(entropy_vif)::get(this, "", "entropy_vif", cfg.entropy_vif)) begin

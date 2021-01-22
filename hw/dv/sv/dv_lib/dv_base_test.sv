@@ -25,17 +25,20 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
 
     env = ENV_T::type_id::create("env", this);
     cfg = CFG_T::type_id::create("cfg", this);
-    // don't add args for initialize. Use default value instead
     cfg.initialize();
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     uvm_config_db#(CFG_T)::set(this, "env", "cfg", cfg);
 
-    // knob to en/dis scb (enabled by default)
+    // Enable scoreboard (and sub-scoreboard checks) via plusarg.
     void'($value$plusargs("en_scb=%0b", cfg.en_scb));
     void'($value$plusargs("en_scb_tl_err_chk=%0b", cfg.en_scb_tl_err_chk));
     void'($value$plusargs("en_scb_mem_chk=%0b", cfg.en_scb_mem_chk));
-    // knob to cfg all agents with zero delays
+
+    // Enable fastest design performance by configuring zero delays in all agents.
     void'($value$plusargs("zero_delays=%0b", cfg.zero_delays));
+
+    // Enable coverage collection.
+    void'($value$plusargs("en_cov=%0b", cfg.en_cov));
   endfunction : build_phase
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
@@ -53,13 +56,15 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     if (run_test_seq) begin
       run_seq(test_seq_s, phase);
     end
-    // TODO: add hook for end of test checking
+    // TODO: add hook for end of test checking.
   endtask : run_phase
 
   virtual task run_seq(string test_seq_s, uvm_phase phase);
     uvm_sequence test_seq = create_seq_by_name(test_seq_s);
 
-    // provide virtual_sequencer earlier, so we may use the p_sequencer in constraint
+    // Setting the sequencer before the sequence is randomized is mandatory. We do this so that the
+    // sequence has access to the UVM environment's cfg handle via the p_sequencer handle within the
+    // randomization constraints.
     test_seq.set_sequencer(env.virtual_sequencer);
     `DV_CHECK_RANDOMIZE_FATAL(test_seq)
 
@@ -70,7 +75,7 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     `uvm_info(`gfn, {"Finished test sequence ", test_seq_s}, UVM_MEDIUM)
   endtask
 
-  // TODO: add default report_phase implementation
+  // TODO: Add default report_phase implementation.
 
 endclass : dv_base_test
 

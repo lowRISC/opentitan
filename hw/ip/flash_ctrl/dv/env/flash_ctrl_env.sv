@@ -47,6 +47,7 @@ class flash_ctrl_env extends cip_base_env #(
     m_eflash_tl_reg_adapter = tl_reg_adapter#()::type_id::create("m_eflash_tl_reg_adapter");
     uvm_config_db#(tl_agent_cfg)::set(
         this, "m_eflash_tl_agent*", "cfg", cfg.m_eflash_tl_agent_cfg);
+    cfg.m_eflash_tl_agent_cfg.en_cov = cfg.en_cov;
   endfunction
 
   function void connect_phase(uvm_phase phase);

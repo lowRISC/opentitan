@@ -28,6 +28,7 @@ class ${name}_env extends dv_base_env #(
     // create components
     m_${agent}_agent = ${agent}_agent::type_id::create("m_${agent}_agent", this);
     uvm_config_db#(${agent}_agent_cfg)::set(this, "m_${agent}_agent*", "cfg", cfg.m_${agent}_agent_cfg);
+    cfg.m_${agent}_agent_cfg.en_cov = cfg.en_cov;
 % endfor
   endfunction
 
