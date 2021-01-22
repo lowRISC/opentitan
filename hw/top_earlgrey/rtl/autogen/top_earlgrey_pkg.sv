@@ -12,14 +12,44 @@
 
 package top_earlgrey_pkg;
   /**
-   * Peripheral base address for uart in top earlgrey.
+   * Peripheral base address for uart0 in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_UART_BASE_ADDR = 32'h40000000;
+  parameter int unsigned TOP_EARLGREY_UART0_BASE_ADDR = 32'h40000000;
 
   /**
-   * Peripheral size in bytes for uart in top earlgrey.
+   * Peripheral size in bytes for uart0 in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_UART_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_UART0_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for uart1 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_UART1_BASE_ADDR = 32'h40010000;
+
+  /**
+   * Peripheral size in bytes for uart1 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_UART1_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for uart2 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_UART2_BASE_ADDR = 32'h40020000;
+
+  /**
+   * Peripheral size in bytes for uart2 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_UART2_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for uart3 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_UART3_BASE_ADDR = 32'h40030000;
+
+  /**
+   * Peripheral size in bytes for uart3 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_UART3_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for gpio in top earlgrey.
@@ -314,7 +344,7 @@ package top_earlgrey_pkg;
   /**
    * Memory base address for ram_ret in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RAM_RET_BASE_ADDR = 32'h18000000;
+  parameter int unsigned TOP_EARLGREY_RAM_RET_BASE_ADDR = 32'h40520000;
 
   /**
    * Memory size for ram_ret in top earlgrey.
@@ -342,8 +372,8 @@ package top_earlgrey_pkg;
     TopEarlgreyDioPinUsbdevDpPullup = 6,
     TopEarlgreyDioPinUsbdevSe0 = 7,
     TopEarlgreyDioPinUsbdevSense = 8,
-    TopEarlgreyDioPinUartTx = 9,
-    TopEarlgreyDioPinUartRx = 10,
+    TopEarlgreyDioPinUart0Tx = 9,
+    TopEarlgreyDioPinUart0Rx = 10,
     TopEarlgreyDioPinSpiDeviceSdo = 11,
     TopEarlgreyDioPinSpiDeviceSdi = 12,
     TopEarlgreyDioPinSpiDeviceCsb = 13,

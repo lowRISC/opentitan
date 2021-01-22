@@ -198,16 +198,12 @@
       addr_range:
       [
         {
-          base_addr: 0x18000000
-          size_byte: 0x1000
-        }
-        {
           base_addr: 0x40000000
           size_byte: 0x421000
         }
         {
           base_addr: 0x40500000
-          size_byte: 0x20000
+          size_byte: 0x21000
         }
       ]
     }

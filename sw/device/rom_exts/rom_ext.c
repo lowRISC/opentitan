@@ -22,7 +22,7 @@ static dif_uart_t uart;
 void rom_ext_boot(void) {
   dif_uart_result_t init_result = dif_uart_init(
       (dif_uart_params_t){
-          .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR),
+          .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
       },
       &uart);
 

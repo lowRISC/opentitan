@@ -43,7 +43,7 @@
 /**
  * Memory base address for ram_ret in top earlgrey.
  */
-#define TOP_EARLGREY_RAM_RET_BASE_ADDR 0x18000000
+#define TOP_EARLGREY_RAM_RET_BASE_ADDR 0x40520000
 
 /**
  * Memory size for ram_ret in top earlgrey.

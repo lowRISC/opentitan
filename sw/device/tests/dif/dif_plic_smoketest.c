@@ -40,14 +40,14 @@ static void handle_uart_isr(const dif_plic_irq_id_t interrupt_id) {
   dif_uart_irq_t uart_irq = 0;
 
   switch (interrupt_id) {
-    case kTopEarlgreyPlicIrqIdUartRxOverflow:
+    case kTopEarlgreyPlicIrqIdUart0RxOverflow:
       CHECK(!uart_rx_overflow_handled,
             "UART RX overflow IRQ asserted more than once");
 
       uart_irq = kDifUartIrqRxOverflow;
       uart_rx_overflow_handled = true;
       break;
-    case kTopEarlgreyPlicIrqIdUartTxEmpty:
+    case kTopEarlgreyPlicIrqIdUart0TxEmpty:
       CHECK(!uart_tx_empty_handled,
             "UART TX empty IRQ asserted more than once");
 
@@ -80,7 +80,7 @@ void handler_irq_external(void) {
   // Check if the interrupted peripheral is UART.
   top_earlgrey_plic_peripheral_t peripheral_id =
       top_earlgrey_plic_interrupt_for_peripheral[interrupt_id];
-  CHECK(peripheral_id == kTopEarlgreyPlicPeripheralUart,
+  CHECK(peripheral_id == kTopEarlgreyPlicPeripheralUart0,
         "ISR interrupted peripheral is not UART!");
   handle_uart_isr(interrupt_id);
 
@@ -129,19 +129,19 @@ static void uart_configure_irqs(dif_uart_t *uart) {
  */
 static void plic_configure_irqs(dif_plic_t *plic) {
   // Set IRQ triggers to be level triggered
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
+  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
                                  kDifPlicIrqTriggerLevel) == kDifPlicOk,
         "RX overflow trigger type set failed!");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
+  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
                                  kDifPlicIrqTriggerLevel) == kDifPlicOk,
         "TX empty trigger type set failed!");
 
   // Set IRQ priorities to MAX
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
+  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
                                   kDifPlicMaxPriority) == kDifPlicOk,
         "priority set for RX overflow failed!");
 
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
+  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
                                   kDifPlicMaxPriority) == kDifPlicOk,
         "priority set for TX empty failed!");
 
@@ -151,12 +151,12 @@ static void plic_configure_irqs(dif_plic_t *plic) {
         "threshold set failed!");
 
   // Enable IRQs in PLIC
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
+  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
                                  kPlicTarget,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "interrupt Enable for RX overflow failed!");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
+  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
                                  kPlicTarget,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "interrupt Enable for TX empty failed!");
@@ -195,7 +195,7 @@ bool test_main(void) {
 
   // No debug output in case of UART initialisation failure.
   mmio_region_t uart_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR);
+      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
   uart_initialise(uart_base_addr, &uart0);
 
   mmio_region_t plic_base_addr =

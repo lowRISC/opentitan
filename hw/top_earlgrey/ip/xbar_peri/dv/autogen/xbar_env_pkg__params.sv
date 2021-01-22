@@ -7,8 +7,17 @@
 
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
-    '{"uart", '{
+    '{"uart0", '{
         '{32'h40000000, 32'h40000fff}
+    }},
+    '{"uart1", '{
+        '{32'h40010000, 32'h40010fff}
+    }},
+    '{"uart2", '{
+        '{32'h40020000, 32'h40020fff}
+    }},
+    '{"uart3", '{
+        '{32'h40030000, 32'h40030fff}
     }},
     '{"gpio", '{
         '{32'h40040000, 32'h40040fff}
@@ -32,7 +41,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h40420000, 32'h40420fff}
     }},
     '{"ram_ret", '{
-        '{32'h18000000, 32'h18000fff}
+        '{32'h40520000, 32'h40520fff}
     }},
     '{"otp_ctrl", '{
         '{32'h40130000, 32'h40133fff}
@@ -59,7 +68,10 @@ tl_device_t xbar_devices[$] = '{
   // List of Xbar hosts
 tl_host_t xbar_hosts[$] = '{
     '{"main", 0, '{
-        "uart",
+        "uart0",
+        "uart1",
+        "uart2",
+        "uart3",
         "gpio",
         "spi_device",
         "rv_timer",
