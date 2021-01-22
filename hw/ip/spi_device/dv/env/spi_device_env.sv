@@ -19,6 +19,7 @@ class spi_device_env extends cip_base_env #(
     // build child components
     m_spi_agent = spi_agent::type_id::create("m_spi_agent", this);
     uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_agent*", "cfg", cfg.m_spi_agent_cfg);
+    cfg.m_spi_agent_cfg.en_cov = cfg.en_cov;
   endfunction
 
   function void connect_phase(uvm_phase phase);

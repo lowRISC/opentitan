@@ -24,11 +24,13 @@ class csrng_env extends cip_base_env #(
     uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))
                           ::set(this, "m_entropy_src_agent*", "cfg", cfg.m_entropy_src_agent_cfg);
     cfg.m_entropy_src_agent_cfg.agent_type = push_pull_agent_pkg::PullAgent;
-    cfg.m_entropy_src_agent_cfg.if_mode    = dv_utils_pkg::Device;
+    cfg.m_entropy_src_agent_cfg.if_mode = dv_utils_pkg::Device;
+    cfg.m_entropy_src_agent_cfg.en_cov = cfg.en_cov;
 
     m_csrng_agent = csrng_agent::type_id::create("m_csrng_agent", this);
     uvm_config_db#(csrng_agent_cfg)::set(this, "m_csrng_agent*", "cfg", cfg.m_csrng_agent_cfg);
     cfg.m_csrng_agent_cfg.if_mode = dv_utils_pkg::Host;
+    cfg.m_csrng_agent_cfg.en_cov = cfg.en_cov;
 
     if (!uvm_config_db#(virtual pins_if)::get(this, "", "efuse_sw_app_enable_vif",
          cfg.efuse_sw_app_enable_vif)) begin

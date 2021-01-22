@@ -17,6 +17,7 @@ class uart_env extends cip_base_env #(.CFG_T               (uart_env_cfg),
 
     m_uart_agent = uart_agent::type_id::create("m_uart_agent", this);
     uvm_config_db#(uart_agent_cfg)::set(this, "m_uart_agent*", "cfg", cfg.m_uart_agent_cfg);
+    cfg.m_uart_agent_cfg.en_cov = cfg.en_cov;
   endfunction
 
   function void connect_phase(uvm_phase phase);

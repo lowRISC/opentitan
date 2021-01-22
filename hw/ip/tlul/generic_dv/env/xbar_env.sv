@@ -28,6 +28,7 @@ class xbar_env extends dv_base_env#(.CFG_T              (xbar_env_cfg),
                       $sformatf("%0s_agent", xbar_hosts[i].host_name), this);
       uvm_config_db#(tl_agent_cfg)::set(this,
         $sformatf("*%0s*", xbar_hosts[i].host_name),"cfg", cfg.host_agent_cfg[i]);
+      cfg.host_agent_cfg[i].en_cov = cfg.en_cov;
     end
     device_agent = new[cfg.num_devices];
     foreach (device_agent[i]) begin
@@ -35,6 +36,7 @@ class xbar_env extends dv_base_env#(.CFG_T              (xbar_env_cfg),
                       $sformatf("%0s_agent", xbar_devices[i].device_name), this);
       uvm_config_db#(tl_agent_cfg)::set(this,
         $sformatf("*%0s*", xbar_devices[i].device_name), "cfg", cfg.device_agent_cfg[i]);
+      cfg.device_agent_cfg[i].en_cov = cfg.en_cov;
     end
 
     // this clock isn't connected to design but only used for TB, like measure timeout, drive long
