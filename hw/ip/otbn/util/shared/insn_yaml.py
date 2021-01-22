@@ -193,13 +193,22 @@ class Insn:
         (not encoded values). mnem_width is the width to pad the mnemonic to.
 
         '''
-        padded_mnem = self.mnemonic
-        if len(padded_mnem) < mnem_width:
-            padded_mnem += ' ' * (mnem_width - len(padded_mnem))
+        hunks = self.syntax.render(cur_pc, op_vals, self.name_to_operand)
+        mnem = self.mnemonic
+        if hunks and self.glued_ops:
+            mnem += hunks[0] + ' '
+            hunks = hunks[1:]
+        else:
+            mnem += ' '
 
-        return (padded_mnem +
-                ('' if self.glued_ops else ' ') +
-                self.syntax.render(cur_pc, op_vals, self.name_to_operand))
+        if len(mnem) < mnem_width:
+            mnem += ' ' * (mnem_width - len(mnem))
+
+        # The lstrip here deals with a tricky corner case for instructions like
+        # bn.mulqacc if the .z option isn't supplied. In that case, the syntax
+        # for the operands starts with a space (following the optional .z that
+        # isn't there) and would mess up our alignment.
+        return mnem + ''.join(hunks).lstrip()
 
 
 def find_ambiguous_encodings(insns: List[Insn]) -> List[Tuple[str, str, int]]:
