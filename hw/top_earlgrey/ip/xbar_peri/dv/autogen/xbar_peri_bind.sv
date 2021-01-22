@@ -14,11 +14,29 @@ module xbar_peri_bind;
   );
 
   // Device interfaces
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_uart (
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_uart0 (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),
-    .h2d    (tl_uart_o),
-    .d2h    (tl_uart_i)
+    .h2d    (tl_uart0_o),
+    .d2h    (tl_uart0_i)
+  );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_uart1 (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_uart1_o),
+    .d2h    (tl_uart1_i)
+  );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_uart2 (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_uart2_o),
+    .d2h    (tl_uart2_i)
+  );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_uart3 (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_uart3_o),
+    .d2h    (tl_uart3_i)
   );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_gpio (
     .clk_i  (clk_peri_i),

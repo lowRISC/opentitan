@@ -49,7 +49,7 @@ static dif_rv_timer_t timer;
 static void sca_init_uart(void) {
   IGNORE_RESULT(dif_uart_init(
       (dif_uart_params_t){
-          .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR),
+          .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
       },
       &uart));
   IGNORE_RESULT(

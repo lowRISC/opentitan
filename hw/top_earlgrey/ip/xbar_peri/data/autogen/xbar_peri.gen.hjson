@@ -28,7 +28,10 @@
   {
     main:
     [
-      uart
+      uart0
+      uart1
+      uart2
+      uart3
       gpio
       spi_device
       rv_timer
@@ -60,7 +63,7 @@
       pipeline_byp: "true"
     }
     {
-      name: uart
+      name: uart0
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -70,6 +73,60 @@
       [
         {
           base_addr: 0x40000000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: uart1
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addr: 0x40010000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: uart2
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addr: 0x40020000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: uart3
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addr: 0x40030000
           size_byte: 0x1000
         }
       ]
@@ -213,7 +270,7 @@
       addr_range:
       [
         {
-          base_addr: 0x18000000
+          base_addr: 0x40520000
           size_byte: 0x1000
         }
       ]

@@ -114,12 +114,13 @@ static dif_uart_t uart;
         Test for some common mistakes.
 */
 void portable_init(core_portable *p, int *argc, char *argv[]) {
-  CHECK(dif_uart_init(
-            (dif_uart_params_t){
-                .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR),
-            },
-            &uart) == kDifUartOk,
-        "failed to init UART");
+  CHECK(
+      dif_uart_init(
+          (dif_uart_params_t){
+              .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
+          },
+          &uart) == kDifUartOk,
+      "failed to init UART");
   CHECK(dif_uart_configure(&uart,
                            (dif_uart_config_t){
                                .baudrate = kUartBaudrate,
