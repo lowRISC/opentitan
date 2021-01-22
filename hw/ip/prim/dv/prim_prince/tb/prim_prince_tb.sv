@@ -44,6 +44,11 @@ module prim_prince_tb;
 
   localparam time ClkPeriod = 10000;
 
+  // This bit can be set from the command line to indicate that we are running a smoke regression,
+  // and to run just a single iteration of the test.
+  // This helps drastically reduce runtimes in the CI flows.
+  bit smoke_test;
+
 //////////////////////////////////////////////////////
 // Clock interface
 //////////////////////////////////////////////////////
@@ -233,6 +238,8 @@ module prim_prince_tb;
 
   initial begin : p_stimuli
 
+    int num_trans;
+
     // The key and plaintext/ciphertext to be fed into PRINCE instances.
     bit [KeyWidth/2-1:0] k0, k1;
     bit [DataWidth-1:0] plaintext;
@@ -273,7 +280,9 @@ module prim_prince_tb;
     test_prince(plaintext, {k1, k0});
 
     // Test random vectors
-    for (int i = 0; i < 25000; i++) begin
+    void'($value$plusargs("smoke_test=%0b", smoke_test));
+    num_trans = smoke_test ? 1 : $urandom_range(10000, 30000);
+    for (int i = 0; i < num_trans; i++) begin
       if (!std::randomize(plaintext)) begin
         $fatal("Randomization of plaintext failed!");
       end

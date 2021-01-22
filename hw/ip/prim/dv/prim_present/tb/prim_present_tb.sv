@@ -42,6 +42,10 @@ module prim_present_tb;
   // this parameter is required for the DPI model.
   localparam bit KeySize80 = (KeyWidth == 80);
 
+  // This bit can be set from the command line to indicate that we are running a smoke regression,
+  // and to run just a single iteration of the test.
+  // This helps drastically reduce runtimes in the CI flows.
+  bit smoke_test;
 
 //////////////////////////////////////////////////////
 // DUTs for both encryption and decryption
@@ -204,6 +208,8 @@ module prim_present_tb;
 
   initial begin : p_stimuli
 
+    int num_trans;
+
     // The key and plaintext/ciphertext to be fed into PRESENT instances.
     bit [KeyWidth-1:0] key;
     bit [DataWidth-1:0] plaintext;
@@ -231,7 +237,9 @@ module prim_present_tb;
     test_present(plaintext, key);
 
     // Test random vectors
-    for (int i = 0; i < 5000; i++) begin
+    void'($value$plusargs("smoke_test=%0b", smoke_test));
+    num_trans = smoke_test ? 1 : $urandom_range(2500, 5000);
+    for (int i = 0; i < num_trans; i++) begin
       if (!std::randomize(plaintext)) begin
         $fatal("Randomization of plaintext failed!");
       end
