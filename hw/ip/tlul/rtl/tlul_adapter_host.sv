@@ -104,6 +104,16 @@ module tlul_adapter_host #(
   assign rdata_o = tl_i.d_data;
   assign err_o   = tl_i.d_error;
 
+  // Addresses are assumed to be word-aligned, and the bottom bits are ignored
+  logic unused_addr_bottom_bits;
+  assign unused_addr_bottom_bits = ^addr_i[WordSize-1:0];
+
+  // Explicitly ignore unused fields of tl_i
+  logic unused_tl_i_fields;
+  assign unused_tl_i_fields = ^{tl_i.d_opcode, tl_i.d_param,
+                                tl_i.d_size, tl_i.d_source, tl_i.d_sink,
+                                tl_i.d_user};
+
 `ifdef INC_ASSERT
   localparam int OutstandingReqCntW =
     (MAX_REQS == 2 ** $clog2(MAX_REQS)) ? $clog2(MAX_REQS) + 1 : $clog2(MAX_REQS);
