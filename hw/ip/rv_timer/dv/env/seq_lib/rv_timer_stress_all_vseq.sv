@@ -11,7 +11,7 @@ class rv_timer_stress_all_vseq extends rv_timer_base_vseq;
   `uvm_object_new
 
   task body();
-    string seq_names[] = {"rv_timer_smoke_vseq",
+    string seq_names[] = {"rv_timer_random_vseq",
                           "rv_timer_disabled_vseq",
                           "rv_timer_common_vseq"}; // for intr_test
     for (int i = 1; i <= num_trans; i++) begin

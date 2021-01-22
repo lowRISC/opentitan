@@ -4,7 +4,7 @@
 
 // This sequence assert reset randomly in between running timer
 
-class rv_timer_random_reset_vseq extends rv_timer_smoke_vseq;
+class rv_timer_random_reset_vseq extends rv_timer_random_vseq;
   `uvm_object_utils(rv_timer_random_reset_vseq)
   `uvm_object_new
 

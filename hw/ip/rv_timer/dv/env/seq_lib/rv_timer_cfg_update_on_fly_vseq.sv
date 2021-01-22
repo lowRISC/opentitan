@@ -7,7 +7,7 @@
 // after disabling timer. This seq also exercise upating timer cfg multiple
 // times when timer is close to expire (1 prescale before).
 
-class rv_timer_cfg_update_on_fly_vseq extends rv_timer_smoke_vseq;
+class rv_timer_cfg_update_on_fly_vseq extends rv_timer_random_vseq;
   `uvm_object_utils(rv_timer_cfg_update_on_fly_vseq)
   `uvm_object_new
 

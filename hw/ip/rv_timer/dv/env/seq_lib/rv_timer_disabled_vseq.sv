@@ -5,7 +5,7 @@
 // This sequence check no activity on timer register and interrupt when timer
 // is disabled
 
-class rv_timer_disabled_vseq extends rv_timer_smoke_vseq;
+class rv_timer_disabled_vseq extends rv_timer_random_vseq;
   `uvm_object_utils(rv_timer_disabled_vseq)
   `uvm_object_new
 
