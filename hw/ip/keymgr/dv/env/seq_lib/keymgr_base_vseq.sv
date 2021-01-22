@@ -20,7 +20,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   // save DUT returned current state here, rather than using it from RAL, it's needed info to
   // predict operation result in seq
-  keymgr_pkg::keymgr_working_state_e current_state;
+  keymgr_pkg::keymgr_working_state_e current_state = keymgr_pkg::StReset;
 
   rand bit is_key_version_err;
 
@@ -52,8 +52,6 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   // setup basic keymgr features
   virtual task keymgr_init();
-    current_state = keymgr_pkg::StReset;
-
     // Any OP except advance at StReset will trigger OP error, test these OPs here
     if (do_op_before_init) begin
       repeat ($urandom_range(1, 5)) begin

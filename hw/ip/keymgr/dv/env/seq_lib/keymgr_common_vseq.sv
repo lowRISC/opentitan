@@ -10,6 +10,16 @@ class keymgr_common_vseq extends keymgr_base_vseq;
   }
   `uvm_object_new
 
+  // override this delay for keymgr_stress_all_with_rand_reset, as most of vseq finishes less than
+  // 10k cycles
+  constraint delay_to_reset_c {
+    delay_to_reset dist {
+        [1     : 100]     :/ 1,
+        [101   : 2_000]   :/ 6,
+        [2_001 : 10_000]  :/ 1
+    };
+  }
+
   virtual task pre_start();
     do_keymgr_init = 1'b0;
     super.pre_start();
