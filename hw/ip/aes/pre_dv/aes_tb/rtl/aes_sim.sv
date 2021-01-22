@@ -94,7 +94,7 @@ module aes_sim import aes_pkg::*;
   assign cipher_op     = {u_aes.u_aes_core.u_aes_cipher_core.op_i};
   assign key_expand_op = {u_aes.u_aes_core.u_aes_cipher_core.u_aes_key_expand.op_i};
   assign key_len       = {u_aes.u_aes_core.u_aes_cipher_core.key_len_i};
-  assign round         = u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.round_q;
+  assign round         = u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.rnd_ctr_q;
 
   // iv
   logic [31:0] iv[4] /*verilator public_flat*/;
