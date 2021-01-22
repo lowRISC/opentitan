@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`ifndef SYNTHESIS
+
 /**
  * Interface designed to be bound into otbn_core and extract out signals useful for the tracer.
  *
@@ -219,3 +221,5 @@ interface otbn_trace_if
     assign flags_read_data[i_fg] = u_otbn_alu_bignum.flags_q[i_fg];
   end
 endinterface
+
+`endif // SYNTHESIS
