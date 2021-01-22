@@ -60,12 +60,14 @@ The following is a list of common features and settings:
   many as the DUT provides. The reason for going with a fixed width pins_if is
   to allow the intr_vif to be available in this base env cfg class (which does not
   know how many interrupt each IP DUT provides).
-* **alerts_vif**: This is a handle to the `pins_if #(NUM_MAX_ALERTS=64)` interface
-  instance created in the tb to hookup the DUT alerts, similar to intr_vif.
 * **devmode_vif**: THis is a handle to the `pins_if #(1)` interface instance created
   in the tb to hookup the DUT input `devmode`.
 * **tl_agent_cfg**: The downstream TileLink host agent created in the cip_base_env
   class requires the agent cfg handle to tell it how to configure the agent.
+* **alert_agent_cfgs**: Similar to tl_agent_cfg, the downstream alert device agent
+  created in the cip_base_env class requires the agent cfg handles to tell it how to
+  configure the agent. In default, alert agent is configured in device mode,
+  asynchronous, active and the ping coverage is turned off.
 * **ral**: This is the instance to the auto-generated RAL model that is
   extended from `dv_base_reg_block`. In the base class, this is created using
   the RAL_T class parameter which the extended IP env cfg class sets correctly.
@@ -104,10 +106,9 @@ testbenches:
 * `intr_cg`: Covers individual and cross coverage on intr_enable and intr_state for all interrupts in IP
 * `intr_test_cg`: Covers intr_test coverage and its cross with intr_enable and intr_state for all interrupts in IP
 * `intr_pins_cg`: Covers values and transitions on all interrupt output pins of IP
-* `alert_cg`: Covers all alerts, if alerts exist in the IP
 * `sticky_intr_cov`: Covers sticky interrupt functionality of all applicable interrupts in IP
 
-Covergroups `intr_cg`, `intr_test_cg`, `intr_pins_cg` and `alert_cg` are instantiated
+Covergroups `intr_cg`, `intr_test_cg` and `intr_pins_cg` are instantiated
 and allocated in `cip_base_env_cov` by default in all IPs.
 On the other hand, `sticky_intr_cov` is instantiated with string key.
 The string key represents the interrupts names that are sticky. This is specific
@@ -153,9 +154,11 @@ the env cfg class type handle from `uvm_config_db` as well as all the virtual
 interfaces (which are actually part of the env cfg class). It then uses the env
 cfg settings to modify the downstream agent cfg settings as required. All of
 the above components are created based on env cfg settings, along with the TileLink
-host agent. In the connect phase, the scoreboard connects with the monitor
-within the TileLink agent to be able to grab packets from the TL interface
-during address and the data phases. In the end of elaboration phase, the ral
+host agent and alert device agents if the module has alerts. In the connect phase,
+the scoreboard connects with the monitor within the TileLink agent to be able to
+grab packets from the TL interface during address and the data phases. The scoreboard
+also connects the alert monitor within the alert_esc_agent to grab packets
+regarding alert handshake status. In the end of elaboration phase, the ral
 model within the env cfg handle is locked and the ral sequencer and adapters are
 set to be used with the TileLink interface.
 
@@ -317,6 +320,44 @@ User sets `UVM_TEST` plus arg to `uart_base_test` so that all tests create the U
 that is automatically tailored to UART IP. Each test then sets the
 `UVM_TEST_SEQ` plusarg to run the specific test sequence, along with additional
 plusargs as required.
+
+## Configure Alert Device Agent from CIP library classes
+
+To configure alert device agents in block level testbench environment that extended
+from this CIP library claaes, please follow the steps below:
+* **${ip_name}_env_pkg.sv**: Add parameter `LIST_OF_ALERTS[]` and `NUM_ALERTS`.
+  Please make sure the alert names and order are correct.
+  For example in `otp_ctrl_env_pkg.sv`:
+  ```systemverilog
+  parameter string LIST_OF_ALERTS[] = {"fatal_macro_error", "fatal_check_error"};
+  parameter uint NUM_ALERTS         = 2;
+  ```
+* **${ip_name}_env_cfg.sv**: In function `initialize()`, assign `LIST_OF_ALERTS`
+  parameter to `list_of_alerts` variable which is created in `cip_base_env_cfg.sv`.
+  Note that this assignment should to be written before calling `super.initialize()`,
+  so that creating alert host agents will take the updated `list_of_alerts` variable.
+  For example in `otp_ctrl_env_cfg.sv`:
+  ```systemverilog
+  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+    list_of_alerts = otp_ctrl_env_pkg::LIST_OF_ALERTS;
+    super.initialize(csr_base_addr);
+  ```
+* **tb.sv**: Add `DV_ALERT_IF_CONNECT` macro that declares alert interfaces,
+  connect alert interface wirings with DUT, and set alert_if to uvm_config_db.
+  Then connect alert_rx/tx to the DUT ports.
+  For example in otp_ctrl's `tb.sv`:
+  ```systemverilog
+  `DV_ALERT_IF_CONNECT
+  otp_ctrl dut (
+    .clk_i                      (clk        ),
+    .rst_ni                     (rst_n      ),
+    .alert_rx_i                 (alert_rx   ),
+    .alert_tx_o                 (alert_tx   ),
+  ```
+Note that if the testbench is generated from `uvmdvgen.py`, using the `-hr` switch
+will automatically generate the skeleton code listed above for alert device agent.
+Details on how to use `uvmdvgen.py` please refer to the
+[uvmdvgen document]({{< relref "util/uvmdvgen/README" >}}).
 
 ## CIP Testbench
 ![CIP testbench diagram](tb.svg)
