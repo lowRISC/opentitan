@@ -13,7 +13,7 @@
 #  - n_dio_pads:          Number of dedicated IO pads
 #  - n_wkup_detect:       Number of wakeup condition detectors
 #  - wkup_cnt_width:      Width of wakeup counters
-# 
+#
 {
   name: "PINMUX",
   clock_primary: "clk_i",
@@ -31,6 +31,9 @@
   wakeup_list: [
     { name: "aon_wkup_req",
       desc: "pin wake request"
+    },
+    { name: "usb_wkup_req",
+      desc: "usb wake request"
     }
   ],
 
@@ -463,4 +466,3 @@
     },
   ],
 }
-
