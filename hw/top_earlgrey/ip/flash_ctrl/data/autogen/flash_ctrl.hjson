@@ -153,7 +153,7 @@
     { name: "RegPagesPerBank",
       desc: "Number of pages per bank",
       type: "int",
-      default: "128",
+      default: "256",
       local: "true"
     },
 
@@ -167,7 +167,7 @@
     { name: "RegPageWidth",
       desc: "Number of bits needed to represent the pages within a bank",
       type: "int",
-      default: "7",
+      default: "8",
       local: "true"
     },
 
@@ -230,7 +230,7 @@
     { name: "BytesPerBank",
       desc: "Number of bytes per bank",
       type: "int",
-      default: "262144",
+      default: "524288",
       local: "true"
     },
 
@@ -554,14 +554,14 @@
               ''',
               resval: "0"
             }
-            { bits: "15:8",
+            { bits: "16:8",
               name: "BASE",
               desc: '''
                 Region base page. Note the granularity is page, not byte or word
               ''',
               resval: "0"
             },
-            { bits: "24:16",
+            { bits: "26:17",
               name: "SIZE",
               desc: '''
                 Region size in number of pages
@@ -1276,7 +1276,7 @@
         { bits: "2",    name: "prog_full",  desc: "Flash program FIFO full"},
         { bits: "3",    name: "prog_empty", desc: "Flash program FIFO empty, software must provide data", resval: "1"},
         { bits: "4",    name: "init_wip",   desc: "Flash controller undergoing init, inclusive of phy init"},
-        { bits: "15:8", name: "error_addr", desc: "Flash controller error address."},
+        { bits: "16:8", name: "error_addr", desc: "Flash controller error address."},
       ]
     },
 

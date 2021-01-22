@@ -8,9 +8,9 @@ package flash_ctrl_reg_pkg;
 
   // Param list
   parameter int RegNumBanks = 2;
-  parameter int RegPagesPerBank = 128;
+  parameter int RegPagesPerBank = 256;
   parameter int RegBusPgmResBytes = 64;
-  parameter int RegPageWidth = 7;
+  parameter int RegPageWidth = 8;
   parameter int RegBankWidth = 1;
   parameter int NumRegions = 8;
   parameter int NumInfos0 = 10;
@@ -19,7 +19,7 @@ package flash_ctrl_reg_pkg;
   parameter int WordsPerPage = 256;
   parameter int BytesPerWord = 8;
   parameter int BytesPerPage = 2048;
-  parameter int BytesPerBank = 262144;
+  parameter int BytesPerBank = 524288;
 
   // Address width within the block
   parameter int BlockAw = 9;
@@ -160,10 +160,10 @@ package flash_ctrl_reg_pkg;
       logic        q;
     } he_en;
     struct packed {
-      logic [7:0]  q;
+      logic [8:0]  q;
     } base;
     struct packed {
-      logic [8:0]  q;
+      logic [9:0] q;
     } size;
   } flash_ctrl_reg2hw_mp_region_cfg_mreg_t;
 
@@ -430,7 +430,7 @@ package flash_ctrl_reg_pkg;
       logic        de;
     } init_wip;
     struct packed {
-      logic [7:0]  d;
+      logic [8:0]  d;
       logic        de;
     } error_addr;
   } flash_ctrl_hw2reg_status_reg_t;
@@ -455,14 +455,14 @@ package flash_ctrl_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [503:498]
-    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [497:492]
-    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [491:480]
-    flash_ctrl_reg2hw_control_reg_t control; // [479:460]
-    flash_ctrl_reg2hw_addr_reg_t addr; // [459:428]
-    flash_ctrl_reg2hw_prog_type_en_reg_t prog_type_en; // [427:426]
-    flash_ctrl_reg2hw_erase_suspend_reg_t erase_suspend; // [425:425]
-    flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [424:233]
+    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [519:514]
+    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [513:508]
+    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [507:496]
+    flash_ctrl_reg2hw_control_reg_t control; // [495:476]
+    flash_ctrl_reg2hw_addr_reg_t addr; // [475:444]
+    flash_ctrl_reg2hw_prog_type_en_reg_t prog_type_en; // [443:442]
+    flash_ctrl_reg2hw_erase_suspend_reg_t erase_suspend; // [441:441]
+    flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [440:233]
     flash_ctrl_reg2hw_default_region_reg_t default_region; // [232:227]
     flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t [9:0] bank0_info0_page_cfg; // [226:157]
     flash_ctrl_reg2hw_bank0_info1_page_cfg_mreg_t [0:0] bank0_info1_page_cfg; // [156:150]
@@ -480,12 +480,12 @@ package flash_ctrl_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    flash_ctrl_hw2reg_intr_state_reg_t intr_state; // [45:34]
-    flash_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [33:33]
-    flash_ctrl_hw2reg_control_reg_t control; // [32:31]
-    flash_ctrl_hw2reg_erase_suspend_reg_t erase_suspend; // [30:29]
-    flash_ctrl_hw2reg_op_status_reg_t op_status; // [28:25]
-    flash_ctrl_hw2reg_status_reg_t status; // [24:6]
+    flash_ctrl_hw2reg_intr_state_reg_t intr_state; // [46:35]
+    flash_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [34:34]
+    flash_ctrl_hw2reg_control_reg_t control; // [33:32]
+    flash_ctrl_hw2reg_erase_suspend_reg_t erase_suspend; // [31:30]
+    flash_ctrl_hw2reg_op_status_reg_t op_status; // [29:26]
+    flash_ctrl_hw2reg_status_reg_t status; // [25:6]
     flash_ctrl_hw2reg_phy_status_reg_t phy_status; // [5:0]
   } flash_ctrl_hw2reg_t;
 
@@ -755,7 +755,7 @@ package flash_ctrl_reg_pkg;
     4'b 0001, // index[77] FLASH_CTRL_BANK_CFG_REGWEN
     4'b 0001, // index[78] FLASH_CTRL_MP_BANK_CFG
     4'b 0001, // index[79] FLASH_CTRL_OP_STATUS
-    4'b 0011, // index[80] FLASH_CTRL_STATUS
+    4'b 0111, // index[80] FLASH_CTRL_STATUS
     4'b 0001, // index[81] FLASH_CTRL_PHY_STATUS
     4'b 1111, // index[82] FLASH_CTRL_SCRATCH
     4'b 0011, // index[83] FLASH_CTRL_FIFO_LVL

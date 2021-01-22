@@ -161,7 +161,7 @@
       [
         {
           base_addr: 0x10000000
-          size_byte: 0x10000
+          size_byte: 0x20000
         }
       ]
       xbar: false
@@ -179,7 +179,7 @@
       [
         {
           base_addr: 0x20000000
-          size_byte: 0x80000
+          size_byte: 0x100000
         }
       ]
       xbar: false

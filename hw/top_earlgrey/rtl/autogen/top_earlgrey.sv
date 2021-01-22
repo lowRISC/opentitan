@@ -566,7 +566,7 @@ module top_earlgrey #(
   logic        ram_main_req;
   logic        ram_main_gnt;
   logic        ram_main_we;
-  logic [13:0] ram_main_addr;
+  logic [14:0] ram_main_addr;
   logic [31:0] ram_main_wdata;
   logic [31:0] ram_main_wmask;
   logic [31:0] ram_main_rdata;
@@ -574,7 +574,7 @@ module top_earlgrey #(
   logic [1:0]  ram_main_rerror;
 
   tlul_adapter_sram #(
-    .SramAw(14),
+    .SramAw(15),
     .SramDw(32),
     .Outstanding(2)
   ) u_tl_adapter_ram_main (
@@ -596,7 +596,7 @@ module top_earlgrey #(
 
   prim_ram_1p_scr #(
     .Width(32),
-    .Depth(16384),
+    .Depth(32768),
     .CfgWidth(8)
   ) u_ram1p_ram_main (
     .clk_i   (clkmgr_clocks.clk_main_infra),
