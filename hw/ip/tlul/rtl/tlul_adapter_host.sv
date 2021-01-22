@@ -50,6 +50,7 @@ module tlul_adapter_host #(
     assign tl_source = '0;
   end else begin : g_multiple_reqs
     localparam int ReqNumW  = $clog2(MAX_REQS);
+    localparam int unsigned MaxSource = MAX_REQS - 1;
 
     logic [ReqNumW-1:0] source_d;
     logic [ReqNumW-1:0] source_q;
@@ -66,7 +67,7 @@ module tlul_adapter_host #(
       source_d = source_q;
 
       if (req_i && gnt_o) begin
-        if (source_q == MAX_REQS - 1) begin
+        if (source_q == MaxSource[ReqNumW-1:0]) begin
           source_d = '0;
         end else  begin
           source_d = source_q + 1;
