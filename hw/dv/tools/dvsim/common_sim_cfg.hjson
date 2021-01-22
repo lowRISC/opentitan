@@ -111,6 +111,8 @@
       name: smoke
       tests: []
       reseed: 1
+      // Knob used to configure an existing test / vseq to have a shorter runtime.
+      run_opts: ["+smoke_test=1"]
     }
 
     {

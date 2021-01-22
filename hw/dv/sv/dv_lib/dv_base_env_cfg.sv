@@ -13,6 +13,12 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   bit under_reset       = 0;
   bit is_initialized;        // Indicates that the initialize() method has been called.
 
+  // The scope and runtime of a existing test can be reduced by setting this variable. This is
+  // useful to keep the runtime down especially in time-sensitive runs such as CI, which is meant
+  // to check the code health and not find design bugs. It is set via plusarg and retrieved in
+  // `dv_base_test`.
+  bit smoke_test        = 0;
+
   // bit to configure all uvcs with zero delays to create high bw test
   rand bit zero_delays;
 
