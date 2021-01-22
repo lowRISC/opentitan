@@ -11,7 +11,7 @@ Type           | Item                 | Resolution  | Note/Collaterals
 ---------------|----------------------|-------------|------------------
 Implementation | [DIF_EXISTS][]       | Done        |
 Implementation | [DIF_USED_IN_TREE][] | Not Started |
-Tests          | [DIF_TEST_UNIT][]    | Not Started |
+Tests          | [DIF_TEST_UNIT][]    | Done        |
 Tests          | [DIF_TEST_SANITY][]  | Not Started |
 
 [DIF_EXISTS]:       {{< relref "/doc/project/checklist.md#dif_exists" >}}

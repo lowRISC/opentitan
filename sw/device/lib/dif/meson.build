@@ -7,7 +7,7 @@ sw_lib_dif_clkmgr = declare_dependency(
   link_with: static_library(
     'clkmgr_ot',
     sources: [
-      hw_ip_clkgmr_reg_h,
+      hw_ip_clkmgr_reg_h,
       'dif_clkmgr.c',
     ],
     dependencies: [
