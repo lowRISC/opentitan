@@ -254,11 +254,11 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_0_he_en_0_qs;
   logic mp_region_cfg_0_he_en_0_wd;
   logic mp_region_cfg_0_he_en_0_we;
-  logic [7:0] mp_region_cfg_0_base_0_qs;
-  logic [7:0] mp_region_cfg_0_base_0_wd;
+  logic [8:0] mp_region_cfg_0_base_0_qs;
+  logic [8:0] mp_region_cfg_0_base_0_wd;
   logic mp_region_cfg_0_base_0_we;
-  logic [8:0] mp_region_cfg_0_size_0_qs;
-  logic [8:0] mp_region_cfg_0_size_0_wd;
+  logic [9:0] mp_region_cfg_0_size_0_qs;
+  logic [9:0] mp_region_cfg_0_size_0_wd;
   logic mp_region_cfg_0_size_0_we;
   logic mp_region_cfg_1_en_1_qs;
   logic mp_region_cfg_1_en_1_wd;
@@ -281,11 +281,11 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_1_he_en_1_qs;
   logic mp_region_cfg_1_he_en_1_wd;
   logic mp_region_cfg_1_he_en_1_we;
-  logic [7:0] mp_region_cfg_1_base_1_qs;
-  logic [7:0] mp_region_cfg_1_base_1_wd;
+  logic [8:0] mp_region_cfg_1_base_1_qs;
+  logic [8:0] mp_region_cfg_1_base_1_wd;
   logic mp_region_cfg_1_base_1_we;
-  logic [8:0] mp_region_cfg_1_size_1_qs;
-  logic [8:0] mp_region_cfg_1_size_1_wd;
+  logic [9:0] mp_region_cfg_1_size_1_qs;
+  logic [9:0] mp_region_cfg_1_size_1_wd;
   logic mp_region_cfg_1_size_1_we;
   logic mp_region_cfg_2_en_2_qs;
   logic mp_region_cfg_2_en_2_wd;
@@ -308,11 +308,11 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_2_he_en_2_qs;
   logic mp_region_cfg_2_he_en_2_wd;
   logic mp_region_cfg_2_he_en_2_we;
-  logic [7:0] mp_region_cfg_2_base_2_qs;
-  logic [7:0] mp_region_cfg_2_base_2_wd;
+  logic [8:0] mp_region_cfg_2_base_2_qs;
+  logic [8:0] mp_region_cfg_2_base_2_wd;
   logic mp_region_cfg_2_base_2_we;
-  logic [8:0] mp_region_cfg_2_size_2_qs;
-  logic [8:0] mp_region_cfg_2_size_2_wd;
+  logic [9:0] mp_region_cfg_2_size_2_qs;
+  logic [9:0] mp_region_cfg_2_size_2_wd;
   logic mp_region_cfg_2_size_2_we;
   logic mp_region_cfg_3_en_3_qs;
   logic mp_region_cfg_3_en_3_wd;
@@ -335,11 +335,11 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_3_he_en_3_qs;
   logic mp_region_cfg_3_he_en_3_wd;
   logic mp_region_cfg_3_he_en_3_we;
-  logic [7:0] mp_region_cfg_3_base_3_qs;
-  logic [7:0] mp_region_cfg_3_base_3_wd;
+  logic [8:0] mp_region_cfg_3_base_3_qs;
+  logic [8:0] mp_region_cfg_3_base_3_wd;
   logic mp_region_cfg_3_base_3_we;
-  logic [8:0] mp_region_cfg_3_size_3_qs;
-  logic [8:0] mp_region_cfg_3_size_3_wd;
+  logic [9:0] mp_region_cfg_3_size_3_qs;
+  logic [9:0] mp_region_cfg_3_size_3_wd;
   logic mp_region_cfg_3_size_3_we;
   logic mp_region_cfg_4_en_4_qs;
   logic mp_region_cfg_4_en_4_wd;
@@ -362,11 +362,11 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_4_he_en_4_qs;
   logic mp_region_cfg_4_he_en_4_wd;
   logic mp_region_cfg_4_he_en_4_we;
-  logic [7:0] mp_region_cfg_4_base_4_qs;
-  logic [7:0] mp_region_cfg_4_base_4_wd;
+  logic [8:0] mp_region_cfg_4_base_4_qs;
+  logic [8:0] mp_region_cfg_4_base_4_wd;
   logic mp_region_cfg_4_base_4_we;
-  logic [8:0] mp_region_cfg_4_size_4_qs;
-  logic [8:0] mp_region_cfg_4_size_4_wd;
+  logic [9:0] mp_region_cfg_4_size_4_qs;
+  logic [9:0] mp_region_cfg_4_size_4_wd;
   logic mp_region_cfg_4_size_4_we;
   logic mp_region_cfg_5_en_5_qs;
   logic mp_region_cfg_5_en_5_wd;
@@ -389,11 +389,11 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_5_he_en_5_qs;
   logic mp_region_cfg_5_he_en_5_wd;
   logic mp_region_cfg_5_he_en_5_we;
-  logic [7:0] mp_region_cfg_5_base_5_qs;
-  logic [7:0] mp_region_cfg_5_base_5_wd;
+  logic [8:0] mp_region_cfg_5_base_5_qs;
+  logic [8:0] mp_region_cfg_5_base_5_wd;
   logic mp_region_cfg_5_base_5_we;
-  logic [8:0] mp_region_cfg_5_size_5_qs;
-  logic [8:0] mp_region_cfg_5_size_5_wd;
+  logic [9:0] mp_region_cfg_5_size_5_qs;
+  logic [9:0] mp_region_cfg_5_size_5_wd;
   logic mp_region_cfg_5_size_5_we;
   logic mp_region_cfg_6_en_6_qs;
   logic mp_region_cfg_6_en_6_wd;
@@ -416,11 +416,11 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_6_he_en_6_qs;
   logic mp_region_cfg_6_he_en_6_wd;
   logic mp_region_cfg_6_he_en_6_we;
-  logic [7:0] mp_region_cfg_6_base_6_qs;
-  logic [7:0] mp_region_cfg_6_base_6_wd;
+  logic [8:0] mp_region_cfg_6_base_6_qs;
+  logic [8:0] mp_region_cfg_6_base_6_wd;
   logic mp_region_cfg_6_base_6_we;
-  logic [8:0] mp_region_cfg_6_size_6_qs;
-  logic [8:0] mp_region_cfg_6_size_6_wd;
+  logic [9:0] mp_region_cfg_6_size_6_qs;
+  logic [9:0] mp_region_cfg_6_size_6_wd;
   logic mp_region_cfg_6_size_6_we;
   logic mp_region_cfg_7_en_7_qs;
   logic mp_region_cfg_7_en_7_wd;
@@ -443,11 +443,11 @@ module flash_ctrl_reg_top (
   logic mp_region_cfg_7_he_en_7_qs;
   logic mp_region_cfg_7_he_en_7_wd;
   logic mp_region_cfg_7_he_en_7_we;
-  logic [7:0] mp_region_cfg_7_base_7_qs;
-  logic [7:0] mp_region_cfg_7_base_7_wd;
+  logic [8:0] mp_region_cfg_7_base_7_qs;
+  logic [8:0] mp_region_cfg_7_base_7_wd;
   logic mp_region_cfg_7_base_7_we;
-  logic [8:0] mp_region_cfg_7_size_7_qs;
-  logic [8:0] mp_region_cfg_7_size_7_wd;
+  logic [9:0] mp_region_cfg_7_size_7_qs;
+  logic [9:0] mp_region_cfg_7_size_7_wd;
   logic mp_region_cfg_7_size_7_we;
   logic default_region_rd_en_qs;
   logic default_region_rd_en_wd;
@@ -1111,7 +1111,7 @@ module flash_ctrl_reg_top (
   logic status_prog_full_qs;
   logic status_prog_empty_qs;
   logic status_init_wip_qs;
-  logic [7:0] status_error_addr_qs;
+  logic [8:0] status_error_addr_qs;
   logic phy_status_init_wip_qs;
   logic phy_status_prog_normal_avail_qs;
   logic phy_status_prog_repair_avail_qs;
@@ -2249,11 +2249,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_0]: 15:8
+  // F[base_0]: 16:8
   prim_subreg #(
-    .DW      (8),
+    .DW      (9),
     .SWACCESS("RW"),
-    .RESVAL  (8'h0)
+    .RESVAL  (9'h0)
   ) u_mp_region_cfg_0_base_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -2275,11 +2275,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_0]: 24:16
+  // F[size_0]: 26:17
   prim_subreg #(
-    .DW      (9),
+    .DW      (10),
     .SWACCESS("RW"),
-    .RESVAL  (9'h0)
+    .RESVAL  (10'h0)
   ) u_mp_region_cfg_0_size_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -2486,11 +2486,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_1]: 15:8
+  // F[base_1]: 16:8
   prim_subreg #(
-    .DW      (8),
+    .DW      (9),
     .SWACCESS("RW"),
-    .RESVAL  (8'h0)
+    .RESVAL  (9'h0)
   ) u_mp_region_cfg_1_base_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -2512,11 +2512,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_1]: 24:16
+  // F[size_1]: 26:17
   prim_subreg #(
-    .DW      (9),
+    .DW      (10),
     .SWACCESS("RW"),
-    .RESVAL  (9'h0)
+    .RESVAL  (10'h0)
   ) u_mp_region_cfg_1_size_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -2723,11 +2723,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_2]: 15:8
+  // F[base_2]: 16:8
   prim_subreg #(
-    .DW      (8),
+    .DW      (9),
     .SWACCESS("RW"),
-    .RESVAL  (8'h0)
+    .RESVAL  (9'h0)
   ) u_mp_region_cfg_2_base_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -2749,11 +2749,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_2]: 24:16
+  // F[size_2]: 26:17
   prim_subreg #(
-    .DW      (9),
+    .DW      (10),
     .SWACCESS("RW"),
-    .RESVAL  (9'h0)
+    .RESVAL  (10'h0)
   ) u_mp_region_cfg_2_size_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -2960,11 +2960,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_3]: 15:8
+  // F[base_3]: 16:8
   prim_subreg #(
-    .DW      (8),
+    .DW      (9),
     .SWACCESS("RW"),
-    .RESVAL  (8'h0)
+    .RESVAL  (9'h0)
   ) u_mp_region_cfg_3_base_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -2986,11 +2986,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_3]: 24:16
+  // F[size_3]: 26:17
   prim_subreg #(
-    .DW      (9),
+    .DW      (10),
     .SWACCESS("RW"),
-    .RESVAL  (9'h0)
+    .RESVAL  (10'h0)
   ) u_mp_region_cfg_3_size_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -3197,11 +3197,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_4]: 15:8
+  // F[base_4]: 16:8
   prim_subreg #(
-    .DW      (8),
+    .DW      (9),
     .SWACCESS("RW"),
-    .RESVAL  (8'h0)
+    .RESVAL  (9'h0)
   ) u_mp_region_cfg_4_base_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -3223,11 +3223,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_4]: 24:16
+  // F[size_4]: 26:17
   prim_subreg #(
-    .DW      (9),
+    .DW      (10),
     .SWACCESS("RW"),
-    .RESVAL  (9'h0)
+    .RESVAL  (10'h0)
   ) u_mp_region_cfg_4_size_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -3434,11 +3434,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_5]: 15:8
+  // F[base_5]: 16:8
   prim_subreg #(
-    .DW      (8),
+    .DW      (9),
     .SWACCESS("RW"),
-    .RESVAL  (8'h0)
+    .RESVAL  (9'h0)
   ) u_mp_region_cfg_5_base_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -3460,11 +3460,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_5]: 24:16
+  // F[size_5]: 26:17
   prim_subreg #(
-    .DW      (9),
+    .DW      (10),
     .SWACCESS("RW"),
-    .RESVAL  (9'h0)
+    .RESVAL  (10'h0)
   ) u_mp_region_cfg_5_size_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -3671,11 +3671,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_6]: 15:8
+  // F[base_6]: 16:8
   prim_subreg #(
-    .DW      (8),
+    .DW      (9),
     .SWACCESS("RW"),
-    .RESVAL  (8'h0)
+    .RESVAL  (9'h0)
   ) u_mp_region_cfg_6_base_6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -3697,11 +3697,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_6]: 24:16
+  // F[size_6]: 26:17
   prim_subreg #(
-    .DW      (9),
+    .DW      (10),
     .SWACCESS("RW"),
-    .RESVAL  (9'h0)
+    .RESVAL  (10'h0)
   ) u_mp_region_cfg_6_size_6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -3908,11 +3908,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[base_7]: 15:8
+  // F[base_7]: 16:8
   prim_subreg #(
-    .DW      (8),
+    .DW      (9),
     .SWACCESS("RW"),
-    .RESVAL  (8'h0)
+    .RESVAL  (9'h0)
   ) u_mp_region_cfg_7_base_7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -3934,11 +3934,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  // F[size_7]: 24:16
+  // F[size_7]: 26:17
   prim_subreg #(
-    .DW      (9),
+    .DW      (10),
     .SWACCESS("RW"),
-    .RESVAL  (9'h0)
+    .RESVAL  (10'h0)
   ) u_mp_region_cfg_7_size_7 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -9920,11 +9920,11 @@ module flash_ctrl_reg_top (
   );
 
 
-  //   F[error_addr]: 15:8
+  //   F[error_addr]: 16:8
   prim_subreg #(
-    .DW      (8),
+    .DW      (9),
     .SWACCESS("RO"),
-    .RESVAL  (8'h0)
+    .RESVAL  (9'h0)
   ) u_status_error_addr (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -10449,10 +10449,10 @@ module flash_ctrl_reg_top (
   assign mp_region_cfg_0_he_en_0_wd = reg_wdata[6];
 
   assign mp_region_cfg_0_base_0_we = addr_hit[16] & reg_we & ~wr_err;
-  assign mp_region_cfg_0_base_0_wd = reg_wdata[15:8];
+  assign mp_region_cfg_0_base_0_wd = reg_wdata[16:8];
 
   assign mp_region_cfg_0_size_0_we = addr_hit[16] & reg_we & ~wr_err;
-  assign mp_region_cfg_0_size_0_wd = reg_wdata[24:16];
+  assign mp_region_cfg_0_size_0_wd = reg_wdata[26:17];
 
   assign mp_region_cfg_1_en_1_we = addr_hit[17] & reg_we & ~wr_err;
   assign mp_region_cfg_1_en_1_wd = reg_wdata[0];
@@ -10476,10 +10476,10 @@ module flash_ctrl_reg_top (
   assign mp_region_cfg_1_he_en_1_wd = reg_wdata[6];
 
   assign mp_region_cfg_1_base_1_we = addr_hit[17] & reg_we & ~wr_err;
-  assign mp_region_cfg_1_base_1_wd = reg_wdata[15:8];
+  assign mp_region_cfg_1_base_1_wd = reg_wdata[16:8];
 
   assign mp_region_cfg_1_size_1_we = addr_hit[17] & reg_we & ~wr_err;
-  assign mp_region_cfg_1_size_1_wd = reg_wdata[24:16];
+  assign mp_region_cfg_1_size_1_wd = reg_wdata[26:17];
 
   assign mp_region_cfg_2_en_2_we = addr_hit[18] & reg_we & ~wr_err;
   assign mp_region_cfg_2_en_2_wd = reg_wdata[0];
@@ -10503,10 +10503,10 @@ module flash_ctrl_reg_top (
   assign mp_region_cfg_2_he_en_2_wd = reg_wdata[6];
 
   assign mp_region_cfg_2_base_2_we = addr_hit[18] & reg_we & ~wr_err;
-  assign mp_region_cfg_2_base_2_wd = reg_wdata[15:8];
+  assign mp_region_cfg_2_base_2_wd = reg_wdata[16:8];
 
   assign mp_region_cfg_2_size_2_we = addr_hit[18] & reg_we & ~wr_err;
-  assign mp_region_cfg_2_size_2_wd = reg_wdata[24:16];
+  assign mp_region_cfg_2_size_2_wd = reg_wdata[26:17];
 
   assign mp_region_cfg_3_en_3_we = addr_hit[19] & reg_we & ~wr_err;
   assign mp_region_cfg_3_en_3_wd = reg_wdata[0];
@@ -10530,10 +10530,10 @@ module flash_ctrl_reg_top (
   assign mp_region_cfg_3_he_en_3_wd = reg_wdata[6];
 
   assign mp_region_cfg_3_base_3_we = addr_hit[19] & reg_we & ~wr_err;
-  assign mp_region_cfg_3_base_3_wd = reg_wdata[15:8];
+  assign mp_region_cfg_3_base_3_wd = reg_wdata[16:8];
 
   assign mp_region_cfg_3_size_3_we = addr_hit[19] & reg_we & ~wr_err;
-  assign mp_region_cfg_3_size_3_wd = reg_wdata[24:16];
+  assign mp_region_cfg_3_size_3_wd = reg_wdata[26:17];
 
   assign mp_region_cfg_4_en_4_we = addr_hit[20] & reg_we & ~wr_err;
   assign mp_region_cfg_4_en_4_wd = reg_wdata[0];
@@ -10557,10 +10557,10 @@ module flash_ctrl_reg_top (
   assign mp_region_cfg_4_he_en_4_wd = reg_wdata[6];
 
   assign mp_region_cfg_4_base_4_we = addr_hit[20] & reg_we & ~wr_err;
-  assign mp_region_cfg_4_base_4_wd = reg_wdata[15:8];
+  assign mp_region_cfg_4_base_4_wd = reg_wdata[16:8];
 
   assign mp_region_cfg_4_size_4_we = addr_hit[20] & reg_we & ~wr_err;
-  assign mp_region_cfg_4_size_4_wd = reg_wdata[24:16];
+  assign mp_region_cfg_4_size_4_wd = reg_wdata[26:17];
 
   assign mp_region_cfg_5_en_5_we = addr_hit[21] & reg_we & ~wr_err;
   assign mp_region_cfg_5_en_5_wd = reg_wdata[0];
@@ -10584,10 +10584,10 @@ module flash_ctrl_reg_top (
   assign mp_region_cfg_5_he_en_5_wd = reg_wdata[6];
 
   assign mp_region_cfg_5_base_5_we = addr_hit[21] & reg_we & ~wr_err;
-  assign mp_region_cfg_5_base_5_wd = reg_wdata[15:8];
+  assign mp_region_cfg_5_base_5_wd = reg_wdata[16:8];
 
   assign mp_region_cfg_5_size_5_we = addr_hit[21] & reg_we & ~wr_err;
-  assign mp_region_cfg_5_size_5_wd = reg_wdata[24:16];
+  assign mp_region_cfg_5_size_5_wd = reg_wdata[26:17];
 
   assign mp_region_cfg_6_en_6_we = addr_hit[22] & reg_we & ~wr_err;
   assign mp_region_cfg_6_en_6_wd = reg_wdata[0];
@@ -10611,10 +10611,10 @@ module flash_ctrl_reg_top (
   assign mp_region_cfg_6_he_en_6_wd = reg_wdata[6];
 
   assign mp_region_cfg_6_base_6_we = addr_hit[22] & reg_we & ~wr_err;
-  assign mp_region_cfg_6_base_6_wd = reg_wdata[15:8];
+  assign mp_region_cfg_6_base_6_wd = reg_wdata[16:8];
 
   assign mp_region_cfg_6_size_6_we = addr_hit[22] & reg_we & ~wr_err;
-  assign mp_region_cfg_6_size_6_wd = reg_wdata[24:16];
+  assign mp_region_cfg_6_size_6_wd = reg_wdata[26:17];
 
   assign mp_region_cfg_7_en_7_we = addr_hit[23] & reg_we & ~wr_err;
   assign mp_region_cfg_7_en_7_wd = reg_wdata[0];
@@ -10638,10 +10638,10 @@ module flash_ctrl_reg_top (
   assign mp_region_cfg_7_he_en_7_wd = reg_wdata[6];
 
   assign mp_region_cfg_7_base_7_we = addr_hit[23] & reg_we & ~wr_err;
-  assign mp_region_cfg_7_base_7_wd = reg_wdata[15:8];
+  assign mp_region_cfg_7_base_7_wd = reg_wdata[16:8];
 
   assign mp_region_cfg_7_size_7_we = addr_hit[23] & reg_we & ~wr_err;
-  assign mp_region_cfg_7_size_7_wd = reg_wdata[24:16];
+  assign mp_region_cfg_7_size_7_wd = reg_wdata[26:17];
 
   assign default_region_rd_en_we = addr_hit[24] & reg_we & ~wr_err;
   assign default_region_rd_en_wd = reg_wdata[0];
@@ -11419,8 +11419,8 @@ module flash_ctrl_reg_top (
         reg_rdata_next[4] = mp_region_cfg_0_scramble_en_0_qs;
         reg_rdata_next[5] = mp_region_cfg_0_ecc_en_0_qs;
         reg_rdata_next[6] = mp_region_cfg_0_he_en_0_qs;
-        reg_rdata_next[15:8] = mp_region_cfg_0_base_0_qs;
-        reg_rdata_next[24:16] = mp_region_cfg_0_size_0_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_0_base_0_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_0_size_0_qs;
       end
 
       addr_hit[17]: begin
@@ -11431,8 +11431,8 @@ module flash_ctrl_reg_top (
         reg_rdata_next[4] = mp_region_cfg_1_scramble_en_1_qs;
         reg_rdata_next[5] = mp_region_cfg_1_ecc_en_1_qs;
         reg_rdata_next[6] = mp_region_cfg_1_he_en_1_qs;
-        reg_rdata_next[15:8] = mp_region_cfg_1_base_1_qs;
-        reg_rdata_next[24:16] = mp_region_cfg_1_size_1_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_1_base_1_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_1_size_1_qs;
       end
 
       addr_hit[18]: begin
@@ -11443,8 +11443,8 @@ module flash_ctrl_reg_top (
         reg_rdata_next[4] = mp_region_cfg_2_scramble_en_2_qs;
         reg_rdata_next[5] = mp_region_cfg_2_ecc_en_2_qs;
         reg_rdata_next[6] = mp_region_cfg_2_he_en_2_qs;
-        reg_rdata_next[15:8] = mp_region_cfg_2_base_2_qs;
-        reg_rdata_next[24:16] = mp_region_cfg_2_size_2_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_2_base_2_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_2_size_2_qs;
       end
 
       addr_hit[19]: begin
@@ -11455,8 +11455,8 @@ module flash_ctrl_reg_top (
         reg_rdata_next[4] = mp_region_cfg_3_scramble_en_3_qs;
         reg_rdata_next[5] = mp_region_cfg_3_ecc_en_3_qs;
         reg_rdata_next[6] = mp_region_cfg_3_he_en_3_qs;
-        reg_rdata_next[15:8] = mp_region_cfg_3_base_3_qs;
-        reg_rdata_next[24:16] = mp_region_cfg_3_size_3_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_3_base_3_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_3_size_3_qs;
       end
 
       addr_hit[20]: begin
@@ -11467,8 +11467,8 @@ module flash_ctrl_reg_top (
         reg_rdata_next[4] = mp_region_cfg_4_scramble_en_4_qs;
         reg_rdata_next[5] = mp_region_cfg_4_ecc_en_4_qs;
         reg_rdata_next[6] = mp_region_cfg_4_he_en_4_qs;
-        reg_rdata_next[15:8] = mp_region_cfg_4_base_4_qs;
-        reg_rdata_next[24:16] = mp_region_cfg_4_size_4_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_4_base_4_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_4_size_4_qs;
       end
 
       addr_hit[21]: begin
@@ -11479,8 +11479,8 @@ module flash_ctrl_reg_top (
         reg_rdata_next[4] = mp_region_cfg_5_scramble_en_5_qs;
         reg_rdata_next[5] = mp_region_cfg_5_ecc_en_5_qs;
         reg_rdata_next[6] = mp_region_cfg_5_he_en_5_qs;
-        reg_rdata_next[15:8] = mp_region_cfg_5_base_5_qs;
-        reg_rdata_next[24:16] = mp_region_cfg_5_size_5_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_5_base_5_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_5_size_5_qs;
       end
 
       addr_hit[22]: begin
@@ -11491,8 +11491,8 @@ module flash_ctrl_reg_top (
         reg_rdata_next[4] = mp_region_cfg_6_scramble_en_6_qs;
         reg_rdata_next[5] = mp_region_cfg_6_ecc_en_6_qs;
         reg_rdata_next[6] = mp_region_cfg_6_he_en_6_qs;
-        reg_rdata_next[15:8] = mp_region_cfg_6_base_6_qs;
-        reg_rdata_next[24:16] = mp_region_cfg_6_size_6_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_6_base_6_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_6_size_6_qs;
       end
 
       addr_hit[23]: begin
@@ -11503,8 +11503,8 @@ module flash_ctrl_reg_top (
         reg_rdata_next[4] = mp_region_cfg_7_scramble_en_7_qs;
         reg_rdata_next[5] = mp_region_cfg_7_ecc_en_7_qs;
         reg_rdata_next[6] = mp_region_cfg_7_he_en_7_qs;
-        reg_rdata_next[15:8] = mp_region_cfg_7_base_7_qs;
-        reg_rdata_next[24:16] = mp_region_cfg_7_size_7_qs;
+        reg_rdata_next[16:8] = mp_region_cfg_7_base_7_qs;
+        reg_rdata_next[26:17] = mp_region_cfg_7_size_7_qs;
       end
 
       addr_hit[24]: begin
@@ -11900,7 +11900,7 @@ module flash_ctrl_reg_top (
         reg_rdata_next[2] = status_prog_full_qs;
         reg_rdata_next[3] = status_prog_empty_qs;
         reg_rdata_next[4] = status_init_wip_qs;
-        reg_rdata_next[15:8] = status_error_addr_qs;
+        reg_rdata_next[16:8] = status_error_addr_qs;
       end
 
       addr_hit[81]: begin

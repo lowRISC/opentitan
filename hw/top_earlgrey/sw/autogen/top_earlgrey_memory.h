@@ -38,7 +38,7 @@
 /**
  * Memory size for ram_main in top earlgrey.
  */
-#define TOP_EARLGREY_RAM_MAIN_SIZE_BYTES 0x10000
+#define TOP_EARLGREY_RAM_MAIN_SIZE_BYTES 0x20000
 
 /**
  * Memory base address for ram_ret in top earlgrey.
@@ -58,7 +58,7 @@
 /**
  * Memory size for eflash in top earlgrey.
  */
-#define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x80000
+#define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x100000
 
 
 #endif  // __ASSEMBLER__
