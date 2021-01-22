@@ -486,6 +486,10 @@ In terms of naming convention, alerts shall be given a meaningful name that is i
 Recoverable alerts must be prefixed with `recov_*`, whereas fatal alerts must be prefixed with `fatal_*`.
 For instance, an uncorrectable parity error in SRAM could be named `fatal_parity_error`.
 
+In cases where many diverse alert sources are bundled into one alert event (see [Alert Hardware Implementation]({{< relref "#alert-hardware-implementation" >}})), it may sometimes be difficult to assign the alert event a meaningful and descriptive name.
+In such cases, it is permissible to default the alert names to just `recov` and/or `fatal`.
+Note that this implies that the peripheral does not expose more than one alert for that type.
+
 ### Test Alert Register Creation
 
 For every peripheral, by default, one register named `ALERT_TEST` is **automatically** created.
@@ -500,7 +504,10 @@ One `prim_alert_sender` must be instantiated per distinct alert event, and the `
 
 It is up to the peripheral owner to determine what are distinct alert events;
 multiple ones can be bundled depending upon the distinction required within the module (i.e.  high priority threat vs. low level threat).
-However, it is recommended that comportable IPs with multiple bundled alerts expose a cause register for disambiguation, which is useful for debugging and crash dumps.
+As a general guideline, it is recommended that each peripheral bundles alert sources into one or two distinct alerts, for example one fatal and one recoverable alert.
+This helps to keep the total number of alerts (and their physical impact) low at the system level.
+
+It is recommended that comportable IPs with multiple bundled alerts expose a cause register for disambiguation, which is useful for debugging and crash dumps.
 Cause registers for recoverable alerts must either be clearable by SW, or the HW must provide an automatic mechanism to clear them (e.g., upon starting a new transaction initiated by SW).
 Cause registers for fatal alerts must not be clearable in any way and must hence be read-only.
 
