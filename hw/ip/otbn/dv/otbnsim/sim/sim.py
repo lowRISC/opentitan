@@ -102,4 +102,4 @@ class OTBNSim:
     def _print_trace(self, pc: int, disasm: str, changes: List[Trace]) -> None:
         '''Print a trace of the current instruction to verbose_file'''
         changes_str = ', '.join([t.trace() for t in changes])
-        print('{:08x} | {:35} | [{}]'.format(pc, disasm, changes_str))
+        print('{:08x} | {:45} | [{}]'.format(pc, disasm, changes_str))
