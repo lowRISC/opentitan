@@ -7,7 +7,8 @@
 import struct
 from typing import List, Optional, Tuple, Type
 
-from .isa import OTBNInsn
+from .alert import Alert, ERR_CODE_ILLEGAL_INSN
+from .isa import DecodeError, OTBNInsn
 from .insn import INSN_CLASSES
 from .state import OTBNState
 
@@ -15,6 +16,18 @@ from .state import OTBNState
 # word has all the bits in m0 clear and all the bits in m1 set, then you should
 # decode it with the given class".
 _MaskTuple = Tuple[int, int, Type[OTBNInsn]]
+
+
+class IllegalInsnError(Alert):
+    '''Raised on a bad instruction'''
+    err_code = ERR_CODE_ILLEGAL_INSN
+
+    def __init__(self, word: int, msg: str):
+        self.word = word
+        self.msg = msg
+
+    def __str__(self) -> str:
+        return ('Illegal instruction {:#010x}: {}'.format(self.word, self.msg))
 
 
 class IllegalInsn(OTBNInsn):
@@ -29,12 +42,16 @@ class IllegalInsn(OTBNInsn):
     we know this doesn't match any real instruction.
 
     '''
-    def __init__(self, word: int) -> None:
-        self.word = word
+    def __init__(self, pc: int, raw: int, msg: str) -> None:
+        super().__init__(raw, {})
+        self.msg = msg
+
+        # Override the memoized disassembly for the instruction, avoiding us
+        # disassembling the underlying DummyInsn.
+        self._disasm = (pc, '?? 0x{:08x}'.format(raw))
 
     def execute(self, state: OTBNState) -> None:
-        raise RuntimeError('Illegal instruction at {:#x}: encoding {:#010x}.'
-                           .format(int(state.pc), self.word))
+        raise IllegalInsnError(self.raw, self.msg)
 
 
 MASK_TUPLES = None  # type: Optional[List[_MaskTuple]]
@@ -68,7 +85,7 @@ def get_insn_masks() -> List[_MaskTuple]:
     return MASK_TUPLES
 
 
-def _decode_word(word_off: int, word: int) -> OTBNInsn:
+def _decode_word(pc: int, word: int) -> OTBNInsn:
     found_cls = None
     for m0, m1, cls in get_insn_masks():
         # If any bit is set that should be zero or if any bit is clear that
@@ -80,7 +97,7 @@ def _decode_word(word_off: int, word: int) -> OTBNInsn:
         break
 
     if found_cls is None:
-        return IllegalInsn(word)
+        return IllegalInsn(pc, word, 'No legal decoding')
 
     # Decode the instruction. We know that we have an encoding (we checked in
     # get_insn_masks).
@@ -89,18 +106,24 @@ def _decode_word(word_off: int, word: int) -> OTBNInsn:
 
     # Make sense of these encoded values as "operand values" (doing any
     # shifting, sign interpretation etc.)
-    op_vals = cls.insn.enc_vals_to_op_vals(4 * word_off, enc_vals)
+    op_vals = cls.insn.enc_vals_to_op_vals(pc, enc_vals)
 
-    return cls(word, op_vals)
+    # Catch any decode errors raised by the instruction constructor. This lets
+    # us generate errors if an instruction encoding has extra constraints that
+    # can't be captured by the logic in the Encoding class.
+    try:
+        return cls(word, op_vals)
+    except DecodeError as err:
+        return IllegalInsn(pc, word, str(err))
 
 
-def decode_bytes(data: bytes) -> List[OTBNInsn]:
+def decode_bytes(base_addr: int, data: bytes) -> List[OTBNInsn]:
     '''Decode instruction bytes as instructions'''
     assert len(data) & 3 == 0
-    return [_decode_word(offset, int_val[0])
+    return [_decode_word(base_addr + 4 * offset, int_val[0])
             for offset, int_val in enumerate(struct.iter_unpack('<I', data))]
 
 
-def decode_file(path: str) -> List[OTBNInsn]:
+def decode_file(base_addr: int, path: str) -> List[OTBNInsn]:
     with open(path, 'rb') as handle:
-        return decode_bytes(handle.read())
+        return decode_bytes(base_addr, handle.read())

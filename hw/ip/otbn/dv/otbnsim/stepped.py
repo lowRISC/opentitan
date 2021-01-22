@@ -144,7 +144,7 @@ def on_load_i(sim: OTBNSim, args: List[str]) -> None:
     path = args[0]
 
     print('LOAD_I {!r}'.format(path))
-    sim.load_program(decode_file(path))
+    sim.load_program(decode_file(0, path))
 
 
 def on_dump_d(sim: OTBNSim, args: List[str]) -> None:
