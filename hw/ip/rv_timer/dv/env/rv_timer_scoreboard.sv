@@ -305,7 +305,7 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
                 end
                 // enabling one clock cycle of ignore period
                 ignore_period[a_i][a_j] = 1'b1;
-                `uvm_info(`gfn, $sformatf("Timer expired check for interrupt"), UVM_LOW)
+                `uvm_info(`gfn, $sformatf("Timer expired check for interrupt"), UVM_MEDIUM)
                 // Update exp val and predict it in read address_channel
                 intr_status_exp[a_i][a_j] = 1'b1;
                 check_interrupt_pin();
