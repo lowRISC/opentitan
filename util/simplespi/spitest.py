@@ -137,7 +137,7 @@ def main():
 
     while len(s):
         write_buf = bytes(s[:4], encoding='utf8')
-        read_buf = device.exchange(write_buf, duplex=True).tobytes()
+        read_buf = device.exchange(write_buf, duplex=True)
         print("Got " + str(read_buf))
         s = s[4:]
 
