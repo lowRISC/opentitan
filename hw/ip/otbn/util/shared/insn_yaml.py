@@ -185,8 +185,7 @@ class Insn:
 
     def disassemble(self,
                     cur_pc: int,
-                    op_vals: Dict[str, int],
-                    mnem_width: int) -> str:
+                    op_vals: Dict[str, int]) -> str:
         '''Return disassembly for this instruction
 
         op_vals should be a dictionary mapping operand names to operand values
@@ -201,8 +200,8 @@ class Insn:
         else:
             mnem += ' '
 
-        if len(mnem) < mnem_width:
-            mnem += ' ' * (mnem_width - len(mnem))
+        if len(mnem) < 15:
+            mnem += ' ' * (15 - len(mnem))
 
         # The lstrip here deals with a tricky corner case for instructions like
         # bn.mulqacc if the .z option isn't supplied. In that case, the syntax

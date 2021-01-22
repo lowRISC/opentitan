@@ -46,7 +46,7 @@ class ProgInsn:
             assert op_val is not None
             op_vals[operand.name] = op_val
 
-        return self.insn.disassemble(cur_pc, op_vals, 14)
+        return self.insn.disassemble(cur_pc, op_vals)
 
     def to_json(self) -> object:
         '''Serialize to an object that can be written as JSON'''
