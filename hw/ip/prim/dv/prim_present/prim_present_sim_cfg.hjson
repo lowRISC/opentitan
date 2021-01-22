@@ -17,9 +17,6 @@
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:prim_present_sim:0.1
 
-  // Testplan hjson file.
-  testplan: "{proj_root}/hw/ip/prim/dv/prim_present/data/prim_present_testplan.hjson"
-
   // Import additional common sim cfg files.
   import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
 
@@ -36,7 +33,7 @@
   // List of test specifications.
   tests: [
     {
-      name: prim_present_smoke
+      name: prim_present_test
     }
   ]
 
@@ -44,7 +41,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["prim_present_smoke"]
+      tests: ["prim_present_test"]
     }
   ]
 }
