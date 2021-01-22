@@ -39,6 +39,9 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
 
     // Enable coverage collection.
     void'($value$plusargs("en_cov=%0b", cfg.en_cov));
+
+    // Enable reduced runtime test.
+    void'($value$plusargs("smoke_test=%0b", cfg.smoke_test));
   endfunction : build_phase
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);

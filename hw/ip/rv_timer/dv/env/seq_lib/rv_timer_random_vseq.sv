@@ -18,11 +18,6 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
   rand uint ticks[NUM_HARTS];
   rand bit  assert_reset;
 
-  // The scope and runtime of this test can be reduced by setting this variable. This is useful to
-  // keep the runtime down especially in time-sensitive runs such as CI, which is meant to check
-  // the code health and not find design bugs. It is set via plusarg.
-  bit smoke_test;
-
   uint64 max_clks_until_expiry = 5_000_000;
 
   constraint assert_reset_c {
@@ -30,8 +25,8 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
   }
 
   constraint num_trans_c {
-    if (smoke_test) num_trans == 1;
-    else            num_trans inside {[1:6]};
+    if (cfg.smoke_test) num_trans == 1;
+    else                num_trans inside {[1:6]};
   }
 
   // Enable at least 1 timer.
@@ -49,8 +44,8 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
     solve en_harts before prescale;
     foreach (prescale[i]) {
       if (en_harts[i]) {
-        if (smoke_test) prescale[i] == 1;
-        else            prescale[i] inside {[0:max_prescale]};
+        if (cfg.smoke_test) prescale[i] == 1;
+        else                prescale[i] inside {[0:max_prescale]};
       } else {
         prescale[i] == 0;
       }
@@ -62,8 +57,8 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
     solve en_harts before step;
     foreach (step[i]) {
       if (en_harts[i]) {
-        if (smoke_test) step[i] == 1;
-        else            step[i] inside {[1:max_step]};
+        if (cfg.smoke_test) step[i] == 1;
+        else                step[i] inside {[1:max_step]};
       } else {
         step[i] == 0;
       }
@@ -76,8 +71,8 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
     foreach (ticks[i]) {
       if (en_harts[i]) {
         // For smoke test, timeout between 50 and 200 ticks.
-        if (smoke_test) ticks[i] inside {[50:200]};
-        else            (ticks[i] * (prescale[i] + 1)) <= max_clks_until_expiry;
+        if (cfg.smoke_test) ticks[i] inside {[50:200]};
+        else                (ticks[i] * (prescale[i] + 1)) <= max_clks_until_expiry;
       }
     }
   }
@@ -97,12 +92,6 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
       }
     }
   }
-
-  function void pre_randomize();
-    super.pre_randomize();
-    // Retrieve this before randomization, so that it can be used inside constraints.
-    void'($value$plusargs("smoke_test=%0b", smoke_test));
-  endfunction
 
   task pre_start();
     super.pre_start();
