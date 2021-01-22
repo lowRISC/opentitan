@@ -512,9 +512,9 @@ The following is a high-level block diagram that illustrates everything that has
 Each of the partitions P0-P6 has its [own controller FSM]({{< relref "#partition-implementations" >}}) that interacts with the OTP wrapper and the [scrambling datapath]({{< relref "#scrambling-datapath" >}}) to fulfill its tasks.
 The partitions expose the address ranges and access control information to the DAI in order to block accesses that go to locked address ranges.
 Further, the only two blocks that have (conditional) write access to the OTP are the DAI and the Life Cycle Interface (LCI) blocks.
-The partitions  can only issue read transactions to the OTP macro.
+The partitions can only issue read transactions to the OTP macro.
 Note that the access ranges of the DAI and the LCI are mutually exclusive.
-I.e., the DAI can read the life cycle partition but it is not allowed to write to it.
+I.e., the DAI cannot read from nor write to the life cycle partition.
 The LCI cannot read the OTP, but is allowed to write to the life cycle partition.
 
 The CSR node on the left side of this diagram connects to the DAI, the OTP partitions (P0-P6) and the OTP wrapper through a gated TL-UL interface.
