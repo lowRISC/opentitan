@@ -4,8 +4,6 @@
 
 class uart_agent_cfg extends dv_base_agent_cfg;
 
-  bit is_active     = 1'b1; // active driver or passive monitor
-  bit en_cov        = 1'b1; // enable coverage
   bit en_rx_checks  = 1'b1; // enable RX checks (implemented in monitor)
   bit en_tx_checks  = 1'b1; // enable TX checks (implemented in monitor)
   bit en_rx_monitor = 1'b1; // enable RX monitor
@@ -36,8 +34,6 @@ class uart_agent_cfg extends dv_base_agent_cfg;
   local uint max_drift_cycle_pct = 25;
 
   `uvm_object_utils_begin(uart_agent_cfg)
-    `uvm_field_int(is_active,     UVM_DEFAULT)
-    `uvm_field_int(en_cov,        UVM_DEFAULT)
     `uvm_field_int(en_rx_checks,  UVM_DEFAULT)
     `uvm_field_int(en_tx_checks,  UVM_DEFAULT)
     `uvm_field_int(en_tx_monitor, UVM_DEFAULT)
