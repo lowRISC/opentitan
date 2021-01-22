@@ -790,8 +790,8 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   logic [NumAlerts-1:0] alert_srcs;
   logic [NumAlerts-1:0] alert_tests;
 
-  logic fatal_err;
-  assign fatal_err = flash_i.flash_alert_p | ~flash_i.flash_alert_n;
+  logic recov_err;
+  assign recov_err = flash_i.flash_alert_p | ~flash_i.flash_alert_n;
 
   logic recov_mp_err;
   assign recov_mp_err = flash_mp_error;
@@ -801,12 +801,12 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
 
   assign alert_srcs = { recov_ecc_err,
                         recov_mp_err,
-                        fatal_err
+                        recov_err
                       };
 
   assign alert_tests = { reg2hw.alert_test.recov_ecc_err.q & reg2hw.alert_test.recov_ecc_err.qe,
                          reg2hw.alert_test.recov_mp_err.q  & reg2hw.alert_test.recov_mp_err.qe,
-                         reg2hw.alert_test.fatal_err.q     & reg2hw.alert_test.fatal_err.qe
+                         reg2hw.alert_test.recov_err.q     & reg2hw.alert_test.recov_err.qe
                        };
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders

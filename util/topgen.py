@@ -881,7 +881,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
 
     for ip in generated_list:
         # For modules that are generated prior to gathering, we need to take it from
-        # the ouptput path.  For modules not generated before, it may exist in a
+        # the output path.  For modules not generated before, it may exist in a
         # pre-defined area already.
         log.info("Appending {}".format(ip))
         if ip == 'clkmgr' or (pass_idx > 0):
