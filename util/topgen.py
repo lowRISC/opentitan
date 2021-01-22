@@ -838,6 +838,158 @@ def generate_top_ral(top, ip_objs, dv_base_prefix, out_path):
     gen_dv.gen_ral(top_block, dv_base_prefix, str(out_path))
 
 
+def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
+    # Create generated list
+    # These modules are generated through topgen
+    generated_list = [
+        module['type'] for module in topcfg['module']
+        if 'generated' in module and module['generated'] == 'true'
+    ]
+    log.info("Filtered list is {}".format(generated_list))
+
+    # These modules are NOT generated but belong to a specific top
+    # and therefore not part of "hw/ip"
+    top_only_list = [
+        module['type'] for module in topcfg['module']
+        if 'top_only' in module and module['top_only'] == 'true'
+    ]
+    log.info("Filtered list is {}".format(top_only_list))
+
+    topname = topcfg["name"]
+
+    # Sweep the IP directory and gather the config files
+    ip_dir = Path(__file__).parents[1] / 'hw/ip'
+    ips = search_ips(ip_dir)
+
+    # exclude filtered IPs (to use top_${topname} one) and
+    exclude_list = generated_list + top_only_list
+    ips = [x for x in ips if not x.parents[1].name in exclude_list]
+
+    # Hack alert
+    # Generate clkmgr.hjson here so that it can be included below
+    # Unlike other generated hjsons, clkmgr thankfully does not require
+    # ip.hjson information.  All the information is embedded within
+    # the top hjson file
+    amend_clocks(topcfg)
+    generate_clkmgr(topcfg, cfg_path, out_path)
+
+    # It may require two passes to check if the module is needed.
+    # TODO: first run of topgen will fail due to the absent of rv_plic.
+    # It needs to run up to amend_interrupt in merge_top function
+    # then creates rv_plic.hjson then run xbar generation.
+    hjson_dir = Path(args.topcfg).parent
+
+    for ip in generated_list:
+        log.info("Appending {}".format(ip))
+        if ip == 'clkmgr' or (pass_idx > 0):
+            ip_hjson = Path(out_path) / "ip/{}/data/autogen/{}.hjson".format(
+                ip, ip)
+        else:
+            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
+                ip, ip)
+        ips.append(ip_hjson)
+
+    for ip in top_only_list:
+        log.info("Appending {}".format(ip))
+        ip_hjson = hjson_dir.parent / "ip/{}/data/{}.hjson".format(ip, ip)
+        ips.append(ip_hjson)
+
+    # load Hjson and pass validate from reggen
+    try:
+        ip_objs = []
+        for x in ips:
+            # Skip if it is not in the module list
+            if x.stem not in [ip["type"] for ip in topcfg["module"]]:
+                log.info("Skip module %s as it isn't in the top module list" %
+                         x.stem)
+                continue
+
+            # The auto-generated hjson might not yet exist. It will be created
+            # later, see generate_{ip_name}() calls below. For the initial
+            # validation, use the template in hw/ip/{ip_name}/data .
+            if x.stem in generated_list and not x.is_file():
+                hjson_file = ip_dir / "{}/data/{}.hjson".format(x.stem, x.stem)
+                log.info(
+                    "Auto-generated hjson %s does not yet exist. " % str(x) +
+                    "Falling back to template %s for initial validation." %
+                    str(hjson_file))
+            else:
+                hjson_file = x
+
+            obj = hjson.load(hjson_file.open('r'),
+                             use_decimal=True,
+                             object_pairs_hook=OrderedDict)
+            if validate.validate(obj) != 0:
+                log.info("Parsing IP %s configuration failed. Skip" % x)
+                continue
+            ip_objs.append(obj)
+
+    except ValueError:
+        raise SystemExit(sys.exc_info()[1])
+
+    # Read the crossbars under the top directory
+    xbar_objs = get_hjsonobj_xbars(hjson_dir)
+
+    log.info("Detected crossbars: %s" %
+             (", ".join([x["name"] for x in xbar_objs])))
+
+    # If specified, override the seed for random netlist constant computation.
+    if args.rnd_cnst_seed:
+        log.warning('Commandline override of rnd_cnst_seed with {}.'.format(
+            args.rnd_cnst_seed))
+        topcfg['rnd_cnst_seed'] = args.rnd_cnst_seed
+    # Otherwise, we either take it from the top_{topname}.hjson if present, or
+    # randomly generate a new seed if not.
+    else:
+        random.seed()
+        new_seed = random.getrandbits(64)
+        if topcfg.setdefault('rnd_cnst_seed', new_seed) == new_seed:
+            log.warning(
+                'No rnd_cnst_seed specified, setting to {}.'.format(new_seed))
+
+    topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
+    if error != 0:
+        raise SystemExit("Error occured while validating top.hjson")
+
+    completecfg = merge_top(topcfg, ip_objs, xbar_objs)
+
+    # Generate PLIC
+    if not args.no_plic and \
+       not args.alert_handler_only and \
+       not args.xbar_only:
+        generate_plic(completecfg, out_path)
+        if args.plic_only:
+            sys.exit()
+
+    # Generate Alert Handler
+    if not args.xbar_only:
+        generate_alert_handler(completecfg, out_path)
+        if args.alert_handler_only:
+            sys.exit()
+
+    # Generate Pinmux
+    generate_pinmux_and_padctrl(completecfg, out_path)
+
+    # Generate Pwrmgr
+    generate_pwrmgr(completecfg, out_path)
+
+    # Generate rstmgr
+    generate_rstmgr(completecfg, out_path)
+
+    # Generate flash
+    generate_flash(completecfg, out_path)
+
+    # Generate top only modules
+    # These modules are not templated, but are not in hw/ip
+    generate_top_only(top_only_list, out_path, topname)
+
+    if pass_idx > 0 and args.top_ral:
+        generate_top_ral(completecfg, ip_objs, args.dv_base_prefix, out_path)
+        sys.exit()
+
+    return completecfg
+
+
 def main():
     parser = argparse.ArgumentParser(prog="topgen")
     parser.add_argument('--topcfg',
@@ -951,153 +1103,39 @@ def main():
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
 
-    # Create generated list
-    # These modules are generated through topgen
-    generated_list = [
-        module['type'] for module in topcfg['module']
-        if 'generated' in module and module['generated'] == 'true'
-    ]
-    log.info("Filtered list is {}".format(generated_list))
-
-    # These modules are NOT generated but belong to a specific top
-    # and therefore not part of "hw/ip"
-    top_only_list = [
-        module['type'] for module in topcfg['module']
-        if 'top_only' in module and module['top_only'] == 'true'
-    ]
-    log.info("Filtered list is {}".format(top_only_list))
+    # TODO, long term, the levels of dependency should be automatically determined instead
+    # of hardcoded.  The following are a few examples:
+    # Example 1: pinmux depends on amending all modules before calculating the correct number of
+    #            pins.
+    #            This would be 1 level of dependency and require 2 passes.
+    # Example 2: pinmux depends on amending all modules, and pwrmgr depends on pinmux generation to
+    #            know correct number of wakeups.  This would be 2 levels of dependency and require 3
+    #            passes.
+    #
+    # How does mulit-pass work?
+    # In example 1, the first pass gathers all modules and merges them.  However, the merge process
+    # uses a stale pinmux.  The correct pinmux is then generated using the merged configuration. The
+    # second pass now merges all the correct modules (including the generated pinmux) and creates
+    # the final merged config.
+    #
+    # In example 2, the first pass gathers all modules and merges them.  However, the merge process
+    # uses a stale pinmux and pwrmgr. The correct pinmux is then generated using the merged
+    # configuration.  However, since pwrmgr is dependent on this new pinmux, it is still generated
+    # incorrectly.  The second pass merge now has an updated pinmux but stale pwrmgr.  The correct
+    # pwrmgr can now be generated.  The final pass then merges all the correct modules and creates
+    # the final configuration.
+    #
+    # This fix is related to #2083
+    process_dependencies = 1
+    for pass_idx in range(process_dependencies + 1):
+        log.debug("Generation pass {}".format(pass_idx))
+        if pass_idx < process_dependencies:
+            cfg_copy = deepcopy(topcfg)
+            _process_top(cfg_copy, args, cfg_path, out_path, pass_idx)
+        else:
+            completecfg = _process_top(topcfg, args, cfg_path, out_path, pass_idx)
 
     topname = topcfg["name"]
-
-    # Sweep the IP directory and gather the config files
-    ip_dir = Path(__file__).parents[1] / 'hw/ip'
-    ips = search_ips(ip_dir)
-
-    # exclude filtered IPs (to use top_${topname} one) and
-    exclude_list = generated_list + top_only_list
-    ips = [x for x in ips if not x.parents[1].name in exclude_list]
-
-    # Hack alert
-    # Generate clkmgr.hjson here so that it can be included below
-    # Unlike other generated hjsons, clkmgr thankfully does not require
-    # ip.hjson information.  All the information is embedded within
-    # the top hjson file
-    amend_clocks(topcfg)
-    generate_clkmgr(topcfg, cfg_path, out_path)
-
-    # It may require two passes to check if the module is needed.
-    # TODO: first run of topgen will fail due to the absent of rv_plic.
-    # It needs to run up to amend_interrupt in merge_top function
-    # then creates rv_plic.hjson then run xbar generation.
-    hjson_dir = Path(args.topcfg).parent
-
-    for ip in generated_list:
-        log.info("Appending {}".format(ip))
-        if ip == 'clkmgr':
-            ip_hjson = Path(out_path) / "ip/{}/data/autogen/{}.hjson".format(
-                ip, ip)
-        else:
-            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
-                ip, ip)
-        ips.append(ip_hjson)
-
-    for ip in top_only_list:
-        log.info("Appending {}".format(ip))
-        ip_hjson = hjson_dir.parent / "ip/{}/data/{}.hjson".format(ip, ip)
-        ips.append(ip_hjson)
-
-    # load Hjson and pass validate from reggen
-    try:
-        ip_objs = []
-        for x in ips:
-            # Skip if it is not in the module list
-            if x.stem not in [ip["type"] for ip in topcfg["module"]]:
-                log.info("Skip module %s as it isn't in the top module list" %
-                         x.stem)
-                continue
-
-            # The auto-generated hjson might not yet exist. It will be created
-            # later, see generate_{ip_name}() calls below. For the initial
-            # validation, use the template in hw/ip/{ip_name}/data .
-            if x.stem in generated_list and not x.is_file():
-                hjson_file = ip_dir / "{}/data/{}.hjson".format(x.stem, x.stem)
-                log.info(
-                    "Auto-generated hjson %s does not yet exist. " % str(x) +
-                    "Falling back to template %s for initial validation." %
-                    str(hjson_file))
-            else:
-                hjson_file = x
-
-            obj = hjson.load(hjson_file.open('r'),
-                             use_decimal=True,
-                             object_pairs_hook=OrderedDict)
-            if validate.validate(obj) != 0:
-                log.info("Parsing IP %s configuration failed. Skip" % x)
-                continue
-            ip_objs.append(obj)
-
-    except ValueError:
-        raise SystemExit(sys.exc_info()[1])
-
-    # Read the crossbars under the top directory
-    xbar_objs = get_hjsonobj_xbars(hjson_dir)
-
-    log.info("Detected crossbars: %s" %
-             (", ".join([x["name"] for x in xbar_objs])))
-
-    # If specified, override the seed for random netlist constant computation.
-    if args.rnd_cnst_seed:
-        log.warning('Commandline override of rnd_cnst_seed with {}.'.format(
-            args.rnd_cnst_seed))
-        topcfg['rnd_cnst_seed'] = args.rnd_cnst_seed
-    # Otherwise, we either take it from the top_{topname}.hjson if present, or
-    # randomly generate a new seed if not.
-    else:
-        random.seed()
-        new_seed = random.getrandbits(64)
-        if topcfg.setdefault('rnd_cnst_seed', new_seed) == new_seed:
-            log.warning(
-                'No rnd_cnst_seed specified, setting to {}.'.format(new_seed))
-
-    topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
-    if error != 0:
-        raise SystemExit("Error occured while validating top.hjson")
-
-    completecfg = merge_top(topcfg, ip_objs, xbar_objs)
-
-    if args.top_ral:
-        generate_top_ral(completecfg, ip_objs, args.dv_base_prefix, out_path)
-        sys.exit()
-
-    # Generate PLIC
-    if not args.no_plic and \
-       not args.alert_handler_only and \
-       not args.xbar_only:
-        generate_plic(completecfg, out_path)
-        if args.plic_only:
-            sys.exit()
-
-    # Generate Alert Handler
-    if not args.xbar_only:
-        generate_alert_handler(completecfg, out_path)
-        if args.alert_handler_only:
-            sys.exit()
-
-    # Generate Pinmux
-    generate_pinmux_and_padctrl(completecfg, out_path)
-
-    # Generate Pwrmgr
-    generate_pwrmgr(completecfg, out_path)
-
-    # Generate rstmgr
-    generate_rstmgr(completecfg, out_path)
-
-    # Generate flash
-    generate_flash(completecfg, out_path)
-
-    # Generate top only modules
-    # These modules are not templated, but are not in hw/ip
-    generate_top_only(top_only_list, out_path, topname)
 
     # Generate xbars
     if not args.no_xbar or args.xbar_only:
