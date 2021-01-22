@@ -167,7 +167,7 @@ module prim_generic_flash #(
   lc_ctrl_pkg::lc_tx_t unused_bist_enable;
   assign unused_bist_enable = bist_enable_i;
 
-  // open source model has no error respons at the moment
+  // open source model has no error response at the moment
   assign flash_err_o = 1'b0;
 
   logic alerts_active;

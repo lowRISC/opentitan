@@ -26,8 +26,8 @@
   ],
 
   alert_list: [
-    { name: "fatal_err",
-      desc: "fatal flash alerts directly from prim_flash",
+    { name: "recov_err",
+      desc: "flash alerts directly from prim_flash",
     },
     { name: "recov_mp_err",
       desc: "recoverable flash alert for permission error"
@@ -833,14 +833,14 @@
         { bits: "3",
           name: "ecc_single_err",
           desc: '''
-            Flash access has encountered a recoverable ECC error.
+            Flash access has encountered a single bit ECC error.
             Please see !!ECC_ERR_ADDR for exact address.
           '''
         },
         { bits: "4",
           name: "ecc_multi_err",
           desc: '''
-            Flash access has encountered a non-recoverable ECC error.
+            Flash access has encountered a multi bit ECC error.
             Please see !!ECC_ERR_ADDR for exact address.
           '''
         },
@@ -887,6 +887,8 @@
           desc: "Trigger flash phy alert"
         }
       ]
+      tags: [ // alert triggers should be tested by directed tests
+             "excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "PHY_STATUS",
