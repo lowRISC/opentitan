@@ -17,22 +17,22 @@ interface keymgr_if(input clk, input rst_n);
   keymgr_pkg::hw_key_req_t hmac_key;
   keymgr_pkg::hw_key_req_t aes_key;
 
-  keymgr_pkg::hw_key_req_t kmac_key_exp = '0;
-  keymgr_pkg::hw_key_req_t hmac_key_exp = '0;
-  keymgr_pkg::hw_key_req_t aes_key_exp = '0;
+  keymgr_pkg::hw_key_req_t kmac_key_exp;
+  keymgr_pkg::hw_key_req_t hmac_key_exp;
+  keymgr_pkg::hw_key_req_t aes_key_exp;
 
   // connect KDF interface for assertion check
   wire keymgr_pkg::kmac_data_req_t kmac_data_req;
   wire keymgr_pkg::kmac_data_rsp_t kmac_data_rsp;
 
   // indicate if check the key is same as expected or shouldn't match to any meaningful key
-  bit is_kmac_key_good = 0;
-  bit is_hmac_key_good = 0;
-  bit is_aes_key_good = 0;
+  bit is_kmac_key_good;
+  bit is_hmac_key_good;
+  bit is_aes_key_good;
 
   // when kmac sideload key is generated, kmac may be used to do other OP, but once the OP is done,
   // it should automatically switch back to sideload key
-  bit is_kmac_sideload_avail = 0;
+  bit is_kmac_sideload_avail;
   keymgr_env_pkg::key_shares_t kmac_sideload_key_shares;
 
   keymgr_env_pkg::key_shares_t keys_a_array[string][string];
@@ -45,6 +45,15 @@ interface keymgr_if(input clk, input rst_n);
     // The power/reset manager ensures that
     // this sequencing is correct.
     keymgr_en = lc_ctrl_pkg::lc_tx_t'($urandom);
+
+    // reset exp variables
+    kmac_key_exp = '0;
+    hmac_key_exp = '0;
+    aes_key_exp  = '0;
+    is_kmac_key_good = 0;
+    is_hmac_key_good = 0;
+    is_aes_key_good  = 0;
+    is_kmac_sideload_avail = 0;
 
     // async delay as these signals are from different clock domain
     #($urandom_range(1000, 0) * 1ns);
