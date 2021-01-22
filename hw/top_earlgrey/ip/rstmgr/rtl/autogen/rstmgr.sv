@@ -506,28 +506,28 @@ module rstmgr import rstmgr_pkg::*; (
   );
 
   logic [PowerDomains-1:0] rst_usb_n;
+  assign rst_usb_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_usb_n[DomainAonSel] = rst_usb_n[DomainAonSel];
+
+
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_aon_usb (
+  ) u_0_usb (
     .clk_i(clk_usb_i),
-    .rst_ni(rst_sys_src_n[DomainAonSel]),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
     .d_i(sw_rst_ctrl_n[USB]),
-    .q_o(rst_usb_n[DomainAonSel])
+    .q_o(rst_usb_n[Domain0Sel])
   );
 
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
-  ) u_aon_usb_mux (
-    .clk0_i(rst_usb_n[DomainAonSel]),
+  ) u_0_usb_mux (
+    .clk0_i(rst_usb_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(resets_o.rst_usb_n[DomainAonSel])
+    .clk_o(resets_o.rst_usb_n[Domain0Sel])
   );
-
-  assign rst_usb_n[Domain0Sel] = 1'b0;
-  assign resets_o.rst_usb_n[Domain0Sel] = rst_usb_n[Domain0Sel];
-
 
 
   ////////////////////////////////////////////////////

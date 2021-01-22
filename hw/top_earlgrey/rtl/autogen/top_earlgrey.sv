@@ -408,7 +408,7 @@ module top_earlgrey #(
   logic unused_daon_rst_lc;
   logic unused_daon_rst_lc_io_div4;
   logic unused_daon_rst_spi_device;
-  logic unused_d0_rst_usb;
+  logic unused_daon_rst_usb;
   assign unused_d0_rst_por_aon = rstmgr_resets.rst_por_aon_n[rstmgr_pkg::Domain0Sel];
   assign unused_d0_rst_por = rstmgr_resets.rst_por_n[rstmgr_pkg::Domain0Sel];
   assign unused_d0_rst_por_io = rstmgr_resets.rst_por_io_n[rstmgr_pkg::Domain0Sel];
@@ -418,7 +418,7 @@ module top_earlgrey #(
   assign unused_daon_rst_lc = rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainAonSel];
   assign unused_daon_rst_lc_io_div4 = rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel];
   assign unused_daon_rst_spi_device = rstmgr_resets.rst_spi_device_n[rstmgr_pkg::DomainAonSel];
-  assign unused_d0_rst_usb = rstmgr_resets.rst_usb_n[rstmgr_pkg::Domain0Sel];
+  assign unused_daon_rst_usb = rstmgr_resets.rst_usb_n[rstmgr_pkg::DomainAonSel];
 
   // Non-debug module reset == reset for everything except for the debug module
   logic ndmreset_req;
