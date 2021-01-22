@@ -732,18 +732,21 @@
     The loaded value is stored into the WDR given by the bottom 5 bits of the GPR `grd`.
 
     After the operation, either the value in the GPR `grs1`, or the value in `grd` can be optionally incremented.
+    Specifying both `grd_inc` and `grs1_inc` results in an error (with error code `ErrCodeIllegalInsn`).
 
-    - If `grs1_inc` is set, the value in `grs1` is incremented by value WLEN/8 (one word).
     - If `grd_inc` is set, `grd` is updated to be `(*grd + 1) & 0x1f`.
+    - If `grs1_inc` is set, the value in `grs1` is incremented by value WLEN/8 (one word).
 
     The memory address must be aligned to WLEN bits.
-    Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+    Any address that is unaligned or is above the top of memory results in an error (with error code `ErrCodeBadDataAddr`).
   cycles: 2
   operation: |
     mem_addr = GPR[grs1] + offset
     wdr_dest = GPR[grd]
 
-    assert not (grs1_inc and grd_inc)  # prevented in encoding
+    if grs1_inc and grd_inc:
+        raise IllegalInsn()
+
     if mem_addr % (WLEN / 8) or mem_addr + WLEN > DMEM_SIZE:
         raise BadDataAddr()
 
@@ -805,17 +808,20 @@
     The value to store is taken from the WDR given by the bottom 5 bits of the GPR `grs2`.
 
     After the operation, either the value in the GPR `grs1`, or the value in `grs2` can be optionally incremented.
+    Specifying both `grs1_inc` and `grs2_inc` results in an error (with error code `ErrCodeIllegalInsn`).
 
     - If `grs1_inc` is set, the value in `grs1` is incremented by the value WLEN/8 (one word).
     - If `grs2_inc` is set, the value in `grs2` is updated to be `(*grs2 + 1) & 0x1f`.
 
     The memory address must be aligned to WLEN bits.
-    Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+    Any address that is unaligned or is above the top of memory results in an error (with error code `ErrCodeBadDataAddr`).
   operation: |
     mem_addr = GPR[grs1] + offset
     wdr_src = GPR[grs2]
 
-    assert not (grs1_inc and grd_inc)  # prevented in encoding
+    if grs1_inc and grs2_inc:
+        raise IllegalInsn()
+
     if mem_addr % (WLEN / 8) or mem_addr + WLEN > DMEM_SIZE:
         raise BadDataAddr()
 
@@ -878,11 +884,15 @@
     Copies WDR contents between registers with indirect addressing.
 
     After the operation, either the value in the GPR `grd`, or the value in `grs` can be optionally incremented.
+    Specifying both `grd_inc` and `grs_inc` results in an error (with error code `ErrCodeIllegalInsn`).
 
     - If `grd_inc` is set, `grd` is updated to be `(*grd + 1) & 0x1f`.
     - If `grs_inc` is set, `grs` is updated to be `(*grs + 1) & 0x1f`.
   operation: |
     WDR[GPR[grd]] = WDR[GPR[grs]]
+
+    if grd_inc and grs_inc:
+        raise IllegalInsn()
 
     if grs_inc:
       GPR[grs] = GPR[grs] + 1
