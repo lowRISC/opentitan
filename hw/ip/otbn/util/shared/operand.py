@@ -388,7 +388,7 @@ class ImmOperandType(OperandType):
             #
             # The other time this is used is objdump, where either version
             # works fine.
-            return '.+{}'.format(op_val - cur_pc)
+            return ImmOperandType._doc_rel_to_abs(op_val - cur_pc)
         else:
             return str(op_val)
 
