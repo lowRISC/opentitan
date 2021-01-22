@@ -597,8 +597,13 @@ module aes_core
   // 1. The synthesis tool doesn't optimize away the sparse encoding.
   // 2. The selector signal is always valid. More precisely, an alert or SVA is triggered if a
   //    selector signal takes on an invalid value.
-  // 3. The error/alert signal remains asserted until reset even if the selector signal becomes
-  //    valid again.
+  // 3. The alert signal remains asserted until reset even if the selector signal becomes valid
+  //    again. This is achieved by driving the control FSM into the terminal error state whenever
+  //    any mux selector signal becomes invalid.
+  //
+  // If any mux selector signal becomes invalid, the control FSM further prevents any data from
+  // being released from the cipher core by de-asserting the write enable of the output data
+  // registers.
 
   aes_sel_buf_chk #(
     .Num   ( DIPSelNum   ),
