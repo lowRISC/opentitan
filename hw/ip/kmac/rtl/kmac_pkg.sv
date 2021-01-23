@@ -5,11 +5,8 @@
 // kmac_pkg
 
 package kmac_pkg;
-
-  // import necessary functions from sha3_pkg
-  import sha3_pkg::*;
-  export sha3_pkg::MsgWidth;
-  export sha3_pkg::MsgStrbW;
+  parameter int MsgWidth = sha3_pkg::MsgWidth;
+  parameter int MsgStrbW = sha3_pkg::MsgStrbW;
 
   // Message FIFO depth
   //
