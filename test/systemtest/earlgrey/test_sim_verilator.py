@@ -213,7 +213,7 @@ def app_selfchecking(request, bin_dir):
 
 def assert_selfchecking_test_passes(sim):
     assert sim.find_in_output(
-        re.compile(r"SW test status changed: SwTestStatusInTest$"),
+        re.compile(r"SW test transitioned to SwTestStatusInTest.$"),
         timeout=120,
         filter_func=utils.filter_remove_sw_test_status_log_prefix
     ) is not None, "Start of test indication not found."
