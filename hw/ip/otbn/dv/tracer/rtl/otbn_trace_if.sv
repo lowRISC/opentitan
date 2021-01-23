@@ -166,7 +166,9 @@ interface otbn_trace_if
 
   logic any_ispr_read;
 
-  assign any_ispr_read = (insn_dec_shared.ispr_rd_insn | insn_dec_shared.ispr_rs_insn) & insn_fetch_resp_valid;
+  assign any_ispr_read =
+      (insn_dec_shared.ispr_rd_insn | insn_dec_shared.ispr_rs_insn) & insn_fetch_resp_valid;
+
 
   assign ispr_write[IsprMod] = |u_otbn_alu_bignum.mod_wr_en;
 
@@ -187,8 +189,8 @@ interface otbn_trace_if
   assign ispr_read[IsprAcc] = (any_ispr_read & (ispr_addr == IsprAcc)) | mac_bignum_en;
   // For ISPR reads look at the ACC flops directly. For other ACC reads look at the `acc` signal in
   // order to read ACC as 0 for the BN.MULQACC.Z instruction variant.
-  assign ispr_read_data[IsprAcc] = (any_ispr_read & (ispr_addr == IsprAcc)) ? u_otbn_mac_bignum.acc_q :
-                                                                              u_otbn_mac_bignum.acc;
+  assign ispr_read_data[IsprAcc] =
+      (any_ispr_read & (ispr_addr == IsprAcc)) ? u_otbn_mac_bignum.acc_q : u_otbn_mac_bignum.acc;
 
   assign ispr_write[IsprRnd] = 1'b0;
   assign ispr_write_data[IsprRnd] = '0;
