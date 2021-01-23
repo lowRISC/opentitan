@@ -45,13 +45,6 @@
   // List of test specifications.
   tests: [
     {
-      name: rv_timer_smoke
-      uvm_test_seq: rv_timer_random_vseq
-      run_opts: ["+smoke_test=1"]
-      reseed: 20
-    }
-
-    {
       name: rv_timer_random
       uvm_test_seq: rv_timer_random_vseq
       reseed: 200
@@ -80,7 +73,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["rv_timer_smoke"]
+      tests: ["rv_timer_random"]
     }
   ]
 }

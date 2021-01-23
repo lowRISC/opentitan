@@ -17,7 +17,7 @@
             - Wait for number of cycles to have mTime>= mTimeCmp
             - Check Interrupt state register and Interrupt signal (scoreboard logic)'''
       milestone: V1
-      tests: ["rv_timer_smoke", "rv_timer_random"]
+      tests: ["rv_timer_random"]
     }
     {
       name: random_reset
