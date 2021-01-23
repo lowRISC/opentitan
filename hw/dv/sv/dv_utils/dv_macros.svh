@@ -270,7 +270,7 @@
 
 // print static/dynamic 1d array or queue
 `ifndef DV_PRINT_ARR_CONTENTS
-`define DV_PRINT_ARR_CONTENTS(ARR_, V_=UVM_MEDIUM, ID_=`gfn) \
+`define DV_PRINT_ARR_CONTENTS(ARR_, V_=uvm_pkg::UVM_MEDIUM, ID_=`gfn) \
   begin \
     foreach (ARR_[i]) begin \
       `dv_info($sformatf("%s[%0d] = 0x%0d[0x%0h]", `"ARR_`", i, ARR_[i], ARR_[i]), V_, ID_) \
@@ -364,7 +364,7 @@
         begin \
           EXIT_ \
           if (MSG_ != "") begin \
-            `dv_info(MSG_, UVM_HIGH, ID_) \
+            `dv_info(MSG_, uvm_pkg::UVM_HIGH, ID_) \
           end \
         end \
       join_any \
@@ -438,7 +438,7 @@
 `ifdef UVM
 `ifndef dv_info
   // verilog_lint: waive macro-name-style
-  `define dv_info(MSG_,  VERBOSITY_ = UVM_LOW, ID_ = $sformatf("%m")) \
+  `define dv_info(MSG_,  VERBOSITY_ = uvm_pkg::UVM_LOW, ID_ = $sformatf("%m")) \
     if (uvm_pkg::uvm_report_enabled(VERBOSITY_, uvm_pkg::UVM_INFO, ID_)) begin \
         uvm_pkg::uvm_report_info(ID_, MSG_, VERBOSITY_, `uvm_file, `uvm_line, "", 1); \
     end
@@ -552,7 +552,7 @@
     /* The #1 delay below allows any part of the tb to control the conditions first at t = 0. */ \
     #1; \
     if ((en_``__CG_NAME) || (__COND)) begin \
-      `dv_info({"Creating covergroup ", `"__CG_NAME`"}, UVM_MEDIUM) \
+      `dv_info({"Creating covergroup ", `"__CG_NAME`"}, uvm_pkg::UVM_MEDIUM) \
       __CG_NAME``_inst = new``__CG_ARGS; \
     end \
   end
