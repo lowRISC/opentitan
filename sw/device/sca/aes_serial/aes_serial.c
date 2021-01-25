@@ -25,37 +25,44 @@ static dif_gpio_t gpio;
 static dif_rv_timer_t timer;
 static dif_uart_t uart;
 
-// UART input maximum buffer sizes
-static const uint32_t kMaxInputLengthText = 128;
-static const uint32_t kMaxInputLengthBin = 64;
-
-// AES Configuration parameters. These values must match the test driving
-// side.
-static const uint32_t kAesBlockSize = 16;
-static const uint32_t kAesKeySize = 16;
+enum {
+  kAesKeySize = 16,
+  /**
+   * Number of cycles (at `kClockFreqCpuHz`) that Ibex should sleep to minimize
+   * noise during AES operations. Caution: This number should be chosen to
+   * provide enough time. Otherwise, Ibex might wake up while AES is still busy
+   * and disturb the capture. Currently, we use a start trigger delay of 40
+   * clock cycles and the scope captures 18 clock cycles at kClockFreqCpuHz (180
+   * samples). The latter number will likely increase as we improve the security
+   * hardening.
+   */
+  kIbexAesSleepCycles = 200,
+  /**
+   * GPIO capture trigger values.
+   */
+  kGpioCaptureTriggerHigh = 0x08200,
+  kGpioCaptureTriggerLow = 0x00000,
+  /**
+   * RV timer settings.
+   */
+  kRvTimerComparator = 0,
+  kRvTimerHart = kTopEarlgreyPlicTargetIbex0,
+  /**
+   * UART constants.
+   */
+  kUartMaxRxSizeText = 128,
+  kUartMaxRxSizeBin = 64,
+  /**
+   * Simple serial protocol version 1.1.
+   */
+  kSimpleSerialProtocolVersion = 1,
+};
 
 // Simple serial status codes
 typedef enum simple_serial_result {
   kSimpleSerialOk = 0,
   kSimpleSerialError = 1
 } simple_serial_result_t;
-
-// Simple serial protocol version 1.1
-static const uint32_t kSimpleSerialProtocolVersion = 1;
-
-// GPIO capture trigger values
-static const uint32_t kGpioCaptureTriggerHigh = 0x08200;
-static const uint32_t kGpioCaptureTriggerLow = 0x00000;
-
-// RV Timer settings
-static const uint32_t kHart = (uint32_t)kTopEarlgreyPlicTargetIbex0;
-static const uint32_t kComparator = 0;
-static const uint64_t kDeadline = 200;  // 200 clock cycles at kClockFreqCpuHz
-// Caution: This number should be chosen to provide enough time. Otherwise,
-// Ibex might wake up while AES is still busy and disturb the capture.
-// Currently, we use a start trigger delay of 40 clock cycles and the scope
-// captures 18 clock cycles at kClockFreqCpuHz (180 samples). The latter number
-// will likely increase as we improve the security hardening.
 
 // TODO: Remove once there is a CHECK version that does not require test
 // library dependencies.
@@ -143,17 +150,6 @@ static void print_cmd_response(const uint8_t cmd_tag, const uint8_t *data,
 }
 
 /**
- * Return number of AES blocks from `plain_text_len`.
- */
-static size_t get_num_blocks(size_t plain_text_len) {
-  size_t num_blocks = plain_text_len / kAesBlockSize;
-  if ((plain_text_len - (num_blocks * kAesBlockSize)) > 0) {
-    ++num_blocks;
-  }
-  return num_blocks;
-}
-
-/**
  * Simple serial set AES key command.
  *
  * @param aes_cfg AES configuration object.
@@ -186,25 +182,24 @@ static simple_serial_result_t simple_serial_set_key(const aes_cfg_t *aes_cfg,
  * Simple serial trigger AES encryption command.
  *
  * @param aes_cfg        AES configuration object.
- * @param plain_text     plain text to be encrypted.
- * @param plain_text_len plain text length.
+ * @param plaintext     plain text to be encrypted.
+ * @param plaintext_len plain text length.
  *
  * @return kSimpleSerialOk on success, kSimpleSerialError otherwise.
  */
 static simple_serial_result_t simple_serial_trigger_encryption(
-    const uint8_t *plain_text, size_t plain_text_len) {
-  if (plain_text_len > kMaxInputLengthBin) {
+    const uint8_t *plaintext, size_t plaintext_len) {
+  if (plaintext_len > kUartMaxRxSizeBin) {
     return kSimpleSerialError;
   }
 
-  uint8_t cipher_text[64];
-  size_t num_blocks = get_num_blocks(plain_text_len);
-  if (num_blocks != 1) {
+  uint8_t ciphertext[64];
+  if (plaintext_len != kAesKeySize) {
     return kSimpleSerialError;
   }
 
   // Provide input data to AES.
-  aes_data_put_wait(plain_text);
+  aes_data_put_wait(plaintext);
 
   // Arm capture trigger. The actual trigger signal used for capture is a
   // combination (logical AND) of:
@@ -216,12 +211,13 @@ static simple_serial_result_t simple_serial_trigger_encryption(
 
   // Start timer to wake up Ibex after AES is done.
   uint64_t current_time;
-  SS_CHECK(dif_rv_timer_counter_read(&timer, kHart, &current_time) ==
+  SS_CHECK(dif_rv_timer_counter_read(&timer, kRvTimerHart, &current_time) ==
            kDifRvTimerOk);
-  SS_CHECK(dif_rv_timer_arm(&timer, kHart, kComparator,
-                            current_time + kDeadline) == kDifRvTimerOk);
+  SS_CHECK(dif_rv_timer_arm(&timer, kRvTimerHart, kRvTimerComparator,
+                            current_time + kIbexAesSleepCycles) ==
+           kDifRvTimerOk);
   SS_CHECK(dif_rv_timer_counter_set_enabled(
-               &timer, kHart, kDifRvTimerEnabled) == kDifRvTimerOk);
+               &timer, kRvTimerHart, kDifRvTimerEnabled) == kDifRvTimerOk);
 
   // Start AES operation (this triggers the capture) and go to sleep.
   // Using the SecAesStartTriggerDelay hardware parameter, the AES unit is
@@ -234,9 +230,9 @@ static simple_serial_result_t simple_serial_trigger_encryption(
   SS_CHECK(dif_gpio_write_all(&gpio, kGpioCaptureTriggerLow) == kDifGpioOk);
 
   // Retrieve output data from AES.
-  aes_data_get_wait(cipher_text);
+  aes_data_get_wait(ciphertext);
 
-  print_cmd_response('r', cipher_text, plain_text_len);
+  print_cmd_response('r', ciphertext, plaintext_len);
   return kSimpleSerialOk;
 }
 
@@ -251,7 +247,7 @@ static void simple_serial_handle_command(const aes_cfg_t *aes_cfg,
                                          const uint8_t *cmd, size_t cmd_len) {
   // Data length is half the size of the hex encoded string.
   const size_t data_len = cmd_len >> 1;
-  if (data_len >= kMaxInputLengthBin) {
+  if (data_len >= kUartMaxRxSizeBin) {
     return;
   }
   uint8_t data[64] = {0};
@@ -263,7 +259,7 @@ static void simple_serial_handle_command(const aes_cfg_t *aes_cfg,
   }
 
   if (cmd[0] == 'v') {
-    print_cmd_response('z', (const uint8_t *)&kSimpleSerialProtocolVersion,
+    print_cmd_response('z', (uint8_t[1]){kSimpleSerialProtocolVersion},
                        /*data_len=*/1);
     return;
   }
@@ -312,9 +308,9 @@ int main(void) {
   CHECK(dif_rv_timer_approximate_tick_params(kClockFreqPeripheralHz,
                                              kClockFreqCpuHz, &tick_params) ==
         kDifRvTimerApproximateTickParamsOk);
-  CHECK(dif_rv_timer_set_tick_params(&timer, kHart, tick_params) ==
+  CHECK(dif_rv_timer_set_tick_params(&timer, kRvTimerHart, tick_params) ==
         kDifRvTimerOk);
-  CHECK(dif_rv_timer_irq_enable(&timer, kHart, kComparator,
+  CHECK(dif_rv_timer_irq_enable(&timer, kRvTimerHart, kRvTimerComparator,
                                 kDifRvTimerEnabled) == kDifRvTimerOk);
 
   dif_gpio_params_t gpio_params = {
@@ -351,18 +347,19 @@ int main(void) {
       // Going over the maxium buffer size will result in corrupting the input
       // buffer. This is okay in this case since we control the script used
       // to drive the UART input.
-      pos = (pos + 1) % kMaxInputLengthText;
+      pos = (pos + 1) % kUartMaxRxSizeText;
     }
   }
 }
 
 void handler_irq_timer(void) {
   bool irq_flag;
-  CHECK(dif_rv_timer_irq_get(&timer, kHart, kComparator, &irq_flag) ==
-        kDifRvTimerOk);
+  CHECK(dif_rv_timer_irq_get(&timer, kRvTimerHart, kRvTimerComparator,
+                             &irq_flag) == kDifRvTimerOk);
   CHECK(irq_flag, "Entered IRQ handler but the expected IRQ flag wasn't set!");
 
-  CHECK(dif_rv_timer_counter_set_enabled(&timer, kHart, kDifRvTimerDisabled) ==
+  CHECK(dif_rv_timer_counter_set_enabled(&timer, kRvTimerHart,
+                                         kDifRvTimerDisabled) == kDifRvTimerOk);
+  CHECK(dif_rv_timer_irq_clear(&timer, kRvTimerHart, kRvTimerComparator) ==
         kDifRvTimerOk);
-  CHECK(dif_rv_timer_irq_clear(&timer, kHart, kComparator) == kDifRvTimerOk);
 }
