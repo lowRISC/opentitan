@@ -7,16 +7,27 @@ sw_sca_aes_serial_sca  = declare_dependency(
     'aes_serial_sca',
     sources: ['sca.c'],
     dependencies: [
-      device_lib,
       sw_lib_dif_gpio,
       sw_lib_dif_rv_timer,
+      sw_lib_dif_uart,
       sw_lib_irq,
       sw_lib_irq_handlers,
       sw_lib_mmio,
       sw_lib_pinmux,
-      sw_lib_runtime_hart,
       sw_lib_runtime_log,
     ],
+  ),
+)
+
+sw_sca_aes_serial_simple_serial = declare_dependency(
+  link_with: static_library(
+    'aes_serial_simple_serial',
+    sources: ['simple_serial.c'],
+    dependencies: [
+      sw_lib_dif_uart,
+      sw_lib_mmio,
+      sw_lib_runtime_print,
+    ]
   ),
 )
 
@@ -26,13 +37,14 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     sources: ['aes_serial.c'],
     name_suffix: 'elf',
     dependencies: [
+      device_lib,
       riscv_crt,
       sw_lib_aes,
-      sw_lib_runtime_log,
       sw_lib_mmio,
       sw_lib_runtime_hart,
-      sw_lib_dif_uart,
+      sw_lib_runtime_log,
       sw_sca_aes_serial_sca,
+      sw_sca_aes_serial_simple_serial,
     ],
   )
 
