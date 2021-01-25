@@ -7,3 +7,4 @@
 `include "pattgen_smoke_vseq.sv"
 `include "pattgen_perf_vseq.sv"
 `include "pattgen_error_vseq.sv"
+`include "pattgen_stress_all_vseq.sv"

@@ -43,6 +43,7 @@ class pattgen_monitor extends dv_base_monitor #(
 
     pattgen_item dut_item;
     forever begin
+      wait(cfg.en_monitor);
       dut_item = pattgen_item::type_id::create("dut_item");
       bit_cnt = 0;
       fork
@@ -51,7 +52,7 @@ class pattgen_monitor extends dv_base_monitor #(
             // capture pattern bits
             begin
               do begin
-                wait(cfg.en_monitor);
+                wait(cfg.vif.rst_ni);
                 get_pattgen_bit(channel, bit_data);
                 `uvm_info(`gfn, $sformatf("\n--> monitor: channel %0d, polar %b, data[%0d] %b",
                     channel, cfg.polarity[channel], bit_cnt, bit_data), UVM_DEBUG)
@@ -82,6 +83,10 @@ class pattgen_monitor extends dv_base_monitor #(
       @(negedge cfg.vif.rst_ni);
       reset_asserted = 1'b1;
       // implement other clean-up actions under reset here
+      for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
+        cfg.error_injected[i]= 1'b0;
+        cfg.length[i] = 0;
+      end
       @(posedge cfg.vif.rst_ni);
       reset_asserted = 1'b0;
     end

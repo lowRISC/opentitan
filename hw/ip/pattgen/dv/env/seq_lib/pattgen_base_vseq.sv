@@ -31,7 +31,6 @@ class pattgen_base_vseq extends cip_base_vseq #(
   // if start_all_channels bit is set: both channels can start simmultaneously
   rand bit                            start_all_channels;
   rand bit                            do_error_injected;
-  rand bit [NUM_PATTGEN_CHANNELS-1:0] reset_channels;
 
   // constraints
   constraint num_trans_c {
@@ -91,24 +90,38 @@ class pattgen_base_vseq extends cip_base_vseq #(
     while (num_pattern_req < num_trans ||   // not send all pattern configs
            num_pattern_gen < num_trans ||   // not get  all pattern done interrupts
            channel_start) begin             // at least one channel is running
+      wait(cfg.clk_rst_vif.rst_n); // wait until reset is de-asserted
       fork
-        // all channels are completely independent (programm, start w/ or wo/ sync, and stop)
-        setup_pattgen_channel_0();
-        setup_pattgen_channel_1();
-        start_pattgen_channels();
-        stop_pattgen_channels();
+        begin : isolation_thread
+          fork
+            process_reset();
+            fork
+              // all channels are completely independent (programm, start w/ or wo/ sync, and stop)
+              setup_pattgen_channel_0();
+              setup_pattgen_channel_1();
+              start_pattgen_channels();
+              stop_pattgen_channels();
+            join
+          join_any
+          disable fork;
+        end : isolation_thread
       join
     end
-    `uvm_info(`gfn, $sformatf("\n--> channel_setup %b", channel_setup), UVM_DEBUG)
-    `uvm_info(`gfn, $sformatf("\n--> channel_start %b", channel_start), UVM_DEBUG)
     `uvm_info(`gfn, "\n--> end of sequence", UVM_DEBUG)
   endtask : body
 
-  // TODO: can setup_pattgen_channel task be parameterized?
-  // e.g. index the regster groups of channels before entering while-loop in body task
+  virtual task process_reset();
+    // when reset is asserted, all threads for channels are stopped
+    @(negedge cfg.clk_rst_vif.rst_n);
+    channel_setup = 'h0;
+    channel_start = 'h0;
+    channel_grant = 'h1;
+    `uvm_info(`gfn, "\n  process_reset is called", UVM_DEBUG)
+  endtask : process_reset
+
   virtual task setup_pattgen_channel_0();
     if (num_pattern_req < num_trans &&
-         channel_grant[0] &&       // ch0 setup is granted
+        channel_grant[0] &&       // ch0 setup is granted
         !channel_setup[0] &&       // ch0 has not been programmed
         !channel_start[1]) begin   // ch1 is not under start (avoid re-programming regs)
       wait_for_channel_ready(Channel0);
@@ -296,9 +309,9 @@ class pattgen_base_vseq extends cip_base_vseq #(
         if (status == Enable) begin
           num_pattern_req += 2;
           `uvm_info(`gfn, $sformatf("\n  sync channel 0: request %0d/%0d\n%s",
-              num_pattern_req - 1, num_trans, channel_cfg[0].convert2string()), UVM_DEBUG);
+              num_pattern_req - 1, num_trans, channel_cfg[0].convert2string()), UVM_DEBUG)
           `uvm_info(`gfn, $sformatf("\n  sync channel 1: request %0d/%0d\n%s",
-              num_pattern_req, num_trans, channel_cfg[1].convert2string()), UVM_DEBUG);
+              num_pattern_req, num_trans, channel_cfg[0].convert2string()), UVM_DEBUG)
         end
       end
     endcase
@@ -373,7 +386,6 @@ class pattgen_base_vseq extends cip_base_vseq #(
     x = {x[NUM_PATTGEN_CHANNELS-2:0], x[NUM_PATTGEN_CHANNELS-1]};
   endfunction : right_rotation
 
-  // TODO: this task is reserved for the next PR
   task wait_host_for_idle();
     csr_spinwait(.ptr(ral.ctrl.enable_ch0),     .exp_data(1'b0));
     csr_spinwait(.ptr(ral.ctrl.enable_ch1),     .exp_data(1'b0));

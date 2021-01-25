@@ -110,8 +110,8 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
             // channel is operating but incorrectly disabled -> error injected
             if (!channel_cfg[i].enable && channel_cfg[i].start && !channel_cfg[i].stop) begin
               channel_cfg[i].stop = 1'b1;
-              `uvm_info(`gfn, $sformatf("\n  scb: channel %0d is abnormally stopped\n%s",
-                  i, channel_cfg[i].convert2string()), UVM_DEBUG);
+              `uvm_info(`gfn, $sformatf("\n  scb: channel config %0d\n%s",
+                  i, channel_cfg[i].convert2string()), UVM_DEBUG)
               generate_exp_items(.channel(i), .error_injected(1'b1));
             end
           end
@@ -206,7 +206,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
       end else begin
         `uvm_info(`gfn, $sformatf("\n--> scb: drop exp_item for channel %0d", channel), UVM_DEBUG)
       end
-      channel_cfg[channel].reset_channel_config;
+      channel_cfg[channel].reset_channel_config();
     end
   endfunction : generate_exp_items
 
@@ -215,7 +215,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
     for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
       item_fifo[i].flush();
       exp_item_q[i].delete();
-      channel_cfg[i].reset_channel_config();
+      channel_cfg[i].reset_channel_config(kind);
     end
   endfunction : reset
 

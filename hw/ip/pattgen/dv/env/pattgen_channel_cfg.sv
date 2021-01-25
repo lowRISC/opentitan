@@ -16,14 +16,19 @@ class pattgen_channel_cfg extends uvm_object;
   rand bit [5:0]     len;
   rand bit [9:0]     reps;
 
-  // functions
-  virtual function void reset_channel_config();
+  virtual function void reset_channel_config(string kind = "");
     start    = 1'b0;
     stop     = 1'b0;
     enable   = 1'b0;
+    if (kind == "HARD") begin
+      polarity = 1'b0;
+      len      = 0;
+      reps     = 0;
+      prediv   = 0;
+      data     = 0;
+    end
   endfunction : reset_channel_config
 
-  // this function print channel configuration for debug
   virtual function string convert2string();
       string str;
 
