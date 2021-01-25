@@ -16,6 +16,7 @@ sw_tests = {
 subdir('dif')
 subdir('rom_ext')
 subdir('runtime')
+subdir('sca')
 subdir('sim_dv')
 
 aes_test_lib = declare_dependency(
