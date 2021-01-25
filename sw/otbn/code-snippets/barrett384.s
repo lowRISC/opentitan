@@ -138,8 +138,8 @@ barrett384:
   /* Compute q1 = x >> 383
      q1 = [w9, w8] = [w18, w17, w16] >> 383  = [w18, w17] >> 127
      => max length q1: 385 bits */
-  bn.rshi w9, w18, w31 >> 127
-  bn.rshi w8, w17, w18 >> 127
+  bn.rshi w9, w31, w18 >> 127
+  bn.rshi w8, w18, w17 >> 127
 
   /* Compute q2 = q1*u
      Instead of full q2 (which would be up to 770 bits) we ignore the MSb of u
@@ -162,8 +162,8 @@ barrett384:
      after shift.
      q2'' = q2' >> 384 = [w20, w19] = [w18, w17, w16] >> 384
                                     = [w18, w17] >> 128 */
-  bn.rshi w20, w18, w31 >> 128
-  bn.rshi w19, w17, w18 >> 128
+  bn.rshi w20, w31, w18 >> 128
+  bn.rshi w19, w18, w17 >> 128
   /* Add q1. This is unconditional since MSb of u is always 1.
      This cannot overflow due to leading zeros.
      q2''' = q2'' + q1 = [w20, w19] = [w20, w19] + [w8, w9] */
@@ -178,12 +178,12 @@ barrett384:
   bn.addc w20, w20, w25
   /* finally this gives q3 by shifting the remain bit to the right
      q3 = q2 >> 385 = q2'''' >> 1 = [w9, w8] = [w20, w19] >> 1 */
-  bn.rshi w9, w20, w31 >> 1
-  bn.rshi w8, w19, w20 >> 1
 
   /* Compute r2 = q3 * m % 2^385.
      => max. length r2: 385 bit
      q3*m = [w18, w17, w16] = [w9, w8] * [w13,w12] */
+  bn.rshi w9, w31, w20 >> 1
+  bn.rshi w8, w20, w19 >> 1
   bn.mov w10, w12
   bn.mov w11, w13
   jal x1, mul384
