@@ -580,7 +580,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     csr_test_type_e csr_test_type = CsrRwTest; // share the same exclusion as csr_rw_test
     dv_base_reg     test_csrs[$];
 
-    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_dv_base_regs(test_csrs);
+    ral.get_dv_base_regs(test_csrs);
 
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running same CSR outstanding test iteration %0d/%0d",
@@ -623,16 +623,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
   endtask
 
-  virtual task split_all_csrs_by_shadowed(ref dv_base_reg shadowed_csrs[$],
-                                          ref dv_base_reg non_shadowed_csrs[$]);
-    dv_base_reg all_csrs[$];
-    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_dv_base_regs(all_csrs);
-    foreach (all_csrs[i]) begin
-      if (all_csrs[i].get_is_shadowed()) shadowed_csrs.push_back(all_csrs[i]);
-      else non_shadowed_csrs.push_back(all_csrs[i]);
-    end
-  endtask
-
   // callback for individual modules to override
   // can be used to update storage error status register
   virtual function void shadow_reg_storage_err_post_write();
@@ -649,7 +639,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             csr_wr(.csr(csr), .value(wdata), .en_shadow_wr(0), .predict(1));
           end
           begin
-            string alert_name = get_alert_agent_name(err_update, csr);
+            string alert_name = csr.get_update_err_alert_name();
             while (1) begin
               cfg.clk_rst_vif.wait_clks(1);
               if (!alert_triggered) begin
@@ -662,18 +652,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       end
     join
   endtask
-
-  // alert_agent name is: (if top_level `block_name` +) `csr_name without _shadow` + `alert_type`
-  virtual function string get_alert_agent_name(shadow_reg_alert_e alert_type, dv_base_reg csr);
-    string shadowed = "_shadowed";
-    string csr_name = csr.get_name();
-    int csr_name_len = csr_name.len();
-    csr_name = csr_name.substr(0, csr_name.len() - shadowed.len() - 1);
-    get_alert_agent_name = $sformatf("%s_%s", csr_name, alert_type.name);
-    if (csr.get_parent().get_name() != "ral") begin
-      get_alert_agent_name = $sformatf("%s_%s", csr.get_parent().get_name(), get_alert_agent_name);
-    end
-  endfunction
 
   // this function will return a storage_err value to backdoor poke shadow_reg's storage registers
   // it can generate a rand value, or randomly flip one bit from the original value
@@ -693,7 +671,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     uvm_reg_data_t     wdata;
     bit                alert_triggered;
 
-    split_all_csrs_by_shadowed(shadowed_csrs, non_shadowed_csrs);
+    split_all_csrs_by_shadowed(ral, shadowed_csrs, non_shadowed_csrs);
 
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running shadow reg error test iteration %0d/%0d", trans,
@@ -729,7 +707,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
           // check shadow_reg update error
           if (test_csrs[i].get_shadow_update_err()) begin
-            string alert_name = get_alert_agent_name(err_update, test_csrs[i]);
+            string alert_name = test_csrs[i].get_update_err_alert_name();
             `DV_SPINWAIT(if(!alert_triggered) begin
                            while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
                            cfg.clk_rst_vif.wait_clks(1);
@@ -762,7 +740,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
             // check shadow_reg storage error
             if ((origin_val ^ rand_val) & ((1 << shadow_reg_width) - 1)) begin
-              string alert_name = get_alert_agent_name(err_storage, shadowed_csrs[index]);
+              string alert_name = shadowed_csrs[index].get_storage_err_alert_name();
               bit    has_storage_error;
 
               shadow_reg_storage_err_post_write();

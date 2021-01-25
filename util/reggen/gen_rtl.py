@@ -91,6 +91,9 @@ def parse_reg(obj):
         reg.ishomog = len(obj['fields']) == 1
         reg.tags = (obj['tags'])
         reg.shadowed = (obj["shadowed"] == "true")
+        # For DV only: TODO: any good way we can move it to gen_dv?
+        reg.update_err_alert = (obj["update_err_alert"] if "update_err_alert" in obj else "")
+        reg.storage_err_alert = (obj["storage_err_alert"] if "storage_err_alert" in obj else "")
 
         # Parsing Fields
         for f in obj["fields"]:

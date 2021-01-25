@@ -677,6 +677,13 @@ The following aspects need to be considered when integrating shadow registers in
     - Alert escalation and sensor configuration registers, and
     - Countermeasure tuning and functional/bandgap calibration registers.
 
+### DV shadow register alert test automation
+
+In DV, the `shadow_reg_errors` automated test will check if shadow registers' update and storage errors trigger the correct alerts.
+This alert automation test requires the user to add the following items in `.hjson` file under each shadow register:
+- Update_err_alert: Alert triggered by a shadow register's update error
+- Storage_err_alert: Alert triggered by a shadow register's storage error
+
 ### Future enhancements
 
 The following features are currently not implemented but might be added in the future.

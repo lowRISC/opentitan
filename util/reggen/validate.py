@@ -489,7 +489,13 @@ reg_optional = {
         's',
         "tags for the register, followed by the format 'tag_name:item1:item2...'"
     ],
-    'shadowed': ['s', "'true' if the register is shadowed"]
+    'shadowed': ['s', "'true' if the register is shadowed"],
+    'update_err_alert': ['s', "alert that will be triggered if " +
+                         "this shadowed register has update error"
+    ],
+    'storage_err_alert': ['s', "alert that will be triggered if " +
+                          "this shadowed register has storage error"
+    ]
 }
 reg_added = {
     'genresval': ['pi', "reset value generated from resval and fields"],

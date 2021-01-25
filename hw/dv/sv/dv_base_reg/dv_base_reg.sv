@@ -14,6 +14,8 @@ class dv_base_reg extends uvm_reg;
   local bit            shadow_wr_staged; // stage the first shadow reg write
   local bit            shadow_update_err;
   local bit            en_shadow_wr = 1;
+  local string         update_err_alert_name;
+  local string         storage_err_alert_name;
 
   // atomic_shadow_wr: semaphore to guarantee atomicity of the two writes for shadowed registers.
   // In case a parallel thread writing a different value to the same reg causing an update_err
@@ -257,4 +259,33 @@ class dv_base_reg extends uvm_reg;
       atomic_en_shadow_wr.put(1);
     end
   endfunction
+
+  function void add_update_err_alert(string name);
+    if (update_err_alert_name == "") update_err_alert_name = name;
+  endfunction
+
+  function void add_storage_err_alert(string name);
+    if (storage_err_alert_name == "") storage_err_alert_name = name;
+  endfunction
+
+  function string get_update_err_alert_name();
+    string parent_name = this.get_parent().get_name();
+
+    // block level alert name is input alert name from hjson
+    if (parent_name == "ral") return update_err_alert_name;
+
+    // top-level alert name is ${block_name} + alert name from hjson
+    return ($sformatf("%0s_%0s", parent_name, update_err_alert_name));
+  endfunction
+
+  function string get_storage_err_alert_name();
+    string parent_name = this.get_parent().get_name();
+
+    // block level alert name is input alert name from hjson
+    if (parent_name == "ral") return storage_err_alert_name;
+
+    // top-level alert name is ${block_name} + alert name from hjson
+    return ($sformatf("%0s_%0s", parent_name, storage_err_alert_name));
+  endfunction
+
 endclass
