@@ -38,8 +38,8 @@ USAGE = """
 
 # Version of hugo extended to be used to build the docs
 try:
-    tool_requirements = check_tool_requirements.read_tool_requirements()
-    HUGO_EXTENDED_VERSION = tool_requirements['hugo_extended']
+    TOOL_REQUIREMENTS = check_tool_requirements.read_tool_requirements()
+    HUGO_EXTENDED_VERSION = TOOL_REQUIREMENTS['hugo_extended'].min_version
 except Exception as e:
     print("Unable to get required hugo version: %s" % str(e), file=sys.stderr)
     sys.exit(1)
@@ -241,16 +241,12 @@ def generate_tool_versions():
     The version number per tool will be saved in outdir-generated/version_$TOOL_NAME.txt
     """
 
-    # Populate __TOOL_REQUIREMENTS__
-    requirements_file = str(SRCTREE_TOP.joinpath("tool_requirements.py"))
-    exec(open(requirements_file).read(), globals())
-
     # And then write a version file for every tool.
-    for tool in __TOOL_REQUIREMENTS__:  # noqa: F821
+    for tool, req in TOOL_REQUIREMENTS.items():
         version_path = config["outdir-generated"].joinpath('version_' + tool + '.txt')
         version_path.parent.mkdir(parents=True, exist_ok=True)
         with open(str(version_path), mode='w') as fout:
-            fout.write(__TOOL_REQUIREMENTS__[tool])  # noqa: F821
+            fout.write(req.min_version)
 
 
 def generate_dif_docs():
