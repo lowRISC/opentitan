@@ -22,7 +22,8 @@ module otbn_loop_controller
   output [ImemAddrWidth-1:0] loop_jump_addr_o,
   output                     loop_err_o,
 
-  input                      branch_taken_i
+  input                      branch_taken_i,
+  input                      otbn_stall_i
 );
   // The loop controller has a current loop and then a stack of outer loops, this sets the size of
   // the stack so maximum loop nesting depth is LoopStackDepth + 1.
@@ -106,11 +107,12 @@ module otbn_loop_controller
   // The iteration decrement happens at loop end. So when execution reaches the end instruction of
   // the current loop with 1 iteration that is the end of the final iteration and the current loop
   // finishes.
-  assign current_loop_finish = at_current_loop_end_insn & (current_loop_q.loop_iterations == 1);
+  assign current_loop_finish = at_current_loop_end_insn & (current_loop_q.loop_iterations == 1)
+    & ~otbn_stall_i;
 
   // Jump to top of current loop when execution reaches the end instruction of the current loop it
   // isn't finished.
-  assign loop_jump_o      = at_current_loop_end_insn & !current_loop_finish;
+  assign loop_jump_o      = at_current_loop_end_insn & ~current_loop_finish;
   assign loop_jump_addr_o = current_loop_q.loop_start;
 
   assign loop_iteration_err      = (loop_iterations_i == '0) & loop_start_i;
@@ -127,23 +129,26 @@ module otbn_loop_controller
     loop_active_d  = loop_active_q;
     current_loop_d = current_loop_q;
 
-    if (loop_start_i & ~loop_err_o) begin
-      // A new loop is starting (executing LOOP instruction), so incoming loop becomes the current
-      // loop
-      loop_active_d  = 1'b1;
-      current_loop_d = new_loop;
-    end else if (current_loop_finish) begin
-      // Current loop has finished, check to see if another loop is available on the loop stack
-      if (next_loop_valid) begin
-        // Loop at top of loop stack (if it exists) becomes the current loop
-        current_loop_d = next_loop;
-      end else begin
-        // Otherwise (loop stack empty) no loop is active.
-        loop_active_d = 1'b0;
+    // Do not take any state altering actions whilst OTBN is stalled.
+    if (!otbn_stall_i) begin
+      if (loop_start_i && !loop_err_o) begin
+        // A new loop is starting (executing LOOP instruction), so incoming loop becomes the current
+        // loop.
+        loop_active_d  = 1'b1;
+        current_loop_d = new_loop;
+      end else if (current_loop_finish) begin
+        // Current loop has finished, check to see if another loop is available on the loop stack.
+        if (next_loop_valid) begin
+          // Loop at top of loop stack (if it exists) becomes the current loop.
+          current_loop_d = next_loop;
+        end else begin
+          // Otherwise (loop stack empty) no loop is active.
+          loop_active_d = 1'b0;
+        end
+      end else if (at_current_loop_end_insn) begin
+        // Reached end of the current loop so decrement the iteration counter for the current loop.
+        current_loop_d.loop_iterations = current_loop_q.loop_iterations - 1'b1;
       end
-    end else if (at_current_loop_end_insn) begin
-      // Reached end of the current loop so decrement the iteration counter for the current loop
-      current_loop_d.loop_iterations = current_loop_q.loop_iterations - 1'b1;
     end
   end
 

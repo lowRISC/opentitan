@@ -237,12 +237,21 @@ module otbn_controller
         // Only ever stall for a single cycle
         // TODO: Any more than one cycle stall cases?
         insn_fetch_req_valid_raw = 1'b1;
-        insn_fetch_req_addr_o    = next_insn_addr;
+
+        if (loop_jump) begin
+          insn_fetch_req_addr_o = loop_jump_addr;
+        end else begin
+          insn_fetch_req_addr_o = next_insn_addr;
+        end
+
         state_raw = OtbnStateRun;
       end
       default: ;
     endcase
   end
+
+  // Anything that moves us or keeps us in the stall state should cause `stall` to be asserted
+  `ASSERT(StallIfNextStateStall, insn_valid_i & (state_d == OtbnStateStall) |-> stall);
 
   // On any error immediately halt and suppress any Imem request.
   assign state_d = err ? OtbnStateHalt : state_raw;
@@ -324,7 +333,8 @@ module otbn_controller
     .loop_jump_addr_o  (loop_jump_addr),
     .loop_err_o        (loop_err),
 
-    .branch_taken_i    (branch_taken)
+    .branch_taken_i    (branch_taken),
+    .otbn_stall_i      (stall)
   );
 
   assign loop_start      = insn_valid_i & insn_dec_shared_i.loop_insn;
