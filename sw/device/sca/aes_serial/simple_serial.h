@@ -14,9 +14,9 @@
  * @file
  * @brief Simple serial protocol for side-channel analysis.
  *
- * This library implements simple serial protocol version 1.1 and provides a
- * built-in handler for the 'v' (version) command. Clients can implement
- * additional command by registering their handlers using
+ * This library implements simple serial protocol version 1.1 and provides
+ * built-in handlers for 'v' (version) and 's' (seed PRNG) commands. Clients
+ * can implement additional command by registering their handlers using
  * `simple_serial_register_handler()`. See https://wiki.newae.com/SimpleSerial
  * for details on the protocol.
  */
@@ -48,7 +48,8 @@ typedef void (*simple_serial_command_handler)(const uint8_t *, size_t);
 /**
  * Initializes the data structures used by simple serial.
  *
- * This function also registers the handler for 'v' (version) command.
+ * This function also registers handlers for 'v' (version) and 's' (seed PRNG)
+ * commands.
  *
  * @param uart Handle to an initialized UART device.
  */
@@ -57,8 +58,8 @@ void simple_serial_init(const dif_uart_t *uart);
 /**
  * Registers a handler for a simple serial command.
  *
- * Clients cannot register a handler for the 'v' (version)
- * command since it is handled by this library.
+ * Clients cannot register handlers for 'v' (version) and 's' (seed PRNG)
+ * commands since these are handled by this library.
  *
  * @param cmd Simple serial command.
  * @param handler Command handler.
