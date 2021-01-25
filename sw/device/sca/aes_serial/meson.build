@@ -19,6 +19,13 @@ sw_sca_aes_serial_sca  = declare_dependency(
   ),
 )
 
+sw_sca_aes_serial_prng = declare_dependency(
+  link_with: static_library(
+    'aes_serial_prng',
+    sources: ['prng.c'],
+  ),
+)
+
 sw_sca_aes_serial_simple_serial = declare_dependency(
   link_with: static_library(
     'aes_serial_simple_serial',
@@ -43,6 +50,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
       sw_lib_mmio,
       sw_lib_runtime_hart,
       sw_lib_runtime_log,
+      sw_sca_aes_serial_prng,
       sw_sca_aes_serial_sca,
       sw_sca_aes_serial_simple_serial,
     ],

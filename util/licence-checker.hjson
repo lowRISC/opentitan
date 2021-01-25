@@ -61,9 +61,10 @@
     'site/**/assets/scss/**',
     'site/landing/static/js/tiny-slider.js',
     'util/opentitan-pgm-fpga/vivado_pgm.tcl',
-
     # Code taken from Chromium, so covered by the BSD licence
     'sw/otbn/code-snippets/modexp.s',
     'sw/otbn/code-snippets/p256.s',
+    # Mersenne Twister PRNG
+    'sw/device/sca/aes_serial/prng.c',
   ],
 }
