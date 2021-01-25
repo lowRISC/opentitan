@@ -123,6 +123,8 @@ package ${block.name}_ral_pkg;
   % endif
 % endfor
 % if reg_shadowed and r.hwext:
+    add_update_err_alert("${r.update_err_alert}");
+    add_storage_err_alert("${r.storage_err_alert}");
 <% shadowed_reg_path = "" %>\
   % for r_tag in r.tags:
 <% tag = r_tag.split(":") %>\

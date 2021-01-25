@@ -77,6 +77,8 @@ class Reg():
         self.ishomog = 0
         self.tags = []
         self.shadowed = False
+        self.update_err_alert = ""  # Used by shadow reg DV
+        self.storage_err_alert = ""  # Used by shadow reg DV
 
     def is_multi_reg(self):
         """Returns true if this is a multireg"""

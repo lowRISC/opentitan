@@ -44,6 +44,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
     // TL host cannot support device same cycle response. Host may drive d_ready=0 when a_valid=1.
     m_tl_agent_cfg.host_can_stall_rsp_when_a_valid_high = $urandom_range(0, 1);
 
+    check_shadow_reg_alerts();
     if (list_of_alerts.size() > 0) begin
       check_alert_configs();
       foreach(list_of_alerts[i]) begin
@@ -113,4 +114,35 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
                    $sformatf("alert %0s position does not match", alert_names[i]))
     end
   endfunction
-endclass
+
+  // This function retrieves all shadowed registers in the design, then check:
+  // - If the update error and storage error alerts are assigned to each shadowed register
+  // - If input alert names are within the cfg.list_of_alerts
+  virtual function void check_shadow_reg_alerts();
+    dv_base_reg shadowed_csrs[$], non_shadowed_csrs[$];
+    string update_err_alert_name, storage_err_alert_name;
+
+    split_all_csrs_by_shadowed(ral, shadowed_csrs, non_shadowed_csrs);
+    foreach (shadowed_csrs[i]) begin
+      update_err_alert_name = shadowed_csrs[i].get_update_err_alert_name();
+      storage_err_alert_name = shadowed_csrs[i].get_storage_err_alert_name();
+
+      if (update_err_alert_name == "" || storage_err_alert_name == "") begin
+        `uvm_fatal(shadowed_csrs[i].get_full_name,
+                   "please add update_err and storage_err alert names in Hjson!")
+      end
+
+      // check if alert names are valid
+      if (!(update_err_alert_name inside {list_of_alerts})) begin
+        `uvm_fatal(shadowed_csrs[i].get_full_name, $sformatf(
+                   "update_err alert name %0s not in list_of_alerts", update_err_alert_name))
+      end
+      if (!(storage_err_alert_name inside {list_of_alerts})) begin
+        `uvm_fatal(shadowed_csrs[i].get_full_name, $sformatf(
+                   "storage_err alert name %0s not in list_of_alerts", storage_err_alert_name))
+      end
+    end
+
+  endfunction
+
+ endclass

@@ -17,7 +17,7 @@ class chip_shadow_reg_errors_vseq extends chip_common_vseq;
     dv_base_reg shadowed_csrs[$], non_shadowed_csrs[$];
 
     // Get all shadowed_regs from each IP
-    split_all_csrs_by_shadowed(shadowed_csrs, non_shadowed_csrs);
+    split_all_csrs_by_shadowed(ral, shadowed_csrs, non_shadowed_csrs);
     shadowed_csrs.shuffle();
 
     foreach (shadowed_csrs[i]) begin
@@ -30,7 +30,7 @@ class chip_shadow_reg_errors_vseq extends chip_common_vseq;
       wr_shadowed_reg_update_err(shadowed_csrs[i], alert_triggered);
 
       // Check update error alerts
-      alert_name = get_alert_agent_name(err_update, shadowed_csrs[i]);
+      alert_name = shadowed_csrs[i].get_update_err_alert_name();
       `DV_SPINWAIT(while (!alert_triggered && !cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
                    cfg.clk_rst_vif.wait_clks(1);,
                    $sformatf("%0s update_err alert not detected", shadowed_csrs[i].get_name()));
@@ -45,7 +45,7 @@ class chip_shadow_reg_errors_vseq extends chip_common_vseq;
       csr_poke(.csr(shadowed_csrs[i]), .value(poke_val), .kind(kind), .predict(1));
 
       // Check storage error alerts
-      alert_name = get_alert_agent_name(err_storage, shadowed_csrs[i]);
+      alert_name = shadowed_csrs[i].get_storage_err_alert_name();
       `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
                    cfg.clk_rst_vif.wait_clks(1);,
                    $sformatf("%0s storage_err alert not detected", shadowed_csrs[i].get_name()));
@@ -53,7 +53,6 @@ class chip_shadow_reg_errors_vseq extends chip_common_vseq;
       `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
                    $sformatf("timeout for alert:%0s", alert_name))
     end
-
   endtask : body
 
   // Generally we should get update error if first write of the register is 'h5555_5555,
