@@ -42,6 +42,9 @@ TEST_APPS_SELFCHECKING = [
         "targets": ["fpga_nexysvideo"],
     },
     {
+        "name": "dif_aes_smoketest",
+    },
+    {
         "name": "dif_otp_ctrl_smoketest",
     },
     {

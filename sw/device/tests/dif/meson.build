@@ -356,3 +356,21 @@ sw_tests += {
     'library': dif_gpio_smoketest_lib,
   }
 }
+
+dif_aes_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_aes_smoketest_lib',
+    sources: ['dif_aes_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_aes,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+      sw_lib_testing_test_status,
+    ],
+  ),
+)
+sw_tests += {
+  'dif_aes_smoketest': {
+    'library': dif_aes_smoketest_lib,
+  }
+}
