@@ -45,11 +45,7 @@ def parse_lint_log(str_buffer):
         # this is a workaround until we actually have native Edalize
         # support for JasperGold and "formal" targets
         ("warnings",
-         r"^(?!WARNING: Unknown item formal in section Target)WARNING: .*"
-         # TODO(https://github.com/lowRISC/ibex/issues/1033):
-         # remove once this has been fixed in Edalize or in the corefile.
-         r"^(?!WARNING: Unknown item symbiyosis in section Target)WARNING: .*"
-         ),
+         r"^(?!WARNING: Unknown item formal in section Target)WARNING: .*"),
         ("warnings", r"^%Warning: .* "),
         ("lint_errors", r"^%Error-.*"),
         ("lint_warnings", r"^%Warning-.*"),
