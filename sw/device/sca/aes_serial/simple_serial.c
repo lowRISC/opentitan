@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/sca/aes_serial/prng.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -31,12 +32,12 @@ enum {
  * Command handlers.
  *
  * Clients can register handlers for commands 'a'-'z' using
- * `simple_serial_register_handler()` except for 'v' (version), which is handled
- * by this library. This array has an extra element (27) that is initialized in
- * `simple_serial_init()` to point to `simple_serial_unknown_command()` in order
- * to simplify handling of invalid commands in `simple_serial_process_packet()`.
+ * `simple_serial_register_handler()` except for 'v' (version) and 's' (seed
+ * PRNG), which are handled by this library. This array has an extra element
+ * (27) that is initialized in `simple_serial_init()` to point to
+ * `simple_serial_unknown_command()` in order to simplify handling of invalid
+ * commands in `simple_serial_process_packet()`.
  */
-
 static simple_serial_command_handler handlers[27];
 static const dif_uart_t *uart;
 
@@ -146,6 +147,19 @@ static void simple_serial_version(const uint8_t *data, size_t data_len) {
 }
 
 /**
+ * Simple serial 's' (seed PRNG) command handler.
+ *
+ * This function only supports 4-byte seeds.
+ *
+ * @param seed A buffer holding the seed.
+ * @param seed_len Seed length.
+ */
+static void simple_serial_seed_prng(const uint8_t *seed, size_t seed_len) {
+  SS_CHECK(seed_len == sizeof(uint32_t));
+  prng_seed(read_32(seed));
+}
+
+/**
  * Handler for uninmplemented simple serial commands.
  *
  * Sends an error packet over UART.
@@ -164,6 +178,7 @@ void simple_serial_init(const dif_uart_t *uart_) {
   for (size_t i = 0; i < ARRAYSIZE(handlers); ++i) {
     handlers[i] = simple_serial_unknown_command;
   }
+  handlers[simple_serial_get_handler_index('s')] = simple_serial_seed_prng;
   handlers[simple_serial_get_handler_index('v')] = simple_serial_version;
 }
 

@@ -34,6 +34,7 @@ sw_sca_aes_serial_simple_serial = declare_dependency(
       sw_lib_dif_uart,
       sw_lib_mmio,
       sw_lib_runtime_print,
+      sw_sca_aes_serial_prng,
     ]
   ),
 )
