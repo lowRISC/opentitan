@@ -24,7 +24,7 @@
  *    - Z: Indicates if highest limb of result is zero
  *    - C: Never set
  *
- * @param[in] [w9, w8]: a first operand, max. length 384 bit.
+ * @param[in] [w9, w8]: a, first operand, max. length 384 bit.
  * @param[in] [w11, w10]: b, second operand, max. length 384 bit.
  * @param[in] w31: all-zero.
  * @param[out] [w18, w17, w16]: c, result, max. length 768 bit.
@@ -87,6 +87,8 @@ mul384:
  * This implementation mostly follows the description in the
  * "Handbook of Applied Cryptography" in Algorithm 14.42.
  * Differences:
+ *   - This implementation incorporates a multiplication before the reduction.
+ *     Therefore it expects two operands (a, b) instead of a wider integer x.
  *   - The computation of q2 ignores the MSbs of q1 and u to allow using
  *     a 384x384 bit multiplication. This is compensated later by
  *     individual (conditional) additions.
@@ -95,8 +97,8 @@ mul384:
  * Flags: Flags when leaving this subroutine depend on a potentially discarded
  *        value and therefore are not usable after return.
  *
- * @param[in] [w9, w8]: a, first operand, max. length 384 bit.
- * @param[in] [w11, w10]: b, second operand, max. length 384 bit.
+ * @param[in] [w9, w8]: a, first operand, max. length 384 bit, a < m.
+ * @param[in] [w11, w10]: b, second operand, max. length 384 bit, b < m.
  * @param[in] [w13, w12]: m, modulus, max. length 384 bit, 2^384 > m > 2^383.
  * @param[in] [w15, w14]: u, pre-computed Barrett constant (without u[384]/MSb
  *                           of u which is always 1 for the allowed range but
@@ -176,7 +178,7 @@ barrett384:
             = [w20, w19] + [w25, w24] = q2 >> 384 */
   bn.add w19, w19, w24
   bn.addc w20, w20, w25
-  /* finally this gives q3 by shifting the remain bit to the right
+  /* finally this gives q3 by shifting the remaining bit to the right
      q3 = q2 >> 385 = q2'''' >> 1 = [w9, w8] = [w20, w19] >> 1 */
 
   /* Compute r2 = q3 * m % 2^385.
@@ -184,6 +186,13 @@ barrett384:
      q3*m = [w18, w17, w16] = [w9, w8] * [w13,w12] */
   bn.rshi w9, w31, w20 >> 1
   bn.rshi w8, w20, w19 >> 1
+
+  /* Compute r = q3 * m
+     => max. length r: 768 bit
+     r2 = q3*m = [w18, w17, w16] = [w9, w8] * [w13, w12]
+     A 384x384 bit multiplication kernel is used here, hence both q3 and m
+     must not be wider than 384 bit. This is always the case for m. For q3 it
+     is the case if a<m and b<m. */
   bn.mov w10, w12
   bn.mov w11, w13
   jal x1, mul384
