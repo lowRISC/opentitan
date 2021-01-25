@@ -90,7 +90,7 @@ static const uint64_t kDeadline = 200;  // 200 clock cycles at kClockFreqCpuHz
  *
  * @return kSimpleSerialOk on success, kSimpleSerialError otherwise.
  */
-static simple_serial_result_t hex_value(char from, char *to) {
+static simple_serial_result_t hex_value(uint8_t from, uint8_t *to) {
   if (from >= '0' && from <= '9') {
     *to = from - '0';
   } else if (from >= 'A' && from <= 'F') {
@@ -114,9 +114,10 @@ static simple_serial_result_t hex_value(char from, char *to) {
  *
  * @return kSimpleSerialOk on success, kSimpleSerialError otherwise.
  */
-static simple_serial_result_t a2b_hex(const char *from, char *to, size_t num) {
+static simple_serial_result_t a2b_hex(const uint8_t *from, uint8_t *to,
+                                      size_t num) {
   for (int i = 0; i < num; ++i) {
-    char hi, lo;
+    uint8_t hi, lo;
     if (hex_value(from[i * 2], &hi) || hex_value(from[i * 2 + 1], &lo)) {
       return kSimpleSerialError;
     }
@@ -132,7 +133,7 @@ static simple_serial_result_t a2b_hex(const char *from, char *to, size_t num) {
  * @param data     Response data. Converted to hex format by this function.
  * @param data_len data length.
  */
-static void print_cmd_response(const char cmd_tag, const char *data,
+static void print_cmd_response(const uint8_t cmd_tag, const uint8_t *data,
                                size_t data_len) {
   base_printf("%c", cmd_tag);
   for (int i = 0; i < data_len; ++i) {
@@ -162,7 +163,7 @@ static size_t get_num_blocks(size_t plain_text_len) {
  * @return kSimpleSerialOk on success, kSimpleSerialError otherwise.
  */
 static simple_serial_result_t simple_serial_set_key(const aes_cfg_t *aes_cfg,
-                                                    const char *key_share0,
+                                                    const uint8_t *key_share0,
                                                     size_t key_len) {
   // The implementation does not use key shares to simplify AES attacks.
   static const uint8_t kKeyShare1[32] = {0};
@@ -191,12 +192,12 @@ static simple_serial_result_t simple_serial_set_key(const aes_cfg_t *aes_cfg,
  * @return kSimpleSerialOk on success, kSimpleSerialError otherwise.
  */
 static simple_serial_result_t simple_serial_trigger_encryption(
-    const char *plain_text, size_t plain_text_len) {
+    const uint8_t *plain_text, size_t plain_text_len) {
   if (plain_text_len > kMaxInputLengthBin) {
     return kSimpleSerialError;
   }
 
-  char cipher_text[64];
+  uint8_t cipher_text[64];
   size_t num_blocks = get_num_blocks(plain_text_len);
   if (num_blocks != 1) {
     return kSimpleSerialError;
@@ -247,13 +248,13 @@ static simple_serial_result_t simple_serial_trigger_encryption(
  * @param cmd_len number of characters set in input buffer.
  */
 static void simple_serial_handle_command(const aes_cfg_t *aes_cfg,
-                                         const char *cmd, size_t cmd_len) {
+                                         const uint8_t *cmd, size_t cmd_len) {
   // Data length is half the size of the hex encoded string.
   const size_t data_len = cmd_len >> 1;
   if (data_len >= kMaxInputLengthBin) {
     return;
   }
-  char data[64] = {0};
+  uint8_t data[64] = {0};
 
   // The simple serial protocol does not expect return status codes for invalid
   // data, thus it is ok to return early.
@@ -262,7 +263,7 @@ static void simple_serial_handle_command(const aes_cfg_t *aes_cfg,
   }
 
   if (cmd[0] == 'v') {
-    print_cmd_response('z', (const char *)&kSimpleSerialProtocolVersion,
+    print_cmd_response('z', (const uint8_t *)&kSimpleSerialProtocolVersion,
                        /*data_len=*/1);
     return;
   }
@@ -281,10 +282,10 @@ static void simple_serial_handle_command(const aes_cfg_t *aes_cfg,
   }
 
   // This protocol version expects a 1 byte return status.
-  print_cmd_response('z', (const char *)&result, /*data_len=*/1);
+  print_cmd_response('z', (const uint8_t *)&result, /*data_len=*/1);
 }
 
-int main(int argc, char **argv) {
+int main(void) {
   CHECK(dif_uart_init(
             (dif_uart_params_t){
                 .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR),
@@ -328,7 +329,7 @@ int main(int argc, char **argv) {
   aes_cfg.mode = kAesEcb;
   aes_cfg.manual_operation = true;
 
-  char text[128] = {0};
+  uint8_t text[128] = {0};
   size_t pos = 0;
   while (true) {
     size_t chars_read;
