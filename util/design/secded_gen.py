@@ -6,19 +6,16 @@ r"""SECDED encoder/decoder generator
 
 Current version doesn't optimize Fan-In. It uses Hsiao code (modified version
 of Hamming code + parity). Please refer https://arxiv.org/pdf/0803.1217.pdf
-"""
 
-# TODO: Add FPV assertions in the encoder/decoder module
+For some further background and info on the differences between Hamming and
+Hsiao SECDED codes, refer to https://ieeexplore.ieee.org/document/8110065.g
+"""
 
 import argparse
 import itertools
 import logging as log
 import math
-import os
 import random
-import sys
-import time
-from pathlib import PurePath
 
 COPYRIGHT = """// Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -26,6 +23,7 @@ COPYRIGHT = """// Copyright lowRISC contributors.
 //
 """
 CODE_OPTIONS = ['hsiao', 'hamming']
+
 
 def min_paritysize(k):
     # SECDED --> Hamming distance 'd': 4
@@ -64,74 +62,73 @@ def calc_fanin(width, codes):
     return fanins
 
 
-def print_comb(n,
-               k,
-               m,
-               cur_m,
-               codes,
-               start_cnt,
-               max_width=100,
-               prefix="",
-               first_indent=0):
-    """Print XOR comb.
-
-    @param[max_width]    Maximum Width of str
-    @param[prefix]       The prepend string at the first line
-    @param[first_indent] The number of character that indented at the first line
-        e.g. first_indent := 2
-            {prefix}in[nn] ...
-                  ^ in[nn] ^ in[nn]
-
-    result:
-        {prefix}in[nn] ^ ... in[nn]
-                ^ in[nn] ^ ... in[nn];
-    """
-    outstr = ""
-    line = prefix
-    prepend_len = len(prefix)
-    cnt = start_cnt
-    first = True
-    for j in range(k):
-        temp_str = ""
-        if cur_m in codes[j]:
-            if not first:
-                temp_str += " ^"
-            if first:
-                first = False
-            temp_str += " in[%d]" % (j)
-            temp_len = len(temp_str)
-
-            if len(line) + temp_len > max_width:
-                outstr += line + "\n"
-                line = ' ' * (prepend_len - first_indent) + temp_str
-            else:
-                line += temp_str
-    outstr += line + ";\n"
-    return outstr
+def calc_bitmasks(k, m, codes, dec):
+    # Transform fanin indices into bitmask.
+    fanin_masks = [0] * m
+    for i, c in enumerate(codes):
+        for j in c:
+            fanin_masks[j] += 1 << i
+    # For decode ops, include ECC bit position.
+    if dec:
+        for j in range(m):
+            fanin_masks[j] += 1 << (k + j)
+    return fanin_masks
 
 
 def print_enc(n, k, m, codes):
-    outstr = ""
-    for i in range(k):
-        outstr += "  assign out[%d] = in[%d] ;\n" % (i, i)
-
-    for i in range(m):
-        # Print parity computation
-        outstr += print_comb(n, k, m, i, codes, 0, 100,
-                             "  assign out[%d] =" % (i + k), 2)
+    outstr = "  always_comb begin : p_encode\n"
+    outstr += "    out = {}'(in);\n".format(n)
+    format_str = "    out[{}] = ^(out & " + str(n) + "'h{:0" + str(
+        (n + 3) // 4) + "X});\n"
+    # Print parity computation
+    for j, mask in enumerate(calc_bitmasks(k, m, codes, False)):
+        outstr += format_str.format(j + k, mask)
+    outstr += "  end\n"
     return outstr
 
 
 def calc_syndrome(code):
-    log.info("in syncrome {}".format(code))
+    log.info("in syndrome {}".format(code))
     return sum(map((lambda x: 2**x), code))
+
+
+def print_dec(n, k, m, codes, codetype):
+    outstr = ""
+    outstr += "  logic single_error;\n"
+    outstr += "\n"
+    outstr += "  // Syndrome calculation\n"
+    format_str = "  assign syndrome_o[{}] = ^(in & " + str(n) + "'h{:0" + str(
+        (n + 3) // 4) + "X});\n"
+    # Print syndrome computation
+    for j, mask in enumerate(calc_bitmasks(k, m, codes, True)):
+        outstr += format_str.format(j, mask)
+    outstr += "\n"
+    outstr += "  // Corrected output calculation\n"
+    for i in range(k):
+        outstr += "  assign d_o[%d] = (syndrome_o == %d'h%x) ^ in[%d];\n" % (
+            i, m, calc_syndrome(codes[i]), i)
+    outstr += "\n"
+    outstr += "  // err_o calc. bit0: single error, bit1: double error\n"
+    # The Hsiao and Hamming syndromes are interpreted slightly differently.
+    if codetype == "hamming":
+        outstr += "  assign err_o[0] = syndrome_o[%d];\n" % (m - 1)
+        outstr += "  assign err_o[1] = |syndrome_o[%d:0] & ~syndrome_o[%d];\n" % (
+            m - 2, m - 1)
+    else:
+        outstr += "  assign single_error = ^syndrome_o;\n"
+        outstr += "  assign err_o[0] =  single_error;\n"
+        outstr += "  assign err_o[1] = ~single_error & (|syndrome_o);\n"
+    return outstr
+
 
 # return whether an integer is a power of 2
 def is_pow2(n):
-    return (n & (n-1) == 0) and n != 0
+    return (n & (n - 1) == 0) and n != 0
+
 
 def is_odd(n):
     return (n % 2) > 0
+
 
 # k = data bits
 # m = parity bits
@@ -150,7 +147,7 @@ def hsiao_code(k, m):
     # row -> [1 1 1 0 0 0 0]
     codes = []
 
-    ## Find code matrix =======================================================
+    # Find code matrix =======================================================
     # This is main part to find the parity matrix.
     # For example, find SECDED for 4bit message is to find 4x4 matrix as below
     # | 1 0 0 0 x x x x |
@@ -178,7 +175,7 @@ def hsiao_code(k, m):
             codes.extend(candidate)
             required_row -= len(candidate)
         else:
-            ## Find optimized fan-in ==========================================
+            # Find optimized fan-in ==========================================
 
             # Calculate each row fan-in with current
             fanins = calc_fanin(m, codes)
@@ -218,6 +215,7 @@ def hsiao_code(k, m):
     log.info("Hsiao codes {}".format(codes))
     return codes
 
+
 # n = total bits
 # k = data bits
 # m = parity bits
@@ -228,7 +226,7 @@ def hamming_code(n, k, m):
     # Tuple corresponds to each bit position and shows which parity bit it participates in
     # Only the data bits are shown, the parity bits are not.
     codes = []
-    for pos in range(1, n+1):
+    for pos in range(1, n + 1):
         # this is a valid parity bit position or the final parity bit
         if (is_pow2(pos) or pos == n):
             continue
@@ -243,43 +241,190 @@ def hamming_code(n, k, m):
                 # If even, we are in the skip phase, do not include
                 # If odd, we are in the include phase
                 parity_chk = int((pos - (pos % parity_pos)) / parity_pos)
-                log.debug("At position {} parity value {}, {}" \
-                         .format(pos, parity_pos, parity_chk))
+                log.debug("At position {} parity value {}, {}".format(
+                    pos, parity_pos, parity_chk))
 
                 # valid for inclusion or final parity bit that includes everything
-                if is_odd(parity_chk) or p == m-1:
-                    code = code + (p,)
+                if is_odd(parity_chk) or p == m - 1:
+                    code = code + (p, )
                     log.info("add {} to tuple {}".format(p, code))
 
             codes.append(code)
+
+    # final parity bit includes all ECC bits
+    for p in range(m - 1):
+        codes.append((m - 1, ))
 
     log.info("Hamming codes {}".format(codes))
     return codes
 
 
-def print_dec(n, k, m, codes):
-    outstr = ""
-    outstr += "  logic single_error;\n"
-    outstr += "\n"
-    outstr += "  // Syndrome calculation\n"
-    for i in range(m):
-        # Print combination
-        outstr += print_comb(n, k, m, i, codes, 1, 100,
-                             "  assign syndrome_o[%d] = in[%d] ^" % (i, k + i),
-                             len(" in[%d] ^" % (k + i)) + 2)
+def write_enc_dec_files(n, k, m, s, codes, suffix, outdir, codetype):
+    enc_out = print_enc(n, k, m, codes)
 
-    outstr += "\n"
-    outstr += "  // Corrected output calculation\n"
-    for i in range(k):
-        synd_v = calc_syndrome(codes[i])
-        outstr += "  assign d_o[%d] = (syndrome_o == %d'h%x) ^ in[%d];\n" % (
-            i, m, calc_syndrome(codes[i]), i)
-    outstr += "\n"
-    outstr += "  // err_o calc. bit0: single error, bit1: double error\n"
-    outstr += "  assign single_error = ^syndrome_o;\n"
-    outstr += "  assign err_o[0] =  single_error;\n"
-    outstr += "  assign err_o[1] = ~single_error & (|syndrome_o);\n"
-    return outstr
+    module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
+
+    with open(outdir + "/" + module_name + "_enc.sv", "w") as f:
+        outstr = '''{}// SECDED Encoder generated by
+// util/design/secded_gen.py -m {} -k {} -s {} -c {}
+
+module {}_enc (
+  input        [{}:0] in,
+  output logic [{}:0] out
+);
+
+{}
+endmodule : {}_enc
+'''.format(COPYRIGHT, m, k, s, codetype, module_name, (k - 1), (n - 1),
+           enc_out, module_name)
+        f.write(outstr)
+
+    dec_out = print_dec(n, k, m, codes, codetype)
+
+    with open(outdir + "/" + module_name + "_dec.sv", "w") as f:
+        outstr = '''{}// SECDED Decoder generated by
+// util/design/secded_gen.py -m {} -k {} -s {} -c {}
+
+module {}_dec (
+  input        [{}:0] in,
+  output logic [{}:0] d_o,
+  output logic [{}:0] syndrome_o,
+  output logic [1:0] err_o
+);
+
+{}
+endmodule : {}_dec
+'''.format(COPYRIGHT, m, k, s, codetype, module_name, (n - 1), (k - 1),
+           (m - 1), dec_out, module_name)
+        f.write(outstr)
+
+
+def write_fpv_files(n, k, m, codes, suffix, outdir):
+    module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
+
+    with open(outdir + "/tb/" + module_name + "_fpv.sv", "w") as f:
+        outstr = '''{}// SECDED FPV testbench generated by util/design/secded_gen.py
+
+module {}_fpv (
+  input               clk_i,
+  input               rst_ni,
+  input        [{}:0] in,
+  output logic [{}:0] d_o,
+  output logic [{}:0] syndrome_o,
+  output logic [1:0]  err_o,
+  input        [{}:0] error_inject_i
+);
+
+  logic [{}:0] data_enc;
+
+  {}_enc {}_enc (
+    .in,
+    .out(data_enc)
+  );
+
+  {}_dec {}_dec (
+    .in(data_enc ^ error_inject_i),
+    .d_o,
+    .syndrome_o,
+    .err_o
+  );
+
+endmodule : {}_fpv
+'''.format(COPYRIGHT, module_name, (k - 1), (k - 1), (m - 1), (n - 1), (n - 1),
+           module_name, module_name, module_name, module_name, module_name)
+        f.write(outstr)
+
+    with open(outdir + "/vip/" + module_name + "_assert_fpv.sv", "w") as f:
+        outstr = '''{}// SECDED FPV assertion file generated by util/design/secded_gen.py
+
+module {}_assert_fpv (
+  input        clk_i,
+  input        rst_ni,
+  input [{}:0] in,
+  input [{}:0] d_o,
+  input [{}:0] syndrome_o,
+  input [1:0]  err_o,
+  input [{}:0] error_inject_i
+);
+
+  // Inject a maximum of two errors simultaneously.
+  `ASSUME_FPV(MaxTwoErrors_M, $countones(error_inject_i) <= 2)
+  // This bounds the input data state space to make sure the solver converges.
+  `ASSUME_FPV(DataLimit_M, $onehot0(in) || $onehot0(~in))
+  // Single bit error detection
+  `ASSERT(SingleErrorDetect_A, $countones(error_inject_i) == 1 |-> err_o[0])
+  `ASSERT(SingleErrorDetectReverse_A, err_o[0] |-> $countones(error_inject_i) == 1)
+  // Double bit error detection
+  `ASSERT(DoubleErrorDetect_A, $countones(error_inject_i) == 2 |-> err_o[1])
+  `ASSERT(DoubleErrorDetectReverse_A, err_o[1] |-> $countones(error_inject_i) == 2)
+  // Single bit error correction (implicitly tests the syndrome output)
+  `ASSERT(SingleErrorCorrect_A, $countones(error_inject_i) < 2 |-> in == d_o)
+  // Basic syndrome check
+  `ASSERT(SyndromeCheck_A, |syndrome_o |-> $countones(error_inject_i) > 0)
+  `ASSERT(SyndromeCheckReverse_A, $countones(error_inject_i) > 0 |-> |syndrome_o)
+
+endmodule : {}_assert_fpv
+'''.format(COPYRIGHT, module_name, (k - 1), (k - 1), (m - 1), (n - 1),
+           module_name)
+        f.write(outstr)
+
+    with open(outdir + "/tb/" + module_name + "_bind_fpv.sv", "w") as f:
+        outstr = '''{}// SECDED FPV bind file generated by util/design/secded_gen.py
+
+module {}_bind_fpv;
+
+  bind {}_fpv
+    {}_assert_fpv {}_assert_fpv (
+    .clk_i,
+    .rst_ni,
+    .in,
+    .d_o,
+    .syndrome_o,
+    .err_o,
+    .error_inject_i
+  );
+
+endmodule : {}_bind_fpv
+'''.format(COPYRIGHT, module_name, module_name, module_name, module_name,
+           module_name)
+        f.write(outstr)
+
+    with open(outdir + "/" + module_name + "_fpv.core", "w") as f:
+        outstr = '''CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:fpv:{}_fpv:0.1"
+description: "SECDED FPV target"
+filesets:
+  files_formal:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:prim:secded
+    files:
+      - vip/{}_assert_fpv.sv
+      - tb/{}_fpv.sv
+      - tb/{}_bind_fpv.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    # note, this setting is just used
+    # to generate a file list for jg
+    default_tool: icarus
+    filesets:
+      - files_formal
+    toplevel:
+      - {}_fpv
+
+  formal:
+    <<: *default_target
+
+  lint:
+    <<: *default_target
+
+'''.format(module_name, module_name, module_name, module_name, module_name)
+        f.write(outstr)
 
 
 def main():
@@ -293,27 +438,38 @@ def main():
         type=int,
         default=7,
         help=
-        'parity length. If fan-in is too big, increasing m helps. (default: %(default)s)'
+        'Parity length. If fan-in is too big, increasing m helps. (default: %(default)s)'
     )
     parser.add_argument(
         '-k',
         type=int,
         default=32,
         help=
-        'code length. Minimum \'m\' is calculated by the tool (default: %(default)s)'
+        'Code length. Minimum \'m\' is calculated by the tool (default: %(default)s)'
     )
     parser.add_argument(
         '-c',
         default='hsiao',
-        help=
-        'ECC code used. Options: hsiao / hamming (default: %(default)s)'
-    )
-    parser.add_argument(
-        '--outdir',
-        default='../rtl',
-        help=
-        'output directory. The output file will be named `prim_secded_<n>_<k>_enc/dec.sv` (default: %(default)s)'
-    )
+        help='ECC code used. Options: hsiao / hamming (default: %(default)s)')
+    parser.add_argument('-s',
+                        type=int,
+                        metavar='<seed>',
+                        help='Custom seed for RNG.')
+    parser.add_argument('--no_fpv',
+                        action='store_true',
+                        help='Do not generate FPV testbench.')
+    parser.add_argument('--outdir',
+                        default='hw/ip/prim/rtl/',
+                        help='''
+        Output directory. The output file will be named
+        `prim_secded_<n>_<k>_enc/dec.sv` (default: %(default)s)
+        ''')
+    parser.add_argument('--fpv_outdir',
+                        default='hw/ip/prim/fpv/',
+                        help='''
+        FPV output directory. The output files will have
+        the base name `prim_secded_<n>_<k>_*_fpv` (default: %(default)s)
+        ''')
     parser.add_argument('--verbose', '-v', action='store_true', help='Verbose')
 
     args = parser.parse_args()
@@ -334,8 +490,9 @@ def main():
     # Calculate 'm' (parity size)
     min_m = min_paritysize(k)
     if (args.m < min_m):
-        log.warning("given \'m\' argument is smaller than minimum requirement " +
-                    "using calculated minimum")
+        log.warning(
+            "given \'m\' argument is smaller than minimum requirement " +
+            "using calculated minimum")
         m = min_m
     else:
         m = args.m
@@ -343,51 +500,38 @@ def main():
     n = m + k
     log.info("n(%d), k(%d), m(%d)", n, k, m)
 
-    random.seed(time.time())
+    if args.s is None:
+        random.seed()
+        args.s = random.getrandbits(32)
+
+    # If no seed has been provided, we choose a seed and print it
+    # into the generated output later on such that this run can be
+    # reproduced.
+    if args.s is None:
+        random.seed()
+        args.s = random.getrandbits(32)
+
+    random.seed(args.s)
 
     # Error check code selection
     codes = []
-    name = ''
+    suffix = ''
     if (args.c == 'hsiao'):
         codes = hsiao_code(k, m)
     elif (args.c == 'hamming'):
-        name = '_hamming'
+        suffix = '_hamming'
         codes = hamming_code(n, k, m)
     else:
-        log.error("Invalid code {} selected, use one of {}".format(args.c, CODE_OPTIONS))
+        log.error("Invalid code {} selected, use one of {}".format(
+            args.c, CODE_OPTIONS))
         return
 
-    # Print Encoder
-    enc_out = print_enc(n, k, m, codes)
-    #log.info(enc_out)
+    write_enc_dec_files(n, k, m, args.s, codes, suffix, args.outdir, args.c)
 
-    module_name = "prim_secded%s_%d_%d" % (name, n, k)
+    # Print out FPV testbench by default.
+    if not args.no_fpv:
+        write_fpv_files(n, k, m, codes, suffix, args.fpv_outdir)
 
-    with open(args.outdir + "/" + module_name + "_enc.sv", "w") as f:
-        f.write(COPYRIGHT)
-        f.write("// SECDED Encoder generated by secded_gen.py\n\n")
-
-        f.write("module " + module_name + "_enc (\n")
-        f.write("  input        [%d:0] in,\n" % (k - 1))
-        f.write("  output logic [%d:0] out\n" % (n - 1))
-        f.write(");\n\n")
-        f.write(enc_out)
-        f.write("endmodule\n\n")
-
-    dec_out = print_dec(n, k, m, codes)
-
-    with open(args.outdir + "/" + module_name + "_dec.sv", "w") as f:
-        f.write(COPYRIGHT)
-        f.write("// SECDED Decoder generated by secded_gen.py\n\n")
-
-        f.write("module " + module_name + "_dec (\n")
-        f.write("  input        [%d:0] in,\n" % (n - 1))
-        f.write("  output logic [%d:0] d_o,\n" % (k - 1))
-        f.write("  output logic [%d:0] syndrome_o,\n" % (m - 1))
-        f.write("  output logic [1:0] err_o\n")
-        f.write(");\n\n")
-        f.write(dec_out)
-        f.write("endmodule\n\n")
 
 if __name__ == "__main__":
     main()
