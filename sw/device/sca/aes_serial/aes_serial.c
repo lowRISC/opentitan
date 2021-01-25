@@ -5,16 +5,27 @@
 #include "sw/device/lib/aes.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/sca/aes_serial/prng.h"
 #include "sw/device/sca/aes_serial/sca.h"
 #include "sw/device/sca/aes_serial/simple_serial.h"
 
-// This program implements the ChipWhisperer simple serial protocol version 1.1.
-// Only set key ('k'), encrypt ('p') and version ('v') commands are implemented.
-// Encryption is done in AES-ECB-128 mode.
-// See https://wiki.newae.com/SimpleSerial for details.
+/**
+ * OpenTitan program for AES side-channel analysis.
+ *
+ * This program implements the following simple serial commands:
+ *   - Set key ('k')*,
+ *   - Encrypt ('p')*,
+ *   - Version ('v')+,
+ *   - Seed PRNG ('s')+,
+ *   - Batch encrypt ('b')*,
+ * Commands marked with * are implemented in this file. Those marked with + are
+ * implemented in the simple serial library. Encryption is done in AES-ECB-128
+ * mode. See https://wiki.newae.com/SimpleSerial for details on the protocol.
+ */
 
 enum {
   kAesKeyLength = 16,
+  kAesTextLength = 16,
   /**
    * Number of cycles (at `kClockFreqCpuHz`) that Ibex should sleep to minimize
    * noise during AES operations. Caution: This number should be chosen to
@@ -41,7 +52,7 @@ static aes_cfg_t aes_cfg;
  */
 static void aes_serial_set_key(const uint8_t *key, size_t key_len) {
   SS_CHECK(key_len == kAesKeyLength);
-  aes_key_put(key, (uint8_t[kAesKeyLength]){0}, aes_cfg.key_len);
+  aes_key_put(key, /*key_share1=*/(uint8_t[kAesKeyLength]){0}, aes_cfg.key_len);
 }
 
 /**
@@ -77,13 +88,55 @@ static void aes_serial_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
  */
 static void aes_serial_single_encrypt(const uint8_t *plaintext,
                                       size_t plaintext_len) {
-  SS_CHECK(plaintext_len == kAesKeyLength);
+  SS_CHECK(plaintext_len == kAesTextLength);
 
   sca_set_trigger_high();
   aes_serial_encrypt(plaintext, plaintext_len);
   sca_set_trigger_low();
 
-  uint8_t ciphertext[kAesKeyLength] = {0};
+  uint8_t ciphertext[kAesTextLength] = {0};
+  aes_data_get_wait(ciphertext);
+  simple_serial_send_packet('r', ciphertext, ARRAYSIZE(ciphertext));
+}
+
+/**
+ * Simple serial 'b' (batch encrypt) command handler.
+ *
+ * This command is designed to maximize the capture rate for side-channel
+ * attacks. Instead of expecting a plaintext and sending the resulting
+ * ciphertext from and to the host for each encryption, this command repeatedly
+ * encrypts random plaintexts that are generated on the device. This minimizes
+ * the overhead of UART communication and significantly improves the capture
+ * rate. The host must use the same PRNG to be able to compute the plaintext and
+ * the ciphertext of each trace.
+ *
+ * Packet payload must be a `uint32_t` representation of the number of
+ * encryptions to perform. Since generated plaintexts are not cached, there is
+ * no limit on the number of encryptions.
+ *
+ * The PRNG should be initialized using the 's' (seed PRNG) command before
+ * starting batch encryption.
+ *
+ * Note that the host can partially verify this operation by checking the
+ * contents of the 'r' (ciphertext) packet that is sent at the end.
+ *
+ * @param data Packet payload.
+ * @param data_len Packet payload length.
+ */
+static void aes_serial_batch_encrypt(const uint8_t *data, size_t data_len) {
+  uint32_t num_encryptions = 0;
+  SS_CHECK(data_len = sizeof(num_encryptions));
+  num_encryptions = read_32(data);
+
+  sca_set_trigger_high();
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
+    uint8_t plaintext[kAesTextLength];
+    prng_rand_bytes(plaintext, kAesTextLength);
+    aes_serial_encrypt(plaintext, kAesTextLength);
+  }
+  sca_set_trigger_low();
+
+  uint8_t ciphertext[kAesTextLength] = {0};
   aes_data_get_wait(ciphertext);
   simple_serial_send_packet('r', ciphertext, ARRAYSIZE(ciphertext));
 }
@@ -118,6 +171,7 @@ int main(void) {
   simple_serial_init(uart);
   simple_serial_register_handler('k', aes_serial_set_key);
   simple_serial_register_handler('p', aes_serial_single_encrypt);
+  simple_serial_register_handler('b', aes_serial_batch_encrypt);
 
   init_aes();
 
