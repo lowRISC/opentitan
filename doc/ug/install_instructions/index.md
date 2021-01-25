@@ -41,7 +41,7 @@ For packages listed below without a version number we have not determined a mini
   GCC 5 or Clang 3.5 should meet this requirement.
 * clang-format.
   The use of clang-format 6.0 is recommended to match the formatting enforced when submitting a pull request.
-* [ninja](https://ninja-build.org/)  {{< tool_version "ninja-build" >}}
+* [ninja](https://ninja-build.org/)  {{< tool_version "ninja" >}}
 * Bash
 * curl
 * xz tools
