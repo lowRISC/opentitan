@@ -152,8 +152,8 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
   constraint bank_erase_en_c {
     foreach (bank_erase_en[i]) {
       bank_erase_en[i] dist {
-        1 :/ (100 - cfg.seq_cfg.bank_erase_en_pc),
-        0 :/ cfg.seq_cfg.bank_erase_en_pc
+        0 :/ (100 - cfg.seq_cfg.bank_erase_en_pc),
+        1 :/ cfg.seq_cfg.bank_erase_en_pc
       };
     }
   }
