@@ -25,7 +25,8 @@ See that document for integration overview within the broader top level system.
 - Support for the following optional capabilities:
     - Clock stretching in the host mode
     - Automatic clock stretching in the target mode when TX FIFO is empty during a read<sup>2</sup>
-    - Clock stretching in the target mode after any complete transaction
+    - Automatic clock stretching in the target mode when ACQ FIFO is full during a write
+    - Clock stretching in the target mode after a complete address acquire, byte read, or byte write transactions
 - *No support at this time* for any of the features related to multi-host control:
     - No support for host-host clock synchronization
     - No support for host bus arbitration.
@@ -243,10 +244,60 @@ Other features may also be required for complete SMBus functionality.)
 ### Clock Stretching
 As described in the I2C specification, a target device can pause a transaction by holding SCL low.
 A target device stretches the clock automatically when a host device reads from the target and the target's TX FIFO is empty.
-The present implementation also supports a mode in which a target device can stretch the clock after completing a transaction, if it needs more time, e.g., to store the acquired data byte in flash memory.
-If {{< regref STRETCH_CTRL.EN >}} is asserted, a target stretches the clock after an ingoing transaction completes.
-However, the target stretches the clock only if it is certain that the next transaction is intended for it and not for another target device on the bus.
-The target device stops stretching the clock and resumes normal operation when {{< regref STRETCH_CTRL.RESUME >}} is asserted.
+Also, a target device stretches the clock automatically when a host device writes to the target and the target's ACQ FIFO is full.
+The present implementation also supports few additional modes in which a target device can stretch the clock after completing a transaction if it needs more time, e.g., to store the acquired data byte in flash memory, etc.
+If {{< regref STRETCH_CTRL.ENABLEADDR >}} is asserted, a target stretches the clock after acquiring an address and making certain that the transaction is intended for it and not for another device on the bus.
+
+{{<wavejson>}}
+{signal: [
+  {name: 'clock', wave: 'p...................'},
+  {name: 'stretch_en_addr', wave: '1...................'},
+  {name: 'stretch_stop', wave: '0.............1.....'},
+  {name: 'bit_ack', wave: '0........1..........'},
+  {name: 'address_match', wave: '0........1..........'},
+  {name: 'SCL host driver', wave: '0z.0..z.0..z.....0..'},
+  {name: 'SCL target driver', wave: 'z.........0....z....'},
+  {name: 'SCL bus', wave: '0u.0..u.0......u.0..'},
+],
+ head: {text: 'Clock stretching after matching an address (cycle 10), normal operation is resumed and address is acknowledged (cycle 15)', tick: 1}
+}
+{{</wavejson>}}
+
+If {{< regref STRETCH_CTRL.ENABLETX >}} is asserted, a target stretches the clock after an ongoing byte transmit operation (host is reading) completes and a host acknowledges the receipt.
+
+{{<wavejson>}}
+{signal: [
+  {name: 'clock', wave: 'p..................'},
+  {name: 'stretch_en_tx', wave: '1..................'},
+  {name: 'stretch_stop', wave: '0.............1....'},
+  {name: 'host_ack', wave: '0......1...........'},
+  {name: 'SCL host driver', wave: '0z.0..z.0..z.....0.'},
+  {name: 'SCL target driver', wave: 'z.......0......z...'},
+  {name: 'SCL bus', wave: '0u.0..u.0......u.0.'},
+],
+ head: {text: 'Clock stretching after receiving an acknowledgement from host (cycle 8), normal operation is resumed (cycle 15)', tick: 1}
+}
+{{</wavejson>}}
+
+If {{< regref STRETCH_CTRL.ENABLEACQ >}} is asserted, a target stretches the clock after an ongoing byte acquire operation (host is writing) completes.
+The target device stops stretching the clock and resumes normal operation when {{< regref STRETCH_CTRL.STOP >}} is asserted.
+
+{{<wavejson>}}
+{signal: [
+  {name: 'clock', wave: 'p..................'},
+  {name: 'stretch_en_acq', wave: '1..................'},
+  {name: 'stretch_stop', wave: '0.............1....'},
+  {name: 'bit_ack', wave: '0........1.........'},
+  {name: 'SCL host driver', wave: '0z.0..z.0..z.....0.'},
+  {name: 'SCL target driver', wave: 'z.........0....z...'},
+  {name: 'SCL bus', wave: '0u.0..u.0......u.0.'},
+],
+ head: {text: 'Clock stretching after acquiring a byte (cycle 10), normal operation is resumed and byte is acknowledged (cycle 15)', tick: 1}
+}
+{{</wavejson>}}
+
+In all three cases described above, a target begins to stretch the clock when SCL is held low by a host.
+For instance, if acknowledgement from a host arrives when SCL is held high and {{< regref STRETCH_CTRL.ENABLETX >}} is asserted, a target waits for the host to pull SCL low before stretching the clock.
 
 ### Interrupts
 The I2C module has a few interrupts including general data flow interrupts and unexpected event interrupts.
@@ -325,7 +376,7 @@ If either TX or ACQ FIFO receives an additional write request when its FIFO is f
 If a host ceases to send SCL pulses at any point during an ongoing transaction, the target waits for a specified time period and then asserts the interrupt `host_timeout`.
 Host sending an address and R/W bit to all target devices, writing to the selected target, or reading from the target are examples of ongoing transactions.
 The time period is counted from the last low-to-high SCL transition.
-Firmware can configure the timeout value via the register {{< regref TIMEOUT_CTRL1 >}}.
+Firmware can configure the timeout value via the register {{< regref HOST_TIMEOUT_CTRL >}}.
 
 ### Implementation Details: Format Flag Parsing
 
@@ -346,6 +397,8 @@ However, all transitions which are dependent on formatting flags are shown expli
 Similarly, the figure below shows a simplified version of the I2C_Target state machine.
 
 ![](I2C_state_diagram_target.svg)
+
+In this diagram, "R/W" stands for a R/W bit value. The host is reading when R/W bit is "1" and writing when R/W bit is "0".
 
 # Programmers guide
 
