@@ -11,6 +11,10 @@ from collections import OrderedDict
 from lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
                         is_valid_codeword, scatter_bits, random_or_hexvalue)
 
+# Seed diversification constant for LcStEnc (this enables to use
+# the same seed for different classes)
+LC_SEED_DIVERSIFIER = 1939944205722120255
+
 
 def _is_incremental_codeword(word1, word2):
     '''Test whether word2 is incremental wrt word1.'''
@@ -174,6 +178,9 @@ class LcStEnc():
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 
+        # Re-initialize with seed to make results reproducible.
+        random.seed(LC_SEED_DIVERSIFIER + int(config['seed']))
+
         config['secded']['data_width'] = check_int(
             config['secded']['data_width'])
         config['secded']['ecc_width'] = check_int(
@@ -231,9 +238,6 @@ class LcStEnc():
         config['tokens'] += hashed_tokens
 
         self.config = config
-
-        # Re-initialize with seed to make results reproducible.
-        random.seed(int(self.config['seed']))
 
         # Generate new encoding words
         word_types = ['ab_words', 'cd_words', 'ef_words']
