@@ -94,7 +94,6 @@ def calc_syndrome(code):
 
 def print_dec(n, k, m, codes, codetype):
     outstr = ""
-    outstr += "  logic single_error;\n"
     outstr += "\n"
     outstr += "  // Syndrome calculation\n"
     format_str = "  assign syndrome_o[{}] = ^(in & " + str(n) + "'h{:0" + str(
@@ -115,9 +114,8 @@ def print_dec(n, k, m, codes, codetype):
         outstr += "  assign err_o[1] = |syndrome_o[%d:0] & ~syndrome_o[%d];\n" % (
             m - 2, m - 1)
     else:
-        outstr += "  assign single_error = ^syndrome_o;\n"
-        outstr += "  assign err_o[0] =  single_error;\n"
-        outstr += "  assign err_o[1] = ~single_error & (|syndrome_o);\n"
+        outstr += "  assign err_o[0] = ^syndrome_o;\n"
+        outstr += "  assign err_o[1] = ~err_o[0] & (|syndrome_o);\n"
     return outstr
 
 
