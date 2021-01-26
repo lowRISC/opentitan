@@ -71,7 +71,7 @@ interface mem_bkdr_if();
   function automatic logic [7:0] read8(input bit [bus_params_pkg::BUS_AW-1:0] addr);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
-      bit [63:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+      logic [63:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
       case (mem_bytes_per_index)
         1: begin
           return mem_data[7:0];
@@ -115,7 +115,7 @@ interface mem_bkdr_if();
     `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
-      bit [63:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+      logic [63:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
       case (mem_bytes_per_index)
         1: begin
           return {read8(addr + 1), mem_data[7:0]};
@@ -149,7 +149,7 @@ interface mem_bkdr_if();
     `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
-      bit [63:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+      logic [63:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
       case (mem_bytes_per_index)
         1: begin
           return {read16(addr + 2), read8(addr + 1), mem_data[7:0]};
