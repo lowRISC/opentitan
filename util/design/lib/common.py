@@ -181,15 +181,17 @@ def ecc_encode(config, dataword):
         log.error("Invalid codeword length {}".format(len(dataword)))
         exit(1)
 
-    # Build syndrome
-    eccbits = ""
-    for fanin in config['secded']['ecc_matrix']:
+    # Note that certain codes like the Hamming code refer to previously
+    # calculated parity bits. Hence, we incrementally build the codeword
+    # and extend it such that previously calculated bits can be referenced.
+    codeword = dataword
+    for j, fanin in enumerate(config['secded']['ecc_matrix']):
         bit = 0
         for k in fanin:
-            bit ^= int(dataword[config['secded']['data_width'] - 1 - k])
-        eccbits += format(bit, '01b')
+            bit ^= int(codeword[config['secded']['data_width'] + j - 1 - k])
+        codeword = str(bit) + codeword
 
-    return eccbits[::-1] + dataword
+    return codeword
 
 
 def scatter_bits(mask, bits):

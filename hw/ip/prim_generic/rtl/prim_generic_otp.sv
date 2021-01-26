@@ -280,7 +280,9 @@ module prim_generic_otp
     .MemInitFile          (MemInitFile),
     .EnableECC            (1'b1),
     .EnableInputPipeline  (1),
-    .EnableOutputPipeline (1)
+    .EnableOutputPipeline (1),
+    // Use a standard Hamming ECC for OTP.
+    .HammingECC           (1)
   ) u_prim_ram_1p_adv (
     .clk_i,
     .rst_ni,
