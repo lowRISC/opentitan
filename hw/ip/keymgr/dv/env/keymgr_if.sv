@@ -46,15 +46,6 @@ interface keymgr_if(input clk, input rst_n);
     // this sequencing is correct.
     keymgr_en = lc_ctrl_pkg::lc_tx_t'($urandom);
 
-    // reset exp variables
-    kmac_key_exp = '0;
-    hmac_key_exp = '0;
-    aes_key_exp  = '0;
-    is_kmac_key_good = 0;
-    is_hmac_key_good = 0;
-    is_aes_key_good  = 0;
-    is_kmac_sideload_avail = 0;
-
     // async delay as these signals are from different clock domain
     #($urandom_range(1000, 0) * 1ns);
     keymgr_en = lc_ctrl_pkg::On;
@@ -62,6 +53,17 @@ interface keymgr_if(input clk, input rst_n);
     otp_hw_cfg.data.device_id = 'hF0F0;
     otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
     flash   = flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT;
+  endtask
+
+  // reset local exp variables when reset is issued
+  task automatic reset();
+    kmac_key_exp = '0;
+    hmac_key_exp = '0;
+    aes_key_exp  = '0;
+    is_kmac_key_good = 0;
+    is_hmac_key_good = 0;
+    is_aes_key_good  = 0;
+    is_kmac_sideload_avail = 0;
   endtask
 
   // randomize otp, lc, flash input data

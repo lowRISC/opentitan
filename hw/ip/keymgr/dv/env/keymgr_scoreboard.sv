@@ -709,6 +709,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     id_data_a_array.delete();
     sw_data_a_array.delete();
     hw_data_a_array.delete();
+    cfg.keymgr_vif.reset();
   endfunction
 
   function void check_phase(uvm_phase phase);

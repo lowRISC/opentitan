@@ -28,10 +28,10 @@ class keymgr_stress_all_vseq extends keymgr_base_vseq;
       `downcast(keymgr_vseq, seq)
 
       // at the end of each vseq, design has enterred StDisabled, need to reset to recover
-      // if upper seq disables do_dut_init for this seq, then can't issue reset
+      // if upper seq disables do_apply_reset for this seq, then can't issue reset
       // as upper seq may drive reset
-      if (do_dut_init && i > 1) keymgr_vseq.do_dut_init = 1;
-      else                      keymgr_vseq.do_dut_init = 0;
+      if (do_apply_reset && i > 1) keymgr_vseq.do_apply_reset = 1;
+      else                         keymgr_vseq.do_apply_reset = 0;
 
       keymgr_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(keymgr_vseq)
@@ -47,7 +47,7 @@ class keymgr_stress_all_vseq extends keymgr_base_vseq;
       // we need to reset for each vseq, but in keymgr_stress_all_with_rand_reset, reset should be
       // issued in upper seq. So, wait forever until reset is issued and this vseq is killed by
       // upper seq
-      if (!do_dut_init) wait(0);
+      if (!do_apply_reset) wait(0);
     end
   endtask : body
 
