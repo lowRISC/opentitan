@@ -12,7 +12,6 @@ module prim_secded_hamming_72_64_dec (
   output logic [1:0] err_o
 );
 
-  logic single_error;
 
   // Syndrome calculation
   assign syndrome_o[0] = ^(in & 72'h01AB55555556AAAD5B);
