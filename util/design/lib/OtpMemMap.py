@@ -16,6 +16,10 @@ from lib.common import check_bool, check_int, random_or_hexvalue
 DIGEST_SUFFIX = "_DIGEST"
 DIGEST_SIZE = 8
 
+# Seed diversification constant for OtpMemMap (this enables to use
+# the same seed for different classes)
+OTP_SEED_DIVERSIFIER = 177149201092001677687
+
 
 def _validate_otp(otp):
     '''Validate OTP entry'''
@@ -234,7 +238,7 @@ class OtpMemMap():
         config["seed"] = check_int(config["seed"])
 
         # Initialize RNG.
-        random.seed(int(config['seed']))
+        random.seed(OTP_SEED_DIVERSIFIER + int(config['seed']))
 
         if "otp" not in config:
             log.error("Missing otp configuration.")

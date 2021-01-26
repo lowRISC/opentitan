@@ -25,7 +25,7 @@ package lc_ctrl_state_pkg;
   // - Minimum Hamming weight: 8
   // - Maximum Hamming weight: 16
   // - Minimum Hamming distance from any other value: 6
-  // - Maximum Hamming distance from any other value: 18
+  // - Maximum Hamming distance from any other value: 20
   //
   // Hamming distance histogram:
   //
@@ -35,21 +35,21 @@ package lc_ctrl_state_pkg;
   //  3: --
   //  4: --
   //  5: --
-  //  6: |||| (6.23%)
+  //  6: |||| (6.84%)
   //  7: --
-  //  8: ||||||||||| (17.60%)
+  //  8: ||||||||||| (16.70%)
   //  9: --
-  // 10: |||||||||||||||||||| (29.76%)
+  // 10: ||||||||||||||||||| (29.10%)
   // 11: --
-  // 12: |||||||||||||||||| (27.71%)
+  // 12: |||||||||||||||||||| (29.82%)
   // 13: --
-  // 14: |||||||||| (15.25%)
+  // 14: |||||||| (12.83%)
   // 15: --
-  // 16: || (3.27%)
+  // 16: || (4.30%)
   // 17: --
-  // 18:  (0.18%)
+  // 18:  (0.36%)
   // 19: --
-  // 20: --
+  // 20:  (0.06%)
   // 21: --
   // 22: --
   //
@@ -58,96 +58,96 @@ package lc_ctrl_state_pkg;
   // the OTP ECC logic at runtime.
 
   // The A/B values are used for the encoded LC state.
-  parameter logic [15:0] A0 = 16'b0110010111010110; // ECC: 6'b001000
-  parameter logic [15:0] B0 = 16'b0111010111011111; // ECC: 6'b011110
+  parameter logic [15:0] A0 = 16'b1000011000111000; // ECC: 6'b110000
+  parameter logic [15:0] B0 = 16'b1110011001111001; // ECC: 6'b111111
 
-  parameter logic [15:0] A1 = 16'b1011000010101001; // ECC: 6'b010110
-  parameter logic [15:0] B1 = 16'b1011000011111111; // ECC: 6'b110111
+  parameter logic [15:0] A1 = 16'b1100011000100110; // ECC: 6'b101001
+  parameter logic [15:0] B1 = 16'b1101111101101110; // ECC: 6'b101011
 
-  parameter logic [15:0] A2 = 16'b1010100011000001; // ECC: 6'b110011
-  parameter logic [15:0] B2 = 16'b1111100111011011; // ECC: 6'b110011
+  parameter logic [15:0] A2 = 16'b0010000111101100; // ECC: 6'b110010
+  parameter logic [15:0] B2 = 16'b0111011111101101; // ECC: 6'b110110
 
-  parameter logic [15:0] A3 = 16'b1111001011100001; // ECC: 6'b100000
-  parameter logic [15:0] B3 = 16'b1111011111111001; // ECC: 6'b101100
+  parameter logic [15:0] A3 = 16'b0001100111101000; // ECC: 6'b000100
+  parameter logic [15:0] B3 = 16'b1101101111101100; // ECC: 6'b001101
 
-  parameter logic [15:0] A4 = 16'b0011010100001010; // ECC: 6'b100001
-  parameter logic [15:0] B4 = 16'b0111010100111011; // ECC: 6'b110101
+  parameter logic [15:0] A4 = 16'b1001011001100100; // ECC: 6'b000001
+  parameter logic [15:0] B4 = 16'b1101111001110100; // ECC: 6'b101101
 
-  parameter logic [15:0] A5 = 16'b1101000101000100; // ECC: 6'b110011
-  parameter logic [15:0] B5 = 16'b1111101101100111; // ECC: 6'b110011
+  parameter logic [15:0] A5 = 16'b0001011000010110; // ECC: 6'b111001
+  parameter logic [15:0] B5 = 16'b1011011001110111; // ECC: 6'b111101
 
-  parameter logic [15:0] A6 = 16'b1001101001100000; // ECC: 6'b111001
-  parameter logic [15:0] B6 = 16'b1001111011101011; // ECC: 6'b111011
+  parameter logic [15:0] A6 = 16'b0101001001010010; // ECC: 6'b001111
+  parameter logic [15:0] B6 = 16'b1101111111110010; // ECC: 6'b001111
 
-  parameter logic [15:0] A7 = 16'b0001110110100001; // ECC: 6'b000100
-  parameter logic [15:0] B7 = 16'b0011111110100011; // ECC: 6'b111100
+  parameter logic [15:0] A7 = 16'b0010001001011111; // ECC: 6'b011000
+  parameter logic [15:0] B7 = 16'b0011101011111111; // ECC: 6'b011101
 
-  parameter logic [15:0] A8 = 16'b0100111010001011; // ECC: 6'b001001
-  parameter logic [15:0] B8 = 16'b0101111110011011; // ECC: 6'b011111
+  parameter logic [15:0] A8 = 16'b0000001110111001; // ECC: 6'b001000
+  parameter logic [15:0] B8 = 16'b1100001110111111; // ECC: 6'b101010
 
-  parameter logic [15:0] A9 = 16'b0011011000110101; // ECC: 6'b000110
-  parameter logic [15:0] B9 = 16'b1011011001111101; // ECC: 6'b011111
+  parameter logic [15:0] A9 = 16'b1100100101111000; // ECC: 6'b010010
+  parameter logic [15:0] B9 = 16'b1111101101111001; // ECC: 6'b011110
 
-  parameter logic [15:0] A10 = 16'b0001110010011100; // ECC: 6'b001000
-  parameter logic [15:0] B10 = 16'b0101110011111110; // ECC: 6'b111000
+  parameter logic [15:0] A10 = 16'b0010000110110111; // ECC: 6'b010001
+  parameter logic [15:0] B10 = 16'b1011010111111111; // ECC: 6'b010101
 
-  parameter logic [15:0] A11 = 16'b0101011000001101; // ECC: 6'b100101
-  parameter logic [15:0] B11 = 16'b0111011110101101; // ECC: 6'b111101
+  parameter logic [15:0] A11 = 16'b1011000100000111; // ECC: 6'b011001
+  parameter logic [15:0] B11 = 16'b1111110110000111; // ECC: 6'b011111
 
 
   // The C/D values are used for the encoded LC transition counter.
-  parameter logic [15:0] C0 = 16'b1000010011010011; // ECC: 6'b110010
-  parameter logic [15:0] D0 = 16'b1100110011110111; // ECC: 6'b111011
+  parameter logic [15:0] C0 = 16'b0011100000010000; // ECC: 6'b111001
+  parameter logic [15:0] D0 = 16'b1111100100110000; // ECC: 6'b111111
 
-  parameter logic [15:0] C1 = 16'b1010010010000011; // ECC: 6'b000011
-  parameter logic [15:0] D1 = 16'b1010110011011011; // ECC: 6'b010111
+  parameter logic [15:0] C1 = 16'b0011000010101011; // ECC: 6'b100110
+  parameter logic [15:0] D1 = 16'b1011010011111011; // ECC: 6'b111110
 
-  parameter logic [15:0] C2 = 16'b0110010000011011; // ECC: 6'b100000
-  parameter logic [15:0] D2 = 16'b0111111011111011; // ECC: 6'b100000
+  parameter logic [15:0] C2 = 16'b0011110100100000; // ECC: 6'b011000
+  parameter logic [15:0] D2 = 16'b0011111101101011; // ECC: 6'b011100
 
-  parameter logic [15:0] C3 = 16'b1000010010001100; // ECC: 6'b110111
-  parameter logic [15:0] D3 = 16'b1010111010101111; // ECC: 6'b110111
+  parameter logic [15:0] C3 = 16'b1010101100010010; // ECC: 6'b111000
+  parameter logic [15:0] D3 = 16'b1111111110011010; // ECC: 6'b111010
 
-  parameter logic [15:0] C4 = 16'b1010010001100101; // ECC: 6'b001101
-  parameter logic [15:0] D4 = 16'b1111010111100111; // ECC: 6'b001111
+  parameter logic [15:0] C4 = 16'b0100011010010100; // ECC: 6'b110110
+  parameter logic [15:0] D4 = 16'b0101111110010111; // ECC: 6'b111110
 
-  parameter logic [15:0] C5 = 16'b0010010000101110; // ECC: 6'b010010
-  parameter logic [15:0] D5 = 16'b0010011111111110; // ECC: 6'b011111
+  parameter logic [15:0] C5 = 16'b1011111110000101; // ECC: 6'b000000
+  parameter logic [15:0] D5 = 16'b1011111111010111; // ECC: 6'b000111
 
-  parameter logic [15:0] C6 = 16'b0010111110000000; // ECC: 6'b100010
-  parameter logic [15:0] D6 = 16'b1010111110110011; // ECC: 6'b110010
+  parameter logic [15:0] C6 = 16'b1110010000010111; // ECC: 6'b010100
+  parameter logic [15:0] D6 = 16'b1111110010111111; // ECC: 6'b010110
 
-  parameter logic [15:0] C7 = 16'b0001000111001110; // ECC: 6'b011100
-  parameter logic [15:0] D7 = 16'b1111100111111110; // ECC: 6'b011100
+  parameter logic [15:0] C7 = 16'b0100100101011010; // ECC: 6'b001000
+  parameter logic [15:0] D7 = 16'b1110100111111111; // ECC: 6'b001101
 
-  parameter logic [15:0] C8 = 16'b1100001000110001; // ECC: 6'b001111
-  parameter logic [15:0] D8 = 16'b1100011001111111; // ECC: 6'b101111
+  parameter logic [15:0] C8 = 16'b0000110000011011; // ECC: 6'b110110
+  parameter logic [15:0] D8 = 16'b0011111000011111; // ECC: 6'b111111
 
-  parameter logic [15:0] C9 = 16'b1100100001010000; // ECC: 6'b110010
-  parameter logic [15:0] D9 = 16'b1111101001111011; // ECC: 6'b110110
+  parameter logic [15:0] C9 = 16'b0111001100010100; // ECC: 6'b011001
+  parameter logic [15:0] D9 = 16'b1111101101110110; // ECC: 6'b111001
 
-  parameter logic [15:0] C10 = 16'b1000000010001010; // ECC: 6'b011011
-  parameter logic [15:0] D10 = 16'b1011010010101010; // ECC: 6'b111111
+  parameter logic [15:0] C10 = 16'b0001101110100010; // ECC: 6'b100011
+  parameter logic [15:0] D10 = 16'b0011111111100011; // ECC: 6'b110111
 
-  parameter logic [15:0] C11 = 16'b0100011101010000; // ECC: 6'b111010
-  parameter logic [15:0] D11 = 16'b0111011111110100; // ECC: 6'b111011
+  parameter logic [15:0] C11 = 16'b0000110101000010; // ECC: 6'b111101
+  parameter logic [15:0] D11 = 16'b1100110111010110; // ECC: 6'b111111
 
-  parameter logic [15:0] C12 = 16'b1011001000010010; // ECC: 6'b110110
-  parameter logic [15:0] D12 = 16'b1011011111010111; // ECC: 6'b110110
+  parameter logic [15:0] C12 = 16'b0001111111010001; // ECC: 6'b000010
+  parameter logic [15:0] D12 = 16'b0001111111111001; // ECC: 6'b101111
 
-  parameter logic [15:0] C13 = 16'b0000101101000110; // ECC: 6'b111010
-  parameter logic [15:0] D13 = 16'b0011101101001111; // ECC: 6'b111111
+  parameter logic [15:0] C13 = 16'b0010010000110000; // ECC: 6'b111111
+  parameter logic [15:0] D13 = 16'b0111011100110101; // ECC: 6'b111111
 
-  parameter logic [15:0] C14 = 16'b0010010000000111; // ECC: 6'b011100
-  parameter logic [15:0] D14 = 16'b0011111011010111; // ECC: 6'b011111
+  parameter logic [15:0] C14 = 16'b0010111010001111; // ECC: 6'b001000
+  parameter logic [15:0] D14 = 16'b1011111010111111; // ECC: 6'b101100
 
-  parameter logic [15:0] C15 = 16'b1101110100010010; // ECC: 6'b001100
-  parameter logic [15:0] D15 = 16'b1111111101011010; // ECC: 6'b011101
+  parameter logic [15:0] C15 = 16'b0100010000111101; // ECC: 6'b011010
+  parameter logic [15:0] D15 = 16'b0101110011111101; // ECC: 6'b111110
 
 
   // The E/F values are used for the encoded ID state.
-  parameter logic [15:0] E0 = 16'b0001010001100001; // ECC: 6'b011111
-  parameter logic [15:0] F0 = 16'b0101111101100101; // ECC: 6'b111111
+  parameter logic [15:0] E0 = 16'b1110000000101100; // ECC: 6'b111001
+  parameter logic [15:0] F0 = 16'b1110010110111101; // ECC: 6'b111101
 
 
   ///////////////////////////////////////////
@@ -158,13 +158,13 @@ package lc_ctrl_state_pkg;
     128'h0
   };
   parameter logic [127:0] RndCnstRawUnlockToken = {
-    128'hB780BFD319A4E2E89805540CDDE5E04E
+    128'h1C8BE2FF12790AE2E6D6A68151CBD084
   };
   parameter logic [127:0] AllZeroTokenHashed = {
     128'h0
   };
   parameter logic [127:0] RndCnstRawUnlockTokenHashed = {
-    128'hB780BFD319A4E2E89805540CDDE5E04E
+    128'h1C8BE2FF12790AE2E6D6A68151CBD084
   };
 
 endpackage : lc_ctrl_state_pkg
