@@ -534,7 +534,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                   end else begin
                     `downcast(dv_vseq, seq.clone())
                   end
-                  dv_vseq.do_dut_init = 0;
+                  dv_vseq.do_apply_reset = 0;
                   dv_vseq.set_sequencer(p_sequencer);
                   `DV_CHECK_RANDOMIZE_FATAL(dv_vseq)
                   dv_vseq.start(p_sequencer);
