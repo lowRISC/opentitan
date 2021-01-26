@@ -107,6 +107,18 @@
                cov: true
              }
              {
+               name: prim_secded_hamming_22_16_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_hamming_22_16_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: true
+             }
+             {
+               name: prim_secded_hamming_39_32_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_hamming_39_32_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: true
+             }
+             {
                name: prim_secded_hamming_72_64_fpv
                fusesoc_core: lowrisc:fpv:prim_secded_hamming_72_64_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]

@@ -28,6 +28,11 @@ module prim_ram_2p_async_adv #(
   parameter  bit EnableInputPipeline  = 0, // Adds an input register (read latency +1)
   parameter  bit EnableOutputPipeline = 0, // Adds an output register (read latency +1)
 
+  // This switch allows to switch to standard Hamming ECC instead of the HSIAO ECC.
+  // It is recommended to leave this parameter at its default setting (HSIAO),
+  // since this results in a more compact and faster implementation.
+  parameter bit HammingECC            = 0,
+
   localparam int Aw                   = prim_util_pkg::vbits(Depth)
 ) (
   input clk_a_i,
@@ -176,20 +181,49 @@ module prim_ram_2p_async_adv #(
     assign b_wmask_d = {TotalWidth{1'b1}};
 
     if (Width == 32) begin : gen_secded_39_32
-      prim_secded_39_32_enc u_enc_a (.in(a_wdata_i), .out(a_wdata_d));
-      prim_secded_39_32_dec u_dec_a (
-        .in         (a_rdata_sram),
-        .d_o        (a_rdata_d[0+:Width]),
-        .syndrome_o ( ),
-        .err_o      (a_rerror_d)
-      );
-      prim_secded_39_32_enc u_enc_b (.in(b_wdata_i), .out(b_wdata_d));
-      prim_secded_39_32_dec u_dec_b (
-        .in         (b_rdata_sram),
-        .d_o        (b_rdata_d[0+:Width]),
-        .syndrome_o ( ),
-        .err_o      (b_rerror_d)
-      );
+      if (HammingECC) begin : gen_hamming
+        prim_secded_hamming_39_32_enc u_enc_a (
+          .in(a_wdata_i),
+          .out(a_wdata_d)
+        );
+        prim_secded_hamming_39_32_dec u_dec_a (
+          .in         (a_rdata_sram),
+          .d_o        (a_rdata_d[0+:Width]),
+          .syndrome_o ( ),
+          .err_o      (a_rerror_d)
+        );
+        prim_secded_hamming_39_32_enc u_enc_b (
+          .in(b_wdata_i),
+          .out(b_wdata_d)
+        );
+        prim_secded_hamming_39_32_dec u_dec_b (
+          .in         (b_rdata_sram),
+          .d_o        (b_rdata_d[0+:Width]),
+          .syndrome_o ( ),
+          .err_o      (b_rerror_d)
+        );
+      end else begin : gen_hsiao
+        prim_secded_39_32_enc u_enc_a (
+          .in(a_wdata_i),
+          .out(a_wdata_d)
+        );
+        prim_secded_39_32_dec u_dec_a (
+          .in         (a_rdata_sram),
+          .d_o        (a_rdata_d[0+:Width]),
+          .syndrome_o ( ),
+          .err_o      (a_rerror_d)
+        );
+        prim_secded_39_32_enc u_enc_b (
+          .in(b_wdata_i),
+          .out(b_wdata_d)
+        );
+        prim_secded_39_32_dec u_dec_b (
+          .in         (b_rdata_sram),
+          .d_o        (b_rdata_d[0+:Width]),
+          .syndrome_o ( ),
+          .err_o      (b_rerror_d)
+        );
+      end
     end
   end else if (EnableParity) begin : gen_byte_parity
 
