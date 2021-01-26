@@ -23,8 +23,8 @@ class rv_timer_stress_all_vseq extends rv_timer_base_vseq;
       `downcast(rv_timer_vseq, seq)
 
       // dut_init (reset) can be skipped
-      if (do_dut_init) rv_timer_vseq.do_dut_init = $urandom_range(0, 1);
-      else rv_timer_vseq.do_dut_init = 0;
+      if (do_apply_reset) rv_timer_vseq.do_apply_reset = $urandom_range(0, 1);
+      else rv_timer_vseq.do_apply_reset = 0;
 
       rv_timer_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(rv_timer_vseq)

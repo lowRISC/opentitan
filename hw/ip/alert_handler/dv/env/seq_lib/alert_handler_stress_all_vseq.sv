@@ -28,14 +28,14 @@ class alert_handler_stress_all_vseq extends alert_handler_base_vseq;
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(alert_vseq, seq)
 
-      // if upper seq disables do_dut_init for this seq, then can't issue reset
+      // if upper seq disables do_apply_reset for this seq, then can't issue reset
       // as upper seq may drive reset
-      if (do_dut_init) begin
-        alert_vseq.do_dut_init = $urandom_range(0, 1);
+      if (do_apply_reset) begin
+        alert_vseq.do_apply_reset = $urandom_range(0, 1);
         // config_locked will be set unless reset is issued
-        alert_vseq.config_locked = alert_vseq.do_dut_init ? 0 : config_locked;
+        alert_vseq.config_locked = alert_vseq.do_apply_reset ? 0 : config_locked;
       end else begin
-        alert_vseq.do_dut_init = 0;
+        alert_vseq.do_apply_reset = 0;
         alert_vseq.config_locked = config_locked;
       end
 
