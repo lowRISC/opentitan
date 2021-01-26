@@ -111,13 +111,14 @@ def main():
                    for_json=True,
                    use_decimal=True)
 
-    # return nonzero status if any warnings or errors are present
-    # lint infos do not count as failures
-    n_errors = len(results["errors"]) + len(results["lint_errors"])
-    n_warnings = len(results["warnings"]) + len(results["lint_warnings"])
-    if n_errors > 0 or n_warnings > 0:
-        log.info("Found %d lint errors and %d lint warnings", n_errors, n_warnings)
-        sys.exit(1)
+    # Pass/fail status is determined in the LintCfg class.
+    log.info(("Found %d flow warnings, %d flow errors, %d lint infos,\n"
+             "%d lint warnings and %d lint errors."),
+             len(results["warnings"]),
+             len(results["errors"]),
+             len(results["lint_infos"]),
+             len(results["lint_warnings"]),
+             len(results["lint_errors"]))
 
     log.info("Lint logfile parsed succesfully")
     sys.exit(0)
