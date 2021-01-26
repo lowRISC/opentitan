@@ -178,6 +178,9 @@ class LcStEnc():
             config['secded']['data_width'])
         config['secded']['ecc_width'] = check_int(
             config['secded']['ecc_width'])
+
+        total_width = config['secded']['data_width'] + config['secded']['ecc_width']
+
         config['num_ab_words'] = check_int(config['num_ab_words'])
         config['num_cd_words'] = check_int(config['num_cd_words'])
         config['num_ef_words'] = check_int(config['num_ef_words'])
@@ -209,6 +212,9 @@ class LcStEnc():
             log.info('ECC Bit {} Fanin: {}'.format(i, l))
             for j, e in enumerate(l):
                 e = check_int(e)
+                if e < 0 or e >= total_width:
+                    log.error('ECC bit position is out of bounds')
+                    exit(1)
                 config['secded']['ecc_matrix'][i][j] = e
 
         log.info('')
@@ -224,7 +230,6 @@ class LcStEnc():
 
         config['tokens'] += hashed_tokens
 
-        print(config['tokens'])
         self.config = config
 
         # Re-initialize with seed to make results reproducible.
