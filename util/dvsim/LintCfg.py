@@ -54,7 +54,7 @@ class LintCfg(OneShotCfg):
         results_str += "\n"
 
         header = [
-            "Name", "Tool Warnings", "Tool Errors", "Lint Warnings",
+            "Name", "Flow Warnings", "Flow Errors", "Lint Warnings",
             "Lint Errors"
         ]
         colalign = ("center", ) * len(header)
@@ -180,22 +180,25 @@ class LintCfg(OneShotCfg):
             self.result_summary["lint_errors"] += self.result["lint_errors"]
 
             # Append detailed messages if they exist
-            hdr_key_pairs = [("Tool Warnings", "warnings"),
-                             ("Tool Errors", "errors"),
-                             ("Lint Warnings", "lint_warnings"),
-                             ("Lint Errors", "lint_errors")]
+            # Indicate whether message leads to failure or not.
+            hdr_key_pairs = [("Flow Warnings", "warnings", False),
+                             ("Flow Errors", "errors", True),
+                             ("Lint Warnings", "lint_warnings", True),
+                             ("Lint Errors", "lint_errors", True)]
 
             # Lint fails if any warning or error message has occurred
             self.errors_seen = False
-            for _, key in hdr_key_pairs:
+            errors_to_report = False
+            for _, key, fail in hdr_key_pairs:
                 if key in self.result:
                     if self.result.get(key):
-                        self.errors_seen = True
+                        self.errors_seen = fail
+                        errors_to_report = True
                         break
 
-            if self.errors_seen:
+            if errors_to_report:
                 fail_msgs += "\n### Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
-                for hdr, key in hdr_key_pairs:
+                for hdr, key, _ in hdr_key_pairs:
                     msgs = self.result.get(key)
                     fail_msgs += print_msg_list("#### " + hdr, msgs, self.max_msg_count)
 
