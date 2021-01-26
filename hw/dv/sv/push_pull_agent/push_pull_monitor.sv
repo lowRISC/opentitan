@@ -99,8 +99,9 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
         req_port.write(item);
         // After picking up a request, wait until a response is sent before
         // detecting another request, as this is not a pipelined protocol.
-        while (!cfg.vif.mon_cb.ack && !in_reset) @(cfg.vif.mon_cb);
-      end
+        `DV_SPINWAIT_EXIT(while (!cfg.vif.mon_cb.ack) @(cfg.vif.mon_cb);,
+                          wait(in_reset))
+       end
     end
   endtask
 
