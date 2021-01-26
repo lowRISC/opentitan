@@ -11,7 +11,8 @@ package csrng_pkg;
 
   parameter int unsigned   GENBITS_BUS_WIDTH = 128;
   parameter int unsigned   CSRNG_CMD_WIDTH = 32;
-  parameter int unsigned   FIPS_GENBITS_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH + GENBITS_BUS_WIDTH;
+  parameter int unsigned   FIPS_GENBITS_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH +
+                           GENBITS_BUS_WIDTH;
 
   // instantiation interface
   typedef struct packed {
