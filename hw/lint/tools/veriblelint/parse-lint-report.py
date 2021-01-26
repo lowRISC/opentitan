@@ -53,6 +53,10 @@ def get_results(resdir):
                 ("errors", r"^Error: .*"),
                 ("errors", r"^E .*"),
                 ("errors", r"^F .*"),
+                # TODO(https://github.com/google/verible/issues/652): uncomment
+                # this regex once the endproperty and first_match keywords are supported
+                # in the Verible style linter.
+                #("errors", r".*: syntax error, rejected.*"),
                 # TODO(https://github.com/olofk/edalize/issues/90):
                 # this is a workaround until we actually have native Edalize
                 # support for JasperGold and "formal" targets
@@ -115,7 +119,7 @@ def main():
 
     # Pass/fail status is determined in the LintCfg class.
     log.info(("Found %d flow warnings, %d flow errors, %d lint infos,\n"
-             "%d lint warnings and %d lint errors."),
+              "%d lint warnings and %d lint errors."),
              len(results["warnings"]),
              len(results["errors"]),
              len(results["lint_infos"]),
