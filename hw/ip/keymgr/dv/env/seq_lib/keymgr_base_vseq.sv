@@ -181,8 +181,10 @@ class keymgr_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] rdata;
 
     csr_rd(.ptr(ral.working_state), .value(rdata));
-    `downcast(current_state, rdata)
-    `uvm_info(`gfn, $sformatf("Current state %0s", current_state.name), UVM_MEDIUM)
+    if (!cfg.under_reset) begin
+      `downcast(current_state, rdata)
+      `uvm_info(`gfn, $sformatf("Current state %0s", current_state.name), UVM_MEDIUM)
+    end
   endtask : read_current_state
 
   virtual task keymgr_advance(bit wait_done = 1);
