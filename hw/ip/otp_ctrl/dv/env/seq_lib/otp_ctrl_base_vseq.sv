@@ -23,12 +23,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     super.dut_init(reset_kind);
     cfg.backdoor_clear_mem = 0;
     // reset power init pin and lc pins
-    cfg.pwr_otp_vif.drive_pin(OtpPwrInitReq, 0);
-    cfg.lc_creator_seed_sw_rw_en_vif.drive(lc_ctrl_pkg::Off);
-    cfg.lc_seed_hw_rd_en_vif.drive(lc_ctrl_pkg::Off);
-    cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::Off);
-    cfg.lc_escalate_en_vif.drive(lc_ctrl_pkg::Off);
-    cfg.lc_check_byp_en_vif.drive(lc_ctrl_pkg::Off);
+    cfg.otp_ctrl_vif.init();
     if (do_otp_ctrl_init) otp_ctrl_init();
     if (do_otp_pwr_init) otp_pwr_init();
   endtask
@@ -40,9 +35,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // drive otp_pwr req pin to initialize OTP, and wait until init is done
   virtual task otp_pwr_init();
-    cfg.pwr_otp_vif.drive_pin(OtpPwrInitReq, 1);
-    wait(cfg.pwr_otp_vif.pins[OtpPwrDoneRsp] == 1);
-    cfg.pwr_otp_vif.drive_pin(OtpPwrInitReq, 0);
+    cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
+    wait(cfg.otp_ctrl_vif.pwr_otp_done_o == 1);
+    cfg.otp_ctrl_vif.drive_pwr_otp_init(0);
   endtask
 
   // setup basic otp_ctrl features
@@ -55,8 +50,6 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // some registers won't set to default value until otp_init is done
   virtual task read_and_check_all_csrs_after_reset();
-    // drive dft_en pins to access the test_access memory
-    cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::On);
     otp_pwr_init();
     super.read_and_check_all_csrs_after_reset();
   endtask

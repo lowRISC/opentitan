@@ -67,7 +67,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_backdoor_mem_clear();
     forever begin
-      @(posedge cfg.pwr_otp_vif.pins[OtpPwrInitReq] && cfg.en_scb) begin
+      @(posedge cfg.otp_ctrl_vif.pwr_otp_init_i && cfg.en_scb) begin
         if (cfg.backdoor_clear_mem) begin
           bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
           otp_a   = '{default:0};

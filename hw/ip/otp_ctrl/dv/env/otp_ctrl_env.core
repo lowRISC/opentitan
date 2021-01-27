@@ -13,7 +13,7 @@ filesets:
       - lowrisc:dv:crypto_dpi_present
     files:
       - otp_ctrl_env_pkg.sv
-      - otp_ctrl_output_data_if.sv
+      - otp_ctrl_if.sv
       - otp_ctrl_env_cfg.sv: {is_include_file: true}
       - otp_ctrl_env_cov.sv: {is_include_file: true}
       - otp_ctrl_virtual_sequencer.sv: {is_include_file: true}
