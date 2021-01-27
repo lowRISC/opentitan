@@ -65,6 +65,11 @@ class Deploy():
         # A list of jobs on which this job depends
         self.dependencies = []
 
+        # Indicates whether running this job requires all dependencies to pass.
+        # If this flag is set to False, any passing dependency will trigger
+        # this current job to run
+        self.needs_all_dependencies_passing = True
+
         # Process
         self.process = None
         self.log_fd = None
@@ -739,6 +744,7 @@ class CovMerge(Deploy):
         super().__init__(sim_cfg)
 
         self.dependencies += run_items
+        self.needs_all_dependencies_passing = False
 
         self.target = "cov_merge"
         self.pass_patterns = []
