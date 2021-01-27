@@ -47,7 +47,6 @@ module prim_packer_fifo #(
   // derived parameters
   localparam int MaxW = (InW > OutW) ? InW : OutW,
   localparam int MinW = (InW < OutW) ? InW : OutW,
-//  localparam int DepthW = $clog2(MaxW/MinW) + ~|$clog2(MaxW/MinW)
   localparam int DepthW = $clog2(MaxW/MinW)
 ) (
   input logic clk_i ,
@@ -72,16 +71,22 @@ module prim_packer_fifo #(
   // flops
   logic [DepthW:0] depth_q, depth_d;
   logic [MaxW-1:0] data_q, data_d;
+  logic            clr_q, clr_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       depth_q <= '0;
       data_q  <= '0;
+      clr_q   <= 1'b1;
     end else begin
       depth_q <= depth_d;
       data_q  <= data_d;
+      clr_q   <= clr_d;
     end
   end
+
+  // flop for handling reset case for clr
+  assign clr_d = clr_i;
 
   assign depth_o = depth_q;
 
@@ -89,7 +94,7 @@ module prim_packer_fifo #(
     logic [MaxW-1:0] wdata_shifted;
 
     assign wdata_shifted = wdata_i << (depth_q*InW);
-    assign clear_data = (rready_i && rvalid_o) || clr_i;
+    assign clear_data = (rready_i && rvalid_o) || clr_q;
     assign load_data = wvalid_i && wready_o;
 
     assign depth_d =  clear_data ? '0 :
@@ -101,9 +106,9 @@ module prim_packer_fifo #(
            data_q;
 
     // set outputs
-    assign wready_o = !(depth_q == (MaxW/MinW));
+    assign wready_o = !(depth_q == (MaxW/MinW)) && !clr_q;
     assign rdata_o =  data_q;
-    assign rvalid_o = (depth_q == (MaxW/MinW));
+    assign rvalid_o = (depth_q == (MaxW/MinW)) && !clr_q;
 
   end else begin : gen_unpack_mode
     logic [MaxW-1:0] rdata_shifted; // ri lint_check_waive NOT_READ
@@ -123,7 +128,7 @@ module prim_packer_fifo #(
     assign lsb_is_one = {{DepthW{1'b0}},1'b1}; // ri lint_check_waive ZERO_REP
     assign   max_value = (MaxW/MinW);
     assign rdata_shifted = data_q >> ptr_q*OutW;
-    assign clear_data = (rready_i && (depth_q == lsb_is_one)) || clr_i;
+    assign clear_data = (rready_i && (depth_q == lsb_is_one)) || clr_q;
     assign load_data = wvalid_i && wready_o;
     assign pull_data = rvalid_o && rready_i;
 
@@ -141,9 +146,9 @@ module prim_packer_fifo #(
            data_q;
 
     // set outputs
-    assign wready_o = (depth_q == '0);
+    assign wready_o = (depth_q == '0) && !clr_q;
     assign rdata_o =  rdata_shifted[OutW-1:0];
-    assign rvalid_o = !(depth_q == '0);
+    assign rvalid_o = !(depth_q == '0) && !clr_q;
 
   end
 
