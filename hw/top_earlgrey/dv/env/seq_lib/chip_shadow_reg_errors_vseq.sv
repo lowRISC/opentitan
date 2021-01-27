@@ -14,10 +14,10 @@ class chip_shadow_reg_errors_vseq extends chip_common_vseq;
 
   // Most of the shadow_reg related tasks are from `dv/sv/cip_lib/cip_base_vseq.sv`
   virtual task body();
-    dv_base_reg shadowed_csrs[$], non_shadowed_csrs[$];
+    dv_base_reg shadowed_csrs[$];
 
     // Get all shadowed_regs from each IP
-    split_all_csrs_by_shadowed(ral, shadowed_csrs, non_shadowed_csrs);
+    ral.get_shadowed_regs(shadowed_csrs);
     shadowed_csrs.shuffle();
 
     foreach (shadowed_csrs[i]) begin

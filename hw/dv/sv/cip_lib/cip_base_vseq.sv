@@ -667,20 +667,20 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   virtual task run_shadow_reg_errors(int num_times);
     csr_excl_item      csr_excl = add_and_return_csr_excl("csr_excl");
-    dv_base_reg        shadowed_csrs[$], non_shadowed_csrs[$], test_csrs[$];
+    dv_base_reg        shadowed_csrs[$], all_csrs[$], test_csrs[$];
     uvm_reg_data_t     wdata;
     bit                alert_triggered;
 
-    split_all_csrs_by_shadowed(ral, shadowed_csrs, non_shadowed_csrs);
+    ral.get_shadowed_regs(shadowed_csrs);
+    ral.get_dv_base_regs(all_csrs);
 
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running shadow reg error test iteration %0d/%0d", trans,
                                 num_times), UVM_LOW)
       repeat ($urandom_range(10, 100)) begin
-        non_shadowed_csrs.shuffle();
+        all_csrs.shuffle();
         test_csrs.delete();
-        test_csrs = {shadowed_csrs,
-                     non_shadowed_csrs[0: $urandom_range(0, non_shadowed_csrs.size()-1)]};
+        test_csrs = {shadowed_csrs, all_csrs[0: $urandom_range(0, all_csrs.size()-1)]};
         test_csrs.shuffle();
 
         if ($urandom_range(1, 10) == 10) dut_init("HARD");
@@ -767,10 +767,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         // random read to check if the register values are equal to the predicted values,
         // reading shadow registers after their first write will clear the phase tracker
         if ($urandom_range(0, 1)) begin
-          test_csrs = {shadowed_csrs, non_shadowed_csrs};
-          test_csrs.shuffle();
-          foreach (test_csrs[i]) begin
-            do_check_csr_or_field_rd(.csr(test_csrs[i]),
+          all_csrs.shuffle();
+          foreach (all_csrs[i]) begin
+            do_check_csr_or_field_rd(.csr(all_csrs[i]),
                                      .blocking(0),
                                      .compare(1),
                                      .compare_vs_ral(1),
