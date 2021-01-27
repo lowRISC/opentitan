@@ -251,7 +251,7 @@ module otbn_controller
   end
 
   // Anything that moves us or keeps us in the stall state should cause `stall` to be asserted
-  `ASSERT(StallIfNextStateStall, insn_valid_i & (state_d == OtbnStateStall) |-> stall);
+  `ASSERT(StallIfNextStateStall, insn_valid_i & (state_d == OtbnStateStall) |-> stall)
 
   // On any error immediately halt and suppress any Imem request.
   assign state_d = err ? OtbnStateHalt : state_raw;
@@ -430,7 +430,7 @@ module otbn_controller
   // Suppress write for loads when controller isn't in stall state as load data for writeback is
   // only available in the stall state.
   assign rf_base_wr_en_o = insn_valid_i & insn_dec_base_i.rf_we &
-    ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall));
+      ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall));
 
   always_comb begin
     unique case (insn_dec_base_i.rf_wdata_sel)
