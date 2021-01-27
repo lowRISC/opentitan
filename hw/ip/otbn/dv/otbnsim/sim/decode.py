@@ -7,7 +7,7 @@
 import struct
 from typing import List, Optional, Tuple, Type
 
-from .alert import Alert, ERR_CODE_ILLEGAL_INSN
+from .alert import IllegalInsnError
 from .isa import DecodeError, OTBNInsn
 from .insn import INSN_CLASSES
 from .state import OTBNState
@@ -16,18 +16,6 @@ from .state import OTBNState
 # word has all the bits in m0 clear and all the bits in m1 set, then you should
 # decode it with the given class".
 _MaskTuple = Tuple[int, int, Type[OTBNInsn]]
-
-
-class IllegalInsnError(Alert):
-    '''Raised on a bad instruction'''
-    err_code = ERR_CODE_ILLEGAL_INSN
-
-    def __init__(self, word: int, msg: str):
-        self.word = word
-        self.msg = msg
-
-    def __str__(self) -> str:
-        return ('Illegal instruction {:#010x}: {}'.format(self.word, self.msg))
 
 
 class IllegalInsn(OTBNInsn):
@@ -51,7 +39,7 @@ class IllegalInsn(OTBNInsn):
         self._disasm = (pc, '?? 0x{:08x}'.format(raw))
 
     def execute(self, state: OTBNState) -> None:
-        raise IllegalInsnError(self.raw, self.msg)
+        state.on_error(IllegalInsnError(self.raw, self.msg))
 
 
 MASK_TUPLES = None  # type: Optional[List[_MaskTuple]]

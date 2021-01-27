@@ -4,7 +4,7 @@
 
 from typing import Dict
 
-from .alert import LoopError
+from .alert import ERR_CODE_NO_ERROR, LoopError
 from .flags import FlagReg
 from .isa import (DecodeError, OTBNInsn, RV32RegReg, RV32RegImm, RV32ImmShift,
                   insn_for_mnemonic, logical_byte_shift)
@@ -315,7 +315,7 @@ class ECALL(OTBNInsn):
 
     def execute(self, state: OTBNState) -> None:
         # Set INTR_STATE.done and STATUS, reflecting the fact we've stopped.
-        state.stop(None)
+        state._stop(ERR_CODE_NO_ERROR)
 
 
 class LOOP(OTBNInsn):
@@ -330,8 +330,9 @@ class LOOP(OTBNInsn):
     def execute(self, state: OTBNState) -> None:
         num_iters = state.gprs.get_reg(self.grs).read_unsigned()
         if num_iters == 0:
-            raise LoopError('loop count in x{} was zero'
-                            .format(self.grs))
+            state.on_error(LoopError('loop count in x{} was zero'
+                                     .format(self.grs)))
+            return
 
         state.loop_start(num_iters, self.bodysize)
 
