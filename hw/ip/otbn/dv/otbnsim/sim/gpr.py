@@ -48,9 +48,6 @@ class CallStackReg(Reg):
         self.saw_read = True
         return self.stack[-1]
 
-    def write_unsigned(self, uval: int, backdoor: bool = False) -> None:
-        super().write_unsigned(uval, backdoor)
-
     def commit(self) -> None:
         if self.saw_read:
             assert self.stack
