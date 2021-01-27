@@ -160,6 +160,72 @@ bazel test //:your_target --platforms=@bazel_embedded//platforms:cortex_m7_fpu -
 ```
 This will pipe the serial output from the microcontroller over /dev/ttyACM0 to stdout. If a line contains 'PASSED', the wrapper will return 0, if a line contains 'FAILED' the wrapper will return 1. This is useful if you are wrapping a cc_test. If success_string or fail_string is not specified, the wrapper will not exit unless sent a sigterm (e.g. by CTRL-C). Leaving these empty can be useful when wrapping a standard cc_binary.
 
+## How to have your embedded code coexist with host code
+There are a number of cases where you may want to build and test everything but running.
+
+```bash
+bazel build //...
+```
+
+However by default this will capture and build all libraries for the host. This includes libraries that are only compatible with the host system. This can lead to scenarios where code will not compile on your host breaking a wildcards for building. As of bazel 4.0, incompatible target skipping is now supported which allows you to specify the constraint_values that your target is compatible. Bazel will then skip targets included in the wildcard that are not supported. If a target is built with the wrong target explicitly bazel will issue a warning saying that your target is not supported with the given platform.
+
+e.g. 
+
+```python
+
+# Linux only
+cc_library(
+    name = "linux_only_lib",
+    srcs = ["some_lib.cc"],
+    target_compatible_with = [
+        "@platforms//os:linux",
+    ],
+)
+
+# Compatible with everything
+cc_library(
+    name = "generic",
+    srcs = ["generic.cc"],
+)
+
+# Cortex m4 only
+cc_library(
+    name = "cortex_m4_only_lib",
+    srcs = ["some_lib_m4.cc"],
+    target_compatible_with = [
+        "@platforms//cpu:armv7e-m",
+    ],
+)
+
+# All cortex-m architectures
+cc_library(
+    name = "cortex_m_all_lib",
+    srcs = ["some_lib_m_all.cc"],
+    # Allow all cortex m architectures using a select statement. Reject anything else
+    target_compatible_with = select({
+        "@platforms//cpu:armv6-m": [],
+        "@platforms//cpu:armv7-m": [],
+        "@platforms//cpu:armv7e-m": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    ],
+)
+
+# Depends on platform specific target therefore can only be built with cortex m4
+cc_library(
+    name = "depends_on_m4",
+    deps = [":cortex_m4_only_lib"],
+)
+```
+
+For reference the following architectures constraint values map to cpu layouts.
+
+"@platforms//cpu:armv6-m" -> Cortex-M0, Cortex-M0+, Cortex-M1
+
+"@platforms//cpu:armv7-m" -> Cortex-M3
+
+"@platforms//cpu:armv7e-m" -> Cortex-M4, Cortex-M7
+
+
 ## Feature configuration
 Bazel can be configured using [features](https://docs.bazel.build/versions/master/cc-toolchain-config-reference.html#features). Each toolchain in this repository aims to implement a consistent behaviour for a given set of features. The list of available configuration features can be listed using the following command.
 ```bash
