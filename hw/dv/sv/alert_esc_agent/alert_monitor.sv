@@ -118,7 +118,6 @@ class alert_monitor extends alert_esc_base_monitor;
                 req.alert_handshake_sta = AlertComplete;
                 wait_ack_complete();
                 req.alert_handshake_sta = AlertAckComplete;
-                @(cfg.vif.monitor_cb);
               end
               begin
                 wait(under_reset);
@@ -160,19 +159,19 @@ class alert_monitor extends alert_esc_base_monitor;
   endtask : int_fail_thread
 
   virtual task wait_alert();
-    while (cfg.vif.alert_tx_final.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
+    while (cfg.vif.monitor_cb.alert_tx_final.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
   endtask : wait_alert
 
   virtual task wait_alert_complete();
-    while (cfg.vif.alert_tx_final.alert_p !== 1'b0) @(cfg.vif.monitor_cb);
+    while (cfg.vif.monitor_cb.alert_tx_final.alert_p !== 1'b0) @(cfg.vif.monitor_cb);
   endtask : wait_alert_complete
 
   virtual task wait_ack();
-    while (cfg.vif.alert_rx_final.ack_p !== 1'b1) @(cfg.vif.monitor_cb);
+    while (cfg.vif.monitor_cb.alert_rx_final.ack_p !== 1'b1) @(cfg.vif.monitor_cb);
   endtask : wait_ack
 
   virtual task wait_ack_complete();
-    while (cfg.vif.alert_rx_final.ack_p !== 1'b0) @(cfg.vif.monitor_cb);
+    while (cfg.vif.monitor_cb.alert_rx_final.ack_p !== 1'b0) @(cfg.vif.monitor_cb);
   endtask : wait_ack_complete
 
   virtual function bit is_sig_int_err();
