@@ -98,17 +98,22 @@ class TargetScheduler:
 
         while len(to_dispatch) < num_slots and self._queued:
             next_item = self._queued.pop(0)
-
             # Does next_item have any dependencies? Since we dispatch jobs by
             # target, we can assume that each of those dependencies appears
             # in old_results.
-            has_failed_dep = False
+            has_failed_dep = False if next_item.needs_all_dependencies_passing else True
             for dep in next_item.dependencies:
                 dep_status = old_results[dep]
                 assert dep_status in ['P', 'F', 'K']
-                if dep_status in ['F', 'K']:
-                    has_failed_dep = True
-                    break
+
+                if next_item.needs_all_dependencies_passing:
+                    if dep_status in ['F', 'K']:
+                        has_failed_dep = True
+                        break
+                else:
+                    if dep_status in ['P']:
+                        has_failed_dep = False
+                        break
 
             # If has_failed_dep then at least one of the dependencies has been
             # cancelled or has run and failed. Give up on this item too.
