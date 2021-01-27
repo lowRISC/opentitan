@@ -31,12 +31,21 @@ class keymgr_kmac_monitor extends dv_base_monitor #(
     data_fifo = new("data_fifo", this);
   endfunction
 
-  task run_phase(uvm_phase phase);
-    super.run_phase(phase);
+  virtual protected task collect_trans(uvm_phase phase);
+    forever fork
+      begin : isolation_fork
+        fork
+          process_trans();
+          @(negedge cfg.vif.rst_n);
+        join_any
+        disable fork;
+        process_reset();
+      end : isolation_fork
+    join
   endtask
 
   // collect transactions forever - already forked in dv_base_moditor::run_phase
-  virtual protected task collect_trans(uvm_phase phase);
+  virtual protected task process_trans();
     forever begin
       keymgr_kmac_item req = keymgr_kmac_item::type_id::create("req");
       keymgr_kmac_item rsp;
@@ -49,6 +58,7 @@ class keymgr_kmac_monitor extends dv_base_monitor #(
 
         data_fifo.get(data_item);
         {data, strb, last} = data_item.h_data;
+        ok_to_end = 0;
 
         while (strb > 0) begin
           if (strb[0]) req.byte_data_q.push_back(data[7:0]);
@@ -67,7 +77,15 @@ class keymgr_kmac_monitor extends dv_base_monitor #(
       rsp.rsp_digest_share1 = cfg.vif.rsp_digest_share1;
       rsp_port.write(rsp);
       `uvm_info(`gfn, $sformatf("Write rsp item:\n%0s", rsp.sprint()), UVM_HIGH)
+      ok_to_end = 1;
     end
+  endtask
+
+  virtual protected task process_reset();
+    `uvm_info(`gfn, $sformatf("Reset occurs"), UVM_MEDIUM)
+    ok_to_end = 1;
+    @(posedge cfg.vif.rst_n);
+    data_fifo.flush();
   endtask
 
 endclass
