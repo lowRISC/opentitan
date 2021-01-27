@@ -32,16 +32,16 @@ class keymgr_kmac_device_driver extends keymgr_kmac_driver;
       rsp.set_id_info(req);
       `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.sprint()), UVM_HIGH)
 
-      repeat (rsp.rsp_delay) begin
-        if (cfg.vif.rst_n) @(cfg.vif.device_cb);
-      end
+      `DV_SPINWAIT_EXIT(repeat (rsp.rsp_delay) @(cfg.vif.device_cb);,
+                        wait(!cfg.vif.rst_n))
 
       cfg.vif.device_cb.rsp_done          <= 1;
       cfg.vif.device_cb.rsp_digest_share0 <= rsp.rsp_digest_share0;
       cfg.vif.device_cb.rsp_digest_share1 <= rsp.rsp_digest_share1;
       cfg.vif.device_cb.rsp_error         <= rsp.rsp_error;
 
-      if (cfg.vif.rst_n) @(cfg.vif.device_cb);
+      `DV_SPINWAIT_EXIT(@(cfg.vif.device_cb);,
+                        wait(!cfg.vif.rst_n))
       invalidate_signals();
 
       `uvm_info(`gfn, "item sent", UVM_HIGH)
