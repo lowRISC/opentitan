@@ -30,17 +30,6 @@ package cip_base_pkg;
   } shadow_reg_alert_e;
 
   // functions
-  function automatic void split_all_csrs_by_shadowed(input  dv_base_reg_block ral,
-                                                     output dv_base_reg shadowed_csrs[$],
-                                                     output dv_base_reg non_shadowed_csrs[$]);
-    dv_base_reg all_csrs[$];
-    ral.get_dv_base_regs(all_csrs);
-    foreach (all_csrs[i]) begin
-      if (all_csrs[i].get_is_shadowed()) shadowed_csrs.push_back(all_csrs[i]);
-      else non_shadowed_csrs.push_back(all_csrs[i]);
-    end
-  endfunction
-
   // package sources
   // base env
   `include "cip_base_env_cfg.sv"

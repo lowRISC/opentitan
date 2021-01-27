@@ -34,6 +34,7 @@ class dv_base_reg_block extends uvm_reg_block;
 
   function void get_dv_base_regs(ref dv_base_reg dv_regs[$]);
     uvm_reg ral_regs[$];
+    // if the ral has hier, this function will recursively includes the registers in the sub-blocks
     this.get_registers(ral_regs);
     foreach (ral_regs[i]) `downcast(dv_regs[i], ral_regs[i])
   endfunction
@@ -48,17 +49,18 @@ class dv_base_reg_block extends uvm_reg_block;
   endfunction
 
   function void get_enable_regs(ref dv_base_reg enable_regs[$]);
-    dv_base_reg_block blks[$];
-    get_dv_base_reg_blocks(blks);
-    if (blks.size() == 0) begin
-      dv_base_reg all_regs[$];
-      this.get_dv_base_regs(all_regs);
-      foreach (all_regs[i]) begin
-        if (all_regs[i].is_enable_reg()) enable_regs.push_back(all_regs[i]);
-      end
-      return;
-    end else begin
-      foreach (blks[i]) blks[i].get_enable_regs(enable_regs);
+    dv_base_reg all_regs[$];
+    this.get_dv_base_regs(all_regs);
+    foreach (all_regs[i]) begin
+      if (all_regs[i].is_enable_reg()) enable_regs.push_back(all_regs[i]);
+    end
+  endfunction
+
+  function void get_shadowed_regs(ref dv_base_reg shadowed_regs[$]);
+    dv_base_reg all_regs[$];
+    this.get_dv_base_regs(all_regs);
+    foreach (all_regs[i]) begin
+      if (all_regs[i].get_is_shadowed()) shadowed_regs.push_back(all_regs[i]);
     end
   endfunction
 

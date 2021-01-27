@@ -119,10 +119,10 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // - If the update error and storage error alerts are assigned to each shadowed register
   // - If input alert names are within the cfg.list_of_alerts
   virtual function void check_shadow_reg_alerts();
-    dv_base_reg shadowed_csrs[$], non_shadowed_csrs[$];
+    dv_base_reg shadowed_csrs[$];
     string update_err_alert_name, storage_err_alert_name;
 
-    split_all_csrs_by_shadowed(ral, shadowed_csrs, non_shadowed_csrs);
+    ral.get_shadowed_regs(shadowed_csrs);
     foreach (shadowed_csrs[i]) begin
       update_err_alert_name = shadowed_csrs[i].get_update_err_alert_name();
       storage_err_alert_name = shadowed_csrs[i].get_storage_err_alert_name();
