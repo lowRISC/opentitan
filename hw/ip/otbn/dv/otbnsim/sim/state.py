@@ -6,7 +6,7 @@ from typing import List, Optional, Tuple
 
 from shared.mem_layout import get_memory_layout
 
-from .alert import BadAddrError
+from .alert import Alert, BadAddrError
 from .csr import CSRFile
 from .dmem import Dmem
 from .ext_regs import OTBNExtRegs
@@ -51,6 +51,8 @@ class OTBNState:
         self.ext_regs = OTBNExtRegs()
         self.running = False
 
+        self.errs = []  # type: List[Alert]
+
     def add_stall_cycles(self, num_cycles: int) -> None:
         '''Add stall cycles before the next insn completes'''
         assert num_cycles >= 0
@@ -64,6 +66,14 @@ class OTBNState:
         back_pc = self.loop_stack.step(self.pc + 4)
         if back_pc is not None:
             self.pc_next = back_pc
+
+    def errors(self) -> List[Alert]:
+        c = []  # type: List[Alert]
+        c += self.errs
+        c += self.gprs.errors()
+        c += self.dmem.errors()
+        c += self.loop_stack.errors()
+        return c
 
     def changes(self) -> List[Trace]:
         c = []  # type: List[Trace]
@@ -113,7 +123,7 @@ class OTBNState:
         self.csrs.flags.commit()
         self.wdrs.commit()
 
-    def abort(self) -> None:
+    def _abort(self) -> None:
         '''Abort any pending state changes'''
         # This should only be called when an instruction's execution goes
         # wrong. If self._stalls is positive, the bad execution caused those
@@ -135,6 +145,29 @@ class OTBNState:
         self.running = True
         self._start_stall = True
         self.stalled = True
+
+    def _stop(self, err_bits: int) -> None:
+        '''Set flags to stop the processor.
+
+        err_bits is the value written to the ERR_BITS register.
+
+        '''
+        # INTR_STATE is the interrupt state register. Bit 0 (which is being
+        # set) is the 'done' flag.
+        self.ext_regs.set_bits('INTR_STATE', 1 << 0)
+        # STATUS is a status register. Bit 0 (being cleared) is the 'busy' flag
+        self.ext_regs.clear_bits('STATUS', 1 << 0)
+
+        self.ext_regs.write('ERR_BITS', err_bits, True)
+        self.running = False
+
+    def die(self, alerts: List[Alert]) -> None:
+        err_bits = 0
+        for alert in alerts:
+            err_bits |= alert.error_code()
+
+        self._abort()
+        self._stop(err_bits)
 
     def get_quarter_word_unsigned(self, idx: int, qwsel: int) -> int:
         '''Select a 64-bit quarter of a wide register.
@@ -221,7 +254,7 @@ class OTBNState:
     def check_jump_dest(self) -> None:
         '''Check whether self.pc_next is a valid jump/branch target
 
-        If not, raises a BadAddrError.
+        If not, generates a BadAddrError.
 
         '''
         if self.pc_next is None:
@@ -233,18 +266,19 @@ class OTBNState:
 
         # Check the new PC is word-aligned
         if self.pc_next & 3:
-            raise BadAddrError('pc', self.pc_next,
-                               'address is not 4-byte aligned')
+            self.errs.append(BadAddrError('pc', self.pc_next,
+                                          'address is not 4-byte aligned'))
 
         # Check the new PC lies in instruction memory
         if self.pc_next >= self.imem_size:
-            raise BadAddrError('pc', self.pc_next,
-                               'address lies above the top of imem')
+            self.errs.append(BadAddrError('pc', self.pc_next,
+                                          'address lies above the top of imem'))
 
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''
         self.check_jump_dest()
         self.loop_step()
+        self.gprs.post_insn()
 
     def read_csr(self, idx: int) -> int:
         '''Read the CSR with index idx as an unsigned 32-bit number'''
@@ -258,20 +292,6 @@ class OTBNState:
         '''Return the current call stack, bottom-first'''
         return self.gprs.peek_call_stack()
 
-    def stop(self, err_code: Optional[int]) -> None:
-        '''Set flags to stop the processor.
-
-        If err_code is not None, it is the value to write to the ERR_BITS
-        register.
-
-        '''
-        # INTR_STATE is the interrupt state register. Bit 0 (which is being
-        # set) is the 'done' flag.
-        self.ext_regs.set_bits('INTR_STATE', 1 << 0)
-        # STATUS is a status register. Bit 0 (being cleared) is the 'busy' flag
-        self.ext_regs.clear_bits('STATUS', 1 << 0)
-
-        if err_code is not None:
-            self.ext_regs.write('ERR_BITS', err_code, True)
-
-        self.running = False
+    def on_error(self, error: Alert) -> None:
+        '''Add a pending error that will be reported at the end of the cycle'''
+        self.errs.append(error)

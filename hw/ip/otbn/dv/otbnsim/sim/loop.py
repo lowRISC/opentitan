@@ -59,6 +59,7 @@ class LoopStack:
     def __init__(self) -> None:
         self.stack = []  # type: List[LoopLevel]
         self.trace = []  # type: List[Trace]
+        self.errs = []  # type: List[LoopError]
 
     def start_loop(self,
                    next_addr: int,
@@ -77,7 +78,7 @@ class LoopStack:
         assert 0 < loop_count
 
         if len(self.stack) == LoopStack.stack_depth:
-            raise LoopError('loop stack overflow')
+            self.errs.append(LoopError('loop stack overflow'))
 
         self.trace.append(TraceLoopStart(loop_count, insn_count))
         self.stack.append(LoopLevel(next_addr, insn_count, loop_count - 1))
@@ -91,7 +92,8 @@ class LoopStack:
                 # Make sure that it isn't a jump, branch or another loop
                 # instruction.
                 if insn_affects_control:
-                    raise LoopError('control instruction at end of loop')
+                    self.errs.append(LoopError('control instruction '
+                                               'at end of loop'))
 
     def step(self, next_pc: int) -> Optional[int]:
         '''Update loop stack. If we should loop, return new PC'''
@@ -116,11 +118,16 @@ class LoopStack:
 
         return None
 
+    def errors(self) -> List[LoopError]:
+        return self.errs
+
     def changes(self) -> List[Trace]:
         return self.trace
 
     def commit(self) -> None:
+        assert not self.errs
         self.trace = []
 
     def abort(self) -> None:
         self.trace = []
+        self.errs = []

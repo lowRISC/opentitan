@@ -17,11 +17,11 @@ ERR_CODE_FATAL_DMEM = 1 << 6
 ERR_CODE_FATAL_REG = 1 << 7
 
 
-class Alert(Exception):
-    '''An exception raised to signal that the program did something wrong
+class Alert:
+    '''An object describing something the program did wrong
 
     This maps onto alerts in the implementation. The err_code value is the
-    value that should be written to the ERR_CODE external register.
+    value that should be OR'd into the ERR_BITS external register.
 
     '''
     # Subclasses should override this class field or the error_code method
@@ -33,7 +33,7 @@ class Alert(Exception):
 
 
 class BadAddrError(Alert):
-    '''Raised when loading or storing or setting PC with a bad address'''
+    '''Generated when loading or storing or setting PC with a bad address'''
 
     def __init__(self, operation: str, addr: int, what: str):
         assert operation in ['pc',
@@ -54,7 +54,7 @@ class BadAddrError(Alert):
 
 
 class LoopError(Alert):
-    '''Raised when doing something wrong with a LOOP/LOOPI'''
+    '''Generated when doing something wrong with a LOOP/LOOPI'''
 
     err_code = ERR_CODE_LOOP
 
@@ -63,3 +63,15 @@ class LoopError(Alert):
 
     def __str__(self) -> str:
         return 'Loop error: {}'.format(self.what)
+
+
+class IllegalInsnError(Alert):
+    '''Generated on a bad instruction'''
+    err_code = ERR_CODE_ILLEGAL_INSN
+
+    def __init__(self, word: int, msg: str):
+        self.word = word
+        self.msg = msg
+
+    def __str__(self) -> str:
+        return ('Illegal instruction {:#010x}: {}'.format(self.word, self.msg))

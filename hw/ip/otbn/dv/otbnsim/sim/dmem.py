@@ -61,6 +61,8 @@ class Dmem:
         self.data = [uninit] * num_words
         self.trace = []  # type: List[TraceDmemStore]
 
+        self._errs = []  # type: List[BadAddrError]
+
     def _get_u32s(self, idx: int) -> List[int]:
         '''Return the value at idx as 8 uint32's
 
@@ -143,14 +145,16 @@ class Dmem:
         assert addr >= 0
 
         if addr & 31:
-            raise BadAddrError('wide load', addr,
-                               'address is not 32-byte aligned')
+            self._errs.append(BadAddrError('wide load', addr,
+                                           'address is not 32-byte aligned'))
+            return 0
 
         word_addr = addr // 32
 
         if word_addr >= len(self.data):
-            raise BadAddrError('wide load', addr,
-                               'address is above the top of dmem')
+            self._errs.append(BadAddrError('wide load', addr,
+                                           'address is above the top of dmem'))
+            return 0
 
         return self.data[word_addr]
 
@@ -160,13 +164,15 @@ class Dmem:
         assert 0 <= value < (1 << 256)
 
         if addr & 31:
-            raise BadAddrError('wide store', addr,
-                               'address is not 32-byte aligned')
+            self._errs.append(BadAddrError('wide store', addr,
+                                           'address is not 32-byte aligned'))
+            return
 
         word_addr = addr // 32
         if word_addr >= len(self.data):
-            raise BadAddrError('wide store', addr,
-                               'address is above the top of dmem')
+            self._errs.append(BadAddrError('wide store', addr,
+                                           'address is above the top of dmem'))
+            return
 
         self.trace.append(TraceDmemStore(addr, value, True))
 
@@ -179,11 +185,13 @@ class Dmem:
         '''
         assert addr >= 0
         if addr & 3:
-            raise BadAddrError('narrow load', addr,
-                               'address is not 4-byte aligned')
+            self._errs.append(BadAddrError('narrow load', addr,
+                                           'address is not 4-byte aligned'))
+            return 0
         if (addr + 3) // 32 >= len(self.data):
-            raise BadAddrError('narrow load', addr,
-                               'address is above the top of dmem')
+            self._errs.append(BadAddrError('narrow load', addr,
+                                           'address is above the top of dmem'))
+            return 0
 
         idx32 = addr // 4
         idxW = idx32 // 8
@@ -201,13 +209,18 @@ class Dmem:
         assert 0 <= value <= (1 << 32) - 1
 
         if addr & 3:
-            raise BadAddrError('narrow load', addr,
-                               'address is not 4-byte aligned')
+            self._errs.append(BadAddrError('narrow load', addr,
+                                           'address is not 4-byte aligned'))
+            return
         if (addr + 3) // 32 >= len(self.data):
-            raise BadAddrError('narrow load', addr,
-                               'address is above the top of dmem')
+            self._errs.append(BadAddrError('narrow load', addr,
+                                           'address is above the top of dmem'))
+            return
 
         self.trace.append(TraceDmemStore(addr, value, False))
+
+    def errors(self) -> List[BadAddrError]:
+        return self._errs
 
     def changes(self) -> Sequence[Trace]:
         return self.trace
@@ -234,9 +247,11 @@ class Dmem:
         self._set_u32s(idxW, u32s)
 
     def commit(self) -> None:
+        assert not self._errs
         for item in self.trace:
             self._commit_store(item)
         self.trace = []
 
     def abort(self) -> None:
         self.trace = []
+        self._errs = []
