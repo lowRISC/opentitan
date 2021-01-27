@@ -71,6 +71,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   task pre_start();
     if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
     if (common_seq_type == "alert_test") en_auto_alerts_response = 0;
+
+    // num_trans is constrained to a small number for CSR test in common test, need a bigger number
+    // for stress_all with reset
+    if (common_seq_type == "stress_all_with_rand_reset") begin
+      num_trans_c.constraint_mode(0);
+      num_trans = $urandom_range(5, 10);
+    end
     csr_utils_pkg::max_outstanding_accesses = 1 << BUS_AIW;
     super.pre_start();
     extract_common_csrs();
@@ -495,10 +502,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                             int             num_test_csrs = 0,
                             bit             do_rand_wr_and_reset = 1);
 
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_access_abort_pct)
     cfg.m_tl_agent_cfg.csr_access_abort_pct_in_adapter = csr_access_abort_pct;
     // when allowing TL transaction to be aborted, TL adapter will return status UVM_NOT_OK, skip
     // checking the status.
     if (csr_access_abort_pct > 0) csr_utils_pkg::default_csr_check = UVM_NO_CHECK;
+    else                          csr_utils_pkg::default_csr_check = UVM_CHECK;
     super.run_csr_vseq(csr_test_type, csr_excl, num_test_csrs, do_rand_wr_and_reset);
   endtask
 
@@ -544,6 +553,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               `uvm_info(`gfn, $sformatf("\nFinished run %0d/%0d w/o reset", i, num_times), UVM_LOW)
             end
             begin : issue_rand_reset
+              `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay_to_reset)
               cfg.clk_rst_vif.wait_clks(delay_to_reset);
               ongoing_reset = 1'b1;
               `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
