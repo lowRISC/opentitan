@@ -10,8 +10,8 @@ import logging as log
 import random
 from math import ceil, log2
 
-from tabulate import tabulate
 from lib.common import check_bool, check_int, random_or_hexvalue
+from tabulate import tabulate
 
 DIGEST_SUFFIX = "_DIGEST"
 DIGEST_SIZE = 8
@@ -96,8 +96,7 @@ def _validate_part(part, offset, key_names):
 
     if check_bool(part["secret"]) and part["key_sel"] == "NoKey":
         log.error(
-            "A secret partition needs a key select value other than NoKey"
-        )
+            "A secret partition needs a key select value other than NoKey")
         exit(1)
 
     if part["write_lock"].lower() not in ["digest", "csr", "none"]:
@@ -121,8 +120,8 @@ def _validate_part(part, offset, key_names):
         exit(1)
 
     if not part["sw_digest"] and not part["hw_digest"]:
-        if part["write_lock"].lower(
-        ) == "digest" or part["read_lock"].lower() == "digest":
+        if part["write_lock"].lower() == "digest" or part["read_lock"].lower(
+        ) == "digest":
             log.error(
                 "A partition can only be write/read lockable if it has a hw or sw digest."
             )
@@ -165,22 +164,38 @@ def _validate_mmap(config):
 
     offset = 0
     num_part = 0
+    part_index = {}
     for part in config["partitions"]:
-        num_part += 1
         _validate_part(part, offset, key_names)
 
+        if part['name'] in part_index:
+            log.error('Partition name {} is not unique'.format(part['name']))
+            exit(1)
+
         # Loop over items within a partition
+        num_items = 0
+        item_index = {}
         for item in part["items"]:
             _validate_item(item, offset)
+            if item['name'] in item_index:
+                log.error('Item name {} is not unique'.format(item['name']))
+                exit(1)
             log.info("> Item {} at offset {} with size {}".format(
                 item["name"], offset, item["size"]))
             offset += check_int(item["size"])
+            item_index[item['name']] = num_items
+            num_items += 1
 
         # Place digest at the end of a partition.
         if part["sw_digest"] or part["hw_digest"]:
+            digest_name = part["name"] + DIGEST_SUFFIX
+            if digest_name in item_index:
+                log.error('Digest name {} is not unique'.format(digest_name))
+                exit(1)
+            item_index[digest_name] = num_items
             part["items"].append({
                 "name":
-                part["name"] + DIGEST_SUFFIX,
+                digest_name,
                 "size":
                 DIGEST_SIZE,
                 "offset":
@@ -188,42 +203,54 @@ def _validate_mmap(config):
                 DIGEST_SIZE,
                 "isdigest":
                 "True",
-                "inv_default": "<random>"
+                "inv_default":
+                "<random>"
             })
             # Randomize the digest default.
-            random_or_hexvalue(part["items"][-1], "inv_default", DIGEST_SIZE * 8)
+            random_or_hexvalue(part["items"][-1], "inv_default",
+                               DIGEST_SIZE * 8)
 
             log.info("> Adding digest {} at offset {} with size {}".format(
-                part["name"] + DIGEST_SUFFIX, offset, DIGEST_SIZE))
+                digest_name, offset, DIGEST_SIZE))
             offset += DIGEST_SIZE
 
         # check offsets and size
         if offset > check_int(part["offset"]) + check_int(part["size"]):
             log.error("Not enough space in partitition "
                       "{} to accommodate all items. Bytes available "
-                      "= {}, bytes requested = {}".format(
-                          part["name"], part["size"],
-                          offset - part["offset"]))
+                      "= {}, bytes allocated to items = {}".format(
+                          part["name"], part["size"], offset - part["offset"]))
             exit(1)
 
         offset = check_int(part["offset"]) + check_int(part["size"])
 
+        part_index.setdefault(part['name'], {
+            'index': num_part,
+            'items': item_index
+        })
+        num_part += 1
+
     if offset > config["otp"]["size"]:
         log.error(
             "OTP is not big enough to store all partitions. "
-            "Bytes available {}, bytes required {}",
-            config["otp"]["size"], offset)
+            "Bytes available {}, bytes required {}", config["otp"]["size"],
+            offset)
         exit(1)
 
     log.info("Total number of partitions: {}".format(num_part))
     log.info("Bytes available in OTP: {}".format(config["otp"]["size"]))
     log.info("Bytes required for partitions: {}".format(offset))
 
+    # return the partition/item index dict
+    return part_index
+
 
 class OtpMemMap():
 
     # This holds the config dict.
     config = {}
+    # This holds the partition/item index dict for fast access.
+    part_index = {}
 
     def __init__(self, config):
 
@@ -239,6 +266,8 @@ class OtpMemMap():
 
         # Initialize RNG.
         random.seed(OTP_SEED_DIVERSIFIER + int(config['seed']))
+        log.info('Seed: {0:x}'.format(config['seed']))
+        log.info('')
 
         if "otp" not in config:
             log.error("Missing otp configuration.")
@@ -255,7 +284,7 @@ class OtpMemMap():
         # Validate scrambling info.
         _validate_scrambling(config["scrambling"])
         # Validate memory map.
-        _validate_mmap(config)
+        self.part_index = _validate_mmap(config)
 
         self.config = config
 
@@ -355,3 +384,14 @@ class OtpMemMap():
                         headers="firstrow",
                         tablefmt="pipe",
                         colalign=colalign)
+
+    def get_part_idx(self, part_name):
+        ''' Get partition index, return -1 if it does not exist'''
+        part_index = self.part_index.get(part_name)
+        return -1 if part_index is None else part_index['index']
+
+    def get_item_index(self, part_name, item_name):
+        ''' Get item index, return -1 if it does not exist'''
+        part_index = self.part_index.get(part_name)
+        return (-1 if part_index is None else part_index['items'].get(
+            item_name, -1))
