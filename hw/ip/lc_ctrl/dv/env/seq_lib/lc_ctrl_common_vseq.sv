@@ -12,7 +12,7 @@ class lc_ctrl_common_vseq extends lc_ctrl_base_vseq;
 
   constraint lc_init_c {
    lc_state == LcStRaw;
-   lc_cnt   == LcCntRaw;
+   lc_cnt   == LcCnt0;
   }
 
   virtual task body();

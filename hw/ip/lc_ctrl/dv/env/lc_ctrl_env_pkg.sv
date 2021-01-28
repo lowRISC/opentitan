@@ -150,7 +150,7 @@ package lc_ctrl_env_pkg;
 
   function automatic int dec_lc_cnt(lc_cnt_e curr_cnt);
     case (curr_cnt)
-      LcCntRaw: return 0;
+      LcCnt0  : return 0;
       LcCnt1  : return 1;
       LcCnt2  : return 2;
       LcCnt3  : return 3;

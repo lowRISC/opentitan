@@ -17,7 +17,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   rand lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
 
   constraint lc_cnt_c {
-    (lc_state != LcStRaw) -> (lc_cnt != LcCntRaw);
+    (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);
   }
 
   `uvm_object_new
@@ -45,7 +45,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
       `DV_CHECK_RANDOMIZE_FATAL(this)
     end else begin
       lc_state = LcStRaw;
-      lc_cnt = LcCntRaw;
+      lc_cnt = LcCnt0;
     end
     cfg.lc_ctrl_vif.init(lc_state, lc_cnt);
     wait(cfg.pwr_lc_vif.pins[LcPwrDoneRsp] == 1);

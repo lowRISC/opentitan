@@ -1,0 +1,36 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Use the gen-otp-img.py script to convert this configuration into
+// a hex file for preloading the OTP in FPGA synthesis or simulation.
+//
+
+{
+    // Seed to be used for generation of partition randomized values.
+    // Can be overridden on the command line with the --seed switch.
+    seed: 01931961561863975174
+
+    // The partition and item names must correspond with the OTP memory map.
+    partitions: [
+        {
+            name:  "SECRET1",
+            lock:  "False",
+            items: [
+                {
+                    name:  "FLASH_DATA_KEY_SEED",
+                    value: "<random>",
+                }
+            ],
+        }
+        {
+            name:  "LIFE_CYCLE",
+            // Can be one of the following strings:
+            // RAW, TEST_UNLOCKED0-3, TEST_LOCKED0-2, DEV, PROD, PROD_END, RMA, SCRAP
+            state: "RAW",
+            // Can range from 0 to 16.
+            // Note that a value of 0 is only permissible in RAW state.
+            count: 0
+        }
+    ]
+}
