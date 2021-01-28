@@ -101,7 +101,7 @@ class TargetScheduler:
             # Does next_item have any dependencies? Since we dispatch jobs by
             # target, we can assume that each of those dependencies appears
             # in old_results.
-            has_failed_dep = False if next_item.needs_all_dependencies_passing else True
+            has_failed_dep = False
             for dep in next_item.dependencies:
                 dep_status = old_results[dep]
                 assert dep_status in ['P', 'F', 'K']
@@ -111,6 +111,10 @@ class TargetScheduler:
                         has_failed_dep = True
                         break
                 else:
+                    # Set has_failed_dep default value to True only if the
+                    # next_item has dependencies, and next_item does not require
+                    # all dependencies to pass
+                    has_failed_dep = True
                     if dep_status in ['P']:
                         has_failed_dep = False
                         break
