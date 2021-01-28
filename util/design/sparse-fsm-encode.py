@@ -56,9 +56,8 @@ RUST_INSTRUCTIONS = """
 
 
 def main():
-    logging.basicConfig(level=logging.INFO,
-                        format="%(asctime)s - %(message)s",
-                        datefmt="%Y-%m-%d %H:%M")
+    log.basicConfig(level=log.INFO,
+                    format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(
         prog="sparse-fsm-encode",
