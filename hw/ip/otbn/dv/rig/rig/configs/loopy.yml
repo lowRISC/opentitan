@@ -2,11 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# The default configuration, which picks at random from various other
-# configurations
+# An example custom configuration that generates lots of loops (100
+# times as many as the default config)
 
-inherit:
-  - base
+inherit: base
 
-  - cfgs: loopy
-    weight: 0.1
+gen-weights:
+  Loop: 100
+

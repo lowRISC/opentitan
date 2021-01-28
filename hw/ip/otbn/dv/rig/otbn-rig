@@ -37,9 +37,9 @@ def get_insns_file() -> Optional[InsnsFile]:
 
 
 def get_named_config(name: str) -> Optional[Config]:
-    path = os.path.join(_RIG_DIR, 'rig/configs', name + '.yml')
+    cfg_dir = os.path.join(_RIG_DIR, 'rig/configs')
     try:
-        return Config.load(path)
+        return Config.load(cfg_dir, name)
     except RuntimeError as err:
         print(err, file=sys.stderr)
         return None
