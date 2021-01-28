@@ -8,6 +8,7 @@ from typing import Optional, Tuple
 from shared.insn_yaml import InsnsFile
 from shared.operand import ImmOperandType, RegOperandType
 
+from ..config import Config
 from ..program import ProgInsn, Program
 from ..model import Model
 from ..snippet import ProgSnippet, Snippet
@@ -16,7 +17,9 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 class Jump(SnippetGen):
     '''A generator that makes a snippet with a JAL or JALR jump'''
-    def __init__(self, insns_file: InsnsFile) -> None:
+    def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
+        super().__init__()
+
         jal = self._get_named_insn(insns_file, 'jal')
         jalr = self._get_named_insn(insns_file, 'jalr')
 
@@ -48,6 +51,16 @@ class Jump(SnippetGen):
         self.jal = jal
         self.jalr = jalr
 
+        self.jalr_prob = 0.5
+
+        jal_weight = cfg.insn_weights.get('jal')
+        jalr_weight = cfg.insn_weights.get('jalr')
+        sum_weights = jal_weight + jalr_weight
+        if sum_weights == 0:
+            self.disabled = True
+        else:
+            self.jalr_prob = jalr_weight / sum_weights
+
     def gen(self,
             cont: GenCont,
             model: Model,
@@ -59,19 +72,15 @@ class Jump(SnippetGen):
                 program: Program,
                 tgt_addr: Optional[int]) -> Optional[Tuple[Snippet, Model]]:
 
-        # Decide whether to generate JALR or JAL. In the future, we'll load
-        # this weighting from somewhere else.
-        jalr_weight = 1.0
-        jal_weight = 1.0
-        sum_weights = jalr_weight + jal_weight
-
-        # If we try to generate a JALR and fail, try to generate a JAL instead:
-        # in practice that might well work and if we return None from here, the
-        # wrapper will disable us entirely this time around.
-        is_jalr = random.random() < jalr_weight / sum_weights
-        if is_jalr:
+        # Decide whether to generate JALR or JAL. If we try to generate a JALR
+        # and fail, try to generate a JAL instead: in practice that might well
+        # work and if we return None from here, the wrapper will disable us
+        # entirely this time around.
+        try_jalr = random.random() < self.jalr_prob
+        ret = None
+        if try_jalr:
             ret = self.gen_jalr(model, program, tgt_addr)
-        else:
+        if ret is None:
             ret = self.gen_jal(model, program, tgt_addr)
 
         if ret is None:

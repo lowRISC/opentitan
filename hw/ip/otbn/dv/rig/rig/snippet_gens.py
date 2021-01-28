@@ -45,13 +45,24 @@ class SnippetGens:
                 raise ValueError('No weight in config at {} '
                                  'for generator {!r}.'
                                  .format(cfg.path, cls_name))
-            gen = cls(insns_file)
-            self.generators.append((gen, weight))
+            gen = cls(cfg, insns_file)
             if isinstance(gen, ECall):
                 ecall = gen
+                # The ECall generator mustn't disable itself
+                assert not gen.disabled
 
             assert cls_name not in used_names
             used_names.add(cls_name)
+
+            if weight > 0 and not gen.disabled:
+                self.generators.append((gen, weight))
+
+        # Check that at least one generator has positive weight and wasn't
+        # disabled
+        if not self.generators:
+            raise ValueError('Config at {} disables or gives zero '
+                             'weight to all generators.'
+                             .format(cfg.path))
 
         # Check that we used all the names in cfg.gen_weights
         unused_names = set(cfg.gen_weights.values.keys()) - used_names
