@@ -37,8 +37,7 @@ TEMPLATES = [
 
 def main():
     log.basicConfig(level=log.INFO,
-                    format="%(asctime)s - %(message)s",
-                    datefmt="%Y-%m-%d %H:%M")
+                    format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(
         prog="gen-otp-mmap",
