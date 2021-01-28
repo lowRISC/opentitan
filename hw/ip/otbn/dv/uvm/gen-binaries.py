@@ -178,7 +178,7 @@ def write_ninja(handle: TextIO, rig_count: int, start_seed: int, size: int,
     seeds = [start_seed + idx for idx in range(rig_count)]
 
     handle.write('rule rig-gen\n'
-                 '  command = {rig} gen --size {size} --seed $seed -o $out\n'
+                 '  command = {rig} gen --size {size} --seed $seed >$out\n'
                  .format(rig=otbn_rig, size=size))
 
     handle.write('rule rig-asm\n'

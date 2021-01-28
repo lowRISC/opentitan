@@ -49,20 +49,10 @@ def gen_main(args: argparse.Namespace) -> int:
     ser_data = init_data.as_json()
     ser_snippet = snippet.to_json()
     ser = [ser_data, ser_snippet]
-    try:
-        if args.output == '-':
-            json.dump(ser, sys.stdout)
-            # Add a newline at end of output: json.dump doesn't, and it makes a
-            # bit of a mess of some consoles.
-            sys.stdout.write('\n')
-        else:
-            with open(args.output, 'w') as out_file:
-                json.dump(ser, out_file)
-    except OSError as err:
-        print('Failed to open json output file {!r}: {}.'
-              .format(args.output, err),
-              file=sys.stderr)
-        return 1
+    json.dump(ser, sys.stdout)
+    # Add a newline at end of output: json.dump doesn't, and it makes a
+    # bit of a mess of some consoles.
+    sys.stdout.write('\n')
 
     return 0
 
@@ -136,11 +126,6 @@ def main() -> int:
     gen = subparsers.add_parser('gen', help='Generate a random program')
     asm = subparsers.add_parser('asm', help='Convert snippets to assembly')
 
-    gen.add_argument('--output', '-o',
-                     default='-',
-                     help=("Path for JSON output of generated snippets. The "
-                           "special path '-' (which is the default) means to "
-                           "write to stdout"))
     gen.add_argument('--seed', type=int, default=0,
                      help='Random seed. Defaults to 0.')
     gen.add_argument('--size', type=int, default=100,
