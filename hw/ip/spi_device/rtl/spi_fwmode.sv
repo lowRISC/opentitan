@@ -5,7 +5,9 @@
 // SPI FW Mode: Intention of this mode is to download FW image. Doesn't parse Commands
 //
 
-module spi_fwmode (
+module spi_fwmode
+  import spi_device_pkg::*;
+(
   // SDI
   input clk_in_i,
   input rst_in_ni,
@@ -16,22 +18,26 @@ module spi_fwmode (
 
   // Configurations
   // No sync logic. Configuration should be static when SPI operating
-  input                             cpha_i,
-  input                             cfg_rxorder_i, // 1: 0->7 , 0:7->0
-  input                             cfg_txorder_i, // 1: 0->7 , 0:7->0
-  input  spi_device_pkg::spi_mode_e mode_i, // Only works at mode_i == FwMode
+  input             cpha_i,
+  input             cfg_txorder_i, // 1: 0->7 , 0:7->0
+  input  spi_mode_e mode_i, // Only works at mode_i == FwMode
 
   // RX, TX FIFO interface
-  output logic                      rx_wvalid_o,
-  input                             rx_wready_i,
-  output spi_device_pkg::spi_byte_t rx_data_o,
+  output logic      rx_wvalid_o,
+  input             rx_wready_i,
+  output spi_byte_t rx_data_o,
 
-  input                             tx_rvalid_i,
-  output logic                      tx_rready_o,
-  input  spi_device_pkg::spi_byte_t tx_data_i,
+  input             tx_rvalid_i,
+  output logic      tx_rready_o,
+  input  spi_byte_t tx_data_i,
 
-  output logic                      rx_overflow_o,
-  output logic                      tx_underflow_o,
+  output logic      rx_overflow_o,
+  output logic      tx_underflow_o,
+
+  // Serial to Parallel
+  input             rx_data_valid_i,
+  input  spi_byte_t rx_data_i,
+  output io_mode_e  io_mode_o,
 
   // SPI Interface: clock is given (ckl_in_i, clk_out_i)
   input        csb_i,
@@ -53,41 +59,11 @@ module spi_fwmode (
   } tx_state_e;
   tx_state_e tx_state;   // Only for handling CPHA
 
-  spi_byte_t rx_data_d, rx_data_q;
+  assign rx_wvalid_o = rx_data_valid_i;
+  assign rx_data_o   = rx_data_i;
 
-  // Serial to Parallel
-  always_comb begin
-    if (cfg_rxorder_i) begin
-      rx_data_d = {sdi_i, rx_data_q[BITS-1:1]};
-    end else begin
-      rx_data_d = {rx_data_q[BITS-2:0], sdi_i};
-    end
-  end
-
-  always_ff @(posedge clk_in_i) begin
-    rx_data_q <= rx_data_d;
-  end
-
-  // As SCK shut off right after bytes are transferred,
-  // HW should give current SDI and latched version of rx_data
-  // if not, FIFO request should be generated next cycle but it cannot be (as no clock exist)
-  // It means RX_FIFO should latch the write request at negedge of clk_in_i
-  assign rx_data_o = rx_data_d;
-
-  // Counter to generate write signal
-  always_ff @(posedge clk_in_i or negedge rst_in_ni) begin
-    if (!rst_in_ni) begin
-      rx_bitcount <= BITWIDTH'(BITS-1);
-    end else begin
-      if (rx_bitcount == '0) begin
-        rx_bitcount <= BITWIDTH'(BITS-1);
-      end else begin
-        rx_bitcount <= rx_bitcount -1;
-      end
-    end
-  end
-
-  assign rx_wvalid_o = (rx_bitcount == '0);
+  // Generic Mode only uses SingleIO. s_i[0] is MOSI, s_o[1] is MISO.
+  assign io_mode_o = SingleIO;
 
   // TX Serialize
   logic [BITWIDTH-1:0] tx_bitcount;

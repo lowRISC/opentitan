@@ -10,7 +10,7 @@ package spi_device_pkg;
   // SPI Operation mode
   typedef enum logic [1:0] {
     FwMode      = 'h0,
-    EepromRam   = 'h1,
+    FlashMode   = 'h1,
     PassThrough = 'h2
   } spi_mode_e;
 

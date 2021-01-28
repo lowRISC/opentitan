@@ -141,6 +141,13 @@ module spi_device #(
 
   logic [AsFifoDepthW-1:0] as_txfifo_depth, as_rxfifo_depth;
 
+  // SPI S2P signals
+  // io_mode: Determine s2p/p2s behavior. As of now, only fwmode exists.
+  // TODO: Add FlashMode IO, passthrough IO
+  io_mode_e    io_mode, fw_io_mode;
+  logic        s2p_data_valid;
+  spi_byte_t   s2p_data;
+  logic [11:0] s2p_bitcnt;
 
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
@@ -333,6 +340,65 @@ module spi_device #(
   assign rst_rxfifo_n = (scanmode_i) ? rst_ni : rst_ni & ~rst_rxfifo_reg;
 
 
+  //////////////////////////////
+  // SPI_DEVICE mode selector //
+  //////////////////////////////
+  // This logic chooses appropriate signals based on input SPI_DEVICE mode.
+  // e.g) If FwMode is selected. all data connected to spi_fwmode logic
+
+  // Assume spi_mode does not change dynamically
+
+  // io_mode to spi_s2p
+  always_comb begin
+    io_mode = SingleIO;
+
+    unique case (spi_mode)
+      FwMode: begin
+        io_mode = fw_io_mode;
+      end
+
+      FlashMode: begin
+        // TODO: Revise when implementing FlashMode
+        io_mode = SingleIO;
+      end
+
+      PassThrough: begin
+        // TODO: Revise when implementing PassThrough
+        io_mode = SingleIO;
+      end
+
+      default: begin
+        io_mode = SingleIO;
+      end
+    endcase
+  end
+  `ASSERT_KNOWN(SpiModeKnown_A, spi_mode)
+
+
+
+  ////////////////////////////
+  // SPI Serial to Parallel //
+  ////////////////////////////
+  // TODO: Make full SPI interface
+  // Currently only one line is connected
+  logic [3:0] s2p_si;
+  assign s2p_si = {3'b 0, cio_sdi_i};
+  spi_s2p u_s2p (
+    .clk_i        (clk_spi_in_buf),
+    .rst_ni       (rst_spi_n),
+
+    // SPI interface
+    .s_i          (s2p_si),
+
+    .data_valid_o (s2p_data_valid),
+    .data_o       (s2p_data      ),
+    .bitcnt_o     (s2p_bitcnt    ),
+
+    // Config (changed dynamically)
+    .order_i      (rxorder),
+    .io_mode_i    (io_mode)
+  );
+
   /////////////
   // FW Mode //
   /////////////
@@ -344,7 +410,7 @@ module spi_device #(
     .rst_out_ni   (rst_spi_n),
 
     .cpha_i        (cpha),
-    .cfg_rxorder_i (rxorder),
+    //.cfg_rxorder_i (rxorder),
     .cfg_txorder_i (txorder),
 
     .mode_i        (spi_mode),
@@ -359,6 +425,13 @@ module spi_device #(
 
     .rx_overflow_o  (rxf_overflow),
     .tx_underflow_o (txf_underflow),
+
+    // Input from S2P
+    .rx_data_valid_i (s2p_data_valid),
+    .rx_data_i       (s2p_data),
+
+    // Output to S2P (mode select)
+    .io_mode_o       (fw_io_mode),
 
     // SPI signal
     .csb_i         (cio_csb_i),
