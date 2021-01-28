@@ -150,34 +150,40 @@ def _validate_mmap(config):
     for key in config["scrambling"]["keys"]:
         key_names.append(key["name"])
 
+    if not isinstance(config['partitions'], list):
+        raise RuntimeError('the "partitions" key must contain a list')
+
     offset = 0
-    part_index = {}
+    part_dict = {}
     for j, part in enumerate(config["partitions"]):
         _validate_part(part, offset, key_names)
 
-        if part['name'] in part_index:
+        if part['name'] in part_dict:
             raise RuntimeError('Partition name {} is not unique'.format(
                 part['name']))
 
+        if not isinstance(part['items'], list):
+            raise RuntimeError('the "items" key must contain a list')
+
         # Loop over items within a partition
-        item_index = {}
+        item_dict = {}
         for k, item in enumerate(part["items"]):
             _validate_item(item, offset)
-            if item['name'] in item_index:
+            if item['name'] in item_dict:
                 raise RuntimeError('Item name {} is not unique'.format(
                     item['name']))
             log.info("> Item {} at offset {} with size {}".format(
                 item["name"], offset, item["size"]))
             offset += check_int(item["size"])
-            item_index[item['name']] = k
+            item_dict[item['name']] = k
 
         # Place digest at the end of a partition.
         if part["sw_digest"] or part["hw_digest"]:
             digest_name = part["name"] + DIGEST_SUFFIX
-            if digest_name in item_index:
+            if digest_name in item_dict:
                 raise RuntimeError(
                     'Digest name {} is not unique'.format(digest_name))
-            item_index[digest_name] = len(part["items"])
+            item_dict[digest_name] = len(part["items"])
             part["items"].append({
                 "name":
                 digest_name,
@@ -221,9 +227,9 @@ def _validate_mmap(config):
 
         offset = check_int(part["offset"]) + check_int(part["size"])
 
-        part_index.setdefault(part['name'], {
+        part_dict.setdefault(part['name'], {
             'index': j,
-            'items': item_index
+            'items': item_dict
         })
 
     if offset > config["otp"]["size"]:
@@ -237,7 +243,7 @@ def _validate_mmap(config):
     log.info("Bytes required for partitions: {}".format(offset))
 
     # return the partition/item index dict
-    return part_index
+    return part_dict
 
 
 class OtpMemMap():
@@ -245,7 +251,7 @@ class OtpMemMap():
     # This holds the config dict.
     config = {}
     # This holds the partition/item index dict for fast access.
-    part_index = {}
+    part_dict = {}
 
     def __init__(self, config):
 
@@ -275,7 +281,7 @@ class OtpMemMap():
         # Validate scrambling info.
         _validate_scrambling(config["scrambling"])
         # Validate memory map.
-        self.part_index = _validate_mmap(config)
+        self.part_dict = _validate_mmap(config)
 
         self.config = config
 
@@ -375,13 +381,18 @@ class OtpMemMap():
                         tablefmt="pipe",
                         colalign=colalign)
 
-    def get_part_idx(self, part_name):
-        ''' Get partition index, return -1 if it does not exist'''
-        part_index = self.part_index.get(part_name)
-        return -1 if part_index is None else part_index['index']
+    def get_part(self, part_name):
+        ''' Get partition by name, return None if it does not exist'''
+        entry = self.part_dict.get(part_name)
+        return (None if entry is None else
+                self.config['partitions'][entry['index']])
 
-    def get_item_index(self, part_name, item_name):
-        ''' Get item index, return -1 if it does not exist'''
-        part_index = self.part_index.get(part_name)
-        return (-1 if part_index is None else part_index['items'].get(
-            item_name, -1))
+    def get_item(self, part_name, item_name):
+        ''' Get item by name, return None if it does not exist'''
+        entry = self.part_dict.get(part_name)
+        if entry is not None:
+            idx = entry['items'].get(item_name, None)
+            return (None if idx is None else
+                    self.config['partitions'][entry['index']]['items'][idx])
+        else:
+            return None

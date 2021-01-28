@@ -38,7 +38,7 @@ interface lc_ctrl_if(input clk, input rst_n);
   lc_flash_rma_seed_t flash_rma_seed_o;
 
   task automatic init(lc_state_e lc_state = LcStRaw,
-                      lc_cnt_e   lc_cnt = LcCntRaw,
+                      lc_cnt_e   lc_cnt = LcCnt0,
                       lc_tx_t    clk_byp_ack = Off,
                       lc_tx_t    flash_rma_ack = Off);
     otp_i.valid = 1;

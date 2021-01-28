@@ -106,7 +106,7 @@ package otp_ctrl_pkg;
     valid: 1'b1,
     error: 1'b0,
     state: lc_ctrl_state_pkg::LcStRaw,
-    count: lc_ctrl_state_pkg::LcCntRaw,
+    count: lc_ctrl_state_pkg::LcCnt0,
     test_unlock_token: '0,
     test_exit_token: '0,
     rma_token: '0,

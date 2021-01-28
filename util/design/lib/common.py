@@ -35,8 +35,7 @@ def check_bool(x):
     if isinstance(x, bool):
         return x
     if not x.lower() in ["true", "false"]:
-        log.error("{} is not a boolean value.".format(x))
-        exit(1)
+        raise RuntimeError("{} is not a boolean value.".format(x))
     else:
         return (x.lower() == "true")
 
@@ -48,8 +47,7 @@ def check_int(x):
     if isinstance(x, int):
         return x
     if not x.isdecimal():
-        log.error("{} is not a decimal number".format(x))
-        exit(1)
+        raise RuntimeError("{} is not a decimal number".format(x))
     return int(x)
 
 
@@ -122,8 +120,7 @@ def hist_to_bars(hist, m):
 def get_hd(word1, word2):
     '''Calculate Hamming distance between two words.'''
     if len(word1) != len(word2):
-        log.error('Words are not of equal size')
-        exit(1)
+        raise RuntimeError('Words are not of equal size')
     return bin(int(word1, 2) ^ int(word2, 2)).count('1')
 
 
@@ -160,8 +157,7 @@ def is_valid_codeword(config, codeword):
     data_width = config['secded']['data_width']
     ecc_width = config['secded']['ecc_width']
     if len(codeword) != (data_width + ecc_width):
-        log.error("Invalid codeword length {}".format(len(codeword)))
-        exit(1)
+        raise RuntimeError("Invalid codeword length {}".format(len(codeword)))
 
     # Build syndrome and check whether it is zero.
     syndrome = [0 for k in range(ecc_width)]
@@ -178,8 +174,7 @@ def is_valid_codeword(config, codeword):
 def ecc_encode(config, dataword):
     '''Calculate and prepend ECC bits.'''
     if len(dataword) != config['secded']['data_width']:
-        log.error("Invalid codeword length {}".format(len(dataword)))
-        exit(1)
+        raise RuntimeError("Invalid codeword length {}".format(len(dataword)))
 
     # Note that certain codes like the Hamming code refer to previously
     # calculated parity bits. Hence, we incrementally build the codeword
@@ -223,9 +218,10 @@ def random_or_hexvalue(dict_obj, key, num_bits):
         try:
             dict_obj[key] = int(dict_obj[key], 16)
             if dict_obj[key] >= 2**num_bits:
-                log.error('Value is out of range.')
-                exit(1)
+                raise RuntimeError(
+                    'Value "{}" is out of range.'
+                    .format(dict_obj[key]))
         except ValueError:
-            log.error('Invalid value "{}". Must be hex or "<random>".'
-                      .format(dict_obj[key]))
-            exit(1)
+            raise RuntimeError(
+                'Invalid value "{}". Must be hex or "<random>".'
+                .format(dict_obj[key]))

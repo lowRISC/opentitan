@@ -141,6 +141,9 @@ def _validate_secded(config):
 
     total_width = config['secded']['data_width'] + config['secded']['ecc_width']
 
+    if config['secded']['data_width'] % 8:
+        raise RuntimeError('SECDED data width must be a multiple of 8')
+
     if config['secded']['ecc_width'] != len(config['secded']['ecc_matrix']):
         raise RuntimeError('ECC matrix does not have correct number of rows')
 
