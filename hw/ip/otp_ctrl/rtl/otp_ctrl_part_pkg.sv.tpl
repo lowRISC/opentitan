@@ -9,26 +9,22 @@
 // $ ./util/design/gen-otp-mmap.py --seed ${otp_mmap.config['seed']}
 //
 <%
-  def PascalCase(inp):
-    # if input is in snake case format
-    # or ALLCAPS
-    oup = ''
-    if '_' in inp or inp == inp.upper():
-      upper = True
-      for k in inp:
-        if k == '_':
-          upper = True
-        else:
-          oup += k.upper() if upper else k.lower()
-          upper = False
-    # assume its a possibly PascalCased string.
-    # just make sure the first char is capitalized.
-    else:
-      oup = inp[0].upper()
-      if len(inp) > 1:
-        oup += inp[1:]
+  def _to_pascal_case(inp):
+    # Split by underscore. For each word, use str.capitalize if the word is all
+    # one case. For words in mixed case, ensure the first character is
+    # capitalized and leave them be otherwise.
+    words = []
+    for p in inp.split('_'):
+        if not p:
+            # Ignore leading and trailing underscores
+            continue
 
-    return oup
+        if p == p.lower() or p == p.upper():
+            words.append(p.capitalize())
+        else:
+            words.append(p[0].upper() + p[1:])
+
+    return ''.join(words)
 
 %>
 package otp_ctrl_part_pkg;
@@ -58,13 +54,13 @@ package otp_ctrl_part_pkg;
 
   typedef enum logic [ConstSelWidth-1:0] {
 % for key in otp_mmap.config["scrambling"]["keys"]:
-    ${PascalCase(key["name"])}${"" if loop.last else ","}
+    ${_to_pascal_case(key["name"])}${"" if loop.last else ","}
 % endfor
   } key_sel_e;
 
   typedef enum logic [ConstSelWidth-1:0] {
 % for dig in otp_mmap.config["scrambling"]["digests"]:
-    ${PascalCase(dig["name"])}${"" if loop.last else ","}
+    ${_to_pascal_case(dig["name"])}${"" if loop.last else ","}
 % endfor
   } digest_sel_e;
 
@@ -135,7 +131,7 @@ package otp_ctrl_part_pkg;
 
   typedef enum {
 % for part in otp_mmap.config["partitions"]:
-    ${PascalCase(part["name"])}Idx,
+    ${_to_pascal_case(part["name"])}Idx,
 % endfor
     // These are not "real partitions", but in terms of implementation it is convenient to
     // add these at the end of certain arrays.
