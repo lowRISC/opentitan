@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple
 
 from shared.insn_yaml import InsnsFile
 
+from .config import Config
 from .program import Program
 from .model import Model
 from .snippet import Snippet
@@ -21,26 +22,45 @@ from .gens.straight_line_insn import StraightLineInsn
 
 class SnippetGens:
     '''A collection of snippet generators'''
-    _WEIGHTED_CLASSES = [
-        (Branch, 0.1),
-        (ECall, 1.0),
-        (Jump, 0.1),
-        (Loop, 0.1),
-        (StraightLineInsn, 1.0)
+    _CLASSES = [
+        Branch,
+        ECall,
+        Jump,
+        Loop,
+        StraightLineInsn
     ]
 
-    def __init__(self, insns_file: InsnsFile) -> None:
+    def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         self.generators = []  # type: List[Tuple[SnippetGen, float]]
-        for cls, weight in SnippetGens._WEIGHTED_CLASSES:
-            self.generators.append((cls(insns_file), weight))
 
         # Grab an ECall generator. We'll use it in self.gens to append an ECALL
         # instruction if necessary.
         ecall = None
-        for gen, _ in self.generators:
+
+        used_names = set()
+        for cls in SnippetGens._CLASSES:
+            cls_name = cls.__name__
+            weight = cfg.gen_weights.values.get(cls_name)
+            if weight is None:
+                raise ValueError('No weight in config at {} '
+                                 'for generator {!r}.'
+                                 .format(cfg.path, cls_name))
+            gen = cls(insns_file)
+            self.generators.append((gen, weight))
             if isinstance(gen, ECall):
                 ecall = gen
-                break
+
+            assert cls_name not in used_names
+            used_names.add(cls_name)
+
+        # Check that we used all the names in cfg.gen_weights
+        unused_names = set(cfg.gen_weights.values.keys()) - used_names
+        if unused_names:
+            raise ValueError('Config at {} gives weights to non-existent '
+                             'generators: {}.'
+                             .format(cfg.path,
+                                     ', '.join(sorted(unused_names))))
+
         assert ecall is not None
         assert isinstance(ecall, ECall)
         self.ecall = ecall

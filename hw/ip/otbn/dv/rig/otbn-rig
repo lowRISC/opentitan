@@ -14,12 +14,14 @@ from typing import Optional, cast
 
 # Ensure that the OTBN utils directory is on sys.path. This means that RIG code
 # can import modules like "shared.foo" and get the OTBN shared code.
-_OTBN_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), '../..'))
+_RIG_DIR = os.path.dirname(__file__)
+_OTBN_DIR = os.path.normpath(os.path.join(_RIG_DIR, '../..'))
 _UTIL_DIR = os.path.join(_OTBN_DIR, 'util')
 sys.path.append(_UTIL_DIR)
 
 from shared.insn_yaml import InsnsFile, load_insns_yaml  # noqa: E402
 
+from rig.config import Config  # noqa: E402
 from rig.init_data import InitData  # noqa: E402
 from rig.rig import gen_program  # noqa: E402
 from rig.snippet import Snippet  # noqa: E402
@@ -34,6 +36,15 @@ def get_insns_file() -> Optional[InsnsFile]:
         return None
 
 
+def get_named_config(name: str) -> Optional[Config]:
+    path = os.path.join(_RIG_DIR, 'rig/configs', name + '.yml')
+    try:
+        return Config.load(path)
+    except RuntimeError as err:
+        print(err, file=sys.stderr)
+        return None
+
+
 def gen_main(args: argparse.Namespace) -> int:
     '''Entry point for the gen subcommand'''
     random.seed(args.seed)
@@ -42,8 +53,19 @@ def gen_main(args: argparse.Namespace) -> int:
     if insns_file is None:
         return 1
 
+    config = get_named_config(args.config)
+    if config is None:
+        return 1
+
     # Run the generator
-    init_data, snippet = gen_program(args.start_addr, args.size, insns_file)
+    try:
+        init_data, snippet = gen_program(config,
+                                         args.start_addr,
+                                         args.size,
+                                         insns_file)
+    except RuntimeError as err:
+        print(err, file=sys.stderr)
+        return 1
 
     # Write out the data and snippets to a JSON file
     ser_data = init_data.as_json()
@@ -133,6 +155,8 @@ def main() -> int:
                            'Defaults to 100.'))
     gen.add_argument('--start-addr', type=int, default=0,
                      help='Reset address. Defaults to 0.')
+    gen.add_argument('--config', type=str, default='default',
+                     help='Configuration to use')
     gen.set_defaults(func=gen_main)
 
     asm.add_argument('--output', '-o',
