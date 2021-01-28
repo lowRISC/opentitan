@@ -10,3 +10,4 @@
 `include "otp_ctrl_rand_key_rsp_vseq.sv"
 `include "otp_ctrl_dai_lock_vseq.sv"
 `include "otp_ctrl_dai_errs_vseq.sv"
+`include "otp_ctrl_regwen_vseq.sv"

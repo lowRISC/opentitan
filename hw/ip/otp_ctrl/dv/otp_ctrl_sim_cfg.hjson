@@ -80,6 +80,14 @@
       uvm_test_seq: otp_ctrl_rand_key_rsp_vseq
     }
 
+    {
+      name: otp_ctrl_regwen
+      uvm_test_seq: otp_ctrl_regwen_vseq
+      // This test is to check reg programming is gated when direct_access_regwen=0
+      // Thus this test is timing sensitive
+      run_opts: ["+zero_delays=1"]
+    }
+
   ]
 
   // List of regressions.

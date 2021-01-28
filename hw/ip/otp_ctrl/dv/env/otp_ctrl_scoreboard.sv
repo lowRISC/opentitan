@@ -56,7 +56,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      process_backdoor_mem_clear();
+      process_otp_power_up();
       process_lc_token_req();
       process_edn_req();
       check_otbn_rsp();
@@ -65,8 +65,16 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     join_none
   endtask
 
-  virtual task process_backdoor_mem_clear();
+  // This task process the following logic in during otp_power_up:
+  // 1. After reset deasserted, otp access is locked until pwr_otp_done_o is set
+  // 2. After reset deasserted, if power otp_init request is on, and if testbench uses backdoor to
+  //    clear OTP memory to all zeros, clear all digests and re-calculate secret partitions
+  virtual task process_otp_power_up();
     forever begin
+      // out of reset: lock dai access until power init is done
+      @(posedge cfg.clk_rst_vif.rst_n) begin
+         void'(ral.direct_access_regwen.predict(0));
+      end
       @(posedge cfg.otp_ctrl_vif.pwr_otp_init_i && cfg.en_scb) begin
         if (cfg.backdoor_clear_mem) begin
           bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
@@ -92,6 +100,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           predict_digest_csrs();
           `uvm_info(`gfn, "clear internal memory and digest", UVM_HIGH)
         end
+      end
+      @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset) begin
+        if (!cfg.under_reset) void'(ral.direct_access_regwen.predict(1));
       end
     end
   endtask
@@ -264,9 +275,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
-    uvm_reg csr;
-    bit     do_read_check     = 1'b1;
-    bit     write             = item.is_write();
+    uvm_reg     csr;
+    dv_base_reg dv_reg;
+    bit         do_read_check = 1'b1;
+    bit         write         = item.is_write();
     uvm_reg_addr_t csr_addr   = ral.get_word_aligned_addr(item.a_addr);
     bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
 
@@ -279,6 +291,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     if (csr_addr inside {cfg.csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
+      `downcast(dv_reg, csr)
     // SW CFG window
     end else if ((csr_addr & addr_mask) inside
         {[SW_WINDOW_BASE_ADDR : SW_WINDOW_BASE_ADDR + SW_WINDOW_SIZE]}) begin
@@ -299,8 +312,11 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
-    // if incoming access is a write to a valid csr, then make updates right away
+    // if incoming access is a write to a valid csr, and not locked by `direct_access_regwen`
+    // then make updates right away
     if (addr_phase_write) begin
+      if (ral.direct_access_regwen.is_inside_locked_regs(dv_reg) &&
+          `gmv(ral.direct_access_regwen) == 0) return;
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
@@ -312,6 +328,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       "intr_state": begin
         // FIXME
         do_read_check = 1'b0;
+        if (data_phase_read && item.d_data[OtpOperationDone]) begin
+          void'(ral.direct_access_regwen.predict(1));
+        end
       end
       "intr_enable": begin
         do_read_check = 1'b0;
@@ -322,10 +341,11 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         // FIXME
       end
       "direct_access_cmd": begin
-        if (addr_phase_write && `gmv(ral.direct_access_regwen)) begin
+        if (addr_phase_write) begin
           // here only normalize to 2 lsb, if is secret, will be reduced further
           bit [TL_AW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int part_idx = get_part_index(dai_addr);
+          void'(ral.direct_access_regwen.predict(0));
           // LC partition cannot be access via DAI
           if (part_idx == LifeCycleIdx) begin
             predict_status_err(.dai_err(1));
@@ -400,10 +420,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         end
       end
       "creator_sw_cfg_read_lock": begin
-        if (item.d_data == 1) sw_read_lock[CreatorSwCfgIdx] = 1;
+        if (addr_phase_write && item.d_data == 1) sw_read_lock[CreatorSwCfgIdx] = 1;
       end
       "owner_sw_cfg_read_lock": begin
-        if (item.d_data == 1) sw_read_lock[OwnerSwCfgIdx] = 1;
+        if (addr_phase_write && item.d_data == 1) sw_read_lock[OwnerSwCfgIdx] = 1;
       end
       "hw_cfg_digest_0", "hw_cfg_digest_1", "", "secret0_digest_0", "secret0_digest_1",
       "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1",
