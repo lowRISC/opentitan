@@ -14,7 +14,8 @@ module otbn_loop_controller
   input [ImemAddrWidth-1:0]  insn_addr_i,
   input [ImemAddrWidth-1:0]  next_insn_addr_i,
 
-  input                      loop_start_i,
+  input                      loop_start_req_i,
+  input                      loop_start_commit_i,
   input [11:0]               loop_bodysize_i,
   input [31:0]               loop_iterations_i,
 
@@ -51,6 +52,7 @@ module otbn_loop_controller
   logic [LoopEndAddrWidth:0] new_loop_end_addr_full;
   logic [ImemAddrWidth:0]    new_loop_end_addr_imem;
 
+  logic loop_stack_push_req;
   logic loop_stack_push;
   logic loop_stack_full;
   logic loop_stack_pop;
@@ -68,7 +70,7 @@ module otbn_loop_controller
   // stack. When the current loop ends a loop is popped off the loop stack to become the current
   // loop if the loop stack isn't empty.
 
-  // Determine end address of incoming loop from LOOP instruction (valid on loop_start_i and
+  // Determine end address of incoming loop from LOOP instruction (valid on loop_start_req_i and
   // specified by loop_bodysize_i and loop_iterations_i).
   if (ImemAddrWidth <= LoopEndAddrWidth) begin : g_new_loop_end_addr_small_imem
     // Where the Imem address width is small enough that `loop_bodysize` could cause overflow when
@@ -115,10 +117,10 @@ module otbn_loop_controller
   assign loop_jump_o      = at_current_loop_end_insn & ~current_loop_finish;
   assign loop_jump_addr_o = current_loop_q.loop_start;
 
-  assign loop_iteration_err      = (loop_iterations_i == '0) & loop_start_i;
+  assign loop_iteration_err      = (loop_iterations_i == '0) & loop_start_req_i;
   assign loop_branch_err         = at_current_loop_end_insn & branch_taken_i;
-  assign loop_stack_overflow_err = loop_stack_push & loop_stack_full;
-  assign loop_at_end_err         = at_current_loop_end_insn & loop_start_i;
+  assign loop_stack_overflow_err = loop_stack_push_req & loop_stack_full;
+  assign loop_at_end_err         = at_current_loop_end_insn & loop_start_req_i;
 
   assign loop_err_o = loop_iteration_err      |
                       loop_branch_err         |
@@ -131,7 +133,7 @@ module otbn_loop_controller
 
     // Do not take any state altering actions whilst OTBN is stalled.
     if (!otbn_stall_i) begin
-      if (loop_start_i && !loop_err_o) begin
+      if (loop_start_req_i && loop_start_commit_i) begin
         // A new loop is starting (executing LOOP instruction), so incoming loop becomes the current
         // loop.
         loop_active_d  = 1'b1;
@@ -152,6 +154,9 @@ module otbn_loop_controller
     end
   end
 
+  // The OTBN controller must not commit a loop request if it sees a loop error.
+  `ASSERT(NoStartCommitIfLoopErr, loop_start_req_i && loop_start_commit_i |-> !loop_err_o);
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       loop_active_q <= 1'b0;
@@ -165,9 +170,10 @@ module otbn_loop_controller
   end
 
   // Push current loop to the loop stack when a new loop starts (LOOP instruction executed) and
-  // there is an active loop. Stack internally checks to see if it's full when asked to push so no
-  // need to factor in overflow here.
-  assign loop_stack_push = loop_start_i & loop_active_q;
+  // there is an active loop. loop_stack_push_req indicates a push is requested and loop_stack_push
+  // commands it to happen (when the loop start is committed).
+  assign loop_stack_push_req = loop_start_req_i & loop_active_q;
+  assign loop_stack_push     = loop_start_commit_i & loop_stack_push_req;
 
   // Pop from the loop stack when the current loop finishes. Stack internally checks to see if it's
   // empty when asked to pop so no need to factor that in here.

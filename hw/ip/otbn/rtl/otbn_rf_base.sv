@@ -8,6 +8,12 @@
  * This wraps two implementations, one for FPGA (otbn_rf_base_fpga)
  * implementation the other for ASIC (otbn_rf_base_ff).
  *
+ * Both reads and writes use a 2 signal protocol: An _en signal indicates intent to do
+ * a read or write operation, a _commit signals the operation should proceed. A _commit without _en
+ * is permissible and means no operation is performed.
+ *
+ * This is used to prevent combinational loops in the error handling logic in the controller.
+ *
  * Features:
  * - 2 read ports
  * - 1 write port
@@ -26,6 +32,7 @@ module otbn_rf_base
   input logic [4:0]    wr_addr_i,
   input logic          wr_en_i,
   input logic [31:0]   wr_data_i,
+  input logic          wr_commit_i,
 
   input  logic [4:0]   rd_addr_a_i,
   input  logic         rd_en_a_i,
@@ -34,6 +41,7 @@ module otbn_rf_base
   input  logic [4:0]   rd_addr_b_i,
   input  logic         rd_en_b_i,
   output logic [31:0]  rd_data_b_o,
+
   input  logic         rd_commit_i,
 
   output logic         call_stack_err_o
@@ -52,25 +60,31 @@ module otbn_rf_base
 
   logic pop_stack_a;
   logic pop_stack_b;
+  logic pop_stack_reqd;
   logic pop_stack;
+  logic push_stack_reqd;
   logic push_stack;
 
   logic        stack_full;
   logic [31:0] stack_data;
   logic        stack_data_valid;
 
-  assign pop_stack_a = rd_en_a_i & (rd_addr_a_i == CallStackRegIndex[4:0]);
-  assign pop_stack_b = rd_en_b_i & (rd_addr_b_i == CallStackRegIndex[4:0]);
-  assign pop_stack   = rd_commit_i & (pop_stack_a | pop_stack_b);
+  assign pop_stack_a    = rd_en_a_i & (rd_addr_a_i == CallStackRegIndex[4:0]);
+  assign pop_stack_b    = rd_en_b_i & (rd_addr_b_i == CallStackRegIndex[4:0]);
+  // pop_stack_reqd indicates a call stack pop is requested and pop_stack commands it to happen.
+  assign pop_stack_reqd = (pop_stack_a | pop_stack_b);
+  assign pop_stack      = rd_commit_i & pop_stack_reqd;
 
-  assign push_stack = wr_en_i & (wr_addr_i == CallStackRegIndex[4:0]);
+  // push_stack_reqd indicates a call stack push is requested and push_stack commands it to happen.
+  assign push_stack_reqd = wr_en_i & (wr_addr_i == CallStackRegIndex[4:0]);
+  assign push_stack      = wr_commit_i & push_stack_reqd;
 
   assign call_stack_err_o =
-      (push_stack & stack_full & ~pop_stack) | (pop_stack & ~stack_data_valid);
+      (push_stack_reqd & stack_full & ~pop_stack_reqd) | (pop_stack_reqd & ~stack_data_valid);
 
   // Prevent any write to the stack register from going to the register file,
-  // all other writes are passed straight through
-  assign wr_en_masked = wr_en_i & ~push_stack;
+  // all other committed writes are passed straight through
+  assign wr_en_masked = wr_en_i & wr_commit_i & ~push_stack;
 
   // Ignore read data from the register file if reading from the stack register,
   // otherwise pass data through from register file.
