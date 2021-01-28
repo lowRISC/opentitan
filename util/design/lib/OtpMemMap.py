@@ -163,9 +163,8 @@ def _validate_mmap(config):
         key_names.append(key["name"])
 
     offset = 0
-    num_part = 0
     part_index = {}
-    for part in config["partitions"]:
+    for j, part in enumerate(config["partitions"]):
         _validate_part(part, offset, key_names)
 
         if part['name'] in part_index:
@@ -173,9 +172,8 @@ def _validate_mmap(config):
             exit(1)
 
         # Loop over items within a partition
-        num_items = 0
         item_index = {}
-        for item in part["items"]:
+        for k, item in enumerate(part["items"]):
             _validate_item(item, offset)
             if item['name'] in item_index:
                 log.error('Item name {} is not unique'.format(item['name']))
@@ -183,8 +181,7 @@ def _validate_mmap(config):
             log.info("> Item {} at offset {} with size {}".format(
                 item["name"], offset, item["size"]))
             offset += check_int(item["size"])
-            item_index[item['name']] = num_items
-            num_items += 1
+            item_index[item['name']] = k
 
         # Place digest at the end of a partition.
         if part["sw_digest"] or part["hw_digest"]:
@@ -192,7 +189,7 @@ def _validate_mmap(config):
             if digest_name in item_index:
                 log.error('Digest name {} is not unique'.format(digest_name))
                 exit(1)
-            item_index[digest_name] = num_items
+            item_index[digest_name] = len(part["items"])
             part["items"].append({
                 "name":
                 digest_name,
@@ -210,6 +207,20 @@ def _validate_mmap(config):
             random_or_hexvalue(part["items"][-1], "inv_default",
                                DIGEST_SIZE * 8)
 
+            # We always place the digest into the last 64bit word
+            # of a partition.
+            canonical_offset = (check_int(part["offset"]) +
+                                check_int(part["size"]) -
+                                DIGEST_SIZE)
+            if offset > canonical_offset:
+                log.error("Not enough space in partitition "
+                          "{} to accommodate a digest. Bytes available "
+                          "= {}, bytes allocated to items = {}".format(
+                              part["name"], part["size"],
+                              offset - part["offset"]))
+                exit(1)
+
+            offset = canonical_offset
             log.info("> Adding digest {} at offset {} with size {}".format(
                 digest_name, offset, DIGEST_SIZE))
             offset += DIGEST_SIZE
@@ -225,10 +236,9 @@ def _validate_mmap(config):
         offset = check_int(part["offset"]) + check_int(part["size"])
 
         part_index.setdefault(part['name'], {
-            'index': num_part,
+            'index': j,
             'items': item_index
         })
-        num_part += 1
 
     if offset > config["otp"]["size"]:
         log.error(
@@ -237,7 +247,7 @@ def _validate_mmap(config):
             offset)
         exit(1)
 
-    log.info("Total number of partitions: {}".format(num_part))
+    log.info("Total number of partitions: {}".format(len(config["partitions"])))
     log.info("Bytes available in OTP: {}".format(config["otp"]["size"]))
     log.info("Bytes required for partitions: {}".format(offset))
 

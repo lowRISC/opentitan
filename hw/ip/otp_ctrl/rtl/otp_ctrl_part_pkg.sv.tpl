@@ -159,13 +159,16 @@ package otp_ctrl_part_pkg;
   } otp_${part["name"].lower()}_t;
   % endif
 % endfor
-
+<% offset =  int(otp_mmap.config["otp"]["depth"]) * int(otp_mmap.config["otp"]["width"]) %>
   // OTP invalid partition default for buffered partitions.
   parameter logic [${int(otp_mmap.config["otp"]["depth"])*int(otp_mmap.config["otp"]["width"])*8-1}:0] PartInvDefault = ${int(otp_mmap.config["otp"]["depth"])*int(otp_mmap.config["otp"]["width"])*8}'({
   % for k, part in enumerate(otp_mmap.config["partitions"][::-1]):
     ${int(part["size"])*8}'({
     % for item in part["items"][::-1]:
-      ${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${("\n    })," if k < len(otp_mmap.config["partitions"])-1 else "\n    })});") if loop.last else ","}
+      % if offset != item['offset'] + item['size']:
+      ${"{}'h{:0X}".format((offset - item['size'] - item['offset']) * 8, 0)}, // unallocated space <% offset = item['offset'] + item['size'] %>
+      % endif
+      ${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${("\n    })," if k < len(otp_mmap.config["partitions"])-1 else "\n    })});") if loop.last else ","}<% offset -= item['size'] %>
     % endfor
   % endfor
 
