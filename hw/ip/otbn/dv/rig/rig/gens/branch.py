@@ -9,6 +9,7 @@ from shared.insn_yaml import InsnsFile
 from shared.operand import ImmOperandType, RegOperandType
 
 from .jump import Jump
+from ..config import Config
 from ..program import ProgInsn, Program
 from ..model import Model
 from ..snippet import BranchSnippet, ProgSnippet, Snippet
@@ -17,8 +18,10 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 class Branch(SnippetGen):
     '''A generator that makes a snippet with a BEQ or BNE branch'''
-    def __init__(self, insns_file: InsnsFile) -> None:
-        self.jump_gen = Jump(insns_file)
+    def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
+        super().__init__()
+
+        self.jump_gen = Jump(cfg, insns_file)
         self.beq = self._get_named_insn(insns_file, 'beq')
         self.bne = self._get_named_insn(insns_file, 'bne')
 
@@ -36,6 +39,16 @@ class Branch(SnippetGen):
                 raise RuntimeError('{} instruction from instructions file is not '
                                    'the shape expected by the Branch generator.'
                                    .format(insn.mnemonic))
+
+        self.beq_prob = 0.5
+
+        beq_weight = cfg.insn_weights.get('beq')
+        bne_weight = cfg.insn_weights.get('bne')
+        sum_weights = beq_weight + bne_weight
+        if sum_weights == 0:
+            self.disabled = True
+        else:
+            self.beq_prob = beq_weight / sum_weights
 
     _FloatRng = Tuple[float, float]
     _WeightedFloatRng = Tuple[float, _FloatRng]
@@ -71,19 +84,14 @@ class Branch(SnippetGen):
             cont: GenCont,
             model: Model,
             program: Program) -> Optional[GenRet]:
-
         # Return None if this is the last instruction in the current gap
         # because we need to either jump or do an ECALL to avoid getting stuck
         # (just like the StraightLineInsn generator)
         if program.get_insn_space_at(model.pc) <= 1:
             return None
 
-        # Decide whether to generate BEQ or BNE. In the future, we'll load
-        # this weighting from somewhere else.
-        beq_weight = 1.0
-        bne_weight = 1.0
-        sum_weights = beq_weight + bne_weight
-        is_beq = random.random() < beq_weight / sum_weights
+        # Decide whether to generate BEQ or BNE.
+        is_beq = random.random() < self.beq_prob
 
         insn = self.beq if is_beq else self.bne
         grs1_op, grs2_op, off_op = insn.operands

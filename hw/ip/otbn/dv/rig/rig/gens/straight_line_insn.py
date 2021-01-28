@@ -9,6 +9,7 @@ from shared.insn_yaml import Insn, InsnsFile
 from shared.lsu_desc import LSUDesc
 from shared.operand import ImmOperandType, OptionOperandType, RegOperandType
 
+from ..config import Config
 from ..program import ProgInsn, Program
 from ..model import Model
 from ..snippet import ProgSnippet, Snippet
@@ -17,19 +18,47 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 class StraightLineInsn(SnippetGen):
     '''A super-simple snippet consisting of a single instruction'''
-    def __init__(self, insns_file: InsnsFile) -> None:
+    def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
+        super().__init__()
+
         # Find all the straight line, non-pseudo instructions in insns_file
         self.insns = []
+        self.weights = []
+
+        seen_insns = set()
         for insn in insns_file.insns:
             # Skip pseudo-ops
             if insn.python_pseudo_op or insn.literal_pseudo_op:
                 continue
 
+            seen_insns.add(insn.mnemonic)
+
             # Skip anything that isn't straight-line
             if not insn.straight_line:
                 continue
 
-            self.insns.append(insn)
+            weight = cfg.insn_weights.get(insn.mnemonic)
+            if weight > 0:
+                self.insns.append(insn)
+                self.weights.append(weight)
+
+        # Check that the config's insn-weights dictionary didn't have any
+        # non-existent instructions. Note that we even add jumps to seen_insns:
+        # although weighting those won't make any difference here, this is the
+        # code that makes sense of what's allowed.
+        missing_insns = set(cfg.insn_weights.values.keys()) - seen_insns
+        if missing_insns:
+            raise ValueError('Config at {} defines weights for '
+                             'non-existent instructions: {}'
+                             .format(cfg.path,
+                                     ', '.join(sorted(missing_insns))))
+
+        # Check that at least one instruction has a positive weight
+        assert len(self.insns) == len(self.weights)
+        if not self.insns:
+            raise ValueError('Config at {} defines a zero weight '
+                             'for all instructions.'
+                             .format(cfg.path))
 
     def gen(self,
             cont: GenCont,
@@ -70,11 +99,7 @@ class StraightLineInsn(SnippetGen):
         if program.get_insn_space_at(model.pc) <= 1:
             return None
 
-        # Pick a (YAML) instruction at random. We'll probably do some clever
-        # weighting here later on but, for now, we'll pick uniformly at the
-        # start.
-        weights = [1.0] * len(self.insns)
-
+        weights = self.weights
         prog_insn = None
         while prog_insn is None:
             idx = random.choices(range(len(self.insns)), weights=weights)[0]
@@ -85,9 +110,12 @@ class StraightLineInsn(SnippetGen):
             assert weights[idx] > 0
 
             # Try to fill out the instruction. On failure, clear the weight for
-            # this index and go around again.
+            # this index and go around again. We take the copy here, rather
+            # than outside the loop, because we don't expect this to happen
+            # very often.
             prog_insn = self.fill_insn(self.insns[idx], model)
             if prog_insn is None:
+                weights = self.weights.copy()
                 weights[idx] = 0
                 continue
 

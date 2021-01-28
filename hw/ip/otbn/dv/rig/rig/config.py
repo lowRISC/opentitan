@@ -34,16 +34,22 @@ class Weights:
 
             self.values[key] = fval
 
+    def get(self, key: str) -> float:
+        '''Get a weight from the dictionary, defaulting to 1.0'''
+        return self.values.get(key, 1.0)
+
 
 class Config:
     '''An object representing configuration for a RIG run'''
     def __init__(self, path: str, yml: object):
         yd = check_keys(yml, 'top-level',
                         ['gen-weights'],
-                        [])
+                        ['insn-weights'])
 
         self.path = path
         self.gen_weights = Weights('gen-weights', yd['gen-weights'])
+        self.insn_weights = Weights('insn-weights',
+                                    yd.get('insn-weights', {}))
 
     @staticmethod
     def load(path: str) -> 'Config':

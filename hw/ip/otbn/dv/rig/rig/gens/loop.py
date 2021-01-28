@@ -10,6 +10,7 @@ from shared.operand import ImmOperandType, RegOperandType, OperandType
 
 from .jump import Jump
 from .straight_line_insn import StraightLineInsn
+from ..config import Config
 from ..program import ProgInsn, Program
 from ..model import Model
 from ..snippet import LoopSnippet, Snippet
@@ -18,9 +19,11 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 class Loop(SnippetGen):
     '''A generator that generates a LOOP / LOOPI'''
-    def __init__(self, insns_file: InsnsFile) -> None:
-        self.jump_gen = Jump(insns_file)
-        self.sli_gen = StraightLineInsn(insns_file)
+    def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
+        super().__init__()
+
+        self.jump_gen = Jump(cfg, insns_file)
+        self.sli_gen = StraightLineInsn(cfg, insns_file)
 
         self.loop = self._get_named_insn(insns_file, 'loop')
         self.loopi = self._get_named_insn(insns_file, 'loopi')
@@ -42,6 +45,16 @@ class Loop(SnippetGen):
                 not self.loopi.operands[1].op_type.signed):
             raise RuntimeError('LOOPI instruction from instructions file is not '
                                'the shape expected by the Loop generator.')
+
+        self.loopi_prob = 0.5
+
+        loop_weight = cfg.insn_weights.get('loop')
+        loopi_weight = cfg.insn_weights.get('loopi')
+        sum_weights = loop_weight + loopi_weight
+        if sum_weights == 0:
+            self.disabled = True
+        else:
+            self.loopi_prob = loopi_weight / sum_weights
 
     def _pick_iterations(self,
                          op_type: OperandType,
@@ -359,11 +372,8 @@ class Loop(SnippetGen):
             return None
 
         # Decide whether to generate LOOP or LOOPI
-        loop_weight = 1.0
-        loopi_weight = 1.0
-        sum_weights = loop_weight + loopi_weight
-        is_loop = random.random() < loop_weight / sum_weights
-        insn = self.loop if is_loop else self.loopi
+        is_loopi = random.random() < self.loopi_prob
+        insn = self.loopi if is_loopi else self.loop
 
         # Pick a loop count
         op0_type = insn.operands[0].op_type

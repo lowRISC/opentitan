@@ -40,6 +40,9 @@ class SnippetGen:
     binary.
 
     '''
+    def __init__(self) -> None:
+        self.disabled = False
+
     def gen(self,
             cont: GenCont,
             model: Model,
