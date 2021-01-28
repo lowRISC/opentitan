@@ -7,6 +7,7 @@ from typing import Tuple
 from shared.insn_yaml import InsnsFile
 from shared.mem_layout import get_memory_layout
 
+from .config import Config
 from .init_data import InitData
 from .program import Program
 from .model import Model
@@ -14,7 +15,8 @@ from .snippet_gens import SnippetGens
 from .snippet import Snippet
 
 
-def gen_program(start_addr: int,
+def gen_program(config: Config,
+                start_addr: int,
                 fuel: int,
                 insns_file: InsnsFile) -> Tuple[InitData, Snippet]:
     '''Generate a random program for OTBN
@@ -50,5 +52,11 @@ def gen_program(start_addr: int,
     for addr in init_data.keys():
         model.touch_mem('dmem', addr, 4)
 
-    snippet = SnippetGens(insns_file).gen_rest(model, program)
+    try:
+        gens = SnippetGens(config, insns_file)
+    except ValueError as err:
+        raise RuntimeError('Failed to initialise snippet generators: {}'
+                           .format(err)) from None
+
+    snippet = gens.gen_rest(model, program)
     return init_data, snippet

@@ -1,0 +1,10 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+gen-weights:
+  Branch: 0.1
+  ECall: 1.0
+  Jump: 0.1
+  Loop: 0.1
+  StraightLineInsn: 1.0
