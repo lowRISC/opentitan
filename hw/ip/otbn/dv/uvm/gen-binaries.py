@@ -172,7 +172,7 @@ def write_ninja(handle: TextIO, rig_count: int, start_seed: int, size: int,
     assert start_seed >= 0
     assert size > 0
 
-    otbn_rig = os.path.join(otbn_dir, 'util/otbn-rig')
+    otbn_rig = os.path.join(otbn_dir, 'dv/rig/otbn-rig')
     smoke_src_dir = os.path.join(otbn_dir, 'dv/smoke')
 
     seeds = [start_seed + idx for idx in range(rig_count)]

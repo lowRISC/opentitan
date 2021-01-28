@@ -44,8 +44,8 @@ users include:
   - `util/yaml_to_doc.py`: Generates a Markdown snippet which is included in
     the OTBN specification.
 
-  - `util/otbn-rig`: A random instruction generator for OTBN. See
-    util/rig/README.md for further information.
+  - `dv/rig/otbn-rig`: A random instruction generator for OTBN. See
+    dv/rig/README.md for further information.
 
 ### Run the standalone RTL simulation
 A standalone environment to run OTBN alone in Verilator is included. Build it
