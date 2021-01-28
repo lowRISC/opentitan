@@ -62,6 +62,11 @@ class dv_base_reg extends uvm_reg;
     locked_regs.push_back(locked_reg);
   endfunction
 
+  function bit is_inside_locked_regs(dv_base_reg csr);
+    if (csr inside {locked_regs}) return 1;
+    else                          return 0;
+  endfunction
+
   function bit is_enable_reg();
     return (locked_regs.size() > 0);
   endfunction

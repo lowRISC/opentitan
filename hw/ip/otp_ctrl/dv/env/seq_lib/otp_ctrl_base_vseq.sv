@@ -25,6 +25,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     // reset power init pin and lc pins
     cfg.otp_ctrl_vif.init();
     if (do_otp_ctrl_init) otp_ctrl_init();
+    cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
     if (do_otp_pwr_init) otp_pwr_init();
   endtask
 
@@ -58,6 +59,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task dai_wr(bit [TL_DW-1:0] addr,
                       bit [TL_DW-1:0] wdata0,
                       bit [TL_DW-1:0] wdata1 = 0);
+    bit [TL_DW-1:0] val;
     addr = randomize_dai_addr(addr);
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_wdata_0, wdata0);
@@ -67,6 +69,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("DAI write, address %0h, data0 %0h data1 %0h, is_secret = %0b",
               addr, wdata0, wdata1, is_secret(addr)), UVM_DEBUG)
 
+    if ($urandom_range(0, 1) && cfg.zero_delays) begin
+      csr_rd(.ptr(ral.direct_access_regwen), .value(val));
+    end
     csr_spinwait(ral.intr_state.otp_operation_done, 1);
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
   endtask : dai_wr
@@ -75,9 +80,13 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task dai_rd(bit [TL_DW-1:0]        addr,
                       output bit [TL_DW-1:0] rdata0,
                       output bit [TL_DW-1:0] rdata1);
+    bit [TL_DW-1:0] val;
     addr = randomize_dai_addr(addr);
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
+    if ($urandom_range(0, 1) && cfg.zero_delays) begin
+      csr_rd(.ptr(ral.direct_access_regwen), .value(val));
+    end
     csr_spinwait(ral.intr_state.otp_operation_done, 1);
 
     csr_rd(ral.direct_access_rdata_0, rdata0);
@@ -87,8 +96,13 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // this task exercises an OTP digest calculation via the DAI interface
   virtual task cal_digest(int part_idx);
+    bit [TL_DW-1:0] val;
     csr_wr(ral.direct_access_address, PART_BASE_ADDRS[part_idx]);
     csr_wr(ral.direct_access_cmd, otp_ctrl_pkg::DaiDigest);
+
+    if ($urandom_range(0, 1) && cfg.zero_delays) begin
+      csr_rd(.ptr(ral.direct_access_regwen), .value(val));
+    end
     csr_spinwait(ral.intr_state.otp_operation_done, 1);
     csr_wr(ral.intr_state, 1 << OtpOperationDone);
   endtask

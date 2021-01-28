@@ -39,6 +39,7 @@
             - Read out keys from key_manager, flash, SRAM, OTBN
             - Write random values to random addresses within each OTP partition
             - Read out the random selected write addresses, check if the readout values are expected
+            - During read and write operations, check if direct_access_regwen is correctly set by HW
             - Perform a system-level reset and check corresponding CSRs are set correctly
             - Lock all partitions except life_cycle by triggering digest calculations
             - Read back and verify the digest
@@ -69,6 +70,20 @@
             '''
       milestone: V2
       tests: []
+    }
+    {
+      name: regwen_during_otp_init
+      desc: '''
+            DIRECT_ACCESS_REGWEN is RO reg and it gates bunch of write access of other registers,
+            which isn't tested in common CSR tests. HW will set this register to 0 when OTP_CTRL's
+            DAI interface is busy.
+
+            Stimulus and checks:
+            - Random read DIRECT_ACCESS_REGWEN and ensure the value is set to 0 during OTP init.
+            - Test accessing registers gated by DIRECT_ACCESS_REGWEN is ignored during OTP init.
+            '''
+      milestone: V2
+      tests: ["otp_ctrl_regwen"]
     }
     {
       name: partition_lock

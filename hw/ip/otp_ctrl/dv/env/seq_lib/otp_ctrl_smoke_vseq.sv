@@ -102,6 +102,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
           tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1));
         end
 
+        if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(tlul_val));
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
       end
 
