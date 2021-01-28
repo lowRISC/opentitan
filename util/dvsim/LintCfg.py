@@ -143,6 +143,15 @@ class LintCfg(OneShotCfg):
             try:
                 with result_data.open() as results_file:
                     self.result = hjson.load(results_file, use_decimal=True)
+
+                # HACK HACK HACK (more hacks)
+                with result_data.open() as results_file:
+                    hack_str = results_file.read()
+
+                results_str += "\n\nVerbatim contents of {}:\n\n".format(result_data)
+                results_str += hack_str
+                results_str += "\n\n"
+
             except IOError as err:
                 log.warning("%s", err)
                 self.result = {
