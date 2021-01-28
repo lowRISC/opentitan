@@ -202,6 +202,7 @@ jobs:
       set -e
       only_doc_changes=0
       has_otbn_changes=0
+      only_dv_changes=0
       if [[ "$(Build.Reason)" = "PullRequest" ]]; then
         # Conservative way of checking for documentation-only and OTBN changes.
         # Only relevant for pipelines triggered from pull requests
@@ -221,6 +222,15 @@ jobs:
           echo "PR contains non doc changes"
         fi
 
+        echo "Checking for dv-only changes in this pull request"
+        only_dv_changes="$(git diff --name-only "$fork_origin" | grep -v '/dv/' -q; echo $?)"
+
+        if [[ $only_dv_changes -eq 1 ]]; then
+          echo "PR is only dv changes"
+        else
+          echo "PR contains non dv changes"
+        fi
+
         # Check if any changes were made to OTBN-related files (hardware, software or tooling)
         echo "Checking if any OTBN changes are in this pull request"
         has_otbn_changes="$(! git diff --name-only "$fork_origin" | grep '/otbn/' -q; echo $?)"
@@ -235,6 +245,7 @@ jobs:
         has_otbn_changes=1
       fi
       echo "##vso[task.setvariable variable=onlyDocChanges;isOutput=true]${only_doc_changes}"
+      echo "##vso[task.setvariable variable=onlyDvChanges;isOutput=true]${only_dv_changes}"
       echo "##vso[task.setvariable variable=hasOTBNChanges;isOutput=true]${has_otbn_changes}"
     displayName: Check what kinds of changes the PR contains
     name: DetermineBuildType
@@ -494,7 +505,7 @@ jobs:
     - lint
     # The bootrom is built into the FPGA image at synthesis time.
     - sw_build_nexysvideo
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   pool: ci-public
   timeoutInMinutes: 120 # 2 hours
   steps:
@@ -546,7 +557,7 @@ jobs:
     # By generating the CW305 bootrom binary we would break execute_fpga_tests executed on the
     # NexysVideo.
     - sw_build
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   pool: ci-public
   timeoutInMinutes: 120 # 2 hours
   steps:
