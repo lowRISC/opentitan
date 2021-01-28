@@ -16,22 +16,15 @@ $(build-dir) $(lint-build-dir):
 	mkdir -p $@
 
 pylibs := $(wildcard shared/*.py)
-pyscripts := yaml_to_doc.py otbn-as otbn-ld otbn-objdump otbn-rig
+pyscripts := yaml_to_doc.py otbn-as otbn-ld otbn-objdump
 
 lint-stamps := $(foreach s,$(pyscripts),$(lint-build-dir)/$(s).stamp)
 $(lint-build-dir)/%.stamp: % $(pylibs) | $(lint-build-dir)
 	mypy --strict $< $(pylibs)
 	touch $@
 
-# For otbn-rig's stamp file, add extra dependencies on the Python code
-# in ./rig.
-$(lint-build-dir)/otbn-rig.stamp: $(wildcard rig/*.py rig/gens/*.py)
-
 .PHONY: lint
 lint: $(lint-stamps)
-
-$(lint-targets): lint-%:
-	mypy --strict $* $(pylibs)
 
 # Target that assembles and links each of the code snippets to make
 # sure the toolchain is in a reasonable shape.

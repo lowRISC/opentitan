@@ -1,7 +1,7 @@
 # OTBN Random Instruction Generator
 
-This directory contains a random instruction generator for OTBN. There
-is a wrapper at `../otbn-rig`. Example usage:
+This directory contains a random instruction generator for OTBN called
+`otbn-rig`. Example usage:
 
 ```
 ./hw/ip/otbn/util/otbn-rig -o x.json --asm-output x.asm

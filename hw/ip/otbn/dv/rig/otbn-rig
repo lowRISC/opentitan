@@ -12,11 +12,13 @@ import random
 import sys
 from typing import Optional, cast
 
-from shared.insn_yaml import InsnsFile, load_insns_yaml
-
 # Ensure that the OTBN utils directory is on sys.path. This means that RIG code
 # can import modules like "shared.foo" and get the OTBN shared code.
-sys.path.append(os.path.dirname(__file__))
+_OTBN_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), '../..'))
+_UTIL_DIR = os.path.join(_OTBN_DIR, 'util')
+sys.path.append(_UTIL_DIR)
+
+from shared.insn_yaml import InsnsFile, load_insns_yaml  # noqa: E402
 
 from rig.init_data import InitData  # noqa: E402
 from rig.rig import gen_program  # noqa: E402
