@@ -44,7 +44,6 @@ module tlul_fifo_sync #(
                      tl_h_i.a_data   ,
                      tl_h_i.a_user   ,
                      spare_req_i}),
-    .depth_o       (),
     .rvalid_o      (tl_d_o.a_valid),
     .rready_i      (tl_d_i.a_ready),
     .rdata_o       ({tl_d_o.a_opcode ,
@@ -55,7 +54,9 @@ module tlul_fifo_sync #(
                      tl_d_o.a_mask   ,
                      tl_d_o.a_data   ,
                      tl_d_o.a_user   ,
-                     spare_req_o}));
+                     spare_req_o}),
+    .full_o        (),
+    .depth_o       ());
 
   // Put everything on the response side into the other FIFO
 
@@ -77,7 +78,6 @@ module tlul_fifo_sync #(
                      tl_d_i.d_user  ,
                      tl_d_i.d_error ,
                      spare_rsp_i}),
-    .depth_o       (),
     .rvalid_o      (tl_h_o.d_valid),
     .rready_i      (tl_h_i.d_ready),
     .rdata_o       ({tl_h_o.d_opcode,
@@ -88,6 +88,8 @@ module tlul_fifo_sync #(
                      tl_h_o.d_data  ,
                      tl_h_o.d_user  ,
                      tl_h_o.d_error ,
-                     spare_rsp_o}));
+                     spare_rsp_o}),
+    .full_o        (),
+    .depth_o       ());
 
 endmodule
