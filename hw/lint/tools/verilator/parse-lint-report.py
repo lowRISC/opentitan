@@ -31,16 +31,24 @@ def extract_messages(str_buffer, patterns):
 def parse_lint_log(str_buffer):
     '''Parse error, warnings, and failed properties from the log file'''
     err_warn_patterns = {
-        # The lint failed error can be ignored, since
-        # Fusesoc will always return this error if lint warnings have
-        # been found. We have a way of capturing the lint warnings
-        # explicitly in this parsing script, hence this error is redundant
-        # and we decided not to report it in the dashboard.
+        # If lint warnings have been found, the lint tool will exit
+        # with a nonzero status code and fusesoc will always spit out
+        # an error like
+        #
+        #    ERROR: Failed to build ip:core:name:0.1 : 'make' exited with an error code
+        #
+        # If we found any other warnings or errors, there's no point in
+        # listing this too. BUT we want to make sure we *do* see this
+        # error if there are no other errors or warnings, since that
+        # shows something has come unstuck. (Probably the lint tool
+        # spat out a warning that we don't understand)
+        ("fusesoc-error",
+         r"^ERROR: Failed to build .* 'make' exited with an error code"),
         ("errors",
          r"^(?!ERROR: Failed to build .* 'make' exited with an error code)ERROR: .*"),
         ("errors",
-         # This is a redundant Verilator error that we ignore for the same
-         # reason as above.
+         # This is a redundant Verilator error that we ignore, since we
+         # already parse out each individual error.
          r"^(?!%Error: Exiting due to .* warning.*)%Error: .*"),
         # TODO(https://github.com/olofk/edalize/issues/90):
         # this is a workaround until we actually have native Edalize
@@ -58,6 +66,7 @@ def get_results(logpath):
     '''Parse Lint log file and extract info to a dictionary'''
     results = {
         "tool": "verilator",
+        "fusesoc-error": [],
         "errors": [],
         "warnings": [],
         "lint_errors": [],
@@ -70,6 +79,13 @@ def get_results(logpath):
             results = parse_lint_log(str_buffer)
     except IOError as err:
         results["errors"] += ["IOError: %s" % err]
+
+    # If there are no errors or warnings, add the "fusesoc-error" field to
+    # "errors" (which will be reported as tooling errors). Remove the
+    # "fusesoc-error" field either way.
+    if not (results['errors'] or results['warnings']):
+        results['errors'] = results['fusesoc-error']
+    del results['fusesoc-error']
 
     return results
 

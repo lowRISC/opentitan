@@ -32,38 +32,75 @@ def get_results(resdir):
     """
     results = {
         "tool": "ascentlint",
+        "fusesoc-error": [],
         "errors": [],
         "warnings": [],
         "lint_errors": [],
         "lint_warnings": [],
         "lint_infos": []
     }
-    try:
-        # check the log file for flow errors and warnings
-        with Path(resdir).joinpath('ascentlint.log').open() as f:
-            full_file = f.read()
-            err_warn_patterns = [("errors", r"^FlexNet Licensing error.*"),
-                                 ("errors", r"^Error: .*"),
-                                 ("errors", r"^ERROR.*"),
-                                 ("errors", r"^  ERR .*"),
-                                 ("warnings", r"^Warning: .*"),
-                                 # TODO: struct assignment labels within concatenation
-                                 # not supported. check with newer ascentlint version.
-                                 ("warnings", r"^  (?!WARN \[#39024\])WARN .*")]
-            extract_messages(full_file, err_warn_patterns, results)
-    except IOError as err:
-        results["errors"] += ["IOError: %s" % err]
 
-    try:
-        # check the report file for lint INFO, WARNING and ERRORs
-        with Path(resdir).joinpath('ascentlint.rpt').open() as f:
-            full_file = f.read()
-            err_warn_patterns = {("lint_errors", r"^E  .*"),
-                                 ("lint_warnings", r"^W  .*"),
-                                 ("lint_infos", r"^I  .*")}
-            extract_messages(full_file, err_warn_patterns, results)
-    except IOError as err:
-        results["errors"] += ["IOError: %s" % err]
+    log_files = ['lint.log',
+                 'lint-ascentlint/ascentlint.log',
+                 'lint-ascentlint/ascentlint.rpt']
+    log_file_contents = []
+    # Open all log files
+    for name in log_files:
+        try:
+            with Path(resdir).joinpath(name).open() as f:
+                log_file_contents.append(f.read())
+        except IOError as err:
+            results["errors"] += ["IOError: %s" % err]
+
+    # Define warning/error patterns for each logfile
+    err_warn_patterns = []
+
+    # Patterns for lint.log
+    err_warn_patterns.append([
+        # If lint warnings have been found, the lint tool will exit
+        # with a nonzero status code and fusesoc will always spit out
+        # an error like
+        #
+        #    ERROR: Failed to build ip:core:name:0.1 : 'make' exited with an error code
+        #
+        # If we found any other warnings or errors, there's no point in
+        # listing this too. BUT we want to make sure we *do* see this
+        # error if there are no other errors or warnings, since that
+        # shows something has come unstuck. (Probably the lint tool
+        # spat out a warning that we don't understand)
+        ("fusesoc-error",
+         r"^ERROR: Failed to build .* : 'make' exited with an error code")
+    ])
+
+    # Patterns for ascentlint.log
+    err_warn_patterns.append([
+        ("errors", r"^FlexNet Licensing error.*"),
+        ("errors", r"^Error: .*"),
+        ("errors", r"^ERROR.*"),
+        ("errors", r"^  ERR .*"),
+        ("warnings", r"^Warning: .*"),
+        # TODO: struct assignment labels within concatenation
+        # not supported. check with newer ascentlint version.
+        ("warnings", r"^  (?!WARN \[#39024\])WARN .*")
+    ])
+
+    # Patterns for ascentlint.rpt
+    err_warn_patterns.append([
+        ("lint_errors", r"^E  .*"),
+        ("lint_warnings", r"^W  .*"),
+        ("lint_infos", r"^I  .*")
+    ])
+
+    # Go parse the logs
+    for patterns, logs in zip(err_warn_patterns, log_file_contents):
+        extract_messages(logs, patterns, results)
+
+    # If there are no errors or warnings, add the "fusesoc-error" field to
+    # "errors" (which will be reported as tooling errors). Remove the
+    # "fusesoc-error" field either way.
+    if not (results['errors'] or results['warnings']):
+        results['errors'] = results['fusesoc-error']
+    del results['fusesoc-error']
 
     return results
 

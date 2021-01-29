@@ -32,6 +32,7 @@ def get_results(resdir):
     """
     results = {
         "tool": "veriblelint",
+        "fusesoc-error": [],
         "errors": [],
         "warnings": [],
         "lint_errors": [],
@@ -42,29 +43,45 @@ def get_results(resdir):
         # check the report file for lint INFO, WARNING and ERRORs
         with Path(resdir).joinpath('lint.log').open() as f:
             full_file = f.read()
-            err_warn_patterns = {
-                # The lint failed error can be ignored, since
-                # Fusesoc will always return this error if lint warnings have
-                # been found. We have a way of capturing the lint warnings
-                # explicitly in this parsing script, hence this error is redundant
-                # and we decided not to report it in the dashboard.
-                ("errors",
-                 r"^(?!ERROR: Failed to run .* Lint failed)ERROR: .*"),
-                ("errors", r"^Error: .*"),
-                ("errors", r"^E .*"),
-                ("errors", r"^F .*"),
-                # TODO(https://github.com/olofk/edalize/issues/90):
-                # this is a workaround until we actually have native Edalize
-                # support for JasperGold and "formal" targets
-                ("warnings",
-                 r"^(?!WARNING: Unknown item formal in section Target)WARNING: .*"),
-                ("warnings", r"^Warning: .* "),
-                ("warnings", r"^W .*"),
-                ("lint_warnings", r"^.*\[Style:.*")
-            }
-            extract_messages(full_file, err_warn_patterns, results)
     except IOError as err:
         results["errors"] += ["IOError: %s" % err]
+
+    err_warn_patterns = [
+        # If lint warnings have been found, the lint tool will exit
+        # with a nonzero status code and fusesoc will always spit out
+        # an error like
+        #
+        #    ERROR: Failed to run ip:core:name:0.1 : Lint failed
+        #
+        # If we found any other warnings or errors, there's no point in
+        # listing this too. BUT we want to make sure we *do* see this
+        # error if there are no other errors or warnings, since that
+        # shows something has come unstuck. (Probably the lint tool
+        # spat out a warning that we don't understand)
+        ("fusesoc-error",
+         r"^ERROR: Failed to run .*: Lint failed.*"),
+        ("errors",
+         r"^(?!ERROR: Failed to run .* Lint failed)ERROR: .*"),
+        ("errors", r"^Error: .*"),
+        ("errors", r"^E .*"),
+        ("errors", r"^F .*"),
+        # TODO(https://github.com/olofk/edalize/issues/90):
+        # this is a workaround until we actually have native Edalize
+        # support for JasperGold and "formal" targets
+        ("warnings",
+         r"^(?!WARNING: Unknown item formal in section Target)WARNING: .*"),
+        ("warnings", r"^Warning: .* "),
+        ("warnings", r"^W .*"),
+        ("lint_warnings", r"^.*\[Style:.*")
+    ]
+    extract_messages(full_file, err_warn_patterns, results)
+
+    # If there are no errors or warnings, add the "fusesoc-error" field to
+    # "errors" (which will be reported as tooling errors). Remove the
+    # "fusesoc-error" field either way.
+    if not (results['errors'] or results['warnings']):
+        results['errors'] = results['fusesoc-error']
+    del results['fusesoc-error']
 
     return results
 
