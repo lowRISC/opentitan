@@ -26,76 +26,22 @@ extern "C" {
 #endif
 
 /**
- * Peripheral base address for uart0 in top earlgrey.
+ * Peripheral base address for uart in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_UART0_BASE_ADDR 0x40000000u
+#define TOP_EARLGREY_UART_BASE_ADDR 0x40000000u
 
 /**
- * Peripheral size for uart0 in top earlgrey.
+ * Peripheral size for uart in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_UART0_BASE_ADDR and
- * `TOP_EARLGREY_UART0_BASE_ADDR + TOP_EARLGREY_UART0_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_UART_BASE_ADDR and
+ * `TOP_EARLGREY_UART_BASE_ADDR + TOP_EARLGREY_UART_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_UART0_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for uart1 in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_UART1_BASE_ADDR 0x40010000u
-
-/**
- * Peripheral size for uart1 in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_UART1_BASE_ADDR and
- * `TOP_EARLGREY_UART1_BASE_ADDR + TOP_EARLGREY_UART1_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_UART1_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for uart2 in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_UART2_BASE_ADDR 0x40020000u
-
-/**
- * Peripheral size for uart2 in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_UART2_BASE_ADDR and
- * `TOP_EARLGREY_UART2_BASE_ADDR + TOP_EARLGREY_UART2_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_UART2_SIZE_BYTES 0x1000u
-
-/**
- * Peripheral base address for uart3 in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_UART3_BASE_ADDR 0x40030000u
-
-/**
- * Peripheral size for uart3 in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_UART3_BASE_ADDR and
- * `TOP_EARLGREY_UART3_BASE_ADDR + TOP_EARLGREY_UART3_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_UART3_SIZE_BYTES 0x1000u
+#define TOP_EARLGREY_UART_SIZE_BYTES 0x1000u
 
 /**
  * Peripheral base address for gpio in top earlgrey.
@@ -607,7 +553,7 @@ extern "C" {
 /**
  * Memory base address for ram_ret in top earlgrey.
  */
-#define TOP_EARLGREY_RAM_RET_BASE_ADDR 0x40520000u
+#define TOP_EARLGREY_RAM_RET_BASE_ADDR 0x18000000u
 
 /**
  * Memory size for ram_ret in top earlgrey.
@@ -633,27 +579,24 @@ extern "C" {
  */
 typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralUnknown = 0, /**< Unknown Peripheral */
-  kTopEarlgreyPlicPeripheralUart0 = 1, /**< uart0 */
-  kTopEarlgreyPlicPeripheralUart1 = 2, /**< uart1 */
-  kTopEarlgreyPlicPeripheralUart2 = 3, /**< uart2 */
-  kTopEarlgreyPlicPeripheralUart3 = 4, /**< uart3 */
-  kTopEarlgreyPlicPeripheralGpio = 5, /**< gpio */
-  kTopEarlgreyPlicPeripheralSpiDevice = 6, /**< spi_device */
-  kTopEarlgreyPlicPeripheralFlashCtrl = 7, /**< flash_ctrl */
-  kTopEarlgreyPlicPeripheralHmac = 8, /**< hmac */
-  kTopEarlgreyPlicPeripheralAlertHandler = 9, /**< alert_handler */
-  kTopEarlgreyPlicPeripheralNmiGen = 10, /**< nmi_gen */
-  kTopEarlgreyPlicPeripheralUsbdev = 11, /**< usbdev */
-  kTopEarlgreyPlicPeripheralPwrmgr = 12, /**< pwrmgr */
-  kTopEarlgreyPlicPeripheralOtbn = 13, /**< otbn */
-  kTopEarlgreyPlicPeripheralKeymgr = 14, /**< keymgr */
-  kTopEarlgreyPlicPeripheralKmac = 15, /**< kmac */
-  kTopEarlgreyPlicPeripheralOtpCtrl = 16, /**< otp_ctrl */
-  kTopEarlgreyPlicPeripheralCsrng = 17, /**< csrng */
-  kTopEarlgreyPlicPeripheralEdn0 = 18, /**< edn0 */
-  kTopEarlgreyPlicPeripheralEdn1 = 19, /**< edn1 */
-  kTopEarlgreyPlicPeripheralEntropySrc = 20, /**< entropy_src */
-  kTopEarlgreyPlicPeripheralLast = 20, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralGpio = 1, /**< gpio */
+  kTopEarlgreyPlicPeripheralUart = 2, /**< uart */
+  kTopEarlgreyPlicPeripheralSpiDevice = 3, /**< spi_device */
+  kTopEarlgreyPlicPeripheralFlashCtrl = 4, /**< flash_ctrl */
+  kTopEarlgreyPlicPeripheralHmac = 5, /**< hmac */
+  kTopEarlgreyPlicPeripheralAlertHandler = 6, /**< alert_handler */
+  kTopEarlgreyPlicPeripheralNmiGen = 7, /**< nmi_gen */
+  kTopEarlgreyPlicPeripheralUsbdev = 8, /**< usbdev */
+  kTopEarlgreyPlicPeripheralPwrmgr = 9, /**< pwrmgr */
+  kTopEarlgreyPlicPeripheralOtbn = 10, /**< otbn */
+  kTopEarlgreyPlicPeripheralKeymgr = 11, /**< keymgr */
+  kTopEarlgreyPlicPeripheralKmac = 12, /**< kmac */
+  kTopEarlgreyPlicPeripheralOtpCtrl = 13, /**< otp_ctrl */
+  kTopEarlgreyPlicPeripheralCsrng = 14, /**< csrng */
+  kTopEarlgreyPlicPeripheralEdn0 = 15, /**< edn0 */
+  kTopEarlgreyPlicPeripheralEdn1 = 16, /**< edn1 */
+  kTopEarlgreyPlicPeripheralEntropySrc = 17, /**< entropy_src */
+  kTopEarlgreyPlicPeripheralLast = 17, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -664,129 +607,105 @@ typedef enum top_earlgrey_plic_peripheral {
  */
 typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdNone = 0, /**< No Interrupt */
-  kTopEarlgreyPlicIrqIdUart0TxWatermark = 1, /**< uart0_tx_watermark */
-  kTopEarlgreyPlicIrqIdUart0RxWatermark = 2, /**< uart0_rx_watermark */
-  kTopEarlgreyPlicIrqIdUart0TxEmpty = 3, /**< uart0_tx_empty */
-  kTopEarlgreyPlicIrqIdUart0RxOverflow = 4, /**< uart0_rx_overflow */
-  kTopEarlgreyPlicIrqIdUart0RxFrameErr = 5, /**< uart0_rx_frame_err */
-  kTopEarlgreyPlicIrqIdUart0RxBreakErr = 6, /**< uart0_rx_break_err */
-  kTopEarlgreyPlicIrqIdUart0RxTimeout = 7, /**< uart0_rx_timeout */
-  kTopEarlgreyPlicIrqIdUart0RxParityErr = 8, /**< uart0_rx_parity_err */
-  kTopEarlgreyPlicIrqIdUart1TxWatermark = 9, /**< uart1_tx_watermark */
-  kTopEarlgreyPlicIrqIdUart1RxWatermark = 10, /**< uart1_rx_watermark */
-  kTopEarlgreyPlicIrqIdUart1TxEmpty = 11, /**< uart1_tx_empty */
-  kTopEarlgreyPlicIrqIdUart1RxOverflow = 12, /**< uart1_rx_overflow */
-  kTopEarlgreyPlicIrqIdUart1RxFrameErr = 13, /**< uart1_rx_frame_err */
-  kTopEarlgreyPlicIrqIdUart1RxBreakErr = 14, /**< uart1_rx_break_err */
-  kTopEarlgreyPlicIrqIdUart1RxTimeout = 15, /**< uart1_rx_timeout */
-  kTopEarlgreyPlicIrqIdUart1RxParityErr = 16, /**< uart1_rx_parity_err */
-  kTopEarlgreyPlicIrqIdUart2TxWatermark = 17, /**< uart2_tx_watermark */
-  kTopEarlgreyPlicIrqIdUart2RxWatermark = 18, /**< uart2_rx_watermark */
-  kTopEarlgreyPlicIrqIdUart2TxEmpty = 19, /**< uart2_tx_empty */
-  kTopEarlgreyPlicIrqIdUart2RxOverflow = 20, /**< uart2_rx_overflow */
-  kTopEarlgreyPlicIrqIdUart2RxFrameErr = 21, /**< uart2_rx_frame_err */
-  kTopEarlgreyPlicIrqIdUart2RxBreakErr = 22, /**< uart2_rx_break_err */
-  kTopEarlgreyPlicIrqIdUart2RxTimeout = 23, /**< uart2_rx_timeout */
-  kTopEarlgreyPlicIrqIdUart2RxParityErr = 24, /**< uart2_rx_parity_err */
-  kTopEarlgreyPlicIrqIdUart3TxWatermark = 25, /**< uart3_tx_watermark */
-  kTopEarlgreyPlicIrqIdUart3RxWatermark = 26, /**< uart3_rx_watermark */
-  kTopEarlgreyPlicIrqIdUart3TxEmpty = 27, /**< uart3_tx_empty */
-  kTopEarlgreyPlicIrqIdUart3RxOverflow = 28, /**< uart3_rx_overflow */
-  kTopEarlgreyPlicIrqIdUart3RxFrameErr = 29, /**< uart3_rx_frame_err */
-  kTopEarlgreyPlicIrqIdUart3RxBreakErr = 30, /**< uart3_rx_break_err */
-  kTopEarlgreyPlicIrqIdUart3RxTimeout = 31, /**< uart3_rx_timeout */
-  kTopEarlgreyPlicIrqIdUart3RxParityErr = 32, /**< uart3_rx_parity_err */
-  kTopEarlgreyPlicIrqIdGpioGpio0 = 33, /**< gpio_gpio 0 */
-  kTopEarlgreyPlicIrqIdGpioGpio1 = 34, /**< gpio_gpio 1 */
-  kTopEarlgreyPlicIrqIdGpioGpio2 = 35, /**< gpio_gpio 2 */
-  kTopEarlgreyPlicIrqIdGpioGpio3 = 36, /**< gpio_gpio 3 */
-  kTopEarlgreyPlicIrqIdGpioGpio4 = 37, /**< gpio_gpio 4 */
-  kTopEarlgreyPlicIrqIdGpioGpio5 = 38, /**< gpio_gpio 5 */
-  kTopEarlgreyPlicIrqIdGpioGpio6 = 39, /**< gpio_gpio 6 */
-  kTopEarlgreyPlicIrqIdGpioGpio7 = 40, /**< gpio_gpio 7 */
-  kTopEarlgreyPlicIrqIdGpioGpio8 = 41, /**< gpio_gpio 8 */
-  kTopEarlgreyPlicIrqIdGpioGpio9 = 42, /**< gpio_gpio 9 */
-  kTopEarlgreyPlicIrqIdGpioGpio10 = 43, /**< gpio_gpio 10 */
-  kTopEarlgreyPlicIrqIdGpioGpio11 = 44, /**< gpio_gpio 11 */
-  kTopEarlgreyPlicIrqIdGpioGpio12 = 45, /**< gpio_gpio 12 */
-  kTopEarlgreyPlicIrqIdGpioGpio13 = 46, /**< gpio_gpio 13 */
-  kTopEarlgreyPlicIrqIdGpioGpio14 = 47, /**< gpio_gpio 14 */
-  kTopEarlgreyPlicIrqIdGpioGpio15 = 48, /**< gpio_gpio 15 */
-  kTopEarlgreyPlicIrqIdGpioGpio16 = 49, /**< gpio_gpio 16 */
-  kTopEarlgreyPlicIrqIdGpioGpio17 = 50, /**< gpio_gpio 17 */
-  kTopEarlgreyPlicIrqIdGpioGpio18 = 51, /**< gpio_gpio 18 */
-  kTopEarlgreyPlicIrqIdGpioGpio19 = 52, /**< gpio_gpio 19 */
-  kTopEarlgreyPlicIrqIdGpioGpio20 = 53, /**< gpio_gpio 20 */
-  kTopEarlgreyPlicIrqIdGpioGpio21 = 54, /**< gpio_gpio 21 */
-  kTopEarlgreyPlicIrqIdGpioGpio22 = 55, /**< gpio_gpio 22 */
-  kTopEarlgreyPlicIrqIdGpioGpio23 = 56, /**< gpio_gpio 23 */
-  kTopEarlgreyPlicIrqIdGpioGpio24 = 57, /**< gpio_gpio 24 */
-  kTopEarlgreyPlicIrqIdGpioGpio25 = 58, /**< gpio_gpio 25 */
-  kTopEarlgreyPlicIrqIdGpioGpio26 = 59, /**< gpio_gpio 26 */
-  kTopEarlgreyPlicIrqIdGpioGpio27 = 60, /**< gpio_gpio 27 */
-  kTopEarlgreyPlicIrqIdGpioGpio28 = 61, /**< gpio_gpio 28 */
-  kTopEarlgreyPlicIrqIdGpioGpio29 = 62, /**< gpio_gpio 29 */
-  kTopEarlgreyPlicIrqIdGpioGpio30 = 63, /**< gpio_gpio 30 */
-  kTopEarlgreyPlicIrqIdGpioGpio31 = 64, /**< gpio_gpio 31 */
-  kTopEarlgreyPlicIrqIdSpiDeviceRxf = 65, /**< spi_device_rxf */
-  kTopEarlgreyPlicIrqIdSpiDeviceRxlvl = 66, /**< spi_device_rxlvl */
-  kTopEarlgreyPlicIrqIdSpiDeviceTxlvl = 67, /**< spi_device_txlvl */
-  kTopEarlgreyPlicIrqIdSpiDeviceRxerr = 68, /**< spi_device_rxerr */
-  kTopEarlgreyPlicIrqIdSpiDeviceRxoverflow = 69, /**< spi_device_rxoverflow */
-  kTopEarlgreyPlicIrqIdSpiDeviceTxunderflow = 70, /**< spi_device_txunderflow */
-  kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty = 71, /**< flash_ctrl_prog_empty */
-  kTopEarlgreyPlicIrqIdFlashCtrlProgLvl = 72, /**< flash_ctrl_prog_lvl */
-  kTopEarlgreyPlicIrqIdFlashCtrlRdFull = 73, /**< flash_ctrl_rd_full */
-  kTopEarlgreyPlicIrqIdFlashCtrlRdLvl = 74, /**< flash_ctrl_rd_lvl */
-  kTopEarlgreyPlicIrqIdFlashCtrlOpDone = 75, /**< flash_ctrl_op_done */
-  kTopEarlgreyPlicIrqIdFlashCtrlOpError = 76, /**< flash_ctrl_op_error */
-  kTopEarlgreyPlicIrqIdHmacHmacDone = 77, /**< hmac_hmac_done */
-  kTopEarlgreyPlicIrqIdHmacFifoEmpty = 78, /**< hmac_fifo_empty */
-  kTopEarlgreyPlicIrqIdHmacHmacErr = 79, /**< hmac_hmac_err */
-  kTopEarlgreyPlicIrqIdAlertHandlerClassa = 80, /**< alert_handler_classa */
-  kTopEarlgreyPlicIrqIdAlertHandlerClassb = 81, /**< alert_handler_classb */
-  kTopEarlgreyPlicIrqIdAlertHandlerClassc = 82, /**< alert_handler_classc */
-  kTopEarlgreyPlicIrqIdAlertHandlerClassd = 83, /**< alert_handler_classd */
-  kTopEarlgreyPlicIrqIdNmiGenEsc0 = 84, /**< nmi_gen_esc0 */
-  kTopEarlgreyPlicIrqIdNmiGenEsc1 = 85, /**< nmi_gen_esc1 */
-  kTopEarlgreyPlicIrqIdNmiGenEsc2 = 86, /**< nmi_gen_esc2 */
-  kTopEarlgreyPlicIrqIdUsbdevPktReceived = 87, /**< usbdev_pkt_received */
-  kTopEarlgreyPlicIrqIdUsbdevPktSent = 88, /**< usbdev_pkt_sent */
-  kTopEarlgreyPlicIrqIdUsbdevDisconnected = 89, /**< usbdev_disconnected */
-  kTopEarlgreyPlicIrqIdUsbdevHostLost = 90, /**< usbdev_host_lost */
-  kTopEarlgreyPlicIrqIdUsbdevLinkReset = 91, /**< usbdev_link_reset */
-  kTopEarlgreyPlicIrqIdUsbdevLinkSuspend = 92, /**< usbdev_link_suspend */
-  kTopEarlgreyPlicIrqIdUsbdevLinkResume = 93, /**< usbdev_link_resume */
-  kTopEarlgreyPlicIrqIdUsbdevAvEmpty = 94, /**< usbdev_av_empty */
-  kTopEarlgreyPlicIrqIdUsbdevRxFull = 95, /**< usbdev_rx_full */
-  kTopEarlgreyPlicIrqIdUsbdevAvOverflow = 96, /**< usbdev_av_overflow */
-  kTopEarlgreyPlicIrqIdUsbdevLinkInErr = 97, /**< usbdev_link_in_err */
-  kTopEarlgreyPlicIrqIdUsbdevRxCrcErr = 98, /**< usbdev_rx_crc_err */
-  kTopEarlgreyPlicIrqIdUsbdevRxPidErr = 99, /**< usbdev_rx_pid_err */
-  kTopEarlgreyPlicIrqIdUsbdevRxBitstuffErr = 100, /**< usbdev_rx_bitstuff_err */
-  kTopEarlgreyPlicIrqIdUsbdevFrame = 101, /**< usbdev_frame */
-  kTopEarlgreyPlicIrqIdUsbdevConnected = 102, /**< usbdev_connected */
-  kTopEarlgreyPlicIrqIdUsbdevLinkOutErr = 103, /**< usbdev_link_out_err */
-  kTopEarlgreyPlicIrqIdPwrmgrWakeup = 104, /**< pwrmgr_wakeup */
-  kTopEarlgreyPlicIrqIdOtbnDone = 105, /**< otbn_done */
-  kTopEarlgreyPlicIrqIdKeymgrOpDone = 106, /**< keymgr_op_done */
-  kTopEarlgreyPlicIrqIdKmacKmacDone = 107, /**< kmac_kmac_done */
-  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 108, /**< kmac_fifo_empty */
-  kTopEarlgreyPlicIrqIdKmacKmacErr = 109, /**< kmac_kmac_err */
-  kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone = 110, /**< otp_ctrl_otp_operation_done */
-  kTopEarlgreyPlicIrqIdOtpCtrlOtpError = 111, /**< otp_ctrl_otp_error */
-  kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 112, /**< csrng_cs_cmd_req_done */
-  kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 113, /**< csrng_cs_entropy_req */
-  kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 114, /**< csrng_cs_hw_inst_exc */
-  kTopEarlgreyPlicIrqIdCsrngCsFifoErr = 115, /**< csrng_cs_fifo_err */
-  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 116, /**< edn0_edn_cmd_req_done */
-  kTopEarlgreyPlicIrqIdEdn0EdnFifoErr = 117, /**< edn0_edn_fifo_err */
-  kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 118, /**< edn1_edn_cmd_req_done */
-  kTopEarlgreyPlicIrqIdEdn1EdnFifoErr = 119, /**< edn1_edn_fifo_err */
-  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 120, /**< entropy_src_es_entropy_valid */
-  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 121, /**< entropy_src_es_health_test_failed */
-  kTopEarlgreyPlicIrqIdEntropySrcEsFifoErr = 122, /**< entropy_src_es_fifo_err */
-  kTopEarlgreyPlicIrqIdLast = 122, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdGpioGpio0 = 1, /**< gpio_gpio 0 */
+  kTopEarlgreyPlicIrqIdGpioGpio1 = 2, /**< gpio_gpio 1 */
+  kTopEarlgreyPlicIrqIdGpioGpio2 = 3, /**< gpio_gpio 2 */
+  kTopEarlgreyPlicIrqIdGpioGpio3 = 4, /**< gpio_gpio 3 */
+  kTopEarlgreyPlicIrqIdGpioGpio4 = 5, /**< gpio_gpio 4 */
+  kTopEarlgreyPlicIrqIdGpioGpio5 = 6, /**< gpio_gpio 5 */
+  kTopEarlgreyPlicIrqIdGpioGpio6 = 7, /**< gpio_gpio 6 */
+  kTopEarlgreyPlicIrqIdGpioGpio7 = 8, /**< gpio_gpio 7 */
+  kTopEarlgreyPlicIrqIdGpioGpio8 = 9, /**< gpio_gpio 8 */
+  kTopEarlgreyPlicIrqIdGpioGpio9 = 10, /**< gpio_gpio 9 */
+  kTopEarlgreyPlicIrqIdGpioGpio10 = 11, /**< gpio_gpio 10 */
+  kTopEarlgreyPlicIrqIdGpioGpio11 = 12, /**< gpio_gpio 11 */
+  kTopEarlgreyPlicIrqIdGpioGpio12 = 13, /**< gpio_gpio 12 */
+  kTopEarlgreyPlicIrqIdGpioGpio13 = 14, /**< gpio_gpio 13 */
+  kTopEarlgreyPlicIrqIdGpioGpio14 = 15, /**< gpio_gpio 14 */
+  kTopEarlgreyPlicIrqIdGpioGpio15 = 16, /**< gpio_gpio 15 */
+  kTopEarlgreyPlicIrqIdGpioGpio16 = 17, /**< gpio_gpio 16 */
+  kTopEarlgreyPlicIrqIdGpioGpio17 = 18, /**< gpio_gpio 17 */
+  kTopEarlgreyPlicIrqIdGpioGpio18 = 19, /**< gpio_gpio 18 */
+  kTopEarlgreyPlicIrqIdGpioGpio19 = 20, /**< gpio_gpio 19 */
+  kTopEarlgreyPlicIrqIdGpioGpio20 = 21, /**< gpio_gpio 20 */
+  kTopEarlgreyPlicIrqIdGpioGpio21 = 22, /**< gpio_gpio 21 */
+  kTopEarlgreyPlicIrqIdGpioGpio22 = 23, /**< gpio_gpio 22 */
+  kTopEarlgreyPlicIrqIdGpioGpio23 = 24, /**< gpio_gpio 23 */
+  kTopEarlgreyPlicIrqIdGpioGpio24 = 25, /**< gpio_gpio 24 */
+  kTopEarlgreyPlicIrqIdGpioGpio25 = 26, /**< gpio_gpio 25 */
+  kTopEarlgreyPlicIrqIdGpioGpio26 = 27, /**< gpio_gpio 26 */
+  kTopEarlgreyPlicIrqIdGpioGpio27 = 28, /**< gpio_gpio 27 */
+  kTopEarlgreyPlicIrqIdGpioGpio28 = 29, /**< gpio_gpio 28 */
+  kTopEarlgreyPlicIrqIdGpioGpio29 = 30, /**< gpio_gpio 29 */
+  kTopEarlgreyPlicIrqIdGpioGpio30 = 31, /**< gpio_gpio 30 */
+  kTopEarlgreyPlicIrqIdGpioGpio31 = 32, /**< gpio_gpio 31 */
+  kTopEarlgreyPlicIrqIdUartTxWatermark = 33, /**< uart_tx_watermark */
+  kTopEarlgreyPlicIrqIdUartRxWatermark = 34, /**< uart_rx_watermark */
+  kTopEarlgreyPlicIrqIdUartTxEmpty = 35, /**< uart_tx_empty */
+  kTopEarlgreyPlicIrqIdUartRxOverflow = 36, /**< uart_rx_overflow */
+  kTopEarlgreyPlicIrqIdUartRxFrameErr = 37, /**< uart_rx_frame_err */
+  kTopEarlgreyPlicIrqIdUartRxBreakErr = 38, /**< uart_rx_break_err */
+  kTopEarlgreyPlicIrqIdUartRxTimeout = 39, /**< uart_rx_timeout */
+  kTopEarlgreyPlicIrqIdUartRxParityErr = 40, /**< uart_rx_parity_err */
+  kTopEarlgreyPlicIrqIdSpiDeviceRxf = 41, /**< spi_device_rxf */
+  kTopEarlgreyPlicIrqIdSpiDeviceRxlvl = 42, /**< spi_device_rxlvl */
+  kTopEarlgreyPlicIrqIdSpiDeviceTxlvl = 43, /**< spi_device_txlvl */
+  kTopEarlgreyPlicIrqIdSpiDeviceRxerr = 44, /**< spi_device_rxerr */
+  kTopEarlgreyPlicIrqIdSpiDeviceRxoverflow = 45, /**< spi_device_rxoverflow */
+  kTopEarlgreyPlicIrqIdSpiDeviceTxunderflow = 46, /**< spi_device_txunderflow */
+  kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty = 47, /**< flash_ctrl_prog_empty */
+  kTopEarlgreyPlicIrqIdFlashCtrlProgLvl = 48, /**< flash_ctrl_prog_lvl */
+  kTopEarlgreyPlicIrqIdFlashCtrlRdFull = 49, /**< flash_ctrl_rd_full */
+  kTopEarlgreyPlicIrqIdFlashCtrlRdLvl = 50, /**< flash_ctrl_rd_lvl */
+  kTopEarlgreyPlicIrqIdFlashCtrlOpDone = 51, /**< flash_ctrl_op_done */
+  kTopEarlgreyPlicIrqIdFlashCtrlOpError = 52, /**< flash_ctrl_op_error */
+  kTopEarlgreyPlicIrqIdHmacHmacDone = 53, /**< hmac_hmac_done */
+  kTopEarlgreyPlicIrqIdHmacFifoEmpty = 54, /**< hmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdHmacHmacErr = 55, /**< hmac_hmac_err */
+  kTopEarlgreyPlicIrqIdAlertHandlerClassa = 56, /**< alert_handler_classa */
+  kTopEarlgreyPlicIrqIdAlertHandlerClassb = 57, /**< alert_handler_classb */
+  kTopEarlgreyPlicIrqIdAlertHandlerClassc = 58, /**< alert_handler_classc */
+  kTopEarlgreyPlicIrqIdAlertHandlerClassd = 59, /**< alert_handler_classd */
+  kTopEarlgreyPlicIrqIdNmiGenEsc0 = 60, /**< nmi_gen_esc0 */
+  kTopEarlgreyPlicIrqIdNmiGenEsc1 = 61, /**< nmi_gen_esc1 */
+  kTopEarlgreyPlicIrqIdNmiGenEsc2 = 62, /**< nmi_gen_esc2 */
+  kTopEarlgreyPlicIrqIdUsbdevPktReceived = 63, /**< usbdev_pkt_received */
+  kTopEarlgreyPlicIrqIdUsbdevPktSent = 64, /**< usbdev_pkt_sent */
+  kTopEarlgreyPlicIrqIdUsbdevDisconnected = 65, /**< usbdev_disconnected */
+  kTopEarlgreyPlicIrqIdUsbdevHostLost = 66, /**< usbdev_host_lost */
+  kTopEarlgreyPlicIrqIdUsbdevLinkReset = 67, /**< usbdev_link_reset */
+  kTopEarlgreyPlicIrqIdUsbdevLinkSuspend = 68, /**< usbdev_link_suspend */
+  kTopEarlgreyPlicIrqIdUsbdevLinkResume = 69, /**< usbdev_link_resume */
+  kTopEarlgreyPlicIrqIdUsbdevAvEmpty = 70, /**< usbdev_av_empty */
+  kTopEarlgreyPlicIrqIdUsbdevRxFull = 71, /**< usbdev_rx_full */
+  kTopEarlgreyPlicIrqIdUsbdevAvOverflow = 72, /**< usbdev_av_overflow */
+  kTopEarlgreyPlicIrqIdUsbdevLinkInErr = 73, /**< usbdev_link_in_err */
+  kTopEarlgreyPlicIrqIdUsbdevRxCrcErr = 74, /**< usbdev_rx_crc_err */
+  kTopEarlgreyPlicIrqIdUsbdevRxPidErr = 75, /**< usbdev_rx_pid_err */
+  kTopEarlgreyPlicIrqIdUsbdevRxBitstuffErr = 76, /**< usbdev_rx_bitstuff_err */
+  kTopEarlgreyPlicIrqIdUsbdevFrame = 77, /**< usbdev_frame */
+  kTopEarlgreyPlicIrqIdUsbdevConnected = 78, /**< usbdev_connected */
+  kTopEarlgreyPlicIrqIdUsbdevLinkOutErr = 79, /**< usbdev_link_out_err */
+  kTopEarlgreyPlicIrqIdPwrmgrWakeup = 80, /**< pwrmgr_wakeup */
+  kTopEarlgreyPlicIrqIdOtbnDone = 81, /**< otbn_done */
+  kTopEarlgreyPlicIrqIdKeymgrOpDone = 82, /**< keymgr_op_done */
+  kTopEarlgreyPlicIrqIdKmacKmacDone = 83, /**< kmac_kmac_done */
+  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 84, /**< kmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdKmacKmacErr = 85, /**< kmac_kmac_err */
+  kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone = 86, /**< otp_ctrl_otp_operation_done */
+  kTopEarlgreyPlicIrqIdOtpCtrlOtpError = 87, /**< otp_ctrl_otp_error */
+  kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 88, /**< csrng_cs_cmd_req_done */
+  kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 89, /**< csrng_cs_entropy_req */
+  kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 90, /**< csrng_cs_hw_inst_exc */
+  kTopEarlgreyPlicIrqIdCsrngCsFifoErr = 91, /**< csrng_cs_fifo_err */
+  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 92, /**< edn0_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn0EdnFifoErr = 93, /**< edn0_edn_fifo_err */
+  kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 94, /**< edn1_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn1EdnFifoErr = 95, /**< edn1_edn_fifo_err */
+  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 96, /**< entropy_src_es_entropy_valid */
+  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 97, /**< entropy_src_es_health_test_failed */
+  kTopEarlgreyPlicIrqIdEntropySrcEsFifoErr = 98, /**< entropy_src_es_fifo_err */
+  kTopEarlgreyPlicIrqIdLast = 98, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -796,7 +715,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[123];
+    top_earlgrey_plic_interrupt_for_peripheral[99];
 
 /**
  * PLIC Interrupt Target.
@@ -912,10 +831,7 @@ typedef enum top_earlgrey_pinmux_peripheral_in {
   kTopEarlgreyPinmuxPeripheralInGpioGpio29 = 29, /**< gpio_gpio 29 */
   kTopEarlgreyPinmuxPeripheralInGpioGpio30 = 30, /**< gpio_gpio 30 */
   kTopEarlgreyPinmuxPeripheralInGpioGpio31 = 31, /**< gpio_gpio 31 */
-  kTopEarlgreyPinmuxPeripheralInUart1Rx = 32, /**< uart1_rx */
-  kTopEarlgreyPinmuxPeripheralInUart2Rx = 33, /**< uart2_rx */
-  kTopEarlgreyPinmuxPeripheralInUart3Rx = 34, /**< uart3_rx */
-  kTopEarlgreyPinmuxPeripheralInLast = 34, /**< \internal Last valid peripheral input */
+  kTopEarlgreyPinmuxPeripheralInLast = 31, /**< \internal Last valid peripheral input */
 } top_earlgrey_pinmux_peripheral_in_t;
 
 /**
@@ -1037,10 +953,7 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselGpioGpio29 = 32, /**< gpio_gpio 29 */
   kTopEarlgreyPinmuxOutselGpioGpio30 = 33, /**< gpio_gpio 30 */
   kTopEarlgreyPinmuxOutselGpioGpio31 = 34, /**< gpio_gpio 31 */
-  kTopEarlgreyPinmuxOutselUart1Tx = 35, /**< uart1_tx */
-  kTopEarlgreyPinmuxOutselUart2Tx = 36, /**< uart2_tx */
-  kTopEarlgreyPinmuxOutselUart3Tx = 37, /**< uart3_tx */
-  kTopEarlgreyPinmuxOutselLast = 37, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselLast = 34, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**

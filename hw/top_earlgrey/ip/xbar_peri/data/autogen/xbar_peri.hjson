@@ -21,25 +21,7 @@
     // device
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_uart0"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
-      name:   "tl_uart1"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
-      name:   "tl_uart2"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
-      name:   "tl_uart3"
+      name:   "tl_uart"
       act:    "req"
       package: "tlul_pkg"
     }

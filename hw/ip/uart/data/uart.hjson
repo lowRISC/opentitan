@@ -139,9 +139,7 @@
         { bits: "4"
           name: "RXIDLE"
           desc: "RX is idle"
-          resval: "1",
-          tags: [// check idle in directed test only
-            "excl:CsrNonInitTests:CsrExclCheck"]
+          resval: "1"
         }
         { bits: "5"
           name: "RXEMPTY"

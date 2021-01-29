@@ -33,13 +33,12 @@ void _boot_start(void) {
   test_status_set(kTestStatusInBootRom);
   pinmux_init();
 
-  CHECK(
-      dif_uart_init(
-          (dif_uart_params_t){
-              .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
-          },
-          &uart0) == kDifUartOk,
-      "failed to init UART");
+  CHECK(dif_uart_init(
+            (dif_uart_params_t){
+                .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR),
+            },
+            &uart0) == kDifUartOk,
+        "failed to init UART");
   CHECK(dif_uart_configure(&uart0,
                            (dif_uart_config_t){
                                .baudrate = kUartBaudrate,

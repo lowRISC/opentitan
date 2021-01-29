@@ -20,12 +20,11 @@ const test_config_t kTestConfig = {
 
 bool test_main(void) {
   dif_uart_t uart;
-  CHECK(
-      dif_uart_init(
-          (dif_uart_params_t){
-              .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
-          },
-          &uart) == kDifUartOk);
+  CHECK(dif_uart_init(
+            (dif_uart_params_t){
+                .base_addr = mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR),
+            },
+            &uart) == kDifUartOk);
   CHECK(dif_uart_configure(&uart,
                            (dif_uart_config_t){
                                .baudrate = kUartBaudrate,

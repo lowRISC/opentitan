@@ -201,7 +201,7 @@
   // generated: A module is templated and generated as part of topgen
   // top_only: A module is not templated but is specific to 'top_*' instead of 'ip'
   module: [
-    { name: "uart0",    // instance name
+    { name: "uart",     // instance name
       type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
@@ -215,51 +215,6 @@
       // If none are defined at ip.hjson, rst_ni is used by default
       reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40000000",
-    },
-    { name: "uart1",    // instance name
-      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
-                        // and `hw/ip/{type}`
-
-      // clock connections defines the port to top level clock connection
-      // the ip.hjson will declare the clock port names
-      // If none are defined at ip.hjson, clk_i is used by default
-      clock_srcs: {clk_i: "io_div4"},
-
-      // reset connections defines the port to top level reset connection
-      // the ip.hjson will declare the reset port names
-      // If none are defined at ip.hjson, rst_ni is used by default
-      reset_connections: {rst_ni: "sys_io_div4"},
-      base_addr: "0x40010000",
-    },
-    { name: "uart2",    // instance name
-      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
-                        // and `hw/ip/{type}`
-
-      // clock connections defines the port to top level clock connection
-      // the ip.hjson will declare the clock port names
-      // If none are defined at ip.hjson, clk_i is used by default
-      clock_srcs: {clk_i: "io_div4"},
-
-      // reset connections defines the port to top level reset connection
-      // the ip.hjson will declare the reset port names
-      // If none are defined at ip.hjson, rst_ni is used by default
-      reset_connections: {rst_ni: "sys_io_div4"},
-      base_addr: "0x40020000",
-    },
-    { name: "uart3",    // instance name
-      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
-                        // and `hw/ip/{type}`
-
-      // clock connections defines the port to top level clock connection
-      // the ip.hjson will declare the clock port names
-      // If none are defined at ip.hjson, clk_i is used by default
-      clock_srcs: {clk_i: "io_div4"},
-
-      // reset connections defines the port to top level reset connection
-      // the ip.hjson will declare the reset port names
-      // If none are defined at ip.hjson, rst_ni is used by default
-      reset_connections: {rst_ni: "sys_io_div4"},
-      base_addr: "0x40030000",
     },
     { name: "gpio",
       type: "gpio",
@@ -536,7 +491,7 @@
       reset_connections: {rst_ni: "sys_io_div4"},
       domain: "Aon",
       type: "ram_1p_scr",
-      base_addr: "0x40520000",
+      base_addr: "0x18000000",
       size: "0x1000",
       byte_write: "true",
       inter_signal_list: [
@@ -763,8 +718,7 @@
   // If interrupt is not defined, it uses the order from the module list
   // and include every modules.
   // first item goes to LSB of the interrupt source
-  interrupt_module: ["uart0", "uart1", "uart2", "uart3",
-                     "gpio", "spi_device", "flash_ctrl",
+  interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl",
                      "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr",
                      "otbn", "keymgr", "kmac", "otp_ctrl", "csrng", "edn0", "edn1",
                      "entropy_src"]
@@ -801,7 +755,7 @@
     dio_modules: [
       { name: "spi_device", pad: ["ChB[0..3]"] },
       //{ name: "uart.tx", pad: ["ChA[0]"]},
-      { name: "uart0", pad: ["ChA[0..1]"]},
+      { name: "uart", pad: ["ChA[0..1]"]},
       // { name: "dio_module.signal_input", pad: ["ChA[31]"] }
       { name: "usbdev", pad: ["ChC[0..8]"]},
     ],
@@ -811,7 +765,7 @@
     //  between the modules and the IO PADS.
     //  If `mio_modules` aren't defined, it uses all remaining modules from
     //  module list except defined in `dio_modules`.
-    mio_modules: ["gpio", "uart1", "uart2", "uart3", ]
+    mio_modules: ["uart", "gpio"]
 
     // If any module isn't defined in above two lists, its inputs will be tied
     //  to 0, and the output/OE signals will be floating (or connected to

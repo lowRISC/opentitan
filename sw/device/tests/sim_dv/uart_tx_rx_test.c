@@ -108,28 +108,28 @@ void handler_irq_external(void) {
   // Check if it is the right peripheral.
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralUart0,
+  CHECK(peripheral == kTopEarlgreyPlicPeripheralUart,
         "Interurpt from unexpected peripheral: %d", peripheral);
 
   // Correlate the interrupt fired at PLIC with UART.
   dif_uart_irq_t uart_irq;
   switch (plic_irq_id) {
-    case kTopEarlgreyPlicIrqIdUart0TxWatermark:
+    case kTopEarlgreyPlicIrqIdUartTxWatermark:
       CHECK(exp_uart_irq_tx_watermark, "Unexpected TX watermark interrupt");
       uart_irq_tx_watermark_fired = true;
       uart_irq = kDifUartIrqTxWatermark;
       break;
-    case kTopEarlgreyPlicIrqIdUart0RxWatermark:
+    case kTopEarlgreyPlicIrqIdUartRxWatermark:
       CHECK(exp_uart_irq_rx_watermark, "Unexpected RX watermark interrupt");
       uart_irq_rx_watermark_fired = true;
       uart_irq = kDifUartIrqRxWatermark;
       break;
-    case kTopEarlgreyPlicIrqIdUart0TxEmpty:
+    case kTopEarlgreyPlicIrqIdUartTxEmpty:
       CHECK(exp_uart_irq_tx_empty, "Unexpected TX empty interrupt");
       uart_irq_tx_empty_fired = true;
       uart_irq = kDifUartIrqTxEmpty;
       break;
-    case kTopEarlgreyPlicIrqIdUart0RxOverflow:
+    case kTopEarlgreyPlicIrqIdUartRxOverflow:
       CHECK(exp_uart_irq_rx_overflow, "Unexpected RX overflow interrupt");
       uart_irq_rx_overflow_fired = true;
       uart_irq = kDifUartIrqRxOverflow;
@@ -212,55 +212,55 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_plic_t *plic) {
         "dif_plic_init failed");
 
   // Enable UART interrupts at PLIC as edge triggered.
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0TxWatermark,
+  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUartTxWatermark,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxWatermark,
+  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUartRxWatermark,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
+  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
+  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxFrameErr,
+  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUartRxFrameErr,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxBreakErr,
+  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUartRxBreakErr,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxTimeout,
+  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUartRxTimeout,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxParityErr,
+  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUartRxParityErr,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
 
   // Set the priority of UART interrupts at PLIC to be >=1 (so ensure the target
   // does get interrupted).
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0TxWatermark,
+  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUartTxWatermark,
                                   0x1) == kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxWatermark,
+  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUartRxWatermark,
                                   0x2) == kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
+  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
                                   0x3) == kDifPlicOk,
         , "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
+  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
                                   0x1) == kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxFrameErr,
+  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUartRxFrameErr,
                                   0x2) == kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxBreakErr,
+  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUartRxBreakErr,
                                   0x3) == kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxTimeout,
+  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUartRxTimeout,
                                   0x1) == kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxParityErr,
+  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUartRxParityErr,
                                   0x2) == kDifPlicOk,
         "dif_plic_irq_set_priority failed");
 
@@ -270,42 +270,42 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_plic_t *plic) {
         "dif_plic_target_set_threshold failed");
 
   // Enable all UART interrupts at the PLIC.
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0TxWatermark,
+  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUartTxWatermark,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxWatermark,
+  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUartRxWatermark,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
+  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUartTxEmpty,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
+  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUartRxOverflow,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxFrameErr,
+  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUartRxFrameErr,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxBreakErr,
+  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUartRxBreakErr,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxTimeout,
+  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUartRxTimeout,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxParityErr,
+  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUartRxParityErr,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
@@ -448,7 +448,7 @@ bool test_main(void) {
 
   // Initialize the UART.
   mmio_region_t uart_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
+      mmio_region_from_addr(TOP_EARLGREY_UART_BASE_ADDR);
   uart_init_with_irqs(uart_base_addr, &uart);
 
   // Initialize the PLIC.

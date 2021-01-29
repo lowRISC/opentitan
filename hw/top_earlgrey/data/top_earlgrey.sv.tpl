@@ -671,19 +671,19 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
   // Pinmux connections
   % if num_mio_outputs + num_mio_inouts != 0:
   assign mio_d2p = {
-    % for sig in list(reversed(top["pinmux"]["inouts"] + top["pinmux"]["outputs"])):
+    % for sig in top["pinmux"]["inouts"] + top["pinmux"]["outputs"]:
     cio_${sig["name"]}_d2p${"" if loop.last else ","}
     % endfor
   };
   assign mio_d2p_en = {
-  % for sig in list(reversed(top["pinmux"]["inouts"] + top["pinmux"]["outputs"])):
+  % for sig in top["pinmux"]["inouts"] + top["pinmux"]["outputs"]:
     cio_${sig["name"]}_en_d2p${"" if loop.last else ","}
   % endfor
   };
   % endif
   % if num_mio_inputs + num_mio_inouts != 0:
   assign {
-    % for sig in list(reversed(top["pinmux"]["inouts"] + top["pinmux"]["inputs"])):
+    % for sig in top["pinmux"]["inouts"] + top["pinmux"]["inputs"]:
     cio_${sig["name"]}_p2d${"" if loop.last else ","}
     % endfor
   } = mio_p2d;

@@ -400,7 +400,7 @@
   module:
   [
     {
-      name: uart0
+      name: uart
       type: uart
       clock_srcs:
       {
@@ -551,490 +551,10 @@
           type: req_rsp
           act: rsp
           name: tl
-          inst_name: uart0
+          inst_name: uart
           width: 1
           default: ""
-          top_signame: uart0_tl
-          index: -1
-        }
-      ]
-    }
-    {
-      name: uart1
-      type: uart
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      reset_connections:
-      {
-        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
-      }
-      base_addr: 0x40010000
-      clock_reset_export: []
-      clock_group: secure
-      clock_connections:
-      {
-        clk_i: clkmgr_clocks.clk_io_div4_secure
-      }
-      domain: "0"
-      size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_input_list:
-      [
-        {
-          name: rx
-          width: 1
-          type: input
-        }
-      ]
-      available_output_list:
-      [
-        {
-          name: tx
-          width: 1
-          type: output
-        }
-      ]
-      available_inout_list: []
-      param_list: []
-      interrupt_list:
-      [
-        {
-          name: tx_watermark
-          width: 1
-          bits: "0"
-          bitinfo:
-          [
-            1
-            1
-            0
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_watermark
-          width: 1
-          bits: "1"
-          bitinfo:
-          [
-            2
-            1
-            1
-          ]
-          type: interrupt
-        }
-        {
-          name: tx_empty
-          width: 1
-          bits: "2"
-          bitinfo:
-          [
-            4
-            1
-            2
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_overflow
-          width: 1
-          bits: "3"
-          bitinfo:
-          [
-            8
-            1
-            3
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_frame_err
-          width: 1
-          bits: "4"
-          bitinfo:
-          [
-            16
-            1
-            4
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_break_err
-          width: 1
-          bits: "5"
-          bitinfo:
-          [
-            32
-            1
-            5
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_timeout
-          width: 1
-          bits: "6"
-          bitinfo:
-          [
-            64
-            1
-            6
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_parity_err
-          width: 1
-          bits: "7"
-          bitinfo:
-          [
-            128
-            1
-            7
-          ]
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
-      inter_signal_list:
-      [
-        {
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          name: tl
-          inst_name: uart1
-          width: 1
-          default: ""
-          top_signame: uart1_tl
-          index: -1
-        }
-      ]
-    }
-    {
-      name: uart2
-      type: uart
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      reset_connections:
-      {
-        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
-      }
-      base_addr: 0x40020000
-      clock_reset_export: []
-      clock_group: secure
-      clock_connections:
-      {
-        clk_i: clkmgr_clocks.clk_io_div4_secure
-      }
-      domain: "0"
-      size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_input_list:
-      [
-        {
-          name: rx
-          width: 1
-          type: input
-        }
-      ]
-      available_output_list:
-      [
-        {
-          name: tx
-          width: 1
-          type: output
-        }
-      ]
-      available_inout_list: []
-      param_list: []
-      interrupt_list:
-      [
-        {
-          name: tx_watermark
-          width: 1
-          bits: "0"
-          bitinfo:
-          [
-            1
-            1
-            0
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_watermark
-          width: 1
-          bits: "1"
-          bitinfo:
-          [
-            2
-            1
-            1
-          ]
-          type: interrupt
-        }
-        {
-          name: tx_empty
-          width: 1
-          bits: "2"
-          bitinfo:
-          [
-            4
-            1
-            2
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_overflow
-          width: 1
-          bits: "3"
-          bitinfo:
-          [
-            8
-            1
-            3
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_frame_err
-          width: 1
-          bits: "4"
-          bitinfo:
-          [
-            16
-            1
-            4
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_break_err
-          width: 1
-          bits: "5"
-          bitinfo:
-          [
-            32
-            1
-            5
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_timeout
-          width: 1
-          bits: "6"
-          bitinfo:
-          [
-            64
-            1
-            6
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_parity_err
-          width: 1
-          bits: "7"
-          bitinfo:
-          [
-            128
-            1
-            7
-          ]
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
-      inter_signal_list:
-      [
-        {
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          name: tl
-          inst_name: uart2
-          width: 1
-          default: ""
-          top_signame: uart2_tl
-          index: -1
-        }
-      ]
-    }
-    {
-      name: uart3
-      type: uart
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      reset_connections:
-      {
-        rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
-      }
-      base_addr: 0x40030000
-      clock_reset_export: []
-      clock_group: secure
-      clock_connections:
-      {
-        clk_i: clkmgr_clocks.clk_io_div4_secure
-      }
-      domain: "0"
-      size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_input_list:
-      [
-        {
-          name: rx
-          width: 1
-          type: input
-        }
-      ]
-      available_output_list:
-      [
-        {
-          name: tx
-          width: 1
-          type: output
-        }
-      ]
-      available_inout_list: []
-      param_list: []
-      interrupt_list:
-      [
-        {
-          name: tx_watermark
-          width: 1
-          bits: "0"
-          bitinfo:
-          [
-            1
-            1
-            0
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_watermark
-          width: 1
-          bits: "1"
-          bitinfo:
-          [
-            2
-            1
-            1
-          ]
-          type: interrupt
-        }
-        {
-          name: tx_empty
-          width: 1
-          bits: "2"
-          bitinfo:
-          [
-            4
-            1
-            2
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_overflow
-          width: 1
-          bits: "3"
-          bitinfo:
-          [
-            8
-            1
-            3
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_frame_err
-          width: 1
-          bits: "4"
-          bitinfo:
-          [
-            16
-            1
-            4
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_break_err
-          width: 1
-          bits: "5"
-          bitinfo:
-          [
-            32
-            1
-            5
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_timeout
-          width: 1
-          bits: "6"
-          bitinfo:
-          [
-            64
-            1
-            6
-          ]
-          type: interrupt
-        }
-        {
-          name: rx_parity_err
-          width: 1
-          bits: "7"
-          bitinfo:
-          [
-            128
-            1
-            7
-          ]
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
-      inter_signal_list:
-      [
-        {
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          name: tl
-          inst_name: uart3
-          width: 1
-          default: ""
-          top_signame: uart3_tl
+          top_signame: uart_tl
           index: -1
         }
       ]
@@ -5794,7 +5314,7 @@
       }
       domain: Aon
       type: ram_1p_scr
-      base_addr: 0x40520000
+      base_addr: 0x18000000
       size: 0x1000
       byte_write: "true"
       inter_signal_list:
@@ -6230,21 +5750,9 @@
       [
         main.tl_sram_ctrl_main
       ]
-      uart0.tl:
+      uart.tl:
       [
-        peri.tl_uart0
-      ]
-      uart1.tl:
-      [
-        peri.tl_uart1
-      ]
-      uart2.tl:
-      [
-        peri.tl_uart2
-      ]
-      uart3.tl:
-      [
-        peri.tl_uart3
+        peri.tl_uart
       ]
       gpio.tl:
       [
@@ -6532,12 +6040,16 @@
           addr_range:
           [
             {
+              base_addr: 0x18000000
+              size_byte: 0x1000
+            }
+            {
               base_addr: 0x40000000
               size_byte: 0x421000
             }
             {
               base_addr: 0x40500000
-              size_byte: 0x21000
+              size_byte: 0x20000
             }
           ]
         }
@@ -7086,10 +6598,7 @@
       {
         main:
         [
-          uart0
-          uart1
-          uart2
-          uart3
+          uart
           gpio
           spi_device
           rv_timer
@@ -7121,7 +6630,7 @@
           pipeline_byp: "true"
         }
         {
-          name: uart0
+          name: uart
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -7131,60 +6640,6 @@
           [
             {
               base_addr: 0x40000000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline_byp: "true"
-        }
-        {
-          name: uart1
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: "false"
-          inst_type: uart
-          addr_range:
-          [
-            {
-              base_addr: 0x40010000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline_byp: "true"
-        }
-        {
-          name: uart2
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: "false"
-          inst_type: uart
-          addr_range:
-          [
-            {
-              base_addr: 0x40020000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline_byp: "true"
-        }
-        {
-          name: uart3
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: "false"
-          inst_type: uart
-          addr_range:
-          [
-            {
-              base_addr: 0x40030000
               size_byte: 0x1000
             }
           ]
@@ -7328,7 +6783,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40520000
+              base_addr: 0x18000000
               size_byte: 0x1000
             }
           ]
@@ -7481,49 +6936,13 @@
         {
           struct: tl
           type: req_rsp
-          name: tl_uart0
+          name: tl_uart
           act: req
           package: tlul_pkg
           inst_name: peri
           width: 1
           default: ""
-          top_signame: uart0_tl
-          index: -1
-        }
-        {
-          struct: tl
-          type: req_rsp
-          name: tl_uart1
-          act: req
-          package: tlul_pkg
-          inst_name: peri
-          width: 1
-          default: ""
-          top_signame: uart1_tl
-          index: -1
-        }
-        {
-          struct: tl
-          type: req_rsp
-          name: tl_uart2
-          act: req
-          package: tlul_pkg
-          inst_name: peri
-          width: 1
-          default: ""
-          top_signame: uart2_tl
-          index: -1
-        }
-        {
-          struct: tl
-          type: req_rsp
-          name: tl_uart3
-          act: req
-          package: tlul_pkg
-          inst_name: peri
-          width: 1
-          default: ""
-          top_signame: uart3_tl
+          top_signame: uart_tl
           index: -1
         }
         {
@@ -7712,11 +7131,8 @@
   ]
   interrupt_module:
   [
-    uart0
-    uart1
-    uart2
-    uart3
     gpio
+    uart
     spi_device
     flash_ctrl
     hmac
@@ -7736,422 +7152,6 @@
   interrupt:
   [
     {
-      name: uart0_tx_watermark
-      width: 1
-      bits: "0"
-      bitinfo:
-      [
-        1
-        1
-        0
-      ]
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_rx_watermark
-      width: 1
-      bits: "1"
-      bitinfo:
-      [
-        2
-        1
-        1
-      ]
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_tx_empty
-      width: 1
-      bits: "2"
-      bitinfo:
-      [
-        4
-        1
-        2
-      ]
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_rx_overflow
-      width: 1
-      bits: "3"
-      bitinfo:
-      [
-        8
-        1
-        3
-      ]
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_rx_frame_err
-      width: 1
-      bits: "4"
-      bitinfo:
-      [
-        16
-        1
-        4
-      ]
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_rx_break_err
-      width: 1
-      bits: "5"
-      bitinfo:
-      [
-        32
-        1
-        5
-      ]
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_rx_timeout
-      width: 1
-      bits: "6"
-      bitinfo:
-      [
-        64
-        1
-        6
-      ]
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_rx_parity_err
-      width: 1
-      bits: "7"
-      bitinfo:
-      [
-        128
-        1
-        7
-      ]
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart1_tx_watermark
-      width: 1
-      bits: "0"
-      bitinfo:
-      [
-        1
-        1
-        0
-      ]
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_watermark
-      width: 1
-      bits: "1"
-      bitinfo:
-      [
-        2
-        1
-        1
-      ]
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_tx_empty
-      width: 1
-      bits: "2"
-      bitinfo:
-      [
-        4
-        1
-        2
-      ]
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_overflow
-      width: 1
-      bits: "3"
-      bitinfo:
-      [
-        8
-        1
-        3
-      ]
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_frame_err
-      width: 1
-      bits: "4"
-      bitinfo:
-      [
-        16
-        1
-        4
-      ]
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_break_err
-      width: 1
-      bits: "5"
-      bitinfo:
-      [
-        32
-        1
-        5
-      ]
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_timeout
-      width: 1
-      bits: "6"
-      bitinfo:
-      [
-        64
-        1
-        6
-      ]
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_parity_err
-      width: 1
-      bits: "7"
-      bitinfo:
-      [
-        128
-        1
-        7
-      ]
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart2_tx_watermark
-      width: 1
-      bits: "0"
-      bitinfo:
-      [
-        1
-        1
-        0
-      ]
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_watermark
-      width: 1
-      bits: "1"
-      bitinfo:
-      [
-        2
-        1
-        1
-      ]
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_tx_empty
-      width: 1
-      bits: "2"
-      bitinfo:
-      [
-        4
-        1
-        2
-      ]
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_overflow
-      width: 1
-      bits: "3"
-      bitinfo:
-      [
-        8
-        1
-        3
-      ]
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_frame_err
-      width: 1
-      bits: "4"
-      bitinfo:
-      [
-        16
-        1
-        4
-      ]
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_break_err
-      width: 1
-      bits: "5"
-      bitinfo:
-      [
-        32
-        1
-        5
-      ]
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_timeout
-      width: 1
-      bits: "6"
-      bitinfo:
-      [
-        64
-        1
-        6
-      ]
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_parity_err
-      width: 1
-      bits: "7"
-      bitinfo:
-      [
-        128
-        1
-        7
-      ]
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart3_tx_watermark
-      width: 1
-      bits: "0"
-      bitinfo:
-      [
-        1
-        1
-        0
-      ]
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_watermark
-      width: 1
-      bits: "1"
-      bitinfo:
-      [
-        2
-        1
-        1
-      ]
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_tx_empty
-      width: 1
-      bits: "2"
-      bitinfo:
-      [
-        4
-        1
-        2
-      ]
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_overflow
-      width: 1
-      bits: "3"
-      bitinfo:
-      [
-        8
-        1
-        3
-      ]
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_frame_err
-      width: 1
-      bits: "4"
-      bitinfo:
-      [
-        16
-        1
-        4
-      ]
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_break_err
-      width: 1
-      bits: "5"
-      bitinfo:
-      [
-        32
-        1
-        5
-      ]
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_timeout
-      width: 1
-      bits: "6"
-      bitinfo:
-      [
-        64
-        1
-        6
-      ]
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_parity_err
-      width: 1
-      bits: "7"
-      bitinfo:
-      [
-        128
-        1
-        7
-      ]
-      type: interrupt
-      module_name: uart3
-    }
-    {
       name: gpio_gpio
       width: 32
       bits: 31:0
@@ -8163,6 +7163,110 @@
       ]
       type: interrupt
       module_name: gpio
+    }
+    {
+      name: uart_tx_watermark
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: interrupt
+      module_name: uart
+    }
+    {
+      name: uart_rx_watermark
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: interrupt
+      module_name: uart
+    }
+    {
+      name: uart_tx_empty
+      width: 1
+      bits: "2"
+      bitinfo:
+      [
+        4
+        1
+        2
+      ]
+      type: interrupt
+      module_name: uart
+    }
+    {
+      name: uart_rx_overflow
+      width: 1
+      bits: "3"
+      bitinfo:
+      [
+        8
+        1
+        3
+      ]
+      type: interrupt
+      module_name: uart
+    }
+    {
+      name: uart_rx_frame_err
+      width: 1
+      bits: "4"
+      bitinfo:
+      [
+        16
+        1
+        4
+      ]
+      type: interrupt
+      module_name: uart
+    }
+    {
+      name: uart_rx_break_err
+      width: 1
+      bits: "5"
+      bitinfo:
+      [
+        32
+        1
+        5
+      ]
+      type: interrupt
+      module_name: uart
+    }
+    {
+      name: uart_rx_timeout
+      width: 1
+      bits: "6"
+      bitinfo:
+      [
+        64
+        1
+        6
+      ]
+      type: interrupt
+      module_name: uart
+    }
+    {
+      name: uart_rx_parity_err
+      width: 1
+      bits: "7"
+      bitinfo:
+      [
+        128
+        1
+        7
+      ]
+      type: interrupt
+      module_name: uart
     }
     {
       name: spi_device_rxf
@@ -9227,7 +8331,7 @@
         ]
       }
       {
-        name: uart0
+        name: uart
         pad:
         [
           ChA[0..1]
@@ -9243,10 +8347,8 @@
     ]
     mio_modules:
     [
+      uart
       gpio
-      uart1
-      uart2
-      uart3
     ]
     nc_modules:
     [
@@ -9310,10 +8412,10 @@
         ]
       }
       {
-        name: uart0_rx
+        name: uart_rx
         width: 1
         type: input
-        module_name: uart0
+        module_name: uart
         pad:
         [
           {
@@ -9323,10 +8425,10 @@
         ]
       }
       {
-        name: uart0_tx
+        name: uart_tx
         width: 1
         type: output
-        module_name: uart0
+        module_name: uart
         pad:
         [
           {
@@ -9453,48 +8555,8 @@
         ]
       }
     ]
-    inputs:
-    [
-      {
-        name: uart1_rx
-        width: 1
-        type: input
-        module_name: uart1
-      }
-      {
-        name: uart2_rx
-        width: 1
-        type: input
-        module_name: uart2
-      }
-      {
-        name: uart3_rx
-        width: 1
-        type: input
-        module_name: uart3
-      }
-    ]
-    outputs:
-    [
-      {
-        name: uart1_tx
-        width: 1
-        type: output
-        module_name: uart1
-      }
-      {
-        name: uart2_tx
-        width: 1
-        type: output
-        module_name: uart2
-      }
-      {
-        name: uart3_tx
-        width: 1
-        type: output
-        module_name: uart3
-      }
-    ]
+    inputs: []
+    outputs: []
     inouts:
     [
       {
@@ -9612,46 +8674,10 @@
         type: req_rsp
         act: rsp
         name: tl
-        inst_name: uart0
+        inst_name: uart
         width: 1
         default: ""
-        top_signame: uart0_tl
-        index: -1
-      }
-      {
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        name: tl
-        inst_name: uart1
-        width: 1
-        default: ""
-        top_signame: uart1_tl
-        index: -1
-      }
-      {
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        name: tl
-        inst_name: uart2
-        width: 1
-        default: ""
-        top_signame: uart2_tl
-        index: -1
-      }
-      {
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        name: tl
-        inst_name: uart3
-        width: 1
-        default: ""
-        top_signame: uart3_tl
+        top_signame: uart_tl
         index: -1
       }
       {
@@ -12052,49 +11078,13 @@
       {
         struct: tl
         type: req_rsp
-        name: tl_uart0
+        name: tl_uart
         act: req
         package: tlul_pkg
         inst_name: peri
         width: 1
         default: ""
-        top_signame: uart0_tl
-        index: -1
-      }
-      {
-        struct: tl
-        type: req_rsp
-        name: tl_uart1
-        act: req
-        package: tlul_pkg
-        inst_name: peri
-        width: 1
-        default: ""
-        top_signame: uart1_tl
-        index: -1
-      }
-      {
-        struct: tl
-        type: req_rsp
-        name: tl_uart2
-        act: req
-        package: tlul_pkg
-        inst_name: peri
-        width: 1
-        default: ""
-        top_signame: uart2_tl
-        index: -1
-      }
-      {
-        struct: tl
-        type: req_rsp
-        name: tl_uart3
-        act: req
-        package: tlul_pkg
-        inst_name: peri
-        width: 1
-        default: ""
-        top_signame: uart3_tl
+        top_signame: uart_tl
         index: -1
       }
       {
@@ -13291,7 +12281,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: uart0_tl_req
+        signame: uart_tl_req
         width: 1
         type: req_rsp
         default: ""
@@ -13299,55 +12289,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: uart0_tl_rsp
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: uart1_tl_req
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: uart1_tl_rsp
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: uart2_tl_req
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: uart2_tl_rsp
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: uart3_tl_req
-        width: 1
-        type: req_rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: uart3_tl_rsp
+        signame: uart_tl_rsp
         width: 1
         type: req_rsp
         default: ""

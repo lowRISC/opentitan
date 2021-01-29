@@ -61,17 +61,8 @@ tl_device_t xbar_devices[$] = '{
     '{"sram_ctrl_main", '{
         '{32'h411c0000, 32'h411c0fff}
     }},
-    '{"uart0", '{
+    '{"uart", '{
         '{32'h40000000, 32'h40000fff}
-    }},
-    '{"uart1", '{
-        '{32'h40010000, 32'h40010fff}
-    }},
-    '{"uart2", '{
-        '{32'h40020000, 32'h40020fff}
-    }},
-    '{"uart3", '{
-        '{32'h40030000, 32'h40030fff}
     }},
     '{"gpio", '{
         '{32'h40040000, 32'h40040fff}
@@ -95,7 +86,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h40420000, 32'h40420fff}
     }},
     '{"ram_ret", '{
-        '{32'h40520000, 32'h40520fff}
+        '{32'h18000000, 32'h18000fff}
     }},
     '{"otp_ctrl", '{
         '{32'h40130000, 32'h40133fff}
@@ -132,10 +123,7 @@ tl_host_t xbar_hosts[$] = '{
         "debug_mem",
         "ram_main",
         "eflash",
-        "uart0",
-        "uart1",
-        "uart2",
-        "uart3",
+        "uart",
         "gpio",
         "spi_device",
         "rv_timer",
@@ -170,10 +158,7 @@ tl_host_t xbar_hosts[$] = '{
         "rom",
         "ram_main",
         "eflash",
-        "uart0",
-        "uart1",
-        "uart2",
-        "uart3",
+        "uart",
         "gpio",
         "spi_device",
         "rv_timer",
