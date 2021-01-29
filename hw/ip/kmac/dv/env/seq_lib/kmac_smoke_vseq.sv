@@ -74,6 +74,10 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
   // Do a full message hash, repeated num_trans times
   task body();
+
+    logic [keymgr_pkg::KeyWidth-1:0] sideload_share0;
+    logic [keymgr_pkg::KeyWidth-1:0] sideload_share1;
+
     `uvm_info(`gfn, $sformatf("Starting %0d message hashes", num_trans), UVM_LOW)
     for (int i = 0; i < num_trans; i++) begin
       `uvm_info(`gfn, $sformatf("iteration: %0d", i), UVM_HIGH)
@@ -85,10 +89,16 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       set_prefix();
 
-      // TODO: drive a sideload key
-
-      // write the keys
-      if (kmac_en) write_key_shares();
+      if (kmac_en) begin
+        // randomly provide a valid sideloaded key
+        if (provide_sideload_key) begin
+          `DV_CHECK_STD_RANDOMIZE_FATAL(sideload_share0)
+          `DV_CHECK_STD_RANDOMIZE_FATAL(sideload_share1)
+          cfg.sideload_vif.drive_sideload_key(1, sideload_share0, sideload_share1);
+        end
+        // write the SW key to the CSRs
+        write_key_shares();
+      end
 
       if (cfg.enable_masking && entropy_mode == EntropyModeSw) begin
         provide_sw_entropy();
