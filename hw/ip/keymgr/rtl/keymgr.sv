@@ -312,10 +312,7 @@ module keymgr import keymgr_pkg::*; #(
                                               creator_seed});
 
   logic unused_otp_bits;
-  assign unused_otp_bits = ^{otp_hw_cfg_i.valid,
-                             otp_hw_cfg_i.data.hw_cfg_digest,
-                             otp_hw_cfg_i.data.hw_cfg_content
-                            };
+  assign unused_otp_bits = ^otp_hw_cfg_i;
 
   assign adv_dvalid[Creator] = creator_seed_vld &
                                devid_vld &

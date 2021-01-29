@@ -223,9 +223,7 @@ module lc_ctrl
   logic lc_idle_d;
 
   logic unused_otp_hw_cfg_bits;
-  assign unused_otp_hw_cfg_bits = ^{otp_hw_cfg_i.valid,
-                                    otp_hw_cfg_i.data.hw_cfg_digest,
-                                    otp_hw_cfg_i.data.hw_cfg_content};
+  assign unused_otp_hw_cfg_bits = ^otp_hw_cfg_i;
 
   always_comb begin : p_csr_assign_outputs
     hw2reg = '0;
