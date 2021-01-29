@@ -209,19 +209,9 @@ module prim_lfsr_tb;
       end
     end
 
-    if (!err) begin
-      $display("All LFSRs from %0d bit to %0d have maximum length!",
-          MinLfsrDw, MaxLfsrDw);
-      // signature for makefile
-      $display("TEST PASSED CHECKS");
-    end else begin
-      $display("One or more checks have failed!");
-      // signature for makefile
-      $display("TEST FAILED CHECKS");
-    end
-
+    if (!err) $display("All LFSRs from %0d bit to %0d have maximum length!", MinLfsrDw, MaxLfsrDw);
+    dv_test_status_pkg::dv_test_status(.passed(!err));
     $finish();
   end
-
 
 endmodule : prim_lfsr_tb

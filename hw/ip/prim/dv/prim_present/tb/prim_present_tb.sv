@@ -11,6 +11,7 @@
 // widths remain untested.
 
 module prim_present_tb;
+  `include "dv_macros.svh"
 
 //////////////////////////////////////////////////////
 // config
@@ -107,7 +108,6 @@ module prim_present_tb;
   endtask
 
 
-
   // Helper task to drive plaintext and key into each encryption instance.
   // Calls a subroutine to perform checks on the outputs (once they are available).
   task automatic check_encryption(input bit [DataWidth-1:0]                 plaintext,
@@ -198,7 +198,7 @@ module prim_present_tb;
         break;
       end
     end
-    if (error) $fatal("TEST FAILED CHECKS");
+    if (error) dv_test_status_pkg::dv_test_status(.passed(1'b0));
   endtask
 
 
@@ -207,8 +207,8 @@ module prim_present_tb;
 //////////////////////////////////////////////////////
 
   initial begin : p_stimuli
-
     int num_trans;
+    string msg_id = $sformatf("%m");
 
     // The key and plaintext/ciphertext to be fed into PRESENT instances.
     bit [KeyWidth-1:0] key;
@@ -240,21 +240,15 @@ module prim_present_tb;
     void'($value$plusargs("smoke_test=%0b", smoke_test));
     num_trans = smoke_test ? 1 : $urandom_range(2500, 5000);
     for (int i = 0; i < num_trans; i++) begin
-      if (!std::randomize(plaintext)) begin
-        $fatal("Randomization of plaintext failed!");
-      end
-      if (!std::randomize(key)) begin
-        $fatal("Randomization of key failed!");
-      end
+      `DV_CHECK_STD_RANDOMIZE_FATAL(plaintext, "", msg_id)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(key, "", msg_id)
       test_present(plaintext, key);
     end
 
-
     // Final error checking and print out the test signature (expected by simulation flow).
     $display("All encryption and decryption passes were successful!");
-    $display("TEST PASSED CHECKS");
+    dv_test_status_pkg::dv_test_status(.passed(1'b1));
     $finish();
   end
-
 
 endmodule : prim_present_tb
