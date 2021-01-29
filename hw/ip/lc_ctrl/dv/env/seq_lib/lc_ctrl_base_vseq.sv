@@ -13,8 +13,8 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   // various knobs to enable certain routines
   bit do_lc_ctrl_init = 1'b1;
 
-  rand lc_ctrl_pkg::lc_state_e lc_state;
-  rand lc_ctrl_pkg::lc_cnt_e   lc_cnt;
+  rand lc_ctrl_state_pkg::lc_state_e lc_state;
+  rand lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
 
   constraint lc_cnt_c {
     (lc_state != LcStRaw) -> (lc_cnt != LcCntRaw);

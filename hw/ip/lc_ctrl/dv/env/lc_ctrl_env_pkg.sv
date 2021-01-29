@@ -13,6 +13,7 @@ package lc_ctrl_env_pkg;
   import csr_utils_pkg::*;
   import lc_ctrl_ral_pkg::*;
   import lc_ctrl_pkg::*;
+  import lc_ctrl_state_pkg::*;
   import otp_ctrl_pkg::*;
   import push_pull_agent_pkg::*;
   import alert_esc_agent_pkg::*;
@@ -29,7 +30,7 @@ package lc_ctrl_env_pkg;
   parameter uint   NUM_STATES = 16;
 
   // lc_otp_program host data width: lc_state_e width + lc_cnt_e width
-  parameter uint OTP_PROG_HDATA_WIDTH = lc_ctrl_pkg::LcStateWidth + lc_ctrl_pkg::LcCountWidth;
+  parameter uint OTP_PROG_HDATA_WIDTH = LcStateWidth + LcCountWidth;
   // TODO: temp set to 0, once push-pull agent can constraint data, it will set to 1 for error bit
   parameter uint OTP_PROG_DDATA_WIDTH = 0;
 

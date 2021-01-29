@@ -17,7 +17,7 @@ class otp_ctrl_env extends cip_base_env #(
   push_pull_agent#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_addr_pull_agent;
   push_pull_agent#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_data_pull_agent;
   push_pull_agent#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)) m_lc_prog_pull_agent;
-  push_pull_agent#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) m_lc_token_pull_agent;
+  push_pull_agent#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) m_lc_token_pull_agent;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -54,9 +54,9 @@ class otp_ctrl_env extends cip_base_env #(
         set(this, "m_lc_prog_pull_agent", "cfg", cfg.m_lc_prog_pull_agent_cfg);
 
     // build lc-otp token pull agent
-    m_lc_token_pull_agent = push_pull_agent#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth))
+    m_lc_token_pull_agent = push_pull_agent#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth))
         ::type_id::create("m_lc_token_pull_agent", this);
-    uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))::
+    uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)))::
         set(this, "m_lc_token_pull_agent", "cfg", cfg.m_lc_token_pull_agent_cfg);
 
     // config mem virtual interface

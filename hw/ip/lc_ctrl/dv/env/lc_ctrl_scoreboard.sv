@@ -15,7 +15,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                         .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))) otp_prog_fifo;
-  uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))
+  uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)))
                         otp_token_fifo;
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_wipe_secrets_fifo;
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_scrap_state_fifo;
