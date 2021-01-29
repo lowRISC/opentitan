@@ -501,13 +501,12 @@ class kmac_base_vseq extends cip_base_vseq #(
       tl_access(.addr(ral.get_addr_from_offset(fifo_addr)),
                 .write(1),
                 .data(data_word),
-                .mask(data_mask));
+                .mask(data_mask),
+                .blocking($urandom_range(0, 1)));
     end
 
     // wait for all msgfifo accesses to complete
-    //
-    // TODO: uncomment once nonblocking TL accesses are enabled.
-    // wait_no_outstanding_access();
+    wait_no_outstanding_access();
 
     // TODO: final csr checks might be needed
   endtask
@@ -558,7 +557,6 @@ class kmac_base_vseq extends cip_base_vseq #(
     bit [7:0] digest_byte;
 
     while (output_len > 0) begin
-      // TODO: randomize non/blocking?
       tl_access(.addr(ral.get_addr_from_offset(state_addr)),
                 .write(1'b0),
                 .data(digest_word));
