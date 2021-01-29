@@ -117,7 +117,7 @@ def main():
 
     # Pass/fail status is determined in the LintCfg class.
     log.info(("Found %d flow warnings, %d flow errors, %d lint infos,\n"
-              "%d lint warnings and %d lint errors."),
+             "%d lint warnings and %d lint errors."),
              len(results["warnings"]),
              len(results["errors"]),
              len(results["lint_infos"]),
