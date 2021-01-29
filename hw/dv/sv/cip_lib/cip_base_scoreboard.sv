@@ -187,9 +187,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                     exp_alert[alert_name]), UVM_MEDIUM)
         end else begin
           `uvm_info(`gfn, $sformatf("alert %0s is expected to trigger", alert_name), UVM_MEDIUM)
+          is_fatal_alert[alert_name] = is_fatal;
+          exp_alert[alert_name] = 1;
         end
-        is_fatal_alert[alert_name] = is_fatal;
-        exp_alert[alert_name] = 1;
       end
     join_none
   endfunction
