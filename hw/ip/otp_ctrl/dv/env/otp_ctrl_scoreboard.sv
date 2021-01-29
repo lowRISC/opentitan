@@ -102,7 +102,18 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         end
       end
       @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset) begin
-        if (!cfg.under_reset) void'(ral.direct_access_regwen.predict(1));
+        if (!cfg.under_reset) begin
+          otp_ctrl_part_pkg::otp_hw_cfg_data_t exp_data;
+          bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
+
+          void'(ral.direct_access_regwen.predict(1));
+
+          // If HwCfg partition is locked, hwcfg_o correct data from OTP
+          // If HwCfg partition is not locked, outputs are all zeros
+          exp_data.hw_cfg_digest = digests[HwCfgIdx];
+          // TODO: issue 5072
+          //`DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data.hw_cfg_digest, digests[HwCfgIdx])
+        end
       end
     end
   endtask
@@ -345,6 +356,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           // here only normalize to 2 lsb, if is secret, will be reduced further
           bit [TL_AW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int part_idx = get_part_index(dai_addr);
+          void'(ral.direct_access_regwen.predict(0));
+
           // LC partition cannot be access via DAI
           if (part_idx == LifeCycleIdx) begin
             predict_status_err(.dai_err(1));
@@ -396,7 +409,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                     if (!is_secret(dai_addr)) begin
                       bit [TL_DW-1:0] wr_data = `gmv(ral.direct_access_wdata_0);
                       // allow bit write
-                      if ((otp_a[otp_addr] & wr_data) == otp_a[otp_addr]) otp_a[otp_addr] = wr_data;
+                      if ((otp_a[otp_addr] & wr_data) == otp_a[otp_addr]) begin
+                        otp_a[otp_addr] = wr_data;
+                        check_otp_idle(.val(0), .wait_clks(3));
+                      end
                       else predict_status_err(1);
                     end else begin
                       bit [SCRAMBLE_DATA_SIZE-1:0] secret_data = {otp_a[otp_addr + 1],
@@ -408,6 +424,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                       if ((secret_data & wr_data) == secret_data) begin
                         otp_a[otp_addr]     = `gmv(ral.direct_access_wdata_0);
                         otp_a[otp_addr + 1] = `gmv(ral.direct_access_wdata_1);
+                        // wait until secret scrambling is done
+                        check_otp_idle(.val(0), .wait_clks(34));
                       end else begin
                         predict_status_err(1);
                       end
@@ -429,6 +447,13 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "owner_sw_cfg_read_lock": begin
         if (addr_phase_write && item.d_data == 1) sw_read_lock[OwnerSwCfgIdx] = 1;
+      end
+      "status": begin
+        // TODO: LC program could also cause otp_idle to be 0, will that affect DAI access and
+        // status?
+        if (data_phase_read) begin
+          if ((item.d_data & OtpDaiIdle) == OtpDaiIdle) check_otp_idle(1);
+        end
       end
       "hw_cfg_digest_0", "hw_cfg_digest_1", "", "secret0_digest_0", "secret0_digest_1",
       "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1",
@@ -461,6 +486,33 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     update_digests_to_otp_mem();
     void'(ral.status.predict(OtpDaiIdle));
     edn_data_q.delete();
+  endfunction
+
+  virtual function void check_otp_idle(bit val, int wait_clks = 0);
+    fork
+      begin
+        fork
+          begin
+            // use negedge to avoid race condition
+            cfg.clk_rst_vif.wait_n_clks(wait_clks + 1);
+            `uvm_error(`gfn,
+                       $sformatf("pwr_otp_idle output is %0b while expect %0b within %0d cycles %0b",
+                       cfg.otp_ctrl_vif.pwr_otp_idle_o, val, wait_clks, cfg.m_edn_pull_agent_cfg.vif.req))
+          end
+          begin
+            wait(cfg.under_reset || cfg.otp_ctrl_vif.pwr_otp_idle_o == val ||
+                 // due to OTP access arbitration, any KDI request during DAI access might block
+                 // write secret until KDI request is completed. Since the KDI process time could
+                 // vary depends on the push-pull-agent, we are going to ignore the checking if
+                 // this scenario happens
+                 cfg.m_otbn_pull_agent_cfg.vif.req || cfg.m_flash_data_pull_agent_cfg.vif.req ||
+                 cfg.m_flash_addr_pull_agent_cfg.vif.req ||
+                 cfg.m_sram_pull_agent_cfg[0].vif.req || cfg.m_sram_pull_agent_cfg[1].vif.req);
+          end
+        join_any
+        disable fork;
+      end
+    join_none
   endfunction
 
   // predict digest registers
