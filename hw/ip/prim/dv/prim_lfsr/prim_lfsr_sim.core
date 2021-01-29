@@ -13,6 +13,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_test_status
       - lowrisc:dv:common_ifs
     files:
       - tb/prim_lfsr_tb.sv

@@ -12,9 +12,11 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:crypto_dpi_prince:0.1
       - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_macros
       - lowrisc:dv:common_ifs
+      - lowrisc:dv:dv_test_status
+      - lowrisc:dv:crypto_dpi_prince
     files:
       - tb/prim_prince_tb.sv
     file_type: systemVerilogSource

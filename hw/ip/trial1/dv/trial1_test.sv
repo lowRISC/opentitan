@@ -69,10 +69,11 @@ module trial1_test (
   );
     begin
       if (gotval !== expval) begin
-        $display("ERROR: expected q value for %s is %x got %x", regname, expval, gotval);
+        $error("ERROR: expected q value for %s is %x got %x", regname, expval, gotval);
         errorcount++;
-      end else if (DEBUG)
+      end else if (DEBUG) begin
         $display("INFO: got expected q value for %s of %x", regname, expval);
+      end
     end
   endtask
 
@@ -114,11 +115,12 @@ module trial1_test (
   );
     begin
       if (gotval !== expval) begin
-        $display("ERROR: expected hwqe captured value for %s is %x got %x", regname, expval,
+        $error("ERROR: expected hwqe captured value for %s is %x got %x", regname, expval,
                  gotval);
         errorcount++;
-      end else if (DEBUG)
+      end else if (DEBUG) begin
         $display("INFO: got expected hwqe captured value for %s of %x", regname, expval);
+      end
     end
   endtask
 
@@ -131,10 +133,11 @@ module trial1_test (
       logic [31:0] gotval;
       send_rd(addr, gotval);
       if (gotval !== expval) begin
-        $display("ERROR: expected rd value for %s is %x got %x", regname, expval, gotval);
+        $error("ERROR: expected rd value for %s is %x got %x", regname, expval, gotval);
         errorcount++;
-      end else if (DEBUG)
+      end else if (DEBUG) begin
         $display("INFO: got expected rd value for %s of %x", regname, expval);
+      end
     end
   endtask
 
@@ -1270,10 +1273,8 @@ module trial1_test (
     send_wr(12'h23c, hold_wd);
     test_rwtype7(hold_wd);
 
-    if (errorcount)
-      $display("ERROR: completed test with %d errors", errorcount);
-    else
-      $display("TEST PASSED CHECKS");
+    $display("INFO: test completed with %d errors", errorcount);
+    dv_test_status_pkg::dv_test_status(.passed(errorcount == 0));
   end
 
 endmodule
