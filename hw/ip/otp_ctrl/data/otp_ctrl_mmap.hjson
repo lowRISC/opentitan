@@ -259,10 +259,12 @@
             items: [
                 {
                     name: "LC_STATE",
+                    inv_default: "<random>",
                     size: "24"
                 }
                 {
                     name: "LC_TRANSITION_CNT",
+                    inv_default: "<random>",
                     size: "32"
                 }
             ],
