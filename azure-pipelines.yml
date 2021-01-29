@@ -67,7 +67,11 @@ jobs:
   - bash: ci/scripts/verible-lint.sh rtl
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Style-Lint RTL Verilog source files with Verible
-  - bash: ci/scripts/verible-lint.sh dv
+  - bash: |
+      set -e
+      ci/scripts/verible-lint.sh dv
+      echo "Failing anyway (hack hack hack)"
+      exit 1
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Style-Lint DV Verilog source files with Verible
   - bash: ci/scripts/build-docs.sh
