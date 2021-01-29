@@ -141,10 +141,10 @@
     }
     { name: "CTRL",
       desc: "SRAM ctrl register.",
-      swaccess: "r0w1c",
+      swaccess: "wo",
       hwaccess: "hro",
       hwqe:     "true",
-      hwext:    "false",
+      hwext:    "true",
       regwen:   "CTRL_REGWEN"
       fields: [
         { bits: "0",
