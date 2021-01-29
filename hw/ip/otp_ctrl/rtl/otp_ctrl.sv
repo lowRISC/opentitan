@@ -1005,11 +1005,10 @@ module otp_ctrl
       assign part_tlul_rerror[k] = '0;
       assign part_tlul_rvalid[k] = 1'b0;
       assign part_tlul_rdata[k]  = '0;
-end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
+    end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
       otp_ctrl_part_buf #(
         .Info(PartInfo[k]),
-        // TODO: set to a random netlist constant
-        .DataDefault('0)
+        .DataDefault(PartInvDefault[PartInfo[k].offset*8 +: PartInfo[k].size*8])
       ) u_part_buf (
         .clk_i,
         .rst_ni,
