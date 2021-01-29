@@ -191,7 +191,7 @@
     { name: "HwCfgSize",
       desc: "Size of the HW_CFG partition",
       type: "int",
-      default: "208",
+      default: "240",
       local: "true"
     },
     { name: "DeviceIdOffset",
@@ -206,22 +206,10 @@
       default: "32",
       local: "true"
     },
-    { name: "HwCfgContentOffset",
-      desc: "Offset of HW_CFG_CONTENT",
-      type: "int",
-      default: "1568",
-      local: "true"
-    },
-    { name: "HwCfgContentSize",
-      desc: "Size of HW_CFG_CONTENT",
-      type: "int",
-      default: "168",
-      local: "true"
-    },
     { name: "HwCfgDigestOffset",
       desc: "Offset of HW_CFG_DIGEST",
       type: "int",
-      default: "1736",
+      default: "1768",
       local: "true"
     },
     { name: "HwCfgDigestSize",
@@ -233,7 +221,7 @@
     { name: "Secret0Offset",
       desc: "Offset of the SECRET0 partition",
       type: "int",
-      default: "1744",
+      default: "1776",
       local: "true"
     },
     { name: "Secret0Size",
@@ -245,7 +233,7 @@
     { name: "TestUnlockTokenOffset",
       desc: "Offset of TEST_UNLOCK_TOKEN",
       type: "int",
-      default: "1744",
+      default: "1776",
       local: "true"
     },
     { name: "TestUnlockTokenSize",
@@ -257,7 +245,7 @@
     { name: "TestExitTokenOffset",
       desc: "Offset of TEST_EXIT_TOKEN",
       type: "int",
-      default: "1760",
+      default: "1792",
       local: "true"
     },
     { name: "TestExitTokenSize",
@@ -269,7 +257,7 @@
     { name: "Secret0DigestOffset",
       desc: "Offset of SECRET0_DIGEST",
       type: "int",
-      default: "1776",
+      default: "1808",
       local: "true"
     },
     { name: "Secret0DigestSize",
@@ -281,7 +269,7 @@
     { name: "Secret1Offset",
       desc: "Offset of the SECRET1 partition",
       type: "int",
-      default: "1784",
+      default: "1816",
       local: "true"
     },
     { name: "Secret1Size",
@@ -293,7 +281,7 @@
     { name: "FlashAddrKeySeedOffset",
       desc: "Offset of FLASH_ADDR_KEY_SEED",
       type: "int",
-      default: "1784",
+      default: "1816",
       local: "true"
     },
     { name: "FlashAddrKeySeedSize",
@@ -305,7 +293,7 @@
     { name: "FlashDataKeySeedOffset",
       desc: "Offset of FLASH_DATA_KEY_SEED",
       type: "int",
-      default: "1816",
+      default: "1848",
       local: "true"
     },
     { name: "FlashDataKeySeedSize",
@@ -317,7 +305,7 @@
     { name: "SramDataKeySeedOffset",
       desc: "Offset of SRAM_DATA_KEY_SEED",
       type: "int",
-      default: "1848",
+      default: "1880",
       local: "true"
     },
     { name: "SramDataKeySeedSize",
@@ -329,7 +317,7 @@
     { name: "Secret1DigestOffset",
       desc: "Offset of SECRET1_DIGEST",
       type: "int",
-      default: "1864",
+      default: "1896",
       local: "true"
     },
     { name: "Secret1DigestSize",
@@ -341,19 +329,19 @@
     { name: "Secret2Offset",
       desc: "Offset of the SECRET2 partition",
       type: "int",
-      default: "1872",
+      default: "1904",
       local: "true"
     },
     { name: "Secret2Size",
       desc: "Size of the SECRET2 partition",
       type: "int",
-      default: "120",
+      default: "88",
       local: "true"
     },
     { name: "RmaTokenOffset",
       desc: "Offset of RMA_TOKEN",
       type: "int",
-      default: "1872",
+      default: "1904",
       local: "true"
     },
     { name: "RmaTokenSize",
@@ -365,7 +353,7 @@
     { name: "CreatorRootKeyShare0Offset",
       desc: "Offset of CREATOR_ROOT_KEY_SHARE0",
       type: "int",
-      default: "1888",
+      default: "1920",
       local: "true"
     },
     { name: "CreatorRootKeyShare0Size",
@@ -377,7 +365,7 @@
     { name: "CreatorRootKeyShare1Offset",
       desc: "Offset of CREATOR_ROOT_KEY_SHARE1",
       type: "int",
-      default: "1920",
+      default: "1952",
       local: "true"
     },
     { name: "CreatorRootKeyShare1Size",
