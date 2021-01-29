@@ -14,6 +14,8 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
   uint   max_quit_count  = 1;
   uint64 test_timeout_ns = 200_000_000; // 200ms
   uint   drain_time_ns   = 2_000;  // 2us
+  bit    poll_for_stop   = 1'b1;
+  uint   poll_for_stop_interval_ns = 1000;
 
   `uvm_component_new
 
@@ -55,6 +57,9 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
   virtual task run_phase(uvm_phase phase);
     void'($value$plusargs("drain_time_ns=%0d", drain_time_ns));
     phase.phase_done.set_drain_time(this, (drain_time_ns * 1ns));
+    void'($value$plusargs("poll_for_stop=%0b", poll_for_stop));
+    void'($value$plusargs("poll_for_stop_interval_ns=%0d", poll_for_stop_interval_ns));
+    if (poll_for_stop) dv_utils_pkg::poll_for_stop(.interval_ns(poll_for_stop_interval_ns));
     void'($value$plusargs("UVM_TEST_SEQ=%0s", test_seq_s));
     if (run_test_seq) begin
       run_seq(test_seq_s, phase);

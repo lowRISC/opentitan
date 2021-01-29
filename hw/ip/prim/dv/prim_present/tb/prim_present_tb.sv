@@ -251,4 +251,13 @@ module prim_present_tb;
     $finish();
   end
 
+  // TODO: perhaps wrap this in a macro?
+  initial begin
+    bit poll_for_stop = 1'b1;
+    int unsigned poll_for_stop_interval_ns = 1000;
+    void'($value$plusargs("poll_for_stop=%0b", poll_for_stop));
+    void'($value$plusargs("poll_for_stop_interval_ns=%0d", poll_for_stop_interval_ns));
+    if (poll_for_stop) dv_utils_pkg::poll_for_stop(.interval_ns(poll_for_stop_interval_ns));
+  end
+
 endmodule : prim_present_tb

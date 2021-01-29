@@ -180,6 +180,20 @@ package dv_utils_pkg;
     return (hier.substr(0, idx - 1));
   endfunction
 
+  // Periodically check for the existence of a magic file (dv.stop). Exit if it exists. This
+  // provides a mechanism to gracefully kill a simulation without direct access to the process.
+  task automatic poll_for_stop(uint interval_ns = 1000, string filename = "dv.stop");
+    fork
+      while (1) begin
+        #(interval_ns * 1ns);
+        if (!$system($sformatf("test -f %0s", filename))) begin
+          $system($sformatf("rm %0s", filename));
+          `dv_fatal($sformatf("Found %0s file. Exiting!", filename), "poll_for_stop")
+        end
+      end
+    join_none
+  endtask : poll_for_stop
+
   // sources
 `ifdef UVM
   `include "dv_report_server.sv"
