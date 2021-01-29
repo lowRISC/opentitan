@@ -128,7 +128,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:    Buffered,
       offset:     11'd1536,
-      size:       208,
+      size:       240,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       hw_digest:  1'b1,
@@ -138,7 +138,7 @@ package otp_ctrl_part_pkg;
     // SECRET0
     '{
       variant:    Buffered,
-      offset:     11'd1744,
+      offset:     11'd1776,
       size:       40,
       key_sel:    Secret0Key,
       secret:     1'b1,
@@ -149,7 +149,7 @@ package otp_ctrl_part_pkg;
     // SECRET1
     '{
       variant:    Buffered,
-      offset:     11'd1784,
+      offset:     11'd1816,
       size:       88,
       key_sel:    Secret1Key,
       secret:     1'b1,
@@ -160,8 +160,8 @@ package otp_ctrl_part_pkg;
     // SECRET2
     '{
       variant:    Buffered,
-      offset:     11'd1872,
-      size:       120,
+      offset:     11'd1904,
+      size:       88,
       key_sel:    Secret2Key,
       secret:     1'b1,
       hw_digest:  1'b1,
@@ -203,7 +203,6 @@ package otp_ctrl_part_pkg;
   // Breakout types for easier access of individual items.
   typedef struct packed {
       logic [63:0] hw_cfg_digest;
-      logic [1343:0] hw_cfg_content;
       logic [255:0] device_id;
   } otp_hw_cfg_data_t;
   typedef struct packed {
@@ -218,7 +217,7 @@ package otp_ctrl_part_pkg;
       256'h0,
       192'h0
     }),
-    960'({
+    704'({
       64'h1E2960279AB8F882,
       256'hA991BEA2CF16541724A52D80A891BCD52BE973D4C5752E3A6912899150240B3A,
       256'hD53651B6259AF2A4FB9DCA186AE168595B637FF7F7BF2E7C26917DDC15EB6827,
@@ -235,9 +234,9 @@ package otp_ctrl_part_pkg;
       128'h5869574E09B5710738066DCD7EF4BB9B,
       128'hC48FDBD8A0031C11FA602470308055C4
     }),
-    1664'({
+    1920'({
       64'hABFF25A58087D34A,
-      1344'h0,
+      1600'h0, // unallocated space 
       256'h37E5AE39A58FACEE41389646B3968A3B128F4AF0AFFC1AAC77ADEFF42376E09D
     }),
     6144'({
