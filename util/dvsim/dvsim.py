@@ -23,6 +23,7 @@ import argparse
 import datetime
 import logging as log
 import os
+from pathlib import Path
 import shutil
 import shlex
 import subprocess
@@ -603,6 +604,11 @@ def main():
     args.branch = resolve_branch(args.branch)
     proj_root_src, proj_root = resolve_proj_root(args)
     log.info("[proj_root]: %s", proj_root)
+
+    # Create an empty FUSESOC_IGNORE file in scratch_root. This ensures that
+    # any fusesoc invocation from a job won't search within scratch_root for
+    # core files.
+    (Path(args.scratch_root) / 'FUSESOC_IGNORE').touch()
 
     args.cfg = os.path.abspath(args.cfg)
     if args.remote:
