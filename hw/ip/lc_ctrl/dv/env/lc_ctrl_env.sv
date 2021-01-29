@@ -12,7 +12,7 @@ class lc_ctrl_env extends cip_base_env #(
 
   push_pull_agent#(.HostDataWidth(OTP_PROG_HDATA_WIDTH), .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))
                    m_otp_prog_pull_agent;
-  push_pull_agent#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) m_otp_token_pull_agent;
+  push_pull_agent#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) m_otp_token_pull_agent;
   alert_esc_agent m_esc_wipe_secrets_agent;
   alert_esc_agent m_esc_scrap_state_agent;
   jtag_agent      m_jtag_agent;
@@ -51,10 +51,10 @@ class lc_ctrl_env extends cip_base_env #(
         cfg.m_otp_prog_pull_agent_cfg);
     cfg.m_otp_prog_pull_agent_cfg.en_cov = cfg.en_cov;
 
-    m_otp_token_pull_agent = push_pull_agent#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth))::type_id::
-        create("m_otp_token_pull_agent", this);
-    uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))::set(this,
-        "m_otp_token_pull_agent", "cfg", cfg.m_otp_token_pull_agent_cfg);
+    m_otp_token_pull_agent = push_pull_agent#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth))::
+        type_id::create("m_otp_token_pull_agent", this);
+    uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)))::
+        set(this, "m_otp_token_pull_agent", "cfg", cfg.m_otp_token_pull_agent_cfg);
     cfg.m_otp_token_pull_agent_cfg.en_cov = cfg.en_cov;
   endfunction
 

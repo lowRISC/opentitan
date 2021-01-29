@@ -30,7 +30,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_data_fifo;
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)))
                         lc_prog_fifo;
-  uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))
+  uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)))
                         lc_token_fifo;
 
   // local queues to hold incoming packets pending comparison
@@ -109,7 +109,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_lc_token_req();
     forever begin
-      push_pull_item#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) rcv_item;
+      push_pull_item#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) rcv_item;
       bit [SCRAMBLE_DATA_SIZE-1:0] exp_data_0, exp_data_1;
       lc_token_fifo.get(rcv_item);
       exp_data_0 = present_encode_with_final_const(

@@ -187,8 +187,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task req_lc_transition();
     // TODO: this two variables are constraints to lc_prog_pull_seq once it supports data
     // constraint
-    lc_ctrl_pkg::lc_state_e lc_state;
-    lc_ctrl_pkg::lc_cnt_e lc_cnt;
+    lc_ctrl_state_pkg::lc_state_e lc_state;
+    lc_ctrl_state_pkg::lc_cnt_e lc_cnt;
     push_pull_host_seq#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
                         lc_prog_pull_seq;
     `uvm_create_on(lc_prog_pull_seq, p_sequencer.lc_prog_pull_sequencer_h);
@@ -199,7 +199,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task req_lc_token();
-    push_pull_host_seq#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) lc_token_pull_seq;
+    push_pull_host_seq#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) lc_token_pull_seq;
     `uvm_create_on(lc_token_pull_seq, p_sequencer.lc_token_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(lc_token_pull_seq)
     `uvm_send(lc_token_pull_seq)

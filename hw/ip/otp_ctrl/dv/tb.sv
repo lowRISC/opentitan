@@ -9,7 +9,6 @@ module tb;
   import otp_ctrl_env_pkg::*;
   import otp_ctrl_test_pkg::*;
   import otp_ctrl_reg_pkg::*;
-  import lc_ctrl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -38,7 +37,7 @@ module tb;
   // lc_otp interfaces
   push_pull_if #(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
                  lc_prog_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if #(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) lc_token_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) lc_token_if(.clk(clk), .rst_n(rst_n));
 
   push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))
                  sram_if[NumSramKeyReqSlots](.clk(clk), .rst_n(rst_n));
@@ -146,7 +145,7 @@ module tb;
                    "*env.m_flash_addr_pull_agent*", "vif", flash_addr_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1)))::
                    set(null, "*env.m_lc_prog_pull_agent*", "vif", lc_prog_if);
-    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))::
+    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)))::
                    set(null, "*env.m_lc_token_pull_agent*", "vif", lc_token_if);
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);

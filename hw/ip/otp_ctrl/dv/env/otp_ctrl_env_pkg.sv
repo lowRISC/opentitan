@@ -18,6 +18,7 @@ package otp_ctrl_env_pkg;
   import otp_ctrl_pkg::*;
   import otp_ctrl_part_pkg::*;
   import lc_ctrl_pkg::*;
+  import lc_ctrl_state_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -62,12 +63,11 @@ package otp_ctrl_env_pkg;
   parameter uint OTP_ARRAY_SIZE = (CreatorSwCfgSize + OwnerSwCfgSize + HwCfgSize + Secret0Size +
                                    Secret1Size + Secret2Size) / (TL_DW / 8);
 
-  // Total num of valid dai address, secret partitions have a granulity of 8, the rest have
-  // a granulity of 4.
+  // Total num of valid dai address, secret partitions have a granularity of 8, the rest have
+  // a granularity of 4. Subtract 8 for each digest.
   parameter uint DAI_ADDR_SIZE =
-      (CreatorSwCfgContentSize + OwnerSwCfgContentSize + HwCfgContentSize) / 4 +
-      // secret partitions does not have content size, so use total size
-      (Secret0Size + Secret1Size + Secret2Size) / 8 - 3;
+      (CreatorSwCfgSize + OwnerSwCfgSize + HwCfgSize - 3 * 8) / 4 +
+      (Secret0Size + Secret1Size + Secret2Size - 3 * 8) / 8 ;
 
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
   parameter uint SRAM_DATA_SIZE = 1 + SramKeyWidth + SramNonceWidth;
