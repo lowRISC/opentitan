@@ -47,7 +47,7 @@ module tb;
 
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
-  otp_ctrl_if otp_ctrl_if();
+  otp_ctrl_if otp_ctrl_if(.clk_i(clk), .rst_ni(rst_n));
 
   `DV_ALERT_IF_CONNECT
 
