@@ -172,8 +172,7 @@ module sram_ctrl
   end
 
   prim_sync_reqack_data #(
-    .Width($bits(otp_ctrl_pkg::sram_otp_key_rsp_t)-1),
-    .DataSrc2Dst(1'b0)
+    .Width($bits(otp_ctrl_pkg::sram_otp_key_rsp_t)-1)
   ) u_prim_sync_reqack_data (
     .clk_src_i  ( clk_i              ),
     .rst_src_ni ( rst_ni             ),
