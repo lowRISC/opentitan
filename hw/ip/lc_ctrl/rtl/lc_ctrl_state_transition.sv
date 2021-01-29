@@ -7,6 +7,7 @@
 
 module lc_ctrl_state_transition
   import lc_ctrl_pkg::*;
+  import lc_ctrl_state_pkg::*;
 (
   // Life cycle state vector.
   input  lc_state_e        lc_state_i,

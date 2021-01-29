@@ -27,8 +27,8 @@ module otp_ctrl_lci
   // Note that a transition request will fail if the request attempts to
   // clear already programmed bits within OTP.
   input                                     lc_req_i,
-  input  lc_ctrl_pkg::lc_state_e            lc_state_i,
-  input  lc_ctrl_pkg::lc_cnt_e              lc_count_i,
+  input  lc_ctrl_state_pkg::lc_state_e            lc_state_i,
+  input  lc_ctrl_state_pkg::lc_cnt_e              lc_count_i,
   output logic                              lc_ack_o,
   output logic                              lc_err_o,
   // Output error state of partition, to be consumed by OTP error/alert logic.
@@ -58,7 +58,7 @@ module otp_ctrl_lci
   localparam int CntWidth = vbits(NumLcOtpWords);
 
   // This is required, since each native OTP word can only be programmed once.
-  `ASSERT_INIT(LcValueMustBeWiderThanNativeOtpWidth_A, lc_ctrl_pkg::LcValueWidth >= OtpWidth)
+  `ASSERT_INIT(LcValueMustBeWiderThanNativeOtpWidth_A, lc_ctrl_state_pkg::LcValueWidth >= OtpWidth)
 
   ////////////////////
   // Controller FSM //

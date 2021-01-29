@@ -1008,8 +1008,8 @@ module otp_ctrl
 end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
       otp_ctrl_part_buf #(
         .Info(PartInfo[k]),
-        // By default all counter words are set and the life cycle state is scrapped.
-        .DataDefault({lc_ctrl_pkg::LcCnt16, lc_ctrl_pkg::LcStScrap})
+        // TODO: set to a random netlist constant
+        .DataDefault('0)
       ) u_part_buf (
         .clk_i,
         .rst_ni,
@@ -1116,14 +1116,14 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
 
   // The device is personalized if the root key has been provisioned and locked
   assign otp_lc_data_o.id_state       = (part_digest[Secret2Idx] != '0) ?
-                                        lc_ctrl_pkg::LcIdPersonalized :
-                                        lc_ctrl_pkg::LcIdBlank;
+                                        lc_ctrl_state_pkg::LcIdPersonalized :
+                                        lc_ctrl_state_pkg::LcIdBlank;
 
   // Lifecycle state
-  assign otp_lc_data_o.state = lc_ctrl_pkg::lc_state_e'(part_buf_data[LcStateOffset +:
-                                                                      LcStateSize]);
-  assign otp_lc_data_o.count = lc_ctrl_pkg::lc_cnt_e'(part_buf_data[LcTransitionCntOffset +:
-                                                                    LcTransitionCntSize]);
+  assign otp_lc_data_o.state = lc_ctrl_state_pkg::lc_state_e'(part_buf_data[LcStateOffset +:
+                                                                            LcStateSize]);
+  assign otp_lc_data_o.count = lc_ctrl_state_pkg::lc_cnt_e'(part_buf_data[LcTransitionCntOffset +:
+                                                                          LcTransitionCntSize]);
 
   // Assert life cycle state valid signal only when all partitions have initialized.
   assign otp_lc_data_o.valid    = &part_init_done;
@@ -1146,11 +1146,11 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
   `ASSERT_INIT(FlashAddrKeySeedSize_A,     FlashKeySeedWidth == FlashAddrKeySeedSize * 8)
   `ASSERT_INIT(SramDataKeySeedSize_A,      SramKeySeedWidth == SramDataKeySeedSize * 8)
 
-  `ASSERT_INIT(RmaTokenSize_A,        lc_ctrl_pkg::LcTokenWidth == RmaTokenSize * 8)
-  `ASSERT_INIT(TestUnlockTokenSize_A, lc_ctrl_pkg::LcTokenWidth == TestUnlockTokenSize * 8)
-  `ASSERT_INIT(TestExitTokenSize_A,   lc_ctrl_pkg::LcTokenWidth == TestExitTokenSize * 8)
-  `ASSERT_INIT(LcStateSize_A,         lc_ctrl_pkg::LcStateWidth == LcStateSize * 8)
-  `ASSERT_INIT(LcTransitionCntSize_A, lc_ctrl_pkg::LcCountWidth == LcTransitionCntSize * 8)
+  `ASSERT_INIT(RmaTokenSize_A,        lc_ctrl_state_pkg::LcTokenWidth == RmaTokenSize * 8)
+  `ASSERT_INIT(TestUnlockTokenSize_A, lc_ctrl_state_pkg::LcTokenWidth == TestUnlockTokenSize * 8)
+  `ASSERT_INIT(TestExitTokenSize_A,   lc_ctrl_state_pkg::LcTokenWidth == TestExitTokenSize * 8)
+  `ASSERT_INIT(LcStateSize_A,         lc_ctrl_state_pkg::LcStateWidth == LcStateSize * 8)
+  `ASSERT_INIT(LcTransitionCntSize_A, lc_ctrl_state_pkg::LcCountWidth == LcTransitionCntSize * 8)
 
   `ASSERT_KNOWN(OtpAstPwrSeqKnown_A,         otp_ast_pwr_seq_o)
   `ASSERT_KNOWN(TlOutKnown_A,                tl_o)

@@ -90,33 +90,33 @@ package otp_ctrl_pkg;
   ///////////////////////////////
 
   typedef struct packed {
-    logic                      valid;
-    logic                      error;
-    lc_ctrl_pkg::lc_state_e    state;
-    lc_ctrl_pkg::lc_cnt_e      count;
+    logic                            valid;
+    logic                            error;
+    lc_ctrl_state_pkg::lc_state_e    state;
+    lc_ctrl_state_pkg::lc_cnt_e      count;
     // These are all hash post-images
-    lc_ctrl_pkg::lc_token_t    test_unlock_token;
-    lc_ctrl_pkg::lc_token_t    test_exit_token;
-    lc_ctrl_pkg::lc_token_t    rma_token;
-    lc_ctrl_pkg::lc_id_state_e id_state;
+    lc_ctrl_state_pkg::lc_token_t    test_unlock_token;
+    lc_ctrl_state_pkg::lc_token_t    test_exit_token;
+    lc_ctrl_state_pkg::lc_token_t    rma_token;
+    lc_ctrl_state_pkg::lc_id_state_e id_state;
   } otp_lc_data_t;
 
   // Default for dangling connection
   parameter otp_lc_data_t OTP_LC_DATA_DEFAULT = '{
     valid: 1'b1,
     error: 1'b0,
-    state: lc_ctrl_pkg::LcStRaw,
-    count: lc_ctrl_pkg::LcCntRaw,
+    state: lc_ctrl_state_pkg::LcStRaw,
+    count: lc_ctrl_state_pkg::LcCntRaw,
     test_unlock_token: '0,
     test_exit_token: '0,
     rma_token: '0,
-    id_state: lc_ctrl_pkg::LcIdBlank
+    id_state: lc_ctrl_state_pkg::LcIdBlank
   };
 
   typedef struct packed {
     logic req;
-    lc_ctrl_pkg::lc_state_e state;
-    lc_ctrl_pkg::lc_cnt_e   count;
+    lc_ctrl_state_pkg::lc_state_e state;
+    lc_ctrl_state_pkg::lc_cnt_e   count;
   } lc_otp_program_req_t;
 
   typedef struct packed {
@@ -127,12 +127,12 @@ package otp_ctrl_pkg;
   // RAW unlock token hashing request.
   typedef struct packed {
     logic req;
-    lc_ctrl_pkg::lc_token_t token_input;
+    lc_ctrl_state_pkg::lc_token_t token_input;
   } lc_otp_token_req_t;
 
   typedef struct packed {
     logic ack;
-    lc_ctrl_pkg::lc_token_t hashed_token;
+    lc_ctrl_state_pkg::lc_token_t hashed_token;
   } lc_otp_token_rsp_t;
 
   ////////////////////////////////
