@@ -10,6 +10,28 @@
 //
 package lc_ctrl_state_pkg;
 
+  import prim_util_pkg::vbits;
+
+  ///////////////////////////////
+  // General size declarations //
+  ///////////////////////////////
+
+  parameter int LcValueWidth = 16;
+
+  parameter int NumLcStateValues = 12;
+  parameter int LcStateWidth = NumLcStateValues * LcValueWidth;
+  parameter int NumLcStates = 13;
+  parameter int DecLcStateWidth = vbits(NumLcStates);
+
+  parameter int NumLcCountValues = 16;
+  parameter int LcCountWidth = NumLcCountValues * LcValueWidth;
+  parameter int NumLcCountStates = 17;
+  parameter int DecLcCountWidth = vbits(NumLcCountStates);
+
+  parameter int NumLcIdStateValues = 1;
+  parameter int LcIdStateWidth = NumLcIdStateValues * LcValueWidth;
+  parameter int NumLcIdStates = 2;
+  parameter int DecLcIdStateWidth = vbits(NumLcIdStates+1);
 
   /////////////////////////////////////////////
   // Life cycle manufacturing state encoding //
@@ -150,20 +172,99 @@ package lc_ctrl_state_pkg;
   parameter logic [15:0] F0 = 16'b1110010110111101; // ECC: 6'b111101
 
 
+  parameter logic [15:0] ZRO = 16'h0;
+
+  ////////////////////////
+  // Derived enum types //
+  ////////////////////////
+
+  typedef enum logic [LcStateWidth-1:0] {
+    LcStRaw           = {ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO},
+    LcStTestUnlocked0 = {A11, A10,  A9,  A8,  A7,  A6,  A5,  A4,  A3,  A2,  A1,  B0},
+    LcStTestLocked0   = {A11, A10,  A9,  A8,  A7,  A6,  A5,  A4,  A3,  A2,  B1,  B0},
+    LcStTestUnlocked1 = {A11, A10,  A9,  A8,  A7,  A6,  A5,  A4,  A3,  B2,  B1,  B0},
+    LcStTestLocked1   = {A11, A10,  A9,  A8,  A7,  A6,  A5,  A4,  B3,  B2,  B1,  B0},
+    LcStTestUnlocked2 = {A11, A10,  A9,  A8,  A7,  A6,  A5,  B4,  B3,  B2,  B1,  B0},
+    LcStTestLocked2   = {A11, A10,  A9,  A8,  A7,  A6,  B5,  B4,  B3,  B2,  B1,  B0},
+    LcStTestUnlocked3 = {A11, A10,  A9,  A8,  A7,  B6,  B5,  B4,  B3,  B2,  B1,  B0},
+    LcStDev           = {A11, A10,  A9,  A8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0},
+    LcStProd          = {A11, A10,  A9,  B8,  A7,  B6,  B5,  B4,  B3,  B2,  B1,  B0},
+    LcStProdEnd       = {A11, A10,  B9,  A8,  A7,  B6,  B5,  B4,  B3,  B2,  B1,  B0},
+    LcStRma           = {B11, B10,  A9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0},
+    LcStScrap         = {B11, B10,  B9,  B8,  B7,  B6,  B5,  B4,  B3,  B2,  B1,  B0}
+  } lc_state_e;
+
+  typedef enum logic [LcIdStateWidth-1:0] {
+    LcIdBlank        = { E0},
+    LcIdPersonalized = { F0}
+  } lc_id_state_e;
+
+  typedef enum logic [LcCountWidth-1:0] {
+    LcCntRaw = {ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO},
+    LcCnt1   = {C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  C4,  C3,  C2,  C1,  D0},
+    LcCnt2   = {C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  C4,  C3,  C2,  D1,  D0},
+    LcCnt3   = {C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  C4,  C3,  D2,  D1,  D0},
+    LcCnt4   = {C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  C4,  D3,  D2,  D1,  D0},
+    LcCnt5   = {C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  C5,  D4,  D3,  D2,  D1,  D0},
+    LcCnt6   = {C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  C6,  D5,  D4,  D3,  D2,  D1,  D0},
+    LcCnt7   = {C15, C14, C13, C12, C11, C10,  C9,  C8,  C7,  D6,  D5,  D4,  D3,  D2,  D1,  D0},
+    LcCnt8   = {C15, C14, C13, C12, C11, C10,  C9,  C8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0},
+    LcCnt9   = {C15, C14, C13, C12, C11, C10,  C9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0},
+    LcCnt10  = {C15, C14, C13, C12, C11, C10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0},
+    LcCnt11  = {C15, C14, C13, C12, C11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0},
+    LcCnt12  = {C15, C14, C13, C12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0},
+    LcCnt13  = {C15, C14, C13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0},
+    LcCnt14  = {C15, C14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0},
+    LcCnt15  = {C15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0},
+    LcCnt16  = {D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0}
+  } lc_cnt_e;
+
+  // Decoded life cycle state, used to interface with CSRs and TAP.
+  typedef enum logic [DecLcStateWidth-1:0] {
+    DecLcStRaw,
+    DecLcStTestUnlocked0,
+    DecLcStTestLocked0,
+    DecLcStTestUnlocked1,
+    DecLcStTestLocked1,
+    DecLcStTestUnlocked2,
+    DecLcStTestLocked2,
+    DecLcStTestUnlocked3,
+    DecLcStDev,
+    DecLcStProd,
+    DecLcStProdEnd,
+    DecLcStRma,
+    DecLcStScrap,
+    DecLcStPostTrans,
+    DecLcStEscalate,
+    DecLcStInvalid
+  } dec_lc_state_e;
+
+  typedef enum logic [DecLcIdStateWidth-1:0] {
+    DecLcIdBlank,
+    DecLcIdPersonalized,
+    DecLcIdInvalid
+  } dec_lc_id_state_e;
+
+  typedef logic [DecLcCountWidth-1:0] dec_lc_cnt_t;
+
+
   ///////////////////////////////////////////
   // Hashed RAW unlock and all-zero tokens //
   ///////////////////////////////////////////
 
-  parameter logic [127:0] AllZeroToken = {
+  parameter int LcTokenWidth = 128;
+  typedef logic [LcTokenWidth-1:0] lc_token_t;
+
+  parameter lc_token_t AllZeroToken = {
     128'h0
   };
-  parameter logic [127:0] RndCnstRawUnlockToken = {
+  parameter lc_token_t RndCnstRawUnlockToken = {
     128'h1C8BE2FF12790AE2E6D6A68151CBD084
   };
-  parameter logic [127:0] AllZeroTokenHashed = {
+  parameter lc_token_t AllZeroTokenHashed = {
     128'h0
   };
-  parameter logic [127:0] RndCnstRawUnlockTokenHashed = {
+  parameter lc_token_t RndCnstRawUnlockTokenHashed = {
     128'h1C8BE2FF12790AE2E6D6A68151CBD084
   };
 
