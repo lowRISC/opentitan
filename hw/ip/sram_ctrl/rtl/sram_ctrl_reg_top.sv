@@ -194,28 +194,19 @@ module sram_ctrl_reg_top (
   );
 
 
-  // R[ctrl]: V(False)
+  // R[ctrl]: V(True)
 
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_ctrl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
+    .re     (1'b0),
+    // qualified with register enable
     .we     (ctrl_we & ctrl_regwen_qs),
     .wd     (ctrl_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
+    .d      ('0),
+    .qre    (),
     .qe     (reg2hw.ctrl.qe),
     .q      (reg2hw.ctrl.q ),
-
     .qs     ()
   );
 
