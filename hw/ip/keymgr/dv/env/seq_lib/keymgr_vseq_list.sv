@@ -12,4 +12,5 @@
 `include "keymgr_lc_disable_vseq.sv"
 `include "keymgr_sw_invalid_input_vseq.sv"
 `include "keymgr_hwsw_invalid_input_vseq.sv"
+`include "keymgr_kmac_rsp_err_vseq.sv"
 `include "keymgr_stress_all_vseq.sv"

@@ -161,14 +161,11 @@ class keymgr_base_vseq extends cip_base_vseq #(
     // in seq
     if (get_check_en()) begin
       `DV_CHECK_EQ(`gmv(ral.op_status.status), exp_status)
-    end else begin
-      return;
+      // check and clear interrupt
+      check_interrupts(.interrupts(1 << IntrOpDone), .check_set(1));
     end
 
     read_current_state();
-
-    // check and clear interrupt
-    check_interrupts(.interrupts(1 << IntrOpDone), .check_set(1));
 
     // check for chech in scb and clear err_code
     csr_rd(.ptr(ral.err_code), .value(rd_val));
