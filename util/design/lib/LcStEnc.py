@@ -27,8 +27,7 @@ LC_STATE_TYPES = {
 def _is_incremental_codeword(word1, word2):
     '''Test whether word2 is incremental wrt word1.'''
     if len(word1) != len(word2):
-        log.error('Words are not of equal size')
-        exit(1)
+        raise RuntimeError('Words are not of equal size')
 
     _word1 = int(word1, 2)
     _word2 = int(word2, 2)
@@ -113,25 +112,23 @@ def _validate_words(config, words):
     for k, w in enumerate(words):
         # Check whether word is valid wrt to ECC polynomial.
         if not is_valid_codeword(config, w):
-            log.error('Codeword {} at index {} is not valid'.format(w, k))
-            exit(1)
+            raise RuntimeError('Codeword {} at index {} is not valid'.format(
+                w, k))
         # Check that word fulfills the Hamming weight constraints.
         pop_cnt = w.count('1')
         if pop_cnt < config['min_hw'] or pop_cnt > config['max_hw']:
-            log.error(
+            raise RuntimeError(
                 'Codeword {} at index {} has wrong Hamming weight'.format(
                     w, k))
-            exit(1)
         # Check Hamming distance wrt to all other existing words.
         # If the constraint is larger than 0 this implies uniqueness.
         if k < len(words) - 1:
             for k2, w2 in enumerate(words[k + 1:]):
                 if get_hd(w, w2) < config['min_hd']:
-                    log.error(
+                    raise RuntimeError(
                         'Hamming distance between codeword {} at index {} '
                         'and codeword {} at index {} is too low.'.format(
                             w, k, w2, k + 1 + k2))
-                    exit(1)
 
 
 def _validate_secded(config):
@@ -145,8 +142,7 @@ def _validate_secded(config):
     total_width = config['secded']['data_width'] + config['secded']['ecc_width']
 
     if config['secded']['ecc_width'] != len(config['secded']['ecc_matrix']):
-        log.error('ECC matrix does not have correct number of rows')
-        exit(1)
+        raise RuntimeError('ECC matrix does not have correct number of rows')
 
     log.info('SECDED Matrix:')
     for i, l in enumerate(config['secded']['ecc_matrix']):
@@ -154,8 +150,7 @@ def _validate_secded(config):
         for j, e in enumerate(l):
             e = check_int(e)
             if e < 0 or e >= total_width:
-                log.error('ECC bit position is out of bounds')
-                exit(1)
+                raise RuntimeError('ECC bit position is out of bounds')
             config['secded']['ecc_matrix'][i][j] = e
 
 
@@ -173,12 +168,10 @@ def _validate_constraints(config):
     if config['min_hw'] >= total_width or \
        config['max_hw'] > total_width or \
        config['min_hw'] >= config['max_hw']:
-        log.error('Hamming weight constraints are inconsistent.')
-        exit(1)
+        raise RuntimeError('Hamming weight constraints are inconsistent.')
 
     if config['max_hw'] - config['min_hw'] + 1 < config['min_hd']:
-        log.error('Hamming distance constraint is inconsistent.')
-        exit(1)
+        raise RuntimeError('Hamming distance constraint is inconsistent.')
 
 
 def _validate_tokens(config):
@@ -207,16 +200,16 @@ def _validate_state_declarations(config):
                 log.info('Inferred {} = {}'.format(
                     'num_' + typ + '_words', config['num_' + typ + '_words']))
             if config['num_' + typ + '_words'] != len(config[typ][state]):
-                log.error('{} entry {} has incorrect length {}'.format(
-                    typ, state, len(config[typ][state])))
-                exit(1)
+                raise RuntimeError(
+                    '{} entry {} has incorrect length {}'.format(
+                        typ, state, len(config[typ][state])))
             # Render the format templates above.
             for j, entry in enumerate(config[typ][state]):
                 legal_values = [fmt.format(j) for fmt in LC_STATE_TYPES[typ]]
                 if entry not in legal_values:
-                    log.error('Illegal entry "{}" found in {} of {}'.format(
-                        entry, state, typ))
-                    exit(1)
+                    raise RuntimeError(
+                        'Illegal entry "{}" found in {} of {}'.format(
+                            entry, state, typ))
 
 
 def _generate_words(config):
@@ -264,19 +257,15 @@ class LcStEnc():
         log.info('')
 
         if 'seed' not in config:
-            log.error('Missing seed in configuration')
-            exit(1)
+            raise RuntimeError('Missing seed in configuration')
         if 'secded' not in config:
-            log.error('Missing secded configuration')
-            exit(1)
+            raise RuntimeError('Missing secded configuration')
         if 'tokens' not in config:
-            log.error('Missing token configuration')
-            exit(1)
+            raise RuntimeError('Missing token configuration')
 
         for typ in LC_STATE_TYPES.keys():
             if typ not in config:
-                log.error('Missing {} definition'.format(typ))
-                exit(1)
+                raise RuntimeError('Missing {} definition'.format(typ))
 
         config['seed'] = check_int(config['seed'])
         log.info('Seed: {0:x}'.format(config['seed']))
@@ -313,12 +302,11 @@ class LcStEnc():
         ecc_width = self.config['secded']['ecc_width']
 
         if name not in LC_STATE_TYPES:
-            log.error('Unknown state type {}'.format(name))
-            exit(1)
+            raise RuntimeError('Unknown state type {}'.format(name))
 
         if state not in self.config[name]:
-            log.error('Unknown state {} of type {}'.format(state, name))
-            exit(1)
+            raise RuntimeError('Unknown state {} of type {}'.format(
+                state, name))
 
         # Assemble list of state words
         words = []
