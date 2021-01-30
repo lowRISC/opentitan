@@ -1,0 +1,17 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# TODO(#5027, https://github.com/google/verible/issues/652):
+# This is a hack to prevent the generated FPV assertion files being
+# passed into the Verible style linter. The tool currently does not
+# support certain SVA language constructs, causing it to throw syntax
+# errors. Remove this file once the issue has been addressed upstream.
+
+name: "lowrisc:fpv:csr_assert_gen_dummy"
+description: "Dummy generator that does nothing."
+generators:
+  csr_assert_gen:
+    interpreter: echo
+    command: none
