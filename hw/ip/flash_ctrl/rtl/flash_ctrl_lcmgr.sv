@@ -194,7 +194,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
   // synchronize inputs
   logic init_q;
-  lc_ctrl_pkg::lc_tx_t rma_req;
+  lc_ctrl_pkg::lc_tx_t [0:0] rma_req;
 
   prim_flop_2sync #(
     .Width(1),
@@ -377,7 +377,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       // Waiting for an rma entry command
       StWait: begin
         rd_buf_en_o = 1'b1;
-        if (rma_req == lc_ctrl_pkg::On) begin
+        if (rma_req[0] == lc_ctrl_pkg::On) begin
           state_d = StEntropyReseed;
         end
       end
