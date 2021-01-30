@@ -1008,7 +1008,10 @@ def main():
              Module is created under rtl/. (default: dir(topcfg)/..)
              ''')  # yapf: disable
     parser.add_argument('--verbose', '-v', action='store_true', help="Verbose")
-
+    parser.add_argument('--nowarn',
+                        '-n',
+                        action='store_true',
+                        help='Suppress all warnings')
     # Generator options: 'no' series. cannot combined with 'only' series
     parser.add_argument(
         '--no-top',
@@ -1080,6 +1083,10 @@ def main():
 
     if args.verbose:
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
+        if args.nowarn:
+            log.warning('Both --verbose and --nowarn are specified. --verbose takes precedence.')
+    elif args.nowarn:
+        log.basicConfig(format="%(levelname)s: %(message)s",  level=log.ERROR)
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
 

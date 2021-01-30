@@ -60,11 +60,11 @@ def main():
     if ip_hjson:
         ral_spec = get_full_path(root_dir, ip_hjson)
         cmd = os.path.join(util_path, "regtool.py")
-        args = [cmd, "-s", "-t", ".", ral_spec]
+        args = [cmd, "--nowarn", "-s", "-t", ".", ral_spec]
     else:
         ral_spec = get_full_path(root_dir, top_hjson)
         cmd = os.path.join(util_path, "topgen.py")
-        args = [cmd, "-r", "-o", ".", "-t", ral_spec]
+        args = [cmd, "--nowarn", "-r", "-o", ".", "-t", ral_spec]
 
     depends = ["lowrisc:dv:dv_base_reg"]
     if dv_base_prefix and dv_base_prefix != "dv_base":

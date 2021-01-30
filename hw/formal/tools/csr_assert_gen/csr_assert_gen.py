@@ -54,7 +54,7 @@ def main():
         sys.exit(1)
 
     cmd = os.path.join(util_path, "regtool.py")
-    args = [cmd, "-f", "-t", ".", spec]
+    args = [cmd, "--nowarn", "-f", "-t", ".", spec]
 
     try:
         subprocess.run(args, check=True)

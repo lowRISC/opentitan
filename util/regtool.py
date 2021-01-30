@@ -84,6 +84,10 @@ def main():
                         '-v',
                         action='store_true',
                         help='Verbose and run validate twice')
+    parser.add_argument('--nowarn',
+                        '-n',
+                        action='store_true',
+                        help='Suppress all warnings')
     parser.add_argument('--param',
                         '-p',
                         type=str,
@@ -108,8 +112,12 @@ def main():
         version.show_and_exit(__file__, ["Hjson", "Mako"])
 
     verbose = args.verbose
-    if (verbose):
+    if verbose:
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
+        if args.nowarn:
+            log.warning('Both --verbose and --nowarn are specified. --verbose takes precedence.')
+    elif args.nowarn:
+        log.basicConfig(format="%(levelname)s: %(message)s",  level=log.ERROR)
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
 
