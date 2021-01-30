@@ -187,11 +187,11 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   logic lfsr_seed_en;
 
   // life cycle connections
-  lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en;
-  lc_ctrl_pkg::lc_tx_t lc_owner_seed_sw_rw_en;
-  lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en;
-  lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en;
-  lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en;
+  lc_ctrl_pkg::lc_tx_t [0:0] lc_creator_seed_sw_rw_en;
+  lc_ctrl_pkg::lc_tx_t [0:0] lc_owner_seed_sw_rw_en;
+  lc_ctrl_pkg::lc_tx_t [0:0] lc_iso_part_sw_rd_en;
+  lc_ctrl_pkg::lc_tx_t [0:0] lc_iso_part_sw_wr_en;
+  lc_ctrl_pkg::lc_tx_t [0:0] lc_seed_hw_rd_en;
 
   // synchronize enables into local domain
   prim_lc_sync #(
@@ -343,10 +343,10 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   assign sw_sel        = if_sel == SwSel;
 
   // software privilege to creator seed
-  assign creator_seed_priv = lc_creator_seed_sw_rw_en == lc_ctrl_pkg::On;
+  assign creator_seed_priv = lc_creator_seed_sw_rw_en[0] == lc_ctrl_pkg::On;
 
   // software privilege to owner seed
-  assign owner_seed_priv = lc_owner_seed_sw_rw_en == lc_ctrl_pkg::On;
+  assign owner_seed_priv = lc_owner_seed_sw_rw_en[0] == lc_ctrl_pkg::On;
 
   // hardware interface
   flash_ctrl_lcmgr #(
@@ -360,7 +360,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
 
     .init_i(pwrmgr_i.flash_init),
     .init_done_o(pwrmgr_o.flash_done),
-    .provision_en_i(lc_seed_hw_rd_en == lc_ctrl_pkg::On),
+    .provision_en_i(lc_seed_hw_rd_en[0] == lc_ctrl_pkg::On),
 
     // interface to ctrl arb control ports
     .ctrl_o(hw_ctrl),
@@ -642,8 +642,8 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
         .cfgs_i(reg2hw_info_page_cfgs[i][j]),
         .creator_seed_priv_i(creator_seed_priv),
         .owner_seed_priv_i(owner_seed_priv),
-        .iso_flash_wr_en_i(lc_iso_part_sw_wr_en == lc_ctrl_pkg::On),
-        .iso_flash_rd_en_i(lc_iso_part_sw_rd_en == lc_ctrl_pkg::On),
+        .iso_flash_wr_en_i(lc_iso_part_sw_wr_en[0] == lc_ctrl_pkg::On),
+        .iso_flash_rd_en_i(lc_iso_part_sw_rd_en[0] == lc_ctrl_pkg::On),
         .cfgs_o(info_page_cfgs[i][j])
       );
     end
