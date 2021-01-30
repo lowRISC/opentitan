@@ -42,11 +42,9 @@ def _validate_scrambling(scr):
     scr["cnst_size"] = check_int(scr["cnst_size"])
 
     if "keys" not in scr:
-        log.error("Missing key configuration.")
-        exit(1)
+        raise RuntimeError("Missing key configuration.")
     if "digests" not in scr:
-        log.error("Missing digest configuration.")
-        exit(1)
+        raise RuntimeError("Missing digest configuration.")
 
     for key in scr["keys"]:
         key.setdefault("name", "unknown_key_name")
@@ -87,53 +85,43 @@ def _validate_part(part, offset, key_names):
 
     # basic checks
     if part["variant"] not in ["Unbuffered", "Buffered", "LifeCycle"]:
-        log.error("Invalid partition type {}".format(part["variant"]))
-        exit(1)
+        raise RuntimeError("Invalid partition type {}".format(part["variant"]))
 
     if part["key_sel"] not in (["NoKey"] + key_names):
-        log.error("Invalid key sel {}".format(part["key_sel"]))
-        exit(1)
+        raise RuntimeError("Invalid key sel {}".format(part["key_sel"]))
 
     if check_bool(part["secret"]) and part["key_sel"] == "NoKey":
-        log.error(
+        raise RuntimeError(
             "A secret partition needs a key select value other than NoKey")
-        exit(1)
 
     if part["write_lock"].lower() not in ["digest", "csr", "none"]:
-        log.error("Invalid value for write_lock")
-        exit(1)
+        raise RuntimeError("Invalid value for write_lock")
 
     if part["read_lock"].lower() not in ["digest", "csr", "none"]:
-        log.error("Invalid value for read_lock")
-        exit(1)
+        raise RuntimeError("Invalid value for read_lock")
 
     if part["sw_digest"] and part["hw_digest"]:
-        log.error(
+        raise RuntimeError(
             "Partition cannot support both a SW and a HW digest at the same time."
         )
-        exit(1)
 
     if part["variant"] == "Unbuffered" and not part["sw_digest"]:
-        log.error(
+        raise RuntimeError(
             "Unbuffered partitions without digest are not supported at the moment."
         )
-        exit(1)
 
     if not part["sw_digest"] and not part["hw_digest"]:
         if part["write_lock"].lower() == "digest" or part["read_lock"].lower(
         ) == "digest":
-            log.error(
+            raise RuntimeError(
                 "A partition can only be write/read lockable if it has a hw or sw digest."
             )
-            exit(1)
 
     if check_int(part["offset"]) % 8:
-        log.error("Partition offset must be 64bit aligned")
-        exit(1)
+        raise RuntimeError("Partition offset must be 64bit aligned")
 
     if check_int(part["size"]) % 8:
-        log.error("Partition size must be 64bit aligned")
-        exit(1)
+        raise RuntimeError("Partition size must be 64bit aligned")
 
     if len(part["items"]) == 0:
         log.warning("Partition does not contain any items.")
@@ -168,16 +156,16 @@ def _validate_mmap(config):
         _validate_part(part, offset, key_names)
 
         if part['name'] in part_index:
-            log.error('Partition name {} is not unique'.format(part['name']))
-            exit(1)
+            raise RuntimeError('Partition name {} is not unique'.format(
+                part['name']))
 
         # Loop over items within a partition
         item_index = {}
         for k, item in enumerate(part["items"]):
             _validate_item(item, offset)
             if item['name'] in item_index:
-                log.error('Item name {} is not unique'.format(item['name']))
-                exit(1)
+                raise RuntimeError('Item name {} is not unique'.format(
+                    item['name']))
             log.info("> Item {} at offset {} with size {}".format(
                 item["name"], offset, item["size"]))
             offset += check_int(item["size"])
@@ -187,8 +175,8 @@ def _validate_mmap(config):
         if part["sw_digest"] or part["hw_digest"]:
             digest_name = part["name"] + DIGEST_SUFFIX
             if digest_name in item_index:
-                log.error('Digest name {} is not unique'.format(digest_name))
-                exit(1)
+                raise RuntimeError(
+                    'Digest name {} is not unique'.format(digest_name))
             item_index[digest_name] = len(part["items"])
             part["items"].append({
                 "name":
@@ -210,15 +198,13 @@ def _validate_mmap(config):
             # We always place the digest into the last 64bit word
             # of a partition.
             canonical_offset = (check_int(part["offset"]) +
-                                check_int(part["size"]) -
-                                DIGEST_SIZE)
+                                check_int(part["size"]) - DIGEST_SIZE)
             if offset > canonical_offset:
-                log.error("Not enough space in partitition "
-                          "{} to accommodate a digest. Bytes available "
-                          "= {}, bytes allocated to items = {}".format(
-                              part["name"], part["size"],
-                              offset - part["offset"]))
-                exit(1)
+                raise RuntimeError(
+                    "Not enough space in partitition "
+                    "{} to accommodate a digest. Bytes available "
+                    "= {}, bytes allocated to items = {}".format(
+                        part["name"], part["size"], offset - part["offset"]))
 
             offset = canonical_offset
             log.info("> Adding digest {} at offset {} with size {}".format(
@@ -227,11 +213,11 @@ def _validate_mmap(config):
 
         # check offsets and size
         if offset > check_int(part["offset"]) + check_int(part["size"]):
-            log.error("Not enough space in partitition "
-                      "{} to accommodate all items. Bytes available "
-                      "= {}, bytes allocated to items = {}".format(
-                          part["name"], part["size"], offset - part["offset"]))
-            exit(1)
+            raise RuntimeError("Not enough space in partitition "
+                               "{} to accommodate all items. Bytes available "
+                               "= {}, bytes allocated to items = {}".format(
+                                   part["name"], part["size"],
+                                   offset - part["offset"]))
 
         offset = check_int(part["offset"]) + check_int(part["size"])
 
@@ -241,11 +227,10 @@ def _validate_mmap(config):
         })
 
     if offset > config["otp"]["size"]:
-        log.error(
+        raise RuntimeError(
             "OTP is not big enough to store all partitions. "
             "Bytes available {}, bytes required {}", config["otp"]["size"],
             offset)
-        exit(1)
 
     log.info("Total number of partitions: {}".format(len(config["partitions"])))
     log.info("Bytes available in OTP: {}".format(config["otp"]["size"]))
@@ -269,8 +254,7 @@ class OtpMemMap():
         log.info('')
 
         if "seed" not in config:
-            log.error("Missing seed in configuration.")
-            exit(1)
+            raise RuntimeError("Missing seed in configuration.")
 
         config["seed"] = check_int(config["seed"])
 
@@ -280,14 +264,11 @@ class OtpMemMap():
         log.info('')
 
         if "otp" not in config:
-            log.error("Missing otp configuration.")
-            exit(1)
+            raise RuntimeError("Missing otp configuration.")
         if "scrambling" not in config:
-            log.error("Missing scrambling configuration.")
-            exit(1)
+            raise RuntimeError("Missing scrambling configuration.")
         if "partitions" not in config:
-            log.error("Missing partition configuration.")
-            exit(1)
+            raise RuntimeError("Missing partition configuration.")
 
         # Validate OTP info.
         _validate_otp(config["otp"])
@@ -386,9 +367,8 @@ class OtpMemMap():
                         table.append(row)
                         break
                 else:
-                    log.error(
+                    raise RuntimeError(
                         "Partition with digest does not contain a digest item")
-                    exit(1)
 
         return tabulate(table,
                         headers="firstrow",
