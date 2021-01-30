@@ -49,6 +49,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   // local variables
   keymgr_pkg::keymgr_working_state_e current_state;
   keymgr_pkg::keymgr_op_status_e     current_op_status;
+  bit                                is_kmac_rsp_err;
+  bit                                is_kmac_invalid_data;
 
   // HW internal key, used for OP in current state
   key_shares_t current_internal_key;
@@ -158,7 +160,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function void process_kmac_data_rsp(keymgr_kmac_item item);
-    update_result_e update_result = process_update_after_op_done();
+    update_result_e update_result;
+
+    is_kmac_rsp_err = item.rsp_error;
+    is_kmac_invalid_data = item.get_is_kmac_rsp_data_invalid();
+    update_result = process_update_after_op_done();
 
     case (update_result)
       UpdateInternalKey: begin
@@ -195,9 +201,6 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       end
       default: `uvm_info(`gfn, "KMAC result isn't updated to any output", UVM_MEDIUM)
     endcase
-
-    // IntrOpDone occurs after every KDF
-    void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
   endfunction
 
   // update current_state, current_op_status, err_code, alert and return update_result for updating
@@ -205,12 +208,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function update_result_e process_update_after_op_done();
     update_result_e update_result;
     keymgr_pkg::keymgr_ops_e op = get_operation();
-    bit is_err = (get_err_code() > 0);
 
-    if (is_err) current_op_status <= keymgr_pkg::OpDoneFail;
-    else        current_op_status <= keymgr_pkg::OpDoneSuccess;
+    if (get_err_code() != 0) current_op_status <= keymgr_pkg::OpDoneFail;
+    else                     current_op_status <= keymgr_pkg::OpDoneSuccess;
 
     process_error_n_alert();
+    // IntrOpDone occurs after every KDF
+    void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
 
     case (current_state)
       keymgr_pkg::StInit, keymgr_pkg::StCreatorRootKey, keymgr_pkg::StOwnerIntKey,
@@ -218,7 +222,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
         case (op)
           keymgr_pkg::OpAdvance: begin
-            if (!get_hw_invalid_input()) begin
+            if (get_fault_err()) begin
+              current_state = keymgr_pkg::StDisabled;
+              update_result = NotUpdate;
+            end else if (!get_op_err()) begin
               // if it's StOwnerKey, it advacens to OpDisable. Key is just random value
               if (current_state == keymgr_pkg::StOwnerKey) update_result = NotUpdate;
               else                                         update_result = UpdateInternalKey;
@@ -233,14 +240,15 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             current_state = keymgr_pkg::StDisabled;
           end
           keymgr_pkg::OpGenId, keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut: begin
-            // If any error, no update for output
-            if (is_err) begin
+            // If only op error but no fault error, no update for output
+            if (get_op_err() && !get_fault_err()) begin
               update_result = NotUpdate;
             end else if (op == keymgr_pkg::OpGenHwOut) begin
               update_result = UpdateHwOut;
             end else begin
               update_result = UpdateSwOut;
             end
+            if (get_fault_err()) current_state = keymgr_pkg::StDisabled;
           end
           default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
         endcase
@@ -474,26 +482,33 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function void process_error_n_alert();
-    keymgr_pkg::keymgr_ops_e op = get_operation();
     bit [TL_DW-1:0] err = get_err_code();
-
     void'(ral.err_code.predict(err));
 
-    if (err[keymgr_pkg::ErrInvalidOut] || err[keymgr_pkg::ErrInvalidCmd]) begin
-      set_exp_alert("fault_err");
-    end
-    if (err[keymgr_pkg::ErrInvalidOp] || err[keymgr_pkg::ErrInvalidIn]) begin
-      set_exp_alert("operation_err");
-    end
+    if (get_fault_err()) set_exp_alert("fault_err");
+    if (get_op_err()) set_exp_alert("operation_err");
 
-    `uvm_info(`gfn, $sformatf("%s is issued and error code is 'b%0b", op.name, err), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("at %s, %s is issued and error code is 'b%0b",
+              current_state, get_operation(), err), UVM_MEDIUM)
+  endfunction
+
+  virtual function bit [TL_DW-1:0] get_fault_err();
+    bit [TL_DW-1:0] err = get_err_code();
+    return err[keymgr_pkg::ErrInvalidOut] || err[keymgr_pkg::ErrInvalidCmd];
+  endfunction
+
+  virtual function bit [TL_DW-1:0] get_op_err();
+    bit [TL_DW-1:0] err = get_err_code();
+    return err[keymgr_pkg::ErrInvalidOp] || err[keymgr_pkg::ErrInvalidIn];
   endfunction
 
   virtual function bit [TL_DW-1:0] get_err_code();
     bit [TL_DW-1:0] err_code;
 
-    err_code[keymgr_pkg::ErrInvalidOp] = get_op_error();
-    err_code[keymgr_pkg::ErrInvalidIn] = get_hw_invalid_input() | get_sw_invalid_input();
+    err_code[keymgr_pkg::ErrInvalidOp]  = get_op_error();
+    err_code[keymgr_pkg::ErrInvalidCmd] = is_kmac_rsp_err | is_kmac_invalid_data;
+    err_code[keymgr_pkg::ErrInvalidIn]  = get_hw_invalid_input() | get_sw_invalid_input();
+    err_code[keymgr_pkg::ErrInvalidOut] = is_kmac_invalid_data;
 
     return err_code;
   endfunction
@@ -792,9 +807,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
-    current_state     = keymgr_pkg::StReset;
-    current_op_status = keymgr_pkg::OpIdle;
+    current_state        = keymgr_pkg::StReset;
+    current_op_status    = keymgr_pkg::OpIdle;
     current_internal_key = 0;
+    is_kmac_rsp_err      = 0;
+    is_kmac_invalid_data = 0;
     adv_data_a_array.delete();
     id_data_a_array.delete();
     sw_data_a_array.delete();

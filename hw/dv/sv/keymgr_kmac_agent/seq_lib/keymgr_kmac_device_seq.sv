@@ -17,6 +17,7 @@ class keymgr_kmac_device_seq extends keymgr_kmac_base_seq;
       `uvm_info(`gfn, $sformatf("Sent response: %0s", rsp.sprint()), UVM_HIGH)
     end
   endtask
+
   virtual function void randomize_item(REQ item);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(item,
       if (cfg.zero_delays) {
@@ -24,6 +25,8 @@ class keymgr_kmac_device_seq extends keymgr_kmac_base_seq;
       } else {
         rsp_delay inside {[cfg.rsp_delay_min : cfg.rsp_delay_max]};
       }
+      is_kmac_rsp_err dist {1 :/ cfg.error_rsp_pct,
+                            0 :/ 100 - cfg.error_rsp_pct};
     )
   endfunction
 endclass
