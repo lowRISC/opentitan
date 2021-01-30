@@ -37,7 +37,6 @@ def main():
                         type=int,
                         metavar='<seed>',
                         help='Custom seed for RNG.')
-
     args = parser.parse_args()
 
     with open(LC_STATE_DEFINITION_FILE, 'r') as infile:
@@ -58,7 +57,11 @@ def main():
                     'No seed specified, setting to {}.'.format(new_seed))
 
         # validate config and generate encoding
-        lc_st_enc = LcStEnc(config)
+        try:
+            lc_st_enc = LcStEnc(config)
+        except RuntimeError as err:
+            log.error(err)
+            exit(1)
 
         # render all templates
         for template in TEMPLATES:
