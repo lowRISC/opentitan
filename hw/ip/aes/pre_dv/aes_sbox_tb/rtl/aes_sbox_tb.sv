@@ -51,66 +51,77 @@ module aes_sbox_tb #(
   );
 
   // Mask Generation
-  parameter int unsigned WidthPRDSBoxCanrightMasked        = 8;
-  parameter int unsigned WidthPRDSBoxCanrightMaskedNoreuse = 18;
-  parameter int unsigned WidthPRDSBoxDOM                   = 28;
+  logic  [7:0] masked_stimulus;
+  logic  [7:0] in_mask;
 
-  logic                      [7:0] masked_stimulus;
-  logic                      [7:0] in_mask;
+  logic  [7:0] masked_response [NUM_SBOX_IMPLS_MASKED];
+  logic  [7:0] out_mask [NUM_SBOX_IMPLS_MASKED];
 
-  logic                      [7:0] masked_response [NUM_SBOX_IMPLS_MASKED];
-  logic                      [7:0] out_mask [NUM_SBOX_IMPLS_MASKED];
+  logic [31:0] mask;
+  logic [23:0] unused_mask;
 
-  logic                     [63:0] tmp;
-  logic [63-(WidthPRDSBoxDOM+8):0] unused_tmp;
-  logic      [WidthPRDSBoxDOM-1:0] prd_masking;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_tmp
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_mask
     if (!rst_ni) begin
-      tmp <= 64'hAAAFF;
+      mask <= 32'hAAFF;
     end else if (dom_done) begin
-      tmp <= {$random, $random};
+      mask <= $random;
     end
   end
-  assign in_mask     = tmp[7:0];
-  assign prd_masking = tmp[8 +: WidthPRDSBoxDOM];
-  assign unused_tmp  = tmp[63:WidthPRDSBoxDOM+8];
+  assign in_mask     = mask[7:0];
+  assign unused_mask = mask[31:8];
 
   assign masked_stimulus = stimulus ^ in_mask;
 
+  // PRD Generation
+  parameter int unsigned WidthPRDSBoxCanrightMasked        = 8;
+  parameter int unsigned WidthPRDSBoxCanrightMaskedNoreuse = 18;
+  parameter int unsigned WidthPRDSBoxDOM                   = 8;
+
+  logic                                   [31:0] prd;
+  logic [31-WidthPRDSBoxCanrightMaskedNoreuse:0] unused_prd;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_prd
+    if (!rst_ni) begin
+      prd <= 32'h4321;
+    end else begin
+      prd <= {$random};
+    end
+  end
+  assign unused_prd = prd[31:WidthPRDSBoxCanrightMaskedNoreuse];
+
   // Instantiate Masked SBox Implementations
   aes_sbox_canright_masked_noreuse aes_sbox_canright_masked_noreuse (
-    .op_i   ( op                                                 ),
-    .data_i ( masked_stimulus                                    ),
-    .mask_i ( in_mask                                            ),
-    .prd_i  ( prd_masking[WidthPRDSBoxCanrightMaskedNoreuse-1:0] ),
-    .data_o ( masked_response[0]                                 ),
-    .mask_o ( out_mask[0]                                        )
+    .op_i   ( op                                         ),
+    .data_i ( masked_stimulus                            ),
+    .mask_i ( in_mask                                    ),
+    .prd_i  ( prd[WidthPRDSBoxCanrightMaskedNoreuse-1:0] ),
+    .data_o ( masked_response[0]                         ),
+    .mask_o ( out_mask[0]                                )
   );
 
   aes_sbox_canright_masked aes_sbox_canright_masked (
-    .op_i   ( op                                          ),
-    .data_i ( masked_stimulus                             ),
-    .mask_i ( in_mask                                     ),
-    .prd_i  ( prd_masking[WidthPRDSBoxCanrightMasked-1:0] ),
-    .data_o ( masked_response[1]                          ),
-    .mask_o ( out_mask[1]                                 )
+    .op_i   ( op                                  ),
+    .data_i ( masked_stimulus                     ),
+    .mask_i ( in_mask                             ),
+    .prd_i  ( prd[WidthPRDSBoxCanrightMasked-1:0] ),
+    .data_o ( masked_response[1]                  ),
+    .mask_o ( out_mask[1]                         )
   );
 
   // Instantiate DOM SBox Implementation
   logic dom_done;
   aes_sbox_dom aes_sbox_dom (
-    .clk_i     ( clk_i                            ),
-    .rst_ni    ( rst_ni                           ),
-    .en_i      ( 1'b1                             ),
-    .out_req_o ( dom_done                         ),
-    .out_ack_i ( 1'b1                             ),
-    .op_i      ( op                               ),
-    .data_i    ( masked_stimulus                  ),
-    .mask_i    ( in_mask                          ),
-    .prd_i     ( prd_masking[WidthPRDSBoxDOM-1:0] ),
-    .data_o    ( masked_response[2]               ),
-    .mask_o    ( out_mask[2]                      )
+    .clk_i     ( clk_i                    ),
+    .rst_ni    ( rst_ni                   ),
+    .en_i      ( 1'b1                     ),
+    .out_req_o ( dom_done                 ),
+    .out_ack_i ( 1'b1                     ),
+    .op_i      ( op                       ),
+    .data_i    ( masked_stimulus          ),
+    .mask_i    ( in_mask                  ),
+    .prd_i     ( prd[WidthPRDSBoxDOM-1:0] ),
+    .data_o    ( masked_response[2]       ),
+    .mask_o    ( out_mask[2]              )
   );
 
   // Unmask responses

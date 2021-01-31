@@ -480,7 +480,8 @@ module aes_cipher_core import aes_pkg::*;
 
   // Control
   aes_cipher_control #(
-    .Masking ( Masking )
+    .Masking  ( Masking  ),
+    .SBoxImpl ( SBoxImpl )
   ) u_aes_cipher_control (
     .clk_i                ( clk_i               ),
     .rst_ni               ( rst_ni              ),
