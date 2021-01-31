@@ -31,11 +31,10 @@ enum {
    * noise during AES operations. Caution: This number should be chosen to
    * provide enough time. Otherwise, Ibex might wake up while AES is still busy
    * and disturb the capture. Currently, we use a start trigger delay of 40
-   * clock cycles and the scope captures 18 clock cycles at kClockFreqCpuHz (180
-   * samples). The latter number will likely increase as we improve the security
-   * hardening.
+   * clock cycles and the scope captures 90 clock cycles at kClockFreqCpuHz (900
+   * samples).
    */
-  kIbexAesSleepCycles = 200,
+  kIbexAesSleepCycles = 400,
 };
 
 static aes_cfg_t aes_cfg;

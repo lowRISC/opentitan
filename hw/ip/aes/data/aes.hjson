@@ -29,7 +29,7 @@
     },
     { name:    "SBoxImpl",
       type:    "aes_pkg::sbox_impl_e",
-      default: "aes_pkg::SBoxImplCanrightMaskedNoreuse",
+      default: "aes_pkg::SBoxImplDom",
       desc:    '''
         Selection of the S-Box implementation. See aes_pkg.sv.
       '''
