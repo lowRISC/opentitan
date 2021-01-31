@@ -250,7 +250,7 @@ module top_earlgrey_asic (
 
   top_earlgrey #(
     .AesMasking(1'b1),
-    .AesSBoxImpl(aes_pkg::SBoxImplCanrightMaskedNoreuse),
+    .AesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b0),
     .KmacEnMasking(1),  // DOM AND + Masking scheme

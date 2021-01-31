@@ -238,7 +238,7 @@ module top_englishbreakfast_cw305 #(
   assign ast_base_rst.aon_pok      = rst_n;
   top_englishbreakfast #(
     .AesMasking(1'b1),
-    .AesSBoxImpl(aes_pkg::SBoxImplCanrightMaskedNoreuse),
+    .AesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
     .IbexRegFile(ibex_pkg::RegFileFPGA),

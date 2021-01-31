@@ -8,7 +8,7 @@ package aes_pkg;
 
 // Widths of signals carrying pseudo-random data for clearing and masking and purposes
 parameter int unsigned WidthPRDClearing = 64;
-parameter int unsigned WidthPRDSBox     = 18; // Number PRD bits per S-Box. This includes the
+parameter int unsigned WidthPRDSBox     = 28; // Number PRD bits per S-Box. This includes the
                                               // 8 bits for the output mask when using any of the
                                               // masked Canright S-Box implementations.
 parameter int unsigned WidthPRDData     = 16*WidthPRDSBox; // 16 S-Boxes for the data path
@@ -33,20 +33,22 @@ parameter clearing_lfsr_perm_t RndCnstClearingLfsrPermDefault = {
 // We use a single seed that is split down into chunks internally. All LFSR chunks use the same
 // permutation.
 // These LFSR parameters have been generated with
-// $ util/design/gen-lfsr-seed.py --width 360 --seed 31468618 --prefix "Masking"
-parameter int MaskingLfsrWidth = 360; // = WidthPRDMasking = WidthPRDSBox * (16 + 4)
+// $ util/design/gen-lfsr-seed.py --width 560 --seed 31468618 --prefix "Masking"
+parameter int MaskingLfsrWidth = 560; // = WidthPRDMasking = WidthPRDSBox * (16 + 4)
 typedef logic [MaskingLfsrWidth-1:0] masking_lfsr_seed_t;
 parameter masking_lfsr_seed_t RndCnstMaskingLfsrSeedDefault = {
-  180'h5ae9b31605f9077a6b758a442031e1c4616ea343ec153,
-  180'h282a30c132b5723c5a4cf4743b3c7c32d580f74f1713a
+  280'h53813d65392c83c01ea5d8be84f1e258891711849a075a71f35fe9b31605f9077a6b75,
+  280'h8a442031e1c4616ea343ec153282a30c132b5723c5a4cf4743b3c7c32d580f74f1713a
 };
 
 // These LFSR parameters have been generated with
-// $ util/design/gen-lfsr-seed.py --width 36 --seed 31468618 --prefix "MskgChunk"
-parameter int MskgChunkLfsrWidth = 36; // = ChunkSizePRDMasking = WidthPRDMasking/10
+// $ util/design/gen-lfsr-seed.py --width 56 --seed 31468618 --prefix "MskgChunk"
+parameter int MskgChunkLfsrWidth = 56; // = ChunkSizePRDMasking = WidthPRDMasking/10
 typedef logic [MskgChunkLfsrWidth-1:0][$clog2(MskgChunkLfsrWidth)-1:0] mskg_chunk_lfsr_perm_t;
-parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPermDefault =
-    216'h6587da04c59c02125750f35e7634e08951122874022ce19b143211;
+parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPermDefault = {
+  80'h61e8c17eab6c959af0bc,
+  256'h09e6cf18694b61b24c75f40902f5395b9a35c8a82b726450f80459d31b143211
+};
 
 typedef enum integer {
   SBoxImplLut,                   // Unmasked LUT-based S-Box
