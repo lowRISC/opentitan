@@ -4,6 +4,8 @@
 //
 // AES SBox
 
+`include "prim_assert.sv"
+
 module aes_sbox import aes_pkg::*;
 #(
   parameter sbox_impl_e SBoxImpl = SBoxImplLut
@@ -59,19 +61,27 @@ module aes_sbox import aes_pkg::*;
   end else begin : gen_sbox_masked
 
     if (SBoxImpl == SBoxImplDom) begin : gen_sbox_dom
+      // Tie off unused inputs.
+      if (WidthPRDSBox > 8) begin : gen_unused_prd
+        logic [WidthPRDSBox-1-8:0] unused_prd;
+        assign unused_prd = prd_i[WidthPRDSBox-1:8];
+      end
+
       aes_sbox_dom u_aes_sbox (
-        .clk_i      ( clk_i       ),
-        .rst_ni     ( rst_ni      ),
-        .en_i       ( en_i        ),
-        .out_req_o  ( out_req_o   ),
-        .out_ack_i  ( out_ack_i   ),
-        .op_i       ( op_i        ),
-        .data_i     ( data_i      ),
-        .mask_i     ( mask_i      ),
-        .prd_i      ( prd_i[27:0] ),
-        .data_o     ( data_o      ),
-        .mask_o     ( mask_o      )
+        .clk_i      ( clk_i      ),
+        .rst_ni     ( rst_ni     ),
+        .en_i       ( en_i       ),
+        .out_req_o  ( out_req_o  ),
+        .out_ack_i  ( out_ack_i  ),
+        .op_i       ( op_i       ),
+        .data_i     ( data_i     ),
+        .mask_i     ( mask_i     ),
+        .prd_i      ( prd_i[7:0] ),
+        .data_o     ( data_o     ),
+        .mask_o     ( mask_o     )
       );
+
+      `ASSERT_INIT(AesWidthPRDSBox, WidthPRDSBox == 8)
 
     end else if (SBoxImpl == SBoxImplCanrightMaskedNoreuse) begin : gen_sbox_canright_masked_noreuse
       // Tie off unused inputs.
@@ -93,6 +103,8 @@ module aes_sbox import aes_pkg::*;
         .mask_o ( mask_o      )
       );
 
+      `ASSERT_INIT(AesWidthPRDSBox, WidthPRDSBox == 18)
+
     end else begin : gen_sbox_canright_masked // SBoxImpl == SBoxImplCanrightMasked
       // Tie off unused inputs.
       logic  unused_clk;
@@ -113,6 +125,7 @@ module aes_sbox import aes_pkg::*;
         .mask_o ( mask_o     )
       );
 
+      `ASSERT_INIT(AesWidthPRDSBox, WidthPRDSBox == 8)
     end
   end
 
