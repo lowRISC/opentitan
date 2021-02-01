@@ -624,6 +624,8 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % if m["scan_reset"] == "true":
       .scan_rst_ni  (scan_rst_ni),
     % endif
+
+      // Clock and reset connections
     % for k, v in m["clock_connections"].items():
       .${k} (${v}),
     % endfor

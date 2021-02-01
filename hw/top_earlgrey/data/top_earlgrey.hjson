@@ -156,6 +156,9 @@
       { name: "sys_aon",     gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "aon"     }
       { name: "spi_device",  gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "io_div2", sw: 1 }
       { name: "usb",         gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "usb",     sw: 1 }
+      { name: "i2c0",        gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "io_div2", sw: 1 },
+      { name: "i2c1",        gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "io_div2", sw: 1 },
+      { name: "i2c2",        gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "io_div2", sw: 1 },
     ]
   }
 
@@ -274,6 +277,34 @@
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_device"},
       base_addr: "0x40050000",
+    },
+    { name: "i2c0",
+      type: "i2c",
+      clock_srcs: {clk_i: "io_div4"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "i2c0"},
+      base_addr: "0x40080000",
+    },
+    { name: "i2c1",
+      type: "i2c",
+      clock_srcs: {clk_i: "io_div4"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "i2c1"},
+      base_addr: "0x40090000",
+    },
+    { name: "i2c2",
+      type: "i2c",
+      clock_srcs: {clk_i: "io_div4"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "i2c2"},
+      base_addr: "0x400A0000",
+    },
+    { name: "pattgen",
+      type: "pattgen",
+      clock_srcs: {clk_i: "io_div4"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "sys_io_div4"},
+      base_addr: "0x400E0000",
     },
     { name: "rv_timer",
       type: "rv_timer",
@@ -771,8 +802,8 @@
   // and include every modules.
   // first item goes to LSB of the interrupt source
   interrupt_module: ["uart0", "uart1", "uart2", "uart3",
-                     "gpio", "spi_device", "flash_ctrl",
-                     "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr",
+                     "gpio", "spi_device", "i2c0", "i2c1", "i2c2", "pattgen",
+                     "flash_ctrl", "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr",
                      "otbn", "keymgr", "kmac", "otp_ctrl", "csrng", "edn0", "edn1",
                      "entropy_src"]
 
@@ -818,7 +849,8 @@
     //  between the modules and the IO PADS.
     //  If `mio_modules` aren't defined, it uses all remaining modules from
     //  module list except defined in `dio_modules`.
-    mio_modules: ["gpio", "uart1", "uart2", "uart3", ]
+    mio_modules: ["gpio", "uart1", "uart2", "uart3",
+                  "i2c0", "i2c1", "i2c2", "pattgen"]
 
     // If any module isn't defined in above two lists, its inputs will be tied
     //  to 0, and the output/OE signals will be floating (or connected to
