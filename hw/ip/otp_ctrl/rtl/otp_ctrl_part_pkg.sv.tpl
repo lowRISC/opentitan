@@ -166,7 +166,7 @@ package otp_ctrl_part_pkg;
     ${int(part["size"])*8}'({
     % for item in part["items"][::-1]:
       % if offset != item['offset'] + item['size']:
-      ${"{}'h{:0X}".format((offset - item['size'] - item['offset']) * 8, 0)}, // unallocated space <% offset = item['offset'] + item['size'] %>
+      ${"{}'h{:0X}".format((offset - item['size'] - item['offset']) * 8, 0)}, // unallocated space<% offset = item['offset'] + item['size'] %>
       % endif
       ${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${("\n    })," if k < len(otp_mmap.config["partitions"])-1 else "\n    })});") if loop.last else ","}<% offset -= item['size'] %>
     % endfor
