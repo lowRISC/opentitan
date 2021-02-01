@@ -54,6 +54,7 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check Licence Headers
   - bash: ci/scripts/python-lint.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
+    condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Run Python lint
     continueOnError: true
   - bash: ci/scripts/check-generated.sh
@@ -74,7 +75,7 @@ jobs:
     displayName: Render documentation
   - bash: ci/scripts/build-site.sh
     displayName: Render landing site
-  - bash: ci/scripts/get-build-type.sh $SYSTEM_PULLREQUEST_TARGETBRANCH "$(Build.Reason)"
+  - bash: ci/scripts/get-build-type.sh "$SYSTEM_PULLREQUEST_TARGETBRANCH" "$(Build.Reason)"
     displayName: Check what kinds of changes the PR contains
     name: DetermineBuildType
 
