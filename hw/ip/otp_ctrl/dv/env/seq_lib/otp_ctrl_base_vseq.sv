@@ -90,9 +90,20 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_spinwait(ral.intr_state.otp_operation_done, 1);
 
     csr_rd(ral.direct_access_rdata_0, rdata0);
-    if (is_secret(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
+    if (is_secret(addr) || is_digest(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
   endtask : dai_rd
+
+  virtual task dai_rd_check(bit [TL_DW-1:0] addr,
+                            bit [TL_DW-1:0] exp_data0,
+                            bit [TL_DW-1:0] exp_data1 = 0);
+    bit [TL_DW-1:0] rdata0, rdata1;
+    dai_rd(addr, rdata0, rdata1);
+    `DV_CHECK_EQ(rdata0, exp_data0, $sformatf("dai addr %0h rdata0 readout mismatch", addr))
+    if (is_secret(addr) || is_digest(addr)) begin
+      `DV_CHECK_EQ(rdata1, exp_data1, $sformatf("dai addr %0h rdata1 readout mismatch", addr))
+    end
+  endtask: dai_rd_check
 
   // this task exercises an OTP digest calculation via the DAI interface
   virtual task cal_digest(int part_idx);

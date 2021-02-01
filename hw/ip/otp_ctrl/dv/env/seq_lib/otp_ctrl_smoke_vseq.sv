@@ -94,7 +94,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         end
 
         // if write sw partitions, check tlul window
-        if (part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx} && ($urandom_range(0, 1))) begin
+        if (is_sw_part(dai_addr) && ($urandom_range(0, 1))) begin
           uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
 
           // random issue reset, OTP content should not be cleared
