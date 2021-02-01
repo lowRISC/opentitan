@@ -529,6 +529,78 @@ module rstmgr import rstmgr_pkg::*; (
     .clk_o(resets_o.rst_usb_n[Domain0Sel])
   );
 
+  logic [PowerDomains-1:0] rst_i2c0_n;
+  assign rst_i2c0_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_i2c0_n[DomainAonSel] = rst_i2c0_n[DomainAonSel];
+
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_0_i2c0 (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
+    .d_i(sw_rst_ctrl_n[I2C0]),
+    .q_o(rst_i2c0_n[Domain0Sel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_i2c0_mux (
+    .clk0_i(rst_i2c0_n[Domain0Sel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_i2c0_n[Domain0Sel])
+  );
+
+  logic [PowerDomains-1:0] rst_i2c1_n;
+  assign rst_i2c1_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_i2c1_n[DomainAonSel] = rst_i2c1_n[DomainAonSel];
+
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_0_i2c1 (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
+    .d_i(sw_rst_ctrl_n[I2C1]),
+    .q_o(rst_i2c1_n[Domain0Sel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_i2c1_mux (
+    .clk0_i(rst_i2c1_n[Domain0Sel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_i2c1_n[Domain0Sel])
+  );
+
+  logic [PowerDomains-1:0] rst_i2c2_n;
+  assign rst_i2c2_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_i2c2_n[DomainAonSel] = rst_i2c2_n[DomainAonSel];
+
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_0_i2c2 (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_sys_src_n[Domain0Sel]),
+    .d_i(sw_rst_ctrl_n[I2C2]),
+    .q_o(rst_i2c2_n[Domain0Sel])
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_0_i2c2_mux (
+    .clk0_i(rst_i2c2_n[Domain0Sel]),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(resets_o.rst_i2c2_n[Domain0Sel])
+  );
+
 
   ////////////////////////////////////////////////////
   // Reset info construction                        //

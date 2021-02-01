@@ -31,6 +31,10 @@
       uart1
       uart2
       uart3
+      i2c0
+      i2c1
+      i2c2
+      pattgen
       gpio
       spi_device
       rv_timer
@@ -126,6 +130,78 @@
       [
         {
           base_addr: 0x40030000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: i2c0
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addr: 0x40080000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: i2c1
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addr: 0x40090000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: i2c2
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addr: 0x400A0000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: pattgen
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: pattgen
+      addr_range:
+      [
+        {
+          base_addr: 0x400E0000
           size_byte: 0x1000
         }
       ]
