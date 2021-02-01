@@ -1,17 +1,12 @@
-From 256422ad7df932c6f9934e65361cd963b8ac3bf0 Mon Sep 17 00:00:00 2001
+From c9bb351a0d0f915b0f66cf0bee38afedbea3c02c Mon Sep 17 00:00:00 2001
 From: Philipp Wagner <phw@lowrisc.org>
 Date: Fri, 22 Feb 2019 14:48:46 +0000
 Subject: [PATCH 2/2] Use lowrisc instead of PULP primitives
 
 Signed-off-by: Michael Schaffner <msf@google.com>
----
- src/dm_csrs.sv      | 42 +++++++++++++++-------------------
- src/dmi_cdc.sv      | 56 +++++++++++++++++++++++++++------------------
- src/dmi_jtag_tap.sv | 20 +++++++---------
- 3 files changed, 60 insertions(+), 58 deletions(-)
 
 diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
-index f131392..0d88e79 100644
+index f131392..e4698eb 100644
 --- a/src/dm_csrs.sv
 +++ b/src/dm_csrs.sv
 @@ -78,6 +78,7 @@ module dm_csrs #(
@@ -43,7 +38,7 @@ index f131392..0d88e79 100644
    // SBA
    assign sbautoincrement_o = sbcs_q.sbautoincrement;
    assign sbreadonaddr_o    = sbcs_q.sbreadonaddr;
-@@ -550,27 +544,27 @@ module dm_csrs #(
+@@ -550,27 +544,28 @@ module dm_csrs #(
    assign progbuf_o   = progbuf_q;
    assign data_o      = data_q;
  
@@ -84,7 +79,8 @@ index f131392..0d88e79 100644
 +    .rdata_o ( dmi_resp_o.data      ),
 +    .rvalid_o( dmi_resp_valid_o     ),
 +    .rready_i( dmi_resp_ready_i     ),
-+    .depth_o (                      )  // Doesn't use
++    .full_o  (                      ), // Unused
++    .depth_o (                      )  // Unused
    );
  
    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
@@ -190,6 +186,3 @@ index 3d11145..94b51d6 100644
    );
  
    // TDO changes state at negative edge of TCK
--- 
-2.28.0.rc0.105.gf9edc3c819-goog
-
