@@ -19,6 +19,18 @@ tl_device_t xbar_devices[$] = '{
     '{"uart3", '{
         '{32'h40030000, 32'h40030fff}
     }},
+    '{"i2c0", '{
+        '{32'h40080000, 32'h40080fff}
+    }},
+    '{"i2c1", '{
+        '{32'h40090000, 32'h40090fff}
+    }},
+    '{"i2c2", '{
+        '{32'h400a0000, 32'h400a0fff}
+    }},
+    '{"pattgen", '{
+        '{32'h400e0000, 32'h400e0fff}
+    }},
     '{"gpio", '{
         '{32'h40040000, 32'h40040fff}
     }},
@@ -72,6 +84,10 @@ tl_host_t xbar_hosts[$] = '{
         "uart1",
         "uart2",
         "uart3",
+        "i2c0",
+        "i2c1",
+        "i2c2",
+        "pattgen",
         "gpio",
         "spi_device",
         "rv_timer",
