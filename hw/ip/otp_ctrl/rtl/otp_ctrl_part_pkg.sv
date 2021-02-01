@@ -236,7 +236,7 @@ package otp_ctrl_part_pkg;
     }),
     1920'({
       64'hABFF25A58087D34A,
-      1600'h0, // unallocated space 
+      1600'h0, // unallocated space
       256'h37E5AE39A58FACEE41389646B3968A3B128F4AF0AFFC1AAC77ADEFF42376E09D
     }),
     6144'({
