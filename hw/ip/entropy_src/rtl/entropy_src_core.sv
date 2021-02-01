@@ -473,7 +473,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rvalid_o   (sfifo_esrng_not_empty),
     .rdata_o    (sfifo_esrng_rdata),
     .rready_i   (sfifo_esrng_pop),
-    .depth_o    ()
+    .depth_o    (),
+    .full_o     ()
   );
 
   // fifo controls
@@ -1262,7 +1263,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rvalid_o   (sfifo_precon_not_empty),
     .rdata_o    (sfifo_precon_rdata),
     .rready_i   (sfifo_precon_pop),
-    .depth_o    (sfifo_precon_depth)
+    .depth_o    (sfifo_precon_depth),
+    .full_o     ()
   );
 
 
@@ -1426,7 +1428,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rvalid_o       (sfifo_esfinal_not_empty),
     .rready_i       (sfifo_esfinal_pop),
     .rdata_o        (sfifo_esfinal_rdata),
-    .depth_o        (sfifo_esfinal_depth)
+    .depth_o        (sfifo_esfinal_depth),
+    .full_o         ()
   );
 
   assign fips_compliance = !es_bypass_mode && es_enable_rng && !es_enable_lfsr && !rng_bit_en;

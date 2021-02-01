@@ -646,7 +646,8 @@ module otp_ctrl
     .rvalid_o ( otp_fifo_valid ),
     .rready_i ( otp_rvalid     ),
     .rdata_o  ( otp_part_idx   ),
-    .depth_o  (                )
+    .depth_o  (                ),
+    .full_o   (                )
   );
 
   // Steer response back to the partition where this request originated.

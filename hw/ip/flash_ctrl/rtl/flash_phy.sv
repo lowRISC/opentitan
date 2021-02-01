@@ -108,6 +108,7 @@ module flash_phy import flash_ctrl_pkg::*; (
     .wready_o(seq_fifo_rdy),
     .wdata_i (host_bank_sel),
     .depth_o (),
+    .full_o (),
     .rvalid_o(seq_fifo_pending),
     .rready_i(host_req_done_o),
     .rdata_o (rsp_bank_sel)
@@ -170,6 +171,7 @@ module flash_phy import flash_ctrl_pkg::*; (
       .wready_o(host_rsp_avail[bank]),
       .wdata_i ({rd_err[bank], rd_data[bank]}),
       .depth_o (),
+      .full_o (),
       .rvalid_o(host_rsp_vld[bank]),
       .rready_i(host_rsp_ack[bank]),
       .rdata_o ({host_rsp_err[bank], host_rsp_data[bank]})

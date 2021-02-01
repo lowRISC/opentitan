@@ -274,6 +274,7 @@ module hmac
     .wdata_i (fifo_wdata),
 
     .depth_o (fifo_depth),
+    .full_o  (),
 
     .rvalid_o(fifo_rvalid),
     .rready_i(fifo_rready),

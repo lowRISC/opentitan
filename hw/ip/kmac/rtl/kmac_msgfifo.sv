@@ -144,6 +144,7 @@ module kmac_msgfifo
     .wdata_i (fifo_wdata),
 
     .depth_o (fifo_depth_o),
+    .full_o  (fifo_full_o),
 
     .rvalid_o (fifo_rvalid),
     .rready_i (fifo_rready),
@@ -159,7 +160,6 @@ module kmac_msgfifo
   assign msg_strb_o  = fifo_rdata.strb;
 
   assign fifo_empty_o = fifo_depth_o == '0;
-  assign fifo_full_o  = fifo_depth_o == MsgDepth;
 
   // Flush (process from outside) handling
   flush_st_e flush_st, flush_st_d;
@@ -237,4 +237,3 @@ module kmac_msgfifo
   `ASSUME(MessageValid_a, fifo_valid_i |-> flush_st == FlushIdle)
 
 endmodule
-

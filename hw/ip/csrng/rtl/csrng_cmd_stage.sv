@@ -124,7 +124,8 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     .rvalid_o       (sfifo_cmd_not_empty),
     .rready_i       (sfifo_cmd_pop),
     .rdata_o        (sfifo_cmd_rdata),
-    .depth_o        (sfifo_cmd_depth)
+    .depth_o        (sfifo_cmd_depth),
+    .full_o         ()
   );
 
   assign sfifo_cmd_wdata = cmd_stage_bus_i;
@@ -318,7 +319,8 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     .rvalid_o       (sfifo_genbits_not_empty),
     .rready_i       (sfifo_genbits_pop),
     .rdata_o        (sfifo_genbits_rdata),
-    .depth_o        () // sfifo_genbits_depth)
+    .depth_o        (),
+    .full_o         ()
   );
 
   assign sfifo_genbits_wdata = {genbits_fips_i,genbits_bus_i};

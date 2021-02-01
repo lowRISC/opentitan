@@ -139,6 +139,7 @@ module prim_generic_flash_bank #(
     .wready_o(ack),
     .wdata_i (cmd_d),
     .depth_o (),
+    .full_o (),
     .rvalid_o(cmd_valid),
     .rready_i(pop_cmd),
     .rdata_o (cmd_q)

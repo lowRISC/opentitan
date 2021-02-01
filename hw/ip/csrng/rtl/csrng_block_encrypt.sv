@@ -137,7 +137,8 @@ module csrng_block_encrypt #(
     .rvalid_o (sfifo_blkenc_not_empty),
     .rready_i (sfifo_blkenc_pop),
     .rdata_o  (sfifo_blkenc_rdata),
-    .depth_o  ()
+    .depth_o  (),
+    .full_o   ()
   );
 
   assign sfifo_blkenc_push = block_encrypt_req_i && sfifo_blkenc_not_full;
