@@ -334,7 +334,7 @@ jobs:
     - lint
     # The bootrom is built into the FPGA image at synthesis time.
     - sw_build_nexysvideo
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
   pool: ci-public
   timeoutInMinutes: 120 # 2 hours
   steps:
@@ -386,7 +386,7 @@ jobs:
     # By generating the CW305 bootrom binary we would break execute_fpga_tests executed on the
     # NexysVideo.
     - sw_build
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0')
   pool: ci-public
   timeoutInMinutes: 120 # 2 hours
   steps:
