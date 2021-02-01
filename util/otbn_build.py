@@ -193,6 +193,17 @@ def main() -> int:
                  out_embedded_obj])
 
         call_rv32_objcopy(args)
+
+        # After objcopy has finished, we have to do a little surgery to
+        # overwrite the ELF e_type field (a 16-bit little-endian number at file
+        # offset 0x10). It will currently be 0x2 (ET_EXEC), which means a
+        # fully-linked executable file. Binutils doesn't want to link with
+        # anything of type ET_EXEC (since it usually wouldn't make any sense to
+        # do so). Hack the type to be 0x1 (ET_REL), which means an object file.
+        with open(out_embedded_obj, 'r+b') as emb_file:
+            emb_file.seek(0x10)
+            emb_file.write(b'\1\0')
+
     except subprocess.CalledProcessError as e:
         # Show a nicer error message if any of the called programs fail.
         log.fatal("Command {!r} returned non-zero exit code {}".format(
