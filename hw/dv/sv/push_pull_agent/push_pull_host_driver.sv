@@ -51,40 +51,30 @@ class push_pull_host_driver #(parameter int HostDataWidth = 32,
 
   // Drives host side of ready/valid protocol
   virtual task drive_push();
-    repeat (req.host_delay) begin
-      if (in_reset) break;
-      @(`PUSH_DRIVER);
-    end
-    if (!in_reset) begin
-      `PUSH_DRIVER.valid_int  <= 1'b1;
-      `PUSH_DRIVER.h_data_int <= req.h_data;
-    end
-    do begin
-      @(`PUSH_DRIVER);
-    end while (!`PUSH_DRIVER.ready && !in_reset);
-    if (!in_reset) begin
-      `PUSH_DRIVER.valid_int <= 1'b0;
-      if (!cfg.hold_h_data_until_next_req) `PUSH_DRIVER.h_data_int <= 'x;
-    end
+    `DV_SPINWAIT_EXIT(
+        repeat (req.host_delay) @(`PUSH_DRIVER);
+        `PUSH_DRIVER.valid_int  <= 1'b1;
+        `PUSH_DRIVER.h_data_int <= req.h_data;
+        do begin
+          @(`PUSH_DRIVER);
+        end while (!`PUSH_DRIVER.ready);
+        `PUSH_DRIVER.valid_int <= 1'b0;
+        if (!cfg.hold_h_data_until_next_req) `PUSH_DRIVER.h_data_int <= 'x;,
+        wait(in_reset);)
   endtask
 
   // Drives host side of req/ack protocol
   virtual task drive_pull();
-    repeat (req.host_delay) begin
-      if (in_reset) break;
-      @(`PULL_DRIVER);
-    end
-    if (!in_reset) begin
-      `PULL_DRIVER.req_int    <= 1'b1;
-      `PULL_DRIVER.h_data_int <= req.h_data;
-    end
-    do begin
-      @(`PULL_DRIVER);
-    end while (!`PULL_DRIVER.ack && !in_reset);
-    if (!in_reset) begin
-      `PULL_DRIVER.req_int <= 1'b0;
-      if (!cfg.hold_h_data_until_next_req) `PULL_DRIVER.h_data_int <= 'x;
-    end
+    `DV_SPINWAIT_EXIT(
+        repeat (req.host_delay) @(`PULL_DRIVER);
+        `PULL_DRIVER.req_int    <= 1'b1;
+        `PULL_DRIVER.h_data_int <= req.h_data;
+        do begin
+          @(`PULL_DRIVER);
+        end while (!`PULL_DRIVER.ack);
+        `PULL_DRIVER.req_int <= 1'b0;
+        if (!cfg.hold_h_data_until_next_req) `PULL_DRIVER.h_data_int <= 'x;,
+        wait(in_reset);)
   endtask
 
 endclass
