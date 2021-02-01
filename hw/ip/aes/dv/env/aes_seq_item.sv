@@ -62,6 +62,8 @@ class aes_seq_item extends uvm_sequence_item;
 
   // indicate message start  in manual mode
   bit             start_item       = 0;
+  // indicate a message was split in two with this item.
+  bit             split_item       = 0;
 
 
   ///////////////////////////////////////
@@ -104,10 +106,8 @@ class aes_seq_item extends uvm_sequence_item;
 
     clr_reg_dist_select == 0 ->            clear_reg == 0;
     clr_reg_dist_select == 1 ->            $countones(clear_reg) > 1;
-    clr_reg_dist_select == 2 -> clear_reg dist {     1  :/ clear_reg_pct/4,
-                                                     2  :/ clear_reg_pct/4,
-                                                     4  :/ clear_reg_pct/4,
-                                                     8  :/ clear_reg_pct/4
+    clr_reg_dist_select == 2 -> clear_reg dist {     1  :/ clear_reg_pct/2,
+                                                     2  :/ clear_reg_pct/2
                                                 };
 
   }
@@ -259,7 +259,7 @@ class aes_seq_item extends uvm_sequence_item;
     iv_vld       = '0;
     key_vld      = '{default: '0};
     data_out_vld = '0;
-    start_item   = 0;
+    start_item   =  0;
   endfunction // clean
 
 
@@ -285,6 +285,7 @@ class aes_seq_item extends uvm_sequence_item;
     aes_mode         = rhs_.aes_mode;
     clear_reg        = rhs_.clear_reg;
     start_item       = rhs_.start_item;
+    split_item       = rhs_.split_item;
     data_was_cleared = rhs_.data_was_cleared;
   endfunction // copy
 
