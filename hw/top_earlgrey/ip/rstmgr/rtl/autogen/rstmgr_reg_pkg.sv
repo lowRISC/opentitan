@@ -10,7 +10,7 @@ package rstmgr_reg_pkg;
   parameter int RdWidth = 32;
   parameter int IdxWidth = 4;
   parameter int NumHwResets = 2;
-  parameter int NumSwResets = 2;
+  parameter int NumSwResets = 5;
 
   // Address width within the block
   parameter int BlockAw = 6;
@@ -106,25 +106,25 @@ package rstmgr_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    rstmgr_reg2hw_reset_info_reg_t reset_info; // [17:16]
-    rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [15:11]
-    rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [10:6]
-    rstmgr_reg2hw_sw_rst_regen_mreg_t [1:0] sw_rst_regen; // [5:4]
-    rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [1:0] sw_rst_ctrl_n; // [3:0]
+    rstmgr_reg2hw_reset_info_reg_t reset_info; // [26:25]
+    rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [24:20]
+    rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [19:15]
+    rstmgr_reg2hw_sw_rst_regen_mreg_t [4:0] sw_rst_regen; // [14:10]
+    rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [4:0] sw_rst_ctrl_n; // [9:0]
   } rstmgr_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    rstmgr_hw2reg_reset_info_reg_t reset_info; // [84:78]
-    rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [77:76]
-    rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [75:72]
-    rstmgr_hw2reg_alert_info_reg_t alert_info; // [71:40]
-    rstmgr_hw2reg_cpu_info_ctrl_reg_t cpu_info_ctrl; // [39:38]
-    rstmgr_hw2reg_cpu_info_attr_reg_t cpu_info_attr; // [37:34]
-    rstmgr_hw2reg_cpu_info_reg_t cpu_info; // [33:2]
-    rstmgr_hw2reg_sw_rst_ctrl_n_mreg_t [1:0] sw_rst_ctrl_n; // [1:0]
+    rstmgr_hw2reg_reset_info_reg_t reset_info; // [87:81]
+    rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [80:79]
+    rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [78:75]
+    rstmgr_hw2reg_alert_info_reg_t alert_info; // [74:43]
+    rstmgr_hw2reg_cpu_info_ctrl_reg_t cpu_info_ctrl; // [42:41]
+    rstmgr_hw2reg_cpu_info_attr_reg_t cpu_info_attr; // [40:37]
+    rstmgr_hw2reg_cpu_info_reg_t cpu_info; // [36:5]
+    rstmgr_hw2reg_sw_rst_ctrl_n_mreg_t [4:0] sw_rst_ctrl_n; // [4:0]
   } rstmgr_hw2reg_t;
 
   // Register Address

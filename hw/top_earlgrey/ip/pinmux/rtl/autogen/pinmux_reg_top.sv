@@ -23,7 +23,7 @@ module pinmux_reg_top (
 
   import pinmux_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 8;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -179,6 +179,24 @@ module pinmux_reg_top (
   logic [5:0] periph_insel_6_in_34_qs;
   logic [5:0] periph_insel_6_in_34_wd;
   logic periph_insel_6_in_34_we;
+  logic [5:0] periph_insel_7_in_35_qs;
+  logic [5:0] periph_insel_7_in_35_wd;
+  logic periph_insel_7_in_35_we;
+  logic [5:0] periph_insel_7_in_36_qs;
+  logic [5:0] periph_insel_7_in_36_wd;
+  logic periph_insel_7_in_36_we;
+  logic [5:0] periph_insel_7_in_37_qs;
+  logic [5:0] periph_insel_7_in_37_wd;
+  logic periph_insel_7_in_37_we;
+  logic [5:0] periph_insel_7_in_38_qs;
+  logic [5:0] periph_insel_7_in_38_wd;
+  logic periph_insel_7_in_38_we;
+  logic [5:0] periph_insel_7_in_39_qs;
+  logic [5:0] periph_insel_7_in_39_wd;
+  logic periph_insel_7_in_39_we;
+  logic [5:0] periph_insel_8_qs;
+  logic [5:0] periph_insel_8_wd;
+  logic periph_insel_8_we;
   logic [5:0] mio_outsel_0_out_0_qs;
   logic [5:0] mio_outsel_0_out_0_wd;
   logic mio_outsel_0_out_0_we;
@@ -1567,6 +1585,166 @@ module pinmux_reg_top (
     .qs     (periph_insel_6_in_34_qs)
   );
 
+
+  // Subregister 35 of Multireg periph_insel
+  // R[periph_insel_7]: V(False)
+
+  // F[in_35]: 5:0
+  prim_subreg #(
+    .DW      (6),
+    .SWACCESS("RW"),
+    .RESVAL  (6'h0)
+  ) u_periph_insel_7_in_35 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (periph_insel_7_in_35_we & regen_qs),
+    .wd     (periph_insel_7_in_35_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.periph_insel[35].q ),
+
+    // to register interface (read)
+    .qs     (periph_insel_7_in_35_qs)
+  );
+
+
+  // F[in_36]: 11:6
+  prim_subreg #(
+    .DW      (6),
+    .SWACCESS("RW"),
+    .RESVAL  (6'h0)
+  ) u_periph_insel_7_in_36 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (periph_insel_7_in_36_we & regen_qs),
+    .wd     (periph_insel_7_in_36_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.periph_insel[36].q ),
+
+    // to register interface (read)
+    .qs     (periph_insel_7_in_36_qs)
+  );
+
+
+  // F[in_37]: 17:12
+  prim_subreg #(
+    .DW      (6),
+    .SWACCESS("RW"),
+    .RESVAL  (6'h0)
+  ) u_periph_insel_7_in_37 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (periph_insel_7_in_37_we & regen_qs),
+    .wd     (periph_insel_7_in_37_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.periph_insel[37].q ),
+
+    // to register interface (read)
+    .qs     (periph_insel_7_in_37_qs)
+  );
+
+
+  // F[in_38]: 23:18
+  prim_subreg #(
+    .DW      (6),
+    .SWACCESS("RW"),
+    .RESVAL  (6'h0)
+  ) u_periph_insel_7_in_38 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (periph_insel_7_in_38_we & regen_qs),
+    .wd     (periph_insel_7_in_38_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.periph_insel[38].q ),
+
+    // to register interface (read)
+    .qs     (periph_insel_7_in_38_qs)
+  );
+
+
+  // F[in_39]: 29:24
+  prim_subreg #(
+    .DW      (6),
+    .SWACCESS("RW"),
+    .RESVAL  (6'h0)
+  ) u_periph_insel_7_in_39 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (periph_insel_7_in_39_we & regen_qs),
+    .wd     (periph_insel_7_in_39_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.periph_insel[39].q ),
+
+    // to register interface (read)
+    .qs     (periph_insel_7_in_39_qs)
+  );
+
+
+  // Subregister 40 of Multireg periph_insel
+  // R[periph_insel_8]: V(False)
+
+  prim_subreg #(
+    .DW      (6),
+    .SWACCESS("RW"),
+    .RESVAL  (6'h0)
+  ) u_periph_insel_8 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (periph_insel_8_we & regen_qs),
+    .wd     (periph_insel_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.periph_insel[40].q ),
+
+    // to register interface (read)
+    .qs     (periph_insel_8_qs)
+  );
 
 
 
@@ -4939,7 +5117,7 @@ module pinmux_reg_top (
 
 
 
-  logic [31:0] addr_hit;
+  logic [33:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == PINMUX_REGEN_OFFSET);
@@ -4950,30 +5128,32 @@ module pinmux_reg_top (
     addr_hit[ 5] = (reg_addr == PINMUX_PERIPH_INSEL_4_OFFSET);
     addr_hit[ 6] = (reg_addr == PINMUX_PERIPH_INSEL_5_OFFSET);
     addr_hit[ 7] = (reg_addr == PINMUX_PERIPH_INSEL_6_OFFSET);
-    addr_hit[ 8] = (reg_addr == PINMUX_MIO_OUTSEL_0_OFFSET);
-    addr_hit[ 9] = (reg_addr == PINMUX_MIO_OUTSEL_1_OFFSET);
-    addr_hit[10] = (reg_addr == PINMUX_MIO_OUTSEL_2_OFFSET);
-    addr_hit[11] = (reg_addr == PINMUX_MIO_OUTSEL_3_OFFSET);
-    addr_hit[12] = (reg_addr == PINMUX_MIO_OUTSEL_4_OFFSET);
-    addr_hit[13] = (reg_addr == PINMUX_MIO_OUTSEL_5_OFFSET);
-    addr_hit[14] = (reg_addr == PINMUX_MIO_OUTSEL_6_OFFSET);
-    addr_hit[15] = (reg_addr == PINMUX_MIO_OUT_SLEEP_VAL_0_OFFSET);
-    addr_hit[16] = (reg_addr == PINMUX_MIO_OUT_SLEEP_VAL_1_OFFSET);
-    addr_hit[17] = (reg_addr == PINMUX_DIO_OUT_SLEEP_VAL_OFFSET);
-    addr_hit[18] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_OFFSET);
-    addr_hit[19] = (reg_addr == PINMUX_WKUP_DETECTOR_0_OFFSET);
-    addr_hit[20] = (reg_addr == PINMUX_WKUP_DETECTOR_1_OFFSET);
-    addr_hit[21] = (reg_addr == PINMUX_WKUP_DETECTOR_2_OFFSET);
-    addr_hit[22] = (reg_addr == PINMUX_WKUP_DETECTOR_3_OFFSET);
-    addr_hit[23] = (reg_addr == PINMUX_WKUP_DETECTOR_4_OFFSET);
-    addr_hit[24] = (reg_addr == PINMUX_WKUP_DETECTOR_5_OFFSET);
-    addr_hit[25] = (reg_addr == PINMUX_WKUP_DETECTOR_6_OFFSET);
-    addr_hit[26] = (reg_addr == PINMUX_WKUP_DETECTOR_7_OFFSET);
-    addr_hit[27] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_0_OFFSET);
-    addr_hit[28] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_1_OFFSET);
-    addr_hit[29] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_0_OFFSET);
-    addr_hit[30] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_1_OFFSET);
-    addr_hit[31] = (reg_addr == PINMUX_WKUP_CAUSE_OFFSET);
+    addr_hit[ 8] = (reg_addr == PINMUX_PERIPH_INSEL_7_OFFSET);
+    addr_hit[ 9] = (reg_addr == PINMUX_PERIPH_INSEL_8_OFFSET);
+    addr_hit[10] = (reg_addr == PINMUX_MIO_OUTSEL_0_OFFSET);
+    addr_hit[11] = (reg_addr == PINMUX_MIO_OUTSEL_1_OFFSET);
+    addr_hit[12] = (reg_addr == PINMUX_MIO_OUTSEL_2_OFFSET);
+    addr_hit[13] = (reg_addr == PINMUX_MIO_OUTSEL_3_OFFSET);
+    addr_hit[14] = (reg_addr == PINMUX_MIO_OUTSEL_4_OFFSET);
+    addr_hit[15] = (reg_addr == PINMUX_MIO_OUTSEL_5_OFFSET);
+    addr_hit[16] = (reg_addr == PINMUX_MIO_OUTSEL_6_OFFSET);
+    addr_hit[17] = (reg_addr == PINMUX_MIO_OUT_SLEEP_VAL_0_OFFSET);
+    addr_hit[18] = (reg_addr == PINMUX_MIO_OUT_SLEEP_VAL_1_OFFSET);
+    addr_hit[19] = (reg_addr == PINMUX_DIO_OUT_SLEEP_VAL_OFFSET);
+    addr_hit[20] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_OFFSET);
+    addr_hit[21] = (reg_addr == PINMUX_WKUP_DETECTOR_0_OFFSET);
+    addr_hit[22] = (reg_addr == PINMUX_WKUP_DETECTOR_1_OFFSET);
+    addr_hit[23] = (reg_addr == PINMUX_WKUP_DETECTOR_2_OFFSET);
+    addr_hit[24] = (reg_addr == PINMUX_WKUP_DETECTOR_3_OFFSET);
+    addr_hit[25] = (reg_addr == PINMUX_WKUP_DETECTOR_4_OFFSET);
+    addr_hit[26] = (reg_addr == PINMUX_WKUP_DETECTOR_5_OFFSET);
+    addr_hit[27] = (reg_addr == PINMUX_WKUP_DETECTOR_6_OFFSET);
+    addr_hit[28] = (reg_addr == PINMUX_WKUP_DETECTOR_7_OFFSET);
+    addr_hit[29] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_0_OFFSET);
+    addr_hit[30] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_1_OFFSET);
+    addr_hit[31] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_0_OFFSET);
+    addr_hit[32] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_1_OFFSET);
+    addr_hit[33] = (reg_addr == PINMUX_WKUP_CAUSE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -5013,6 +5193,8 @@ module pinmux_reg_top (
     if (addr_hit[29] && reg_we && (PINMUX_PERMIT[29] != (PINMUX_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[30] && reg_we && (PINMUX_PERMIT[30] != (PINMUX_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[31] && reg_we && (PINMUX_PERMIT[31] != (PINMUX_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[32] && reg_we && (PINMUX_PERMIT[32] != (PINMUX_PERMIT[32] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[33] && reg_we && (PINMUX_PERMIT[33] != (PINMUX_PERMIT[33] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign regen_we = addr_hit[0] & reg_we & ~wr_err;
@@ -5123,433 +5305,451 @@ module pinmux_reg_top (
   assign periph_insel_6_in_34_we = addr_hit[7] & reg_we & ~wr_err;
   assign periph_insel_6_in_34_wd = reg_wdata[29:24];
 
-  assign mio_outsel_0_out_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign periph_insel_7_in_35_we = addr_hit[8] & reg_we & ~wr_err;
+  assign periph_insel_7_in_35_wd = reg_wdata[5:0];
+
+  assign periph_insel_7_in_36_we = addr_hit[8] & reg_we & ~wr_err;
+  assign periph_insel_7_in_36_wd = reg_wdata[11:6];
+
+  assign periph_insel_7_in_37_we = addr_hit[8] & reg_we & ~wr_err;
+  assign periph_insel_7_in_37_wd = reg_wdata[17:12];
+
+  assign periph_insel_7_in_38_we = addr_hit[8] & reg_we & ~wr_err;
+  assign periph_insel_7_in_38_wd = reg_wdata[23:18];
+
+  assign periph_insel_7_in_39_we = addr_hit[8] & reg_we & ~wr_err;
+  assign periph_insel_7_in_39_wd = reg_wdata[29:24];
+
+  assign periph_insel_8_we = addr_hit[9] & reg_we & ~wr_err;
+  assign periph_insel_8_wd = reg_wdata[5:0];
+
+  assign mio_outsel_0_out_0_we = addr_hit[10] & reg_we & ~wr_err;
   assign mio_outsel_0_out_0_wd = reg_wdata[5:0];
 
-  assign mio_outsel_0_out_1_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mio_outsel_0_out_1_we = addr_hit[10] & reg_we & ~wr_err;
   assign mio_outsel_0_out_1_wd = reg_wdata[11:6];
 
-  assign mio_outsel_0_out_2_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mio_outsel_0_out_2_we = addr_hit[10] & reg_we & ~wr_err;
   assign mio_outsel_0_out_2_wd = reg_wdata[17:12];
 
-  assign mio_outsel_0_out_3_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mio_outsel_0_out_3_we = addr_hit[10] & reg_we & ~wr_err;
   assign mio_outsel_0_out_3_wd = reg_wdata[23:18];
 
-  assign mio_outsel_0_out_4_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mio_outsel_0_out_4_we = addr_hit[10] & reg_we & ~wr_err;
   assign mio_outsel_0_out_4_wd = reg_wdata[29:24];
 
-  assign mio_outsel_1_out_5_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mio_outsel_1_out_5_we = addr_hit[11] & reg_we & ~wr_err;
   assign mio_outsel_1_out_5_wd = reg_wdata[5:0];
 
-  assign mio_outsel_1_out_6_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mio_outsel_1_out_6_we = addr_hit[11] & reg_we & ~wr_err;
   assign mio_outsel_1_out_6_wd = reg_wdata[11:6];
 
-  assign mio_outsel_1_out_7_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mio_outsel_1_out_7_we = addr_hit[11] & reg_we & ~wr_err;
   assign mio_outsel_1_out_7_wd = reg_wdata[17:12];
 
-  assign mio_outsel_1_out_8_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mio_outsel_1_out_8_we = addr_hit[11] & reg_we & ~wr_err;
   assign mio_outsel_1_out_8_wd = reg_wdata[23:18];
 
-  assign mio_outsel_1_out_9_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mio_outsel_1_out_9_we = addr_hit[11] & reg_we & ~wr_err;
   assign mio_outsel_1_out_9_wd = reg_wdata[29:24];
 
-  assign mio_outsel_2_out_10_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mio_outsel_2_out_10_we = addr_hit[12] & reg_we & ~wr_err;
   assign mio_outsel_2_out_10_wd = reg_wdata[5:0];
 
-  assign mio_outsel_2_out_11_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mio_outsel_2_out_11_we = addr_hit[12] & reg_we & ~wr_err;
   assign mio_outsel_2_out_11_wd = reg_wdata[11:6];
 
-  assign mio_outsel_2_out_12_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mio_outsel_2_out_12_we = addr_hit[12] & reg_we & ~wr_err;
   assign mio_outsel_2_out_12_wd = reg_wdata[17:12];
 
-  assign mio_outsel_2_out_13_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mio_outsel_2_out_13_we = addr_hit[12] & reg_we & ~wr_err;
   assign mio_outsel_2_out_13_wd = reg_wdata[23:18];
 
-  assign mio_outsel_2_out_14_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mio_outsel_2_out_14_we = addr_hit[12] & reg_we & ~wr_err;
   assign mio_outsel_2_out_14_wd = reg_wdata[29:24];
 
-  assign mio_outsel_3_out_15_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mio_outsel_3_out_15_we = addr_hit[13] & reg_we & ~wr_err;
   assign mio_outsel_3_out_15_wd = reg_wdata[5:0];
 
-  assign mio_outsel_3_out_16_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mio_outsel_3_out_16_we = addr_hit[13] & reg_we & ~wr_err;
   assign mio_outsel_3_out_16_wd = reg_wdata[11:6];
 
-  assign mio_outsel_3_out_17_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mio_outsel_3_out_17_we = addr_hit[13] & reg_we & ~wr_err;
   assign mio_outsel_3_out_17_wd = reg_wdata[17:12];
 
-  assign mio_outsel_3_out_18_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mio_outsel_3_out_18_we = addr_hit[13] & reg_we & ~wr_err;
   assign mio_outsel_3_out_18_wd = reg_wdata[23:18];
 
-  assign mio_outsel_3_out_19_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mio_outsel_3_out_19_we = addr_hit[13] & reg_we & ~wr_err;
   assign mio_outsel_3_out_19_wd = reg_wdata[29:24];
 
-  assign mio_outsel_4_out_20_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mio_outsel_4_out_20_we = addr_hit[14] & reg_we & ~wr_err;
   assign mio_outsel_4_out_20_wd = reg_wdata[5:0];
 
-  assign mio_outsel_4_out_21_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mio_outsel_4_out_21_we = addr_hit[14] & reg_we & ~wr_err;
   assign mio_outsel_4_out_21_wd = reg_wdata[11:6];
 
-  assign mio_outsel_4_out_22_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mio_outsel_4_out_22_we = addr_hit[14] & reg_we & ~wr_err;
   assign mio_outsel_4_out_22_wd = reg_wdata[17:12];
 
-  assign mio_outsel_4_out_23_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mio_outsel_4_out_23_we = addr_hit[14] & reg_we & ~wr_err;
   assign mio_outsel_4_out_23_wd = reg_wdata[23:18];
 
-  assign mio_outsel_4_out_24_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mio_outsel_4_out_24_we = addr_hit[14] & reg_we & ~wr_err;
   assign mio_outsel_4_out_24_wd = reg_wdata[29:24];
 
-  assign mio_outsel_5_out_25_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mio_outsel_5_out_25_we = addr_hit[15] & reg_we & ~wr_err;
   assign mio_outsel_5_out_25_wd = reg_wdata[5:0];
 
-  assign mio_outsel_5_out_26_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mio_outsel_5_out_26_we = addr_hit[15] & reg_we & ~wr_err;
   assign mio_outsel_5_out_26_wd = reg_wdata[11:6];
 
-  assign mio_outsel_5_out_27_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mio_outsel_5_out_27_we = addr_hit[15] & reg_we & ~wr_err;
   assign mio_outsel_5_out_27_wd = reg_wdata[17:12];
 
-  assign mio_outsel_5_out_28_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mio_outsel_5_out_28_we = addr_hit[15] & reg_we & ~wr_err;
   assign mio_outsel_5_out_28_wd = reg_wdata[23:18];
 
-  assign mio_outsel_5_out_29_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mio_outsel_5_out_29_we = addr_hit[15] & reg_we & ~wr_err;
   assign mio_outsel_5_out_29_wd = reg_wdata[29:24];
 
-  assign mio_outsel_6_out_30_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mio_outsel_6_out_30_we = addr_hit[16] & reg_we & ~wr_err;
   assign mio_outsel_6_out_30_wd = reg_wdata[5:0];
 
-  assign mio_outsel_6_out_31_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mio_outsel_6_out_31_we = addr_hit[16] & reg_we & ~wr_err;
   assign mio_outsel_6_out_31_wd = reg_wdata[11:6];
 
-  assign mio_out_sleep_val_0_out_0_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_0_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_0_wd = reg_wdata[1:0];
 
-  assign mio_out_sleep_val_0_out_1_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_1_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_1_wd = reg_wdata[3:2];
 
-  assign mio_out_sleep_val_0_out_2_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_2_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_2_wd = reg_wdata[5:4];
 
-  assign mio_out_sleep_val_0_out_3_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_3_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_3_wd = reg_wdata[7:6];
 
-  assign mio_out_sleep_val_0_out_4_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_4_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_4_wd = reg_wdata[9:8];
 
-  assign mio_out_sleep_val_0_out_5_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_5_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_5_wd = reg_wdata[11:10];
 
-  assign mio_out_sleep_val_0_out_6_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_6_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_6_wd = reg_wdata[13:12];
 
-  assign mio_out_sleep_val_0_out_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_7_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_7_wd = reg_wdata[15:14];
 
-  assign mio_out_sleep_val_0_out_8_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_8_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_8_wd = reg_wdata[17:16];
 
-  assign mio_out_sleep_val_0_out_9_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_9_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_9_wd = reg_wdata[19:18];
 
-  assign mio_out_sleep_val_0_out_10_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_10_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_10_wd = reg_wdata[21:20];
 
-  assign mio_out_sleep_val_0_out_11_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_11_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_11_wd = reg_wdata[23:22];
 
-  assign mio_out_sleep_val_0_out_12_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_12_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_12_wd = reg_wdata[25:24];
 
-  assign mio_out_sleep_val_0_out_13_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_13_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_13_wd = reg_wdata[27:26];
 
-  assign mio_out_sleep_val_0_out_14_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_14_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_14_wd = reg_wdata[29:28];
 
-  assign mio_out_sleep_val_0_out_15_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_0_out_15_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_out_sleep_val_0_out_15_wd = reg_wdata[31:30];
 
-  assign mio_out_sleep_val_1_out_16_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_16_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_16_wd = reg_wdata[1:0];
 
-  assign mio_out_sleep_val_1_out_17_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_17_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_17_wd = reg_wdata[3:2];
 
-  assign mio_out_sleep_val_1_out_18_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_18_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_18_wd = reg_wdata[5:4];
 
-  assign mio_out_sleep_val_1_out_19_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_19_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_19_wd = reg_wdata[7:6];
 
-  assign mio_out_sleep_val_1_out_20_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_20_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_20_wd = reg_wdata[9:8];
 
-  assign mio_out_sleep_val_1_out_21_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_21_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_21_wd = reg_wdata[11:10];
 
-  assign mio_out_sleep_val_1_out_22_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_22_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_22_wd = reg_wdata[13:12];
 
-  assign mio_out_sleep_val_1_out_23_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_23_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_23_wd = reg_wdata[15:14];
 
-  assign mio_out_sleep_val_1_out_24_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_24_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_24_wd = reg_wdata[17:16];
 
-  assign mio_out_sleep_val_1_out_25_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_25_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_25_wd = reg_wdata[19:18];
 
-  assign mio_out_sleep_val_1_out_26_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_26_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_26_wd = reg_wdata[21:20];
 
-  assign mio_out_sleep_val_1_out_27_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_27_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_27_wd = reg_wdata[23:22];
 
-  assign mio_out_sleep_val_1_out_28_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_28_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_28_wd = reg_wdata[25:24];
 
-  assign mio_out_sleep_val_1_out_29_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_29_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_29_wd = reg_wdata[27:26];
 
-  assign mio_out_sleep_val_1_out_30_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_30_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_30_wd = reg_wdata[29:28];
 
-  assign mio_out_sleep_val_1_out_31_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_out_sleep_val_1_out_31_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_out_sleep_val_1_out_31_wd = reg_wdata[31:30];
 
-  assign dio_out_sleep_val_out_0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_0_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_0_wd = reg_wdata[1:0];
-  assign dio_out_sleep_val_out_0_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_0_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_1_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_1_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_1_wd = reg_wdata[3:2];
-  assign dio_out_sleep_val_out_1_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_1_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_2_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_2_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_2_wd = reg_wdata[5:4];
-  assign dio_out_sleep_val_out_2_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_2_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_3_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_3_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_3_wd = reg_wdata[7:6];
-  assign dio_out_sleep_val_out_3_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_3_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_4_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_4_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_4_wd = reg_wdata[9:8];
-  assign dio_out_sleep_val_out_4_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_4_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_5_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_5_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_5_wd = reg_wdata[11:10];
-  assign dio_out_sleep_val_out_5_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_5_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_6_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_6_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_6_wd = reg_wdata[13:12];
-  assign dio_out_sleep_val_out_6_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_6_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_7_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_7_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_7_wd = reg_wdata[15:14];
-  assign dio_out_sleep_val_out_7_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_7_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_8_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_8_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_8_wd = reg_wdata[17:16];
-  assign dio_out_sleep_val_out_8_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_8_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_9_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_9_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_9_wd = reg_wdata[19:18];
-  assign dio_out_sleep_val_out_9_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_9_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_10_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_10_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_10_wd = reg_wdata[21:20];
-  assign dio_out_sleep_val_out_10_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_10_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_11_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_11_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_11_wd = reg_wdata[23:22];
-  assign dio_out_sleep_val_out_11_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_11_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_12_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_12_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_12_wd = reg_wdata[25:24];
-  assign dio_out_sleep_val_out_12_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_12_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_13_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_13_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_13_wd = reg_wdata[27:26];
-  assign dio_out_sleep_val_out_13_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_13_re = addr_hit[19] && reg_re;
 
-  assign dio_out_sleep_val_out_14_we = addr_hit[17] & reg_we & ~wr_err;
+  assign dio_out_sleep_val_out_14_we = addr_hit[19] & reg_we & ~wr_err;
   assign dio_out_sleep_val_out_14_wd = reg_wdata[29:28];
-  assign dio_out_sleep_val_out_14_re = addr_hit[17] && reg_re;
+  assign dio_out_sleep_val_out_14_re = addr_hit[19] && reg_re;
 
-  assign wkup_detector_en_en_0_we = addr_hit[18] & reg_we & ~wr_err;
+  assign wkup_detector_en_en_0_we = addr_hit[20] & reg_we & ~wr_err;
   assign wkup_detector_en_en_0_wd = reg_wdata[0];
 
-  assign wkup_detector_en_en_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign wkup_detector_en_en_1_we = addr_hit[20] & reg_we & ~wr_err;
   assign wkup_detector_en_en_1_wd = reg_wdata[1];
 
-  assign wkup_detector_en_en_2_we = addr_hit[18] & reg_we & ~wr_err;
+  assign wkup_detector_en_en_2_we = addr_hit[20] & reg_we & ~wr_err;
   assign wkup_detector_en_en_2_wd = reg_wdata[2];
 
-  assign wkup_detector_en_en_3_we = addr_hit[18] & reg_we & ~wr_err;
+  assign wkup_detector_en_en_3_we = addr_hit[20] & reg_we & ~wr_err;
   assign wkup_detector_en_en_3_wd = reg_wdata[3];
 
-  assign wkup_detector_en_en_4_we = addr_hit[18] & reg_we & ~wr_err;
+  assign wkup_detector_en_en_4_we = addr_hit[20] & reg_we & ~wr_err;
   assign wkup_detector_en_en_4_wd = reg_wdata[4];
 
-  assign wkup_detector_en_en_5_we = addr_hit[18] & reg_we & ~wr_err;
+  assign wkup_detector_en_en_5_we = addr_hit[20] & reg_we & ~wr_err;
   assign wkup_detector_en_en_5_wd = reg_wdata[5];
 
-  assign wkup_detector_en_en_6_we = addr_hit[18] & reg_we & ~wr_err;
+  assign wkup_detector_en_en_6_we = addr_hit[20] & reg_we & ~wr_err;
   assign wkup_detector_en_en_6_wd = reg_wdata[6];
 
-  assign wkup_detector_en_en_7_we = addr_hit[18] & reg_we & ~wr_err;
+  assign wkup_detector_en_en_7_we = addr_hit[20] & reg_we & ~wr_err;
   assign wkup_detector_en_en_7_wd = reg_wdata[7];
 
-  assign wkup_detector_0_mode_0_we = addr_hit[19] & reg_we & ~wr_err;
+  assign wkup_detector_0_mode_0_we = addr_hit[21] & reg_we & ~wr_err;
   assign wkup_detector_0_mode_0_wd = reg_wdata[2:0];
 
-  assign wkup_detector_0_filter_0_we = addr_hit[19] & reg_we & ~wr_err;
+  assign wkup_detector_0_filter_0_we = addr_hit[21] & reg_we & ~wr_err;
   assign wkup_detector_0_filter_0_wd = reg_wdata[3];
 
-  assign wkup_detector_0_miodio_0_we = addr_hit[19] & reg_we & ~wr_err;
+  assign wkup_detector_0_miodio_0_we = addr_hit[21] & reg_we & ~wr_err;
   assign wkup_detector_0_miodio_0_wd = reg_wdata[4];
 
-  assign wkup_detector_1_mode_1_we = addr_hit[20] & reg_we & ~wr_err;
+  assign wkup_detector_1_mode_1_we = addr_hit[22] & reg_we & ~wr_err;
   assign wkup_detector_1_mode_1_wd = reg_wdata[2:0];
 
-  assign wkup_detector_1_filter_1_we = addr_hit[20] & reg_we & ~wr_err;
+  assign wkup_detector_1_filter_1_we = addr_hit[22] & reg_we & ~wr_err;
   assign wkup_detector_1_filter_1_wd = reg_wdata[3];
 
-  assign wkup_detector_1_miodio_1_we = addr_hit[20] & reg_we & ~wr_err;
+  assign wkup_detector_1_miodio_1_we = addr_hit[22] & reg_we & ~wr_err;
   assign wkup_detector_1_miodio_1_wd = reg_wdata[4];
 
-  assign wkup_detector_2_mode_2_we = addr_hit[21] & reg_we & ~wr_err;
+  assign wkup_detector_2_mode_2_we = addr_hit[23] & reg_we & ~wr_err;
   assign wkup_detector_2_mode_2_wd = reg_wdata[2:0];
 
-  assign wkup_detector_2_filter_2_we = addr_hit[21] & reg_we & ~wr_err;
+  assign wkup_detector_2_filter_2_we = addr_hit[23] & reg_we & ~wr_err;
   assign wkup_detector_2_filter_2_wd = reg_wdata[3];
 
-  assign wkup_detector_2_miodio_2_we = addr_hit[21] & reg_we & ~wr_err;
+  assign wkup_detector_2_miodio_2_we = addr_hit[23] & reg_we & ~wr_err;
   assign wkup_detector_2_miodio_2_wd = reg_wdata[4];
 
-  assign wkup_detector_3_mode_3_we = addr_hit[22] & reg_we & ~wr_err;
+  assign wkup_detector_3_mode_3_we = addr_hit[24] & reg_we & ~wr_err;
   assign wkup_detector_3_mode_3_wd = reg_wdata[2:0];
 
-  assign wkup_detector_3_filter_3_we = addr_hit[22] & reg_we & ~wr_err;
+  assign wkup_detector_3_filter_3_we = addr_hit[24] & reg_we & ~wr_err;
   assign wkup_detector_3_filter_3_wd = reg_wdata[3];
 
-  assign wkup_detector_3_miodio_3_we = addr_hit[22] & reg_we & ~wr_err;
+  assign wkup_detector_3_miodio_3_we = addr_hit[24] & reg_we & ~wr_err;
   assign wkup_detector_3_miodio_3_wd = reg_wdata[4];
 
-  assign wkup_detector_4_mode_4_we = addr_hit[23] & reg_we & ~wr_err;
+  assign wkup_detector_4_mode_4_we = addr_hit[25] & reg_we & ~wr_err;
   assign wkup_detector_4_mode_4_wd = reg_wdata[2:0];
 
-  assign wkup_detector_4_filter_4_we = addr_hit[23] & reg_we & ~wr_err;
+  assign wkup_detector_4_filter_4_we = addr_hit[25] & reg_we & ~wr_err;
   assign wkup_detector_4_filter_4_wd = reg_wdata[3];
 
-  assign wkup_detector_4_miodio_4_we = addr_hit[23] & reg_we & ~wr_err;
+  assign wkup_detector_4_miodio_4_we = addr_hit[25] & reg_we & ~wr_err;
   assign wkup_detector_4_miodio_4_wd = reg_wdata[4];
 
-  assign wkup_detector_5_mode_5_we = addr_hit[24] & reg_we & ~wr_err;
+  assign wkup_detector_5_mode_5_we = addr_hit[26] & reg_we & ~wr_err;
   assign wkup_detector_5_mode_5_wd = reg_wdata[2:0];
 
-  assign wkup_detector_5_filter_5_we = addr_hit[24] & reg_we & ~wr_err;
+  assign wkup_detector_5_filter_5_we = addr_hit[26] & reg_we & ~wr_err;
   assign wkup_detector_5_filter_5_wd = reg_wdata[3];
 
-  assign wkup_detector_5_miodio_5_we = addr_hit[24] & reg_we & ~wr_err;
+  assign wkup_detector_5_miodio_5_we = addr_hit[26] & reg_we & ~wr_err;
   assign wkup_detector_5_miodio_5_wd = reg_wdata[4];
 
-  assign wkup_detector_6_mode_6_we = addr_hit[25] & reg_we & ~wr_err;
+  assign wkup_detector_6_mode_6_we = addr_hit[27] & reg_we & ~wr_err;
   assign wkup_detector_6_mode_6_wd = reg_wdata[2:0];
 
-  assign wkup_detector_6_filter_6_we = addr_hit[25] & reg_we & ~wr_err;
+  assign wkup_detector_6_filter_6_we = addr_hit[27] & reg_we & ~wr_err;
   assign wkup_detector_6_filter_6_wd = reg_wdata[3];
 
-  assign wkup_detector_6_miodio_6_we = addr_hit[25] & reg_we & ~wr_err;
+  assign wkup_detector_6_miodio_6_we = addr_hit[27] & reg_we & ~wr_err;
   assign wkup_detector_6_miodio_6_wd = reg_wdata[4];
 
-  assign wkup_detector_7_mode_7_we = addr_hit[26] & reg_we & ~wr_err;
+  assign wkup_detector_7_mode_7_we = addr_hit[28] & reg_we & ~wr_err;
   assign wkup_detector_7_mode_7_wd = reg_wdata[2:0];
 
-  assign wkup_detector_7_filter_7_we = addr_hit[26] & reg_we & ~wr_err;
+  assign wkup_detector_7_filter_7_we = addr_hit[28] & reg_we & ~wr_err;
   assign wkup_detector_7_filter_7_wd = reg_wdata[3];
 
-  assign wkup_detector_7_miodio_7_we = addr_hit[26] & reg_we & ~wr_err;
+  assign wkup_detector_7_miodio_7_we = addr_hit[28] & reg_we & ~wr_err;
   assign wkup_detector_7_miodio_7_wd = reg_wdata[4];
 
-  assign wkup_detector_cnt_th_0_th_0_we = addr_hit[27] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_0_th_0_we = addr_hit[29] & reg_we & ~wr_err;
   assign wkup_detector_cnt_th_0_th_0_wd = reg_wdata[7:0];
 
-  assign wkup_detector_cnt_th_0_th_1_we = addr_hit[27] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_0_th_1_we = addr_hit[29] & reg_we & ~wr_err;
   assign wkup_detector_cnt_th_0_th_1_wd = reg_wdata[15:8];
 
-  assign wkup_detector_cnt_th_0_th_2_we = addr_hit[27] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_0_th_2_we = addr_hit[29] & reg_we & ~wr_err;
   assign wkup_detector_cnt_th_0_th_2_wd = reg_wdata[23:16];
 
-  assign wkup_detector_cnt_th_0_th_3_we = addr_hit[27] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_0_th_3_we = addr_hit[29] & reg_we & ~wr_err;
   assign wkup_detector_cnt_th_0_th_3_wd = reg_wdata[31:24];
 
-  assign wkup_detector_cnt_th_1_th_4_we = addr_hit[28] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_1_th_4_we = addr_hit[30] & reg_we & ~wr_err;
   assign wkup_detector_cnt_th_1_th_4_wd = reg_wdata[7:0];
 
-  assign wkup_detector_cnt_th_1_th_5_we = addr_hit[28] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_1_th_5_we = addr_hit[30] & reg_we & ~wr_err;
   assign wkup_detector_cnt_th_1_th_5_wd = reg_wdata[15:8];
 
-  assign wkup_detector_cnt_th_1_th_6_we = addr_hit[28] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_1_th_6_we = addr_hit[30] & reg_we & ~wr_err;
   assign wkup_detector_cnt_th_1_th_6_wd = reg_wdata[23:16];
 
-  assign wkup_detector_cnt_th_1_th_7_we = addr_hit[28] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_1_th_7_we = addr_hit[30] & reg_we & ~wr_err;
   assign wkup_detector_cnt_th_1_th_7_wd = reg_wdata[31:24];
 
-  assign wkup_detector_padsel_0_sel_0_we = addr_hit[29] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_0_sel_0_we = addr_hit[31] & reg_we & ~wr_err;
   assign wkup_detector_padsel_0_sel_0_wd = reg_wdata[4:0];
 
-  assign wkup_detector_padsel_0_sel_1_we = addr_hit[29] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_0_sel_1_we = addr_hit[31] & reg_we & ~wr_err;
   assign wkup_detector_padsel_0_sel_1_wd = reg_wdata[9:5];
 
-  assign wkup_detector_padsel_0_sel_2_we = addr_hit[29] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_0_sel_2_we = addr_hit[31] & reg_we & ~wr_err;
   assign wkup_detector_padsel_0_sel_2_wd = reg_wdata[14:10];
 
-  assign wkup_detector_padsel_0_sel_3_we = addr_hit[29] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_0_sel_3_we = addr_hit[31] & reg_we & ~wr_err;
   assign wkup_detector_padsel_0_sel_3_wd = reg_wdata[19:15];
 
-  assign wkup_detector_padsel_0_sel_4_we = addr_hit[29] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_0_sel_4_we = addr_hit[31] & reg_we & ~wr_err;
   assign wkup_detector_padsel_0_sel_4_wd = reg_wdata[24:20];
 
-  assign wkup_detector_padsel_0_sel_5_we = addr_hit[29] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_0_sel_5_we = addr_hit[31] & reg_we & ~wr_err;
   assign wkup_detector_padsel_0_sel_5_wd = reg_wdata[29:25];
 
-  assign wkup_detector_padsel_1_sel_6_we = addr_hit[30] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_1_sel_6_we = addr_hit[32] & reg_we & ~wr_err;
   assign wkup_detector_padsel_1_sel_6_wd = reg_wdata[4:0];
 
-  assign wkup_detector_padsel_1_sel_7_we = addr_hit[30] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_1_sel_7_we = addr_hit[32] & reg_we & ~wr_err;
   assign wkup_detector_padsel_1_sel_7_wd = reg_wdata[9:5];
 
-  assign wkup_cause_cause_0_we = addr_hit[31] & reg_we & ~wr_err;
+  assign wkup_cause_cause_0_we = addr_hit[33] & reg_we & ~wr_err;
   assign wkup_cause_cause_0_wd = reg_wdata[0];
-  assign wkup_cause_cause_0_re = addr_hit[31] && reg_re;
+  assign wkup_cause_cause_0_re = addr_hit[33] && reg_re;
 
-  assign wkup_cause_cause_1_we = addr_hit[31] & reg_we & ~wr_err;
+  assign wkup_cause_cause_1_we = addr_hit[33] & reg_we & ~wr_err;
   assign wkup_cause_cause_1_wd = reg_wdata[1];
-  assign wkup_cause_cause_1_re = addr_hit[31] && reg_re;
+  assign wkup_cause_cause_1_re = addr_hit[33] && reg_re;
 
-  assign wkup_cause_cause_2_we = addr_hit[31] & reg_we & ~wr_err;
+  assign wkup_cause_cause_2_we = addr_hit[33] & reg_we & ~wr_err;
   assign wkup_cause_cause_2_wd = reg_wdata[2];
-  assign wkup_cause_cause_2_re = addr_hit[31] && reg_re;
+  assign wkup_cause_cause_2_re = addr_hit[33] && reg_re;
 
-  assign wkup_cause_cause_3_we = addr_hit[31] & reg_we & ~wr_err;
+  assign wkup_cause_cause_3_we = addr_hit[33] & reg_we & ~wr_err;
   assign wkup_cause_cause_3_wd = reg_wdata[3];
-  assign wkup_cause_cause_3_re = addr_hit[31] && reg_re;
+  assign wkup_cause_cause_3_re = addr_hit[33] && reg_re;
 
-  assign wkup_cause_cause_4_we = addr_hit[31] & reg_we & ~wr_err;
+  assign wkup_cause_cause_4_we = addr_hit[33] & reg_we & ~wr_err;
   assign wkup_cause_cause_4_wd = reg_wdata[4];
-  assign wkup_cause_cause_4_re = addr_hit[31] && reg_re;
+  assign wkup_cause_cause_4_re = addr_hit[33] && reg_re;
 
-  assign wkup_cause_cause_5_we = addr_hit[31] & reg_we & ~wr_err;
+  assign wkup_cause_cause_5_we = addr_hit[33] & reg_we & ~wr_err;
   assign wkup_cause_cause_5_wd = reg_wdata[5];
-  assign wkup_cause_cause_5_re = addr_hit[31] && reg_re;
+  assign wkup_cause_cause_5_re = addr_hit[33] && reg_re;
 
-  assign wkup_cause_cause_6_we = addr_hit[31] & reg_we & ~wr_err;
+  assign wkup_cause_cause_6_we = addr_hit[33] & reg_we & ~wr_err;
   assign wkup_cause_cause_6_wd = reg_wdata[6];
-  assign wkup_cause_cause_6_re = addr_hit[31] && reg_re;
+  assign wkup_cause_cause_6_re = addr_hit[33] && reg_re;
 
-  assign wkup_cause_cause_7_we = addr_hit[31] & reg_we & ~wr_err;
+  assign wkup_cause_cause_7_we = addr_hit[33] & reg_we & ~wr_err;
   assign wkup_cause_cause_7_wd = reg_wdata[7];
-  assign wkup_cause_cause_7_re = addr_hit[31] && reg_re;
+  assign wkup_cause_cause_7_re = addr_hit[33] && reg_re;
 
   // Read data return
   always_comb begin
@@ -5616,6 +5816,18 @@ module pinmux_reg_top (
       end
 
       addr_hit[8]: begin
+        reg_rdata_next[5:0] = periph_insel_7_in_35_qs;
+        reg_rdata_next[11:6] = periph_insel_7_in_36_qs;
+        reg_rdata_next[17:12] = periph_insel_7_in_37_qs;
+        reg_rdata_next[23:18] = periph_insel_7_in_38_qs;
+        reg_rdata_next[29:24] = periph_insel_7_in_39_qs;
+      end
+
+      addr_hit[9]: begin
+        reg_rdata_next[5:0] = periph_insel_8_qs;
+      end
+
+      addr_hit[10]: begin
         reg_rdata_next[5:0] = mio_outsel_0_out_0_qs;
         reg_rdata_next[11:6] = mio_outsel_0_out_1_qs;
         reg_rdata_next[17:12] = mio_outsel_0_out_2_qs;
@@ -5623,7 +5835,7 @@ module pinmux_reg_top (
         reg_rdata_next[29:24] = mio_outsel_0_out_4_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[11]: begin
         reg_rdata_next[5:0] = mio_outsel_1_out_5_qs;
         reg_rdata_next[11:6] = mio_outsel_1_out_6_qs;
         reg_rdata_next[17:12] = mio_outsel_1_out_7_qs;
@@ -5631,7 +5843,7 @@ module pinmux_reg_top (
         reg_rdata_next[29:24] = mio_outsel_1_out_9_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[12]: begin
         reg_rdata_next[5:0] = mio_outsel_2_out_10_qs;
         reg_rdata_next[11:6] = mio_outsel_2_out_11_qs;
         reg_rdata_next[17:12] = mio_outsel_2_out_12_qs;
@@ -5639,7 +5851,7 @@ module pinmux_reg_top (
         reg_rdata_next[29:24] = mio_outsel_2_out_14_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[13]: begin
         reg_rdata_next[5:0] = mio_outsel_3_out_15_qs;
         reg_rdata_next[11:6] = mio_outsel_3_out_16_qs;
         reg_rdata_next[17:12] = mio_outsel_3_out_17_qs;
@@ -5647,7 +5859,7 @@ module pinmux_reg_top (
         reg_rdata_next[29:24] = mio_outsel_3_out_19_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[14]: begin
         reg_rdata_next[5:0] = mio_outsel_4_out_20_qs;
         reg_rdata_next[11:6] = mio_outsel_4_out_21_qs;
         reg_rdata_next[17:12] = mio_outsel_4_out_22_qs;
@@ -5655,7 +5867,7 @@ module pinmux_reg_top (
         reg_rdata_next[29:24] = mio_outsel_4_out_24_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[15]: begin
         reg_rdata_next[5:0] = mio_outsel_5_out_25_qs;
         reg_rdata_next[11:6] = mio_outsel_5_out_26_qs;
         reg_rdata_next[17:12] = mio_outsel_5_out_27_qs;
@@ -5663,12 +5875,12 @@ module pinmux_reg_top (
         reg_rdata_next[29:24] = mio_outsel_5_out_29_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[16]: begin
         reg_rdata_next[5:0] = mio_outsel_6_out_30_qs;
         reg_rdata_next[11:6] = mio_outsel_6_out_31_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[17]: begin
         reg_rdata_next[1:0] = mio_out_sleep_val_0_out_0_qs;
         reg_rdata_next[3:2] = mio_out_sleep_val_0_out_1_qs;
         reg_rdata_next[5:4] = mio_out_sleep_val_0_out_2_qs;
@@ -5687,7 +5899,7 @@ module pinmux_reg_top (
         reg_rdata_next[31:30] = mio_out_sleep_val_0_out_15_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[18]: begin
         reg_rdata_next[1:0] = mio_out_sleep_val_1_out_16_qs;
         reg_rdata_next[3:2] = mio_out_sleep_val_1_out_17_qs;
         reg_rdata_next[5:4] = mio_out_sleep_val_1_out_18_qs;
@@ -5706,7 +5918,7 @@ module pinmux_reg_top (
         reg_rdata_next[31:30] = mio_out_sleep_val_1_out_31_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[19]: begin
         reg_rdata_next[1:0] = dio_out_sleep_val_out_0_qs;
         reg_rdata_next[3:2] = dio_out_sleep_val_out_1_qs;
         reg_rdata_next[5:4] = dio_out_sleep_val_out_2_qs;
@@ -5724,7 +5936,7 @@ module pinmux_reg_top (
         reg_rdata_next[29:28] = dio_out_sleep_val_out_14_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[20]: begin
         reg_rdata_next[0] = wkup_detector_en_en_0_qs;
         reg_rdata_next[1] = wkup_detector_en_en_1_qs;
         reg_rdata_next[2] = wkup_detector_en_en_2_qs;
@@ -5735,69 +5947,69 @@ module pinmux_reg_top (
         reg_rdata_next[7] = wkup_detector_en_en_7_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[21]: begin
         reg_rdata_next[2:0] = wkup_detector_0_mode_0_qs;
         reg_rdata_next[3] = wkup_detector_0_filter_0_qs;
         reg_rdata_next[4] = wkup_detector_0_miodio_0_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[22]: begin
         reg_rdata_next[2:0] = wkup_detector_1_mode_1_qs;
         reg_rdata_next[3] = wkup_detector_1_filter_1_qs;
         reg_rdata_next[4] = wkup_detector_1_miodio_1_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[23]: begin
         reg_rdata_next[2:0] = wkup_detector_2_mode_2_qs;
         reg_rdata_next[3] = wkup_detector_2_filter_2_qs;
         reg_rdata_next[4] = wkup_detector_2_miodio_2_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[24]: begin
         reg_rdata_next[2:0] = wkup_detector_3_mode_3_qs;
         reg_rdata_next[3] = wkup_detector_3_filter_3_qs;
         reg_rdata_next[4] = wkup_detector_3_miodio_3_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[25]: begin
         reg_rdata_next[2:0] = wkup_detector_4_mode_4_qs;
         reg_rdata_next[3] = wkup_detector_4_filter_4_qs;
         reg_rdata_next[4] = wkup_detector_4_miodio_4_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[26]: begin
         reg_rdata_next[2:0] = wkup_detector_5_mode_5_qs;
         reg_rdata_next[3] = wkup_detector_5_filter_5_qs;
         reg_rdata_next[4] = wkup_detector_5_miodio_5_qs;
       end
 
-      addr_hit[25]: begin
+      addr_hit[27]: begin
         reg_rdata_next[2:0] = wkup_detector_6_mode_6_qs;
         reg_rdata_next[3] = wkup_detector_6_filter_6_qs;
         reg_rdata_next[4] = wkup_detector_6_miodio_6_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[28]: begin
         reg_rdata_next[2:0] = wkup_detector_7_mode_7_qs;
         reg_rdata_next[3] = wkup_detector_7_filter_7_qs;
         reg_rdata_next[4] = wkup_detector_7_miodio_7_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[29]: begin
         reg_rdata_next[7:0] = wkup_detector_cnt_th_0_th_0_qs;
         reg_rdata_next[15:8] = wkup_detector_cnt_th_0_th_1_qs;
         reg_rdata_next[23:16] = wkup_detector_cnt_th_0_th_2_qs;
         reg_rdata_next[31:24] = wkup_detector_cnt_th_0_th_3_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[30]: begin
         reg_rdata_next[7:0] = wkup_detector_cnt_th_1_th_4_qs;
         reg_rdata_next[15:8] = wkup_detector_cnt_th_1_th_5_qs;
         reg_rdata_next[23:16] = wkup_detector_cnt_th_1_th_6_qs;
         reg_rdata_next[31:24] = wkup_detector_cnt_th_1_th_7_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[31]: begin
         reg_rdata_next[4:0] = wkup_detector_padsel_0_sel_0_qs;
         reg_rdata_next[9:5] = wkup_detector_padsel_0_sel_1_qs;
         reg_rdata_next[14:10] = wkup_detector_padsel_0_sel_2_qs;
@@ -5806,12 +6018,12 @@ module pinmux_reg_top (
         reg_rdata_next[29:25] = wkup_detector_padsel_0_sel_5_qs;
       end
 
-      addr_hit[30]: begin
+      addr_hit[32]: begin
         reg_rdata_next[4:0] = wkup_detector_padsel_1_sel_6_qs;
         reg_rdata_next[9:5] = wkup_detector_padsel_1_sel_7_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[33]: begin
         reg_rdata_next[0] = wkup_cause_cause_0_qs;
         reg_rdata_next[1] = wkup_cause_cause_1_qs;
         reg_rdata_next[2] = wkup_cause_cause_2_qs;

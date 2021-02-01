@@ -72,6 +72,46 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for i2c0 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_I2C0_BASE_ADDR = 32'h40080000;
+
+  /**
+   * Peripheral size in bytes for i2c0 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_I2C0_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for i2c1 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_I2C1_BASE_ADDR = 32'h40090000;
+
+  /**
+   * Peripheral size in bytes for i2c1 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_I2C1_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for i2c2 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_I2C2_BASE_ADDR = 32'h400A0000;
+
+  /**
+   * Peripheral size in bytes for i2c2 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_I2C2_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for pattgen in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_PATTGEN_BASE_ADDR = 32'h400E0000;
+
+  /**
+   * Peripheral size in bytes for pattgen in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_PATTGEN_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for rv_timer in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_RV_TIMER_BASE_ADDR = 32'h40100000;

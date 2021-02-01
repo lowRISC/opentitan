@@ -55,6 +55,10 @@ tl_if uart0_tl_if(clk_io_div4, rst_n);
 tl_if uart1_tl_if(clk_io_div4, rst_n);
 tl_if uart2_tl_if(clk_io_div4, rst_n);
 tl_if uart3_tl_if(clk_io_div4, rst_n);
+tl_if i2c0_tl_if(clk_io_div4, rst_n);
+tl_if i2c1_tl_if(clk_io_div4, rst_n);
+tl_if i2c2_tl_if(clk_io_div4, rst_n);
+tl_if pattgen_tl_if(clk_io_div4, rst_n);
 tl_if gpio_tl_if(clk_io_div4, rst_n);
 tl_if spi_device_tl_if(clk_io_div4, rst_n);
 tl_if rv_timer_tl_if(clk_io_div4, rst_n);
@@ -120,6 +124,10 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(uart1, uart1, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(uart2, uart2, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(uart3, uart3, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(i2c0, i2c0, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(i2c1, i2c1, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(i2c2, i2c2, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(pattgen, pattgen, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl)
