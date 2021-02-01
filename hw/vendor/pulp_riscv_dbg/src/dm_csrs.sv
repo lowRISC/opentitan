@@ -564,7 +564,8 @@ module dm_csrs #(
     .rdata_o ( dmi_resp_o.data      ),
     .rvalid_o( dmi_resp_valid_o     ),
     .rready_i( dmi_resp_ready_i     ),
-    .depth_o (                      )  // Doesn't use
+    .full_o  (                      ), // Unused
+    .depth_o (                      )  // Unused
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
