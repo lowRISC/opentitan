@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:top_earlgrey_pkg
-      - lowrisc:systems:ast_wrapper
+      - lowrisc:systems:ast
       - lowrisc:ibex:ibex_tracer:0.1
     files:
       - rtl/top_earlgrey_asic.sv
