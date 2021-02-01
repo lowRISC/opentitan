@@ -28,10 +28,8 @@ package aes_env_pkg;
   typedef enum int { AES_CFG=0, AES_DATA=1, AES_ERR_INJ=2 } aes_item_type_e;
 
   typedef struct packed {
-    bit          data_out;
-    bit          data_in;
-    bit          iv;
-    bit          key;
+    bit          dataout;
+    bit          key_iv_data_in;
   } clear_t;
 
   typedef struct packed {

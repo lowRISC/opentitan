@@ -85,7 +85,7 @@
             Exercise trigger and clear registers at random times to make sure we handle the different cornercases correctly.
             Example of a cornercases clearing data input or data output before the data is consumed or the DUT finishes an operation.'''
       milestone: V2
-      tests: []
+      tests: ["aes_clear"]
     }
     {
       name: nist_test_vectors
