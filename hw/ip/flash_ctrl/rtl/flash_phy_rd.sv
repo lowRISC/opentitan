@@ -285,6 +285,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .wready_o(rsp_fifo_rdy),
     .wdata_i (rsp_fifo_wdata),
     .depth_o (),
+    .full_o (),
     .rvalid_o(rsp_fifo_vld),
     .rready_i(data_valid_o), // pop when a match has been found
     .rdata_o (rsp_fifo_rdata)
@@ -434,6 +435,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .wready_o(data_fifo_rdy),
     .wdata_i ({alloc_q, descram, forward, data_err, data_int}),
     .depth_o (),
+    .full_o (),
     .rvalid_o(fifo_data_valid),
     .rready_i(fifo_data_ready | fifo_forward_pop),
     .rdata_o ({alloc_q2, hint_descram, hint_forward, data_err_q, fifo_data})
@@ -453,6 +455,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .wready_o(mask_fifo_rdy),
     .wdata_i (mask_i),
     .depth_o (),
+    .full_o (),
     .rvalid_o(mask_valid),
     .rready_i(fifo_data_ready | fifo_forward_pop),
     .rdata_o (mask)

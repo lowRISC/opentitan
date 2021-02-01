@@ -181,6 +181,7 @@ module uart_core (
     .wready_o(tx_fifo_wready),
     .wdata_i (reg2hw.wdata.q),
     .depth_o (tx_fifo_depth),
+    .full_o (),
     .rvalid_o(tx_fifo_rvalid),
     .rready_i(tx_fifo_rready),
     .rdata_o (tx_fifo_data)
@@ -280,6 +281,7 @@ module uart_core (
     .wready_o(rx_fifo_wready),
     .wdata_i (rx_fifo_data),
     .depth_o (rx_fifo_depth),
+    .full_o (),
     .rvalid_o(rx_fifo_rvalid),
     .rready_i(reg2hw.rdata.re),
     .rdata_o (uart_rdata)

@@ -459,6 +459,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .wready_o(prog_fifo_wready),
     .wdata_i (prog_fifo_wdata),
     .depth_o (prog_fifo_depth),
+    .full_o  (),
     .rvalid_o(prog_fifo_rvalid),
     .rready_i(prog_fifo_ren),
     .rdata_o (prog_fifo_rdata)
