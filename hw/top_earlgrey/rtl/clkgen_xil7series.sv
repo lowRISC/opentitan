@@ -24,7 +24,7 @@ module clkgen_xil7series # (
   logic clk_48_unbuf;
 
   // input clock buffer
-  IBUFG io_clk_ibufg (
+  IBUF io_clk_ibuf (
     .I (IO_CLK),
     .O (io_clk_buf)
   );
