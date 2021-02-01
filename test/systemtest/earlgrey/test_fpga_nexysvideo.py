@@ -124,7 +124,10 @@ def test_apps_selfchecking(tmp_path, localconf_nexysvideo, nexysvideo_earlgrey,
     """ Load a simple application, and check its output. """
 
     spiflash = bin_dir / 'sw/host/spiflash/spiflash'
-    utils.load_sw_over_spi(tmp_path, spiflash, app_selfchecking_bin)
+    utils.load_sw_over_spi(tmp_path,
+                           spiflash,
+                           app_selfchecking_bin,
+                           timeout=30)
 
     # We need to wait for this message to ensure we are asserting on the output
     # of the newly flashed software, not the software which might be already on
