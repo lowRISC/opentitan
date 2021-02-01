@@ -46,38 +46,26 @@ class push_pull_device_driver #(parameter int HostDataWidth = 32,
 
   // Drives device side of ready/valid protocol.
   virtual task drive_push();
-    repeat (req.device_delay) begin
-      if (in_reset) break;
-      @(`PUSH_DRIVER);
-    end
-    if (!in_reset) begin
-      `PUSH_DRIVER.ready_int  <= 1'b1;
-      `PUSH_DRIVER.d_data_int <= req.d_data;
-    end
-    @(`PUSH_DRIVER);
-    if (!in_reset) begin
-      `PUSH_DRIVER.ready_int  <= 1'b0;
-      if (!cfg.hold_d_data_until_next_req) `PUSH_DRIVER.d_data_int <= 'x;
-    end
+    `DV_SPINWAIT_EXIT(
+        repeat (req.device_delay) @(`PUSH_DRIVER);
+        `PUSH_DRIVER.ready_int  <= 1'b1;
+        `PUSH_DRIVER.d_data_int <= req.d_data;
+        @(`PUSH_DRIVER);
+        `PUSH_DRIVER.ready_int  <= 1'b0;
+        if (!cfg.hold_d_data_until_next_req) `PUSH_DRIVER.d_data_int <= 'x;,
+        wait(in_reset);)
   endtask
 
   virtual task drive_pull();
-    while (!`PULL_DRIVER.req && !in_reset) begin
-      @(`PULL_DRIVER);
-    end
-    repeat (req.device_delay) begin
-      if (in_reset) break;
-      @(`PULL_DRIVER);
-    end
-    if (!in_reset) begin
-      `PULL_DRIVER.ack_int    <= 1'b1;
-      `PULL_DRIVER.d_data_int <= req.d_data;
-    end
-    @(`PULL_DRIVER);
-    if (!in_reset) begin
-      `PULL_DRIVER.ack_int    <= 1'b0;
-      if (!cfg.hold_d_data_until_next_req) `PULL_DRIVER.d_data_int <= 'x;
-    end
+    `DV_SPINWAIT_EXIT(
+        while (!`PULL_DRIVER.req) @(`PULL_DRIVER);
+        repeat (req.device_delay) @(`PULL_DRIVER);
+        `PULL_DRIVER.ack_int    <= 1'b1;
+        `PULL_DRIVER.d_data_int <= req.d_data;
+        @(`PULL_DRIVER);
+        `PULL_DRIVER.ack_int    <= 1'b0;
+        if (!cfg.hold_d_data_until_next_req) `PULL_DRIVER.d_data_int <= 'x;,
+        wait(in_reset);)
   endtask
 
 endclass
