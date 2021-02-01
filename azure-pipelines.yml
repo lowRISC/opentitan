@@ -436,6 +436,10 @@ jobs:
     parameters:
       includePatterns:
         - "/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"
+  - publish: "$(Build.ArtifactStagingDirectory)"
+    artifact: chip_earlgrey_cw310-build-out
+    displayName: Upload all Vivado artifacts for CW310
+    condition: failed()
 
 - job: chip_earlgrey_nexysvideo
   displayName: Build NexysVideo variant of the Earl Grey toplevel design using Vivado
@@ -491,6 +495,10 @@ jobs:
     parameters:
       includePatterns:
         - "/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit"
+  - publish: "$(Build.ArtifactStagingDirectory)"
+    artifact: chip_earlgrey_nexysvideo-build-out
+    displayName: Upload all Vivado artifacts for Nexys Video
+    condition: failed()
 
 - job: chip_englishbreakfast_cw305
   displayName: Build CW305 variant of the English Breakfast toplevel design using Vivado
