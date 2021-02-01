@@ -364,7 +364,11 @@ def dump_temp_files(tmp_path):
             "^^^^^^^^^^^^^^^^^^^^ {} ^^^^^^^^^^^^^^^^^^^^\n".format(f))
 
 
-def load_sw_over_spi(tmp_path, spiflash_path, sw_test_bin, spiflash_args=[]):
+def load_sw_over_spi(tmp_path,
+                     spiflash_path,
+                     sw_test_bin,
+                     spiflash_args=[],
+                     timeout=600):
     """ Use the spiflash utility to load software onto a device. """
 
     log.info("Flashing device software from {} over SPI".format(
@@ -373,7 +377,7 @@ def load_sw_over_spi(tmp_path, spiflash_path, sw_test_bin, spiflash_args=[]):
     cmd_flash = [spiflash_path, '--input', sw_test_bin] + spiflash_args
     p_flash = Process(cmd_flash, logdir=tmp_path, cwd=tmp_path)
     p_flash.run()
-    p_flash.proc.wait(timeout=600)
+    p_flash.proc.wait(timeout=timeout)
     assert p_flash.proc.returncode == 0
 
     log.info("Device software flashed.")
