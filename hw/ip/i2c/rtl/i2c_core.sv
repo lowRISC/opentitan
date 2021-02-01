@@ -84,6 +84,7 @@ module  i2c_core (
   logic        fmt_fifo_rvalid;
   logic        fmt_fifo_rready;
   logic [12:0] fmt_fifo_rdata;
+  logic        fmt_fifo_full;
   logic [7:0]  fmt_byte;
   logic        fmt_flag_start_before;
   logic        fmt_flag_stop_after;
@@ -103,6 +104,7 @@ module  i2c_core (
   logic        rx_fifo_rvalid;
   logic        rx_fifo_rready;
   logic [7:0]  rx_fifo_rdata;
+  logic        rx_fifo_full;
 
   logic        fmt_watermark_d;
   logic        fmt_watermark_q;
@@ -116,6 +118,7 @@ module  i2c_core (
   logic        tx_fifo_rvalid;
   logic        tx_fifo_rready;
   logic [7:0]  tx_fifo_rdata;
+  logic        tx_fifo_full;
 
   logic        acq_fifo_wvalid;
   logic        acq_fifo_wready;
@@ -124,6 +127,7 @@ module  i2c_core (
   logic        acq_fifo_rvalid;
   logic        acq_fifo_rready;
   logic [9:0]  acq_fifo_rdata;
+  logic        acq_fifo_full;
 
   logic        i2c_fifo_txrst;
   logic        i2c_fifo_acqrst;
@@ -298,7 +302,8 @@ module  i2c_core (
     .depth_o (fmt_fifo_depth),
     .rvalid_o(fmt_fifo_rvalid),
     .rready_i(fmt_fifo_rready),
-    .rdata_o (fmt_fifo_rdata)
+    .rdata_o (fmt_fifo_rdata),
+    .full_o  (fmt_fifo_full)
   );
 
   assign rx_fifo_rready = reg2hw.rdata.re;
@@ -317,7 +322,8 @@ module  i2c_core (
     .depth_o (rx_fifo_depth),
     .rvalid_o(rx_fifo_rvalid),
     .rready_i(rx_fifo_rready),
-    .rdata_o (rx_fifo_rdata)
+    .rdata_o (rx_fifo_rdata),
+    .full_o  (rx_fifo_full)
   );
 
   // Target TX and ACQ FIFOs
@@ -341,7 +347,8 @@ module  i2c_core (
     .depth_o (tx_fifo_depth),
     .rvalid_o(tx_fifo_rvalid),
     .rready_i(tx_fifo_rready),
-    .rdata_o (tx_fifo_rdata)
+    .rdata_o (tx_fifo_rdata),
+    .full_o  (tx_fifo_full)
   );
 
   assign acq_fifo_rready = reg2hw.acqdata.abyte.re & reg2hw.acqdata.signal.re;
@@ -360,7 +367,8 @@ module  i2c_core (
     .depth_o (acq_fifo_depth),
     .rvalid_o(acq_fifo_rvalid),
     .rready_i(acq_fifo_rready),
-    .rdata_o (acq_fifo_rdata)
+    .rdata_o (acq_fifo_rdata),
+    .full_o  (acq_fifo_full)
   );
 
   i2c_fsm u_i2c_fsm (
