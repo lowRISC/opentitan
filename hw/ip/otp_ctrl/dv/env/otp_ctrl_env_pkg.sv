@@ -158,6 +158,12 @@ package otp_ctrl_env_pkg;
     end
   endfunction
 
+  function automatic bit is_sw_part(bit [TL_DW-1:0] addr);
+    int part_idx = get_part_index(addr);
+    if (part_idx inside {CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset}) return 1;
+    else return 0;
+  endfunction
+
   // Resolve an offset within the software window as an offset within the whole otp_ctrl block.
   function automatic bit [TL_AW-1:0] get_sw_window_offset(bit [TL_AW-1:0] dai_addr);
     return dai_addr + SW_WINDOW_BASE_ADDR;

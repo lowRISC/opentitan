@@ -377,9 +377,13 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                   void'(ral.status.predict(OtpDaiIdle));
                   // write digest
                   if (is_sw_digest(dai_addr)) begin
-                    if (otp_a[otp_addr] == 0 && otp_a[otp_addr+1] == 0) begin
-                      digests[part_idx] = {`gmv(ral.direct_access_wdata_1),
-                                           `gmv(ral.direct_access_wdata_0)};
+                    bit [TL_DW*2-1:0] curr_digest, prev_digest;
+                    curr_digest = {`gmv(ral.direct_access_wdata_1),
+                                   `gmv(ral.direct_access_wdata_0)};
+                    prev_digest = {otp_a[otp_addr+1], otp_a[otp_addr]};
+                    // allow bit write
+                    if ((prev_digest & curr_digest) == prev_digest) begin
+                      digests[part_idx] = curr_digest;
                       // sw digest directly write to OTP, so reading out digest val do not need to
                       // wait a reset
                       update_sw_digests_to_otp(part_idx);

@@ -24,7 +24,6 @@
   ral_spec: "{proj_root}/hw/ip/otp_ctrl/data/otp_ctrl.hjson"
 
   // Import additional common sim cfg files.
-  // TODO: remove imported cfgs that do not apply.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
@@ -58,6 +57,12 @@
     {
       name: otp_ctrl_smoke
       uvm_test_seq: otp_ctrl_smoke_vseq
+    }
+
+    {
+      name: otp_ctrl_partition_walk
+      uvm_test_seq: otp_ctrl_partition_walk_vseq
+      reseed: 1
     }
 
     {

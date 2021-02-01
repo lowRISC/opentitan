@@ -50,13 +50,13 @@
       tests: ["otp_ctrl_smoke"]
     }
     {
-      name: all_partitions
+      name: dai_access_partition_walk
       desc: '''
-            Based on the smoke test, this test ensures every address in each partition can be accessed
-            successfully within its access policy.
+            Similar to UVM's memory walk test, this test ensures every address in each partition
+            can be accessed successfully via DAI and TLUL interfacs according to its access policy.
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_partition_walk"]
     }
     {
       name: partition_check_failure
