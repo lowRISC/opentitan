@@ -1,9 +1,10 @@
 # Python PRESENT implementation
-# Version: 1.1
+# Version: 1.2
 # Date: 01/27/2021
 #
 # Version 1.0: Original Version from https://github.com/doegox/python-cryptoplus
 # Version 1.1: Minor modifications to run with Python >= 3.5
+# Version 1.2: Remove string to int conversions
 #
 # =============================================================================
 # Copyright (c) 2008 Christophe Oosterlynck <christophe.oosterlynck_AT_gmail.com>
@@ -38,27 +39,27 @@ Importing:
 
 Encrypting with a 80-bit key:
 ------------------------------
->>> key = "00000000000000000000".decode('hex')
->>> plain = "0000000000000000".decode('hex')
->>> cipher = Present(key)
+>>> key = 0x00000000000000000000
+>>> plain = 0x0000000000000000
+>>> cipher = Present(key, keylen=80)
 >>> encrypted = cipher.encrypt(plain)
->>> encrypted.encode('hex')
-'5579c1387b228445'
+>>> hex(encrypted)
+'0x5579c1387b228445'
 >>> decrypted = cipher.decrypt(encrypted)
->>> decrypted.encode('hex')
-'0000000000000000'
+>>> hex(decrypted)
+'0x0'
 
 Encrypting with a 128-bit key:
 -------------------------------
->>> key = "0123456789abcdef0123456789abcdef".decode('hex')
->>> plain = "0123456789abcdef".decode('hex')
+>>> key = 0x0123456789abcdef0123456789abcdef
+>>> plain = 0x0123456789abcdef
 >>> cipher = Present(key)
 >>> encrypted = cipher.encrypt(plain)
->>> encrypted.encode('hex')
-'0e9d28685e671dd6'
+>>> hex(encrypted)
+'0xe9d28685e671dd6'
 >>> decrypted = cipher.decrypt(encrypted)
->>> decrypted.encode('hex')
-'0123456789abcdef'
+>>> hex(decrypted)
+'0x123456789abcdef'
 
 fully based on standard specifications: http://www.crypto.ruhr-uni-bochum.de/imperia/md/content/texte/publications/conferences/present_ches2007.pdf
 test vectors: http://www.crypto.ruhr-uni-bochum.de/imperia/md/content/texte/publications/conferences/slides/present_testvectors.zip
@@ -66,21 +67,22 @@ test vectors: http://www.crypto.ruhr-uni-bochum.de/imperia/md/content/texte/publ
 
 
 class Present:
-    def __init__(self, key, rounds=32):
+    def __init__(self, key, rounds=32, keylen=128):
         """Create a PRESENT cipher object
 
-                key:    the key as a 128-bit or 80-bit rawstring
+                key:    the key as an integer
                 rounds: the number of rounds as an integer, 32 by default
+                keylen: length of the key in bits
                 """
         self.rounds = rounds
-        if len(key) * 8 == 80:
-            self.roundkeys = generateRoundkeys80(string2number(key),
+        if keylen == 80 and key < 2**80:
+            self.roundkeys = generateRoundkeys80(key,
                                                  self.rounds)
-        elif len(key) * 8 == 128:
-            self.roundkeys = generateRoundkeys128(string2number(key),
+        elif keylen == 128 and key < 2**128:
+            self.roundkeys = generateRoundkeys128(key,
                                                   self.rounds)
         else:
-            raise ValueError("Key must be a 128-bit or 80-bit rawstring")
+            raise ValueError("keylen be 80 or 128")
 
     def encrypt(self, block):
         """Encrypt 1 block (8 bytes)
@@ -88,13 +90,13 @@ class Present:
                 Input:  plaintext block as raw string
                 Output: ciphertext block as raw string
                 """
-        state = string2number(block)
+        state = block
         for i in range(self.rounds - 1):
             state = addRoundKey(state, self.roundkeys[i])
             state = sBoxLayer(state)
             state = pLayer(state)
         cipher = addRoundKey(state, self.roundkeys[-1])
-        return number2string_N(cipher, 8)
+        return cipher
 
     def decrypt(self, block):
         """Decrypt 1 block (8 bytes)
@@ -102,13 +104,13 @@ class Present:
                 Input:  ciphertext block as raw string
                 Output: plaintext block as raw string
                 """
-        state = string2number(block)
+        state = block
         for i in range(self.rounds - 1):
             state = addRoundKey(state, self.roundkeys[-i - 1])
             state = pLayer_dec(state)
             state = sBoxLayer_dec(state)
         decipher = addRoundKey(state, self.roundkeys[0])
-        return number2string_N(decipher, 8)
+        return decipher
 
     def get_block_size(self):
         return 8
@@ -222,26 +224,6 @@ def pLayer_dec(state):
     for i in range(64):
         output += ((state >> i) & 0x01) << PBox_inv[i]
     return output
-
-
-def string2number(i):
-    """ Convert a string to a number
-
-    Input: string (big-endian)
-    Output: long or integer
-    """
-    return int(bytearray.hex(i), 16)
-
-
-def number2string_N(i, N):
-    """Convert a number to a string of fixed size
-
-    i: long or integer
-    N: length of string
-    Output: string (big-endian)
-    """
-    s = '%0*x' % (N * 2, i)
-    return bytearray.fromhex(s)
 
 
 def _test():
