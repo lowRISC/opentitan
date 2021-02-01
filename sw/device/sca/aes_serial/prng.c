@@ -40,8 +40,10 @@
  * The code below is identical to the code at the link above except for:
  *    - Unused functions were removed,
  *    - `static` specifier was added to all remaining functions,
- *    - Data types were replaced with compatible types for consistency, and
- *    - `clang-format` was run.
+ *    - Data types were replaced with compatible types for consistency,
+ *    - `clang-format` was run, and
+ *    - `genrand_int32()` was specified as `noinline` to improve capture
+ *       performance.
  */
 
 /* Period parameters */
@@ -106,7 +108,8 @@ static void init_by_array(uint32_t init_key[], int32_t key_length) {
 }
 
 /* generates a random number on [0,0xffffffff]-interval */
-static uint32_t genrand_int32(void) {
+/* Note: Specified as noinline to improve capture performance. */
+__attribute__((noinline)) static uint32_t genrand_int32(void) {
   uint32_t y;
   static uint32_t mag01[2] = {0x0UL, MATRIX_A};
   /* mag01[x] = x * MATRIX_A  for x=0,1 */
