@@ -16,4 +16,9 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
   constraint num_iterations_up_to_num_valid_addr_c {
     num_trans * num_dai_op <= DAI_ADDR_SIZE;
   }
+
+  virtual task pre_start();
+    super.pre_start();
+    is_valid_dai_op = 0;
+  endtask
 endclass

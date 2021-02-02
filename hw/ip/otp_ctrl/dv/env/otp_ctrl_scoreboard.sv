@@ -345,7 +345,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           // here only normalize to 2 lsb, if is secret, will be reduced further
           bit [TL_AW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int part_idx = get_part_index(dai_addr);
-          void'(ral.direct_access_regwen.predict(0));
           // LC partition cannot be access via DAI
           if (part_idx == LifeCycleIdx) begin
             predict_status_err(.dai_err(1));
@@ -416,6 +415,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                 `uvm_fatal(`gfn, $sformatf("invalid cmd: %0d", item.a_data))
               end
             endcase
+            // regwen is set to 0 only if the dai operation is successfully
+            if (`gmv(ral.intr_state.otp_error) == 0) void'(ral.direct_access_regwen.predict(0));
           end
         end
       end
