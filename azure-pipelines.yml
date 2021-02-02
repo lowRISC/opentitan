@@ -272,6 +272,10 @@ jobs:
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - top_earlgrey_verilator
+        - sw_build
   - bash: |
       # Install an additional pytest dependency for result upload.
       pip3 install pytest-azurepipelines
@@ -340,6 +344,9 @@ jobs:
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - sw_build_nexysvideo
   - bash: |
       set -e
       . util/build_consts.sh
@@ -392,6 +399,9 @@ jobs:
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - sw_build_nexysvideo
   - bash: |
       set -e
       . util/build_consts.sh
@@ -427,6 +437,10 @@ jobs:
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - top_earlgrey_nexysvideo
+        - sw_build_nexysvideo
   - bash: |
       set -e
 
@@ -456,6 +470,13 @@ jobs:
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - sw_build
+        - sw_build_nexysvideo
+        - top_earlgrey_verilator
+        - top_earlgrey_nexysvideo
+        - top_englishbreakfast_verilator
   - bash: |
       . util/build_consts.sh
 
