@@ -51,18 +51,22 @@ module'],
 }
 
 top_optional = {
-    'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
-    'interrupt': ['lnw', 'interrupts (generated)'],
-    'alert_module':
-    ['l', 'list of the modules that connects to alert_handler'],
-    'alert': ['lnw', 'alerts (generated)'],
     'alert_async': ['l', 'async alerts (generated)'],
-    'pinmux': ['g', 'pinmux definition if doesn\'t exist, tool uses defaults'],
-    'padctrl':
-    ['g', 'PADS instantiation, if doesn\'t exist, tool creates direct output'],
-    'inter_module': ['g', 'define the signal connections between the modules'],
-    'num_cores': ['pn', "number of computing units"],
+    'alert': ['lnw', 'alerts (generated)'],
+    'alert_module': [
+        'l',
+        'list of the modules that connects to alert_handler'
+    ],
     'datawidth': ['pn', "default data width"],
+    'inter_module': ['g', 'define the signal connections between the modules'],
+    'interrupt': ['lnw', 'interrupts (generated)'],
+    'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
+    'num_cores': ['pn', "number of computing units"],
+    'padctrl': [
+        'g',
+        'PADS instantiation, if doesn\'t exist, tool creates direct output'
+    ],
+    'pinmux': ['g', 'pinmux definition if doesn\'t exist, tool uses defaults'],
 }
 
 top_added = {}
