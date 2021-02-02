@@ -4,27 +4,40 @@
 
 # Azure template for downloading pipeline step outputs and unpacking them.
 #
-# This template will download all artifacts from upstream jobs (which are
-# expected to use upload_artifacts_template.yml) and unpack them.
+# This template will download all artifacts from the upstream jobs listed in
+# `downloadPartialBuildBinFrom` (which are expected to use
+# upload-artifacts-template.yml) and unpack them.
 #
 # This template expects that a variable $BUILD_ROOT is set to a writeable
 # directory; the results will be available in $BIN_DIR. See
 # util/build_consts.sh for more information.
 
+parameters:
+  # Names of jobs to download a partial $BIN_DIR from.
+  # List all "upstream" jobs here which produce files in $BIN_DIR which are
+  # needed in the current job. In other words, list all jobs which need to be
+  # executed and produce some build outputs before this job can start. The
+  # current job will find all outputs from those upstream jobs in $BIN_DIR and
+  # can use them.
+  - name: downloadPartialBuildBinFrom
+    type: object
+    default: []
+
 steps:
-  - task: DownloadPipelineArtifact@2
-    inputs:
-      buildType: current
-      targetPath: '$(BUILD_ROOT)/downloads'
-      # The first "path" segment is the name of the artifact.
-      pattern: "*-build-bin/**"
-    displayName: 'Download upstream outputs'
+  - ${{ each job in parameters.downloadPartialBuildBinFrom }}:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: current
+        path: '$(BUILD_ROOT)/downloads/${{ job }}'
+        artifact: "partial-build-bin-${{ job }}"
+      displayName: Downloading partial build-bin directory from job ${{ job }}
   - bash: |
       set -e
       test -n "$BUILD_ROOT"
       . util/build_consts.sh
       mkdir -p "$BIN_DIR"
 
+      echo 'Extracting partial BIN_DIRs:'
       find "$BUILD_ROOT/downloads" \
         -name 'build-bin.tar' \
         -exec \
@@ -32,4 +45,4 @@ steps:
           --strip-components=1 \
           --overwrite \
           -xvf {} \;
-    displayName: 'Unpack upstream outputs'
+    displayName: Unpack upstream outputs
