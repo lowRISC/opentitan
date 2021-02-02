@@ -28,7 +28,6 @@ class pattgen_stress_all_vseq extends pattgen_base_vseq;
       seq_run_hist[seq_names[i-1]] = 0;
     end
 
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_runs)
     for (int i = 1; i <= num_runs; i++) begin
       uvm_sequence       seq;
       pattgen_base_vseq  pattgen_vseq;

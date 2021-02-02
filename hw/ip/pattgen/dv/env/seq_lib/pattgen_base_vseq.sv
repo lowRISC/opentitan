@@ -62,17 +62,14 @@ class pattgen_base_vseq extends cip_base_vseq #(
     cfg.m_pattgen_agent_cfg.en_monitor = cfg.en_scb;
     `uvm_info(`gfn, $sformatf("\n--> %s monitor and scoreboard",
         cfg.en_scb ? "enable" : "disable"), UVM_DEBUG)
-    super.pre_start();
-  endtask : pre_start
-
-  virtual task post_start();
+    num_runs.rand_mode(0);
     // env_cfg must be reset after vseq completion
     cfg.seq_cfg.error_injected_enb = 1'b0;
     cfg.seq_cfg.pattgen_min_prediv = 0;
     cfg.seq_cfg.pattgen_min_len    = 0;
     cfg.seq_cfg.pattgen_min_reps   = 0;
-    super.post_start();
-  endtask : post_start
+    super.pre_start();
+  endtask : pre_start
 
   // setup basic pattgen features
   virtual task initialize_dut();
@@ -217,6 +214,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
 
       case (channel_stop)
         Channel0: begin
+          if (!error_injected) cfg.m_pattgen_agent_cfg.channel_done = Channel0;
           clear_interrupts(Channel0, error_injected);
           control_channels(Channel0, Disable);
           if (error_injected) cfg.m_pattgen_agent_cfg.error_injected[0] = 1'b0;
@@ -226,6 +224,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
               error_injected ? "error" : "completed", num_pattern_gen, num_trans), UVM_DEBUG)
         end
         Channel1: begin
+          if (!error_injected) cfg.m_pattgen_agent_cfg.channel_done = Channel1;
           clear_interrupts(Channel1, error_injected);
           control_channels(Channel1, Disable);
           if (error_injected) cfg.m_pattgen_agent_cfg.error_injected[1] = 1'b0;
@@ -235,6 +234,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
               error_injected ? "error" : "completed", num_pattern_gen, num_trans), UVM_DEBUG)
         end
         AllChannels: begin
+          if (!error_injected) cfg.m_pattgen_agent_cfg.channel_done = AllChannels;
           clear_interrupts(AllChannels, error_injected);
           control_channels(AllChannels, Disable);
           if (error_injected) begin
@@ -248,6 +248,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
               error_injected ? "error" : "completed", num_pattern_gen, num_trans), UVM_DEBUG)
         end
       endcase
+      cfg.m_pattgen_agent_cfg.channel_done = NoChannels;
     end
   endtask : stop_pattgen_channels
 

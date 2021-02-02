@@ -154,7 +154,9 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
             generate_exp_items(.channel(i), .error_injected(1'b0));
           end
         end
-        "ctrl": begin
+        "ctrl", "size", "intr_test", "intr_enable",
+        "prediv_ch0", "data_ch0_0", "data_ch0_1",
+        "prediv_ch1", "data_ch1_0", "data_ch1_1": begin
           // no special handle is needed
         end
         default: begin
