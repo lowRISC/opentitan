@@ -6770,7 +6770,7 @@
           name: kmac
           type: device
           clock: clk_main_i
-          rset: rst_main_ni
+          reset: rst_main_ni
           pipeline_byp: "false"
           inst_type: kmac
           addr_range:
