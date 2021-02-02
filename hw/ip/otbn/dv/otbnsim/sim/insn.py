@@ -4,7 +4,7 @@
 
 from typing import Dict
 
-from .alert import ERR_CODE_NO_ERROR, LoopError
+from .alert import LoopError
 from .flags import FlagReg
 from .isa import (DecodeError, OTBNInsn, RV32RegReg, RV32RegImm, RV32ImmShift,
                   insn_for_mnemonic, logical_byte_shift)
@@ -315,7 +315,7 @@ class ECALL(OTBNInsn):
 
     def execute(self, state: OTBNState) -> None:
         # Set INTR_STATE.done and STATUS, reflecting the fact we've stopped.
-        state._stop(ERR_CODE_NO_ERROR)
+        state._stop(0)
 
 
 class LOOP(OTBNInsn):

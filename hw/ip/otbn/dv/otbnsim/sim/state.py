@@ -164,7 +164,7 @@ class OTBNState:
     def die(self, alerts: List[Alert]) -> None:
         err_bits = 0
         for alert in alerts:
-            err_bits |= alert.error_code()
+            err_bits |= alert.error_bit()
 
         self._abort()
         self._stop(err_bits)

@@ -4,21 +4,8 @@
 
 from typing import List
 
-from .alert import Alert, ERR_CODE_CALL_STACK
+from .alert import CallStackError
 from .reg import Reg, RegFile
-
-
-class CallStackError(Alert):
-    '''Raised when under- or over-flowing the call stack'''
-
-    err_code = ERR_CODE_CALL_STACK
-
-    def __init__(self, is_overflow: bool):
-        self.is_overflow = is_overflow
-
-    def __str__(self) -> str:
-        xflow = 'overflow' if self.is_overflow else 'underflow'
-        return 'Instruction caused {} of x1 call stack.'.format(xflow)
 
 
 class CallStackReg(Reg):
