@@ -27,31 +27,31 @@ package sensor_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } as;
+    } recov_as;
     struct packed {
       logic        q;
       logic        qe;
-    } cg;
+    } recov_cg;
     struct packed {
       logic        q;
       logic        qe;
-    } gd;
+    } recov_gd;
     struct packed {
       logic        q;
       logic        qe;
-    } ts_hi;
+    } recov_ts_hi;
     struct packed {
       logic        q;
       logic        qe;
-    } ts_lo;
+    } recov_ts_lo;
     struct packed {
       logic        q;
       logic        qe;
-    } ls;
+    } recov_ls;
     struct packed {
       logic        q;
       logic        qe;
-    } ot;
+    } recov_ot;
   } sensor_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {

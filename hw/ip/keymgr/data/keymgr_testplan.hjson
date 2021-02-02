@@ -24,7 +24,7 @@
             Checks:
             - Check STATUS reg for each operation.
             - Check interrupts `op_done` is triggered when operation is done.
-            - Check `err` and alert `operation_err` are triggered after invalid operation.
+            - Check `err` and alert `recov_operation_err` are triggered after invalid operation.
             - Check KMAC key, KMAC data and output SW data for correctness.
             - For invalid operations, check KMAC key, KMAC data and output SW data don't match to
               any of saved meaningful data, which are collected from valid operations. This
@@ -139,7 +139,7 @@
 
             Checks:
             - Check interrupts `err` is triggered.
-            - Check alert `fault_err` is triggered and err_code is `INVALID_CMD`.
+            - Check alert `fatal_fault_err` is triggered and err_code is `INVALID_CMD`.
             - Check KMAC output key and output data to SW are corrupted, also keymgr enters
               StDisabled.
             '''
@@ -172,7 +172,7 @@
             Checks:
             when KEY_VERSION > MAX_*_VER
             - Check interrupts `err` is triggered.
-            - Check alert `operation_err` is triggered and err_code is `INVALID_KMAC_INPUT`.
+            - Check alert `recov_operation_err` is triggered and err_code is `INVALID_KMAC_INPUT`.
             - Check KMAC output key is corrupted and working state remains the same.
             '''
       milestone: V2
@@ -188,7 +188,7 @@
 
             Checks:
             - Check interrupts `err` is triggered.
-            - Check alert `operation_err` is triggered and err_code is `INVALID_KMAC_DATA`.
+            - Check alert `recov_operation_err` is triggered and err_code is `INVALID_KMAC_DATA`.
             - Check SW output isn't updated and working state remains the same.
             '''
       milestone: V2

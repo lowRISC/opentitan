@@ -71,20 +71,20 @@ module sensor_ctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic alert_test_as_wd;
-  logic alert_test_as_we;
-  logic alert_test_cg_wd;
-  logic alert_test_cg_we;
-  logic alert_test_gd_wd;
-  logic alert_test_gd_we;
-  logic alert_test_ts_hi_wd;
-  logic alert_test_ts_hi_we;
-  logic alert_test_ts_lo_wd;
-  logic alert_test_ts_lo_we;
-  logic alert_test_ls_wd;
-  logic alert_test_ls_we;
-  logic alert_test_ot_wd;
-  logic alert_test_ot_we;
+  logic alert_test_recov_as_wd;
+  logic alert_test_recov_as_we;
+  logic alert_test_recov_cg_wd;
+  logic alert_test_recov_cg_we;
+  logic alert_test_recov_gd_wd;
+  logic alert_test_recov_gd_we;
+  logic alert_test_recov_ts_hi_wd;
+  logic alert_test_recov_ts_hi_we;
+  logic alert_test_recov_ts_lo_wd;
+  logic alert_test_recov_ts_lo_we;
+  logic alert_test_recov_ls_wd;
+  logic alert_test_recov_ls_we;
+  logic alert_test_recov_ot_wd;
+  logic alert_test_recov_ot_we;
   logic cfg_regwen_qs;
   logic cfg_regwen_wd;
   logic cfg_regwen_we;
@@ -156,107 +156,107 @@ module sensor_ctrl_reg_top (
   // Register instances
   // R[alert_test]: V(True)
 
-  //   F[as]: 0:0
+  //   F[recov_as]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_as (
+  ) u_alert_test_recov_as (
     .re     (1'b0),
-    .we     (alert_test_as_we),
-    .wd     (alert_test_as_wd),
+    .we     (alert_test_recov_as_we),
+    .wd     (alert_test_recov_as_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.as.qe),
-    .q      (reg2hw.alert_test.as.q ),
+    .qe     (reg2hw.alert_test.recov_as.qe),
+    .q      (reg2hw.alert_test.recov_as.q ),
     .qs     ()
   );
 
 
-  //   F[cg]: 1:1
+  //   F[recov_cg]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_cg (
+  ) u_alert_test_recov_cg (
     .re     (1'b0),
-    .we     (alert_test_cg_we),
-    .wd     (alert_test_cg_wd),
+    .we     (alert_test_recov_cg_we),
+    .wd     (alert_test_recov_cg_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.cg.qe),
-    .q      (reg2hw.alert_test.cg.q ),
+    .qe     (reg2hw.alert_test.recov_cg.qe),
+    .q      (reg2hw.alert_test.recov_cg.q ),
     .qs     ()
   );
 
 
-  //   F[gd]: 2:2
+  //   F[recov_gd]: 2:2
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_gd (
+  ) u_alert_test_recov_gd (
     .re     (1'b0),
-    .we     (alert_test_gd_we),
-    .wd     (alert_test_gd_wd),
+    .we     (alert_test_recov_gd_we),
+    .wd     (alert_test_recov_gd_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.gd.qe),
-    .q      (reg2hw.alert_test.gd.q ),
+    .qe     (reg2hw.alert_test.recov_gd.qe),
+    .q      (reg2hw.alert_test.recov_gd.q ),
     .qs     ()
   );
 
 
-  //   F[ts_hi]: 3:3
+  //   F[recov_ts_hi]: 3:3
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_ts_hi (
+  ) u_alert_test_recov_ts_hi (
     .re     (1'b0),
-    .we     (alert_test_ts_hi_we),
-    .wd     (alert_test_ts_hi_wd),
+    .we     (alert_test_recov_ts_hi_we),
+    .wd     (alert_test_recov_ts_hi_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.ts_hi.qe),
-    .q      (reg2hw.alert_test.ts_hi.q ),
+    .qe     (reg2hw.alert_test.recov_ts_hi.qe),
+    .q      (reg2hw.alert_test.recov_ts_hi.q ),
     .qs     ()
   );
 
 
-  //   F[ts_lo]: 4:4
+  //   F[recov_ts_lo]: 4:4
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_ts_lo (
+  ) u_alert_test_recov_ts_lo (
     .re     (1'b0),
-    .we     (alert_test_ts_lo_we),
-    .wd     (alert_test_ts_lo_wd),
+    .we     (alert_test_recov_ts_lo_we),
+    .wd     (alert_test_recov_ts_lo_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.ts_lo.qe),
-    .q      (reg2hw.alert_test.ts_lo.q ),
+    .qe     (reg2hw.alert_test.recov_ts_lo.qe),
+    .q      (reg2hw.alert_test.recov_ts_lo.q ),
     .qs     ()
   );
 
 
-  //   F[ls]: 5:5
+  //   F[recov_ls]: 5:5
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_ls (
+  ) u_alert_test_recov_ls (
     .re     (1'b0),
-    .we     (alert_test_ls_we),
-    .wd     (alert_test_ls_wd),
+    .we     (alert_test_recov_ls_we),
+    .wd     (alert_test_recov_ls_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.ls.qe),
-    .q      (reg2hw.alert_test.ls.q ),
+    .qe     (reg2hw.alert_test.recov_ls.qe),
+    .q      (reg2hw.alert_test.recov_ls.q ),
     .qs     ()
   );
 
 
-  //   F[ot]: 6:6
+  //   F[recov_ot]: 6:6
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_ot (
+  ) u_alert_test_recov_ot (
     .re     (1'b0),
-    .we     (alert_test_ot_we),
-    .wd     (alert_test_ot_wd),
+    .we     (alert_test_recov_ot_we),
+    .wd     (alert_test_recov_ot_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.ot.qe),
-    .q      (reg2hw.alert_test.ot.q ),
+    .qe     (reg2hw.alert_test.recov_ot.qe),
+    .q      (reg2hw.alert_test.recov_ot.q ),
     .qs     ()
   );
 
@@ -901,26 +901,26 @@ module sensor_ctrl_reg_top (
     if (addr_hit[5] && reg_we && (SENSOR_CTRL_PERMIT[5] != (SENSOR_CTRL_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign alert_test_as_we = addr_hit[0] & reg_we & ~wr_err;
-  assign alert_test_as_wd = reg_wdata[0];
+  assign alert_test_recov_as_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_as_wd = reg_wdata[0];
 
-  assign alert_test_cg_we = addr_hit[0] & reg_we & ~wr_err;
-  assign alert_test_cg_wd = reg_wdata[1];
+  assign alert_test_recov_cg_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_cg_wd = reg_wdata[1];
 
-  assign alert_test_gd_we = addr_hit[0] & reg_we & ~wr_err;
-  assign alert_test_gd_wd = reg_wdata[2];
+  assign alert_test_recov_gd_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_gd_wd = reg_wdata[2];
 
-  assign alert_test_ts_hi_we = addr_hit[0] & reg_we & ~wr_err;
-  assign alert_test_ts_hi_wd = reg_wdata[3];
+  assign alert_test_recov_ts_hi_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_ts_hi_wd = reg_wdata[3];
 
-  assign alert_test_ts_lo_we = addr_hit[0] & reg_we & ~wr_err;
-  assign alert_test_ts_lo_wd = reg_wdata[4];
+  assign alert_test_recov_ts_lo_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_ts_lo_wd = reg_wdata[4];
 
-  assign alert_test_ls_we = addr_hit[0] & reg_we & ~wr_err;
-  assign alert_test_ls_wd = reg_wdata[5];
+  assign alert_test_recov_ls_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_ls_wd = reg_wdata[5];
 
-  assign alert_test_ot_we = addr_hit[0] & reg_we & ~wr_err;
-  assign alert_test_ot_wd = reg_wdata[6];
+  assign alert_test_recov_ot_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_ot_wd = reg_wdata[6];
 
   assign cfg_regwen_we = addr_hit[1] & reg_we & ~wr_err;
   assign cfg_regwen_wd = reg_wdata[0];

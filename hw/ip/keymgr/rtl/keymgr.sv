@@ -505,10 +505,11 @@ module keymgr import keymgr_pkg::*; #(
   end
 
   logic fault_alert_test;
-  assign fault_alert_test = reg2hw.alert_test.fault_err.q & reg2hw.alert_test.fault_err.qe;
+  assign fault_alert_test = reg2hw.alert_test.fatal_fault_err.q &
+                            reg2hw.alert_test.fatal_fault_err.qe;
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn),
-    .IsFatal(0)
+    .IsFatal(1)
   ) u_fault_alert (
     .clk_i,
     .rst_ni,
@@ -521,8 +522,8 @@ module keymgr import keymgr_pkg::*; #(
   );
 
   logic op_err_alert_test;
-  assign op_err_alert_test = reg2hw.alert_test.operation_err.q &
-                             reg2hw.alert_test.operation_err.qe;
+  assign op_err_alert_test = reg2hw.alert_test.recov_operation_err.q &
+                             reg2hw.alert_test.recov_operation_err.qe;
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn),
       .IsFatal(0)

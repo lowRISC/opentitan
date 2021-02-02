@@ -11,10 +11,10 @@
     { name: "op_done",   desc: "Operation complete" },
   ],
   alert_list: [
-    { name: "fault_err",
+    { name: "fatal_fault_err",
       desc: "Alert for key manager faults.  These errors cannot be caused by software",
     },
-    { name: "operation_err",
+    { name: "recov_operation_err",
       desc: '''
         Alert for key manager operation errors.  These errors could have been caused by
         software'''

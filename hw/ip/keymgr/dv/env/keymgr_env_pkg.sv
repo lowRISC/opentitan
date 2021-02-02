@@ -20,7 +20,7 @@ package keymgr_env_pkg;
   `include "dv_macros.svh"
 
   // parameters and types
-  parameter string LIST_OF_ALERTS[] = {"fault_err", "operation_err"};
+  parameter string LIST_OF_ALERTS[] = {"fatal_fault_err", "recov_operation_err"};
   parameter uint NUM_ALERTS = 2;
   parameter uint DIGEST_SHARE_WORD_NUM = keymgr_pkg::KeyWidth / TL_DW;
 
