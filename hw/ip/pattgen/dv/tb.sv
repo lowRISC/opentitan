@@ -38,10 +38,10 @@ module tb;
     .tl_i                 (tl_if.h2d     ),
     .tl_o                 (tl_if.d2h     ),
 
-    .pda0_tx_o            (pda_tx_o[0]   ),
-    .pcl0_tx_o            (pcl_tx_o[0]   ),
-    .pda1_tx_o            (pda_tx_o[1]   ),
-    .pcl1_tx_o            (pcl_tx_o[1]   ),
+    .cio_pda0_tx_o        (pda_tx_o[0]   ),
+    .cio_pcl0_tx_o        (pcl_tx_o[0]   ),
+    .cio_pda1_tx_o        (pda_tx_o[1]   ),
+    .cio_pcl1_tx_o        (pcl_tx_o[1]   ),
     .intr_done_ch0_o      (intr_done_ch0 ),
     .intr_done_ch1_o      (intr_done_ch1 )
   );
