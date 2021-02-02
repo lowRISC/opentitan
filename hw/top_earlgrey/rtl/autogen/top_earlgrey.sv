@@ -78,6 +78,7 @@ module top_earlgrey #(
   output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
   output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,
   input               scan_rst_ni, // reset used for test mode
+  input               scan_en_i,
   input               scanmode_i   // 1 for Scan
 );
 
@@ -871,6 +872,7 @@ module top_earlgrey #(
     .flash_test_mode_a_i,
     .flash_test_voltage_h_i,
     .scanmode_i,
+    .scan_en_i,
     .scan_rst_ni
   );
 
