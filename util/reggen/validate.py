@@ -363,31 +363,34 @@ top_required = {
      "offset control groups"]
 }
 top_optional = {
-    'reset_primary': ['s', "primary reset used by the module"],
-    'other_reset_list': ['l', "list of other resets"],
-    'bus_host': ['s', "name of the bus interface as host"],
-    'other_clock_list': ['l', "list of other chip clocks needed"],
+    'alert_list': ['lnw', "list of peripheral alerts"],
+    'available_inout_list': ['lnw', "list of available peripheral inouts"],
     'available_input_list': ['lnw', "list of available peripheral inputs"],
     'available_output_list': ['lnw', "list of available peripheral outputs"],
-    'available_inout_list': ['lnw', "list of available peripheral inouts"],
+    'bus_host': ['s', "name of the bus interface as host"],
+    'hier_path': [
+        None,
+        'additional hierarchy path before the reg block instance'
+    ],
     'interrupt_list': ['lnw', "list of peripheral interrupts"],
     'inter_signal_list': ['l', "list of inter-module signals"],
-    'no_auto_intr_regs': [
-        's', "Set to true to suppress automatic "
-        "generation of interrupt registers. "
-        "Defaults to true if no interrupt_list is present. "
-        "Otherwise this defaults to false. "
-    ],
-    'alert_list': ['lnw', "list of peripheral alerts"],
     'no_auto_alert_regs': [
         's', "Set to true to suppress automatic "
         "generation of alert test registers. "
         "Defaults to true if no alert_list is present. "
         "Otherwise this defaults to false. "
     ],
-    'wakeup_list': ['lnw', "list of peripheral wakeups"],
-    'regwidth': ['d', "width of registers in bits (default 32)"],
+    'no_auto_intr_regs': [
+        's', "Set to true to suppress automatic "
+        "generation of interrupt registers. "
+        "Defaults to true if no interrupt_list is present. "
+        "Otherwise this defaults to false. "
+    ],
+    'other_clock_list': ['l', "list of other chip clocks needed"],
+    'other_reset_list': ['l', "list of other resets"],
     'param_list': ['lp', "list of parameters of the IP"],
+    'regwidth': ['d', "width of registers in bits (default 32)"],
+    'reset_primary': ['s', "primary reset used by the module"],
     'scan': ['pb', 'Indicates the module have `scanmode_i`'],
     'scan_reset': ['pb', 'Indicates the module have `test_rst_ni`'],
     'SPDX-License-Identifier': [
@@ -396,8 +399,7 @@ top_optional = {
         "information in a comment at the top of the "
         "file."
     ],
-    'hier_path':
-    [None, 'additional hierarchy path before the reg block instance']
+    'wakeup_list': ['lnw', "list of peripheral wakeups"]
 }
 top_added = {
     'genrnames': ['pl', "list of register names"],
