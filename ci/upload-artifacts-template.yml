@@ -5,10 +5,17 @@
 # Azure template for archiving pipeline step outputs and uploading them.
 #
 # This template will archive all of $BIN_DIR, and upload it for use by
-# downstream jobs using download_artifacts_template.yml.
+# downstream jobs using download-artifacts-template.yml.
 #
 # This template expects that a variable $BUILD_ROOT is set. See
 # util/build_consts.sh for more information.
+
+
+parameters:
+  # Rsync-style file patterns to include in the partial BIN_DIR output.
+  - name: includePatterns
+    type: object
+    default: []
 
 steps:
   - bash: |
@@ -16,11 +23,50 @@ steps:
       test -n "$BUILD_ROOT"
       . util/build_consts.sh
 
+      # Write all include patterns to a file used by rsync.
+      echo "${{ join('\n', parameters.includePatterns) }}" > "$BUILD_ROOT/include_patterns.txt"
+
+      echo
+      echo Files matching these patterns will be included in the binary build artifact for this job:
+      echo vvvvvvvvvvvvvvvvvv
+      cat "$BUILD_ROOT/include_patterns.txt"
+      echo ^^^^^^^^^^^^^^^^^^
+
+      # The file upstream_bin_dir_contents.txt lists all files which were part
+      # of an "upstream" BIN_DIR which got downloaded at the beginning of this
+      # job. Ensure that this file exists, even if no upstream BIN_DIR was
+      # downloaded.
+      touch "$BUILD_ROOT/upstream_bin_dir_contents.txt"
+
+      BIN_DIR_FULL="${BIN_DIR}.full"
+      mv "$BIN_DIR" "$BIN_DIR_FULL"
+      mkdir -p "$BIN_DIR"
+
+      echo
+      echo Copying files into the output archive:
+      rsync \
+        --archive \
+        --verbose \
+        --remove-source-files \
+        --prune-empty-dirs \
+        --exclude-from="$BUILD_ROOT/upstream_bin_dir_contents.txt" \
+        --include="*/" \
+        --include-from="$BUILD_ROOT/include_patterns.txt" \
+        --exclude="*" \
+        "${BIN_DIR_FULL}/" "${BIN_DIR}/"
+
+      echo
+      echo 'Files in $BIN_DIR not considered outputs of this job:'
+      echo vvvvvvvvvvvvvvvvvv
+      find "$BIN_DIR_FULL"
+      echo ^^^^^^^^^^^^^^^^^^
+
       tar -C "$BUILD_ROOT" \
         -cvf "$BUILD_ROOT/build-bin.tar" \
         "${BIN_DIR#"$BUILD_ROOT/"}"
-    displayName: 'Archive step outputs'
+    displayName: Archive step outputs
   - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
-    artifact: ${{ parameters.artifact }}-build-bin
-    displayName: 'Upload step outputs'
-
+    # The PhaseName is the string after the "job" key in the build description,
+    # e.g. "job: my_phase_name".
+    artifact: partial-build-bin-$(System.PhaseName)
+    displayName: Upload step outputs

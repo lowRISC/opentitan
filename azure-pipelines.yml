@@ -135,7 +135,8 @@ jobs:
     displayName: Delete all Nexys Video build artifacts
   - template: ci/upload-artifacts-template.yml
     parameters:
-      artifact: sw_build
+      includePatterns:
+        - "/sw/***"
 
 # Software targeting the Nexys Video board is produced by patching the source
 # tree before building. This produces a full sw build tree, however only the
@@ -174,7 +175,8 @@ jobs:
     displayName: Run unit tests
   - template: ci/upload-artifacts-template.yml
     parameters:
-      artifact: sw_build_nexysvideo
+      includePatterns:
+        - "/sw/device/**/*nexysvideo*"
 
 # We continue building with GCC, despite defaulting to Clang. This is a copy of
 # `sw_build` with `meson_init.sh` configured with the GCC toolchain, instead of
@@ -238,7 +240,8 @@ jobs:
     displayName: Build simulation with Verilator
   - template: ci/upload-artifacts-template.yml
     parameters:
-      artifact: top_earlgrey_verilator
+      includePatterns:
+        - "/hw/top_earlgrey/Vtop_earlgrey_verilator"
 
 - job: top_englishbreakfast_verilator
   displayName: Build Verilator simulation of the English Breakfast toplevel design
@@ -273,7 +276,8 @@ jobs:
     displayName: Build simulation with Verilator
   - template: ci/upload-artifacts-template.yml
     parameters:
-      artifact: top_englishbreakfast_verilator
+      includePatterns:
+        - "/hw/top_englishbreakfast/Vtop_englishbreakfast_verilator"
 
 - job: execute_verilated_tests
   displayName: Execute tests on the Verilated system
@@ -394,7 +398,8 @@ jobs:
     displayName: Display synthesis and implementation logs
   - template: ci/upload-artifacts-template.yml
     parameters:
-      artifact: top_earlgrey_nexysvideo
+      includePatterns:
+        - "/hw/top_earlgrey/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit"
 
 - job: top_englishbreakfast_cw305
   displayName: Build CW305 variant of the English Breakfast toplevel design using Vivado
@@ -438,7 +443,8 @@ jobs:
     displayName: Build bitstream with Vivado
   - template: ci/upload-artifacts-template.yml
     parameters:
-      artifact: top_englishbreakfast_cw305
+      includePatterns:
+        - "/hw/top_englishbreakfast/lowrisc_systems_top_englishbreakfast_cw305_0.1.bit"
 
 - job: execute_fpga_tests
   displayName: Execute tests on FPGA
