@@ -54,27 +54,25 @@ class keymgr_cfgen_vseq extends keymgr_random_vseq;
       wait_no_outstanding_access();
       csr_rd(ral.op_status, op_status_val, .backdoor(1));
       if (op_status_val == keymgr_pkg::OpWip && cfg.keymgr_vif.kmac_data_rsp.done) begin
-        write_cfgen_gated_reg();
+        write_and_check_regwen_locked_reg();
       end
     end
   endtask
 
-  virtual task write_cfgen_gated_reg();
+  virtual task write_and_check_regwen_locked_reg();
     bit [TL_DW-1:0] val = $urandom;
-
-    `uvm_info(`gfn, "Write cfgen gated reg, and this write should be ignored", UVM_HIGH)
     // since it's timing sensitive, only write one of these reg
-    randcase
-      1: csr_wr(ral.control,            val);
-      1: csr_wr(ral.key_version,        val);
-      1: csr_wr(ral.sw_binding_0,       val);
-      1: csr_wr(ral.sw_binding_1,       val);
-      1: csr_wr(ral.sw_binding_2,       val);
-      1: csr_wr(ral.sw_binding_3,       val);
-      1: csr_wr(ral.salt_0,             val);
-      1: csr_wr(ral.salt_1,             val);
-      1: csr_wr(ral.salt_2,             val);
-      1: csr_wr(ral.salt_3,             val);
-    endcase
-  endtask : write_cfgen_gated_reg
+    dv_base_reg     locked_reg;
+    dv_base_reg     locked_regs[$];
+
+    ral.cfgen.get_locked_regs(locked_regs);
+    locked_regs.shuffle();
+    locked_reg = locked_regs[0];
+
+    `uvm_info(`gfn, $sformatf("Write regwen locked reg %0s, and this write should be ignored",
+                              locked_reg.get_name()), UVM_MEDIUM)
+    csr_wr(locked_reg, val);
+    csr_rd(locked_reg, val); // checking is done with scb
+  endtask : write_and_check_regwen_locked_reg
+
 endclass : keymgr_cfgen_vseq

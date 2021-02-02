@@ -274,6 +274,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+    dv_base_reg dv_reg;
     uvm_reg csr;
     bit     do_read_check   = 1'b1;
     bit     write           = item.is_write();
@@ -288,6 +289,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     if (csr_addr inside {cfg.csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
+      `downcast(dv_reg, csr)
     end
     else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
@@ -297,9 +299,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     if (addr_phase_write) begin
       // if OP WIP or keymgr_en=0, will clear cfgen and below csr can't be written
       if ((current_op_status == keymgr_pkg::OpWip || cfg.keymgr_vif.keymgr_en != lc_ctrl_pkg::On) &&
-          csr.get_name() inside {"control", "key_version",
-          "sw_binding_0", "sw_binding_1", "sw_binding_2", "sw_binding_3",
-          "salt_0", "salt_1", "salt_2", "salt_3"}) begin
+          ral.cfgen.is_inside_locked_regs(dv_reg)) begin
         `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to cfgen=0", csr.get_name()),
                   UVM_MEDIUM)
         return;
