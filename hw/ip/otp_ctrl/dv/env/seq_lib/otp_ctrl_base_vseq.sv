@@ -16,6 +16,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   rand bit [NumOtpCtrlIntr-1:0] en_intr;
   bit [TL_AW-1:0] used_dai_addr_q[$];
+  bit is_valid_dai_op = 1;
 
   `uvm_object_new
 
@@ -69,7 +70,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("DAI write, address %0h, data0 %0h data1 %0h, is_secret = %0b",
               addr, wdata0, wdata1, is_secret(addr)), UVM_DEBUG)
 
-    if ($urandom_range(0, 1) && cfg.zero_delays) begin
+    // direct_access_regwen is set only when following conditions are met:
+    // - the dai operation is valid, otherwise it is hard to predict which cycle the error is
+    //   detected and regwen is set back to 1
+    // - zero delays in TLUL interface, otherwise dai operation might be finished before reading
+    //   this regwen CSR
+    if ($urandom_range(0, 1) && cfg.zero_delays && is_valid_dai_op) begin
       csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
     csr_spinwait(ral.intr_state.otp_operation_done, 1);
@@ -84,7 +90,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     addr = randomize_dai_addr(addr);
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
-    if ($urandom_range(0, 1) && cfg.zero_delays) begin
+    if ($urandom_range(0, 1) && cfg.zero_delays && is_valid_dai_op) begin
       csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
     csr_spinwait(ral.intr_state.otp_operation_done, 1);
@@ -111,7 +117,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(ral.direct_access_address, PART_BASE_ADDRS[part_idx]);
     csr_wr(ral.direct_access_cmd, otp_ctrl_pkg::DaiDigest);
 
-    if ($urandom_range(0, 1) && cfg.zero_delays) begin
+    if ($urandom_range(0, 1) && cfg.zero_delays && is_valid_dai_op) begin
       csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
     csr_spinwait(ral.intr_state.otp_operation_done, 1);
