@@ -58,6 +58,8 @@ top_optional = {
         'list of the modules that connects to alert_handler'
     ],
     'datawidth': ['pn', "default data width"],
+    'exported_clks': ['g', 'clock signal routing rules'],
+    'host': ['g', 'list of host-only components in the system'],
     'inter_module': ['g', 'define the signal connections between the modules'],
     'interrupt': ['lnw', 'interrupts (generated)'],
     'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
@@ -67,6 +69,7 @@ top_optional = {
         'PADS instantiation, if doesn\'t exist, tool creates direct output'
     ],
     'pinmux': ['g', 'pinmux definition if doesn\'t exist, tool uses defaults'],
+    'power': ['g', 'power domains supported by the design'],
 }
 
 top_added = {}
