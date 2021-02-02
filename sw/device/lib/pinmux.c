@@ -9,7 +9,7 @@
 
 #include "pinmux_regs.h"  // Generated.
 
-#define PINMUX0_BASE_ADDR TOP_EARLGREY_PINMUX_BASE_ADDR
+#define PINMUX0_BASE_ADDR TOP_EARLGREY_PINMUX_AON_BASE_ADDR
 
 static void init_pinmux_reg(uint32_t reg, uint32_t size, uint32_t num_fields,
                             uint32_t mask, uint32_t start_v) {

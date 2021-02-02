@@ -34,7 +34,7 @@
   clocks: {
 
     hier_paths: {
-      top: "clkmgr_clocks.", // top level is a struct
+      top: "clkmgr_aon_clocks.", // top level is a struct
       ext: "",               // ext is a port of the clock name
     },
 
@@ -110,7 +110,7 @@
   resets: {
 
     hier_paths: {
-      top: "rstmgr_resets.", // top level is a struct
+      top: "rstmgr_aon_resets.", // top level is a struct
       ext: "",               // ext is a port of the clock name
     },
 
@@ -276,7 +276,7 @@
       reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40160000",
     }
-    { name: "pwrmgr",
+    { name: "pwrmgr_aon",
       type: "pwrmgr",
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
       clock_group: "powerup",
@@ -286,7 +286,7 @@
       generated: "true"         // Indicate this module is generated in the topgen
 
     },
-    { name: "rstmgr",
+    { name: "rstmgr_aon",
       type: "rstmgr",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
                    clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"},
@@ -296,7 +296,7 @@
       base_addr: "0x40410000",
       generated: "true"         // Indicate this module is generated in the topgen
     },
-    { name: "clkmgr",
+    { name: "clkmgr_aon",
       type: "clkmgr",
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "powerup",
@@ -525,26 +525,26 @@
   //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
   inter_module: {
     'connect': {
-      'alert_handler.crashdump' : ['rstmgr.alert_dump'],
+      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_nmi_rx',
                                    'lc_ctrl.esc_wipe_secrets_rx',
                                    'lc_ctrl.esc_scrap_state_rx'
-                                   'pwrmgr.esc_rst_rx'],
+                                   'pwrmgr_aon.esc_rst_rx'],
       'alert_handler.esc_tx'    : ['rv_core_ibex.esc_nmi_tx',
                                    'lc_ctrl.esc_wipe_secrets_tx',
                                    'lc_ctrl.esc_scrap_state_tx',
-                                   'pwrmgr.esc_rst_tx'],
+                                   'pwrmgr_aon.esc_rst_tx'],
       'flash_ctrl.flash'        : ['eflash.flash_ctrl'],
       'flash_ctrl.rma_req'      : ['lc_ctrl.lc_flash_rma_req'],
       'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'sram_ctrl_main.sram_scr' : ['ram_main.sram_scr'],
       'sram_ctrl_ret.sram_scr'  : ['ram_ret.sram_scr'],
-      'pwrmgr.pwr_flash'        : ['flash_ctrl.pwrmgr'],
-      'pwrmgr.pwr_rst'          : ['rstmgr.pwr'],
-      'pwrmgr.pwr_clk'          : ['clkmgr.pwr'],
-      'pwrmgr.pwr_lc'           : ['lc_ctrl.pwr_lc'],
-      'rv_core_ibex.crashdump'  : ['rstmgr.cpu_dump'],
+      'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
+      'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
+      'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
+      'pwrmgr_aon.pwr_lc'       : ['lc_ctrl.pwr_lc'],
+      'rv_core_ibex.crashdump'  : ['rstmgr_aon.cpu_dump'],
 
       // usbdev connection to pinmux
       'usbdev.usb_out_of_rst'   : ['pinmux.usb_out_of_rst'],
@@ -559,7 +559,7 @@
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
       // an empty list.
-      'clkmgr.idle'      : [],
+      'clkmgr_aon.idle'      : [],
 
       // LC function control signal broadcast
       // TODO(#3920): connect all these signals once top-level sim and FPGA can backload LC state
@@ -584,7 +584,7 @@
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
     'top': [
-        'rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr.clocks',
+        'rstmgr_aon.resets', 'rstmgr_aon.cpu', 'pwrmgr_aon.pwr_cpu', 'clkmgr_aon.clocks',
 
         // Xbars
         'main.tl_corei', 'main.tl_cored', 'main.tl_dm_sba', 'main.tl_debug_mem'
@@ -592,12 +592,12 @@
 
     // ext is to create port in the top.
     'external': {
-        'clkmgr.clk_main': 'clk_main',   // clock inputs
-        'clkmgr.clk_io': 'clk_io',       // clock inputs
-        'clkmgr.clk_usb': 'clk_usb',     // clock inputs
-        'clkmgr.clk_aon': 'clk_aon',     // clock inputs
-        'rstmgr.ast': '',                // ast reset input
-        'pwrmgr.pwr_ast': '',
+        'clkmgr_aon.clk_main': 'clk_main',   // clock inputs
+        'clkmgr_aon.clk_io': 'clk_io',       // clock inputs
+        'clkmgr_aon.clk_usb': 'clk_usb',     // clock inputs
+        'clkmgr_aon.clk_aon': 'clk_aon',     // clock inputs
+        'rstmgr_aon.ast': 'rstmgr_ast',                // ast reset input
+        'pwrmgr_aon.pwr_ast': 'pwrmgr_ast',
         'sensor_ctrl.ast_alert': '',
         'sensor_ctrl.ast_status': '',
         'usbdev.usb_ref_val': '',

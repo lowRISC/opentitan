@@ -91,7 +91,7 @@ void test_hintable_clocks(const dif_clkmgr_t *clkmgr) {
 
 bool test_main() {
   const dif_clkmgr_params_t params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_BASE_ADDR),
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR),
       .last_gateable_clock = kTopEarlgreyGateableClocksLast,
       .last_hintable_clock = kTopEarlgreyHintableClocksLast,
   };

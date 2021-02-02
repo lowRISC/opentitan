@@ -45,19 +45,19 @@
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    { name:      "pwrmgr",
+    { name:      "pwrmgr_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    { name:      "rstmgr",
+    { name:      "rstmgr_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    { name:      "clkmgr",
+    { name:      "clkmgr_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
@@ -117,7 +117,7 @@
     },
   ],
   connections: {
-    main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr", "rstmgr", "clkmgr",
+    main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon",
             "ram_ret", "lc_ctrl", "sensor_ctrl", "alert_handler", "nmi_gen",
             "ast_wrapper", "sram_ctrl_ret"],
   },

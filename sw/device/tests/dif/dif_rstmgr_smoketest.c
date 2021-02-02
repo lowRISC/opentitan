@@ -15,7 +15,7 @@ const test_config_t kTestConfig;
 
 bool test_main(void) {
   dif_rstmgr_params_t params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR),
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
   };
   CHECK(dif_rstmgr_init(params, &rstmgr) == kDifRstmgrOk);
 
