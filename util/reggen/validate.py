@@ -1736,11 +1736,10 @@ def validate(regs, **kwargs):
                 error += 1
             prefix = alert['name'].split('_')
             if prefix[0] not in ['recov', 'fatal']:
-                # TODO: to be elevated to error severity
-                log.warning(
+                log.error(
                     "{}: Alerts must be prefixed with either 'recov_' or "
                     "'fatal_'.".format(alert['name']))
-                # error += 1
+                error += 1
 
         if num_alerts != 0:
             param = ''
