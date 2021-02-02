@@ -63,13 +63,14 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
   assign alerts_vld = ast_alert_i.alerts_p | ~ast_alert_i.alerts_n;
 
   // alert test connection
-  assign alert_test[AsSel]   = reg2hw.alert_test.as.qe    & reg2hw.alert_test.as.q;
-  assign alert_test[CgSel]   = reg2hw.alert_test.cg.qe    & reg2hw.alert_test.cg.q;
-  assign alert_test[GdSel]   = reg2hw.alert_test.gd.qe    & reg2hw.alert_test.gd.q;
-  assign alert_test[TsHiSel] = reg2hw.alert_test.ts_hi.qe & reg2hw.alert_test.ts_hi.q;
-  assign alert_test[TsLoSel] = reg2hw.alert_test.ts_lo.qe & reg2hw.alert_test.ts_lo.q;
-  assign alert_test[LsSel]   = reg2hw.alert_test.ls.qe    & reg2hw.alert_test.ls.q;
-  assign alert_test[OtSel]   = reg2hw.alert_test.ot.qe    & reg2hw.alert_test.ot.q;
+  assign alert_test[AsSel]   = reg2hw.alert_test.recov_as.qe    & reg2hw.alert_test.recov_as.q;
+  assign alert_test[CgSel]   = reg2hw.alert_test.recov_cg.qe    & reg2hw.alert_test.recov_cg.q;
+  assign alert_test[GdSel]   = reg2hw.alert_test.recov_gd.qe    & reg2hw.alert_test.recov_gd.q;
+  assign alert_test[TsHiSel] = reg2hw.alert_test.recov_ts_hi.qe & reg2hw.alert_test.recov_ts_hi.q;
+  assign alert_test[TsLoSel] = reg2hw.alert_test.recov_ts_lo.qe & reg2hw.alert_test.recov_ts_lo.q;
+  assign alert_test[LsSel]   = reg2hw.alert_test.recov_ls.qe    & reg2hw.alert_test.recov_ls.q;
+  assign alert_test[OtSel]   = reg2hw.alert_test.recov_ot.qe    & reg2hw.alert_test.recov_ot.q;
+
 
   // fire an alert whenever indicated, or whenever input no longer differential
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
@@ -89,7 +90,7 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
     assign alert_req = sw_ack_mode[i] ? reg2hw.alert_state[i].q : valid_alert;
     prim_alert_sender #(
       .AsyncOn(AsyncOn),
-      .IsFatal(1)
+      .IsFatal(0)
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,

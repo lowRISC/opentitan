@@ -946,13 +946,13 @@ module top_earlgrey #(
 
   sensor_ctrl u_sensor_ctrl (
 
-      // [0]: as
-      // [1]: cg
-      // [2]: gd
-      // [3]: ts_hi
-      // [4]: ts_lo
-      // [5]: ls
-      // [6]: ot
+      // [0]: recov_as
+      // [1]: recov_cg
+      // [2]: recov_gd
+      // [3]: recov_ts_hi
+      // [4]: recov_ts_lo
+      // [5]: recov_ls
+      // [6]: recov_ot
       .alert_tx_o  ( alert_tx[6:0] ),
       .alert_rx_i  ( alert_rx[6:0] ),
 
@@ -1468,8 +1468,8 @@ module top_earlgrey #(
       // Interrupt
       .intr_op_done_o (intr_keymgr_op_done),
 
-      // [17]: fault_err
-      // [18]: operation_err
+      // [17]: fatal_fault_err
+      // [18]: recov_operation_err
       .alert_tx_o  ( alert_tx[18:17] ),
       .alert_rx_i  ( alert_rx[18:17] ),
 

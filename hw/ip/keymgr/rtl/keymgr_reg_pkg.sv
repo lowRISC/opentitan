@@ -35,11 +35,11 @@ package keymgr_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } fault_err;
+    } fatal_fault_err;
     struct packed {
       logic        q;
       logic        qe;
-    } operation_err;
+    } recov_operation_err;
   } keymgr_reg2hw_alert_test_reg_t;
 
   typedef struct packed {

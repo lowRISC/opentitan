@@ -1338,7 +1338,7 @@
       alert_list:
       [
         {
-          name: as
+          name: recov_as
           width: 1
           bits: "0"
           bitinfo:
@@ -1351,7 +1351,7 @@
           async: 0
         }
         {
-          name: cg
+          name: recov_cg
           width: 1
           bits: "1"
           bitinfo:
@@ -1364,7 +1364,7 @@
           async: 0
         }
         {
-          name: gd
+          name: recov_gd
           width: 1
           bits: "2"
           bitinfo:
@@ -1377,7 +1377,7 @@
           async: 0
         }
         {
-          name: ts_hi
+          name: recov_ts_hi
           width: 1
           bits: "3"
           bitinfo:
@@ -1390,7 +1390,7 @@
           async: 0
         }
         {
-          name: ts_lo
+          name: recov_ts_lo
           width: 1
           bits: "4"
           bitinfo:
@@ -1403,7 +1403,7 @@
           async: 0
         }
         {
-          name: ls
+          name: recov_ls
           width: 1
           bits: "5"
           bitinfo:
@@ -1416,7 +1416,7 @@
           async: 0
         }
         {
-          name: ot
+          name: recov_ot
           width: 1
           bits: "6"
           bitinfo:
@@ -4933,7 +4933,7 @@
       alert_list:
       [
         {
-          name: fault_err
+          name: fatal_fault_err
           width: 1
           bits: "0"
           bitinfo:
@@ -4946,7 +4946,7 @@
           async: 1
         }
         {
-          name: operation_err
+          name: recov_operation_err
           width: 1
           bits: "1"
           bitinfo:
@@ -9132,7 +9132,7 @@
       module_name: otbn
     }
     {
-      name: sensor_ctrl_as
+      name: sensor_ctrl_recov_as
       width: 1
       bits: "0"
       bitinfo:
@@ -9146,7 +9146,7 @@
       module_name: sensor_ctrl
     }
     {
-      name: sensor_ctrl_cg
+      name: sensor_ctrl_recov_cg
       width: 1
       bits: "1"
       bitinfo:
@@ -9160,7 +9160,7 @@
       module_name: sensor_ctrl
     }
     {
-      name: sensor_ctrl_gd
+      name: sensor_ctrl_recov_gd
       width: 1
       bits: "2"
       bitinfo:
@@ -9174,7 +9174,7 @@
       module_name: sensor_ctrl
     }
     {
-      name: sensor_ctrl_ts_hi
+      name: sensor_ctrl_recov_ts_hi
       width: 1
       bits: "3"
       bitinfo:
@@ -9188,7 +9188,7 @@
       module_name: sensor_ctrl
     }
     {
-      name: sensor_ctrl_ts_lo
+      name: sensor_ctrl_recov_ts_lo
       width: 1
       bits: "4"
       bitinfo:
@@ -9202,7 +9202,7 @@
       module_name: sensor_ctrl
     }
     {
-      name: sensor_ctrl_ls
+      name: sensor_ctrl_recov_ls
       width: 1
       bits: "5"
       bitinfo:
@@ -9216,7 +9216,7 @@
       module_name: sensor_ctrl
     }
     {
-      name: sensor_ctrl_ot
+      name: sensor_ctrl_recov_ot
       width: 1
       bits: "6"
       bitinfo:
@@ -9230,7 +9230,7 @@
       module_name: sensor_ctrl
     }
     {
-      name: keymgr_fault_err
+      name: keymgr_fatal_fault_err
       width: 1
       bits: "0"
       bitinfo:
@@ -9244,7 +9244,7 @@
       module_name: keymgr
     }
     {
-      name: keymgr_operation_err
+      name: keymgr_recov_operation_err
       width: 1
       bits: "1"
       bitinfo:

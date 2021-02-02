@@ -485,8 +485,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     bit [TL_DW-1:0] err = get_err_code();
     void'(ral.err_code.predict(err));
 
-    if (get_fault_err()) set_exp_alert("fault_err");
-    if (get_op_err()) set_exp_alert("operation_err");
+    if (get_fault_err()) set_exp_alert("fatal_fault_err");
+    if (get_op_err()) set_exp_alert("recov_operation_err");
 
     `uvm_info(`gfn, $sformatf("at %s, %s is issued and error code is 'b%0b",
               current_state, get_operation(), err), UVM_MEDIUM)
