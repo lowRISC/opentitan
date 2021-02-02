@@ -391,6 +391,7 @@ top_optional = {
     'param_list': ['lp', "list of parameters of the IP"],
     'regwidth': ['d', "width of registers in bits (default 32)"],
     'reset_primary': ['s', "primary reset used by the module"],
+    'reset_request_list': ['l', 'list of signals requesting reset'],
     'scan': ['pb', 'Indicates the module have `scanmode_i`'],
     'scan_reset': ['pb', 'Indicates the module have `test_rst_ni`'],
     'SPDX-License-Identifier': [
