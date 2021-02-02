@@ -130,9 +130,11 @@ clock_groups_added = {}
 eflash_required = {
     'banks': ['d', 'number of flash banks'],
     'base_addr': ['s', 'strarting hex address of memory'],
+    'clock_connections': ['g', 'generated, elaborated version of clock_srcs'],
     'clock_group': ['s', 'associated clock attribute group'],
     'clock_srcs': ['g', 'clock connections'],
     'inter_signal_list': ['lg', 'intersignal list'],
+    'name': ['s', 'name of flash memory'],
     'pages_per_bank': ['d', 'number of data pages per flash bank'],
     'program_resolution': ['d', 'maximum number of flash words allowed to program'],
     'reset_connections': ['g', 'reset connections'],
