@@ -127,10 +127,23 @@ jobs:
       . util/build_consts.sh
       ninja -C "$OBJ_DIR" test
     displayName: Run unit tests
+  - bash: |
+      . util/build_consts.sh
+      # Remove all Nexys Video-related build artifacts, which will be produced
+      # by the sw_build_nexysvideo job below (see comment there).
+      find "$BIN_DIR/sw/device" -name '*fpga_nexysvideo*' -type f -delete
+    displayName: Delete all Nexys Video build artifacts
   - template: ci/upload-artifacts-template.yml
     parameters:
       artifact: sw_build
 
+# Software targeting the Nexys Video board is produced by patching the source
+# tree before building. This produces a full sw build tree, however only the
+# artifacts with "nexysvideo" in the name are actually the ones we're looking
+# for. Everything else will be discarded.
+# TODO: This is a rather ugly hack, which will go away once we properly support
+# building more than one top-level design with different parametrizations.
+# Work towards this goal is tracked in issue #4669.
 - job: sw_build_nexysvideo
   displayName: Build Software for Earl Grey toplevel design targeting the Nexys Video board
   dependsOn: lint
@@ -151,6 +164,9 @@ jobs:
       ./hw/top_earlgrey/util/top_earlgrey_reduce.py
       ./meson_init.sh -A
       ninja -C "$OBJ_DIR" all
+
+      # Delete all build artifacts which are *not* for the Nexys Video board.
+      find "$BIN_DIR/sw/device" -not -name '*fpga_nexysvideo*' -type f -delete
     displayName: Build embedded targets
   - bash: |
       . util/build_consts.sh
