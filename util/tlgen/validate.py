@@ -91,13 +91,18 @@ Crossbar configuration format.
             ' If not specified, it is assumed to be in main clock domain'
         ],
         'reset': ['s', 'Main reset'],
-        'connections':
-        ['g', "List of edge. Key is host, entry in value list is device"],
+        'connections': [
+            'g',
+            "List of edge. Key is host, entry in value list is device"
+        ],
         'clock_connections': ['g', 'list of clocks'],
         'nodes': ['lg', node]
     },
     'optional': {
         'type': ['s', 'Indicate Hjson type. "xbar" always if exist'],
+        'clock_group': ['s', "Remnant from auto-generation scripts. Ignore."],
+        'clock_srcs': ['g', "Remnant from auto-generation scripts. Ignore."],
+        'domain': ['s', 'Power domain for the crossbar']
     },
     'added': {
         'reset_connections': [
@@ -138,11 +143,13 @@ def check_keys(obj, control, prefix=""):
             continue
 
         # Type and value check
-        if not checker[0] in val_types:
+        if checker[0] is not None and checker[0] not in val_types:
             log.error(prefix +
                       " field {} is undefined type. Check val_types {}".format(
                           k, checker[0]))
-        if checker[0] == 'lg':
+        if checker[0] is None:
+            pass
+        elif checker[0] == 'lg':
             # List of subgroup
             error += sum(
                 map(
