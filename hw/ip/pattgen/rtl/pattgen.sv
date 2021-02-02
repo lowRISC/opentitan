@@ -61,10 +61,14 @@ module pattgen
 
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
-  `ASSERT_KNOWN(Pcl0TxKnownO_A, pcl0_tx_o)
-  `ASSERT_KNOWN(Pda0TxKnownO_A, pda0_tx_o)
-  `ASSERT_KNOWN(Pcl1TxKnownO_A, pcl1_tx_o)
-  `ASSERT_KNOWN(Pda1TxKnownO_A, pda1_tx_o)
+  `ASSERT_KNOWN(Pcl0TxKnownO_A, cio_pcl0_tx_o)
+  `ASSERT_KNOWN(Pda0TxKnownO_A, cio_pda0_tx_o)
+  `ASSERT_KNOWN(Pcl1TxKnownO_A, cio_pcl1_tx_o)
+  `ASSERT_KNOWN(Pda1TxKnownO_A, cio_pda1_tx_o)
+  `ASSERT_KNOWN(Pcl0TxEnKnownO_A, cio_pcl0_tx_en_o)
+  `ASSERT_KNOWN(Pda0TxEnKnownO_A, cio_pda0_tx_en_o)
+  `ASSERT_KNOWN(Pcl1TxEnKnownO_A, cio_pcl1_tx_en_o)
+  `ASSERT_KNOWN(Pda1TxEnKnownO_A, cio_pda1_tx_en_o)
   `ASSERT_KNOWN(IntrCh0DoneKnownO_A, intr_done_ch0_o)
   `ASSERT_KNOWN(IntrCh1DoneKnownO_A, intr_done_ch1_o)
 
