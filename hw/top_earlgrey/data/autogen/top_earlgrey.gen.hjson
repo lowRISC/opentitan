@@ -413,7 +413,6 @@
         rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40000000
-      clock_reset_export: []
       clock_group: secure
       clock_connections:
       {
@@ -573,7 +572,6 @@
         rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40010000
-      clock_reset_export: []
       clock_group: secure
       clock_connections:
       {
@@ -733,7 +731,6 @@
         rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40020000
-      clock_reset_export: []
       clock_group: secure
       clock_connections:
       {
@@ -893,7 +890,6 @@
         rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40030000
-      clock_reset_export: []
       clock_group: secure
       clock_connections:
       {
@@ -1054,7 +1050,6 @@
         rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40040000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_peri
@@ -1123,7 +1118,6 @@
         rst_ni: rstmgr_resets.rst_spi_device_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40050000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_peri
@@ -1269,7 +1263,6 @@
         rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40100000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_timers
@@ -1497,7 +1490,6 @@
         rst_edn_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40130000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_timers
@@ -1830,7 +1822,6 @@
         rst_ni: rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40140000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_timers
@@ -2296,7 +2287,6 @@
         AccuCntDw: 16
         LfsrSeed: 0x7FFFFFFF
       }
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_timers
@@ -2468,7 +2458,6 @@
         rst_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40160000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_timers
@@ -2594,7 +2583,6 @@
       domain: Aon
       base_addr: 0x40400000
       generated: "true"
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_powerup
@@ -2799,7 +2787,6 @@
       domain: Aon
       base_addr: 0x40410000
       generated: "true"
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_powerup
@@ -2945,7 +2932,6 @@
       domain: Aon
       base_addr: 0x40420000
       generated: "true"
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_powerup
@@ -3120,7 +3106,6 @@
       domain: Aon
       base_addr: 0x40460000
       generated: "true"
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -3300,7 +3285,6 @@
       domain: Aon
       base_addr: 0x40470000
       generated: "true"
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -3754,7 +3738,6 @@
       }
       domain: Aon
       base_addr: 0x40510000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_peri
@@ -3882,7 +3865,6 @@
       }
       base_addr: 0x41000000
       generated: "true"
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_infra
@@ -4233,7 +4215,6 @@
       }
       base_addr: 0x41010000
       generated: "true"
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -4281,7 +4262,6 @@
         rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41100000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_aes
@@ -4494,7 +4474,6 @@
         rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41110000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_hmac
@@ -4594,7 +4573,6 @@
         rst_edn_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41120000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_kmac
@@ -4766,7 +4744,6 @@
         rst_edn_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41130000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -5125,7 +5102,6 @@
         rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41150000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -5280,7 +5256,6 @@
         rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41160000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -5421,7 +5396,6 @@
         rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41170000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -5526,7 +5500,6 @@
         rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41180000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -5633,7 +5606,6 @@
         rst_otp_ni: rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x411C0000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_secure
@@ -5759,7 +5731,6 @@
         rst_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x411D0000
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_otbn
@@ -5894,7 +5865,6 @@
           index: -1
         }
       ]
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_infra
@@ -5943,7 +5913,6 @@
           index: -1
         }
       ]
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_infra
@@ -5993,7 +5962,6 @@
           index: -1
         }
       ]
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_div4_infra
@@ -6120,7 +6088,6 @@
           index: -1
         }
       ]
-      clock_reset_export: []
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_infra
@@ -6543,7 +6510,6 @@
         rst_main_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
         rst_fixed_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      clock_reset_export: []
       clock_connections:
       {
         clk_main_i: clkmgr_clocks.clk_main_infra
@@ -7265,7 +7231,6 @@
       {
         rst_peri_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      clock_reset_export: []
       clock_connections:
       {
         clk_peri_i: clkmgr_clocks.clk_io_div4_infra

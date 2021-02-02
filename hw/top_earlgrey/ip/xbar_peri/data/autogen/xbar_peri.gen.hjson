@@ -18,7 +18,6 @@
   {
     rst_peri_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
   }
-  clock_reset_export: []
   clock_connections:
   {
     clk_peri_i: clkmgr_clocks.clk_io_div4_infra
