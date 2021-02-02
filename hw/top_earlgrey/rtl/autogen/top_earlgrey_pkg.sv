@@ -69,7 +69,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for spi_device in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES = 32'h2000;
 
   /**
    * Peripheral base address for i2c0 in top earlgrey.

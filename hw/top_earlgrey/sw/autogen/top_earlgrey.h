@@ -131,7 +131,7 @@ extern "C" {
  * address between #TOP_EARLGREY_SPI_DEVICE_BASE_ADDR and
  * `TOP_EARLGREY_SPI_DEVICE_BASE_ADDR + TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES 0x1000u
+#define TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES 0x2000u
 
 /**
  * Peripheral base address for i2c0 in top earlgrey.

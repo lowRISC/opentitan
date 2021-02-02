@@ -1165,7 +1165,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       domain: "0"
-      size: 0x1000
+      size: 0x2000
       bus_device: tlul
       bus_host: none
       available_input_list:
@@ -8462,7 +8462,7 @@
           [
             {
               base_addr: 0x40050000
-              size_byte: 0x1000
+              size_byte: 0x2000
             }
           ]
           xbar: false
