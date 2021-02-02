@@ -125,7 +125,7 @@ static void aes_serial_single_encrypt(const uint8_t *plaintext,
  */
 static void aes_serial_batch_encrypt(const uint8_t *data, size_t data_len) {
   uint32_t num_encryptions = 0;
-  SS_CHECK(data_len = sizeof(num_encryptions));
+  SS_CHECK(data_len == sizeof(num_encryptions));
   num_encryptions = read_32(data);
 
   sca_set_trigger_high();
