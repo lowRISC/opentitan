@@ -495,13 +495,12 @@ def check_power_domains(top):
     # If there is one defined, check that it is a valid definition
     for end_point in top['module'] + top['memory'] + top['xbar']:
         if 'domain' not in end_point:
-            log.warning("{} does not have a power domain defined, \
-            assigning default".format(end_point['name']))
-
             end_point['domain'] = top['power']['default']
-        elif end_point['domain'] not in top['power']['domains']:
-            log.error("{} defined invalid domain {}".format(
-                end_point['name'], end_point['domain']))
+
+        if end_point['domain'] not in top['power']['domains']:
+            log.error("{} defined invalid domain {}"
+                      .format(end_point['name'],
+                              end_point['domain']))
             error += 1
             return error
 
