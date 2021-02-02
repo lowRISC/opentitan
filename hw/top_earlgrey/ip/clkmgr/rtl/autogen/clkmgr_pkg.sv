@@ -45,10 +45,10 @@ package clkmgr_pkg;
   } clkmgr_out_t;
 
   typedef struct packed {
-    logic clk_ast_sensor_ctrl_io_div4_secure;
     logic clk_ast_usbdev_io_div4_peri;
     logic clk_ast_usbdev_aon_peri;
     logic clk_ast_usbdev_usb_peri;
+    logic clk_ast_sensor_ctrl_aon_io_div4_secure;
   } clkmgr_ast_out_t;
 
   typedef struct packed {

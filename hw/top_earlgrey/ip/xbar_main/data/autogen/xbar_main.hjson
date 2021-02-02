@@ -117,18 +117,6 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_pinmux"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
-      name:   "tl_padctrl"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
       name:   "tl_otbn"
       act:    "req"
       package: "tlul_pkg"

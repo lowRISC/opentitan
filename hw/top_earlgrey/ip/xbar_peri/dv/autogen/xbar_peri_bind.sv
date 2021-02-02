@@ -86,29 +86,41 @@ module xbar_peri_bind;
     .h2d    (tl_usbdev_o),
     .d2h    (tl_usbdev_i)
   );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_pwrmgr (
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_pwrmgr_aon (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),
-    .h2d    (tl_pwrmgr_o),
-    .d2h    (tl_pwrmgr_i)
+    .h2d    (tl_pwrmgr_aon_o),
+    .d2h    (tl_pwrmgr_aon_i)
   );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_rstmgr (
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_rstmgr_aon (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),
-    .h2d    (tl_rstmgr_o),
-    .d2h    (tl_rstmgr_i)
+    .h2d    (tl_rstmgr_aon_o),
+    .d2h    (tl_rstmgr_aon_i)
   );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_clkmgr (
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_clkmgr_aon (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),
-    .h2d    (tl_clkmgr_o),
-    .d2h    (tl_clkmgr_i)
+    .h2d    (tl_clkmgr_aon_o),
+    .d2h    (tl_clkmgr_aon_i)
   );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_ram_ret (
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_pinmux_aon (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),
-    .h2d    (tl_ram_ret_o),
-    .d2h    (tl_ram_ret_i)
+    .h2d    (tl_pinmux_aon_o),
+    .d2h    (tl_pinmux_aon_i)
+  );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_padctrl_aon (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_padctrl_aon_o),
+    .d2h    (tl_padctrl_aon_i)
+  );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_ram_ret_aon (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_ram_ret_aon_o),
+    .d2h    (tl_ram_ret_aon_i)
   );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_otp_ctrl (
     .clk_i  (clk_peri_i),
@@ -122,11 +134,11 @@ module xbar_peri_bind;
     .h2d    (tl_lc_ctrl_o),
     .d2h    (tl_lc_ctrl_i)
   );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_sensor_ctrl (
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_sensor_ctrl_aon (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),
-    .h2d    (tl_sensor_ctrl_o),
-    .d2h    (tl_sensor_ctrl_i)
+    .h2d    (tl_sensor_ctrl_aon_o),
+    .d2h    (tl_sensor_ctrl_aon_i)
   );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_alert_handler (
     .clk_i  (clk_peri_i),
@@ -134,11 +146,11 @@ module xbar_peri_bind;
     .h2d    (tl_alert_handler_o),
     .d2h    (tl_alert_handler_i)
   );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_sram_ctrl_ret (
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_sram_ctrl_ret_aon (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),
-    .h2d    (tl_sram_ctrl_ret_o),
-    .d2h    (tl_sram_ctrl_ret_i)
+    .h2d    (tl_sram_ctrl_ret_aon_o),
+    .d2h    (tl_sram_ctrl_ret_aon_i)
   );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_nmi_gen (
     .clk_i  (clk_peri_i),
