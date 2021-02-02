@@ -246,7 +246,6 @@ def elab_intermodule(topcfg: OrderedDict):
         req_struct = find_intermodule_signal(list_of_intersignals, req_module,
                                              req_signal)
 
-        rsp_len = len(rsps)
         # decide signal format based on the `key`
         sig_name = intersignal_format(req_struct)
         req_struct["top_signame"] = sig_name
@@ -327,12 +326,6 @@ def elab_intermodule(topcfg: OrderedDict):
             if req_struct["struct"] == "logic":
                 assert req_struct[
                     "type"] != "req_rsp", "logic signal cannot have req_rsp type"
-
-            if rsp_len != 1:
-                log.warning("{req}[{i}] -> {rsp}".format(req=req, i=i,
-                                                         rsp=rsp))
-            else:
-                log.warning("{req} -> {rsp}".format(req=req, rsp=rsp))
 
             # increase Unique ID
             uid += 1
