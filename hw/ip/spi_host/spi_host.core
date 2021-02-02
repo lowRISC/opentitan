@@ -8,6 +8,7 @@ description: "SPI Host"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:constants:top_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:ip:lc_ctrl_pkg

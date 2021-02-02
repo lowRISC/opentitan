@@ -1321,16 +1321,19 @@
       clock_srcs:
       {
         clk_i: io_div4
+        clk_core_i: io_div2
       }
       clock_group: peri
       reset_connections:
       {
         rst_ni: rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel]
+        rst_core_ni: rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40060000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
+        clk_core_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
       domain: "0"
       size: 0x1000
@@ -1359,11 +1362,37 @@
         }
       ]
       param_list: []
-      interrupt_list: []
+      interrupt_list:
+      [
+        {
+          name: error
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: spi_event
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+      ]
       alert_list: []
       wakeup_list: []
       reset_request_list: []
-      scan: "true"
+      scan: "false"
       scan_reset: "false"
       inter_signal_list:
       [
@@ -1388,16 +1417,19 @@
       clock_srcs:
       {
         clk_i: io_div4
+        clk_core_i: io_div2
       }
       clock_group: peri
       reset_connections:
       {
         rst_ni: rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel]
+        rst_core_ni: rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40070000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
+        clk_core_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
       domain: "0"
       size: 0x1000
@@ -1426,11 +1458,37 @@
         }
       ]
       param_list: []
-      interrupt_list: []
+      interrupt_list:
+      [
+        {
+          name: error
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: interrupt
+        }
+        {
+          name: spi_event
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
+          ]
+          type: interrupt
+        }
+      ]
       alert_list: []
       wakeup_list: []
       reset_request_list: []
-      scan: "true"
+      scan: "false"
       scan_reset: "false"
       inter_signal_list:
       [

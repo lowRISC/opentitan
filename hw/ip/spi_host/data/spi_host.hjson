@@ -1,57 +1,542 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-{ name: "SPI_HOST",
+{ name: "spi_host",
   clock_primary: "clk_i",
+  other_clock_list: [ "clk_core_i" ],
+  reset_primary: "rst_ni",
+  other_reset_list: [ "rst_core_ni" ],
   bus_device: "tlul",
-  available_input_list: [
+  bus_host: "none",
+  regwidth: "32",
+  param_list: [
+    { name: "ByteOrder",
+      desc: '''Byte order to use when transmitting or receiving data.  If ByteOrder = 0,
+               the IP uses a Big-Endian ordering for the bytes in TXDATA and RXDATA.
+               The most significant byte (MSB) of TXDATA is transmitted first, and
+               received data is placed in the MSB location of RXDATA.  If ByteOrder = 1,
+               a Little-Endian ordering is used for these registers, and the LSB of each
+               gets priority for receiving and transmitting data.'''
+      type: "int",
+      default: "0"
+    },
+    { name: "MaxCS",
+      desc: "The number of active-low chip select (cs_n) lines to create.",
+      type: "int",
+      default: "1"
+    },
   ],
   available_output_list: [
-    { name: "sck", desc: "SPI Clock" },
-    { name: "csb", desc: "Chip Enable#" },
+    { name:  "sck"
+      desc:  "SPI Clock"
+    },
+    { name:  "csb"
+      desc:  '''Chip Select# (One hot, active low).  The size of this port should match MaxCS.'''
+      width: "1"
+    }
   ],
   available_inout_list: [
-    { name: "sd", width: 4, desc: "SPI In/Out ports" },
+    { name:  "sd",
+      desc:  "SPI data bus",
+      width: "4"
+    },
   ],
-  scan: "true", // Enable `scanmode_i` port
-  regwidth: "32",
+  interrupt_list: [
+    { name: "error",
+      desc: '''Error-related interrupts, see !!ERROR_ENABLE register for more
+               information.'''
+    },
+    { name: "spi_event",
+      desc: '''Event-related interrupts, see !!EVENT_ENABLE register for more
+               information.'''
+    }
+  ],
   registers: [
     { name: "CONTROL",
       desc: "Control register",
       swaccess: "rw",
-      hwaccess: "hrw",
+      hwaccess: "hro",
       fields: [
-        { bits: "3:0",
-          name: "data",
-          desc: '''This is a dummy register
-            '''
+        { bits: "31",
+          name: "SPIEN",
+          desc: '''Enables the SPI host.  On reset, this field is 0, meaning
+                   that no transactions can proceed.'''
+          resval: "0x0"
+        },
+        { bits: "30",
+          name: "RST_FSM",
+          desc: '''Holds the control FSM in reset when set to 1. (Must be
+                   explicitly cleared again before commands can be issued.)'''
+          resval: "0x0",
+        },
+        { bits: "29",
+          name: "RST_TXFIFO",
+          desc: '''Holds the TX FIFO in reset when set to 1. (Must be explicitly
+                   cleared again before using the TX FIFO.)'''
+          resval: "0x0",
+        },
+        { bits: "28",
+          name: "RST_RXFIFO",
+          desc: '''Holds the RX FIFO in reset when set to 1.  (Must be explicitly
+                   cleared again before using the RX FIFO.)'''
+          resval: "0x0"
+        },
+        { bits: "27",
+          name: "PASSTHRU",
+          desc: '''Enables Pass-through mode, wherein the SPI_HOST IP surrenders
+                   control of the SPI bus to another block. In this mode the
+                   `sck`, `cs_n` and `sd` signals are no longer driven by
+                   the SPI_HOST IP, rather they are multiplexed out to match the
+                   on-chip inputs `pt_sck_i`, `pt_cs_n_i`, `pt_sden_i`, `pt_sdo_i`,
+                   and `pt_sdi_o`.  (Since the `sd` bus is bidirectional, there are
+                   separate input, output and tri-state controls for this bus.)''',
+          resval: "0x0"
+        },
+        { bits: "24:16",
+          name: "TX_WATERMARK"
+          desc: '''If !!EVENT_ENABLE.TXWM is set, the IP will send
+                   an interrupt when the depth of the RX FIFO drops below
+                   TX_WATERMARK words (32b each).'''
           resval: "0"
         },
-        { bits: "4",
-          name: "sck",
-          desc: '''This is a dummy register
-            '''
-          resval: "0"
+        { bits: "15:9",
+          name: "RX_WATERMARK"
+          desc: '''If !!EVENT_ENABLE.RXWM is set, the IP will send
+                   an interrupt when the depth of the RX FIFO reaches
+                   RX_WATERMARK words (32b each).'''
+          resval: "127"
         },
-        { bits: "5",
-          name: "csb",
-          desc: '''This is a dummy register
-            '''
-          resval: "0"
+        { bits: "8",
+          name: "MANCS_EN",
+          desc: '''Enable Manual Chip Select. Typically each command
+                   manages the CS lines automatically, issuing a command
+                   to exactly one device, and lowering and raising the
+                   appropriate CS line after transmitting or receiving the
+                   necessary bytes.  Asserting this bit overrides this
+                   automatic selection, instead setting the CS lines to
+                   reflect the contents of the !!CONTROL.MANUAL_CS field.'''
+          resval: "0x0"
         },
-        { bits: "6",
-          name: "dir",
-          desc: '''This is a dummy register
-            '''
-          resval: "0"
+        { bits: "7:0",
+          name: "MANUAL_CS"
+          desc: '''When !!CONTROL.MANCS_EN = 1, the cs_n lines are tied directly to the
+                   value of MANUAL_CS.'''
+          resval: 0
+        }
+      ]
+    },
+    { name: "STATUS",
+      desc: "Status register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "31",
+          name: "READY",
+          desc: '''When high, indicates the SPI host is ready to receive
+                   commands. Writing a one to !!COMMAND_0.GO when READY is low is
+                   an error, and will trigger an interrupt.
+                   ''',
+          resval: "0x0"
+        },
+        { bits: "30",
+          name: "ACTIVE",
+          desc: '''When high, indicates the SPI host is processing a previously
+                   issued command.'''
+          resval: "0x0"
+        },
+        { bits: "29",
+          name: "TXFULL",
+          desc: '''When high, indicates that the transmit data fifo is full.
+                   Any further writes to !!TXDATA will create an error interrupt.
+                '''
+          resval: "0x0"
+        },
+        { bits: "28",
+          name: "TXEMPTY",
+          desc: '''When high, indicates that the transmit data fifo is empty.
+                   '''
+          resval: "0x0"
+        },
+        { bits: "27"
+          name: "TXSTALL",
+          desc: '''If high, signifies that an ongoing transaction has stalled
+                   due to lack of data in the TX FIFO''',
+          resval: "0x0"
+        },
+        { bits: "26",
+          name: "TXWM",
+          desc: '''If high, the amount of data in the TX FIFO has fallen below the
+                   level of !!CONTROL.TX_WATERMARK words (32b each).'''
+          resval: "0x0"
+        },
+        { bits: "25",
+          name: "RXFULL",
+          desc: '''When high, indicates that the receive fifo is full.  Any
+                   ongoing transactions will stall until firmware reads some
+                   data from !!RXDATA.'''
+          resval: "0x0"
+        },
+        { bits: "24",
+          name: "RXEMPTY",
+          desc: '''When high, indicates that the receive fifo is empty.
+                   Any reads from RX FIFO will cause an error interrupt.
+                   '''
+          resval: "0x0"
+        },
+        { bits: "23",
+          name: "RXSTALL",
+          desc: '''If high, signifies that an ongoing transaction has stalled
+                   due to lack of available space in the RX FIFO''',
+          resval: "0x0"
+        },
+        { bits: "22",
+          name: "BYTEORDER",
+          desc: '''The value of the ByteOrder parameter, provided so that firmware
+                   can confirm proper IP configuration.'''
+        }
+        { bits: "20",
+          name: "RXWM",
+          desc: '''If high, the number of 32-bits in the RX FIFO now exceeds the
+                   !!CONTROL.RX_WATERMARK entries (32b each).'''
+          resval: "0x0"
+        },
+        { bits: "17:9",
+          name: "RXQD",
+          desc: '''Receive queue depth. Indicates how many unread entries are currently in the
+                   RX FIFO.  When active, this result may an underestimate due
+                   to synchronization delays.
+                ''',
+          resval: "0x0"
+        },
+        { bits: "8:0",
+          name: "TXQD",
+          desc: '''Transmit queue depth. Indicates how many unsent entries are currently
+                   in the TX FIFO.  When active, this result may be an
+                   over-estimate due to synchronization delays,
+                ''',
+          resval: "0x0"
+        }
+      ]
+    },
+    { multireg: { name: "CONFIGOPTS",
+        desc: '''Configuration options register.
+
+                 Contains options for controlling each peripheral. One register per
+                 cs_n line''',
+        swaccess: "rw",
+        hwaccess: "hro",
+        cname: "configopts",
+        count: "MaxCS",
+        fields: [
+          { bits: "31",
+            name: "CPOL",
+            desc: '''The polarity of the sck clock signal.  When CPOL is 0,
+                     sck is low when idle, and emits high pulses.   When CPOL
+                     is low, sck is high when idle, and emits a series of low
+                     pulses.
+                     '''
+            resval: "0x0"
+          },
+          { bits: "30",
+            name: "CPHA",
+            desc: '''The phase of the sck clock signal relative to the data. When
+                     CPHA = 0, the data changes on the trailing edge of sck
+                     and is typically sampled on the leading edge.  Conversely
+                     if CPHA = 1 high, data lines change on the leading edge of
+                     sck and are typically sampled on the trailing edge.
+                     CPHA should be chosen to match the phase of the selected
+                     device.  The sampling behavior is modified by the
+                     !!CONFIGOPTS_0.FULLCYC bit.
+                     ''',
+            resval: "0x0"
+          },
+          { bits: "29",
+            name: "FULLCYC",
+            desc: '''Full cycle.  Modifies the CPHA sampling behaviour to allow
+                     for longer device logic setup times.  Rather than sampling the SD
+                     bus a half cycle after shifting out data, the data is sampled
+                     a full cycle after shifting data out.  This means that if
+                     CPHA = 0, data is shifted out on the trailing edge, and
+                     sampled a full cycle later.  If CPHA = 1, data is shifted and
+                     sampled with the trailing edge, also separated by a
+                     full cycle.''',
+            resval: 0
+          },
+          { bits: "28",
+            name: "CSAAT",
+            desc: '''Chip select active after transaction.  If CSAAT = 0, the
+                     chip select line is raised immediately at the end of the
+                     transaction.   If CSAAT = 1, the chip select line is left
+                     low at the end of the current sequence.  This potentially
+                     allows for the creation of longer or otherwise more
+                     complex sequences.'''
+            resval: "0x0"
+          },
+          { bits: "27:24",
+            name: "CSNLEAD",
+            desc: '''CS_N Leading Time.  Indicates the number of half sck cycles,
+                     CSNLEAD+1, to leave between the falling edge of cs_n and
+                     the first edge of sck.  Setting this register to zero
+                     corresponds to the minimum delay of one-half sck cycle'''
+            resval: 0
+          },
+          { bits: "23:20",
+            name: "CSNTRAIL"
+            desc: '''CS_N Trailing Time.  Indicates the number of half sck cycles,
+                     CSNTRAIL+1, to leave between last edge of sck and the rising
+                     edge of cs_n. Setting this register to zero corresponds
+                     to the minimum delay of one-half sck cycle.'''
+            resval: 0
+          },
+          { bits: "19:16",
+            name: "CSNIDLE"
+            desc: '''Minimum idle time between commands. Indicates the minimum
+                     number of sck half-cycles to hold cs_n high between commands.
+                     Setting this register to zero creates a minimally-wide CS_N-high
+                     pulse of one-half sck cycle.'''
+            resval: 0
+          },
+          { bits: "15:0",
+            name: "CLKDIV",
+            desc: '''Core clock divider.  Slows down subsequent SPI transactions by a
+                     factor of (CLKDIV+1) relative to the core clock frequency.  The
+                     period of sck, T(sck) then becomes `2*(CLK_DIV+1)*T(core)`'''
+            resval: 0
+          },
+        ]
+      }
+    },
+    { multireg: { name: "COMMAND",
+        desc: '''Command Register
+
+                 Parameters specific to each command.  One register per cs_n line''',
+        swaccess: "rw",
+        hwaccess: "hro",
+        hwqe: "true",
+        cname: "command",
+        count: "MaxCS",
+        fields: [
+          { bits: "3:0",
+            name: "TX1_CNT",
+            desc: '''The number of 1-byte bursts to transmit in this command,
+                     at the single-line data width (8 sck clocks per cycle).
+                     All other data lines are high-Z during this command phase.
+                     This field is ignored in full-duplex standard-mode
+                     (i.e. when !!COMMAND_0.FULLDPLX = 1 and !!COMMAND_0.SPEED = 0).
+                     ''',
+            resval: "0x0"
+          },
+          { bits: "12:4",
+            name: "TXN_CNT",
+            desc: '''The number of 1-byte bursts to transmit in this command,
+                     at the full-data width (Determined by the !!COMMAND_0.SPEED
+                     field).
+                     ''',
+            resval: "0x0"
+          },
+          { bits: "16:13",
+            name: "DUMMY_CYCLES",
+            desc: '''Controls the number of sck dummy cycles inserted between
+                     end of the last TX byte and the beginning of the first RX
+                     byte.  No data is transmitted or received and all outputs
+                     are high-Z during this command phase.
+                     This field is ignored in full-duplex standard-mode
+                     (i.e. when !!COMMAND_0.FULLDPLX = 1 and !!COMMAND_0.SPEED = 0).
+                     ''',
+            resval: "0x0"
+          },
+          { bits: "25:17",
+            name: "RX_CNT",
+            desc: '''In Dual or Quad mode, this is the number of 1-byte bursts
+                     to receive in this command.
+                     This field is ignored in full-duplex standard-mode
+                     (i.e. when !!COMMAND_0.FULLDPLX = 1 and !!COMMAND_0.SPEED = 0).
+                     ''',
+            resval: "0x0"
+          },
+          { bits: "26",
+            name: "FULLDPLX",
+            desc: '''Allows full-duplex operation for this command.  In full-duplex
+                     mode, !!COMMAND_0.TXN_CNT bytes are transmitted on 'sd[0]' and
+                     and the same number of bytes are received on 'sd[1]'.  This
+                     flag only applies if !!COMMAND_0.SPEED = 0.''',
+            resval: "0x0"
+          },
+          { bits: "27",
+            name: "HIGHZ",
+            desc: '''Forces high-impendance when not transmitting. Typically Standard
+                     Mode commands exclusively transmit on sd[0], and receive on sd[1].
+                     The sd[1] line is always high-impedance, but for half-duplex commands
+                     the sd[0] line is typically held low during dummy and receive cycles.
+                     This bit forces the sd[0] to high-impedance during dummy and receive
+                     cycles.''',
+            resval: "0x0"
+          },
+          { bits: "30:29",
+            name: "SPEED",
+            desc: '''The speed for the following command: "0" = Standard SPI. "1" = Dual SPI.
+                      "2"=Quad SPI,  "3": RESERVED.''',
+            resval: "0x0"
+          },
+          { bits: "31",
+            name: "GO",
+            hwaccess: "hrw",
+            desc: '''Writing a one to this field finalizes the command and submits it to the SPI_HOST core.
+                     This field is self-clearing, so each write to this field only triggers one command.'''
+            resval: "0x0",
+            tags: [// Updated by the hw. Exclude from write-checks.
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"]
+          }
+        ]
+      }
+    },
+    { window: {
+        name: "TXDATA",
+        items: "1",
+        validbits: "32",
+        byte-write: "true",
+        desc: '''SPI Transmit Data.
+
+                 The serial order of bit transmission
+                 is chosen to match SPI flash devices. Individual bytes
+                 are always transmitted with the most significant bit first.
+                 Multi-byte writes are also supported, and if ByteOrder = 0,
+                 the bits of !!TXDATA are transmitted strictly in order of
+                 decreasing signficance (i.e. most signicant bit first).
+                 For some processor architectures, this could lead to shuffling
+                 of flash data as compared to how it is written in memory.
+                 In which case, choosing ByteOrder = 1 can reverse the
+                 byte-order of multi-byte data writes.  (Though within
+                 each byte the most significant bit is always sent first.)
+                 '''
+        swaccess: "wo",
+        unusual: "false"
+      }
+    },
+    { name: "RXDATA",
+      desc: '''SPI Receive Data.
+
+               Received data is expected in the same
+               order used for the !!TXDATA register.  Each individual byte
+               is expected to arrive most-significant bit first.  If
+               ByteOrder = 0, the first byte received will be transferred to
+               RXDATA[31:24], and following bytes will be stored in
+               decreasing byte order. If ByteOrder = 1, incoming bytes will be
+               stored in the reverse order.''',
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      fields: [
+        { bits:   "31:0",
+          name:   "data",
+          resval: "0x0",
+          desc:   "Data Received"
+        }
+      ]
+    },
+    { name: "ERROR_ENABLE",
+      desc: "Controls which classes of errors raise an interrupt."
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "CMDERR",
+          desc: '''Command Error: If this bit is set, the block sends an error
+                   interrupt whenever a command is issued (i.e. a 1 is
+                   written to COMMAND.GO) while STATUS.READY is
+                   not asserted.''',
+          resval: "0x1"
+        },
+        { bits: "1",
+          name: "OVERFLOW",
+          desc: '''Overflow Errors: If this bit is set, the block sends an
+                   error interrupt whenever the TX FIFO overflows.'''
+          resval: "0x1"
+        },
+        { bits: "2",
+          name: "UNDERFLOW",
+          desc: '''Underflow Errors: If this bit is set, the block sends an
+                   error interrupt whenever there is a read from !!RXDATA
+                   but the RX FIFO is empty.'''
+          resval: "0x1"
         },
       ]
-      // This is a dummy register in order to
-      // connect some logic to the TL-UL bus.
-      // Do not write to or read from this reg
-      // until this has been replaced by correctly
-      // behaving logic.
-      tags: ["excl:CsrAllTests:CsrExclAll"]
     },
+    { name: "ERROR_STATUS",
+      desc: '''Indicates that any errors that have occurred.
+
+               When an error
+               occurs, the corresponding bit must be cleared here before
+               issuing any further commands.'''
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "CMDERR",
+          desc: '''Indicates a write to !!COMMAND_0.GO when
+                   !!STATUS.READY = 0.
+                   '''
+          resval: "0x0"
+        },
+        { bits: "1",
+          name: "OVERFLOW",
+          desc: '''Indicates that firmware has overflowed the TX FIFO'''
+          resval: "0x0"
+        },
+        { bits: "2",
+          name: "UNDERFLOW",
+          desc: '''Indicates that firmware has attempted to read from
+                   !!RXDATA when the RX FIFO is empty.''',
+          resval: "0x0"
+        },
+      ]
+    },
+    { name: "EVENT_ENABLE",
+      desc: "Controls which classes of SPI events raise an interrupt.",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "2",
+          name: "RXFULL",
+          desc: '''Assert to send a spi_event interrupt whenever !!STATUS.RXFULL
+                   goes high''',
+          resval: "0x0"
+        },
+        { bits: "3",
+          name: "TXEMPTY",
+          desc: '''Assert to send a spi_event interrupt whenever !!STATUS.TXEMPTY
+                   goes high''',
+          resval: "0x0"
+        },
+        { bits: "4",
+          name: "RXWM",
+          desc: '''Assert to send a spi_event interrupt whenever the number of 32-bit words in
+                   the RX FIFO is greater than !!CONTROL.RX_WATERMARK. To prevent the
+                   reassertion of this interrupt, read more data from the RX FIFO, or
+                   increase !!CONTROL.RX_WATERMARK.''',
+          resval: "0x0"
+        },
+        { bits: "5",
+          name: "TXWM",
+          desc: '''Assert to send a spi_event interrupt whenever the number of 32-bit words in
+                   the TX FIFO is less than !!CONTROL.TX_WATERMARK.  To prevent the
+                   reassertion of this interrupt add more data to the TX FIFO, or
+                   reduce !!CONTROL.TX_WATERMARK.''',
+          resval: "0x0"
+        },
+        { bits: "6",
+          name: "READY",
+          desc: '''Assert to send a spi_event interrupt whenever !!STATUS.READY
+                   goes high''',
+          resval: "0x0"
+        },
+        { bits: "7",
+          name: "IDLE",
+          desc: '''Assert to send a spi_event interrupt whenever !!STATUS.ACTIVE
+                   goes low''',
+          resval: "0x0"
+        }
+      ]
+    }
   ]
 }

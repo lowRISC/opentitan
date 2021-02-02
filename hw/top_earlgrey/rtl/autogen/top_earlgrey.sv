@@ -279,6 +279,10 @@ module top_earlgrey #(
   logic intr_spi_device_rxerr;
   logic intr_spi_device_rxoverflow;
   logic intr_spi_device_txunderflow;
+  logic intr_spi_host0_error;
+  logic intr_spi_host0_spi_event;
+  logic intr_spi_host1_error;
+  logic intr_spi_host1_spi_event;
   logic intr_i2c0_fmt_watermark;
   logic intr_i2c0_rx_watermark;
   logic intr_i2c0_fmt_overflow;
@@ -1115,14 +1119,19 @@ module top_earlgrey #(
       .cio_sd_o     (cio_spi_host0_sd_d2p),
       .cio_sd_en_o  (cio_spi_host0_sd_en_d2p),
 
+      // Interrupt
+      .intr_error_o     (intr_spi_host0_error),
+      .intr_spi_event_o (intr_spi_host0_spi_event),
+
       // Inter-module signals
       .tl_i(spi_host0_tl_req),
       .tl_o(spi_host0_tl_rsp),
-      .scanmode_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
-      .rst_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel])
+      .clk_core_i (clkmgr_aon_clocks.clk_io_div2_peri),
+      .rst_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel]),
+      .rst_core_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel])
   );
 
   spi_host u_spi_host1 (
@@ -1138,14 +1147,19 @@ module top_earlgrey #(
       .cio_sd_o     (cio_spi_host1_sd_d2p),
       .cio_sd_en_o  (cio_spi_host1_sd_en_d2p),
 
+      // Interrupt
+      .intr_error_o     (intr_spi_host1_error),
+      .intr_spi_event_o (intr_spi_host1_spi_event),
+
       // Inter-module signals
       .tl_i(spi_host1_tl_req),
       .tl_o(spi_host1_tl_rsp),
-      .scanmode_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
-      .rst_ni (rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel])
+      .clk_core_i (clkmgr_aon_clocks.clk_io_div2_peri),
+      .rst_ni (rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel]),
+      .rst_core_ni (rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel])
   );
 
   i2c u_i2c0 (
