@@ -112,14 +112,14 @@ module ast_wrapper import ast_wrapper_pkg::*;
     .clk_ast_usb_i(clks_ast_i.clk_ast_usbdev_usb_peri),
     .clk_ast_es_i(1'b0),   // not yet in design
     // sensor control acts as both the alert interface and the tlul     // front-end
-    .clk_ast_alert_i(clks_ast_i.clk_ast_sensor_ctrl_io_div4_secure),
-    .clk_ast_tlul_i(clks_ast_i.clk_ast_sensor_ctrl_io_div4_secure),
+    .clk_ast_alert_i(clks_ast_i.clk_ast_sensor_ctrl_aon_io_div4_secure),
+    .clk_ast_tlul_i(clks_ast_i.clk_ast_sensor_ctrl_aon_io_div4_secure),
     .rst_ast_adc_ni(1'b0), // not yet in design
     .rst_ast_rng_ni(1'b0), // not yet in design
     .rst_ast_usb_ni(rsts_ast_i.rst_ast_usbdev_usb_n),
     .rst_ast_es_ni(1'b0),
-    .rst_ast_alert_ni(rsts_ast_i.rst_ast_sensor_ctrl_sys_io_div4_n),
-    .rst_ast_tlul_ni(rsts_ast_i.rst_ast_sensor_ctrl_sys_io_div4_n),
+    .rst_ast_alert_ni(rsts_ast_i.rst_ast_sensor_ctrl_aon_sys_io_div4_n),
+    .rst_ast_tlul_ni(rsts_ast_i.rst_ast_sensor_ctrl_aon_sys_io_div4_n),
 
     // tlul if
     .tl_i(bus_i),

@@ -34,8 +34,8 @@
   clocks: {
 
     hier_paths: {
-      top: "clkmgr_clocks.", // top level is a struct
-      ext: "",               // ext is a port of the clock name
+      top: "clkmgr_aon_clocks.", // top level is a struct
+      ext: "",                   // ext is a port of the clock name
     },
 
     // Clock Source attributes
@@ -110,8 +110,8 @@
   resets: {
 
     hier_paths: {
-      top: "rstmgr_resets.", // top level is a struct
-      ext: "",               // ext is a port of the clock name
+      top: "rstmgr_aon_resets.", // top level is a struct
+      ext: "",                   // ext is a port of the clock name
     },
 
     // Reset node attributes
@@ -313,15 +313,13 @@
       reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40100000",
     },
-    { name: "sensor_ctrl",
-      type: "sensor_ctrl",
-      clock_srcs: {clk_i: "io_div4"},
-      clock_group: "secure",
+    { name: "usbdev",
+      type: "usbdev",
+      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},
+      clock_group: "peri",
       clock_reset_export: ["ast"],
-      reset_connections: {rst_ni: "sys_io_div4"},
-      domain: "Aon",
+      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usb"},
       base_addr: "0x40110000",
-      top_only: "true"
     },
     { name: "otp_ctrl",
       type: "otp_ctrl",
@@ -359,7 +357,7 @@
       reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40160000",
     }
-    { name: "pwrmgr",
+    { name: "pwrmgr_aon",
       type: "pwrmgr",
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
       clock_group: "powerup",
@@ -369,7 +367,7 @@
       generated: "true"         // Indicate this module is generated in the topgen
 
     },
-    { name: "rstmgr",
+    { name: "rstmgr_aon",
       type: "rstmgr",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
                    clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"},
@@ -379,7 +377,7 @@
       base_addr: "0x40410000",
       generated: "true"         // Indicate this module is generated in the topgen
     },
-    { name: "clkmgr",
+    { name: "clkmgr_aon",
       type: "clkmgr",
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "powerup",
@@ -391,36 +389,38 @@
     },
     // pinmux is currently allocated to main fabric,
     // however this should probably be moved to peri fabric
-    { name: "pinmux",
+    { name: "pinmux_aon",
       type: "pinmux",
       clock: "main",
-      clock_srcs: {clk_i: "main", clk_aon_i: "aon"},
+      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "sys", rst_aon_ni: "sys_aon"},
+      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       domain: "Aon",
       base_addr: "0x40460000",
       generated: "true"
     },
     // see comment regarding pinmux above
-    { name: "padctrl",
+    { name: "padctrl_aon",
       type: "padctrl",
       clock: "main",
-      clock_srcs: {clk_i: "main"},
+      clock_srcs: {clk_i: "io_div4"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "sys"},
+      reset_connections: {rst_ni: "sys_io_div4"},
       domain: "Aon",
       base_addr: "0x40470000",
       generated: "true"
     },
-    { name: "usbdev",
-      type: "usbdev",
-      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},
-      clock_group: "peri",
+    { name: "sensor_ctrl_aon",
+      type: "sensor_ctrl",
+      clock_srcs: {clk_i: "io_div4"},
+      clock_group: "secure",
       clock_reset_export: ["ast"],
-      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usb"},
+      reset_connections: {rst_ni: "sys_io_div4"},
+      domain: "Aon",
       base_addr: "0x40500000",
+      top_only: "true"
     },
-    { name: "sram_ctrl_ret",
+    { name: "sram_ctrl_ret_aon",
       type: "sram_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_otp_i: "io_div4"},
       clock_group: "peri",
@@ -560,7 +560,7 @@
         }
       ]
     },
-    { name: "ram_ret",
+    { name: "ram_ret_aon",
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "infra",
       reset_connections: {rst_ni: "sys_io_div4"},
@@ -656,15 +656,15 @@
   //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
   inter_module: {
     'connect': {
-      'alert_handler.crashdump' : ['rstmgr.alert_dump'],
+      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_nmi_rx',
                                    'lc_ctrl.esc_wipe_secrets_rx',
                                    'lc_ctrl.esc_scrap_state_rx'
-                                   'pwrmgr.esc_rst_rx'],
+                                   'pwrmgr_aon.esc_rst_rx'],
       'alert_handler.esc_tx'    : ['rv_core_ibex.esc_nmi_tx',
                                    'lc_ctrl.esc_wipe_secrets_tx',
                                    'lc_ctrl.esc_scrap_state_tx',
-                                   'pwrmgr.esc_rst_tx'],
+                                   'pwrmgr_aon.esc_rst_tx'],
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       'flash_ctrl.flash'        : ['eflash.flash_ctrl'],
@@ -674,37 +674,37 @@
       'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'sram_ctrl_main.sram_scr' : ['ram_main.sram_scr'],
-      'sram_ctrl_ret.sram_scr'  : ['ram_ret.sram_scr'],
+      'sram_ctrl_ret_aon.sram_scr' : ['ram_ret_aon.sram_scr'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
-                                   'sram_ctrl_ret.sram_otp_key']
-      'pwrmgr.pwr_flash'        : ['flash_ctrl.pwrmgr'],
-      'pwrmgr.pwr_rst'          : ['rstmgr.pwr'],
-      'pwrmgr.pwr_clk'          : ['clkmgr.pwr'],
-      'pwrmgr.pwr_otp'          : ['otp_ctrl.pwr_otp'],
-      'pwrmgr.pwr_lc'           : ['lc_ctrl.pwr_lc'],
+                                   'sram_ctrl_ret_aon.sram_otp_key']
+      'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
+      'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
+      'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
+      'pwrmgr_aon.pwr_otp'      : ['otp_ctrl.pwr_otp'],
+      'pwrmgr_aon.pwr_lc'       : ['lc_ctrl.pwr_lc'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
-      'alert_handler.crashdump' : ['rstmgr.alert_dump'],
-      'rv_core_ibex.crashdump'  : ['rstmgr.cpu_dump'],
+      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
+      'rv_core_ibex.crashdump'  : ['rstmgr_aon.cpu_dump'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
 
       // usbdev connection to pinmux
-      'usbdev.usb_out_of_rst'   : ['pinmux.usb_out_of_rst'],
-      'usbdev.usb_aon_wake_en'  : ['pinmux.usb_aon_wake_en'],
-      'usbdev.usb_aon_wake_ack' : ['pinmux.usb_aon_wake_ack'],
-      'usbdev.usb_suspend'      : ['pinmux.usb_suspend'],
-      'pinmux.usb_state_debug'  : ['usbdev.usb_state_debug'],
+      'usbdev.usb_out_of_rst'   : ['pinmux_aon.usb_out_of_rst'],
+      'usbdev.usb_aon_wake_en'  : ['pinmux_aon.usb_aon_wake_en'],
+      'usbdev.usb_aon_wake_ack' : ['pinmux_aon.usb_aon_wake_ack'],
+      'usbdev.usb_suspend'      : ['pinmux_aon.usb_suspend'],
+      'pinmux_aon.usb_state_debug' : ['usbdev.usb_state_debug'],
 
       // TODO see #4447
       //'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn'],
 
       // KeyMgr Sideload & KDF function
-      'otp_ctrl.otp_keymgr_key': ['keymgr.otp_key'],
-      'keymgr.kmac_key' : ['kmac.keymgr_key']
-      'keymgr.kmac_data': ['kmac.keymgr_kdf']
+      'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],
+      'keymgr.kmac_key'         : ['kmac.keymgr_key']
+      'keymgr.kmac_data'        : ['kmac.keymgr_kdf']
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
       // an empty list.
-      'clkmgr.idle'      : [],
+      'clkmgr_aon.idle'         : [],
 
       // OTP LC interface
       'otp_ctrl.otp_lc_data'   : ['lc_ctrl.otp_lc_data'],
@@ -726,12 +726,12 @@
       //'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['otp_ctrl.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',
-                                      'sram_ctrl_ret.lc_escalate_en'],
+                                      'sram_ctrl_ret_aon.lc_escalate_en'],
 
       'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en'],
       // TODO: OTP Clock bypass signal going from LC to AST/clkmgr
       'lc_ctrl.lc_clk_byp_req'     : [],
-      'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr.lc_clk_bypass_ack'],
+      'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_bypass_ack'],
 
       // LC access control signal broadcast
       'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['otp_ctrl.lc_creator_seed_sw_rw_en',
@@ -747,7 +747,7 @@
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
     'top': [
-        'rstmgr.resets', 'rstmgr.cpu', 'pwrmgr.pwr_cpu', 'clkmgr.clocks',
+        'rstmgr_aon.resets', 'rstmgr_aon.cpu', 'pwrmgr_aon.pwr_cpu', 'clkmgr_aon.clocks',
 
         // Xbars
         'main.tl_corei', 'main.tl_cored', 'main.tl_dm_sba', 'main.tl_debug_mem'
@@ -755,14 +755,14 @@
 
     // ext is to create port in the top.
     'external': {
-        'clkmgr.clk_main': 'clk_main',   // clock inputs
-        'clkmgr.clk_io': 'clk_io',       // clock inputs
-        'clkmgr.clk_usb': 'clk_usb',     // clock inputs
-        'clkmgr.clk_aon': 'clk_aon',     // clock inputs
-        'rstmgr.ast': '',                // ast reset input
-        'pwrmgr.pwr_ast': '',
-        'sensor_ctrl.ast_alert': '',
-        'sensor_ctrl.ast_status': '',
+        'clkmgr_aon.clk_main': 'clk_main',  // clock inputs
+        'clkmgr_aon.clk_io': 'clk_io',      // clock inputs
+        'clkmgr_aon.clk_usb': 'clk_usb',    // clock inputs
+        'clkmgr_aon.clk_aon': 'clk_aon',    // clock inputs
+        'rstmgr_aon.ast': '',               // ast reset input
+        'pwrmgr_aon.pwr_ast': '',
+        'sensor_ctrl_aon.ast_alert': '',
+        'sensor_ctrl_aon.ast_status': '',
         'usbdev.usb_ref_val': '',
         'usbdev.usb_ref_pulse': '',
         'peri.tl_ast_wrapper': 'ast_tl',
@@ -803,7 +803,7 @@
   // first item goes to LSB of the interrupt source
   interrupt_module: ["uart0", "uart1", "uart2", "uart3",
                      "gpio", "spi_device", "i2c0", "i2c1", "i2c2", "pattgen",
-                     "flash_ctrl", "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr",
+                     "flash_ctrl", "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr_aon",
                      "otbn", "keymgr", "kmac", "otp_ctrl", "csrng", "edn0", "edn1",
                      "entropy_src"]
 
@@ -818,8 +818,8 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
-  alert_module: [ "aes", "otbn", "sensor_ctrl", "keymgr", "otp_ctrl", "lc_ctrl",
-                  "entropy_src", "sram_ctrl_main", "sram_ctrl_ret", "flash_ctrl"]
+  alert_module: [ "aes", "otbn", "sensor_ctrl_aon", "keymgr", "otp_ctrl", "lc_ctrl",
+                  "entropy_src", "sram_ctrl_main", "sram_ctrl_ret_aon", "flash_ctrl"]
 
   // generated list of alerts:
   alert: [
