@@ -546,15 +546,6 @@ def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
     return result
 
 
-# Check if the export field already exists
-# If yes, return it
-# If no, set a default and return that
-def check_clk_rst_export(module):
-    if 'clock_reset_export' not in module:
-        module['clock_reset_export'] = []
-    return module['clock_reset_export']
-
-
 def amend_clocks(top: OrderedDict):
     """Add a list of clocks to each clock group
        Amend the clock connections of each entry to reflect the actual gated clock
@@ -587,7 +578,7 @@ def amend_clocks(top: OrderedDict):
         clock_connections = OrderedDict()
 
         # Ensure each module has a default case
-        export_if = check_clk_rst_export(ep)
+        export_if = ep.get('clock_reset_export', [])
 
         # if no clock group assigned, default is unique
         ep['clock_group'] = 'secure' if 'clock_group' not in ep else ep[
@@ -682,7 +673,7 @@ def amend_resets(top):
 
         # This code is here to ensure if amend_clocks/resets switched order
         # everything would still work
-        export_if = check_clk_rst_export(module)
+        export_if = module.get('clock_reset_export', [])
 
         # There may be multiple export interfaces
         for intf in export_if:

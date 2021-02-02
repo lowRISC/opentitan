@@ -20,7 +20,6 @@
     rst_main_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
     rst_fixed_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
   }
-  clock_reset_export: []
   clock_connections:
   {
     clk_main_i: clkmgr_clocks.clk_main_infra
