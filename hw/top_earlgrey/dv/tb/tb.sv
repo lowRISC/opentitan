@@ -252,7 +252,7 @@ module tb;
     // temp disable pinmux assertion AonWkupReqKnownO_A because driving X in spi_device.sdi and
     // WkupPadSel choose IO_DPS1 in MIO will trigger this assertion
     // TODO: remove this assertion once pinmux is templatized
-    $assertoff(0, dut.top_earlgrey.u_pinmux.AonWkupReqKnownO_A);
+    $assertoff(0, dut.top_earlgrey.u_pinmux_aon.AonWkupReqKnownO_A);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();

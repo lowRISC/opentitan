@@ -759,10 +759,10 @@
         'clkmgr_aon.clk_io': 'clk_io',      // clock inputs
         'clkmgr_aon.clk_usb': 'clk_usb',    // clock inputs
         'clkmgr_aon.clk_aon': 'clk_aon',    // clock inputs
-        'rstmgr_aon.ast': '',               // ast reset input
-        'pwrmgr_aon.pwr_ast': '',
-        'sensor_ctrl_aon.ast_alert': '',
-        'sensor_ctrl_aon.ast_status': '',
+        'rstmgr_aon.ast': 'rstmgr_ast',
+        'pwrmgr_aon.pwr_ast': 'pwrmgr_ast',
+        'sensor_ctrl_aon.ast_alert': 'sensor_ctrl_ast_alert',
+        'sensor_ctrl_aon.ast_status': 'sensor_ctrl_ast_status',
         'usbdev.usb_ref_val': '',
         'usbdev.usb_ref_pulse': '',
         'peri.tl_ast_wrapper': 'ast_tl',

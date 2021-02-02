@@ -69,7 +69,7 @@ package chip_env_pkg;
     case (mem)
       Rom:    return top_earlgrey_pkg::TOP_EARLGREY_ROM_BASE_ADDR;
       RamMain:return top_earlgrey_pkg::TOP_EARLGREY_RAM_MAIN_BASE_ADDR;
-      RamRet: return top_earlgrey_pkg::TOP_EARLGREY_RAM_RET_BASE_ADDR;
+      RamRet: return top_earlgrey_pkg::TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
       FlashBank0, FlashBank0Info: return top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR;
       FlashBank1, FlashBank1Info: return top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR +
                                          flash_ctrl_pkg::PagesPerBank *
