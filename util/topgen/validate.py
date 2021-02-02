@@ -126,16 +126,15 @@ clock_groups_added = {}
 
 eflash_required = {
     'banks': ['d', 'number of flash banks'],
-    'pages_per_bank': ['d', 'number of data pages per flash bank'],
-    'program_resolution':
-    ['d', 'maximum number of flash words allowed to program'],
-    'clock_srcs': ['g', 'clock connections'],
-    'clock_group': ['s', 'associated clock attribute group'],
-    'reset_connections': ['g', 'reset connections'],
-    'type': ['s', 'type of memory'],
     'base_addr': ['s', 'strarting hex address of memory'],
+    'clock_group': ['s', 'associated clock attribute group'],
+    'clock_srcs': ['g', 'clock connections'],
+    'inter_signal_list': ['lg', 'intersignal list'],
+    'pages_per_bank': ['d', 'number of data pages per flash bank'],
+    'program_resolution': ['d', 'maximum number of flash words allowed to program'],
+    'reset_connections': ['g', 'reset connections'],
     'swaccess': ['s', 'software accessibility'],
-    'inter_signal_list': ['lg', 'intersignal list']
+    'type': ['s', 'type of memory']
 }
 
 eflash_optional = {}
