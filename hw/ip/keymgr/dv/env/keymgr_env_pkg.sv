@@ -10,6 +10,7 @@ package keymgr_env_pkg;
   import dv_lib_pkg::*;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
+  import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
   import keymgr_ral_pkg::*;
   import keymgr_kmac_agent_pkg::*;
