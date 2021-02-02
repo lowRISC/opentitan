@@ -270,17 +270,21 @@
         }
       ],
     },
+    { skipto: "0x1000" }
     { window: {
         name: "buffer",
-        items: "512",
+        items: "1024",
         validbits: "32",
         byte-write: "false",
         unusual: "false"
         swaccess: "rw",
         desc: '''
-          SPI internal 2kB buffer.
+          SPI internal buffer.
 
-          This buffer is shared by RX and TX circular buffer together.
+          In Generic mode, this buffer is used for RX/TX buffer.  In Flash &
+          Passthrough mode, lower 2kB is for Read content emulating eFlash.
+          next 1kB is for Mailbox read/write buffer. The rest is 64B of
+          CmdFIFO, 64B of AddrFIFO, and 256B of payload FIFO.
           '''
       },
     },

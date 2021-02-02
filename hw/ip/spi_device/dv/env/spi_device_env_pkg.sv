@@ -36,8 +36,8 @@ package spi_device_env_pkg;
   } sram_avail_type_e;
 
   // SPI SRAM is 2kB
-  parameter uint SRAM_OFFSET              = 'h800;
-  parameter uint SRAM_SIZE                = 2048;
+  parameter uint SRAM_OFFSET              = 'h1000;
+  parameter uint SRAM_SIZE                = 4096; // 672 depth
   parameter uint SRAM_MSB                 = $clog2(SRAM_SIZE) - 1;
   parameter uint SRAM_PTR_PHASE_BIT       = SRAM_MSB + 1;
   parameter uint SRAM_WORD_SIZE           = 4;

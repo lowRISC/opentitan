@@ -68,4 +68,30 @@ package spi_device_pkg;
     QdRd   = 8'h6B    // Quad Read
   } spi_rom_cmd_e;
 
+
+  // Sram parameters
+  parameter int unsigned SramDw = 32;
+
+  // Msg region is used for read cmd in Flash and Passthrough region
+  parameter int unsigned SramMsgDepth = 512; // 2kB
+
+  parameter int unsigned SramMailboxDepth = 256; // 1kB for mailbox
+
+  // SPI Flash Discoverable Parameter is for host to get the device
+  // information. It is a separate Command. The device provides a region in
+  // DPSRAM for SW. The size is 256B
+  parameter int unsigned SramSfdpDepth = 64;
+  parameter int unsigned SramPayloadDepth = 64; // 256B for Program
+  parameter int unsigned SramCmdFifoDepth = 16; // 16 x 1B for Cmd
+  parameter int unsigned SramAddrFifoDepth = 16; // 16 x 4B for Addr
+  parameter int unsigned SramTotalDepth = SramMsgDepth + SramMailboxDepth
+                                        + SramSfdpDepth + SramPayloadDepth
+                                        + SramCmdFifoDepth + SramAddrFifoDepth ;
+
+  // Sram Depth is set to 1024 to satisfy DPSRAM parameter even though
+  // SramTotalDepth above is 928.
+  parameter int unsigned SramDepth = 1024;
+
+  parameter int unsigned SramAw = $clog2(SramDepth);
+
 endpackage : spi_device_pkg

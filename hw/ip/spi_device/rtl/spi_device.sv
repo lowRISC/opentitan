@@ -8,10 +8,7 @@
 
 `include "prim_assert.sv"
 
-module spi_device #(
-  parameter int SramAw = 9, // 2kB, SRAM Width is DW
-  parameter int SramDw = 32
-) (
+module spi_device (
   input clk_i,
   input rst_ni,
 
@@ -601,7 +598,7 @@ module spi_device #(
 
   // SRAM Wrapper
   prim_ram_2p_adv #(
-    .Depth (512),
+    .Depth (SramDepth),
     .Width (SramDw),    // 32 x 512 --> 2kB
     .DataBitsPerMask (8),
     .CfgW  (8),

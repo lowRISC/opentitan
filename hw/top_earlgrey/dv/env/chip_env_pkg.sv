@@ -31,7 +31,8 @@ package chip_env_pkg;
 
   // local parameters and types
   parameter uint NUM_GPIOS = 16;
-  parameter uint SPI_FRAME_BYTE_SIZE = 1024;
+  // Buffer is half of SPI_DEVICE Dual Port SRAM
+  parameter uint SPI_FRAME_BYTE_SIZE = spi_device_reg_pkg::SPI_DEVICE_BUFFER_SIZE/2;
 
   // SW constants - use unmapped address space with at least 32 bytes.
   parameter bit [TL_AW-1:0] SW_DV_START_ADDR        = 32'h3000_0000;
@@ -75,7 +76,8 @@ package chip_env_pkg;
                                          flash_ctrl_pkg::PagesPerBank *
                                          flash_ctrl_pkg::WordsPerPage *
                                          flash_ctrl_pkg::DataWidth / 8;
-      SpiMem: return top_earlgrey_pkg::TOP_EARLGREY_SPI_DEVICE_BASE_ADDR + 32'h800; // TODO
+      SpiMem: return top_earlgrey_pkg::TOP_EARLGREY_SPI_DEVICE_BASE_ADDR
+                      + spi_device_reg_pkg::SPI_DEVICE_BUFFER_OFFSET ; // TODO
       default:`uvm_fatal("chip_env_pkg", {"Invalid input: ", mem.name()})
     endcase
   endfunction
