@@ -86,6 +86,7 @@ module top_${top["name"]} #(
   % endfor
 % endif
   input               scan_rst_ni, // reset used for test mode
+  input               scan_en_i,
   input               scanmode_i   // 1 for Scan
 );
 
@@ -498,6 +499,7 @@ module top_${top["name"]} #(
     .flash_test_mode_a_i,
     .flash_test_voltage_h_i,
     .scanmode_i,
+    .scan_en_i,
     .scan_rst_ni
   );
 

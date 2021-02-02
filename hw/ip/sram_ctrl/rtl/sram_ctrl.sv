@@ -84,6 +84,10 @@ module sram_ctrl
   assign hw2reg.error_address.de            = sram_scr_i.rerror[1];
   assign parity_error_d                     = parity_error_q | sram_scr_i.rerror[1];
 
+  // Correctable RAM errors are not supported
+  logic unused_error;
+  assign unused_error = sram_scr_i.rerror[0];
+
 
   //////////////////
   // Alert Sender //

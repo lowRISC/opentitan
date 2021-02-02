@@ -303,6 +303,7 @@ module top_earlgrey_asic (
 
     // DFT signals
     .scan_rst_ni     ( 1'b1          ),
+    .scan_en_i       ( 1'b0          ),
     .scanmode_i      ( 1'b0          )
   );
 
