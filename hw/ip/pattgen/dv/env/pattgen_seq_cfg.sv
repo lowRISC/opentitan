@@ -13,8 +13,8 @@ class pattgen_seq_cfg extends uvm_object;
 
   // knobs for number of retry after reset
   // for stress_all, stress_all_with_rand_reset
-  uint pattgen_min_num_runs          = 5;
-  uint pattgen_max_num_runs          = 10;
+  uint pattgen_min_num_runs          = 1;
+  uint pattgen_max_num_runs          = 5;
 
   // knobs for pattgen channel
   uint pattgen_min_dly               = 0;

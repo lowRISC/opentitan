@@ -59,12 +59,17 @@ class pattgen_monitor extends dv_base_monitor #(
                 dut_item.data_q.push_back(bit_data);
                 bit_cnt++;
               end while (bit_cnt < cfg.length[channel]);
+              // must see the channel_done intr is asserted because reset can be issued
+              // immediately right after the last bit
+              wait(cfg.channel_done[channel]);
               // avoid race condition (counter is achieved and reset is issued at the same time)
               if (!reset_asserted && !cfg.error_injected[channel]) begin
+                // monitor only pushes item if chan_done intr is asserted
                 item_port[channel].write(dut_item);
                 `uvm_info(`gfn, $sformatf("\n--> monitor: send dut_item for channel %0d\n%s",
                     channel, dut_item.sprint()), UVM_DEBUG)
                 bit_cnt = 0;
+                cfg.channel_done[channel] = 1'b0;
               end
             end
             // handle reset
@@ -83,10 +88,9 @@ class pattgen_monitor extends dv_base_monitor #(
       @(negedge cfg.vif.rst_ni);
       reset_asserted = 1'b1;
       // implement other clean-up actions under reset here
-      for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
-        cfg.error_injected[i]= 1'b0;
-        cfg.length[i] = 0;
-      end
+      cfg.error_injected = '{default:0};
+      cfg.length         = '{default:0};
+      cfg.channel_done   = '{default:0};
       @(posedge cfg.vif.rst_ni);
       reset_asserted = 1'b0;
     end

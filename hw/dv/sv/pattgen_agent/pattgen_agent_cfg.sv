@@ -9,8 +9,9 @@ class pattgen_agent_cfg extends dv_base_agent_cfg;
   virtual pattgen_if vif;
 
   bit [NUM_PATTGEN_CHANNELS-1:0] error_injected;
+  bit [NUM_PATTGEN_CHANNELS-1:0] channel_done;
+  bit [NUM_PATTGEN_CHANNELS-1:0] polarity;
 
-  bit  polarity[NUM_PATTGEN_CHANNELS-1:0];
   uint length[NUM_PATTGEN_CHANNELS-1:0];
 
   `uvm_object_utils_begin(pattgen_agent_cfg)
