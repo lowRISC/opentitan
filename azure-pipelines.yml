@@ -441,9 +441,6 @@ jobs:
         --log-cli-level=DEBUG \
         --test-run-title="Run system tests on Nexys Video FPGA board" \
         --napoleon-docstrings
-    # Temporary workaround, see
-    # https://github.com/lowRISC/opentitan/issues/5029 for details.
-    continueOnError: true
     displayName: Execute tests
 
 - job: deploy_release_artifacts
