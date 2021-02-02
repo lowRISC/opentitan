@@ -29,6 +29,12 @@ steps:
       set -e
       test -n "$BUILD_ROOT"
       . util/build_consts.sh
+
+      test -f "$BUILD_ROOT/upstream_bin_dir_contents.txt" && {
+        echo The download-artifacts-template.yml template can be called only once per job.
+        exit 1
+      }
+
       mkdir -p "$BIN_DIR"
 
       echo 'Extracting partial BIN_DIRs:'
@@ -37,6 +43,14 @@ steps:
         -exec \
           tar -C "$BIN_DIR" \
           --strip-components=1 \
-          --overwrite \
           -xvf {} \;
+
+      # Remember all files which were present in the upstream $BIN_DIRs.
+      find "$BIN_DIR" -type f -fprintf "$BUILD_ROOT/upstream_bin_dir_contents.txt" '%P\n'
+
+      echo
+      echo Upstream BIN_DIR contents:
+      echo vvvvvvvvvvvvvvvvvv
+      cat "$BUILD_ROOT/upstream_bin_dir_contents.txt"
+      echo ^^^^^^^^^^^^^^^^^^
     displayName: Unpack upstream outputs
