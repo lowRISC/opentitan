@@ -546,12 +546,22 @@ def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
     return result
 
 
+# find the first instance name of a given type
+def _find_module_name(modules, module_type):
+    for m in modules:
+        if m['type'] == module_type:
+            return m['name']
+
+    return None
+
+
 def amend_clocks(top: OrderedDict):
     """Add a list of clocks to each clock group
        Amend the clock connections of each entry to reflect the actual gated clock
     """
     clks_attr = top['clocks']
     clk_paths = clks_attr['hier_paths']
+    clkmgr_name = _find_module_name(top['module'], 'clkmgr')
     groups_in_top = [x["name"].lower() for x in clks_attr['groups']]
     exported_clks = OrderedDict()
     trans_eps = []
@@ -654,19 +664,23 @@ def amend_clocks(top: OrderedDict):
 
     # add entry to inter_module automatically
     for intf in top['exported_clks']:
-        top['inter_module']['external']['clkmgr.clocks_{}'.format(
-            intf)] = "clks_{}".format(intf)
+        top['inter_module']['external']['{}.clocks_{}'.format(
+            clkmgr_name, intf)] = "clks_{}".format(intf)
 
     # add to intermodule connections
     for ep in trans_eps:
         entry = ep + ".idle"
-        top['inter_module']['connect']['clkmgr.idle'].append(entry)
+        top['inter_module']['connect']['{}.idle'.format(clkmgr_name)].append(entry)
 
 
 def amend_resets(top):
     """Generate exported reset structure and automatically connect to
        intermodule.
     """
+
+    rstmgr = [m for m in top['module'] if m['type'] == 'rstmgr']
+    rstmgr_name = _find_module_name(top['module'], 'rstmgr')
+
     # Generate exported reset list
     exported_rsts = OrderedDict()
     for module in top["module"]:
@@ -690,8 +704,8 @@ def amend_resets(top):
 
     # add entry to inter_module automatically
     for intf in top['exported_rsts']:
-        top['inter_module']['external']['rstmgr.resets_{}'.format(
-            intf)] = "rsts_{}".format(intf)
+        top['inter_module']['external']['{}.resets_{}'.format(
+            rstmgr_name,intf)] = "rsts_{}".format(intf)
     """Discover the full path and selection to each reset connection.
        This is done by modifying the reset connection of each end point.
     """
@@ -772,6 +786,8 @@ def amend_alert(top):
 
 def amend_wkup(topcfg: OrderedDict):
 
+    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
+
     if "wakeups" not in topcfg or topcfg["wakeups"] == "":
         topcfg["wakeups"] = []
 
@@ -789,15 +805,16 @@ def amend_wkup(topcfg: OrderedDict):
         "{}.{}".format(s["module"].lower(), s["name"].lower())
         for s in topcfg["wakeups"]
     ]
-    # TBD: What's the best way to not hardcode this signal below?
-    #      We could make this a top.hjson variable and validate it against pwrmgr hjson
-    topcfg["inter_module"]["connect"]["pwrmgr.wakeups"] = signal_names
+
+    topcfg["inter_module"]["connect"]["{}.wakeups".format(pwrmgr_name)] = signal_names
     log.info("Intermodule signals: {}".format(
         topcfg["inter_module"]["connect"]))
 
 
 # Handle reset requests from modules
 def amend_reset_request(topcfg: OrderedDict):
+
+    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
 
     if "reset_requests" not in topcfg or topcfg["reset_requests"] == "":
         topcfg["reset_requests"] = []
@@ -816,9 +833,8 @@ def amend_reset_request(topcfg: OrderedDict):
         "{}.{}".format(s["module"].lower(), s["name"].lower())
         for s in topcfg["reset_requests"]
     ]
-    # TBD: What's the best way to not hardcode this signal below?
-    #      We could make this a top.hjson variable and validate it against pwrmgr hjson
-    topcfg["inter_module"]["connect"]["pwrmgr.rstreqs"] = signal_names
+
+    topcfg["inter_module"]["connect"]["{}.rstreqs".format(pwrmgr_name)] = signal_names
     log.info("Intermodule signals: {}".format(
         topcfg["inter_module"]["connect"]))
 
