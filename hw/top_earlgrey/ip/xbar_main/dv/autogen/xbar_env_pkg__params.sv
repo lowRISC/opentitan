@@ -20,8 +20,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h20000000, 32'h200fffff}
     }},
     '{"peri", '{
-        '{32'h40000000, 32'h40420fff},
-        '{32'h40500000, 32'h40520fff}
+        '{32'h40000000, 32'h407fffff}
     }},
     '{"flash_ctrl", '{
         '{32'h41000000, 32'h41000fff}
@@ -49,12 +48,6 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"rv_plic", '{
         '{32'h41010000, 32'h41010fff}
-    }},
-    '{"pinmux", '{
-        '{32'h40460000, 32'h40460fff}
-    }},
-    '{"padctrl", '{
-        '{32'h40470000, 32'h40470fff}
     }},
     '{"otbn", '{
         '{32'h411d0000, 32'h411dffff}
@@ -88,8 +81,6 @@ tl_host_t xbar_hosts[$] = '{
         "edn1",
         "hmac",
         "rv_plic",
-        "pinmux",
-        "padctrl",
         "otbn",
         "keymgr",
         "kmac",
@@ -108,8 +99,6 @@ tl_host_t xbar_hosts[$] = '{
         "edn1",
         "hmac",
         "rv_plic",
-        "pinmux",
-        "padctrl",
         "otbn",
         "kmac",
         "sram_ctrl_main"}}

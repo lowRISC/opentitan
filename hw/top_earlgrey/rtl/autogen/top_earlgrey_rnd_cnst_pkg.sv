@@ -58,15 +58,15 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   ////////////////////////////////////////////
-  // sram_ctrl_ret
+  // sram_ctrl_ret_aon
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
-  parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlRetSramKey = {
+  parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlRetAonSramKey = {
     128'h83D0550B80E84EB1F4C3471C5DEF7861
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
-  parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlRetSramNonce = {
+  parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlRetAonSramNonce = {
     64'h2D73930D4CAC3785
   };
 

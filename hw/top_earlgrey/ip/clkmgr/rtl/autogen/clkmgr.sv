@@ -446,10 +446,10 @@ module clkmgr import clkmgr_pkg::*; (
   // Exported clocks
   ////////////////////////////////////////////////////
 
-  assign clocks_ast_o.clk_ast_sensor_ctrl_io_div4_secure = clocks_o.clk_io_div4_secure;
   assign clocks_ast_o.clk_ast_usbdev_io_div4_peri = clocks_o.clk_io_div4_peri;
   assign clocks_ast_o.clk_ast_usbdev_aon_peri = clocks_o.clk_aon_peri;
   assign clocks_ast_o.clk_ast_usbdev_usb_peri = clocks_o.clk_usb_peri;
+  assign clocks_ast_o.clk_ast_sensor_ctrl_aon_io_div4_secure = clocks_o.clk_io_div4_secure;
 
   ////////////////////////////////////////////////////
   // Assertions

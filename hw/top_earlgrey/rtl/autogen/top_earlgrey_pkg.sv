@@ -122,14 +122,14 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_RV_TIMER_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for sensor_ctrl in top earlgrey.
+   * Peripheral base address for usbdev in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR = 32'h40110000;
+  parameter int unsigned TOP_EARLGREY_USBDEV_BASE_ADDR = 32'h40110000;
 
   /**
-   * Peripheral size in bytes for sensor_ctrl in top earlgrey.
+   * Peripheral size in bytes for usbdev in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_USBDEV_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for otp_ctrl in top earlgrey.
@@ -172,74 +172,74 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_NMI_GEN_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for pwrmgr in top earlgrey.
+   * Peripheral base address for pwrmgr_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_PWRMGR_BASE_ADDR = 32'h40400000;
+  parameter int unsigned TOP_EARLGREY_PWRMGR_AON_BASE_ADDR = 32'h40400000;
 
   /**
-   * Peripheral size in bytes for pwrmgr in top earlgrey.
+   * Peripheral size in bytes for pwrmgr_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_PWRMGR_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_PWRMGR_AON_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for rstmgr in top earlgrey.
+   * Peripheral base address for rstmgr_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RSTMGR_BASE_ADDR = 32'h40410000;
+  parameter int unsigned TOP_EARLGREY_RSTMGR_AON_BASE_ADDR = 32'h40410000;
 
   /**
-   * Peripheral size in bytes for rstmgr in top earlgrey.
+   * Peripheral size in bytes for rstmgr_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RSTMGR_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_RSTMGR_AON_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for clkmgr in top earlgrey.
+   * Peripheral base address for clkmgr_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_CLKMGR_BASE_ADDR = 32'h40420000;
+  parameter int unsigned TOP_EARLGREY_CLKMGR_AON_BASE_ADDR = 32'h40420000;
 
   /**
-   * Peripheral size in bytes for clkmgr in top earlgrey.
+   * Peripheral size in bytes for clkmgr_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_CLKMGR_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_CLKMGR_AON_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for pinmux in top earlgrey.
+   * Peripheral base address for pinmux_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_PINMUX_BASE_ADDR = 32'h40460000;
+  parameter int unsigned TOP_EARLGREY_PINMUX_AON_BASE_ADDR = 32'h40460000;
 
   /**
-   * Peripheral size in bytes for pinmux in top earlgrey.
+   * Peripheral size in bytes for pinmux_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_PINMUX_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_PINMUX_AON_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for padctrl in top earlgrey.
+   * Peripheral base address for padctrl_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_PADCTRL_BASE_ADDR = 32'h40470000;
+  parameter int unsigned TOP_EARLGREY_PADCTRL_AON_BASE_ADDR = 32'h40470000;
 
   /**
-   * Peripheral size in bytes for padctrl in top earlgrey.
+   * Peripheral size in bytes for padctrl_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_PADCTRL_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_PADCTRL_AON_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for usbdev in top earlgrey.
+   * Peripheral base address for sensor_ctrl_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_USBDEV_BASE_ADDR = 32'h40500000;
+  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR = 32'h40500000;
 
   /**
-   * Peripheral size in bytes for usbdev in top earlgrey.
+   * Peripheral size in bytes for sensor_ctrl_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_USBDEV_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for sram_ctrl_ret in top earlgrey.
+   * Peripheral base address for sram_ctrl_ret_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_BASE_ADDR = 32'h40510000;
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_BASE_ADDR = 32'h40510000;
 
   /**
-   * Peripheral size in bytes for sram_ctrl_ret in top earlgrey.
+   * Peripheral size in bytes for sram_ctrl_ret_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for flash_ctrl in top earlgrey.
@@ -382,14 +382,14 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_RAM_MAIN_SIZE_BYTES = 32'h20000;
 
   /**
-   * Memory base address for ram_ret in top earlgrey.
+   * Memory base address for ram_ret_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RAM_RET_BASE_ADDR = 32'h40520000;
+  parameter int unsigned TOP_EARLGREY_RAM_RET_AON_BASE_ADDR = 32'h40520000;
 
   /**
-   * Memory size for ram_ret in top earlgrey.
+   * Memory size for ram_ret_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RAM_RET_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES = 32'h1000;
 
   /**
    * Memory base address for eflash in top earlgrey.
