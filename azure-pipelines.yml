@@ -405,7 +405,7 @@ jobs:
     # using the NexysVideo bootrom here and the resulting CW305 bitstream is not functional.
     # By generating the CW305 bootrom binary we would break execute_fpga_tests executed on the
     # NexysVideo.
-    - sw_build
+    - sw_build_nexysvideo
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
   pool: ci-public
   timeoutInMinutes: 120 # 2 hours
