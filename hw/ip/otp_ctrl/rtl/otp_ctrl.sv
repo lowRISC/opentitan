@@ -81,11 +81,13 @@ module otp_ctrl
 
   // These error codes need to be identical.
   `ASSERT_INIT(ErrorCodeWidth_A, OtpErrWidth == prim_otp_pkg::ErrWidth)
-  `ASSERT_INIT(OtpErrorCode0_A, NoError == prim_otp_pkg::NoError)
-  `ASSERT_INIT(OtpErrorCode1_A, MacroError == prim_otp_pkg::MacroError)
-  `ASSERT_INIT(OtpErrorCode2_A, MacroEccCorrError == prim_otp_pkg::MacroEccCorrError)
-  `ASSERT_INIT(OtpErrorCode3_A, MacroEccUncorrError == prim_otp_pkg::MacroEccUncorrError)
-  `ASSERT_INIT(OtpErrorCode4_A, MacroWriteBlankError == prim_otp_pkg::MacroWriteBlankError)
+  `ASSERT_INIT(OtpErrorCode0_A,  int'(NoError) == int'(prim_otp_pkg::NoError))
+  `ASSERT_INIT(OtpErrorCode1_A,  int'(MacroError) == int'(prim_otp_pkg::MacroError))
+  `ASSERT_INIT(OtpErrorCode2_A,  int'(MacroEccCorrError) == int'(prim_otp_pkg::MacroEccCorrError))
+  `ASSERT_INIT(OtpErrorCode3_A,
+               int'(MacroEccUncorrError) == int'(prim_otp_pkg::MacroEccUncorrError))
+  `ASSERT_INIT(OtpErrorCode4_A,
+               int'(MacroWriteBlankError) == int'(prim_otp_pkg::MacroWriteBlankError))
 
   /////////////
   // Regfile //
