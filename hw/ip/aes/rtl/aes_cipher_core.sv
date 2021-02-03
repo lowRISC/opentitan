@@ -649,8 +649,8 @@ module aes_cipher_core import aes_pkg::*;
   // Make sure the output of the masking PRNG is properly extracted without creating overlaps
   // in the data input masks, or between the PRD fed to the key expand module and SubBytes.
   if (WidthPRDSBox > 8) begin : gen_prd_extract_assert
-    // For one row of the state matrix, extract the WidthPRDSBox-8 MSBs of the per-S-Box PRD from the
-    // PRNG output.
+    // For one row of the state matrix, extract the WidthPRDSBox-8 MSBs of the per-S-Box PRD from
+    // the PRNG output.
     function automatic logic [3:0][(WidthPRDSBox-8)-1:0] aes_prd_get_msbs(
       logic [(4*WidthPRDSBox)-1:0] in
     );
@@ -661,9 +661,9 @@ module aes_cipher_core import aes_pkg::*;
       return prd_msbs;
     endfunction
 
-    // For one row of the state matrix, undo the extraction of LSBs and MSBs of the per-S-Box PRD from
-    // the PRNG output. This can be used to verify proper extraction (no overlap of output masks and PRD
-    // for masked Canright S-Box implementations, no unused PRNG output).
+    // For one row of the state matrix, undo the extraction of LSBs and MSBs of the per-S-Box PRD
+    // from the PRNG output. This can be used to verify proper extraction (no overlap of output
+    // masks and PRD for masked Canright S-Box implementations, no unused PRNG output).
     function automatic logic [4*WidthPRDSBox-1:0] aes_prd_concat_bits(
       logic [3:0]                 [7:0] prd_lsbs,
       logic [3:0][(WidthPRDSBox-8)-1:0] prd_msbs
