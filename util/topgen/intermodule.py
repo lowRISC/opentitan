@@ -677,6 +677,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                     error += 1
 
         # Determine if "uni" is broadcast or one-to-N
+        # Does this check here for one-to-N or broadcast already cover the otehr check below?
         if req_struct["type"] == "uni" and len(rsps) != 1:
             # If req width is same as total width of rsps ==> one-to-N
             if req_struct["width"] == total_width:
@@ -703,19 +704,19 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         if error != 0:
             # Skip the check
             continue
-        rsps_width = 0
-        for rsp in rsps:
-            rsp_m, rsp_s, rsp_i = filter_index(rsp)
-            rsp_struct = find_intermodule_signal(
-                topcfg["inter_signal"]["signals"], rsp_m, rsp_s)
-            # Update total responses width
-            rsps_width += rsp_struct["width"]
-
-        if req_struct["width"] != rsps_width:
-            log.error(
-                "Request {} width is not matched with total responses width {}"
-                .format(req_struct["width"], rsps_width))
-            error += 1
+        ##rsps_width = 0
+        ##for rsp in rsps:
+        ##    rsp_m, rsp_s, rsp_i = filter_index(rsp)
+        ##    rsp_struct = find_intermodule_signal(
+        ##        topcfg["inter_signal"]["signals"], rsp_m, rsp_s)
+        ##    # Update total responses width
+        ##    rsps_width += rsp_struct["width"]
+        ##
+        ##if req_struct["width"] != rsps_width:
+        ##    log.error(
+        ##        "{} Request {} width is not matched with total responses width {}"
+        ##        .format(req_struct['name'], req_struct["width"], rsps_width))
+        ##    error += 1
 
     for item in topcfg["inter_module"]["top"] + list(
             topcfg["inter_module"]["external"].keys()):
