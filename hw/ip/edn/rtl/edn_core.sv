@@ -98,7 +98,7 @@ module edn_core import edn_pkg::*; #(
   logic [RescmdFifoWidth-1:0]         sfifo_rescmd_wdata;
   logic                               sfifo_rescmd_pop;
   logic [2:0]                         sfifo_rescmd_err;
-  logic                               sfifo_rescmd_not_full;
+  logic                               sfifo_rescmd_full;
   logic                               sfifo_rescmd_not_empty;
 
   // gencmd fifo
@@ -109,7 +109,7 @@ module edn_core import edn_pkg::*; #(
   logic [GencmdFifoWidth-1:0]         sfifo_gencmd_wdata;
   logic                               sfifo_gencmd_pop;
   logic [2:0]                         sfifo_gencmd_err;
-  logic                               sfifo_gencmd_not_full;
+  logic                               sfifo_gencmd_full;
   logic                               sfifo_gencmd_not_empty;
 
   // flops
@@ -293,13 +293,13 @@ module edn_core import edn_pkg::*; #(
     .rst_ni   (rst_ni),
     .clr_i    (sfifo_rescmd_clr),
     .wvalid_i (sfifo_rescmd_push),
-    .wready_o (sfifo_rescmd_not_full),
+    .wready_o (),
     .wdata_i  (sfifo_rescmd_wdata),
     .rvalid_o (sfifo_rescmd_not_empty),
     .rready_i (sfifo_rescmd_pop),
     .rdata_o  (sfifo_rescmd_rdata),
-    .depth_o  (sfifo_rescmd_depth),
-    .full_o   ()
+    .full_o   (sfifo_rescmd_full),
+    .depth_o  (sfifo_rescmd_depth)
   );
 
   // feedback cmd back into rescmd fifo
@@ -315,9 +315,9 @@ module edn_core import edn_pkg::*; #(
   assign sfifo_rescmd_clr = (cmd_fifo_rst || auto_req_mode_end);
 
   assign sfifo_rescmd_err =
-         {(sfifo_rescmd_push && !sfifo_rescmd_not_full),
+         {(sfifo_rescmd_push && sfifo_rescmd_full),
           (sfifo_rescmd_pop && !sfifo_rescmd_not_empty),
-          (!sfifo_rescmd_not_full && !sfifo_rescmd_not_empty)};
+          (sfifo_rescmd_full && !sfifo_rescmd_not_empty)};
 
   // gencmd fifo
   prim_fifo_sync #(
@@ -329,13 +329,13 @@ module edn_core import edn_pkg::*; #(
     .rst_ni   (rst_ni),
     .clr_i    (sfifo_gencmd_clr),
     .wvalid_i (sfifo_gencmd_push),
-    .wready_o (sfifo_gencmd_not_full),
+    .wready_o (),
     .wdata_i  (sfifo_gencmd_wdata),
     .rvalid_o (sfifo_gencmd_not_empty),
     .rready_i (sfifo_gencmd_pop),
     .rdata_o  (sfifo_gencmd_rdata),
-    .depth_o  (sfifo_gencmd_depth),
-    .full_o   ()
+    .full_o   (sfifo_gencmd_full),
+    .depth_o  (sfifo_gencmd_depth)
   );
 
   // feedback cmd back into gencmd fifo
@@ -355,9 +355,9 @@ module edn_core import edn_pkg::*; #(
   assign sfifo_gencmd_clr = (cmd_fifo_rst || auto_req_mode_end);
 
   assign sfifo_gencmd_err =
-         {(sfifo_gencmd_push && !sfifo_gencmd_not_full),
+         {(sfifo_gencmd_push && sfifo_gencmd_full),
           (sfifo_gencmd_pop && !sfifo_gencmd_not_empty),
-          (!sfifo_gencmd_not_full && !sfifo_gencmd_not_empty)};
+          (sfifo_gencmd_full && !sfifo_gencmd_not_empty)};
 
   // sm to process csrng commands
   edn_main_sm u_edn_main_sm (
