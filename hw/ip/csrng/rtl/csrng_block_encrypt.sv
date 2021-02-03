@@ -99,13 +99,13 @@ module csrng_block_encrypt #(
     .key_len_i          ( aes_pkg::AES_256           ),
     .crypt_i            ( aes_cipher_core_enable     ),
     .crypt_o            (                            ),
+    .alert_o            (                            ), // TODO: Prop to top
     .dec_key_gen_i      ( 1'b0                       ), // Disable
     .dec_key_gen_o      (                            ),
     .key_clear_i        ( 1'b0                       ), // Disable
     .key_clear_o        (                            ),
     .data_out_clear_i   ( 1'b0                       ), // Disable
     .data_out_clear_o   (                            ),
-    .alert_o            (                            ), // Currently unused.
     .prd_clearing_i     ( '0                         ),
     .force_zero_masks_i ( 1'b0                       ),
     .data_in_mask_o     (                            ),
@@ -137,8 +137,8 @@ module csrng_block_encrypt #(
     .rvalid_o (sfifo_blkenc_not_empty),
     .rready_i (sfifo_blkenc_pop),
     .rdata_o  (sfifo_blkenc_rdata),
-    .depth_o  (),
-    .full_o   ()
+    .full_o   (),
+    .depth_o  ()
   );
 
   assign sfifo_blkenc_push = block_encrypt_req_i && sfifo_blkenc_not_full;
