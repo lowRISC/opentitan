@@ -169,6 +169,11 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.secret2_digest_1),        .value(val));
   endtask
 
+  virtual task trigger_checks(bit [1:0] val, bit wait_done = 1);
+    csr_wr(ral.check_trigger, val);
+    if (wait_done && val) csr_spinwait(ral.status.check_pending, 0);
+  endtask
+
   virtual task req_sram_key(int index);
     push_pull_host_seq#(.DeviceDataWidth(SRAM_DATA_SIZE)) sram_pull_seq;
     `uvm_create_on(sram_pull_seq, p_sequencer.sram_pull_sequencer_h[index]);

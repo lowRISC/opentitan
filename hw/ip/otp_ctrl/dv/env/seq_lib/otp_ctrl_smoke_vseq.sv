@@ -19,6 +19,9 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   rand bit [TL_DW-1:0]               wdata0, wdata1;
   rand int                           num_dai_op;
   rand otp_ctrl_part_pkg::part_idx_e part_idx;
+  rand bit                           check_regwen_val, check_trigger_regwen_val;
+  rand bit [TL_DW-1:0]               check_timeout_val;
+  rand bit [1:0]                     check_trigger_val;
 
   constraint no_access_err_c {access_locked_parts == 0;}
 
@@ -48,6 +51,15 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
     num_dai_op inside {[1:50]};
   }
 
+  constraint regwens_c {
+    check_regwen_val         dist {1 :/ 1, 0 :/ 9};
+    check_trigger_regwen_val dist {1 :/ 1, 0 :/ 9};
+  }
+
+  constraint check_timeout_val_c {
+    check_timeout_val inside {0, [100_000:'1]};
+  }
+
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
     csr_wr(ral.intr_enable, en_intr);
@@ -72,6 +84,13 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
       end
       do_otp_ctrl_init = 0;
+
+      `DV_CHECK_RANDOMIZE_FATAL(this)
+      // set consistency and integrity checks
+      csr_wr(ral.check_regwen, check_regwen_val);
+      csr_wr(ral.check_trigger_regwen, check_trigger_regwen_val);
+      csr_wr(ral.check_timeout, check_timeout_val);
+      trigger_checks(.val(check_trigger_val), .wait_done(1));
 
       for (int i = 0; i < num_dai_op; i++) begin
         bit [TL_DW-1:0] rdata0, rdata1;
