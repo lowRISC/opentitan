@@ -1098,7 +1098,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .nmi_rst_req_o(pwrmgr_rstreqs),
-      .esc_tx_i('{3{prim_esc_pkg::ESC_TX_DEFAULT}}),
+      .esc_tx_i({3{prim_esc_pkg::ESC_TX_DEFAULT}}),
       .esc_rx_o(),
       .tl_i(nmi_gen_tl_req),
       .tl_o(nmi_gen_tl_rsp),
