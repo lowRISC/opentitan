@@ -8,7 +8,7 @@
 
 `include "prim_assert.sv"
 
-module aes_control
+module aes_control import aes_pkg::*;
 #(
   parameter int unsigned SecStartTriggerDelay = 0
 ) (
@@ -19,9 +19,9 @@ module aes_control
   input  logic                    ctrl_qe_i,
   output logic                    ctrl_we_o,
   input  logic                    ctrl_err_storage_i,
-  input  aes_pkg::aes_op_e        op_i,
-  input  aes_pkg::aes_mode_e      mode_i,
-  input  aes_pkg::ciph_op_e       cipher_op_i,
+  input  aes_op_e                 op_i,
+  input  aes_mode_e               mode_i,
+  input  ciph_op_e                cipher_op_i,
   input  logic                    manual_operation_i,
   input  logic                    start_i,
   input  logic                    key_iv_data_in_clear_i,
@@ -40,13 +40,13 @@ module aes_control
   output logic                    data_out_we_o,
 
   // Previous input data register
-  output aes_pkg::dip_sel_e       data_in_prev_sel_o,
+  output dip_sel_e                data_in_prev_sel_o,
   output logic                    data_in_prev_we_o,
 
   // Cipher I/O muxes
-  output aes_pkg::si_sel_e        state_in_sel_o,
-  output aes_pkg::add_si_sel_e    add_state_in_sel_o,
-  output aes_pkg::add_so_sel_e    add_state_out_sel_o,
+  output si_sel_e                 state_in_sel_o,
+  output add_si_sel_e             add_state_in_sel_o,
+  output add_so_sel_e             add_state_out_sel_o,
 
   // Counter
   output logic                    ctr_incr_o,
@@ -54,10 +54,10 @@ module aes_control
   input  logic [7:0]              ctr_we_i,
 
   // Cipher core control and sync
-  output logic                    cipher_in_valid_o,
-  input  logic                    cipher_in_ready_i,
-  input  logic                    cipher_out_valid_i,
-  output logic                    cipher_out_ready_o,
+  output sp2v_e                   cipher_in_valid_o,
+  input  sp2v_e                   cipher_in_ready_i,
+  input  sp2v_e                   cipher_out_valid_i,
+  output sp2v_e                   cipher_out_ready_o,
   output logic                    cipher_crypt_o,
   input  logic                    cipher_crypt_i,
   output logic                    cipher_dec_key_gen_o,
@@ -68,11 +68,11 @@ module aes_control
   input  logic                    cipher_data_out_clear_i,
 
   // Initial key registers
-  output aes_pkg::key_init_sel_e  key_init_sel_o,
+  output key_init_sel_e           key_init_sel_o,
   output logic [7:0]              key_init_we_o [2],
 
   // IV registers
-  output aes_pkg::iv_sel_e        iv_sel_o,
+  output iv_sel_e                 iv_sel_o,
   output logic [7:0]              iv_we_o,
 
   // Pseudo-random number generator interface
@@ -169,6 +169,11 @@ module aes_control
   logic       doing_ctr;
   logic       ctrl_we_q;
   logic       clear_in_out_status;
+  sp2v_e      cipher_in_ready;
+  logic       cipher_in_ready_err;
+  sp2v_e      cipher_out_valid;
+  logic       cipher_out_valid_err;
+  logic       hs_err;
 
   if (SecStartTriggerDelay > 0) begin : gen_start_delay
     // Delay the manual start trigger input for SCA measurements.
@@ -244,8 +249,8 @@ module aes_control
     ctr_incr_o = 1'b0;
 
     // Cipher core control
-    cipher_in_valid_o       = 1'b0;
-    cipher_out_ready_o      = 1'b0;
+    cipher_in_valid_o       = SP2V_LOW;
+    cipher_out_ready_o      = SP2V_LOW;
     cipher_out_done         = 1'b0;
     cipher_crypt_o          = 1'b0;
     cipher_dec_key_gen_o    = 1'b0;
@@ -365,8 +370,8 @@ module aes_control
                                doing_ctr     ? ADD_SI_IV : ADD_SI_ZERO;
 
           // We have work for the cipher core, perform handshake.
-          cipher_in_valid_o = 1'b1;
-          if (cipher_in_ready_i) begin
+          cipher_in_valid_o = SP2V_HIGH;
+          if (cipher_in_ready == SP2V_HIGH) begin
             // Do not yet clear a possible start trigger if we are just starting the generation of
             // the start key for decryption.
             start_we_o  = ~cipher_dec_key_gen_o;
@@ -418,8 +423,8 @@ module aes_control
             cipher_data_out_clear_o = data_out_clear_i;
 
             // We have work for the cipher core, perform handshake.
-            cipher_in_valid_o = 1'b1;
-            if (cipher_in_ready_i) begin
+            cipher_in_valid_o = SP2V_HIGH;
+            if (cipher_in_ready == SP2V_HIGH) begin
               aes_ctrl_ns = CLEAR;
             end
           end // cipher_crypt_i
@@ -431,17 +436,17 @@ module aes_control
 
         if (cipher_dec_key_gen_i) begin
           // We are ready.
-          cipher_out_ready_o = 1'b1;
-          if (cipher_out_valid_i) begin
+          cipher_out_ready_o = SP2V_HIGH;
+          if (cipher_out_valid == SP2V_HIGH) begin
             aes_ctrl_ns = IDLE;
           end
         end else begin
           // Handshake signals: We are ready once the output data registers can be written.
-          cipher_out_ready_o = finish;
-          cipher_out_done    = finish & cipher_out_valid_i;
+          cipher_out_ready_o = finish ? SP2V_HIGH : SP2V_LOW;
+          cipher_out_done    = finish & (cipher_out_valid == SP2V_HIGH);
 
           // Signal if the cipher core is stalled (because previous output has not yet been read).
-          stall_o    = ~finish & cipher_out_valid_i;
+          stall_o    = ~finish & (cipher_out_valid == SP2V_HIGH);
           stall_we_o = 1'b1;
 
           // State out addition mux control
@@ -477,7 +482,7 @@ module aes_control
                    doing_ctr     ? cipher_out_done : 1'b0;
 
           // Proceed upon successful handshake.
-          if (cipher_out_done) begin
+          if (finish && (cipher_out_valid == SP2V_HIGH)) begin
             // Don't release data from cipher core in case of invalid mux selector signals.
             data_out_we_o = ~mux_sel_err_i;
             aes_ctrl_ns   = IDLE;
@@ -505,8 +510,8 @@ module aes_control
         end
 
         // Perform handshake with cipher core.
-        cipher_out_ready_o = 1'b1;
-        if (cipher_out_valid_i) begin
+        cipher_out_ready_o = SP2V_HIGH;
+        if (cipher_out_valid == SP2V_HIGH) begin
 
           // Full Key and Decryption Key registers are cleared by the cipher core.
           // key_iv_data_in_clear_i is acknowledged by the cipher core with cipher_key_clear_i.
@@ -519,8 +524,8 @@ module aes_control
           // data_out_clear_i is acknowledged by the cipher core with cipher_data_out_clear_i.
           if (cipher_data_out_clear_i) begin
             // Clear output data and the trigger bit. Don't release data from cipher core in case
-            // of invalid mux selector signals.
-            data_out_we_o       = ~mux_sel_err_i;
+            // of invalid mux selector or handshake signals.
+            data_out_we_o       = ~mux_sel_err_i & ~hs_err;
             data_out_clear_we_o = 1'b1;
           end
 
@@ -539,9 +544,9 @@ module aes_control
       end
     endcase
 
-    // Unconditionally jump into the terminal error state in case a mux selector signal becomes
-    // invalid.
-    if (mux_sel_err_i) begin
+    // Unconditionally jump into the terminal error state in case a mux selector or handshake
+    // signal becomes invalid.
+    if (mux_sel_err_i || hs_err) begin
       aes_ctrl_ns = ERROR;
     end
   end
@@ -675,6 +680,49 @@ module aes_control
   assign key_iv_data_in_clear_o = 1'b0;
   assign data_out_clear_o       = 1'b0;
   assign prng_reseed_o          = 1'b0;
+
+  ///////////////////////
+  // Handshake Signals //
+  ///////////////////////
+
+  // We use sparse encodings for handshake signals and must ensure that:
+  // 1. The synthesis tool doesn't optimize away the sparse encoding.
+  // 2. The handshake signal is always valid. More precisely, an alert or SVA is triggered if a
+  //    handshake signal takes on an invalid value.
+  // 3. The alert signal remains asserted until reset even if the handshake signal becomes valid
+  //    again. This is achieved by driving the control FSM into the terminal error state whenever
+  //    any handshake signal becomes invalid.
+  //
+  // If any handshake signal becomes invalid, the cipher core further immediately de-asserts
+  // the out_valid_o signal to prevent any data from being released.
+
+  logic [Sp2VWidth-1:0] cipher_in_ready_raw;
+  aes_sel_buf_chk #(
+    .Num   ( Sp2VNum   ),
+    .Width ( Sp2VWidth )
+  ) u_aes_cipher_in_ready_buf_chk (
+    .clk_i  ( clk_i               ),
+    .rst_ni ( rst_ni              ),
+    .sel_i  ( cipher_in_ready_i   ),
+    .sel_o  ( cipher_in_ready_raw ),
+    .err_o  ( cipher_in_ready_err )
+  );
+  assign cipher_in_ready = sp2v_e'(cipher_in_ready_raw);
+
+  logic [Sp2VWidth-1:0] cipher_out_valid_raw;
+  aes_sel_buf_chk #(
+    .Num   ( Sp2VNum   ),
+    .Width ( Sp2VWidth )
+  ) u_aes_cipher_out_valid_buf_chk (
+    .clk_i  ( clk_i                ),
+    .rst_ni ( rst_ni               ),
+    .sel_i  ( cipher_out_valid_i   ),
+    .sel_o  ( cipher_out_valid_raw ),
+    .err_o  ( cipher_out_valid_err )
+  );
+  assign cipher_out_valid = sp2v_e'(cipher_out_valid_raw);
+
+  assign hs_err = cipher_in_ready_err | cipher_out_valid_err;
 
   ////////////////
   // Assertions //

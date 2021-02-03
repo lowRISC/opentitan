@@ -129,10 +129,10 @@ module aes_core
   logic                        data_out_we;
   logic                  [3:0] data_out_re;
 
-  logic                        cipher_in_valid;
-  logic                        cipher_in_ready;
-  logic                        cipher_out_valid;
-  logic                        cipher_out_ready;
+  sp2v_e                       cipher_in_valid;
+  sp2v_e                       cipher_in_ready;
+  sp2v_e                       cipher_out_valid;
+  sp2v_e                       cipher_out_ready;
   logic                        cipher_crypt;
   logic                        cipher_crypt_busy;
   logic                        cipher_dec_key_gen;

@@ -275,6 +275,15 @@ typedef enum logic [AddSOSelWidth-1:0] {
   ADD_SO_DIP  = MUX3_SEL_2
 } add_so_sel_e;
 
+// Sparse two-value signal type sp2v_e
+parameter int Sp2VNum = 2;
+parameter int Sp2VWidth = Mux2SelWidth;
+typedef enum logic [Sp2VWidth-1:0] {
+  SP2V_HIGH = MUX2_SEL_0,
+  SP2V_LOW  = MUX2_SEL_1
+} sp2v_e;
+
+// Control register type
 typedef struct packed {
   logic      force_zero_masks;
   logic      manual_operation;

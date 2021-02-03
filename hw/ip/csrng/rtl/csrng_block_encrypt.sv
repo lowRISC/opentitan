@@ -51,10 +51,10 @@ module csrng_block_encrypt #(
   logic [StateId-1:0]         sfifo_blkenc_id;
   logic [BlkLen-1:0]          sfifo_blkenc_v;
 
-  logic                 cipher_in_valid;
-  logic                 cipher_in_ready;
-  logic                 cipher_out_valid;
-  logic                 cipher_out_ready;
+  aes_pkg::sp2v_e       cipher_in_valid;
+  aes_pkg::sp2v_e       cipher_in_ready;
+  aes_pkg::sp2v_e       cipher_out_valid;
+  aes_pkg::sp2v_e       cipher_out_ready;
   logic [BlkLen-1:0]    cipher_data_out;
   logic                 aes_cipher_core_enable;
 
@@ -80,7 +80,8 @@ module csrng_block_encrypt #(
   //--------------------------------------------
   // aes cipher core
   //--------------------------------------------
-  assign cipher_in_valid = (aes_cipher_core_enable && block_encrypt_req_i);
+  assign cipher_in_valid = (aes_cipher_core_enable && block_encrypt_req_i) ?
+      aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
 
   // Cipher core
   aes_cipher_core #(
@@ -145,18 +146,20 @@ module csrng_block_encrypt #(
   assign sfifo_blkenc_push = block_encrypt_req_i && !sfifo_blkenc_full;
   assign sfifo_blkenc_wdata = {block_encrypt_v_i,block_encrypt_id_i,block_encrypt_cmd_i};
 
-  assign block_encrypt_rdy_o = !aes_cipher_core_enable ? !sfifo_blkenc_full : cipher_in_ready;
+  assign block_encrypt_rdy_o = !aes_cipher_core_enable ? !sfifo_blkenc_full :
+               (cipher_in_ready == aes_pkg::SP2V_HIGH) ? 1'b1               : 1'b0;
 
   assign sfifo_blkenc_pop = block_encrypt_ack_o;
   assign {sfifo_blkenc_v,sfifo_blkenc_id,sfifo_blkenc_cmd} = sfifo_blkenc_rdata;
 
   assign block_encrypt_ack_o = block_encrypt_rdy_i &&
-         (!aes_cipher_core_enable ? sfifo_blkenc_not_empty : cipher_out_valid);
+         (!aes_cipher_core_enable                  ? sfifo_blkenc_not_empty :
+          (cipher_out_valid == aes_pkg::SP2V_HIGH) ? 1'b1                   : 1'b0);
 
   assign block_encrypt_cmd_o = sfifo_blkenc_cmd;
   assign block_encrypt_id_o = sfifo_blkenc_id;
   assign block_encrypt_v_o = !aes_cipher_core_enable ? sfifo_blkenc_v : cipher_data_out;
-  assign cipher_out_ready = block_encrypt_rdy_i;
+  assign cipher_out_ready = block_encrypt_rdy_i ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
 
   assign block_encrypt_sfifo_blkenc_err_o =
          {(sfifo_blkenc_push && sfifo_blkenc_full),
