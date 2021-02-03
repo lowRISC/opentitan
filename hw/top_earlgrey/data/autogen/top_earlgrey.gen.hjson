@@ -5461,6 +5461,7 @@
           name: edn
           act: rsp
           width: "4"
+          default: "'0"
           desc:
             '''
             The collection of peripheral ports supported by edn. The width (4)
@@ -5565,6 +5566,7 @@
           name: edn
           act: rsp
           width: "4"
+          default: "'0"
           desc:
             '''
             The collection of peripheral ports supported by edn. The width (4)
@@ -11794,6 +11796,7 @@
         name: edn
         act: rsp
         width: "4"
+        default: "'0"
         desc:
           '''
           The collection of peripheral ports supported by edn. The width (4)
@@ -11837,6 +11840,7 @@
         name: edn
         act: rsp
         width: "4"
+        default: "'0"
         desc:
           '''
           The collection of peripheral ports supported by edn. The width (4)
