@@ -21,7 +21,7 @@ package edn_pkg;
     logic [ENDPOINT_BUS_WIDTH-1:0]        edn_bus;
   } edn_rsp_t;
 
-  parameter edn_req_t EDN_REQ_DEFAULT = '{default: '0};
-  parameter edn_rsp_t EDN_RSP_DEFAULT = '{default: '0};
+  parameter edn_req_t EDN_REQ_DEFAULT = '0;
+  parameter edn_rsp_t EDN_RSP_DEFAULT = '0;
 
 endpackage : edn_pkg

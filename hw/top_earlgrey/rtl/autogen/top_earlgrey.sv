@@ -1551,7 +1551,7 @@ module top_earlgrey #(
       // Inter-module signals
       .csrng_cmd_o(csrng_csrng_cmd_req[0]),
       .csrng_cmd_i(csrng_csrng_cmd_rsp[0]),
-      .edn_i(edn_pkg::EDN_REQ_DEFAULT),
+      .edn_i('0),
       .edn_o(),
       .tl_i(edn0_tl_req),
       .tl_o(edn0_tl_rsp),
@@ -1568,7 +1568,7 @@ module top_earlgrey #(
       // Inter-module signals
       .csrng_cmd_o(csrng_csrng_cmd_req[1]),
       .csrng_cmd_i(csrng_csrng_cmd_rsp[1]),
-      .edn_i(edn_pkg::EDN_REQ_DEFAULT),
+      .edn_i('0),
       .edn_o(),
       .tl_i(edn1_tl_req),
       .tl_o(edn1_tl_rsp),
