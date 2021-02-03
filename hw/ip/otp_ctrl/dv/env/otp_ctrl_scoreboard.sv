@@ -22,6 +22,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   // This two bits are local values stored for sw partitions' read lock registers.
   bit [1:0] sw_read_lock;
 
+  bit under_chk;
+
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(SRAM_DATA_SIZE)))
                         sram_fifos[NumSramKeyReqSlots];
@@ -453,14 +455,30 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         // status?
         if (data_phase_read) begin
           if ((item.d_data & OtpDaiIdle) == OtpDaiIdle) check_otp_idle(1);
+          // we do not know how long it take to process checks, so mask check_pending field out
+          if (under_chk) begin
+            `DV_CHECK_EQ((csr.get_mirrored_value() | OtpCheckPending),
+                         (item.d_data | OtpCheckPending), "reg name: status")
+            if ((item.d_data & OtpCheckPending) != OtpCheckPending) under_chk = 0;
+          end else begin
+            `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, "reg name: status")
+            if (`gmv(ral.status.check_pending)) under_chk = 1;
+          end
+        end
+        // checked in this block above
+        do_read_check = 0;
+      end
+      "check_trigger": begin
+        if (addr_phase_write && `gmv(ral.check_trigger_regwen) && item.a_data inside {[1:3]}) begin
+          void'(ral.status.check_pending.predict(1));
         end
       end
       "hw_cfg_digest_0", "hw_cfg_digest_1", "", "secret0_digest_0", "secret0_digest_1",
       "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1",
       "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
-      "owner_sw_cfg_digest_1", "direct_access_regwen", "direct_access_wdata_0",
+      "owner_sw_cfg_digest_1", "direct_access_regwen", "direct_access_wdata_0", "check_timeout",
       "direct_access_wdata_1", "direct_access_address", "direct_access_rdata_0",
-      "direct_access_rdata_1", "status": begin
+      "direct_access_rdata_1", "check_regwen", "check_trigger_regwen", "check_trigger": begin
         // Do nothing
       end
       default: begin
@@ -480,6 +498,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
+    under_chk = 0;
     // reset local fifos queues and variables
     // digest values are updated after a power cycle
     predict_digest_csrs();
