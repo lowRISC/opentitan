@@ -147,9 +147,12 @@ package otp_ctrl_part_pkg;
   // Breakout types for easier access of individual items.
 % for part in otp_mmap.config["partitions"]:
   % if part["bkout_type"]:
-  typedef struct packed {
+  typedef struct packed {<% offset = part['offset'] + part['size'] %>
     % for item in part["items"][::-1]:
-      logic [${int(item["size"])*8-1}:0] ${item["name"].lower()};
+      % if offset != item['offset'] + item['size']:
+      logic [${(offset - item['size'] - item['offset']) * 8 - 1}:0] unallocated;<% offset = item['offset'] + item['size'] %>
+      % endif
+      logic [${int(item["size"])*8-1}:0] ${item["name"].lower()};<% offset -= item['size'] %>
     % endfor
   } otp_${part["name"].lower()}_data_t;
   typedef struct packed {

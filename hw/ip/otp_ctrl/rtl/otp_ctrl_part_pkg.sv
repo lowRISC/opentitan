@@ -203,6 +203,7 @@ package otp_ctrl_part_pkg;
   // Breakout types for easier access of individual items.
   typedef struct packed {
       logic [63:0] hw_cfg_digest;
+      logic [1599:0] unallocated;
       logic [255:0] device_id;
   } otp_hw_cfg_data_t;
   typedef struct packed {
