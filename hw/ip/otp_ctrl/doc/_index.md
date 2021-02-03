@@ -434,7 +434,7 @@ The expected timining is illustrated below:
 #### Interface to Key Manager
 
 The interface to the key manager is a simple struct that outputs the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1 keys via `otp_keymgr_key_o` if these secrets have been provisioned and locked (via CREATOR_KEY_LOCK).
-Otherwise, this signal is tied to all-zeros.
+Otherwise, this signal is tied to a random netlist constant.
 
 Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `otp_keymgr_key_o` signals.
 
