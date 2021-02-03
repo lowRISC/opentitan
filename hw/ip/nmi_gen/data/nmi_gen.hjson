@@ -47,7 +47,7 @@
       name:    "esc_tx",
       act:     "rcv",
       package: "prim_esc_pkg",
-      default: "'{3{prim_esc_pkg::ESC_TX_DEFAULT}}"
+      default: "{3{prim_esc_pkg::ESC_TX_DEFAULT}}"
     },
 
     { struct:  "esc_rx",
