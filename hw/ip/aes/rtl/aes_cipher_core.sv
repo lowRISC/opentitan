@@ -643,6 +643,9 @@ module aes_cipher_core import aes_pkg::*;
       (SBoxImpl == SBoxImplLut ||
        SBoxImpl == SBoxImplCanright)))
 
+// the code below is not meant to be synthesized,
+// but it is intended to be used in simulation and FPV
+`ifndef SYNTHESIS
   // Make sure the output of the masking PRNG is properly extracted without creating overlaps
   // in the data input masks, or between the PRD fed to the key expand module and SubBytes.
   if (WidthPRDSBox > 8) begin : gen_prd_extract_assert
@@ -685,5 +688,6 @@ module aes_cipher_core import aes_pkg::*;
     assign unused_prd_masking[WidthPRDMasking-1 -: WidthPRDKey] = prd_key_expand;
     `ASSERT(AesMskgPrdExtraction, prd_masking == unused_prd_masking)
   end
+`endif
 
 endmodule
