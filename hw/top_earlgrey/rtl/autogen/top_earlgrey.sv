@@ -73,7 +73,7 @@ module top_earlgrey #(
   input  lc_ctrl_pkg::lc_tx_t       flash_bist_enable_i,
   input  logic       flash_power_down_h_i,
   input  logic       flash_power_ready_h_i,
-  input  logic [1:0] flash_test_mode_a_i,
+  input  logic [3:0] flash_test_mode_a_i,
   input  logic       flash_test_voltage_h_i,
   output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
   output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,

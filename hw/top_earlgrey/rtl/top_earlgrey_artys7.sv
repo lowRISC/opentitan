@@ -214,8 +214,13 @@ module top_earlgrey_artys7  #(
     .ast_tl_rsp_i                 ( '0              ),
     .otp_ctrl_otp_ast_pwr_seq_o   (                 ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( '0              ),
-    .flash_power_down_h_i         ( '0              ),
+    .flash_bist_enable_i          ( 1'b0            ),
+    .flash_power_down_h_i         ( 1'b0            ),
     .flash_power_ready_h_i        ( 1'b1            ),
+    .flash_test_mode_a_i          ('0),
+    .flash_test_voltage_h_i       ('0),
+    .clks_ast_o                   ( ),
+    .rsts_ast_o                   ( ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck_buf  ),
