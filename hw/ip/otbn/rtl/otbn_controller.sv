@@ -143,6 +143,8 @@ module otbn_controller
   ispr_e                               ispr_addr_bignum;
 
   logic                                ispr_wr_insn;
+  logic                                ispr_wr_base_insn;
+  logic                                ispr_wr_bignum_insn;
 
   logic lsu_load_req_raw;
   logic lsu_store_req_raw;
@@ -352,7 +354,8 @@ module otbn_controller
   assign loop_start_req    = insn_valid_i & insn_dec_shared_i.loop_insn;
   assign loop_start_commit = insn_executing;
   assign loop_bodysize     = insn_dec_base_i.loop_bodysize;
-  assign loop_iterations   = insn_dec_base_i.loop_immediate ? insn_dec_base_i.i : rf_base_rd_data_a_i;
+  assign loop_iterations   = insn_dec_base_i.loop_immediate ? insn_dec_base_i.i :
+                                                              rf_base_rd_data_a_i;
 
   // Compute increments which can be optionally applied to indirect register accesses and memory
   // addresses in BN.LID/BN.SID/BN.MOVR instructions.
@@ -648,21 +651,21 @@ module otbn_controller
                                                         insn_dec_shared_i.ispr_rs_insn);
 
   assign ispr_wr_insn = insn_dec_shared_i.ispr_wr_insn | insn_dec_shared_i.ispr_rs_insn;
+  assign ispr_wr_base_insn   = ispr_wr_insn & (insn_dec_shared_i.subset == InsnSubsetBase);
+  assign ispr_wr_bignum_insn = ispr_wr_insn & (insn_dec_shared_i.subset == InsnSubsetBignum);
 
   assign ispr_addr_o         = insn_dec_shared_i.subset == InsnSubsetBase ? ispr_addr_base :
                                                                             ispr_addr_bignum;
   assign ispr_base_wdata_o   = csr_wdata;
-  assign ispr_base_wr_en_o   =
-      {BaseWordsPerWLEN{(insn_dec_shared_i.subset == InsnSubsetBase) & ispr_wr_insn & insn_executing}}
-      & ispr_word_sel_base;
+  assign ispr_base_wr_en_o   = {BaseWordsPerWLEN{ispr_wr_base_insn & insn_executing}} &
+                               ispr_word_sel_base;
 
   assign ispr_bignum_wdata_o = wsr_wdata;
-  assign ispr_bignum_wr_en_o = (insn_dec_shared_i.subset == InsnSubsetBignum) & ispr_wr_insn
-      & insn_executing;
+  assign ispr_bignum_wr_en_o = ispr_wr_bignum_insn & insn_executing;
 
   // lsu_load_req_raw/lsu_store_req_raw indicate an instruction wishes to perform a store or a load.
-  // lsu_load_req_o/lsu_store_req_o factor in whether an instruction is actually executing (it may be
-  // suppressed due an error) and command the load or store to happen when asserted.
+  // lsu_load_req_o/lsu_store_req_o factor in whether an instruction is actually executing (it may
+  // be suppressed due an error) and command the load or store to happen when asserted.
   assign lsu_load_req_raw = insn_valid_i & insn_dec_shared_i.ld_insn & (state_q == OtbnStateRun);
   assign lsu_load_req_o   = insn_executing & lsu_load_req_raw;
 
