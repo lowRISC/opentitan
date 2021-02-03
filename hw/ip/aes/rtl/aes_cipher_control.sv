@@ -17,17 +17,17 @@ module aes_cipher_control import aes_pkg::*;
   input  logic                    rst_ni,
 
   // Input handshake signals
-  input  logic                    in_valid_i,
-  output logic                    in_ready_o,
+  input  sp2v_e                   in_valid_i,
+  output sp2v_e                   in_ready_o,
 
   // Output handshake signals
-  output logic                    out_valid_o,
-  input  logic                    out_ready_i,
+  output sp2v_e                   out_valid_o,
+  input  sp2v_e                   out_ready_i,
 
   // Control and sync signals
   input  logic                    cfg_valid_i,
-  input  aes_pkg::ciph_op_e       op_i,
-  input  aes_pkg::key_len_e       key_len_i,
+  input  ciph_op_e                op_i,
+  input  key_len_e                key_len_i,
   input  logic                    crypt_i,
   output logic                    crypt_o,
   input  logic                    dec_key_gen_i,
@@ -45,26 +45,26 @@ module aes_cipher_control import aes_pkg::*;
   input  logic                    prng_reseed_ack_i,
 
   // Control and sync signals for cipher data path
-  output aes_pkg::state_sel_e     state_sel_o,
+  output state_sel_e              state_sel_o,
   output logic                    state_we_o,
   output logic                    sub_bytes_en_o,
   input  logic                    sub_bytes_out_req_i,
   output logic                    sub_bytes_out_ack_o,
-  output aes_pkg::add_rk_sel_e    add_rk_sel_o,
+  output add_rk_sel_e             add_rk_sel_o,
 
   // Control and sync signals for key expand data path
-  output aes_pkg::ciph_op_e       key_expand_op_o,
-  output aes_pkg::key_full_sel_e  key_full_sel_o,
+  output ciph_op_e                key_expand_op_o,
+  output key_full_sel_e           key_full_sel_o,
   output logic                    key_full_we_o,
-  output aes_pkg::key_dec_sel_e   key_dec_sel_o,
+  output key_dec_sel_e            key_dec_sel_o,
   output logic                    key_dec_we_o,
   output logic                    key_expand_en_o,
   input  logic                    key_expand_out_req_i,
   output logic                    key_expand_out_ack_o,
   output logic                    key_expand_clear_o,
   output logic [3:0]              key_expand_round_o,
-  output aes_pkg::key_words_sel_e key_words_sel_o,
-  output aes_pkg::round_key_sel_e round_key_sel_o
+  output key_words_sel_e          key_words_sel_o,
+  output round_key_sel_e          round_key_sel_o
 );
 
   // Types
@@ -111,6 +111,11 @@ module aes_cipher_control import aes_pkg::*;
   logic       data_out_clear_d, data_out_clear_q;
   logic       prng_reseed_done_d, prng_reseed_done_q;
   logic       advance;
+  sp2v_e      in_valid;
+  logic       in_valid_err;
+  sp2v_e      out_ready;
+  logic       out_ready_err;
+  logic       hs_err;
 
   // cfg_valid_i is used for gating assertions only.
   logic       unused_cfg_valid;
@@ -120,8 +125,8 @@ module aes_cipher_control import aes_pkg::*;
   always_comb begin : aes_cipher_ctrl_fsm
 
     // Handshake signals
-    in_ready_o           = 1'b0;
-    out_valid_o          = 1'b0;
+    in_ready_o           = SP2V_LOW;
+    out_valid_o          = SP2V_LOW;
 
     // Masking PRNG signals
     prng_update_o        = 1'b0;
@@ -166,8 +171,8 @@ module aes_cipher_control import aes_pkg::*;
         dec_key_gen_d = 1'b0;
 
         // Signal that we are ready, wait for handshake.
-        in_ready_o = 1'b1;
-        if (in_valid_i) begin
+        in_ready_o = SP2V_HIGH;
+        if (in_valid == SP2V_HIGH) begin
           if (key_clear_i || data_out_clear_i) begin
             // Clear internal key registers. The cipher core muxes are used to clear the data
             // output registers.
@@ -296,8 +301,8 @@ module aes_cipher_control import aes_pkg::*;
               // Indicate that we are done, try to perform the handshake. But we don't wait here.
               // If we don't get the handshake now, we will wait in the finish state. When using
               // masking, we only finish if the masking PRNG has been reseeded.
-              out_valid_o = Masking ? prng_reseed_done_q : 1'b1;
-              if (out_valid_o && out_ready_i) begin
+              out_valid_o = Masking ? (prng_reseed_done_q ? SP2V_HIGH : SP2V_LOW) : SP2V_HIGH;
+              if (out_valid_o == SP2V_HIGH && out_ready == SP2V_HIGH) begin
                 // Go to idle state directly.
                 dec_key_gen_d      = 1'b0;
                 aes_cipher_ctrl_ns = IDLE;
@@ -328,18 +333,20 @@ module aes_cipher_control import aes_pkg::*;
         // Advance in sync with SubBytes. Based on the S-Box implementation, it can take multiple
         // cycles to finish. Only indicate that we are done if:
         // - we have valid output (SubBytes finished),
-        // - the masking PRNG has been reseeded (if masking is used), and
-        // - all mux selector signals are valid (don't release data in that case of errors).
+        // - the masking PRNG has been reseeded (if masking is used),
+        // - all mux selector signals are valid (don't release data in that case of errors), and
+        // - all handshake signals are valid (don't release data in that case of errors).
         // Perform both handshakes simultaneously.
         advance        = dec_key_gen_q | sub_bytes_out_req_i;
         sub_bytes_en_o = ~dec_key_gen_q;
-        out_valid_o    = advance & (Masking == prng_reseed_done_q) & ~mux_sel_err_i;
+        out_valid_o    = (advance & (Masking == prng_reseed_done_q) &
+            ~mux_sel_err_i & ~hs_err) ? SP2V_HIGH : SP2V_LOW;
         // When using DOM S-Boxes, make the masking PRNG advance every cycle until the output is
         // ready. For other S-Boxes, make it advance once only. Updating it while being stalled
         // would cause non-DOM S-Boxes to be re-evaluated, thereby creating additional SCA leakage.
-        prng_update_o  = (SBoxImpl == SBoxImplDom) ? ~advance                  :
-                          Masking                  ? out_valid_o & out_ready_i : 1'b0;
-        if (out_valid_o && out_ready_i) begin
+        prng_update_o  = (SBoxImpl == SBoxImplDom) ? ~advance              :
+            Masking ? (out_valid_o == SP2V_HIGH && out_ready == SP2V_HIGH) : 1'b0;
+        if (out_valid_o == SP2V_HIGH && out_ready == SP2V_HIGH) begin
           sub_bytes_out_ack_o = ~dec_key_gen_q;
 
           // Clear the state.
@@ -374,8 +381,8 @@ module aes_cipher_control import aes_pkg::*;
           round_key_sel_o = ROUND_KEY_DIRECT;
         end
         // Indicate that we are done, wait for handshake.
-        out_valid_o = 1'b1;
-        if (out_ready_i) begin
+        out_valid_o = SP2V_HIGH;
+        if (out_ready == SP2V_HIGH) begin
           key_clear_d        = 1'b0;
           data_out_clear_d   = 1'b0;
           aes_cipher_ctrl_ns = IDLE;
@@ -393,9 +400,9 @@ module aes_cipher_control import aes_pkg::*;
       end
     endcase
 
-    // Unconditionally jump into the terminal error state in case a mux selector signal becomes
-    // invalid or in case we have detected a fault in the round counter.
-    if (mux_sel_err_i || rnd_ctr_err) begin
+    // Unconditionally jump into the terminal error state in case a mux selector or a handshake
+    // signal becomes invalid, or in case we have detected a fault in the round counter.
+    if (mux_sel_err_i || hs_err || rnd_ctr_err) begin
       aes_cipher_ctrl_ns = ERROR;
     end
   end
@@ -500,6 +507,49 @@ module aes_cipher_control import aes_pkg::*;
   assign rnd_ctr_err_parity = (rnd_ctr_parity != rnd_ctr_parity_q) ? 1'b1 : 1'b0;
 
   assign rnd_ctr_err = rnd_ctr_err_sum | rnd_ctr_err_parity;
+
+  ///////////////////////
+  // Handshake Signals //
+  ///////////////////////
+
+  // We use sparse encodings for handshake signals and must ensure that:
+  // 1. The synthesis tool doesn't optimize away the sparse encoding.
+  // 2. The handshake signal is always valid. More precisely, an alert or SVA is triggered if a
+  //    handshake signal takes on an invalid value.
+  // 3. The alert signal remains asserted until reset even if the handshake signal becomes valid
+  //    again. This is achieved by driving the control FSM into the terminal error state whenever
+  //    any handshake signal becomes invalid.
+  //
+  // If any handshake signal becomes invalid, the cipher core further immediately de-asserts
+  // the out_valid_o signal to prevent any data from being released.
+
+  logic [Sp2VWidth-1:0] in_valid_raw;
+  aes_sel_buf_chk #(
+    .Num   ( Sp2VNum   ),
+    .Width ( Sp2VWidth )
+  ) u_aes_in_valid_sel_buf_chk (
+    .clk_i  ( clk_i        ),
+    .rst_ni ( rst_ni       ),
+    .sel_i  ( in_valid_i   ),
+    .sel_o  ( in_valid_raw ),
+    .err_o  ( in_valid_err )
+  );
+  assign in_valid = sp2v_e'(in_valid_raw);
+
+  logic [Sp2VWidth-1:0] out_ready_raw;
+  aes_sel_buf_chk #(
+    .Num   ( Sp2VNum   ),
+    .Width ( Sp2VWidth )
+  ) u_aes_out_ready_sel_buf_chk (
+    .clk_i  ( clk_i         ),
+    .rst_ni ( rst_ni        ),
+    .sel_i  ( out_ready_i   ),
+    .sel_o  ( out_ready_raw ),
+    .err_o  ( out_ready_err )
+  );
+  assign out_ready = sp2v_e'(out_ready_raw);
+
+  assign hs_err = in_valid_err | out_ready_err;
 
   ////////////////
   // Assertions //

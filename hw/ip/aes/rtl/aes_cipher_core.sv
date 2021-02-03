@@ -108,12 +108,12 @@ module aes_cipher_core import aes_pkg::*;
   input  logic                        rst_ni,
 
   // Input handshake signals
-  input  logic                        in_valid_i,
-  output logic                        in_ready_o,
+  input  sp2v_e                       in_valid_i,
+  output sp2v_e                       in_ready_o,
 
   // Output handshake signals
-  output logic                        out_valid_o,
-  input  logic                        out_ready_i,
+  output sp2v_e                       out_valid_o,
+  input  sp2v_e                       out_ready_i,
 
   // Control and sync signals
   input  logic                        cfg_valid_i, // Used for gating assertions only.
