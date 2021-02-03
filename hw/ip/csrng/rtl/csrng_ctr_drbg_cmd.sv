@@ -134,8 +134,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
     .rvalid_o       (sfifo_cmdreq_not_empty),
     .rready_i       (sfifo_cmdreq_pop),
     .rdata_o        (sfifo_cmdreq_rdata),
-    .depth_o        (),
-    .full_o         ()
+    .full_o         (),
+    .depth_o        ()
   );
 
   assign fips_modified = (ctr_drbg_cmd_ccmd_i == INS) ? ctr_drbg_cmd_entropy_fips_i :
@@ -222,8 +222,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
     .rvalid_o       (sfifo_rcstage_not_empty),
     .rready_i       (sfifo_rcstage_pop),
     .rdata_o        (sfifo_rcstage_rdata),
-    .depth_o        (),
-    .full_o         ()
+    .full_o         (),
+    .depth_o        ()
   );
 
   assign sfifo_rcstage_push = sfifo_cmdreq_pop;
@@ -257,8 +257,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
     .rvalid_o       (sfifo_keyvrc_not_empty),
     .rready_i       (sfifo_keyvrc_pop),
     .rdata_o        (sfifo_keyvrc_rdata),
-    .depth_o        (),
-    .full_o         ()
+    .full_o         (),
+    .depth_o        ()
   );
 
   assign sfifo_keyvrc_push = sfifo_rcstage_pop;
