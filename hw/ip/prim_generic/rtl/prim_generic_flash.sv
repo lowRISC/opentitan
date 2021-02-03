@@ -14,7 +14,7 @@ module prim_generic_flash #(
   parameter int WordsPerPage   = 256,// words per page
   parameter int DataWidth      = 32, // bits per word
   parameter int MetaDataWidth  = 12, // metadata such as ECC
-  parameter int TestModeWidth  = 2
+  parameter int TestModeWidth  = 4
 ) (
   input clk_i,
   input rst_ni,
@@ -40,11 +40,15 @@ module prim_generic_flash #(
   input flash_alert_ack_i,
   input flash_alert_trig_i,
   input tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o
+  output tlul_pkg::tl_d2h_t tl_o,
+  input  devmode_i
 );
 
   localparam int CfgRegs = 21;
   localparam int CfgAddrWidth = $clog2(CfgRegs);
+
+  logic unused_devmode;
+  assign unused_devmode = devmode_i;
 
   // convert this into a tlul write later
   logic init;

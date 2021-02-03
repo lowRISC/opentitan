@@ -6064,7 +6064,7 @@
         {
           struct: logic
           package: ""
-          width: 2
+          width: 4
           type: uni
           act: rcv
           name: flash_test_mode_a
@@ -12071,7 +12071,7 @@
       {
         struct: logic
         package: ""
-        width: 2
+        width: 4
         type: uni
         act: rcv
         name: flash_test_mode_a
@@ -12814,7 +12814,7 @@
         package: ""
         struct: logic
         signame: flash_test_mode_a_i
-        width: 2
+        width: 4
         type: uni
         default: ""
         direction: in
