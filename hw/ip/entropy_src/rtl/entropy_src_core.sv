@@ -83,7 +83,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                   sfifo_esrng_push;
   logic                   sfifo_esrng_pop;
   logic                   sfifo_esrng_clr;
-  logic                   sfifo_esrng_not_full;
+  logic                   sfifo_esrng_full;
   logic                   sfifo_esrng_not_empty;
   logic [2:0]             sfifo_esrng_err;
 
@@ -104,6 +104,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                   sfifo_esfinal_pop;
   logic                   sfifo_esfinal_clr;
   logic                   sfifo_esfinal_not_full;
+  logic                   sfifo_esfinal_full;
   logic                   sfifo_esfinal_not_empty;
   logic [2:0]             sfifo_esfinal_err;
   logic [SeedLen-1:0]     esfinal_data;
@@ -469,12 +470,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clr_i      (sfifo_esrng_clr),
     .wvalid_i   (sfifo_esrng_push),
     .wdata_i    (sfifo_esrng_wdata),
-    .wready_o   (sfifo_esrng_not_full),
+    .wready_o   (),
     .rvalid_o   (sfifo_esrng_not_empty),
     .rdata_o    (sfifo_esrng_rdata),
     .rready_i   (sfifo_esrng_pop),
-    .depth_o    (),
-    .full_o     ()
+    .full_o     (sfifo_esrng_full),
+    .depth_o    ()
   );
 
   // fifo controls
@@ -491,7 +492,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign sfifo_esrng_err =
          {1'b0,
          (sfifo_esrng_pop && !sfifo_esrng_not_empty),
-         (!sfifo_esrng_not_full && !sfifo_esrng_not_empty)};
+         (sfifo_esrng_full && !sfifo_esrng_not_empty)};
 
 
   // pack esrng bus into signal bit packer
@@ -1263,8 +1264,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rvalid_o   (sfifo_precon_not_empty),
     .rdata_o    (sfifo_precon_rdata),
     .rready_i   (sfifo_precon_pop),
-    .depth_o    (sfifo_precon_depth),
-    .full_o     ()
+    .full_o     (),
+    .depth_o    (sfifo_precon_depth)
   );
 
 
@@ -1428,8 +1429,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rvalid_o       (sfifo_esfinal_not_empty),
     .rready_i       (sfifo_esfinal_pop),
     .rdata_o        (sfifo_esfinal_rdata),
-    .depth_o        (sfifo_esfinal_depth),
-    .full_o         ()
+    .full_o         (sfifo_esfinal_full),
+    .depth_o        (sfifo_esfinal_depth)
   );
 
   assign fips_compliance = !es_bypass_mode && es_enable_rng && !es_enable_lfsr && !rng_bit_en;
@@ -1445,9 +1446,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // fifo err
   assign sfifo_esfinal_err =
-         {(sfifo_esfinal_push && !sfifo_esfinal_not_full),
+         {(sfifo_esfinal_push && sfifo_esfinal_full),
           (sfifo_esfinal_pop && !sfifo_esfinal_not_empty),
-          (!sfifo_esfinal_not_full && !sfifo_esfinal_not_empty)};
+          (sfifo_esfinal_full && !sfifo_esfinal_not_empty)};
 
   // drive out hw interface
   assign es_hw_if_req = entropy_src_hw_if_i.es_req;
