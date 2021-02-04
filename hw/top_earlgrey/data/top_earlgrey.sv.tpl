@@ -187,6 +187,20 @@ module top_${top["name"]} #(
   ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
 % endfor
 
+## Mixed connection to port
+## Index greater than 0 means a port is assigned to an inter-module array
+## whereas an index of 0 means a port is directly driven by a module
+  // define mixed connection to port
+% for port in top['inter_signal']['external']:
+  % if port['index'] > 0:
+    % if port['direction'] == 'in':
+  assign ${port['netname']}[${port['index']}] = ${port['signame']};
+    % else:
+  assign ${port['signame']} = ${port['netname']}[${port['index']}];
+    % endif
+  % endif
+% endfor
+
 ## Partial inter-module definition tie-off
   // define partial inter-module tie-off
 % for sig in unused_im_defs:

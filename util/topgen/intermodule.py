@@ -196,7 +196,7 @@ def elab_intermodule(topcfg: OrderedDict):
 
     # Gather the inter_signal_list
     instances = topcfg["module"] + topcfg["memory"] + topcfg["xbar"] + \
-        topcfg["host"]
+        topcfg["host"] + topcfg["port"]
 
     intermodule_instances = [x for x in instances if "inter_signal_list" in x]
 
@@ -387,16 +387,24 @@ def elab_intermodule(topcfg: OrderedDict):
         sig['external'] = True
 
         sig_name = port if port != "" else intersignal_format(sig)
-        sig["top_signame"] = sig_name
+
+        # if top signame already defined, then a previous connection category
+        # is already connected to external pin.  Sig name is only used for
+        # port definition
+        if "top_signame" not in sig:
+            sig["top_signame"] = sig_name
 
         if "index" not in sig:
             sig["index"] = -1
 
         # Add the port definition to top external ports
+        index = sig["index"]
+        netname = sig["top_signame"]
         if sig["type"] == "req_rsp":
             req_suffix, rsp_suffix = get_suffixes(sig)
             if sig["act"] == "req":
                 req_sigsuffix, rsp_sigsuffix = ("_o", "_i")
+
             else:
                 req_sigsuffix, rsp_sigsuffix = ("_i", "_o")
 
@@ -407,7 +415,9 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
                              ('direction',
-                              'out' if sig['act'] == "req" else 'in')]))
+                              'out' if sig['act'] == "req" else 'in'),
+                             ('index', index),
+                             ('netname', netname + req_suffix)]))
             topcfg["inter_signal"]["external"].append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + rsp_suffix),
@@ -415,7 +425,9 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
                              ('direction',
-                              'in' if sig['act'] == "req" else 'out')]))
+                              'in' if sig['act'] == "req" else 'out'),
+                             ('index', index),
+                             ('netname', netname + rsp_suffix)]))
         else:  # uni
             if sig["act"] == "req":
                 sigsuffix = "_o"
@@ -428,7 +440,9 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
                              ('direction',
-                              'out' if sig['act'] == "req" else 'in')]))
+                              'out' if sig['act'] == "req" else 'in'),
+                             ('index', index),
+                             ('netname', netname)]))
 
     for sig in topcfg["inter_signal"]["signals"]:
         # Check if it exist in definitions
@@ -705,7 +719,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
             # one-to-N connection is not fully populated
             elif req_struct["width"] > total_width:
                 log.debug("partial one-to-N type")
-                req_struct["top_type"] = "paritial-one-to-N"
+                req_struct["top_type"] = "partial-one-to-N"
                 req_struct["end_idx"] = len(rsps)
 
             # If not, error
@@ -726,19 +740,6 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         if error != 0:
             # Skip the check
             continue
-        #rsps_width = 0
-        #for rsp in rsps:
-        #    rsp_m, rsp_s, rsp_i = filter_index(rsp)
-        #    rsp_struct = find_intermodule_signal(
-        #        topcfg["inter_signal"]["signals"], rsp_m, rsp_s)
-        #    # Update total responses width
-        #    rsps_width += rsp_struct["width"]
-        #
-        #if req_struct["width"] != rsps_width:
-        #    log.error(
-        #        "Request {} width is not matched with total responses width {}"
-        #        .format(req_struct["width"], rsps_width))
-        #    error += 1
 
     for item in topcfg["inter_module"]["top"] + list(
             topcfg["inter_module"]["external"].keys()):

@@ -279,6 +279,8 @@ module top_earlgrey_asic (
     .flash_bist_enable_i          ( ast_base_eflash.flash_bist_enable   ),
     .flash_power_down_h_i         ( ast_base_eflash.flash_power_down_h  ),
     .flash_power_ready_h_i        ( ast_base_eflash.flash_power_ready_h ),
+    .ast_edn_edn_req_i            ( '0                         ),
+    .ast_edn_edn_rsp_o            (                            ),
     // TODO: connect these
     .flash_test_mode_a_i          ('0),
     .flash_test_voltage_h_i       ('0),
