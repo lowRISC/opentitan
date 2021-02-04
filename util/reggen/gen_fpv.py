@@ -7,15 +7,13 @@
 """
 
 import logging as log
-import operator
-import sys
 
 from mako import exceptions
 from mako.template import Template
 from pkg_resources import resource_filename
 
+from .access import HwAccess, SwRdAccess, SwWrAccess
 from .data import *
-from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
 from .gen_rtl import json_to_reg
 
 

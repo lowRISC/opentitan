@@ -10,7 +10,7 @@ from mako import exceptions
 from mako.template import Template
 from pkg_resources import resource_filename
 
-from .field_enums import HwAccess, SwRdAccess, SwWrAccess
+from .access import HwAccess, SwRdAccess, SwWrAccess
 from .gen_rtl import json_to_reg
 
 

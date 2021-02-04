@@ -5,7 +5,8 @@
 Generates the documentation for the register tool
 
 """
-from reggen import validate
+from .access import SWACCESS_PERMITTED, HWACCESS_PERMITTED
+from reggen import validate, enum_entry, field, register, multi_register
 
 
 def genout(outfile, msg):
@@ -233,13 +234,13 @@ def document(outfile):
 
     genout(outfile, swaccess_intro)
     doc_tbl_head(outfile, None)
-    for x in validate.swaccess_permitted:
-        doc_tbl_line(outfile, x, None, validate.swaccess_permitted[x][0])
+    for key, value in SWACCESS_PERMITTED.items():
+        doc_tbl_line(outfile, key, None, value[0])
 
     genout(outfile, hwaccess_intro)
     doc_tbl_head(outfile, None)
-    for x in validate.hwaccess_permitted:
-        doc_tbl_line(outfile, x, None, validate.hwaccess_permitted[x][0])
+    for key, value in HWACCESS_PERMITTED.items():
+        doc_tbl_line(outfile, key, None, value[0])
 
     genout(
         outfile, "\n\nThe top level of the JSON is a group containing "
@@ -257,34 +258,26 @@ def document(outfile):
         outfile, "\n\nThe list of registers includes register definition "
         "groups containing the following keys:\n")
     doc_tbl_head(outfile, 1)
-    for x in validate.reg_required:
-        doc_tbl_line(outfile, x, 'r', validate.reg_required[x])
-    for x in validate.reg_optional:
-        doc_tbl_line(outfile, x, 'o', validate.reg_optional[x])
-    for x in validate.reg_added:
-        doc_tbl_line(outfile, x, 'a', validate.reg_added[x])
+    for k, v in register.REQUIRED_FIELDS.items():
+        doc_tbl_line(outfile, k, 'r', v)
+    for k, v in register.OPTIONAL_FIELDS.items():
+        doc_tbl_line(outfile, k, 'o', v)
     genout(outfile, register_example)
 
     genout(
         outfile, "\n\nIn the fields list each field definition is a group "
         "itself containing the following keys:\n")
     doc_tbl_head(outfile, 1)
-    for x in validate.field_required:
-        doc_tbl_line(outfile, x, 'r', validate.field_required[x])
-    for x in validate.field_optional:
-        doc_tbl_line(outfile, x, 'o', validate.field_optional[x])
-    for x in validate.field_added:
-        doc_tbl_line(outfile, x, 'a', validate.field_added[x])
+    for k, v in field.REQUIRED_FIELDS.items():
+        doc_tbl_line(outfile, k, 'r', v)
+    for k, v in field.OPTIONAL_FIELDS.items():
+        doc_tbl_line(outfile, k, 'o', v)
     genout(outfile, field_example)
 
     genout(outfile, "\n\nDefinitions in an enumeration group contain:\n")
     doc_tbl_head(outfile, 1)
-    for x in validate.enum_required:
-        doc_tbl_line(outfile, x, 'r', validate.enum_required[x])
-    for x in validate.enum_optional:
-        doc_tbl_line(outfile, x, 'o', validate.enum_optional[x])
-    for x in validate.enum_added:
-        doc_tbl_line(outfile, x, 'a', validate.enum_added[x])
+    for k, v in enum_entry.REQUIRED_FIELDS.items():
+        doc_tbl_line(outfile, k, 'r', v)
 
     genout(
         outfile, "\n\nThe list of registers may include single entry groups "
@@ -307,11 +300,9 @@ def document(outfile):
 
     genout(outfile, multi_intro)
     doc_tbl_head(outfile, 1)
-    for x in validate.multireg_required:
-        doc_tbl_line(outfile, x, 'r', validate.multireg_required[x])
-    for x in validate.multireg_optional:
-        doc_tbl_line(outfile, x, 'o', validate.multireg_optional[x])
-    for x in validate.multireg_added:
-        doc_tbl_line(outfile, x, 'a', validate.multireg_added[x])
+    for k, v in multi_register.REQUIRED_FIELDS.items():
+        doc_tbl_line(outfile, k, 'r', v)
+    for k, v in multi_register.OPTIONAL_FIELDS.items():
+        doc_tbl_line(outfile, k, 'o', v)
 
     genout(outfile, doc_tail)

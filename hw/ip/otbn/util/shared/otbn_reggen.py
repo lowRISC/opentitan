@@ -23,9 +23,15 @@ try:
                               '..', '..', '..', '..', '..', 'util')
     sys.path = [_UTIL_PATH] + _OLD_SYS_PATH
     from reggen.validate import checking_dict, validate   # type: ignore
+    import reggen.register  # type: ignore
+    import reggen.field  # type: ignore
 finally:
     sys.path = _OLD_SYS_PATH
 
+# Re-export some reggen types so that code importing otbn_reggen can get them
+# transitively without having to mess around with sys.path.
+Register = reggen.register.Register
+Field = reggen.field.Field
 
 _LR_RETVAL = None  # type: Optional[Tuple[int, List[HjsonDict]]]
 

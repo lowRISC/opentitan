@@ -4,7 +4,7 @@
 
 from typing import Callable, Dict, List, Sequence
 
-from shared.otbn_reggen import HjsonDict, load_registers
+from shared.otbn_reggen import Field, Register, load_registers
 
 from .trace import Trace
 
@@ -31,19 +31,20 @@ class TraceExtRegChange(Trace):
 
 class RGField:
     '''A wrapper around a field in a register as parsed by reggen'''
-    def __init__(self, as_dict: HjsonDict):
-        name = as_dict.get('name')
+    def __init__(self, field: Field):
+        name = field.name
         assert isinstance(name, str)
 
-        bitinfo = as_dict.get('bitinfo')
-        assert isinstance(bitinfo, tuple)
-        assert len(bitinfo) == 3
-        mask, width, lsb = bitinfo
+        width = field.bits.width()
+        assert isinstance(width, int)
 
-        reset_value = as_dict.get('genresval')
+        lsb = field.bits.lsb
+        assert isinstance(lsb, int)
+
+        reset_value = field.resval or 0
         assert isinstance(reset_value, int)
 
-        swaccess = as_dict.get('swaccess')
+        swaccess = field.swaccess.key
         assert isinstance(swaccess, str)
 
         # We only support some values of swaccess (the ones we need)
@@ -104,12 +105,8 @@ class RGField:
 
 class RGReg:
     '''A wrapper around a register as parsed by reggen'''
-    def __init__(self, as_dict: HjsonDict):
-        field_dicts = as_dict.get('fields')
-        assert field_dicts is not None
-        assert isinstance(field_dicts, list)
-
-        self.fields = [RGField(fd) for fd in field_dicts]
+    def __init__(self, reg: Register):
+        self.fields = [RGField(fd) for fd in reg.fields]
 
     def _apply_fields(self,
                       func: Callable[[RGField, int], int],
@@ -163,19 +160,17 @@ class OTBNExtRegs:
         self.trace = []  # type: List[TraceExtRegChange]
 
         # We're interested in the proper registers, and don't care about
-        # address tracking. So we can just ignore anything without a 'name'
-        # attribute.
+        # anything else.
         for entry in reg_list:
-            name = entry.get('name')
-            if name is None:
+            if not isinstance(entry, Register):
                 continue
 
-            assert isinstance(name, str)
+            assert isinstance(entry.name, str)
 
             # reggen's validation should have checked that we have no
             # duplicates.
-            assert name not in self.regs
-            self.regs[name] = RGReg(entry)
+            assert entry.name not in self.regs
+            self.regs[entry.name] = RGReg(entry)
 
     def _get_reg(self, reg_name: str) -> RGReg:
         reg = self.regs.get(reg_name)
