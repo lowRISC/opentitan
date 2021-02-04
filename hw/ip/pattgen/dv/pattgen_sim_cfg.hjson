@@ -60,6 +60,12 @@
       name: pattgen_error
       uvm_test_seq: pattgen_error_vseq
     }
+
+    // TODO: this test description is removed when stress_tests.hjson is included
+    {
+      name: pattgen_stress_all
+      uvm_test_seq: pattgen_stress_all_vseq
+    }
   ]
 
   // List of regressions.
