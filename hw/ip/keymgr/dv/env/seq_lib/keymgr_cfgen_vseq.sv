@@ -53,7 +53,7 @@ class keymgr_cfgen_vseq extends keymgr_random_vseq;
       // 3. make sure done isn't high, because if done is high, next cycle status won't be WIP
       wait_no_outstanding_access();
       csr_rd(ral.op_status, op_status_val, .backdoor(1));
-      if (op_status_val == keymgr_pkg::OpWip && cfg.keymgr_vif.kmac_data_rsp.done) begin
+      if (op_status_val == keymgr_pkg::OpWip && !cfg.keymgr_vif.kmac_data_rsp.done) begin
         write_and_check_regwen_locked_reg();
       end
     end
@@ -72,6 +72,11 @@ class keymgr_cfgen_vseq extends keymgr_random_vseq;
     `uvm_info(`gfn, $sformatf("Write regwen locked reg %0s, and this write should be ignored",
                               locked_reg.get_name()), UVM_MEDIUM)
     csr_wr(locked_reg, val);
+    // if it's control, wait until OP is done, so that control.start is clear
+    if (locked_reg.get_name() == "control") begin
+      csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip),
+                   .compare_op(CompareOpNe));
+    end
     csr_rd(locked_reg, val); // checking is done with scb
   endtask : write_and_check_regwen_locked_reg
 
