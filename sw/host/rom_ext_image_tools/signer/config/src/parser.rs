@@ -4,6 +4,7 @@
 
 use std::fs;
 use std::path::Path;
+use std::path::PathBuf;
 
 use serde_derive::Deserialize;
 use serde_hjson::Value;
@@ -12,35 +13,34 @@ use serde_hjson::Value;
 #[derive(Deserialize, Debug)]
 pub struct ParsedConfig {
     pub input_files: InputFiles,
-    pub usage_constraints: UsageConstraints,
     pub peripheral_lockdown_info: PeripheralLockdownInfo,
     pub manifest_identifier: String,
-    pub image_length: String,
     pub image_version: String,
-    pub image_timestamp: String,
-    pub extension0_checksum: String,
-    pub extension1_checksum: String,
-    pub extension2_checksum: String,
-    pub extension3_checksum: String,
+    pub extensions: [Extension; 4],
 }
 
 /// Input files that are required for signing.
 #[derive(Deserialize, Debug)]
 pub struct InputFiles {
-    pub image_path: String,
-    pub private_key_der_path: String,
+    pub image_path: PathBuf,
+    pub private_key_der_path: PathBuf,
+    pub usage_constraints_path: PathBuf,
+    pub system_state_value_path: PathBuf,
 }
 
-/// TODO - possibly should be a binary file.
-#[derive(Deserialize, Debug)]
-pub struct UsageConstraints {
-    pub value: u32,
-}
-
-/// TODO
+/// Peripheral Lockdown Information configuration data.
+///
+/// This data is used to produce 128-bit encoded manifest field.
 #[derive(Deserialize, Debug)]
 pub struct PeripheralLockdownInfo {
     pub value: u32,
+}
+
+/// ROM_EXT.
+#[derive(Deserialize, Debug)]
+pub struct Extension {
+    pub offset: String,
+    pub checksum: String,
 }
 
 impl ParsedConfig {
