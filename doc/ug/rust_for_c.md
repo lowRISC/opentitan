@@ -833,7 +833,7 @@ These also allow you to make use of Rust's visibility annotations, to make imple
 Here's an example of a type with methods.
 ```rust
 pub struct Counter(u64);  // Non-public field!
-impl MyType {
+impl Counter {
   /// Creates a new `Counter`.
   pub fn new() -> Self {
     Counter(0)
