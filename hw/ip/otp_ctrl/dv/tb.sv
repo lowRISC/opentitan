@@ -133,7 +133,7 @@ module tb;
   assign interrupts[OtpOperationDone] = intr_otp_operation_done;
   assign interrupts[OtpErr]           = intr_otp_error;
 
-  bind `OTP_CTRL_MEM_HIER mem_bkdr_if mem_bkdr_if();
+  bind `OTP_CTRL_MEM_HIER mem_bkdr_if #(.MEM_ECC(1)) mem_bkdr_if();
 
   initial begin
     // drive clk and rst_n from clk_if

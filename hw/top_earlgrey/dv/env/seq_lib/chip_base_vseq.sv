@@ -48,10 +48,10 @@ class chip_base_vseq extends cip_base_vseq #(
     // Initialize gpio pin default states
     cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});
     // Initialize flash seeds
-    cfg.mem_bkdr_vifs[FlashBank0Info].set_mem();
-    cfg.mem_bkdr_vifs[FlashBank1Info].set_mem();
+    cfg.flash_info0_bkdr_vif.set_mem();
+    cfg.flash_info1_bkdr_vif.set_mem();
     // Bring the chip out of reset.
-    cfg.mem_bkdr_vifs[Otp].clear_mem();
+    cfg.otp_bkdr_vif.clear_mem();
     super.dut_init(reset_kind);
   endtask
 

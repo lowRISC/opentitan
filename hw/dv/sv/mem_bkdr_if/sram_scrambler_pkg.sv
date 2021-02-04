@@ -84,7 +84,7 @@ package sram_scrambler_pkg;
   // Permutation layer - all even indexed bits move to the lower half,
   // and all odd indexed bits move to the top half.
   function automatic state_t perm_layer(state_t state, int width, bit inv);
-    logic state_out[] = new[width];
+    logic state_out[] = new[width](state);
     for (int i = 0; i < width / 2; i++) begin
       if (inv) begin
         state_out[i * 2]          = state[i];

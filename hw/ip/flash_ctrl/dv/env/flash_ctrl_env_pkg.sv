@@ -90,8 +90,7 @@ package flash_ctrl_env_pkg;
     bit [TL_AW-1:0] addr;       // starting addr for the op
   } flash_op_t;
 
-  // 8 bytes per word of flash memory
-  typedef virtual mem_bkdr_if #(.MEM_BYTES_PER_WORD(8)) mem_bkdr_vif;
+  typedef virtual mem_bkdr_if mem_bkdr_vif;
 
   // functions
 
