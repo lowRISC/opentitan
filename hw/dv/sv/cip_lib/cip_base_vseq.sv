@@ -562,7 +562,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               do_read_and_check_all_csrs = 1'b1;
             end
           join_any
-          p_sequencer.tl_sequencer_h.stop_sequences();
           disable fork;
           `uvm_info(`gfn, $sformatf("\nStress w/ reset is done for run %0d/%0d", i, num_times),
                     UVM_LOW)
