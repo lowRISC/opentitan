@@ -45,14 +45,19 @@ package ast_pkg;
     logic clk_aon;
   } ast_clks_t;
 
+  // Alert interface
   typedef struct packed {
-    logic [NumAlerts-1:0] alerts_p;
-    logic [NumAlerts-1:0] alerts_n;
+    logic        p;
+    logic        n;
+  } ast_dif_t;
+
+  typedef struct packed {
+    ast_dif_t [NumAlerts-1:0] alerts;
   } ast_alert_req_t;
 
   typedef struct packed {
-    logic [NumAlerts-1:0] alerts_ack;
-    logic [NumAlerts-1:0] alerts_trig;
+    ast_dif_t [NumAlerts-1:0] alerts_ack;
+    ast_dif_t [NumAlerts-1:0] alerts_trig;
   } ast_alert_rsp_t;
 
   typedef struct packed {
@@ -64,23 +69,6 @@ package ast_pkg;
     ImmAck = 0,
     SwAck  = 1
   } ast_ack_mode_e;
-
-  parameter ast_alert_req_t AST_ALERT_REQ_DEFAULT = '{
-    alerts_p: '0,
-    alerts_n: {NumAlerts{1'b1}}
-  };
-
-  typedef struct packed {
-    logic flash_bist_enable;
-    logic flash_power_down_h;
-    logic flash_power_ready_h;
-  } ast_eflash_t;
-
-  // Alert interface
-  typedef struct packed {
-    logic        p;
-    logic        n;
-  } ast_dif_t;
 
   // Read-Write Margin interface
   typedef struct packed {

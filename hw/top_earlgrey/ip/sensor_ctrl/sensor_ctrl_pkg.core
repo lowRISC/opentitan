@@ -9,7 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
-      - lowrisc:systems:ast_wrapper_pkg
+      - lowrisc:systems:ast_pkg
       - lowrisc:systems:sensor_ctrl_reg
     files:
       - rtl/sensor_ctrl_pkg.sv

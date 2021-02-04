@@ -484,6 +484,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
+      clock_reset_export: ["ast"],
       base_addr: "0x41160000",
     },
     { name: "edn0",
@@ -491,6 +492,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
+      clock_reset_export: ["ast"],
       base_addr: "0x41170000",
     },
     { name: "edn1",
@@ -750,7 +752,6 @@
 
       'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en'],
       // TODO: OTP Clock bypass signal going from LC to AST/clkmgr
-      'lc_ctrl.lc_clk_byp_req'     : [],
       'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_bypass_ack'],
 
       // LC access control signal broadcast
@@ -775,25 +776,28 @@
 
     // ext is to create port in the top.
     'external': {
-        'clkmgr_aon.clk_main': 'clk_main',  // clock inputs
-        'clkmgr_aon.clk_io': 'clk_io',      // clock inputs
-        'clkmgr_aon.clk_usb': 'clk_usb',    // clock inputs
-        'clkmgr_aon.clk_aon': 'clk_aon',    // clock inputs
-        'rstmgr_aon.ast': 'rstmgr_ast',
-        'pwrmgr_aon.pwr_ast': 'pwrmgr_ast',
-        'sensor_ctrl_aon.ast_alert': 'sensor_ctrl_ast_alert',
-        'sensor_ctrl_aon.ast_status': 'sensor_ctrl_ast_status',
-        'usbdev.usb_ref_val': '',
-        'usbdev.usb_ref_pulse': '',
-        'peri.tl_ast_wrapper': 'ast_tl',
-        'otp_ctrl.otp_ast_pwr_seq': '',
-        'otp_ctrl.otp_ast_pwr_seq_h': '',
-        'eflash.flash_bist_enable': 'flash_bist_enable',
-        'eflash.flash_power_down_h': 'flash_power_down_h',
-        'eflash.flash_power_ready_h': 'flash_power_ready_h',
-        'eflash.flash_test_mode_a': 'flash_test_mode_a',
-        'eflash.flash_test_voltage_h': 'flash_test_voltage_h',
-        'ast_edn.edn': ''
+        'clkmgr_aon.clk_main'          : 'clk_main',  // clock inputs
+        'clkmgr_aon.clk_io'            : 'clk_io',    // clock inputs
+        'clkmgr_aon.clk_usb'           : 'clk_usb',   // clock inputs
+        'clkmgr_aon.clk_aon'           : 'clk_aon',   // clock inputs
+        'rstmgr_aon.ast'               : 'rstmgr_ast',
+        'pwrmgr_aon.pwr_ast'           : 'pwrmgr_ast',
+        'sensor_ctrl_aon.ast_alert'    : 'sensor_ctrl_ast_alert',
+        'sensor_ctrl_aon.ast_status'   : 'sensor_ctrl_ast_status',
+        'usbdev.usb_ref_val'           : '',
+        'usbdev.usb_ref_pulse'         : '',
+        'peri.tl_ast_wrapper'          : 'ast_tl',
+        'otp_ctrl.otp_ast_pwr_seq'     : '',
+        'otp_ctrl.otp_ast_pwr_seq_h'   : '',
+        'eflash.flash_bist_enable'     : 'flash_bist_enable',
+        'eflash.flash_power_down_h'    : 'flash_power_down_h',
+        'eflash.flash_power_ready_h'   : 'flash_power_ready_h',
+        'eflash.flash_test_mode_a'     : 'flash_test_mode_a',
+        'eflash.flash_test_voltage_h'  : 'flash_test_voltage_h',
+        'entropy_src.entropy_src_rng'  : 'es_rng',
+        'lc_ctrl.lc_clk_byp_req'       : 'lc_clk_byp_req',
+        'clkmgr_aon.ast_clk_bypass_ack': 'lc_clk_byp_ack',
+        'ast_edn.edn'                  : ''
     },
   },
 

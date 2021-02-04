@@ -61,9 +61,9 @@ module top_earlgrey #(
   input  rstmgr_pkg::rstmgr_ast_t       rstmgr_ast_i,
   output pwrmgr_pkg::pwr_ast_req_t       pwrmgr_ast_req_o,
   input  pwrmgr_pkg::pwr_ast_rsp_t       pwrmgr_ast_rsp_i,
-  input  ast_wrapper_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
-  output ast_wrapper_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp_o,
-  input  ast_wrapper_pkg::ast_status_t       sensor_ctrl_ast_status_i,
+  input  ast_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
+  output ast_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp_o,
+  input  ast_pkg::ast_status_t       sensor_ctrl_ast_status_i,
   output logic       usbdev_usb_ref_val_o,
   output logic       usbdev_usb_ref_pulse_o,
   output tlul_pkg::tl_h2d_t       ast_tl_req_o,
@@ -75,6 +75,10 @@ module top_earlgrey #(
   input  logic       flash_power_ready_h_i,
   input  logic [3:0] flash_test_mode_a_i,
   input  logic       flash_test_voltage_h_i,
+  output entropy_src_pkg::entropy_src_rng_req_t       es_rng_req_o,
+  input  entropy_src_pkg::entropy_src_rng_rsp_t       es_rng_rsp_i,
+  output lc_ctrl_pkg::lc_tx_t       lc_clk_byp_req_o,
+  input  lc_ctrl_pkg::lc_tx_t       lc_clk_byp_ack_i,
   input  edn_pkg::edn_req_t       ast_edn_edn_req_i,
   output edn_pkg::edn_rsp_t       ast_edn_edn_rsp_o,
   output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
@@ -429,7 +433,6 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_check_byp_en;
-  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_req;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_ack;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_creator_seed_sw_rw_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_owner_seed_sw_rw_en;
@@ -1356,7 +1359,7 @@ module top_earlgrey #(
       .lc_cpu_en_o(lc_ctrl_lc_cpu_en),
       .lc_keymgr_en_o(),
       .lc_escalate_en_o(lc_ctrl_lc_escalate_en),
-      .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_req),
+      .lc_clk_byp_req_o(lc_clk_byp_req_o),
       .lc_clk_byp_ack_i(lc_ctrl_lc_clk_byp_ack),
       .lc_flash_rma_req_o(flash_ctrl_rma_req),
       .lc_flash_rma_seed_o(flash_ctrl_rma_seed),
@@ -1488,7 +1491,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .clocks_o(clkmgr_aon_clocks),
-      .ast_clk_bypass_ack_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .ast_clk_bypass_ack_i(lc_clk_byp_ack_i),
       .lc_clk_bypass_ack_o(lc_ctrl_lc_clk_byp_ack),
       .clk_main_i(clk_main_i),
       .clk_io_i(clk_io_i),
@@ -1836,8 +1839,8 @@ module top_earlgrey #(
       // Inter-module signals
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
       .entropy_src_hw_if_o(csrng_entropy_src_hw_if_rsp),
-      .entropy_src_rng_o(),
-      .entropy_src_rng_i(entropy_src_pkg::ENTROPY_SRC_RNG_RSP_DEFAULT),
+      .entropy_src_rng_o(es_rng_req_o),
+      .entropy_src_rng_i(es_rng_rsp_i),
       .entropy_src_xht_o(),
       .entropy_src_xht_i(entropy_src_pkg::ENTROPY_SRC_XHT_RSP_DEFAULT),
       .efuse_es_sw_reg_en_i('0),

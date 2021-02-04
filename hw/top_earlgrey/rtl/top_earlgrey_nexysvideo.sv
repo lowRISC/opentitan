@@ -360,24 +360,30 @@ module top_earlgrey_nexysvideo #(
   // Top-level design //
   //////////////////////
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
-  ast_wrapper_pkg::ast_rst_t ast_base_rst;
-  ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
-  ast_wrapper_pkg::ast_status_t ast_base_status;
+  ast_pkg::ast_rst_t ast_base_rst;
+  ast_pkg::ast_alert_req_t ast_base_alerts;
+  ast_pkg::ast_status_t ast_base_status;
 
-  assign ast_base_pwr.slow_clk_val = pwrmgr_pkg::DiffValid;
-  assign ast_base_pwr.core_clk_val = pwrmgr_pkg::DiffValid;
-  assign ast_base_pwr.io_clk_val   = pwrmgr_pkg::DiffValid;
-  assign ast_base_pwr.usb_clk_val  = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.slow_clk_val = 1'b1;
+  assign ast_base_pwr.core_clk_val = 1'b1;
+  assign ast_base_pwr.io_clk_val   = 1'b1;
+  assign ast_base_pwr.usb_clk_val  = 1'b1;
   assign ast_base_pwr.main_pok     = 1'b1;
 
-  assign ast_base_alerts.alerts_p  = '0;
-  assign ast_base_alerts.alerts_n  = {ast_wrapper_pkg::NumAlerts{1'b1}};
-  assign ast_base_status.io_pok    = {ast_wrapper_pkg::NumIoRails{1'b1}};
+  ast_pkg::ast_dif_t silent_alert = '{
+                                       p: 1'b0,
+                                       n: 1'b1
+                                     };
+
+  assign ast_base_alerts.alerts = {ast_pkg::NumAlerts{silent_alert}};
+  assign ast_base_status.io_pok = {ast_pkg::NumIoRails{1'b1}};
 
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
   assign ast_base_rst.aon_pok      = rst_n;
+  lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
+
   top_earlgrey #(
     .AesMasking(1'b0),
     .AesSBoxImpl(aes_pkg::SBoxImplLut),
@@ -389,14 +395,16 @@ module top_earlgrey_nexysvideo #(
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (
     // Clocks, resets
-    .rst_ni          ( rst_n         ),
-    .clk_main_i      ( clk_main      ),
-    .clk_io_i        ( clk_main      ),
-    .clk_usb_i       ( clk_usb_48mhz ),
-    .clk_aon_i       ( clk_main      ),
-    .rstmgr_ast_i             ( ast_base_rst    ),
-    .pwrmgr_ast_req_o         (                 ),
-    .pwrmgr_ast_rsp_i         ( ast_base_pwr    ),
+    .rst_ni                       ( rst_n           ),
+    .clk_main_i                   ( clk_main        ),
+    .clk_io_i                     ( clk_main        ),
+    .clk_usb_i                    ( clk_usb_48mhz   ),
+    .clk_aon_i                    ( clk_main        ),
+    .clks_ast_o                   (                 ),
+    .rstmgr_ast_i                 ( ast_base_rst    ),
+    .rsts_ast_o                   (                 ),
+    .pwrmgr_ast_req_o             (                 ),
+    .pwrmgr_ast_rsp_i             ( ast_base_pwr    ),
     .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts ),
     .sensor_ctrl_ast_alert_rsp_o  (                 ),
     .sensor_ctrl_ast_status_i     ( ast_base_status ),
@@ -404,15 +412,21 @@ module top_earlgrey_nexysvideo #(
     .usbdev_usb_ref_pulse_o       (                 ),
     .ast_tl_req_o                 (                 ),
     .ast_tl_rsp_i                 ( '0              ),
+    .ast_edn_edn_req_i            ( '0              ),
+    .ast_edn_edn_rsp_o            (                 ),
     .otp_ctrl_otp_ast_pwr_seq_o   (                 ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( '0              ),
     .flash_bist_enable_i          ( 1'b0            ),
     .flash_power_down_h_i         ( 1'b0            ),
     .flash_power_ready_h_i        ( 1'b1            ),
-    .flash_test_mode_a_i          ('0),
-    .flash_test_voltage_h_i       ('0),
-    .clks_ast_o                   ( ),
-    .rsts_ast_o                   ( ),
+    // Need to modle this logic at some point, otherwise entropy
+    // on verilator will hang
+    .es_rng_req_o                 (                 ),
+    .es_rng_rsp_i                 ( '0              ),
+    .lc_clk_byp_req_o             ( lc_clk_bypass   ),
+    .lc_clk_byp_ack_i             ( lc_clk_bypass   ),
+    .flash_test_mode_a_i          ('0               ),
+    .flash_test_voltage_h_i       ('0               ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck_buf  ),

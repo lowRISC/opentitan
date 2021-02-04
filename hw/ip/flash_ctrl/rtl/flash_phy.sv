@@ -241,6 +241,10 @@ module flash_phy import flash_ctrl_pkg::*; (
     .lc_en_o(lc_nvm_debug_en)
   );
 
+  lc_ctrl_pkg::lc_tx_t bist_enable_qual;
+  assign bist_enable_qual = lc_ctrl_pkg::lc_tx_t'(flash_bist_enable_i &
+                            lc_nvm_debug_en[FlashBistSel]);
+
   prim_flash #(
     .NumBanks(NumBanks),
     .InfosPerBank(InfosPerBank),
@@ -264,7 +268,7 @@ module flash_phy import flash_ctrl_pkg::*; (
     .tdi_i(jtag_req_i.tdi & (lc_nvm_debug_en[FlashLcTdiSel] == lc_ctrl_pkg::On)),
     .tms_i(jtag_req_i.tms & (lc_nvm_debug_en[FlashLcTmsSel] == lc_ctrl_pkg::On)),
     .tdo_o(tdo),
-    .bist_enable_i(flash_bist_enable_i & lc_nvm_debug_en[FlashBistSel]),
+    .bist_enable_i(bist_enable_qual),
     .scanmode_i,
     .scan_en_i,
     .scan_rst_ni,
