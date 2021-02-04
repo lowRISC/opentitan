@@ -106,9 +106,9 @@ module prim_prince_tb;
                              bit [KeyWidth-1:0]  key);
 
     bit [1:0][1:0][NumRoundsHalf-1:0][DataWidth-1:0] encrypted_text;
-    $display("Starting encryption with data[0x%0x] and key[0x%0x]!", plaintext, key);
+
     check_encryption(plaintext, key, encrypted_text);
-    $display("Starting decryption pass!");
+
     check_decryption(encrypted_text, key);
 
   endtask
@@ -280,7 +280,7 @@ module prim_prince_tb;
 
     // Test random vectors
     void'($value$plusargs("smoke_test=%0b", smoke_test));
-    num_trans = smoke_test ? 1 : $urandom_range(10000, 30000);
+    num_trans = smoke_test ? 1 : $urandom_range(5000, 25000);
     for (int i = 0; i < num_trans; i++) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(plaintext, "", msg_id)
       `DV_CHECK_STD_RANDOMIZE_FATAL(k0, "", msg_id)
