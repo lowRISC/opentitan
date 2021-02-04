@@ -754,6 +754,7 @@ module top_earlgrey #(
   prim_ram_1p_scr #(
     .Width(32),
     .Depth(32768),
+    .EnableParity(1),
     .CfgWidth(8)
   ) u_ram1p_ram_main (
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
@@ -813,6 +814,7 @@ module top_earlgrey #(
   prim_ram_1p_scr #(
     .Width(32),
     .Depth(1024),
+    .EnableParity(1),
     .CfgWidth(8)
   ) u_ram1p_ram_ret_aon (
     .clk_i   (clkmgr_aon_clocks.clk_io_div4_infra),

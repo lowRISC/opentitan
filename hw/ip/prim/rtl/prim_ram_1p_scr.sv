@@ -24,34 +24,41 @@
 `include "prim_assert.sv"
 
 module prim_ram_1p_scr #(
-  parameter  int Depth                = 16*1024, // Needs to be a power of 2 if NumAddrScrRounds > 0.
-  parameter  int Width                = 32, // Needs to be byte aligned for parity
-  parameter  int CfgWidth             = 8,   // WTC, RTC, etc
+  parameter  int Depth               = 16*1024, // Needs to be a power of 2 if NumAddrScrRounds > 0.
+  parameter  int Width               = 32, // Needs to be byte aligned if byte parity is enabled.
+  parameter  int DataBitsPerMask     = 8, // Needs to be set to 8 in case of byte parity.
+  parameter  bit EnableParity        = 1, // Enable byte parity.
+  parameter  int CfgWidth            = 8, // WTC, RTC, etc
 
   // Scrambling parameters. Note that this needs to be low-latency, hence we have to keep the
   // amount of cipher rounds low. PRINCE has 5 half rounds in its original form, which corresponds
   // to 2*5 + 1 effective rounds. Setting this to 2 halves this to approximately 5 effective rounds.
-  parameter  int NumPrinceRoundsHalf  = 2,   // Number of PRINCE half rounds, can be [1..5]
-  // Number of extra intra-byte diffusion rounds. Setting this to 0 disables intra-byte diffusion.
-  parameter  int NumByteScrRounds     = 2,
+  // Number of PRINCE half rounds, can be [1..5]
+  parameter  int NumPrinceRoundsHalf = 2,
+  // Number of extra diffusion rounds. Setting this to 0 to disable diffusion.
+  parameter  int NumDiffRounds       = 2,
+  // This parameter governs the block-width of additional diffusion layers.
+  // For intra-byte diffusion, set this parameter to 8.
+  // Note that DataBitsPerMask must be a multiple of this parameter.
+  parameter  int DiffWidth           = DataBitsPerMask,
   // Number of address scrambling rounds. Setting this to 0 disables address scrambling.
-  parameter  int NumAddrScrRounds     = 2,
+  parameter  int NumAddrScrRounds    = 2,
   // If set to 1, the same 64bit key stream is replicated if the data port is wider than 64bit.
   // If set to 0, the cipher primitive is replicated, and together with a wider nonce input,
   // a unique keystream is generated for the full data width.
-  parameter  bit ReplicateKeyStream   = 1'b0,
+  parameter  bit ReplicateKeyStream  = 1'b0,
 
   // Derived parameters
-  localparam int AddrWidth            = prim_util_pkg::vbits(Depth),
+  localparam int AddrWidth           = prim_util_pkg::vbits(Depth),
   // Depending on the data width, we need to instantiate multiple parallel cipher primitives to
   // create a keystream that is wide enough (PRINCE has a block size of 64bit)
-  localparam int NumParScr            = (ReplicateKeyStream) ? 1 : (Width + 63) / 64,
-  localparam int NumParKeystr         = (ReplicateKeyStream) ? (Width + 63) / 64 : 1,
+  localparam int NumParScr           = (ReplicateKeyStream) ? 1 : (Width + 63) / 64,
+  localparam int NumParKeystr        = (ReplicateKeyStream) ? (Width + 63) / 64 : 1,
   // This is given by the PRINCE cipher primitive. All parallel cipher modules
   // use the same key, but they use a different IV
-  localparam int DataKeyWidth         = 128,
+  localparam int DataKeyWidth        = 128,
   // Each 64 bit scrambling primitive requires a 64bit IV
-  localparam int NonceWidth           = 64 * NumParScr
+  localparam int NonceWidth          = 64 * NumParScr
 ) (
   input                             clk_i,
   input                             rst_ni,
@@ -83,6 +90,8 @@ module prim_ram_1p_scr #(
 
   // The depth needs to be a power of 2 in case address scrambling is turned on
   `ASSERT_INIT(DepthPow2Check_A, NumAddrScrRounds <= '0 || 2**$clog2(Depth) == Depth)
+  `ASSERT_INIT(DiffWidthAligned_A, (DataBitsPerMask % DiffWidth) == 0)
+  `ASSERT_INIT(DiffWidthWithParity_A, EnableParity && (DiffWidth == 8) || !EnableParity)
 
   /////////////////////////////////////////
   // Pending Write and Address Registers //
@@ -206,45 +215,49 @@ module prim_ram_1p_scr #(
   // read path. This allows us to hide a part of the combinational delay of the PRINCE primitive
   // behind the propagation delay of the SRAM macro and the per-byte diffusion step.
 
-  // Write path. Note that since this does not fan out into the interconnect, the write path is not
-  // as critical as the read path below in terms of timing.
-  logic [Width-1:0] wdata_scr_d, wdata_scr_q, wdata_q;
-  for (genvar k = 0; k < Width/8; k++) begin : gen_diffuse_wdata
-    // Apply the keystream first
-    logic [7:0] wdata_xor;
-    assign wdata_xor = wdata_q[k*8 +: 8] ^ keystream_repl[k*8 +: 8];
-
-    // byte aligned diffusion using a substitution / permutation network
-    prim_subst_perm #(
-      .DataWidth ( 8                ),
-      .NumRounds ( NumByteScrRounds ),
-      .Decrypt   ( 0                )
-    ) u_prim_subst_perm (
-      .data_i ( wdata_xor             ),
-      .key_i  ( '0                    ),
-      .data_o ( wdata_scr_d[k*8 +: 8] )
-    );
-  end
-
-  // Read path. This is timing critical. The keystream XOR operation is performed last in order to
-  // hide the combinational delay of the PRINCE primitive behind the propagation delay of the
-  // SRAM and the byte diffusion.
   logic [Width-1:0] rdata_scr, rdata;
-  for (genvar k = 0; k < Width/8; k++) begin : gen_undiffuse_rdata
-    // Reverse diffusion first
-    logic [7:0] rdata_xor;
+  logic [Width-1:0] wdata_scr_d, wdata_scr_q, wdata_q;
+  for (genvar k = 0; k < (Width + DiffWidth - 1) / DiffWidth; k++) begin : gen_diffuse_data
+    // If the Width is not divisible by DiffWidth, we need to adjust the width of the last slice.
+    localparam int LocalWidth = (Width - k * DiffWidth >= DiffWidth) ? DiffWidth :
+                                                                       (Width - k * DiffWidth);
+
+    // Write path. Note that since this does not fan out into the interconnect, the write path is not
+    // as critical as the read path below in terms of timing.
+    // Apply the keystream first
+    logic [LocalWidth-1:0] wdata_xor;
+    assign wdata_xor = wdata_q[k*DiffWidth +: LocalWidth] ^
+                       keystream_repl[k*DiffWidth +: LocalWidth];
+
+    // Byte aligned diffusion using a substitution / permutation network
     prim_subst_perm #(
-      .DataWidth ( 8                ),
-      .NumRounds ( NumByteScrRounds ),
+      .DataWidth ( LocalWidth       ),
+      .NumRounds ( NumDiffRounds ),
+      .Decrypt   ( 0                )
+    ) u_prim_subst_perm_enc (
+      .data_i ( wdata_xor ),
+      .key_i  ( '0        ),
+      .data_o ( wdata_scr_d[k*DiffWidth +: LocalWidth] )
+    );
+
+    // Read path. This is timing critical. The keystream XOR operation is performed last in order to
+    // hide the combinational delay of the PRINCE primitive behind the propagation delay of the
+    // SRAM and the byte diffusion.
+    // Reverse diffusion first
+    logic [LocalWidth-1:0] rdata_xor;
+    prim_subst_perm #(
+      .DataWidth ( LocalWidth       ),
+      .NumRounds ( NumDiffRounds ),
       .Decrypt   ( 1                )
-    ) u_prim_subst_perm (
-      .data_i ( rdata_scr[k*8 +: 8]  ),
-      .key_i  ( '0                   ),
-      .data_o ( rdata_xor            )
+    ) u_prim_subst_perm_dec (
+      .data_i ( rdata_scr[k*DiffWidth +: LocalWidth] ),
+      .key_i  ( '0        ),
+      .data_o ( rdata_xor )
     );
 
     // Apply Keystream, replicate it if needed
-    assign rdata[k*8 +: 8] = rdata_xor ^ keystream_repl[k*8 +: 8];
+    assign rdata[k*DiffWidth +: LocalWidth] = rdata_xor ^
+                                              keystream_repl[k*DiffWidth +: LocalWidth];
   end
 
   ////////////////////////////////////////////////
@@ -331,10 +344,10 @@ module prim_ram_1p_scr #(
   prim_ram_1p_adv #(
     .Depth(Depth),
     .Width(Width),
-    .DataBitsPerMask(8),
+    .DataBitsPerMask(DataBitsPerMask),
     .CfgW(CfgWidth),
     .EnableECC(1'b0),
-    .EnableParity(1'b1), // We are using byte parity
+    .EnableParity(EnableParity),
     .EnableInputPipeline(1'b0),
     .EnableOutputPipeline(1'b0)
   ) u_prim_ram_1p_adv (
