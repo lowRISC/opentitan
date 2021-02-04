@@ -45,7 +45,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg         csr;
     bit [TL_DW-1:0] reg_value;
-    bit             do_read_check = 1'b0;  // TODO: temporaly disable
+    bit             do_read_check = 1'b1;
     bit             write = item.is_write();
 
     uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
@@ -141,16 +141,11 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (!write && channel == DataChannel) begin
-      if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-            $sformatf("reg name: %0s", csr.get_full_name()))
-      end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
-
       case (csr.get_name())
         "intr_state": begin
+          do_read_check = 1'b0;
           // done_ch0/done_ch1 is asserted to indicate a pattern is completely generated
-          reg_value = ral.intr_state.get_mirrored_value();
+          reg_value = item.d_data;
           channel_cfg[0].stop = bit'(get_field_val(ral.intr_state.done_ch0, reg_value));
           channel_cfg[1].stop = bit'(get_field_val(ral.intr_state.done_ch1, reg_value));
           `uvm_info(`gfn, $sformatf("\n  scb: read intr_state %b%b",
@@ -166,6 +161,12 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
           `uvm_fatal(`gfn, $sformatf("\n  scb: read from invalid csr: %0s", csr.get_full_name()))
         end
       endcase
+
+      if (do_read_check) begin
+        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+            $sformatf("reg name: %0s", csr.get_full_name()))
+      end
+      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask : process_tl_access
 

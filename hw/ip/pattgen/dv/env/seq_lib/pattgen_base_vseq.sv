@@ -92,32 +92,15 @@ class pattgen_base_vseq extends cip_base_vseq #(
            channel_start) begin             // at least one channel is running
       wait(cfg.clk_rst_vif.rst_n); // wait until reset is de-asserted
       fork
-        begin : isolation_thread
-          fork
-            process_reset();
-            fork
-              // all channels are completely independent (programm, start w/ or wo/ sync, and stop)
-              setup_pattgen_channel_0();
-              setup_pattgen_channel_1();
-              start_pattgen_channels();
-              stop_pattgen_channels();
-            join
-          join_any
-          disable fork;
-        end : isolation_thread
+        // all channels are completely independent (programm, start w/ or wo/ sync, and stop)
+        setup_pattgen_channel_0();
+        setup_pattgen_channel_1();
+        start_pattgen_channels();
+        stop_pattgen_channels();
       join
     end
     `uvm_info(`gfn, "\n--> end of sequence", UVM_DEBUG)
   endtask : body
-
-  virtual task process_reset();
-    // when reset is asserted, all threads for channels are stopped
-    @(negedge cfg.clk_rst_vif.rst_n);
-    channel_setup = 'h0;
-    channel_start = 'h0;
-    channel_grant = 'h1;
-    `uvm_info(`gfn, "\n  process_reset is called", UVM_DEBUG)
-  endtask : process_reset
 
   virtual task setup_pattgen_channel_0();
     if (num_pattern_req < num_trans &&
