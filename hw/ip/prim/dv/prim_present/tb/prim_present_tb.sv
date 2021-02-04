@@ -99,10 +99,8 @@ module prim_present_tb;
 
     crypto_dpi_present_pkg::sv_dpi_present_get_key_schedule(key, KeySize80, key_schedule);
 
-    $display("Starting encryption pass with data[0x%0x] and key[0x%0x]!", plaintext, key);
     check_encryption(plaintext, key, key_schedule, encrypted_text);
 
-    $display("Starting decryption pass!");
     check_decryption(encrypted_text, key, key_out[Encrypt]);
 
   endtask
@@ -238,7 +236,7 @@ module prim_present_tb;
 
     // Test random vectors
     void'($value$plusargs("smoke_test=%0b", smoke_test));
-    num_trans = smoke_test ? 1 : $urandom_range(2500, 5000);
+    num_trans = smoke_test ? 1 : $urandom_range(5000, 25000);
     for (int i = 0; i < num_trans; i++) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(plaintext, "", msg_id)
       `DV_CHECK_STD_RANDOMIZE_FATAL(key, "", msg_id)
