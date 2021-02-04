@@ -25,13 +25,15 @@ class tl_host_driver extends tl_base_driver;
           if (req != null) begin
             send_a_channel_request(req);
           end else begin
-            // wait for reset to deassert and always align with clock edge to send item
-            wait(cfg.vif.rst_n === 1'b1);
-            `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
-                              wait(reset_asserted);)
-          end
-        end
-      end
+            // during reset, clock may be off. check every 1ns to flush out all req
+            if (reset_asserted) #1ns;
+            if (!reset_asserted) begin
+              `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
+                                wait(reset_asserted);)
+            end
+          end // req != null
+        end // forever
+      end : process_seq_item
       d_channel_thread();
       d_ready_rsp();
     join_none
