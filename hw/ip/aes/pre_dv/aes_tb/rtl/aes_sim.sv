@@ -77,8 +77,8 @@ module aes_sim import aes_pkg::*;
                    (u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.key_full_we_o ||
                     u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.state_we_o)) ||
                  ((aes_cipher_ctrl_cs == FINISH) && // FINISH + performing handshake
-                    u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.out_valid_o &&
-                    u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.out_ready_i);
+                    u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.out_valid_o == SP2V_HIGH &&
+                    u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.out_ready_i == SP2V_HIGH);
 
   // Make internal signals directly accessible
   // control
