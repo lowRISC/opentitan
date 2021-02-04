@@ -6455,8 +6455,8 @@
             '''
           package: edn_pkg
           inst_name: edn0
-          end_idx: 2
-          top_type: paritial-one-to-N
+          end_idx: 3
+          top_type: partial-one-to-N
           top_signame: edn0_edn
           index: -1
         }
@@ -7104,6 +7104,28 @@
       domain: "0"
     }
   ]
+  port:
+  [
+    {
+      name: ast_edn
+      inter_signal_list:
+      [
+        {
+          struct: edn
+          type: req_rsp
+          name: edn
+          act: rsp
+          package: edn_pkg
+          inst_name: ast_edn
+          width: 1
+          default: ""
+          top_signame: edn0_edn
+          index: 2
+          external: true
+        }
+      ]
+    }
+  ]
   inter_module:
   {
     connect:
@@ -7220,6 +7242,7 @@
       [
         keymgr.edn
         otp_ctrl.edn
+        ast_edn.edn
       ]
       otp_ctrl.otp_keymgr_key:
       [
@@ -7509,6 +7532,7 @@
       eflash.flash_power_ready_h: flash_power_ready_h
       eflash.flash_test_mode_a: flash_test_mode_a
       eflash.flash_test_voltage_h: flash_test_voltage_h
+      ast_edn.edn: ""
       clkmgr_aon.clocks_ast: clks_ast
       rstmgr_aon.resets_ast: rsts_ast
     }
@@ -13805,8 +13829,8 @@
           '''
         package: edn_pkg
         inst_name: edn0
-        end_idx: 2
-        top_type: paritial-one-to-N
+        end_idx: 3
+        top_type: partial-one-to-N
         top_signame: edn0_edn
         index: -1
       }
@@ -14700,6 +14724,19 @@
         top_signame: rv_core_ibex_crashdump
         index: -1
       }
+      {
+        struct: edn
+        type: req_rsp
+        name: edn
+        act: rsp
+        package: edn_pkg
+        inst_name: ast_edn
+        width: 1
+        default: ""
+        top_signame: edn0_edn
+        index: 2
+        external: true
+      }
     ]
     external:
     [
@@ -14711,6 +14748,8 @@
         type: uni
         default: ""
         direction: in
+        index: -1
+        netname: clk_main
       }
       {
         package: ""
@@ -14720,6 +14759,8 @@
         type: uni
         default: ""
         direction: in
+        index: -1
+        netname: clk_io
       }
       {
         package: ""
@@ -14729,6 +14770,8 @@
         type: uni
         default: ""
         direction: in
+        index: -1
+        netname: clk_usb
       }
       {
         package: ""
@@ -14738,6 +14781,8 @@
         type: uni
         default: ""
         direction: in
+        index: -1
+        netname: clk_aon
       }
       {
         package: rstmgr_pkg
@@ -14747,6 +14792,8 @@
         type: uni
         default: ""
         direction: in
+        index: -1
+        netname: rstmgr_ast
       }
       {
         package: pwrmgr_pkg
@@ -14756,6 +14803,8 @@
         type: req_rsp
         default: ""
         direction: out
+        index: -1
+        netname: pwrmgr_ast_req
       }
       {
         package: pwrmgr_pkg
@@ -14765,6 +14814,8 @@
         type: req_rsp
         default: ""
         direction: in
+        index: -1
+        netname: pwrmgr_ast_rsp
       }
       {
         package: ast_wrapper_pkg
@@ -14774,6 +14825,8 @@
         type: req_rsp
         default: ""
         direction: in
+        index: -1
+        netname: sensor_ctrl_ast_alert_req
       }
       {
         package: ast_wrapper_pkg
@@ -14783,6 +14836,8 @@
         type: req_rsp
         default: ""
         direction: out
+        index: -1
+        netname: sensor_ctrl_ast_alert_rsp
       }
       {
         package: ast_wrapper_pkg
@@ -14792,6 +14847,8 @@
         type: uni
         default: ""
         direction: in
+        index: -1
+        netname: sensor_ctrl_ast_status
       }
       {
         package: ""
@@ -14801,6 +14858,8 @@
         type: uni
         default: ""
         direction: out
+        index: -1
+        netname: usbdev_usb_ref_val
       }
       {
         package: ""
@@ -14810,6 +14869,8 @@
         type: uni
         default: ""
         direction: out
+        index: -1
+        netname: usbdev_usb_ref_pulse
       }
       {
         package: tlul_pkg
@@ -14819,6 +14880,8 @@
         type: req_rsp
         default: ""
         direction: out
+        index: -1
+        netname: ast_tl_h2d
       }
       {
         package: tlul_pkg
@@ -14828,6 +14891,8 @@
         type: req_rsp
         default: ""
         direction: in
+        index: -1
+        netname: ast_tl_d2h
       }
       {
         package: otp_ctrl_pkg
@@ -14837,6 +14902,8 @@
         type: uni
         default: "'0"
         direction: out
+        index: -1
+        netname: otp_ctrl_otp_ast_pwr_seq
       }
       {
         package: otp_ctrl_pkg
@@ -14846,6 +14913,8 @@
         type: uni
         default: "'0"
         direction: in
+        index: -1
+        netname: otp_ctrl_otp_ast_pwr_seq_h
       }
       {
         package: lc_ctrl_pkg
@@ -14855,6 +14924,8 @@
         type: uni
         default: ""
         direction: in
+        index: -1
+        netname: flash_bist_enable
       }
       {
         package: ""
@@ -14864,6 +14935,8 @@
         type: uni
         default: ""
         direction: in
+        index: -1
+        netname: flash_power_down_h
       }
       {
         package: ""
@@ -14873,6 +14946,8 @@
         type: uni
         default: ""
         direction: in
+        index: -1
+        netname: flash_power_ready_h
       }
       {
         package: ""
@@ -14882,6 +14957,8 @@
         type: uni
         default: ""
         direction: in
+        index: -1
+        netname: flash_test_mode_a
       }
       {
         package: ""
@@ -14891,6 +14968,30 @@
         type: uni
         default: ""
         direction: in
+        index: -1
+        netname: flash_test_voltage_h
+      }
+      {
+        package: edn_pkg
+        struct: edn_req
+        signame: ast_edn_edn_req_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        index: 2
+        netname: edn0_edn_req
+      }
+      {
+        package: edn_pkg
+        struct: edn_rsp
+        signame: ast_edn_edn_rsp_o
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        index: 2
+        netname: edn0_edn_rsp
       }
       {
         package: clkmgr_pkg
@@ -14900,6 +15001,8 @@
         type: uni
         default: ""
         direction: out
+        index: -1
+        netname: clks_ast
       }
       {
         package: rstmgr_pkg
@@ -14909,6 +15012,8 @@
         type: uni
         default: ""
         direction: out
+        index: -1
+        netname: rsts_ast
       }
     ]
     definitions:
@@ -15326,7 +15431,7 @@
         signame: edn0_edn_req
         width: 4
         type: req_rsp
-        end_idx: 2
+        end_idx: 3
         act: rsp
         suffix: req
         default: "'0"
@@ -15337,7 +15442,7 @@
         signame: edn0_edn_rsp
         width: 4
         type: req_rsp
-        end_idx: 2
+        end_idx: 3
         act: rsp
         suffix: rsp
         default: "'0"

@@ -648,6 +648,25 @@
     },
   ],
 
+  // The port data structure is not something that should be used liberally.
+  // It is used specifically to assign special attributes to specific ports.
+  // For example, this allows us to designate a port as part of inter-module
+  // connections.
+  port: [
+    { name: "ast_edn",
+      inter_signal_list: [
+        { struct: "edn",
+          type: "req_rsp",
+          name: "edn",
+          // The activity direction for a port inter-signal is "opposite" of
+          // what the external module actually needs.
+          act:  "rsp",
+          package: "edn_pkg",
+        },
+      ]
+    },
+  ]
+
   // Inter-module Connection.
   // format:
   //    requester: [ resp1, resp2, ... ],
@@ -695,7 +714,7 @@
       'pinmux_aon.usb_state_debug' : ['usbdev.usb_state_debug'],
 
       // TODO see #4447
-      'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn'],
+      'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast_edn.edn'],
       //'edn1.edn'              : [],
 
       // KeyMgr Sideload & KDF function
@@ -774,6 +793,7 @@
         'eflash.flash_power_ready_h': 'flash_power_ready_h',
         'eflash.flash_test_mode_a': 'flash_test_mode_a',
         'eflash.flash_test_voltage_h': 'flash_test_voltage_h',
+        'ast_edn.edn': ''
     },
   },
 

@@ -517,6 +517,9 @@
     },
   ],
 
+  // This is empty for top_englishbreakfast
+  port: []
+
   // Inter-module Connection.
   // format:
   //    requester: [ resp1, resp2, ... ],

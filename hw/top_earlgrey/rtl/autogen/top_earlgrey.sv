@@ -75,6 +75,8 @@ module top_earlgrey #(
   input  logic       flash_power_ready_h_i,
   input  logic [3:0] flash_test_mode_a_i,
   input  logic       flash_test_voltage_h_i,
+  input  edn_pkg::edn_req_t       ast_edn_edn_req_i,
+  output edn_pkg::edn_rsp_t       ast_edn_edn_rsp_o,
   output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
   output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,
   input               scan_rst_ni, // reset used for test mode
@@ -529,14 +531,15 @@ module top_earlgrey #(
   tlul_pkg::tl_h2d_t       main_tl_debug_mem_req;
   tlul_pkg::tl_d2h_t       main_tl_debug_mem_rsp;
 
+  // define mixed connection to port
+  assign edn0_edn_req[2] = ast_edn_edn_req_i;
+  assign ast_edn_edn_rsp_o = edn0_edn_rsp[2];
+
   // define partial inter-module tie-off
-  edn_pkg::edn_rsp_t unused_edn0_edn_rsp2;
   edn_pkg::edn_rsp_t unused_edn0_edn_rsp3;
 
   // assign partial inter-module tie-off
-  assign unused_edn0_edn_rsp2 = edn0_edn_rsp[2];
   assign unused_edn0_edn_rsp3 = edn0_edn_rsp[3];
-  assign edn0_edn_req[2] = '0;
   assign edn0_edn_req[3] = '0;
 
 
