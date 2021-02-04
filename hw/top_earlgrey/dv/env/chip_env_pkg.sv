@@ -7,6 +7,8 @@ package chip_env_pkg;
   import uvm_pkg::*;
   import top_pkg::*;
   import flash_ctrl_pkg::*;
+  import otp_ctrl_pkg::*;
+  import sram_ctrl_pkg::*;
   import dv_utils_pkg::*;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
@@ -40,9 +42,13 @@ package chip_env_pkg;
   parameter bit [TL_AW-1:0] SW_DV_LOG_ADDR          = SW_DV_START_ADDR + 4;
 
   typedef virtual pins_if #(NUM_GPIOS)  gpio_vif;
-  typedef virtual mem_bkdr_if           mem_bkdr_vif;
   typedef virtual sw_logger_if          sw_logger_vif;
   typedef virtual sw_test_status_if     sw_test_status_vif;
+
+  // backdoors
+  typedef virtual mem_bkdr_if mem_bkdr_vif;
+  typedef virtual mem_bkdr_if #(.MEM_PARITY(1)) parity_mem_bkdr_vif;
+  typedef virtual mem_bkdr_if #(.MEM_ECC(1)) ecc_mem_bkdr_vif;
 
   // Types of memories in the chip.
   typedef enum {

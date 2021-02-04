@@ -228,7 +228,7 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     logic [7:0] rdata;
     logic [bus_params_pkg::BUS_AW-1:0] bus_addr;
 
-    logic rdata_arr[]      = new[8];
+    logic rdata_arr[]       = new[8];
     logic scrambled_addr[]  = new[mem_addr_width];
     logic sram_addr[]       = new[mem_addr_width];
     logic key_arr[]         = new[SRAM_KEY_WIDTH];
@@ -269,7 +269,7 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     logic [15:0] rdata;
     logic [bus_params_pkg::BUS_AW-1:0] bus_addr;
 
-    logic rdata_arr[]     = new[16];
+    logic rdata_arr[]       = new[16];
     logic scrambled_addr[]  = new[mem_addr_width];
     logic sram_addr[]       = new[mem_addr_width];
     logic key_arr[]         = new[SRAM_KEY_WIDTH];
@@ -310,7 +310,7 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     logic [31:0] rdata = '0;
     logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
 
-    logic rdata_arr[]     = new[32];
+    logic rdata_arr[]       = new[32];
     logic scrambled_addr[]  = new[mem_addr_width];
     logic sram_addr[]       = new[mem_addr_width];
     logic key_arr[]         = new[SRAM_KEY_WIDTH];
@@ -354,7 +354,7 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     logic [63:0] rdata;
     logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
 
-    logic rdata_arr[]     = new[64];
+    logic rdata_arr[]       = new[64];
     logic scrambled_addr[]  = new[mem_addr_width];
     logic sram_addr[]       = new[mem_addr_width];
     logic key_arr[]         = new[SRAM_KEY_WIDTH];
@@ -397,7 +397,7 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     logic [7:0] scrambled_data;
     logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
 
-    logic wdata_arr[]      = new[8];
+    logic wdata_arr[]       = new[8];
     logic scrambled_addr[]  = new[mem_addr_width];
     logic sram_addr[]       = new[mem_addr_width];
     logic key_arr[]         = new[SRAM_KEY_WIDTH];
@@ -438,7 +438,7 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     logic [15:0] scrambled_data;
     logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
 
-    logic wdata_arr[]     = new[16];
+    logic wdata_arr[]       = new[16];
     logic scrambled_addr[]  = new[mem_addr_width];
     logic sram_addr[]       = new[mem_addr_width];
     logic key_arr[]         = new[SRAM_KEY_WIDTH];
@@ -479,7 +479,7 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     logic [31:0] scrambled_data;
     logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
 
-    logic wdata_arr[]     = new[32];
+    logic wdata_arr[]       = new[32];
     logic scrambled_addr[]  = new[mem_addr_width];
     logic sram_addr[]       = new[mem_addr_width];
     logic key_arr[]         = new[SRAM_KEY_WIDTH];
@@ -520,7 +520,7 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     logic [63:0] scrambled_data;
     logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
 
-    logic wdata_arr[]     = new[64];
+    logic wdata_arr[]       = new[64];
     logic scrambled_addr[]  = new[mem_addr_width];
     logic sram_addr[]       = new[mem_addr_width];
     logic key_arr[]         = new[SRAM_KEY_WIDTH];

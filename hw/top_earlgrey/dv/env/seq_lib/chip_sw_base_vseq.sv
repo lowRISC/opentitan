@@ -32,19 +32,19 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.sw_test_status_vif.sw_test_status_addr = SW_DV_TEST_STATUS_ADDR;
 
     // Initialize the RAM to 0s and flash to all 1s.
-    if (cfg.initialize_ram) cfg.mem_bkdr_vifs[RamMain].clear_mem();
-    cfg.mem_bkdr_vifs[FlashBank0].set_mem();
-    cfg.mem_bkdr_vifs[FlashBank1].set_mem();
+    if (cfg.initialize_ram) cfg.ram_main_bkdr_vif.clear_mem();
+    cfg.flash_bank0_bkdr_vif.set_mem();
+    cfg.flash_bank1_bkdr_vif.set_mem();
 
     // Backdoor load memories with sw images.
-    cfg.mem_bkdr_vifs[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
-    cfg.mem_bkdr_vifs[Otp].load_mem_from_file({cfg.sw_images[SwTypeOtp], ".vmem"});
+    cfg.rom_bkdr_vif.load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
+    cfg.otp_bkdr_vif.load_mem_from_file({cfg.sw_images[SwTypeOtp], ".vmem"});
 
     // TODO: the location of the main execution image should be randomized for either bank in future
     if (cfg.use_spi_load_bootstrap) begin
       spi_device_load_bootstrap({cfg.sw_images[SwTypeTest], ".frames.vmem"});
     end else begin
-      cfg.mem_bkdr_vifs[FlashBank0].load_mem_from_file({cfg.sw_images[SwTypeTest], ".64.vmem"});
+      cfg.flash_bank0_bkdr_vif.load_mem_from_file({cfg.sw_images[SwTypeTest], ".64.vmem"});
     end
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
   endtask
@@ -170,11 +170,60 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `DV_CHECK_EQ_FATAL(size, data.size())
 
     for (int i = 0; i < size; i++) begin
-      byte prev_data = cfg.mem_bkdr_vifs[mem].read8(addr + i);
-      `uvm_info(`gfn, $sformatf("%s[%0d] = 0x%0h --> 0x%0h", symbol, i, prev_data, data[i]),
-                UVM_HIGH)
-      cfg.mem_bkdr_vifs[mem].write8(addr + i, data[i]);
+      `DV_CHECK_FATAL(mem inside {Rom, RamMain, FlashBank0, FlashBank1},
+          $sformatf("SW symbol cannot appear in %0s mem", mem))
+
+      `uvm_info(`gfn, $sformatf("Overwriting symbol %s via backdoor", symbol), UVM_HIGH)
+      chip_mem_bkdr_write8(mem, addr + i, data[i]);
     end
+  endfunction
+
+  // General-use function to backdoor write a byte of data to any selected memory type
+  //
+  // TODO: SpiMem is not supported yet
+  virtual function void chip_mem_bkdr_write8(input chip_mem_e mem,
+                                             input bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                             input byte data);
+    byte prev_data;
+    case (mem)
+      Rom: begin
+        prev_data = cfg.rom_bkdr_vif.read8(addr);
+        cfg.rom_bkdr_vif.write8(addr, data);
+      end
+      RamMain: begin
+        prev_data = cfg.ram_main_bkdr_vif.read8(addr);
+        cfg.ram_main_bkdr_vif.write8(addr, data);
+      end
+      RamRet: begin
+        prev_data = cfg.ram_ret_bkdr_vif.read8(addr);
+        cfg.ram_ret_bkdr_vif.write8(addr, data);
+      end
+      FlashBank0: begin
+        prev_data = cfg.flash_bank0_bkdr_vif.read8(addr);
+        cfg.flash_bank0_bkdr_vif.write8(addr, data);
+      end
+      FlashBank1: begin
+        prev_data = cfg.flash_bank1_bkdr_vif.read8(addr);
+        cfg.flash_bank1_bkdr_vif.write8(addr, data);
+      end
+      FlashBank0Info: begin
+        prev_data = cfg.flash_info0_bkdr_vif.read8(addr);
+        cfg.flash_info0_bkdr_vif.write8(addr, data);
+      end
+      FlashBank1Info: begin
+        prev_data = cfg.flash_info1_bkdr_vif.read8(addr);
+        cfg.flash_info1_bkdr_vif.write8(addr, data);
+      end
+      Otp: begin
+        prev_data = cfg.otp_bkdr_vif.read8(addr);
+        cfg.otp_bkdr_vif.write8(addr, data);
+      end
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("%0s is an unsupported memory for backdoor read/writes", mem))
+      end
+    endcase
+    `uvm_info(`gfn, $sformatf("addr[%0d] = 0x%0h --> 0x%0h", addr, prev_data, data),
+              UVM_HIGH)
   endfunction
 
 endclass : chip_sw_base_vseq

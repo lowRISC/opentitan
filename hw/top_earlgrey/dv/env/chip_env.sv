@@ -48,11 +48,42 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get rst_n_mon_vif from uvm_config_db")
     end
 
-    foreach (cfg.mem_bkdr_vifs[mem]) begin
-      if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", $sformatf("mem_bkdr_vifs[%0s]", mem.name),
-                                             cfg.mem_bkdr_vifs[mem])) begin
-        `uvm_fatal(`gfn, $sformatf("failed to get mem_bkdr_vifs[%0s] from uvm_config_db", mem.name))
-      end
+    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "rom_bkdr_vif", cfg.rom_bkdr_vif)) begin
+      `uvm_fatal(`gfn, "failed to get rom_bkdr_vif from uvm_config_db")
+    end
+
+    if (!uvm_config_db#(parity_mem_bkdr_vif)::get(this, "", "ram_main_bkdr_vif",
+        cfg.ram_main_bkdr_vif)) begin
+      `uvm_fatal(`gfn, "failed to get ram_main_bkdr_vif from uvm_config_db")
+    end
+
+    if (!uvm_config_db#(parity_mem_bkdr_vif)::get(this, "", "ram_ret_bkdr_vif",
+        cfg.ram_ret_bkdr_vif)) begin
+      `uvm_fatal(`gfn, "failed to get ram_ret_bkdr_vif from uvm_config_db")
+    end
+
+    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "flash_bank0_bkdr_vif",
+        cfg.flash_bank0_bkdr_vif)) begin
+      `uvm_fatal(`gfn, "failed to get flash_bank0_bkdr_vif from uvm_config_db")
+    end
+
+    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "flash_bank1_bkdr_vif",
+        cfg.flash_bank1_bkdr_vif)) begin
+      `uvm_fatal(`gfn, "failed to get flash_bank1_bkdr_vif from uvm_config_db")
+    end
+
+    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "flash_info0_bkdr_vif",
+        cfg.flash_info0_bkdr_vif)) begin
+      `uvm_fatal(`gfn, "failed to get flash_info0_bkdr_vif from uvm_config_db")
+    end
+
+    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "flash_info1_bkdr_vif",
+        cfg.flash_info1_bkdr_vif)) begin
+      `uvm_fatal(`gfn, "failed to get flash_info1_bkdr_vif from uvm_config_db")
+    end
+
+    if (!uvm_config_db#(ecc_mem_bkdr_vif)::get(this, "", "otp_bkdr_vif", cfg.otp_bkdr_vif)) begin
+      `uvm_fatal(`gfn, "failed to get otp_bkdr_vif from uvm_config_db")
     end
 
     // get the handle to the sw log monitor for available sw_images.

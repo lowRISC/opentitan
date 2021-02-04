@@ -76,13 +76,13 @@ module tb;
 
   // backdoors
   bind `ROM_HIER mem_bkdr_if rom_mem_bkdr_if();
-  bind `RAM_MAIN_HIER mem_bkdr_if ram_mem_bkdr_if();
-  bind `RAM_RET_HIER mem_bkdr_if ram_mem_bkdr_if();
+  bind `RAM_MAIN_HIER mem_bkdr_if #(.MEM_PARITY(1)) ram_mem_bkdr_if();
+  bind `RAM_RET_HIER mem_bkdr_if #(.MEM_PARITY(1)) ram_mem_bkdr_if();
   bind `FLASH0_MEM_HIER mem_bkdr_if flash0_mem_bkdr_if();
   bind `FLASH1_MEM_HIER mem_bkdr_if flash1_mem_bkdr_if();
   bind `FLASH0_INFO_HIER mem_bkdr_if flash0_info_bkdr_if();
   bind `FLASH1_INFO_HIER mem_bkdr_if flash1_info_bkdr_if();
-  bind `OTP_MEM_HIER mem_bkdr_if otp_bkdr_if();
+  bind `OTP_MEM_HIER mem_bkdr_if #(.MEM_ECC(1)) otp_bkdr_if();
 
   // TODO: the external clk is currently not connected.
   // We will need to feed this in via a muxed pin, once that function implemented.
@@ -272,22 +272,22 @@ module tb;
         null, "*.env", "rst_n_mon_vif", rst_n_mon_if);
 
     // Backdoors
-    uvm_config_db#(virtual mem_bkdr_if)::set(
-        null, "*.env", "mem_bkdr_vifs[Rom]", `ROM_HIER.rom_mem_bkdr_if);
-    uvm_config_db#(virtual mem_bkdr_if)::set(
-        null, "*.env", "mem_bkdr_vifs[RamMain]", `RAM_MAIN_HIER.ram_mem_bkdr_if);
-    uvm_config_db#(virtual mem_bkdr_if)::set(
-        null, "*.env", "mem_bkdr_vifs[RamRet]", `RAM_RET_HIER.ram_mem_bkdr_if);
-    uvm_config_db#(virtual mem_bkdr_if)::set(
-        null, "*.env", "mem_bkdr_vifs[FlashBank0]", `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
-    uvm_config_db#(virtual mem_bkdr_if)::set(
-        null, "*.env", "mem_bkdr_vifs[FlashBank1]", `FLASH1_MEM_HIER.flash1_mem_bkdr_if);
-    uvm_config_db#(virtual mem_bkdr_if)::set(
-        null, "*.env", "mem_bkdr_vifs[FlashBank0Info]", `FLASH0_INFO_HIER.flash0_info_bkdr_if);
-    uvm_config_db#(virtual mem_bkdr_if)::set(
-        null, "*.env", "mem_bkdr_vifs[FlashBank1Info]", `FLASH1_INFO_HIER.flash1_info_bkdr_if);
-    uvm_config_db#(virtual mem_bkdr_if)::set(
-        null, "*.env", "mem_bkdr_vifs[Otp]", `OTP_MEM_HIER.otp_bkdr_if);
+    uvm_config_db#(mem_bkdr_vif)::set(
+        null, "*.env", "rom_bkdr_vif", `ROM_HIER.rom_mem_bkdr_if);
+    uvm_config_db#(parity_mem_bkdr_vif)::set(
+        null, "*.env", "ram_main_bkdr_vif", `RAM_MAIN_HIER.ram_mem_bkdr_if);
+    uvm_config_db#(parity_mem_bkdr_vif)::set(
+        null, "*.env", "ram_ret_bkdr_vif", `RAM_RET_HIER.ram_mem_bkdr_if);
+    uvm_config_db#(mem_bkdr_vif)::set(
+        null, "*.env", "flash_bank0_bkdr_vif", `FLASH0_MEM_HIER.flash0_mem_bkdr_if);
+    uvm_config_db#(mem_bkdr_vif)::set(
+        null, "*.env", "flash_bank1_bkdr_vif", `FLASH1_MEM_HIER.flash1_mem_bkdr_if);
+    uvm_config_db#(mem_bkdr_vif)::set(
+        null, "*.env", "flash_info0_bkdr_vif", `FLASH0_INFO_HIER.flash0_info_bkdr_if);
+    uvm_config_db#(mem_bkdr_vif)::set(
+        null, "*.env", "flash_info1_bkdr_vif", `FLASH1_INFO_HIER.flash1_info_bkdr_if);
+    uvm_config_db#(ecc_mem_bkdr_vif)::set(
+        null, "*.env", "otp_bkdr_vif", `OTP_MEM_HIER.otp_bkdr_if);
 
     // SW logger and test status interfaces.
     uvm_config_db#(virtual sw_test_status_if)::set(

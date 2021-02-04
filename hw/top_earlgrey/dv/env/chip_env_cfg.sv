@@ -20,11 +20,20 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   // chip top interfaces
   virtual clk_rst_if  usb_clk_rst_vif;
   gpio_vif            gpio_vif;
-  mem_bkdr_vif        mem_bkdr_vifs[chip_mem_e];
   virtual pins_if#(1) srst_n_vif;
   virtual pins_if#(1) jtag_spi_n_vif;
   virtual pins_if#(1) bootstrap_vif;
   virtual pins_if#(1) rst_n_mon_vif;
+
+  // mem backdoors
+  mem_bkdr_vif        rom_bkdr_vif;
+  parity_mem_bkdr_vif ram_main_bkdr_vif;
+  parity_mem_bkdr_vif ram_ret_bkdr_vif;
+  mem_bkdr_vif        flash_bank0_bkdr_vif;
+  mem_bkdr_vif        flash_bank1_bkdr_vif;
+  mem_bkdr_vif        flash_info0_bkdr_vif;
+  mem_bkdr_vif        flash_info1_bkdr_vif;
+  ecc_mem_bkdr_vif    otp_bkdr_vif;
 
   // sw related
   // Directory from where to pick up the SW test images -default to PWD {run_dir}.
@@ -77,14 +86,6 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-    chip_mem_e mems[] = {Rom,
-                         RamMain,
-                         RamRet,
-                         FlashBank0,
-                         FlashBank1,
-                         FlashBank0Info,
-                         FlashBank1Info,
-                         Otp};
 
     has_devmode = 0;
     list_of_alerts = chip_env_pkg::LIST_OF_ALERTS;
@@ -103,11 +104,6 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
 
     // create spi agent config obj
     m_spi_agent_cfg = spi_agent_cfg::type_id::create("m_spi_agent_cfg");
-
-    // initialize the mem_bkdr_if vifs we want for this chip
-    foreach (mems[mem]) begin
-      mem_bkdr_vifs[mems[mem]] = null;
-    end
 
     // By default, assume SW images in PWD with these generic names.
     sw_images[SwTypeRom] = "./rom";

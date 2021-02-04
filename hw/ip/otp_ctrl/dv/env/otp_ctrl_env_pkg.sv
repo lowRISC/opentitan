@@ -121,13 +121,13 @@ package otp_ctrl_env_pkg;
     OtpCheckPendingIdx
   } otp_status_e;
 
-  typedef enum bit [1:0] {
+typedef enum bit [1:0] {
     OtpNoEccErr,
     OtpEccCorrErr,
     OtpEccUncorrErr
   } otp_ecc_err_e;
 
-  typedef virtual mem_bkdr_if mem_bkdr_vif;
+  typedef virtual mem_bkdr_if #(.MEM_ECC(1)) mem_bkdr_vif;
   typedef virtual otp_ctrl_if otp_ctrl_vif;
 
   // functions
