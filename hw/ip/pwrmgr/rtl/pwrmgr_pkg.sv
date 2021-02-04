@@ -16,11 +16,11 @@ package pwrmgr_pkg;
   // variables referenced only by pwrmgr
   localparam int TotalWakeWidth = pwrmgr_reg_pkg::NumWkups + 2; // Abort and fall through are added
 
-  // The following structs should eventually be relocted to other modules
-  typedef enum logic [1:0] {
-    DiffValid = 2'b10,
-    DiffInvalid = 2'b01
-  } pwrmgr_diff_e;
+  //// The following structs should eventually be relocted to other modules
+  //typedef enum logic [1:0] {
+  //  DiffValid = 2'b10,
+  //  DiffInvalid = 2'b01
+  //} pwrmgr_diff_e;
 
   // pwrmgr to ast
   typedef struct packed {
@@ -33,27 +33,27 @@ package pwrmgr_pkg;
   } pwr_ast_req_t;
 
   typedef struct packed {
-    pwrmgr_diff_e slow_clk_val;
-    pwrmgr_diff_e core_clk_val;
-    pwrmgr_diff_e io_clk_val;
-    pwrmgr_diff_e usb_clk_val;
+    logic slow_clk_val;
+    logic core_clk_val;
+    logic io_clk_val;
+    logic usb_clk_val;
     logic main_pok;
   } pwr_ast_rsp_t;
 
   // default value of pwr_ast_rsp (for dangling ports)
   parameter pwr_ast_rsp_t PWR_AST_RSP_DEFAULT = '{
-    slow_clk_val: DiffValid,
-    core_clk_val: DiffValid,
-    io_clk_val: DiffValid,
-    usb_clk_val: DiffValid,
+    slow_clk_val: 1'b1,
+    core_clk_val: 1'b1,
+    io_clk_val: 1'b1,
+    usb_clk_val: 1'b1,
     main_pok: 1'b1
   };
 
   parameter pwr_ast_rsp_t PWR_AST_RSP_SYNC_DEFAULT = '{
-    slow_clk_val: DiffInvalid,
-    core_clk_val: DiffInvalid,
-    io_clk_val: DiffInvalid,
-    usb_clk_val: DiffInvalid,
+    slow_clk_val: 1'b0,
+    core_clk_val: 1'b0,
+    io_clk_val: 1'b0,
+    usb_clk_val: 1'b0,
     main_pok: 1'b0
   };
 

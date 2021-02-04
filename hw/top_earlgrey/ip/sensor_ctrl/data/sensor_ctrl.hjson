@@ -94,7 +94,7 @@
   ]
 
 
-  // Define ast_wrapper struct package
+  // Define ast_struct package
   inter_signal_list: [
 
     // should be defined by ast wrapper later
@@ -102,7 +102,7 @@
       type:    "req_rsp",
       name:    "ast_alert",
       act:     "rsp",
-      package: "ast_wrapper_pkg",
+      package: "ast_pkg",
     },
 
     // should be defined by ast wrapper later
@@ -110,7 +110,7 @@
       type:    "uni",
       name:    "ast_status",
       act:     "rcv",
-      package: "ast_wrapper_pkg",
+      package: "ast_pkg",
     },
   ],
 

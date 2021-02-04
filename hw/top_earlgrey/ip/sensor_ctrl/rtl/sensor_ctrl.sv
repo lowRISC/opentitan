@@ -18,9 +18,9 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Interface from AST
-  input ast_wrapper_pkg::ast_alert_req_t ast_alert_i,
-  output ast_wrapper_pkg::ast_alert_rsp_t ast_alert_o,
-  input ast_wrapper_pkg::ast_status_t ast_status_i,
+  input ast_pkg::ast_alert_req_t ast_alert_i,
+  output ast_pkg::ast_alert_rsp_t ast_alert_o,
+  input ast_pkg::ast_status_t ast_status_i,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -60,7 +60,11 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
 
   // While the alerts are differential, they are not perfectly aligned.
   // Instead, each alert is treated independently.
-  assign alerts_vld = ast_alert_i.alerts_p | ~ast_alert_i.alerts_n;
+  always_comb begin
+    for (int i = 0; i < NumAlerts; i++) begin
+      alerts_vld[i] = ast_alert_i.alerts[i].p | ~ast_alert_i.alerts[i].n;
+    end
+  end
 
   // alert test connection
   assign alert_test[AsSel]   = reg2hw.alert_test.recov_as.qe    & reg2hw.alert_test.recov_as.q;
@@ -109,13 +113,19 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
   // When in immediate ack mode, ack alerts as they are received by the sender
   // When in software ack mode, only ack when software issues the command to clear alert_state
   always_comb begin
-    ast_alert_o.alerts_ack = '0;
     for (int i = 0; i < NumAlerts; i++) begin
-      ast_alert_o.alerts_ack[i] = alerts_clr[i];
+      ast_alert_o.alerts_ack[i].p = alerts_clr[i];
+      ast_alert_o.alerts_ack[i].n = ~alerts_clr[i];
     end
   end
 
   // alert trigger for test
-  assign ast_alert_o.alerts_trig = reg2hw.alert_trig;
+  always_comb begin
+    for (int i = 0; i < NumAlerts; i++) begin
+      ast_alert_o.alerts_trig[i].p = reg2hw.alert_trig[i];
+      ast_alert_o.alerts_trig[i].n = ~reg2hw.alert_trig[i];
+    end
+  end
+
 
 endmodule // sensor_ctrl

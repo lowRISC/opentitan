@@ -3253,9 +3253,8 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
-          end_idx: -1
-          top_type: broadcast
-          top_signame: lc_ctrl_lc_clk_byp_req
+          external: true
+          top_signame: lc_clk_byp_req
           index: -1
         }
         {
@@ -4150,6 +4149,10 @@
           act: rcv
           package: lc_ctrl_pkg
           inst_name: clkmgr_aon
+          width: 1
+          default: ""
+          external: true
+          top_signame: lc_clk_byp_ack
           index: -1
         }
         {
@@ -4645,7 +4648,7 @@
           type: req_rsp
           name: ast_alert
           act: rsp
-          package: ast_wrapper_pkg
+          package: ast_pkg
           inst_name: sensor_ctrl_aon
           width: 1
           default: ""
@@ -4658,7 +4661,7 @@
           type: uni
           name: ast_status
           act: rcv
-          package: ast_wrapper_pkg
+          package: ast_pkg
           inst_name: sensor_ctrl_aon
           width: 1
           default: ""
@@ -6237,6 +6240,10 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
+      clock_reset_export:
+      [
+        ast
+      ]
       base_addr: 0x41160000
       clock_connections:
       {
@@ -6330,6 +6337,10 @@
           act: req
           package: entropy_src_pkg
           inst_name: entropy_src
+          width: 1
+          default: ""
+          external: true
+          top_signame: es_rng
           index: -1
         }
         {
@@ -6378,6 +6389,10 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
+      clock_reset_export:
+      [
+        ast
+      ]
       base_addr: 0x41170000
       clock_connections:
       {
@@ -7304,7 +7319,6 @@
       [
         otp_ctrl.lc_check_byp_en
       ]
-      lc_ctrl.lc_clk_byp_req: []
       lc_ctrl.lc_clk_byp_ack:
       [
         clkmgr_aon.lc_clk_bypass_ack
@@ -7532,6 +7546,9 @@
       eflash.flash_power_ready_h: flash_power_ready_h
       eflash.flash_test_mode_a: flash_test_mode_a
       eflash.flash_test_voltage_h: flash_test_voltage_h
+      entropy_src.entropy_src_rng: es_rng
+      lc_ctrl.lc_clk_byp_req: lc_clk_byp_req
+      clkmgr_aon.ast_clk_bypass_ack: lc_clk_byp_ack
       ast_edn.edn: ""
       clkmgr_aon.clocks_ast: clks_ast
       rstmgr_aon.resets_ast: rsts_ast
@@ -11618,6 +11635,14 @@
       [
         io_div4_secure
       ]
+      entropy_src:
+      [
+        main_secure
+      ]
+      edn0:
+      [
+        main_secure
+      ]
     }
   }
   wakeups:
@@ -11653,6 +11678,14 @@
       sensor_ctrl_aon:
       [
         sys_io_div4
+      ]
+      entropy_src:
+      [
+        sys
+      ]
+      edn0:
+      [
+        sys
       ]
     }
   }
@@ -12351,9 +12384,8 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
-        end_idx: -1
-        top_type: broadcast
-        top_signame: lc_ctrl_lc_clk_byp_req
+        external: true
+        top_signame: lc_clk_byp_req
         index: -1
       }
       {
@@ -12910,6 +12942,10 @@
         act: rcv
         package: lc_ctrl_pkg
         inst_name: clkmgr_aon
+        width: 1
+        default: ""
+        external: true
+        top_signame: lc_clk_byp_ack
         index: -1
       }
       {
@@ -13185,7 +13221,7 @@
         type: req_rsp
         name: ast_alert
         act: rsp
-        package: ast_wrapper_pkg
+        package: ast_pkg
         inst_name: sensor_ctrl_aon
         width: 1
         default: ""
@@ -13198,7 +13234,7 @@
         type: uni
         name: ast_status
         act: rcv
-        package: ast_wrapper_pkg
+        package: ast_pkg
         inst_name: sensor_ctrl_aon
         width: 1
         default: ""
@@ -13765,6 +13801,10 @@
         act: req
         package: entropy_src_pkg
         inst_name: entropy_src
+        width: 1
+        default: ""
+        external: true
+        top_signame: es_rng
         index: -1
       }
       {
@@ -14818,7 +14858,7 @@
         netname: pwrmgr_ast_rsp
       }
       {
-        package: ast_wrapper_pkg
+        package: ast_pkg
         struct: ast_alert_req
         signame: sensor_ctrl_ast_alert_req_i
         width: 1
@@ -14829,7 +14869,7 @@
         netname: sensor_ctrl_ast_alert_req
       }
       {
-        package: ast_wrapper_pkg
+        package: ast_pkg
         struct: ast_alert_rsp
         signame: sensor_ctrl_ast_alert_rsp_o
         width: 1
@@ -14840,7 +14880,7 @@
         netname: sensor_ctrl_ast_alert_rsp
       }
       {
-        package: ast_wrapper_pkg
+        package: ast_pkg
         struct: ast_status
         signame: sensor_ctrl_ast_status_i
         width: 1
@@ -14970,6 +15010,50 @@
         direction: in
         index: -1
         netname: flash_test_voltage_h
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_rng_req
+        signame: es_rng_req_o
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        index: -1
+        netname: es_rng_req
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_rng_rsp
+        signame: es_rng_rsp_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        index: -1
+        netname: es_rng_rsp
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_clk_byp_req_o
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+        direction: out
+        index: -1
+        netname: lc_clk_byp_req
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_clk_byp_ack_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        index: -1
+        netname: lc_clk_byp_ack
       }
       {
         package: edn_pkg
@@ -15638,17 +15722,6 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: lc_ctrl_lc_check_byp_en
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: lc_ctrl_pkg::Off
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: lc_ctrl_lc_clk_byp_req
         width: 1
         type: uni
         end_idx: -1

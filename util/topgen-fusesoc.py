@@ -139,7 +139,7 @@ def main():
                         # Top
                         # ast and sensor_ctrl not auto-generated, re-used from top_earlgrey
                         'lowrisc:systems:sensor_ctrl',
-                        'lowrisc:systems:ast_wrapper_pkg',
+                        'lowrisc:systems:ast_pkg',
                     ],
                     'files': [
                         # IPs

@@ -72,6 +72,8 @@ package rstmgr_pkg;
     logic [PowerDomains-1:0] rst_ast_usbdev_sys_aon_n;
     logic [PowerDomains-1:0] rst_ast_usbdev_usb_n;
     logic [PowerDomains-1:0] rst_ast_sensor_ctrl_aon_sys_io_div4_n;
+    logic [PowerDomains-1:0] rst_ast_entropy_src_sys_n;
+    logic [PowerDomains-1:0] rst_ast_edn0_sys_n;
   } rstmgr_ast_out_t;
 
   // default value for rstmgr_ast_rsp_t (for dangling ports)
