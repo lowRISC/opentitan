@@ -25,6 +25,9 @@ opt-level = 2
 debug = true
 
 [dependencies]
-mundane = "0.4.3"
 rom_ext_config = { path = "config" }
 rom_ext_image = { path = "image" }
+
+[dependencies.mundane]
+version = "0.4.3"
+features = ["rsa-pkcs1v15"]

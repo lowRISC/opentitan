@@ -5,21 +5,31 @@
   input_files: {
     image_path: "sw/host/rom_ext_image_tools/signer/dev/rom_ext_blank_image.bin",
     private_key_der_path: "sw/host/rom_ext_image_tools/signer/dev/test_key_private.der",
-  },
-  // TBD
-  usage_constraints: {
-    value: 0,
+    usage_constraints_path: "sw/host/rom_ext_image_tools/signer/dev/usage_constraints.bin",
+    system_state_value_path: "sw/host/rom_ext_image_tools/signer/dev/system_state_value.bin",
   },
   // TBD
   peripheral_lockdown_info: {
     value: 0,
   },
   manifest_identifier: "43981",
-  image_length: "0xdeadbeef",
   image_version: "0xdeadbeef",
-  image_timestamp: "0xaabbccddeeff1122",
-  extension0_checksum: "0xdeadbeef",
-  extension1_checksum: "0xdeadbeef",
-  extension2_checksum: "0xdeadbeef",
-  extension3_checksum: "0xdeadbeef",
+  extensions: [
+    {
+      offset: "0xdeadbeef",
+      checksum: "0xdeadbeef",
+    },
+    {
+      offset: "0xdeadbeef",
+      checksum: "0xdeadbeef",
+    },
+    {
+      offset: "0xdeadbeef",
+      checksum: "0xdeadbeef",
+    },
+    {
+      offset: "0xdeadbeef",
+      checksum: "0xdeadbeef",
+    },
+  ],
 }
