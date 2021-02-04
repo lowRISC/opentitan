@@ -15,6 +15,7 @@ import hjson
 # disable isort formating, as conflicting with flake8
 from .intermodule import find_otherside_modules  # noqa : F401 # isort:skip
 from .intermodule import im_portname, im_defname, im_netname  # noqa : F401 # isort:skip
+from .intermodule import get_dangling_im_def # noqa : F401 # isort:skip
 
 
 def is_ipcfg(ip: Path) -> bool:  # return bool

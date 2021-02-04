@@ -32,6 +32,8 @@ esc_clk = top['clocks']['hier_paths']['top'] + "clk_io_div4_timers"
 esc_rst = top["reset_paths"]["sys_io_div4"]
 
 unused_resets = lib.get_unused_resets(top)
+unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["definitions"])
+
 %>\
 module top_${top["name"]} #(
   // Auto-inferred parameters
@@ -183,6 +185,26 @@ module top_${top["name"]} #(
 % endif
 % for sig in top["inter_signal"]["definitions"]:
   ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
+% endfor
+
+## Partial inter-module definition tie-off
+  // define partial inter-module tie-off
+% for sig in unused_im_defs:
+  % for idx in range(sig['end_idx'], sig['width']):
+  ${lib.im_defname(sig)} unused_${sig["signame"]}${idx};
+  % endfor
+% endfor
+
+  // assign partial inter-module tie-off
+% for sig in unused_im_defs:
+  % for idx in range(sig['end_idx'], sig['width']):
+  assign unused_${sig["signame"]}${idx} = ${sig["signame"]}[${idx}];
+  % endfor
+% endfor
+% for sig in undriven_im_defs:
+  % for idx in range(sig['end_idx'], sig['width']):
+  assign ${sig["signame"]}[${idx}] = ${lib.im_netname(sig, sig['suffix'], True)};
+  % endfor
 % endfor
 
 ## Inter-module signal collection
