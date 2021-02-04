@@ -4,7 +4,7 @@
 
 from collections import OrderedDict
 
-from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
+from .access import HwAccess, SwAccess, SwRdAccess, SwWrAccess
 
 
 # helper funtion that strips trailing _number (used as multireg suffix) from name

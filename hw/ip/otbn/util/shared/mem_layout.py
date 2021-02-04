@@ -35,7 +35,9 @@ def extract_windows(reg_byte_width: int,
     windows = {}
 
     for reg in registers:
-        assert isinstance(reg, dict)
+        if not isinstance(reg, dict):
+            continue
+
         window = reg.get('window')
         if window is None:
             continue

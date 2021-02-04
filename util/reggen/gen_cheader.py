@@ -12,6 +12,10 @@ import textwrap
 import warnings
 
 
+from .register import Register
+from .multi_register import MultiRegister
+
+
 def genout(outfile, msg):
     outfile.write(msg)
 
@@ -88,37 +92,36 @@ def gen_define(name, args, body, existing_defines, indent='  '):
 
 
 def gen_cdefine_register(outstr, reg, comp, width, rnames, existing_defines):
-    rname = reg['name']
-    offset = reg['genoffset']
+    rname = reg.name
+    offset = reg.offset
 
-    genout(outstr, format_comment(first_line(reg['desc'])))
+    genout(outstr, format_comment(first_line(reg.desc)))
     defname = as_define(comp + '_' + rname)
     genout(
         outstr,
         gen_define(defname + '_REG_OFFSET', [], hex(offset), existing_defines))
 
-    for field in reg['fields']:
-        fieldlsb = field['bitinfo'][2]
-        fname = field['name']
-        dname = defname + '_' + as_define(fname)
+    for field in reg.fields:
+        dname = defname + '_' + as_define(field.name)
+        field_width = field.bits.width()
 
-        if field['bitinfo'][1] == 1:
+        if field_width == 1:
             # single bit
             genout(
                 outstr,
-                gen_define(dname + '_BIT', [], str(fieldlsb),
+                gen_define(dname + '_BIT', [], str(field.bits.lsb),
                            existing_defines))
         else:
             # multiple bits (unless it is the whole register)
-            if field['bitinfo'][1] != width:
-                mask = field['bitinfo'][0] >> fieldlsb
+            if field_width != width:
+                mask = field.bits.bitmask() >> field.bits.lsb
                 genout(
                     outstr,
                     gen_define(dname + '_MASK', [], hex(mask),
                                existing_defines))
                 genout(
                     outstr,
-                    gen_define(dname + '_OFFSET', [], str(fieldlsb),
+                    gen_define(dname + '_OFFSET', [], str(field.bits.lsb),
                                existing_defines))
                 genout(
                     outstr,
@@ -126,14 +129,14 @@ def gen_cdefine_register(outstr, reg, comp, width, rnames, existing_defines):
                         dname + '_FIELD', [],
                         '((bitfield_field32_t) {{ .mask = {dname}_MASK, .index = {dname}_OFFSET }})'
                         .format(dname=dname), existing_defines))
-            if 'enum' in field:
-                for enum in field['enum']:
-                    ename = as_define(enum['name'])
-                    value = hex(int(enum['value'], 0))
+            if field.enum is not None:
+                for enum in field.enum:
+                    ename = as_define(enum.name)
+                    value = hex(enum.value)
                     genout(
                         outstr,
                         gen_define(
-                            defname + '_' + as_define(field['name']) +
+                            defname + '_' + as_define(field.name) +
                             '_VALUE_' + ename, [], value, existing_defines))
     genout(outstr, '\n')
     return
@@ -209,14 +212,14 @@ def gen_cdefines_module_params(outstr, module_data, module_name,
 
 def gen_multireg_field_defines(outstr, regname, field, subreg_num, regwidth,
                                existing_defines):
-    field_width = field['bitinfo'][1]
+    field_width = field.bits.width()
     fields_per_reg = regwidth // field_width
 
-    define_name = regname + '_' + as_define(field['name'] + "_FIELD_WIDTH")
+    define_name = regname + '_' + as_define(field.name + "_FIELD_WIDTH")
     define = gen_define(define_name, [], str(field_width), existing_defines)
     genout(outstr, define)
 
-    define_name = regname + '_' + as_define(field['name'] + "_FIELDS_PER_REG")
+    define_name = regname + '_' + as_define(field.name + "_FIELDS_PER_REG")
     define = gen_define(define_name, [], str(fields_per_reg), existing_defines)
     genout(outstr, define)
 
@@ -227,22 +230,19 @@ def gen_multireg_field_defines(outstr, regname, field, subreg_num, regwidth,
     genout(outstr, '\n')
 
 
-def gen_cdefine_multireg(outstr, register, component, regwidth, rnames,
+def gen_cdefine_multireg(outstr, multireg, component, regwidth, rnames,
                          existing_defines):
-    multireg = register['multireg']
-    subregs = multireg['genregs']
-
-    comment = multireg['desc'] + " (common parameters)"
+    comment = multireg.reg.desc + " (common parameters)"
     genout(outstr, format_comment(first_line(comment)))
-    if len(multireg['fields']) == 1:
-        regname = as_define(component + '_' + multireg['name'])
-        gen_multireg_field_defines(outstr, regname, multireg['fields'][0],
-                                   len(subregs), regwidth, existing_defines)
+    if len(multireg.reg.fields) == 1:
+        regname = as_define(component + '_' + multireg.reg.name)
+        gen_multireg_field_defines(outstr, regname, multireg.reg.fields[0],
+                                   len(multireg.regs), regwidth, existing_defines)
     else:
-        log.warn("Non-homogeneous multireg " + multireg['name'] +
+        log.warn("Non-homogeneous multireg " + multireg.reg.name +
                  " skip multireg specific data generation.")
 
-    for subreg in subregs:
+    for subreg in multireg.regs:
         gen_cdefine_register(outstr, subreg, component, regwidth, rnames,
                              existing_defines)
 
@@ -329,14 +329,20 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
                             existing_defines)
 
     for x in registers:
-        if 'reserved' in x:
+        if isinstance(x, Register):
+            gen_cdefine_register(outstr, x, component, regwidth, rnames,
+                                 existing_defines)
             continue
 
-        if 'skipto' in x:
+        if isinstance(x, MultiRegister):
+            gen_cdefine_multireg(outstr, x, component, regwidth, rnames,
+                                 existing_defines)
             continue
 
+        assert isinstance(x, dict)
         if 'sameaddr' in x:
             for sareg in x['sameaddr']:
+                assert isinstance(sareg, Register)
                 gen_cdefine_register(outstr, sareg, component, regwidth,
                                      rnames, existing_defines)
             continue
@@ -345,14 +351,6 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
             gen_cdefine_window(outstr, x['window'], component, regwidth,
                                rnames, existing_defines)
             continue
-
-        if 'multireg' in x:
-            gen_cdefine_multireg(outstr, x, component, regwidth, rnames,
-                                 existing_defines)
-            continue
-
-        gen_cdefine_register(outstr, x, component, regwidth, rnames,
-                             existing_defines)
 
     generated = outstr.getvalue()
     outstr.close()
