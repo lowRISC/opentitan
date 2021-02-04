@@ -1219,7 +1219,7 @@ trait Clone {
 ```
 
 A type satisfying `Clone`'s interface (in Rust parlance, "implements `Clone`") has a `clone` method with the given signature, which returns a duplicate of `self`.
-To implement a trait, you use a slightly funny `impl` syntax[^89]:
+To implement a trait, you use a slightly funny `impl` syntax:
 ```rust
 impl Clone for MyType {
   fn clone(&self) -> Self { /* implementation */ }
@@ -1227,7 +1227,7 @@ impl Clone for MyType {
 ```
 
 This gives us a consistent way to spell "I want a duplicate of this value".
-The standard library provides traits for a number of similar operations, such as `Default`[^90], for providing a default value, `PartialEq`[^91] and `Eq`, for equality, `PartialOrd`[^92] and `Ord`, for ordering, and `Hash`[^93], for non-cryptographic hashing.
+The standard library provides traits for a number of similar operations, such as `Default`[^89], for providing a default value, `PartialEq`[^90] and `Eq`, for equality, `PartialOrd`[^91] and `Ord`, for ordering, and `Hash`[^92], for non-cryptographic hashing.
 
 The above traits are special in that they have trivial implementations for a struct or enum, assuming that all fields of that struct or enum implement it.
 The `#[derive()]` syntax described in the "Ownership" section can be used with any of these traits to automatically implement them for a type.
@@ -1260,10 +1260,10 @@ Traits, and types that implement them, can be defined in different modules, so l
 This means that trait methods aren't really part of the type, but rather part of the trait plus the type.
 Thus, in order to call trait methods on a particular type, that trait has to be in scope, too.
 When unambiguous, trait functions can be called as either `foo.trait_fn()`, `Foo::trait_fn(foo)`, or `Trait::trait_fn(foo)`.
-However, since names can sometimes be ambiguous, there is a fully unambiguous syntax[^94]: `<Foo as Trait>::trait_fn(foo)`.
+However, since names can sometimes be ambiguous, there is a fully unambiguous syntax[^93]: `<Foo as Trait>::trait_fn(foo)`.
 This last syntax is also useful in generic contexts, or for being precise about the exact function being referred to.
 
-Traits are also the vehicle for operator overloading: these traits are found in the std::ops[^95] module of the standard library.
+Traits are also the vehicle for operator overloading: these traits are found in the std::ops[^94] module of the standard library.
 
 
 #### Trait Objects {#trait-objects}
@@ -1306,8 +1306,8 @@ let dyn_id = &device as IdTraitObject;
 let id = (dyn_id.vtable.get_id)(dyn_id.value);
 ```
 
-There are some limitations on what traits can be made into trait objects: namely, functions cannot take or return functions of type `Self`; only `&Self` or `&mut Self`[^96].
-In other words, all of the functions must treat `Self` as if it were not sized and only accessible through a pointer.[^97] A trait that can be made into a trait object is called _object safe_.
+There are some limitations on what traits can be made into trait objects: namely, functions cannot take or return functions of type `Self`; only `&Self` or `&mut Self`[^95].
+In other words, all of the functions must treat `Self` as if it were not sized and only accessible through a pointer.[^96] A trait that can be made into a trait object is called _object safe_.
 The type `dyn Trait` always behaves as if it implemented `Trait`, which is relevant for generics, discussed below.
 
 
@@ -1315,7 +1315,7 @@ The type `dyn Trait` always behaves as if it implemented `Trait`, which is relev
 
 It is possible to mark a trait as `unsafe` by writing `unsafe trait MyTrait { /* ... */ }`; the only difference with normal traits is that it requires `unsafe impl` to be implemented.
 Unsafe traits typically enforce some kind of additional constraint in addition to their methods; in fact, unsafe traits frequently don't have methods at all.
-For example, the standard library trait `Sync` is implemented by all types which synchronize access[^98].
+For example, the standard library trait `Sync` is implemented by all types which synchronize access[^97].
 Because the invariant this trait asserts is beyond what the compiler can check, it is an unsafe trait.
 
 Trait methods may separately be marked as `unsafe`.
@@ -1327,7 +1327,7 @@ This is separate from marking a trait as `unsafe`, and it is not necessary to ma
 
 Auto traits are a compiler mechanism for automatically implementing certain traits; in the standard library's source code, this shows up as `auto trait Foo {}` (though this syntax is unavailable for normal libraries).
 Auto traits are implemented automatically for a struct or enum type if all of its fields also implement that trait, and are used for exposing transitive properties to the trait system.
-For example, `Send` and `Sync` are auto traits; a number of other marker traits[^99] are also auto traits.
+For example, `Send` and `Sync` are auto traits; a number of other marker traits[^98] are also auto traits.
 
 Auto traits are always markers that you don't really want to opt out of.
 They're like the opposite of `derive()` traits, which you need to opt into, since they meaningfully affect the API of your type in a way that it is important to be able to control.
@@ -1336,16 +1336,16 @@ They're like the opposite of `derive()` traits, which you need to opt into, sinc
 ### Generics {#generics}
 
 _Generic programming_ is writing source code that can be compiled for many types.
-Generics are one of Rust's core features, which enable polymorphic[^100] static dispatch.
+Generics are one of Rust's core features, which enable polymorphic[^99] static dispatch.
 
-Functions can be made generic by introducing _type parameters_, using a syntax similar to explicit lifetimes[^101]:
+Functions can be made generic by introducing _type parameters_, using a syntax similar to explicit lifetimes[^100]:
 ```rust
 fn identity<T>(x: T) -> T {
   x
 }
 ```
 This function accepts a value of any type and immediately returns it.
-It can then be called like this: `identity::<i32>(42)`[^102].
+It can then be called like this: `identity::<i32>(42)`[^101].
 Using a generic function with all of its type parameters filled in causes it to be _instantiated_ (or _monomorphized_), resulting in code being generated for it.
 This process essentially consists of replacing each occurrence of `T` with its concrete value.
 
@@ -1355,7 +1355,7 @@ Overzealous use of generic code can lead to binary bloat.
 Most of the time, the `::<>` bit (referred to by some reference materials as the "turbofish") is unnecessary, since Rust type deduction can infer it: `let x: u64 = identity(42);` will infer that `T = u64`.
 It can, however, be useful to include when otherwise unnecessary to help with readability.
 
-Types can also be generic, like the  `Option<T>` type from before[^103]:
+Types can also be generic, like the  `Option<T>` type from before[^102]:
 ```rust
 struct MyWrapper<T> {
   foo: usize,
@@ -1370,7 +1370,7 @@ fn get_foo(mw: MyWrapper<i32>) -> usize {
 ```
 Note that `MyWrapper` on its own is not a type.
 
-Note that different generic instantiations are different types, with different layouts and sizes, which cannot be converted between each other in general.[^104]
+Note that different generic instantiations are different types, with different layouts and sizes, which cannot be converted between each other in general.[^103]
 
 Unsurprisingly, we can combine generic functions with generic types.
 In this case, we don't really need to know that `T = i32`, so we factor it out.
@@ -1396,7 +1396,7 @@ impl<T> MyWrapper<T> {
 
 #### Generic Bounds {#generic-bounds}
 
-However, generics alone have one limitation: the function is only type and borrow checked once, in its generic form, rather than per instantiation; this means that generic code can't just call inherent methods of `T` and expect the lookup to succeed[^105].
+However, generics alone have one limitation: the function is only type and borrow checked once, in its generic form, rather than per instantiation; this means that generic code can't just call inherent methods of `T` and expect the lookup to succeed[^104].
 For example, this code won't compile:
 ```rust
 fn generic_add<T>(x: T, y: T) -> T {
@@ -1426,8 +1426,8 @@ trait Add<Rhs> {
   fn add(self, other: Rhs) -> Self::Output;
 }
 ```
-Not only is this trait generic, but it also defines an _associated type_, which allows implementations to choose the return type of the addition operation[^106].
-Thus, for any types `T` and `U`, we can add them together if `T` implements `Add<U>`; the return type of the operation is the type `<T as Add<U>>::Output`[^107].
+Not only is this trait generic, but it also defines an _associated type_, which allows implementations to choose the return type of the addition operation[^105].
+Thus, for any types `T` and `U`, we can add them together if `T` implements `Add<U>`; the return type of the operation is the type `<T as Add<U>>::Output`[^106].
 
 Thus, our `generic_add` function should be rewritten into
 ```rust
@@ -1447,7 +1447,7 @@ fn generic_add<T>(x: T, y: T) -> T
 ```
 Note that this bound is included in a `where` clause, after the return type.
 This is identical to placing it in the angle brackets, but is recommended for complicated bounds to keep them out of the way.
-In-bracket bounds and `where` clauses are available for all other items that can have generic bounds, such as traits, impls, structs, and enums[^108].
+In-bracket bounds and `where` clauses are available for all other items that can have generic bounds, such as traits, impls, structs, and enums[^107].
 
 Bound generics can be used to emulate all kinds of other behavior.
 For example, the `From` and `Into` traits represent lossless conversions, so a function that wants any value that can be converted into `MyType` might look like
@@ -1458,7 +1458,7 @@ fn foo<T: Into<MyType>>(x: T) {
 ```
 You could then implement `From<T>` on `MyType` for all `T` that can be converted into `MyType`.
 When `U` implements `From<T>`, a generic `impl` in the standard library causes `T` to implement `Into<U>`.
-At the call-site, this looks like an overloaded function[^109].
+At the call-site, this looks like an overloaded function[^108].
 
 Bound generics can also be used to pass in constants. Imagine that we define a trait like
 ```rust
@@ -1503,12 +1503,12 @@ error[E0392]: parameter `T` is never used
 
 Rust requires that all lifetime and type parameters be used, since generating code to call destructors requires knowing if a particular type owns a `T`.
 This is not always ideal, since it's sometimes useful to expose a `T` in your type even though you don't own one; we can work around this using the compiler's suggestion: `PhantomData`.
-For more information on how to use it, refer to the type documentation[^110] or the relevant Rustonomicon entry[^111].
+For more information on how to use it, refer to the type documentation[^109] or the relevant Rustonomicon entry[^110].
 
 
 ### Smart Pointers {#smart-pointers}
 
-In Rust, a "smart pointer"[^112] is any type that implements `std::ops::Deref`[^113], the dereference operator[^114].
+In Rust, a "smart pointer"[^1112] is any type that implements `std::ops::Deref`[^112], the dereference operator[^113].
 `Deref` is defined like this:
 ```rust
 trait Deref {
@@ -1615,10 +1615,10 @@ The distinction between capture-by-move and capture-by-ref is mostly irrelevant 
 
 To be polymorphic over different closure types, we use the special `Fn`, `FnMut`, and `FnOnce` traits.
 These represent functions that can be called by shared reference, unique reference, or by move.
-Closures that only capture shared references implement all three; closures that capture by unique reference implement only the latter two, and closures that capture by move implement only the last one[^115].
-Function pointers, function items[^116], and closures that don't capture also implement all three, and can all be converted to function pointers.
+Closures that only capture shared references implement all three; closures that capture by unique reference implement only the latter two, and closures that capture by move implement only the last one[^114].
+Function pointers, function items[^115], and closures that don't capture also implement all three, and can all be converted to function pointers.
 
-These traits use special syntax similar to function pointers[^117].
+These traits use special syntax similar to function pointers[^116].
 For example, `Fn(i32) -> i32` represents taking an `i32` argument and returning another `i32`.
 Closures also implement `Copy` and `Clone` if all of their captures do, too.
 
@@ -1750,9 +1750,9 @@ The documentation for `Option` describes a number of other potential uses and op
 The type documentation itself has a full list of all of the convenience functions defined for `Option`: [https://doc.rust-lang.org/std/option/enum.Option.html](https://doc.rust-lang.org/std/option/enum.Option.html).
 
 One key application of `Option` is safe nullable references: `Option<&T>`.
-The Rust language guarantees that `Option<&T>` is identical to a nullable pointer at the ABI layer[^118], so it can be safely passed that way into C code.
+The Rust language guarantees that `Option<&T>` is identical to a nullable pointer at the ABI layer[^117], so it can be safely passed that way into C code.
 This optimization is also available for structs which contain at least one reference: the `is_none()` bit will be compressed into one of the struct's reference fields.
-Some other types are also eligible for memory layout optimization, such as `NonZeroI32`[^119].
+Some other types are also eligible for memory layout optimization, such as `NonZeroI32`[^118].
 
 `Result<T, E>` is similar to `Option<T>`, but rather than having an "empty" state, it has an "error" state:
 ```rust
@@ -1789,7 +1789,7 @@ Computations that are executed for their side-effects which can fail, such as a 
 This is unlike `C`, where the handling of functions that can fail is inconsistent when they return `void`, because `void` is not a real type.
 
 Sometimes, it is necessary to produce a `Result`, due to some trait's interface, for an operation that cannot fail.
-Current practice is to use the type `Result<T, std::convert::Infallible>`[^120], which can be matched on as follows:
+Current practice is to use the type `Result<T, std::convert::Infallible>`[^119], which can be matched on as follows:
 ```rust
 let res: Result<T, Infallible> = /* ... */;
 match res {
@@ -1797,7 +1797,6 @@ match res {
   Err(x) => match x {},
 }
 ```
-See [https://doc.rust-lang.org/std/convert/enum.Infallible.html](https://doc.rust-lang.org/std/convert/enum.Infallible.html) for more information.
 
 `Result` supports a special early-return syntax.
 When in a function returning `Result<T, E>`, and you have a value `res` of type `Result<U, E>`, the expression `res?` will unwrap the `Result`, and get the "ok" value inside if it's present, or immediately return with the error if it isn't.
@@ -1841,7 +1840,7 @@ impl Iterator for Counter {
 ```
 
 This iterator will produce values forever: it always returns `Some`.
-An iterator that eventually produces `None`, and then forever more returns `None`, is called "fused"[^121].
+An iterator that eventually produces `None`, and then forever more returns `None`, is called "fused"[^120].
 Some iterators may start returning `Some` again after returning `None`, but most Rust constructs treat all iterators as if they are fused.
 
 A related trait is the `IntoIter` trait:
@@ -1897,7 +1896,7 @@ See [https://doc.rust-lang.org/std/iter/trait.Iterator.html](https://doc.rust-la
 ### Modules and Crate Layout {#modules-and-crate-layout}
 
 Each Rust crate is (from the compiler's perspective) given a unique, single-identifier name.
-This name is used to namespace a crate's symbols[^122].
+This name is used to namespace a crate's symbols[^121].
 `core` and `std` are crates.
 
 Each crate is rooted at a `lib.rs` or `main.rs` file, depending on whether it is a library or a binary.
@@ -1983,12 +1982,12 @@ Rust crate namespaces are closed: after a crate is fully compiled, no other symb
 _Interior mutability_ is a borrow check escape hatch for working around Rust's aliasing rules.
 
 Normally, Rust requires that you prove statically that you have unique access to a value before you mutate it.
-`UnsafeCell<T>`[^123] is a special, compiler-blessed[^124] type which contains a single `T`, and has a method `fn get(&self) -> *mut T`.
+`UnsafeCell<T>`[^122] is a special, compiler-blessed[^123] type which contains a single `T`, and has a method `fn get(&self) -> *mut T`.
 When you can guarantee at runtime that a shared reference to an `UnsafeCell` is actually unique, the raw pointer returned by `get()` can be converted into a unique reference.
 This makes it possible to safely mutate code that is known, at runtime, to be uniquely owned.
 Of course, it is very unsafe to use `UnsafeCell` directly, and exists to form the basis of other abstractions.
 
-There are two common strategies for exposing interior mutability safely: the `Cell`[^125] approach and the `RefCell`[^126] approach.
+There are two common strategies for exposing interior mutability safely: the `Cell`[^124] approach and the `RefCell`[^125] approach.
 
 The `Cell` approach simply never creates a unique reference at all: instead, it holds a valid `T` at all times, and provides a `swap` primitive for taking out the `T` and leaving behind another one.
 This way, no aliasing rules need to be enforced, since no reference actually points to that `T`.
@@ -2033,7 +2032,7 @@ The things that Unsafe Rust can do that Safe Rust cannot are:
 
 Additionally, `unsafe impl`s may implement `unsafe trait`s, but don't need to be inside an `unsafe` block.
 
-The canonical reference is the Rustonomicon[^127], a non-normative document describing common uses for Unsafe Rust.
+The canonical reference is the Rustonomicon[^126], a non-normative document describing common uses for Unsafe Rust.
 It is required reading (mostly the first half) for embedded programming.
 It contains detailed examples of correct and incorrect Unsafe Rust usage, and guidance on when to invoke Unsafe Rust.
 
@@ -2043,7 +2042,7 @@ In general, a few rules of thumb are useful:
 *   Every `unsafe fn` should declare, in documentation, what invariants it assumes that the caller will uphold, and what state it will leave the machine in.
     For example, `<[T]>::get_unchecked(n)` elides the bounds check for the indexing operation, and it is up to the caller to uphold it instead.
 *   Every time `unsafe` code calls into a non-`unsafe` function, it must ensure that no violated invariants, which could trigger Undefined Behavior, are observable in that safe code.
-    For example, if we have a type that maintains the invariant that `len > 0`, and we temporarily set it to `0` during an `unsafe` block, it must be restored to `> 0` before any safe methods can be called on that type[^128].
+    For example, if we have a type that maintains the invariant that `len > 0`, and we temporarily set it to `0` during an `unsafe` block, it must be restored to `> 0` before any safe methods can be called on that type.
 *   Unsafe code should be kept to the absolute minimum, and wrapped in safe interfaces that assert invariants, either through static type-system guarantees or through runtime checks.
     Every line of unsafe code is a place where the engineering cost of Rust's guarantees are wasted.
 
@@ -2106,250 +2105,242 @@ This is sometimes called the "validity invariant", and applies to other restrict
 
 [^21]: Currently, the compiler will reorder struct fields to minimize alignment padding, though there is ongoing discussion to add a "struct field layout randomization" flag as an ASLR-like hardening.
 
-[^22]: It has some issues, similar to the C variant.
-See [https://doc.rust-lang.org/nomicon/other-reprs.html#reprpacked](https://doc.rust-lang.org/nomicon/other-reprs.html#reprpacked)
-
-[^23]: Unlike C, Rust has true zero-sized types (ZSTs).
+[^22]: Unlike C, Rust has true zero-sized types (ZSTs).
 They are completely elided from the program at runtime, but can be useful for creating abstractions.
 
-[^24]: This is similar to how a `bool` must always be `0` or `1`.
+[^23]: This is similar to how a `bool` must always be `0` or `1`.
 One could even imagine that `bool` is defined as `enum bool { false = 0, true = 1 }`.
 
-[^25]: Without uttering `unsafe`, it is impossible to witness uninitialized or invalid data.
+[^24]: Without uttering `unsafe`, it is impossible to witness uninitialized or invalid data.
 Doing so even with `unsafe` is Undefined Behavior.
 
-[^26]: This feature is also sometimes known as "algebraic data types".
+[^25]: This feature is also sometimes known as "algebraic data types".
 
-[^27]: This syntax requires that the array component type be "copyable", which we will get to later.
+[^26]: This syntax requires that the array component type be "copyable", which we will get to later.
 
-[^28]: These accesses are often elided.
+[^27]: These accesses are often elided.
 LLVM is very good at optimizing them away, but not perfect.
 
-[^29]: In C, pointers must _always_ be well-aligned.
+[^28]: In C, pointers must _always_ be well-aligned.
 Rust only requires this when dereferencing the pointer.
 
-[^30]: In other words, Rust's aliasing model for pointers is the same as that of `-fno-strict-aliasing`.
+[^29]: In other words, Rust's aliasing model for pointers is the same as that of `-fno-strict-aliasing`.
 Rust allows `*mut u32` and `*mut u64`to alias, for example.
 
-[^31]: In C, it is technically UB to forge raw pointers (such as creating a pointer to an MMIO register) and then dereference them, although all embedded programs need to do this anyway.
+[^30]: In C, it is technically UB to forge raw pointers (such as creating a pointer to an MMIO register) and then dereference them, although all embedded programs need to do this anyway.
 While Rust has not yet formalized what this means, it seems unlikely that they will make forging raw pointers to MMIO regions UB.
 
-[^32]: Or by casting zero.
+[^31]: Or by casting zero.
 
-[^33]: Rust currently does not have an equivalent of the `->` operator, though it may get one some day.
+[^32]: Rust currently does not have an equivalent of the `->` operator, though it may get one some day.
 As such, it is not possible to get pointers to fields of a pointer-to-struct without creating a reference along the way.
 
-[^34]: We will get into references later.
+[^33]: We will get into references later.
 
-[^35]: We will learn more about "move semantics" when we discuss ownership.
+[^34]: We will learn more about "move semantics" when we discuss ownership.
 
-[^36]: However, great care should be taken when using these methods on types that track ownership of a resource, since this can result in a double-free when the pointee is freed.
+[^35]: However, great care should be taken when using these methods on types that track ownership of a resource, since this can result in a double-free when the pointee is freed.
 
-[^37]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.read_unaligned](https://doc.rust-lang.org/std/primitive.pointer.html#method.read_unaligned)
+[^36]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.read_unaligned](https://doc.rust-lang.org/std/primitive.pointer.html#method.read_unaligned)
 
-[^38]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.write_unaligned](https://doc.rust-lang.org/std/primitive.pointer.html#method.write_unaligned)
+[^37]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.write_unaligned](https://doc.rust-lang.org/std/primitive.pointer.html#method.write_unaligned)
 
-[^39]: These are effectively memcpys: they will behave as if they read each byte individually with no respect for alignment.
+[^38]: These are effectively memcpys: they will behave as if they read each byte individually with no respect for alignment.
 
-[^40]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to](https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to)
+[^39]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to](https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to)
 
-[^41]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to_nonoverlapping](https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to_nonoverlapping)
+[^40]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to_nonoverlapping](https://doc.rust-lang.org/std/primitive.pointer.html#method.copy_to_nonoverlapping)
 
-[^42]: Rust also provides an abstraction for dealing with uninitialized memory that has somewhat fewer sharp edges: [https://doc.rust-lang.org/std/mem/union.MaybeUninit.html](https://doc.rust-lang.org/std/mem/union.MaybeUninit.html).
+[^41]: Rust also provides an abstraction for dealing with uninitialized memory that has somewhat fewer sharp edges: [https://doc.rust-lang.org/std/mem/union.MaybeUninit.html](https://doc.rust-lang.org/std/mem/union.MaybeUninit.html).
 
-[^43]: Rust also allows taking the addresses of rvalues, which simply shoves them onto `.rodata` or the stack, depending on mutation.
+[^42]: Rust also allows taking the addresses of rvalues, which simply shoves them onto `.rodata` or the stack, depending on mutation.
 For example, `&0` is valid, and produces an address in `.rodata`, while `&mut 0` will push into the stack. The mechanism that converts `&0` into a reference to a constant is called *rvalue promotion*, since `0`, an rvalue of limited lifetime, is promoted into a constant, which has `'static` lifetime.
 
-[^44]: Completely unrelated to the meaning of this keyword in C, where it specifies a symbol's linkage.
+[^43]: Completely unrelated to the meaning of this keyword in C, where it specifies a symbol's linkage.
 
-[^45]: Immutable statics seem pretty useless: why not make them constants, since you can't mutate them?
+[^44]: Immutable statics seem pretty useless: why not make them constants, since you can't mutate them?
 This distinction will arise again when we discuss _interior mutability_ towards the end of the document.
 Also, like globals in `C`, these static variables can be made visible to other libraries.
 
-[^46]: In practice, this is just the C calling convention, except that `#[repr(Rust)]` structs and enums are aggressively broken up into words so they can be passed in registers.
+[^45]: In practice, this is just the C calling convention, except that `#[repr(Rust)]` structs and enums are aggressively broken up into words so they can be passed in registers.
 On 32-bit RISC-V, `(u64, u32, i32)` is passed in four registers.
 Rust functions also do some handling of "panics" in their prologues that is mostly irrelevant in an embedded context.
 
-[^47]: Supported calling conventions: [https://doc.rust-lang.org/nomicon/ffi.html#foreign-calling-conventions](https://doc.rust-lang.org/nomicon/ffi.html#foreign-calling-conventions)
+[^46]: Supported calling conventions: [https://doc.rust-lang.org/nomicon/ffi.html#foreign-calling-conventions](https://doc.rust-lang.org/nomicon/ffi.html#foreign-calling-conventions)
 
-[^48]: For those familiar with C++, extern blocks *do* disable name mangling there.
+[^47]: For those familiar with C++, extern blocks *do* disable name mangling there.
 
-[^49]: Rust's type inference is very powerful, which is part of its ML heritage.
+[^48]: Rust's type inference is very powerful, which is part of its ML heritage.
 Readable Rust code should include type annotations where necessary to ensure that the type of every `let` can be deduced without having to look at distant context; this is analogous to similar advice for `auto` in C++.
 
-[^50]: It is also possible to leave off the expression in a `let` binding: `let x;`.
+[^49]: It is also possible to leave off the expression in a `let` binding: `let x;`.
 The variable cannot be used until Rust can prove that, in all branches of the program, the variable has been assigned to (and, of course, all the assignments must produce the same type).
 
-[^51]: A missing else block implicitly gets replaced by `else {}`, so the type of all blocks needs to be `()`.
+[^50]: A missing else block implicitly gets replaced by `else {}`, so the type of all blocks needs to be `()`.
 
-[^52]: The value being matched on is called the "scrutinee" (as in scrutinize) in some compiler errors.
+[^51]: The value being matched on is called the "scrutinee" (as in scrutinize) in some compiler errors.
 
-[^53]: Rust has a long-standing miscompilation where `loop {}` triggers UB; this is an issue with LLVM that is actively being worked on, and which in practice is rarely an issue for users.
+[^52]: Rust has a long-standing miscompilation where `loop {}` triggers UB; this is an issue with LLVM that is actively being worked on, and which in practice is rarely an issue for users.
 
-[^54]: Needless to say, all `break`s must have the same type.
+[^53]: Needless to say, all `break`s must have the same type.
 
-[^55]: Rust's execution model is far more constrained than C, so C function calls are basically black boxes that inhibit optimization.
+[^54]: Rust's execution model is far more constrained than C, so C function calls are basically black boxes that inhibit optimization.
 However, there is no runtime cost compared to cross-library-calls in C.
 
-[^56]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.read_volatile](https://doc.rust-lang.org/std/primitive.pointer.html#method.read_volatile)
+[^55]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.read_volatile](https://doc.rust-lang.org/std/primitive.pointer.html#method.read_volatile)
 
-[^57]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.write_volatile](https://doc.rust-lang.org/std/primitive.pointer.html#method.write_volatile)
+[^56]: [https://doc.rust-lang.org/std/primitive.pointer.html#method.write_volatile](https://doc.rust-lang.org/std/primitive.pointer.html#method.write_volatile)
 
-[^58]: Of course, due to an LLVM bug, this is not guaranteed to work...
+[^57]: Of course, due to an LLVM bug, this is not guaranteed to work...
 
-[^59]: Caveats apply as with `__attribute__((inline_always))`.
+[^58]: Caveats apply as with `__attribute__((inline_always))`.
 
-[^60]: This coincides with the similar notion in C++: the _owner_ of a value is whomever is responsible for destroying it. We'll cover Rust destructors later on.
+[^59]: This coincides with the similar notion in C++: the _owner_ of a value is whomever is responsible for destroying it. We'll cover Rust destructors later on.
 
-[^61]: "Owners" don't need to be stack variables: they can be heap allocations, global variables, function parameters for a function call, or an element of an array.
+[^60]: "Owners" don't need to be stack variables: they can be heap allocations, global variables, function parameters for a function call, or an element of an array.
 
-[^62]: Suggested pronunciations include: "tick a", "apostrophe a", and "lifetime a".
+[^61]: Suggested pronunciations include: "tick a", "apostrophe a", and "lifetime a".
 
-[^63]: These days, it's a subgraph of the control flow graph.
+[^62]: These days, it's a subgraph of the control flow graph.
 
-[^64]: The compiler does so using strict "elision rules", and does not actually peek into the function body to do so.
+[^63]: The compiler does so using strict "elision rules", and does not actually peek into the function body to do so.
 
-[^65]: Rust is so strict about this that it will mark code as unreachable and emit illegal instructions if it notices that this is happening.
+[^64]: Rust is so strict about this that it will mark code as unreachable and emit illegal instructions if it notices that this is happening.
 
-[^66]: Also, note that strict aliasing does not apply to shared references, either.
+[^65]: Also, note that strict aliasing does not apply to shared references, either.
 `&u32` and `&u64` may alias, but `&mut u32` and `&mut u64` cannot, because a `&mut T` can never alias with any other active reference.
 
-[^67]: To put it in perspective, all references are marked as "dereferenceable" at the LLVM layer, which gives them the same optimization semantics as C++ references.
+[^66]: To put it in perspective, all references are marked as "dereferenceable" at the LLVM layer, which gives them the same optimization semantics as C++ references.
 Merely materializing an invalid reference is Undefined Behavior, because LLVM will treat it as a pointer to valid memory that it can cache reads from and combine writes to.
 
-[^68]: It is common convention in Rust to name the default function for creating a new value `new`; it is not a reserved word.
+[^67]: It is common convention in Rust to name the default function for creating a new value `new`; it is not a reserved word.
 
-[^69]: Note the capital S.
+[^68]: Note the capital S.
 
-[^70]: This is currently fairly restricted; for our purposes, only `Self`, `&Self`, and `&mut Self` are allowed.
+[^69]: This is currently fairly restricted; for our purposes, only `Self`, `&Self`, and `&mut Self` are allowed.
 
-[^71]: There's only a couple of dynamically sized types built into the language; user-defined DSTs exist, but they're a very advanced topic.
+[^70]: There's only a couple of dynamically sized types built into the language; user-defined DSTs exist, but they're a very advanced topic.
 
-[^72]: https://doc.rust-lang.org/std/str/index.html
+[^71]: https://doc.rust-lang.org/std/str/index.html
 
-[^73]: It should be noted that `a..b` is itself an expression, which creates a `Range<T>` of the chosen numeric type.
+[^72]: It should be noted that `a..b` is itself an expression, which creates a `Range<T>` of the chosen numeric type.
 
-[^74]: [https://doc.rust-lang.org/std/primitive.slice.html#method.split_at_mut](https://doc.rust-lang.org/std/primitive.slice.html#method.split_at_mut)
+[^73]: [https://doc.rust-lang.org/std/primitive.slice.html#method.split_at_mut](https://doc.rust-lang.org/std/primitive.slice.html#method.split_at_mut)
 
-[^75]: [https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html](https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html)
+[^74]: [https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html](https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html)
 
-[^76]: The second quote disambiguates them from lifetime names.
+[^75]: The second quote disambiguates them from lifetime names.
 
-[^77]: `Drop` is technically a trait, but it is an extremely fake trait.
-In particular, `T: Drop` does *not* determine whether `T` needs to call destructors; `std::mem::needs_drop::<T>()` should be used, instead.
+[^76]: [https://doc.rust-lang.org/std/mem/fn.drop.html](https://doc.rust-lang.org/std/mem/fn.drop.html)
 
-[^78]: [https://doc.rust-lang.org/std/mem/fn.drop.html](https://doc.rust-lang.org/std/mem/fn.drop.html)
+[^77]: Unions also cannot contain types with destructors in them.
 
-[^79]: Unions also cannot contain types with destructors in them.
+[^78]: While not available in embedded environments, `Box<T>` in the standard library is an implementation of this idea: [https://doc.rust-lang.org/std/boxed/index.html](https://doc.rust-lang.org/std/boxed/index.html).
 
-[^80]: While not available in embedded environments, `Box<T>` in the standard library is an implementation of this idea: [https://doc.rust-lang.org/std/boxed/index.html](https://doc.rust-lang.org/std/boxed/index.html).
+[^79]: [https://doc.rust-lang.org/std/mem/fn.forget.html](https://doc.rust-lang.org/std/mem/fn.forget.html)
 
-[^81]: [https://doc.rust-lang.org/std/mem/fn.forget.html](https://doc.rust-lang.org/std/mem/fn.forget.html)
+[^80]: [https://doc.rust-lang.org/std/mem/struct.ManuallyDrop.html](https://doc.rust-lang.org/std/mem/struct.ManuallyDrop.html)
 
-[^82]: [https://doc.rust-lang.org/std/mem/struct.ManuallyDrop.html](https://doc.rust-lang.org/std/mem/struct.ManuallyDrop.html)
+[^81]: We'll get to these later.
 
-[^83]: We'll get to these later.
+[^82]: [https://doc.rust-lang.org/std/mem/fn.needs_drop.html](https://doc.rust-lang.org/std/mem/fn.needs_drop.html)
 
-[^84]: [https://doc.rust-lang.org/std/mem/fn.needs_drop.html](https://doc.rust-lang.org/std/mem/fn.needs_drop.html)
-
-[^85]:
+[^83]:
 [https://doc.rust-lang.org/std/ptr/fn.drop_in_place.html](https://doc.rust-lang.org/std/ptr/fn.drop_in_place.html)
 
-[^86]: Though naively, it might seem like this would make `Option<T>` bigger than `T` (twice as big, for an integer type, where alignment == size), the compiler can optimize the size down.
+[^84]: Though naively, it might seem like this would make `Option<T>` bigger than `T` (twice as big, for an integer type, where alignment == size), the compiler can optimize the size down.
 For example, as we'll see later, `Option::<&T>::None` is represented as a null pointer, since `&T` can never be null.
 
-[^87]: The single underscore is a keyword in Rust.
+[^85]: The single underscore is a keyword in Rust.
 
-[^88]: Inclusive ranges are currently an unstable feature.
+[^86]: Inclusive ranges are currently an unstable feature.
 
-[^89]: Of course, the compiler has no problem optimizing match expressions into C switch statements when possible.
+[^87]: Of course, the compiler has no problem optimizing match expressions into C switch statements when possible.
 
-[^90]: [https://doc.rust-lang.org/std/clone/trait.Clone.html](https://doc.rust-lang.org/std/clone/trait.Clone.html)
+[^88]: [https://doc.rust-lang.org/std/clone/trait.Clone.html](https://doc.rust-lang.org/std/clone/trait.Clone.html)
 
-[^91]: Yes, `Drop` is a trait, but mostly does not behave like one, and merely shares syntax with normal traits.
+[^89]: [https://doc.rust-lang.org/std/default/trait.Default.html](https://doc.rust-lang.org/std/default/trait.Default.html)
 
-[^92]: [https://doc.rust-lang.org/std/default/trait.Default.html](https://doc.rust-lang.org/std/default/trait.Default.html)
+[^90]: [https://doc.rust-lang.org/std/cmp/trait.PartialEq.html](https://doc.rust-lang.org/std/cmp/trait.PartialEq.html)
 
-[^93]: [https://doc.rust-lang.org/std/cmp/trait.PartialEq.html](https://doc.rust-lang.org/std/cmp/trait.PartialEq.html)
+[^91]: [https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html](https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html)
 
-[^94]: [https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html](https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html)
+[^92]: [https://doc.rust-lang.org/std/hash/trait.Hash.html](https://doc.rust-lang.org/std/hash/trait.Hash.html)
 
-[^95]: [https://doc.rust-lang.org/std/hash/trait.Hash.html](https://doc.rust-lang.org/std/hash/trait.Hash.html)
+[^93]: The so-called Universal Function Call Syntax.
 
-[^96]: The so-called Universal Function Call Syntax.
+[^94]: [https://doc.rust-lang.org/std/ops/index.html](https://doc.rust-lang.org/std/ops/index.html)
 
-[^97]: [https://doc.rust-lang.org/std/ops/index.html](https://doc.rust-lang.org/std/ops/index.html)
+[^95]: Associated types and constants will also disqualify a trait.
 
-[^98]: Associated types and constants will also disqualify a trait.
-
-[^99]: The trait `Sized` is implemented by all types with a compile-time known size.
+[^96]: The trait `Sized` is implemented by all types with a compile-time known size.
 In the language of generic bounds, trait object methods cannot rely on the fact that `Self: Sized`.
 
-[^100]: This is sometimes called being "thread compatible".
+[^97]: This is sometimes called being "thread compatible".
 
-[^101]: [https://doc.rust-lang.org/std/marker/index.html](https://doc.rust-lang.org/std/marker/index.html)
+[^98]: [https://doc.rust-lang.org/std/marker/index.html](https://doc.rust-lang.org/std/marker/index.html)
 
-[^102]: I.e., write once, use for many types.
+[^99]: I.e., write once, use for many types.
 
-[^103]: When mixing lifetime and type parameters, lifetimes go first: `<'a, T>`.
+[^100]: When mixing lifetime and type parameters, lifetimes go first: `<'a, T>`.
 
-[^104]: This syntax is necessary to disambiguate a generic call from the `<` operator, while keeping the grammar simple.
+[^101]: This syntax is necessary to disambiguate a generic call from the `<` operator, while keeping the grammar simple.
 It is also required when naming generic types in expression position, like `Option::<u32>::Some(42)`.
 
-[^105]: The `::<>` syntax is not used in type position, because it is not necessary for disambiguation.
+[^102]: The `::<>` syntax is not used in type position, because it is not necessary for disambiguation.
 
-[^106]: The symbol `MyWrapper`, without angle brackets, is sometimes called a _type constructor_.
+[^103]: The symbol `MyWrapper`, without angle brackets, is sometimes called a _type constructor_.
 Empty angle brackets are also allowed to follow non-generic symbols, mostly for syntactic completeness.
 `i32<>` is equivalent to `i32`.
 
-[^107]: Contrast this to C++: C++ template metaprogramming is similar to Rust generics, but significantly harder to use, because callsites can trigger compiler errors in the definition.
+[^104]: Contrast this to C++: C++ template metaprogramming is similar to Rust generics, but significantly harder to use, because callsites can trigger compiler errors in the definition.
 Rust side-steps this issue completely.
 
-[^108]: A note on generic parameters vs associated types.
+[^105]: A note on generic parameters vs associated types.
 These are similar, but distinct ways of attaching type information to a trait.
 While it is completely possible for a single type `T` to implement `Add<U1>` and `Add<U2>`, it is not possible to implement `Add<U1, Output=u32>` and `Add<U1, Output=u64>` at the same time.
 
-[^109]: Note the Universal Function Call Syntax to refer to a particular trait implementation.
+[^106]: Note the Universal Function Call Syntax to refer to a particular trait implementation.
 
-[^110]: `where` clauses can also be empty, which looks silly but is useful for macro authors: `fn foo() -> u32 where { /* ... */ }`.
+[^107]: `where` clauses can also be empty, which looks silly but is useful for macro authors: `fn foo() -> u32 where { /* ... */ }`.
 
-[^111]: While not present in C (except in C11 via the `_Generic` keyword), function overloading is a popular feature in many other languages.
+[^108]: While not present in C (except in C11 via the `_Generic` keyword), function overloading is a popular feature in many other languages.
 
-[^112]: [https://doc.rust-lang.org/std/marker/struct.PhantomData.html](https://doc.rust-lang.org/std/marker/struct.PhantomData.html)
+[^109]: [https://doc.rust-lang.org/std/marker/struct.PhantomData.html](https://doc.rust-lang.org/std/marker/struct.PhantomData.html)
 
-[^113]: [https://doc.rust-lang.org/nomicon/phantom-data.html](https://doc.rust-lang.org/nomicon/phantom-data.html)
+[^110]: [https://doc.rust-lang.org/nomicon/phantom-data.html](https://doc.rust-lang.org/nomicon/phantom-data.html)
 
-[^114]: C++ also has "smart pointers", though it is not as strict about what that means as Rust (none of the smart pointers used in embedded programming in Rust allocate, for example).
+[^111]: C++ also has "smart pointers", though it is not as strict about what that means as Rust (none of the smart pointers used in embedded programming in Rust allocate, for example).
 
-[^115]: [https://doc.rust-lang.org/stable/std/ops/trait.Deref.html](https://doc.rust-lang.org/stable/std/ops/trait.Deref.html)
+[^112]: [https://doc.rust-lang.org/stable/std/ops/trait.Deref.html](https://doc.rust-lang.org/stable/std/ops/trait.Deref.html)
 
-[^116]: Even though raw pointers can be dereferenced with `*ptr`, they do _not_ implement `Deref`.
+[^113]: Even though raw pointers can be dereferenced with `*ptr`, they do _not_ implement `Deref`.
 Similarly, although references implement `Deref`, they are not typically called smart pointers.
 
-[^117]: These traits actually have an inheritance relation: calling by `&self` means you can obviously call by `&mut self`, by reborrowing the unique reference as a shared reference; similarly, if you can call by `&mut self`, you can call by `self`, by taking a unique reference to `self`.
+[^114]: These traits actually have an inheritance relation: calling by `&self` means you can obviously call by `&mut self`, by reborrowing the unique reference as a shared reference; similarly, if you can call by `&mut self`, you can call by `self`, by taking a unique reference to `self`.
 In practice, the compiler is pretty good at inlining away the extra calls and references.
 
-[^118]: Functions defined like `fn foo()` each have a unique, closure-like type that coerces to a function pointer when necessary.
+[^115]: Functions defined like `fn foo()` each have a unique, closure-like type that coerces to a function pointer when necessary.
 
-[^119]: This is currently magic, but is likely to become less magic in future versions.
+[^116]: This is currently magic, but is likely to become less magic in future versions.
 
-[^120]: See [https://doc.rust-lang.org/std/option/index.html#options-and-pointers-nullable-pointers](https://doc.rust-lang.org/std/option/index.html#options-and-pointers-nullable-pointers)
+[^117]: See [https://doc.rust-lang.org/std/option/index.html#options-and-pointers-nullable-pointers](https://doc.rust-lang.org/std/option/index.html#options-and-pointers-nullable-pointers)
 
-[^121]:  [https://doc.rust-lang.org/std/num/struct.NonZeroI32.html](https://doc.rust-lang.org/std/num/struct.NonZeroI32.html)
+[^118]: See [https://doc.rust-lang.org/std/num/struct.NonZeroI32.html](https://doc.rust-lang.org/std/num/struct.NonZeroI32.html)
 
-[^122]: While it seems we could write `Result<T, !>`, this can't be done on stable.
-Uses of `!`, except as the return value of a function, require a nightly compiler.
+[^119]: See [https://doc.rust-lang.org/std/convert/enum.Infallible.html](https://doc.rust-lang.org/std/convert/enum.Infallible.html)
 
-[^123]: Note that Rust supports error conversion: if the return type error implements `From<E>`, where E is the error type in the `?` expression, it will use that to perform an automatic conversion.
+[^120]: As in an electrical fuse: eventually, the fuse goes off and stops working.
 
-[^124]: As in an electrical fuse: eventually, the fuse goes off and stops working.
+[^121]: These being Rust source-code symbols, _not_ linker symbols.
 
-[^125]: These being Rust source-code symbols, _not_ linker symbols.
+[^122]: [https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html](https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html)
 
-[^126]: [https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html](https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html)
-
-[^127]: `UnsafeCell` (or, the effect it has on data, at any rate) is well-known to the optimizer and the code generator.
+[^123]: `UnsafeCell` (or, the effect it has on data, at any rate) is well-known to the optimizer and the code generator.
 As we'll see below, the presence of `UnsafeCell` can radically change how a value is laid out in memory, even though it logically only contains a `T`.
 
-[^128]: [https://doc.rust-lang.org/std/cell/struct.Cell.html](https://doc.rust-lang.org/std/cell/struct.Cell.html)
+[^124]: [https://doc.rust-lang.org/std/cell/struct.Cell.html](https://doc.rust-lang.org/std/cell/struct.Cell.html)
 
+[^125]: [https://doc.rust-lang.org/std/cell/struct.RefCell.html](https://doc.rust-lang.org/std/cell/struct.RefCell.html)
+
+[^126]: [https://doc.rust-lang.org/stable/nomicon/](https://doc.rust-lang.org/stable/nomicon/)
