@@ -6,7 +6,7 @@
 // is locked.
 // This sequence will check if nonce, seed_valid, and output keys are correct via scb.
 
-class otp_ctrl_rand_key_rsp_vseq extends otp_ctrl_smoke_vseq;
+class otp_ctrl_rand_key_rsp_vseq extends otp_ctrl_dai_errs_vseq;
   `uvm_object_utils(otp_ctrl_rand_key_rsp_vseq)
 
   `uvm_object_new
@@ -15,11 +15,6 @@ class otp_ctrl_rand_key_rsp_vseq extends otp_ctrl_smoke_vseq;
     num_trans  inside {[1:5]};
     num_dai_op inside {[1:500]};
   }
-
-  function void pre_randomize();
-    this.dai_wr_blank_addr_c.constraint_mode(0);
-    collect_used_addr = 0;
-  endfunction
 
   virtual task body();
     bit base_vseq_done;
