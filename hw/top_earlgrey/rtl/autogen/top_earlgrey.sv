@@ -407,6 +407,8 @@ module top_earlgrey #(
   logic       usbdev_usb_aon_wake_ack;
   logic       usbdev_usb_suspend;
   usbdev_pkg::awk_state_t       pinmux_aon_usb_state_debug;
+  edn_pkg::edn_req_t [3:0] edn0_edn_req;
+  edn_pkg::edn_rsp_t [3:0] edn0_edn_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
@@ -526,6 +528,16 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       main_tl_dm_sba_rsp;
   tlul_pkg::tl_h2d_t       main_tl_debug_mem_req;
   tlul_pkg::tl_d2h_t       main_tl_debug_mem_rsp;
+
+  // define partial inter-module tie-off
+  edn_pkg::edn_rsp_t unused_edn0_edn_rsp2;
+  edn_pkg::edn_rsp_t unused_edn0_edn_rsp3;
+
+  // assign partial inter-module tie-off
+  assign unused_edn0_edn_rsp2 = edn0_edn_rsp[2];
+  assign unused_edn0_edn_rsp3 = edn0_edn_rsp[3];
+  assign edn0_edn_req[2] = '0;
+  assign edn0_edn_req[3] = '0;
 
 
   // Unused reset signals
@@ -1278,8 +1290,8 @@ module top_earlgrey #(
       // Inter-module signals
       .otp_ast_pwr_seq_o(otp_ctrl_otp_ast_pwr_seq_o),
       .otp_ast_pwr_seq_h_i(otp_ctrl_otp_ast_pwr_seq_h_i),
-      .edn_o(),
-      .edn_i(edn_pkg::EDN_RSP_DEFAULT),
+      .edn_o(edn0_edn_req[1]),
+      .edn_i(edn0_edn_rsp[1]),
       .pwr_otp_i(pwrmgr_aon_pwr_otp_req),
       .pwr_otp_o(pwrmgr_aon_pwr_otp_rsp),
       .lc_otp_program_i(lc_ctrl_lc_otp_program_req),
@@ -1760,8 +1772,8 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[18:17] ),
 
       // Inter-module signals
-      .edn_o(),
-      .edn_i(edn_pkg::EDN_RSP_DEFAULT),
+      .edn_o(edn0_edn_req[0]),
+      .edn_i(edn0_edn_rsp[0]),
       .aes_key_o(),
       .hmac_key_o(),
       .kmac_key_o(keymgr_kmac_key),
@@ -1843,8 +1855,8 @@ module top_earlgrey #(
       // Inter-module signals
       .csrng_cmd_o(csrng_csrng_cmd_req[0]),
       .csrng_cmd_i(csrng_csrng_cmd_rsp[0]),
-      .edn_i('0),
-      .edn_o(),
+      .edn_i(edn0_edn_req),
+      .edn_o(edn0_edn_rsp),
       .tl_i(edn0_tl_req),
       .tl_o(edn0_tl_rsp),
 

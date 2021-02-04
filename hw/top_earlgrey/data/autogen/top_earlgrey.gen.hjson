@@ -428,6 +428,7 @@
           inst_name: rv_core_ibex
           width: 1
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: rv_core_ibex_crashdump
           index: -1
@@ -591,6 +592,7 @@
           inst_name: uart0
           width: 1
           default: ""
+          end_idx: -1
           top_signame: uart0_tl
           index: -1
         }
@@ -750,6 +752,7 @@
           inst_name: uart1
           width: 1
           default: ""
+          end_idx: -1
           top_signame: uart1_tl
           index: -1
         }
@@ -909,6 +912,7 @@
           inst_name: uart2
           width: 1
           default: ""
+          end_idx: -1
           top_signame: uart2_tl
           index: -1
         }
@@ -1068,6 +1072,7 @@
           inst_name: uart3
           width: 1
           default: ""
+          end_idx: -1
           top_signame: uart3_tl
           index: -1
         }
@@ -1136,6 +1141,7 @@
           inst_name: gpio
           width: 1
           default: ""
+          end_idx: -1
           top_signame: gpio_tl
           index: -1
         }
@@ -1281,6 +1287,7 @@
           inst_name: spi_device
           width: 1
           default: ""
+          end_idx: -1
           top_signame: spi_device_tl
           index: -1
         }
@@ -1534,6 +1541,7 @@
           inst_name: i2c0
           width: 1
           default: ""
+          end_idx: -1
           top_signame: i2c0_tl
           index: -1
         }
@@ -1787,6 +1795,7 @@
           inst_name: i2c1
           width: 1
           default: ""
+          end_idx: -1
           top_signame: i2c1_tl
           index: -1
         }
@@ -2040,6 +2049,7 @@
           inst_name: i2c2
           width: 1
           default: ""
+          end_idx: -1
           top_signame: i2c2_tl
           index: -1
         }
@@ -2135,6 +2145,7 @@
           inst_name: pattgen
           width: 1
           default: ""
+          end_idx: -1
           top_signame: pattgen_tl
           index: -1
         }
@@ -2189,6 +2200,7 @@
           inst_name: rv_timer
           width: 1
           default: ""
+          end_idx: -1
           top_signame: rv_timer_tl
           index: -1
         }
@@ -2529,6 +2541,7 @@
           width: 1
           inst_name: usbdev
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: usbdev_usb_out_of_rst
           index: -1
@@ -2542,6 +2555,7 @@
           width: 1
           inst_name: usbdev
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: usbdev_usb_aon_wake_en
           index: -1
@@ -2555,6 +2569,7 @@
           width: 1
           inst_name: usbdev
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: usbdev_usb_aon_wake_ack
           index: -1
@@ -2568,6 +2583,7 @@
           width: 1
           inst_name: usbdev
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: usbdev_usb_suspend
           index: -1
@@ -2593,6 +2609,7 @@
           inst_name: usbdev
           width: 1
           default: ""
+          end_idx: -1
           top_signame: usbdev_tl
           index: -1
         }
@@ -2747,7 +2764,10 @@
           act: req
           package: edn_pkg
           inst_name: otp_ctrl
-          index: -1
+          width: 1
+          default: ""
+          top_signame: edn0_edn
+          index: 1
         }
         {
           struct: pwr_otp
@@ -2794,6 +2814,7 @@
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: otp_ctrl_otp_lc_data
           index: -1
@@ -2867,6 +2888,7 @@
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: otp_ctrl_otp_keymgr_key
           index: -1
@@ -2892,6 +2914,8 @@
           default: "'0"
           package: otp_ctrl_pkg
           inst_name: otp_ctrl
+          end_idx: -1
+          top_type: one-to-N
           top_signame: otp_ctrl_sram_otp_key
           index: -1
         }
@@ -2914,6 +2938,7 @@
           package: otp_ctrl_part_pkg
           inst_name: otp_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: otp_ctrl_otp_hw_cfg
           index: -1
@@ -2927,6 +2952,7 @@
           inst_name: otp_ctrl
           width: 1
           default: ""
+          end_idx: -1
           top_signame: otp_ctrl_tl
           index: -1
         }
@@ -3121,6 +3147,7 @@
           package: otp_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_signame: lc_ctrl_lc_otp_program
           index: -1
         }
@@ -3133,6 +3160,7 @@
           package: otp_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_signame: lc_ctrl_lc_otp_token
           index: -1
         }
@@ -3145,6 +3173,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_dft_en
           index: -1
@@ -3158,6 +3187,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_nvm_debug_en
           index: -1
@@ -3171,6 +3201,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_hw_debug_en
           index: -1
@@ -3184,6 +3215,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_cpu_en
           index: -1
@@ -3207,6 +3239,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
@@ -3220,6 +3253,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_clk_byp_req
           index: -1
@@ -3233,6 +3267,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_clk_byp_ack
           index: -1
@@ -3282,6 +3317,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_check_byp_en
           index: -1
@@ -3295,6 +3331,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
           index: -1
@@ -3308,6 +3345,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
           index: -1
@@ -3321,6 +3359,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_iso_part_sw_rd_en
           index: -1
@@ -3334,6 +3373,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_iso_part_sw_wr_en
           index: -1
@@ -3347,6 +3387,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_seed_hw_rd_en
           index: -1
@@ -3360,6 +3401,7 @@
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
           width: 1
+          end_idx: -1
           top_type: broadcast
           top_signame: lc_ctrl_lc_keymgr_div
           index: -1
@@ -3385,6 +3427,7 @@
           inst_name: lc_ctrl
           width: 1
           default: ""
+          end_idx: -1
           top_signame: lc_ctrl_tl
           index: -1
         }
@@ -3515,6 +3558,7 @@
           inst_name: alert_handler
           width: 1
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: alert_handler_crashdump
           index: -1
@@ -3537,6 +3581,7 @@
           package: prim_esc_pkg
           inst_name: alert_handler
           default: ""
+          end_idx: -1
           top_type: one-to-N
           top_signame: alert_handler_esc_rx
           index: -1
@@ -3550,6 +3595,7 @@
           package: prim_esc_pkg
           inst_name: alert_handler
           default: ""
+          end_idx: -1
           top_type: one-to-N
           top_signame: alert_handler_esc_tx
           index: -1
@@ -3563,6 +3609,7 @@
           inst_name: alert_handler
           width: 1
           default: ""
+          end_idx: -1
           top_signame: alert_handler_tl
           index: -1
         }
@@ -3684,6 +3731,7 @@
           inst_name: nmi_gen
           width: 1
           default: ""
+          end_idx: -1
           top_signame: nmi_gen_tl
           index: -1
         }
@@ -3762,6 +3810,7 @@
           inst_name: pwrmgr_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: pwrmgr_aon_pwr_rst
           index: -1
         }
@@ -3774,6 +3823,7 @@
           inst_name: pwrmgr_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: pwrmgr_aon_pwr_clk
           index: -1
         }
@@ -3786,6 +3836,7 @@
           inst_name: pwrmgr_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: pwrmgr_aon_pwr_otp
           index: -1
         }
@@ -3798,6 +3849,7 @@
           inst_name: pwrmgr_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: pwrmgr_aon_pwr_lc
           index: -1
         }
@@ -3810,6 +3862,7 @@
           inst_name: pwrmgr_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: pwrmgr_aon_pwr_flash
           index: -1
         }
@@ -3858,6 +3911,7 @@
           package: ""
           inst_name: pwrmgr_aon
           default: ""
+          end_idx: -1
           top_type: one-to-N
           top_signame: pwrmgr_aon_wakeups
           index: -1
@@ -3871,6 +3925,7 @@
           package: ""
           inst_name: pwrmgr_aon
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: pwrmgr_aon_rstreqs
           index: -1
@@ -3884,6 +3939,7 @@
           inst_name: pwrmgr_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: pwrmgr_aon_tl
           index: -1
         }
@@ -4030,6 +4086,7 @@
           inst_name: rstmgr_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: rstmgr_aon_tl
           index: -1
         }
@@ -4193,6 +4250,7 @@
           width: 4
           inst_name: clkmgr_aon
           default: ""
+          end_idx: -1
           top_type: one-to-N
           top_signame: clkmgr_aon_idle
           index: -1
@@ -4206,6 +4264,7 @@
           inst_name: clkmgr_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: clkmgr_aon_tl
           index: -1
         }
@@ -4380,6 +4439,7 @@
           inst_name: pinmux_aon
           width: 1
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: pinmux_aon_usb_state_debug
           index: -1
@@ -4393,6 +4453,7 @@
           inst_name: pinmux_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: pinmux_aon_tl
           index: -1
         }
@@ -4442,6 +4503,7 @@
           inst_name: padctrl_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: padctrl_aon_tl
           index: -1
         }
@@ -4613,6 +4675,7 @@
           inst_name: sensor_ctrl_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: sensor_ctrl_aon_tl
           index: -1
         }
@@ -4716,6 +4779,7 @@
           package: sram_ctrl_pkg
           inst_name: sram_ctrl_ret_aon
           width: 1
+          end_idx: -1
           top_signame: sram_ctrl_ret_aon_sram_scr
           index: -1
         }
@@ -4740,6 +4804,7 @@
           inst_name: sram_ctrl_ret_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: sram_ctrl_ret_aon_tl
           index: -1
         }
@@ -4944,6 +5009,7 @@
           inst_name: flash_ctrl
           width: 1
           default: ""
+          end_idx: -1
           top_signame: flash_ctrl_flash
           index: -1
         }
@@ -4956,6 +5022,7 @@
           inst_name: flash_ctrl
           width: 1
           default: ""
+          end_idx: -1
           top_signame: flash_ctrl_otp
           index: -1
         }
@@ -5028,6 +5095,7 @@
           inst_name: flash_ctrl
           width: 1
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: flash_ctrl_rma_req
           index: -1
@@ -5041,6 +5109,7 @@
           inst_name: flash_ctrl
           width: 1
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: flash_ctrl_rma_ack
           index: -1
@@ -5054,6 +5123,7 @@
           inst_name: flash_ctrl
           width: 1
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: flash_ctrl_rma_seed
           index: -1
@@ -5079,6 +5149,7 @@
           inst_name: flash_ctrl
           width: 1
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: flash_ctrl_keymgr
           index: -1
@@ -5092,6 +5163,7 @@
           inst_name: flash_ctrl
           width: 1
           default: ""
+          end_idx: -1
           top_signame: flash_ctrl_tl
           index: -1
         }
@@ -5140,6 +5212,7 @@
           inst_name: rv_plic
           width: 1
           default: ""
+          end_idx: -1
           top_signame: rv_plic_tl
           index: -1
         }
@@ -5352,6 +5425,7 @@
           inst_name: aes
           width: 1
           default: ""
+          end_idx: -1
           top_signame: aes_tl
           index: -1
         }
@@ -5449,6 +5523,7 @@
           inst_name: hmac
           width: 1
           default: ""
+          end_idx: -1
           top_signame: hmac_tl
           index: -1
         }
@@ -5620,6 +5695,7 @@
           inst_name: kmac
           width: 1
           default: ""
+          end_idx: -1
           top_signame: kmac_tl
           index: -1
         }
@@ -5868,7 +5944,10 @@
           act: req
           package: edn_pkg
           inst_name: keymgr
-          index: -1
+          width: 1
+          default: ""
+          top_signame: edn0_edn
+          index: 0
         }
         {
           struct: hw_key_req
@@ -5897,6 +5976,7 @@
           inst_name: keymgr
           width: 1
           default: ""
+          end_idx: -1
           top_type: broadcast
           top_signame: keymgr_kmac_key
           index: -1
@@ -5910,6 +5990,7 @@
           inst_name: keymgr
           width: 1
           default: ""
+          end_idx: -1
           top_signame: keymgr_kmac_data
           index: -1
         }
@@ -5980,6 +6061,7 @@
           inst_name: keymgr
           width: 1
           default: ""
+          end_idx: -1
           top_signame: keymgr_tl
           index: -1
         }
@@ -6090,6 +6172,8 @@
           width: 2
           inst_name: csrng
           default: ""
+          end_idx: -1
+          top_type: one-to-N
           top_signame: csrng_csrng_cmd
           index: -1
         }
@@ -6102,6 +6186,7 @@
           inst_name: csrng
           width: 1
           default: ""
+          end_idx: -1
           top_signame: csrng_entropy_src_hw_if
           index: -1
         }
@@ -6134,6 +6219,7 @@
           inst_name: csrng
           width: 1
           default: ""
+          end_idx: -1
           top_signame: csrng_tl
           index: -1
         }
@@ -6274,6 +6360,7 @@
           inst_name: entropy_src
           width: 1
           default: ""
+          end_idx: -1
           top_signame: entropy_src_tl
           index: -1
         }
@@ -6356,7 +6443,7 @@
           type: req_rsp
           name: edn
           act: rsp
-          width: "4"
+          width: 4
           default: "'0"
           desc:
             '''
@@ -6368,6 +6455,9 @@
             '''
           package: edn_pkg
           inst_name: edn0
+          end_idx: 2
+          top_type: paritial-one-to-N
+          top_signame: edn0_edn
           index: -1
         }
         {
@@ -6379,6 +6469,7 @@
           inst_name: edn0
           width: 1
           default: ""
+          end_idx: -1
           top_signame: edn0_tl
           index: -1
         }
@@ -6484,6 +6575,7 @@
           inst_name: edn1
           width: 1
           default: ""
+          end_idx: -1
           top_signame: edn1_tl
           index: -1
         }
@@ -6587,6 +6679,7 @@
           package: sram_ctrl_pkg
           inst_name: sram_ctrl_main
           width: 1
+          end_idx: -1
           top_signame: sram_ctrl_main_sram_scr
           index: -1
         }
@@ -6611,6 +6704,7 @@
           inst_name: sram_ctrl_main
           width: 1
           default: ""
+          end_idx: -1
           top_signame: sram_ctrl_main_tl
           index: -1
         }
@@ -6725,6 +6819,7 @@
           inst_name: otbn
           width: 1
           default: ""
+          end_idx: -1
           top_signame: otbn_tl
           index: -1
         }
@@ -6759,6 +6854,7 @@
           inst_name: rom
           width: 1
           default: ""
+          end_idx: -1
           top_signame: rom_tl
           index: -1
         }
@@ -6795,6 +6891,7 @@
           inst_name: ram_main
           width: 1
           default: ""
+          end_idx: -1
           top_signame: ram_main_tl
           index: -1
         }
@@ -6844,6 +6941,7 @@
           inst_name: ram_ret_aon
           width: 1
           default: ""
+          end_idx: -1
           top_signame: ram_ret_aon_tl
           index: -1
         }
@@ -6905,6 +7003,7 @@
           inst_name: eflash
           width: 1
           default: ""
+          end_idx: -1
           top_signame: eflash_tl
           index: -1
         }
@@ -7116,6 +7215,11 @@
       pinmux_aon.usb_state_debug:
       [
         usbdev.usb_state_debug
+      ]
+      edn0.edn:
+      [
+        keymgr.edn
+        otp_ctrl.edn
       ]
       otp_ctrl.otp_keymgr_key:
       [
@@ -7917,6 +8021,7 @@
           inst_name: main
           width: 1
           default: ""
+          end_idx: -1
           top_signame: main_tl_peri
           index: -1
         }
@@ -11560,6 +11665,7 @@
         inst_name: uart0
         width: 1
         default: ""
+        end_idx: -1
         top_signame: uart0_tl
         index: -1
       }
@@ -11572,6 +11678,7 @@
         inst_name: uart1
         width: 1
         default: ""
+        end_idx: -1
         top_signame: uart1_tl
         index: -1
       }
@@ -11584,6 +11691,7 @@
         inst_name: uart2
         width: 1
         default: ""
+        end_idx: -1
         top_signame: uart2_tl
         index: -1
       }
@@ -11596,6 +11704,7 @@
         inst_name: uart3
         width: 1
         default: ""
+        end_idx: -1
         top_signame: uart3_tl
         index: -1
       }
@@ -11608,6 +11717,7 @@
         inst_name: gpio
         width: 1
         default: ""
+        end_idx: -1
         top_signame: gpio_tl
         index: -1
       }
@@ -11620,6 +11730,7 @@
         inst_name: spi_device
         width: 1
         default: ""
+        end_idx: -1
         top_signame: spi_device_tl
         index: -1
       }
@@ -11632,6 +11743,7 @@
         inst_name: i2c0
         width: 1
         default: ""
+        end_idx: -1
         top_signame: i2c0_tl
         index: -1
       }
@@ -11644,6 +11756,7 @@
         inst_name: i2c1
         width: 1
         default: ""
+        end_idx: -1
         top_signame: i2c1_tl
         index: -1
       }
@@ -11656,6 +11769,7 @@
         inst_name: i2c2
         width: 1
         default: ""
+        end_idx: -1
         top_signame: i2c2_tl
         index: -1
       }
@@ -11668,6 +11782,7 @@
         inst_name: pattgen
         width: 1
         default: ""
+        end_idx: -1
         top_signame: pattgen_tl
         index: -1
       }
@@ -11680,6 +11795,7 @@
         inst_name: rv_timer
         width: 1
         default: ""
+        end_idx: -1
         top_signame: rv_timer_tl
         index: -1
       }
@@ -11718,6 +11834,7 @@
         width: 1
         inst_name: usbdev
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: usbdev_usb_out_of_rst
         index: -1
@@ -11731,6 +11848,7 @@
         width: 1
         inst_name: usbdev
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: usbdev_usb_aon_wake_en
         index: -1
@@ -11744,6 +11862,7 @@
         width: 1
         inst_name: usbdev
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: usbdev_usb_aon_wake_ack
         index: -1
@@ -11757,6 +11876,7 @@
         width: 1
         inst_name: usbdev
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: usbdev_usb_suspend
         index: -1
@@ -11782,6 +11902,7 @@
         inst_name: usbdev
         width: 1
         default: ""
+        end_idx: -1
         top_signame: usbdev_tl
         index: -1
       }
@@ -11818,7 +11939,10 @@
         act: req
         package: edn_pkg
         inst_name: otp_ctrl
-        index: -1
+        width: 1
+        default: ""
+        top_signame: edn0_edn
+        index: 1
       }
       {
         struct: pwr_otp
@@ -11865,6 +11989,7 @@
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: otp_ctrl_otp_lc_data
         index: -1
@@ -11938,6 +12063,7 @@
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: otp_ctrl_otp_keymgr_key
         index: -1
@@ -11963,6 +12089,8 @@
         default: "'0"
         package: otp_ctrl_pkg
         inst_name: otp_ctrl
+        end_idx: -1
+        top_type: one-to-N
         top_signame: otp_ctrl_sram_otp_key
         index: -1
       }
@@ -11985,6 +12113,7 @@
         package: otp_ctrl_part_pkg
         inst_name: otp_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: otp_ctrl_otp_hw_cfg
         index: -1
@@ -11998,6 +12127,7 @@
         inst_name: otp_ctrl
         width: 1
         default: ""
+        end_idx: -1
         top_signame: otp_ctrl_tl
         index: -1
       }
@@ -12091,6 +12221,7 @@
         package: otp_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_signame: lc_ctrl_lc_otp_program
         index: -1
       }
@@ -12103,6 +12234,7 @@
         package: otp_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_signame: lc_ctrl_lc_otp_token
         index: -1
       }
@@ -12115,6 +12247,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_dft_en
         index: -1
@@ -12128,6 +12261,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_nvm_debug_en
         index: -1
@@ -12141,6 +12275,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_hw_debug_en
         index: -1
@@ -12154,6 +12289,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_cpu_en
         index: -1
@@ -12177,6 +12313,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
@@ -12190,6 +12327,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_clk_byp_req
         index: -1
@@ -12203,6 +12341,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_clk_byp_ack
         index: -1
@@ -12252,6 +12391,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_check_byp_en
         index: -1
@@ -12265,6 +12405,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
         index: -1
@@ -12278,6 +12419,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
         index: -1
@@ -12291,6 +12433,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_iso_part_sw_rd_en
         index: -1
@@ -12304,6 +12447,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_iso_part_sw_wr_en
         index: -1
@@ -12317,6 +12461,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_seed_hw_rd_en
         index: -1
@@ -12330,6 +12475,7 @@
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
         width: 1
+        end_idx: -1
         top_type: broadcast
         top_signame: lc_ctrl_lc_keymgr_div
         index: -1
@@ -12355,6 +12501,7 @@
         inst_name: lc_ctrl
         width: 1
         default: ""
+        end_idx: -1
         top_signame: lc_ctrl_tl
         index: -1
       }
@@ -12367,6 +12514,7 @@
         inst_name: alert_handler
         width: 1
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: alert_handler_crashdump
         index: -1
@@ -12389,6 +12537,7 @@
         package: prim_esc_pkg
         inst_name: alert_handler
         default: ""
+        end_idx: -1
         top_type: one-to-N
         top_signame: alert_handler_esc_rx
         index: -1
@@ -12402,6 +12551,7 @@
         package: prim_esc_pkg
         inst_name: alert_handler
         default: ""
+        end_idx: -1
         top_type: one-to-N
         top_signame: alert_handler_esc_tx
         index: -1
@@ -12415,6 +12565,7 @@
         inst_name: alert_handler
         width: 1
         default: ""
+        end_idx: -1
         top_signame: alert_handler_tl
         index: -1
       }
@@ -12458,6 +12609,7 @@
         inst_name: nmi_gen
         width: 1
         default: ""
+        end_idx: -1
         top_signame: nmi_gen_tl
         index: -1
       }
@@ -12483,6 +12635,7 @@
         inst_name: pwrmgr_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: pwrmgr_aon_pwr_rst
         index: -1
       }
@@ -12495,6 +12648,7 @@
         inst_name: pwrmgr_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: pwrmgr_aon_pwr_clk
         index: -1
       }
@@ -12507,6 +12661,7 @@
         inst_name: pwrmgr_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: pwrmgr_aon_pwr_otp
         index: -1
       }
@@ -12519,6 +12674,7 @@
         inst_name: pwrmgr_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: pwrmgr_aon_pwr_lc
         index: -1
       }
@@ -12531,6 +12687,7 @@
         inst_name: pwrmgr_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: pwrmgr_aon_pwr_flash
         index: -1
       }
@@ -12579,6 +12736,7 @@
         package: ""
         inst_name: pwrmgr_aon
         default: ""
+        end_idx: -1
         top_type: one-to-N
         top_signame: pwrmgr_aon_wakeups
         index: -1
@@ -12592,6 +12750,7 @@
         package: ""
         inst_name: pwrmgr_aon
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: pwrmgr_aon_rstreqs
         index: -1
@@ -12605,6 +12764,7 @@
         inst_name: pwrmgr_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: pwrmgr_aon_tl
         index: -1
       }
@@ -12703,6 +12863,7 @@
         inst_name: rstmgr_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: rstmgr_aon_tl
         index: -1
       }
@@ -12825,6 +12986,7 @@
         width: 4
         inst_name: clkmgr_aon
         default: ""
+        end_idx: -1
         top_type: one-to-N
         top_signame: clkmgr_aon_idle
         index: -1
@@ -12838,6 +13000,7 @@
         inst_name: clkmgr_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: clkmgr_aon_tl
         index: -1
       }
@@ -12962,6 +13125,7 @@
         inst_name: pinmux_aon
         width: 1
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: pinmux_aon_usb_state_debug
         index: -1
@@ -12975,6 +13139,7 @@
         inst_name: pinmux_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: pinmux_aon_tl
         index: -1
       }
@@ -12987,6 +13152,7 @@
         inst_name: padctrl_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: padctrl_aon_tl
         index: -1
       }
@@ -13025,6 +13191,7 @@
         inst_name: sensor_ctrl_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: sensor_ctrl_aon_tl
         index: -1
       }
@@ -13049,6 +13216,7 @@
         package: sram_ctrl_pkg
         inst_name: sram_ctrl_ret_aon
         width: 1
+        end_idx: -1
         top_signame: sram_ctrl_ret_aon_sram_scr
         index: -1
       }
@@ -13073,6 +13241,7 @@
         inst_name: sram_ctrl_ret_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: sram_ctrl_ret_aon_tl
         index: -1
       }
@@ -13085,6 +13254,7 @@
         inst_name: flash_ctrl
         width: 1
         default: ""
+        end_idx: -1
         top_signame: flash_ctrl_flash
         index: -1
       }
@@ -13097,6 +13267,7 @@
         inst_name: flash_ctrl
         width: 1
         default: ""
+        end_idx: -1
         top_signame: flash_ctrl_otp
         index: -1
       }
@@ -13169,6 +13340,7 @@
         inst_name: flash_ctrl
         width: 1
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: flash_ctrl_rma_req
         index: -1
@@ -13182,6 +13354,7 @@
         inst_name: flash_ctrl
         width: 1
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: flash_ctrl_rma_ack
         index: -1
@@ -13195,6 +13368,7 @@
         inst_name: flash_ctrl
         width: 1
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: flash_ctrl_rma_seed
         index: -1
@@ -13220,6 +13394,7 @@
         inst_name: flash_ctrl
         width: 1
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: flash_ctrl_keymgr
         index: -1
@@ -13233,6 +13408,7 @@
         inst_name: flash_ctrl
         width: 1
         default: ""
+        end_idx: -1
         top_signame: flash_ctrl_tl
         index: -1
       }
@@ -13245,6 +13421,7 @@
         inst_name: rv_plic
         width: 1
         default: ""
+        end_idx: -1
         top_signame: rv_plic_tl
         index: -1
       }
@@ -13269,6 +13446,7 @@
         inst_name: aes
         width: 1
         default: ""
+        end_idx: -1
         top_signame: aes_tl
         index: -1
       }
@@ -13293,6 +13471,7 @@
         inst_name: hmac
         width: 1
         default: ""
+        end_idx: -1
         top_signame: hmac_tl
         index: -1
       }
@@ -13351,6 +13530,7 @@
         inst_name: kmac
         width: 1
         default: ""
+        end_idx: -1
         top_signame: kmac_tl
         index: -1
       }
@@ -13361,7 +13541,10 @@
         act: req
         package: edn_pkg
         inst_name: keymgr
-        index: -1
+        width: 1
+        default: ""
+        top_signame: edn0_edn
+        index: 0
       }
       {
         struct: hw_key_req
@@ -13390,6 +13573,7 @@
         inst_name: keymgr
         width: 1
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: keymgr_kmac_key
         index: -1
@@ -13403,6 +13587,7 @@
         inst_name: keymgr
         width: 1
         default: ""
+        end_idx: -1
         top_signame: keymgr_kmac_data
         index: -1
       }
@@ -13473,6 +13658,7 @@
         inst_name: keymgr
         width: 1
         default: ""
+        end_idx: -1
         top_signame: keymgr_tl
         index: -1
       }
@@ -13485,6 +13671,8 @@
         width: 2
         inst_name: csrng
         default: ""
+        end_idx: -1
+        top_type: one-to-N
         top_signame: csrng_csrng_cmd
         index: -1
       }
@@ -13497,6 +13685,7 @@
         inst_name: csrng
         width: 1
         default: ""
+        end_idx: -1
         top_signame: csrng_entropy_src_hw_if
         index: -1
       }
@@ -13529,6 +13718,7 @@
         inst_name: csrng
         width: 1
         default: ""
+        end_idx: -1
         top_signame: csrng_tl
         index: -1
       }
@@ -13581,6 +13771,7 @@
         inst_name: entropy_src
         width: 1
         default: ""
+        end_idx: -1
         top_signame: entropy_src_tl
         index: -1
       }
@@ -13602,7 +13793,7 @@
         type: req_rsp
         name: edn
         act: rsp
-        width: "4"
+        width: 4
         default: "'0"
         desc:
           '''
@@ -13614,6 +13805,9 @@
           '''
         package: edn_pkg
         inst_name: edn0
+        end_idx: 2
+        top_type: paritial-one-to-N
+        top_signame: edn0_edn
         index: -1
       }
       {
@@ -13625,6 +13819,7 @@
         inst_name: edn0
         width: 1
         default: ""
+        end_idx: -1
         top_signame: edn0_tl
         index: -1
       }
@@ -13669,6 +13864,7 @@
         inst_name: edn1
         width: 1
         default: ""
+        end_idx: -1
         top_signame: edn1_tl
         index: -1
       }
@@ -13693,6 +13889,7 @@
         package: sram_ctrl_pkg
         inst_name: sram_ctrl_main
         width: 1
+        end_idx: -1
         top_signame: sram_ctrl_main_sram_scr
         index: -1
       }
@@ -13717,6 +13914,7 @@
         inst_name: sram_ctrl_main
         width: 1
         default: ""
+        end_idx: -1
         top_signame: sram_ctrl_main_tl
         index: -1
       }
@@ -13741,6 +13939,7 @@
         inst_name: otbn
         width: 1
         default: ""
+        end_idx: -1
         top_signame: otbn_tl
         index: -1
       }
@@ -13753,6 +13952,7 @@
         inst_name: rom
         width: 1
         default: ""
+        end_idx: -1
         top_signame: rom_tl
         index: -1
       }
@@ -13765,6 +13965,7 @@
         inst_name: ram_main
         width: 1
         default: ""
+        end_idx: -1
         top_signame: ram_main_tl
         index: -1
       }
@@ -13789,6 +13990,7 @@
         inst_name: ram_ret_aon
         width: 1
         default: ""
+        end_idx: -1
         top_signame: ram_ret_aon_tl
         index: -1
       }
@@ -13825,6 +14027,7 @@
         inst_name: eflash
         width: 1
         default: ""
+        end_idx: -1
         top_signame: eflash_tl
         index: -1
       }
@@ -13998,6 +14201,7 @@
         inst_name: main
         width: 1
         default: ""
+        end_idx: -1
         top_signame: main_tl_peri
         index: -1
       }
@@ -14491,6 +14695,7 @@
         inst_name: rv_core_ibex
         width: 1
         default: ""
+        end_idx: -1
         top_type: broadcast
         top_signame: rv_core_ibex_crashdump
         index: -1
@@ -14714,6 +14919,9 @@
         signame: alert_handler_crashdump
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: ""
       }
       {
@@ -14722,6 +14930,9 @@
         signame: alert_handler_esc_rx
         width: 4
         type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
         default: ""
       }
       {
@@ -14730,6 +14941,9 @@
         signame: alert_handler_esc_tx
         width: 4
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: ""
       }
       {
@@ -14738,6 +14952,9 @@
         signame: csrng_csrng_cmd_req
         width: 2
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -14746,6 +14963,9 @@
         signame: csrng_csrng_cmd_rsp
         width: 2
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -14754,6 +14974,9 @@
         signame: csrng_entropy_src_hw_if_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: ""
       }
       {
@@ -14762,6 +14985,9 @@
         signame: csrng_entropy_src_hw_if_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: ""
       }
       {
@@ -14770,6 +14996,9 @@
         signame: flash_ctrl_flash_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: ""
       }
       {
@@ -14778,6 +15007,9 @@
         signame: flash_ctrl_flash_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: ""
       }
       {
@@ -14786,6 +15018,9 @@
         signame: flash_ctrl_keymgr
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: ""
       }
       {
@@ -14794,6 +15029,9 @@
         signame: flash_ctrl_otp_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: ""
       }
       {
@@ -14802,6 +15040,9 @@
         signame: flash_ctrl_otp_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: ""
       }
       {
@@ -14810,6 +15051,9 @@
         signame: flash_ctrl_rma_req
         width: 1
         type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
         default: ""
       }
       {
@@ -14818,6 +15062,9 @@
         signame: flash_ctrl_rma_ack
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: ""
       }
       {
@@ -14826,6 +15073,9 @@
         signame: flash_ctrl_rma_seed
         width: 1
         type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
         default: ""
       }
       {
@@ -14834,6 +15084,9 @@
         signame: sram_ctrl_main_sram_scr_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: "'0"
       }
       {
@@ -14842,6 +15095,9 @@
         signame: sram_ctrl_main_sram_scr_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: "'0"
       }
       {
@@ -14850,6 +15106,9 @@
         signame: sram_ctrl_ret_aon_sram_scr_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: "'0"
       }
       {
@@ -14858,6 +15117,9 @@
         signame: sram_ctrl_ret_aon_sram_scr_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: "'0"
       }
       {
@@ -14866,6 +15128,9 @@
         signame: otp_ctrl_sram_otp_key_req
         width: 2
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: "'0"
       }
       {
@@ -14874,6 +15139,9 @@
         signame: otp_ctrl_sram_otp_key_rsp
         width: 2
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: "'0"
       }
       {
@@ -14882,6 +15150,9 @@
         signame: pwrmgr_aon_pwr_flash_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: ""
       }
       {
@@ -14890,6 +15161,9 @@
         signame: pwrmgr_aon_pwr_flash_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: ""
       }
       {
@@ -14898,6 +15172,9 @@
         signame: pwrmgr_aon_pwr_rst_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: ""
       }
       {
@@ -14906,6 +15183,9 @@
         signame: pwrmgr_aon_pwr_rst_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: ""
       }
       {
@@ -14914,6 +15194,9 @@
         signame: pwrmgr_aon_pwr_clk_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: ""
       }
       {
@@ -14922,6 +15205,9 @@
         signame: pwrmgr_aon_pwr_clk_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: ""
       }
       {
@@ -14930,6 +15216,9 @@
         signame: pwrmgr_aon_pwr_otp_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: ""
       }
       {
@@ -14938,6 +15227,9 @@
         signame: pwrmgr_aon_pwr_otp_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: ""
       }
       {
@@ -14946,6 +15238,9 @@
         signame: pwrmgr_aon_pwr_lc_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: ""
       }
       {
@@ -14954,6 +15249,9 @@
         signame: pwrmgr_aon_pwr_lc_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: ""
       }
       {
@@ -14962,6 +15260,9 @@
         signame: rv_core_ibex_crashdump
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: ""
       }
       {
@@ -14970,6 +15271,9 @@
         signame: usbdev_usb_out_of_rst
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: ""
       }
       {
@@ -14978,6 +15282,9 @@
         signame: usbdev_usb_aon_wake_en
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: ""
       }
       {
@@ -14986,6 +15293,9 @@
         signame: usbdev_usb_aon_wake_ack
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: ""
       }
       {
@@ -14994,6 +15304,9 @@
         signame: usbdev_usb_suspend
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: ""
       }
       {
@@ -15002,7 +15315,32 @@
         signame: pinmux_aon_usb_state_debug
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: ""
+      }
+      {
+        package: edn_pkg
+        struct: edn_req
+        signame: edn0_edn_req
+        width: 4
+        type: req_rsp
+        end_idx: 2
+        act: rsp
+        suffix: req
+        default: "'0"
+      }
+      {
+        package: edn_pkg
+        struct: edn_rsp
+        signame: edn0_edn_rsp
+        width: 4
+        type: req_rsp
+        end_idx: 2
+        act: rsp
+        suffix: rsp
+        default: "'0"
       }
       {
         package: otp_ctrl_pkg
@@ -15010,6 +15348,9 @@
         signame: otp_ctrl_otp_keymgr_key
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: "'0"
       }
       {
@@ -15018,6 +15359,9 @@
         signame: keymgr_kmac_key
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: ""
       }
       {
@@ -15026,6 +15370,9 @@
         signame: keymgr_kmac_data_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: ""
       }
       {
@@ -15034,6 +15381,9 @@
         signame: keymgr_kmac_data_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: ""
       }
       {
@@ -15042,6 +15392,9 @@
         signame: clkmgr_aon_idle
         width: 4
         type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
         default: ""
       }
       {
@@ -15050,6 +15403,9 @@
         signame: otp_ctrl_otp_lc_data
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: "'0"
       }
       {
@@ -15058,6 +15414,9 @@
         signame: lc_ctrl_lc_otp_program_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: "'0"
       }
       {
@@ -15066,6 +15425,9 @@
         signame: lc_ctrl_lc_otp_program_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: "'0"
       }
       {
@@ -15074,6 +15436,9 @@
         signame: lc_ctrl_lc_otp_token_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: "'0"
       }
       {
@@ -15082,6 +15447,9 @@
         signame: lc_ctrl_lc_otp_token_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: "'0"
       }
       {
@@ -15090,6 +15458,9 @@
         signame: otp_ctrl_otp_hw_cfg
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: "'0"
       }
       {
@@ -15098,6 +15469,9 @@
         signame: lc_ctrl_lc_keymgr_div
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: "'0"
       }
       {
@@ -15106,6 +15480,9 @@
         signame: lc_ctrl_lc_dft_en
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15114,6 +15491,9 @@
         signame: lc_ctrl_lc_nvm_debug_en
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15122,6 +15502,9 @@
         signame: lc_ctrl_lc_hw_debug_en
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15130,6 +15513,9 @@
         signame: lc_ctrl_lc_cpu_en
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15138,6 +15524,9 @@
         signame: lc_ctrl_lc_escalate_en
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15146,6 +15535,9 @@
         signame: lc_ctrl_lc_check_byp_en
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15154,6 +15546,9 @@
         signame: lc_ctrl_lc_clk_byp_req
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15162,6 +15557,9 @@
         signame: lc_ctrl_lc_clk_byp_ack
         width: 1
         type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15170,6 +15568,9 @@
         signame: lc_ctrl_lc_creator_seed_sw_rw_en
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15178,6 +15579,9 @@
         signame: lc_ctrl_lc_owner_seed_sw_rw_en
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15186,6 +15590,9 @@
         signame: lc_ctrl_lc_iso_part_sw_rd_en
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15194,6 +15601,9 @@
         signame: lc_ctrl_lc_iso_part_sw_wr_en
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15202,6 +15612,9 @@
         signame: lc_ctrl_lc_seed_hw_rd_en
         width: 1
         type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: lc_ctrl_pkg::Off
       }
       {
@@ -15210,6 +15623,9 @@
         signame: pwrmgr_aon_wakeups
         width: 2
         type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
         default: ""
       }
       {
@@ -15218,6 +15634,9 @@
         signame: pwrmgr_aon_rstreqs
         width: 1
         type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
         default: ""
       }
       {
@@ -15226,6 +15645,9 @@
         signame: rom_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15234,6 +15656,9 @@
         signame: rom_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15242,6 +15667,9 @@
         signame: ram_main_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15250,6 +15678,9 @@
         signame: ram_main_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15258,6 +15689,9 @@
         signame: eflash_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15266,6 +15700,9 @@
         signame: eflash_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15274,6 +15711,9 @@
         signame: main_tl_peri_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
         default: ""
       }
       {
@@ -15282,6 +15722,9 @@
         signame: main_tl_peri_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: ""
       }
       {
@@ -15290,6 +15733,9 @@
         signame: flash_ctrl_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15298,6 +15744,9 @@
         signame: flash_ctrl_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15306,6 +15755,9 @@
         signame: hmac_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15314,6 +15766,9 @@
         signame: hmac_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15322,6 +15777,9 @@
         signame: kmac_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15330,6 +15788,9 @@
         signame: kmac_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15338,6 +15799,9 @@
         signame: aes_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15346,6 +15810,9 @@
         signame: aes_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15354,6 +15821,9 @@
         signame: entropy_src_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15362,6 +15832,9 @@
         signame: entropy_src_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15370,6 +15843,9 @@
         signame: csrng_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15378,6 +15854,9 @@
         signame: csrng_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15386,6 +15865,9 @@
         signame: edn0_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15394,6 +15876,9 @@
         signame: edn0_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15402,6 +15887,9 @@
         signame: edn1_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15410,6 +15898,9 @@
         signame: edn1_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15418,6 +15909,9 @@
         signame: rv_plic_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15426,6 +15920,9 @@
         signame: rv_plic_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15434,6 +15931,9 @@
         signame: otbn_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15442,6 +15942,9 @@
         signame: otbn_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15450,6 +15953,9 @@
         signame: keymgr_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15458,6 +15964,9 @@
         signame: keymgr_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15466,6 +15975,9 @@
         signame: sram_ctrl_main_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15474,6 +15986,9 @@
         signame: sram_ctrl_main_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15482,6 +15997,9 @@
         signame: uart0_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15490,6 +16008,9 @@
         signame: uart0_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15498,6 +16019,9 @@
         signame: uart1_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15506,6 +16030,9 @@
         signame: uart1_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15514,6 +16041,9 @@
         signame: uart2_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15522,6 +16052,9 @@
         signame: uart2_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15530,6 +16063,9 @@
         signame: uart3_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15538,6 +16074,9 @@
         signame: uart3_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15546,6 +16085,9 @@
         signame: i2c0_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15554,6 +16096,9 @@
         signame: i2c0_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15562,6 +16107,9 @@
         signame: i2c1_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15570,6 +16118,9 @@
         signame: i2c1_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15578,6 +16129,9 @@
         signame: i2c2_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15586,6 +16140,9 @@
         signame: i2c2_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15594,6 +16151,9 @@
         signame: pattgen_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15602,6 +16162,9 @@
         signame: pattgen_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15610,6 +16173,9 @@
         signame: gpio_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15618,6 +16184,9 @@
         signame: gpio_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15626,6 +16195,9 @@
         signame: spi_device_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15634,6 +16206,9 @@
         signame: spi_device_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15642,6 +16217,9 @@
         signame: rv_timer_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15650,6 +16228,9 @@
         signame: rv_timer_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15658,6 +16239,9 @@
         signame: usbdev_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15666,6 +16250,9 @@
         signame: usbdev_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15674,6 +16261,9 @@
         signame: pwrmgr_aon_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15682,6 +16272,9 @@
         signame: pwrmgr_aon_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15690,6 +16283,9 @@
         signame: rstmgr_aon_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15698,6 +16294,9 @@
         signame: rstmgr_aon_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15706,6 +16305,9 @@
         signame: clkmgr_aon_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15714,6 +16316,9 @@
         signame: clkmgr_aon_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15722,6 +16327,9 @@
         signame: pinmux_aon_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15730,6 +16338,9 @@
         signame: pinmux_aon_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15738,6 +16349,9 @@
         signame: padctrl_aon_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15746,6 +16360,9 @@
         signame: padctrl_aon_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15754,6 +16371,9 @@
         signame: ram_ret_aon_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15762,6 +16382,9 @@
         signame: ram_ret_aon_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15770,6 +16393,9 @@
         signame: otp_ctrl_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15778,6 +16404,9 @@
         signame: otp_ctrl_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15786,6 +16415,9 @@
         signame: lc_ctrl_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15794,6 +16426,9 @@
         signame: lc_ctrl_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15802,6 +16437,9 @@
         signame: sensor_ctrl_aon_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15810,6 +16448,9 @@
         signame: sensor_ctrl_aon_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15818,6 +16459,9 @@
         signame: alert_handler_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15826,6 +16470,9 @@
         signame: alert_handler_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15834,6 +16481,9 @@
         signame: sram_ctrl_ret_aon_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15842,6 +16492,9 @@
         signame: sram_ctrl_ret_aon_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15850,6 +16503,9 @@
         signame: nmi_gen_tl_req
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
         default: ""
       }
       {
@@ -15858,6 +16514,9 @@
         signame: nmi_gen_tl_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
         default: ""
       }
       {
@@ -15866,6 +16525,7 @@
         signame: rstmgr_aon_resets
         width: 1
         type: uni
+        end_idx: -1
         default: ""
       }
       {
@@ -15874,6 +16534,7 @@
         signame: rstmgr_aon_cpu
         width: 1
         type: uni
+        end_idx: -1
         default: ""
       }
       {
@@ -15882,6 +16543,7 @@
         signame: pwrmgr_aon_pwr_cpu
         width: 1
         type: uni
+        end_idx: -1
         default: ""
       }
       {
@@ -15890,6 +16552,7 @@
         signame: clkmgr_aon_clocks
         width: 1
         type: uni
+        end_idx: -1
         default: ""
       }
       {
@@ -15898,6 +16561,7 @@
         signame: main_tl_corei_req
         width: 1
         type: req_rsp
+        end_idx: -1
         default: ""
       }
       {
@@ -15906,6 +16570,7 @@
         signame: main_tl_corei_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
         default: ""
       }
       {
@@ -15914,6 +16579,7 @@
         signame: main_tl_cored_req
         width: 1
         type: req_rsp
+        end_idx: -1
         default: ""
       }
       {
@@ -15922,6 +16588,7 @@
         signame: main_tl_cored_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
         default: ""
       }
       {
@@ -15930,6 +16597,7 @@
         signame: main_tl_dm_sba_req
         width: 1
         type: req_rsp
+        end_idx: -1
         default: ""
       }
       {
@@ -15938,6 +16606,7 @@
         signame: main_tl_dm_sba_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
         default: ""
       }
       {
@@ -15946,6 +16615,7 @@
         signame: main_tl_debug_mem_req
         width: 1
         type: req_rsp
+        end_idx: -1
         default: ""
       }
       {
@@ -15954,6 +16624,7 @@
         signame: main_tl_debug_mem_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
         default: ""
       }
     ]
