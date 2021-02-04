@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   input_files: {
-    image_path: "build-out/sw/device/rom_exts/rom_ext_slot_a_sim_verilator.bin",
-    private_key_der_path: "sw/device/rom_exts/keys/test_key_private.der",
+    image_path: "sw/host/rom_ext_image_tools/signer/dev/rom_ext_blank_image.bin",
+    private_key_der_path: "sw/host/rom_ext_image_tools/signer/dev/test_key_private.der",
   },
   // TBD
   usage_constraints: {
