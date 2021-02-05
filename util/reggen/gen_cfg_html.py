@@ -72,32 +72,33 @@ def gen_cfg_html(cfgs, outfile):
         genout(outfile, "</table>\n")
     else:
         genout(outfile, "<p><i>Peripheral Pins for Chip IO: none</i></p>\n")
-    # interrupts
-    if 'interrupt_list' in cfgs:
+
+    interrupts = cfgs.get('interrupt_list', [])
+    if not interrupts:
+        genout(outfile, "<p><i>Interrupts: none</i></p>\n")
+    else:
         genout(outfile, "<p><i>Interrupts:</i></p>\n")
         genout(
             outfile, "<table class=\"cfgtable\"><tr><th>Interrupt Name</th>" +
             "<th>Description</th></tr>\n")
-        for x in cfgs['interrupt_list']:
+        for x in interrupts:
             genout(outfile,
                    '<tr><td>{}</td>{}</tr>'
                    .format(name_width(x),
                            render_td(x['desc'], rnames, None)))
         genout(outfile, "</table>\n")
+
+    alerts = cfgs.get('alert_list', [])
+    if not alerts:
+        genout(outfile, "<p><i>Security Alerts: none</i></p>\n")
     else:
-        genout(outfile, "<p><i>Interrupts: none</i></p>\n")
-    if 'alert_list' in cfgs:
         genout(outfile, "<p><i>Security Alerts:</i></p>\n")
         genout(
             outfile, "<table class=\"cfgtable\"><tr><th>Alert Name</th>" +
             "<th>Description</th></tr>\n")
-        for x in cfgs['alert_list']:
+        for x in alerts:
             genout(outfile,
                    '<tr><td>{}</td>{}</tr>'
                    .format(x['name'],
                            render_td(x['desc'], rnames, None)))
         genout(outfile, "</table>\n")
-    else:
-        genout(outfile, "<p><i>Security Alerts: none</i></p>\n")
-    # interrupts
-    return
