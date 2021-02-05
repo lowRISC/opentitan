@@ -705,7 +705,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         # Determine if broadcast or one-to-N
         log.debug("Handling inter-sig {} {}".format(req_struct['name'], total_width))
         req_struct["end_idx"] = -1
-        if len(rsps) != 1:
+        if req_struct["width"] > 1 or len(rsps) != 1:
             # If req width is same to the every width of rsps ==> broadcast
             if len(rsps) * [req_struct["width"]] == widths:
                 log.debug("broadcast type")
