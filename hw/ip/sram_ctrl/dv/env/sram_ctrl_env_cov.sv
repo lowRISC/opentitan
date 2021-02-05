@@ -9,6 +9,7 @@
  */
 
 class sram_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(sram_ctrl_env_cfg));
+
   `uvm_component_utils(sram_ctrl_env_cov)
 
   // the base class provides the following handles for use:

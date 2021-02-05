@@ -25,11 +25,10 @@ class sram_ctrl_env extends cip_base_env #(
     if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "otp_clk_rst_vif", cfg.otp_clk_rst_vif)) begin
       `uvm_fatal(`gfn, "failed to get otp_clk_rst_if from uvm_config_db")
     end
-    // TODO: eventually set the OTP clock to a different frequency
-    cfg.otp_clk_rst_vif.set_freq_mhz(cfg.clk_freq_mhz);
+    cfg.otp_clk_rst_vif.set_freq_mhz(cfg.otp_freq_mhz);
 
     // Get the LC interface
-    if (!uvm_config_db#(lc_vif)::get(this, "", "lc_vif", cfg.lc_vif)) begin
+    if (!uvm_config_db#(virtual sram_ctrl_lc_if)::get(this, "", "lc_vif", cfg.lc_vif)) begin
       `uvm_fatal(`gfn, "failed to get lc_vif from uvm_config_db")
     end
 
@@ -54,6 +53,17 @@ class sram_ctrl_env extends cip_base_env #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+
+    virtual_sequencer.sram_tl_sequencer_h = m_sram_tl_agent.sequencer;
+
+    if (cfg.en_scb) begin
+      // connect SRAM TLUL ports
+      m_sram_tl_agent.monitor.a_chan_port.connect(scoreboard.sram_tl_a_chan_fifo.analysis_export);
+      m_sram_tl_agent.monitor.d_chan_port.connect(scoreboard.sram_tl_d_chan_fifo.analysis_export);
+
+      // connect KDI port
+      m_kdi_agent.monitor.analysis_port.connect(scoreboard.kdi_fifo.analysis_export);
+    end
   endfunction
 
 endclass

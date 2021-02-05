@@ -199,6 +199,8 @@
       hwqe:     "true",
       hwext:    "true",
       regwen:   "CTRL_REGWEN"
+      tags: [// avoid writing to CTRL, as this will cause STATUS to be modified
+             "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "0",
           name: "RENEW_SCR_KEY",
