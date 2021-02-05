@@ -103,16 +103,26 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset) begin
         if (!cfg.under_reset) begin
-          otp_ctrl_part_pkg::otp_hw_cfg_data_t exp_data;
+          otp_ctrl_part_pkg::otp_hw_cfg_data_t exp_hwcfg_data;
+          otp_ctrl_pkg::otp_keymgr_key_t       exp_keymgr_data;
           bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
 
           void'(ral.direct_access_regwen.predict(1));
 
-          // If HwCfg partition is locked, hwcfg_o correct data from OTP
-          // If HwCfg partition is not locked, outputs are all zeros
-          exp_data.hw_cfg_digest = digests[HwCfgIdx];
-          // TODO: issue 5072
-          //`DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data.hw_cfg_digest, digests[HwCfgIdx])
+          // Hwcfg_o gets data from OTP HW cfg partition
+          exp_hwcfg_data = otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
+          `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data, exp_hwcfg_data)
+
+          // Otp_keymgr outputs creator root key shares from the secret2 partition.
+          // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
+          exp_keymgr_data.valid = digests[Secret2Idx] != 0;
+          exp_keymgr_data.key_share0 = (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) ?
+              {<<32 {otp_a[CreatorRootKeyShare0Offset/4 +: CreatorRootKeyShare0Size/4]}} :
+              PartInvDefault[CreatorRootKeyShare0Offset*8 +: CreatorRootKeyShare0Size*8];
+          exp_keymgr_data.key_share1 = (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) ?
+              {<<32 {otp_a[CreatorRootKeyShare1Offset/4 +: CreatorRootKeyShare1Size/4]}} :
+              PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
+          `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
         end
       end
     end
