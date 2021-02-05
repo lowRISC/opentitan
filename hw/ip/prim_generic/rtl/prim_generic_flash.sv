@@ -138,7 +138,7 @@ module prim_generic_flash #(
     .SramAw(CfgAddrWidth),
     .SramDw(32),
     .Outstanding(2),
-    .ErrOnWrite(1)
+    .ErrOnWrite(0)
   ) u_cfg (
     .clk_i,
     .rst_ni,
