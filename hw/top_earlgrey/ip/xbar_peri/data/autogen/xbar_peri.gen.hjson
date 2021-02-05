@@ -383,7 +383,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40520000
+          base_addr: 0x40600000
           size_byte: 0x1000
         }
       ]

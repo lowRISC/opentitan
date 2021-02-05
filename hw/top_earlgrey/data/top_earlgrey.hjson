@@ -568,7 +568,7 @@
       reset_connections: {rst_ni: "sys_io_div4"},
       domain: "Aon",
       type: "ram_1p_scr",
-      base_addr: "0x40520000",
+      base_addr: "0x40600000",
       size: "0x1000",
       byte_write: "true",
       inter_signal_list: [

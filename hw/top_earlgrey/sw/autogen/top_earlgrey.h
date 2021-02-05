@@ -679,7 +679,7 @@ extern "C" {
 /**
  * Memory base address for ram_ret_aon in top earlgrey.
  */
-#define TOP_EARLGREY_RAM_RET_AON_BASE_ADDR 0x40520000u
+#define TOP_EARLGREY_RAM_RET_AON_BASE_ADDR 0x40600000u
 
 /**
  * Memory size for ram_ret_aon in top earlgrey.
