@@ -337,9 +337,9 @@
     },
     { name: "alert_handler",
       type: "alert_handler",
-      clock_srcs: {clk_i: "io_div4"},
+      clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
       clock_group: "timers",
-      reset_connections: {rst_ni: "sys_io_div4"},
+      reset_connections: {rst_ni: "sys_io_div4", rst_edn_ni: "sys"},
       base_addr: "0x40150000",
       generated: "true"         // Indicate this module is generated in the topgen
       localparam: {
@@ -716,8 +716,8 @@
       'pinmux_aon.usb_state_debug' : ['usbdev.usb_state_debug'],
 
       // TODO see #4447
-      'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast_edn.edn'],
-      //'edn1.edn'              : [],
+      'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast_edn.edn', 'kmac.entropy'],
+      'edn1.edn'              : ['alert_handler.edn'],
 
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],

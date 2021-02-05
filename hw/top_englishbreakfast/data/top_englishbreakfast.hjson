@@ -256,9 +256,9 @@
     },
     { name: "alert_handler",
       type: "alert_handler",
-      clock_srcs: {clk_i: "io_div4"},
+      clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
       clock_group: "timers",
-      reset_connections: {rst_ni: "sys_io_div4"},
+      reset_connections: {rst_ni: "sys_io_div4", rst_edn_ni: "sys"},
       base_addr: "0x40150000",
       generated: "true"         // Indicate this module is generated in the topgen
       localparam: {

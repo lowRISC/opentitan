@@ -63,10 +63,16 @@ module tb;
           $sformatf("*.env.esc_device_agent[%0d]", k), "probe_vif", probe_if[k]);
     end
   end
+
+  // edn_clk, edn_rst_n and edn_if are defined and driven in below macro
+  `DV_EDN_IF_CONNECT
+
   // main dut
   alert_handler dut (
     .clk_i                ( clk           ),
     .rst_ni               ( rst_n         ),
+    .clk_edn_i            ( edn_clk       ),
+    .rst_edn_ni           ( edn_rst_n     ),
     .tl_i                 ( tl_if.h2d     ),
     .tl_o                 ( tl_if.d2h     ),
     .intr_classa_o        ( interrupts[0] ),
@@ -74,7 +80,8 @@ module tb;
     .intr_classc_o        ( interrupts[2] ),
     .intr_classd_o        ( interrupts[3] ),
     .crashdump_o          (               ),
-    .entropy_i            ( entropy       ),
+    .edn_o                ( edn_if.req    ),
+    .edn_i                ( {edn_if.ack, edn_if.d_data} ),
     .alert_rx_o           ( alert_rx      ),
     .alert_tx_i           ( alert_tx      ),
     .esc_rx_i             ( esc_rx        ),
