@@ -14,6 +14,7 @@ def expand_paras(s, rnames):
 
     - Separate paragraphs on a blank line
     - **bold** and *italicised* text
+    - Back-ticks for pre-formatted text
 
     We also generate links to registers when a name is prefixed with a double
     exclamation mark. For example, if there is a register FOO then !!FOO or
@@ -49,10 +50,25 @@ def _expand_paragraph(s, rnames):
                  ' not found in register list.')
         return match.group(0)
 
-    s = re.sub(r"!!([A-Za-z0-9_.]+)", fieldsub, s)
-    s = re.sub(r"(?s)\*\*(.+?)\*\*", r'<B>\1</B>', s)
-    s = re.sub(r"\*([^*]+?)\*", r'<I>\1</I>', s)
-    return s
+    # Split out pre-formatted text. Because the call to re.split has a capture
+    # group in the regex, we get an odd number of results. Elements with even
+    # indices are "normal text". Those with odd indices are the captured text
+    # between the back-ticks.
+    code_split = re.split(r'`([^`]+)`', s)
+    expanded_parts = []
+
+    for idx, part in enumerate(code_split):
+        if idx & 1:
+            # Text contained in back ticks
+            expanded_parts.append('<code>{}</code>'.format(part))
+            continue
+
+        part = re.sub(r"!!([A-Za-z0-9_.]+)", fieldsub, part)
+        part = re.sub(r"(?s)\*\*(.+?)\*\*", r'<B>\1</B>', part)
+        part = re.sub(r"\*([^*]+?)\*", r'<I>\1</I>', part)
+        expanded_parts.append(part)
+
+    return ''.join(expanded_parts)
 
 
 def render_td(s, rnames, td_class):
