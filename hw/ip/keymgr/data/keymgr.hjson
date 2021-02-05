@@ -374,6 +374,8 @@
           desc: '''
             Software binding register write enable.
             This is locked by software and unlocked by hardware upon a successful advance call.
+
+            Software binding resets to 1, and its value cannot be altered by software until advancement to Init state.
           '''
         },
       ]
@@ -384,7 +386,7 @@
     { multireg: {
         cname: "KEYMGR",
         name: "SW_BINDING",
-        regwen: "CFGEN",
+        regwen: "SW_BINDING_EN",
         desc: '''
           Software binding input to key manager.
           This register is lockable and shared between key manager stages.

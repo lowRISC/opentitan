@@ -496,7 +496,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (sw_binding_0_we & cfgen_qs),
+    .we     (sw_binding_0_we & sw_binding_en_qs),
     .wd     (sw_binding_0_wd),
 
     // from internal hardware
@@ -523,7 +523,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (sw_binding_1_we & cfgen_qs),
+    .we     (sw_binding_1_we & sw_binding_en_qs),
     .wd     (sw_binding_1_wd),
 
     // from internal hardware
@@ -550,7 +550,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (sw_binding_2_we & cfgen_qs),
+    .we     (sw_binding_2_we & sw_binding_en_qs),
     .wd     (sw_binding_2_wd),
 
     // from internal hardware
@@ -577,7 +577,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (sw_binding_3_we & cfgen_qs),
+    .we     (sw_binding_3_we & sw_binding_en_qs),
     .wd     (sw_binding_3_wd),
 
     // from internal hardware
