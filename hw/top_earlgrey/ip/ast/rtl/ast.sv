@@ -88,18 +88,21 @@ module ast
 
   // adc interface
   input adc_pd_i,                             // ADC Power Down
-`ifndef VERILATOR
-`ifndef SYNTHESIS
-  input awire adc_a0_ai,                      // ADC A0 Analog Input
-  input awire adc_a1_ai,                      // ADC A1 Analog Input
-`else
-  input wire adc_a0_ai,                       // ADC A0 Analog Input
-  input wire adc_a1_ai,                       // ADC A1 Analog Input
-`endif
-`else
-  input wire adc_a0_ai,                       // ADC A0 Analog Input
-  input wire adc_a1_ai,                       // ADC A1 Analog Input
-`endif
+//`ifndef VERILATOR
+//`ifndef SYNTHESIS
+//  input awire adc_a0_ai,                      // ADC A0 Analog Input
+//  input awire adc_a1_ai,                      // ADC A1 Analog Input
+//`else
+//  input wire adc_a0_ai,                       // ADC A0 Analog Input
+//  input wire adc_a1_ai,                       // ADC A1 Analog Input
+//`endif
+//`else
+//  input wire adc_a0_ai,                       // ADC A0 Analog Input
+//  input wire adc_a1_ai,                       // ADC A1 Analog Input
+//`endif
+  input adc_a0_ai,                            // ADC A0 Analog Input
+  input adc_a1_ai,                            // ADC A1 Analog Input
+
   input [AdcChannels-1:0] adc_chnsel_i,       // ADC Channel Select
   output [AdcDataWidth-1:0] adc_d_o,          // ADC Digital (per channel)
   output adc_d_val_o,                         // ADC Digital Valid
@@ -156,24 +159,28 @@ module ast
   input [Pad2AstInWidth-1:0] padmux2ast_i,   // IO_2_DFT Input Signals
   output logic [Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
 
-`ifndef VERILATOR
-`ifndef SYNTHESIS
-  input awire pad2ast_t0_ai,                  // PAD_2_AST Analog T0 Input Signal
-  input awire pad2ast_t1_ai,                  // PAD_2_AST Analog T1 Input Signal
-  output awire ast2pad_t0_ao,                 // AST_2_PAD Analog T0 Output Signal
-  output awire ast2pad_t1_ao,                 // AST_2_PAD Analog T1 Output Signal
-`else
+//`ifndef VERILATOR
+//`ifndef SYNTHESIS
+//  input awire pad2ast_t0_ai,                  // PAD_2_AST Analog T0 Input Signal
+//  input awire pad2ast_t1_ai,                  // PAD_2_AST Analog T1 Input Signal
+//  output awire ast2pad_t0_ao,                 // AST_2_PAD Analog T0 Output Signal
+//  output awire ast2pad_t1_ao,                 // AST_2_PAD Analog T1 Output Signal
+//`else
+//  input  wire pad2ast_t0_ai,                  // PAD_2_AST Analog T0 Input Signal
+//  input  wire pad2ast_t1_ai,                  // PAD_2_AST Analog T1 Input Signal
+//  output wire ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
+//  output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
+//`endif
+//`else
+//  input  wire pad2ast_t0_ai,                  // PAD_2_AST Analog T0 Input Signal
+//  input  wire pad2ast_t1_ai,                  // PAD_2_AST Analog T1 Input Signal
+//  output wire ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
+//  output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
+//`endif
   input  wire pad2ast_t0_ai,                  // PAD_2_AST Analog T0 Input Signal
   input  wire pad2ast_t1_ai,                  // PAD_2_AST Analog T1 Input Signal
   output wire ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
   output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`endif
-`else
-  input  wire pad2ast_t0_ai,                  // PAD_2_AST Analog T0 Input Signal
-  input  wire pad2ast_t1_ai,                  // PAD_2_AST Analog T1 Input Signal
-  output wire ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
-  output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
-`endif
 
   // flash and otp clock
   input  lc_ctrl_pkg::lc_tx_t lc_clk_byp_req_i, // External clock mux override for OTP bootstrap
@@ -423,21 +430,21 @@ io_clk #(
 ///////////////////////////////////////
 // ADC (Always ON)
 ///////////////////////////////////////
-`ifndef VERILATOR
-`ifndef SYNTHESIS
-awire adc_a2_a, adc_a3_a;
-assign adc_a2_a = 0.6;
-assign adc_a3_a = 1.2;
-`else
-wire adc_a2_a, adc_a3_a;
-assign adc_a2_a = 1'b0;
-assign adc_a3_a = 1'b0;
-`endif
-`else
-wire adc_a2_a, adc_a3_a;
-assign adc_a2_a = 1'b0;
-assign adc_a3_a = 1'b0;
-`endif
+//`ifndef VERILATOR
+//`ifndef SYNTHESIS
+//awire adc_a2_a, adc_a3_a;
+//assign adc_a2_a = 0.6;
+//assign adc_a3_a = 1.2;
+//`else
+//wire adc_a2_a, adc_a3_a;
+//assign adc_a2_a = 1'b0;
+//assign adc_a3_a = 1'b0;
+//`endif
+//`else
+//wire adc_a2_a, adc_a3_a;
+//assign adc_a2_a = 1'b0;
+//assign adc_a3_a = 1'b0;
+//`endif
 
 adc #(
 /*P*/ .AdcCnvtClks ( AdcCnvtClks ),
