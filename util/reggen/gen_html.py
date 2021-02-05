@@ -13,8 +13,36 @@ def genout(outfile, msg):
     outfile.write(msg)
 
 
-# expand !!register references into HTML links, gen **bold** and *italic*
-def desc_expand(s, rnames):
+def _get_desc_paras(s, rnames):
+    '''Expand a description field to HTML.
+
+    This supports a sort of simple pseudo-markdown. Supported Markdown
+    features:
+
+    - Separate paragraphs on a blank line
+    - **bold** and *italicised* text
+
+    We also generate links to registers when a name is prefixed with a double
+    exclamation mark. For example, if there is a register FOO then !!FOO or
+    !!FOO.field will generate a link to that register.
+
+    Returns a list of rendered paragraphs
+
+    '''
+    # Start by splitting into paragraphs. The regex matches a newline followed
+    # by one or more lines that just contain whitespace. Then render each
+    # paragraph with the _expand_paragraph worker function.
+    paras = [_expand_paragraph(paragraph.strip(), rnames)
+             for paragraph in re.split(r'\n(?:\s*\n)+', s)]
+
+    # There will always be at least one paragraph (splitting an empty string
+    # gives [''])
+    assert paras
+    return paras
+
+
+def _expand_paragraph(s, rnames):
+    '''Expand a single paragraph, as described in _get_desc_paras'''
     def fieldsub(match):
         base = match.group(1).partition('.')[0].lower()
         if base in rnames:
@@ -32,6 +60,18 @@ def desc_expand(s, rnames):
     s = re.sub(r"(?s)\*\*(.+?)\*\*", r'<B>\1</B>', s)
     s = re.sub(r"\*([^*]+?)\*", r'<I>\1</I>', s)
     return s
+
+
+def _get_desc_td(s, rnames, td_class):
+    '''Expand a description field and put it in a <td>.
+
+    Returns a string. See _get_desc_paras for the format that gets expanded.
+
+    '''
+    desc_paras = _get_desc_paras(s, rnames)
+    class_attr = '' if td_class is None else ' class="{}"'.format(td_class)
+    return ('<td{}><p>{}</p></td>'
+            .format(class_attr, '</p><p>'.join(desc_paras)))
 
 
 # Generation of HTML table with register bit-field summary picture
@@ -165,6 +205,10 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
         regwen_div = ('    <div>Register enable = {}</div>\n'
                       .format(reg['regwen']))
 
+    desc_paras = _get_desc_paras(reg['desc'], rnames)
+    desc_head = desc_paras[0]
+    desc_body = desc_paras[1:]
+
     genout(outfile,
            '<table class="regdef" id="Reg_{lrname}">\n'
            ' <tr>\n'
@@ -179,10 +223,15 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
                    comp=comp,
                    rname=rname,
                    off=offset,
-                   desc=desc_expand(reg['desc'], rnames),
+                   desc=desc_head,
                    resval=reg['genresval'],
                    mask=reg['genresmask'],
                    wen=regwen_div))
+    if desc_body:
+        genout(outfile,
+               '<tr><td colspan=5><p>{}</p></td></tr>'
+               .format('</p><p>'.join(desc_body)))
+
     if toc is not None:
         toc.append((toclvl, comp + "." + rname, "Reg_" + rname.lower()))
     genout(outfile, "<tr><td colspan=5>")
@@ -234,9 +283,7 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
             "</td>")
         genout(outfile, "<td class=\"regfn\">" + fname + "</td>")
         if 'desc' in field:
-            genout(
-                outfile, "<td class=\"regde\">" +
-                desc_expand(field['desc'], rnames) + "\n")
+            genout(outfile, _get_desc_td(field['desc'], rnames, 'regde'))
         else:
             genout(outfile, "<td>\n")
 
@@ -249,9 +296,8 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
                     ename = enum['name']
                 genout(outfile, "    <tr><td>" + enum['value'] + "</td>")
                 genout(outfile, "<td>" + ename + "</td>")
-                genout(
-                    outfile, "<td>" + desc_expand(enum['desc'], rnames) +
-                    "</td></tr>\n")
+                genout(outfile, _get_desc_td(enum['desc'], rnames, None))
+                genout(outfile, "</tr>\n")
 
             genout(outfile, "    </table>")
             if 'genrsvdenum' in field:
@@ -311,9 +357,8 @@ def gen_html_window(outfile, win, comp, regwidth, rnames, toc, toclvl):
                     '>&nbsp;</td>\n')
             genout(outfile, '</tr>')
     genout(outfile, '</td></tr></table>')
-    genout(
-        outfile, '<tr><td class="regde">' + desc_expand(win['desc'], rnames) +
-        '</td></tr>')
+    genout(outfile,
+           '<tr>{}</tr>'.format(_get_desc_td(win['desc'], rnames, 'regde')))
     genout(outfile, "</table>\n<br><br>\n")
     if toc is not None:
         toc.append((toclvl, comp + "." + wname, "Reg_" + wname.lower()))
