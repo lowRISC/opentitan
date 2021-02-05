@@ -21,6 +21,8 @@ module alert_handler
 ) (
   input                           clk_i,
   input                           rst_ni,
+  input                           clk_edn_i,
+  input                           rst_edn_ni,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t       tl_i,
   output tlul_pkg::tl_d2h_t       tl_o,
@@ -31,8 +33,9 @@ module alert_handler
   output logic                    intr_classd_o,
   // State information for HW crashdump
   output alert_crashdump_t        crashdump_o,
-  // Entropy Input from TRNG
-  input                           entropy_i,
+  // Entropy Input
+  output edn_pkg::edn_req_t       edn_o,
+  input  edn_pkg::edn_rsp_t       edn_i,
   // Alert Sources
   input  alert_tx_t [NAlerts-1:0] alert_tx_i,
   output alert_rx_t [NAlerts-1:0] alert_rx_o,
@@ -77,13 +80,32 @@ module alert_handler
   logic [N_ESC_SEV-1:0] esc_ping_req;
   logic [N_ESC_SEV-1:0] esc_ping_ok;
 
+  logic entropy;
+
+  // This module pings for entropy excessively at the moment,
+  // but this will be addressed later using a refresh rate
+  prim_edn_req #(
+    .OutWidth(1)
+  ) u_edn_req (
+    .clk_i,
+    .rst_ni,
+    .req_i(1'b0),
+    .ack_o(),
+    .data_o(entropy),
+    .fips_o(),
+    .clk_edn_i,
+    .rst_edn_ni,
+    .edn_o(edn_o),
+    .edn_i(edn_i)
+  );
+
   alert_handler_ping_timer #(
     .RndCnstLfsrSeed(RndCnstLfsrSeed),
     .RndCnstLfsrPerm(RndCnstLfsrPerm)
   ) i_ping_timer (
     .clk_i,
     .rst_ni,
-    .entropy_i,
+    .entropy_i(entropy),
     // we enable ping testing as soon as the config
     // regs have been locked
     .en_i               ( reg2hw_wrap.config_locked    ),

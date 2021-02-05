@@ -17,6 +17,9 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 {
   name: "ALERT_HANDLER",
   clock_primary: "clk_i",
+  other_clock_list: [ "clk_edn_i" ],
+  reset_primary: "rst_ni",
+  other_reset_list: [ "rst_edn_ni" ],
   bus_device: "tlul",
   regwidth: "32",
   hier_path: "i_reg_wrap"
@@ -111,12 +114,12 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       act:     "req",
       package: "alert_pkg"
     },
-    // TODO: connect this to EDN
-    { struct:  "logic",
-      type:    "uni",
-      name:    "entropy",
-      default: " 1'b0",
-      act:     "rcv",
+    { struct:  "edn"
+      type:    "req_rsp"
+      name:    "edn"
+      act:     "req"
+      width:   "1"
+      package: "edn_pkg"
     },
     { struct:  "esc_rx"
       type:    "uni"
