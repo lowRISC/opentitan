@@ -338,8 +338,8 @@ typedef struct fifo_ptr {
 
 // Masks for extracting the phase and offset parts from a
 // compressed FIFO pointer.
-static const uint16_t kFifoPhaseMask = (1 << 11);
-static const uint16_t kFifoOffsetMask = (1 << 11) - 1;
+static const uint16_t kFifoPhaseMask = (1 << 12);
+static const uint16_t kFifoOffsetMask = (1 << 12) - 1;
 
 /**
  * Modifies a `fifo_ptr_t` into a FIFO of length `fifo_len` by

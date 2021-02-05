@@ -20,7 +20,7 @@ using ::mock_mmio::MockDevice;
 
 // Convenience function for assembling a phased FIFO pointer.
 uintptr_t FifoPtr(uintptr_t offset, bool phase) {
-  return offset | (static_cast<uintptr_t>(phase) << 11);
+  return offset | (static_cast<uintptr_t>(phase) << 12);
 }
 
 // Convenience function for generating a vector full of noisy data.
@@ -37,7 +37,7 @@ std::vector<char> MakeBlob(size_t len) {
 
 class SpiTest : public testing::Test, public MmioTest {
  protected:
-  static const uint16_t kFifoLen = 0x400;
+  static const uint16_t kFifoLen = 0x800;
 
   dif_spi_device_t spi_ = {
       .params = {.base_addr = dev().region()},
@@ -100,12 +100,12 @@ TEST_F(ConfigTest, BasicInit) {
   EXPECT_WRITE32(SPI_DEVICE_RXF_ADDR_REG_OFFSET,
                  {
                      {SPI_DEVICE_RXF_ADDR_BASE_OFFSET, 0x000},
-                     {SPI_DEVICE_RXF_ADDR_LIMIT_OFFSET, 0x400 - 1},
+                     {SPI_DEVICE_RXF_ADDR_LIMIT_OFFSET, 0x800 - 1},
                  });
   EXPECT_WRITE32(SPI_DEVICE_TXF_ADDR_REG_OFFSET,
                  {
-                     {SPI_DEVICE_TXF_ADDR_BASE_OFFSET, 0x400},
-                     {SPI_DEVICE_TXF_ADDR_LIMIT_OFFSET, 0x800 - 1},
+                     {SPI_DEVICE_TXF_ADDR_BASE_OFFSET, 0x800},
+                     {SPI_DEVICE_TXF_ADDR_LIMIT_OFFSET, 0x1000 - 1},
                  });
 
   EXPECT_EQ(dif_spi_device_configure(&spi_, config_), kDifSpiDeviceOk);
@@ -138,7 +138,7 @@ TEST_F(ConfigTest, ComplexInit) {
   EXPECT_WRITE32(SPI_DEVICE_TXF_ADDR_REG_OFFSET,
                  {
                      {SPI_DEVICE_TXF_ADDR_BASE_OFFSET, 0x024},
-                     {SPI_DEVICE_TXF_ADDR_LIMIT_OFFSET, 0x423},
+                     {SPI_DEVICE_TXF_ADDR_LIMIT_OFFSET, 0x823},
                  });
 
   EXPECT_EQ(dif_spi_device_configure(&spi_, config_), kDifSpiDeviceOk);
@@ -306,7 +306,7 @@ TEST_F(RxPendingTest, OutOfPhaseFull) {
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_rx_pending(&spi_, &bytes_remaining),
             kDifSpiDeviceOk);
-  EXPECT_EQ(bytes_remaining, 0x400);
+  EXPECT_EQ(bytes_remaining, 0x800);
 }
 
 TEST_F(RxPendingTest, OutOfPhase) {
@@ -316,7 +316,7 @@ TEST_F(RxPendingTest, OutOfPhase) {
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_rx_pending(&spi_, &bytes_remaining),
             kDifSpiDeviceOk);
-  EXPECT_EQ(bytes_remaining, 0x3eb);
+  EXPECT_EQ(bytes_remaining, 0x7eb);
 }
 
 TEST_F(RxPendingTest, NullArgs) {
@@ -365,7 +365,7 @@ TEST_F(TxPendingTest, OutOfPhaseFull) {
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_tx_pending(&spi_, &bytes_remaining),
             kDifSpiDeviceOk);
-  EXPECT_EQ(bytes_remaining, 0x400);
+  EXPECT_EQ(bytes_remaining, 0x800);
 }
 
 TEST_F(TxPendingTest, OutOfPhase) {
@@ -375,7 +375,7 @@ TEST_F(TxPendingTest, OutOfPhase) {
   size_t bytes_remaining;
   EXPECT_EQ(dif_spi_device_tx_pending(&spi_, &bytes_remaining),
             kDifSpiDeviceOk);
-  EXPECT_EQ(bytes_remaining, 0x3eb);
+  EXPECT_EQ(bytes_remaining, 0x7eb);
 }
 
 TEST_F(TxPendingTest, NullArgs) {

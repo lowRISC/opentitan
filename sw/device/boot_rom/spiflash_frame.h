@@ -13,7 +13,7 @@
 /**
  * The total size of a spiflash frame.
  */
-#define SPIFLASH_RAW_BUFFER_SIZE 1024
+#define SPIFLASH_RAW_BUFFER_SIZE 2048
 
 /**
  * The EOF flag on a spiflash frame, indicating that a frame is the last one in
