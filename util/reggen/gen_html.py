@@ -5,73 +5,11 @@
 Generate HTML documentation from validated register Hjson tree
 """
 
-import logging as log
-import re
+from .html_helpers import expand_paras, render_td
 
 
 def genout(outfile, msg):
     outfile.write(msg)
-
-
-def _get_desc_paras(s, rnames):
-    '''Expand a description field to HTML.
-
-    This supports a sort of simple pseudo-markdown. Supported Markdown
-    features:
-
-    - Separate paragraphs on a blank line
-    - **bold** and *italicised* text
-
-    We also generate links to registers when a name is prefixed with a double
-    exclamation mark. For example, if there is a register FOO then !!FOO or
-    !!FOO.field will generate a link to that register.
-
-    Returns a list of rendered paragraphs
-
-    '''
-    # Start by splitting into paragraphs. The regex matches a newline followed
-    # by one or more lines that just contain whitespace. Then render each
-    # paragraph with the _expand_paragraph worker function.
-    paras = [_expand_paragraph(paragraph.strip(), rnames)
-             for paragraph in re.split(r'\n(?:\s*\n)+', s)]
-
-    # There will always be at least one paragraph (splitting an empty string
-    # gives [''])
-    assert paras
-    return paras
-
-
-def _expand_paragraph(s, rnames):
-    '''Expand a single paragraph, as described in _get_desc_paras'''
-    def fieldsub(match):
-        base = match.group(1).partition('.')[0].lower()
-        if base in rnames:
-            if match.group(1)[-1] == ".":
-                return ('<a href="#Reg_' + base + '"><code class=\"reg\">' +
-                        match.group(1)[:-1] + '</code></a>.')
-            else:
-                return ('<a href="#Reg_' + base + '"><code class=\"reg\">' +
-                        match.group(1) + '</code></a>')
-        log.warn('!!' + match.group(1).partition('.')[0] +
-                 ' not found in register list.')
-        return match.group(0)
-
-    s = re.sub(r"!!([A-Za-z0-9_.]+)", fieldsub, s)
-    s = re.sub(r"(?s)\*\*(.+?)\*\*", r'<B>\1</B>', s)
-    s = re.sub(r"\*([^*]+?)\*", r'<I>\1</I>', s)
-    return s
-
-
-def _get_desc_td(s, rnames, td_class):
-    '''Expand a description field and put it in a <td>.
-
-    Returns a string. See _get_desc_paras for the format that gets expanded.
-
-    '''
-    desc_paras = _get_desc_paras(s, rnames)
-    class_attr = '' if td_class is None else ' class="{}"'.format(td_class)
-    return ('<td{}><p>{}</p></td>'
-            .format(class_attr, '</p><p>'.join(desc_paras)))
 
 
 # Generation of HTML table with register bit-field summary picture
@@ -205,7 +143,7 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
         regwen_div = ('    <div>Register enable = {}</div>\n'
                       .format(reg['regwen']))
 
-    desc_paras = _get_desc_paras(reg['desc'], rnames)
+    desc_paras = expand_paras(reg['desc'], rnames)
     desc_head = desc_paras[0]
     desc_body = desc_paras[1:]
 
@@ -283,7 +221,7 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
             "</td>")
         genout(outfile, "<td class=\"regfn\">" + fname + "</td>")
         if 'desc' in field:
-            genout(outfile, _get_desc_td(field['desc'], rnames, 'regde'))
+            genout(outfile, render_td(field['desc'], rnames, 'regde'))
         else:
             genout(outfile, "<td>\n")
 
@@ -296,7 +234,7 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
                     ename = enum['name']
                 genout(outfile, "    <tr><td>" + enum['value'] + "</td>")
                 genout(outfile, "<td>" + ename + "</td>")
-                genout(outfile, _get_desc_td(enum['desc'], rnames, None))
+                genout(outfile, render_td(enum['desc'], rnames, None))
                 genout(outfile, "</tr>\n")
 
             genout(outfile, "    </table>")
@@ -358,7 +296,7 @@ def gen_html_window(outfile, win, comp, regwidth, rnames, toc, toclvl):
             genout(outfile, '</tr>')
     genout(outfile, '</td></tr></table>')
     genout(outfile,
-           '<tr>{}</tr>'.format(_get_desc_td(win['desc'], rnames, 'regde')))
+           '<tr>{}</tr>'.format(render_td(win['desc'], rnames, 'regde')))
     genout(outfile, "</table>\n<br><br>\n")
     if toc is not None:
         toc.append((toclvl, comp + "." + wname, "Reg_" + wname.lower()))

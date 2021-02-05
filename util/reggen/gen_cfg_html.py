@@ -5,6 +5,8 @@
 Generate HTML documentation from validated configuration Hjson tree
 """
 
+from .html_helpers import render_td
+
 
 def genout(outfile, msg):
     outfile.write(msg)
@@ -20,6 +22,8 @@ def name_width(x):
 
 
 def gen_cfg_html(cfgs, outfile):
+    rnames = cfgs['genrnames']
+
     genout(outfile, "<p>Referring to the \n")
     genout(
         outfile,
@@ -48,29 +52,23 @@ def gen_cfg_html(cfgs, outfile):
             cfgs['bus_host'] + "</code></b></p>\n")
     else:
         genout(outfile, "<p><i>Bus Host Interface: none</i></p>\n")
+
     # IO
-    if ('available_input_list' in cfgs or 'available_output_list' in cfgs or
-            'available_inout_list' in cfgs):
+    ios = ([('input', x) for x in cfgs.get('available_input_list', [])] +
+           [('output', x) for x in cfgs.get('available_output_list', [])] +
+           [('inout', x) for x in cfgs.get('available_inout_list', [])])
+    if ios:
         genout(outfile, "<p><i>Peripheral Pins for Chip IO:</i></p>\n")
         genout(
             outfile, "<table class=\"cfgtable\"><tr>" +
             "<th>Pin name</th><th>direction</th>" +
             "<th>Description</th></tr>\n")
-        if 'available_input_list' in cfgs:
-            for x in cfgs['available_input_list']:
-                genout(
-                    outfile, "<tr><td>" + name_width(x) +
-                    "</td><td>input</td><td>" + x['desc'] + "</td></tr>\n")
-        if 'available_output_list' in cfgs:
-            for x in cfgs['available_output_list']:
-                genout(
-                    outfile, "<tr><td>" + name_width(x) +
-                    "</td><td>output</td><td>" + x['desc'] + "</td></tr>\n")
-        if 'available_inout_list' in cfgs:
-            for x in cfgs['available_inout_list']:
-                genout(
-                    outfile, "<tr><td>" + name_width(x) +
-                    "</td><td>inout</td><td>" + x['desc'] + "</td></tr>\n")
+        for direction, x in ios:
+            genout(outfile,
+                   '<tr><td>{}</td><td>{}</td>{}</tr>'
+                   .format(name_width(x),
+                           direction,
+                           render_td(x['desc'], rnames, None)))
         genout(outfile, "</table>\n")
     else:
         genout(outfile, "<p><i>Peripheral Pins for Chip IO: none</i></p>\n")
@@ -81,9 +79,10 @@ def gen_cfg_html(cfgs, outfile):
             outfile, "<table class=\"cfgtable\"><tr><th>Interrupt Name</th>" +
             "<th>Description</th></tr>\n")
         for x in cfgs['interrupt_list']:
-            genout(
-                outfile, "<tr><td>" + name_width(x) + "</td><td>" + x['desc'] +
-                "</td></tr>\n")
+            genout(outfile,
+                   '<tr><td>{}</td>{}</tr>'
+                   .format(name_width(x),
+                           render_td(x['desc'], rnames, None)))
         genout(outfile, "</table>\n")
     else:
         genout(outfile, "<p><i>Interrupts: none</i></p>\n")
@@ -93,9 +92,10 @@ def gen_cfg_html(cfgs, outfile):
             outfile, "<table class=\"cfgtable\"><tr><th>Alert Name</th>" +
             "<th>Description</th></tr>\n")
         for x in cfgs['alert_list']:
-            genout(
-                outfile, "<tr><td>" + x['name'] + "</td><td>" + x['desc'] +
-                "</td></tr>\n")
+            genout(outfile,
+                   '<tr><td>{}</td>{}</tr>'
+                   .format(x['name'],
+                           render_td(x['desc'], rnames, None)))
         genout(outfile, "</table>\n")
     else:
         genout(outfile, "<p><i>Security Alerts: none</i></p>\n")
