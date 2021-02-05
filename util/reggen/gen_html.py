@@ -159,16 +159,30 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
     # in a multireg with multiple regs give anchor with base register name
     if 'genbasebits' in reg and rname[-1] == '0':
         genout(outfile, "<div id=\"Reg_" + rname[:-1].lower() + "\"></div>\n")
-    regwen_string = ''
+
+    regwen_div = ''
     if 'regwen' in reg and (reg['regwen'] != ''):
-        regwen_string = '<br>Register enable = ' + reg['regwen']
-    genout(
-        outfile, "<table class=\"regdef\" id=\"Reg_" + rname.lower() + "\">\n"
-        "<tr><th class=\"regdef\" colspan=5><div>" + comp + "." + rname +
-        " @ + " + hex(offset) + "</div><div>" +
-        desc_expand(reg['desc'], rnames) + "</div>" + "<div>Reset default = " +
-        hex(reg['genresval']) + ", mask " + hex(reg['genresmask']) +
-        regwen_string + "</div></th></tr>\n")
+        regwen_div = ('    <div>Register enable = {}</div>\n'
+                      .format(reg['regwen']))
+
+    genout(outfile,
+           '<table class="regdef" id="Reg_{lrname}">\n'
+           ' <tr>\n'
+           '  <th class="regdef" colspan=5>\n'
+           '   <div>{comp}.{rname} @ {off:#x}</div>\n'
+           '   <div>{desc}</div>\n'
+           '   <div>Reset default = {resval:#x}, mask {mask:#x}</div>\n'
+           '{wen}'
+           '  </th>\n'
+           ' </tr>\n'
+           .format(lrname=rname.lower(),
+                   comp=comp,
+                   rname=rname,
+                   off=offset,
+                   desc=desc_expand(reg['desc'], rnames),
+                   resval=reg['genresval'],
+                   mask=reg['genresmask'],
+                   wen=regwen_div))
     if toc is not None:
         toc.append((toclvl, comp + "." + rname, "Reg_" + rname.lower()))
     genout(outfile, "<tr><td colspan=5>")
