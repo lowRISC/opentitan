@@ -23,7 +23,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_CLKMGR_AON        = 32'h 40420000;
   localparam logic [31:0] ADDR_SPACE_PINMUX_AON        = 32'h 40460000;
   localparam logic [31:0] ADDR_SPACE_PADCTRL_AON       = 32'h 40470000;
-  localparam logic [31:0] ADDR_SPACE_RAM_RET_AON       = 32'h 40520000;
+  localparam logic [31:0] ADDR_SPACE_RAM_RET_AON       = 32'h 40600000;
   localparam logic [31:0] ADDR_SPACE_OTP_CTRL          = 32'h 40130000;
   localparam logic [31:0] ADDR_SPACE_LC_CTRL           = 32'h 40140000;
   localparam logic [31:0] ADDR_SPACE_SENSOR_CTRL_AON   = 32'h 40500000;

@@ -384,7 +384,7 @@ package top_earlgrey_pkg;
   /**
    * Memory base address for ram_ret_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RAM_RET_AON_BASE_ADDR = 32'h40520000;
+  parameter int unsigned TOP_EARLGREY_RAM_RET_AON_BASE_ADDR = 32'h40600000;
 
   /**
    * Memory size for ram_ret_aon in top earlgrey.
