@@ -155,7 +155,7 @@ module otbn_loop_controller
   end
 
   // The OTBN controller must not commit a loop request if it sees a loop error.
-  `ASSERT(NoStartCommitIfLoopErr, loop_start_req_i && loop_start_commit_i |-> !loop_err_o);
+  `ASSERT(NoStartCommitIfLoopErr, loop_start_req_i && loop_start_commit_i |-> !loop_err_o)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
