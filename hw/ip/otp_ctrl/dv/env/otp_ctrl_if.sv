@@ -49,4 +49,6 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   // Once OTP init is done, hw_cfg_o output value stays stable until next power cycle
   `ASSERT(OtpHwCfgStable_A, otp_hw_cfg_o.valid == lc_ctrl_pkg::On |=> $stable(otp_hw_cfg_o))
 
+  // otp_keymgr valid is related to part_digest, should not be changed after otp_pwr_init
+  `ASSERT(OtpKeymgrValidStable_A, pwr_otp_done_o |-> $stable(keymgr_key_o.valid))
 endinterface
