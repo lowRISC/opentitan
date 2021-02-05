@@ -12,7 +12,7 @@
 
   .extern main
   .extern crt_interrupt_vector
-  .extern kDeviceStopAddress
+  .extern crt_section_clear
 
 /**
  * Callable entry point for flash.
@@ -25,7 +25,7 @@ _start:
 
   // Set up the stack. We have no expectation that the rom that
   // jumps here will have the correct stack start linked in.
-  la sp, _stack_start
+  la sp, _stack_end
 
   // Set up the global pointer. This requires that we disable linker relaxations
   // (or it will be relaxed to `mv gp, gp`).
@@ -39,31 +39,14 @@ _start:
   csrw mtvec, t0
 
   // Zero out the `.bss` segment.
-  //
-  // We use `t0` and `t1` to represent the start and end pointers
-  // of `.bss`.
-  la   t0, _bss_start
-  la   t1, _bss_end
-  bgeu t0, t1, bss_zero_loop_end
-bss_zero_loop:
-  sw    zero, 0(t0)
-  addi  t0, t0, 0x4
-  bltu  t0, t1, bss_zero_loop
-bss_zero_loop_end:
+  la   a0, _bss_start
+  la   a1, _bss_end
+  call crt_section_clear
 
   // Zero out the stack
-  //
-  // We use `t0` and `t1` to represent the start and end pointers of the stack.
-  // As the stack grows downwards and we zero going forwards the start pointer
-  // starts as _stack_end and the end pointer at _stack_start.
-  la   t0, _stack_end
-  la   t1, _stack_start
-  bgeu t0, t1, stack_zero_loop_end
-stack_zero_loop:
-  sw    zero, 0(t0)
-  addi  t0, t0, 0x4
-  bltu  t0, t1, stack_zero_loop
-stack_zero_loop_end:
+  la   a0, _stack_start
+  la   a1, _stack_end
+  call crt_section_clear
 
   // Call the functions in the `.init_array` section.
   //
@@ -91,13 +74,6 @@ init_array_loop_end:
   li   a1, 0x0  // argv = NULL
   call main
 
-  // Load `kDeviceStopAddress` into `t0`. If it is non-zero, write the return
-  // value from `main` (in `a0`) into it, otherwise, skip to `wfi` loop.
-  lw t0, kDeviceStopAddress
-  beqz t0, wfi_loop
-  sw a0, 0(t0)
-
-  // Loop forever if main somehow returns.
-wfi_loop:
-  wfi
-  j wfi_loop
+  // Halt the core (wfi loop)
+1:wfi
+  j 1b

@@ -21,16 +21,16 @@ __DYNAMIC = 0;
  */
 INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 
-/* Reserving 32 bytes at the top of the RAM for test utils. */
-_test_reserved_size = 0x20;
-
 /**
- * The stack starts at the end of RAM right after the 32 reserved bytes and grows down.
+ * The stack starts at the end of RAM and grows down.
  * It is zeroed out so a size must be provided.
  */
-_stack_size = 0x2000 - _test_reserved_size; /* ~8kb stack */
-_stack_start = ORIGIN(ram_main) + LENGTH(ram_main) - _test_reserved_size;
-_stack_end = _stack_start - _stack_size;
+_stack_size = 0x2000; /* ~8kb stack */
+_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
+_stack_start = _stack_end - _stack_size;
+
+/* DV Log offset (has to be different to other boot stages). */
+_dv_log_offset = 0x10000;
 
 ENTRY(_start)
 
@@ -141,37 +141,5 @@ SECTIONS {
     _bss_end = .;
   } > ram_main
 
-  /**
-   * STAB debug table.
-   */
-  .stab 0x0 (NOLOAD): {
-    *(.stab)
-  }
-
-  /**
-   * STAB debug strings.
-   */
-  .stabstr 0x0 (NOLOAD): {
-    *(.stabstr)
-  }
-
-  /**
-   * The following sections are used by DV to implement logging in an
-   * alternate way, which enables simulation speed up by completely avoiding
-   * any string format processing or even the actual transmission of log data
-   * to a real peripheral.
-   *
-   * These sections are marked as dummy so that they can still be extracted
-   * using readelf or similar utilities. As such, the content in these sections
-   * is not relevant for the actual SW code and can be safely discarded.
-   */
-
-  /**
-   * The following section contains log fields constructed from the logs using
-   * the log_fields_t struct defined in sw/device/lib/base/log.h. The size of
-   * each log field is fixed - 20 bytes, which is used as the delimiter.
-   */
-  .logs.fields 0x10000 (DSECT): {
-    *(.logs.fields)
-  }
+  INCLUDE sw/device/info_sections.ld
 }
