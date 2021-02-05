@@ -415,6 +415,8 @@ module top_earlgrey #(
   usbdev_pkg::awk_state_t       pinmux_aon_usb_state_debug;
   edn_pkg::edn_req_t [3:0] edn0_edn_req;
   edn_pkg::edn_rsp_t [3:0] edn0_edn_rsp;
+  edn_pkg::edn_req_t [3:0] edn1_edn_req;
+  edn_pkg::edn_rsp_t [3:0] edn1_edn_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
@@ -539,11 +541,17 @@ module top_earlgrey #(
   assign ast_edn_edn_rsp_o = edn0_edn_rsp[2];
 
   // define partial inter-module tie-off
-  edn_pkg::edn_rsp_t unused_edn0_edn_rsp3;
+  edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
+  edn_pkg::edn_rsp_t unused_edn1_edn_rsp2;
+  edn_pkg::edn_rsp_t unused_edn1_edn_rsp3;
 
   // assign partial inter-module tie-off
-  assign unused_edn0_edn_rsp3 = edn0_edn_rsp[3];
-  assign edn0_edn_req[3] = '0;
+  assign unused_edn1_edn_rsp1 = edn1_edn_rsp[1];
+  assign unused_edn1_edn_rsp2 = edn1_edn_rsp[2];
+  assign unused_edn1_edn_rsp3 = edn1_edn_rsp[3];
+  assign edn1_edn_req[1] = '0;
+  assign edn1_edn_req[2] = '0;
+  assign edn1_edn_req[3] = '0;
 
 
   // Unused reset signals
@@ -1394,7 +1402,8 @@ module top_earlgrey #(
 
       // Inter-module signals
       .crashdump_o(alert_handler_crashdump),
-      .entropy_i( 1'b0),
+      .edn_o(edn1_edn_req[0]),
+      .edn_i(edn1_edn_rsp[0]),
       .esc_rx_i(alert_handler_esc_rx),
       .esc_tx_o(alert_handler_esc_tx),
       .tl_i(alert_handler_tl_req),
@@ -1405,7 +1414,9 @@ module top_earlgrey #(
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_timers),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel])
+      .clk_edn_i (clkmgr_aon_clocks.clk_main_timers),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]),
+      .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
   nmi_gen u_nmi_gen (
@@ -1740,8 +1751,8 @@ module top_earlgrey #(
       .keymgr_key_i(keymgr_kmac_key),
       .keymgr_kdf_i(keymgr_kmac_data_req),
       .keymgr_kdf_o(keymgr_kmac_data_rsp),
-      .entropy_o(),
-      .entropy_i(edn_pkg::EDN_RSP_DEFAULT),
+      .entropy_o(edn0_edn_req[3]),
+      .entropy_i(edn0_edn_rsp[3]),
       .idle_o(clkmgr_aon_idle[2]),
       .tl_i(kmac_tl_req),
       .tl_o(kmac_tl_rsp),
@@ -1880,8 +1891,8 @@ module top_earlgrey #(
       // Inter-module signals
       .csrng_cmd_o(csrng_csrng_cmd_req[1]),
       .csrng_cmd_i(csrng_csrng_cmd_rsp[1]),
-      .edn_i('0),
-      .edn_o(),
+      .edn_i(edn1_edn_req),
+      .edn_o(edn1_edn_rsp),
       .tl_i(edn1_tl_req),
       .tl_o(edn1_tl_rsp),
 

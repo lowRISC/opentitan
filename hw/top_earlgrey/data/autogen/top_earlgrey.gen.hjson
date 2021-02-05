@@ -3438,11 +3438,13 @@
       clock_srcs:
       {
         clk_i: io_div4
+        clk_edn_i: main
       }
       clock_group: timers
       reset_connections:
       {
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
+        rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40150000
       generated: "true"
@@ -3455,6 +3457,7 @@
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
+        clk_edn_i: clkmgr_aon_clocks.clk_main_timers
       }
       domain: "0"
       size: 0x1000
@@ -3563,13 +3566,16 @@
           index: -1
         }
         {
-          struct: logic
-          type: uni
-          name: entropy
-          default: " 1'b0"
-          act: rcv
+          struct: edn
+          type: req_rsp
+          name: edn
+          act: req
+          width: 1
+          package: edn_pkg
           inst_name: alert_handler
-          index: -1
+          default: ""
+          top_signame: edn1_edn
+          index: 0
         }
         {
           struct: esc_rx
@@ -5672,10 +5678,12 @@
           type: req_rsp
           name: entropy
           act: req
-          width: "1"
+          width: 1
           package: edn_pkg
           inst_name: kmac
-          index: -1
+          default: ""
+          top_signame: edn0_edn
+          index: 3
         }
         {
           name: idle
@@ -6470,8 +6478,8 @@
             '''
           package: edn_pkg
           inst_name: edn0
-          end_idx: 3
-          top_type: partial-one-to-N
+          end_idx: -1
+          top_type: one-to-N
           top_signame: edn0_edn
           index: -1
         }
@@ -6567,7 +6575,7 @@
           type: req_rsp
           name: edn
           act: rsp
-          width: "4"
+          width: 4
           default: "'0"
           desc:
             '''
@@ -6579,6 +6587,9 @@
             '''
           package: edn_pkg
           inst_name: edn1
+          end_idx: 1
+          top_type: partial-one-to-N
+          top_signame: edn1_edn
           index: -1
         }
         {
@@ -7258,6 +7269,11 @@
         keymgr.edn
         otp_ctrl.edn
         ast_edn.edn
+        kmac.entropy
+      ]
+      edn1.edn:
+      [
+        alert_handler.edn
       ]
       otp_ctrl.otp_keymgr_key:
       [
@@ -12576,13 +12592,16 @@
         index: -1
       }
       {
-        struct: logic
-        type: uni
-        name: entropy
-        default: " 1'b0"
-        act: rcv
+        struct: edn
+        type: req_rsp
+        name: edn
+        act: req
+        width: 1
+        package: edn_pkg
         inst_name: alert_handler
-        index: -1
+        default: ""
+        top_signame: edn1_edn
+        index: 0
       }
       {
         struct: esc_rx
@@ -13564,10 +13583,12 @@
         type: req_rsp
         name: entropy
         act: req
-        width: "1"
+        width: 1
         package: edn_pkg
         inst_name: kmac
-        index: -1
+        default: ""
+        top_signame: edn0_edn
+        index: 3
       }
       {
         name: idle
@@ -13869,8 +13890,8 @@
           '''
         package: edn_pkg
         inst_name: edn0
-        end_idx: 3
-        top_type: partial-one-to-N
+        end_idx: -1
+        top_type: one-to-N
         top_signame: edn0_edn
         index: -1
       }
@@ -13905,7 +13926,7 @@
         type: req_rsp
         name: edn
         act: rsp
-        width: "4"
+        width: 4
         default: "'0"
         desc:
           '''
@@ -13917,6 +13938,9 @@
           '''
         package: edn_pkg
         inst_name: edn1
+        end_idx: 1
+        top_type: partial-one-to-N
+        top_signame: edn1_edn
         index: -1
       }
       {
@@ -15515,7 +15539,7 @@
         signame: edn0_edn_req
         width: 4
         type: req_rsp
-        end_idx: 3
+        end_idx: -1
         act: rsp
         suffix: req
         default: "'0"
@@ -15526,7 +15550,29 @@
         signame: edn0_edn_rsp
         width: 4
         type: req_rsp
-        end_idx: 3
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: "'0"
+      }
+      {
+        package: edn_pkg
+        struct: edn_req
+        signame: edn1_edn_req
+        width: 4
+        type: req_rsp
+        end_idx: 1
+        act: rsp
+        suffix: req
+        default: "'0"
+      }
+      {
+        package: edn_pkg
+        struct: edn_rsp
+        signame: edn1_edn_rsp
+        width: 4
+        type: req_rsp
+        end_idx: 1
         act: rsp
         suffix: rsp
         default: "'0"
