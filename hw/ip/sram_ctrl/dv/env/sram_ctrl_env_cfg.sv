@@ -22,6 +22,10 @@ class sram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(sram_ctrl_reg_block));
     list_of_alerts = sram_ctrl_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
 
+    ral.set_hdl_path_root("tb.dut.u_sram_ctrl", "BkdrRegPathRtl");
+    ral.set_hdl_path_root("tb.dut.u_sram_ctrl", "BkdrRegPathRtlCommitted");
+    ral.set_hdl_path_root("tb.dut.u_sram_ctrl", "BkdrRegPathRtlShadow");
+
     // Build KDI cfg object
     m_kdi_cfg = push_pull_agent_cfg#(.DeviceDataWidth(KDI_DATA_SIZE))::type_id::create("m_kdi_cfg");
 
