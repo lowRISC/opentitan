@@ -30,8 +30,8 @@ def _nexysvideo_check():
 
     files = ["flash_ctrl_reg_pkg.sv", "tl_main_pkg.sv"]
     match = [
-        r"parameter\s+int\s+RegPagesPerBank\s*=\s*128;",
-        r"localparam\s+logic\s*\[\s*31\s*:\s*0\s*\]\s+ADDR_MASK_EFLASH\s*=\s*32'h\s*0007ffff;"
+        r"parameter\s+int\s+RegPagesPerBank\s*=\s*256;",
+        r"localparam\s+logic\s*\[\s*31\s*:\s*0\s*\]\s+ADDR_MASK_EFLASH\s*=\s*32'h\s*000fffff;"
     ]
 
     return files, match
