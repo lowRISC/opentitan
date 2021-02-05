@@ -33,6 +33,8 @@
              "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",
              "{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson",
              "{proj_root}/hw/ip/spi_device/dv/spi_device_sim_cfg.hjson",
+             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_main_sim_cfg.hjson",
+             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_ret_sim_cfg.hjson",
              "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
              "{proj_root}/hw/ip/usbdev/dv/usbdev_sim_cfg.hjson",
              // Top level IPs.

@@ -5,12 +5,12 @@
 {
     name:               "sram_ctrl",
     design_spec:        "hw/ip/sram_ctrl/doc",
-    dv_doc:            "",
+    dv_doc:             "hw/ip/sram_ctrl/doc/dv",
     hw_checklist:       "hw/ip/sram_ctrl/doc/checklist",
-    sw_checklist:       ""
+    sw_checklist:       "",
     version:            "0.1",
     life_stage:         "L1",
     design_stage:       "D2",
-    verification_stage: "V0",
+    verification_stage: "V1",
     notes:              "",
 }

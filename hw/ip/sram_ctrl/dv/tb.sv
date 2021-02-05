@@ -105,9 +105,8 @@ module tb;
   // bind mem_bkdr_if
   `define SRAM_CTRL_MEM_HIER \
     dut.u_ram1p_sram.u_prim_ram_1p_adv.u_mem
-  bind `SRAM_CTRL_MEM_HIER mem_bkdr_if #(.MEM_ADDR_WIDTH(`SRAM_ADDR_WIDTH),
-                                         .MEM_BYTES_PER_WORD(`SRAM_DATA_WIDTH >> 3),
-                                         .MEM_PARITY(1)) mem_bkdr_if ();
+
+  bind `SRAM_CTRL_MEM_HIER mem_bkdr_if #(.MEM_PARITY(1)) mem_bkdr_if ();
 
   initial begin
     // drive clk and rst_n from clk_if
