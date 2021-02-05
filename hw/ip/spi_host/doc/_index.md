@@ -150,6 +150,8 @@ A preliminary investigation of DTR transfer mode suggests that proper support fo
 
 ## SPI_HOST IP Command Interface
 
+**TODO**: Add full-duplex bit in HJSON, remove requirement that TXBYTES=RXBYTES
+
 Issuing a command generally consists of the following steps:
 1. Configure the IP to be compatible with the target peripheral.
 The {{< regref "CONFIGOPTS_0" >}} multi-register has one set of configuration settings for each `cs_n` line.
@@ -391,6 +393,7 @@ All data in the waveform is transferred using 32-bit instructions.
   }
 }
 {{< /wavejson >}}
+
 
 There is also no restriction on the alignment of transmitted data. 
 The {{< regref "TXDATA" >}} register is actually implemented as a memory window, so that it can support byte-enable signals.
@@ -661,17 +664,104 @@ The Byte Select, or `bytesel`, unit is responsible for unpacking data from the F
 
 # Programmer's Guide
 
+Though the SPI_HOST IP may be suitable for interacting with any number of SPI devices, this Programmer's guide focuses on one primary target device, the [W25Q01JV flash from Winbond](https://www.winbond.com/resource-files/W25Q01JV%20SPI%20RevB%2011132019.pdf).
+
+## Byte-Ordering Conventions
+
+The primary objective when interacting with serial flash devices is to transfer data from CPU memory to flash memory or vice-versa.
+Software is responsible for transfering data in and out of the SPI_HOST via the TXDATA and RXDATA registers
+
+The following waveform depicts a quad I/O fast read command for our targetted flash device.
+{{< wavejson >}}
+{ signal: [
+  {name:"cs_n", wave:"10........................."},
+  {name:"sck", wave:"lnn........................"},
+  {name:"sd[0]", wave:"x1..0101.22222222z.22334455",
+   data:["a[23]", "a[19]", "a[15]", "a[11]", "a[7]", "a[3]", "1", "1"]},
+  {name:"sd[1]", wave:"xz.......22222222z.22334455",
+   data:["a[22]", "a[18]", "a[14]", "a[10]", "a[6]", "a[2]", "1", "1"]},
+  {name:"sd[2]", wave:"xz.......22222222zz22334455",
+   data:["a[21]", "a[17]", "a[15]", "a[11]", "a[7]", "a[3]", "1", "1"]},
+  {name:"sd[3]", wave:"xz.......22222222zz22334455",
+   data:["a[20]", "a[16]", "a[12]", "a[8]", "a[4]", "a[0]", "1", "1"]},
+  {node: ".A.......B.C.D.E.F.G.H.I.J.K"},
+  {node: ".........L.....M...N........O"}
+],
+  edge: ['A<->B Command 0xEB ("Fast Read Quad I/O")',  'B<->C MSB(addr)', 'D<->E LSB(addr)',
+         'G<->H addr[0]', 'H<->I addr[1]', 'I<->J addr[2]', 'J<->K addr[3]',
+         'L<->M Address', 'N<->O Data'],
+
+ foot: {text: "Addresses are transmitted MSB first, and data is returned in order of increasing peripheral byte address."}}
+{{< /wavejson >}}
+
+Note two important details:
+1. Each byte of data is returned in order of increasing address.
+2. All fields are transmitted most significant bit first, and for any multi-byte quantities (notably here the address), most significant bytes are transmitted first.
+In this regard, these flash devices are similar to Big-Endian CPU architectures.
+
+
+
 **TODO**. (Outline Below)
+
+The first step in SPI_HOST we must first enable it.
+
+## Overview
 
 ## Basic Configuration
 
-## Issuing a Standard SPI command
+Next the SPI_HOST must be configured to match the needs of the SPI peripheral being targeted.
 
-## Issuing a Dual or Quad SPI command
 
-### Instruction code sent at Standard SPI bit width
+** TODO **: Look at other Difs to understand how to write pseudo code
 
-### All Bytes Sent at Dual or Quad Rate
+```
+// Set CPOL to 0, CPHA to 0, and FULLCYC to 1
+
+// Leave CSAAT, CSNLEAD, CSNTRAIL, CSNIDLE can typically be left at
+// zero (default value).
+
+// Optional: set CLKDIV
+```
+
+## Loading the TXFIFO
+
+### Example 1: Quad Read with 4-Byte Addressing
+
+
+Larger SPI Flashes support both 4-byte and 3-byte addressing modes.
+However some smaller parts only support the 3-bytes addresses.
+
+**Note when using Little-Endian systems (such as Ibex)**: 32-bit integer addresses must be byte-swapped to Big-Endian byte-order before being loaded into {{< regref "TXDATA" >}}, because these SPI flash devices expect the MSB to be sent first.
+Assuming the SPI_HOST is compiled with `ByteOrder = 1`, sending the address without this byte swap will result in the MSB being sent last, and the address will be incorrectly received at the flash device.
+The `ByteOrder` parameter is meant to correct for byte-ordering issues that may be caused when using 32-bit instructions to copy bytes from *memory* to the SPI bus (i.e. the goal is to avoid shuffling of flash data).
+When copying 32-bit *CPU register* values, such as addresses, to {{< regref "TXDATA" >}} this byte-ordering correction (which is applied to properly order memory transfers) inverts the register address.
+
+### Example 2: Quad Read with 3-byte Addressing
+
+For 3-byte address commands, writing the 24-bit address to {{< regref "TXDATA" >}} as a 32-bit integer will *not* work.
+The address will be sent as a 4-byte value, and the entire command will be shifted incorrectly.
+There are two possible solutions to this problem:
+1. The instruction code can be packed into the MSB of the address, and written to {{< regref "TXDATA" >}}, to create a 4-byte header which can be loaded directly into {{< regref "TXDATA">}}
+```
+// 24-bit address;
+long address=value24bit;
+// Winbond Fast Read with Quad I/O
+char instruction_code=0xEB;
+// Pack the instruction into the MSB
+long header=(address & 0xffffff) | ((instruction_code << 24) & 0xff000000);
+// See previous note on byte-order when using transmitting 32-bit values on Little-Endian systems.
+```
+2. The instruction code and address can be written to {{< regref "TXDATA" >}}, as a sequence of smaller bytes.
+These bytes will then be serially transmitted in the same order they are loaded into the
+This method may be simpler from a programmer's perspective, but it has the downside that each 1-byte write to the Command FIFO consumes a full 32-bit slot in the FIFO.
+
+## Issuing the Command
+
+### Typical (Half-Duplex) SPI commands
+
+**Example 1**: Quad-data Read (with 4-bytesent at Standard SPI bit width
+
+### Full-Duplex Standard SPI command
 
 ## Register Table
 
