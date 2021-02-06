@@ -207,17 +207,29 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task req_lc_transition();
-    // TODO: this two variables are constraints to lc_prog_pull_seq once it supports data
-    // constraint
     lc_ctrl_state_pkg::lc_state_e lc_state;
-    lc_ctrl_state_pkg::lc_cnt_e lc_cnt;
+    lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
+    bit [TL_DW-1:0]               intr_val;
     push_pull_host_seq#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
                         lc_prog_pull_seq;
     `uvm_create_on(lc_prog_pull_seq, p_sequencer.lc_prog_pull_sequencer_h);
-    `DV_CHECK_STD_RANDOMIZE_FATAL(lc_state);
-    `DV_CHECK_STD_RANDOMIZE_FATAL(lc_cnt)
+
+    // Even though OTP does not check input lc_state or lc_cnt is valid enum,
+    // this sequence will have 90% chance that the input data is correctly encoded
+    if (!$urandom_range(0, 9)) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(lc_state)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(lc_cnt)
+      cfg.m_lc_prog_pull_agent_cfg.add_h_user_data({lc_state, lc_cnt});
+    end
+
     `DV_CHECK_RANDOMIZE_FATAL(lc_prog_pull_seq)
     `uvm_send(lc_prog_pull_seq)
+
+    // Wait 2 clock cycle until error propogates to the interrupts,
+    // then read and clear interrupt, check is implemented in scb
+    cfg.clk_rst_vif.wait_clks(2);
+    csr_rd(ral.intr_state, intr_val);
+    csr_wr(ral.intr_state, intr_val);
   endtask
 
   virtual task req_lc_token();
