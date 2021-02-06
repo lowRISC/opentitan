@@ -233,6 +233,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
               current_state = get_next_state(current_state);
               // set sw_binding_en after advance OP
               void'(ral.sw_binding_en.predict(.value(1)));
+              ral.sw_binding_en.set_locked_regs_access("original_access");
             end
           end
           keymgr_pkg::OpDisable: begin
@@ -308,9 +309,20 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to sw_binding_en=0",
                                   csr.get_name()), UVM_MEDIUM)
         return;
+      end else if (csr.get_name() == "sw_binding_en" && current_state == keymgr_pkg::StReset) begin
+        `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to state in StReset",
+                                  csr.get_name()), UVM_MEDIUM)
+        return;
       end else begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
       end
+    end
+    if (data_phase_write && csr.get_name() == "sw_binding_en" &&
+        current_state == keymgr_pkg::StReset) begin
+      // in StReset, can't change sw_binding_en value
+      // set related locked reg back to original_access as this is updated automatic in post_write
+      #0; // push below update to be done after post_write
+      ral.sw_binding_en.set_locked_regs_access("original_access");
     end
 
     // process the csr req
