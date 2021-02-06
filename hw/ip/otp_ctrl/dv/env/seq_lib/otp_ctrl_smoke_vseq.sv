@@ -11,10 +11,9 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   `uvm_object_new
 
-  bit do_lc_trans;
   bit collect_used_addr = 1;
 
-  rand bit                           do_req_keys;
+  rand bit                           do_req_keys, do_lc_trans;
   rand bit                           access_locked_parts;
   rand bit [TL_AW-1:0]               dai_addr;
   rand bit [TL_DW-1:0]               wdata0, wdata1;
@@ -133,6 +132,11 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
       end
 
+      if (do_lc_trans) begin
+        req_lc_transition();
+        req_lc_token();
+      end
+
       // lock digests
       `uvm_info(`gfn, "Trigger HW digest calculation", UVM_HIGH)
       cal_hw_digests();
@@ -146,11 +150,6 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
       // read and check digest in scb
       rd_digests();
-
-      if (do_lc_trans) begin
-        req_lc_transition();
-        req_lc_token();
-      end
     end
 
   endtask : body

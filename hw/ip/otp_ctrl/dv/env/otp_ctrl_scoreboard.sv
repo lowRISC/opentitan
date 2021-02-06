@@ -11,6 +11,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // local variables
   bit [TL_DW-1:0] otp_a [OTP_ARRAY_SIZE];
+
+  // lc_state and lc_cnt that stored in OTP
+  bit [LC_PROG_DATA_SIZE-1:0] otp_lc_data;
   bit key_size_80 = SCRAMBLE_KEY_SIZE == 80;
   bit [EDN_BUS_WIDTH-1:0] edn_data_q[$];
 
@@ -60,6 +63,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     fork
       process_otp_power_up();
       process_lc_token_req();
+      process_lc_prog_req();
       process_edn_req();
       check_otbn_rsp();
       check_flash_rsps();
@@ -82,6 +86,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
           otp_a   = '{default:0};
           digests = '{default:0};
+          otp_lc_data = 0;
           sw_read_lock = 0;
           // secret partitions have been scrambled before writing to OTP.
           // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
@@ -126,6 +131,27 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
               PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
         end
+      end
+    end
+  endtask
+
+  virtual task process_lc_prog_req();
+    forever begin
+      push_pull_item#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)) rcv_item;
+      bit exp_err_bit;
+      string err_msg;
+
+      lc_prog_fifo.get(rcv_item);
+      err_msg = $sformatf("current lc_data %0h, request program lc_data %0h",
+                          otp_lc_data, rcv_item.h_data);
+
+      // LC program request data is valid, no OTP macro error
+      if ((otp_lc_data & rcv_item.h_data) == otp_lc_data) begin
+        `DV_CHECK_EQ(rcv_item.d_data, 0, err_msg)
+        otp_lc_data = rcv_item.h_data;
+      end else begin
+        `DV_CHECK_EQ(rcv_item.d_data, 1, err_msg)
+        predict_status_err(.dai_err(0), .lc_err(1));
       end
     end
   endtask
@@ -403,7 +429,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
                                 otp_a[otp_addr], otp_a[otp_addr+1]);
-                  void'(ral.status.predict(OtpDaiIdle));
+                  predict_dai_idle_status_wo_err();
                 end
               end
               DaiWrite: begin
@@ -412,7 +438,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                 if (get_digest_reg_val(part_idx) != 0) begin
                   predict_status_err(.dai_err(1));
                 end else begin
-                  void'(ral.status.predict(OtpDaiIdle));
+                  predict_dai_idle_status_wo_err();
                   // write digest
                   if (is_sw_digest(dai_addr)) begin
                     bit [TL_DW*2-1:0] curr_digest, prev_digest;
@@ -429,7 +455,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                       predict_status_err(.dai_err(1));
                     end
                   end else if (is_digest(dai_addr)) begin
-                    predict_status_err(1);
+                    predict_status_err(.dai_err(1));
                   // write OTP memory
                   end else begin
                     if (!is_secret(dai_addr)) begin
@@ -439,7 +465,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                         otp_a[otp_addr] = wr_data;
                         check_otp_idle(.val(0), .wait_clks(3));
                       end
-                      else predict_status_err(1);
+                      else predict_status_err(.dai_err(1));
                     end else begin
                       bit [SCRAMBLE_DATA_SIZE-1:0] secret_data = {otp_a[otp_addr + 1],
                                                                   otp_a[otp_addr]};
@@ -453,7 +479,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                         // wait until secret scrambling is done
                         check_otp_idle(.val(0), .wait_clks(34));
                       end else begin
-                        predict_status_err(1);
+                        predict_status_err(.dai_err(1));
                       end
                     end
                   end
@@ -632,7 +658,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       predict_status_err(.dai_err(1));
       return;
     end else begin
-      void'(ral.status.predict(OtpDaiIdle));
+      predict_dai_idle_status_wo_err();
     end
     case (part_idx)
       HwCfgIdx:   mem_q = otp_a[HW_CFG_START_ADDR:HW_CFG_END_ADDR];
@@ -746,9 +772,18 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                                                                       dai_addr >> 2;
   endfunction
 
-  virtual function void predict_status_err(bit dai_err, int part_idx = 0);
+  virtual function void predict_status_err(bit dai_err = 0, bit lc_err = 0);
     void'(ral.intr_state.otp_error.predict(.value(1)));
-    if (dai_err) void'(ral.status.predict(OtpDaiErr | OtpDaiIdle));
+    if (dai_err) begin
+       void'(ral.status.dai_idle.predict(1));
+       void'(ral.status.dai_error.predict(1));
+    end
+    if (lc_err) void'(ral.status.lci_error.predict(1));
+  endfunction
+
+  virtual function void predict_dai_idle_status_wo_err();
+    void'(ral.status.dai_idle.predict(1));
+    void'(ral.status.dai_error.predict(0));
   endfunction
 
   virtual function void predict_rdata(bit is_64_bits, bit [TL_DW-1:0] rdata0,
