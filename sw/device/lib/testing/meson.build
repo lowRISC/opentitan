@@ -36,7 +36,7 @@ if coverage
       ],
       dependencies: [
         sw_lib_mem,
-        sw_lib_uart,
+        sw_lib_dif_uart,
         sw_lib_runtime_log,
       ],
     ),
