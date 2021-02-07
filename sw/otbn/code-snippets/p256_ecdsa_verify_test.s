@@ -17,8 +17,8 @@
 .text
 
 ecdsa_verify_test:
-  jal      x1, p256init
-  jal      x1, p256verify
+  jal      x1, p256_init
+  jal      x1, p256_verify
 
   /* pointer to rnd */
   lw        x21, 4(x0)

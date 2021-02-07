@@ -7,15 +7,16 @@
  * https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/dcrypto/dcrypto_p256.c
  */
 
-.globl p256init
-.globl p256isoncurve
-.globl p256scalarmult
-.globl p256sign
-.globl p256verify
+.globl p256_init
+.globl p256_isoncurve
+.globl p256_scalarmult
+.globl p256_scalar_base_mult
+.globl p256_sign
+.globl p256_verify
 
 .text
 
-SetupP256PandMuLow:
+setup_barrett_p:
   sw        x0, 524(x0)
   sw        x0, 528(x0)
   sw        x0, 532(x0)
@@ -42,14 +43,14 @@ SetupP256PandMuLow:
   sw        x2, 564(x0)
   addi      x2, x0, 28
   bn.lid    x2, 544(x0)
-  jalr      x0, x1, 0
+  ret
 
-p256init:
+p256_init:
   addi      x3, x0, 31
   bn.lid    x3, 0(x0)
   bn.xor    w31, w31, w31
   bn.addi   w30, w31, 1
-  jal       x1, SetupP256PandMuLow
+  jal       x1, setup_barrett_p
   lui       x2, 163110
   addi      x2, x2, 75
   sw        x2, 576(x0)
@@ -76,9 +77,9 @@ p256init:
   sw        x2, 604(x0)
   addi      x2, x0, 27
   bn.lid    x2, 576(x0)
-  jalr      x0, x1, 0
+  ret
 
-MulMod:
+mod_mul_256x256:
   bn.mulqacc.z          w24.0, w25.0,  0
   bn.mulqacc            w24.1, w25.0, 64
   bn.mulqacc.so  w19.L, w24.0, w25.1, 64
@@ -143,9 +144,9 @@ MulMod:
   bn.sel    w21, w29, w31, L
   bn.sub    w21, w22, w21
   bn.addm   w19, w21, w31
-  jalr      x0, x1, 0
+  ret
 
-p256isoncurve:
+p256_isoncurve:
   addi      x3, x0, 0
   bn.lid    x3, 0(x0)
   lw        x16, 0(x0)
@@ -166,14 +167,14 @@ p256isoncurve:
   lw        x15, 28(x0)
   bn.lid    x14, 0(x22)
   bn.mov    w25, w24
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w0, w19
   bn.lid    x13, 0(x21)
   bn.mov    w25, w24
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.lid    x13, 0(x21)
   bn.mov    w25, w19
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.lid    x13, 0(x21)
   bn.subm   w19, w19, w24
   bn.subm   w19, w19, w24
@@ -181,33 +182,33 @@ p256isoncurve:
   bn.addm   w24, w19, w27
   bn.sid    x13, 0(x19)
   bn.sid    x8, 0(x20)
-  jalr      x0, x1, 0
+  ret
 
-ProjAdd:
+proj_add:
   bn.mov    w24, w11
   bn.mov    w25, w8
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w14, w19
   bn.mov    w24, w12
   bn.mov    w25, w9
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w15, w19
   bn.mov    w24, w13
   bn.mov    w25, w10
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w16, w19
   bn.addm   w17, w11, w12
   bn.addm   w18, w8, w9
   bn.mov    w24, w17
   bn.mov    w25, w18
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.addm   w18, w14, w15
   bn.subm   w17, w19, w18
   bn.addm   w18, w12, w13
   bn.addm   w19, w9, w10
   bn.mov    w24, w18
   bn.mov    w25, w19
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w18, w19
   bn.addm   w19, w15, w16
   bn.subm   w18, w18, w19
@@ -215,13 +216,13 @@ ProjAdd:
   bn.addm   w12, w8, w10
   bn.mov    w24, w19
   bn.mov    w25, w12
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w11, w19
   bn.addm   w12, w14, w16
   bn.subm   w12, w11, w12
   bn.mov    w24, w27
   bn.mov    w25, w16
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.subm   w11, w12, w19
   bn.addm   w13, w11, w11
   bn.addm   w11, w11, w13
@@ -229,7 +230,7 @@ ProjAdd:
   bn.addm   w11, w15, w11
   bn.mov    w24, w27
   bn.mov    w25, w12
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.addm   w15, w16, w16
   bn.addm   w16, w15, w16
   bn.subm   w12, w19, w16
@@ -241,156 +242,156 @@ ProjAdd:
   bn.subm   w14, w14, w16
   bn.mov    w24, w18
   bn.mov    w25, w12
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w15, w19
   bn.mov    w24, w14
   bn.mov    w25, w12
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w16, w19
   bn.mov    w24, w11
   bn.mov    w25, w13
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.addm   w12, w19, w16
   bn.mov    w24, w17
   bn.mov    w25, w11
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.subm   w11, w19, w15
   bn.mov    w24, w18
   bn.mov    w25, w13
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w13, w19
   bn.mov    w24, w17
   bn.mov    w25, w14
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.addm   w13, w13, w19
-  jalr      x0, x1, 0
+  ret
 
-ProjToAffine:
+proj_to_affine:
   bn.addm   w10, w10, w31
   bn.mov    w24, w10
   bn.mov    w25, w10
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w24, w19
   bn.mov    w25, w10
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w12, w19
   bn.mov    w24, w19
   bn.mov    w25, w19
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w24, w19
   bn.mov    w25, w19
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w24, w19
   bn.mov    w25, w12
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w13, w19
   loopi     4, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, MulMod
-    addi      x0, x0, 0
+    jal       x1, mod_mul_256x256
+    nop
   bn.mov    w24, w19
   bn.mov    w25, w13
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w14, w19
   loopi     8, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, MulMod
-    addi      x0, x0, 0
+    jal       x1, mod_mul_256x256
+    nop
   bn.mov    w24, w19
   bn.mov    w25, w14
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w15, w19
   loopi     16, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, MulMod
-    addi      x0, x0, 0
+    jal       x1, mod_mul_256x256
+    nop
   bn.mov    w24, w19
   bn.mov    w25, w15
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w16, w19
   loopi     32, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, MulMod
-    addi      x0, x0, 0
+    jal       x1, mod_mul_256x256
+    nop
   bn.mov    w17, w19
   bn.mov    w24, w10
   bn.mov    w25, w19
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   loopi     192, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, MulMod
-    addi      x0, x0, 0
+    jal       x1, mod_mul_256x256
+    nop
   bn.mov    w18, w19
   bn.mov    w24, w17
   bn.mov    w25, w16
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   loopi     16, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, MulMod
-    addi      x0, x0, 0
+    jal       x1, mod_mul_256x256
+    nop
   bn.mov    w24, w15
   bn.mov    w25, w19
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   loopi     8, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, MulMod
-    addi      x0, x0, 0
+    jal       x1, mod_mul_256x256
+    nop
   bn.mov    w24, w14
   bn.mov    w25, w19
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   loopi     4, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, MulMod
-    addi      x0, x0, 0
+    jal       x1, mod_mul_256x256
+    nop
   bn.mov    w24, w13
   bn.mov    w25, w19
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   loopi     2, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, MulMod
-    addi      x0, x0, 0
+    jal       x1, mod_mul_256x256
+    nop
   bn.mov    w24, w12
   bn.mov    w25, w19
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   loopi     2, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, MulMod
-    addi      x0, x0, 0
+    jal       x1, mod_mul_256x256
+    nop
   bn.mov    w24, w10
   bn.mov    w25, w19
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w24, w19
   bn.mov    w25, w18
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w14, w19
   bn.mov    w24, w8
   bn.mov    w25, w14
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w11, w19
   bn.mov    w24, w9
   bn.mov    w25, w14
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w12, w19
-  jalr      x0, x1, 0
+  ret
 
-ModInv:
+mod_inv:
   bn.wsrr   w2, 0
   bn.subi   w2, w2, 2
   bn.mov    w1, w30
   loopi     256, 14
     bn.mov    w24, w1
     bn.mov    w25, w1
-    jal       x1, MulMod
+    jal       x1, mod_mul_256x256
     bn.mov    w3, w19
     bn.add    w2, w2, w2
     bn.sel    w1, w1, w3, C
@@ -399,33 +400,33 @@ ModInv:
     beq       x2, x0, nomul
     bn.mov    w24, w3
     bn.mov    w25, w0
-    jal       x1, MulMod
+    jal       x1, mod_mul_256x256
     bn.mov    w1, w19
     nomul:
-    addi      x0, x0, 0
-  jalr      x0, x1, 0
+    nop
+  ret
 
-FetchBandRandomize:
+fetch_proj_randomize:
   bn.wsrr   w2, 1
   bn.addm   w26, w2, w31
   bn.lid    x10, 0(x21)
   bn.mov    w25, w26
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w6, w19
   bn.lid    x10, 0(x22)
   bn.mov    w25, w26
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w7, w19
-  jalr      x0, x1, 0
+  ret
 
-ProjDouble:
+proj_double:
   bn.mov    w11, w8
   bn.mov    w12, w9
   bn.mov    w13, w10
-  jal       x1, ProjAdd
-  jalr      x0, x1, 0
+  jal       x1, proj_add
+  ret
 
-SetupP256NandMuLow:
+setup_barrett_n:
   addi      x2, x0, 0
   sw        x2, 632(x0)
   addi      x2, x2, -1
@@ -468,19 +469,23 @@ SetupP256NandMuLow:
   sw        x2, 652(x0)
   addi      x2, x0, 28
   bn.lid    x2, 640(x0)
-  jalr      x0, x1, 0
+  ret
 
-ScalarMult_internal:
-  jal       x1, SetupP256NandMuLow
+scalar_mult_int:
+  jal       x1, setup_barrett_n
   bn.lid    x9, 0(x17)
   bn.addm   w1, w1, w31
   bn.subm   w0, w0, w1
-  jal       x1, SetupP256PandMuLow
-  jal       x1, FetchBandRandomize
+  jal       x1, setup_barrett_p
+
+  /* get randomized projective coodinates of curve point
+     P = (x_p, y_p, z_p) = (w8, w9, w10) = (w6, w7, w26) =
+     (x*z mod p, y*z mod p, z) */
+  jal       x1, fetch_proj_randomize
   bn.mov    w8, w6
   bn.mov    w9, w7
   bn.mov    w10, w26
-  jal       x1, ProjDouble
+  jal       x1, proj_double
   bn.mov    w3, w11
   bn.mov    w4, w12
   bn.mov    w5, w13
@@ -488,8 +493,8 @@ ScalarMult_internal:
   bn.mov    w9, w30
   bn.mov    w10, w31
   loopi     256, 32
-    jal       x1, ProjDouble
-    jal       x1, FetchBandRandomize
+    jal       x1, proj_double
+    jal       x1, fetch_proj_randomize
     bn.xor    w8, w0, w1
     bn.sel    w8, w6, w3, M
     bn.sel    w9, w7, w4, M
@@ -497,7 +502,7 @@ ScalarMult_internal:
     bn.mov    w2, w11
     bn.mov    w6, w12
     bn.mov    w7, w13
-    jal       x1, ProjAdd
+    jal       x1, proj_add
     bn.or     w8, w0, w1
     bn.sel    w8, w11, w2, M
     bn.sel    w9, w12, w6, M
@@ -510,20 +515,20 @@ ScalarMult_internal:
     bn.wsrr   w2, 1
     bn.mov    w24, w3
     bn.mov    w25, w2
-    jal       x1, MulMod
+    jal       x1, mod_mul_256x256
     bn.mov    w3, w19
     bn.mov    w24, w4
     bn.mov    w25, w2
-    jal       x1, MulMod
+    jal       x1, mod_mul_256x256
     bn.mov    w4, w19
     bn.mov    w24, w5
     bn.mov    w25, w2
-    jal       x1, MulMod
+    jal       x1, mod_mul_256x256
     bn.mov    w5, w19
-  jal       x1, ProjToAffine
-  jalr      x0, x1, 0
+  jal       x1, proj_to_affine
+  ret
 
-get_P256B:
+load_basepoint:
   lui       x2, 887180
   addi      x2, x2, 662
   sw        x2, 672(x0)
@@ -576,9 +581,9 @@ get_P256B:
   sw        x2, 732(x0)
   addi      x2, x0, 9
   bn.lid    x2, 704(x0)
-  jalr      x0, x1, 0
+  ret
 
-p256sign:
+p256_sign:
   addi      x0, x0, 0
   addi      x3, x0, 0
   bn.lid    x3, 0(x0)
@@ -598,33 +603,33 @@ p256sign:
   addi      x13, x0, 9
   lw        x14, 24(x0)
   lw        x15, 28(x0)
-  jal       x1, get_P256B
+  jal       x1, load_basepoint
   bn.sid    x12, 0(x21)
   bn.sid    x13, 0(x22)
   addi      x0, x0, 0
   bn.lid    x8, 0(x16)
-  jal       x1, ScalarMult_internal
-  jal       x1, SetupP256NandMuLow
+  jal       x1, scalar_mult_int
+  jal       x1, setup_barrett_n
   bn.lid    x8, 0(x16)
-  jal       x1, ModInv
+  jal       x1, mod_inv
   bn.lid    x10, 0(x23)
   bn.mov    w25, w1
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.addm   w24, w11, w31
   bn.sid    x10, 0(x19)
   addi      x0, x0, 0
   bn.mov    w25, w19
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w0, w19
   bn.lid    x10, 0(x18)
   bn.mov    w25, w1
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.addm   w0, w19, w0
   bn.sid    x8, 0(x20)
-  jal       x1, SetupP256PandMuLow
-  jalr      x0, x1, 0
+  jal       x1, setup_barrett_p
+  ret
 
-p256scalarbasemult:
+p256_scalar_base_mult:
   addi      x0, x0, 0
   addi      x3, x0, 0
   bn.lid    x3, 0(x0)
@@ -645,80 +650,81 @@ p256scalarbasemult:
   lw        x14, 24(x0)
   lw        x15, 28(x0)
   bn.lid    x8, 0(x17)
-  jal       x1, get_P256B
+  jal       x1, load_basepoint
   bn.sid    x12, 0(x21)
   bn.sid    x13, 0(x22)
   addi      x0, x0, 0
   bn.lid    x8, 0(x23)
-  jal       x1, ScalarMult_internal
+  jal       x1, scalar_mult_int
   bn.sid    x11++, 0(x21)
   bn.sid    x11++, 0(x22)
-  jalr      x0, x1, 0
+  ret
 
-ModInvVar:
+mod_inv_var:
   bn.mov    w2, w31
   bn.mov    w3, w30
   bn.wsrr   w4, 0
   bn.wsrr   w7, 0
   bn.mov    w5, w0
 
-  impvt_Loop:
+  ebgcd_loop:
   bn.or     w4, w4, w4
   csrrs     x2, 1984, x0
   andi      x2, x2, 4
-  bne       x2, x0, impvt_Uodd
+  bne       x2, x0, ebgcd_u_odd
   bn.rshi   w4, w31, w4 >> 1
   bn.or     w2, w2, w2
   csrrs     x2, 1984, x0
   andi      x2, x2, 4
-  bne       x2, x0, impvt_Rodd
+  bne       x2, x0, ebgcd_r_odd
   bn.rshi   w2, w31, w2 >> 1
-  jal       x0, impvt_Loop
+  jal       x0, ebgcd_loop
 
-  impvt_Rodd:
+  ebgcd_r_odd:
   bn.add    w2, w7, w2
   bn.addc   w6, w31, w31
   bn.rshi   w2, w6, w2 >> 1
-  jal       x0, impvt_Loop
+  jal       x0, ebgcd_loop
 
-  impvt_Uodd:
+  ebgcd_u_odd:
   bn.or     w5, w5, w5
   csrrs     x2, 1984, x0
   andi      x2, x2, 4
-  bne       x2, x0, impvt_UVodd
+  bne       x2, x0, ebgcd_uv_odd
   bn.rshi   w5, w31, w5 >> 1
   bn.or     w3, w3, w3
   csrrs     x2, 1984, x0
   andi      x2, x2, 4
-  bne       x2, x0, impvt_Sodd
+  bne       x2, x0, ebgcd_s_odd
   bn.rshi   w3, w31, w3 >> 1
-  jal       x0, impvt_Loop
+  jal       x0, ebgcd_loop
 
-  impvt_Sodd:
+  ebgcd_s_odd:
   bn.add    w3, w7, w3
   bn.addc   w6, w31, w31
   bn.rshi   w3, w6, w3 >> 1
-  jal       x0, impvt_Loop
+  jal       x0, ebgcd_loop
 
-  impvt_UVodd:
+  ebgcd_uv_odd:
   bn.cmp    w5, w4
   csrrs     x2, 1984, x0
   andi      x2, x2, 1
-  beq       x2, x0, impvt_V_gte_U
+  beq       x2, x0, ebgcd_v_gte_u
   bn.subm   w2, w2, w3
   bn.sub    w4, w4, w5
-  jal       x0, impvt_Loop
+  jal       x0, ebgcd_loop
 
-  impvt_V_gte_U:
+  ebgcd_v_gte_u:
   bn.subm   w3, w3, w2
   bn.sub    w5, w5, w4
   csrrs     x2, 1984, x0
   andi      x2, x2, 8
-  beq       x2, x0, impvt_Loop
-  bn.addm   w1, w2, w31
-  jalr      x0, x1, 0
+  beq       x2, x0, ebgcd_loop
 
-p256verify:
+  bn.addm   w1, w2, w31
+  ret
+
+p256_verify:
   addi      x3, x0, 6
   bn.lid    x3, 0(x0)
   lw        x16, 0(x0)
@@ -740,7 +746,7 @@ p256verify:
   bn.lid    x11, 0(x19)
   bn.mov    w24, w6
   bn.not    w24, w24
-  jal       x1, SetupP256NandMuLow
+  jal       x1, setup_barrett_n
   bn.cmp    w6, w31
   csrrs     x2, 1984, x0
   andi      x2, x2, 8
@@ -758,22 +764,22 @@ p256verify:
   csrrs     x2, 1984, x0
   andi      x2, x2, 1
   beq       x2, x0, fail
-  jal       x1, ModInvVar
+  jal       x1, mod_inv_var
   bn.lid    x11, 0(x19)
   bn.mov    w25, w1
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w0, w19
   bn.lid    x10, 0(x18)
   bn.mov    w25, w1
-  jal       x1, MulMod
+  jal       x1, mod_mul_256x256
   bn.mov    w1, w19
-  jal       x1, SetupP256PandMuLow
+  jal       x1, setup_barrett_p
   bn.lid    x8, 0(x21)
   bn.lid    x15, 0(x22)
   bn.mov    w13, w30
-  jal       x1, get_P256B
+  jal       x1, load_basepoint
   bn.mov    w10, w30
-  jal       x1, ProjAdd
+  jal       x1, proj_add
   bn.mov    w3, w11
   bn.mov    w4, w12
   bn.mov    w5, w13
@@ -785,37 +791,37 @@ p256verify:
     bn.mov    w8, w11
     bn.mov    w9, w12
     bn.mov    w10, w13
-    jal       x1, ProjAdd
+    jal       x1, proj_add
     bn.add    w2, w2, w2
     csrrs     x2, 1984, x0
     andi      x2, x2, 1
-    beq       x2, x0, noBoth
+    beq       x2, x0, no_both
     bn.mov    w8, w3
     bn.mov    w9, w4
     bn.mov    w10, w5
-    jal       x1, ProjAdd
-    jal       x0, noY
+    jal       x1, proj_add
+    jal       x0, no_q
 
-    noBoth:
+    no_both:
     bn.add    w6, w0, w0
     csrrs     x2, 1984, x0
     andi      x2, x2, 1
-    beq       x2, x0, noG
+    beq       x2, x0, no_g
     bn.lid    x13, 0(x21)
     bn.lid    x14, 0(x22)
     bn.mov    w10, w30
-    jal       x1, ProjAdd
+    jal       x1, proj_add
 
-    noG:
+    no_g:
     bn.add    w6, w1, w1
     csrrs     x2, 1984, x0
     andi      x2, x2, 1
-    beq       x2, x0, noY
-    jal       x1, get_P256B
+    beq       x2, x0, no_q
+    jal       x1, load_basepoint
     bn.mov    w10, w30
-    jal       x1, ProjAdd
+    jal       x1, proj_add
 
-    noY:
+    no_q:
     bn.add    w0, w0, w0
     bn.add    w1, w1, w1
 
@@ -823,15 +829,16 @@ p256verify:
   jal       x1, mod_inv_var
   bn.mov    w24, w1
   bn.mov    w25, w11
-  jal       x1, MulMod
-  jal       x1, SetupP256NandMuLow
+  jal       x1, mod_mul_256x256
+  jal       x1, setup_barrett_n
   bn.subm   w24, w19, w31
 
   fail:
   bn.sid    x11, 0(x17)
-  jalr      x0, x1, 0
 
-p256scalarmult:
+  ret
+
+p256_scalarmult:
   addi      x3, x0, 0
   bn.lid    x3, 0(x0)
   lw        x16, 0(x0)
@@ -851,7 +858,7 @@ p256scalarmult:
   lw        x14, 24(x0)
   lw        x15, 28(x0)
   bn.lid    x8, 0(x16)
-  jal       x1, ScalarMult_internal
+  jal       x1, scalar_mult_int
   bn.sid    x11++, 0(x21)
   bn.sid    x11++, 0(x22)
-  jalr      x0, x1, 0
+  ret

@@ -16,8 +16,8 @@
 .text
 
 scalar_mult_test:
-  jal      x1, p256init
-  jal      x1, p256scalarmult
+  jal      x1, p256_init
+  jal      x1, p256_scalarmult
 
   /* pointer to x-coordinate */
   lw        x21, 20(x0)
