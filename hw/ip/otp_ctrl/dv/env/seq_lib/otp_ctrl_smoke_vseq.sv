@@ -14,6 +14,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   bit do_lc_trans;
   bit collect_used_addr = 1;
 
+  rand bit                           do_req_keys;
   rand bit                           access_locked_parts;
   rand bit [TL_AW-1:0]               dai_addr;
   rand bit [TL_DW-1:0]               wdata0, wdata1;
@@ -91,6 +92,13 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       csr_wr(ral.check_trigger_regwen, check_trigger_regwen_val);
       csr_wr(ral.check_timeout, check_timeout_val);
       trigger_checks(.val(check_trigger_val), .wait_done(1));
+
+      if (do_req_keys) begin
+        req_otbn_key();
+        req_flash_addr_key();
+        req_flash_data_key();
+        req_all_sram_keys();
+      end
 
       for (int i = 0; i < num_dai_op; i++) begin
         bit [TL_DW-1:0] rdata0, rdata1;
