@@ -18,8 +18,8 @@
 .text
 
 ecdsa_sign_test:
-  jal      x1, p256init
-  jal      x1, p256sign
+  jal      x1, p256_init
+  jal      x1, p256_sign
 
   /* pointer to R */
   lw        x21, 12(x0)

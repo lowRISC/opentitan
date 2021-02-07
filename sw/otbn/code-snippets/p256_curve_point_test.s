@@ -17,8 +17,8 @@
 .text
 
 curve_point_test:
-  jal      x1, p256init
-  jal      x1, p256isoncurve
+  jal      x1, p256_init
+  jal      x1, p256_isoncurve
 
   /* pointer to R */
   lw        x21, 12(x0)
