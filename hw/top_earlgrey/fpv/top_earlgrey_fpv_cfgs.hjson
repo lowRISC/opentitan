@@ -90,7 +90,7 @@
              }
              {
                name: prim_secded_28_22_fpv
-               fusesoc_core: lowrisc:fpv:prim_secded_82226_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_28_22_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                cov: true
              }
