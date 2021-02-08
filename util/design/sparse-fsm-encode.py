@@ -20,7 +20,7 @@ deterministic. If not specified, the script randomly picks a seed.
 
 """
 import argparse
-import logging
+import logging as log
 import math
 import random
 import sys
@@ -92,29 +92,29 @@ def main():
 
     if args.language in ['c', 'rust']:
         if args.n not in [8, 16, 32]:
-            logging.error(
+            log.error(
                 "When using C or Rust, widths must be a power-of-two "
                 "at least a byte (8 bits) wide. You chose %d." % (args.n, ))
             sys.exit(1)
 
     if args.m > 2**args.n:
-        logging.error(
+        log.error(
             'Statespace 2^%d not large enough to accommodate %d states.' %
             (args.n, args.m))
         sys.exit(1)
 
     if args.d >= args.n:
-        logging.error(
+        log.error(
             'State is only %d bits wide, which is not enough to fulfill a '
             'minimum Hamming distance constraint of %d. ' % (args.n, args.d))
         sys.exit(1)
 
     if args.d <= 0:
-        logging.error('Hamming distance must be > 0.')
+        log.error('Hamming distance must be > 0.')
         sys.exit(1)
 
     if args.d < 3:
-        logging.warning(
+        log.warning(
             'A value of 4-5 is recommended for the minimum Hamming distance '
             'constraint. At a minimum, this should be set to 3.')
 
@@ -149,7 +149,7 @@ def main():
             encodings = [format(rnd, '0' + str(args.n) + 'b')]
         # if we restarted for too many times, abort.
         if num_restarts >= MAX_RESTARTS:
-            logging.error(
+            log.error(
                 'Did not find a solution after restarting {} times. This is '
                 'an indicator that not many (or even no) solutions exist for '
                 'the current parameterization. Rerun the script and/or adjust '
