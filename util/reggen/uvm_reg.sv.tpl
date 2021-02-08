@@ -44,7 +44,7 @@ package ${block.name}_ral_pkg;
 % for r in regs_flat:
 <%
   reg_width = block.width
-  reg_name = r.name
+  reg_name = r.name.lower()
   is_ext = 0
   reg_shadowed = r.shadowed
 %>\
@@ -192,7 +192,7 @@ package ${block.name}_ral_pkg;
     // registers
 % endif
 % for r in regs_flat:
-    rand ${gen_dv.rcname(block, r)} ${r.name};
+    rand ${gen_dv.rcname(block, r)} ${r.name.lower()};
 % endfor
 % if block.wins:
     // memories
@@ -243,8 +243,8 @@ package ${block.name}_ral_pkg;
 % endif
 % for r in regs_flat:
 <%
-  reg_name = r.name
-  reg_right = r.dvrights
+  reg_name = r.name.lower()
+  reg_right = r.dv_rights()
   reg_width = block.width
   reg_offset =  str(reg_width) + "'h" + "%x" % r.offset
   reg_tags = r.tags
@@ -275,7 +275,7 @@ package ${block.name}_ral_pkg;
       // assign locked reg to its regwen reg
 % for r in regs_flat:
   % if r.regwen:
-      ${r.regwen}.add_locked_reg(${r.name});
+      ${r.regwen.lower()}.add_locked_reg(${r.name.lower()});
   % endif
 % endfor
 

@@ -21,7 +21,7 @@ def bcname(b):
 
 def rcname(b, r):
     '''Get the name of the dv_base_reg subclass for this register'''
-    return b.name + "_reg_" + r.name
+    return b.name + "_reg_" + r.name.lower()
 
 
 def mcname(b, m):

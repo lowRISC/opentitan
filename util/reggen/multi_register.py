@@ -5,9 +5,11 @@
 from typing import Dict, List
 
 from reggen import register
-from .register import Register
+from .field import Field
 from .lib import (check_keys, check_str, check_name,
                   check_bool, expand_parameter)
+from .reg_block import RegBlock
+from .register import Register
 
 REQUIRED_FIELDS = {
     'name': ['s', "base name of the registers"],
@@ -40,13 +42,14 @@ OPTIONAL_FIELDS.update({
 })
 
 
-class MultiRegister:
+class MultiRegister(RegBlock):
     def __init__(self,
                  offset: int,
                  addrsep: int,
                  reg_width: int,
                  params: List[Dict[str, object]],
                  raw: object):
+        super().__init__(offset)
 
         rd = check_keys(raw, 'multireg',
                         list(REQUIRED_FIELDS.keys()),
@@ -114,6 +117,18 @@ class MultiRegister:
                                       self.regwen_multi, self.compact,
                                       min_reg_idx, max_reg_idx, self.cname)
             self.regs.append(reg)
+
+    def get_n_bits(self, bittype: List[str] = ["q"]) -> int:
+        return sum(reg.get_n_bits(bittype) for reg in self.regs)
+
+    def get_field_list(self) -> List[Field]:
+        ret = []
+        for reg in self.regs:
+            ret += reg.get_field_list()
+        return ret
+
+    def is_homogeneous(self) -> bool:
+        return self.reg.is_homogeneous()
 
     def _asdict(self) -> Dict[str, object]:
         rd = self.reg._asdict()

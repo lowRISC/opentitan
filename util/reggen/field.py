@@ -184,7 +184,29 @@ class Field:
         return (self.enum is not None and
                 len(self.enum) != 1 + self.bits.max_value())
 
-    def get_n_bits(self, hwext: bool, bittype: List[str] = ["q"]) -> int:
+    def get_n_bits(self, hwext: bool, bittype: List[str]) -> int:
+        '''Get the size of this field in bits
+
+        bittype should be a list of the types of signals to count. The elements
+        should come from the following list:
+
+        - 'q': A signal for the value of the field. Only needed if HW can read
+          its contents.
+
+        - 'd': A signal for the next value of the field. Only needed if HW can
+          write its contents.
+
+        - 'qe': A write enable signal for bus accesses. Only needed if HW can
+          read the field's contents and the field has the hwqe flag.
+
+        - 're': A read enable signal for bus accesses. Only needed if HW can
+          read the field's contents and the field has the hwre flag.
+
+        - 'de': A write enable signal for hardware accesses. Only needed if HW
+          can write the field's contents and the register data is stored in the
+          register block (true if the hwext flag is false).
+
+        '''
         n_bits = 0
         if "q" in bittype and self.hwaccess.allows_read():
             n_bits += self.bits.width()
