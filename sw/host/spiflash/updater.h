@@ -36,10 +36,10 @@ struct Frame {
   } hdr;
 
   /** Frame payload. */
-  uint8_t data[1024 - sizeof(hdr)];
+  uint8_t data[2048 - sizeof(hdr)];
 
   /** Returns available the frame available payload size in bytes. */
-  size_t PayloadSize() const { return 1024 - sizeof(hdr); }
+  size_t PayloadSize() const { return 2048 - sizeof(hdr); }
 };
 
 /**
