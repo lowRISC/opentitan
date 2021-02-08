@@ -6,6 +6,8 @@
 
 <%
   from topgen import lib # TODO: Split lib to common lib module
+  from reggen.data import get_basename
+
   num_regs = block.get_n_regs_flat()
   max_regs_char = len("{}".format(num_regs-1))
 %>\
@@ -28,14 +30,14 @@ package ${block.name}_reg_pkg;
   ## in this case we have a homogeneous multireg, with only one replicated field
   % if r.get_n_bits(["q"]) and r.ishomog:
   typedef struct packed {
-    logic ${lib.bitarray(r.get_field_flat(0).get_n_bits(["q"]),2)} q;
+    logic ${lib.bitarray(r.get_field_flat(0).get_n_bits(r.hwext, ["q"]),2)} q;
     % if r.get_field_flat(0).hwqe:
     logic        qe;
     % endif
-    % if r.get_field_flat(0).hwre or (r.get_field_flat(0).shadowed and r.get_field_flat(0).hwext):
+    % if r.get_field_flat(0).hwre or (r.shadowed and r.hwext):
     logic        re;
     % endif
-    % if r.get_field_flat(0).shadowed and not r.get_field_flat(0).hwext:
+    % if r.shadowed and not r.hwext:
     logic        err_update;
     logic        err_storage;
     % endif
@@ -45,20 +47,20 @@ package ${block.name}_reg_pkg;
   % elif r.get_n_bits(["q"]) and not r.ishomog:
   typedef struct packed {
     % for f in r.get_reg_flat(0).fields:
-      % if f.get_n_bits(["q"]) >= 1:
+      % if f.get_n_bits(r.hwext, ["q"]) >= 1:
     struct packed {
-      logic ${lib.bitarray(f.get_n_bits(["q"]),2)} q;
+      logic ${lib.bitarray(f.get_n_bits(r.hwext, ["q"]),2)} q;
       % if f.hwqe:
       logic        qe;
       % endif
-      % if f.hwre or (f.shadowed and f.hwext):
+      % if f.hwre or (r.shadowed and r.hwext):
       logic        re;
       % endif
-      % if f.shadowed and not f.hwext:
+      % if r.shadowed and not r.hwext:
       logic        err_update;
       logic        err_storage;
       % endif
-    } ${f.get_basename() if r.is_multi_reg() else f.name};
+    } ${get_basename(f.name.lower()) if r.is_multi_reg() else f.name.lower()};
       %endif
     %endfor
   } ${block.name + "_reg2hw_" + r.name + ("_mreg_t" if r.is_multi_reg() else "_reg_t")};
@@ -70,8 +72,8 @@ package ${block.name}_reg_pkg;
  ## in this case we have a homogeneous multireg, with only one replicated field
   % if r.get_n_bits(["d"]) and r.ishomog:
   typedef struct packed {
-    logic ${lib.bitarray(r.get_field_flat(0).get_n_bits(["d"]),2)} d;
-    % if not r.get_reg_flat(0).hwext:
+    logic ${lib.bitarray(r.get_field_flat(0).get_n_bits(r.hwext, ["d"]),2)} d;
+    % if not r.hwext:
     logic        de;
     % endif
   } ${block.name + "_hw2reg_" + r.name + ("_mreg_t" if r.is_multi_reg() else "_reg_t")};
@@ -80,13 +82,13 @@ package ${block.name}_reg_pkg;
   % elif r.get_n_bits(["d"]) and not r.ishomog:
   typedef struct packed {
     % for f in r.get_reg_flat(0).fields:
-      % if f.get_n_bits(["d"]) >= 1:
+      % if f.get_n_bits(r.hwext, ["d"]) >= 1:
     struct packed {
-      logic ${lib.bitarray(f.get_n_bits(["d"]),2)} d;
+      logic ${lib.bitarray(f.get_n_bits(r.hwext, ["d"]),2)} d;
       % if not r.hwext:
       logic        de;
       % endif
-    } ${f.get_basename() if r.is_multi_reg() else f.name};
+    } ${get_basename(f.name.lower()) if r.is_multi_reg() else f.name.lower()};
       %endif
     %endfor
   } ${block.name + "_hw2reg_" + r.name + ("_mreg_t" if r.is_multi_reg() else "_reg_t")};

@@ -11,7 +11,7 @@ from mako.template import Template
 from pkg_resources import resource_filename
 
 from .access import HwAccess, SwRdAccess, SwWrAccess
-from .data import Block, Field, MultiReg, Reg, Window
+from .data import Block, MultiReg, Reg, Window
 from .register import Register
 from .multi_register import MultiRegister
 
@@ -27,43 +27,12 @@ def check_field_bool(obj, field, default):
         return default
 
 
-def parse_field(obj, reg, nfields):
-    """Convert OrderedDict field into Field class
-    """
-    f = Field()
-    f.name = escape_name(obj.name)
-    # if name doesn't exist and only one field in a reg
-    if f.name == "" and nfields == 1:
-        f.name = reg.name
-
-    # MSB, LSB
-    f.lsb = obj.bits.lsb
-    f.msb = obj.bits.msb
-
-    f.swaccess = obj.swaccess.value[1]
-    f.swwraccess = obj.swaccess.value[2]
-    f.swrdaccess = obj.swaccess.value[3]
-    f.hwaccess = obj.hwaccess.value[1]
-    f.hwqe = obj.hwqe
-    f.hwre = obj.hwre
-    f.hwext = reg.hwext
-    f.tags = obj.tags
-    f.shadowed = reg.shadowed
-
-    # resval handling. If obj.resval is None, the field is defined as unknown.
-    # Treat it as zero here.
-    f.resval = obj.resval or 0
-
-    return f
-
-
 def parse_reg(obj):
     """Convert Register into a Reg object."""
     assert isinstance(obj, Register)
     reg = Reg(escape_name(obj.name))
     reg.offset = obj.offset
     reg.fields = []
-
     reg.hwext = obj.hwext
     reg.hwqe = obj.hwqe
     reg.hwre = obj.hwre
@@ -77,17 +46,14 @@ def parse_reg(obj):
     reg.update_err_alert = obj.update_err_alert or ''
     reg.storage_err_alert = obj.storage_err_alert or ''
 
-    # Parsing Fields
-    for f in obj.fields:
-        field = parse_field(f, reg, len(obj.fields))
-        if field is not None:
-            reg.fields.append(field)
-            reg.width = max(reg.width, field.msb + 1)
+    reg.fields = obj.fields
+    for field in reg.fields:
+        reg.width = max(reg.width, field.bits.msb + 1)
 
     # TODO: Field bitfield overlapping check
     log.info("R[0x%04x]: %s ", reg.offset, reg.name)
     for f in reg.fields:
-        log.info("  F[%2d:%2d]: %s", f.msb, f.lsb, f.name)
+        log.info("  F[%2d:%2d]: %s", f.bits.msb, f.bits.lsb, f.name)
 
     return reg
 
@@ -96,17 +62,31 @@ def parse_multireg(obj):
     '''Convert MultiRegister into a MultiReg object'''
     assert isinstance(obj, MultiRegister)
     regs = [parse_reg(r) for r in obj.regs]
+    reg0 = regs[0].get_reg_flat(0)
     # get register properties of the first register in the multireg and
     # copy them to the parent
     # since all regs in a multireg have the same props
-    reg = MultiReg(regs[0].get_reg_flat(0))
+    reg = MultiReg(escape_name(obj.reg.name))
+    reg.offset = reg0.offset
+    reg.hwext = reg0.hwext
+    reg.hwqe = reg0.hwqe
+    reg.hwre = reg0.hwre
+
     # since this is a multireg, the list of fields can
     # contain regs or multiregs
     reg.fields = regs
+
+    # Fields that don't really make sense for a multireg
+    reg.resval = None
+    reg.dvrights = None
+    reg.regwen = None
+
     # a homogenous multireg contains only one single field that is replicated
     reg.ishomog = len(obj.reg.fields) == 1
-    # TODO: need to rework this once the underlying JSON has been changed
-    reg.name = escape_name(obj.reg.name)
+
+    reg.tags = reg0.tags
+    reg.shadowed = reg0.shadowed
+
     # TODO: need to reference proper param here such that it can be used
     # in the package template for the array declaration
     # reg.param = ...

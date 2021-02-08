@@ -6,9 +6,11 @@
 // Do Not Edit directly
 // TODO: This automation does not support: shadow reg, has_d has_de not has_q (right now does not
 // have internal storage if de=0)
-<% from reggen import (gen_fpv)
-%>\
-<% from topgen import lib
+<%
+  from reggen import (gen_fpv)
+  from reggen.data import get_basename
+
+  from topgen import lib
 %>\
 <%def name="construct_classes(block)">\
 % for b in block.blocks:
@@ -160,7 +162,7 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
   has_d  = r.get_n_bits(["d"]) > 0
   has_de = r.get_n_bits(["de"]) > 0
 %>\
-  % if not r.get_field_flat(0).shadowed:
+  % if not r.shadowed:
   % if r.is_multi_reg():
 <%
       mreg_name          = r.name
@@ -179,12 +181,12 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
    % if not r.ishomog:
      % for field in r.get_reg_flat(0).fields:
 <%
-  mreg_fpv_name_list.append(mreg_name + "_" + field.get_basename())
-  mreg_dut_path_list.append(mreg_name + "[s]." + field.get_basename())
-  mreg_width_list.append(field.msb - field.lsb + 1)
-  mreg_has_q_list.append(field.get_n_bits(["q"]) > 0)
-  mreg_has_d_list.append(field.get_n_bits(["d"]) > 0)
-  mreg_has_de_list.append(field.get_n_bits(["de"]) > 0)
+  mreg_fpv_name_list.append(mreg_name + "_" + get_basename(field.name.lower()))
+  mreg_dut_path_list.append(mreg_name + "[s]." + get_basename(field.name.lower()))
+  mreg_width_list.append(field.bits.width())
+  mreg_has_q_list.append(field.get_n_bits(r.hwext, ["q"]) > 0)
+  mreg_has_d_list.append(field.get_n_bits(r.hwext, ["d"]) > 0)
+  mreg_has_de_list.append(field.get_n_bits(r.hwext, ["de"]) > 0)
 %>\
      % endfor
 <%
@@ -197,7 +199,7 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
   mreg_num_base_fields = 1
   mreg_fpv_name_list.append(mreg_name)
   mreg_dut_path_list.append(mreg_name + "[s]")
-  mreg_width_list.append(f.msb - f.lsb + 1)
+  mreg_width_list.append(f.bits.width())
   mreg_has_q_list.append(has_q)
   mreg_has_d_list.append(has_d)
   mreg_has_de_list.append(has_de)
@@ -233,19 +235,19 @@ ${assign_fpv_var(fpv_name, mreg_dut_path_list[loop.index], int(mreg_width_list[l
     % endif
     % for f in reg_flat.get_fields_flat():
 <%
-      field_name      = f.name
+      field_name      = f.name.lower()
       assert_path     = reg_name + "." + field_name
       assert_name     = reg_name + "_" + field_name
-      field_access    = f.swaccess.name
-      field_wr_mask   = ((1 << (f.msb-f.lsb + 1)) -1) << f.lsb
+      field_access    = f.swaccess.key.upper()
+      field_wr_mask   = ((1 << f.bits.width()) - 1) << f.bits.lsb
       field_wr_mask_h = format(field_wr_mask, 'x')
       reg_wr_mask    |= field_wr_mask
       reg_wr_mask_h   = format(reg_wr_mask, 'x')
-      lsb             = f.lsb
-      sw_rdaccess     = f.swrdaccess.name
-      had_q           = f.get_n_bits(["q"]) > 0
-      has_d           = f.get_n_bits(["d"]) > 0
-      has_de          = f.get_n_bits(["de"]) > 0
+      lsb             = f.bits.lsb
+      sw_rdaccess     = f.swaccess.swrd().name
+      had_q           = f.get_n_bits(r.hwext, ["q"]) > 0
+      has_d           = f.get_n_bits(r.hwext, ["d"]) > 0
+      has_de          = f.get_n_bits(r.hwext, ["de"]) > 0
 %>\
       % if not r.ishomog:
         % if r.is_multi_reg():
@@ -254,7 +256,7 @@ ${assign_fpv_var(fpv_name, mreg_dut_path_list[loop.index], int(mreg_width_list[l
       mreg_lsb = i * mreg_width_list[loop.index]
       mreg_msb = mreg_lsb + mreg_width_list[loop.index] - 1
 %>\
-${gen_multi_reg_asserts_by_category(assert_name, mreg_name + "_" + f.get_basename(), mreg_msb, mreg_lsb, reg_flat.hwext, field_wr_mask_h)}\
+${gen_multi_reg_asserts_by_category(assert_name, mreg_name + "_" + get_basename(f.name.lower()), mreg_msb, mreg_lsb, reg_flat.hwext, field_wr_mask_h)}\
         % else:
 ${gen_asserts_by_category(assert_name, assert_path, reg_flat.hwext, field_wr_mask_h)}\
         % endif

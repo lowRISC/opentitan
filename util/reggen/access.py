@@ -95,6 +95,15 @@ class SWAccess:
             assert self.key == 'wo'
             return "WO"
 
+    def swrd(self) -> SwRdAccess:
+        return self.value[3]
+
+    def allows_read(self) -> bool:
+        return self.value[3] != SwRdAccess.NONE
+
+    def allows_write(self) -> bool:
+        return self.value[2] == SwWrAccess.WR
+
 
 class HWAccess:
     def __init__(self, where: str, raw: object):
@@ -104,3 +113,9 @@ class HWAccess:
         except KeyError:
             raise ValueError('Unknown hwaccess key, {}, for {}.'
                              .format(self.key, where)) from None
+
+    def allows_read(self) -> bool:
+        return self.key in ['hro', 'hrw']
+
+    def allows_write(self) -> bool:
+        return self.key in ['hrw', 'hwo']

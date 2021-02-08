@@ -52,7 +52,7 @@ package ${block.name}_ral_pkg;
   class ${gen_dv.rcname(block, r)} extends ${dv_base_prefix}_reg;
     // fields
 % for f in r.fields:
-    rand ${dv_base_prefix}_reg_field ${f.name};
+    rand ${dv_base_prefix}_reg_field ${f.name.lower()};
 % endfor
 
     `uvm_object_utils(${gen_dv.rcname(block, r)})
@@ -67,48 +67,53 @@ package ${block.name}_ral_pkg;
       // create fields
 % for f in r.fields:
 <%
-  field_size = f.msb - f.lsb + 1
-  if f.swaccess.name == "R0W1C":
+  field_size = f.bits.width()
+  if f.swaccess.key == "r0w1c":
     field_access = "W1C"
   else:
-    field_access = f.swaccess.name
+    field_access = f.swaccess.value[1].name
 
-  if f.hwaccess == HwAccess.HRO:
+  if not f.hwaccess.allows_write():
     field_volatile = 0
   else:
     field_volatile = 1
   field_tags = f.tags
 
-  if r.hwext or (f.hwaccess == HwAccess.NONE and f.swrdaccess == SwRdAccess.RD and
-                 f.swwraccess == SwWrAccess.NONE):
+  if r.hwext or (f.hwaccess.value[1] == HwAccess.NONE and
+                 f.swaccess.swrd() == SwRdAccess.RD and
+                 not f.swaccess.allows_write()):
     is_ext = 1
+
+  fname = f.name.lower()
 
   if len(r.fields) == 1:
     reg_field_name = reg_name
   else:
-    reg_field_name = reg_name + "_" + f.name
+    reg_field_name = reg_name + "_" + fname
 %>\
-      ${f.name} = ${dv_base_prefix}_reg_field::type_id::create("${f.name}");
-      ${f.name}.configure(
+      ${fname} = ${dv_base_prefix}_reg_field::type_id::create("${fname}");
+      ${fname}.configure(
         .parent(this),
         .size(${field_size}),
-        .lsb_pos(${f.lsb}),
+        .lsb_pos(${f.bits.lsb}),
         .access("${field_access}"),
         .volatile(${field_volatile}),
-        .reset(${reg_width}'h${format(f.resval, 'x')}),
+        .reset(${reg_width}'h${format(f.resval or 0, 'x')}),
         .has_reset(1),
         .is_rand(1),
         .individually_accessible(1));
-      ${f.name}.set_original_access("${field_access}");
-  % if f.hwaccess == HwAccess.NONE and f.swrdaccess == SwRdAccess.RD and f.swwraccess == SwWrAccess.NONE:
+      ${fname}.set_original_access("${field_access}");
+  % if ((f.hwaccess.value[1] == HwAccess.NONE and\
+         f.swaccess.swrd() == SwRdAccess.RD and\
+         not f.swaccess.allows_write())):
       // constant reg
-      add_hdl_path_slice("${hier_path}u_reg.${reg_field_name}_qs", ${f.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
+      add_hdl_path_slice("${hier_path}u_reg.${reg_field_name}_qs", ${f.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
   % else:
-      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.q${"s" if r.hwext else ""}", ${f.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
+      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.q${"s" if r.hwext else ""}", ${f.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
   % endif
   % if reg_shadowed and not r.hwext:
-      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.committed_reg.q", ${f.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
-      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.shadow_reg.q", ${f.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
+      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.committed_reg.q", ${f.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
+      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.shadow_reg.q", ${f.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
   % endif
   % if field_tags:
       // create field tags
@@ -117,7 +122,7 @@ package ${block.name}_ral_pkg;
   tag = field_tag.split(":")
 %>\
       % if tag[0] == "excl":
-      csr_excl.add_excl(${f.name}.get_full_name(), ${tag[2]}, ${tag[1]});
+      csr_excl.add_excl(${f.name.lower()}.get_full_name(), ${tag[2]}, ${tag[1]});
       % endif
     % endfor
   % endif
@@ -135,8 +140,8 @@ package ${block.name}_ral_pkg;
   % if shadowed_reg_path == "":
     print("ERROR: ext shadow_reg does not have tags for shadowed_reg_path!")
   % else:
-      add_hdl_path_slice("${shadowed_reg_path}.committed_reg.q", 0, (${f.lsb} + ${field_size}), 0, "BkdrRegPathRtlCommitted");
-      add_hdl_path_slice("${shadowed_reg_path}.shadow_reg.q", 0, (${f.lsb} + ${field_size}), 0, "BkdrRegPathRtlShadow");
+      add_hdl_path_slice("${shadowed_reg_path}.committed_reg.q", 0, (${f.bits.lsb} + ${field_size}), 0, "BkdrRegPathRtlCommitted");
+      add_hdl_path_slice("${shadowed_reg_path}.shadow_reg.q", 0, (${f.bits.lsb} + ${field_size}), 0, "BkdrRegPathRtlShadow");
   % endif
 % endif
 % if is_ext:
