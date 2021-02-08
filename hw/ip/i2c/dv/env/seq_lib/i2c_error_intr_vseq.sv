@@ -29,7 +29,7 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
   virtual task body();
     `uvm_info(`gfn, "\n--> start of i2c_error_intr_vseq", UVM_DEBUG)
     initialization();
-    do_dut_init = 1'b1;
+    do_apply_reset = 1'b1;
     for (int i = 1; i <= num_runs; i++) begin
       `uvm_info(`gfn, $sformatf("\n  run simulation %0d/%0d", i, num_runs), UVM_DEBUG)
       fork
