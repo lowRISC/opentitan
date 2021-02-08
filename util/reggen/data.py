@@ -4,12 +4,12 @@
 
 from collections import OrderedDict
 
-from .access import HwAccess, SwAccess, SwRdAccess, SwWrAccess
+from .field import Field
 
 
 # helper funtion that strips trailing _number (used as multireg suffix) from name
 # TODO: this is a workaround, should solve this in validate.py
-def _get_basename(name):
+def get_basename(name):
     for (k, c) in enumerate(name[::-1]):
         if not str.isdigit(c):
             if c == "_":
@@ -17,49 +17,6 @@ def _get_basename(name):
             else:
                 break
     return ""
-
-
-class Field():
-    """Field in a register.
-
-    Field class contains necessary info to generate RTL code.
-    It has two additional (tool generated) fields, swrdaccess and swwraccess,
-    which represent read and write type. This makes RTL generation code simpler.
-    """
-    def __init__(self):
-        self.name = ""  # required
-        self.msb = 31  # required
-        self.lsb = 0  # required
-        self.resval = 0  # optional
-        self.swaccess = SwAccess.NONE  # optional
-        self.swrdaccess = SwRdAccess.NONE
-        self.swwraccess = SwWrAccess.NONE
-        self.hwaccess = HwAccess.HRO
-        self.hwqe = False
-        self.hwre = False
-        self.hwext = False
-        self.tags = []
-        self.shadowed = False
-
-    def get_n_bits(self, bittype=["q"]):
-        n_bits = 0
-        if "q" in bittype and self.hwaccess in [HwAccess.HRW, HwAccess.HRO]:
-            n_bits += self.msb - self.lsb + 1
-        if "d" in bittype and self.hwaccess in [HwAccess.HRW, HwAccess.HWO]:
-            n_bits += self.msb - self.lsb + 1
-        if "qe" in bittype and self.hwaccess in [HwAccess.HRW, HwAccess.HRO]:
-            n_bits += self.hwqe
-        if "re" in bittype and self.hwaccess in [HwAccess.HRW, HwAccess.HRO]:
-            n_bits += self.hwre
-        if "de" in bittype and self.hwaccess in [HwAccess.HRW, HwAccess.HWO]:
-            n_bits += not self.hwext
-        return n_bits
-
-    def get_fields_flat(self):
-        return [self]
-
-    def get_basename(self):
-        return _get_basename(self.name)
 
 
 class Reg():
@@ -92,15 +49,22 @@ class Reg():
         """
         n_bits = 0
         for f in self.fields:
-            n_bits += f.get_n_bits(bittype)
+            if isinstance(f, Reg):
+                n_bits += f.get_n_bits(bittype)
+            else:
+                n_bits += f.get_n_bits(self.hwext, bittype)
         return n_bits
 
     def get_fields_flat(self):
         """Returns a flat list of all the fields in this register"""
-        fields = []
+        ret = []
         for f in self.fields:
-            fields += f.get_fields_flat()
-        return fields
+            if isinstance(f, Reg):
+                ret += f.get_fields_flat()
+            else:
+                ret.append(f)
+
+        return ret
 
     def get_field_flat(self, linear_idx):
         """Returns a specific field at a linear index position in
@@ -159,9 +123,6 @@ class Reg():
         if isinstance(self.fields[0], MultiReg):
             params += self.fields[0].get_nested_params()
         return params
-
-    def get_basename(self):
-        return _get_basename(self.name)
 
 
 class MultiReg(Reg):
