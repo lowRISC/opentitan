@@ -32,7 +32,17 @@ case "$flavour" in
         exit 1
 esac
 
-util/dvsim/dvsim.py --tool=veriblelint "$dvsim_cfg" || {
+# DVSIM_MAX_PARALLEL constrains how many tasks dvsim.py will try to
+# run in parallel. If it hasn't already been set, set it to be the
+# number of CPUs on the machine.
+if [ -n "$DVSIM_MAX_PARALLEL" ]; then
+    mp=$DVSIM_MAX_PARALLEL
+else
+    mp=$(nproc)
+fi
+
+env DVSIM_MAX_PARALLEL="$mp" \
+  util/dvsim/dvsim.py --tool=veriblelint "$dvsim_cfg" || {
     echo -n "##vso[task.logissue type=error]"
     echo "Verilog style lint of $human_desc sources with Verible failed. Run 'util/dvsim/dvsim.py -t veriblelint $dvsim_cfg' and fix all errors."
     exit 1
