@@ -301,7 +301,7 @@ module otp_ctrl
   // DAI-related CSRs //
   //////////////////////
 
-  logic                         dai_idle, dai_prog_idle;
+  logic                         dai_idle;
   logic                         dai_req;
   dai_cmd_e                     dai_cmd;
   logic [OtpByteAddrWidth-1:0]  dai_addr;
@@ -327,8 +327,8 @@ module otp_ctrl
   // are pending. Hence, we signal the LCI/DAI idle state to the
   // power manager. This signal is flopped here as it has to
   // cross a clock boundary to the power manager.
-  logic lci_idle, otp_idle_d, otp_idle_q;
-  assign otp_idle_d = lci_idle & dai_prog_idle;
+  logic dai_prog_idle, lci_prog_idle, otp_idle_d, otp_idle_q;
+  assign otp_idle_d = lci_prog_idle & dai_prog_idle;
   assign pwr_otp_o.otp_idle = otp_idle_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_idle_reg
@@ -824,7 +824,7 @@ module otp_ctrl
     .lci_en_i         ( pwr_otp_o.otp_done                ),
     .escalate_en_i    ( lc_escalate_en[LciIdx]            ),
     .error_o          ( part_error[LciIdx]                ),
-    .lci_idle_o       ( lci_idle                          ),
+    .lci_prog_idle_o  ( lci_prog_idle                     ),
     .lc_req_i         ( lc_otp_program_i.req              ),
     .lc_state_i       ( lc_otp_program_i.state            ),
     .lc_count_i       ( lc_otp_program_i.count            ),

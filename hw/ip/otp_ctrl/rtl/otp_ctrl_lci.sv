@@ -27,15 +27,15 @@ module otp_ctrl_lci
   // Note that a transition request will fail if the request attempts to
   // clear already programmed bits within OTP.
   input                                     lc_req_i,
-  input  lc_ctrl_state_pkg::lc_state_e            lc_state_i,
-  input  lc_ctrl_state_pkg::lc_cnt_e              lc_count_i,
+  input  lc_ctrl_state_pkg::lc_state_e      lc_state_i,
+  input  lc_ctrl_state_pkg::lc_cnt_e        lc_count_i,
   output logic                              lc_ack_o,
   output logic                              lc_err_o,
   // Output error state of partition, to be consumed by OTP error/alert logic.
   // Note that most errors are not recoverable and move the partition FSM into
   // a terminal error state.
   output otp_err_e                          error_o,
-  output logic                              lci_idle_o,
+  output logic                              lci_prog_idle_o,
   // OTP interface
   output logic                              otp_req_o,
   output prim_otp_pkg::cmd_e                otp_cmd_o,
@@ -106,7 +106,7 @@ module otp_ctrl_lci
     cnt_clr  = 1'b0;
 
     // Idle status
-    lci_idle_o = 1'b0;
+    lci_prog_idle_o = 1'b1;
 
     // OTP signals
     otp_req_o = 1'b0;
@@ -123,6 +123,7 @@ module otp_ctrl_lci
       ///////////////////////////////////////////////////////////////////
       // State right after reset. Wait here until LCI gets enabled.
       ResetSt: begin
+        lci_prog_idle_o = 1'b0;
         if (lci_en_i) begin
           state_d = IdleSt;
         end
@@ -130,7 +131,6 @@ module otp_ctrl_lci
       ///////////////////////////////////////////////////////////////////
       // Wait for a request from the life cycle controller
       IdleSt: begin
-        lci_idle_o = 1'b1;
         if (lc_req_i) begin
           state_d = WriteSt;
           cnt_clr = 1'b1;
@@ -143,6 +143,7 @@ module otp_ctrl_lci
       WriteSt: begin
         otp_req_o = 1'b1;
         otp_cmd_o = prim_otp_pkg::Write;
+        lci_prog_idle_o = 1'b0;
         if (otp_gnt_i) begin
           state_d = WriteWaitSt;
         end
@@ -152,6 +153,7 @@ module otp_ctrl_lci
       // In case an OTP transaction fails, latch the OTP error code, and jump to
       // terminal error state.
       WriteWaitSt: begin
+        lci_prog_idle_o = 1'b0;
         if (otp_rvalid_i) begin
           // Check OTP return code.
           // No errors are tolerated here.
@@ -259,7 +261,7 @@ module otp_ctrl_lci
   `ASSERT_KNOWN(LcAckKnown_A,    lc_ack_o)
   `ASSERT_KNOWN(LcErrKnown_A,    lc_err_o)
   `ASSERT_KNOWN(ErrorKnown_A,    error_o)
-  `ASSERT_KNOWN(LciIdleKnown_A,  lci_idle_o)
+  `ASSERT_KNOWN(LciIdleKnown_A,  lci_prog_idle_o)
   `ASSERT_KNOWN(OtpReqKnown_A,   otp_req_o)
   `ASSERT_KNOWN(OtpCmdKnown_A,   otp_cmd_o)
   `ASSERT_KNOWN(OtpSizeKnown_A,  otp_size_o)
