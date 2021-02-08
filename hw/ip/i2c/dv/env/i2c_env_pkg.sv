@@ -35,7 +35,8 @@ package i2c_env_pkg;
     TxOverflow     = 12,
     AcqOverflow    = 13,
     AckStop        = 14,
-    NumI2cIntr     = 15
+    HostTimeout    = 15,
+    NumI2cIntr     = 16
   } i2c_intr_e;
 
   typedef enum int {
