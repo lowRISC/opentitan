@@ -31,3 +31,10 @@ option(
   type: 'boolean',
   value: false,
 )
+
+option(
+  'loader',
+  type: 'combo',
+  choices: ['flash', 'ram'],
+  value: 'flash'
+)
