@@ -8,6 +8,7 @@ from .access import SWAccess, HWAccess
 from .field import Field
 from .lib import (check_keys, check_str, check_name, check_bool,
                   check_list, check_str_list, check_int)
+from .reg_block import RegBlock
 
 REQUIRED_FIELDS = {
     'name': ['s', "name of the register"],
@@ -72,7 +73,7 @@ OPTIONAL_FIELDS = {
 }
 
 
-class Register:
+class Register(RegBlock):
     '''Code representing a register for reggen'''
     def __init__(self,
                  offset: int,
@@ -90,7 +91,7 @@ class Register:
                  fields: List[Field],
                  update_err_alert: Optional[str],
                  storage_err_alert: Optional[str]):
-        self.offset = offset
+        super().__init__(offset)
         self.name = name
         self.desc = desc
 
@@ -269,6 +270,27 @@ class Register:
 
     def dv_rights(self) -> str:
         return self.swaccess.dv_rights()
+
+    def get_n_bits(self, bittype: List[str]) -> int:
+        return sum(field.get_n_bits(self.hwext, bittype)
+                   for field in self.fields)
+
+    def get_field_list(self) -> List[Field]:
+        return self.fields
+
+    def is_homogeneous(self) -> bool:
+        return len(self.fields) == 1
+
+    def get_width(self) -> int:
+        '''Get the width of the fields in the register in bits
+
+        This counts dead space between and below fields, so it's calculated as
+        one more than the highest msb.
+
+        '''
+        # self.fields is ordered by (increasing) LSB, so we can find the MSB of
+        # the register by taking the MSB of the last field.
+        return 1 + self.fields[-1].bits.msb
 
     def make_multi(self,
                    reg_width: int,

@@ -6,7 +6,8 @@
 
 <%
   from topgen import lib # TODO: Split lib to common lib module
-  from reggen.data import get_basename
+  from reggen.register import Register
+  from reggen.multi_register import MultiRegister
 
   num_regs = block.get_n_regs_flat()
   max_regs_char = len("{}".format(num_regs-1))
@@ -27,71 +28,123 @@ package ${block.name}_reg_pkg;
   // Typedefs for registers //
   ////////////////////////////
 % for r in block.regs:
-  ## in this case we have a homogeneous multireg, with only one replicated field
-  % if r.get_n_bits(["q"]) and r.ishomog:
+  % if r.get_n_bits(["q"]):
+<%
+    if isinstance(r, Register):
+      r0 = r
+      type_suff = 'reg_t'
+    else:
+      assert isinstance(r, MultiRegister)
+      r0 = r.reg
+      type_suff = 'mreg_t'
+
+    reg2hw_name = ('{}_reg2hw_{}_{}'
+                   .format(block.name, r0.name.lower(), type_suff))
+%>\
   typedef struct packed {
-    logic ${lib.bitarray(r.get_field_flat(0).get_n_bits(r.hwext, ["q"]),2)} q;
-    % if r.get_field_flat(0).hwqe:
+    % if r.is_homogeneous():
+      ## If we have a homogeneous register or multireg, there is just one field
+      ## (possibly replicated many times). The typedef is for one copy of that
+      ## field.
+<%
+      field = r.get_field_list()[0]
+      field_q_width = field.get_n_bits(r0.hwext, ['q'])
+      field_q_bits = lib.bitarray(field_q_width, 2)
+%>\
+    logic ${field_q_bits} q;
+      % if field.hwqe:
     logic        qe;
-    % endif
-    % if r.get_field_flat(0).hwre or (r.shadowed and r.hwext):
+      % endif
+      % if field.hwre or (r0.shadowed and r0.hwext):
     logic        re;
-    % endif
-    % if r.shadowed and not r.hwext:
+      % endif
+      % if r0.shadowed and not r0.hwext:
     logic        err_update;
     logic        err_storage;
-    % endif
-  } ${block.name + "_reg2hw_" + r.name + ("_mreg_t" if r.is_multi_reg() else "_reg_t")};
+      % endif
+    % else:
+      ## We are inhomogeneous, which means there is more than one different
+      ## field. Generate a reg2hw typedef that packs together all the fields of
+      ## the register.
+      % for f in r0.fields:
+        % if f.get_n_bits(r0.hwext, ["q"]) >= 1:
+<%
+          field_q_width = f.get_n_bits(r0.hwext, ['q'])
+          field_q_bits = lib.bitarray(field_q_width, 2)
 
-  ## in this case we have an inhomogeneous multireg, with several different fields per register
-  % elif r.get_n_bits(["q"]) and not r.ishomog:
-  typedef struct packed {
-    % for f in r.get_reg_flat(0).fields:
-      % if f.get_n_bits(r.hwext, ["q"]) >= 1:
+          struct_name = f.name.lower()
+%>\
     struct packed {
-      logic ${lib.bitarray(f.get_n_bits(r.hwext, ["q"]),2)} q;
-      % if f.hwqe:
+      logic ${field_q_bits} q;
+          % if f.hwqe:
       logic        qe;
-      % endif
-      % if f.hwre or (r.shadowed and r.hwext):
+          % endif
+          % if f.hwre or (r0.shadowed and r0.hwext):
       logic        re;
-      % endif
-      % if r.shadowed and not r.hwext:
+          % endif
+          % if r0.shadowed and not r0.hwext:
       logic        err_update;
       logic        err_storage;
-      % endif
-    } ${get_basename(f.name.lower()) if r.is_multi_reg() else f.name.lower()};
-      %endif
-    %endfor
-  } ${block.name + "_reg2hw_" + r.name + ("_mreg_t" if r.is_multi_reg() else "_reg_t")};
+          % endif
+    } ${struct_name};
+        %endif
+      %endfor
+    %endif
+  } ${reg2hw_name};
 
   %endif
 % endfor
 
 % for r in block.regs:
- ## in this case we have a homogeneous multireg, with only one replicated field
-  % if r.get_n_bits(["d"]) and r.ishomog:
-  typedef struct packed {
-    logic ${lib.bitarray(r.get_field_flat(0).get_n_bits(r.hwext, ["d"]),2)} d;
-    % if not r.hwext:
-    logic        de;
-    % endif
-  } ${block.name + "_hw2reg_" + r.name + ("_mreg_t" if r.is_multi_reg() else "_reg_t")};
+  % if r.get_n_bits(["d"]):
+<%
+    if isinstance(r, Register):
+      r0 = r
+      type_suff = 'reg_t'
+    else:
+      assert isinstance(r, MultiRegister)
+      r0 = r.reg
+      type_suff = 'mreg_t'
 
-  ## in this case we have an inhomogeneous multireg, with several different fields per register
-  % elif r.get_n_bits(["d"]) and not r.ishomog:
+    hw2reg_name = ('{}_hw2reg_{}_{}'
+                   .format(block.name, r0.name.lower(), type_suff))
+%>\
   typedef struct packed {
-    % for f in r.get_reg_flat(0).fields:
-      % if f.get_n_bits(r.hwext, ["d"]) >= 1:
-    struct packed {
-      logic ${lib.bitarray(f.get_n_bits(r.hwext, ["d"]),2)} d;
-      % if not r.hwext:
-      logic        de;
+    % if r.is_homogeneous():
+      ## If we have a homogeneous register or multireg, there is just one field
+      ## (possibly replicated many times). The typedef is for one copy of that
+      ## field.
+<%
+      field = r.get_field_list()[0]
+      field_d_width = field.get_n_bits(r0.hwext, ['d'])
+      field_d_bits = lib.bitarray(field_d_width, 2)
+%>\
+    logic ${field_d_bits} d;
+      % if not r0.hwext:
+    logic        de;
       % endif
-    } ${get_basename(f.name.lower()) if r.is_multi_reg() else f.name.lower()};
-      %endif
-    %endfor
-  } ${block.name + "_hw2reg_" + r.name + ("_mreg_t" if r.is_multi_reg() else "_reg_t")};
+    % else:
+      ## We are inhomogeneous, which means there is more than one different
+      ## field. Generate a hw2reg typedef that packs together all the fields of
+      ## the register.
+      % for f in r0.fields:
+        % if f.get_n_bits(r0.hwext, ["d"]) >= 1:
+<%
+          field_d_width = f.get_n_bits(r0.hwext, ['d'])
+          field_d_bits = lib.bitarray(field_d_width, 2)
+
+          struct_name = f.name.lower()
+%>\
+    struct packed {
+      logic ${field_d_bits} d;
+          % if not r0.hwext:
+      logic        de;
+          % endif
+    } ${struct_name};
+        %endif
+      %endfor
+    %endif
+  } ${hw2reg_name};
 
   % endif
 % endfor
@@ -100,26 +153,32 @@ package ${block.name}_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
 <%
-nbits = block.get_n_bits(["q","qe","re"])
+nbits = block.get_n_bits(["q", "qe", "re"])
 packbit = 0
 %>\
 % if nbits > 0:
   typedef struct packed {
 % for r in block.regs:
-  ######################## multiregister ###########################
-  % if r.is_multi_reg() and r.get_n_bits(["q"]):
+  % if r.get_n_bits(["q"]):
 <%
-  array_dims = ""
-  for d in r.get_nested_dims():
-    array_dims += "[%d:0]" % (d-1)
+    if isinstance(r, MultiRegister):
+      r0 = r.reg
+      repl_count = r.count
+      type_suff = 'mreg_t [{}:0]'.format(repl_count - 1)
+    else:
+      r0 = r
+      repl_count = 1
+      type_suff = 'reg_t'
+
+    struct_type = ('{}_reg2hw_{}_{}'
+                   .format(block.name, r0.name.lower(), type_suff))
+
+    struct_width = r0.get_n_bits(['q', 'qe', 're']) * repl_count
+    msb = nbits - packbit - 1
+    lsb = msb - struct_width + 1
+    packbit += struct_width
 %>\
-    ${block.name + "_reg2hw_" + r.name + "_mreg_t"} ${array_dims} ${r.name}; // [${nbits - packbit - 1}:${nbits - (packbit + r.get_n_bits(["q", "qe", "re"]))}]<% packbit += r.get_n_bits(["q", "qe", "re"]) %>\
-
-  ######################## register ###########################
-  % elif r.get_n_bits(["q"]):
-    ## Only one field, should use register name as it is
-    ${block.name + "_reg2hw_" + r.name + "_reg_t"} ${r.name}; // [${nbits - packbit - 1}:${nbits - (packbit + r.get_n_bits(["q", "qe", "re"]))}]<% packbit += r.get_n_bits(["q", "qe", "re"]) %>\
-
+    ${struct_type} ${r0.name.lower()}; // [${msb}:${lsb}]
   % endif
 % endfor
   } ${block.name}_reg2hw_t;
@@ -129,64 +188,75 @@ packbit = 0
   // Internal design logic to register //
   ///////////////////////////////////////
 <%
-nbits = block.get_n_bits(["d","de"])
+nbits = block.get_n_bits(["d", "de"])
 packbit = 0
 %>\
 % if nbits > 0:
   typedef struct packed {
 % for r in block.regs:
-<%  reg_d_bits = r.get_n_bits(["d"]) %>\
-  % if reg_d_bits:
+  % if r.get_n_bits(["d"]):
 <%
-    if r.is_multi_reg():
-      array_dims = "".join("[%d:0]" % (d-1) for d in r.get_nested_dims())
-      reg_type = "{}_hw2reg_{}_mreg_t {}".format(block.name, r.name, array_dims)
+    if isinstance(r, MultiRegister):
+      r0 = r.reg
+      repl_count = r.count
+      type_suff = 'mreg_t [{}:0]'.format(repl_count - 1)
     else:
-      reg_type = "{}_hw2reg_{}_reg_t".format(block.name, r.name)
+      r0 = r
+      repl_count = 1
+      type_suff = 'reg_t'
 
-    reg_width = r.get_n_bits(["d", "de"])
+    struct_type = ('{}_hw2reg_{}_{}'
+                   .format(block.name, r0.name.lower(), type_suff))
+
+    struct_width = r0.get_n_bits(['d', 'de']) * repl_count
     msb = nbits - packbit - 1
-    lsb = nbits - (packbit + reg_width)
-    packbit += reg_width
+    lsb = msb - struct_width + 1
+    packbit += struct_width
 %>\
-    ${reg_type} ${r.name}; // [${msb}:${lsb}]
+    ${struct_type} ${r0.name.lower()}; // [${msb}:${lsb}]
   % endif
 % endfor
   } ${block.name}_hw2reg_t;
 % endif
 
   // Register Address
+<%
+ublock = block.name.upper()
+%>\
 % for r in block.get_regs_flat():
-  parameter logic [BlockAw-1:0] ${block.name.upper()}_${r.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % r.offset};
+  parameter logic [BlockAw-1:0] ${ublock}_${r.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % r.offset};
 % endfor
 
 % if len(block.wins) > 0:
   // Window parameter
 % endif
 % for i,w in enumerate(block.wins):
-  parameter logic [BlockAw-1:0] ${block.name.upper()}_${w.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % w.base_addr};
-  parameter logic [BlockAw-1:0] ${block.name.upper()}_${w.name.upper()}_SIZE   = ${block.addr_width}'h ${"%x" % (w.limit_addr - w.base_addr)};
+  parameter logic [BlockAw-1:0] ${ublock}_${w.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % w.base_addr};
+  parameter logic [BlockAw-1:0] ${ublock}_${w.name.upper()}_SIZE   = ${block.addr_width}'h ${"%x" % (w.limit_addr - w.base_addr)};
 % endfor
 
   // Register Index
   typedef enum int {
 % for r in block.get_regs_flat():
-    ${block.name.upper()}_${r.name.upper()}${"" if loop.last else ","}
+    ${ublock}_${r.name.upper()}${"" if loop.last else ","}
 % endfor
   } ${block.name}_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] ${block.name.upper()}_PERMIT [${block.get_n_regs_flat()}] = '{
+  parameter logic [3:0] ${ublock}_PERMIT [${block.get_n_regs_flat()}] = '{
 % for i,r in enumerate(block.get_regs_flat()):
-<% index_str = "{}".format(i).rjust(max_regs_char) %>\
-  % if r.width > 24:
-    4'b 1111${" " if i == num_regs-1 else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
-  % elif r.width > 16:
-    4'b 0111${" " if i == num_regs-1 else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
-  % elif r.width > 8:
-    4'b 0011${" " if i == num_regs-1 else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
+<%
+  index_str = "{}".format(i).rjust(max_regs_char)
+  width = r.get_width()
+%>\
+  % if width > 24:
+    4'b 1111${" " if i == num_regs-1 else ","} // index[${index_str}] ${ublock}_${r.name.upper()}
+  % elif width > 16:
+    4'b 0111${" " if i == num_regs-1 else ","} // index[${index_str}] ${ublock}_${r.name.upper()}
+  % elif width > 8:
+    4'b 0011${" " if i == num_regs-1 else ","} // index[${index_str}] ${ublock}_${r.name.upper()}
   % else:
-    4'b 0001${" " if i == num_regs-1 else ","} // index[${index_str}] ${block.name.upper()}_${r.name.upper()}
+    4'b 0001${" " if i == num_regs-1 else ","} // index[${index_str}] ${ublock}_${r.name.upper()}
   % endif
 % endfor
   };

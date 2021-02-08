@@ -11,7 +11,7 @@ from mako.template import Template
 from pkg_resources import resource_filename
 
 from .access import HwAccess, SwRdAccess, SwWrAccess
-from .data import Block, MultiReg, Reg, Window
+from .data import Block, Window
 from .register import Register
 from .multi_register import MultiRegister
 
@@ -25,72 +25,6 @@ def check_field_bool(obj, field, default):
         return True if obj[field] == "true" else False
     else:
         return default
-
-
-def parse_reg(obj):
-    """Convert Register into a Reg object."""
-    assert isinstance(obj, Register)
-    reg = Reg(escape_name(obj.name))
-    reg.offset = obj.offset
-    reg.fields = []
-    reg.hwext = obj.hwext
-    reg.hwqe = obj.hwqe
-    reg.hwre = obj.hwre
-    reg.resval = obj.resval
-    reg.dvrights = obj.dv_rights()
-    reg.regwen = (obj.regwen or '').lower()
-    reg.ishomog = len(obj.fields) == 1
-    reg.tags = obj.tags
-    reg.shadowed = obj.shadowed
-    # For DV only: TODO: any good way we can move it to gen_dv?
-    reg.update_err_alert = obj.update_err_alert or ''
-    reg.storage_err_alert = obj.storage_err_alert or ''
-
-    reg.fields = obj.fields
-    for field in reg.fields:
-        reg.width = max(reg.width, field.bits.msb + 1)
-
-    # TODO: Field bitfield overlapping check
-    log.info("R[0x%04x]: %s ", reg.offset, reg.name)
-    for f in reg.fields:
-        log.info("  F[%2d:%2d]: %s", f.bits.msb, f.bits.lsb, f.name)
-
-    return reg
-
-
-def parse_multireg(obj):
-    '''Convert MultiRegister into a MultiReg object'''
-    assert isinstance(obj, MultiRegister)
-    regs = [parse_reg(r) for r in obj.regs]
-    reg0 = regs[0].get_reg_flat(0)
-    # get register properties of the first register in the multireg and
-    # copy them to the parent
-    # since all regs in a multireg have the same props
-    reg = MultiReg(escape_name(obj.reg.name))
-    reg.offset = reg0.offset
-    reg.hwext = reg0.hwext
-    reg.hwqe = reg0.hwqe
-    reg.hwre = reg0.hwre
-
-    # since this is a multireg, the list of fields can
-    # contain regs or multiregs
-    reg.fields = regs
-
-    # Fields that don't really make sense for a multireg
-    reg.resval = None
-    reg.dvrights = None
-    reg.regwen = None
-
-    # a homogenous multireg contains only one single field that is replicated
-    reg.ishomog = len(obj.reg.fields) == 1
-
-    reg.tags = reg0.tags
-    reg.shadowed = reg0.shadowed
-
-    # TODO: need to reference proper param here such that it can be used
-    # in the package template for the array declaration
-    # reg.param = ...
-    return reg
 
 
 def parse_win(obj, width):
@@ -137,11 +71,8 @@ def json_to_reg(obj):
     block.hier_path = obj["hier_path"] if "hier_path" in obj else ""
 
     for r in obj["registers"]:
-        if isinstance(r, Register):
-            block.regs.append(parse_reg(r))
-            continue
-        if isinstance(r, MultiRegister):
-            block.regs.append(parse_multireg(r))
+        if isinstance(r, Register) or isinstance(r, MultiRegister):
+            block.regs.append(r)
             continue
         assert isinstance(r, dict)
         if 'window' in r:
