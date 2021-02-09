@@ -96,7 +96,7 @@
     }
     {
       name: stress
-      tests: ["aes_stress","aes_b2b"]
+      tests: ["aes_stress","aes_b2b", "aes_clear", "aes_config_error", "aes_smoke"]
     }
   ]
 }
