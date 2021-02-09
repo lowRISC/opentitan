@@ -143,9 +143,6 @@ subject to change based on platform integration requirements:
             handling/filtering.
         -   Access to on-die ram and flash memory regions.
         -   Mailbox interface with support for custom opcode commands.
-*   eSPI: Enhanced Serial Peripheral (eSPI) which enables asynchronous
-    processing of boot flash commands issued by a boot device supporting the
-    eSPI protocol and serviced by OpenTitan.
 *   UART: Debug console interface. May be disabled by production firmware.
 *   GPIO: Reset control and monitoring. Status signals.
 *   I2C interface compatible with SMBus interfaces.
