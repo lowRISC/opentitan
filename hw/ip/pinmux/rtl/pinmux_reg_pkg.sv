@@ -13,6 +13,12 @@ package pinmux_reg_pkg;
   parameter int NDioPads = 16;
   parameter int NWkupDetect = 8;
   parameter int WkupCntWidth = 8;
+  parameter int NUsbDevPads = 0;
+  parameter int NDioPadUsbDevStart = 0;
+  parameter int UsbDpSel = 0;
+  parameter int UsbDnSel = 0;
+  parameter int UsbDpPullUpSel = 0;
+  parameter int UsbDnPullUpSel = 0;
 
   // Address width within the block
   parameter int BlockAw = 7;
@@ -100,7 +106,7 @@ package pinmux_reg_pkg;
   } pinmux_hw2reg_t;
 
   // Register Address
-  parameter logic [BlockAw-1:0] PINMUX_REGEN_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] PINMUX_REGWEN_OFFSET = 7'h 0;
   parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_0_OFFSET = 7'h 4;
   parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_1_OFFSET = 7'h 8;
   parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_2_OFFSET = 7'h c;
@@ -136,7 +142,7 @@ package pinmux_reg_pkg;
 
   // Register Index
   typedef enum int {
-    PINMUX_REGEN,
+    PINMUX_REGWEN,
     PINMUX_PERIPH_INSEL_0,
     PINMUX_PERIPH_INSEL_1,
     PINMUX_PERIPH_INSEL_2,
@@ -172,7 +178,7 @@ package pinmux_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] PINMUX_PERMIT [32] = '{
-    4'b 0001, // index[ 0] PINMUX_REGEN
+    4'b 0001, // index[ 0] PINMUX_REGWEN
     4'b 1111, // index[ 1] PINMUX_PERIPH_INSEL_0
     4'b 1111, // index[ 2] PINMUX_PERIPH_INSEL_1
     4'b 1111, // index[ 3] PINMUX_PERIPH_INSEL_2

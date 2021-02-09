@@ -103,9 +103,9 @@ module csrng_reg_top (
   logic intr_test_cs_hw_inst_exc_we;
   logic intr_test_cs_fifo_err_wd;
   logic intr_test_cs_fifo_err_we;
-  logic regen_qs;
-  logic regen_wd;
-  logic regen_we;
+  logic regwen_qs;
+  logic regwen_wd;
+  logic regwen_we;
   logic ctrl_enable_qs;
   logic ctrl_enable_wd;
   logic ctrl_enable_we;
@@ -468,19 +468,19 @@ module csrng_reg_top (
   );
 
 
-  // R[regen]: V(False)
+  // R[regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_regen (
+  ) u_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (regen_we),
-    .wd     (regen_wd),
+    .we     (regwen_we),
+    .wd     (regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -488,10 +488,10 @@ module csrng_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regen.q ),
+    .q      (reg2hw.regwen.q ),
 
     // to register interface (read)
-    .qs     (regen_qs)
+    .qs     (regwen_qs)
   );
 
 
@@ -507,7 +507,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (ctrl_enable_we & regen_qs),
+    .we     (ctrl_enable_we & regwen_qs),
     .wd     (ctrl_enable_wd),
 
     // from internal hardware
@@ -533,7 +533,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (ctrl_aes_cipher_disable_we & regen_qs),
+    .we     (ctrl_aes_cipher_disable_we & regwen_qs),
     .wd     (ctrl_aes_cipher_disable_wd),
 
     // from internal hardware
@@ -559,7 +559,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (ctrl_fifo_depth_sts_sel_we & regen_qs),
+    .we     (ctrl_fifo_depth_sts_sel_we & regwen_qs),
     .wd     (ctrl_fifo_depth_sts_sel_wd),
 
     // from internal hardware
@@ -638,7 +638,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (cmd_req_we & regen_qs),
+    .we     (cmd_req_we & regwen_qs),
     .wd     (cmd_req_wd),
 
     // from internal hardware
@@ -764,7 +764,7 @@ module csrng_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (int_state_num_we & regen_qs),
+    .we     (int_state_num_we & regwen_qs),
     .wd     (int_state_num_wd),
 
     // from internal hardware
@@ -1327,7 +1327,7 @@ module csrng_reg_top (
     addr_hit[ 0] = (reg_addr == CSRNG_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == CSRNG_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == CSRNG_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == CSRNG_REGEN_OFFSET);
+    addr_hit[ 3] = (reg_addr == CSRNG_REGWEN_OFFSET);
     addr_hit[ 4] = (reg_addr == CSRNG_CTRL_OFFSET);
     addr_hit[ 5] = (reg_addr == CSRNG_SUM_STS_OFFSET);
     addr_hit[ 6] = (reg_addr == CSRNG_CMD_REQ_OFFSET);
@@ -1397,8 +1397,8 @@ module csrng_reg_top (
   assign intr_test_cs_fifo_err_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_cs_fifo_err_wd = reg_wdata[3];
 
-  assign regen_we = addr_hit[3] & reg_we & ~wr_err;
-  assign regen_wd = reg_wdata[0];
+  assign regwen_we = addr_hit[3] & reg_we & ~wr_err;
+  assign regwen_wd = reg_wdata[0];
 
   assign ctrl_enable_we = addr_hit[4] & reg_we & ~wr_err;
   assign ctrl_enable_wd = reg_wdata[0];
@@ -1513,7 +1513,7 @@ module csrng_reg_top (
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[0] = regen_qs;
+        reg_rdata_next[0] = regwen_qs;
       end
 
       addr_hit[4]: begin

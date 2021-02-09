@@ -62,7 +62,7 @@ package entropy_src_reg_pkg;
 
   typedef struct packed {
     logic        q;
-  } entropy_src_reg2hw_regen_reg_t;
+  } entropy_src_reg2hw_regwen_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -440,7 +440,7 @@ package entropy_src_reg_pkg;
     entropy_src_reg2hw_intr_enable_reg_t intr_enable; // [446:444]
     entropy_src_reg2hw_intr_test_reg_t intr_test; // [443:438]
     entropy_src_reg2hw_alert_test_reg_t alert_test; // [437:436]
-    entropy_src_reg2hw_regen_reg_t regen; // [435:435]
+    entropy_src_reg2hw_regwen_reg_t regwen; // [435:435]
     entropy_src_reg2hw_conf_reg_t conf; // [434:423]
     entropy_src_reg2hw_rate_reg_t rate; // [422:407]
     entropy_src_reg2hw_entropy_control_reg_t entropy_control; // [406:405]
@@ -497,7 +497,7 @@ package entropy_src_reg_pkg;
   parameter logic [BlockAw-1:0] ENTROPY_SRC_INTR_ENABLE_OFFSET = 8'h 4;
   parameter logic [BlockAw-1:0] ENTROPY_SRC_INTR_TEST_OFFSET = 8'h 8;
   parameter logic [BlockAw-1:0] ENTROPY_SRC_ALERT_TEST_OFFSET = 8'h c;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_REGEN_OFFSET = 8'h 10;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_REGWEN_OFFSET = 8'h 10;
   parameter logic [BlockAw-1:0] ENTROPY_SRC_REV_OFFSET = 8'h 14;
   parameter logic [BlockAw-1:0] ENTROPY_SRC_CONF_OFFSET = 8'h 18;
   parameter logic [BlockAw-1:0] ENTROPY_SRC_RATE_OFFSET = 8'h 1c;
@@ -547,7 +547,7 @@ package entropy_src_reg_pkg;
     ENTROPY_SRC_INTR_ENABLE,
     ENTROPY_SRC_INTR_TEST,
     ENTROPY_SRC_ALERT_TEST,
-    ENTROPY_SRC_REGEN,
+    ENTROPY_SRC_REGWEN,
     ENTROPY_SRC_REV,
     ENTROPY_SRC_CONF,
     ENTROPY_SRC_RATE,
@@ -597,7 +597,7 @@ package entropy_src_reg_pkg;
     4'b 0001, // index[ 1] ENTROPY_SRC_INTR_ENABLE
     4'b 0001, // index[ 2] ENTROPY_SRC_INTR_TEST
     4'b 0001, // index[ 3] ENTROPY_SRC_ALERT_TEST
-    4'b 0001, // index[ 4] ENTROPY_SRC_REGEN
+    4'b 0001, // index[ 4] ENTROPY_SRC_REGWEN
     4'b 0111, // index[ 5] ENTROPY_SRC_REV
     4'b 0011, // index[ 6] ENTROPY_SRC_CONF
     4'b 0011, // index[ 7] ENTROPY_SRC_RATE

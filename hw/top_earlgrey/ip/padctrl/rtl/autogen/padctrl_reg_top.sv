@@ -71,9 +71,9 @@ module padctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic regen_qs;
-  logic regen_wd;
-  logic regen_we;
+  logic regwen_qs;
+  logic regwen_wd;
+  logic regwen_we;
   logic [9:0] dio_pads_0_attr_0_qs;
   logic [9:0] dio_pads_0_attr_0_wd;
   logic dio_pads_0_attr_0_we;
@@ -264,19 +264,19 @@ module padctrl_reg_top (
   logic mio_pads_10_attr_31_re;
 
   // Register instances
-  // R[regen]: V(False)
+  // R[regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_regen (
+  ) u_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (regen_we),
-    .wd     (regen_wd),
+    .we     (regwen_we),
+    .wd     (regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -287,7 +287,7 @@ module padctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (regen_qs)
+    .qs     (regwen_qs)
   );
 
 
@@ -301,7 +301,7 @@ module padctrl_reg_top (
   ) u_dio_pads_0_attr_0 (
     .re     (dio_pads_0_attr_0_re),
     // qualified with register enable
-    .we     (dio_pads_0_attr_0_we & regen_qs),
+    .we     (dio_pads_0_attr_0_we & regwen_qs),
     .wd     (dio_pads_0_attr_0_wd),
     .d      (hw2reg.dio_pads[0].d),
     .qre    (),
@@ -317,7 +317,7 @@ module padctrl_reg_top (
   ) u_dio_pads_0_attr_1 (
     .re     (dio_pads_0_attr_1_re),
     // qualified with register enable
-    .we     (dio_pads_0_attr_1_we & regen_qs),
+    .we     (dio_pads_0_attr_1_we & regwen_qs),
     .wd     (dio_pads_0_attr_1_wd),
     .d      (hw2reg.dio_pads[1].d),
     .qre    (),
@@ -333,7 +333,7 @@ module padctrl_reg_top (
   ) u_dio_pads_0_attr_2 (
     .re     (dio_pads_0_attr_2_re),
     // qualified with register enable
-    .we     (dio_pads_0_attr_2_we & regen_qs),
+    .we     (dio_pads_0_attr_2_we & regwen_qs),
     .wd     (dio_pads_0_attr_2_wd),
     .d      (hw2reg.dio_pads[2].d),
     .qre    (),
@@ -352,7 +352,7 @@ module padctrl_reg_top (
   ) u_dio_pads_1_attr_3 (
     .re     (dio_pads_1_attr_3_re),
     // qualified with register enable
-    .we     (dio_pads_1_attr_3_we & regen_qs),
+    .we     (dio_pads_1_attr_3_we & regwen_qs),
     .wd     (dio_pads_1_attr_3_wd),
     .d      (hw2reg.dio_pads[3].d),
     .qre    (),
@@ -368,7 +368,7 @@ module padctrl_reg_top (
   ) u_dio_pads_1_attr_4 (
     .re     (dio_pads_1_attr_4_re),
     // qualified with register enable
-    .we     (dio_pads_1_attr_4_we & regen_qs),
+    .we     (dio_pads_1_attr_4_we & regwen_qs),
     .wd     (dio_pads_1_attr_4_wd),
     .d      (hw2reg.dio_pads[4].d),
     .qre    (),
@@ -384,7 +384,7 @@ module padctrl_reg_top (
   ) u_dio_pads_1_attr_5 (
     .re     (dio_pads_1_attr_5_re),
     // qualified with register enable
-    .we     (dio_pads_1_attr_5_we & regen_qs),
+    .we     (dio_pads_1_attr_5_we & regwen_qs),
     .wd     (dio_pads_1_attr_5_wd),
     .d      (hw2reg.dio_pads[5].d),
     .qre    (),
@@ -403,7 +403,7 @@ module padctrl_reg_top (
   ) u_dio_pads_2_attr_6 (
     .re     (dio_pads_2_attr_6_re),
     // qualified with register enable
-    .we     (dio_pads_2_attr_6_we & regen_qs),
+    .we     (dio_pads_2_attr_6_we & regwen_qs),
     .wd     (dio_pads_2_attr_6_wd),
     .d      (hw2reg.dio_pads[6].d),
     .qre    (),
@@ -419,7 +419,7 @@ module padctrl_reg_top (
   ) u_dio_pads_2_attr_7 (
     .re     (dio_pads_2_attr_7_re),
     // qualified with register enable
-    .we     (dio_pads_2_attr_7_we & regen_qs),
+    .we     (dio_pads_2_attr_7_we & regwen_qs),
     .wd     (dio_pads_2_attr_7_wd),
     .d      (hw2reg.dio_pads[7].d),
     .qre    (),
@@ -435,7 +435,7 @@ module padctrl_reg_top (
   ) u_dio_pads_2_attr_8 (
     .re     (dio_pads_2_attr_8_re),
     // qualified with register enable
-    .we     (dio_pads_2_attr_8_we & regen_qs),
+    .we     (dio_pads_2_attr_8_we & regwen_qs),
     .wd     (dio_pads_2_attr_8_wd),
     .d      (hw2reg.dio_pads[8].d),
     .qre    (),
@@ -454,7 +454,7 @@ module padctrl_reg_top (
   ) u_dio_pads_3_attr_9 (
     .re     (dio_pads_3_attr_9_re),
     // qualified with register enable
-    .we     (dio_pads_3_attr_9_we & regen_qs),
+    .we     (dio_pads_3_attr_9_we & regwen_qs),
     .wd     (dio_pads_3_attr_9_wd),
     .d      (hw2reg.dio_pads[9].d),
     .qre    (),
@@ -470,7 +470,7 @@ module padctrl_reg_top (
   ) u_dio_pads_3_attr_10 (
     .re     (dio_pads_3_attr_10_re),
     // qualified with register enable
-    .we     (dio_pads_3_attr_10_we & regen_qs),
+    .we     (dio_pads_3_attr_10_we & regwen_qs),
     .wd     (dio_pads_3_attr_10_wd),
     .d      (hw2reg.dio_pads[10].d),
     .qre    (),
@@ -486,7 +486,7 @@ module padctrl_reg_top (
   ) u_dio_pads_3_attr_11 (
     .re     (dio_pads_3_attr_11_re),
     // qualified with register enable
-    .we     (dio_pads_3_attr_11_we & regen_qs),
+    .we     (dio_pads_3_attr_11_we & regwen_qs),
     .wd     (dio_pads_3_attr_11_wd),
     .d      (hw2reg.dio_pads[11].d),
     .qre    (),
@@ -505,7 +505,7 @@ module padctrl_reg_top (
   ) u_dio_pads_4_attr_12 (
     .re     (dio_pads_4_attr_12_re),
     // qualified with register enable
-    .we     (dio_pads_4_attr_12_we & regen_qs),
+    .we     (dio_pads_4_attr_12_we & regwen_qs),
     .wd     (dio_pads_4_attr_12_wd),
     .d      (hw2reg.dio_pads[12].d),
     .qre    (),
@@ -521,7 +521,7 @@ module padctrl_reg_top (
   ) u_dio_pads_4_attr_13 (
     .re     (dio_pads_4_attr_13_re),
     // qualified with register enable
-    .we     (dio_pads_4_attr_13_we & regen_qs),
+    .we     (dio_pads_4_attr_13_we & regwen_qs),
     .wd     (dio_pads_4_attr_13_wd),
     .d      (hw2reg.dio_pads[13].d),
     .qre    (),
@@ -537,7 +537,7 @@ module padctrl_reg_top (
   ) u_dio_pads_4_attr_14 (
     .re     (dio_pads_4_attr_14_re),
     // qualified with register enable
-    .we     (dio_pads_4_attr_14_we & regen_qs),
+    .we     (dio_pads_4_attr_14_we & regwen_qs),
     .wd     (dio_pads_4_attr_14_wd),
     .d      (hw2reg.dio_pads[14].d),
     .qre    (),
@@ -558,7 +558,7 @@ module padctrl_reg_top (
   ) u_mio_pads_0_attr_0 (
     .re     (mio_pads_0_attr_0_re),
     // qualified with register enable
-    .we     (mio_pads_0_attr_0_we & regen_qs),
+    .we     (mio_pads_0_attr_0_we & regwen_qs),
     .wd     (mio_pads_0_attr_0_wd),
     .d      (hw2reg.mio_pads[0].d),
     .qre    (),
@@ -574,7 +574,7 @@ module padctrl_reg_top (
   ) u_mio_pads_0_attr_1 (
     .re     (mio_pads_0_attr_1_re),
     // qualified with register enable
-    .we     (mio_pads_0_attr_1_we & regen_qs),
+    .we     (mio_pads_0_attr_1_we & regwen_qs),
     .wd     (mio_pads_0_attr_1_wd),
     .d      (hw2reg.mio_pads[1].d),
     .qre    (),
@@ -590,7 +590,7 @@ module padctrl_reg_top (
   ) u_mio_pads_0_attr_2 (
     .re     (mio_pads_0_attr_2_re),
     // qualified with register enable
-    .we     (mio_pads_0_attr_2_we & regen_qs),
+    .we     (mio_pads_0_attr_2_we & regwen_qs),
     .wd     (mio_pads_0_attr_2_wd),
     .d      (hw2reg.mio_pads[2].d),
     .qre    (),
@@ -609,7 +609,7 @@ module padctrl_reg_top (
   ) u_mio_pads_1_attr_3 (
     .re     (mio_pads_1_attr_3_re),
     // qualified with register enable
-    .we     (mio_pads_1_attr_3_we & regen_qs),
+    .we     (mio_pads_1_attr_3_we & regwen_qs),
     .wd     (mio_pads_1_attr_3_wd),
     .d      (hw2reg.mio_pads[3].d),
     .qre    (),
@@ -625,7 +625,7 @@ module padctrl_reg_top (
   ) u_mio_pads_1_attr_4 (
     .re     (mio_pads_1_attr_4_re),
     // qualified with register enable
-    .we     (mio_pads_1_attr_4_we & regen_qs),
+    .we     (mio_pads_1_attr_4_we & regwen_qs),
     .wd     (mio_pads_1_attr_4_wd),
     .d      (hw2reg.mio_pads[4].d),
     .qre    (),
@@ -641,7 +641,7 @@ module padctrl_reg_top (
   ) u_mio_pads_1_attr_5 (
     .re     (mio_pads_1_attr_5_re),
     // qualified with register enable
-    .we     (mio_pads_1_attr_5_we & regen_qs),
+    .we     (mio_pads_1_attr_5_we & regwen_qs),
     .wd     (mio_pads_1_attr_5_wd),
     .d      (hw2reg.mio_pads[5].d),
     .qre    (),
@@ -660,7 +660,7 @@ module padctrl_reg_top (
   ) u_mio_pads_2_attr_6 (
     .re     (mio_pads_2_attr_6_re),
     // qualified with register enable
-    .we     (mio_pads_2_attr_6_we & regen_qs),
+    .we     (mio_pads_2_attr_6_we & regwen_qs),
     .wd     (mio_pads_2_attr_6_wd),
     .d      (hw2reg.mio_pads[6].d),
     .qre    (),
@@ -676,7 +676,7 @@ module padctrl_reg_top (
   ) u_mio_pads_2_attr_7 (
     .re     (mio_pads_2_attr_7_re),
     // qualified with register enable
-    .we     (mio_pads_2_attr_7_we & regen_qs),
+    .we     (mio_pads_2_attr_7_we & regwen_qs),
     .wd     (mio_pads_2_attr_7_wd),
     .d      (hw2reg.mio_pads[7].d),
     .qre    (),
@@ -692,7 +692,7 @@ module padctrl_reg_top (
   ) u_mio_pads_2_attr_8 (
     .re     (mio_pads_2_attr_8_re),
     // qualified with register enable
-    .we     (mio_pads_2_attr_8_we & regen_qs),
+    .we     (mio_pads_2_attr_8_we & regwen_qs),
     .wd     (mio_pads_2_attr_8_wd),
     .d      (hw2reg.mio_pads[8].d),
     .qre    (),
@@ -711,7 +711,7 @@ module padctrl_reg_top (
   ) u_mio_pads_3_attr_9 (
     .re     (mio_pads_3_attr_9_re),
     // qualified with register enable
-    .we     (mio_pads_3_attr_9_we & regen_qs),
+    .we     (mio_pads_3_attr_9_we & regwen_qs),
     .wd     (mio_pads_3_attr_9_wd),
     .d      (hw2reg.mio_pads[9].d),
     .qre    (),
@@ -727,7 +727,7 @@ module padctrl_reg_top (
   ) u_mio_pads_3_attr_10 (
     .re     (mio_pads_3_attr_10_re),
     // qualified with register enable
-    .we     (mio_pads_3_attr_10_we & regen_qs),
+    .we     (mio_pads_3_attr_10_we & regwen_qs),
     .wd     (mio_pads_3_attr_10_wd),
     .d      (hw2reg.mio_pads[10].d),
     .qre    (),
@@ -743,7 +743,7 @@ module padctrl_reg_top (
   ) u_mio_pads_3_attr_11 (
     .re     (mio_pads_3_attr_11_re),
     // qualified with register enable
-    .we     (mio_pads_3_attr_11_we & regen_qs),
+    .we     (mio_pads_3_attr_11_we & regwen_qs),
     .wd     (mio_pads_3_attr_11_wd),
     .d      (hw2reg.mio_pads[11].d),
     .qre    (),
@@ -762,7 +762,7 @@ module padctrl_reg_top (
   ) u_mio_pads_4_attr_12 (
     .re     (mio_pads_4_attr_12_re),
     // qualified with register enable
-    .we     (mio_pads_4_attr_12_we & regen_qs),
+    .we     (mio_pads_4_attr_12_we & regwen_qs),
     .wd     (mio_pads_4_attr_12_wd),
     .d      (hw2reg.mio_pads[12].d),
     .qre    (),
@@ -778,7 +778,7 @@ module padctrl_reg_top (
   ) u_mio_pads_4_attr_13 (
     .re     (mio_pads_4_attr_13_re),
     // qualified with register enable
-    .we     (mio_pads_4_attr_13_we & regen_qs),
+    .we     (mio_pads_4_attr_13_we & regwen_qs),
     .wd     (mio_pads_4_attr_13_wd),
     .d      (hw2reg.mio_pads[13].d),
     .qre    (),
@@ -794,7 +794,7 @@ module padctrl_reg_top (
   ) u_mio_pads_4_attr_14 (
     .re     (mio_pads_4_attr_14_re),
     // qualified with register enable
-    .we     (mio_pads_4_attr_14_we & regen_qs),
+    .we     (mio_pads_4_attr_14_we & regwen_qs),
     .wd     (mio_pads_4_attr_14_wd),
     .d      (hw2reg.mio_pads[14].d),
     .qre    (),
@@ -813,7 +813,7 @@ module padctrl_reg_top (
   ) u_mio_pads_5_attr_15 (
     .re     (mio_pads_5_attr_15_re),
     // qualified with register enable
-    .we     (mio_pads_5_attr_15_we & regen_qs),
+    .we     (mio_pads_5_attr_15_we & regwen_qs),
     .wd     (mio_pads_5_attr_15_wd),
     .d      (hw2reg.mio_pads[15].d),
     .qre    (),
@@ -829,7 +829,7 @@ module padctrl_reg_top (
   ) u_mio_pads_5_attr_16 (
     .re     (mio_pads_5_attr_16_re),
     // qualified with register enable
-    .we     (mio_pads_5_attr_16_we & regen_qs),
+    .we     (mio_pads_5_attr_16_we & regwen_qs),
     .wd     (mio_pads_5_attr_16_wd),
     .d      (hw2reg.mio_pads[16].d),
     .qre    (),
@@ -845,7 +845,7 @@ module padctrl_reg_top (
   ) u_mio_pads_5_attr_17 (
     .re     (mio_pads_5_attr_17_re),
     // qualified with register enable
-    .we     (mio_pads_5_attr_17_we & regen_qs),
+    .we     (mio_pads_5_attr_17_we & regwen_qs),
     .wd     (mio_pads_5_attr_17_wd),
     .d      (hw2reg.mio_pads[17].d),
     .qre    (),
@@ -864,7 +864,7 @@ module padctrl_reg_top (
   ) u_mio_pads_6_attr_18 (
     .re     (mio_pads_6_attr_18_re),
     // qualified with register enable
-    .we     (mio_pads_6_attr_18_we & regen_qs),
+    .we     (mio_pads_6_attr_18_we & regwen_qs),
     .wd     (mio_pads_6_attr_18_wd),
     .d      (hw2reg.mio_pads[18].d),
     .qre    (),
@@ -880,7 +880,7 @@ module padctrl_reg_top (
   ) u_mio_pads_6_attr_19 (
     .re     (mio_pads_6_attr_19_re),
     // qualified with register enable
-    .we     (mio_pads_6_attr_19_we & regen_qs),
+    .we     (mio_pads_6_attr_19_we & regwen_qs),
     .wd     (mio_pads_6_attr_19_wd),
     .d      (hw2reg.mio_pads[19].d),
     .qre    (),
@@ -896,7 +896,7 @@ module padctrl_reg_top (
   ) u_mio_pads_6_attr_20 (
     .re     (mio_pads_6_attr_20_re),
     // qualified with register enable
-    .we     (mio_pads_6_attr_20_we & regen_qs),
+    .we     (mio_pads_6_attr_20_we & regwen_qs),
     .wd     (mio_pads_6_attr_20_wd),
     .d      (hw2reg.mio_pads[20].d),
     .qre    (),
@@ -915,7 +915,7 @@ module padctrl_reg_top (
   ) u_mio_pads_7_attr_21 (
     .re     (mio_pads_7_attr_21_re),
     // qualified with register enable
-    .we     (mio_pads_7_attr_21_we & regen_qs),
+    .we     (mio_pads_7_attr_21_we & regwen_qs),
     .wd     (mio_pads_7_attr_21_wd),
     .d      (hw2reg.mio_pads[21].d),
     .qre    (),
@@ -931,7 +931,7 @@ module padctrl_reg_top (
   ) u_mio_pads_7_attr_22 (
     .re     (mio_pads_7_attr_22_re),
     // qualified with register enable
-    .we     (mio_pads_7_attr_22_we & regen_qs),
+    .we     (mio_pads_7_attr_22_we & regwen_qs),
     .wd     (mio_pads_7_attr_22_wd),
     .d      (hw2reg.mio_pads[22].d),
     .qre    (),
@@ -947,7 +947,7 @@ module padctrl_reg_top (
   ) u_mio_pads_7_attr_23 (
     .re     (mio_pads_7_attr_23_re),
     // qualified with register enable
-    .we     (mio_pads_7_attr_23_we & regen_qs),
+    .we     (mio_pads_7_attr_23_we & regwen_qs),
     .wd     (mio_pads_7_attr_23_wd),
     .d      (hw2reg.mio_pads[23].d),
     .qre    (),
@@ -966,7 +966,7 @@ module padctrl_reg_top (
   ) u_mio_pads_8_attr_24 (
     .re     (mio_pads_8_attr_24_re),
     // qualified with register enable
-    .we     (mio_pads_8_attr_24_we & regen_qs),
+    .we     (mio_pads_8_attr_24_we & regwen_qs),
     .wd     (mio_pads_8_attr_24_wd),
     .d      (hw2reg.mio_pads[24].d),
     .qre    (),
@@ -982,7 +982,7 @@ module padctrl_reg_top (
   ) u_mio_pads_8_attr_25 (
     .re     (mio_pads_8_attr_25_re),
     // qualified with register enable
-    .we     (mio_pads_8_attr_25_we & regen_qs),
+    .we     (mio_pads_8_attr_25_we & regwen_qs),
     .wd     (mio_pads_8_attr_25_wd),
     .d      (hw2reg.mio_pads[25].d),
     .qre    (),
@@ -998,7 +998,7 @@ module padctrl_reg_top (
   ) u_mio_pads_8_attr_26 (
     .re     (mio_pads_8_attr_26_re),
     // qualified with register enable
-    .we     (mio_pads_8_attr_26_we & regen_qs),
+    .we     (mio_pads_8_attr_26_we & regwen_qs),
     .wd     (mio_pads_8_attr_26_wd),
     .d      (hw2reg.mio_pads[26].d),
     .qre    (),
@@ -1017,7 +1017,7 @@ module padctrl_reg_top (
   ) u_mio_pads_9_attr_27 (
     .re     (mio_pads_9_attr_27_re),
     // qualified with register enable
-    .we     (mio_pads_9_attr_27_we & regen_qs),
+    .we     (mio_pads_9_attr_27_we & regwen_qs),
     .wd     (mio_pads_9_attr_27_wd),
     .d      (hw2reg.mio_pads[27].d),
     .qre    (),
@@ -1033,7 +1033,7 @@ module padctrl_reg_top (
   ) u_mio_pads_9_attr_28 (
     .re     (mio_pads_9_attr_28_re),
     // qualified with register enable
-    .we     (mio_pads_9_attr_28_we & regen_qs),
+    .we     (mio_pads_9_attr_28_we & regwen_qs),
     .wd     (mio_pads_9_attr_28_wd),
     .d      (hw2reg.mio_pads[28].d),
     .qre    (),
@@ -1049,7 +1049,7 @@ module padctrl_reg_top (
   ) u_mio_pads_9_attr_29 (
     .re     (mio_pads_9_attr_29_re),
     // qualified with register enable
-    .we     (mio_pads_9_attr_29_we & regen_qs),
+    .we     (mio_pads_9_attr_29_we & regwen_qs),
     .wd     (mio_pads_9_attr_29_wd),
     .d      (hw2reg.mio_pads[29].d),
     .qre    (),
@@ -1068,7 +1068,7 @@ module padctrl_reg_top (
   ) u_mio_pads_10_attr_30 (
     .re     (mio_pads_10_attr_30_re),
     // qualified with register enable
-    .we     (mio_pads_10_attr_30_we & regen_qs),
+    .we     (mio_pads_10_attr_30_we & regwen_qs),
     .wd     (mio_pads_10_attr_30_wd),
     .d      (hw2reg.mio_pads[30].d),
     .qre    (),
@@ -1084,7 +1084,7 @@ module padctrl_reg_top (
   ) u_mio_pads_10_attr_31 (
     .re     (mio_pads_10_attr_31_re),
     // qualified with register enable
-    .we     (mio_pads_10_attr_31_we & regen_qs),
+    .we     (mio_pads_10_attr_31_we & regwen_qs),
     .wd     (mio_pads_10_attr_31_wd),
     .d      (hw2reg.mio_pads[31].d),
     .qre    (),
@@ -1100,7 +1100,7 @@ module padctrl_reg_top (
   logic [16:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == PADCTRL_REGEN_OFFSET);
+    addr_hit[ 0] = (reg_addr == PADCTRL_REGWEN_OFFSET);
     addr_hit[ 1] = (reg_addr == PADCTRL_DIO_PADS_0_OFFSET);
     addr_hit[ 2] = (reg_addr == PADCTRL_DIO_PADS_1_OFFSET);
     addr_hit[ 3] = (reg_addr == PADCTRL_DIO_PADS_2_OFFSET);
@@ -1143,8 +1143,8 @@ module padctrl_reg_top (
     if (addr_hit[16] && reg_we && (PADCTRL_PERMIT[16] != (PADCTRL_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign regen_we = addr_hit[0] & reg_we & ~wr_err;
-  assign regen_wd = reg_wdata[0];
+  assign regwen_we = addr_hit[0] & reg_we & ~wr_err;
+  assign regwen_wd = reg_wdata[0];
 
   assign dio_pads_0_attr_0_we = addr_hit[1] & reg_we & ~wr_err;
   assign dio_pads_0_attr_0_wd = reg_wdata[9:0];
@@ -1339,7 +1339,7 @@ module padctrl_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = regen_qs;
+        reg_rdata_next[0] = regwen_qs;
       end
 
       addr_hit[1]: begin

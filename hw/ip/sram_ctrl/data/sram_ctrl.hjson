@@ -128,7 +128,7 @@
     }
     { name: "CTRL_REGWEN",
       desc: "Lock register for control register.",
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "none",
       fields: [
         { bits: "0"

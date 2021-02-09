@@ -238,36 +238,36 @@ module keymgr import keymgr_pkg::*; #(
     .en_i(lc_keymgr_en[KeyMgrEnCfgEn] == lc_ctrl_pkg::On),
     .set_i(reg2hw.control.start.q & op_done),
     .clr_i(reg2hw.control.start.q),
-    .out_o(hw2reg.cfgen.d)
+    .out_o(hw2reg.cfg_regwen.d)
   );
 
 
   logic sw_binding_set;
   logic sw_binding_clr;
-  logic sw_binding_en;
+  logic sw_binding_regwen;
 
   // set on a successful advance
   assign sw_binding_set = reg2hw.control.operation.q == OpAdvance &
                           sw_binding_unlock;
 
   // this is w0c
-  assign sw_binding_clr = reg2hw.sw_binding_en.qe & ~reg2hw.sw_binding_en.q;
+  assign sw_binding_clr = reg2hw.sw_binding_regwen.qe & ~reg2hw.sw_binding_regwen.q;
 
   // software clears the enable
   // hardware restores it upon successful advance
   keymgr_cfg_en #(
     .NonInitClr(1'b0)  // clear has no effect until init
-  ) u_sw_binding_en (
+  ) u_sw_binding_regwen (
     .clk_i,
     .rst_ni,
     .init_i(init),
     .en_i(lc_keymgr_en[KeyMgrEnSwBindingEn] == lc_ctrl_pkg::On),
     .set_i(sw_binding_set),
     .clr_i(sw_binding_clr),
-    .out_o(sw_binding_en)
+    .out_o(sw_binding_regwen)
   );
 
-  assign hw2reg.sw_binding_en.d = sw_binding_en & hw2reg.cfgen.d;
+  assign hw2reg.sw_binding_regwen.d = sw_binding_regwen & hw2reg.cfg_regwen.d;
 
   /////////////////////////////////////
   //  Key Manager Input Construction

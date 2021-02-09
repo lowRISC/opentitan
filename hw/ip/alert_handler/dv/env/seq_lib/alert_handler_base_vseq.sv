@@ -73,17 +73,17 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     if (class_en[3]) `RAND_WRITE_CLASS_CTRL(d, lock_bit[3])
   endtask
 
-  virtual task alert_handler_wr_clren_regs(bit [NUM_ALERT_HANDLER_CLASSES-1:0] clr_en);
-    if (!clr_en[0]) csr_wr(.csr(ral.classa_clren), .value($urandom_range(0, 1)));
-    if (!clr_en[1]) csr_wr(.csr(ral.classb_clren), .value($urandom_range(0, 1)));
-    if (!clr_en[2]) csr_wr(.csr(ral.classc_clren), .value($urandom_range(0, 1)));
-    if (!clr_en[3]) csr_wr(.csr(ral.classd_clren), .value($urandom_range(0, 1)));
+  virtual task alert_handler_wr_regwen_regs(bit [NUM_ALERT_HANDLER_CLASSES-1:0] regwen);
+    if (!regwen[0]) csr_wr(.csr(ral.classa_regwen), .value($urandom_range(0, 1)));
+    if (!regwen[1]) csr_wr(.csr(ral.classb_regwen), .value($urandom_range(0, 1)));
+    if (!regwen[2]) csr_wr(.csr(ral.classc_regwen), .value($urandom_range(0, 1)));
+    if (!regwen[3]) csr_wr(.csr(ral.classd_regwen), .value($urandom_range(0, 1)));
   endtask
 
   // write regen register if do_lock_config is set. If not set, 50% of chance to write value 0
   // to regen register.
   virtual task lock_config(bit do_lock_config);
-    if (do_lock_config || $urandom_range(0,1)) csr_wr(.csr(ral.regen), .value(do_lock_config));
+    if (do_lock_config || $urandom_range(0,1)) csr_wr(.csr(ral.regwen), .value(do_lock_config));
   endtask
 
   virtual task drive_alert(bit[NUM_ALERTS-1:0] alert_trigger, bit[NUM_ALERTS-1:0] alert_int_err);

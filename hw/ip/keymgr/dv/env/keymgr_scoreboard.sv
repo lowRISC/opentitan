@@ -58,7 +58,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   // preserve value at TL read address phase and compare it at read data phase
   keymgr_pkg::keymgr_op_status_e     addr_phase_op_status;
-  bit                                addr_phase_cfgen;
+  bit                                addr_phase_cfg_regwen;
   keymgr_pkg::keymgr_working_state_e addr_phase_working_state;
   bit                                addr_phase_is_sw_share_corrupted;
 
@@ -236,9 +236,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
               else                                         update_result = UpdateInternalKey;
 
               update_state(get_next_state(current_state));
-              // set sw_binding_en after advance OP
-              void'(ral.sw_binding_en.predict(.value(1)));
-              ral.sw_binding_en.set_locked_regs_access("original_access");
+              // set sw_binding_regwen after advance OP
+              void'(ral.sw_binding_regwen.predict(.value(1)));
+              ral.sw_binding_regwen.set_locked_regs_access("original_access");
             end
           end
           keymgr_pkg::OpDisable: begin
@@ -303,18 +303,18 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     // if incoming access is a write to a valid csr, then make updates right away
     if (addr_phase_write) begin
-      // if OP WIP or keymgr_en=0, will clear cfgen and below csr can't be written
+      // if OP WIP or keymgr_en=0, will clear cfg_regwen and below csr can't be written
       if ((current_op_status == keymgr_pkg::OpWip || !cfg.keymgr_vif.get_keymgr_en()) &&
-          ral.cfgen.is_inside_locked_regs(dv_reg)) begin
-        `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to cfgen=0", csr.get_name()),
+          ral.cfg_regwen.is_inside_locked_regs(dv_reg)) begin
+        `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to cfg_regwen=0", csr.get_name()),
                   UVM_MEDIUM)
         return;
-      end else if (`gmv(ral.sw_binding_en) == 0 && csr.get_name() inside {"sw_binding_0",
+      end else if (`gmv(ral.sw_binding_regwen) == 0 && csr.get_name() inside {"sw_binding_0",
                "sw_binding_1", "sw_binding_2", "sw_binding_3"}) begin
-        `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to sw_binding_en=0",
+        `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to sw_binding_regwen=0",
                                   csr.get_name()), UVM_MEDIUM)
         return;
-      end else if (csr.get_name() == "sw_binding_en" && current_state == keymgr_pkg::StReset) begin
+      end else if (csr.get_name() == "sw_binding_regwen" && current_state == keymgr_pkg::StReset) begin
         `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to state in StReset",
                                   csr.get_name()), UVM_MEDIUM)
         return;
@@ -322,12 +322,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
       end
     end
-    if (data_phase_write && csr.get_name() == "sw_binding_en" &&
+    if (data_phase_write && csr.get_name() == "sw_binding_regwen" &&
         current_state == keymgr_pkg::StReset) begin
-      // in StReset, can't change sw_binding_en value
+      // in StReset, can't change sw_binding_regwen value
       // set related locked reg back to original_access as this is updated automatic in post_write
       #0; // push below update to be done after post_write
-      ral.sw_binding_en.set_locked_regs_access("original_access");
+      ral.sw_binding_regwen.set_locked_regs_access("original_access");
     end
 
     // process the csr req
@@ -348,7 +348,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
-      "intr_enable", "err_code", "sw_binding_en": begin
+      "intr_enable", "err_code", "sw_binding_regwen": begin
         // no speical handle is needed
       end
       "intr_test": begin
@@ -364,18 +364,18 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
-      "cfgen": begin
+      "cfg_regwen": begin
         // Check in this block
         do_read_check = 1'b0;
 
-        // skip checking cfgen value when it's advance OP in Reset, as it's hard to know what exact
+        // skip checking cfg_regwen value when it's advance OP in Reset, as it's hard to know what exact
         // time OP will complete
         if (current_state != keymgr_pkg::StReset || current_op_status != keymgr_pkg::OpWip) begin
           if (addr_phase_read) begin
-            addr_phase_cfgen = current_op_status != keymgr_pkg::OpWip &&
+            addr_phase_cfg_regwen = current_op_status != keymgr_pkg::OpWip &&
                                cfg.keymgr_vif.get_keymgr_en();
           end else if (data_phase_read) begin
-            `DV_CHECK_EQ(item.d_data, addr_phase_cfgen)
+            `DV_CHECK_EQ(item.d_data, addr_phase_cfg_regwen)
           end
         end
       end

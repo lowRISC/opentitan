@@ -97,9 +97,9 @@ module entropy_src_reg_top (
   logic intr_test_es_fifo_err_we;
   logic alert_test_wd;
   logic alert_test_we;
-  logic regen_qs;
-  logic regen_wd;
-  logic regen_we;
+  logic regwen_qs;
+  logic regwen_wd;
+  logic regwen_we;
   logic [7:0] rev_abi_revision_qs;
   logic [7:0] rev_hw_revision_qs;
   logic [7:0] rev_chip_type_qs;
@@ -535,19 +535,19 @@ module entropy_src_reg_top (
   );
 
 
-  // R[regen]: V(False)
+  // R[regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_regen (
+  ) u_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (regen_we),
-    .wd     (regen_wd),
+    .we     (regwen_we),
+    .wd     (regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -555,10 +555,10 @@ module entropy_src_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regen.q ),
+    .q      (reg2hw.regwen.q ),
 
     // to register interface (read)
-    .qs     (regen_qs)
+    .qs     (regwen_qs)
   );
 
 
@@ -591,7 +591,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (conf_enable_we & regen_qs),
+    .we     (conf_enable_we & regwen_qs),
     .wd     (conf_enable_wd),
 
     // from internal hardware
@@ -617,7 +617,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (conf_boot_bypass_disable_we & regen_qs),
+    .we     (conf_boot_bypass_disable_we & regwen_qs),
     .wd     (conf_boot_bypass_disable_wd),
 
     // from internal hardware
@@ -643,7 +643,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (conf_repcnt_disable_we & regen_qs),
+    .we     (conf_repcnt_disable_we & regwen_qs),
     .wd     (conf_repcnt_disable_wd),
 
     // from internal hardware
@@ -669,7 +669,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (conf_adaptp_disable_we & regen_qs),
+    .we     (conf_adaptp_disable_we & regwen_qs),
     .wd     (conf_adaptp_disable_wd),
 
     // from internal hardware
@@ -695,7 +695,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (conf_bucket_disable_we & regen_qs),
+    .we     (conf_bucket_disable_we & regwen_qs),
     .wd     (conf_bucket_disable_wd),
 
     // from internal hardware
@@ -721,7 +721,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (conf_markov_disable_we & regen_qs),
+    .we     (conf_markov_disable_we & regwen_qs),
     .wd     (conf_markov_disable_wd),
 
     // from internal hardware
@@ -747,7 +747,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (conf_health_test_clr_we & regen_qs),
+    .we     (conf_health_test_clr_we & regwen_qs),
     .wd     (conf_health_test_clr_wd),
 
     // from internal hardware
@@ -773,7 +773,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (conf_rng_bit_en_we & regen_qs),
+    .we     (conf_rng_bit_en_we & regwen_qs),
     .wd     (conf_rng_bit_en_wd),
 
     // from internal hardware
@@ -799,7 +799,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (conf_rng_bit_sel_we & regen_qs),
+    .we     (conf_rng_bit_sel_we & regwen_qs),
     .wd     (conf_rng_bit_sel_wd),
 
     // from internal hardware
@@ -825,7 +825,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (conf_extht_enable_we & regen_qs),
+    .we     (conf_extht_enable_we & regwen_qs),
     .wd     (conf_extht_enable_wd),
 
     // from internal hardware
@@ -880,7 +880,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (entropy_control_es_route_we & regen_qs),
+    .we     (entropy_control_es_route_we & regwen_qs),
     .wd     (entropy_control_es_route_wd),
 
     // from internal hardware
@@ -906,7 +906,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (entropy_control_es_type_we & regen_qs),
+    .we     (entropy_control_es_type_we & regwen_qs),
     .wd     (entropy_control_es_type_wd),
 
     // from internal hardware
@@ -950,7 +950,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (health_test_windows_fips_window_we & regen_qs),
+    .we     (health_test_windows_fips_window_we & regwen_qs),
     .wd     (health_test_windows_fips_window_wd),
 
     // from internal hardware
@@ -976,7 +976,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (health_test_windows_bypass_window_we & regen_qs),
+    .we     (health_test_windows_bypass_window_we & regwen_qs),
     .wd     (health_test_windows_bypass_window_wd),
 
     // from internal hardware
@@ -1004,7 +1004,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (repcnt_thresholds_fips_repcnt_thresh_we & regen_qs),
+    .we     (repcnt_thresholds_fips_repcnt_thresh_we & regwen_qs),
     .wd     (repcnt_thresholds_fips_repcnt_thresh_wd),
 
     // from internal hardware
@@ -1030,7 +1030,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (repcnt_thresholds_bypass_repcnt_thresh_we & regen_qs),
+    .we     (repcnt_thresholds_bypass_repcnt_thresh_we & regwen_qs),
     .wd     (repcnt_thresholds_bypass_repcnt_thresh_wd),
 
     // from internal hardware
@@ -1058,7 +1058,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (adaptp_hi_thresholds_fips_adaptp_hi_thresh_we & regen_qs),
+    .we     (adaptp_hi_thresholds_fips_adaptp_hi_thresh_we & regwen_qs),
     .wd     (adaptp_hi_thresholds_fips_adaptp_hi_thresh_wd),
 
     // from internal hardware
@@ -1084,7 +1084,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (adaptp_hi_thresholds_bypass_adaptp_hi_thresh_we & regen_qs),
+    .we     (adaptp_hi_thresholds_bypass_adaptp_hi_thresh_we & regwen_qs),
     .wd     (adaptp_hi_thresholds_bypass_adaptp_hi_thresh_wd),
 
     // from internal hardware
@@ -1112,7 +1112,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (adaptp_lo_thresholds_fips_adaptp_lo_thresh_we & regen_qs),
+    .we     (adaptp_lo_thresholds_fips_adaptp_lo_thresh_we & regwen_qs),
     .wd     (adaptp_lo_thresholds_fips_adaptp_lo_thresh_wd),
 
     // from internal hardware
@@ -1138,7 +1138,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (adaptp_lo_thresholds_bypass_adaptp_lo_thresh_we & regen_qs),
+    .we     (adaptp_lo_thresholds_bypass_adaptp_lo_thresh_we & regwen_qs),
     .wd     (adaptp_lo_thresholds_bypass_adaptp_lo_thresh_wd),
 
     // from internal hardware
@@ -1166,7 +1166,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (bucket_thresholds_fips_bucket_thresh_we & regen_qs),
+    .we     (bucket_thresholds_fips_bucket_thresh_we & regwen_qs),
     .wd     (bucket_thresholds_fips_bucket_thresh_wd),
 
     // from internal hardware
@@ -1192,7 +1192,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (bucket_thresholds_bypass_bucket_thresh_we & regen_qs),
+    .we     (bucket_thresholds_bypass_bucket_thresh_we & regwen_qs),
     .wd     (bucket_thresholds_bypass_bucket_thresh_wd),
 
     // from internal hardware
@@ -1220,7 +1220,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (markov_hi_thresholds_fips_markov_hi_thresh_we & regen_qs),
+    .we     (markov_hi_thresholds_fips_markov_hi_thresh_we & regwen_qs),
     .wd     (markov_hi_thresholds_fips_markov_hi_thresh_wd),
 
     // from internal hardware
@@ -1246,7 +1246,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (markov_hi_thresholds_bypass_markov_hi_thresh_we & regen_qs),
+    .we     (markov_hi_thresholds_bypass_markov_hi_thresh_we & regwen_qs),
     .wd     (markov_hi_thresholds_bypass_markov_hi_thresh_wd),
 
     // from internal hardware
@@ -1274,7 +1274,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (markov_lo_thresholds_fips_markov_lo_thresh_we & regen_qs),
+    .we     (markov_lo_thresholds_fips_markov_lo_thresh_we & regwen_qs),
     .wd     (markov_lo_thresholds_fips_markov_lo_thresh_wd),
 
     // from internal hardware
@@ -1300,7 +1300,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (markov_lo_thresholds_bypass_markov_lo_thresh_we & regen_qs),
+    .we     (markov_lo_thresholds_bypass_markov_lo_thresh_we & regwen_qs),
     .wd     (markov_lo_thresholds_bypass_markov_lo_thresh_wd),
 
     // from internal hardware
@@ -1328,7 +1328,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (extht_hi_thresholds_fips_extht_hi_thresh_we & regen_qs),
+    .we     (extht_hi_thresholds_fips_extht_hi_thresh_we & regwen_qs),
     .wd     (extht_hi_thresholds_fips_extht_hi_thresh_wd),
 
     // from internal hardware
@@ -1354,7 +1354,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (extht_hi_thresholds_bypass_extht_hi_thresh_we & regen_qs),
+    .we     (extht_hi_thresholds_bypass_extht_hi_thresh_we & regwen_qs),
     .wd     (extht_hi_thresholds_bypass_extht_hi_thresh_wd),
 
     // from internal hardware
@@ -1382,7 +1382,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (extht_lo_thresholds_fips_extht_lo_thresh_we & regen_qs),
+    .we     (extht_lo_thresholds_fips_extht_lo_thresh_we & regwen_qs),
     .wd     (extht_lo_thresholds_fips_extht_lo_thresh_wd),
 
     // from internal hardware
@@ -1408,7 +1408,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (extht_lo_thresholds_bypass_extht_lo_thresh_we & regen_qs),
+    .we     (extht_lo_thresholds_bypass_extht_lo_thresh_we & regwen_qs),
     .wd     (extht_lo_thresholds_bypass_extht_lo_thresh_wd),
 
     // from internal hardware
@@ -1819,7 +1819,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_threshold_we & regen_qs),
+    .we     (alert_threshold_we & regwen_qs),
     .wd     (alert_threshold_wd),
 
     // from internal hardware
@@ -1986,7 +1986,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (fw_ov_control_fw_ov_mode_we & regen_qs),
+    .we     (fw_ov_control_fw_ov_mode_we & regwen_qs),
     .wd     (fw_ov_control_fw_ov_mode_wd),
 
     // from internal hardware
@@ -2012,7 +2012,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (fw_ov_control_fw_ov_fifo_reg_rd_we & regen_qs),
+    .we     (fw_ov_control_fw_ov_fifo_reg_rd_we & regwen_qs),
     .wd     (fw_ov_control_fw_ov_fifo_reg_rd_wd),
 
     // from internal hardware
@@ -2038,7 +2038,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (fw_ov_control_fw_ov_fifo_reg_wr_we & regen_qs),
+    .we     (fw_ov_control_fw_ov_fifo_reg_wr_we & regwen_qs),
     .wd     (fw_ov_control_fw_ov_fifo_reg_wr_wd),
 
     // from internal hardware
@@ -2113,7 +2113,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (pre_cond_fifo_depth_we & regen_qs),
+    .we     (pre_cond_fifo_depth_we & regwen_qs),
     .wd     (pre_cond_fifo_depth_wd),
 
     // from internal hardware
@@ -2172,7 +2172,7 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (seed_we & regen_qs),
+    .we     (seed_we & regwen_qs),
     .wd     (seed_wd),
 
     // from internal hardware
@@ -2355,7 +2355,7 @@ module entropy_src_reg_top (
     addr_hit[ 1] = (reg_addr == ENTROPY_SRC_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == ENTROPY_SRC_INTR_TEST_OFFSET);
     addr_hit[ 3] = (reg_addr == ENTROPY_SRC_ALERT_TEST_OFFSET);
-    addr_hit[ 4] = (reg_addr == ENTROPY_SRC_REGEN_OFFSET);
+    addr_hit[ 4] = (reg_addr == ENTROPY_SRC_REGWEN_OFFSET);
     addr_hit[ 5] = (reg_addr == ENTROPY_SRC_REV_OFFSET);
     addr_hit[ 6] = (reg_addr == ENTROPY_SRC_CONF_OFFSET);
     addr_hit[ 7] = (reg_addr == ENTROPY_SRC_RATE_OFFSET);
@@ -2482,8 +2482,8 @@ module entropy_src_reg_top (
   assign alert_test_we = addr_hit[3] & reg_we & ~wr_err;
   assign alert_test_wd = reg_wdata[0];
 
-  assign regen_we = addr_hit[4] & reg_we & ~wr_err;
-  assign regen_wd = reg_wdata[0];
+  assign regwen_we = addr_hit[4] & reg_we & ~wr_err;
+  assign regwen_wd = reg_wdata[0];
 
 
 
@@ -2723,7 +2723,7 @@ module entropy_src_reg_top (
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[0] = regen_qs;
+        reg_rdata_next[0] = regwen_qs;
       end
 
       addr_hit[5]: begin

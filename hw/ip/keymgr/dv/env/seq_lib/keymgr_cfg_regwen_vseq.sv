@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// SW starts operation and HW will set cfgen=0 to prevent write to registers gated by cfgen
+// SW starts operation and HW will set cfg_regwen=0 to prevent write to registers gated by cfg_regwen
 // Test those registers can't be written during OpWip
-// Also check cfgen value is updated by design correctly
-class keymgr_cfgen_vseq extends keymgr_random_vseq;
-  `uvm_object_utils(keymgr_cfgen_vseq)
+// Also check cfg_regwen value is updated by design correctly
+class keymgr_cfg_regwen_vseq extends keymgr_random_vseq;
+  `uvm_object_utils(keymgr_cfg_regwen_vseq)
   `uvm_object_new
 
   virtual task body();
     bit regular_vseq_done;
     fork
-      write_cfgen_gate_regs_during_op_wip(regular_vseq_done);
+      write_cfg_regwen_gate_regs_during_op_wip(regular_vseq_done);
       begin
         super.body();
         // let the unblocking thread finish before ending this seq
@@ -21,12 +21,12 @@ class keymgr_cfgen_vseq extends keymgr_random_vseq;
     join
   endtask : body
 
-  task write_cfgen_gate_regs_during_op_wip(ref bit regular_vseq_done);
+  task write_cfg_regwen_gate_regs_during_op_wip(ref bit regular_vseq_done);
     // since it's very timing sensitive, backdoor wait op_status.
     // randomly add 0-100 cycle delay, backdoor check op_status again
-    // When status is still OpWip, call write_cfgen_gated_reg and the write will be ignored
+    // When status is still OpWip, call write_cfg_regwen_gated_reg and the write will be ignored
     while (!regular_vseq_done) begin
-      bit [TL_DW-1:0] op_status_val, cfgen_val;
+      bit [TL_DW-1:0] op_status_val, cfg_regwen_val;
       uint delay;
 
       forever begin
@@ -44,10 +44,10 @@ class keymgr_cfgen_vseq extends keymgr_random_vseq;
                                                      [11:100] :/ 1};)
       cfg.clk_rst_vif.wait_clks(delay);
 
-      // 50% to read cfgen and check in scb
-      if ($urandom_range(0, 1)) csr_rd(ral.cfgen, cfgen_val);
+      // 50% to read cfg_regwen and check in scb
+      if ($urandom_range(0, 1)) csr_rd(ral.cfg_regwen, cfg_regwen_val);
 
-      // writing during cfgen is timing sensitive
+      // writing during cfg_regwen is timing sensitive
       // 1. make sure no other thread is accessing register
       // 2. use backdoor check op_status again in case it's not OpWip after front-door read
       // 3. make sure done isn't high, because if done is high, next cycle status won't be WIP
@@ -65,7 +65,7 @@ class keymgr_cfgen_vseq extends keymgr_random_vseq;
     dv_base_reg     locked_reg;
     dv_base_reg     locked_regs[$];
 
-    ral.cfgen.get_locked_regs(locked_regs);
+    ral.cfg_regwen.get_locked_regs(locked_regs);
     locked_regs.shuffle();
     locked_reg = locked_regs[0];
 
@@ -80,4 +80,4 @@ class keymgr_cfgen_vseq extends keymgr_random_vseq;
     csr_rd(locked_reg, val); // checking is done with scb
   endtask : write_and_check_regwen_locked_reg
 
-endclass : keymgr_cfgen_vseq
+endclass : keymgr_cfg_regwen_vseq

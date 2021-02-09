@@ -987,7 +987,7 @@ module otp_ctrl_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_check_trigger_regwen (
     .clk_i   (clk_i    ),
@@ -1048,7 +1048,7 @@ module otp_ctrl_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_check_regwen (
     .clk_i   (clk_i    ),

@@ -865,7 +865,7 @@ the security settings process) should do the following:
           changed from the default mapping (0->0, 1->1, 2->2, 3->3).
 
 4. After initial configuration at startup, lock the alert enable and escalation
-config registers by writing 1 to {{< regref "REGEN" >}}. This protects the registers from being
+config registers by writing 1 to {{< regref "REGWEN" >}}. This protects the registers from being
 altered later on, and activates the ping mechanism for the enabled alerts and
 escalation signals.
 
@@ -902,8 +902,8 @@ the interrupt as follows:
     - Resetting the accumulation register for the class by writing {{< regref "CLASSA_CLR" >}}.
       This also aborts escalation protocol if it has been triggered. If for some
       reason it is desired to never allow the accumulator or escalation to be
-      cleared, software can initialize the {{< regref "CLASSA_CLREN" >}} register to zero.
-      If {{< regref "CLASSA_CLREN" >}} is already false when an alert interrupt is detected
+      cleared, software can initialize the {{< regref "CLASSA_REGWEN" >}} register to zero.
+      If {{< regref "CLASSA_REGWEN" >}} is already false when an alert interrupt is detected
       (either due to software control or hardware trigger via
       {{< regref "CLASSA_CTRL.LOCK" >}}), then the accumulation counter can not be cleared and
       this step has no effect.

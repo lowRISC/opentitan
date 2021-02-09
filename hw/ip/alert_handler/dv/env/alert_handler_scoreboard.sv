@@ -221,7 +221,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     bit [TL_DW-1:0] class_ctrl = get_class_ctrl(class_i);
     if (class_ctrl[AlertClassCtrlLock]) begin
       uvm_reg clren_rg;
-      clren_rg = ral.get_reg_by_name($sformatf("class%s_clren", class_name[class_i]));
+      clren_rg = ral.get_reg_by_name($sformatf("class%s_regwen", class_name[class_i]));
       `DV_CHECK_NE_FATAL(clren_rg, null)
       void'(clren_rg.predict(0));
     end
@@ -233,7 +233,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     // if ping periodic check enabled, will not check cycle count, because cycle count might be
     // connected with ping request, which makes the length unpredictable
     // it is beyond this scb to check ping timer (FPV checks it).
-    if (ral.regen.get_mirrored_value()) begin
+    if (ral.regwen.get_mirrored_value()) begin
       `DV_CHECK_EQ(cycle_cnt, esc_cnter_per_signal[esc_sig_i],
                    $sformatf("check signal_%0d", esc_sig_i))
       if (cfg.en_cov) cov.esc_sig_length_cg.sample(esc_sig_i, cycle_cnt);
@@ -303,10 +303,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               if (item.a_data[i] == 0) under_intr_classes[i] = 0;
             end
           end
-          "classa_clr": if (ral.classa_clren.get_mirrored_value()) clr_reset_esc_class(0);
-          "classb_clr": if (ral.classb_clren.get_mirrored_value()) clr_reset_esc_class(1);
-          "classc_clr": if (ral.classc_clren.get_mirrored_value()) clr_reset_esc_class(2);
-          "classd_clr": if (ral.classd_clren.get_mirrored_value()) clr_reset_esc_class(3);
+          "classa_clr": if (ral.classa_regwen.get_mirrored_value()) clr_reset_esc_class(0);
+          "classb_clr": if (ral.classb_regwen.get_mirrored_value()) clr_reset_esc_class(1);
+          "classc_clr": if (ral.classc_regwen.get_mirrored_value()) clr_reset_esc_class(2);
+          "classd_clr": if (ral.classd_regwen.get_mirrored_value()) clr_reset_esc_class(3);
           default: begin
            //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
           end

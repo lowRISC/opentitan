@@ -126,17 +126,17 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   // ping timeout in cycles
   // autolock can clear these regs automatically upon entering escalation
   // note: the class must be activated for this to occur
-  assign { hw2reg.classd_clren.d,
-           hw2reg.classc_clren.d,
-           hw2reg.classb_clren.d,
-           hw2reg.classa_clren.d } = '0;
+  assign { hw2reg.classd_regwen.d,
+           hw2reg.classc_regwen.d,
+           hw2reg.classb_regwen.d,
+           hw2reg.classa_regwen.d } = '0;
 
-  assign { hw2reg.classd_clren.de,
-           hw2reg.classc_clren.de,
-           hw2reg.classb_clren.de,
-           hw2reg.classa_clren.de } = hw2reg_wrap.class_esc_trig    &
-                                      class_autolock_en             &
-                                      reg2hw_wrap.class_en;
+  assign { hw2reg.classd_regwen.de,
+           hw2reg.classc_regwen.de,
+           hw2reg.classb_regwen.de,
+           hw2reg.classa_regwen.de } = hw2reg_wrap.class_esc_trig &
+                                       class_autolock_en          &
+                                       reg2hw_wrap.class_en;
 
   // current accumulator counts
   assign { hw2reg.classd_accum_cnt.d,
@@ -161,7 +161,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   /////////////////////
 
   // config register lock
-  assign reg2hw_wrap.config_locked = ~reg2hw.regen.q;
+  assign reg2hw_wrap.config_locked = ~reg2hw.regwen.q;
 
   // alert enable and class assignments
   for (genvar k = 0; k < NAlerts; k++) begin : gen_alert_en_class

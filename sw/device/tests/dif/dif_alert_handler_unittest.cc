@@ -98,7 +98,7 @@ TEST_F(ConfigTest, Locked) {
       .ping_timeout = 0,
   };
 
-  EXPECT_READ32(ALERT_HANDLER_REGEN_REG_OFFSET, 0);
+  EXPECT_READ32(ALERT_HANDLER_REGWEN_REG_OFFSET, 0);
 
   EXPECT_EQ(dif_alert_handler_configure(&handler_, config),
             kDifAlertHandlerConfigLocked);
@@ -109,8 +109,8 @@ TEST_F(ConfigTest, NoClassInit) {
       .ping_timeout = 50,
   };
 
-  EXPECT_READ32(ALERT_HANDLER_REGEN_REG_OFFSET,
-                {{ALERT_HANDLER_REGEN_REGEN_BIT, true}});
+  EXPECT_READ32(ALERT_HANDLER_REGWEN_REG_OFFSET,
+                {{ALERT_HANDLER_REGWEN_REGWEN_BIT, true}});
 
   EXPECT_WRITE32(
       ALERT_HANDLER_PING_TIMEOUT_CYC_REG_OFFSET,
@@ -207,8 +207,8 @@ TEST_F(ConfigTest, ClassInit) {
       .classes_len = classes.size(),
   };
 
-  EXPECT_READ32(ALERT_HANDLER_REGEN_REG_OFFSET,
-                {{ALERT_HANDLER_REGEN_REGEN_BIT, true}});
+  EXPECT_READ32(ALERT_HANDLER_REGWEN_REG_OFFSET,
+                {{ALERT_HANDLER_REGWEN_REGWEN_BIT, true}});
 
   // Unfortunately, we can't use EXPECT_MASK for these reads and writes,
   // since there are not sequenced exactly.
@@ -569,20 +569,20 @@ class LockTest : public AlertTest {};
 TEST_F(LockTest, IsLocked) {
   bool flag;
 
-  EXPECT_READ32(ALERT_HANDLER_REGEN_REG_OFFSET,
-                {{ALERT_HANDLER_REGEN_REGEN_BIT, true}});
+  EXPECT_READ32(ALERT_HANDLER_REGWEN_REG_OFFSET,
+                {{ALERT_HANDLER_REGWEN_REGWEN_BIT, true}});
   EXPECT_EQ(dif_alert_handler_is_locked(&handler_, &flag), kDifAlertHandlerOk);
   EXPECT_FALSE(flag);
 
-  EXPECT_READ32(ALERT_HANDLER_REGEN_REG_OFFSET,
-                {{ALERT_HANDLER_REGEN_REGEN_BIT, false}});
+  EXPECT_READ32(ALERT_HANDLER_REGWEN_REG_OFFSET,
+                {{ALERT_HANDLER_REGWEN_REGWEN_BIT, false}});
   EXPECT_EQ(dif_alert_handler_is_locked(&handler_, &flag), kDifAlertHandlerOk);
   EXPECT_TRUE(flag);
 }
 
 TEST_F(LockTest, Lock) {
-  EXPECT_WRITE32(ALERT_HANDLER_REGEN_REG_OFFSET,
-                 {{ALERT_HANDLER_REGEN_REGEN_BIT, true}});
+  EXPECT_WRITE32(ALERT_HANDLER_REGWEN_REG_OFFSET,
+                 {{ALERT_HANDLER_REGWEN_REGWEN_BIT, true}});
   EXPECT_EQ(dif_alert_handler_lock(&handler_), kDifAlertHandlerOk);
 }
 
@@ -811,13 +811,13 @@ class EscalationTest : public AlertTest {};
 TEST_F(EscalationTest, CanClear) {
   bool flag;
 
-  EXPECT_READ32(ALERT_HANDLER_CLASSB_CLREN_REG_OFFSET, true);
+  EXPECT_READ32(ALERT_HANDLER_CLASSB_REGWEN_REG_OFFSET, true);
   EXPECT_EQ(dif_alert_handler_escalation_can_clear(
                 &handler_, kDifAlertHandlerClassB, &flag),
             kDifAlertHandlerOk);
   EXPECT_TRUE(flag);
 
-  EXPECT_READ32(ALERT_HANDLER_CLASSA_CLREN_REG_OFFSET, false);
+  EXPECT_READ32(ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET, false);
   EXPECT_EQ(dif_alert_handler_escalation_can_clear(
                 &handler_, kDifAlertHandlerClassA, &flag),
             kDifAlertHandlerOk);
@@ -825,7 +825,7 @@ TEST_F(EscalationTest, CanClear) {
 }
 
 TEST_F(EscalationTest, Disable) {
-  EXPECT_WRITE32(ALERT_HANDLER_CLASSC_CLREN_REG_OFFSET, true);
+  EXPECT_WRITE32(ALERT_HANDLER_CLASSC_REGWEN_REG_OFFSET, true);
   EXPECT_EQ(dif_alert_handler_escalation_disable_clearing(
                 &handler_, kDifAlertHandlerClassC),
             kDifAlertHandlerOk);
