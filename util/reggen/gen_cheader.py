@@ -340,13 +340,6 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
             continue
 
         assert isinstance(x, dict)
-        if 'sameaddr' in x:
-            for sareg in x['sameaddr']:
-                assert isinstance(sareg, Register)
-                gen_cdefine_register(outstr, sareg, component, regwidth,
-                                     rnames, existing_defines)
-            continue
-
         if 'window' in x:
             gen_cdefine_window(outstr, x['window'], component, regwidth,
                                rnames, existing_defines)

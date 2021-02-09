@@ -163,15 +163,12 @@ def json_to_reg(obj):
         if isinstance(r, MultiRegister):
             block.regs.append(parse_multireg(r))
             continue
-        if isinstance(r, dict):
-            if 'sameaddr' in r:
-                log.error("Current tool doesn't support 'sameaddr' type")
-                continue
-            if 'window' in r:
-                win = parse_win(r['window'], block.width)
-                if win is not None:
-                    block.wins.append(win)
-                continue
+        assert isinstance(r, dict)
+        if 'window' in r:
+            win = parse_win(r['window'], block.width)
+            if win is not None:
+                block.wins.append(win)
+            continue
 
     # Last offset and calculate space
     #  Later on, it could use block.regs[-1].genoffset

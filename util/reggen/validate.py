@@ -368,9 +368,6 @@ lp_optional = {
 list_optone = {
     'reserved': ['d', "number of registers to reserve space for"],
     'skipto': ['d', "set next register offset to value"],
-    'sameaddr':
-    ['l', "list of register definition groups "
-     "that share the same offset"],
     'window': [
         'g', "group defining an address range "
         "for something other than standard registers"
@@ -705,8 +702,6 @@ def check_wen_regs(regs):
             x_regs = [x]
         elif isinstance(x, MultiRegister):
             x_regs = x.regs
-        elif isinstance(x, dict):
-            x_regs = x.get('sameaddr', [])
         else:
             x_regs = []
 
@@ -955,29 +950,6 @@ def validate(regs, **kwargs):
                 offset = skipto
 
             vld_regs.append(x)
-            continue
-
-        if 'sameaddr' in x:
-            saregs = []
-            for sareg_idx, sareg in enumerate(x['sameaddr']):
-                try:
-                    reg = Register.from_raw(fullwidth, offset,
-                                            regs.get('param_list', []),
-                                            sareg)
-                    saregs.append(reg)
-                    error += _upd_gennames(regs, offset, reg)
-                except ValueError as err:
-                    log.error('Error in reg {} of sameaddr at offset {:#x}: {}'
-                              .format(sareg_idx + 1,
-                                      offset,
-                                      err))
-                    error += 1
-
-            xx = x.copy()
-            xx['sameaddr'] = saregs
-            vld_regs.append(xx)
-
-            offset += addrsep
             continue
 
         if 'window' in x:
