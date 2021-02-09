@@ -5,7 +5,7 @@
   clock_primary: "clk_i",
   bus_device: "tlul",
   bus_host: "none",
-  param_list: [
+param_list: [
     { name: "EsFifoDepth",
       desc: "Depth of the entropy FIFO",
       type: "int",
@@ -57,9 +57,9 @@
 
   regwidth: "32",
   registers: [
-    { name: "REGEN",
+    { name: "REGWEN",
       desc: "Register write enable for all control registers",
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "hro",
       fields: [
         {
@@ -98,7 +98,7 @@
       desc: "Configuration register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "1:0",
           name: "ENABLE",
@@ -178,7 +178,7 @@
       desc: "Entropy control register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "0",
           name: "ES_ROUTE",
@@ -213,7 +213,7 @@
       desc: "Health test windows register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           name: "FIPS_WINDOW",
@@ -238,7 +238,7 @@
       desc: "Repetition count test thresholds register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           name: "FIPS_REPCNT_THRESH",
@@ -264,7 +264,7 @@
       desc: "Adaptive proportion test high thresholds register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           name: "FIPS_ADAPTP_HI_THRESH",
@@ -290,7 +290,7 @@
       desc: "Adaptive proportion test low thresholds register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           name: "FIPS_ADAPTP_LO_THRESH",
@@ -316,7 +316,7 @@
       desc: "Bucket test thresholds register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           name: "FIPS_BUCKET_THRESH",
@@ -342,7 +342,7 @@
       desc: "Markov test high thresholds register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           name: "FIPS_MARKOV_HI_THRESH",
@@ -368,7 +368,7 @@
       desc: "Markov test low thresholds register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           name: "FIPS_MARKOV_LO_THRESH",
@@ -394,7 +394,7 @@
       desc: "External health test high thresholds register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           name: "FIPS_EXTHT_HI_THRESH",
@@ -420,7 +420,7 @@
       desc: "External health test low thresholds register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           name: "FIPS_EXTHT_LO_THRESH",
@@ -686,7 +686,7 @@
       desc: "Alert threshold register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "3:0",
           name: "ALERT_THRESHOLD",
@@ -794,7 +794,7 @@
       desc: "Firmware override control register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "0",
           name: "FW_OV_MODE",
@@ -868,7 +868,7 @@
       desc: "Pre-conditioner FIFO depth control register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "6:0",
           desc: '''This field to set the logical depth of the
@@ -901,11 +901,11 @@
     { name: "SEED",
       desc: "ENTROPY_SRC seed register",
       swaccess: "rw",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "3:0",
           name: "LFSR_SEED",
-          desc: "Seed used to load into the LFSR for the initial state. This field will not update if the REGEN bit 0 is cleared.",
+          desc: "Seed used to load into the LFSR for the initial state. This field will not update if the REGWEN bit 0 is cleared.",
           resval: "0xb"
        }
       ]

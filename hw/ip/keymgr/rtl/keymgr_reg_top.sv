@@ -83,8 +83,8 @@ module keymgr_reg_top (
   logic alert_test_fatal_fault_err_we;
   logic alert_test_recov_operation_err_wd;
   logic alert_test_recov_operation_err_we;
-  logic cfgen_qs;
-  logic cfgen_re;
+  logic cfg_regwen_qs;
+  logic cfg_regwen_re;
   logic control_start_qs;
   logic control_start_wd;
   logic control_start_we;
@@ -100,10 +100,10 @@ module keymgr_reg_top (
   logic [15:0] reseed_interval_qs;
   logic [15:0] reseed_interval_wd;
   logic reseed_interval_we;
-  logic sw_binding_en_qs;
-  logic sw_binding_en_wd;
-  logic sw_binding_en_we;
-  logic sw_binding_en_re;
+  logic sw_binding_regwen_qs;
+  logic sw_binding_regwen_wd;
+  logic sw_binding_regwen_we;
+  logic sw_binding_regwen_re;
   logic [31:0] sw_binding_0_qs;
   logic [31:0] sw_binding_0_wd;
   logic sw_binding_0_we;
@@ -131,21 +131,21 @@ module keymgr_reg_top (
   logic [31:0] key_version_qs;
   logic [31:0] key_version_wd;
   logic key_version_we;
-  logic max_creator_key_ver_en_qs;
-  logic max_creator_key_ver_en_wd;
-  logic max_creator_key_ver_en_we;
+  logic max_creator_key_ver_regwen_qs;
+  logic max_creator_key_ver_regwen_wd;
+  logic max_creator_key_ver_regwen_we;
   logic [31:0] max_creator_key_ver_qs;
   logic [31:0] max_creator_key_ver_wd;
   logic max_creator_key_ver_we;
-  logic max_owner_int_key_ver_en_qs;
-  logic max_owner_int_key_ver_en_wd;
-  logic max_owner_int_key_ver_en_we;
+  logic max_owner_int_key_ver_regwen_qs;
+  logic max_owner_int_key_ver_regwen_wd;
+  logic max_owner_int_key_ver_regwen_we;
   logic [31:0] max_owner_int_key_ver_qs;
   logic [31:0] max_owner_int_key_ver_wd;
   logic max_owner_int_key_ver_we;
-  logic max_owner_key_ver_en_qs;
-  logic max_owner_key_ver_en_wd;
-  logic max_owner_key_ver_en_we;
+  logic max_owner_key_ver_regwen_qs;
+  logic max_owner_key_ver_regwen_wd;
+  logic max_owner_key_ver_regwen_we;
   logic [31:0] max_owner_key_ver_qs;
   logic [31:0] max_owner_key_ver_wd;
   logic max_owner_key_ver_we;
@@ -317,19 +317,19 @@ module keymgr_reg_top (
   );
 
 
-  // R[cfgen]: V(True)
+  // R[cfg_regwen]: V(True)
 
   prim_subreg_ext #(
     .DW    (1)
-  ) u_cfgen (
-    .re     (cfgen_re),
+  ) u_cfg_regwen (
+    .re     (cfg_regwen_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.cfgen.d),
+    .d      (hw2reg.cfg_regwen.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (cfgen_qs)
+    .qs     (cfg_regwen_qs)
   );
 
 
@@ -345,7 +345,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (control_start_we & cfgen_qs),
+    .we     (control_start_we & cfg_regwen_qs),
     .wd     (control_start_wd),
 
     // from internal hardware
@@ -371,7 +371,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (control_operation_we & cfgen_qs),
+    .we     (control_operation_we & cfg_regwen_qs),
     .wd     (control_operation_wd),
 
     // from internal hardware
@@ -397,7 +397,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (control_dest_sel_we & cfgen_qs),
+    .we     (control_dest_sel_we & cfg_regwen_qs),
     .wd     (control_dest_sel_wd),
 
     // from internal hardware
@@ -467,19 +467,19 @@ module keymgr_reg_top (
   );
 
 
-  // R[sw_binding_en]: V(True)
+  // R[sw_binding_regwen]: V(True)
 
   prim_subreg_ext #(
     .DW    (1)
-  ) u_sw_binding_en (
-    .re     (sw_binding_en_re),
-    .we     (sw_binding_en_we),
-    .wd     (sw_binding_en_wd),
-    .d      (hw2reg.sw_binding_en.d),
+  ) u_sw_binding_regwen (
+    .re     (sw_binding_regwen_re),
+    .we     (sw_binding_regwen_we),
+    .wd     (sw_binding_regwen_wd),
+    .d      (hw2reg.sw_binding_regwen.d),
     .qre    (),
-    .qe     (reg2hw.sw_binding_en.qe),
-    .q      (reg2hw.sw_binding_en.q ),
-    .qs     (sw_binding_en_qs)
+    .qe     (reg2hw.sw_binding_regwen.qe),
+    .q      (reg2hw.sw_binding_regwen.q ),
+    .qs     (sw_binding_regwen_qs)
   );
 
 
@@ -496,7 +496,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (sw_binding_0_we & sw_binding_en_qs),
+    .we     (sw_binding_0_we & sw_binding_regwen_qs),
     .wd     (sw_binding_0_wd),
 
     // from internal hardware
@@ -523,7 +523,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (sw_binding_1_we & sw_binding_en_qs),
+    .we     (sw_binding_1_we & sw_binding_regwen_qs),
     .wd     (sw_binding_1_wd),
 
     // from internal hardware
@@ -550,7 +550,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (sw_binding_2_we & sw_binding_en_qs),
+    .we     (sw_binding_2_we & sw_binding_regwen_qs),
     .wd     (sw_binding_2_wd),
 
     // from internal hardware
@@ -577,7 +577,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (sw_binding_3_we & sw_binding_en_qs),
+    .we     (sw_binding_3_we & sw_binding_regwen_qs),
     .wd     (sw_binding_3_wd),
 
     // from internal hardware
@@ -606,7 +606,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (salt_0_we & cfgen_qs),
+    .we     (salt_0_we & cfg_regwen_qs),
     .wd     (salt_0_wd),
 
     // from internal hardware
@@ -633,7 +633,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (salt_1_we & cfgen_qs),
+    .we     (salt_1_we & cfg_regwen_qs),
     .wd     (salt_1_wd),
 
     // from internal hardware
@@ -660,7 +660,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (salt_2_we & cfgen_qs),
+    .we     (salt_2_we & cfg_regwen_qs),
     .wd     (salt_2_wd),
 
     // from internal hardware
@@ -687,7 +687,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (salt_3_we & cfgen_qs),
+    .we     (salt_3_we & cfg_regwen_qs),
     .wd     (salt_3_wd),
 
     // from internal hardware
@@ -716,7 +716,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (key_version_we & cfgen_qs),
+    .we     (key_version_we & cfg_regwen_qs),
     .wd     (key_version_wd),
 
     // from internal hardware
@@ -732,19 +732,19 @@ module keymgr_reg_top (
   );
 
 
-  // R[max_creator_key_ver_en]: V(False)
+  // R[max_creator_key_ver_regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_max_creator_key_ver_en (
+  ) u_max_creator_key_ver_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (max_creator_key_ver_en_we),
-    .wd     (max_creator_key_ver_en_wd),
+    .we     (max_creator_key_ver_regwen_we),
+    .wd     (max_creator_key_ver_regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -755,7 +755,7 @@ module keymgr_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (max_creator_key_ver_en_qs)
+    .qs     (max_creator_key_ver_regwen_qs)
   );
 
 
@@ -770,7 +770,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (max_creator_key_ver_we & max_creator_key_ver_en_qs),
+    .we     (max_creator_key_ver_we & max_creator_key_ver_regwen_qs),
     .wd     (max_creator_key_ver_wd),
 
     // from internal hardware
@@ -786,19 +786,19 @@ module keymgr_reg_top (
   );
 
 
-  // R[max_owner_int_key_ver_en]: V(False)
+  // R[max_owner_int_key_ver_regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_max_owner_int_key_ver_en (
+  ) u_max_owner_int_key_ver_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (max_owner_int_key_ver_en_we),
-    .wd     (max_owner_int_key_ver_en_wd),
+    .we     (max_owner_int_key_ver_regwen_we),
+    .wd     (max_owner_int_key_ver_regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -809,7 +809,7 @@ module keymgr_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (max_owner_int_key_ver_en_qs)
+    .qs     (max_owner_int_key_ver_regwen_qs)
   );
 
 
@@ -824,7 +824,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (max_owner_int_key_ver_we & max_owner_int_key_ver_en_qs),
+    .we     (max_owner_int_key_ver_we & max_owner_int_key_ver_regwen_qs),
     .wd     (max_owner_int_key_ver_wd),
 
     // from internal hardware
@@ -840,19 +840,19 @@ module keymgr_reg_top (
   );
 
 
-  // R[max_owner_key_ver_en]: V(False)
+  // R[max_owner_key_ver_regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_max_owner_key_ver_en (
+  ) u_max_owner_key_ver_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (max_owner_key_ver_en_we),
-    .wd     (max_owner_key_ver_en_wd),
+    .we     (max_owner_key_ver_regwen_we),
+    .wd     (max_owner_key_ver_regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -863,7 +863,7 @@ module keymgr_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (max_owner_key_ver_en_qs)
+    .qs     (max_owner_key_ver_regwen_qs)
   );
 
 
@@ -878,7 +878,7 @@ module keymgr_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (max_owner_key_ver_we & max_owner_key_ver_en_qs),
+    .we     (max_owner_key_ver_we & max_owner_key_ver_regwen_qs),
     .wd     (max_owner_key_ver_wd),
 
     // from internal hardware
@@ -1498,11 +1498,11 @@ module keymgr_reg_top (
     addr_hit[ 1] = (reg_addr == KEYMGR_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == KEYMGR_INTR_TEST_OFFSET);
     addr_hit[ 3] = (reg_addr == KEYMGR_ALERT_TEST_OFFSET);
-    addr_hit[ 4] = (reg_addr == KEYMGR_CFGEN_OFFSET);
+    addr_hit[ 4] = (reg_addr == KEYMGR_CFG_REGWEN_OFFSET);
     addr_hit[ 5] = (reg_addr == KEYMGR_CONTROL_OFFSET);
     addr_hit[ 6] = (reg_addr == KEYMGR_SIDELOAD_CLEAR_OFFSET);
     addr_hit[ 7] = (reg_addr == KEYMGR_RESEED_INTERVAL_OFFSET);
-    addr_hit[ 8] = (reg_addr == KEYMGR_SW_BINDING_EN_OFFSET);
+    addr_hit[ 8] = (reg_addr == KEYMGR_SW_BINDING_REGWEN_OFFSET);
     addr_hit[ 9] = (reg_addr == KEYMGR_SW_BINDING_0_OFFSET);
     addr_hit[10] = (reg_addr == KEYMGR_SW_BINDING_1_OFFSET);
     addr_hit[11] = (reg_addr == KEYMGR_SW_BINDING_2_OFFSET);
@@ -1512,11 +1512,11 @@ module keymgr_reg_top (
     addr_hit[15] = (reg_addr == KEYMGR_SALT_2_OFFSET);
     addr_hit[16] = (reg_addr == KEYMGR_SALT_3_OFFSET);
     addr_hit[17] = (reg_addr == KEYMGR_KEY_VERSION_OFFSET);
-    addr_hit[18] = (reg_addr == KEYMGR_MAX_CREATOR_KEY_VER_EN_OFFSET);
+    addr_hit[18] = (reg_addr == KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_OFFSET);
     addr_hit[19] = (reg_addr == KEYMGR_MAX_CREATOR_KEY_VER_OFFSET);
-    addr_hit[20] = (reg_addr == KEYMGR_MAX_OWNER_INT_KEY_VER_EN_OFFSET);
+    addr_hit[20] = (reg_addr == KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_OFFSET);
     addr_hit[21] = (reg_addr == KEYMGR_MAX_OWNER_INT_KEY_VER_OFFSET);
-    addr_hit[22] = (reg_addr == KEYMGR_MAX_OWNER_KEY_VER_EN_OFFSET);
+    addr_hit[22] = (reg_addr == KEYMGR_MAX_OWNER_KEY_VER_REGWEN_OFFSET);
     addr_hit[23] = (reg_addr == KEYMGR_MAX_OWNER_KEY_VER_OFFSET);
     addr_hit[24] = (reg_addr == KEYMGR_SW_SHARE0_OUTPUT_0_OFFSET);
     addr_hit[25] = (reg_addr == KEYMGR_SW_SHARE0_OUTPUT_1_OFFSET);
@@ -1604,7 +1604,7 @@ module keymgr_reg_top (
   assign alert_test_recov_operation_err_we = addr_hit[3] & reg_we & ~wr_err;
   assign alert_test_recov_operation_err_wd = reg_wdata[1];
 
-  assign cfgen_re = addr_hit[4] && reg_re;
+  assign cfg_regwen_re = addr_hit[4] && reg_re;
 
   assign control_start_we = addr_hit[5] & reg_we & ~wr_err;
   assign control_start_wd = reg_wdata[0];
@@ -1621,9 +1621,9 @@ module keymgr_reg_top (
   assign reseed_interval_we = addr_hit[7] & reg_we & ~wr_err;
   assign reseed_interval_wd = reg_wdata[15:0];
 
-  assign sw_binding_en_we = addr_hit[8] & reg_we & ~wr_err;
-  assign sw_binding_en_wd = reg_wdata[0];
-  assign sw_binding_en_re = addr_hit[8] && reg_re;
+  assign sw_binding_regwen_we = addr_hit[8] & reg_we & ~wr_err;
+  assign sw_binding_regwen_wd = reg_wdata[0];
+  assign sw_binding_regwen_re = addr_hit[8] && reg_re;
 
   assign sw_binding_0_we = addr_hit[9] & reg_we & ~wr_err;
   assign sw_binding_0_wd = reg_wdata[31:0];
@@ -1652,20 +1652,20 @@ module keymgr_reg_top (
   assign key_version_we = addr_hit[17] & reg_we & ~wr_err;
   assign key_version_wd = reg_wdata[31:0];
 
-  assign max_creator_key_ver_en_we = addr_hit[18] & reg_we & ~wr_err;
-  assign max_creator_key_ver_en_wd = reg_wdata[0];
+  assign max_creator_key_ver_regwen_we = addr_hit[18] & reg_we & ~wr_err;
+  assign max_creator_key_ver_regwen_wd = reg_wdata[0];
 
   assign max_creator_key_ver_we = addr_hit[19] & reg_we & ~wr_err;
   assign max_creator_key_ver_wd = reg_wdata[31:0];
 
-  assign max_owner_int_key_ver_en_we = addr_hit[20] & reg_we & ~wr_err;
-  assign max_owner_int_key_ver_en_wd = reg_wdata[0];
+  assign max_owner_int_key_ver_regwen_we = addr_hit[20] & reg_we & ~wr_err;
+  assign max_owner_int_key_ver_regwen_wd = reg_wdata[0];
 
   assign max_owner_int_key_ver_we = addr_hit[21] & reg_we & ~wr_err;
   assign max_owner_int_key_ver_wd = reg_wdata[31:0];
 
-  assign max_owner_key_ver_en_we = addr_hit[22] & reg_we & ~wr_err;
-  assign max_owner_key_ver_en_wd = reg_wdata[0];
+  assign max_owner_key_ver_regwen_we = addr_hit[22] & reg_we & ~wr_err;
+  assign max_owner_key_ver_regwen_wd = reg_wdata[0];
 
   assign max_owner_key_ver_we = addr_hit[23] & reg_we & ~wr_err;
   assign max_owner_key_ver_wd = reg_wdata[31:0];
@@ -1756,7 +1756,7 @@ module keymgr_reg_top (
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[0] = cfgen_qs;
+        reg_rdata_next[0] = cfg_regwen_qs;
       end
 
       addr_hit[5]: begin
@@ -1774,7 +1774,7 @@ module keymgr_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[0] = sw_binding_en_qs;
+        reg_rdata_next[0] = sw_binding_regwen_qs;
       end
 
       addr_hit[9]: begin
@@ -1814,7 +1814,7 @@ module keymgr_reg_top (
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[0] = max_creator_key_ver_en_qs;
+        reg_rdata_next[0] = max_creator_key_ver_regwen_qs;
       end
 
       addr_hit[19]: begin
@@ -1822,7 +1822,7 @@ module keymgr_reg_top (
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[0] = max_owner_int_key_ver_en_qs;
+        reg_rdata_next[0] = max_owner_int_key_ver_regwen_qs;
       end
 
       addr_hit[21]: begin
@@ -1830,7 +1830,7 @@ module keymgr_reg_top (
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[0] = max_owner_key_ver_en_qs;
+        reg_rdata_next[0] = max_owner_key_ver_regwen_qs;
       end
 
       addr_hit[23]: begin

@@ -1499,7 +1499,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
   assign hw2reg.debug_status.diag.d  =
-         reg2hw.regen.q &&
+         reg2hw.regwen.q &&
          (&reg2hw.entropy_data.q) &&
          (&reg2hw.fw_ov_rd_data.q);
 

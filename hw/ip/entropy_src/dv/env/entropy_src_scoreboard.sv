@@ -70,7 +70,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
       end
       "intr_test": begin
       end
-      "regen": begin
+      "regwen": begin
       end
       "conf": begin
       end

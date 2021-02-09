@@ -123,7 +123,7 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
 
       // write class_ctrl and clren_reg
       alert_handler_rand_wr_class_ctrl(lock_bit_en);
-      alert_handler_wr_clren_regs(clr_en);
+      alert_handler_wr_regwen_regs(clr_en);
 
       // randomly write phase cycle registers
       // always set phase_cycle for the first iteration, in order to pass stress_all test

@@ -17,7 +17,7 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
   task write_random_sw_content();
     uvm_reg         csr_update_q[$];
 
-    csr_random_n_add_to_q(ral.sw_binding_en, csr_update_q);
+    csr_random_n_add_to_q(ral.sw_binding_regwen, csr_update_q);
     csr_random_n_add_to_q(ral.sw_binding_0, csr_update_q);
     csr_random_n_add_to_q(ral.sw_binding_1, csr_update_q);
     csr_random_n_add_to_q(ral.sw_binding_2, csr_update_q);
@@ -31,9 +31,9 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
     csr_random_n_add_to_q(ral.max_owner_int_key_ver, csr_update_q);
     csr_random_n_add_to_q(ral.max_owner_key_ver, csr_update_q);
 
-    csr_random_n_add_to_q(ral.max_creator_key_ver_en, csr_update_q);
-    csr_random_n_add_to_q(ral.max_owner_int_key_ver_en, csr_update_q);
-    csr_random_n_add_to_q(ral.max_owner_key_ver_en, csr_update_q);
+    csr_random_n_add_to_q(ral.max_creator_key_ver_regwen, csr_update_q);
+    csr_random_n_add_to_q(ral.max_owner_int_key_ver_regwen, csr_update_q);
+    csr_random_n_add_to_q(ral.max_owner_key_ver_regwen, csr_update_q);
     csr_random_n_add_to_q(ral.key_version, csr_update_q);
 
     csr_update_q.shuffle();

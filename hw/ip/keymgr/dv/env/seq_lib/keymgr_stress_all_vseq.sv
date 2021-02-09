@@ -4,7 +4,7 @@
 
 // combine all keymgr seqs (except below seqs) in one seq to run sequentially
 // 1. csr seq, which requires scb to be disabled
-// 2. keymgr_cfgen_vseq as it's very timing sensitive
+// 2. keymgr_cfg_regwen_vseq as it's very timing sensitive
 class keymgr_stress_all_vseq extends keymgr_base_vseq;
   `uvm_object_utils(keymgr_stress_all_vseq)
 

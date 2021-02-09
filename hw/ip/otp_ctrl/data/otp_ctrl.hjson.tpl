@@ -586,7 +586,7 @@
       desc: '''
             Register write enable for !!CHECK_TRIGGER.
             ''',
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "none",
       fields: [
         { bits:   "0",
@@ -628,7 +628,7 @@
       desc: '''
             Register write enable for !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD.
             ''',
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "none",
       fields: [
         { bits:   "0",

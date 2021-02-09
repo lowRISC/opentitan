@@ -54,7 +54,7 @@ package padctrl_reg_pkg;
   } padctrl_hw2reg_t;
 
   // Register Address
-  parameter logic [BlockAw-1:0] PADCTRL_REGEN_OFFSET = 6'h 0;
+  parameter logic [BlockAw-1:0] PADCTRL_REGWEN_OFFSET = 6'h 0;
   parameter logic [BlockAw-1:0] PADCTRL_DIO_PADS_0_OFFSET = 6'h 4;
   parameter logic [BlockAw-1:0] PADCTRL_DIO_PADS_1_OFFSET = 6'h 8;
   parameter logic [BlockAw-1:0] PADCTRL_MIO_PADS_0_OFFSET = 6'h c;
@@ -67,7 +67,7 @@ package padctrl_reg_pkg;
 
   // Register Index
   typedef enum int {
-    PADCTRL_REGEN,
+    PADCTRL_REGWEN,
     PADCTRL_DIO_PADS_0,
     PADCTRL_DIO_PADS_1,
     PADCTRL_MIO_PADS_0,
@@ -80,7 +80,7 @@ package padctrl_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] PADCTRL_PERMIT [9] = '{
-    4'b 0001, // index[0] PADCTRL_REGEN
+    4'b 0001, // index[0] PADCTRL_REGWEN
     4'b 1111, // index[1] PADCTRL_DIO_PADS_0
     4'b 0011, // index[2] PADCTRL_DIO_PADS_1
     4'b 1111, // index[3] PADCTRL_MIO_PADS_0

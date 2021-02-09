@@ -34,7 +34,7 @@
     },
   ],
   registers: [
-    { name: "REGEN",
+    { name: "REGWEN",
       desc: '''
             Register write enable for all control registers.
             ''',
@@ -61,7 +61,7 @@
                   hwaccess: "hrw",
                   hwext:    "true",
                   hwqe:     "true",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "ATTR",
                   fields: [
                     { bits: "9:0",
@@ -96,7 +96,7 @@
                   hwaccess: "hrw",
                   hwext:    "true",
                   hwqe:     "true",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "ATTR",
                   fields: [
                     { bits: "9:0",

@@ -166,11 +166,11 @@
 
   registers: [
 # register locks for alerts and class configs
-    { name: "REGEN",
+    { name: "REGWEN",
       desc: '''
             Register write enable for all control registers.
             ''',
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "hro",
       fields: [
         {
@@ -190,7 +190,7 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         {
           # TODO: add PING_CNT_DW parameter here
@@ -210,7 +210,7 @@
                   count:    "NAlerts",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "alert",
                   tags:     [// Enable `alert_en` might cause top-level escalators to trigger
                              // unexpected reset
@@ -230,7 +230,7 @@
                   count:    "NAlerts",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "alert",
                   fields: [
                     {
@@ -273,7 +273,7 @@
                   count:    "N_LOC_ALERT",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "local alert",
                   fields: [
                     { bits: "0",
@@ -290,7 +290,7 @@
                   count:    "N_LOC_ALERT",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "local alert",
                   fields: [
                     {
@@ -330,10 +330,10 @@
 # classes
 
     { name:     "CLASSA_CTRL",
-      desc:     "Escalation control register for alert Class A. Can not be modified if !!REGEN is false."
+      desc:     "Escalation control register for alert Class A. Can not be modified if !!REGWEN is false."
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
@@ -395,11 +395,11 @@
         }
       ]
     },
-    { name:     "CLASSA_CLREN",
+    { name:     "CLASSA_REGWEN",
       desc:     '''
                 Clear enable for escalation protocol of Class A alerts.
                 '''
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "hwo",
       fields: [
       {   bits:   "0",
@@ -422,11 +422,11 @@
       swaccess: "wo",
       hwaccess: "hro",
       hwqe:     "true",
-      regwen:   "CLASSA_CLREN",
+      regwen:   "CLASSA_REGWEN",
       fields: [
         { bits: "0",
           desc: '''Writing to this register clears the accumulator and aborts escalation
-          (if it has been triggered). This clear is disabled if !!CLASSA_CLREN is false.
+          (if it has been triggered). This clear is disabled if !!CLASSA_REGWEN is false.
           '''
         }
       ]
@@ -434,7 +434,7 @@
     { name:     "CLASSA_ACCUM_CNT",
       desc:     '''
                 Current accumulation value for alert Class A. Software can clear this register
-                with a write to !!CLASSA_CLR register unless !!CLASSA_CLREN is false.
+                with a write to !!CLASSA_CLR register unless !!CLASSA_REGWEN is false.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -452,12 +452,12 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           desc: '''Once the accumulation value register is equal to the threshold escalation will
           be triggered on the next alert occurrence within this class A begins. Note that this
-          register can not be modified if !!REGEN is false.
+          register can not be modified if !!REGWEN is false.
           '''
         }
       ]
@@ -468,14 +468,14 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0",
           desc: '''If the interrupt corresponding to this class is not
           handled within the specified amount of cycles, escalation will be triggered.
           Set to a positive value to enable the interrupt timeout for Class A. The timeout is set to zero
           by default, which disables this feature. Note that this register can not be modified if
-          !!REGEN is false.
+          !!REGWEN is false.
           '''
         }
       ]
@@ -486,11 +486,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -500,11 +500,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -514,11 +514,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -528,11 +528,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -552,7 +552,7 @@
           corresponding interrupt bit.
 
           If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
-          aborted by writing to !!CLASSA_CLR. Note however that has no effect if !!CLASSA_CLREN
+          aborted by writing to !!CLASSA_CLR. Note however that has no effect if !!CLASSA_REGWEN
           is set to false (either by SW or by HW via the !!CLASSA_CTRL.LOCK feature).
           '''
         }
@@ -587,10 +587,10 @@
     },
 
     { name:     "CLASSB_CTRL",
-      desc:     "Escalation control register for alert Class B. Can not be modified if !!REGEN is false."
+      desc:     "Escalation control register for alert Class B. Can not be modified if !!REGWEN is false."
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
@@ -652,11 +652,11 @@
         }
       ]
     },
-    { name:     "CLASSB_CLREN",
+    { name:     "CLASSB_REGWEN",
       desc:     '''
                 Clear enable for escalation protocol of Class B alerts.
                 '''
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "hwo",
       fields: [
       {   bits:   "0",
@@ -679,11 +679,11 @@
       swaccess: "wo",
       hwaccess: "hro",
       hwqe:     "true",
-      regwen:   "CLASSB_CLREN",
+      regwen:   "CLASSB_REGWEN",
       fields: [
         { bits: "0",
           desc: '''Writing to this register clears the accumulator and aborts escalation
-          (if it has been triggered). This clear is disabled if !!CLASSB_CLREN is false.
+          (if it has been triggered). This clear is disabled if !!CLASSB_REGWEN is false.
           '''
         }
       ]
@@ -691,7 +691,7 @@
     { name:     "CLASSB_ACCUM_CNT",
       desc:     '''
                 Current accumulation value for alert Class B. Software can clear this register
-                with a write to !!CLASSB_CLR register unless !!CLASSB_CLREN is false.
+                with a write to !!CLASSB_CLR register unless !!CLASSB_REGWEN is false.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -709,12 +709,12 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           desc: '''Once the accumulation value register is equal to the threshold escalation will
           be triggered on the next alert occurrence within this class B begins. Note that this
-          register can not be modified if !!REGEN is false.
+          register can not be modified if !!REGWEN is false.
           '''
         }
       ]
@@ -725,14 +725,14 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0",
           desc: '''If the interrupt corresponding to this class is not
           handled within the specified amount of cycles, escalation will be triggered.
           Set to a positive value to enable the interrupt timeout for Class B. The timeout is set to zero
           by default, which disables this feature. Note that this register can not be modified if
-          !!REGEN is false.
+          !!REGWEN is false.
           '''
         }
       ]
@@ -743,11 +743,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -757,11 +757,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -771,11 +771,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -785,11 +785,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -809,7 +809,7 @@
           corresponding interrupt bit.
 
           If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
-          aborted by writing to !!CLASSB_CLR. Note however that has no effect if !!CLASSB_CLREN
+          aborted by writing to !!CLASSB_CLR. Note however that has no effect if !!CLASSB_REGWEN
           is set to false (either by SW or by HW via the !!CLASSB_CTRL.LOCK feature).
           '''
         }
@@ -844,10 +844,10 @@
     },
 
     { name:     "CLASSC_CTRL",
-      desc:     "Escalation control register for alert Class C. Can not be modified if !!REGEN is false."
+      desc:     "Escalation control register for alert Class C. Can not be modified if !!REGWEN is false."
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
@@ -909,11 +909,11 @@
         }
       ]
     },
-    { name:     "CLASSC_CLREN",
+    { name:     "CLASSC_REGWEN",
       desc:     '''
                 Clear enable for escalation protocol of Class C alerts.
                 '''
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "hwo",
       fields: [
       {   bits:   "0",
@@ -936,11 +936,11 @@
       swaccess: "wo",
       hwaccess: "hro",
       hwqe:     "true",
-      regwen:   "CLASSC_CLREN",
+      regwen:   "CLASSC_REGWEN",
       fields: [
         { bits: "0",
           desc: '''Writing to this register clears the accumulator and aborts escalation
-          (if it has been triggered). This clear is disabled if !!CLASSC_CLREN is false.
+          (if it has been triggered). This clear is disabled if !!CLASSC_REGWEN is false.
           '''
         }
       ]
@@ -948,7 +948,7 @@
     { name:     "CLASSC_ACCUM_CNT",
       desc:     '''
                 Current accumulation value for alert Class C. Software can clear this register
-                with a write to !!CLASSC_CLR register unless !!CLASSC_CLREN is false.
+                with a write to !!CLASSC_CLR register unless !!CLASSC_REGWEN is false.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -966,12 +966,12 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           desc: '''Once the accumulation value register is equal to the threshold escalation will
           be triggered on the next alert occurrence within this class C begins. Note that this
-          register can not be modified if !!REGEN is false.
+          register can not be modified if !!REGWEN is false.
           '''
         }
       ]
@@ -982,14 +982,14 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0",
           desc: '''If the interrupt corresponding to this class is not
           handled within the specified amount of cycles, escalation will be triggered.
           Set to a positive value to enable the interrupt timeout for Class C. The timeout is set to zero
           by default, which disables this feature. Note that this register can not be modified if
-          !!REGEN is false.
+          !!REGWEN is false.
           '''
         }
       ]
@@ -1000,11 +1000,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -1014,11 +1014,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -1028,11 +1028,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -1042,11 +1042,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -1066,7 +1066,7 @@
           corresponding interrupt bit.
 
           If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
-          aborted by writing to !!CLASSC_CLR. Note however that has no effect if !!CLASSC_CLREN
+          aborted by writing to !!CLASSC_CLR. Note however that has no effect if !!CLASSC_REGWEN
           is set to false (either by SW or by HW via the !!CLASSC_CTRL.LOCK feature).
           '''
         }
@@ -1101,10 +1101,10 @@
     },
 
     { name:     "CLASSD_CTRL",
-      desc:     "Escalation control register for alert Class D. Can not be modified if !!REGEN is false."
+      desc:     "Escalation control register for alert Class D. Can not be modified if !!REGWEN is false."
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
@@ -1166,11 +1166,11 @@
         }
       ]
     },
-    { name:     "CLASSD_CLREN",
+    { name:     "CLASSD_REGWEN",
       desc:     '''
                 Clear enable for escalation protocol of Class D alerts.
                 '''
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "hwo",
       fields: [
       {   bits:   "0",
@@ -1193,11 +1193,11 @@
       swaccess: "wo",
       hwaccess: "hro",
       hwqe:     "true",
-      regwen:   "CLASSD_CLREN",
+      regwen:   "CLASSD_REGWEN",
       fields: [
         { bits: "0",
           desc: '''Writing to this register clears the accumulator and aborts escalation
-          (if it has been triggered). This clear is disabled if !!CLASSD_CLREN is false.
+          (if it has been triggered). This clear is disabled if !!CLASSD_REGWEN is false.
           '''
         }
       ]
@@ -1205,7 +1205,7 @@
     { name:     "CLASSD_ACCUM_CNT",
       desc:     '''
                 Current accumulation value for alert Class D. Software can clear this register
-                with a write to !!CLASSD_CLR register unless !!CLASSD_CLREN is false.
+                with a write to !!CLASSD_CLR register unless !!CLASSD_REGWEN is false.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1223,12 +1223,12 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "15:0",
           desc: '''Once the accumulation value register is equal to the threshold escalation will
           be triggered on the next alert occurrence within this class D begins. Note that this
-          register can not be modified if !!REGEN is false.
+          register can not be modified if !!REGWEN is false.
           '''
         }
       ]
@@ -1239,14 +1239,14 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0",
           desc: '''If the interrupt corresponding to this class is not
           handled within the specified amount of cycles, escalation will be triggered.
           Set to a positive value to enable the interrupt timeout for Class D. The timeout is set to zero
           by default, which disables this feature. Note that this register can not be modified if
-          !!REGEN is false.
+          !!REGWEN is false.
           '''
         }
       ]
@@ -1257,11 +1257,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -1271,11 +1271,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -1285,11 +1285,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -1299,11 +1299,11 @@
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "31:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -1323,7 +1323,7 @@
           corresponding interrupt bit.
 
           If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
-          aborted by writing to !!CLASSD_CLR. Note however that has no effect if !!CLASSD_CLREN
+          aborted by writing to !!CLASSD_CLR. Note however that has no effect if !!CLASSD_REGWEN
           is set to false (either by SW or by HW via the !!CLASSD_CTRL.LOCK feature).
           '''
         }

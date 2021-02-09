@@ -66,7 +66,7 @@ package csrng_reg_pkg;
 
   typedef struct packed {
     logic        q;
-  } csrng_reg2hw_regen_reg_t;
+  } csrng_reg2hw_regwen_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -251,7 +251,7 @@ package csrng_reg_pkg;
     csrng_reg2hw_intr_state_reg_t intr_state; // [126:123]
     csrng_reg2hw_intr_enable_reg_t intr_enable; // [122:119]
     csrng_reg2hw_intr_test_reg_t intr_test; // [118:111]
-    csrng_reg2hw_regen_reg_t regen; // [110:110]
+    csrng_reg2hw_regwen_reg_t regwen; // [110:110]
     csrng_reg2hw_ctrl_reg_t ctrl; // [109:104]
     csrng_reg2hw_cmd_req_reg_t cmd_req; // [103:71]
     csrng_reg2hw_genbits_reg_t genbits; // [70:38]
@@ -277,7 +277,7 @@ package csrng_reg_pkg;
   parameter logic [BlockAw-1:0] CSRNG_INTR_STATE_OFFSET = 6'h 0;
   parameter logic [BlockAw-1:0] CSRNG_INTR_ENABLE_OFFSET = 6'h 4;
   parameter logic [BlockAw-1:0] CSRNG_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [BlockAw-1:0] CSRNG_REGEN_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] CSRNG_REGWEN_OFFSET = 6'h c;
   parameter logic [BlockAw-1:0] CSRNG_CTRL_OFFSET = 6'h 10;
   parameter logic [BlockAw-1:0] CSRNG_SUM_STS_OFFSET = 6'h 14;
   parameter logic [BlockAw-1:0] CSRNG_CMD_REQ_OFFSET = 6'h 18;
@@ -295,7 +295,7 @@ package csrng_reg_pkg;
     CSRNG_INTR_STATE,
     CSRNG_INTR_ENABLE,
     CSRNG_INTR_TEST,
-    CSRNG_REGEN,
+    CSRNG_REGWEN,
     CSRNG_CTRL,
     CSRNG_SUM_STS,
     CSRNG_CMD_REQ,
@@ -313,7 +313,7 @@ package csrng_reg_pkg;
     4'b 0001, // index[ 0] CSRNG_INTR_STATE
     4'b 0001, // index[ 1] CSRNG_INTR_ENABLE
     4'b 0001, // index[ 2] CSRNG_INTR_TEST
-    4'b 0001, // index[ 3] CSRNG_REGEN
+    4'b 0001, // index[ 3] CSRNG_REGWEN
     4'b 0111, // index[ 4] CSRNG_CTRL
     4'b 1111, // index[ 5] CSRNG_SUM_STS
     4'b 1111, // index[ 6] CSRNG_CMD_REQ

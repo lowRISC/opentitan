@@ -71,9 +71,9 @@ module pinmux_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic regen_qs;
-  logic regen_wd;
-  logic regen_we;
+  logic regwen_qs;
+  logic regwen_wd;
+  logic regwen_we;
   logic [5:0] periph_insel_0_in_0_qs;
   logic [5:0] periph_insel_0_in_0_wd;
   logic periph_insel_0_in_0_we;
@@ -604,19 +604,19 @@ module pinmux_reg_top (
   logic wkup_cause_cause_7_re;
 
   // Register instances
-  // R[regen]: V(False)
+  // R[regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_regen (
+  ) u_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (regen_we),
-    .wd     (regen_wd),
+    .we     (regwen_we),
+    .wd     (regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -627,7 +627,7 @@ module pinmux_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (regen_qs)
+    .qs     (regwen_qs)
   );
 
 
@@ -645,7 +645,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_0_in_0_we & regen_qs),
+    .we     (periph_insel_0_in_0_we & regwen_qs),
     .wd     (periph_insel_0_in_0_wd),
 
     // from internal hardware
@@ -671,7 +671,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_0_in_1_we & regen_qs),
+    .we     (periph_insel_0_in_1_we & regwen_qs),
     .wd     (periph_insel_0_in_1_wd),
 
     // from internal hardware
@@ -697,7 +697,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_0_in_2_we & regen_qs),
+    .we     (periph_insel_0_in_2_we & regwen_qs),
     .wd     (periph_insel_0_in_2_wd),
 
     // from internal hardware
@@ -723,7 +723,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_0_in_3_we & regen_qs),
+    .we     (periph_insel_0_in_3_we & regwen_qs),
     .wd     (periph_insel_0_in_3_wd),
 
     // from internal hardware
@@ -749,7 +749,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_0_in_4_we & regen_qs),
+    .we     (periph_insel_0_in_4_we & regwen_qs),
     .wd     (periph_insel_0_in_4_wd),
 
     // from internal hardware
@@ -778,7 +778,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_1_in_5_we & regen_qs),
+    .we     (periph_insel_1_in_5_we & regwen_qs),
     .wd     (periph_insel_1_in_5_wd),
 
     // from internal hardware
@@ -804,7 +804,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_1_in_6_we & regen_qs),
+    .we     (periph_insel_1_in_6_we & regwen_qs),
     .wd     (periph_insel_1_in_6_wd),
 
     // from internal hardware
@@ -830,7 +830,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_1_in_7_we & regen_qs),
+    .we     (periph_insel_1_in_7_we & regwen_qs),
     .wd     (periph_insel_1_in_7_wd),
 
     // from internal hardware
@@ -856,7 +856,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_1_in_8_we & regen_qs),
+    .we     (periph_insel_1_in_8_we & regwen_qs),
     .wd     (periph_insel_1_in_8_wd),
 
     // from internal hardware
@@ -882,7 +882,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_1_in_9_we & regen_qs),
+    .we     (periph_insel_1_in_9_we & regwen_qs),
     .wd     (periph_insel_1_in_9_wd),
 
     // from internal hardware
@@ -911,7 +911,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_2_in_10_we & regen_qs),
+    .we     (periph_insel_2_in_10_we & regwen_qs),
     .wd     (periph_insel_2_in_10_wd),
 
     // from internal hardware
@@ -937,7 +937,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_2_in_11_we & regen_qs),
+    .we     (periph_insel_2_in_11_we & regwen_qs),
     .wd     (periph_insel_2_in_11_wd),
 
     // from internal hardware
@@ -963,7 +963,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_2_in_12_we & regen_qs),
+    .we     (periph_insel_2_in_12_we & regwen_qs),
     .wd     (periph_insel_2_in_12_wd),
 
     // from internal hardware
@@ -989,7 +989,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_2_in_13_we & regen_qs),
+    .we     (periph_insel_2_in_13_we & regwen_qs),
     .wd     (periph_insel_2_in_13_wd),
 
     // from internal hardware
@@ -1015,7 +1015,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_2_in_14_we & regen_qs),
+    .we     (periph_insel_2_in_14_we & regwen_qs),
     .wd     (periph_insel_2_in_14_wd),
 
     // from internal hardware
@@ -1044,7 +1044,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_3_in_15_we & regen_qs),
+    .we     (periph_insel_3_in_15_we & regwen_qs),
     .wd     (periph_insel_3_in_15_wd),
 
     // from internal hardware
@@ -1070,7 +1070,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_3_in_16_we & regen_qs),
+    .we     (periph_insel_3_in_16_we & regwen_qs),
     .wd     (periph_insel_3_in_16_wd),
 
     // from internal hardware
@@ -1096,7 +1096,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_3_in_17_we & regen_qs),
+    .we     (periph_insel_3_in_17_we & regwen_qs),
     .wd     (periph_insel_3_in_17_wd),
 
     // from internal hardware
@@ -1122,7 +1122,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_3_in_18_we & regen_qs),
+    .we     (periph_insel_3_in_18_we & regwen_qs),
     .wd     (periph_insel_3_in_18_wd),
 
     // from internal hardware
@@ -1148,7 +1148,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_3_in_19_we & regen_qs),
+    .we     (periph_insel_3_in_19_we & regwen_qs),
     .wd     (periph_insel_3_in_19_wd),
 
     // from internal hardware
@@ -1177,7 +1177,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_4_in_20_we & regen_qs),
+    .we     (periph_insel_4_in_20_we & regwen_qs),
     .wd     (periph_insel_4_in_20_wd),
 
     // from internal hardware
@@ -1203,7 +1203,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_4_in_21_we & regen_qs),
+    .we     (periph_insel_4_in_21_we & regwen_qs),
     .wd     (periph_insel_4_in_21_wd),
 
     // from internal hardware
@@ -1229,7 +1229,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_4_in_22_we & regen_qs),
+    .we     (periph_insel_4_in_22_we & regwen_qs),
     .wd     (periph_insel_4_in_22_wd),
 
     // from internal hardware
@@ -1255,7 +1255,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_4_in_23_we & regen_qs),
+    .we     (periph_insel_4_in_23_we & regwen_qs),
     .wd     (periph_insel_4_in_23_wd),
 
     // from internal hardware
@@ -1281,7 +1281,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_4_in_24_we & regen_qs),
+    .we     (periph_insel_4_in_24_we & regwen_qs),
     .wd     (periph_insel_4_in_24_wd),
 
     // from internal hardware
@@ -1310,7 +1310,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_5_in_25_we & regen_qs),
+    .we     (periph_insel_5_in_25_we & regwen_qs),
     .wd     (periph_insel_5_in_25_wd),
 
     // from internal hardware
@@ -1336,7 +1336,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_5_in_26_we & regen_qs),
+    .we     (periph_insel_5_in_26_we & regwen_qs),
     .wd     (periph_insel_5_in_26_wd),
 
     // from internal hardware
@@ -1362,7 +1362,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_5_in_27_we & regen_qs),
+    .we     (periph_insel_5_in_27_we & regwen_qs),
     .wd     (periph_insel_5_in_27_wd),
 
     // from internal hardware
@@ -1388,7 +1388,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_5_in_28_we & regen_qs),
+    .we     (periph_insel_5_in_28_we & regwen_qs),
     .wd     (periph_insel_5_in_28_wd),
 
     // from internal hardware
@@ -1414,7 +1414,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_5_in_29_we & regen_qs),
+    .we     (periph_insel_5_in_29_we & regwen_qs),
     .wd     (periph_insel_5_in_29_wd),
 
     // from internal hardware
@@ -1443,7 +1443,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_6_in_30_we & regen_qs),
+    .we     (periph_insel_6_in_30_we & regwen_qs),
     .wd     (periph_insel_6_in_30_wd),
 
     // from internal hardware
@@ -1469,7 +1469,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (periph_insel_6_in_31_we & regen_qs),
+    .we     (periph_insel_6_in_31_we & regwen_qs),
     .wd     (periph_insel_6_in_31_wd),
 
     // from internal hardware
@@ -1500,7 +1500,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_0_out_0_we & regen_qs),
+    .we     (mio_outsel_0_out_0_we & regwen_qs),
     .wd     (mio_outsel_0_out_0_wd),
 
     // from internal hardware
@@ -1526,7 +1526,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_0_out_1_we & regen_qs),
+    .we     (mio_outsel_0_out_1_we & regwen_qs),
     .wd     (mio_outsel_0_out_1_wd),
 
     // from internal hardware
@@ -1552,7 +1552,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_0_out_2_we & regen_qs),
+    .we     (mio_outsel_0_out_2_we & regwen_qs),
     .wd     (mio_outsel_0_out_2_wd),
 
     // from internal hardware
@@ -1578,7 +1578,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_0_out_3_we & regen_qs),
+    .we     (mio_outsel_0_out_3_we & regwen_qs),
     .wd     (mio_outsel_0_out_3_wd),
 
     // from internal hardware
@@ -1604,7 +1604,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_0_out_4_we & regen_qs),
+    .we     (mio_outsel_0_out_4_we & regwen_qs),
     .wd     (mio_outsel_0_out_4_wd),
 
     // from internal hardware
@@ -1633,7 +1633,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_1_out_5_we & regen_qs),
+    .we     (mio_outsel_1_out_5_we & regwen_qs),
     .wd     (mio_outsel_1_out_5_wd),
 
     // from internal hardware
@@ -1659,7 +1659,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_1_out_6_we & regen_qs),
+    .we     (mio_outsel_1_out_6_we & regwen_qs),
     .wd     (mio_outsel_1_out_6_wd),
 
     // from internal hardware
@@ -1685,7 +1685,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_1_out_7_we & regen_qs),
+    .we     (mio_outsel_1_out_7_we & regwen_qs),
     .wd     (mio_outsel_1_out_7_wd),
 
     // from internal hardware
@@ -1711,7 +1711,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_1_out_8_we & regen_qs),
+    .we     (mio_outsel_1_out_8_we & regwen_qs),
     .wd     (mio_outsel_1_out_8_wd),
 
     // from internal hardware
@@ -1737,7 +1737,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_1_out_9_we & regen_qs),
+    .we     (mio_outsel_1_out_9_we & regwen_qs),
     .wd     (mio_outsel_1_out_9_wd),
 
     // from internal hardware
@@ -1766,7 +1766,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_2_out_10_we & regen_qs),
+    .we     (mio_outsel_2_out_10_we & regwen_qs),
     .wd     (mio_outsel_2_out_10_wd),
 
     // from internal hardware
@@ -1792,7 +1792,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_2_out_11_we & regen_qs),
+    .we     (mio_outsel_2_out_11_we & regwen_qs),
     .wd     (mio_outsel_2_out_11_wd),
 
     // from internal hardware
@@ -1818,7 +1818,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_2_out_12_we & regen_qs),
+    .we     (mio_outsel_2_out_12_we & regwen_qs),
     .wd     (mio_outsel_2_out_12_wd),
 
     // from internal hardware
@@ -1844,7 +1844,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_2_out_13_we & regen_qs),
+    .we     (mio_outsel_2_out_13_we & regwen_qs),
     .wd     (mio_outsel_2_out_13_wd),
 
     // from internal hardware
@@ -1870,7 +1870,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_2_out_14_we & regen_qs),
+    .we     (mio_outsel_2_out_14_we & regwen_qs),
     .wd     (mio_outsel_2_out_14_wd),
 
     // from internal hardware
@@ -1899,7 +1899,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_3_out_15_we & regen_qs),
+    .we     (mio_outsel_3_out_15_we & regwen_qs),
     .wd     (mio_outsel_3_out_15_wd),
 
     // from internal hardware
@@ -1925,7 +1925,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_3_out_16_we & regen_qs),
+    .we     (mio_outsel_3_out_16_we & regwen_qs),
     .wd     (mio_outsel_3_out_16_wd),
 
     // from internal hardware
@@ -1951,7 +1951,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_3_out_17_we & regen_qs),
+    .we     (mio_outsel_3_out_17_we & regwen_qs),
     .wd     (mio_outsel_3_out_17_wd),
 
     // from internal hardware
@@ -1977,7 +1977,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_3_out_18_we & regen_qs),
+    .we     (mio_outsel_3_out_18_we & regwen_qs),
     .wd     (mio_outsel_3_out_18_wd),
 
     // from internal hardware
@@ -2003,7 +2003,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_3_out_19_we & regen_qs),
+    .we     (mio_outsel_3_out_19_we & regwen_qs),
     .wd     (mio_outsel_3_out_19_wd),
 
     // from internal hardware
@@ -2032,7 +2032,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_4_out_20_we & regen_qs),
+    .we     (mio_outsel_4_out_20_we & regwen_qs),
     .wd     (mio_outsel_4_out_20_wd),
 
     // from internal hardware
@@ -2058,7 +2058,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_4_out_21_we & regen_qs),
+    .we     (mio_outsel_4_out_21_we & regwen_qs),
     .wd     (mio_outsel_4_out_21_wd),
 
     // from internal hardware
@@ -2084,7 +2084,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_4_out_22_we & regen_qs),
+    .we     (mio_outsel_4_out_22_we & regwen_qs),
     .wd     (mio_outsel_4_out_22_wd),
 
     // from internal hardware
@@ -2110,7 +2110,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_4_out_23_we & regen_qs),
+    .we     (mio_outsel_4_out_23_we & regwen_qs),
     .wd     (mio_outsel_4_out_23_wd),
 
     // from internal hardware
@@ -2136,7 +2136,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_4_out_24_we & regen_qs),
+    .we     (mio_outsel_4_out_24_we & regwen_qs),
     .wd     (mio_outsel_4_out_24_wd),
 
     // from internal hardware
@@ -2165,7 +2165,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_5_out_25_we & regen_qs),
+    .we     (mio_outsel_5_out_25_we & regwen_qs),
     .wd     (mio_outsel_5_out_25_wd),
 
     // from internal hardware
@@ -2191,7 +2191,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_5_out_26_we & regen_qs),
+    .we     (mio_outsel_5_out_26_we & regwen_qs),
     .wd     (mio_outsel_5_out_26_wd),
 
     // from internal hardware
@@ -2217,7 +2217,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_5_out_27_we & regen_qs),
+    .we     (mio_outsel_5_out_27_we & regwen_qs),
     .wd     (mio_outsel_5_out_27_wd),
 
     // from internal hardware
@@ -2243,7 +2243,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_5_out_28_we & regen_qs),
+    .we     (mio_outsel_5_out_28_we & regwen_qs),
     .wd     (mio_outsel_5_out_28_wd),
 
     // from internal hardware
@@ -2269,7 +2269,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_5_out_29_we & regen_qs),
+    .we     (mio_outsel_5_out_29_we & regwen_qs),
     .wd     (mio_outsel_5_out_29_wd),
 
     // from internal hardware
@@ -2298,7 +2298,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_6_out_30_we & regen_qs),
+    .we     (mio_outsel_6_out_30_we & regwen_qs),
     .wd     (mio_outsel_6_out_30_wd),
 
     // from internal hardware
@@ -2324,7 +2324,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_outsel_6_out_31_we & regen_qs),
+    .we     (mio_outsel_6_out_31_we & regwen_qs),
     .wd     (mio_outsel_6_out_31_wd),
 
     // from internal hardware
@@ -2355,7 +2355,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_0_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_0_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_0_wd),
 
     // from internal hardware
@@ -2381,7 +2381,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_1_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_1_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_1_wd),
 
     // from internal hardware
@@ -2407,7 +2407,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_2_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_2_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_2_wd),
 
     // from internal hardware
@@ -2433,7 +2433,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_3_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_3_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_3_wd),
 
     // from internal hardware
@@ -2459,7 +2459,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_4_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_4_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_4_wd),
 
     // from internal hardware
@@ -2485,7 +2485,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_5_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_5_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_5_wd),
 
     // from internal hardware
@@ -2511,7 +2511,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_6_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_6_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_6_wd),
 
     // from internal hardware
@@ -2537,7 +2537,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_7_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_7_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_7_wd),
 
     // from internal hardware
@@ -2563,7 +2563,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_8_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_8_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_8_wd),
 
     // from internal hardware
@@ -2589,7 +2589,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_9_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_9_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_9_wd),
 
     // from internal hardware
@@ -2615,7 +2615,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_10_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_10_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_10_wd),
 
     // from internal hardware
@@ -2641,7 +2641,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_11_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_11_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_11_wd),
 
     // from internal hardware
@@ -2667,7 +2667,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_12_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_12_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_12_wd),
 
     // from internal hardware
@@ -2693,7 +2693,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_13_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_13_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_13_wd),
 
     // from internal hardware
@@ -2719,7 +2719,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_14_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_14_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_14_wd),
 
     // from internal hardware
@@ -2745,7 +2745,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_0_out_15_we & regen_qs),
+    .we     (mio_out_sleep_val_0_out_15_we & regwen_qs),
     .wd     (mio_out_sleep_val_0_out_15_wd),
 
     // from internal hardware
@@ -2774,7 +2774,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_16_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_16_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_16_wd),
 
     // from internal hardware
@@ -2800,7 +2800,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_17_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_17_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_17_wd),
 
     // from internal hardware
@@ -2826,7 +2826,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_18_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_18_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_18_wd),
 
     // from internal hardware
@@ -2852,7 +2852,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_19_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_19_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_19_wd),
 
     // from internal hardware
@@ -2878,7 +2878,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_20_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_20_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_20_wd),
 
     // from internal hardware
@@ -2904,7 +2904,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_21_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_21_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_21_wd),
 
     // from internal hardware
@@ -2930,7 +2930,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_22_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_22_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_22_wd),
 
     // from internal hardware
@@ -2956,7 +2956,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_23_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_23_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_23_wd),
 
     // from internal hardware
@@ -2982,7 +2982,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_24_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_24_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_24_wd),
 
     // from internal hardware
@@ -3008,7 +3008,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_25_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_25_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_25_wd),
 
     // from internal hardware
@@ -3034,7 +3034,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_26_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_26_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_26_wd),
 
     // from internal hardware
@@ -3060,7 +3060,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_27_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_27_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_27_wd),
 
     // from internal hardware
@@ -3086,7 +3086,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_28_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_28_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_28_wd),
 
     // from internal hardware
@@ -3112,7 +3112,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_29_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_29_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_29_wd),
 
     // from internal hardware
@@ -3138,7 +3138,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_30_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_30_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_30_wd),
 
     // from internal hardware
@@ -3164,7 +3164,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (mio_out_sleep_val_1_out_31_we & regen_qs),
+    .we     (mio_out_sleep_val_1_out_31_we & regwen_qs),
     .wd     (mio_out_sleep_val_1_out_31_wd),
 
     // from internal hardware
@@ -3191,7 +3191,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_0 (
     .re     (dio_out_sleep_val_out_0_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_0_we & regen_qs),
+    .we     (dio_out_sleep_val_out_0_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_0_wd),
     .d      (hw2reg.dio_out_sleep_val[0].d),
     .qre    (),
@@ -3207,7 +3207,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_1 (
     .re     (dio_out_sleep_val_out_1_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_1_we & regen_qs),
+    .we     (dio_out_sleep_val_out_1_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_1_wd),
     .d      (hw2reg.dio_out_sleep_val[1].d),
     .qre    (),
@@ -3223,7 +3223,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_2 (
     .re     (dio_out_sleep_val_out_2_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_2_we & regen_qs),
+    .we     (dio_out_sleep_val_out_2_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_2_wd),
     .d      (hw2reg.dio_out_sleep_val[2].d),
     .qre    (),
@@ -3239,7 +3239,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_3 (
     .re     (dio_out_sleep_val_out_3_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_3_we & regen_qs),
+    .we     (dio_out_sleep_val_out_3_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_3_wd),
     .d      (hw2reg.dio_out_sleep_val[3].d),
     .qre    (),
@@ -3255,7 +3255,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_4 (
     .re     (dio_out_sleep_val_out_4_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_4_we & regen_qs),
+    .we     (dio_out_sleep_val_out_4_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_4_wd),
     .d      (hw2reg.dio_out_sleep_val[4].d),
     .qre    (),
@@ -3271,7 +3271,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_5 (
     .re     (dio_out_sleep_val_out_5_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_5_we & regen_qs),
+    .we     (dio_out_sleep_val_out_5_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_5_wd),
     .d      (hw2reg.dio_out_sleep_val[5].d),
     .qre    (),
@@ -3287,7 +3287,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_6 (
     .re     (dio_out_sleep_val_out_6_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_6_we & regen_qs),
+    .we     (dio_out_sleep_val_out_6_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_6_wd),
     .d      (hw2reg.dio_out_sleep_val[6].d),
     .qre    (),
@@ -3303,7 +3303,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_7 (
     .re     (dio_out_sleep_val_out_7_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_7_we & regen_qs),
+    .we     (dio_out_sleep_val_out_7_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_7_wd),
     .d      (hw2reg.dio_out_sleep_val[7].d),
     .qre    (),
@@ -3319,7 +3319,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_8 (
     .re     (dio_out_sleep_val_out_8_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_8_we & regen_qs),
+    .we     (dio_out_sleep_val_out_8_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_8_wd),
     .d      (hw2reg.dio_out_sleep_val[8].d),
     .qre    (),
@@ -3335,7 +3335,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_9 (
     .re     (dio_out_sleep_val_out_9_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_9_we & regen_qs),
+    .we     (dio_out_sleep_val_out_9_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_9_wd),
     .d      (hw2reg.dio_out_sleep_val[9].d),
     .qre    (),
@@ -3351,7 +3351,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_10 (
     .re     (dio_out_sleep_val_out_10_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_10_we & regen_qs),
+    .we     (dio_out_sleep_val_out_10_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_10_wd),
     .d      (hw2reg.dio_out_sleep_val[10].d),
     .qre    (),
@@ -3367,7 +3367,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_11 (
     .re     (dio_out_sleep_val_out_11_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_11_we & regen_qs),
+    .we     (dio_out_sleep_val_out_11_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_11_wd),
     .d      (hw2reg.dio_out_sleep_val[11].d),
     .qre    (),
@@ -3383,7 +3383,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_12 (
     .re     (dio_out_sleep_val_out_12_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_12_we & regen_qs),
+    .we     (dio_out_sleep_val_out_12_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_12_wd),
     .d      (hw2reg.dio_out_sleep_val[12].d),
     .qre    (),
@@ -3399,7 +3399,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_13 (
     .re     (dio_out_sleep_val_out_13_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_13_we & regen_qs),
+    .we     (dio_out_sleep_val_out_13_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_13_wd),
     .d      (hw2reg.dio_out_sleep_val[13].d),
     .qre    (),
@@ -3415,7 +3415,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_14 (
     .re     (dio_out_sleep_val_out_14_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_14_we & regen_qs),
+    .we     (dio_out_sleep_val_out_14_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_14_wd),
     .d      (hw2reg.dio_out_sleep_val[14].d),
     .qre    (),
@@ -3431,7 +3431,7 @@ module pinmux_reg_top (
   ) u_dio_out_sleep_val_out_15 (
     .re     (dio_out_sleep_val_out_15_re),
     // qualified with register enable
-    .we     (dio_out_sleep_val_out_15_we & regen_qs),
+    .we     (dio_out_sleep_val_out_15_we & regwen_qs),
     .wd     (dio_out_sleep_val_out_15_wd),
     .d      (hw2reg.dio_out_sleep_val[15].d),
     .qre    (),
@@ -3456,7 +3456,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_en_en_0_we & regen_qs),
+    .we     (wkup_detector_en_en_0_we & regwen_qs),
     .wd     (wkup_detector_en_en_0_wd),
 
     // from internal hardware
@@ -3482,7 +3482,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_en_en_1_we & regen_qs),
+    .we     (wkup_detector_en_en_1_we & regwen_qs),
     .wd     (wkup_detector_en_en_1_wd),
 
     // from internal hardware
@@ -3508,7 +3508,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_en_en_2_we & regen_qs),
+    .we     (wkup_detector_en_en_2_we & regwen_qs),
     .wd     (wkup_detector_en_en_2_wd),
 
     // from internal hardware
@@ -3534,7 +3534,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_en_en_3_we & regen_qs),
+    .we     (wkup_detector_en_en_3_we & regwen_qs),
     .wd     (wkup_detector_en_en_3_wd),
 
     // from internal hardware
@@ -3560,7 +3560,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_en_en_4_we & regen_qs),
+    .we     (wkup_detector_en_en_4_we & regwen_qs),
     .wd     (wkup_detector_en_en_4_wd),
 
     // from internal hardware
@@ -3586,7 +3586,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_en_en_5_we & regen_qs),
+    .we     (wkup_detector_en_en_5_we & regwen_qs),
     .wd     (wkup_detector_en_en_5_wd),
 
     // from internal hardware
@@ -3612,7 +3612,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_en_en_6_we & regen_qs),
+    .we     (wkup_detector_en_en_6_we & regwen_qs),
     .wd     (wkup_detector_en_en_6_wd),
 
     // from internal hardware
@@ -3638,7 +3638,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_en_en_7_we & regen_qs),
+    .we     (wkup_detector_en_en_7_we & regwen_qs),
     .wd     (wkup_detector_en_en_7_wd),
 
     // from internal hardware
@@ -3669,7 +3669,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_0_mode_0_we & regen_qs),
+    .we     (wkup_detector_0_mode_0_we & regwen_qs),
     .wd     (wkup_detector_0_mode_0_wd),
 
     // from internal hardware
@@ -3695,7 +3695,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_0_filter_0_we & regen_qs),
+    .we     (wkup_detector_0_filter_0_we & regwen_qs),
     .wd     (wkup_detector_0_filter_0_wd),
 
     // from internal hardware
@@ -3721,7 +3721,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_0_miodio_0_we & regen_qs),
+    .we     (wkup_detector_0_miodio_0_we & regwen_qs),
     .wd     (wkup_detector_0_miodio_0_wd),
 
     // from internal hardware
@@ -3750,7 +3750,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_1_mode_1_we & regen_qs),
+    .we     (wkup_detector_1_mode_1_we & regwen_qs),
     .wd     (wkup_detector_1_mode_1_wd),
 
     // from internal hardware
@@ -3776,7 +3776,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_1_filter_1_we & regen_qs),
+    .we     (wkup_detector_1_filter_1_we & regwen_qs),
     .wd     (wkup_detector_1_filter_1_wd),
 
     // from internal hardware
@@ -3802,7 +3802,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_1_miodio_1_we & regen_qs),
+    .we     (wkup_detector_1_miodio_1_we & regwen_qs),
     .wd     (wkup_detector_1_miodio_1_wd),
 
     // from internal hardware
@@ -3831,7 +3831,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_2_mode_2_we & regen_qs),
+    .we     (wkup_detector_2_mode_2_we & regwen_qs),
     .wd     (wkup_detector_2_mode_2_wd),
 
     // from internal hardware
@@ -3857,7 +3857,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_2_filter_2_we & regen_qs),
+    .we     (wkup_detector_2_filter_2_we & regwen_qs),
     .wd     (wkup_detector_2_filter_2_wd),
 
     // from internal hardware
@@ -3883,7 +3883,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_2_miodio_2_we & regen_qs),
+    .we     (wkup_detector_2_miodio_2_we & regwen_qs),
     .wd     (wkup_detector_2_miodio_2_wd),
 
     // from internal hardware
@@ -3912,7 +3912,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_3_mode_3_we & regen_qs),
+    .we     (wkup_detector_3_mode_3_we & regwen_qs),
     .wd     (wkup_detector_3_mode_3_wd),
 
     // from internal hardware
@@ -3938,7 +3938,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_3_filter_3_we & regen_qs),
+    .we     (wkup_detector_3_filter_3_we & regwen_qs),
     .wd     (wkup_detector_3_filter_3_wd),
 
     // from internal hardware
@@ -3964,7 +3964,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_3_miodio_3_we & regen_qs),
+    .we     (wkup_detector_3_miodio_3_we & regwen_qs),
     .wd     (wkup_detector_3_miodio_3_wd),
 
     // from internal hardware
@@ -3993,7 +3993,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_4_mode_4_we & regen_qs),
+    .we     (wkup_detector_4_mode_4_we & regwen_qs),
     .wd     (wkup_detector_4_mode_4_wd),
 
     // from internal hardware
@@ -4019,7 +4019,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_4_filter_4_we & regen_qs),
+    .we     (wkup_detector_4_filter_4_we & regwen_qs),
     .wd     (wkup_detector_4_filter_4_wd),
 
     // from internal hardware
@@ -4045,7 +4045,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_4_miodio_4_we & regen_qs),
+    .we     (wkup_detector_4_miodio_4_we & regwen_qs),
     .wd     (wkup_detector_4_miodio_4_wd),
 
     // from internal hardware
@@ -4074,7 +4074,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_5_mode_5_we & regen_qs),
+    .we     (wkup_detector_5_mode_5_we & regwen_qs),
     .wd     (wkup_detector_5_mode_5_wd),
 
     // from internal hardware
@@ -4100,7 +4100,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_5_filter_5_we & regen_qs),
+    .we     (wkup_detector_5_filter_5_we & regwen_qs),
     .wd     (wkup_detector_5_filter_5_wd),
 
     // from internal hardware
@@ -4126,7 +4126,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_5_miodio_5_we & regen_qs),
+    .we     (wkup_detector_5_miodio_5_we & regwen_qs),
     .wd     (wkup_detector_5_miodio_5_wd),
 
     // from internal hardware
@@ -4155,7 +4155,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_6_mode_6_we & regen_qs),
+    .we     (wkup_detector_6_mode_6_we & regwen_qs),
     .wd     (wkup_detector_6_mode_6_wd),
 
     // from internal hardware
@@ -4181,7 +4181,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_6_filter_6_we & regen_qs),
+    .we     (wkup_detector_6_filter_6_we & regwen_qs),
     .wd     (wkup_detector_6_filter_6_wd),
 
     // from internal hardware
@@ -4207,7 +4207,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_6_miodio_6_we & regen_qs),
+    .we     (wkup_detector_6_miodio_6_we & regwen_qs),
     .wd     (wkup_detector_6_miodio_6_wd),
 
     // from internal hardware
@@ -4236,7 +4236,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_7_mode_7_we & regen_qs),
+    .we     (wkup_detector_7_mode_7_we & regwen_qs),
     .wd     (wkup_detector_7_mode_7_wd),
 
     // from internal hardware
@@ -4262,7 +4262,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_7_filter_7_we & regen_qs),
+    .we     (wkup_detector_7_filter_7_we & regwen_qs),
     .wd     (wkup_detector_7_filter_7_wd),
 
     // from internal hardware
@@ -4288,7 +4288,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_7_miodio_7_we & regen_qs),
+    .we     (wkup_detector_7_miodio_7_we & regwen_qs),
     .wd     (wkup_detector_7_miodio_7_wd),
 
     // from internal hardware
@@ -4319,7 +4319,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_cnt_th_0_th_0_we & regen_qs),
+    .we     (wkup_detector_cnt_th_0_th_0_we & regwen_qs),
     .wd     (wkup_detector_cnt_th_0_th_0_wd),
 
     // from internal hardware
@@ -4345,7 +4345,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_cnt_th_0_th_1_we & regen_qs),
+    .we     (wkup_detector_cnt_th_0_th_1_we & regwen_qs),
     .wd     (wkup_detector_cnt_th_0_th_1_wd),
 
     // from internal hardware
@@ -4371,7 +4371,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_cnt_th_0_th_2_we & regen_qs),
+    .we     (wkup_detector_cnt_th_0_th_2_we & regwen_qs),
     .wd     (wkup_detector_cnt_th_0_th_2_wd),
 
     // from internal hardware
@@ -4397,7 +4397,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_cnt_th_0_th_3_we & regen_qs),
+    .we     (wkup_detector_cnt_th_0_th_3_we & regwen_qs),
     .wd     (wkup_detector_cnt_th_0_th_3_wd),
 
     // from internal hardware
@@ -4426,7 +4426,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_cnt_th_1_th_4_we & regen_qs),
+    .we     (wkup_detector_cnt_th_1_th_4_we & regwen_qs),
     .wd     (wkup_detector_cnt_th_1_th_4_wd),
 
     // from internal hardware
@@ -4452,7 +4452,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_cnt_th_1_th_5_we & regen_qs),
+    .we     (wkup_detector_cnt_th_1_th_5_we & regwen_qs),
     .wd     (wkup_detector_cnt_th_1_th_5_wd),
 
     // from internal hardware
@@ -4478,7 +4478,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_cnt_th_1_th_6_we & regen_qs),
+    .we     (wkup_detector_cnt_th_1_th_6_we & regwen_qs),
     .wd     (wkup_detector_cnt_th_1_th_6_wd),
 
     // from internal hardware
@@ -4504,7 +4504,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_cnt_th_1_th_7_we & regen_qs),
+    .we     (wkup_detector_cnt_th_1_th_7_we & regwen_qs),
     .wd     (wkup_detector_cnt_th_1_th_7_wd),
 
     // from internal hardware
@@ -4535,7 +4535,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_padsel_0_sel_0_we & regen_qs),
+    .we     (wkup_detector_padsel_0_sel_0_we & regwen_qs),
     .wd     (wkup_detector_padsel_0_sel_0_wd),
 
     // from internal hardware
@@ -4561,7 +4561,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_padsel_0_sel_1_we & regen_qs),
+    .we     (wkup_detector_padsel_0_sel_1_we & regwen_qs),
     .wd     (wkup_detector_padsel_0_sel_1_wd),
 
     // from internal hardware
@@ -4587,7 +4587,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_padsel_0_sel_2_we & regen_qs),
+    .we     (wkup_detector_padsel_0_sel_2_we & regwen_qs),
     .wd     (wkup_detector_padsel_0_sel_2_wd),
 
     // from internal hardware
@@ -4613,7 +4613,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_padsel_0_sel_3_we & regen_qs),
+    .we     (wkup_detector_padsel_0_sel_3_we & regwen_qs),
     .wd     (wkup_detector_padsel_0_sel_3_wd),
 
     // from internal hardware
@@ -4639,7 +4639,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_padsel_0_sel_4_we & regen_qs),
+    .we     (wkup_detector_padsel_0_sel_4_we & regwen_qs),
     .wd     (wkup_detector_padsel_0_sel_4_wd),
 
     // from internal hardware
@@ -4665,7 +4665,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_padsel_0_sel_5_we & regen_qs),
+    .we     (wkup_detector_padsel_0_sel_5_we & regwen_qs),
     .wd     (wkup_detector_padsel_0_sel_5_wd),
 
     // from internal hardware
@@ -4694,7 +4694,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_padsel_1_sel_6_we & regen_qs),
+    .we     (wkup_detector_padsel_1_sel_6_we & regwen_qs),
     .wd     (wkup_detector_padsel_1_sel_6_wd),
 
     // from internal hardware
@@ -4720,7 +4720,7 @@ module pinmux_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (wkup_detector_padsel_1_sel_7_we & regen_qs),
+    .we     (wkup_detector_padsel_1_sel_7_we & regwen_qs),
     .wd     (wkup_detector_padsel_1_sel_7_wd),
 
     // from internal hardware
@@ -4747,7 +4747,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_0 (
     .re     (wkup_cause_cause_0_re),
     // qualified with register enable
-    .we     (wkup_cause_cause_0_we & regen_qs),
+    .we     (wkup_cause_cause_0_we & regwen_qs),
     .wd     (wkup_cause_cause_0_wd),
     .d      (hw2reg.wkup_cause[0].d),
     .qre    (),
@@ -4763,7 +4763,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_1 (
     .re     (wkup_cause_cause_1_re),
     // qualified with register enable
-    .we     (wkup_cause_cause_1_we & regen_qs),
+    .we     (wkup_cause_cause_1_we & regwen_qs),
     .wd     (wkup_cause_cause_1_wd),
     .d      (hw2reg.wkup_cause[1].d),
     .qre    (),
@@ -4779,7 +4779,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_2 (
     .re     (wkup_cause_cause_2_re),
     // qualified with register enable
-    .we     (wkup_cause_cause_2_we & regen_qs),
+    .we     (wkup_cause_cause_2_we & regwen_qs),
     .wd     (wkup_cause_cause_2_wd),
     .d      (hw2reg.wkup_cause[2].d),
     .qre    (),
@@ -4795,7 +4795,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_3 (
     .re     (wkup_cause_cause_3_re),
     // qualified with register enable
-    .we     (wkup_cause_cause_3_we & regen_qs),
+    .we     (wkup_cause_cause_3_we & regwen_qs),
     .wd     (wkup_cause_cause_3_wd),
     .d      (hw2reg.wkup_cause[3].d),
     .qre    (),
@@ -4811,7 +4811,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_4 (
     .re     (wkup_cause_cause_4_re),
     // qualified with register enable
-    .we     (wkup_cause_cause_4_we & regen_qs),
+    .we     (wkup_cause_cause_4_we & regwen_qs),
     .wd     (wkup_cause_cause_4_wd),
     .d      (hw2reg.wkup_cause[4].d),
     .qre    (),
@@ -4827,7 +4827,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_5 (
     .re     (wkup_cause_cause_5_re),
     // qualified with register enable
-    .we     (wkup_cause_cause_5_we & regen_qs),
+    .we     (wkup_cause_cause_5_we & regwen_qs),
     .wd     (wkup_cause_cause_5_wd),
     .d      (hw2reg.wkup_cause[5].d),
     .qre    (),
@@ -4843,7 +4843,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_6 (
     .re     (wkup_cause_cause_6_re),
     // qualified with register enable
-    .we     (wkup_cause_cause_6_we & regen_qs),
+    .we     (wkup_cause_cause_6_we & regwen_qs),
     .wd     (wkup_cause_cause_6_wd),
     .d      (hw2reg.wkup_cause[6].d),
     .qre    (),
@@ -4859,7 +4859,7 @@ module pinmux_reg_top (
   ) u_wkup_cause_cause_7 (
     .re     (wkup_cause_cause_7_re),
     // qualified with register enable
-    .we     (wkup_cause_cause_7_we & regen_qs),
+    .we     (wkup_cause_cause_7_we & regwen_qs),
     .wd     (wkup_cause_cause_7_wd),
     .d      (hw2reg.wkup_cause[7].d),
     .qre    (),
@@ -4875,7 +4875,7 @@ module pinmux_reg_top (
   logic [31:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == PINMUX_REGEN_OFFSET);
+    addr_hit[ 0] = (reg_addr == PINMUX_REGWEN_OFFSET);
     addr_hit[ 1] = (reg_addr == PINMUX_PERIPH_INSEL_0_OFFSET);
     addr_hit[ 2] = (reg_addr == PINMUX_PERIPH_INSEL_1_OFFSET);
     addr_hit[ 3] = (reg_addr == PINMUX_PERIPH_INSEL_2_OFFSET);
@@ -4948,8 +4948,8 @@ module pinmux_reg_top (
     if (addr_hit[31] && reg_we && (PINMUX_PERMIT[31] != (PINMUX_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign regen_we = addr_hit[0] & reg_we & ~wr_err;
-  assign regen_wd = reg_wdata[0];
+  assign regwen_we = addr_hit[0] & reg_we & ~wr_err;
+  assign regwen_wd = reg_wdata[0];
 
   assign periph_insel_0_in_0_we = addr_hit[1] & reg_we & ~wr_err;
   assign periph_insel_0_in_0_wd = reg_wdata[5:0];
@@ -5484,7 +5484,7 @@ module pinmux_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = regen_qs;
+        reg_rdata_next[0] = regwen_qs;
       end
 
       addr_hit[1]: begin

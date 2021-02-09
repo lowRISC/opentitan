@@ -234,7 +234,7 @@
     // TODO(#1412): this register enable signal should be split into multiregs such that
     // each pin / peripheral select can be locked down individually. this needs support
     // for compact, nested multireg enable registers in our regtool.
-    { name: "REGEN",
+    { name: "REGWEN",
       desc: '''
             Register write enable for all control registers.
             ''',
@@ -257,7 +257,7 @@
                   count:    "NMioPeriphIn",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "IN",
                   fields: [
                     { bits: "${(n_mio_pads+1).bit_length()-1}:0",
@@ -277,7 +277,7 @@
                   count:    "NMioPads",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "OUT",
                   fields: [
                     { bits: "${(n_mio_periph_out+2).bit_length()-1}:0",
@@ -306,7 +306,7 @@
                   count:    "NMioPads",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "OUT",
                   fields: [
                     { bits: "1:0",
@@ -352,7 +352,7 @@
                   hwaccess: "hrw",
                   hwext:    "true",
                   hwqe:     "true",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "OUT",
                   fields: [
                     { bits: "1:0",
@@ -394,7 +394,7 @@
                   count:    "NWkupDetect",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "DETECTOR",
                   fields: [
                     { bits: "0:0",
@@ -416,7 +416,7 @@
                   count:    "NWkupDetect",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "DETECTOR",
                   fields: [
                     { bits: "2:0",
@@ -481,7 +481,7 @@
                   count:    "NWkupDetect",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "DETECTOR",
                   fields: [
                     { bits: "WkupCntWidth-1:0",
@@ -501,7 +501,7 @@
                   count:    "NWkupDetect",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "DETECTOR",
                   fields: [
                     { bits: "${max(n_mio_pads-1, n_dio_periph_in-1).bit_length()-1}:0",
@@ -525,7 +525,7 @@
                   hwaccess: "hrw",
                   hwext:    "true",
                   hwqe:     "true",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "DETECTOR",
                   fields: [
                     { bits: "0",

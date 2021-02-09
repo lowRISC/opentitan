@@ -85,7 +85,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       "intr_test": begin
         // FIXME
       end
-      "regen": begin
+      "regwen": begin
       end
       "ctrl": begin
       end

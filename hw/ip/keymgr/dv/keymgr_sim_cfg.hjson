@@ -64,9 +64,9 @@
     }
 
     {
-      name: keymgr_cfgen
-      uvm_test_seq: keymgr_cfgen_vseq
-      // This test is to check reg programming is gated when cfgen=0, it's timing sensitive
+      name: keymgr_cfg_regwen
+      uvm_test_seq: keymgr_cfg_regwen_vseq
+      // This test is to check reg programming is gated when cfg_regwen=0, it's timing sensitive
       run_opts: ["+zero_delays=1"]
     }
 

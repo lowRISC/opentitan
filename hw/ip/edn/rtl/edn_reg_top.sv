@@ -87,9 +87,9 @@ module edn_reg_top (
   logic intr_test_edn_cmd_req_done_we;
   logic intr_test_edn_fifo_err_wd;
   logic intr_test_edn_fifo_err_we;
-  logic regen_qs;
-  logic regen_wd;
-  logic regen_we;
+  logic regwen_qs;
+  logic regwen_wd;
+  logic regwen_we;
   logic ctrl_edn_enable_qs;
   logic ctrl_edn_enable_wd;
   logic ctrl_edn_enable_we;
@@ -279,19 +279,19 @@ module edn_reg_top (
   );
 
 
-  // R[regen]: V(False)
+  // R[regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_regen (
+  ) u_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (regen_we),
-    .wd     (regen_wd),
+    .we     (regwen_we),
+    .wd     (regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -299,10 +299,10 @@ module edn_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regen.q ),
+    .q      (reg2hw.regwen.q ),
 
     // to register interface (read)
-    .qs     (regen_qs)
+    .qs     (regwen_qs)
   );
 
 
@@ -499,7 +499,7 @@ module edn_reg_top (
   ) u_sw_cmd_req (
     .re     (1'b0),
     // qualified with register enable
-    .we     (sw_cmd_req_we & regen_qs),
+    .we     (sw_cmd_req_we & regwen_qs),
     .wd     (sw_cmd_req_wd),
     .d      ('0),
     .qre    (),
@@ -568,7 +568,7 @@ module edn_reg_top (
   ) u_reseed_cmd (
     .re     (1'b0),
     // qualified with register enable
-    .we     (reseed_cmd_we & regen_qs),
+    .we     (reseed_cmd_we & regwen_qs),
     .wd     (reseed_cmd_wd),
     .d      ('0),
     .qre    (),
@@ -585,7 +585,7 @@ module edn_reg_top (
   ) u_generate_cmd (
     .re     (1'b0),
     // qualified with register enable
-    .we     (generate_cmd_we & regen_qs),
+    .we     (generate_cmd_we & regwen_qs),
     .wd     (generate_cmd_wd),
     .d      ('0),
     .qre    (),
@@ -762,7 +762,7 @@ module edn_reg_top (
     addr_hit[ 0] = (reg_addr == EDN_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == EDN_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == EDN_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == EDN_REGEN_OFFSET);
+    addr_hit[ 3] = (reg_addr == EDN_REGWEN_OFFSET);
     addr_hit[ 4] = (reg_addr == EDN_CTRL_OFFSET);
     addr_hit[ 5] = (reg_addr == EDN_SUM_STS_OFFSET);
     addr_hit[ 6] = (reg_addr == EDN_SW_CMD_REQ_OFFSET);
@@ -810,8 +810,8 @@ module edn_reg_top (
   assign intr_test_edn_fifo_err_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_edn_fifo_err_wd = reg_wdata[1];
 
-  assign regen_we = addr_hit[3] & reg_we & ~wr_err;
-  assign regen_wd = reg_wdata[0];
+  assign regwen_we = addr_hit[3] & reg_we & ~wr_err;
+  assign regwen_wd = reg_wdata[0];
 
   assign ctrl_edn_enable_we = addr_hit[4] & reg_we & ~wr_err;
   assign ctrl_edn_enable_wd = reg_wdata[0];
@@ -883,7 +883,7 @@ module edn_reg_top (
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[0] = regen_qs;
+        reg_rdata_next[0] = regwen_qs;
       end
 
       addr_hit[4]: begin

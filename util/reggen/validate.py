@@ -6,6 +6,7 @@ Register JSON validation
 """
 
 import logging as log
+import re
 from collections import OrderedDict
 
 from .access import SWAccess, HWAccess, SWACCESS_PERMITTED
@@ -480,7 +481,6 @@ def _upd_gennames(regs, offset, register):
                   .format(offset, rname))
         err = 1
     genrnames.append(rname)
-
     genwennames = regs['genwennames']
     if register.regwen is not None and register.regwen not in genwennames:
         genwennames.append(register.regwen)
@@ -728,11 +728,18 @@ def check_wen_regs(regs):
     # check for reset value
     # both w1c and w0c are acceptable, ro is also acceptable when hwaccess is wo (hw managed regwen)
     for x in regs['genwennames']:
+
+        # check the REGWEN naming convention
+        if re.fullmatch(r'(.+_)*REGWEN(_[0-9]+)?', x) is None:
+            error += 1
+            log.error("Regwen name %s must have the suffix '_REGWEN'" % x)
+
         target = x.lower()
         log.debug("check_wen_regs::Searching for %s" % target)
 
         reg_data = name_to_reg_data.get(target)
         if reg_data is None:
+            error += 1
             log.error("Could not find register name matching %s" % target)
             continue
 
@@ -746,12 +753,12 @@ def check_wen_regs(regs):
             log.error(x + " used as regwen fails requirement to default " +
                       "to 1")
 
-        # either the regwen is software managed (rw0c or rw1c)
+        # either the regwen is software managed (must be rw0c)
         # or it is completely hw managed (sw=r0 and hw=wo)
         sw_regwen = 0
         hw_regwen = 0
 
-        if swaccess.key in ["rw0c", "rw1c"]:
+        if swaccess.key in ["rw0c"]:
             sw_regwen += 1
 
         if swaccess.key == "ro" and hwaccess.key == "hwo":
@@ -761,7 +768,7 @@ def check_wen_regs(regs):
             error += 1
             log.error(
                 "{x} used as regwen fails requirement to be "
-                "swaccess=W1C/W0C or swaccess=RO and hwaccess=HWO".format(x=x))
+                "swaccess=W0C or swaccess=RO and hwaccess=HWO".format(x=x))
 
     return error
 
@@ -1002,7 +1009,6 @@ def validate(regs, **kwargs):
                 log.error('Error in multireg at offset {:#x}: {}'
                           .format(offset, err))
                 error += 1
-
             continue
 
         try:

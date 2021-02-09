@@ -61,9 +61,9 @@
   ],
   regwidth: "32",
   registers: [
-    { name: "REGEN",
+    { name: "REGWEN",
       desc: "Register write enable for all control registers",
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "hro",
       fields: [
         {
@@ -81,7 +81,7 @@
       desc: "Control register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen: "REGEN",
+      regwen: "REGWEN",
       fields: [
         {
             bits: "0",
@@ -133,7 +133,7 @@
       swaccess: "wo",
       hwaccess: "hro",
       hwqe: "true",
-      regwen: "REGEN",
+      regwen: "REGWEN",
       fields: [
         { bits: "31:0",
           name: "CMD_REQ",
@@ -212,7 +212,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       hwqe: "true",
-      regwen: "REGEN",
+      regwen: "REGWEN",
       fields: [
         {
             bits: "3:0",

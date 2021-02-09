@@ -451,9 +451,9 @@ dif_alert_handler_result_t dif_alert_handler_lock(
     return kDifAlertHandlerBadArg;
   }
 
-  uint32_t reg = bitfield_bit32_write(0, ALERT_HANDLER_REGEN_REGEN_BIT, true);
-  mmio_region_write32(handler->params.base_addr, ALERT_HANDLER_REGEN_REG_OFFSET,
-                      reg);
+  uint32_t reg = bitfield_bit32_write(0, ALERT_HANDLER_REGWEN_REGWEN_BIT, true);
+  mmio_region_write32(handler->params.base_addr,
+                      ALERT_HANDLER_REGWEN_REG_OFFSET, reg);
 
   return kDifAlertHandlerOk;
 }
@@ -465,9 +465,9 @@ dif_alert_handler_result_t dif_alert_handler_is_locked(
   }
 
   uint32_t reg = mmio_region_read32(handler->params.base_addr,
-                                    ALERT_HANDLER_REGEN_REG_OFFSET);
+                                    ALERT_HANDLER_REGWEN_REG_OFFSET);
   // Note that "true" indicates "enabled", so we negated to get "locked".
-  *is_locked = !bitfield_bit32_read(reg, ALERT_HANDLER_REGEN_REGEN_BIT);
+  *is_locked = !bitfield_bit32_read(reg, ALERT_HANDLER_REGWEN_REGWEN_BIT);
 
   return kDifAlertHandlerOk;
 }
@@ -720,16 +720,16 @@ static bool get_clear_enable_reg_offset(dif_alert_handler_class_t class,
                                         ptrdiff_t *reg_offset) {
   switch (class) {
     case kDifAlertHandlerClassA:
-      *reg_offset = ALERT_HANDLER_CLASSA_CLREN_REG_OFFSET;
+      *reg_offset = ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET;
       break;
     case kDifAlertHandlerClassB:
-      *reg_offset = ALERT_HANDLER_CLASSB_CLREN_REG_OFFSET;
+      *reg_offset = ALERT_HANDLER_CLASSB_REGWEN_REG_OFFSET;
       break;
     case kDifAlertHandlerClassC:
-      *reg_offset = ALERT_HANDLER_CLASSC_CLREN_REG_OFFSET;
+      *reg_offset = ALERT_HANDLER_CLASSC_REGWEN_REG_OFFSET;
       break;
     case kDifAlertHandlerClassD:
-      *reg_offset = ALERT_HANDLER_CLASSD_CLREN_REG_OFFSET;
+      *reg_offset = ALERT_HANDLER_CLASSD_REGWEN_REG_OFFSET;
       break;
     default:
       return false;
@@ -751,7 +751,7 @@ dif_alert_handler_result_t dif_alert_handler_escalation_can_clear(
 
   uint32_t reg = mmio_region_read32(handler->params.base_addr, reg_offset);
   *can_clear =
-      bitfield_bit32_read(reg, ALERT_HANDLER_CLASSA_CLREN_CLASSA_CLREN_BIT);
+      bitfield_bit32_read(reg, ALERT_HANDLER_CLASSA_REGWEN_CLASSA_REGWEN_BIT);
 
   return kDifAlertHandlerOk;
 }
@@ -768,7 +768,7 @@ dif_alert_handler_result_t dif_alert_handler_escalation_disable_clearing(
   }
 
   uint32_t reg = bitfield_bit32_write(
-      0, ALERT_HANDLER_CLASSA_CLREN_CLASSA_CLREN_BIT, true);
+      0, ALERT_HANDLER_CLASSA_REGWEN_CLASSA_REGWEN_BIT, true);
   mmio_region_write32(handler->params.base_addr, reg_offset, reg);
 
   return kDifAlertHandlerOk;
