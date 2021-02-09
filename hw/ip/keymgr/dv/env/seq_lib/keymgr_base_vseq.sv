@@ -99,7 +99,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
     max_key_ver_val = (current_state == keymgr_pkg::StCreatorRootKey)
         ? max_creator_key_ver_val : (current_state == keymgr_pkg::StOwnerIntKey)
         ? max_owner_int_key_ver_val : (current_state == keymgr_pkg::StOwnerKey)
-        ? max_owner_key_ver_val : '1;
+        ? max_owner_key_ver_val : 0;
 
     // if current key_version already match to what we need, return without updating it
     if (is_key_version_err && key_version_val > max_key_ver_val ||
@@ -149,12 +149,10 @@ class keymgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("Wait for operation done in state %0s, operation %0s, good_op %0d",
                               current_state.name, operation.name, is_good_op), UVM_MEDIUM)
 
-    // if keymgr_en is off, all OP is ignored, don't need to check status
-    if (cfg.keymgr_vif.keymgr_en != lc_ctrl_pkg::On) return;
-
     // wait for status to get out of OpWip and check
     csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip),
                  .compare_op(CompareOpNe), .spinwait_delay_ns($urandom_range(0, 100)));
+
     exp_status = is_good_op ? keymgr_pkg::OpDoneSuccess : keymgr_pkg::OpDoneFail;
 
     // if keymgr_en is set to off during OP, status is checked in scb. hard to predict the result
