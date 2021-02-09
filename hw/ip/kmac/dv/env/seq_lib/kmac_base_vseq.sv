@@ -233,6 +233,7 @@ class kmac_base_vseq extends cip_base_vseq #(
             $sformatf("xof_en: %0b\n", xof_en),
             $sformatf("hash_mode: %0s\n", hash_mode.name()),
             $sformatf("strength: %0s\n", strength.name()),
+            $sformatf("msg_length: %0d bytes\n", msg.size()),
             $sformatf("keccak_block_size: %0d\n", keccak_block_size),
             $sformatf("key_len: %0s\n", key_len.name()),
             $sformatf("output_len %0d\n", output_len),
@@ -358,8 +359,10 @@ class kmac_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("encoded_custom_str: %0p", encoded_custom_str), UVM_HIGH)
 
     // stream into chunks of 32-bits (size of the PREFIX csr)
-    prefix_bytes = {<< byte {encoded_fname, encoded_custom_str}};
-    prefix_arr = {<< 32 {prefix_bytes}};
+    prefix_bytes = {encoded_fname, encoded_custom_str};
+    for (int i = 0; i < (fname_len + custom_str_len) / 4 + 2 ; i++) begin
+      prefix_arr[i] = {<< byte {prefix_bytes with [i*4 +: 4]}};
+    end
     `uvm_info(`gfn, $sformatf("prefix_arr: %0p", prefix_arr), UVM_HIGH)
 
     // write to PREFIX csrs
@@ -377,6 +380,13 @@ class kmac_base_vseq extends cip_base_vseq #(
   // This task writes the given command to the CMD csr
   virtual task issue_cmd(kmac_cmd_e cmd);
     csr_wr(.csr(ral.cmd), .value(cmd));
+  endtask
+
+  // This task commands KMAC to manually squeeze more output data,
+  // and blocks until it has completed.
+  virtual task squeeze_digest();
+    issue_cmd(CmdManualRun);
+    csr_spinwait(.ptr(ral.status.sha3_squeeze), .exp_data(1'b1));
   endtask
 
   // This task writes both key shares to the appropriate CSRs
@@ -541,18 +551,16 @@ class kmac_base_vseq extends cip_base_vseq #(
     csr_wr(.csr(ral.intr_state), .value(intr_state));
   endtask
 
-  // This task reads the contents of the STATE window and populates the contents of `digest` with
-  // the output data.
+  // This task reads a chunk of data from the STATE window and appends it to the `digest`
+  // array byte by byte.
+  // This task can read at most `keccak_block_size` bytes from the digest window.
   //
   // The general idea is:
   // - Read 4-byte words from the STATE window
   // - Add each byte to a queue, decrementing the total output_len each time
-  //
-  // TODO: Support squeezing output data for >keccak_block_size B output.
-  //       Smoke test constrains output length to be below keccak_block_size.
-  virtual task read_digest(bit [TL_AW-1:0] state_addr,
-                           int unsigned output_len,
-                           ref bit [7:0] digest[]);
+  virtual task read_digest_chunk(bit [TL_AW-1:0] state_addr,
+                                 int unsigned output_len,
+                                 ref bit [7:0] digest[]);
     bit [TL_DW-1:0] digest_word;
     bit [7:0] digest_byte;
 
@@ -588,6 +596,41 @@ class kmac_base_vseq extends cip_base_vseq #(
 
   endtask
 
+  // This task reads the full `output_len` bytes from the digest window,
+  // using the helper task `read_digest_chunk()` to read a block at a time
+  // from the digest window.
+  // More data is squeezed as necessary.
+  //
+  // Note: if masking is disabled we read the full 200 bytes from SHARE1,
+  //       this is so we can check that it has been zeroed.
+  virtual task read_digest_shares(int unsigned full_output_len,
+                                  bit en_masking,
+                                  ref bit [7:0] share0[],
+                                  ref bit [7:0] share1[]);
+
+    int unsigned remaining_output_len = full_output_len;
+
+    int unsigned cur_chunk_size = 0;
+
+    while (remaining_output_len > 0) begin
+      cur_chunk_size = (remaining_output_len <= keccak_block_size) ? remaining_output_len : keccak_block_size;
+
+      read_digest_chunk(KMAC_STATE_SHARE0_BASE, cur_chunk_size, share0);
+      read_digest_chunk(KMAC_STATE_SHARE1_BASE, en_masking ? cur_chunk_size : 200, share1);
+
+      `uvm_info(`gfn, $sformatf("read a %0d byte chunk of digest", cur_chunk_size), UVM_HIGH)
+
+      remaining_output_len -= cur_chunk_size;
+
+      if (remaining_output_len > 0) begin
+        squeeze_digest();
+      end
+
+      `uvm_info(`gfn, $sformatf("remaining_output_len: %0d", remaining_output_len), UVM_HIGH)
+    end
+
+  endtask
+
   // This task reads the output digest and compares it to digest produced by reference model
   virtual task check_digest();
     // Note that all three of these will be the same length
@@ -614,11 +657,10 @@ class kmac_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("key_word_len: %0d", key_word_len), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("key_byte_len: %0d", key_byte_len), UVM_HIGH)
 
-    // Read out both digest shares
-    read_digest(KMAC_STATE_SHARE0_BASE, output_len, digest_share0);
+    // Read the output digest values
+    read_digest_shares(output_len, cfg.enable_masking, digest_share0, digest_share1);
+
     `uvm_info(`gfn, $sformatf("digest_share0: %0p", digest_share0), UVM_HIGH)
-    // if masking disabled, read the full share1 digest so we can check it is 0.
-    read_digest(KMAC_STATE_SHARE1_BASE, (cfg.enable_masking) ? output_len : 200, digest_share1);
     `uvm_info(`gfn, $sformatf("digest_share1: %0p", digest_share1), UVM_HIGH)
 
     `uvm_info(`gfn, $sformatf("msg input to DPI: %0p", msg), UVM_HIGH)
@@ -642,12 +684,13 @@ class kmac_base_vseq extends cip_base_vseq #(
         unmasked_key.push_back(key_share[0][i] ^ key_share[1][i]);
       end
     end else begin
-      // check that share1 of digest is 0 - 200 bytes in total.
-      for (int i = 0; i < 200; i++) begin
-        `DV_CHECK_EQ_FATAL(digest_share1[i], 0,
-          $sformatf("digest_share1[%0d] is not 0!", i))
+      // Check that share1 has been zeroed.
+      foreach (digest_share1[i]) begin
+        `DV_CHECK_EQ_FATAL(digest_share1[i], '0,
+          $sformatf("digest_share1[%0d] : 0x%0x is not 0!", i, digest_share1[i]))
       end
-      // the digest is just share0
+
+      // the unmasked digest is just share0
       unmasked_digest = digest_share0;
       // the "actual" key is just share0 of the key
       for (int i = 0; i < key_word_len; i++) begin
