@@ -6,13 +6,10 @@
 
 import os
 import sys
-from typing import List, Mapping, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import hjson  # type: ignore
 
-# An hjson dict is actually an OrderedDict, but typing/mypy support for that is
-# a little spotty, so we'll use a generic Mapping type.
-HjsonDict = Mapping[str, object]
 
 # We use reggen to read the hjson file. Since that lives somewhere completely
 # different from this script (and there aren't __init__.py files scattered all
@@ -23,8 +20,9 @@ try:
                               '..', '..', '..', '..', '..', 'util')
     sys.path = [_UTIL_PATH] + _OLD_SYS_PATH
     from reggen.validate import checking_dict, validate   # type: ignore
-    import reggen.register  # type: ignore
     import reggen.field  # type: ignore
+    import reggen.register  # type: ignore
+    import reggen.window  # type: ignore
 finally:
     sys.path = _OLD_SYS_PATH
 
@@ -32,14 +30,16 @@ finally:
 # transitively without having to mess around with sys.path.
 Register = reggen.register.Register
 Field = reggen.field.Field
+Window = reggen.window.Window
 
-_LR_RETVAL = None  # type: Optional[Tuple[int, List[HjsonDict]]]
+_LR_RETVAL = None  # type: Optional[Tuple[int, List[object]]]
 
 
-def load_registers() -> Tuple[int, List[HjsonDict]]:
+def load_registers() -> Tuple[int, List[object]]:
     '''Load otbn.hjson with reggen
 
-    Return its register width and list of registers. Memoized.
+    Returns (width, regs) where width is the register width and regs is a
+    list of Register, MultiRegister or Window objects. Memoized.
 
     '''
     global _LR_RETVAL
@@ -74,6 +74,5 @@ def load_registers() -> Tuple[int, List[HjsonDict]]:
     # dictionaries, so we can assert the type safely.
     registers = obj['registers']
     assert isinstance(registers, list)
-
     _LR_RETVAL = (reg_byte_width, registers)
     return _LR_RETVAL

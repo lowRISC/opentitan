@@ -18,15 +18,6 @@ def get_basename(name):
     return name[0:match.start()]
 
 
-class Window():
-    def __init__(self):
-        self.base_addr = 0
-        self.byte_write = 0
-        self.limit_addr = 0
-        self.n_bits = 0
-        self.tags = []
-
-
 class Block():
     def __init__(self):
         self.width = 32

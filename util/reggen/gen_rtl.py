@@ -11,9 +11,10 @@ from mako.template import Template
 from pkg_resources import resource_filename
 
 from .access import HwAccess, SwRdAccess, SwWrAccess
-from .data import Block, Window
+from .data import Block
 from .register import Register
 from .multi_register import MultiRegister
+from .window import Window
 
 
 def escape_name(name):
@@ -25,22 +26,6 @@ def check_field_bool(obj, field, default):
         return True if obj[field] == "true" else False
     else:
         return default
-
-
-def parse_win(obj, width):
-    # Convert register window fields into Window class
-    # base_addr : genoffset
-    # limit_addr : genoffset + items*width
-    win = Window()
-    win.name = obj["name"]
-    win.base_addr = obj["genoffset"]
-    win.byte_write = obj["genbyte-write"]
-    win.limit_addr = obj["genoffset"] + int(obj["items"]) * (width // 8)
-    win.dvrights = obj["swaccess"]
-    win.n_bits = obj["genvalidbits"]
-
-    # TODO: Generate warnings of `unusual`
-    return win
 
 
 def json_to_reg(obj):
@@ -74,11 +59,9 @@ def json_to_reg(obj):
         if isinstance(r, Register) or isinstance(r, MultiRegister):
             block.regs.append(r)
             continue
-        assert isinstance(r, dict)
-        if 'window' in r:
-            win = parse_win(r['window'], block.width)
-            if win is not None:
-                block.wins.append(win)
+
+        if isinstance(r, Window):
+            block.wins.append(r)
             continue
 
     # Last offset and calculate space

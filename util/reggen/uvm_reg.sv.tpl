@@ -155,9 +155,9 @@ package ${block.name}_ral_pkg;
 % for w in block.wins:
 <%
   mem_name = w.name.lower()
-  mem_right = w.dvrights.upper()
-  mem_n_bits = w.n_bits
-  mem_size = int((w.limit_addr - w.base_addr) / (mem_n_bits / 8))
+  mem_right = w.swaccess.dv_rights()
+  mem_n_bits = w.validbits
+  mem_size = w.items
 %>\
   // Class: ${gen_dv.mcname(block, w)}
   class ${gen_dv.mcname(block, w)} extends ${dv_base_prefix}_mem;
@@ -286,28 +286,16 @@ package ${block.name}_ral_pkg;
 % for w in block.wins:
 <%
   mem_name = w.name.lower()
-  mem_right = w.dvrights.upper()
-  mem_offset = str(block.width) + "'h" + "%x" % w.base_addr
-  mem_n_bits = w.n_bits
-  mem_size = int((w.limit_addr - w.base_addr) / (mem_n_bits / 8))
-  mem_tags = w.tags
+  mem_right = w.swaccess.dv_rights()
+  mem_offset = str(block.width) + "'h" + "%x" % w.offset
+  mem_n_bits = w.validbits
+  mem_size = w.items
 %>\
       ${mem_name} = ${gen_dv.mcname(block, w)}::type_id::create("${mem_name}");
       ${mem_name}.configure(.parent(this));
       default_map.add_mem(.mem(${mem_name}),
                           .offset(${mem_offset}),
                           .rights("${mem_right}"));
-  % if mem_tags:
-      // create memory tags
-    % for mem_tag in mem_tags:
-<%
-  tag = mem_tag.split(":")
-%>\
-      % if tag[0] == "excl":
-      csr_excl.add_excl(${mem_name}.get_full_name(), ${tag[2]}, ${tag[1]});
-      % endif
-    % endfor
-  % endif
 % endfor
     endfunction : build
 

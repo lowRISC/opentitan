@@ -14,6 +14,7 @@ import warnings
 
 from .register import Register
 from .multi_register import MultiRegister
+from .window import Window
 
 
 def genout(outfile, msg):
@@ -143,15 +144,15 @@ def gen_cdefine_register(outstr, reg, comp, width, rnames, existing_defines):
 
 
 def gen_cdefine_window(outstr, win, comp, regwidth, rnames, existing_defines):
-    wname = win['name']
-    offset = win['genoffset']
+    wname = win.name or "Window at + {:#x}".format(win.offset)
+    offset = win.offset
 
-    genout(outstr, format_comment('Memory area: ' + first_line(win['desc'])))
+    genout(outstr, format_comment('Memory area: ' + first_line(win.desc)))
     defname = as_define(comp + '_' + wname)
     genout(
         outstr,
         gen_define(defname + '_REG_OFFSET', [], hex(offset), existing_defines))
-    items = int(win['items'])
+    items = win.items
     genout(
         outstr,
         gen_define(defname + '_SIZE_WORDS', [], str(items), existing_defines))
@@ -160,7 +161,7 @@ def gen_cdefine_window(outstr, win, comp, regwidth, rnames, existing_defines):
         outstr,
         gen_define(defname + '_SIZE_BYTES', [], str(items), existing_defines))
 
-    wid = win['genvalidbits']
+    wid = win.validbits
     if (wid != regwidth):
         mask = (1 << wid) - 1
         genout(outstr,
@@ -339,9 +340,8 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
                                  existing_defines)
             continue
 
-        assert isinstance(x, dict)
-        if 'window' in x:
-            gen_cdefine_window(outstr, x['window'], component, regwidth,
+        if isinstance(x, Window):
+            gen_cdefine_window(outstr, x, component, regwidth,
                                rnames, existing_defines)
             continue
 

@@ -109,11 +109,15 @@ module ${block.name}_reg_top (
 
     // TODO: Can below codes be unique case () inside ?
   % for i,w in enumerate(block.wins):
-      % if w.limit_addr == 2**block.addr_width:
-    if (tl_i.a_address[AW-1:0] >= ${w.base_addr}) begin
-      // Exceed or meet the address range. Removed the comparison of limit addr ${"'h %x" % w.limit_addr}
+<%
+    base_addr = w.offset
+    limit_addr = w.offset + w.size_in_bytes
+%>\
+      % if limit_addr == 2**block.addr_width:
+    if (tl_i.a_address[AW-1:0] >= ${base_addr}) begin
+      // Exceed or meet the address range. Removed the comparison of limit addr 'h ${'{:x}'.format(limit_addr)}
       % else:
-    if (tl_i.a_address[AW-1:0] >= ${w.base_addr} && tl_i.a_address[AW-1:0] < ${w.limit_addr}) begin
+    if (tl_i.a_address[AW-1:0] >= ${base_addr} && tl_i.a_address[AW-1:0] < ${limit_addr}) begin
       % endif
       reg_steer = ${i};
     end

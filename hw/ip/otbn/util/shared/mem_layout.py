@@ -20,41 +20,30 @@ block).
 
 from typing import Dict, List, Optional, Tuple
 
-from .otbn_reggen import HjsonDict, load_registers
+from .otbn_reggen import load_registers, Window
 
 # A window is represented as (offset, size)
 _Window = Tuple[int, int]
 
 
 def extract_windows(reg_byte_width: int,
-                    registers: List[HjsonDict]) -> Dict[str, _Window]:
+                    registers: List[object]) -> Dict[str, _Window]:
     '''Make sense of the list of register definitions and extract memories'''
 
     # Conveniently, reggen's validate method stores 'genoffset' (the offset to
     # the start) for each window, so we can just look that up.
     windows = {}
 
-    for reg in registers:
-        if not isinstance(reg, dict):
+    for entry in registers:
+        if not isinstance(entry, Window):
             continue
 
-        window = reg.get('window')
-        if window is None:
-            continue
+        name = entry.name or 'Window at +{:#x}'.format(entry.offset)
 
-        assert isinstance(window, dict)
+        # Should be guaranteed by RegBlock constructor
+        assert name not in windows
 
-        offset = window['genoffset']
-        assert isinstance(offset, int)
-
-        items = int(window['items'])
-        window_name = window.get('name', 'Window at +{:#x}'.format(offset))
-        assert isinstance(window_name, str)
-        if window_name in windows:
-            raise ValueError('Duplicate window entry with name {!r}.'
-                             .format(window_name))
-
-        windows[window_name] = (offset, items * reg_byte_width)
+        windows[name] = (entry.offset, entry.size_in_bytes)
 
     return windows
 

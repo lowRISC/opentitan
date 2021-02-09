@@ -264,8 +264,13 @@ def field_resname(reg, field):
 % if len(block.wins) > 0:
   // Window parameter
 % for i,w in enumerate(block.wins):
-  parameter logic [BlockAw-1:0] ${ublock}_${w.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % w.base_addr};
-  parameter logic [BlockAw-1:0] ${ublock}_${w.name.upper()}_SIZE   = ${block.addr_width}'h ${"%x" % (w.limit_addr - w.base_addr)};
+<%
+    win_pfx = '{}_{}'.format(ublock, w.name.upper())
+    base_txt_val = "{}'h {:x}".format(block.addr_width, w.offset)
+    size_txt_val = "{}'h {:x}".format(block.addr_width, w.size_in_bytes)
+%>\
+  parameter logic [BlockAw-1:0] ${win_pfx}_OFFSET = ${base_txt_val};
+  parameter logic [BlockAw-1:0] ${win_pfx}_SIZE   = ${size_txt_val};
 % endfor
 
 % endif

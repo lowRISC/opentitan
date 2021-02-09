@@ -9,11 +9,12 @@ import logging as log
 import re
 from collections import OrderedDict
 
-from .access import SWAccess, HWAccess, SWACCESS_PERMITTED
+from .access import SWAccess, HWAccess
 from .bits import Bits
 from .field import Field
 from .multi_register import MultiRegister
 from .register import Register
+from .window import Window
 
 
 # Routine that can be used for Hjson object_pairs_hook
@@ -377,94 +378,10 @@ list_optone = {
      "from a base instance."]
 }
 
-# Register keys
-reg_added = {
-    'genresval': ['pi', "reset value generated from resval and fields"],
-    'genresmask': ['pi', "mask of bits with valid reset value (not x)"],
-    'genbitsused': ['pi', "mask of bits defined in the register"],
-    'genoffset': ['pi', "offset address of the register"],
-    'gendvrights': ['s', "SW Rights used in UVM reg class"]
-}
-
-# Window keys
-window_required = {
-    'name': ['s', "Name of the window"],
-    'desc': ['t', "description of the window"],
-    'items': ['d', "size in fieldaccess width words of the window"],
-    'swaccess': ['s', "software access permitted"],
-}
-
-# TODO potential for additional optional to give more type info?
-# eg sram-hw-port: "none", "sync", "async"
-window_optional = {
-    'byte-write': [
-        's', "True if byte writes are supported. "
-        "Defaults to false if not present."
-    ],
-    'validbits': [
-        'd', "Number of valid data bits within "
-        "regwidth sized word. "
-        "Defaults to regwidth. If "
-        "smaller than the regwidth then in each "
-        "word of the window bits "
-        "[regwidth-1:validbits] are unused and "
-        "bits [validbits-1:0] are valid."
-    ],
-    'unusual': [
-        's', "True if window has unusual parameters "
-        "(set to prevent Unusual: errors)."
-        "Defaults to false if not present."
-    ]
-}
-
-window_added = {
-    'genbyte-write': ['pb', "generated boolean for byte-write"],
-    'genvalidbits': ['pi', "valid data width"],
-    'genoffset':
-    ['pi', "base offset address of the window (aligned for size)"],
-    'genswaccess': ['pe', "Software access (gen enum)"],
-    'genswwraccess': ['pe', "Software write access (gen enum)"],
-    'genswrdaccess': ['pe', "Software read access (gen enum)"]
-}
-
-# Field keys
-# special case in the code, no name and no desc if only field
-field_added = {
-    'genrsvdenum': ['pb', "enum did not cover every possible value"],
-    'genresval': [
-        'pi', "resval for field constructed by the tool. "
-        "Will be set to 0 for x."
-    ],
-    'genresvalx': ['pb', "Indicates if resval is x"],
-    'genswaccess': ['pe', "Software access (generated enum)"],
-    'genswwraccess': ['pe', "Software write access (generated enum)"],
-    'genswrdaccess': ['pe', "Software read access (generated enum)"],
-    'genhwaccess': ['pe', "Hardware access (generated Enum)"],
-    'genhwqe': ['pb', "Hardware qualifier enable signal needed"],
-    'genhwre': ['pb', "Hardware read enable signal needed"],
-    'bitinfo': ['T', "tuple (bitfield_mask, field width, lsb)"]
-}
-
 key_use = {'r': "required", 'o': "optional", 'a': "added by tool"}
 
 
-# if not int, check in param_list
-def resolve_value(entry, param_list):
-    val, not_int = check_int(entry, "", True)
-    err = 0
-
-    if not_int:
-        param, err = search_param(param_list, entry)
-        val = param['default']
-        if param['local'] != "true":
-            log.warning(
-                "It is recommended to define {} as localparam,"
-                " since it should not be changed in the design".format(entry))
-
-    return int(val), err
-
-
-def _upd_gennames(regs, offset, register):
+def _upd_regnames(regs, offset, register):
     genrnames = regs['genrnames']
     rname = register.name.lower()
     err = 0
@@ -562,7 +479,7 @@ def make_intr_alert_reg(regs, name, offset, swaccess, hwaccess, desc):
                    fields=fields,
                    update_err_alert=None,
                    storage_err_alert=None)
-    _upd_gennames(regs, offset, reg)
+    _upd_regnames(regs, offset, reg)
     return reg
 
 
@@ -598,92 +515,6 @@ def make_alert_regs(regs, offset, addrsep, fullwidth):
                                   'Alert Test Register')
     alert_regs.append(new_reg)
     return alert_regs, 0
-
-
-def validate_window(win, offset, regwidth, top):
-    error = 0
-
-    if 'name' not in win:
-        name = "Window at +" + hex(offset)
-    else:
-        name = win['name']
-        if name.lower() in top['genrnames']:
-            error += 1
-            log.error("Window at +" + hex(offset) + " duplicate name " + name)
-        else:
-            top['genrnames'].append(name.lower())
-
-    error += check_keys(win, window_required, window_optional, window_added,
-                        name)
-
-    # if there was an error before this then can't trust anything!
-    if error > 0:
-        log.debug(name + "@" + hex(offset) + " " + str(error) +
-                  " top level errors. Window will be ignored.")
-        return error, offset
-
-    # optional flags
-    unusual = 'unusual' in win and win['unusual'].lower() == "true"
-    win['genbyte-write'] = ('byte-write' in win and
-                            win['byte-write'].lower() == "true")
-
-    if 'validbits' in win:
-        wid, err = check_int(win['validbits'], name + " validbits")
-        if err:
-            error += err
-            wid = regwidth
-        if wid > regwidth:
-            error += 1
-            log.error(name + ": validbits " + str(wid) +
-                      " is greater than regwidth (" + str(regwidth) + ").")
-            wid = regwidth
-        win['genvalidbits'] = wid
-    else:
-        win['genvalidbits'] = regwidth
-
-    param, err = resolve_value(win['items'], top['param_list'])
-    error += err
-
-    winitems, err = check_int(param, name + " items")
-
-    if err:
-        error += err
-        winitems = 4
-
-    win['items'] = str(winitems)
-
-    # convert items to bytes
-    winsize = winitems * (regwidth // 8)
-    # if size is not a power of two, po2_size is next po2 larger
-    po2_size = 1 << (winsize.bit_length() - 1)
-    if winsize != po2_size:
-        # the -1 above was wrong if not a power of two
-        po2_size = po2_size << 1
-        if not unusual:
-            log.warn(name + ": Unusual: Size " + str(winitems) +
-                     " is not a power of 2.")
-
-    # Align to ensure base address of first item in window has
-    # all zeros in the low bits
-    if (offset & (po2_size - 1)) != 0:
-        genoff = (offset | (po2_size - 1)) + 1
-    else:
-        genoff = offset
-    nextoff = genoff + winsize
-    win['genoffset'] = genoff
-
-    swaccess = win['swaccess']
-    if swaccess not in SWACCESS_PERMITTED:
-        log.warn(name + ": Bad window swaccess value " + swaccess)
-        swaccess = "wo"
-    swacc_info = SWACCESS_PERMITTED[swaccess]
-    win['genswaccess'] = swacc_info[1]
-    win['genswwraccess'] = swacc_info[2]
-    win['genswrdaccess'] = swacc_info[3]
-    if not swacc_info[4] and not unusual:
-        log.warn(name + ": Unusual: access type for a window " + swaccess)
-
-    return error, nextoff
 
 
 """ Check that terms specified for regwen exist
@@ -953,9 +784,24 @@ def validate(regs, **kwargs):
             continue
 
         if 'window' in x:
-            err, offset = validate_window(x['window'], offset, fullwidth, regs)
-            error += err
-            vld_regs.append(x)
+            try:
+                window = Window.from_raw(offset, fullwidth,
+                                         regs.get('param_list', []),
+                                         x['window'])
+                vld_regs.append(window)
+                offset = window.offset + window.size_in_bytes
+
+                if window.name is not None:
+                    if window.name in regs['genrnames']:
+                        log.error('Duplicate window name {!r} at offset {:#x}.'
+                                  .format(offset, window.name))
+                        error += 1
+                    regs['genrnames'].append(window.name.lower())
+            except ValueError as err:
+                log.error('Error in window at offset {:#x}: {}'
+                          .format(offset, err))
+                error += 1
+
             continue
 
         if 'multireg' in x:
@@ -965,7 +811,7 @@ def validate(regs, **kwargs):
                                           x['multireg'])
                 vld_regs.append(multi_reg)
                 for reg in multi_reg.regs:
-                    error += _upd_gennames(regs, offset, reg)
+                    error += _upd_regnames(regs, offset, reg)
                 offset += addrsep * len(multi_reg.regs)
             except ValueError as err:
                 log.error('Error in multireg at offset {:#x}: {}'
@@ -978,7 +824,7 @@ def validate(regs, **kwargs):
                                     regs.get('param_list', []),
                                     x)
             vld_regs.append(reg)
-            error += _upd_gennames(regs, offset, reg)
+            error += _upd_regnames(regs, offset, reg)
         except ValueError as err:
             log.error('Error in register at offset {:#x}: {}'
                       .format(offset, err))
