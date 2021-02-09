@@ -271,9 +271,135 @@ The internal state within the Config/Command CDC provides the option of scheduli
 
 On the other hand, writing a one to {{< regref "COMMAND_0.GO_0" >}} (or any `GO` bit in this multi-register) when {{< regref "STATUS.READY" >}} is low will trigger an error condition, which must be acknowledged by software.
 
-## Data Formatting (Placeholder)
+## Data Formatting
 
-**Section moved to PR #5149**
+### Input and Output Byte Ordering
+
+The SPI transactions must be issued with correct bit ordering to properly communicate with a remote device.
+Based on the requirements for our chosen flash devices, this IP follows these conventions:
+- The relative significance of lines on the `sd` bus: `sd[0]` is always the most significant, followed by `sd[1]` though `sd[3]` with decreasing significance.
+- The relative significance of a sequence of bits on the same `sd` bus: higher significance bits are always transmitted earlier than (or at the same time as) any lower significance bits.
+    - For instance, when transferring a single byte in Quad mode, all four bits of the upper nibble (bits 7 through 3) are transferred in the first clock cycle and the entire lower nibble (bits 3 through 0) is transferred in the second cycle.
+
+The programming model for the IP should meanwhile make it easy to quickly program the peripheral device, with a minimum amount of byte shuffling.
+It should be intuitive to program the specific flash devices we are targeting, while following the conventions above:
+- When reading the data in and out of the {{< regref "TXDATA" >}} and {{< regref "RXDATA" >}} registers, the IP should make the most of the TL-UL bus, using 32-bit I/O instructions.
+- The SPI_HOST should make it easy to arrange transaction-data in processor memory, meaning that bytes should be sequentially transmitted in order of ascending memory address.
+  - When using 32-bit I/O instructions, this requires some knowledge of the processor byte-order.
+
+Based on these requirements, data placed in {{< regref "TXDATA" >}} or read from {{< regref "RXDATA" >}} is handled as follows:
+- 32-bit words placed in the {{< regref "TXDATA" >}} register are transmitted in first-in-first-out order.
+Likewise, words received from the SPI data lines are made available in the {{< regref "RXDATA" >}} register in first-in-first-out order.
+- Within a 32-byte word, the `ByteOrder` parameter controls the order in which bytes are transmitted, and also the manner in which received bytes are eventually arranged in the 32-bit {{< regref "RXDATA" >}} register.
+By default (`ByteOrder` = 0, for Big-Endian processors), the MSB of {{< regref "TXDATA" >}} (i.e bits 31 though 24) is transmitted first, and the other bytes follow in order of decreasing significance.
+Similarly, by default, the first byte received is packed into the MSB of {{< regref "RXDATA" >}}, and the subsequent bytes of {{< regref "RXDATA" >}} are filled in order of decreasing significance.
+On the other hand, if `ByteOrder` is set to 1 (for Little-Endian processors), the LSB is transmitted first from {{< regref "TXDATA" >}}, and received data is loaded first into the LSB of {{< regref "RXDATA" >}}.
+   - The default choice of Big-Endian comes from the observation that our target flash peripherals expect to receive MSBs first for addresses and data.
+- Finally within a given byte, the most significant bits are transmitted and received first.
+For Dual and Quad transactions the *most* significant bit in any instantaneous pair or nibble is transmitted or received on `sd[0]`, and the remaining `sd` bits (1 though 3) are populated in order of *decreasing* significance.
+
+The following figure shows how data appears on the serial data bus when it is written to {{< regref "TXDATA" >}}, or read from {{< regref "RXDATA" >}}.
+
+{{< wavejson >}}
+{signal: [
+  ["ByteOrder=0",
+  {name: "sd[0] (host output)", wave: "x22222222222|2222|222|22x", data: ["t[31]", "t[30]", "t[29]", "t[28]", "t[27]", "t[26]", "t[25]", "t[24]", "t[23]","t[22]",
+                                                                          "t[21]","t[17]","t[16]","t[15]","t[14]","t[8]", "t[7]", "t[6]", "t[1]", "t[0]"]},
+  {name: "sd[1] (host input)", wave: "x22222222222|2222|222|22x", data: ["r[31]", "r[30]", "r[29]", "r[28]", "r[27]", "r[26]", "r[25]", "r[24]", "r[23]","r[22]",
+                                                                         "r[21]","r[17]","r[16]","r[15]","r[14]","r[8]", "r[7]", "r[6]", "r[1]", "r[0]"]},
+  {name: "Which Byte?", wave: "x4.......4..|..4.|.4.|..x", data: ["MSB from TXDATA/RXDATA", "","", "          LSB"]}
+],
+  ["ByteOrder=1",
+  {name: "sd[0] (host output)", wave: "x22222222222|2222|222|22x", data: ["t[7]", "t[6]", "t[5]", "t[4]", "t[3]", "t[2]", "t[1]", "t[0]", "t[15]","t[14]",
+                                                                          "t[13]","t[9]","t[8]","t[23]","t[22]","t[16]", "t[31]", "t[30]", "t[25]", "t[24]"]},
+  {name: "sd[1] (host input)", wave: "x22222222222|2222|222|22x", data: ["r[7]", "r[6]", "r[5]", "r[4]", "r[3]", "r[2]", "r[1]", "r[0]", "r[15]","r[14]",
+                                                                         "r[13]","r[9]","r[8]","r[23]","r[22]","r[16]", "r[31]", "r[30]", "r[25]", "r[24]"]},
+  {name: "Which Byte?", wave: "x5.......5..|..5.|.5.|..x", data: ["LSB from TXDATA/RXDATA", "","", "          MSB"]}
+],
+  ],
+  head: {
+    text: "Serial bit ordering for 32-bit TXDATA & RXDATA data words (t[31:0] and r[31:0]), Standard SPI as a Function of the Parameter 'ByteOrder'",
+  },
+  foot: {
+  text: "(Bits are numbered as they appear when loaded into TXDATA or RXDATA registers.)"
+  }
+}
+{{< /wavejson >}}
+
+
+As shown in the following figure, a similar time-ordering scheme applies for Dual- and Quad-mode transfers.
+However many bits of similar significance are packed into multiple parallel `sd` data lines, with the most significant going to `sd[0]`.
+
+{{< wavejson >}}
+{signal: [
+  ["ByteOrder=0",
+  {name: "sd[0]", wave: "x...22334455x...", data: ["d[31]", "d[27]", "d[23]", "d[19]", "d[15]", "d[11]", "d[7]", "d[3]"]},
+  {name: "sd[1]", wave: "x...22334455x...", data: ["d[30]", "d[26]", "d[22]", "d[18]", "d[14]", "d[10]", "d[6]", "d[2]"]},
+  {name: "sd[2]", wave: "x...22334455x...", data: ["d[29]", "d[25]", "d[21]", "d[17]", "d[13]", "d[9]", "d[5]", "d[1]"]},
+  {name: "sd[3]", wave: "x...22334455x...", data: ["d[28]", "d[24]", "d[20]", "d[16]", "d[12]", "d[8]", "d[4]", "d[0]"]},
+],
+   ["ByteOrder=1",
+  {name: "sd[0]", wave: "x...55443322x...", data: ["d[7]", "d[3]", "d[15]", "d[11]", "d[23]", "d[19]", "d[31]", "d[27]"]},
+  {name: "sd[1]", wave: "x...55443322x...", data: ["d[6]", "d[2]", "d[14]", "d[10]", "d[22]", "d[18]", "d[30]", "d[26]"]},
+  {name: "sd[2]", wave: "x...55443322x...", data: ["d[5]", "d[1]", "d[13]", "d[9]", "d[21]", "d[17]", "d[29]", "d[25]"]},
+  {name: "sd[3]", wave: "x...55443322x...", data: ["d[4]", "d[0]", "d[12]", "d[8]", "d[20]", "d[16]", "d[28]", "d[24]"]},
+  ],
+  ],
+  head: {
+   text: "Serial bit ordering for 32-bit data word (d[31:0]), Quad SPI as a Function of the Parameter 'ByteOrder'",
+  },
+  foot: {
+  text: "(Bits are numbered as they appear when loaded into TXDATA or RXDATA registers.)"
+  }
+}
+{{< /wavejson >}}
+
+### Command Length and Alignment in TXDATA,RXDATA
+
+There is no restriction on the length of a command.
+Even though the TXDATA and RXDATA registers require 4-byte accesses, any unused bytes in the TXDATA fifo (or unused slots in the RXDATA fifo), are simply ignored at the end of a command.
+There is no need to explicitly pad commands to use up extra TXDATA bytes.
+If the last few received bytes do not fill an entire RXDATA word, they will be posted to RXDATA at the end of the command and any unneeded bytes the end of the RXDATA word will be left as zeros.
+
+The following waveform illustrates an example SPI transaction, where neither the data transmitted nor the data received fit into an even number of 32-bit words.
+In this example, `A[31:0]` and `B[31:0]`, have been previously loaded into {{< regref "TXDATA" >}}, and afterwards one word, `X[31:0]`, is available in {{< regref "RXDATA" >}}.
+All data in the waveform is transferred using 32-bit instructions.
+
+{{< wavejson >}}
+{signal: [
+  ["ByteOrder=0",
+  {name: "sd[0]", wave: "x222222223344552233z.22x", data: ["A[31]", "A[30]", "A[29]", "A[28]", "A[27]","A[26]", "A[25]", "A[24]", "A[23]", "A[19]", "A[15]", "A[11]",
+                                                         "A[7]", "A[3]", "B[31]", "B[27]", "B[23]", "B[19]", "X[31]", "X[27]"]},
+  {name: "sd[1]", wave: "xz.......3344552233z.22x", data: ["A[22]", "A[18]", "A[14]", "A[10]", "A[6]", "A[2]", "B[30]", "B[26]", "B[22]", "B[18]", "X[30]", "X[26]"]},
+  {name: "sd[2]", wave: "xz.......3344552233z.22x", data: ["A[21]", "A[17]", "A[13]", "A[9]", "A[5]", "A[1]", "B[29]", "B[25]", "B[21]", "B[17]", "X[29]", "X[25]"]},
+  {name: "sd[3]", wave: "xz.......3344552233z.22x", data: ["A[20]", "A[16]", "A[12]", "A[8]", "A[4]", "A[0]", "B[28]", "B[24]", "B[20]", "B[16]", "X[28]", "X[24]"]},
+],
+   {name:""},
+   ["ByteOrder=1",
+  {name: "sd[0]", wave: "x555555554433225544z.55x", data: ["A[7]", "A[6]", "A[5]", "A[4]", "A[3]", "A[2]", "A[1]", "A[0]",
+                                                           "A[15]", "A[11]", "A[23]", "A[19]", "A[31]", "A[27]", "B[7]", "B[3]", "B[15]", "B[11]", "X[7]", "X[3]"]},
+  {name: "sd[1]", wave: "xz.......4433225544z.55x", data: ["A[14]", "A[10]", "A[22]", "A[18]", "A[30]", "A[26]", "B[6]", "B[2]", "B[14]", "B[10]", "X[6]","X[2]"]},
+  {name: "sd[2]", wave: "xz.......4433225544z.55x", data: ["A[13]", "A[9]", "A[21]", "A[17]", "A[29]", "A[25]", "B[5]", "B[1]", "B[13]", "B[9]", "X[5]", "X[1]"]},
+  {name: "sd[3]", wave: "xz.......4433225544z.55x", data: ["A[12]", "A[8]", "A[20]", "A[16]", "A[28]", "A[24]", "B[4]", "B[0]", "B[12]", "B[8]", "X[4]", "X[0]"]},
+  ],
+  ],
+  head: {
+    text: "Serial bit ordering for 6 bytes transmitted from FIFO words 'A[31:0]' and 'B[31:0]', and 1 byte received into word 'X[31:0]'",
+  },
+  foot: {
+    text: "Note: SPI_HOST command sent with COMMAND_0.TX1_CNT_0 = 1, .TXN_CNT_0 = 5, .DUMMY_CYCLES_0 = 2, and  .RX_CNT_0=1"
+  }
+}
+{{< /wavejson >}}
+
+There is also no restriction on the alignment of transmitted data. 
+The {{< regref "TXDATA" >}} register is actually implemented as a memory window, so that it can support byte-enable signals.
+This means that when copying bytes into {{< regref "TXDATA" >}} from unaligned firmware memory addresses, it is possible to use byte or half-word instructions.
+Full-word instructions should however be used whenever possible, because each write consumes a full word of data in the TX FIFO regardless of the instruction size.
+Smaller writes thus make inefficient use of the TX FIFO.
+
+The RX FIFO has no special provisions for packing received data in any unaligned fashion.
+Depending on the ByteOrder parameter, the first byte received is always packed into either the most- or least-significant byte of {{< regref "RXDATA" >}}.
 
 ## Pass-through Mode
 
