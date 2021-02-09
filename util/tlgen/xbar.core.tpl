@@ -11,6 +11,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
+      - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/autogen/tl_${xbar.name}_pkg.sv
       - rtl/autogen/xbar_${xbar.name}.sv

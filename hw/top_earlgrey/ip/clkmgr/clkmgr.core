@@ -14,6 +14,7 @@ filesets:
       - lowrisc:prim:clock_buf
       - lowrisc:prim:clock_div
       - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:prim:lc_sync
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:systems:clkmgr_pkg
     files:

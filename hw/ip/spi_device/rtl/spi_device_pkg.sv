@@ -68,7 +68,6 @@ package spi_device_pkg;
     QdRd   = 8'h6B    // Quad Read
   } spi_rom_cmd_e;
 
-
   // Sram parameters
   parameter int unsigned SramDw = 32;
 
@@ -93,5 +92,14 @@ package spi_device_pkg;
   parameter int unsigned SramDepth = 1024;
 
   parameter int unsigned SramAw = $clog2(SramDepth);
+
+  // spi device scanmode usage
+  typedef enum logic [2:0] {
+    ClkInvSel,
+    CsbRstMuxSel,
+    TxRstMuxSel,
+    RxRstMuxSel,
+    ScanModeUseLast
+  } scan_mode_e;
 
 endpackage : spi_device_pkg

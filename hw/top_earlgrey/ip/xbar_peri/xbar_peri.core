@@ -11,6 +11,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
+      - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/autogen/tl_peri_pkg.sv
       - rtl/autogen/xbar_peri.sv

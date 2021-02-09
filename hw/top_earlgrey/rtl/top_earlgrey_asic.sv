@@ -253,6 +253,9 @@ module top_earlgrey_asic (
   logic scan_en;
   lc_ctrl_pkg::lc_tx_t scanmode;
 
+  // Jitter enable
+  logic jen;
+
   // Alert connections
   import sensor_ctrl_reg_pkg::AsSel;
   import sensor_ctrl_reg_pkg::CgSel;
@@ -315,7 +318,7 @@ module top_earlgrey_asic (
     // system source clock
     .clk_src_sys_en_i      ( base_ast_pwr.core_clk_en ),
     // need to add function in clkmgr
-    .clk_src_sys_jen_i     ( 1'b0 ),
+    .clk_src_sys_jen_i     ( jen ),
     .clk_src_sys_o         ( ast_base_clks.clk_sys  ),
     .clk_src_sys_val_o     ( ast_base_pwr.core_clk_val ),
     // aon source clock
@@ -410,17 +413,18 @@ module top_earlgrey_asic (
     .KmacEnMasking(1),  // DOM AND + Masking scheme
     .KmacReuseShare(0)
   ) top_earlgrey (
-    .rst_ni          ( rst_n         ),
+    .rst_ni                       ( rst_n                      ),
     // ast connections
-    .clk_main_i      ( ast_base_clks.clk_sys ),
-    .clk_io_i        ( ast_base_clks.clk_io  ),
-    .clk_usb_i       ( ast_base_clks.clk_usb ),
-    .clk_aon_i       ( ast_base_clks.clk_aon ),
-    .clks_ast_o      ( clks_ast      ),
-    .rstmgr_ast_i         ( ast_base_rst               ),
-    .rsts_ast_o           ( rsts_ast                   ),
-    .pwrmgr_ast_req_o     ( base_ast_pwr               ),
-    .pwrmgr_ast_rsp_i     ( ast_base_pwr               ),
+    .clk_main_i                   ( ast_base_clks.clk_sys      ),
+    .clk_io_i                     ( ast_base_clks.clk_io       ),
+    .clk_usb_i                    ( ast_base_clks.clk_usb      ),
+    .clk_aon_i                    ( ast_base_clks.clk_aon      ),
+    .clks_ast_o                   ( clks_ast                   ),
+    .clk_main_jitter_en_o         ( jen                        ),
+    .rstmgr_ast_i                 ( ast_base_rst               ),
+    .rsts_ast_o                   ( rsts_ast                   ),
+    .pwrmgr_ast_req_o             ( base_ast_pwr               ),
+    .pwrmgr_ast_rsp_i             ( ast_base_pwr               ),
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
     .sensor_ctrl_ast_status_i     ( ast_status                 ),
@@ -443,31 +447,30 @@ module top_earlgrey_asic (
     .flash_test_mode_a_i          ('0                          ),
     .flash_test_voltage_h_i       ('0                          ),
     // JTAG
-    .jtag_tck_i      ( jtag_tck      ),
-    .jtag_tms_i      ( jtag_tms      ),
-    .jtag_trst_ni    ( jtag_trst_n   ),
-    .jtag_tdi_i      ( jtag_tdi      ),
-    .jtag_tdo_o      ( jtag_tdo      ),
+    .jtag_tck_i                   ( jtag_tck                   ),
+    .jtag_tms_i                   ( jtag_tms                   ),
+    .jtag_trst_ni                 ( jtag_trst_n                ),
+    .jtag_tdi_i                   ( jtag_tdi                   ),
+    .jtag_tdo_o                   ( jtag_tdo                   ),
 
     // Multiplexed I/O
-    .mio_in_i        ( mio_in_core   ),
-    .mio_out_o       ( mio_out_core  ),
-    .mio_oe_o        ( mio_oe_core   ),
+    .mio_in_i                     ( mio_in_core                ),
+    .mio_out_o                    ( mio_out_core               ),
+    .mio_oe_o                     ( mio_oe_core                ),
 
     // Dedicated I/O
-    .dio_in_i        ( dio_in_core   ),
-    .dio_out_o       ( dio_out_core  ),
-    .dio_oe_o        ( dio_oe_core   ),
+    .dio_in_i                     ( dio_in_core                ),
+    .dio_out_o                    ( dio_out_core               ),
+    .dio_oe_o                     ( dio_oe_core                ),
 
     // Pad attributes
-    .mio_attr_o      ( mio_attr      ),
-    .dio_attr_o      ( dio_attr      ),
+    .mio_attr_o                   ( mio_attr                   ),
+    .dio_attr_o                   ( dio_attr                   ),
 
     // DFT signals
-    .scan_rst_ni     ( scan_rst_n                  ),
-    .scan_en_i       ( scan_en                     ),
-    // TODO: Update scanmode to be a multi-bit connection inside the design
-    .scanmode_i      ( scanmode == lc_ctrl_pkg::On )
+    .scan_rst_ni                  ( scan_rst_n                 ),
+    .scan_en_i                    ( scan_en                    ),
+    .scanmode_i                   ( scanmode                   )
   );
 
 endmodule : top_earlgrey_asic

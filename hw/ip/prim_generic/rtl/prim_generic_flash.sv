@@ -27,7 +27,7 @@ module prim_generic_flash #(
   input tms_i,
   output logic tdo_o,
   input lc_ctrl_pkg::lc_tx_t bist_enable_i,
-  input scanmode_i,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i,
   input scan_en_i,
   input scan_rst_ni,
   input flash_power_ready_h_i,
@@ -99,7 +99,7 @@ module prim_generic_flash #(
     );
   end
 
-  logic unused_scanmode;
+  lc_ctrl_pkg::lc_tx_t unused_scanmode;
   logic unused_scan_en;
   logic unused_scan_rst_n;
   logic [TestModeWidth-1:0] unused_flash_test_mode;

@@ -58,7 +58,7 @@ module tb;
     .intr_rxerr_o   (intr_rxerr),
     .intr_rxoverflow_o (intr_rxoverflow),
     .intr_txunderflow_o(intr_txunderflow),
-    .scanmode_i     (1'b0      )
+    .scanmode_i     (lc_ctrl_pkg::Off)
   );
 
   assign sck          = spi_if.sck;

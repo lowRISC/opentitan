@@ -20,7 +20,8 @@
     { name: "rxoverflow",  desc: "RX Async FIFO overflow" },
     { name: "txunderflow", desc: "TX Async FIFO underflow" },
   ],
-  scan: "true", // Enable `scanmode_i` port
+  scan: "true",       // Enable `scanmode_i` port
+  scan_reset: "true", // Enable `scan_rst_ni` port
   regwidth: "32",
   registers: [
     { name: "CONTROL",

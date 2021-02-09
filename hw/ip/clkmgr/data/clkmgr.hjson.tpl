@@ -62,6 +62,13 @@ num_grps = len(grps)
       package: "lc_ctrl_pkg",
     },
 
+    { struct:  "logic",
+      type:    "uni",
+      name:    "jitter_en",
+      act:     "req",
+      package: ""
+    },
+
   // All clock inputs
 % for src in srcs:
     { struct:  "logic",
@@ -99,6 +106,22 @@ num_grps = len(grps)
 
 
   registers: [
+    { name: "JITTER_ENABLE",
+      desc: '''
+        Enable jittery clock
+      ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          name: "VAL",
+          desc: "Enable jittery clock"
+          resval: "0"
+        }
+      ]
+    },
+
     { name: "CLK_ENABLES",
       desc: '''
         Clock enable for software gateable clocks.
