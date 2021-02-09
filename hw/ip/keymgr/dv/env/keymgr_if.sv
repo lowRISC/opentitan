@@ -25,6 +25,9 @@ interface keymgr_if(input clk, input rst_n);
   wire keymgr_pkg::kmac_data_req_t kmac_data_req;
   wire keymgr_pkg::kmac_data_rsp_t kmac_data_rsp;
 
+  // keymgr_en is async, create a sync one for use in scb
+  lc_ctrl_pkg::lc_tx_t keymgr_en_sync1, keymgr_en_sync2;
+
   // indicate if check the key is same as expected or shouldn't match to any meaningful key
   bit is_kmac_key_good;
   bit is_hmac_key_good;
@@ -167,6 +170,21 @@ interface keymgr_if(input clk, input rst_n);
     if (good_key) keys_a_array[state.name][dest.name]  = key_shares;
   endfunction
 
+  function automatic bit get_keymgr_en();
+    return keymgr_en_sync2 === lc_ctrl_pkg::On;
+  endfunction
+
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      keymgr_en_sync1 <= lc_ctrl_pkg::Off;
+      keymgr_en_sync2 <= lc_ctrl_pkg::Off;
+    end else begin
+      keymgr_en_sync1 <= keymgr_en;
+      // avoid race condtion in the driver
+      keymgr_en_sync2 <= #1ps keymgr_en_sync1;
+    end
+  end
+
   // if kmac sideload key is available, switch to it after an operation is completed
   // if not available, de-assert valid after done is asserted
   initial begin
@@ -211,7 +229,7 @@ interface keymgr_if(input clk, input rst_n);
   endfunction
 
   `define KM_ASSERT(NAME, SEQ) \
-    `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en != lc_ctrl_pkg::On)
+    `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On)
 
   `KM_ASSERT(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid -> kmac_key == kmac_key_exp)
 

@@ -30,6 +30,8 @@ class keymgr_common_vseq extends keymgr_base_vseq;
   endtask : body
 
   virtual task read_and_check_all_csrs_after_reset();
+    // need to set keymgr_en to be On, before it can be read back with correct init values
+    cfg.keymgr_vif.init();
     delay_after_reset_before_access_csr();
 
     super.read_and_check_all_csrs_after_reset();
