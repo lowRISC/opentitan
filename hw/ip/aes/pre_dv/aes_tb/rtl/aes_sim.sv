@@ -66,16 +66,16 @@ module aes_sim import aes_pkg::*;
   assign start = (aes_cipher_ctrl_cs == IDLE) && (aes_cipher_ctrl_ns == INIT);   // IDLE -> INIT
   assign init  = (aes_cipher_ctrl_cs == INIT);                                   // INIT
   assign done  = (aes_cipher_ctrl_cs == FINISH) && (aes_cipher_ctrl_ns == IDLE); // FINISH -> IDLE
-  assign busy  = u_aes.u_aes_core.u_aes_control.cipher_crypt_i |
-                 u_aes.u_aes_core.u_aes_control.cipher_crypt_o |
-                 u_aes.u_aes_core.u_aes_control.cipher_dec_key_gen_i |
-                 u_aes.u_aes_core.u_aes_control.cipher_dec_key_gen_o;
+  assign busy  = (u_aes.u_aes_core.u_aes_control.cipher_crypt_i == SP2V_HIGH) |
+                 (u_aes.u_aes_core.u_aes_control.cipher_crypt_o == SP2V_HIGH) |
+                 (u_aes.u_aes_core.u_aes_control.cipher_dec_key_gen_i == SP2V_HIGH) |
+                 (u_aes.u_aes_core.u_aes_control.cipher_dec_key_gen_o == SP2V_HIGH);
   assign stall = u_aes.u_aes_core.u_aes_control.stall_o;
 
   assign step  = ((aes_cipher_ctrl_cs == INIT) && (aes_cipher_ctrl_ns == ROUND)) || // INIT -> ROUND
                  ((aes_cipher_ctrl_cs == ROUND) && // ROUND + updating state or full key
-                   (u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.key_full_we_o ||
-                    u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.state_we_o)) ||
+                   (u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.key_full_we_o == SP2V_HIGH ||
+                    u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.state_we_o == SP2V_HIGH)) ||
                  ((aes_cipher_ctrl_cs == FINISH) && // FINISH + performing handshake
                     u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.out_valid_o == SP2V_HIGH &&
                     u_aes.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.out_ready_i == SP2V_HIGH);
