@@ -214,6 +214,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     update_result_e update_result;
     keymgr_pkg::keymgr_ops_e op = get_operation();
 
+    // op_status is updated one cycle after done. If SW reads at this edge, still return old value
+    // use non-blocking assignment to push the update available in next cycle
     if (get_err_code() != 0) current_op_status <= keymgr_pkg::OpDoneFail;
     else                     current_op_status <= keymgr_pkg::OpDoneSuccess;
 
