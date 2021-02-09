@@ -291,13 +291,6 @@ def gen_html(regs, outfile, toclist=None, toclevel=3):
             continue
 
         assert isinstance(x, dict)
-        if 'sameaddr' in x:
-            for reg in x['sameaddr']:
-                assert isinstance(reg, Register)
-                gen_html_register(outfile, reg, component, regwidth, rnames,
-                                  toclist, toclevel)
-            continue
-
         if 'window' in x:
             gen_html_window(outfile, x['window'], component, regwidth, rnames,
                             toclist, toclevel)

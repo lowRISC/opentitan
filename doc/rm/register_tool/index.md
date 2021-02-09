@@ -63,24 +63,6 @@ For example to place ITCR at offset 0x100:
 
 ```
 
-Historically, peripherals have put multiple registers at the same offset either different based on read or write, or with some other bit controlling the overlay.
-This is not permitted for Comportable peripherals but may be required for compatibility.
-These registers are grouped in a list.
-For example to have REGA and REGB (and more) at the same offest:
-
-```hjson
-    { sameaddr: [
-      { name: "REGA",
-        ...register definition...
-      }
-      { name: "REGB",
-        ...register definition...
-      }
-      ...register definitions...
-      ]
-    }
-```
-
 The tool can reserve an area of the memory space for something that is not a simple register, for example access to a buffer memory.
 This is done with a `window` declaration.
 The window size is specified as `items:` where each item is a `regwidth` wide word.
