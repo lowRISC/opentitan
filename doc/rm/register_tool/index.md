@@ -105,35 +105,10 @@ The tool will give a warning if the size is not a power of 2.
 The tool will also give a warning if the window has software access other than read-only, write-only or read-write.
 Both of these warnings are supressed if the description acknowledges there is something special about this window by setting `unusual: "True"` in the window declaration.
 
-The tool will normally increment the offset to align the region based on its size.
+The tool will increment the offset to align the region based on its size.
 The start address is aligned such that the base item in the window is at an address with all zeros in the low bits.
 For instance, if the current offset is 0x104, and the window size in 32-bit words is between 0x11 and 0x20 (inclusive) (i.e. 65-128 bytes), the window base will be set to 0x180.
-The alignment may be prevented by seting `noalign: "True"` in which case the hardware design must take care of the addressing offset.
 The next register will immedately follow the window, so will be at the window base address plus the window size in bytes.
-
-Putting these together an unaligned 60 byte window (15 32-bit words) could follow a single aligned register:
-
-
-```hjson
-    {skipto: "0x200"}
-    {name: "aligned_reg" ... }
-    {window: {
-         name: "unaligned_win"
-         items: "15"
-         noalign: "True"
-         unusual: "True"
-         byte-write: "True"
-         swaccess: "rw"
-         desc: '''
-               A 60 byte window that slots in after the register.
-               The addresses used in the window will be 0x204-0x23C.
-               The implementation must take account of the first
-               item being at address 0x04.
-           '''
-      }
-    },
-
-```
 
 Sometimes the window may need to map a structure that is not a full word wide (for example providing debug access to a the memory in a 12-bit wide FIFO).
 In this case it may be convenient to have only the low bits of each word valid and use the word address directly as an index (rather than presenting a "packed" structure with the sub-word items packed into as few words as possible).

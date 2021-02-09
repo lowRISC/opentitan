@@ -413,11 +413,6 @@ window_optional = {
         "[regwidth-1:validbits] are unused and "
         "bits [validbits-1:0] are valid."
     ],
-    'noalign': [
-        's', "Set to True to prevent tool aligning "
-        "the base address of the window. "
-        "Defaults to false if not present."
-    ],
     'unusual': [
         's', "True if window has unusual parameters "
         "(set to prevent Unusual: errors)."
@@ -632,7 +627,6 @@ def validate_window(win, offset, regwidth, top):
 
     # optional flags
     unusual = 'unusual' in win and win['unusual'].lower() == "true"
-    noalign = 'noalign' in win and win['noalign'].lower() == "true"
     win['genbyte-write'] = ('byte-write' in win and
                             win['byte-write'].lower() == "true")
 
@@ -672,17 +666,13 @@ def validate_window(win, offset, regwidth, top):
             log.warn(name + ": Unusual: Size " + str(winitems) +
                      " is not a power of 2.")
 
-    if noalign:
-        genoff = offset
-        nextoff = offset + winsize
+    # Align to ensure base address of first item in window has
+    # all zeros in the low bits
+    if (offset & (po2_size - 1)) != 0:
+        genoff = (offset | (po2_size - 1)) + 1
     else:
-        # Align to ensure base address of first item in window has
-        # all zeros in the low bits
-        if (offset & (po2_size - 1)) != 0:
-            genoff = (offset | (po2_size - 1)) + 1
-        else:
-            genoff = offset
-        nextoff = genoff + winsize
+        genoff = offset
+    nextoff = genoff + winsize
     win['genoffset'] = genoff
 
     swaccess = win['swaccess']

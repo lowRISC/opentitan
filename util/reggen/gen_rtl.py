@@ -125,7 +125,7 @@ def parse_win(obj, width):
     win.dvrights = obj["swaccess"]
     win.n_bits = obj["genvalidbits"]
 
-    # TODO: Generate warnings of `noalign` or `unusual`
+    # TODO: Generate warnings of `unusual`
     return win
 
 
