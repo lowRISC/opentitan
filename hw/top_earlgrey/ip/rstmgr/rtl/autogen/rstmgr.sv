@@ -46,7 +46,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   // dft bypass
   input scan_rst_ni,
-  input scanmode_i,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i,
 
   // reset outputs
   output rstmgr_ast_out_t resets_ast_o,
@@ -60,14 +60,26 @@ module rstmgr import rstmgr_pkg::*; (
   // The por is at first stretched and synced on clk_aon
   // The rst_ni and pok_i input will be changed once AST is integrated
   logic [PowerDomains-1:0] rst_por_aon_n;
+  lc_ctrl_pkg::lc_tx_t [1:0] por_aon_scanmode;
 
   for (genvar i = 0; i < PowerDomains; i++) begin : gen_rst_por_aon
     if (i == DomainAonSel) begin : gen_rst_por_aon_normal
+
+      prim_lc_sync #(
+        .NumCopies(2),
+        .AsyncOn(0)
+      ) u_por_scanmode_sync  (
+        .clk_i,
+        .rst_ni,
+        .lc_en_i(scanmode_i),
+        .lc_en_o(por_aon_scanmode)
+      );
+
       rstmgr_por u_rst_por_aon (
         .clk_i(clk_aon_i),
         .rst_ni(ast_i.aon_pok),
         .scan_rst_ni,
-        .scanmode_i,
+        .scanmode_i(por_aon_scanmode[0] == lc_ctrl_pkg::On),
         .rst_no(rst_por_aon_n[i])
       );
 
@@ -76,7 +88,7 @@ module rstmgr import rstmgr_pkg::*; (
       ) u_rst_por_aon_n_mux (
         .clk0_i(rst_por_aon_n[i]),
         .clk1_i(scan_rst_ni),
-        .sel_i(scanmode_i),
+        .sel_i(por_aon_scanmode[1] == lc_ctrl_pkg::On),
         .clk_o(resets_o.rst_por_aon_n[i])
       );
     end else begin : gen_rst_por_aon_tieoff
@@ -196,6 +208,17 @@ module rstmgr import rstmgr_pkg::*; (
   // To simplify generation, each reset generates all associated power domain outputs.
   // If a reset does not support a particular power domain, that reset is always hard-wired to 0.
 
+  lc_ctrl_pkg::lc_tx_t [14:0] leaf_rst_scanmode;
+  prim_lc_sync #(
+    .NumCopies(15),
+    .AsyncOn(0)
+    ) u_leaf_rst_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(leaf_rst_scanmode)
+ );
+
   logic [PowerDomains-1:0] rst_por_n;
   prim_flop_2sync #(
     .Width(1),
@@ -212,7 +235,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_aon_por_mux (
     .clk0_i(rst_por_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[0] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_por_n[DomainAonSel])
   );
 
@@ -236,7 +259,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_aon_por_io_mux (
     .clk0_i(rst_por_io_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[1] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_por_io_n[DomainAonSel])
   );
 
@@ -260,7 +283,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_aon_por_io_div2_mux (
     .clk0_i(rst_por_io_div2_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[2] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_por_io_div2_n[DomainAonSel])
   );
 
@@ -284,7 +307,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_aon_por_io_div4_mux (
     .clk0_i(rst_por_io_div4_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[3] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_por_io_div4_n[DomainAonSel])
   );
 
@@ -308,7 +331,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_aon_por_usb_mux (
     .clk0_i(rst_por_usb_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[4] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_por_usb_n[DomainAonSel])
   );
 
@@ -336,7 +359,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_0_lc_mux (
     .clk0_i(rst_lc_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[5] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_lc_n[Domain0Sel])
   );
 
@@ -360,7 +383,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_0_lc_io_div4_mux (
     .clk0_i(rst_lc_io_div4_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[6] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_lc_io_div4_n[Domain0Sel])
   );
 
@@ -380,7 +403,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_aon_sys_mux (
     .clk0_i(rst_sys_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[7] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_sys_n[DomainAonSel])
   );
 
@@ -399,7 +422,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_0_sys_mux (
     .clk0_i(rst_sys_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[7] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_sys_n[Domain0Sel])
   );
 
@@ -419,7 +442,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_aon_sys_io_div4_mux (
     .clk0_i(rst_sys_io_div4_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_sys_io_div4_n[DomainAonSel])
   );
 
@@ -438,7 +461,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_0_sys_io_div4_mux (
     .clk0_i(rst_sys_io_div4_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[8] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_sys_io_div4_n[Domain0Sel])
   );
 
@@ -458,7 +481,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_aon_sys_aon_mux (
     .clk0_i(rst_sys_aon_n[DomainAonSel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[9] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_sys_aon_n[DomainAonSel])
   );
 
@@ -477,7 +500,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_0_sys_aon_mux (
     .clk0_i(rst_sys_aon_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[9] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_sys_aon_n[Domain0Sel])
   );
 
@@ -501,7 +524,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_0_spi_device_mux (
     .clk0_i(rst_spi_device_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[10] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_spi_device_n[Domain0Sel])
   );
 
@@ -525,7 +548,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_0_usb_mux (
     .clk0_i(rst_usb_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[11] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_usb_n[Domain0Sel])
   );
 
@@ -549,7 +572,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_0_i2c0_mux (
     .clk0_i(rst_i2c0_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[12] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_i2c0_n[Domain0Sel])
   );
 
@@ -573,7 +596,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_0_i2c1_mux (
     .clk0_i(rst_i2c1_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[13] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_i2c1_n[Domain0Sel])
   );
 
@@ -597,7 +620,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_0_i2c2_mux (
     .clk0_i(rst_i2c2_n[Domain0Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[14] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_i2c2_n[Domain0Sel])
   );
 

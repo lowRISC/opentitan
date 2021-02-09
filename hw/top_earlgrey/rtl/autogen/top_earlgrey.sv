@@ -58,6 +58,7 @@ module top_earlgrey #(
   input  logic       clk_io_i,
   input  logic       clk_usb_i,
   input  logic       clk_aon_i,
+  output logic       clk_main_jitter_en_o,
   input  rstmgr_pkg::rstmgr_ast_t       rstmgr_ast_i,
   output pwrmgr_pkg::pwr_ast_req_t       pwrmgr_ast_req_o,
   input  pwrmgr_pkg::pwr_ast_rsp_t       pwrmgr_ast_rsp_i,
@@ -83,9 +84,9 @@ module top_earlgrey #(
   output edn_pkg::edn_rsp_t       ast_edn_edn_rsp_o,
   output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
   output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,
-  input               scan_rst_ni, // reset used for test mode
-  input               scan_en_i,
-  input               scanmode_i   // 1 for Scan
+  input                      scan_rst_ni, // reset used for test mode
+  input                      scan_en_i,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i   // 1 for Scan
 );
 
   // JTAG IDCODE for development versions of this code.
@@ -1062,6 +1063,7 @@ module top_earlgrey #(
       .tl_i(spi_device_tl_req),
       .tl_o(spi_device_tl_rsp),
       .scanmode_i   (scanmode_i),
+      .scan_rst_ni  (scan_rst_ni),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
@@ -1506,6 +1508,7 @@ module top_earlgrey #(
       .clocks_o(clkmgr_aon_clocks),
       .ast_clk_bypass_ack_i(lc_clk_byp_ack_i),
       .lc_clk_bypass_ack_o(lc_ctrl_lc_clk_byp_ack),
+      .jitter_en_o(clk_main_jitter_en_o),
       .clk_main_i(clk_main_i),
       .clk_io_i(clk_io_i),
       .clk_usb_i(clk_usb_i),
