@@ -275,7 +275,19 @@ package ${block.name}_ral_pkg;
       // assign locked reg to its regwen reg
 % for r in regs_flat:
   % if r.regwen:
-      ${r.regwen.lower()}.add_locked_reg(${r.name.lower()});
+    % for reg in regs_flat:
+      % if r.regwen.lower() == reg.name.lower():
+      ${r.regwen.lower()}.add_lockable_reg_or_fld(${r.name.lower()});
+<% break %>\
+      % elif reg.name.lower() in r.regwen.lower():
+        % for field in reg.get_field_list():
+          % if r.regwen.lower() == (reg.name.lower() + "_" + field.name.lower()):
+      ${r.regwen.lower()}.${field.name.lower()}.add_lockable_reg_or_fld(${r.name.lower()});
+<% break %>\
+          % endif
+        % endfor
+      % endif
+    % endfor
   % endif
 % endfor
 

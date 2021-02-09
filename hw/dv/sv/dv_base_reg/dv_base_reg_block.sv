@@ -48,30 +48,12 @@ class dv_base_reg_block extends uvm_reg_block;
     end
   endfunction
 
-  function void get_enable_regs(ref dv_base_reg enable_regs[$]);
-    dv_base_reg all_regs[$];
-    this.get_dv_base_regs(all_regs);
-    foreach (all_regs[i]) begin
-      if (all_regs[i].is_enable_reg()) enable_regs.push_back(all_regs[i]);
-    end
-  endfunction
-
   function void get_shadowed_regs(ref dv_base_reg shadowed_regs[$]);
     dv_base_reg all_regs[$];
     this.get_dv_base_regs(all_regs);
     foreach (all_regs[i]) begin
       if (all_regs[i].get_is_shadowed()) shadowed_regs.push_back(all_regs[i]);
     end
-  endfunction
-
-  // override RAL's reset function to support enable registers
-  // when reset issued - the locked registers' access will be reset to original access
-  virtual function void reset(string kind = "HARD");
-    dv_base_reg enable_regs[$];
-    `uvm_info(`gfn, "Resetting RAL reg block", UVM_MEDIUM)
-    super.reset(kind);
-    get_enable_regs(enable_regs);
-    foreach (enable_regs[i]) enable_regs[i].set_locked_regs_access();
   endfunction
 
   // Internal function, used to compute the address mask for this register block.
