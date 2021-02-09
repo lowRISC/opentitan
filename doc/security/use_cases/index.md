@@ -43,14 +43,13 @@ subject to change based on the implementation timeline of any given
 instantiation of OpenTitan. It is expected that a future implementation may be
 required to target a minimum of 192-bit or 256-bit security strength.
 
-*   TRNG: Entropy source for chip identity generation and KDF operations. In
-    both cases, raw entropy is processed by a pseudorandom function before any
-    key generation is done.
+*   TRNG: NIST SP 800-90B compliant entropy source.
+*   DRBG: NIST SP 800-90A compliant DRBG.
 *   Hash Algorithms:
     *   SHA256: An approved hash algorithm with approximately the same security
         strength as its strongest asymmetric algorithm.
 *   Asymmetric Key Algorithms:
-    *   RSA-3072-bit: Secure boot signature verification.
+    *   RSA-3072: Secure boot signature verification.
     *   ECDSA P-256: Signature and verification for identity and attestation
         keys.
 *   Symmetric Key Algorithms:
@@ -184,7 +183,7 @@ required to target a minimum of 192-bit or 256-bit security strength.
 *   Asymmetric Key Algorithms:
     *   ECDSA: Signature and verification on NIST P-256 curve for identity and
         attestation keys.
-    *   RSA-3072-bit: Secure boot signature verification. Used to verify the
+    *   RSA-3072: Secure boot signature verification. Used to verify the
         signature of the device's firmware.
 *   Symmetric Key Algorithms:
     *   AES-CTR:
