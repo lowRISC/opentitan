@@ -10,6 +10,14 @@ class keymgr_stress_all_vseq extends keymgr_base_vseq;
 
   `uvm_object_new
 
+  // keymgr_init is done in each sub-vseq
+  // some vseq like keymgr_common_vseq should not invoke keymgr_init.
+  // Let sub-vseq do keymgr_init and don't do it in stress_all
+  virtual task pre_start();
+    do_keymgr_init = 1'b0;
+    super.pre_start();
+  endtask
+
   task body();
     string seq_names[] = {"keymgr_smoke_vseq",
                           "keymgr_common_vseq", // for intr_test
