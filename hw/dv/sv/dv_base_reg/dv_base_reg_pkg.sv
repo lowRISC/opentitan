@@ -46,8 +46,26 @@ package dv_base_reg_pkg;
     BkdrRegPathGlsShdow      // backdoor path for shadow reg's shadow val in GLS
   } bkdr_reg_path_e;
 
-  // package sources
-  // base ral
+
+  typedef class dv_base_reg;
+  typedef class dv_base_reg_field;
+
+  function automatic void get_flds_from_uvm_object(input uvm_object obj,
+                                                   input string msg = "dv_base_reg_pkg",
+                                                   ref dv_base_reg_field flds[$]);
+    dv_base_reg       csr;
+    dv_base_reg_field fld;
+
+    if ($cast(csr, obj)) begin
+      csr.get_dv_base_reg_fields(flds);
+    end else if ($cast(fld, obj)) begin
+      flds.push_back(fld);
+    end else begin
+      `uvm_fatal(msg, $sformatf("obj %0s is not of type uvm_reg or uvm_reg_field",
+                      obj.get_full_name()))
+    end
+  endfunction
+
   `include "csr_excl_item.sv"
   `include "dv_base_reg_field.sv"
   `include "dv_base_reg.sv"
