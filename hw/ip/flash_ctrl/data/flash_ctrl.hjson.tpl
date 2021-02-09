@@ -1000,7 +1000,9 @@
         items: "21",
         validbits: "32",
         byte-write: "true",
-        unusual: "false"
+        // Setting the unusual flag avoids warning messages from regtool about
+        // the unusual number of items in the window.
+        unusual: "true"
         swaccess: "rw",
         desc: '''
           Configuration window for prim_flash.
