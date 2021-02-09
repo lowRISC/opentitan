@@ -70,8 +70,9 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       state_q        <= SlowPwrStateReset;
       cause_q        <= Por;
       cause_toggle_q <= 1'b0;
-      pd_nq          <= 1'b0;
-      pwr_clamp_q    <= 1'b1;
+      // pwrmgr resets assuming main power domain is already ready
+      pd_nq          <= 1'b1;
+      pwr_clamp_q    <= 1'b0;
       core_clk_en_q  <= 1'b0;
       io_clk_en_q    <= 1'b0;
       usb_clk_en_q   <= 1'b0;
