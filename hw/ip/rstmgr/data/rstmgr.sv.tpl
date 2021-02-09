@@ -37,7 +37,7 @@ module rstmgr import rstmgr_pkg::*; (
 
   // dft bypass
   input scan_rst_ni,
-  input scanmode_i,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i,
 
   // reset outputs
 % for intf in export_rsts:
@@ -53,14 +53,26 @@ module rstmgr import rstmgr_pkg::*; (
   // The por is at first stretched and synced on clk_aon
   // The rst_ni and pok_i input will be changed once AST is integrated
   logic [PowerDomains-1:0] rst_por_aon_n;
+  lc_ctrl_pkg::lc_tx_t [1:0] por_aon_scanmode;
 
   for (genvar i = 0; i < PowerDomains; i++) begin : gen_rst_por_aon
     if (i == DomainAonSel) begin : gen_rst_por_aon_normal
+
+      prim_lc_sync #(
+        .NumCopies(2),
+        .AsyncOn(0)
+      ) u_por_scanmode_sync  (
+        .clk_i,
+        .rst_ni,
+        .lc_en_i(scanmode_i),
+        .lc_en_o(por_aon_scanmode)
+      );
+
       rstmgr_por u_rst_por_aon (
         .clk_i(clk_aon_i),
         .rst_ni(ast_i.aon_pok),
         .scan_rst_ni,
-        .scanmode_i,
+        .scanmode_i(por_aon_scanmode[0] == lc_ctrl_pkg::On),
         .rst_no(rst_por_aon_n[i])
       );
 
@@ -69,7 +81,7 @@ module rstmgr import rstmgr_pkg::*; (
       ) u_rst_por_aon_n_mux (
         .clk0_i(rst_por_aon_n[i]),
         .clk1_i(scan_rst_ni),
-        .sel_i(scanmode_i),
+        .sel_i(por_aon_scanmode[1] == lc_ctrl_pkg::On),
         .clk_o(resets_o.rst_por_aon_n[i])
       );
     end else begin : gen_rst_por_aon_tieoff
@@ -189,7 +201,18 @@ module rstmgr import rstmgr_pkg::*; (
   // To simplify generation, each reset generates all associated power domain outputs.
   // If a reset does not support a particular power domain, that reset is always hard-wired to 0.
 
-% for rst in leaf_rsts:
+  lc_ctrl_pkg::lc_tx_t [${len(leaf_rsts)-1}:0] leaf_rst_scanmode;
+  prim_lc_sync #(
+    .NumCopies(${len(leaf_rsts)}),
+    .AsyncOn(0)
+    ) u_leaf_rst_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(leaf_rst_scanmode)
+ );
+
+% for i, rst in enumerate(leaf_rsts):
   logic [PowerDomains-1:0] rst_${rst['name']}_n;
   % for domain in power_domains:
     % if domain in rst['domains']:
@@ -212,7 +235,7 @@ module rstmgr import rstmgr_pkg::*; (
   ) u_${domain.lower()}_${rst['name']}_mux (
     .clk0_i(rst_${rst['name']}_n[Domain${domain}Sel]),
     .clk1_i(scan_rst_ni),
-    .sel_i(scanmode_i),
+    .sel_i(leaf_rst_scanmode[${i}] == lc_ctrl_pkg::On),
     .clk_o(resets_o.rst_${rst['name']}_n[Domain${domain}Sel])
   );
 

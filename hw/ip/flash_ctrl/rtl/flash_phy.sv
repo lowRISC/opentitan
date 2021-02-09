@@ -21,7 +21,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   output logic host_rderr_o,
   input flash_req_t flash_ctrl_i,
   output flash_rsp_t flash_ctrl_o,
-  input scanmode_i,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i,
   input scan_en_i,
   input scan_rst_ni,
   input flash_power_ready_h_i,

@@ -776,10 +776,11 @@
 
     // ext is to create port in the top.
     'external': {
-        'clkmgr_aon.clk_main'          : 'clk_main',  // clock inputs
+       'clkmgr_aon.clk_main'           : 'clk_main',  // clock inputs
         'clkmgr_aon.clk_io'            : 'clk_io',    // clock inputs
         'clkmgr_aon.clk_usb'           : 'clk_usb',   // clock inputs
         'clkmgr_aon.clk_aon'           : 'clk_aon',   // clock inputs
+        'clkmgr_aon.jitter_en'         : 'clk_main_jitter_en',
         'rstmgr_aon.ast'               : 'rstmgr_ast',
         'pwrmgr_aon.pwr_ast'           : 'pwrmgr_ast',
         'sensor_ctrl_aon.ast_alert'    : 'sensor_ctrl_ast_alert',

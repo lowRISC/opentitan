@@ -87,9 +87,9 @@ module top_${top["name"]} #(
   ${"input " if sig["direction"] == "in" else "output"} ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]},
   % endfor
 % endif
-  input               scan_rst_ni, // reset used for test mode
-  input               scan_en_i,
-  input               scanmode_i   // 1 for Scan
+  input                      scan_rst_ni, // reset used for test mode
+  input                      scan_en_i,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i   // 1 for Scan
 );
 
   // JTAG IDCODE for development versions of this code.

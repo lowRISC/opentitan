@@ -30,7 +30,8 @@ module spi_device (
   output logic intr_rxoverflow_o,  // RX Async FIFO Overflow
   output logic intr_txunderflow_o, // TX Async FIFO Underflow
 
-  input scanmode_i
+  input scan_rst_ni,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i
 );
 
   import spi_device_pkg::*;
@@ -320,8 +321,24 @@ module spi_device (
   //  doesn't exist until it transmits data through SDI
   logic sck_n;
   logic rst_spi_n;
+  lc_ctrl_pkg::lc_tx_t [ScanModeUseLast-1:0] scanmode;
 
-  prim_clock_inv u_clk_spi (.clk_i(cio_sck_i), .clk_no(sck_n), .scanmode_i);
+  prim_lc_sync #(
+    .NumCopies(int'(ScanModeUseLast)),
+    .AsyncOn(0)
+  ) u_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(scanmode)
+  );
+
+  prim_clock_inv u_clk_spi (
+    .clk_i(cio_sck_i),
+    .clk_no(sck_n),
+    .scanmode_i(scanmode[ClkInvSel] == lc_ctrl_pkg::On)
+  );
+
   assign clk_spi_in  = (cpha ^ cpol) ? sck_n    : cio_sck_i   ;
   assign clk_spi_out = (cpha ^ cpol) ? cio_sck_i    : sck_n   ;
 
@@ -334,11 +351,32 @@ module spi_device (
     .clk_o (clk_spi_out_buf)
   );
 
-  assign rst_spi_n = (scanmode_i) ? rst_ni : rst_ni & ~cio_csb_i;
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_csb_rst_scan_mux (
+    .clk0_i(rst_ni & ~cio_csb_i),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode[CsbRstMuxSel] == lc_ctrl_pkg::On),
+    .clk_o(rst_spi_n)
+  );
 
-  assign rst_txfifo_n = (scanmode_i) ? rst_ni : rst_ni & ~rst_txfifo_reg;
-  assign rst_rxfifo_n = (scanmode_i) ? rst_ni : rst_ni & ~rst_rxfifo_reg;
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_tx_rst_scan_mux (
+    .clk0_i(rst_ni & ~rst_txfifo_reg),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode[TxRstMuxSel] == lc_ctrl_pkg::On),
+    .clk_o(rst_txfifo_n)
+  );
 
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_rx_rst_scan_mux (
+    .clk0_i(rst_ni & ~rst_rxfifo_reg),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode[RxRstMuxSel] == lc_ctrl_pkg::On),
+    .clk_o(rst_rxfifo_n)
+  );
 
   //////////////////////////////
   // SPI_DEVICE mode selector //

@@ -30,7 +30,7 @@ module lc_ctrl
   input  jtag_pkg::jtag_req_t                        jtag_i,
   output jtag_pkg::jtag_rsp_t                        jtag_o,
   // This bypasses the clock inverter inside the JTAG TAP for scanmmode.
-  input                                              scanmode_i,
+  input  lc_tx_t                                     scanmode_i,
   // Alert outputs.
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
@@ -147,7 +147,7 @@ module lc_ctrl
   ) u_dmi_jtag (
     .clk_i,
     .rst_ni,
-    .testmode_i       ( scanmode_i        ),
+    .testmode_i       ( scanmode_i == On  ),
     .dmi_rst_no       (                   ), // unused
     .dmi_req_o        ( dmi_req           ),
     .dmi_req_valid_o  ( dmi_req_valid     ),
