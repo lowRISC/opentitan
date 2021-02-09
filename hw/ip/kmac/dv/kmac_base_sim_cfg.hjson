@@ -50,12 +50,12 @@
     {
       name: enable_mask_mode
       build_opts: ["+define+EN_MASKING=1", "+define+REUSE_SHARE=0"]
-      run_opts: ["+enable_masking=1", "+test_timeout_ns=2000000000"]
+      run_opts: ["+enable_masking=1"]
     }
     {
       name: disable_mask_mode
       build_opts: ["+define+EN_MASKING=0", "+define+REUSE_SHARE=0"]
-      run_opts: ["+enable_masking=0", "+test_timeout_ns=2000000000"]
+      run_opts: ["+enable_masking=0"]
     }
   ]
 
@@ -68,9 +68,13 @@
     {
       name: "{variant}_smoke"
       uvm_test_seq: kmac_smoke_vseq
+      run_opts: ["+test_timeout_ns=4000000000"]
     }
-
-    // TODO: add more tests here
+    {
+      name: "{variant}_long_msg_and_output"
+      uvm_test_seq: kmac_long_msg_and_output_vseq
+      run_opts: ["+test_timeout_ns=10000000000"]
+    }
   ]
 
   // List of regressions.

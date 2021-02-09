@@ -5,3 +5,4 @@
 `include "kmac_base_vseq.sv"
 `include "kmac_smoke_vseq.sv"
 `include "kmac_common_vseq.sv"
+`include "kmac_long_msg_and_output_vseq.sv"

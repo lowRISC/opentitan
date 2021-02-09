@@ -36,7 +36,7 @@
       tests: ["{name}_smoke"]
     }
     {
-      name: long_message_and_output
+      name: long_msg_and_output
       desc: '''
             Same as the smoke test, except with a message of up to 100KB.
             Max firmware input size for KMAX is around 392KB, but this is too large for a DV
@@ -51,7 +51,7 @@
             applicable).
             '''
       milestone: V2
-      tests: ["{name}_long_message_and_output"]
+      tests: ["{name}_long_msg_and_output"]
     }
     {
       name: burst_wr
