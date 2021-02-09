@@ -1275,7 +1275,7 @@
       wakeup_list: []
       reset_request_list: []
       scan: "true"
-      scan_reset: "false"
+      scan_reset: "true"
       inter_signal_list:
       [
         {
@@ -4171,6 +4171,19 @@
           width: 1
           default: ""
           top_signame: lc_ctrl_lc_clk_byp_ack
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: jitter_en
+          act: req
+          package: ""
+          inst_name: clkmgr_aon
+          width: 1
+          default: ""
+          external: true
+          top_signame: clk_main_jitter_en
           index: -1
         }
         {
@@ -7563,6 +7576,7 @@
       clkmgr_aon.clk_io: clk_io
       clkmgr_aon.clk_usb: clk_usb
       clkmgr_aon.clk_aon: clk_aon
+      clkmgr_aon.jitter_en: clk_main_jitter_en
       rstmgr_aon.ast: rstmgr_ast
       pwrmgr_aon.pwr_ast: pwrmgr_ast
       sensor_ctrl_aon.ast_alert: sensor_ctrl_ast_alert
@@ -13012,6 +13026,19 @@
       {
         struct: logic
         type: uni
+        name: jitter_en
+        act: req
+        package: ""
+        inst_name: clkmgr_aon
+        width: 1
+        default: ""
+        external: true
+        top_signame: clk_main_jitter_en
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
         name: clk_main
         act: rcv
         package: ""
@@ -14877,6 +14904,17 @@
         direction: in
         index: -1
         netname: clk_aon
+      }
+      {
+        package: ""
+        struct: logic
+        signame: clk_main_jitter_en_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        index: -1
+        netname: clk_main_jitter_en
       }
       {
         package: rstmgr_pkg

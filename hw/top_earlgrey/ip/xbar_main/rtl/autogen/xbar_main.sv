@@ -136,7 +136,7 @@ module xbar_main (
   output tlul_pkg::tl_h2d_t tl_sram_ctrl_main_o,
   input  tlul_pkg::tl_d2h_t tl_sram_ctrl_main_i,
 
-  input scanmode_i
+  input lc_ctrl_pkg::lc_tx_t scanmode_i
 );
 
   import tlul_pkg::*;
@@ -144,7 +144,7 @@ module xbar_main (
 
   // scanmode_i is currently not used, but provisioned for future use
   // this assignment prevents lint warnings
-  logic unused_scanmode;
+  lc_ctrl_pkg::lc_tx_t unused_scanmode;
   assign unused_scanmode = scanmode_i;
 
   tl_h2d_t tl_s1n_20_us_h2d ;

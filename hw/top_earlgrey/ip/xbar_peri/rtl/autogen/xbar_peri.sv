@@ -94,7 +94,7 @@ module xbar_peri (
   output tlul_pkg::tl_h2d_t tl_ast_wrapper_o,
   input  tlul_pkg::tl_d2h_t tl_ast_wrapper_i,
 
-  input scanmode_i
+  input lc_ctrl_pkg::lc_tx_t scanmode_i
 );
 
   import tlul_pkg::*;
@@ -102,7 +102,7 @@ module xbar_peri (
 
   // scanmode_i is currently not used, but provisioned for future use
   // this assignment prevents lint warnings
-  logic unused_scanmode;
+  lc_ctrl_pkg::lc_tx_t unused_scanmode;
   assign unused_scanmode = scanmode_i;
 
   tl_h2d_t tl_s1n_26_us_h2d ;
