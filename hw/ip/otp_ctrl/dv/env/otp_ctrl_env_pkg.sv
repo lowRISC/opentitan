@@ -83,6 +83,9 @@ package otp_ctrl_env_pkg;
   parameter uint SCRAMBLE_KEY_SIZE  = 128;
   parameter uint NUM_ROUND          = 31;
 
+  parameter uint NUM_SRAM_EDN_REQ = 10;
+  parameter uint NUM_OTBN_EDN_REQ = 16;
+
   // lc does not have digest
   parameter int PART_BASE_ADDRS [NumPart-1] = {
     CreatorSwCfgOffset,

@@ -175,31 +175,41 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       // seed is valid as long as secret1 is locked
       `DV_CHECK_EQ(seed_valid, part_locked, "otbn seed_valid mismatch")
 
-      // get edn CSRNG
-      `DV_CHECK_EQ(edn_data_q.size(), 16);
-      {exp_nonce, edn_key2, edn_key1} = {<<32{edn_data_q}};
+      // If edn_data_q matches the OTBN requested size, check OTBN outputs
+      if (edn_data_q.size() == NUM_OTBN_EDN_REQ) begin
+        {exp_nonce, edn_key2, edn_key1} = {<<32{edn_data_q}};
+
+        // check nonce value
+        `DV_CHECK_EQ(nonce, exp_nonce, "otbn nonce mismatch")
+
+        // calculate key
+        sram_key = get_key_from_otp(part_locked, SramDataKeySeedOffset / 4);
+        exp_key_lower = present_encode_with_final_const(
+                        .data(RndCnstDigestIV[SramDataKey]),
+                        .key(sram_key),
+                        .final_const(RndCnstDigestConst[SramDataKey]),
+                        .second_key(edn_key1),
+                        .num_round(2));
+
+        exp_key_higher = present_encode_with_final_const(
+                         .data(RndCnstDigestIV[SramDataKey]),
+                         .key(sram_key),
+                         .final_const(RndCnstDigestConst[SramDataKey]),
+                         .second_key(edn_key2),
+                         .num_round(2));
+        exp_key = {exp_key_higher, exp_key_lower};
+        `DV_CHECK_EQ(key, exp_key, "otbn key mismatch")
+
+      // If during OTBN key request, the LFSR timer expired and trigger an EDN request to acquire
+      // two EDN keys, then ignore the OTBN output checking, because scb did not know which EDN
+      // keys are used for LFSR.
+      // With current config, LFSR EDN request cannot be triggered twice during OTBN key request,
+      // so any edn_data_q size rather than (16+2) is an error.
+      end else if (edn_data_q.size() != (NUM_OTBN_EDN_REQ + 2)) begin
+        `uvm_error(`gfn, $sformatf("Unexpected edn_data_q size (%0d) during OTBN request",
+                                   edn_data_q.size()))
+      end
       edn_data_q.delete();
-
-      // check nonce value
-      `DV_CHECK_EQ(nonce, exp_nonce, "otbn nonce mismatch")
-
-      // calculate key
-      sram_key = get_key_from_otp(part_locked, SramDataKeySeedOffset / 4);
-      exp_key_lower = present_encode_with_final_const(
-                      .data(RndCnstDigestIV[SramDataKey]),
-                      .key(sram_key),
-                      .final_const(RndCnstDigestConst[SramDataKey]),
-                      .second_key(edn_key1),
-                      .num_round(2));
-
-      exp_key_higher = present_encode_with_final_const(
-                       .data(RndCnstDigestIV[SramDataKey]),
-                       .key(sram_key),
-                       .final_const(RndCnstDigestConst[SramDataKey]),
-                       .second_key(edn_key2),
-                       .num_round(2));
-      exp_key = {exp_key_higher, exp_key_lower};
-      `DV_CHECK_EQ(key, exp_key, "otbn key mismatch")
     end
   endtask
 
@@ -267,31 +277,35 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           // seed is valid as long as secret1 is locked
           `DV_CHECK_EQ(seed_valid, part_locked, $sformatf("sram_%0d seed_valid mismatch", index))
 
-          // get edn CSRNG
-          `DV_CHECK_EQ(edn_data_q.size(), 10);
-          {exp_nonce, edn_key2, edn_key1} = {<<32{edn_data_q}};
+          // If edn_data_q matches the OTBN requested size, check OTBN outputs
+          if (edn_data_q.size() == NUM_SRAM_EDN_REQ) begin
+            {exp_nonce, edn_key2, edn_key1} = {<<32{edn_data_q}};
+
+            // check nonce value
+            `DV_CHECK_EQ(nonce, exp_nonce, $sformatf("sram_%0d nonce mismatch", index))
+
+            // calculate key
+            sram_key = get_key_from_otp(part_locked, SramDataKeySeedOffset / 4);
+            exp_key_lower = present_encode_with_final_const(
+                            .data(RndCnstDigestIV[SramDataKey]),
+                            .key(sram_key),
+                            .final_const(RndCnstDigestConst[SramDataKey]),
+                            .second_key(edn_key1),
+                            .num_round(2));
+
+            exp_key_higher = present_encode_with_final_const(
+                             .data(RndCnstDigestIV[SramDataKey]),
+                             .key(sram_key),
+                             .final_const(RndCnstDigestConst[SramDataKey]),
+                             .second_key(edn_key2),
+                             .num_round(2));
+            exp_key = {exp_key_higher, exp_key_lower};
+            `DV_CHECK_EQ(key, exp_key, $sformatf("sram_%0d key mismatch", index))
+          end else if (edn_data_q.size() != (NUM_SRAM_EDN_REQ + 2)) begin
+            `uvm_error(`gfn, $sformatf("Unexpected edn_data_q size (%0d) during SRAM request",
+                                       edn_data_q.size()))
+          end
           edn_data_q.delete();
-
-          // check nonce value
-          `DV_CHECK_EQ(nonce, exp_nonce, $sformatf("sram_%0d nonce mismatch", index))
-
-          // calculate key
-          sram_key = get_key_from_otp(part_locked, SramDataKeySeedOffset / 4);
-          exp_key_lower = present_encode_with_final_const(
-                          .data(RndCnstDigestIV[SramDataKey]),
-                          .key(sram_key),
-                          .final_const(RndCnstDigestConst[SramDataKey]),
-                          .second_key(edn_key1),
-                          .num_round(2));
-
-          exp_key_higher = present_encode_with_final_const(
-                           .data(RndCnstDigestIV[SramDataKey]),
-                           .key(sram_key),
-                           .final_const(RndCnstDigestConst[SramDataKey]),
-                           .second_key(edn_key2),
-                           .num_round(2));
-          exp_key = {exp_key_higher, exp_key_lower};
-          `DV_CHECK_EQ(key, exp_key, $sformatf("sram_%0d key mismatch", index))
         end
       join_none
     end
