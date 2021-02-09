@@ -9,6 +9,7 @@ from .html_helpers import expand_paras, render_td
 
 from .multi_register import MultiRegister
 from .register import Register
+from .window import Window
 
 
 def genout(outfile, msg):
@@ -217,18 +218,27 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
 
 
 def gen_html_window(outfile, win, comp, regwidth, rnames, toc, toclvl):
-    wname = win['name']
-    offset = win['genoffset']
-    genout(
-        outfile, '<table class="regdef" id="Reg_' + wname.lower() + '">\n'
-        '<tr><th class="regdef"><div>' + comp + '.' + wname + ' @ + ' +
-        hex(offset) + '</div><div>' + win['items'] + ' item ' +
-        win['swaccess'] + ' window</div><div>Byte writes are ' +
-        ('' if win['genbyte-write'] else '<i>not</i> ') +
-        'supported</div></th></tr>\n')
+    wname = win.name or '(unnamed window)'
+    offset = win.offset
+    genout(outfile,
+           '<table class="regdef" id="Reg_{lwname}">\n'
+           '  <tr>\n'
+           '    <th class="regdef">\n'
+           '      <div>{comp}.{wname} @ + {off:#x}</div>\n'
+           '      <div>{items} item {swaccess} window</div>\n'
+           '      <div>Byte writes are {byte_writes}supported</div>\n'
+           '    </th>\n'
+           '  </tr>\n'
+           .format(comp=comp,
+                   wname=wname,
+                   lwname=wname.lower(),
+                   off=offset,
+                   items=win.items,
+                   swaccess=win.swaccess.key,
+                   byte_writes=('' if win.byte_write else '<i>not</i> ')))
     genout(outfile, '<tr><td><table class="regpic">')
     genout(outfile, '<tr><td width="10%"></td>')
-    wid = win['genvalidbits']
+    wid = win.validbits
 
     for x in range(regwidth - 1, -1, -1):
         if x == regwidth - 1 or x == wid - 1 or x == 0:
@@ -236,7 +246,7 @@ def gen_html_window(outfile, win, comp, regwidth, rnames, toc, toclvl):
         else:
             genout(outfile, '<td class="bitnum"></td>')
     genout(outfile, '</tr>')
-    tblmax = int(win['items']) - 1
+    tblmax = win.items - 1
     for x in [0, 1, 2, tblmax - 1, tblmax]:
         if x == 2:
             genout(
@@ -260,7 +270,7 @@ def gen_html_window(outfile, win, comp, regwidth, rnames, toc, toclvl):
             genout(outfile, '</tr>')
     genout(outfile, '</td></tr></table>')
     genout(outfile,
-           '<tr>{}</tr>'.format(render_td(win['desc'], rnames, 'regde')))
+           '<tr>{}</tr>'.format(render_td(win.desc, rnames, 'regde')))
     genout(outfile, "</table>\n<br>\n")
     if toc is not None:
         toc.append((toclvl, comp + "." + wname, "Reg_" + wname.lower()))
@@ -289,10 +299,8 @@ def gen_html(regs, outfile, toclist=None, toclevel=3):
                 gen_html_register(outfile, reg, component, regwidth, rnames,
                                   toclist, toclevel)
             continue
-
-        assert isinstance(x, dict)
-        if 'window' in x:
-            gen_html_window(outfile, x['window'], component, regwidth, rnames,
+        if isinstance(x, Window):
+            gen_html_window(outfile, x, component, regwidth, rnames,
                             toclist, toclevel)
             continue
 

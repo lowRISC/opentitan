@@ -226,6 +226,12 @@ def check_xint(obj: object, what: str) -> Optional[int]:
 def expand_parameter(params: List[Dict[str, object]],
                      value: str,
                      when: str) -> int:
+    # Check whether the 'parameter' is already an integer: if so, return that.
+    try:
+        return int(value, 0)
+    except ValueError:
+        pass
+
     found = None
     for param in params:
         if param['name'] == value:

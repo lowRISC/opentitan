@@ -6,7 +6,9 @@ Generates the documentation for the register tool
 
 """
 from .access import SWACCESS_PERMITTED, HWACCESS_PERMITTED
-from reggen import validate, enum_entry, field, register, multi_register
+from reggen import (validate,
+                    enum_entry, field,
+                    register, multi_register, window)
 
 
 def genout(outfile, msg):
@@ -291,12 +293,10 @@ def document(outfile):
 
     genout(outfile, window_intro)
     doc_tbl_head(outfile, 1)
-    for x in validate.window_required:
-        doc_tbl_line(outfile, x, 'r', validate.window_required[x])
-    for x in validate.window_optional:
-        doc_tbl_line(outfile, x, 'o', validate.window_optional[x])
-    for x in validate.window_added:
-        doc_tbl_line(outfile, x, 'a', validate.window_added[x])
+    for k, v in window.REQUIRED_FIELDS.items():
+        doc_tbl_line(outfile, k, 'r', v)
+    for k, v in window.OPTIONAL_FIELDS.items():
+        doc_tbl_line(outfile, k, 'o', v)
 
     genout(outfile, multi_intro)
     doc_tbl_head(outfile, 1)
