@@ -83,27 +83,105 @@ module top_earlgrey_nexysvideo #(
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux, dio_in_padring;
 
   padring #(
-    // MIOs 23:20 are currently not
+    // MIOs 43:34 and 23:20 are currently not
     // connected to pads and hence tied off
-    .ConnectMioIn  ( 32'hFF0FFFFF ),
-    .ConnectMioOut ( 32'hFF0FFFFF ),
+    .ConnectMioIn  ( 44'h003_FF0F_FFFF ),
+    .ConnectMioOut ( 44'h003_FF0F_FFFF ),
     // Tied off DIOs:
     // 2: usbdev_d
     // 3: usbdev_suspend
     // 4: usbdev_tx_mode
     // 7: usbdev_se
-    .ConnectDioIn  ( 15'h7F63 ),
-    .ConnectDioOut ( 15'h7F63 )
+    // 9-14: spi_host all signals
+    // 17-18: spi_device unused quad signals
+    .ConnectDioIn  ( 21'h19_8163 ),
+    .ConnectDioOut ( 21'h19_8163 ),
+    // MIO pad types
+    .MioPadVariant ( { // RBox
+                       2'd3, // IOR13   -- open drain
+                       2'd3, // IOR12   -- open drain
+                       2'd3, // IOR11   -- open drain
+                       2'd3, // IOR10   -- open drain
+                       2'd3, // IOR9    -- open drain
+                       2'd3, // IOR8    -- open drain
+                       2'd0, // IOR7    -- bidir
+                       2'd0, // IOR6    -- bidir
+                       2'd0, // IOR5    -- bidir
+                       2'd0, // IOR4    -- bidir
+                       2'd0, // IOR3    -- bidir
+                       2'd0, // IOR2    -- bidir
+                       2'd0, // IOR1    -- bidir
+                       2'd0, // IOR0    -- bidir
+                       // Bank C
+                       2'd3, // IOC11   -- open drain
+                       2'd3, // IOC10   -- open drain
+                       2'd3, // IOC9    -- open drain
+                       2'd3, // IOC8    -- open drain
+                       2'd0, // IOC7    -- bidir
+                       2'd0, // IOC6    -- bidir
+                       2'd0, // IOC5    -- bidir
+                       2'd0, // IOC4    -- bidir
+                       2'd0, // IOC3    -- bidir
+                       2'd0, // IOC2    -- bidir
+                       2'd0, // IOC1    -- bidir
+                       2'd0, // IOC0    -- bidir
+                       // Bank B
+                       2'd3, // IOB11   -- open drain
+                       2'd3, // IOB10   -- open drain
+                       2'd3, // IOB9    -- open drain
+                       2'd3, // IOB8    -- open drain
+                       2'd0, // IOB7    -- birid
+                       2'd0, // IOB6    -- birid
+                       2'd0, // IOB5    -- birid
+                       2'd0, // IOB4    -- birid
+                       2'd0, // IOB3    -- bidir
+                       2'd0, // IOB2    -- bidir
+                       2'd0, // IOB1    -- bidir
+                       2'd0, // IOB0    -- bidir
+                       // Bank A
+                       2'd3, // IOA5    -- open drain
+                       2'd3, // IOA4    -- open drain
+                       2'd0, // IOA3    -- bidir
+                       2'd0, // IOA2    -- bidir
+                       2'd0, // IOA1    -- bidir
+                       2'd0  // IOA0    -- bidir
+                      } ),
+    // DIO pad types
+    .DioPadVariant (  { 2'd1, // SPI_DEV_CLK    -- input only
+                        2'd1, // SPI_DEV_CS_L   -- input only
+                        2'd0, // SPI_DEV_D3     -- bidir
+                        2'd0, // SPI_DEV_D2     -- bidir
+                        2'd0, // SPI_DEV_D1     -- bidir
+                        2'd0, // SPI_DEV_D0     -- bidir
+                        2'd0, // SPI_HOST_CLK   -- bidir
+                        2'd0, // SPI_HOST_CS_L  -- bidir
+                        2'd0, // SPI_HOST_D3    -- bidir
+                        2'd0, // SPI_HOST_D2    -- bidir
+                        2'd0, // SPI_HOST_D1    -- bidir
+                        2'd0, // SPI_HOST_D0    -- bidir
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd2, // USB_P          -- tolerant
+                        2'd2  // USB_N          -- tolerant
+                      } )
   ) padring (
     // Clk / Rst
     .clk_pad_i           ( 1'b0 ),
-    .clk_usb_48mhz_pad_i ( 1'b0 ),
     .rst_pad_ni          ( 1'b0 ),
     .clk_o               (      ),
-    .clk_usb_48mhz_o     (      ),
     .rst_no              (      ),
+    .cc1_i               ( 1'b0 ),
+    .cc2_i               ( 1'b0 ),
     // MIO Pads
-    .mio_pad_io          ( { IO_GP31,
+    .mio_pad_io          ( { 10'bz,    // Note that 43:34 are currently not mapped
+                             IO_UTX,
+                             IO_URX,
+                             IO_GP31,
                              IO_GP30,
                              IO_GP29,
                              IO_GP28,
@@ -135,10 +213,10 @@ module top_earlgrey_nexysvideo #(
     // DIO Pads
     .dio_pad_io          ( { IO_DPS0, // SCK, JTAG_TCK
                              IO_DPS3, // CSB, JTAG_TMS
-                             IO_DPS1, // SDI, JTAG_TDI
+                             2'bz,    // quad SPI device signals are not mapped
                              IO_DPS2, // SDO, JTAG_TDO
-                             IO_URX,
-                             IO_UTX,
+                             IO_DPS1, // SDI, JTAG_TDI
+                             6'bz,    // SPI host signals are not mapped
                              IO_USB_SENSE0,
                              1'bz,    // usbdev_se0
                              IO_USB_DPPULLUP0,
@@ -192,9 +270,9 @@ module top_earlgrey_nexysvideo #(
     .TrstIdx        (                             18 ), // MIO 18
     .SrstIdx        (                             19 ), // MIO 19
     .TdiIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSdi ),
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd0 ),
     .TdoIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSdo )
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd1 )
   ) jtag_mux (
     // To JTAG inside core
     .jtag_tck_o   ( jtag_tck        ),
@@ -210,7 +288,11 @@ module top_earlgrey_nexysvideo #(
     // To padring side
     .out_padring_o ( {dio_out_padring, mio_out_padring} ),
     .oe_padring_o  ( {dio_oe_padring, mio_oe_padring } ),
-    .in_padring_i  ( {dio_in_padring, mio_in_padring } )
+    .in_padring_i  ( {dio_in_padring, mio_in_padring } ),
+    // USB breakouts
+    .usb_pullup_p_en_o (      ),
+    .usb_pullup_n_en_o (      ),
+    .usb_diff_input_i  ( 1'b0 )
   );
 
   // Software can enable the pinflip feature inside usbdev.
@@ -453,7 +535,7 @@ module top_earlgrey_nexysvideo #(
     // DFT signals
     .scan_rst_ni     ( 1'b1          ),
     .scan_en_i       ( 1'b0          ),
-    .scanmode_i      ( 1'b0          )
+    .scanmode_i      ( lc_ctrl_pkg::Off )
   );
 
 endmodule : top_earlgrey_nexysvideo

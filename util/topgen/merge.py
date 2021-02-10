@@ -917,8 +917,6 @@ def amend_pinmux_io(top):
         pinmux["inputs"] = []
     if "outputs" not in pinmux:
         pinmux["outputs"] = []
-    if "inouts" not in pinmux:
-        pinmux["inouts"] = []
 
     for e in pinmux["mio_modules"]:
         tokens = e.split('.')
@@ -937,7 +935,22 @@ def amend_pinmux_io(top):
                     map(
                         partial(lib.add_module_prefix_to_signal,
                                 module=m["name"].lower()),
+                        m["available_inout_list"])))
+            pinmux["inputs"] += list(
+                filter(
+                    lambda x: x["name"] not in dio_names,
+                    map(
+                        partial(lib.add_module_prefix_to_signal,
+                                module=m["name"].lower()),
                         m["available_input_list"])))
+
+            pinmux["outputs"] += list(
+                filter(
+                    lambda x: x["name"] not in dio_names,
+                    map(
+                        partial(lib.add_module_prefix_to_signal,
+                                module=m["name"].lower()),
+                        m["available_inout_list"])))
             pinmux["outputs"] += list(
                 filter(
                     lambda x: x["name"] not in dio_names,
@@ -945,13 +958,6 @@ def amend_pinmux_io(top):
                         partial(lib.add_module_prefix_to_signal,
                                 module=m["name"].lower()),
                         m["available_output_list"])))
-            pinmux["inouts"] += list(
-                filter(
-                    lambda x: x["name"] not in dio_names,
-                    map(
-                        partial(lib.add_module_prefix_to_signal,
-                                module=m["name"].lower()),
-                        m["available_inout_list"])))
 
         elif len(tokens) == 2:
             # Current version doesn't consider signal in mio_modules

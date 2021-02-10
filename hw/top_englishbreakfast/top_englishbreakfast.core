@@ -29,6 +29,7 @@ filesets:
       - lowrisc:ip:pinmux_component
       - lowrisc:ip:rv_timer
       - lowrisc:ip:spi_device
+      - lowrisc:ip:spi_host
       - lowrisc:ip:aes
       - lowrisc:ip:entropy_src
       - lowrisc:ip:hmac

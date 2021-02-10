@@ -11559,7 +11559,7 @@
   ]
   pinmux:
   {
-    num_mio: 32
+    num_mio: 44
     dio_modules:
     [
       {
@@ -11829,6 +11829,12 @@
     inputs:
     [
       {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        module_name: gpio
+      }
+      {
         name: uart0_rx
         width: 1
         type: input
@@ -11851,78 +11857,6 @@
         width: 1
         type: input
         module_name: uart3
-      }
-    ]
-    outputs:
-    [
-      {
-        name: uart0_tx
-        width: 1
-        type: output
-        module_name: uart0
-      }
-      {
-        name: uart1_tx
-        width: 1
-        type: output
-        module_name: uart1
-      }
-      {
-        name: uart2_tx
-        width: 1
-        type: output
-        module_name: uart2
-      }
-      {
-        name: uart3_tx
-        width: 1
-        type: output
-        module_name: uart3
-      }
-      {
-        name: pattgen_pda0_tx
-        width: 1
-        type: output
-        module_name: pattgen
-      }
-      {
-        name: pattgen_pcl0_tx
-        width: 1
-        type: output
-        module_name: pattgen
-      }
-      {
-        name: pattgen_pda1_tx
-        width: 1
-        type: output
-        module_name: pattgen
-      }
-      {
-        name: pattgen_pcl1_tx
-        width: 1
-        type: output
-        module_name: pattgen
-      }
-      {
-        name: spi_host1_sck
-        width: 1
-        type: output
-        module_name: spi_host1
-      }
-      {
-        name: spi_host1_csb
-        width: 1
-        type: output
-        module_name: spi_host1
-      }
-    ]
-    inouts:
-    [
-      {
-        name: gpio_gpio
-        width: 32
-        type: inout
-        module_name: gpio
       }
       {
         name: i2c0_sda
@@ -11964,6 +11898,117 @@
         name: spi_host1_sd
         width: 4
         type: inout
+        module_name: spi_host1
+      }
+    ]
+    outputs:
+    [
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        module_name: gpio
+      }
+      {
+        name: uart0_tx
+        width: 1
+        type: output
+        module_name: uart0
+      }
+      {
+        name: uart1_tx
+        width: 1
+        type: output
+        module_name: uart1
+      }
+      {
+        name: uart2_tx
+        width: 1
+        type: output
+        module_name: uart2
+      }
+      {
+        name: uart3_tx
+        width: 1
+        type: output
+        module_name: uart3
+      }
+      {
+        name: i2c0_sda
+        width: 1
+        type: inout
+        module_name: i2c0
+      }
+      {
+        name: i2c0_scl
+        width: 1
+        type: inout
+        module_name: i2c0
+      }
+      {
+        name: i2c1_sda
+        width: 1
+        type: inout
+        module_name: i2c1
+      }
+      {
+        name: i2c1_scl
+        width: 1
+        type: inout
+        module_name: i2c1
+      }
+      {
+        name: i2c2_sda
+        width: 1
+        type: inout
+        module_name: i2c2
+      }
+      {
+        name: i2c2_scl
+        width: 1
+        type: inout
+        module_name: i2c2
+      }
+      {
+        name: pattgen_pda0_tx
+        width: 1
+        type: output
+        module_name: pattgen
+      }
+      {
+        name: pattgen_pcl0_tx
+        width: 1
+        type: output
+        module_name: pattgen
+      }
+      {
+        name: pattgen_pda1_tx
+        width: 1
+        type: output
+        module_name: pattgen
+      }
+      {
+        name: pattgen_pcl1_tx
+        width: 1
+        type: output
+        module_name: pattgen
+      }
+      {
+        name: spi_host1_sd
+        width: 4
+        type: inout
+        module_name: spi_host1
+      }
+      {
+        name: spi_host1_sck
+        width: 1
+        type: output
+        module_name: spi_host1
+      }
+      {
+        name: spi_host1_csb
+        width: 1
+        type: output
         module_name: spi_host1
       }
     ]

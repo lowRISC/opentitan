@@ -46,6 +46,12 @@
           resval: "0"
         },
       ]
+      // This is a dummy register in order to
+      // connect some logic to the TL-UL bus.
+      // Do not write to or read from this reg
+      // until this has been replaced by correctly
+      // behaving logic.
+      tags: ["excl:CsrAllTests:CsrExclAll"]
     },
   ]
 }

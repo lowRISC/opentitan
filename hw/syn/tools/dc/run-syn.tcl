@@ -80,7 +80,7 @@ set_app_var hdlin_enable_hier_map true
 set DEFINE "PRIM_DEFAULT_IMPL=${PRIM_DEFAULT_IMPL}+${PRIM_STD_CELL_VARIANT}"
 
 # additional parameters
-set PARAMS "KmacEnMasking=1"
+set PARAMS ""
 
 ###########################
 ##   ELABORATE DESIGN    ##

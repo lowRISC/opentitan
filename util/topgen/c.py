@@ -295,8 +295,9 @@ class TopGenC(object):
     def _init_pinmux_mapping(self):
         """Generate C enums for addressing pinmux registers and in/out selects.
 
-        Inputs are connected in order: inouts, then inputs
-        Outputs are connected in order: inouts, then outputs
+        Inputs/outputs are connected in the order the modules are listed in
+        the hjson under the "mio_modules" key. For each module, the corresponding
+        inouts are connected first, followed by either the inputs or the outputs.
 
         Inputs:
         - Peripheral chooses register field (pinmux_peripheral_in)
@@ -313,7 +314,7 @@ class TopGenC(object):
         # Peripheral Inputs
         peripheral_in = CEnum(self._top_name +
                               Name(["pinmux", "peripheral", "in"]))
-        for signal in pinmux_info["inouts"] + pinmux_info["inputs"]:
+        for signal in pinmux_info["inputs"]:
             if "width" in signal and int(signal["width"]) != 1:
                 for i in range(int(signal["width"])):
                     name = Name.from_snake_case(signal["name"]) + Name(
@@ -353,7 +354,7 @@ class TopGenC(object):
                             docstring="Tie constantly to one")
         outsel.add_constant(Name(["constant", "high", "z"]),
                             docstring="Tie constantly to high-Z")
-        for signal in pinmux_info["inouts"] + pinmux_info["outputs"]:
+        for signal in pinmux_info["outputs"]:
             if "width" in signal and int(signal["width"]) != 1:
                 for i in range(int(signal["width"])):
                     name = Name.from_snake_case(signal["name"]) + Name(

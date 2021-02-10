@@ -77,11 +77,11 @@ module top_earlgrey_artys7  #(
   ) padring (
     // Clk / Rst
     .clk_pad_i           ( 1'b0 ),
-    .clk_usb_48mhz_pad_i ( 1'b0 ),
     .rst_pad_ni          ( 1'b0 ),
     .clk_o               (      ),
-    .clk_usb_48mhz_o     (      ),
     .rst_no              (      ),
+    .cc1_i               ( 1'b0 ),
+    .cc2_i               ( 1'b0 ),
     // MIO Pads
     .mio_pad_io          ( { 16'bz,   // Note that 31:16 are currently not mapped
                              IO_GP15,

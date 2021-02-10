@@ -866,7 +866,7 @@
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
   alert_module: [ "aes", "otbn", "sensor_ctrl_aon", "keymgr", "otp_ctrl", "lc_ctrl",
-                  "entropy_src","csrng", 
+                  "entropy_src","csrng",
                   "sram_ctrl_main", "sram_ctrl_ret_aon", "flash_ctrl"]
 
   // generated list of alerts:
@@ -880,7 +880,7 @@
     //  All the input/outputs from IPs are muxed in pinmux, and it has # of I/O
     //  talks to the outside of top_earlgrey.
     //  This field will be replaced to the length of PAD if padctrl is defined
-    num_mio: 32
+    num_mio: 44
 
     // Dedicated IO modules. The in/out ports of the modules below are connected
     //  to TOP IO port through PADS directly. It bypasses PINMUX multiplexers

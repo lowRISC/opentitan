@@ -371,7 +371,6 @@ def generate_pinmux(top, out_path):
     # Validation ensures that the width field is present.
     num_mio_inputs = sum([x["width"] for x in top["pinmux"]["inputs"]])
     num_mio_outputs = sum([x["width"] for x in top["pinmux"]["outputs"]])
-    num_mio_inouts = sum([x["width"] for x in top["pinmux"]["inouts"]])
 
     num_dio_inputs = sum([
         x["width"] if x["type"] == "input" else 0 for x in top["pinmux"]["dio"]
@@ -384,8 +383,8 @@ def generate_pinmux(top, out_path):
         x["width"] if x["type"] == "inout" else 0 for x in top["pinmux"]["dio"]
     ])
 
-    n_mio_periph_in = num_mio_inouts + num_mio_inputs
-    n_mio_periph_out = num_mio_inouts + num_mio_outputs
+    n_mio_periph_in = num_mio_inputs
+    n_mio_periph_out = num_mio_outputs
     n_dio_periph_in = num_dio_inouts + num_dio_inputs
     n_dio_periph_out = num_dio_inouts + num_dio_outputs
     n_dio_pads = num_dio_inouts + num_dio_inputs + num_dio_outputs
@@ -411,10 +410,8 @@ def generate_pinmux(top, out_path):
     log.info("Generating pinmux with following info from hjson:")
     log.info("num_mio_inputs:  %d" % num_mio_inputs)
     log.info("num_mio_outputs: %d" % num_mio_outputs)
-    log.info("num_mio_inouts:  %d" % num_mio_inouts)
     log.info("num_dio_inputs:  %d" % num_dio_inputs)
     log.info("num_dio_outputs: %d" % num_dio_outputs)
-    log.info("num_dio_inouts:  %d" % num_dio_inouts)
     log.info("attr_dw:         %d" % attr_dw)
     log.info("num_wkup_detect: %d" % num_wkup_detect)
     log.info("wkup_cnt_width:  %d" % wkup_cnt_width)
