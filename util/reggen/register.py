@@ -8,7 +8,7 @@ from .access import SWAccess, HWAccess
 from .field import Field
 from .lib import (check_keys, check_str, check_name, check_bool,
                   check_list, check_str_list, check_int)
-from .reg_block import RegBlock
+from .reg_base import RegBase
 
 REQUIRED_FIELDS = {
     'name': ['s', "name of the register"],
@@ -73,7 +73,7 @@ OPTIONAL_FIELDS = {
 }
 
 
-class Register(RegBlock):
+class Register(RegBase):
     '''Code representing a register for reggen'''
     def __init__(self,
                  offset: int,
