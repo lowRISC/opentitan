@@ -56,7 +56,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic [CmdFifoWidth-1:0] sfifo_cmd_wdata;
   logic                    sfifo_cmd_pop;
   logic [2:0]              sfifo_cmd_err;
-  logic                    sfifo_cmd_not_full;
+  logic                    sfifo_cmd_full;
   logic                    sfifo_cmd_not_empty;
 
   // genbits fifo
@@ -119,12 +119,12 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     .rst_ni         (rst_ni),
     .clr_i          (!cs_enable_i),
     .wvalid_i       (sfifo_cmd_push),
-    .wready_o       (sfifo_cmd_not_full),
+    .wready_o       (),
     .wdata_i        (sfifo_cmd_wdata),
     .rvalid_o       (sfifo_cmd_not_empty),
     .rready_i       (sfifo_cmd_pop),
     .rdata_o        (sfifo_cmd_rdata),
-    .full_o         (),
+    .full_o         (sfifo_cmd_full),
     .depth_o        (sfifo_cmd_depth)
   );
 
@@ -139,12 +139,12 @@ module csrng_cmd_stage import csrng_pkg::*; #(
          cmd_gen_1st_req ? {16'b0,cmd_stage_shid_i,sfifo_cmd_rdata[11:0]} :  // pad,id,f,clen,cmd
          sfifo_cmd_rdata;
 
-  assign cmd_stage_rdy_o = sfifo_cmd_not_full;
+  assign cmd_stage_rdy_o = !sfifo_cmd_full;
 
   assign sfifo_cmd_err =
-         {(sfifo_cmd_push && !sfifo_cmd_not_full),
+         {(sfifo_cmd_push && sfifo_cmd_full),
           (sfifo_cmd_pop && !sfifo_cmd_not_empty),
-          (!sfifo_cmd_not_full && !sfifo_cmd_not_empty)};
+          (sfifo_cmd_full && !sfifo_cmd_not_empty)};
 
 
   // state machine controls
