@@ -4,7 +4,6 @@
 //
 // Serial Peripheral Interface (SPI) Device module.
 //
-//
 
 `include "prim_assert.sv"
 
@@ -145,6 +144,10 @@ module spi_device (
   logic        s2p_data_valid;
   spi_byte_t   s2p_data;
   logic [11:0] s2p_bitcnt;
+
+  logic        p2s_valid;
+  spi_byte_t   p2s_data;
+  logic        p2s_sent;
 
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
@@ -396,20 +399,34 @@ module spi_device (
     .io_mode_i    (io_mode)
   );
 
+
+  // TODO: make full SPI
+  logic [3:0] p2s_so;
+  logic [3:0] p2s_s_en;
+  assign cio_sdo_o = p2s_so[1];
+  assign cio_sdo_en_o = p2s_s_en[1];
+
+  spi_p2s u_p2s (
+    .clk_i        (clk_spi_out_buf),
+    .rst_ni       (rst_spi_n),
+
+    .data_valid_i (p2s_valid),
+    .data_i       (p2s_data),
+    .data_sent_o  (p2s_sent),
+
+    .s_en_o       (p2s_s_en),
+    .s_o          (p2s_so),
+
+    .cpha_i       (cpha),
+    .order_i      (txorder),
+    .io_mode_i    (io_mode)
+
+  );
+
   /////////////
   // FW Mode //
   /////////////
   spi_fwmode u_fwmode (
-    .clk_in_i     (clk_spi_in_buf),
-    .rst_in_ni    (rst_spi_n),
-
-    .clk_out_i    (clk_spi_out_buf),
-    .rst_out_ni   (rst_spi_n),
-
-    .cpha_i        (cpha),
-    //.cfg_rxorder_i (rxorder),
-    .cfg_txorder_i (txorder),
-
     .mode_i        (spi_mode),
 
     .rx_wvalid_o   (rxf_wvalid),
@@ -430,11 +447,11 @@ module spi_device (
     // Output to S2P (mode select)
     .io_mode_o       (fw_io_mode),
 
-    // SPI signal
-    .csb_i         (cio_csb_i),
-    .sdi_i         (cio_sdi_i),
-    .sdo_o         (cio_sdo_o),
-    .sdo_oe_o      (cio_sdo_en_o)
+    // P2S
+    .tx_wvalid_o (p2s_valid),
+    .tx_data_o   (p2s_data),
+    .tx_wready_i (p2s_sent)
+
   );
 
   // FIFO: Connecting FwMode to SRAM CTRLs
