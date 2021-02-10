@@ -30,6 +30,7 @@ module csrng_block_encrypt #(
   output logic [Cmd-1:0]     block_encrypt_cmd_o,
   output logic [StateId-1:0] block_encrypt_id_o,
   output logic [BlkLen-1:0]  block_encrypt_v_o,
+  output logic               block_encrypt_aes_cipher_sm_err_o,
   output logic [2:0]         block_encrypt_sfifo_blkenc_err_o
 );
 
@@ -43,7 +44,7 @@ module csrng_block_encrypt #(
   logic                       sfifo_blkenc_push;
   logic [BlkEncFifoWidth-1:0] sfifo_blkenc_wdata;
   logic                       sfifo_blkenc_pop;
-  logic                       sfifo_blkenc_not_full;
+  logic                       sfifo_blkenc_full;
   logic                       sfifo_blkenc_not_empty;
   // breakout
   logic [Cmd-1:0]             sfifo_blkenc_cmd;
@@ -99,7 +100,7 @@ module csrng_block_encrypt #(
     .key_len_i          ( aes_pkg::AES_256           ),
     .crypt_i            ( aes_cipher_core_enable     ),
     .crypt_o            (                            ),
-    .alert_o            (                            ), // TODO: Prop to top
+    .alert_o            ( block_encrypt_aes_cipher_sm_err_o),
     .dec_key_gen_i      ( 1'b0                       ), // Disable
     .dec_key_gen_o      (                            ),
     .key_clear_i        ( 1'b0                       ), // Disable
@@ -132,19 +133,19 @@ module csrng_block_encrypt #(
     .rst_ni   (rst_ni),
     .clr_i    (!block_encrypt_enable_i),
     .wvalid_i (sfifo_blkenc_push),
-    .wready_o (sfifo_blkenc_not_full),
+    .wready_o (),
     .wdata_i  (sfifo_blkenc_wdata),
     .rvalid_o (sfifo_blkenc_not_empty),
     .rready_i (sfifo_blkenc_pop),
     .rdata_o  (sfifo_blkenc_rdata),
-    .full_o   (),
+    .full_o   (sfifo_blkenc_full),
     .depth_o  ()
   );
 
-  assign sfifo_blkenc_push = block_encrypt_req_i && sfifo_blkenc_not_full;
+  assign sfifo_blkenc_push = block_encrypt_req_i && !sfifo_blkenc_full;
   assign sfifo_blkenc_wdata = {block_encrypt_v_i,block_encrypt_id_i,block_encrypt_cmd_i};
 
-  assign block_encrypt_rdy_o = !aes_cipher_core_enable ? sfifo_blkenc_not_full : cipher_in_ready;
+  assign block_encrypt_rdy_o = !aes_cipher_core_enable ? !sfifo_blkenc_full : cipher_in_ready;
 
   assign sfifo_blkenc_pop = block_encrypt_ack_o;
   assign {sfifo_blkenc_v,sfifo_blkenc_id,sfifo_blkenc_cmd} = sfifo_blkenc_rdata;
@@ -158,8 +159,8 @@ module csrng_block_encrypt #(
   assign cipher_out_ready = block_encrypt_rdy_i;
 
   assign block_encrypt_sfifo_blkenc_err_o =
-         {(sfifo_blkenc_push && !sfifo_blkenc_not_full),
+         {(sfifo_blkenc_push && sfifo_blkenc_full),
           (sfifo_blkenc_pop && !sfifo_blkenc_not_empty),
-          (!sfifo_blkenc_not_full && !sfifo_blkenc_not_empty)};
+          (sfifo_blkenc_full && !sfifo_blkenc_not_empty)};
 
 endmodule

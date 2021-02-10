@@ -18,7 +18,7 @@ module top_earlgrey #(
   parameter bit SecAesAllowForcingMasks = 1'b0,
   parameter bit KmacEnMasking = 0,
   parameter int KmacReuseShare = 0,
-  parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
+  parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplLut,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
 
   // Manually defined parameters
@@ -350,7 +350,7 @@ module top_earlgrey #(
   logic intr_csrng_cs_cmd_req_done;
   logic intr_csrng_cs_entropy_req;
   logic intr_csrng_cs_hw_inst_exc;
-  logic intr_csrng_cs_fifo_err;
+  logic intr_csrng_cs_fatal_err;
   logic intr_entropy_src_es_entropy_valid;
   logic intr_entropy_src_es_health_test_failed;
   logic intr_entropy_src_es_fifo_err;
@@ -1821,7 +1821,11 @@ module top_earlgrey #(
       .intr_cs_cmd_req_done_o (intr_csrng_cs_cmd_req_done),
       .intr_cs_entropy_req_o  (intr_csrng_cs_entropy_req),
       .intr_cs_hw_inst_exc_o  (intr_csrng_cs_hw_inst_exc),
-      .intr_cs_fifo_err_o     (intr_csrng_cs_fifo_err),
+      .intr_cs_fatal_err_o    (intr_csrng_cs_fatal_err),
+
+      // [19]: fatal_alert
+      .alert_tx_o  ( alert_tx[19:19] ),
+      .alert_rx_i  ( alert_rx[19:19] ),
 
       // Inter-module signals
       .csrng_cmd_i(csrng_csrng_cmd_req),
@@ -1845,9 +1849,9 @@ module top_earlgrey #(
       .intr_es_health_test_failed_o (intr_entropy_src_es_health_test_failed),
       .intr_es_fifo_err_o           (intr_entropy_src_es_fifo_err),
 
-      // [19]: recov_alert_count_met
-      .alert_tx_o  ( alert_tx[19:19] ),
-      .alert_rx_i  ( alert_rx[19:19] ),
+      // [20]: recov_alert_count_met
+      .alert_tx_o  ( alert_tx[20:20] ),
+      .alert_rx_i  ( alert_rx[20:20] ),
 
       // Inter-module signals
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
@@ -1908,9 +1912,9 @@ module top_earlgrey #(
     .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce)
   ) u_sram_ctrl_main (
 
-      // [20]: fatal_parity_error
-      .alert_tx_o  ( alert_tx[20:20] ),
-      .alert_rx_i  ( alert_rx[20:20] ),
+      // [21]: fatal_parity_error
+      .alert_tx_o  ( alert_tx[21:21] ),
+      .alert_rx_i  ( alert_rx[21:21] ),
 
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
@@ -1935,10 +1939,10 @@ module top_earlgrey #(
       // Interrupt
       .intr_done_o (intr_otbn_done),
 
-      // [21]: fatal
-      // [22]: recov
-      .alert_tx_o  ( alert_tx[22:21] ),
-      .alert_rx_i  ( alert_rx[22:21] ),
+      // [22]: fatal
+      // [23]: recov
+      .alert_tx_o  ( alert_tx[23:22] ),
+      .alert_rx_i  ( alert_rx[23:22] ),
 
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[3]),
@@ -1959,7 +1963,7 @@ module top_earlgrey #(
       intr_edn1_edn_cmd_req_done,
       intr_edn0_edn_fifo_err,
       intr_edn0_edn_cmd_req_done,
-      intr_csrng_cs_fifo_err,
+      intr_csrng_cs_fatal_err,
       intr_csrng_cs_hw_inst_exc,
       intr_csrng_cs_entropy_req,
       intr_csrng_cs_cmd_req_done,

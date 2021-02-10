@@ -23,37 +23,44 @@ module csrng_main_sm import csrng_pkg::*; (
   output logic               reseed_req_o,
   output logic               generate_req_o,
   output logic               update_req_o,
-  output logic               uninstant_req_o
+  output logic               uninstant_req_o,
+  output logic               main_sm_err_o
 );
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 3 -m 9 -n 8 -s 3053040243
-  // Hamming distance histogram:
-  //
-  // 0: --
-  // 1: --
-  // 2: --
-  // 3: |||||||||||||||||||| (30.56%)
-  // 4: |||||||||||||||||||| (30.56%)
-  // 5: |||||||||||| (19.44%)
-  // 6: ||||||||| (13.89%)
-  // 7: ||| (5.56%)
-  // 8: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 7
-  //
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 8 \
+//      -s 845453599 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: ||||||||||||||| (26.67%)
+//  4: |||||||||||||||||||| (35.56%)
+//  5: ||||||||||||||| (26.67%)
+//  6: ||||| (8.89%)
+//  7: --
+//  8: | (2.22%)
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 8
+// Minimum Hamming weight: 2
+// Maximum Hamming weight: 7
+//
 
   localparam int StateWidth = 8;
   typedef    enum logic [StateWidth-1:0] {
-    Idle    =      8'b01100100, // idle
-    InstantPrep  = 8'b11000010, // instantiate prep
-    InstantReq   = 8'b11000101, // instantiate request (takes adata or entropy)
-    ReseedPrep   = 8'b00010001, // reseed prep
-    ReseedReq    = 8'b10110010, // reseed request (takes adata and entropy and Key,V,RC)
-    GenerateReq  = 8'b01111010, // generate request (takes adata? and Key,V,RC)
-    UpdatePrep   = 8'b00001101, // update prep
-    UpdateReq    = 8'b10101011, // update request (takes adata and Key,V,RC)
-    UninstantReq = 8'b00101000  // uninstantiate request (no input)
+    Idle    =      8'b10111111, // idle
+    InstantPrep  = 8'b11011101, // instantiate prep
+    InstantReq   = 8'b00010100, // instantiate request (takes adata or entropy)
+    ReseedPrep   = 8'b11000001, // reseed prep
+    ReseedReq    = 8'b01100100, // reseed request (takes adata and entropy and Key,V,RC)
+    GenerateReq  = 8'b10101100, // generate request (takes adata? and Key,V,RC)
+    UpdatePrep   = 8'b11010010, // update prep
+    UpdateReq    = 8'b11111000, // update request (takes adata and Key,V,RC)
+    UninstantReq = 8'b11101011, // uninstantiate request (no input)
+    Error        = 8'b00001010  // error state, results in fatal alert
   } state_e;
 
   state_e state_d, state_q;
@@ -83,6 +90,7 @@ module csrng_main_sm import csrng_pkg::*; (
     generate_req_o = 1'b0;
     update_req_o = 1'b0;
     uninstant_req_o = 1'b0;
+    main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
         if (ctr_drbg_cmd_req_rdy_i) begin
@@ -154,7 +162,10 @@ module csrng_main_sm import csrng_pkg::*; (
         uninstant_req_o = 1'b1;
         state_d = Idle;
       end
-      default: state_d = Idle;
+      Error: begin
+        main_sm_err_o = 1'b1;
+      end
+      default: state_d = Error;
     endcase
   end
 

@@ -19,7 +19,7 @@ module tb;
   wire intr_cmd_req_done;
   wire intr_entropy_req;
   wire intr_hw_inst_exc;
-  wire intr_fifo_err;
+  wire intr_cs_fatal_err;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -51,16 +51,19 @@ module tb;
     .csrng_cmd_i             (csrng_if.cmd_req),
     .csrng_cmd_o             (csrng_if.cmd_rsp),
 
+    .alert_rx_i              ('0), // (alert_rx), // TODO: connect to model
+    .alert_tx_o              (),   // (alert_tx), // TODO: connect to model
+
     .intr_cs_cmd_req_done_o  (intr_cmd_req_done),
     .intr_cs_entropy_req_o   (intr_entropy_req),
     .intr_cs_hw_inst_exc_o   (intr_hw_inst_exc),
-    .intr_cs_fifo_err_o      (intr_fifo_err)
+    .intr_cs_fatal_err_o     (intr_cs_fatal_err)
   );
 
   assign interrupts[CmdReqDone] = intr_cmd_req_done;
   assign interrupts[EntropyReq] = intr_entropy_req;
   assign interrupts[HwInstExc]  = intr_hw_inst_exc;
-  assign interrupts[FifoErr]    = intr_fifo_err;
+  assign interrupts[FifoErr]    = intr_cs_fatal_err;
 
   initial begin
     // drive clk and rst_n from clk_if
