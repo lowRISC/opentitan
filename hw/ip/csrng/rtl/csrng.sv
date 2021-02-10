@@ -6,8 +6,12 @@
 
 `include "prim_assert.sv"
 
-module csrng import csrng_pkg::*; #(
+module csrng
+ import csrng_pkg::*;
+ import csrng_reg_pkg::*;
+#(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter int NHwApps = 2
 ) (
   input logic         clk_i,
@@ -31,11 +35,15 @@ module csrng import csrng_pkg::*; #(
   input  csrng_req_t  [NHwApps-1:0] csrng_cmd_i,
   output csrng_rsp_t  [NHwApps-1:0] csrng_cmd_o,
 
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+
   // Interrupts
   output logic    intr_cs_cmd_req_done_o,
   output logic    intr_cs_entropy_req_o,
   output logic    intr_cs_hw_inst_exc_o,
-  output logic    intr_cs_fifo_err_o
+  output logic    intr_cs_fatal_err_o
 );
 
 
@@ -44,6 +52,9 @@ module csrng import csrng_pkg::*; #(
   csrng_reg2hw_t reg2hw;
   csrng_hw2reg_t hw2reg;
 
+  logic  alert;
+  logic  alert_test;
+
   csrng_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -51,7 +62,6 @@ module csrng import csrng_pkg::*; #(
     .tl_o,
     .reg2hw,
     .hw2reg,
-
     .devmode_i(1'b1)
   );
 
@@ -76,11 +86,31 @@ module csrng import csrng_pkg::*; #(
     .csrng_cmd_i,
     .csrng_cmd_o,
 
+    // Alerts
+    .alert_test_o(alert_test),
+    .fatal_alert_o(alert),
+
     .intr_cs_cmd_req_done_o,
     .intr_cs_entropy_req_o,
     .intr_cs_hw_inst_exc_o,
-    .intr_cs_fifo_err_o
+    .intr_cs_fatal_err_o
   );
+
+
+  prim_alert_sender #(
+    .AsyncOn(AlertAsyncOn[0]),
+    .IsFatal(1)
+  ) u_prim_alert_sender (
+    .clk_i,
+    .rst_ni,
+    .alert_test_i  ( alert_test    ),
+    .alert_req_i   ( alert         ),
+    .alert_ack_o   (               ),
+    .alert_state_o (               ),
+    .alert_rx_i    ( alert_rx_i[0] ),
+    .alert_tx_o    ( alert_tx_o[0] )
+  );
+
 
   // Assertions
 
@@ -98,10 +128,13 @@ module csrng import csrng_pkg::*; #(
     `ASSERT_KNOWN(CsrngGenbitsBusKnownO_A, csrng_cmd_o[i].genbits_bus)
   end : gen_app_if_asserts
 
+  // Alerts
+  `ASSERT_KNOWN(AlertTxKnownO_A, alert_tx_o)
+
   `ASSERT_KNOWN(IntrCsCmdReqDoneKnownO_A, intr_cs_cmd_req_done_o)
   `ASSERT_KNOWN(IntrCsEntropyReqKnownO_A, intr_cs_entropy_req_o)
   `ASSERT_KNOWN(IntrCsHwInstExcKnownO_A, intr_cs_hw_inst_exc_o)
-  `ASSERT_KNOWN(IntrCsFifoErrKnownO_A, intr_cs_fifo_err_o)
+  `ASSERT_KNOWN(IntrCsFatalErrKnownO_A, intr_cs_fatal_err_o)
 
 
 

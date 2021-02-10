@@ -6107,7 +6107,7 @@
         {
           name: SBoxImpl
           type: aes_pkg::sbox_impl_e
-          default: aes_pkg::SBoxImplCanright
+          default: aes_pkg::SBoxImplLut
           desc: Selection of the S-Box implementation. See aes_pkg.sv.
           local: "false"
           expose: "true"
@@ -6155,7 +6155,7 @@
           type: interrupt
         }
         {
-          name: cs_fifo_err
+          name: cs_fatal_err
           width: 1
           bits: "3"
           bitinfo:
@@ -6167,7 +6167,22 @@
           type: interrupt
         }
       ]
-      alert_list: []
+      alert_list:
+      [
+        {
+          name: fatal_alert
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: alert
+          async: 1
+        }
+      ]
       wakeup_list: []
       reset_request_list: []
       scan: "false"
@@ -10805,7 +10820,7 @@
       module_name: csrng
     }
     {
-      name: csrng_cs_fifo_err
+      name: csrng_cs_fatal_err
       width: 1
       bits: "3"
       bitinfo:
@@ -10918,6 +10933,7 @@
     otp_ctrl
     lc_ctrl
     entropy_src
+    csrng
     sram_ctrl_main
     sram_ctrl_ret_aon
     flash_ctrl
@@ -11175,6 +11191,20 @@
       type: alert
       async: 1
       module_name: entropy_src
+    }
+    {
+      name: csrng_fatal_alert
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: alert
+      async: 1
+      module_name: csrng
     }
     {
       name: sram_ctrl_main_fatal_parity_error
