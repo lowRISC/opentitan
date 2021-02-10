@@ -116,7 +116,8 @@
                      "-64bit",
                      "-licqueue",
                      "-load {cov_merge_db_dir}",
-                     "{xcelium_cov_refine_files}"]
+                     "-init {xcelium_common_excl_file}",
+                     " {eval_cmd} echo {xcelium_cov_refine_files} | sed -E 's/(\\S+)/-load_refinement \\1/g' "]
 
   // pass and fail patterns
   build_fail_patterns: ["\\*E.*$"]
@@ -134,8 +135,8 @@
                    "-coverage {cov_metrics}",
                    // Limit the scope of coverage collection to the DUT.
                    "-covdut {dut}",
-                   // Set the coverage configuration file.
-                   "{xcelium_cov_cfg_file}"]
+                   // Set the coverage configuration file
+                   "-covfile {xcelium_cov_cfg_file}"]
       run_opts:   [// Coverage database output location.
                    "-covworkdir {cov_work_dir}",
                    // Set the scope to the build mode name.

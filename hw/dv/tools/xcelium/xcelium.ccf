@@ -1,0 +1,18 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// only collect toggle coverage on dut
+deselect_coverage -toggle -instance tb.dut.*...
+
+// only collect toggle coverage on ports
+set_toggle_portsonly
+
+// enable toggle scoring of structs and multidim arrays + MDA structs
+set_toggle_scoring -sv_mda -sv_mda_of_struct
+
+// filter glitches
+set_toggle_strobe 0ps
+
+//  Filter unreachable/statically constant blocks
+set_com -log
