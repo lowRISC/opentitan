@@ -65,6 +65,15 @@ module tb;
   uart_if uart_if();
   jtag_if jtag_if();
 
+  // TODO: Replace with correct interfaces once
+  // pinmux/padring and pinout have been updated.
+  wire [28:0] tie_off;
+  wire [5:0] spi_host_tie_off;
+  wire [1:0] spi_dev_tie_off;
+  assign (weak0, weak1) tie_off = '0;
+  assign (weak0, weak1) spi_host_tie_off = '0;
+  assign (weak0, weak1) spi_dev_tie_off = '0;
+
   // backdoors
   bind `ROM_HIER mem_bkdr_if rom_mem_bkdr_if();
   bind `RAM_MAIN_HIER mem_bkdr_if ram_mem_bkdr_if();
@@ -77,48 +86,77 @@ module tb;
 
   top_earlgrey_asic dut (
     // Clock and Reset
-    .IO_CLK           (clk),
-    .IO_RST_N         (rst_n),
-    .IO_CLK_USB_48MHZ (usb_clk),
-
-    // JTAG / SPI interface
-    .IO_DPS0          (io_dps[0]),
-    .IO_DPS1          (io_dps[1]),
-    .IO_DPS2          (io_dps[2]),
-    .IO_DPS3          (io_dps[3]),
-    .IO_DPS4          (io_dps[4]),
-    .IO_DPS5          (io_dps[5]),
-    .IO_DPS6          (io_dps[6]),
-    .IO_DPS7          (io_dps[7]),
-
-    // UART interface
-    .IO_URX           (uart_rx),
-    .IO_UTX           (uart_tx),
-
-    // USB interface
-    .IO_USB_DP0       (usb_dp0),
-    .IO_USB_DN0       (usb_dn0),
-    .IO_USB_SENSE0    (usb_sense0),
-    .IO_USB_DNPULLUP0 (usb_dppullup0),
-    .IO_USB_DPPULLUP0 (usb_dnpullup0),
-
-    // GPIO x 16 interface
-    .IO_GP0           (gpio_pins[0 ]),
-    .IO_GP1           (gpio_pins[1 ]),
-    .IO_GP2           (gpio_pins[2 ]),
-    .IO_GP3           (gpio_pins[3 ]),
-    .IO_GP4           (gpio_pins[4 ]),
-    .IO_GP5           (gpio_pins[5 ]),
-    .IO_GP6           (gpio_pins[6 ]),
-    .IO_GP7           (gpio_pins[7 ]),
-    .IO_GP8           (gpio_pins[8 ]),
-    .IO_GP9           (gpio_pins[9 ]),
-    .IO_GP10          (gpio_pins[10]),
-    .IO_GP11          (gpio_pins[11]),
-    .IO_GP12          (gpio_pins[12]),
-    .IO_GP13          (gpio_pins[13]),
-    .IO_GP14          (gpio_pins[14]),
-    .IO_GP15          (gpio_pins[15])
+    .IO_CLK(clk),
+    .IO_RST_N(rst_n),
+    // Bank A (VIOA domain)
+    .SPI_HOST_D0(spi_host_tie_off[0]),
+    .SPI_HOST_D1(spi_host_tie_off[1]),
+    .SPI_HOST_D2(spi_host_tie_off[2]),
+    .SPI_HOST_D3(spi_host_tie_off[3]),
+    .SPI_HOST_CLK(spi_host_tie_off[4]),
+    .SPI_HOST_CS_L(spi_host_tie_off[5]),
+    .SPI_DEV_D0(io_dps[1]),
+    .SPI_DEV_D1(io_dps[2]),
+    .SPI_DEV_D2(spi_dev_tie_off[0]),
+    .SPI_DEV_D3(spi_dev_tie_off[1]),
+    .SPI_DEV_CLK(io_dps[0]),
+    .SPI_DEV_CS_L(io_dps[3]),
+    .IOA0(gpio_pins[0]),   // MIO 0
+    .IOA1(gpio_pins[1]),   // MIO 1
+    .IOA2(gpio_pins[2]),   // MIO 2
+    .IOA3(gpio_pins[3]),   // MIO 3
+    .IOA4(gpio_pins[4]),   // MIO 4
+    .IOA5(gpio_pins[5]),   // MIO 5
+    // Bank B (VIOB domain)
+    .IOB0(gpio_pins[6]),   // MIO 6
+    .IOB1(gpio_pins[7]),   // MIO 7
+    .IOB2(gpio_pins[8]),   // MIO 8
+    .IOB3(gpio_pins[9]),   // MIO 9
+    .IOB4(gpio_pins[10]),  // MIO 10
+    .IOB5(gpio_pins[11]),  // MIO 11
+    .IOB6(gpio_pins[12]),  // MIO 12
+    .IOB7(gpio_pins[13]),  // MIO 13
+    .IOB8(gpio_pins[14]),  // MIO 14
+    .IOB9(gpio_pins[15]),  // MIO 15
+    .IOB10(io_dps[6]),     // MIO 16
+    .IOB11(io_dps[7]),     // MIO 17
+    // Bank C (VCC domain)
+    .IOC0(io_dps[4]),      // MIO 18
+    .IOC1(io_dps[5]),      // MIO 19
+    .IOC2(tie_off[0]),     // MIO 20
+    .IOC3(tie_off[1]),     // MIO 21
+    .IOC4(tie_off[2]),     // MIO 22
+    .IOC5(tie_off[3]),     // MIO 23
+    .IOC6(tie_off[4]),     // MIO 24
+    .IOC7(tie_off[5]),     // MIO 25
+    .IOC8(tie_off[6]),     // MIO 26
+    .IOC9(tie_off[7]),     // MIO 27
+    .IOC10(tie_off[8]),    // MIO 28
+    .IOC11(tie_off[9]),    // MIO 29
+    // Bank R (VCC domain)
+    .IOR0(tie_off[10]),    // MIO 30
+    .IOR1(tie_off[11]),    // MIO 31
+    .IOR2(uart_rx),        // MIO 32
+    .IOR3(uart_tx),        // MIO 33
+    .IOR4(tie_off[12]),    // MIO 34
+    .IOR5(tie_off[13]),    // MIO 35
+    .IOR6(tie_off[14]),    // MIO 36
+    .IOR7(tie_off[15]),    // MIO 37
+    .IOR8(tie_off[16]),    // MIO 38
+    .IOR9(tie_off[17]),    // MIO 39
+    .IOR10(tie_off[18]),   // MIO 40
+    .IOR11(tie_off[19]),   // MIO 41
+    .IOR12(tie_off[20]),   // MIO 42
+    .IOR13(tie_off[21]),   // MIO 43
+    // DCD (VCC domain)
+    .CC1(tie_off[22]),
+    .CC2(tie_off[23]),
+    // USB (VCC domain)
+    .USB_P(usb_dp0),
+    .USB_N(usb_dn0),
+    // FLASH
+    .FLASH_TEST_MODE(tie_off[27:24]),
+    .FLASH_TEST_VOLT(tie_off[28])
   );
 
   // connect signals
@@ -143,6 +181,10 @@ module tb;
   assign spi_device_sdi_i   = spi_if.sdi;
   assign spi_if.sdo         = spi_device_sdo_o;
 
+  // TODO: Replace this weak pull to a known value with initialization
+  // in the agent/interface.
+  assign (weak0, weak1) uart_rx = 1'b1;
+  assign (weak0, weak1) uart_tx = 1'b1;
   assign uart_rx = uart_if.uart_rx;
   assign uart_if.uart_tx = uart_tx;
 
@@ -151,6 +193,8 @@ module tb;
   assign usb_dp0    = 1'b1;
   assign usb_dn0    = 1'b0;
   assign usb_sense0 = 1'b0;
+  assign usb_dppullup0 = 1'b0;
+  assign usb_dnpullup0 = 1'b0;
 
   `define SIM_SRAM_IF u_sim_sram.u_sim_sram_if
 

@@ -23,12 +23,13 @@ module padring import pinmux_reg_pkg::*; #(
 ) (
   // pad input
   input wire                  clk_pad_i,
-  input wire                  clk_usb_48mhz_pad_i,
   input wire                  rst_pad_ni,
   // to clocking/reset infrastructure
   output logic                clk_o,
-  output logic                clk_usb_48mhz_o,
   output logic                rst_no,
+  // pads for dcd.
+  input wire                  cc1_i,
+  input wire                  cc2_i,
   // pads
   inout wire   [NMioPads-1:0] mio_pad_io,
   inout wire   [NDioPads-1:0] dio_pad_io,
@@ -54,15 +55,14 @@ module padring import pinmux_reg_pkg::*; #(
   // has trouble defining/tracing the clock signal. on the other hand, a direct
   // connection of input wire to an inout pad causes lint problems
   // (even though oe is hardwired to 0).
-  wire clk, clk_usb_48mhz, rst_n;
+  wire clk, rst_n;
   assign clk           = clk_pad_i;
-  assign clk_usb_48mhz = clk_usb_48mhz_pad_i;
   assign rst_n         = rst_pad_ni;
 
   prim_pad_wrapper #(
     .AttrDw  ( AttrDw ),
     .Variant ( 1      ) // input-only
-  ) i_clk_pad (
+  ) u_clk_pad (
     .inout_io ( clk   ),
     .in_o     ( clk_o ),
     .ie_i     ( 1'b1  ),
@@ -75,10 +75,33 @@ module padring import pinmux_reg_pkg::*; #(
   prim_pad_wrapper #(
     .AttrDw  ( AttrDw ),
     .Variant ( 1      ) // input-only
-  ) i_clk_usb_48mhz_pad (
-    .inout_io ( clk_usb_48mhz   ),
-    .in_o     ( clk_usb_48mhz_o ),
+  ) u_rst_pad (
+    .inout_io ( rst_n  ),
+    .in_o     ( rst_no ),
     .ie_i     ( 1'b1  ),
+    .out_i    ( 1'b0  ),
+    .oe_i     ( 1'b0  ),
+    .attr_i   (   '0  ),
+    .warl_o   (       )
+  );
+
+  //////////////////
+  // Pads for DCD //
+  //////////////////
+
+  // Note that analog connections to these pads are made in physical design.
+  // None of the digital signals are used here.
+  wire cc1, cc2;
+  assign cc1 = cc1_i;
+  assign cc2 = cc2_i;
+
+  prim_pad_wrapper #(
+    .AttrDw  ( AttrDw ),
+    .Variant ( 1      ) // input-only
+  ) u_cc1_pad (
+    .inout_io ( cc1   ),
+    .in_o     (       ),
+    .ie_i     ( 1'b0  ), // input buffer disabled
     .out_i    ( 1'b0  ),
     .oe_i     ( 1'b0  ),
     .attr_i   (   '0  ),
@@ -88,10 +111,10 @@ module padring import pinmux_reg_pkg::*; #(
   prim_pad_wrapper #(
     .AttrDw  ( AttrDw ),
     .Variant ( 1      ) // input-only
-  ) i_rst_pad (
-    .inout_io ( rst_n  ),
-    .in_o     ( rst_no ),
-    .ie_i     ( 1'b1  ),
+  ) u_cc2_pad (
+    .inout_io ( cc2   ),
+    .in_o     (       ),
+    .ie_i     ( 1'b0  ), // input buffer disabled
     .out_i    ( 1'b0  ),
     .oe_i     ( 1'b0  ),
     .attr_i   (   '0  ),
@@ -107,7 +130,7 @@ module padring import pinmux_reg_pkg::*; #(
       prim_pad_wrapper #(
         .AttrDw  ( AttrDw           ),
         .Variant ( MioPadVariant[k] )
-      ) i_mio_pad (
+      ) u_mio_pad (
         .inout_io ( mio_pad_io[k] ),
         .in_o     ( mio_in_o[k]   ),
         .ie_i     ( 1'b1          ),
@@ -120,7 +143,7 @@ module padring import pinmux_reg_pkg::*; #(
       prim_pad_wrapper #(
         .AttrDw  ( AttrDw           ),
         .Variant ( MioPadVariant[k] )
-      ) i_mio_pad (
+      ) u_mio_pad (
         .inout_io ( mio_pad_io[k] ),
         .in_o     (               ),
         .ie_i     ( 1'b0          ),
@@ -135,7 +158,7 @@ module padring import pinmux_reg_pkg::*; #(
       prim_pad_wrapper #(
         .AttrDw  ( AttrDw           ),
         .Variant ( MioPadVariant[k] )
-      ) i_mio_pad (
+      ) u_mio_pad (
         .inout_io ( mio_pad_io[k] ),
         .in_o     ( mio_in_o[k]   ),
         .ie_i     ( 1'b1          ),
@@ -169,7 +192,7 @@ module padring import pinmux_reg_pkg::*; #(
       prim_pad_wrapper #(
         .AttrDw  ( AttrDw           ),
         .Variant ( DioPadVariant[k] )
-      ) i_dio_pad (
+      ) u_dio_pad (
         .inout_io ( dio_pad_io[k] ),
         .in_o     ( dio_in_o[k]   ),
         .ie_i     ( 1'b1          ),
@@ -182,7 +205,7 @@ module padring import pinmux_reg_pkg::*; #(
       prim_pad_wrapper #(
         .AttrDw  ( AttrDw           ),
         .Variant ( DioPadVariant[k] )
-      ) i_dio_pad (
+      ) u_dio_pad (
         .inout_io ( dio_pad_io[k] ),
         .in_o     (               ),
         .ie_i     ( 1'b0          ),
@@ -197,7 +220,7 @@ module padring import pinmux_reg_pkg::*; #(
       prim_pad_wrapper #(
         .AttrDw  ( AttrDw           ),
         .Variant ( DioPadVariant[k] )
-      ) i_dio_pad (
+      ) u_dio_pad (
         .inout_io ( dio_pad_io[k] ),
         .in_o     ( dio_in_o[k]   ),
         .ie_i     ( 1'b1          ),

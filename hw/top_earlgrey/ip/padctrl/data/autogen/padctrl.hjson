@@ -1,0 +1,134 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson -o hw/top_earlgrey/
+
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+# PADCTRL register template
+#
+# Parameter (given by Python tool)
+#  - n_dio_pads:      Number of dedicated IO pads
+#  - n_mio_pads:      Number of muxed IO pads
+#  - attr_dw:         Attribute datawidth
+{
+  name: "PADCTRL",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  regwidth: "32",
+  param_list: [
+    { name: "NDioPads",
+      desc: "Number of dedicated IO pads",
+      type: "int",
+      default: "21",
+      local: "true"
+    },
+    { name: "NMioPads",
+      desc: "Number of muxed IO pads",
+      type: "int",
+      default: "44",
+      local: "true"
+    },
+    { name: "AttrDw",
+      desc: "Pad attribute data width",
+      type: "int",
+      default: "10",
+      local: "true"
+    },
+  ],
+  registers: [
+    { name: "REGWEN",
+      desc: '''
+            Register write enable for all control registers.
+            ''',
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        {
+            bits:   "0",
+            name: "wen",
+            desc: ''' When true, all configuration registers can be modified.
+            When false, they become read-only. Defaults true, write zero to clear.
+            '''
+            resval: 1,
+        },
+      ]
+    },
+# dedicated pads
+    { multireg: { name:     "DIO_PADS",
+                  desc:     '''Dedicated pad attributes.
+                  This register has WARL behavior as some attributes may not be implemented.
+                  ''',
+                  count:    "NDioPads",
+                  swaccess: "rw",
+                  hwaccess: "hrw",
+                  hwext:    "true",
+                  hwqe:     "true",
+                  regwen:   "REGWEN",
+                  cname:    "ATTR",
+                  fields: [
+                    { bits: "9:0",
+                      name: "ATTR",
+                      desc: '''Bit   0: input/output inversion,
+                               Bit   1: Virtual open drain enable.
+                               Bit   2: Pull enable.
+                               Bit   3: Pull select (0: pull down, 1: pull up).
+                               Bit   4: Keeper enable.
+                               Bit   5: Schmitt trigger enable.
+                               Bit   6: Slew rate (0: slow, 1: fast).
+                               Bit 7/8: Drive strength (00: weakest, 11: strongest).
+                               Bit   9: Reserved.
+                      '''
+                      resval: 0
+                    }
+                  ],
+                  // these CSRs have WARL behavior and may not
+                  // read back the same value that was written to them.
+                  // further, they have hardware side effects since they drive the
+                  // pad attributes, and hence no random data should be written to them.
+                  tags: ["excl:CsrAllTests:CsrExclWrite"]
+                }
+    },
+# muxed pads
+    { multireg: { name:     "MIO_PADS",
+                  desc:     '''Muxed pad attributes.
+                  This register has WARL behavior as some attributes may not be implemented.
+                  ''',
+                  count:    "NMioPads",
+                  swaccess: "rw",
+                  hwaccess: "hrw",
+                  hwext:    "true",
+                  hwqe:     "true",
+                  regwen:   "REGWEN",
+                  cname:    "ATTR",
+                  fields: [
+                    { bits: "9:0",
+                      name: "ATTR",
+                      desc: '''Bit   0: input/output inversion,
+                               Bit   1: Virtual open drain enable.
+                               Bit   2: Pull enable.
+                               Bit   3: Pull select (0: pull down, 1: pull up).
+                               Bit   4: Keeper enable.
+                               Bit   5: Schmitt trigger enable.
+                               Bit   6: Slew rate (0: slow, 1: fast).
+                               Bit 7/8: Drive strength (00: weakest, 11: strongest).
+                               Bit   9: Reserved.
+                      '''
+                      resval: 0
+                    }
+                  ],
+                  // these CSRs have WARL behavior and may not
+                  // read back the same value that was written to them.
+                  // further, they have hardware side effects since they drive the
+                  // pad attributes, and hence no random data should be written to them.
+                  tags: ["excl:CsrAllTests:CsrExclWrite"]
+                }
+    },
+  ],
+}
+

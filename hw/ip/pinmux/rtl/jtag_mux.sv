@@ -18,7 +18,12 @@ module jtag_mux #(
   parameter int TrstIdx        = 0,
   parameter int SrstIdx        = 0,
   parameter int TdiIdx         = 0,
-  parameter int TdoIdx         = 0
+  parameter int TdoIdx         = 0,
+  // Indices for USB breakout (this is a Bronze workaround)
+  parameter int UsbDpPuIdx     = 0,
+  parameter int UsbDnPuIdx     = 0,
+  parameter int UsbDIdx        = 0,
+  parameter bit ConnectUSB     = 0
 ) (
   // To JTAG inside core
   output logic jtag_tck_o,
@@ -36,7 +41,12 @@ module jtag_mux #(
   // To padring side
   output logic [NumIOs-1:0] out_padring_o,
   output logic [NumIOs-1:0] oe_padring_o,
-  input  logic [NumIOs-1:0] in_padring_i
+  input  logic [NumIOs-1:0] in_padring_i,
+
+  // USB breakouts for bronze
+  output logic usb_pullup_p_en_o,
+  output logic usb_pullup_n_en_o,
+  input  logic usb_diff_input_i
 );
 
   // Note that we do not tie off the enable signal, since it
@@ -57,6 +67,11 @@ module jtag_mux #(
     if (k == TckIdx || k == TmsIdx || k == TrstIdx || k == SrstIdx || k == TdiIdx ||
         k == TdoIdx) begin : gen_jtag_signal
       assign in_core_o[k] = (jtag_en) ? TieOffValues[k] : in_padring_i[k];
+
+    end else if (k == UsbDIdx && ConnectUSB) begin : gen_usb_diff_in
+      logic unused_in;
+      assign unused_in = in_padring_i[k];
+      assign in_core_o[k] = usb_diff_input_i;
     end else begin : gen_other_inputs
       assign in_core_o[k] = in_padring_i[k];
     end
@@ -72,6 +87,10 @@ module jtag_mux #(
       assign oe_padring_o[k]  = oe_core_i[k];
     end
   end
+
+  // Other USB output taps for Bronze
+  assign usb_pullup_p_en_o = out_core_i[UsbDpPuIdx] & oe_core_i[UsbDpPuIdx];
+  assign usb_pullup_n_en_o = out_core_i[UsbDnPuIdx] & oe_core_i[UsbDnPuIdx];
 
   ////////////////
   // Assertions //

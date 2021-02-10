@@ -155,6 +155,7 @@
       { name: "sys_io_div4", gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "io_div4" }
       { name: "sys_aon",     gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "aon"     }
       { name: "spi_device",  gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "io_div2", sw: 1 }
+      { name: "spi_host0",   gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "io_div2", sw: 1 }
       { name: "usb",         gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "usb",     sw: 1 }
     ]
   }
@@ -229,6 +230,13 @@
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_device"},
       base_addr: "0x40050000",
+    },
+    { name: "spi_host0",
+      type: "spi_host",
+      clock_srcs: {clk_i: "io_div4"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "spi_host0"},
+      base_addr: "0x40060000",
     },
     { name: "rv_timer",
       type: "rv_timer",
@@ -674,18 +682,16 @@
 
     // Total number of Multiplexed I/O
     //  All the input/outputs from IPs are muxed in pinmux, and it has # of I/O
-    //  talks to the outside of top_englishbreakfast.
+    //  talks to the outside of top_earlgrey.
     //  This field will be replaced to the length of PAD if padctrl is defined
-    num_mio: 32
+    num_mio: 44
 
     // Dedicated IO modules. The in/out ports of the modules below are connected
     //  to TOP IO port through PADS directly. It bypasses PINMUX multiplexers
     dio_modules: [
-      { name: "spi_device", pad: ["ChB[0..3]"] },
-      //{ name: "uart.tx", pad: ["ChA[0]"]},
-      { name: "uart0", pad: ["ChA[0..1]"]},
-      // { name: "dio_module.signal_input", pad: ["ChA[31]"] }
-      { name: "usbdev", pad: ["ChC[0..8]"]},
+      { name: "spi_device", pad: ["ChC[0..5]"] },
+      { name: "spi_host0",  pad: ["ChB[0..5]"] },
+      { name: "usbdev",     pad: ["ChA[0..8]"] },
     ],
 
     // Multiplexing IO modules. The in/out ports of the modules below are
@@ -693,7 +699,7 @@
     //  between the modules and the IO PADS.
     //  If `mio_modules` aren't defined, it uses all remaining modules from
     //  module list except defined in `dio_modules`.
-    mio_modules: ["gpio"]
+    mio_modules: ["gpio", "uart0"]
 
     // If any module isn't defined in above two lists, its inputs will be tied
     //  to 0, and the output/OE signals will be floating (or connected to
