@@ -1489,7 +1489,7 @@ Finally, lifetimes may be bound by other lifetimes: `'a: 'b` means that the life
 
 #### Phantom Data
 
-The following struct definition is an error in Rust:
+The following is an error in Rust:
 ```rust
 error[E0392]: parameter `T` is never used
  --> src/lib.rs:2:12
@@ -1872,7 +1872,7 @@ Here are a few examples of particularly useful combinators:
 
 *   `iter.chain(iter2)`.
     Chains two iterators with the same `Item` type together.
-     The second iterator starts one `iter` produces `None`.
+     The second iterator starts when `iter` produces `None`.
 *   `iter.peekable()`.
     Converts the iterator into an iterator with a `.peek()` function, which returns a reference to the next value in the sequence (but does not advance it).
 *   `iter.enumerate()`.
@@ -2037,7 +2037,7 @@ It is required reading (mostly the first half) for embedded programming.
 It contains detailed examples of correct and incorrect Unsafe Rust usage, and guidance on when to invoke Unsafe Rust.
 
 Throughout this document, references to Unsafe Rust are made, mostly around calling unsafe functions and referencing raw pointers, which are roughly all that Unsafe Rust can do that normal Rust can't.
-With these powers comes responsibility: Unsafe Rust is not safe from Undefined Behavior, and cannot leave the machine in a state where actions allowed in normal, safe Rust would trigger Undefined Behavior.
+With these powers comes responsibility: Unsafe Rust is not safe from Undefined Behavior, and can leave the machine in a state where actions allowed in normal, safe Rust would trigger Undefined Behavior.
 In general, a few rules of thumb are useful:
 *   Every `unsafe fn` should declare, in documentation, what invariants it assumes that the caller will uphold, and what state it will leave the machine in.
     For example, `<[T]>::get_unchecked(n)` elides the bounds check for the indexing operation, and it is up to the caller to uphold it instead.
