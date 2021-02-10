@@ -25,6 +25,9 @@ interface keymgr_if(input clk, input rst_n);
   wire keymgr_pkg::kmac_data_req_t kmac_data_req;
   wire keymgr_pkg::kmac_data_rsp_t kmac_data_rsp;
 
+  // connect EDN for assertion check
+  wire edn_clk, edn_rst_n, edn_req, edn_ack;
+
   // keymgr_en is async, create a sync one for use in scb
   lc_ctrl_pkg::lc_tx_t keymgr_en_sync1, keymgr_en_sync2;
 
@@ -39,6 +42,18 @@ interface keymgr_if(input clk, input rst_n);
   keymgr_env_pkg::key_shares_t kmac_sideload_key_shares;
 
   keymgr_env_pkg::key_shares_t keys_a_array[string][string];
+
+  // set this flag when design enters init state, edn req will start periodically
+  bit start_edn_req;
+  // keymgr will request edn twice for 64 bit data each time, use this to indicate if it's first or
+  // second req. 0: wait for 1st req, 1: for 2nd
+  bit edn_req_cnt;
+  int edn_wait_cnt;
+  int edn_interval;
+  // synchronize req/ack from async domain
+  bit edn_req_sync;
+  bit edn_req_ack_sync;
+  bit edn_req_ack_sync_done;
 
   string msg_id = "keymgr_if";
 
@@ -67,6 +82,10 @@ interface keymgr_if(input clk, input rst_n);
     is_hmac_key_good = 0;
     is_aes_key_good  = 0;
     is_kmac_sideload_avail = 0;
+
+    // edn related
+    edn_interval  = 'h100;
+    start_edn_req = 0;
   endtask
 
   // randomize otp, lc, flash input data
@@ -241,6 +260,65 @@ interface keymgr_if(input clk, input rst_n);
 
   //`KM_ASSERT(AesKeyStable, $stable(aes_key_exp) |=> $stable(aes_key))
   //`KM_ASSERT(AesKeyUpdate, !$stable(aes_key_exp) |=> aes_key == aes_key_exp)
+
+  // for EDN assertion
+  // sync req/ack to core clk domain
+  always @(posedge edn_clk or negedge edn_rst_n) begin
+    if (!edn_rst_n) begin
+      edn_req_sync <= 0;
+      edn_req_ack_sync <= 0;
+    end else if (edn_req_ack_sync_done) begin
+      edn_req_sync <= 0;
+      edn_req_ack_sync <= 0;
+    end else if (edn_req && !edn_req_sync) begin
+      edn_req_sync <= 1;
+    end else if (edn_req & edn_ack) begin
+      edn_req_ack_sync <= 1;
+    end
+  end
+
+  // use start_edn_req to skip checking 1st EDN req as it's triggered by advance cmd
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      edn_req_ack_sync_done <= 0;
+      start_edn_req <= 0;
+    end else if (edn_req_ack_sync && !edn_req_ack_sync_done) begin
+      edn_req_ack_sync_done <= 1;
+      start_edn_req <= 1;
+    end else if (!edn_req_ack_sync) begin
+      edn_req_ack_sync_done <= 0;
+    end
+  end
+
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      edn_wait_cnt <= 0;
+    end else if (!edn_req_sync) begin
+      edn_wait_cnt <= edn_wait_cnt + 1;
+    end else begin
+      edn_wait_cnt <= 0;
+    end
+  end
+
+  initial begin
+    forever begin
+      wait(rst_n === 1);
+      edn_req_cnt <= 0;
+      `DV_SPINWAIT_EXIT(forever begin
+                          @(negedge edn_req_ack_sync_done);
+                          edn_req_cnt <= edn_req_cnt + 1;
+                        end,
+                        wait(!rst_n), , msg_id)
+    end
+  end
+
+  // consider async handshaking and a few cycles to start the req. allow no more than 20 tolerance
+  // error on the cnt
+  `ASSERT(CheckEdn1stReq, $rose(edn_req_sync) && edn_req_cnt == 0 && start_edn_req |->
+          edn_wait_cnt - edn_interval < 20, clk, !rst_n)
+
+  `ASSERT(CheckEdn2ndReq, $fell(edn_req_sync) && edn_req_cnt == 1 |-> edn_wait_cnt < 20,
+          clk, !rst_n)
 
   `undef KM_ASSERT
 endinterface

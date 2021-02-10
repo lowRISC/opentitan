@@ -10,11 +10,11 @@ class keymgr_stress_all_vseq extends keymgr_base_vseq;
 
   `uvm_object_new
 
-  // keymgr_init is done in each sub-vseq
+  // dut_init/keymgr_init is done in each sub-vseq
   // some vseq like keymgr_common_vseq should not invoke keymgr_init.
-  // Let sub-vseq do keymgr_init and don't do it in stress_all
+  // Let sub-vseq do dut_init/keymgr_init and don't do it in stress_all
   virtual task pre_start();
-    do_keymgr_init = 1'b0;
+    do_dut_init = 1'b0;
     super.pre_start();
   endtask
 
@@ -40,8 +40,8 @@ class keymgr_stress_all_vseq extends keymgr_base_vseq;
       // at the end of each vseq, design has enterred StDisabled, need to reset to recover
       // if upper seq disables do_apply_reset for this seq, then can't issue reset
       // as upper seq may drive reset
-      if (do_apply_reset && i > 1) keymgr_vseq.do_apply_reset = 1;
-      else                         keymgr_vseq.do_apply_reset = 0;
+      if (do_apply_reset) keymgr_vseq.do_apply_reset = 1;
+      else                keymgr_vseq.do_apply_reset = 0;
 
       keymgr_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(keymgr_vseq)

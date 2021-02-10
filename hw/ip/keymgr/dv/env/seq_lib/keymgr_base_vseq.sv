@@ -63,6 +63,11 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
     `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
     csr_update(.csr(ral.intr_enable));
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.reseed_interval.val,
+                                   value dist {[50:100]   :/ 1,
+                                               [101:1000] :/ 1,
+                                               [1001:$]   :/ 1};)
+    csr_update(.csr(ral.reseed_interval));
   endtask : keymgr_init
 
   // advance to next state and generate output, clear output

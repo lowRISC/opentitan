@@ -314,6 +314,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   virtual function void reset(string kind = "HARD");
     tl_a_chan_fifo.flush();
     tl_d_chan_fifo.flush();
+    if (cfg.has_edn) edn_fifo.flush();
     foreach(cfg.list_of_alerts[i]) begin
       alert_fifos[cfg.list_of_alerts[i]].flush();
       exp_alert[cfg.list_of_alerts[i]]             = 0;
