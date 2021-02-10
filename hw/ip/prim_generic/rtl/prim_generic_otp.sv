@@ -155,7 +155,7 @@ module prim_generic_otp
     state_d = state_q;
     ready_o = 1'b0;
     valid_d = 1'b0;
-    err_d   = NoError;
+    err_d   = err_q;
     req     = 1'b0;
     wren    = 1'b0;
     cnt_clr = 1'b0;
@@ -164,6 +164,7 @@ module prim_generic_otp
     unique case (state_q)
       // Wait here until we receive an initialization command.
       ResetSt: begin
+        err_d = NoError;
         ready_o = 1'b1;
         if (valid_i) begin
           if (cmd_i == Init) begin
@@ -179,10 +180,12 @@ module prim_generic_otp
       InitSt: begin
         state_d = IdleSt;
         valid_d = 1'b1;
+        err_d = NoError;
       end
       // In the idle state, we basically wait for read or write commands.
       IdleSt: begin
         ready_o = 1'b1;
+        err_d = NoError;
         if (valid_i) begin
           cnt_clr = 1'b1;
           err_d = NoError;
