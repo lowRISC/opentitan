@@ -57,9 +57,14 @@ module tlul_adapter_reg import tlul_pkg::*; #(
 
   assign we_o    = wr_req & ~err_internal;
   assign re_o    = rd_req & ~err_internal;
-  assign addr_o  = {tl_i.a_address[RegAw-1:2], 2'b00}; // generate always word-align
   assign wdata_o = tl_i.a_data;
   assign be_o    = tl_i.a_mask;
+
+  if (RegAw <= 2) begin : gen_only_one_reg
+    assign addr_o  = '0;
+  end else begin : gen_more_regs
+    assign addr_o  = {tl_i.a_address[RegAw-1:2], 2'b00}; // generate always word-align
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)    outstanding <= 1'b0;
