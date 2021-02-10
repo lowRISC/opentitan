@@ -192,6 +192,7 @@
 
   // Vars that need to exported to the env.
   exports: [
+    { FLEXLM_DIAGNOSTICS: 4 },
     { VCS_ARCH_OVERRIDE: "linux" },
     { VCS_LIC_EXPIRE_WARNING: 1 }
   ]
