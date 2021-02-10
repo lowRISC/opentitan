@@ -281,12 +281,3 @@ class Scheduler:
         for scheduler in self.schedulers.values():
             results.update(scheduler.run(timer, results))
         return results
-
-
-def run(items):
-    '''Run the given items.
-
-    Returns a map from item to status.
-
-    '''
-    return Scheduler(items).run()
