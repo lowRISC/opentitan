@@ -18,6 +18,7 @@ class Timer:
     def __init__(self):
         self.start = time.monotonic()
         self.next_print = self.start + Timer.print_interval
+        self.first_print = True
 
     def period(self):
         '''Return the float time in seconds since start'''
@@ -40,6 +41,11 @@ class Timer:
 
         '''
         now = time.monotonic()
+
+        if self.first_print:
+            self.first_print = False
+            return True
+
         if now < self.next_print:
             return False
 
