@@ -60,9 +60,11 @@ def gen_ral(block, dv_base_prefix, outdir):
                                       SwWrAccess=SwWrAccess)
     except:  # noqa: E722
         log.error(exceptions.text_error_template().render())
-        sys.exit(1)
+        return 1
 
     # Dump to output file
     dest_path = '{}/{}_ral_pkg.sv'.format(outdir, block.name)
     with open(dest_path, 'w') as fout:
         fout.write(to_write)
+
+    return 0

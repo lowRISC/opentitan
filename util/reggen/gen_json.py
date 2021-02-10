@@ -30,3 +30,5 @@ def gen_json(obj, outfile, format):
                    use_decimal=True)
     else:
         raise ValueError('Invalid JSON format ' + format)
+
+    return 0

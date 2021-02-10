@@ -78,7 +78,7 @@ pre_reg:
 
 $(ips_reg): pre_reg otp-mmap lc-state-enc
 	if [ -f ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson ]; then \
-		${PRJ_DIR}/util/regtool.py ${toolflags} -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
+		${PRJ_DIR}/util/regtool.py ${toolflags} -r ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson && \
 		${PRJ_DIR}/util/regtool.py -s -t ${REG_OUTPUT_DV_DIR} \
 		  ${PRJ_DIR}/hw/ip/$(subst _reg,,$@)/$(dir_hjson)/$(subst _reg,,$@).hjson; \
 	fi

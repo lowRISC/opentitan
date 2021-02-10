@@ -296,4 +296,4 @@ def gen_html(regs, outfile, toclist=None, toclevel=3):
                             toclist, toclevel)
             continue
 
-    return
+    return 0

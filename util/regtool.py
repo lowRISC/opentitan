@@ -192,14 +192,11 @@ def main():
             validate.validate(obj, params=params)
 
         if format == 'rtl':
-            gen_rtl.gen_rtl(obj, outdir)
-            return 0
+            return gen_rtl.gen_rtl(obj, outdir)
         if format == 'dv':
-            gen_dv.gen_dv(obj, args.dv_base_prefix, outdir)
-            return 0
+            return gen_dv.gen_dv(obj, args.dv_base_prefix, outdir)
         if format == 'fpv':
-            gen_fpv.gen_fpv(obj, outdir)
-            return 0
+            return gen_fpv.gen_fpv(obj, outdir)
         src_lic = None
         src_copy = ''
         found_spdx = None
@@ -224,16 +221,16 @@ def main():
 
         with outfile:
             if format == 'html':
-                gen_html.gen_html(obj, outfile)
+                return gen_html.gen_html(obj, outfile)
             elif format == 'cdh':
-                gen_cheader.gen_cdefines(obj, outfile, src_lic, src_copy)
+                return gen_cheader.gen_cdefines(obj, outfile, src_lic, src_copy)
             elif format == 'cth':
-                gen_ctheader.gen_cdefines(obj, outfile, src_lic, src_copy)
+                return gen_ctheader.gen_cdefines(obj, outfile, src_lic, src_copy)
             else:
-                gen_json.gen_json(obj, outfile, format)
+                return gen_json.gen_json(obj, outfile, format)
 
             outfile.write('\n')
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
