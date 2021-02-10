@@ -248,6 +248,21 @@ sw_lib_dif_aon_timer = declare_dependency(
   )
 )
 
+# Entropy Source
+sw_lib_dif_entropy = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_entropy',
+    sources: [
+      hw_ip_entropy_reg_h,
+      'dif_entropy.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_bitfield,
+    ],
+  )
+)
+
 # AES DIF library
 sw_lib_dif_aes = declare_dependency(
   link_with: static_library(
