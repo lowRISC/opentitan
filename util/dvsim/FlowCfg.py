@@ -13,7 +13,7 @@ import sys
 import hjson
 
 from CfgJson import set_target_attribute
-import Scheduler
+from Scheduler import Scheduler
 from utils import (VERBOSE, md_results_to_html,
                    subst_wildcards, find_and_substitute_wildcards)
 
@@ -197,12 +197,6 @@ class FlowCfg():
 
         return new_instance
 
-    def kill(self):
-        '''kill running processes and jobs gracefully
-        '''
-        for item in self.deploy:
-            item.kill()
-
     def _load_child_cfg(self, entry, mk_config):
         '''Load a child configuration for a primary cfg'''
         if type(entry) is str:
@@ -371,21 +365,18 @@ class FlowCfg():
         '''Public facing API for _create_deploy_objects().
         '''
         self.prune_selected_cfgs()
-        if self.is_primary_cfg:
-            self.deploy = []
-            for item in self.cfgs:
-                item._create_deploy_objects()
-                self.deploy.extend(item.deploy)
-        else:
-            self._create_deploy_objects()
+        for item in self.cfgs:
+            item._create_deploy_objects()
 
     def deploy_objects(self):
         '''Public facing API for deploying all available objects.
 
         Runs each job and returns a map from item to status.
-
         '''
-        return Scheduler.run(self.deploy)
+        deploy = []
+        for item in self.cfgs:
+            deploy.extend(item.deploy)
+        return Scheduler(deploy).run()
 
     def _gen_results(self, results):
         '''
