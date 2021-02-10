@@ -46,6 +46,19 @@ _VERILOG_KEYWORDS = {
 }
 
 
+def check_str_dict(obj: object, what: str) -> Dict[str, object]:
+    if not isinstance(obj, dict):
+        raise ValueError("{} is expected to be a dict, but was actually a {}."
+                         .format(what, type(obj).__name__))
+
+    for key in obj:
+        if not isinstance(key, str):
+            raise ValueError('{} has a key {!r}, which is not a string.'
+                             .format(what, key))
+
+    return cast(Dict[str, object], obj)
+
+
 def check_keys(obj: object,
                what: str,
                required_keys: List[str],
@@ -55,16 +68,14 @@ def check_keys(obj: object,
     If not, raise a ValueError; the what argument names the object.
 
     '''
-    if not isinstance(obj, dict):
-        raise ValueError("{} is expected to be a dict, but was actually a {}."
-                         .format(what, type(obj).__name__))
+    od = check_str_dict(obj, what)
 
     allowed = set()
     missing = []
     for key in required_keys:
         assert key not in allowed
         allowed.add(key)
-        if key not in obj:
+        if key not in od:
             missing.append(key)
 
     for key in optional_keys:
@@ -72,7 +83,7 @@ def check_keys(obj: object,
         allowed.add(key)
 
     unexpected = []
-    for key in obj:
+    for key in od:
         if key not in allowed:
             unexpected.append(key)
 
@@ -87,7 +98,7 @@ def check_keys(obj: object,
                                  ' ' if mstr and ustr else '',
                                  ustr))
 
-    return obj
+    return od
 
 
 def check_str(obj: object, what: str) -> str:
