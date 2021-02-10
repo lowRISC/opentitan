@@ -124,8 +124,8 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       // wait for kmac_done to be set
       wait_for_kmac_done();
 
-      // compare the output digest against C++ reference model
-      check_digest();
+      // Read the output digest, scb will check digest
+      read_digest_shares(output_len, cfg.enable_masking);
 
       // issue the Done cmd to tell KMAC to clear internal state
       issue_cmd(CmdDone);

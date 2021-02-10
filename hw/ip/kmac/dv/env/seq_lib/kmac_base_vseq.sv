@@ -97,7 +97,7 @@ class kmac_base_vseq extends cip_base_vseq #(
   // address used when writing to message fifo
   rand bit [TL_AW-1:0] fifo_addr;
 
-  // data mask used when writing to message fifo
+  // data mask used when accessing TLUL windows (msgfifo, state)
   rand bit [TL_DBW-1:0] data_mask;
 
   // array to store `right_encode(output_len)`
@@ -318,30 +318,6 @@ class kmac_base_vseq extends cip_base_vseq #(
     arr = {encoded_len, arr};
   endfunction
 
-  // helper function - takes in the key_len_e enum, and returns
-  // its size in bytes.
-  // e.g. if key is 128 bits long, this function will return 16.
-  function int get_key_size_bytes(kmac_pkg::key_len_e len);
-    case (len)
-      Key128: return 16;
-      Key192: return 24;
-      Key256: return 32;
-      Key384: return 48;
-      Key512: return 64;
-      default: `uvm_fatal(`gfn, $sformatf("%0s is an invalid key length!", len))
-    endcase
-  endfunction
-
-  // Returns the key size in 32-bit words.
-  function int get_key_size_words(kmac_pkg::key_len_e len);
-    return (get_key_size_bytes(len) / 4);
-  endfunction
-
-  // Returns the key size in 64-bit blocks.
-  function int get_key_size_blocks(kmac_pkg::key_len_e len);
-    return (get_key_size_words(len) / 2);
-  endfunction
-
   // This task will encode the function name and customization string,
   // and write them to the PREFIX csrs.
   virtual task set_prefix();
@@ -487,6 +463,7 @@ class kmac_base_vseq extends cip_base_vseq #(
                                                            soft $countones(data_mask) == TL_DBW;
                                                          }
                                                        })
+
       // Randomize the data word to write into the message fifo.
       // Valid byte positions will be overwritten with bytes from the actual message.
       `DV_CHECK_STD_RANDOMIZE_FATAL(data_word)
@@ -554,44 +531,40 @@ class kmac_base_vseq extends cip_base_vseq #(
   // This task reads a chunk of data from the STATE window and appends it to the `digest`
   // array byte by byte.
   // This task can read at most `keccak_block_size` bytes from the digest window.
+  // The `chunk_size` input is assumed to be greater than 0.
   //
   // The general idea is:
   // - Read 4-byte words from the STATE window
   // - Add each byte to a queue, decrementing the total output_len each time
-  virtual task read_digest_chunk(bit [TL_AW-1:0] state_addr,
-                                 int unsigned output_len,
-                                 ref bit [7:0] digest[]);
+  virtual task read_digest_chunk(bit [TL_AW-1:0] state_addr, int unsigned chunk_size);
     bit [TL_DW-1:0] digest_word;
-    bit [7:0] digest_byte;
 
-    while (output_len > 0) begin
+    while (chunk_size > 0) begin
+      // Get a random mask for the state window read, keeping it as TL_DBW'(1'b1) whenever possible
+      `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(data_mask, $countones(data_mask) <= chunk_size;
+                                                       data_mask[0] == 1;
+                                                       if (chunk_size < TL_DBW) {
+                                                         soft $countones(data_mask) == chunk_size;
+                                                       } else {
+                                                         soft $countones(data_mask) == TL_DBW;
+                                                       })
+      `uvm_info(`gfn, $sformatf("state read mask: 0b%0b", data_mask), UVM_HIGH)
+      if (state_endian) begin
+        data_mask = {<< bit {data_mask}};
+        `uvm_info(`gfn, $sformatf("swapped state read mask: 0b%0b", data_mask), UVM_HIGH)
+      end
+
       tl_access(.addr(ral.get_addr_from_offset(state_addr)),
                 .write(1'b0),
+                .mask(data_mask),
                 .data(digest_word));
 
       `uvm_info(`gfn, $sformatf("digest_word: 0x%0x", digest_word), UVM_HIGH)
 
-      // If endianness is swapped for the state digest, byte-swap each word that is read.
-      if (state_endian) begin
-        digest_word = {<< byte {digest_word}};
-        `uvm_info(`gfn, $sformatf("digest_word after endian swap: 0x%0x", digest_word), UVM_HIGH)
-      end
+      chunk_size -= $countones(data_mask);
 
-      for (int i = 0; i < TL_DW / 8; i++) begin
-        // safety check - if the output length has reached 0 due to being decremented,
-        // it indicates that we've finished reading the full digest and need to exit immediately.
-        if (output_len == 0) break;
-
-        digest_byte = digest_word[i*8 +: 8];
-
-        digest = {digest, digest_byte};
-
-        // decrement the output_len, as we've just popped off a byte
-        output_len = output_len - 1;
-      end
-
-      // Increment the address into the state window to read the next word
       state_addr = state_addr + 4;
+
     end
 
   endtask
@@ -603,10 +576,7 @@ class kmac_base_vseq extends cip_base_vseq #(
   //
   // Note: if masking is disabled we read the full 200 bytes from SHARE1,
   //       this is so we can check that it has been zeroed.
-  virtual task read_digest_shares(int unsigned full_output_len,
-                                  bit en_masking,
-                                  ref bit [7:0] share0[],
-                                  ref bit [7:0] share1[]);
+  virtual task read_digest_shares(int unsigned full_output_len, bit en_masking);
 
     int unsigned remaining_output_len = full_output_len;
 
@@ -615,8 +585,8 @@ class kmac_base_vseq extends cip_base_vseq #(
     while (remaining_output_len > 0) begin
       cur_chunk_size = (remaining_output_len <= keccak_block_size) ? remaining_output_len : keccak_block_size;
 
-      read_digest_chunk(KMAC_STATE_SHARE0_BASE, cur_chunk_size, share0);
-      read_digest_chunk(KMAC_STATE_SHARE1_BASE, en_masking ? cur_chunk_size : 200, share1);
+      read_digest_chunk(KMAC_STATE_SHARE0_BASE, cur_chunk_size);
+      read_digest_chunk(KMAC_STATE_SHARE1_BASE, en_masking ? cur_chunk_size : 200);
 
       `uvm_info(`gfn, $sformatf("read a %0d byte chunk of digest", cur_chunk_size), UVM_HIGH)
 
@@ -629,176 +599,6 @@ class kmac_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, $sformatf("remaining_output_len: %0d", remaining_output_len), UVM_HIGH)
     end
 
-  endtask
-
-  // This task reads the output digest and compares it to digest produced by reference model
-  virtual task check_digest();
-    // Note that all three of these will be the same length
-    bit [7:0] digest_share0[];
-    bit [7:0] digest_share1[];
-    bit [7:0] unmasked_digest[] = new[output_len];
-
-    // # of 32-bit entries in the key
-    int key_word_len = get_key_size_words(key_len);
-    // # of bytes in the key
-    int key_byte_len = get_key_size_bytes(key_len);
-
-    // if masking is enabled, need to XOR both key shares to get "actual" key
-    bit [31:0] unmasked_key[$];
-    // DPI model needs to take in a byte-stream for the key
-    bit [7:0] dpi_key_arr[];
-    // Intermediate array for streaming `unmasked_key` into `dpi_key_arr`
-    //bit [7:0] unmasked_key_bytes[] = new[get_key_size_bytes(key_len)];
-    bit [7:0] unmasked_key_bytes[];
-
-    // output digest from DPI model
-    bit [7:0] dpi_digest[] = new[output_len];
-
-    `uvm_info(`gfn, $sformatf("key_word_len: %0d", key_word_len), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("key_byte_len: %0d", key_byte_len), UVM_HIGH)
-
-    // Read the output digest values
-    read_digest_shares(output_len, cfg.enable_masking, digest_share0, digest_share1);
-
-    `uvm_info(`gfn, $sformatf("digest_share0: %0p", digest_share0), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("digest_share1: %0p", digest_share1), UVM_HIGH)
-
-    `uvm_info(`gfn, $sformatf("msg input to DPI: %0p", msg), UVM_HIGH)
-
-    ////////////////////////////////////////////////////
-    // Below logic should eventually go in scoreboard //
-    ////////////////////////////////////////////////////
-
-    // If masking is enabled, we need to XOR both shares of the digest and key
-    // to get the "actual" unmasked versions.
-    //
-    // If masking is disabled, share1 of the digest must be 0, and
-    // we will only care about share0 of the key.
-    if (cfg.enable_masking) begin
-      // XOR the digest
-      for (int i = 0; i < output_len; i++) begin
-        unmasked_digest[i] = digest_share0[i] ^ digest_share1[i];
-      end
-      // XOR the key
-      for (int i = 0; i < key_word_len; i++) begin
-        unmasked_key.push_back(key_share[0][i] ^ key_share[1][i]);
-      end
-    end else begin
-      // Check that share1 has been zeroed.
-      foreach (digest_share1[i]) begin
-        `DV_CHECK_EQ_FATAL(digest_share1[i], '0,
-          $sformatf("digest_share1[%0d] : 0x%0x is not 0!", i, digest_share1[i]))
-      end
-
-      // the unmasked digest is just share0
-      unmasked_digest = digest_share0;
-      // the "actual" key is just share0 of the key
-      for (int i = 0; i < key_word_len; i++) begin
-        unmasked_key.push_back(key_share[0][i]);
-      end
-    end
-
-    // Based on random settings, determine which DPI function to call
-    case (hash_mode)
-      sha3_pkg::Sha3: begin
-        case (strength)
-          sha3_pkg::L224: begin
-            digestpp_dpi_pkg::c_dpi_sha3_224(msg, msg.size(), dpi_digest);
-          end
-          sha3_pkg::L256: begin
-            digestpp_dpi_pkg::c_dpi_sha3_256(msg, msg.size(), dpi_digest);
-          end
-          sha3_pkg::L384: begin
-            digestpp_dpi_pkg::c_dpi_sha3_384(msg, msg.size(), dpi_digest);
-          end sha3_pkg::L512: begin
-            digestpp_dpi_pkg::c_dpi_sha3_512(msg, msg.size(), dpi_digest);
-          end
-          default: begin
-            `uvm_fatal(`gfn, $sformatf("strength[%0s] is not allowed for sha3!", strength.name()))
-          end
-        endcase
-      end
-      sha3_pkg::Shake: begin
-        case (strength)
-          sha3_pkg::L128: begin
-            digestpp_dpi_pkg::c_dpi_shake128(msg, msg.size(), output_len, dpi_digest);
-          end
-          sha3_pkg::L256: begin
-            digestpp_dpi_pkg::c_dpi_shake256(msg, msg.size(), output_len, dpi_digest);
-          end
-          default: begin
-            `uvm_fatal(`gfn, $sformatf("strength[%0s] is not allowed for shake!", strength.name()))
-          end
-        endcase
-      end
-      sha3_pkg::CShake: begin
-        `uvm_info(`gfn, $sformatf("fname_str: %0s", str_utils_pkg::bytes_to_str(fname_arr)), UVM_HIGH)
-        `uvm_info(`gfn, $sformatf("custom_str: %0s", str_utils_pkg::bytes_to_str(custom_str_arr)), UVM_HIGH)
-        if (kmac_en) begin
-          // Convert the key array into a byte array for the DPI model
-          unmasked_key_bytes = {<< 32 {unmasked_key}};
-          dpi_key_arr = {<< byte {unmasked_key_bytes}};
-          `uvm_info(`gfn, $sformatf("dpi_key_arr.size(): %0d", dpi_key_arr.size()), UVM_HIGH)
-          `uvm_info(`gfn, $sformatf("dpi_key_arr: %0p", dpi_key_arr), UVM_HIGH)
-          case (strength)
-            sha3_pkg::L128: begin
-              if (xof_en) begin
-                digestpp_dpi_pkg::c_dpi_kmac128_xof(msg, msg.size(),
-                                                    dpi_key_arr, dpi_key_arr.size(),
-                                                    str_utils_pkg::bytes_to_str(custom_str_arr),
-                                                    output_len, dpi_digest);
-              end else begin
-                digestpp_dpi_pkg::c_dpi_kmac128(msg, msg.size(),
-                                                dpi_key_arr, dpi_key_arr.size(),
-                                                str_utils_pkg::bytes_to_str(custom_str_arr),
-                                                output_len, dpi_digest);
-              end
-            end
-            sha3_pkg::L256: begin
-              if (xof_en) begin
-                digestpp_dpi_pkg::c_dpi_kmac256_xof(msg, msg.size(),
-                                                    dpi_key_arr, dpi_key_arr.size(),
-                                                    str_utils_pkg::bytes_to_str(custom_str_arr),
-                                                    output_len, dpi_digest);
-              end else begin
-                digestpp_dpi_pkg::c_dpi_kmac256(msg, msg.size(),
-                                                dpi_key_arr, dpi_key_arr.size(),
-                                                str_utils_pkg::bytes_to_str(custom_str_arr),
-                                                output_len, dpi_digest);
-              end
-            end
-            default: begin
-              `uvm_fatal(`gfn, $sformatf("strength[%0s] is not allowed for kmac!", strength.name()))
-            end
-          endcase
-        end else begin
-          case (strength)
-            sha3_pkg::L128: begin
-              digestpp_dpi_pkg::c_dpi_cshake128(msg, str_utils_pkg::bytes_to_str(fname_arr),
-                                                str_utils_pkg::bytes_to_str(custom_str_arr),
-                                                msg.size(), output_len, dpi_digest);
-            end
-            sha3_pkg::L256: begin
-              digestpp_dpi_pkg::c_dpi_cshake256(msg, str_utils_pkg::bytes_to_str(fname_arr),
-                                                str_utils_pkg::bytes_to_str(custom_str_arr),
-                                                msg.size(), output_len, dpi_digest);
-            end
-            default: begin
-              `uvm_fatal(`gfn, $sformatf("strength[%0s] is not allowed for cshake!", strength.name()))
-            end
-          endcase
-        end
-      end
-    endcase
-
-    `uvm_info(`gfn, $sformatf("unmasked_digest: %0p", unmasked_digest), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("dpi_digest: %0p", dpi_digest), UVM_HIGH)
-
-    // Compare outputs from DPI model and DUT
-    for (int i = 0; i < unmasked_digest.size(); i++) begin
-      `DV_CHECK_EQ_FATAL(unmasked_digest[i], dpi_digest[i],
-        $sformatf("Mismatch between unmasked_digest[%0d] and dpi_digest[%0d]", i, i))
-    end
   endtask
 
 endclass : kmac_base_vseq

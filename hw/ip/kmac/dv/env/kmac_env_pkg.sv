@@ -8,6 +8,7 @@ package kmac_env_pkg;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
+  import dv_base_reg_pkg::*;
   import tl_agent_pkg::*;
   import str_utils_pkg::*;
   import test_vectors_pkg::*;
@@ -29,6 +30,8 @@ package kmac_env_pkg;
   parameter int KMAC_NUM_SHARES = 2;
 
   parameter int KMAC_NUM_KEYS_PER_SHARE = 16;
+
+  parameter int KMAC_NUM_PREFIX_WORDS = 11;
 
   // share1 of the 1600-bit KMAC state memory
   parameter bit [TL_AW-1:0] KMAC_STATE_SHARE0_BASE = 32'h400;
@@ -58,17 +61,55 @@ package kmac_env_pkg;
   // types
 
   // interrupt types
-  typedef enum logic [1:0] {
-    KmacDone,
-    KmacFifoEmpty,
-    KmacErr,
-    KmacNumIntrs
+  typedef enum int {
+    KmacDone = 0,
+    KmacFifoEmpty = 1,
+    KmacErr = 2,
+    KmacNumIntrs = 3
   } kmac_intr_e;
+
+  // CFG csr bit positions
+  typedef enum int {
+    KmacEn = 0,
+    KmacMsgEndian = 8,
+    KmacStateEndian = 9,
+    KmacSideload = 12,
+    KmacFastEntropy = 19,
+    KmacEntropyReady = 24,
+    KmacErrProcessed = 25
+  } kmac_cfg_e;
+
+  // STATUS csr bit positions
+  typedef enum int {
+    KmacStatusSha3Idle = 0,
+    KmacStatusSha3Absorb = 1,
+    KmacStatusSha3Squeeze = 2,
+    KmacStatusFifoEmpty = 14,
+    KmacStatusFifoFull = 15
+  } kmac_status_e;
 
   typedef virtual pins_if#(1)       idle_vif;
   typedef virtual kmac_sideload_if  sideload_vif;
 
-  // functions
+  // Helper functions that returns the KMAC key size in bytes/words/blocks
+  function automatic int get_key_size_bytes(kmac_pkg::key_len_e len);
+    case (len)
+      Key128: return 16;
+      Key192: return 24;
+      Key256: return 32;
+      Key384: return 48;
+      Key512: return 64;
+      default: `uvm_fatal("kmac_env_pkg", $sformatf("%0s is an invalid key length", len.name()))
+    endcase
+  endfunction
+
+  function automatic int get_key_size_words(kmac_pkg::key_len_e len);
+    return (get_key_size_bytes(len) / 4);
+  endfunction
+
+  function automatic int get_key_size_blocks(kmac_pkg::key_len_e len);
+    return (get_key_size_words(len) / 2);
+  endfunction
 
   // package sources
   `include "kmac_env_cfg.sv"
