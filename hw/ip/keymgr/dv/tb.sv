@@ -34,6 +34,11 @@ module tb;
   // edn_clk, edn_rst_n and edn_if are defined and driven in below macro
   `DV_EDN_IF_CONNECT
 
+  assign keymgr_if.edn_clk   = edn_if.clk;
+  assign keymgr_if.edn_rst_n = edn_if.rst_n;
+  assign keymgr_if.edn_req   = edn_if.req;
+  assign keymgr_if.edn_ack   = edn_if.ack;
+
   // dut
   keymgr dut (
     .clk_i                (clk        ),

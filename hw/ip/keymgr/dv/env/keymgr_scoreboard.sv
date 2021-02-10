@@ -400,6 +400,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
                   current_internal_key = {cfg.keymgr_vif.otp_key.key_share1,
                                           cfg.keymgr_vif.otp_key.key_share0};
                   cfg.keymgr_vif.store_internal_key(current_internal_key, current_state);
+
+                  // expect no EDN request is issued. After this advance is done, will have 2 reqs
+                  `DV_CHECK_EQ(edn_fifo.is_empty(), 1)
                 end else begin // !OpAdvance
                   current_op_status = keymgr_pkg::OpDoneFail;
                   // No KDF issued, done interrupt/alert is triggered in next cycle
@@ -460,11 +463,18 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
               current_op_status = keymgr_pkg::OpDoneSuccess;
               current_state = get_next_state(current_state);
               void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+
+              // keymgr should request 2 EDN data during advancing from StReset
+              // function `used` returns the number of entries put into the FIFO
+              `DV_CHECK_EQ(edn_fifo.used(), 2)
             end
           end else begin
             `DV_CHECK_EQ(item.d_data, addr_phase_op_status)
           end
         end
+      end
+      "reseed_interval": begin
+        if (addr_phase_write) cfg.keymgr_vif.edn_interval = item.a_data;
       end
       default: begin
         if (!uvm_re_match("sw_share*", csr.get_name())) begin // sw_share
@@ -861,6 +871,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     is_kmac_rsp_err       = 0;
     is_kmac_invalid_data  = 0;
     is_sw_share_corrupted = 0;
+    req_fifo.flush();
+    rsp_fifo.flush();
     adv_data_a_array.delete();
     id_data_a_array.delete();
     sw_data_a_array.delete();
