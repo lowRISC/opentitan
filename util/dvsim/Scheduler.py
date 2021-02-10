@@ -223,7 +223,6 @@ class TargetScheduler:
         old_handler = signal(SIGINT, on_sigint)
 
         try:
-            first_time = True
             while True:
                 if stop_now.is_set():
                     # We've had an interrupt. Kill any jobs that are running,
@@ -234,9 +233,8 @@ class TargetScheduler:
                 hms = timer.hms()
                 changed = self._poll(hms)
                 self._dispatch(hms, old_results)
-                if self._check_if_done(timer, hms, changed or first_time):
+                if self._check_if_done(timer, hms, changed):
                     break
-                first_time = False
 
                 # This is essentially sleep(1) to wait a second between each
                 # polling loop. But we do it with a bounded wait on stop_now so
