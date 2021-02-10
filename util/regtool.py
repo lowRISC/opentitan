@@ -13,7 +13,7 @@ from pathlib import PurePath
 
 import hjson
 
-from reggen import (gen_cheader, gen_ctheader, gen_dv, gen_fpv, gen_html,
+from reggen import (gen_cheader, gen_dv, gen_fpv, gen_html,
                     gen_json, gen_rtl, gen_selfdoc, validate, version)
 
 DESC = """regtool, generate register info from Hjson source"""
@@ -47,10 +47,6 @@ def main():
                         '-D',
                         action='store_true',
                         help='Output C defines header')
-    parser.add_argument('--ctdefines',
-                        '-T',
-                        action='store_true',
-                        help='Output C defines header (Titan style)')
     parser.add_argument('--doc',
                         action='store_true',
                         help='Output source file documentation (gfm)')
@@ -122,8 +118,7 @@ def main():
     arg_to_format = [('j', ('json', None)), ('c', ('compact', None)),
                      ('d', ('html', None)), ('doc', ('doc', None)),
                      ('r', ('rtl', 'rtl')), ('s', ('dv', 'dv')),
-                     ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None)),
-                     ('ctdefines', ('cth', None))]
+                     ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None))]
     format = None
     dirspec = None
     for arg_name, spec in arg_to_format:
@@ -224,8 +219,6 @@ def main():
                 return gen_html.gen_html(obj, outfile)
             elif format == 'cdh':
                 return gen_cheader.gen_cdefines(obj, outfile, src_lic, src_copy)
-            elif format == 'cth':
-                return gen_ctheader.gen_cdefines(obj, outfile, src_lic, src_copy)
             else:
                 return gen_json.gen_json(obj, outfile, format)
 
