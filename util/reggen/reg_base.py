@@ -7,7 +7,7 @@ from typing import List
 from .field import Field
 
 
-class RegBlock:
+class RegBase:
     '''An abstract class inherited by Register and MultiRegister
 
     This represents a block of one or more registers with a base address.

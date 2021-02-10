@@ -8,7 +8,7 @@ from reggen import register
 from .field import Field
 from .lib import (check_keys, check_str, check_name,
                   check_bool, expand_parameter)
-from .reg_block import RegBlock
+from .reg_base import RegBase
 from .register import Register
 
 REQUIRED_FIELDS = {
@@ -42,7 +42,7 @@ OPTIONAL_FIELDS.update({
 })
 
 
-class MultiRegister(RegBlock):
+class MultiRegister(RegBase):
     def __init__(self,
                  offset: int,
                  addrsep: int,
