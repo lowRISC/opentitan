@@ -719,65 +719,6 @@ For example:
 # define UART_CTRL_RXBLVL_BREAK16        3
 ```
 
-### Alternate style headers
-
-The register generation tool will generate alternate style headers if it is invoked with the `-T` flag.
-The `-o <file.h>` flag may be used to specify the output file.
-As an example the tool can be invoked to generate the uart headers with:
-
-```console
-$ cd hw/ip/uart/doc
-$ ../../../../util/regtool.py -T -o ~/src/alt/uart.h uart.hjson
-```
-
-This format assumes that there is a base address `NAME`n`_BASE_ADDR` defined where n is an identifying number to allow for multiple instantiations of peripherals.
-It provides a definition `NAME_REG(n)` that provides the address of the register in instantiation n and also a definition `NAME_REG_OFFSET` that has the byte offset of the register from the base address.
-Fields have a define for the LSB bit offset, the access mask, the size in bits and the default value and may have defines giving the enumerated names and values.
-For example:
-
-
-```c
-// UART control register
-#define UART_CTRL(id)                            (UART ## id ## _BASE_ADDR  + 0x0)
-#define UART_CTRL_OFFSET                         0x0
-# define UART_CTRL_TX_LSB                        0x0
-# define UART_CTRL_TX_MASK                       0x1
-# define UART_CTRL_TX_SIZE                       0x1
-# define UART_CTRL_TX_DEFAULT                    0x0
-# define UART_CTRL_RX_LSB                        0x1
-# define UART_CTRL_RX_MASK                       0x1
-# define UART_CTRL_RX_SIZE                       0x1
-# define UART_CTRL_RX_DEFAULT                    0x0
-# define UART_CTRL_NF_LSB                        0x2
-# define UART_CTRL_NF_MASK                       0x1
-# define UART_CTRL_NF_SIZE                       0x1
-# define UART_CTRL_NF_DEFAULT                    0x0
-# define UART_CTRL_SLPBK_LSB                     0x4
-# define UART_CTRL_SLPBK_MASK                    0x1
-# define UART_CTRL_SLPBK_SIZE                    0x1
-# define UART_CTRL_SLPBK_DEFAULT                 0x0
-# define UART_CTRL_LLPBK_LSB                     0x5
-# define UART_CTRL_LLPBK_MASK                    0x1
-# define UART_CTRL_LLPBK_SIZE                    0x1
-# define UART_CTRL_LLPBK_DEFAULT                 0x0
-# define UART_CTRL_PARITY_EN_LSB                 0x6
-# define UART_CTRL_PARITY_EN_MASK                0x1
-# define UART_CTRL_PARITY_EN_SIZE                0x1
-# define UART_CTRL_PARITY_EN_DEFAULT             0x0
-# define UART_CTRL_PARITY_ODD_LSB                0x7
-# define UART_CTRL_PARITY_ODD_MASK               0x1
-# define UART_CTRL_PARITY_ODD_SIZE               0x1
-# define UART_CTRL_PARITY_ODD_DEFAULT            0x0
-# define UART_CTRL_RXBLVL_LSB                    0x8
-# define UART_CTRL_RXBLVL_MASK                   0x3
-# define UART_CTRL_RXBLVL_SIZE                   0x2
-# define UART_CTRL_RXBLVL_DEFAULT                0x0
-# define UART_CTRL_RXBLVL_BREAK2                 0x0
-# define UART_CTRL_RXBLVL_BREAK4                 0x1
-# define UART_CTRL_RXBLVL_BREAK8                 0x2
-# define UART_CTRL_RXBLVL_BREAK16                0x3
-```
-
 ## Generating documentation
 
 The register tool can be used standalone to generate HTML documentation of the registers.
