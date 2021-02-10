@@ -379,7 +379,7 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
 
     genout(outfile, '// End generated register defines for ' + component)
 
-    return
+    return 0
 
 
 def test_gen_define():
