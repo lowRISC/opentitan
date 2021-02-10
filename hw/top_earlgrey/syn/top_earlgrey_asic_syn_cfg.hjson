@@ -1,0 +1,30 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Top level dut name (sv module).
+  name: top_earlgrey_asic
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:systems:top_earlgrey_asic:0.1
+
+  import_cfgs: [// Project wide common synthesis config file
+                "{proj_root}/hw/syn/tools/dvsim/common_syn_cfg.hjson"]
+
+  // Overrides
+  overrides: [
+    {
+      name: design_level
+      value: "top"
+    }
+  ]
+
+  // Timing constraints for this module
+  sdc_file: "{proj_root}/hw/top_earlgrey/syn/asic.constraints.sdc"
+
+  // Technology specific timing constraints for this module
+  foundry_sdc_file: "{foundry_root}/top_earlgrey/syn/foundry.constraints.sdc"
+
+  // Configuration for result parser script
+  area_depth: 2
+ }

@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:systems:top_earlgrey_asic:0.1"
-description: "Earl Grey toplevel for DV simulations"
+description: "Earl Grey chip level"
 filesets:
   files_rtl:
     depend:
@@ -11,7 +11,6 @@ filesets:
       - lowrisc:systems:top_earlgrey_pkg
       - "!fileset_partner ? (lowrisc:systems:ast)"
       - "fileset_partner ? (partner:systems:ast)"
-      - lowrisc:ibex:ibex_tracer:0.1
     files:
       - rtl/top_earlgrey_asic.sv
     file_type: systemVerilogSource
