@@ -121,6 +121,12 @@ package otp_ctrl_env_pkg;
     OtpCreatorSwCfgErr  = 15'b000_0000_0000_0001
   } otp_status_e;
 
+  typedef enum bit [1:0] {
+    OtpNoEccErr,
+    OtpEccCorrErr,
+    OtpEccUncorrErr
+  } otp_ecc_err_e;
+
   typedef virtual mem_bkdr_if mem_bkdr_vif;
   typedef virtual otp_ctrl_if otp_ctrl_vif;
 

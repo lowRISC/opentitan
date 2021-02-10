@@ -81,6 +81,11 @@
     }
 
     {
+      name: otp_ctrl_macro_errs
+      uvm_test_seq: otp_ctrl_macro_errs_vseq
+    }
+
+    {
       name: otp_ctrl_parallel_key_req
       uvm_test_seq: otp_ctrl_parallel_key_req_vseq
     }

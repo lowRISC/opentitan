@@ -429,7 +429,13 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
                                 otp_a[otp_addr], otp_a[otp_addr+1]);
-                  predict_dai_idle_status_wo_err();
+                  if (cfg.ecc_err == OtpNoEccErr) begin
+                    predict_dai_idle_status_wo_err();
+                  end else if (cfg.ecc_err == OtpEccCorrErr) begin
+                    predict_status_err(.dai_err(1));
+                  end else begin
+                    // TODO: trigger alert and goes to terminal stage
+                  end
                 end
               end
               DaiWrite: begin
