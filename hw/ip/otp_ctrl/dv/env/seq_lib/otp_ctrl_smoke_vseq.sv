@@ -22,13 +22,12 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   rand bit                           check_regwen_val, check_trigger_regwen_val;
   rand bit [TL_DW-1:0]               check_timeout_val;
   rand bit [1:0]                     check_trigger_val;
+  rand bit [TL_DW-1:0]               ecc_err_mask;
 
   constraint no_access_err_c {access_locked_parts == 0;}
 
   // LC partition does not allow DAI access
-  constraint partition_index_c {
-    part_idx inside {[CreatorSwCfgIdx:Secret2Idx]};
-  }
+  constraint partition_index_c {part_idx inside {[CreatorSwCfgIdx:Secret2Idx]};}
 
   constraint dai_wr_legal_addr_c {
     if (part_idx == CreatorSwCfgIdx) dai_addr inside `PART_ADDR_RANGE(CreatorSwCfgIdx);
@@ -59,6 +58,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   constraint check_timeout_val_c {
     check_timeout_val inside {0, [100_000:'1]};
   }
+
+  constraint ecc_err_c {ecc_err_mask == 0;}
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
@@ -116,7 +117,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
         if ($urandom_range(0, 1)) begin
           // OTP read via DAI, check data in scb
-          dai_rd(dai_addr, rdata0, rdata1);
+          dai_rd(dai_addr, ecc_err_mask, rdata0, rdata1);
         end
 
         // if write sw partitions, check tlul window

@@ -82,12 +82,16 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
   endtask : dai_wr
 
-  // this task triggers an OTP readout sequence via the DAI interface
-  virtual task dai_rd(bit [TL_DW-1:0]        addr,
+  // This task triggers an OTP readout sequence via the DAI interface
+  // If ecc_err_mask is not 0, will backdoor write to OTP and trigger an ECC error
+  virtual task dai_rd(input  bit [TL_DW-1:0] addr,
+                      input  bit [TL_DW-1:0] ecc_err_mask,
                       output bit [TL_DW-1:0] rdata0,
                       output bit [TL_DW-1:0] rdata1);
-    bit [TL_DW-1:0] val;
+    bit [TL_DW-1:0] val, backdoor_rd_val;
     addr = randomize_dai_addr(addr);
+    backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err_mask);
+
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
     if ($urandom_range(0, 1) && cfg.zero_delays && is_valid_dai_op) begin
@@ -98,13 +102,17 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(ral.direct_access_rdata_0, rdata0);
     if (is_secret(addr) || is_digest(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
+
+    // If has ecc_err, backdoor write back original value
+    // TODO: remove this once we can detect ECC error from men_bkdr_if
+    if (cfg.ecc_err != OtpNoEccErr) cfg.mem_bkdr_vif.write32({addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
   endtask : dai_rd
 
   virtual task dai_rd_check(bit [TL_DW-1:0] addr,
                             bit [TL_DW-1:0] exp_data0,
                             bit [TL_DW-1:0] exp_data1 = 0);
     bit [TL_DW-1:0] rdata0, rdata1;
-    dai_rd(addr, rdata0, rdata1);
+    dai_rd(addr, 0, rdata0, rdata1);
     `DV_CHECK_EQ(rdata0, exp_data0, $sformatf("dai addr %0h rdata0 readout mismatch", addr))
     if (is_secret(addr) || is_digest(addr)) begin
       `DV_CHECK_EQ(rdata1, exp_data1, $sformatf("dai addr %0h rdata1 readout mismatch", addr))
@@ -168,6 +176,37 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.secret2_digest_0),        .value(val));
     csr_rd(.ptr(ral.secret2_digest_1),        .value(val));
   endtask
+
+  // This function backdoor inject error according to err_mask.
+  // For example, if err_mask is set to 'b01, bit 1 in OTP macro will be flipped.
+  // This function will output original backdoor read data for the given address.
+  // TODO: move it to mem_bkdr_if once #4794 landed
+  virtual function bit [TL_DW-1:0] backdoor_inject_ecc_err(bit [TL_DW-1:0] addr,
+                                                           bit [TL_DW-1:0] err_mask);
+    bit [TL_DW-1:0] val, backdoor_val;
+    addr = {addr[TL_DW-3:2], 2'b00};
+    if (err_mask == 0 || addr >= LifeCycleOffset) begin
+      cfg.ecc_err = OtpNoEccErr;
+      return 0;
+    end
+
+    // If every byte at most has one ECC error bit, it is a correctable error
+    // If any byte at more than one ECC error bit, it is a uncorrectable error
+    cfg.ecc_err = OtpEccCorrErr;
+    for (int i = 0; i < 4; i++) begin
+      if (!$onehot(err_mask[i*8+:8]) && err_mask[i*8+:8]) begin
+        cfg.ecc_err = OtpEccUncorrErr;
+        break;
+      end
+    end
+
+    // Backdoor read and write back with error bits
+    val = cfg.mem_bkdr_vif.read32(addr);
+    foreach (err_mask[i]) backdoor_val[i] = err_mask[i] ? ~val[i] : val[i];
+    cfg.mem_bkdr_vif.write32(addr, backdoor_val);
+
+    return val;
+  endfunction
 
   virtual task trigger_checks(bit [1:0] val, bit wait_done = 1);
     csr_wr(ral.check_trigger, val);
@@ -249,4 +288,5 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       randomize_dai_addr = {dai_addr[TL_DW-1:2], rand_addr};
     end
   endfunction
+
 endclass : otp_ctrl_base_vseq
