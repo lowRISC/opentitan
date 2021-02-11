@@ -271,5 +271,17 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                cov: false
              }
+             {
+               name: usbdev
+               fusesoc_core: lowrisc:dv:usbdev_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: false
+             }
+             {
+               name: usbuart
+               fusesoc_core: lowrisc:dv:usbuart_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: false
+             }
             ]
 }
