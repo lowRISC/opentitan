@@ -90,10 +90,14 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       set_prefix();
 
       if (kmac_en) begin
-        // randomly provide a valid sideloaded key
-        if (provide_sideload_key) begin
+        // provide a random sideloaded key
+        if (en_sideload || provide_sideload_key) begin
           `DV_CHECK_STD_RANDOMIZE_FATAL(sideload_share0)
           `DV_CHECK_STD_RANDOMIZE_FATAL(sideload_share1)
+
+          `uvm_info(`gfn, $sformatf("sideload_key_share0: 0x%0x", sideload_share0), UVM_HIGH)
+          `uvm_info(`gfn, $sformatf("sideload_key_share1: 0x%0x", sideload_share1), UVM_HIGH)
+
           cfg.sideload_vif.drive_sideload_key(1, sideload_share0, sideload_share1);
         end
         // write the SW key to the CSRs
@@ -132,6 +136,16 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       `uvm_info(`gfn, "done", UVM_HIGH)
 
       // TODO: randomly read out the digest after issuing Done command, expect both shares = 0
+
+      // Drop the sideloaded key if it was provided to the DUT.
+        //
+      // TODO - wait a few clks before doing this so scb can check the digest.
+      //        Remove this when the previous TODO(random read out digest) is implemented.
+      cfg.clk_rst_vif.wait_clks(5);
+      if (kmac_en && (en_sideload || provide_sideload_key)) begin
+        cfg.sideload_vif.drive_sideload_key(0);
+      end
+
     end
 
   endtask : body

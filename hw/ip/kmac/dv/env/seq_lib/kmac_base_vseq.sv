@@ -138,6 +138,10 @@ class kmac_base_vseq extends cip_base_vseq #(
     (hash_mode == sha3_pkg::Sha3) -> (strength != sha3_pkg::L128);
   }
 
+  constraint key_len_c {
+    (en_sideload) -> key_len == Key256;
+  }
+
   // Set the block size based on the random security strength.
   // This is only relevant for XOF functions (L128 or L256), but will be
   // set for all security strengths.
