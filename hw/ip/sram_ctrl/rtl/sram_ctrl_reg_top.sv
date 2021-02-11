@@ -81,6 +81,12 @@ module sram_ctrl_reg_top (
   logic status_scr_key_valid_re;
   logic status_scr_key_seed_valid_qs;
   logic status_scr_key_seed_valid_re;
+  logic exec_regwen_qs;
+  logic exec_regwen_wd;
+  logic exec_regwen_we;
+  logic [2:0] exec_qs;
+  logic [2:0] exec_wd;
+  logic exec_we;
   logic ctrl_regwen_qs;
   logic ctrl_regwen_wd;
   logic ctrl_regwen_we;
@@ -167,6 +173,60 @@ module sram_ctrl_reg_top (
   );
 
 
+  // R[exec_regwen]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W0C"),
+    .RESVAL  (1'h1)
+  ) u_exec_regwen (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (exec_regwen_we),
+    .wd     (exec_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (exec_regwen_qs)
+  );
+
+
+  // R[exec]: V(False)
+
+  prim_subreg #(
+    .DW      (3),
+    .SWACCESS("RW"),
+    .RESVAL  (3'h0)
+  ) u_exec (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (exec_we & exec_regwen_qs),
+    .wd     (exec_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exec.q ),
+
+    // to register interface (read)
+    .qs     (exec_qs)
+  );
+
+
   // R[ctrl_regwen]: V(False)
 
   prim_subreg #(
@@ -239,14 +299,16 @@ module sram_ctrl_reg_top (
 
 
 
-  logic [4:0] addr_hit;
+  logic [6:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == SRAM_CTRL_ALERT_TEST_OFFSET);
     addr_hit[1] = (reg_addr == SRAM_CTRL_STATUS_OFFSET);
-    addr_hit[2] = (reg_addr == SRAM_CTRL_CTRL_REGWEN_OFFSET);
-    addr_hit[3] = (reg_addr == SRAM_CTRL_CTRL_OFFSET);
-    addr_hit[4] = (reg_addr == SRAM_CTRL_ERROR_ADDRESS_OFFSET);
+    addr_hit[2] = (reg_addr == SRAM_CTRL_EXEC_REGWEN_OFFSET);
+    addr_hit[3] = (reg_addr == SRAM_CTRL_EXEC_OFFSET);
+    addr_hit[4] = (reg_addr == SRAM_CTRL_CTRL_REGWEN_OFFSET);
+    addr_hit[5] = (reg_addr == SRAM_CTRL_CTRL_OFFSET);
+    addr_hit[6] = (reg_addr == SRAM_CTRL_ERROR_ADDRESS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -259,6 +321,8 @@ module sram_ctrl_reg_top (
     if (addr_hit[2] && reg_we && (SRAM_CTRL_PERMIT[2] != (SRAM_CTRL_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[3] && reg_we && (SRAM_CTRL_PERMIT[3] != (SRAM_CTRL_PERMIT[3] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[4] && reg_we && (SRAM_CTRL_PERMIT[4] != (SRAM_CTRL_PERMIT[4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[5] && reg_we && (SRAM_CTRL_PERMIT[5] != (SRAM_CTRL_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[6] && reg_we && (SRAM_CTRL_PERMIT[6] != (SRAM_CTRL_PERMIT[6] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign alert_test_we = addr_hit[0] & reg_we & ~wr_err;
@@ -272,10 +336,16 @@ module sram_ctrl_reg_top (
 
   assign status_scr_key_seed_valid_re = addr_hit[1] && reg_re;
 
-  assign ctrl_regwen_we = addr_hit[2] & reg_we & ~wr_err;
+  assign exec_regwen_we = addr_hit[2] & reg_we & ~wr_err;
+  assign exec_regwen_wd = reg_wdata[0];
+
+  assign exec_we = addr_hit[3] & reg_we & ~wr_err;
+  assign exec_wd = reg_wdata[2:0];
+
+  assign ctrl_regwen_we = addr_hit[4] & reg_we & ~wr_err;
   assign ctrl_regwen_wd = reg_wdata[0];
 
-  assign ctrl_we = addr_hit[3] & reg_we & ~wr_err;
+  assign ctrl_we = addr_hit[5] & reg_we & ~wr_err;
   assign ctrl_wd = reg_wdata[0];
 
 
@@ -295,14 +365,22 @@ module sram_ctrl_reg_top (
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[0] = ctrl_regwen_qs;
+        reg_rdata_next[0] = exec_regwen_qs;
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[0] = '0;
+        reg_rdata_next[2:0] = exec_qs;
       end
 
       addr_hit[4]: begin
+        reg_rdata_next[0] = ctrl_regwen_qs;
+      end
+
+      addr_hit[5]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[6]: begin
         reg_rdata_next[31:0] = error_address_qs;
       end
 

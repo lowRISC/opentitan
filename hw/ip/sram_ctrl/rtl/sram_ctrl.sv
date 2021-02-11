@@ -13,9 +13,11 @@ module sram_ctrl
 #(
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn          = {NumAlerts{1'b1}},
+  parameter bit InstrExec                               = 1,
   // Random netlist constants
   parameter otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault
+
 ) (
   // SRAM Clock
   input                                              clk_i,
@@ -31,12 +33,17 @@ module sram_ctrl
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
   // Life-cycle escalation input (scraps the scrambling keys)
   input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                        lc_hw_debug_en_i,
+  // Otp configuration for sram execution
+  input  otp_ctrl_part_pkg::otp_hw_cfg_t             otp_hw_cfg_i,
   // Key request to OTP (running on clk_fixed)
   output otp_ctrl_pkg::sram_otp_key_req_t            sram_otp_key_o,
   input  otp_ctrl_pkg::sram_otp_key_rsp_t            sram_otp_key_i,
   // Interface with SRAM scrambling wrapper
   output sram_scr_req_t                              sram_scr_o,
-  input  sram_scr_rsp_t                              sram_scr_i
+  input  sram_scr_rsp_t                              sram_scr_i,
+  // Interface with corresponding tlul adapters
+  output tlul_pkg::tl_instr_en_e                     en_ifetch_o
 );
 
   // This peripheral only works up to a width of 64bits.
@@ -194,6 +201,35 @@ module sram_ctrl
                    nonce_d,
                    key_seed_valid_d}          )
   );
+
+  ////////////////////
+  // SRAM Execution //
+  ////////////////////
+
+  import tlul_pkg::tl_instr_en_e;
+
+  if (InstrExec) begin : gen_instr_ctrl
+    tl_instr_en_e lc_ifetch_en;
+    tl_instr_en_e reg_ifetch_en;
+    assign lc_ifetch_en = (lc_hw_debug_en_i == lc_ctrl_pkg::On) ? tlul_pkg::InstrEn :
+                                                                  tlul_pkg::InstrDis;
+    assign reg_ifetch_en = tl_instr_en_e'(reg2hw.exec.q);
+    assign en_ifetch_o = (otp_hw_cfg_i.data.en_sram_ifetch == EnSramIfetch) ? reg_ifetch_en :
+                                                                              lc_ifetch_en;
+  end else begin : gen_tieoff
+    assign en_ifetch_o = tlul_pkg::InstrDis;
+  end
+
+  // tie off unused signal
+  if (!InstrExec) begin : gen_tieoff_unused
+    lc_ctrl_pkg::lc_tx_t unused_lc;
+    tl_instr_en_e unused_reg_en;
+    assign unused_lc = lc_hw_debug_en_i;
+    assign unused_reg_en = tl_instr_en_e'(reg2hw.exec.q);
+  end
+
+  logic unused_otp_bits;
+  assign unused_otp_bits = ^otp_hw_cfg_i;
 
   ////////////////
   // Assertions //

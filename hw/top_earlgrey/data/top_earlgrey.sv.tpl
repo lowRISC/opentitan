@@ -311,6 +311,7 @@ module top_${top["name"]} #(
   ) u_dm_top (
     .clk_i         (${cpu_clk}),
     .rst_ni        (${dm_rst}[rstmgr_pkg::Domain0Sel]),
+    .hw_debug_en_i (lc_ctrl_lc_hw_debug_en),
     .testmode_i    (1'b0),
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
@@ -371,7 +372,7 @@ module top_${top["name"]} #(
     % endfor
     .tl_i        (${m["name"]}_tl_req),
     .tl_o        (${m["name"]}_tl_rsp),
-    .en_ifetch_i (1'b1),
+    .en_ifetch_i (${m["inter_signal_list"][2]["top_signame"]}),
     .req_o       (${m["name"]}_req),
     .gnt_i       (${m["name"]}_gnt),
     .we_o        (${m["name"]}_we),
@@ -444,7 +445,7 @@ module top_${top["name"]} #(
 
     .tl_i        (${m["name"]}_tl_req),
     .tl_o        (${m["name"]}_tl_rsp),
-    .en_ifetch_i (1'b1),
+    .en_ifetch_i (tlul_pkg::InstrEn),
     .req_o       (${m["name"]}_req),
     .gnt_i       (1'b1), // Always grant as only one requester exists
     .we_o        (),
@@ -500,7 +501,7 @@ module top_${top["name"]} #(
 
     .tl_i        (${m["name"]}_tl_req),
     .tl_o        (${m["name"]}_tl_rsp),
-    .en_ifetch_i (1'b1), // tie this to secure boot somehow
+    .en_ifetch_i (tlul_pkg::InstrEn), // tie this to secure boot somehow
     .req_o       (flash_host_req),
     .gnt_i       (flash_host_req_rdy),
     .we_o        (),

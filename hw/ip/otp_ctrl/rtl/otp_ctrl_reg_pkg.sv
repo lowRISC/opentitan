@@ -31,6 +31,8 @@ package otp_ctrl_reg_pkg;
   parameter int HwCfgSize = 240;
   parameter int DeviceIdOffset = 1536;
   parameter int DeviceIdSize = 32;
+  parameter int EnSramIfetchOffset = 1568;
+  parameter int EnSramIfetchSize = 1;
   parameter int HwCfgDigestOffset = 1768;
   parameter int HwCfgDigestSize = 8;
   parameter int Secret0Offset = 1776;

@@ -429,17 +429,18 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   ) u_to_prog_fifo (
     .clk_i,
     .rst_ni,
-    .tl_i       (tl_win_h2d[0]),
-    .tl_o       (tl_win_d2h[0]),
-    .req_o      (sw_wvalid),
-    .gnt_i      (sw_wready),
-    .we_o       (sw_wen),
-    .addr_o     (),
-    .wmask_o    (),
-    .wdata_o    (sw_wdata),
-    .rdata_i    (BusWidth'(0)),
-    .rvalid_i   (1'b0),
-    .rerror_i   (2'b0)
+    .tl_i        (tl_win_h2d[0]),
+    .tl_o        (tl_win_d2h[0]),
+    .en_ifetch_i (tlul_pkg::InstrDis),
+    .req_o       (sw_wvalid),
+    .gnt_i       (sw_wready),
+    .we_o        (sw_wen),
+    .addr_o      (),
+    .wmask_o     (),
+    .wdata_o     (sw_wdata),
+    .rdata_i     (BusWidth'(0)),
+    .rvalid_i    (1'b0),
+    .rerror_i    (2'b0)
   );
 
   prim_fifo_sync #(
@@ -511,17 +512,18 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   ) u_to_rd_fifo (
     .clk_i,
     .rst_ni,
-    .tl_i       (tl_win_h2d[1]),
-    .tl_o       (tl_win_d2h[1]),
-    .req_o      (rd_fifo_ren),
-    .gnt_i      (rd_fifo_rvalid),
-    .we_o       (),
-    .addr_o     (),
-    .wmask_o    (),
-    .wdata_o    (),
-    .rdata_i    (rd_fifo_rdata),
-    .rvalid_i   (adapter_rvalid),
-    .rerror_i   (2'b0)
+    .tl_i        (tl_win_h2d[1]),
+    .tl_o        (tl_win_d2h[1]),
+    .en_ifetch_i (tlul_pkg::InstrDis),
+    .req_o       (rd_fifo_ren),
+    .gnt_i       (rd_fifo_rvalid),
+    .we_o        (),
+    .addr_o      (),
+    .wmask_o     (),
+    .wdata_o     (),
+    .rdata_i     (rd_fifo_rdata),
+    .rvalid_i    (adapter_rvalid),
+    .rerror_i    (2'b0)
   );
 
   prim_fifo_sync #(

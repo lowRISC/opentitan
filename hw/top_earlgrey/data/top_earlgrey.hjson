@@ -531,8 +531,9 @@
       reset_connections: {rst_ni: "sys"},
       type: "ram_1p_scr",
       base_addr: "0x10000000",
-      size: "0x20000"
+      size: "0x20000",
       byte_write: "true",
+      exec: "1",
       inter_signal_list: [
         { struct: "tl"
           package: "tlul_pkg"
@@ -546,7 +547,13 @@
           type:    "req_rsp",
           name:    "sram_scr",
           act:     "rsp",
-        }
+        },
+        { struct:  "tl_instr_en",
+          package: "tlul_pkg"
+          type:    "uni",
+          name:    "en_ifetch",
+          act:     "rcv",
+        },
       ]
     },
     { name: "ram_ret_aon",
@@ -558,6 +565,7 @@
       base_addr: "0x40600000",
       size: "0x1000",
       byte_write: "true",
+      exec: "0",
       inter_signal_list: [
         { struct: "tl"
           package: "tlul_pkg"
@@ -571,7 +579,13 @@
           type:    "req_rsp",
           name:    "sram_scr",
           act:     "rsp",
-        }
+        },
+        { struct:  "tl_instr_en",
+          package: "tlul_pkg"
+          type:    "uni",
+          name:    "en_ifetch",
+          act:     "rcv",
+        },
       ]
     },
     { name: "eflash",
@@ -683,6 +697,8 @@
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'sram_ctrl_main.sram_scr' : ['ram_main.sram_scr'],
       'sram_ctrl_ret_aon.sram_scr' : ['ram_ret_aon.sram_scr'],
+      'sram_ctrl_main.en_ifetch' : ['ram_main.en_ifetch']
+      'sram_ctrl_ret_aon.en_ifetch' : ['ram_ret_aon.en_ifetch']
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
                                    'sram_ctrl_ret_aon.sram_otp_key']
       'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
@@ -721,7 +737,8 @@
       'lc_ctrl.lc_otp_token'   : ['otp_ctrl.lc_otp_token'],
 
       // HW_CFG broadcast
-      'otp_ctrl.otp_hw_cfg'    : ['lc_ctrl.otp_hw_cfg', 'keymgr.otp_hw_cfg'],
+      'otp_ctrl.otp_hw_cfg'    : ['lc_ctrl.otp_hw_cfg', 'keymgr.otp_hw_cfg',
+                                  'sram_ctrl_main.otp_hw_cfg', 'sram_ctrl_ret_aon.otp_hw_cfg'],
 
       // Diversification constant coming from life cycle
       'lc_ctrl.lc_keymgr_div'  : ['keymgr.lc_keymgr_div'],
@@ -730,7 +747,8 @@
       // TODO(#3920): connect all these signals once top-level sim and FPGA can backload LC state
       'lc_ctrl.lc_dft_en'          : ['otp_ctrl.lc_dft_en'],
       'lc_ctrl.lc_nvm_debug_en'    : ['eflash.lc_nvm_debug_en'],
-      'lc_ctrl.lc_hw_debug_en'     : [],
+      'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
+                                      'sram_ctrl_ret_aon.lc_hw_debug_en'],
       'lc_ctrl.lc_cpu_en'          : [],
       //'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['otp_ctrl.lc_escalate_en',

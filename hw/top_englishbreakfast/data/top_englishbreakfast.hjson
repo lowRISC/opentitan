@@ -415,7 +415,13 @@
           type:    "req_rsp",
           name:    "sram_scr",
           act:     "rsp",
-        }
+        },
+        { struct:  "tl_instr_en",
+          package: "tlul_pkg"
+          type:    "uni",
+          name:    "en_ifetch",
+          act:     "rcv",
+        },
       ]
     },
     { name: "ram_ret",
@@ -440,7 +446,13 @@
           type:    "req_rsp",
           name:    "sram_scr",
           act:     "rsp",
-        }
+        },
+        { struct:  "tl_instr_en",
+          package: "tlul_pkg"
+          type:    "uni",
+          name:    "en_ifetch",
+          act:     "rcv",
+        },
       ]
     },
     { name: "eflash",
@@ -532,6 +544,8 @@
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'sram_ctrl_main.sram_scr' : ['ram_main.sram_scr'],
       'sram_ctrl_ret.sram_scr'  : ['ram_ret.sram_scr'],
+      'sram_ctrl_main.en_ifetch' : ['ram_main.en_ifetch']
+      'sram_ctrl_ret.en_ifetch' : ['ram_ret.en_ifetch']
       'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
       'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],

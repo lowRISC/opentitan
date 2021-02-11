@@ -10,6 +10,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |    1    |  OWNER_SW_CFG  |    768     |      32bit       |                 OWNER_SW_CFG_CONTENT                  |     0x300      |    760     |
 |         |                |            |      64bit       |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x5F8      |     8      |
 |    2    |     HW_CFG     |    240     |      32bit       |                       DEVICE_ID                       |     0x600      |     32     |
+|         |                |            |      32bit       |                    EN_SRAM_IFETCH                     |     0x620      |     1      |
 |         |                |            |      64bit       |         [HW_CFG_DIGEST](#Reg_hw_cfg_digest_0)         |     0x6E8      |     8      |
 |    3    |    SECRET0     |     40     |      64bit       |                   TEST_UNLOCK_TOKEN                   |     0x6F0      |     16     |
 |         |                |            |      64bit       |                    TEST_EXIT_TOKEN                    |     0x700      |     16     |
