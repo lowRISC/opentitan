@@ -12,6 +12,7 @@
 
 module top_earlgrey #(
   // Auto-inferred parameters
+  parameter bit SramCtrlRetAonInstrExec = 1,
   parameter bit AesMasking = 1'b1,
   parameter aes_pkg::sbox_impl_e AesSBoxImpl = aes_pkg::SBoxImplDom,
   parameter int unsigned SecAesStartTriggerDelay = 0,
@@ -19,6 +20,7 @@ module top_earlgrey #(
   parameter bit KmacEnMasking = 0,
   parameter int KmacReuseShare = 0,
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplLut,
+  parameter bit SramCtrlMainInstrExec = 1,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
 
   // Manually defined parameters
@@ -395,6 +397,8 @@ module top_earlgrey #(
   sram_ctrl_pkg::sram_scr_rsp_t       sram_ctrl_main_sram_scr_rsp;
   sram_ctrl_pkg::sram_scr_req_t       sram_ctrl_ret_aon_sram_scr_req;
   sram_ctrl_pkg::sram_scr_rsp_t       sram_ctrl_ret_aon_sram_scr_rsp;
+  tlul_pkg::tl_instr_en_t       sram_ctrl_main_en_ifetch;
+  tlul_pkg::tl_instr_en_t       sram_ctrl_ret_aon_en_ifetch;
   otp_ctrl_pkg::sram_otp_key_req_t [1:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [1:0] otp_ctrl_sram_otp_key_rsp;
   pwrmgr_pkg::pwr_flash_req_t       pwrmgr_aon_pwr_flash_req;
@@ -660,6 +664,7 @@ module top_earlgrey #(
   ) u_dm_top (
     .clk_i         (clkmgr_aon_clocks.clk_proc_main),
     .rst_ni        (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .hw_debug_en_i (lc_ctrl_lc_hw_debug_en),
     .testmode_i    (1'b0),
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
@@ -697,18 +702,18 @@ module top_earlgrey #(
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
 
-    .tl_i     (rom_tl_req),
-    .tl_o     (rom_tl_rsp),
-
-    .req_o    (rom_req),
-    .gnt_i    (1'b1), // Always grant as only one requester exists
-    .we_o     (),
-    .addr_o   (rom_addr),
-    .wdata_o  (),
-    .wmask_o  (),
-    .rdata_i  (rom_rdata),
-    .rvalid_i (rom_rvalid),
-    .rerror_i (2'b00)
+    .tl_i        (rom_tl_req),
+    .tl_o        (rom_tl_rsp),
+    .en_ifetch_i (tlul_pkg::InstrEn),
+    .req_o       (rom_req),
+    .gnt_i       (1'b1), // Always grant as only one requester exists
+    .we_o        (),
+    .addr_o      (rom_addr),
+    .wdata_o     (),
+    .wmask_o     (),
+    .rdata_i     (rom_rdata),
+    .rvalid_i    (rom_rvalid),
+    .rerror_i    (2'b00)
   );
 
   prim_rom_adv #(
@@ -743,18 +748,18 @@ module top_earlgrey #(
   ) u_tl_adapter_ram_main (
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
-    .tl_i     (ram_main_tl_req),
-    .tl_o     (ram_main_tl_rsp),
-
-    .req_o    (ram_main_req),
-    .gnt_i    (ram_main_gnt),
-    .we_o     (ram_main_we),
-    .addr_o   (ram_main_addr),
-    .wdata_o  (ram_main_wdata),
-    .wmask_o  (ram_main_wmask),
-    .rdata_i  (ram_main_rdata),
-    .rvalid_i (ram_main_rvalid),
-    .rerror_i (ram_main_rerror)
+    .tl_i        (ram_main_tl_req),
+    .tl_o        (ram_main_tl_rsp),
+    .en_ifetch_i (sram_ctrl_main_en_ifetch),
+    .req_o       (ram_main_req),
+    .gnt_i       (ram_main_gnt),
+    .we_o        (ram_main_we),
+    .addr_o      (ram_main_addr),
+    .wdata_o     (ram_main_wdata),
+    .wmask_o     (ram_main_wmask),
+    .rdata_i     (ram_main_rdata),
+    .rvalid_i    (ram_main_rvalid),
+    .rerror_i    (ram_main_rerror)
   );
 
   prim_ram_1p_scr #(
@@ -803,18 +808,18 @@ module top_earlgrey #(
   ) u_tl_adapter_ram_ret_aon (
     .clk_i   (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .tl_i     (ram_ret_aon_tl_req),
-    .tl_o     (ram_ret_aon_tl_rsp),
-
-    .req_o    (ram_ret_aon_req),
-    .gnt_i    (ram_ret_aon_gnt),
-    .we_o     (ram_ret_aon_we),
-    .addr_o   (ram_ret_aon_addr),
-    .wdata_o  (ram_ret_aon_wdata),
-    .wmask_o  (ram_ret_aon_wmask),
-    .rdata_i  (ram_ret_aon_rdata),
-    .rvalid_i (ram_ret_aon_rvalid),
-    .rerror_i (ram_ret_aon_rerror)
+    .tl_i        (ram_ret_aon_tl_req),
+    .tl_o        (ram_ret_aon_tl_rsp),
+    .en_ifetch_i (sram_ctrl_ret_aon_en_ifetch),
+    .req_o       (ram_ret_aon_req),
+    .gnt_i       (ram_ret_aon_gnt),
+    .we_o        (ram_ret_aon_we),
+    .addr_o      (ram_ret_aon_addr),
+    .wdata_o     (ram_ret_aon_wdata),
+    .wmask_o     (ram_ret_aon_wmask),
+    .rdata_i     (ram_ret_aon_rdata),
+    .rvalid_i    (ram_ret_aon_rvalid),
+    .rerror_i    (ram_ret_aon_rerror)
   );
 
   prim_ram_1p_scr #(
@@ -864,18 +869,18 @@ module top_earlgrey #(
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
 
-    .tl_i     (eflash_tl_req),
-    .tl_o     (eflash_tl_rsp),
-
-    .req_o    (flash_host_req),
-    .gnt_i    (flash_host_req_rdy),
-    .we_o     (),
-    .addr_o   (flash_host_addr),
-    .wdata_o  (),
-    .wmask_o  (),
-    .rdata_i  (flash_host_rdata),
-    .rvalid_i (flash_host_req_done),
-    .rerror_i ({flash_host_rderr,1'b0})
+    .tl_i        (eflash_tl_req),
+    .tl_o        (eflash_tl_rsp),
+    .en_ifetch_i (tlul_pkg::InstrEn), // tie this to secure boot somehow
+    .req_o       (flash_host_req),
+    .gnt_i       (flash_host_req_rdy),
+    .we_o        (),
+    .addr_o      (flash_host_addr),
+    .wdata_o     (),
+    .wmask_o     (),
+    .rdata_i     (flash_host_rdata),
+    .rvalid_i    (flash_host_req_done),
+    .rerror_i    ({flash_host_rderr,1'b0})
   );
 
   flash_phy u_flash_eflash (
@@ -1597,7 +1602,8 @@ module top_earlgrey #(
 
   sram_ctrl #(
     .RndCnstSramKey(RndCnstSramCtrlRetAonSramKey),
-    .RndCnstSramNonce(RndCnstSramCtrlRetAonSramNonce)
+    .RndCnstSramNonce(RndCnstSramCtrlRetAonSramNonce),
+    .InstrExec(SramCtrlRetAonInstrExec)
   ) u_sram_ctrl_ret_aon (
 
       // [11]: fatal_parity_error
@@ -1610,6 +1616,9 @@ module top_earlgrey #(
       .sram_scr_o(sram_ctrl_ret_aon_sram_scr_req),
       .sram_scr_i(sram_ctrl_ret_aon_sram_scr_rsp),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+      .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
+      .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
+      .en_ifetch_o(sram_ctrl_ret_aon_en_ifetch),
       .tl_i(sram_ctrl_ret_aon_tl_req),
       .tl_o(sram_ctrl_ret_aon_tl_rsp),
 
@@ -1897,7 +1906,8 @@ module top_earlgrey #(
 
   sram_ctrl #(
     .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
-    .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce)
+    .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
+    .InstrExec(SramCtrlMainInstrExec)
   ) u_sram_ctrl_main (
 
       // [21]: fatal_parity_error
@@ -1910,6 +1920,9 @@ module top_earlgrey #(
       .sram_scr_o(sram_ctrl_main_sram_scr_req),
       .sram_scr_i(sram_ctrl_main_sram_scr_rsp),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+      .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
+      .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
+      .en_ifetch_o(sram_ctrl_main_en_ifetch),
       .tl_i(sram_ctrl_main_tl_req),
       .tl_o(sram_ctrl_main_tl_rsp),
 

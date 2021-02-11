@@ -4696,6 +4696,17 @@
           name_top: RndCnstSramCtrlRetAonSramNonce
           randwidth: 64
         }
+        {
+          name: InstrExec
+          desc: Support execution from SRAM
+          type: bit
+          local: "false"
+          expose: "true"
+          default: "1"
+          randcount: "0"
+          randtype: none
+          name_top: SramCtrlRetAonInstrExec
+        }
       ]
       interrupt_list: []
       alert_list:
@@ -4755,6 +4766,44 @@
           inst_name: sram_ctrl_ret_aon
           width: 1
           top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_hw_debug_en
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: sram_ctrl_ret_aon
+          width: 1
+          top_signame: lc_ctrl_lc_hw_debug_en
+          index: -1
+        }
+        {
+          struct: otp_hw_cfg
+          type: uni
+          name: otp_hw_cfg
+          act: rcv
+          package: otp_ctrl_part_pkg
+          inst_name: sram_ctrl_ret_aon
+          width: 1
+          default: ""
+          top_signame: otp_ctrl_otp_hw_cfg
+          index: -1
+        }
+        {
+          struct: tl_instr_en
+          type: uni
+          name: en_ifetch
+          act: req
+          package: tlul_pkg
+          inst_name: sram_ctrl_ret_aon
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: sram_ctrl_ret_aon_en_ifetch
           index: -1
         }
         {
@@ -6628,6 +6677,17 @@
           name_top: RndCnstSramCtrlMainSramNonce
           randwidth: 64
         }
+        {
+          name: InstrExec
+          desc: Support execution from SRAM
+          type: bit
+          local: "false"
+          expose: "true"
+          default: "1"
+          randcount: "0"
+          randtype: none
+          name_top: SramCtrlMainInstrExec
+        }
       ]
       interrupt_list: []
       alert_list:
@@ -6687,6 +6747,44 @@
           inst_name: sram_ctrl_main
           width: 1
           top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_hw_debug_en
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: sram_ctrl_main
+          width: 1
+          top_signame: lc_ctrl_lc_hw_debug_en
+          index: -1
+        }
+        {
+          struct: otp_hw_cfg
+          type: uni
+          name: otp_hw_cfg
+          act: rcv
+          package: otp_ctrl_part_pkg
+          inst_name: sram_ctrl_main
+          width: 1
+          default: ""
+          top_signame: otp_ctrl_otp_hw_cfg
+          index: -1
+        }
+        {
+          struct: tl_instr_en
+          type: uni
+          name: en_ifetch
+          act: req
+          package: tlul_pkg
+          inst_name: sram_ctrl_main
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: sram_ctrl_main_en_ifetch
           index: -1
         }
         {
@@ -6874,6 +6972,7 @@
       base_addr: 0x10000000
       size: 0x20000
       byte_write: "true"
+      exec: "1"
       inter_signal_list:
       [
         {
@@ -6901,6 +7000,18 @@
           top_signame: sram_ctrl_main_sram_scr
           index: -1
         }
+        {
+          struct: tl_instr_en
+          package: tlul_pkg
+          type: uni
+          name: en_ifetch
+          act: rcv
+          inst_name: ram_main
+          width: 1
+          default: ""
+          top_signame: sram_ctrl_main_en_ifetch
+          index: -1
+        }
       ]
       clock_connections:
       {
@@ -6924,6 +7035,7 @@
       base_addr: 0x40600000
       size: 0x1000
       byte_write: "true"
+      exec: "0"
       inter_signal_list:
       [
         {
@@ -6949,6 +7061,18 @@
           width: 1
           default: ""
           top_signame: sram_ctrl_ret_aon_sram_scr
+          index: -1
+        }
+        {
+          struct: tl_instr_en
+          package: tlul_pkg
+          type: uni
+          name: en_ifetch
+          act: rcv
+          inst_name: ram_ret_aon
+          width: 1
+          default: ""
+          top_signame: sram_ctrl_ret_aon_en_ifetch
           index: -1
         }
       ]
@@ -7183,6 +7307,14 @@
       [
         ram_ret_aon.sram_scr
       ]
+      sram_ctrl_main.en_ifetch:
+      [
+        ram_main.en_ifetch
+      ]
+      sram_ctrl_ret_aon.en_ifetch:
+      [
+        ram_ret_aon.en_ifetch
+      ]
       otp_ctrl.sram_otp_key:
       [
         sram_ctrl_main.sram_otp_key
@@ -7278,6 +7410,8 @@
       [
         lc_ctrl.otp_hw_cfg
         keymgr.otp_hw_cfg
+        sram_ctrl_main.otp_hw_cfg
+        sram_ctrl_ret_aon.otp_hw_cfg
       ]
       lc_ctrl.lc_keymgr_div:
       [
@@ -7291,7 +7425,11 @@
       [
         eflash.lc_nvm_debug_en
       ]
-      lc_ctrl.lc_hw_debug_en: []
+      lc_ctrl.lc_hw_debug_en:
+      [
+        sram_ctrl_main.lc_hw_debug_en
+        sram_ctrl_ret_aon.lc_hw_debug_en
+      ]
       lc_ctrl.lc_cpu_en: []
       lc_ctrl.lc_escalate_en:
       [
@@ -13251,6 +13389,44 @@
         index: -1
       }
       {
+        struct: lc_tx
+        type: uni
+        name: lc_hw_debug_en
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: sram_ctrl_ret_aon
+        width: 1
+        top_signame: lc_ctrl_lc_hw_debug_en
+        index: -1
+      }
+      {
+        struct: otp_hw_cfg
+        type: uni
+        name: otp_hw_cfg
+        act: rcv
+        package: otp_ctrl_part_pkg
+        inst_name: sram_ctrl_ret_aon
+        width: 1
+        default: ""
+        top_signame: otp_ctrl_otp_hw_cfg
+        index: -1
+      }
+      {
+        struct: tl_instr_en
+        type: uni
+        name: en_ifetch
+        act: req
+        package: tlul_pkg
+        inst_name: sram_ctrl_ret_aon
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: sram_ctrl_ret_aon_en_ifetch
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -13933,6 +14109,44 @@
         index: -1
       }
       {
+        struct: lc_tx
+        type: uni
+        name: lc_hw_debug_en
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: sram_ctrl_main
+        width: 1
+        top_signame: lc_ctrl_lc_hw_debug_en
+        index: -1
+      }
+      {
+        struct: otp_hw_cfg
+        type: uni
+        name: otp_hw_cfg
+        act: rcv
+        package: otp_ctrl_part_pkg
+        inst_name: sram_ctrl_main
+        width: 1
+        default: ""
+        top_signame: otp_ctrl_otp_hw_cfg
+        index: -1
+      }
+      {
+        struct: tl_instr_en
+        type: uni
+        name: en_ifetch
+        act: req
+        package: tlul_pkg
+        inst_name: sram_ctrl_main
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: sram_ctrl_main_en_ifetch
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -14009,6 +14223,18 @@
         index: -1
       }
       {
+        struct: tl_instr_en
+        package: tlul_pkg
+        type: uni
+        name: en_ifetch
+        act: rcv
+        inst_name: ram_main
+        width: 1
+        default: ""
+        top_signame: sram_ctrl_main_en_ifetch
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -14031,6 +14257,18 @@
         width: 1
         default: ""
         top_signame: sram_ctrl_ret_aon_sram_scr
+        index: -1
+      }
+      {
+        struct: tl_instr_en
+        package: tlul_pkg
+        type: uni
+        name: en_ifetch
+        act: rcv
+        inst_name: ram_ret_aon
+        width: 1
+        default: ""
+        top_signame: sram_ctrl_ret_aon_en_ifetch
         index: -1
       }
       {
@@ -15272,6 +15510,28 @@
         act: req
         suffix: rsp
         default: "'0"
+      }
+      {
+        package: tlul_pkg
+        struct: tl_instr_en
+        signame: sram_ctrl_main_en_ifetch
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_instr_en
+        signame: sram_ctrl_ret_aon_en_ifetch
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: ""
       }
       {
         package: otp_ctrl_pkg

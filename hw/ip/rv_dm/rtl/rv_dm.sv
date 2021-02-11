@@ -19,7 +19,7 @@ module rv_dm #(
   input  logic               clk_i,       // clock
   input  logic               rst_ni,      // asynchronous reset active low, connect PoR
                                           // here, not the system reset
-  input  lc_ctrl_pkg::lc_tx_t hw_debug_en,
+  input  lc_ctrl_pkg::lc_tx_t hw_debug_en_i,
   input  logic               testmode_i,
   output logic               ndmreset_o,  // non-debug module reset
   output logic               dmactive_o,  // debug module is active
@@ -302,7 +302,18 @@ module rv_dm #(
 
 
   tlul_pkg::tl_instr_en_e en_ifetch;
-  assign en_ifetch = hw_debug_en == lc_ctrl_pkg::On ? tlul_pkg::InstrEn : tlul_pkg::InstrDis;
+  lc_ctrl_pkg::lc_tx_t [0:0] hw_debug_en;
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(hw_debug_en_i),
+    .lc_en_o(hw_debug_en)
+  );
+
+  assign en_ifetch = (hw_debug_en == lc_ctrl_pkg::On) ? tlul_pkg::InstrEn : tlul_pkg::InstrDis;
   tlul_adapter_sram #(
     .SramAw(AddressWidthWords),
     .SramDw(BusWidth),
