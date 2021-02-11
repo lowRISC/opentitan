@@ -7,6 +7,7 @@ Generate HTML documentation for Device Interface Functions (DIFs)
 
 import logging as log
 import subprocess
+import re
 
 import xml.etree.ElementTree as ET
 
@@ -123,5 +124,12 @@ def _get_text_or_empty(element, xpath):
     if inner is None:
         return ""
 
-    # If there's no inner text, return ""
-    return inner.text or ""
+    # Create a string from all subelements
+    text = ET.tostring(inner, encoding="unicode", method="html")
+    # Code highlighting is supported for the tag 'code' use it instead of
+    # 'computeroutput'
+    text = text.replace("<computeroutput>",
+            "<code>").replace("</computeroutput>", "</code>")
+    # Manually remove the enclosing tags
+    text = re.sub("^<[^<]+>(.*)</.+>$", "\\1", text.strip())
+    return text or ""
