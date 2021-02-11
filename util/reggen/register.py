@@ -262,6 +262,9 @@ class Register(RegBase):
                         tags, resval, shadowed, fields,
                         update_err_alert, storage_err_alert)
 
+    def next_offset(self, addrsep: int) -> int:
+        return self.offset + addrsep
+
     def sw_readable(self) -> bool:
         return self.swaccess.key not in ['wo', 'r0w1c']
 

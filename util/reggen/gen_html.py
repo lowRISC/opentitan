@@ -296,7 +296,7 @@ def gen_html(regs, outfile, toclist=None, toclevel=3):
     else:
         regwidth = 32
 
-    for x in registers:
+    for x in registers.entries:
         if isinstance(x, Register):
             gen_html_register(outfile, x, component, regwidth, rnames, toclist,
                               toclevel)

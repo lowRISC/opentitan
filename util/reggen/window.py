@@ -147,6 +147,9 @@ class Window:
         return Window(name, desc, unusual, byte_write,
                       validbits, items, size_in_bytes, offset, swaccess)
 
+    def next_offset(self, addrsep: int) -> int:
+        return self.offset + self.size_in_bytes
+
     def _asdict(self) -> Dict[str, object]:
         rd = {
             'desc': self.desc,

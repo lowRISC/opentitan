@@ -11,7 +11,7 @@
 ${construct_classes(b)}
 % endfor
 <%
-regs_flat = block.get_regs_flat()
+regs_flat = block.reg_block.flat_regs
 hier_path = ""
 if (block.hier_path):
   hier_path = block.hier_path + "."
@@ -36,7 +36,7 @@ package ${block.name}_ral_pkg;
 % for r in regs_flat:
   typedef class ${gen_dv.rcname(block, r)};
 % endfor
-% for w in block.wins:
+% for w in block.reg_block.windows:
   typedef class ${gen_dv.mcname(block, w)};
 % endfor
   typedef class ${gen_dv.bcname(block)};
@@ -152,7 +152,7 @@ package ${block.name}_ral_pkg;
   endclass : ${gen_dv.rcname(block, r)}
 
 % endfor
-% for w in block.wins:
+% for w in block.reg_block.windows:
 <%
   mem_name = w.name.lower()
   mem_right = w.swaccess.dv_rights()
@@ -194,10 +194,10 @@ package ${block.name}_ral_pkg;
 % for r in regs_flat:
     rand ${gen_dv.rcname(block, r)} ${r.name.lower()};
 % endfor
-% if block.wins:
+% if block.reg_block.windows:
     // memories
 % endif
-% for w in block.wins:
+% for w in block.reg_block.windows:
     rand ${gen_dv.mcname(block, w)} ${gen_dv.miname(w)};
 % endfor
 
@@ -279,11 +279,11 @@ package ${block.name}_ral_pkg;
   % endif
 % endfor
 
-% if block.wins:
+% if block.reg_block.windows:
 
       // create memories
 % endif
-% for w in block.wins:
+% for w in block.reg_block.windows:
 <%
   mem_name = w.name.lower()
   mem_right = w.swaccess.dv_rights()

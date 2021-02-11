@@ -4,7 +4,7 @@
 
 from typing import Callable, Dict, List, Sequence
 
-from shared.otbn_reggen import Field, Register, load_registers
+from shared.otbn_reggen import Field, Register, RegBlock, load_registers
 
 from .trace import Trace
 
@@ -154,17 +154,13 @@ class RGReg:
 
 class OTBNExtRegs:
     def __init__(self) -> None:
-        _, reg_list = load_registers()
+        _, reg_block = load_registers()
 
         self.regs = {}  # type: Dict[str, RGReg]
         self.trace = []  # type: List[TraceExtRegChange]
 
-        # We're interested in the proper registers, and don't care about
-        # anything else.
-        for entry in reg_list:
-            if not isinstance(entry, Register):
-                continue
-
+        assert isinstance(reg_block, RegBlock)
+        for entry in reg_block.flat_regs:
             assert isinstance(entry.name, str)
 
             # reggen's validation should have checked that we have no
