@@ -36,25 +36,19 @@ class dv_base_reg extends uvm_reg;
   endfunction : new
 
   function void get_dv_base_reg_fields(ref dv_base_reg_field dv_fields[$]);
-    uvm_reg_field ral_fields[$];
-    get_fields(ral_fields);
-    foreach (ral_fields[i]) `downcast(dv_fields[i], ral_fields[i])
+    foreach (m_fields[i]) `downcast(dv_fields[i], m_fields[i])
   endfunction
 
   // get_n_bits will return number of all the bits in the csr
   // while this function will return actual number of bits used in reg field
   function uint get_n_used_bits();
-    uvm_reg_field fields[$];
-    get_fields(fields);
-    foreach (fields[i]) get_n_used_bits += fields[i].get_n_bits();
+    foreach (m_fields[i]) get_n_used_bits += m_fields[i].get_n_bits();
   endfunction
 
   // loop all the fields to find the msb position of this reg
   function uint get_msb_pos();
-    uvm_reg_field fields[$];
-    get_fields(fields);
-    foreach (fields[i]) begin
-      uint field_msb_pos = fields[i].get_lsb_pos() + fields[i].get_n_bits() - 1;
+    foreach (m_fields[i]) begin
+      uint field_msb_pos = m_fields[i].get_lsb_pos() + m_fields[i].get_n_bits() - 1;
       if (field_msb_pos > get_msb_pos) get_msb_pos = field_msb_pos;
     end
   endfunction
