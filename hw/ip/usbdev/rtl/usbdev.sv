@@ -1109,4 +1109,53 @@ module usbdev import usbdev_pkg::*; (
   assign hw2reg.wake_debug.de = tgl_en;
   assign hw2reg.wake_debug.d = usb_state_debug_i;
 
+  /////////////////////////////////
+  // Xprop assertions on outputs //
+  /////////////////////////////////
+
+  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  // These pins are not necessarily associated with any clock but it probably makes most sense to
+  // check them on the fastest clock.
+  `ASSERT_KNOWN(CIODKnown_A, cio_d_o)
+  `ASSERT_KNOWN(CIODEnKnown_A, cio_d_en_o)
+  `ASSERT_KNOWN(CIODpKnown_A, cio_dp_o)
+  `ASSERT_KNOWN(CIODpEnKnown_A, cio_dp_en_o)
+  `ASSERT_KNOWN(CIODnKnown_A, cio_dn_o)
+  `ASSERT_KNOWN(CIODnEnKnown_A, cio_dn_en_o)
+  `ASSERT_KNOWN(CIOSe0Known_A, cio_se0_o)
+  `ASSERT_KNOWN(CIOSe0EnKnown_A, cio_se0_en_o)
+  `ASSERT_KNOWN(CIODpPUKnown_A, cio_dp_pullup_o)
+  `ASSERT_KNOWN(CIODpPUEnKnown_A, cio_dp_pullup_en_o)
+  `ASSERT_KNOWN(CIODnPUKnown_A, cio_dn_pullup_o)
+  `ASSERT_KNOWN(CIODnPUEnKnown_A, cio_dn_pullup_en_o)
+  `ASSERT_KNOWN(CIOSuspendKnown_A, cio_suspend_o)
+  `ASSERT_KNOWN(CIOSuspendEnKnown_A, cio_suspend_en_o)
+  `ASSERT_KNOWN(CIOTxModeKnown_A, cio_tx_mode_se_o)
+  `ASSERT_KNOWN(CIOTxModeEnKnown_A, cio_tx_mode_se_en_o)
+  `ASSERT_KNOWN(USBOoRKnown_A, usb_out_of_rst_o)
+  `ASSERT_KNOWN(USBAonWakeEnKnown_A, usb_aon_wake_en_o)
+  `ASSERT_KNOWN(USBAonWakeAckKnown_A, usb_aon_wake_ack_o)
+  `ASSERT_KNOWN(USBSuspendKnown_A, usb_suspend_o)
+  `ASSERT_KNOWN(USBRefValKnown_A, usb_ref_val_o, clk_usb_48mhz_i, !rst_usb_48mhz_ni)
+  `ASSERT_KNOWN(USBRefPulseKnown_A, usb_ref_pulse_o, clk_usb_48mhz_i, !rst_usb_48mhz_ni)
+  //Interrupt signals
+  `ASSERT_KNOWN(USBIntrPktRcvdKnown_A, intr_pkt_received_o)
+  `ASSERT_KNOWN(USBIntrPktSentKnown_A, intr_pkt_sent_o)
+  `ASSERT_KNOWN(USBIntrConnKnown_A, intr_connected_o)
+  `ASSERT_KNOWN(USBIntrDisConKnown_A, intr_disconnected_o)
+  `ASSERT_KNOWN(USBIntrHostLostKnown_A, intr_host_lost_o)
+  `ASSERT_KNOWN(USBIntrLinkRstKnown_A, intr_link_reset_o)
+  `ASSERT_KNOWN(USBIntrLinkSusKnown_A, intr_link_suspend_o)
+  `ASSERT_KNOWN(USBIntrLinkResKnown_A, intr_link_resume_o)
+  `ASSERT_KNOWN(USBIntrAvEmptyKnown_A, intr_av_empty_o)
+  `ASSERT_KNOWN(USBIntrRxFullKnown_A, intr_rx_full_o)
+  `ASSERT_KNOWN(USBIntrAvOverKnown_A, intr_av_overflow_o)
+  `ASSERT_KNOWN(USBIntrLinkInErrKnown_A, intr_link_in_err_o)
+  `ASSERT_KNOWN(USBIntrLinkOutErrKnown_A, intr_link_out_err_o)
+  `ASSERT_KNOWN(USBIntrRxCrCErrKnown_A, intr_rx_crc_err_o)
+  `ASSERT_KNOWN(USBIntrRxPidErrKnown_A, intr_rx_pid_err_o)
+  `ASSERT_KNOWN(USBIntrRxBitstuffErrKnown_A, intr_rx_bitstuff_err_o)
+  `ASSERT_KNOWN(USBIntrFrameKnown_A, intr_frame_o)
+
 endmodule
