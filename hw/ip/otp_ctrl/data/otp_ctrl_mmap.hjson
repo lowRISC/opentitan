@@ -142,7 +142,11 @@
                     // initialized or is in error state. If not specified,
                     // a value of '0 will be used.
                     inv_default: "<random>",
-                }
+                },
+                {
+                    name:    "EN_SRAM_IFETCH",
+                    size:    "1",
+                },
             ],
             desc: '''Hardware configuration bits used to hardwire
             specific hardware functionality. E.g., raw entropy
