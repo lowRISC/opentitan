@@ -996,7 +996,7 @@ typedef enum top_earlgrey_alert_id {
 extern const top_earlgrey_alert_peripheral_t
     top_earlgrey_alert_for_peripheral[23];
 
-#define PINMUX_PERIPH_INSEL_IDX_OFFSET 2
+#define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 
 // PERIPH_INSEL ranges from 0 to NUM_MIO + 2 -1}
 //  0 and 1 are tied to value 0 and 1

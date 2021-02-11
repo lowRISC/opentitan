@@ -21,14 +21,14 @@ package pinmux_reg_pkg;
   parameter int UsbDnPullUpSel = 5;
 
   // Address width within the block
-  parameter int BlockAw = 8;
+  parameter int BlockAw = 11;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
   typedef struct packed {
     logic [5:0]  q;
-  } pinmux_reg2hw_periph_insel_mreg_t;
+  } pinmux_reg2hw_mio_periph_insel_mreg_t;
 
   typedef struct packed {
     logic [5:0]  q;
@@ -64,7 +64,7 @@ package pinmux_reg_pkg;
   } pinmux_reg2hw_wkup_detector_cnt_th_mreg_t;
 
   typedef struct packed {
-    logic [4:0]  q;
+    logic [5:0]  q;
   } pinmux_reg2hw_wkup_detector_padsel_mreg_t;
 
   typedef struct packed {
@@ -86,14 +86,14 @@ package pinmux_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    pinmux_reg2hw_periph_insel_mreg_t [40:0] periph_insel; // [714:469]
-    pinmux_reg2hw_mio_outsel_mreg_t [31:0] mio_outsel; // [468:277]
-    pinmux_reg2hw_mio_out_sleep_val_mreg_t [31:0] mio_out_sleep_val; // [276:213]
-    pinmux_reg2hw_dio_out_sleep_val_mreg_t [14:0] dio_out_sleep_val; // [212:168]
-    pinmux_reg2hw_wkup_detector_en_mreg_t [7:0] wkup_detector_en; // [167:160]
-    pinmux_reg2hw_wkup_detector_mreg_t [7:0] wkup_detector; // [159:120]
-    pinmux_reg2hw_wkup_detector_cnt_th_mreg_t [7:0] wkup_detector_cnt_th; // [119:56]
-    pinmux_reg2hw_wkup_detector_padsel_mreg_t [7:0] wkup_detector_padsel; // [55:16]
+    pinmux_reg2hw_mio_periph_insel_mreg_t [40:0] mio_periph_insel; // [722:477]
+    pinmux_reg2hw_mio_outsel_mreg_t [31:0] mio_outsel; // [476:285]
+    pinmux_reg2hw_mio_out_sleep_val_mreg_t [31:0] mio_out_sleep_val; // [284:221]
+    pinmux_reg2hw_dio_out_sleep_val_mreg_t [14:0] dio_out_sleep_val; // [220:176]
+    pinmux_reg2hw_wkup_detector_en_mreg_t [7:0] wkup_detector_en; // [175:168]
+    pinmux_reg2hw_wkup_detector_mreg_t [7:0] wkup_detector; // [167:128]
+    pinmux_reg2hw_wkup_detector_cnt_th_mreg_t [7:0] wkup_detector_cnt_th; // [127:64]
+    pinmux_reg2hw_wkup_detector_padsel_mreg_t [7:0] wkup_detector_padsel; // [63:16]
     pinmux_reg2hw_wkup_cause_mreg_t [7:0] wkup_cause; // [15:0]
   } pinmux_reg2hw_t;
 
@@ -106,54 +106,405 @@ package pinmux_reg_pkg;
   } pinmux_hw2reg_t;
 
   // Register Address
-  parameter logic [BlockAw-1:0] PINMUX_REGWEN_OFFSET = 8'h 0;
-  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_0_OFFSET = 8'h 4;
-  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_1_OFFSET = 8'h 8;
-  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_2_OFFSET = 8'h c;
-  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_3_OFFSET = 8'h 10;
-  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_4_OFFSET = 8'h 14;
-  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_5_OFFSET = 8'h 18;
-  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_6_OFFSET = 8'h 1c;
-  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_7_OFFSET = 8'h 20;
-  parameter logic [BlockAw-1:0] PINMUX_PERIPH_INSEL_8_OFFSET = 8'h 24;
-  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_0_OFFSET = 8'h 28;
-  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_1_OFFSET = 8'h 2c;
-  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_2_OFFSET = 8'h 30;
-  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_3_OFFSET = 8'h 34;
-  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_4_OFFSET = 8'h 38;
-  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_5_OFFSET = 8'h 3c;
-  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_6_OFFSET = 8'h 40;
-  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_0_OFFSET = 8'h 44;
-  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_1_OFFSET = 8'h 48;
-  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_OFFSET = 8'h 4c;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_EN_OFFSET = 8'h 50;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_0_OFFSET = 8'h 54;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_1_OFFSET = 8'h 58;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_2_OFFSET = 8'h 5c;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_3_OFFSET = 8'h 60;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_4_OFFSET = 8'h 64;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_5_OFFSET = 8'h 68;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_6_OFFSET = 8'h 6c;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_7_OFFSET = 8'h 70;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_CNT_TH_0_OFFSET = 8'h 74;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_CNT_TH_1_OFFSET = 8'h 78;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_0_OFFSET = 8'h 7c;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_1_OFFSET = 8'h 80;
-  parameter logic [BlockAw-1:0] PINMUX_WKUP_CAUSE_OFFSET = 8'h 84;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_0_OFFSET = 11'h 0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_1_OFFSET = 11'h 4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_2_OFFSET = 11'h 8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_3_OFFSET = 11'h c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_4_OFFSET = 11'h 10;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_5_OFFSET = 11'h 14;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_6_OFFSET = 11'h 18;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_7_OFFSET = 11'h 1c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_8_OFFSET = 11'h 20;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_9_OFFSET = 11'h 24;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_10_OFFSET = 11'h 28;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_11_OFFSET = 11'h 2c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_12_OFFSET = 11'h 30;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_13_OFFSET = 11'h 34;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_14_OFFSET = 11'h 38;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_15_OFFSET = 11'h 3c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_16_OFFSET = 11'h 40;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_17_OFFSET = 11'h 44;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_18_OFFSET = 11'h 48;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_19_OFFSET = 11'h 4c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_20_OFFSET = 11'h 50;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_21_OFFSET = 11'h 54;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_22_OFFSET = 11'h 58;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_23_OFFSET = 11'h 5c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_24_OFFSET = 11'h 60;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_25_OFFSET = 11'h 64;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_26_OFFSET = 11'h 68;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_27_OFFSET = 11'h 6c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_28_OFFSET = 11'h 70;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_29_OFFSET = 11'h 74;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_30_OFFSET = 11'h 78;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_31_OFFSET = 11'h 7c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_32_OFFSET = 11'h 80;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_33_OFFSET = 11'h 84;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_34_OFFSET = 11'h 88;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_35_OFFSET = 11'h 8c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_36_OFFSET = 11'h 90;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_37_OFFSET = 11'h 94;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_38_OFFSET = 11'h 98;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_39_OFFSET = 11'h 9c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_40_OFFSET = 11'h a0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_0_OFFSET = 11'h a4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_1_OFFSET = 11'h a8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_2_OFFSET = 11'h ac;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_3_OFFSET = 11'h b0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_4_OFFSET = 11'h b4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_5_OFFSET = 11'h b8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_6_OFFSET = 11'h bc;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_7_OFFSET = 11'h c0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_8_OFFSET = 11'h c4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_9_OFFSET = 11'h c8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_10_OFFSET = 11'h cc;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_11_OFFSET = 11'h d0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_12_OFFSET = 11'h d4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_13_OFFSET = 11'h d8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_14_OFFSET = 11'h dc;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_15_OFFSET = 11'h e0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_16_OFFSET = 11'h e4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_17_OFFSET = 11'h e8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_18_OFFSET = 11'h ec;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_19_OFFSET = 11'h f0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_20_OFFSET = 11'h f4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_21_OFFSET = 11'h f8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_22_OFFSET = 11'h fc;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_23_OFFSET = 11'h 100;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_24_OFFSET = 11'h 104;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_25_OFFSET = 11'h 108;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_26_OFFSET = 11'h 10c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_27_OFFSET = 11'h 110;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_28_OFFSET = 11'h 114;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_29_OFFSET = 11'h 118;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_30_OFFSET = 11'h 11c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_31_OFFSET = 11'h 120;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_32_OFFSET = 11'h 124;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_33_OFFSET = 11'h 128;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_34_OFFSET = 11'h 12c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_35_OFFSET = 11'h 130;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_36_OFFSET = 11'h 134;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_37_OFFSET = 11'h 138;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_38_OFFSET = 11'h 13c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_39_OFFSET = 11'h 140;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_40_OFFSET = 11'h 144;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_0_OFFSET = 11'h 148;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_1_OFFSET = 11'h 14c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_2_OFFSET = 11'h 150;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_3_OFFSET = 11'h 154;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_4_OFFSET = 11'h 158;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_5_OFFSET = 11'h 15c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_6_OFFSET = 11'h 160;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_7_OFFSET = 11'h 164;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_8_OFFSET = 11'h 168;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_9_OFFSET = 11'h 16c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_10_OFFSET = 11'h 170;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_11_OFFSET = 11'h 174;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_12_OFFSET = 11'h 178;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_13_OFFSET = 11'h 17c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_14_OFFSET = 11'h 180;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_15_OFFSET = 11'h 184;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_16_OFFSET = 11'h 188;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_17_OFFSET = 11'h 18c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_18_OFFSET = 11'h 190;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_19_OFFSET = 11'h 194;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_20_OFFSET = 11'h 198;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_21_OFFSET = 11'h 19c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_22_OFFSET = 11'h 1a0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_23_OFFSET = 11'h 1a4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_24_OFFSET = 11'h 1a8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_25_OFFSET = 11'h 1ac;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_26_OFFSET = 11'h 1b0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_27_OFFSET = 11'h 1b4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_28_OFFSET = 11'h 1b8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_29_OFFSET = 11'h 1bc;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_30_OFFSET = 11'h 1c0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_REGWEN_31_OFFSET = 11'h 1c4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_0_OFFSET = 11'h 1c8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_1_OFFSET = 11'h 1cc;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_2_OFFSET = 11'h 1d0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_3_OFFSET = 11'h 1d4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_4_OFFSET = 11'h 1d8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_5_OFFSET = 11'h 1dc;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_6_OFFSET = 11'h 1e0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_7_OFFSET = 11'h 1e4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_8_OFFSET = 11'h 1e8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_9_OFFSET = 11'h 1ec;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_10_OFFSET = 11'h 1f0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_11_OFFSET = 11'h 1f4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_12_OFFSET = 11'h 1f8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_13_OFFSET = 11'h 1fc;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_14_OFFSET = 11'h 200;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_15_OFFSET = 11'h 204;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_16_OFFSET = 11'h 208;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_17_OFFSET = 11'h 20c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_18_OFFSET = 11'h 210;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_19_OFFSET = 11'h 214;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_20_OFFSET = 11'h 218;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_21_OFFSET = 11'h 21c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_22_OFFSET = 11'h 220;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_23_OFFSET = 11'h 224;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_24_OFFSET = 11'h 228;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_25_OFFSET = 11'h 22c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_26_OFFSET = 11'h 230;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_27_OFFSET = 11'h 234;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_28_OFFSET = 11'h 238;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_29_OFFSET = 11'h 23c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_30_OFFSET = 11'h 240;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUTSEL_31_OFFSET = 11'h 244;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_0_OFFSET = 11'h 248;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_1_OFFSET = 11'h 24c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_2_OFFSET = 11'h 250;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_3_OFFSET = 11'h 254;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_4_OFFSET = 11'h 258;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_5_OFFSET = 11'h 25c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_6_OFFSET = 11'h 260;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_7_OFFSET = 11'h 264;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_8_OFFSET = 11'h 268;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_9_OFFSET = 11'h 26c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_10_OFFSET = 11'h 270;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_11_OFFSET = 11'h 274;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_12_OFFSET = 11'h 278;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_13_OFFSET = 11'h 27c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_14_OFFSET = 11'h 280;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_15_OFFSET = 11'h 284;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_16_OFFSET = 11'h 288;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_17_OFFSET = 11'h 28c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_18_OFFSET = 11'h 290;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_19_OFFSET = 11'h 294;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_20_OFFSET = 11'h 298;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_21_OFFSET = 11'h 29c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_22_OFFSET = 11'h 2a0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_23_OFFSET = 11'h 2a4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_24_OFFSET = 11'h 2a8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_25_OFFSET = 11'h 2ac;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_26_OFFSET = 11'h 2b0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_27_OFFSET = 11'h 2b4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_28_OFFSET = 11'h 2b8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_29_OFFSET = 11'h 2bc;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_30_OFFSET = 11'h 2c0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_REGWEN_31_OFFSET = 11'h 2c4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_0_OFFSET = 11'h 2c8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_1_OFFSET = 11'h 2cc;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_2_OFFSET = 11'h 2d0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_3_OFFSET = 11'h 2d4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_4_OFFSET = 11'h 2d8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_5_OFFSET = 11'h 2dc;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_6_OFFSET = 11'h 2e0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_7_OFFSET = 11'h 2e4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_8_OFFSET = 11'h 2e8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_9_OFFSET = 11'h 2ec;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_10_OFFSET = 11'h 2f0;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_11_OFFSET = 11'h 2f4;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_12_OFFSET = 11'h 2f8;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_13_OFFSET = 11'h 2fc;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_14_OFFSET = 11'h 300;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_15_OFFSET = 11'h 304;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_16_OFFSET = 11'h 308;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_17_OFFSET = 11'h 30c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_18_OFFSET = 11'h 310;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_19_OFFSET = 11'h 314;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_20_OFFSET = 11'h 318;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_21_OFFSET = 11'h 31c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_22_OFFSET = 11'h 320;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_23_OFFSET = 11'h 324;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_24_OFFSET = 11'h 328;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_25_OFFSET = 11'h 32c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_26_OFFSET = 11'h 330;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_27_OFFSET = 11'h 334;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_28_OFFSET = 11'h 338;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_29_OFFSET = 11'h 33c;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_30_OFFSET = 11'h 340;
+  parameter logic [BlockAw-1:0] PINMUX_MIO_OUT_SLEEP_VAL_31_OFFSET = 11'h 344;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_0_OFFSET = 11'h 348;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_1_OFFSET = 11'h 34c;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_2_OFFSET = 11'h 350;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_3_OFFSET = 11'h 354;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_4_OFFSET = 11'h 358;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_5_OFFSET = 11'h 35c;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_6_OFFSET = 11'h 360;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_7_OFFSET = 11'h 364;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_8_OFFSET = 11'h 368;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_9_OFFSET = 11'h 36c;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_10_OFFSET = 11'h 370;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_11_OFFSET = 11'h 374;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_12_OFFSET = 11'h 378;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_13_OFFSET = 11'h 37c;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_REGWEN_14_OFFSET = 11'h 380;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_0_OFFSET = 11'h 384;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_1_OFFSET = 11'h 388;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_2_OFFSET = 11'h 38c;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_3_OFFSET = 11'h 390;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_4_OFFSET = 11'h 394;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_5_OFFSET = 11'h 398;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_6_OFFSET = 11'h 39c;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_7_OFFSET = 11'h 3a0;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_8_OFFSET = 11'h 3a4;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_9_OFFSET = 11'h 3a8;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_10_OFFSET = 11'h 3ac;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_11_OFFSET = 11'h 3b0;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_12_OFFSET = 11'h 3b4;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_13_OFFSET = 11'h 3b8;
+  parameter logic [BlockAw-1:0] PINMUX_DIO_OUT_SLEEP_VAL_14_OFFSET = 11'h 3bc;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_REGWEN_0_OFFSET = 11'h 3c0;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_REGWEN_1_OFFSET = 11'h 3c4;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_REGWEN_2_OFFSET = 11'h 3c8;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_REGWEN_3_OFFSET = 11'h 3cc;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_REGWEN_4_OFFSET = 11'h 3d0;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_REGWEN_5_OFFSET = 11'h 3d4;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_REGWEN_6_OFFSET = 11'h 3d8;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_REGWEN_7_OFFSET = 11'h 3dc;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_EN_0_OFFSET = 11'h 3e0;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_EN_1_OFFSET = 11'h 3e4;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_EN_2_OFFSET = 11'h 3e8;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_EN_3_OFFSET = 11'h 3ec;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_EN_4_OFFSET = 11'h 3f0;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_EN_5_OFFSET = 11'h 3f4;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_EN_6_OFFSET = 11'h 3f8;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_EN_7_OFFSET = 11'h 3fc;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_0_OFFSET = 11'h 400;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_1_OFFSET = 11'h 404;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_2_OFFSET = 11'h 408;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_3_OFFSET = 11'h 40c;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_4_OFFSET = 11'h 410;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_5_OFFSET = 11'h 414;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_6_OFFSET = 11'h 418;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_7_OFFSET = 11'h 41c;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_CNT_TH_0_OFFSET = 11'h 420;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_CNT_TH_1_OFFSET = 11'h 424;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_CNT_TH_2_OFFSET = 11'h 428;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_CNT_TH_3_OFFSET = 11'h 42c;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_CNT_TH_4_OFFSET = 11'h 430;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_CNT_TH_5_OFFSET = 11'h 434;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_CNT_TH_6_OFFSET = 11'h 438;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_CNT_TH_7_OFFSET = 11'h 43c;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_0_OFFSET = 11'h 440;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_1_OFFSET = 11'h 444;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_2_OFFSET = 11'h 448;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_3_OFFSET = 11'h 44c;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_4_OFFSET = 11'h 450;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_5_OFFSET = 11'h 454;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_6_OFFSET = 11'h 458;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_7_OFFSET = 11'h 45c;
+  parameter logic [BlockAw-1:0] PINMUX_WKUP_CAUSE_OFFSET = 11'h 460;
 
 
   // Register Index
   typedef enum int {
-    PINMUX_REGWEN,
-    PINMUX_PERIPH_INSEL_0,
-    PINMUX_PERIPH_INSEL_1,
-    PINMUX_PERIPH_INSEL_2,
-    PINMUX_PERIPH_INSEL_3,
-    PINMUX_PERIPH_INSEL_4,
-    PINMUX_PERIPH_INSEL_5,
-    PINMUX_PERIPH_INSEL_6,
-    PINMUX_PERIPH_INSEL_7,
-    PINMUX_PERIPH_INSEL_8,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_0,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_1,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_2,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_3,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_4,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_5,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_6,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_7,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_8,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_9,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_10,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_11,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_12,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_13,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_14,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_15,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_16,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_17,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_18,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_19,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_20,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_21,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_22,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_23,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_24,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_25,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_26,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_27,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_28,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_29,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_30,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_31,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_32,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_33,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_34,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_35,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_36,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_37,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_38,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_39,
+    PINMUX_MIO_PERIPH_INSEL_REGWEN_40,
+    PINMUX_MIO_PERIPH_INSEL_0,
+    PINMUX_MIO_PERIPH_INSEL_1,
+    PINMUX_MIO_PERIPH_INSEL_2,
+    PINMUX_MIO_PERIPH_INSEL_3,
+    PINMUX_MIO_PERIPH_INSEL_4,
+    PINMUX_MIO_PERIPH_INSEL_5,
+    PINMUX_MIO_PERIPH_INSEL_6,
+    PINMUX_MIO_PERIPH_INSEL_7,
+    PINMUX_MIO_PERIPH_INSEL_8,
+    PINMUX_MIO_PERIPH_INSEL_9,
+    PINMUX_MIO_PERIPH_INSEL_10,
+    PINMUX_MIO_PERIPH_INSEL_11,
+    PINMUX_MIO_PERIPH_INSEL_12,
+    PINMUX_MIO_PERIPH_INSEL_13,
+    PINMUX_MIO_PERIPH_INSEL_14,
+    PINMUX_MIO_PERIPH_INSEL_15,
+    PINMUX_MIO_PERIPH_INSEL_16,
+    PINMUX_MIO_PERIPH_INSEL_17,
+    PINMUX_MIO_PERIPH_INSEL_18,
+    PINMUX_MIO_PERIPH_INSEL_19,
+    PINMUX_MIO_PERIPH_INSEL_20,
+    PINMUX_MIO_PERIPH_INSEL_21,
+    PINMUX_MIO_PERIPH_INSEL_22,
+    PINMUX_MIO_PERIPH_INSEL_23,
+    PINMUX_MIO_PERIPH_INSEL_24,
+    PINMUX_MIO_PERIPH_INSEL_25,
+    PINMUX_MIO_PERIPH_INSEL_26,
+    PINMUX_MIO_PERIPH_INSEL_27,
+    PINMUX_MIO_PERIPH_INSEL_28,
+    PINMUX_MIO_PERIPH_INSEL_29,
+    PINMUX_MIO_PERIPH_INSEL_30,
+    PINMUX_MIO_PERIPH_INSEL_31,
+    PINMUX_MIO_PERIPH_INSEL_32,
+    PINMUX_MIO_PERIPH_INSEL_33,
+    PINMUX_MIO_PERIPH_INSEL_34,
+    PINMUX_MIO_PERIPH_INSEL_35,
+    PINMUX_MIO_PERIPH_INSEL_36,
+    PINMUX_MIO_PERIPH_INSEL_37,
+    PINMUX_MIO_PERIPH_INSEL_38,
+    PINMUX_MIO_PERIPH_INSEL_39,
+    PINMUX_MIO_PERIPH_INSEL_40,
+    PINMUX_MIO_OUTSEL_REGWEN_0,
+    PINMUX_MIO_OUTSEL_REGWEN_1,
+    PINMUX_MIO_OUTSEL_REGWEN_2,
+    PINMUX_MIO_OUTSEL_REGWEN_3,
+    PINMUX_MIO_OUTSEL_REGWEN_4,
+    PINMUX_MIO_OUTSEL_REGWEN_5,
+    PINMUX_MIO_OUTSEL_REGWEN_6,
+    PINMUX_MIO_OUTSEL_REGWEN_7,
+    PINMUX_MIO_OUTSEL_REGWEN_8,
+    PINMUX_MIO_OUTSEL_REGWEN_9,
+    PINMUX_MIO_OUTSEL_REGWEN_10,
+    PINMUX_MIO_OUTSEL_REGWEN_11,
+    PINMUX_MIO_OUTSEL_REGWEN_12,
+    PINMUX_MIO_OUTSEL_REGWEN_13,
+    PINMUX_MIO_OUTSEL_REGWEN_14,
+    PINMUX_MIO_OUTSEL_REGWEN_15,
+    PINMUX_MIO_OUTSEL_REGWEN_16,
+    PINMUX_MIO_OUTSEL_REGWEN_17,
+    PINMUX_MIO_OUTSEL_REGWEN_18,
+    PINMUX_MIO_OUTSEL_REGWEN_19,
+    PINMUX_MIO_OUTSEL_REGWEN_20,
+    PINMUX_MIO_OUTSEL_REGWEN_21,
+    PINMUX_MIO_OUTSEL_REGWEN_22,
+    PINMUX_MIO_OUTSEL_REGWEN_23,
+    PINMUX_MIO_OUTSEL_REGWEN_24,
+    PINMUX_MIO_OUTSEL_REGWEN_25,
+    PINMUX_MIO_OUTSEL_REGWEN_26,
+    PINMUX_MIO_OUTSEL_REGWEN_27,
+    PINMUX_MIO_OUTSEL_REGWEN_28,
+    PINMUX_MIO_OUTSEL_REGWEN_29,
+    PINMUX_MIO_OUTSEL_REGWEN_30,
+    PINMUX_MIO_OUTSEL_REGWEN_31,
     PINMUX_MIO_OUTSEL_0,
     PINMUX_MIO_OUTSEL_1,
     PINMUX_MIO_OUTSEL_2,
@@ -161,10 +512,141 @@ package pinmux_reg_pkg;
     PINMUX_MIO_OUTSEL_4,
     PINMUX_MIO_OUTSEL_5,
     PINMUX_MIO_OUTSEL_6,
+    PINMUX_MIO_OUTSEL_7,
+    PINMUX_MIO_OUTSEL_8,
+    PINMUX_MIO_OUTSEL_9,
+    PINMUX_MIO_OUTSEL_10,
+    PINMUX_MIO_OUTSEL_11,
+    PINMUX_MIO_OUTSEL_12,
+    PINMUX_MIO_OUTSEL_13,
+    PINMUX_MIO_OUTSEL_14,
+    PINMUX_MIO_OUTSEL_15,
+    PINMUX_MIO_OUTSEL_16,
+    PINMUX_MIO_OUTSEL_17,
+    PINMUX_MIO_OUTSEL_18,
+    PINMUX_MIO_OUTSEL_19,
+    PINMUX_MIO_OUTSEL_20,
+    PINMUX_MIO_OUTSEL_21,
+    PINMUX_MIO_OUTSEL_22,
+    PINMUX_MIO_OUTSEL_23,
+    PINMUX_MIO_OUTSEL_24,
+    PINMUX_MIO_OUTSEL_25,
+    PINMUX_MIO_OUTSEL_26,
+    PINMUX_MIO_OUTSEL_27,
+    PINMUX_MIO_OUTSEL_28,
+    PINMUX_MIO_OUTSEL_29,
+    PINMUX_MIO_OUTSEL_30,
+    PINMUX_MIO_OUTSEL_31,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_0,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_1,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_2,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_3,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_4,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_5,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_6,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_7,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_8,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_9,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_10,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_11,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_12,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_13,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_14,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_15,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_16,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_17,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_18,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_19,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_20,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_21,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_22,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_23,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_24,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_25,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_26,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_27,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_28,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_29,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_30,
+    PINMUX_MIO_OUT_SLEEP_REGWEN_31,
     PINMUX_MIO_OUT_SLEEP_VAL_0,
     PINMUX_MIO_OUT_SLEEP_VAL_1,
-    PINMUX_DIO_OUT_SLEEP_VAL,
-    PINMUX_WKUP_DETECTOR_EN,
+    PINMUX_MIO_OUT_SLEEP_VAL_2,
+    PINMUX_MIO_OUT_SLEEP_VAL_3,
+    PINMUX_MIO_OUT_SLEEP_VAL_4,
+    PINMUX_MIO_OUT_SLEEP_VAL_5,
+    PINMUX_MIO_OUT_SLEEP_VAL_6,
+    PINMUX_MIO_OUT_SLEEP_VAL_7,
+    PINMUX_MIO_OUT_SLEEP_VAL_8,
+    PINMUX_MIO_OUT_SLEEP_VAL_9,
+    PINMUX_MIO_OUT_SLEEP_VAL_10,
+    PINMUX_MIO_OUT_SLEEP_VAL_11,
+    PINMUX_MIO_OUT_SLEEP_VAL_12,
+    PINMUX_MIO_OUT_SLEEP_VAL_13,
+    PINMUX_MIO_OUT_SLEEP_VAL_14,
+    PINMUX_MIO_OUT_SLEEP_VAL_15,
+    PINMUX_MIO_OUT_SLEEP_VAL_16,
+    PINMUX_MIO_OUT_SLEEP_VAL_17,
+    PINMUX_MIO_OUT_SLEEP_VAL_18,
+    PINMUX_MIO_OUT_SLEEP_VAL_19,
+    PINMUX_MIO_OUT_SLEEP_VAL_20,
+    PINMUX_MIO_OUT_SLEEP_VAL_21,
+    PINMUX_MIO_OUT_SLEEP_VAL_22,
+    PINMUX_MIO_OUT_SLEEP_VAL_23,
+    PINMUX_MIO_OUT_SLEEP_VAL_24,
+    PINMUX_MIO_OUT_SLEEP_VAL_25,
+    PINMUX_MIO_OUT_SLEEP_VAL_26,
+    PINMUX_MIO_OUT_SLEEP_VAL_27,
+    PINMUX_MIO_OUT_SLEEP_VAL_28,
+    PINMUX_MIO_OUT_SLEEP_VAL_29,
+    PINMUX_MIO_OUT_SLEEP_VAL_30,
+    PINMUX_MIO_OUT_SLEEP_VAL_31,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_0,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_1,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_2,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_3,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_4,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_5,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_6,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_7,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_8,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_9,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_10,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_11,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_12,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_13,
+    PINMUX_DIO_OUT_SLEEP_REGWEN_14,
+    PINMUX_DIO_OUT_SLEEP_VAL_0,
+    PINMUX_DIO_OUT_SLEEP_VAL_1,
+    PINMUX_DIO_OUT_SLEEP_VAL_2,
+    PINMUX_DIO_OUT_SLEEP_VAL_3,
+    PINMUX_DIO_OUT_SLEEP_VAL_4,
+    PINMUX_DIO_OUT_SLEEP_VAL_5,
+    PINMUX_DIO_OUT_SLEEP_VAL_6,
+    PINMUX_DIO_OUT_SLEEP_VAL_7,
+    PINMUX_DIO_OUT_SLEEP_VAL_8,
+    PINMUX_DIO_OUT_SLEEP_VAL_9,
+    PINMUX_DIO_OUT_SLEEP_VAL_10,
+    PINMUX_DIO_OUT_SLEEP_VAL_11,
+    PINMUX_DIO_OUT_SLEEP_VAL_12,
+    PINMUX_DIO_OUT_SLEEP_VAL_13,
+    PINMUX_DIO_OUT_SLEEP_VAL_14,
+    PINMUX_WKUP_DETECTOR_REGWEN_0,
+    PINMUX_WKUP_DETECTOR_REGWEN_1,
+    PINMUX_WKUP_DETECTOR_REGWEN_2,
+    PINMUX_WKUP_DETECTOR_REGWEN_3,
+    PINMUX_WKUP_DETECTOR_REGWEN_4,
+    PINMUX_WKUP_DETECTOR_REGWEN_5,
+    PINMUX_WKUP_DETECTOR_REGWEN_6,
+    PINMUX_WKUP_DETECTOR_REGWEN_7,
+    PINMUX_WKUP_DETECTOR_EN_0,
+    PINMUX_WKUP_DETECTOR_EN_1,
+    PINMUX_WKUP_DETECTOR_EN_2,
+    PINMUX_WKUP_DETECTOR_EN_3,
+    PINMUX_WKUP_DETECTOR_EN_4,
+    PINMUX_WKUP_DETECTOR_EN_5,
+    PINMUX_WKUP_DETECTOR_EN_6,
+    PINMUX_WKUP_DETECTOR_EN_7,
     PINMUX_WKUP_DETECTOR_0,
     PINMUX_WKUP_DETECTOR_1,
     PINMUX_WKUP_DETECTOR_2,
@@ -175,47 +657,306 @@ package pinmux_reg_pkg;
     PINMUX_WKUP_DETECTOR_7,
     PINMUX_WKUP_DETECTOR_CNT_TH_0,
     PINMUX_WKUP_DETECTOR_CNT_TH_1,
+    PINMUX_WKUP_DETECTOR_CNT_TH_2,
+    PINMUX_WKUP_DETECTOR_CNT_TH_3,
+    PINMUX_WKUP_DETECTOR_CNT_TH_4,
+    PINMUX_WKUP_DETECTOR_CNT_TH_5,
+    PINMUX_WKUP_DETECTOR_CNT_TH_6,
+    PINMUX_WKUP_DETECTOR_CNT_TH_7,
     PINMUX_WKUP_DETECTOR_PADSEL_0,
     PINMUX_WKUP_DETECTOR_PADSEL_1,
+    PINMUX_WKUP_DETECTOR_PADSEL_2,
+    PINMUX_WKUP_DETECTOR_PADSEL_3,
+    PINMUX_WKUP_DETECTOR_PADSEL_4,
+    PINMUX_WKUP_DETECTOR_PADSEL_5,
+    PINMUX_WKUP_DETECTOR_PADSEL_6,
+    PINMUX_WKUP_DETECTOR_PADSEL_7,
     PINMUX_WKUP_CAUSE
   } pinmux_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] PINMUX_PERMIT [34] = '{
-    4'b 0001, // index[ 0] PINMUX_REGWEN
-    4'b 1111, // index[ 1] PINMUX_PERIPH_INSEL_0
-    4'b 1111, // index[ 2] PINMUX_PERIPH_INSEL_1
-    4'b 1111, // index[ 3] PINMUX_PERIPH_INSEL_2
-    4'b 1111, // index[ 4] PINMUX_PERIPH_INSEL_3
-    4'b 1111, // index[ 5] PINMUX_PERIPH_INSEL_4
-    4'b 1111, // index[ 6] PINMUX_PERIPH_INSEL_5
-    4'b 1111, // index[ 7] PINMUX_PERIPH_INSEL_6
-    4'b 1111, // index[ 8] PINMUX_PERIPH_INSEL_7
-    4'b 0001, // index[ 9] PINMUX_PERIPH_INSEL_8
-    4'b 1111, // index[10] PINMUX_MIO_OUTSEL_0
-    4'b 1111, // index[11] PINMUX_MIO_OUTSEL_1
-    4'b 1111, // index[12] PINMUX_MIO_OUTSEL_2
-    4'b 1111, // index[13] PINMUX_MIO_OUTSEL_3
-    4'b 1111, // index[14] PINMUX_MIO_OUTSEL_4
-    4'b 1111, // index[15] PINMUX_MIO_OUTSEL_5
-    4'b 0011, // index[16] PINMUX_MIO_OUTSEL_6
-    4'b 1111, // index[17] PINMUX_MIO_OUT_SLEEP_VAL_0
-    4'b 1111, // index[18] PINMUX_MIO_OUT_SLEEP_VAL_1
-    4'b 1111, // index[19] PINMUX_DIO_OUT_SLEEP_VAL
-    4'b 0001, // index[20] PINMUX_WKUP_DETECTOR_EN
-    4'b 0001, // index[21] PINMUX_WKUP_DETECTOR_0
-    4'b 0001, // index[22] PINMUX_WKUP_DETECTOR_1
-    4'b 0001, // index[23] PINMUX_WKUP_DETECTOR_2
-    4'b 0001, // index[24] PINMUX_WKUP_DETECTOR_3
-    4'b 0001, // index[25] PINMUX_WKUP_DETECTOR_4
-    4'b 0001, // index[26] PINMUX_WKUP_DETECTOR_5
-    4'b 0001, // index[27] PINMUX_WKUP_DETECTOR_6
-    4'b 0001, // index[28] PINMUX_WKUP_DETECTOR_7
-    4'b 1111, // index[29] PINMUX_WKUP_DETECTOR_CNT_TH_0
-    4'b 1111, // index[30] PINMUX_WKUP_DETECTOR_CNT_TH_1
-    4'b 1111, // index[31] PINMUX_WKUP_DETECTOR_PADSEL_0
-    4'b 0011, // index[32] PINMUX_WKUP_DETECTOR_PADSEL_1
-    4'b 0001  // index[33] PINMUX_WKUP_CAUSE
+  parameter logic [3:0] PINMUX_PERMIT [281] = '{
+    4'b 0001, // index[  0] PINMUX_MIO_PERIPH_INSEL_REGWEN_0
+    4'b 0001, // index[  1] PINMUX_MIO_PERIPH_INSEL_REGWEN_1
+    4'b 0001, // index[  2] PINMUX_MIO_PERIPH_INSEL_REGWEN_2
+    4'b 0001, // index[  3] PINMUX_MIO_PERIPH_INSEL_REGWEN_3
+    4'b 0001, // index[  4] PINMUX_MIO_PERIPH_INSEL_REGWEN_4
+    4'b 0001, // index[  5] PINMUX_MIO_PERIPH_INSEL_REGWEN_5
+    4'b 0001, // index[  6] PINMUX_MIO_PERIPH_INSEL_REGWEN_6
+    4'b 0001, // index[  7] PINMUX_MIO_PERIPH_INSEL_REGWEN_7
+    4'b 0001, // index[  8] PINMUX_MIO_PERIPH_INSEL_REGWEN_8
+    4'b 0001, // index[  9] PINMUX_MIO_PERIPH_INSEL_REGWEN_9
+    4'b 0001, // index[ 10] PINMUX_MIO_PERIPH_INSEL_REGWEN_10
+    4'b 0001, // index[ 11] PINMUX_MIO_PERIPH_INSEL_REGWEN_11
+    4'b 0001, // index[ 12] PINMUX_MIO_PERIPH_INSEL_REGWEN_12
+    4'b 0001, // index[ 13] PINMUX_MIO_PERIPH_INSEL_REGWEN_13
+    4'b 0001, // index[ 14] PINMUX_MIO_PERIPH_INSEL_REGWEN_14
+    4'b 0001, // index[ 15] PINMUX_MIO_PERIPH_INSEL_REGWEN_15
+    4'b 0001, // index[ 16] PINMUX_MIO_PERIPH_INSEL_REGWEN_16
+    4'b 0001, // index[ 17] PINMUX_MIO_PERIPH_INSEL_REGWEN_17
+    4'b 0001, // index[ 18] PINMUX_MIO_PERIPH_INSEL_REGWEN_18
+    4'b 0001, // index[ 19] PINMUX_MIO_PERIPH_INSEL_REGWEN_19
+    4'b 0001, // index[ 20] PINMUX_MIO_PERIPH_INSEL_REGWEN_20
+    4'b 0001, // index[ 21] PINMUX_MIO_PERIPH_INSEL_REGWEN_21
+    4'b 0001, // index[ 22] PINMUX_MIO_PERIPH_INSEL_REGWEN_22
+    4'b 0001, // index[ 23] PINMUX_MIO_PERIPH_INSEL_REGWEN_23
+    4'b 0001, // index[ 24] PINMUX_MIO_PERIPH_INSEL_REGWEN_24
+    4'b 0001, // index[ 25] PINMUX_MIO_PERIPH_INSEL_REGWEN_25
+    4'b 0001, // index[ 26] PINMUX_MIO_PERIPH_INSEL_REGWEN_26
+    4'b 0001, // index[ 27] PINMUX_MIO_PERIPH_INSEL_REGWEN_27
+    4'b 0001, // index[ 28] PINMUX_MIO_PERIPH_INSEL_REGWEN_28
+    4'b 0001, // index[ 29] PINMUX_MIO_PERIPH_INSEL_REGWEN_29
+    4'b 0001, // index[ 30] PINMUX_MIO_PERIPH_INSEL_REGWEN_30
+    4'b 0001, // index[ 31] PINMUX_MIO_PERIPH_INSEL_REGWEN_31
+    4'b 0001, // index[ 32] PINMUX_MIO_PERIPH_INSEL_REGWEN_32
+    4'b 0001, // index[ 33] PINMUX_MIO_PERIPH_INSEL_REGWEN_33
+    4'b 0001, // index[ 34] PINMUX_MIO_PERIPH_INSEL_REGWEN_34
+    4'b 0001, // index[ 35] PINMUX_MIO_PERIPH_INSEL_REGWEN_35
+    4'b 0001, // index[ 36] PINMUX_MIO_PERIPH_INSEL_REGWEN_36
+    4'b 0001, // index[ 37] PINMUX_MIO_PERIPH_INSEL_REGWEN_37
+    4'b 0001, // index[ 38] PINMUX_MIO_PERIPH_INSEL_REGWEN_38
+    4'b 0001, // index[ 39] PINMUX_MIO_PERIPH_INSEL_REGWEN_39
+    4'b 0001, // index[ 40] PINMUX_MIO_PERIPH_INSEL_REGWEN_40
+    4'b 0001, // index[ 41] PINMUX_MIO_PERIPH_INSEL_0
+    4'b 0001, // index[ 42] PINMUX_MIO_PERIPH_INSEL_1
+    4'b 0001, // index[ 43] PINMUX_MIO_PERIPH_INSEL_2
+    4'b 0001, // index[ 44] PINMUX_MIO_PERIPH_INSEL_3
+    4'b 0001, // index[ 45] PINMUX_MIO_PERIPH_INSEL_4
+    4'b 0001, // index[ 46] PINMUX_MIO_PERIPH_INSEL_5
+    4'b 0001, // index[ 47] PINMUX_MIO_PERIPH_INSEL_6
+    4'b 0001, // index[ 48] PINMUX_MIO_PERIPH_INSEL_7
+    4'b 0001, // index[ 49] PINMUX_MIO_PERIPH_INSEL_8
+    4'b 0001, // index[ 50] PINMUX_MIO_PERIPH_INSEL_9
+    4'b 0001, // index[ 51] PINMUX_MIO_PERIPH_INSEL_10
+    4'b 0001, // index[ 52] PINMUX_MIO_PERIPH_INSEL_11
+    4'b 0001, // index[ 53] PINMUX_MIO_PERIPH_INSEL_12
+    4'b 0001, // index[ 54] PINMUX_MIO_PERIPH_INSEL_13
+    4'b 0001, // index[ 55] PINMUX_MIO_PERIPH_INSEL_14
+    4'b 0001, // index[ 56] PINMUX_MIO_PERIPH_INSEL_15
+    4'b 0001, // index[ 57] PINMUX_MIO_PERIPH_INSEL_16
+    4'b 0001, // index[ 58] PINMUX_MIO_PERIPH_INSEL_17
+    4'b 0001, // index[ 59] PINMUX_MIO_PERIPH_INSEL_18
+    4'b 0001, // index[ 60] PINMUX_MIO_PERIPH_INSEL_19
+    4'b 0001, // index[ 61] PINMUX_MIO_PERIPH_INSEL_20
+    4'b 0001, // index[ 62] PINMUX_MIO_PERIPH_INSEL_21
+    4'b 0001, // index[ 63] PINMUX_MIO_PERIPH_INSEL_22
+    4'b 0001, // index[ 64] PINMUX_MIO_PERIPH_INSEL_23
+    4'b 0001, // index[ 65] PINMUX_MIO_PERIPH_INSEL_24
+    4'b 0001, // index[ 66] PINMUX_MIO_PERIPH_INSEL_25
+    4'b 0001, // index[ 67] PINMUX_MIO_PERIPH_INSEL_26
+    4'b 0001, // index[ 68] PINMUX_MIO_PERIPH_INSEL_27
+    4'b 0001, // index[ 69] PINMUX_MIO_PERIPH_INSEL_28
+    4'b 0001, // index[ 70] PINMUX_MIO_PERIPH_INSEL_29
+    4'b 0001, // index[ 71] PINMUX_MIO_PERIPH_INSEL_30
+    4'b 0001, // index[ 72] PINMUX_MIO_PERIPH_INSEL_31
+    4'b 0001, // index[ 73] PINMUX_MIO_PERIPH_INSEL_32
+    4'b 0001, // index[ 74] PINMUX_MIO_PERIPH_INSEL_33
+    4'b 0001, // index[ 75] PINMUX_MIO_PERIPH_INSEL_34
+    4'b 0001, // index[ 76] PINMUX_MIO_PERIPH_INSEL_35
+    4'b 0001, // index[ 77] PINMUX_MIO_PERIPH_INSEL_36
+    4'b 0001, // index[ 78] PINMUX_MIO_PERIPH_INSEL_37
+    4'b 0001, // index[ 79] PINMUX_MIO_PERIPH_INSEL_38
+    4'b 0001, // index[ 80] PINMUX_MIO_PERIPH_INSEL_39
+    4'b 0001, // index[ 81] PINMUX_MIO_PERIPH_INSEL_40
+    4'b 0001, // index[ 82] PINMUX_MIO_OUTSEL_REGWEN_0
+    4'b 0001, // index[ 83] PINMUX_MIO_OUTSEL_REGWEN_1
+    4'b 0001, // index[ 84] PINMUX_MIO_OUTSEL_REGWEN_2
+    4'b 0001, // index[ 85] PINMUX_MIO_OUTSEL_REGWEN_3
+    4'b 0001, // index[ 86] PINMUX_MIO_OUTSEL_REGWEN_4
+    4'b 0001, // index[ 87] PINMUX_MIO_OUTSEL_REGWEN_5
+    4'b 0001, // index[ 88] PINMUX_MIO_OUTSEL_REGWEN_6
+    4'b 0001, // index[ 89] PINMUX_MIO_OUTSEL_REGWEN_7
+    4'b 0001, // index[ 90] PINMUX_MIO_OUTSEL_REGWEN_8
+    4'b 0001, // index[ 91] PINMUX_MIO_OUTSEL_REGWEN_9
+    4'b 0001, // index[ 92] PINMUX_MIO_OUTSEL_REGWEN_10
+    4'b 0001, // index[ 93] PINMUX_MIO_OUTSEL_REGWEN_11
+    4'b 0001, // index[ 94] PINMUX_MIO_OUTSEL_REGWEN_12
+    4'b 0001, // index[ 95] PINMUX_MIO_OUTSEL_REGWEN_13
+    4'b 0001, // index[ 96] PINMUX_MIO_OUTSEL_REGWEN_14
+    4'b 0001, // index[ 97] PINMUX_MIO_OUTSEL_REGWEN_15
+    4'b 0001, // index[ 98] PINMUX_MIO_OUTSEL_REGWEN_16
+    4'b 0001, // index[ 99] PINMUX_MIO_OUTSEL_REGWEN_17
+    4'b 0001, // index[100] PINMUX_MIO_OUTSEL_REGWEN_18
+    4'b 0001, // index[101] PINMUX_MIO_OUTSEL_REGWEN_19
+    4'b 0001, // index[102] PINMUX_MIO_OUTSEL_REGWEN_20
+    4'b 0001, // index[103] PINMUX_MIO_OUTSEL_REGWEN_21
+    4'b 0001, // index[104] PINMUX_MIO_OUTSEL_REGWEN_22
+    4'b 0001, // index[105] PINMUX_MIO_OUTSEL_REGWEN_23
+    4'b 0001, // index[106] PINMUX_MIO_OUTSEL_REGWEN_24
+    4'b 0001, // index[107] PINMUX_MIO_OUTSEL_REGWEN_25
+    4'b 0001, // index[108] PINMUX_MIO_OUTSEL_REGWEN_26
+    4'b 0001, // index[109] PINMUX_MIO_OUTSEL_REGWEN_27
+    4'b 0001, // index[110] PINMUX_MIO_OUTSEL_REGWEN_28
+    4'b 0001, // index[111] PINMUX_MIO_OUTSEL_REGWEN_29
+    4'b 0001, // index[112] PINMUX_MIO_OUTSEL_REGWEN_30
+    4'b 0001, // index[113] PINMUX_MIO_OUTSEL_REGWEN_31
+    4'b 0001, // index[114] PINMUX_MIO_OUTSEL_0
+    4'b 0001, // index[115] PINMUX_MIO_OUTSEL_1
+    4'b 0001, // index[116] PINMUX_MIO_OUTSEL_2
+    4'b 0001, // index[117] PINMUX_MIO_OUTSEL_3
+    4'b 0001, // index[118] PINMUX_MIO_OUTSEL_4
+    4'b 0001, // index[119] PINMUX_MIO_OUTSEL_5
+    4'b 0001, // index[120] PINMUX_MIO_OUTSEL_6
+    4'b 0001, // index[121] PINMUX_MIO_OUTSEL_7
+    4'b 0001, // index[122] PINMUX_MIO_OUTSEL_8
+    4'b 0001, // index[123] PINMUX_MIO_OUTSEL_9
+    4'b 0001, // index[124] PINMUX_MIO_OUTSEL_10
+    4'b 0001, // index[125] PINMUX_MIO_OUTSEL_11
+    4'b 0001, // index[126] PINMUX_MIO_OUTSEL_12
+    4'b 0001, // index[127] PINMUX_MIO_OUTSEL_13
+    4'b 0001, // index[128] PINMUX_MIO_OUTSEL_14
+    4'b 0001, // index[129] PINMUX_MIO_OUTSEL_15
+    4'b 0001, // index[130] PINMUX_MIO_OUTSEL_16
+    4'b 0001, // index[131] PINMUX_MIO_OUTSEL_17
+    4'b 0001, // index[132] PINMUX_MIO_OUTSEL_18
+    4'b 0001, // index[133] PINMUX_MIO_OUTSEL_19
+    4'b 0001, // index[134] PINMUX_MIO_OUTSEL_20
+    4'b 0001, // index[135] PINMUX_MIO_OUTSEL_21
+    4'b 0001, // index[136] PINMUX_MIO_OUTSEL_22
+    4'b 0001, // index[137] PINMUX_MIO_OUTSEL_23
+    4'b 0001, // index[138] PINMUX_MIO_OUTSEL_24
+    4'b 0001, // index[139] PINMUX_MIO_OUTSEL_25
+    4'b 0001, // index[140] PINMUX_MIO_OUTSEL_26
+    4'b 0001, // index[141] PINMUX_MIO_OUTSEL_27
+    4'b 0001, // index[142] PINMUX_MIO_OUTSEL_28
+    4'b 0001, // index[143] PINMUX_MIO_OUTSEL_29
+    4'b 0001, // index[144] PINMUX_MIO_OUTSEL_30
+    4'b 0001, // index[145] PINMUX_MIO_OUTSEL_31
+    4'b 0001, // index[146] PINMUX_MIO_OUT_SLEEP_REGWEN_0
+    4'b 0001, // index[147] PINMUX_MIO_OUT_SLEEP_REGWEN_1
+    4'b 0001, // index[148] PINMUX_MIO_OUT_SLEEP_REGWEN_2
+    4'b 0001, // index[149] PINMUX_MIO_OUT_SLEEP_REGWEN_3
+    4'b 0001, // index[150] PINMUX_MIO_OUT_SLEEP_REGWEN_4
+    4'b 0001, // index[151] PINMUX_MIO_OUT_SLEEP_REGWEN_5
+    4'b 0001, // index[152] PINMUX_MIO_OUT_SLEEP_REGWEN_6
+    4'b 0001, // index[153] PINMUX_MIO_OUT_SLEEP_REGWEN_7
+    4'b 0001, // index[154] PINMUX_MIO_OUT_SLEEP_REGWEN_8
+    4'b 0001, // index[155] PINMUX_MIO_OUT_SLEEP_REGWEN_9
+    4'b 0001, // index[156] PINMUX_MIO_OUT_SLEEP_REGWEN_10
+    4'b 0001, // index[157] PINMUX_MIO_OUT_SLEEP_REGWEN_11
+    4'b 0001, // index[158] PINMUX_MIO_OUT_SLEEP_REGWEN_12
+    4'b 0001, // index[159] PINMUX_MIO_OUT_SLEEP_REGWEN_13
+    4'b 0001, // index[160] PINMUX_MIO_OUT_SLEEP_REGWEN_14
+    4'b 0001, // index[161] PINMUX_MIO_OUT_SLEEP_REGWEN_15
+    4'b 0001, // index[162] PINMUX_MIO_OUT_SLEEP_REGWEN_16
+    4'b 0001, // index[163] PINMUX_MIO_OUT_SLEEP_REGWEN_17
+    4'b 0001, // index[164] PINMUX_MIO_OUT_SLEEP_REGWEN_18
+    4'b 0001, // index[165] PINMUX_MIO_OUT_SLEEP_REGWEN_19
+    4'b 0001, // index[166] PINMUX_MIO_OUT_SLEEP_REGWEN_20
+    4'b 0001, // index[167] PINMUX_MIO_OUT_SLEEP_REGWEN_21
+    4'b 0001, // index[168] PINMUX_MIO_OUT_SLEEP_REGWEN_22
+    4'b 0001, // index[169] PINMUX_MIO_OUT_SLEEP_REGWEN_23
+    4'b 0001, // index[170] PINMUX_MIO_OUT_SLEEP_REGWEN_24
+    4'b 0001, // index[171] PINMUX_MIO_OUT_SLEEP_REGWEN_25
+    4'b 0001, // index[172] PINMUX_MIO_OUT_SLEEP_REGWEN_26
+    4'b 0001, // index[173] PINMUX_MIO_OUT_SLEEP_REGWEN_27
+    4'b 0001, // index[174] PINMUX_MIO_OUT_SLEEP_REGWEN_28
+    4'b 0001, // index[175] PINMUX_MIO_OUT_SLEEP_REGWEN_29
+    4'b 0001, // index[176] PINMUX_MIO_OUT_SLEEP_REGWEN_30
+    4'b 0001, // index[177] PINMUX_MIO_OUT_SLEEP_REGWEN_31
+    4'b 0001, // index[178] PINMUX_MIO_OUT_SLEEP_VAL_0
+    4'b 0001, // index[179] PINMUX_MIO_OUT_SLEEP_VAL_1
+    4'b 0001, // index[180] PINMUX_MIO_OUT_SLEEP_VAL_2
+    4'b 0001, // index[181] PINMUX_MIO_OUT_SLEEP_VAL_3
+    4'b 0001, // index[182] PINMUX_MIO_OUT_SLEEP_VAL_4
+    4'b 0001, // index[183] PINMUX_MIO_OUT_SLEEP_VAL_5
+    4'b 0001, // index[184] PINMUX_MIO_OUT_SLEEP_VAL_6
+    4'b 0001, // index[185] PINMUX_MIO_OUT_SLEEP_VAL_7
+    4'b 0001, // index[186] PINMUX_MIO_OUT_SLEEP_VAL_8
+    4'b 0001, // index[187] PINMUX_MIO_OUT_SLEEP_VAL_9
+    4'b 0001, // index[188] PINMUX_MIO_OUT_SLEEP_VAL_10
+    4'b 0001, // index[189] PINMUX_MIO_OUT_SLEEP_VAL_11
+    4'b 0001, // index[190] PINMUX_MIO_OUT_SLEEP_VAL_12
+    4'b 0001, // index[191] PINMUX_MIO_OUT_SLEEP_VAL_13
+    4'b 0001, // index[192] PINMUX_MIO_OUT_SLEEP_VAL_14
+    4'b 0001, // index[193] PINMUX_MIO_OUT_SLEEP_VAL_15
+    4'b 0001, // index[194] PINMUX_MIO_OUT_SLEEP_VAL_16
+    4'b 0001, // index[195] PINMUX_MIO_OUT_SLEEP_VAL_17
+    4'b 0001, // index[196] PINMUX_MIO_OUT_SLEEP_VAL_18
+    4'b 0001, // index[197] PINMUX_MIO_OUT_SLEEP_VAL_19
+    4'b 0001, // index[198] PINMUX_MIO_OUT_SLEEP_VAL_20
+    4'b 0001, // index[199] PINMUX_MIO_OUT_SLEEP_VAL_21
+    4'b 0001, // index[200] PINMUX_MIO_OUT_SLEEP_VAL_22
+    4'b 0001, // index[201] PINMUX_MIO_OUT_SLEEP_VAL_23
+    4'b 0001, // index[202] PINMUX_MIO_OUT_SLEEP_VAL_24
+    4'b 0001, // index[203] PINMUX_MIO_OUT_SLEEP_VAL_25
+    4'b 0001, // index[204] PINMUX_MIO_OUT_SLEEP_VAL_26
+    4'b 0001, // index[205] PINMUX_MIO_OUT_SLEEP_VAL_27
+    4'b 0001, // index[206] PINMUX_MIO_OUT_SLEEP_VAL_28
+    4'b 0001, // index[207] PINMUX_MIO_OUT_SLEEP_VAL_29
+    4'b 0001, // index[208] PINMUX_MIO_OUT_SLEEP_VAL_30
+    4'b 0001, // index[209] PINMUX_MIO_OUT_SLEEP_VAL_31
+    4'b 0001, // index[210] PINMUX_DIO_OUT_SLEEP_REGWEN_0
+    4'b 0001, // index[211] PINMUX_DIO_OUT_SLEEP_REGWEN_1
+    4'b 0001, // index[212] PINMUX_DIO_OUT_SLEEP_REGWEN_2
+    4'b 0001, // index[213] PINMUX_DIO_OUT_SLEEP_REGWEN_3
+    4'b 0001, // index[214] PINMUX_DIO_OUT_SLEEP_REGWEN_4
+    4'b 0001, // index[215] PINMUX_DIO_OUT_SLEEP_REGWEN_5
+    4'b 0001, // index[216] PINMUX_DIO_OUT_SLEEP_REGWEN_6
+    4'b 0001, // index[217] PINMUX_DIO_OUT_SLEEP_REGWEN_7
+    4'b 0001, // index[218] PINMUX_DIO_OUT_SLEEP_REGWEN_8
+    4'b 0001, // index[219] PINMUX_DIO_OUT_SLEEP_REGWEN_9
+    4'b 0001, // index[220] PINMUX_DIO_OUT_SLEEP_REGWEN_10
+    4'b 0001, // index[221] PINMUX_DIO_OUT_SLEEP_REGWEN_11
+    4'b 0001, // index[222] PINMUX_DIO_OUT_SLEEP_REGWEN_12
+    4'b 0001, // index[223] PINMUX_DIO_OUT_SLEEP_REGWEN_13
+    4'b 0001, // index[224] PINMUX_DIO_OUT_SLEEP_REGWEN_14
+    4'b 0001, // index[225] PINMUX_DIO_OUT_SLEEP_VAL_0
+    4'b 0001, // index[226] PINMUX_DIO_OUT_SLEEP_VAL_1
+    4'b 0001, // index[227] PINMUX_DIO_OUT_SLEEP_VAL_2
+    4'b 0001, // index[228] PINMUX_DIO_OUT_SLEEP_VAL_3
+    4'b 0001, // index[229] PINMUX_DIO_OUT_SLEEP_VAL_4
+    4'b 0001, // index[230] PINMUX_DIO_OUT_SLEEP_VAL_5
+    4'b 0001, // index[231] PINMUX_DIO_OUT_SLEEP_VAL_6
+    4'b 0001, // index[232] PINMUX_DIO_OUT_SLEEP_VAL_7
+    4'b 0001, // index[233] PINMUX_DIO_OUT_SLEEP_VAL_8
+    4'b 0001, // index[234] PINMUX_DIO_OUT_SLEEP_VAL_9
+    4'b 0001, // index[235] PINMUX_DIO_OUT_SLEEP_VAL_10
+    4'b 0001, // index[236] PINMUX_DIO_OUT_SLEEP_VAL_11
+    4'b 0001, // index[237] PINMUX_DIO_OUT_SLEEP_VAL_12
+    4'b 0001, // index[238] PINMUX_DIO_OUT_SLEEP_VAL_13
+    4'b 0001, // index[239] PINMUX_DIO_OUT_SLEEP_VAL_14
+    4'b 0001, // index[240] PINMUX_WKUP_DETECTOR_REGWEN_0
+    4'b 0001, // index[241] PINMUX_WKUP_DETECTOR_REGWEN_1
+    4'b 0001, // index[242] PINMUX_WKUP_DETECTOR_REGWEN_2
+    4'b 0001, // index[243] PINMUX_WKUP_DETECTOR_REGWEN_3
+    4'b 0001, // index[244] PINMUX_WKUP_DETECTOR_REGWEN_4
+    4'b 0001, // index[245] PINMUX_WKUP_DETECTOR_REGWEN_5
+    4'b 0001, // index[246] PINMUX_WKUP_DETECTOR_REGWEN_6
+    4'b 0001, // index[247] PINMUX_WKUP_DETECTOR_REGWEN_7
+    4'b 0001, // index[248] PINMUX_WKUP_DETECTOR_EN_0
+    4'b 0001, // index[249] PINMUX_WKUP_DETECTOR_EN_1
+    4'b 0001, // index[250] PINMUX_WKUP_DETECTOR_EN_2
+    4'b 0001, // index[251] PINMUX_WKUP_DETECTOR_EN_3
+    4'b 0001, // index[252] PINMUX_WKUP_DETECTOR_EN_4
+    4'b 0001, // index[253] PINMUX_WKUP_DETECTOR_EN_5
+    4'b 0001, // index[254] PINMUX_WKUP_DETECTOR_EN_6
+    4'b 0001, // index[255] PINMUX_WKUP_DETECTOR_EN_7
+    4'b 0001, // index[256] PINMUX_WKUP_DETECTOR_0
+    4'b 0001, // index[257] PINMUX_WKUP_DETECTOR_1
+    4'b 0001, // index[258] PINMUX_WKUP_DETECTOR_2
+    4'b 0001, // index[259] PINMUX_WKUP_DETECTOR_3
+    4'b 0001, // index[260] PINMUX_WKUP_DETECTOR_4
+    4'b 0001, // index[261] PINMUX_WKUP_DETECTOR_5
+    4'b 0001, // index[262] PINMUX_WKUP_DETECTOR_6
+    4'b 0001, // index[263] PINMUX_WKUP_DETECTOR_7
+    4'b 0001, // index[264] PINMUX_WKUP_DETECTOR_CNT_TH_0
+    4'b 0001, // index[265] PINMUX_WKUP_DETECTOR_CNT_TH_1
+    4'b 0001, // index[266] PINMUX_WKUP_DETECTOR_CNT_TH_2
+    4'b 0001, // index[267] PINMUX_WKUP_DETECTOR_CNT_TH_3
+    4'b 0001, // index[268] PINMUX_WKUP_DETECTOR_CNT_TH_4
+    4'b 0001, // index[269] PINMUX_WKUP_DETECTOR_CNT_TH_5
+    4'b 0001, // index[270] PINMUX_WKUP_DETECTOR_CNT_TH_6
+    4'b 0001, // index[271] PINMUX_WKUP_DETECTOR_CNT_TH_7
+    4'b 0001, // index[272] PINMUX_WKUP_DETECTOR_PADSEL_0
+    4'b 0001, // index[273] PINMUX_WKUP_DETECTOR_PADSEL_1
+    4'b 0001, // index[274] PINMUX_WKUP_DETECTOR_PADSEL_2
+    4'b 0001, // index[275] PINMUX_WKUP_DETECTOR_PADSEL_3
+    4'b 0001, // index[276] PINMUX_WKUP_DETECTOR_PADSEL_4
+    4'b 0001, // index[277] PINMUX_WKUP_DETECTOR_PADSEL_5
+    4'b 0001, // index[278] PINMUX_WKUP_DETECTOR_PADSEL_6
+    4'b 0001, // index[279] PINMUX_WKUP_DETECTOR_PADSEL_7
+    4'b 0001  // index[280] PINMUX_WKUP_CAUSE
   };
 endpackage
 

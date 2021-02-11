@@ -22,7 +22,7 @@ def main():
     parser.add_argument('--n_mio_periph_in',
                         type=int,
                         help='Number of muxed peripheral inputs',
-                        default=32)
+                        default=33)
     parser.add_argument('--n_mio_periph_out',
                         type=int,
                         help='Number of muxed peripheral outputs',

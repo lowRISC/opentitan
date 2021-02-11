@@ -200,7 +200,7 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
 
   for (genvar k = 0; k < NMioPeriphIn; k++) begin : gen_mio_periph_in
     // index using configured insel
-    assign mio_to_periph_o[k] = mio_data_mux[reg2hw.periph_insel[k].q];
+    assign mio_to_periph_o[k] = mio_data_mux[reg2hw.mio_periph_insel[k].q];
   end
 
   ////////////////
