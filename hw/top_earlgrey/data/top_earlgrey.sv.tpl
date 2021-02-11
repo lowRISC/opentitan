@@ -369,18 +369,18 @@ module top_${top["name"]} #(
     % for key, value in resets.items():
     .${key}   (${value}),
     % endfor
-    .tl_i     (${m["name"]}_tl_req),
-    .tl_o     (${m["name"]}_tl_rsp),
-
-    .req_o    (${m["name"]}_req),
-    .gnt_i    (${m["name"]}_gnt),
-    .we_o     (${m["name"]}_we),
-    .addr_o   (${m["name"]}_addr),
-    .wdata_o  (${m["name"]}_wdata),
-    .wmask_o  (${m["name"]}_wmask),
-    .rdata_i  (${m["name"]}_rdata),
-    .rvalid_i (${m["name"]}_rvalid),
-    .rerror_i (${m["name"]}_rerror)
+    .tl_i        (${m["name"]}_tl_req),
+    .tl_o        (${m["name"]}_tl_rsp),
+    .en_ifetch_i (1'b1),
+    .req_o       (${m["name"]}_req),
+    .gnt_i       (${m["name"]}_gnt),
+    .we_o        (${m["name"]}_we),
+    .addr_o      (${m["name"]}_addr),
+    .wdata_o     (${m["name"]}_wdata),
+    .wmask_o     (${m["name"]}_wmask),
+    .rdata_i     (${m["name"]}_rdata),
+    .rvalid_i    (${m["name"]}_rvalid),
+    .rerror_i    (${m["name"]}_rerror)
   );
 
   prim_ram_1p_scr #(
@@ -442,18 +442,18 @@ module top_${top["name"]} #(
     .${key}   (${value}),
     % endfor
 
-    .tl_i     (${m["name"]}_tl_req),
-    .tl_o     (${m["name"]}_tl_rsp),
-
-    .req_o    (${m["name"]}_req),
-    .gnt_i    (1'b1), // Always grant as only one requester exists
-    .we_o     (),
-    .addr_o   (${m["name"]}_addr),
-    .wdata_o  (),
-    .wmask_o  (),
-    .rdata_i  (${m["name"]}_rdata),
-    .rvalid_i (${m["name"]}_rvalid),
-    .rerror_i (2'b00)
+    .tl_i        (${m["name"]}_tl_req),
+    .tl_o        (${m["name"]}_tl_rsp),
+    .en_ifetch_i (1'b1),
+    .req_o       (${m["name"]}_req),
+    .gnt_i       (1'b1), // Always grant as only one requester exists
+    .we_o        (),
+    .addr_o      (${m["name"]}_addr),
+    .wdata_o     (),
+    .wmask_o     (),
+    .rdata_i     (${m["name"]}_rdata),
+    .rvalid_i    (${m["name"]}_rvalid),
+    .rerror_i    (2'b00)
   );
 
   prim_rom_adv #(
@@ -498,18 +498,18 @@ module top_${top["name"]} #(
     .${key}   (${value}),
     % endfor
 
-    .tl_i     (${m["name"]}_tl_req),
-    .tl_o     (${m["name"]}_tl_rsp),
-
-    .req_o    (flash_host_req),
-    .gnt_i    (flash_host_req_rdy),
-    .we_o     (),
-    .addr_o   (flash_host_addr),
-    .wdata_o  (),
-    .wmask_o  (),
-    .rdata_i  (flash_host_rdata),
-    .rvalid_i (flash_host_req_done),
-    .rerror_i ({flash_host_rderr,1'b0})
+    .tl_i        (${m["name"]}_tl_req),
+    .tl_o        (${m["name"]}_tl_rsp),
+    .en_ifetch_i (1'b1), // tie this to secure boot somehow
+    .req_o       (flash_host_req),
+    .gnt_i       (flash_host_req_rdy),
+    .we_o        (),
+    .addr_o      (flash_host_addr),
+    .wdata_o     (),
+    .wmask_o     (),
+    .rdata_i     (flash_host_rdata),
+    .rvalid_i    (flash_host_req_done),
+    .rerror_i    ({flash_host_rderr,1'b0})
   );
 
   flash_phy u_flash_${m["name"]} (

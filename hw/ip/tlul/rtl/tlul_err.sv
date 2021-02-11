@@ -27,8 +27,13 @@ module tlul_err import tlul_pkg::*; (
   assign op_partial = (tl_i.a_opcode == PutPartialData);
   assign op_get     = (tl_i.a_opcode == Get);
 
+  // An instruction type transaction cannot be write
+  logic instr_wr_err;
+  assign instr_wr_err = (tl_i.a_user.tl_type == InstrType) &
+                        (op_full | op_partial);
+
   // Anything that doesn't fall into the permitted category, it raises an error
-  assign err_o = ~(opcode_allowed & a_config_allowed);
+  assign err_o = ~(opcode_allowed & a_config_allowed) | instr_wr_err;
 
   // opcode check
   assign opcode_allowed = (tl_i.a_opcode == PutFullData)
@@ -92,4 +97,3 @@ module tlul_err import tlul_pkg::*; (
   `ASSERT_INIT(dataWidthOnly32_A, DW == 32)
 
 endmodule
-

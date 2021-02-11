@@ -11,7 +11,7 @@
  *   it means that aliasing can happen if target device size in TL-UL crossbar is bigger
  *   than SRAM size
  */
-module tlul_adapter_sram #(
+module tlul_adapter_sram import tlul_pkg::*; #(
   parameter int SramAw      = 12,
   parameter int SramDw      = 32, // Must be multiple of the TL width
   parameter int Outstanding = 1,  // Only one request is accepted
@@ -23,8 +23,11 @@ module tlul_adapter_sram #(
   input   rst_ni,
 
   // TL-UL interface
-  input   tlul_pkg::tl_h2d_t  tl_i,
-  output  tlul_pkg::tl_d2h_t  tl_o,
+  input   tl_h2d_t          tl_i,
+  output  tl_d2h_t          tl_o,
+
+  // control interface
+  input   tl_instr_en_e     en_ifetch_i,
 
   // SRAM interface
   output logic              req_o,
@@ -37,8 +40,6 @@ module tlul_adapter_sram #(
   input                     rvalid_i,
   input        [1:0]        rerror_i // 2 bit error [1]: Uncorrectable, [0]: Correctable
 );
-
-  import tlul_pkg::*;
 
   localparam int SramByte = SramDw/8;
   localparam int DataBitWidth = prim_util_pkg::vbits(SramByte);
@@ -91,6 +92,7 @@ module tlul_adapter_sram #(
 
   logic error_internal; // Internal protocol error checker
   logic wr_attr_error;
+  logic instr_error;
   logic wr_vld_error;
   logic rd_vld_error;
   logic tlul_error;     // Error from `tlul_err` module
@@ -198,6 +200,10 @@ module tlul_adapter_sram #(
                          (ByteAccess == 0) ? (tl_i.a_mask != '1 || tl_i.a_size != 2'h2) : 1'b0 :
                          1'b0;
 
+  // An instruction type transaction is only valid if en_ifetch is enabled
+  assign instr_error = tl_i.a_user.tl_type == InstrType &
+                       en_ifetch_i == InstrDis;
+
   if (ErrOnWrite == 1) begin : gen_no_writes
     assign wr_vld_error = tl_i.a_opcode != Get;
   end else begin : gen_writes_allowed
@@ -217,7 +223,7 @@ module tlul_adapter_sram #(
     .err_o (tlul_error)
   );
 
-  assign error_internal = wr_attr_error | wr_vld_error | rd_vld_error | tlul_error;
+  assign error_internal = wr_attr_error | wr_vld_error | rd_vld_error | instr_error | tlul_error;
   // End: Request Error Detection
 
   assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted

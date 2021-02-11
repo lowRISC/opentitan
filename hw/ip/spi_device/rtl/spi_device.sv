@@ -638,18 +638,18 @@ module spi_device (
     .clk_i,
     .rst_ni,
 
-    .tl_i (tl_sram_h2d [0]),
-    .tl_o (tl_sram_d2h [0]),
-
-    .req_o    (mem_a_req),
-    .gnt_i    (mem_a_req),  //Always grant when request
-    .we_o     (mem_a_write),
-    .addr_o   (mem_a_addr),
-    .wdata_o  (mem_a_wdata),
-    .wmask_o  (),           // Not used
-    .rdata_i  (mem_a_rdata),
-    .rvalid_i (mem_a_rvalid),
-    .rerror_i (mem_a_rerror)
+    .tl_i        (tl_sram_h2d [0]),
+    .tl_o        (tl_sram_d2h [0]),
+    .en_ifetch_i (tlul_pkg::InstrDis),
+    .req_o       (mem_a_req),
+    .gnt_i       (mem_a_req),  //Always grant when request
+    .we_o        (mem_a_write),
+    .addr_o      (mem_a_addr),
+    .wdata_o     (mem_a_wdata),
+    .wmask_o     (),           // Not used
+    .rdata_i     (mem_a_rdata),
+    .rvalid_i    (mem_a_rvalid),
+    .rerror_i    (mem_a_rerror)
   );
 
   // SRAM Wrapper

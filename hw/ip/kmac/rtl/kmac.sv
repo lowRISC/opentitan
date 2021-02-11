@@ -639,19 +639,19 @@ module kmac
   ) u_tlul_adapter_msgfifo (
     .clk_i,
     .rst_ni,
+    .en_ifetch_i (tlul_pkg::InstrDis),
+    .tl_i        (tl_win_h2d[WinMsgFifo]),
+    .tl_o        (tl_win_d2h[WinMsgFifo]),
 
-    .tl_i (tl_win_h2d[WinMsgFifo]),
-    .tl_o (tl_win_d2h[WinMsgFifo]),
-
-    .req_o    (tlram_req),
-    .gnt_i    (tlram_gnt),
-    .we_o     (tlram_we ),
-    .addr_o   (tlram_addr),
-    .wdata_o  (tlram_wdata),
-    .wmask_o  (tlram_wmask),
-    .rdata_i  (tlram_rdata),
-    .rvalid_i (tlram_rvalid),
-    .rerror_i (tlram_rerror)
+    .req_o       (tlram_req),
+    .gnt_i       (tlram_gnt),
+    .we_o        (tlram_we ),
+    .addr_o      (tlram_addr),
+    .wdata_o     (tlram_wdata),
+    .wmask_o     (tlram_wmask),
+    .rdata_i     (tlram_rdata),
+    .rvalid_i    (tlram_rvalid),
+    .rerror_i    (tlram_rerror)
   );
 
   assign sw_msg_valid = tlram_req & tlram_we ;
@@ -886,4 +886,3 @@ module kmac
   // Command input should be onehot0
   `ASSUME(CmdOneHot0_M, reg2hw.cmd.qe |-> $onehot0(reg2hw.cmd.q))
 endmodule
-
