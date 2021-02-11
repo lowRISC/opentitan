@@ -97,13 +97,18 @@ def main():
                 "at least a byte (8 bits) wide. You chose %d." % (args.n, ))
             sys.exit(1)
 
+    if args.m < 2:
+        log.error(
+            'Number of states %d must be at least 2.' % (args.m))
+        sys.exit(1)
+
     if args.m > 2**args.n:
         log.error(
             'Statespace 2^%d not large enough to accommodate %d states.' %
             (args.n, args.m))
         sys.exit(1)
 
-    if args.d >= args.n:
+    if (args.d >= args.n) and not(args.d == args.n and args.m == 2):
         log.error(
             'State is only %d bits wide, which is not enough to fulfill a '
             'minimum Hamming distance constraint of %d. ' % (args.n, args.d))
