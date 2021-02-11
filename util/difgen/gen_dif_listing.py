@@ -5,10 +5,11 @@
 Generate HTML documentation for Device Interface Functions (DIFs)
 """
 
+import copy
 import logging as log
 import subprocess
-
 import xml.etree.ElementTree as ET
+
 
 # Turn the Doxygen multi-file XML output into one giant XML file (and parse it
 # into a python object), using the provided XLST file.
@@ -70,7 +71,7 @@ def gen_listing_html(combined_xml, dif_header, dif_listings_html):
 # Generate HTML link for single function, using info returned from
 # get_difref_info
 def gen_difref_html(function_info, difref_html):
-    difref_html.write('<a href="{full_url}" title="{description}">'.format(**function_info))
+    difref_html.write('<a href="{full_url}">'.format(**function_info))
     difref_html.write('<code>{name}</code>'.format(**function_info))
     difref_html.write('</a>\n')
 
@@ -109,7 +110,7 @@ def _get_dif_function_info(compound, file_id):
         func_info["name"] = _get_text_or_empty(m, "name")
         func_info["prototype"] = _get_text_or_empty(
             m, "definition") + _get_text_or_empty(m, "argsstring")
-        func_info["description"] = _get_text_or_empty(m,
+        func_info["description"] = _get_html_or_empty(m,
                                                       "briefdescription/para")
 
         functions.append(func_info)
@@ -117,11 +118,44 @@ def _get_dif_function_info(compound, file_id):
     return functions
 
 
-def _get_text_or_empty(element, xpath):
+def _get_html_or_empty(element: ET.Element, xpath: str) -> str:
+    """ Get a minimal HTML-rendering of the children in an element.
+
+    element is expected to be a docCmdGroup according to the DoxyGen schema [1],
+    but only a very minimal subset of formatting is transferred to semantic
+    HTML. However, the tag structure is retained by transforming all tags into
+    HTML `span` tags with a class attribute `doxygentag-ORIGINALTAGNAME`. This
+    can be used to write CSS targeting specific Doxygen tags and recreate the
+    intended formatting.
+
+    In addtion, the following semantic transformations are performed:
+    - `computeroutput` is transformed to `code`
+
+    [1] https://github.com/doxygen/doxygen/blob/master/templates/xml/compound.xsd"""
     inner = element.find(xpath)
     # if the element isn't found, return ""
     if inner is None:
         return ""
 
-    # If there's no inner text, return ""
-    return inner.text or ""
+    # Avoid modifying the passed element argument.
+    inner_copy = copy.deepcopy(inner)
+
+    for c in inner_copy.iter():
+        c.set('class', 'doxygentag-' + c.tag)
+        if c.tag == 'computeroutput':
+            c.tag = 'code'
+        else:
+            c.tag = 'span'
+
+    # Create a string from all subelements
+    text = ET.tostring(inner_copy, encoding="unicode", method="html")
+    return text or ""
+
+
+def _get_text_or_empty(element: ET.Element, xpath: str) -> str:
+    """ Get all text of an element, without any tags """
+    inner = element.find(xpath)
+    if inner is None:
+        return ""
+
+    return ' '.join([e for e in inner.itertext()]) or ""
