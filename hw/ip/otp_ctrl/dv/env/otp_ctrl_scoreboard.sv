@@ -548,6 +548,16 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
+    // flush fifos
+    otbn_fifo.flush();
+    flash_addr_fifo.flush();
+    flash_data_fifo.flush();
+    lc_prog_fifo.flush();
+    lc_token_fifo.flush();
+    for (int i = 0; i < NumSramKeyReqSlots; i++) begin
+      sram_fifos[i].flush();
+    end
+
     under_chk = 0;
     // reset local fifos queues and variables
     // digest values are updated after a power cycle
