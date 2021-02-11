@@ -14,13 +14,6 @@ package pinmux_pkg;
     HighTimed = 3'b101
   } wkup_mode_e;
 
-  // Number of IO power OK signals
-  parameter int NIOPokSignals = 2;
-
-  typedef struct packed {
-    logic [NIOPokSignals-1:0] domain;
-  } io_pok_req_t;
-
   // DFT Test Mode straps
   parameter int NDFTStraps  = 2;
   // Strap sampling is only supported on MIOs at the moment

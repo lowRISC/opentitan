@@ -21,8 +21,6 @@ module pinmux
   output logic                     usb_wkup_req_o,
   // Sleep enable, running on clk_i
   input                            sleep_en_i,
-  // IO Power OK signal
-  input  io_pok_req_t              io_pok_i,
   // Strap sample request
   input  lc_strap_req_t            lc_pinmux_strap_i,
   output lc_strap_rsp_t            lc_pinmux_strap_o,
@@ -213,8 +211,7 @@ module pinmux
   // stack input and default signals for convenient indexing below possible defaults: constant 0 or
   // 1. make sure mux is aligned to a power of 2 to avoid Xes.
   logic [AlignedMuxSize-1:0] mio_data_mux;
-  // TODO: need a way to select which IO POK signal to use por pin
-  assign mio_data_mux = AlignedMuxSize'({(&io_pok_i) ? mio_in_i : '0, 1'b1, 1'b0});
+  assign mio_data_mux = AlignedMuxSize'({mio_in_i, 1'b1, 1'b0});
 
   for (genvar k = 0; k < NMioPeriphIn; k++) begin : gen_mio_periph_in
     // index using configured insel
@@ -265,8 +262,7 @@ module pinmux
   /////////////////////
 
   // Inputs are just fed through
-  // TODO: need a way to select which IO POK signal to use por pin
-  assign dio_to_periph_o = (&io_pok_i) ? dio_in_i : '0;
+  assign dio_to_periph_o = dio_in_i;
 
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_out
     // Check individual sleep enable status bits
@@ -307,8 +303,7 @@ module pinmux
   // Only connect DIOs that are not excempt
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_wkup
     if (DioPeriphHasWkup[k]) begin : gen_dio_wkup_connect
-      // TODO: need a way to select which IO POK signal to use por pin
-      assign dio_data_mux[k] = (&io_pok_i) ? dio_in_i[k] : 1'b0;
+      assign dio_data_mux[k] = dio_in_i[k];
     end else begin : gen_dio_wkup_tie_off
       assign dio_data_mux[k] = 1'b0;
     end
