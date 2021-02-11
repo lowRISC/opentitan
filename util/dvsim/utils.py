@@ -9,6 +9,7 @@ import logging as log
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import time
@@ -103,7 +104,8 @@ def _stringify_wildcard_value(value):
     try:
         return ' '.join(_stringify_wildcard_value(x) for x in value)
     except TypeError:
-        raise ValueError('Wildcard had value {!r} which is not of a supported type.')
+        raise ValueError('Wildcard had value {!r} which is not of a supported '
+                         'type.'.format(value))
 
 
 def _subst_wildcards(var, mdict, ignored, ignore_error, seen):
@@ -144,13 +146,12 @@ def _subst_wildcards(var, mdict, ignored, ignore_error, seen):
         # That's not allowed!
         if name in seen:
             raise ValueError('String contains circular expansion of '
-                             'wildcard {!r}.'
-                             .format(match.group(0)))
+                             'wildcard {!r}.'.format(match.group(0)))
 
         # Treat eval_cmd specially
         if name == 'eval_cmd':
-            cmd = _subst_wildcards(right_str[match.end():],
-                                   mdict, ignored, ignore_error, seen)[0]
+            cmd = _subst_wildcards(right_str[match.end():], mdict, ignored,
+                                   ignore_error, seen)[0]
 
             # Are there any wildcards left in cmd? If not, we can run the
             # command and we're done.
@@ -170,8 +171,7 @@ def _subst_wildcards(var, mdict, ignored, ignore_error, seen):
             if bad_names:
                 raise ValueError('Cannot run eval_cmd because the command '
                                  'expands to {!r}, which still contains a '
-                                 'wildcard.'
-                                 .format(cmd))
+                                 'wildcard.'.format(cmd))
 
             # We can't run the command (because it still has wildcards), but we
             # don't want to report an error either because ignore_error is true
@@ -193,20 +193,19 @@ def _subst_wildcards(var, mdict, ignored, ignore_error, seen):
                 continue
 
             raise ValueError('String to be expanded contains '
-                             'unknown wildcard, {!r}.'
-                             .format(match.group(0)))
+                             'unknown wildcard, {!r}.'.format(match.group(0)))
 
         value = _stringify_wildcard_value(value)
 
         # Do any recursive expansion of value, adding name to seen (to avoid
         # circular recursion).
-        value, saw_err = _subst_wildcards(value, mdict,
-                                          ignored, ignore_error, seen + [name])
+        value, saw_err = _subst_wildcards(value, mdict, ignored, ignore_error,
+                                          seen + [name])
 
         # Replace the original match with the result and go around again. If
         # saw_err, increment idx past what we just inserted.
-        var = (var[:idx] +
-               right_str[:match.start()] + value + right_str[match.end():])
+        var = (var[:idx] + right_str[:match.start()] + value +
+               right_str[match.end():])
         if saw_err:
             any_err = True
             idx += match.start() + len(value)
@@ -279,7 +278,8 @@ def subst_wildcards(var, mdict, ignored_wildcards=[], ignore_error=False):
 
     '''
     try:
-        return _subst_wildcards(var, mdict, ignored_wildcards, ignore_error, [])[0]
+        return _subst_wildcards(var, mdict, ignored_wildcards, ignore_error,
+                                [])[0]
     except ValueError as err:
         log.error(str(err))
         sys.exit(1)
@@ -518,3 +518,26 @@ def print_msg_list(msg_list_title, msg_list, max_msg_count=-1):
                 break
         md_results += "```\n"
     return md_results
+
+
+def rm_path(path, ignore_error=False):
+    '''Removes the specified path if it exists.
+
+    'path' is a Path-like object. If it does not exist, the function simply
+    returns. If 'ignore_error' is set, then exception caught by the remove
+    operation is raised, else it is ignored.
+    '''
+
+    try:
+        if os.path.islink(path):
+            os.remove(path)
+        elif os.path.isdir(path):
+            shutil.rmtree(path)
+        else:
+            os.remove(path)
+    except FileNotFoundError:
+        pass
+    except OSError as e:
+        log.error("Failed to remove {}:\n{}.".format(path, e))
+        if not ignore_error:
+            raise e

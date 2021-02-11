@@ -14,7 +14,7 @@ import hjson
 from CfgJson import set_target_attribute
 from Scheduler import Scheduler
 from utils import (VERBOSE, find_and_substitute_wildcards, md_results_to_html,
-                   subst_wildcards)
+                   rm_path, subst_wildcards)
 
 
 # Interface class for extensions.
@@ -209,11 +209,8 @@ class FlowCfg():
             self.cfgs.append(self.create_instance(mk_config, temp_cfg_file))
 
             # Delete the temp_cfg_file once the instance is created
-            try:
-                log.log(VERBOSE, "Deleting temp cfg file:\n%s", temp_cfg_file)
-                os.system("/bin/rm -rf " + temp_cfg_file)
-            except IOError:
-                log.error("Failed to remove temp cfg file:\n%s", temp_cfg_file)
+            log.log(VERBOSE, "Deleting temp cfg file:\n%s", temp_cfg_file)
+            rm_path(temp_cfg_file, ignore_error=True)
 
         else:
             log.error(
@@ -549,11 +546,10 @@ class FlowCfg():
             md_results_to_html(self.results_title, self.css_file,
                                publish_results_md))
         f.close()
-        rm_cmd += "/bin/rm -rf " + results_html_file + "; "
 
         log.info("Publishing results to %s", results_page_url)
         cmd = (self.results_server_cmd + " cp " + results_html_file + " " +
-               self.results_server_page + "; " + rm_cmd)
+               self.results_server_page)
         log.log(VERBOSE, cmd)
         try:
             cmd_output = subprocess.run(args=cmd,
@@ -563,6 +559,7 @@ class FlowCfg():
             log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
         except Exception as e:
             log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
+        rm_path(results_html_file)
 
     def publish_results(self):
         '''Public facing API for publishing results to the opentitan web
@@ -589,11 +586,10 @@ class FlowCfg():
             md_results_to_html(self.results_title, self.css_file,
                                self.results_summary_md))
         f.close()
-        rm_cmd = "/bin/rm -rf " + results_html_file + "; "
 
         log.info("Publishing results summary to %s", results_page_url)
         cmd = (self.results_server_cmd + " cp " + results_html_file + " " +
-               self.results_summary_server_page + "; " + rm_cmd)
+               self.results_summary_server_page)
         log.log(VERBOSE, cmd)
         try:
             cmd_output = subprocess.run(args=cmd,
@@ -603,6 +599,7 @@ class FlowCfg():
             log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
         except Exception as e:
             log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
+        rm_path(results_html_file)
 
     def has_errors(self):
         return self.errors_seen

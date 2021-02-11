@@ -8,12 +8,15 @@ import pprint
 import random
 import re
 import shlex
+import shutil
 import subprocess
 import sys
+from datetime import datetime
+from pathlib import Path
 
 from sim_utils import get_cov_summary_table
 from tabulate import tabulate
-from utils import VERBOSE, find_and_substitute_wildcards, run_cmd
+from utils import VERBOSE, find_and_substitute_wildcards, rm_path
 
 
 class DeployError(Exception):
@@ -36,8 +39,7 @@ class Deploy():
 
     def __str__(self):
         return (pprint.pformat(self.__dict__)
-                if log.getLogger().isEnabledFor(VERBOSE)
-                else self.cmd)
+                if log.getLogger().isEnabledFor(VERBOSE) else self.cmd)
 
     def __init__(self, sim_cfg):
         '''Initialize common class members.'''
@@ -195,9 +197,6 @@ class Deploy():
             if type(value) is str:
                 value = value.strip()
             cmd += " " + attr + "=\"" + str(value) + "\""
-
-        # TODO: If not running locally, redirect stdout and err to the log file
-        # self.cmd += " > " + self.log + " 2>&1 &"
         return cmd
 
     def is_equivalent_job(self, item):
@@ -253,7 +252,7 @@ class Deploy():
             # If renew_odir flag is True - then move it.
             if self.renew_odir:
                 self.odir_limiter(odir=self.odir)
-            os.system("mkdir -p " + self.odir)
+            os.makedirs(self.odir, exist_ok=True)
             # Dump all env variables for ease of debug.
             with open(self.odir + "/env_vars",
                       "w",
@@ -262,8 +261,7 @@ class Deploy():
                 for var in sorted(exports.keys()):
                     f.write("{}={}\n".format(var, exports[var]))
                 f.close()
-            os.system("ln -s " + self.odir + " " + self.sim_cfg.links['D'] +
-                      '/' + self.odir_ln)
+            self._link_odir("D")
             f = open(self.log, "w", encoding="UTF-8", errors="surrogateescape")
             f.write("[Executing]:\n{}\n\n".format(self.cmd))
             f.flush()
@@ -279,118 +277,141 @@ class Deploy():
                 self.log_fd.close()
             raise DeployError('IO Error: See {}'.format(self.log))
 
-    def odir_limiter(self, odir, max_odirs=-1):
-        '''Function to backup previously run output directory to maintain a
-        history of a limited number of output directories. It deletes the output
-        directory with the oldest timestamps, if the limit is reached. It returns
-        a list of directories that remain after deletion.
-        Arguments:
-        odir: The output directory to backup
-        max_odirs: Maximum output directories to maintain as history.
+    def odir_limiter(self, odir):
+        """Clean previous output directories.
 
-        Returns:
-        dirs: Space-separated list of directories that remain after deletion.
-        '''
-        try:
-            # If output directory exists, back it up.
-            if os.path.exists(odir):
-                ts = run_cmd("date '+" + self.sim_cfg.ts_format + "' -d \"" +
-                             "$(stat -c '%y' " + odir + ")\"")
-                os.system('mv ' + odir + " " + odir + "_" + ts)
-        except IOError:
-            log.error('Failed to back up existing output directory %s', odir)
+        When running jobs, we may want to maintain a limited history of
+        previous invocations. This method finds and deletes the output
+        directories at the base of input arg 'odir' with the oldest timestamps,
+        if that limit is reached. It returns a list of directories that
+        remain after deletion.
+        """
 
-        dirs = ""
-        # Delete older directories.
-        try:
-            pdir = os.path.realpath(odir + "/..")
-            # Fatal out if pdir got set to root.
-            if pdir == "/":
-                log.fatal(
-                    "Something went wrong while processing \"%s\": odir = \"%s\"",
-                    self.name, odir)
-                sys.exit(1)
+        if not os.path.exists(odir):
+            return []
 
-            if os.path.exists(pdir):
-                find_cmd = "find " + pdir + " -mindepth 1 -maxdepth 1 -type d "
-                dirs = run_cmd(find_cmd)
-                dirs = dirs.replace('\n', ' ')
-                list_dirs = dirs.split()
-                num_dirs = len(list_dirs)
-                if max_odirs == -1:
-                    max_odirs = self.max_odirs
-                num_rm_dirs = num_dirs - max_odirs
-                if num_rm_dirs > -1:
-                    rm_dirs = run_cmd(find_cmd +
-                                      "-printf '%T+ %p\n' | sort | head -n " +
-                                      str(num_rm_dirs + 1) +
-                                      " | awk '{print $2}'")
-                    rm_dirs = rm_dirs.replace('\n', ' ')
-                    dirs = dirs.replace(rm_dirs, "")
-                    os.system("/bin/rm -rf " + rm_dirs)
-        except IOError:
-            log.error("Failed to delete old run directories!")
-        return dirs
+        # If output directory exists, back it up.
+        ts = datetime.fromtimestamp(os.stat(odir).st_ctime)
+        ts = ts.strftime(self.sim_cfg.ts_format)
+        shutil.move(odir, odir + "_" + ts)
+
+        # Get list of past output directories sorted by creation time.
+        pdir = Path(odir).resolve().parent
+        dirs = sorted([old for old in pdir.iterdir() if old.is_dir()],
+                      key=os.path.getctime,
+                      reverse=True)
+
+        for old in dirs[self.max_odirs - 1:]:
+            rm_path(old)
+
+        return dirs[0:self.max_odirs - 2]
 
     def _test_passed(self):
-        '''Return True if the job passed, False otherwise
+        """Determine the outcome of the job (P/F if it ran to completion).
 
-        This is called by poll() just after the job finishes.
+        Return True if the job passed, False otherwise. This is called by
+        poll() just after the job finishes.
 
-        '''
+        """
+        def log_fail_msg(msg):
+            '''Logs the fail msg to the final report.'''
+            self.fail_msg += msg
+            log.log(VERBOSE, msg)
+
+        def _find_patterns(patterns, line):
+            '''Helper function that returns true if all or any of the given
+            patterns is found, else False.'''
+
+            assert patterns
+            for pattern in patterns:
+                match = re.search(r"{}".format(pattern), line)
+                if match:
+                    return pattern
+            return None
+
+        def _get_n_lines(pos, num):
+            "Helper function that returns next N lines starting at pos index."
+
+            return ''.join(lines[pos:pos + num - 1]).strip()
+
         if self.dry_run:
             return True
 
-        seen_fail_pattern = False
-        for fail_pattern in self.fail_patterns:
-            # Return error message with the following 4 lines.
-            grep_cmd = "grep -m 1 -A 4 -E \'" + fail_pattern + "\' " + self.log
-            (status, rslt) = subprocess.getstatusoutput(grep_cmd)
-            if rslt:
-                msg = "```\n{}\n```\n".format(rslt)
-                self.fail_msg += msg
-                log.log(VERBOSE, msg)
-                seen_fail_pattern = True
-                break
+        # Only one fail pattern needs to be seen.
+        failed = False
+        chk_failed = bool(self.fail_patterns)
 
-        if seen_fail_pattern:
+        # All pass patterns need to be seen, so we replicate the list and remove
+        # patterns as we encounter them.
+        pass_patterns = self.pass_patterns.copy()
+        chk_passed = bool(pass_patterns) and (self.process.returncode == 0)
+
+        try:
+            with open(self.log, "r", encoding="UTF-8") as f:
+                lines = f.readlines()
+        except OSError as e:
+            log_fail_msg("Error opening file {!r}:\n{}".format(self.log, e))
+            return False
+
+        if chk_failed or chk_passed:
+            for cnt, line in enumerate(lines):
+                if chk_failed:
+                    if _find_patterns(self.fail_patterns, line) is not None:
+                        # Print 4 additional lines to help debug more easily.
+                        log_fail_msg("```\n{}\n```\n".format(
+                            _get_n_lines(cnt, 5)))
+                        failed = True
+                        chk_failed = False
+                        chk_passed = False
+
+                if chk_passed:
+                    pattern = _find_patterns(pass_patterns, line)
+                    if pattern is not None:
+                        pass_patterns.remove(pattern)
+                        chk_passed = bool(pass_patterns)
+
+        # If failed, then nothing else to do. Just return.
+        if failed:
             return False
 
         # If no fail patterns were seen, but the job returned with non-zero
         # exit code for whatever reason, then show the last 10 lines of the log
         # as the failure message, which might help with the debug.
         if self.process.returncode != 0:
-            msg = "Last 10 lines of the log:<br>\n"
-            self.fail_msg += msg
-            log.log(VERBOSE, msg)
-            get_fail_msg_cmd = "tail -n 10 " + self.log
-            msg = run_cmd(get_fail_msg_cmd)
-            msg = "```\n{}\n```\n".format(msg)
-            self.fail_msg += msg
-            log.log(VERBOSE, msg)
+            msg = ''.join(lines[-10:]).strip()
+            log_fail_msg("Process returned non-zero exit code. "
+                         "Last 10 lines:\n```\n{}\n```\n".format(msg))
             return False
 
-        # If we get here, we've not seen anything explicitly wrong, but we
-        # might have "pass patterns": patterns that must occur in the log for
-        # the run to be considered successful.
-        for pass_pattern in self.pass_patterns:
-            grep_cmd = "grep -c -m 1 -E \'" + pass_pattern + "\' " + self.log
-            (status, rslt) = subprocess.getstatusoutput(grep_cmd)
-            if rslt == "0":
-                msg = "Pass pattern {!r} not found.<br>\n".format(pass_pattern)
-                self.fail_msg += msg
-                log.log(VERBOSE, msg)
-                return False
+        # Ensure all pass patterns were seen.
+        if chk_passed:
+            msg = ''.join(lines[-10:]).strip()
+            log_fail_msg("One or more pass patterns not found:\n{}\n"
+                         "Last 10 lines:\n```\n{}\n```\n".format(
+                             pass_patterns, msg))
+            return False
 
         return True
 
     def _link_odir(self, status):
-        old_link = self.sim_cfg.links['D'] + "/" + self.odir_ln
-        new_link = self.sim_cfg.links[status] + "/" + self.odir_ln
-        cmd = "ln -s " + self.odir + " " + new_link + "; "
-        cmd += "rm " + old_link
-        if os.system(cmd):
-            log.error("Cmd \"%s\" could not be run", cmd)
+        '''Soft-links the job's directory based on job's status, into
+        dispatched, running, passed, failed or killed directories in the
+        scratch area.'''
+
+        dest = Path(self.sim_cfg.links[status], self.odir_ln)
+
+        # If dest exists, then atomically remove it and link the odir again.
+        while True:
+            try:
+                os.symlink(self.odir, dest)
+                break
+            except FileExistsError:
+                rm_path(dest)
+
+        # Delete the symlink from dispatched directory if it exists.
+        if status != "D":
+            old = Path(self.sim_cfg.links['D'], self.odir_ln)
+            rm_path(old)
 
     def _on_finish(self, status):
         '''Called when the process finishes or is killed'''
@@ -524,9 +545,9 @@ class CompileSim(Deploy):
         CompileSim.items.append(self)
 
     def dispatch_cmd(self):
-        # Delete previous cov_db_dir if it exists before dispatching new build.
-        if os.path.exists(self.cov_db_dir):
-            os.system("rm -rf " + self.cov_db_dir)
+        # Delete old coverage database directories before building again. We
+        # need to do this becuase build directory is not 'renewed'.
+        rm_path(self.cov_db_dir)
         super().dispatch_cmd()
 
 
@@ -663,10 +684,7 @@ class RunTest(Deploy):
         super()._on_finish(status)
         if status != 'P':
             # Delete the coverage data if available.
-            if os.path.exists(self.cov_db_test_dir):
-                log.log(VERBOSE, "Deleting coverage data of failing test:\n%s",
-                        self.cov_db_test_dir)
-                os.system("/bin/rm -rf " + self.cov_db_test_dir)
+            rm_path(self.cov_db_test_dir)
 
     @staticmethod
     def get_seed():
@@ -882,7 +900,7 @@ class CovReport(Deploy):
                                     colalign=colalign)
 
         # Delete the cov report - not needed.
-        os.system("rm -rf " + self.log)
+        rm_path(self.log)
         return True
 
 
