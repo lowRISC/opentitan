@@ -329,7 +329,7 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
     gen_cdefines_interrupts(outstr, regs, component, regwidth,
                             existing_defines)
 
-    for x in registers:
+    for x in registers.entries:
         if isinstance(x, Register):
             gen_cdefine_register(outstr, x, component, regwidth, rnames,
                                  existing_defines)

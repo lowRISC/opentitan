@@ -12,9 +12,6 @@ from pkg_resources import resource_filename
 
 from .access import HwAccess, SwRdAccess, SwWrAccess
 from .data import Block
-from .register import Register
-from .multi_register import MultiRegister
-from .window import Window
 
 
 def escape_name(name):
@@ -55,14 +52,7 @@ def json_to_reg(obj):
 
     block.hier_path = obj["hier_path"] if "hier_path" in obj else ""
 
-    for r in obj["registers"]:
-        if isinstance(r, Register) or isinstance(r, MultiRegister):
-            block.regs.append(r)
-            continue
-
-        if isinstance(r, Window):
-            block.wins.append(r)
-            continue
+    block.reg_block = obj['registers']
 
     # Last offset and calculate space
     #  Later on, it could use block.regs[-1].genoffset

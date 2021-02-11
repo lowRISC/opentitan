@@ -20,6 +20,7 @@ from mako.template import Template
 
 import tlgen
 from reggen import access, gen_dv, gen_rtl, validate, window
+from reggen.reg_block import RegBlock
 from topgen import amend_clocks, get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import merge_top, search_ips, validate_top
@@ -833,7 +834,12 @@ def generate_top_ral(top, ip_objs, dv_base_prefix, out_path):
     assert top_block.width % 8 == 0
     reg_width_in_bytes = top_block.width // 8
 
-    # add memories
+    top_block.reg_block = RegBlock(reg_width_in_bytes,
+                                   top_block.width,
+                                   [])
+
+    # Add memories (in order)
+    mems = []
     for item in list(top.get("memory", [])):
         byte_write = ('byte_write' in item and
                       item["byte_write"].lower() == "true")
@@ -842,16 +848,18 @@ def generate_top_ral(top, ip_objs, dv_base_prefix, out_path):
         swaccess = access.SWAccess('top-level memory',
                                    item.get('swaccess', 'rw'))
 
-        mem = window.Window(name=item['name'],
-                            desc='(generated from top-level)',
-                            unusual=False,
-                            byte_write=byte_write,
-                            validbits=top_block.width,
-                            items=num_regs,
-                            size_in_bytes=size_in_bytes,
-                            offset=int(item["base_addr"], 0),
-                            swaccess=swaccess)
-        top_block.wins.append(mem)
+        mems.append(window.Window(name=item['name'],
+                                  desc='(generated from top-level)',
+                                  unusual=False,
+                                  byte_write=byte_write,
+                                  validbits=top_block.width,
+                                  items=num_regs,
+                                  size_in_bytes=size_in_bytes,
+                                  offset=int(item["base_addr"], 0),
+                                  swaccess=swaccess))
+    mems.sort(key=lambda w: w.offset)
+    for mem in mems:
+        top_block.reg_block.add_window(mem)
 
     # get sub-block base addresses, instance names from top cfg
     for block in top_block.blocks:
@@ -861,7 +869,6 @@ def generate_top_ral(top, ip_objs, dv_base_prefix, out_path):
 
     # sort by the base_addr of 1st instance of the block
     top_block.blocks.sort(key=lambda block: next(iter(block.base_addr))[1])
-    top_block.wins.sort(key=lambda win: win.offset)
 
     # generate the top ral model with template
     gen_dv.gen_ral(top_block, dv_base_prefix, str(out_path))

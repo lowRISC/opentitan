@@ -18,26 +18,21 @@ block).
 
 '''
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
-from .otbn_reggen import load_registers, Window
+from .otbn_reggen import load_registers, RegBlock
 
 # A window is represented as (offset, size)
 _Window = Tuple[int, int]
 
 
-def extract_windows(reg_byte_width: int,
-                    registers: List[object]) -> Dict[str, _Window]:
+def extract_windows(reg_byte_width: int, regs: object) -> Dict[str, _Window]:
     '''Make sense of the list of register definitions and extract memories'''
 
-    # Conveniently, reggen's validate method stores 'genoffset' (the offset to
-    # the start) for each window, so we can just look that up.
     windows = {}
 
-    for entry in registers:
-        if not isinstance(entry, Window):
-            continue
-
+    assert isinstance(regs, RegBlock)
+    for entry in regs.windows:
         name = entry.name or 'Window at +{:#x}'.format(entry.offset)
 
         # Should be guaranteed by RegBlock constructor

@@ -6,7 +6,7 @@
 
 import os
 import sys
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 import hjson  # type: ignore
 
@@ -23,6 +23,7 @@ try:
     import reggen.field  # type: ignore
     import reggen.register  # type: ignore
     import reggen.window  # type: ignore
+    import reggen.reg_block   # type: ignore
 finally:
     sys.path = _OLD_SYS_PATH
 
@@ -31,11 +32,12 @@ finally:
 Register = reggen.register.Register
 Field = reggen.field.Field
 Window = reggen.window.Window
+RegBlock = reggen.reg_block.RegBlock
 
-_LR_RETVAL = None  # type: Optional[Tuple[int, List[object]]]
+_LR_RETVAL = None  # type: Optional[Tuple[int, object]]
 
 
-def load_registers() -> Tuple[int, List[object]]:
+def load_registers() -> Tuple[int, object]:
     '''Load otbn.hjson with reggen
 
     Returns (width, regs) where width is the register width and regs is a
@@ -73,6 +75,6 @@ def load_registers() -> Tuple[int, List[object]]:
     # The validation code would also have exploded if it wasn't a list of
     # dictionaries, so we can assert the type safely.
     registers = obj['registers']
-    assert isinstance(registers, list)
+    assert isinstance(registers, RegBlock)
     _LR_RETVAL = (reg_byte_width, registers)
     return _LR_RETVAL

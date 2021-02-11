@@ -158,7 +158,7 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
         (d2h.d_error || (d2h.d_data & mask) >> lsb == exp_data);
   endproperty
 
-% for r in block.regs:
+% for r in block.reg_block.all_regs:
 <%
   has_q  = r.get_n_bits(["q"]) > 0
   has_d  = r.get_n_bits(["d"]) > 0

@@ -9,8 +9,9 @@
   from reggen.register import Register
   from reggen.multi_register import MultiRegister
 
-  num_regs = block.get_n_regs_flat()
-  max_regs_char = len("{}".format(num_regs-1))
+  flat_regs = block.reg_block.flat_regs
+  num_regs = len(flat_regs)
+  max_regs_char = len("{}".format(num_regs - 1))
 %>\
 package ${block.name}_reg_pkg;
 % if len(block.params) != 0:
@@ -27,7 +28,7 @@ package ${block.name}_reg_pkg;
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
-% for r in block.regs:
+% for r in block.reg_block.all_regs:
   % if r.get_n_bits(["q"]):
 <%
     if isinstance(r, Register):
@@ -95,7 +96,7 @@ package ${block.name}_reg_pkg;
   %endif
 % endfor
 
-% for r in block.regs:
+% for r in block.reg_block.all_regs:
   % if r.get_n_bits(["d"]):
 <%
     if isinstance(r, Register):
@@ -153,12 +154,12 @@ package ${block.name}_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
 <%
-nbits = block.get_n_bits(["q", "qe", "re"])
+nbits = block.reg_block.get_n_bits(["q", "qe", "re"])
 packbit = 0
 %>\
 % if nbits > 0:
   typedef struct packed {
-% for r in block.regs:
+% for r in block.reg_block.all_regs:
   % if r.get_n_bits(["q"]):
 <%
     if isinstance(r, MultiRegister):
@@ -188,12 +189,12 @@ packbit = 0
   // Internal design logic to register //
   ///////////////////////////////////////
 <%
-nbits = block.get_n_bits(["d", "de"])
+nbits = block.reg_block.get_n_bits(["d", "de"])
 packbit = 0
 %>\
 % if nbits > 0:
   typedef struct packed {
-% for r in block.regs:
+% for r in block.reg_block.all_regs:
   % if r.get_n_bits(["d"]):
 <%
     if isinstance(r, MultiRegister):
@@ -222,7 +223,6 @@ packbit = 0
   // Register Address
 <%
 ublock = block.name.upper()
-flat_regs = block.get_regs_flat()
 
 def reg_pfx(reg):
   return '{}_{}'.format(ublock, reg.name.upper())
@@ -261,9 +261,9 @@ def field_resname(reg, field):
   % endfor
 
 % endif
-% if len(block.wins) > 0:
+% if len(block.reg_block.windows) > 0:
   // Window parameter
-% for i,w in enumerate(block.wins):
+% for i,w in enumerate(block.reg_block.windows):
 <%
     win_pfx = '{}_{}'.format(ublock, w.name.upper())
     base_txt_val = "{}'h {:x}".format(block.addr_width, w.offset)
@@ -276,14 +276,14 @@ def field_resname(reg, field):
 % endif
   // Register Index
   typedef enum int {
-% for r in block.get_regs_flat():
+% for r in flat_regs:
     ${ublock}_${r.name.upper()}${"" if loop.last else ","}
 % endfor
   } ${block.name}_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] ${ublock}_PERMIT [${block.get_n_regs_flat()}] = '{
-% for i,r in enumerate(block.get_regs_flat()):
+  parameter logic [3:0] ${ublock}_PERMIT [${len(flat_regs)}] = '{
+% for i,r in enumerate(flat_regs):
 <%
   index_str = "{}".format(i).rjust(max_regs_char)
   width = r.get_width()

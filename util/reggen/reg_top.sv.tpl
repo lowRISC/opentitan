@@ -8,11 +8,11 @@
   from reggen.register import Register
   from reggen.multi_register import MultiRegister
 
-  num_wins = len(block.wins)
+  num_wins = len(block.reg_block.windows)
   num_wins_width = ((num_wins+1).bit_length()) - 1
   num_dsp  = num_wins + 1
-  max_regs_char = len("{}".format(block.get_n_regs_flat()-1))
-  regs_flat = block.get_regs_flat()
+  regs_flat = block.reg_block.flat_regs
+  max_regs_char = len("{}".format(len(regs_flat) - 1))
 %>
 `include "prim_assert.sv"
 
@@ -31,10 +31,10 @@ module ${block.name}_reg_top (
 
 % endif
   // To HW
-% if block.get_n_bits(["q","qe","re"]):
+% if block.reg_block.get_n_bits(["q","qe","re"]):
   output ${block.name}_reg_pkg::${block.name}_reg2hw_t reg2hw, // Write
 % endif
-% if block.get_n_bits(["d","de"]):
+% if block.reg_block.get_n_bits(["d","de"]):
   input  ${block.name}_reg_pkg::${block.name}_hw2reg_t hw2reg, // Read
 % endif
 
@@ -91,7 +91,7 @@ module ${block.name}_reg_top (
   assign tl_reg_h2d = tl_socket_h2d[${num_wins}];
   assign tl_socket_d2h[${num_wins}] = tl_reg_d2h;
 
-  % for i,t in enumerate(block.wins):
+  % for i,t in enumerate(block.reg_block.windows):
   assign tl_win_o[${i}] = tl_socket_h2d[${i}];
   assign tl_socket_d2h[${i}] = tl_win_i[${i}];
   % endfor
@@ -122,7 +122,7 @@ module ${block.name}_reg_top (
     reg_steer = ${num_dsp-1};       // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
-  % for i,w in enumerate(block.wins):
+  % for i,w in enumerate(block.reg_block.windows):
 <%
     base_addr = w.offset
     limit_addr = w.offset + w.size_in_bytes
@@ -178,7 +178,7 @@ ${sig_gen(f, r.name.lower() + "_" + f.name.lower(), r.hwext, r.shadowed)}\
   % endfor
 
   // Register instances
-  % for r in block.regs:
+  % for r in block.reg_block.all_regs:
   ######################## multiregister ###########################
     % if isinstance(r, MultiRegister):
 <%
@@ -237,7 +237,7 @@ ${finst_gen(f, finst_name, fsig_name, r.hwext, r.regwen, r.shadowed)}
       % endfor
     % endif
 
-  ## for: block.regs
+  ## for: block.reg_block.all_regs
   % endfor
 
 
