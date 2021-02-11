@@ -27,4 +27,13 @@ class keymgr_hwsw_invalid_input_vseq extends keymgr_sw_invalid_input_vseq;
     return 0;
   endfunction
 
+  task post_start();
+    super.post_start();
+
+    // fatal alert will be triggered in this seq. Issue reset if reset is allowed, otherwise, reset
+    // will be called in upper vseq
+    #10_000ns;
+    if (do_apply_reset) apply_reset();
+  endtask
+
 endclass : keymgr_hwsw_invalid_input_vseq
