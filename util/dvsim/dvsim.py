@@ -30,7 +30,8 @@ import textwrap
 from pathlib import Path
 
 from CfgFactory import make_cfg
-from Deploy import Deploy, RunTest
+from Deploy import RunTest
+from Launcher import Launcher
 from Scheduler import Scheduler
 from Timer import Timer
 from utils import (TS_FORMAT, TS_FORMAT_LONG, VERBOSE, rm_path,
@@ -635,7 +636,7 @@ def main():
     # Register the common deploy settings.
     Timer.print_interval = args.print_interval
     Scheduler.max_parallel = args.max_parallel
-    Deploy.max_odirs = args.max_odirs
+    Launcher.max_odirs = args.max_odirs
 
     # Build infrastructure from hjson file and create the list of items to
     # be deployed.

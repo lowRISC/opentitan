@@ -62,7 +62,7 @@ class Results:
         '''Recursively add a single item to the table of results'''
         status = results[item]
         if status == "F":
-            self.fail_msgs.append(item.fail_msg)
+            self.fail_msgs.append(item.launcher.fail_msg)
 
         # Runs get added to the table directly
         if item.target == "run":
