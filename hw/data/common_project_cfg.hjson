@@ -35,7 +35,13 @@
   revision: '''{eval_cmd}
             COMMIT_L=`git rev-parse HEAD`; \
             COMMIT_S=`git rev-parse --short HEAD`; \
-            echo "Revision: [\`$COMMIT_S\`]({results_server_url_prefix}{repo_server}/tree/$COMMIT_L)";
+            REV_STR="GitHub Revision: [\`$COMMIT_S\`]({results_server_url_prefix}{repo_server}/tree/$COMMIT_L)"; \
+            printf "$REV_STR"; \
+            if [ -d "{proj_root}/hw/foundry" ]; then \
+              COMMIT_FOUNDRY_S=`git -C {proj_root}/hw/foundry rev-parse --short HEAD`; \
+              REV_STR_FOUNDRY="Foundry Revision: \`$COMMIT_FOUNDRY_S\`"; \
+              printf "<br>$REV_STR_FOUNDRY"; \
+            fi
             '''
 
   // The current design level
