@@ -23,18 +23,17 @@ import argparse
 import datetime
 import logging as log
 import os
-from pathlib import Path
-import shutil
 import shlex
 import subprocess
 import sys
 import textwrap
+from pathlib import Path
 
-import Deploy
+from CfgFactory import make_cfg
+from Deploy import Deploy, RunTest
 from Scheduler import Scheduler
 from Timer import Timer
-import utils
-from CfgFactory import make_cfg
+from utils import VERBOSE, rm_path, run_cmd_with_timeout
 
 # TODO: add dvsim_cfg.hjson to retrieve this info
 version = 0.1
@@ -60,10 +59,9 @@ def resolve_scratch_root(arg_scratch_root):
             # Scratch space could be mounted in a filesystem (such as NFS) on a network drive.
             # If the network is down, it could cause the access access check to hang. So run a
             # simple ls command with a timeout to prevent the hang.
-            (out,
-             status) = utils.run_cmd_with_timeout(cmd="ls -d " + scratch_root,
-                                                  timeout=1,
-                                                  exit_on_failure=0)
+            (out, status) = run_cmd_with_timeout(cmd="ls -d " + scratch_root,
+                                                 timeout=1,
+                                                 exit_on_failure=0)
             if status == 0 and out != "":
                 arg_scratch_root = scratch_root
             else:
@@ -76,13 +74,17 @@ def resolve_scratch_root(arg_scratch_root):
         arg_scratch_root = os.path.realpath(arg_scratch_root)
 
     try:
-        os.system("mkdir -p " + arg_scratch_root)
-    except OSError:
-        log.fatal(
-            "Invalid --scratch-root=\"%s\" switch - failed to create directory!",
-            arg_scratch_root)
+        os.makedirs(arg_scratch_root, exist_ok=True)
+    except PermissionError as e:
+        log.fatal("Failed to create scratch root {}:\n{}.".format(
+            arg_scratch_root, e))
         sys.exit(1)
-    return (arg_scratch_root)
+
+    if not os.access(arg_scratch_root, os.W_OK):
+        log.fatal("Scratch root {} is not writable!".format(arg_scratch_root))
+        sys.exit(1)
+
+    return arg_scratch_root
 
 
 def read_max_parallel(arg):
@@ -178,7 +180,7 @@ def resolve_proj_root(args):
         proj_root_dest = os.path.join(args.scratch_root, args.branch,
                                       "repo_top")
         if args.purge:
-            shutil.rmtree(proj_root_dest, ignore_errors=True)
+            rm_path(proj_root_dest)
         copy_repo(proj_root_src, proj_root_dest, args.dry_run)
     else:
         proj_root_dest = proj_root_src
@@ -194,17 +196,19 @@ def copy_repo(src, dest, dry_run):
     exclude patterns to skip certain things from being copied over. With GitHub
     repos, an existing `.gitignore` serves this purpose pretty well.
     '''
-    rsync_cmd = ["rsync",
-                 "--recursive", "--links", "--checksum", "--update",
-                 "--inplace", "--no-group"]
+    rsync_cmd = [
+        "rsync", "--recursive", "--links", "--checksum", "--update",
+        "--inplace", "--no-group"
+    ]
 
     # Supply `.gitignore` from the src area to skip temp files.
     ignore_patterns_file = os.path.join(src, ".gitignore")
     if os.path.exists(ignore_patterns_file):
         # TODO: hack - include hw/foundry since it is excluded in .gitignore.
-        rsync_cmd += ["--include=hw/foundry",
-                      "--exclude-from={}".format(ignore_patterns_file),
-                      "--exclude=.*"]
+        rsync_cmd += [
+            "--include=hw/foundry",
+            "--exclude-from={}".format(ignore_patterns_file), "--exclude=.*"
+        ]
 
     rsync_cmd += [src + "/.", dest]
     rsync_str = ' '.join([shlex.quote(w) for w in rsync_cmd])
@@ -212,7 +216,7 @@ def copy_repo(src, dest, dry_run):
     cmd = ["flock", "--timeout", "600", dest, "--command", rsync_str]
 
     log.info("[copy_repo] [dest]: %s", dest)
-    log.log(utils.VERBOSE, "[copy_repo] [cmd]: \n%s", ' '.join(cmd))
+    log.log(VERBOSE, "[copy_repo] [cmd]: \n%s", ' '.join(cmd))
     if not dry_run:
         # Make sure the dest exists first.
         os.makedirs(dest, exist_ok=True)
@@ -582,12 +586,12 @@ def main():
     args = parse_args()
 
     # Add log level 'VERBOSE' between INFO and DEBUG
-    log.addLevelName(utils.VERBOSE, 'VERBOSE')
+    log.addLevelName(VERBOSE, 'VERBOSE')
 
     log_format = '%(levelname)s: [%(module)s] %(message)s'
     log_level = log.INFO
     if args.verbose == "default":
-        log_level = utils.VERBOSE
+        log_level = VERBOSE
     elif args.verbose == "debug":
         log_level = log.DEBUG
     log.basicConfig(format=log_format, level=log_level)
@@ -628,16 +632,16 @@ def main():
     setattr(args, "timestamp", timestamp)
 
     # Register the seeds from command line with RunTest class.
-    Deploy.RunTest.seeds = args.seeds
+    RunTest.seeds = args.seeds
     # If we are fixing a seed value, no point in tests having multiple reseeds.
     if args.fixed_seed:
         args.reseed = 1
-    Deploy.RunTest.fixed_seed = args.fixed_seed
+    RunTest.fixed_seed = args.fixed_seed
 
     # Register the common deploy settings.
     Timer.print_interval = args.print_interval
     Scheduler.max_parallel = args.max_parallel
-    Deploy.Deploy.max_odirs = args.max_odirs
+    Deploy.max_odirs = args.max_odirs
 
     # Build infrastructure from hjson file and create the list of items to
     # be deployed.

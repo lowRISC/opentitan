@@ -16,10 +16,9 @@ from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
 from tabulate import tabulate
-from utils import VERBOSE
-
-from testplanner.class_defs import TestResult, Testplan
+from testplanner.class_defs import Testplan, TestResult
 from testplanner.testplan_utils import parse_testplan
+from utils import VERBOSE, rm_path
 
 
 def pick_wave_format(fmts):
@@ -282,13 +281,9 @@ class SimCfg(FlowCfg):
 
     # Purge the output directories. This operates on self.
     def _purge(self):
-        if self.scratch_path:
-            try:
-                log.info("Purging scratch path %s", self.scratch_path)
-                os.system("/bin/rm -rf " + self.scratch_path)
-            except IOError:
-                log.error('Failed to purge scratch directory %s',
-                          self.scratch_path)
+        assert self.scratch_path
+        log.info("Purging scratch path %s", self.scratch_path)
+        rm_path(self.scratch_path)
 
     def _create_objects(self):
         # Create build and run modes objects
@@ -444,21 +439,9 @@ class SimCfg(FlowCfg):
     def _create_dirs(self):
         '''Create initial set of directories
         '''
-        # Invoking system calls has a performance penalty.
-        # Construct a single command line chained with '&&' to invoke
-        # the system call only once, rather than multiple times.
-        create_link_dirs_cmd = ""
         for link in self.links.keys():
-            create_link_dirs_cmd += "/bin/rm -rf " + self.links[link] + " && "
-            create_link_dirs_cmd += "mkdir -p " + self.links[link] + " && "
-        create_link_dirs_cmd += " true"
-
-        try:
-            os.system(create_link_dirs_cmd)
-        except IOError:
-            log.error("Error running when running the cmd \"%s\"",
-                      create_link_dirs_cmd)
-            sys.exit(1)
+            rm_path(self.links[link])
+            os.makedirs(self.links[link])
 
     def _expand_run_list(self, build_map):
         '''Generate a list of tests to be run
@@ -532,8 +515,8 @@ class SimCfg(FlowCfg):
                     test.build_mode = Modes.find_mode(
                         build_map[test.build_mode].name, self.build_modes)
 
-            self.runs = ([] if self.build_only
-                         else self._expand_run_list(build_map))
+            self.runs = ([] if self.build_only else
+                         self._expand_run_list(build_map))
 
         self.deploy = self.builds + self.runs
 
