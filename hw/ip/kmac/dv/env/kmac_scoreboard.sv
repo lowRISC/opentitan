@@ -28,8 +28,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // error reporting
   bit kmac_err;
 
+  keymgr_pkg::hw_key_req_t sideload_key;
+
   // secret keys
+  //
+  // max key size is 512-bits
   bit [KMAC_NUM_SHARES-1:0][KMAC_NUM_KEYS_PER_SHARE-1:0][31:0] keys;
+  bit [KMAC_NUM_SHARES-1:0][KMAC_NUM_KEYS_PER_SHARE-1:0][31:0] keymgr_keys;
 
   // prefix words
   bit [31:0] prefix[KMAC_NUM_PREFIX_WORDS];
@@ -62,7 +67,32 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      process_sideload_key();
     join_none
+  endtask
+
+  // This task will check for any sideload keys that have been provided
+  virtual task process_sideload_key();
+    forever begin
+      // Wait for a valid sideloaded key
+      cfg.sideload_vif.wait_valid(logic'(1'b1));
+
+      // Once valid sideload keys have been seen, update scoreboard state.
+      //
+      // Note: max size of sideloaded key is keymgr_pkg::KeyWidth
+
+      sideload_key = cfg.sideload_vif.sideload_key;
+
+      `uvm_info(`gfn, $sformatf("detected valid sideload_key: %0p", sideload_key), UVM_HIGH)
+
+      for (int i = 0; i < keymgr_pkg::KeyWidth / 32; i++) begin
+        keymgr_keys[0][i] = sideload_key.key_share0[i*32 +: 32];
+        keymgr_keys[1][i] = sideload_key.key_share1[i*32 +: 32];
+      end
+
+      // Sequence will drop the sideloaded key after scb can process the digest
+      cfg.sideload_vif.wait_valid(logic'(1'b0));
+    end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
@@ -365,12 +395,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // This function should be called to reset internal state to prepare for a new hash operation
   virtual function void clear_state();
-    keys = '0;
-    prefix = '{default:0};
     msg.delete();
+    keys          = '0;
+    keymgr_keys   = '0;
+    sideload_key  = '0;
+    prefix        = '{default:0};
     digest_share0 = {};
     digest_share1 = {};
-    // TODO
   endfunction
 
   // This function is called whenever a CmdDone command is issued to KMAC,
@@ -403,6 +434,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // Function name and customization strings for KMAC operations
     string fname;
     string custom_str;
+
+    // Use this to store the correct set of keys (SW-provided or sideloaded)
+    bit [KMAC_NUM_SHARES-1:0][KMAC_NUM_KEYS_PER_SHARE-1:0][31:0] exp_keys;
 
     // The actual key used for KMAC operations
     bit [31:0] unmasked_key[$];
@@ -448,12 +482,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end
     `uvm_info(`gfn, $sformatf("unmasked_digest: %0p", unmasked_digest), UVM_HIGH)
 
-    `uvm_info(`gfn, $sformatf("msg_arr for DPI mode: %0p", msg_arr), UVM_HIGH)
-
     ///////////////////////////////////////////////////////////
     // Calculate the expected digest using the DPI-C++ model //
     ///////////////////////////////////////////////////////////
     msg_arr = msg;
+    `uvm_info(`gfn, $sformatf("msg_arr for DPI mode: %0p", msg_arr), UVM_HIGH)
+
     case (hash_mode)
       sha3_pkg::Sha3: begin
         case (strength)
@@ -493,12 +527,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           get_fname_and_custom_str(fname, custom_str);
 
           // Calculate the unmasked key
+          exp_keys = `gmv(ral.cfg.sideload) ? keymgr_keys : keys;
           for (int i = 0; i < key_word_len; i++) begin
-            if (cfg.enable_masking) begin
-              unmasked_key.push_back(keys[0][i] ^ keys[1][i]);
+            // Sideloaded keys are treated as two-share masked form by default, need to xor them
+            if (cfg.enable_masking || `gmv(ral.cfg.sideload)) begin
+              unmasked_key.push_back(exp_keys[0][i] ^ exp_keys[1][i]);
             end else begin
-              unmasked_key.push_back(keys[0][i]);
+              unmasked_key.push_back(exp_keys[0][i]);
             end
+            `uvm_info(`gfn, $sformatf("unmasked_key[%0d] = 0x%0x", i, unmasked_key[i]), UVM_HIGH)
           end
 
           // Convert the key array into a byte array for the DPI model

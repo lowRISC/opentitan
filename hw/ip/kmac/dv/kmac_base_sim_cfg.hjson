@@ -38,6 +38,8 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  run_opts: ["+test_timeout_ns=4000000000"]
+
   // Need to override the default output directory
   overrides: [
     {
@@ -68,12 +70,15 @@
     {
       name: "{variant}_smoke"
       uvm_test_seq: kmac_smoke_vseq
-      run_opts: ["+test_timeout_ns=4000000000"]
     }
     {
       name: "{variant}_long_msg_and_output"
       uvm_test_seq: kmac_long_msg_and_output_vseq
       run_opts: ["+test_timeout_ns=10000000000"]
+    }
+    {
+      name: "{variant}_sideload"
+      uvm_test_seq: kmac_sideload_vseq
     }
   ]
 
