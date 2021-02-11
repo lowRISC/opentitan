@@ -231,34 +231,36 @@
     // },
   ],
   registers: [
-    // TODO(#1412): this register enable signal should be split into multiregs such that
-    // each pin / peripheral select can be locked down individually. this needs support
-    // for compact, nested multireg enable registers in our regtool.
-    { name: "REGWEN",
-      desc: '''
-            Register write enable for all control registers.
-            ''',
-      swaccess: "rw0c",
-      hwaccess: "none",
-      fields: [
-        {
-            bits:   "0",
-            name: "wen",
-            desc: ''' When true, all configuration registers can be modified.
-            When false, they become read-only. Defaults true, write zero to clear.
-            '''
-            resval: 1,
-        },
-      ]
-    },
 # inputs
-    { multireg: { name:     "PERIPH_INSEL", // TODO: update this name to MIO_PERIPH_INSEL
-                  desc:     "Mux select for peripheral inputs.",
+    { multireg: { name:     "MIO_PERIPH_INSEL_REGWEN",
+                  desc:     "Register write enable for MIO peripheral input selects.",
                   count:    "NMioPeriphIn",
-                  swaccess: "rw",
-                  hwaccess: "hro",
-                  regwen:   "REGWEN",
-                  cname:    "IN",
+                  compact:  "false",
+                  swaccess: "rw0c",
+                  hwaccess: "none",
+                  cname:    "MIO_PERIPH_INSEL",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              Register write enable bit.
+                              If this is cleared to 0, the corresponding MIO_PERIPH_INSEL
+                              is not writable anymore.
+                              ''',
+                      resval: "1",
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:         "MIO_PERIPH_INSEL",
+                  desc:         "For each peripheral input, this selects the muxable pad input.",
+                  count:        "NMioPeriphIn",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hro",
+                  regwen:       "MIO_PERIPH_INSEL_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "IN",
                   fields: [
                     { bits: "${(n_mio_pads+1).bit_length()-1}:0",
                       name: "IN",
@@ -272,13 +274,35 @@
                 }
     },
 # outputs
-    { multireg: { name:     "MIO_OUTSEL",
-                  desc:     "Mux select for MIO outputs.",
+    { multireg: { name:     "MIO_OUTSEL_REGWEN",
+                  desc:     "Register write enable for MIO output selects.",
                   count:    "NMioPads",
-                  swaccess: "rw",
-                  hwaccess: "hro",
-                  regwen:   "REGWEN",
-                  cname:    "OUT",
+                  compact:  "false",
+                  swaccess: "rw0c",
+                  hwaccess: "none",
+                  cname:    "MIO_OUTSEL",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              Register write enable bit.
+                              If this is cleared to 0, the corresponding MIO_OUTSEL
+                              is not writable anymore.
+                              ''',
+                      resval: "1",
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:         "MIO_OUTSEL",
+                  desc:         "For each muxable pad, this selects the peripheral output.",
+                  count:        "NMioPads",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hro",
+                  regwen:       "MIO_OUTSEL_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "OUT",
                   fields: [
                     { bits: "${(n_mio_periph_out+2).bit_length()-1}:0",
                       name: "OUT",
@@ -295,19 +319,41 @@
                 }
     },
 # sleep behavior of MIO peripheral outputs
-# TODO: add individual sleep disable bits
-    { multireg: { name:     "MIO_OUT_SLEEP_VAL",
-                  desc:     '''Defines sleep behavior of muxed output or inout. Note that
-                            the MIO output will only switch into sleep mode if the the corresponding
-                            !!MIO_OUTSEL is either set to 0-2, or if !!MIO_OUTSEL selects a peripheral
-                            output that can go into sleep. If an always on peripheral is selected with
-                            !!MIO_OUTSEL, the !!MIO_OUT_SLEEP_VAL configuration has no effect.
-                            '''
+    { multireg: { name:     "MIO_OUT_SLEEP_REGWEN",
+                  desc:     "Register write enable for MIO sleep value configuration.",
                   count:    "NMioPads",
-                  swaccess: "rw",
-                  hwaccess: "hro",
-                  regwen:   "REGWEN",
-                  cname:    "OUT",
+                  compact:  "false",
+                  swaccess: "rw0c",
+                  hwaccess: "none",
+                  cname:    "MIO_OUT_SLEEP_VAL",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              Register write enable bit.
+                              If this is cleared to 0, the corresponding MIO_OUT_SLEEP_VAL
+                              is not writable anymore.
+                              ''',
+                      resval: "1",
+                    }
+                  ]
+                }
+    },
+# TODO: add individual sleep disable bits
+    { multireg: { name:         "MIO_OUT_SLEEP_VAL",
+                  desc:         '''Defines sleep behavior of muxed output or inout. Note that
+                                the MIO output will only switch into sleep mode if the the corresponding
+                                !!MIO_OUTSEL is either set to 0-2, or if !!MIO_OUTSEL selects a peripheral
+                                output that can go into sleep. If an always on peripheral is selected with
+                                !!MIO_OUTSEL, the !!MIO_OUT_SLEEP_VAL configuration has no effect.
+                                '''
+                  count:        "NMioPads",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hro",
+                  regwen:       "MIO_OUT_SLEEP_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "OUT",
                   fields: [
                     { bits: "1:0",
                       name: "OUT",
@@ -340,20 +386,42 @@
                 }
     },
 # sleep behavior of DIO peripheral outputs
-# TODO: add individual sleep disable bits
-    { multireg: { name:     "DIO_OUT_SLEEP_VAL",
-                  desc:     '''Defines sleep behavior of dedicated output or inout. Note this
-                            register has WARL behavior since the sleep value settings are
-                            meaningless for always-on and input-only DIOs. For these DIOs,
-                            this register always reads 0.
-                            '''
+    { multireg: { name:     "DIO_OUT_SLEEP_REGWEN",
+                  desc:     "Register write enable for DIO sleep value configuration.",
                   count:    "NDioPads",
-                  swaccess: "rw",
-                  hwaccess: "hrw",
-                  hwext:    "true",
-                  hwqe:     "true",
-                  regwen:   "REGWEN",
-                  cname:    "OUT",
+                  compact:  "false",
+                  swaccess: "rw0c",
+                  hwaccess: "none",
+                  cname:    "DIO_OUT_SLEEP_VAL",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              Register write enable bit.
+                              If this is cleared to 0, the corresponding DIO_OUT_SLEEP_VAL
+                              is not writable anymore.
+                              ''',
+                      resval: "1",
+                    }
+                  ]
+                }
+    },
+# TODO: add individual sleep disable bits
+    { multireg: { name:         "DIO_OUT_SLEEP_VAL",
+                  desc:         '''Defines sleep behavior of dedicated output or inout. Note this
+                                register has WARL behavior since the sleep value settings are
+                                meaningless for always-on and input-only DIOs. For these DIOs,
+                                this register always reads 0.
+                                '''
+                  count:        "NDioPads",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hrw",
+                  hwext:        "true",
+                  hwqe:         "true",
+                  regwen:       "DIO_OUT_SLEEP_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "OUT",
                   fields: [
                     { bits: "1:0",
                       name: "OUT",
@@ -389,13 +457,35 @@
                 }
     },
 # wakeup detector enables
-    { multireg: { name:     "WKUP_DETECTOR_EN",
-                  desc:     "Enables for the wakeup detectors."
+    { multireg: { name:     "WKUP_DETECTOR_REGWEN",
+                  desc:     "Register write enable for wakeup detectors.",
                   count:    "NWkupDetect",
-                  swaccess: "rw",
-                  hwaccess: "hro",
-                  regwen:   "REGWEN",
-                  cname:    "DETECTOR",
+                  compact:  "false",
+                  swaccess: "rw0c",
+                  hwaccess: "none",
+                  cname:    "WKUP_DETECTOR",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              Register write enable bit.
+                              If this is cleared to 0, the corresponding WKUP_DETECTOR
+                              configuration is not writable anymore.
+                              ''',
+                      resval: "1",
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:         "WKUP_DETECTOR_EN",
+                  desc:         "Enables for the wakeup detectors."
+                  count:        "NWkupDetect",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hro",
+                  regwen:       "WKUP_DETECTOR_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "DETECTOR",
                   fields: [
                     { bits: "0:0",
                       name: "EN",
@@ -411,13 +501,15 @@
 
     },
 # wakeup detector config
-    { multireg: { name:     "WKUP_DETECTOR",
-                  desc:     "Configuration of wakeup condition detectors."
-                  count:    "NWkupDetect",
-                  swaccess: "rw",
-                  hwaccess: "hro",
-                  regwen:   "REGWEN",
-                  cname:    "DETECTOR",
+    { multireg: { name:         "WKUP_DETECTOR",
+                  desc:         "Configuration of wakeup condition detectors."
+                  count:        "NWkupDetect",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hro",
+                  regwen:       "WKUP_DETECTOR_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "DETECTOR",
                   fields: [
                     { bits: "2:0",
                       name: "MODE",
@@ -476,13 +568,15 @@
 
     },
 # wakeup detector count thresholds
-    { multireg: { name:     "WKUP_DETECTOR_CNT_TH",
-                  desc:     "Counter thresholds for wakeup condition detectors."
-                  count:    "NWkupDetect",
-                  swaccess: "rw",
-                  hwaccess: "hro",
-                  regwen:   "REGWEN",
-                  cname:    "DETECTOR",
+    { multireg: { name:         "WKUP_DETECTOR_CNT_TH",
+                  desc:         "Counter thresholds for wakeup condition detectors."
+                  count:        "NWkupDetect",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hro",
+                  regwen:       "WKUP_DETECTOR_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "DETECTOR",
                   fields: [
                     { bits: "WkupCntWidth-1:0",
                       name: "TH",
@@ -496,15 +590,17 @@
 
     },
 # wakeup detector pad selectors
-    { multireg: { name:     "WKUP_DETECTOR_PADSEL",
-                  desc:     "Pad selects for pad wakeup condition detectors."
-                  count:    "NWkupDetect",
-                  swaccess: "rw",
-                  hwaccess: "hro",
-                  regwen:   "REGWEN",
-                  cname:    "DETECTOR",
+    { multireg: { name:         "WKUP_DETECTOR_PADSEL",
+                  desc:         "Pad selects for pad wakeup condition detectors."
+                  count:        "NWkupDetect",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hro",
+                  regwen:       "WKUP_DETECTOR_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "DETECTOR",
                   fields: [
-                    { bits: "${max(n_mio_pads-1, n_dio_periph_in-1).bit_length()-1}:0",
+                    { bits: "${max(2 + n_mio_pads-1, n_dio_periph_in-1).bit_length()-1}:0",
                       name: "SEL",
                       resval: 0,
                       desc: '''Selects a specific MIO or DIO pad (depending on !!WKUP_DETECTOR configuration).
@@ -525,7 +621,6 @@
                   hwaccess: "hrw",
                   hwext:    "true",
                   hwqe:     "true",
-                  regwen:   "REGWEN",
                   cname:    "DETECTOR",
                   fields: [
                     { bits: "0",
