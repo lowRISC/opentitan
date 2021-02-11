@@ -191,18 +191,6 @@
       default: "${usb_dn_pull_sel}",
       local: "true"
     },
-
-    // TODO: Enable these once supported by topgen and the C header generation script.
-    // These parameters are currently located in pinmux_pkg.sv
-    // // If a bit is set to 1 in this vector, wakeup detectors are connected
-    // // to this DIO.
-    // { name: "DioPeriphHasWkup",
-    //   desc: "Indicates which DIOs shall be connected to the WakeupDetectors.",
-    //   type: "logic [NDioPads-1:0]",
-    //   // TODO: need to generate this via topgen
-    //   default: "'1",
-    //   local: "true"
-    // },
   ],
   registers: [
 //////////////////////////
@@ -692,7 +680,6 @@
                 }
 
     },
-    # wakeup detector config
     { multireg: { name:         "WKUP_DETECTOR",
                   desc:         "Configuration of wakeup condition detectors."
                   count:        "NWkupDetect",
@@ -709,20 +696,23 @@
                       desc: "Wakeup detection mode."
                       enum: [
                         { value: "0",
-                          name: "Disabled",
-                          desc: "Pin wakeup detector is disabled."
+                          name: "Posedge",
+                          desc: "Trigger a wakeup request when observing a positive edge."
                         },
                         { value: "1",
                           name: "Negedge",
                           desc: "Trigger a wakeup request when observing a negative edge."
                         },
                         { value: "2",
-                          name: "Posedge",
-                          desc: "Trigger a wakeup request when observing a positive edge."
-                        },
-                        { value: "3",
                           name: "Edge",
                           desc: "Trigger a wakeup request when observing an edge in any direction."
+                        },
+                        { value: "3",
+                          name: "TimedHigh",
+                          desc: '''
+                            Trigger a wakeup request when pin is driven HIGH for a certain amount
+                            of always-on clock cycles as configured in !!WKUP_DETECTOR_CNT_TH.
+                            '''
                         },
                         { value: "4",
                           name: "TimedLow",
@@ -731,13 +721,7 @@
                             of always-on clock cycles as configured in !!WKUP_DETECTOR_CNT_TH.
                             '''
                         },
-                        { value: "5",
-                          name: "TimedHigh",
-                          desc: '''
-                            Trigger a wakeup request when pin is driven HIGH for a certain amount
-                            of always-on clock cycles as configured in !!WKUP_DETECTOR_CNT_TH.
-                            '''
-                        },
+
                       ]
                     }
                     { bits: "3",

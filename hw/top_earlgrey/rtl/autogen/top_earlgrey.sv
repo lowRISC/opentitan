@@ -1534,7 +1534,6 @@ module top_earlgrey #(
       .lc_pinmux_strap_i('0),
       .lc_pinmux_strap_o(),
       .dft_strap_test_o(),
-      .io_pok_i({pinmux_pkg::NIOPokSignals{1'b1}}),
       .sleep_en_i(1'b0),
       .aon_wkup_req_o(pwrmgr_aon_wakeups[0]),
       .usb_wkup_req_o(pwrmgr_aon_wakeups[1]),

@@ -4361,16 +4361,6 @@
           index: -1
         }
         {
-          struct: io_pok
-          type: uni
-          name: io_pok
-          act: rcv
-          package: pinmux_pkg
-          default: "{pinmux_pkg::NIOPokSignals{1'b1}}"
-          inst_name: pinmux_aon
-          index: -1
-        }
-        {
           struct: logic
           type: uni
           name: sleep_en
@@ -13072,16 +13062,6 @@
         act: req
         package: pinmux_pkg
         default: "'0"
-        inst_name: pinmux_aon
-        index: -1
-      }
-      {
-        struct: io_pok
-        type: uni
-        name: io_pok
-        act: rcv
-        package: pinmux_pkg
-        default: "{pinmux_pkg::NIOPokSignals{1'b1}}"
         inst_name: pinmux_aon
         index: -1
       }
