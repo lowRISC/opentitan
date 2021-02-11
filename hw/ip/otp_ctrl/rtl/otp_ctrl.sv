@@ -184,17 +184,18 @@ module otp_ctrl
   ) u_tlul_adapter_sram (
     .clk_i,
     .rst_ni,
-    .tl_i     ( tl_win_h2d[0] ),
-    .tl_o     ( tl_win_d2h[0] ),
-    .req_o    (  tlul_req     ),
-    .gnt_i    (  tlul_gnt     ),
-    .we_o     (               ), // unused
-    .addr_o   (  tlul_addr    ),
-    .wdata_o  (               ), // unused
-    .wmask_o  (               ), // unused
-    .rdata_i  (  tlul_rdata   ),
-    .rvalid_i (  tlul_rvalid  ),
-    .rerror_i (  tlul_rerror  )
+    .en_ifetch_i ( 1'b0          ),
+    .tl_i        ( tl_win_h2d[0] ),
+    .tl_o        ( tl_win_d2h[0] ),
+    .req_o       (  tlul_req     ),
+    .gnt_i       (  tlul_gnt     ),
+    .we_o        (               ), // unused
+    .addr_o      (  tlul_addr    ),
+    .wdata_o     (               ), // unused
+    .wmask_o     (               ), // unused
+    .rdata_i     (  tlul_rdata   ),
+    .rvalid_i    (  tlul_rvalid  ),
+    .rerror_i    (  tlul_rerror  )
   );
 
   logic [NumPart-1:0] tlul_part_sel_oh;

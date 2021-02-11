@@ -69,17 +69,18 @@ module prim_generic_otp
   ) u_tlul_adapter_sram (
     .clk_i,
     .rst_ni,
-    .tl_i     ( test_tl_i         ),
-    .tl_o     ( test_tl_o         ),
-    .req_o    ( tlul_req          ),
-    .gnt_i    ( tlul_req          ),
-    .we_o     ( tlul_wren         ),
-    .addr_o   ( tlul_addr         ),
-    .wdata_o  ( tlul_wdata        ),
-    .wmask_o  (                   ),
-    .rdata_i  ( tlul_rdata_q      ),
-    .rvalid_i ( tlul_rvalid_q     ),
-    .rerror_i ( '0                )
+    .tl_i        ( test_tl_i          ),
+    .tl_o        ( test_tl_o          ),
+    .en_ifetch_i ( tlul_pkg::InstrDis ),
+    .req_o       ( tlul_req           ),
+    .gnt_i       ( tlul_req           ),
+    .we_o        ( tlul_wren          ),
+    .addr_o      ( tlul_addr          ),
+    .wdata_o     ( tlul_wdata         ),
+    .wmask_o     (                    ),
+    .rdata_i     ( tlul_rdata_q       ),
+    .rvalid_i    ( tlul_rvalid_q      ),
+    .rerror_i    ( '0                 )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlul_testreg

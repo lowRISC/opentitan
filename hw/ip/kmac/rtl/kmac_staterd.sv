@@ -64,16 +64,16 @@ module kmac_staterd
 
     .tl_i,
     .tl_o,
-
-    .req_o    (tlram_req),
-    .gnt_i    (tlram_gnt),
-    .we_o     (tlram_we ),
-    .addr_o   (tlram_addr),
-    .wdata_o  (unused_tlram_wdata),
-    .wmask_o  (unused_tlram_wmask),
-    .rdata_i  (tlram_rdata),
-    .rvalid_i (tlram_rvalid),
-    .rerror_i (tlram_rerror)
+    .en_ifetch_i (tlul_pkg::InstrDis),
+    .req_o       (tlram_req),
+    .gnt_i       (tlram_gnt),
+    .we_o        (tlram_we ),
+    .addr_o      (tlram_addr),
+    .wdata_o     (unused_tlram_wdata),
+    .wmask_o     (unused_tlram_wmask),
+    .rdata_i     (tlram_rdata),
+    .rvalid_i    (tlram_rvalid),
+    .rerror_i    (tlram_rerror)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -123,4 +123,3 @@ module kmac_staterd
   end
 
 endmodule
-
