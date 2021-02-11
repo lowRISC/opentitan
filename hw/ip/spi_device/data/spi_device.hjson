@@ -14,8 +14,11 @@
   available_output_list: [
   ],
   available_inout_list: [
-    { name: "sd", width: 4, desc: "SPI In/Out ports" },
-  ],
+    { name: "sd",
+      width: "4",
+      desc: "SPI IO, IO2/IO3 has multi-purpose (/WP, /HOLD)"
+    }
+  ]
   interrupt_list: [
     { name: "rxf",         desc: "RX SRAM FIFO Full" },
     { name: "rxlvl",       desc: "RX SRAM FIFO is above the level" },

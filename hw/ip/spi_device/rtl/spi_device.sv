@@ -438,7 +438,6 @@ module spi_device (
   ////////////////////////////
   // SPI Serial to Parallel //
   ////////////////////////////
-
   spi_s2p u_s2p (
     .clk_i        (clk_spi_in_buf),
     .rst_ni       (rst_spi_n),

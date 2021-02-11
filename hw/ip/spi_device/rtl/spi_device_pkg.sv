@@ -53,20 +53,22 @@ package spi_device_pkg;
 
   localparam int MEM_AW = 12; // Memory Address width (Byte based)
 
-  // List of supported commands @ Bunker mode (SPI Manufacturing mode)
-  typedef enum logic [7:0] {
-    Nop    = 8'h00,
-    WrSts  = 8'h01,   // Write STATUS1 followed by STATUS2 register
-    Write  = 8'h02,   // Write Data
-    Read   = 8'h03,   // Limit to a certain speed as read data starts right after addr
-    WrDi   = 8'h04,   // Write Disable: Clear WEL to 0
-    RdSts  = 8'h05,
-    WrEn   = 8'h06,   // Write Enable: Set WEL to 1
-    HsRd   = 8'h0B,   // 8 cycle gap between addr/ rdata
-    RdSts2 = 8'h35,   // Read STATUS2 register
-    DlRd   = 8'h3B,   // Dual Read
-    QdRd   = 8'h6B    // Quad Read
-  } spi_rom_cmd_e;
+  typedef enum logic [5:0] {
+    DpNone       = 'b 000000,
+    DpReadCmd    = 'b 000001,
+    DpReadStatus = 'b 000010,
+    DpReadSFDP   = 'b 000100,
+    DpReadJEDEC  = 'b 001000,
+
+    // Command + Address only: e.g Block Erase
+    // Command + Address + Paylod: Program
+    // Command followed by direct payload
+    // Write Status could be an example
+    // Command only: Write Protect Enable / Chip Erase
+    DpUpload     = 'b 010000,
+    // Unrecognizable commands: Just handle this as DpPayload
+    DpUnknown    = 'b 100000
+  } sel_datapath_e;
 
   // Sram parameters
   parameter int unsigned SramDw = 32;
