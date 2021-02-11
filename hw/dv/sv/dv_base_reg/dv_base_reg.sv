@@ -165,7 +165,8 @@ class dv_base_reg extends uvm_reg;
       field_access = fields[0].get_access();
       case (field_access)
         // rw.value is a dynamic array
-        "W1C": if (rw.value[0][0] == 1'b1) set_locked_regs_access("RO");
+        // discussed in issue #1922: enable register is standarized to W0C or RO (if HW has write
+        // access).
         "W0C": if (rw.value[0][0] == 1'b0) set_locked_regs_access("RO");
         "RO": ; // if RO, it's updated by design, need to predict in scb
         default:`uvm_fatal(`gfn, $sformatf("enable register invalid access %s", field_access))
