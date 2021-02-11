@@ -7,7 +7,10 @@
 
 `include "prim_assert.sv"
 
-module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
+module pinmux
+  import pinmux_pkg::*;
+  import pinmux_reg_pkg::*;
+(
   input                            clk_i,
   input                            rst_ni,
   // Slow always-on clock
@@ -60,10 +63,6 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   // They have been placed here such that they do not generate
   // warnings in the C header generation step, since logic is not supported
   // as a data type yet.
-  localparam logic [pinmux_reg_pkg::NMioPeriphOut-1:0] MioPeriphHasSleepMode
-                   = {pinmux_reg_pkg::NMioPeriphOut{1'b1}};
-  localparam logic [pinmux_reg_pkg::NDioPads-1:0]      DioPeriphHasSleepMode
-                   = {pinmux_reg_pkg::NDioPads{1'b1}};
   localparam logic [pinmux_reg_pkg::NDioPads-1:0]      DioPeriphHasWkup
                    = {pinmux_reg_pkg::NDioPads{1'b1}};
 
@@ -110,84 +109,54 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
     .state_debug_o(usb_state_debug_o)
   );
 
-  /////////////////////
-  // Sleep registers //
-  /////////////////////
+  /////////////////////////
+  // Retention Registers //
+  /////////////////////////
 
-  logic sleep_en_q;
-  logic [NMioPads-1:0] mio_out_sleep_d, mio_oe_sleep_d;
-  logic [NMioPads-1:0] mio_out_sleep_q, mio_oe_sleep_q;
-  logic [NDioPads-1:0] dio_out_sleep_d, dio_oe_sleep_d;
-  logic [NDioPads-1:0] dio_out_sleep_q, dio_oe_sleep_q;
-  // these are external due to their WARL behavior
-  logic [NDioPads-1:0][1:0] dio_out_sleep_val_d, dio_out_sleep_val_q;
+  logic sleep_en_q, sleep_trig;
 
-  // latch MIO/DIO state when going to sleep
-  // 0: drive low
-  // 1: drive high
-  // 2: high-z
-  // 3: previous value
-  for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_sleep
-    assign mio_out_sleep_d[k] = (reg2hw.mio_out_sleep_val[k].q == 0) ? 1'b0 :
-                                (reg2hw.mio_out_sleep_val[k].q == 1) ? 1'b1 :
-                                (reg2hw.mio_out_sleep_val[k].q == 2) ? 1'b0 : mio_out_o[k];
+  logic [NMioPads-1:0] mio_sleep_trig;
+  logic [NMioPads-1:0] mio_out_retreg_d, mio_oe_retreg_d;
+  logic [NMioPads-1:0] mio_out_retreg_q, mio_oe_retreg_q;
 
-    assign mio_oe_sleep_d[k] = (reg2hw.mio_out_sleep_val[k].q == 0) ? 1'b1 :
-                               (reg2hw.mio_out_sleep_val[k].q == 1) ? 1'b1 :
-                               (reg2hw.mio_out_sleep_val[k].q == 2) ? 1'b0 : mio_oe_o[k];
-  end
+  logic [NDioPads-1:0] dio_sleep_trig;
+  logic [NDioPads-1:0] dio_out_retreg_d, dio_oe_retreg_d;
+  logic [NDioPads-1:0] dio_out_retreg_q, dio_oe_retreg_q;
 
-  // since DIO pads are permanently mapped to a specific peripheral,
-  // we only need to support retention regs on non-always on peripherals,
-  // outputs / inouts.
-  for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_sleep
-    if (DioPeriphHasSleepMode[k]) begin : gen_warl_connect
-      assign hw2reg.dio_out_sleep_val[k].d = dio_out_sleep_val_q[k];
-
-      assign dio_out_sleep_val_d[k] = (reg2hw.dio_out_sleep_val[k].qe) ?
-                                      reg2hw.dio_out_sleep_val[k].q :
-                                      dio_out_sleep_val_q[k];
-
-      assign dio_out_sleep_d[k] = (dio_out_sleep_val_q[k] == 0) ? 1'b0 :
-                                  (dio_out_sleep_val_q[k] == 1) ? 1'b1 :
-                                  (dio_out_sleep_val_q[k] == 2) ? 1'b0 : dio_out_o[k];
-
-      assign dio_oe_sleep_d[k] = (dio_out_sleep_val_q[k] == 0) ? 1'b1 :
-                                 (dio_out_sleep_val_q[k] == 1) ? 1'b1 :
-                                 (dio_out_sleep_val_q[k] == 2) ? 1'b0 : dio_oe_o[k];
-    end else begin : gen_warl_tie0
-      // these signals will be unused
-      assign hw2reg.dio_out_sleep_val[k].d = 2'b10; // default value defined in hjson
-      assign dio_out_sleep_val_d[k] = 2'b10; // default value defined in hjson
-      assign dio_out_sleep_d[k]     = '0;
-      assign dio_oe_sleep_d[k]      = '0;
-    end
-  end
+  // Sleep entry trigger
+  assign sleep_trig = sleep_en_i & ~sleep_en_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_sleep
     if (!rst_ni) begin
-      sleep_en_q          <= 1'b0;
-      dio_out_sleep_val_q <= {NDioPads{2'b10}}; // default value defined in hjson
-      mio_out_sleep_q     <= '0;
-      mio_oe_sleep_q      <= '0;
-      dio_out_sleep_q     <= '0;
-      dio_oe_sleep_q      <= '0;
+      sleep_en_q       <= 1'b0;
+      mio_out_retreg_q <= '0;
+      mio_oe_retreg_q  <= '0;
+      dio_out_retreg_q <= '0;
+      dio_oe_retreg_q  <= '0;
     end else begin
-      sleep_en_q          <= sleep_en_i;
-      dio_out_sleep_val_q <= dio_out_sleep_val_d;
+      sleep_en_q <= sleep_en_i;
 
-      if (sleep_en_i & !sleep_en_q) begin
-        mio_out_sleep_q <= mio_out_sleep_d;
-        mio_oe_sleep_q  <= mio_oe_sleep_d;
-        dio_out_sleep_q <= dio_out_sleep_d;
-        dio_oe_sleep_q  <= dio_oe_sleep_d;
+      // MIOs
+      for (int k = 0; k < NMioPads; k++) begin
+        if (mio_sleep_trig[k]) begin
+          mio_out_retreg_q[k] <= mio_out_retreg_d[k];
+          mio_oe_retreg_q[k]  <= mio_oe_retreg_d[k];
+        end
+      end
+
+      // DIOs
+      for (int k = 0; k < NDioPads; k++) begin
+        if (dio_sleep_trig[k]) begin
+          dio_out_retreg_q[k] <= dio_out_retreg_d[k];
+          dio_oe_retreg_q[k]  <= dio_oe_retreg_d[k];
+        end
       end
     end
   end
 
-  ///////////////
-  // Input Mux //
-  ///////////////
+  /////////////////////
+  // MIO Input Muxes //
+  /////////////////////
 
   localparam int AlignedMuxSize = (NMioPads + 2 > NDioPads) ? 2**$clog2(NMioPads + 2) :
                                                               2**$clog2(NDioPads);
@@ -203,24 +172,43 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
     assign mio_to_periph_o[k] = mio_data_mux[reg2hw.mio_periph_insel[k].q];
   end
 
-  ////////////////
-  // Output Mux //
-  ////////////////
+  //////////////////////
+  // MIO Output Muxes //
+  //////////////////////
 
   // stack output data/enable and default signals for convenient indexing below
   // possible defaults: 0, 1 or 2 (high-Z). make sure mux is aligned to a power of 2 to avoid Xes.
-  logic [2**$clog2(NMioPeriphOut+3)-1:0] periph_data_mux, periph_oe_mux, periph_sleep_mux;
+  logic [2**$clog2(NMioPeriphOut+3)-1:0] periph_data_mux, periph_oe_mux;
   assign periph_data_mux  = $bits(periph_data_mux)'({periph_to_mio_i, 1'b0, 1'b1, 1'b0});
   assign periph_oe_mux    = $bits(periph_oe_mux)'({periph_to_mio_oe_i,  1'b0, 1'b1, 1'b1});
-  assign periph_sleep_mux = $bits(periph_sleep_mux)'({MioPeriphHasSleepMode,  1'b1, 1'b1, 1'b1});
 
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_out
-    logic sleep_en;
-    // check whether this peripheral can actually go to sleep
-    assign sleep_en = periph_sleep_mux[reg2hw.mio_outsel[k].q] & sleep_en_q;
-    // index using configured outsel
-    assign mio_out_o[k] = (sleep_en) ? mio_out_sleep_q[k] : periph_data_mux[reg2hw.mio_outsel[k].q];
-    assign mio_oe_o[k]  = (sleep_en) ? mio_oe_sleep_q[k]  : periph_oe_mux[reg2hw.mio_outsel[k].q];
+    // Check individual sleep enable status bits
+    assign mio_out_o[k] = reg2hw.mio_pad_sleep_status[k].q ?
+                          mio_out_retreg_q[k]              :
+                          periph_data_mux[reg2hw.mio_outsel[k].q];
+
+    assign mio_oe_o[k]  = reg2hw.mio_pad_sleep_status[k].q ?
+                          mio_oe_retreg_q[k]               :
+                          periph_oe_mux[reg2hw.mio_outsel[k].q];
+
+    // latch state when going to sleep
+    // 0: drive low
+    // 1: drive high
+    // 2: high-z
+    // 3: previous value
+    assign mio_out_retreg_d[k] = (reg2hw.mio_pad_sleep_mode[k].q == 0) ? 1'b0 :
+                                 (reg2hw.mio_pad_sleep_mode[k].q == 1) ? 1'b1 :
+                                 (reg2hw.mio_pad_sleep_mode[k].q == 2) ? 1'b0 : mio_out_o[k];
+
+    assign mio_oe_retreg_d[k] = (reg2hw.mio_pad_sleep_mode[k].q == 0) ? 1'b1 :
+                                (reg2hw.mio_pad_sleep_mode[k].q == 1) ? 1'b1 :
+                                (reg2hw.mio_pad_sleep_mode[k].q == 2) ? 1'b0 : mio_oe_o[k];
+
+    // Activate sleep behavior only if it has been enabled
+    assign mio_sleep_trig[k] = reg2hw.mio_pad_sleep_en[k].q & sleep_trig;
+    assign hw2reg.mio_pad_sleep_status[k].d = 1'b1;
+    assign hw2reg.mio_pad_sleep_status[k].de = mio_sleep_trig[k];
   end
 
   /////////////////////
@@ -228,17 +216,36 @@ module pinmux import pinmux_pkg::*; import pinmux_reg_pkg::*; (
   /////////////////////
 
   // Inputs are just fed through
-  assign dio_to_periph_o = dio_in_i;
+  // TODO: need a way to select which IO POK signal to use por pin
+  assign dio_to_periph_o = (&io_pok_i) ? dio_in_i : '0;
 
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_out
-    // Since this is a DIO, this can be determined at design time
-    if (DioPeriphHasSleepMode[k]) begin : gen_sleep
-      assign dio_out_o[k] = (sleep_en_q) ? dio_out_sleep_q[k] : periph_to_dio_i[k];
-      assign dio_oe_o[k]  = (sleep_en_q) ? dio_oe_sleep_q[k]  : periph_to_dio_oe_i[k];
-    end else begin : gen_nosleep
-      assign dio_out_o[k] = periph_to_dio_i[k];
-      assign dio_oe_o[k]  = periph_to_dio_oe_i[k];
-    end
+    // Check individual sleep enable status bits
+    assign dio_out_o[k] = reg2hw.dio_pad_sleep_status[k].q ?
+                          dio_out_retreg_q[k]              :
+                          periph_to_dio_i[k];
+
+    assign dio_oe_o[k]  = reg2hw.dio_pad_sleep_status[k].q ?
+                          dio_oe_retreg_q[k]               :
+                          periph_to_dio_oe_i[k];
+
+    // latch state when going to sleep
+    // 0: drive low
+    // 1: drive high
+    // 2: high-z
+    // 3: previous value
+    assign dio_out_retreg_d[k] = (reg2hw.dio_pad_sleep_mode[k].q == 0) ? 1'b0 :
+                                 (reg2hw.dio_pad_sleep_mode[k].q == 1) ? 1'b1 :
+                                 (reg2hw.dio_pad_sleep_mode[k].q == 2) ? 1'b0 : dio_out_o[k];
+
+    assign dio_oe_retreg_d[k] = (reg2hw.dio_pad_sleep_mode[k].q == 0) ? 1'b1 :
+                                (reg2hw.dio_pad_sleep_mode[k].q == 1) ? 1'b1 :
+                                (reg2hw.dio_pad_sleep_mode[k].q == 2) ? 1'b0 : dio_oe_o[k];
+
+    // Activate sleep behavior only if it has been enabled
+    assign dio_sleep_trig[k] = reg2hw.dio_pad_sleep_en[k].q & sleep_trig;
+    assign hw2reg.dio_pad_sleep_status[k].d = 1'b1;
+    assign hw2reg.dio_pad_sleep_status[k].de = dio_sleep_trig[k];
   end
 
   //////////////////////
