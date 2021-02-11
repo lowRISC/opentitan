@@ -53,7 +53,6 @@ declare -a blocks=(
   "prim_secded_hamming_39_32_fpv"
   "prim_secded_hamming_72_64_fpv"
   "pinmux_fpv"
-  "padctrl_fpv"
   "rv_plic_fpv"
   "rv_plic_generic_fpv"
 )

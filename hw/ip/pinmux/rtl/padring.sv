@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// This it the padctrl portion that has to be instantiated on the chip level.
+// This is the pinmux portion that has to be instantiated on the chip level.
 // The module instantiates the technology dependent pads, and connects them
-// to the MIOs/DIOs and pad attributes coming from the padctrl block.
+// to the MIOs/DIOs and pad attributes coming from the pinmux block.
 //
 
 `include "prim_assert.sv"
 
-module padring import padctrl_reg_pkg::*; #(
+module padring import pinmux_reg_pkg::*; #(
   // This allows to selectively connect Pad instances.
   // unconnected inputs are tied to 0, unconnected outputs are high-z.
   parameter logic [NMioPads-1:0] ConnectMioIn = '1,

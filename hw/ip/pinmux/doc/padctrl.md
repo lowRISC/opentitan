@@ -51,7 +51,6 @@ Note that the chip-level `padctrl` module also contains the pads for clock and r
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/padctrl/data/padctrl.hjson" >}}
 
 ### Parameters
 
@@ -173,5 +172,3 @@ This behavior is also referred to as "writes-any-reads-legal" or "WARL" in the R
 
 
 ## Register Table
-
-{{< registers "hw/ip/padctrl/data/padctrl.hjson" >}}

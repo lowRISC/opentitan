@@ -125,12 +125,6 @@
                cov: true
              }
              {
-               name: padctrl_fpv
-               fusesoc_core: lowrisc:fpv:padctrl_fpv
-               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               cov: true
-             }
-             {
                name: pinmux_fpv
                fusesoc_core: lowrisc:fpv:pinmux_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]

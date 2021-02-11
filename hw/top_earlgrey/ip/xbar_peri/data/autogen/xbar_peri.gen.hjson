@@ -43,7 +43,6 @@
       rstmgr_aon
       clkmgr_aon
       pinmux_aon
-      padctrl_aon
       ram_ret_aon
       otp_ctrl
       lc_ctrl
@@ -348,24 +347,6 @@
       [
         {
           base_addr: 0x40460000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline_byp: "true"
-    }
-    {
-      name: padctrl_aon
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: "false"
-      inst_type: padctrl
-      addr_range:
-      [
-        {
-          base_addr: 0x40470000
           size_byte: 0x1000
         }
       ]

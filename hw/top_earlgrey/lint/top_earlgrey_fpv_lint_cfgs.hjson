@@ -71,12 +71,6 @@
                rel_path: "hw/ip/prim/fpv/lint/{tool}"
              }
              {
-               name: padctrl_fpv
-               fusesoc_core: lowrisc:fpv:padctrl_fpv
-               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/padctrl/fpv/lint/{tool}"
-             }
-             {
                name: pinmux_fpv
                fusesoc_core: lowrisc:fpv:pinmux_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

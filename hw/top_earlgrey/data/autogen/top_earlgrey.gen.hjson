@@ -4469,56 +4469,6 @@
       ]
     }
     {
-      name: padctrl_aon
-      type: padctrl
-      clock: main
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      clock_group: secure
-      reset_connections:
-      {
-        rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
-      }
-      domain: Aon
-      base_addr: 0x40470000
-      generated: "true"
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_secure
-      }
-      size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_input_list: []
-      available_output_list: []
-      available_inout_list: []
-      param_list: []
-      interrupt_list: []
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
-      inter_signal_list:
-      [
-        {
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          name: tl
-          inst_name: padctrl_aon
-          width: 1
-          default: ""
-          end_idx: -1
-          top_signame: padctrl_aon_tl
-          index: -1
-        }
-      ]
-    }
-    {
       name: sensor_ctrl_aon
       type: sensor_ctrl
       clock_srcs:
@@ -7498,10 +7448,6 @@
       [
         peri.tl_pinmux_aon
       ]
-      padctrl_aon.tl:
-      [
-        peri.tl_padctrl_aon
-      ]
       ram_ret_aon.tl:
       [
         peri.tl_ram_ret_aon
@@ -8265,7 +8211,6 @@
           rstmgr_aon
           clkmgr_aon
           pinmux_aon
-          padctrl_aon
           ram_ret_aon
           otp_ctrl
           lc_ctrl
@@ -8570,24 +8515,6 @@
           [
             {
               base_addr: 0x40460000
-              size_byte: 0x1000
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline_byp: "true"
-        }
-        {
-          name: padctrl_aon
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: "false"
-          inst_type: padctrl
-          addr_range:
-          [
-            {
-              base_addr: 0x40470000
               size_byte: 0x1000
             }
           ]
@@ -8945,18 +8872,6 @@
           width: 1
           default: ""
           top_signame: pinmux_aon_tl
-          index: -1
-        }
-        {
-          struct: tl
-          type: req_rsp
-          name: tl_padctrl_aon
-          act: req
-          package: tlul_pkg
-          inst_name: peri
-          width: 1
-          default: ""
-          top_signame: padctrl_aon_tl
           index: -1
         }
         {
@@ -13223,19 +13138,6 @@
         index: -1
       }
       {
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        name: tl
-        inst_name: padctrl_aon
-        width: 1
-        default: ""
-        end_idx: -1
-        top_signame: padctrl_aon_tl
-        index: -1
-      }
-      {
         struct: ast_alert
         type: req_rsp
         name: ast_alert
@@ -14639,18 +14541,6 @@
         width: 1
         default: ""
         top_signame: pinmux_aon_tl
-        index: -1
-      }
-      {
-        struct: tl
-        type: req_rsp
-        name: tl_padctrl_aon
-        act: req
-        package: tlul_pkg
-        inst_name: peri
-        width: 1
-        default: ""
-        top_signame: padctrl_aon_tl
         index: -1
       }
       {
@@ -16560,28 +16450,6 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: pinmux_aon_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: padctrl_aon_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: padctrl_aon_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

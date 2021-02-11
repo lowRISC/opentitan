@@ -51,14 +51,14 @@ module top_earlgrey_asic (
   //////////////////////
 
   logic clk, clk_usb_48mhz, rst_n;
-  logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
-  logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] mio_attr;
+  logic [pinmux_reg_pkg::NDioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] dio_attr;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
 
   // unused pad signals. need to hook these wires up since lint does not like module ports that are
   // tied to 1'bz.
@@ -146,13 +146,13 @@ module top_earlgrey_asic (
   logic jtag_trst_n, jtag_srst_n;
   logic jtag_tck, jtag_tms, jtag_tdi, jtag_tdo;
 
-  localparam int NumIOs = padctrl_reg_pkg::NMioPads +
-                          padctrl_reg_pkg::NDioPads;
+  localparam int NumIOs = pinmux_reg_pkg::NMioPads +
+                          pinmux_reg_pkg::NDioPads;
 
   // This specifies the tie-off values of the muxed MIO/DIOs
   // when the JTAG is active. SPI CSB is active low.
   localparam logic [NumIOs-1:0] TieOffValues =NumIOs'(1'b1 << (
-      padctrl_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
+      pinmux_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
 
   // TODO: this is a temporary solution. JTAG will eventually be selected and
   // qualified inside the pinmux, based on strap and lifecycle state.
@@ -163,15 +163,15 @@ module top_earlgrey_asic (
     .TieOffValues   (                   TieOffValues ),
     .JtagEnIdx      (                             16 ), // MIO 16
     .JtagEnPolarity (                              1 ),
-    .TckIdx         ( padctrl_reg_pkg::NMioPads +
+    .TckIdx         ( pinmux_reg_pkg::NMioPads +
                       top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSck ),
-    .TmsIdx         ( padctrl_reg_pkg::NMioPads +
+    .TmsIdx         ( pinmux_reg_pkg::NMioPads +
                       top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb ),
     .TrstIdx        (                             18 ), // MIO 18
     .SrstIdx        (                             19 ), // MIO 19
-    .TdiIdx         ( padctrl_reg_pkg::NMioPads +
+    .TdiIdx         ( pinmux_reg_pkg::NMioPads +
                       top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSdi ),
-    .TdoIdx         ( padctrl_reg_pkg::NMioPads +
+    .TdoIdx         ( pinmux_reg_pkg::NMioPads +
                       top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSdo )
   ) jtag_mux (
     // To JTAG inside core

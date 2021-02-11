@@ -55,9 +55,6 @@ tl_device_t xbar_devices[$] = '{
     '{"pinmux_aon", '{
         '{32'h40460000, 32'h40460fff}
     }},
-    '{"padctrl_aon", '{
-        '{32'h40470000, 32'h40470fff}
-    }},
     '{"ram_ret_aon", '{
         '{32'h40600000, 32'h40600fff}
     }},
@@ -102,7 +99,6 @@ tl_host_t xbar_hosts[$] = '{
         "rstmgr_aon",
         "clkmgr_aon",
         "pinmux_aon",
-        "padctrl_aon",
         "ram_ret_aon",
         "otp_ctrl",
         "lc_ctrl",

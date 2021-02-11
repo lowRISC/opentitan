@@ -51,6 +51,11 @@ def main():
                         type=int,
                         help='With of wakeup counters',
                         default=8)
+    parser.add_argument('--attr_dw',
+                        type=int,
+                        help='Pad attribute data width',
+                        default = 10)
+
 
     args = parser.parse_args()
 
@@ -67,6 +72,7 @@ def main():
                        n_dio_pads=args.n_dio_pads,
                        n_wkup_detect=args.n_wkup_detect,
                        wkup_cnt_width=args.wkup_cnt_width,
+                       attr_dw=args.attr_dw,
                        usb_start_pos=0,
                        n_usb_pins=0,
                        usb_dp_sel=0,

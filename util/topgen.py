@@ -330,7 +330,7 @@ def _find_dio_pin_pos(top, sname):
     return bit_pos
 
 
-def generate_pinmux_and_padctrl(top, out_path):
+def generate_pinmux(top, out_path):
     topname = top["name"]
     # MIO Pads
     n_mio_pads = top["pinmux"]["num_mio"]
@@ -390,6 +390,9 @@ def generate_pinmux_and_padctrl(top, out_path):
     n_dio_periph_out = num_dio_inouts + num_dio_outputs
     n_dio_pads = num_dio_inouts + num_dio_inputs + num_dio_outputs
 
+    # TODO: derive this value
+    attr_dw = 10
+
     if n_dio_pads <= 0:
         # TODO: add support for no DIO case
         log.error("Topgen does currently not support generation of a top " +
@@ -412,6 +415,7 @@ def generate_pinmux_and_padctrl(top, out_path):
     log.info("num_dio_inputs:  %d" % num_dio_inputs)
     log.info("num_dio_outputs: %d" % num_dio_outputs)
     log.info("num_dio_inouts:  %d" % num_dio_inouts)
+    log.info("attr_dw:         %d" % attr_dw)
     log.info("num_wkup_detect: %d" % num_wkup_detect)
     log.info("wkup_cnt_width:  %d" % wkup_cnt_width)
     log.info("This translates to:")
@@ -460,6 +464,7 @@ def generate_pinmux_and_padctrl(top, out_path):
                 n_dio_periph_in=n_dio_pads,
                 n_dio_periph_out=n_dio_pads,
                 n_dio_pads=n_dio_pads,
+                attr_dw=attr_dw,
                 n_wkup_detect=num_wkup_detect,
                 wkup_cnt_width=wkup_cnt_width,
                 usb_start_pos=usb_start_pos,
@@ -475,48 +480,6 @@ def generate_pinmux_and_padctrl(top, out_path):
 
     if out == "":
         log.error("Cannot generate pinmux HJSON")
-        return
-
-    with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(genhdr + gencmd + out)
-
-    hjson_obj = hjson.loads(out,
-                            use_decimal=True,
-                            object_pairs_hook=validate.checking_dict)
-    validate.validate(hjson_obj)
-    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
-
-    # Target path
-    #   rtl: padctrl_reg_pkg.sv & padctrl_reg_top.sv
-    #   data: padctrl.hjson
-    rtl_path = out_path / 'ip/padctrl/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    data_path = out_path / 'ip/padctrl/data/autogen'
-    data_path.mkdir(parents=True, exist_ok=True)
-
-    # Template path
-    tpl_path = Path(
-        __file__).resolve().parent / '../hw/ip/padctrl/data/padctrl.hjson.tpl'
-
-    # Generate register package and RTLs
-    gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
-              "-o hw/top_{topname}/\n\n".format(topname=topname))
-
-    hjson_gen_path = data_path / "padctrl.hjson"
-
-    out = StringIO()
-    with tpl_path.open(mode='r', encoding='UTF-8') as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            out = hjson_tpl.render(n_mio_pads=n_mio_pads,
-                                   n_dio_pads=n_dio_pads,
-                                   attr_dw=10)
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("PADCTRL HJSON: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate padctrl HJSON")
         return
 
     with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
@@ -1036,7 +999,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
             sys.exit()
 
     # Generate Pinmux
-    generate_pinmux_and_padctrl(completecfg, out_path)
+    generate_pinmux(completecfg, out_path)
 
     # Generate Pwrmgr
     generate_pwrmgr(completecfg, out_path)

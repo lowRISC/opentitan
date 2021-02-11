@@ -110,12 +110,6 @@ module xbar_peri_bind;
     .h2d    (tl_pinmux_aon_o),
     .d2h    (tl_pinmux_aon_i)
   );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_padctrl_aon (
-    .clk_i  (clk_peri_i),
-    .rst_ni (rst_peri_ni),
-    .h2d    (tl_padctrl_aon_o),
-    .d2h    (tl_padctrl_aon_i)
-  );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_ram_ret_aon (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),
