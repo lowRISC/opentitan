@@ -155,11 +155,28 @@ package otp_ctrl_part_pkg;
       logic [${int(item["size"])*8-1}:0] ${item["name"].lower()};<% offset -= item['size'] %>
     % endfor
   } otp_${part["name"].lower()}_data_t;
+
+  // default value used for intermodule
+  parameter otp_${part["name"].lower()}_data_t OTP_${part["name"].upper()}_DATA_DEFAULT = '{<% offset = part['offset'] + part['size'] %>
+  % for k, item in enumerate(part["items"][::-1]):
+    % if offset != item['offset'] + item['size']:
+    unallocated: ${"{}'h{:0X}".format((offset - item['size'] - item['offset']) * 8, 0)}<% offset = item['offset'] + item['size'] %>,
+    % endif
+    ${item["name"].lower()}: ${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${"," if k < len(part["items"])-1 else ""}<% offset -= item['size'] %>
+  % endfor
+  };
+
   typedef struct packed {
     // This reuses the same encoding as the life cycle signals for indicating valid status.
     lc_ctrl_pkg::lc_tx_t valid;
     otp_${part["name"].lower()}_data_t data;
   } otp_${part["name"].lower()}_t;
+
+  // default value for intermodule
+  parameter otp_${part["name"].lower()}_t OTP_${part["name"].upper()}_DEFAULT = '{
+    valid: lc_ctrl_pkg::Off,
+    data: OTP_${part["name"].upper()}_DATA_DEFAULT
+  };
   % endif
 % endfor
 <% offset =  int(otp_mmap.config["otp"]["depth"]) * int(otp_mmap.config["otp"]["width"]) %>
