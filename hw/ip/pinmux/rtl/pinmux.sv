@@ -55,17 +55,6 @@ module pinmux
   input        [NDioPads-1:0]             dio_in_i
 );
 
-  ////////////////////////////
-  // Parameters / Constants //
-  ////////////////////////////
-
-  // TODO: these need to be parameterizable via topgen at some point.
-  // They have been placed here such that they do not generate
-  // warnings in the C header generation step, since logic is not supported
-  // as a data type yet.
-  localparam logic [pinmux_reg_pkg::NDioPads-1:0]      DioPeriphHasWkup
-                   = {pinmux_reg_pkg::NDioPads{1'b1}};
-
   //////////////////////////////////
   // Regfile Breakout and Mapping //
   //////////////////////////////////
@@ -297,22 +286,10 @@ module pinmux
   // Wakeup detectors //
   //////////////////////
 
-  logic [NWkupDetect-1:0] aon_wkup_req;
   logic [AlignedMuxSize-1:0] dio_data_mux;
+  assign dio_data_mux = AlignedMuxSize'(dio_in_i);
 
-  // Only connect DIOs that are not excempt
-  for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_wkup
-    if (DioPeriphHasWkup[k]) begin : gen_dio_wkup_connect
-      assign dio_data_mux[k] = dio_in_i[k];
-    end else begin : gen_dio_wkup_tie_off
-      assign dio_data_mux[k] = 1'b0;
-    end
-  end
-
-  for (genvar k = NDioPads; k < AlignedMuxSize; k++) begin : gen_dio_data_mux_tie_off
-      assign dio_data_mux[k] = 1'b0;
-  end
-
+  logic [NWkupDetect-1:0] aon_wkup_req;
   for (genvar k = 0; k < NWkupDetect; k++) begin : gen_wkup_detect
     logic pin_value;
     assign pin_value = (reg2hw.wkup_detector[k].miodio.q)           ?
