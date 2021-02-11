@@ -246,6 +246,8 @@ The address for each of the peripherals will be given at the end of this documen
 
 ##### Pin Multiplexor (`pinmux`) and Pad Control (`padctrl`)
 
+**TODO: this section needs to be updated to reflect the pinmux/padctrl merger**
+
 The pin multiplexor's purpose is to route between peripherals and the available multiplexable IO (`MIO_00 .. MIO_31`) of the chip.
 At this time, the pin multiplexor is provided, but it is not used to its full potential.
 In addition, the `padctrl` device manages control or pad attributes like drive strength, technology (OD, OS, etc), pull up, pull down, etc., of the chip's external IO.
@@ -255,8 +257,7 @@ For both, the `pinmux` and `padctrl` are expected to play the same role.
 Their effect, however, over things like drive strength and Open Drain technology are highly platform-dependent, and are not finalized at this time.
 
 Both `pinmux` and `padctrl` are themselves peripherals on the TLUL bus, with collections of registers that provide software configurability.
-See the [pinmux specification]({{< relref "hw/ip/pinmux/doc" >}}) for how to connect peripheral IO to chip IO.
-See the [padctrl specification]({{< relref "hw/ip/padctrl/doc" >}}) for information on pad control features available in the future.
+See the [pinmux specification]({{< relref "hw/ip/pinmux/doc" >}}) for how to connect peripheral IO to chip IO and for information on pad control features.
 
 ##### UART
 

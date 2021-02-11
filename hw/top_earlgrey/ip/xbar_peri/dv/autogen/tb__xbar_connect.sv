@@ -33,7 +33,6 @@ initial force dut.rst_peri_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(rstmgr_aon, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(clkmgr_aon, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(pinmux_aon, dut, clk_peri_i, rst_n)
-`CONNECT_TL_DEVICE_IF(padctrl_aon, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(ram_ret_aon, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(otp_ctrl, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(lc_ctrl, dut, clk_peri_i, rst_n)

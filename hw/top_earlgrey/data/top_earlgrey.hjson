@@ -387,8 +387,6 @@
       base_addr: "0x40420000",
       generated: "true"
     },
-    // pinmux is currently allocated to main fabric,
-    // however this should probably be moved to peri fabric
     { name: "pinmux_aon",
       type: "pinmux",
       clock: "main",
@@ -397,17 +395,6 @@
       reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       domain: "Aon",
       base_addr: "0x40460000",
-      generated: "true"
-    },
-    // see comment regarding pinmux above
-    { name: "padctrl_aon",
-      type: "padctrl",
-      clock: "main",
-      clock_srcs: {clk_i: "io_div4"},
-      clock_group: "secure",
-      reset_connections: {rst_ni: "sys_io_div4"},
-      domain: "Aon",
-      base_addr: "0x40470000",
       generated: "true"
     },
     { name: "sensor_ctrl_aon",
@@ -852,7 +839,7 @@
   alert: [
   ]
 
-  // TODO: PINMUX
+  // TODO: need to overhaul this datastructure.
   pinmux: {
 
     // Total number of Multiplexed I/O
@@ -904,6 +891,7 @@
     //  ]
   }
 
+  // TODO: need to overhaul this datastructure.
   // PADS instantiation
   //  Number of in/outs and the numer of PAD instances doesn't have to be
   //  same. The number given below excludes clock/reset and other necessary

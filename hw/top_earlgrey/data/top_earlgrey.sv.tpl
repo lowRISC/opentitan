@@ -72,12 +72,12 @@ module top_${top["name"]} #(
   output logic ${lib.bitarray(num_dio, max_sigwidth)} dio_oe_o,
 % endif
 
-% if "padctrl" in top:
+% if "pinmux" in top:
   // pad attributes to padring
-  output logic[padctrl_reg_pkg::NMioPads-1:0]
-              [padctrl_reg_pkg::AttrDw-1:0]   mio_attr_o,
-  output logic[padctrl_reg_pkg::NDioPads-1:0]
-              [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o,
+  output logic[pinmux_reg_pkg::NMioPads-1:0]
+              [pinmux_reg_pkg::AttrDw-1:0]   mio_attr_o,
+  output logic[pinmux_reg_pkg::NDioPads-1:0]
+              [pinmux_reg_pkg::AttrDw-1:0]   dio_attr_o,
 % endif
 
 % if num_im != 0:
@@ -635,6 +635,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .periph_to_mio_oe_i   (mio_d2p_en ),
       .mio_to_periph_o      (mio_p2d    ),
 
+      .mio_attr_o,
       .mio_out_o,
       .mio_oe_o,
       .mio_in_i,
@@ -643,14 +644,11 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .periph_to_dio_oe_i   (dio_d2p_en ),
       .dio_to_periph_o      (dio_p2d    ),
 
+      .dio_attr_o,
       .dio_out_o,
       .dio_oe_o,
       .dio_in_i,
-    % endif
-    % if m["type"] == "padctrl":
 
-      .mio_attr_o,
-      .dio_attr_o,
     % endif
     % if m["type"] == "alert_handler":
       // alert signals

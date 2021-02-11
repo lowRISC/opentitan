@@ -212,16 +212,6 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_PINMUX_AON_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for padctrl_aon in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_PADCTRL_AON_BASE_ADDR = 32'h40470000;
-
-  /**
-   * Peripheral size in bytes for padctrl_aon in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_PADCTRL_AON_SIZE_BYTES = 32'h1000;
-
-  /**
    * Peripheral base address for sensor_ctrl_aon in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR = 32'h40500000;

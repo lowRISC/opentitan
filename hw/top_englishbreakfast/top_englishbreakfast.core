@@ -27,7 +27,6 @@ filesets:
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_plic_component
       - lowrisc:ip:pinmux_component
-      - lowrisc:ip:padctrl_component
       - lowrisc:ip:rv_timer
       - lowrisc:ip:spi_device
       - lowrisc:ip:aes

@@ -65,7 +65,6 @@ tl_if pwrmgr_aon_tl_if(clk_io_div4, rst_n);
 tl_if rstmgr_aon_tl_if(clk_io_div4, rst_n);
 tl_if clkmgr_aon_tl_if(clk_io_div4, rst_n);
 tl_if pinmux_aon_tl_if(clk_io_div4, rst_n);
-tl_if padctrl_aon_tl_if(clk_io_div4, rst_n);
 tl_if ram_ret_aon_tl_if(clk_io_div4, rst_n);
 tl_if otp_ctrl_tl_if(clk_io_div4, rst_n);
 tl_if lc_ctrl_tl_if(clk_io_div4, rst_n);
@@ -134,7 +133,6 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rstmgr_aon, rstmgr_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(clkmgr_aon, clkmgr_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(pinmux_aon, pinmux_aon, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(padctrl_aon, padctrl_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(ram_ret_aon, tl_adapter_ram_ret_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(otp_ctrl, otp_ctrl, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl, lc_ctrl, tl)

@@ -46,13 +46,15 @@ module pinmux
   output logic [NDioPads-1:0]      dio_to_periph_o,
   // Pad side
   // MIOs
-  output logic [NMioPads-1:0]      mio_out_o,
-  output logic [NMioPads-1:0]      mio_oe_o,
-  input        [NMioPads-1:0]      mio_in_i,
+  output logic [NMioPads-1:0][AttrDw-1:0] mio_attr_o,
+  output logic [NMioPads-1:0]             mio_out_o,
+  output logic [NMioPads-1:0]             mio_oe_o,
+  input        [NMioPads-1:0]             mio_in_i,
   // DIOs
-  output logic [NDioPads-1:0]      dio_out_o,
-  output logic [NDioPads-1:0]      dio_oe_o,
-  input        [NDioPads-1:0]      dio_in_i
+  output logic [NDioPads-1:0][AttrDw-1:0] dio_attr_o,
+  output logic [NDioPads-1:0]             dio_out_o,
+  output logic [NDioPads-1:0]             dio_oe_o,
+  input        [NDioPads-1:0]             dio_in_i
 );
 
   ////////////////////////////
@@ -82,6 +84,53 @@ module pinmux
     .hw2reg ,
     .devmode_i(1'b1)
   );
+
+  /////////////////////////////
+  // Pad attribute registers //
+  /////////////////////////////
+
+  logic [NDioPads-1:0][AttrDw-1:0] dio_pad_attr_q;
+  logic [NMioPads-1:0][AttrDw-1:0] mio_pad_attr_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+    if (!rst_ni) begin
+      dio_pad_attr_q <= '0;
+      mio_pad_attr_q <= '0;
+    end else begin
+      // dedicated pads
+      for (int kk = 0; kk < NDioPads; kk++) begin
+        if (reg2hw.dio_pad_attr[kk].qe) begin
+          dio_pad_attr_q[kk] <= reg2hw.dio_pad_attr[kk].q;
+        end
+      end
+      // muxed pads
+      for (int kk = 0; kk < NMioPads; kk++) begin
+        if (reg2hw.mio_pad_attr[kk].qe) begin
+          mio_pad_attr_q[kk] <= reg2hw.mio_pad_attr[kk].q;
+        end
+      end
+    end
+  end
+
+  ////////////////////////
+  // Connect attributes //
+  ////////////////////////
+
+  // TODO: rework the WARL behavior
+  for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_attr
+    logic [AttrDw-1:0] warl_mask;
+    assign warl_mask = '0;
+    assign dio_attr_o[k]            = dio_pad_attr_q[k] & warl_mask;
+    assign hw2reg.dio_pad_attr[k].d = dio_pad_attr_q[k] & warl_mask;
+  end
+
+  for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_attr
+    logic [AttrDw-1:0] warl_mask;
+    assign warl_mask = '0;
+    assign mio_attr_o[k]            = mio_pad_attr_q[k] & warl_mask;
+    assign hw2reg.mio_pad_attr[k].d = mio_pad_attr_q[k] & warl_mask;
+  end
+
 
   ///////////////////////////////////////
   // USB wake detect module connection //
@@ -356,6 +405,9 @@ module pinmux
   // for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_known_if
   //   `ASSERT_KNOWN_IF(DioOutKnownO_A, dio_out_o[k], dio_oe_o[k])
   // end
+
+  `ASSERT_KNOWN(MioKnownO_A, mio_attr_o)
+  `ASSERT_KNOWN(DioKnownO_A, dio_attr_o)
 
   // running on slow AON clock
   `ASSERT_KNOWN(AonWkupReqKnownO_A, aon_wkup_req_o, clk_aon_i, !rst_aon_ni)

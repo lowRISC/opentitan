@@ -116,11 +116,6 @@
                     }
                   ]
              },
-             {    name: padctrl
-                  fusesoc_core: lowrisc:ip:padctrl
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/padctrl/lint/{tool}"
-             },
              {    name: pinmux
                   fusesoc_core: lowrisc:ip:pinmux
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

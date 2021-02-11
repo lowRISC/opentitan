@@ -318,17 +318,6 @@
       base_addr: "0x40460000",
       generated: "true"
     },
-    // see comment regarding pinmux above
-    { name: "padctrl",
-      type: "padctrl",
-      clock: "main",
-      clock_srcs: {clk_i: "main"},
-      clock_group: "secure",
-      reset_connections: {rst_ni: "sys"},
-      domain: "Aon",
-      base_addr: "0x40470000",
-      generated: "true"
-    },
     { name: "usbdev",
       type: "usbdev",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},

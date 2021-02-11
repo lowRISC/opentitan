@@ -52,14 +52,14 @@ module top_earlgrey_artys7  #(
   //////////////////////
 
   logic clk_main, clk_usb_48mhz, rst_n;
-  logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
-  logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] mio_attr;
+  logic [pinmux_reg_pkg::NDioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] dio_attr;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
 
   padring #(
     // MIOs 31:20 are currently not

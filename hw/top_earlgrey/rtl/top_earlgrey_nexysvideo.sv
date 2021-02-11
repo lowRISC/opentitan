@@ -73,14 +73,14 @@ module top_earlgrey_nexysvideo #(
 
 
   logic clk_main, clk_usb_48mhz, rst_n;
-  logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
-  logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_umux, dio_out_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_umux, dio_oe_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux, dio_in_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] mio_attr;
+  logic [pinmux_reg_pkg::NDioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] dio_attr;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_umux, dio_out_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_umux, dio_oe_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux, dio_in_padring;
 
   padring #(
     // MIOs 23:20 are currently not
@@ -168,13 +168,13 @@ module top_earlgrey_nexysvideo #(
   logic jtag_trst_n, jtag_srst_n;
   logic jtag_tck, jtag_tck_buf, jtag_tms, jtag_tdi, jtag_tdo;
 
-  localparam int NumIOs = padctrl_reg_pkg::NMioPads +
-                          padctrl_reg_pkg::NDioPads;
+  localparam int NumIOs = pinmux_reg_pkg::NMioPads +
+                          pinmux_reg_pkg::NDioPads;
 
   // This specifies the tie-off values of the muxed MIO/DIOs
   // when the JTAG is active. SPI CSB is active low.
   localparam logic [NumIOs-1:0] TieOffValues = NumIOs'(1'b1 << (
-      padctrl_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
+      pinmux_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
 
   // TODO: this is a temporary solution. JTAG will eventually be selected and
   // qualified inside the pinmux, based on strap and lifecycle state.
@@ -185,15 +185,15 @@ module top_earlgrey_nexysvideo #(
     .TieOffValues   (                   TieOffValues ),
     .JtagEnIdx      (                             16 ), // MIO 16
     .JtagEnPolarity (                              1 ),
-    .TckIdx         ( padctrl_reg_pkg::NMioPads +
+    .TckIdx         ( pinmux_reg_pkg::NMioPads +
                       top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSck ),
-    .TmsIdx         ( padctrl_reg_pkg::NMioPads +
+    .TmsIdx         ( pinmux_reg_pkg::NMioPads +
                       top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb ),
     .TrstIdx        (                             18 ), // MIO 18
     .SrstIdx        (                             19 ), // MIO 19
-    .TdiIdx         ( padctrl_reg_pkg::NMioPads +
+    .TdiIdx         ( pinmux_reg_pkg::NMioPads +
                       top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSdi ),
-    .TdoIdx         ( padctrl_reg_pkg::NMioPads +
+    .TdoIdx         ( pinmux_reg_pkg::NMioPads +
                       top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSdo )
   ) jtag_mux (
     // To JTAG inside core
@@ -282,7 +282,7 @@ module top_earlgrey_nexysvideo #(
   logic use_uphy;
   assign use_uphy = mio_in_padring[2];
 
-  for (genvar i = 0; i < padctrl_reg_pkg::NDioPads; i++) begin : gen_dio
+  for (genvar i = 0; i < pinmux_reg_pkg::NDioPads; i++) begin : gen_dio
     if (i == DioIdxUsbDn0) begin
       assign dio_out_umux[i] = undo_swap ? dio_out_core[DioIdxUsbDp0] :
                                            dio_out_core[DioIdxUsbDn0];

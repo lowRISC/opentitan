@@ -79,7 +79,6 @@ declare -a modules=(
   "aes"
   "hmac"
   "pinmux"
-  "padctrl"
   "alert_handler"
   "pwrmgr"
   "rstmgr"

@@ -47,10 +47,10 @@ module top_earlgrey #(
   output logic [14:0] dio_oe_o,
 
   // pad attributes to padring
-  output logic[padctrl_reg_pkg::NMioPads-1:0]
-              [padctrl_reg_pkg::AttrDw-1:0]   mio_attr_o,
-  output logic[padctrl_reg_pkg::NDioPads-1:0]
-              [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o,
+  output logic[pinmux_reg_pkg::NMioPads-1:0]
+              [pinmux_reg_pkg::AttrDw-1:0]   mio_attr_o,
+  output logic[pinmux_reg_pkg::NDioPads-1:0]
+              [pinmux_reg_pkg::AttrDw-1:0]   dio_attr_o,
 
 
   // Inter-module Signal External type
@@ -200,7 +200,6 @@ module top_earlgrey #(
   // rstmgr_aon
   // clkmgr_aon
   // pinmux_aon
-  // padctrl_aon
   // sensor_ctrl_aon
   // sram_ctrl_ret_aon
   // flash_ctrl
@@ -508,8 +507,6 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       clkmgr_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       pinmux_aon_tl_req;
   tlul_pkg::tl_d2h_t       pinmux_aon_tl_rsp;
-  tlul_pkg::tl_h2d_t       padctrl_aon_tl_req;
-  tlul_pkg::tl_d2h_t       padctrl_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       ram_ret_aon_tl_req;
   tlul_pkg::tl_d2h_t       ram_ret_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       otp_ctrl_tl_req;
@@ -1553,6 +1550,7 @@ module top_earlgrey #(
       .periph_to_mio_oe_i   (mio_d2p_en ),
       .mio_to_periph_o      (mio_p2d    ),
 
+      .mio_attr_o,
       .mio_out_o,
       .mio_oe_o,
       .mio_in_i,
@@ -1561,29 +1559,17 @@ module top_earlgrey #(
       .periph_to_dio_oe_i   (dio_d2p_en ),
       .dio_to_periph_o      (dio_p2d    ),
 
+      .dio_attr_o,
       .dio_out_o,
       .dio_oe_o,
       .dio_in_i,
+
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
       .clk_aon_i (clkmgr_aon_clocks.clk_aon_secure),
       .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel])
-  );
-
-  padctrl u_padctrl_aon (
-
-      // Inter-module signals
-      .tl_i(padctrl_aon_tl_req),
-      .tl_o(padctrl_aon_tl_rsp),
-
-      .mio_attr_o,
-      .dio_attr_o,
-
-      // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel])
   );
 
   sensor_ctrl u_sensor_ctrl_aon (
@@ -2263,10 +2249,6 @@ module top_earlgrey #(
     // port: tl_pinmux_aon
     .tl_pinmux_aon_o(pinmux_aon_tl_req),
     .tl_pinmux_aon_i(pinmux_aon_tl_rsp),
-
-    // port: tl_padctrl_aon
-    .tl_padctrl_aon_o(padctrl_aon_tl_req),
-    .tl_padctrl_aon_i(padctrl_aon_tl_rsp),
 
     // port: tl_ram_ret_aon
     .tl_ram_ret_aon_o(ram_ret_aon_tl_req),

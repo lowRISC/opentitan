@@ -13,6 +13,7 @@
 ##  - n_dio_pads:          Number of dedicated IO pads
 ##  - n_wkup_detect:       Number of wakeup condition detectors
 ##  - wkup_cnt_width:      Width of wakeup counters
+##  - attr_dw:             Width of wakeup counters
 {
   name: "PINMUX",
   clock_primary: "clk_i",
@@ -120,6 +121,12 @@
   ]
 
   param_list: [
+    { name: "AttrDw",
+      desc: "Pad attribute data width",
+      type: "int",
+      default: "${attr_dw}",
+      local: "true"
+    },
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
@@ -296,6 +303,130 @@
                   // Random writes to this field may result in pad drive conflicts,
                   // which in turn leads to propagating Xes and assertion failures.
                   tags: ["excl:CsrNonInitTests:CsrExclWrite"]
+                }
+    },
+
+//////////////////////////
+// MIO PAD attributes   //
+//////////////////////////
+    { multireg: { name:     "MIO_PAD_ATTR_REGWEN",
+                  desc:     "Register write enable for MIO PAD attributes.",
+                  count:    "NMioPads",
+                  compact:  "false",
+                  swaccess: "rw0c",
+                  hwaccess: "none",
+                  cname:    "MIO_PAD",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              Register write enable bit.
+                              If this is cleared to 0, the corresponding !!MIO_PAD_ATTR
+                              is not writable anymore.
+                              ''',
+                      resval: "1",
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:     "MIO_PAD_ATTR",
+                  desc:     '''
+                            Muxed pad attributes.
+                            This register has WARL behavior since not each pad type may support
+                            all attributes.
+                            ''',
+                  count:        "NMioPads",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hrw",
+                  hwext:        "true",
+                  hwqe:         "true",
+                  regwen:       "MIO_PAD_ATTR_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "MIO_PAD",
+                  fields: [
+                    { bits: "9:0",
+                      name: "ATTR",
+                      desc: '''Bit   0: input/output inversion,
+                               Bit   1: Virtual open drain enable.
+                               Bit   2: Pull enable.
+                               Bit   3: Pull select (0: pull down, 1: pull up).
+                               Bit   4: Keeper enable.
+                               Bit   5: Schmitt trigger enable.
+                               Bit   6: Slew rate (0: slow, 1: fast).
+                               Bit 7/8: Drive strength (00: weakest, 11: strongest).
+                               Bit   9: Reserved.
+                      '''
+                      resval: 0
+                    }
+                  ],
+                  // these CSRs have WARL behavior and may not
+                  // read back the same value that was written to them.
+                  // further, they have hardware side effects since they drive the
+                  // pad attributes, and hence no random data should be written to them.
+                  tags: ["excl:CsrAllTests:CsrExclWrite"]
+                }
+    },
+
+//////////////////////////
+// DIO PAD attributes   //
+//////////////////////////
+    { multireg: { name:     "DIO_PAD_ATTR_REGWEN",
+                  desc:     "Register write enable for DIO PAD attributes.",
+                  count:    "NDioPads",
+                  compact:  "false",
+                  swaccess: "rw0c",
+                  hwaccess: "none",
+                  cname:    "DIO_PAD",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              Register write enable bit.
+                              If this is cleared to 0, the corresponding !!DIO_PAD_ATTR
+                              is not writable anymore.
+                              ''',
+                      resval: "1",
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:     "DIO_PAD_ATTR",
+                  desc:     '''
+                            Dedicated pad attributes.
+                            This register has WARL behavior since not each pad type may support
+                            all attributes.
+                            ''',
+                  count:        "NDioPads",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hrw",
+                  hwext:        "true",
+                  hwqe:         "true",
+                  regwen:       "DIO_PAD_ATTR_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "DIO_PAD",
+                  fields: [
+                    { bits: "9:0",
+                      name: "ATTR",
+                      desc: '''Bit   0: input/output inversion,
+                               Bit   1: Virtual open drain enable.
+                               Bit   2: Pull enable.
+                               Bit   3: Pull select (0: pull down, 1: pull up).
+                               Bit   4: Keeper enable.
+                               Bit   5: Schmitt trigger enable.
+                               Bit   6: Slew rate (0: slow, 1: fast).
+                               Bit 7/8: Drive strength (00: weakest, 11: strongest).
+                               Bit   9: Reserved.
+                      '''
+                      resval: 0
+                    }
+                  ],
+                  // these CSRs have WARL behavior and may not
+                  // read back the same value that was written to them.
+                  // further, they have hardware side effects since they drive the
+                  // pad attributes, and hence no random data should be written to them.
+                  tags: ["excl:CsrAllTests:CsrExclWrite"]
                 }
     },
 

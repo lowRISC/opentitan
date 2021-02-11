@@ -203,8 +203,8 @@ Comportable peripherals do not designate whether their available IO are hardwire
 That is done at the top level with an Hjson configuration file.
 See the top level specification for information about that configuration file.
 
-In addition, full pad control is not done by the peripheral logic, but is done by the [`padctrl`]({{< relref "/hw/ip/padctrl/doc" >}}) module.
-The `padctrl` module provides software configuration control over pad drive strength, pin mapping, pad type (push/pull, open drain, etc).
+In addition, full pad control is not done by the peripheral logic, but is done, by the `pinmux` as well.
+The `pinmux` module provides software configuration control over pad drive strength, pin mapping, pad type (push/pull, open drain, etc).
 
 ### Interrupts
 
