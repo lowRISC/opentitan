@@ -80,7 +80,7 @@
     },
     { name: "WDOG_REGWEN",
       desc: "Watchdog Timer Write Enable Register",
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "hro",
       fields: [
         { bits: "0",
