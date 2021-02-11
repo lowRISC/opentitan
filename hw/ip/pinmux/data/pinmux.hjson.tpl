@@ -2,18 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-# PINMUX register template
-#
-# Parameter (given by Python tool)
-#  - n_mio_periph_in:     Number of muxed peripheral inputs
-#  - n_mio_periph_out:    Number of muxed peripheral outputs
-#  - n_mio_pads:          Number of muxed IO pads
-#  - n_dio_periph_in:     Number of dedicated peripheral inputs
-#  - n_dio_periph_out:    Number of dedicated peripheral outputs
-#  - n_dio_pads:          Number of dedicated IO pads
-#  - n_wkup_detect:       Number of wakeup condition detectors
-#  - wkup_cnt_width:      Width of wakeup counters
-# <% import math %>
+## PINMUX register template
+##
+## Parameter (given by Python tool)
+##  - n_mio_periph_in:     Number of muxed peripheral inputs
+##  - n_mio_periph_out:    Number of muxed peripheral outputs
+##  - n_mio_pads:          Number of muxed IO pads
+##  - n_dio_periph_in:     Number of dedicated peripheral inputs
+##  - n_dio_periph_out:    Number of dedicated peripheral outputs
+##  - n_dio_pads:          Number of dedicated IO pads
+##  - n_wkup_detect:       Number of wakeup condition detectors
+##  - wkup_cnt_width:      Width of wakeup counters
 {
   name: "PINMUX",
   clock_primary: "clk_i",
@@ -196,30 +195,6 @@
 
     // TODO: Enable these once supported by topgen and the C header generation script.
     // These parameters are currently located in pinmux_pkg.sv
-    // // If a bit is set to 1 in this vector, this MIO activates low power
-    // // behavior when going to sleep.
-    // { name: "MioPeriphHasSleepMode",
-    //   desc: '''
-    //         Indicates whether a MIO channel activates low power behavior
-    //         when going to sleep.
-    //         '''
-    //   type: "logic [NMioPeriphOut-1:0]",
-    //   // TODO: need to generate this via topgen
-    //   default: "'1",
-    //   local: "true"
-    // },
-    // // If a bit is set to 1 in this vector, this DIO activates low power
-    // // behavior when going to sleep.
-    // { name: "DioPeriphHasSleepMode",
-    //   desc: '''
-    //         Indicates whether a DIO channel activates low power behavior
-    //         when going to sleep.
-    //         ''',
-    //   type: "logic [NDioPads-1:0]",
-    //   // TODO: need to generate this via topgen
-    //   default: "'1",
-    //   local: "true"
-    // },
     // // If a bit is set to 1 in this vector, wakeup detectors are connected
     // // to this DIO.
     // { name: "DioPeriphHasWkup",
@@ -231,7 +206,9 @@
     // },
   ],
   registers: [
-# inputs
+//////////////////////////
+// MIO Inputs           //
+//////////////////////////
     { multireg: { name:     "MIO_PERIPH_INSEL_REGWEN",
                   desc:     "Register write enable for MIO peripheral input selects.",
                   count:    "NMioPeriphIn",
@@ -273,7 +250,10 @@
                   ]
                 }
     },
-# outputs
+
+//////////////////////////
+// MIO Outputs          //
+//////////////////////////
     { multireg: { name:     "MIO_OUTSEL_REGWEN",
                   desc:     "Register write enable for MIO output selects.",
                   count:    "NMioPads",
@@ -318,20 +298,43 @@
                   tags: ["excl:CsrNonInitTests:CsrExclWrite"]
                 }
     },
-# sleep behavior of MIO peripheral outputs
-    { multireg: { name:     "MIO_OUT_SLEEP_REGWEN",
+
+//////////////////////////
+// MIO PAD sleep mode   //
+//////////////////////////
+    { multireg: { name:     "MIO_PAD_SLEEP_STATUS",
+                  desc:     "Register indicating whether the corresponding pad is in sleep mode.",
+                  count:    "NMioPads",
+                  swaccess: "rw0c",
+                  hwaccess: "hrw",
+                  cname:    "MIO_PAD",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              This register is set to 1 if the deep sleep mode of the corresponding
+                              pad has been enabled (!!MIO_PAD_SLEEP_EN) upon deep sleep entry.
+                              The sleep mode of the corresponding pad will remain active until SW
+                              clears this bit.
+                              ''',
+                      resval: "0",
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:     "MIO_PAD_SLEEP_REGWEN",
                   desc:     "Register write enable for MIO sleep value configuration.",
                   count:    "NMioPads",
                   compact:  "false",
                   swaccess: "rw0c",
                   hwaccess: "none",
-                  cname:    "MIO_OUT_SLEEP_VAL",
+                  cname:    "MIO_PAD",
                   fields: [
                     { bits:   "0",
                       name:   "EN",
                       desc:   '''
                               Register write enable bit.
-                              If this is cleared to 0, the corresponding MIO_OUT_SLEEP_VAL
+                              If this is cleared to 0, the corresponding !!MIO_OUT_SLEEP_MODE
                               is not writable anymore.
                               ''',
                       resval: "1",
@@ -339,42 +342,65 @@
                   ]
                 }
     },
-# TODO: add individual sleep disable bits
-    { multireg: { name:         "MIO_OUT_SLEEP_VAL",
-                  desc:         '''Defines sleep behavior of muxed output or inout. Note that
-                                the MIO output will only switch into sleep mode if the the corresponding
-                                !!MIO_OUTSEL is either set to 0-2, or if !!MIO_OUTSEL selects a peripheral
-                                output that can go into sleep. If an always on peripheral is selected with
-                                !!MIO_OUTSEL, the !!MIO_OUT_SLEEP_VAL configuration has no effect.
+    { multireg: { name:         "MIO_PAD_SLEEP_EN",
+                  desc:         '''Enables the sleep mode of the corresponding muxed pad.
                                 '''
                   count:        "NMioPads",
                   compact:      "false",
                   swaccess:     "rw",
                   hwaccess:     "hro",
-                  regwen:       "MIO_OUT_SLEEP_REGWEN",
+                  regwen:       "MIO_PAD_SLEEP_REGWEN",
                   regwen_multi: "true",
                   cname:        "OUT",
                   fields: [
-                    { bits: "1:0",
-                      name: "OUT",
+                    { bits: "0",
+                      name: "EN",
+                      resval: 0,
+                      desc: '''
+                            Deep sleep mode enable.
+                            If this bit is set to 1 the corresponding pad will enable the sleep behavior
+                            specified in !!MIO_PAD_SLEEP_MODE upon deep sleep entry, and the corresponding bit
+                            in !!MIO_PAD_SLEEP_STATUS will be set to 1.
+                            The pad remains in deep sleep mode until the corresponding bit in
+                            !!MIO_PAD_SLEEP_STATUS is cleared by SW.
+                            Note that if an always on peripheral is connected to a specific MIO pad,
+                            the corresponding !!MIO_PAD_SLEEP_EN bit should be set to 0.
+                            '''
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:         "MIO_PAD_SLEEP_MODE",
+                  desc:         '''Defines sleep behavior of the corresponding muxed pad.
+                                '''
+                  count:        "NMioPads",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hro",
+                  regwen:       "MIO_PAD_SLEEP_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "OUT",
+                  fields: [
+                    { bits:  "1:0",
+                      name:  "OUT",
                       resval: 2,
-                      desc:"Value to drive in deep sleep."
+                      desc:  "Value to drive in deep sleep."
                       enum: [
                         { value: "0",
                           name: "Tie-Low",
-                          desc: "The pin is driven actively to zero in deep sleep mode."
+                          desc: "The pad is driven actively to zero in deep sleep mode."
                         },
                         { value: "1",
                           name: "Tie-High",
-                          desc: "The pin is driven actively to one in deep sleep mode."
+                          desc: "The pad is driven actively to one in deep sleep mode."
                         },
                         { value: "2",
                           name: "High-Z",
                           desc: '''
-                            The pin is left undriven in deep sleep mode. Note that the actual
-                            driving behavior during deep sleep will then depend on the pull-up/-down
-                            configuration of padctrl.
-                            '''
+                                The pad is left undriven in deep sleep mode. Note that the actual
+                                driving behavior during deep sleep will then depend on the pull-up/-down
+                                configuration of in !!MIO_PAD_ATTR.
+                                '''
                         },
                         { value: "3",
                           name: "Keep",
@@ -385,20 +411,42 @@
                   ]
                 }
     },
-# sleep behavior of DIO peripheral outputs
-    { multireg: { name:     "DIO_OUT_SLEEP_REGWEN",
+//////////////////////////
+// DIO PAD sleep mode   //
+//////////////////////////
+    { multireg: { name:     "DIO_PAD_SLEEP_STATUS",
+                  desc:     "Register indicating whether the corresponding pad is in sleep mode.",
+                  count:    "NDioPads",
+                  swaccess: "rw0c",
+                  hwaccess: "hrw",
+                  cname:    "DIO_PAD",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              This register is set to 1 if the deep sleep mode of the corresponding
+                              pad has been enabled (!!DIO_PAD_SLEEP_MODE) upon deep sleep entry.
+                              The sleep mode of the corresponding pad will remain active until SW
+                              clears this bit.
+                              ''',
+                      resval: "0",
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:     "DIO_PAD_SLEEP_REGWEN",
                   desc:     "Register write enable for DIO sleep value configuration.",
                   count:    "NDioPads",
                   compact:  "false",
                   swaccess: "rw0c",
                   hwaccess: "none",
-                  cname:    "DIO_OUT_SLEEP_VAL",
+                  cname:    "DIO_PAD",
                   fields: [
                     { bits:   "0",
                       name:   "EN",
                       desc:   '''
                               Register write enable bit.
-                              If this is cleared to 0, the corresponding DIO_OUT_SLEEP_VAL
+                              If this is cleared to 0, the corresponding !!DIO_PAD_SLEEP_MODE
                               is not writable anymore.
                               ''',
                       resval: "1",
@@ -406,43 +454,65 @@
                   ]
                 }
     },
-# TODO: add individual sleep disable bits
-    { multireg: { name:         "DIO_OUT_SLEEP_VAL",
-                  desc:         '''Defines sleep behavior of dedicated output or inout. Note this
-                                register has WARL behavior since the sleep value settings are
-                                meaningless for always-on and input-only DIOs. For these DIOs,
-                                this register always reads 0.
+    { multireg: { name:         "DIO_PAD_SLEEP_EN",
+                  desc:         '''Enables the sleep mode of the corresponding dedicated pad.
                                 '''
                   count:        "NDioPads",
                   compact:      "false",
                   swaccess:     "rw",
-                  hwaccess:     "hrw",
-                  hwext:        "true",
-                  hwqe:         "true",
-                  regwen:       "DIO_OUT_SLEEP_REGWEN",
+                  hwaccess:     "hro",
+                  regwen:       "DIO_PAD_SLEEP_REGWEN",
                   regwen_multi: "true",
                   cname:        "OUT",
                   fields: [
-                    { bits: "1:0",
-                      name: "OUT",
+                    { bits: "0",
+                      name: "EN",
+                      resval: 0,
+                      desc: '''
+                            Deep sleep mode enable.
+                            If this bit is set to 1 the corresponding pad will enable the sleep behavior
+                            specified in !!DIO_PAD_SLEEP_MODE upon deep sleep entry, and the corresponding bit
+                            in !!DIO_PAD_SLEEP_STATUS will be set to 1.
+                            The pad remains in deep sleep mode until the corresponding bit in
+                            !!DIO_PAD_SLEEP_STATUS is cleared by SW.
+                            Note that if an always on peripheral is connected to a specific DIO pad,
+                            the corresponding !!DIO_PAD_SLEEP_EN bit should be set to 0.
+                            '''
+                    }
+                  ]
+                }
+    },
+    { multireg: { name:         "DIO_PAD_SLEEP_MODE",
+                  desc:         '''Defines sleep behavior of the corresponding dedicated pad.
+                                '''
+                  count:        "NDioPads",
+                  compact:      "false",
+                  swaccess:     "rw",
+                  hwaccess:     "hro",
+                  regwen:       "DIO_PAD_SLEEP_REGWEN",
+                  regwen_multi: "true",
+                  cname:        "OUT",
+                  fields: [
+                    { bits:  "1:0",
+                      name:  "OUT",
                       resval: 2,
-                      desc:"Value to drive in deep sleep."
+                      desc:  "Value to drive in deep sleep."
                       enum: [
                         { value: "0",
                           name: "Tie-Low",
-                          desc: "The pin is driven actively to zero in deep sleep mode."
+                          desc: "The pad is driven actively to zero in deep sleep mode."
                         },
                         { value: "1",
                           name: "Tie-High",
-                          desc: "The pin is driven actively to one in deep sleep mode."
+                          desc: "The pad is driven actively to one in deep sleep mode."
                         },
                         { value: "2",
                           name: "High-Z",
                           desc: '''
-                            The pin is left undriven in deep sleep mode. Note that the actual
-                            driving behavior during deep sleep will then depend on the pull-up/-down
-                            configuration of padctrl.
-                            '''
+                                The pad is left undriven in deep sleep mode. Note that the actual
+                                driving behavior during deep sleep will then depend on the pull-up/-down
+                                configuration of in !!DIO_PAD_ATTR.
+                                '''
                         },
                         { value: "3",
                           name: "Keep",
@@ -451,12 +521,11 @@
                       ]
                     }
                   ]
-                  // these CSRs have WARL behavior and may not
-                  // read back the same value that was written to them.
-                  tags: ["excl:CsrAllTests:CsrExclWriteCheck"]
                 }
     },
-# wakeup detector enables
+////////////////////////
+// Wakeup detectors   //
+////////////////////////
     { multireg: { name:     "WKUP_DETECTOR_REGWEN",
                   desc:     "Register write enable for wakeup detectors.",
                   count:    "NWkupDetect",
@@ -500,7 +569,7 @@
                 }
 
     },
-# wakeup detector config
+    # wakeup detector config
     { multireg: { name:         "WKUP_DETECTOR",
                   desc:         "Configuration of wakeup condition detectors."
                   count:        "NWkupDetect",
@@ -567,7 +636,6 @@
                 }
 
     },
-# wakeup detector count thresholds
     { multireg: { name:         "WKUP_DETECTOR_CNT_TH",
                   desc:         "Counter thresholds for wakeup condition detectors."
                   count:        "NWkupDetect",
@@ -589,7 +657,6 @@
                 }
 
     },
-# wakeup detector pad selectors
     { multireg: { name:         "WKUP_DETECTOR_PADSEL",
                   desc:         "Pad selects for pad wakeup condition detectors."
                   count:        "NWkupDetect",
@@ -613,7 +680,6 @@
                 }
 
     },
-# wakeup detector cause regs
     { multireg: { name:     "WKUP_CAUSE",
                   desc:     "Cause registers for wakeup detectors."
                   count:    "NWkupDetect",
