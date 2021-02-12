@@ -64,9 +64,23 @@ module ${block.name}_reg_top (
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
+  // incoming payload check
+  logic chk_err;
+  tlul_payload_chk u_chk (
+    .tl_i,
+    .err_o(chk_err)
+  );
+
+  // outgoing payload generation
+  tlul_pkg::tl_d2h_t tl_o_pre;
+  tlul_gen_payload_chk u_gen_chk (
+    .tl_i(tl_o_pre),
+    .tl_o
+  );
+
 % if num_wins == 0:
   assign tl_reg_h2d = tl_i;
-  assign tl_o       = tl_reg_d2h;
+  assign tl_o_pre   = tl_reg_d2h;
 % else:
   tlul_pkg::tl_h2d_t tl_socket_h2d [${num_dsp}];
   tlul_pkg::tl_d2h_t tl_socket_d2h [${num_dsp}];
@@ -97,7 +111,7 @@ module ${block.name}_reg_top (
     .clk_i,
     .rst_ni,
     .tl_h_i (tl_i),
-    .tl_h_o (tl_o),
+    .tl_h_o (tl_o_pre),
     .tl_d_o (tl_socket_h2d),
     .tl_d_i (tl_socket_d2h),
     .dev_select_i (reg_steer)
@@ -122,6 +136,9 @@ module ${block.name}_reg_top (
       reg_steer = ${i};
     end
   % endfor
+    if (chk_err) begin
+      reg_steer = ${num_dsp-1};
+    end
   end
 % endif
 
@@ -145,7 +162,7 @@ module ${block.name}_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err ;
+  assign reg_error = (devmode_i & addrmiss) | wr_err | chk_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}

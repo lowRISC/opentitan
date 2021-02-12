@@ -26,6 +26,7 @@ IPS ?= aes           \
        lc_ctrl       \
        nmi_gen       \
        otp_ctrl      \
+       pattgen       \
        pinmux        \
        pwrmgr        \
        rstmgr        \

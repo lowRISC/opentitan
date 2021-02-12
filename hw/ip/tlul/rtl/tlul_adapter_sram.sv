@@ -145,7 +145,7 @@ module tlul_adapter_sram import tlul_pkg::*; #(
       d_sink   : 1'b0,
       d_data   : (d_valid && rspfifo_rvalid && reqfifo_rdata.op == OpRead)
                  ? rspfifo_rdata.data : '0,
-      d_user   : '0,
+      d_user   : TL_D_USER_DEFAULT,
       d_error  : d_valid && d_error,
 
       a_ready  : (gnt_i | error_internal) & reqfifo_wready & sramreqfifo_wready

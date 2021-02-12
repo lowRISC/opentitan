@@ -113,9 +113,8 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   ////////////////////
   assign err_internal = addr_align_err | malformed_meta_err | tl_err ;
 
-  // malformed_meta_err
-  //    Raised if not supported feature is turned on or user signal has malformed
-  assign malformed_meta_err = (tl_i.a_user.parity_en == 1'b1);
+  // Don't allow unsupported values.
+  assign malformed_meta_err = tl_a_user_chk(tl_i.a_user);
 
   // addr_align_err
   //    Raised if addr isn't aligned with the size

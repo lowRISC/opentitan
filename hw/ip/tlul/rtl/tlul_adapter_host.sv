@@ -46,6 +46,8 @@ module tlul_adapter_host import tlul_pkg::*; #(
 
   logic [top_pkg::TL_AIW-1:0] tl_source;
   logic [top_pkg::TL_DBW-1:0] tl_be;
+  tl_h2d_t                    tl_out;
+  tl_a_user_t tl_user;
 
   if (MAX_REQS == 1) begin : g_single_req
     assign tl_source = '0;
@@ -83,7 +85,7 @@ module tlul_adapter_host import tlul_pkg::*; #(
   // bits set. For writes the supplied be_i is used as the mask.
   assign tl_be = ~we_i ? {top_pkg::TL_DBW{1'b1}} : be_i;
 
-  assign tl_o = '{
+  assign tl_out = '{
     a_valid:   req_i,
     a_opcode:  (~we_i) ? Get           :
                (&be_i) ? PutFullData   :
@@ -94,10 +96,32 @@ module tlul_adapter_host import tlul_pkg::*; #(
     a_source:  tl_source,
     a_address: {addr_i[31:WordSize], {WordSize{1'b0}}},
     a_data:    wdata_i,
-    a_user:    '{parity_en: '0, parity: '0, tl_type: type_i},
-
+    a_user:    '{default: '0, chk_en: CheckDis, chk_data: '0, tl_type: type_i},
     d_ready:   1'b1
   };
+
+  logic [H2DCmdMaxWidth-1:0] unused_cmd;
+  logic [H2DCmdChkWidth-1:0] chk_cmd;
+
+  prim_secded_64_57_enc u_enc (
+    .in(H2DCmdMaxWidth'(extract_h2d_cmd_chk(tl_out))),
+    .out({chk_cmd, unused_cmd})
+  );
+
+  assign tl_user = '{
+    default: '0,
+    tl_type:  type_i,
+    chk_en:   CheckEn,
+    chk_cmd:  chk_cmd,
+    chk_data: '0
+  };
+
+  // override user bits.
+  always_comb begin
+    tl_o = tl_out;
+    tl_o.a_user = tl_user;
+  end
+
 
   assign gnt_o   = tl_i.a_ready;
 
