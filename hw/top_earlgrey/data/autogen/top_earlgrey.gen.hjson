@@ -6459,7 +6459,7 @@
           type: interrupt
         }
         {
-          name: es_fifo_err
+          name: es_fatal_err
           width: 1
           bits: "2"
           bitinfo:
@@ -6474,7 +6474,7 @@
       alert_list:
       [
         {
-          name: recov_alert_count_met
+          name: recov_alert
           width: 1
           bits: "0"
           bitinfo:
@@ -6482,6 +6482,19 @@
             1
             1
             0
+          ]
+          type: alert
+          async: 1
+        }
+        {
+          name: fatal_alert
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
           ]
           type: alert
           async: 1
@@ -11162,7 +11175,7 @@
       module_name: entropy_src
     }
     {
-      name: entropy_src_es_fifo_err
+      name: entropy_src_es_fatal_err
       width: 1
       bits: "2"
       bitinfo:
@@ -11430,7 +11443,7 @@
       module_name: lc_ctrl
     }
     {
-      name: entropy_src_recov_alert_count_met
+      name: entropy_src_recov_alert
       width: 1
       bits: "0"
       bitinfo:
@@ -11438,6 +11451,20 @@
         1
         1
         0
+      ]
+      type: alert
+      async: 1
+      module_name: entropy_src
+    }
+    {
+      name: entropy_src_fatal_alert
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
       ]
       type: alert
       async: 1

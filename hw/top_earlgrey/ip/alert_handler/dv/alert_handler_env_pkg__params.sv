@@ -10,5 +10,5 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-parameter uint NUM_ALERTS = 24;
-parameter bit [NUM_ALERTS-1:0] ASYNC_ON = 24'b111011100001100000001111;
+parameter uint NUM_ALERTS = 25;
+parameter bit [NUM_ALERTS-1:0] ASYNC_ON = 25'b1110111100001100000001111;

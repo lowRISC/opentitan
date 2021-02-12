@@ -370,7 +370,7 @@ module top_earlgrey #(
   logic intr_csrng_cs_fatal_err;
   logic intr_entropy_src_es_entropy_valid;
   logic intr_entropy_src_es_health_test_failed;
-  logic intr_entropy_src_es_fifo_err;
+  logic intr_entropy_src_es_fatal_err;
   logic intr_edn0_edn_cmd_req_done;
   logic intr_edn0_edn_fifo_err;
   logic intr_edn1_edn_cmd_req_done;
@@ -1915,11 +1915,12 @@ module top_earlgrey #(
       // Interrupt
       .intr_es_entropy_valid_o      (intr_entropy_src_es_entropy_valid),
       .intr_es_health_test_failed_o (intr_entropy_src_es_health_test_failed),
-      .intr_es_fifo_err_o           (intr_entropy_src_es_fifo_err),
+      .intr_es_fatal_err_o          (intr_entropy_src_es_fatal_err),
 
-      // [20]: recov_alert_count_met
-      .alert_tx_o  ( alert_tx[20:20] ),
-      .alert_rx_i  ( alert_rx[20:20] ),
+      // [20]: recov_alert
+      // [21]: fatal_alert
+      .alert_tx_o  ( alert_tx[21:20] ),
+      .alert_rx_i  ( alert_rx[21:20] ),
 
       // Inter-module signals
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
@@ -1981,9 +1982,9 @@ module top_earlgrey #(
     .InstrExec(SramCtrlMainInstrExec)
   ) u_sram_ctrl_main (
 
-      // [21]: fatal_parity_error
-      .alert_tx_o  ( alert_tx[21:21] ),
-      .alert_rx_i  ( alert_rx[21:21] ),
+      // [22]: fatal_parity_error
+      .alert_tx_o  ( alert_tx[22:22] ),
+      .alert_rx_i  ( alert_rx[22:22] ),
 
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
@@ -2011,10 +2012,10 @@ module top_earlgrey #(
       // Interrupt
       .intr_done_o (intr_otbn_done),
 
-      // [22]: fatal
-      // [23]: recov
-      .alert_tx_o  ( alert_tx[23:22] ),
-      .alert_rx_i  ( alert_rx[23:22] ),
+      // [23]: fatal
+      // [24]: recov
+      .alert_tx_o  ( alert_tx[24:23] ),
+      .alert_rx_i  ( alert_rx[24:23] ),
 
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[3]),
@@ -2028,7 +2029,7 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
-      intr_entropy_src_es_fifo_err, // ID 139
+      intr_entropy_src_es_fatal_err, // ID 139
       intr_entropy_src_es_health_test_failed, // ID 138
       intr_entropy_src_es_entropy_valid, // ID 137
       intr_aon_timer_aon_wdog_timer_bark, // ID 136

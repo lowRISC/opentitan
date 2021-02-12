@@ -31,8 +31,8 @@ package entropy_src_env_pkg;
                                                  32'h9124836c,
                                                  32'hb5a7efd9,
                                                  32'h124836cb};
-  parameter string                LIST_OF_ALERTS[] = {"recov_alert_count_met"};
-  parameter uint                  NUM_ALERTS = 1;
+  parameter string                LIST_OF_ALERTS[] = {"recov_alert","fatal_alert"};
+  parameter uint                  NUM_ALERTS = 2;
 
   // types
   typedef enum int {

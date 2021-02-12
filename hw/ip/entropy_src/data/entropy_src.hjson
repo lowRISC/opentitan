@@ -18,8 +18,8 @@ param_list: [
       desc: "Asserted when entropy source bits are available."}
     { name: "es_health_test_failed"
       desc: "Asserted when the alert count has been met."}
-    { name: "es_fifo_err"
-      desc: "Asserted when a FIFO error occurs."}
+    { name: "es_fatal_err"
+      desc: "Asserted when a FIFO error occurs, or if an illegal state machine state is reached."}
   ],
   inter_signal_list: [
     { struct:  "entropy_src_hw_if",
@@ -49,9 +49,11 @@ param_list: [
     }
   ],
   alert_list: [
-    { name: "recov_alert_count_met",
-      desc: '''This alert is triggered upon the alert health test threshold criteria not met.
-            '''
+    { name: "recov_alert",
+      desc: "This alert is triggered upon the alert health test threshold criteria not met."
+    }
+    { name: "fatal_alert",
+      desc: "This alert triggers if an illegal state machine state is reached."
     }
   ],
 
@@ -913,7 +915,7 @@ param_list: [
     {
       name: "ERR_CODE",
       desc: "Hardware detection of error conditions status register",
-      swaccess: "rw",
+      swaccess: "ro",
       hwaccess: "hwo",
       fields: [
         { bits: "0",
@@ -940,6 +942,24 @@ param_list: [
                 This bit will be set to one when an error has been detected for the
                 esfinal FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "20",
+          name: "ES_ACK_SM_ERR",
+          desc: '''
+                This bit will be set to one when an illegal state has been detected for the
+                ES ack stage state machine. This error will signal a fatal alert, and also
+                an interrupt if enabled.
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "21",
+          name: "ES_MAIN_SM_ERR",
+          desc: '''
+                This bit will be set to one when an illegal state has been detected for the
+                ES main stage state machine. This error will signal a fatal alert, and also
+                an interrupt if enabled.
                 This bit will stay set until firmware clears it.
                 '''
         }
@@ -970,6 +990,27 @@ param_list: [
                 This bit will stay set until firmware clears it.
                 '''
         }
+      ]
+    },
+    { name: "ERR_CODE_TEST",
+      desc: "Test error conditions register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      hwqe: "true",
+      regwen: "REGWEN",
+      fields: [
+        {
+            bits: "4:0",
+            name: "ERR_CODE_TEST",
+            desc: '''
+                  Setting this field will set the bit number for which an error
+                  will be forced in the hardware. This bit number is that same one
+                  found in the !!ERR_CODE register. The action of writing this
+                  register will force an error pulse. The sole purpose of this
+                  register is to test that any error properly propagates to either
+                  an interrupt or an alert.
+                  '''
+        },
       ]
     },
   ]

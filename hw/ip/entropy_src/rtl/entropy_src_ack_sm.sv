@@ -12,29 +12,36 @@ module entropy_src_ack_sm (
   input logic                req_i,
   output logic               ack_o,
   input logic                fifo_not_empty_i,
-  output logic               fifo_pop_o
+  output logic               fifo_pop_o,
+  output logic               ack_sm_err_o
 );
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 3 -m 3 -n 6 -s 3584999330
-  // Hamming distance histogram:
-  //
-  // 0: --
-  // 1: --
-  // 2: --
-  // 3: |||||||||||||||||||| (66.67%)
-  // 4: |||||||||| (33.33%)
-  // 5: --
-  // 6: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 4
-  //
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 6 \
+//      -s 1236774883 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||||| (66.67%)
+//  4: ||||| (16.67%)
+//  5: --
+//  6: ||||| (16.67%)
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 6
+// Minimum Hamming weight: 1
+// Maximum Hamming weight: 4
+//
 
   localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
-    Idle      = 6'b010110, // idle
-    AckImmed  = 6'b111111, // ack the request immediately
-    AckWait   = 6'b111000  // wait until the fifo has an entry
+    Idle      = 6'b010100, // idle
+    AckImmed  = 6'b101100, // ack the request immediately
+    AckWait   = 6'b000010, // wait until the fifo has an entry
+    Error     = 6'b101011  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
@@ -60,6 +67,7 @@ module entropy_src_ack_sm (
     state_d = state_q;
     ack_o = 1'b0;
     fifo_pop_o = 1'b0;
+    ack_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
         if (req_i) begin
@@ -82,7 +90,10 @@ module entropy_src_ack_sm (
           state_d = Idle;
         end
       end
-      default: state_d = Idle;
+      Error: begin
+        ack_sm_err_o = 1'b1;
+      end
+      default: state_d = Error;
     endcase
   end
 
