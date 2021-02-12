@@ -191,7 +191,7 @@ def generate_alert_handler(top, out_path):
     hjson_obj = hjson.loads(out,
                             use_decimal=True,
                             object_pairs_hook=validate.checking_dict)
-    validate.validate(hjson_obj)
+    validate.validate(hjson_obj, params=[])
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
 
@@ -250,7 +250,7 @@ def generate_plic(top, out_path):
     hjson_obj = hjson.loads(out,
                             use_decimal=True,
                             object_pairs_hook=OrderedDict)
-    validate.validate(hjson_obj)
+    validate.validate(hjson_obj, params=[])
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
     # Generate RV_PLIC Top Module
@@ -468,7 +468,7 @@ def generate_pinmux(top, out_path):
     hjson_obj = hjson.loads(out,
                             use_decimal=True,
                             object_pairs_hook=validate.checking_dict)
-    validate.validate(hjson_obj)
+    validate.validate(hjson_obj, params=[])
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
 
@@ -573,7 +573,7 @@ def generate_clkmgr(top, cfg_path, out_path):
         hjson_obj = hjson.load(out,
                                use_decimal=True,
                                object_pairs_hook=OrderedDict)
-    validate.validate(hjson_obj)
+    validate.validate(hjson_obj, params=[])
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
 
@@ -630,7 +630,7 @@ def generate_pwrmgr(top, out_path):
         hjson_obj = hjson.load(out,
                                use_decimal=True,
                                object_pairs_hook=OrderedDict)
-    validate.validate(hjson_obj)
+    validate.validate(hjson_obj, params=[])
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
 
@@ -719,7 +719,7 @@ def generate_rstmgr(topcfg, out_path):
         hjson_obj = hjson.load(out,
                                use_decimal=True,
                                object_pairs_hook=OrderedDict)
-    validate.validate(hjson_obj)
+    validate.validate(hjson_obj, params=[])
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
 
@@ -778,7 +778,7 @@ def generate_flash(topcfg, out_path):
         hjson_obj = hjson.load(out,
                                use_decimal=True,
                                object_pairs_hook=OrderedDict)
-    validate.validate(hjson_obj)
+    validate.validate(hjson_obj, params=[])
     gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
 
 
@@ -798,7 +798,7 @@ def generate_top_only(top_only_list, out_path, topname):
             hjson_obj = hjson.load(out,
                                    use_decimal=True,
                                    object_pairs_hook=OrderedDict)
-            validate.validate(hjson_obj)
+            validate.validate(hjson_obj, params=[])
             gen_rtl.gen_rtl(hjson_obj, str(genrtl_dir))
 
 
@@ -940,7 +940,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
             obj = hjson.load(hjson_file.open('r'),
                              use_decimal=True,
                              object_pairs_hook=OrderedDict)
-            if validate.validate(obj) != 0:
+            if validate.validate(obj, params=[]) != 0:
                 log.info("Parsing IP %s configuration failed. Skip" % x)
                 continue
             ip_objs.append(obj)

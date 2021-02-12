@@ -132,7 +132,7 @@ def main():
         format = 'hjson'
 
     infile = args.input
-    params = args.param.split(';')
+    params = args.param.split(';') if args.param else []
 
     # Define either outfile or outdir (but not both), depending on the output
     # format.

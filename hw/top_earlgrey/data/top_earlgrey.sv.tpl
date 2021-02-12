@@ -40,7 +40,7 @@ module top_${top["name"]} #(
   % if not lib.is_inst(m):
 <% continue %>
   % endif
-  % for p_exp in filter(lambda p: p["expose"] == "true", m["param_list"]):
+  % for p_exp in filter(lambda p: p.get("expose") == "true", m["param_list"]):
   parameter ${p_exp["type"]} ${p_exp["name_top"]} = ${p_exp["default"]},
   % endfor
 % endfor
@@ -592,7 +592,7 @@ else:
   % if m["param_list"]:
   ${m["type"]} #(
     % for i in m["param_list"]:
-    .${i["name"]}(${i["name_top" if i["expose"] == "true" or i["randtype"] != "none" else "default"]})${"," if not loop.last else ""}
+    .${i["name"]}(${i["name_top" if i.get("expose") == "true" or i.get("randtype", "none") != "none" else "default"]})${"," if not loop.last else ""}
     % endfor
   ) u_${m["name"]} (
   % else:

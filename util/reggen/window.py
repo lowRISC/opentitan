@@ -2,11 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List
+from typing import Dict
 
 from .access import SWAccess
-from .lib import (check_keys, check_str, check_bool, check_int,
-                  expand_parameter)
+from .lib import check_keys, check_str, check_bool, check_int
+from .params import Params
+
 
 REQUIRED_FIELDS = {
     'name': ['s', "name of the window"],
@@ -72,7 +73,7 @@ class Window:
     @staticmethod
     def from_raw(offset: int,
                  reg_width: int,
-                 params: List[Dict[str, object]],
+                 params: Params,
                  raw: object) -> 'Window':
         rd = check_keys(raw, 'window',
                         list(REQUIRED_FIELDS.keys()),
@@ -100,8 +101,7 @@ class Window:
                              .format(wind_desc, validbits, reg_width))
 
         r_items = check_str(rd['items'], 'items field for ' + wind_desc)
-        items = expand_parameter(params, r_items,
-                                 'expanding items field for ' + wind_desc)
+        items = params.expand(r_items, 'items field for ' + wind_desc)
         if items <= 0:
             raise ValueError("Items field for {} is {}, "
                              "which isn't positive."

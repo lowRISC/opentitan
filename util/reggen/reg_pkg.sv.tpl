@@ -12,14 +12,15 @@
   flat_regs = block.reg_block.flat_regs
   num_regs = len(flat_regs)
   max_regs_char = len("{}".format(num_regs - 1))
+  localparams = block.params.get_localparams()
 %>\
 package ${block.name}_reg_pkg;
-% if len(block.params) != 0:
+% if localparams:
 
   // Param list
 % endif
-% for param in [p for p in block.params if p["local"] == "true"]:
-  parameter ${param["type"]} ${param["name"]} = ${param["default"]};
+% for param in localparams:
+  parameter ${param.param_type} ${param.name} = ${param.value};
 % endfor
 
   // Address width within the block

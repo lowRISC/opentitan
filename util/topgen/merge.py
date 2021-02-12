@@ -10,6 +10,7 @@ from functools import partial
 from math import ceil, log2
 
 from topgen import c, lib
+from reggen.params import LocalParam, Parameter, RandParameter
 
 
 def _get_random_data_hex_literal(width):
@@ -118,43 +119,53 @@ def amend_ip(top, ip):
             ip_module["available_inout_list"] = []
 
         # param_list
-        if "param_list" in ip:
-            ip_module["param_list"] = deepcopy(ip["param_list"])
-            # Removing local parameters.
-            for i in ip["param_list"]:
-                if i["local"] == "true":
-                    ip_module["param_list"].remove(i)
-            # Checking for security-relevant parameters
-            # that are not exposed, adding a top-level name.
-            for i in ip_module["param_list"]:
-                par_name = i["name"]
-                if par_name.lower().startswith("sec") and not i["expose"]:
-                    log.warning("{} has security-critical parameter {} "
-                                "not exposed to top".format(
-                                    mod_name, par_name))
-                # Move special prefixes to the beginnining of the parameter name.
-                param_prefixes = ["Sec", "RndCnst"]
-                cc_mod_name = c.Name.from_snake_case(mod_name).as_camel_case()
-                for prefix in param_prefixes:
-                    if par_name.lower().startswith(prefix.lower()):
-                        i["name_top"] = prefix + cc_mod_name + par_name[
-                            len(prefix):]
-                        break
-                else:
-                    i["name_top"] = cc_mod_name + par_name
+        new_params = []
+        for param in ip['param_list'].by_name.values():
+            if isinstance(param, LocalParam):
+                # Remove local parameters.
+                continue
 
-                # Generate random bits or permutation, if needed
-                if i["randtype"] == "data":
-                    i["default"] = _get_random_data_hex_literal(i["randcount"])
+            new_param = param.as_dict()
+
+            param_expose = param.expose if isinstance(param, Parameter) else False
+
+            # Check for security-relevant parameters that are not exposed,
+            # adding a top-level name.
+            if param.name.lower().startswith("sec") and not param_expose:
+                log.warning("{} has security-critical parameter {} "
+                            "not exposed to top".format(
+                                mod_name, param.name))
+
+            # Move special prefixes to the beginnining of the parameter name.
+            param_prefixes = ["Sec", "RndCnst"]
+            cc_mod_name = c.Name.from_snake_case(mod_name).as_camel_case()
+            name_top = cc_mod_name + param.name
+            for prefix in param_prefixes:
+                if param.name.lower().startswith(prefix.lower()):
+                    name_top = (prefix + cc_mod_name +
+                                param.name[len(prefix):])
+                    break
+
+            new_param['name_top'] = name_top
+
+            # Generate random bits or permutation, if needed
+            if isinstance(param, RandParameter):
+                if param.randtype == 'data':
+                    new_default = _get_random_data_hex_literal(param.randcount)
                     # Effective width of the random vector
-                    i["randwidth"] = int(i["randcount"])
-                elif i["randtype"] == "perm":
-                    i["default"] = _get_random_perm_hex_literal(i["randcount"])
+                    randwidth = param.randcount
+                else:
+                    assert param.randtype == 'perm'
+                    new_default = _get_random_perm_hex_literal(param.randcount)
                     # Effective width of the random vector
-                    i["randwidth"] = int(i["randcount"]) * int(
-                        ceil(log2(float(i["randcount"]))))
-        else:
-            ip_module["param_list"] = []
+                    randwidth = param.randcount * ceil(log2(param.randcount))
+
+                new_param['default'] = new_default
+                new_param['randwidth'] = randwidth
+
+            new_params.append(new_param)
+
+        ip_module["param_list"] = new_params
 
         # interrupt_list
         if "interrupt_list" in ip:

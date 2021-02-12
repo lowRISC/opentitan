@@ -8,6 +8,7 @@ from .access import SWAccess, HWAccess
 from .field import Field
 from .lib import (check_keys, check_str, check_name, check_bool,
                   check_list, check_str_list, check_int)
+from .params import Params
 from .reg_base import RegBase
 
 REQUIRED_FIELDS = {
@@ -176,7 +177,7 @@ class Register(RegBase):
     @staticmethod
     def from_raw(reg_width: int,
                  offset: int,
-                 params: List[Dict[str, object]],
+                 params: Params,
                  raw: object) -> 'Register':
         rd = check_keys(raw, 'register',
                         list(REQUIRED_FIELDS.keys()),
