@@ -414,6 +414,7 @@ module spi_device (
     .data_i       (p2s_data),
     .data_sent_o  (p2s_sent),
 
+    .csb_i        (cio_csb_i),
     .s_en_o       (p2s_s_en),
     .s_o          (p2s_so),
 

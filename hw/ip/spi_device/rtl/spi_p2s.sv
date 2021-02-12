@@ -16,6 +16,7 @@ module spi_p2s
   output logic     data_sent_o,
 
   // SPI interface
+  input  logic       csb_i, // for line floating
   output logic [3:0] s_en_o,
   output logic [3:0] s_o,
 
@@ -88,7 +89,7 @@ module spi_p2s
     endcase
   end
 
-  assign s_en_o = out_enable;
+  assign s_en_o = (csb_i) ? 4'b 0000 : out_enable ;
 
   // `data_sent`
   // Popping signal is a little bit tricky if p2s supports Quad IO
