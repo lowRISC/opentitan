@@ -12,3 +12,4 @@
 `include "kmac_test_vectors_shake_vseq.sv"
 `include "kmac_test_vectors_kmac_vseq.sv"
 `include "kmac_test_vectors_kmac_xof_vseq.sv"
+`include "kmac_burst_write_vseq.sv"
