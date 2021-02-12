@@ -8,17 +8,18 @@
 
 `include "prim_assert.sv"
 
-module aes_ctr(
-  input  logic             clk_i,
-  input  logic             rst_ni,
+module aes_ctr import aes_pkg::*;
+(
+  input  logic              clk_i,
+  input  logic              rst_ni,
 
-  input  logic             incr_i,
-  output logic             ready_o,
-  output logic             alert_o,
+  input  sp2v_e             incr_i,
+  output sp2v_e             ready_o,
+  output logic              alert_o,
 
-  input  logic [7:0][15:0] ctr_i, // 8 times 2 bytes
-  output logic [7:0][15:0] ctr_o, // 8 times 2 bytes
-  output logic [7:0]       ctr_we_o
+  input  logic  [7:0][15:0] ctr_i, // 8 times 2 bytes
+  output logic  [7:0][15:0] ctr_o, // 8 times 2 bytes
+  output sp2v_e [7:0]       ctr_we_o
 );
 
   // Reverse byte order
@@ -30,9 +31,9 @@ module aes_ctr(
     return out;
   endfunction
 
-  // Reverse bit order
-  function automatic logic [7:0] aes_rev_order_bit(logic [7:0] in);
-    logic [7:0] out;
+  // Reverse sp2v order
+  function automatic sp2v_e [7:0] aes_rev_order_sp2v(sp2v_e [7:0] in);
+    sp2v_e [7:0] out;
     for (int i=0; i<8; i++) begin
       out[i] = in[7-i];
     end
@@ -63,18 +64,22 @@ module aes_ctr(
   } aes_ctr_e;
 
   // Signals
-  aes_ctr_e         aes_ctr_ns, aes_ctr_cs;
-  logic       [2:0] ctr_slice_idx_d, ctr_slice_idx_q;
-  logic             ctr_carry_d, ctr_carry_q;
+  aes_ctr_e          aes_ctr_ns, aes_ctr_cs;
+  logic        [2:0] ctr_slice_idx_d, ctr_slice_idx_q;
+  logic              ctr_carry_d, ctr_carry_q;
 
-  logic [7:0][15:0] ctr_i_rev; // 8 times 2 bytes
-  logic [7:0][15:0] ctr_o_rev; // 8 times 2 bytes
-  logic [7:0]       ctr_we_o_rev;
-  logic             ctr_we;
+  logic  [7:0][15:0] ctr_i_rev; // 8 times 2 bytes
+  logic  [7:0][15:0] ctr_o_rev; // 8 times 2 bytes
+  sp2v_e [7:0]       ctr_we_o_rev;
+  sp2v_e             ctr_we;
 
-  logic      [15:0] ctr_i_slice;
-  logic      [15:0] ctr_o_slice;
-  logic      [16:0] ctr_value;
+  logic       [15:0] ctr_i_slice;
+  logic       [15:0] ctr_o_slice;
+  logic       [16:0] ctr_value;
+
+  logic              alert;
+  sp2v_e             incr;
+  logic              incr_err_d, incr_err_q;
 
   ////////////
   // Inputs //
@@ -82,6 +87,30 @@ module aes_ctr(
 
   // Reverse byte order
   assign ctr_i_rev = aes_rev_order_byte(ctr_i);
+
+  // Check sparsely encoded incr signal.
+  logic [Sp2VWidth-1:0] incr_raw;
+  aes_sel_buf_chk #(
+    .Num   ( Sp2VNum   ),
+    .Width ( Sp2VWidth )
+  ) u_aes_sb_en_buf_chk (
+    .clk_i  ( clk_i      ),
+    .rst_ni ( rst_ni     ),
+    .sel_i  ( incr_i     ),
+    .sel_o  ( incr_raw   ),
+    .err_o  ( incr_err_d )
+  );
+  assign incr = sp2v_e'(incr_raw);
+
+  // Need to register errors in incr to avoid circular loops in the main
+  // controller related to start.
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_out_ack_err
+    if (!rst_ni) begin
+      incr_err_q <= 1'b0;
+    end else if (incr_err_d) begin
+      incr_err_q <= 1'b1;
+    end
+  end
 
   /////////////
   // Counter //
@@ -100,9 +129,9 @@ module aes_ctr(
   always_comb begin : aes_ctr_fsm
 
     // Outputs
-    ready_o         = 1'b0;
-    ctr_we          = 1'b0;
-    alert_o         = 1'b0;
+    ready_o         = SP2V_LOW;
+    ctr_we          = SP2V_LOW;
+    alert           = 1'b0;
 
     // FSM
     aes_ctr_ns      = aes_ctr_cs;
@@ -111,8 +140,8 @@ module aes_ctr(
 
     unique case (aes_ctr_cs)
       IDLE: begin
-        ready_o = 1'b1;
-        if (incr_i) begin
+        ready_o = SP2V_HIGH;
+        if (incr == SP2V_HIGH) begin
           // Initialize slice index and carry bit.
           ctr_slice_idx_d = '0;
           ctr_carry_d     = 1'b1;
@@ -124,7 +153,7 @@ module aes_ctr(
         // Increment slice index.
         ctr_slice_idx_d = ctr_slice_idx_q + 3'b001;
         ctr_carry_d     = ctr_value[16];
-        ctr_we          = 1'b1;
+        ctr_we          = SP2V_HIGH;
 
         if (ctr_slice_idx_q == 3'b111) begin
           aes_ctr_ns = IDLE;
@@ -133,7 +162,7 @@ module aes_ctr(
 
       ERROR: begin
         // Terminal error state
-        alert_o = 1'b1;
+        alert = 1'b1;
       end
 
       // We should never get here. If we do (e.g. via a malicious
@@ -181,13 +210,16 @@ module aes_ctr(
 
   // Generate the sliced write enable.
   always_comb begin
-    ctr_we_o_rev                  = '0;
+    ctr_we_o_rev                  = {8{SP2V_LOW}};
     ctr_we_o_rev[ctr_slice_idx_q] = ctr_we;
   end
 
   // Reverse byte and bit order.
   assign ctr_o    = aes_rev_order_byte(ctr_o_rev);
-  assign ctr_we_o = aes_rev_order_bit(ctr_we_o_rev);
+  assign ctr_we_o = aes_rev_order_sp2v(ctr_we_o_rev);
+
+  // Collect alert signals.
+  assign alert_o  = alert | incr_err_q;
 
   ////////////////
   // Assertions //

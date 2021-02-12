@@ -119,10 +119,10 @@ module aes_cipher_core import aes_pkg::*;
   input  logic                        cfg_valid_i, // Used for gating assertions only.
   input  ciph_op_e                    op_i,
   input  key_len_e                    key_len_i,
-  input  logic                        crypt_i,
-  output logic                        crypt_o,
-  input  logic                        dec_key_gen_i,
-  output logic                        dec_key_gen_o,
+  input  sp2v_e                       crypt_i,
+  output sp2v_e                       crypt_o,
+  input  sp2v_e                       dec_key_gen_i,
+  output sp2v_e                       dec_key_gen_o,
   input  logic                        key_clear_i,
   output logic                        key_clear_o,
   input  logic                        data_out_clear_i, // Re-use the cipher core muxes.
@@ -148,15 +148,17 @@ module aes_cipher_core import aes_pkg::*;
   // Signals
   logic               [3:0][3:0][7:0] state_d [NumShares];
   logic               [3:0][3:0][7:0] state_q [NumShares];
-  logic                               state_we;
+  sp2v_e                              state_we_ctrl;
+  sp2v_e                              state_we;
   logic           [StateSelWidth-1:0] state_sel_raw;
   state_sel_e                         state_sel_ctrl;
   state_sel_e                         state_sel;
   logic                               state_sel_err;
 
-  logic                               sub_bytes_en;
-  logic                               sub_bytes_out_req;
-  logic                               sub_bytes_out_ack;
+  sp2v_e                              sub_bytes_en;
+  sp2v_e                              sub_bytes_out_req;
+  sp2v_e                              sub_bytes_out_ack;
+  logic                               sub_bytes_err;
   logic               [3:0][3:0][7:0] sub_bytes_out;
   logic               [3:0][3:0][7:0] sb_in_mask;
   logic               [3:0][3:0][7:0] sb_out_mask;
@@ -172,23 +174,26 @@ module aes_cipher_core import aes_pkg::*;
 
   logic                   [7:0][31:0] key_full_d [NumShares];
   logic                   [7:0][31:0] key_full_q [NumShares];
-  logic                               key_full_we;
+  sp2v_e                              key_full_we_ctrl;
+  sp2v_e                              key_full_we;
   logic         [KeyFullSelWidth-1:0] key_full_sel_raw;
   key_full_sel_e                      key_full_sel_ctrl;
   key_full_sel_e                      key_full_sel;
   logic                               key_full_sel_err;
   logic                   [7:0][31:0] key_dec_d [NumShares];
   logic                   [7:0][31:0] key_dec_q [NumShares];
-  logic                               key_dec_we;
+  sp2v_e                              key_dec_we_ctrl;
+  sp2v_e                              key_dec_we;
   logic          [KeyDecSelWidth-1:0] key_dec_sel_raw;
   key_dec_sel_e                       key_dec_sel_ctrl;
   key_dec_sel_e                       key_dec_sel;
   logic                               key_dec_sel_err;
   logic                   [7:0][31:0] key_expand_out [NumShares];
   ciph_op_e                           key_expand_op;
-  logic                               key_expand_en;
-  logic                               key_expand_out_req;
-  logic                               key_expand_out_ack;
+  sp2v_e                              key_expand_en;
+  sp2v_e                              key_expand_out_req;
+  sp2v_e                              key_expand_out_ack;
+  logic                               key_expand_err;
   logic                               key_expand_clear;
   logic                         [3:0] key_expand_round;
   logic        [KeyWordsSelWidth-1:0] key_words_sel_raw;
@@ -205,6 +210,7 @@ module aes_cipher_core import aes_pkg::*;
   logic                               round_key_sel_err;
 
   logic                               mux_sel_err;
+  logic                               sp_enc_err_d, sp_enc_err_q;
 
   // Pseudo-random data for clearing and masking purposes
   logic                       [127:0] prd_clearing_128;
@@ -242,7 +248,7 @@ module aes_cipher_core import aes_pkg::*;
   always_ff @(posedge clk_i or negedge rst_ni) begin : state_reg
     if (!rst_ni) begin
       state_q <= '{default: '0};
-    end else if (state_we) begin
+    end else if (state_we == SP2V_HIGH) begin
       state_q <= state_d;
     end
   end
@@ -346,7 +352,8 @@ module aes_cipher_core import aes_pkg::*;
     .mask_i    ( sb_in_mask        ),
     .prd_i     ( prd_sub_bytes     ),
     .data_o    ( sub_bytes_out     ),
-    .mask_o    ( sb_out_mask       )
+    .mask_o    ( sb_out_mask       ),
+    .err_o     ( sub_bytes_err     )
   );
 
   for (genvar s = 0; s < NumShares; s++) begin : gen_shares_shift_mix
@@ -402,7 +409,7 @@ module aes_cipher_core import aes_pkg::*;
   always_ff @(posedge clk_i or negedge rst_ni) begin : key_full_reg
     if (!rst_ni) begin
       key_full_q <= '{default: '0};
-    end else if (key_full_we) begin
+    end else if (key_full_we == SP2V_HIGH) begin
       key_full_q <= key_full_d;
     end
   end
@@ -419,7 +426,7 @@ module aes_cipher_core import aes_pkg::*;
   always_ff @(posedge clk_i or negedge rst_ni) begin : key_dec_reg
     if (!rst_ni) begin
       key_dec_q <= '{default: '0};
-    end else if (key_dec_we) begin
+    end else if (key_dec_we == SP2V_HIGH) begin
       key_dec_q <= key_dec_d;
     end
   end
@@ -442,7 +449,8 @@ module aes_cipher_core import aes_pkg::*;
     .key_len_i   ( key_len_i          ),
     .key_i       ( key_full_q         ),
     .key_o       ( key_expand_out     ),
-    .prd_i       ( prd_key_expand     )
+    .prd_i       ( prd_key_expand     ),
+    .err_o       ( key_expand_err     )
   );
 
   for (genvar s = 0; s < NumShares; s++) begin : gen_shares_round_key
@@ -504,6 +512,7 @@ module aes_cipher_core import aes_pkg::*;
     .data_out_clear_i     ( data_out_clear_i    ),
     .data_out_clear_o     ( data_out_clear_o    ),
     .mux_sel_err_i        ( mux_sel_err         ),
+    .sp_enc_err_i         ( sp_enc_err_q        ),
     .alert_o              ( alert_o             ),
 
     .prng_update_o        ( prd_masking_upd     ),
@@ -511,7 +520,7 @@ module aes_cipher_core import aes_pkg::*;
     .prng_reseed_ack_i    ( prd_masking_rsd_ack ),
 
     .state_sel_o          ( state_sel_ctrl      ),
-    .state_we_o           ( state_we            ),
+    .state_we_o           ( state_we_ctrl       ),
     .sub_bytes_en_o       ( sub_bytes_en        ),
     .sub_bytes_out_req_i  ( sub_bytes_out_req   ),
     .sub_bytes_out_ack_o  ( sub_bytes_out_ack   ),
@@ -519,9 +528,9 @@ module aes_cipher_core import aes_pkg::*;
 
     .key_expand_op_o      ( key_expand_op       ),
     .key_full_sel_o       ( key_full_sel_ctrl   ),
-    .key_full_we_o        ( key_full_we         ),
+    .key_full_we_o        ( key_full_we_ctrl    ),
     .key_dec_sel_o        ( key_dec_sel_ctrl    ),
-    .key_dec_we_o         ( key_dec_we          ),
+    .key_dec_we_o         ( key_dec_we_ctrl     ),
     .key_expand_en_o      ( key_expand_en       ),
     .key_expand_out_req_i ( key_expand_out_req  ),
     .key_expand_out_ack_o ( key_expand_out_ack  ),
@@ -621,6 +630,66 @@ module aes_cipher_core import aes_pkg::*;
   // Signal invalid mux selector signals to control FSM which will lock up and trigger an alert.
   assign mux_sel_err = state_sel_err | add_rk_sel_err | key_full_sel_err |
       key_dec_sel_err | key_words_sel_err | round_key_sel_err;
+
+  //////////////////////////////
+  // Sparsely Encoded Signals //
+  //////////////////////////////
+
+  // We use sparse encodings for various critical signals and must ensure that:
+  // 1. The synthesis tool doesn't optimize away the sparse encoding.
+  // 2. The sparsely encoded signal is always valid. More precisely, an alert or SVA is triggered
+  //    if a sparse signal takes on an invalid value.
+  // 3. The alert signal remains asserted until reset even if the sparse signal becomes valid again
+  //    This is achieved by driving the control FSM into the terminal error state whenever any
+  //    sparsely encoded signal becomes invalid.
+  //
+  // If any sparsely encoded signal becomes invalid, the cipher core further immediately de-asserts
+  // the out_valid_o signal to prevent any data from being released.
+
+  // We use vectors of sparsely encoded signals to reduce code duplication.
+  localparam int unsigned NumSp2VSig = 3;
+  sp2v_e [NumSp2VSig-1:0]                sp2v_sig;
+  sp2v_e [NumSp2VSig-1:0]                sp2v_sig_chk;
+  logic  [NumSp2VSig-1:0][Sp2VWidth-1:0] sp2v_sig_chk_raw;
+  logic  [NumSp2VSig-1:0]                sp2v_sig_err;
+
+  assign sp2v_sig[0] = state_we_ctrl;
+  assign sp2v_sig[1] = key_full_we_ctrl;
+  assign sp2v_sig[2] = key_dec_we_ctrl;
+
+  // Individually check sparsely encoded signals.
+  for (genvar i = 0; i < NumSp2VSig; i++) begin : gen_sel_buf_chk
+    aes_sel_buf_chk #(
+      .Num   ( Sp2VNum   ),
+      .Width ( Sp2VWidth )
+    ) u_aes_sp2v_sig_buf_chk_i (
+      .clk_i  ( clk_i               ),
+      .rst_ni ( rst_ni              ),
+      .sel_i  ( sp2v_sig[i]         ),
+      .sel_o  ( sp2v_sig_chk_raw[i] ),
+      .err_o  ( sp2v_sig_err[i]     )
+    );
+    assign sp2v_sig_chk[i] = sp2v_e'(sp2v_sig_chk_raw[i]);
+  end
+
+  assign state_we    = sp2v_sig_chk[0];
+  assign key_full_we = sp2v_sig_chk[1];
+  assign key_dec_we  = sp2v_sig_chk[2];
+
+  // Collect encoding errors.
+  // We instantiate the checker modules as close as possible to where the sparsely encoded signals
+  // are used. Here, we collect also encoding errors detected in other places of the cipher core.
+  assign sp_enc_err_d = |sp2v_sig_err | sub_bytes_err | key_expand_err;
+
+  // We need to register the collected error signal to avoid circular loops in the cipher core
+  // controller related to out_valid_o and detecting errors in state_we_o and sub_bytes_out_ack.
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_sp_enc_err
+    if (!rst_ni) begin
+      sp_enc_err_q <= 1'b0;
+    end else if (sp_enc_err_d) begin
+      sp_enc_err_q <= 1'b1;
+    end
+  end
 
   /////////////
   // Outputs //
