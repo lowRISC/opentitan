@@ -26,7 +26,7 @@ ${gencmd}
 package top_${top["name"]}_rnd_cnst_pkg;
 
 % for m in top["module"]:
-  % for p in filter(lambda p: p["randtype"] in ["data", "perm"], m["param_list"]):
+  % for p in filter(lambda p: p.get("randtype") in ["data", "perm"], m["param_list"]):
     % if loop.first:
   ////////////////////////////////////////////
   // ${m['name']}

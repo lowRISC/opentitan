@@ -7,10 +7,12 @@ Register JSON validation
 
 import logging as log
 from collections import OrderedDict
+from typing import List
 
 from .access import SWAccess, HWAccess
 from .bits import Bits
 from .field import Field
+from .params import LocalParam, Params
 from .reg_block import RegBlock
 from .register import Register
 
@@ -99,115 +101,6 @@ def check_ln(obj, x, withwidth, err_prefix):
     return error
 
 
-def check_lp(obj, x, err_prefix):
-    error = 0
-    if not isinstance(obj[x], list):
-        log.error(err_prefix + ' element ' + x + ' not a list')
-        return 1
-
-    for y in obj[x]:
-        error += check_keys(y, lp_required, lp_optional, {},
-                            err_prefix + ' element ' + x)
-
-        # If this is a random netlist constant, other attributes like local, default and expose
-        # are automatically set. Throw an error if they already exist in the dict.
-        randcount = int(y.setdefault('randcount', "0"))
-        randtype = y.setdefault('randtype', "none")
-        if randtype != "none":
-
-            if randcount <= 0:
-                log.error(err_prefix + ' randwith for parameter ' + y['name'] +
-                          ' must be greater > 0.')
-                return error + 1
-
-            if randtype not in ['perm', 'data']:
-                log.error(err_prefix + ' parameter ' + y['name'] +
-                          ' has unknown randtype ' + randtype)
-                return error + 1
-
-            if y.get('type') is None:
-                log.error(
-                    err_prefix + ' parameter ' + y['name'] +
-                    ' has undefined type. '
-                    'It is required to define the type in the IP package.')
-                return error + 1
-
-            if not y.get('name').lower().startswith('rndcnst'):
-                log.error(
-                    err_prefix + ' parameter ' + y['name'] +
-                    ' is defined as a compile-time '
-                    'random netlist constant. The name must therefore start with RndCnst.'
-                )
-                return error + 1
-
-            overrides = [('local', 'false'), ('default', ''),
-                         ('expose', 'false')]
-
-            for key, value in overrides:
-                if y.setdefault(key, value) != value:
-                    log.error(
-                        err_prefix + ' ' + key + ' for parameter ' +
-                        y['name'] +
-                        ' must not be set since it will be defined automatically.'
-                    )
-                    return error + 1
-
-        # TODO: Check if PascalCase or ALL_CAPS
-        y.setdefault('type', 'int')
-
-        y.setdefault('local', 'true')
-        local, ierr = check_bool(y["local"], err_prefix + " local")
-        if ierr:
-            error += 1
-            y["local"] = "true"
-
-        y.setdefault('expose', 'false')
-        local, ierr = check_bool(y["expose"], err_prefix + " expose")
-        if ierr:
-            error += 1
-            y["expose"] = "false"
-
-        if y["local"] == "true" and y["expose"] == "true":
-            log.error(err_prefix + ' element ' + x + '["' + y["name"] + '"]' +
-                      ' cannot be local and exposed to top level')
-            return error + 1
-
-        if "default" in y:
-            if y["type"][:3] == "int":
-                default, ierr = check_int(y["default"],
-                                          err_prefix + " default")
-                if ierr:
-                    error += 1
-                    y["default"] = "1"
-        elif y["randtype"] != "none":
-            # Don't make assumptions for exposed parameters. These must have
-            # a default.
-            if y["expose"] == "true":
-                log.error(err_prefix + ' element ' + x + '["' + y["name"] +
-                          '"]' + ' has no defined default value')
-            elif y["type"][:3] == "int":
-                y["default"] = "1"
-            elif y["type"] == "string":
-                y["default"] = ""
-            else:
-                log.error(err_prefix + ' element ' + x + '["' + y["name"] +
-                          '"]' + ' type is not supported')
-                return error + 1
-
-    return error
-
-
-def search_param(obj, key):
-    """return the param object if found, else return non zero error
-    """
-    for p in obj:
-        if p["name"] == key:
-            return p, 0
-
-    log.error("Param {} cannot be found".format(key))
-    return None, 1
-
-
 def check_keys(obj, required_keys, optional_keys, added_keys, err_prefix):
     error = 0
     for x in required_keys:
@@ -225,8 +118,6 @@ def check_keys(obj, required_keys, optional_keys, added_keys, err_prefix):
         if type is not None:
             if type[:2] == 'ln':
                 error += check_ln(obj, x, type == 'lnw', err_prefix)
-            if type == 'lp':
-                error += check_lp(obj, x, err_prefix)
 
     return error
 
@@ -329,21 +220,6 @@ ln_required = {
 }
 ln_optional = {
     'width': ['d', "bit width of the item (if not 1)"],
-}
-
-# lp type
-lp_required = {
-    'name': ['s', "name of the item"],
-}
-lp_optional = {
-    'desc': ['s', "description of the item"],
-    'type': ['s', "item type. int by default"],
-    'default': ['s', "item default value"],
-    'local': ['pb', "to be localparam"],
-    'expose': ['pb', "to be exposed to top"],
-    'randcount':
-    ['s', "number of bits to randomize in the parameter. 0 by default."],
-    'randtype': ['s', "type of randomization to perform. none by default"],
 }
 
 # Registers list may have embedded keys
@@ -492,19 +368,12 @@ def make_alert_regs(reg_block, regs, fullwidth):
     return alert_regs, 0
 
 
-def validate(regs, **kwargs):
-    if "params" in kwargs:
-        params = kwargs["params"]
-    else:
-        params = []
-
+def validate(regs, params: List[str]):
     if 'name' not in regs:
         log.error("Component has no name. Aborting.")
         return 1
 
     component = regs['name']
-
-    regs.setdefault('param_list', [])
 
     error = check_keys(regs, top_required, top_optional, top_added, component)
     if (error > 0):
@@ -529,7 +398,11 @@ def validate(regs, **kwargs):
     else:
         addrsep = fullwidth // 8
 
-    reg_block = RegBlock(addrsep, fullwidth, regs.get('param_list', []))
+    param_list = Params.from_raw('block parameter list',
+                                 regs.get('param_list', []))
+    regs['param_list'] = param_list
+
+    reg_block = RegBlock(addrsep, fullwidth, param_list)
 
     autoregs = []
 
@@ -592,53 +465,24 @@ def validate(regs, **kwargs):
                 error += 1
 
         if num_alerts != 0:
-            param = ''
-            for p in regs['param_list']:
-                if p['name'] == 'NumAlerts':
-                    param = p
-            if param:
-                # We already have an NumAlerts parameter.
-                if (param['type'] != 'int' or
-                        param['default'] != str(num_alerts) or
-                        param['local'] != 'true'):
-                    log.error(
-                        'Conflicting definition of NumAlerts parameter found.')
+            existing_param = param_list.get('NumAlerts')
+            if existing_param is not None:
+                if ((not isinstance(existing_param, LocalParam) or
+                     existing_param.param_type != 'int' or
+                     existing_param.value != str(num_alerts))):
+                    log.error('Conflicting definition of NumAlerts parameter.')
                     error += 1
             else:
-                # Generate the NumAlerts parameter.x
-                regs['param_list'].append({
-                    'name': 'NumAlerts',
-                    'type': 'int',
-                    'default': str(num_alerts),
-                    'desc': 'Number of alerts',
-                    'local': 'true',
-                    'expose': 'false',
-                })
+                param_list.add(LocalParam(name='NumAlerts',
+                                          desc='Number of alerts',
+                                          param_type='int',
+                                          value=str(num_alerts)))
 
-    # Change default param value if exists.
-    #   Assumed param list is already validated in above `check_keys` function
-    if "param_list" in regs and len(regs["param_list"]) != 0:
-        for p in params:
-            if p == '':
-                continue
-
-            tokens = p.split('=')
-            if len(tokens) != 2:
-                error += 1
-                log.error("Parameter format isn't correct. {}".format(p))
-            key, value = tokens[0], tokens[1]
-            param, err = search_param(regs["param_list"], key)
-            if err != 0:
-                error += err
-                continue
-
-            value, err = check_int(
-                value, component + " param[{}]".format(param["name"]))
-            if err != 0:
-                error += err
-                continue
-
-            param["default"] = value
+    try:
+        param_list.apply_defaults(params)
+    except (ValueError, KeyError) as err:
+        log.error(str(err))
+        return error + 1
 
     if "scan" in regs:
         scan, err = check_bool(regs["scan"], component + " scan")

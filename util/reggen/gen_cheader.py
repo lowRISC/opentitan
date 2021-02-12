@@ -169,25 +169,19 @@ def gen_cdefine_window(outstr, win, comp, regwidth, rnames, existing_defines):
 
 
 def gen_cdefines_module_param(outstr, param, module_name, existing_defines):
-    param_type = param['type']
-
-    # Do not generate C defines for parameters that are not localparams defined
-    # in the corresponding SystemVerilog package.
-    if param["local"].lower() == "false":
-        return
-
     # Presently there is only one type (int), however if the new types are
     # added, they potentially need to be handled differently.
     known_types = ["int"]
-    if param_type not in known_types:
-        warnings.warn(
-            "Cannot generate a module define of type {}".format(param_type))
+    if param.param_type not in known_types:
+        warnings.warn("Cannot generate a module define of type {}"
+                      .format(param.param_type))
         return
 
-    genout(outstr, format_comment(first_line(param['desc'])))
-    define_name = as_define(module_name + '_PARAM_' + param['name'])
-    if param_type == "int":
-        define = gen_define(define_name, [], param['default'],
+    if param.desc is not None:
+        genout(outstr, format_comment(first_line(param.desc)))
+    define_name = as_define(module_name + '_PARAM_' + param.name)
+    if param.param_type == "int":
+        define = gen_define(define_name, [], param.value,
                             existing_defines)
 
     genout(outstr, define)
@@ -201,7 +195,7 @@ def gen_cdefines_module_params(outstr, module_data, module_name,
     if 'param_list' in module_data:
         module_params = module_data['param_list']
 
-    for param in module_params:
+    for param in module_params.get_localparams():
         gen_cdefines_module_param(outstr, param, module_name, existing_defines)
 
     genout(outstr, format_comment(first_line("Register width")))

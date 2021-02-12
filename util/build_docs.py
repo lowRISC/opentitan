@@ -154,7 +154,7 @@ def generate_hardware_blocks():
         regs = hjson.load(hardware_file,
                           use_decimal=True,
                           object_pairs_hook=validate.checking_dict)
-        if validate.validate(regs) == 0:
+        if validate.validate(regs, params=[]) == 0:
             logging.info("Parsed %s" % (hardware))
         else:
             logging.fatal("Failed to parse %s" % (hardware))

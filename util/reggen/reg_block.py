@@ -9,15 +9,13 @@ from typing import Dict, List, Union
 
 from .lib import check_int, check_list, check_str_dict
 from .multi_register import MultiRegister
+from .params import Params
 from .register import Register
 from .window import Window
 
 
 class RegBlock:
-    def __init__(self,
-                 addrsep: int,
-                 reg_width: int,
-                 params: List[Dict[str, object]]):
+    def __init__(self, addrsep: int, reg_width: int, params: Params):
 
         self._addrsep = addrsep
         self._reg_width = reg_width

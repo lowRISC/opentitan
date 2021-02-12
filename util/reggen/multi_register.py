@@ -6,8 +6,8 @@ from typing import Dict, List
 
 from reggen import register
 from .field import Field
-from .lib import (check_keys, check_str, check_name,
-                  check_bool, expand_parameter)
+from .lib import check_keys, check_str, check_name, check_bool
+from .params import Params
 from .reg_base import RegBase
 from .register import Register
 
@@ -47,7 +47,7 @@ class MultiRegister(RegBase):
                  offset: int,
                  addrsep: int,
                  reg_width: int,
-                 params: List[Dict[str, object]],
+                 params: Params,
                  raw: object):
         super().__init__(offset)
 
@@ -86,9 +86,8 @@ class MultiRegister(RegBase):
         count_str = check_str(rd['count'],
                               'count field of multireg {}'
                               .format(self.reg.name))
-        self.count = expand_parameter(params, count_str,
-                                      'expanding count field of multireg {}'
-                                      .format(self.reg.name))
+        self.count = params.expand(count_str,
+                                   'count field of multireg ' + self.reg.name)
         if self.count <= 0:
             raise ValueError("Multireg {} has a count of {}, "
                              "which isn't positive."
