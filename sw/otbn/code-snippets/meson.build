@@ -52,7 +52,7 @@ sw_otbn_sources += {
     'p256.s',
   ),
   'rsa': files(
-   'rsa.s',
+    'rsa.s',
     'modexp.s',
   ),
 }
