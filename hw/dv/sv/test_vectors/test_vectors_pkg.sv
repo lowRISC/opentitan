@@ -324,7 +324,10 @@ package test_vectors_pkg;
           end
           "Key": begin
             str_to_bytes(entry_data, bytes);
-            vector.keys = {>>byte{bytes}};
+            vector.keys = new[vector.key_length_word];
+            for (int i = 0; i < vector.key_length_word; i++) begin
+              vector.keys[i] = {<< byte {bytes with [i*4 +: 4]}};
+            end
           end
           "Outputlen", "OutputLen": begin
             // Output digest length in bits

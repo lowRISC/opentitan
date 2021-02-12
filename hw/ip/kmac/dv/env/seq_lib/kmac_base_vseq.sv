@@ -211,7 +211,7 @@ class kmac_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("intr[KmacFifoEmpty] = %0b", enable_intr[KmacFifoEmpty]), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("intr[KmacErr] = %0b", enable_intr[KmacErr]), UVM_HIGH)
 
-    // setup CFG csr
+    // setup CFG csr with default random values
     ral.cfg.kmac_en.set(kmac_en);
     ral.cfg.kstrength.set(strength);
     ral.cfg.mode.set(hash_mode);
@@ -429,7 +429,7 @@ class kmac_base_vseq extends cip_base_vseq #(
   //
   // - Perform a TLUL access to the msgfifo with the random data/addr/mask, relying on tl_agent
   //   to correctly align the final address and data size
-  virtual task write_msg(bit [7:0] msg_arr[]);
+  virtual task write_msg(bit [7:0] msg_arr[], bit blocking = $urandom_range(0, 1));
 
     bit [TL_DW-1:0] data_word;
     bit [7:0] msg_q[$];
@@ -493,7 +493,7 @@ class kmac_base_vseq extends cip_base_vseq #(
                 .write(1),
                 .data(data_word),
                 .mask(data_mask),
-                .blocking($urandom_range(0, 1)));
+                .blocking(blocking));
     end
 
     // wait for all msgfifo accesses to complete
@@ -540,8 +540,10 @@ class kmac_base_vseq extends cip_base_vseq #(
   // The general idea is:
   // - Read 4-byte words from the STATE window
   // - Add each byte to a queue, decrementing the total output_len each time
-  virtual task read_digest_chunk(bit [TL_AW-1:0] state_addr, int unsigned chunk_size);
+  virtual task read_digest_chunk(bit [TL_AW-1:0] state_addr, int unsigned chunk_size,
+                                 ref bit [7:0] digest[]);
     bit [TL_DW-1:0] digest_word;
+    bit [7:0] digest_byte;
 
     while (chunk_size > 0) begin
       // Get a random mask for the state window read, keeping it as TL_DBW'(1'b1) whenever possible
@@ -565,7 +567,21 @@ class kmac_base_vseq extends cip_base_vseq #(
 
       `uvm_info(`gfn, $sformatf("digest_word: 0x%0x", digest_word), UVM_HIGH)
 
-      chunk_size -= $countones(data_mask);
+      // This section of code is used to return the read digest to the virtual sequence for any
+      // checks.
+      // This is only actually used for the NIST vector tests.
+      if (state_endian) begin
+        data_mask = {<< bit {data_mask}};
+        digest_word = {<< byte {digest_word}};
+      end
+      for (int i = 0; i < TL_DBW; i++) begin
+        if (chunk_size == 0) break;
+        if (data_mask[i]) begin
+          digest_byte = digest_word[i*8 +: 8];
+          digest = {digest, digest_byte};
+          chunk_size -= 1;
+        end
+      end
 
       state_addr = state_addr + 4;
 
@@ -580,7 +596,8 @@ class kmac_base_vseq extends cip_base_vseq #(
   //
   // Note: if masking is disabled we read the full 200 bytes from SHARE1,
   //       this is so we can check that it has been zeroed.
-  virtual task read_digest_shares(int unsigned full_output_len, bit en_masking);
+  virtual task read_digest_shares(int unsigned full_output_len, bit en_masking,
+                                  ref bit [7:0] share0[], ref bit [7:0] share1[]);
 
     int unsigned remaining_output_len = full_output_len;
 
@@ -589,8 +606,8 @@ class kmac_base_vseq extends cip_base_vseq #(
     while (remaining_output_len > 0) begin
       cur_chunk_size = (remaining_output_len <= keccak_block_size) ? remaining_output_len : keccak_block_size;
 
-      read_digest_chunk(KMAC_STATE_SHARE0_BASE, cur_chunk_size);
-      read_digest_chunk(KMAC_STATE_SHARE1_BASE, en_masking ? cur_chunk_size : 200);
+      read_digest_chunk(KMAC_STATE_SHARE0_BASE, cur_chunk_size, share0);
+      read_digest_chunk(KMAC_STATE_SHARE1_BASE, en_masking ? cur_chunk_size : 200, share1);
 
       `uvm_info(`gfn, $sformatf("read a %0d byte chunk of digest", cur_chunk_size), UVM_HIGH)
 

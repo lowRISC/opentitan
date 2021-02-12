@@ -80,6 +80,26 @@
       name: "{variant}_sideload"
       uvm_test_seq: kmac_sideload_vseq
     }
+    {
+      name: "{variant}_test_vectors_sha3"
+      uvm_test_seq: kmac_test_vectors_sha3_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+    }
+    {
+      name: "{variant}_test_vectors_shake"
+      uvm_test_seq: kmac_test_vectors_shake_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+    }
+    {
+      name: "{variant}_test_vectors_kmac"
+      uvm_test_seq: kmac_test_vectors_kmac_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+    }
+    {
+      name: "{variant}_test_vectors_kmac_xof"
+      uvm_test_seq: kmac_test_vectors_kmac_xof_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+    }
   ]
 
   // List of regressions.

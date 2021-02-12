@@ -69,8 +69,8 @@
             the output against the expected digest values.
             '''
       milestone: V2
-      tests: ["{name}_sha3_test_vectors", "{name}_shake_test_vectors", "{name}_test_vectors",
-      "{name}_xof_test_vectors"]
+      tests: ["{name}_test_vectors_sha3", "{name}_test_vectors_shake", "{name}_test_vectors_kmac",
+              "{name}_test_vectors_kmac_xof"]
     }
     {
       name: sideload
