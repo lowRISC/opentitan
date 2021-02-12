@@ -85,7 +85,7 @@ typedef enum logic [2:0] {
 // Generic, sparse mux selector encodings
 
 // Encoding generated with:
-// $ ./sparse-fsm-encode.py -d 3 -m 2 -n 4 \
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 2 -n 3 \
 //      -s 31468618 --language=sv
 //
 // Hamming distance histogram:
@@ -94,15 +94,16 @@ typedef enum logic [2:0] {
 //  1: --
 //  2: --
 //  3: |||||||||||||||||||| (100.00%)
-//  4: --
 //
 // Minimum Hamming distance: 3
 // Maximum Hamming distance: 3
+// Minimum Hamming weight: 1
+// Maximum Hamming weight: 2
 //
-parameter int Mux2SelWidth = 4;
+parameter int Mux2SelWidth = 3;
 typedef enum logic [Mux2SelWidth-1:0] {
-  MUX2_SEL_0 = 4'b0111,
-  MUX2_SEL_1 = 4'b1100
+  MUX2_SEL_0 = 3'b011,
+  MUX2_SEL_1 = 3'b100
 } mux2_sel_e;
 
 // Encoding generated with:
