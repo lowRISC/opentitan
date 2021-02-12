@@ -268,11 +268,9 @@ class Scheduler:
         '''Check for running items that have finished
 
         Returns True if something changed.
-
         '''
 
         changed = False
-
         for target in self._scheduled:
             to_pass = []
             to_fail = []
@@ -319,19 +317,50 @@ class Scheduler:
         def __sum(d):
             return sum([len(d[k]) for k in d])
 
-        num_slots = min(Scheduler.max_parallel - __sum(self._running),
-                        __sum(self._queued))
-        if num_slots <= 0:
+        slots = min(Scheduler.max_parallel - __sum(self._running),
+                    __sum(self._queued))
+        if slots <= 0:
             return
 
+        # Compute how many slots to allocate to each target based on their
+        # weights.
+        sum_weight = 0
+        slots_filled = 0
+        total_weight = sum(self._queued[t][0].weight for t in self._queued
+                           if self._queued[t])
+
         for target in self._scheduled:
-            num_slots_per_target = min(
-                num_slots, Scheduler.max_parallel - len(self._running[target]))
-            if num_slots_per_target <= 0:
+            if not self._queued[target]:
                 continue
 
+            # N slots are allocated to M targets each with W(m) weights with
+            # the formula:
+            #
+            # N(m) = N * W(m) / T, where,
+            #   T is the sum total of all weights.
+            #
+            # This is however, problematic due to fractions. Even after
+            # rounding off to the nearest digit, slots may not be fully
+            # utilized (one extra left). An alternate approach that avoids this
+            # problem is as follows:
+            #
+            # N(m) = (N * S(W(m)) / T) - F(m), where,
+            #   S(W(m)) is the running sum of weights upto current target m.
+            #   F(m) is the running total of slots filled.
+            #
+            # The computed slots per target is nearly identical to the first
+            # solution, except that it prioritizes the slot allocation to
+            # targets that are earlier in the list such that in the end, all
+            # slots are fully consumed.
+            sum_weight += self._queued[target][0].weight
+            target_slots = round(
+                (slots * sum_weight) / total_weight) - slots_filled
+            if target_slots <= 0:
+                continue
+            slots_filled += target_slots
+
             to_dispatch = []
-            while self._queued[target] and num_slots_per_target > 0:
+            while self._queued[target] and target_slots > 0:
                 next_item = self._queued[target].pop(0)
                 if not self._ok_to_run(next_item):
                     self._cancel_item(next_item, cancel_successors=False)
@@ -339,8 +368,7 @@ class Scheduler:
                     continue
 
                 to_dispatch.append(next_item)
-                num_slots_per_target -= 1
-                num_slots -= 1
+                target_slots -= 1
 
             if not to_dispatch:
                 continue

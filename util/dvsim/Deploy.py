@@ -26,6 +26,15 @@ class Deploy():
     # be joined with '&&' instead of a space.
     cmds_list_vars = []
 
+    # Represents the weight with which a job of this target is scheduled. These
+    # initial weights set for each of the targets below are roughly inversely
+    # proportional to their average runtimes. These are subject to change in
+    # future. Lower the runtime, the higher chance the it gets scheduled. It is
+    # useful to customize this only in case of targets that may coexist at a
+    # time.
+    # TODO: Allow these to be set in the HJson.
+    weight = 1
+
     def __str__(self):
         return (pprint.pformat(self.__dict__)
                 if log.getLogger().isEnabledFor(VERBOSE) else self.full_name)
@@ -265,6 +274,7 @@ class CompileSim(Deploy):
 
     target = "build"
     cmds_list_vars = ["pre_build_cmds", "post_build_cmds"]
+    weight = 5
 
     def __init__(self, build_mode, sim_cfg):
         self.build_mode_obj = build_mode
@@ -480,6 +490,7 @@ class CovMerge(Deploy):
     """Abstraction for merging coverage databases."""
 
     target = "cov_merge"
+    weight = 10
 
     def __init__(self, run_items, sim_cfg):
         # Construct the cov_db_dirs right away from the run_items. This is a
@@ -536,6 +547,7 @@ class CovReport(Deploy):
     """Abstraction for coverage report generation. """
 
     target = "cov_report"
+    weight = 10
 
     def __init__(self, merge_job, sim_cfg):
         super().__init__(sim_cfg)
