@@ -167,7 +167,7 @@ void mmio_region_write32(mmio_region_t base, ptrdiff_t offset, uint32_t value);
  * @param offset the offset to apply the mask at, in bytes.
  * @param mask the mask to read from the selected register.
  * @param mask_index mask position within the selected register.
- * @retun return the value of the read mask.
+ * @return return the value of the read mask.
  */
 MMIO_WARN_UNUSED_RESULT
 MMIO_DEPRECATED

@@ -11,7 +11,7 @@
  *
  * @param ctx The context object.
  * @param ptr The pointer to convert.
- * @param[out] func_addr_otbn The address of the function in OTBN's instruction
+ * @param[out] imem_addr_otbn The address of the function in OTBN's instruction
  *                            memory.
  * @return The result of the operation; #kOtbnBadArg if `ptr` is not in the
  *         instruction memory space of the currently loaded application.
@@ -36,7 +36,7 @@ static otbn_result_t func_ptr_to_otbn_imem_addr(const otbn_t *ctx,
  *
  * @param ctx The context object.
  * @param ptr The pointer to convert.
- * @param[out] data_addr_otbn The address of the data in OTBN's data memory.
+ * @param[out] dmem_addr_otbn The address of the data in OTBN's data memory.
  * @return The result of the operation; #kOtbnBadArg if `ptr` is not in the data
  *         memory space of the currently loaded application.
  */

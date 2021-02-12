@@ -128,8 +128,8 @@ unsigned int usbdev_get_address(usbdev_ctx_t *ctx);
  * complete, this function should be called to set the new ID. Note
  * on a reset the hardware will clear the device ID back to 0.
  *
- * @param usbdev context pointer
- * @param new deviceid
+ * @param ctx usbdev context pointer
+ * @param deviceid new deviceid
  */
 void usbdev_set_deviceid(usbdev_ctx_t *ctx, int deviceid);
 
@@ -138,7 +138,7 @@ void usbdev_set_deviceid(usbdev_ctx_t *ctx, int deviceid);
  *
  * By default endpoints are enabled, but they can be halted but the host
  *
- * @param usbdev context pointer
+ * @param ctx usbdev context pointer
  * @param endpoint number
  * @param enable set/clear
  */
@@ -147,7 +147,8 @@ void usbdev_halt(usbdev_ctx_t *ctx, int endpoint, int enable);
 /**
  * Get halted status for an endpoint
  *
- * @param usbdev context pointer
+ * @param ctx usbdev context pointer
+ * @param endpoint number
  * @return 1 if endpoint is halted else 0
  */
 inline int usbdev_halted(usbdev_ctx_t *ctx, int endpoint) {
@@ -159,7 +160,7 @@ inline int usbdev_halted(usbdev_ctx_t *ctx, int endpoint) {
  *
  * By default endpoints are non-ISO, but they can be set to ISO
  *
- * @param usbdev context pointer
+ * @param ctx usbdev context pointer
  * @param endpoint number
  * @param enable 0: non-ISO, 1: ISO
  */
@@ -167,7 +168,7 @@ void usbdev_set_iso(usbdev_ctx_t *ctx, int endpoint, int enable);
 
 /**
  * Clear the data toggle bit for an endpoint
- * @param usbdev context pointer
+ * @param ctx usbdev context pointer
  * @param endpoint Endpoint number
  */
 void usbdev_clear_data_toggle(usbdev_ctx_t *ctx, int endpoint);
@@ -184,7 +185,7 @@ void usbdev_set_ep0_stall(usbdev_ctx_t *ctx, int stall);
 /**
  * Enable or disable remote wake
  *
- * @param usbdev context pointer
+ * @param ctx usbdev context pointer
  * @param enable set/clear
  */
 inline void usbdev_rem_wake_en(usbdev_ctx_t *ctx, int enable) {
@@ -194,7 +195,7 @@ inline void usbdev_rem_wake_en(usbdev_ctx_t *ctx, int enable) {
 /**
  * Get ability to wake the host
  *
- * @param usbdev context pointer
+ * @param ctx usbdev context pointer
  * @return 1 if remote wake is permitted else 0
  */
 int usbdev_can_rem_wake(usbdev_ctx_t *ctx);

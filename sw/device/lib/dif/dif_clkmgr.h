@@ -198,7 +198,8 @@ dif_clkmgr_result_t dif_clkmgr_hintable_clock_set_hint(
  *
  * @param handle Clock Manager Handle.
  * @param clock Hintable Clock ID.
- * @param[out] is_enabled the current software request (hint) for this clock.
+ * @param[out] hinted_is_enabled the current software request (hint) for this
+ * clock.
  * @returns The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT

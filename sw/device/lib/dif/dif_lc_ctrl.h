@@ -341,7 +341,7 @@ dif_lc_ctrl_result_t dif_lc_ctrl_get_state(const dif_lc_ctrl_t *lc,
  * up to 16.
  *
  * @param lc A lifecycle handle.
- * @param[out] state Out-param for the controller's state.
+ * @param[out] count Out-param for the number of attempts.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT

@@ -241,7 +241,8 @@ dif_gpio_result_t dif_gpio_irq_set_enabled(const dif_gpio_t *gpio,
  * Sets whether a particular pin's interrupt is currently enabled or disabled.
  *
  * @param gpio A GPIO handle.
- * @param pin A GPIO pin.
+ * @param mask Mask that identifies the pins whose interrupt triggers will be
+ * configured.
  * @param state The new toggle state for the interrupt.
  * @return The result of the operation.
  */
@@ -357,7 +358,7 @@ dif_gpio_result_t dif_gpio_write(const dif_gpio_t *gpio, dif_gpio_pin_t pin,
  * The actual values on the pins depend on the output enable setting.
  *
  * @param gpio A GPIO handle.
- * @param val Value to write.
+ * @param state Value to write.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT

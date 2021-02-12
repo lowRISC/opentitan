@@ -337,7 +337,7 @@ dif_plic_result_t dif_plic_software_irq_acknowledge(const dif_plic_t *plic,
  *
  * @param plic PLIC state data.
  * @param target Target HART.
- * @param is_pending[out] Flag indicating whether the interrupt is pending.
+ * @param[out] is_pending Flag indicating whether the interrupt is pending.
  * @return `dif_plic_result_t`.
  */
 DIF_WARN_UNUSED_RESULT
