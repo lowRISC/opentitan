@@ -22,7 +22,8 @@ parameter string LIST_OF_ALERTS[] = {
   "otp_ctrl_fatal_check_error",
   "lc_ctrl_fatal_prog_error",
   "lc_ctrl_fatal_state_error",
-  "entropy_src_recov_alert_count_met",
+  "entropy_src_recov_alert",
+  "entropy_src_fatal_alert",
   "csrng_fatal_alert",
   "sram_ctrl_main_fatal_parity_error",
   "sram_ctrl_ret_aon_fatal_parity_error",
@@ -31,4 +32,4 @@ parameter string LIST_OF_ALERTS[] = {
   "flash_ctrl_recov_ecc_err"
 };
 
-parameter uint NUM_ALERTS = 24;
+parameter uint NUM_ALERTS = 25;

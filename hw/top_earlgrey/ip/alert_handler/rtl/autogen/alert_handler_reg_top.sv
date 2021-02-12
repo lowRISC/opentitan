@@ -181,6 +181,9 @@ module alert_handler_reg_top (
   logic alert_en_en_a_23_qs;
   logic alert_en_en_a_23_wd;
   logic alert_en_en_a_23_we;
+  logic alert_en_en_a_24_qs;
+  logic alert_en_en_a_24_wd;
+  logic alert_en_en_a_24_we;
   logic [1:0] alert_class_0_class_a_0_qs;
   logic [1:0] alert_class_0_class_a_0_wd;
   logic alert_class_0_class_a_0_we;
@@ -253,6 +256,9 @@ module alert_handler_reg_top (
   logic [1:0] alert_class_1_class_a_23_qs;
   logic [1:0] alert_class_1_class_a_23_wd;
   logic alert_class_1_class_a_23_we;
+  logic [1:0] alert_class_1_class_a_24_qs;
+  logic [1:0] alert_class_1_class_a_24_wd;
+  logic alert_class_1_class_a_24_we;
   logic alert_cause_a_0_qs;
   logic alert_cause_a_0_wd;
   logic alert_cause_a_0_we;
@@ -325,6 +331,9 @@ module alert_handler_reg_top (
   logic alert_cause_a_23_qs;
   logic alert_cause_a_23_wd;
   logic alert_cause_a_23_we;
+  logic alert_cause_a_24_qs;
+  logic alert_cause_a_24_wd;
+  logic alert_cause_a_24_we;
   logic loc_alert_en_en_la_0_qs;
   logic loc_alert_en_en_la_0_wd;
   logic loc_alert_en_en_la_0_we;
@@ -1555,6 +1564,32 @@ module alert_handler_reg_top (
   );
 
 
+  // F[en_a_24]: 24:24
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_alert_en_en_a_24 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_en_en_a_24_we & regwen_qs),
+    .wd     (alert_en_en_a_24_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_en[24].q ),
+
+    // to register interface (read)
+    .qs     (alert_en_en_a_24_qs)
+  );
+
+
 
 
   // Subregister 0 of Multireg alert_class
@@ -2187,6 +2222,32 @@ module alert_handler_reg_top (
   );
 
 
+  // F[class_a_24]: 17:16
+  prim_subreg #(
+    .DW      (2),
+    .SWACCESS("RW"),
+    .RESVAL  (2'h0)
+  ) u_alert_class_1_class_a_24 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_class_1_class_a_24_we & regwen_qs),
+    .wd     (alert_class_1_class_a_24_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_class[24].q ),
+
+    // to register interface (read)
+    .qs     (alert_class_1_class_a_24_qs)
+  );
+
+
 
 
   // Subregister 0 of Multireg alert_cause
@@ -2813,6 +2874,32 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_cause_a_23_qs)
+  );
+
+
+  // F[a_24]: 24:24
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_alert_cause_a_24 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (alert_cause_a_24_we),
+    .wd     (alert_cause_a_24_wd),
+
+    // from internal hardware
+    .de     (hw2reg.alert_cause[24].de),
+    .d      (hw2reg.alert_cause[24].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_cause[24].q ),
+
+    // to register interface (read)
+    .qs     (alert_cause_a_24_qs)
   );
 
 
@@ -5492,6 +5579,9 @@ module alert_handler_reg_top (
   assign alert_en_en_a_23_we = addr_hit[5] & reg_we & ~wr_err;
   assign alert_en_en_a_23_wd = reg_wdata[23];
 
+  assign alert_en_en_a_24_we = addr_hit[5] & reg_we & ~wr_err;
+  assign alert_en_en_a_24_wd = reg_wdata[24];
+
   assign alert_class_0_class_a_0_we = addr_hit[6] & reg_we & ~wr_err;
   assign alert_class_0_class_a_0_wd = reg_wdata[1:0];
 
@@ -5564,6 +5654,9 @@ module alert_handler_reg_top (
   assign alert_class_1_class_a_23_we = addr_hit[7] & reg_we & ~wr_err;
   assign alert_class_1_class_a_23_wd = reg_wdata[15:14];
 
+  assign alert_class_1_class_a_24_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_class_1_class_a_24_wd = reg_wdata[17:16];
+
   assign alert_cause_a_0_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_0_wd = reg_wdata[0];
 
@@ -5635,6 +5728,9 @@ module alert_handler_reg_top (
 
   assign alert_cause_a_23_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_23_wd = reg_wdata[23];
+
+  assign alert_cause_a_24_we = addr_hit[8] & reg_we & ~wr_err;
+  assign alert_cause_a_24_wd = reg_wdata[24];
 
   assign loc_alert_en_en_la_0_we = addr_hit[9] & reg_we & ~wr_err;
   assign loc_alert_en_en_la_0_wd = reg_wdata[0];
@@ -5970,6 +6066,7 @@ module alert_handler_reg_top (
         reg_rdata_next[21] = alert_en_en_a_21_qs;
         reg_rdata_next[22] = alert_en_en_a_22_qs;
         reg_rdata_next[23] = alert_en_en_a_23_qs;
+        reg_rdata_next[24] = alert_en_en_a_24_qs;
       end
 
       addr_hit[6]: begin
@@ -6000,6 +6097,7 @@ module alert_handler_reg_top (
         reg_rdata_next[11:10] = alert_class_1_class_a_21_qs;
         reg_rdata_next[13:12] = alert_class_1_class_a_22_qs;
         reg_rdata_next[15:14] = alert_class_1_class_a_23_qs;
+        reg_rdata_next[17:16] = alert_class_1_class_a_24_qs;
       end
 
       addr_hit[8]: begin
@@ -6027,6 +6125,7 @@ module alert_handler_reg_top (
         reg_rdata_next[21] = alert_cause_a_21_qs;
         reg_rdata_next[22] = alert_cause_a_22_qs;
         reg_rdata_next[23] = alert_cause_a_23_qs;
+        reg_rdata_next[24] = alert_cause_a_24_qs;
       end
 
       addr_hit[9]: begin

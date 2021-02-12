@@ -20,34 +20,41 @@ module entropy_src_main_sm (
   input logic                main_stage_rdy_i,
   input logic                bypass_stage_rdy_i,
   output logic               main_stage_pop_o,
-  output logic               bypass_stage_pop_o
+  output logic               bypass_stage_pop_o,
+  output logic               main_sm_err_o
 );
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 3 -m 6 -n 8 -s 3348095039
-  // Hamming distance histogram:
-  //
-  // 0: --
-  // 1: --
-  // 2: --
-  // 3: |||||| (13.33%)
-  // 4: |||||||||||||||| (33.33%)
-  // 5: |||||||||||||||||||| (40.00%)
-  // 6: |||||| (13.33%)
-  // 7: --
-  // 8: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 6
-  //
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 8 \
+//      -s 373118154 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||||| (42.86%)
+//  4: ||||||||||||||| (33.33%)
+//  5: |||| (9.52%)
+//  6: |||| (9.52%)
+//  7: || (4.76%)
+//  8: --
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 7
+// Minimum Hamming weight: 2
+// Maximum Hamming weight: 6
+//
 
   localparam int StateWidth = 8;
   typedef enum logic [StateWidth-1:0] {
-    Idle              = 8'b00011111, // idle
-    HealthTestDone    = 8'b01111010, // wait for health test done pulse
-    PostHealthTestChk = 8'b11111001, // wait for post health test packer not empty state
-    FlowModeChk       = 8'b10110100, // determine what mode the flow is in
-    BypassMode        = 8'b00100011, // in bypass mode
-    NormalMode        = 8'b11001000  // in normal mode
+    Idle              = 8'b01100010, // idle
+    HealthTestDone    = 8'b00011101, // wait for health test done pulse
+    PostHealthTestChk = 8'b01001100, // wait for post health test packer not empty state
+    FlowModeChk       = 8'b01110111, // determine what mode the flow is in
+    BypassMode        = 8'b11011001, // in bypass mode
+    NormalMode        = 8'b00000111, // in normal mode
+    Error             = 8'b01000001  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
@@ -74,6 +81,7 @@ module entropy_src_main_sm (
     rst_alert_cntr_o = 1'b0;
     main_stage_pop_o = 1'b0;
     bypass_stage_pop_o = 1'b0;
+    main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
         if (enable_i) begin
@@ -115,7 +123,10 @@ module entropy_src_main_sm (
           state_d = Idle;
         end
       end
-      default: state_d = Idle;
+      Error: begin
+        main_sm_err_o = 1'b1;
+      end
+      default: state_d = Error;
     endcase
   end
 

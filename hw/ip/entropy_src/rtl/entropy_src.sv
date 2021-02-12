@@ -7,8 +7,11 @@
 `include "prim_assert.sv"
 
 
-module entropy_src import entropy_src_pkg::*; #(
-  parameter logic AlertAsyncOn = 1,
+module entropy_src
+  import entropy_src_pkg::*;
+  import entropy_src_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter int EsFifoDepth = 2
 ) (
   input logic clk_i,
@@ -34,13 +37,13 @@ module entropy_src import entropy_src_pkg::*; #(
   input  entropy_src_xht_rsp_t entropy_src_xht_i,
 
   // Alerts
-  input  prim_alert_pkg::alert_rx_t alert_rx_i,
-  output prim_alert_pkg::alert_tx_t alert_tx_o,
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // Interrupts
   output logic    intr_es_entropy_valid_o,
   output logic    intr_es_health_test_failed_o,
-  output logic    intr_es_fifo_err_o
+  output logic    intr_es_fatal_err_o
 );
 
   import entropy_src_reg_pkg::*;
@@ -48,8 +51,8 @@ module entropy_src import entropy_src_pkg::*; #(
   entropy_src_reg2hw_t reg2hw;
   entropy_src_hw2reg_t hw2reg;
 
-  logic recov_alert_event;
-  logic alert_test;
+  logic [NumAlerts-1:0] alert_test;
+  logic [NumAlerts-1:0] alert;
 
   entropy_src_reg_top u_reg (
     .clk_i,
@@ -81,27 +84,33 @@ module entropy_src import entropy_src_pkg::*; #(
     .entropy_src_rng_o,
     .entropy_src_rng_i,
 
-    .recov_alert_event_o(recov_alert_event),
-    .alert_test_o(alert_test),
+    .recov_alert_o(alert[0]),
+    .fatal_alert_o(alert[1]),
+
+    .recov_alert_test_o(alert_test[0]),
+    .fatal_alert_test_o(alert_test[1]),
 
     .intr_es_entropy_valid_o,
     .intr_es_health_test_failed_o,
-    .intr_es_fifo_err_o
+    .intr_es_fatal_err_o
   );
 
-   prim_alert_sender #(
-     .AsyncOn(AlertAsyncOn),
-     .IsFatal(0)
-   ) u_alert_sender_i (
-     .clk_i         ( clk_i      ),
-     .rst_ni        ( rst_ni     ),
-     .alert_test_i  ( alert_test ),
-     .alert_req_i   ( recov_alert_event),
-     .alert_ack_o   (            ),
-     .alert_state_o (            ),
-     .alert_rx_i    ( alert_rx_i ),
-     .alert_tx_o    ( alert_tx_o )
-   );
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(i)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alert[i]      ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
 
   // Outputs should have a known value after reset
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
@@ -130,6 +139,6 @@ module entropy_src import entropy_src_pkg::*; #(
   // Interrupts
   `ASSERT_KNOWN(IntrEsEntropyValidKnownO_A, intr_es_entropy_valid_o)
   `ASSERT_KNOWN(IntrEsHealthTestFailedKnownO_A, intr_es_health_test_failed_o)
-  `ASSERT_KNOWN(IntrEsFifoErrKnownO_A, intr_es_fifo_err_o)
+  `ASSERT_KNOWN(IntrEsFifoErrKnownO_A, intr_es_fatal_err_o)
 
 endmodule

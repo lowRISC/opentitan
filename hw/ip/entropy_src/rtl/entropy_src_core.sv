@@ -30,12 +30,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
   output entropy_src_xht_req_t entropy_src_xht_o,
   input  entropy_src_xht_rsp_t entropy_src_xht_i,
 
-  output logic           recov_alert_event_o,
-  output logic           alert_test_o,
+  output logic           recov_alert_test_o,
+  output logic           fatal_alert_test_o,
+  output logic           recov_alert_o,
+  output logic           fatal_alert_o,
 
   output logic           intr_es_entropy_valid_o,
   output logic           intr_es_health_test_failed_o,
-  output logic           intr_es_fifo_err_o
+  output logic           intr_es_fatal_err_o
 );
 
   import entropy_src_reg_pkg::*;
@@ -72,7 +74,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       sw_es_rd_pulse;
   logic       event_es_entropy_valid;
   logic       event_es_health_test_failed;
-  logic       event_es_fifo_err;
+  logic       event_es_fatal_err;
   logic [15:0] es_rate;
   logic        es_rate_entropy_pulse;
   logic        es_rng_src_valid;
@@ -261,6 +263,17 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     es_hw_if_req;
   logic                     es_hw_if_ack;
   logic                     es_hw_if_fifo_pop;
+  logic                     sfifo_esrng_err_sum;
+  logic                     sfifo_precon_err_sum;
+  logic                     sfifo_esfinal_err_sum;
+  logic                     es_ack_sm_err_sum;
+  logic                     es_ack_sm_err;
+  logic                     es_main_sm_err_sum;
+  logic                     es_main_sm_err;
+  logic                     fifo_write_err_sum;
+  logic                     fifo_read_err_sum;
+  logic                     fifo_status_err_sum;
+  logic [30:0]              err_code_test_bit;
 
   // flops
   logic [15:0] es_rate_cntr_q, es_rate_cntr_d;
@@ -351,17 +364,17 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   prim_intr_hw #(
     .Width(1)
-  ) u_intr_hw_es_fifo_err (
+  ) u_intr_hw_es_fatal_err (
     .clk_i                  (clk_i),
     .rst_ni                 (rst_ni),
-    .event_intr_i           (event_es_fifo_err),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.es_fifo_err.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.es_fifo_err.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.es_fifo_err.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.es_fifo_err.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.es_fifo_err.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.es_fifo_err.d),
-    .intr_o                 (intr_es_fifo_err_o)
+    .event_intr_i           (event_es_fatal_err),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.es_fatal_err.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.es_fatal_err.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.es_fatal_err.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.es_fatal_err.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.es_fatal_err.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.es_fatal_err.d),
+    .intr_o                 (intr_es_fatal_err_o)
   );
 
   //--------------------------------------------
@@ -416,40 +429,84 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   // set the interrupt sources
-  assign event_es_fifo_err = es_enable && (
-         (|sfifo_esrng_err) ||
-         (|sfifo_precon_err) ||
-         (|sfifo_esfinal_err));
+  assign event_es_fatal_err = es_enable && (
+         sfifo_esrng_err_sum ||
+         sfifo_precon_err_sum ||
+         sfifo_esfinal_err_sum ||
+         es_ack_sm_err_sum ||
+         es_main_sm_err_sum);
+
+  // set fifo errors that are single instances of source
+  assign sfifo_esrng_err_sum = (|sfifo_esrng_err) ||
+         err_code_test_bit[0];
+  assign sfifo_precon_err_sum = (|sfifo_precon_err) ||
+         err_code_test_bit[1];
+  assign sfifo_esfinal_err_sum = (|sfifo_esfinal_err) ||
+         err_code_test_bit[2];
+  assign es_ack_sm_err_sum = es_ack_sm_err ||
+         err_code_test_bit[20];
+  assign es_main_sm_err_sum = es_main_sm_err ||
+         err_code_test_bit[21];
+  assign fifo_write_err_sum =
+         sfifo_esrng_err[2] ||
+         sfifo_precon_err[2] ||
+         sfifo_esfinal_err[2] ||
+         err_code_test_bit[28];
+  assign fifo_read_err_sum =
+         sfifo_esrng_err[1] ||
+         sfifo_precon_err[1] ||
+         sfifo_esfinal_err[1] ||
+         err_code_test_bit[29];
+  assign fifo_status_err_sum =
+         sfifo_esrng_err[0] ||
+         sfifo_precon_err[0] ||
+         sfifo_esfinal_err[0] ||
+         err_code_test_bit[30];
 
   // set the err code source bits
   assign hw2reg.err_code.sfifo_esrng_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_esrng_err.de =  es_enable && (|sfifo_esrng_err);
+  assign hw2reg.err_code.sfifo_esrng_err.de =  es_enable && sfifo_esrng_err_sum;
 
   assign hw2reg.err_code.sfifo_precon_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_precon_err.de =  es_enable && (|sfifo_precon_err);
+  assign hw2reg.err_code.sfifo_precon_err.de =  es_enable && sfifo_precon_err_sum;
 
   assign hw2reg.err_code.sfifo_esfinal_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_esfinal_err.de =  es_enable && (|sfifo_esfinal_err);
+  assign hw2reg.err_code.sfifo_esfinal_err.de =  es_enable && sfifo_esfinal_err_sum;
+
+  assign hw2reg.err_code.es_ack_sm_err.d = 1'b1;
+  assign hw2reg.err_code.es_ack_sm_err.de = es_enable && es_ack_sm_err_sum;
+
+  assign hw2reg.err_code.es_main_sm_err.d = 1'b1;
+  assign hw2reg.err_code.es_main_sm_err.de = es_enable && es_main_sm_err_sum;
 
 
  // set the err code type bits
   assign hw2reg.err_code.fifo_write_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_write_err.de = es_enable && (
-         sfifo_esrng_err[2] ||
-         sfifo_precon_err[2] ||
-         sfifo_esfinal_err[2]);
+  assign hw2reg.err_code.fifo_write_err.de = es_enable && fifo_write_err_sum;
 
   assign hw2reg.err_code.fifo_read_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_read_err.de = es_enable && (
-         sfifo_esrng_err[1] ||
-         sfifo_precon_err[1] ||
-         sfifo_esfinal_err[1]);
+  assign hw2reg.err_code.fifo_read_err.de = es_enable && fifo_read_err_sum;
 
   assign hw2reg.err_code.fifo_state_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_state_err.de = es_enable && (
-         sfifo_esrng_err[0] ||
-         sfifo_precon_err[0] ||
-         sfifo_esfinal_err[0]);
+  assign hw2reg.err_code.fifo_state_err.de = es_enable && fifo_status_err_sum;
+
+  // Error forcing
+  for (genvar i = 0; i < 31; i = i+1) begin : gen_err_code_test_bit
+    assign err_code_test_bit[i] = (reg2hw.err_code_test.q == i) && reg2hw.err_code_test.qe;
+  end : gen_err_code_test_bit
+
+  // alert - send all interrupt sources to the alert for the fatal case
+  assign fatal_alert_o = event_es_fatal_err;
+
+  // alert test
+  assign recov_alert_test_o = {
+    reg2hw.alert_test.recov_alert.q &&
+    reg2hw.alert_test.recov_alert.qe
+  };
+  assign fatal_alert_test_o = {
+    reg2hw.alert_test.fatal_alert.q &&
+    reg2hw.alert_test.fatal_alert.qe
+  };
 
 
   // set the debug status reg
@@ -1101,10 +1158,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign alert_threshold = reg2hw.alert_threshold.q;
 
   assign recov_alert_event = (any_fail_count >= alert_threshold) && (alert_threshold != '0);
-  assign recov_alert_event_o = recov_alert_event;
-
-  // alert test
-  assign alert_test_o = reg2hw.alert_test.qe && reg2hw.alert_test.q;
+  assign recov_alert_o = recov_alert_event;
 
 
   // repcnt fail counter
@@ -1407,7 +1461,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .main_stage_rdy_i   (pfifo_cond_not_empty),
     .bypass_stage_rdy_i (pfifo_bypass_not_empty),
     .main_stage_pop_o   (main_stage_pop),
-    .bypass_stage_pop_o (bypass_stage_pop)
+    .bypass_stage_pop_o (bypass_stage_pop),
+    .main_sm_err_o      (es_main_sm_err)
   );
 
 
@@ -1462,7 +1517,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .req_i            (es_hw_if_req),
     .ack_o            (es_hw_if_ack),
     .fifo_not_empty_i (sfifo_esfinal_not_empty && !es_route_to_sw),
-    .fifo_pop_o       (es_hw_if_fifo_pop)
+    .fifo_pop_o       (es_hw_if_fifo_pop),
+    .ack_sm_err_o     (es_ack_sm_err)
   );
 
   //--------------------------------------------
@@ -1499,6 +1555,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
   assign hw2reg.debug_status.diag.d  =
+         (|err_code_test_bit[19:3]) ||
+         (|err_code_test_bit[27:22]) ||
          reg2hw.regwen.q &&
          (&reg2hw.entropy_data.q) &&
          (&reg2hw.fw_ov_rd_data.q);

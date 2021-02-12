@@ -77,26 +77,28 @@ module entropy_src_reg_top (
   logic intr_state_es_health_test_failed_qs;
   logic intr_state_es_health_test_failed_wd;
   logic intr_state_es_health_test_failed_we;
-  logic intr_state_es_fifo_err_qs;
-  logic intr_state_es_fifo_err_wd;
-  logic intr_state_es_fifo_err_we;
+  logic intr_state_es_fatal_err_qs;
+  logic intr_state_es_fatal_err_wd;
+  logic intr_state_es_fatal_err_we;
   logic intr_enable_es_entropy_valid_qs;
   logic intr_enable_es_entropy_valid_wd;
   logic intr_enable_es_entropy_valid_we;
   logic intr_enable_es_health_test_failed_qs;
   logic intr_enable_es_health_test_failed_wd;
   logic intr_enable_es_health_test_failed_we;
-  logic intr_enable_es_fifo_err_qs;
-  logic intr_enable_es_fifo_err_wd;
-  logic intr_enable_es_fifo_err_we;
+  logic intr_enable_es_fatal_err_qs;
+  logic intr_enable_es_fatal_err_wd;
+  logic intr_enable_es_fatal_err_we;
   logic intr_test_es_entropy_valid_wd;
   logic intr_test_es_entropy_valid_we;
   logic intr_test_es_health_test_failed_wd;
   logic intr_test_es_health_test_failed_we;
-  logic intr_test_es_fifo_err_wd;
-  logic intr_test_es_fifo_err_we;
-  logic alert_test_wd;
-  logic alert_test_we;
+  logic intr_test_es_fatal_err_wd;
+  logic intr_test_es_fatal_err_we;
+  logic alert_test_recov_alert_wd;
+  logic alert_test_recov_alert_we;
+  logic alert_test_fatal_alert_wd;
+  logic alert_test_fatal_alert_we;
   logic regwen_qs;
   logic regwen_wd;
   logic regwen_we;
@@ -293,23 +295,16 @@ module entropy_src_reg_top (
   logic [3:0] seed_wd;
   logic seed_we;
   logic err_code_sfifo_esrng_err_qs;
-  logic err_code_sfifo_esrng_err_wd;
-  logic err_code_sfifo_esrng_err_we;
   logic err_code_sfifo_precon_err_qs;
-  logic err_code_sfifo_precon_err_wd;
-  logic err_code_sfifo_precon_err_we;
   logic err_code_sfifo_esfinal_err_qs;
-  logic err_code_sfifo_esfinal_err_wd;
-  logic err_code_sfifo_esfinal_err_we;
+  logic err_code_es_ack_sm_err_qs;
+  logic err_code_es_main_sm_err_qs;
   logic err_code_fifo_write_err_qs;
-  logic err_code_fifo_write_err_wd;
-  logic err_code_fifo_write_err_we;
   logic err_code_fifo_read_err_qs;
-  logic err_code_fifo_read_err_wd;
-  logic err_code_fifo_read_err_we;
   logic err_code_fifo_state_err_qs;
-  logic err_code_fifo_state_err_wd;
-  logic err_code_fifo_state_err_we;
+  logic [4:0] err_code_test_qs;
+  logic [4:0] err_code_test_wd;
+  logic err_code_test_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -366,29 +361,29 @@ module entropy_src_reg_top (
   );
 
 
-  //   F[es_fifo_err]: 2:2
+  //   F[es_fatal_err]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_es_fifo_err (
+  ) u_intr_state_es_fatal_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_es_fifo_err_we),
-    .wd     (intr_state_es_fifo_err_wd),
+    .we     (intr_state_es_fatal_err_we),
+    .wd     (intr_state_es_fatal_err_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.es_fifo_err.de),
-    .d      (hw2reg.intr_state.es_fifo_err.d ),
+    .de     (hw2reg.intr_state.es_fatal_err.de),
+    .d      (hw2reg.intr_state.es_fatal_err.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.es_fifo_err.q ),
+    .q      (reg2hw.intr_state.es_fatal_err.q ),
 
     // to register interface (read)
-    .qs     (intr_state_es_fifo_err_qs)
+    .qs     (intr_state_es_fatal_err_qs)
   );
 
 
@@ -446,18 +441,18 @@ module entropy_src_reg_top (
   );
 
 
-  //   F[es_fifo_err]: 2:2
+  //   F[es_fatal_err]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_es_fifo_err (
+  ) u_intr_enable_es_fatal_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_es_fifo_err_we),
-    .wd     (intr_enable_es_fifo_err_wd),
+    .we     (intr_enable_es_fatal_err_we),
+    .wd     (intr_enable_es_fatal_err_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -465,10 +460,10 @@ module entropy_src_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.es_fifo_err.q ),
+    .q      (reg2hw.intr_enable.es_fatal_err.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_es_fifo_err_qs)
+    .qs     (intr_enable_es_fatal_err_qs)
   );
 
 
@@ -504,33 +499,49 @@ module entropy_src_reg_top (
   );
 
 
-  //   F[es_fifo_err]: 2:2
+  //   F[es_fatal_err]: 2:2
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_es_fifo_err (
+  ) u_intr_test_es_fatal_err (
     .re     (1'b0),
-    .we     (intr_test_es_fifo_err_we),
-    .wd     (intr_test_es_fifo_err_wd),
+    .we     (intr_test_es_fatal_err_we),
+    .wd     (intr_test_es_fatal_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.es_fifo_err.qe),
-    .q      (reg2hw.intr_test.es_fifo_err.q ),
+    .qe     (reg2hw.intr_test.es_fatal_err.qe),
+    .q      (reg2hw.intr_test.es_fatal_err.q ),
     .qs     ()
   );
 
 
   // R[alert_test]: V(True)
 
+  //   F[recov_alert]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test (
+  ) u_alert_test_recov_alert (
     .re     (1'b0),
-    .we     (alert_test_we),
-    .wd     (alert_test_wd),
+    .we     (alert_test_recov_alert_we),
+    .wd     (alert_test_recov_alert_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
-    .q      (reg2hw.alert_test.q ),
+    .qe     (reg2hw.alert_test.recov_alert.qe),
+    .q      (reg2hw.alert_test.recov_alert.q ),
+    .qs     ()
+  );
+
+
+  //   F[fatal_alert]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_alert (
+    .re     (1'b0),
+    .we     (alert_test_fatal_alert_we),
+    .wd     (alert_test_fatal_alert_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.fatal_alert.qe),
+    .q      (reg2hw.alert_test.fatal_alert.q ),
     .qs     ()
   );
 
@@ -2193,15 +2204,14 @@ module entropy_src_reg_top (
   //   F[sfifo_esrng_err]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_esrng_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (err_code_sfifo_esrng_err_we),
-    .wd     (err_code_sfifo_esrng_err_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.err_code.sfifo_esrng_err.de),
@@ -2219,15 +2229,14 @@ module entropy_src_reg_top (
   //   F[sfifo_precon_err]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_precon_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (err_code_sfifo_precon_err_we),
-    .wd     (err_code_sfifo_precon_err_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.err_code.sfifo_precon_err.de),
@@ -2245,15 +2254,14 @@ module entropy_src_reg_top (
   //   F[sfifo_esfinal_err]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_esfinal_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (err_code_sfifo_esfinal_err_we),
-    .wd     (err_code_sfifo_esfinal_err_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.err_code.sfifo_esfinal_err.de),
@@ -2268,18 +2276,67 @@ module entropy_src_reg_top (
   );
 
 
+  //   F[es_ack_sm_err]: 20:20
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_err_code_es_ack_sm_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.es_ack_sm_err.de),
+    .d      (hw2reg.err_code.es_ack_sm_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_code_es_ack_sm_err_qs)
+  );
+
+
+  //   F[es_main_sm_err]: 21:21
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_err_code_es_main_sm_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.es_main_sm_err.de),
+    .d      (hw2reg.err_code.es_main_sm_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_code_es_main_sm_err_qs)
+  );
+
+
   //   F[fifo_write_err]: 28:28
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_write_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (err_code_fifo_write_err_we),
-    .wd     (err_code_fifo_write_err_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.err_code.fifo_write_err.de),
@@ -2297,15 +2354,14 @@ module entropy_src_reg_top (
   //   F[fifo_read_err]: 29:29
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_read_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (err_code_fifo_read_err_we),
-    .wd     (err_code_fifo_read_err_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.err_code.fifo_read_err.de),
@@ -2323,15 +2379,14 @@ module entropy_src_reg_top (
   //   F[fifo_state_err]: 30:30
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_state_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (err_code_fifo_state_err_we),
-    .wd     (err_code_fifo_state_err_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.err_code.fifo_state_err.de),
@@ -2346,9 +2401,36 @@ module entropy_src_reg_top (
   );
 
 
+  // R[err_code_test]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_err_code_test (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (err_code_test_we & regwen_qs),
+    .wd     (err_code_test_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.err_code_test.qe),
+    .q      (reg2hw.err_code_test.q ),
+
+    // to register interface (read)
+    .qs     (err_code_test_qs)
+  );
 
 
-  logic [45:0] addr_hit;
+
+
+  logic [46:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == ENTROPY_SRC_INTR_STATE_OFFSET);
@@ -2397,6 +2479,7 @@ module entropy_src_reg_top (
     addr_hit[43] = (reg_addr == ENTROPY_SRC_DEBUG_STATUS_OFFSET);
     addr_hit[44] = (reg_addr == ENTROPY_SRC_SEED_OFFSET);
     addr_hit[45] = (reg_addr == ENTROPY_SRC_ERR_CODE_OFFSET);
+    addr_hit[46] = (reg_addr == ENTROPY_SRC_ERR_CODE_TEST_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2450,6 +2533,7 @@ module entropy_src_reg_top (
     if (addr_hit[43] && reg_we && (ENTROPY_SRC_PERMIT[43] != (ENTROPY_SRC_PERMIT[43] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[44] && reg_we && (ENTROPY_SRC_PERMIT[44] != (ENTROPY_SRC_PERMIT[44] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[45] && reg_we && (ENTROPY_SRC_PERMIT[45] != (ENTROPY_SRC_PERMIT[45] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[46] && reg_we && (ENTROPY_SRC_PERMIT[46] != (ENTROPY_SRC_PERMIT[46] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_es_entropy_valid_we = addr_hit[0] & reg_we & ~wr_err;
@@ -2458,8 +2542,8 @@ module entropy_src_reg_top (
   assign intr_state_es_health_test_failed_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_es_health_test_failed_wd = reg_wdata[1];
 
-  assign intr_state_es_fifo_err_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_es_fifo_err_wd = reg_wdata[2];
+  assign intr_state_es_fatal_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_es_fatal_err_wd = reg_wdata[2];
 
   assign intr_enable_es_entropy_valid_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_es_entropy_valid_wd = reg_wdata[0];
@@ -2467,8 +2551,8 @@ module entropy_src_reg_top (
   assign intr_enable_es_health_test_failed_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_es_health_test_failed_wd = reg_wdata[1];
 
-  assign intr_enable_es_fifo_err_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_es_fifo_err_wd = reg_wdata[2];
+  assign intr_enable_es_fatal_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_es_fatal_err_wd = reg_wdata[2];
 
   assign intr_test_es_entropy_valid_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_es_entropy_valid_wd = reg_wdata[0];
@@ -2476,11 +2560,14 @@ module entropy_src_reg_top (
   assign intr_test_es_health_test_failed_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_es_health_test_failed_wd = reg_wdata[1];
 
-  assign intr_test_es_fifo_err_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_es_fifo_err_wd = reg_wdata[2];
+  assign intr_test_es_fatal_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_es_fatal_err_wd = reg_wdata[2];
 
-  assign alert_test_we = addr_hit[3] & reg_we & ~wr_err;
-  assign alert_test_wd = reg_wdata[0];
+  assign alert_test_recov_alert_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_recov_alert_wd = reg_wdata[0];
+
+  assign alert_test_fatal_alert_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_fatal_alert_wd = reg_wdata[1];
 
   assign regwen_we = addr_hit[4] & reg_we & ~wr_err;
   assign regwen_wd = reg_wdata[0];
@@ -2678,23 +2765,16 @@ module entropy_src_reg_top (
   assign seed_we = addr_hit[44] & reg_we & ~wr_err;
   assign seed_wd = reg_wdata[3:0];
 
-  assign err_code_sfifo_esrng_err_we = addr_hit[45] & reg_we & ~wr_err;
-  assign err_code_sfifo_esrng_err_wd = reg_wdata[0];
 
-  assign err_code_sfifo_precon_err_we = addr_hit[45] & reg_we & ~wr_err;
-  assign err_code_sfifo_precon_err_wd = reg_wdata[1];
 
-  assign err_code_sfifo_esfinal_err_we = addr_hit[45] & reg_we & ~wr_err;
-  assign err_code_sfifo_esfinal_err_wd = reg_wdata[2];
 
-  assign err_code_fifo_write_err_we = addr_hit[45] & reg_we & ~wr_err;
-  assign err_code_fifo_write_err_wd = reg_wdata[28];
 
-  assign err_code_fifo_read_err_we = addr_hit[45] & reg_we & ~wr_err;
-  assign err_code_fifo_read_err_wd = reg_wdata[29];
 
-  assign err_code_fifo_state_err_we = addr_hit[45] & reg_we & ~wr_err;
-  assign err_code_fifo_state_err_wd = reg_wdata[30];
+
+
+
+  assign err_code_test_we = addr_hit[46] & reg_we & ~wr_err;
+  assign err_code_test_wd = reg_wdata[4:0];
 
   // Read data return
   always_comb begin
@@ -2703,13 +2783,13 @@ module entropy_src_reg_top (
       addr_hit[0]: begin
         reg_rdata_next[0] = intr_state_es_entropy_valid_qs;
         reg_rdata_next[1] = intr_state_es_health_test_failed_qs;
-        reg_rdata_next[2] = intr_state_es_fifo_err_qs;
+        reg_rdata_next[2] = intr_state_es_fatal_err_qs;
       end
 
       addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_es_entropy_valid_qs;
         reg_rdata_next[1] = intr_enable_es_health_test_failed_qs;
-        reg_rdata_next[2] = intr_enable_es_fifo_err_qs;
+        reg_rdata_next[2] = intr_enable_es_fatal_err_qs;
       end
 
       addr_hit[2]: begin
@@ -2720,6 +2800,7 @@ module entropy_src_reg_top (
 
       addr_hit[3]: begin
         reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
       end
 
       addr_hit[4]: begin
@@ -2929,9 +3010,15 @@ module entropy_src_reg_top (
         reg_rdata_next[0] = err_code_sfifo_esrng_err_qs;
         reg_rdata_next[1] = err_code_sfifo_precon_err_qs;
         reg_rdata_next[2] = err_code_sfifo_esfinal_err_qs;
+        reg_rdata_next[20] = err_code_es_ack_sm_err_qs;
+        reg_rdata_next[21] = err_code_es_main_sm_err_qs;
         reg_rdata_next[28] = err_code_fifo_write_err_qs;
         reg_rdata_next[29] = err_code_fifo_read_err_qs;
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
+      end
+
+      addr_hit[46]: begin
+        reg_rdata_next[4:0] = err_code_test_qs;
       end
 
       default: begin
