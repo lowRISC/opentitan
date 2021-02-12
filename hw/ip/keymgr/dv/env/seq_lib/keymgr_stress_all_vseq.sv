@@ -24,10 +24,10 @@ class keymgr_stress_all_vseq extends keymgr_base_vseq;
                           "keymgr_sideload_vseq",
                           "keymgr_random_vseq",
                           "keymgr_direct_to_disabled_vseq",
-                          "keymgr_sw_invalid_input_vseq"
+                          "keymgr_sw_invalid_input_vseq",
                           // TODO, add this later
                           // "keymgr_hwsw_invalid_input_vseq",
-                          //"keymgr_lc_disable_vseq",
+                          "keymgr_lc_disable_vseq"
                           };
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence     seq;
@@ -51,6 +51,7 @@ class keymgr_stress_all_vseq extends keymgr_base_vseq;
         common_vseq.common_seq_type = "intr_test";
       end
 
+      `uvm_info(`gfn, $sformatf("Seq %s start", seq_names[seq_idx]), UVM_HIGH)
       keymgr_vseq.start(p_sequencer);
 
       // this is for keymgr_stress_all_with_rand_reset
