@@ -88,9 +88,6 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (kind == "HARD") begin
       cfg.clk_rst_vif.apply_reset();
     end
-    if (cfg.has_ral) begin
-      foreach (cfg.ral_models[i]) cfg.ral_models[i].reset(kind);
-    end
   endtask
 
   virtual task wait_for_reset(string reset_kind     = "HARD",
