@@ -554,7 +554,7 @@ dif_keymgr_result_t dif_keymgr_read_output(const dif_keymgr_t *keymgr,
  * Forces a particular alert as if hardware had asserted it.
  *
  * @param keymgr A key manager handle.
- * @param irq An alert type.
+ * @param alert An alert type.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT

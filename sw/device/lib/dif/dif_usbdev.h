@@ -414,7 +414,7 @@ typedef enum dif_usbdev_buffer_read_result {
  */
 DIF_WARN_UNUSED_RESULT
 dif_usbdev_buffer_read_result_t dif_usbdev_buffer_read(
-    dif_usbdev_t *usbev, dif_usbdev_buffer_t *buffer, uint8_t *dst,
+    dif_usbdev_t *usbdev, dif_usbdev_buffer_t *buffer, uint8_t *dst,
     size_t dst_len, size_t *bytes_written);
 
 /**

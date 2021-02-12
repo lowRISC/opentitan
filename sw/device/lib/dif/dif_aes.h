@@ -330,7 +330,7 @@ dif_aes_start_result_t dif_aes_start_ecb(
  *
  * @param aes AES state data.
  * @param transaction Configuration data.
- * @param key_share Masked AES key.
+ * @param key Masked AES key.
  * @param iv AES Initialisation Vector.
  * @return The result of the operation.
  */
@@ -355,7 +355,7 @@ dif_aes_start_result_t dif_aes_start_cbc(
  *
  * @param aes AES state data.
  * @param transaction Configuration data.
- * @paran key Masked AES key.
+ * @param key Masked AES key.
  * @param iv AES Initial Counter Value.
  * @return The result of the operation.
  */

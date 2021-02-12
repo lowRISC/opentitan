@@ -119,7 +119,6 @@ static bool pmp_addr_csr_read(pmp_region_index_t region, uint32_t *value) {
  * Writes the pmpcfg for a given region.
  *
  * @param region PMP region ID to get/set.
- * @param access CSR access type read/write.
  * @param value Value to write into a CSR.
  * @return `pmp_region_configure_result_t`.
  */
@@ -320,7 +319,7 @@ static bool pmp_address_aligned(uintptr_t address) {
  *
  * @param address Conventional system address.
  * @param size The size of a range to protect.
- * @param napot_address Constructed NAPOT address.
+ * @param pmp_address_napot Constructed NAPOT address.
  * @return `pmp_region_configure_napot_result_t`.
  */
 PMP_WARN_UNUSED_RESULT

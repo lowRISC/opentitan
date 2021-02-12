@@ -49,7 +49,7 @@ static bool simple_serial_is_valid_command(uint8_t cmd) {
  * Converts a hex encoded nibble to binary.
  *
  * @param hex A hex encoded nibble.
- * @param[out] to Value of the nibble.
+ * @param[out] val Value of the nibble.
  *
  * @return Result of the operation.
  */
@@ -76,7 +76,7 @@ static simple_serial_result_t simple_serial_hex_to_bin(uint8_t hex,
  * - Terminator: '\n'.
  *
  * @param[out] cmd Simple serial command.
- * @param[out] Buffer for received packet payload.
+ * @param[out] data Buffer for received packet payload.
  * @param data_buf_len Length of the packet payload buffer.
  * @param[out] data_len Received packet payload length.
  */
