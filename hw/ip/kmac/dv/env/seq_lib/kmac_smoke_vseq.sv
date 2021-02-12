@@ -80,6 +80,9 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
     `uvm_info(`gfn, $sformatf("Starting %0d message hashes", num_trans), UVM_LOW)
     for (int i = 0; i < num_trans; i++) begin
+      bit [7:0] share0[];
+      bit [7:0] share1[];
+
       `uvm_info(`gfn, $sformatf("iteration: %0d", i), UVM_HIGH)
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -129,7 +132,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       wait_for_kmac_done();
 
       // Read the output digest, scb will check digest
-      read_digest_shares(output_len, cfg.enable_masking);
+      read_digest_shares(output_len, cfg.enable_masking, share0, share1);
 
       // issue the Done cmd to tell KMAC to clear internal state
       issue_cmd(CmdDone);

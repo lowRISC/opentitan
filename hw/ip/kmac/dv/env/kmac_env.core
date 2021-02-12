@@ -28,6 +28,11 @@ filesets:
       - seq_lib/kmac_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_long_msg_and_output_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_sideload_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_test_vectors_base_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_test_vectors_sha3_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_test_vectors_shake_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_test_vectors_kmac_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_test_vectors_kmac_xof_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

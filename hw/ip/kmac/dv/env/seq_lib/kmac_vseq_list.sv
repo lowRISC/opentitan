@@ -7,3 +7,8 @@
 `include "kmac_common_vseq.sv"
 `include "kmac_long_msg_and_output_vseq.sv"
 `include "kmac_sideload_vseq.sv"
+`include "kmac_test_vectors_base_vseq.sv"
+`include "kmac_test_vectors_sha3_vseq.sv"
+`include "kmac_test_vectors_shake_vseq.sv"
+`include "kmac_test_vectors_kmac_vseq.sv"
+`include "kmac_test_vectors_kmac_xof_vseq.sv"
