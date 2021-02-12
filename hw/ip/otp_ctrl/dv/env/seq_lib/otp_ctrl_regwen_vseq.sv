@@ -44,26 +44,26 @@ class otp_ctrl_regwen_vseq extends otp_ctrl_smoke_vseq;
       // 2. use backdoor check otp init is not done and is not under reset
       wait_no_outstanding_access();
       if (cfg.otp_ctrl_vif.pwr_otp_done_o === 0 && !cfg.under_reset) begin
-        write_and_check_regwen_locked_reg();
+        write_and_check_regwen_lockable_reg();
       end
       wait (cfg.otp_ctrl_vif.pwr_otp_done_o === 1 || cfg.under_reset || regular_vseq_done);
     end
   endtask
 
-  virtual task write_and_check_regwen_locked_reg();
+  virtual task write_and_check_regwen_lockable_reg();
     bit [TL_DW-1:0] val = $urandom;
     // since it's timing sensitive, only write one of these reg
-    dv_base_reg     locked_reg;
-    dv_base_reg     locked_regs[$];
+    dv_base_reg     lockable_reg;
+    dv_base_reg_field     lockable_flds[$];
 
-    ral.direct_access_regwen.get_locked_regs(locked_regs);
-    locked_regs.shuffle();
-    locked_reg = locked_regs[0];
+    ral.direct_access_regwen.get_lockable_flds(lockable_flds);
+    lockable_flds.shuffle();
+    lockable_reg = lockable_flds[0].get_dv_base_reg_parent();
 
-    `uvm_info(`gfn, $sformatf("Write regwen locked reg %0s, and this write should be ignored",
-                              locked_reg.get_name()), UVM_HIGH)
-    csr_wr(locked_reg, val);
-    csr_rd(locked_reg, val); // checking is done with scb
-  endtask : write_and_check_regwen_locked_reg
+    `uvm_info(`gfn, $sformatf("Write regwen lockable reg %0s, and this write should be ignored",
+                              lockable_reg.get_name()), UVM_HIGH)
+    csr_wr(lockable_reg, val);
+    csr_rd(lockable_reg, val); // checking is done with scb
+  endtask : write_and_check_regwen_lockable_reg
 
 endclass

@@ -48,7 +48,13 @@ package dv_base_reg_pkg;
 
 
   typedef class dv_base_reg;
-  typedef class dv_base_reg_field;
+
+  `include "csr_excl_item.sv"
+  `include "dv_base_reg_field.sv"
+  `include "dv_base_reg.sv"
+  `include "dv_base_mem.sv"
+  `include "dv_base_reg_block.sv"
+  `include "dv_base_reg_map.sv"
 
   function automatic void get_flds_from_uvm_object(input uvm_object obj,
                                                    input string msg = "dv_base_reg_pkg",
@@ -56,6 +62,7 @@ package dv_base_reg_pkg;
     dv_base_reg       csr;
     dv_base_reg_field fld;
 
+    flds.delete();
     if ($cast(csr, obj)) begin
       csr.get_dv_base_reg_fields(flds);
     end else if ($cast(fld, obj)) begin
@@ -65,12 +72,5 @@ package dv_base_reg_pkg;
                       obj.get_full_name()))
     end
   endfunction
-
-  `include "csr_excl_item.sv"
-  `include "dv_base_reg_field.sv"
-  `include "dv_base_reg.sv"
-  `include "dv_base_mem.sv"
-  `include "dv_base_reg_block.sv"
-  `include "dv_base_reg_map.sv"
 
 endpackage

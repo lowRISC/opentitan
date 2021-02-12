@@ -630,8 +630,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         end
         csr_utils_pkg::wait_no_outstanding_access();
 
-        // reset after writing to enable_reg to avoid it locking associated regs
-        if (test_csrs[i].is_enable_reg()) dut_init("HARD");
+        // reset after writing to wen_reg to avoid it locking associated regs
+        if (test_csrs[i].is_wen_reg()) dut_init("HARD");
       end
     end
   endtask

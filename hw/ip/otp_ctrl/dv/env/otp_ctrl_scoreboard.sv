@@ -388,7 +388,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
     if (addr_phase_write) begin
       // Skip predict if the register is locked by `direct_access_regwen`.
-      if (ral.direct_access_regwen.is_inside_locked_regs(dv_reg) &&
+      if (ral.direct_access_regwen.locks_reg_or_fld(dv_reg) &&
           `gmv(ral.direct_access_regwen) == 0) return;
 
       // Skip predict if the register is accessing DAI interface while macro alert is triggered.

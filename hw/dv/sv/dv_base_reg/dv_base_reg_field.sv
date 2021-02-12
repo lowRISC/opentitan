@@ -65,7 +65,9 @@ class dv_base_reg_field extends uvm_reg_field;
     end
   endfunction
 
-  // Only used for lock regsiter and reset.
+  // Lock the write access to this field.
+  // This only pertains to a lockable field. It is invoked in the `set_lockable_flds_access()`
+  // method of its corresponding lock (wen) field.
   local function void set_fld_access(bit lock);
     if (lock) void'(this.set_access("RO"));
     else      void'(this.set_access(m_original_access));
@@ -81,12 +83,15 @@ class dv_base_reg_field extends uvm_reg_field;
   endfunction
 
   // Returns true if this field can lock the specified register/field, else return false.
+  // If lockable register is partially lockable (only certain field is lockable), this method will
+  // still return true.
   function bit locks_reg_or_fld(uvm_object obj);
     dv_base_reg_field flds[$];
     get_flds_from_uvm_object(obj, `gfn, flds);
-
-    foreach(flds[i]) if (!(flds[i] inside {lockable_flds})) return 0;
-    return 1;
+    foreach (flds[i]) begin
+      if (flds[i] inside {lockable_flds}) return 1;
+    end
+    return 0;
   endfunction
 
   function bit is_wen_fld();

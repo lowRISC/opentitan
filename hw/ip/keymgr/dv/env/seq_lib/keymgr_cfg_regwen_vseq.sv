@@ -54,30 +54,30 @@ class keymgr_cfg_regwen_vseq extends keymgr_random_vseq;
       wait_no_outstanding_access();
       csr_rd(ral.op_status, op_status_val, .backdoor(1));
       if (op_status_val == keymgr_pkg::OpWip && !cfg.keymgr_vif.kmac_data_rsp.done) begin
-        write_and_check_regwen_locked_reg();
+        write_and_check_regwen_lockable_reg();
       end
     end
   endtask
 
-  virtual task write_and_check_regwen_locked_reg();
-    bit [TL_DW-1:0] val = $urandom;
+  virtual task write_and_check_regwen_lockable_reg();
+    bit [TL_DW-1:0]   val = $urandom;
     // since it's timing sensitive, only write one of these reg
-    dv_base_reg     locked_reg;
-    dv_base_reg     locked_regs[$];
+    dv_base_reg       lockable_reg;
+    dv_base_reg_field lockable_flds[$];
 
-    ral.cfg_regwen.get_locked_regs(locked_regs);
-    locked_regs.shuffle();
-    locked_reg = locked_regs[0];
+    ral.cfg_regwen.get_lockable_flds(lockable_flds);
+    lockable_flds.shuffle();
+    lockable_reg = lockable_flds[0].get_dv_base_reg_parent();
 
-    `uvm_info(`gfn, $sformatf("Write regwen locked reg %0s, and this write should be ignored",
-                              locked_reg.get_name()), UVM_MEDIUM)
-    csr_wr(locked_reg, val);
+    `uvm_info(`gfn, $sformatf("Write regwen lockable reg %0s, and this write should be ignored",
+                              lockable_reg.get_name()), UVM_MEDIUM)
+    csr_wr(lockable_reg, val);
     // if it's control, wait until OP is done, so that control.start is clear
-    if (locked_reg.get_name() == "control") begin
+    if (lockable_reg.get_name() == "control") begin
       csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip),
                    .compare_op(CompareOpNe));
     end
-    csr_rd(locked_reg, val); // checking is done with scb
-  endtask : write_and_check_regwen_locked_reg
+    csr_rd(lockable_reg, val); // checking is done with scb
+  endtask : write_and_check_regwen_lockable_reg
 
 endclass : keymgr_cfg_regwen_vseq
