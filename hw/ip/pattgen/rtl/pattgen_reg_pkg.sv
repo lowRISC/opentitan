@@ -9,6 +9,9 @@ package pattgen_reg_pkg;
   // Param list
   parameter int NumRegsData = 2;
 
+  // Address width within the block
+  parameter int BlockAw = 6;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -119,22 +122,26 @@ package pattgen_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    pattgen_hw2reg_intr_state_reg_t intr_state; // [3:2]
+    pattgen_hw2reg_intr_state_reg_t intr_state; // [3:0]
   } pattgen_hw2reg_t;
 
   // Register Address
-  parameter logic [5:0] PATTGEN_INTR_STATE_OFFSET = 6'h 0;
-  parameter logic [5:0] PATTGEN_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter logic [5:0] PATTGEN_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [5:0] PATTGEN_CTRL_OFFSET = 6'h c;
-  parameter logic [5:0] PATTGEN_PREDIV_CH0_OFFSET = 6'h 10;
-  parameter logic [5:0] PATTGEN_PREDIV_CH1_OFFSET = 6'h 14;
-  parameter logic [5:0] PATTGEN_DATA_CH0_0_OFFSET = 6'h 18;
-  parameter logic [5:0] PATTGEN_DATA_CH0_1_OFFSET = 6'h 1c;
-  parameter logic [5:0] PATTGEN_DATA_CH1_0_OFFSET = 6'h 20;
-  parameter logic [5:0] PATTGEN_DATA_CH1_1_OFFSET = 6'h 24;
-  parameter logic [5:0] PATTGEN_SIZE_OFFSET = 6'h 28;
+  parameter logic [BlockAw-1:0] PATTGEN_INTR_STATE_OFFSET = 6'h 0;
+  parameter logic [BlockAw-1:0] PATTGEN_INTR_ENABLE_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] PATTGEN_INTR_TEST_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] PATTGEN_CTRL_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] PATTGEN_PREDIV_CH0_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] PATTGEN_PREDIV_CH1_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] PATTGEN_DATA_CH0_0_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] PATTGEN_DATA_CH0_1_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] PATTGEN_DATA_CH1_0_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] PATTGEN_DATA_CH1_1_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] PATTGEN_SIZE_OFFSET = 6'h 28;
 
+  // Reset values for hwext registers and their fields
+  parameter logic [1:0] PATTGEN_INTR_TEST_RESVAL = 2'h 0;
+  parameter logic [0:0] PATTGEN_INTR_TEST_DONE_CH0_RESVAL = 1'h 0;
+  parameter logic [0:0] PATTGEN_INTR_TEST_DONE_CH1_RESVAL = 1'h 0;
 
   // Register Index
   typedef enum int {

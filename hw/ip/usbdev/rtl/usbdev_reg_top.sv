@@ -48,6 +48,20 @@ module usbdev_reg_top (
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
+  // incoming payload check
+  logic chk_err;
+  tlul_payload_chk u_chk (
+    .tl_i,
+    .err_o(chk_err)
+  );
+
+  // outgoing payload generation
+  tlul_pkg::tl_d2h_t tl_o_pre;
+  tlul_gen_payload_chk u_gen_chk (
+    .tl_i(tl_o_pre),
+    .tl_o
+  );
+
   tlul_pkg::tl_h2d_t tl_socket_h2d [2];
   tlul_pkg::tl_d2h_t tl_socket_d2h [2];
 
@@ -75,7 +89,7 @@ module usbdev_reg_top (
     .clk_i,
     .rst_ni,
     .tl_h_i (tl_i),
-    .tl_h_o (tl_o),
+    .tl_h_o (tl_o_pre),
     .tl_d_o (tl_socket_h2d),
     .tl_d_i (tl_socket_d2h),
     .dev_select_i (reg_steer)
@@ -89,6 +103,9 @@ module usbdev_reg_top (
     if (tl_i.a_address[AW-1:0] >= 2048) begin
       // Exceed or meet the address range. Removed the comparison of limit addr 'h 1000
       reg_steer = 0;
+    end
+    if (chk_err) begin
+      reg_steer = 1;
     end
   end
 
@@ -112,7 +129,7 @@ module usbdev_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err ;
+  assign reg_error = (devmode_i & addrmiss) | wr_err | chk_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
@@ -7042,6 +7059,6 @@ module usbdev_reg_top (
 
   // this is formulated as an assumption such that the FPV testbenches do disprove this
   // property by mistake
-  `ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.parity_en == 1'b0)
+  //`ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.chk_en == tlul_pkg::CheckDis)
 
 endmodule

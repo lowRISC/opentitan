@@ -43,8 +43,22 @@ module usbuart_reg_top (
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
+  // incoming payload check
+  logic chk_err;
+  tlul_payload_chk u_chk (
+    .tl_i,
+    .err_o(chk_err)
+  );
+
+  // outgoing payload generation
+  tlul_pkg::tl_d2h_t tl_o_pre;
+  tlul_gen_payload_chk u_gen_chk (
+    .tl_i(tl_o_pre),
+    .tl_o
+  );
+
   assign tl_reg_h2d = tl_i;
-  assign tl_o       = tl_reg_d2h;
+  assign tl_o_pre   = tl_reg_d2h;
 
   tlul_adapter_reg #(
     .RegAw(AW),
@@ -66,7 +80,7 @@ module usbuart_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err ;
+  assign reg_error = (devmode_i & addrmiss) | wr_err | chk_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
@@ -1819,6 +1833,6 @@ module usbuart_reg_top (
 
   // this is formulated as an assumption such that the FPV testbenches do disprove this
   // property by mistake
-  `ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.parity_en == 1'b0)
+  //`ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.chk_en == tlul_pkg::CheckDis)
 
 endmodule
