@@ -119,6 +119,12 @@ $(otbn-code-snippets-bin-dir)/p256_ecdsa_verify_test.elf: \
 $(otbn-code-snippets-bin-dir)/p256_ecdsa_verify_test.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/p256.o
 
+# p256_ecdsa depends on p256init, p256verify, p256sign, defined in p256.s
+$(otbn-code-snippets-bin-dir)/p256_ecdsa.elf: \
+  $(otbn-code-snippets-obj-dir)/p256.o
+$(otbn-code-snippets-bin-dir)/p256_ecdsa.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p256.o
+
 # rsa depends on code defined in modexp.s
 $(otbn-code-snippets-bin-dir)/rsa.elf: \
   $(otbn-code-snippets-obj-dir)/modexp.o

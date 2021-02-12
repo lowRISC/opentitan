@@ -55,4 +55,8 @@ sw_otbn_sources += {
     'rsa.s',
     'modexp.s',
   ),
+  'p256_ecdsa': files(
+    'p256_ecdsa.s',
+    'p256.s',
+  ),
 }
