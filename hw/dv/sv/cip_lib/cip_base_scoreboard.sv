@@ -312,6 +312,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endfunction
 
   virtual function void reset(string kind = "HARD");
+    super.reset(kind);
     tl_a_chan_fifo.flush();
     tl_d_chan_fifo.flush();
     if (cfg.has_edn) edn_fifo.flush();

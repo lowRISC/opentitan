@@ -25,8 +25,7 @@ class tl_host_driver extends tl_base_driver;
           if (req != null) begin
             send_a_channel_request(req);
           end else begin
-            // during reset, clock may be off. check every 1ns to flush out all req
-            if (reset_asserted) #1ns;
+            if (reset_asserted) flush_during_reset();
             if (!reset_asserted) begin
               `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
                                 wait(reset_asserted);)
@@ -37,6 +36,16 @@ class tl_host_driver extends tl_base_driver;
       d_channel_thread();
       d_ready_rsp();
     join_none
+  endtask
+
+  // keep flushing items when reset is asserted
+  virtual task flush_during_reset();
+    `DV_SPINWAIT_EXIT(
+                      forever begin
+                        seq_item_port.get_next_item(req);
+                        send_a_channel_request(req);
+                      end,
+                      wait(!reset_asserted);)
   endtask
 
   // reset signals every time reset occurs.

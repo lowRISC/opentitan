@@ -50,7 +50,9 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual function void reset(string kind = "HARD");
     // reset the ral model
-    if (cfg.has_ral) ral.reset(kind);
+    if (cfg.has_ral) begin
+      foreach (cfg.ral_models[i]) cfg.ral_models[i].reset(kind);
+    end
   endfunction
 
   virtual function void pre_abort();
