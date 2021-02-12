@@ -62,6 +62,7 @@ module aes_core
   logic                        ctrl_err_storage_q;
   logic                        ctrl_alert;
   logic                        mux_sel_err;
+  logic                        sp_enc_err_d, sp_enc_err_q;
 
   logic        [3:0][3:0][7:0] state_in;
   logic       [SISelWidth-1:0] state_in_sel_raw;
@@ -84,7 +85,8 @@ module aes_core
   logic            [7:0][31:0] key_init_d [2];
   logic            [7:0][31:0] key_init_q [2];
   logic            [7:0][31:0] key_init_cipher [NumShares];
-  logic            [7:0]       key_init_we [2];
+  sp2v_e           [7:0]       key_init_we_ctrl [2];
+  sp2v_e           [7:0]       key_init_we [2];
   logic  [KeyInitSelWidth-1:0] key_init_sel_raw;
   key_init_sel_e               key_init_sel_ctrl;
   key_init_sel_e               key_init_sel;
@@ -94,21 +96,23 @@ module aes_core
   logic            [3:0]       iv_qe;
   logic            [7:0][15:0] iv_d;
   logic            [7:0][15:0] iv_q;
-  logic            [7:0]       iv_we;
+  sp2v_e           [7:0]       iv_we_ctrl;
+  sp2v_e           [7:0]       iv_we;
   logic       [IVSelWidth-1:0] iv_sel_raw;
   iv_sel_e                     iv_sel_ctrl;
   iv_sel_e                     iv_sel;
   logic                        iv_sel_err;
 
   logic            [7:0][15:0] ctr;
-  logic            [7:0]       ctr_we;
-  logic                        ctr_incr;
-  logic                        ctr_ready;
+  sp2v_e           [7:0]       ctr_we;
+  sp2v_e                       ctr_incr;
+  sp2v_e                       ctr_ready;
   logic                        ctr_alert;
 
   logic            [3:0][31:0] data_in_prev_d;
   logic            [3:0][31:0] data_in_prev_q;
-  logic                        data_in_prev_we;
+  sp2v_e                       data_in_prev_we_ctrl;
+  sp2v_e                       data_in_prev_we;
   logic      [DIPSelWidth-1:0] data_in_prev_sel_raw;
   dip_sel_e                    data_in_prev_sel_ctrl;
   dip_sel_e                    data_in_prev_sel;
@@ -126,17 +130,18 @@ module aes_core
 
   logic            [3:0][31:0] data_out_d;
   logic            [3:0][31:0] data_out_q;
-  logic                        data_out_we;
+  sp2v_e                       data_out_we_ctrl;
+  sp2v_e                       data_out_we;
   logic                  [3:0] data_out_re;
 
   sp2v_e                       cipher_in_valid;
   sp2v_e                       cipher_in_ready;
   sp2v_e                       cipher_out_valid;
   sp2v_e                       cipher_out_ready;
-  logic                        cipher_crypt;
-  logic                        cipher_crypt_busy;
-  logic                        cipher_dec_key_gen;
-  logic                        cipher_dec_key_gen_busy;
+  sp2v_e                       cipher_crypt;
+  sp2v_e                       cipher_crypt_busy;
+  sp2v_e                       cipher_dec_key_gen;
+  sp2v_e                       cipher_dec_key_gen_busy;
   logic                        cipher_key_clear;
   logic                        cipher_key_clear_busy;
   logic                        cipher_data_out_clear;
@@ -238,7 +243,7 @@ module aes_core
     end else begin
       for (int s=0; s<2; s++) begin
         for (int i=0; i<8; i++) begin
-          if (key_init_we[s][i]) begin
+          if (key_init_we[s][i] == SP2V_HIGH) begin
             key_init_q[s][i] <= key_init_d[s][i];
           end
         end
@@ -264,7 +269,7 @@ module aes_core
       iv_q <= '0;
     end else begin
       for (int i=0; i<8; i++) begin
-        if (iv_we[i]) begin
+        if (iv_we[i] == SP2V_HIGH) begin
           iv_q[i] <= iv_d[i];
         end
       end
@@ -283,7 +288,7 @@ module aes_core
   always_ff @(posedge clk_i or negedge rst_ni) begin : data_in_prev_reg
     if (!rst_ni) begin
       data_in_prev_q <= '0;
-    end else if (data_in_prev_we) begin
+    end else if (data_in_prev_we == SP2V_HIGH) begin
       data_in_prev_q <= data_in_prev_d;
     end
   end
@@ -519,6 +524,7 @@ module aes_core
     .data_out_clear_i          ( reg2hw.trigger.data_out_clear.q        ),
     .prng_reseed_i             ( reg2hw.trigger.prng_reseed.q           ),
     .mux_sel_err_i             ( mux_sel_err                            ),
+    .sp_enc_err_i              ( sp_enc_err_q                           ),
     .alert_fatal_i             ( alert_fatal_o                          ),
     .alert_o                   ( ctrl_alert                             ),
 
@@ -527,10 +533,10 @@ module aes_core
     .data_in_qe_i              ( data_in_qe                             ),
     .data_out_re_i             ( data_out_re                            ),
     .data_in_we_o              ( data_in_we                             ),
-    .data_out_we_o             ( data_out_we                            ),
+    .data_out_we_o             ( data_out_we_ctrl                       ),
 
     .data_in_prev_sel_o        ( data_in_prev_sel_ctrl                  ),
-    .data_in_prev_we_o         ( data_in_prev_we                        ),
+    .data_in_prev_we_o         ( data_in_prev_we_ctrl                   ),
 
     .state_in_sel_o            ( state_in_sel_ctrl                      ),
     .add_state_in_sel_o        ( add_state_in_sel_ctrl                  ),
@@ -554,9 +560,9 @@ module aes_core
     .cipher_data_out_clear_i   ( cipher_data_out_clear_busy             ),
 
     .key_init_sel_o            ( key_init_sel_ctrl                      ),
-    .key_init_we_o             ( key_init_we                            ),
+    .key_init_we_o             ( key_init_we_ctrl                       ),
     .iv_sel_o                  ( iv_sel_ctrl                            ),
-    .iv_we_o                   ( iv_we                                  ),
+    .iv_we_o                   ( iv_we_ctrl                             ),
 
     .prng_data_req_o           ( prd_clearing_upd_req                   ),
     .prng_data_ack_i           ( prd_clearing_upd_ack                   ),
@@ -685,6 +691,80 @@ module aes_core
   assign mux_sel_err = data_in_prev_sel_err | state_in_sel_err | add_state_in_sel_err |
       add_state_out_sel_err | key_init_sel_err | iv_sel_err;
 
+  //////////////////////////////
+  // Sparsely Encoded Signals //
+  //////////////////////////////
+
+  // We use sparse encodings for various critical signals and must ensure that:
+  // 1. The synthesis tool doesn't optimize away the sparse encoding.
+  // 2. The sparsely encoded signal is always valid. More precisely, an alert or SVA is triggered
+  //    if a sparse signal takes on an invalid value.
+  // 3. The alert signal remains asserted until reset even if the sparse signal becomes valid again
+  //    This is achieved by driving the control FSM into the terminal error state whenever any
+  //    sparsely encoded signal becomes invalid.
+  //
+  // If any sparsely encoded signal becomes invalid, the core controller further immediately
+  // de-asserts the data_out_we_o signal to prevent any data from being released.
+
+  // We use vectors of sparsely encoded signals to reduce code duplication.
+  localparam int unsigned NumSp2VSig = 26;
+  sp2v_e [NumSp2VSig-1:0]                sp2v_sig;
+  sp2v_e [NumSp2VSig-1:0]                sp2v_sig_chk;
+  logic  [NumSp2VSig-1:0][Sp2VWidth-1:0] sp2v_sig_chk_raw;
+  logic  [NumSp2VSig-1:0]                sp2v_sig_err;
+
+  for (genvar s = 0; s < 2; s++) begin : gen_use_key_init_we_ctrl_shares
+    for (genvar i = 0; i < 8; i++) begin : gen_use_key_init_we_ctrl
+      assign sp2v_sig[s*8+i] = key_init_we_ctrl[s][i];
+    end
+  end
+  for (genvar i = 0; i < 8; i++) begin : gen_use_iv_we_ctrl
+    assign sp2v_sig[16+i] = iv_we_ctrl[i];
+  end
+  assign sp2v_sig[24] = data_in_prev_we_ctrl;
+  assign sp2v_sig[25] = data_out_we_ctrl;
+
+  // Individually check sparsely encoded signals.
+  for (genvar i = 0; i < NumSp2VSig; i++) begin : gen_sel_buf_chk
+    aes_sel_buf_chk #(
+      .Num   ( Sp2VNum   ),
+      .Width ( Sp2VWidth )
+    ) u_aes_sp2v_sig_buf_chk_i (
+      .clk_i  ( clk_i               ),
+      .rst_ni ( rst_ni              ),
+      .sel_i  ( sp2v_sig[i]         ),
+      .sel_o  ( sp2v_sig_chk_raw[i] ),
+      .err_o  ( sp2v_sig_err[i]     )
+    );
+    assign sp2v_sig_chk[i] = sp2v_e'(sp2v_sig_chk_raw[i]);
+  end
+
+  for (genvar s = 0; s < 2; s++) begin : gen_key_init_we_shares
+    for (genvar i = 0; i < 8; i++) begin : gen_key_init_we
+      assign key_init_we[s][i] = sp2v_sig_chk[s*8+i];
+    end
+  end
+  for (genvar i = 0; i < 8; i++) begin : gen_iv_we
+    assign iv_we[i]      = sp2v_sig_chk[16+i];
+  end
+  assign data_in_prev_we = sp2v_sig_chk[24];
+  assign data_out_we     = sp2v_sig_chk[25];
+
+  // Collect encoding errors.
+  // We instantiate the checker modules as close as possible to where the sparsely encoded signals
+  // are used. Here, we collect also encoding errors detected in other places of the core.
+  assign sp_enc_err_d = |sp2v_sig_err;
+
+  // We need to register the collected error signal to avoid circular loops in the core controller
+  // related to iv_we and data_out_we.
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_sp_enc_err
+    if (!rst_ni) begin
+      sp_enc_err_q <= 1'b0;
+    end else if (sp_enc_err_d) begin
+      sp_enc_err_q <= 1'b1;
+    end
+  end
+
   /////////////
   // Outputs //
   /////////////
@@ -692,7 +772,7 @@ module aes_core
   always_ff @(posedge clk_i or negedge rst_ni) begin : data_out_reg
     if (!rst_ni) begin
       data_out_q <= '0;
-    end else if (data_out_we) begin
+    end else if (data_out_we == SP2V_HIGH) begin
       data_out_q <= data_out_d;
     end
   end

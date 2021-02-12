@@ -6,14 +6,14 @@
 waive -rules COMBO_READ_WRITE -location {aes_key_expand.sv} -regexp {'regular\[[0-9]+\]\[2:1|4:2|6:5\]' is read from within the same combinational process block} \
       -comment "regular[*] is assigned in a for loop, regular[*][1|2|5] depends on regular[*][0|1|4]"
 
-waive -rules {CLOCK_USE} -location {aes_cipher_core.sv} -regexp {clk_i' is connected to 'aes_sub_bytes' port} \
-      -comment "when using fully combinational S-Box implementations, no clock is used inside aes_sub_bytes"
+waive -rules {CLOCK_USE} -location {aes_sub_bytes.sv} -regexp {clk_i' is connected to 'aes_sbox' port} \
+      -comment "when using fully combinational S-Box implementations, no clock is used inside aes_sbox"
 
 waive -rules {CLOCK_USE} -location {aes_key_expand.sv} -regexp {clk_i' is connected to 'aes_sbox' port} \
       -comment "when using fully combinational S-Box implementations, no clock is used inside aes_sbox"
 
-waive -rules {RESET_USE} -location {aes_cipher_core.sv} -regexp {'rst_ni' is connected to 'aes_sub_bytes' port} \
-      -comment "when using fully combinational S-Box implementations, no reset is used inside aes_sub_bytes"
+waive -rules {RESET_USE} -location {aes_sub_bytes.sv} -regexp {'rst_ni' is connected to 'aes_sbox' port} \
+      -comment "when using fully combinational S-Box implementations, no reset is used inside aes_sbox"
 
 waive -rules {RESET_USE} -location {aes_key_expand.sv} -regexp {'rst_ni' is connected to 'aes_sbox' port} \
       -comment "when using fully combinational S-Box implementations, no reset is used inside aes_sbox"
@@ -30,6 +30,15 @@ waive -rules {CLOCK_USE} -location {aes_cipher_core.sv} -regexp {clk_i' is conne
 waive -rules {CLOCK_USE} -location {aes_cipher_control.sv} -regexp {clk_i' is connected to 'aes_sel_buf_chk' port} \
       -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
 
+waive -rules {CLOCK_USE} -location {aes_sub_bytes.sv} -regexp {clk_i' is connected to 'aes_sel_buf_chk' port} \
+      -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
+
+waive -rules {CLOCK_USE} -location {aes_key_expand.sv} -regexp {clk_i' is connected to 'aes_sel_buf_chk' port} \
+      -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
+
+waive -rules {CLOCK_USE} -location {aes_ctr.sv} -regexp {clk_i' is connected to 'aes_sel_buf_chk' port} \
+      -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
+
 waive -rules {RESET_USE} -location {aes_core.sv} -regexp {'rst_ni' is connected to 'aes_sel_buf_chk' port} \
       -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
 
@@ -40,6 +49,15 @@ waive -rules {RESET_USE} -location {aes_cipher_core.sv} -regexp {'rst_ni' is con
       -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
 
 waive -rules {RESET_USE} -location {aes_cipher_control.sv} -regexp {'rst_ni' is connected to 'aes_sel_buf_chk' port} \
+      -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
+
+waive -rules {RESET_USE} -location {aes_sub_bytes.sv} -regexp {'rst_ni' is connected to 'aes_sel_buf_chk' port} \
+      -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
+
+waive -rules {RESET_USE} -location {aes_key_expand.sv} -regexp {'rst_ni' is connected to 'aes_sel_buf_chk' port} \
+      -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
+
+waive -rules {RESET_USE} -location {aes_ctr.sv} -regexp {'rst_ni' is connected to 'aes_sel_buf_chk' port} \
       -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
 
 waive -rules {ONE_BRANCH} -location {aes_sel_buf_chk.sv} -regexp {unique case statement has only one branch} \

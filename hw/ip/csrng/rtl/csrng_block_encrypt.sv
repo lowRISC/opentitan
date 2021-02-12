@@ -99,10 +99,10 @@ module csrng_block_encrypt #(
     .out_ready_i        ( cipher_out_ready           ),
     .op_i               ( aes_pkg::CIPH_FWD          ),
     .key_len_i          ( aes_pkg::AES_256           ),
-    .crypt_i            ( aes_cipher_core_enable     ),
+    .crypt_i            ( aes_pkg::SP2V_HIGH         ), // Enable
     .crypt_o            (                            ),
     .alert_o            ( block_encrypt_aes_cipher_sm_err_o),
-    .dec_key_gen_i      ( 1'b0                       ), // Disable
+    .dec_key_gen_i      ( aes_pkg::SP2V_LOW          ), // Disable
     .dec_key_gen_o      (                            ),
     .key_clear_i        ( 1'b0                       ), // Disable
     .key_clear_o        (                            ),
