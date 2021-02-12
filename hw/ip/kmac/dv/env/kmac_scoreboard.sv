@@ -200,7 +200,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         // - entropy_seed_upper
         // - key_len
         // if writes to these csrs are seen, must check that they are not locked first.
-        if (ral.cfg_regwen.is_inside_locked_regs(check_locked_reg) &&
+        if (ral.cfg_regwen.locks_reg_or_fld(check_locked_reg) &&
             `gmv(ral.cfg_regwen) == 0) return;
 
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));

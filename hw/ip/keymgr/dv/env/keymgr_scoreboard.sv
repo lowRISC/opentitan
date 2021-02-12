@@ -247,7 +247,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
               update_state(get_next_state(current_state));
               // set sw_binding_regwen after advance OP
               void'(ral.sw_binding_regwen.predict(.value(1)));
-              ral.sw_binding_regwen.en.set_locked_regs_access("original_access");
+              ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
             end
           end
           keymgr_pkg::OpDisable: begin
@@ -314,7 +314,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     if (addr_phase_write) begin
       // if OP WIP or keymgr_en=0, will clear cfg_regwen and below csr can't be written
       if ((current_op_status == keymgr_pkg::OpWip || !cfg.keymgr_vif.get_keymgr_en()) &&
-          ral.cfg_regwen.is_inside_locked_regs(dv_reg)) begin
+          ral.cfg_regwen.locks_reg_or_fld(dv_reg)) begin
         `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to cfg_regwen=0", csr.get_name()),
                   UVM_MEDIUM)
         return;
@@ -336,7 +336,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       // in StReset, can't change sw_binding_regwen value
       // set related locked reg back to original_access as this is updated automatic in post_write
       #0; // push below update to be done after post_write
-      ral.sw_binding_regwen.en.set_locked_regs_access("original_access");
+      ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
     end
 
     // process the csr req

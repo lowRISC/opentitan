@@ -71,6 +71,8 @@ class dv_base_reg extends uvm_reg;
     return wen_fld.locks_reg_or_fld(obj);
   endfunction
 
+  // Even though user can add lockable register or field via `add_lockable_reg_or_fld` method, the
+  // get_lockable_flds function will always return a queue of lockable fields.
   function void get_lockable_flds(ref dv_base_reg_field lockable_flds_q[$]);
     dv_base_reg_field wen_fld;
     `DV_CHECK_FATAL(m_fields.size(), 1, "This register has more than one field.\
@@ -79,6 +81,7 @@ class dv_base_reg extends uvm_reg;
     wen_fld.get_lockable_flds(lockable_flds_q);
   endfunction
 
+  // The register is a write enable register (wen_reg) if its fields are wen_flds.
   function bit is_wen_reg();
     foreach (m_fields[i]) begin
       dv_base_reg_field fld;
