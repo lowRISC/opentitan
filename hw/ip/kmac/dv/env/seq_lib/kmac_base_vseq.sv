@@ -241,7 +241,9 @@ class kmac_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual function string convert2string();
-    return {$sformatf("enable_intr: %0p\n", enable_intr),
+    return {$sformatf("intr_en[KmacDone]: %0b\n", enable_intr[KmacDone]),
+            $sformatf("intr_en[KmacFifoEmpty]: %0b\n", enable_intr[KmacFifoEmpty]),
+            $sformatf("intr_en[KmacErr]: %0b\n", enable_intr[KmacErr]),
             $sformatf("kmac_en: %0b\n", kmac_en),
             $sformatf("xof_en: %0b\n", xof_en),
             $sformatf("hash_mode: %0s\n", hash_mode.name()),
@@ -509,6 +511,60 @@ class kmac_base_vseq extends cip_base_vseq #(
     wait_no_outstanding_access();
 
     // TODO: final csr checks might be needed
+  endtask
+
+  // This task burst writes 32-bit chunks of the message into the msgfifo
+  virtual task burst_write_msg(bit [7:0] msg_arr[]);
+    bit [TL_DW-1:0] data_word;
+    bit [7:0] msg_q[$];
+
+    if (msg_endian) dv_utils_pkg::endian_swap_byte_arr(msg_arr);
+
+    msg_q = msg_arr;
+
+    `uvm_info(`gfn, $sformatf("initial msg: %0p", msg_q), UVM_HIGH)
+
+    while (msg_q.size() > 0) begin
+      `uvm_info(`gfn, $sformatf("msg size: %0d", msg_q.size()), UVM_HIGH)
+
+      if (msg_q.size() >= KMAC_FIFO_NUM_BYTES) begin
+        repeat (KMAC_FIFO_NUM_WORDS) begin
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fifo_addr)
+          `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(data_mask, data_mask == '1;)
+
+          for (int i = 0; i < TL_DBW; i++) begin
+            data_word[i*8 +: 8] = msg_q.pop_front();
+            `uvm_info(`gfn, $sformatf("intermediate data_word: 0x%0x", data_word), UVM_HIGH)
+          end
+
+          // print some debug info before performing the TLUL write
+          `uvm_info(`gfn, $sformatf("msg_size: %0d", msg_q.size()), UVM_HIGH)
+          `uvm_info(`gfn, $sformatf("fifo_addr = 0x%0x", fifo_addr), UVM_HIGH)
+          `uvm_info(`gfn, $sformatf("data_word = 0x%0x", data_word), UVM_HIGH)
+          `uvm_info(`gfn, $sformatf("data_mask = 0x%0x", data_mask), UVM_HIGH)
+
+          tl_access(.addr(ral.get_addr_from_offset(fifo_addr)),
+                    .write(1),
+                    .data(data_word),
+                    .mask(data_mask),
+                    .blocking($urandom_range(0, 1)));
+        end
+        // wait for the fifo to be empty before writing more msg
+        //
+        // spinwait instead of checking the interrupt because it's not guaranteed
+        // that the interrupt will remain high after writing the last word,
+        // depending on how long the input message is.
+        csr_spinwait(.ptr(ral.status.fifo_empty), .exp_data(1));
+      end else begin
+        // if we reach this case, means that the remaining message
+        // is smaller in size than the fifo, so we can just write it normally
+        // using `write_msg()`.
+        write_msg(msg_q);
+        break;
+      end
+    end
+    // wait for all fifo accesses to complete
+    wait_no_outstanding_access();
   endtask
 
   // This task checks the fifo_empty interrupt (if enabled) and clears it,

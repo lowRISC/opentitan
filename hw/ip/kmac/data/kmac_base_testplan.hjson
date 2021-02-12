@@ -54,13 +54,13 @@
       tests: ["{name}_long_msg_and_output"]
     }
     {
-      name: burst_wr
+      name: burst_write
       desc: '''
             This is the same as the long_message test, except we burst-write chunks of the message
             into the msg_fifo, and disable intermediate status/CSR checks.
             '''
       milestone: V2
-      tests: ["{name}_burst_wr"]
+      tests: ["{name}_burst_write"]
     }
     {
       name: test_vectors

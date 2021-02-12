@@ -8,6 +8,9 @@ class kmac_smoke_vseq extends kmac_base_vseq;
   `uvm_object_utils(kmac_smoke_vseq)
   `uvm_object_new
 
+  // Set this bit if we want to burst write the message into the msgfifo
+  bit burst_write = 0;
+
   // TODO: 200 is chosen as upper bound due to large configuration space for KMAC.
   //       If this large range causes noticeable simulation slowdown, reduce it.
   constraint num_trans_c {
@@ -117,7 +120,11 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       // write the message into msgfifo
       `uvm_info(`gfn, $sformatf("msg: %0p", msg), UVM_HIGH)
-      write_msg(msg);
+      if (burst_write) begin
+        burst_write_msg(msg);
+      end else begin
+        write_msg(msg);
+      end
 
       // if using KMAC, need to write either encoded output length or 0 to msgfifo
       if (kmac_en) begin

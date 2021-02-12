@@ -45,6 +45,16 @@ package kmac_env_pkg;
   parameter bit [TL_AW-1:0] KMAC_FIFO_BASE = 32'h800;
   parameter bit [TL_AW-1:0] KMAC_FIFO_END = 32'hFFC;
 
+  // width and depth of the msgfifo
+  parameter int KMAC_FIFO_DEPTH = kmac_pkg::MsgFifoDepth;
+  parameter int KMAC_FIFO_WIDTH = kmac_pkg::MsgWidth;
+
+  parameter int KMAC_FIFO_WORDS_PER_ENTRY = KMAC_FIFO_WIDTH / TL_DW;
+
+  parameter int KMAC_FIFO_NUM_WORDS = KMAC_FIFO_DEPTH * KMAC_FIFO_WORDS_PER_ENTRY;
+
+  parameter int KMAC_FIFO_NUM_BYTES = KMAC_FIFO_NUM_WORDS * 4;
+
   // Represents the max bit-width of some value to be encoded with either
   // `right_encode()` or `left_encode()`.
   parameter int MAX_ENCODE_WIDTH = 2040;
