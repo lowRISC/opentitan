@@ -24,10 +24,12 @@ package rstmgr_pkg;
 
   // positions of software controllable reset bits
   parameter int SPI_DEVICE = 0;
-  parameter int USB = 1;
-  parameter int I2C0 = 2;
-  parameter int I2C1 = 3;
-  parameter int I2C2 = 4;
+  parameter int SPI_HOST0 = 1;
+  parameter int SPI_HOST1 = 2;
+  parameter int USB = 3;
+  parameter int I2C0 = 4;
+  parameter int I2C1 = 5;
+  parameter int I2C2 = 6;
 
   // ast interface
   typedef struct packed {
@@ -54,6 +56,8 @@ package rstmgr_pkg;
     logic [PowerDomains-1:0] rst_sys_io_div4_n;
     logic [PowerDomains-1:0] rst_sys_aon_n;
     logic [PowerDomains-1:0] rst_spi_device_n;
+    logic [PowerDomains-1:0] rst_spi_host0_n;
+    logic [PowerDomains-1:0] rst_spi_host1_n;
     logic [PowerDomains-1:0] rst_usb_n;
     logic [PowerDomains-1:0] rst_i2c0_n;
     logic [PowerDomains-1:0] rst_i2c1_n;

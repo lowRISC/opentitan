@@ -7,10 +7,11 @@
   available_input_list: [
     { name: "sck", desc: "SPI Clock" },
     { name: "csb", desc: "Chip Enable#" },
-    { name: "sdi", desc: "SPI Input" },
   ],
   available_output_list: [
-    { name: "sdo", desc: "SPI Output" },
+  ],
+  available_inout_list: [
+    { name: "sd", width: 4, desc: "SPI In/Out ports" },
   ],
   interrupt_list: [
     { name: "rxf",         desc: "RX SRAM FIFO Full" },

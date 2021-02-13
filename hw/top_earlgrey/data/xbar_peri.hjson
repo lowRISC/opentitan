@@ -75,6 +75,18 @@
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
+    { name:      "spi_host0",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "spi_host1",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
     { name:      "rv_timer",
       type:      "device",
       clock:     "clk_peri_i",
@@ -172,8 +184,9 @@
   ],
   connections: {
     main:  ["uart0", "uart1", "uart2", "uart3", "i2c0", "i2c1", "i2c2", "pattgen",
-            "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon",
-            "pinmux_aon", "ram_ret_aon", "otp_ctrl", "lc_ctrl", "sensor_ctrl_aon",
-            "alert_handler", "nmi_gen", "ast_wrapper", "sram_ctrl_ret_aon"],
+            "gpio", "spi_device", "spi_host0", "spi_host1", "rv_timer", "usbdev",
+            "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon", "ram_ret_aon",
+            "otp_ctrl", "lc_ctrl", "sensor_ctrl_aon", "alert_handler", "ast_wrapper",
+            "sram_ctrl_ret_aon", "nmi_gen"],
   },
 }

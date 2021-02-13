@@ -85,6 +85,12 @@ tl_device_t xbar_devices[$] = '{
     '{"spi_device", '{
         '{32'h40050000, 32'h40051fff}
     }},
+    '{"spi_host0", '{
+        '{32'h40060000, 32'h40060fff}
+    }},
+    '{"spi_host1", '{
+        '{32'h40070000, 32'h40070fff}
+    }},
     '{"rv_timer", '{
         '{32'h40100000, 32'h40100fff}
     }},
@@ -151,6 +157,8 @@ tl_host_t xbar_hosts[$] = '{
         "pattgen",
         "gpio",
         "spi_device",
+        "spi_host0",
+        "spi_host1",
         "rv_timer",
         "usbdev",
         "pwrmgr_aon",
@@ -162,9 +170,9 @@ tl_host_t xbar_hosts[$] = '{
         "lc_ctrl",
         "sensor_ctrl_aon",
         "alert_handler",
-        "nmi_gen",
         "ast_wrapper",
         "sram_ctrl_ret_aon",
+        "nmi_gen",
         "flash_ctrl",
         "aes",
         "entropy_src",
@@ -192,6 +200,8 @@ tl_host_t xbar_hosts[$] = '{
         "pattgen",
         "gpio",
         "spi_device",
+        "spi_host0",
+        "spi_host1",
         "rv_timer",
         "usbdev",
         "pwrmgr_aon",
@@ -203,9 +213,9 @@ tl_host_t xbar_hosts[$] = '{
         "lc_ctrl",
         "sensor_ctrl_aon",
         "alert_handler",
-        "nmi_gen",
         "ast_wrapper",
         "sram_ctrl_ret_aon",
+        "nmi_gen",
         "flash_ctrl",
         "aes",
         "entropy_src",

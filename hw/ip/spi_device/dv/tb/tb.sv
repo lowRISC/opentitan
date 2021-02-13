@@ -20,9 +20,9 @@ module tb;
 
   wire sck;
   wire csb;
-  wire sdo_o;
-  wire sdo_en;
-  wire sdi_i;
+  wire [3:0] sd_out;
+  wire [3:0] sd_out_en;
+  wire [3:0] sd_in;
 
   wire intr_rxf;
   wire intr_rxlvl;
@@ -48,9 +48,9 @@ module tb;
 
     .cio_sck_i      (sck       ),
     .cio_csb_i      (csb       ),
-    .cio_sdo_o      (sdo_o    ),
-    .cio_sdo_en_o   (sdo_en   ),
-    .cio_sdi_i      (sdi_i    ),
+    .cio_sd_o       (sd_out    ),
+    .cio_sd_en_o    (sd_out_en ),
+    .cio_sd_i       (sd_in     ),
 
     .intr_rxf_o     (intr_rxf  ),
     .intr_rxlvl_o   (intr_rxlvl),
@@ -63,8 +63,9 @@ module tb;
 
   assign sck          = spi_if.sck;
   assign csb          = spi_if.csb;
-  assign sdi_i        = spi_if.sdi;
-  assign spi_if.sdo   = sdo_en ? sdo_o : 1'bz;
+  // TODO: quad SPI mode is currently not yet implemented
+  assign sd_in        = {3'b000, spi_if.sdi};
+  assign spi_if.sdo   = sd_out_en[1] ? sd_out[1] : 1'bz;
 
   assign interrupts[RxFifoFull]      = intr_rxf;
   assign interrupts[RxFifoGeLevel]   = intr_rxlvl;

@@ -18,6 +18,7 @@ filesets:
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
+      - lowrisc:ip:spi_host
       - lowrisc:ip:i2c
       - lowrisc:ip:pattgen
       - lowrisc:ip:aes
@@ -48,6 +49,7 @@ filesets:
       - "fileset_partner ? (partner:systems:ast_pkg)"
       - lowrisc:tlul:headers
       - lowrisc:prim:all
+      - lowrisc:prim:usb_diff_rx
     files:
       - rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
       - rtl/autogen/top_earlgrey.sv

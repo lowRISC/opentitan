@@ -134,6 +134,42 @@ extern "C" {
 #define TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES 0x2000u
 
 /**
+ * Peripheral base address for spi_host0 in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SPI_HOST0_BASE_ADDR 0x40060000u
+
+/**
+ * Peripheral size for spi_host0 in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SPI_HOST0_BASE_ADDR and
+ * `TOP_EARLGREY_SPI_HOST0_BASE_ADDR + TOP_EARLGREY_SPI_HOST0_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SPI_HOST0_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for spi_host1 in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SPI_HOST1_BASE_ADDR 0x40070000u
+
+/**
+ * Peripheral size for spi_host1 in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SPI_HOST1_BASE_ADDR and
+ * `TOP_EARLGREY_SPI_HOST1_BASE_ADDR + TOP_EARLGREY_SPI_HOST1_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SPI_HOST1_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for i2c0 in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -985,7 +1021,7 @@ extern const top_earlgrey_alert_peripheral_t
 // PERIPH_INSEL ranges from 0 to NUM_MIO + 2 -1}
 //  0 and 1 are tied to value 0 and 1
 #define NUM_MIO 32
-#define NUM_DIO 15
+#define NUM_DIO 21
 
 #define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
 
@@ -1031,10 +1067,15 @@ typedef enum top_earlgrey_pinmux_peripheral_in {
   kTopEarlgreyPinmuxPeripheralInI2c1Scl = 35, /**< i2c1_scl */
   kTopEarlgreyPinmuxPeripheralInI2c2Sda = 36, /**< i2c2_sda */
   kTopEarlgreyPinmuxPeripheralInI2c2Scl = 37, /**< i2c2_scl */
-  kTopEarlgreyPinmuxPeripheralInUart1Rx = 38, /**< uart1_rx */
-  kTopEarlgreyPinmuxPeripheralInUart2Rx = 39, /**< uart2_rx */
-  kTopEarlgreyPinmuxPeripheralInUart3Rx = 40, /**< uart3_rx */
-  kTopEarlgreyPinmuxPeripheralInLast = 40, /**< \internal Last valid peripheral input */
+  kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0 = 38, /**< spi_host1_sd 0 */
+  kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1 = 39, /**< spi_host1_sd 1 */
+  kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2 = 40, /**< spi_host1_sd 2 */
+  kTopEarlgreyPinmuxPeripheralInSpiHost1Sd3 = 41, /**< spi_host1_sd 3 */
+  kTopEarlgreyPinmuxPeripheralInUart0Rx = 42, /**< uart0_rx */
+  kTopEarlgreyPinmuxPeripheralInUart1Rx = 43, /**< uart1_rx */
+  kTopEarlgreyPinmuxPeripheralInUart2Rx = 44, /**< uart2_rx */
+  kTopEarlgreyPinmuxPeripheralInUart3Rx = 45, /**< uart3_rx */
+  kTopEarlgreyPinmuxPeripheralInLast = 45, /**< \internal Last valid peripheral input */
 } top_earlgrey_pinmux_peripheral_in_t;
 
 /**
@@ -1162,14 +1203,21 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselI2c1Scl = 38, /**< i2c1_scl */
   kTopEarlgreyPinmuxOutselI2c2Sda = 39, /**< i2c2_sda */
   kTopEarlgreyPinmuxOutselI2c2Scl = 40, /**< i2c2_scl */
-  kTopEarlgreyPinmuxOutselUart1Tx = 41, /**< uart1_tx */
-  kTopEarlgreyPinmuxOutselUart2Tx = 42, /**< uart2_tx */
-  kTopEarlgreyPinmuxOutselUart3Tx = 43, /**< uart3_tx */
-  kTopEarlgreyPinmuxOutselPattgenPda0Tx = 44, /**< pattgen_pda0_tx */
-  kTopEarlgreyPinmuxOutselPattgenPcl0Tx = 45, /**< pattgen_pcl0_tx */
-  kTopEarlgreyPinmuxOutselPattgenPda1Tx = 46, /**< pattgen_pda1_tx */
-  kTopEarlgreyPinmuxOutselPattgenPcl1Tx = 47, /**< pattgen_pcl1_tx */
-  kTopEarlgreyPinmuxOutselLast = 47, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselSpiHost1Sd0 = 41, /**< spi_host1_sd 0 */
+  kTopEarlgreyPinmuxOutselSpiHost1Sd1 = 42, /**< spi_host1_sd 1 */
+  kTopEarlgreyPinmuxOutselSpiHost1Sd2 = 43, /**< spi_host1_sd 2 */
+  kTopEarlgreyPinmuxOutselSpiHost1Sd3 = 44, /**< spi_host1_sd 3 */
+  kTopEarlgreyPinmuxOutselUart0Tx = 45, /**< uart0_tx */
+  kTopEarlgreyPinmuxOutselUart1Tx = 46, /**< uart1_tx */
+  kTopEarlgreyPinmuxOutselUart2Tx = 47, /**< uart2_tx */
+  kTopEarlgreyPinmuxOutselUart3Tx = 48, /**< uart3_tx */
+  kTopEarlgreyPinmuxOutselPattgenPda0Tx = 49, /**< pattgen_pda0_tx */
+  kTopEarlgreyPinmuxOutselPattgenPcl0Tx = 50, /**< pattgen_pcl0_tx */
+  kTopEarlgreyPinmuxOutselPattgenPda1Tx = 51, /**< pattgen_pda1_tx */
+  kTopEarlgreyPinmuxOutselPattgenPcl1Tx = 52, /**< pattgen_pcl1_tx */
+  kTopEarlgreyPinmuxOutselSpiHost1Sck = 53, /**< spi_host1_sck */
+  kTopEarlgreyPinmuxOutselSpiHost1Csb = 54, /**< spi_host1_csb */
+  kTopEarlgreyPinmuxOutselLast = 54, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**
@@ -1186,11 +1234,13 @@ typedef enum top_earlgrey_power_manager_wake_ups {
  */
 typedef enum top_earlgrey_reset_manager_sw_resets {
   kTopEarlgreyResetManagerSwResetsSpiDevice = 0, /**<  */
-  kTopEarlgreyResetManagerSwResetsUsb = 1, /**<  */
-  kTopEarlgreyResetManagerSwResetsI2c0 = 2, /**<  */
-  kTopEarlgreyResetManagerSwResetsI2c1 = 3, /**<  */
-  kTopEarlgreyResetManagerSwResetsI2c2 = 4, /**<  */
-  kTopEarlgreyResetManagerSwResetsLast = 4, /**< \internal Last valid rstmgr software reset request */
+  kTopEarlgreyResetManagerSwResetsSpiHost0 = 1, /**<  */
+  kTopEarlgreyResetManagerSwResetsSpiHost1 = 2, /**<  */
+  kTopEarlgreyResetManagerSwResetsUsb = 3, /**<  */
+  kTopEarlgreyResetManagerSwResetsI2c0 = 4, /**<  */
+  kTopEarlgreyResetManagerSwResetsI2c1 = 5, /**<  */
+  kTopEarlgreyResetManagerSwResetsI2c2 = 6, /**<  */
+  kTopEarlgreyResetManagerSwResetsLast = 6, /**< \internal Last valid rstmgr software reset request */
 } top_earlgrey_reset_manager_sw_resets_t;
 
 /**

@@ -74,6 +74,18 @@ module xbar_peri_bind;
     .h2d    (tl_spi_device_o),
     .d2h    (tl_spi_device_i)
   );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_spi_host0 (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_spi_host0_o),
+    .d2h    (tl_spi_host0_i)
+  );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_spi_host1 (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_spi_host1_o),
+    .d2h    (tl_spi_host1_i)
+  );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_rv_timer (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),
