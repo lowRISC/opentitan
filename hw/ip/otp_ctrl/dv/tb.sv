@@ -54,6 +54,9 @@ module tb;
   // edn_clk, edn_rst_n and edn_if are defined and driven in below macro
   `DV_EDN_IF_CONNECT
 
+  assign otp_ctrl_if.lc_prog_req = lc_prog_if.req;
+  assign otp_ctrl_if.lc_prog_err = lc_prog_if.d_data;
+
   // dut
   otp_ctrl dut (
     .clk_i                      (clk        ),

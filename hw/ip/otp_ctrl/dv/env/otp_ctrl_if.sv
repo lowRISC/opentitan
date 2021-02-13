@@ -20,6 +20,18 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   lc_ctrl_pkg::lc_tx_e lc_dft_en_i, lc_escalate_en_i, lc_check_byp_en_i,
                        lc_creator_seed_sw_rw_en_i, lc_seed_hw_rd_en_i;
 
+  // connect with lc_prog push-pull interface
+  logic                lc_prog_req, lc_prog_err, lc_prog_req_dly1;
+
+  // delay one clock cycle for lc_prog_req, this will be used in scb to check lci_err status
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      lc_prog_req_dly1 <= 0;
+    end else begin
+      lc_prog_req_dly1 <= lc_prog_req;
+    end
+  end
+
   // TODO: for lc_tx, except esc_en signal, all value different from On is treated as Off,
   // technically we can randomize values here once scb supports
   task automatic init();
@@ -42,13 +54,17 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   // If pwr_otp_idle is set only if pwr_otp init is done
   `ASSERT(OtpPwrDoneWhenIdle_A, pwr_otp_idle_o |-> pwr_otp_done_o)
 
-  // otp_hw_cfg_o is valid only when otp init is done
+  // Otp_hw_cfg_o is valid only when otp init is done
   `ASSERT(OtpHwCfgValidOn_A, pwr_otp_done_o |-> otp_hw_cfg_o.valid == lc_ctrl_pkg::On)
-  // if otp_hw_cfg is Off, then hw partition is not finished calculation, then otp init is not done
+  // If otp_hw_cfg is Off, then hw partition is not finished calculation, then otp init is not done
   `ASSERT(OtpHwCfgValidOff_A, otp_hw_cfg_o.valid == lc_ctrl_pkg::Off |-> pwr_otp_done_o == 0)
   // Once OTP init is done, hw_cfg_o output value stays stable until next power cycle
   `ASSERT(OtpHwCfgStable_A, otp_hw_cfg_o.valid == lc_ctrl_pkg::On |=> $stable(otp_hw_cfg_o))
 
-  // otp_keymgr valid is related to part_digest, should not be changed after otp_pwr_init
+  // Otp_keymgr valid is related to part_digest, should not be changed after otp_pwr_init
   `ASSERT(OtpKeymgrValidStable_A, pwr_otp_done_o |-> $stable(keymgr_key_o.valid))
+
+  // During lc_prog_req, either otp_idle will be reset or lc_error is set
+  `ASSERT(LcProgReq_A, $rose(lc_prog_req) |=>
+                       ($fell(pwr_otp_idle_o) || $rose(lc_prog_err)) within lc_prog_req[*1:$])
 endinterface
