@@ -18,9 +18,9 @@ module spi_device (
   // SPI Interface
   input              cio_sck_i,
   input              cio_csb_i,
-  output logic       cio_sdo_o,
-  output logic       cio_sdo_en_o,
-  input              cio_sdi_i,
+  output logic [3:0] cio_sd_o,
+  output logic [3:0] cio_sd_en_o,
+  input        [3:0] cio_sd_i,
 
   // Interrupts
   output logic intr_rxf_o,         // RX FIFO Full
@@ -417,16 +417,13 @@ module spi_device (
   ////////////////////////////
   // SPI Serial to Parallel //
   ////////////////////////////
-  // TODO: Make full SPI interface
-  // Currently only one line is connected
-  logic [3:0] s2p_si;
-  assign s2p_si = {3'b 0, cio_sdi_i};
+
   spi_s2p u_s2p (
     .clk_i        (clk_spi_in_buf),
     .rst_ni       (rst_spi_n),
 
     // SPI interface
-    .s_i          (s2p_si),
+    .s_i          (cio_sd_i),
 
     .data_valid_o (s2p_data_valid),
     .data_o       (s2p_data      ),
@@ -437,13 +434,6 @@ module spi_device (
     .io_mode_i    (io_mode)
   );
 
-
-  // TODO: make full SPI
-  logic [3:0] p2s_so;
-  logic [3:0] p2s_s_en;
-  assign cio_sdo_o = p2s_so[1];
-  assign cio_sdo_en_o = p2s_s_en[1];
-
   spi_p2s u_p2s (
     .clk_i        (clk_spi_out_buf),
     .rst_ni       (rst_spi_n),
@@ -453,13 +443,12 @@ module spi_device (
     .data_sent_o  (p2s_sent),
 
     .csb_i        (cio_csb_i),
-    .s_en_o       (p2s_s_en),
-    .s_o          (p2s_so),
+    .s_en_o       (cio_sd_en_o),
+    .s_o          (cio_sd_o),
 
     .cpha_i       (cpha),
     .order_i      (txorder),
     .io_mode_i    (io_mode)
-
   );
 
   /////////////
@@ -490,7 +479,6 @@ module spi_device (
     .tx_wvalid_o (p2s_valid),
     .tx_data_o   (p2s_data),
     .tx_wready_i (p2s_sent)
-
   );
 
   // FIFO: Connecting FwMode to SRAM CTRLs
@@ -706,7 +694,7 @@ module spi_device (
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
-  `ASSERT_KNOWN(CioSdoEnOKnown, cio_sdo_en_o)
+  `ASSERT_KNOWN(CioSdoEnOKnown, cio_sd_en_o)
 
   `ASSERT_KNOWN(IntrRxfOKnown,         intr_rxf_o        )
   `ASSERT_KNOWN(IntrRxlvlOKnown,       intr_rxlvl_o      )

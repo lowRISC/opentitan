@@ -733,32 +733,64 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 % if num_dio != 0:
   // Dedicated IO connections
   // Input-only DIOs have no d2p signals
-  assign dio_d2p = {
+  assign dio_d2p = {<% vector_idx = num_dio - 1 %>
   % for sig in top["pinmux"]["dio"]:
     % if sig["type"] in ["output", "inout"]:
-    cio_${sig["name"]}_d2p${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}
+      % if sig["width"] > 1:
+        % for i in range(sig["width"]-1,-1,-1):
+    cio_${sig["name"]}_d2p[${i}]${"" if vector_idx - sig["width"] + 1 == 0 else ","} // DIO${vector_idx}<% vector_idx -= 1 %>
+        % endfor
+      % else:
+    cio_${sig["name"]}_d2p${"" if vector_idx == 0 else ","} // DIO${vector_idx}<% vector_idx -= 1 %>
+      % endif
     % else:
-    ${sig["width"]}'b0${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}: cio_${sig["name"]}
+      % if sig["width"] > 1:
+    ${sig["width"]}'b0${"" if vector_idx - sig["width"] + 1 == 0 else ","} // DIO${vector_idx} - DIO${vector_idx-sig["width"] + 1}: cio_${sig["name"]}<% vector_idx -= sig["width"] %>
+      % else:
+    ${sig["width"]}'b0${"" if vector_idx == 0 else ","} // DIO${vector_idx}: cio_${sig["name"]}<% vector_idx -= 1 %>
+      % endif
     % endif
   % endfor
   };
 
-  assign dio_d2p_en = {
+  assign dio_d2p_en = {<% vector_idx = num_dio - 1 %>
   % for sig in top["pinmux"]["dio"]:
     % if sig["type"] in ["output", "inout"]:
-    cio_${sig["name"]}_en_d2p${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}
+      % if sig["width"] > 1:
+        % for i in range(sig["width"]-1,-1,-1):
+    cio_${sig["name"]}_en_d2p[${i}]${"" if vector_idx - sig["width"] + 1 == 0 else ","} // DIO${vector_idx}<% vector_idx -= 1 %>
+        % endfor
+      % else:
+    cio_${sig["name"]}_en_d2p${"" if vector_idx == 0 else ","} // DIO${vector_idx}<% vector_idx -= 1 %>
+      % endif
     % else:
-    ${sig["width"]}'b0${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}: cio_${sig["name"]}
+      % if sig["width"] > 1:
+    ${sig["width"]}'b0${"" if vector_idx - sig["width"] + 1 == 0 else ","} // DIO${vector_idx} - DIO${vector_idx-sig["width"] + 1}: cio_${sig["name"]}<% vector_idx -= sig["width"] %>
+      % else:
+    ${sig["width"]}'b0${"" if vector_idx == 0 else ","} // DIO${vector_idx}: cio_${sig["name"]}<% vector_idx -= 1 %>
+      % endif
     % endif
   % endfor
   };
 
-  // Output-only DIOs have no p2d signal
+  // Output-only DIOs have no p2d signal<% vector_idx = num_dio - 1 %>
   % for sig in top["pinmux"]["dio"]:
     % if sig["type"] in ["input", "inout"]:
-  assign cio_${sig["name"]}_p2d${" " * (max_diolength - len(sig["name"]))} = dio_p2d[${num_dio - 1 - loop.index}]; // DIO${num_dio - 1 - loop.index}
+      % if sig["width"] > 1:
+        % for i in range(sig["width"]-1,-1,-1):
+  assign cio_${sig["name"]}_p2d[${i}]${" " * (max_diolength - len(str(i)) - 2 - len(sig["name"]))} = dio_p2d[${vector_idx}]; // DIO${vector_idx}<% vector_idx -= 1 %>
+        % endfor
+      % else:
+  assign cio_${sig["name"]}_p2d${" " * (max_diolength - len(sig["name"]))} = dio_p2d[${vector_idx}]; // DIO${vector_idx}<% vector_idx -= 1 %>
+      % endif
     % else:
-  // DIO${num_dio - 1 - loop.index}: cio_${sig["name"]}
+      % if sig["width"] > 1:
+        % for i in range(sig["width"]-1,-1,-1):
+  // DIO${vector_idx}: cio_${sig["name"]}[${i}] // DIO${vector_idx}<% vector_idx -= 1 %>
+        % endfor
+      % else:
+  // DIO${vector_idx}: cio_${sig["name"]} // DIO${vector_idx}<% vector_idx -= 1 %>
+      % endif
     % endif
   % endfor
 % endif

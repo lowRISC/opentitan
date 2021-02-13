@@ -72,6 +72,26 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES = 32'h2000;
 
   /**
+   * Peripheral base address for spi_host0 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SPI_HOST0_BASE_ADDR = 32'h40060000;
+
+  /**
+   * Peripheral size in bytes for spi_host0 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SPI_HOST0_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for spi_host1 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SPI_HOST1_BASE_ADDR = 32'h40070000;
+
+  /**
+   * Peripheral size in bytes for spi_host1 in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SPI_HOST1_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for i2c0 in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_I2C0_BASE_ADDR = 32'h40080000;
@@ -402,13 +422,13 @@ package top_earlgrey_pkg;
     TopEarlgreyDioPinUsbdevDpPullup = 6,
     TopEarlgreyDioPinUsbdevSe0 = 7,
     TopEarlgreyDioPinUsbdevSense = 8,
-    TopEarlgreyDioPinUart0Tx = 9,
-    TopEarlgreyDioPinUart0Rx = 10,
-    TopEarlgreyDioPinSpiDeviceSdo = 11,
-    TopEarlgreyDioPinSpiDeviceSdi = 12,
-    TopEarlgreyDioPinSpiDeviceCsb = 13,
-    TopEarlgreyDioPinSpiDeviceSck = 14,
-    TopEarlgreyDioPinCount = 15
+    TopEarlgreyDioPinSpiHost0Sd[4] = 9,
+    TopEarlgreyDioPinSpiHost0Csb = 13,
+    TopEarlgreyDioPinSpiHost0Sck = 14,
+    TopEarlgreyDioPinSpiDeviceSd[4] = 15,
+    TopEarlgreyDioPinSpiDeviceCsb = 19,
+    TopEarlgreyDioPinSpiDeviceSck = 20,
+    TopEarlgreyDioPinCount = 21
   } top_earlgrey_dio_pin_e;
 
   // TODO: Enumeration for PLIC Interrupt source peripheral.

@@ -10,6 +10,8 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
+      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:prim:lc_sync
     files:
       - rtl/spi_host_reg_pkg.sv
       - rtl/spi_host_reg_top.sv

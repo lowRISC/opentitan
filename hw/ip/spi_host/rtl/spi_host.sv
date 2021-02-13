@@ -12,7 +12,7 @@ module spi_host (
   input clk_i,
   input rst_ni,
 
-  input scanmode_i,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i,
 
   // Register interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -59,7 +59,7 @@ module spi_host (
   assign cio_csb_en_o = reg2hw.control.csb.q;
 
   logic unused_sigs;
-  assign unused_sigs = scanmode_i;
+  assign unused_sigs = ^scanmode_i;
 
   // Tie offs
   assign hw2reg.control.dir.d  = 1'b0;

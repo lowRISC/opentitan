@@ -81,6 +81,18 @@
     }
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_spi_host0"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_spi_host1"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_rv_timer"
       act:    "req"
       package: "tlul_pkg"
