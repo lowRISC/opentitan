@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/sca/aes_serial/simple_serial.h"
+#include "sw/device/sca/simple_serial.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/sca/aes_serial/prng.h"
+#include "sw/device/sca/prng.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

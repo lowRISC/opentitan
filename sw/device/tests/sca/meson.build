@@ -5,7 +5,7 @@
 test('sca_prng_unittest', executable(
   'sca_prng_unittest',
   sources: [
-    meson.source_root() / 'sw/device/sca/aes_serial/prng.c',
+    meson.source_root() / 'sw/device/sca/prng.c',
     'sca_prng_unittest.cc',
   ],
   dependencies: [
