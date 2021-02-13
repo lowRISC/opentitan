@@ -66,8 +66,8 @@
     }
 
     {
-      name: otp_ctrl_lc
-      uvm_test_seq: otp_ctrl_lc_vseq
+      name: otp_ctrl_parallel_lc_req
+      uvm_test_seq: otp_ctrl_parallel_lc_req_vseq
     }
 
     {

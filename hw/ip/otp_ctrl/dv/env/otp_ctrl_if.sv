@@ -66,5 +66,5 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   // During lc_prog_req, either otp_idle will be reset or lc_error is set
   `ASSERT(LcProgReq_A, $rose(lc_prog_req) |=>
-                       ($fell(pwr_otp_idle_o) || $rose(lc_prog_err)) within lc_prog_req[*1:$])
+                       (pwr_otp_idle_o == 0 || $rose(lc_prog_err)) within lc_prog_req[*1:$])
 endinterface

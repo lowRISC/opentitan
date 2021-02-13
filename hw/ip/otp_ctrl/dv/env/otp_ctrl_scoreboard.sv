@@ -148,7 +148,12 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         otp_lc_data = rcv_item.h_data;
       end else begin
         `DV_CHECK_EQ(rcv_item.d_data, 1, err_msg)
-        predict_status_err(.dai_err(0), .lc_err(1));
+        fork
+          begin
+            cfg.clk_rst_vif.wait_n_clks(2);
+            predict_status_err(.dai_err(0), .lc_err(1));
+          end
+        join
       end
     end
   endtask
@@ -507,14 +512,19 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         // TODO: LC program could also cause otp_idle to be 0, will that affect DAI access and
         // status?
         if (data_phase_read) begin
+          bit [TL_DW-1:0] status_mask;
           if ((item.d_data & OtpDaiIdle) == OtpDaiIdle) check_otp_idle(1);
-          // we do not know how long it take to process checks, so mask check_pending field out
+
+          // Ignore check `check_pending` field - we do not know how long it take to process checks
+          if (under_chk) status_mask |= OtpCheckPending;
+
+          // STATUS register check with mask
+          `DV_CHECK_EQ((csr.get_mirrored_value() | status_mask), (item.d_data | status_mask),
+                       "reg name: status")
+
           if (under_chk) begin
-            `DV_CHECK_EQ((csr.get_mirrored_value() | OtpCheckPending),
-                         (item.d_data | OtpCheckPending), "reg name: status")
             if ((item.d_data & OtpCheckPending) != OtpCheckPending) under_chk = 0;
           end else begin
-            `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, "reg name: status")
             if (`gmv(ral.status.check_pending)) under_chk = 1;
           end
         end
@@ -592,7 +602,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                  // this scenario happens
                  cfg.m_otbn_pull_agent_cfg.vif.req || cfg.m_flash_data_pull_agent_cfg.vif.req ||
                  cfg.m_flash_addr_pull_agent_cfg.vif.req ||
-                 cfg.m_sram_pull_agent_cfg[0].vif.req || cfg.m_sram_pull_agent_cfg[1].vif.req);
+                 cfg.m_sram_pull_agent_cfg[0].vif.req || cfg.m_sram_pull_agent_cfg[1].vif.req ||
+                 cfg.m_lc_prog_pull_agent_cfg.vif.req || cfg.m_lc_token_pull_agent_cfg.vif.req);
           end
         join_any
         disable fork;
@@ -789,12 +800,12 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function void predict_status_err(bit dai_err = 0, bit lc_err = 0);
-    void'(ral.intr_state.otp_error.predict(.value(1)));
+    void'(ral.intr_state.otp_error.predict(.value(1), .kind(UVM_PREDICT_READ)));
     if (dai_err) begin
        void'(ral.status.dai_idle.predict(1));
        void'(ral.status.dai_error.predict(1));
     end
-    if (lc_err) void'(ral.status.lci_error.predict(1));
+    if (lc_err) void'(ral.status.lci_error.predict(.value(1), .kind(UVM_PREDICT_READ)));
   endfunction
 
   virtual function void predict_dai_idle_status_wo_err();
