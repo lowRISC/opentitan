@@ -51,8 +51,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   }
 
   constraint regwens_c {
-    check_regwen_val         dist {1 :/ 1, 0 :/ 9};
-    check_trigger_regwen_val dist {1 :/ 1, 0 :/ 9};
+    check_regwen_val         dist {0 :/ 1, 1 :/ 9};
+    check_trigger_regwen_val dist {0 :/ 1, 1 :/ 9};
   }
 
   constraint check_timeout_val_c {
