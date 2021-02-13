@@ -5,9 +5,9 @@
 #include "sw/device/lib/aes.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/sca/aes_serial/prng.h"
-#include "sw/device/sca/aes_serial/sca.h"
-#include "sw/device/sca/aes_serial/simple_serial.h"
+#include "sw/device/sca/prng.h"
+#include "sw/device/sca/sca.h"
+#include "sw/device/sca/simple_serial.h"
 
 /**
  * OpenTitan program for AES side-channel analysis.
