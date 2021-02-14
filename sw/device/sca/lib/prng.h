@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SCA_AES_SERIAL_PRNG_H_
-#define OPENTITAN_SW_DEVICE_SCA_AES_SERIAL_PRNG_H_
+#ifndef OPENTITAN_SW_DEVICE_SCA_LIB_PRNG_H_
+#define OPENTITAN_SW_DEVICE_SCA_LIB_PRNG_H_
 
 #include <stddef.h>
 
@@ -59,4 +59,4 @@ void prng_rand_bytes(uint8_t *buffer, size_t buffer_len);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SCA_AES_SERIAL_PRNG_H_
+#endif  // OPENTITAN_SW_DEVICE_SCA_LIB_PRNG_H_

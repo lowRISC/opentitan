@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SCA_AES_SERIAL_SCA_H_
-#define OPENTITAN_SW_DEVICE_SCA_AES_SERIAL_SCA_H_
+#ifndef OPENTITAN_SW_DEVICE_SCA_LIB_SCA_H_
+#define OPENTITAN_SW_DEVICE_SCA_LIB_SCA_H_
 
 #include "sw/device/lib/dif/dif_uart.h"
 
@@ -79,4 +79,4 @@ void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles);
     }                                                     \
   } while (false)
 
-#endif  // OPENTITAN_SW_DEVICE_SCA_AES_SERIAL_SCA_H_
+#endif  // OPENTITAN_SW_DEVICE_SCA_LIB_SCA_H_

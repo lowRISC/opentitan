@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sw/device/sca/prng.h"
+#include "sw/device/sca/lib/prng.h"
 
 namespace sca_prng_unittest {
 namespace {
