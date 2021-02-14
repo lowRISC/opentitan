@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SCA_AES_SERIAL_SIMPLE_SERIAL_H_
-#define OPENTITAN_SW_DEVICE_SCA_AES_SERIAL_SIMPLE_SERIAL_H_
+#ifndef OPENTITAN_SW_DEVICE_SCA_LIB_SIMPLE_SERIAL_H_
+#define OPENTITAN_SW_DEVICE_SCA_LIB_SIMPLE_SERIAL_H_
 
 #include "sw/device/lib/dif/dif_uart.h"
 
@@ -98,4 +98,4 @@ void simple_serial_send_status(uint8_t res);
  */
 void simple_serial_print_hex(const uint8_t *data, size_t data_len);
 
-#endif  // OPENTITAN_SW_DEVICE_SCA_AES_SERIAL_SIMPLE_SERIAL_H_
+#endif  // OPENTITAN_SW_DEVICE_SCA_LIB_SIMPLE_SERIAL_H_
