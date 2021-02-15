@@ -7,8 +7,16 @@ import threading
 from signal import SIGINT, signal
 
 from Launcher import LauncherError
+from StatusPrinter import get_status_printer
 from Timer import Timer
 from utils import VERBOSE
+
+
+# Sum of lenghts of all lists in the given dict.
+def sum_dict_lists(d):
+    '''Given a dict whose key values are lists, return sum of lengths of
+    thoese lists.'''
+    return sum([len(d[k]) for k in d])
 
 
 class Scheduler:
@@ -28,6 +36,12 @@ class Scheduler:
         for item in items:
             self.add_to_scheduled(item)
 
+        # Print status periodically using an external status printer.
+        self.status_printer = get_status_printer()
+        self.status_printer.print_header(
+            msg="Q: queued, D: dispatched, P: passed, F: failed, K: killed, "
+            "T: total")
+
         # Sets of items, split up by their current state. The sets are
         # disjoint and their union equals the keys of self.item_to_status.
         # _queued is a list so that we dispatch things in order (relevant
@@ -38,12 +52,22 @@ class Scheduler:
         self._passed = {}
         self._failed = {}
         self._killed = {}
+        self._total = {}
         for target in self._scheduled:
             self._queued[target] = []
             self._running[target] = set()
             self._passed[target] = set()
             self._failed[target] = set()
             self._killed[target] = set()
+            self._total[target] = sum_dict_lists(self._scheduled[target])
+
+            # Stuff for printing the status.
+            width = len(str(self._total[target]))
+            field_fmt = '{{:0{}d}}'.format(width)
+            self.msg_fmt = 'Q: {0}, D: {0}, P: {0}, F: {0}, K: {0}, T: {0}'.format(
+                field_fmt)
+            msg = self.msg_fmt.format(0, 0, 0, 0, 0, self._total[target])
+            self.status_printer.init_target(target=target, msg=msg)
 
         # A map from the Deploy objects tracked by this class to their
         # current status. This status is 'Q', 'D', 'P', 'F' or 'K',
@@ -59,9 +83,6 @@ class Scheduler:
         '''
 
         timer = Timer()
-
-        log.info("[legend]: [Q: queued, D: dispatched, "
-                 "P: passed, F: failed, K: killed, T: total]")
 
         # Catch one SIGINT and tell the runner to quit. On a second, die.
         stop_now = threading.Event()
@@ -92,8 +113,9 @@ class Scheduler:
                 hms = timer.hms()
                 changed = self._poll(hms) or timer.check_time()
                 self._dispatch(hms)
-                if self._check_if_done(hms, changed):
-                    break
+                if changed:
+                    if self._check_if_done(hms):
+                        break
 
                 # This is essentially sleep(1) to wait a second between each
                 # polling loop. But we do it with a bounded wait on stop_now so
@@ -102,6 +124,9 @@ class Scheduler:
                 stop_now.wait(timeout=1)
         finally:
             signal(SIGINT, old_handler)
+
+        # Cleaup the status printer.
+        self.status_printer.exit()
 
         # We got to the end without anything exploding. Return the results.
         return self.item_to_status
@@ -313,12 +338,7 @@ class Scheduler:
     def _dispatch(self, hms):
         '''Dispatch some queued items if possible.'''
 
-        # Compute sum of lengths of all lists in the given dict.
-        def __sum(d):
-            return sum([len(d[k]) for k in d])
-
-        slots = min(Scheduler.max_parallel - __sum(self._running),
-                    __sum(self._queued))
+        slots = Scheduler.max_parallel - sum_dict_lists(self._running)
         if slots <= 0:
             return
 
@@ -400,57 +420,39 @@ class Scheduler:
             for item in [item for item in self._running[target]]:
                 self._kill_item(item)
 
-    def _check_if_done(self, hms, changed):
-        '''Check whether we are finished.
+    def _check_if_done(self, hms):
+        '''Check if we are done executing all jobs.
 
-        If print_status or we've reached a time interval then print current
-        status for those jobs that weren't known to be finished already.
-
+        Also, prints the status of currently running jobs.
         '''
-        # 'just_completed' is a 'precursor' to updating the _scheduled list.
-        # This is done in two separate for loops so that we can print the
-        # status of the targets that just completed one final time.
-        just_completed = {}
+
+        done = True
         for target in self._scheduled:
-            # Target is done if scheduled, queued and running lists are empty.
-            just_completed[target] = not self._scheduled[target] and \
-                not self._queued[target] and not self._running[target]
-
-        changed = changed or any(just_completed.values())
-        if changed:
-            self._print_status(hms)
-
-        for target in just_completed:
-            if just_completed[target]:
-                self._scheduled.pop(target)
-
-        return all(just_completed.values())
-
-    def _print_status(self, hms):
-        '''Print the status of currently running jobs.'''
-
-        for target in self._scheduled:
-            total_cnt = sum([
-                len(self._queued[target]),
-                len(self._running[target]),
+            done_cnt = sum([
                 len(self._passed[target]),
                 len(self._failed[target]),
                 len(self._killed[target])
             ])
+            done = done and (done_cnt == self._total[target])
 
-            if total_cnt > 0:
-                width = len(str(total_cnt))
+            # Skip if a target has not even begun executing.
+            if not (self._queued[target] or self._running[target] or
+                    done_cnt > 0):
+                continue
 
-                field_fmt = '{{:0{}d}}'.format(width)
-                msg_fmt = ('[Q: {0}, D: {0}, P: {0}, F: {0}, K: {0}, T: {0}]'.
-                           format(field_fmt))
+            perc = done_cnt / self._total[target] * 100
 
-                msg = msg_fmt.format(len(self._queued[target]),
-                                     len(self._running[target]),
-                                     len(self._passed[target]),
-                                     len(self._failed[target]),
-                                     len(self._killed[target]), total_cnt)
-                log.info("[%s]: [%s]: %s", hms, target, msg)
+            msg = self.msg_fmt.format(len(self._queued[target]),
+                                      len(self._running[target]),
+                                      len(self._passed[target]),
+                                      len(self._failed[target]),
+                                      len(self._killed[target]),
+                                      self._total[target])
+            self.status_printer.update_target(target=target,
+                                              msg=msg,
+                                              hms=hms,
+                                              perc=perc)
+        return done
 
     def _cancel_item(self, item, cancel_successors=True):
         '''Cancel an item and optionally all of its successors.
