@@ -580,6 +580,55 @@ package pinmux_reg_pkg;
   parameter logic [BlockAw-1:0] PINMUX_WKUP_DETECTOR_PADSEL_7_OFFSET = 11'h 698;
   parameter logic [BlockAw-1:0] PINMUX_WKUP_CAUSE_OFFSET = 11'h 69c;
 
+  // Reset values for hwext registers
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_0_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_1_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_2_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_3_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_4_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_5_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_6_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_7_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_8_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_9_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_10_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_11_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_12_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_13_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_14_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_15_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_16_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_17_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_18_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_19_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_20_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_21_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_22_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_23_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_24_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_25_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_26_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_27_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_28_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_29_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_30_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_MIO_PAD_ATTR_31_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_0_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_1_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_2_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_3_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_4_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_5_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_6_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_7_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_8_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_9_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_10_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_11_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_12_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_13_RESVAL = 10'h 0;
+  parameter logic [9:0] PINMUX_DIO_PAD_ATTR_14_RESVAL = 10'h 0;
+  parameter logic [7:0] PINMUX_WKUP_CAUSE_RESVAL = 8'h 0;
 
   // Register Index
   typedef enum int {

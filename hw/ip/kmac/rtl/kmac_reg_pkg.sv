@@ -274,6 +274,44 @@ package kmac_reg_pkg;
   parameter logic [BlockAw-1:0] KMAC_PREFIX_10_OFFSET = 12'h d4;
   parameter logic [BlockAw-1:0] KMAC_ERR_CODE_OFFSET = 12'h d8;
 
+  // Reset values for hwext registers
+  parameter logic [2:0] KMAC_INTR_TEST_RESVAL = 3'h 0;
+  parameter logic [0:0] KMAC_CFG_REGWEN_RESVAL = 1'h 1;
+  parameter logic [3:0] KMAC_CMD_RESVAL = 4'h 0;
+  parameter logic [15:0] KMAC_STATUS_RESVAL = 16'h 4001;
+  parameter logic [31:0] KMAC_KEY_SHARE0_0_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_1_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_2_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_3_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_4_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_5_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_6_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_7_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_8_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_9_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_10_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_11_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_12_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_13_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_14_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE0_15_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_0_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_1_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_2_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_3_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_4_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_5_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_6_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_7_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_8_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_9_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_10_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_11_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_12_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_13_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_14_RESVAL = 32'h 0;
+  parameter logic [31:0] KMAC_KEY_SHARE1_15_RESVAL = 32'h 0;
+
   // Window parameter
   parameter logic [BlockAw-1:0] KMAC_STATE_OFFSET = 12'h 400;
   parameter logic [BlockAw-1:0] KMAC_STATE_SIZE   = 12'h 200;

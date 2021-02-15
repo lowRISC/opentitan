@@ -222,19 +222,38 @@ packbit = 0
   // Register Address
 <%
 ublock = block.name.upper()
+flat_regs = block.get_regs_flat()
+
+def reg_pfx(reg):
+  return '{}_{}'.format(ublock, reg.name.upper())
+
 %>\
-% for r in block.get_regs_flat():
-  parameter logic [BlockAw-1:0] ${ublock}_${r.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % r.offset};
+% for r in flat_regs:
+  parameter logic [BlockAw-1:0] ${reg_pfx(r)}_OFFSET = ${block.addr_width}'h ${"%x" % r.offset};
 % endfor
 
+<%
+  hwext_regs = [r for r in flat_regs if r.hwext]
+%>\
+% if hwext_regs:
+  // Reset values for hwext registers
+  % for reg in hwext_regs:
+<%
+    reg_width = reg.get_width()
+    reg_msb = reg_width - 1
+%>\
+  parameter logic [${reg_msb}:0] ${reg_pfx(reg)}_RESVAL = ${"{}'h {:x}".format(reg_width, reg.resval)};
+  % endfor
+
+% endif
 % if len(block.wins) > 0:
   // Window parameter
-% endif
 % for i,w in enumerate(block.wins):
   parameter logic [BlockAw-1:0] ${ublock}_${w.name.upper()}_OFFSET = ${block.addr_width}'h ${"%x" % w.base_addr};
   parameter logic [BlockAw-1:0] ${ublock}_${w.name.upper()}_SIZE   = ${block.addr_width}'h ${"%x" % (w.limit_addr - w.base_addr)};
 % endfor
 
+% endif
   // Register Index
   typedef enum int {
 % for r in block.get_regs_flat():

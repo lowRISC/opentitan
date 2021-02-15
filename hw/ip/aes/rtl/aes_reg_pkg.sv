@@ -257,6 +257,33 @@ package aes_reg_pkg;
   parameter logic [BlockAw-1:0] AES_TRIGGER_OFFSET = 7'h 78;
   parameter logic [BlockAw-1:0] AES_STATUS_OFFSET = 7'h 7c;
 
+  // Reset values for hwext registers
+  parameter logic [1:0] AES_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] AES_KEY_SHARE0_0_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE0_1_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE0_2_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE0_3_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE0_4_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE0_5_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE0_6_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE0_7_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE1_0_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE1_1_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE1_2_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE1_3_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE1_4_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE1_5_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE1_6_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_KEY_SHARE1_7_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_IV_0_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_IV_1_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_IV_2_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_IV_3_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_DATA_OUT_0_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_DATA_OUT_1_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_DATA_OUT_2_RESVAL = 32'h 0;
+  parameter logic [31:0] AES_DATA_OUT_3_RESVAL = 32'h 0;
+  parameter logic [11:0] AES_CTRL_SHADOWED_RESVAL = 12'h c0;
 
   // Register Index
   typedef enum int {

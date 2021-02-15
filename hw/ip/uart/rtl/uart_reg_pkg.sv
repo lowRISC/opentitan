@@ -333,6 +333,12 @@ package uart_reg_pkg;
   parameter logic [BlockAw-1:0] UART_VAL_OFFSET = 6'h 28;
   parameter logic [BlockAw-1:0] UART_TIMEOUT_CTRL_OFFSET = 6'h 2c;
 
+  // Reset values for hwext registers
+  parameter logic [7:0] UART_INTR_TEST_RESVAL = 8'h 0;
+  parameter logic [5:0] UART_STATUS_RESVAL = 6'h 3c;
+  parameter logic [7:0] UART_RDATA_RESVAL = 8'h 0;
+  parameter logic [21:0] UART_FIFO_STATUS_RESVAL = 22'h 0;
+  parameter logic [15:0] UART_VAL_RESVAL = 16'h 0;
 
   // Register Index
   typedef enum int {

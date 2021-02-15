@@ -65,7 +65,6 @@ package spi_host_reg_pkg;
   // Register Address
   parameter logic [BlockAw-1:0] SPI_HOST_CONTROL_OFFSET = 2'h 0;
 
-
   // Register Index
   typedef enum int {
     SPI_HOST_CONTROL

@@ -164,6 +164,28 @@ package lc_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_6_OFFSET = 7'h 4c;
   parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_7_OFFSET = 7'h 50;
 
+  // Reset values for hwext registers
+  parameter logic [1:0] LC_CTRL_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [8:0] LC_CTRL_STATUS_RESVAL = 9'h 0;
+  parameter logic [7:0] LC_CTRL_CLAIM_TRANSITION_IF_RESVAL = 8'h 0;
+  parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_RESVAL = 1'h 0;
+  parameter logic [0:0] LC_CTRL_TRANSITION_CMD_RESVAL = 1'h 0;
+  parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_0_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_1_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_2_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_3_RESVAL = 32'h 0;
+  parameter logic [3:0] LC_CTRL_TRANSITION_TARGET_RESVAL = 4'h 0;
+  parameter logic [3:0] LC_CTRL_LC_STATE_RESVAL = 4'h 0;
+  parameter logic [4:0] LC_CTRL_LC_TRANSITION_CNT_RESVAL = 5'h 0;
+  parameter logic [1:0] LC_CTRL_LC_ID_STATE_RESVAL = 2'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_0_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_1_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_2_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_3_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_4_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_5_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_6_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_7_RESVAL = 32'h 0;
 
   // Register Index
   typedef enum int {

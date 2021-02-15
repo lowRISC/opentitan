@@ -180,6 +180,10 @@ package pwrmgr_reg_pkg;
   parameter logic [BlockAw-1:0] PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET = 6'h 34;
   parameter logic [BlockAw-1:0] PWRMGR_WAKE_INFO_OFFSET = 6'h 38;
 
+  // Reset values for hwext registers
+  parameter logic [0:0] PWRMGR_INTR_TEST_RESVAL = 1'h 0;
+  parameter logic [0:0] PWRMGR_CTRL_CFG_REGWEN_RESVAL = 1'h 1;
+  parameter logic [3:0] PWRMGR_WAKE_INFO_RESVAL = 4'h 0;
 
   // Register Index
   typedef enum int {

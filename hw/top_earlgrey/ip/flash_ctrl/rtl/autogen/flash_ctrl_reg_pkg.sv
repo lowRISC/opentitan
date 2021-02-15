@@ -627,6 +627,11 @@ package flash_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] FLASH_CTRL_FIFO_LVL_OFFSET = 9'h 164;
   parameter logic [BlockAw-1:0] FLASH_CTRL_FIFO_RST_OFFSET = 9'h 168;
 
+  // Reset values for hwext registers
+  parameter logic [4:0] FLASH_CTRL_INTR_TEST_RESVAL = 5'h 0;
+  parameter logic [2:0] FLASH_CTRL_ALERT_TEST_RESVAL = 3'h 0;
+  parameter logic [0:0] FLASH_CTRL_CTRL_REGWEN_RESVAL = 1'h 1;
+
   // Window parameter
   parameter logic [BlockAw-1:0] FLASH_CTRL_PROG_FIFO_OFFSET = 9'h 16c;
   parameter logic [BlockAw-1:0] FLASH_CTRL_PROG_FIFO_SIZE   = 9'h 4;

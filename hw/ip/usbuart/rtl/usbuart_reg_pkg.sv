@@ -341,6 +341,14 @@ package usbuart_reg_pkg;
   parameter logic [BlockAw-1:0] USBUART_USBSTAT_OFFSET = 6'h 30;
   parameter logic [BlockAw-1:0] USBUART_USBPARAM_OFFSET = 6'h 34;
 
+  // Reset values for hwext registers
+  parameter logic [7:0] USBUART_INTR_TEST_RESVAL = 8'h 0;
+  parameter logic [5:0] USBUART_STATUS_RESVAL = 6'h 0;
+  parameter logic [7:0] USBUART_RDATA_RESVAL = 8'h 0;
+  parameter logic [21:0] USBUART_FIFO_STATUS_RESVAL = 22'h 0;
+  parameter logic [15:0] USBUART_VAL_RESVAL = 16'h 0;
+  parameter logic [22:0] USBUART_USBSTAT_RESVAL = 23'h 0;
+  parameter logic [17:0] USBUART_USBPARAM_RESVAL = 18'h 0;
 
   // Register Index
   typedef enum int {

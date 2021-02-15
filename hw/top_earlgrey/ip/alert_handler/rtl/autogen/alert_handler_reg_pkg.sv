@@ -589,6 +589,20 @@ package alert_handler_reg_pkg;
   parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET = 10'h 3e4;
   parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_STATE_OFFSET = 10'h 3e8;
 
+  // Reset values for hwext registers
+  parameter logic [3:0] ALERT_HANDLER_INTR_TEST_RESVAL = 4'h 0;
+  parameter logic [15:0] ALERT_HANDLER_CLASSA_ACCUM_CNT_RESVAL = 16'h 0;
+  parameter logic [31:0] ALERT_HANDLER_CLASSA_ESC_CNT_RESVAL = 32'h 0;
+  parameter logic [2:0] ALERT_HANDLER_CLASSA_STATE_RESVAL = 3'h 0;
+  parameter logic [15:0] ALERT_HANDLER_CLASSB_ACCUM_CNT_RESVAL = 16'h 0;
+  parameter logic [31:0] ALERT_HANDLER_CLASSB_ESC_CNT_RESVAL = 32'h 0;
+  parameter logic [2:0] ALERT_HANDLER_CLASSB_STATE_RESVAL = 3'h 0;
+  parameter logic [15:0] ALERT_HANDLER_CLASSC_ACCUM_CNT_RESVAL = 16'h 0;
+  parameter logic [31:0] ALERT_HANDLER_CLASSC_ESC_CNT_RESVAL = 32'h 0;
+  parameter logic [2:0] ALERT_HANDLER_CLASSC_STATE_RESVAL = 3'h 0;
+  parameter logic [15:0] ALERT_HANDLER_CLASSD_ACCUM_CNT_RESVAL = 16'h 0;
+  parameter logic [31:0] ALERT_HANDLER_CLASSD_ESC_CNT_RESVAL = 32'h 0;
+  parameter logic [2:0] ALERT_HANDLER_CLASSD_STATE_RESVAL = 3'h 0;
 
   // Register Index
   typedef enum int {

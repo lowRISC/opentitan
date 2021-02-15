@@ -268,6 +268,8 @@ package rv_plic_reg_pkg;
   parameter logic [BlockAw-1:0] RV_PLIC_CC0_OFFSET = 9'h 108;
   parameter logic [BlockAw-1:0] RV_PLIC_MSIP0_OFFSET = 9'h 10c;
 
+  // Reset values for hwext registers
+  parameter logic [5:0] RV_PLIC_CC0_RESVAL = 6'h 0;
 
   // Register Index
   typedef enum int {

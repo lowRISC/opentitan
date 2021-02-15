@@ -66,7 +66,6 @@ package clkmgr_reg_pkg;
   parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_OFFSET = 4'h 4;
   parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_STATUS_OFFSET = 4'h 8;
 
-
   // Register Index
   typedef enum int {
     CLKMGR_CLK_ENABLES,
