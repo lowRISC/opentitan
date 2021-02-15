@@ -216,6 +216,29 @@ package hmac_reg_pkg;
   parameter logic [BlockAw-1:0] HMAC_MSG_LENGTH_LOWER_OFFSET = 12'h 60;
   parameter logic [BlockAw-1:0] HMAC_MSG_LENGTH_UPPER_OFFSET = 12'h 64;
 
+  // Reset values for hwext registers
+  parameter logic [2:0] HMAC_INTR_TEST_RESVAL = 3'h 0;
+  parameter logic [3:0] HMAC_CFG_RESVAL = 4'h 4;
+  parameter logic [1:0] HMAC_CMD_RESVAL = 2'h 0;
+  parameter logic [8:0] HMAC_STATUS_RESVAL = 9'h 1;
+  parameter logic [31:0] HMAC_WIPE_SECRET_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_0_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_1_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_2_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_3_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_4_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_5_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_6_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_7_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_2_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_3_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_4_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_5_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_6_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_7_RESVAL = 32'h 0;
+
   // Window parameter
   parameter logic [BlockAw-1:0] HMAC_MSG_FIFO_OFFSET = 12'h 800;
   parameter logic [BlockAw-1:0] HMAC_MSG_FIFO_SIZE   = 12'h 800;

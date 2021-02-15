@@ -206,6 +206,14 @@ package gpio_reg_pkg;
   parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_LVLLOW_OFFSET = 6'h 34;
   parameter logic [BlockAw-1:0] GPIO_CTRL_EN_INPUT_FILTER_OFFSET = 6'h 38;
 
+  // Reset values for hwext registers
+  parameter logic [31:0] GPIO_INTR_TEST_RESVAL = 32'h 0;
+  parameter logic [31:0] GPIO_DIRECT_OUT_RESVAL = 32'h 0;
+  parameter logic [31:0] GPIO_MASKED_OUT_LOWER_RESVAL = 32'h 0;
+  parameter logic [31:0] GPIO_MASKED_OUT_UPPER_RESVAL = 32'h 0;
+  parameter logic [31:0] GPIO_DIRECT_OE_RESVAL = 32'h 0;
+  parameter logic [31:0] GPIO_MASKED_OE_LOWER_RESVAL = 32'h 0;
+  parameter logic [31:0] GPIO_MASKED_OE_UPPER_RESVAL = 32'h 0;
 
   // Register Index
   typedef enum int {

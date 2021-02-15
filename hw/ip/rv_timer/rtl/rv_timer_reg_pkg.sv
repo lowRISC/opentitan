@@ -112,6 +112,8 @@ package rv_timer_reg_pkg;
   parameter logic [BlockAw-1:0] RV_TIMER_INTR_STATE0_OFFSET = 9'h 118;
   parameter logic [BlockAw-1:0] RV_TIMER_INTR_TEST0_OFFSET = 9'h 11c;
 
+  // Reset values for hwext registers
+  parameter logic [0:0] RV_TIMER_INTR_TEST0_RESVAL = 1'h 0;
 
   // Register Index
   typedef enum int {

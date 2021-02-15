@@ -328,6 +328,12 @@ package csrng_reg_pkg;
   parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_OFFSET = 6'h 38;
   parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_TEST_OFFSET = 6'h 3c;
 
+  // Reset values for hwext registers
+  parameter logic [3:0] CSRNG_INTR_TEST_RESVAL = 4'h 0;
+  parameter logic [0:0] CSRNG_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [1:0] CSRNG_GENBITS_VLD_RESVAL = 2'h 0;
+  parameter logic [31:0] CSRNG_GENBITS_RESVAL = 32'h 0;
+  parameter logic [31:0] CSRNG_INT_STATE_VAL_RESVAL = 32'h 0;
 
   // Register Index
   typedef enum int {

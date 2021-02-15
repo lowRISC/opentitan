@@ -581,6 +581,12 @@ package usbdev_reg_pkg;
   parameter logic [BlockAw-1:0] USBDEV_WAKE_CONFIG_OFFSET = 12'h 70;
   parameter logic [BlockAw-1:0] USBDEV_WAKE_DEBUG_OFFSET = 12'h 74;
 
+  // Reset values for hwext registers
+  parameter logic [16:0] USBDEV_INTR_TEST_RESVAL = 17'h 0;
+  parameter logic [31:0] USBDEV_USBSTAT_RESVAL = 32'h 80000000;
+  parameter logic [23:0] USBDEV_RXFIFO_RESVAL = 24'h 0;
+  parameter logic [16:0] USBDEV_PHY_PINS_SENSE_RESVAL = 17'h 0;
+
   // Window parameter
   parameter logic [BlockAw-1:0] USBDEV_BUFFER_OFFSET = 12'h 800;
   parameter logic [BlockAw-1:0] USBDEV_BUFFER_SIZE   = 12'h 800;

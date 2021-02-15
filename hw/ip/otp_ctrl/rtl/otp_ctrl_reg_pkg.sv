@@ -339,6 +339,29 @@ package otp_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] OTP_CTRL_SECRET2_DIGEST_0_OFFSET = 14'h 7c;
   parameter logic [BlockAw-1:0] OTP_CTRL_SECRET2_DIGEST_1_OFFSET = 14'h 80;
 
+  // Reset values for hwext registers
+  parameter logic [1:0] OTP_CTRL_INTR_TEST_RESVAL = 2'h 0;
+  parameter logic [1:0] OTP_CTRL_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [14:0] OTP_CTRL_STATUS_RESVAL = 15'h 0;
+  parameter logic [26:0] OTP_CTRL_ERR_CODE_RESVAL = 27'h 0;
+  parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_RESVAL = 1'h 1;
+  parameter logic [2:0] OTP_CTRL_DIRECT_ACCESS_CMD_RESVAL = 3'h 0;
+  parameter logic [31:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_RESVAL = 32'h 0;
+  parameter logic [1:0] OTP_CTRL_CHECK_TRIGGER_RESVAL = 2'h 0;
+  parameter logic [31:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_HW_CFG_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_HW_CFG_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET0_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET0_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET1_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET1_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_1_RESVAL = 32'h 0;
+
   // Window parameter
   parameter logic [BlockAw-1:0] OTP_CTRL_SW_CFG_WINDOW_OFFSET = 14'h 1000;
   parameter logic [BlockAw-1:0] OTP_CTRL_SW_CFG_WINDOW_SIZE   = 14'h 800;

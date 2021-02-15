@@ -565,6 +565,13 @@ package i2c_reg_pkg;
   parameter logic [BlockAw-1:0] I2C_STRETCH_CTRL_OFFSET = 7'h 50;
   parameter logic [BlockAw-1:0] I2C_HOST_TIMEOUT_CTRL_OFFSET = 7'h 54;
 
+  // Reset values for hwext registers
+  parameter logic [15:0] I2C_INTR_TEST_RESVAL = 16'h 0;
+  parameter logic [9:0] I2C_STATUS_RESVAL = 10'h 33c;
+  parameter logic [7:0] I2C_RDATA_RESVAL = 8'h 0;
+  parameter logic [29:0] I2C_FIFO_STATUS_RESVAL = 30'h 0;
+  parameter logic [31:0] I2C_VAL_RESVAL = 32'h 0;
+  parameter logic [9:0] I2C_ACQDATA_RESVAL = 10'h 0;
 
   // Register Index
   typedef enum int {

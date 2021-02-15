@@ -138,6 +138,12 @@ package rstmgr_reg_pkg;
   parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGEN_OFFSET = 6'h 1c;
   parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_OFFSET = 6'h 20;
 
+  // Reset values for hwext registers
+  parameter logic [3:0] RSTMGR_ALERT_INFO_ATTR_RESVAL = 4'h 0;
+  parameter logic [31:0] RSTMGR_ALERT_INFO_RESVAL = 32'h 0;
+  parameter logic [3:0] RSTMGR_CPU_INFO_ATTR_RESVAL = 4'h 0;
+  parameter logic [31:0] RSTMGR_CPU_INFO_RESVAL = 32'h 0;
+  parameter logic [4:0] RSTMGR_SW_RST_CTRL_N_RESVAL = 5'h 1f;
 
   // Register Index
   typedef enum int {
