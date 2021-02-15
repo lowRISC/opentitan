@@ -33,7 +33,8 @@
  *     -pkeyopt rsa_keygen_bits:1024
  *
  * # Create all constants/variables
- * $ ./otbn_rsa_test_params.py otbn_rsa_test_private_key_1024.pem
+ * $ ./otbn_test_params.py rsa otbn_rsa_test_private_key_1024.pem \
+ *     "Hello OTBN, can you encrypt and decrypt this for me?"
  * </code>
  */
 
