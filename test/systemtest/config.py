@@ -35,10 +35,14 @@ TEST_APPS_SELFCHECKING = [
         "verilator_extra_args": ['+OTBN_USE_MODEL=1'],
         "targets": ["sim_verilator"],
     },
-    # The RSA tests can be run in simulation, but take a long time there. Run
-    # them on FPGAs only for faster test results.
+    # The OTBN end-to-end tests can be run in simulation, but take a long time
+    # there. Run them on FPGAs only for faster test results.
     {
         "name": "otbn_rsa_test",
+        "targets": ["fpga_nexysvideo"],
+    },
+    {
+        "name": "otbn_ecdsa_p256_test",
         "targets": ["fpga_nexysvideo"],
     },
     {
