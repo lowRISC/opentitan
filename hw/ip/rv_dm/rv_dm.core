@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:tlul:adapter_host
       - pulp-platform:riscv-dbg:0.1
+      - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/rv_dm.sv
     file_type: systemVerilogSource
@@ -71,5 +72,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
-
