@@ -27,11 +27,11 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_RAM_RET_AON       = 32'h 40600000;
   localparam logic [31:0] ADDR_SPACE_OTP_CTRL          = 32'h 40130000;
   localparam logic [31:0] ADDR_SPACE_LC_CTRL           = 32'h 40140000;
-  localparam logic [31:0] ADDR_SPACE_SENSOR_CTRL_AON   = 32'h 40500000;
+  localparam logic [31:0] ADDR_SPACE_SENSOR_CTRL_AON   = 32'h 40490000;
   localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER     = 32'h 40150000;
-  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON = 32'h 40510000;
-  localparam logic [31:0] ADDR_SPACE_NMI_GEN           = 32'h 40160000;
-  localparam logic [31:0] ADDR_SPACE_AST_WRAPPER       = 32'h 40490000;
+  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON = 32'h 40500000;
+  localparam logic [31:0] ADDR_SPACE_AON_TIMER_AON     = 32'h 40470000;
+  localparam logic [31:0] ADDR_SPACE_AST_WRAPPER       = 32'h 40480000;
 
   localparam logic [31:0] ADDR_MASK_UART0             = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_UART1             = 32'h 00000fff;
@@ -57,7 +57,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_SENSOR_CTRL_AON   = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_ALERT_HANDLER     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_RET_AON = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_NMI_GEN           = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_AON_TIMER_AON     = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AST_WRAPPER       = 32'h 00000fff;
 
   localparam int N_HOST   = 1;
@@ -88,7 +88,7 @@ package tl_peri_pkg;
     TlSensorCtrlAon = 21,
     TlAlertHandler = 22,
     TlSramCtrlRetAon = 23,
-    TlNmiGen = 24,
+    TlAonTimerAon = 24,
     TlAstWrapper = 25
   } tl_device_e;
 

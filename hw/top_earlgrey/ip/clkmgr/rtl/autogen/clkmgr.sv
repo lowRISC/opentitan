@@ -186,6 +186,10 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_peri)
   );
+  prim_clock_buf u_clk_aon_timers_buf (
+    .clk_i(clk_aon_i),
+    .clk_o(clocks_o.clk_aon_timers)
+  );
 
   ////////////////////////////////////////////////////
   // Root gating

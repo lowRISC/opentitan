@@ -366,13 +366,13 @@
     },
     // dummy module to capture the alert handler escalation signals
     // and test them by converting them into IRQs
-    { name: "nmi_gen",
-      type: "nmi_gen",
-      clock_srcs: {clk_i: "io_div4"},
-      clock_group: "timers",
-      reset_connections: {rst_ni: "sys_io_div4"},
-      base_addr: "0x40160000",
-    }
+//    { name: "nmi_gen",
+//      type: "nmi_gen",
+//      clock_srcs: {clk_i: "io_div4"},
+//      clock_group: "timers",
+//      reset_connections: {rst_ni: "sys_io_div4"},
+//      base_addr: "0x40160000",
+//    }
     { name: "pwrmgr_aon",
       type: "pwrmgr",
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon"},
@@ -405,12 +405,20 @@
     },
     { name: "pinmux_aon",
       type: "pinmux",
-      clock: "main",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       domain: "Aon",
       base_addr: "0x40460000",
+      generated: "true"
+    },
+    { name: "aon_timer_aon",
+      type: "aon_timer",
+      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
+      clock_group: "timers",
+      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
+      domain: "Aon",
+      base_addr: "0x40470000",
       generated: "true"
     },
     { name: "sensor_ctrl_aon",
@@ -420,7 +428,7 @@
       clock_reset_export: ["ast"],
       reset_connections: {rst_ni: "sys_io_div4"},
       domain: "Aon",
-      base_addr: "0x40500000",
+      base_addr: "0x40490000",
       top_only: "true"
     },
     { name: "sram_ctrl_ret_aon",
@@ -429,7 +437,7 @@
       clock_group: "peri",
       reset_connections: {rst_ni: "sys_io_div4", rst_otp_ni: "lc_io_div4"},
       domain: "Aon",
-      base_addr: "0x40510000"
+      base_addr: "0x40500000"
     },
     { name: "flash_ctrl",
       type: "flash_ctrl",
@@ -850,9 +858,9 @@
   // first item goes to LSB of the interrupt source
   interrupt_module: ["uart0", "uart1", "uart2", "uart3",
                      "gpio", "spi_device", "i2c0", "i2c1", "i2c2", "pattgen",
-                     "flash_ctrl", "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr_aon",
+                     "flash_ctrl", "hmac", "alert_handler", "usbdev", "pwrmgr_aon",
                      "otbn", "keymgr", "kmac", "otp_ctrl", "csrng", "edn0", "edn1",
-                     "entropy_src"]
+                     "aon_timer_aon", "entropy_src"]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
