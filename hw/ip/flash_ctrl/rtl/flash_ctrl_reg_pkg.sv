@@ -627,10 +627,19 @@ package flash_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] FLASH_CTRL_FIFO_LVL_OFFSET = 9'h 164;
   parameter logic [BlockAw-1:0] FLASH_CTRL_FIFO_RST_OFFSET = 9'h 168;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [4:0] FLASH_CTRL_INTR_TEST_RESVAL = 5'h 0;
+  parameter logic [0:0] FLASH_CTRL_INTR_TEST_PROG_EMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] FLASH_CTRL_INTR_TEST_PROG_LVL_RESVAL = 1'h 0;
+  parameter logic [0:0] FLASH_CTRL_INTR_TEST_RD_FULL_RESVAL = 1'h 0;
+  parameter logic [0:0] FLASH_CTRL_INTR_TEST_RD_LVL_RESVAL = 1'h 0;
+  parameter logic [0:0] FLASH_CTRL_INTR_TEST_OP_DONE_RESVAL = 1'h 0;
   parameter logic [2:0] FLASH_CTRL_ALERT_TEST_RESVAL = 3'h 0;
+  parameter logic [0:0] FLASH_CTRL_ALERT_TEST_RECOV_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] FLASH_CTRL_ALERT_TEST_RECOV_MP_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] FLASH_CTRL_ALERT_TEST_RECOV_ECC_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_CTRL_REGWEN_RESVAL = 1'h 1;
+  parameter logic [0:0] FLASH_CTRL_CTRL_REGWEN_EN_RESVAL = 1'h 1;
 
   // Window parameter
   parameter logic [BlockAw-1:0] FLASH_CTRL_PROG_FIFO_OFFSET = 9'h 16c;

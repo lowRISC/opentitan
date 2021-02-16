@@ -1124,7 +1124,7 @@ package rv_plic_reg_pkg;
   parameter logic [BlockAw-1:0] RV_PLIC_CC0_OFFSET = 10'h 31c;
   parameter logic [BlockAw-1:0] RV_PLIC_MSIP0_OFFSET = 10'h 320;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [7:0] RV_PLIC_CC0_RESVAL = 8'h 0;
 
   // Register Index

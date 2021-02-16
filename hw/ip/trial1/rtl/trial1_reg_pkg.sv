@@ -283,9 +283,11 @@ package trial1_reg_pkg;
   parameter logic [BlockAw-1:0] TRIAL1_ROTYPE2_OFFSET = 10'h 238;
   parameter logic [BlockAw-1:0] TRIAL1_RWTYPE7_OFFSET = 10'h 23c;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [31:0] TRIAL1_RWTYPE6_RESVAL = 32'h c8c8c8c8;
+  parameter logic [31:0] TRIAL1_RWTYPE6_RWTYPE6_RESVAL = 32'h c8c8c8c8;
   parameter logic [31:0] TRIAL1_ROTYPE1_RESVAL = 32'h 66aa66aa;
+  parameter logic [31:0] TRIAL1_ROTYPE1_ROTYPE1_RESVAL = 32'h 66aa66aa;
 
   // Register Index
   typedef enum int {

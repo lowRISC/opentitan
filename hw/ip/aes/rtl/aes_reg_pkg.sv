@@ -257,8 +257,10 @@ package aes_reg_pkg;
   parameter logic [BlockAw-1:0] AES_TRIGGER_OFFSET = 7'h 78;
   parameter logic [BlockAw-1:0] AES_STATUS_OFFSET = 7'h 7c;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [1:0] AES_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [0:0] AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] AES_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [31:0] AES_KEY_SHARE0_0_RESVAL = 32'h 0;
   parameter logic [31:0] AES_KEY_SHARE0_1_RESVAL = 32'h 0;
   parameter logic [31:0] AES_KEY_SHARE0_2_RESVAL = 32'h 0;
@@ -284,6 +286,9 @@ package aes_reg_pkg;
   parameter logic [31:0] AES_DATA_OUT_2_RESVAL = 32'h 0;
   parameter logic [31:0] AES_DATA_OUT_3_RESVAL = 32'h 0;
   parameter logic [11:0] AES_CTRL_SHADOWED_RESVAL = 12'h c0;
+  parameter logic [5:0] AES_CTRL_SHADOWED_MODE_RESVAL = 6'h 20;
+  parameter logic [2:0] AES_CTRL_SHADOWED_KEY_LEN_RESVAL = 3'h 1;
+  parameter logic [0:0] AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_RESVAL = 1'h 0;
 
   // Register Index
   typedef enum int {

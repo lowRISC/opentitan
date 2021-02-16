@@ -565,9 +565,31 @@ package i2c_reg_pkg;
   parameter logic [BlockAw-1:0] I2C_STRETCH_CTRL_OFFSET = 7'h 50;
   parameter logic [BlockAw-1:0] I2C_HOST_TIMEOUT_CTRL_OFFSET = 7'h 54;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [15:0] I2C_INTR_TEST_RESVAL = 16'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_FMT_WATERMARK_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_RX_WATERMARK_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_FMT_OVERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_RX_OVERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_NAK_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_SCL_INTERFERENCE_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_SDA_INTERFERENCE_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_STRETCH_TIMEOUT_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_SDA_UNSTABLE_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_TRANS_COMPLETE_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_TX_EMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_TX_NONEMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_TX_OVERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_ACQ_OVERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_ACK_STOP_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_HOST_TIMEOUT_RESVAL = 1'h 0;
   parameter logic [9:0] I2C_STATUS_RESVAL = 10'h 33c;
+  parameter logic [0:0] I2C_STATUS_FMTEMPTY_RESVAL = 1'h 1;
+  parameter logic [0:0] I2C_STATUS_HOSTIDLE_RESVAL = 1'h 1;
+  parameter logic [0:0] I2C_STATUS_TARGETIDLE_RESVAL = 1'h 1;
+  parameter logic [0:0] I2C_STATUS_RXEMPTY_RESVAL = 1'h 1;
+  parameter logic [0:0] I2C_STATUS_TXEMPTY_RESVAL = 1'h 1;
+  parameter logic [0:0] I2C_STATUS_ACQEMPTY_RESVAL = 1'h 1;
   parameter logic [7:0] I2C_RDATA_RESVAL = 8'h 0;
   parameter logic [29:0] I2C_FIFO_STATUS_RESVAL = 30'h 0;
   parameter logic [31:0] I2C_VAL_RESVAL = 32'h 0;

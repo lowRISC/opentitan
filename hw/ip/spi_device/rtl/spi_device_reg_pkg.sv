@@ -267,10 +267,20 @@ package spi_device_reg_pkg;
   parameter logic [BlockAw-1:0] SPI_DEVICE_RXF_ADDR_OFFSET = 13'h 28;
   parameter logic [BlockAw-1:0] SPI_DEVICE_TXF_ADDR_OFFSET = 13'h 2c;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [5:0] SPI_DEVICE_INTR_TEST_RESVAL = 6'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RXF_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RXLVL_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_TXLVL_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RXERR_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_RXOVERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_TXUNDERFLOW_RESVAL = 1'h 0;
   parameter logic [23:0] SPI_DEVICE_ASYNC_FIFO_LEVEL_RESVAL = 24'h 0;
   parameter logic [5:0] SPI_DEVICE_STATUS_RESVAL = 6'h 3a;
+  parameter logic [0:0] SPI_DEVICE_STATUS_RXF_EMPTY_RESVAL = 1'h 1;
+  parameter logic [0:0] SPI_DEVICE_STATUS_TXF_EMPTY_RESVAL = 1'h 1;
+  parameter logic [0:0] SPI_DEVICE_STATUS_ABORT_DONE_RESVAL = 1'h 1;
+  parameter logic [0:0] SPI_DEVICE_STATUS_CSB_RESVAL = 1'h 1;
 
   // Window parameter
   parameter logic [BlockAw-1:0] SPI_DEVICE_BUFFER_OFFSET = 13'h 1000;

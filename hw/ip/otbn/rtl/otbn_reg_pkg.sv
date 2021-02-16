@@ -142,9 +142,12 @@ package otbn_reg_pkg;
   parameter logic [BlockAw-1:0] OTBN_START_ADDR_OFFSET = 16'h 1c;
   parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [0:0] OTBN_INTR_TEST_RESVAL = 1'h 0;
+  parameter logic [0:0] OTBN_INTR_TEST_DONE_RESVAL = 1'h 0;
   parameter logic [1:0] OTBN_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [0:0] OTBN_ALERT_TEST_FATAL_RESVAL = 1'h 0;
+  parameter logic [0:0] OTBN_ALERT_TEST_RECOV_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_CMD_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_STATUS_RESVAL = 1'h 0;
 

@@ -274,11 +274,17 @@ package kmac_reg_pkg;
   parameter logic [BlockAw-1:0] KMAC_PREFIX_10_OFFSET = 12'h d4;
   parameter logic [BlockAw-1:0] KMAC_ERR_CODE_OFFSET = 12'h d8;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [2:0] KMAC_INTR_TEST_RESVAL = 3'h 0;
+  parameter logic [0:0] KMAC_INTR_TEST_KMAC_DONE_RESVAL = 1'h 0;
+  parameter logic [0:0] KMAC_INTR_TEST_FIFO_EMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] KMAC_INTR_TEST_KMAC_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] KMAC_CFG_REGWEN_RESVAL = 1'h 1;
+  parameter logic [0:0] KMAC_CFG_REGWEN_EN_RESVAL = 1'h 1;
   parameter logic [3:0] KMAC_CMD_RESVAL = 4'h 0;
   parameter logic [15:0] KMAC_STATUS_RESVAL = 16'h 4001;
+  parameter logic [0:0] KMAC_STATUS_SHA3_IDLE_RESVAL = 1'h 1;
+  parameter logic [0:0] KMAC_STATUS_FIFO_EMPTY_RESVAL = 1'h 1;
   parameter logic [31:0] KMAC_KEY_SHARE0_0_RESVAL = 32'h 0;
   parameter logic [31:0] KMAC_KEY_SHARE0_1_RESVAL = 32'h 0;
   parameter logic [31:0] KMAC_KEY_SHARE0_2_RESVAL = 32'h 0;

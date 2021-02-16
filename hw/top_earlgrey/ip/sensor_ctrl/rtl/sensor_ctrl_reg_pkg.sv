@@ -105,8 +105,15 @@ package sensor_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] SENSOR_CTRL_ALERT_STATE_OFFSET = 5'h 10;
   parameter logic [BlockAw-1:0] SENSOR_CTRL_STATUS_OFFSET = 5'h 14;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [6:0] SENSOR_CTRL_ALERT_TEST_RESVAL = 7'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_AS_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_CG_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_GD_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_TS_HI_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_TS_LO_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_LS_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OT_RESVAL = 1'h 0;
 
   // Register Index
   typedef enum int {

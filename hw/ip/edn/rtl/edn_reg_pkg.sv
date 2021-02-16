@@ -186,8 +186,10 @@ package edn_reg_pkg;
   parameter logic [BlockAw-1:0] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET = 6'h 28;
   parameter logic [BlockAw-1:0] EDN_ERR_CODE_OFFSET = 6'h 2c;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [1:0] EDN_INTR_TEST_RESVAL = 2'h 0;
+  parameter logic [0:0] EDN_INTR_TEST_EDN_CMD_REQ_DONE_RESVAL = 1'h 0;
+  parameter logic [0:0] EDN_INTR_TEST_EDN_FIFO_ERR_RESVAL = 1'h 0;
   parameter logic [31:0] EDN_SW_CMD_REQ_RESVAL = 32'h 0;
   parameter logic [31:0] EDN_RESEED_CMD_RESVAL = 32'h 0;
   parameter logic [31:0] EDN_GENERATE_CMD_RESVAL = 32'h 0;

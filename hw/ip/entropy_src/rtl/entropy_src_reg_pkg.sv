@@ -540,9 +540,13 @@ package entropy_src_reg_pkg;
   parameter logic [BlockAw-1:0] ENTROPY_SRC_SEED_OFFSET = 8'h b0;
   parameter logic [BlockAw-1:0] ENTROPY_SRC_ERR_CODE_OFFSET = 8'h b4;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [2:0] ENTROPY_SRC_INTR_TEST_RESVAL = 3'h 0;
+  parameter logic [0:0] ENTROPY_SRC_INTR_TEST_ES_ENTROPY_VALID_RESVAL = 1'h 0;
+  parameter logic [0:0] ENTROPY_SRC_INTR_TEST_ES_HEALTH_TEST_FAILED_RESVAL = 1'h 0;
+  parameter logic [0:0] ENTROPY_SRC_INTR_TEST_ES_FIFO_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] ENTROPY_SRC_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [0:0] ENTROPY_SRC_ALERT_TEST_RECOV_ALERT_COUNT_MET_RESVAL = 1'h 0;
   parameter logic [31:0] ENTROPY_SRC_ENTROPY_DATA_RESVAL = 32'h 0;
   parameter logic [31:0] ENTROPY_SRC_REPCNT_HI_WATERMARKS_RESVAL = 32'h 0;
   parameter logic [31:0] ENTROPY_SRC_ADAPTP_HI_WATERMARKS_RESVAL = 32'h 0;

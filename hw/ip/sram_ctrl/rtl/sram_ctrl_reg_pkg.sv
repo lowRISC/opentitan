@@ -77,8 +77,9 @@ package sram_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] SRAM_CTRL_CTRL_OFFSET = 5'h 14;
   parameter logic [BlockAw-1:0] SRAM_CTRL_ERROR_ADDRESS_OFFSET = 5'h 18;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [0:0] SRAM_CTRL_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [0:0] SRAM_CTRL_ALERT_TEST_FATAL_PARITY_ERROR_RESVAL = 1'h 0;
   parameter logic [3:0] SRAM_CTRL_STATUS_RESVAL = 4'h 0;
   parameter logic [0:0] SRAM_CTRL_CTRL_RESVAL = 1'h 0;
 

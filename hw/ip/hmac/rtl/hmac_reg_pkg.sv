@@ -216,11 +216,17 @@ package hmac_reg_pkg;
   parameter logic [BlockAw-1:0] HMAC_MSG_LENGTH_LOWER_OFFSET = 12'h 60;
   parameter logic [BlockAw-1:0] HMAC_MSG_LENGTH_UPPER_OFFSET = 12'h 64;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [2:0] HMAC_INTR_TEST_RESVAL = 3'h 0;
+  parameter logic [0:0] HMAC_INTR_TEST_HMAC_DONE_RESVAL = 1'h 0;
+  parameter logic [0:0] HMAC_INTR_TEST_FIFO_EMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] HMAC_INTR_TEST_HMAC_ERR_RESVAL = 1'h 0;
   parameter logic [3:0] HMAC_CFG_RESVAL = 4'h 4;
+  parameter logic [0:0] HMAC_CFG_ENDIAN_SWAP_RESVAL = 1'h 1;
+  parameter logic [0:0] HMAC_CFG_DIGEST_SWAP_RESVAL = 1'h 0;
   parameter logic [1:0] HMAC_CMD_RESVAL = 2'h 0;
   parameter logic [8:0] HMAC_STATUS_RESVAL = 9'h 1;
+  parameter logic [0:0] HMAC_STATUS_FIFO_EMPTY_RESVAL = 1'h 1;
   parameter logic [31:0] HMAC_WIPE_SECRET_RESVAL = 32'h 0;
   parameter logic [31:0] HMAC_KEY_0_RESVAL = 32'h 0;
   parameter logic [31:0] HMAC_KEY_1_RESVAL = 32'h 0;

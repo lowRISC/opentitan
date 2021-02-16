@@ -341,8 +341,16 @@ package usbuart_reg_pkg;
   parameter logic [BlockAw-1:0] USBUART_USBSTAT_OFFSET = 6'h 30;
   parameter logic [BlockAw-1:0] USBUART_USBPARAM_OFFSET = 6'h 34;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [7:0] USBUART_INTR_TEST_RESVAL = 8'h 0;
+  parameter logic [0:0] USBUART_INTR_TEST_TX_WATERMARK_RESVAL = 1'h 0;
+  parameter logic [0:0] USBUART_INTR_TEST_RX_WATERMARK_RESVAL = 1'h 0;
+  parameter logic [0:0] USBUART_INTR_TEST_TX_OVERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] USBUART_INTR_TEST_RX_OVERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] USBUART_INTR_TEST_RX_FRAME_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] USBUART_INTR_TEST_RX_BREAK_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] USBUART_INTR_TEST_RX_TIMEOUT_RESVAL = 1'h 0;
+  parameter logic [0:0] USBUART_INTR_TEST_RX_PARITY_ERR_RESVAL = 1'h 0;
   parameter logic [5:0] USBUART_STATUS_RESVAL = 6'h 0;
   parameter logic [7:0] USBUART_RDATA_RESVAL = 8'h 0;
   parameter logic [21:0] USBUART_FIFO_STATUS_RESVAL = 22'h 0;
