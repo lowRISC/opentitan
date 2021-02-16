@@ -13,18 +13,18 @@
 `include "prim_assert.sv"
 
 module rv_dm #(
-  parameter int              NrHarts = 1,
-  parameter logic [31:0]     IdcodeValue = 32'h 0000_0001
+  parameter int               NrHarts = 1,
+  parameter logic [31:0]      IdcodeValue = 32'h 0000_0001
 ) (
-  input  logic               clk_i,       // clock
-  input  logic               rst_ni,      // asynchronous reset active low, connect PoR
+  input  logic                clk_i,       // clock
+  input  logic                rst_ni,      // asynchronous reset active low, connect PoR
                                           // here, not the system reset
   input  lc_ctrl_pkg::lc_tx_t hw_debug_en_i,
-  input  logic               testmode_i,
-  output logic               ndmreset_o,  // non-debug module reset
-  output logic               dmactive_o,  // debug module is active
-  output logic [NrHarts-1:0] debug_req_o, // async debug request
-  input  logic [NrHarts-1:0] unavailable_i, // communicate whether the hart is unavailable
+  input  logic                testmode_i,
+  output logic                ndmreset_o,  // non-debug module reset
+  output logic                dmactive_o,  // debug module is active
+  output logic [NrHarts-1:0]  debug_req_o, // async debug request
+  input  logic [NrHarts-1:0]  unavailable_i, // communicate whether the hart is unavailable
                                             // (e.g.: power down)
 
   // bus device with debug memory, for an execution based technique
