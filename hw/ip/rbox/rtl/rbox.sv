@@ -45,8 +45,10 @@ module rbox (
   rbox_hw2reg_t hw2reg;
 
   logic pwrb_int, key0_int, key1_int, key2_int, ac_present_int;
-  logic pwrb_out_hw, key0_out_hw, key1_out_hw, key2_out_hw, ec_rst_l_hw;
+  logic pwrb_out_hw, key0_out_hw, key1_out_hw, key2_out_hw, ec_rst_l_hw, bat_disable_hw;
   logic pwrb_out_int, key0_out_int, key1_out_int, key2_out_int, bat_disable_int;
+  logic rbox_combo_intr, rbox_key_intr;
+  logic nc_intg_err_o;//FIXME
 
   //Always-on pins
   assign cio_ec_rst_l_en_o = 1'b1;
@@ -64,6 +66,7 @@ module rbox (
     .tl_o(tl_o),
     .reg2hw(reg2hw),
     .hw2reg(hw2reg),
+    .intg_err_o(nc_intg_err_o),
     .devmode_i  (1'b1)
   );
 
@@ -77,6 +80,8 @@ module rbox (
     .key0_int(key0_int),
     .key1_int(key1_int),
     .key2_int(key2_int),
+    .auto_block_debounce_ctl_i(reg2hw.auto_block_debounce_ctl),
+    .auto_block_out_ctl_i(reg2hw.auto_block_out_ctl),
     .pwrb_out_hw(pwrb_out_hw),
     .key0_out_hw(key0_out_hw),
     .key1_out_hw(key1_out_hw),
@@ -97,6 +102,7 @@ module rbox (
     .key1_out_int(key1_out_int),
     .key2_out_int(key2_out_int),
     .bat_disable_int(bat_disable_int),
+    .key_invert_ctl_i(reg2hw.key_invert_ctl),
     .pwrb_int(pwrb_int),
     .key0_int(key0_int),
     .key1_int(key1_int),
@@ -127,6 +133,10 @@ module rbox (
     .key2_out_hw(key2_out_hw),
     .bat_disable_hw(bat_disable_hw),
     .ec_rst_l_hw(ec_rst_l_hw),
+    .pin_allowed_ctl_i(reg2hw.pin_allowed_ctl),
+    .pin_out_ctl_i(reg2hw.pin_out_ctl),
+    .pin_out_value_i(reg2hw.pin_out_value),
+    .pin_in_value_o(hw2reg.pin_in_value),
     .pwrb_out_int(pwrb_out_int),
     .key0_out_int(key0_out_int),
     .key1_out_int(key1_out_int),
@@ -146,7 +156,11 @@ module rbox (
     .key1_int(key1_int),
     .key2_int(key2_int),
     .ac_present_int(ac_present_int),
-    .cio_ec_rst_l_i(cio_ec_rst_l_i)
+    .cio_ec_rst_l_i(cio_ec_rst_l_i),
+    .key_intr_ctl_i(reg2hw.key_intr_ctl),
+    .key_intr_debounce_ctl_i(reg2hw.key_intr_debounce_ctl),
+    .key_intr_status_o(hw2reg.key_intr_status),
+    .rbox_key_intr(rbox_key_intr)
   );
 
   //Instantiate combo module
@@ -155,12 +169,19 @@ module rbox (
     .rst_ni(rst_ni),
     .clk_aon_i(clk_aon_i),
     .rst_slow_ni(rst_slow_ni),
-    .pwrb_int(pwr_int),
+    .pwrb_int(pwrb_int),
     .key0_int(key0_int),
     .key1_int(key1_int),
     .key2_int(key2_int),
     .ac_present_int(ac_present_int),
     .cio_ec_rst_l_i(cio_ec_rst_l_i),
+    .ec_rst_ctl_i(reg2hw.ec_rst_ctl),
+    .key_intr_debounce_ctl_i(reg2hw.key_intr_debounce_ctl),
+    .com_sel_ctl_i(reg2hw.com_sel_ctl),
+    .com_det_ctl_i(reg2hw.com_det_ctl),
+    .com_out_ctl_i(reg2hw.com_out_ctl),
+    .combo_intr_status_o(hw2reg.combo_intr_status),
+    .rbox_combo_intr(rbox_combo_intr),
     .bat_disable_hw(bat_disable_hw),
     .gsc_rst_o(gsc_rst_o),
     .ec_rst_l_hw(ec_rst_l_hw)
@@ -170,8 +191,25 @@ module rbox (
   rbox_intr i_intr (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
+    .rbox_combo_intr(rbox_combo_intr),
+    .rbox_key_intr(rbox_key_intr),
+    .intr_state_i(reg2hw.intr_state),
+    .intr_enable_i(reg2hw.intr_enable),
+    .intr_test_i(reg2hw.intr_test),
+    .intr_state_o(hw2reg.intr_state),
     .rbox_intr_o(rbox_intr_o)
   );
 
+  // All outputs should be known value after reset
+  `ASSERT_KNOWN(IntrRboxOKnown, rbox_intr_o)
+  `ASSERT_KNOWN(GSCRstOKnown, gsc_rst_l_o)
+  `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
+  `ASSERT_KNOWN(BatOKnown, cio_bat_disable_o)
+  `ASSERT_KNOWN(ECRSTOKnown, cio_ec_rst_l_o)
+  `ASSERT_KNOWN(PwrbOKnown, cio_pwrb_out_o)
+  `ASSERT_KNOWN(Key0OKnown, cio_key0_out_o)
+  `ASSERT_KNOWN(Key1OKnown, cio_key1_out_o)
+  `ASSERT_KNOWN(Key2OKnown, cio_key2_out_o)
 
 endmodule
