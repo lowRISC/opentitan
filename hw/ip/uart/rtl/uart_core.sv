@@ -359,7 +359,7 @@ module uart_core (
               // reset count upon change in fifo level: covers both read and receiving a new byte
               rx_fifo_depth_changed               ? 24'd0 :
               // reset count if no bytes are pending
-              (rx_fifo_depth == 5'd0)             ? 24'd0 :
+              (rx_fifo_depth == '0)               ? 24'd0 :
               // stop the count at timeout value (this will set the interrupt)
               //   Removed below line as when the timeout reaches the value,
               //   event occured, and timeout value reset to 0h.
