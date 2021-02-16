@@ -19,8 +19,25 @@ def main():
 
     topname = 'top_' + name
 
-    # We first need to run topgen in order to create all auto-generated files.
     path_root = str(Path(__file__).resolve().parents[3])
+
+    # We start by removing any previously generated auto-gen files for the
+    # selected non-earlgrey top. These might be stale and confuse topgen.
+    cmd = [path_root + '/hw/' + topname + '/util/remove_autogen_files.sh']
+
+    try:
+        print("Removing auto-generated files...")
+        subprocess.run(cmd,
+                       check=True,
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT,
+                       universal_newlines=True)
+
+    except subprocess.CalledProcessError as e:
+        print("Removing auto-generated files failed: " + str(e))
+        sys.exit(1)
+
+    # Next, we need to run topgen in order to create all auto-generated files.
     path_in = path_root + '/hw/' + topname + '/data/'
     path_out = path_root + '/hw/' + topname
     cmd = [path_root + '/util/topgen.py',  # "--verbose",
