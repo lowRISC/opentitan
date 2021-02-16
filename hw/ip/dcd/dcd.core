@@ -52,7 +52,7 @@ targets:
     parameters:
       - SYNTHESIS=true
     tools:
-      vdcd.hjsonerilator:
+      verilator:
         mode: lint-only
         verilator_options:
           - "-Wall"
