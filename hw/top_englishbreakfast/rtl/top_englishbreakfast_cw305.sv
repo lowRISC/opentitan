@@ -233,12 +233,14 @@ module top_englishbreakfast_cw305 #(
                                        n: 1'b1
                                      };
   assign ast_base_alerts.alerts = {ast_pkg::NumAlerts{silent_alert}};
-  assign ast_base_status.io_pok    = {ast_pkg::NumIoRails{1'b1}};
+  assign ast_base_status.io_pok = {ast_pkg::NumIoRails{1'b1}};
 
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
   assign ast_base_rst.aon_pok      = rst_n;
+  lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
+
   top_englishbreakfast #(
     .AesMasking(1'b1),
     .AesSBoxImpl(aes_pkg::SBoxImplDom),
@@ -250,11 +252,11 @@ module top_englishbreakfast_cw305 #(
     .BootRomInitFile(BootRomInitFile)
   ) top_englishbreakfast (
     // Clocks, resets
-    .rst_ni          ( rst_n         ),
-    .clk_main_i      ( clk_main      ),
-    .clk_io_i        ( clk_main      ),
-    .clk_usb_i       ( clk_usb_48mhz ),
-    .clk_aon_i       ( clk_main      ),
+    .rst_ni                       ( rst_n           ),
+    .clk_main_i                   ( clk_main        ),
+    .clk_io_i                     ( clk_main        ),
+    .clk_usb_i                    ( clk_usb_48mhz   ),
+    .clk_aon_i                    ( clk_main        ),
     .rstmgr_ast_i                 ( ast_base_rst    ),
     .pwrmgr_ast_req_o             (                 ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr    ),
@@ -270,8 +272,10 @@ module top_englishbreakfast_cw305 #(
     .flash_power_ready_h_i        ( 1'b1            ),
     .flash_test_mode_a_i          ('0),
     .flash_test_voltage_h_i       ('0),
-    .clks_ast_o                   ( ),
-    .rsts_ast_o                   ( ),
+    .lc_clk_byp_req_o             ( lc_clk_bypass   ),
+    .lc_clk_byp_ack_i             ( lc_clk_bypass   ),
+    .clks_ast_o                   (                 ),
+    .rsts_ast_o                   (                 ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck_buf  ),
@@ -296,6 +300,7 @@ module top_englishbreakfast_cw305 #(
 
     // DFT signals
     .scan_rst_ni     ( 1'b1          ),
+    .scan_en_i       ( 1'b0          ),
     .scanmode_i      ( 1'b0          )
   );
 
@@ -326,6 +331,6 @@ module top_englishbreakfast_cw305 #(
   assign TIO_CLKOUT = IO_CLK;
 
   // UART Tx for debugging. The UART itself is connected to the capture board.
-  assign IO_UTX_DEBUG = top_englishbreakfast.cio_uart_tx_d2p;
+  assign IO_UTX_DEBUG = top_englishbreakfast.cio_uart0_tx_d2p;
 
 endmodule : top_englishbreakfast_cw305
