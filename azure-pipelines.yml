@@ -86,21 +86,7 @@ jobs:
     vmImage: ubuntu-18.04
   steps:
   - template: ci/install-package-dependencies.yml
-  - bash: |
-      # Here we look for all *.vendor.hjson files in the repo to re-vendor them.
-      # We exclude the following:
-      # - Any in 'hw/vendor/lowrisc_ibex', because that directory is vendored.
-      find . \
-        -not \( -path './hw/vendor/lowrisc_ibex' -prune \) \
-        -name '*.vendor.hjson' \
-        | xargs -n1 util/vendor.py --verbose \
-        && git diff --exit-code
-      if [[ $? != 0 ]]; then
-        echo -n "##vso[task.logissue type=error]"
-        echo "Vendored repositories not up-to-date. Run util/vendor.py to fix."
-        exit 1
-      fi
-    condition: always()
+  - bash: ci/scripts/check-vendoring.sh
     displayName: Check vendored directories are up-to-date
 
 - job: sw_build
