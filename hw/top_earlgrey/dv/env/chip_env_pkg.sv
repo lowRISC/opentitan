@@ -104,8 +104,10 @@ package chip_env_pkg;
       string line;
       int out_file_d = 0;
       string out_file = $sformatf("%0s.dat", symbol);
-      string cmd = $sformatf("/usr/bin/readelf -s %0s | grep %0s | awk \'{print $2\" \"$3}\' > %0s",
-                             elf_file, symbol, out_file);
+      string cmd = $sformatf(
+          // use `--wide` to avoid truncating the output, in case of long symbol name
+          "/usr/bin/readelf -s --wide %0s | grep %0s | awk \'{print $2\" \"$3}\' > %0s",
+          elf_file, symbol, out_file);
 
       // TODO #3838: shell pipes are bad 'mkay?
       ret = $system(cmd);
