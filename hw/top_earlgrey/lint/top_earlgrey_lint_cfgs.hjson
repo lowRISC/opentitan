@@ -142,6 +142,11 @@
                     }
                   ]
              },
+             {    name: rbox
+                  fusesoc_core: lowrisc:ip:rbox
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rbox/lint/{tool}"
+             },
              {    name: rstmgr
                   fusesoc_core: lowrisc:ip:rstmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
