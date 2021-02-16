@@ -215,9 +215,14 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     keymgr_pkg::keymgr_ops_e op = get_operation();
 
     // op_status is updated one cycle after done. If SW reads at this edge, still return old value
-    // use non-blocking assignment to push the update available in next cycle
-    if (get_err_code() != 0) current_op_status <= keymgr_pkg::OpDoneFail;
-    else                     current_op_status <= keymgr_pkg::OpDoneSuccess;
+    // delay half cycle to push the update available in next cycle
+    fork
+      begin
+        cfg.clk_rst_vif.wait_n_clks(1);
+        if (get_err_code()) current_op_status = keymgr_pkg::OpDoneFail;
+        else                current_op_status = keymgr_pkg::OpDoneSuccess;
+      end
+    join_none
 
     process_error_n_alert();
     // IntrOpDone occurs after every KDF
