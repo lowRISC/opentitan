@@ -158,11 +158,11 @@ module xbar_peri_bind;
     .h2d    (tl_sram_ctrl_ret_aon_o),
     .d2h    (tl_sram_ctrl_ret_aon_i)
   );
-  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_nmi_gen (
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_aon_timer_aon (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),
-    .h2d    (tl_nmi_gen_o),
-    .d2h    (tl_nmi_gen_i)
+    .h2d    (tl_aon_timer_aon_o),
+    .d2h    (tl_aon_timer_aon_i)
   );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_ast_wrapper (
     .clk_i  (clk_peri_i),

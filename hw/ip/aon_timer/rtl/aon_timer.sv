@@ -23,7 +23,7 @@ module aon_timer (
   // clk_aon_i domain
   input  logic                sleep_mode_i, // TODO where will this come from?
   output logic                aon_timer_wkup_req_o,
-  output logic                rst_req_aon_timer_o
+  output logic                aon_timer_rst_req_o
 );
 
   import aon_timer_reg_pkg::*;
@@ -358,6 +358,9 @@ module aon_timer (
   assign hw2reg.intr_state.wdog_timer_expired.d  = intr_aon_state_d[AON_WDOG];
   assign hw2reg.intr_state.wdog_timer_expired.de = intr_aon_state_de;
 
+  // Dummy interrupt enable to get around #5260
+  assign hw2reg.intr_enable = '0;
+
   prim_intr_hw #(
     .Width (2)
   ) u_intr_hw (
@@ -393,6 +396,6 @@ module aon_timer (
     end
   end
 
-  assign rst_req_aon_timer_o = aon_rst_req_q;
+  assign aon_timer_rst_req_o = aon_rst_req_q;
 
 endmodule

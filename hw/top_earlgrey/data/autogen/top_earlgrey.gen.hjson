@@ -152,6 +152,7 @@
         {
           clk_io_div4_timers: io_div4
           clk_main_timers: main
+          clk_aon_timers: aon
         }
       }
       {
@@ -3774,128 +3775,6 @@
       ]
     }
     {
-      name: nmi_gen
-      type: nmi_gen
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      clock_group: timers
-      reset_connections:
-      {
-        rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
-      }
-      base_addr: 0x40160000
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_timers
-      }
-      domain: "0"
-      size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_input_list: []
-      available_output_list: []
-      available_inout_list: []
-      param_list: []
-      interrupt_list:
-      [
-        {
-          name: esc0
-          width: 1
-          bits: "0"
-          bitinfo:
-          [
-            1
-            1
-            0
-          ]
-          type: interrupt
-        }
-        {
-          name: esc1
-          width: 1
-          bits: "1"
-          bitinfo:
-          [
-            2
-            1
-            1
-          ]
-          type: interrupt
-        }
-        {
-          name: esc2
-          width: 1
-          bits: "2"
-          bitinfo:
-          [
-            4
-            1
-            2
-          ]
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list:
-      [
-        {
-          name: nmi_rst_req
-        }
-      ]
-      scan: "false"
-      scan_reset: "false"
-      inter_signal_list:
-      [
-        {
-          struct: logic
-          type: uni
-          name: nmi_rst_req
-          act: req
-          package: ""
-          default: 1'b0
-          inst_name: nmi_gen
-          width: 1
-          top_signame: pwrmgr_aon_rstreqs
-          index: -1
-        }
-        {
-          struct: esc_tx
-          type: uni
-          name: esc_tx
-          act: rcv
-          package: prim_esc_pkg
-          default: "{3{prim_esc_pkg::ESC_TX_DEFAULT}}"
-          inst_name: nmi_gen
-          index: -1
-        }
-        {
-          struct: esc_rx
-          type: uni
-          name: esc_rx
-          act: req
-          package: prim_esc_pkg
-          inst_name: nmi_gen
-          index: -1
-        }
-        {
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          name: tl
-          inst_name: nmi_gen
-          width: 1
-          default: ""
-          end_idx: -1
-          top_signame: nmi_gen_tl
-          index: -1
-        }
-      ]
-    }
-    {
       name: pwrmgr_aon
       type: pwrmgr
       clock_srcs:
@@ -4062,7 +3941,7 @@
         }
         {
           struct: logic
-          width: 2
+          width: 3
           type: uni
           name: wakeups
           act: rcv
@@ -4448,7 +4327,6 @@
     {
       name: pinmux_aon
       type: pinmux
-      clock: main
       clock_srcs:
       {
         clk_i: io_div4
@@ -4625,6 +4503,125 @@
       ]
     }
     {
+      name: aon_timer_aon
+      type: aon_timer
+      clock_srcs:
+      {
+        clk_i: io_div4
+        clk_aon_i: aon
+      }
+      clock_group: timers
+      reset_connections:
+      {
+        rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
+        rst_aon_ni: rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel]
+      }
+      domain: Aon
+      base_addr: 0x40470000
+      generated: "true"
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_div4_timers
+        clk_aon_i: clkmgr_aon_clocks.clk_aon_timers
+      }
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list: []
+      interrupt_list:
+      [
+        {
+          name: wkup_timer_expired
+          width: 1
+          type: interrupt
+        }
+        {
+          name: wdog_timer_bark
+          width: 1
+          type: interrupt
+        }
+      ]
+      alert_list: []
+      wakeup_list:
+      [
+        {
+          name: aon_timer_wkup_req
+          width: "1"
+        }
+      ]
+      reset_request_list:
+      [
+        {
+          name: aon_timer_rst_req
+        }
+      ]
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: logic
+          type: uni
+          name: aon_timer_wkup_req
+          act: req
+          package: ""
+          default: 1'b0
+          inst_name: aon_timer_aon
+          width: 1
+          top_signame: pwrmgr_aon_wakeups
+          index: 2
+        }
+        {
+          struct: logic
+          type: uni
+          name: aon_timer_rst_req
+          act: req
+          package: ""
+          default: 1'b0
+          inst_name: aon_timer_aon
+          width: 1
+          top_signame: pwrmgr_aon_rstreqs
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_escalate_en
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: aon_timer_aon
+          index: -1
+        }
+        {
+          name: sleep_mode
+          type: uni
+          act: rcv
+          package: ""
+          struct: logic
+          width: "1"
+          inst_name: aon_timer_aon
+          index: -1
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: aon_timer_aon
+          width: 1
+          default: ""
+          end_idx: -1
+          top_signame: aon_timer_aon_tl
+          index: -1
+        }
+      ]
+    }
+    {
       name: sensor_ctrl_aon
       type: sensor_ctrl
       clock_srcs:
@@ -4641,7 +4638,7 @@
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
       }
       domain: Aon
-      base_addr: 0x40500000
+      base_addr: 0x40490000
       top_only: "true"
       clock_connections:
       {
@@ -4811,7 +4808,7 @@
         rst_otp_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]
       }
       domain: Aon
-      base_addr: 0x40510000
+      base_addr: 0x40500000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -7624,10 +7621,11 @@
       [
         pinmux_aon.aon_wkup_req
         pinmux_aon.usb_wkup_req
+        aon_timer_aon.aon_timer_wkup_req
       ]
       pwrmgr_aon.rstreqs:
       [
-        nmi_gen.nmi_rst_req
+        aon_timer_aon.aon_timer_rst_req
       ]
       rom.tl:
       [
@@ -7789,9 +7787,9 @@
       [
         peri.tl_sram_ctrl_ret_aon
       ]
-      nmi_gen.tl:
+      aon_timer_aon.tl:
       [
-        peri.tl_nmi_gen
+        peri.tl_aon_timer_aon
       ]
     }
     top:
@@ -8538,7 +8536,7 @@
           alert_handler
           ast_wrapper
           sram_ctrl_ret_aon
-          nmi_gen
+          aon_timer_aon
         ]
       }
       nodes:
@@ -8942,7 +8940,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40500000
+              base_addr: 0x40490000
               size_byte: 0x1000
             }
           ]
@@ -8978,7 +8976,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40510000
+              base_addr: 0x40500000
               size_byte: 0x1000
             }
           ]
@@ -8987,16 +8985,16 @@
           pipeline_byp: "true"
         }
         {
-          name: nmi_gen
+          name: aon_timer_aon
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
           pipeline: "false"
-          inst_type: nmi_gen
+          inst_type: aon_timer
           addr_range:
           [
             {
-              base_addr: 0x40160000
+              base_addr: 0x40470000
               size_byte: 0x1000
             }
           ]
@@ -9014,7 +9012,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40490000
+              base_addr: 0x40480000
               size_byte: 0x1000
             }
           ]
@@ -9329,13 +9327,13 @@
         {
           struct: tl
           type: req_rsp
-          name: tl_nmi_gen
+          name: tl_aon_timer_aon
           act: req
           package: tlul_pkg
           inst_name: peri
           width: 1
           default: ""
-          top_signame: nmi_gen_tl
+          top_signame: aon_timer_aon_tl
           index: -1
         }
         {
@@ -9369,7 +9367,6 @@
     flash_ctrl
     hmac
     alert_handler
-    nmi_gen
     usbdev
     pwrmgr_aon
     otbn
@@ -9379,6 +9376,7 @@
     csrng
     edn0
     edn1
+    aon_timer_aon
     entropy_src
   ]
   interrupt:
@@ -10697,45 +10695,6 @@
       module_name: alert_handler
     }
     {
-      name: nmi_gen_esc0
-      width: 1
-      bits: "0"
-      bitinfo:
-      [
-        1
-        1
-        0
-      ]
-      type: interrupt
-      module_name: nmi_gen
-    }
-    {
-      name: nmi_gen_esc1
-      width: 1
-      bits: "1"
-      bitinfo:
-      [
-        2
-        1
-        1
-      ]
-      type: interrupt
-      module_name: nmi_gen
-    }
-    {
-      name: nmi_gen_esc2
-      width: 1
-      bits: "2"
-      bitinfo:
-      [
-        4
-        1
-        2
-      ]
-      type: interrupt
-      module_name: nmi_gen
-    }
-    {
       name: usbdev_pkt_received
       width: 1
       bits: "0"
@@ -11163,6 +11122,18 @@
       ]
       type: interrupt
       module_name: edn1
+    }
+    {
+      name: aon_timer_aon_wkup_timer_expired
+      width: 1
+      type: interrupt
+      module_name: aon_timer_aon
+    }
+    {
+      name: aon_timer_aon_wdog_timer_bark
+      width: 1
+      type: interrupt
+      module_name: aon_timer_aon
     }
     {
       name: entropy_src_es_entropy_valid
@@ -12084,12 +12055,17 @@
       width: "1"
       module: pinmux_aon
     }
+    {
+      name: aon_timer_wkup_req
+      width: "1"
+      module: aon_timer_aon
+    }
   ]
   reset_requests:
   [
     {
-      name: nmi_rst_req
-      module: nmi_gen
+      name: aon_timer_rst_req
+      module: aon_timer_aon
     }
   ]
   exported_rsts:
@@ -13084,50 +13060,6 @@
         index: -1
       }
       {
-        struct: logic
-        type: uni
-        name: nmi_rst_req
-        act: req
-        package: ""
-        default: 1'b0
-        inst_name: nmi_gen
-        width: 1
-        top_signame: pwrmgr_aon_rstreqs
-        index: -1
-      }
-      {
-        struct: esc_tx
-        type: uni
-        name: esc_tx
-        act: rcv
-        package: prim_esc_pkg
-        default: "{3{prim_esc_pkg::ESC_TX_DEFAULT}}"
-        inst_name: nmi_gen
-        index: -1
-      }
-      {
-        struct: esc_rx
-        type: uni
-        name: esc_rx
-        act: req
-        package: prim_esc_pkg
-        inst_name: nmi_gen
-        index: -1
-      }
-      {
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        name: tl
-        inst_name: nmi_gen
-        width: 1
-        default: ""
-        end_idx: -1
-        top_signame: nmi_gen_tl
-        index: -1
-      }
-      {
         struct: pwr_ast
         type: req_rsp
         name: pwr_ast
@@ -13243,7 +13175,7 @@
       }
       {
         struct: logic
-        width: 2
+        width: 3
         type: uni
         name: wakeups
         act: rcv
@@ -13662,6 +13594,63 @@
         default: ""
         end_idx: -1
         top_signame: pinmux_aon_tl
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: aon_timer_wkup_req
+        act: req
+        package: ""
+        default: 1'b0
+        inst_name: aon_timer_aon
+        width: 1
+        top_signame: pwrmgr_aon_wakeups
+        index: 2
+      }
+      {
+        struct: logic
+        type: uni
+        name: aon_timer_rst_req
+        act: req
+        package: ""
+        default: 1'b0
+        inst_name: aon_timer_aon
+        width: 1
+        top_signame: pwrmgr_aon_rstreqs
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_escalate_en
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: aon_timer_aon
+        index: -1
+      }
+      {
+        name: sleep_mode
+        type: uni
+        act: rcv
+        package: ""
+        struct: logic
+        width: "1"
+        inst_name: aon_timer_aon
+        index: -1
+      }
+      {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: aon_timer_aon
+        width: 1
+        default: ""
+        end_idx: -1
+        top_signame: aon_timer_aon_tl
         index: -1
       }
       {
@@ -15269,13 +15258,13 @@
       {
         struct: tl
         type: req_rsp
-        name: tl_nmi_gen
+        name: tl_aon_timer_aon
         act: req
         package: tlul_pkg
         inst_name: peri
         width: 1
         default: ""
-        top_signame: nmi_gen_tl
+        top_signame: aon_timer_aon_tl
         index: -1
       }
       {
@@ -16419,7 +16408,7 @@
         package: ""
         struct: logic
         signame: pwrmgr_aon_wakeups
-        width: 2
+        width: 3
         type: uni
         end_idx: -1
         act: rcv
@@ -17320,7 +17309,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: nmi_gen_tl_req
+        signame: aon_timer_aon_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -17331,7 +17320,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: nmi_gen_tl_rsp
+        signame: aon_timer_aon_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

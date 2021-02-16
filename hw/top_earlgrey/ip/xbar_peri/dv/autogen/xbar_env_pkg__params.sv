@@ -71,19 +71,19 @@ tl_device_t xbar_devices[$] = '{
         '{32'h40140000, 32'h40140fff}
     }},
     '{"sensor_ctrl_aon", '{
-        '{32'h40500000, 32'h40500fff}
+        '{32'h40490000, 32'h40490fff}
     }},
     '{"alert_handler", '{
         '{32'h40150000, 32'h40150fff}
     }},
     '{"sram_ctrl_ret_aon", '{
-        '{32'h40510000, 32'h40510fff}
+        '{32'h40500000, 32'h40500fff}
     }},
-    '{"nmi_gen", '{
-        '{32'h40160000, 32'h40160fff}
+    '{"aon_timer_aon", '{
+        '{32'h40470000, 32'h40470fff}
     }},
     '{"ast_wrapper", '{
-        '{32'h40490000, 32'h40490fff}
+        '{32'h40480000, 32'h40480fff}
 }}};
 
   // List of Xbar hosts
@@ -114,5 +114,5 @@ tl_host_t xbar_hosts[$] = '{
         "alert_handler",
         "ast_wrapper",
         "sram_ctrl_ret_aon",
-        "nmi_gen"}}
+        "aon_timer_aon"}}
 };

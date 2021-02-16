@@ -213,11 +213,11 @@ module top_earlgrey #(
   // otp_ctrl
   // lc_ctrl
   // alert_handler
-  // nmi_gen
   // pwrmgr_aon
   // rstmgr_aon
   // clkmgr_aon
   // pinmux_aon
+  // aon_timer_aon
   // sensor_ctrl_aon
   // sram_ctrl_ret_aon
   // flash_ctrl
@@ -234,7 +234,7 @@ module top_earlgrey #(
   // otbn
 
 
-  logic [171:0]  intr_vector;
+  logic [170:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -349,10 +349,9 @@ module top_earlgrey #(
   logic intr_alert_handler_classb;
   logic intr_alert_handler_classc;
   logic intr_alert_handler_classd;
-  logic intr_nmi_gen_esc0;
-  logic intr_nmi_gen_esc1;
-  logic intr_nmi_gen_esc2;
   logic intr_pwrmgr_aon_wakeup;
+  logic intr_aon_timer_aon_wkup_timer_expired;
+  logic intr_aon_timer_aon_wdog_timer_bark;
   logic intr_flash_ctrl_prog_empty;
   logic intr_flash_ctrl_prog_lvl;
   logic intr_flash_ctrl_rd_full;
@@ -461,7 +460,7 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_rd_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_wr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
-  logic [1:0] pwrmgr_aon_wakeups;
+  logic [2:0] pwrmgr_aon_wakeups;
   logic       pwrmgr_aon_rstreqs;
   tlul_pkg::tl_h2d_t       rom_tl_req;
   tlul_pkg::tl_d2h_t       rom_tl_rsp;
@@ -543,8 +542,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       alert_handler_tl_rsp;
   tlul_pkg::tl_h2d_t       sram_ctrl_ret_aon_tl_req;
   tlul_pkg::tl_d2h_t       sram_ctrl_ret_aon_tl_rsp;
-  tlul_pkg::tl_h2d_t       nmi_gen_tl_req;
-  tlul_pkg::tl_d2h_t       nmi_gen_tl_rsp;
+  tlul_pkg::tl_h2d_t       aon_timer_aon_tl_req;
+  tlul_pkg::tl_d2h_t       aon_timer_aon_tl_rsp;
   rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_aon_cpu;
   pwrmgr_pkg::pwr_cpu_t       pwrmgr_aon_pwr_cpu;
@@ -1495,25 +1494,6 @@ module top_earlgrey #(
       .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
-  nmi_gen u_nmi_gen (
-
-      // Interrupt
-      .intr_esc0_o (intr_nmi_gen_esc0),
-      .intr_esc1_o (intr_nmi_gen_esc1),
-      .intr_esc2_o (intr_nmi_gen_esc2),
-
-      // Inter-module signals
-      .nmi_rst_req_o(pwrmgr_aon_rstreqs),
-      .esc_tx_i({3{prim_esc_pkg::ESC_TX_DEFAULT}}),
-      .esc_rx_o(),
-      .tl_i(nmi_gen_tl_req),
-      .tl_o(nmi_gen_tl_rsp),
-
-      // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_io_div4_timers),
-      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel])
-  );
-
   pwrmgr u_pwrmgr_aon (
 
       // Interrupt
@@ -1642,6 +1622,27 @@ module top_earlgrey #(
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
       .clk_aon_i (clkmgr_aon_clocks.clk_aon_secure),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
+      .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel])
+  );
+
+  aon_timer u_aon_timer_aon (
+
+      // Interrupt
+      .intr_wkup_timer_expired_o (intr_aon_timer_aon_wkup_timer_expired),
+      .intr_wdog_timer_bark_o    (intr_aon_timer_aon_wdog_timer_bark),
+
+      // Inter-module signals
+      .aon_timer_wkup_req_o(pwrmgr_aon_wakeups[2]),
+      .aon_timer_rst_req_o(pwrmgr_aon_rstreqs),
+      .lc_escalate_en_i(lc_ctrl_pkg::Off),
+      .sleep_mode_i('0),
+      .tl_i(aon_timer_aon_tl_req),
+      .tl_o(aon_timer_aon_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_timers),
+      .clk_aon_i (clkmgr_aon_clocks.clk_aon_timers),
       .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel])
   );
@@ -2027,45 +2028,44 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
-      intr_entropy_src_es_fifo_err, // ID 140
-      intr_entropy_src_es_health_test_failed, // ID 139
-      intr_entropy_src_es_entropy_valid, // ID 138
-      intr_edn1_edn_fifo_err, // ID 137
-      intr_edn1_edn_cmd_req_done, // ID 136
-      intr_edn0_edn_fifo_err, // ID 135
-      intr_edn0_edn_cmd_req_done, // ID 134
-      intr_csrng_cs_fatal_err, // ID 133
-      intr_csrng_cs_hw_inst_exc, // ID 132
-      intr_csrng_cs_entropy_req, // ID 131
-      intr_csrng_cs_cmd_req_done, // ID 130
-      intr_otp_ctrl_otp_error, // ID 129
-      intr_otp_ctrl_otp_operation_done, // ID 128
-      intr_kmac_kmac_err, // ID 127
-      intr_kmac_fifo_empty, // ID 126
-      intr_kmac_kmac_done, // ID 125
-      intr_keymgr_op_done, // ID 124
-      intr_otbn_done, // ID 123
-      intr_pwrmgr_aon_wakeup, // ID 122
-      intr_usbdev_link_out_err, // ID 121
-      intr_usbdev_connected, // ID 120
-      intr_usbdev_frame, // ID 119
-      intr_usbdev_rx_bitstuff_err, // ID 118
-      intr_usbdev_rx_pid_err, // ID 117
-      intr_usbdev_rx_crc_err, // ID 116
-      intr_usbdev_link_in_err, // ID 115
-      intr_usbdev_av_overflow, // ID 114
-      intr_usbdev_rx_full, // ID 113
-      intr_usbdev_av_empty, // ID 112
-      intr_usbdev_link_resume, // ID 111
-      intr_usbdev_link_suspend, // ID 110
-      intr_usbdev_link_reset, // ID 109
-      intr_usbdev_host_lost, // ID 108
-      intr_usbdev_disconnected, // ID 107
-      intr_usbdev_pkt_sent, // ID 106
-      intr_usbdev_pkt_received, // ID 105
-      intr_nmi_gen_esc2, // ID 104
-      intr_nmi_gen_esc1, // ID 103
-      intr_nmi_gen_esc0, // ID 102
+      intr_entropy_src_es_fifo_err, // ID 139
+      intr_entropy_src_es_health_test_failed, // ID 138
+      intr_entropy_src_es_entropy_valid, // ID 137
+      intr_aon_timer_aon_wdog_timer_bark, // ID 136
+      intr_aon_timer_aon_wkup_timer_expired, // ID 135
+      intr_edn1_edn_fifo_err, // ID 134
+      intr_edn1_edn_cmd_req_done, // ID 133
+      intr_edn0_edn_fifo_err, // ID 132
+      intr_edn0_edn_cmd_req_done, // ID 131
+      intr_csrng_cs_fatal_err, // ID 130
+      intr_csrng_cs_hw_inst_exc, // ID 129
+      intr_csrng_cs_entropy_req, // ID 128
+      intr_csrng_cs_cmd_req_done, // ID 127
+      intr_otp_ctrl_otp_error, // ID 126
+      intr_otp_ctrl_otp_operation_done, // ID 125
+      intr_kmac_kmac_err, // ID 124
+      intr_kmac_fifo_empty, // ID 123
+      intr_kmac_kmac_done, // ID 122
+      intr_keymgr_op_done, // ID 121
+      intr_otbn_done, // ID 120
+      intr_pwrmgr_aon_wakeup, // ID 119
+      intr_usbdev_link_out_err, // ID 118
+      intr_usbdev_connected, // ID 117
+      intr_usbdev_frame, // ID 116
+      intr_usbdev_rx_bitstuff_err, // ID 115
+      intr_usbdev_rx_pid_err, // ID 114
+      intr_usbdev_rx_crc_err, // ID 113
+      intr_usbdev_link_in_err, // ID 112
+      intr_usbdev_av_overflow, // ID 111
+      intr_usbdev_rx_full, // ID 110
+      intr_usbdev_av_empty, // ID 109
+      intr_usbdev_link_resume, // ID 108
+      intr_usbdev_link_suspend, // ID 107
+      intr_usbdev_link_reset, // ID 106
+      intr_usbdev_host_lost, // ID 105
+      intr_usbdev_disconnected, // ID 104
+      intr_usbdev_pkt_sent, // ID 103
+      intr_usbdev_pkt_received, // ID 102
       intr_alert_handler_classd, // ID 101
       intr_alert_handler_classc, // ID 100
       intr_alert_handler_classb, // ID 99
@@ -2364,9 +2364,9 @@ module top_earlgrey #(
     .tl_sram_ctrl_ret_aon_o(sram_ctrl_ret_aon_tl_req),
     .tl_sram_ctrl_ret_aon_i(sram_ctrl_ret_aon_tl_rsp),
 
-    // port: tl_nmi_gen
-    .tl_nmi_gen_o(nmi_gen_tl_req),
-    .tl_nmi_gen_i(nmi_gen_tl_rsp),
+    // port: tl_aon_timer_aon
+    .tl_aon_timer_aon_o(aon_timer_aon_tl_req),
+    .tl_aon_timer_aon_i(aon_timer_aon_tl_rsp),
 
     // port: tl_ast_wrapper
     .tl_ast_wrapper_o(ast_tl_req_o),

@@ -43,6 +43,7 @@ filesets:
       - lowrisc:top_earlgrey:xbar_peri
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr
+      - lowrisc:ip:aon_timer
       - lowrisc:systems:clkmgr
       - lowrisc:systems:sensor_ctrl
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"

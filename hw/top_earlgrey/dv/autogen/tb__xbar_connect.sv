@@ -73,7 +73,7 @@ tl_if lc_ctrl_tl_if(clk_io_div4, rst_n);
 tl_if sensor_ctrl_aon_tl_if(clk_io_div4, rst_n);
 tl_if alert_handler_tl_if(clk_io_div4, rst_n);
 tl_if sram_ctrl_ret_aon_tl_if(clk_io_div4, rst_n);
-tl_if nmi_gen_tl_if(clk_io_div4, rst_n);
+tl_if aon_timer_aon_tl_if(clk_io_div4, rst_n);
 tl_if ast_wrapper_tl_if(clk_io_div4, rst_n);
 
 initial begin
@@ -143,7 +143,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(sensor_ctrl_aon, sensor_ctrl_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(alert_handler, alert_handler, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon, sram_ctrl_ret_aon, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(nmi_gen, nmi_gen, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(aon_timer_aon, aon_timer_aon, tl)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast_wrapper, ast_tl)
   end
 end

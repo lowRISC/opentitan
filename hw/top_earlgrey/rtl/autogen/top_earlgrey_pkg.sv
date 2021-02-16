@@ -182,16 +182,6 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for nmi_gen in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_NMI_GEN_BASE_ADDR = 32'h40160000;
-
-  /**
-   * Peripheral size in bytes for nmi_gen in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_NMI_GEN_SIZE_BYTES = 32'h1000;
-
-  /**
    * Peripheral base address for pwrmgr_aon in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_PWRMGR_AON_BASE_ADDR = 32'h40400000;
@@ -232,9 +222,19 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_PINMUX_AON_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for aon_timer_aon in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR = 32'h40470000;
+
+  /**
+   * Peripheral size in bytes for aon_timer_aon in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_AON_TIMER_AON_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for sensor_ctrl_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR = 32'h40500000;
+  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR = 32'h40490000;
 
   /**
    * Peripheral size in bytes for sensor_ctrl_aon in top earlgrey.
@@ -244,7 +244,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral base address for sram_ctrl_ret_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_BASE_ADDR = 32'h40510000;
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_BASE_ADDR = 32'h40500000;
 
   /**
    * Peripheral size in bytes for sram_ctrl_ret_aon in top earlgrey.

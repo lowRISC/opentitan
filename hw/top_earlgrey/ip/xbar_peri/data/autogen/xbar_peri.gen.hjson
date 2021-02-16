@@ -52,7 +52,7 @@
       alert_handler
       ast_wrapper
       sram_ctrl_ret_aon
-      nmi_gen
+      aon_timer_aon
     ]
   }
   nodes:
@@ -456,7 +456,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40500000
+          base_addr: 0x40490000
           size_byte: 0x1000
         }
       ]
@@ -492,7 +492,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40510000
+          base_addr: 0x40500000
           size_byte: 0x1000
         }
       ]
@@ -501,16 +501,16 @@
       pipeline_byp: "true"
     }
     {
-      name: nmi_gen
+      name: aon_timer_aon
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
       pipeline: "false"
-      inst_type: nmi_gen
+      inst_type: aon_timer
       addr_range:
       [
         {
-          base_addr: 0x40160000
+          base_addr: 0x40470000
           size_byte: 0x1000
         }
       ]
@@ -528,7 +528,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40490000
+          base_addr: 0x40480000
           size_byte: 0x1000
         }
       ]

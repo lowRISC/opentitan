@@ -165,7 +165,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_nmi_gen"
+      name:   "tl_aon_timer_aon"
       act:    "req"
       package: "tlul_pkg"
     }

@@ -159,9 +159,7 @@
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    // dummy module to capture the alert handler escalation signals
-    // and test them by converting them into IRQs
-    { name:      "nmi_gen",
+    { name:      "aon_timer_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
@@ -176,7 +174,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40490000
+          base_addr: 0x40480000
           size_byte: 0x1000
         }
       ]
@@ -187,6 +185,6 @@
             "gpio", "spi_device", "spi_host0", "spi_host1", "rv_timer", "usbdev",
             "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon", "ram_ret_aon",
             "otp_ctrl", "lc_ctrl", "sensor_ctrl_aon", "alert_handler", "ast_wrapper",
-            "sram_ctrl_ret_aon", "nmi_gen"],
+            "sram_ctrl_ret_aon", "aon_timer_aon"],
   },
 }
