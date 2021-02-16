@@ -196,9 +196,9 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   // wr_attr_error: Check if the request size,mask are permitted.
   //    Basic check of size, mask, addr align is done in tlul_err module.
   //    Here it checks any partial write if ByteAccess isn't allowed.
-  assign wr_attr_error = (tl_i.a_opcode == PutFullData || tl_i.a_opcode == PutPartialData) ?
-                         (ByteAccess == 0) ? (tl_i.a_mask != '1 || tl_i.a_size != 2'h2) : 1'b0 :
-                         1'b0;
+  assign wr_attr_error = (tl_i.a_opcode == PutFullData || tl_i.a_opcode == PutPartialData)
+                         ? ((ByteAccess == 0) ? (tl_i.a_mask != '1 || tl_i.a_size != 2'h2) : 1'b0)
+                         : 1'b0;
 
   // An instruction type transaction is only valid if en_ifetch is enabled
   assign instr_error = tl_i.a_user.tl_type == InstrType &
