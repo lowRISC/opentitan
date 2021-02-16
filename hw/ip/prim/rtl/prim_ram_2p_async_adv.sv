@@ -12,6 +12,9 @@
 //
 // Note that the write mask needs to be per Byte if parity is enabled. If ECC is enabled, the write
 // mask cannot be used and has to be tied to {Width{1'b1}}.
+//
+// Also note that when parity is enabled, the write mask will be used to mask the corresponding
+// parity check bits upon readout.
 
 `include "prim_assert.sv"
 
@@ -230,6 +233,8 @@ module prim_ram_2p_async_adv #(
     `ASSERT_INIT(ParityNeedsByteWriteMask_A, DataBitsPerMask == 8)
     `ASSERT_INIT(WidthNeedsToBeByteAligned_A, Width % 8 == 0)
 
+    logic [TotalWidth/8-1:0] a_pmask_d, a_pmask_q;
+    logic [TotalWidth/8-1:0] b_pmask_d, b_pmask_q;
     always_comb begin : p_parity
       a_rerror_d = '0;
       b_rerror_d = '0;
@@ -249,9 +254,28 @@ module prim_ram_2p_async_adv #(
         a_wmask_d[i*9 + 8] = &a_wmask_i[i*8 +: 8];
         b_wdata_d[i*9 + 8] = ~(^b_wdata_i[i*8 +: 8]);
         b_wmask_d[i*9 + 8] = &b_wmask_i[i*8 +: 8];
+        // register this to mask the parity check in the next cycle
+        a_pmask_d[i] = a_wmask_q[i*9 + 8];
+        b_pmask_d[i] = b_wmask_q[i*9 + 8];
+
         // parity decoding (errors are always uncorrectable)
-        a_rerror_d[1] |= ~(^{a_rdata_sram[i*9 +: 8], a_rdata_sram[i*9 + 8]});
-        b_rerror_d[1] |= ~(^{b_rdata_sram[i*9 +: 8], b_rdata_sram[i*9 + 8]});
+        a_rerror_d[1] |= (~(^{a_rdata_sram[i*9 +: 8], a_rdata_sram[i*9 + 8]})) & a_pmask_q[i];
+        b_rerror_d[1] |= (~(^{b_rdata_sram[i*9 +: 8], b_rdata_sram[i*9 + 8]})) & b_pmask_q[i];
+      end
+    end
+
+    always_ff @(posedge clk_a_i or negedge rst_a_ni) begin : p_a_pmask
+      if(!rst_a_ni) begin
+        a_pmask_q <= '0;
+      end else begin
+        a_pmask_q <= a_pmask_d;
+      end
+    end
+    always_ff @(posedge clk_b_i or negedge rst_b_ni) begin : p_b_pmask
+      if(!rst_b_ni) begin
+        b_pmask_q <= '0;
+      end else begin
+        b_pmask_q <= b_pmask_d;
       end
     end
   end else begin : gen_nosecded_noparity

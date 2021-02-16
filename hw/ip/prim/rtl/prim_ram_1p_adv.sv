@@ -12,6 +12,9 @@
 //
 // Note that the write mask needs to be per Byte if parity is enabled. If ECC is enabled, the write
 // mask cannot be used and has to be tied to {Width{1'b1}}.
+//
+// Also note that when parity is enabled, the write mask will be used to mask the corresponding
+// parity check bits upon readout.
 
 `include "prim_assert.sv"
 
@@ -191,6 +194,7 @@ module prim_ram_1p_adv #(
     `ASSERT_INIT(WidthNeedsToBeByteAligned_A, Width % 8 == 0)
     `ASSERT_INIT(ParityNeedsByteWriteMask_A, DataBitsPerMask == 8)
 
+    logic [TotalWidth/8-1:0] pmask_d, pmask_q;
     always_comb begin : p_parity
       rerror_d = '0;
       for (int i = 0; i < Width/8; i ++) begin
@@ -204,8 +208,19 @@ module prim_ram_1p_adv #(
         // parity generation (odd parity)
         wdata_d[i*9 + 8] = ~(^wdata_i[i*8 +: 8]);
         wmask_d[i*9 + 8] = &wmask_i[i*8 +: 8];
+        // register this to mask the parity check in the next cycle
+        pmask_d[i] = wmask_q[i*9 + 8];
+
         // parity decoding (errors are always uncorrectable)
-        rerror_d[1] |= ~(^{rdata_sram[i*9 +: 8], rdata_sram[i*9 + 8]});
+        rerror_d[1] |= (~(^{rdata_sram[i*9 +: 8], rdata_sram[i*9 + 8]})) & pmask_q[i];
+      end
+    end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_pmask
+      if(!rst_ni) begin
+        pmask_q <= '0;
+      end else begin
+        pmask_q <= pmask_d;
       end
     end
   end else begin : gen_nosecded_noparity
