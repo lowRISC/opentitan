@@ -61,8 +61,8 @@ module tlul_sink import tlul_pkg::*; (
   // Write mask should be all 1s.
   assign wr_mask_err = wr_req ? ~(&tl_i.a_mask) : 1'b0;
 
-  // Don't allow unsupported features.
-  assign malformed_meta_err = (tl_i.a_user.parity_en == 1'b1);
+  // Don't allow unsupported values.
+  assign malformed_meta_err = tl_a_user_chk(tl_i.a_user);
 
   // tl_err : separate checker
   tlul_err u_err (

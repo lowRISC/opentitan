@@ -313,7 +313,7 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
 
   // this is formulated as an assumption such that the FPV testbenches do disprove this
   // property by mistake
-  `ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.parity_en == 1'b0)
+  //`ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.chk_en == tlul_pkg::CheckDis)
 
 endmodule
 <%def name="str_bits_sv(bits)">\
