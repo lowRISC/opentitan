@@ -14,10 +14,10 @@ set clks_48_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT1]]
 ## destination flops few enough.
 
 set u_pll clkgen/pll
-set u_div2 top_*/u_clkmgr/u_io_div2_div
+set u_div2 top_*/u_clkmgr_aon/u_io_div2_div
 create_generated_clock -name clk_io_div2 -source [get_pin ${u_pll}/CLKOUT0] -divide_by 2 [get_pin ${u_div2}/u_clk_div_buf/gen_xilinx.u_impl_xilinx/bufg_i/O]
 
-set u_div4 top_*/u_clkmgr/u_io_div4_div
+set u_div4 top_*/u_clkmgr_aon/u_io_div4_div
 create_generated_clock -name clk_io_div4 -source [get_pin ${u_pll}/CLKOUT0] -divide_by 4 [get_pin ${u_div4}/u_clk_div_buf/gen_xilinx.u_impl_xilinx/bufg_i/O]
 
 ## JTAG and SPI clocks
