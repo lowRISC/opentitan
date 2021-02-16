@@ -21,6 +21,8 @@ CC_ALL_COMMON_FEATURES_INFO = {
     "opt": "Compile a release build with, optimisation turned on",
     "fastbuild": "Compile quickly, for fast development",
     "output_format": "The output format of the compilers *.stripped target, (default binary)",
+    "coverage": "A set of features that don't fit in any other categories",
+    "misc": "A set of features that don't fit in any other categories",
     "type_name": "The type name for this provider",
 }
 
@@ -36,7 +38,9 @@ def all_common_features(
         dbg,
         opt,
         fastbuild,
-        output_format):
+        output_format,
+        coverage,
+        misc):
     """ all_common_features represents the minimal set of features that should be implemented for a portable toolchain
 
     Args:
@@ -50,6 +54,8 @@ def all_common_features(
         opt: Configure the optimal/release compilation mode
         fastbuild: Configure the fastbuild mode, to speed up developement
         output_format: The output format for the {target}.stripped target (default binary)
+        coverage: Feature for instrumenting code coverage
+        misc: The set of features that don't fit anywhere else
 
     Returns:
         CCAllCommonFeaturesInfo: All the common features required to make a minimal toolchain
@@ -64,6 +70,8 @@ def all_common_features(
         opt,
         fastbuild,
         output_format,
+        coverage,
+        misc,
     ]
     for arg in args:
         if not _is_feature(arg):
@@ -82,5 +90,7 @@ def all_common_features(
         opt = opt,
         fastbuild = fastbuild,
         output_format = output_format,
+        coverage = coverage,
+        misc = misc,
         type_name = "cc_all_common_feature_info",
     )

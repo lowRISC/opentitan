@@ -101,6 +101,7 @@ def _gcc_arm_none_toolchain_config_info_impl(ctx):
         endian = ctx.attr.endian,
         fpu = ctx.attr.fpu,
         include_paths = SYSTEM_INCLUDE_COMMAND_LINE,
+        sysroot = None,
     )
     embedded_features = GetEmbeddedFeatures("GCC")
     toolchain_config_info = cc_common.create_cc_toolchain_config_info(
@@ -221,24 +222,24 @@ gcc_arm_none_toolchain_config = rule(
             doc = "Passthrough gcc wrappers used for the compiler",
             default = "//toolchains/gcc_arm_none_eabi/gcc_wrappers:all",
         ),
-        "_host_platform": attr.label(
-            default = "@local_config_platform//:host",
-            providers = [platform_common.PlatformInfo],
-        ),
-        "_os": attr.label(
-            default = "@platforms//os",
-            providers = [platform_common.ConstraintSettingInfo],
-        ),
     },
     provides = [CcToolchainConfigInfo],
 )
 
-def compiler_components():
+def compiler_components(system_hdr_deps, injected_hdr_deps):
+    native.filegroup(
+        name = "additional_headers",
+        srcs = [
+            system_hdr_deps,
+            injected_hdr_deps,
+        ],
+    )
     native.filegroup(
         name = "compiler_components",
         srcs = [
             "//toolchains/gcc_arm_none_eabi/gcc_wrappers:all",
             "@com_gcc_arm_none_eabi_compiler//:all",
+            ":additional_headers",
         ],
     )
 

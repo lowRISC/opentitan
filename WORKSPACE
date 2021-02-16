@@ -38,11 +38,11 @@ git_repository(
 
 http_archive(
     name = "bazel_skylib",
+    sha256 = "1c531376ac7e5a180e0237938a2536de0c54d93f5c278634818e0efc952dd56c",
     urls = [
         "https://github.com/bazelbuild/bazel-skylib/releases/download/1.0.3/bazel-skylib-1.0.3.tar.gz",
         "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.0.3/bazel-skylib-1.0.3.tar.gz",
     ],
-    sha256 = "1c531376ac7e5a180e0237938a2536de0c54d93f5c278634818e0efc952dd56c",
 )
 
 load("//tools/openocd:openocd_repository.bzl", "openocd_deps")
@@ -89,42 +89,25 @@ http_archive(
     urls = ["https://github.com/silvergasp/cxxopts/archive/5e323d648e50b43fd430fb324c632dafd73f7add.zip"],
 )
 
-# Change master to the git tag you want.
-http_archive(
-    name = "com_grail_bazel_toolchain",
-    sha256 = "14610f3b6a7b41600bec9168461101fe7b63f095c8724d965a64e51f49a980d5",
-    strip_prefix = "bazel-toolchain-5d6406ee54b3aa04139f30769b4e94538a80bc52",
-    urls = ["https://github.com/grailbio/bazel-toolchain/archive/5d6406ee54b3aa04139f30769b4e94538a80bc52.zip"],
-)
+load("//toolchains/tools/sysroot:sysroot_repository.bzl", "sysroot_archive")
 
-load("@com_grail_bazel_toolchain//toolchain:deps.bzl", "bazel_toolchain_dependencies")
-
-bazel_toolchain_dependencies()
-
-# This sysroot is used by github.com/vsco/bazel-toolchains.
-http_archive(
+sysroot_archive(
     name = "org_chromium_sysroot_linux_x64",
-    build_file_content = """
-filegroup(
-  name = "sysroot",
-  srcs = glob(["*/**"]),
-  visibility = ["//visibility:public"],
-)
-""",
     sha256 = "84656a6df544ecef62169cfe3ab6e41bb4346a62d3ba2a045dc5a0a2ecea94a3",
     urls = ["https://commondatastorage.googleapis.com/chrome-linux-sysroot/toolchain/2202c161310ffde63729f29d27fe7bb24a0bc540/debian_stretch_amd64_sysroot.tar.xz"],
 )
 
-load("@com_grail_bazel_toolchain//toolchain:rules.bzl", "llvm_toolchain")
+load("//toolchains/upstream:toolchain_upstream_deps.bzl", "toolchain_upstream_deps")
 
-llvm_toolchain(
-    name = "llvm_toolchain",
-    llvm_version = "9.0.0",
-    sysroot = {
-        "linux": "@org_chromium_sysroot_linux_x64//:sysroot",
-    },
+toolchain_upstream_deps()
+
+load("//toolchains/compilers/llvm:llvm_repository.bzl", "llvm_repository")
+
+llvm_repository(
+    name = "com_llvm_compiler",
+    #sysroot = "@org_chromium_sysroot_linux_x64//:sysroot",
 )
 
-load("@llvm_toolchain//:toolchains.bzl", "llvm_register_toolchains")
+load("//toolchains/clang:clang_toolchain.bzl", "register_clang_toolchain")
 
-llvm_register_toolchains()
+register_clang_toolchain()

@@ -28,7 +28,10 @@ _LD_ALL_ACTIONS = [
     ACTION_NAMES.cpp_link_executable,
 ]
 
-def GccIncludeFeature(include_paths):
+def ClangIncludeFeature(include_paths, sysroot):
+    sysroot_command_line = ""
+    if sysroot:
+        sysroot_command_line = "--sysroot=" + sysroot
     _INCLUDE_FEATURE = feature(
         name = "includes",
         enabled = True,
@@ -38,7 +41,7 @@ def GccIncludeFeature(include_paths):
                 flag_groups = [
                     flag_group(
                         # Disable system includes, then re-enable includes using -I flag
-                        flags = ["-nostdinc", "-no-canonical-prefixes", "-fno-canonical-system-headers"] + include_paths,
+                        flags = [sysroot_command_line] + include_paths,
                     ),
                 ],
             ),
@@ -46,7 +49,7 @@ def GccIncludeFeature(include_paths):
     )
     return _INCLUDE_FEATURE
 
-def GccAchitectureFeature(architecture, float_abi, endian, fpu):
+def ClangAchitectureFeature(architecture, float_abi, endian, fpu):
     if fpu == "none":
         fpu = "auto"
     _ARCHITECTURE_FEATURE = feature(
@@ -61,13 +64,8 @@ def GccAchitectureFeature(architecture, float_abi, endian, fpu):
                         flags = [
                             # Set the system architecture/cpu
                             "-march=" + architecture,
-                            # Set the fpu
-                            "-mfpu=" + fpu,
-                            # Set the floating point calculation mode hard/soft
-                            "-mfloat-abi={}".format(float_abi),
                             # Set the endianess of the architecture
                             "-m{}-endian".format(endian),
-                            # Set the fpu available on the chip
                         ],
                     ),
                 ],
@@ -78,7 +76,7 @@ def GccAchitectureFeature(architecture, float_abi, endian, fpu):
 
 _ALL_WARNINGS_FEATURE = feature(
     name = "all_warnings",
-    enabled = True,
+    enabled = False,
     flag_sets = [
         flag_set(
             actions = _CPP_ALL_COMPILE_ACTIONS + _C_ALL_COMPILE_ACTIONS,
@@ -124,7 +122,7 @@ _REPRODUCIBLE_FEATURE = feature(
 
 _EXCEPTIONS_FEATURE = feature(
     name = "exceptions",
-    enabled = True,
+    enabled = False,
     flag_sets = [
         flag_set(
             actions = _CPP_ALL_COMPILE_ACTIONS,
@@ -139,6 +137,25 @@ _EXCEPTIONS_FEATURE = feature(
             ],
         ),
     ],
+)
+
+_COVERAGE_FEATURE = feature(
+    name = "coverage",
+    flag_sets = [
+        flag_set(
+            actions = _CPP_ALL_COMPILE_ACTIONS + _C_ALL_COMPILE_ACTIONS,
+            flag_groups = [
+                flag_group(
+                    flags = ["--coverage"],
+                ),
+            ],
+        ),
+        flag_set(
+            actions = _LD_ALL_ACTIONS,
+            flag_groups = [flag_group(flags = ["-fprofile-instr-generate"])],
+        ),
+    ],
+    provides = ["profile"],
 )
 
 _SYMBOL_GARBAGE_COLLECTION = feature(
@@ -226,9 +243,8 @@ _OPT_FEATURE = feature(
                 flag_group(
                     flags = [
                         # Optimise for space
-                        "-Os",
+                        "-O2",
                         # Inline small functions if less instructions are likely to be executed
-                        "-finline-small-functions",
                         "-flto",
                     ],
                 ),
@@ -249,31 +265,27 @@ _OPT_FEATURE = feature(
     provides = ["compilation_mode"],
 )
 
+# Leaving for compatibility
 _OUTPUT_FORMAT_FEATURE = feature(
     name = "output_format",
+    enabled = False,
+)
+
+_MISC = feature(
+    name = "misc",
     enabled = True,
     flag_sets = [
         flag_set(
-            actions = [ACTION_NAMES.strip],
+            actions = _CPP_ALL_COMPILE_ACTIONS + _LD_ALL_ACTIONS,
             flag_groups = [
                 flag_group(
                     flags = [
-                        # Strip all symbols
-                        "--strip-all",
-                        # Set binary format with compiler flag passthrough
-                        "--input-target=elf32-little",
-                        "--output-target=binary",
+                        "-x",
+                        "c++",
                     ],
                 ),
             ],
         ),
-    ],
-)
-
-_MISC_FEATURE = feature(
-    name = "misc",
-    enabled = True,
-    flag_sets = [
         flag_set(
             actions = _CPP_ALL_COMPILE_ACTIONS,
             flag_groups = [
@@ -284,27 +296,32 @@ _MISC_FEATURE = feature(
                 ),
             ],
         ),
+        flag_set(
+            actions = _LD_ALL_ACTIONS,
+            flag_groups = [
+                flag_group(
+                    flags = [
+                        "-fuse-ld=lld",
+                        "-lstdc++",
+                    ],
+                ),
+            ],
+        ),
     ],
 )
 
-# Here for interface compatibility
-_COVERAGE_FEATURE = feature(
-    name = "coverage",
-    enabled = False,
-)
-
-def GetGccCommonFeatures(include_paths, sysroot = "", architecture = "native", float_abi = "soft", endian = "little", fpu = "nofp"):
+def GetClangCommonFeatures(include_paths, sysroot = "", architecture = "native", float_abi = "soft", endian = "little", fpu = "nofp"):
     return all_common_features(
         all_warnings = _ALL_WARNINGS_FEATURE,
         all_warnings_as_errors = _ALL_WARNINGS_AS_ERRORS_FEATURE,
         reproducible = _REPRODUCIBLE_FEATURE,
-        includes = GccIncludeFeature(include_paths),
+        includes = ClangIncludeFeature(include_paths, sysroot),
         symbol_garbage_collection = _SYMBOL_GARBAGE_COLLECTION,
-        architecture = GccAchitectureFeature(architecture = architecture, fpu = fpu, float_abi = float_abi, endian = endian),
+        architecture = ClangAchitectureFeature(architecture = architecture, fpu = fpu, float_abi = float_abi, endian = endian),
         dbg = _DEBUG_FEATURE,
         opt = _OPT_FEATURE,
         fastbuild = _FASTBUILD_FEATURE,
         output_format = _OUTPUT_FORMAT_FEATURE,
-        misc = _MISC_FEATURE,
         coverage = _COVERAGE_FEATURE,
+        misc = _MISC,
     )

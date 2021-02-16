@@ -2,6 +2,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_embedded//toolchains/upstream:toolchain_upstream_deps.bzl", "toolchain_upstream_deps")
 
 def bazel_embedded_deps():
     """ bazel_embedded_deps downloads and setups up the required thirdy party dependencies """
@@ -12,8 +13,11 @@ def bazel_embedded_deps():
         name = "platforms",
         remote = "https://github.com/curtin-space/platforms.git",
         commit = "a9fb73e46ab4a7558d53d65ed8e608724f07d4cc",
-        shallow_since = "1585009972 +0800"
+        shallow_since = "1585009972 +0800",
     )
+
+    if not native.existing_rule("bazel_embedded_upstream_toolchain"):
+        toolchain_upstream_deps()
 
     if not native.existing_rule("rules_cc"):
         git_repository(
