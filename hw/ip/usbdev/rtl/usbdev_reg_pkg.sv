@@ -581,9 +581,27 @@ package usbdev_reg_pkg;
   parameter logic [BlockAw-1:0] USBDEV_WAKE_CONFIG_OFFSET = 12'h 70;
   parameter logic [BlockAw-1:0] USBDEV_WAKE_DEBUG_OFFSET = 12'h 74;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [16:0] USBDEV_INTR_TEST_RESVAL = 17'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_PKT_RECEIVED_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_PKT_SENT_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_DISCONNECTED_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_HOST_LOST_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_LINK_RESET_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_LINK_SUSPEND_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_LINK_RESUME_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_AV_EMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_RX_FULL_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_AV_OVERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_LINK_IN_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_RX_CRC_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_RX_PID_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_RX_BITSTUFF_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_FRAME_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_CONNECTED_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_LINK_OUT_ERR_RESVAL = 1'h 0;
   parameter logic [31:0] USBDEV_USBSTAT_RESVAL = 32'h 80000000;
+  parameter logic [0:0] USBDEV_USBSTAT_RX_EMPTY_RESVAL = 1'h 1;
   parameter logic [23:0] USBDEV_RXFIFO_RESVAL = 24'h 0;
   parameter logic [16:0] USBDEV_PHY_PINS_SENSE_RESVAL = 17'h 0;
 

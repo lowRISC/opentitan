@@ -227,6 +227,12 @@ flat_regs = block.get_regs_flat()
 def reg_pfx(reg):
   return '{}_{}'.format(ublock, reg.name.upper())
 
+def reg_resname(reg):
+  return '{}_RESVAL'.format(reg_pfx(reg))
+
+def field_resname(reg, field):
+  return '{}_{}_RESVAL'.format(reg_pfx(reg), field.name.upper())
+
 %>\
 % for r in flat_regs:
   parameter logic [BlockAw-1:0] ${reg_pfx(r)}_OFFSET = ${block.addr_width}'h ${"%x" % r.offset};
@@ -236,13 +242,22 @@ def reg_pfx(reg):
   hwext_regs = [r for r in flat_regs if r.hwext]
 %>\
 % if hwext_regs:
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   % for reg in hwext_regs:
 <%
     reg_width = reg.get_width()
     reg_msb = reg_width - 1
 %>\
-  parameter logic [${reg_msb}:0] ${reg_pfx(reg)}_RESVAL = ${"{}'h {:x}".format(reg_width, reg.resval)};
+  parameter logic [${reg_msb}:0] ${reg_resname(reg)} = ${"{}'h {:x}".format(reg_width, reg.resval)};
+    % for field in reg.fields:
+      % if field.resval is not None:
+<%
+    field_width = field.bits.width()
+    field_msb = field_width - 1
+%>\
+  parameter logic [${field_msb}:0] ${field_resname(reg, field)} = ${"{}'h {:x}".format(field_width, field.resval)};
+      % endif
+    % endfor
   % endfor
 
 % endif

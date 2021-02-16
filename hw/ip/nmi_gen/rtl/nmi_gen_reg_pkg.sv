@@ -89,8 +89,11 @@ package nmi_gen_reg_pkg;
   parameter logic [BlockAw-1:0] NMI_GEN_INTR_ENABLE_OFFSET = 4'h 4;
   parameter logic [BlockAw-1:0] NMI_GEN_INTR_TEST_OFFSET = 4'h 8;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [2:0] NMI_GEN_INTR_TEST_RESVAL = 3'h 0;
+  parameter logic [0:0] NMI_GEN_INTR_TEST_ESC0_RESVAL = 1'h 0;
+  parameter logic [0:0] NMI_GEN_INTR_TEST_ESC1_RESVAL = 1'h 0;
+  parameter logic [0:0] NMI_GEN_INTR_TEST_ESC2_RESVAL = 1'h 0;
 
   // Register Index
   typedef enum int {

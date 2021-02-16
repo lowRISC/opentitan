@@ -248,11 +248,16 @@ package keymgr_reg_pkg;
   parameter logic [BlockAw-1:0] KEYMGR_OP_STATUS_OFFSET = 8'h a4;
   parameter logic [BlockAw-1:0] KEYMGR_ERR_CODE_OFFSET = 8'h a8;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [0:0] KEYMGR_INTR_TEST_RESVAL = 1'h 0;
+  parameter logic [0:0] KEYMGR_INTR_TEST_OP_DONE_RESVAL = 1'h 0;
   parameter logic [1:0] KEYMGR_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [0:0] KEYMGR_ALERT_TEST_FATAL_FAULT_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] KEYMGR_ALERT_TEST_RECOV_OPERATION_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_CFG_REGWEN_RESVAL = 1'h 1;
+  parameter logic [0:0] KEYMGR_CFG_REGWEN_EN_RESVAL = 1'h 1;
   parameter logic [0:0] KEYMGR_SW_BINDING_REGWEN_RESVAL = 1'h 1;
+  parameter logic [0:0] KEYMGR_SW_BINDING_REGWEN_EN_RESVAL = 1'h 1;
 
   // Register Index
   typedef enum int {

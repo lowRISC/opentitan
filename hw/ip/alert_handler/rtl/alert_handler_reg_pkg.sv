@@ -588,8 +588,12 @@ package alert_handler_reg_pkg;
   parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET = 10'h 3e4;
   parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_STATE_OFFSET = 10'h 3e8;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [3:0] ALERT_HANDLER_INTR_TEST_RESVAL = 4'h 0;
+  parameter logic [0:0] ALERT_HANDLER_INTR_TEST_CLASSA_RESVAL = 1'h 0;
+  parameter logic [0:0] ALERT_HANDLER_INTR_TEST_CLASSB_RESVAL = 1'h 0;
+  parameter logic [0:0] ALERT_HANDLER_INTR_TEST_CLASSC_RESVAL = 1'h 0;
+  parameter logic [0:0] ALERT_HANDLER_INTR_TEST_CLASSD_RESVAL = 1'h 0;
   parameter logic [15:0] ALERT_HANDLER_CLASSA_ACCUM_CNT_RESVAL = 16'h 0;
   parameter logic [31:0] ALERT_HANDLER_CLASSA_ESC_CNT_RESVAL = 32'h 0;
   parameter logic [2:0] ALERT_HANDLER_CLASSA_STATE_RESVAL = 3'h 0;

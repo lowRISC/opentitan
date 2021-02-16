@@ -164,11 +164,14 @@ package lc_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_6_OFFSET = 7'h 4c;
   parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_7_OFFSET = 7'h 50;
 
-  // Reset values for hwext registers
+  // Reset values for hwext registers and their fields
   parameter logic [1:0] LC_CTRL_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_PROG_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_STATE_ERROR_RESVAL = 1'h 0;
   parameter logic [8:0] LC_CTRL_STATUS_RESVAL = 9'h 0;
   parameter logic [7:0] LC_CTRL_CLAIM_TRANSITION_IF_RESVAL = 8'h 0;
   parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_RESVAL = 1'h 0;
+  parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_TRANSITION_REGWEN_RESVAL = 1'h 0;
   parameter logic [0:0] LC_CTRL_TRANSITION_CMD_RESVAL = 1'h 0;
   parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_0_RESVAL = 32'h 0;
   parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_1_RESVAL = 32'h 0;
