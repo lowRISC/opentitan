@@ -35,7 +35,7 @@
 
     hier_paths: {
       top: "clkmgr_aon_clocks.", // top level is a struct
-      ext: "",               // ext is a port of the clock name
+      ext: "",                   // ext is a port of the clock name
     },
 
     // Clock Source attributes
@@ -111,7 +111,7 @@
 
     hier_paths: {
       top: "rstmgr_aon_resets.", // top level is a struct
-      ext: "",               // ext is a port of the clock name
+      ext: "",                   // ext is a port of the clock name
     },
 
     // Reset node attributes
@@ -153,9 +153,9 @@
       { name: "lc_io_div4",  gen: true,  type: "top", domains: [       "0"], parent: "lc_src",  clk: "io_div4" }
       { name: "sys",         gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "main"    }
       { name: "sys_io_div4", gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "io_div4" }
-      { name: "sys_aon",     gen: true,  type: "top", domains: ["Aon",    ], parent: "sys_src", clk: "aon"     }
+      { name: "sys_aon",     gen: true,  type: "top", domains: ["Aon", "0"], parent: "sys_src", clk: "aon"     }
       { name: "spi_device",  gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "io_div2", sw: 1 }
-      { name: "usb",         gen: true,  type: "top", domains: ["Aon",    ], parent: "sys_src", clk: "usb",     sw: 1 }
+      { name: "usb",         gen: true,  type: "top", domains: [       "0"], parent: "sys_src", clk: "usb",     sw: 1 }
     ]
   }
 
@@ -201,7 +201,7 @@
   // generated: A module is templated and generated as part of topgen
   // top_only: A module is not templated but is specific to 'top_*' instead of 'ip'
   module: [
-    { name: "uart",     // instance name
+    { name: "uart0",    // instance name
       type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
@@ -237,15 +237,13 @@
       reset_connections: {rst_ni: "sys_io_div4"},
       base_addr: "0x40100000",
     },
-    { name: "sensor_ctrl",
-      type: "sensor_ctrl",
-      clock_srcs: {clk_i: "io_div4"},
-      clock_group: "secure",
+    { name: "usbdev",
+      type: "usbdev",
+      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},
+      clock_group: "peri",
       clock_reset_export: ["ast"],
-      reset_connections: {rst_ni: "sys_io_div4"},
-      domain: "Aon",
+      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usb"},
       base_addr: "0x40110000",
-      top_only: "true"
     },
     { name: "lc_ctrl",
       type: "lc_ctrl",
@@ -306,28 +304,27 @@
       base_addr: "0x40420000",
       generated: "true"
     },
-    // pinmux is currently allocated to main fabric,
-    // however this should probably be moved to peri fabric
-    { name: "pinmux",
+    { name: "pinmux_aon",
       type: "pinmux",
       clock: "main",
-      clock_srcs: {clk_i: "main", clk_aon_i: "aon"},
+      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "secure",
-      reset_connections: {rst_ni: "sys", rst_aon_ni: "sys_aon"},
+      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       domain: "Aon",
       base_addr: "0x40460000",
       generated: "true"
     },
-    { name: "usbdev",
-      type: "usbdev",
-      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon", clk_usb_48mhz_i: "usb"},
-      clock_group: "peri",
+    { name: "sensor_ctrl_aon",
+      type: "sensor_ctrl",
+      clock_srcs: {clk_i: "io_div4"},
+      clock_group: "secure",
       clock_reset_export: ["ast"],
-      reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon", rst_usb_48mhz_ni: "usb"},
+      reset_connections: {rst_ni: "sys_io_div4"},
       domain: "Aon",
       base_addr: "0x40500000",
+      top_only: "true"
     },
-    { name: "sram_ctrl_ret",
+    { name: "sram_ctrl_ret_aon",
       type: "sram_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_otp_i: "io_div4"},
       clock_group: "peri",
@@ -400,8 +397,9 @@
       reset_connections: {rst_ni: "sys"},
       type: "ram_1p_scr",
       base_addr: "0x10000000",
-      size: "0x10000"
+      size: "0x10000",
       byte_write: "true",
+      exec: "1",
       inter_signal_list: [
         { struct: "tl"
           package: "tlul_pkg"
@@ -424,15 +422,16 @@
         },
       ]
     },
-    { name: "ram_ret",
+    { name: "ram_ret_aon",
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "infra",
       reset_connections: {rst_ni: "sys_io_div4"},
       domain: "Aon",
       type: "ram_1p_scr",
-      base_addr: "0x18000000",
+      base_addr: "0x40600000",
       size: "0x1000",
       byte_write: "true",
+      exec: "0",
       inter_signal_list: [
         { struct: "tl"
           package: "tlul_pkg"
@@ -481,10 +480,10 @@
           package: "lc_ctrl_pkg",
           type: "uni"
           act: "rcv"
-          name: "lc_dft_en"
+          name: "lc_nvm_debug_en"
         },
-        { struct: "logic"
-          package: ""
+        { struct: "lc_tx"
+          package: "lc_ctrl_pkg"
           type: "uni"
           act: "rcv"
           name: "flash_bist_enable"
@@ -543,9 +542,9 @@
       'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'sram_ctrl_main.sram_scr' : ['ram_main.sram_scr'],
-      'sram_ctrl_ret.sram_scr'  : ['ram_ret.sram_scr'],
+      'sram_ctrl_ret_aon.sram_scr' : ['ram_ret_aon.sram_scr'],
       'sram_ctrl_main.en_ifetch' : ['ram_main.en_ifetch']
-      'sram_ctrl_ret.en_ifetch' : ['ram_ret.en_ifetch']
+      'sram_ctrl_ret_aon.en_ifetch' : ['ram_ret_aon.en_ifetch']
       'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
       'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
@@ -553,30 +552,33 @@
       'rv_core_ibex.crashdump'  : ['rstmgr_aon.cpu_dump'],
 
       // usbdev connection to pinmux
-      'usbdev.usb_out_of_rst'   : ['pinmux.usb_out_of_rst'],
-      'usbdev.usb_aon_wake_en'  : ['pinmux.usb_aon_wake_en'],
-      'usbdev.usb_aon_wake_ack' : ['pinmux.usb_aon_wake_ack'],
-      'usbdev.usb_suspend'      : ['pinmux.usb_suspend'],
-      'pinmux.usb_state_debug'  : ['usbdev.usb_state_debug'],
+      'usbdev.usb_out_of_rst'   : ['pinmux_aon.usb_out_of_rst'],
+      'usbdev.usb_aon_wake_en'  : ['pinmux_aon.usb_aon_wake_en'],
+      'usbdev.usb_aon_wake_ack' : ['pinmux_aon.usb_aon_wake_ack'],
+      'usbdev.usb_suspend'      : ['pinmux_aon.usb_suspend'],
+      'pinmux_aon.usb_state_debug' : ['usbdev.usb_state_debug'],
 
       // TODO see #4447
-      //'edn0.edn' : ['keymgr.edn'],
+      //'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast_edn.edn', 'kmac.entropy'],
+      //'edn1.edn'              : ['alert_handler.edn'],
 
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
       // an empty list.
-      'clkmgr_aon.idle'      : [],
+      'clkmgr_aon.idle'         : [],
 
       // LC function control signal broadcast
       // TODO(#3920): connect all these signals once top-level sim and FPGA can backload LC state
-      'lc_ctrl.lc_dft_en'          : ['eflash.lc_dft_en'],
-      'lc_ctrl.lc_nvm_debug_en'    : [],
-      'lc_ctrl.lc_hw_debug_en'     : [],
+      'lc_ctrl.lc_dft_en'          : [],
+      'lc_ctrl.lc_nvm_debug_en'    : ['eflash.lc_nvm_debug_en'],
+      'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
+                                      'sram_ctrl_ret_aon.lc_hw_debug_en'],
       'lc_ctrl.lc_cpu_en'          : [],
-
+      'lc_ctrl.lc_escalate_en'     : ['sram_ctrl_main.lc_escalate_en',
+                                      'sram_ctrl_ret_aon.lc_escalate_en'],
+      'lc_ctrl.lc_check_byp_en'    : [],
       // TODO: OTP Clock bypass signal going from LC to AST/clkmgr
-      'lc_ctrl.lc_clk_byp_req'  : [],
-      //'lc_ctrl.lc_clk_byp_ack'  : [],
+      'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_bypass_ack'],
 
       // LC access control signal broadcast
       'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['flash_ctrl.lc_creator_seed_sw_rw_en'],
@@ -598,22 +600,25 @@
 
     // ext is to create port in the top.
     'external': {
-        'clkmgr_aon.clk_main': 'clk_main',   // clock inputs
-        'clkmgr_aon.clk_io': 'clk_io',       // clock inputs
-        'clkmgr_aon.clk_usb': 'clk_usb',     // clock inputs
-        'clkmgr_aon.clk_aon': 'clk_aon',     // clock inputs
-        'rstmgr_aon.ast': 'rstmgr_ast',                // ast reset input
-        'pwrmgr_aon.pwr_ast': 'pwrmgr_ast',
-        'sensor_ctrl.ast_alert': '',
-        'sensor_ctrl.ast_status': '',
-        'usbdev.usb_ref_val': '',
-        'usbdev.usb_ref_pulse': '',
-        'peri.tl_ast_wrapper': 'ast_tl',
-        'eflash.flash_bist_enable': 'flash_bist_enable',
-        'eflash.flash_power_down_h': 'flash_power_down_h',
-        'eflash.flash_power_ready_h': 'flash_power_ready_h',
-        'eflash.flash_test_mode_a': 'flash_test_mode_a',
-        'eflash.flash_test_voltage_h': 'flash_test_voltage_h',
+       'clkmgr_aon.clk_main'           : 'clk_main',  // clock inputs
+        'clkmgr_aon.clk_io'            : 'clk_io',    // clock inputs
+        'clkmgr_aon.clk_usb'           : 'clk_usb',   // clock inputs
+        'clkmgr_aon.clk_aon'           : 'clk_aon',   // clock inputs
+        'clkmgr_aon.jitter_en'         : 'clk_main_jitter_en',
+        'rstmgr_aon.ast'               : 'rstmgr_ast',
+        'pwrmgr_aon.pwr_ast'           : 'pwrmgr_ast',
+        'sensor_ctrl_aon.ast_alert'    : 'sensor_ctrl_ast_alert',
+        'sensor_ctrl_aon.ast_status'   : 'sensor_ctrl_ast_status',
+        'usbdev.usb_ref_val'           : '',
+        'usbdev.usb_ref_pulse'         : '',
+        'peri.tl_ast_wrapper'          : 'ast_tl',
+        'eflash.flash_bist_enable'     : 'flash_bist_enable',
+        'eflash.flash_power_down_h'    : 'flash_power_down_h',
+        'eflash.flash_power_ready_h'   : 'flash_power_ready_h',
+        'eflash.flash_test_mode_a'     : 'flash_test_mode_a',
+        'eflash.flash_test_voltage_h'  : 'flash_test_voltage_h',
+        'lc_ctrl.lc_clk_byp_req'       : 'lc_clk_byp_req',
+        'clkmgr_aon.ast_clk_bypass_ack': 'lc_clk_byp_ack',
     },
   },
 
@@ -642,8 +647,9 @@
   // If interrupt is not defined, it uses the order from the module list
   // and include every modules.
   // first item goes to LSB of the interrupt source
-  interrupt_module: ["gpio", "uart", "spi_device", "flash_ctrl",
-                     "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr"]
+  interrupt_module: ["uart0",
+                     "gpio", "spi_device",
+                     "flash_ctrl", "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr_aon"]
 
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
@@ -656,14 +662,14 @@
   // ===== ALERT HANDLER ======================================================
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
-  alert_module: [ "aes", "sensor_ctrl", "lc_ctrl",
-                  "sram_ctrl_main", "sram_ctrl_ret", "flash_ctrl"]
+  alert_module: [ "aes", "sensor_ctrl_aon", "lc_ctrl",
+                  "sram_ctrl_main", "sram_ctrl_ret_aon", "flash_ctrl"]
 
   // generated list of alerts:
   alert: [
   ]
 
-  // TODO: PINMUX
+  // TODO: need to overhaul this datastructure.
   pinmux: {
 
     // Total number of Multiplexed I/O
@@ -677,7 +683,7 @@
     dio_modules: [
       { name: "spi_device", pad: ["ChB[0..3]"] },
       //{ name: "uart.tx", pad: ["ChA[0]"]},
-      { name: "uart", pad: ["ChA[0..1]"]},
+      { name: "uart0", pad: ["ChA[0..1]"]},
       // { name: "dio_module.signal_input", pad: ["ChA[31]"] }
       { name: "usbdev", pad: ["ChC[0..8]"]},
     ],
@@ -687,7 +693,7 @@
     //  between the modules and the IO PADS.
     //  If `mio_modules` aren't defined, it uses all remaining modules from
     //  module list except defined in `dio_modules`.
-    mio_modules: ["uart", "gpio"]
+    mio_modules: ["gpio"]
 
     // If any module isn't defined in above two lists, its inputs will be tied
     //  to 0, and the output/OE signals will be floating (or connected to
@@ -714,6 +720,7 @@
     //  ]
   }
 
+  // TODO: need to overhaul this datastructure.
   // PADS instantiation
   //  Number of in/outs and the numer of PAD instances doesn't have to be
   //  same. The number given below excludes clock/reset and other necessary

@@ -89,17 +89,6 @@
         }],
       pipeline_byp: "false"
     },
-    { name:      "pinmux",
-      type:      "device",
-      clock:     "clk_main_i",
-      reset:     "rst_fixed_ni",
-      inst_type: "pinmux",
-      addr_range: [{
-        base_addr: "0x40070000",
-        size_byte: "0x1000",
-        }],
-      pipeline_byp: "false"
-    },
     { name:      "sram_ctrl_main",
       type:      "device",
       clock:     "clk_main_i",
@@ -111,9 +100,9 @@
     corei:  ["rom", "debug_mem", "ram_main", "eflash"],
     cored:  ["rom", "debug_mem", "ram_main", "eflash", "peri", "flash_ctrl",
     "aes",
-    "hmac", "rv_plic", "pinmux", "sram_ctrl_main"],
+    "hmac", "rv_plic", "sram_ctrl_main"],
     dm_sba: ["rom",              "ram_main", "eflash", "peri", "flash_ctrl",
     "aes",
-    "hmac", "rv_plic", "pinmux", "sram_ctrl_main"],
+    "hmac", "rv_plic", "sram_ctrl_main"],
   },
 }
