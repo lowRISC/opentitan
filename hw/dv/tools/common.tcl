@@ -17,8 +17,9 @@ if {[info exists ::env(WAVES)]} {
 }
 
 set tb_top "tb"
-if {[info exists ::(TB_TOP)]} {
+if {[info exists ::env(TB_TOP)]} {
   set tb_top "$::env(TB_TOP)"
+} else {
   puts "WARNING: TB_TOP environment variable not set - using \"tb\" as the
         top level testbench hierarchy."
 }
