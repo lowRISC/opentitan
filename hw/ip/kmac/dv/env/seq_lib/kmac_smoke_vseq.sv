@@ -140,8 +140,8 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       // randomly read out both digests after issuing Done cmd.
       if ($urandom_range(0, 1)) begin
-        read_digest_chunk(KMAC_STATE_SHARE0_BASE, 200);
-        read_digest_chunk(KMAC_STATE_SHARE1_BASE, 200);
+        read_digest_chunk(KMAC_STATE_SHARE0_BASE, 200, share0);
+        read_digest_chunk(KMAC_STATE_SHARE1_BASE, 200, share1);
       end else begin
         // If we don't read out the state window again, wait a few clocks before dropping the
         // sideload key (if applicable).
