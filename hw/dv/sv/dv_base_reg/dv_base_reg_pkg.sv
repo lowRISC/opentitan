@@ -46,7 +46,7 @@ package dv_base_reg_pkg;
     BkdrRegPathGlsShdow      // backdoor path for shadow reg's shadow val in GLS
   } bkdr_reg_path_e;
 
-
+  typedef class dv_base_reg_block;
   typedef class dv_base_reg;
 
   `include "csr_excl_item.sv"

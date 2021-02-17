@@ -52,6 +52,43 @@ class dv_base_reg extends uvm_reg;
     end
   endfunction
 
+  virtual function dv_base_reg_field get_dv_base_reg_field_by_name(string fld_name,
+                                                                   bit check_fld_exist = 1'b1);
+    uvm_reg_field fld = get_field_by_name(fld_name);
+    dv_base_reg_field dv_fld;
+
+    `downcast(dv_fld, fld)
+    if (check_fld_exist) begin
+      `DV_CHECK_NE_FATAL(dv_fld, null,
+                         $sformatf("%0s does not exist in reg %0s", fld_name, get_full_name()))
+    end
+    return dv_fld;
+  endfunction
+
+  // this function can only be called when this reg is intr_state reg
+  // Example: ral.intr_state.get_intr_pins_exp_value(). And it returns value of
+  // intr_state & intr_enable, which represents value of interrupt pins
+  virtual function uvm_reg_data_t get_intr_pins_exp_value();
+    uvm_reg_block blk = get_parent();
+    uvm_reg       intr_enable_csr;
+    string        intr_enable_csr_name;
+    bit           is_intr_state_csr = !(uvm_re_match("intr_state*", get_name()));
+
+    `DV_CHECK_EQ_FATAL(is_intr_state_csr, 1)
+
+    // intr_enable and intr_state have the same suffix
+    intr_enable_csr_name = str_utils_pkg::str_replace(get_name(), "state", "enable");
+
+    intr_enable_csr = blk.get_reg_by_name(intr_enable_csr_name);
+
+    // some interrupts may not have intr_enable
+    if (intr_enable_csr != null) begin
+      return get_mirrored_value() & intr_enable_csr.get_mirrored_value();
+    end else begin
+      return get_mirrored_value();
+    end
+  endfunction
+
   // Wen reg/fld can lock specific groups of fields' write acces. The lockable fields are called
   // lockable flds.
   function void add_lockable_reg_or_fld(uvm_object lockable_obj);
