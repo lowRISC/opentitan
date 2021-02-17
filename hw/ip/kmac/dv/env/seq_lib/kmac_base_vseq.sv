@@ -169,6 +169,15 @@ class kmac_base_vseq extends cip_base_vseq #(
     $countones(data_mask ^ {data_mask[TL_DBW-2:0], 1'b0}) <= 2;
   }
 
+  // Bias the data mask to be {TL_DBW{1'b1}} half of the time,
+  // to slightly increase simulation speed
+  constraint data_mask_c {
+    $countones(data_mask) dist {
+      [1 : TL_DBW] :/ 1,
+      TL_DBW       :/ 1
+    };
+  }
+
   // as per spec, len(N+S) can be at most 288 bits (36 bytes).
   constraint prefix_len_c {
     fname_len + custom_str_len <= 36;

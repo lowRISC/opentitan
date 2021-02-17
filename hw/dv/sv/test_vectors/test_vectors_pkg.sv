@@ -16,36 +16,40 @@ package test_vectors_pkg;
   `include "uvm_macros.svh"
 
   // declare string and vectors
-  string header               = "test_vectors_pkg";
-  string sha_file_list[]      = {"vectors/sha/sha256/SHA256ShortMsg.rsp",
-                                 "vectors/sha/sha256/SHA256LongMsg.rsp"
-                                };
-  string hmac_file_list[]     = {"vectors/hmac/HMAC_RFC4868.rsp"};
-  string sha3_file_list[]     = {"vectors/sha/sha3/SHA3_224ShortMsg.rsp",
-                                 "vectors/sha/sha3/SHA3_224LongMsg.rsp",
-                                 "vectors/sha/sha3/SHA3_256ShortMsg.rsp",
-                                 "vectors/sha/sha3/SHA3_256LongMsg.rsp",
-                                 "vectors/sha/sha3/SHA3_384ShortMsg.rsp",
-                                 "vectors/sha/sha3/SHA3_384LongMsg.rsp",
-                                 "vectors/sha/sha3/SHA3_512ShortMsg.rsp",
-                                 "vectors/sha/sha3/SHA3_512LongMsg.rsp"
-                                };
-  string shake_file_list[]    = {"vectors/xof/shake/SHAKE128ShortMsg.rsp",
-                                 "vectors/xof/shake/SHAKE128LongMsg.rsp",
-                                 "vectors/xof/shake/SHAKE128VariableOut.rsp",
-                                 "vectors/xof/shake/SHAKE256ShortMsg.rsp",
-                                 "vectors/xof/shake/SHAKE256LongMsg.rsp",
-                                 "vectors/xof/shake/SHAKE256VariableOut.rsp"
-                                };
-  string cshake_file_list[]   = {"vectors/xof/cshake/CSHAKE128Ex1.rsp",
-                                 "vectors/xof/cshake/CSHAKE256Ex1.rsp"
-                                };
-  string kmac_file_list[]     = {"vectors/xof/kmac/KMAC128Ex1.rsp",
-                                 "vectors/xof/kmac/KMAC256Ex1.rsp"
-                                };
-  string kmac_xof_file_list[] = {"vectors/xof/kmac/KMAC128XOFEx1.rsp",
-                                 "vectors/xof/kmac/KMAC256XOFEx1.rsp"
-                                };
+  string header                 = "test_vectors_pkg";
+  string sha_file_list[]        = {"vectors/sha/sha256/SHA256ShortMsg.rsp",
+                                   "vectors/sha/sha256/SHA256LongMsg.rsp"
+                                  };
+  string hmac_file_list[]       = {"vectors/hmac/HMAC_RFC4868.rsp"};
+  string sha3_224_file_list[]   = {"vectors/sha/sha3/SHA3_224ShortMsg.rsp",
+                                   "vectors/sha/sha3/SHA3_224LongMsg.rsp"
+                                  };
+  string sha3_256_file_list[]   = {"vectors/sha/sha3/SHA3_256ShortMsg.rsp",
+                                   "vectors/sha/sha3/SHA3_256LongMsg.rsp"
+                                  };
+  string sha3_384_file_list[]   = {"vectors/sha/sha3/SHA3_384ShortMsg.rsp",
+                                   "vectors/sha/sha3/SHA3_384LongMsg.rsp"
+                                  };
+  string sha3_512_file_list[]   = {"vectors/sha/sha3/SHA3_512ShortMsg.rsp",
+                                   "vectors/sha/sha3/SHA3_512LongMsg.rsp"
+                                  };
+  string shake_128_file_list[]  = {"vectors/xof/shake/SHAKE128ShortMsg.rsp",
+                                   "vectors/xof/shake/SHAKE128LongMsg.rsp",
+                                   "vectors/xof/shake/SHAKE128VariableOut.rsp"
+                                  };
+  string shake_256_file_list[]  = {"vectors/xof/shake/SHAKE256ShortMsg.rsp",
+                                   "vectors/xof/shake/SHAKE256LongMsg.rsp",
+                                   "vectors/xof/shake/SHAKE256VariableOut.rsp"
+                                  };
+  string cshake_file_list[]     = {"vectors/xof/cshake/CSHAKE128Ex1.rsp",
+                                   "vectors/xof/cshake/CSHAKE256Ex1.rsp"
+                                  };
+  string kmac_file_list[]       = {"vectors/xof/kmac/KMAC128Ex1.rsp",
+                                   "vectors/xof/kmac/KMAC256Ex1.rsp"
+                                  };
+  string kmac_xof_file_list[]   = {"vectors/xof/kmac/KMAC128XOFEx1.rsp",
+                                   "vectors/xof/kmac/KMAC256XOFEx1.rsp"
+                                  };
   string test_vectors_dir;
 
   typedef struct {

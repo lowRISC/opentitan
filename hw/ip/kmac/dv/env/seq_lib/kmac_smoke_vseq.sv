@@ -83,7 +83,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       bit [7:0] share0[];
       bit [7:0] share1[];
 
-      `uvm_info(`gfn, $sformatf("iteration: %0d", i), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("iteration: %0d", i), UVM_LOW)
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
 
@@ -108,6 +108,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       end
 
       if (cfg.enable_masking && entropy_mode == EntropyModeSw) begin
+        `uvm_info(`gfn, "providing SW entropy", UVM_HIGH)
         provide_sw_entropy();
       end
 
