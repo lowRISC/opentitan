@@ -753,7 +753,7 @@ def check_wen_regs(regs):
             error += 1
             log.error(
                 "{x} used as regwen fails requirement to be "
-                "swaccess=W0C or swaccess=RO and hwaccess=HWO".format(x=x))
+                "swaccess=RW0C or swaccess=RO and hwaccess=HWO".format(x=x))
 
     return error
 
