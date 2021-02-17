@@ -89,9 +89,9 @@ package spi_device_pkg;
 
   // Sram Depth is set to 1024 to satisfy DPSRAM parameter even though
   // SramTotalDepth above is 928.
-  parameter int unsigned SramDepth = 1024;
+  //parameter int unsigned SramDepth = 1024;
 
-  parameter int unsigned SramAw = $clog2(SramDepth);
+  parameter int unsigned SramAw = $clog2(spi_device_reg_pkg::SramDepth);
 
   // spi device scanmode usage
   typedef enum logic [2:0] {

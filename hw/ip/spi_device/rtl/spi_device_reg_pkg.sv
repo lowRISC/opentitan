@@ -6,6 +6,9 @@
 
 package spi_device_reg_pkg;
 
+  // Param list
+  parameter int unsigned SramDepth = 1024;
+
   // Address width within the block
   parameter int BlockAw = 13;
 
