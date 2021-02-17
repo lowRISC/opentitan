@@ -21,8 +21,8 @@ class kmac_test_vectors_base_vseq extends kmac_smoke_vseq;
       // parse each test vector file
       test_vectors_pkg::get_hash_test_vectors(test_list[i], vectors);
 
-      `uvm_info(`gfn, $sformatf("Starting %0s test vectors", test_list[i]), UVM_HIGH)
-      `uvm_info(`gfn, $sformatf("Preparing %0d test vectors...", vectors.size()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Starting %0s test vectors", test_list[i]), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("Preparing %0d test vectors...", vectors.size()), UVM_LOW)
 
       // Run a basic hash operation for each parsed test vector
       foreach (vectors[j]) begin
@@ -35,12 +35,14 @@ class kmac_test_vectors_base_vseq extends kmac_smoke_vseq;
         bit [7:0] share0[];
         bit [7:0] share1[];
 
+        `uvm_info(`gfn, $sformatf("Running test vector %0d", j), UVM_LOW)
         `uvm_info(`gfn, $sformatf("vectors[%0d]: %0p", j, vectors[j]), UVM_HIGH)
 
         // Use this hook to set the appropriate configuration options
         randomize_cfg(vectors[j]);
 
         msg = vectors[j].msg;
+        `uvm_info(`gfn, $sformatf("msg: %0p", msg), UVM_HIGH)
 
         kmac_init();
 
@@ -67,16 +69,16 @@ class kmac_test_vectors_base_vseq extends kmac_smoke_vseq;
             end
           end
           write_key_shares();
+        end
 
-          // provide entropy if masked
-          if (cfg.enable_masking && entropy_mode == EntropyModeSw) begin
-            provide_sw_entropy();
-          end
+        // provide entropy if masked
+        if (cfg.enable_masking && entropy_mode == EntropyModeSw) begin
+          provide_sw_entropy();
         end
 
         issue_cmd(CmdStart);
 
-        write_msg(vectors[j].msg, 1);
+        write_msg(msg, 1);
 
         if (kmac_en) begin
           right_encode(xof_en ? 0 : output_len * 8, output_len_enc);

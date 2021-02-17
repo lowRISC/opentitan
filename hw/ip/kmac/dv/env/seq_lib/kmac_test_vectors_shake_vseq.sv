@@ -8,7 +8,17 @@ class kmac_test_vectors_shake_vseq extends kmac_test_vectors_base_vseq;
   `uvm_object_new
 
   virtual task pre_start();
-    test_list = test_vectors_pkg::shake_file_list;
+    case (cfg.shake_variant)
+      128: begin
+        test_list = test_vectors_pkg::shake_128_file_list;
+      end
+      256: begin
+        test_list = test_vectors_pkg::shake_256_file_list;
+      end
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("%0d is not a valid shake_variant", cfg.shake_variant))
+      end
+    endcase
     super.pre_start();
   endtask
 

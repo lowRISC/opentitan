@@ -11,6 +11,11 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
   // Masked KMAC is the default configuration
   bit enable_masking = 1;
 
+  // These values are used by the test vector tests to select the correct vector text files.
+  // These are unused by all other tests.
+  int sha3_variant;
+  int shake_variant;
+
   `uvm_object_utils_begin(kmac_env_cfg)
   `uvm_object_utils_end
 
@@ -19,6 +24,10 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     has_edn = 1;
     super.initialize(csr_base_addr);
+
+    void'($value$plusargs("enable_masking=%0d", enable_masking));
+    void'($value$plusargs("test_vectors_sha3_variant=%0d", sha3_variant));
+    void'($value$plusargs("test_vectors_shake_variant=%0d", shake_variant));
 
     // set num_interrupts & num_alerts
     begin
