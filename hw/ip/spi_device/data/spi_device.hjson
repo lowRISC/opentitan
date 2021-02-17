@@ -23,6 +23,14 @@
   ],
   scan: "true",       // Enable `scanmode_i` port
   scan_reset: "true", // Enable `scan_rst_ni` port
+  param_list: [
+    { name:    "SramDepth"
+      desc:    "Sram Entries. Word size is 32bit width."
+      type:    "int unsigned"
+      default: "1024"
+      local:   "true"
+    }
+  ]
   regwidth: "32",
   registers: [
     { name: "CONTROL",
@@ -275,7 +283,7 @@
     { skipto: "0x1000" }
     { window: {
         name: "buffer",
-        items: "1024",
+        items: "SramDepth",
         validbits: "32",
         byte-write: "false",
         unusual: "false"
