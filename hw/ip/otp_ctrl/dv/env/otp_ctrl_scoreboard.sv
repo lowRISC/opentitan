@@ -77,10 +77,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   //    clear OTP memory to all zeros, clear all digests and re-calculate secret partitions
   virtual task process_otp_power_up();
     forever begin
-      // out of reset: lock dai access until power init is done
-      @(posedge cfg.clk_rst_vif.rst_n) begin
-         void'(ral.direct_access_regwen.predict(0));
-      end
       @(posedge cfg.otp_ctrl_vif.pwr_otp_init_i && cfg.en_scb) begin
         if (cfg.backdoor_clear_mem) begin
           bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
@@ -114,6 +110,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           otp_ctrl_pkg::otp_keymgr_key_t       exp_keymgr_data;
           bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
 
+          // Dai access is unlocked because the power init is done
           void'(ral.direct_access_regwen.predict(1));
 
           // Hwcfg_o gets data from OTP HW cfg partition
@@ -571,6 +568,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     update_digests_to_otp_mem();
     void'(ral.status.predict(OtpDaiIdle));
     edn_data_q.delete();
+
+    // Out of reset: lock dai access until power init is done
+    if (cfg.en_scb) void'(ral.direct_access_regwen.predict(0));
   endfunction
 
   virtual function void check_otp_idle(bit val, int wait_clks = 0);
