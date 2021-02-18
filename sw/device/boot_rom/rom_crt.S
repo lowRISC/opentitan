@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+
 /**
  * Boot ROM runtime initialization code.
  */
@@ -74,6 +76,11 @@ _reset_start:
  */
 _start:
   .globl _start
+
+  // Temporarily: Zero out ram_main
+  li   a0, TOP_EARLGREY_RAM_MAIN_BASE_ADDR
+  li   a1, (TOP_EARLGREY_RAM_MAIN_BASE_ADDR + TOP_EARLGREY_RAM_MAIN_SIZE_BYTES)
+  call crt_section_clear
 
   // Zero out the `.bss` segment.
   la   a0, _bss_start
