@@ -45,6 +45,11 @@ module otbn_top_sim (
   logic [1:0]               dmem_rerror_vec;
   logic                     dmem_rerror;
 
+  // Entropy Distribution Network (EDN)
+  logic                     edn_req;
+  logic                     edn_ack;
+  logic [EdnDataWidth-1:0]  edn_data;
+
   otbn_core #(
     .ImemSizeByte ( ImemSizeByte ),
     .DmemSizeByte ( DmemSizeByte )
@@ -73,8 +78,18 @@ module otbn_top_sim (
     .dmem_wmask_o  ( dmem_wmask      ),
     .dmem_rdata_i  ( dmem_rdata      ),
     .dmem_rvalid_i ( dmem_rvalid     ),
-    .dmem_rerror_i ( dmem_rerror     )
+    .dmem_rerror_i ( dmem_rerror     ),
+
+    .edn_req_o     ( edn_req         ),
+    .edn_ack_i     ( edn_ack         ),
+    .edn_data_i    ( edn_data        )
   );
+
+  // Tie-off EDN signals, eventually simulation will provide something here for testing RND
+  logic unused_edn_req;
+  assign unused_edn_req = edn_req;
+  assign edn_ack = 1'b0;
+  assign edn_data = '0;
 
   bind otbn_core otbn_trace_if #(.ImemAddrWidth, .DmemAddrWidth) i_otbn_trace_if (.*);
   bind otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));

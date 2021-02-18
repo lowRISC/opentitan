@@ -522,9 +522,9 @@
     },
     { name: "otbn",
       type: "otbn",
-      clock_srcs: {clk_i: "main"},
+      clock_srcs: {clk_i: "main", clk_edn_i: "main"},
       clock_group: "trans",
-      reset_connections: {rst_ni: "sys"},
+      reset_connections: {rst_ni: "sys", rst_edn_ni: "sys"},
       base_addr: "0x411D0000",
     },
   ]
@@ -744,7 +744,7 @@
 
       // TODO see #4447
       'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast_edn.edn', 'kmac.entropy'],
-      'edn1.edn'              : ['alert_handler.edn'],
+      'edn1.edn'              : ['alert_handler.edn', 'otbn.edn'],
 
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],

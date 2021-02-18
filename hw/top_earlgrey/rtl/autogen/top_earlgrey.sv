@@ -562,15 +562,12 @@ module top_earlgrey #(
   assign ast_edn_edn_rsp_o = edn0_edn_rsp[2];
 
   // define partial inter-module tie-off
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp2;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp3;
 
   // assign partial inter-module tie-off
-  assign unused_edn1_edn_rsp1 = edn1_edn_rsp[1];
   assign unused_edn1_edn_rsp2 = edn1_edn_rsp[2];
   assign unused_edn1_edn_rsp3 = edn1_edn_rsp[3];
-  assign edn1_edn_req[1] = '0;
   assign edn1_edn_req[2] = '0;
   assign edn1_edn_req[3] = '0;
 
@@ -2018,13 +2015,17 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[24:23] ),
 
       // Inter-module signals
+      .edn_o(edn1_edn_req[1]),
+      .edn_i(edn1_edn_rsp[1]),
       .idle_o(clkmgr_aon_idle[3]),
       .tl_i(otbn_tl_req),
       .tl_o(otbn_tl_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_otbn),
-      .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
+      .clk_edn_i (clkmgr_aon_clocks.clk_main_otbn),
+      .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+      .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
   // interrupt assignments
