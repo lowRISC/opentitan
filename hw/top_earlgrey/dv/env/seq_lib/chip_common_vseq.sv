@@ -15,6 +15,13 @@ class chip_common_vseq extends chip_base_vseq;
     // Select SPI interface.
     cfg.jtag_spi_n_vif.drive(1'b0);
     enable_asserts_in_hw_reset_rand_wr = 0;
+
+    // In top-level uart RX pin may be selected in pinmux. CSR tests may randomly enable line
+    // loopback, which will connect TX with RX. If RX isn't enabled in pinmux, it will be 0.
+    // moniter will start to check the TX data when it changes from 1 to 0. But the length of 0 may
+    // be not right in CSR test.
+    // In block-level, we always ties RX to 1 (idle) in CSR test. No need to disable the monitor
+    cfg.m_uart_agent_cfg.en_tx_monitor = 0;
   endtask
 
   task post_start();
