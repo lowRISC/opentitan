@@ -19,33 +19,40 @@ module edn_main_sm (
   input logic                max_reqs_cnt_zero_i,
   output logic               capt_rescmd_fifo_cnt_o,
   output logic               send_rescmd_o,
-  input logic                cmd_sent_i
+  input logic                cmd_sent_i,
+  output logic               main_sm_err_o
 );
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 3 -m 7 -n 6 -s 4153446945
-  // Hamming distance histogram:
-  //
-  // 0: --
-  // 1: --
-  // 2: --
-  // 3: |||||||||||||||||||| (57.14%)
-  // 4: ||||||||||||||| (42.86%)
-  // 5: --
-  // 6: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 4
-  //
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
+//      -s 3370065314 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||||| (57.14%)
+//  4: ||||||||||||||| (42.86%)
+//  5: --
+//  6: --
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 4
+// Minimum Hamming weight: 1
+// Maximum Hamming weight: 5
+//
 
   localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
-    Idle          = 6'b011000, // idle (hamming distance = 3)
-    AckWait       = 6'b110001, // wait for csrng req ack
-    Dispatch      = 6'b000100, // dispatch the next cmd after ack
-    CaptGenCnt    = 6'b101101, // capture the generate fifo count
-    SendGenCmd    = 6'b000011, // send the generate cmd req
-    CaptReseedCnt = 6'b101010, // capture the reseed fifo count
-    SendReseedCmd = 6'b011111  // send the reseed cmd req
+    Idle          = 6'b111011, // idle (hamming distance = 3)
+    AckWait       = 6'b010111, // wait for csrng req ack
+    Dispatch      = 6'b011100, // dispatch the next cmd after ack
+    CaptGenCnt    = 6'b110000, // capture the generate fifo count
+    SendGenCmd    = 6'b001001, // send the generate cmd req
+    CaptReseedCnt = 6'b101110, // capture the reseed fifo count
+    SendReseedCmd = 6'b000010, // send the reseed cmd req
+    Error         = 6'b100101  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
@@ -75,6 +82,7 @@ module edn_main_sm (
     send_rescmd_o = 1'b0;
     seq_auto_req_mode_o = 1'b1;
     auto_req_mode_end_o = 1'b0;
+    main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
         seq_auto_req_mode_o = 1'b0;
@@ -119,7 +127,10 @@ module edn_main_sm (
           state_d = AckWait;
         end
       end
-      default: state_d = Idle;
+      Error: begin
+        main_sm_err_o = 1'b1;
+      end
+      default: state_d = Error;
     endcase
   end
 

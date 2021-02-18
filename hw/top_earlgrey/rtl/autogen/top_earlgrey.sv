@@ -372,9 +372,9 @@ module top_earlgrey #(
   logic intr_entropy_src_es_health_test_failed;
   logic intr_entropy_src_es_fatal_err;
   logic intr_edn0_edn_cmd_req_done;
-  logic intr_edn0_edn_fifo_err;
+  logic intr_edn0_edn_fatal_err;
   logic intr_edn1_edn_cmd_req_done;
-  logic intr_edn1_edn_fifo_err;
+  logic intr_edn1_edn_fatal_err;
   logic intr_otbn_done;
 
 
@@ -1942,7 +1942,11 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_edn_cmd_req_done_o (intr_edn0_edn_cmd_req_done),
-      .intr_edn_fifo_err_o     (intr_edn0_edn_fifo_err),
+      .intr_edn_fatal_err_o    (intr_edn0_edn_fatal_err),
+
+      // [22]: fatal_alert
+      .alert_tx_o  ( alert_tx[22:22] ),
+      .alert_rx_i  ( alert_rx[22:22] ),
 
       // Inter-module signals
       .csrng_cmd_o(csrng_csrng_cmd_req[0]),
@@ -1961,7 +1965,11 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_edn_cmd_req_done_o (intr_edn1_edn_cmd_req_done),
-      .intr_edn_fifo_err_o     (intr_edn1_edn_fifo_err),
+      .intr_edn_fatal_err_o    (intr_edn1_edn_fatal_err),
+
+      // [23]: fatal_alert
+      .alert_tx_o  ( alert_tx[23:23] ),
+      .alert_rx_i  ( alert_rx[23:23] ),
 
       // Inter-module signals
       .csrng_cmd_o(csrng_csrng_cmd_req[1]),
@@ -1982,9 +1990,9 @@ module top_earlgrey #(
     .InstrExec(SramCtrlMainInstrExec)
   ) u_sram_ctrl_main (
 
-      // [22]: fatal_parity_error
-      .alert_tx_o  ( alert_tx[22:22] ),
-      .alert_rx_i  ( alert_rx[22:22] ),
+      // [24]: fatal_parity_error
+      .alert_tx_o  ( alert_tx[24:24] ),
+      .alert_rx_i  ( alert_rx[24:24] ),
 
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
@@ -2012,10 +2020,10 @@ module top_earlgrey #(
       // Interrupt
       .intr_done_o (intr_otbn_done),
 
-      // [23]: fatal
-      // [24]: recov
-      .alert_tx_o  ( alert_tx[24:23] ),
-      .alert_rx_i  ( alert_rx[24:23] ),
+      // [25]: fatal
+      // [26]: recov
+      .alert_tx_o  ( alert_tx[26:25] ),
+      .alert_rx_i  ( alert_rx[26:25] ),
 
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[3]),
@@ -2034,9 +2042,9 @@ module top_earlgrey #(
       intr_entropy_src_es_entropy_valid, // ID 137
       intr_aon_timer_aon_wdog_timer_bark, // ID 136
       intr_aon_timer_aon_wkup_timer_expired, // ID 135
-      intr_edn1_edn_fifo_err, // ID 134
+      intr_edn1_edn_fatal_err, // ID 134
       intr_edn1_edn_cmd_req_done, // ID 133
-      intr_edn0_edn_fifo_err, // ID 132
+      intr_edn0_edn_fatal_err, // ID 132
       intr_edn0_edn_cmd_req_done, // ID 131
       intr_csrng_cs_fatal_err, // ID 130
       intr_csrng_cs_hw_inst_exc, // ID 129

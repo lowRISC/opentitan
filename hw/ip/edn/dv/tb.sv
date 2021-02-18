@@ -15,7 +15,7 @@ module tb;
 
   wire clk, rst_n;
   wire devmode;
-  wire intr_edn_cmd_req_done, intr_edn_fifo_err;
+  wire intr_edn_cmd_req_done, intr_edn_fatal_err;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   edn_pkg::edn_req_t [NUM_ENDPOINTS-1:0] endpoint_req;
   edn_pkg::edn_rsp_t [NUM_ENDPOINTS-1:0] endpoint_rsp;
@@ -43,8 +43,11 @@ module tb;
     .csrng_cmd_i               (csrng_if.cmd_rsp),
     .csrng_cmd_o               (csrng_if.cmd_req),
 
+    .alert_rx_i                ('0), // (alert_rx), // TODO: connect to model
+    .alert_tx_o                (),   // (alert_tx), // TODO: connect to model
+
     .intr_edn_cmd_req_done_o   (intr_edn_cmd_req_done),
-    .intr_edn_fifo_err_o       (intr_edn_fifo_err)
+    .intr_edn_fatal_err_o      (intr_edn_fatal_err)
   );
 
   for (genvar i = 0; i < NUM_ENDPOINTS; i++) begin : gen_endpoint_if
@@ -57,7 +60,7 @@ module tb;
   end
 
   assign interrupts[CmdReqDone] = intr_edn_cmd_req_done;
-  assign interrupts[FifoErr]    = intr_edn_fifo_err;
+  assign interrupts[FifoErr]    = intr_edn_fatal_err;
 
   initial begin
     // drive clk and rst_n from clk_if

@@ -6609,7 +6609,7 @@
           type: interrupt
         }
         {
-          name: edn_fifo_err
+          name: edn_fatal_err
           width: 1
           bits: "1"
           bitinfo:
@@ -6621,7 +6621,22 @@
           type: interrupt
         }
       ]
-      alert_list: []
+      alert_list:
+      [
+        {
+          name: fatal_alert
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: alert
+          async: 1
+        }
+      ]
       wakeup_list: []
       reset_request_list: []
       scan: "false"
@@ -6718,7 +6733,7 @@
           type: interrupt
         }
         {
-          name: edn_fifo_err
+          name: edn_fatal_err
           width: 1
           bits: "1"
           bitinfo:
@@ -6730,7 +6745,22 @@
           type: interrupt
         }
       ]
-      alert_list: []
+      alert_list:
+      [
+        {
+          name: fatal_alert
+          width: 1
+          bits: "0"
+          bitinfo:
+          [
+            1
+            1
+            0
+          ]
+          type: alert
+          async: 1
+        }
+      ]
       wakeup_list: []
       reset_request_list: []
       scan: "false"
@@ -11098,7 +11128,7 @@
       module_name: edn0
     }
     {
-      name: edn0_edn_fifo_err
+      name: edn0_edn_fatal_err
       width: 1
       bits: "1"
       bitinfo:
@@ -11124,7 +11154,7 @@
       module_name: edn1
     }
     {
-      name: edn1_edn_fifo_err
+      name: edn1_edn_fatal_err
       width: 1
       bits: "1"
       bitinfo:
@@ -11198,6 +11228,8 @@
     lc_ctrl
     entropy_src
     csrng
+    edn0
+    edn1
     sram_ctrl_main
     sram_ctrl_ret_aon
     flash_ctrl
@@ -11483,6 +11515,34 @@
       type: alert
       async: 1
       module_name: csrng
+    }
+    {
+      name: edn0_fatal_alert
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: alert
+      async: 1
+      module_name: edn0
+    }
+    {
+      name: edn1_fatal_alert
+      width: 1
+      bits: "0"
+      bitinfo:
+      [
+        1
+        1
+        0
+      ]
+      type: alert
+      async: 1
+      module_name: edn1
     }
     {
       name: sram_ctrl_main_fatal_parity_error

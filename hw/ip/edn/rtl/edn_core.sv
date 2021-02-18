@@ -8,7 +8,8 @@
 //    end points.
 //
 
-module edn_core import edn_pkg::*; #(
+module edn_core import edn_pkg::*;
+#(
   parameter int NumEndPoints = 4,
   parameter int BootInsCmd = 32'h0000_0001,
   parameter int BootGenCmd = 32'h0000_1003
@@ -19,16 +20,21 @@ module edn_core import edn_pkg::*; #(
   input  edn_reg_pkg::edn_reg2hw_t reg2hw,
   output edn_reg_pkg::edn_hw2reg_t hw2reg,
 
-  // edn interfaces
+  // EDN interfaces
   input  edn_req_t [NumEndPoints-1:0] edn_i,
   output edn_rsp_t [NumEndPoints-1:0] edn_o,
 
-  // csrng application Interface
+  // CSRNG Application Interface
   output  csrng_pkg::csrng_req_t  csrng_cmd_o,
   input   csrng_pkg::csrng_rsp_t  csrng_cmd_i,
 
+  // Alerts
+  output logic        alert_test_o,
+  output logic        fatal_alert_o,
+
+  // Interrupts
   output logic        intr_edn_cmd_req_done_o,
-  output logic        intr_edn_fifo_err_o
+  output logic        intr_edn_fatal_err_o
 );
 
   import edn_reg_pkg::*;
@@ -43,7 +49,7 @@ module edn_core import edn_pkg::*; #(
 
   // signals
   logic event_edn_cmd_req_done;
-  logic event_edn_fifo_err;
+  logic event_edn_fatal_err;
   logic edn_enable;
   logic cmd_fifo_rst;
   logic packer_arb_valid;
@@ -88,6 +94,8 @@ module edn_core import edn_pkg::*; #(
   logic [NumEndPoints-1:0]   packer_ep_wready;
   logic [NumEndPoints-1:0]   packer_ep_rvalid;
   logic [NumEndPoints-1:0]   packer_ep_rready;
+  logic                      edn_ack_sm_err_sum;
+  logic [NumEndPoints-1:0]   edn_ack_sm_err;
   logic [EndPointBusWidth-1:0] packer_ep_rdata [NumEndPoints];
 
   // rescmd fifo
@@ -97,6 +105,7 @@ module edn_core import edn_pkg::*; #(
   logic                               sfifo_rescmd_push;
   logic [RescmdFifoWidth-1:0]         sfifo_rescmd_wdata;
   logic                               sfifo_rescmd_pop;
+  logic                               sfifo_rescmd_err_sum;
   logic [2:0]                         sfifo_rescmd_err;
   logic                               sfifo_rescmd_full;
   logic                               sfifo_rescmd_not_empty;
@@ -108,9 +117,17 @@ module edn_core import edn_pkg::*; #(
   logic                               sfifo_gencmd_push;
   logic [GencmdFifoWidth-1:0]         sfifo_gencmd_wdata;
   logic                               sfifo_gencmd_pop;
+  logic                               sfifo_gencmd_err_sum;
   logic [2:0]                         sfifo_gencmd_err;
   logic                               sfifo_gencmd_full;
   logic                               sfifo_gencmd_not_empty;
+
+  logic                               edn_main_sm_err_sum;
+  logic                               edn_main_sm_err;
+  logic [30:0]                        err_code_test_bit;
+  logic                               fifo_write_err_sum;
+  logic                               fifo_read_err_sum;
+  logic                               fifo_status_err_sum;
 
   // flops
   logic [31:0]                        cs_cmd_req_q, cs_cmd_req_d;
@@ -180,53 +197,91 @@ module edn_core import edn_pkg::*; #(
 
   prim_intr_hw #(
     .Width(1)
-  ) u_intr_hw_edn_fifo_err (
+  ) u_intr_hw_edn_fatal_err (
     .clk_i                  (clk_i),
     .rst_ni                 (rst_ni),
-    .event_intr_i           (event_edn_fifo_err),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.edn_fifo_err.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.edn_fifo_err.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.edn_fifo_err.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.edn_fifo_err.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.edn_fifo_err.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.edn_fifo_err.d),
-    .intr_o                 (intr_edn_fifo_err_o)
+    .event_intr_i           (event_edn_fatal_err),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.edn_fatal_err.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.edn_fatal_err.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.edn_fatal_err.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.edn_fatal_err.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.edn_fatal_err.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.edn_fatal_err.d),
+    .intr_o                 (intr_edn_fatal_err_o)
   );
 
   // interrupt for sw app interface only
   assign event_edn_cmd_req_done = csrng_cmd_ack;
 
   // set the interrupt sources
-  assign event_edn_fifo_err = edn_enable && (
-         (|sfifo_rescmd_err) ||
-         (|sfifo_gencmd_err));
+  assign event_edn_fatal_err = edn_enable && (
+         sfifo_rescmd_err_sum ||
+         sfifo_gencmd_err_sum ||
+         edn_ack_sm_err_sum ||
+         edn_main_sm_err_sum);
+
+  // set fifo errors that are single instances of source
+  assign sfifo_rescmd_err_sum = (|sfifo_rescmd_err) ||
+         err_code_test_bit[0];
+  assign sfifo_gencmd_err_sum = (|sfifo_gencmd_err) ||
+         err_code_test_bit[1];
+  assign edn_ack_sm_err_sum = (|edn_ack_sm_err) ||
+         err_code_test_bit[20];
+  assign edn_main_sm_err_sum = edn_main_sm_err ||
+         err_code_test_bit[21];
+  assign fifo_write_err_sum =
+         sfifo_rescmd_err[2] ||
+         sfifo_gencmd_err[2] ||
+         err_code_test_bit[28];
+  assign fifo_read_err_sum =
+         sfifo_rescmd_err[1] ||
+         sfifo_gencmd_err[1] ||
+         err_code_test_bit[29];
+  assign fifo_status_err_sum =
+         sfifo_rescmd_err[0] ||
+         sfifo_gencmd_err[0] ||
+         err_code_test_bit[30];
 
 
   // set the err code source bits
   assign hw2reg.err_code.sfifo_rescmd_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_rescmd_err.de = edn_enable && (|sfifo_rescmd_err);
+  assign hw2reg.err_code.sfifo_rescmd_err.de = edn_enable && sfifo_rescmd_err_sum;
 
   assign hw2reg.err_code.sfifo_gencmd_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_gencmd_err.de = edn_enable && (|sfifo_gencmd_err);
+  assign hw2reg.err_code.sfifo_gencmd_err.de = edn_enable && sfifo_gencmd_err_sum;
+
+  assign hw2reg.err_code.edn_ack_sm_err.d = 1'b1;
+  assign hw2reg.err_code.edn_ack_sm_err.de = edn_enable && edn_ack_sm_err_sum;
+
+  assign hw2reg.err_code.edn_main_sm_err.d = 1'b1;
+  assign hw2reg.err_code.edn_main_sm_err.de = edn_enable && edn_main_sm_err_sum;
 
 
  // set the err code type bits
   assign hw2reg.err_code.fifo_write_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_write_err.de = edn_enable && (
-         sfifo_rescmd_err[2] ||
-         sfifo_gencmd_err[2]);
+  assign hw2reg.err_code.fifo_write_err.de = edn_enable && fifo_write_err_sum;
 
   assign hw2reg.err_code.fifo_read_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_read_err.de = edn_enable && (
-         sfifo_rescmd_err[1] ||
-         sfifo_gencmd_err[1]);
+  assign hw2reg.err_code.fifo_read_err.de = edn_enable && fifo_read_err_sum;
 
   assign hw2reg.err_code.fifo_state_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_state_err.de = edn_enable && (
-         sfifo_rescmd_err[0] ||
-         sfifo_gencmd_err[0]);
+  assign hw2reg.err_code.fifo_state_err.de = edn_enable && fifo_status_err_sum;
 
 
+  // Error forcing
+  for (genvar i = 0; i < 31; i = i+1) begin : gen_err_code_test_bit
+    assign err_code_test_bit[i] = (reg2hw.err_code_test.q == i) && reg2hw.err_code_test.qe;
+  end : gen_err_code_test_bit
+
+
+  // alert - send all interrupt sources to the alert for the fatal case
+  assign fatal_alert_o = event_edn_fatal_err;
+
+  // alert test
+  assign alert_test_o = {
+    reg2hw.alert_test.q &
+    reg2hw.alert_test.qe
+  };
 
   // master module enable
   assign edn_enable = reg2hw.ctrl.edn_enable.q;
@@ -372,7 +427,8 @@ module edn_core import edn_pkg::*; #(
     .max_reqs_cnt_zero_i(max_reqs_cnt_zero),
     .capt_rescmd_fifo_cnt_o(capt_rescmd_fifo_cnt),
     .send_rescmd_o(send_rescmd),
-    .cmd_sent_i(cmd_sent)
+    .cmd_sent_i(cmd_sent),
+    .main_sm_err_o(edn_main_sm_err)
   );
 
 
@@ -522,7 +578,8 @@ module edn_core import edn_pkg::*; #(
       .req_i            (edn_i[i].edn_req),
       .ack_o            (packer_ep_ack[i]),
       .fifo_not_empty_i (packer_ep_rvalid[i]),
-      .fifo_pop_o       (packer_ep_rready[i])
+      .fifo_pop_o       (packer_ep_rready[i]),
+      .ack_sm_err_o     (edn_ack_sm_err[i])
     );
 
   end
@@ -533,7 +590,10 @@ module edn_core import edn_pkg::*; #(
   //--------------------------------------------
 
   assign     hw2reg.sum_sts.internal_use.de = !edn_enable;
-  assign     hw2reg.sum_sts.internal_use.d  = reg2hw.regwen.q;
+  assign     hw2reg.sum_sts.internal_use.d =
+             (|err_code_test_bit[19:2]) ||
+             (|err_code_test_bit[27:22]) ||
+             reg2hw.regwen.q;
 
 
 endmodule
