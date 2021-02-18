@@ -193,7 +193,8 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
             "</td>")
         genout(outfile, "<td class=\"regfn\">" + fname + "</td>")
         if field.desc is not None:
-            genout(outfile, render_td(field.desc, rnames, 'regde'))
+            genout(outfile,
+                   render_td(field.desc, rnames, 'regde', field.enum is None))
         else:
             genout(outfile, "<td>\n")
 
@@ -209,7 +210,8 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
             genout(outfile, "    </table>")
             if field.has_incomplete_enum():
                 genout(outfile, "Other values are reserved.")
-        genout(outfile, "</td></tr>\n")
+            genout(outfile, "</td>")
+        genout(outfile, "</tr>\n")
         nextbit = fieldlsb + field.bits.width()
 
     genout(outfile, "</table>\n<br>\n")

@@ -71,7 +71,7 @@ def _expand_paragraph(s, rnames):
     return ''.join(expanded_parts)
 
 
-def render_td(s, rnames, td_class):
+def render_td(s, rnames, td_class, close_td=True):
     '''Expand a description field and put it in a <td>.
 
     Returns a string. See _get_desc_paras for the format that gets expanded.
@@ -79,5 +79,5 @@ def render_td(s, rnames, td_class):
     '''
     desc_paras = expand_paras(s, rnames)
     class_attr = '' if td_class is None else ' class="{}"'.format(td_class)
-    return ('<td{}><p>{}</p></td>'
-            .format(class_attr, '</p><p>'.join(desc_paras)))
+    return ('<td{}><p>{}</p>{}'.format(class_attr, '</p><p>'.join(desc_paras),
+                                       "</td>" if close_td else ""))
