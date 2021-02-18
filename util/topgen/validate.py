@@ -70,6 +70,7 @@ top_optional = {
     ],
     'pinmux': ['g', 'pinmux definition if doesn\'t exist, tool uses defaults'],
     'power': ['g', 'power domains supported by the design'],
+    'port': ['g', 'assign special attributes to specific ports']
 }
 
 top_added = {}
