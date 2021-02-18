@@ -14,6 +14,17 @@ puts "Applying constraints for top level"
 # for the purpose of test synthesis, these clock nets are just set to ideal networks.
 
 #####################
+# Architectural CGs #
+#####################
+
+# in synthesis, we treat all clock networks as ideal nets.
+# architecturally insterted CGs however can be interpreted as
+# sequential cells by the tool, hence stopping automatic propagation
+# of ideal network attributes. therefore, we go through the design and
+# declare all architectural CG outputs as ideal.
+set_ideal_network [get_pins -hier u_clkgate/Q]
+
+#####################
 # main clock        #
 #####################
 set MAIN_CLK_PIN u_ast/u_sys_clk/u_sys_osc/sys_clk_o
